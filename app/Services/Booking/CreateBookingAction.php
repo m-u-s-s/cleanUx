@@ -10,13 +10,16 @@ use App\Models\ServiceCatalog;
 use App\Models\ServiceZone;
 use App\Models\User;
 use App\Models\ZoneServiceRule;
+use App\Services\International\CountryMarketResolver;
 use App\Support\ActivityLogger;
 use Illuminate\Support\Arr;
+use Illuminate\Validation\ValidationException;
 
 class CreateBookingAction
 {
     public function __construct(
         protected BookingSnapshotFactory $snapshotFactory,
+        protected CountryMarketResolver $countryMarketResolver,
     ) {}
 
     public function execute(
@@ -40,26 +43,71 @@ class CreateBookingAction
             resolutionSource: Arr::get($data, 'resolution_source'),
         );
 
+        $countryMarket = $this->countryMarketResolver->resolveForBooking($client, $postal, $zone, $organizationSite, $catalog);
+
+        if (! $this->countryMarketResolver->bookingEnabled($countryMarket)) {
+            throw ValidationException::withMessages([
+                'postal_code_input' => 'La réservation n’est pas encore active pour ce marché.',
+            ]);
+        }
+
+        if (! $this->countryMarketResolver->serviceEnabled($countryMarket)) {
+            throw ValidationException::withMessages([
+                'selected_service_identifier' => 'Ce service n’est pas encore disponible dans ce pays.',
+            ]);
+        }
+
         $manualValidationRequired = $resolution->requiresManualValidation()
             || (bool) ($rule->requires_manual_validation
                 || data_get($zone->metadata, 'requires_manual_validation', false)
                 || $catalog->requires_manual_validation
-                || Arr::get($data, 'entreprise_approval_required', false));
+                || Arr::get($data, 'entreprise_approval_required', false)
+                || $this->countryMarketResolver->requiresManualValidation($countryMarket)
+                || $this->countryMarketResolver->requiresQuote($countryMarket));
 
         $status = Arr::get($data, 'status', 'en_attente');
         if ($manualValidationRequired && $status === 'confirme') {
             $status = 'en_attente';
         }
 
-        $serviceIdentifier = (string) (
-            Arr::get($data, 'service_identifier')
-            ?: $catalog->code
-            ?: $catalog->slug
-        );
-
+        $serviceIdentifier = (string) (Arr::get($data, 'service_identifier') ?: $catalog->code ?: $catalog->slug);
         if ($serviceIdentifier === '') {
             throw new \LogicException('Impossible de créer un rendez-vous sans service_identifier.');
         }
+
+        $zoneSnapshot = array_merge(
+            $this->snapshotFactory->makeZoneSnapshot($postal, $zone, $organizationSite, $resolution),
+            [
+                'country_id' => data_get($countryMarket['country'] ?? null, 'id'),
+                'country_iso' => data_get($countryMarket['country'] ?? null, 'iso_code'),
+                'country_iso3' => data_get($countryMarket['country'] ?? null, 'iso3_code'),
+                'country_name' => data_get($countryMarket['country'] ?? null, 'name'),
+                'market_stage' => $this->countryMarketResolver->marketStage($countryMarket),
+            ]
+        );
+
+        $pricingSnapshot = $this->snapshotFactory->makePricingSnapshot($catalog, $zone, $rule, $resolution, $data);
+        $countryMultiplier = $this->countryMarketResolver->countryPriceMultiplier($countryMarket);
+        $adjustedEstimate = round((float) (Arr::get($data, 'devis_estime', data_get($pricingSnapshot, 'devis_estime', 0))) * $countryMultiplier, 2);
+
+        $pricingSnapshot = array_merge($pricingSnapshot, [
+            'devis_estime' => $adjustedEstimate,
+            'currency' => $this->countryMarketResolver->effectiveCurrency($countryMarket),
+            'tax_rate' => $this->countryMarketResolver->effectiveTaxRate($countryMarket),
+            'quote_required' => $this->countryMarketResolver->requiresQuote($countryMarket),
+            'country_market' => [
+                'country_id' => data_get($countryMarket['country'] ?? null, 'id'),
+                'country_iso' => data_get($countryMarket['country'] ?? null, 'iso_code'),
+                'market_stage' => $this->countryMarketResolver->marketStage($countryMarket),
+                'service_price_multiplier' => $countryMultiplier,
+                'minimum_notice_hours' => $this->countryMarketResolver->minimumNoticeHours($countryMarket),
+                'requires_manual_validation' => $this->countryMarketResolver->requiresManualValidation($countryMarket),
+                'requires_quote' => $this->countryMarketResolver->requiresQuote($countryMarket),
+                'document_formatting' => $this->countryMarketResolver->formatting($countryMarket),
+                'default_team_id' => data_get($countryMarket['service_rule'] ?? null, 'default_team_id'),
+                'default_partner_id' => data_get($countryMarket['service_rule'] ?? null, 'default_partner_id'),
+            ],
+        ]);
 
         $rendezVous = RendezVous::create([
             'client_id' => $client->id,
@@ -71,8 +119,8 @@ class CreateBookingAction
             'postal_code_id' => $postal->id,
             'booking_channel' => Arr::get($data, 'booking_channel', 'web'),
             'booking_reference' => Arr::get($data, 'booking_reference'),
-            'zone_snapshot' => $this->snapshotFactory->makeZoneSnapshot($postal, $zone, $organizationSite, $resolution),
-            'pricing_snapshot' => $this->snapshotFactory->makePricingSnapshot($catalog, $zone, $rule, $resolution, $data),
+            'zone_snapshot' => $zoneSnapshot,
+            'pricing_snapshot' => $pricingSnapshot,
             'date' => Arr::get($data, 'date'),
             'heure' => Arr::get($data, 'heure'),
             'motif' => Arr::get($data, 'motif', $catalog->name),
@@ -105,7 +153,7 @@ class CreateBookingAction
             'is_favorite_slot' => (bool) Arr::get($data, 'is_favorite_slot', false),
             'photos_reference' => Arr::get($data, 'photos_reference', []),
             'duree_estimee' => Arr::get($data, 'duree_estimee'),
-            'devis_estime' => Arr::get($data, 'devis_estime'),
+            'devis_estime' => $adjustedEstimate,
             'status' => $status,
         ]);
 
@@ -118,6 +166,8 @@ class CreateBookingAction
             'postal_code_id' => $postal->id,
             'manual_validation_required' => $manualValidationRequired,
             'coverage_resolution_source' => $resolution->resolutionSource,
+            'country_iso' => data_get($countryMarket['country'] ?? null, 'iso_code'),
+            'market_stage' => $this->countryMarketResolver->marketStage($countryMarket),
         ]);
 
         return $rendezVous;

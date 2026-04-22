@@ -10,6 +10,7 @@ use App\Models\ServiceCatalog;
 use App\Models\ServiceZone;
 use App\Models\User;
 use App\Models\ZoneServiceRule;
+use App\Services\International\CountryMarketResolver;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
@@ -17,6 +18,23 @@ use Illuminate\Validation\ValidationException;
 
 trait InteractsWithBookingFormState
 {
+
+protected function countryMarketResolver(): CountryMarketResolver
+{
+    return app(CountryMarketResolver::class);
+}
+
+protected function currentCountryMarketContext(): array
+{
+    return $this->countryMarketResolver()->resolveForBooking(
+        Auth::user(),
+        $this->currentPostalCode(),
+        $this->currentServiceZone(),
+        $this->selectedOrganizationSite(),
+        $this->currentServiceCatalog(),
+    );
+}
+
     protected function hydrateFromQuery(): void
     {
         $requestedEmployeId = request()->integer('employe');

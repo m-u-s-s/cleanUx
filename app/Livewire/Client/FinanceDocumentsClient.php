@@ -124,12 +124,17 @@ class FinanceDocumentsClient extends Component
         $quoteRows = $this->quotesQuery()->get(['id', 'total_amount', 'status']);
         $invoiceRows = $this->invoicesQuery()->get(['id', 'balance_due', 'status', 'due_at']);
 
+        $currencySymbol = $this->quotes->first()?->documentCurrencySymbol()
+            ?? $this->invoices->first()?->documentCurrencySymbol()
+            ?? '€';
+
         return [
             'quotes_count' => $quoteRows->count(),
             'quotes_pending' => $quoteRows->whereIn('status', ['draft', 'sent'])->count(),
             'invoices_count' => $invoiceRows->count(),
             'outstanding_total' => round((float) $invoiceRows->sum('balance_due'), 2),
             'overdue_count' => $invoiceRows->where('status', 'overdue')->count(),
+            'currency_symbol' => $currencySymbol,
         ];
     }
 

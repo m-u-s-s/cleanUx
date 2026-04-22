@@ -17,7 +17,6 @@ class BookingEstimatorService
     public function estimateDuration(?ServiceCatalog $catalog, array $context): int
     {
         $serviceIdentifier = $this->resolveServiceIdentifier($context);
-
         $baseMinutes = $catalog?->default_duration_minutes ?? match ($serviceIdentifier) {
             'nettoyage_standard' => 120,
             'nettoyage_profond' => 180,
@@ -64,6 +63,11 @@ class BookingEstimatorService
             $basePrice *= (float) $rule->price_multiplier;
         }
 
+        $countryMultiplier = (float) ($context['country_price_multiplier'] ?? 1.0);
+        if ($countryMultiplier > 0 && abs($countryMultiplier - 1.0) > 0.0001) {
+            $basePrice *= $countryMultiplier;
+        }
+
         $surfacePrice = match ($context['surface'] ?? null) {
             'moins_50' => 0,
             '50_100' => 20,
@@ -79,7 +83,6 @@ class BookingEstimatorService
         $travelSurcharge = (float) ($zone?->travel_surcharge ?? 0);
 
         $subtotal = $basePrice + $surfacePrice + $optionsPrice + $zonesPrice + $premiumPrice + $travelSurcharge;
-
         $subtotal *= match ($context['frequence'] ?? null) {
             'hebdomadaire' => 0.92,
             'bihebdomadaire' => 0.95,

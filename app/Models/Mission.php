@@ -158,4 +158,9 @@ class Mission extends Model
     {
         return $this->hasMany(MissionEvent::class)->orderBy('happened_at');
     }
+
+    public function taskSegment(): BelongsTo
+    {
+        return $this->belongsTo(MissionTaskSegment::class, 'mission_task_segment_id');
+    }
 }

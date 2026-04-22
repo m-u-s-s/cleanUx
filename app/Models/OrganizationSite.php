@@ -67,6 +67,11 @@ class OrganizationSite extends Model
         return $this->hasMany(RendezVous::class, 'organization_site_id');
     }
 
+    public function missionBatches(): HasMany
+    {
+        return $this->hasMany(MissionBatch::class, 'organization_site_id');
+    }
+
     public function bookingPolicy(): array
     {
         return [

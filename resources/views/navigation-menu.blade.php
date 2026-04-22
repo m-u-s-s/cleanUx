@@ -25,7 +25,6 @@
                             <x-nav-link :href="route('employe.missions')" :active="request()->routeIs('employe.missions')">Mes missions</x-nav-link>
                             <x-nav-link :href="route('employe.disponibilites')" :active="request()->routeIs('employe.disponibilites')">Disponibilités</x-nav-link>
                             <x-nav-link :href="route('employe.historique')" :active="request()->routeIs('employe.historique')">Historique</x-nav-link>
-                            <x-nav-link :href="route('employe.team')" :active="request()->routeIs('employe.team')">Mon équipe</x-nav-link>
                         @elseif($user->isAdmin())
                             <x-nav-link :href="route('admin.dashboard')" :active="request()->routeIs('admin.dashboard')">Pilotage</x-nav-link>
                             <x-nav-link :href="route('admin.planning')" :active="request()->routeIs('admin.planning')">Planning</x-nav-link>
@@ -40,7 +39,6 @@
 
                             @can('manage-entreprises')
                                 <x-nav-link :href="route('admin.entreprises')" :active="request()->routeIs('admin.entreprises')">Entreprises</x-nav-link>
-                                <x-nav-link :href="route('admin.teams.partners')" :active="request()->routeIs('admin.teams.partners')">Équipes & partenaires</x-nav-link>
                             @endcan
 
                             @can('manage-finance')
@@ -166,7 +164,6 @@
                     <x-responsive-nav-link :href="route('employe.missions')" :active="request()->routeIs('employe.missions')">{{ __('app.nav.missions') }}</x-responsive-nav-link>
                     <x-responsive-nav-link :href="route('employe.disponibilites')" :active="request()->routeIs('employe.disponibilites')">Disponibilités</x-responsive-nav-link>
                     <x-responsive-nav-link :href="route('employe.historique')" :active="request()->routeIs('employe.historique')">{{ __('app.nav.history') }}</x-responsive-nav-link>
-                    <x-responsive-nav-link :href="route('employe.team')" :active="request()->routeIs('employe.team')">Mon équipe</x-responsive-nav-link>
                 @elseif($user->isAdmin())
                     <x-responsive-nav-link :href="route('admin.dashboard')" :active="request()->routeIs('admin.dashboard')">{{ __('app.nav.pilotage') }}</x-responsive-nav-link>
                     <x-responsive-nav-link :href="route('admin.planning')" :active="request()->routeIs('admin.planning')">{{ __('app.nav.planning') }}</x-responsive-nav-link>
@@ -180,7 +177,6 @@
                     @endcan
                     @can('manage-entreprises')
                         <x-responsive-nav-link :href="route('admin.entreprises')" :active="request()->routeIs('admin.entreprises')">{{ __('app.nav.companies') }}</x-responsive-nav-link>
-                        <x-responsive-nav-link :href="route('admin.teams.partners')" :active="request()->routeIs('admin.teams.partners')">Équipes & partenaires</x-responsive-nav-link>
                     @endcan
                     @can('manage-finance')
                         <x-responsive-nav-link :href="route('admin.finance')" :active="request()->routeIs('admin.finance')">{{ __('app.nav.finance') }}</x-responsive-nav-link>

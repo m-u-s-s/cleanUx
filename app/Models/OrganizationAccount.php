@@ -82,9 +82,9 @@ class OrganizationAccount extends Model
         return $this->hasMany(RendezVous::class);
     }
 
-    public function fieldTeams(): HasMany
+    public function missionBatches(): HasMany
     {
-        return $this->hasMany(FieldTeam::class);
+        return $this->hasMany(MissionBatch::class);
     }
 
 

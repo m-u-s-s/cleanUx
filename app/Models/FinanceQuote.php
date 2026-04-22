@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\InteractsWithDocumentFormatting;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -10,6 +11,7 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 class FinanceQuote extends Model
 {
     use HasFactory;
+    use InteractsWithDocumentFormatting;
 
     protected $fillable = [
         'rendez_vous_id',

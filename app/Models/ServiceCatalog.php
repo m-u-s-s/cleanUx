@@ -12,19 +12,8 @@ class ServiceCatalog extends Model
     use HasFactory;
 
     protected $fillable = [
-        'code',
-        'name',
-        'slug',
-        'description',
-        'service_type',
-        'is_active',
-        'requires_quote',
-        'requires_manual_validation',
-        'is_entreprise',
-        'default_duration_minutes',
-        'base_price',
-        'sort_order',
-        'settings',
+        'code', 'name', 'slug', 'description', 'service_type', 'is_active', 'requires_quote',
+        'requires_manual_validation', 'is_entreprise', 'default_duration_minutes', 'base_price', 'sort_order', 'settings',
     ];
 
     protected $casts = [
@@ -36,36 +25,19 @@ class ServiceCatalog extends Model
         'settings' => 'array',
     ];
 
-
     public function getDisplayNameAttribute(): string
     {
         $name = (string) ($this->name ?: $this->code ?: $this->service_type ?: 'Service');
-
         return (string) str($name)->replace('_', ' ')->headline();
     }
 
-    public function zoneServiceRules(): HasMany
-    {
-        return $this->hasMany(ZoneServiceRule::class);
-    }
-
+    public function zoneServiceRules(): HasMany { return $this->hasMany(ZoneServiceRule::class); }
     public function serviceZones(): BelongsToMany
     {
         return $this->belongsToMany(ServiceZone::class, 'zone_service_rules')
-            ->withPivot([
-                'is_enabled',
-                'requires_manual_validation',
-                'base_price_override',
-                'price_multiplier',
-                'minimum_notice_hours',
-                'maximum_daily_capacity',
-                'settings',
-            ])
+            ->withPivot(['is_enabled','requires_manual_validation','base_price_override','price_multiplier','minimum_notice_hours','maximum_daily_capacity','settings'])
             ->withTimestamps();
     }
-
-    public function rendezVous(): HasMany
-    {
-        return $this->hasMany(RendezVous::class);
-    }
+    public function rendezVous(): HasMany { return $this->hasMany(RendezVous::class); }
+    public function countryServiceCatalogRules(): HasMany { return $this->hasMany(CountryServiceCatalogRule::class); }
 }

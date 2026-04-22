@@ -8,6 +8,7 @@ use App\Models\FinanceQuote;
 use App\Models\FinanceReminder;
 use App\Models\RendezVous;
 use App\Notifications\FinanceReminderNotification;
+use App\Services\International\CountryMarketResolver;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
@@ -15,19 +16,25 @@ use Illuminate\Support\Facades\DB;
 
 class FinanceDocumentService
 {
+    public function __construct(
+        protected CountryMarketResolver $countryMarketResolver,
+    ) {}
+
     public function syncQuoteForRendezVous(RendezVous $rdv): FinanceQuote
     {
         $amounts = $this->amountBreakdownFor($rdv);
+        $market = $this->countryMarketResolver->resolveForRendezVous($rdv);
+        $formatting = $this->countryMarketResolver->formatting($market);
 
-        return DB::transaction(function () use ($rdv, $amounts) {
+        return DB::transaction(function () use ($rdv, $amounts, $market, $formatting) {
             $quote = FinanceQuote::query()->updateOrCreate(
                 ['rendez_vous_id' => $rdv->id],
                 [
                     'client_id' => $rdv->client_id,
                     'organization_account_id' => $rdv->organization_account_id,
-                    'quote_number' => FinanceQuote::query()->where('rendez_vous_id', $rdv->id)->value('quote_number') ?: $this->nextQuoteNumber($rdv),
+                    'quote_number' => FinanceQuote::query()->where('rendez_vous_id', $rdv->id)->value('quote_number') ?: $this->nextQuoteNumber($rdv, $market),
                     'status' => $this->quoteStatusFor($rdv),
-                    'currency' => 'EUR',
+                    'currency' => $this->countryMarketResolver->effectiveCurrency($market),
                     'subtotal' => $amounts['subtotal'],
                     'tax_rate' => $amounts['tax_rate'],
                     'tax_amount' => $amounts['tax_amount'],
@@ -37,13 +44,17 @@ class FinanceDocumentService
                     'accepted_at' => in_array($rdv->status, ['confirme', 'en_route', 'sur_place', 'termine'], true)
                         ? (FinanceQuote::query()->where('rendez_vous_id', $rdv->id)->value('accepted_at') ?: now())
                         : null,
-                    'snapshot' => array_merge($this->snapshotFor($rdv), [
+                    'snapshot' => array_merge($this->snapshotFor($rdv, $market), [
                         'finance_breakdown' => $amounts,
+                        'document_formatting' => $formatting,
                     ]),
                     'meta' => [
                         'booking_reference' => $rdv->booking_reference,
                         'market' => $rdv->organization_account_id ? 'entreprise' : 'particulier',
                         'quote_validity_days' => (int) ($amounts['quote_validity_days'] ?? 15),
+                        'country_iso' => data_get($market['country'] ?? null, 'iso_code'),
+                        'market_stage' => $this->countryMarketResolver->marketStage($market),
+                        'document_formatting' => $formatting,
                     ],
                 ]
             );
@@ -58,10 +69,16 @@ class FinanceDocumentService
             return null;
         }
 
+        $market = $this->countryMarketResolver->resolveForRendezVous($rdv);
+        if (! $this->countryMarketResolver->billingEnabled($market)) {
+            return null;
+        }
+
         $quote = $this->syncQuoteForRendezVous($rdv);
         $amounts = $this->amountBreakdownFor($rdv);
+        $formatting = $this->countryMarketResolver->formatting($market);
 
-        return DB::transaction(function () use ($rdv, $quote, $amounts) {
+        return DB::transaction(function () use ($rdv, $quote, $amounts, $market, $formatting) {
             $existingBalance = FinanceInvoice::query()->where('rendez_vous_id', $rdv->id)->value('balance_due');
             $existingIssuedAt = FinanceInvoice::query()->where('rendez_vous_id', $rdv->id)->value('issued_at');
             $existingDueAt = FinanceInvoice::query()->where('rendez_vous_id', $rdv->id)->value('due_at');
@@ -72,9 +89,9 @@ class FinanceDocumentService
                     'finance_quote_id' => $quote->id,
                     'client_id' => $rdv->client_id,
                     'organization_account_id' => $rdv->organization_account_id,
-                    'invoice_number' => FinanceInvoice::query()->where('rendez_vous_id', $rdv->id)->value('invoice_number') ?: $this->nextInvoiceNumber($rdv),
+                    'invoice_number' => FinanceInvoice::query()->where('rendez_vous_id', $rdv->id)->value('invoice_number') ?: $this->nextInvoiceNumber($rdv, $market),
                     'status' => $this->invoiceStatusFor($rdv),
-                    'currency' => 'EUR',
+                    'currency' => $this->countryMarketResolver->effectiveCurrency($market),
                     'subtotal' => $amounts['subtotal'],
                     'tax_rate' => $amounts['tax_rate'],
                     'tax_amount' => $amounts['tax_amount'],
@@ -83,13 +100,17 @@ class FinanceDocumentService
                     'issued_at' => $existingIssuedAt ?: now(),
                     'due_at' => $existingDueAt ?: now()->addDays((int) ($amounts['payment_terms_days'] ?? ($rdv->organization_account_id ? 30 : 14))),
                     'paid_at' => null,
-                    'snapshot' => array_merge($this->snapshotFor($rdv), [
+                    'snapshot' => array_merge($this->snapshotFor($rdv, $market), [
                         'finance_breakdown' => $amounts,
+                        'document_formatting' => $formatting,
                     ]),
                     'meta' => [
                         'booking_reference' => $rdv->booking_reference,
                         'source_status' => $rdv->status,
                         'payment_terms_days' => (int) ($amounts['payment_terms_days'] ?? ($rdv->organization_account_id ? 30 : 14)),
+                        'country_iso' => data_get($market['country'] ?? null, 'iso_code'),
+                        'market_stage' => $this->countryMarketResolver->marketStage($market),
+                        'document_formatting' => $formatting,
                     ],
                 ]
             );
@@ -240,6 +261,8 @@ class FinanceDocumentService
     public function amountBreakdownFor(RendezVous $rdv): array
     {
         $pricing = (array) ($rdv->pricing_snapshot ?? []);
+        $market = $this->countryMarketResolver->resolveForRendezVous($rdv);
+
         $basePrice = round((float) (
             data_get($pricing, 'devis_estime')
             ?? $rdv->devis_estime
@@ -267,11 +290,7 @@ class FinanceDocumentService
         $discountAmount = round((($basePrice + $travelSurcharge) * max($discountRate, 0)) / 100, 2);
         $subtotal = round(max(($basePrice + $travelSurcharge) - $discountAmount, 0), 2);
 
-        $taxRate = round((float) (
-            data_get($pricing, 'tax_rate')
-            ?? data_get($rdv->organizationAccount?->metadata, 'finance.tax_rate')
-            ?? 21.00
-        ), 2);
+        $taxRate = $this->countryMarketResolver->effectiveTaxRate($market, $rdv);
         $taxAmount = round($subtotal * ($taxRate / 100), 2);
         $totalAmount = round($subtotal + $taxAmount, 2);
 
@@ -299,17 +318,8 @@ class FinanceDocumentService
         $estimatedMarginAmount = round($subtotal - $estimatedInternalCost, 2);
         $estimatedMarginRate = $subtotal > 0 ? round(($estimatedMarginAmount / $subtotal) * 100, 1) : 0.0;
 
-        $paymentTermsDays = (int) (
-            data_get($pricing, 'corporate_context.payment_terms_days')
-            ?? data_get($rdv->organizationAccount?->metadata, 'finance.payment_terms_days')
-            ?? data_get($rdv->organizationAccount?->metadata, 'contract.payment_terms_days')
-            ?? ($rdv->organization_account_id ? 30 : 14)
-        );
-
-        $quoteValidityDays = (int) (
-            data_get($rdv->organizationAccount?->metadata, 'finance.quote_validity_days')
-            ?? 15
-        );
+        $paymentTermsDays = $this->countryMarketResolver->paymentTermsDays($market, $rdv);
+        $quoteValidityDays = $this->countryMarketResolver->quoteValidityDays($market, $rdv);
 
         return [
             'base_price' => $basePrice,
@@ -328,6 +338,8 @@ class FinanceDocumentService
             'estimated_margin_rate' => $estimatedMarginRate,
             'payment_terms_days' => $paymentTermsDays,
             'quote_validity_days' => $quoteValidityDays,
+            'currency' => $this->countryMarketResolver->effectiveCurrency($market),
+            'document_formatting' => $this->countryMarketResolver->formatting($market),
         ];
     }
 
@@ -337,11 +349,7 @@ class FinanceDocumentService
 
         $outstanding = round((float) $rows->sum('balance_due'), 2);
         $paid = round((float) $rows->filter(fn(FinanceInvoice $invoice) => (float) $invoice->balance_due <= 0)->sum('total_amount'), 2);
-        $overdue = $rows->filter(function (FinanceInvoice $invoice) {
-            return (float) $invoice->balance_due > 0
-                && $invoice->due_at !== null
-                && now()->gt($invoice->due_at);
-        });
+        $overdue = $rows->filter(fn(FinanceInvoice $invoice) => (float) $invoice->balance_due > 0 && $invoice->due_at !== null && now()->gt($invoice->due_at));
 
         return [
             'invoice_count' => $rows->count(),
@@ -371,7 +379,7 @@ class FinanceDocumentService
         };
     }
 
-    protected function snapshotFor(RendezVous $rdv): array
+    protected function snapshotFor(RendezVous $rdv, array $market = []): array
     {
         $serviceName = $rdv->service_display_name
             ?: $rdv->serviceCatalog?->name
@@ -398,9 +406,7 @@ class FinanceDocumentService
             ?: data_get($rdv->zone_snapshot, 'ville')
             ?: $rdv->ville;
 
-        $locationDisplay = collect([$rdv->adresse, $postalCode, $city])
-            ->filter(fn($value) => filled($value))
-            ->implode(', ');
+        $locationDisplay = collect([$rdv->adresse, $postalCode, $city])->filter(fn($value) => filled($value))->implode(', ');
 
         return [
             'booking_reference' => $rdv->booking_reference,
@@ -416,16 +422,23 @@ class FinanceDocumentService
             'organization_name' => $rdv->organizationAccount?->name,
             'site_name' => $rdv->organizationSite?->name,
             'client_name' => $rdv->client?->name,
+            'country_iso' => data_get($market['country'] ?? null, 'iso_code') ?: data_get($rdv->zone_snapshot, 'country_iso'),
+            'country_name' => data_get($market['country'] ?? null, 'name') ?: data_get($rdv->zone_snapshot, 'country_name'),
+            'market_stage' => $this->countryMarketResolver->marketStage($market),
         ];
     }
 
-    protected function nextQuoteNumber(RendezVous $rdv): string
+    protected function nextQuoteNumber(RendezVous $rdv, array $market = []): string
     {
-        return 'DEV-' . now()->format('Y') . '-' . str_pad((string) ($rdv->id ?: 0), 6, '0', STR_PAD_LEFT);
+        $prefix = (string) (data_get($market['billing_profile'] ?? null, 'quote_prefix') ?: 'DEV');
+
+        return $prefix . '-' . now()->format('Y') . '-' . str_pad((string) ($rdv->id ?: 0), 6, '0', STR_PAD_LEFT);
     }
 
-    protected function nextInvoiceNumber(RendezVous $rdv): string
+    protected function nextInvoiceNumber(RendezVous $rdv, array $market = []): string
     {
-        return 'FAC-' . now()->format('Y') . '-' . str_pad((string) ($rdv->id ?: 0), 6, '0', STR_PAD_LEFT);
+        $prefix = (string) (data_get($market['billing_profile'] ?? null, 'invoice_prefix') ?: 'FAC');
+
+        return $prefix . '-' . now()->format('Y') . '-' . str_pad((string) ($rdv->id ?: 0), 6, '0', STR_PAD_LEFT);
     }
 }

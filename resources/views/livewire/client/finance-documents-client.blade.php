@@ -18,7 +18,7 @@
         <x-kpi-card :title="__('Devis à valider')" :value="$financeSummary['quotes_pending']" tone="amber" icon="⏳" />
         <x-kpi-card :title="__('Factures')" :value="$financeSummary['invoices_count']" tone="slate" icon="📄" />
         <x-kpi-card :title="__('En retard')" :value="$financeSummary['overdue_count']" tone="rose" icon="⚠️" />
-        <x-kpi-card :title="__('Reste à payer')" :value="number_format((float) $financeSummary['outstanding_total'], 2, ',', ' ') . ' €'" tone="emerald" icon="💳" />
+        <x-kpi-card :title="__('Reste à payer')" :value="number_format((float) $financeSummary['outstanding_total'], 2, ',', ' ') . ' ' . ($financeSummary['currency_symbol'] ?? '€')" tone="emerald" icon="💳" />
     </div>
 
     <div class="grid grid-cols-1 gap-6 xl:grid-cols-3">
@@ -83,7 +83,7 @@
                             <p class="text-sm text-slate-500">{{ optional($payment->paid_at)->format('d/m/Y H:i') ?: optional($payment->created_at)->format('d/m/Y H:i') }}</p>
                         </div>
                         <div class="text-right">
-                            <p class="font-semibold text-slate-900">{{ number_format((float) $payment->amount, 2, ',', ' ') }} €</p>
+                            <p class="font-semibold text-slate-900">{{ number_format((float) $payment->amount, 2, ',', ' ') }} {{ $financeSummary['currency_symbol'] ?? '€' }}</p>
                             <p class="text-xs uppercase tracking-wide text-slate-500">{{ $payment->status }}</p>
                         </div>
                     </div>
@@ -112,7 +112,7 @@
                         </div>
 
                         <div class="flex flex-col items-start gap-3 lg:items-end">
-                            <p class="text-xl font-bold text-slate-900">{{ number_format((float) $quote->total_amount, 2, ',', ' ') }} €</p>
+                            <p class="text-xl font-bold text-slate-900">{{ $quote->formatDocumentMoney($quote->total_amount) }}</p>
                             <a href="{{ route('client.finance.quote.download', $quote) }}" class="cu-btn-secondary">{{ __('📥 Télécharger le devis') }}</a>
                         </div>
                     </div>
@@ -137,11 +137,11 @@
                             </div>
                             <p class="mt-1 text-sm text-slate-600">{{ $invoice->rendezVous?->service_display_name ?? 'Service non précisé' }}</p>
                             <p class="text-sm text-slate-500">{{ __('Émise le') }} {{ optional($invoice->issued_at)->format('d/m/Y') ?: '—' }} · {{ __('Échéance') }} {{ optional($invoice->due_at)->format('d/m/Y') ?: '—' }}</p>
-                            <p class="text-sm text-slate-500">{{ __('Reste à payer :') }} {{ number_format((float) $invoice->balance_due, 2, ',', ' ') }} €</p>
+                            <p class="text-sm text-slate-500">{{ __('Reste à payer :') }} {{ $invoice->formatDocumentMoney($invoice->balance_due) }}</p>
                         </div>
 
                         <div class="flex flex-col items-start gap-3 lg:items-end">
-                            <p class="text-xl font-bold text-slate-900">{{ number_format((float) $invoice->total_amount, 2, ',', ' ') }} €</p>
+                            <p class="text-xl font-bold text-slate-900">{{ $invoice->formatDocumentMoney($invoice->total_amount) }}</p>
                             <a href="{{ route('client.finance.invoice.download', $invoice) }}" class="cu-btn-secondary">{{ __('📥 Télécharger la facture') }}</a>
                         </div>
                     </div>

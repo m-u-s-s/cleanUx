@@ -12,21 +12,22 @@
 </head>
 <body>
     <h1>Facture {{ $invoice->invoice_number }}</h1>
-    <p class="muted">Émise le {{ optional($invoice->issued_at)->format('d/m/Y') ?: '—' }}</p>
+    <p class="muted">Émise le {{ $invoice->formatDocumentDate($invoice->issued_at) }}</p>
 
     <div class="card">
         <div class="row"><strong>Client</strong><span>{{ $invoice->client?->name ?? $invoice->organizationAccount?->name ?? '—' }}</span></div>
-        <div class="row"><strong>Service</strong><span>{{ $invoice->rendezVous?->service_display_name ?? '—' }}</span></div>
-        <div class="row"><strong>Zone</strong><span>{{ $invoice->rendezVous?->serviceZone?->name ?? '—' }}</span></div>
-        <div class="row"><strong>Adresse</strong><span>{{ $invoice->rendezVous?->location_display ?? '—' }}</span></div>
-        <div class="row"><strong>Échéance</strong><span>{{ optional($invoice->due_at)->format('d/m/Y') ?: '—' }}</span></div>
+        <div class="row"><strong>Service</strong><span>{{ $invoice->rendezVous?->service_display_name ?? data_get($invoice->snapshot, 'service_name', '—') }}</span></div>
+        <div class="row"><strong>Zone</strong><span>{{ $invoice->rendezVous?->serviceZone?->name ?? data_get($invoice->snapshot, 'zone_name', '—') }}</span></div>
+        <div class="row"><strong>Adresse</strong><span>{{ $invoice->rendezVous?->location_display ?? data_get($invoice->snapshot, 'location_display', '—') }}</span></div>
+        <div class="row"><strong>Pays</strong><span>{{ data_get($invoice->snapshot, 'country_name', '—') }}</span></div>
+        <div class="row"><strong>Échéance</strong><span>{{ $invoice->formatDocumentDate($invoice->due_at) }}</span></div>
     </div>
 
     <div class="card">
-        <div class="row"><span>Sous-total</span><strong>{{ number_format((float) $invoice->subtotal, 2, ',', ' ') }} €</strong></div>
-        <div class="row"><span>TVA</span><strong>{{ number_format((float) $invoice->tax_amount, 2, ',', ' ') }} €</strong></div>
-        <div class="row"><span>Total</span><strong>{{ number_format((float) $invoice->total_amount, 2, ',', ' ') }} €</strong></div>
-        <div class="row"><span>Reste à payer</span><strong>{{ number_format((float) $invoice->balance_due, 2, ',', ' ') }} €</strong></div>
+        <div class="row"><span>Sous-total</span><strong>{{ $invoice->formatDocumentMoney($invoice->subtotal) }}</strong></div>
+        <div class="row"><span>{{ $invoice->documentTaxLabel() }}</span><strong>{{ $invoice->formatDocumentMoney($invoice->tax_amount) }}</strong></div>
+        <div class="row"><span>Total</span><strong>{{ $invoice->formatDocumentMoney($invoice->total_amount) }}</strong></div>
+        <div class="row"><span>Reste à payer</span><strong>{{ $invoice->formatDocumentMoney($invoice->balance_due) }}</strong></div>
     </div>
 </body>
 </html>

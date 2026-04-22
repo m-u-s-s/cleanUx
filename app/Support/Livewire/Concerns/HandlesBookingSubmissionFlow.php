@@ -326,7 +326,8 @@ trait HandlesBookingSubmissionFlow
             return;
         }
 
-        $minimumNoticeHours = max((int) ($zone->minimum_notice_hours ?? 0), (int) ($rule->minimum_notice_hours ?? 0));
+        $countryMarket = $this->currentCountryMarketContext();
+        $minimumNoticeHours = max((int) ($zone->minimum_notice_hours ?? 0), (int) ($rule->minimum_notice_hours ?? 0), $this->countryMarketResolver()->minimumNoticeHours($countryMarket));
         $timezone = config('app.timezone', 'Europe/Brussels');
 
         $slots = collect($slots)->filter(function ($heure) use ($minimumNoticeHours, $timezone, $zone) {
@@ -395,9 +396,20 @@ trait HandlesBookingSubmissionFlow
             return false;
         }
 
+if (! $this->countryMarketResolver()->bookingEnabled($countryMarket)) {
+    $this->addError('postal_code_input', 'La réservation n’est pas encore active pour ce marché.');
+    return false;
+}
+
+if (! $this->countryMarketResolver()->serviceEnabled($countryMarket)) {
+    $this->addError('selected_service_identifier', 'Ce service n’est pas encore disponible dans ce pays.');
+    return false;
+}
+
         $timezone = config('app.timezone', 'Europe/Brussels');
         $requestedAt = Carbon::createFromFormat('Y-m-d H:i', $this->rdvDate . ' ' . $this->rdvHeure, $timezone);
-        $minimumNoticeHours = max((int) ($zone->minimum_notice_hours ?? 0), (int) ($rule->minimum_notice_hours ?? 0));
+        $countryMarket = $this->currentCountryMarketContext();
+        $minimumNoticeHours = max((int) ($zone->minimum_notice_hours ?? 0), (int) ($rule->minimum_notice_hours ?? 0), $this->countryMarketResolver()->minimumNoticeHours($countryMarket));
 
         if ($requestedAt->lt(now($timezone)->addHours($minimumNoticeHours))) {
             $this->addError('rdvDate', 'Ce créneau est trop proche par rapport au délai minimum de réservation de votre zone.');
@@ -452,6 +464,8 @@ trait HandlesBookingSubmissionFlow
         $zone = $this->currentServiceZone();
         $rule = $this->currentZoneServiceRule();
 
+        $countryMarket = $this->currentCountryMarketContext();
+
         $context = [
             'service_identifier' => $this->selected_service_identifier,
             'surface' => $this->surface,
@@ -460,6 +474,7 @@ trait HandlesBookingSubmissionFlow
             'presence_animaux' => $this->presence_animaux,
             'frequence' => $this->frequence,
             'is_premium' => $this->isPremiumClient(),
+            'country_price_multiplier' => $this->countryMarketResolver()->countryPriceMultiplier($countryMarket),
         ];
 
         $this->duree_estimee = $this->bookingEstimatorService()->estimateDuration($catalog, $context);
@@ -490,6 +505,7 @@ trait HandlesBookingSubmissionFlow
                 'zones_specifiques' => $this->zones_specifiques,
                 'frequence' => $this->frequence,
                 'is_premium' => $this->isPremiumClient(),
+                'country_price_multiplier' => $this->countryMarketResolver()->countryPriceMultiplier($this->currentCountryMarketContext()),
             ]
         );
     }

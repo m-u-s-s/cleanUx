@@ -59,4 +59,21 @@ class ServicePartner extends Model
     {
         return $this->hasMany(MissionPartnerAssignment::class);
     }
+
+
+    public function organizationContracts(): HasMany
+    {
+        return $this->hasMany(OrganizationContract::class, 'default_service_partner_id');
+    }
+
+    public function enterpriseWorkOrders(): HasMany
+    {
+        return $this->hasMany(EnterpriseWorkOrder::class, 'assigned_service_partner_id');
+    }
+
+    public function missionBatches(): HasMany
+    {
+        return $this->hasMany(MissionBatch::class, 'assigned_service_partner_id');
+    }
+
 }

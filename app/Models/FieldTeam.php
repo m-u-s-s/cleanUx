@@ -79,4 +79,21 @@ class FieldTeam extends Model
     {
         return $this->hasMany(MissionTeamAssignment::class);
     }
+
+
+    public function organizationContracts(): HasMany
+    {
+        return $this->hasMany(OrganizationContract::class, 'default_field_team_id');
+    }
+
+    public function enterpriseWorkOrders(): HasMany
+    {
+        return $this->hasMany(EnterpriseWorkOrder::class, 'assigned_field_team_id');
+    }
+
+    public function missionBatches(): HasMany
+    {
+        return $this->hasMany(MissionBatch::class, 'assigned_field_team_id');
+    }
+
 }
