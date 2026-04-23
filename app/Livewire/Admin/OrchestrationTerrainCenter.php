@@ -8,6 +8,8 @@ use App\Models\OrganizationSite;
 use App\Models\ServicePartner;
 use App\Services\Missions\MissionBatchPlannerService;
 use Livewire\Component;
+use Illuminate\Contracts\View\View;
+use Livewire\Attributes\Layout;
 
 class OrchestrationTerrainCenter extends Component
 {
@@ -103,7 +105,7 @@ class OrchestrationTerrainCenter extends Component
             ->get();
     }
 
-    public function render()
+    public function render(): View
     {
         return view('livewire.admin.orchestration-terrain-center', [
             'accounts' => $this->accounts,
@@ -111,6 +113,6 @@ class OrchestrationTerrainCenter extends Component
             'teams' => $this->teams,
             'partners' => $this->partners,
             'recentBatches' => $this->recentBatches,
-        ])->layout('layouts.app');
+        ]);
     }
 }

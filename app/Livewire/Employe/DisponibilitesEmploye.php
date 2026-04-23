@@ -7,6 +7,8 @@ use App\Support\ActivityLogger;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
+use Illuminate\Contracts\View\View;
+use Livewire\Attributes\Layout;
 
 class DisponibilitesEmploye extends Component
 {
@@ -143,11 +145,11 @@ class DisponibilitesEmploye extends Component
             ->groupBy(fn ($slot) => optional($slot->date)->toDateString() ?? $slot->date);
     }
 
-    public function render()
+    public function render(): View
     {
         return view('livewire.employe.disponibilites-employe', [
             'weekDays' => $this->weekDays,
             'slotsByDay' => $this->slotsByDay,
-        ])->layout('layouts.app');
+        ]);
     }
 }

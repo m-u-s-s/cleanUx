@@ -16,6 +16,8 @@ use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Livewire\Component;
+use Illuminate\Contracts\View\View;
+use Livewire\Attributes\Layout;
 
 class GestionEquipesPartenaires extends Component
 {
@@ -341,7 +343,7 @@ class GestionEquipesPartenaires extends Component
             : null;
     }
 
-    public function render()
+    public function render(): View
     {
         return view('livewire.admin.gestion-equipes-partenaires', [
             'teams' => $this->teams,
@@ -353,6 +355,6 @@ class GestionEquipesPartenaires extends Component
             'accounts' => $this->accounts,
             'employees' => $this->employees,
             'services' => $this->services,
-        ])->layout('layouts.app');
+        ]);
     }
 }

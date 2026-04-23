@@ -25,7 +25,7 @@ class AdminTeamsPartnersCenterTest extends TestCase
         $this->actingAs($admin)
             ->get(route('admin.teams.partners'))
             ->assertOk()
-            ->assertSee('Équipes terrain & partenaires');
+            ->assertSeeText('Équipes terrain & partenaires', false);
     }
 
     public function test_admin_can_create_team_and_partner_foundations(): void

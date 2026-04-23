@@ -9,6 +9,8 @@ use App\Models\ServicePartnerLoadSnapshot;
 use App\Services\Missions\EnterpriseWorkOrderMissionGeneratorService;
 use App\Services\Missions\OperationalLoadCalculator;
 use Livewire\Component;
+use Illuminate\Contracts\View\View;
+use Livewire\Attributes\Layout;
 
 class AutomationMissionGenerationCenter extends Component
 {
@@ -90,13 +92,13 @@ class AutomationMissionGenerationCenter extends Component
             ->get();
     }
 
-    public function render()
+    public function render(): View
     {
         return view('livewire.admin.automation-mission-generation-center', [
             'approvedPendingWorkOrders' => $this->approvedPendingWorkOrders,
             'recentBatches' => $this->recentBatches,
             'fieldTeamSnapshots' => $this->fieldTeamSnapshots,
             'partnerSnapshots' => $this->partnerSnapshots,
-        ])->layout('layouts.app');
+        ]);
     }
 }

@@ -5,6 +5,8 @@ namespace App\Livewire\Employe;
 use App\Models\GoogleCalendarConnection;
 use App\Models\RendezVous;
 use Livewire\Component;
+use Illuminate\Contracts\View\View;
+use Livewire\Attributes\Layout;
 
 class GoogleAgendaEmploye extends Component
 {
@@ -33,12 +35,12 @@ class GoogleAgendaEmploye extends Component
             ->first();
     }
 
-    public function render()
+    public function render(): View
     {
         return view('livewire.employe.google-agenda-employe', [
             'connection' => $this->connection,
             'upcomingCount' => $this->upcomingCount,
             'nextMission' => $this->nextMission,
-        ])->layout('layouts.app');
+        ]);
     }
 }

@@ -164,6 +164,11 @@
                     <x-responsive-nav-link :href="route('employe.missions')" :active="request()->routeIs('employe.missions')">{{ __('app.nav.missions') }}</x-responsive-nav-link>
                     <x-responsive-nav-link :href="route('employe.disponibilites')" :active="request()->routeIs('employe.disponibilites')">Disponibilités</x-responsive-nav-link>
                     <x-responsive-nav-link :href="route('employe.historique')" :active="request()->routeIs('employe.historique')">{{ __('app.nav.history') }}</x-responsive-nav-link>
+                    <x-responsive-nav-link :href="route('employe.team')" :active="request()->routeIs('employe.team')">Équipe terrain</x-responsive-nav-link>
+                    <x-responsive-nav-link :href="route('employe.coordination')" :active="request()->routeIs('employe.coordination')">Coordination chantier</x-responsive-nav-link>
+                    @if($user->isFieldTeamLead())
+                        <x-responsive-nav-link :href="route('employe.teamlead.operations')" :active="request()->routeIs('employe.teamlead.operations')">Chef d’équipe</x-responsive-nav-link>
+                    @endif
                 @elseif($user->isAdmin())
                     <x-responsive-nav-link :href="route('admin.dashboard')" :active="request()->routeIs('admin.dashboard')">{{ __('app.nav.pilotage') }}</x-responsive-nav-link>
                     <x-responsive-nav-link :href="route('admin.planning')" :active="request()->routeIs('admin.planning')">{{ __('app.nav.planning') }}</x-responsive-nav-link>
@@ -174,9 +179,14 @@
                     @can('manage-services')
                         <x-responsive-nav-link :href="route('admin.services')" :active="request()->routeIs('admin.services')">{{ __('app.nav.services') }}</x-responsive-nav-link>
                         <x-responsive-nav-link :href="route('admin.zones')" :active="request()->routeIs('admin.zones')">Zones</x-responsive-nav-link>
+                        <x-responsive-nav-link :href="route('admin.international')" :active="request()->routeIs('admin.international')">International</x-responsive-nav-link>
                     @endcan
                     @can('manage-entreprises')
                         <x-responsive-nav-link :href="route('admin.entreprises')" :active="request()->routeIs('admin.entreprises')">{{ __('app.nav.companies') }}</x-responsive-nav-link>
+                        <x-responsive-nav-link :href="route('admin.teams.partners')" :active="request()->routeIs('admin.teams.partners')">Équipes & partenaires</x-responsive-nav-link>
+                        <x-responsive-nav-link :href="route('admin.b2b.operations')" :active="request()->routeIs('admin.b2b.operations')">Opérations B2B</x-responsive-nav-link>
+                        <x-responsive-nav-link :href="route('admin.orchestration')" :active="request()->routeIs('admin.orchestration')">Orchestration terrain</x-responsive-nav-link>
+                        <x-responsive-nav-link :href="route('admin.automation')" :active="request()->routeIs('admin.automation')">Automatisation</x-responsive-nav-link>
                     @endcan
                     @can('manage-finance')
                         <x-responsive-nav-link :href="route('admin.finance')" :active="request()->routeIs('admin.finance')">{{ __('app.nav.finance') }}</x-responsive-nav-link>

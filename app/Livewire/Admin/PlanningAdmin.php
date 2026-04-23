@@ -5,6 +5,8 @@ namespace App\Livewire\Admin;
 use App\Models\RendezVous;
 use App\Models\User;
 use Livewire\Component;
+use Illuminate\Contracts\View\View;
+use Livewire\Attributes\Layout;
 
 class PlanningAdmin extends Component
 {
@@ -32,11 +34,11 @@ class PlanningAdmin extends Component
         return User::where('role', 'employe')->orderBy('name')->get();
     }
 
-    public function render()
+    public function render(): View
     {
         return view('livewire.admin.planning-admin', [
             'stats' => $this->stats,
             'employes' => $this->employes,
-        ])->layout('layouts.app');
+        ]);
     }
 }

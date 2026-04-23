@@ -10,6 +10,8 @@ use App\Models\MarketLaunchReadiness;
 use App\Models\ServiceCatalog;
 use App\Support\ActivityLogger;
 use Livewire\Component;
+use Illuminate\Contracts\View\View;
+use Livewire\Attributes\Layout;
 
 class InternationalOperationsCenter extends Component
 {
@@ -239,28 +241,32 @@ class InternationalOperationsCenter extends Component
     {
         $validated = $this->validate([
             'selectedCountryId' => ['required', 'exists:countries,id'],
-            'invoice_prefix' => ['required', 'string', 'max:20'],
-            'quote_prefix' => ['required', 'string', 'max:20'],
-            'tax_label' => ['required', 'string', 'max:30'],
+            'invoice_prefix' => ['nullable', 'string', 'max:20'],
+            'quote_prefix' => ['nullable', 'string', 'max:20'],
+            'tax_label' => ['nullable', 'string', 'max:30'],
             'default_tax_rate' => ['nullable', 'numeric', 'min:0', 'max:100'],
-            'rounding_mode' => ['required', 'string', 'max:30'],
-            'decimal_separator' => ['required', 'string', 'max:5'],
-            'thousands_separator' => ['required', 'string', 'max:5'],
-            'payment_terms_days' => ['required', 'integer', 'min:0', 'max:365'],
+            'payment_terms_days' => ['nullable', 'integer', 'min:0', 'max:365'],
         ]);
 
-        $profile = CountryBillingProfile::updateOrCreate(
+        $invoicePrefix = strtoupper(trim((string) ($validated['invoice_prefix'] ?? $this->invoice_prefix ?? 'INV')));
+        $quotePrefix = strtoupper(trim((string) ($validated['quote_prefix'] ?? $this->quote_prefix ?? 'QUO')));
+        $taxLabel = trim((string) ($validated['tax_label'] ?? $this->tax_label ?? 'TVA'));
+        $roundingMode = trim((string) ($this->rounding_mode ?? ''));
+        $decimalSeparator = $this->decimal_separator;
+        $thousandsSeparator = $this->thousands_separator;
+
+        $profile = CountryBillingProfile::query()->updateOrCreate(
             ['country_id' => $validated['selectedCountryId']],
             [
-                'invoice_prefix' => strtoupper($validated['invoice_prefix']),
-                'quote_prefix' => strtoupper($validated['quote_prefix']),
-                'tax_label' => $validated['tax_label'],
-                'default_tax_rate' => $validated['default_tax_rate'] ?? 0,
-                'prices_include_tax' => $this->prices_include_tax,
-                'rounding_mode' => $validated['rounding_mode'],
-                'decimal_separator' => $validated['decimal_separator'],
-                'thousands_separator' => $validated['thousands_separator'],
-                'payment_terms_days' => $validated['payment_terms_days'],
+                'invoice_prefix' => $invoicePrefix !== '' ? $invoicePrefix : 'INV',
+                'quote_prefix' => $quotePrefix !== '' ? $quotePrefix : 'QUO',
+                'tax_label' => $taxLabel !== '' ? $taxLabel : 'TVA',
+                'default_tax_rate' => $validated['default_tax_rate'] ?? $this->default_tax_rate ?? 0,
+                'prices_include_tax' => (bool) $this->prices_include_tax,
+                'rounding_mode' => $roundingMode !== '' ? $roundingMode : 'half_up',
+                'decimal_separator' => ($decimalSeparator !== null && $decimalSeparator !== '') ? (string) $decimalSeparator : ',',
+                'thousands_separator' => ($thousandsSeparator !== null && $thousandsSeparator !== '') ? (string) $thousandsSeparator : ' ',
+                'payment_terms_days' => (int) ($validated['payment_terms_days'] ?? $this->payment_terms_days ?? 30),
             ]
         );
 
@@ -351,14 +357,14 @@ class InternationalOperationsCenter extends Component
                 $search = trim($this->search);
 
                 $query->where(function ($sub) use ($search) {
-                    $sub->where('name', 'like', '%'.$search.'%')
-                        ->orWhere('official_name', 'like', '%'.$search.'%')
-                        ->orWhere('iso_code', 'like', '%'.$search.'%')
-                        ->orWhere('currency_code', 'like', '%'.$search.'%');
+                    $sub->where('name', 'like', '%' . $search . '%')
+                        ->orWhere('official_name', 'like', '%' . $search . '%')
+                        ->orWhere('iso_code', 'like', '%' . $search . '%')
+                        ->orWhere('currency_code', 'like', '%' . $search . '%');
                 });
             })
             ->when($this->stageFilter !== '', function ($query) {
-                $query->whereHas('operationalSetting', fn ($q) => $q->where('readiness_stage', $this->stageFilter));
+                $query->whereHas('operationalSetting', fn($q) => $q->where('readiness_stage', $this->stageFilter));
             })
             ->orderByDesc('is_active')
             ->orderBy('name')
@@ -393,13 +399,13 @@ class InternationalOperationsCenter extends Component
         return (int) ($this->selectedCountry?->launchReadiness?->readiness_score ?? 0);
     }
 
-    public function render()
+    public function render(): View
     {
         return view('livewire.admin.international-operations-center', [
             'countries' => $this->countries,
             'selectedCountry' => $this->selectedCountry,
             'serviceCatalogs' => $this->serviceCatalogs,
             'selectedCountryReadinessScore' => $this->selectedCountryReadinessScore,
-        ])->layout('layouts.app');
+        ]);
     }
 }

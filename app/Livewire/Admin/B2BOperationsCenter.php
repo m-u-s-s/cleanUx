@@ -15,6 +15,8 @@ use App\Models\WorkOrderLine;
 use App\Support\ActivityLogger;
 use Illuminate\Support\Str;
 use Livewire\Component;
+use Illuminate\Contracts\View\View;
+use Livewire\Attributes\Layout;
 
 class B2BOperationsCenter extends Component
 {
@@ -318,7 +320,7 @@ class B2BOperationsCenter extends Component
         $this->dispatch('toast', 'Ordre de service rejeté.', 'error');
     }
 
-    public function render()
+    public function render(): View
     {
         $accounts = OrganizationAccount::query()->withCount(['sites', 'organizationContracts', 'enterpriseWorkOrders'])->orderBy('name')->get();
 
@@ -345,6 +347,6 @@ class B2BOperationsCenter extends Component
             'teams' => FieldTeam::orderBy('name')->get(['id', 'name']),
             'partners' => ServicePartner::orderBy('name')->get(['id', 'name']),
             'requesters' => User::clientFacing()->orderBy('name')->get(['id', 'name']),
-        ])->layout('layouts.app');
+        ]);
     }
 }

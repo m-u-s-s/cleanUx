@@ -7,6 +7,8 @@ use App\Support\Livewire\Concerns\Admin\PerformsZoneManagementActions;
 use App\Models\ServiceZone;
 use Livewire\Component;
 use Livewire\WithPagination;
+use Illuminate\Contracts\View\View;
+use Livewire\Attributes\Layout;
 
 class GestionZones extends Component
 {
@@ -61,7 +63,7 @@ class GestionZones extends Component
         }
     }
 
-    public function render()
+    public function render(): View
     {
         $zones = $this->applyZoneFilters($this->zoneBaseQuery())->orderBy('priority')->orderBy('name')->paginate(12);
 
@@ -78,6 +80,6 @@ class GestionZones extends Component
             'zoneHistory' => $this->zoneHistory,
             'zoneStats' => $this->zoneStats,
             'sourceZones' => $this->sourceZones,
-        ])->layout('layouts.app');
+        ]);
     }
 }

@@ -10,6 +10,8 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 use Livewire\Component;
 use Livewire\WithPagination;
+use Illuminate\Contracts\View\View;
+use Livewire\Attributes\Layout;
 
 class MesRendezVousClient extends Component
 {
@@ -181,7 +183,7 @@ class MesRendezVousClient extends Component
             ->get();
     }
 
-    public function render()
+    public function render(): View
     {
         $query = RendezVous::with(['employe', 'feedback', 'serviceCatalog', 'serviceZone', 'organizationSite', 'postalCode', 'mission', 'mission.leadEmployee', 'mission.verificationCodes', 'mission.activeTrackingSession'])
             ->where('client_id', Auth::id())
@@ -195,6 +197,6 @@ class MesRendezVousClient extends Component
                 ->orderBy('date', $this->tri)
                 ->orderBy('heure', $this->tri)
                 ->paginate(8),
-        ])->layout('layouts.app');
+        ]);
     }
 }

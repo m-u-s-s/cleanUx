@@ -5,6 +5,8 @@ namespace App\Livewire;
 use App\Support\Livewire\Concerns\ComputesAdminDashboardData;
 use App\Support\Livewire\Concerns\HandlesAdminDashboardPlanning;
 use Livewire\Component;
+use Illuminate\Contracts\View\View;
+use Livewire\Attributes\Layout;
 
 class AdminDashboard extends Component
 {
@@ -32,7 +34,7 @@ class AdminDashboard extends Component
 
     public array $suggestedEmployees = [];
 
-    public function render()
+    public function render(): View
     {
         return view('livewire.admin-dashboard', [
             'employes' => $this->employes,
@@ -68,6 +70,6 @@ class AdminDashboard extends Component
             'selectedZone' => $this->selectedZone,
             'adminScopeLabel' => $this->adminScopeLabel,
             'zoneOverview' => $this->zoneOverview,
-        ])->layout('layouts.app');
+        ]);
     }
 }

@@ -6,6 +6,8 @@ use App\Models\RendezVous;
 use App\Models\User;
 use Livewire\Component;
 use Livewire\WithPagination;
+use Illuminate\Contracts\View\View;
+use Livewire\Attributes\Layout;
 
 class MissionsAdmin extends Component
 {
@@ -44,7 +46,7 @@ class MissionsAdmin extends Component
         return User::where('role', 'employe')->orderBy('name')->get();
     }
 
-    public function render()
+    public function render(): View
     {
         $query = RendezVous::with(['client', 'employe', 'serviceCatalog', 'postalCode'])
             ->when($this->search, fn ($q) => $q->searchStructured($this->search))
@@ -55,6 +57,6 @@ class MissionsAdmin extends Component
         return view('livewire.admin.missions-admin', [
             'missions' => $query->orderBy('date', $this->tri)->orderBy('heure', $this->tri)->paginate(10),
             'employes' => $this->employes,
-        ])->layout('layouts.app');
+        ]);
     }
 }

@@ -6,6 +6,8 @@ use App\Models\RendezVous;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
 use Livewire\WithPagination;
+use Illuminate\Contracts\View\View;
+use Livewire\Attributes\Layout;
 
 class HistoriqueEmploye extends Component
 {
@@ -30,7 +32,7 @@ class HistoriqueEmploye extends Component
         $this->resetPage();
     }
 
-    public function render()
+    public function render(): View
     {
         $query = RendezVous::with(['client', 'feedback', 'serviceCatalog', 'postalCode'])
             ->where('employe_id', Auth::id())
@@ -42,6 +44,6 @@ class HistoriqueEmploye extends Component
                 ->orderBy('date', $this->tri)
                 ->orderBy('heure', $this->tri)
                 ->paginate(8),
-        ])->layout('layouts.app');
+        ]);
     }
 }

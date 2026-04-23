@@ -9,6 +9,8 @@ use App\Models\User;
 use App\Services\Missions\TeamLeadOperationsService;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
+use Illuminate\Contracts\View\View;
+use Livewire\Attributes\Layout;
 
 class TeamLeadOperationsCenter extends Component
 {
@@ -123,7 +125,7 @@ class TeamLeadOperationsCenter extends Component
         $this->dispatch('toast', 'Clôture globale exécutée.', 'success');
     }
 
-    public function render()
+    public function render(): View
     {
         $batches = $this->managedBatches()->get();
         $segments = $this->currentSegments()->get();
@@ -139,6 +141,6 @@ class TeamLeadOperationsCenter extends Component
             'segments' => $segments,
             'selectedSegment' => $selectedSegment,
             'reinforcementRequests' => $reinforcementRequests,
-        ])->layout('layouts.app');
+        ]);
     }
 }

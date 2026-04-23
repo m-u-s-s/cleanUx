@@ -9,6 +9,8 @@ use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
 use Livewire\Component;
+use Illuminate\Contracts\View\View;
+use Livewire\Attributes\Layout;
 
 class CalendrierInterne extends Component
 {
@@ -148,7 +150,7 @@ class CalendrierInterne extends Component
             ->get();
     }
 
-    public function render()
+    public function render(): View
     {
         return view('livewire.admin.calendrier-interne', [
             'zones' => $this->zones,
@@ -157,6 +159,6 @@ class CalendrierInterne extends Component
             'stats' => $this->stats,
             'calendarEvents' => $this->calendarEvents,
             'upcoming' => $this->upcoming,
-        ])->layout('layouts.app');
+        ]);
     }
 }

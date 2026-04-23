@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class OrganizationAccount extends Model
 {
@@ -77,6 +78,34 @@ class OrganizationAccount extends Model
         return $this->hasMany(OrganizationSite::class);
     }
 
+    public function organizationContracts(): HasMany
+    {
+        return $this->hasMany(OrganizationContract::class);
+    }
+
+    public function activeOrganizationContract(): HasOne
+    {
+        $today = now()->toDateString();
+
+        return $this->hasOne(OrganizationContract::class)
+            ->ofMany(['id' => 'max'], function ($query) use ($today) {
+                $query->whereIn('status', ['active', 'signed', 'pilot'])
+                    ->where(function ($query) use ($today) {
+                        $query->whereNull('effective_from')
+                            ->orWhereDate('effective_from', '<=', $today);
+                    })
+                    ->where(function ($query) use ($today) {
+                        $query->whereNull('effective_to')
+                            ->orWhereDate('effective_to', '>=', $today);
+                    });
+            });
+    }
+
+    public function enterpriseWorkOrders(): HasMany
+    {
+        return $this->hasMany(EnterpriseWorkOrder::class);
+    }
+
     public function rendezVous(): HasMany
     {
         return $this->hasMany(RendezVous::class);
@@ -96,7 +125,7 @@ class OrganizationAccount extends Model
             $ids = [(int) data_get($this->metadata, 'priority_zone_id')];
         }
 
-        return collect($ids)->map(fn ($id) => (int) $id)->values()->all();
+        return collect($ids)->map(fn($id) => (int) $id)->values()->all();
     }
 
     public function bookingPolicy(): array

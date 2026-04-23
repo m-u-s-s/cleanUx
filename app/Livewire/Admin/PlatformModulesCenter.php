@@ -7,6 +7,8 @@ use App\Models\PlatformModule;
 use App\Models\ServiceZone;
 use App\Support\ActivityLogger;
 use Livewire\Component;
+use Illuminate\Contracts\View\View;
+use Livewire\Attributes\Layout;
 
 class PlatformModulesCenter extends Component
 {
@@ -198,7 +200,7 @@ class PlatformModulesCenter extends Component
         return ServiceZone::query()->orderBy('priority')->orderBy('name')->get(['id', 'name']);
     }
 
-    public function render()
+    public function render(): View
     {
         return view('livewire.admin.platform-modules-center', [
             'modules' => $this->modules,
@@ -208,6 +210,6 @@ class PlatformModulesCenter extends Component
             'roleOptions' => ['admin', 'employe', 'client', 'entreprise'],
             'planOptions' => ['standard', 'premium'],
             'strategyOptions' => PlatformModule::STRATEGIES,
-        ])->layout('layouts.app');
+        ]);
     }
 }

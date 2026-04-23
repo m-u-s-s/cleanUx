@@ -4,6 +4,8 @@ namespace App\Livewire\Employe;
 
 use App\Models\MissionBatch;
 use Livewire\Component;
+use Illuminate\Contracts\View\View;
+use Livewire\Attributes\Layout;
 
 class CoordinationChantier extends Component
 {
@@ -25,10 +27,10 @@ class CoordinationChantier extends Component
             ->get();
     }
 
-    public function render()
+    public function render(): View
     {
         return view('livewire.employe.coordination-chantier', [
             'leadBatches' => $this->leadBatches,
-        ])->layout('layouts.app');
+        ]);
     }
 }

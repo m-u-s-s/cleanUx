@@ -5,6 +5,8 @@ namespace App\Livewire\Admin;
 use App\Models\User;
 use Livewire\Component;
 use Livewire\WithPagination;
+use Illuminate\Contracts\View\View;
+use Livewire\Attributes\Layout;
 
 class UtilisateursAdmin extends Component
 {
@@ -25,7 +27,7 @@ class UtilisateursAdmin extends Component
         $this->resetPage();
     }
 
-    public function render()
+    public function render(): View
     {
         $query = User::query()
             ->when($this->search, function ($q) {
@@ -39,6 +41,6 @@ class UtilisateursAdmin extends Component
 
         return view('livewire.admin.utilisateurs-admin', [
             'users' => $query->orderBy('name')->paginate(10),
-        ])->layout('layouts.app');
+        ]);
     }
 }

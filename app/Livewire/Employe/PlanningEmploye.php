@@ -7,6 +7,8 @@ use App\Models\ServiceZone;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
+use Illuminate\Contracts\View\View;
+use Livewire\Attributes\Layout;
 
 class PlanningEmploye extends Component
 {
@@ -117,7 +119,7 @@ class PlanningEmploye extends Component
         return $start->translatedFormat('d M').' → '.$end->translatedFormat('d M Y');
     }
 
-    public function render()
+    public function render(): View
     {
         $zones = ServiceZone::query()
             ->whereHas('employeeAssignments', fn ($query) => $query->where('user_id', Auth::id())->where('is_active', true))
@@ -129,6 +131,6 @@ class PlanningEmploye extends Component
             'groupedMissions' => $this->groupedMissions,
             'planningStats' => $this->planningStats,
             'periodLabel' => $this->periodLabel,
-        ])->layout('layouts.app');
+        ]);
     }
 }

@@ -1,6 +1,8 @@
 <?php
 
 namespace App\Livewire\Employe;
+use Illuminate\Contracts\View\View;
+use Livewire\Attributes\Layout;
 
 class MissionsEmploye extends MesRendezVous
 {
@@ -17,13 +19,13 @@ class MissionsEmploye extends MesRendezVous
         ];
     }
 
-    public function render()
+    public function render(): View
     {
         return view('livewire.employe.missions-employe', [
             'rendezVous' => $this->paginatedRendezVous(),
             'stats' => $this->stats,
             'selectedRendezVous' => $this->selectedRendezVous,
             'selectedMission' => $this->selectedMission,
-        ])->layout('layouts.app');
+        ]);
     }
 }

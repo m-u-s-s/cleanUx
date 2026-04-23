@@ -8,6 +8,8 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
 use Livewire\WithPagination;
+use Illuminate\Contracts\View\View;
+use Livewire\Attributes\Layout;
 
 class NotificationsCenter extends Component
 {
@@ -136,7 +138,7 @@ class NotificationsCenter extends Component
         );
     }
 
-    public function render()
+    public function render(): View
     {
         $presenter = app(NotificationPresenter::class);
         $notifications = $this->paginateCollection($this->filteredNotifications(), 15);
@@ -146,6 +148,6 @@ class NotificationsCenter extends Component
             'unreadCount' => $this->unreadCount,
             'presenter' => $presenter,
             'typeOptions' => $this->typeOptions(),
-        ])->layout('layouts.app');
+        ]);
     }
 }

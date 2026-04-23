@@ -2,16 +2,16 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\User;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 
 class PremiumCheckoutController extends Controller
 {
     public function checkout(Request $request)
     {
-        $user = Auth::user();
+        $user = $request->user();
 
-        if (! $user || ! $user->isClient()) {
+        if (! $user instanceof User || ! $user->isClient()) {
             abort(403);
         }
 
@@ -21,9 +21,17 @@ class PremiumCheckoutController extends Controller
                 ->with('success', 'Vous êtes déjà client Premium.');
         }
 
-        return $user->newSubscription('default', env('STRIPE_PREMIUM_PRICE_ID'))
+        $priceId = config('services.stripe.premium_price_id');
+
+        if (! $priceId) {
+            return redirect()
+                ->route('premium.offer')
+                ->with('error', 'Le plan Premium Stripe n’est pas configuré.');
+        }
+
+        return $user->newSubscription('default', $priceId)
             ->checkout([
-                'success_url' => route('premium.success').'?session_id={CHECKOUT_SESSION_ID}',
+                'success_url' => route('premium.success') . '?session_id={CHECKOUT_SESSION_ID}',
                 'cancel_url' => route('premium.cancel'),
                 'metadata' => [
                     'user_id' => (string) $user->id,
@@ -34,9 +42,9 @@ class PremiumCheckoutController extends Controller
 
     public function success(Request $request)
     {
-        $user = Auth::user();
+        $user = $request->user();
 
-        if (! $user) {
+        if (! $user instanceof User) {
             return redirect()->route('login');
         }
 

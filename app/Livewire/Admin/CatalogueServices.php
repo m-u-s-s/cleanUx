@@ -10,6 +10,8 @@ use App\Support\ActivityLogger;
 use Illuminate\Support\Str;
 use Livewire\Component;
 use Livewire\WithPagination;
+use Illuminate\Contracts\View\View;
+use Livewire\Attributes\Layout;
 
 class CatalogueServices extends Component
 {
@@ -251,7 +253,7 @@ class CatalogueServices extends Component
         session()->flash('success', 'Règle de zone enregistrée.');
     }
 
-    public function render()
+    public function render(): View
     {
         $services = ServiceCatalog::query()
             ->when($this->search, function ($query) {
@@ -315,6 +317,6 @@ class CatalogueServices extends Component
             'selectedService' => $selectedService,
             'serviceTypes' => $serviceTypes,
             'serviceLogs' => $serviceLogs,
-        ])->layout('layouts.app');
+        ]);
     }
 }

@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Builder;
 
 class EnterpriseWorkOrder extends Model
 {
@@ -106,6 +107,21 @@ class EnterpriseWorkOrder extends Model
         return $this->hasMany(Mission::class);
     }
 
+    public function scopeApprovedForGeneration(Builder $query): Builder
+    {
+        return $query
+            ->where('approval_status', 'approved')
+            ->where('auto_generate_missions', true)
+            ->where(function (Builder $query) {
+                $query->whereNull('generation_status')
+                    ->orWhereIn('generation_status', [
+                        'pending',
+                        'batch_created',
+                        'segments_planned',
+                    ]);
+            });
+    }
+    
     public function isApproved(): bool
     {
         return $this->approval_status === 'approved';

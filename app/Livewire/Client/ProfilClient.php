@@ -14,6 +14,8 @@ use Illuminate\Support\Facades\DB;
 use App\Support\Domain\BookingStatus;
 use Illuminate\Validation\Rule;
 use Livewire\Component;
+use Illuminate\Contracts\View\View;
+use Livewire\Attributes\Layout;
 
 class ProfilClient extends Component
 {
@@ -301,7 +303,7 @@ class ProfilClient extends Component
             ->all();
     }
 
-    public function render()
+    public function render(): View
     {
         return view('livewire.client.profil-client', [
             'client' => $this->client,
@@ -312,6 +314,6 @@ class ProfilClient extends Component
             'isEntreprise' => $this->isEntreprise,
             'sites' => $this->sites,
             'recentActivities' => $this->recentActivities,
-        ])->layout('layouts.app');
+        ]);
     }
 }

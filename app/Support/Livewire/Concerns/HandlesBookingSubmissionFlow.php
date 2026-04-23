@@ -396,19 +396,20 @@ trait HandlesBookingSubmissionFlow
             return false;
         }
 
-if (! $this->countryMarketResolver()->bookingEnabled($countryMarket)) {
-    $this->addError('postal_code_input', 'La réservation n’est pas encore active pour ce marché.');
-    return false;
-}
+        $countryMarket = $this->currentCountryMarketContext();
 
-if (! $this->countryMarketResolver()->serviceEnabled($countryMarket)) {
-    $this->addError('selected_service_identifier', 'Ce service n’est pas encore disponible dans ce pays.');
-    return false;
-}
+        if (! $this->countryMarketResolver()->bookingEnabled($countryMarket)) {
+            $this->addError('postal_code_input', 'La réservation n’est pas encore active pour ce marché.');
+            return false;
+        }
+
+        if (! $this->countryMarketResolver()->serviceEnabled($countryMarket)) {
+            $this->addError('selected_service_identifier', 'Ce service n’est pas encore disponible dans ce pays.');
+            return false;
+        }
 
         $timezone = config('app.timezone', 'Europe/Brussels');
         $requestedAt = Carbon::createFromFormat('Y-m-d H:i', $this->rdvDate . ' ' . $this->rdvHeure, $timezone);
-        $countryMarket = $this->currentCountryMarketContext();
         $minimumNoticeHours = max((int) ($zone->minimum_notice_hours ?? 0), (int) ($rule->minimum_notice_hours ?? 0), $this->countryMarketResolver()->minimumNoticeHours($countryMarket));
 
         if ($requestedAt->lt(now($timezone)->addHours($minimumNoticeHours))) {

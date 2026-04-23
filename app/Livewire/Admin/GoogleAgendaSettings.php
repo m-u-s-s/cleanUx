@@ -10,6 +10,8 @@ use App\Services\Integrations\GoogleCalendarOAuthService;
 use App\Services\Integrations\GoogleCalendarSyncService;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
+use Illuminate\Contracts\View\View;
+use Livewire\Attributes\Layout;
 
 class GoogleAgendaSettings extends Component
 {
@@ -162,10 +164,10 @@ class GoogleAgendaSettings extends Component
             ->get();
     }
 
-    public function render()
+    public function render(): View
     {
         return view('livewire.admin.google-agenda-settings', [
             'connections' => $this->connections,
-        ])->layout('layouts.app');
+        ]);
     }
 }

@@ -5,6 +5,8 @@ namespace App\Livewire\Admin;
 use App\Support\Livewire\Concerns\InteractsWithRecurringSeries;
 use App\Models\RendezVous;
 use Livewire\Component;
+use Illuminate\Contracts\View\View;
+use Livewire\Attributes\Layout;
 
 class EditRecurringBooking extends Component
 {
@@ -16,11 +18,11 @@ class EditRecurringBooking extends Component
         $this->mountRecurringSeries($rendezVous);
     }
 
-    public function render()
+    public function render(): View
     {
         return view('livewire.recurring.edit-recurring-booking', [
             'backRoute' => route('admin.dashboard'),
             'title' => 'Gérer une série récurrente',
-        ])->layout('layouts.app');
+        ]);
     }
 }

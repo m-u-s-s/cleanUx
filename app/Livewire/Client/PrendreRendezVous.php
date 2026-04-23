@@ -16,6 +16,8 @@ use App\Support\Livewire\Concerns\InteractsWithBookingFormState;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
 use Livewire\WithFileUploads;
+use Illuminate\Contracts\View\View;
+use Livewire\Attributes\Layout;
 
 class PrendreRendezVous extends Component
 {
@@ -169,7 +171,7 @@ class PrendreRendezVous extends Component
             $this->traitUpdatedPostalCodeInput();
         }
 
-        public function render()
+        public function render(): View
         {
             return view('livewire.client.prendre-rendez-vous', [
                 'surfaces' => $this->surfaces,
@@ -186,7 +188,7 @@ class PrendreRendezVous extends Component
                 'selectedServiceLabel' => $this->selectedServiceLabel,
                 'bookingEntryRouteName' => $this->publicBookingEntryRouteName(),
                 'isGuestBooking' => ! Auth::check(),
-            ])->layout('layouts.app');
+            ]);
         }
 
 }

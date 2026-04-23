@@ -5,6 +5,8 @@ namespace App\Livewire\Client;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
+use Illuminate\Contracts\View\View;
+use Livewire\Attributes\Layout;
 
 class FavoriteEmployesManager extends Component
 {
@@ -69,12 +71,12 @@ class FavoriteEmployesManager extends Component
         $this->dispatch('toast', 'Employé retiré de vos favoris.', 'success');
     }
 
-    public function render()
+    public function render(): View
     {
         return view('livewire.client.favorite-employes-manager', [
             'employes' => $this->employes,
             'favoriteIds' => $this->favoriteIds,
             'isPremium' => $this->isPremiumClient(),
-        ])->layout('layouts.app');
+        ]);
     }
 }

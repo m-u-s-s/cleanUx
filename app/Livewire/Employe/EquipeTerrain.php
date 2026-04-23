@@ -5,6 +5,8 @@ namespace App\Livewire\Employe;
 use App\Models\MissionTeamAssignment;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
+use Illuminate\Contracts\View\View;
+use Livewire\Attributes\Layout;
 
 class EquipeTerrain extends Component
 {
@@ -54,12 +56,12 @@ class EquipeTerrain extends Component
             ->get();
     }
 
-    public function render()
+    public function render(): View
     {
         return view('livewire.employe.equipe-terrain', [
             'ledTeams' => $this->ledTeams,
             'memberTeams' => $this->memberTeams,
             'activeTeamAssignments' => $this->activeTeamAssignments,
-        ])->layout('layouts.app');
+        ]);
     }
 }

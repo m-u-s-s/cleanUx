@@ -7,6 +7,8 @@ use App\Support\Domain\BookingStatus;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
+use Illuminate\Contracts\View\View;
+use Livewire\Attributes\Layout;
 
 class EmployeDashboard extends Component
 {
@@ -81,7 +83,7 @@ class EmployeDashboard extends Component
             ->values();
     }
 
-    public function render()
+    public function render(): View
     {
         return view('livewire.employe-dashboard', [
             'missionsDuJour' => $this->missionsDuJour,
@@ -90,6 +92,6 @@ class EmployeDashboard extends Component
             'statsJour' => $this->statsJour,
             'assignedZones' => $this->assignedZones,
             'missionsHorsZone' => $this->missionsHorsZone,
-        ])->layout('layouts.app');
+        ]);
     }
 }

@@ -16,6 +16,8 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 use Livewire\Component;
 use Livewire\WithPagination;
+use Illuminate\Contracts\View\View;
+use Livewire\Attributes\Layout;
 
 class ClientDashboard extends Component
 {
@@ -388,7 +390,7 @@ class ClientDashboard extends Component
         $this->dispatch('toast', 'Rendez-vous annulé.', 'error');
     }
 
-    public function render()
+    public function render(): View
     {
         return view('livewire.client-dashboard', [
             'avenir' => $this->rendezVousAvenir,
@@ -405,6 +407,6 @@ class ClientDashboard extends Component
             'availableServices' => $this->availableServices,
             'organizationSitesSummary' => $this->organizationSitesSummary,
             'financeSnapshot' => $this->financeSnapshot,
-        ])->layout('layouts.app');
+        ]);
     }
 }

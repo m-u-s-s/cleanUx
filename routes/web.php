@@ -12,6 +12,13 @@ use App\Http\Controllers\StripeWebhookController;
 use App\Livewire\Admin\AdminPremiumClients;
 use App\Livewire\Admin\AnalyticsCenter;
 use App\Livewire\Admin\AutomationMissionGenerationCenter;
+use App\Livewire\Employe\TeamLeadOperationsCenter;
+use App\Livewire\Employe\EquipeTerrain;
+use App\Livewire\Employe\CoordinationChantier;
+use App\Livewire\Admin\OrchestrationTerrainCenter;
+use App\Livewire\Admin\InternationalOperationsCenter;
+use App\Livewire\Admin\GestionEquipesPartenaires;
+use App\Livewire\Admin\B2BOperationsCenter;
 use App\Livewire\Admin\AuditLogsCenter;
 use App\Livewire\Admin\CalendrierInterne;
 use App\Livewire\Admin\CatalogueServices;
@@ -154,6 +161,10 @@ Route::middleware(['auth', 'verified', 'active.account'])->group(function () {
         Route::get('finance', FinanceCenter::class)->middleware('can:manage-finance')->name('finance');
         Route::get('analytics', AnalyticsCenter::class)->middleware('can:manage-analytics')->name('analytics');
         Route::get('automatisation', AutomationMissionGenerationCenter::class)->middleware('can:manage-entreprises')->name('automation');
+        Route::get('equipes-partenaires', GestionEquipesPartenaires::class)->middleware('can:manage-entreprises')->name('teams.partners');
+        Route::get('b2b/operations', B2BOperationsCenter::class)->middleware('can:manage-entreprises')->name('b2b.operations');
+        Route::get('international', InternationalOperationsCenter::class)->middleware('can:manage-services')->name('international');
+        Route::get('orchestration', OrchestrationTerrainCenter::class)->middleware('can:manage-entreprises')->name('orchestration');
         Route::get('qualite', App\Livewire\Admin\IncidentsQualiteCenter::class)->middleware('can:manage-quality')->name('quality');
         Route::get('audit-logs', AuditLogsCenter::class)->middleware('can:manage-audit-logs')->name('audit.logs');
         Route::get('emails', ProductEmailsCenter::class)->name('emails');
@@ -215,6 +226,9 @@ Route::middleware(['auth', 'verified', 'active.account'])->group(function () {
         Route::get('disponibilites', DisponibilitesEmploye::class)->name('disponibilites');
         Route::get('incident', SignalerIncident::class)->name('incident');
         Route::get('historique', HistoriqueEmploye::class)->name('historique');
+        Route::get('equipe', EquipeTerrain::class)->name('team');
+        Route::get('coordination', CoordinationChantier::class)->name('coordination');
+        Route::get('chef-equipe', TeamLeadOperationsCenter::class)->middleware('can:access-team-lead-ops')->name('teamlead.operations');
     });
 
     Route::middleware('role:client')->prefix('feedback')->name('feedback.')->group(function () {

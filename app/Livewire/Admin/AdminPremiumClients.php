@@ -4,7 +4,9 @@ namespace App\Livewire\Admin;
 
 use App\Models\User;
 use Livewire\Component;
+use Illuminate\Contracts\View\View;
 use Livewire\WithPagination;
+use Livewire\Attributes\Layout;
 
 class AdminPremiumClients extends Component
 {
@@ -105,10 +107,10 @@ class AdminPremiumClients extends Component
         session()->flash('success', 'Le plan Premium a été réactivé.');
     }
 
-    public function render()
+    public function render(): View
     {
         return view('livewire.admin.admin-premium-clients', [
             'clients' => $this->clients,
-        ])->layout('layouts.app');
+        ]);
     }
 }

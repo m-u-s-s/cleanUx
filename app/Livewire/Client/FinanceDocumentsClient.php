@@ -10,6 +10,8 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
+use Illuminate\Contracts\View\View;
+use Livewire\Attributes\Layout;
 
 class FinanceDocumentsClient extends Component
 {
@@ -181,7 +183,7 @@ class FinanceDocumentsClient extends Component
         };
     }
 
-    public function render()
+    public function render(): View
     {
         return view('livewire.client.finance-documents-client', [
             'quotes' => $this->quotes,
@@ -189,6 +191,6 @@ class FinanceDocumentsClient extends Component
             'financeSummary' => $this->financeSummary,
             'subscriptionSummary' => $this->subscriptionSummary,
             'latestPaymentEvents' => $this->latestPaymentEvents,
-        ])->layout('layouts.app');
+        ]);
     }
 }

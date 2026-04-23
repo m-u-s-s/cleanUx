@@ -7,9 +7,12 @@ use App\Models\MissionBatch;
 use App\Models\User;
 use Livewire\Livewire;
 use Tests\TestCase;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class TeamLeadOperationsCenterTest extends TestCase
 {
+    use RefreshDatabase;
+
     public function test_team_lead_can_render_operations_center_placeholder(): void
     {
         $lead = User::factory()->create(['role' => User::ROLE_EMPLOYE]);
