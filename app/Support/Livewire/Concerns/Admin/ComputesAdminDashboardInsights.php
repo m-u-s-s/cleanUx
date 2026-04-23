@@ -124,7 +124,7 @@ trait ComputesAdminDashboardInsights
             return Cache::remember($this->cacheKey('topServices'), now()->addMinutes(10), function () {
                 return $this->scopedRendezVousQuery(false)
                     ->with('serviceCatalog:id,name')
-                    ->get(['id', 'service_catalog_id', 'service_type'])
+                    ->get(['id', 'service_catalog_id'])
                     ->groupBy(fn (RendezVous $rdv) => $rdv->service_display_name)
                     ->map(fn ($items, $label) => (object) [
                         'label' => $label,
@@ -247,21 +247,21 @@ trait ComputesAdminDashboardInsights
         public function getServicesSousEstimesProperty()
         {
             return Cache::remember($this->cacheKey('servicesSousEstimes'), now()->addMinutes(10), function () {
-                return $this->scopedRendezVousQuery(false)
-                    ->with('serviceCatalog:id,name')
-                    ->where('status', 'termine')
-                    ->whereNotNull('duree_estimee')
-                    ->whereNotNull('duree_reelle')
-                    ->get(['id', 'service_catalog_id', 'service_type', 'duree_estimee', 'duree_reelle'])
-                    ->groupBy(fn (RendezVous $rdv) => $rdv->service_display_name)
-                    ->map(function ($items) {
-                        return [
-                            'avg_gap' => round($items->avg(fn ($rdv) => $rdv->duree_reelle - $rdv->duree_estimee)),
-                            'count' => $items->count(),
-                        ];
-                    })
-                    ->filter(fn ($row) => $row['count'] >= 3 && $row['avg_gap'] >= 20)
-                    ->sortByDesc('avg_gap');
+            return $this->scopedRendezVousQuery(false)
+                ->with('serviceCatalog:id,name')
+                ->where('status', 'termine')
+                ->whereNotNull('duree_estimee')
+                ->whereNotNull('duree_reelle')
+                ->get(['id', 'service_catalog_id', 'duree_estimee', 'duree_reelle'])
+                ->groupBy(fn (RendezVous $rdv) => $rdv->service_display_name)
+                ->map(function ($items) {
+                    return [
+                        'avg_gap' => round($items->avg(fn ($rdv) => $rdv->duree_reelle - $rdv->duree_estimee)),
+                        'count' => $items->count(),
+                    ];
+                })
+                ->filter(fn ($row) => $row['count'] >= 3 && $row['avg_gap'] >= 20)
+                ->sortByDesc('avg_gap');
             });
         }
 

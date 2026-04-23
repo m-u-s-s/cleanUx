@@ -2,14 +2,14 @@
 
 namespace App\Livewire;
 
+use App\Models\User;
 use App\Support\Notifications\NotificationPresenter;
+use Illuminate\Contracts\View\View;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
 use Livewire\WithPagination;
-use Illuminate\Contracts\View\View;
-use Livewire\Attributes\Layout;
 
 class NotificationsCenter extends Component
 {
@@ -25,6 +25,13 @@ class NotificationsCenter extends Component
         'search' => ['except' => ''],
         'page' => ['except' => 1],
     ];
+
+    protected function currentUser(): ?User
+    {
+        $user = Auth::user();
+
+        return $user instanceof User ? $user : null;
+    }
 
     public function updatingFilter(): void
     {
@@ -43,7 +50,13 @@ class NotificationsCenter extends Component
 
     public function markAsRead(string $notificationId): void
     {
-        $notification = Auth::user()?->notifications()->whereKey($notificationId)->first();
+        $user = $this->currentUser();
+
+        if (! $user) {
+            return;
+        }
+
+        $notification = $user->notifications()->whereKey($notificationId)->first();
 
         if ($notification && is_null($notification->read_at)) {
             $notification->markAsRead();
@@ -52,7 +65,13 @@ class NotificationsCenter extends Component
 
     public function markAsUnread(string $notificationId): void
     {
-        $notification = Auth::user()?->notifications()->whereKey($notificationId)->first();
+        $user = $this->currentUser();
+
+        if (! $user) {
+            return;
+        }
+
+        $notification = $user->notifications()->whereKey($notificationId)->first();
 
         if ($notification && ! is_null($notification->read_at)) {
             $notification->forceFill(['read_at' => null])->save();
@@ -61,7 +80,13 @@ class NotificationsCenter extends Component
 
     public function deleteNotification(string $notificationId): void
     {
-        $notification = Auth::user()?->notifications()->whereKey($notificationId)->first();
+        $user = $this->currentUser();
+
+        if (! $user) {
+            return;
+        }
+
+        $notification = $user->notifications()->whereKey($notificationId)->first();
 
         if ($notification) {
             $notification->delete();
@@ -70,12 +95,20 @@ class NotificationsCenter extends Component
 
     public function markAllAsRead(): void
     {
-        Auth::user()?->unreadNotifications->markAsRead();
+        $user = $this->currentUser();
+
+        if (! $user) {
+            return;
+        }
+
+        $user->unreadNotifications->markAsRead();
     }
 
     public function getUnreadCountProperty(): int
     {
-        return Auth::user()?->unreadNotifications()->count() ?? 0;
+        $user = $this->currentUser();
+
+        return $user?->unreadNotifications()->count() ?? 0;
     }
 
     public function typeOptions(): array
@@ -94,7 +127,7 @@ class NotificationsCenter extends Component
 
     protected function filteredNotifications(): Collection
     {
-        $user = Auth::user();
+        $user = $this->currentUser();
         $presenter = app(NotificationPresenter::class);
 
         if (! $user) {
@@ -110,12 +143,16 @@ class NotificationsCenter extends Component
         }
 
         if ($this->type !== 'all') {
-            $notifications = $notifications->filter(fn ($notification) => $presenter->typeKey($notification) === $this->type);
+            $notifications = $notifications->filter(
+                fn ($notification) => $presenter->typeKey($notification) === $this->type
+            );
         }
 
         if ($this->search !== '') {
             $term = mb_strtolower(trim($this->search));
-            $notifications = $notifications->filter(fn ($notification) => str_contains($presenter->searchableText($notification), $term));
+            $notifications = $notifications->filter(
+                fn ($notification) => str_contains($presenter->searchableText($notification), $term)
+            );
         }
 
         return $notifications->values();

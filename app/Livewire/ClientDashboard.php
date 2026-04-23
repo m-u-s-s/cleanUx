@@ -8,16 +8,16 @@ use App\Models\OrganizationSite;
 use App\Models\RendezVous;
 use App\Models\ServiceCatalog;
 use App\Models\ServiceZone;
+use App\Models\User;
 use App\Support\ActivityLogger;
 use App\Support\Domain\BookingStatus;
+use Illuminate\Contracts\View\View;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Livewire\Component;
 use Livewire\WithPagination;
-use Illuminate\Contracts\View\View;
-use Livewire\Attributes\Layout;
 
 class ClientDashboard extends Component
 {
@@ -30,9 +30,11 @@ class ClientDashboard extends Component
 
     protected $paginationTheme = 'tailwind';
 
-    protected function currentUser()
+    protected function currentUser(): ?User
     {
-        return Auth::user();
+        $user = Auth::user();
+
+        return $user instanceof User ? $user : null;
     }
 
     protected function coverageZoneIds(): Collection
@@ -70,12 +72,16 @@ class ClientDashboard extends Component
 
     public function isPremiumClient(): bool
     {
-        return Auth::check() && Auth::user()->isPremium();
+        $user = $this->currentUser();
+
+        return $user?->isPremium() ?? false;
     }
 
     public function getActiveSubscriptionProperty()
     {
-        return $this->currentUser()?->subscription('default');
+        $user = $this->currentUser();
+
+        return $user?->subscription('default');
     }
 
     public function getCoverageZonesProperty()
@@ -101,8 +107,8 @@ class ClientDashboard extends Component
         $zones = $this->coverageZones;
 
         $typeLabel = match (true) {
-            $user?->isEntreprise() => 'Entreprise',
-            $user?->isPremium() => 'Premium',
+            $user?->isEntreprise() ?? false => 'Entreprise',
+            $user?->isPremium() ?? false => 'Premium',
             default => 'Standard',
         };
 

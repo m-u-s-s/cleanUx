@@ -22,7 +22,10 @@ class ProductionHealthReportTest extends TestCase
         Config::set('session.driver', 'database');
         Config::set('mail.default', 'smtp');
 
-        $report = app(ProductionHealthReport::class)->build();
+        /** @var ProductionHealthReport $healthReport */
+        $healthReport = app(ProductionHealthReport::class);
+
+        $report = $healthReport->build();
 
         $httpsCheck = collect($report['checks'])->firstWhere('label', 'APP URL en HTTPS en production');
 

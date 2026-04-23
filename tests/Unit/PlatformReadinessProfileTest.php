@@ -19,7 +19,10 @@ class PlatformReadinessProfileTest extends TestCase
             'email' => 'admin@cleanux.test',
         ]);
 
-        $report = app(PlatformReadinessReport::class)->build();
+        /** @var PlatformReadinessReport $readinessReport */
+        $readinessReport = app(PlatformReadinessReport::class);
+
+        $report = $readinessReport->build();
         $checks = collect($report['checks'])->keyBy('key');
 
         $this->assertSame('production', $report['profile']);

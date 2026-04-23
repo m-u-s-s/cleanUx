@@ -3,7 +3,9 @@
 namespace App\Livewire\Client;
 
 use App\Models\Mission;
+use App\Models\User;
 use App\Notifications\EmployeArriveNotification;
+use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
 
@@ -11,11 +13,18 @@ class MissionTracking extends Component
 {
     public Mission $mission;
 
+    protected function currentUser(): ?User
+    {
+        $user = Auth::user();
+
+        return $user instanceof User ? $user : null;
+    }
+
     public function mount(Mission $mission): void
     {
         abort_unless($mission->exists, 404);
 
-        $user = Auth::user();
+        $user = $this->currentUser();
 
         $isOwner =
             $mission->rendezVous?->client_id === $user?->id
@@ -31,7 +40,7 @@ class MissionTracking extends Component
         ]);
     }
 
-    public function render()
+    public function render(): View
     {
         $this->mission->load([
             'verificationCodes',
@@ -52,8 +61,10 @@ class MissionTracking extends Component
             ->latest('id')
             ->first();
 
-        $latestArrivalNotification = Auth::user()
-            ? Auth::user()->notifications()
+        $user = $this->currentUser();
+
+        $latestArrivalNotification = $user
+            ? $user->notifications()
                 ->where('type', EmployeArriveNotification::class)
                 ->where('data->mission_id', $this->mission->id)
                 ->latest('id')

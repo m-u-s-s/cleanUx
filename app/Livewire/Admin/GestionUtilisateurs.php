@@ -5,7 +5,9 @@ namespace App\Livewire\Admin;
 use App\Models\ServiceZone;
 use App\Models\User;
 use App\Support\ActivityLogger;
+use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Gate;
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -24,9 +26,27 @@ class GestionUtilisateurs extends Component
     public ?int $securityManagedZoneId = null;
     public array $securityPermissions = [];
 
-    public function updatingRoleFilter(): void { $this->resetPage(); }
-    public function updatingSearch(): void { $this->resetPage(); }
-    public function updatingAccessScopeFilter(): void { $this->resetPage(); }
+    protected function currentAdmin(): ?User
+    {
+        $user = auth()->user();
+
+        return $user instanceof User ? $user : null;
+    }
+
+    public function updatingRoleFilter(): void
+    {
+        $this->resetPage();
+    }
+
+    public function updatingSearch(): void
+    {
+        $this->resetPage();
+    }
+
+    public function updatingAccessScopeFilter(): void
+    {
+        $this->resetPage();
+    }
 
     public function toggleActivation(int $userId): void
     {
@@ -34,6 +54,7 @@ class GestionUtilisateurs extends Component
         Gate::authorize('toggleActivation', $user);
 
         $nextActive = ! (bool) $user->is_active;
+
         $user->update([
             'is_active' => $nextActive,
             'status' => $nextActive ? 'active' : 'inactive',
@@ -51,9 +72,12 @@ class GestionUtilisateurs extends Component
     {
         $normalizedRole = $newRole === 'entreprise' ? User::ROLE_ENTREPRISE : $newRole;
         $user = User::findOrFail($userId);
+
         Gate::authorize('updateRole', $user);
 
-        $user->update(['role' => $normalizedRole]);
+        $user->update([
+            'role' => $normalizedRole,
+        ]);
 
         ActivityLogger::critical('security.user_role_updated', $user, [
             'domain' => 'security',
@@ -88,13 +112,26 @@ class GestionUtilisateurs extends Component
         Gate::authorize('updateAdminSecurity', $user);
 
         $validated = $this->validate([
-            'securityAccessScope' => ['required', 'in:' . implode(',', [User::ACCESS_SCOPE_ALL, User::ACCESS_SCOPE_ZONE, User::ACCESS_SCOPE_READONLY])],
+            'securityAccessScope' => [
+                'required',
+                'in:' . implode(',', [
+                    User::ACCESS_SCOPE_ALL,
+                    User::ACCESS_SCOPE_ZONE,
+                    User::ACCESS_SCOPE_READONLY,
+                ]),
+            ],
             'securityManagedZoneId' => ['nullable', 'exists:service_zones,id'],
             'securityPermissions' => ['array'],
-            'securityPermissions.*' => ['string', 'in:' . implode(',', array_keys(User::allowedAdminPermissions()))],
+            'securityPermissions.*' => [
+                'string',
+                'in:' . implode(',', array_keys(User::allowedAdminPermissions())),
+            ],
         ]);
 
-        if ($validated['securityAccessScope'] === User::ACCESS_SCOPE_ZONE && empty($validated['securityManagedZoneId'])) {
+        if (
+            $validated['securityAccessScope'] === User::ACCESS_SCOPE_ZONE
+            && empty($validated['securityManagedZoneId'])
+        ) {
             $this->addError('securityManagedZoneId', 'Une zone est obligatoire pour un admin scope zone.');
             return;
         }
@@ -125,21 +162,21 @@ class GestionUtilisateurs extends Component
         return User::allowedAdminPermissions();
     }
 
-    public function getZonesProperty()
+    public function getZonesProperty(): Collection
     {
-        $query = ServiceZone::query()->orderBy('name');
-        $admin = auth()->user();
+        $admin = $this->currentAdmin();
 
-        if ($admin?->isZoneScopedAdmin()) {
-            $query->where('id', $admin->managed_service_zone_id);
-        }
-
-        return $query->get(['id', 'name']);
+        return ServiceZone::query()
+            ->when($admin?->isZoneScopedAdmin(), function (Builder $query) use ($admin) {
+                $query->whereKey($admin->managed_service_zone_id);
+            })
+            ->orderBy('name')
+            ->get(['id', 'name']);
     }
 
     protected function applyZoneScope(Builder $query): void
     {
-        $admin = auth()->user();
+        $admin = $this->currentAdmin();
 
         if (! $admin?->isZoneScopedAdmin()) {
             return;
@@ -168,9 +205,10 @@ class GestionUtilisateurs extends Component
         });
     }
 
-    public function render()
+    public function render(): View
     {
         $query = User::query()->with(['primaryServiceZone', 'managedServiceZone']);
+
         $this->applyZoneScope($query);
 
         $users = $query
@@ -192,6 +230,7 @@ class GestionUtilisateurs extends Component
             })
             ->when($this->search, function (Builder $query) {
                 $term = '%' . $this->search . '%';
+
                 $query->where(function (Builder $sub) use ($term) {
                     $sub->where('name', 'like', $term)
                         ->orWhere('email', 'like', $term)

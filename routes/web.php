@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\User;
 use App\Http\Controllers\Admin\MissionAdminController;
 use App\Http\Controllers\Admin\MissionQualityExportController;
 use App\Http\Controllers\Client\FinanceDocumentDownloadController;
@@ -56,7 +57,6 @@ use App\Livewire\NotificationsCenter;
 use App\Models\Country;
 use App\Models\Feedback;
 use App\Models\RendezVous;
-use App\Models\User;
 use App\Http\Controllers\MissionTrackingController;
 use App\Http\Controllers\MissionFieldActionController;
 use App\Http\Controllers\MissionReportController;
@@ -73,7 +73,10 @@ Route::post('/locale', function (Request $request) {
     session(['locale' => $locale]);
 
     if (auth()->check()) {
-        auth()->user()->forceFill([
+        /** @var User $user */
+        $user = auth()->user();
+
+        $user->forceFill([
             'locale' => match ($locale) {
                 'nl' => 'nl_BE',
                 'en' => 'en_US',
@@ -94,9 +97,12 @@ Route::post('/country', function (Request $request) {
     $request->session()->put('country', $country->iso_code);
 
     if (auth()->check()) {
+        /** @var User $user */
         $user = auth()->user();
+
         $metadata = (array) ($user->metadata ?? []);
         $metadata['current_country_code'] = $country->iso_code;
+
         $user->forceFill(['metadata' => $metadata])->save();
     }
 
@@ -108,8 +114,12 @@ Route::get('/prendre-rendez-vous', PrendreRendezVous::class)->name('booking.crea
 Route::post('/stripe/webhook', [StripeWebhookController::class, 'handleWebhook'])->name('cashier.webhook');
 
 Route::middleware(['auth', 'verified', 'active.account'])->group(function () {
-    Route::get('/dashboard', function () {
-        $user = auth()->user();
+    Route::get('/dashboard', function (Request $request) {
+        $user = $request->user();
+
+        if (! $user instanceof User) {
+            abort(403);
+        }
 
         if ($user->isAdmin()) {
             return redirect()->route('admin.dashboard');

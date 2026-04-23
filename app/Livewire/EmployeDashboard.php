@@ -3,15 +3,22 @@
 namespace App\Livewire;
 
 use App\Models\RendezVous;
+use App\Models\User;
 use App\Support\Domain\BookingStatus;
+use Illuminate\Contracts\View\View;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
-use Illuminate\Contracts\View\View;
-use Livewire\Attributes\Layout;
 
 class EmployeDashboard extends Component
 {
+    protected function currentUser(): ?User
+    {
+        $user = Auth::user();
+
+        return $user instanceof User ? $user : null;
+    }
+
     public function getMissionsDuJourProperty()
     {
         return RendezVous::with(['client', 'serviceZone', 'serviceCatalog', 'postalCode'])
@@ -58,7 +65,7 @@ class EmployeDashboard extends Component
 
     public function getAssignedZonesProperty(): Collection
     {
-        $user = Auth::user();
+        $user = $this->currentUser();
 
         if (! $user) {
             return collect();

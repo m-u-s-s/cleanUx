@@ -19,7 +19,10 @@ class OpsHeartbeatCommandTest extends TestCase
 
         $this->artisan('app:ops-heartbeat')->assertExitCode(0);
 
-        Storage::disk('local')->assertExists('ops/heartbeat.json');
+        /** @var \Illuminate\Filesystem\FilesystemAdapter $disk */
+        $disk = Storage::disk('local');
+
+        $disk->assertExists('ops/heartbeat.json');
         $this->assertNotNull(Cache::get('cleanux:test:heartbeat'));
     }
 }

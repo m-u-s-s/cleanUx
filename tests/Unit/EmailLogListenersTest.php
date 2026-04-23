@@ -22,8 +22,14 @@ class EmailLogListenersTest extends TestCase
         $rdv = RendezVous::factory()->create(['client_id' => $client->id]);
         $notification = new RappelRendezVousNotification($rdv, '24h');
 
-        app(LogNotificationMailSent::class)->handle(new NotificationSent($client, $notification, 'mail', 'preview-id'));
-        app(LogNotificationMailFailed::class)->handle(new NotificationFailed($client, $notification, 'mail', ['error' => 'smtp down']));
+        /** @var LogNotificationMailSent $sentListener */
+        $sentListener = app(LogNotificationMailSent::class);
+
+        /** @var LogNotificationMailFailed $failedListener */
+        $failedListener = app(LogNotificationMailFailed::class);
+
+        $sentListener->handle(new NotificationSent($client, $notification, 'mail', 'preview-id'));
+        $failedListener->handle(new NotificationFailed($client, $notification, 'mail', ['error' => 'smtp down']));
 
         $this->assertDatabaseHas('email_logs', [
             'status' => 'sent',

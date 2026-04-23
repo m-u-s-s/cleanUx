@@ -15,7 +15,10 @@ class DatabaseSeederReadinessTest extends TestCase
     {
         $this->seed(DatabaseSeeder::class);
 
-        $report = app(PlatformReadinessReport::class)->build();
+        /** @var PlatformReadinessReport $readinessReport */
+        $readinessReport = app(PlatformReadinessReport::class);
+
+        $report = $readinessReport->build();
 
         $this->assertGreaterThanOrEqual(1, $report['metrics']['admins_total']);
         $this->assertGreaterThanOrEqual(1, $report['metrics']['employees_total']);

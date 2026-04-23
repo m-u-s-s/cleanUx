@@ -2,7 +2,9 @@
 
 namespace App\Livewire;
 
+use App\Models\User;
 use App\Support\Notifications\NotificationPresenter;
+use Illuminate\Contracts\View\View;
 use Illuminate\Notifications\DatabaseNotification;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
@@ -18,12 +20,15 @@ class Notifications extends Component
         'notificationCreated' => '$refresh',
     ];
 
+    protected function currentUser(): ?User
+    {
+        $user = Auth::user();
+
+        return $user instanceof User ? $user : null;
+    }
+
     public function markAsRead(string $notificationId): void
     {
-        if (! Auth::check()) {
-            return;
-        }
-
         $notification = $this->findNotification($notificationId);
 
         if ($notification && is_null($notification->read_at)) {
@@ -33,10 +38,6 @@ class Notifications extends Component
 
     public function markAsUnread(string $notificationId): void
     {
-        if (! Auth::check()) {
-            return;
-        }
-
         $notification = $this->findNotification($notificationId);
 
         if ($notification && ! is_null($notification->read_at)) {
@@ -46,19 +47,17 @@ class Notifications extends Component
 
     public function markAllAsRead(): void
     {
-        if (! Auth::check()) {
+        $user = $this->currentUser();
+
+        if (! $user) {
             return;
         }
 
-        Auth::user()?->unreadNotifications->markAsRead();
+        $user->unreadNotifications->markAsRead();
     }
 
     public function deleteNotification(string $notificationId): void
     {
-        if (! Auth::check()) {
-            return;
-        }
-
         $notification = $this->findNotification($notificationId);
 
         if ($notification) {
@@ -83,22 +82,22 @@ class Notifications extends Component
 
     public function getUnreadCountProperty(): int
     {
-        if (! Auth::check()) {
-            return 0;
-        }
+        $user = $this->currentUser();
 
-        return Auth::user()->unreadNotifications()->count();
+        return $user?->unreadNotifications()->count() ?? 0;
     }
 
     public function getNotificationsProperty(): Collection
     {
-        if (! Auth::check()) {
+        $user = $this->currentUser();
+
+        if (! $user) {
             return collect();
         }
 
         $presenter = app(NotificationPresenter::class);
 
-        $notifications = Auth::user()
+        $notifications = $user
             ->notifications()
             ->latest()
             ->take(max($this->limit * 4, 40))
@@ -111,7 +110,9 @@ class Notifications extends Component
         }
 
         if ($this->type !== 'all') {
-            $notifications = $notifications->filter(fn (DatabaseNotification $notification) => $presenter->typeKey($notification) === $this->type);
+            $notifications = $notifications->filter(
+                fn (DatabaseNotification $notification) => $presenter->typeKey($notification) === $this->type
+            );
         }
 
         return $notifications->take($this->limit)->values();
@@ -129,7 +130,7 @@ class Notifications extends Component
 
     public function notificationActionUrl(DatabaseNotification $notification): string
     {
-        return app(NotificationPresenter::class)->actionUrl($notification, Auth::user());
+        return app(NotificationPresenter::class)->actionUrl($notification, $this->currentUser());
     }
 
     public function typeOptions(): array
@@ -148,13 +149,19 @@ class Notifications extends Component
 
     protected function findNotification(string $notificationId): ?DatabaseNotification
     {
-        return Auth::user()
-            ?->notifications()
+        $user = $this->currentUser();
+
+        if (! $user) {
+            return null;
+        }
+
+        return $user
+            ->notifications()
             ->where('id', $notificationId)
             ->first();
     }
 
-    public function render()
+    public function render(): View
     {
         $presenter = app(NotificationPresenter::class);
 

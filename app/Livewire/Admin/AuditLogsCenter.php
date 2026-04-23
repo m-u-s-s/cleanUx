@@ -6,6 +6,7 @@ use App\Models\ActivityLog;
 use App\Models\ServiceZone;
 use Livewire\Component;
 use Livewire\WithPagination;
+use App\Models\User;
 
 class AuditLogsCenter extends Component
 {
@@ -24,8 +25,11 @@ class AuditLogsCenter extends Component
 
     public function mount(): void
     {
-        if (auth()->user()?->isZoneScopedAdmin()) {
-            $this->zoneFilter = (string) auth()->user()->managed_service_zone_id;
+        /** @var User|null $user */
+        $user = auth()->user();
+
+        if ($user?->isZoneScopedAdmin()) {
+            $this->zoneFilter = (string) $user->managed_service_zone_id;
         }
     }
 
@@ -62,6 +66,7 @@ class AuditLogsCenter extends Component
 
     public function getLogsProperty()
     {
+        /** @var User|null $user */
         $user = auth()->user();
         $criticalKeywords = ['delete', 'supprime', 'suspend', 'export', 'finance', 'incident', 'quality', 'premium', 'user', 'security'];
 
@@ -88,12 +93,12 @@ class AuditLogsCenter extends Component
                         });
                 });
             })
-            ->when($this->actionFilter !== '', fn ($query) => $query->where('action', $this->actionFilter))
-            ->when($this->domainFilter !== '', fn ($query) => $query->where('domain', $this->domainFilter))
-            ->when($this->severityFilter !== '', fn ($query) => $query->where('severity', $this->severityFilter))
-            ->when($this->zoneFilter !== '', fn ($query) => $query->where('service_zone_id', (int) $this->zoneFilter))
-            ->when($this->actorFilter === 'system', fn ($query) => $query->whereNull('user_id'))
-            ->when($this->actorFilter === 'human', fn ($query) => $query->whereNotNull('user_id'))
+            ->when($this->actionFilter !== '', fn($query) => $query->where('action', $this->actionFilter))
+            ->when($this->domainFilter !== '', fn($query) => $query->where('domain', $this->domainFilter))
+            ->when($this->severityFilter !== '', fn($query) => $query->where('severity', $this->severityFilter))
+            ->when($this->zoneFilter !== '', fn($query) => $query->where('service_zone_id', (int) $this->zoneFilter))
+            ->when($this->actorFilter === 'system', fn($query) => $query->whereNull('user_id'))
+            ->when($this->actorFilter === 'human', fn($query) => $query->whereNotNull('user_id'))
             ->when($this->criticalOnly, function ($query) use ($criticalKeywords) {
                 $query->where(function ($q) use ($criticalKeywords) {
                     $q->where('is_critical', true);
