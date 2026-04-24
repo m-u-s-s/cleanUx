@@ -34,6 +34,30 @@ class AdminDashboard extends Component
 
     public array $suggestedEmployees = [];
 
+    public function refreshDashboard()
+    {
+        $this->clearAdminCache();
+        $this->mettreAJourStats();
+        $this->chargerRdvs();
+
+        $this->dispatch('toast', type: 'success', message: 'Dashboard mis à jour');
+    }
+
+    public function goToPlanning()
+    {
+        return redirect()->route('admin.planning');
+    }
+
+    public function goToMissions()
+    {
+        return redirect()->route('admin.missions');
+    }
+
+    public function goToFeedbacks()
+    {
+        return redirect()->route('admin.feedbacks');
+    }
+
     public function render(): View
     {
         return view('livewire.admin-dashboard', [

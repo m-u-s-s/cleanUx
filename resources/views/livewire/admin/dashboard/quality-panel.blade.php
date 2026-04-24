@@ -1,64 +1,76 @@
-<div class="cu-card p-5">
-    <div class="mb-4 flex items-center justify-between">
+<div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+    <div class="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-            <h3 class="text-lg font-semibold text-slate-800">🧪 Suivi qualité des missions</h3>
-            <p class="text-sm text-gray-500">Contrôle des rapports, photos après intervention et écarts de durée.</p>
+            <p class="text-sm font-semibold uppercase tracking-wide text-emerald-600">Qualité opérationnelle</p>
+            <h3 class="text-xl font-black text-slate-900">Suivi qualité des missions</h3>
+            <p class="text-sm text-slate-500">
+                Rapports, photos après intervention et écarts de durée.
+            </p>
+        </div>
+
+        <span class="rounded-full bg-emerald-50 px-3 py-1 text-xs font-black text-emerald-700 ring-1 ring-emerald-200">
+            {{ $qualiteMissions->count() ?? 0 }} mission(s)
+        </span>
+    </div>
+
+    <div class="mb-6 grid grid-cols-1 gap-4 md:grid-cols-3">
+        <div class="rounded-2xl border border-red-100 bg-red-50 p-5">
+            <p class="text-sm font-semibold text-red-700">Missions sans rapport</p>
+            <p class="mt-2 text-3xl font-black text-red-700">
+                {{ $qualiteStats['sans_rapport'] ?? 0 }}
+            </p>
+            <p class="mt-1 text-xs text-red-600">
+                À compléter par les employés.
+            </p>
+        </div>
+
+        <div class="rounded-2xl border border-orange-100 bg-orange-50 p-5">
+            <p class="text-sm font-semibold text-orange-700">Sans photos après</p>
+            <p class="mt-2 text-3xl font-black text-orange-700">
+                {{ $qualiteStats['sans_photos_apres'] ?? 0 }}
+            </p>
+            <p class="mt-1 text-xs text-orange-600">
+                Contrôle visuel manquant.
+            </p>
+        </div>
+
+        <div class="rounded-2xl border border-emerald-100 bg-emerald-50 p-5">
+            <p class="text-sm font-semibold text-emerald-700">Avec durée réelle</p>
+            <p class="mt-2 text-3xl font-black text-emerald-700">
+                {{ $qualiteStats['avec_duree_reelle'] ?? 0 }}
+            </p>
+            <p class="mt-1 text-xs text-emerald-600">
+                Données exploitables.
+            </p>
         </div>
     </div>
 
-    <div class="mb-5 grid grid-cols-1 gap-4 md:grid-cols-3">
-        <div class="rounded-lg border bg-gray-50 p-4">
-            <p class="text-sm text-gray-500">Missions sans rapport</p>
-            <p class="text-2xl font-bold text-red-600">{{ $qualiteStats['sans_rapport'] }}</p>
-        </div>
-
-        <div class="rounded-lg border bg-gray-50 p-4">
-            <p class="text-sm text-gray-500">Missions sans photos après</p>
-            <p class="text-2xl font-bold text-orange-600">{{ $qualiteStats['sans_photos_apres'] }}</p>
-        </div>
-
-        <div class="rounded-lg border bg-gray-50 p-4">
-            <p class="text-sm text-gray-500">Missions avec durée réelle</p>
-            <p class="text-2xl font-bold text-emerald-600">{{ $qualiteStats['avec_duree_reelle'] }}</p>
-        </div>
-    </div>
-
-    <div class="space-y-3">
+    <div class="space-y-4">
         @forelse($qualiteMissions as $item)
-            @php($rdv = $item['rdv'])
+            @php
+                $rdv = $item['rdv'];
+                $difference = $item['difference'];
+                $durationTone = is_null($difference)
+                    ? 'slate'
+                    : ($item['is_long_overrun'] ? 'red' : ($item['is_short_underrun'] ? 'blue' : 'emerald'));
+            @endphp
 
-            <div class="rounded-lg border bg-gray-50 p-4">
-                <div class="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+            <div class="rounded-2xl border border-slate-200 bg-slate-50 p-5">
+                <div class="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                     <div>
-                        <p class="font-semibold text-gray-800">{{ $rdv->service_display_name ?: 'Service non précisé' }}</p>
-                        <p class="text-sm text-gray-600">👤 {{ $rdv->client->name ?? '—' }} · 🧑‍💼 {{ $rdv->employe->name ?? '—' }}</p>
-                        <p class="text-sm text-gray-600">📅 {{ $rdv->date }} à {{ $rdv->heure }}</p>
+                        <p class="font-black text-slate-900">
+                            {{ $rdv->service_display_name ?: 'Service non précisé' }}
+                        </p>
 
-                        @if(!empty($suggestedEmployees))
-                            <div class="mt-4">
-                                <h4 class="mb-2 text-sm font-semibold text-slate-800">🧠 Suggestions automatiques</h4>
+                        <p class="mt-1 text-sm text-slate-600">
+                            👤 {{ $rdv->client->name ?? '—' }}
+                            · 🧑‍💼 {{ $rdv->employe->name ?? '—' }}
+                        </p>
 
-                                <div class="space-y-2">
-                                    @foreach($suggestedEmployees as $suggestion)
-                                        <div class="flex items-center justify-between rounded-lg border bg-gray-50 p-3">
-                                            <div>
-                                                <p class="font-medium text-gray-800">{{ $suggestion['name'] }}</p>
-                                                <p class="text-xs text-gray-600">
-                                                    {{ $suggestion['rdv_count'] }} mission(s) • {{ $suggestion['load_minutes'] }} min planifiées
-                                                    @if($suggestion['same_city_bonus'] < 0)
-                                                        • même ville
-                                                    @endif
-                                                </p>
-                                            </div>
-
-                                            <button wire:click="appliquerSuggestionEmploye({{ $suggestion['id'] }})" type="button" class="rounded bg-blue-600 px-3 py-1 text-sm text-white hover:bg-blue-700">
-                                                Choisir
-                                            </button>
-                                        </div>
-                                    @endforeach
-                                </div>
-                            </div>
-                        @endif
+                        <p class="mt-1 text-sm text-slate-500">
+                            📅 {{ $rdv->date?->format('d/m/Y') ?? $rdv->date }}
+                            · 🕒 {{ substr((string) $rdv->heure, 0, 5) }}
+                        </p>
                     </div>
 
                     <div class="flex flex-wrap items-center gap-2">
@@ -67,48 +79,86 @@
                     </div>
                 </div>
 
-                <div class="mt-4 grid grid-cols-1 gap-3 text-sm md:grid-cols-3">
-                    <div class="rounded border bg-white p-3">
-                        <p class="text-gray-500">Rapport</p>
-                        <p class="font-semibold {{ $item['has_report'] ? 'text-emerald-700' : 'text-red-600' }}">{{ $item['has_report'] ? 'Présent' : 'Manquant' }}</p>
+                <div class="mt-5 grid grid-cols-1 gap-3 md:grid-cols-3">
+                    <div class="rounded-xl border bg-white p-4">
+                        <p class="text-xs font-semibold uppercase tracking-wide text-slate-400">Rapport</p>
+
+                        @if($item['has_report'])
+                            <p class="mt-2 font-black text-emerald-700">Présent</p>
+                        @else
+                            <p class="mt-2 font-black text-red-600">Manquant</p>
+                        @endif
                     </div>
 
-                    <div class="rounded border bg-white p-3">
-                        <p class="text-gray-500">Photos après</p>
-                        <p class="font-semibold {{ $item['has_after_photos'] ? 'text-emerald-700' : 'text-orange-600' }}">{{ $item['has_after_photos'] ? 'Présentes' : 'Manquantes' }}</p>
+                    <div class="rounded-xl border bg-white p-4">
+                        <p class="text-xs font-semibold uppercase tracking-wide text-slate-400">Photos après</p>
+
+                        @if($item['has_after_photos'])
+                            <p class="mt-2 font-black text-emerald-700">Présentes</p>
+                        @else
+                            <p class="mt-2 font-black text-orange-600">Manquantes</p>
+                        @endif
                     </div>
 
-                    <div class="rounded border bg-white p-3">
-                        <p class="text-gray-500">Durée</p>
-                        <p class="font-semibold text-slate-800">
+                    <div class="rounded-xl border bg-white p-4">
+                        <p class="text-xs font-semibold uppercase tracking-wide text-slate-400">Durée</p>
+
+                        <p class="mt-2 text-sm font-semibold text-slate-700">
                             Estimée : {{ $item['estimated'] ? $item['estimated'] . ' min' : '—' }}
-                            <br>
+                        </p>
+
+                        <p class="text-sm font-semibold text-slate-700">
                             Réelle : {{ $item['real'] ? $item['real'] . ' min' : '—' }}
                         </p>
                     </div>
                 </div>
 
-                @if(!is_null($item['difference']))
-                    <div class="mt-3 text-sm">
-                        @if($item['is_long_overrun'])
-                            <span class="inline-flex items-center rounded-full border border-red-200 bg-red-100 px-2.5 py-1 text-xs font-semibold text-red-700">+{{ $item['difference'] }} min par rapport à l’estimé</span>
-                        @elseif($item['is_short_underrun'])
-                            <span class="inline-flex items-center rounded-full border border-blue-200 bg-blue-100 px-2.5 py-1 text-xs font-semibold text-blue-700">{{ $item['difference'] }} min par rapport à l’estimé</span>
-                        @else
-                            <span class="inline-flex items-center rounded-full border border-emerald-200 bg-emerald-100 px-2.5 py-1 text-xs font-semibold text-emerald-700">Durée cohérente</span>
-                        @endif
-                    </div>
-                @endif
+                <div class="mt-4 flex flex-wrap items-center gap-2">
+                    @if(!is_null($difference))
+                        <span class="rounded-full px-3 py-1 text-xs font-black
+                            {{ $durationTone === 'red' ? 'bg-red-50 text-red-700 ring-1 ring-red-200' : '' }}
+                            {{ $durationTone === 'blue' ? 'bg-blue-50 text-blue-700 ring-1 ring-blue-200' : '' }}
+                            {{ $durationTone === 'emerald' ? 'bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200' : '' }}">
+                            @if($item['is_long_overrun'])
+                                +{{ $difference }} min par rapport à l’estimé
+                            @elseif($item['is_short_underrun'])
+                                {{ $difference }} min par rapport à l’estimé
+                            @else
+                                Durée cohérente
+                            @endif
+                        </span>
+                    @else
+                        <span class="rounded-full bg-slate-100 px-3 py-1 text-xs font-black text-slate-600">
+                            Durée non comparable
+                        </span>
+                    @endif
+
+                    @if(!$item['has_report'])
+                        <span class="rounded-full bg-red-50 px-3 py-1 text-xs font-black text-red-700 ring-1 ring-red-200">
+                            Rapport à compléter
+                        </span>
+                    @endif
+
+                    @if(!$item['has_after_photos'])
+                        <span class="rounded-full bg-orange-50 px-3 py-1 text-xs font-black text-orange-700 ring-1 ring-orange-200">
+                            Photos à ajouter
+                        </span>
+                    @endif
+                </div>
 
                 @if($rdv->commentaire_fin_mission)
-                    <div class="mt-3 rounded border bg-white p-3 text-sm text-gray-700">
-                        <span class="font-medium">Rapport employé :</span>
-                        <p class="mt-1">{{ $rdv->commentaire_fin_mission }}</p>
+                    <div class="mt-4 rounded-2xl border border-slate-200 bg-white p-4">
+                        <p class="text-xs font-semibold uppercase tracking-wide text-slate-400">
+                            Rapport employé
+                        </p>
+                        <p class="mt-2 text-sm leading-relaxed text-slate-700">
+                            {{ $rdv->commentaire_fin_mission }}
+                        </p>
                     </div>
                 @endif
             </div>
         @empty
-            <div class="text-sm italic text-gray-500">Aucune donnée qualité disponible pour le moment.</div>
+            <x-empty-state title="Aucune donnée qualité" message="Les missions terminées avec données qualité apparaîtront ici." icon="🧪" />
         @endforelse
     </div>
 </div>
