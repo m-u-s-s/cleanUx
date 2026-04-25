@@ -1,70 +1,51 @@
-<div class="bg-white p-4 rounded shadow space-y-4">
-
-    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-        <div>
-            <h3 class="text-xl font-semibold text-blue-800">🗓️ {{ __('ui.weekly_agenda.title') }}</h3>
-            <p class="text-sm text-gray-500">{{ __('ui.weekly_agenda.subtitle') }}</p>
-        </div>
-
-        <div class="flex items-center gap-3">
-            <button wire:click="semainePrecedente" class="text-sm text-blue-600 hover:underline">
-                ⬅️ {{ __('ui.weekly_agenda.previous_week') }}
-            </button>
-
-            <div class="text-sm font-semibold text-gray-700">
-                {{ __('ui.weekly_agenda.week_of', ['date' => \Carbon\Carbon::parse($semaine)->translatedFormat('d M')]) }}
-            </div>
-
-            <button wire:click="semaineSuivante" class="text-sm text-blue-600 hover:underline">
-                {{ __('ui.weekly_agenda.next_week') }} ➡️
-            </button>
-        </div>
-    </div>
-
-    <div class="flex flex-wrap items-center gap-4">
-        <div>
-            <label class="text-sm text-gray-700 font-medium">{{ __('ui.weekly_agenda.employee') }} :</label>
-            <select wire:model.live="employe_id" class="border rounded px-2 py-1 text-sm">
-                <option value="">{{ __('ui.weekly_agenda.all_employees') }}</option>
-                @foreach($employes as $e)
-                    <option value="{{ $e->id }}">{{ $e->name }}</option>
-                @endforeach
-            </select>
-        </div>
-
-        <div>
-            <label class="text-sm text-gray-700 font-medium">{{ __('ui.weekly_agenda.priority') }} :</label>
-            <select wire:model.live="priorite" class="border rounded px-2 py-1 text-sm">
-                <option value="">{{ __('ui.weekly_agenda.all_priorities') }}</option>
-                <option value="normale">{{ __('ui.weekly_agenda.normal') }}</option>
-                <option value="haute">{{ __('ui.weekly_agenda.high') }}</option>
-                <option value="urgente">{{ __('ui.weekly_agenda.urgent') }}</option>
-            </select>
-        </div>
-    </div>
-
-    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+<div class="space-y-4">
+    <div class="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4 2xl:grid-cols-7">
         @foreach($jours as $jour)
-            <div class="border rounded-xl p-4 bg-gray-50">
-                <div class="mb-3">
-                    <div class="font-semibold text-blue-900 text-base">
-                        {{ $jour['label'] }}
+            <section class="flex min-h-[18rem] flex-col rounded-[1.75rem] border p-4 shadow-sm {{ $jour['is_focus'] ? 'border-sky-300 bg-sky-50/50' : 'border-slate-200 bg-slate-50/70' }} {{ $jour['is_today'] ? 'ring-2 ring-indigo-100' : '' }}">
+                <div class="mb-4">
+                    <div class="flex items-center justify-between gap-3">
+                        <div>
+                            <p class="text-sm font-black {{ $jour['is_focus'] ? 'text-sky-900' : 'text-slate-900' }}">
+                                {{ $jour['short_label'] }}
+                            </p>
+                            <p class="text-xs text-slate-500">
+                                {{ $jour['rdvs']->count() }} intervention(s) • {{ $jour['total_hours'] }} h
+                            </p>
+                        </div>
+                        @if($jour['is_today'])
+                            <span class="rounded-full bg-indigo-100 px-2.5 py-1 text-[11px] font-black text-indigo-700">Aujourd’hui</span>
+                        @elseif($jour['is_focus'])
+                            <span class="rounded-full bg-sky-100 px-2.5 py-1 text-[11px] font-black text-sky-700">Focus</span>
+                        @endif
                     </div>
-                    <div class="text-xs text-gray-500">
-                        {{ __('ui.weekly_agenda.interventions_count', ['count' => $jour['rdvs']->count(), 'minutes' => $jour['total_minutes'], 'hours' => $jour['total_hours']]) }}
+
+                    <div class="mt-3 flex flex-wrap gap-2 text-[11px] font-bold">
+                        <span class="rounded-full bg-white px-2.5 py-1 text-slate-600">
+                            {{ $jour['active_count'] }} actives
+                        </span>
+                        @if($jour['urgent_count'] > 0)
+                            <span class="rounded-full bg-rose-100 px-2.5 py-1 text-rose-700">
+                                {{ $jour['urgent_count'] }} urgente(s)
+                            </span>
+                        @endif
+                        @if($jour['unassigned_count'] > 0)
+                            <span class="rounded-full bg-amber-100 px-2.5 py-1 text-amber-700">
+                                {{ $jour['unassigned_count'] }} sans employé
+                            </span>
+                        @endif
                     </div>
                 </div>
 
-                <div class="space-y-3">
+                <div class="flex-1 space-y-3">
                     @forelse($jour['rdvs'] as $rdv)
-                        <x-rdv-cleaning-card :rdv="$rdv" />
+                        <x-rdv-planning-card :rdv="$rdv" />
                     @empty
-                        <div class="text-sm text-gray-500 italic">
-                            {{ __('ui.weekly_agenda.none') }}
+                        <div class="flex h-full items-center justify-center rounded-3xl border border-dashed border-slate-300 bg-white/70 p-4 text-center text-sm text-slate-500">
+                            Aucune intervention sur ce créneau.
                         </div>
                     @endforelse
                 </div>
-            </div>
+            </section>
         @endforeach
     </div>
 </div>

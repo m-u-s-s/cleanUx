@@ -41,9 +41,10 @@
                 Réinitialiser
             </button>
         </div>
-        wire:loading.attr="disabled"
-        class="rounded-xl bg-slate-100 px-4 py-2 text-sm font-black text-slate-700 hover:bg-slate-200 disabled:opacity-50">
-        Réinitialiser
+        <button>
+            wire:loading.attr="disabled"
+            class="rounded-xl bg-slate-100 px-4 py-2 text-sm font-black text-slate-700 hover:bg-slate-200 disabled:opacity-50">
+            Réinitialiser
         </button>
     </div>
 
