@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Livewire\Client\MesRendezVousClient;
 use App\Livewire\Client\MissionTracking;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Http;
 use Livewire\Livewire;
 use Tests\Support\CreatesMissionPortalFixtures;
 use Tests\TestCase;
@@ -26,6 +27,21 @@ class ClientMissionTrackingPanelTest extends TestCase
             ->assertSee('Suivi de mission')
             ->assertSee('Code de début disponible')
             ->assertSee('Actions client');
+    }
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        Http::fake([
+            'nominatim.openstreetmap.org/*' => Http::response([
+                [
+                    'lat' => '50.8466',
+                    'lon' => '4.3528',
+                    'display_name' => 'Rue de Test 1, 1000 Bruxelles, Belgique',
+                ],
+            ], 200),
+        ]);
     }
 
     public function test_owner_can_render_mission_tracking_component(): void
