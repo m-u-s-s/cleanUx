@@ -1,6 +1,6 @@
 <div class="space-y-6">
     <x-page-shell
-        title="Analytics center"
+        title="Centre analytics"
         subtitle="Vue consolidée des performances, du chiffre d'affaires, de la marge estimée et des signaux opérationnels par axe." 
         eyebrow="Pilotage premium"
     >
