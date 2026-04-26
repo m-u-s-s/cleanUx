@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Mission;
 use App\Models\MissionTrackingSession;
+use App\Models\User;
 use App\Services\Missions\MissionTrackingService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -14,12 +15,24 @@ class EmployeeMissionTrackingController extends Controller
 {
     public function start(Request $request, Mission $mission, MissionTrackingService $service): JsonResponse
     {
+        /** @var User|null $user */
+        $user = Auth::user();
+
+        abort_unless($user instanceof User, 403);
+        abort_unless($user->isEmploye(), 403);
+
+        abort_unless(
+            $mission->lead_employee_id === $user->id
+            || $mission->assignments()->where('user_id', $user->id)->exists(),
+            403
+        );
+
         $data = $request->validate([
             'lat' => ['required', 'numeric'],
             'lng' => ['required', 'numeric'],
         ]);
 
-        $session = $service->startToClientTracking($mission, Auth::user(), (float) $data['lat'], (float) $data['lng']);
+        $session = $service->startToClientTracking($mission, $user, (float) $data['lat'], (float) $data['lng']);
 
         return response()->json([
             'ok' => true,
@@ -30,6 +43,13 @@ class EmployeeMissionTrackingController extends Controller
 
     public function push(Request $request, MissionTrackingSession $session, MissionTrackingService $service): JsonResponse
     {
+        /** @var User|null $user */
+        $user = Auth::user();
+
+        abort_unless($user instanceof User, 403);
+        abort_unless($user->isEmploye(), 403);
+        abort_unless($session->employee_user_id === $user->id, 403);
+
         $data = $request->validate([
             'lat' => ['required', 'numeric'],
             'lng' => ['required', 'numeric'],
@@ -40,8 +60,6 @@ class EmployeeMissionTrackingController extends Controller
             'source' => ['nullable', 'string', 'max:30'],
             'app_state' => ['nullable', 'string', 'max:30'],
         ]);
-
-        abort_unless($session->employee_user_id === Auth::id(), 403);
 
         $session = $service->pushPoint($session, $data);
 
@@ -54,12 +72,17 @@ class EmployeeMissionTrackingController extends Controller
 
     public function stop(Request $request, MissionTrackingSession $session, MissionTrackingService $service): JsonResponse
     {
+        /** @var User|null $user */
+        $user = Auth::user();
+
+        abort_unless($user instanceof User, 403);
+        abort_unless($user->isEmploye(), 403);
+        abort_unless($session->employee_user_id === $user->id, 403);
+
         $data = $request->validate([
             'lat' => ['nullable', 'numeric'],
             'lng' => ['nullable', 'numeric'],
         ]);
-
-        abort_unless($session->employee_user_id === Auth::id(), 403);
 
         $session = $service->stopTracking(
             $session,

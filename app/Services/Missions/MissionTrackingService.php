@@ -18,6 +18,20 @@ class MissionTrackingService
             throw new RuntimeException('La mission ne peut pas démarrer le tracking trajet.');
         }
 
+        if (! $employee->isEmploye()) {
+            throw new RuntimeException('Seul un employé peut démarrer le tracking.');
+        }
+
+        $isAssigned = $mission->lead_employee_id === $employee->id
+            || MissionAssignment::query()
+            ->where('mission_id', $mission->id)
+            ->where('user_id', $employee->id)
+            ->exists();
+
+        if (! $isAssigned) {
+            throw new RuntimeException('Cet employé n’est pas assigné à cette mission.');
+        }
+
         return DB::transaction(function () use ($mission, $employee, $lat, $lng) {
             MissionTrackingSession::query()
                 ->where('mission_id', $mission->id)
@@ -31,6 +45,10 @@ class MissionTrackingService
                 ->where('mission_id', $mission->id)
                 ->where('user_id', $employee->id)
                 ->first();
+
+            if (! $assignment && $mission->lead_employee_id !== $employee->id) {
+                throw new RuntimeException('Aucune affectation mission trouvée pour cet employé.');
+            }
 
             $session = MissionTrackingSession::query()->create([
                 'mission_id' => $mission->id,
