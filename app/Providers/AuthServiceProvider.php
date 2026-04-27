@@ -3,9 +3,13 @@
 namespace App\Providers;
 
 use App\Models\Feedback;
+use App\Models\FinanceInvoice;
+use App\Models\Mission;
 use App\Models\RendezVous;
 use App\Models\User;
 use App\Policies\FeedbackPolicy;
+use App\Policies\FinanceInvoicePolicy;
+use App\Policies\MissionPolicy;
 use App\Policies\RendezVousPolicy;
 use App\Policies\UserPolicy;
 use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
@@ -17,6 +21,8 @@ class AuthServiceProvider extends ServiceProvider
         RendezVous::class => RendezVousPolicy::class,
         Feedback::class => FeedbackPolicy::class,
         User::class => UserPolicy::class,
+        Mission::class => MissionPolicy::class,
+        FinanceInvoice::class => FinanceInvoicePolicy::class,
     ];
 
     public function boot(): void
@@ -35,6 +41,7 @@ class AuthServiceProvider extends ServiceProvider
         Gate::define('manage-premium', fn (User $user) => $user->canAccessAdminModule('manage-premium'));
         Gate::define('manage-audit-logs', fn (User $user) => $user->canAccessAdminModule('manage-audit-logs'));
         Gate::define('manage-modules', fn (User $user) => $user->canAccessAdminModule('manage-modules'));
+        
 
         Gate::define('access-team-lead-ops', fn (User $user) => $user->isEmploye() && $user->is_active && $user->isFieldTeamLead());
 

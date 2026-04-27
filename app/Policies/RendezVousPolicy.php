@@ -4,14 +4,13 @@ namespace App\Policies;
 
 use App\Models\RendezVous;
 use App\Models\User;
-use App\Support\AdminScope;
 
 class RendezVousPolicy
 {
     public function view(User $user, RendezVous $rendezVous): bool
     {
         if ($user->isAdmin()) {
-            return AdminScope::canAccessRendezVous($user, $rendezVous);
+            return true;
         }
 
         if ($user->isClient()) {
@@ -25,42 +24,52 @@ class RendezVousPolicy
         return false;
     }
 
-    public function create(User $user): bool
-    {
-        return $user->isClient();
-    }
-
     public function update(User $user, RendezVous $rendezVous): bool
     {
-        if ($user->isAdmin()) {
-            return $user->canPerformCriticalAdminActions()
-                && AdminScope::canAccessRendezVous($user, $rendezVous);
+        if ($user->isAdmin() && ! $user->isReadOnlyAdmin()) {
+            return true;
         }
 
         if ($user->isClient()) {
             return $rendezVous->client_id === $user->id
-                && $rendezVous->canStillBeEditedByClient();
-        }
-
-        if ($user->isEmploye()) {
-            return $rendezVous->employe_id === $user->id;
+                && in_array($rendezVous->status, [
+                    'en_attente',
+                    'confirme',
+                ], true);
         }
 
         return false;
+    }
+
+    public function reschedule(User $user, RendezVous $rendezVous): bool
+    {
+        return $this->update($user, $rendezVous);
+    }
+
+    public function cancel(User $user, RendezVous $rendezVous): bool
+    {
+        if ($user->isAdmin() && ! $user->isReadOnlyAdmin()) {
+            return true;
+        }
+
+        return $user->isClient()
+            && $rendezVous->client_id === $user->id
+            && in_array($rendezVous->status, [
+                'en_attente',
+                'confirme',
+            ], true);
+    }
+
+    public function assignEmployee(User $user, RendezVous $rendezVous): bool
+    {
+        return $user->isAdmin()
+            && ! $user->isReadOnlyAdmin()
+            && $user->hasPermission('manage-calendar');
     }
 
     public function delete(User $user, RendezVous $rendezVous): bool
     {
-        if ($user->isAdmin()) {
-            return $user->canPerformCriticalAdminActions()
-                && AdminScope::canAccessRendezVous($user, $rendezVous);
-        }
-
-        if ($user->isClient()) {
-            return $rendezVous->client_id === $user->id
-                && $rendezVous->canStillBeEditedByClient();
-        }
-
-        return false;
+        return $user->isAdmin()
+            && $user->canPerformCriticalAdminActions();
     }
 }

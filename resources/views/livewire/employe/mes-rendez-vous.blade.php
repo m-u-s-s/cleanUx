@@ -1,156 +1,222 @@
-<div class="space-y-4">
-    <div class="flex flex-wrap items-center gap-4">
-        <div>
-            <label class="text-sm text-gray-700 font-medium">Priorité :</label>
-            <select wire:model.live="priorite" class="border rounded px-2 py-1 text-sm">
-                <option value="">— Toutes —</option>
-                <option value="normale">Normale</option>
-                <option value="haute">Haute</option>
-                <option value="urgente">Urgente</option>
-            </select>
-        </div>
+<div class="space-y-5">
+    <div class="bg-white border rounded-2xl shadow-sm p-4">
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
+            <div>
+                <label class="text-xs font-semibold text-slate-500 uppercase">Priorité</label>
+                <select wire:model.live="priorite" class="mt-1 w-full rounded-xl border-slate-200 text-sm">
+                    <option value="">Toutes</option>
+                    <option value="normale">Normale</option>
+                    <option value="haute">Haute</option>
+                    <option value="urgente">Urgente</option>
+                </select>
+            </div>
 
-        <div>
-            <label class="text-sm text-gray-700 font-medium">Statut :</label>
-            <select wire:model.live="filtreStatus" class="border rounded px-2 py-1 text-sm">
-                <option value="">— Tous —</option>
-                <option value="en_attente">En attente</option>
-                <option value="confirme">Confirmé</option>
-                <option value="en_route">En route</option>
-                <option value="sur_place">Sur place</option>
-                <option value="termine">Terminé</option>
-                <option value="refuse">Refusé</option>
-            </select>
-        </div>
+            <div>
+                <label class="text-xs font-semibold text-slate-500 uppercase">Statut</label>
+                <select wire:model.live="filtreStatus" class="mt-1 w-full rounded-xl border-slate-200 text-sm">
+                    <option value="">Tous</option>
+                    <option value="en_attente">En attente</option>
+                    <option value="confirme">Confirmé</option>
+                    <option value="en_route">En route</option>
+                    <option value="sur_place">Sur place</option>
+                    <option value="termine">Terminé</option>
+                    <option value="refuse">Refusé</option>
+                </select>
+            </div>
 
-        <div class="flex-1 min-w-[220px]">
-            <label class="text-sm text-gray-700 font-medium">Recherche :</label>
-            <input
-                type="text"
-                wire:model.live.debounce.350ms="search"
-                class="w-full border rounded px-3 py-2 text-sm"
-                placeholder="Client, adresse, ville, référence..."
-            >
+            <div>
+                <label class="text-xs font-semibold text-slate-500 uppercase">Tri</label>
+                <select wire:model.live="tri" class="mt-1 w-full rounded-xl border-slate-200 text-sm">
+                    <option value="asc">Plus proche d’abord</option>
+                    <option value="desc">Plus récent d’abord</option>
+                </select>
+            </div>
+
+            <div>
+                <label class="text-xs font-semibold text-slate-500 uppercase">Recherche</label>
+                <input
+                    type="text"
+                    wire:model.live.debounce.350ms="search"
+                    class="mt-1 w-full rounded-xl border-slate-200 text-sm"
+                    placeholder="Client, adresse, ville...">
+            </div>
         </div>
     </div>
 
     @forelse($rendezVous as $rdv)
-        <div class="{{ $selectedRendezVous?->id === $rdv->id ? 'ring-2 ring-indigo-300 rounded-2xl' : '' }}">
-            <x-rdv-cleaning-card :rdv="$rdv">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm text-slate-600 pt-2">
-                    <div class="space-y-1">
-                        <p><span class="font-medium text-slate-800">Début mission :</span> {{ $rdv->mission_started_at?->format('d/m/Y H:i') ?? '—' }}</p>
-                        <p><span class="font-medium text-slate-800">Arrivée :</span> {{ $rdv->mission_arrived_at?->format('d/m/Y H:i') ?? '—' }}</p>
-                        <p><span class="font-medium text-slate-800">Présence client :</span> {{ $rdv->client_presence_confirmed_at ? 'Confirmée' : 'Non confirmée' }}</p>
+    @php
+    $statusLabel = [
+    'en_attente' => 'En attente',
+    'confirme' => 'Confirmé',
+    'en_route' => 'En route',
+    'sur_place' => 'Sur place',
+    'termine' => 'Terminé',
+    'refuse' => 'Refusé',
+    ][$rdv->status] ?? ucfirst($rdv->status ?? '—');
+
+    $statusClass = [
+    'en_attente' => 'bg-amber-50 text-amber-700 border-amber-200',
+    'confirme' => 'bg-blue-50 text-blue-700 border-blue-200',
+    'en_route' => 'bg-indigo-50 text-indigo-700 border-indigo-200',
+    'sur_place' => 'bg-purple-50 text-purple-700 border-purple-200',
+    'termine' => 'bg-emerald-50 text-emerald-700 border-emerald-200',
+    'refuse' => 'bg-red-50 text-red-700 border-red-200',
+    ][$rdv->status] ?? 'bg-slate-50 text-slate-700 border-slate-200';
+
+    $mapsQuery = urlencode(trim(($rdv->adresse ?? '').' '.($rdv->ville ?? '')));
+    $photosAvantCount = is_array($rdv->photos_avant) ? count($rdv->photos_avant) : 0;
+    $photosApresCount = is_array($rdv->photos_apres) ? count($rdv->photos_apres) : 0;
+    @endphp
+
+    <div class="bg-white border rounded-2xl shadow-sm overflow-hidden {{ $selectedRendezVous?->id === $rdv->id ? 'ring-2 ring-indigo-300' : '' }}">
+        <div class="p-5 space-y-4">
+            <div class="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
+                <div class="space-y-1">
+                    <div class="flex flex-wrap items-center gap-2">
+                        <span class="inline-flex items-center rounded-full border px-3 py-1 text-xs font-bold {{ $statusClass }}">
+                            {{ $statusLabel }}
+                        </span>
+
+                        @if($rdv->priorite)
+                        <span class="inline-flex items-center rounded-full border px-3 py-1 text-xs font-semibold bg-slate-50 text-slate-700">
+                            Priorité : {{ ucfirst($rdv->priorite) }}
+                        </span>
+                        @endif
+
+                        @if($rdv->mission)
+                        <span class="inline-flex items-center rounded-full border px-3 py-1 text-xs font-semibold bg-indigo-50 text-indigo-700">
+                            Mission #{{ $rdv->mission->id }}
+                        </span>
+                        @endif
                     </div>
-                    <div class="space-y-1">
-                        <p><span class="font-medium text-slate-800">Photos avant :</span> {{ is_array($rdv->photos_avant) ? count($rdv->photos_avant) : 0 }}</p>
-                        <p><span class="font-medium text-slate-800">Photos après :</span> {{ is_array($rdv->photos_apres) ? count($rdv->photos_apres) : 0 }}</p>
-                        <p><span class="font-medium text-slate-800">Signature client :</span> {{ $rdv->client_signature_path ? 'Oui' : 'Non' }}</p>
-                    </div>
+
+                    <h3 class="text-lg font-bold text-slate-900">
+                        {{ $rdv->service_display_name ?? 'Mission de nettoyage' }}
+                    </h3>
+
+                    <p class="text-sm text-slate-500">
+                        {{ $rdv->date?->format('d/m/Y') ?? 'Date inconnue' }}
+                        à {{ substr((string) $rdv->heure, 0, 5) }}
+                        · {{ $rdv->client?->name ?? 'Client inconnu' }}
+                    </p>
                 </div>
 
-                @if($rdv->mission)
-                    <div class="mt-3 rounded-xl border border-indigo-200 bg-indigo-50 p-3 text-sm text-indigo-800">
-                        <div class="flex flex-wrap items-center justify-between gap-2">
-                            <div>
-                                <span class="font-semibold">Mission liée :</span>
-                                #{{ $rdv->mission->id }} — statut {{ $rdv->mission->status }}
-                            </div>
-
-                            <button
-                                wire:click="{{ $selectedRendezVous?->id === $rdv->id ? 'clearSelectedRdv' : 'selectRdv('.$rdv->id.')' }}"
-                                class="inline-flex items-center rounded-lg border border-indigo-300 bg-white px-3 py-1.5 text-xs font-semibold text-indigo-700 hover:bg-indigo-100 transition"
-                            >
-                                {{ $selectedRendezVous?->id === $rdv->id ? 'Fermer le panneau mission' : 'Ouvrir la mission' }}
-                            </button>
-                        </div>
-                    </div>
-                @endif
-
-                @if($rdv->remarque_terrain)
-                    <div class="mt-3 rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800">
-                        <span class="font-semibold">Remarque terrain :</span> {{ $rdv->remarque_terrain }}
-                    </div>
-                @endif
-
-                @if($rdv->incident_terrain)
-                    <div class="mt-3 rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-800">
-                        <span class="font-semibold">Incident :</span> {{ $rdv->incident_terrain }}
-                    </div>
-                @endif
-
-                <div class="flex flex-wrap gap-3 text-sm pt-3">
-                    @if($rdv->status === 'en_attente')
-                        <button
-                            wire:click="mettreAJourStatut({{ $rdv->id }}, 'confirme')"
-                            class="px-3 py-1.5 rounded bg-green-100 text-green-700 hover:bg-green-200 transition">
-                            ✅ Confirmer
-                        </button>
-
-                        <button
-                            wire:click="mettreAJourStatut({{ $rdv->id }}, 'refuse')"
-                            class="px-3 py-1.5 rounded bg-red-100 text-red-700 hover:bg-red-200 transition">
-                            ❌ Refuser
-                        </button>
-                    @endif
-
-                    @if($rdv->status === 'confirme')
-                        <button
-                            wire:click="mettreAJourStatut({{ $rdv->id }}, 'en_route')"
-                            class="px-3 py-1.5 rounded bg-blue-100 text-blue-700 hover:bg-blue-200 transition">
-                            🚗 En route
-                        </button>
-                    @endif
-
-                    @if($rdv->status === 'en_route')
-                        <button
-                            wire:click="ouvrirCheckInMission({{ $rdv->id }})"
-                            class="px-3 py-1.5 rounded bg-indigo-100 text-indigo-700 hover:bg-indigo-200 transition">
-                            📍 Check-in sur place
-                        </button>
-                    @endif
-
-                    @if($rdv->status === 'sur_place')
-                        <button
-                            wire:click="ouvrirRapportFinMission({{ $rdv->id }})"
-                            class="px-3 py-1.5 rounded bg-emerald-100 text-emerald-700 hover:bg-emerald-200 transition">
-                            ✅ Clôturer la mission
-                        </button>
+                <div class="flex flex-wrap gap-2">
+                    @if($rdv->adresse || $rdv->ville)
+                    <a
+                        href="https://www.google.com/maps/search/?api=1&query={{ $mapsQuery }}"
+                        target="_blank"
+                        class="inline-flex items-center rounded-xl bg-sky-600 px-4 py-2 text-sm font-semibold text-white hover:bg-sky-700">
+                        🗺️ Google Maps
+                    </a>
                     @endif
 
                     @if($rdv->telephone_client)
-                        <a
-                            href="tel:{{ $rdv->telephone_client }}"
-                            class="px-3 py-1.5 rounded bg-green-100 text-green-700 hover:bg-green-200 transition">
-                            📞 Appeler
-                        </a>
-                    @endif
-
-                    @if($rdv->adresse || $rdv->ville)
-                        <a
-                            href="https://www.google.com/maps/search/?api=1&query={{ urlencode(($rdv->adresse ?? '') . ' ' . ($rdv->ville ?? '')) }}"
-                            target="_blank"
-                            class="px-3 py-1.5 rounded bg-sky-100 text-sky-700 hover:bg-sky-200 transition">
-                            📍 GPS
-                        </a>
-                    @endif
-
-                    @if(Route::has('employe.incident'))
-                        <a href="{{ route('employe.incident') }}" class="px-3 py-1.5 rounded bg-red-100 text-red-700 hover:bg-red-200 transition">
-                            🚨 Signaler un incident
-                        </a>
+                    <a
+                        href="tel:{{ $rdv->telephone_client }}"
+                        class="inline-flex items-center rounded-xl bg-emerald-600 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-700">
+                        📞 Appeler
+                    </a>
                     @endif
                 </div>
-            </x-rdv-cleaning-card>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-3 text-sm">
+                <div class="rounded-xl bg-slate-50 border p-3">
+                    <p class="text-xs text-slate-500 font-semibold uppercase">Adresse</p>
+                    <p class="mt-1 font-medium text-slate-800">
+                        {{ $rdv->adresse ?? '—' }} {{ $rdv->ville ? ', '.$rdv->ville : '' }}
+                    </p>
+                </div>
+
+                <div class="rounded-xl bg-slate-50 border p-3">
+                    <p class="text-xs text-slate-500 font-semibold uppercase">Timing</p>
+                    <p class="mt-1 text-slate-800">
+                        Départ : {{ $rdv->mission_started_at?->format('H:i') ?? '—' }}<br>
+                        Arrivée : {{ $rdv->mission_arrived_at?->format('H:i') ?? '—' }}
+                    </p>
+                </div>
+
+                <div class="rounded-xl bg-slate-50 border p-3">
+                    <p class="text-xs text-slate-500 font-semibold uppercase">Preuves</p>
+                    <p class="mt-1 text-slate-800">
+                        Avant : {{ $photosAvantCount }} photo(s)<br>
+                        Après : {{ $photosApresCount }} photo(s)
+                    </p>
+                </div>
+            </div>
+
+            <div class="flex flex-wrap gap-2 pt-2">
+                @if($rdv->status === 'en_attente')
+                <button wire:click="mettreAJourStatut({{ $rdv->id }}, 'confirme')" class="rounded-xl bg-emerald-600 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-700">
+                    ✅ Confirmer
+                </button>
+
+                <button wire:click="mettreAJourStatut({{ $rdv->id }}, 'refuse')" class="rounded-xl bg-red-600 px-4 py-2 text-sm font-semibold text-white hover:bg-red-700">
+                    ❌ Refuser
+                </button>
+                @endif
+
+                @if($rdv->status === 'confirme')
+                <button wire:click="mettreAJourStatut({{ $rdv->id }}, 'en_route')" class="rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700">
+                    🚗 Je suis en route
+                </button>
+                @endif
+
+                @if($rdv->status === 'en_route')
+                <button wire:click="ouvrirCheckInMission({{ $rdv->id }})" class="rounded-xl bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700">
+                    📍 Je suis arrivé
+                </button>
+                @endif
+
+                @if($rdv->status === 'sur_place')
+                <button wire:click="ouvrirRapportFinMission({{ $rdv->id }})" class="rounded-xl bg-emerald-600 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-700">
+                    ✅ Terminer la mission
+                </button>
+                @endif
+
+                @if($rdv->mission)
+                <button
+                    wire:click="{{ $selectedRendezVous?->id === $rdv->id ? 'clearSelectedRdv' : 'selectRdv('.$rdv->id.')' }}"
+                    class="rounded-xl border px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50">
+                    {{ $selectedRendezVous?->id === $rdv->id ? 'Fermer détails' : 'Voir détails mission' }}
+                </button>
+                @endif
+
+                @if(Route::has('employe.incident'))
+                <a href="{{ route('employe.incident') }}" class="rounded-xl border border-red-200 bg-red-50 px-4 py-2 text-sm font-semibold text-red-700 hover:bg-red-100">
+                    🚨 Incident
+                </a>
+                @endif
+            </div>
+
+            @if($rdv->remarque_terrain || $rdv->incident_terrain)
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3 pt-2">
+                @if($rdv->remarque_terrain)
+                <div class="rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800">
+                    <span class="font-bold">Remarque terrain :</span>
+                    {{ $rdv->remarque_terrain }}
+                </div>
+                @endif
+
+                @if($rdv->incident_terrain)
+                <div class="rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-800">
+                    <span class="font-bold">Incident :</span>
+                    {{ $rdv->incident_terrain }}
+                </div>
+                @endif
+            </div>
+            @endif
         </div>
+    </div>
     @empty
-        <div class="bg-white border rounded-xl p-6 text-center text-gray-500 italic">
-            Aucun rendez-vous trouvé.
-        </div>
+    <div class="bg-white border border-dashed rounded-2xl p-8 text-center">
+        <p class="text-lg font-bold text-slate-800">Aucune mission trouvée</p>
+        <p class="text-sm text-slate-500 mt-1">Change les filtres ou vérifie ton planning.</p>
+    </div>
     @endforelse
 
-    <div class="mt-4">
+    <div>
         {{ $rendezVous->links() }}
     </div>
 
@@ -164,11 +230,11 @@
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
                 @foreach([
-                    'acces_ok' => 'Accès OK',
-                    'materiel_ok' => 'Matériel OK',
-                    'zone_securisee' => 'Zone sécurisée',
-                    'etat_initial_capture' => 'État initial capturé',
-                    'client_present' => 'Client présent',
+                'acces_ok' => 'Accès OK',
+                'materiel_ok' => 'Matériel OK',
+                'zone_securisee' => 'Zone sécurisée',
+                'etat_initial_capture' => 'État initial capturé',
+                'client_present' => 'Client présent',
                 ] as $key => $label)
                 <label class="flex items-center gap-2 rounded-lg border p-3 text-sm text-slate-700">
                     <input type="checkbox" wire:model="terrain_checklist.{{ $key }}">
@@ -279,60 +345,78 @@
     @endif
 
     @once
-        <script>
-            window.cleanuxSignaturePad = function ($wire) {
-                return {
-                    canvas: null,
-                    ctx: null,
-                    drawing: false,
-                    init() {
-                        this.canvas = this.$refs.canvas;
-                        this.ctx = this.canvas.getContext('2d');
-                        const ratio = window.devicePixelRatio || 1;
-                        const rect = this.canvas.getBoundingClientRect();
-                        this.canvas.width = rect.width * ratio;
-                        this.canvas.height = rect.height * ratio;
-                        this.ctx.scale(ratio, ratio);
-                        this.ctx.lineWidth = 2;
-                        this.ctx.lineCap = 'round';
-                        this.ctx.strokeStyle = '#0f172a';
+    <script>
+        window.cleanuxSignaturePad = function($wire) {
+            return {
+                canvas: null,
+                ctx: null,
+                drawing: false,
+                init() {
+                    this.canvas = this.$refs.canvas;
+                    this.ctx = this.canvas.getContext('2d');
+                    const ratio = window.devicePixelRatio || 1;
+                    const rect = this.canvas.getBoundingClientRect();
+                    this.canvas.width = rect.width * ratio;
+                    this.canvas.height = rect.height * ratio;
+                    this.ctx.scale(ratio, ratio);
+                    this.ctx.lineWidth = 2;
+                    this.ctx.lineCap = 'round';
+                    this.ctx.strokeStyle = '#0f172a';
 
-                        const start = (x, y) => {
-                            this.drawing = true;
-                            this.ctx.beginPath();
-                            this.ctx.moveTo(x, y);
-                        };
-                        const draw = (x, y) => {
-                            if (! this.drawing) return;
-                            this.ctx.lineTo(x, y);
-                            this.ctx.stroke();
-                            $wire.set('client_signature_data', this.canvas.toDataURL('image/png'));
-                        };
-                        const stop = () => {
-                            this.drawing = false;
-                        };
-                        const pos = (e) => {
-                            const r = this.canvas.getBoundingClientRect();
-                            if (e.touches && e.touches[0]) {
-                                return [e.touches[0].clientX - r.left, e.touches[0].clientY - r.top];
-                            }
-                            return [e.clientX - r.left, e.clientY - r.top];
-                        };
+                    const start = (x, y) => {
+                        this.drawing = true;
+                        this.ctx.beginPath();
+                        this.ctx.moveTo(x, y);
+                    };
+                    const draw = (x, y) => {
+                        if (!this.drawing) return;
+                        this.ctx.lineTo(x, y);
+                        this.ctx.stroke();
+                        $wire.set('client_signature_data', this.canvas.toDataURL('image/png'));
+                    };
+                    const stop = () => {
+                        this.drawing = false;
+                    };
+                    const pos = (e) => {
+                        const r = this.canvas.getBoundingClientRect();
+                        if (e.touches && e.touches[0]) {
+                            return [e.touches[0].clientX - r.left, e.touches[0].clientY - r.top];
+                        }
+                        return [e.clientX - r.left, e.clientY - r.top];
+                    };
 
-                        this.canvas.addEventListener('mousedown', e => { const [x,y] = pos(e); start(x,y); });
-                        this.canvas.addEventListener('mousemove', e => { const [x,y] = pos(e); draw(x,y); });
-                        window.addEventListener('mouseup', stop);
-                        this.canvas.addEventListener('touchstart', e => { e.preventDefault(); const [x,y] = pos(e); start(x,y); }, { passive: false });
-                        this.canvas.addEventListener('touchmove', e => { e.preventDefault(); const [x,y] = pos(e); draw(x,y); }, { passive: false });
-                        window.addEventListener('touchend', stop);
-                    },
-                    clear() {
-                        if (! this.ctx || ! this.canvas) return;
-                        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-                        $wire.set('client_signature_data', null);
-                    }
+                    this.canvas.addEventListener('mousedown', e => {
+                        const [x, y] = pos(e);
+                        start(x, y);
+                    });
+                    this.canvas.addEventListener('mousemove', e => {
+                        const [x, y] = pos(e);
+                        draw(x, y);
+                    });
+                    window.addEventListener('mouseup', stop);
+                    this.canvas.addEventListener('touchstart', e => {
+                        e.preventDefault();
+                        const [x, y] = pos(e);
+                        start(x, y);
+                    }, {
+                        passive: false
+                    });
+                    this.canvas.addEventListener('touchmove', e => {
+                        e.preventDefault();
+                        const [x, y] = pos(e);
+                        draw(x, y);
+                    }, {
+                        passive: false
+                    });
+                    window.addEventListener('touchend', stop);
+                },
+                clear() {
+                    if (!this.ctx || !this.canvas) return;
+                    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+                    $wire.set('client_signature_data', null);
                 }
             }
-        </script>
+        }
+    </script>
     @endonce
 </div>
