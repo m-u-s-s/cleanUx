@@ -65,9 +65,12 @@ use App\Models\RendezVous;
 use App\Http\Controllers\MissionTrackingController;
 use App\Http\Controllers\MissionFieldActionController;
 use App\Http\Controllers\MissionReportController;
+use App\Livewire\Admin\AiDispatchCenter;
+use App\Livewire\Admin\B2BMonthlyInvoicesCenter;
 use App\Livewire\Admin\BusinessDashboard;
 use App\Livewire\Admin\ClientSegmentationCenter;
 use App\Livewire\Admin\EnterpriseApprovalsCenter;
+use App\Livewire\Admin\PlatformReadiness;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -119,7 +122,8 @@ Route::post('/country', function (Request $request) {
 
 Route::get('/premium', PremiumOfferPage::class)->name('premium.offer');
 Route::get('/prendre-rendez-vous', PrendreRendezVous::class)->name('booking.create');
-Route::post('/stripe/webhook', [StripeWebhookController::class, 'handleWebhook'])->name('cashier.webhook');
+Route::post('/stripe/webhook', [StripeWebhookController::class, 'handleWebhook'])
+    ->name('cashier.webhook');
 
 Route::middleware(['auth', 'verified', 'active.account'])->group(function () {
     Route::get('/dashboard', function (Request $request) {
@@ -188,7 +192,13 @@ Route::middleware(['auth', 'verified', 'active.account'])->group(function () {
         Route::get('emails', ProductEmailsCenter::class)->name('emails');
         Route::get('modules', PlatformModulesCenter::class)->middleware('can:manage-modules')->name('modules');
         Route::get('sites', \App\Livewire\Admin\OrganizationSitesManager::class)
-            ->name('admin.sites');
+            ->name('sites');
+        Route::get('b2b/facturation-mensuelle', B2BMonthlyInvoicesCenter::class)
+            ->middleware('can:manage-finance')
+            ->name('b2b.monthly-invoices');
+        Route::get('ia-dispatch', AiDispatchCenter::class)
+            ->middleware('can:manage-calendar')
+            ->name('ai.dispatch');
         Route::get('approbations-entreprises', EnterpriseApprovalsCenter::class)
             ->middleware('can:manage-entreprises')
             ->name('enterprise.approvals');
@@ -199,6 +209,8 @@ Route::middleware(['auth', 'verified', 'active.account'])->group(function () {
         Route::get('alertes', OperationsAlertsCenter::class)
             ->middleware('can:manage-analytics')
             ->name('alerts');
+        Route::get('platform-readiness', PlatformReadiness::class)
+            ->name('platform.readiness');
         Route::get('rentabilite-missions', MissionProfitabilityCenter::class)
             ->middleware('can:manage-finance')
             ->name('missions.profitability');

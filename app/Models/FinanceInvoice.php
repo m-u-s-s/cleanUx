@@ -31,6 +31,10 @@ class FinanceInvoice extends Model
         'paid_at',
         'snapshot',
         'meta',
+        'billing_period_start',
+        'billing_period_end',
+        'invoice_type',
+        'site_breakdown',
     ];
 
     protected $casts = [
@@ -44,6 +48,9 @@ class FinanceInvoice extends Model
         'paid_at' => 'datetime',
         'snapshot' => 'array',
         'meta' => 'array',
+        'billing_period_start' => 'date',
+        'billing_period_end' => 'date',
+        'site_breakdown' => 'array',
     ];
 
     public function rendezVous(): BelongsTo

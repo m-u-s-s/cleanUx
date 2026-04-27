@@ -156,6 +156,20 @@ class CreateBookingAction
             'devis_estime' => $adjustedEstimate,
             'status' => $status,
         ]);
+        
+        $org = $rendezVous->organizationAccount;
+
+        if ($org) {
+            $policy = app(\App\Services\Enterprise\ContractPolicyService::class);
+
+            $check = $policy->validateBooking($rendezVous, $org);
+
+            if (! $check['valid']) {
+                throw new \Exception($check['message']);
+            }
+
+            $policy->applyDiscount($rendezVous, $org);
+        }
 
         if ($client->isEntreprise() || $client->hasOrganizationContext() || Arr::get($data, 'entreprise_approval_required', false)) {
             app(\App\Services\Enterprise\EnterpriseBookingApprovalService::class)
