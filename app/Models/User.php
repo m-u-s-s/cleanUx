@@ -16,6 +16,7 @@ use Laravel\Fortify\TwoFactorAuthenticatable;
 use Laravel\Jetstream\HasProfilePhoto;
 use Laravel\Sanctum\HasApiTokens;
 
+
 class User extends Authenticatable implements MustVerifyEmail
 {
     use HasApiTokens;
@@ -361,7 +362,7 @@ class User extends Authenticatable implements MustVerifyEmail
 
     public function activeFieldTeamIds(): array
     {
-        return $this->activeFieldTeamMemberships()->pluck('field_team_id')->map(fn ($id) => (int) $id)->values()->all();
+        return $this->activeFieldTeamMemberships()->pluck('field_team_id')->map(fn($id) => (int) $id)->values()->all();
     }
 
     // mission
@@ -390,5 +391,21 @@ class User extends Authenticatable implements MustVerifyEmail
     public function validatedMissionCodes(): HasMany
     {
         return $this->hasMany(MissionVerificationCode::class, 'validated_by_user_id');
+    }
+
+    public function customerCredits(): HasMany
+    {
+        return $this->hasMany(CustomerCredit::class, 'client_id');
+    }
+
+    public function activeCreditBalance(): float
+    {
+        return (float) $this->customerCredits()
+            ->where('status', 'active')
+            ->where(function ($query) {
+                $query->whereNull('expires_at')
+                    ->orWhere('expires_at', '>', now());
+            })
+            ->sum('remaining_amount');
     }
 }

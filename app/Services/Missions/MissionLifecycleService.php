@@ -20,8 +20,7 @@ class MissionLifecycleService
         protected MissionFromRendezVousSyncService $missionFromRendezVousSyncService,
         protected MissionTrackingService $missionTrackingService,
         protected MissionQualityService $missionQualityService,
-    ) {
-    }
+    ) {}
 
     public function createFromRendezVous(RendezVous $rendezVous): Mission
     {
@@ -150,6 +149,38 @@ class MissionLifecycleService
         $this->verificationCodeService->consumeValidCode($mission, 'end', $plainCode, $user);
 
         return $this->completeMission($mission, $user, $lat, $lng);
+    }
+
+    public function validateStartCodeFromQr(Mission $mission, User $user, ?float $lat = null, ?float $lng = null): Mission
+    {
+        $this->assignmentStatusService->assertAssignedToMission($mission, $user);
+
+        $mission->update([
+            'status' => MissionStatus::STARTED,
+            'actual_start_at' => now(),
+            'started_by_user_id' => $user->id,
+            'client_presence_confirmed' => true,
+            'start_lat' => $lat ?? $mission->start_lat,
+            'start_lng' => $lng ?? $mission->start_lng,
+        ]);
+
+        $this->assignmentStatusService->updateAssignmentStatus($mission, $user, 'arrived', [
+            'accepted_at' => now(),
+        ]);
+
+        if ($mission->rendezVous?->client) {
+            $mission->rendezVous->client->notify(new MissionStartedNotification($mission));
+        }
+
+        app(MissionHistoryService::class)->log(
+            $mission->fresh(),
+            $user,
+            'mission_started_qr',
+            'Mission démarrée via QR code',
+            'La mission a démarré après scan du QR code client.'
+        );
+
+        return $mission->fresh(['verificationCodes', 'assignments']);
     }
 
     public function completeMission(Mission $mission, User $user, ?float $lat = null, ?float $lng = null): Mission

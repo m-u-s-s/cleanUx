@@ -17,6 +17,8 @@ class Kernel extends ConsoleKernel
         $schedule->command('google-calendar:sync --future-days=30')->everyFifteenMinutes()->withoutOverlapping();
         $schedule->command('finance:sync-documents')->hourly()->withoutOverlapping();
         $schedule->command('finance:sync-documents --reminders')->dailyAt('09:00')->withoutOverlapping();
+        $schedule->command('subscriptions:generate')->daily();
+        $schedule->command('app:send-smart-rdv-notifications')->everyFifteenMinutes();
 
         $schedule->command('app:ops-heartbeat')
             ->everyFiveMinutes()

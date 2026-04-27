@@ -69,7 +69,7 @@ class EmployeeAvailabilityService
     {
         return $this->eligibleEmployeesQuery($zoneId)
             ->get()
-            ->sortByDesc(fn (User $employee) => $this->employeeCoverageScore($employee, $zoneId))
+            ->sortByDesc(fn(User $employee) => $this->employeeCoverageScore($employee, $zoneId))
             ->values();
     }
 
@@ -99,8 +99,14 @@ class EmployeeAvailabilityService
             ->exists();
     }
 
-    public function employeeIsAvailableForSlot(int $employeeId, string $date, string $heure, ?ServiceZone $zone = null, int $estimatedDuration = 90): bool
-    {
+    public function employeeIsAvailableForSlot(
+        int $employeeId,
+        string $date,
+        string $heure,
+        ?ServiceZone $zone = null,
+        int $estimatedDuration = 90,
+        ?int $ignoreRendezVousId = null,
+    ): bool {
         $timezone = config('app.timezone', 'Europe/Brussels');
         $bufferMinutes = (int) ($zone?->time_buffer_minutes ?? 0);
         $estimatedDuration = max(30, $estimatedDuration);
@@ -149,9 +155,21 @@ class EmployeeAvailabilityService
             });
     }
 
-    public function resolveBestAvailableEmployeeForSlot(string $date, string $heure, ServiceZone $zone, int $estimatedDuration = 90): ?User
-    {
+    public function resolveBestAvailableEmployeeForSlot(
+        string $date,
+        string $heure,
+        ServiceZone $zone,
+        int $estimatedDuration = 90,
+        ?int $ignoreRendezVousId = null,
+    ): ?User {
         return $this->sortedEligibleEmployeesForZone((int) $zone->id)
-            ->first(fn (User $employee) => $this->employeeIsAvailableForSlot($employee->id, $date, $heure, $zone, $estimatedDuration));
+            ->first(fn(User $employee) => $this->employeeIsAvailableForSlot(
+                $employee->id,
+                $date,
+                $heure,
+                $zone,
+                $estimatedDuration,
+                $ignoreRendezVousId,
+            ));
     }
 }

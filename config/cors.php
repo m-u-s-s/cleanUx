@@ -31,4 +31,10 @@ return [
 
     'supports_credentials' => false,
 
+    'finance' => [
+        'default_employee_hourly_cost' => env('CLEANUX_EMPLOYEE_HOURLY_COST', 18),
+        'default_travel_cost' => env('CLEANUX_TRAVEL_COST', 8),
+        'default_material_cost_rate' => env('CLEANUX_MATERIAL_COST_RATE', 0.08),
+    ],
+
 ];

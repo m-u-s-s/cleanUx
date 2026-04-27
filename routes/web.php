@@ -4,6 +4,7 @@ use App\Models\User;
 use App\Http\Controllers\Admin\MissionAdminController;
 use App\Http\Controllers\Admin\MissionQualityExportController;
 use App\Http\Controllers\Client\FinanceDocumentDownloadController;
+use App\Http\Controllers\EmployeeMissionQrController;
 use App\Http\Controllers\ExportRendezVousController;
 use App\Http\Controllers\FeedbackExportController;
 use App\Http\Controllers\FeedbackInviteController;
@@ -30,10 +31,13 @@ use App\Livewire\Admin\GestionZones;
 use App\Livewire\Admin\GoogleAgendaSettings;
 use App\Livewire\Admin\MissionsAdmin;
 use App\Livewire\Admin\OutilsAdmin;
+use App\Livewire\Admin\MissionProfitabilityCenter;
+use App\Livewire\Admin\OperationsAlertsCenter;
 use App\Livewire\Admin\PlanningAdmin;
 use App\Livewire\Admin\PlatformModulesCenter;
 use App\Livewire\Admin\ProductEmailsCenter;
 use App\Livewire\Admin\UtilisateursAdmin;
+use App\Livewire\Admin\OperationalQualityCenter;
 use App\Livewire\AdminDashboard;
 use App\Livewire\AdminFeedbacks;
 use App\Livewire\Client\EditRecurringBooking as ClientEditRecurringBooking;
@@ -45,6 +49,7 @@ use App\Livewire\Client\MesRendezVousClient;
 use App\Livewire\Client\PremiumOfferPage;
 use App\Livewire\Client\PrendreRendezVous;
 use App\Livewire\Client\ProfilClient;
+use App\Livewire\Client\WalletClient;
 use App\Livewire\ClientDashboard;
 use App\Livewire\Employe\DisponibilitesEmploye;
 use App\Livewire\Employe\GoogleAgendaEmploye;
@@ -60,6 +65,9 @@ use App\Models\RendezVous;
 use App\Http\Controllers\MissionTrackingController;
 use App\Http\Controllers\MissionFieldActionController;
 use App\Http\Controllers\MissionReportController;
+use App\Livewire\Admin\BusinessDashboard;
+use App\Livewire\Admin\ClientSegmentationCenter;
+use App\Livewire\Admin\EnterpriseApprovalsCenter;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -179,17 +187,34 @@ Route::middleware(['auth', 'verified', 'active.account'])->group(function () {
         Route::get('audit-logs', AuditLogsCenter::class)->middleware('can:manage-audit-logs')->name('audit.logs');
         Route::get('emails', ProductEmailsCenter::class)->name('emails');
         Route::get('modules', PlatformModulesCenter::class)->middleware('can:manage-modules')->name('modules');
+        Route::get('sites', \App\Livewire\Admin\OrganizationSitesManager::class)
+            ->name('admin.sites');
+        Route::get('approbations-entreprises', EnterpriseApprovalsCenter::class)
+            ->middleware('can:manage-entreprises')
+            ->name('enterprise.approvals');
         Route::view('pays', 'admin.countries-page')
             ->middleware('can:manage-services')
             ->name('countries');
         Route::get('rendez-vous/serie/{rendezVous}', AdminEditRecurringBooking::class)->name('rendezvous.series.edit');
-
+        Route::get('alertes', OperationsAlertsCenter::class)
+            ->middleware('can:manage-analytics')
+            ->name('alerts');
+        Route::get('rentabilite-missions', MissionProfitabilityCenter::class)
+            ->middleware('can:manage-finance')
+            ->name('missions.profitability');
         Route::get('/quality/export/incidents.csv', [MissionQualityExportController::class, 'incidentsCsv'])
             ->name('quality.export.incidents.csv');
-
+        Route::get('qualite-operationnelle', OperationalQualityCenter::class)
+            ->middleware('can:manage-analytics')
+            ->name('quality.operational');
         Route::get('/quality/export/missions.csv', [MissionQualityExportController::class, 'missionsCsv'])
             ->name('quality.export.missions.csv');
-
+        Route::get('business-dashboard', BusinessDashboard::class)
+            ->middleware('can:manage-analytics')
+            ->name('business.dashboard');
+        Route::get('segmentation-clients', ClientSegmentationCenter::class)
+            ->middleware('can:manage-analytics')
+            ->name('clients.segmentation');
         Route::get('/missions/{mission}/export-pdf', [MissionReportController::class, 'download'])
             ->name('missions.export.pdf');
         Route::get('feedbacks/export', [FeedbackExportController::class, 'export'])->name('feedbacks.export');
@@ -224,6 +249,7 @@ Route::middleware(['auth', 'verified', 'active.account'])->group(function () {
         Route::get('finance', FinanceDocumentsClient::class)->name('finance');
         Route::get('finance/devis/{quote}', [FinanceDocumentDownloadController::class, 'quote'])->name('finance.quote.download');
         Route::get('finance/factures/{invoice}', [FinanceDocumentDownloadController::class, 'invoice'])->name('finance.invoice.download');
+        Route::get('portefeuille', WalletClient::class)->name('wallet');
     });
 
     Route::middleware('role:employe')->prefix('dashboard/employe')->name('employe.')->group(function () {
@@ -239,6 +265,8 @@ Route::middleware(['auth', 'verified', 'active.account'])->group(function () {
         Route::get('equipe', EquipeTerrain::class)->name('team');
         Route::get('coordination', CoordinationChantier::class)->name('coordination');
         Route::get('chef-equipe', TeamLeadOperationsCenter::class)->middleware('can:access-team-lead-ops')->name('teamlead.operations');
+        Route::get('missions/{mission}/qr/{type}/{codeId}', [EmployeeMissionQrController::class, 'validateQr'])
+            ->name('missions.qr.validate');
     });
 
     Route::middleware('role:client')->prefix('feedback')->name('feedback.')->group(function () {

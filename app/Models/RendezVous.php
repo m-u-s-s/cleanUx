@@ -178,8 +178,8 @@ class RendezVous extends Model
                 ->orWhere('telephone_client', 'like', $like)
                 ->orWhere('motif', 'like', $like)
                 ->orWhere('code_postal', 'like', $like)
-                ->orWhereHas('client', fn (Builder $clientQuery) => $clientQuery->where('name', 'like', $like))
-                ->orWhereHas('employe', fn (Builder $employeeQuery) => $employeeQuery->where('name', 'like', $like))
+                ->orWhereHas('client', fn(Builder $clientQuery) => $clientQuery->where('name', 'like', $like))
+                ->orWhereHas('employe', fn(Builder $employeeQuery) => $employeeQuery->where('name', 'like', $like))
                 ->orWhereHas('serviceCatalog', function (Builder $serviceQuery) use ($like) {
                     $serviceQuery
                         ->where('name', 'like', $like)
@@ -241,5 +241,10 @@ class RendezVous extends Model
     public function mission(): HasOne
     {
         return $this->hasOne(Mission::class, 'rendez_vous_id');
+    }
+
+    public function enterpriseApproval(): HasOne
+    {
+        return $this->hasOne(EnterpriseBookingApproval::class, 'rendez_vous_id');
     }
 }

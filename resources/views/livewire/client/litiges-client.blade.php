@@ -1,103 +1,194 @@
-<div class="space-y-6">
-    <div>
-        <h1 class="text-2xl font-bold text-gray-900">Litiges & réclamations</h1>
-        <p class="text-sm text-gray-500">Déclare un litige, joins des preuves et suis la réponse admin avec un SLA indicatif.</p>
-    </div>
+<x-page-shell
+    title="⚠️ Centre de litiges"
+    subtitle="Signalez un problème, ajoutez des preuves et suivez le traitement de votre demande.">
 
-    @if (session('success'))
-        <div class="rounded-xl border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-800">{{ session('success') }}</div>
-    @endif
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div class="lg:col-span-1 rounded-2xl border bg-white p-6 shadow-sm space-y-4">
+            <div>
+                <h3 class="font-semibold text-slate-900">Nouveau litige</h3>
+                <p class="text-sm text-slate-500">
+                    Décrivez clairement le problème rencontré.
+                </p>
+            </div>
 
-    <div class="grid gap-6 lg:grid-cols-3">
-        <div class="lg:col-span-1 rounded-2xl border bg-white p-5 shadow-sm space-y-4">
-            <h2 class="text-lg font-semibold text-gray-900">Nouveau dossier</h2>
-            <select wire:model="rendezVousId" class="w-full rounded-xl border-gray-300 text-sm">
-                <option value="">Rendez-vous lié (optionnel)</option>
-                @foreach($this->rendezVousOptions as $rdv)
-                    <option value="{{ $rdv->id }}">{{ $rdv->booking_reference }} — {{ $rdv->date?->format('d/m/Y') }}</option>
-                @endforeach
-            </select>
-            <select wire:model="category" class="w-full rounded-xl border-gray-300 text-sm">
-                <option value="reclamation">Réclamation</option>
-                <option value="qualite">Qualité</option>
-                <option value="facturation">Facturation</option>
-                <option value="retard">Retard</option>
-            </select>
-            <select wire:model="priority" class="w-full rounded-xl border-gray-300 text-sm">
-                <option value="faible">Faible</option>
-                <option value="normale">Normale</option>
-                <option value="haute">Haute</option>
-                <option value="critique">Critique</option>
-            </select>
-            <input wire:model="subject" type="text" class="w-full rounded-xl border-gray-300 text-sm" placeholder="Sujet">
-            <textarea wire:model="description" rows="5" class="w-full rounded-xl border-gray-300 text-sm" placeholder="Décris ton dossier"></textarea>
-            <textarea wire:model="attachmentInput" rows="3" class="w-full rounded-xl border-gray-300 text-sm" placeholder="Pièces jointes (1 lien/chemin par ligne)"></textarea>
-            <button wire:click="save" class="w-full rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white">Envoyer</button>
-        </div>
-
-        <div class="lg:col-span-2 rounded-2xl border bg-white p-5 shadow-sm space-y-4">
-            <div class="flex items-center justify-between gap-3">
-                <h2 class="text-lg font-semibold text-gray-900">Mes dossiers</h2>
-                <select wire:model.live="status" class="rounded-xl border-gray-300 text-sm">
-                    <option value="">Tous statuts</option>
-                    <option value="ouvert">Ouvert</option>
-                    <option value="en_cours">En cours</option>
-                    <option value="en_attente_client">En attente client</option>
-                    <option value="resolu">Résolu</option>
-                    <option value="ferme">Fermé</option>
+            <div>
+                <label class="text-sm font-medium text-slate-700">Rendez-vous concerné</label>
+                <select wire:model="rendez_vous_id" class="mt-1 w-full rounded-xl border-gray-300 text-sm">
+                    <option value="">— Aucun / général —</option>
+                    @foreach($rendezVous as $rdv)
+                        <option value="{{ $rdv->id }}">
+                            {{ $rdv->date?->format('d/m/Y') }} — {{ $rdv->service_display_name }}
+                        </option>
+                    @endforeach
                 </select>
             </div>
 
-            <div class="space-y-3">
-                @forelse($cases as $case)
-                    <div class="rounded-2xl border p-4 {{ $case->is_overdue ? 'border-red-200 bg-red-50/40' : '' }}">
-                        <div class="flex flex-col gap-2 md:flex-row md:items-start md:justify-between">
-                            <div>
-                                <div class="font-semibold text-gray-900">{{ $case->subject }}</div>
-                                <div class="text-xs text-gray-500">
-                                    {{ $case->category }} • {{ $case->created_at?->format('d/m/Y H:i') }}
-                                    @if($case->rendezVous)
-                                        • {{ $case->rendezVous->booking_reference }}
-                                    @endif
-                                </div>
-                            </div>
-                            <div class="flex items-center gap-2">
-                                <span class="rounded-full bg-gray-100 px-2.5 py-1 text-xs font-semibold">{{ $case->status }}</span>
-                                <span class="rounded-full bg-red-50 px-2.5 py-1 text-xs font-semibold text-red-700">{{ $case->priority }}</span>
-                            </div>
-                        </div>
-                        <div class="mt-3 text-sm text-gray-700">{{ $case->description }}</div>
-                        <div class="mt-3 grid gap-3 md:grid-cols-2 text-xs text-gray-600">
-                            <div>
-                                <span class="font-semibold">SLA :</span> {{ $case->sla_policy ?: '—' }}
-                            </div>
-                            <div>
-                                <span class="font-semibold">Échéance :</span> {{ $case->due_at?->format('d/m/Y H:i') ?: '—' }}
-                            </div>
-                        </div>
-                        @if(!empty($case->attachments))
-                            <div class="mt-3 rounded-xl border border-slate-200 bg-slate-50 p-3">
-                                <div class="text-xs font-semibold text-slate-700">Pièces jointes</div>
-                                <ul class="mt-2 space-y-1 text-xs text-slate-600">
-                                    @foreach($case->attachments as $attachment)
-                                        <li>• {{ data_get($attachment, 'path') }}</li>
-                                    @endforeach
-                                </ul>
-                            </div>
-                        @endif
-                        @if($case->admin_response)
-                            <div class="mt-3 rounded-xl border border-blue-100 bg-blue-50 p-3 text-sm text-blue-900">
-                                <div class="font-semibold">Réponse admin</div>
-                                <div class="mt-1">{{ $case->admin_response }}</div>
-                            </div>
-                        @endif
-                    </div>
-                @empty
-                    <div class="rounded-2xl border border-dashed p-8 text-center text-sm text-gray-500">Aucun dossier.</div>
-                @endforelse
+            <div>
+                <label class="text-sm font-medium text-slate-700">Catégorie</label>
+                <select wire:model="category" class="mt-1 w-full rounded-xl border-gray-300 text-sm">
+                    <option value="quality">Qualité du nettoyage</option>
+                    <option value="delay">Retard</option>
+                    <option value="damage">Dégât / dommage</option>
+                    <option value="billing">Facturation</option>
+                    <option value="employee_behavior">Comportement employé</option>
+                    <option value="missing_service">Service non réalisé</option>
+                </select>
             </div>
 
-            {{ $cases->links() }}
+            <div>
+                <label class="text-sm font-medium text-slate-700">Priorité</label>
+                <select wire:model="priority" class="mt-1 w-full rounded-xl border-gray-300 text-sm">
+                    <option value="low">Basse</option>
+                    <option value="normal">Normale</option>
+                    <option value="high">Haute</option>
+                    <option value="urgent">Urgente</option>
+                </select>
+            </div>
+
+            <div>
+                <label class="text-sm font-medium text-slate-700">Titre</label>
+                <input
+                    type="text"
+                    wire:model="title"
+                    class="mt-1 w-full rounded-xl border-gray-300 text-sm"
+                    placeholder="Ex : Nettoyage incomplet">
+                @error('title') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
+            </div>
+
+            <div>
+                <label class="text-sm font-medium text-slate-700">Description</label>
+                <textarea
+                    wire:model="description"
+                    rows="5"
+                    class="mt-1 w-full rounded-xl border-gray-300 text-sm"
+                    placeholder="Expliquez le problème avec le plus de détails possible..."></textarea>
+                @error('description') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
+            </div>
+
+            <div>
+                <label class="text-sm font-medium text-slate-700">Preuves photo</label>
+                <input
+                    type="file"
+                    wire:model="photos"
+                    multiple
+                    accept="image/*"
+                    class="mt-1 w-full text-sm">
+                @error('photos.*') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
+            </div>
+
+            <button
+                wire:click="createClaim"
+                class="w-full rounded-xl bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700">
+                Envoyer le litige
+            </button>
+        </div>
+
+        <div class="lg:col-span-2 space-y-4">
+            <div class="rounded-2xl border bg-white p-4 shadow-sm flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+                <div>
+                    <h3 class="font-semibold text-slate-900">Mes litiges</h3>
+                    <p class="text-sm text-slate-500">Suivi du statut et du délai de réponse.</p>
+                </div>
+
+                <select wire:model.live="filterStatus" class="rounded-xl border-gray-300 text-sm">
+                    <option value="">Tous les statuts</option>
+                    <option value="open">Ouvert</option>
+                    <option value="in_review">En traitement</option>
+                    <option value="waiting_client">En attente client</option>
+                    <option value="resolved">Résolu</option>
+                    <option value="closed">Clôturé</option>
+                </select>
+            </div>
+
+            @forelse($claims as $claim)
+                <div class="rounded-2xl border bg-white p-5 shadow-sm space-y-4">
+                    <div class="flex flex-col md:flex-row md:items-start md:justify-between gap-3">
+                        <div>
+                            <h4 class="font-semibold text-slate-900">
+                                {{ $claim->title }}
+                            </h4>
+
+                            <p class="text-sm text-slate-500">
+                                {{ $claim->category_label }}
+                                @if($claim->rendezVous)
+                                    — RDV du {{ $claim->rendezVous->date?->format('d/m/Y') }}
+                                @endif
+                            </p>
+                        </div>
+
+                        <div class="flex flex-wrap gap-2">
+                            <span class="rounded-full px-3 py-1 text-xs font-medium
+                                {{ $claim->status === 'resolved'
+                                    ? 'bg-emerald-100 text-emerald-700'
+                                    : 'bg-amber-100 text-amber-700' }}">
+                                {{ $claim->status_label }}
+                            </span>
+
+                            <span class="rounded-full px-3 py-1 text-xs font-medium
+                                {{ in_array($claim->priority, ['high', 'urgent'])
+                                    ? 'bg-red-100 text-red-700'
+                                    : 'bg-slate-100 text-slate-700' }}">
+                                {{ ucfirst($claim->priority) }}
+                            </span>
+                        </div>
+                    </div>
+
+                    <p class="text-sm text-slate-700">
+                        {{ $claim->description }}
+                    </p>
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-3 text-sm">
+                        <div class="rounded-xl bg-slate-50 border p-3">
+                            <p class="text-slate-500">Créé le</p>
+                            <p class="font-medium text-slate-900">
+                                {{ $claim->created_at?->format('d/m/Y H:i') }}
+                            </p>
+                        </div>
+
+                        <div class="rounded-xl bg-slate-50 border p-3">
+                            <p class="text-slate-500">SLA réponse avant</p>
+                            <p class="font-medium text-slate-900">
+                                {{ $claim->sla_due_at?->format('d/m/Y H:i') ?? '—' }}
+                            </p>
+                        </div>
+
+                        <div class="rounded-xl bg-slate-50 border p-3">
+                            <p class="text-slate-500">Résolu le</p>
+                            <p class="font-medium text-slate-900">
+                                {{ $claim->resolved_at?->format('d/m/Y H:i') ?? '—' }}
+                            </p>
+                        </div>
+                    </div>
+
+                    @if(is_array($claim->attachments) && count($claim->attachments))
+                        <div class="space-y-2">
+                            <p class="text-sm font-medium text-slate-800">Preuves ajoutées</p>
+
+                            <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                                @foreach($claim->attachments as $attachment)
+                                    <a
+                                        href="{{ asset('storage/'.$attachment['path']) }}"
+                                        target="_blank"
+                                        class="block rounded-xl overflow-hidden border bg-slate-50">
+                                        <img
+                                            src="{{ asset('storage/'.$attachment['path']) }}"
+                                            class="h-24 w-full object-cover"
+                                            alt="Preuve litige">
+                                    </a>
+                                @endforeach
+                            </div>
+                        </div>
+                    @endif
+                </div>
+            @empty
+                <x-empty-state
+                    title="Aucun litige"
+                    message="Vous n’avez pas encore signalé de problème." />
+            @endforelse
+
+            <div>
+                {{ $claims->links() }}
+            </div>
         </div>
     </div>
-</div>
+</x-page-shell>

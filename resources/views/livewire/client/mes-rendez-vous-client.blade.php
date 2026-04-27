@@ -45,21 +45,78 @@
     </div>
 
     @if($editRdvId)
-    <div class="bg-yellow-50 p-4 border border-yellow-300 rounded-xl shadow">
-        <h4 class="font-semibold text-yellow-800 mb-3">✏️ Modifier le rendez-vous</h4>
-        <div class="flex gap-4 items-end flex-wrap">
+    <div class="bg-yellow-50 p-5 border border-yellow-300 rounded-2xl shadow space-y-4">
+        <div>
+            <h4 class="font-semibold text-yellow-900">🔁 Replanifier le rendez-vous</h4>
+            <p class="text-sm text-yellow-700">
+                Choisis une nouvelle date et un créneau disponible. Le rendez-vous repassera en attente de confirmation.
+            </p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-                <label class="text-sm text-gray-700">Date</label>
-                <input type="date" wire:model="editDate" class="text-sm border-gray-300 rounded px-2 py-1">
+                <label class="text-sm font-medium text-gray-700">Nouvelle date</label>
+                <input
+                    type="date"
+                    wire:model.live="editDate"
+                    class="w-full text-sm border-gray-300 rounded-lg px-3 py-2">
             </div>
+
             <div>
-                <label class="text-sm text-gray-700">Heure</label>
-                <input type="time" wire:model="editHeure" class="text-sm border-gray-300 rounded px-2 py-1">
+                <label class="text-sm font-medium text-gray-700">Heure sélectionnée</label>
+                <input
+                    type="time"
+                    wire:model="editHeure"
+                    class="w-full text-sm border-gray-300 rounded-lg px-3 py-2">
             </div>
-            <button wire:click="enregistrerModif" class="bg-blue-600 text-white px-3 py-1 rounded text-sm">
-                💾 Sauvegarder
+        </div>
+
+        <div>
+            <p class="text-sm font-semibold text-gray-800 mb-2">Créneaux disponibles</p>
+
+            @if(count($creneauxDisponibles))
+            <div class="flex flex-wrap gap-2">
+                @foreach($creneauxDisponibles as $slot)
+                <button
+                    type="button"
+                    wire:click="$set('editHeure', '{{ $slot['heure'] }}')"
+                    class="px-3 py-2 rounded-xl border text-sm
+                            {{ $editHeure === $slot['heure'] ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-gray-700 border-gray-300 hover:bg-blue-50' }}">
+                    {{ $slot['heure'] }}
+                    <span class="block text-xs opacity-80">
+                        {{ $slot['same_employee'] ? 'Même employé' : $slot['employe_name'] }}
+                    </span>
+                </button>
+                @endforeach
+            </div>
+            @else
+            <p class="text-sm text-red-600">
+                Aucun créneau disponible pour cette date.
+            </p>
+            @endif
+        </div>
+
+        <div class="bg-white border rounded-xl p-4 text-sm text-gray-700 space-y-1">
+            <p>
+                💰 <span class="font-medium">Impact devis :</span>
+                {{ $impactDevisMessage ?? 'Le devis sera recalculé si nécessaire.' }}
+            </p>
+            <p>
+                👤 <span class="font-medium">Employé :</span>
+                le système garde le même employé si possible, sinon il propose un autre employé disponible.
+            </p>
+        </div>
+
+        <div class="flex flex-wrap gap-3">
+            <button
+                wire:click="enregistrerModif"
+                class="bg-blue-600 text-white px-4 py-2 rounded-xl text-sm font-medium hover:bg-blue-700">
+                ✅ Confirmer la replanification
             </button>
-            <button wire:click="fermerEdition" class="text-sm text-gray-600 underline">
+
+            <button
+                wire:click="fermerEdition"
+                class="px-4 py-2 rounded-xl border text-sm text-gray-700 bg-white hover:bg-gray-50">
                 Annuler
             </button>
         </div>
@@ -142,9 +199,9 @@
                 </div>
 
                 @if($rdv->mission)
-                    <livewire:client.mission-tracking :mission="$rdv->mission" :key="'mission-tracking-'.$rdv->mission->id" />
+                <livewire:client.mission-tracking :mission="$rdv->mission" :key="'mission-tracking-'.$rdv->mission->id" />
                 @else
-                    <p class="text-sm text-slate-500">Le suivi mission détaillé apparaîtra dès qu’une mission opérationnelle sera synchronisée.</p>
+                <p class="text-sm text-slate-500">Le suivi mission détaillé apparaîtra dès qu’une mission opérationnelle sera synchronisée.</p>
                 @endif
             </div>
 
@@ -190,26 +247,25 @@
     </div>
 
     @if($cancelRdvId)
-        <div class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 px-4">
-            <div class="w-full max-w-lg rounded-2xl bg-white p-6 shadow-2xl space-y-4">
-                <div>
-                    <h3 class="text-lg font-semibold text-slate-900">Confirmer l’annulation</h3>
-                    <p class="mt-1 text-sm text-slate-500">Ajoute une raison si tu veux garder une trace côté support.</p>
-                </div>
+    <div class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 px-4">
+        <div class="w-full max-w-lg rounded-2xl bg-white p-6 shadow-2xl space-y-4">
+            <div>
+                <h3 class="text-lg font-semibold text-slate-900">Confirmer l’annulation</h3>
+                <p class="mt-1 text-sm text-slate-500">Ajoute une raison si tu veux garder une trace côté support.</p>
+            </div>
 
-                <textarea
-                    wire:model.defer="cancelReason"
-                    rows="4"
-                    placeholder="Raison d’annulation (facultatif)..."
-                    class="w-full rounded-xl border border-slate-300 px-4 py-3 text-sm focus:border-slate-500 focus:outline-none"
-                ></textarea>
+            <textarea
+                wire:model.defer="cancelReason"
+                rows="4"
+                placeholder="Raison d’annulation (facultatif)..."
+                class="w-full rounded-xl border border-slate-300 px-4 py-3 text-sm focus:border-slate-500 focus:outline-none"></textarea>
 
-                <div class="flex flex-wrap justify-end gap-3">
-                    <button type="button" wire:click="fermerAnnulation" class="rounded-xl border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700">Retour</button>
-                    <button type="button" wire:click="confirmerAnnulation" class="rounded-xl bg-red-600 px-4 py-2 text-sm font-medium text-white">Confirmer l’annulation</button>
-                </div>
+            <div class="flex flex-wrap justify-end gap-3">
+                <button type="button" wire:click="fermerAnnulation" class="rounded-xl border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700">Retour</button>
+                <button type="button" wire:click="confirmerAnnulation" class="rounded-xl bg-red-600 px-4 py-2 text-sm font-medium text-white">Confirmer l’annulation</button>
             </div>
         </div>
+    </div>
     @endif
 
 </x-page-shell>

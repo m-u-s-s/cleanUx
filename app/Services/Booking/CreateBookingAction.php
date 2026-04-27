@@ -157,6 +157,24 @@ class CreateBookingAction
             'status' => $status,
         ]);
 
+        if ($client->isEntreprise() || $client->hasOrganizationContext() || Arr::get($data, 'entreprise_approval_required', false)) {
+            app(\App\Services\Enterprise\EnterpriseBookingApprovalService::class)
+                ->createForBooking(
+                    $rendezVous,
+                    $client,
+                    Arr::get($data, 'site_instructions')
+                );
+        }
+
+        $bestEmployee = app(\App\Services\Booking\SmartDispatchService::class)
+            ->assignBestEmployee($rendezVous->fresh(['client', 'serviceZone']));
+
+        if ($bestEmployee) {
+            $rendezVous->update([
+                'employe_id' => $bestEmployee->id,
+            ]);
+        }
+
         ActivityLogger::log('booking.created', $rendezVous, [
             'booking_reference' => $rendezVous->booking_reference,
             'client_id' => $client->id,

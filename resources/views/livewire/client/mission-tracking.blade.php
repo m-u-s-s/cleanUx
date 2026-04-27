@@ -69,7 +69,8 @@
     <div class="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700">
         Mission terminée avec succès.
     </div>
-
+    <livewire:client.mission-qr-codes :mission="$mission" :key="'qr-codes-'.$mission->id" />
+    <livewire:client.mission-aftercare-summary :mission="$mission" :key="'aftercare-'.$mission->id" />
     <livewire:client.mission-final-validation :mission="$mission" :key="'final-validation-'.$mission->id" />
     @endif
 </div>

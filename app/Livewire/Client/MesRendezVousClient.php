@@ -6,6 +6,8 @@ use App\Models\ActivityLog;
 use App\Models\RendezVous;
 use App\Support\ActivityLogger;
 use App\Support\Domain\BookingStatus;
+use App\Services\Booking\EmployeeAvailabilityService;
+use App\Services\Missions\MissionFromRendezVousSyncService;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 use Livewire\Component;
@@ -29,6 +31,9 @@ class MesRendezVousClient extends Component
 
     public ?int $cancelRdvId = null;
     public string $cancelReason = '';
+    public array $creneauxDisponibles = [];
+    public ?string $impactDevisMessage = null;
+    public ?string $employeReplanificationMessage = null;
 
     protected $queryString = [
         'filtreStatus' => ['except' => ''],
@@ -66,7 +71,7 @@ class MesRendezVousClient extends Component
 
     public function modifier($id): void
     {
-        $rdv = RendezVous::findOrFail($id);
+        $rdv = RendezVous::with(['serviceZone', 'employe'])->findOrFail($id);
 
         Gate::authorize('update', $rdv);
 
@@ -78,6 +83,64 @@ class MesRendezVousClient extends Component
         $this->editRdvId = $rdv->id;
         $this->editDate = $rdv->date?->format('Y-m-d') ?? $rdv->date;
         $this->editHeure = substr((string) $rdv->heure, 0, 5);
+
+        $this->impactDevisMessage = 'Le devis reste inchangé pour ce changement de créneau.';
+        $this->employeReplanificationMessage = null;
+
+        $this->chargerCreneauxDisponibles();
+    }
+
+    public function chargerCreneauxDisponibles(): void
+    {
+        if (! $this->editRdvId || ! $this->editDate) {
+            $this->creneauxDisponibles = [];
+            return;
+        }
+
+        $rdv = RendezVous::with(['serviceZone'])->findOrFail($this->editRdvId);
+
+        $availability = app(EmployeeAvailabilityService::class);
+
+        $slots = [];
+
+        foreach (['08:00', '09:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00', '18:00'] as $heure) {
+            $currentEmployeeAvailable = $rdv->employe_id
+                ? $availability->employeeIsAvailableForSlot(
+                    $rdv->employe_id,
+                    $this->editDate,
+                    $heure,
+                    $rdv->serviceZone,
+                    (int) ($rdv->duree_estimee ?: $rdv->duree ?: 90),
+                    $rdv->id
+                )
+                : false;
+
+            $bestEmployee = $currentEmployeeAvailable
+                ? $rdv->employe
+                : $availability->resolveBestAvailableEmployeeForSlot(
+                    $this->editDate,
+                    $heure,
+                    $rdv->serviceZone,
+                    (int) ($rdv->duree_estimee ?: $rdv->duree ?: 90),
+                    $rdv->id
+                );
+
+            if ($bestEmployee) {
+                $slots[] = [
+                    'heure' => $heure,
+                    'employe_id' => $bestEmployee->id,
+                    'employe_name' => $bestEmployee->name,
+                    'same_employee' => $rdv->employe_id === $bestEmployee->id,
+                ];
+            }
+        }
+
+        $this->creneauxDisponibles = $slots;
+    }
+
+    public function updatedEditDate(): void
+    {
+        $this->chargerCreneauxDisponibles();
     }
 
     public function fermerEdition(): void
@@ -89,7 +152,8 @@ class MesRendezVousClient extends Component
 
     public function enregistrerModif(): void
     {
-        $rdv = RendezVous::where('id', $this->editRdvId)
+        $rdv = RendezVous::with(['serviceZone', 'employe', 'mission'])
+            ->where('id', $this->editRdvId)
             ->where('client_id', Auth::id())
             ->firstOrFail();
 
@@ -100,28 +164,74 @@ class MesRendezVousClient extends Component
             return;
         }
 
+        $this->validate([
+            'editDate' => ['required', 'date', 'after_or_equal:today'],
+            'editHeure' => ['required', 'date_format:H:i'],
+        ]);
+
+        $availability = app(EmployeeAvailabilityService::class);
+
+        $employee = null;
+
+        if ($rdv->employe_id && $availability->employeeIsAvailableForSlot(
+            $rdv->employe_id,
+            $this->editDate,
+            $this->editHeure,
+            $rdv->serviceZone,
+            (int) ($rdv->duree_estimee ?: $rdv->duree ?: 90),
+            $rdv->id
+        )) {
+            $employee = $rdv->employe;
+        } else {
+            $employee = $availability->resolveBestAvailableEmployeeForSlot(
+                $this->editDate,
+                $this->editHeure,
+                $rdv->serviceZone,
+                (int) ($rdv->duree_estimee ?: $rdv->duree ?: 90),
+                $rdv->id
+            );
+        }
+
+        if (! $employee) {
+            $this->dispatch('toast', 'Aucun employé disponible pour ce créneau.', 'error');
+            return;
+        }
+
         $original = [
             'date' => $rdv->date,
             'heure' => $rdv->heure,
             'status' => $rdv->status,
             'priorite' => $rdv->priorite,
+            'employe_id' => $rdv->employe_id,
+            'devis_estime' => $rdv->devis_estime,
         ];
 
         $rdv->date = $this->editDate;
         $rdv->heure = $this->editHeure;
+        $rdv->employe_id = $employee->id;
         $rdv->status = BookingStatus::EN_ATTENTE;
+
         $rdv->resetNotificationTrackingIfNeeded($original);
         $rdv->save();
+
+        if ($rdv->mission) {
+            app(MissionFromRendezVousSyncService::class)->syncFromRendezVous($rdv->fresh());
+        }
 
         ActivityLogger::log('rdv_reprogramme_par_client', $rdv, [
             'ancienne_date' => $original['date']?->format('Y-m-d') ?? (string) $original['date'],
             'ancienne_heure' => $original['heure'],
             'nouvelle_date' => $rdv->date?->format('Y-m-d') ?? (string) $rdv->date,
             'nouvelle_heure' => $rdv->heure,
+            'ancien_employe_id' => $original['employe_id'],
+            'nouvel_employe_id' => $employee->id,
+            'ancien_devis' => $original['devis_estime'],
+            'nouveau_devis' => $rdv->devis_estime,
         ]);
 
         $this->fermerEdition();
-        $this->dispatch('toast', 'Rendez-vous mis à jour.', 'success');
+
+        $this->dispatch('toast', 'Rendez-vous replanifié avec succès.', 'success');
     }
 
     public function demanderAnnulation(int $id): void
@@ -187,10 +297,10 @@ class MesRendezVousClient extends Component
     {
         $query = RendezVous::with(['employe', 'feedback', 'serviceCatalog', 'serviceZone', 'organizationSite', 'postalCode', 'mission', 'mission.leadEmployee', 'mission.verificationCodes', 'mission.activeTrackingSession'])
             ->where('client_id', Auth::id())
-            ->when($this->filtreStatus, fn ($q) => $q->where('status', $this->filtreStatus))
-            ->when($this->dateFrom, fn ($q) => $q->whereDate('date', '>=', $this->dateFrom))
-            ->when($this->dateTo, fn ($q) => $q->whereDate('date', '<=', $this->dateTo))
-            ->when($this->search, fn ($q) => $q->searchStructured($this->search));
+            ->when($this->filtreStatus, fn($q) => $q->where('status', $this->filtreStatus))
+            ->when($this->dateFrom, fn($q) => $q->whereDate('date', '>=', $this->dateFrom))
+            ->when($this->dateTo, fn($q) => $q->whereDate('date', '<=', $this->dateTo))
+            ->when($this->search, fn($q) => $q->searchStructured($this->search));
 
         return view('livewire.client.mes-rendez-vous-client', [
             'rendezVous' => $query

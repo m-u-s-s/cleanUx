@@ -17,11 +17,11 @@
         @livewire('navigation-menu')
 
         @if (isset($header))
-            <header class="border-b border-white/70 bg-white/70 shadow-sm backdrop-blur">
-                <div class="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
-                    {{ $header }}
-                </div>
-            </header>
+        <header class="border-b border-white/70 bg-white/70 shadow-sm backdrop-blur">
+            <div class="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
+                {{ $header }}
+            </div>
+        </header>
         @endif
 
         <main class="px-3 py-5 sm:px-5 lg:px-8 lg:py-6">
@@ -37,9 +37,9 @@
     <audio id="error-sound" src="{{ asset('sounds/error.mp3') }}" preload="auto"></audio>
 
     @auth
-        @if (class_exists(\App\Livewire\Notifications::class))
-            @livewire('notifications')
-        @endif
+    @if (class_exists(\App\Livewire\Notifications::class))
+    @livewire('notifications')
+    @endif
     @endauth
 
     @stack('modals')
@@ -47,36 +47,52 @@
     @stack('scripts')
 
     @auth
-        @if(auth()->user()->role === 'client')
-            <div class="sm:hidden fixed bottom-0 inset-x-0 z-50 border-t border-slate-200 bg-white/95 backdrop-blur shadow-[0_-10px_30px_rgba(15,23,42,0.08)]">
-                <div class="grid grid-cols-4 h-16">
-                    <a href="{{ route('client.dashboard') }}"
-                        class="flex flex-col items-center justify-center text-xs {{ request()->routeIs('client.dashboard') ? 'text-blue-600 font-semibold' : 'text-gray-500' }}">
-                        <span>🏠</span>
-                        <span>Accueil</span>
-                    </a>
+    @if(auth()->user()->role === 'client')
+    <div class="sm:hidden fixed bottom-0 inset-x-0 z-50 border-t border-slate-200 bg-white/95 backdrop-blur shadow-[0_-10px_30px_rgba(15,23,42,0.08)]">
+        <div class="grid grid-cols-4 h-16">
+            <a href="{{ route('client.dashboard') }}"
+                class="flex flex-col items-center justify-center text-xs {{ request()->routeIs('client.dashboard') ? 'text-blue-600 font-semibold' : 'text-gray-500' }}">
+                <span>🏠</span>
+                <span>Accueil</span>
+            </a>
 
-                    <a href="{{ route('client.rendezvous.create') }}"
-                        class="flex flex-col items-center justify-center text-xs {{ request()->routeIs('client.rendezvous.*') ? 'text-blue-600 font-semibold' : 'text-gray-500' }}">
-                        <span>➕</span>
-                        <span>Demande</span>
-                    </a>
+            <a href="{{ route('client.rendezvous.create') }}"
+                class="flex flex-col items-center justify-center text-xs {{ request()->routeIs('client.rendezvous.*') ? 'text-blue-600 font-semibold' : 'text-gray-500' }}">
+                <span>➕</span>
+                <span>Demande</span>
+            </a>
 
-                    <a href="{{ route('client.rendezvous.index') }}"
-                        class="flex flex-col items-center justify-center text-xs {{ request()->routeIs('client.rendezvous.index') ? 'text-blue-600 font-semibold' : 'text-gray-500' }}">
-                        <span>📅</span>
-                        <span>Rendez-vous</span>
-                    </a>
+            <a href="{{ route('client.rendezvous.index') }}"
+                class="flex flex-col items-center justify-center text-xs {{ request()->routeIs('client.rendezvous.index') ? 'text-blue-600 font-semibold' : 'text-gray-500' }}">
+                <span>📅</span>
+                <span>Rendez-vous</span>
+            </a>
 
-                    <a href="{{ route('client.historique') }}"
-                        class="flex flex-col items-center justify-center text-xs {{ request()->routeIs('client.historique') ? 'text-blue-600 font-semibold' : 'text-gray-500' }}">
-                        <span>🕘</span>
-                        <span>Historique</span>
-                    </a>
-                </div>
-            </div>
-        @endif
+            <a href="{{ route('client.historique') }}"
+                class="flex flex-col items-center justify-center text-xs {{ request()->routeIs('client.historique') ? 'text-blue-600 font-semibold' : 'text-gray-500' }}">
+                <span>🕘</span>
+                <span>Historique</span>
+            </a>
+        </div>
+    </div>
+    @endif
     @endauth
+
+
+
+
+    <!-- script offline -->
+    <script src="/js/offline-mission.js"></script>
+
+    <script>
+        setInterval(() => {
+            window.OfflineMission.sync();
+        }, 10000); // toutes les 10 sec
+
+        window.addEventListener('online', () => {
+            window.OfflineMission.sync();
+        });
+    </script>
 </body>
 
 </html>
