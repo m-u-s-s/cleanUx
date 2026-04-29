@@ -77,73 +77,74 @@
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
 <script>
-async function startMissionTracking(missionId) {
-    if (!navigator.geolocation) {
-        alert('La géolocalisation n’est pas disponible sur cet appareil.');
-        return;
-    }
-
-    navigator.geolocation.getCurrentPosition(async function(position) {
-        const lat = position.coords.latitude;
-        const lng = position.coords.longitude;
-
-        const response = await fetch(`/missions/${missionId}/en-route`, {
-            method: 'POST',
-            headers: {
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-                'Accept': 'application/json',
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                lat: lat,
-                lng: lng,
-            }),
-        });
-
-        const result = await response.json();
-
-        if (!result.ok) {
-            alert('Impossible de démarrer le tracking.');
+    async function startMissionTracking(missionId) {
+        if (!navigator.geolocation) {
+            alert('La géolocalisation n’est pas disponible sur cet appareil.');
             return;
         }
 
-        window.currentTrackingSessionId = result.tracking_session_id;
-
-        startSendingPosition(result.tracking_session_id);
-
-        alert('Trajet démarré. Le client peut maintenant suivre votre position.');
-    }, function() {
-        alert('Vous devez autoriser la géolocalisation pour démarrer le trajet.');
-    }, {
-        enableHighAccuracy: true,
-        timeout: 10000,
-        maximumAge: 0,
-    });
-}
-
-function startSendingPosition(sessionId) {
-    setInterval(() => {
         navigator.geolocation.getCurrentPosition(async function(position) {
-            await fetch(`/mission-tracking-sessions/${sessionId}/tracking/push`, {
-                method: 'POST',
-                headers: {
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-                    'Accept': 'application/json',
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    lat: position.coords.latitude,
-                    lng: position.coords.longitude,
-                    accuracy_meters: position.coords.accuracy,
-                    speed_kmh: position.coords.speed ? position.coords.speed * 3.6 : null,
-                    heading: position.coords.heading,
-                    source: 'browser',
-                    app_state: 'foreground',
-                }),
+                const lat = position.coords.latitude;
+                const lng = position.coords.longitude;
+
+                const response = await fetch(`/missions/${missionId}/en-route`, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        lat: lat,
+                        lng: lng,
+                    }),
+                });
+
+                const result = await response.json();
+
+                if (!result.ok) {
+                    alert('Impossible de démarrer le tracking.');
+                    return;
+                }
+
+                window.currentTrackingSessionId = result.tracking_session_id;
+
+                startSendingPosition(result.tracking_session_id);
+
+                alert('Trajet démarré. Le client peut maintenant suivre votre position.');
+            },
+            function() {
+                alert('Vous devez autoriser la géolocalisation pour démarrer le trajet.');
+            }, {
+                enableHighAccuracy: true,
+                timeout: 10000,
+                maximumAge: 0,
             });
-        });
-    }, 15000);
-}
+    }
+
+    function startSendingPosition(sessionId) {
+        setInterval(() => {
+            navigator.geolocation.getCurrentPosition(async function(position) {
+                await fetch(`/mission-tracking-sessions/${sessionId}/tracking/push`, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        lat: position.coords.latitude,
+                        lng: position.coords.longitude,
+                        accuracy_meters: position.coords.accuracy,
+                        speed_kmh: position.coords.speed ? position.coords.speed * 3.6 : null,
+                        heading: position.coords.heading,
+                        source: 'browser',
+                        app_state: 'foreground',
+                    }),
+                });
+            });
+        }, 15000);
+    }
 </script>
 <script>
     function clientMissionLiveTracking(config) {
@@ -192,9 +193,12 @@ function startSendingPosition(sessionId) {
             },
 
             get lastRefreshLabel() {
-                return this.lastRefreshAt
-                    ? this.lastRefreshAt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-                    : '—';
+                return this.lastRefreshAt ?
+                    this.lastRefreshAt.toLocaleTimeString([], {
+                        hour: '2-digit',
+                        minute: '2-digit'
+                    }) :
+                    '—';
             },
 
             get statusLabel() {
@@ -346,5 +350,30 @@ function startSendingPosition(sessionId) {
         }
     }
 </script>
+@push('scripts')
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const missionId = @json($mission - > id);
+
+        window.cleanUxMissionTracking(missionId, {
+            onPositionUpdated(data) {
+                console.log('Position reçue via Reverb', data);
+
+                window.dispatchEvent(new CustomEvent('cleanux-position-updated', {
+                    detail: data
+                }));
+            },
+
+            onStatusUpdated(event) {
+                console.log('Statut reçu via Reverb', event);
+
+                window.dispatchEvent(new CustomEvent('cleanux-status-updated', {
+                    detail: event
+                }));
+            },
+        });
+    });
+</script>
+@endpush
 @endpush
 @endonce

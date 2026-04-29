@@ -71,6 +71,10 @@ return new class extends Migration
             $table->index(['client_id', 'date']);
             $table->index('devis_estime');
             $table->index('is_recurrent');
+            $table->decimal('destination_lat', 10, 7)->nullable();
+            $table->decimal('destination_lng', 10, 7)->nullable();
+            $table->string('google_place_id')->nullable();
+            $table->json('address_components')->nullable();
         });
     }
 

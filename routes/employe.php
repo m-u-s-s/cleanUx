@@ -3,6 +3,7 @@
 use App\Livewire\Employe\MissionsEmploye;
 use App\Livewire\EmployeDashboard;
 use Illuminate\Support\Facades\Route;
+use App\Livewire\Employe\MissionFieldPage;
 
 Route::middleware(['role:employe'])
     ->prefix('dashboard/employe')
@@ -13,4 +14,7 @@ Route::middleware(['role:employe'])
 
         Route::get('/missions', MissionsEmploye::class)
             ->name('missions');
+        Route::get('/missions/{mission}', MissionFieldPage::class)
+            ->middleware('can:update,mission')
+            ->name('missions.show');
     });

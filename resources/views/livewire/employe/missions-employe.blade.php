@@ -155,4 +155,37 @@
             }),
         });
     }
-</script>
+    let cleanUxTrackingInterval = null;
+
+    function startSendingPosition(sessionId) {
+    if (cleanUxTrackingInterval) {
+        clearInterval(cleanUxTrackingInterval);
+    }
+    
+    cleanUxTrackingInterval = setInterval(() => {
+        if (!navigator.geolocation) {
+            return;
+        }
+        
+        navigator.geolocation.getCurrentPosition(async function(position) {
+            await fetch(`/mission-tracking-sessions/${sessionId}/tracking/push`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    lat: position.coords.latitude,
+                    lng: position.coords.longitude,
+                    accuracy_meters: position.coords.accuracy,
+                    speed_kmh: position.coords.speed ? position.coords.speed * 3.6 : null,
+                    heading: position.coords.heading,
+                    source: 'browser',
+                    app_state: document.hidden ? 'background' : 'foreground',
+                }),
+            });
+        });
+    }, 15000);
+    }
+    </script>

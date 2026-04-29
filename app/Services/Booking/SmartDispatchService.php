@@ -38,6 +38,32 @@ class SmartDispatchService
         return $score;
     }
 
+    protected function distanceScore(User $employee, RendezVous $rdv): int
+    {
+        if (! $employee->current_lat || ! $employee->current_lng) {
+            return 0;
+        }
+
+        if (! $rdv->destination_lat || ! $rdv->destination_lng) {
+            return 0;
+        }
+
+        $distanceKm = app(\App\Services\Geo\GeoDistanceService::class)
+            ->haversineKm(
+                $employee->current_lat,
+                $employee->current_lng,
+                $rdv->destination_lat,
+                $rdv->destination_lng
+            );
+
+        return match (true) {
+            $distanceKm <= 2 => 400,
+            $distanceKm <= 5 => 250,
+            $distanceKm <= 10 => 100,
+            default => -100,
+        };
+    }
+
     public function explainBestMatch(RendezVous $rdv): array
     {
         $candidates = $this->explainScores($rdv);
@@ -51,7 +77,7 @@ class SmartDispatchService
             'candidates' => $candidates->take(10)->values()->all(),
         ];
     }
-    
+
     public function assignBestEmployee(RendezVous $rdv): ?User
     {
         if (! $rdv->service_zone_id || ! $rdv->date || ! $rdv->heure) {
@@ -86,6 +112,7 @@ class SmartDispatchService
         $score += $this->workloadScore($employee, $rdv);
         $score += $this->premiumScore($employee, $rdv);
         $score += $this->asapScore($employee, $rdv);
+        $score += $this->distanceScore($employee, $rdv);
 
         return $score;
     }

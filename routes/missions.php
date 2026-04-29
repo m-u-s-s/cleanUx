@@ -26,6 +26,10 @@ Route::middleware(['role:employe'])->group(function () {
         ->name('missions.tracking.stop');
     Route::post('/missions/{mission}/finish', [MissionFieldActionController::class, 'finish'])
         ->name('missions.finish');
+    Route::post('/missions/{mission}/en-route', [MissionFieldActionController::class, 'enRoute']);
+    Route::post('/missions/{mission}/start', [MissionFieldActionController::class, 'start']);
+    Route::post('/missions/{mission}/finish', [MissionFieldActionController::class, 'finish']);
+    Route::post('/missions/offline-sync', [MissionFieldActionController::class, 'offlineSync']);
 });
 
 Route::get('/missions/{mission}/tracking/live', [MissionTrackingController::class, 'live'])

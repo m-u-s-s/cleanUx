@@ -1,6 +1,8 @@
 <?php
 
 use App\Http\Controllers\Admin\MissionAdminController;
+use App\Livewire\Admin\AdminAlertsCenter;
+use App\Livewire\Admin\AdminAnalyticsDashboard;
 use App\Livewire\Admin\MissionsAdmin;
 use App\Livewire\AdminDashboard;
 use App\Livewire\Admin\CustomerCreditsManager;
@@ -23,4 +25,8 @@ Route::middleware(['role:admin'])
         Route::get('/credits-clients', CustomerCreditsManager::class)
             ->middleware('can:manage-finance')
             ->name('customer.credits');
+
+        Route::get('/alerts', AdminAlertsCenter::class)->name('alerts');
+        Route::get('/analytics', AdminAnalyticsDashboard::class)->name('analytics');
+        
     });

@@ -2,6 +2,7 @@
 
 namespace App\Services\Missions;
 
+use App\Events\MissionStatusUpdated;
 use App\Models\Mission;
 use App\Models\RendezVous;
 use App\Models\User;
@@ -50,6 +51,13 @@ class MissionLifecycleService
             'status' => MissionStatus::EN_ROUTE,
         ]);
 
+        event(new MissionStatusUpdated(
+            (int) $mission->id,
+            $mission->status,
+            [
+                'message' => 'Employé en route',
+            ]
+        ));
         $this->assignmentStatusService->updateAssignmentStatus($mission, $user, 'accepted', [
             'accepted_at' => now(),
         ]);
@@ -87,6 +95,14 @@ class MissionLifecycleService
             'start_lat' => $lat,
             'start_lng' => $lng,
         ]);
+
+        event(new MissionStatusUpdated(
+            (int) $mission->id,
+            $mission->status,
+            [
+                'message' => 'Employé arrivé',
+            ]
+        ));
 
         $this->assignmentStatusService->updateAssignmentStatus($mission, $user, 'arrived', [
             'arrived_at' => now(),
@@ -137,6 +153,14 @@ class MissionLifecycleService
             'start_lat' => $lat ?? $mission->start_lat,
             'start_lng' => $lng ?? $mission->start_lng,
         ]);
+
+        event(new MissionStatusUpdated(
+            (int) $mission->id,
+            $mission->status,
+            [
+                'message' => 'Mission démarrée',
+            ]
+        ));
 
         $this->assignmentStatusService->updateAssignmentStatus($mission, $user, 'arrived', [
             'accepted_at' => now(),
@@ -221,6 +245,14 @@ class MissionLifecycleService
             'end_lat' => $lat,
             'end_lng' => $lng,
         ]);
+
+        event(new MissionStatusUpdated(
+            (int) $mission->id,
+            $mission->status,
+            [
+                'message' => 'Mission terminée',
+            ]
+        ));
 
         $this->assignmentStatusService->updateAssignmentStatus($mission, $user, 'completed', [
             'completed_at' => now(),

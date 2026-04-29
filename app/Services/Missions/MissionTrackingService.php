@@ -2,6 +2,7 @@
 
 namespace App\Services\Missions;
 
+use App\Events\MissionPositionUpdated;
 use App\Models\Mission;
 use App\Models\MissionAssignment;
 use App\Models\MissionTrackingPoint;
@@ -112,7 +113,14 @@ class MissionTrackingService
                 'distance_meters' => $session->distance_meters + max(0, (int) round($distance)),
             ]);
 
-            return $session->fresh(['points']);
+            $freshSession = $session->fresh(['points', 'mission']);
+
+            event(new MissionPositionUpdated(
+                (int) $freshSession->mission_id,
+                $this->livePayload($freshSession->mission)
+            ));
+
+            return $freshSession;
         });
     }
 
