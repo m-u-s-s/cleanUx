@@ -12,6 +12,8 @@ class MissionFieldActionController extends Controller
 {
     public function arrived(Request $request, Mission $mission, MissionLifecycleService $service): JsonResponse
     {
+        $this->authorize('update', $mission);
+        
         $data = $request->validate([
             'lat' => ['nullable', 'numeric'],
             'lng' => ['nullable', 'numeric'],

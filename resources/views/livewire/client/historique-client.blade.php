@@ -56,6 +56,35 @@
                     <p><span class="font-medium">Durée réelle :</span> {{ $rdv->duree_reelle ? $rdv->duree_reelle . ' min' : '—' }}</p>
                 </div>
 
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                    <div class="rounded-xl bg-white border p-4">
+                        <p class="text-xs font-bold uppercase text-slate-500">Durée prévue</p>
+                        <p class="mt-1 text-lg font-black text-slate-900">
+                            {{ $rdv->duree_estimee ? $rdv->duree_estimee.' min' : '—' }}
+                        </p>
+                    </div>
+
+                    <div class="rounded-xl bg-white border p-4">
+                        <p class="text-xs font-bold uppercase text-slate-500">Durée réelle</p>
+                        <p class="mt-1 text-lg font-black text-slate-900">
+                            {{ $rdv->duree_reelle ? $rdv->duree_reelle.' min' : '—' }}
+                        </p>
+                    </div>
+
+                    <div class="rounded-xl bg-white border p-4">
+                        <p class="text-xs font-bold uppercase text-slate-500">Qualité</p>
+                        <p class="mt-1 text-lg font-black text-emerald-700">
+                            {{ $rdv->mission?->quality_score ? $rdv->mission->quality_score.'/100' : 'Validée' }}
+                        </p>
+                    </div>
+                    @if($rdv->mission && Route::has('missions.report.pdf'))
+                    <a href="{{ route('missions.report.pdf', $rdv->mission) }}"
+                        class="rounded-xl border px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50">
+                        📄 Télécharger le rapport
+                    </a>
+                    @endif
+                </div>
+
                 <div>
                     <p><span class="font-medium">Fréquence :</span> {{ ucfirst(str_replace('_', ' ', $rdv->frequence ?? '—')) }}</p>
                     <p><span class="font-medium">Surface :</span> {{ $rdv->surface ?? '—' }}</p>
@@ -96,33 +125,66 @@
                 @endif
             </div>
 
-            @if(!empty($rdv->photos_reference))
-            <div class="space-y-2">
-                <p class="text-sm font-medium text-gray-700">📷 Photos de référence</p>
-                <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
-                    @foreach($rdv->photos_reference as $photo)
-                    <a href="{{ asset('storage/' . $photo) }}" target="_blank" class="block">
-                        <img
-                            src="{{ asset('storage/' . $photo) }}"
-                            alt="Photo de référence"
-                            class="w-full h-28 object-cover rounded-lg border hover:opacity-90 transition">
-                    </a>
-                    @endforeach
+            @if(!empty($rdv->photos_avant) || !empty($rdv->photos_apres))
+            <div class="rounded-2xl bg-white border p-4 space-y-4">
+                <div>
+                    <p class="text-sm font-bold text-slate-900">📷 Preuves photo</p>
+                    <p class="text-xs text-slate-500">Photos prises avant et après la mission.</p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                    <div>
+                        <p class="text-xs font-bold uppercase text-slate-500 mb-2">Avant intervention</p>
+
+                        @if(!empty($rdv->photos_avant))
+                        <div class="grid grid-cols-2 gap-3">
+                            @foreach($rdv->photos_avant as $photo)
+                            <a href="{{ asset('storage/'.$photo) }}" target="_blank">
+                                <img src="{{ asset('storage/'.$photo) }}"
+                                    class="h-28 w-full rounded-xl object-cover border hover:opacity-90">
+                            </a>
+                            @endforeach
+                        </div>
+                        @else
+                        <p class="text-sm text-slate-400 italic">Aucune photo avant.</p>
+                        @endif
+                    </div>
+
+                    <div>
+                        <p class="text-xs font-bold uppercase text-slate-500 mb-2">Après intervention</p>
+
+                        @if(!empty($rdv->photos_apres))
+                        <div class="grid grid-cols-2 gap-3">
+                            @foreach($rdv->photos_apres as $photo)
+                            <a href="{{ asset('storage/'.$photo) }}" target="_blank">
+                                <img src="{{ asset('storage/'.$photo) }}"
+                                    class="h-28 w-full rounded-xl object-cover border hover:opacity-90">
+                            </a>
+                            @endforeach
+                        </div>
+                        @else
+                        <p class="text-sm text-slate-400 italic">Aucune photo après.</p>
+                        @endif
+                    </div>
                 </div>
             </div>
             @endif
 
-            @if(!empty($rdv->photos_apres))
-            <div class="space-y-2">
-                <p class="text-sm font-medium text-gray-700">📸 Photos après intervention</p>
-                <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
-                    @foreach($rdv->photos_apres as $photo)
-                    <a href="{{ asset('storage/' . $photo) }}" target="_blank" class="block">
-                        <img
-                            src="{{ asset('storage/' . $photo) }}"
-                            alt="Photo après intervention"
-                            class="w-full h-28 object-cover rounded-lg border hover:opacity-90 transition">
-                    </a>
+            @if(!empty($rdv->terrain_checklist))
+            <div class="rounded-2xl bg-white border p-4">
+                <p class="text-sm font-bold text-slate-900 mb-3">✅ Checklist intervention</p>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
+                    @foreach($rdv->terrain_checklist as $key => $checked)
+                    <div class="flex items-center justify-between rounded-xl border p-3 text-sm">
+                        <span class="text-slate-700">
+                            {{ ucfirst(str_replace('_', ' ', $key)) }}
+                        </span>
+
+                        <span class="font-bold {{ $checked ? 'text-emerald-600' : 'text-slate-400' }}">
+                            {{ $checked ? 'Validé' : 'Non validé' }}
+                        </span>
+                    </div>
                     @endforeach
                 </div>
             </div>

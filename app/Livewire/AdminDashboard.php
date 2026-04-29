@@ -38,11 +38,11 @@ class AdminDashboard extends Component
     public string $filtreStatus = '';
     public string $filtrePeriode = 'all';
     public string $dashboardSearch = '';
-    public bool $compactMode = false;
+    public bool $compactMode = true;
     public array $visibleDashboardSections = [
         'operations' => true,
         'analytics' => true,
-        'premium' => true,
+        'premium' => false,
         'charts' => true,
         'tools' => true,
         'modules' => false,

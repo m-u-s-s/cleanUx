@@ -1,6 +1,6 @@
 <x-page-shell
     title="📅 Mes rendez-vous"
-    subtitle="Retrouvez vos interventions à venir, modifiez-les si nécessaire et suivez leur statut.">
+    subtitle="Gérez vos interventions, suivez l’employé, modifiez un créneau ou laissez un avis après la mission.">
     <x-slot name="actions">
         <a
             href="{{ route('client.rendezvous.create') }}"
@@ -10,21 +10,21 @@
     </x-slot>
 
 
-    <div class="bg-white rounded-2xl shadow border p-4">
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Recherche</label>
+    <div class="bg-white rounded-2xl shadow-sm border p-5">
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div class="md:col-span-2">
+                <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Recherche</label>
                 <input
                     type="text"
-                    wire:model.live="search"
-                    placeholder="Service, ville, adresse..."
-                    class="w-full border-gray-300 rounded-lg shadow-sm">
+                    wire:model.live.debounce.350ms="search"
+                    placeholder="Service, ville, adresse, employé..."
+                    class="w-full rounded-xl border-gray-300 shadow-sm text-sm">
             </div>
 
             <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Statut</label>
-                <select wire:model.live="filtreStatus" class="w-full border-gray-300 rounded-lg shadow-sm">
-                    <option value="">— Tous —</option>
+                <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Statut</label>
+                <select wire:model.live="filtreStatus" class="w-full rounded-xl border-gray-300 shadow-sm text-sm">
+                    <option value="">Tous</option>
                     <option value="en_attente">En attente</option>
                     <option value="confirme">Confirmé</option>
                     <option value="en_route">En route</option>
@@ -34,12 +34,12 @@
                 </select>
             </div>
 
-            <div class="flex items-end">
-                <button
-                    wire:click="$set('tri', '{{ $tri === 'asc' ? 'desc' : 'asc' }}')"
-                    class="inline-flex items-center px-4 py-2 rounded-lg border bg-white text-sm font-medium text-gray-700 hover:bg-gray-50">
-                    Trier : {{ $tri === 'asc' ? 'Croissant' : 'Décroissant' }}
-                </button>
+            <div>
+                <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Tri</label>
+                <select wire:model.live="tri" class="w-full rounded-xl border-gray-300 shadow-sm text-sm">
+                    <option value="asc">Plus proche d’abord</option>
+                    <option value="desc">Plus récent d’abord</option>
+                </select>
             </div>
         </div>
     </div>
@@ -205,32 +205,41 @@
                 @endif
             </div>
 
-            <div class="flex flex-wrap gap-3 text-sm">
-                <a href="{{ route('client.rendezvous.create', ['source_rdv' => $rdv->id]) }}" class="text-slate-700 underline">
-                    🔁 Reprendre
+            <div class="flex flex-wrap gap-2 pt-2">
+                @if($rdv->mission)
+                <a href="{{ route('missions.tracking.live', $rdv->mission) }}"
+                    class="rounded-xl bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700">
+                    📍 Suivre la mission
                 </a>
+                @endif
 
-                <button wire:click="modifier({{ $rdv->id }})" class="text-blue-600 underline">
-                    ✏️ Modifier
+                @if($rdv->canStillBeEditedByClient())
+                <button wire:click="modifier({{ $rdv->id }})"
+                    class="rounded-xl border px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50">
+                    🔁 Replanifier
                 </button>
 
+                <button wire:click="demanderAnnulation({{ $rdv->id }})"
+                    class="rounded-xl border border-red-200 bg-red-50 px-4 py-2 text-sm font-semibold text-red-700 hover:bg-red-100">
+                    Annuler
+                </button>
+                @endif
+
                 @if($rdv->recurring_series_id)
-                <a href="{{ route('client.rendezvous.series.edit', $rdv->id) }}" class="text-indigo-600 underline">
+                <a href="{{ route('client.rendezvous.series.edit', $rdv->id) }}"
+                    class="rounded-xl border px-4 py-2 text-sm font-semibold text-indigo-700 hover:bg-indigo-50">
                     🗓️ Gérer la série
                 </a>
                 @endif
 
-                <button
-                    wire:click="demanderAnnulation({{ $rdv->id }})"
-                    class="text-red-600 underline">
-                    ❌ Annuler
-                </button>
-
                 @if($rdv->status === 'termine' && $rdv->feedback)
-                <span class="text-emerald-700">💬 Feedback laissé</span>
+                <span class="rounded-xl bg-emerald-50 px-4 py-2 text-sm font-semibold text-emerald-700">
+                    💬 Feedback laissé
+                </span>
                 @elseif($rdv->status === 'termine')
-                <a href="{{ route('feedback.create', $rdv->id) }}" class="text-blue-600 underline">
-                    💬 Laisser un feedback
+                <a href="{{ route('feedback.create', $rdv->id) }}"
+                    class="rounded-xl bg-emerald-600 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-700">
+                    ⭐ Laisser un avis
                 </a>
                 @endif
             </div>

@@ -156,7 +156,11 @@ class CreateBookingAction
             'devis_estime' => $adjustedEstimate,
             'status' => $status,
         ]);
-        
+
+        if ($client->activeCreditBalance() > 0) {
+            app(\App\Services\Finance\CustomerCreditApplicationService::class)
+                ->applyAvailableCredits($client, $rendezVous);
+        }
         $org = $rendezVous->organizationAccount;
 
         if ($org) {

@@ -55,14 +55,26 @@ class HistoriqueClient extends Component
 
     public function render(): View
     {
-        $query = RendezVous::with(['employe', 'feedback', 'serviceCatalog', 'serviceZone', 'organizationSite', 'postalCode'])
+        $query = RendezVous::with([
+            'employe',
+            'feedback',
+            'serviceCatalog',
+            'serviceZone',
+            'organizationSite',
+            'postalCode',
+            'mission',
+            'mission.report',
+            'mission.checklists',
+            'mission.media',
+            'mission.incidents',
+        ])
             ->where('client_id', Auth::id())
             ->where('status', 'termine')
-            ->when($this->search, fn ($q) => $q->searchStructured($this->search))
-            ->when($this->feedbackStatus === 'with_feedback', fn ($q) => $q->whereHas('feedback'))
-            ->when($this->feedbackStatus === 'without_feedback', fn ($q) => $q->whereDoesntHave('feedback'))
-            ->when($this->dateFrom, fn ($q) => $q->whereDate('date', '>=', $this->dateFrom))
-            ->when($this->dateTo, fn ($q) => $q->whereDate('date', '<=', $this->dateTo));
+            ->when($this->search, fn($q) => $q->searchStructured($this->search))
+            ->when($this->feedbackStatus === 'with_feedback', fn($q) => $q->whereHas('feedback'))
+            ->when($this->feedbackStatus === 'without_feedback', fn($q) => $q->whereDoesntHave('feedback'))
+            ->when($this->dateFrom, fn($q) => $q->whereDate('date', '>=', $this->dateFrom))
+            ->when($this->dateTo, fn($q) => $q->whereDate('date', '<=', $this->dateTo));
 
         return view('livewire.client.historique-client', [
             'historique' => $query

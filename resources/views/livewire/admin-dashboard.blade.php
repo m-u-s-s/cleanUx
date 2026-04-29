@@ -25,6 +25,7 @@
         {{-- KPIs principaux --}}
         <section class="space-y-4">
             @include('livewire.admin.dashboard.kpis')
+            @include('livewire.admin.dashboard.today-priority')
         </section>
         @if($executiveMode)
         <section class="space-y-6">

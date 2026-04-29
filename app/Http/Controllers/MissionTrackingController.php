@@ -13,6 +13,8 @@ class MissionTrackingController extends Controller
 {
     public function start(Request $request, Mission $mission, MissionTrackingService $service): JsonResponse
     {
+        $this->authorize('track', $mission);
+
         $this->abortUnlessAssigned($mission);
 
         $data = $request->validate([
@@ -81,6 +83,8 @@ class MissionTrackingController extends Controller
 
     public function live(Mission $mission, MissionTrackingService $service): JsonResponse
     {
+        $this->authorize('view', $mission);
+        
         $this->abortUnlessClientCanView($mission);
 
         return response()->json([

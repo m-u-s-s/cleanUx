@@ -13,6 +13,36 @@
             </p>
         </div>
 
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div class="rounded-2xl border bg-white p-4 shadow-sm">
+                <p class="text-xs font-bold uppercase text-slate-500">Crédits actifs</p>
+                <p class="mt-2 text-2xl font-black text-emerald-700">
+                    {{ $stats['active_count'] ?? 0 }}
+                </p>
+            </div>
+
+            <div class="rounded-2xl border bg-white p-4 shadow-sm">
+                <p class="text-xs font-bold uppercase text-slate-500">Total reçu</p>
+                <p class="mt-2 text-2xl font-black text-blue-700">
+                    {{ number_format($stats['total_received'] ?? 0, 2, ',', ' ') }} €
+                </p>
+            </div>
+
+            <div class="rounded-2xl border bg-white p-4 shadow-sm">
+                <p class="text-xs font-bold uppercase text-slate-500">Déjà utilisé</p>
+                <p class="mt-2 text-2xl font-black text-indigo-700">
+                    {{ number_format($stats['total_used'] ?? 0, 2, ',', ' ') }} €
+                </p>
+            </div>
+
+            <div class="rounded-2xl border bg-white p-4 shadow-sm">
+                <p class="text-xs font-bold uppercase text-slate-500">Expirés</p>
+                <p class="mt-2 text-2xl font-black text-red-700">
+                    {{ $stats['expired_count'] ?? 0 }}
+                </p>
+            </div>
+        </div>
+
         <div class="md:col-span-2 rounded-2xl border bg-white p-6 shadow-sm">
             <h3 class="font-semibold text-slate-900">Comment ça fonctionne ?</h3>
 
@@ -56,46 +86,76 @@
 
                 <tbody class="divide-y">
                     @forelse($credits as $credit)
-                        <tr>
-                            <td class="px-4 py-3">
-                                {{ $credit->created_at?->format('d/m/Y') }}
-                            </td>
+                    <tr>
+                        <td class="px-4 py-3">
+                            {{ $credit->created_at?->format('d/m/Y') }}
+                        </td>
 
-                            <td class="px-4 py-3">
-                                {{ ucfirst($credit->type) }}
-                            </td>
+                        <td class="px-4 py-3">
+                            {{ ucfirst($credit->type) }}
+                        </td>
 
-                            <td class="px-4 py-3">
-                                {{ $credit->reason ?? '—' }}
-                            </td>
+                        <td class="px-4 py-3">
+                            {{ $credit->reason ?? '—' }}
+                        </td>
 
-                            <td class="px-4 py-3 font-medium">
-                                {{ number_format($credit->amount, 2, ',', ' ') }} €
-                            </td>
+                        <td class="px-4 py-3 font-medium">
+                            {{ number_format($credit->amount, 2, ',', ' ') }} €
+                        </td>
 
-                            <td class="px-4 py-3 font-medium text-blue-700">
-                                {{ number_format($credit->remaining_amount, 2, ',', ' ') }} €
-                            </td>
+                        <td class="px-4 py-3 font-medium text-blue-700">
+                            {{ number_format($credit->remaining_amount, 2, ',', ' ') }} €
+                        </td>
 
-                            <td class="px-4 py-3">
-                                <span class="rounded-full px-3 py-1 text-xs font-medium
-                                    {{ $credit->status === 'active'
-                                        ? 'bg-emerald-100 text-emerald-700'
-                                        : 'bg-slate-100 text-slate-600' }}">
-                                    {{ ucfirst($credit->status) }}
-                                </span>
-                            </td>
+                        <td class="px-4 py-3">
+                            @php
+                            $statusClass = match ($credit->status) {
+                            'active' => 'bg-emerald-100 text-emerald-700',
+                            'used' => 'bg-blue-100 text-blue-700',
+                            'expired' => 'bg-red-100 text-red-700',
+                            default => 'bg-slate-100 text-slate-600',
+                            };
 
-                            <td class="px-4 py-3">
-                                {{ $credit->expires_at?->format('d/m/Y') ?? '—' }}
-                            </td>
-                        </tr>
+                            $statusLabel = match ($credit->status) {
+                            'active' => 'Disponible',
+                            'used' => 'Utilisé',
+                            'expired' => 'Expiré',
+                            default => ucfirst($credit->status),
+                            };
+                            @endphp
+
+                            <span class="rounded-full px-3 py-1 text-xs font-bold {{ $statusClass }}">
+                                {{ $statusLabel }}
+                            </span>
+                        </td>
+
+
+                        <td class="px-4 py-3">
+                            @if($credit->expires_at)
+                            <div>
+                                <p>{{ $credit->expires_at->format('d/m/Y') }}</p>
+
+                                @if($credit->status === 'active' && $credit->expires_at->isFuture() && $credit->expires_at->diffInDays(now()) <= 14)
+                                    <p class="text-xs font-semibold text-amber-600">
+                                    Expire bientôt
+                                    </p>
+                                    @elseif($credit->expires_at->isPast())
+                                    <p class="text-xs font-semibold text-red-600">
+                                        Expiré
+                                    </p>
+                                    @endif
+                            </div>
+                            @else
+                            —
+                            @endif
+                        </td>
+                    </tr>
                     @empty
-                        <tr>
-                            <td colspan="7" class="px-4 py-8 text-center text-slate-500">
-                                Aucun crédit disponible pour le moment.
-                            </td>
-                        </tr>
+                    <tr>
+                        <td colspan="7" class="px-4 py-8 text-center text-slate-500">
+                            Aucun crédit disponible pour le moment.
+                        </td>
+                    </tr>
                     @endforelse
                 </tbody>
             </table>

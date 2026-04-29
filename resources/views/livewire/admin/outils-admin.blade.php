@@ -2,8 +2,7 @@
     <x-page-shell
         title="Outils administrateur"
         subtitle="Centre d’orchestration pour les exports, imports, statistiques, emails produit, logs et outils de test."
-        eyebrow="Backoffice premium"
-    >
+        eyebrow="Backoffice premium">
         <x-slot:actions>
             <span class="cu-inline-stat">Pilotage centralisé</span>
         </x-slot:actions>
@@ -27,6 +26,13 @@
         <x-app-card title="Emails produit & aperçu" subtitle="Prévisualise les emails transactionnels et marketing.">
             <livewire:admin.product-emails-center />
         </x-app-card>
+
+        @if(Route::has('admin.customer.credits'))
+        <a href="{{ route('admin.customer.credits') }}"
+            class="rounded-xl border px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50">
+            💳 Crédits clients
+        </a>
+        @endif
 
         <x-app-card title="Logs système & notifications" subtitle="Visualise les traces et notifications clés depuis le backoffice.">
             <livewire:admin.logs-activity />

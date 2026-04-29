@@ -12,6 +12,8 @@ class MissionAdminController extends Controller
 {
     public function show(Mission $mission)
     {
+        $this->authorize('view', $mission);
+        
         abort_unless(auth()->user()?->isAdmin(), 403);
 
         $mission->load([
