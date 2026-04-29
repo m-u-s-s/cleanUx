@@ -16,6 +16,7 @@ trait HandlesBookingSubmissionFlow
     {
         return [
             'selected_service_identifier' => ['required', 'string', 'max:255'],
+            'booking_mode' => ['required', Rule::in(['scheduled', 'asap'])],
             'type_lieu' => ['required', 'string', 'max:255'],
             'frequence' => ['required', 'string', 'max:255'],
             'surface' => ['required', Rule::in(array_keys($this->surfaces))],
@@ -184,6 +185,7 @@ trait HandlesBookingSubmissionFlow
             'recurrence_count' => $this->is_recurrent ? ['nullable', 'integer', 'min:2', 'max:52'] : ['nullable'],
             'recurrence_days' => ['nullable', 'array'],
             'is_favorite_slot' => ['boolean'],
+            'booking_mode' => ['required', Rule::in(['scheduled', 'asap'])],
         ];
 
         if ($this->isPremiumClient()) {
@@ -391,6 +393,20 @@ trait HandlesBookingSubmissionFlow
         $zone = $this->currentBookableServiceZone();
         $catalog = $this->currentServiceCatalog();
         $rule = $this->currentZoneServiceRule();
+
+        if ($this->booking_mode === 'asap') {
+            $requestedAt = Carbon::createFromFormat('Y-m-d H:i', $this->rdvDate . ' ' . $this->rdvHeure, $timezone);
+
+            if ($requestedAt->gt(now($timezone)->addHours(2))) {
+                $this->addError('booking_mode', 'Le mode ASAP doit trouver un créneau dans les 2 heures.');
+                return false;
+            }
+        } else {
+            if ($requestedAt->lt(now($timezone)->addHours($minimumNoticeHours))) {
+                $this->addError('rdvDate', 'Ce créneau est trop proche par rapport au délai minimum de réservation de votre zone.');
+                return false;
+            }
+        }
 
         if (! $zone || ! $catalog || ! $rule || ! $this->rdvDate || ! $this->rdvHeure) {
             return false;

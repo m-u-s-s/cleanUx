@@ -42,6 +42,11 @@ class Mission extends Model
         'client_final_status',
         'client_final_validated_at',
         'quality_summary',
+        'employee_cost',
+        'client_price',
+        'margin',
+        'actual_duration_minutes',
+        'travel_duration_minutes',
     ];
 
     protected $casts = [
@@ -157,6 +162,11 @@ class Mission extends Model
     public function events(): \Illuminate\Database\Eloquent\Relations\HasMany
     {
         return $this->hasMany(MissionEvent::class)->orderBy('happened_at');
+    }
+
+    public function conversation()
+    {
+        return $this->hasOne(Conversation::class);
     }
 
     public function taskSegment(): BelongsTo

@@ -47,11 +47,46 @@
 </head>
 
 <body>
+
     <div class="section">
         <h1>Rapport mission</h1>
         <p class="muted">Mission #{{ $mission->id }} — Référence {{ $mission->rendezVous?->booking_reference }}</p>
     </div>
 
+
+    {{-- resources/views/pdf/mission-report.blade.php --}}
+
+    <h1>Rapport de mission</h1>
+
+    <p><strong>Client :</strong> {{ $mission->rendezVous->client->name }}</p>
+    <p><strong>Employé :</strong> {{ $mission->leadEmployee->name }}</p>
+
+    <p><strong>Début :</strong> {{ $mission->actual_start_at }}</p>
+    <p><strong>Fin :</strong> {{ $mission->actual_end_at }}</p>
+
+    <h2>Photos avant</h2>
+    @foreach($mission->media->where('media_type', 'before') as $photo)
+    <img src="{{ public_path('storage/'.$photo->path) }}" width="200">
+    @endforeach
+
+    <h2>Photos après</h2>
+    @foreach($mission->media->where('media_type', 'after') as $photo)
+    <img src="{{ public_path('storage/'.$photo->path) }}" width="200">
+    @endforeach
+
+    <h2>Checklist</h2>
+    @foreach($mission->checklists as $checklist)
+    <p><strong>{{ $checklist->template_name }}</strong></p>
+    <ul>
+        @foreach($checklist->items as $item)
+        <li>
+            {{ $item->label }} — {{ $item->status === 'done' ? '✔' : '✘' }}
+        </li>
+        @endforeach
+    </ul>
+    @endforeach
+
+    
     <div class="section box">
         <h3>Informations générales</h3>
         <p><strong>Client :</strong> {{ $mission->rendezVous?->client?->name ?? '—' }}</p>

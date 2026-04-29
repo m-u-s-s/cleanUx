@@ -34,6 +34,7 @@ return new class extends Migration
             $table->index('role');
             $table->index('plan_type');
             $table->index('plan_status');
+            $table->foreignId('company_id')->nullable()->constrained();
         });
     }
 

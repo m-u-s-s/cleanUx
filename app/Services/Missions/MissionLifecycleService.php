@@ -22,6 +22,21 @@ class MissionLifecycleService
         protected MissionQualityService $missionQualityService,
     ) {}
 
+    protected function assertRequiredChecklistCompleted(Mission $mission): void
+    {
+        $mission->loadMissing('checklists.items');
+
+        $missingRequiredItems = $mission->checklists
+            ->flatMap(fn($checklist) => $checklist->items)
+            ->filter(fn($item) => $item->is_required && $item->status !== 'done');
+
+        if ($missingRequiredItems->isNotEmpty()) {
+            throw new \RuntimeException(
+                'Impossible de terminer la mission : certaines tâches obligatoires ne sont pas cochées.'
+            );
+        }
+    }
+
     public function createFromRendezVous(RendezVous $rendezVous): Mission
     {
         return $this->missionFromRendezVousSyncService->createFromRendezVous($rendezVous);
@@ -44,6 +59,11 @@ class MissionLifecycleService
         if ($mission->rendezVous?->client) {
             $mission->rendezVous->client->notify(new EmployeEnRouteNotification($mission));
         }
+
+        app(\App\Services\Notifications\SmsService::class)->send(
+            $mission->rendezVous?->client?->phone ?? $mission->rendezVous?->telephone_client,
+            'CleanUx : votre employé est en route. Vous pouvez suivre sa position depuis votre espace client.'
+        );
 
         app(MissionHistoryService::class)->log(
             $mission->fresh(),
@@ -74,6 +94,10 @@ class MissionLifecycleService
 
         $generated = $this->verificationCodeService->createVerificationCode($mission, 'start');
         session()->put('mission_start_code_' . $mission->id, $generated['code']);
+        app(\App\Services\Notifications\SmsService::class)->send(
+            $mission->rendezVous?->client?->phone ?? $mission->rendezVous?->telephone_client,
+            'CleanUx : votre employé est arrivé. Code de début : ' . $generated['code']
+        );
 
         $mission = $mission->fresh(['assignments', 'verificationCodes', 'rendezVous.client', 'leadEmployee']);
 
@@ -185,7 +209,10 @@ class MissionLifecycleService
 
     public function completeMission(Mission $mission, User $user, ?float $lat = null, ?float $lng = null): Mission
     {
+        $mission = app(\App\Services\Missions\MissionProfitService::class)
+            ->calculate($mission);
         $this->assignmentStatusService->assertAssignedToMission($mission, $user);
+        $this->assertRequiredChecklistCompleted($mission);
 
         $mission->update([
             'status' => MissionStatus::COMPLETED,
@@ -200,10 +227,18 @@ class MissionLifecycleService
         ]);
 
         $mission = $mission->fresh(['assignments', 'verificationCodes', 'rendezVous.client', 'leadEmployee']);
+        if ($mission->rendezVous) {
+            app(\App\Services\Payments\MissionPaymentService::class)
+                ->capture($mission->rendezVous);
+        }
 
         if ($mission->rendezVous?->client) {
             $mission->rendezVous->client->notify(new MissionCompletedNotification($mission));
         }
+        app(\App\Services\Notifications\SmsService::class)->send(
+            $mission->rendezVous?->client?->phone ?? $mission->rendezVous?->telephone_client,
+            'CleanUx : votre mission est terminée. Merci de laisser votre avis depuis votre espace client.'
+        );
 
         $mission = $this->missionQualityService->refreshMissionQuality($mission->fresh());
         $this->missionQualityService->generateOrRefreshReport($mission, $user);
@@ -215,6 +250,13 @@ class MissionLifecycleService
             'Mission terminée',
             'La mission a été clôturée avec validation client.'
         );
+
+        $reportPath = app(\App\Services\Missions\MissionReportService::class)
+            ->generate($mission);
+
+        $mission->update([
+            'report_path' => $reportPath,
+        ]);
 
         return $mission->fresh(['assignments', 'verificationCodes']);
     }

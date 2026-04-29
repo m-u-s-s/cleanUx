@@ -5,7 +5,7 @@
         class="bg-purple-600 text-white px-4 py-2 rounded-xl">
         🔁 Abonnements
     </a>
-    
+
     <x-page-shell
         :eyebrow="__('Espace client')"
         :title="'Bonjour ' . \Illuminate\Support\Str::before(auth()->user()->name, ' ')"
@@ -326,6 +326,15 @@
         <div class="mt-6">
             {{ $avenir->links() }}
         </div>
+        @endif
+
+        @if($mission->report_path)
+        <a
+            href="{{ asset('storage/'.$mission->report_path) }}"
+            target="_blank"
+            class="rounded-xl bg-green-600 px-4 py-2 text-white">
+            Télécharger le rapport
+        </a>
         @endif
     </x-app-card>
 </div>

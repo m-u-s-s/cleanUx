@@ -95,6 +95,8 @@ class PrendreRendezVous extends Component
 
     public int $duree_estimee = 0;
     public float $devis_estime = 0;
+    public string $booking_mode = 'scheduled';
+    public ?string $asapMessage = null;
 
     public function mount(): void
     {
@@ -153,42 +155,105 @@ class PrendreRendezVous extends Component
         $this->addError('selected_service_identifier', $message);
     }
 
-        public function updatedSelectedServiceIdentifier(): void
-        {
-            $this->normalizeBookingState();
-            $this->traitUpdatedSelectedServiceIdentifier();
+    public function updatedSelectedServiceIdentifier(): void
+    {
+        $this->normalizeBookingState();
+        $this->traitUpdatedSelectedServiceIdentifier();
+    }
+
+    public function updatedPostalCodeInput(): void
+    {
+        $this->code_postal = $this->postal_code_input;
+        $this->traitUpdatedPostalCodeInput();
+    }
+
+    public function updatedCodePostal(): void
+    {
+        $this->postal_code_input = $this->code_postal;
+        $this->traitUpdatedPostalCodeInput();
+    }
+
+    protected function asapBookingService(): \App\Services\Booking\AsapBookingService
+    {
+        return app(\App\Services\Booking\AsapBookingService::class);
+    }
+
+    public function updatedBookingMode(): void
+    {
+        if ($this->booking_mode === 'asap') {
+            $this->is_recurrent = false;
+            $this->priorite = 'urgente';
+            $this->resolveAsapSlot();
+        }
+    }
+
+    public function resolveAsapSlot(): void
+    {
+        $this->asapMessage = null;
+
+        $zone = $this->currentBookableServiceZone();
+
+        if (! $zone) {
+            $this->asapMessage = 'Entrez d’abord une adresse couverte.';
+            return;
         }
 
-        public function updatedPostalCodeInput(): void
-        {
-            $this->code_postal = $this->postal_code_input;
-            $this->traitUpdatedPostalCodeInput();
+        $result = $this->asapBookingService()->findBestAsapSlot(
+            zone: $zone,
+            estimatedDuration: max(30, (int) ($this->duree_estimee ?: 90)),
+            preferredEmployeeId: $this->isPremiumClient() ? $this->employe_id : null,
+            maxDelayHours: 2,
+        );
+
+        if (! $result) {
+            $zone = $this->currentBookableServiceZone();
+            $catalog = $this->currentServiceCatalog();
+
+            $suggestions = [];
+
+            if ($zone && $catalog) {
+                $suggestions = app(\App\Services\Booking\BookingIntelligenceService::class)
+                    ->suggestAlternativeSlots($zone, $catalog);
+            }
+
+            $this->rdvDate = null;
+            $this->rdvHeure = null;
+
+            $this->asapMessage = count($suggestions)
+                ? 'Aucun employé disponible sous 2h. Nous vous proposons les meilleurs créneaux alternatifs.'
+                : 'Aucun employé disponible sous 2h. Choisissez un créneau planifié.';
+
+            $this->creneauxDisponibles = collect($suggestions)
+                ->map(fn($slot) => $slot['date'] . ' ' . $slot['heure'])
+                ->toArray();
+
+            return;
         }
 
-        public function updatedCodePostal(): void
-        {
-            $this->postal_code_input = $this->code_postal;
-            $this->traitUpdatedPostalCodeInput();
-        }
+        $this->rdvDate = $result['date'];
+        $this->rdvHeure = $result['heure'];
+        $this->employe_id = $result['employee']->id;
 
-        public function render(): View
-        {
-            return view('livewire.client.prendre-rendez-vous', [
-                'surfaces' => $this->surfaces,
-                'services' => $this->services,
-                'typesLieu' => $this->typesLieux,
-                'frequences' => $this->frequences,
-                'priorites' => $this->priorites,
-                'optionsDisponibles' => $this->optionsDisponibles,
-                'zonesDisponibles' => $this->zonesDisponibles,
-                'employesDisponibles' => $this->employesDisponibles,
-                'creneauxDisponibles' => $this->creneauxDisponibles,
-                'recurringFrequencyOptions' => $this->recurringFrequencyOptions,
-                'recurringDayOptions' => $this->recurringDayOptions,
-                'selectedServiceLabel' => $this->selectedServiceLabel,
-                'bookingEntryRouteName' => $this->publicBookingEntryRouteName(),
-                'isGuestBooking' => ! Auth::check(),
-            ]);
-        }
+        $this->asapMessage = 'Créneau ASAP trouvé : aujourd’hui à ' . $this->rdvHeure . '.';
+    }
 
+    public function render(): View
+    {
+        return view('livewire.client.prendre-rendez-vous', [
+            'surfaces' => $this->surfaces,
+            'services' => $this->services,
+            'typesLieu' => $this->typesLieux,
+            'frequences' => $this->frequences,
+            'priorites' => $this->priorites,
+            'optionsDisponibles' => $this->optionsDisponibles,
+            'zonesDisponibles' => $this->zonesDisponibles,
+            'employesDisponibles' => $this->employesDisponibles,
+            'creneauxDisponibles' => $this->creneauxDisponibles,
+            'recurringFrequencyOptions' => $this->recurringFrequencyOptions,
+            'recurringDayOptions' => $this->recurringDayOptions,
+            'selectedServiceLabel' => $this->selectedServiceLabel,
+            'bookingEntryRouteName' => $this->publicBookingEntryRouteName(),
+            'isGuestBooking' => ! Auth::check(),
+        ]);
+    }
 }

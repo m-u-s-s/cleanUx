@@ -12,6 +12,46 @@ class SmartDispatchService
         protected EmployeeAvailabilityService $availabilityService,
     ) {}
 
+
+
+    protected function asapScore(User $employee, RendezVous $rdv): int
+    {
+        if (($rdv->booking_mode ?? 'scheduled') !== 'asap') {
+            return 0;
+        }
+
+        $score = 200;
+
+        $todayMissions = $employee->rendezVousEmploye()
+            ->whereDate('date', now()->toDateString())
+            ->whereIn('status', ['en_attente', 'confirme', 'en_route', 'sur_place'])
+            ->count();
+
+        if ($todayMissions === 0) {
+            $score += 150;
+        }
+
+        if ($todayMissions >= 3) {
+            $score -= 200;
+        }
+
+        return $score;
+    }
+
+    public function explainBestMatch(RendezVous $rdv): array
+    {
+        $candidates = $this->explainScores($rdv);
+
+        return [
+            'booking_id' => $rdv->id,
+            'booking_reference' => $rdv->booking_reference,
+            'booking_mode' => $rdv->booking_mode ?? 'scheduled',
+            'selected_employee_id' => $rdv->employe_id,
+            'candidates_count' => $candidates->count(),
+            'candidates' => $candidates->take(10)->values()->all(),
+        ];
+    }
+    
     public function assignBestEmployee(RendezVous $rdv): ?User
     {
         if (! $rdv->service_zone_id || ! $rdv->date || ! $rdv->heure) {
@@ -24,7 +64,7 @@ class SmartDispatchService
             ->sortedEligibleEmployeesForZone((int) $rdv->service_zone_id);
 
         return $employees
-            ->filter(fn (User $employee) => $this->availabilityService->employeeIsAvailableForSlot(
+            ->filter(fn(User $employee) => $this->availabilityService->employeeIsAvailableForSlot(
                 $employee->id,
                 $rdv->date->format('Y-m-d'),
                 substr((string) $rdv->heure, 0, 5),
@@ -32,7 +72,7 @@ class SmartDispatchService
                 $duration,
                 $rdv->id
             ))
-            ->sortByDesc(fn (User $employee) => $this->score($employee, $rdv))
+            ->sortByDesc(fn(User $employee) => $this->score($employee, $rdv))
             ->first();
     }
 
@@ -45,6 +85,7 @@ class SmartDispatchService
         $score += $this->qualityScore($employee);
         $score += $this->workloadScore($employee, $rdv);
         $score += $this->premiumScore($employee, $rdv);
+        $score += $this->asapScore($employee, $rdv);
 
         return $score;
     }

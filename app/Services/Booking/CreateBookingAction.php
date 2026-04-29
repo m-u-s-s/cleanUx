@@ -12,6 +12,8 @@ use App\Models\User;
 use App\Models\ZoneServiceRule;
 use App\Services\International\CountryMarketResolver;
 use App\Support\ActivityLogger;
+use App\Notifications\NouveauRendezVousNotification;
+use App\Notifications\RdvConfirmeNotification;
 use Illuminate\Support\Arr;
 use Illuminate\Validation\ValidationException;
 
@@ -155,6 +157,19 @@ class CreateBookingAction
             'duree_estimee' => Arr::get($data, 'duree_estimee'),
             'devis_estime' => $adjustedEstimate,
             'status' => $status,
+            'booking_mode' => Arr::get($data, 'booking_mode', 'scheduled'),
+            'asap_requested_at' => Arr::get($data, 'asap_requested_at'),
+            'asap_deadline_at' => Arr::get($data, 'asap_deadline_at'),
+            'matched_at' => Arr::get($data, 'matched_at'),
+            'matching_snapshot' => Arr::get($data, 'matching_snapshot'),
+        ]);
+        // conversation
+        $conversation = \App\Models\Conversation::firstOrCreate([
+            'rendez_vous_id' => $rendezVous->id,
+        ], [
+            'mission_id' => null,
+            'type' => 'booking',
+            'status' => 'open',
         ]);
 
         if ($client->activeCreditBalance() > 0) {
@@ -187,10 +202,38 @@ class CreateBookingAction
         $bestEmployee = app(\App\Services\Booking\SmartDispatchService::class)
             ->assignBestEmployee($rendezVous->fresh(['client', 'serviceZone']));
 
+        $dispatchService = app(\App\Services\Booking\SmartDispatchService::class);
+
+        $freshRdv = $rendezVous->fresh(['client', 'serviceZone']);
+
+        $bestEmployee = $dispatchService->assignBestEmployee($freshRdv);
+
         if ($bestEmployee) {
             $rendezVous->update([
                 'employe_id' => $bestEmployee->id,
+                'status' => $rendezVous->booking_mode === 'asap' ? 'confirme' : $rendezVous->status,
+                'matched_at' => now(),
+                'matching_snapshot' => array_merge(
+                    (array) ($rendezVous->matching_snapshot ?? []),
+                    [
+                        'selected_employee_id' => $bestEmployee->id,
+                        'selected_employee_name' => $bestEmployee->name,
+                        'confirmed_instantly' => $rendezVous->booking_mode === 'asap',
+                        'matched_at' => now()->toISOString(),
+                    ]
+                ),
             ]);
+
+            $conversation->update([
+                'mission_id' => $rendezVous->mission?->id,
+            ]);
+            $rendezVous->refresh()->load(['client', 'employe', 'serviceZone']);
+
+            $bestEmployee->notify(new NouveauRendezVousNotification($rendezVous));
+
+            if ($rendezVous->client && $rendezVous->status === 'confirme') {
+                $rendezVous->client->notify(new RdvConfirmeNotification($rendezVous));
+            }
         }
 
         ActivityLogger::log('booking.created', $rendezVous, [

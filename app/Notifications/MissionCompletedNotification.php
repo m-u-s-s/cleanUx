@@ -11,9 +11,7 @@ class MissionCompletedNotification extends Notification
 {
     use Queueable;
 
-    public function __construct(public Mission $mission)
-    {
-    }
+    public function __construct(public Mission $mission) {}
 
     public function via(object $notifiable): array
     {
@@ -25,9 +23,12 @@ class MissionCompletedNotification extends Notification
         return (new MailMessage)
             ->subject('Votre mission est terminée')
             ->greeting('Bonjour,')
-            ->line('La mission '.$this->mission->rendezVous?->booking_reference.' est terminée.')
+            ->line('La mission ' . $this->mission->rendezVous?->booking_reference . ' est terminée.')
             ->line('Vous pouvez maintenant valider la présence ou signaler un problème.')
-            ->action('Voir la mission', url('/client/dashboard'));
+            ->action('Voir la mission', url('/client/dashboard'))
+            ->action('Donner mon avis', url('/dashboard/client/rendez-vous/' . $this->mission->rendez_vous_id . '/feedback'))
+            ->line('Votre rapport de mission est disponible.')
+            ->action('Télécharger le rapport', url('/storage/' . $this->mission->report_path));
     }
 
     public function toArray(object $notifiable): array

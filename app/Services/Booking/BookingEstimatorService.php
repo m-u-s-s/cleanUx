@@ -39,7 +39,11 @@ class BookingEstimatorService
         $zonesMinutes = count((array) ($context['zones_specifiques'] ?? [])) * 10;
         $animauxMinutes = ! empty($context['presence_animaux']) ? 10 : 0;
 
-        return $baseMinutes + $surfaceMinutes + $optionsMinutes + $zonesMinutes + $animauxMinutes;
+        return app(\App\Services\Booking\BookingIntelligenceService::class)
+            ->predictDuration(
+                $baseMinutes + $surfaceMinutes + $optionsMinutes + $zonesMinutes + $animauxMinutes,
+                $context
+            );
     }
 
     public function estimatePrice(?ServiceCatalog $catalog, ?ServiceZone $zone, ?ZoneServiceRule $rule, array $context): float
@@ -91,5 +95,7 @@ class BookingEstimatorService
         };
 
         return round($subtotal, 2);
+        $subtotal = app(\App\Services\Booking\BookingIntelligenceService::class)
+            ->dynamicPrice($subtotal, $context);
     }
 }

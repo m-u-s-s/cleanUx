@@ -82,6 +82,16 @@ class RendezVous extends Model
         'alerte_urgence_envoyee_at',
         'duree_estimee',
         'devis_estime',
+        'booking_mode',
+        'asap_requested_at',
+        'asap_deadline_at',
+        'matched_at',
+        'matching_snapshot',
+        'payment_status',
+        'stripe_payment_intent_id',
+        'payment_authorized_at',
+        'payment_captured_at',
+        'payment_cancelled_at',
     ];
 
     protected $casts = [
@@ -118,6 +128,13 @@ class RendezVous extends Model
         'rappel_2h_envoye_at' => 'datetime',
         'feedback_demande_envoye_at' => 'datetime',
         'alerte_urgence_envoyee_at' => 'datetime',
+        'asap_requested_at' => 'datetime',
+        'asap_deadline_at' => 'datetime',
+        'matched_at' => 'datetime',
+        'matching_snapshot' => 'array',
+        'payment_authorized_at' => 'datetime',
+        'payment_captured_at' => 'datetime',
+        'payment_cancelled_at' => 'datetime',
     ];
 
     public function client(): BelongsTo
@@ -241,6 +258,11 @@ class RendezVous extends Model
     public function mission(): HasOne
     {
         return $this->hasOne(Mission::class, 'rendez_vous_id');
+    }
+
+    public function conversation()
+    {
+        return $this->hasOne(\App\Models\Conversation::class, 'rendez_vous_id');
     }
 
     public function enterpriseApproval(): HasOne

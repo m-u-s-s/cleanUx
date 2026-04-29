@@ -48,67 +48,111 @@
 
             <div class="space-y-4">
                 @if($selectedRendezVous && $selectedMission)
-                    <div class="bg-white rounded-2xl border border-indigo-200 shadow-sm p-5 space-y-3">
-                        <div class="flex items-start justify-between gap-3">
-                            <div>
-                                <p class="text-xs font-semibold uppercase tracking-wide text-indigo-600">Mission sélectionnée</p>
-                                <h3 class="text-lg font-bold text-slate-900">
-                                    {{ $selectedRendezVous->service_display_name }}
-                                </h3>
-                                <p class="text-sm text-slate-500">
-                                    RDV #{{ $selectedRendezVous->id }} · Mission #{{ $selectedMission->id }}
-                                </p>
-                            </div>
-
-                            <button
-                                wire:click="clearSelectedRdv"
-                                class="inline-flex items-center rounded-lg border px-3 py-1.5 text-xs font-semibold text-slate-600 hover:bg-slate-50 transition"
-                            >
-                                Fermer
-                            </button>
+                <div class="bg-white rounded-2xl border border-indigo-200 shadow-sm p-5 space-y-3">
+                    <div class="flex items-start justify-between gap-3">
+                        <div>
+                            <p class="text-xs font-semibold uppercase tracking-wide text-indigo-600">Mission sélectionnée</p>
+                            <h3 class="text-lg font-bold text-slate-900">
+                                {{ $selectedRendezVous->service_display_name }}
+                            </h3>
+                            <p class="text-sm text-slate-500">
+                                RDV #{{ $selectedRendezVous->id }} · Mission #{{ $selectedMission->id }}
+                            </p>
                         </div>
 
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
-                            <div class="rounded-xl bg-slate-50 border p-3">
-                                <p class="text-slate-500">Client</p>
-                                <p class="font-semibold text-slate-900">{{ $selectedRendezVous->client?->name ?? '—' }}</p>
-                            </div>
-                            <div class="rounded-xl bg-slate-50 border p-3">
-                                <p class="text-slate-500">Adresse</p>
-                                <p class="font-semibold text-slate-900">{{ $selectedRendezVous->adresse ?? '—' }}, {{ $selectedRendezVous->ville ?? '—' }}</p>
-                            </div>
-                            <div class="rounded-xl bg-slate-50 border p-3">
-                                <p class="text-slate-500">Statut RDV</p>
-                                <p class="font-semibold text-slate-900">{{ $selectedRendezVous->status }}</p>
-                            </div>
-                            <div class="rounded-xl bg-slate-50 border p-3">
-                                <p class="text-slate-500">Statut mission</p>
-                                <p class="font-semibold text-slate-900">{{ $selectedMission->status }}</p>
-                            </div>
-                        </div>
+                        <button
+                            wire:click="clearSelectedRdv"
+                            class="inline-flex items-center rounded-lg border px-3 py-1.5 text-xs font-semibold text-slate-600 hover:bg-slate-50 transition">
+                            Fermer
+                        </button>
+
+                        <button
+                            type="button"
+                            onclick="startMissionTracking({{ $mission->id }})"
+                            class="rounded-xl bg-blue-600 px-4 py-2 text-white hover:bg-blue-700">
+                            Je suis en route
+                        </button>
                     </div>
 
-                    <livewire:employe.mission-actions :mission="$selectedMission" :key="'mission-actions-'.$selectedMission->id" />
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
+                        <div class="rounded-xl bg-slate-50 border p-3">
+                            <p class="text-slate-500">Client</p>
+                            <p class="font-semibold text-slate-900">{{ $selectedRendezVous->client?->name ?? '—' }}</p>
+                        </div>
+                        <div class="rounded-xl bg-slate-50 border p-3">
+                            <p class="text-slate-500">Adresse</p>
+                            <p class="font-semibold text-slate-900">{{ $selectedRendezVous->adresse ?? '—' }}, {{ $selectedRendezVous->ville ?? '—' }}</p>
+                        </div>
+                        <div class="rounded-xl bg-slate-50 border p-3">
+                            <p class="text-slate-500">Statut RDV</p>
+                            <p class="font-semibold text-slate-900">{{ $selectedRendezVous->status }}</p>
+                        </div>
+                        <div class="rounded-xl bg-slate-50 border p-3">
+                            <p class="text-slate-500">Statut mission</p>
+                            <p class="font-semibold text-slate-900">{{ $selectedMission->status }}</p>
+                        </div>
+                    </div>
+                </div>
 
-                    @if(in_array($selectedMission->status, ['en_route', 'arrived', 'started', 'paused']))
-                        <livewire:employe.mission-route-tracking :mission="$selectedMission" :key="'mission-route-'.$selectedMission->id" />
-                    @endif
+                @foreach($mission->checklists as $checklist)
+                <div class="rounded-2xl border bg-white p-4 space-y-3">
+                    <h3 class="font-bold">{{ $checklist->template_name }}</h3>
 
-                    @if(in_array($selectedMission->status, ['arrived', 'started', 'paused', 'completed']))
-                        <livewire:employe.mission-execution-board :mission="$selectedMission" :key="'mission-execution-'.$selectedMission->id" />
-                    @endif
+                    @foreach($checklist->items as $item)
+                    <label class="flex items-center gap-3">
+                        <input
+                            type="checkbox"
+                            onchange="toggleChecklistItem({{ $item->id }}, this.checked)"
+                            {{ $item->status === 'done' ? 'checked' : '' }}>
 
-                    <livewire:employe.mission-incident-board :mission="$selectedMission" :key="'incident-board-'.$selectedMission->id" />
+                        <span>
+                            {{ $item->label }}
+                            @if($item->is_required)
+                            <span class="text-red-500">*</span>
+                            @endif
+                        </span>
+                    </label>
+                    @endforeach
+                </div>
+                @endforeach
+
+                <livewire:employe.mission-actions :mission="$selectedMission" :key="'mission-actions-'.$selectedMission->id" />
+
+                @if(in_array($selectedMission->status, ['en_route', 'arrived', 'started', 'paused']))
+                <livewire:employe.mission-route-tracking :mission="$selectedMission" :key="'mission-route-'.$selectedMission->id" />
+                @endif
+
+                @if(in_array($selectedMission->status, ['arrived', 'started', 'paused', 'completed']))
+                <livewire:employe.mission-execution-board :mission="$selectedMission" :key="'mission-execution-'.$selectedMission->id" />
+                @endif
+
+                <livewire:employe.mission-incident-board :mission="$selectedMission" :key="'incident-board-'.$selectedMission->id" />
                 @else
-                    <div class="bg-white rounded-2xl border border-dashed border-slate-300 p-8 text-center text-slate-500">
-                        <p class="text-base font-semibold text-slate-700">Aucune mission ouverte</p>
-                        <p class="mt-2 text-sm">
-                            Sélectionnez un rendez-vous avec une mission liée pour afficher le panneau terrain,
-                            le tracking, les actions et les incidents.
-                        </p>
-                    </div>
+                <div class="bg-white rounded-2xl border border-dashed border-slate-300 p-8 text-center text-slate-500">
+                    <p class="text-base font-semibold text-slate-700">Aucune mission ouverte</p>
+                    <p class="mt-2 text-sm">
+                        Sélectionnez un rendez-vous avec une mission liée pour afficher le panneau terrain,
+                        le tracking, les actions et les incidents.
+                    </p>
+                </div>
                 @endif
             </div>
         </div>
     </div>
 </div>
+
+<script>
+    async function toggleChecklistItem(itemId, checked) {
+        await fetch(`/mission-checklist-items/${itemId}/toggle`, {
+            method: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                'Accept': 'application/json',
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                status: checked ? 'done' : 'pending',
+            }),
+        });
+    }
+</script>
