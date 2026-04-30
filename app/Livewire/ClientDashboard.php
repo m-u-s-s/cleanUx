@@ -377,7 +377,7 @@ class ClientDashboard extends Component
     {
         $rdv = RendezVous::findOrFail($id);
 
-        Gate::authorize('delete', $rdv);
+        Gate::authorize('cancel', $rdv);
 
         if (! $rdv->canStillBeEditedByClient()) {
             $this->dispatch('toast', 'Ce rendez-vous ne peut plus être annulé.', 'error');

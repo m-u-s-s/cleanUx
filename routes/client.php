@@ -52,4 +52,9 @@ Route::middleware(['role:client'])
         if (class_exists(\App\Livewire\Client\HistoriqueClient::class)) {
             Route::get('/historique', \App\Livewire\Client\HistoriqueClient::class)->name('historique');
         }
+
+        if (class_exists(\App\Livewire\Client\ClientSubscriptions::class)) {
+            Route::get('/abonnements', \App\Livewire\Client\ClientSubscriptions::class)
+                ->name('subscriptions');
+        }
     });

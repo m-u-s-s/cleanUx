@@ -40,7 +40,7 @@
 
     <!-- mode reservation -->
     @if($booking_mode !== 'asap')
-    {{
+    
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
             <label class="block text-sm font-semibold text-slate-700 mb-2">Date souhaitée</label>
@@ -55,7 +55,7 @@
                     @endforeach
             </select>
         </div>
-    </div>}}
+    </div>
     @endif
     
 <div class="rounded-2xl border border-slate-200 p-4 space-y-3">

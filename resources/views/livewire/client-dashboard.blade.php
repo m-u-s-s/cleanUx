@@ -311,6 +311,15 @@
                         <p class="text-sm text-slate-600">🧑‍💼 {{ $rdv->employe->name ?? 'Employé à confirmer' }}</p>
                     </div>
 
+                    @if($rdv->mission?->report_path)
+                    <a
+                        href="{{ asset('storage/'.$rdv->mission->report_path) }}"
+                        target="_blank"
+                        class="rounded-xl bg-green-600 px-4 py-2 text-white">
+                        Télécharger le rapport
+                    </a>
+                    @endif
+
                     <div class="flex flex-wrap items-center gap-2">
                         <x-badge :status="$rdv->status" />
                         <x-priority-badge :priority="$rdv->priorite" />
@@ -325,16 +334,8 @@
         @if(method_exists($avenir, 'links'))
         <div class="mt-6">
             {{ $avenir->links() }}
-        </div>
-        @endif
 
-        @if($mission->report_path)
-        <a
-            href="{{ asset('storage/'.$mission->report_path) }}"
-            target="_blank"
-            class="rounded-xl bg-green-600 px-4 py-2 text-white">
-            Télécharger le rapport
-        </a>
+        </div>
         @endif
     </x-app-card>
 </div>
