@@ -204,6 +204,13 @@ class MissionTrackingService
         $destinationLat = $mission->destination_lat !== null ? (float) $mission->destination_lat : null;
         $destinationLng = $mission->destination_lng !== null ? (float) $mission->destination_lng : null;
 
+        $destinationLat = $mission->destination_lat !== null
+            ? (float) $mission->destination_lat
+            : ($mission->rendezVous?->destination_lat !== null ? (float) $mission->rendezVous->destination_lat : null);
+
+        $destinationLng = $mission->destination_lng !== null
+            ? (float) $mission->destination_lng
+            : ($mission->rendezVous?->destination_lng !== null ? (float) $mission->rendezVous->destination_lng : null);
         $distanceMeters = null;
         $etaMinutes = null;
 

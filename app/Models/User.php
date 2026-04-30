@@ -58,6 +58,14 @@ class User extends Authenticatable implements MustVerifyEmail
         'status',
         'is_active',
         'metadata',
+        'current_lat',
+        'current_lng',
+        'last_location_at',
+        'stripe_connect_account_id',
+        'stripe_connect_status',
+        'stripe_connect_onboarded_at',
+        'stripe_connect_charges_enabled_at',
+        'stripe_connect_payouts_enabled_at',
     ];
 
     protected $hidden = [
@@ -75,6 +83,12 @@ class User extends Authenticatable implements MustVerifyEmail
         'is_active' => 'boolean',
         'permissions' => 'array',
         'metadata' => 'array',
+        'current_lat' => 'decimal:7',
+        'current_lng' => 'decimal:7',
+        'last_location_at' => 'datetime',
+        'stripe_connect_onboarded_at' => 'datetime',
+        'stripe_connect_charges_enabled_at' => 'datetime',
+        'stripe_connect_payouts_enabled_at' => 'datetime',
     ];
 
     protected $appends = [
@@ -210,6 +224,19 @@ class User extends Authenticatable implements MustVerifyEmail
         return $this->belongsToMany(ServiceZone::class, 'employee_zone_assignments')
             ->withPivot(['assignment_type', 'coverage_priority', 'is_active', 'starts_at', 'ends_at', 'notes'])
             ->withTimestamps();
+    }
+
+    public function hasStripeConnectAccount(): bool
+    {
+        return filled($this->stripe_connect_account_id);
+    }
+
+    public function canReceiveStripeConnectPayments(): bool
+    {
+        return filled($this->stripe_connect_account_id)
+            && $this->stripe_connect_status === 'active'
+            && filled($this->stripe_connect_charges_enabled_at)
+            && filled($this->stripe_connect_payouts_enabled_at);
     }
 
     public function organizationSites(): HasMany
@@ -363,6 +390,11 @@ class User extends Authenticatable implements MustVerifyEmail
     public function activeFieldTeamIds(): array
     {
         return $this->activeFieldTeamMemberships()->pluck('field_team_id')->map(fn($id) => (int) $id)->values()->all();
+    }
+
+    public function company()
+    {
+        return $this->belongsTo(Company::class);
     }
 
     // mission

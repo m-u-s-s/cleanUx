@@ -29,15 +29,14 @@ return new class extends Migration
             $table->foreignId('current_team_id')->nullable();
             $table->string('profile_photo_path', 2048)->nullable();
 
-            
+
             $table->index('role');
             $table->index('plan_type');
             $table->index('plan_status');
-            $table->foreignId('company_id')->nullable()->constrained();
+            $table->foreignId('company_id')->nullable()->constrained('companies')->nullOnDelete();
             $table->decimal('current_lat', 10, 7)->nullable();
             $table->decimal('current_lng', 10, 7)->nullable();
             $table->timestamp('last_location_at')->nullable();
-            $table->string('stripe_connect_account_id')->nullable();
             $table->string('stripe_connect_account_id')->nullable();
             $table->string('stripe_connect_status')->default('not_connected');
             $table->timestamp('stripe_connect_onboarded_at')->nullable();

@@ -14,7 +14,7 @@ $prochaineMission = $prochaineMission ?? null;
 
 <div class="space-y-6">
     <x-active-sessions />
-    
+
     <x-page-shell
         eyebrow="Portail employé"
         title="Ma journée"
@@ -27,6 +27,24 @@ $prochaineMission = $prochaineMission ?? null;
         </x-slot>
     </x-page-shell>
 
+    @if(auth()->user()->canReceiveStripeConnectPayments())
+    <div class="rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-emerald-800">
+        Votre compte de paiement est actif. Vous pouvez recevoir vos reversements.
+    </div>
+    @else
+    <div class="rounded-2xl border border-amber-200 bg-amber-50 p-4 text-amber-800">
+        <p class="font-semibold">Paiement prestataire non configuré</p>
+        <p class="text-sm mt-1">
+            Configurez Stripe Connect pour recevoir automatiquement vos paiements.
+        </p>
+
+        <a
+            href="{{ route('employe.stripe-connect.start') }}"
+            class="inline-flex mt-3 rounded-xl bg-slate-900 px-4 py-2 text-white">
+            Configurer mes paiements
+        </a>
+    </div>
+    @endif
     <div class="grid grid-cols-2 gap-4 xl:grid-cols-5">
         <x-ui.stat title="Total" :value="$statsJour['total']" tone="slate" icon="📦" hint="Toutes les missions du jour" />
         <x-ui.stat title="À faire" :value="$statsJour['a_faire']" tone="amber" icon="⏳" hint="Missions encore à démarrer" />
@@ -216,57 +234,57 @@ $prochaineMission = $prochaineMission ?? null;
 
 
 <script>
-const OFFLINE_QUEUE_KEY = 'cleanux_offline_actions';
+    const OFFLINE_QUEUE_KEY = 'cleanux_offline_actions';
 
-function getOfflineQueue() {
-    return JSON.parse(localStorage.getItem(OFFLINE_QUEUE_KEY) || '[]');
-}
-
-function saveOfflineQueue(queue) {
-    localStorage.setItem(OFFLINE_QUEUE_KEY, JSON.stringify(queue));
-}
-
-function queueOfflineAction(type, missionId, payload = {}) {
-    const queue = getOfflineQueue();
-
-    queue.push({
-        type: type,
-        mission_id: missionId,
-        payload: payload,
-        created_at: new Date().toISOString(),
-    });
-
-    saveOfflineQueue(queue);
-}
-
-async function syncOfflineActions() {
-    const queue = getOfflineQueue();
-
-    if (!queue.length || !navigator.onLine) {
-        return;
+    function getOfflineQueue() {
+        return JSON.parse(localStorage.getItem(OFFLINE_QUEUE_KEY) || '[]');
     }
 
-    const response = await fetch('/missions/offline-sync', {
-        method: 'POST',
-        headers: {
-            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-            'Accept': 'application/json',
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-            actions: queue,
-        }),
-    });
-
-    const result = await response.json();
-
-    if (result.ok) {
-        saveOfflineQueue([]);
-        console.log(`${result.synced} action(s) synchronisée(s).`);
+    function saveOfflineQueue(queue) {
+        localStorage.setItem(OFFLINE_QUEUE_KEY, JSON.stringify(queue));
     }
-}
 
-window.addEventListener('online', syncOfflineActions);
+    function queueOfflineAction(type, missionId, payload = {}) {
+        const queue = getOfflineQueue();
 
-setInterval(syncOfflineActions, 30000);
+        queue.push({
+            type: type,
+            mission_id: missionId,
+            payload: payload,
+            created_at: new Date().toISOString(),
+        });
+
+        saveOfflineQueue(queue);
+    }
+
+    async function syncOfflineActions() {
+        const queue = getOfflineQueue();
+
+        if (!queue.length || !navigator.onLine) {
+            return;
+        }
+
+        const response = await fetch('/missions/offline-sync', {
+            method: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                'Accept': 'application/json',
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                actions: queue,
+            }),
+        });
+
+        const result = await response.json();
+
+        if (result.ok) {
+            saveOfflineQueue([]);
+            console.log(`${result.synced} action(s) synchronisée(s).`);
+        }
+    }
+
+    window.addEventListener('online', syncOfflineActions);
+
+    setInterval(syncOfflineActions, 30000);
 </script>

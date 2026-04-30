@@ -253,6 +253,7 @@ class MissionLifecycleService
                 'message' => 'Mission terminée',
             ]
         ));
+        
 
         $this->assignmentStatusService->updateAssignmentStatus($mission, $user, 'completed', [
             'completed_at' => now(),

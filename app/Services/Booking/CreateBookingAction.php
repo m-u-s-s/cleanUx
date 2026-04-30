@@ -162,6 +162,10 @@ class CreateBookingAction
             'asap_deadline_at' => Arr::get($data, 'asap_deadline_at'),
             'matched_at' => Arr::get($data, 'matched_at'),
             'matching_snapshot' => Arr::get($data, 'matching_snapshot'),
+            'google_place_id' => Arr::get($data, 'google_place_id'),
+            'destination_lat' => Arr::get($data, 'destination_lat'),
+            'destination_lng' => Arr::get($data, 'destination_lng'),
+            'address_components' => Arr::get($data, 'address_components', []),
         ]);
         // conversation
         $conversation = \App\Models\Conversation::firstOrCreate([

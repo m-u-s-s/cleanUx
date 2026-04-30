@@ -131,6 +131,10 @@ trait HandlesBookingCreation
                 'matched_date' => $this->rdvDate,
                 'matched_time' => $this->rdvHeure,
             ] : null,
+            'google_place_id' => $this->google_place_id,
+            'destination_lat' => $this->destination_lat,
+            'destination_lng' => $this->destination_lng,
+            'address_components' => $this->address_components,
         ];
 
         $occurrencesCount = 1;

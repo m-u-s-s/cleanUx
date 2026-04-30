@@ -97,6 +97,10 @@ class PrendreRendezVous extends Component
     public float $devis_estime = 0;
     public string $booking_mode = 'scheduled';
     public ?string $asapMessage = null;
+    public ?string $google_place_id = null;
+    public ?float $destination_lat = null;
+    public ?float $destination_lng = null;
+    public array $address_components = [];
 
     public function mount(): void
     {
@@ -254,6 +258,7 @@ class PrendreRendezVous extends Component
             'selectedServiceLabel' => $this->selectedServiceLabel,
             'bookingEntryRouteName' => $this->publicBookingEntryRouteName(),
             'isGuestBooking' => ! Auth::check(),
+            'googleMapsApiKey' => config('services.google_maps.key'),
         ]);
     }
 }

@@ -1,351 +1,291 @@
 <x-guest-layout>
+    <main class="overflow-hidden bg-slate-50">
 
-<div class="bg-slate-50 text-slate-900">
-    {{-- HERO --}}
-    <section class="relative overflow-hidden">
-        <div class="absolute inset-0 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-700"></div>
-        <div class="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(245,158,11,0.15),transparent_30%),radial-gradient(circle_at_bottom_left,rgba(14,165,233,0.15),transparent_30%)]"></div>
+        {{-- HERO --}}
+        <section class="relative">
+            <div class="absolute inset-0 bg-gradient-to-br from-slate-950 via-slate-900 to-blue-950"></div>
+            <div class="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(59,130,246,0.28),transparent_35%),radial-gradient(circle_at_bottom_left,rgba(16,185,129,0.18),transparent_35%)]"></div>
 
-        <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-24">
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-10 items-center">
-                <div class="text-white">
-                    <span class="inline-flex items-center rounded-full border border-white/20 bg-white/10 px-4 py-1.5 text-xs font-semibold tracking-wide uppercase">
-                        Entreprise de nettoyage moderne
-                    </span>
-
-                    <h1 class="mt-6 text-4xl md:text-5xl lg:text-6xl font-extrabold leading-tight tracking-tight">
-                        Un service de nettoyage professionnel,
-                        <span class="text-amber-300">simple à réserver</span>
-                        et facile à suivre
-                    </h1>
-
-                    <p class="mt-6 text-lg text-slate-200 max-w-2xl leading-relaxed">
-                        Maison, appartement, bureaux ou interventions en profondeur :
-                        profitez d’une équipe réelle, d’une organisation claire et d’une expérience digitale fluide.
-                    </p>
-
-                    <div class="mt-8 flex flex-wrap gap-3">
-                        <a href="{{ route('booking.create') }}"
-                           class="inline-flex items-center justify-center rounded-2xl bg-sky-500 px-6 py-3.5 text-sm font-semibold text-white hover:bg-sky-600 transition">
-                            Réserver une prestation
-                        </a>
-
-                        <a href="{{ route('premium.offer') }}"
-                           class="inline-flex items-center justify-center rounded-2xl border border-white/20 bg-white/10 px-6 py-3.5 text-sm font-semibold text-white hover:bg-white/15 transition">
-                            Découvrir l’offre Premium
-                        </a>
-                    </div>
-
-                    <div class="mt-8 grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm">
-                        <div class="rounded-2xl border border-white/10 bg-white/5 px-4 py-3">
-                            <p class="font-semibold text-white">Réservation rapide</p>
-                            <p class="mt-1 text-slate-300">Parcours simple et clair</p>
-                        </div>
-                        <div class="rounded-2xl border border-white/10 bg-white/5 px-4 py-3">
-                            <p class="font-semibold text-white">Suivi rassurant</p>
-                            <p class="mt-1 text-slate-300">Statuts et historique client</p>
-                        </div>
-                        <div class="rounded-2xl border border-white/10 bg-white/5 px-4 py-3">
-                            <p class="font-semibold text-white">Service premium</p>
-                            <p class="mt-1 text-slate-300">Option mensuelle personnalisée</p>
-                        </div>
-                    </div>
-                </div>
-
-                <div>
-                    <div class="rounded-[2rem] bg-white shadow-2xl border border-slate-200 overflow-hidden">
-                        <div class="p-6 border-b border-slate-100 bg-slate-50">
-                            <div class="flex items-center justify-between gap-3">
-                                <div>
-                                    <p class="text-sm font-medium text-slate-500">Aperçu du service</p>
-                                    <h3 class="text-xl font-bold text-slate-900 mt-1">Expérience client claire</h3>
-                                </div>
-                                <span class="inline-flex items-center rounded-full bg-emerald-50 border border-emerald-200 px-3 py-1 text-xs font-semibold text-emerald-700">
-                                    Disponible
-                                </span>
-                            </div>
+            <div class="relative mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8 lg:py-24">
+                <div class="grid items-center gap-12 lg:grid-cols-2">
+                    <div class="text-white">
+                        <div class="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-4 py-2 text-xs font-bold uppercase tracking-[0.2em] text-blue-100">
+                            ✨ Plateforme de nettoyage moderne
                         </div>
 
-                        <div class="p-6 space-y-4">
-                            <div class="rounded-2xl border border-slate-200 bg-slate-50 p-4">
-                                <div class="flex items-center justify-between gap-3">
-                                    <div>
-                                        <p class="text-sm text-slate-500">Prochaine intervention</p>
-                                        <p class="text-lg font-bold text-slate-900 mt-1">Nettoyage standard</p>
-                                    </div>
-                                    <span class="inline-flex items-center rounded-full bg-sky-50 border border-sky-200 px-3 py-1 text-xs font-semibold text-sky-700">
-                                        Confirmée
-                                    </span>
-                                </div>
-                                <p class="mt-3 text-sm text-slate-600">Mardi 10:00 — Bruxelles</p>
-                            </div>
+                        <h1 class="mt-6 text-4xl font-black leading-tight tracking-tight sm:text-5xl lg:text-6xl">
+                            Réservez un nettoyage,
+                            <span class="text-blue-300">suivez l’employé</span>
+                            et validez la mission en toute confiance.
+                        </h1>
 
-                            <div class="grid grid-cols-2 gap-4">
-                                <div class="rounded-2xl border border-slate-200 p-4">
-                                    <p class="text-sm text-slate-500">Réservation</p>
-                                    <p class="text-lg font-bold text-slate-900 mt-1">En 4 étapes</p>
-                                </div>
-                                <div class="rounded-2xl border border-slate-200 p-4">
-                                    <p class="text-sm text-slate-500">Devis estimatif</p>
-                                    <p class="text-lg font-bold text-slate-900 mt-1">Visible en direct</p>
-                                </div>
-                            </div>
-
-                            <div class="rounded-2xl border border-amber-200 bg-amber-50 p-4">
-                                <p class="text-sm font-semibold text-amber-800">Option Premium mensuelle</p>
-                                <p class="mt-1 text-sm text-amber-700">
-                                    Choix des employés favoris, disponibilités visibles et expérience plus personnalisée.
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    {{-- HOW IT WORKS --}}
-    <section class="py-16 md:py-20">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="max-w-2xl">
-                <p class="text-sm font-semibold uppercase tracking-[0.2em] text-sky-600">Comment ça marche</p>
-                <h2 class="mt-3 text-3xl md:text-4xl font-extrabold tracking-tight text-slate-900">
-                    Une organisation simple, claire et professionnelle
-                </h2>
-                <p class="mt-4 text-slate-600">
-                    Nous avons pensé l’expérience pour qu’elle soit fluide côté client et efficace côté équipe.
-                </p>
-            </div>
-
-            <div class="mt-10 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
-                <div class="bg-white rounded-3xl border border-slate-200 p-6 shadow-sm">
-                    <div class="text-sky-600 font-extrabold text-2xl">1</div>
-                    <h3 class="mt-3 text-lg font-bold text-slate-900">Choisissez votre service</h3>
-                    <p class="mt-2 text-sm text-slate-600">
-                        Sélectionnez le type de prestation, le lieu, la fréquence et les besoins principaux.
-                    </p>
-                </div>
-
-                <div class="bg-white rounded-3xl border border-slate-200 p-6 shadow-sm">
-                    <div class="text-sky-600 font-extrabold text-2xl">2</div>
-                    <h3 class="mt-3 text-lg font-bold text-slate-900">Indiquez vos préférences</h3>
-                    <p class="mt-2 text-sm text-slate-600">
-                        Ajoutez vos options, votre adresse, vos commentaires et vos contraintes d’accès.
-                    </p>
-                </div>
-
-                <div class="bg-white rounded-3xl border border-slate-200 p-6 shadow-sm">
-                    <div class="text-sky-600 font-extrabold text-2xl">3</div>
-                    <h3 class="mt-3 text-lg font-bold text-slate-900">Planifiez le créneau</h3>
-                    <p class="mt-2 text-sm text-slate-600">
-                        En standard, nous gérons l’attribution. En Premium, vous pouvez choisir vos favoris.
-                    </p>
-                </div>
-
-                <div class="bg-white rounded-3xl border border-slate-200 p-6 shadow-sm">
-                    <div class="text-sky-600 font-extrabold text-2xl">4</div>
-                    <h3 class="mt-3 text-lg font-bold text-slate-900">Suivez la prestation</h3>
-                    <p class="mt-2 text-sm text-slate-600">
-                        Retrouvez vos rendez-vous, votre historique et les informations utiles dans votre espace client.
-                    </p>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    {{-- OFFERS --}}
-    <section class="pb-16 md:pb-20">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="max-w-2xl">
-                <p class="text-sm font-semibold uppercase tracking-[0.2em] text-amber-600">Nos offres</p>
-                <h2 class="mt-3 text-3xl md:text-4xl font-extrabold tracking-tight text-slate-900">
-                    Deux niveaux de service, selon votre manière de réserver
-                </h2>
-                <p class="mt-4 text-slate-600">
-                    Une formule simple pour les besoins classiques, et une formule Premium pour les clients réguliers.
-                </p>
-            </div>
-
-            <div class="mt-10 grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <div class="bg-white rounded-[2rem] border border-slate-200 shadow-sm p-8">
-                    <div class="flex items-center justify-between gap-3">
-                        <h3 class="text-2xl font-bold text-slate-900">Standard</h3>
-                        <span class="inline-flex items-center rounded-full bg-slate-100 border border-slate-200 px-3 py-1 text-xs font-semibold text-slate-700">
-                            Flexible
-                        </span>
-                    </div>
-
-                    <p class="mt-4 text-slate-600">
-                        Idéal pour les demandes ponctuelles ou les clients qui veulent réserver rapidement.
-                    </p>
-
-                    <ul class="mt-6 space-y-3 text-sm text-slate-700">
-                        <li>• Réservation simple et rapide</li>
-                        <li>• Devis estimatif visible</li>
-                        <li>• Attribution interne de l’employé</li>
-                        <li>• Suivi du rendez-vous</li>
-                        <li>• Historique client</li>
-                    </ul>
-
-                    <div class="mt-8">
-                        <a href="{{ route('booking.create') }}"
-                           class="inline-flex items-center justify-center rounded-2xl bg-slate-900 px-5 py-3 text-sm font-semibold text-white hover:bg-slate-800 transition">
-                            Réserver en Standard
-                        </a>
-                    </div>
-                </div>
-
-                <div class="bg-white rounded-[2rem] border border-amber-200 shadow-sm p-8 relative overflow-hidden">
-                    <div class="absolute top-0 right-0 m-6">
-                        <span class="inline-flex items-center rounded-full bg-amber-50 border border-amber-200 px-3 py-1 text-xs font-semibold text-amber-700">
-                            Recommandé
-                        </span>
-                    </div>
-
-                    <div class="max-w-xl">
-                        <h3 class="text-2xl font-bold text-slate-900">Premium mensuel</h3>
-
-                        <p class="mt-4 text-slate-700">
-                            Pensé pour les clients réguliers qui veulent plus de confort, plus de personnalisation et plus de continuité.
+                        <p class="mt-6 max-w-2xl text-lg leading-8 text-slate-200">
+                            CleanUx simplifie toute l’expérience : devis, rendez-vous, suivi en temps réel,
+                            codes de début/fin, historique, feedback et espace client.
                         </p>
 
-                        <div class="mt-6 flex items-end gap-2">
-                            <span class="text-4xl font-extrabold text-slate-900">29€</span>
-                            <span class="text-slate-500 mb-1">/ mois</span>
+                        <div class="mt-8 flex flex-wrap gap-3">
+                            <a href="{{ route('booking.create') }}"
+                               class="inline-flex items-center justify-center rounded-2xl bg-blue-600 px-6 py-4 text-sm font-bold text-white shadow-lg shadow-blue-900/30 hover:bg-blue-700">
+                                Réserver une prestation
+                            </a>
+
+                            @if(Route::has('premium.offer'))
+                                <a href="{{ route('premium.offer') }}"
+                                   class="inline-flex items-center justify-center rounded-2xl border border-white/20 bg-white/10 px-6 py-4 text-sm font-bold text-white hover:bg-white/15">
+                                    Découvrir Premium
+                                </a>
+                            @endif
                         </div>
 
-                        <ul class="mt-6 space-y-3 text-sm text-slate-800">
-                            <li>• Tout ce qui est inclus dans Standard</li>
-                            <li>• Choix des employés favoris</li>
-                            <li>• Visibilité sur leurs disponibilités</li>
-                            <li>• Réservation plus personnalisée</li>
-                            <li>• Expérience plus fluide au quotidien</li>
+                        <div class="mt-10 grid grid-cols-3 gap-3 text-center">
+                            <div class="rounded-2xl border border-white/10 bg-white/10 p-4">
+                                <p class="text-2xl font-black">24/7</p>
+                                <p class="mt-1 text-xs text-slate-300">Demande en ligne</p>
+                            </div>
+                            <div class="rounded-2xl border border-white/10 bg-white/10 p-4">
+                                <p class="text-2xl font-black">GPS</p>
+                                <p class="mt-1 text-xs text-slate-300">Suivi employé</p>
+                            </div>
+                            <div class="rounded-2xl border border-white/10 bg-white/10 p-4">
+                                <p class="text-2xl font-black">Code</p>
+                                <p class="mt-1 text-xs text-slate-300">Début & fin</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="relative">
+                        <div class="rounded-[2rem] border border-white/10 bg-white p-5 shadow-2xl">
+                            <div class="rounded-[1.5rem] bg-slate-50 p-5">
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <p class="text-sm font-semibold text-slate-500">Mission en cours</p>
+                                        <h2 class="mt-1 text-2xl font-black text-slate-900">Nettoyage bureaux</h2>
+                                    </div>
+                                    <span class="rounded-full bg-blue-100 px-3 py-1 text-xs font-bold text-blue-700">
+                                        En route
+                                    </span>
+                                </div>
+
+                                <div class="mt-5 rounded-2xl border bg-white p-4">
+                                    <p class="text-sm text-slate-500">Arrivée estimée</p>
+                                    <p class="mt-1 text-3xl font-black text-blue-700">12 min</p>
+                                    <div class="mt-4 h-2 rounded-full bg-slate-100">
+                                        <div class="h-2 w-2/3 rounded-full bg-blue-600"></div>
+                                    </div>
+                                </div>
+
+                                <div class="mt-4 grid grid-cols-2 gap-3">
+                                    <div class="rounded-2xl border bg-white p-4">
+                                        <p class="text-xs text-slate-500">Employé</p>
+                                        <p class="mt-1 font-bold text-slate-900">Assigné</p>
+                                    </div>
+                                    <div class="rounded-2xl border bg-white p-4">
+                                        <p class="text-xs text-slate-500">Validation</p>
+                                        <p class="mt-1 font-bold text-slate-900">Code client</p>
+                                    </div>
+                                </div>
+
+                                <div class="mt-4 rounded-2xl border border-emerald-200 bg-emerald-50 p-4">
+                                    <p class="font-bold text-emerald-800">Mission sécurisée</p>
+                                    <p class="mt-1 text-sm text-emerald-700">
+                                        L’employé démarre et termine uniquement avec votre validation.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="absolute -bottom-6 -left-6 hidden rounded-2xl bg-white p-4 shadow-xl lg:block">
+                            <p class="text-xs font-semibold text-slate-500">Feedback client</p>
+                            <p class="mt-1 text-xl font-black text-slate-900">★★★★★</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        {{-- TRUST --}}
+        <section class="border-b border-slate-200 bg-white py-6">
+            <div class="mx-auto grid max-w-7xl grid-cols-2 gap-4 px-4 text-center sm:px-6 md:grid-cols-4 lg:px-8">
+                <div>
+                    <p class="font-black text-slate-900">Devis clair</p>
+                    <p class="text-sm text-slate-500">Avant confirmation</p>
+                </div>
+                <div>
+                    <p class="font-black text-slate-900">Suivi live</p>
+                    <p class="text-sm text-slate-500">Employé en route</p>
+                </div>
+                <div>
+                    <p class="font-black text-slate-900">Photos & rapport</p>
+                    <p class="text-sm text-slate-500">Après mission</p>
+                </div>
+                <div>
+                    <p class="font-black text-slate-900">B2B ready</p>
+                    <p class="text-sm text-slate-500">Sites & factures</p>
+                </div>
+            </div>
+        </section>
+
+        {{-- HOW IT WORKS --}}
+        <section id="fonctionnement" class="py-20">
+            <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+                <div class="max-w-3xl">
+                    <p class="text-sm font-black uppercase tracking-[0.2em] text-blue-600">Comment ça marche</p>
+                    <h2 class="mt-3 text-3xl font-black tracking-tight text-slate-900 sm:text-4xl">
+                        Un parcours simple du devis jusqu’au feedback.
+                    </h2>
+                </div>
+
+                <div class="mt-10 grid gap-5 md:grid-cols-2 lg:grid-cols-4">
+                    @foreach([
+                        ['1', 'Demande', 'Le client choisit le service, l’adresse, la date et les options.'],
+                        ['2', 'Devis', 'Le prix estimé est visible avant la confirmation.'],
+                        ['3', 'Mission', 'L’employé est assigné, suivi et validé par code.'],
+                        ['4', 'Feedback', 'Le client reçoit une page de note et commentaire.'],
+                    ] as $step)
+                        <div class="rounded-[2rem] border bg-white p-6 shadow-sm">
+                            <div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-600 text-lg font-black text-white">
+                                {{ $step[0] }}
+                            </div>
+                            <h3 class="mt-5 text-xl font-black text-slate-900">{{ $step[1] }}</h3>
+                            <p class="mt-3 text-sm leading-6 text-slate-600">{{ $step[2] }}</p>
+                        </div>
+                    @endforeach
+                </div>
+            </div>
+        </section>
+
+        {{-- SERVICES --}}
+        <section id="services" class="bg-white py-20">
+            <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+                <div class="max-w-3xl">
+                    <p class="text-sm font-black uppercase tracking-[0.2em] text-emerald-600">Services</p>
+                    <h2 class="mt-3 text-3xl font-black tracking-tight text-slate-900 sm:text-4xl">
+                        Des prestations adaptées aux particuliers et aux entreprises.
+                    </h2>
+                </div>
+
+                <div class="mt-10 grid gap-5 md:grid-cols-2 lg:grid-cols-4">
+                    @foreach([
+                        ['🏠', 'Nettoyage standard', 'Entretien régulier maison, appartement ou studio.'],
+                        ['✨', 'Nettoyage profond', 'Intervention plus complète avec options ciblées.'],
+                        ['🏗️', 'Fin de chantier', 'Nettoyage après travaux, rénovation ou déménagement.'],
+                        ['🏢', 'Bureaux & B2B', 'Nettoyage professionnel avec suivi et facturation.'],
+                    ] as $service)
+                        <div class="rounded-[2rem] border border-slate-200 bg-slate-50 p-6">
+                            <div class="text-3xl">{{ $service[0] }}</div>
+                            <h3 class="mt-4 text-lg font-black text-slate-900">{{ $service[1] }}</h3>
+                            <p class="mt-2 text-sm leading-6 text-slate-600">{{ $service[2] }}</p>
+                        </div>
+                    @endforeach
+                </div>
+            </div>
+        </section>
+
+        {{-- PREMIUM --}}
+        <section id="premium" class="py-20">
+            <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+                <div class="grid gap-8 lg:grid-cols-2">
+                    <div class="rounded-[2rem] border bg-white p-8 shadow-sm">
+                        <p class="text-sm font-black uppercase tracking-[0.2em] text-slate-500">Standard</p>
+                        <h3 class="mt-3 text-3xl font-black text-slate-900">Pour réserver simplement.</h3>
+                        <ul class="mt-6 space-y-3 text-sm text-slate-700">
+                            <li>✅ Réservation rapide</li>
+                            <li>✅ Devis estimé</li>
+                            <li>✅ Suivi du rendez-vous</li>
+                            <li>✅ Historique client</li>
                         </ul>
+                        <a href="{{ route('booking.create') }}"
+                           class="mt-8 inline-flex rounded-2xl bg-slate-900 px-5 py-3 text-sm font-bold text-white hover:bg-slate-800">
+                            Commencer
+                        </a>
+                    </div>
+
+                    <div class="relative overflow-hidden rounded-[2rem] border border-blue-200 bg-blue-600 p-8 text-white shadow-xl">
+                        <div class="absolute right-0 top-0 h-40 w-40 rounded-full bg-white/10 blur-2xl"></div>
+                        <p class="text-sm font-black uppercase tracking-[0.2em] text-blue-100">Premium</p>
+                        <h3 class="mt-3 text-3xl font-black">Pour les clients réguliers.</h3>
+                        <p class="mt-4 text-blue-50">
+                            Plus de confort, plus de personnalisation et une expérience plus fluide.
+                        </p>
+                        <ul class="mt-6 space-y-3 text-sm text-blue-50">
+                            <li>⭐ Employés favoris</li>
+                            <li>⭐ Disponibilités visibles</li>
+                            <li>⭐ Replanification plus simple</li>
+                            <li>⭐ Expérience prioritaire</li>
+                        </ul>
+                        @if(Route::has('premium.offer'))
+                            <a href="{{ route('premium.offer') }}"
+                               class="mt-8 inline-flex rounded-2xl bg-white px-5 py-3 text-sm font-bold text-blue-700 hover:bg-blue-50">
+                                Voir Premium
+                            </a>
+                        @endif
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        {{-- B2B --}}
+        <section id="b2b" class="bg-slate-900 py-20 text-white">
+            <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+                <div class="grid gap-10 lg:grid-cols-2 lg:items-center">
+                    <div>
+                        <p class="text-sm font-black uppercase tracking-[0.2em] text-blue-300">Entreprises</p>
+                        <h2 class="mt-3 text-3xl font-black tracking-tight sm:text-4xl">
+                            Une solution pensée pour les bureaux, sites et grands comptes.
+                        </h2>
+                        <p class="mt-5 text-slate-300">
+                            CleanUx peut gérer plusieurs sites, des validations internes, des factures mensuelles,
+                            des centres de coûts et un suivi opérationnel clair.
+                        </p>
+                    </div>
+
+                    <div class="grid gap-4 sm:grid-cols-2">
+                        @foreach([
+                            ['Multi-sites', 'Plusieurs adresses et responsables.'],
+                            ['Workflow', 'Validation manager et finance.'],
+                            ['Facturation B2B', 'Factures groupées par période.'],
+                            ['SLA', 'Suivi qualité et alertes opérationnelles.'],
+                        ] as $item)
+                            <div class="rounded-2xl border border-white/10 bg-white/10 p-5">
+                                <p class="font-black">{{ $item[0] }}</p>
+                                <p class="mt-2 text-sm text-slate-300">{{ $item[1] }}</p>
+                            </div>
+                        @endforeach
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        {{-- CTA --}}
+        <section class="py-20">
+            <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+                <div class="rounded-[2rem] bg-gradient-to-r from-blue-600 to-emerald-500 p-8 text-white shadow-xl sm:p-12">
+                    <div class="max-w-3xl">
+                        <h2 class="text-3xl font-black sm:text-4xl">
+                            Prêt à réserver votre prochain nettoyage ?
+                        </h2>
+                        <p class="mt-4 text-blue-50">
+                            Une expérience moderne, claire et rassurante pour les particuliers comme pour les entreprises.
+                        </p>
 
                         <div class="mt-8 flex flex-wrap gap-3">
-                            <a href="{{ route('premium.offer') }}"
-                               class="inline-flex items-center justify-center rounded-2xl bg-amber-500 px-5 py-3 text-sm font-semibold text-white hover:bg-amber-600 transition">
-                                Découvrir Premium
-                            </a>
-
                             <a href="{{ route('booking.create') }}"
-                               class="inline-flex items-center justify-center rounded-2xl border border-slate-300 px-5 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-50 transition">
+                               class="rounded-2xl bg-white px-6 py-4 text-sm font-black text-blue-700 hover:bg-blue-50">
                                 Réserver maintenant
                             </a>
+
+                            @guest
+                                <a href="{{ route('register') }}"
+                                   class="rounded-2xl border border-white/30 px-6 py-4 text-sm font-black text-white hover:bg-white/10">
+                                    Créer un compte
+                                </a>
+                            @endguest
                         </div>
                     </div>
                 </div>
             </div>
-        </div>
-    </section>
+        </section>
 
-    {{-- SERVICES --}}
-    <section class="py-16 md:py-20 bg-white border-y border-slate-200">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="max-w-2xl">
-                <p class="text-sm font-semibold uppercase tracking-[0.2em] text-sky-600">Prestations</p>
-                <h2 class="mt-3 text-3xl md:text-4xl font-extrabold tracking-tight text-slate-900">
-                    Des services pensés pour le quotidien comme pour les besoins spécifiques
-                </h2>
-            </div>
-
-            <div class="mt-10 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
-                <div class="rounded-3xl border border-slate-200 p-6">
-                    <h3 class="text-lg font-bold text-slate-900">Nettoyage standard</h3>
-                    <p class="mt-2 text-sm text-slate-600">
-                        Pour l’entretien classique de votre maison, appartement ou espace de travail.
-                    </p>
-                </div>
-
-                <div class="rounded-3xl border border-slate-200 p-6">
-                    <h3 class="text-lg font-bold text-slate-900">Nettoyage en profondeur</h3>
-                    <p class="mt-2 text-sm text-slate-600">
-                        Pour un besoin plus poussé avec davantage de détails et d’options ciblées.
-                    </p>
-                </div>
-
-                <div class="rounded-3xl border border-slate-200 p-6">
-                    <h3 class="text-lg font-bold text-slate-900">Fin de bail / chantier</h3>
-                    <p class="mt-2 text-sm text-slate-600">
-                        Pour les situations qui demandent une intervention plus complète et structurée.
-                    </p>
-                </div>
-
-                <div class="rounded-3xl border border-slate-200 p-6">
-                    <h3 class="text-lg font-bold text-slate-900">Bureaux & professionnels</h3>
-                    <p class="mt-2 text-sm text-slate-600">
-                        Une solution adaptée aux structures qui veulent un service sérieux et bien organisé.
-                    </p>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    {{-- TESTIMONIALS --}}
-    <section class="py-16 md:py-20">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="max-w-2xl">
-                <p class="text-sm font-semibold uppercase tracking-[0.2em] text-amber-600">Avis clients</p>
-                <h2 class="mt-3 text-3xl md:text-4xl font-extrabold tracking-tight text-slate-900">
-                    Une expérience pensée pour inspirer confiance
-                </h2>
-            </div>
-
-            <div class="mt-10 grid grid-cols-1 lg:grid-cols-3 gap-4">
-                <div class="bg-white rounded-3xl border border-slate-200 p-6 shadow-sm">
-                    <p class="text-slate-700 leading-relaxed">
-                        “Réservation simple, suivi clair, et intervention très propre. On sent que l’équipe est bien organisée.”
-                    </p>
-                    <p class="mt-4 text-sm font-semibold text-slate-900">Sophie, Anderlecht</p>
-                </div>
-
-                <div class="bg-white rounded-3xl border border-slate-200 p-6 shadow-sm">
-                    <p class="text-slate-700 leading-relaxed">
-                        “Le dashboard client est très rassurant. On sait rapidement où en est la demande et qui intervient.”
-                    </p>
-                    <p class="mt-4 text-sm font-semibold text-slate-900">Client régulier, Uccle</p>
-                </div>
-
-                <div class="bg-white rounded-3xl border border-slate-200 p-6 shadow-sm">
-                    <p class="text-slate-700 leading-relaxed">
-                        “La formule Premium est vraiment pratique pour garder les mêmes habitudes et réserver plus facilement.”
-                    </p>
-                    <p class="mt-4 text-sm font-semibold text-slate-900">Cabinet médical, Bruxelles</p>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    {{-- FINAL CTA --}}
-    <section class="pb-16 md:pb-20">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="rounded-[2rem] bg-gradient-to-r from-sky-600 to-sky-700 text-white p-8 md:p-10 shadow-sm">
-                <div class="max-w-3xl">
-                    <p class="text-sm uppercase tracking-[0.2em] text-sky-100">Prêt à planifier votre prestation</p>
-                    <h2 class="mt-3 text-3xl md:text-4xl font-extrabold tracking-tight">
-                        Réservez facilement ou découvrez l’expérience Premium
-                    </h2>
-                    <p class="mt-4 text-sky-50">
-                        Un service de nettoyage professionnel, une gestion claire et une expérience pensée pour durer.
-                    </p>
-
-                    <div class="mt-8 flex flex-wrap gap-3">
-                        <a href="{{ route('booking.create') }}"
-                           class="inline-flex items-center justify-center rounded-2xl bg-white px-5 py-3 text-sm font-semibold text-sky-700 hover:bg-sky-50 transition">
-                            Réserver maintenant
-                        </a>
-
-                        <a href="{{ route('premium.offer') }}"
-                           class="inline-flex items-center justify-center rounded-2xl border border-white/30 px-5 py-3 text-sm font-semibold text-white hover:bg-white/10 transition">
-                            Voir l’offre Premium
-                        </a>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-</div>
-
-
-    
+    </main>
 </x-guest-layout>

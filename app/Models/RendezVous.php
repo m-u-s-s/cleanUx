@@ -92,6 +92,19 @@ class RendezVous extends Model
         'payment_authorized_at',
         'payment_captured_at',
         'payment_cancelled_at',
+        'google_place_id',
+        'destination_lat',
+        'destination_lng',
+        'address_components',
+        'stripe_payment_intent_id',
+        'stripe_connect_account_id',
+        'payment_amount_cents',
+        'platform_fee_cents',
+        'provider_amount_cents',
+        'payment_status',
+        'payment_authorized_at',
+        'payment_captured_at',
+        'payment_failed_at',
     ];
 
     protected $casts = [
@@ -135,6 +148,15 @@ class RendezVous extends Model
         'payment_authorized_at' => 'datetime',
         'payment_captured_at' => 'datetime',
         'payment_cancelled_at' => 'datetime',
+        'destination_lat' => 'decimal:7',
+        'destination_lng' => 'decimal:7',
+        'address_components' => 'array',
+        'payment_authorized_at' => 'datetime',
+        'payment_captured_at' => 'datetime',
+        'payment_failed_at' => 'datetime',
+        'payment_amount_cents' => 'integer',
+        'platform_fee_cents' => 'integer',
+        'provider_amount_cents' => 'integer',
     ];
 
     public function client(): BelongsTo

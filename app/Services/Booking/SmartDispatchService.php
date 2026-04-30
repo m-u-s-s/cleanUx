@@ -4,12 +4,14 @@ namespace App\Services\Booking;
 
 use App\Models\RendezVous;
 use App\Models\User;
+use App\Services\Geo\GeoDistanceService;
 use Illuminate\Support\Collection;
 
 class SmartDispatchService
 {
     public function __construct(
         protected EmployeeAvailabilityService $availabilityService,
+        protected GeoDistanceService $geoDistanceService,
     ) {}
 
 
@@ -48,19 +50,19 @@ class SmartDispatchService
             return 0;
         }
 
-        $distanceKm = app(\App\Services\Geo\GeoDistanceService::class)
-            ->haversineKm(
-                $employee->current_lat,
-                $employee->current_lng,
-                $rdv->destination_lat,
-                $rdv->destination_lng
-            );
+        $distanceKm = $this->geoDistanceService->haversineKm(
+            (float) $employee->current_lat,
+            (float) $employee->current_lng,
+            (float) $rdv->destination_lat,
+            (float) $rdv->destination_lng,
+        );
 
         return match (true) {
-            $distanceKm <= 2 => 400,
-            $distanceKm <= 5 => 250,
-            $distanceKm <= 10 => 100,
-            default => -100,
+            $distanceKm <= 2 => 500,
+            $distanceKm <= 5 => 350,
+            $distanceKm <= 10 => 200,
+            $distanceKm <= 20 => 50,
+            default => -200,
         };
     }
 
@@ -113,6 +115,7 @@ class SmartDispatchService
         $score += $this->premiumScore($employee, $rdv);
         $score += $this->asapScore($employee, $rdv);
         $score += $this->distanceScore($employee, $rdv);
+
 
         return $score;
     }
@@ -222,6 +225,14 @@ class SmartDispatchService
                         (int) ($rdv->duree_estimee ?: $rdv->duree ?: 90),
                         $rdv->id
                     ),
+                    'distance_km' => $employee->current_lat && $employee->current_lng && $rdv->destination_lat && $rdv->destination_lng
+                        ? $this->geoDistanceService->haversineKm(
+                            (float) $employee->current_lat,
+                            (float) $employee->current_lng,
+                            (float) $rdv->destination_lat,
+                            (float) $rdv->destination_lng,
+                        )
+                        : null,
                 ];
             })
             ->sortByDesc('score')
