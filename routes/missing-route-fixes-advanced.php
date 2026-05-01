@@ -335,13 +335,12 @@ Route::middleware(['auth', 'verified', 'active.account'])->group(function () use
 
                 $rows = $query->get();
 
-                $csv = "id,rendez_vous_id,note,commentaire\n";
+                $csv = "id,rendez_vous_id,commentaire\n";
 
                 foreach ($rows as $feedback) {
                     $csv .= implode(',', [
                         $feedback->id,
                         $feedback->rendez_vous_id,
-                        $feedback->note ?? '',
                         '"' . str_replace('"', '""', (string) ($feedback->commentaire ?? $feedback->comment ?? '')) . '"',
                     ]) . "\n";
                 }
