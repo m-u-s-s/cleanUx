@@ -277,36 +277,55 @@ class ClientDashboard extends Component
             ];
         }
 
-        $quoteQuery = FinanceQuote::query()->where('client_id', $user->id);
-        $invoiceQuery = FinanceInvoice::query()->where('client_id', $user->id);
+        $quoteQuery = FinanceQuote::query()
+            ->where(function ($query) use ($user) {
+                $query->where('client_id', $user->id);
 
-        if ($user->organization_account_id) {
-            $quoteQuery->orWhere('organization_account_id', $user->organization_account_id);
-            $invoiceQuery->orWhere('organization_account_id', $user->organization_account_id);
-        }
+                if ($user->organization_account_id) {
+                    $query->orWhere('organization_account_id', $user->organization_account_id);
+                }
+            });
 
-        $quotes = $quoteQuery->get(['id']);
-        $invoices = $invoiceQuery->get(['id', 'balance_due', 'status']);
+        $invoiceQuery = FinanceInvoice::query()
+            ->where(function ($query) use ($user) {
+                $query->where('client_id', $user->id);
+
+                if ($user->organization_account_id) {
+                    $query->orWhere('organization_account_id', $user->organization_account_id);
+                }
+            });
 
         return [
-            'quotes_count' => $quotes->count(),
-            'invoices_count' => $invoices->count(),
-            'outstanding_total' => round((float) $invoices->sum('balance_due'), 2),
-            'overdue_count' => $invoices->where('status', 'overdue')->count(),
+            'quotes_count' => (clone $quoteQuery)->count(),
+            'invoices_count' => (clone $invoiceQuery)->count(),
+            'outstanding_total' => round((float) (clone $invoiceQuery)->sum('balance_due'), 2),
+            'overdue_count' => (clone $invoiceQuery)->where('status', 'overdue')->count(),
         ];
     }
 
     public function getStatsClientProperty()
     {
-        $all = RendezVous::with('feedback')
-            ->where('client_id', Auth::id())
-            ->get();
+        $clientId = Auth::id();
 
         return [
-            'total' => $all->count(),
-            'avenir' => $all->where('date', '>=', now()->toDateString())->count(),
-            'termine' => $all->where('status', BookingStatus::TERMINE)->count(),
-            'feedbacks' => $all->filter(fn ($rdv) => $rdv->feedback)->count(),
+            'total' => RendezVous::query()
+                ->where('client_id', $clientId)
+                ->count(),
+
+            'avenir' => RendezVous::query()
+                ->where('client_id', $clientId)
+                ->whereDate('date', '>=', now()->toDateString())
+                ->count(),
+
+            'termine' => RendezVous::query()
+                ->where('client_id', $clientId)
+                ->where('status', BookingStatus::TERMINE)
+                ->count(),
+
+            'feedbacks' => RendezVous::query()
+                ->where('client_id', $clientId)
+                ->whereHas('feedback')
+                ->count(),
         ];
     }
 
