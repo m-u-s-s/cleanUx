@@ -16,6 +16,13 @@
     </div>
 
     <div class="bg-white rounded-2xl shadow border p-4">
+        <!-- filtres mission  -->
+        <div class="mb-4">
+            <h3 class="text-lg font-bold text-slate-900">Filtres missions</h3>
+            <p class="text-sm text-slate-500">
+                Filtrez les missions par employé, statut, priorité ou recherche libre.
+            </p>
+        </div>
         <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
             <input type="text" wire:model.live="search" placeholder="Service, client, employé, ville..."
                 class="w-full border-gray-300 rounded-lg shadow-sm">
@@ -48,6 +55,14 @@
         </div>
     </div>
 
+    <!-- mission urgentes  -->
+    <div class="rounded-2xl border border-amber-200 bg-amber-50 p-4">
+        <h3 class="text-lg font-bold text-amber-900">Points d’attention</h3>
+        <p class="mt-1 text-sm text-amber-800">
+            Surveillez les missions urgentes, non assignées ou bloquées.
+        </p>
+    </div>
+    
     <div class="space-y-4">
         @forelse($missions as $rdv)
         <div class="bg-white border rounded-2xl shadow-sm p-4">

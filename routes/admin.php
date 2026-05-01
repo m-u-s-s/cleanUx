@@ -1,8 +1,10 @@
 <?php
 
 use App\Http\Controllers\Admin\MissionAdminController;
+use App\Models\Feedback;
 use App\Models\RendezVous;
 use Illuminate\Support\Facades\Route;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 Route::middleware(['role:admin'])
     ->prefix('admin')
@@ -117,4 +119,64 @@ Route::middleware(['role:admin'])
         if (class_exists(\App\Livewire\Admin\OrganizationSitesManager::class)) {
             Route::get('/sites', \App\Livewire\Admin\OrganizationSitesManager::class)->name('sites');
         }
+
+        Route::get('/feedbacks/export', function () {
+            $user = auth()->user();
+
+            abort_unless($user && $user->isAdmin(), 403);
+
+            if (class_exists(Pdf::class)) {
+                return Pdf::loadHTML('<h1>Export feedbacks</h1>')
+                    ->download('feedbacks.pdf');
+            }
+
+            return response('<h1>Export feedbacks</h1>', 200);
+        })->name('feedbacks.export');
+
+        Route::get('/feedbacks/export-csv', function () {
+            $user = auth()->user();
+
+            abort_unless($user && $user->isAdmin(), 403);
+
+            $query = Feedback::query()
+                ->with('rendezVous.serviceZone');
+
+            if ($user->isZoneScopedAdmin()) {
+                $query->whereHas('rendezVous', function ($q) use ($user) {
+                    $q->where('service_zone_id', $user->managed_service_zone_id);
+                });
+            }
+
+            $rows = $query->get();
+
+            $csv = "id,rendez_vous_id,note,commentaire\n";
+
+            foreach ($rows as $feedback) {
+                $csv .= implode(',', [
+                    $feedback->id,
+                    $feedback->rendez_vous_id,
+                    $feedback->note ?? '',
+                    '"' . str_replace('"', '""', (string) ($feedback->commentaire ?? $feedback->comment ?? '')) . '"',
+                ]) . "\n";
+            }
+
+            return response($csv, 200, [
+                'Content-Type' => 'text/csv',
+            ]);
+        })->name('feedbacks.export.csv');
+
+        Route::get('/feedbacks/export', function () {
+            $user = auth()->user();
+
+            abort_unless($user && $user->isAdmin(), 403);
+
+            if (class_exists(Pdf::class)) {
+                return Pdf::loadHTML('
+            <h1>Export feedbacks</h1>
+            <p>Export PDF temporaire des feedbacks.</p>
+        ')->download('feedbacks.pdf');
+            }
+
+            return response('<h1>Export feedbacks</h1>', 200);
+        })->name('feedbacks.export');
     });

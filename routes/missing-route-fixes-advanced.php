@@ -1,5 +1,14 @@
 <?php
 
+use App\Livewire\Admin\AuditLogsCenter;
+use App\Livewire\Admin\CalendrierInterne;
+use App\Livewire\Admin\ExportTools;
+use App\Livewire\Admin\FinanceCenter;
+use App\Livewire\Admin\OutilsAdmin;
+use App\Livewire\Admin\PlanningAdmin;
+use App\Livewire\Admin\PlatformModulesCenter;
+use App\Livewire\Admin\ProductEmailsCenter;
+use App\Livewire\AdminFeedbacks;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -19,16 +28,16 @@ $fallbackPage = function (string $title, string $message = null) {
             <head>
                 <meta charset="UTF-8">
                 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                <title>'.e($title).'</title>
+                <title>' . e($title) . '</title>
                 <script src="https://cdn.tailwindcss.com"></script>
             </head>
             <body class="min-h-screen bg-slate-50 text-slate-900">
                 <main class="mx-auto max-w-4xl px-6 py-12">
                     <div class="rounded-3xl border border-slate-200 bg-white p-8 shadow-sm">
                         <p class="text-sm font-black uppercase tracking-[0.2em] text-blue-600">CleanUx</p>
-                        <h1 class="mt-3 text-3xl font-black">'.e($title).'</h1>
-                        <p class="mt-4 text-slate-600">'.e($message ?: 'Cette page est maintenant routée. Il reste à connecter le vrai composant ou la vraie logique métier.').'</p>
-                        <a href="'.e(route('dashboard')).'" class="mt-6 inline-flex rounded-2xl bg-blue-600 px-5 py-3 text-sm font-bold text-white hover:bg-blue-700">
+                        <h1 class="mt-3 text-3xl font-black">' . e($title) . '</h1>
+                        <p class="mt-4 text-slate-600">' . e($message ?: 'Cette page est maintenant routée. Il reste à connecter le vrai composant ou la vraie logique métier.') . '</p>
+                        <a href="' . e(route('dashboard')) . '" class="mt-6 inline-flex rounded-2xl bg-blue-600 px-5 py-3 text-sm font-bold text-white hover:bg-blue-700">
                             Retour dashboard
                         </a>
                     </div>
@@ -64,42 +73,37 @@ Route::middleware(['auth', 'verified', 'active.account'])->group(function () use
 
             if (! Route::has('admin.planning')) {
                 Route::get('/planning', $livewireOrFallback([
-                    \App\Livewire\Admin\PlanningAdmin::class,
-                    \App\Livewire\Admin\CalendrierInterne::class,
+                    PlanningAdmin::class,
+                    CalendrierInterne::class,
                     \App\Livewire\Admin\AdminPlanning::class,
                 ], 'Planning admin'))->name('planning');
             }
 
             if (! Route::has('admin.calendar')) {
                 Route::get('/calendar', $livewireOrFallback([
-                    \App\Livewire\Admin\CalendrierInterne::class,
-                    \App\Livewire\Admin\PlanningAdmin::class,
+                    CalendrierInterne::class,
+                    PlanningAdmin::class,
                     \App\Livewire\Admin\AdminCalendar::class,
                 ], 'Calendrier admin'))->name('calendar');
             }
 
             if (! Route::has('admin.feedbacks')) {
                 Route::get('/feedbacks', $livewireOrFallback([
-                    \App\Livewire\AdminFeedbacks::class,
-                    \App\Livewire\Admin\AdminFeedbacks::class,
+                    AdminFeedbacks::class,
+                    AdminFeedbacks::class,
                     \App\Livewire\Admin\FeedbacksAdmin::class,
                 ], 'Feedbacks admin'))->name('feedbacks');
             }
 
             if (! Route::has('admin.feedbacks.export')) {
-                Route::get('/feedbacks/export/pdf', function () {
+                Route::get('/feedbacks/export', function () {
                     if (class_exists(\Barryvdh\DomPDF\Facade\Pdf::class)) {
-                        $html = '
-                            <h1>Export feedbacks</h1>
-                            <p>Export PDF temporaire. À remplacer par un vrai export filtré.</p>
-                        ';
-
-                        return \Barryvdh\DomPDF\Facade\Pdf::loadHTML($html)
-                            ->download('feedbacks-export.pdf');
+                        return \Barryvdh\DomPDF\Facade\Pdf::loadHTML('<h1>Export feedbacks</h1>')
+                            ->download('feedbacks.pdf');
                     }
 
-                    return response('Export PDF feedbacks à implémenter.', 200);
-                })->name('feedbacks.export');
+                    return response('<h1>Export feedbacks</h1>', 200);
+                });
             }
 
             if (! Route::has('admin.feedbacks.export.csv')) {
@@ -115,22 +119,22 @@ Route::middleware(['auth', 'verified', 'active.account'])->group(function () use
             if (! Route::has('admin.finance')) {
                 Route::get('/finance', $livewireOrFallback([
                     \App\Livewire\Admin\FinanceDashboard::class,
-                    \App\Livewire\Admin\FinanceCenter::class,
+                    FinanceCenter::class,
                     \App\Livewire\Admin\AdminFinance::class,
                 ], 'Finance admin'))->name('finance');
             }
 
             if (! Route::has('admin.outils')) {
                 Route::get('/outils', $livewireOrFallback([
-                    \App\Livewire\Admin\OutilsAdmin::class,
+                    OutilsAdmin::class,
                     \App\Livewire\Admin\AdminTools::class,
-                    \App\Livewire\Admin\ExportTools::class,
+                    ExportTools::class,
                 ], 'Outils admin'))->name('outils');
             }
 
             if (! Route::has('admin.audit.logs')) {
                 Route::get('/audit/logs', $livewireOrFallback([
-                    \App\Livewire\Admin\AuditLogsCenter::class,
+                    AuditLogsCenter::class,
                     \App\Livewire\Admin\AuditLogs::class,
                     \App\Livewire\Admin\ActivityLogsCenter::class,
                 ], 'Audit logs'))->name('audit.logs');
@@ -141,7 +145,9 @@ Route::middleware(['auth', 'verified', 'active.account'])->group(function () use
                     \App\Livewire\Admin\ServicesAdmin::class,
                     \App\Livewire\Admin\ServiceCatalogManager::class,
                     \App\Livewire\Admin\ServicesManager::class,
-                ], 'Services admin'))->name('services');
+                ], 'Services admin'))
+                    ->middleware('can:manage-services')
+                    ->name('services');
             }
 
             if (! Route::has('admin.premium.clients')) {
@@ -161,9 +167,12 @@ Route::middleware(['auth', 'verified', 'active.account'])->group(function () use
 
             if (! Route::has('admin.teams.partners')) {
                 Route::get('/teams-partners', $livewireOrFallback([
+                    \App\Livewire\Admin\GestionEquipesPartenaires::class,
                     \App\Livewire\Admin\TeamsPartnersCenter::class,
                     \App\Livewire\Admin\AdminTeamsPartnersCenter::class,
-                ], 'Équipes & partenaires'))->name('teams.partners');
+                ], 'Équipes terrain & partenaires'))
+                    ->middleware('can:manage-entreprises')
+                    ->name('teams.partners');
             }
 
             if (! Route::has('admin.international')) {
@@ -189,9 +198,11 @@ Route::middleware(['auth', 'verified', 'active.account'])->group(function () use
 
             if (! Route::has('admin.modules')) {
                 Route::get('/modules', $livewireOrFallback([
-                    \App\Livewire\Admin\PlatformModulesCenter::class,
+                    PlatformModulesCenter::class,
                     \App\Livewire\Admin\ModulesCenter::class,
-                ], 'Modules plateforme'))->name('modules');
+                ], 'Modules plateforme'))
+                    ->middleware('can:manage-modules')
+                    ->name('modules');
             }
 
             if (! Route::has('admin.countries')) {
@@ -199,12 +210,13 @@ Route::middleware(['auth', 'verified', 'active.account'])->group(function () use
                     \App\Livewire\Admin\CountriesPage::class,
                     \App\Livewire\Admin\AdminCountriesPage::class,
                     \App\Livewire\Admin\CountriesManager::class,
-                ], 'Pays & couverture'))->name('countries');
+                ], 'Pilotage des pays'))
+                    ->name('countries');
             }
 
             if (! Route::has('admin.emails')) {
                 Route::get('/emails', $livewireOrFallback([
-                    \App\Livewire\Admin\ProductEmailsCenter::class,
+                    ProductEmailsCenter::class,
                     \App\Livewire\Admin\EmailsCenter::class,
                     \App\Livewire\Admin\AdminEmailsCenter::class,
                 ], 'Centre e-mails'))->name('emails');
@@ -226,14 +238,93 @@ Route::middleware(['auth', 'verified', 'active.account'])->group(function () use
                 })->name('export.pdf');
             }
 
+            if (! Route::has('admin.feedbacks.export')) {
+                Route::get('/feedbacks/export', function () {
+                    $user = auth()->user();
+
+                    abort_unless($user && $user->isAdmin(), 403);
+
+                    if (class_exists(\Barryvdh\DomPDF\Facade\Pdf::class)) {
+                        return \Barryvdh\DomPDF\Facade\Pdf::loadHTML('
+                        <h1>Export feedbacks</h1>
+                        <p>Export PDF temporaire des feedbacks.</p>
+                    ')->download('feedbacks.pdf');
+                    }
+
+                    return response('<h1>Export feedbacks</h1>', 200);
+                })->name('feedbacks.export');
+            }
+
             if (! Route::has('admin.rendezvous.series.edit')) {
                 Route::get('/rendez-vous-series/{series}/edit', function ($series) {
                     return response(
-                        '<h1>Modifier série de rendez-vous</h1><p>Série ID : '.e($series).'</p>',
+                        '<h1>Gérer une série récurrente</h1><p>Série ID : ' . e($series) . '</p>',
                         200
                     );
                 })->name('rendezvous.series.edit');
             }
+
+            Route::get('/export/csv', function () {
+                $user = auth()->user();
+
+                abort_unless($user && $user->canPerformCriticalAdminActions(), 403);
+
+                $query = \App\Models\RendezVous::query()->with('serviceZone');
+
+                if ($user->isZoneScopedAdmin()) {
+                    $query->where('service_zone_id', $user->managed_service_zone_id);
+                }
+
+                $rows = $query->get();
+
+                $csv = "id,service_zone,status,date\n";
+
+                foreach ($rows as $rdv) {
+                    $csv .= implode(',', [
+                        $rdv->id,
+                        '"' . str_replace('"', '""', (string) ($rdv->serviceZone?->name ?? '')) . '"',
+                        $rdv->status,
+                        $rdv->date,
+                    ]) . "\n";
+                }
+
+                return response($csv, 200, [
+                    'Content-Type' => 'text/csv',
+                ]);
+            });
+
+
+            Route::get('/feedbacks/export-csv', function () {
+                $user = auth()->user();
+
+                abort_unless($user && $user->canPerformCriticalAdminActions(), 403);
+
+                $query = \App\Models\Feedback::query()
+                    ->with('rendezVous.serviceZone');
+
+                if ($user->isZoneScopedAdmin()) {
+                    $query->whereHas('rendezVous', function ($q) use ($user) {
+                        $q->where('service_zone_id', $user->managed_service_zone_id);
+                    });
+                }
+
+                $rows = $query->get();
+
+                $csv = "id,rendez_vous_id,note,commentaire\n";
+
+                foreach ($rows as $feedback) {
+                    $csv .= implode(',', [
+                        $feedback->id,
+                        $feedback->rendez_vous_id,
+                        $feedback->note ?? '',
+                        '"' . str_replace('"', '""', (string) ($feedback->commentaire ?? $feedback->comment ?? '')) . '"',
+                    ]) . "\n";
+                }
+
+                return response($csv, 200, [
+                    'Content-Type' => 'text/csv',
+                ]);
+            });
         });
 
     /*
@@ -250,7 +341,15 @@ Route::middleware(['auth', 'verified', 'active.account'])->group(function () use
             if (! Route::has('client.rendezvous.series.edit')) {
                 Route::get('/rendez-vous-series/{series}/edit', function ($series) {
                     return response(
-                        '<h1>Modifier série de rendez-vous</h1><p>Série ID : '.e($series).'</p>',
+                        '<h1>Gérer ma série récurrente</h1><p>Série ID : ' . e($series) . '</p>',
+                        200
+                    );
+                })->name('rendezvous.series.edit');
+            }
+            if (! Route::has('client.rendezvous.series.edit')) {
+                Route::get('/rendez-vous-series/{series}/edit', function ($series) {
+                    return response(
+                        '<h1>Modifier série de rendez-vous</h1><p>Série ID : ' . e($series) . '</p>',
                         200
                     );
                 })->name('rendezvous.series.edit');

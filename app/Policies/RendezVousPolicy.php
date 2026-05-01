@@ -7,6 +7,13 @@ use App\Models\User;
 
 class RendezVousPolicy
 {
+    public function create(User $user): bool
+    {
+        return $user->isClient()
+            || $user->isEntreprise()
+            || ($user->isAdmin() && ! $user->isReadOnlyAdmin());
+    }
+    
     public function view(User $user, RendezVous $rendezVous): bool
     {
         if ($user->isAdmin()) {
@@ -23,6 +30,7 @@ class RendezVousPolicy
 
         return false;
     }
+
 
     public function update(User $user, RendezVous $rendezVous): bool
     {

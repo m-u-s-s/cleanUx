@@ -4,6 +4,7 @@ use App\Models\FinanceInvoice;
 use App\Models\FinanceQuote;
 use Illuminate\Support\Facades\Response;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Client\FinanceDocumentDownloadController;
 
 Route::middleware(['role:client'])
     ->prefix('dashboard/client')
@@ -96,4 +97,10 @@ Route::middleware(['role:client'])
             Route::get('/abonnements', \App\Livewire\Client\ClientSubscriptions::class)
                 ->name('subscriptions');
         }
+
+        Route::get('/finance/devis/{quote}/telecharger', [FinanceDocumentDownloadController::class, 'quote'])
+            ->name('finance.quote.download');
+
+        Route::get('/finance/factures/{invoice}/telecharger', [FinanceDocumentDownloadController::class, 'invoice'])
+            ->name('finance.invoice.download');
     });
