@@ -1,4 +1,4 @@
-cat > deep-audit.php <<'PHP'
+
 <?php
 
 require_once __DIR__ . '/vendor/autoload.php';
