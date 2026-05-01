@@ -112,8 +112,18 @@ class ProductionHealthReport
     protected function storageLinkExists(): bool
     {
         $publicStorage = public_path('storage');
+        $expectedStorage = storage_path('app/public');
 
-        return is_link($publicStorage) || is_dir($publicStorage);
+        if (! file_exists($publicStorage) || ! file_exists($expectedStorage)) {
+            return false;
+        }
+
+        $publicRealPath = realpath($publicStorage);
+        $expectedRealPath = realpath($expectedStorage);
+
+        return $publicRealPath !== false
+            && $expectedRealPath !== false
+            && $publicRealPath === $expectedRealPath;
     }
 
     protected function writablePathsOk(): bool
