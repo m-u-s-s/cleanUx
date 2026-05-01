@@ -205,7 +205,7 @@
                     </div>
                 </div>
             @else
-                <div class="mt-4 text-sm text-slate-400">Sélectionne un rendez-vous pour générer un devis, suivre l’encaissement et piloter la marge.</div>
+                <div class="mt-4 text-sm text-slate-400">Sélectionne un rendez-vous pour générer un devis, suivre l’encaissement et piloter la margeSélectionne un rendez-vous pour générer un devis, suivre l’encaissement et piloter la marge.</div>
             @endif
         </x-app-card>
     </div>
