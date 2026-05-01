@@ -19,33 +19,37 @@ class EmployeDashboard extends Component
         return $user instanceof User ? $user : null;
     }
 
-    public function getMissionsDuJourProperty()
+    protected function todayMissionsQuery()
     {
-        return RendezVous::with(['client', 'serviceZone', 'serviceCatalog', 'postalCode'])
+        return RendezVous::with(['client', 'serviceZone', 'serviceCatalog', 'postalCode', 'mission'])
             ->where('employe_id', Auth::id())
-            ->whereDate('date', today())
+            ->whereDate('date', today()->toDateString());
+    }
+
+    public function getMissionsDuJourProperty(): Collection
+    {
+        return $this->todayMissionsQuery()
             ->whereIn('status', BookingStatus::employeeDashboard())
             ->orderByRaw(BookingStatus::employeeDashboardCaseSql('status'))
             ->orderBy('heure')
             ->get();
     }
 
-    public function getProchaineMissionProperty()
+    public function getProchaineMissionProperty(): ?RendezVous
     {
-        return RendezVous::with(['client', 'serviceZone', 'serviceCatalog', 'postalCode'])
-            ->where('employe_id', Auth::id())
-            ->whereDate('date', today())
+        return $this->todayMissionsQuery()
             ->whereIn('status', BookingStatus::active())
             ->orderBy('heure')
             ->first();
     }
 
-    public function getHistoriqueRecentProperty()
+    public function getHistoriqueRecentProperty(): Collection
     {
-        return RendezVous::with(['client', 'serviceZone', 'serviceCatalog', 'postalCode'])
+        return RendezVous::with(['client', 'serviceZone', 'serviceCatalog', 'postalCode', 'mission'])
             ->where('employe_id', Auth::id())
             ->where('status', BookingStatus::TERMINE)
             ->latest('mission_finished_at')
+            ->latest('date')
             ->limit(5)
             ->get();
     }
@@ -54,12 +58,20 @@ class EmployeDashboard extends Component
     {
         $missions = $this->missionsDuJour;
 
+        $total = $missions->count();
+        $terminees = $missions->where('status', BookingStatus::TERMINE)->count();
+        $minutesPrevues = $missions->sum(fn ($rdv) => (int) ($rdv->duree_estimee ?? $rdv->duree ?? 90));
+
         return [
-            'total' => $missions->count(),
+            'total' => $total,
             'a_faire' => $missions->whereIn('status', [BookingStatus::EN_ATTENTE, BookingStatus::CONFIRME])->count(),
             'en_cours' => $missions->whereIn('status', [BookingStatus::EN_ROUTE, BookingStatus::SUR_PLACE])->count(),
-            'terminees' => $missions->where('status', BookingStatus::TERMINE)->count(),
+            'terminees' => $terminees,
             'refusees' => $missions->where('status', BookingStatus::REFUSE)->count(),
+            'urgentes' => $missions->where('priorite', 'urgente')->count(),
+            'minutes_prevues' => $minutesPrevues,
+            'heures_prevues' => round($minutesPrevues / 60, 1),
+            'progression' => $total > 0 ? (int) round(($terminees / $total) * 100) : 0,
         ];
     }
 
@@ -79,7 +91,10 @@ class EmployeDashboard extends Component
 
     public function getMissionsHorsZoneProperty(): Collection
     {
-        $assignedZoneIds = $this->assignedZones->pluck('id')->map(fn ($id) => (int) $id)->all();
+        $assignedZoneIds = $this->assignedZones
+            ->pluck('id')
+            ->map(fn ($id) => (int) $id)
+            ->all();
 
         if ($assignedZoneIds === []) {
             return collect();
@@ -88,6 +103,28 @@ class EmployeDashboard extends Component
         return $this->missionsDuJour
             ->filter(fn ($rdv) => filled($rdv->service_zone_id) && ! in_array((int) $rdv->service_zone_id, $assignedZoneIds, true))
             ->values();
+    }
+
+    public function getUrgencesDuJourProperty(): Collection
+    {
+        return $this->missionsDuJour
+            ->filter(fn ($rdv) => $rdv->priorite === 'urgente' || in_array($rdv->status, [BookingStatus::EN_ATTENTE, BookingStatus::EN_ROUTE, BookingStatus::SUR_PLACE], true))
+            ->values()
+            ->take(4);
+    }
+
+    public function getPaymentStatusProperty(): array
+    {
+        $user = $this->currentUser();
+
+        $canReceivePayments = $user && method_exists($user, 'canReceiveStripeConnectPayments')
+            ? $user->canReceiveStripeConnectPayments()
+            : false;
+
+        return [
+            'ready' => $canReceivePayments,
+            'label' => $canReceivePayments ? 'Paiement actif' : 'Paiement à configurer',
+        ];
     }
 
     public function render(): View
@@ -99,6 +136,8 @@ class EmployeDashboard extends Component
             'statsJour' => $this->statsJour,
             'assignedZones' => $this->assignedZones,
             'missionsHorsZone' => $this->missionsHorsZone,
+            'urgencesDuJour' => $this->urgencesDuJour,
+            'paymentStatus' => $this->paymentStatus,
         ]);
     }
 }
