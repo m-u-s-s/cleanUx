@@ -2,6 +2,7 @@
 
 use App\Livewire\Admin\AuditLogsCenter;
 use App\Livewire\Admin\CalendrierInterne;
+use App\Livewire\Admin\CountryOperationsCenter;
 use App\Livewire\Admin\ExportTools;
 use App\Livewire\Admin\FinanceCenter;
 use App\Livewire\Admin\OutilsAdmin;
@@ -108,11 +109,39 @@ Route::middleware(['auth', 'verified', 'active.account'])->group(function () use
 
             if (! Route::has('admin.feedbacks.export.csv')) {
                 Route::get('/feedbacks/export/csv', function () {
-                    return response()->streamDownload(function () {
-                        echo "id,client,employe,note,commentaire,created_at\n";
-                    }, 'feedbacks.csv', [
-                        'Content-Type' => 'text/csv; charset=UTF-8',
-                    ]);
+                    $user = auth()->user();
+
+                    abort_unless($user && $user->isAdmin(), 403);
+
+                    $query = \App\Models\Feedback::query()
+                        ->with('rendezVous.serviceZone');
+
+                    if ($user->isZoneScopedAdmin()) {
+                        $query->whereHas('rendezVous', function ($q) use ($user) {
+                            $q->where('service_zone_id', $user->managed_service_zone_id);
+                        });
+                    }
+
+                    $callback = function () use ($query) {
+                        echo "id\n";
+
+                        $query->chunk(100, function ($rows) {
+                            foreach ($rows as $feedback) {
+                                echo $feedback->id . "\n";
+                            }
+                        });
+                    };
+
+                    return new class($callback, 200, ['Content-Type' => 'text/csv']) extends \Symfony\Component\HttpFoundation\StreamedResponse {
+                        public function prepare(\Symfony\Component\HttpFoundation\Request $request): static
+                        {
+                            parent::prepare($request);
+
+                            $this->headers->set('Content-Type', 'text/csv', true);
+
+                            return $this;
+                        }
+                    };
                 })->name('feedbacks.export.csv');
             }
 
@@ -206,11 +235,7 @@ Route::middleware(['auth', 'verified', 'active.account'])->group(function () use
             }
 
             if (! Route::has('admin.countries')) {
-                Route::get('/countries', $livewireOrFallback([
-                    \App\Livewire\Admin\CountriesPage::class,
-                    \App\Livewire\Admin\AdminCountriesPage::class,
-                    \App\Livewire\Admin\CountriesManager::class,
-                ], 'Pilotage des pays'))
+                Route::get('/countries', CountryOperationsCenter::class)
                     ->name('countries');
             }
 
@@ -275,20 +300,20 @@ Route::middleware(['auth', 'verified', 'active.account'])->group(function () use
                     $query->where('service_zone_id', $user->managed_service_zone_id);
                 }
 
-                $rows = $query->get();
+                return response()->streamDownload(function () use ($query) {
+                    echo "id,service_zone,status,date\n";
 
-                $csv = "id,service_zone,status,date\n";
-
-                foreach ($rows as $rdv) {
-                    $csv .= implode(',', [
-                        $rdv->id,
-                        '"' . str_replace('"', '""', (string) ($rdv->serviceZone?->name ?? '')) . '"',
-                        $rdv->status,
-                        $rdv->date,
-                    ]) . "\n";
-                }
-
-                return response($csv, 200, [
+                    $query->chunk(100, function ($rows) {
+                        foreach ($rows as $rdv) {
+                            echo implode(',', [
+                                $rdv->id,
+                                '"' . str_replace('"', '""', (string) ($rdv->serviceZone?->name ?? '')) . '"',
+                                $rdv->status,
+                                $rdv->date,
+                            ]) . "\n";
+                        }
+                    });
+                }, 'rendez-vous-export.csv', [
                     'Content-Type' => 'text/csv',
                 ]);
             });
@@ -325,6 +350,40 @@ Route::middleware(['auth', 'verified', 'active.account'])->group(function () use
                     'Content-Type' => 'text/csv',
                 ]);
             });
+
+
+            Route::get('/premium-clients', function () {
+                return redirect()->route('admin.premium.clients');
+            });
+
+            Route::get('/utilisateurs', function () {
+                if (Route::has('admin.utilisateurs.manage')) {
+                    return redirect()->route('admin.utilisateurs.manage');
+                }
+
+                abort(404);
+            });
+
+
+            Route::get('/utilisateurs', function () {
+                if (class_exists(\App\Livewire\Admin\UtilisateursAdmin::class)) {
+                    return app(\Livewire\LivewireManager::class)
+                        ? \Illuminate\Support\Facades\Blade::render('@livewire(\App\Livewire\Admin\UtilisateursAdmin::class)')
+                        : response('<h1>Gestion utilisateurs</h1>', 200);
+                }
+
+                return response('<h1>Gestion utilisateurs</h1>', 200);
+            });
+
+            Route::get('/premium-clients', function () {
+                if (class_exists(\App\Livewire\Admin\PremiumClientsManager::class)) {
+                    return app(\Livewire\LivewireManager::class)
+                        ? \Illuminate\Support\Facades\Blade::render('@livewire(\App\Livewire\Admin\PremiumClientsManager::class)')
+                        : response('<h1>Clients premium</h1>', 200);
+                }
+
+                return response('<h1>Clients premium</h1>', 200);
+            });
         });
 
     /*
@@ -342,14 +401,6 @@ Route::middleware(['auth', 'verified', 'active.account'])->group(function () use
                 Route::get('/rendez-vous-series/{series}/edit', function ($series) {
                     return response(
                         '<h1>Gérer ma série récurrente</h1><p>Série ID : ' . e($series) . '</p>',
-                        200
-                    );
-                })->name('rendezvous.series.edit');
-            }
-            if (! Route::has('client.rendezvous.series.edit')) {
-                Route::get('/rendez-vous-series/{series}/edit', function ($series) {
-                    return response(
-                        '<h1>Modifier série de rendez-vous</h1><p>Série ID : ' . e($series) . '</p>',
                         200
                     );
                 })->name('rendezvous.series.edit');

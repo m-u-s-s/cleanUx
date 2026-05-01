@@ -45,7 +45,7 @@ Route::middleware(['role:admin'])
             return response()->streamDownload(function () {
                 echo "id,mission_id,type,status,created_at\n";
             }, 'incidents.csv', [
-                'Content-Type' => 'text/csv; charset=UTF-8',
+                'Content-Type' => 'text/csv',
             ]);
         })->name('quality.export.incidents.csv');
 
@@ -53,7 +53,7 @@ Route::middleware(['role:admin'])
             return response()->streamDownload(function () {
                 echo "id,reference,status,quality_score,created_at\n";
             }, 'missions-quality.csv', [
-                'Content-Type' => 'text/csv; charset=UTF-8',
+                'Content-Type' => 'text/csv',
             ]);
         })->name('quality.export.missions.csv');
 

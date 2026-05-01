@@ -1,4 +1,8 @@
 <x-page-shell
+
+    title="⚠️ Centre de litiges"
+    subtitle="Signalez un problème, ajoutez des preuves et suivez le traitement de votre demande.">
+    
     <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
     <div class="rounded-2xl border bg-white p-4 shadow-sm">
         <p class="text-xs font-bold uppercase text-slate-500">Ouverts</p>
@@ -31,8 +35,7 @@
 
 
 
-    title="⚠️ Centre de litiges"
-    subtitle="Signalez un problème, ajoutez des preuves et suivez le traitement de votre demande.">
+
 
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div class="lg:col-span-1 rounded-2xl border bg-white p-6 shadow-sm space-y-4">

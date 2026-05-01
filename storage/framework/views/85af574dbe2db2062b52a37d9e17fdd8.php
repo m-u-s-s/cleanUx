@@ -1,14 +1,14 @@
 <div class="space-y-6">
     <?php if (isset($component)) { $__componentOriginal12a5063a2f74bc3084facd42cc51c606 = $component; } ?>
 <?php if (isset($attributes)) { $__attributesOriginal12a5063a2f74bc3084facd42cc51c606 = $attributes; } ?>
-<?php $component = Illuminate\View\AnonymousComponent::resolve(['view' => 'components.page-shell','data' => ['eyebrow' => 'Finance','title' => 'Finance center','subtitle' => 'Devis, factures, suivi d’encaissement et marge estimée pilotés depuis les rendez-vous.']] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? (array) $attributes->getIterator() : [])); ?>
+<?php $component = Illuminate\View\AnonymousComponent::resolve(['view' => 'components.page-shell','data' => ['eyebrow' => 'Finance','title' => 'Centre finance','subtitle' => 'Devis, factures, suivi d’encaissement et marge estimée pilotés depuis les rendez-vous.']] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? (array) $attributes->getIterator() : [])); ?>
 <?php $component->withName('page-shell'); ?>
 <?php if ($component->shouldRender()): ?>
 <?php $__env->startComponent($component->resolveView(), $component->data()); ?>
 <?php if (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag && $constructor = (new ReflectionClass(Illuminate\View\AnonymousComponent::class))->getConstructor()): ?>
 <?php $attributes = $attributes->except(collect($constructor->getParameters())->map->getName()->all()); ?>
 <?php endif; ?>
-<?php $component->withAttributes(['eyebrow' => 'Finance','title' => 'Finance center','subtitle' => 'Devis, factures, suivi d’encaissement et marge estimée pilotés depuis les rendez-vous.']); ?>
+<?php $component->withAttributes(['eyebrow' => 'Finance','title' => 'Centre finance','subtitle' => 'Devis, factures, suivi d’encaissement et marge estimée pilotés depuis les rendez-vous.']); ?>
          <?php $__env->slot('actions', null, []); ?> 
             <button wire:click="syncFilteredDocuments" class="cu-btn-secondary">Sync filtres</button>
             <button wire:click="syncAllDocuments" class="cu-btn-primary">Sync globale</button>
@@ -162,14 +162,14 @@
     <div class="grid gap-4 lg:grid-cols-4">
         <?php if (isset($component)) { $__componentOriginalf3f7946f558699cf27352737986448eb = $component; } ?>
 <?php if (isset($attributes)) { $__attributesOriginalf3f7946f558699cf27352737986448eb = $attributes; } ?>
-<?php $component = Illuminate\View\AnonymousComponent::resolve(['view' => 'components.filter-panel','data' => ['title' => 'Filtres finance','subtitle' => 'Recherche, période, marché, zone, service et état de paiement.','class' => 'lg:col-span-3']] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? (array) $attributes->getIterator() : [])); ?>
+<?php $component = Illuminate\View\AnonymousComponent::resolve(['view' => 'components.filter-panel','data' => ['title' => 'Pipeline finance','subtitle' => 'Recherche, période, marché, zone, service et état de paiement.','class' => 'lg:col-span-3']] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? (array) $attributes->getIterator() : [])); ?>
 <?php $component->withName('filter-panel'); ?>
 <?php if ($component->shouldRender()): ?>
 <?php $__env->startComponent($component->resolveView(), $component->data()); ?>
 <?php if (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag && $constructor = (new ReflectionClass(Illuminate\View\AnonymousComponent::class))->getConstructor()): ?>
 <?php $attributes = $attributes->except(collect($constructor->getParameters())->map->getName()->all()); ?>
 <?php endif; ?>
-<?php $component->withAttributes(['title' => 'Filtres finance','subtitle' => 'Recherche, période, marché, zone, service et état de paiement.','class' => 'lg:col-span-3']); ?>
+<?php $component->withAttributes(['title' => 'Pipeline finance','subtitle' => 'Recherche, période, marché, zone, service et état de paiement.','class' => 'lg:col-span-3']); ?>
             <div class="grid gap-3 md:grid-cols-4 xl:grid-cols-9">
                 <input wire:model.live.debounce.300ms="search" type="text" placeholder="Recherche" class="rounded-xl border-slate-300 text-sm shadow-sm xl:col-span-2">
                 <input wire:model.live="dateFrom" type="date" class="rounded-xl border-slate-300 text-sm shadow-sm">
@@ -290,14 +290,14 @@
 
         <?php if (isset($component)) { $__componentOriginal593082f5d9bbe85e64b8909ad2db569b = $component; } ?>
 <?php if (isset($attributes)) { $__attributesOriginal593082f5d9bbe85e64b8909ad2db569b = $attributes; } ?>
-<?php $component = Illuminate\View\AnonymousComponent::resolve(['view' => 'components.app-card','data' => ['title' => 'Synthèse','subtitle' => 'Vue rapide du rendez-vous sélectionné et des actions disponibles.']] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? (array) $attributes->getIterator() : [])); ?>
+<?php $component = Illuminate\View\AnonymousComponent::resolve(['view' => 'components.app-card','data' => ['title' => 'Workspace finance','subtitle' => 'Vue rapide du rendez-vous sélectionné et des actions disponibles.']] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? (array) $attributes->getIterator() : [])); ?>
 <?php $component->withName('app-card'); ?>
 <?php if ($component->shouldRender()): ?>
 <?php $__env->startComponent($component->resolveView(), $component->data()); ?>
 <?php if (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag && $constructor = (new ReflectionClass(Illuminate\View\AnonymousComponent::class))->getConstructor()): ?>
 <?php $attributes = $attributes->except(collect($constructor->getParameters())->map->getName()->all()); ?>
 <?php endif; ?>
-<?php $component->withAttributes(['title' => 'Synthèse','subtitle' => 'Vue rapide du rendez-vous sélectionné et des actions disponibles.']); ?>
+<?php $component->withAttributes(['title' => 'Workspace finance','subtitle' => 'Vue rapide du rendez-vous sélectionné et des actions disponibles.']); ?>
             <h2 class="text-lg font-semibold text-slate-800">Document sélectionné</h2>
 
             <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($selectedRendezVous): ?>

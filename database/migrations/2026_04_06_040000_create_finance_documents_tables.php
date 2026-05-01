@@ -10,7 +10,7 @@ return new class extends Migration
     {
         Schema::create('finance_quotes', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('rendez_vous_id')->unique();
+            $table->unsignedBigInteger('rendez_vous_id')->nullable()->index();
             $table->unsignedBigInteger('client_id')->nullable();
             $table->unsignedBigInteger('organization_account_id')->nullable();
             $table->string('quote_number')->unique();
@@ -35,7 +35,7 @@ return new class extends Migration
 
         Schema::create('finance_invoices', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('rendez_vous_id')->unique();
+            $table->unsignedBigInteger('rendez_vous_id')->nullable()->index();
             $table->unsignedBigInteger('finance_quote_id')->nullable();
             $table->unsignedBigInteger('client_id')->nullable();
             $table->unsignedBigInteger('organization_account_id')->nullable();
@@ -54,7 +54,7 @@ return new class extends Migration
             $table->json('meta')->nullable();
             $table->timestamps();
 
-            $table->foreign('rendez_vous_id', 'fin_inv_rdv_fk')->references('id')->on('rendez_vous')->cascadeOnDelete();
+            $table->foreign('rendez_vous_id', 'fin_inv_rdv_fk')->references('id')->on('rendez_vous')->nullOnDelete();
             $table->foreign('finance_quote_id', 'fin_inv_quote_fk')->references('id')->on('finance_quotes')->nullOnDelete();
             $table->foreign('client_id', 'fin_inv_client_fk')->references('id')->on('users')->nullOnDelete();
             $table->foreign('organization_account_id', 'fin_inv_org_fk')->references('id')->on('organization_accounts')->nullOnDelete();

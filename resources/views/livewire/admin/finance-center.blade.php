@@ -1,5 +1,5 @@
 <div class="space-y-6">
-    <x-page-shell eyebrow="Finance" title="Finance center" subtitle="Devis, factures, suivi d’encaissement et marge estimée pilotés depuis les rendez-vous.">
+    <x-page-shell eyebrow="Finance" title="Centre finance" subtitle="Devis, factures, suivi d’encaissement et marge estimée pilotés depuis les rendez-vous.">
         <x-slot name="actions">
             <button wire:click="syncFilteredDocuments" class="cu-btn-secondary">Sync filtres</button>
             <button wire:click="syncAllDocuments" class="cu-btn-primary">Sync globale</button>
@@ -28,7 +28,7 @@
     </div>
 
     <div class="grid gap-4 lg:grid-cols-4">
-        <x-filter-panel title="Filtres finance" subtitle="Recherche, période, marché, zone, service et état de paiement." class="lg:col-span-3">
+        <x-filter-panel title="Pipeline finance" subtitle="Recherche, période, marché, zone, service et état de paiement." class="lg:col-span-3">
             <div class="grid gap-3 md:grid-cols-4 xl:grid-cols-9">
                 <input wire:model.live.debounce.300ms="search" type="text" placeholder="Recherche" class="rounded-xl border-slate-300 text-sm shadow-sm xl:col-span-2">
                 <input wire:model.live="dateFrom" type="date" class="rounded-xl border-slate-300 text-sm shadow-sm">
@@ -137,7 +137,7 @@
             </div>
         </x-filter-panel>
 
-        <x-app-card title="Synthèse" subtitle="Vue rapide du rendez-vous sélectionné et des actions disponibles.">
+        <x-app-card title="Workspace finance" subtitle="Vue rapide du rendez-vous sélectionné et des actions disponibles.">
             <h2 class="text-lg font-semibold text-slate-800">Document sélectionné</h2>
 
             @if($selectedRendezVous)

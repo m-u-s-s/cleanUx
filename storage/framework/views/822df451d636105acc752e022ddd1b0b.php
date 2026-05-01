@@ -1,4 +1,14 @@
-<x-page-shell
+<?php if (isset($component)) { $__componentOriginal12a5063a2f74bc3084facd42cc51c606 = $component; } ?>
+<?php if (isset($attributes)) { $__attributesOriginal12a5063a2f74bc3084facd42cc51c606 = $attributes; } ?>
+<?php $component = Illuminate\View\AnonymousComponent::resolve(['view' => 'components.page-shell','data' => ['title' => '⚠️ Centre de litiges','subtitle' => 'Signalez un problème, ajoutez des preuves et suivez le traitement de votre demande.']] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? (array) $attributes->getIterator() : [])); ?>
+<?php $component->withName('page-shell'); ?>
+<?php if ($component->shouldRender()): ?>
+<?php $__env->startComponent($component->resolveView(), $component->data()); ?>
+<?php if (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag && $constructor = (new ReflectionClass(Illuminate\View\AnonymousComponent::class))->getConstructor()): ?>
+<?php $attributes = $attributes->except(collect($constructor->getParameters())->map->getName()->all()); ?>
+<?php endif; ?>
+<?php $component->withAttributes(['title' => '⚠️ Centre de litiges','subtitle' => 'Signalez un problème, ajoutez des preuves et suivez le traitement de votre demande.']); ?>
+    
     <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
     <div class="rounded-2xl border bg-white p-4 shadow-sm">
         <p class="text-xs font-bold uppercase text-slate-500">Ouverts</p>
@@ -35,8 +45,7 @@
 
 
 
-    title="⚠️ Centre de litiges"
-    subtitle="Signalez un problème, ajoutez des preuves et suivez le traitement de votre demande.">
+
 
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div class="lg:col-span-1 rounded-2xl border bg-white p-6 shadow-sm space-y-4">
@@ -313,11 +322,11 @@ unset($__errorArgs, $__bag); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendB
     </div>
  <?php echo $__env->renderComponent(); ?>
 <?php endif; ?>
-<?php if (isset($__attributesOriginal)): ?>
-<?php $attributes = $__attributesOriginal; ?>
-<?php unset($__attributesOriginal); ?>
+<?php if (isset($__attributesOriginal12a5063a2f74bc3084facd42cc51c606)): ?>
+<?php $attributes = $__attributesOriginal12a5063a2f74bc3084facd42cc51c606; ?>
+<?php unset($__attributesOriginal12a5063a2f74bc3084facd42cc51c606); ?>
 <?php endif; ?>
-<?php if (isset($__componentOriginal)): ?>
-<?php $component = $__componentOriginal; ?>
-<?php unset($__componentOriginal); ?>
+<?php if (isset($__componentOriginal12a5063a2f74bc3084facd42cc51c606)): ?>
+<?php $component = $__componentOriginal12a5063a2f74bc3084facd42cc51c606; ?>
+<?php unset($__componentOriginal12a5063a2f74bc3084facd42cc51c606); ?>
 <?php endif; ?><?php /**PATH C:\Users\mmdar\Desktop\code\work\CleanUx\resources\views/livewire/client/litiges-client.blade.php ENDPATH**/ ?>

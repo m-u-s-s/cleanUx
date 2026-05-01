@@ -394,21 +394,8 @@ trait HandlesBookingSubmissionFlow
         $catalog = $this->currentServiceCatalog();
         $rule = $this->currentZoneServiceRule();
 
-        if ($this->booking_mode === 'asap') {
-            $requestedAt = Carbon::createFromFormat('Y-m-d H:i', $this->rdvDate . ' ' . $this->rdvHeure, $timezone);
-
-            if ($requestedAt->gt(now($timezone)->addHours(2))) {
-                $this->addError('booking_mode', 'Le mode ASAP doit trouver un créneau dans les 2 heures.');
-                return false;
-            }
-        } else {
-            if ($requestedAt->lt(now($timezone)->addHours($minimumNoticeHours))) {
-                $this->addError('rdvDate', 'Ce créneau est trop proche par rapport au délai minimum de réservation de votre zone.');
-                return false;
-            }
-        }
-
         if (! $zone || ! $catalog || ! $rule || ! $this->rdvDate || ! $this->rdvHeure) {
+            $this->addError('rdvDate', 'Impossible de valider ce créneau pour cette zone et ce service.');
             return false;
         }
 
@@ -426,14 +413,27 @@ trait HandlesBookingSubmissionFlow
 
         $timezone = config('app.timezone', 'Europe/Brussels');
         $requestedAt = Carbon::createFromFormat('Y-m-d H:i', $this->rdvDate . ' ' . $this->rdvHeure, $timezone);
-        $minimumNoticeHours = max((int) ($zone->minimum_notice_hours ?? 0), (int) ($rule->minimum_notice_hours ?? 0), $this->countryMarketResolver()->minimumNoticeHours($countryMarket));
 
-        if ($requestedAt->lt(now($timezone)->addHours($minimumNoticeHours))) {
-            $this->addError('rdvDate', 'Ce créneau est trop proche par rapport au délai minimum de réservation de votre zone.');
-            return false;
+        $minimumNoticeHours = max(
+            (int) ($zone->minimum_notice_hours ?? 0),
+            (int) ($rule->minimum_notice_hours ?? 0),
+            $this->countryMarketResolver()->minimumNoticeHours($countryMarket)
+        );
+
+        if ($this->booking_mode === 'asap') {
+            if ($requestedAt->gt(now($timezone)->addHours(2))) {
+                $this->addError('booking_mode', 'Le mode ASAP doit trouver un créneau dans les 2 heures.');
+                return false;
+            }
+        } else {
+            if ($requestedAt->lt(now($timezone)->addHours($minimumNoticeHours))) {
+                $this->addError('rdvDate', 'Ce créneau est trop proche par rapport au délai minimum de réservation de votre zone.');
+                return false;
+            }
         }
 
         $activeStatuses = ['en_attente', 'confirme', 'en_route', 'sur_place'];
+
         $zoneBookingsCount = RendezVous::query()
             ->where('service_zone_id', $zone->id)
             ->whereDate('date', $this->rdvDate)

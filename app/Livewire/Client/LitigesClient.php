@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
 use Livewire\WithFileUploads;
 use Livewire\WithPagination;
+use App\Models\ComplaintCase;
 
 class LitigesClient extends Component
 {
@@ -23,6 +24,8 @@ class LitigesClient extends Component
     public array $photos = [];
 
     public string $filterStatus = '';
+    public string $subject = '';
+    public string $attachmentInput = '';
 
     protected $paginationTheme = 'tailwind';
 
@@ -99,13 +102,70 @@ class LitigesClient extends Component
         $this->resetPage();
     }
 
+    public function save(): void
+    {
+        $validated = $this->validate([
+            'subject' => ['required', 'string', 'min:3', 'max:120'],
+            'description' => ['required', 'string', 'min:10', 'max:2000'],
+            'priority' => ['required', 'string'],
+            'attachmentInput' => ['nullable', 'string', 'max:4000'],
+        ]);
+
+        $priority = match ($this->priority) {
+            'critique', 'critical', 'urgent' => 'urgent',
+            'haute', 'high' => 'high',
+            'basse', 'low' => 'low',
+            default => 'normal',
+        };
+
+        $slaPolicy = match ($priority) {
+            'urgent' => '4h',
+            'high' => '24h',
+            'normal' => '48h',
+            default => '72h',
+        };
+
+        $dueAt = match ($priority) {
+            'urgent' => now()->addHours(4),
+            'high' => now()->addDay(),
+            'normal' => now()->addDays(2),
+            default => now()->addDays(3),
+        };
+
+        $attachments = collect(preg_split('/\R+/', trim($this->attachmentInput)))
+            ->filter()
+            ->values()
+            ->map(fn($value) => [
+                'path' => $value,
+                'original_name' => basename($value),
+            ])
+            ->all();
+
+        ComplaintCase::create([
+            'client_id' => Auth::id(),
+            'category' => $this->category ?: 'quality',
+            'priority' => $priority,
+            'sla_policy' => $slaPolicy,
+            'status' => 'open',
+            'subject' => $validated['subject'],
+            'description' => $validated['description'],
+            'attachments' => $attachments,
+            'due_at' => $dueAt,
+        ]);
+
+        $this->reset(['subject', 'description', 'attachmentInput']);
+        $this->priority = 'normal';
+
+        $this->dispatch('toast', 'Votre litige a été envoyé au support.', 'success');
+    }
+
     public function render(): View
     {
         return view('livewire.client.litiges-client', [
             'claims' => CustomerClaim::query()
                 ->with('rendezVous')
                 ->where('client_id', Auth::id())
-                ->when($this->filterStatus, fn ($query) => $query->where('status', $this->filterStatus))
+                ->when($this->filterStatus, fn($query) => $query->where('status', $this->filterStatus))
                 ->latest()
                 ->paginate(8),
 
