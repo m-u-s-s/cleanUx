@@ -4,10 +4,13 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+
     <title>{{ config('app.name', 'CleanUx') }}</title>
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @livewireStyles
+    @stack('styles')
 </head>
 
 <body class="font-sans antialiased text-gray-800 selection:bg-sky-100 selection:text-sky-900">
@@ -42,37 +45,39 @@
     @endif
     @endauth
 
-    @stack('modals')
-    @livewireScripts
-    @stack('scripts')
-
     @auth
-    @if(auth()->user()->role === 'client')
+    @if(auth()->user()->isClient())
     <div class="sm:hidden fixed bottom-0 inset-x-0 z-50 border-t border-slate-200 bg-white/95 backdrop-blur shadow-[0_-10px_30px_rgba(15,23,42,0.08)]">
-        <div class="grid grid-cols-5 h-16">
+        <div class="grid {{ Route::has('client.wallet') ? 'grid-cols-5' : 'grid-cols-4' }} h-16">
             <a href="{{ route('client.dashboard') }}"
                 class="flex flex-col items-center justify-center text-xs {{ request()->routeIs('client.dashboard') ? 'text-blue-600 font-semibold' : 'text-gray-500' }}">
                 <span>🏠</span>
                 <span>Accueil</span>
             </a>
 
+            @if(Route::has('client.rendezvous.create'))
             <a href="{{ route('client.rendezvous.create') }}"
-                class="flex flex-col items-center justify-center text-xs {{ request()->routeIs('client.rendezvous.*') ? 'text-blue-600 font-semibold' : 'text-gray-500' }}">
+                class="flex flex-col items-center justify-center text-xs {{ request()->routeIs('client.rendezvous.create') ? 'text-blue-600 font-semibold' : 'text-gray-500' }}">
                 <span>➕</span>
                 <span>Demande</span>
             </a>
+            @endif
 
+            @if(Route::has('client.rendezvous.index'))
             <a href="{{ route('client.rendezvous.index') }}"
                 class="flex flex-col items-center justify-center text-xs {{ request()->routeIs('client.rendezvous.index') ? 'text-blue-600 font-semibold' : 'text-gray-500' }}">
                 <span>📅</span>
-                <span>Rendez-vous</span>
+                <span>RDV</span>
             </a>
+            @endif
 
+            @if(Route::has('client.historique'))
             <a href="{{ route('client.historique') }}"
                 class="flex flex-col items-center justify-center text-xs {{ request()->routeIs('client.historique') ? 'text-blue-600 font-semibold' : 'text-gray-500' }}">
                 <span>🕘</span>
                 <span>Historique</span>
             </a>
+            @endif
 
             @if(Route::has('client.wallet'))
             <a href="{{ route('client.wallet') }}"
@@ -86,27 +91,26 @@
     @endif
     @endauth
 
+    @stack('modals')
+    @livewireScripts
 
-
-
-    <!-- script offline -->
-    <script src="/js/offline-mission.js"></script>
+    @auth
+    @if(auth()->user()->isEmploye() && request()->routeIs('employe.*'))
+    <script src="{{ asset('js/offline-mission.js') }}"></script>
 
     <script>
-        setInterval(() => {
-            window.OfflineMission.sync();
-        }, 10000); // toutes les 10 sec
+        if (window.OfflineMission) {
+            setInterval(() => {
+                window.OfflineMission.sync();
+            }, 10000);
 
-        window.addEventListener('online', () => {
-            window.OfflineMission.sync();
-        });
+            window.addEventListener('online', () => {
+                window.OfflineMission.sync();
+            });
+        }
     </script>
-
-    <script
-        src="https://maps.googleapis.com/maps/api/js?key={{ config('services.google.maps_api_key') }}&libraries=places"
-        async
-        defer>
-    </script>
+    @endif
+    @endauth
 
     @stack('scripts')
 </body>

@@ -1,6 +1,9 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\StripeConnectController;
+use App\Livewire\FeedbacksEmploye;
+use App\Livewire\Employe\ValidationMultipleRdv;
 
 Route::middleware(['role:employe'])
     ->prefix('dashboard/employe')
@@ -43,7 +46,33 @@ Route::middleware(['role:employe'])
             Route::get('/coordination', \App\Livewire\Employe\CoordinationChantier::class)->name('coordination');
         }
 
-        if (class_exists(\App\Livewire\Employe\TeamLeadOperationsCenter::class)) {
-            Route::get('/chef-equipe', \App\Livewire\Employe\TeamLeadOperationsCenter::class)->name('teamlead.operations');
+        Route::get('/chef-equipe', function () {
+            abort_unless(auth()->user()?->isFieldTeamLead(), 403);
+
+            return app(\App\Livewire\Employe\TeamLeadOperationsCenter::class);
+        })->name('teamlead.operations');
+
+        Route::get('/chef-equipe', \App\Livewire\Employe\TeamLeadOperationsCenter::class)
+            ->middleware('field.team.lead')
+            ->name('teamlead.operations');
+
+        if (class_exists(StripeConnectController::class)) {
+            Route::get('/stripe-connect/start', [StripeConnectController::class, 'start'])
+                ->name('stripe-connect.start');
+
+            Route::get('/stripe-connect/refresh', [StripeConnectController::class, 'refresh'])
+                ->name('stripe-connect.refresh');
+
+            Route::get('/stripe-connect/return', [StripeConnectController::class, 'return'])
+                ->name('stripe-connect.return');
+        }
+
+        if (class_exists(FeedbacksEmploye::class)) {
+            Route::get('/feedbacks', FeedbacksEmploye::class)->name('feedbacks');
+        }
+
+        if (class_exists(ValidationMultipleRdv::class)) {
+            Route::get('/validation-multiple-rdv', ValidationMultipleRdv::class)
+                ->name('validation.multiple');
         }
     });

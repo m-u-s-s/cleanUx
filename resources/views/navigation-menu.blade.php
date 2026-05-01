@@ -45,19 +45,75 @@
                     <x-nav-link :href="route('admin.feedbacks')" :active="request()->routeIs('admin.feedbacks')">Feedbacks</x-nav-link>
 
                     @can('manage-services')
-                    <x-nav-link :href="route('admin.services')" :active="request()->routeIs('admin.services')">Services</x-nav-link>
-                    <x-nav-link :href="route('admin.zones')" :active="request()->routeIs('admin.zones')">Zones</x-nav-link>
+                    @if(Route::has('admin.services'))
+                    <x-nav-link :href="route('admin.services')" :active="request()->routeIs('admin.services')">
+                        Services
+                    </x-nav-link>
+                    @endif
+
+                    @if(Route::has('admin.zones'))
+                    <x-nav-link :href="route('admin.zones')" :active="request()->routeIs('admin.zones')">
+                        Zones
+                    </x-nav-link>
+                    @endif
+
+                    @if(Route::has('admin.countries'))
+                    <x-nav-link :href="route('admin.countries')" :active="request()->routeIs('admin.countries')">
+                        Pays
+                    </x-nav-link>
+                    @endif
+
+                    @if(Route::has('admin.international'))
+                    <x-nav-link :href="route('admin.international')" :active="request()->routeIs('admin.international')">
+                        International
+                    </x-nav-link>
+                    @endif
                     @endcan
 
                     @can('manage-entreprises')
-                    <x-nav-link :href="route('admin.entreprises')" :active="request()->routeIs('admin.entreprises')">Entreprises</x-nav-link>
+                    @if(Route::has('admin.entreprises'))
+                    <x-nav-link :href="route('admin.entreprises')" :active="request()->routeIs('admin.entreprises')">
+                        Entreprises
+                    </x-nav-link>
+                    @endif
+
                     @if(Route::has('admin.enterprise.approvals'))
-                    <x-nav-link :href="route('admin.enterprise.approvals')" :active="request()->routeIs('admin.enterprise.approvals')">Approbations</x-nav-link>
+                    <x-nav-link :href="route('admin.enterprise.approvals')" :active="request()->routeIs('admin.enterprise.approvals')">
+                        Approbations
+                    </x-nav-link>
+                    @endif
+
+                    @if(Route::has('admin.teams.partners'))
+                    <x-nav-link :href="route('admin.teams.partners')" :active="request()->routeIs('admin.teams.partners')">
+                        Équipes & partenaires
+                    </x-nav-link>
+                    @endif
+
+                    @if(Route::has('admin.b2b.operations'))
+                    <x-nav-link :href="route('admin.b2b.operations')" :active="request()->routeIs('admin.b2b.operations')">
+                        Opérations B2B
+                    </x-nav-link>
+                    @endif
+
+                    @if(Route::has('admin.orchestration'))
+                    <x-nav-link :href="route('admin.orchestration')" :active="request()->routeIs('admin.orchestration')">
+                        Orchestration
+                    </x-nav-link>
+                    @endif
+
+                    @if(Route::has('admin.automation'))
+                    <x-nav-link :href="route('admin.automation')" :active="request()->routeIs('admin.automation')">
+                        Automatisation
+                    </x-nav-link>
                     @endif
                     @endcan
 
                     @can('manage-finance')
-                    <x-nav-link :href="route('admin.finance')" :active="request()->routeIs('admin.finance')">Finance</x-nav-link>
+                    @if(Route::has('admin.finance'))
+                    <x-nav-link :href="route('admin.finance')" :active="request()->routeIs('admin.finance')">
+                        Finance
+                    </x-nav-link>
+                    @endif
                     @endcan
 
                     @can('manage-analytics')
@@ -65,7 +121,11 @@
                     @endcan
 
                     @can('manage-quality')
-                    <x-nav-link :href="route('admin.quality')" :active="request()->routeIs('admin.quality')">Qualité</x-nav-link>
+                    @if(Route::has('admin.quality'))
+                    <x-nav-link :href="route('admin.quality')" :active="request()->routeIs('admin.quality')">
+                        Qualité
+                    </x-nav-link>
+                    @endif
                     @endcan
 
                     @can('manage-calendar')
@@ -73,11 +133,19 @@
                     @endcan
 
                     @can('manage-premium')
-                    <x-nav-link :href="route('admin.premium.clients')" :active="request()->routeIs('admin.premium.clients')">Premium</x-nav-link>
+                    @if(Route::has('admin.premium.clients'))
+                    <x-nav-link :href="route('admin.premium.clients')" :active="request()->routeIs('admin.premium.clients')">
+                        Premium
+                    </x-nav-link>
+                    @endif
                     @endcan
 
                     @can('manage-audit-logs')
-                    <x-nav-link :href="route('admin.audit.logs')" :active="request()->routeIs('admin.audit.logs')">Audit</x-nav-link>
+                    @if(Route::has('admin.audit.logs'))
+                    <x-nav-link :href="route('admin.audit.logs')" :active="request()->routeIs('admin.audit.logs')">
+                        Audit
+                    </x-nav-link>
+                    @endif
                     @endcan
 
                     <x-nav-link :href="route('admin.outils')" :active="request()->routeIs('admin.outils')">Outils</x-nav-link>

@@ -6,6 +6,7 @@ use App\Support\Livewire\Concerns\ComputesAdminDashboardData;
 use App\Support\Livewire\Concerns\HandlesAdminDashboardPlanning;
 use Livewire\Component;
 use Illuminate\Contracts\View\View;
+use Illuminate\Support\Facades\Route;
 use Livewire\Attributes\Layout;
 
 class AdminDashboard extends Component
@@ -59,17 +60,24 @@ class AdminDashboard extends Component
 
     public function goToPlanning()
     {
-        return redirect()->route('admin.planning');
+        return redirect()->to($this->safeAdminRoute('admin.planning'));
     }
 
     public function goToMissions()
     {
-        return redirect()->route('admin.missions');
+        return redirect()->to($this->safeAdminRoute('admin.missions'));
     }
 
     public function goToFeedbacks()
     {
-        return redirect()->route('admin.feedbacks');
+        return redirect()->to($this->safeAdminRoute('admin.feedbacks'));
+    }
+
+    protected function safeAdminRoute(string $routeName, string $fallback = 'admin.dashboard'): string
+    {
+        return Route::has($routeName)
+            ? route($routeName)
+            : route($fallback);
     }
 
     public function realtimeRefresh(): void
@@ -252,7 +260,7 @@ class AdminDashboard extends Component
             $actions[] = [
                 'title' => 'Traiter les rendez-vous en attente',
                 'message' => 'Des demandes attendent une validation ou une attribution.',
-                'route' => route('admin.planning'),
+                'route' => $this->safeAdminRoute('admin.planning'),
                 'label' => 'Ouvrir planning',
                 'icon' => '⏳',
                 'tone' => 'amber',
@@ -285,7 +293,7 @@ class AdminDashboard extends Component
             $actions[] = [
                 'title' => 'Relancer les feedbacks clients',
                 'message' => 'Le taux de feedback est faible. Une relance peut améliorer le suivi qualité.',
-                'route' => route('admin.feedbacks'),
+                'route' => $this->safeAdminRoute('admin.feedbacks'),
                 'label' => 'Voir feedbacks',
                 'icon' => '💬',
                 'tone' => 'emerald',

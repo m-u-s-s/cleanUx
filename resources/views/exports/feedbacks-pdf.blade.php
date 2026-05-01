@@ -1,25 +1,33 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <style>
-        body { font-family: DejaVu Sans, sans-serif; font-size: 12px; }
-        h1 { text-align: center; margin-bottom: 20px; }
-        .feedback { margin-bottom: 15px; border-bottom: 1px solid #ccc; padding-bottom: 10px; }
-    </style>
+    <meta charset="utf-8">
+    <title>Export feedbacks</title>
 </head>
 <body>
-    <h1>📄 Feedbacks</h1>
+    <h1>Export feedbacks</h1>
 
-    @foreach($feedbacks as $fb)
-        <div class="feedback">
-            <strong>Client :</strong> {{ $fb->client->name }}<br>
-            <strong>Employé :</strong> {{ $fb->rendezVous->employe->name ?? '—' }}<br>
-            <strong>Note :</strong> {{ $fb->note }}/5<br>
-            <strong>Commentaire :</strong><br>
-            {{ $fb->commentaire }}<br>
-            <strong>Date :</strong> {{ $fb->created_at->format('d/m/Y') }}
-        </div>
-    @endforeach
+    <table width="100%" border="1" cellspacing="0" cellpadding="6">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Client</th>
+                <th>Note</th>
+                <th>Commentaire</th>
+                <th>Zone</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach($feedbacks as $feedback)
+                <tr>
+                    <td>{{ $feedback->id }}</td>
+                    <td>{{ $feedback->client?->name }}</td>
+                    <td>{{ $feedback->note }}</td>
+                    <td>{{ $feedback->commentaire }}</td>
+                    <td>{{ $feedback->rendezVous?->serviceZone?->name }}</td>
+                </tr>
+            @endforeach
+        </tbody>
+    </table>
 </body>
 </html>

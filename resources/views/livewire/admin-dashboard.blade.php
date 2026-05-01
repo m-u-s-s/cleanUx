@@ -136,7 +136,6 @@
         </section>
         @endif
 
-
         {{-- Outils rapides --}}
         @if($visibleDashboardSections['tools'] ?? true)
         <section class="space-y-6">
@@ -162,7 +161,6 @@
             @endif
         </section>
         @endif
-
 
         {{-- Modules lourds --}}
         @if(($visibleDashboardSections['modules'] ?? false) && ! $compactMode)
@@ -201,40 +199,8 @@
         @endif
         @include('livewire.admin.dashboard.scripts')
 
-
         <livewire:admin.admin-alerts-center />
         <livewire:admin.admin-analytics-dashboard />
         <livewire:admin.employee-performance />
-
-
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <div class="bg-white rounded-2xl p-4">
-                <p class="text-sm text-slate-500">Prix client</p>
-                <p class="text-xl font-bold text-green-600">
-                    €{{ number_format($mission->client_price, 2) }}
-                </p>
-            </div>
-
-            <div class="bg-white rounded-2xl p-4">
-                <p class="text-sm text-slate-500">Coût employé</p>
-                <p class="text-xl font-bold text-red-600">
-                    €{{ number_format($mission->employee_cost, 2) }}
-                </p>
-            </div>
-
-            <div class="bg-white rounded-2xl p-4">
-                <p class="text-sm text-slate-500">Marge</p>
-                <p class="text-xl font-bold {{ $mission->margin >= 0 ? 'text-green-600' : 'text-red-600' }}">
-                    €{{ number_format($mission->margin, 2) }}
-                </p>
-            </div>
-
-            <div class="bg-white rounded-2xl p-4">
-                <p class="text-sm text-slate-500">Durée réelle</p>
-                <p class="text-xl font-bold text-slate-900">
-                    {{ $mission->actual_duration_minutes }} min
-                </p>
-            </div>
-        </div>
     </div>
 </div>

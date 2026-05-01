@@ -198,8 +198,7 @@ class MissionFieldActionController extends Controller
             }
         }
 
-        $commission = $mission->client_price * ($company->commission_rate / 100);
-        $companyRevenue = $mission->client_price - $commission;
+        
 
         $mission = $service->validateEndCode(
             $mission,

@@ -350,30 +350,5 @@
         }
     }
 </script>
-@push('scripts')
-<script>
-    document.addEventListener('DOMContentLoaded', () => {
-        const missionId = @json($mission - > id);
-
-        window.cleanUxMissionTracking(missionId, {
-            onPositionUpdated(data) {
-                console.log('Position reçue via Reverb', data);
-
-                window.dispatchEvent(new CustomEvent('cleanux-position-updated', {
-                    detail: data
-                }));
-            },
-
-            onStatusUpdated(event) {
-                console.log('Statut reçu via Reverb', event);
-
-                window.dispatchEvent(new CustomEvent('cleanux-status-updated', {
-                    detail: event
-                }));
-            },
-        });
-    });
-</script>
-@endpush
 @endpush
 @endonce

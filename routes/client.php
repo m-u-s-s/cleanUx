@@ -57,4 +57,12 @@ Route::middleware(['role:client'])
             Route::get('/abonnements', \App\Livewire\Client\ClientSubscriptions::class)
                 ->name('subscriptions');
         }
+
+        Route::get('/rendez-vous/series/{series}/edit', function ($series) {
+            abort_unless(auth()->user()?->isClient(), 403);
+
+            return view('client.recurring-series-edit', [
+                'series' => $series,
+            ]);
+        })->name('rendezvous.series.edit');
     });

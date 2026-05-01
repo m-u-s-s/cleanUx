@@ -68,7 +68,7 @@
 
                         <button
                             type="button"
-                            onclick="startMissionTracking({{ $mission->id }})"
+                            onclick="startMissionTracking({{ $selectedMission->id }})"
                             class="rounded-xl bg-blue-600 px-4 py-2 text-white hover:bg-blue-700">
                             Je suis en route
                         </button>
@@ -94,7 +94,7 @@
                     </div>
                 </div>
 
-                @foreach($mission->checklists as $checklist)
+                @foreach($selectedMission->checklists as $checklist)
                 <div class="rounded-2xl border bg-white p-4 space-y-3">
                     <h3 class="font-bold">{{ $checklist->template_name }}</h3>
 
