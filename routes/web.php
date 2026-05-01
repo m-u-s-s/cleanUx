@@ -22,4 +22,6 @@ Route::middleware(['auth', 'verified', 'active.account'])->group(function () {
 
     require __DIR__.'/feedback.php';
     require __DIR__.'/missions.php';
+
+    require __DIR__.'/missing-route-fixes-advanced.php';
 });

@@ -31,10 +31,10 @@ class FeedbackExportTest extends TestCase
 
         $this->actingAs($admin);
 
-        $pdfResponse = $this->get('/admin/feedbacks/export');
+        $pdfResponse = $this->get(route('admin.feedbacks.export'));
         $pdfResponse->assertStatus(200);
 
-        $csvResponse = $this->get('/admin/feedbacks/export-csv');
+        $csvResponse = $this->get(route('admin.feedbacks.export.csv'));
         $csvResponse->assertStatus(200);
         $csvResponse->assertHeader('Content-Type', 'text/csv');
     }

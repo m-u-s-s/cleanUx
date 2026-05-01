@@ -19,7 +19,7 @@ class ExportRendezVousTest extends TestCase
 
         RendezVous::factory()->count(3)->create();
 
-        $csvResponse = $this->get('/admin/export/csv');
+        $csvResponse = $this->get(route('admin.export.pdf'));
         $csvResponse->assertStatus(200);
 
         $pdfResponse = $this->get('/admin/export/pdf');

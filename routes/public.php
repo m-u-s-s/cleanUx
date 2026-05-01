@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\PremiumCheckoutController;
 use App\Http\Controllers\StripeWebhookController;
 use App\Livewire\Client\PremiumOfferPage;
 use App\Livewire\Client\PrendreRendezVous;
@@ -55,7 +56,31 @@ Route::post('/country', function (Request $request) {
 })->name('country.switch');
 
 Route::get('/premium', PremiumOfferPage::class)->name('premium.offer');
+
+Route::middleware(['auth', 'verified', 'active.account'])->group(function () {
+    Route::post('/premium/checkout', [PremiumCheckoutController::class, 'checkout'])
+        ->name('premium.checkout');
+
+    Route::get('/premium/success', [PremiumCheckoutController::class, 'success'])
+        ->name('premium.success');
+
+    Route::get('/premium/cancel', [PremiumCheckoutController::class, 'cancel'])
+        ->name('premium.cancel');
+});
+
 Route::get('/prendre-rendez-vous', PrendreRendezVous::class)->name('booking.create');
+
+Route::get('/terms-of-service', function () {
+    return view()->exists('terms')
+        ? view('terms')
+        : response('<h1>Conditions générales</h1><p>Page à compléter.</p>');
+})->name('terms.show');
+
+Route::get('/privacy-policy', function () {
+    return view()->exists('policy')
+        ? view('policy')
+        : response('<h1>Politique de confidentialité</h1><p>Page à compléter.</p>');
+})->name('policy.show');
 
 Route::post('/stripe/webhook', [StripeWebhookController::class, 'handleWebhook'])
     ->name('cashier.webhook');

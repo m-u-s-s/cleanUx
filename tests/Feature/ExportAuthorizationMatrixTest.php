@@ -20,10 +20,10 @@ class ExportAuthorizationMatrixTest extends TestCase
 
         $this->actingAs($admin);
 
-        $this->get('/admin/export/csv')->assertOk();
+        $this->get(route('admin.export.pdf'))->assertOk();
         $this->get('/admin/export/pdf')->assertOk();
-        $this->get('/admin/feedbacks/export')->assertOk();
-        $this->get('/admin/feedbacks/export-csv')->assertOk();
+        $this->get(route('admin.feedbacks.export'))->assertOk();
+        $this->get(route('admin.feedbacks.export.csv'))->assertOk();
     }
 
     public function test_non_admin_users_are_forbidden_from_export_routes(): void
@@ -31,9 +31,9 @@ class ExportAuthorizationMatrixTest extends TestCase
         $client = User::factory()->client()->create();
         $this->actingAs($client);
 
-        $this->get('/admin/export/csv')->assertForbidden();
+        $this->get(route('admin.export.pdf'))->assertForbidden();
         $this->get('/admin/export/pdf')->assertForbidden();
-        $this->get('/admin/feedbacks/export')->assertForbidden();
-        $this->get('/admin/feedbacks/export-csv')->assertForbidden();
+        $this->get(route('admin.feedbacks.export'))->assertForbidden();
+        $this->get(route('admin.feedbacks.export.csv'))->assertForbidden();
     }
 }

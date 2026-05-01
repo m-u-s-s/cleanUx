@@ -1,387 +1,325 @@
-<nav x-data="{ open: false }" class="bg-white border-b border-gray-100 sticky top-0 z-40">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="flex justify-between h-16">
-            <div class="flex">
-                <div class="shrink-0 flex items-center">
-                    <a href="{{ auth()->check() ? route('dashboard') : route('home') }}" class="text-xl font-extrabold text-blue-700">
-                        {{ config('app.name', 'App') }}
+<nav x-data="{ open: false }" class="sticky top-0 z-40 border-b border-gray-100 bg-white">
+    @php
+        $user = auth()->user();
+
+        $clientLinks = [
+            ['label' => 'Accueil', 'route' => 'client.dashboard', 'active' => 'client.dashboard', 'icon' => '🏠'],
+            ['label' => 'Nouveau RDV', 'route' => 'client.rendezvous.create', 'active' => 'client.rendezvous.create', 'icon' => '➕'],
+            ['label' => 'Mes rendez-vous', 'route' => 'client.rendezvous.index', 'active' => 'client.rendezvous.index', 'icon' => '📅'],
+            ['label' => 'Historique', 'route' => 'client.historique', 'active' => 'client.historique', 'icon' => '🕘'],
+            ['label' => 'Finance', 'route' => 'client.finance', 'active' => 'client.finance', 'icon' => '💳'],
+            ['label' => 'Profil client', 'route' => 'client.profile', 'active' => 'client.profile', 'icon' => '👤'],
+            ['label' => 'Favoris employés', 'route' => 'client.favorite-employes', 'active' => 'client.favorite-employes', 'icon' => '⭐'],
+            ['label' => 'Portefeuille', 'route' => 'client.wallet', 'active' => 'client.wallet', 'icon' => '👛'],
+            ['label' => 'Litiges', 'route' => 'client.claims', 'active' => 'client.claims', 'icon' => '⚠️'],
+            ['label' => 'Abonnements', 'route' => 'client.subscriptions', 'active' => 'client.subscriptions', 'icon' => '🔁'],
+        ];
+
+        $employeLinks = [
+            ['label' => 'Ma journée', 'route' => 'employe.dashboard', 'active' => 'employe.dashboard', 'icon' => '🏠'],
+            ['label' => 'Mes missions', 'route' => 'employe.missions', 'active' => 'employe.missions*', 'icon' => '📋'],
+            ['label' => 'Planning', 'route' => 'employe.planning', 'active' => 'employe.planning', 'icon' => '📅'],
+            ['label' => 'Disponibilités', 'route' => 'employe.disponibilites', 'active' => 'employe.disponibilites', 'icon' => '🕒'],
+            ['label' => 'Historique', 'route' => 'employe.historique', 'active' => 'employe.historique', 'icon' => '🕘'],
+            ['label' => 'Incident', 'route' => 'employe.incident', 'active' => 'employe.incident', 'icon' => '⚠️'],
+            ['label' => 'Équipe terrain', 'route' => 'employe.team', 'active' => 'employe.team', 'icon' => '👥'],
+            ['label' => 'Coordination', 'route' => 'employe.coordination', 'active' => 'employe.coordination', 'icon' => '🧭'],
+            ['label' => 'Chef d’équipe', 'route' => 'employe.teamlead.operations', 'active' => 'employe.teamlead.operations', 'icon' => '🧑‍💼'],
+        ];
+
+        $adminLinks = [
+            ['label' => 'Pilotage', 'route' => 'admin.dashboard', 'active' => 'admin.dashboard', 'icon' => '📊'],
+            ['label' => 'Missions', 'route' => 'admin.missions', 'active' => 'admin.missions*', 'icon' => '📋'],
+            ['label' => 'Alertes', 'route' => 'admin.alerts', 'active' => 'admin.alerts', 'icon' => '🚨'],
+            ['label' => 'Analytics', 'route' => 'admin.analytics', 'active' => 'admin.analytics', 'icon' => '📈'],
+            ['label' => 'Crédits clients', 'route' => 'admin.customer.credits', 'active' => 'admin.customer.credits', 'icon' => '💰'],
+            ['label' => 'Stripe prestataires', 'route' => 'admin.stripe-connect.providers', 'active' => 'admin.stripe-connect.providers', 'icon' => '💳'],
+            ['label' => 'IA Dispatch', 'route' => 'admin.ai.dispatch', 'active' => 'admin.ai.dispatch', 'icon' => '🤖'],
+            ['label' => 'Business', 'route' => 'admin.business.dashboard', 'active' => 'admin.business.dashboard', 'icon' => '🏢'],
+            ['label' => 'Readiness', 'route' => 'admin.platform.readiness', 'active' => 'admin.platform.readiness', 'icon' => '✅'],
+            ['label' => 'Factures B2B', 'route' => 'admin.b2b.monthly-invoices', 'active' => 'admin.b2b.monthly-invoices', 'icon' => '🧾'],
+            ['label' => 'Approbations', 'route' => 'admin.enterprise.approvals', 'active' => 'admin.enterprise.approvals', 'icon' => '🏢'],
+            ['label' => 'Sites', 'route' => 'admin.sites', 'active' => 'admin.sites', 'icon' => '📍'],
+        ];
+
+        $roleLinks = collect();
+
+        if ($user?->isClient()) {
+            $roleLinks = collect($clientLinks);
+        } elseif ($user?->isEmploye()) {
+            $roleLinks = collect($employeLinks);
+        } elseif ($user?->isAdmin()) {
+            $roleLinks = collect($adminLinks);
+        }
+
+        $roleLinks = $roleLinks
+            ->filter(fn ($link) => Route::has($link['route']))
+            ->values();
+
+        $primaryLinks = $roleLinks->take(6);
+        $moreLinks = $roleLinks->slice(6)->values();
+    @endphp
+
+    <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div class="flex h-16 justify-between">
+            <div class="flex min-w-0">
+                <div class="flex shrink-0 items-center">
+                    <a href="{{ auth()->check() && Route::has('dashboard') ? route('dashboard') : route('home') }}"
+                       class="text-xl font-extrabold text-blue-700">
+                        {{ config('app.name', 'CleanUx') }}
                     </a>
                 </div>
 
-                <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
+                <div class="hidden sm:-my-px sm:ms-8 sm:flex sm:items-center sm:gap-6">
                     @auth
-                    @php($user = auth()->user())
+                        @foreach($primaryLinks as $link)
+                            <x-nav-link :href="route($link['route'])" :active="request()->routeIs($link['active'])">
+                                <span class="me-1">{{ $link['icon'] }}</span>
+                                {{ $link['label'] }}
+                            </x-nav-link>
+                        @endforeach
 
-                    @if($user->isClient())
-                    <x-nav-link :href="route('client.dashboard')" :active="request()->routeIs('client.dashboard')">Accueil</x-nav-link>
-                    <x-nav-link :href="route('client.rendezvous.create')" :active="request()->routeIs('client.rendezvous.create')">Nouveau rendez-vous</x-nav-link>
-                    <x-nav-link :href="route('client.rendezvous.index')" :active="request()->routeIs('client.rendezvous.index')">Mes rendez-vous</x-nav-link>
-                    <x-nav-link :href="route('client.historique')" :active="request()->routeIs('client.historique')">Historique</x-nav-link>
-                    <x-nav-link :href="route('client.favorite-employes')" :active="request()->routeIs('client.favorite-employes')">Favoris</x-nav-link>
-                    <x-nav-link :href="route('client.profile')" :active="request()->routeIs('client.profile')">Espace client</x-nav-link>
-                    @if(Route::has('client.wallet'))
-                    <x-nav-link :href="route('client.wallet')" :active="request()->routeIs('client.wallet')">Portefeuille</x-nav-link>
-                    @endif
+                        @if($moreLinks->isNotEmpty())
+                            <div class="relative">
+                                <x-dropdown align="left" width="60">
+                                    <x-slot name="trigger">
+                                        <button type="button"
+                                                class="inline-flex items-center border-b-2 border-transparent px-1 pt-1 text-sm font-medium leading-5 text-gray-500 transition duration-150 ease-in-out hover:border-gray-300 hover:text-gray-700 focus:border-gray-300 focus:text-gray-700 focus:outline-none">
+                                            Plus
+                                            <svg class="ms-1 h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
+                                                <path fill-rule="evenodd"
+                                                      d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+                                                      clip-rule="evenodd" />
+                                            </svg>
+                                        </button>
+                                    </x-slot>
 
-                    @if(Route::has('client.claims'))
-                    <x-nav-link :href="route('client.claims')" :active="request()->routeIs('client.claims')">Litiges</x-nav-link>
-                    @endif
+                                    <x-slot name="content">
+                                        @foreach($moreLinks as $link)
+                                            <x-dropdown-link :href="route($link['route'])">
+                                                <span class="me-2">{{ $link['icon'] }}</span>
+                                                {{ $link['label'] }}
+                                            </x-dropdown-link>
+                                        @endforeach
+                                    </x-slot>
+                                </x-dropdown>
+                            </div>
+                        @endif
+                    @else
+                        @if(Route::has('booking.create'))
+                            <x-nav-link :href="route('booking.create')" :active="request()->routeIs('booking.create')">
+                                Réserver
+                            </x-nav-link>
+                        @endif
 
-                    @if(Route::has('client.subscriptions'))
-                    <x-nav-link :href="route('client.subscriptions')" :active="request()->routeIs('client.subscriptions')">Abonnements</x-nav-link>
-                    @endif
-
-                    @elseif($user->isEmploye())
-                    <x-nav-link :href="route('employe.dashboard')" :active="request()->routeIs('employe.dashboard')">Ma journée</x-nav-link>
-                    <x-nav-link :href="route('employe.planning')" :active="request()->routeIs('employe.planning')">Planning</x-nav-link>
-                    <x-nav-link :href="route('employe.missions')" :active="request()->routeIs('employe.missions')">Mes missions</x-nav-link>
-                    <x-nav-link :href="route('employe.disponibilites')" :active="request()->routeIs('employe.disponibilites')">Disponibilités</x-nav-link>
-                    <x-nav-link :href="route('employe.historique')" :active="request()->routeIs('employe.historique')">Historique</x-nav-link>
-                    @elseif($user->isAdmin())
-                    <x-nav-link :href="route('admin.dashboard')" :active="request()->routeIs('admin.dashboard')">Pilotage</x-nav-link>
-                    <x-nav-link :href="route('admin.planning')" :active="request()->routeIs('admin.planning')">Planning</x-nav-link>
-                    <x-nav-link :href="route('admin.missions')" :active="request()->routeIs('admin.missions')">Missions</x-nav-link>
-                    <x-nav-link :href="route('admin.utilisateurs')" :active="request()->routeIs('admin.utilisateurs')">Utilisateurs</x-nav-link>
-                    <x-nav-link :href="route('admin.feedbacks')" :active="request()->routeIs('admin.feedbacks')">Feedbacks</x-nav-link>
-
-                    @can('manage-services')
-                    @if(Route::has('admin.services'))
-                    <x-nav-link :href="route('admin.services')" :active="request()->routeIs('admin.services')">
-                        Services
-                    </x-nav-link>
-                    @endif
-
-                    @if(Route::has('admin.zones'))
-                    <x-nav-link :href="route('admin.zones')" :active="request()->routeIs('admin.zones')">
-                        Zones
-                    </x-nav-link>
-                    @endif
-
-                    @if(Route::has('admin.countries'))
-                    <x-nav-link :href="route('admin.countries')" :active="request()->routeIs('admin.countries')">
-                        Pays
-                    </x-nav-link>
-                    @endif
-
-                    @if(Route::has('admin.international'))
-                    <x-nav-link :href="route('admin.international')" :active="request()->routeIs('admin.international')">
-                        International
-                    </x-nav-link>
-                    @endif
-                    @endcan
-
-                    @can('manage-entreprises')
-                    @if(Route::has('admin.entreprises'))
-                    <x-nav-link :href="route('admin.entreprises')" :active="request()->routeIs('admin.entreprises')">
-                        Entreprises
-                    </x-nav-link>
-                    @endif
-
-                    @if(Route::has('admin.enterprise.approvals'))
-                    <x-nav-link :href="route('admin.enterprise.approvals')" :active="request()->routeIs('admin.enterprise.approvals')">
-                        Approbations
-                    </x-nav-link>
-                    @endif
-
-                    @if(Route::has('admin.teams.partners'))
-                    <x-nav-link :href="route('admin.teams.partners')" :active="request()->routeIs('admin.teams.partners')">
-                        Équipes & partenaires
-                    </x-nav-link>
-                    @endif
-
-                    @if(Route::has('admin.b2b.operations'))
-                    <x-nav-link :href="route('admin.b2b.operations')" :active="request()->routeIs('admin.b2b.operations')">
-                        Opérations B2B
-                    </x-nav-link>
-                    @endif
-
-                    @if(Route::has('admin.orchestration'))
-                    <x-nav-link :href="route('admin.orchestration')" :active="request()->routeIs('admin.orchestration')">
-                        Orchestration
-                    </x-nav-link>
-                    @endif
-
-                    @if(Route::has('admin.automation'))
-                    <x-nav-link :href="route('admin.automation')" :active="request()->routeIs('admin.automation')">
-                        Automatisation
-                    </x-nav-link>
-                    @endif
-                    @endcan
-
-                    @can('manage-finance')
-                    @if(Route::has('admin.finance'))
-                    <x-nav-link :href="route('admin.finance')" :active="request()->routeIs('admin.finance')">
-                        Finance
-                    </x-nav-link>
-                    @endif
-                    @endcan
-
-                    @can('manage-analytics')
-                    <x-nav-link :href="route('admin.analytics')" :active="request()->routeIs('admin.analytics')">Analytics</x-nav-link>
-                    @endcan
-
-                    @can('manage-quality')
-                    @if(Route::has('admin.quality'))
-                    <x-nav-link :href="route('admin.quality')" :active="request()->routeIs('admin.quality')">
-                        Qualité
-                    </x-nav-link>
-                    @endif
-                    @endcan
-
-                    @can('manage-calendar')
-                    <x-nav-link :href="route('admin.calendar')" :active="request()->routeIs('admin.calendar')">Calendrier</x-nav-link>
-                    @endcan
-
-                    @can('manage-premium')
-                    @if(Route::has('admin.premium.clients'))
-                    <x-nav-link :href="route('admin.premium.clients')" :active="request()->routeIs('admin.premium.clients')">
-                        Premium
-                    </x-nav-link>
-                    @endif
-                    @endcan
-
-                    @can('manage-audit-logs')
-                    @if(Route::has('admin.audit.logs'))
-                    <x-nav-link :href="route('admin.audit.logs')" :active="request()->routeIs('admin.audit.logs')">
-                        Audit
-                    </x-nav-link>
-                    @endif
-                    @endcan
-
-                    <x-nav-link :href="route('admin.outils')" :active="request()->routeIs('admin.outils')">Outils</x-nav-link>
-                    @if(Route::has('admin.ai.dispatch'))
-                    <x-nav-link :href="route('admin.ai.dispatch')" :active="request()->routeIs('admin.ai.dispatch')">IA Dispatch</x-nav-link>
-                    @endif
-
-                    @if(Route::has('admin.alerts'))
-                    <x-nav-link :href="route('admin.alerts')" :active="request()->routeIs('admin.alerts')">Alertes</x-nav-link>
-                    @endif
-
-                    @if(Route::has('admin.business.dashboard'))
-                    <x-nav-link :href="route('admin.business.dashboard')" :active="request()->routeIs('admin.business.dashboard')">Business</x-nav-link>
-                    @endif
-
-                    @if(Route::has('admin.platform.readiness'))
-                    <x-nav-link :href="route('admin.platform.readiness')" :active="request()->routeIs('admin.platform.readiness')">Readiness</x-nav-link>
-                    @endif
-                    @endif
+                        @if(Route::has('premium.offer'))
+                            <x-nav-link :href="route('premium.offer')" :active="request()->routeIs('premium.offer')">
+                                Premium
+                            </x-nav-link>
+                        @endif
                     @endauth
                 </div>
             </div>
 
-            <div class="hidden sm:flex sm:items-center sm:ms-6 gap-3">
+            <div class="hidden sm:flex sm:items-center sm:gap-3">
                 <x-language-switcher />
+
                 @auth
-                @php($user = auth()->user())
-
-                @if($user->isClient())
-                <a href="{{ route('client.rendezvous.create') }}"
-                    class="inline-flex items-center px-4 py-2 rounded-lg bg-blue-600 text-white text-sm font-semibold hover:bg-blue-700 transition">
-                    {{ __('app.reserve') }}
-                </a>
-                @endif
-
-                <a href="{{ route('notifications.index') }}"
-                    class="relative inline-flex items-center px-3 py-2 rounded-lg bg-gray-100 text-sm font-medium text-gray-700 hover:bg-gray-200 transition">
-                    {{ __('ui.navigation.notifications') }}
-                    @if($user->unreadNotifications()->count() > 0)
-                    <span class="ms-2 inline-flex min-w-[1.5rem] justify-center rounded-full bg-red-500 px-2 py-0.5 text-xs font-bold text-white">
-                        {{ min($user->unreadNotifications()->count(), 99) }}
-                    </span>
+                    @if($user?->isClient() && Route::has('client.rendezvous.create'))
+                        <a href="{{ route('client.rendezvous.create') }}"
+                           class="inline-flex items-center rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-blue-700">
+                            ➕ Réserver
+                        </a>
                     @endif
-                </a>
 
-                <div class="relative ms-3">
-                    <x-dropdown align="right" width="48">
-                        <x-slot name="trigger">
-                            <button class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-lg text-gray-700 bg-gray-100 hover:bg-gray-200 focus:outline-none transition ease-in-out duration-150">
-                                <div>{{ $user->name }}</div>
-                                <div class="ms-2">
-                                    <svg class="fill-current h-4 w-4" viewBox="0 0 20 20">
-                                        <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" />
-                                    </svg>
-                                </div>
-                            </button>
-                        </x-slot>
+                    @if(Route::has('notifications.index'))
+                        <a href="{{ route('notifications.index') }}"
+                           class="relative inline-flex items-center rounded-lg bg-gray-100 px-3 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-200">
+                            🔔 Notifications
 
-                        <x-slot name="content">
-                            <div class="block px-4 py-2 text-xs text-gray-400">
-                                {{ __('app.account') }}
-                            </div>
-
-                            @if($user->isClient())
-                            <x-dropdown-link :href="route('client.profile')">{{ __('app.client_space') }}</x-dropdown-link>
+                            @if($user->unreadNotifications()->count() > 0)
+                                <span class="ms-2 inline-flex min-w-[1.5rem] justify-center rounded-full bg-red-500 px-2 py-0.5 text-xs font-bold text-white">
+                                    {{ min($user->unreadNotifications()->count(), 99) }}
+                                </span>
                             @endif
+                        </a>
+                    @endif
 
-                            <x-dropdown-link :href="route('notifications.index')">{{ __('ui.navigation.notifications') }}</x-dropdown-link>
-                            <x-dropdown-link :href="route('profile.show')">{{ __('app.account_security') }}</x-dropdown-link>
+                    <div class="relative ms-2">
+                        <x-dropdown align="right" width="48">
+                            <x-slot name="trigger">
+                                <button class="inline-flex items-center rounded-lg border border-transparent bg-gray-100 px-3 py-2 text-sm font-medium leading-4 text-gray-700 transition duration-150 ease-in-out hover:bg-gray-200 focus:outline-none">
+                                    <div>{{ $user->name }}</div>
+                                    <div class="ms-2">
+                                        <svg class="h-4 w-4 fill-current" viewBox="0 0 20 20">
+                                            <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" />
+                                        </svg>
+                                    </div>
+                                </button>
+                            </x-slot>
 
-                            <form method="POST" action="{{ route('logout') }}">
-                                @csrf
-                                <x-dropdown-link :href="route('logout')"
-                                    onclick="event.preventDefault(); this.closest('form').submit();">
-                                    {{ __('app.logout') }}
-                                </x-dropdown-link>
-                            </form>
-                        </x-slot>
-                    </x-dropdown>
-                </div>
+                            <x-slot name="content">
+                                <div class="block px-4 py-2 text-xs text-gray-400">
+                                    Compte
+                                </div>
+
+                                @if($user?->isClient() && Route::has('client.profile'))
+                                    <x-dropdown-link :href="route('client.profile')">
+                                        👤 Espace client
+                                    </x-dropdown-link>
+                                @endif
+
+                                @if(Route::has('notifications.index'))
+                                    <x-dropdown-link :href="route('notifications.index')">
+                                        🔔 Notifications
+                                    </x-dropdown-link>
+                                @endif
+
+                                @if(Route::has('profile.show'))
+                                    <x-dropdown-link :href="route('profile.show')">
+                                        🔐 Sécurité du compte
+                                    </x-dropdown-link>
+                                @endif
+
+                                <form method="POST" action="{{ route('logout') }}">
+                                    @csrf
+
+                                    <x-dropdown-link :href="route('logout')"
+                                                     onclick="event.preventDefault(); this.closest('form').submit();">
+                                        Déconnexion
+                                    </x-dropdown-link>
+                                </form>
+                            </x-slot>
+                        </x-dropdown>
+                    </div>
                 @else
-                <a href="{{ route('booking.create') }}" class="text-sm font-medium text-gray-700 hover:text-blue-700">Réserver</a>
-                <a href="{{ route('login') }}" class="text-sm font-medium text-gray-700 hover:text-blue-700">{{ __('app.login') }}</a>
-                <a href="{{ route('register') }}" class="inline-flex items-center px-4 py-2 rounded-lg bg-blue-600 text-white text-sm font-semibold hover:bg-blue-700 transition">{{ __('app.register') }}</a>
+                    @if(Route::has('booking.create'))
+                        <a href="{{ route('booking.create') }}"
+                           class="text-sm font-medium text-gray-700 hover:text-blue-700">
+                            Réserver
+                        </a>
+                    @endif
+
+                    @if(Route::has('login'))
+                        <a href="{{ route('login') }}"
+                           class="text-sm font-medium text-gray-700 hover:text-blue-700">
+                            Connexion
+                        </a>
+                    @endif
+
+                    @if(Route::has('register'))
+                        <a href="{{ route('register') }}"
+                           class="inline-flex items-center rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-blue-700">
+                            Inscription
+                        </a>
+                    @endif
                 @endauth
             </div>
 
             <div class="-me-2 flex items-center sm:hidden">
-                <button @click="open = ! open" class="inline-flex items-center justify-center p-2 rounded-md text-gray-500 hover:text-gray-700 hover:bg-gray-100 focus:outline-none transition">
+                <button @click="open = ! open"
+                        class="inline-flex items-center justify-center rounded-md p-2 text-gray-500 transition hover:bg-gray-100 hover:text-gray-700 focus:outline-none">
                     <svg class="h-6 w-6" stroke="currentColor" fill="none" viewBox="0 0 24 24">
-                        <path :class="{'hidden': open, 'inline-flex': ! open }" class="inline-flex" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
-                        <path :class="{'hidden': ! open, 'inline-flex': open }" class="hidden" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                        <path :class="{ 'hidden': open, 'inline-flex': !open }"
+                              class="inline-flex"
+                              stroke-linecap="round"
+                              stroke-linejoin="round"
+                              stroke-width="2"
+                              d="M4 6h16M4 12h16M4 18h16" />
+
+                        <path :class="{ 'hidden': !open, 'inline-flex': open }"
+                              class="hidden"
+                              stroke-linecap="round"
+                              stroke-linejoin="round"
+                              stroke-width="2"
+                              d="M6 18L18 6M6 6l12 12" />
                     </svg>
                 </button>
             </div>
         </div>
     </div>
 
-    <div :class="{'block': open, 'hidden': ! open}" class="hidden sm:hidden border-t border-gray-100 bg-white">
-        <div class="pt-2 pb-3 space-y-1">
+    <div :class="{ 'block': open, 'hidden': !open }" class="hidden border-t border-gray-100 bg-white sm:hidden">
+        <div class="space-y-1 pb-3 pt-2">
             @auth
-            @php($user = auth()->user())
+                @foreach($roleLinks as $link)
+                    <x-responsive-nav-link :href="route($link['route'])" :active="request()->routeIs($link['active'])">
+                        <span class="me-2">{{ $link['icon'] }}</span>
+                        {{ $link['label'] }}
+                    </x-responsive-nav-link>
+                @endforeach
 
-            @if($user->isClient())
-            <x-responsive-nav-link :href="route('client.dashboard')" :active="request()->routeIs('client.dashboard')">{{ __('app.nav.home') }}</x-responsive-nav-link>
-            <x-responsive-nav-link :href="route('client.rendezvous.create')" :active="request()->routeIs('client.rendezvous.create')">{{ __('app.nav.new_booking') }}</x-responsive-nav-link>
-            <x-responsive-nav-link :href="route('client.rendezvous.index')" :active="request()->routeIs('client.rendezvous.index')">{{ __('app.nav.my_bookings') }}</x-responsive-nav-link>
-            <x-responsive-nav-link :href="route('client.historique')" :active="request()->routeIs('client.historique')">{{ __('app.nav.history') }}</x-responsive-nav-link>
-            <x-responsive-nav-link :href="route('client.favorite-employes')" :active="request()->routeIs('client.favorite-employes')">{{ __('app.nav.favorites') }}</x-responsive-nav-link>
-            <x-responsive-nav-link :href="route('client.profile')" :active="request()->routeIs('client.profile')">{{ __('app.client_space') }}</x-responsive-nav-link>
-            @if(Route::has('client.wallet'))
-            <x-responsive-nav-link :href="route('client.wallet')" :active="request()->routeIs('client.wallet')">Portefeuille</x-responsive-nav-link>
-            @endif
+                @if(Route::has('notifications.index'))
+                    <x-responsive-nav-link :href="route('notifications.index')" :active="request()->routeIs('notifications.index')">
+                        🔔 Notifications
+                    </x-responsive-nav-link>
+                @endif
+            @else
+                @if(Route::has('booking.create'))
+                    <x-responsive-nav-link :href="route('booking.create')" :active="request()->routeIs('booking.create')">
+                        Réserver
+                    </x-responsive-nav-link>
+                @endif
 
-            @if(Route::has('client.claims'))
-            <x-responsive-nav-link :href="route('client.claims')" :active="request()->routeIs('client.claims')">Litiges</x-responsive-nav-link>
-            @endif
-
-            @if(Route::has('client.subscriptions'))
-            <x-responsive-nav-link :href="route('client.subscriptions')" :active="request()->routeIs('client.subscriptions')">Abonnements</x-responsive-nav-link>
-            @endif
-            @elseif($user->isEmploye())
-            <x-responsive-nav-link :href="route('employe.dashboard')" :active="request()->routeIs('employe.dashboard')">{{ __('app.nav.my_day') }}</x-responsive-nav-link>
-            <x-responsive-nav-link :href="route('employe.planning')" :active="request()->routeIs('employe.planning')">{{ __('app.nav.planning') }}</x-responsive-nav-link>
-            <x-responsive-nav-link :href="route('employe.missions')" :active="request()->routeIs('employe.missions')">{{ __('app.nav.missions') }}</x-responsive-nav-link>
-            <x-responsive-nav-link :href="route('employe.disponibilites')" :active="request()->routeIs('employe.disponibilites')">Disponibilités</x-responsive-nav-link>
-            <x-responsive-nav-link :href="route('employe.historique')" :active="request()->routeIs('employe.historique')">{{ __('app.nav.history') }}</x-responsive-nav-link>
-            <x-responsive-nav-link :href="route('employe.team')" :active="request()->routeIs('employe.team')">Équipe terrain</x-responsive-nav-link>
-            <x-responsive-nav-link :href="route('employe.coordination')" :active="request()->routeIs('employe.coordination')">Coordination chantier</x-responsive-nav-link>
-            @if($user->isFieldTeamLead())
-            <x-responsive-nav-link :href="route('employe.teamlead.operations')" :active="request()->routeIs('employe.teamlead.operations')">Chef d’équipe</x-responsive-nav-link>
-            @endif
-            @elseif($user->isAdmin())
-            <x-responsive-nav-link :href="route('admin.dashboard')" :active="request()->routeIs('admin.dashboard')">{{ __('app.nav.pilotage') }}</x-responsive-nav-link>
-            <x-responsive-nav-link :href="route('admin.planning')" :active="request()->routeIs('admin.planning')">{{ __('app.nav.planning') }}</x-responsive-nav-link>
-            <x-responsive-nav-link :href="route('admin.missions')" :active="request()->routeIs('admin.missions')">{{ __('app.nav.missions') }}</x-responsive-nav-link>
-            <x-responsive-nav-link :href="route('admin.utilisateurs')" :active="request()->routeIs('admin.utilisateurs')">{{ __('ui.navigation.user_management') }}</x-responsive-nav-link>
-            <x-responsive-nav-link :href="route('admin.feedbacks')" :active="request()->routeIs('admin.feedbacks')">{{ __('app.nav.feedbacks') }}</x-responsive-nav-link>
-
-            @can('manage-services')
-            <x-responsive-nav-link :href="route('admin.services')" :active="request()->routeIs('admin.services')">{{ __('app.nav.services') }}</x-responsive-nav-link>
-            <x-responsive-nav-link :href="route('admin.zones')" :active="request()->routeIs('admin.zones')">Zones</x-responsive-nav-link>
-            <x-responsive-nav-link :href="route('admin.international')" :active="request()->routeIs('admin.international')">International</x-responsive-nav-link>
-            @endcan
-            @can('manage-entreprises')
-            <x-responsive-nav-link :href="route('admin.entreprises')" :active="request()->routeIs('admin.entreprises')">{{ __('app.nav.companies') }}</x-responsive-nav-link>
-            <x-responsive-nav-link :href="route('admin.teams.partners')" :active="request()->routeIs('admin.teams.partners')">Équipes & partenaires</x-responsive-nav-link>
-            <x-responsive-nav-link :href="route('admin.b2b.operations')" :active="request()->routeIs('admin.b2b.operations')">Opérations B2B</x-responsive-nav-link>
-            <x-responsive-nav-link :href="route('admin.orchestration')" :active="request()->routeIs('admin.orchestration')">Orchestration terrain</x-responsive-nav-link>
-            <x-responsive-nav-link :href="route('admin.automation')" :active="request()->routeIs('admin.automation')">Automatisation</x-responsive-nav-link>
-            @endcan
-
-            @if(Route::has('admin.missions.profitability'))
-            <x-nav-link :href="route('admin.missions.profitability')" :active="request()->routeIs('admin.missions.profitability')">Rentabilité</x-nav-link>
-            @endif
-
-
-            @can('manage-finance')
-            <x-responsive-nav-link :href="route('admin.finance')" :active="request()->routeIs('admin.finance')">{{ __('app.nav.finance') }}</x-responsive-nav-link>
-            @if(Route::has('admin.b2b.monthly-invoices'))
-            <x-nav-link :href="route('admin.b2b.monthly-invoices')" :active="request()->routeIs('admin.b2b.monthly-invoices')">Factures B2B</x-nav-link>
-            @endif
-            @endcan
-            @can('manage-analytics')
-            <x-responsive-nav-link :href="route('admin.analytics')" :active="request()->routeIs('admin.analytics')">{{ __('app.nav.analytics') }}</x-responsive-nav-link>
-            @if(Route::has('admin.quality.operational'))
-            <x-nav-link :href="route('admin.quality.operational')" :active="request()->routeIs('admin.quality.operational')">SLA</x-nav-link>
-            @endif
-
-            @if(Route::has('admin.clients.segmentation'))
-            <x-nav-link :href="route('admin.clients.segmentation')" :active="request()->routeIs('admin.clients.segmentation')">Segments</x-nav-link>
-            @endif
-            @endcan
-            @can('manage-quality')
-            <x-responsive-nav-link :href="route('admin.quality')" :active="request()->routeIs('admin.quality')">{{ __('app.nav.quality') }}</x-responsive-nav-link>
-            @endcan
-            @can('manage-calendar')
-            <x-responsive-nav-link :href="route('admin.calendar')" :active="request()->routeIs('admin.calendar')">{{ __('app.nav.calendar') }}</x-responsive-nav-link>
-            @endcan
-            @can('manage-premium')
-            <x-responsive-nav-link :href="route('admin.premium.clients')" :active="request()->routeIs('admin.premium.clients')">{{ __('app.nav.premium') }}</x-responsive-nav-link>
-            @endcan
-            @can('manage-audit-logs')
-            <x-responsive-nav-link :href="route('admin.audit.logs')" :active="request()->routeIs('admin.audit.logs')">{{ __('app.nav.audit') }}</x-responsive-nav-link>
-            @endcan
-            <x-responsive-nav-link :href="route('admin.outils')" :active="request()->routeIs('admin.outils')">{{ __('app.nav.tools') }}</x-responsive-nav-link>
-            @if(Route::has('admin.ai.dispatch'))
-            <x-responsive-nav-link :href="route('admin.ai.dispatch')" :active="request()->routeIs('admin.ai.dispatch')">IA Dispatch</x-responsive-nav-link>
-            @endif
-
-            @if(Route::has('admin.alerts'))
-            <x-responsive-nav-link :href="route('admin.alerts')" :active="request()->routeIs('admin.alerts')">Alertes</x-responsive-nav-link>
-            @endif
-
-            @if(Route::has('admin.business.dashboard'))
-            <x-responsive-nav-link :href="route('admin.business.dashboard')" :active="request()->routeIs('admin.business.dashboard')">Business Dashboard</x-responsive-nav-link>
-            @endif
-
-            @if(Route::has('admin.platform.readiness'))
-            <x-responsive-nav-link :href="route('admin.platform.readiness')" :active="request()->routeIs('admin.platform.readiness')">Platform Readiness</x-responsive-nav-link>
-            @endif
-            @endif
+                @if(Route::has('premium.offer'))
+                    <x-responsive-nav-link :href="route('premium.offer')" :active="request()->routeIs('premium.offer')">
+                        Premium
+                    </x-responsive-nav-link>
+                @endif
             @endauth
         </div>
 
         @auth
-        <div class="pt-4 pb-1 border-t border-gray-200">
-            <div class="px-4">
-                <div class="font-medium text-base text-gray-800">{{ Auth::user()->name }}</div>
-                <div class="font-medium text-sm text-gray-500">{{ Auth::user()->email }}</div>
-                <div class="mt-3"><x-language-switcher /></div>
-            </div>
+            <div class="border-t border-gray-200 pb-1 pt-4">
+                <div class="px-4">
+                    <div class="text-base font-medium text-gray-800">{{ $user->name }}</div>
+                    <div class="text-sm font-medium text-gray-500">{{ $user->email }}</div>
+                    <div class="mt-3">
+                        <x-language-switcher />
+                    </div>
+                </div>
 
-            <div class="mt-3 space-y-1">
-                @if(auth()->user()->isClient())
-                <x-responsive-nav-link :href="route('client.profile')" :active="request()->routeIs('client.profile')">{{ __('app.client_space') }}</x-responsive-nav-link>
+                <div class="mt-3 space-y-1">
+                    @if($user?->isClient() && Route::has('client.profile'))
+                        <x-responsive-nav-link :href="route('client.profile')" :active="request()->routeIs('client.profile')">
+                            👤 Espace client
+                        </x-responsive-nav-link>
+                    @endif
+
+                    @if(Route::has('profile.show'))
+                        <x-responsive-nav-link :href="route('profile.show')" :active="request()->routeIs('profile.show')">
+                            🔐 Sécurité du compte
+                        </x-responsive-nav-link>
+                    @endif
+
+                    <form method="POST" action="{{ route('logout') }}">
+                        @csrf
+
+                        <x-responsive-nav-link :href="route('logout')"
+                                               onclick="event.preventDefault(); this.closest('form').submit();">
+                            Déconnexion
+                        </x-responsive-nav-link>
+                    </form>
+                </div>
+            </div>
+        @else
+            <div class="space-y-3 border-t border-gray-200 pb-4 pt-4">
+                <div class="px-4">
+                    <x-language-switcher />
+                </div>
+
+                @if(Route::has('login'))
+                    <x-responsive-nav-link :href="route('login')" :active="request()->routeIs('login')">
+                        Connexion
+                    </x-responsive-nav-link>
                 @endif
 
-                <x-responsive-nav-link :href="route('notifications.index')" :active="request()->routeIs('notifications.index')">{{ __('ui.navigation.notifications') }}</x-responsive-nav-link>
-                <x-responsive-nav-link :href="route('profile.show')" :active="request()->routeIs('profile.show')">{{ __('app.account_security') }}</x-responsive-nav-link>
-
-                <form method="POST" action="{{ route('logout') }}">
-                    @csrf
-                    <x-responsive-nav-link :href="route('logout')"
-                        onclick="event.preventDefault(); this.closest('form').submit();">
-                        {{ __('app.logout') }}
+                @if(Route::has('register'))
+                    <x-responsive-nav-link :href="route('register')" :active="request()->routeIs('register')">
+                        Inscription
                     </x-responsive-nav-link>
-                </form>
+                @endif
             </div>
-        </div>
-        @else
-        <div class="pt-4 pb-4 border-t border-gray-200 space-y-3">
-            <div class="px-4"><x-language-switcher /></div>
-            <x-responsive-nav-link :href="route('login')" :active="request()->routeIs('login')">{{ __('app.login') }}</x-responsive-nav-link>
-            <x-responsive-nav-link :href="route('register')" :active="request()->routeIs('register')">{{ __('app.register') }}</x-responsive-nav-link>
-        </div>
         @endauth
     </div>
 </nav>

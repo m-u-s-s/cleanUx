@@ -1,5 +1,8 @@
 <?php
 
+use App\Models\FinanceInvoice;
+use App\Models\FinanceQuote;
+use Illuminate\Support\Facades\Response;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware(['role:client'])
@@ -41,6 +44,42 @@ Route::middleware(['role:client'])
             Route::get('/finance', \App\Livewire\Client\FinanceDocumentsClient::class)->name('finance');
         }
 
+        Route::get('/finance/devis/{quote}/telecharger', function (FinanceQuote $quote) {
+            $user = auth()->user();
+
+            abort_unless($user && (int) $quote->client_id === (int) $user->id, 403);
+
+            $path = $quote->getAttribute('pdf_path')
+                ?? $quote->getAttribute('document_path')
+                ?? $quote->getAttribute('file_path');
+
+            abort_unless(filled($path), 404, 'PDF du devis introuvable.');
+
+            $fullPath = storage_path('app/public/' . ltrim($path, '/'));
+
+            abort_unless(file_exists($fullPath), 404, 'Fichier du devis introuvable.');
+
+            return Response::download($fullPath);
+        })->name('finance.quote.download');
+
+        Route::get('/finance/factures/{invoice}/telecharger', function (FinanceInvoice $invoice) {
+            $user = auth()->user();
+
+            abort_unless($user && (int) $invoice->client_id === (int) $user->id, 403);
+
+            $path = $invoice->getAttribute('pdf_path')
+                ?? $invoice->getAttribute('document_path')
+                ?? $invoice->getAttribute('file_path');
+
+            abort_unless(filled($path), 404, 'PDF de la facture introuvable.');
+
+            $fullPath = storage_path('app/public/' . ltrim($path, '/'));
+
+            abort_unless(file_exists($fullPath), 404, 'Fichier de la facture introuvable.');
+
+            return Response::download($fullPath);
+        })->name('finance.invoice.download');
+
         if (class_exists(\App\Livewire\Client\ProfilClient::class)) {
             Route::get('/profil', \App\Livewire\Client\ProfilClient::class)->name('profile');
         }
@@ -57,12 +96,4 @@ Route::middleware(['role:client'])
             Route::get('/abonnements', \App\Livewire\Client\ClientSubscriptions::class)
                 ->name('subscriptions');
         }
-
-        Route::get('/rendez-vous/series/{series}/edit', function ($series) {
-            abort_unless(auth()->user()?->isClient(), 403);
-
-            return view('client.recurring-series-edit', [
-                'series' => $series,
-            ]);
-        })->name('rendezvous.series.edit');
     });

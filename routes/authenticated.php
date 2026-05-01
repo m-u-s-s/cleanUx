@@ -29,3 +29,33 @@ Route::get('/dashboard', function (Request $request) {
 
 Route::get('/notifications', NotificationsCenter::class)
     ->name('notifications.index');
+
+Route::put('/current-team', function (Request $request) {
+    $user = $request->user();
+
+    if (! $user) {
+        abort(403);
+    }
+
+    if (! method_exists($user, 'switchTeam')) {
+        return back()->with('info', 'La gestion des équipes Jetstream n’est pas activée.');
+    }
+
+    $teamId = $request->integer('team_id');
+
+    if (! $teamId) {
+        return back()->with('error', 'Équipe invalide.');
+    }
+
+    $team = $user->allTeams()
+        ->where('id', $teamId)
+        ->first();
+
+    if (! $team) {
+        abort(403);
+    }
+
+    $user->switchTeam($team);
+
+    return back()->with('success', 'Équipe active mise à jour.');
+})->name('current-team.update');
