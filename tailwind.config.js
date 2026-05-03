@@ -23,25 +23,27 @@ export default {
                     blue: "#003366",
                 },
             },
+            animation: {
+                "fade-up": "fadeUp 0.5s ease-out",
+                "fade-down": "fadeDown 0.5s ease-out",
+                "soft-pulse": "softPulse 1.8s ease-in-out infinite",
+            },
+            keyframes: {
+                fadeUp: {
+                    "0%": { opacity: 0, transform: "translateY(20px)" },
+                    "100%": { opacity: 1, transform: "translateY(0)" },
+                },
+                fadeDown: {
+                    "0%": { opacity: 0, transform: "translateY(-20px)" },
+                    "100%": { opacity: 1, transform: "translateY(0)" },
+                },
+                softPulse: {
+                    "0%, 100%": { opacity: 1 },
+                    "50%": { opacity: 0.62 },
+                },
+            },
         },
     },
 
     plugins: [forms, typography],
-
-    extend: {
-        animation: {
-            "fade-up": "fadeUp 0.5s ease-out",
-            "fade-down": "fadeDown 0.5s ease-out",
-        },
-        keyframes: {
-            fadeUp: {
-                "0%": { opacity: 0, transform: "translateY(20px)" },
-                "100%": { opacity: 1, transform: "translateY(0)" },
-            },
-            fadeDown: {
-                "0%": { opacity: 0, transform: "translateY(-20px)" },
-                "100%": { opacity: 1, transform: "translateY(0)" },
-            },
-        },
-    },
 };

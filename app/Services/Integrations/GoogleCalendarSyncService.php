@@ -7,6 +7,7 @@ use App\Models\GoogleCalendarConnection;
 use App\Models\GoogleCalendarEventLink;
 use App\Models\RendezVous;
 use App\Models\User;
+use App\Support\Domain\BookingStatus;
 use Carbon\Carbon;
 use GuzzleHttp\Client;
 use Illuminate\Support\Arr;
@@ -38,7 +39,7 @@ class GoogleCalendarSyncService
             ->where('employe_id', $user->id)
             ->whereDate('date', '>=', now()->toDateString())
             ->whereDate('date', '<=', now()->addDays($futureDays)->toDateString())
-            ->whereNotIn('status', ['refuse'])
+            ->whereNotIn('status', [BookingStatus::ANNULE, BookingStatus::REFUSE])
             ->orderBy('date')
             ->orderBy('heure')
             ->get();
@@ -77,7 +78,7 @@ class GoogleCalendarSyncService
             ->where('rendez_vous_id', $rendezVous->id)
             ->first();
 
-        if ($rendezVous->status === 'refuse') {
+        if (in_array($rendezVous->status, [BookingStatus::ANNULE, BookingStatus::REFUSE], true)) {
             if ($existingLink) {
                 $this->deleteRemoteEvent($connection, $existingLink);
                 $existingLink->delete();

@@ -1,0 +1,3 @@
+<div>
+    {{ $missions->links() }}
+</div>

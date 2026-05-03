@@ -76,7 +76,7 @@ class MesRendezVousClient extends Component
         Gate::authorize('update', $rdv);
 
         if (! $rdv->canStillBeEditedByClient()) {
-            $this->dispatch('toast', 'Ce rendez-vous ne peut plus être modifié.', 'error');
+            $this->dispatch('toast', message: 'Ce rendez-vous ne peut plus être modifié.', type: 'error');
             return;
         }
 
@@ -160,7 +160,7 @@ class MesRendezVousClient extends Component
         Gate::authorize('update', $rdv);
 
         if (! $rdv->canStillBeEditedByClient()) {
-            $this->dispatch('toast', 'Ce rendez-vous ne peut plus être modifié.', 'error');
+            $this->dispatch('toast', message: 'Ce rendez-vous ne peut plus être modifié.', type: 'error');
             return;
         }
 
@@ -193,7 +193,7 @@ class MesRendezVousClient extends Component
         }
 
         if (! $employee) {
-            $this->dispatch('toast', 'Aucun employé disponible pour ce créneau.', 'error');
+            $this->dispatch('toast', message: 'Aucun employé disponible pour ce créneau.', type: 'error');
             return;
         }
 
@@ -231,16 +231,16 @@ class MesRendezVousClient extends Component
 
         $this->fermerEdition();
 
-        $this->dispatch('toast', 'Rendez-vous replanifié avec succès.', 'success');
+        $this->dispatch('toast', message: 'Rendez-vous replanifié avec succès.', type: 'success');
     }
 
     public function demanderAnnulation(int $id): void
     {
         $rdv = RendezVous::findOrFail($id);
-        Gate::authorize('delete', $rdv);
+        Gate::authorize('cancel', $rdv);
 
         if (! $rdv->canStillBeEditedByClient()) {
-            $this->dispatch('toast', 'Ce rendez-vous ne peut plus être annulé.', 'error');
+            $this->dispatch('toast', message: 'Ce rendez-vous ne peut plus être annulé.', type: 'error');
             return;
         }
 
@@ -258,10 +258,10 @@ class MesRendezVousClient extends Component
     {
         $rdv = RendezVous::findOrFail($this->cancelRdvId);
 
-        Gate::authorize('delete', $rdv);
+        Gate::authorize('cancel', $rdv);
 
         if (! $rdv->canStillBeEditedByClient()) {
-            $this->dispatch('toast', 'Ce rendez-vous ne peut plus être annulé.', 'error');
+            $this->dispatch('toast', message: 'Ce rendez-vous ne peut plus être annulé.', type: 'error');
             return;
         }
 
@@ -273,9 +273,9 @@ class MesRendezVousClient extends Component
             'reason' => $this->cancelReason,
         ]);
 
-        $rdv->delete();
+        $rdv->markCancelledByClient($this->cancelReason);
         $this->fermerAnnulation();
-        $this->dispatch('toast', 'Rendez-vous annulé.', 'success');
+        $this->dispatch('toast', message: 'Rendez-vous annulé.', type: 'success');
     }
 
     public function annuler(int $id): void

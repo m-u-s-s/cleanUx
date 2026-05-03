@@ -9,6 +9,7 @@ final class BookingStatus
     public const EN_ROUTE = 'en_route';
     public const SUR_PLACE = 'sur_place';
     public const TERMINE = 'termine';
+    public const ANNULE = 'annule';
     public const REFUSE = 'refuse';
 
     public static function all(): array
@@ -19,6 +20,7 @@ final class BookingStatus
             self::EN_ROUTE,
             self::SUR_PLACE,
             self::TERMINE,
+            self::ANNULE,
             self::REFUSE,
         ];
     }
@@ -59,6 +61,7 @@ final class BookingStatus
             self::EN_ROUTE,
             self::SUR_PLACE,
             self::TERMINE,
+            self::ANNULE,
             self::REFUSE,
         ];
     }
@@ -66,6 +69,7 @@ final class BookingStatus
     public static function final(): array
     {
         return [
+            self::ANNULE,
             self::REFUSE,
             self::TERMINE,
         ];
@@ -85,6 +89,7 @@ final class BookingStatus
     {
         return match ($status) {
             self::CONFIRME => 'confirmée',
+            self::ANNULE => 'annulée',
             self::REFUSE => 'refusée',
             self::EN_ATTENTE => 'mise en attente',
             self::EN_ROUTE => 'en route',
@@ -98,6 +103,7 @@ final class BookingStatus
     {
         return match ($status) {
             self::CONFIRME => 'confirmée ✅',
+            self::ANNULE => 'annulée ❌',
             self::REFUSE => 'refusée ❌',
             self::EN_ATTENTE => 'mise en attente ⏳',
             self::EN_ROUTE => 'en route 🚗',
@@ -111,7 +117,7 @@ final class BookingStatus
     {
         return match ($status) {
             self::CONFIRME, self::TERMINE => 'success',
-            self::REFUSE => 'danger',
+            self::ANNULE, self::REFUSE => 'danger',
             self::EN_ROUTE, self::SUR_PLACE => 'info',
             default => 'warning',
         };

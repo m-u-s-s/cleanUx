@@ -159,23 +159,15 @@ Route::middleware(['role:admin'])
                 ]) . "\n";
             }
 
-            return response($csv, 200, [
-                'Content-Type' => 'text/csv',
-            ]);
+            return new class($csv, 200, ['Content-Type' => 'text/csv']) extends \Illuminate\Http\Response {
+                public function prepare(\Symfony\Component\HttpFoundation\Request $request): static
+                {
+                    parent::prepare($request);
+
+                    $this->headers->set('Content-Type', 'text/csv', true);
+
+                    return $this;
+                }
+            };
         })->name('feedbacks.export.csv');
-
-        Route::get('/feedbacks/export', function () {
-            $user = auth()->user();
-
-            abort_unless($user && $user->isAdmin(), 403);
-
-            if (class_exists(Pdf::class)) {
-                return Pdf::loadHTML('
-            <h1>Export feedbacks</h1>
-            <p>Export PDF temporaire des feedbacks.</p>
-        ')->download('feedbacks.pdf');
-            }
-
-            return response('<h1>Export feedbacks</h1>', 200);
-        })->name('feedbacks.export');
     });

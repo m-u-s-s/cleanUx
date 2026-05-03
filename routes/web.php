@@ -24,14 +24,4 @@ Route::middleware(['auth', 'verified', 'active.account'])->group(function () {
     require __DIR__ . '/missions.php';
 
     require __DIR__ . '/missing-route-fixes-advanced.php';
-
-    Route::middleware(['auth', 'verified', 'active.account', 'role:admin'])
-        ->get('/admin/utilisateurs/manage', function () {
-            if (class_exists(\App\Livewire\Admin\UtilisateursAdmin::class)) {
-                return \Livewire\Livewire::mount('admin.utilisateurs-admin');
-            }
-
-            return response('<h1>Gestion utilisateurs</h1>', 200);
-        })
-        ->name('admin.utilisateurs.manage');
 });

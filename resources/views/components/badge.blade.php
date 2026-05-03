@@ -5,6 +5,7 @@
 
     $config = match($normalized) {
         'confirme' => ['classes' => 'bg-green-100 text-green-700 border-green-200', 'label' => 'Confirmé'],
+        'annule' => ['classes' => 'bg-rose-100 text-rose-700 border-rose-200', 'label' => 'Annulé'],
         'refuse' => ['classes' => 'bg-red-100 text-red-700 border-red-200', 'label' => 'Refusé'],
         'en_attente' => ['classes' => 'bg-yellow-100 text-yellow-700 border-yellow-200', 'label' => 'En attente'],
         'en_route' => ['classes' => 'bg-blue-100 text-blue-700 border-blue-200', 'label' => 'En route'],

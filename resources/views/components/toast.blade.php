@@ -1,20 +1,37 @@
 <div
-    x-data="{ show: false, message: '', type: 'success', timeout: null }"
+    x-data="{
+        show: false,
+        message: '',
+        type: 'success',
+        timeout: null,
+        open(payload = {}, fallbackType = 'success') {
+            if (typeof payload === 'string') {
+                this.message = payload;
+                this.type = fallbackType || 'success';
+            } else {
+                this.message = payload.message || payload.msg || '';
+                this.type = payload.type || fallbackType || 'success';
+            }
+
+            this.show = true;
+
+            if (this.timeout) clearTimeout(this.timeout);
+
+            try {
+                const sound = this.type === 'success' ? '/sounds/success.mp3' : '/sounds/error.mp3';
+                new Audio(sound).play();
+            } catch (e) {}
+
+            this.timeout = setTimeout(() => this.show = false, 3600);
+        }
+    }"
     x-show="show"
     x-transition.opacity.scale.duration.250ms
     x-init="
-        Livewire.on('toast', (msg, toastType = 'success') => {
-            message = msg;
-            type = toastType;
-            show = true;
-
-            if (timeout) clearTimeout(timeout);
-
-            try {
-                new Audio(type === 'success' ? '/sounds/success.mp3' : '/sounds/error.mp3').play();
-            } catch (e) {}
-
-            timeout = setTimeout(() => show = false, 3600);
+        Livewire.on('toast', (...args) => {
+            const first = args[0] || {};
+            const second = args[1] || 'success';
+            open(first, second);
         });
     "
     class="fixed right-4 top-4 z-[9999] sm:right-6 sm:top-6"
@@ -24,7 +41,7 @@
         class="min-w-[300px] max-w-sm overflow-hidden rounded-[22px] border px-4 py-3 text-sm font-medium shadow-[0_22px_55px_rgba(15,23,42,0.18)] backdrop-blur cu-scale-in"
         :class="{
             'bg-emerald-50/95 text-emerald-900 border-emerald-200': type === 'success',
-            'bg-red-50/95 text-red-900 border-red-200': type === 'error',
+            'bg-red-50/95 text-red-900 border-red-200': type === 'error' || type === 'danger',
             'bg-amber-50/95 text-amber-900 border-amber-200': type === 'warning',
             'bg-sky-50/95 text-sky-900 border-sky-200': type === 'info',
         }"
@@ -32,7 +49,7 @@
         <div class="flex items-start gap-3">
             <div class="mt-0.5 flex h-9 w-9 items-center justify-center rounded-2xl bg-white/80 text-lg shadow-sm">
                 <span x-show="type === 'success'">✅</span>
-                <span x-show="type === 'error'">❌</span>
+                <span x-show="type === 'error' || type === 'danger'">❌</span>
                 <span x-show="type === 'warning'">⚠️</span>
                 <span x-show="type === 'info'">ℹ️</span>
             </div>
@@ -51,7 +68,7 @@
             <div class="h-full rounded-full"
                 :class="{
                     'bg-emerald-500': type === 'success',
-                    'bg-red-500': type === 'error',
+                    'bg-red-500': type === 'error' || type === 'danger',
                     'bg-amber-500': type === 'warning',
                     'bg-sky-500': type === 'info',
                 }"

@@ -46,12 +46,6 @@ Route::middleware(['role:employe'])
             Route::get('/coordination', \App\Livewire\Employe\CoordinationChantier::class)->name('coordination');
         }
 
-        Route::get('/chef-equipe', function () {
-            abort_unless(auth()->user()?->isFieldTeamLead(), 403);
-
-            return app(\App\Livewire\Employe\TeamLeadOperationsCenter::class);
-        })->name('teamlead.operations');
-
         Route::get('/chef-equipe', \App\Livewire\Employe\TeamLeadOperationsCenter::class)
             ->middleware('field.team.lead')
             ->name('teamlead.operations');

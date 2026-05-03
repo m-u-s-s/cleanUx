@@ -336,7 +336,7 @@ class ClientDashboard extends Component
         Gate::authorize('update', $rdv);
 
         if (! $rdv->canStillBeEditedByClient()) {
-            $this->dispatch('toast', 'Ce rendez-vous ne peut plus être modifié.', 'error');
+            $this->dispatch('toast', message: 'Ce rendez-vous ne peut plus être modifié.', type: 'error');
             return;
         }
 
@@ -361,7 +361,7 @@ class ClientDashboard extends Component
         Gate::authorize('update', $rdv);
 
         if (! $rdv->canStillBeEditedByClient()) {
-            $this->dispatch('toast', 'Ce rendez-vous ne peut plus être modifié.', 'error');
+            $this->dispatch('toast', message: 'Ce rendez-vous ne peut plus être modifié.', type: 'error');
             return;
         }
 
@@ -389,7 +389,7 @@ class ClientDashboard extends Component
         ]);
 
         $this->fermerEdition();
-        $this->dispatch('toast', 'Rendez-vous mis à jour.', 'success');
+        $this->dispatch('toast', message: 'Rendez-vous mis à jour.', type: 'success');
     }
 
     public function annuler($id)
@@ -399,7 +399,7 @@ class ClientDashboard extends Component
         Gate::authorize('cancel', $rdv);
 
         if (! $rdv->canStillBeEditedByClient()) {
-            $this->dispatch('toast', 'Ce rendez-vous ne peut plus être annulé.', 'error');
+            $this->dispatch('toast', message: 'Ce rendez-vous ne peut plus être annulé.', type: 'error');
             return;
         }
 
@@ -410,9 +410,9 @@ class ClientDashboard extends Component
             'service_zone_id' => $rdv->service_zone_id,
         ]);
 
-        $rdv->delete();
+        $rdv->markCancelledByClient();
 
-        $this->dispatch('toast', 'Rendez-vous annulé.', 'error');
+        $this->dispatch('toast', message: 'Rendez-vous annulé.', type: 'success');
     }
 
     public function render(): View

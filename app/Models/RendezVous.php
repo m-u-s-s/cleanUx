@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Support\Domain\BookingStatus;
+use App\Support\Domain\MissionStatus;
 use App\Models\Concerns\HasBookingDisplayAccessors;
 use App\Models\Concerns\HasRecurringSeries;
 use App\Models\Concerns\ResetsNotificationTracking;
@@ -265,6 +267,34 @@ class RendezVous extends Model
                 ->orWhere('code', 'like', $like)
                 ->orWhere('slug', 'like', $like);
         });
+    }
+
+
+    public function markCancelledByClient(?string $reason = null): self
+    {
+        $this->forceFill([
+            'status' => BookingStatus::ANNULE,
+        ])->save();
+
+        $mission = $this->relationLoaded('mission')
+            ? $this->mission
+            : $this->mission()->first();
+
+        if ($mission && $mission->status !== MissionStatus::COMPLETED) {
+            $notes = trim((string) $mission->notes);
+            $cancelNote = trim('Annulé par le client' . ($reason ? ' : ' . $reason : ''));
+
+            if ($cancelNote !== '' && ! str_contains($notes, $cancelNote)) {
+                $notes = trim($notes . "\n" . $cancelNote);
+            }
+
+            $mission->forceFill([
+                'status' => MissionStatus::CANCELLED,
+                'notes' => $notes ?: null,
+            ])->save();
+        }
+
+        return $this->fresh(['mission']) ?? $this;
     }
 
     public function financeQuote(): HasOne

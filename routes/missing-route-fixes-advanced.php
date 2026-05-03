@@ -107,43 +107,6 @@ Route::middleware(['auth', 'verified', 'active.account'])->group(function () use
                 });
             }
 
-            if (! Route::has('admin.feedbacks.export.csv')) {
-                Route::get('/feedbacks/export/csv', function () {
-                    $user = auth()->user();
-
-                    abort_unless($user && $user->isAdmin(), 403);
-
-                    $query = \App\Models\Feedback::query()
-                        ->with('rendezVous.serviceZone');
-
-                    if ($user->isZoneScopedAdmin()) {
-                        $query->whereHas('rendezVous', function ($q) use ($user) {
-                            $q->where('service_zone_id', $user->managed_service_zone_id);
-                        });
-                    }
-
-                    $callback = function () use ($query) {
-                        echo "id\n";
-
-                        $query->chunk(100, function ($rows) {
-                            foreach ($rows as $feedback) {
-                                echo $feedback->id . "\n";
-                            }
-                        });
-                    };
-
-                    return new class($callback, 200, ['Content-Type' => 'text/csv']) extends \Symfony\Component\HttpFoundation\StreamedResponse {
-                        public function prepare(\Symfony\Component\HttpFoundation\Request $request): static
-                        {
-                            parent::prepare($request);
-
-                            $this->headers->set('Content-Type', 'text/csv', true);
-
-                            return $this;
-                        }
-                    };
-                })->name('feedbacks.export.csv');
-            }
 
             if (! Route::has('admin.finance')) {
                 Route::get('/finance', $livewireOrFallback([
@@ -289,100 +252,45 @@ Route::middleware(['auth', 'verified', 'active.account'])->group(function () use
                 })->name('rendezvous.series.edit');
             }
 
-            Route::get('/export/csv', function () {
-                $user = auth()->user();
 
-                abort_unless($user && $user->canPerformCriticalAdminActions(), 403);
+            if (! Route::has('admin.export.csv')) {
+                Route::get('/export/csv', function () {
+                    $user = auth()->user();
 
-                $query = \App\Models\RendezVous::query()->with('serviceZone');
+                    abort_unless($user && $user->canPerformCriticalAdminActions(), 403);
 
-                if ($user->isZoneScopedAdmin()) {
-                    $query->where('service_zone_id', $user->managed_service_zone_id);
-                }
+                    $query = \App\Models\RendezVous::query()->with('serviceZone');
 
-                return response()->streamDownload(function () use ($query) {
-                    echo "id,service_zone,status,date\n";
+                    if ($user->isZoneScopedAdmin()) {
+                        $query->where('service_zone_id', $user->managed_service_zone_id);
+                    }
 
-                    $query->chunk(100, function ($rows) {
-                        foreach ($rows as $rdv) {
-                            echo implode(',', [
-                                $rdv->id,
-                                '"' . str_replace('"', '""', (string) ($rdv->serviceZone?->name ?? '')) . '"',
-                                $rdv->status,
-                                $rdv->date,
-                            ]) . "\n";
-                        }
-                    });
-                }, 'rendez-vous-export.csv', [
-                    'Content-Type' => 'text/csv',
-                ]);
-            });
+                    return response()->streamDownload(function () use ($query) {
+                        echo "id,service_zone,status,date\n";
 
+                        $query->chunk(100, function ($rows) {
+                            foreach ($rows as $rdv) {
+                                echo implode(',', [
+                                    $rdv->id,
+                                    '"' . str_replace('"', '""', (string) ($rdv->serviceZone?->name ?? '')) . '"',
+                                    $rdv->status,
+                                    $rdv->date,
+                                ]) . "\n";
+                            }
+                        });
+                    }, 'rendez-vous-export.csv', [
+                        'Content-Type' => 'text/csv',
+                    ]);
+                })->name('export.csv');
+            }
 
-            Route::get('/feedbacks/export-csv', function () {
-                $user = auth()->user();
-
-                abort_unless($user && $user->canPerformCriticalAdminActions(), 403);
-
-                $query = \App\Models\Feedback::query()
-                    ->with('rendezVous.serviceZone');
-
-                if ($user->isZoneScopedAdmin()) {
-                    $query->whereHas('rendezVous', function ($q) use ($user) {
-                        $q->where('service_zone_id', $user->managed_service_zone_id);
-                    });
-                }
-
-                $rows = $query->get();
-
-                $csv = "id,rendez_vous_id,commentaire\n";
-
-                foreach ($rows as $feedback) {
-                    $csv .= implode(',', [
-                        $feedback->id,
-                        $feedback->rendez_vous_id,
-                        '"' . str_replace('"', '""', (string) ($feedback->commentaire ?? $feedback->comment ?? '')) . '"',
-                    ]) . "\n";
-                }
-
-                return response($csv, 200, [
-                    'Content-Type' => 'text/csv',
-                ]);
-            });
-
-
-            Route::get('/premium-clients', function () {
-                return redirect()->route('admin.premium.clients');
-            });
-
-            Route::get('/utilisateurs', function () {
-                if (Route::has('admin.utilisateurs.manage')) {
-                    return redirect()->route('admin.utilisateurs.manage');
-                }
-
-                abort(404);
-            });
-
-
-            Route::get('/utilisateurs', function () {
-                if (class_exists(\App\Livewire\Admin\UtilisateursAdmin::class)) {
-                    return app(\Livewire\LivewireManager::class)
-                        ? \Illuminate\Support\Facades\Blade::render('@livewire(\App\Livewire\Admin\UtilisateursAdmin::class)')
-                        : response('<h1>Gestion utilisateurs</h1>', 200);
-                }
-
-                return response('<h1>Gestion utilisateurs</h1>', 200);
-            });
-
-            Route::get('/premium-clients', function () {
-                if (class_exists(\App\Livewire\Admin\PremiumClientsManager::class)) {
-                    return app(\Livewire\LivewireManager::class)
-                        ? \Illuminate\Support\Facades\Blade::render('@livewire(\App\Livewire\Admin\PremiumClientsManager::class)')
-                        : response('<h1>Clients premium</h1>', 200);
-                }
-
-                return response('<h1>Clients premium</h1>', 200);
-            });
+            if (! Route::has('admin.premium.clients.legacy')) {
+                Route::get('/premium-clients', $livewireOrFallback([
+                    \App\Livewire\Admin\PremiumClients::class,
+                    \App\Livewire\Admin\PremiumClientsManager::class,
+                    \App\Livewire\Admin\AdminPremiumClients::class,
+                ], 'Clients premium'))->name('premium.clients.legacy');
+            }
         });
 
     /*

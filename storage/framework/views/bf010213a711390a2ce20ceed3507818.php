@@ -127,49 +127,49 @@ if (isset($__slots)) unset($__slots);
     <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
 
     <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(auth()->guard()->check()): ?>
-    <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(auth()->user()->isClient()): ?>
-    <div class="sm:hidden fixed bottom-0 inset-x-0 z-50 border-t border-slate-200 bg-white/95 backdrop-blur shadow-[0_-10px_30px_rgba(15,23,42,0.08)]">
-        <div class="grid <?php echo e(Route::has('client.wallet') ? 'grid-cols-5' : 'grid-cols-4'); ?> h-16">
-            <a href="<?php echo e(route('client.dashboard')); ?>"
-                class="flex flex-col items-center justify-center text-xs <?php echo e(request()->routeIs('client.dashboard') ? 'text-blue-600 font-semibold' : 'text-gray-500'); ?>">
-                <span>🏠</span>
-                <span>Accueil</span>
-            </a>
-
-            <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(Route::has('client.rendezvous.create')): ?>
-            <a href="<?php echo e(route('client.rendezvous.create')); ?>"
-                class="flex flex-col items-center justify-center text-xs <?php echo e(request()->routeIs('client.rendezvous.create') ? 'text-blue-600 font-semibold' : 'text-gray-500'); ?>">
-                <span>➕</span>
-                <span>Demande</span>
-            </a>
-            <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
-
-            <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(Route::has('client.rendezvous.index')): ?>
-            <a href="<?php echo e(route('client.rendezvous.index')); ?>"
-                class="flex flex-col items-center justify-center text-xs <?php echo e(request()->routeIs('client.rendezvous.index') ? 'text-blue-600 font-semibold' : 'text-gray-500'); ?>">
-                <span>📅</span>
-                <span>RDV</span>
-            </a>
-            <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
-
-            <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(Route::has('client.historique')): ?>
-            <a href="<?php echo e(route('client.historique')); ?>"
-                class="flex flex-col items-center justify-center text-xs <?php echo e(request()->routeIs('client.historique') ? 'text-blue-600 font-semibold' : 'text-gray-500'); ?>">
-                <span>🕘</span>
-                <span>Historique</span>
-            </a>
-            <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
-
-            <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(Route::has('client.wallet')): ?>
-            <a href="<?php echo e(route('client.wallet')); ?>"
-                class="flex flex-col items-center justify-center text-xs <?php echo e(request()->routeIs('client.wallet') ? 'text-blue-600 font-semibold' : 'text-gray-500'); ?>">
-                <span>💳</span>
-                <span>Wallet</span>
-            </a>
-            <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
-        </div>
-    </div>
-    <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+        <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(auth()->user()->isClient()): ?>
+            <?php if (isset($component)) { $__componentOriginalffd5b51471d1182c1a63434d1b9e8c84 = $component; } ?>
+<?php if (isset($attributes)) { $__attributesOriginalffd5b51471d1182c1a63434d1b9e8c84 = $attributes; } ?>
+<?php $component = Illuminate\View\AnonymousComponent::resolve(['view' => 'components.ui.mobile-bottom-nav','data' => ['role' => 'client']] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? (array) $attributes->getIterator() : [])); ?>
+<?php $component->withName('ui.mobile-bottom-nav'); ?>
+<?php if ($component->shouldRender()): ?>
+<?php $__env->startComponent($component->resolveView(), $component->data()); ?>
+<?php if (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag && $constructor = (new ReflectionClass(Illuminate\View\AnonymousComponent::class))->getConstructor()): ?>
+<?php $attributes = $attributes->except(collect($constructor->getParameters())->map->getName()->all()); ?>
+<?php endif; ?>
+<?php $component->withAttributes(['role' => 'client']); ?>
+<?php echo $__env->renderComponent(); ?>
+<?php endif; ?>
+<?php if (isset($__attributesOriginalffd5b51471d1182c1a63434d1b9e8c84)): ?>
+<?php $attributes = $__attributesOriginalffd5b51471d1182c1a63434d1b9e8c84; ?>
+<?php unset($__attributesOriginalffd5b51471d1182c1a63434d1b9e8c84); ?>
+<?php endif; ?>
+<?php if (isset($__componentOriginalffd5b51471d1182c1a63434d1b9e8c84)): ?>
+<?php $component = $__componentOriginalffd5b51471d1182c1a63434d1b9e8c84; ?>
+<?php unset($__componentOriginalffd5b51471d1182c1a63434d1b9e8c84); ?>
+<?php endif; ?>
+        <?php elseif(auth()->user()->isEmploye() && request()->routeIs('employe.*')): ?>
+            <?php if (isset($component)) { $__componentOriginalffd5b51471d1182c1a63434d1b9e8c84 = $component; } ?>
+<?php if (isset($attributes)) { $__attributesOriginalffd5b51471d1182c1a63434d1b9e8c84 = $attributes; } ?>
+<?php $component = Illuminate\View\AnonymousComponent::resolve(['view' => 'components.ui.mobile-bottom-nav','data' => ['role' => 'employe']] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? (array) $attributes->getIterator() : [])); ?>
+<?php $component->withName('ui.mobile-bottom-nav'); ?>
+<?php if ($component->shouldRender()): ?>
+<?php $__env->startComponent($component->resolveView(), $component->data()); ?>
+<?php if (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag && $constructor = (new ReflectionClass(Illuminate\View\AnonymousComponent::class))->getConstructor()): ?>
+<?php $attributes = $attributes->except(collect($constructor->getParameters())->map->getName()->all()); ?>
+<?php endif; ?>
+<?php $component->withAttributes(['role' => 'employe']); ?>
+<?php echo $__env->renderComponent(); ?>
+<?php endif; ?>
+<?php if (isset($__attributesOriginalffd5b51471d1182c1a63434d1b9e8c84)): ?>
+<?php $attributes = $__attributesOriginalffd5b51471d1182c1a63434d1b9e8c84; ?>
+<?php unset($__attributesOriginalffd5b51471d1182c1a63434d1b9e8c84); ?>
+<?php endif; ?>
+<?php if (isset($__componentOriginalffd5b51471d1182c1a63434d1b9e8c84)): ?>
+<?php $component = $__componentOriginalffd5b51471d1182c1a63434d1b9e8c84; ?>
+<?php unset($__componentOriginalffd5b51471d1182c1a63434d1b9e8c84); ?>
+<?php endif; ?>
+        <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
     <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
 
     <?php echo $__env->yieldPushContent('modals'); ?>
