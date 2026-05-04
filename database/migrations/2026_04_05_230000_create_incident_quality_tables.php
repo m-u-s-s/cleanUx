@@ -10,7 +10,7 @@ return new class extends Migration
     {
         Schema::create('incident_reports', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('rendez_vous_id')->nullable()->constrained('rendez_vous')->nullOnDelete();
+            $table->foreignId('booking_id')->nullable()->constrained('bookings')->nullOnDelete();
             $table->foreignId('employe_id')->nullable()->constrained('users')->nullOnDelete();
             $table->foreignId('client_id')->nullable()->constrained('users')->nullOnDelete();
             $table->foreignId('organization_account_id')->nullable()->constrained('organization_accounts')->nullOnDelete();
@@ -33,7 +33,7 @@ return new class extends Migration
 
         Schema::create('complaint_cases', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('rendez_vous_id')->nullable()->constrained('rendez_vous')->nullOnDelete();
+            $table->foreignId('booking_id')->nullable()->constrained('bookings')->nullOnDelete();
             $table->foreignId('client_id')->nullable()->constrained('users')->nullOnDelete();
             $table->foreignId('organization_account_id')->nullable()->constrained('organization_accounts')->nullOnDelete();
             $table->foreignId('assigned_to')->nullable()->constrained('users')->nullOnDelete();
@@ -54,7 +54,7 @@ return new class extends Migration
 
         Schema::create('quality_audits', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('rendez_vous_id')->nullable()->constrained('rendez_vous')->nullOnDelete();
+            $table->foreignId('booking_id')->nullable()->constrained('bookings')->nullOnDelete();
             $table->foreignId('employe_id')->nullable()->constrained('users')->nullOnDelete();
             $table->foreignId('service_zone_id')->nullable()->constrained('service_zones')->nullOnDelete();
             $table->foreignId('auditor_id')->nullable()->constrained('users')->nullOnDelete();

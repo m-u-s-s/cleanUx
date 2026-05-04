@@ -11,7 +11,7 @@ return new class extends Migration
         Schema::create('enterprise_booking_approvals', function (Blueprint $table) {
             $table->id();
 
-            $table->foreignId('rendez_vous_id')->constrained('rendez_vous')->cascadeOnDelete();
+            $table->foreignId('booking_id')->constrained('bookings')->cascadeOnDelete();
             $table->foreignId('organization_account_id')->nullable()->constrained('organization_accounts')->nullOnDelete();
             $table->foreignId('organization_site_id')->nullable()->constrained('organization_sites')->nullOnDelete();
 

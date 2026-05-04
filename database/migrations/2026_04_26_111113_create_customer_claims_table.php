@@ -11,7 +11,7 @@ return new class extends Migration
         Schema::create('customer_claims', function (Blueprint $table) {
             $table->id();
             $table->foreignId('client_id')->constrained('users')->cascadeOnDelete();
-            $table->foreignId('rendez_vous_id')->nullable()->constrained('rendez_vous')->nullOnDelete();
+            $table->foreignId('booking_id')->nullable()->constrained('bookings')->nullOnDelete();
             $table->string('category');
             $table->string('priority')->default('normal');
             $table->string('status')->default('open');

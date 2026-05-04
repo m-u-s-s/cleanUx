@@ -36,7 +36,7 @@ return new class extends Migration
             $table->id();
 
             $table->unsignedBigInteger('google_calendar_connection_id');
-            $table->unsignedBigInteger('rendez_vous_id');
+            $table->unsignedBigInteger('booking_id');
 
             $table->string('google_event_id');
             $table->string('google_calendar_id')->default('primary');
@@ -52,13 +52,13 @@ return new class extends Migration
                 ->on('google_calendar_connections')
                 ->cascadeOnDelete();
 
-            $table->foreign('rendez_vous_id', 'gcal_evt_rdv_fk')
+            $table->foreign('booking_id', 'gcal_evt_rdv_fk')
                 ->references('id')
-                ->on('rendez_vous')
+                ->on('bookings')
                 ->cascadeOnDelete();
 
             $table->unique(
-                ['google_calendar_connection_id', 'rendez_vous_id'],
+                ['google_calendar_connection_id', 'booking_id'],
                 'gcal_conn_rdv_unique'
             );
 
