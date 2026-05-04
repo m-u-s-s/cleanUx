@@ -2,82 +2,107 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Support\Arr;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class OrganizationSite extends Model
 {
-    use HasFactory;
-
     protected $fillable = [
         'organization_account_id',
-        'client_user_id',
-        'service_zone_id',
-        'postal_code_id',
         'name',
-        'site_code',
-        'contact_name',
-        'email',
-        'phone',
-        'address_line_1',
-        'address_line_2',
+        'address',
         'city',
         'postal_code',
-        'access_instructions',
+        'country',
         'latitude',
         'longitude',
-        'is_primary',
-        'is_active',
+        'surface_m2',
+        'floor_count',
+        'access_instructions',
+        'contact_name',
+        'contact_phone',
+        'contact_email',
+        'preferred_provider_id',
+        'cleaning_frequency',
+        'preferred_time_slot',
+        'status',
+        'notes',
         'metadata',
     ];
 
     protected $casts = [
-        'latitude' => 'float',
-        'longitude' => 'float',
-        'is_primary' => 'boolean',
-        'is_active' => 'boolean',
-        'metadata' => 'array',
+        'latitude'    => 'decimal:7',
+        'longitude'   => 'decimal:7',
+        'surface_m2'  => 'integer',
+        'floor_count' => 'integer',
+        'metadata'    => 'array',
     ];
 
-    public function organizationAccount(): BelongsTo
+    // Fréquences
+    public const FREQ_ONE_TIME  = 'one_time';
+    public const FREQ_WEEKLY    = 'weekly';
+    public const FREQ_BIWEEKLY  = 'biweekly';
+    public const FREQ_MONTHLY   = 'monthly';
+
+    public function organization(): BelongsTo
     {
-        return $this->belongsTo(OrganizationAccount::class);
+        return $this->belongsTo(OrganizationAccount::class, 'organization_account_id');
     }
 
-    public function clientUser(): BelongsTo
+    public function preferredProvider(): BelongsTo
     {
-        return $this->belongsTo(User::class, 'client_user_id');
+        return $this->belongsTo(User::class, 'preferred_provider_id');
     }
 
-    public function serviceZone(): BelongsTo
+    public function bookings(): HasMany
     {
-        return $this->belongsTo(ServiceZone::class);
+        return $this->hasMany(Booking::class, 'organization_site_id');
     }
 
-    public function postalCodeReference(): BelongsTo
+    public function authorizedMembers(): BelongsToMany
     {
-        return $this->belongsTo(PostalCode::class, 'postal_code_id');
+        return $this->belongsToMany(
+            OrganizationMember::class,
+            'organization_member_site_access',
+            'organization_site_id',
+            'organization_member_id'
+        )->withTimestamps();
     }
 
-    public function rendezVous(): HasMany
+    // Scopes
+    public function scopeActive($query)
     {
-        return $this->hasMany(RendezVous::class, 'organization_site_id');
+        return $query->where('status', 'active');
     }
 
-    public function missionBatches(): HasMany
+    public function scopeForOrg($query, int $orgId)
     {
-        return $this->hasMany(MissionBatch::class, 'organization_site_id');
+        return $query->where('organization_account_id', $orgId);
     }
 
-    public function bookingPolicy(): array
+    // Helpers
+    public function fullAddress(): string
     {
-        return [
-            'approval_mode' => (string) Arr::get($this->metadata, 'approval_mode', 'inherit'),
-            'purchase_order_required' => Arr::get($this->metadata, 'purchase_order_required'),
-            'default_cost_center' => Arr::get($this->metadata, 'default_cost_center'),
-        ];
+        return "{$this->address}, {$this->postal_code} {$this->city}";
+    }
+
+    public function frequencyLabel(): string
+    {
+        return match ($this->cleaning_frequency) {
+            self::FREQ_ONE_TIME => 'Ponctuel',
+            self::FREQ_WEEKLY   => 'Hebdomadaire',
+            self::FREQ_BIWEEKLY => 'Bi-mensuel',
+            self::FREQ_MONTHLY  => 'Mensuel',
+            default             => 'Non défini',
+        };
+    }
+
+    public function activeBookingsCount(): int
+    {
+        return $this->bookings()
+            ->whereIn('status', ['pending', 'confirmed', 'in_progress'])
+            ->count();
     }
 }

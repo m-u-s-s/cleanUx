@@ -2,38 +2,41 @@
 
 namespace App\Events;
 
+use App\Models\Mission;
+use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Broadcasting\PrivateChannel;
-use Illuminate\Contracts\Broadcasting\ShouldBroadcastNow;
+use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 
-class MissionStatusUpdated implements ShouldBroadcastNow
+class MissionStatusUpdated implements ShouldBroadcast
 {
     use Dispatchable;
+    use InteractsWithSockets;
     use SerializesModels;
 
-    public function __construct(
-        public int $missionId,
-        public string $status,
-        public array $payload = []
-    ) {}
-
-    public function broadcastOn(): PrivateChannel
+    public function __construct(public Mission $mission)
     {
-        return new PrivateChannel('mission.' . $this->missionId);
     }
 
-    public function broadcastAs(): string
+    public function broadcastOn(): array
     {
-        return 'status.updated';
+        return [
+            new PrivateChannel('mission.' . $this->mission->id),
+        ];
     }
 
     public function broadcastWith(): array
     {
         return [
-            'mission_id' => $this->missionId,
-            'status' => $this->status,
-            'data' => $this->payload,
+            'mission_id'  => $this->mission->id,
+            'status'      => $this->mission->status,
+            'updated_at'  => $this->mission->updated_at->toIso8601String(),
         ];
+    }
+
+    public function broadcastAs(): string
+    {
+        return 'MissionStatusUpdated';
     }
 }

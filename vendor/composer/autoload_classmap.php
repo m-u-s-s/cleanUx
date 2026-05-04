@@ -8633,6 +8633,7 @@ return array(
     'Tests\\Feature\\LivewireViewIntegrityTest' => $baseDir . '/tests/Feature/LivewireViewIntegrityTest.php',
     'Tests\\Feature\\LocaleSwitchTest' => $baseDir . '/tests/Feature/LocaleSwitchTest.php',
     'Tests\\Feature\\OpsHeartbeatCommandTest' => $baseDir . '/tests/Feature/OpsHeartbeatCommandTest.php',
+    'Tests\\Feature\\OptimizedDashboardExperienceSmokeTest' => $baseDir . '/tests/Feature/OptimizedDashboardExperienceSmokeTest.php',
     'Tests\\Feature\\PasswordConfirmationTest' => $baseDir . '/tests/Feature/PasswordConfirmationTest.php',
     'Tests\\Feature\\PasswordResetTest' => $baseDir . '/tests/Feature/PasswordResetTest.php',
     'Tests\\Feature\\PlatformModulesCenterTest' => $baseDir . '/tests/Feature/PlatformModulesCenterTest.php',
