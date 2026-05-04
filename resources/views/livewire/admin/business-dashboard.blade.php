@@ -1,4 +1,6 @@
 <div class="space-y-6" data-phase2u-root="true">
+    @include('livewire.admin.governance.security-checks')
+
     @includeIf('livewire.admin.readiness.layout-stack')
 
 <div class="space-y-6" data-phase2s-root="true">

@@ -1,4 +1,6 @@
 <div class="space-y-6" data-phase2u-root="true">
+    @include('livewire.admin.governance.go-live-panel')
+
     @includeIf('livewire.admin.readiness.layout-stack')
 
 <x-page-shell
