@@ -1,0 +1,56 @@
+name: Laravel tests
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  tests:
+    name: Run Laravel test suite
+    runs-on: ubuntu-latest
+
+    env:
+      APP_ENV: testing
+      APP_KEY: base64:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=
+      APP_DEBUG: true
+      DB_CONNECTION: sqlite
+      DB_DATABASE: ${{ github.workspace }}/database/testing.sqlite
+      CACHE_STORE: array
+      SESSION_DRIVER: array
+      QUEUE_CONNECTION: sync
+      MAIL_MAILER: array
+      FILESYSTEM_DISK: local
+      LOG_CHANNEL: stderr
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: mbstring, dom, fileinfo, sqlite, pdo_sqlite, curl, zip, gd
+          coverage: none
+
+      - name: Install Composer dependencies
+        run: composer install --no-interaction --prefer-dist --optimize-autoloader
+
+      - name: Prepare Laravel testing database
+        run: |
+          cp .env.example .env
+          php artisan key:generate --force
+          mkdir -p database
+          touch database/testing.sqlite
+          php artisan optimize:clear
+
+      - name: Run release checks
+        run: |
+          php artisan test tests/Feature/ProductionHealthCheckCommandTest.php tests/Feature/GoLiveReadinessReportCommandTest.php tests/Feature/ConsolidationFinalCheckCommandTest.php tests/Feature/AdminRouteAccessTest.php tests/Feature/OptimizedDashboardExperienceSmokeTest.php
+
+      - name: Run full test suite
+        run: php artisan test
