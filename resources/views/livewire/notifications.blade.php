@@ -1,3 +1,6 @@
+<div class="space-y-6" data-phase2t-root="true">
+    @includeIf('livewire.shared.communication.layout-stack')
+
 <div class="bg-white rounded-xl shadow border p-4">
     <div class="flex items-center justify-between mb-4">
         <div>
@@ -71,4 +74,6 @@
             </div>
         @endforelse
     </div>
+</div>
+
 </div>

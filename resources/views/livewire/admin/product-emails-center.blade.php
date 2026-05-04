@@ -1,3 +1,9 @@
+<div class="space-y-6" data-phase2t-root="true">
+    @includeIf('livewire.shared.communication.layout-stack')
+
+<div class="space-y-6" data-phase2s-root="true">
+    @includeIf('livewire.admin.pilotage.layout-stack')
+
 <div class="space-y-6">
     <div class="bg-white rounded-xl shadow border p-4 space-y-4">
         <div>
@@ -62,4 +68,7 @@
             </div>
         </div>
     </div>
+</div>
+
+</div>
 </div>

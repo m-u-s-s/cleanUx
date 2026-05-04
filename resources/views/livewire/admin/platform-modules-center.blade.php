@@ -1,3 +1,9 @@
+<div class="space-y-6" data-phase2u-root="true">
+    @includeIf('livewire.admin.readiness.layout-stack')
+
+<div class="space-y-6" data-phase2s-root="true">
+    @includeIf('livewire.admin.pilotage.layout-stack')
+
 <div class="space-y-6">
     <x-page-shell
         title="Centre de contrôle des modules"
@@ -227,4 +233,7 @@
             @endif
         </x-app-card>
     </div>
+</div>
+
+</div>
 </div>

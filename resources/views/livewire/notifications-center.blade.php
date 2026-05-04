@@ -1,3 +1,6 @@
+<div class="space-y-6" data-phase2t-root="true">
+    @includeIf('livewire.shared.communication.layout-stack')
+
 <div class="max-w-6xl mx-auto space-y-6">
     <div class="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
         <div>
@@ -87,4 +90,6 @@
     <div>
         {{ $notifications->links() }}
     </div>
+</div>
+
 </div>

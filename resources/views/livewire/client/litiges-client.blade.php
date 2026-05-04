@@ -1,3 +1,6 @@
+<div class="space-y-6" data-phase2t-root="true">
+    @includeIf('livewire.shared.communication.layout-stack')
+
 <x-page-shell
     title="⚠️ Centre de litiges"
     subtitle="Signalez un problème, ajoutez des preuves et suivez le traitement de votre demande.">
@@ -11,3 +14,5 @@
         </div>
     </div>
 </x-page-shell>
+
+</div>

@@ -1,3 +1,9 @@
+<div class="space-y-6" data-phase2u-root="true">
+    @includeIf('livewire.admin.readiness.layout-stack')
+
+<div class="space-y-6" data-phase2s-root="true">
+    @includeIf('livewire.admin.pilotage.layout-stack')
+
 <x-page-shell
     title="📊 Business Dashboard"
     subtitle="Vue globale de la croissance, du chiffre d’affaires, des clients et des opérations.">
@@ -114,3 +120,5 @@
         </div>
     </div>
 </x-page-shell>
+</div>
+</div>

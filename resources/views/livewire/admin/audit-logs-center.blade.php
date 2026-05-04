@@ -1,3 +1,12 @@
+<div class="space-y-6" data-phase2u-root="true">
+    @includeIf('livewire.admin.readiness.layout-stack')
+
+<div class="space-y-6" data-phase2t-root="true">
+    @includeIf('livewire.shared.communication.layout-stack')
+
+<div class="space-y-6" data-phase2s-root="true">
+    @includeIf('livewire.admin.pilotage.layout-stack')
+
 <div class="space-y-6">
     <x-page-shell
         title="Centre d’audit et logs"
@@ -137,4 +146,8 @@
             <div class="mt-4">{{ $logs->links() }}</div>
         </x-table-shell>
     </div>
+</div>
+
+</div>
+</div>
 </div>

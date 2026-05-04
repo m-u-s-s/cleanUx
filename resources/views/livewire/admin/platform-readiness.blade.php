@@ -1,3 +1,6 @@
+<div class="space-y-6" data-phase2u-root="true">
+    @includeIf('livewire.admin.readiness.layout-stack')
+
 <x-page-shell
     title="🚀 Platform Readiness"
     subtitle="Vérifiez si votre SaaS est prêt pour la production.">
@@ -23,3 +26,4 @@
     </div>
 
 </x-page-shell>
+</div>
