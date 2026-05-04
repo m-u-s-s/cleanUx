@@ -13,6 +13,20 @@ use Tests\TestCase;
 
 class RecurringBookingTest extends TestCase
 {
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        Carbon::setTestNow(Carbon::parse('2025-01-15 09:00:00'));
+    }
+
+    protected function tearDown(): void
+    {
+        Carbon::setTestNow();
+
+        parent::tearDown();
+    }
     use CreatesZoneAwareFixtures;
     use RefreshDatabase;
 
