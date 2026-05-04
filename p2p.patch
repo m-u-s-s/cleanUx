@@ -1,0 +1,1347 @@
+diff --git a/resources/views/livewire/admin/b2b/invoices/generator.blade.php b/resources/views/livewire/admin/b2b/invoices/generator.blade.php
+new file mode 100644
+index 0000000..589c764
+--- /dev/null
++++ b/resources/views/livewire/admin/b2b/invoices/generator.blade.php
+@@ -0,0 +1,37 @@
++    <div class="rounded-2xl border bg-white p-5 shadow-sm space-y-4">
++        <h3 class="font-semibold text-slate-900">Générer une facture mensuelle</h3>
++
++        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
++            <div class="md:col-span-2">
++                <label class="text-sm font-medium text-slate-700">Entreprise</label>
++                <select wire:model="organization_account_id" class="mt-1 w-full rounded-xl border-gray-300 text-sm">
++                    <option value="">— Choisir —</option>
++                    @foreach($organizations as $organization)
++                        <option value="{{ $organization->id }}">
++                            {{ $organization->name }}
++                        </option>
++                    @endforeach
++                </select>
++                @error('organization_account_id') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
++            </div>
++
++            <div>
++                <label class="text-sm font-medium text-slate-700">Début période</label>
++                <input type="date" wire:model="period_start" class="mt-1 w-full rounded-xl border-gray-300 text-sm">
++                @error('period_start') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
++            </div>
++
++            <div>
++                <label class="text-sm font-medium text-slate-700">Fin période</label>
++                <input type="date" wire:model="period_end" class="mt-1 w-full rounded-xl border-gray-300 text-sm">
++                @error('period_end') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
++            </div>
++        </div>
++
++        <button
++            type="button"
++            wire:click="generate"
++            class="rounded-xl bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700">
++            Générer la facture groupée
++        </button>
++    </div>
+diff --git a/resources/views/livewire/admin/b2b/invoices/table.blade.php b/resources/views/livewire/admin/b2b/invoices/table.blade.php
+new file mode 100644
+index 0000000..1beb119
+--- /dev/null
++++ b/resources/views/livewire/admin/b2b/invoices/table.blade.php
+@@ -0,0 +1,73 @@
++    <div class="rounded-2xl border bg-white shadow-sm overflow-hidden">
++        <div class="border-b p-5">
++            <h3 class="font-semibold text-slate-900">Factures B2B générées</h3>
++        </div>
++
++        <div class="overflow-x-auto">
++            <table class="min-w-full text-sm">
++                <thead class="bg-slate-50 text-slate-600">
++                    <tr>
++                        <th class="px-4 py-3 text-left">Facture</th>
++                        <th class="px-4 py-3 text-left">Entreprise</th>
++                        <th class="px-4 py-3 text-left">Période</th>
++                        <th class="px-4 py-3 text-left">Total</th>
++                        <th class="px-4 py-3 text-left">Statut</th>
++                        <th class="px-4 py-3 text-left">Sites</th>
++                    </tr>
++                </thead>
++
++                <tbody class="divide-y">
++                    @forelse($invoices as $invoice)
++                        <tr>
++                            <td class="px-4 py-3 font-medium text-slate-900">
++                                {{ $invoice->invoice_number }}
++                            </td>
++
++                            <td class="px-4 py-3">
++                                {{ $invoice->organizationAccount?->name ?? '—' }}
++                            </td>
++
++                            <td class="px-4 py-3">
++                                {{ $invoice->billing_period_start?->format('d/m/Y') }}
++                                →
++                                {{ $invoice->billing_period_end?->format('d/m/Y') }}
++                            </td>
++
++                            <td class="px-4 py-3 font-semibold text-slate-900">
++                                {{ number_format((float) $invoice->total_amount, 2, ',', ' ') }}
++                                {{ $invoice->currency }}
++                            </td>
++
++                            <td class="px-4 py-3">
++                                <span class="rounded-full bg-blue-50 px-3 py-1 text-xs font-medium text-blue-700">
++                                    {{ $invoice->status }}
++                                </span>
++                            </td>
++
++                            <td class="px-4 py-3">
++                                @foreach((array) $invoice->site_breakdown as $site)
++                                    <div class="text-xs text-slate-600">
++                                        {{ $site['site'] ?? '—' }} :
++                                        {{ $site['count'] ?? 0 }} RDV —
++                                        {{ number_format((float) ($site['subtotal'] ?? 0), 2, ',', ' ') }} €
++                                    </div>
++                                @endforeach
++                            </td>
++                        </tr>
++                    @empty
++                        <tr>
++                            <td colspan="6" class="px-4 py-8 text-center text-slate-500">
++                                Aucune facture B2B générée.
++                            </td>
++                        </tr>
++                    @endforelse
++                </tbody>
++            </table>
++        </div>
++
++        <div class="p-4">
++            {{ $invoices->links() }}
++        </div>
++
++        
++    </div>
+diff --git a/resources/views/livewire/admin/b2b/operations/contract-form.blade.php b/resources/views/livewire/admin/b2b/operations/contract-form.blade.php
+new file mode 100644
+index 0000000..90fcec8
+--- /dev/null
++++ b/resources/views/livewire/admin/b2b/operations/contract-form.blade.php
+@@ -0,0 +1,81 @@
++        <section class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
++            <div class="mb-4 flex items-center justify-between">
++                <div>
++                    <h2 class="text-xl font-bold text-slate-900">Contrat entreprise</h2>
++                    <p class="text-sm text-slate-500">Définit le cadre commercial, SLA, PO, équipe et partenaire par défaut.</p>
++                </div>
++            </div>
++
++            <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
++                <div>
++                    <label class="mb-1 block text-sm font-medium text-slate-700">Référence contrat</label>
++                    <input wire:model.defer="contractForm.contract_reference" type="text" class="w-full rounded-2xl border-slate-300 text-sm shadow-sm">
++                </div>
++                <div>
++                    <label class="mb-1 block text-sm font-medium text-slate-700">Statut</label>
++                    <select wire:model.defer="contractForm.status" class="w-full rounded-2xl border-slate-300 text-sm shadow-sm">
++                        <option value="draft">Draft</option>
++                        <option value="pilot">Pilot</option>
++                        <option value="signed">Signed</option>
++                        <option value="active">Active</option>
++                        <option value="paused">Paused</option>
++                    </select>
++                </div>
++                <div>
++                    <label class="mb-1 block text-sm font-medium text-slate-700">Zone de service</label>
++                    <select wire:model.defer="contractForm.service_zone_id" class="w-full rounded-2xl border-slate-300 text-sm shadow-sm">
++                        <option value="">Aucune</option>
++                        @foreach($zones as $zone)
++                            <option value="{{ $zone->id }}">{{ $zone->name }}</option>
++                        @endforeach
++                    </select>
++                </div>
++                <div>
++                    <label class="mb-1 block text-sm font-medium text-slate-700">Mode approbation</label>
++                    <select wire:model.defer="contractForm.approval_mode" class="w-full rounded-2xl border-slate-300 text-sm shadow-sm">
++                        <option value="auto">Auto</option>
++                        <option value="site_contact">Contact site</option>
++                        <option value="account_owner">Responsable compte</option>
++                        <option value="manual">Manuel</option>
++                    </select>
++                </div>
++                <div>
++                    <label class="mb-1 block text-sm font-medium text-slate-700">Équipe par défaut</label>
++                    <select wire:model.defer="contractForm.default_field_team_id" class="w-full rounded-2xl border-slate-300 text-sm shadow-sm">
++                        <option value="">Aucune</option>
++                        @foreach($teams as $team)
++                            <option value="{{ $team->id }}">{{ $team->name }}</option>
++                        @endforeach
++                    </select>
++                </div>
++                <div>
++                    <label class="mb-1 block text-sm font-medium text-slate-700">Partenaire par défaut</label>
++                    <select wire:model.defer="contractForm.default_service_partner_id" class="w-full rounded-2xl border-slate-300 text-sm shadow-sm">
++                        <option value="">Aucun</option>
++                        @foreach($partners as $partner)
++                            <option value="{{ $partner->id }}">{{ $partner->name }}</option>
++                        @endforeach
++                    </select>
++                </div>
++                <div>
++                    <label class="mb-1 block text-sm font-medium text-slate-700">Coût center par défaut</label>
++                    <input wire:model.defer="contractForm.default_cost_center" type="text" class="w-full rounded-2xl border-slate-300 text-sm shadow-sm">
++                </div>
++                <div>
++                    <label class="mb-1 block text-sm font-medium text-slate-700">Remise négociée (%)</label>
++                    <input wire:model.defer="contractForm.negotiated_discount_percent" type="number" step="0.01" class="w-full rounded-2xl border-slate-300 text-sm shadow-sm">
++                </div>
++                <div class="md:col-span-2 flex items-center gap-3">
++                    <input id="requires-po" wire:model.defer="contractForm.requires_purchase_order" type="checkbox" class="rounded border-slate-300 text-sky-600 shadow-sm">
++                    <label for="requires-po" class="text-sm font-medium text-slate-700">Purchase order obligatoire</label>
++                </div>
++                <div class="md:col-span-2">
++                    <label class="mb-1 block text-sm font-medium text-slate-700">Notes</label>
++                    <textarea wire:model.defer="contractForm.notes" rows="3" class="w-full rounded-2xl border-slate-300 text-sm shadow-sm"></textarea>
++                </div>
++            </div>
++
++            <div class="mt-4 flex justify-end">
++                <button wire:click="saveContract" class="rounded-2xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white shadow hover:bg-slate-800">Enregistrer le contrat</button>
++            </div>
++        </section>
+diff --git a/resources/views/livewire/admin/b2b/operations/hero.blade.php b/resources/views/livewire/admin/b2b/operations/hero.blade.php
+new file mode 100644
+index 0000000..8213114
+--- /dev/null
++++ b/resources/views/livewire/admin/b2b/operations/hero.blade.php
+@@ -0,0 +1,18 @@
++    <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
++        <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
++            <div>
++                <p class="text-sm font-semibold uppercase tracking-[0.2em] text-sky-600">B2B lourd</p>
++                <h1 class="mt-2 text-3xl font-black tracking-tight text-slate-900">Centre opérations entreprises</h1>
++                <p class="mt-2 max-w-3xl text-sm text-slate-600">Contrats explicites, ordres de service, validations et affectations d’équipes/partenaires pour les comptes complexes.</p>
++            </div>
++            <div class="min-w-[260px]">
++                <label class="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-500">Compte entreprise</label>
++                <select wire:model.live="selectedAccountId" class="w-full rounded-2xl border-slate-300 text-sm shadow-sm focus:border-sky-500 focus:ring-sky-500">
++                    <option value="">Sélectionner</option>
++                    @foreach($accounts as $account)
++                        <option value="{{ $account->id }}">{{ $account->name }} ({{ $account->organization_contracts_count }} contrats / {{ $account->enterprise_work_orders_count }} OS)</option>
++                    @endforeach
++                </select>
++            </div>
++        </div>
++    </div>
+diff --git a/resources/views/livewire/admin/b2b/operations/recent-contracts.blade.php b/resources/views/livewire/admin/b2b/operations/recent-contracts.blade.php
+new file mode 100644
+index 0000000..05f6ba7
+--- /dev/null
++++ b/resources/views/livewire/admin/b2b/operations/recent-contracts.blade.php
+@@ -0,0 +1,21 @@
++        <section class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
++            <h2 class="text-xl font-bold text-slate-900">Contrats récents</h2>
++            <div class="mt-4 space-y-3">
++                @forelse($contracts as $contract)
++                    <button wire:click="loadContract({{ $contract->id }})" class="w-full rounded-2xl border border-slate-200 p-4 text-left hover:border-sky-300 hover:bg-sky-50/50">
++                        <div class="flex items-center justify-between gap-3">
++                            <div>
++                                <p class="text-sm font-bold text-slate-900">{{ $contract->contract_reference }}</p>
++                                <p class="text-xs text-slate-500">{{ $contract->organizationAccount?->name }} · {{ strtoupper($contract->status) }}</p>
++                            </div>
++                            <div class="text-right text-xs text-slate-500">
++                                <div>Équipe: {{ $contract->defaultFieldTeam?->name ?? '—' }}</div>
++                                <div>Partenaire: {{ $contract->defaultServicePartner?->name ?? '—' }}</div>
++                            </div>
++                        </div>
++                    </button>
++                @empty
++                    <p class="text-sm text-slate-500">Aucun contrat pour ce compte.</p>
++                @endforelse
++            </div>
++        </section>
+diff --git a/resources/views/livewire/admin/b2b/operations/recent-work-orders.blade.php b/resources/views/livewire/admin/b2b/operations/recent-work-orders.blade.php
+new file mode 100644
+index 0000000..c2c074f
+--- /dev/null
++++ b/resources/views/livewire/admin/b2b/operations/recent-work-orders.blade.php
+@@ -0,0 +1,32 @@
++        <section class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
++            <h2 class="text-xl font-bold text-slate-900">Ordres de service récents</h2>
++            <div class="mt-4 space-y-3">
++                @forelse($workOrders as $workOrder)
++                    <div class="rounded-2xl border border-slate-200 p-4">
++                        <div class="flex items-start justify-between gap-4">
++                            <div>
++                                <p class="text-sm font-bold text-slate-900">{{ $workOrder->reference }} — {{ $workOrder->title }}</p>
++                                <p class="mt-1 text-xs text-slate-500">{{ $workOrder->organizationAccount?->name }} · {{ $workOrder->organizationSite?->name ?? 'Tous sites' }} · {{ strtoupper($workOrder->approval_status) }}</p>
++                            </div>
++                            <div class="flex gap-2">
++                                @if($workOrder->approval_status !== 'approved')
++                                    <button wire:click="approveWorkOrder({{ $workOrder->id }})" class="rounded-xl bg-emerald-600 px-3 py-2 text-xs font-semibold text-white">Approuver</button>
++                                @endif
++                                @if($workOrder->approval_status !== 'rejected')
++                                    <button wire:click="rejectWorkOrder({{ $workOrder->id }})" class="rounded-xl bg-rose-600 px-3 py-2 text-xs font-semibold text-white">Rejeter</button>
++                                @endif
++                            </div>
++                        </div>
++                        <div class="mt-3 grid grid-cols-1 gap-2 text-xs text-slate-600 md:grid-cols-4">
++                            <div>Équipe: <span class="font-semibold text-slate-900">{{ $workOrder->assignedFieldTeam?->name ?? '—' }}</span></div>
++                            <div>Partenaire: <span class="font-semibold text-slate-900">{{ $workOrder->assignedServicePartner?->name ?? '—' }}</span></div>
++                            <div>Budget: <span class="font-semibold text-slate-900">{{ $workOrder->budget_amount ? number_format((float) $workOrder->budget_amount, 2, ',', ' ') . ' €' : '—' }}</span></div>
++                            <div>PO: <span class="font-semibold text-slate-900">{{ $workOrder->purchase_order_number ?: '—' }}</span></div>
++                        </div>
++                    </div>
++                @empty
++                    <p class="text-sm text-slate-500">Aucun ordre de service pour ce compte.</p>
++                @endforelse
++            </div>
++        </section>
++    </div>
+diff --git a/resources/views/livewire/admin/b2b/operations/work-order-form.blade.php b/resources/views/livewire/admin/b2b/operations/work-order-form.blade.php
+new file mode 100644
+index 0000000..84ee543
+--- /dev/null
++++ b/resources/views/livewire/admin/b2b/operations/work-order-form.blade.php
+@@ -0,0 +1,127 @@
++        <section class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
++            <div class="mb-4">
++                <h2 class="text-xl font-bold text-slate-900">Ordre de service entreprise</h2>
++                <p class="text-sm text-slate-500">Demandes lourdes, multisites, chantier, bureau ou intervention complexe avec approbation et budget.</p>
++            </div>
++
++            <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
++                <div class="md:col-span-2">
++                    <label class="mb-1 block text-sm font-medium text-slate-700">Titre</label>
++                    <input wire:model.defer="workOrderForm.title" type="text" class="w-full rounded-2xl border-slate-300 text-sm shadow-sm">
++                </div>
++                <div>
++                    <label class="mb-1 block text-sm font-medium text-slate-700">Référence</label>
++                    <input wire:model.defer="workOrderForm.reference" type="text" class="w-full rounded-2xl border-slate-300 text-sm shadow-sm">
++                </div>
++                <div>
++                    <label class="mb-1 block text-sm font-medium text-slate-700">Type</label>
++                    <select wire:model.defer="workOrderForm.work_type" class="w-full rounded-2xl border-slate-300 text-sm shadow-sm">
++                        <option value="site_intervention">Site intervention</option>
++                        <option value="chantier">Chantier</option>
++                        <option value="office_program">Programme bureaux</option>
++                        <option value="deep_clean">Deep clean</option>
++                    </select>
++                </div>
++                <div>
++                    <label class="mb-1 block text-sm font-medium text-slate-700">Service</label>
++                    <select wire:model.defer="workOrderForm.service_catalog_id" class="w-full rounded-2xl border-slate-300 text-sm shadow-sm">
++                        <option value="">Aucun</option>
++                        @foreach($services as $service)
++                            <option value="{{ $service->id }}">{{ $service->name }}</option>
++                        @endforeach
++                    </select>
++                </div>
++                <div>
++                    <label class="mb-1 block text-sm font-medium text-slate-700">Zone</label>
++                    <select wire:model.defer="workOrderForm.service_zone_id" class="w-full rounded-2xl border-slate-300 text-sm shadow-sm">
++                        <option value="">Aucune</option>
++                        @foreach($zones as $zone)
++                            <option value="{{ $zone->id }}">{{ $zone->name }}</option>
++                        @endforeach
++                    </select>
++                </div>
++                <div>
++                    <label class="mb-1 block text-sm font-medium text-slate-700">Équipe assignée</label>
++                    <select wire:model.defer="workOrderForm.assigned_field_team_id" class="w-full rounded-2xl border-slate-300 text-sm shadow-sm">
++                        <option value="">Aucune</option>
++                        @foreach($teams as $team)
++                            <option value="{{ $team->id }}">{{ $team->name }}</option>
++                        @endforeach
++                    </select>
++                </div>
++                <div>
++                    <label class="mb-1 block text-sm font-medium text-slate-700">Partenaire assigné</label>
++                    <select wire:model.defer="workOrderForm.assigned_service_partner_id" class="w-full rounded-2xl border-slate-300 text-sm shadow-sm">
++                        <option value="">Aucun</option>
++                        @foreach($partners as $partner)
++                            <option value="{{ $partner->id }}">{{ $partner->name }}</option>
++                        @endforeach
++                    </select>
++                </div>
++                <div>
++                    <label class="mb-1 block text-sm font-medium text-slate-700">Statut approbation</label>
++                    <select wire:model.defer="workOrderForm.approval_status" class="w-full rounded-2xl border-slate-300 text-sm shadow-sm">
++                        <option value="pending">Pending</option>
++                        <option value="approved">Approved</option>
++                        <option value="rejected">Rejected</option>
++                    </select>
++                </div>
++                <div>
++                    <label class="mb-1 block text-sm font-medium text-slate-700">Priorité</label>
++                    <select wire:model.defer="workOrderForm.priority" class="w-full rounded-2xl border-slate-300 text-sm shadow-sm">
++                        <option value="normale">Normale</option>
++                        <option value="haute">Haute</option>
++                        <option value="urgente">Urgente</option>
++                    </select>
++                </div>
++                <div>
++                    <label class="mb-1 block text-sm font-medium text-slate-700">PO</label>
++                    <input wire:model.defer="workOrderForm.purchase_order_number" type="text" class="w-full rounded-2xl border-slate-300 text-sm shadow-sm">
++                </div>
++                <div>
++                    <label class="mb-1 block text-sm font-medium text-slate-700">Cost center</label>
++                    <input wire:model.defer="workOrderForm.cost_center" type="text" class="w-full rounded-2xl border-slate-300 text-sm shadow-sm">
++                </div>
++                <div>
++                    <label class="mb-1 block text-sm font-medium text-slate-700">Budget</label>
++                    <input wire:model.defer="workOrderForm.budget_amount" type="number" step="0.01" class="w-full rounded-2xl border-slate-300 text-sm shadow-sm">
++                </div>
++                <div class="md:col-span-2">
++                    <label class="mb-1 block text-sm font-medium text-slate-700">Instructions</label>
++                    <textarea wire:model.defer="workOrderForm.instructions" rows="3" class="w-full rounded-2xl border-slate-300 text-sm shadow-sm"></textarea>
++                </div>
++            </div>
++
++            <div class="mt-5 rounded-2xl border border-slate-200 bg-slate-50 p-4">
++                <div class="mb-3 flex items-center justify-between">
++                    <h3 class="text-sm font-bold text-slate-900">Lignes d’ordre de service</h3>
++                    <button wire:click="addWorkOrderLine" type="button" class="rounded-xl border border-slate-300 px-3 py-1 text-xs font-semibold text-slate-700">+ Ajouter ligne</button>
++                </div>
++                <div class="space-y-3">
++                    @foreach($workOrderLines as $index => $line)
++                        <div class="grid grid-cols-1 gap-3 rounded-2xl border border-slate-200 bg-white p-3 md:grid-cols-6">
++                            <div class="md:col-span-2">
++                                <input wire:model.defer="workOrderLines.{{ $index }}.title" type="text" placeholder="Ligne / lot / zone" class="w-full rounded-xl border-slate-300 text-sm shadow-sm">
++                            </div>
++                            <div>
++                                <input wire:model.defer="workOrderLines.{{ $index }}.quantity" type="number" step="0.1" placeholder="Qté" class="w-full rounded-xl border-slate-300 text-sm shadow-sm">
++                            </div>
++                            <div>
++                                <input wire:model.defer="workOrderLines.{{ $index }}.unit" type="text" placeholder="Unité" class="w-full rounded-xl border-slate-300 text-sm shadow-sm">
++                            </div>
++                            <div>
++                                <input wire:model.defer="workOrderLines.{{ $index }}.unit_price" type="number" step="0.01" placeholder="PU" class="w-full rounded-xl border-slate-300 text-sm shadow-sm">
++                            </div>
++                            <div class="flex items-center justify-between gap-2">
++                                <input wire:model.defer="workOrderLines.{{ $index }}.surface_value" type="number" step="0.01" placeholder="Surface" class="w-full rounded-xl border-slate-300 text-sm shadow-sm">
++                                <button wire:click="removeWorkOrderLine({{ $index }})" type="button" class="rounded-xl border border-rose-200 px-3 py-2 text-xs font-semibold text-rose-600">Suppr.</button>
++                            </div>
++                        </div>
++                    @endforeach
++                </div>
++            </div>
++
++            <div class="mt-4 flex justify-end">
++                <button wire:click="saveWorkOrder" class="rounded-2xl bg-sky-600 px-4 py-2 text-sm font-semibold text-white shadow hover:bg-sky-700">Enregistrer l’ordre de service</button>
++            </div>
++        </section>
+diff --git a/resources/views/livewire/admin/b2b-monthly-invoices-center.blade.php b/resources/views/livewire/admin/b2b-monthly-invoices-center.blade.php
+index 4301ac3..e6999b1 100644
+--- a/resources/views/livewire/admin/b2b-monthly-invoices-center.blade.php
++++ b/resources/views/livewire/admin/b2b-monthly-invoices-center.blade.php
+@@ -2,115 +2,7 @@
+     title="💼 Facturation B2B centralisée"
+     subtitle="Générez des factures mensuelles groupées par entreprise, site et centre de coût.">
+ 
+-    <div class="rounded-2xl border bg-white p-5 shadow-sm space-y-4">
+-        <h3 class="font-semibold text-slate-900">Générer une facture mensuelle</h3>
++    @include('livewire.admin.b2b.invoices.generator')
+ 
+-        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+-            <div class="md:col-span-2">
+-                <label class="text-sm font-medium text-slate-700">Entreprise</label>
+-                <select wire:model="organization_account_id" class="mt-1 w-full rounded-xl border-gray-300 text-sm">
+-                    <option value="">— Choisir —</option>
+-                    @foreach($organizations as $organization)
+-                        <option value="{{ $organization->id }}">
+-                            {{ $organization->name }}
+-                        </option>
+-                    @endforeach
+-                </select>
+-                @error('organization_account_id') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
+-            </div>
+-
+-            <div>
+-                <label class="text-sm font-medium text-slate-700">Début période</label>
+-                <input type="date" wire:model="period_start" class="mt-1 w-full rounded-xl border-gray-300 text-sm">
+-                @error('period_start') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
+-            </div>
+-
+-            <div>
+-                <label class="text-sm font-medium text-slate-700">Fin période</label>
+-                <input type="date" wire:model="period_end" class="mt-1 w-full rounded-xl border-gray-300 text-sm">
+-                @error('period_end') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
+-            </div>
+-        </div>
+-
+-        <button
+-            type="button"
+-            wire:click="generate"
+-            class="rounded-xl bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700">
+-            Générer la facture groupée
+-        </button>
+-    </div>
+-
+-    <div class="rounded-2xl border bg-white shadow-sm overflow-hidden">
+-        <div class="border-b p-5">
+-            <h3 class="font-semibold text-slate-900">Factures B2B générées</h3>
+-        </div>
+-
+-        <div class="overflow-x-auto">
+-            <table class="min-w-full text-sm">
+-                <thead class="bg-slate-50 text-slate-600">
+-                    <tr>
+-                        <th class="px-4 py-3 text-left">Facture</th>
+-                        <th class="px-4 py-3 text-left">Entreprise</th>
+-                        <th class="px-4 py-3 text-left">Période</th>
+-                        <th class="px-4 py-3 text-left">Total</th>
+-                        <th class="px-4 py-3 text-left">Statut</th>
+-                        <th class="px-4 py-3 text-left">Sites</th>
+-                    </tr>
+-                </thead>
+-
+-                <tbody class="divide-y">
+-                    @forelse($invoices as $invoice)
+-                        <tr>
+-                            <td class="px-4 py-3 font-medium text-slate-900">
+-                                {{ $invoice->invoice_number }}
+-                            </td>
+-
+-                            <td class="px-4 py-3">
+-                                {{ $invoice->organizationAccount?->name ?? '—' }}
+-                            </td>
+-
+-                            <td class="px-4 py-3">
+-                                {{ $invoice->billing_period_start?->format('d/m/Y') }}
+-                                →
+-                                {{ $invoice->billing_period_end?->format('d/m/Y') }}
+-                            </td>
+-
+-                            <td class="px-4 py-3 font-semibold text-slate-900">
+-                                {{ number_format((float) $invoice->total_amount, 2, ',', ' ') }}
+-                                {{ $invoice->currency }}
+-                            </td>
+-
+-                            <td class="px-4 py-3">
+-                                <span class="rounded-full bg-blue-50 px-3 py-1 text-xs font-medium text-blue-700">
+-                                    {{ $invoice->status }}
+-                                </span>
+-                            </td>
+-
+-                            <td class="px-4 py-3">
+-                                @foreach((array) $invoice->site_breakdown as $site)
+-                                    <div class="text-xs text-slate-600">
+-                                        {{ $site['site'] ?? '—' }} :
+-                                        {{ $site['count'] ?? 0 }} RDV —
+-                                        {{ number_format((float) ($site['subtotal'] ?? 0), 2, ',', ' ') }} €
+-                                    </div>
+-                                @endforeach
+-                            </td>
+-                        </tr>
+-                    @empty
+-                        <tr>
+-                            <td colspan="6" class="px-4 py-8 text-center text-slate-500">
+-                                Aucune facture B2B générée.
+-                            </td>
+-                        </tr>
+-                    @endforelse
+-                </tbody>
+-            </table>
+-        </div>
+-
+-        <div class="p-4">
+-            {{ $invoices->links() }}
+-        </div>
+-
+-        
+-    </div>
+-</x-page-shell>
+\ No newline at end of file
++    @include('livewire.admin.b2b.invoices.table')
++</x-page-shell>
+diff --git a/resources/views/livewire/admin/b2b-operations-center.blade.php b/resources/views/livewire/admin/b2b-operations-center.blade.php
+index e258d41..74425ea 100644
+--- a/resources/views/livewire/admin/b2b-operations-center.blade.php
++++ b/resources/views/livewire/admin/b2b-operations-center.blade.php
+@@ -1,288 +1,15 @@
+ <div class="space-y-6">
+-    <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+-        <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+-            <div>
+-                <p class="text-sm font-semibold uppercase tracking-[0.2em] text-sky-600">B2B lourd</p>
+-                <h1 class="mt-2 text-3xl font-black tracking-tight text-slate-900">Centre opérations entreprises</h1>
+-                <p class="mt-2 max-w-3xl text-sm text-slate-600">Contrats explicites, ordres de service, validations et affectations d’équipes/partenaires pour les comptes complexes.</p>
+-            </div>
+-            <div class="min-w-[260px]">
+-                <label class="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-500">Compte entreprise</label>
+-                <select wire:model.live="selectedAccountId" class="w-full rounded-2xl border-slate-300 text-sm shadow-sm focus:border-sky-500 focus:ring-sky-500">
+-                    <option value="">Sélectionner</option>
+-                    @foreach($accounts as $account)
+-                        <option value="{{ $account->id }}">{{ $account->name }} ({{ $account->organization_contracts_count }} contrats / {{ $account->enterprise_work_orders_count }} OS)</option>
+-                    @endforeach
+-                </select>
+-            </div>
+-        </div>
+-    </div>
++    @include('livewire.admin.b2b.operations.hero')
+ 
+     <div class="grid grid-cols-1 gap-6 xl:grid-cols-2">
+-        <section class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+-            <div class="mb-4 flex items-center justify-between">
+-                <div>
+-                    <h2 class="text-xl font-bold text-slate-900">Contrat entreprise</h2>
+-                    <p class="text-sm text-slate-500">Définit le cadre commercial, SLA, PO, équipe et partenaire par défaut.</p>
+-                </div>
+-            </div>
+-
+-            <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+-                <div>
+-                    <label class="mb-1 block text-sm font-medium text-slate-700">Référence contrat</label>
+-                    <input wire:model.defer="contractForm.contract_reference" type="text" class="w-full rounded-2xl border-slate-300 text-sm shadow-sm">
+-                </div>
+-                <div>
+-                    <label class="mb-1 block text-sm font-medium text-slate-700">Statut</label>
+-                    <select wire:model.defer="contractForm.status" class="w-full rounded-2xl border-slate-300 text-sm shadow-sm">
+-                        <option value="draft">Draft</option>
+-                        <option value="pilot">Pilot</option>
+-                        <option value="signed">Signed</option>
+-                        <option value="active">Active</option>
+-                        <option value="paused">Paused</option>
+-                    </select>
+-                </div>
+-                <div>
+-                    <label class="mb-1 block text-sm font-medium text-slate-700">Zone de service</label>
+-                    <select wire:model.defer="contractForm.service_zone_id" class="w-full rounded-2xl border-slate-300 text-sm shadow-sm">
+-                        <option value="">Aucune</option>
+-                        @foreach($zones as $zone)
+-                            <option value="{{ $zone->id }}">{{ $zone->name }}</option>
+-                        @endforeach
+-                    </select>
+-                </div>
+-                <div>
+-                    <label class="mb-1 block text-sm font-medium text-slate-700">Mode approbation</label>
+-                    <select wire:model.defer="contractForm.approval_mode" class="w-full rounded-2xl border-slate-300 text-sm shadow-sm">
+-                        <option value="auto">Auto</option>
+-                        <option value="site_contact">Contact site</option>
+-                        <option value="account_owner">Responsable compte</option>
+-                        <option value="manual">Manuel</option>
+-                    </select>
+-                </div>
+-                <div>
+-                    <label class="mb-1 block text-sm font-medium text-slate-700">Équipe par défaut</label>
+-                    <select wire:model.defer="contractForm.default_field_team_id" class="w-full rounded-2xl border-slate-300 text-sm shadow-sm">
+-                        <option value="">Aucune</option>
+-                        @foreach($teams as $team)
+-                            <option value="{{ $team->id }}">{{ $team->name }}</option>
+-                        @endforeach
+-                    </select>
+-                </div>
+-                <div>
+-                    <label class="mb-1 block text-sm font-medium text-slate-700">Partenaire par défaut</label>
+-                    <select wire:model.defer="contractForm.default_service_partner_id" class="w-full rounded-2xl border-slate-300 text-sm shadow-sm">
+-                        <option value="">Aucun</option>
+-                        @foreach($partners as $partner)
+-                            <option value="{{ $partner->id }}">{{ $partner->name }}</option>
+-                        @endforeach
+-                    </select>
+-                </div>
+-                <div>
+-                    <label class="mb-1 block text-sm font-medium text-slate-700">Coût center par défaut</label>
+-                    <input wire:model.defer="contractForm.default_cost_center" type="text" class="w-full rounded-2xl border-slate-300 text-sm shadow-sm">
+-                </div>
+-                <div>
+-                    <label class="mb-1 block text-sm font-medium text-slate-700">Remise négociée (%)</label>
+-                    <input wire:model.defer="contractForm.negotiated_discount_percent" type="number" step="0.01" class="w-full rounded-2xl border-slate-300 text-sm shadow-sm">
+-                </div>
+-                <div class="md:col-span-2 flex items-center gap-3">
+-                    <input id="requires-po" wire:model.defer="contractForm.requires_purchase_order" type="checkbox" class="rounded border-slate-300 text-sky-600 shadow-sm">
+-                    <label for="requires-po" class="text-sm font-medium text-slate-700">Purchase order obligatoire</label>
+-                </div>
+-                <div class="md:col-span-2">
+-                    <label class="mb-1 block text-sm font-medium text-slate-700">Notes</label>
+-                    <textarea wire:model.defer="contractForm.notes" rows="3" class="w-full rounded-2xl border-slate-300 text-sm shadow-sm"></textarea>
+-                </div>
+-            </div>
+-
+-            <div class="mt-4 flex justify-end">
+-                <button wire:click="saveContract" class="rounded-2xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white shadow hover:bg-slate-800">Enregistrer le contrat</button>
+-            </div>
+-        </section>
+-
+-        <section class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+-            <div class="mb-4">
+-                <h2 class="text-xl font-bold text-slate-900">Ordre de service entreprise</h2>
+-                <p class="text-sm text-slate-500">Demandes lourdes, multisites, chantier, bureau ou intervention complexe avec approbation et budget.</p>
+-            </div>
+-
+-            <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+-                <div class="md:col-span-2">
+-                    <label class="mb-1 block text-sm font-medium text-slate-700">Titre</label>
+-                    <input wire:model.defer="workOrderForm.title" type="text" class="w-full rounded-2xl border-slate-300 text-sm shadow-sm">
+-                </div>
+-                <div>
+-                    <label class="mb-1 block text-sm font-medium text-slate-700">Référence</label>
+-                    <input wire:model.defer="workOrderForm.reference" type="text" class="w-full rounded-2xl border-slate-300 text-sm shadow-sm">
+-                </div>
+-                <div>
+-                    <label class="mb-1 block text-sm font-medium text-slate-700">Type</label>
+-                    <select wire:model.defer="workOrderForm.work_type" class="w-full rounded-2xl border-slate-300 text-sm shadow-sm">
+-                        <option value="site_intervention">Site intervention</option>
+-                        <option value="chantier">Chantier</option>
+-                        <option value="office_program">Programme bureaux</option>
+-                        <option value="deep_clean">Deep clean</option>
+-                    </select>
+-                </div>
+-                <div>
+-                    <label class="mb-1 block text-sm font-medium text-slate-700">Service</label>
+-                    <select wire:model.defer="workOrderForm.service_catalog_id" class="w-full rounded-2xl border-slate-300 text-sm shadow-sm">
+-                        <option value="">Aucun</option>
+-                        @foreach($services as $service)
+-                            <option value="{{ $service->id }}">{{ $service->name }}</option>
+-                        @endforeach
+-                    </select>
+-                </div>
+-                <div>
+-                    <label class="mb-1 block text-sm font-medium text-slate-700">Zone</label>
+-                    <select wire:model.defer="workOrderForm.service_zone_id" class="w-full rounded-2xl border-slate-300 text-sm shadow-sm">
+-                        <option value="">Aucune</option>
+-                        @foreach($zones as $zone)
+-                            <option value="{{ $zone->id }}">{{ $zone->name }}</option>
+-                        @endforeach
+-                    </select>
+-                </div>
+-                <div>
+-                    <label class="mb-1 block text-sm font-medium text-slate-700">Équipe assignée</label>
+-                    <select wire:model.defer="workOrderForm.assigned_field_team_id" class="w-full rounded-2xl border-slate-300 text-sm shadow-sm">
+-                        <option value="">Aucune</option>
+-                        @foreach($teams as $team)
+-                            <option value="{{ $team->id }}">{{ $team->name }}</option>
+-                        @endforeach
+-                    </select>
+-                </div>
+-                <div>
+-                    <label class="mb-1 block text-sm font-medium text-slate-700">Partenaire assigné</label>
+-                    <select wire:model.defer="workOrderForm.assigned_service_partner_id" class="w-full rounded-2xl border-slate-300 text-sm shadow-sm">
+-                        <option value="">Aucun</option>
+-                        @foreach($partners as $partner)
+-                            <option value="{{ $partner->id }}">{{ $partner->name }}</option>
+-                        @endforeach
+-                    </select>
+-                </div>
+-                <div>
+-                    <label class="mb-1 block text-sm font-medium text-slate-700">Statut approbation</label>
+-                    <select wire:model.defer="workOrderForm.approval_status" class="w-full rounded-2xl border-slate-300 text-sm shadow-sm">
+-                        <option value="pending">Pending</option>
+-                        <option value="approved">Approved</option>
+-                        <option value="rejected">Rejected</option>
+-                    </select>
+-                </div>
+-                <div>
+-                    <label class="mb-1 block text-sm font-medium text-slate-700">Priorité</label>
+-                    <select wire:model.defer="workOrderForm.priority" class="w-full rounded-2xl border-slate-300 text-sm shadow-sm">
+-                        <option value="normale">Normale</option>
+-                        <option value="haute">Haute</option>
+-                        <option value="urgente">Urgente</option>
+-                    </select>
+-                </div>
+-                <div>
+-                    <label class="mb-1 block text-sm font-medium text-slate-700">PO</label>
+-                    <input wire:model.defer="workOrderForm.purchase_order_number" type="text" class="w-full rounded-2xl border-slate-300 text-sm shadow-sm">
+-                </div>
+-                <div>
+-                    <label class="mb-1 block text-sm font-medium text-slate-700">Cost center</label>
+-                    <input wire:model.defer="workOrderForm.cost_center" type="text" class="w-full rounded-2xl border-slate-300 text-sm shadow-sm">
+-                </div>
+-                <div>
+-                    <label class="mb-1 block text-sm font-medium text-slate-700">Budget</label>
+-                    <input wire:model.defer="workOrderForm.budget_amount" type="number" step="0.01" class="w-full rounded-2xl border-slate-300 text-sm shadow-sm">
+-                </div>
+-                <div class="md:col-span-2">
+-                    <label class="mb-1 block text-sm font-medium text-slate-700">Instructions</label>
+-                    <textarea wire:model.defer="workOrderForm.instructions" rows="3" class="w-full rounded-2xl border-slate-300 text-sm shadow-sm"></textarea>
+-                </div>
+-            </div>
+-
+-            <div class="mt-5 rounded-2xl border border-slate-200 bg-slate-50 p-4">
+-                <div class="mb-3 flex items-center justify-between">
+-                    <h3 class="text-sm font-bold text-slate-900">Lignes d’ordre de service</h3>
+-                    <button wire:click="addWorkOrderLine" type="button" class="rounded-xl border border-slate-300 px-3 py-1 text-xs font-semibold text-slate-700">+ Ajouter ligne</button>
+-                </div>
+-                <div class="space-y-3">
+-                    @foreach($workOrderLines as $index => $line)
+-                        <div class="grid grid-cols-1 gap-3 rounded-2xl border border-slate-200 bg-white p-3 md:grid-cols-6">
+-                            <div class="md:col-span-2">
+-                                <input wire:model.defer="workOrderLines.{{ $index }}.title" type="text" placeholder="Ligne / lot / zone" class="w-full rounded-xl border-slate-300 text-sm shadow-sm">
+-                            </div>
+-                            <div>
+-                                <input wire:model.defer="workOrderLines.{{ $index }}.quantity" type="number" step="0.1" placeholder="Qté" class="w-full rounded-xl border-slate-300 text-sm shadow-sm">
+-                            </div>
+-                            <div>
+-                                <input wire:model.defer="workOrderLines.{{ $index }}.unit" type="text" placeholder="Unité" class="w-full rounded-xl border-slate-300 text-sm shadow-sm">
+-                            </div>
+-                            <div>
+-                                <input wire:model.defer="workOrderLines.{{ $index }}.unit_price" type="number" step="0.01" placeholder="PU" class="w-full rounded-xl border-slate-300 text-sm shadow-sm">
+-                            </div>
+-                            <div class="flex items-center justify-between gap-2">
+-                                <input wire:model.defer="workOrderLines.{{ $index }}.surface_value" type="number" step="0.01" placeholder="Surface" class="w-full rounded-xl border-slate-300 text-sm shadow-sm">
+-                                <button wire:click="removeWorkOrderLine({{ $index }})" type="button" class="rounded-xl border border-rose-200 px-3 py-2 text-xs font-semibold text-rose-600">Suppr.</button>
+-                            </div>
+-                        </div>
+-                    @endforeach
+-                </div>
+-            </div>
++        @include('livewire.admin.b2b.operations.contract-form')
+ 
+-            <div class="mt-4 flex justify-end">
+-                <button wire:click="saveWorkOrder" class="rounded-2xl bg-sky-600 px-4 py-2 text-sm font-semibold text-white shadow hover:bg-sky-700">Enregistrer l’ordre de service</button>
+-            </div>
+-        </section>
++        @include('livewire.admin.b2b.operations.work-order-form')
+     </div>
+ 
+     <div class="grid grid-cols-1 gap-6 xl:grid-cols-2">
+-        <section class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+-            <h2 class="text-xl font-bold text-slate-900">Contrats récents</h2>
+-            <div class="mt-4 space-y-3">
+-                @forelse($contracts as $contract)
+-                    <button wire:click="loadContract({{ $contract->id }})" class="w-full rounded-2xl border border-slate-200 p-4 text-left hover:border-sky-300 hover:bg-sky-50/50">
+-                        <div class="flex items-center justify-between gap-3">
+-                            <div>
+-                                <p class="text-sm font-bold text-slate-900">{{ $contract->contract_reference }}</p>
+-                                <p class="text-xs text-slate-500">{{ $contract->organizationAccount?->name }} · {{ strtoupper($contract->status) }}</p>
+-                            </div>
+-                            <div class="text-right text-xs text-slate-500">
+-                                <div>Équipe: {{ $contract->defaultFieldTeam?->name ?? '—' }}</div>
+-                                <div>Partenaire: {{ $contract->defaultServicePartner?->name ?? '—' }}</div>
+-                            </div>
+-                        </div>
+-                    </button>
+-                @empty
+-                    <p class="text-sm text-slate-500">Aucun contrat pour ce compte.</p>
+-                @endforelse
+-            </div>
+-        </section>
++        @include('livewire.admin.b2b.operations.recent-contracts')
+ 
+-        <section class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+-            <h2 class="text-xl font-bold text-slate-900">Ordres de service récents</h2>
+-            <div class="mt-4 space-y-3">
+-                @forelse($workOrders as $workOrder)
+-                    <div class="rounded-2xl border border-slate-200 p-4">
+-                        <div class="flex items-start justify-between gap-4">
+-                            <div>
+-                                <p class="text-sm font-bold text-slate-900">{{ $workOrder->reference }} — {{ $workOrder->title }}</p>
+-                                <p class="mt-1 text-xs text-slate-500">{{ $workOrder->organizationAccount?->name }} · {{ $workOrder->organizationSite?->name ?? 'Tous sites' }} · {{ strtoupper($workOrder->approval_status) }}</p>
+-                            </div>
+-                            <div class="flex gap-2">
+-                                @if($workOrder->approval_status !== 'approved')
+-                                    <button wire:click="approveWorkOrder({{ $workOrder->id }})" class="rounded-xl bg-emerald-600 px-3 py-2 text-xs font-semibold text-white">Approuver</button>
+-                                @endif
+-                                @if($workOrder->approval_status !== 'rejected')
+-                                    <button wire:click="rejectWorkOrder({{ $workOrder->id }})" class="rounded-xl bg-rose-600 px-3 py-2 text-xs font-semibold text-white">Rejeter</button>
+-                                @endif
+-                            </div>
+-                        </div>
+-                        <div class="mt-3 grid grid-cols-1 gap-2 text-xs text-slate-600 md:grid-cols-4">
+-                            <div>Équipe: <span class="font-semibold text-slate-900">{{ $workOrder->assignedFieldTeam?->name ?? '—' }}</span></div>
+-                            <div>Partenaire: <span class="font-semibold text-slate-900">{{ $workOrder->assignedServicePartner?->name ?? '—' }}</span></div>
+-                            <div>Budget: <span class="font-semibold text-slate-900">{{ $workOrder->budget_amount ? number_format((float) $workOrder->budget_amount, 2, ',', ' ') . ' €' : '—' }}</span></div>
+-                            <div>PO: <span class="font-semibold text-slate-900">{{ $workOrder->purchase_order_number ?: '—' }}</span></div>
+-                        </div>
+-                    </div>
+-                @empty
+-                    <p class="text-sm text-slate-500">Aucun ordre de service pour ce compte.</p>
+-                @endforelse
+-            </div>
+-        </section>
++        @include('livewire.admin.b2b.operations.recent-work-orders')
+     </div>
+ </div>
+diff --git a/resources/views/livewire/admin/enterprise/approvals/filters.blade.php b/resources/views/livewire/admin/enterprise/approvals/filters.blade.php
+new file mode 100644
+index 0000000..434cce3
+--- /dev/null
++++ b/resources/views/livewire/admin/enterprise/approvals/filters.blade.php
+@@ -0,0 +1,24 @@
++    <div class="rounded-2xl border bg-white p-5 shadow-sm">
++        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
++            <div class="md:col-span-2">
++                <label class="text-sm font-medium text-slate-700">Recherche</label>
++                <input
++                    type="text"
++                    wire:model.live="search"
++                    placeholder="Client, entreprise, site..."
++                    class="mt-1 w-full rounded-xl border-gray-300 text-sm">
++            </div>
++
++            <div>
++                <label class="text-sm font-medium text-slate-700">Statut</label>
++                <select wire:model.live="status" class="mt-1 w-full rounded-xl border-gray-300 text-sm">
++                    <option value="">Tous</option>
++                    <option value="pending_manager">En attente manager</option>
++                    <option value="pending_finance">En attente finance</option>
++                    <option value="approved">Approuvé</option>
++                    <option value="rejected">Refusé</option>
++                    <option value="cancelled">Annulé</option>
++                </select>
++            </div>
++        </div>
++    </div>
+diff --git a/resources/views/livewire/admin/enterprise/approvals/list.blade.php b/resources/views/livewire/admin/enterprise/approvals/list.blade.php
+new file mode 100644
+index 0000000..acde419
+--- /dev/null
++++ b/resources/views/livewire/admin/enterprise/approvals/list.blade.php
+@@ -0,0 +1,124 @@
++    <div class="space-y-4">
++        @forelse($approvals as $approval)
++            <div class="rounded-2xl border bg-white p-5 shadow-sm space-y-4">
++                <div class="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
++                    <div>
++                        <h3 class="font-semibold text-slate-900">
++                            {{ $approval->organizationAccount?->name ?? 'Entreprise inconnue' }}
++                        </h3>
++
++                        <p class="text-sm text-slate-500">
++                            Site : {{ $approval->organizationSite?->name ?? '—' }}
++                        </p>
++
++                        <p class="text-sm text-slate-500">
++                            Client : {{ $approval->rendezVous?->client?->name ?? '—' }}
++                        </p>
++
++                        <p class="text-sm text-slate-500">
++                            Service : {{ $approval->rendezVous?->service_display_name ?? '—' }}
++                        </p>
++                    </div>
++
++                    <span class="rounded-full px-3 py-1 text-xs font-medium
++                        @class([
++                            'bg-amber-100 text-amber-700' => in_array($approval->status, ['pending_manager', 'pending_finance']),
++                            'bg-emerald-100 text-emerald-700' => $approval->status === 'approved',
++                            'bg-red-100 text-red-700' => $approval->status === 'rejected',
++                            'bg-slate-100 text-slate-700' => $approval->status === 'cancelled',
++                        ])">
++                        {{ $approval->status_label }}
++                    </span>
++                </div>
++
++                <div class="grid grid-cols-1 md:grid-cols-4 gap-3 text-sm">
++                    <div class="rounded-xl border bg-slate-50 p-3">
++                        <p class="text-slate-500">Date RDV</p>
++                        <p class="font-medium text-slate-900">
++                            {{ $approval->rendezVous?->date?->format('d/m/Y') ?? '—' }}
++                            {{ $approval->rendezVous?->heure ? 'à '.substr((string) $approval->rendezVous->heure, 0, 5) : '' }}
++                        </p>
++                    </div>
++
++                    <div class="rounded-xl border bg-slate-50 p-3">
++                        <p class="text-slate-500">Devis</p>
++                        <p class="font-medium text-slate-900">
++                            {{ number_format((float) ($approval->rendezVous?->devis_estime ?? 0), 2, ',', ' ') }} €
++                        </p>
++                    </div>
++
++                    <div class="rounded-xl border bg-slate-50 p-3">
++                        <p class="text-slate-500">Manager</p>
++                        <p class="font-medium text-slate-900">
++                            {{ $approval->managerApprovedBy?->name ?? '—' }}
++                        </p>
++                    </div>
++
++                    <div class="rounded-xl border bg-slate-50 p-3">
++                        <p class="text-slate-500">Finance</p>
++                        <p class="font-medium text-slate-900">
++                            {{ $approval->financeApprovedBy?->name ?? '—' }}
++                        </p>
++                    </div>
++                </div>
++
++                @if($approval->request_note || $approval->manager_note || $approval->finance_note || $approval->rejection_reason)
++                    <div class="rounded-xl border bg-slate-50 p-4 text-sm space-y-2">
++                        @if($approval->request_note)
++                            <p><span class="font-medium">Note demande :</span> {{ $approval->request_note }}</p>
++                        @endif
++
++                        @if($approval->manager_note)
++                            <p><span class="font-medium">Note manager :</span> {{ $approval->manager_note }}</p>
++                        @endif
++
++                        @if($approval->finance_note)
++                            <p><span class="font-medium">Note finance :</span> {{ $approval->finance_note }}</p>
++                        @endif
++
++                        @if($approval->rejection_reason)
++                            <p class="text-red-700"><span class="font-medium">Raison refus :</span> {{ $approval->rejection_reason }}</p>
++                        @endif
++                    </div>
++                @endif
++
++                @if(in_array($approval->status, ['pending_manager', 'pending_finance']))
++                    <div class="rounded-xl border bg-white p-4 space-y-3">
++                        <textarea
++                            wire:model.defer="note"
++                            rows="2"
++                            placeholder="Note interne facultative..."
++                            class="w-full rounded-xl border-gray-300 text-sm"></textarea>
++
++                        <div class="flex flex-wrap gap-3">
++                            @if($approval->status === 'pending_manager')
++                                <button
++                                    wire:click="approveManager({{ $approval->id }})"
++                                    class="rounded-xl bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700">
++                                    ✅ Valider manager
++                                </button>
++                            @endif
++
++                            @if($approval->status === 'pending_finance')
++                                <button
++                                    wire:click="approveFinance({{ $approval->id }})"
++                                    class="rounded-xl bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-700">
++                                    💰 Valider finance
++                                </button>
++                            @endif
++
++                            <button
++                                wire:click="openRejectModal({{ $approval->id }})"
++                                class="rounded-xl bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700">
++                                ❌ Refuser
++                            </button>
++                        </div>
++                    </div>
++                @endif
++            </div>
++        @empty
++            <x-empty-state
++                title="Aucune approbation"
++                message="Aucune demande entreprise ne correspond aux filtres." />
++        @endforelse
++    </div>
+diff --git a/resources/views/livewire/admin/enterprise/approvals/pagination.blade.php b/resources/views/livewire/admin/enterprise/approvals/pagination.blade.php
+new file mode 100644
+index 0000000..04fd68e
+--- /dev/null
++++ b/resources/views/livewire/admin/enterprise/approvals/pagination.blade.php
+@@ -0,0 +1,3 @@
++    <div>
++        {{ $approvals->links() }}
++    </div>
+diff --git a/resources/views/livewire/admin/enterprise/approvals/reject-modal.blade.php b/resources/views/livewire/admin/enterprise/approvals/reject-modal.blade.php
+new file mode 100644
+index 0000000..a46aa37
+--- /dev/null
++++ b/resources/views/livewire/admin/enterprise/approvals/reject-modal.blade.php
+@@ -0,0 +1,36 @@
++    @if($selectedApprovalId)
++        <div class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 px-4">
++            <div class="w-full max-w-lg rounded-2xl bg-white p-6 shadow-2xl space-y-4">
++                <div>
++                    <h3 class="text-lg font-semibold text-slate-900">Refuser la demande</h3>
++                    <p class="text-sm text-slate-500">
++                        Ajoutez une raison claire pour garder une trace.
++                    </p>
++                </div>
++
++                <textarea
++                    wire:model.defer="rejectionReason"
++                    rows="4"
++                    class="w-full rounded-xl border-gray-300 text-sm"
++                    placeholder="Raison du refus..."></textarea>
++
++                @error('rejectionReason')
++                    <p class="text-sm text-red-600">{{ $message }}</p>
++                @enderror
++
++                <div class="flex justify-end gap-3">
++                    <button
++                        wire:click="closeRejectModal"
++                        class="rounded-xl border px-4 py-2 text-sm font-medium text-slate-700">
++                        Annuler
++                    </button>
++
++                    <button
++                        wire:click="reject"
++                        class="rounded-xl bg-red-600 px-4 py-2 text-sm font-medium text-white">
++                        Confirmer le refus
++                    </button>
++                </div>
++            </div>
++        </div>
++    @endif
+diff --git a/resources/views/livewire/admin/enterprise/sites/create-form.blade.php b/resources/views/livewire/admin/enterprise/sites/create-form.blade.php
+new file mode 100644
+index 0000000..a3a5616
+--- /dev/null
++++ b/resources/views/livewire/admin/enterprise/sites/create-form.blade.php
+@@ -0,0 +1,15 @@
++    <div class="rounded-2xl border bg-white p-5 shadow-sm">
++        <h3 class="font-semibold text-slate-900">➕ Ajouter un site</h3>
++
++        <div class="grid grid-cols-2 gap-3 mt-4">
++            <input wire:model="name" placeholder="Nom" class="rounded-xl border" />
++            <input wire:model="address" placeholder="Adresse" class="rounded-xl border" />
++            <input wire:model="city" placeholder="Ville" class="rounded-xl border" />
++            <input wire:model="cost_center" placeholder="Centre de coût" class="rounded-xl border" />
++        </div>
++
++        <button wire:click="create"
++            class="mt-4 bg-blue-600 text-white px-4 py-2 rounded-xl">
++            Ajouter
++        </button>
++    </div>
+diff --git a/resources/views/livewire/admin/enterprise/sites/list.blade.php b/resources/views/livewire/admin/enterprise/sites/list.blade.php
+new file mode 100644
+index 0000000..6ca18c7
+--- /dev/null
++++ b/resources/views/livewire/admin/enterprise/sites/list.blade.php
+@@ -0,0 +1,11 @@
++    <div class="rounded-2xl border bg-white p-5 shadow-sm">
++        <h3 class="font-semibold text-slate-900">📍 Sites</h3>
++
++        @foreach($sites as $site)
++            <div class="border p-3 rounded-xl mt-2">
++                <p class="font-medium">{{ $site->name }}</p>
++                <p class="text-sm text-slate-500">{{ $site->address }}</p>
++                <p class="text-xs">Centre coût : {{ $site->cost_center }}</p>
++            </div>
++        @endforeach
++    </div>
+diff --git a/resources/views/livewire/admin/enterprise-approvals-center.blade.php b/resources/views/livewire/admin/enterprise-approvals-center.blade.php
+index 072bfe4..40707ec 100644
+--- a/resources/views/livewire/admin/enterprise-approvals-center.blade.php
++++ b/resources/views/livewire/admin/enterprise-approvals-center.blade.php
+@@ -2,194 +2,11 @@
+     title="🏢 Approbations entreprises"
+     subtitle="Validez les demandes B2B avant confirmation définitive du rendez-vous.">
+ 
+-    <div class="rounded-2xl border bg-white p-5 shadow-sm">
+-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+-            <div class="md:col-span-2">
+-                <label class="text-sm font-medium text-slate-700">Recherche</label>
+-                <input
+-                    type="text"
+-                    wire:model.live="search"
+-                    placeholder="Client, entreprise, site..."
+-                    class="mt-1 w-full rounded-xl border-gray-300 text-sm">
+-            </div>
++    @include('livewire.admin.enterprise.approvals.filters')
+ 
+-            <div>
+-                <label class="text-sm font-medium text-slate-700">Statut</label>
+-                <select wire:model.live="status" class="mt-1 w-full rounded-xl border-gray-300 text-sm">
+-                    <option value="">Tous</option>
+-                    <option value="pending_manager">En attente manager</option>
+-                    <option value="pending_finance">En attente finance</option>
+-                    <option value="approved">Approuvé</option>
+-                    <option value="rejected">Refusé</option>
+-                    <option value="cancelled">Annulé</option>
+-                </select>
+-            </div>
+-        </div>
+-    </div>
++    @include('livewire.admin.enterprise.approvals.list')
+ 
+-    <div class="space-y-4">
+-        @forelse($approvals as $approval)
+-            <div class="rounded-2xl border bg-white p-5 shadow-sm space-y-4">
+-                <div class="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
+-                    <div>
+-                        <h3 class="font-semibold text-slate-900">
+-                            {{ $approval->organizationAccount?->name ?? 'Entreprise inconnue' }}
+-                        </h3>
++    @include('livewire.admin.enterprise.approvals.pagination')
+ 
+-                        <p class="text-sm text-slate-500">
+-                            Site : {{ $approval->organizationSite?->name ?? '—' }}
+-                        </p>
+-
+-                        <p class="text-sm text-slate-500">
+-                            Client : {{ $approval->rendezVous?->client?->name ?? '—' }}
+-                        </p>
+-
+-                        <p class="text-sm text-slate-500">
+-                            Service : {{ $approval->rendezVous?->service_display_name ?? '—' }}
+-                        </p>
+-                    </div>
+-
+-                    <span class="rounded-full px-3 py-1 text-xs font-medium
+-                        @class([
+-                            'bg-amber-100 text-amber-700' => in_array($approval->status, ['pending_manager', 'pending_finance']),
+-                            'bg-emerald-100 text-emerald-700' => $approval->status === 'approved',
+-                            'bg-red-100 text-red-700' => $approval->status === 'rejected',
+-                            'bg-slate-100 text-slate-700' => $approval->status === 'cancelled',
+-                        ])">
+-                        {{ $approval->status_label }}
+-                    </span>
+-                </div>
+-
+-                <div class="grid grid-cols-1 md:grid-cols-4 gap-3 text-sm">
+-                    <div class="rounded-xl border bg-slate-50 p-3">
+-                        <p class="text-slate-500">Date RDV</p>
+-                        <p class="font-medium text-slate-900">
+-                            {{ $approval->rendezVous?->date?->format('d/m/Y') ?? '—' }}
+-                            {{ $approval->rendezVous?->heure ? 'à '.substr((string) $approval->rendezVous->heure, 0, 5) : '' }}
+-                        </p>
+-                    </div>
+-
+-                    <div class="rounded-xl border bg-slate-50 p-3">
+-                        <p class="text-slate-500">Devis</p>
+-                        <p class="font-medium text-slate-900">
+-                            {{ number_format((float) ($approval->rendezVous?->devis_estime ?? 0), 2, ',', ' ') }} €
+-                        </p>
+-                    </div>
+-
+-                    <div class="rounded-xl border bg-slate-50 p-3">
+-                        <p class="text-slate-500">Manager</p>
+-                        <p class="font-medium text-slate-900">
+-                            {{ $approval->managerApprovedBy?->name ?? '—' }}
+-                        </p>
+-                    </div>
+-
+-                    <div class="rounded-xl border bg-slate-50 p-3">
+-                        <p class="text-slate-500">Finance</p>
+-                        <p class="font-medium text-slate-900">
+-                            {{ $approval->financeApprovedBy?->name ?? '—' }}
+-                        </p>
+-                    </div>
+-                </div>
+-
+-                @if($approval->request_note || $approval->manager_note || $approval->finance_note || $approval->rejection_reason)
+-                    <div class="rounded-xl border bg-slate-50 p-4 text-sm space-y-2">
+-                        @if($approval->request_note)
+-                            <p><span class="font-medium">Note demande :</span> {{ $approval->request_note }}</p>
+-                        @endif
+-
+-                        @if($approval->manager_note)
+-                            <p><span class="font-medium">Note manager :</span> {{ $approval->manager_note }}</p>
+-                        @endif
+-
+-                        @if($approval->finance_note)
+-                            <p><span class="font-medium">Note finance :</span> {{ $approval->finance_note }}</p>
+-                        @endif
+-
+-                        @if($approval->rejection_reason)
+-                            <p class="text-red-700"><span class="font-medium">Raison refus :</span> {{ $approval->rejection_reason }}</p>
+-                        @endif
+-                    </div>
+-                @endif
+-
+-                @if(in_array($approval->status, ['pending_manager', 'pending_finance']))
+-                    <div class="rounded-xl border bg-white p-4 space-y-3">
+-                        <textarea
+-                            wire:model.defer="note"
+-                            rows="2"
+-                            placeholder="Note interne facultative..."
+-                            class="w-full rounded-xl border-gray-300 text-sm"></textarea>
+-
+-                        <div class="flex flex-wrap gap-3">
+-                            @if($approval->status === 'pending_manager')
+-                                <button
+-                                    wire:click="approveManager({{ $approval->id }})"
+-                                    class="rounded-xl bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700">
+-                                    ✅ Valider manager
+-                                </button>
+-                            @endif
+-
+-                            @if($approval->status === 'pending_finance')
+-                                <button
+-                                    wire:click="approveFinance({{ $approval->id }})"
+-                                    class="rounded-xl bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-700">
+-                                    💰 Valider finance
+-                                </button>
+-                            @endif
+-
+-                            <button
+-                                wire:click="openRejectModal({{ $approval->id }})"
+-                                class="rounded-xl bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700">
+-                                ❌ Refuser
+-                            </button>
+-                        </div>
+-                    </div>
+-                @endif
+-            </div>
+-        @empty
+-            <x-empty-state
+-                title="Aucune approbation"
+-                message="Aucune demande entreprise ne correspond aux filtres." />
+-        @endforelse
+-    </div>
+-
+-    <div>
+-        {{ $approvals->links() }}
+-    </div>
+-
+-    @if($selectedApprovalId)
+-        <div class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 px-4">
+-            <div class="w-full max-w-lg rounded-2xl bg-white p-6 shadow-2xl space-y-4">
+-                <div>
+-                    <h3 class="text-lg font-semibold text-slate-900">Refuser la demande</h3>
+-                    <p class="text-sm text-slate-500">
+-                        Ajoutez une raison claire pour garder une trace.
+-                    </p>
+-                </div>
+-
+-                <textarea
+-                    wire:model.defer="rejectionReason"
+-                    rows="4"
+-                    class="w-full rounded-xl border-gray-300 text-sm"
+-                    placeholder="Raison du refus..."></textarea>
+-
+-                @error('rejectionReason')
+-                    <p class="text-sm text-red-600">{{ $message }}</p>
+-                @enderror
+-
+-                <div class="flex justify-end gap-3">
+-                    <button
+-                        wire:click="closeRejectModal"
+-                        class="rounded-xl border px-4 py-2 text-sm font-medium text-slate-700">
+-                        Annuler
+-                    </button>
+-
+-                    <button
+-                        wire:click="reject"
+-                        class="rounded-xl bg-red-600 px-4 py-2 text-sm font-medium text-white">
+-                        Confirmer le refus
+-                    </button>
+-                </div>
+-            </div>
+-        </div>
+-    @endif
+-</x-page-shell>
+\ No newline at end of file
++    @include('livewire.admin.enterprise.approvals.reject-modal')
++</x-page-shell>
+diff --git a/resources/views/livewire/admin/organization-sites-manager.blade.php b/resources/views/livewire/admin/organization-sites-manager.blade.php
+index 49a54c7..2f4d43e 100644
+--- a/resources/views/livewire/admin/organization-sites-manager.blade.php
++++ b/resources/views/livewire/admin/organization-sites-manager.blade.php
+@@ -1,31 +1,5 @@
+ <div class="space-y-5">
++    @include('livewire.admin.enterprise.sites.create-form')
+ 
+-    <div class="rounded-2xl border bg-white p-5 shadow-sm">
+-        <h3 class="font-semibold text-slate-900">➕ Ajouter un site</h3>
+-
+-        <div class="grid grid-cols-2 gap-3 mt-4">
+-            <input wire:model="name" placeholder="Nom" class="rounded-xl border" />
+-            <input wire:model="address" placeholder="Adresse" class="rounded-xl border" />
+-            <input wire:model="city" placeholder="Ville" class="rounded-xl border" />
+-            <input wire:model="cost_center" placeholder="Centre de coût" class="rounded-xl border" />
+-        </div>
+-
+-        <button wire:click="create"
+-            class="mt-4 bg-blue-600 text-white px-4 py-2 rounded-xl">
+-            Ajouter
+-        </button>
+-    </div>
+-
+-    <div class="rounded-2xl border bg-white p-5 shadow-sm">
+-        <h3 class="font-semibold text-slate-900">📍 Sites</h3>
+-
+-        @foreach($sites as $site)
+-            <div class="border p-3 rounded-xl mt-2">
+-                <p class="font-medium">{{ $site->name }}</p>
+-                <p class="text-sm text-slate-500">{{ $site->address }}</p>
+-                <p class="text-xs">Centre coût : {{ $site->cost_center }}</p>
+-            </div>
+-        @endforeach
+-    </div>
+-
+-</div>
+\ No newline at end of file
++    @include('livewire.admin.enterprise.sites.list')
++</div>
