@@ -1004,6 +1004,7 @@ class ComposerStaticInitb025338559cbbd8459a93f43b2d86a2a
         'App\\Livewire\\ProviderCompany\\TeamManagement' => __DIR__ . '/../..' . '/app/Livewire/ProviderCompany/TeamManagement.php',
         'App\\Models\\ActivityLog' => __DIR__ . '/../..' . '/app/Models/ActivityLog.php',
         'App\\Models\\Booking' => __DIR__ . '/../..' . '/app/Models/Booking.php',
+        'App\\Models\\Bookings' => __DIR__ . '/../..' . '/app/Models/Bookings.php',
         'App\\Models\\Channel' => __DIR__ . '/../..' . '/app/Models/Channel.php',
         'App\\Models\\ClientSubscription' => __DIR__ . '/../..' . '/app/Models/ClientSubscription.php',
         'App\\Models\\Commune' => __DIR__ . '/../..' . '/app/Models/Commune.php',

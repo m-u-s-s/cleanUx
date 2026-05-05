@@ -88,7 +88,10 @@ return new class extends Migration
 
             $table->timestamps();
 
-            $table->unique(['organization_member_id', 'organization_site_id']);
+            $table->unique(
+                ['organization_member_id', 'organization_site_id'],
+                'omsa_member_site_unique'
+            );
         });
 
         Schema::create('provider_teams', function (Blueprint $table) {

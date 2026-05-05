@@ -20,6 +20,7 @@ use Laravel\Jetstream\HasProfilePhoto;
 use Laravel\Jetstream\HasTeams;
 use Laravel\Sanctum\HasApiTokens;
 use App\Models\Concerns\HasLegacyRoleCompatibility;
+use Laravel\Cashier\Billable;
 
 class User extends Authenticatable implements MustVerifyEmail
 {
@@ -29,6 +30,8 @@ class User extends Authenticatable implements MustVerifyEmail
     use HasTeams;
     use Notifiable;
     use TwoFactorAuthenticatable;
+    use Billable;
+    use HasLegacyRoleCompatibility;
 
     // ──────────────────────────────────────────────────────
     // Constantes platform_role (rôle global CleanUx)

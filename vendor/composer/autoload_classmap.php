@@ -195,6 +195,7 @@ return array(
     'App\\Livewire\\ProviderCompany\\TeamManagement' => $baseDir . '/app/Livewire/ProviderCompany/TeamManagement.php',
     'App\\Models\\ActivityLog' => $baseDir . '/app/Models/ActivityLog.php',
     'App\\Models\\Booking' => $baseDir . '/app/Models/Booking.php',
+    'App\\Models\\Bookings' => $baseDir . '/app/Models/Bookings.php',
     'App\\Models\\Channel' => $baseDir . '/app/Models/Channel.php',
     'App\\Models\\ClientSubscription' => $baseDir . '/app/Models/ClientSubscription.php',
     'App\\Models\\Commune' => $baseDir . '/app/Models/Commune.php',
