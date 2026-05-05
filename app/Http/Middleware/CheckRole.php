@@ -21,7 +21,11 @@ class CheckRole
                 return $next($request);
             }
 
-            if ($user->role === $role) {
+            if (($user->role ?? null) === $role) {
+                return $next($request);
+            }
+
+            if (($user->platform_role ?? null) === $role) {
                 return $next($request);
             }
         }
