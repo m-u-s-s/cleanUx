@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\PresenceController;
 use App\Livewire\NotificationsCenter;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -24,6 +25,7 @@ Route::get('/dashboard', function (Request $request) {
         return redirect()->route('employe.dashboard');
     }
 
+    
     abort(403);
 })->name('dashboard');
 
@@ -59,3 +61,9 @@ Route::put('/current-team', function (Request $request) {
 
     return back()->with('success', 'Équipe active mise à jour.');
 })->name('current-team.update');
+
+Route::middleware('auth')->group(function () {
+    Route::post('/presence/touch',  [PresenceController::class, 'touch'])->name('presence.touch');
+    Route::post('/presence/status', [PresenceController::class, 'setStatus'])->name('presence.status');
+    Route::get( '/presence/me',     [PresenceController::class, 'me'])->name('presence.me');
+});

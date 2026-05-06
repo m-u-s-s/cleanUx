@@ -173,4 +173,6 @@ Route::middleware(['role:admin'])
                 }
             };
         })->name('feedbacks.export.csv');
+
+        Route::get('/trades', \App\Livewire\Admin\Trades::class)->name('trades');
     });

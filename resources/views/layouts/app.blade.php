@@ -8,6 +8,12 @@
 
     <title>{{ config('app.name', 'CleanUx') }}</title>
 
+
+    @auth
+    <meta name="user-id" content="{{ auth()->id() }}">
+    <meta name="org-id" content="{{ auth()->user()->organization_account_id }}">
+    @endauth
+    
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @livewireStyles
     @stack('styles')
@@ -46,11 +52,11 @@
     @endauth
 
     @auth
-        @if(auth()->user()->isClient())
-            <x-ui.mobile-bottom-nav role="client" />
-        @elseif(auth()->user()->isEmploye() && request()->routeIs('employe.*'))
-            <x-ui.mobile-bottom-nav role="employe" />
-        @endif
+    @if(auth()->user()->isClient())
+    <x-ui.mobile-bottom-nav role="client" />
+    @elseif(auth()->user()->isEmploye() && request()->routeIs('employe.*'))
+    <x-ui.mobile-bottom-nav role="employe" />
+    @endif
     @endauth
 
     @stack('modals')

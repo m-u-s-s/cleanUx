@@ -1,12 +1,12 @@
 <?php
 
-namespace App\Services\Entreprise;
+namespace App\Services\Enterprise;
 
 use App\Models\OrganizationAccount;
 use App\Models\OrganizationSite;
 use App\Models\User;
 
-class EntrepriseRoutingService
+class EnterpriseRoutingService
 {
     public function resolvePriorityZoneIds(?OrganizationAccount $account, ?OrganizationSite $site = null): array
     {

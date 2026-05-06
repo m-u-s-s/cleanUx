@@ -4,12 +4,12 @@ namespace Tests\Unit;
 
 use App\Models\OrganizationSite;
 use App\Models\User;
-use App\Services\Entreprise\EntrepriseRoutingService;
+use App\Services\Enterprise\EnterpriseRoutingService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Support\CreatesDomainFixtures;
 use Tests\TestCase;
 
-class EntrepriseRoutingServiceTest extends TestCase
+class EnterpriseRoutingServiceTest extends TestCase
 {
     use CreatesDomainFixtures;
     use RefreshDatabase;
@@ -32,7 +32,7 @@ class EntrepriseRoutingServiceTest extends TestCase
             ],
         ]);
 
-        $service = app(EntrepriseRoutingService::class);
+        $service = app(EnterpriseRoutingService::class);
 
         $result = $service->resolvePriorityZoneIds($context['account']->fresh(), $site->fresh());
 
@@ -63,7 +63,7 @@ class EntrepriseRoutingServiceTest extends TestCase
             ],
         ]);
 
-        $service = app(EntrepriseRoutingService::class);
+        $service = app(EnterpriseRoutingService::class);
 
         $this->assertTrue($service->userCanAccessSite($user, $context['site']));
         $this->assertFalse($service->userCanAccessSite($user, $otherSite));

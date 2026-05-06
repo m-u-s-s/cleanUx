@@ -1,4 +1,5 @@
 import './bootstrap';
+import './echo-listeners';  
 import './cleanux-mission-tracking';
 import ApexCharts from 'apexcharts';
 window.ApexCharts = ApexCharts;

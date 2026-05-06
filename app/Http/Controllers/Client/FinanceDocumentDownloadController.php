@@ -4,12 +4,12 @@ namespace App\Http\Controllers\Client;
 
 use App\Models\FinanceInvoice;
 use App\Models\FinanceQuote;
-use App\Services\Entreprise\EntrepriseRoutingService;
+use App\Services\Enterprise\EnterpriseRoutingService;
 use Barryvdh\DomPDF\Facade\Pdf;
 
 class FinanceDocumentDownloadController
 {
-    public function quote(FinanceQuote $quote, EntrepriseRoutingService $entrepriseRouting)
+    public function quote(FinanceQuote $quote, EnterpriseRoutingService $entrepriseRouting)
     {
         $quote->loadMissing(['client', 'organizationAccount', 'rendezVous.serviceZone', 'rendezVous.organizationSite']);
         $this->authorizeDocument($quote->client_id, $quote->organization_account_id, $quote->rendezVous?->organizationSite, $entrepriseRouting);
@@ -21,7 +21,7 @@ class FinanceDocumentDownloadController
         );
     }
 
-    public function invoice(FinanceInvoice $invoice, EntrepriseRoutingService $entrepriseRouting)
+    public function invoice(FinanceInvoice $invoice, EnterpriseRoutingService $entrepriseRouting)
     {
         $invoice->loadMissing(['client', 'organizationAccount', 'rendezVous.serviceZone', 'rendezVous.organizationSite', 'payments']);
         $this->authorizeDocument($invoice->client_id, $invoice->organization_account_id, $invoice->rendezVous?->organizationSite, $entrepriseRouting);
@@ -33,7 +33,7 @@ class FinanceDocumentDownloadController
         );
     }
 
-    protected function authorizeDocument(?int $clientId, ?int $organizationAccountId, $site, EntrepriseRoutingService $entrepriseRouting): void
+    protected function authorizeDocument(?int $clientId, ?int $organizationAccountId, $site, EnterpriseRoutingService $entrepriseRouting): void
     {
         $user = auth()->user();
 

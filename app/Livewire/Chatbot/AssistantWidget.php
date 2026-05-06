@@ -4,12 +4,24 @@ namespace App\Livewire\Chatbot;
 
 use App\Models\AssistantConversation;
 use App\Models\AssistantMessage;
-use App\Services\AssistantContextBuilder;
+use App\Services\Assistant\Llm\LlmClient;
+use App\Services\Assistant\Tools\AssistantToolDispatcher;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Http;
-use Livewire\Attributes\On;
 use Livewire\Component;
 
+/**
+ * Phase 5 — AssistantWidget refactoré.
+ *
+ * Avant : appelait directement Http::post à l'API Anthropic, pas de tools.
+ * Après : délègue à LlmClient (multi-provider), supporte le tool calling
+ *         agentic, gère le workflow de confirmation pour les actions
+ *         destructives (create_booking, cancel_booking…).
+ *
+ * Différences clés :
+ *   - Plus de logique Http directe : tout passe par LlmClient
+ *   - Si une action nécessite confirmation, $pendingActionId est set et
+ *     le UI affiche un bouton "Confirmer" qui appelle confirmAction().
+ */
 class AssistantWidget extends Component
 {
     // ──────────────────────────────────────────────────────
@@ -19,10 +31,13 @@ class AssistantWidget extends Component
     public bool   $isLoading = false;
     public string $input     = '';
 
-    /** @var array<int, array{sender: string, content: string, time: string}> */
+    /** @var array<int, array{sender:string, content:string, time:string, action_id?:int}> */
     public array $messages = [];
 
     public ?int $conversationId = null;
+
+    /** Si non-null, le UI affichera un bouton "Confirmer cette action". */
+    public ?int $pendingActionId = null;
 
     // ──────────────────────────────────────────────────────
     // Boot
@@ -31,32 +46,16 @@ class AssistantWidget extends Component
     {
         $user = Auth::user();
 
-        // Reprendre la dernière conversation ouverte ou en créer une
         $conversation = AssistantConversation::query()
             ->where('user_id', $user->id)
-            ->where('status', 'open')
+            ->where('status', AssistantConversation::STATUS_OPEN)
             ->latest()
             ->first();
 
         if ($conversation) {
             $this->conversationId = $conversation->id;
-
-            // Charger les 20 derniers messages
-            $this->messages = AssistantMessage::query()
-                ->where('assistant_conversation_id', $conversation->id)
-                ->latest()
-                ->limit(20)
-                ->get()
-                ->reverse()
-                ->map(fn ($m) => [
-                    'sender'  => $m->sender_type,
-                    'content' => $m->content,
-                    'time'    => $m->created_at->format('H:i'),
-                ])
-                ->values()
-                ->toArray();
+            $this->loadHistory($conversation);
         } else {
-            // Nouveau message de bienvenue selon le rôle
             $this->messages = [[
                 'sender'  => 'assistant',
                 'content' => $this->welcomeMessage($user),
@@ -65,8 +64,29 @@ class AssistantWidget extends Component
         }
     }
 
+    private function loadHistory(AssistantConversation $conversation): void
+    {
+        $this->messages = AssistantMessage::query()
+            ->where('assistant_conversation_id', $conversation->id)
+            ->whereIn('sender_type', [
+                AssistantMessage::SENDER_USER,
+                AssistantMessage::SENDER_ASSISTANT,
+            ])
+            ->orderByDesc('id')
+            ->limit(30)
+            ->get()
+            ->reverse()
+            ->map(fn (AssistantMessage $m) => [
+                'sender'  => $m->sender_type,
+                'content' => $m->content !== '' ? $m->content : '(action en cours…)',
+                'time'    => $m->created_at->format('H:i'),
+            ])
+            ->values()
+            ->toArray();
+    }
+
     // ──────────────────────────────────────────────────────
-    // Actions
+    // Actions Livewire
     // ──────────────────────────────────────────────────────
     public function toggle(): void
     {
@@ -76,69 +96,99 @@ class AssistantWidget extends Component
     public function send(): void
     {
         $message = trim($this->input);
-
         if (blank($message) || $this->isLoading) {
             return;
         }
 
         $user = Auth::user();
 
-        // Ajouter le message utilisateur à l'UI immédiatement
+        // Rendu instantané du message user
         $this->messages[] = [
             'sender'  => 'user',
             'content' => $message,
             'time'    => now()->format('H:i'),
         ];
-
         $this->input     = '';
         $this->isLoading = true;
 
-        // Persister la conversation si première fois
-        if (! $this->conversationId) {
-            $conversation = AssistantConversation::create([
-                'user_id'                  => $user->id,
-                'organization_account_id'  => $user->current_organization_id,
-                'context_role'             => $user->assistantContextRole()->value,
-                'status'                   => 'open',
-            ]);
+        // Récupère ou crée la conversation
+        $conversation = $this->getOrCreateConversation($user);
 
-            $this->conversationId = $conversation->id;
+        // Délégation à LlmClient (qui gère la boucle agentic)
+        try {
+            $result = app(LlmClient::class)->sendUserMessage($user, $conversation, $message);
+
+            $this->messages[] = [
+                'sender'    => 'assistant',
+                'content'   => $result['text'],
+                'time'      => now()->format('H:i'),
+                'action_id' => $result['pending_action_id'] ?? null,
+            ];
+
+            $this->pendingActionId = $result['pending_action_id'] ?? null;
+
+        } catch (\Throwable $e) {
+            report($e);
+            $this->messages[] = [
+                'sender'  => 'assistant',
+                'content' => "Une erreur inattendue est survenue. Reformule ta question s'il te plaît.",
+                'time'    => now()->format('H:i'),
+            ];
         }
 
-        // Persister le message utilisateur
-        AssistantMessage::create([
-            'assistant_conversation_id' => $this->conversationId,
-            'sender_type'               => 'user',
-            'content'                   => $message,
-        ]);
+        $this->isLoading = false;
+    }
 
-        // Appeler l'API
-        $response = $this->callAnthropicApi($user, $message);
+    public function confirmAction(int $actionId): void
+    {
+        $user = Auth::user();
 
-        // Ajouter la réponse du bot
+        $result = app(AssistantToolDispatcher::class)->confirmAndExecute($user, $actionId);
+
+        if (! empty($result['ok'])) {
+            $resPayload = $result['result'] ?? [];
+            $msg = $resPayload['message']
+                ?? "Action exécutée avec succès.";
+
+            $this->messages[] = [
+                'sender'  => 'assistant',
+                'content' => "✅ " . $msg,
+                'time'    => now()->format('H:i'),
+            ];
+        } else {
+            $this->messages[] = [
+                'sender'  => 'assistant',
+                'content' => "❌ " . ($result['error'] ?? "L'action n'a pas pu être exécutée."),
+                'time'    => now()->format('H:i'),
+            ];
+        }
+
+        $this->pendingActionId = null;
+    }
+
+    public function cancelAction(int $actionId): void
+    {
+        $user = Auth::user();
+        app(AssistantToolDispatcher::class)->cancel($user, $actionId);
+
         $this->messages[] = [
             'sender'  => 'assistant',
-            'content' => $response,
+            'content' => "Action annulée.",
             'time'    => now()->format('H:i'),
         ];
 
-        // Persister la réponse
-        AssistantMessage::create([
-            'assistant_conversation_id' => $this->conversationId,
-            'sender_type'               => 'assistant',
-            'content'                   => $response,
-        ]);
-
-        $this->isLoading = false;
+        $this->pendingActionId = null;
     }
 
     public function clearConversation(): void
     {
         if ($this->conversationId) {
-            AssistantConversation::find($this->conversationId)?->update(['status' => 'archived']);
+            AssistantConversation::find($this->conversationId)
+                ?->update(['status' => AssistantConversation::STATUS_ARCHIVED]);
         }
 
-        $this->conversationId = null;
+        $this->conversationId  = null;
+        $this->pendingActionId = null;
         $user = Auth::user();
 
         $this->messages = [[
@@ -149,63 +199,43 @@ class AssistantWidget extends Component
     }
 
     // ──────────────────────────────────────────────────────
-    // API Anthropic
+    // Helpers
     // ──────────────────────────────────────────────────────
-    private function callAnthropicApi($user, string $userMessage): string
+    private function getOrCreateConversation($user): AssistantConversation
     {
-        try {
-            $context = app(AssistantContextBuilder::class)->build($user);
-
-            // Construire l'historique de conversation pour l'API
-            $history = collect($this->messages)
-                ->filter(fn ($m) => in_array($m['sender'], ['user', 'assistant'], true))
-                ->map(fn ($m) => [
-                    'role'    => $m['sender'] === 'user' ? 'user' : 'assistant',
-                    'content' => $m['content'],
-                ])
-                ->values()
-                ->toArray();
-
-            $response = Http::withHeaders([
-                'x-api-key'         => config('services.anthropic.key'),
-                'anthropic-version' => '2023-06-01',
-                'Content-Type'      => 'application/json',
-            ])->timeout(30)->post('https://api.anthropic.com/v1/messages', [
-                'model'      => 'claude-sonnet-4-20250514',
-                'max_tokens' => 800,
-                'system'     => $context['system'],
-                'messages'   => $history,
-            ]);
-
-            if ($response->successful()) {
-                $data = $response->json();
-                return $data['content'][0]['text'] ?? 'Je n\'ai pas pu générer une réponse.';
+        if ($this->conversationId) {
+            $conversation = AssistantConversation::find($this->conversationId);
+            if ($conversation && $conversation->isOpen()) {
+                return $conversation;
             }
-
-            return 'Une erreur est survenue. Veuillez réessayer dans quelques instants.';
-
-        } catch (\Throwable $e) {
-            report($e);
-            return 'Le service est temporairement indisponible.';
         }
+
+        $conversation = AssistantConversation::create([
+            'user_id'                  => $user->id,
+            'organization_account_id'  => $user->organization_account_id,
+            'context_role'             => $user->assistantContextRole()->value,
+            'status'                   => AssistantConversation::STATUS_OPEN,
+        ]);
+
+        $this->conversationId = $conversation->id;
+        return $conversation;
     }
 
-    // ──────────────────────────────────────────────────────
-    // Messages de bienvenue par rôle
-    // ──────────────────────────────────────────────────────
     private function welcomeMessage($user): string
     {
         $name = $user->name;
         $role = $user->assistantContextRole();
 
-        return match ($role) {
-            default => "Bonjour {$name} ! 👋 Je suis votre assistant CleanUx. Comment puis-je vous aider ?",
+        return match ($role->value) {
+            'client_personal' => "Bonjour {$name} 👋 Je peux t'aider à réserver un nettoyage, suivre une mission, ou comprendre une facture. Que veux-tu faire ?",
+            'client_company'  => "Bonjour {$name} 👋 Je peux préparer une demande pour un de tes locaux, te lister les missions actives ou expliquer une facture. Comment puis-je t'aider ?",
+            'provider_independent' => "Bonjour {$name} 👋 Je peux t'aider avec tes missions, tes paiements Stripe ou un incident sur site. Quelle est ta question ?",
+            'provider_company' => "Bonjour {$name} 👋 Je peux te montrer tes missions du jour, t'expliquer les canaux d'équipe ou signaler un incident. Que veux-tu ?",
+            'admin'           => "Bonjour {$name} — assistant admin CleanUx prêt. Pose ta question (stats, anomalies, configuration…).",
+            default           => "Bonjour {$name} ! Comment puis-je vous aider ?",
         };
     }
 
-    // ──────────────────────────────────────────────────────
-    // Render
-    // ──────────────────────────────────────────────────────
     public function render()
     {
         return view('livewire.chatbot.assistant-widget');

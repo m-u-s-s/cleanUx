@@ -1,12 +1,12 @@
 <?php
 
-namespace App\Services\Entreprise;
+namespace App\Services\Enterprise;
 
 use App\Models\OrganizationSite;
 use App\Models\User;
 use Illuminate\Support\Arr;
 
-class EntrepriseBookingPolicyResolver
+class EnterpriseBookingPolicyResolver
 {
     public function resolve(User $client, ?OrganizationSite $site = null): array
     {

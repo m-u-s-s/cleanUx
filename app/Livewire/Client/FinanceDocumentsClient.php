@@ -5,7 +5,7 @@ namespace App\Livewire\Client;
 use App\Models\FinanceInvoice;
 use App\Models\FinanceQuote;
 use App\Models\User;
-use App\Services\Entreprise\EntrepriseRoutingService;
+use App\Services\Enterprise\EnterpriseRoutingService;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
@@ -28,9 +28,9 @@ class FinanceDocumentsClient extends Component
         return $user instanceof User ? $user : null;
     }
 
-    protected function entrepriseRouting(): EntrepriseRoutingService
+    protected function entrepriseRouting(): EnterpriseRoutingService
     {
-        return app(EntrepriseRoutingService::class);
+        return app(EnterpriseRoutingService::class);
     }
 
     protected function allowedSiteIdsForCurrentUser(): array
