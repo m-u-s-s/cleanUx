@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\PresenceController;
+use App\Http\Controllers\Messaging\AttachmentDownloadController;
 use App\Livewire\NotificationsCenter;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -66,4 +67,11 @@ Route::middleware('auth')->group(function () {
     Route::post('/presence/touch',  [PresenceController::class, 'touch'])->name('presence.touch');
     Route::post('/presence/status', [PresenceController::class, 'setStatus'])->name('presence.status');
     Route::get( '/presence/me',     [PresenceController::class, 'me'])->name('presence.me');
+
+    // Phase 4 — Download de pièce jointe via URL signée (15 min de validité).
+    // Le middleware 'signed' valide la signature URL générée par
+    // URL::temporarySignedRoute('messaging.attachments.download', ...).
+    Route::get('/attachments/{attachment}', [AttachmentDownloadController::class, 'download'])
+        ->middleware('signed')
+        ->name('messaging.attachments.download');
 });

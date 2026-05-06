@@ -6,6 +6,7 @@ use App\Events\MessageSent;
 use App\Models\Channel;
 use App\Models\Message;
 use App\Models\OrganizationAccount;
+use App\Services\Messaging\MessageService;
 use App\Services\PermissionService;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\On;
@@ -151,19 +152,26 @@ class TeamChannels extends Component
             return;
         }
 
-        $message = Message::create([
-            'channel_id' => $this->activeChannelId,
-            'user_id'    => Auth::id(),
-            'content'    => $content,
-            'type'       => Message::TYPE_TEXT,
-            'parent_id'  => $this->replyingToId,
-        ]);
+        $channel = Channel::find($this->activeChannelId);
+        if (! $channel) {
+            return;
+        }
+
+        // Phase 4 — MessageService gère TOUT en une transaction :
+        //   - création du message (avec parent_id pour threads)
+        //   - extraction des @user mentions et stockage en message_mentions
+        //   - notification aux utilisateurs mentionnés (database + email)
+        //   - mise à jour de replies_count + last_reply_at sur le parent
+        //   - broadcast Reverb (MessageSent + UserMentioned)
+        app(MessageService::class)->send(
+            channel:  $channel,
+            sender:   Auth::user(),
+            content:  $content,
+            parentId: $this->replyingToId,
+        );
 
         $this->messageInput  = '';
         $this->replyingToId  = null;
-
-        // Broadcast temps réel via Reverb
-        broadcast(new MessageSent($message))->toOthers();
 
         $this->loadMessages();
     }

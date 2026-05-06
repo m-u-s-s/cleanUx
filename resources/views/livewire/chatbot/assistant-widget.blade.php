@@ -88,6 +88,38 @@
             @endif
         </div>
 
+        {{-- ──────────────────────────────────────────────── --}}
+        {{-- Phase 5 — Bandeau de confirmation d'action LLM    --}}
+        {{-- ──────────────────────────────────────────────── --}}
+        @if ($pendingActionId ?? null)
+            <div class="border-t border-amber-200 bg-amber-50 px-3 py-2">
+                <div class="mb-1.5 flex items-center gap-1.5 text-xs font-medium text-amber-800">
+                    <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                    </svg>
+                    <span>Confirmer l'action ?</span>
+                </div>
+                <div class="flex gap-2">
+                    <button
+                        wire:click="confirmAction({{ $pendingActionId }})"
+                        wire:loading.attr="disabled"
+                        wire:target="confirmAction,cancelAction"
+                        class="flex-1 rounded-lg bg-emerald-600 px-3 py-1.5 text-xs font-semibold text-white shadow-sm transition hover:bg-emerald-700 disabled:opacity-50"
+                    >
+                        ✅ Confirmer
+                    </button>
+                    <button
+                        wire:click="cancelAction({{ $pendingActionId }})"
+                        wire:loading.attr="disabled"
+                        wire:target="confirmAction,cancelAction"
+                        class="flex-1 rounded-lg bg-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:bg-slate-300 disabled:opacity-50"
+                    >
+                        ❌ Annuler
+                    </button>
+                </div>
+            </div>
+        @endif
+
         {{-- Input --}}
         <div class="border-t border-slate-100 p-3">
             <form wire:submit.prevent="send" class="flex items-end gap-2">

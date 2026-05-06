@@ -52,4 +52,29 @@ return [
         'from' => env('TWILIO_FROM'),
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Anthropic (Phase 5 — Chatbot LLM)
+    |--------------------------------------------------------------------------
+    | Configuration pour l'API Claude utilisée par AssistantWidget.
+    | Récupère ta clé sur https://console.anthropic.com/settings/keys
+    */
+    'anthropic' => [
+        'key'        => env('ANTHROPIC_API_KEY'),
+        'model'      => env('ANTHROPIC_MODEL', 'claude-sonnet-4-20250514'),
+        'max_tokens' => (int) env('ANTHROPIC_MAX_TOKENS', 1024),
+        'timeout'    => (int) env('ANTHROPIC_TIMEOUT', 30),
+        'retries'    => (int) env('ANTHROPIC_RETRIES', 1),
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | OpenAI (optionnel — failover assistant Phase 5.1)
+    |--------------------------------------------------------------------------
+    */
+    'openai' => [
+        'key'   => env('OPENAI_API_KEY'),
+        'model' => env('OPENAI_MODEL', 'gpt-4o-mini'),
+    ],
+
 ];
