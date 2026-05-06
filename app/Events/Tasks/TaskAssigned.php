@@ -13,6 +13,12 @@ use Illuminate\Queue\SerializesModels;
 /**
  * Phase 3 — Diffuse l'attribution d'une tâche en temps réel.
  *
+ * REVIEW FIX :
+ *   - `property_exists($model, $key)` retourne FALSE sur les attributs
+ *     Eloquent (qui passent par __get magic). Donc la branche channel_id
+ *     n'était JAMAIS prise. Remplacé par `! empty($task->channel_id)`
+ *     qui fonctionne correctement avec le magic getter d'Eloquent.
+ *
  * Diffusé sur le channel privé de l'utilisateur assigné (pour notification toast)
  * ET sur le channel d'organisation pour rafraîchir le board partagé.
  */
@@ -35,12 +41,12 @@ class TaskAssigned implements ShouldBroadcast
         ];
 
         // Si la tâche est rattachée à une organisation, on rafraîchit le board partagé
-        if ($this->task->organization_account_id) {
+        if (! empty($this->task->organization_account_id)) {
             $channels[] = new PrivateChannel('presence-org.' . $this->task->organization_account_id);
         }
 
         // Si la tâche est rattachée à un canal de discussion, on rafraîchit le contexte
-        if (property_exists($this->task, 'channel_id') && $this->task->channel_id) {
+        if (! empty($this->task->channel_id)) {
             $channels[] = new PrivateChannel('channel.' . $this->task->channel_id);
         }
 

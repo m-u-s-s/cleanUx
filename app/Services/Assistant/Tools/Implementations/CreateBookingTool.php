@@ -6,17 +6,21 @@ use App\Models\Booking;
 use App\Models\ServiceCatalog;
 use App\Models\User;
 use App\Services\Assistant\Tools\Contracts\AssistantTool;
+use Illuminate\Support\Str;
 
 /**
  * Tool d'écriture : créer une nouvelle réservation.
  *
+ * REVIEW FIX :
+ *   - Génère booking_reference (colonne UNIQUE NOT NULL sans default)
+ *     → sans cette ligne, Booking::create() plantait avec
+ *       "Field 'booking_reference' doesn't have a default value"
+ *   - Utilise la vraie route (client.rendezvous.index) qui existe dans
+ *     routes/client.php au lieu de client.bookings.show qui n'existe pas
+ *
  * executesImmediately = FALSE → l'orchestrateur enregistre une AssistantAction
  * en pending_confirmation et l'utilisateur doit valider dans l'UI avant
  * que la réservation soit réellement créée.
- *
- * Le LLM appellera ce tool avec ses meilleures hypothèses ; le payload
- * sera affiché à l'utilisateur sous forme de carte récapitulative
- * "Confirmer la création de cette réservation ?".
  */
 class CreateBookingTool implements AssistantTool
 {
@@ -110,11 +114,6 @@ class CreateBookingTool implements AssistantTool
         return false;
     }
 
-    /**
-     * "Exécute" le tool = en réalité, crée la réservation.
-     * Cette méthode n'est appelée QUE après confirmation utilisateur via UI
-     * (cf. AssistantAction::markConfirmed dans le dispatcher).
-     */
     public function execute(User $user, array $input): array
     {
         // Résolution service_catalog_id : on accepte slug ou id
@@ -123,24 +122,29 @@ class CreateBookingTool implements AssistantTool
             $serviceId = ServiceCatalog::where('slug', $input['service_slug'])->value('id');
         }
 
+        // ⚙ REVIEW FIX : Génère booking_reference (UNIQUE, NOT NULL, pas de default).
+        // Format aligné avec HandlesBookingCreation::makeReference (CUX-XXXXXX).
+        $reference = $this->generateUniqueBookingReference();
+
         $booking = Booking::create([
-            'customer_user_id'  => $user->id,
-            'client_id'         => $user->id, // legacy alias
-            'service_catalog_id'=> $serviceId,
-            'scheduled_date'    => $input['scheduled_date'],
-            'scheduled_time'    => $input['scheduled_time'],
-            'place_type'        => $input['place_type'],
-            'surface_m2'        => (int) $input['surface_m2'],
-            'address'           => $input['address'],
-            'city'              => $input['city'],
-            'postal_code'       => $input['postal_code'],
-            'country'           => $input['country'] ?? 'BE',
-            'frequency'         => $input['frequency'] ?? 'unique',
-            'customer_comment'  => $input['customer_comment'] ?? null,
-            'status'            => 'pending',
-            'booking_mode'      => 'assistant',
-            'created_by'        => $user->id,
-            'currency'          => 'EUR',
+            'booking_reference'        => $reference,
+            'customer_user_id'         => $user->id,
+            'client_id'                => $user->id, // legacy alias
+            'service_catalog_id'       => $serviceId,
+            'scheduled_date'           => $input['scheduled_date'],
+            'scheduled_time'           => $input['scheduled_time'],
+            'place_type'               => $input['place_type'],
+            'surface_m2'               => (int) $input['surface_m2'],
+            'address'                  => $input['address'],
+            'city'                     => $input['city'],
+            'postal_code'              => $input['postal_code'],
+            'country'                  => $input['country'] ?? 'BE',
+            'frequency'                => $input['frequency'] ?? 'unique',
+            'customer_comment'         => $input['customer_comment'] ?? null,
+            'status'                   => 'pending',
+            'booking_mode'             => 'assistant',
+            'created_by'               => $user->id,
+            'currency'                 => 'EUR',
             'customer_organization_id' => $user->organization_account_id,
         ]);
 
@@ -148,8 +152,46 @@ class CreateBookingTool implements AssistantTool
             'ok'                => true,
             'booking_id'        => $booking->id,
             'booking_reference' => $booking->booking_reference,
-            'message'           => "Réservation créée. Référence : " . ($booking->booking_reference ?: '#' . $booking->id),
-            'view_url'          => route('client.bookings.show', $booking->id, false),
+            'message'           => "Réservation créée. Référence : {$booking->booking_reference}",
+            // ⚙ REVIEW FIX : route('client.bookings.show') n'existait pas dans
+            // routes/client.php. La vraie route pour voir ses RDV est
+            // 'client.rendezvous.index' (Livewire MesRendezVousClient).
+            'view_url'          => $this->resolveBookingViewUrl($booking),
         ];
+    }
+
+    /**
+     * Génère une référence unique au format CUX-XXXXXX (6 chars alphanum upper).
+     * Boucle jusqu'à trouver une combinaison libre (collision proba ≈ 0 en pratique).
+     */
+    protected function generateUniqueBookingReference(int $maxAttempts = 8): string
+    {
+        for ($i = 0; $i < $maxAttempts; $i++) {
+            $candidate = 'CUX-' . strtoupper(Str::random(6));
+            if (! Booking::where('booking_reference', $candidate)->exists()) {
+                return $candidate;
+            }
+        }
+        // Fallback ULID (extrêmement peu probable d'arriver ici)
+        return 'CUX-' . strtoupper(substr((string) Str::ulid(), -8));
+    }
+
+    /**
+     * Résout l'URL de vue du booking de manière défensive : si la route
+     * spécifique n'existe pas, on tombe sur la liste, et en dernier ressort
+     * sur '#' (UI-only).
+     */
+    protected function resolveBookingViewUrl(Booking $booking): string
+    {
+        try {
+            // Future-proof : si tu ajoutes la route détail un jour
+            return route('client.rendezvous.show', $booking->id, false);
+        } catch (\Throwable $e) {
+            try {
+                return route('client.rendezvous.index', [], false);
+            } catch (\Throwable $e2) {
+                return '#';
+            }
+        }
     }
 }

@@ -88,6 +88,11 @@ class User extends Authenticatable implements MustVerifyEmail
         return $this->belongsTo(OrganizationAccount::class, 'current_organization_id');
     }
 
+    public function getOrganizationAccountIdAttribute(): ?int
+    {
+        return $this->attributes['current_organization_id'] ?? null;
+    }
+
     public function organizationMemberships(): HasMany
     {
         return $this->hasMany(OrganizationMember::class);

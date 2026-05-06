@@ -11,8 +11,9 @@ use Illuminate\Queue\SerializesModels;
 
 /**
  * Phase 3 — Diffuse un changement de statut d'une tâche.
- * Permet à tous les membres affichant le board de voir la carte bouger
- * en temps réel sans rafraîchir.
+ *
+ * REVIEW FIX : property_exists() ne marche pas sur les attributs Eloquent.
+ * Remplacé par ! empty() qui passe par __get correctement.
  */
 class TaskStatusChanged implements ShouldBroadcast
 {
@@ -31,16 +32,16 @@ class TaskStatusChanged implements ShouldBroadcast
     {
         $channels = [];
 
-        if ($this->task->organization_account_id) {
+        if (! empty($this->task->organization_account_id)) {
             $channels[] = new PrivateChannel('presence-org.' . $this->task->organization_account_id);
         }
 
-        if (property_exists($this->task, 'channel_id') && $this->task->channel_id) {
+        if (! empty($this->task->channel_id)) {
             $channels[] = new PrivateChannel('channel.' . $this->task->channel_id);
         }
 
         // Notifier l'assigné s'il y en a un
-        if (property_exists($this->task, 'assigned_to_user_id') && $this->task->assigned_to_user_id) {
+        if (! empty($this->task->assigned_to_user_id)) {
             $channels[] = new PrivateChannel('user.' . $this->task->assigned_to_user_id);
         }
 

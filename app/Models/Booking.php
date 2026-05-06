@@ -396,47 +396,74 @@ class Booking extends Model
                 ->orWhere('motif', 'like', $like)
                 ->orWhere('code_postal', 'like', $like)
                 ->orWhere('postal_code', 'like', $like)
-                ->orWhereHas('client', fn (Builder $q) => $q->where('name', 'like', $like))
-                ->orWhereHas('employe', fn (Builder $q) => $q->where('name', 'like', $like));
+                ->orWhereHas('client', fn(Builder $q) => $q->where('name', 'like', $like))
+                ->orWhereHas('employe', fn(Builder $q) => $q->where('name', 'like', $like));
         });
     }
 
     // ──────────────────────────────────────────────────────
     // Helpers de statut
     // ──────────────────────────────────────────────────────
+    //
+    // BookingStatus est une CLASSE à constantes (pas un enum), avec des
+    // valeurs en français (EN_ATTENTE, CONFIRME, ANNULE, TERMINE...).
+    // Les variantes en anglais sont acceptées pour rétrocompat avec
+    // le code récent (assistant LLM, bookings v3, tests, etc.).
 
     public function isPending(): bool
     {
         return in_array($this->status, [
-            BookingStatus::PENDING->value ?? 'pending',
+            BookingStatus::EN_ATTENTE,
             'pending',
             'pending_approval',
             'pending_assignment',
+            'draft',
         ], true);
     }
 
     public function isConfirmed(): bool
     {
         return in_array($this->status, [
-            BookingStatus::CONFIRMED->value ?? 'confirmed',
+            BookingStatus::CONFIRME,
             'confirmed',
+        ], true);
+    }
+
+    public function isInProgress(): bool
+    {
+        return in_array($this->status, [
+            BookingStatus::EN_ROUTE,
+            BookingStatus::SUR_PLACE,
+            'in_progress',
+            'on_route',
+            'on_site',
         ], true);
     }
 
     public function isCancelled(): bool
     {
         return in_array($this->status, [
-            BookingStatus::CANCELLED->value ?? 'cancelled',
+            BookingStatus::ANNULE,
+            BookingStatus::REFUSE,
             'cancelled',
+            'refused',
         ], true);
     }
 
     public function isCompleted(): bool
     {
         return in_array($this->status, [
-            BookingStatus::COMPLETED->value ?? 'completed',
+            BookingStatus::TERMINE,
             'completed',
+            'done',
         ], true);
+    }
+
+    public function isFinal(): bool
+    {
+        return in_array($this->status, BookingStatus::final(), true)
+            || $this->isCompleted()
+            || $this->isCancelled();
     }
 
     // ──────────────────────────────────────────────────────

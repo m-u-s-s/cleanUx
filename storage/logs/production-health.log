@@ -1054,3 +1054,47 @@
 | backups_enabled       | false                 |
 +-----------------------+-----------------------+
 [32mProduction health check OK.[39m
++--------+----------+------------------------------------------------+------------------------+
+|[32m Statut [39m|[32m Sévérité [39m|[32m Check                                          [39m|[32m Valeur                 [39m|
++--------+----------+------------------------------------------------+------------------------+
+| OK     | ERROR    | APP key définie                                | OK                     |
+| OK     | ERROR    | APP debug désactivé en production              | true                   |
+| OK     | ERROR    | APP URL en HTTPS en production                 | http://localhost       |
+| OK     | ERROR    | Queue non synchrone en production              | sync                   |
+| OK     | ERROR    | Jobs queue présents si driver database         | present                |
+| OK     | WARNING  | Failed jobs présents si queue asynchrone       | present                |
+| OK     | WARNING  | Backlog queue sous seuil                       | 0                      |
+| OK     | WARNING  | Failed jobs sous seuil                         | 0                      |
+| OK     | WARNING  | Cache store adapté à la prod                   | file                   |
+| OK     | WARNING  | Cache table présente si driver database        | missing                |
+| OK     | WARNING  | Session driver adapté à la prod                | database               |
+| OK     | WARNING  | Sessions table présente si driver database     | present                |
+| OK     | WARNING  | Cookie de session sécurisé en production HTTPS | NULL                   |
+| OK     | WARNING  | Mailer configuré hors array/log en production  | log                    |
+| OK     | WARNING  | Storage public lié                             | linked                 |
+| OK     | WARNING  | Storage et bootstrap cache inscriptibles       | writable               |
+| OK     | WARNING  | Heartbeat monitoring activé                    | enabled                |
+| OK     | WARNING  | Heartbeat récent                               | 1                      |
+| OK     | WARNING  | Email de monitoring configuré                  | mm.darouch@hotmail.com |
+| OK     | WARNING  | Configuration backups présente                 | disabled               |
+| OK     | WARNING  | Rétention backups positive                     | 14                     |
++--------+----------+------------------------------------------------+------------------------+
+
++-----------------------+-----------------------+
+|[32m Metric                [39m|[32m Value                 [39m|
++-----------------------+-----------------------+
+| app_env               | local                 |
+| app_url               | http://localhost      |
+| queue                 | sync                  |
+| queue_backlog         | 0                     |
+| failed_jobs_count     | 0                     |
+| cache                 | file                  |
+| session               | database              |
+| mail                  | log                   |
+| filesystem            | local                 |
+| heartbeat_cache_key   | cleanux:ops:heartbeat |
+| heartbeat_age_seconds | 1                     |
+| heartbeat_source      | cache                 |
+| backups_enabled       | false                 |
++-----------------------+-----------------------+
+[32mProduction health check OK.[39m
