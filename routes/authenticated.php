@@ -6,6 +6,7 @@ use App\Livewire\NotificationsCenter;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Assistant\AssistantStreamController;
 
 Route::get('/dashboard', function (Request $request) {
     $user = $request->user();
@@ -26,9 +27,14 @@ Route::get('/dashboard', function (Request $request) {
         return redirect()->route('employe.dashboard');
     }
 
-    
+
     abort(403);
 })->name('dashboard');
+
+Route::middleware(['auth', 'assistant.ratelimit'])->group(function () {
+    Route::get('/assistant/stream', [AssistantStreamController::class, 'stream'])
+        ->name('assistant.stream');
+});
 
 Route::get('/notifications', NotificationsCenter::class)
     ->name('notifications.index');
@@ -66,7 +72,7 @@ Route::put('/current-team', function (Request $request) {
 Route::middleware('auth')->group(function () {
     Route::post('/presence/touch',  [PresenceController::class, 'touch'])->name('presence.touch');
     Route::post('/presence/status', [PresenceController::class, 'setStatus'])->name('presence.status');
-    Route::get( '/presence/me',     [PresenceController::class, 'me'])->name('presence.me');
+    Route::get('/presence/me',     [PresenceController::class, 'me'])->name('presence.me');
 
     // Phase 4 — Download de pièce jointe via URL signée (15 min de validité).
     // Le middleware 'signed' valide la signature URL générée par

@@ -76,7 +76,7 @@ class AssistantWidget extends Component
             ->limit(30)
             ->get()
             ->reverse()
-            ->map(fn (AssistantMessage $m) => [
+            ->map(fn(AssistantMessage $m) => [
                 'sender'  => $m->sender_type,
                 'content' => $m->content !== '' ? $m->content : '(action en cours…)',
                 'time'    => $m->created_at->format('H:i'),
@@ -97,6 +97,21 @@ class AssistantWidget extends Component
     {
         $message = trim($this->input);
         if (blank($message) || $this->isLoading) {
+            return;
+        }
+
+        // Rate limit côté Livewire
+        $apiLog = \App\Models\AssistantApiLog::query()
+            ->forUser(Auth::id())
+            ->where('created_at', '>=', now()->subHour())
+            ->count();
+
+        if ($apiLog >= (int) config('services.assistant.rate_per_hour', 30)) {
+            $this->messages[] = [
+                'sender'  => 'assistant',
+                'content' => "⏱ Tu as atteint la limite de messages par heure. Réessaye dans un instant.",
+                'time'    => now()->format('H:i'),
+            ];
             return;
         }
 
@@ -126,7 +141,6 @@ class AssistantWidget extends Component
             ];
 
             $this->pendingActionId = $result['pending_action_id'] ?? null;
-
         } catch (\Throwable $e) {
             report($e);
             $this->messages[] = [

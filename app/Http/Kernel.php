@@ -22,6 +22,7 @@ class Kernel extends HttpKernel
         \App\Http\Middleware\TrimStrings::class,
         \Illuminate\Foundation\Http\Middleware\ConvertEmptyStringsToNull::class,
         
+        
     ];
 
     /**
@@ -69,5 +70,6 @@ class Kernel extends HttpKernel
         'role' => \App\Http\Middleware\CheckRole::class,
         'active.account' => \App\Http\Middleware\EnsureActiveAccount::class,
         'field.team.lead' => \App\Http\Middleware\EnsureFieldTeamLead::class,
+        'assistant.ratelimit' => \App\Http\Middleware\AssistantRateLimit::class,
     ];
 }

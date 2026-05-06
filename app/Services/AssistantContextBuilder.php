@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Enums\AssistantContextRole;
 use App\Models\User;
 use Illuminate\Support\Collection;
+use App\Services\Assistant\Stats\AssistantStats;
 
 /**
  * Construit le contexte dynamique pour le chatbot CleanUx.
@@ -149,8 +150,9 @@ Ne jamais exécuter d'actions destructives sans confirmation explicite.",
 
     private function buildContextData(AssistantContextRole $role, User $user): array
     {
-        return match ($role) {
+        $stats = app(AssistantStats::class)->forUser($user);
 
+        return match ($role) {
             AssistantContextRole::CLIENT_PERSONAL => [
                 'next_booking'   => $this->nextBookingLabel($user),
                 'active_mission' => $this->activeMissionLabel($user),
@@ -161,33 +163,33 @@ Ne jamais exécuter d'actions destructives sans confirmation explicite.",
                 'org_name'          => $user->currentOrganization?->name,
                 'member_role'       => $user->membershipIn()?->role?->label(),
                 'sites_count'       => $user->currentOrganization?->sites()->count() ?? 0,
-                'active_missions'   => 0, // à requêter selon votre logique
-                'pending_approvals' => 0,
-                'unpaid_invoices'   => 0,
+                'active_missions'   => $stats['active_missions'],
+                'pending_approvals' => $stats['pending_approvals'],
+                'unpaid_invoices'   => $stats['unpaid_invoices'],
             ],
 
             AssistantContextRole::PROVIDER_INDEPENDENT => [
                 'today_missions' => $this->todayMissionsLabel($user),
                 'next_mission'   => $this->nextMissionLabel($user),
                 'stripe_status'  => $user->providerProfile?->stripe_connect_status ?? 'not_connected',
-                'avg_rating'     => null, // à calculer
+                'avg_rating'     => $stats['avg_rating'],
             ],
 
             AssistantContextRole::PROVIDER_COMPANY => [
-                'org_name'        => $user->currentOrganization?->name,
-                'member_role'     => $user->membershipIn()?->role?->label(),
+                'org_name'          => $user->currentOrganization?->name,
+                'member_role'       => $user->membershipIn()?->role?->label(),
                 'my_missions_today' => $this->todayMissionsLabel($user),
-                'team_name'       => null,
-                'team_lead'       => null,
-                'unread_messages' => 0,
-                'pending_tasks'   => 0,
+                'team_name'         => $stats['team_name'],
+                'team_lead'         => null,
+                'unread_messages'   => 0,
+                'pending_tasks'     => $stats['pending_tasks'],
             ],
 
             AssistantContextRole::ADMIN => [
                 'total_users'     => \App\Models\User::count(),
-                'active_missions' => 0,
-                'monthly_revenue' => 0,
-                'alerts'          => 0,
+                'active_missions' => $stats['admin_total_active_missions'],
+                'monthly_revenue' => $stats['admin_monthly_revenue'],
+                'alerts'          => $stats['admin_alerts'],
             ],
         };
     }

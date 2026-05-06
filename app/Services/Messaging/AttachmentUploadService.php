@@ -5,6 +5,7 @@ namespace App\Services\Messaging;
 use App\Models\Message;
 use App\Models\MessageAttachment;
 use App\Models\User;
+use App\Jobs\Messaging\ScanAttachmentForMalware;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -24,7 +25,11 @@ class AttachmentUploadService
 {
     public const ALLOWED_MIMES = [
         // Images
-        'image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/heic',
+        'image/jpeg',
+        'image/png',
+        'image/gif',
+        'image/webp',
+        'image/heic',
         // Documents
         'application/pdf',
         'application/msword',
@@ -34,7 +39,8 @@ class AttachmentUploadService
         'application/vnd.ms-powerpoint',
         'application/vnd.openxmlformats-officedocument.presentationml.presentation',
         // Texte
-        'text/plain', 'text/csv',
+        'text/plain',
+        'text/csv',
         // Archives (limité)
         'application/zip',
     ];
@@ -72,7 +78,16 @@ class AttachmentUploadService
             $this->processImageMetadata($file, $disk, $folder, $filename, $attrs);
         }
 
-        return MessageAttachment::create($attrs);
+        $attachment = MessageAttachment::create($attrs);
+
+        // Phase 4.1 — Dispatch scan AV asynchrone si activé
+        if (config('messaging.av.required', false) || config('messaging.av.engine')) {
+            ScanAttachmentForMalware::dispatch($attachment)
+                ->onQueue('antivirus')
+                ->afterCommit();
+        }
+
+        return $attachment;
     }
 
     private function validate(UploadedFile $file): void

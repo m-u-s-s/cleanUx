@@ -77,4 +77,9 @@ return [
         'model' => env('OPENAI_MODEL', 'gpt-4o-mini'),
     ],
 
+    'assistant' => [
+        'rate_per_hour'           => (int) env('ASSISTANT_RATE_PER_HOUR', 30),
+        'rate_per_day'            => (int) env('ASSISTANT_RATE_PER_DAY', 200),
+        'cost_limit_usd_per_day'  => (float) env('ASSISTANT_COST_LIMIT_USD_PER_DAY', 1.0),
+    ],
 ];

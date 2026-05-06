@@ -157,3 +157,36 @@
         {{-- <span class="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white">3</span> --}}
     </button>
 </div>
+<script>
+    function startStreaming(conversationId, userMessage) {
+        const url = new URL('/assistant/stream', window.location.origin);
+        url.searchParams.set('conversation_id', conversationId);
+        url.searchParams.set('message', userMessage);
+    
+        const es = new EventSource(url);
+        let currentText = '';
+    
+        es.addEventListener('text_delta', (e) => {
+            const data = JSON.parse(e.data);
+            currentText += data.text;
+            // mettre à jour l'UI avec currentText
+            Livewire.dispatch('streamUpdate', { text: currentText });
+        });
+    
+        es.addEventListener('tool_use_start', (e) => {
+            const data = JSON.parse(e.data);
+            Livewire.dispatch('streamToolUse', { name: data.tool_name });
+        });
+    
+        es.addEventListener('stop', () => {
+            es.close();
+            Livewire.dispatch('streamComplete');
+        });
+    
+        es.addEventListener('error', (e) => {
+            console.error('Stream error', e);
+            es.close();
+        });
+    }
+
+</script>

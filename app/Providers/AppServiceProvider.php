@@ -2,11 +2,14 @@
 
 namespace App\Providers;
 
+use App\Models\Channel;
 use Illuminate\Support\ServiceProvider;
 use App\Models\RendezVous;
 use App\Observers\RendezVousObserver;
+use App\Policies\ChannelPolicy;
 use App\Services\Assistant\Llm\AnthropicProvider;
 use App\Services\Assistant\Llm\LlmProvider;
+use Illuminate\Support\Facades\Gate;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -29,5 +32,7 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         RendezVous::observe(RendezVousObserver::class);
+        // Phase 4.1 — Channel moderation policy
+        Gate::policy(Channel::class, ChannelPolicy::class);
     }
 }

@@ -5,6 +5,7 @@ namespace App\Services\Assistant\Llm;
 use App\Models\AssistantConversation;
 use App\Models\AssistantMessage;
 use App\Models\User;
+use App\Services\Assistant\Logging\LogRecorder;
 use App\Services\Assistant\Tools\AssistantToolDispatcher;
 use App\Services\Assistant\Tools\AssistantToolRegistry;
 use App\Services\AssistantContextBuilder;
@@ -29,6 +30,7 @@ class LlmClient
         protected AssistantContextBuilder $contextBuilder,
         protected AssistantToolRegistry $toolRegistry,
         protected AssistantToolDispatcher $toolDispatcher,
+        protected LogRecorder $logRecorder,
     ) {}
 
     /**
@@ -61,6 +63,34 @@ class LlmClient
         $finalText       = '';
 
         for ($iteration = 0; $iteration < self::MAX_TOOL_ITERATIONS; $iteration++) {
+            $startTime = microtime(true);
+
+            $response = $this->provider->chat($context['system'], $messages, $tools);
+
+            $latencyMs = (int) ((microtime(true) - $startTime) * 1000);
+            $model     = config('services.anthropic.model');
+
+            if ($response->isError()) {
+                $this->logRecorder->recordError(
+                    $user,
+                    $conversation,
+                    $this->provider->name(),
+                    $model,
+                    $response->error ?? 'unknown',
+                    $latencyMs,
+                );
+                $finalText = "Désolé, le service assistant rencontre un problème : " . ($response->error ?? 'erreur inconnue');
+                break;
+            }
+
+            $this->logRecorder->recordSuccess(
+                $user,
+                $conversation,
+                $this->provider->name(),
+                $model,
+                $response,
+                $latencyMs,
+            );
             $response = $this->provider->chat($context['system'], $messages, $tools);
 
             if ($response->isError()) {
@@ -160,8 +190,8 @@ class LlmClient
             ->values();
 
         return $rows
-            ->map(fn (AssistantMessage $m) => $m->toApiPayload())
-            ->filter(fn ($p) => ! empty($p))
+            ->map(fn(AssistantMessage $m) => $m->toApiPayload())
+            ->filter(fn($p) => ! empty($p))
             ->values()
             ->all();
     }

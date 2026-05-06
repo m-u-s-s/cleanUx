@@ -7,38 +7,40 @@ use App\Models\User;
 use App\Services\Assistant\Tools\Contracts\AssistantTool;
 use App\Services\Assistant\Tools\Implementations\CancelBookingTool;
 use App\Services\Assistant\Tools\Implementations\CreateBookingTool;
+use App\Services\Assistant\Tools\Implementations\GetInvoiceTool;
 use App\Services\Assistant\Tools\Implementations\ListMyBookingsTool;
 use App\Services\Assistant\Tools\Implementations\ListMySitesTool;
 use App\Services\Assistant\Tools\Implementations\ListServicesCatalogTool;
+use App\Services\Assistant\Tools\Implementations\RegisterSiteTool;
+use App\Services\Assistant\Tools\Implementations\ReportIssueTool;
 
 /**
- * Registre central des tools disponibles pour l'assistant.
+ * Phase 5.1 — Registre central avec les nouveaux tools.
  *
- * Pour ajouter un tool :
- *   1. Implémenter App\Services\Assistant\Tools\Contracts\AssistantTool
- *   2. L'ajouter dans la propriété $allTools ci-dessous
- *   3. (Optionnel) Restreindre par rôle dans toolsForRole()
+ * Ajout par rapport à Phase 5 :
+ *   - GetInvoiceTool      (read, immediate)
+ *   - RegisterSiteTool    (write, requires confirm)
+ *   - ReportIssueTool     (write, requires confirm)
  */
 class AssistantToolRegistry
 {
     /**
-     * Liste exhaustive des classes de tools disponibles.
-     * Order = priorité d'évaluation.
-     *
      * @var array<int, class-string<AssistantTool>>
      */
     protected array $allTools = [
+        // Phase 5
         ListMyBookingsTool::class,
         ListMySitesTool::class,
         ListServicesCatalogTool::class,
         CreateBookingTool::class,
         CancelBookingTool::class,
-        // Phase 5.1 : ReportIssueTool, GetInvoiceTool, RegisterSiteTool, etc.
+        // Phase 5.1
+        GetInvoiceTool::class,
+        RegisterSiteTool::class,
+        ReportIssueTool::class,
     ];
 
     /**
-     * Retourne les tools accessibles à un utilisateur selon son rôle.
-     *
      * @return array<int, AssistantTool>
      */
     public function toolsForUser(User $user): array
@@ -60,10 +62,6 @@ class AssistantToolRegistry
         return $instances;
     }
 
-    /**
-     * Retrouve un tool par son nom (sans filtre de rôle, à utiliser pour
-     * dispatch après que le LLM a déjà choisi).
-     */
     public function find(string $name): ?AssistantTool
     {
         foreach ($this->allTools as $cls) {
@@ -76,8 +74,6 @@ class AssistantToolRegistry
     }
 
     /**
-     * Format Anthropic tool definitions pour l'API Messages.
-     *
      * @return array<int, array{name:string, description:string, input_schema:array}>
      */
     public function definitionsForUser(User $user): array
@@ -94,7 +90,6 @@ class AssistantToolRegistry
 
     /**
      * Whitelist de tool names par rôle.
-     * Aligne sur AssistantContextBuilder::availableActions() pour cohérence.
      */
     private function allowedToolNamesForRole(AssistantContextRole $role): array
     {
@@ -104,6 +99,8 @@ class AssistantToolRegistry
                 'list_services_catalog',
                 'create_booking',
                 'cancel_booking',
+                'get_invoice',
+                'report_issue',
             ],
             AssistantContextRole::CLIENT_COMPANY => [
                 'list_my_bookings',
@@ -111,20 +108,28 @@ class AssistantToolRegistry
                 'list_services_catalog',
                 'create_booking',
                 'cancel_booking',
+                'get_invoice',
+                'register_site',
+                'report_issue',
             ],
             AssistantContextRole::PROVIDER_INDEPENDENT => [
                 'list_my_bookings',
+                'report_issue',
             ],
             AssistantContextRole::PROVIDER_COMPANY => [
-                // Le terrain n'a pas accès à la création de booking via assistant
+                'list_my_bookings',
+                'report_issue',
             ],
             AssistantContextRole::ADMIN => [
-                // Admin a tout
+                // Admin a accès à tout
                 'list_my_bookings',
                 'list_my_sites',
                 'list_services_catalog',
                 'create_booking',
                 'cancel_booking',
+                'get_invoice',
+                'register_site',
+                'report_issue',
             ],
         };
     }
