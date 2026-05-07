@@ -2,7 +2,6 @@
     x-data="{ open: @entangle('isOpen') }"
     class="fixed bottom-6 right-6 z-50 flex flex-col items-end gap-3"
 >
-    {{-- ── Fenêtre de chat ── --}}
     <div
         x-show="open"
         x-transition:enter="transition ease-out duration-200"
@@ -21,7 +20,16 @@
                 <div class="flex h-8 w-8 items-center justify-center rounded-full bg-white/20 text-lg">🤖</div>
                 <div>
                     <p class="text-sm font-bold text-white">Assistant CleanUx</p>
-                    <p class="text-xs text-blue-100">Toujours disponible</p>
+                    <p class="text-xs text-blue-100">
+                        @if ($useStreaming)
+                            <span class="inline-flex items-center gap-1">
+                                <span class="h-1.5 w-1.5 rounded-full bg-emerald-300 animate-pulse"></span>
+                                Streaming actif
+                            </span>
+                        @else
+                            Toujours disponible
+                        @endif
+                    </p>
                 </div>
             </div>
             <div class="flex items-center gap-2">
@@ -75,23 +83,41 @@
                 @endif
             @endforeach
 
-            {{-- Indicateur de chargement --}}
+            {{-- ──────────────────────────────────────── --}}
+            {{-- Container streaming en temps réel        --}}
+            {{-- Le JS y append du texte au fil de l'eau   --}}
+            {{-- ──────────────────────────────────────── --}}
             @if ($isLoading)
-                <div class="flex justify-start gap-2">
+                <div class="flex justify-start gap-2" id="streaming-bubble">
                     <div class="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-blue-100 text-sm">🤖</div>
-                    <div class="flex items-center gap-1 rounded-2xl rounded-bl-sm bg-slate-100 px-4 py-3">
-                        <div class="h-2 w-2 animate-bounce rounded-full bg-slate-400" style="animation-delay: 0ms"></div>
-                        <div class="h-2 w-2 animate-bounce rounded-full bg-slate-400" style="animation-delay: 150ms"></div>
-                        <div class="h-2 w-2 animate-bounce rounded-full bg-slate-400" style="animation-delay: 300ms"></div>
+                    <div class="max-w-[80%]">
+                        <div class="rounded-2xl rounded-bl-sm bg-slate-100 px-3 py-2 text-sm text-slate-800">
+                            <div
+                                data-streaming-target
+                                class="whitespace-pre-wrap min-h-[1.25rem]"
+                                x-data="{
+                                    init() {
+                                        // Affiche un curseur clignotant tant que le stream n'a pas commencé.
+                                    }
+                                }"
+                            ></div>
+
+                            {{-- Curseur clignotant pendant le streaming --}}
+                            <span
+                                class="inline-block w-0.5 h-4 bg-blue-500 align-text-bottom animate-pulse ml-0.5"
+                                x-show="$el.previousElementSibling && $el.previousElementSibling.dataset.streaming === 'true' || true"
+                            ></span>
+                        </div>
+                        <p class="mt-1 text-[10px] text-slate-400">en cours…</p>
                     </div>
                 </div>
             @endif
         </div>
 
-        {{-- ──────────────────────────────────────────────── --}}
-        {{-- Phase 5 — Bandeau de confirmation d'action LLM    --}}
-        {{-- ──────────────────────────────────────────────── --}}
-        @if ($pendingActionId ?? null)
+        {{-- ──────────────────────────────────────────── --}}
+        {{-- Phase 5 — Bandeau confirmation action LLM   --}}
+        {{-- ──────────────────────────────────────────── --}}
+        @if ($pendingActionId)
             <div class="border-t border-amber-200 bg-amber-50 px-3 py-2">
                 <div class="mb-1.5 flex items-center gap-1.5 text-xs font-medium text-amber-800">
                     <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -131,10 +157,11 @@
                     class="flex-1 resize-none rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 outline-none transition focus:border-blue-400 focus:bg-white focus:ring-2 focus:ring-blue-100"
                     style="max-height: 96px"
                     x-on:input="$el.style.height = 'auto'; $el.style.height = Math.min($el.scrollHeight, 96) + 'px'"
+                    {{ ($pendingActionId || $isLoading) ? 'disabled' : '' }}
                 ></textarea>
                 <button
                     type="submit"
-                    :disabled="{{ $isLoading ? 'true' : 'false' }}"
+                    :disabled="{{ ($isLoading || $pendingActionId) ? 'true' : 'false' }}"
                     class="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-xl bg-blue-600 text-white transition hover:bg-blue-700 disabled:opacity-50"
                 >
                     <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -145,7 +172,7 @@
         </div>
     </div>
 
-    {{-- ── Bouton flottant ── --}}
+    {{-- Bouton flottant --}}
     <button
         wire:click="toggle"
         class="relative flex h-14 w-14 items-center justify-center rounded-full bg-blue-600 text-2xl shadow-lg shadow-blue-200 transition hover:scale-105 hover:bg-blue-700 active:scale-95"
@@ -153,40 +180,8 @@
         <span x-show="!open">🤖</span>
         <span x-show="open" x-cloak>✕</span>
 
-        {{-- Badge notifications (à connecter avec unread count) --}}
-        {{-- <span class="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white">3</span> --}}
+        @if ($pendingActionId)
+            <span class="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-amber-500 text-[10px] font-bold text-white animate-pulse">!</span>
+        @endif
     </button>
 </div>
-<script>
-    function startStreaming(conversationId, userMessage) {
-        const url = new URL('/assistant/stream', window.location.origin);
-        url.searchParams.set('conversation_id', conversationId);
-        url.searchParams.set('message', userMessage);
-    
-        const es = new EventSource(url);
-        let currentText = '';
-    
-        es.addEventListener('text_delta', (e) => {
-            const data = JSON.parse(e.data);
-            currentText += data.text;
-            // mettre à jour l'UI avec currentText
-            Livewire.dispatch('streamUpdate', { text: currentText });
-        });
-    
-        es.addEventListener('tool_use_start', (e) => {
-            const data = JSON.parse(e.data);
-            Livewire.dispatch('streamToolUse', { name: data.tool_name });
-        });
-    
-        es.addEventListener('stop', () => {
-            es.close();
-            Livewire.dispatch('streamComplete');
-        });
-    
-        es.addEventListener('error', (e) => {
-            console.error('Stream error', e);
-            es.close();
-        });
-    }
-
-</script>

@@ -8,4 +8,9 @@
     @include('livewire.client.dashboard.main-content')
 
     @include('livewire.client.dashboard.security-sessions')
+
+    <a href="{{ route('client.analytics.dashboard') }}"
+        class="@if (request()->routeIs('client.analytics.*')) text-blue-600 font-semibold @endif">
+        📊 Analytics
+    </a>
 </div>

@@ -4,48 +4,42 @@ namespace App\Livewire\Chatbot;
 
 use App\Models\AssistantConversation;
 use App\Models\AssistantMessage;
-use App\Services\Assistant\Llm\LlmClient;
 use App\Services\Assistant\Tools\AssistantToolDispatcher;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\URL;
+use Livewire\Attributes\On;
 use Livewire\Component;
 
 /**
- * Phase 5 — AssistantWidget refactoré.
+ * Phase 5.2 — AssistantWidget enrichi avec streaming UI.
  *
- * Avant : appelait directement Http::post à l'API Anthropic, pas de tools.
- * Après : délègue à LlmClient (multi-provider), supporte le tool calling
- *         agentic, gère le workflow de confirmation pour les actions
- *         destructives (create_booking, cancel_booking…).
+ * Différences avec Phase 5 :
+ *   - send() ne lance plus directement LlmClient (qui bloquait Livewire jusqu'à
+ *     la fin de la réponse). À la place, il :
+ *       1. Persiste le message utilisateur
+ *       2. Génère une URL signée vers /assistant/stream
+ *       3. Dispatche un browser event 'assistant:stream-start'
+ *     Le JS prend le relais avec EventSource pour afficher en temps réel.
+ *   - Nouveau handler streamCompleted() appelé quand le JS finit de streamer
+ *     pour rafraîchir la liste des messages persistés.
  *
- * Différences clés :
- *   - Plus de logique Http directe : tout passe par LlmClient
- *   - Si une action nécessite confirmation, $pendingActionId est set et
- *     le UI affiche un bouton "Confirmer" qui appelle confirmAction().
+ * Le mode "non-streaming" reste disponible (fallback) via $useStreaming = false.
  */
 class AssistantWidget extends Component
 {
-    // ──────────────────────────────────────────────────────
-    // State
-    // ──────────────────────────────────────────────────────
-    public bool   $isOpen    = false;
-    public bool   $isLoading = false;
-    public string $input     = '';
+    public bool   $isOpen          = false;
+    public bool   $isLoading       = false;
+    public string $input           = '';
+    public bool   $useStreaming    = true; // si false, fallback Phase 5 sync
+    public ?int   $conversationId  = null;
+    public ?int   $pendingActionId = null;
 
-    /** @var array<int, array{sender:string, content:string, time:string, action_id?:int}> */
+    /** @var array<int, array{sender:string, content:string, time:string, message_id?:int}> */
     public array $messages = [];
 
-    public ?int $conversationId = null;
-
-    /** Si non-null, le UI affichera un bouton "Confirmer cette action". */
-    public ?int $pendingActionId = null;
-
-    // ──────────────────────────────────────────────────────
-    // Boot
-    // ──────────────────────────────────────────────────────
     public function mount(): void
     {
         $user = Auth::user();
-
         $conversation = AssistantConversation::query()
             ->where('user_id', $user->id)
             ->where('status', AssistantConversation::STATUS_OPEN)
@@ -64,35 +58,19 @@ class AssistantWidget extends Component
         }
     }
 
-    private function loadHistory(AssistantConversation $conversation): void
-    {
-        $this->messages = AssistantMessage::query()
-            ->where('assistant_conversation_id', $conversation->id)
-            ->whereIn('sender_type', [
-                AssistantMessage::SENDER_USER,
-                AssistantMessage::SENDER_ASSISTANT,
-            ])
-            ->orderByDesc('id')
-            ->limit(30)
-            ->get()
-            ->reverse()
-            ->map(fn(AssistantMessage $m) => [
-                'sender'  => $m->sender_type,
-                'content' => $m->content !== '' ? $m->content : '(action en cours…)',
-                'time'    => $m->created_at->format('H:i'),
-            ])
-            ->values()
-            ->toArray();
-    }
-
-    // ──────────────────────────────────────────────────────
-    // Actions Livewire
-    // ──────────────────────────────────────────────────────
     public function toggle(): void
     {
         $this->isOpen = ! $this->isOpen;
     }
 
+    /**
+     * Phase 5.2 — Envoi avec streaming.
+     *
+     * Au lieu d'appeler LlmClient (bloquant), on :
+     *   1. Persiste le message user
+     *   2. Génère une URL signée
+     *   3. Dispatche au front pour qu'il ouvre un EventSource
+     */
     public function send(): void
     {
         $message = trim($this->input);
@@ -100,24 +78,19 @@ class AssistantWidget extends Component
             return;
         }
 
-        // Rate limit côté Livewire
-        $apiLog = \App\Models\AssistantApiLog::query()
-            ->forUser(Auth::id())
-            ->where('created_at', '>=', now()->subHour())
-            ->count();
+        $user = Auth::user();
 
-        if ($apiLog >= (int) config('services.assistant.rate_per_hour', 30)) {
+        // Rate limit côté serveur (paranoïa : le middleware ne tape pas Livewire actions)
+        if ($this->isRateLimited($user)) {
             $this->messages[] = [
                 'sender'  => 'assistant',
-                'content' => "⏱ Tu as atteint la limite de messages par heure. Réessaye dans un instant.",
+                'content' => "⏱ Tu as atteint la limite de messages. Réessaye dans quelques minutes.",
                 'time'    => now()->format('H:i'),
             ];
             return;
         }
 
-        $user = Auth::user();
-
-        // Rendu instantané du message user
+        // Render immédiat du message user
         $this->messages[] = [
             'sender'  => 'user',
             'content' => $message,
@@ -126,44 +99,91 @@ class AssistantWidget extends Component
         $this->input     = '';
         $this->isLoading = true;
 
-        // Récupère ou crée la conversation
         $conversation = $this->getOrCreateConversation($user);
+        $userMessage  = AssistantMessage::create([
+            'assistant_conversation_id' => $conversation->id,
+            'sender_type'               => AssistantMessage::SENDER_USER,
+            'content'                   => $message,
+        ]);
 
-        // Délégation à LlmClient (qui gère la boucle agentic)
-        try {
-            $result = app(LlmClient::class)->sendUserMessage($user, $conversation, $message);
+        if ($this->useStreaming) {
+            $signedUrl = URL::temporarySignedRoute(
+                'assistant.stream',
+                now()->addMinutes(5),
+                [
+                    'conversation_id'   => $conversation->id,
+                    'user_message_id'   => $userMessage->id,
+                ]
+            );
 
-            $this->messages[] = [
-                'sender'    => 'assistant',
-                'content'   => $result['text'],
-                'time'      => now()->format('H:i'),
-                'action_id' => $result['pending_action_id'] ?? null,
-            ];
+            // Dispatch un event navigateur — le JS dans la blade ouvrira l'EventSource.
+            $this->dispatch('assistant:stream-start', [
+                'url'             => $signedUrl,
+                'conversation_id' => $conversation->id,
+                'user_message_id' => $userMessage->id,
+            ]);
+        } else {
+            // Fallback sync (Phase 5 — comportement original)
+            $this->sendSync($user, $conversation, $message);
+        }
+    }
 
-            $this->pendingActionId = $result['pending_action_id'] ?? null;
-        } catch (\Throwable $e) {
-            report($e);
-            $this->messages[] = [
-                'sender'  => 'assistant',
-                'content' => "Une erreur inattendue est survenue. Reformule ta question s'il te plaît.",
-                'time'    => now()->format('H:i'),
-            ];
+    /**
+     * Appelé par le JS quand le stream est terminé.
+     * On reload la liste des messages depuis la DB pour récupérer le message
+     * assistant final persisté + d'éventuels tool_uses qui ont créé des
+     * AssistantAction en pending_confirmation.
+     */
+    #[On('assistant:stream-completed')]
+    public function streamCompleted(?int $messageId = null, bool $hasTools = false): void
+    {
+        $this->isLoading = false;
+
+        $user = Auth::user();
+        $conversation = $this->conversationId
+            ? AssistantConversation::find($this->conversationId)
+            : null;
+
+        if (! $conversation) {
+            return;
         }
 
+        $this->loadHistory($conversation);
+
+        // Si un tool_use a créé une action en attente, recharger l'ID pour afficher le bouton confirm
+        if ($hasTools) {
+            $latestAction = \App\Models\AssistantAction::query()
+                ->where('assistant_conversation_id', $conversation->id)
+                ->where('user_id', $user->id)
+                ->where('status', \App\Models\AssistantAction::STATUS_PENDING_CONFIRMATION)
+                ->latest('id')
+                ->first();
+
+            if ($latestAction) {
+                $this->pendingActionId = $latestAction->id;
+            }
+        }
+    }
+
+    #[On('assistant:stream-error')]
+    public function streamError(?string $message = null): void
+    {
         $this->isLoading = false;
+        $this->messages[] = [
+            'sender'  => 'assistant',
+            'content' => "❌ Erreur de streaming : " . ($message ?: "connexion interrompue"),
+            'time'    => now()->format('H:i'),
+        ];
     }
 
     public function confirmAction(int $actionId): void
     {
-        $user = Auth::user();
-
+        $user   = Auth::user();
         $result = app(AssistantToolDispatcher::class)->confirmAndExecute($user, $actionId);
 
         if (! empty($result['ok'])) {
             $resPayload = $result['result'] ?? [];
-            $msg = $resPayload['message']
-                ?? "Action exécutée avec succès.";
-
+            $msg = $resPayload['message'] ?? "Action exécutée avec succès.";
             $this->messages[] = [
                 'sender'  => 'assistant',
                 'content' => "✅ " . $msg,
@@ -190,7 +210,6 @@ class AssistantWidget extends Component
             'content' => "Action annulée.",
             'time'    => now()->format('H:i'),
         ];
-
         $this->pendingActionId = null;
     }
 
@@ -215,6 +234,39 @@ class AssistantWidget extends Component
     // ──────────────────────────────────────────────────────
     // Helpers
     // ──────────────────────────────────────────────────────
+
+    private function isRateLimited($user): bool
+    {
+        $perHour = (int) config('services.assistant.rate_per_hour', 30);
+        $count = \App\Models\AssistantApiLog::query()
+            ->forUser($user->id)
+            ->where('created_at', '>=', now()->subHour())
+            ->count();
+        return $count >= $perHour;
+    }
+
+    private function loadHistory(AssistantConversation $conversation): void
+    {
+        $this->messages = AssistantMessage::query()
+            ->where('assistant_conversation_id', $conversation->id)
+            ->whereIn('sender_type', [
+                AssistantMessage::SENDER_USER,
+                AssistantMessage::SENDER_ASSISTANT,
+            ])
+            ->orderByDesc('id')
+            ->limit(30)
+            ->get()
+            ->reverse()
+            ->map(fn (AssistantMessage $m) => [
+                'sender'     => $m->sender_type,
+                'content'    => $m->content !== '' ? $m->content : '(action en cours…)',
+                'time'       => $m->created_at->format('H:i'),
+                'message_id' => $m->id,
+            ])
+            ->values()
+            ->toArray();
+    }
+
     private function getOrCreateConversation($user): AssistantConversation
     {
         if ($this->conversationId) {
@@ -235,17 +287,43 @@ class AssistantWidget extends Component
         return $conversation;
     }
 
+    /**
+     * Fallback sync (mode Phase 5 — bloquant) si streaming désactivé.
+     */
+    private function sendSync($user, AssistantConversation $conversation, string $message): void
+    {
+        try {
+            $result = app(\App\Services\Assistant\Llm\LlmClient::class)
+                ->sendUserMessage($user, $conversation, $message);
+
+            $this->messages[] = [
+                'sender'  => 'assistant',
+                'content' => $result['text'],
+                'time'    => now()->format('H:i'),
+            ];
+            $this->pendingActionId = $result['pending_action_id'] ?? null;
+        } catch (\Throwable $e) {
+            report($e);
+            $this->messages[] = [
+                'sender'  => 'assistant',
+                'content' => "Une erreur est survenue. Reformule ta question s'il te plaît.",
+                'time'    => now()->format('H:i'),
+            ];
+        }
+        $this->isLoading = false;
+    }
+
     private function welcomeMessage($user): string
     {
         $name = $user->name;
         $role = $user->assistantContextRole();
 
         return match ($role->value) {
-            'client_personal' => "Bonjour {$name} 👋 Je peux t'aider à réserver un nettoyage, suivre une mission, ou comprendre une facture. Que veux-tu faire ?",
-            'client_company'  => "Bonjour {$name} 👋 Je peux préparer une demande pour un de tes locaux, te lister les missions actives ou expliquer une facture. Comment puis-je t'aider ?",
-            'provider_independent' => "Bonjour {$name} 👋 Je peux t'aider avec tes missions, tes paiements Stripe ou un incident sur site. Quelle est ta question ?",
-            'provider_company' => "Bonjour {$name} 👋 Je peux te montrer tes missions du jour, t'expliquer les canaux d'équipe ou signaler un incident. Que veux-tu ?",
-            'admin'           => "Bonjour {$name} — assistant admin CleanUx prêt. Pose ta question (stats, anomalies, configuration…).",
+            'client_personal' => "Bonjour {$name} 👋 Je peux t'aider à réserver, suivre une mission, ou expliquer une facture. Que veux-tu faire ?",
+            'client_company'  => "Bonjour {$name} 👋 Demande une intervention pour un de tes locaux, vois les missions actives, ou explique-moi une facture.",
+            'provider_independent' => "Bonjour {$name} 👋 Tes missions, paiements Stripe, incidents — je suis là pour ça.",
+            'provider_company' => "Bonjour {$name} 👋 Missions du jour, canaux d'équipe, signalement d'incident — comment je peux aider ?",
+            'admin'           => "Bonjour {$name} — assistant admin CleanUx prêt.",
             default           => "Bonjour {$name} ! Comment puis-je vous aider ?",
         };
     }

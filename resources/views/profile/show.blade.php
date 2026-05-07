@@ -10,6 +10,11 @@
         </div>
     </x-slot>
 
+    <div class="space-y-4">
+        <x-push-toggle />
+        {{-- ... autres préférences ... --}}
+    </div>
+
     <div class="py-8">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
             <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
@@ -42,43 +47,42 @@
                             </div>
 
                             @if (Laravel\Jetstream\Jetstream::hasAccountDeletionFeatures())
-                                <div class="rounded-xl bg-red-50 border border-red-200 p-3">
-                                    <p class="font-medium text-red-700">Zone sensible</p>
-                                    <p class="text-red-500 mt-1">Suppression définitive du compte</p>
-                                </div>
+                            <div class="rounded-xl bg-red-50 border border-red-200 p-3">
+                                <p class="font-medium text-red-700">Zone sensible</p>
+                                <p class="text-red-500 mt-1">Suppression définitive du compte</p>
+                            </div>
                             @endif
                         </div>
 
                         @if(auth()->user()->role === 'client')
-                            <div class="mt-6 pt-6 border-t">
-                                <a
-                                    href="{{ route('client.profile') }}"
-                                    class="text-sm text-blue-600 underline"
-                                >
-                                    ← Retour au profil client
-                                </a>
-                            </div>
+                        <div class="mt-6 pt-6 border-t">
+                            <a
+                                href="{{ route('client.profile') }}"
+                                class="text-sm text-blue-600 underline">
+                                ← Retour au profil client
+                            </a>
+                        </div>
                         @endif
                     </div>
                 </div>
 
                 <div class="xl:col-span-2 space-y-6">
                     @if (Laravel\Fortify\Features::canUpdateProfileInformation())
-                        <div class="bg-white rounded-2xl shadow border p-6">
-                            @livewire('profile.update-profile-information-form')
-                        </div>
+                    <div class="bg-white rounded-2xl shadow border p-6">
+                        @livewire('profile.update-profile-information-form')
+                    </div>
                     @endif
 
                     @if (Laravel\Fortify\Features::enabled(Laravel\Fortify\Features::updatePasswords()))
-                        <div class="bg-white rounded-2xl shadow border p-6">
-                            @livewire('profile.update-password-form')
-                        </div>
+                    <div class="bg-white rounded-2xl shadow border p-6">
+                        @livewire('profile.update-password-form')
+                    </div>
                     @endif
 
                     @if (Laravel\Fortify\Features::canManageTwoFactorAuthentication())
-                        <div class="bg-white rounded-2xl shadow border p-6">
-                            @livewire('profile.two-factor-authentication-form')
-                        </div>
+                    <div class="bg-white rounded-2xl shadow border p-6">
+                        @livewire('profile.two-factor-authentication-form')
+                    </div>
                     @endif
 
                     <div class="bg-white rounded-2xl shadow border p-6">
@@ -86,9 +90,9 @@
                     </div>
 
                     @if (Laravel\Jetstream\Jetstream::hasAccountDeletionFeatures())
-                        <div class="bg-white rounded-2xl shadow border border-red-100 p-6">
-                            @livewire('profile.delete-user-form')
-                        </div>
+                    <div class="bg-white rounded-2xl shadow border border-red-100 p-6">
+                        @livewire('profile.delete-user-form')
+                    </div>
                     @endif
                 </div>
             </div>

@@ -3,6 +3,7 @@
 namespace App\Notifications;
 
 use App\Models\Mission;
+use App\Notifications\Channels\WebPushChannel;
 use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
@@ -14,12 +15,22 @@ class EmployeArriveNotification extends Notification
     public function __construct(
         public Mission $mission,
         public string $startCode
-    ) {
+    ) {}
+
+    public function via($notifiable): array
+    {
+        return ['database', 'mail', WebPushChannel::class];
     }
 
-    public function via(object $notifiable): array
+    public function toWebPush($notifiable): array
     {
-        return ['database', 'mail'];
+        return [
+            'title' => 'Votre employé est arrivé',
+            'body'  => "Mission {$this->mission->rendezVous?->booking_reference}",
+            'url'   => '/dashboard/client/rendezvous',
+            'tag'   => 'mission-arrived-' . $this->mission->id,
+            'requireInteraction' => true,
+        ];
     }
 
     public function toMail(object $notifiable): MailMessage
@@ -27,8 +38,8 @@ class EmployeArriveNotification extends Notification
         return (new MailMessage)
             ->subject('Votre employé est arrivé')
             ->greeting('Bonjour,')
-            ->line('Votre employé est arrivé pour la mission '.$this->mission->rendezVous?->booking_reference.'.')
-            ->line('Code de début de mission : '.$this->startCode)
+            ->line('Votre employé est arrivé pour la mission ' . $this->mission->rendezVous?->booking_reference . '.')
+            ->line('Code de début de mission : ' . $this->startCode)
             ->line('Donnez ce code à l’employé pour démarrer la mission.')
             ->action('Voir le suivi', url('/client/dashboard'));
     }

@@ -24,6 +24,7 @@ class AppServiceProvider extends ServiceProvider
         // Singleton car LlmClient (orchestrateur agentic) doit recevoir la même
         // instance HTTP-clientée durant un cycle de requête.
         $this->app->singleton(LlmProvider::class, AnthropicProvider::class);
+        $this->app->singleton(\App\Services\Assistant\Llm\AnthropicStreamingProvider::class);
     }
 
     /**
@@ -31,8 +32,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        \Carbon\Carbon::setLocale('fr');
         RendezVous::observe(RendezVousObserver::class);
-        // Phase 4.1 — Channel moderation policy
         Gate::policy(Channel::class, ChannelPolicy::class);
     }
 }

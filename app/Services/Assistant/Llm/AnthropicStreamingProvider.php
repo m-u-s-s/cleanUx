@@ -3,51 +3,43 @@
 namespace App\Services\Assistant\Llm;
 
 use App\Services\Assistant\Streaming\StreamEvent;
-use Generator;
-use Illuminate\Support\Facades\Log;
 
 /**
- * Phase 5.1 — Streaming pour le provider Anthropic.
+ * Phase 5.2 — Streaming temps réel avec callback pattern.
  *
- * Différence avec AnthropicProvider : au lieu d'attendre la réponse complète,
- * on parse les événements SSE (Server-Sent Events) au fur et à mesure et on
- * yield des StreamEvent à chaque token/bloc reçu.
+ * Différence clé avec Phase 5.1 :
+ *   AVANT : accumulait tous les events curl dans un array, puis yield après
+ *           curl_exec (= pseudo-streaming, l'utilisateur attend toute la réponse).
+ *   APRÈS : invoque le callback à CHAQUE event SSE reçu, depuis l'intérieur
+ *           du WRITEFUNCTION callback de curl. Le contrôleur peut donc écrire
+ *           sur le flux de réponse HTTP au fur et à mesure → vrai streaming.
  *
- * Avantages UX :
- *   - L'utilisateur voit la réponse se construire token par token (Discord/ChatGPT-like)
- *   - Latence perçue divisée par 2-3 sur des longues réponses
- *   - Possibilité d'annuler en cours de stream
- *
- * Doc Anthropic streaming :
- *   https://docs.anthropic.com/en/api/messages-streaming
- *
- * Format des events SSE :
- *   event: message_start
- *   data: {"type":"message_start", ...}
- *
- *   event: content_block_delta
- *   data: {"type":"content_block_delta", "index":0, "delta":{"type":"text_delta", "text":"Hello"}}
- *
- *   event: message_stop
- *   data: {"type":"message_stop"}
+ * Usage :
+ *   $provider->chatStream($system, $messages, $tools, function (StreamEvent $event) {
+ *       echo "event: {$event->type}\n";
+ *       echo "data: " . json_encode($event->payload) . "\n\n";
+ *       flush();
+ *   });
  */
 class AnthropicStreamingProvider
 {
     /**
-     * Stream une conversation et yield les événements en flux.
+     * Stream une conversation, invoquant $onEvent pour chaque StreamEvent
+     * dès qu'il arrive du serveur Anthropic.
      *
-     * @return Generator<StreamEvent>
+     * @param callable(StreamEvent): void $onEvent
      */
     public function chatStream(
         string $systemPrompt,
         array $messages,
-        array $tools = [],
+        array $tools,
+        callable $onEvent,
         array $options = []
-    ): Generator {
+    ): void {
         $apiKey = (string) config('services.anthropic.key');
 
         if (empty($apiKey)) {
-            yield StreamEvent::error("ANTHROPIC_API_KEY n'est pas configurée.");
+            $onEvent(StreamEvent::error("ANTHROPIC_API_KEY n'est pas configurée."));
             return;
         }
 
@@ -63,11 +55,8 @@ class AnthropicStreamingProvider
             $payload['tools'] = $tools;
         }
 
-        // Pas de Http::stream pratique en Laravel pour SSE → on utilise cURL directement.
-        $ch = curl_init('https://api.anthropic.com/v1/messages');
-
+        $ch     = curl_init('https://api.anthropic.com/v1/messages');
         $buffer = '';
-        $events = [];
 
         curl_setopt_array($ch, [
             CURLOPT_POST           => true,
@@ -78,49 +67,54 @@ class AnthropicStreamingProvider
                 'Accept: text/event-stream',
             ],
             CURLOPT_POSTFIELDS     => json_encode($payload),
-            CURLOPT_TIMEOUT        => $options['timeout'] ?? 60,
+            CURLOPT_TIMEOUT        => $options['timeout'] ?? 120,
             CURLOPT_RETURNTRANSFER => false,
-            // Callback : on accumule les chunks SSE et on parse les events complets
-            CURLOPT_WRITEFUNCTION  => function ($ch, $chunk) use (&$buffer, &$events) {
+
+            // Le streaming réel : à chaque chunk reçu de Anthropic, on parse
+            // les frames complètes et on appelle $onEvent immédiatement.
+            CURLOPT_WRITEFUNCTION  => function ($ch, $chunk) use (&$buffer, $onEvent) {
                 $buffer .= $chunk;
 
-                // Un event SSE est délimité par "\n\n"
                 while (($pos = strpos($buffer, "\n\n")) !== false) {
-                    $rawEvent = substr($buffer, 0, $pos);
+                    $rawFrame = substr($buffer, 0, $pos);
                     $buffer   = substr($buffer, $pos + 2);
-                    $events[] = $this->parseSseFrame($rawEvent);
+
+                    $frame = $this->parseSseFrame($rawFrame);
+                    $event = $this->mapToStreamEvent($frame);
+
+                    if ($event !== null) {
+                        try {
+                            $onEvent($event);
+                        } catch (\Throwable $e) {
+                            // Si le callback explose (client déconnecté par ex.),
+                            // on coupe le stream gracieusement.
+                            return -1; // abort curl
+                        }
+                    }
+                }
+
+                // Si le client a fermé la connexion, on arrête.
+                if (connection_aborted()) {
+                    return -1;
                 }
 
                 return strlen($chunk);
             },
         ]);
 
-        // Lancer la requête (synchrone mais notre WRITEFUNCTION accumule les events)
         $success = curl_exec($ch);
         $error   = curl_error($ch);
         $code    = curl_getinfo($ch, CURLINFO_HTTP_CODE);
         curl_close($ch);
 
-        if (! $success || $code >= 400) {
-            yield StreamEvent::error("Erreur API Anthropic (HTTP {$code}): {$error}");
-            return;
-        }
-
-        // On a tous les events, on les yield un par un en simulant un vrai stream.
-        // (Pour un vrai stream incrémental avec Laravel, il faudrait un setup
-        // plus complexe avec ratchet ou un BroadcastChannel — voir AssistantStreamController.)
-        foreach ($events as $eventData) {
-            $streamEvent = $this->mapToStreamEvent($eventData);
-            if ($streamEvent) {
-                yield $streamEvent;
-            }
+        if (! $success && ! connection_aborted()) {
+            $onEvent(StreamEvent::error("Erreur réseau Anthropic: {$error} (HTTP {$code})"));
         }
     }
 
     /**
      * Parse une frame SSE :
      *   "event: content_block_delta\ndata: {...json...}"
-     *   → ['event' => 'content_block_delta', 'data' => [...]]
      */
     private function parseSseFrame(string $raw): array
     {
@@ -135,8 +129,9 @@ class AnthropicStreamingProvider
             }
         }
 
-        $dataJson = implode("\n", $dataLines);
-        $data     = json_decode($dataJson, true) ?? [];
+        $data = $dataLines
+            ? (json_decode(implode("\n", $dataLines), true) ?? [])
+            : [];
 
         return ['event' => $event, 'data' => $data];
     }
@@ -156,7 +151,6 @@ class AnthropicStreamingProvider
             ),
 
             'content_block_start' => $this->mapContentBlockStart($data),
-
             'content_block_delta' => $this->mapContentBlockDelta($data),
 
             'content_block_stop' => StreamEvent::contentBlockStop(
@@ -170,7 +164,7 @@ class AnthropicStreamingProvider
 
             'message_stop' => StreamEvent::stop(),
 
-            'ping' => null, // ignore les keepalive
+            'ping' => null,
 
             'error' => StreamEvent::error($data['error']['message'] ?? 'Stream error'),
 

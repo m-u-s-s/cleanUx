@@ -1,6 +1,14 @@
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="dark">
+
 <head>
+    {{-- Phase 8 — PWA --}}
+    <link rel="manifest" href="/manifest.webmanifest">
+    <meta name="theme-color" content="#2563eb">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="CleanUx">
+    <link rel="apple-touch-icon" href="/icons/icon-192.png">
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
@@ -8,6 +16,7 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @livewireStyles
 </head>
+
 <body class="bg-slate-900 text-slate-100 antialiased">
 
     {{-- ── Topbar ── --}}
@@ -18,20 +27,20 @@
             </a>
             <div class="hidden sm:flex items-center gap-1">
                 @foreach ([
-                    ['route' => 'provider-company.dashboard', 'label' => 'Dashboard', 'icon' => '🏗️'],
-                    ['route' => 'provider-company.channels',  'label' => 'Canaux',    'icon' => '💬'],
-                    ['route' => 'provider-company.tasks',     'label' => 'Tâches',    'icon' => '✅'],
-                    ['route' => 'provider-company.dispatch',  'label' => 'Dispatch',  'icon' => '🗺️'],
-                    ['route' => 'provider-company.team',      'label' => 'Équipe',    'icon' => '👥'],
+                ['route' => 'provider-company.dashboard', 'label' => 'Dashboard', 'icon' => '🏗️'],
+                ['route' => 'provider-company.channels', 'label' => 'Canaux', 'icon' => '💬'],
+                ['route' => 'provider-company.tasks', 'label' => 'Tâches', 'icon' => '✅'],
+                ['route' => 'provider-company.dispatch', 'label' => 'Dispatch', 'icon' => '🗺️'],
+                ['route' => 'provider-company.team', 'label' => 'Équipe', 'icon' => '👥'],
                 ] as $link)
-                    <a href="{{ route($link['route']) }}"
-                       class="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm transition
+                <a href="{{ route($link['route']) }}"
+                    class="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm transition
                            {{ request()->routeIs($link['route'])
                                ? 'bg-slate-700 text-white font-medium'
                                : 'text-slate-400 hover:bg-slate-800 hover:text-slate-200' }}">
-                        <span class="text-sm">{{ $link['icon'] }}</span>
-                        <span>{{ $link['label'] }}</span>
-                    </a>
+                    <span class="text-sm">{{ $link['icon'] }}</span>
+                    <span>{{ $link['label'] }}</span>
+                </a>
                 @endforeach
             </div>
         </div>
@@ -41,9 +50,9 @@
                 <livewire:chatbot.assistant-widget />
             </div>
             <a href="{{ route('profile.show') }}"
-               class="flex items-center gap-2 rounded-lg px-2 py-1.5 hover:bg-slate-800 transition">
+                class="flex items-center gap-2 rounded-lg px-2 py-1.5 hover:bg-slate-800 transition">
                 <img src="{{ Auth::user()->profile_photo_url }}"
-                     class="h-7 w-7 rounded-full object-cover border border-slate-600">
+                    class="h-7 w-7 rounded-full object-cover border border-slate-600">
                 <span class="hidden sm:block text-sm text-slate-300">{{ str(Auth::user()->name)->before(' ') }}</span>
             </a>
         </div>
@@ -56,4 +65,5 @@
 
     @livewireScripts
 </body>
+
 </html>

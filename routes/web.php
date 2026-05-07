@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Controllers\LocaleController;
+use App\Http\Controllers\Push\PushSubscriptionController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -25,4 +27,15 @@ Route::middleware(['auth', 'verified', 'active.account'])->group(function () {
 
     require __DIR__ . '/company-dashboards.php';
     require __DIR__ . '/missing-route-fixes-advanced.php';
+
+    Route::post('/locale', [LocaleController::class, 'update'])->name('locale.update');
 });
+
+Route::middleware('auth')->prefix('push')->group(function () {
+    Route::post('/subscribe',   [PushSubscriptionController::class, 'subscribe']);
+    Route::post('/unsubscribe', [PushSubscriptionController::class, 'unsubscribe']);
+    Route::post('/test',        [PushSubscriptionController::class, 'test']);
+});
+
+// Public (pas besoin d'auth pour récupérer la clé publique)
+Route::get('/push/public-key', [PushSubscriptionController::class, 'publicKey']);

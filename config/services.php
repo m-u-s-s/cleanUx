@@ -82,4 +82,10 @@ return [
         'rate_per_day'            => (int) env('ASSISTANT_RATE_PER_DAY', 200),
         'cost_limit_usd_per_day'  => (float) env('ASSISTANT_COST_LIMIT_USD_PER_DAY', 1.0),
     ],
+
+    'webpush' => [
+        'public_key'  => env('VAPID_PUBLIC_KEY'),
+        'private_key' => env('VAPID_PRIVATE_KEY'),
+        'subject'     => env('VAPID_SUBJECT', 'mailto:contact@cleanux.local'),
+    ],
 ];

@@ -20,6 +20,7 @@ class Kernel extends ConsoleKernel
         $schedule->command('finance:sync-documents --reminders')->dailyAt('09:00')->withoutOverlapping();
         $schedule->command('subscriptions:generate')->daily();
         $schedule->command('app:send-smart-rdv-notifications')->everyFifteenMinutes();
+        $schedule->command('currencies:refresh')->dailyAt('06:00');
         
 
         $schedule->command('app:ops-heartbeat')

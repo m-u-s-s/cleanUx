@@ -1,6 +1,10 @@
 import './bootstrap';
 import './echo-listeners';  
 import './cleanux-mission-tracking';
+import './assistant-streaming';
+import './fullcalendar';
+import './pwa';
+import './push-notifications';
 import ApexCharts from 'apexcharts';
 window.ApexCharts = ApexCharts;
 

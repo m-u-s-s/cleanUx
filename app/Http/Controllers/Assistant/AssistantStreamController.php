@@ -8,27 +8,23 @@ use App\Models\AssistantMessage;
 use App\Services\Assistant\Llm\AnthropicStreamingProvider;
 use App\Services\Assistant\Logging\LogRecorder;
 use App\Services\Assistant\Streaming\StreamEvent;
-use App\Services\Assistant\Tools\AssistantToolDispatcher;
 use App\Services\Assistant\Tools\AssistantToolRegistry;
 use App\Services\AssistantContextBuilder;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 /**
- * Phase 5.1 — Endpoint SSE de streaming pour l'assistant.
+ * Phase 5.2 — Endpoint SSE de streaming, refactoré pour vrai temps réel.
  *
- * Le front (AssistantWidget) lance un `EventSource('/assistant/stream?...')` et
- * reçoit progressivement les chunks de texte au fur et à mesure que le LLM répond.
+ * Différence clé avec 5.1 :
+ *   AVANT : tous les events étaient accumulés puis émis en bloc à la fin.
+ *   APRÈS : chaque event Anthropic est immédiatement émis vers le client
+ *           via le callback du AnthropicStreamingProvider.
  *
- * Limites :
- *   - L'endpoint est à long-running (peut durer 30-60s).
- *   - PHP-FPM peut couper avant la fin si max_execution_time trop bas.
- *   - Pour Reverb/WebSocket, faire un wrapper async dédié (Phase 6).
- *
- * Usage côté JS :
- *   const es = new EventSource('/assistant/stream?conversation_id=42&message=...');
- *   es.addEventListener('text_delta', (e) => append(JSON.parse(e.data).text));
- *   es.addEventListener('stop', () => es.close());
+ * Authentification :
+ *   EventSource ne supporte pas les headers custom (CSRF). On utilise donc
+ *   une URL signée (URL::temporarySignedRoute) générée par AssistantWidget
+ *   pour authentifier l'appel.
  */
 class AssistantStreamController extends Controller
 {
@@ -37,78 +33,93 @@ class AssistantStreamController extends Controller
         AnthropicStreamingProvider $streamer,
         AssistantContextBuilder $contextBuilder,
         AssistantToolRegistry $registry,
-        AssistantToolDispatcher $dispatcher,
         LogRecorder $logRecorder,
     ): StreamedResponse {
-        $user           = $request->user();
+        $user = $request->user();
         abort_if(! $user, 401);
 
         $conversationId = (int) $request->query('conversation_id');
-        $userMessage    = trim((string) $request->query('message'));
+        $userMessageId  = (int) $request->query('user_message_id');
 
-        abort_if(! $userMessage || ! $conversationId, 400, 'Missing message or conversation_id');
+        abort_if(! $conversationId || ! $userMessageId, 400, 'Missing conversation_id or user_message_id');
 
         $conversation = AssistantConversation::query()
             ->where('id', $conversationId)
             ->where('user_id', $user->id)
             ->first();
 
-        abort_if(! $conversation, 404);
+        abort_if(! $conversation, 404, 'Conversation not found');
 
-        // Persister le message utilisateur
-        AssistantMessage::create([
-            'assistant_conversation_id' => $conversation->id,
-            'sender_type'               => AssistantMessage::SENDER_USER,
-            'content'                   => $userMessage,
-        ]);
+        // Le message utilisateur a été persisté côté Livewire AVANT de générer
+        // l'URL signée — on le valide ici.
+        $userMessage = AssistantMessage::query()
+            ->where('id', $userMessageId)
+            ->where('assistant_conversation_id', $conversation->id)
+            ->where('sender_type', AssistantMessage::SENDER_USER)
+            ->first();
+
+        abort_if(! $userMessage, 404, 'User message not found');
 
         return new StreamedResponse(function () use (
-            $user,
-            $conversation,
-            $userMessage,
-            $streamer,
-            $contextBuilder,
-            $registry,
-            $dispatcher,
-            $logRecorder,
+            $user, $conversation, $streamer, $contextBuilder, $registry, $logRecorder
         ) {
-            $context = $contextBuilder->build($user);
-            $tools   = $registry->definitionsForUser($user);
+            // Désactive le buffering PHP & nginx pour vraie diffusion live
+            @ini_set('output_buffering', 'off');
+            @ini_set('zlib.output_compression', 'off');
+            while (ob_get_level()) {
+                @ob_end_flush();
+            }
+
+            $context  = $contextBuilder->build($user);
+            $tools    = $registry->definitionsForUser($user);
             $messages = $this->buildMessageHistory($conversation);
 
-            $startTime = microtime(true);
-            $accText   = '';
-            $toolUses  = [];
+            $startTime    = microtime(true);
+            $accText      = '';
+            $toolUses     = [];
+            $outputTokens = 0;
+            $stopReason   = null;
+            $modelUsed    = null;
 
             try {
-                foreach ($streamer->chatStream($context['system'], $messages, $tools) as $event) {
-                    // Émet vers le client
-                    $this->emit($event);
+                $streamer->chatStream(
+                    $context['system'],
+                    $messages,
+                    $tools,
+                    function (StreamEvent $event) use (
+                        &$accText, &$toolUses, &$outputTokens, &$stopReason, &$modelUsed
+                    ) {
+                        // 1. Émission immédiate au client
+                        $this->emit($event);
 
-                    // Accumule pour persistence finale
-                    if ($event->type === StreamEvent::TYPE_TEXT_DELTA) {
-                        $accText .= $event->payload['text'] ?? '';
-                    } elseif ($event->type === StreamEvent::TYPE_TOOL_USE_START) {
-                        $toolUses[$event->payload['index']] = [
-                            'id'    => $event->payload['tool_use_id'],
-                            'name'  => $event->payload['tool_name'],
-                            'input' => '',
-                        ];
-                    } elseif ($event->type === StreamEvent::TYPE_TOOL_INPUT_DELTA) {
-                        $idx = $event->payload['index'];
-                        if (isset($toolUses[$idx])) {
-                            $toolUses[$idx]['input'] .= $event->payload['json_chunk'] ?? '';
+                        // 2. Accumulation pour persistence finale
+                        switch ($event->type) {
+                            case StreamEvent::TYPE_START:
+                                $modelUsed = $event->payload['model'] ?? null;
+                                break;
+                            case StreamEvent::TYPE_TEXT_DELTA:
+                                $accText .= $event->payload['text'] ?? '';
+                                break;
+                            case StreamEvent::TYPE_TOOL_USE_START:
+                                $toolUses[$event->payload['index']] = [
+                                    'id'    => $event->payload['tool_use_id'],
+                                    'name'  => $event->payload['tool_name'],
+                                    'input' => '',
+                                ];
+                                break;
+                            case StreamEvent::TYPE_TOOL_INPUT_DELTA:
+                                $idx = $event->payload['index'];
+                                if (isset($toolUses[$idx])) {
+                                    $toolUses[$idx]['input'] .= $event->payload['json_chunk'] ?? '';
+                                }
+                                break;
+                            case StreamEvent::TYPE_MESSAGE_DELTA:
+                                $stopReason   = $event->payload['stop_reason']   ?? $stopReason;
+                                $outputTokens = $event->payload['output_tokens'] ?? $outputTokens;
+                                break;
                         }
-                    } elseif ($event->type === StreamEvent::TYPE_STOP) {
-                        break;
-                    } elseif ($event->type === StreamEvent::TYPE_ERROR) {
-                        break;
                     }
-
-                    if (connection_aborted()) {
-                        break;
-                    }
-                }
+                );
 
                 // Persiste le message assistant final
                 $finalToolUses = array_values(array_map(function ($t) {
@@ -116,28 +127,49 @@ class AssistantStreamController extends Controller
                     return $t;
                 }, $toolUses));
 
-                AssistantMessage::create([
+                $assistantMessage = AssistantMessage::create([
                     'assistant_conversation_id' => $conversation->id,
                     'sender_type'               => AssistantMessage::SENDER_ASSISTANT,
                     'content'                   => $accText,
                     'metadata'                  => $finalToolUses
-                        ? ['tool_uses' => $finalToolUses]
-                        : null,
+                        ? ['tool_uses' => $finalToolUses, 'streamed' => true]
+                        : ['streamed' => true],
                 ]);
 
-                // Logue (latence en ms)
+                // Émet un event de fin avec l'ID du message persisté
+                $this->emitRaw('persisted', [
+                    'message_id'  => $assistantMessage->id,
+                    'has_tools'   => count($finalToolUses) > 0,
+                ]);
+
+                // Logue l'appel
                 $latencyMs = (int) ((microtime(true) - $startTime) * 1000);
-                // Note: pour le streaming on ne récupère pas usage tokens dans la réponse
-                // streamée (Anthropic les met dans message_delta — voir AnthropicStreamingProvider).
-                // Pour un tracking précis, accumuler dans la boucle.
+
+                // Pour le streaming on construit une LlmResponse pseudo pour réutiliser le LogRecorder
+                $pseudoResponse = new \App\Services\Assistant\Llm\LlmResponse(
+                    text: $accText,
+                    stopReason: $stopReason ?? 'end_turn',
+                    toolUses: $finalToolUses,
+                    usage: ['input_tokens' => 0, 'output_tokens' => $outputTokens],
+                );
+
+                $logRecorder->recordSuccess(
+                    $user,
+                    $conversation,
+                    'anthropic',
+                    $modelUsed ?? config('services.anthropic.model'),
+                    $pseudoResponse,
+                    $latencyMs,
+                );
 
             } catch (\Throwable $e) {
-                $this->emit(StreamEvent::error($e->getMessage()));
+                report($e);
+                $this->emit(StreamEvent::error("Erreur de streaming : " . $e->getMessage()));
                 $logRecorder->recordError(
                     $user,
                     $conversation,
                     'anthropic',
-                    config('services.anthropic.model'),
+                    $modelUsed ?? config('services.anthropic.model'),
                     $e->getMessage(),
                     (int) ((microtime(true) - $startTime) * 1000),
                 );
@@ -145,25 +177,28 @@ class AssistantStreamController extends Controller
         }, 200, [
             'Content-Type'      => 'text/event-stream',
             'Cache-Control'     => 'no-cache, no-transform',
-            'X-Accel-Buffering' => 'no', // désactive le buffering nginx
+            'X-Accel-Buffering' => 'no',     // désactive le buffering nginx
             'Connection'        => 'keep-alive',
         ]);
     }
 
     /**
-     * Émet un StreamEvent au format SSE :
-     *   event: text_delta
-     *   data: {"index": 0, "text": "Hello"}
-     *
-     *   (\n\n termine le frame)
+     * Émet un StreamEvent au format SSE et flush immédiatement.
      */
     private function emit(StreamEvent $event): void
     {
-        echo "event: {$event->type}\n";
-        echo "data: " . json_encode($event->payload, JSON_UNESCAPED_UNICODE) . "\n\n";
+        $this->emitRaw($event->type, $event->payload);
+    }
 
-        if (function_exists('ob_flush')) @ob_flush();
-        flush();
+    private function emitRaw(string $eventName, array $payload): void
+    {
+        echo "event: {$eventName}\n";
+        echo 'data: ' . json_encode($payload, JSON_UNESCAPED_UNICODE) . "\n\n";
+
+        if (function_exists('ob_flush')) {
+            @ob_flush();
+        }
+        @flush();
     }
 
     private function buildMessageHistory(AssistantConversation $conversation): array

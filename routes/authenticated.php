@@ -31,7 +31,7 @@ Route::get('/dashboard', function (Request $request) {
     abort(403);
 })->name('dashboard');
 
-Route::middleware(['auth', 'assistant.ratelimit'])->group(function () {
+Route::middleware(['auth', 'signed'])->group(function () {
     Route::get('/assistant/stream', [AssistantStreamController::class, 'stream'])
         ->name('assistant.stream');
 });

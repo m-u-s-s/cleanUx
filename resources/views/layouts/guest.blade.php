@@ -1,6 +1,14 @@
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+
 <head>
+    {{-- Phase 8 — PWA --}}
+    <link rel="manifest" href="/manifest.webmanifest">
+    <meta name="theme-color" content="#2563eb">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="CleanUx">
+    <link rel="apple-touch-icon" href="/icons/icon-192.png">
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
@@ -41,20 +49,20 @@
 
                 <div class="flex items-center gap-2">
                     @auth
-                        <a href="{{ route('dashboard') }}"
-                           class="rounded-xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-800">
-                            Dashboard
-                        </a>
+                    <a href="{{ route('dashboard') }}"
+                        class="rounded-xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-800">
+                        Dashboard
+                    </a>
                     @else
-                        <a href="{{ route('login') }}"
-                           class="hidden rounded-xl px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-100 sm:inline-flex">
-                            Connexion
-                        </a>
+                    <a href="{{ route('login') }}"
+                        class="hidden rounded-xl px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-100 sm:inline-flex">
+                        Connexion
+                    </a>
 
-                        <a href="{{ route('booking.create') }}"
-                           class="rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-700">
-                            Réserver
-                        </a>
+                    <a href="{{ route('booking.create') }}"
+                        class="rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-700">
+                        Réserver
+                    </a>
                     @endauth
                 </div>
             </div>
@@ -66,4 +74,5 @@
     @livewireScripts
     @stack('scripts')
 </body>
+
 </html>
