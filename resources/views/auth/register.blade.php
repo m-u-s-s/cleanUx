@@ -9,7 +9,7 @@
                 CleanUx Platform
             </span>
             <h1 class="mt-8 text-5xl font-black leading-tight">
-                La plateforme professionnelle du nettoyage en Belgique.
+                Prestataire indépendant
             </h1>
             <p class="mt-5 text-lg leading-8 text-slate-300">
                 Réservations, missions terrain, paiements automatiques, communication d'équipe. Tout en un.

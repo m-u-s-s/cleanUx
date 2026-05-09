@@ -6,25 +6,25 @@
                 🔄 Refresh
             </button>
 
-            <button href="{{ route('admin.planning') }}"
+            <a href="{{ route('admin.planning') }}"
                 class="rounded-2xl bg-blue-600 px-4 py-3 text-sm font-black text-white shadow-sm hover:bg-blue-700">
                 🗓️ Planning
-            </button>
+            </a>
 
-            <button href="{{ route('admin.missions') }}"
+            <a href="{{ route('admin.missions') }}"
                 class="rounded-2xl bg-slate-900 px-4 py-3 text-sm font-black text-white shadow-sm hover:bg-slate-700">
                 📋 Missions
-            </button>
+            </a>
 
-            <button href="{{ route('admin.feedbacks') }}"
+            <a href="{{ route('admin.feedbacks') }}"
                 class="rounded-2xl bg-emerald-600 px-4 py-3 text-sm font-black text-white shadow-sm hover:bg-emerald-700">
                 💬 Feedbacks
-            </button>
+            </a>
 
-            <button href="{{ route('admin.outils') }}"
+            <a href="{{ route('admin.outils') }}"
                 class="rounded-2xl bg-amber-500 px-4 py-3 text-sm font-black text-slate-900 shadow-sm hover:bg-amber-400">
                 🛠️ Outils
-            </button>
+            </a>
         </div>
     </div>
 </div>

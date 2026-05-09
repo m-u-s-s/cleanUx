@@ -132,15 +132,9 @@ Route::middleware(['auth', 'verified', 'active.account'])->group(function () use
                 ], 'Audit logs'))->name('audit.logs');
             }
 
-            if (! Route::has('admin.services')) {
-                Route::get('/services', $livewireOrFallback([
-                    \App\Livewire\Admin\ServicesAdmin::class,
-                    \App\Livewire\Admin\ServiceCatalogManager::class,
-                    \App\Livewire\Admin\ServicesManager::class,
-                ], 'Services admin'))
-                    ->middleware('can:manage-services')
-                    ->name('services');
-            }
+            Route::get('/services', \App\Livewire\Admin\CatalogueServices::class)
+                ->middleware('can:manage-services')
+                ->name('services');
 
             if (! Route::has('admin.premium.clients')) {
                 Route::get('/premium/clients', $livewireOrFallback([
