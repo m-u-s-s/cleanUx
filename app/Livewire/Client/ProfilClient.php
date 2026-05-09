@@ -5,7 +5,7 @@ namespace App\Livewire\Client;
 use App\Models\ActivityLog;
 use App\Models\OrganizationSite;
 use App\Models\PostalCode;
-use App\Models\RendezVous;
+use App\Models\Booking;
 use App\Models\ServiceCatalog;
 use App\Models\ServiceZone;
 use App\Support\ActivityLogger;
@@ -75,7 +75,7 @@ class ProfilClient extends Component
 
     public function getStatsProperty()
     {
-        $rdvs = RendezVous::where('client_id', Auth::id())->get();
+        $rdvs = Booking::where('client_id', Auth::id())->get();
 
         return [
             'total' => $rdvs->count(),
@@ -87,7 +87,7 @@ class ProfilClient extends Component
 
     public function getAdressesRecentesProperty()
     {
-        return RendezVous::query()
+        return Booking::query()
             ->where('client_id', Auth::id())
             ->whereNotNull('adresse')
             ->where('adresse', '!=', '')
@@ -101,7 +101,7 @@ class ProfilClient extends Component
 
     public function getDernierePreferenceProperty()
     {
-        return RendezVous::with(['serviceCatalog', 'serviceZone', 'postalCode'])
+        return Booking::with(['serviceCatalog', 'serviceZone', 'postalCode'])
             ->where('client_id', Auth::id())
             ->latest('date')
             ->latest('heure')

@@ -8,7 +8,7 @@ use App\Models\CountryOperationalSetting;
 use App\Models\CountryServiceCatalogRule;
 use App\Models\OrganizationSite;
 use App\Models\PostalCode;
-use App\Models\RendezVous;
+use App\Models\Booking;
 use App\Models\ServiceCatalog;
 use App\Models\ServiceZone;
 use App\Models\User;
@@ -28,7 +28,7 @@ class CountryMarketResolver
         return $this->buildMarketContext($country, $catalog);
     }
 
-    public function resolveForRendezVous(RendezVous $rendezVous): array
+    public function resolveForRendezVous(Booking $rendezVous): array
     {
         $rendezVous->loadMissing([
             'client.organizationAccount.country',
@@ -102,7 +102,7 @@ class CountryMarketResolver
         );
     }
 
-    public function effectiveTaxRate(array $context, ?RendezVous $rendezVous = null): float
+    public function effectiveTaxRate(array $context, ?Booking $rendezVous = null): float
     {
         $accountMetadata = (array) ($rendezVous?->organizationAccount?->metadata ?? []);
 
@@ -114,7 +114,7 @@ class CountryMarketResolver
         ), 2);
     }
 
-    public function paymentTermsDays(array $context, ?RendezVous $rendezVous = null): int
+    public function paymentTermsDays(array $context, ?Booking $rendezVous = null): int
     {
         $accountMetadata = (array) ($rendezVous?->organizationAccount?->metadata ?? []);
 
@@ -125,7 +125,7 @@ class CountryMarketResolver
         );
     }
 
-    public function quoteValidityDays(array $context, ?RendezVous $rendezVous = null): int
+    public function quoteValidityDays(array $context, ?Booking $rendezVous = null): int
     {
         $accountMetadata = (array) ($rendezVous?->organizationAccount?->metadata ?? []);
 

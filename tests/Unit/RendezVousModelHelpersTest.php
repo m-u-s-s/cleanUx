@@ -3,7 +3,7 @@
 namespace Tests\Unit;
 
 use App\Models\PostalCode;
-use App\Models\RendezVous;
+use App\Models\Booking;
 use App\Models\ServiceCatalog;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -14,7 +14,7 @@ class RendezVousModelHelpersTest extends TestCase
 
     public function test_reset_notification_tracking_if_needed_clears_reminders_and_urgent_alert_when_schedule_changes(): void
     {
-        $rdv = RendezVous::factory()->create([
+        $rdv = Booking::factory()->create([
             'date' => now()->addDay()->toDateString(),
             'heure' => '10:00:00',
             'status' => 'confirme',
@@ -40,10 +40,10 @@ class RendezVousModelHelpersTest extends TestCase
 
     public function test_final_status_helper_and_client_editability_are_correct(): void
     {
-        $termine = RendezVous::factory()->termine()->create();
-        $refuse = RendezVous::factory()->refuse()->create();
-        $confirme = RendezVous::factory()->confirme()->create();
-        $surPlace = RendezVous::factory()->create(['status' => 'sur_place']);
+        $termine = Booking::factory()->termine()->create();
+        $refuse = Booking::factory()->refuse()->create();
+        $confirme = Booking::factory()->confirme()->create();
+        $surPlace = Booking::factory()->create(['status' => 'sur_place']);
 
         $this->assertTrue($termine->isFinalStatus());
         $this->assertTrue($refuse->isFinalStatus());
@@ -68,7 +68,7 @@ class RendezVousModelHelpersTest extends TestCase
             'city_name' => 'Ixelles',
         ]);
 
-        $rdv = RendezVous::factory()->create([
+        $rdv = Booking::factory()->create([
             'service_catalog_id' => $service->id,
             'postal_code_id' => $postalCode->id,
             'code_postal' => null,
@@ -84,9 +84,9 @@ class RendezVousModelHelpersTest extends TestCase
             ],
         ]);
 
-        $this->assertTrue(RendezVous::query()->searchStructured('Vitrage Premium')->whereKey($rdv->id)->exists());
-        $this->assertTrue(RendezVous::query()->searchStructured('1050')->whereKey($rdv->id)->exists());
-        $this->assertTrue(RendezVous::query()->whereServiceMatches('vitres')->whereKey($rdv->id)->exists());
+        $this->assertTrue(Booking::query()->searchStructured('Vitrage Premium')->whereKey($rdv->id)->exists());
+        $this->assertTrue(Booking::query()->searchStructured('1050')->whereKey($rdv->id)->exists());
+        $this->assertTrue(Booking::query()->whereServiceMatches('vitres')->whereKey($rdv->id)->exists());
     }
 
     public function test_location_display_and_service_display_use_structured_relations_first(): void
@@ -101,7 +101,7 @@ class RendezVousModelHelpersTest extends TestCase
             'city_name' => 'Bruxelles',
         ]);
 
-        $rdv = RendezVous::factory()->create([
+        $rdv = Booking::factory()->create([
             'service_catalog_id' => $service->id,
             'postal_code_id' => $postalCode->id,
             'code_postal' => null,

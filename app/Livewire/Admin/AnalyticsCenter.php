@@ -3,7 +3,7 @@
 namespace App\Livewire\Admin;
 
 use App\Models\FinanceInvoice;
-use App\Models\RendezVous;
+use App\Models\Booking;
 use App\Models\ServiceCatalog;
 use App\Models\ServiceZone;
 use App\Models\User;
@@ -79,7 +79,7 @@ class AnalyticsCenter extends Component
 
     protected function baseQuery(): Builder
     {
-        return RendezVous::query()
+        return Booking::query()
             ->with(['client', 'employe', 'organizationAccount', 'serviceCatalog', 'serviceZone', 'feedback', 'financeInvoice'])
             ->when(filled($this->dateFrom), fn (Builder $q) => $q->whereDate('date', '>=', $this->dateFrom))
             ->when(filled($this->dateTo), fn (Builder $q) => $q->whereDate('date', '<=', $this->dateTo))
@@ -102,12 +102,12 @@ class AnalyticsCenter extends Component
         return $this->baseQuery()->orderByDesc('date')->orderByDesc('heure')->paginate(12);
     }
 
-    protected function amountBreakdown(RendezVous $rdv): array
+    protected function amountBreakdown(Booking $rdv): array
     {
         return $this->financeService()->amountBreakdownFor($rdv);
     }
 
-    protected function amountHtva(RendezVous $rdv): float
+    protected function amountHtva(Booking $rdv): float
     {
         return $this->amountBreakdown($rdv)['subtotal'];
     }
@@ -115,13 +115,13 @@ class AnalyticsCenter extends Component
     public function getKpisProperty(): array
     {
         $rows = $this->filteredRowsCollection();
-        $turnover = round((float) $rows->sum(fn (RendezVous $rdv) => $this->amountBreakdown($rdv)['subtotal']), 2);
-        $margin = round((float) $rows->sum(fn (RendezVous $rdv) => $this->amountBreakdown($rdv)['estimated_margin_amount']), 2);
+        $turnover = round((float) $rows->sum(fn (Booking $rdv) => $this->amountBreakdown($rdv)['subtotal']), 2);
+        $margin = round((float) $rows->sum(fn (Booking $rdv) => $this->amountBreakdown($rdv)['estimated_margin_amount']), 2);
         $completed = $rows->where('status', 'termine');
-        $cancelled = $rows->filter(fn (RendezVous $rdv) => in_array($rdv->status, ['annule', 'refuse'], true));
+        $cancelled = $rows->filter(fn (Booking $rdv) => in_array($rdv->status, ['annule', 'refuse'], true));
         $feedbacks = $rows->pluck('feedback')->filter();
         $avgSatisfaction = $feedbacks->count() ? round($feedbacks->avg('note'), 2) : 0;
-        $avgMissionTime = $completed->count() ? round($completed->avg(fn (RendezVous $rdv) => (int) ($rdv->duree_reelle ?: $rdv->duree ?: 0)), 0) : 0;
+        $avgMissionTime = $completed->count() ? round($completed->avg(fn (Booking $rdv) => (int) ($rdv->duree_reelle ?: $rdv->duree ?: 0)), 0) : 0;
         $capacityUsed = $rows->count() ? round(($completed->count() / max($rows->count(), 1)) * 100, 1) : 0;
         $entrepriseCount = $rows->whereNotNull('organization_account_id')->count();
         $invoiceRows = FinanceInvoice::query()->whereIn('rendez_vous_id', $rows->pluck('id'))->get();
@@ -148,10 +148,10 @@ class AnalyticsCenter extends Component
     public function getZoneAnalyticsProperty()
     {
         return $this->filteredRowsCollection()
-            ->groupBy(fn (RendezVous $rdv) => $rdv->serviceZone?->name ?: 'Sans zone')
+            ->groupBy(fn (Booking $rdv) => $rdv->serviceZone?->name ?: 'Sans zone')
             ->map(function ($rows, $zoneName) {
-                $turnover = $rows->sum(fn (RendezVous $rdv) => $this->amountBreakdown($rdv)['subtotal']);
-                $margin = $rows->sum(fn (RendezVous $rdv) => $this->amountBreakdown($rdv)['estimated_margin_amount']);
+                $turnover = $rows->sum(fn (Booking $rdv) => $this->amountBreakdown($rdv)['subtotal']);
+                $margin = $rows->sum(fn (Booking $rdv) => $this->amountBreakdown($rdv)['estimated_margin_amount']);
                 $completed = $rows->where('status', 'termine')->count();
                 $feedbacks = $rows->pluck('feedback')->filter();
 
@@ -173,10 +173,10 @@ class AnalyticsCenter extends Component
     public function getServiceAnalyticsProperty()
     {
         return $this->filteredRowsCollection()
-            ->groupBy(fn (RendezVous $rdv) => $rdv->service_display_name ?: 'Sans service')
+            ->groupBy(fn (Booking $rdv) => $rdv->service_display_name ?: 'Sans service')
             ->map(function ($rows, $serviceName) {
-                $turnover = $rows->sum(fn (RendezVous $rdv) => $this->amountBreakdown($rdv)['subtotal']);
-                $margin = $rows->sum(fn (RendezVous $rdv) => $this->amountBreakdown($rdv)['estimated_margin_amount']);
+                $turnover = $rows->sum(fn (Booking $rdv) => $this->amountBreakdown($rdv)['subtotal']);
+                $margin = $rows->sum(fn (Booking $rdv) => $this->amountBreakdown($rdv)['estimated_margin_amount']);
                 $completed = $rows->where('status', 'termine')->count();
 
                 return [
@@ -196,19 +196,19 @@ class AnalyticsCenter extends Component
     public function getEmployeeAnalyticsProperty()
     {
         return $this->filteredRowsCollection()
-            ->filter(fn (RendezVous $rdv) => $rdv->employe)
-            ->groupBy(fn (RendezVous $rdv) => $rdv->employe?->name)
+            ->filter(fn (Booking $rdv) => $rdv->employe)
+            ->groupBy(fn (Booking $rdv) => $rdv->employe?->name)
             ->map(function ($rows, $employeeName) {
                 $completed = $rows->where('status', 'termine');
                 $feedbacks = $rows->pluck('feedback')->filter();
-                $delays = $rows->filter(fn (RendezVous $rdv) => in_array($rdv->status, ['en_route', 'sur_place'], true))->count();
-                $margin = $rows->sum(fn (RendezVous $rdv) => $this->amountBreakdown($rdv)['estimated_margin_amount']);
+                $delays = $rows->filter(fn (Booking $rdv) => in_array($rdv->status, ['en_route', 'sur_place'], true))->count();
+                $margin = $rows->sum(fn (Booking $rdv) => $this->amountBreakdown($rdv)['estimated_margin_amount']);
 
                 return [
                     'name' => $employeeName,
                     'count' => $rows->count(),
                     'completed' => $completed->count(),
-                    'avg_time' => $completed->count() ? round($completed->avg(fn (RendezVous $rdv) => (int) ($rdv->duree_reelle ?: $rdv->duree ?: 0)), 0) : null,
+                    'avg_time' => $completed->count() ? round($completed->avg(fn (Booking $rdv) => (int) ($rdv->duree_reelle ?: $rdv->duree ?: 0)), 0) : null,
                     'avg_satisfaction' => $feedbacks->count() ? round($feedbacks->avg('note'), 2) : null,
                     'delay_signals' => $delays,
                     'margin' => round((float) $margin, 2),
@@ -222,9 +222,9 @@ class AnalyticsCenter extends Component
     public function getClientAnalyticsProperty()
     {
         return $this->filteredRowsCollection()
-            ->groupBy(fn (RendezVous $rdv) => $rdv->organizationAccount?->name ?: $rdv->client?->name ?: 'Client inconnu')
+            ->groupBy(fn (Booking $rdv) => $rdv->organizationAccount?->name ?: $rdv->client?->name ?: 'Client inconnu')
             ->map(function ($rows, $clientName) {
-                $turnover = $rows->sum(fn (RendezVous $rdv) => $this->amountBreakdown($rdv)['subtotal']);
+                $turnover = $rows->sum(fn (Booking $rdv) => $this->amountBreakdown($rdv)['subtotal']);
                 $feedbacks = $rows->pluck('feedback')->filter();
 
                 return [

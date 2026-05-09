@@ -3,7 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\OrganizationAccount;
-use App\Models\RendezVous;
+use App\Models\Booking;
 use App\Models\User;
 use App\Services\Finance\B2BMonthlyInvoiceService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -30,7 +30,7 @@ class B2BMonthlyInvoiceTest extends TestCase
             'organization_account_id' => $organization->id,
         ]);
 
-        RendezVous::factory()->count(2)->create([
+        Booking::factory()->count(2)->create([
             'client_id' => $client->id,
             'organization_account_id' => $organization->id,
             'status' => 'termine',

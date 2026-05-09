@@ -3,7 +3,7 @@
 namespace App\Livewire\Admin;
 
 use Livewire\Component;
-use App\Models\RendezVous;
+use App\Models\Booking;
 use App\Models\User;
 use App\Models\Feedback;
 
@@ -19,7 +19,7 @@ class StatsGlobale extends Component
 
     public function render()
     {
-        $rdvs = RendezVous::whereYear('date', $this->year)
+        $rdvs = Booking::whereYear('date', $this->year)
             ->when($this->employe_id, fn($q) =>
             $q->where('employe_id', $this->employe_id))
             ->get();
@@ -37,7 +37,7 @@ class StatsGlobale extends Component
             ->get();
 
         $dataMonthly = collect(range(1, 12))->map(function ($month) {
-            return RendezVous::whereYear('date', $this->year)
+            return Booking::whereYear('date', $this->year)
                 ->whereMonth('date', $month)
                 ->when($this->employe_id, fn($q) =>
                 $q->where('employe_id', $this->employe_id))

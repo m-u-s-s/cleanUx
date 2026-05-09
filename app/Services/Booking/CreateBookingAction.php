@@ -5,7 +5,7 @@ namespace App\Services\Booking;
 use App\Data\ZoneCoverageResult;
 use App\Models\OrganizationSite;
 use App\Models\PostalCode;
-use App\Models\RendezVous;
+use App\Models\Booking;
 use App\Models\ServiceCatalog;
 use App\Models\ServiceZone;
 use App\Models\User;
@@ -34,7 +34,7 @@ class CreateBookingAction
         array $data,
         ?OrganizationSite $organizationSite = null,
         ?ZoneCoverageResult $resolution = null,
-    ): RendezVous {
+    ): Booking {
         $resolution ??= new ZoneCoverageResult(
             postalCode: $postal,
             zone: $zone,
@@ -111,7 +111,7 @@ class CreateBookingAction
             ],
         ]);
 
-        $rendezVous = RendezVous::create([
+        $rendezVous = Booking::create([
             'client_id' => $client->id,
             'employe_id' => $assignedEmployee->id,
             'organization_account_id' => $client->organization_account_id,
@@ -194,6 +194,10 @@ class CreateBookingAction
             $policy->applyDiscount($rendezVous, $org);
         }
 
+        if ($booking->booking_mode === 'asap') {
+            app(\App\Services\Dispatch\MissionDispatchService::class)
+                ->dispatchToNextProvider($mission);
+        }
         if ($client->isEntreprise() || $client->hasOrganizationContext() || Arr::get($data, 'entreprise_approval_required', false)) {
             app(\App\Services\Enterprise\EnterpriseBookingApprovalService::class)
                 ->createForBooking(

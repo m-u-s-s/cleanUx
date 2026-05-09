@@ -2,7 +2,7 @@
 
 namespace App\Livewire\Admin;
 
-use App\Models\RendezVous;
+use App\Models\Booking;
 use App\Models\User;
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -53,7 +53,7 @@ class MissionsAdmin extends Component
 
     public function dispatchRendezVous(int $rdvId): void
     {
-        $rdv = \App\Models\RendezVous::with([
+        $rdv = \App\Models\Booking::with([
             'client',
             'serviceZone',
             'employe',
@@ -89,7 +89,7 @@ class MissionsAdmin extends Component
 
     public function previewDispatch(int $rdvId): void
     {
-        $rdv = \App\Models\RendezVous::with([
+        $rdv = \App\Models\Booking::with([
             'client',
             'serviceZone',
             'employe',
@@ -110,7 +110,7 @@ class MissionsAdmin extends Component
 
     public function render(): View
     {
-        $query = RendezVous::with(['client', 'employe', 'serviceCatalog', 'postalCode'])
+        $query = Booking::with(['client', 'employe', 'serviceCatalog', 'postalCode'])
             ->when($this->search, fn($q) => $q->searchStructured($this->search))
             ->when($this->filtreEmploye, fn($q) => $q->where('employe_id', $this->filtreEmploye))
             ->when($this->filtreStatus, fn($q) => $q->where('status', $this->filtreStatus))

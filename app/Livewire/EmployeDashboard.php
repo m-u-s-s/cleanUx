@@ -2,7 +2,7 @@
 
 namespace App\Livewire;
 
-use App\Models\RendezVous;
+use App\Models\Booking;
 use App\Models\User;
 use App\Support\Domain\BookingStatus;
 use Illuminate\Contracts\View\View;
@@ -21,7 +21,7 @@ class EmployeDashboard extends Component
 
     protected function todayMissionsQuery()
     {
-        return RendezVous::with(['client', 'serviceZone', 'serviceCatalog', 'postalCode', 'mission'])
+        return Booking::with(['client', 'serviceZone', 'serviceCatalog', 'postalCode', 'mission'])
             ->where('employe_id', Auth::id())
             ->whereDate('date', today()->toDateString());
     }
@@ -35,7 +35,7 @@ class EmployeDashboard extends Component
             ->get();
     }
 
-    public function getProchaineMissionProperty(): ?RendezVous
+    public function getProchaineMissionProperty(): ?Booking
     {
         return $this->todayMissionsQuery()
             ->whereIn('status', BookingStatus::active())
@@ -45,7 +45,7 @@ class EmployeDashboard extends Component
 
     public function getHistoriqueRecentProperty(): Collection
     {
-        return RendezVous::with(['client', 'serviceZone', 'serviceCatalog', 'postalCode', 'mission'])
+        return Booking::with(['client', 'serviceZone', 'serviceCatalog', 'postalCode', 'mission'])
             ->where('employe_id', Auth::id())
             ->where('status', BookingStatus::TERMINE)
             ->latest('mission_finished_at')

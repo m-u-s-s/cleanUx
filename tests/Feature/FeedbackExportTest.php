@@ -16,7 +16,7 @@ class FeedbackExportTest extends TestCase
         $client = User::factory()->client()->create();
         $employe = User::factory()->employe()->create();
 
-        $rdv = RendezVous::factory()->create([
+        $rdv = Booking::factory()->create([
             'client_id' => $client->id,
             'employe_id' => $employe->id,
             'status' => 'termine',

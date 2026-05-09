@@ -12,6 +12,22 @@
             placeholder="Raison d’annulation (facultatif)..."
             class="w-full rounded-xl border border-slate-300 px-4 py-3 text-sm focus:border-slate-500 focus:outline-none"></textarea>
 
+        // Avant de confirmer cancel, fetch le quote
+        const quote = await fetch(`/api/client/bookings/${bookingId}/cancellation-quote`, {
+        headers: { 'Authorization': `Bearer ${token}` },
+        }).then(r => r.json());
+
+        if (quote.quote.fee_amount > 0) {
+        // Afficher modale "Tu seras facturé X€"
+        confirm(`L'annulation entraînera des frais de ${quote.quote.fee_amount}€. Continuer ?`);
+        }
+
+        // Si confirmé
+        await fetch(`/api/client/bookings/${bookingId}/cancel-with-fee`, {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ reason: 'changement de plans', accept_fee: true }),
+        });
         <div class="flex flex-wrap justify-end gap-3">
             <button type="button" wire:click="fermerAnnulation" class="rounded-xl border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700">Retour</button>
             <button type="button" wire:click="confirmerAnnulation" class="rounded-xl bg-red-600 px-4 py-2 text-sm font-medium text-white">Confirmer l’annulation</button>

@@ -3,7 +3,7 @@
 namespace Tests\Unit;
 
 use App\Models\OrganizationAccount;
-use App\Models\RendezVous;
+use App\Models\Booking;
 use App\Models\User;
 use App\Services\Finance\FinanceDocumentService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -35,7 +35,7 @@ class FinanceDocumentServiceBreakdownTest extends TestCase
         ]);
 
         $employee = User::factory()->employe()->create();
-        $rdv = RendezVous::factory()->confirme()->create([
+        $rdv = Booking::factory()->confirme()->create([
             'organization_account_id' => $organization->id,
             'employe_id' => $employee->id,
             'service_catalog_id' => $context['service']->id,
@@ -71,7 +71,7 @@ class FinanceDocumentServiceBreakdownTest extends TestCase
             ],
         ]);
 
-        $rdv = RendezVous::factory()->confirme()->create([
+        $rdv = Booking::factory()->confirme()->create([
             'service_catalog_id' => $context['service']->id,
             'service_zone_id' => $context['zone']->id,
             'postal_code_id' => $context['postalCode']->id,

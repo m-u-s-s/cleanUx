@@ -3,7 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\Feedback;
-use App\Models\RendezVous;
+use App\Models\Booking;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -15,7 +15,7 @@ class ExportAuthorizationMatrixTest extends TestCase
     public function test_admin_can_access_export_routes(): void
     {
         $admin = User::factory()->admin()->create();
-        RendezVous::factory()->count(2)->create();
+        Booking::factory()->count(2)->create();
         Feedback::factory()->count(2)->create();
 
         $this->actingAs($admin);

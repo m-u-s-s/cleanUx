@@ -2,7 +2,7 @@
 
 namespace App\Services\Analytics;
 
-use App\Models\RendezVous;
+use App\Models\Booking;
 use App\Services\Finance\FinanceDocumentService;
 use Illuminate\Support\Collection;
 
@@ -16,10 +16,10 @@ class AdminAnalyticsSnapshotService
     public function monthTrend(Collection $rows): Collection
     {
         return $rows
-            ->groupBy(fn (RendezVous $rdv) => optional($rdv->date)->format('Y-m') ?: 'sans-date')
+            ->groupBy(fn (Booking $rdv) => optional($rdv->date)->format('Y-m') ?: 'sans-date')
             ->map(function (Collection $items, string $monthKey) {
-                $turnover = $items->sum(fn (RendezVous $rdv) => $this->financeService->amountBreakdownFor($rdv)['subtotal']);
-                $margin = $items->sum(fn (RendezVous $rdv) => $this->financeService->amountBreakdownFor($rdv)['estimated_margin_amount']);
+                $turnover = $items->sum(fn (Booking $rdv) => $this->financeService->amountBreakdownFor($rdv)['subtotal']);
+                $margin = $items->sum(fn (Booking $rdv) => $this->financeService->amountBreakdownFor($rdv)['estimated_margin_amount']);
 
                 return [
                     'month' => $monthKey,

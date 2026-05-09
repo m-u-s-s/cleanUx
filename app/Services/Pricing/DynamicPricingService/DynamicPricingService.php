@@ -30,4 +30,30 @@ class DynamicPricingService
 
         return round($basePrice * $multiplier, 2);
     }
+
+    
+    public function boot(): void
+    {
+        // Phase 14 — Aliaser l'ancien DynamicPricingService vers le nouveau
+        // moteur Surge (signature backward-compatible)
+        $this->app->bind(
+            \App\Services\Pricing\DynamicPricingService\DynamicPricingService::class,
+            function () {
+                // Wrapper qui adapte la nouvelle signature
+                return new class {
+                    public function calculate(float $basePrice, array $context): float
+                    {
+                        $zone = isset($context['service_zone_id'])
+                            ? \App\Models\ServiceZone::find($context['service_zone_id'])
+                            : null;
+
+                        $result = app(\App\Services\Pricing\SurgePricingEngine::class)
+                            ->calculate($basePrice, $zone, $context);
+
+                        return $result['final_price'];
+                    }
+                };
+            }
+        );
+    }
 }

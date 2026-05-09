@@ -3,7 +3,7 @@
 namespace Tests\Unit;
 
 use App\Models\ActivityLog;
-use App\Models\RendezVous;
+use App\Models\Booking;
 use App\Models\ServiceZone;
 use App\Models\User;
 use App\Support\ActivityLogger;
@@ -19,7 +19,7 @@ class ActivityLoggerSecurityContextTest extends TestCase
     {
         $admin = User::factory()->admin()->create();
         $zone = ServiceZone::factory()->create();
-        $rdv = RendezVous::factory()->create([
+        $rdv = Booking::factory()->create([
             'service_zone_id' => $zone->id,
         ]);
 

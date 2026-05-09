@@ -2,7 +2,7 @@
 
 namespace App\Notifications;
 
-use App\Models\RendezVous;
+use App\Models\Booking;
 use App\Support\Notifications\InteractsWithUserNotificationPreferences;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -14,7 +14,7 @@ class DemandeFeedbackNotification extends Notification implements ShouldQueue
     use Queueable;
     use InteractsWithUserNotificationPreferences;
 
-    public function __construct(public RendezVous $rdv)
+    public function __construct(public Booking $rdv)
     {
     }
 

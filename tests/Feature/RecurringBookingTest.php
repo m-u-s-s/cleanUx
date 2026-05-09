@@ -3,7 +3,7 @@
 namespace Tests\Feature;
 
 use App\Livewire\Client\PrendreRendezVous;
-use App\Models\RendezVous;
+use App\Models\Booking;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -64,7 +64,7 @@ class RecurringBookingTest extends TestCase
             ->assertHasNoErrors()
             ->assertSet('step', 5);
 
-        $records = RendezVous::query()
+        $records = Booking::query()
             ->where('client_id', $client->id)
             ->orderBy('series_position')
             ->get();
@@ -78,9 +78,9 @@ class RecurringBookingTest extends TestCase
         $this->assertNotNull($records->first()->recurring_series_id);
         $this->assertSame($records->pluck('recurring_series_id')->unique()->count(), 1);
         $this->assertSame([1, 2, 3, 4], $records->pluck('series_position')->all());
-        $this->assertTrue($records->every(fn (RendezVous $rdv) => $rdv->service_zone_id === $context['zone']->id));
-        $this->assertTrue($records->every(fn (RendezVous $rdv) => $rdv->service_catalog_id === $context['service']->id));
-        $this->assertTrue($records->every(fn (RendezVous $rdv) => $rdv->postal_code_id === $context['postalCode']->id));
-        $this->assertTrue($records->every(fn (RendezVous $rdv) => data_get($rdv->zone_snapshot, 'zone.id') === $context['zone']->id));
+        $this->assertTrue($records->every(fn (Booking $rdv) => $rdv->service_zone_id === $context['zone']->id));
+        $this->assertTrue($records->every(fn (Booking $rdv) => $rdv->service_catalog_id === $context['service']->id));
+        $this->assertTrue($records->every(fn (Booking $rdv) => $rdv->postal_code_id === $context['postalCode']->id));
+        $this->assertTrue($records->every(fn (Booking $rdv) => data_get($rdv->zone_snapshot, 'zone.id') === $context['zone']->id));
     }
 }

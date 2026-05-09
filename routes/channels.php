@@ -147,3 +147,12 @@ Broadcast::channel('presence-team.{teamId}', function (User $user, int $teamId) 
 Broadcast::channel('user.{userId}', function (User $user, int $userId) {
     return (int) $user->id === (int) $userId;
 });
+
+Broadcast::channel('providers.presence', function ($user) {
+    // Seuls les admins / dispatchers peuvent écouter
+    return $user && (
+        $user->role === 'admin' ||
+        $user->role === 'dispatcher' ||
+        method_exists($user, 'isPlatformAdmin') && $user->isPlatformAdmin()
+    );
+});

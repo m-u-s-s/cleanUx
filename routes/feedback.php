@@ -1,12 +1,12 @@
 <?php
 
 use App\Models\Feedback;
-use App\Models\RendezVous;
+use App\Models\Booking;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware(['auth'])->group(function () {
-    Route::get('/feedback/{rendezVous}', function (RendezVous $rendezVous) {
+    Route::get('/feedback/{rendezVous}', function (Booking $rendezVous) {
         abort_unless($rendezVous->client_id === auth()->id(), 403);
 
         return view('feedback.create', [
@@ -14,7 +14,7 @@ Route::middleware(['auth'])->group(function () {
         ]);
     })->name('feedback.create');
 
-    Route::post('/feedback/{rendezVous}', function (Request $request, RendezVous $rendezVous) {
+    Route::post('/feedback/{rendezVous}', function (Request $request, Booking $rendezVous) {
         abort_unless($rendezVous->client_id === auth()->id(), 403);
 
         if (Feedback::where('rendez_vous_id', $rendezVous->id)->exists()) {

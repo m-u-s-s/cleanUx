@@ -2,7 +2,7 @@
 
 namespace Tests\Unit;
 
-use App\Models\RendezVous;
+use App\Models\Booking;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -12,7 +12,7 @@ class RendezVousFactoryStructuredStateTest extends TestCase
 
     public function test_default_factory_creates_structured_references_and_snapshots(): void
     {
-        $rdv = RendezVous::factory()->create();
+        $rdv = Booking::factory()->create();
 
         $this->assertNotNull($rdv->service_catalog_id);
         $this->assertNotNull($rdv->service_zone_id);
@@ -35,7 +35,7 @@ class RendezVousFactoryStructuredStateTest extends TestCase
 
     public function test_entreprise_state_creates_coherent_corporate_context(): void
     {
-        $rdv = RendezVous::factory()->entreprise()->create();
+        $rdv = Booking::factory()->entreprise()->create();
 
         $this->assertNotNull($rdv->organization_account_id);
         $this->assertNotNull($rdv->organization_site_id);

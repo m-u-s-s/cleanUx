@@ -2,7 +2,7 @@
 
 namespace App\Actions\Booking;
 
-use App\Models\RendezVous;
+use App\Models\Booking;
 use App\Models\User;
 use App\Services\Booking\EmployeeAvailabilityService;
 use App\Support\ActivityLogger;
@@ -17,7 +17,7 @@ class UpdateRecurringSeriesAction
     ) {
     }
 
-    public function execute(RendezVous $anchor, array $data, string $scope = 'occurrence'): Collection
+    public function execute(Booking $anchor, array $data, string $scope = 'occurrence'): Collection
     {
         if (! $anchor->recurring_series_id) {
             throw ValidationException::withMessages([
@@ -108,9 +108,9 @@ class UpdateRecurringSeriesAction
         return $updated;
     }
 
-    protected function resolveTargets(RendezVous $anchor, string $scope): Collection
+    protected function resolveTargets(Booking $anchor, string $scope): Collection
     {
-        $query = RendezVous::query()
+        $query = Booking::query()
             ->where('recurring_series_id', $anchor->recurring_series_id)
             ->orderBy('series_position')
             ->orderBy('date')
@@ -123,7 +123,7 @@ class UpdateRecurringSeriesAction
         };
     }
 
-    protected function employeeAvailableIgnoringTargets(int $employeeId, string $date, string $heure, RendezVous $target, int $estimatedDuration, array $ignoredIds = []): bool
+    protected function employeeAvailableIgnoringTargets(int $employeeId, string $date, string $heure, Booking $target, int $estimatedDuration, array $ignoredIds = []): bool
     {
         $timezone = config('app.timezone', 'Europe/Brussels');
         $bufferMinutes = (int) ($target->serviceZone?->time_buffer_minutes ?? 0);
@@ -149,7 +149,7 @@ class UpdateRecurringSeriesAction
 
         $activeStatuses = ['en_attente', 'confirme', 'en_route', 'sur_place'];
 
-        return ! RendezVous::query()
+        return ! Booking::query()
             ->where('employe_id', $employeeId)
             ->whereDate('date', $date)
             ->whereIn('status', $activeStatuses)

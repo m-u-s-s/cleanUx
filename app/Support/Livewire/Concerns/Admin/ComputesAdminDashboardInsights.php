@@ -3,7 +3,7 @@
 namespace App\Support\Livewire\Concerns\Admin;
 
 use App\Models\LimiteJournaliere;
-use App\Models\RendezVous;
+use App\Models\Booking;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Cache;
 
@@ -125,7 +125,7 @@ trait ComputesAdminDashboardInsights
                 return $this->scopedRendezVousQuery(false)
                     ->with('serviceCatalog:id,name')
                     ->get(['id', 'service_catalog_id'])
-                    ->groupBy(fn (RendezVous $rdv) => $rdv->service_display_name)
+                    ->groupBy(fn (Booking $rdv) => $rdv->service_display_name)
                     ->map(fn ($items, $label) => (object) [
                         'label' => $label,
                         'total' => $items->count(),
@@ -253,7 +253,7 @@ trait ComputesAdminDashboardInsights
                 ->whereNotNull('duree_estimee')
                 ->whereNotNull('duree_reelle')
                 ->get(['id', 'service_catalog_id', 'duree_estimee', 'duree_reelle'])
-                ->groupBy(fn (RendezVous $rdv) => $rdv->service_display_name)
+                ->groupBy(fn (Booking $rdv) => $rdv->service_display_name)
                 ->map(function ($items) {
                     return [
                         'avg_gap' => round($items->avg(fn ($rdv) => $rdv->duree_reelle - $rdv->duree_estimee)),

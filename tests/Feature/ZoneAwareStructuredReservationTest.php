@@ -5,7 +5,7 @@ namespace Tests\Feature;
 use App\Livewire\Client\PrendreRendezVous;
 use App\Models\OrganizationAccount;
 use App\Models\OrganizationSite;
-use App\Models\RendezVous;
+use App\Models\Booking;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
@@ -43,7 +43,7 @@ class ZoneAwareStructuredReservationTest extends TestCase
             ->call('validerRdv')
             ->assertHasNoErrors();
 
-        $rdv = RendezVous::query()->firstOrFail();
+        $rdv = Booking::query()->firstOrFail();
 
         $this->assertSame($context['postalCode']->city_name, $rdv->ville);
         $this->assertSame($context['postalCode']->code, $rdv->code_postal);
@@ -101,7 +101,7 @@ class ZoneAwareStructuredReservationTest extends TestCase
             ->call('validerRdv')
             ->assertHasNoErrors();
 
-        $rendezVous = \App\Models\RendezVous::query()
+        $rendezVous = \App\Models\Booking::query()
             ->where('service_catalog_id', $context['service']->id)
             ->latest('id')
             ->first();
@@ -166,7 +166,7 @@ class ZoneAwareStructuredReservationTest extends TestCase
             ->call('validerRdv')
             ->assertHasNoErrors();
 
-        $rdv = RendezVous::query()->firstOrFail();
+        $rdv = Booking::query()->firstOrFail();
 
         $this->assertSame($site->id, $rdv->organization_site_id);
         $this->assertSame('Avenue Louise 200', $rdv->adresse);

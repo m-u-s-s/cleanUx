@@ -4,7 +4,7 @@ namespace Tests\Feature;
 
 use App\Livewire\Admin\GestionUtilisateurs;
 use App\Models\Feedback;
-use App\Models\RendezVous;
+use App\Models\Booking;
 use App\Models\ServiceZone;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -30,10 +30,10 @@ class AdminSecurityHardeningTest extends TestCase
             'permissions' => ['manage-users', 'perform-critical-admin-actions'],
         ]);
 
-        RendezVous::factory()->create([
+        Booking::factory()->create([
             'service_zone_id' => $zoneA->id,
         ]);
-        RendezVous::factory()->create([
+        Booking::factory()->create([
             'service_zone_id' => $zoneB->id,
         ]);
 
@@ -98,10 +98,10 @@ class AdminSecurityHardeningTest extends TestCase
         ]);
 
         $visibleFeedback = Feedback::factory()->create([
-            'rendez_vous_id' => RendezVous::factory()->create(['service_zone_id' => $zoneA->id])->id,
+            'rendez_vous_id' => Booking::factory()->create(['service_zone_id' => $zoneA->id])->id,
         ]);
         $hiddenFeedback = Feedback::factory()->create([
-            'rendez_vous_id' => RendezVous::factory()->create(['service_zone_id' => $zoneB->id])->id,
+            'rendez_vous_id' => Booking::factory()->create(['service_zone_id' => $zoneB->id])->id,
         ]);
 
         $response = $this->actingAs($admin)->get('/admin/feedbacks/export-csv');

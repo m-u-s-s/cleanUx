@@ -8,7 +8,7 @@ use App\Models\Feedback;
 use App\Models\OrganizationAccount;
 use App\Models\OrganizationSite;
 use App\Models\PostalCode;
-use App\Models\RendezVous;
+use App\Models\Booking;
 use App\Models\ServiceCatalog;
 use App\Models\ServiceZone;
 use App\Models\User;
@@ -89,7 +89,7 @@ class PlatformReadinessReport
             $this->makeCheck(
                 key: 'rendezvous_missing_structured_refs',
                 label: 'Rendez-vous sans références structurées',
-                count: RendezVous::query()
+                count: Booking::query()
                     ->where(function ($query) {
                         $query
                             ->whereNull('service_zone_id')
@@ -102,7 +102,7 @@ class PlatformReadinessReport
             $this->makeCheck(
                 key: 'rendezvous_missing_snapshots',
                 label: 'Rendez-vous sans snapshots zone/pricing',
-                count: RendezVous::query()
+                count: Booking::query()
                     ->where(function ($query) {
                         $query->whereNull('zone_snapshot')->orWhereNull('pricing_snapshot');
                     })
@@ -178,7 +178,7 @@ class PlatformReadinessReport
             'zone_rules_total' => ZoneServiceRule::query()->count(),
             'service_catalogs_total' => ServiceCatalog::query()->count(),
             'employee_zone_assignments_total' => EmployeeZoneAssignment::query()->where('is_active', true)->count(),
-            'rendezvous_total' => RendezVous::query()->count(),
+            'rendezvous_total' => Booking::query()->count(),
             'feedbacks_total' => Feedback::query()->count(),
         ];
 
@@ -219,7 +219,7 @@ class PlatformReadinessReport
         $count += User::query()->where('email', 'like', '%@cleanux.test')->count();
         $count += OrganizationAccount::query()->where('email', 'like', '%@atlasfacilities.test')->count();
         $count += OrganizationSite::query()->where('email', 'like', '%@atlasfacilities.test')->count();
-        $count += RendezVous::query()->count();
+        $count += Booking::query()->count();
         $count += Feedback::query()->count();
 
         return $count;

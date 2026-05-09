@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\RendezVous;
+use App\Models\Booking;
 use App\Models\User;
 use App\Support\ActivityLogger;
 use Barryvdh\DomPDF\Facade\Pdf;
@@ -24,7 +24,7 @@ class ExportRendezVousController extends Controller
 
         $serviceFilter = $request->input('service_catalog_id') ?: $request->input('service_identifier');
 
-        $query = RendezVous::with(['client', 'employe', 'serviceZone', 'serviceCatalog', 'postalCode'])
+        $query = Booking::with(['client', 'employe', 'serviceZone', 'serviceCatalog', 'postalCode'])
             ->when($employeId, fn(Builder $q) => $q->where('employe_id', $employeId))
             ->when($request->status, fn(Builder $q) => $q->where('status', $request->status))
             ->when($request->ville, fn(Builder $q) => $q->where('ville', $request->ville))

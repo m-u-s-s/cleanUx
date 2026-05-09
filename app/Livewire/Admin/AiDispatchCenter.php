@@ -2,7 +2,7 @@
 
 namespace App\Livewire\Admin;
 
-use App\Models\RendezVous;
+use App\Models\Booking;
 use App\Services\Dispatch\AiDispatchService;
 use App\Services\Missions\MissionFromRendezVousSyncService;
 use App\Support\ActivityLogger;
@@ -23,7 +23,7 @@ class AiDispatchCenter extends Component
 
     public function preview(int $rdvId, AiDispatchService $dispatch): void
     {
-        $rdv = RendezVous::with(['client', 'serviceZone', 'employe'])
+        $rdv = Booking::with(['client', 'serviceZone', 'employe'])
             ->findOrFail($rdvId);
 
         $this->previewRdvId = $rdv->id;
@@ -46,7 +46,7 @@ class AiDispatchCenter extends Component
 
     public function assign(int $rdvId, AiDispatchService $dispatch): void
     {
-        $rdv = RendezVous::with(['client', 'serviceZone', 'employe', 'mission'])
+        $rdv = Booking::with(['client', 'serviceZone', 'employe', 'mission'])
             ->findOrFail($rdvId);
 
         $employee = $dispatch->bestEmployeeFor($rdv);
@@ -78,7 +78,7 @@ class AiDispatchCenter extends Component
     public function render()
     {
         return view('livewire.admin.ai-dispatch-center', [
-            'rendezVous' => RendezVous::query()
+            'rendezVous' => Booking::query()
                 ->with(['client', 'employe', 'serviceZone'])
                 ->when($this->status, fn ($q) => $q->where('status', $this->status))
                 ->when($this->search, fn ($q) => $q->searchStructured($this->search))

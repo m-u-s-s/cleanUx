@@ -2,7 +2,7 @@
 
 namespace App\Livewire\Employe;
 
-use App\Models\RendezVous;
+use App\Models\Booking;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -34,7 +34,7 @@ class HistoriqueEmploye extends Component
 
     public function render(): View
     {
-        $query = RendezVous::with(['client', 'feedback', 'serviceCatalog', 'postalCode'])
+        $query = Booking::with(['client', 'feedback', 'serviceCatalog', 'postalCode'])
             ->where('employe_id', Auth::id())
             ->where('status', 'termine')
             ->when($this->search, fn ($q) => $q->searchStructured($this->search));

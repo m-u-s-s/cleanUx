@@ -4,7 +4,7 @@ namespace App\Support\Livewire\Concerns\Admin;
 
 use App\Models\FinanceInvoice;
 use App\Models\OrganizationAccount;
-use App\Models\RendezVous;
+use App\Models\Booking;
 use App\Models\ServiceCatalog;
 use App\Models\ServiceZone;
 use App\Services\Finance\FinanceDocumentService;
@@ -45,7 +45,7 @@ trait BuildsFinanceCenterQueries
 
     protected function baseQuery(): Builder
     {
-        return RendezVous::query()
+        return Booking::query()
             ->with(['client', 'employe', 'organizationAccount', 'organizationSite', 'serviceCatalog', 'serviceZone', 'financeQuote', 'financeInvoice.payments', 'financeInvoice.reminders'])
             ->when(filled($this->dateFrom), fn (Builder $q) => $q->whereDate('date', '>=', $this->dateFrom))
             ->when(filled($this->dateTo), fn (Builder $q) => $q->whereDate('date', '<=', $this->dateTo))
@@ -89,11 +89,11 @@ trait BuildsFinanceCenterQueries
     public function getKpisProperty(): array
     {
         $rows = $this->baseQuery()->get();
-        $totalHtva = round((float) $rows->sum(fn (RendezVous $rdv) => $this->amountBreakdown($rdv)['subtotal']), 2);
-        $entrepriseHtva = round((float) $rows->whereNotNull('organization_account_id')->sum(fn (RendezVous $rdv) => $this->amountBreakdown($rdv)['subtotal']), 2);
-        $toInvoice = round((float) $rows->filter(fn (RendezVous $rdv) => in_array($rdv->status, ['confirme', 'en_route', 'sur_place', 'termine']))->sum(fn (RendezVous $rdv) => $this->amountBreakdown($rdv)['subtotal']), 2);
+        $totalHtva = round((float) $rows->sum(fn (Booking $rdv) => $this->amountBreakdown($rdv)['subtotal']), 2);
+        $entrepriseHtva = round((float) $rows->whereNotNull('organization_account_id')->sum(fn (Booking $rdv) => $this->amountBreakdown($rdv)['subtotal']), 2);
+        $toInvoice = round((float) $rows->filter(fn (Booking $rdv) => in_array($rdv->status, ['confirme', 'en_route', 'sur_place', 'termine']))->sum(fn (Booking $rdv) => $this->amountBreakdown($rdv)['subtotal']), 2);
         $avgBasket = $rows->count() > 0 ? round($totalHtva / $rows->count(), 2) : 0;
-        $margin = round((float) $rows->sum(fn (RendezVous $rdv) => $this->amountBreakdown($rdv)['estimated_margin_amount']), 2);
+        $margin = round((float) $rows->sum(fn (Booking $rdv) => $this->amountBreakdown($rdv)['estimated_margin_amount']), 2);
 
         $invoices = FinanceInvoice::query()
             ->whereIn('rendez_vous_id', $rows->pluck('id'))
@@ -108,9 +108,9 @@ trait BuildsFinanceCenterQueries
             'avg_basket_htva' => $avgBasket,
             'margin_estimate' => $margin,
             'count' => $rows->count(),
-            'manual_validation_count' => $rows->filter(fn (RendezVous $rdv) => (bool) data_get($rdv->pricing_snapshot, 'requires_manual_validation', false))->count(),
+            'manual_validation_count' => $rows->filter(fn (Booking $rdv) => (bool) data_get($rdv->pricing_snapshot, 'requires_manual_validation', false))->count(),
             'completed_count' => $rows->where('status', 'termine')->count(),
-            'cancelled_count' => $rows->filter(fn (RendezVous $rdv) => in_array($rdv->status, ['annule', 'refuse'], true))->count(),
+            'cancelled_count' => $rows->filter(fn (Booking $rdv) => in_array($rdv->status, ['annule', 'refuse'], true))->count(),
             'outstanding_balance' => $invoiceHealth['outstanding_balance'],
             'paid_total' => $invoiceHealth['paid_total'],
             'overdue_count' => $invoiceHealth['overdue_count'],
@@ -128,43 +128,43 @@ trait BuildsFinanceCenterQueries
         }
     }
 
-    public function getSelectedRendezVousProperty(): ?RendezVous
+    public function getSelectedRendezVousProperty(): ?Booking
     {
         if (! $this->selectedRendezVousId) {
             return $this->rows->first();
         }
 
-        return RendezVous::query()
+        return Booking::query()
             ->with(['client', 'employe', 'organizationAccount', 'organizationSite', 'serviceCatalog', 'serviceZone', 'financeQuote', 'financeInvoice.payments', 'financeInvoice.reminders'])
             ->find($this->selectedRendezVousId);
     }
 
-    protected function amountBreakdown(RendezVous $rdv): array
+    protected function amountBreakdown(Booking $rdv): array
     {
         return $this->financeService()->amountBreakdownFor($rdv);
     }
 
-    public function amountHtva(RendezVous $rdv): float
+    public function amountHtva(Booking $rdv): float
     {
         return $this->amountBreakdown($rdv)['subtotal'];
     }
 
-    public function amountTva(RendezVous $rdv): float
+    public function amountTva(Booking $rdv): float
     {
         return $this->amountBreakdown($rdv)['tax_amount'];
     }
 
-    public function amountTvac(RendezVous $rdv): float
+    public function amountTvac(Booking $rdv): float
     {
         return $this->amountBreakdown($rdv)['total_amount'];
     }
 
-    public function marginEstimate(RendezVous $rdv): float
+    public function marginEstimate(Booking $rdv): float
     {
         return $this->amountBreakdown($rdv)['estimated_margin_amount'];
     }
 
-    public function financeStage(RendezVous $rdv): string
+    public function financeStage(Booking $rdv): string
     {
         if ($rdv->financeInvoice && (float) $rdv->financeInvoice->balance_due <= 0) {
             return 'Payé';
@@ -184,12 +184,12 @@ trait BuildsFinanceCenterQueries
         };
     }
 
-    protected function quoteNumber(RendezVous $rdv): string
+    protected function quoteNumber(Booking $rdv): string
     {
         return $rdv->financeQuote?->quote_number ?: 'DEV-' . ($rdv->booking_reference ?: $rdv->id);
     }
 
-    protected function invoiceNumber(RendezVous $rdv): string
+    protected function invoiceNumber(Booking $rdv): string
     {
         return $rdv->financeInvoice?->invoice_number ?: 'FAC-' . ($rdv->booking_reference ?: $rdv->id);
     }

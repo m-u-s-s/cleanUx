@@ -5,7 +5,7 @@ namespace App\Livewire;
 use App\Models\FinanceInvoice;
 use App\Models\FinanceQuote;
 use App\Models\OrganizationSite;
-use App\Models\RendezVous;
+use App\Models\Booking;
 use App\Models\ServiceCatalog;
 use App\Models\ServiceZone;
 use App\Models\User;
@@ -212,7 +212,7 @@ class ClientDashboard extends Component
 
     public function getRendezVousAvenirProperty()
     {
-        return RendezVous::with(['employe', 'feedback', 'serviceZone', 'organizationSite', 'serviceCatalog', 'postalCode'])
+        return Booking::with(['employe', 'feedback', 'serviceZone', 'organizationSite', 'serviceCatalog', 'postalCode'])
             ->where('client_id', Auth::id())
             ->whereDate('date', '>=', now()->toDateString())
             ->orderBy('date', $this->tri)
@@ -222,7 +222,7 @@ class ClientDashboard extends Component
 
     public function getRendezVousPasseProperty()
     {
-        return RendezVous::with(['employe', 'feedback', 'serviceZone', 'organizationSite', 'serviceCatalog', 'postalCode'])
+        return Booking::with(['employe', 'feedback', 'serviceZone', 'organizationSite', 'serviceCatalog', 'postalCode'])
             ->where('client_id', Auth::id())
             ->whereDate('date', '<', now()->toDateString())
             ->orderByDesc('date')
@@ -233,7 +233,7 @@ class ClientDashboard extends Component
 
     public function getDernierRendezVousProperty()
     {
-        return RendezVous::with(['employe', 'serviceZone', 'organizationSite', 'serviceCatalog', 'postalCode'])
+        return Booking::with(['employe', 'serviceZone', 'organizationSite', 'serviceCatalog', 'postalCode'])
             ->where('client_id', Auth::id())
             ->latest('date')
             ->latest('heure')
@@ -242,7 +242,7 @@ class ClientDashboard extends Component
 
     public function getProchainRendezVousProperty()
     {
-        return RendezVous::with(['employe', 'feedback', 'serviceZone', 'organizationSite', 'serviceCatalog', 'postalCode'])
+        return Booking::with(['employe', 'feedback', 'serviceZone', 'organizationSite', 'serviceCatalog', 'postalCode'])
             ->where('client_id', Auth::id())
             ->whereDate('date', '>=', now()->toDateString())
             ->orderBy('date')
@@ -252,7 +252,7 @@ class ClientDashboard extends Component
 
     public function getAdressesRecentesProperty()
     {
-        return RendezVous::query()
+        return Booking::query()
             ->where('client_id', Auth::id())
             ->whereNotNull('adresse')
             ->where('adresse', '!=', '')
@@ -308,21 +308,21 @@ class ClientDashboard extends Component
         $clientId = Auth::id();
 
         return [
-            'total' => RendezVous::query()
+            'total' => Booking::query()
                 ->where('client_id', $clientId)
                 ->count(),
 
-            'avenir' => RendezVous::query()
+            'avenir' => Booking::query()
                 ->where('client_id', $clientId)
                 ->whereDate('date', '>=', now()->toDateString())
                 ->count(),
 
-            'termine' => RendezVous::query()
+            'termine' => Booking::query()
                 ->where('client_id', $clientId)
                 ->where('status', BookingStatus::TERMINE)
                 ->count(),
 
-            'feedbacks' => RendezVous::query()
+            'feedbacks' => Booking::query()
                 ->where('client_id', $clientId)
                 ->whereHas('feedback')
                 ->count(),
@@ -331,7 +331,7 @@ class ClientDashboard extends Component
 
     public function modifier($id)
     {
-        $rdv = RendezVous::findOrFail($id);
+        $rdv = Booking::findOrFail($id);
 
         Gate::authorize('update', $rdv);
 
@@ -354,7 +354,7 @@ class ClientDashboard extends Component
 
     public function enregistrerModif()
     {
-        $rdv = RendezVous::where('id', $this->editRdvId)
+        $rdv = Booking::where('id', $this->editRdvId)
             ->where('client_id', Auth::id())
             ->firstOrFail();
 
@@ -394,7 +394,7 @@ class ClientDashboard extends Component
 
     public function annuler($id)
     {
-        $rdv = RendezVous::findOrFail($id);
+        $rdv = Booking::findOrFail($id);
 
         Gate::authorize('cancel', $rdv);
 

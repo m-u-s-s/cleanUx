@@ -2,7 +2,7 @@
 
 namespace App\Console\Commands;
 
-use App\Models\RendezVous;
+use App\Models\Booking;
 use App\Services\Notifications\SmartNotificationService;
 use App\Support\Domain\BookingStatus;
 use Illuminate\Console\Command;
@@ -17,7 +17,7 @@ class SendSmartRendezVousNotifications extends Command
     {
         $now = now();
 
-        RendezVous::query()
+        Booking::query()
             ->with('client')
             ->whereIn('status', [BookingStatus::EN_ATTENTE, BookingStatus::CONFIRME])
             ->whereNull('rappel_24h_envoye_at')
@@ -28,7 +28,7 @@ class SendSmartRendezVousNotifications extends Command
                 }
             });
 
-        RendezVous::query()
+        Booking::query()
             ->with('client')
             ->whereIn('status', [BookingStatus::EN_ATTENTE, BookingStatus::CONFIRME])
             ->whereNull('rappel_2h_envoye_at')
@@ -43,7 +43,7 @@ class SendSmartRendezVousNotifications extends Command
                 }
             });
 
-        RendezVous::query()
+        Booking::query()
             ->with(['client', 'feedback'])
             ->where('status', BookingStatus::TERMINE)
             ->whereNull('feedback_demande_envoye_at')

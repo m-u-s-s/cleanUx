@@ -3,7 +3,7 @@
 namespace App\Services\Missions;
 
 use App\Models\Mission;
-use App\Models\RendezVous;
+use App\Models\Booking;
 use App\Services\Geocoding\GeocodingService;
 use App\Support\Domain\MissionStatus;
 use Illuminate\Support\Facades\DB;
@@ -14,10 +14,9 @@ class MissionFromRendezVousSyncService
         protected MissionAssignmentStatusService $assignmentStatusService,
         protected MissionChecklistService $missionChecklistService,
         protected GeocodingService $geocodingService,
-    ) {
-    }
+    ) {}
 
-    public function createFromRendezVous(RendezVous $rendezVous): Mission
+    public function createFromRendezVous(Booking $rendezVous): Mission
     {
         return DB::transaction(function () use ($rendezVous) {
             $mission = Mission::query()->firstOrCreate(
@@ -45,11 +44,18 @@ class MissionFromRendezVousSyncService
                 $this->assignmentStatusService->syncLeadAssignment($mission, $rendezVous->employe_id);
             }
 
+            if ($mission->status === 'planned' && ! $mission->assignments()->exists()) {
+                app(\App\Services\Dispatch\MissionDispatchService::class)
+                    ->dispatchToNextProvider($mission);
+            }
+
             return $mission->fresh(['assignments', 'rendezVous']);
         });
     }
 
-    public function syncFromRendezVous(RendezVous $rendezVous): Mission
+
+
+    public function syncFromRendezVous(Booking $rendezVous): Mission
     {
         return DB::transaction(function () use ($rendezVous) {
             $plannedStartAt = $this->combineDateAndTime($rendezVous->date, $rendezVous->heure);

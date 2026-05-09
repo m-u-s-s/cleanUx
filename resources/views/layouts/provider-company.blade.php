@@ -64,6 +64,8 @@
     </main>
 
     @livewireScripts
+    <x-mobile-bottom-nav />
+    <x-pwa-install-prompt />
 </body>
 
 </html>

@@ -3,7 +3,7 @@
 namespace App\Livewire\Employe;
 
 use App\Models\GoogleCalendarConnection;
-use App\Models\RendezVous;
+use App\Models\Booking;
 use Livewire\Component;
 use Illuminate\Contracts\View\View;
 use Livewire\Attributes\Layout;
@@ -17,15 +17,15 @@ class GoogleAgendaEmploye extends Component
 
     public function getUpcomingCountProperty(): int
     {
-        return RendezVous::query()
+        return Booking::query()
             ->where('employe_id', auth()->id())
             ->whereDate('date', '>=', now()->toDateString())
             ->count();
     }
 
-    public function getNextMissionProperty(): ?RendezVous
+    public function getNextMissionProperty(): ?Booking
     {
-        return RendezVous::query()
+        return Booking::query()
             ->with(['serviceZone:id,name', 'serviceCatalog:id,name'])
             ->where('employe_id', auth()->id())
             ->whereDate('date', '>=', now()->toDateString())

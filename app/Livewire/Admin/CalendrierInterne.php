@@ -2,7 +2,7 @@
 
 namespace App\Livewire\Admin;
 
-use App\Models\RendezVous;
+use App\Models\Booking;
 use App\Models\ServiceCatalog;
 use App\Models\ServiceZone;
 use App\Models\User;
@@ -68,7 +68,7 @@ class CalendrierInterne extends Component
 
     protected function baseQuery(): Builder
     {
-        return RendezVous::query()
+        return Booking::query()
             ->with(['client:id,name', 'employe:id,name', 'serviceCatalog:id,name', 'serviceZone:id,name'])
             ->when($this->dateFrom, fn (Builder $q) => $q->whereDate('date', '>=', $this->dateFrom))
             ->when($this->dateTo, fn (Builder $q) => $q->whereDate('date', '<=', $this->dateTo))
@@ -111,7 +111,7 @@ class CalendrierInterne extends Component
             ->orderBy('heure')
             ->limit(500)
             ->get()
-            ->map(function (RendezVous $rdv) {
+            ->map(function (Booking $rdv) {
                 $start = Carbon::parse($rdv->date->format('Y-m-d').' '.($rdv->heure ?: '09:00:00'));
                 $end = (clone $start)->addMinutes((int) ($rdv->duree ?: $rdv->duree_estimee ?: 60));
                 $client = $rdv->client?->name ?: 'Client';

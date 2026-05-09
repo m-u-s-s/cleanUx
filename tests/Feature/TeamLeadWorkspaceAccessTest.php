@@ -7,7 +7,7 @@ use App\Models\FieldTeam;
 use App\Models\FieldTeamMember;
 use App\Models\Mission;
 use App\Models\MissionTeamAssignment;
-use App\Models\RendezVous;
+use App\Models\Booking;
 use App\Models\ServiceZone;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -23,7 +23,7 @@ class TeamLeadWorkspaceAccessTest extends TestCase
         $zone = ServiceZone::factory()->create(['country_id' => $country->id]);
         $lead = User::factory()->employe()->create();
         $client = User::factory()->client()->create();
-        $rdv = RendezVous::factory()->create([
+        $rdv = Booking::factory()->create([
             'client_id' => $client->id,
             'service_zone_id' => $zone->id,
             'status' => 'confirme',

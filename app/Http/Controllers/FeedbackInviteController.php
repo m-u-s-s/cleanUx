@@ -3,14 +3,14 @@
 namespace App\Http\Controllers;
 
 use App\Models\Feedback;
-use App\Models\RendezVous;
+use App\Models\Booking;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 
 class FeedbackInviteController extends Controller
 {
-    public function create(RendezVous $rendezVous)
+    public function create(Booking $rendezVous)
     {
         Gate::authorize('create', Feedback::class);
 
@@ -21,7 +21,7 @@ class FeedbackInviteController extends Controller
         return view('feedback.create', compact('rendezVous'));
     }
 
-    public function store(Request $request, RendezVous $rendezVous)
+    public function store(Request $request, Booking $rendezVous)
     {
         Gate::authorize('create', Feedback::class);
 

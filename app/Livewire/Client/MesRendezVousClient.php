@@ -3,7 +3,7 @@
 namespace App\Livewire\Client;
 
 use App\Models\ActivityLog;
-use App\Models\RendezVous;
+use App\Models\Booking;
 use App\Support\ActivityLogger;
 use App\Support\Domain\BookingStatus;
 use App\Services\Booking\EmployeeAvailabilityService;
@@ -71,7 +71,7 @@ class MesRendezVousClient extends Component
 
     public function modifier($id): void
     {
-        $rdv = RendezVous::with(['serviceZone', 'employe'])->findOrFail($id);
+        $rdv = Booking::with(['serviceZone', 'employe'])->findOrFail($id);
 
         Gate::authorize('update', $rdv);
 
@@ -97,7 +97,7 @@ class MesRendezVousClient extends Component
             return;
         }
 
-        $rdv = RendezVous::with(['serviceZone'])->findOrFail($this->editRdvId);
+        $rdv = Booking::with(['serviceZone'])->findOrFail($this->editRdvId);
 
         $availability = app(EmployeeAvailabilityService::class);
 
@@ -152,7 +152,7 @@ class MesRendezVousClient extends Component
 
     public function enregistrerModif(): void
     {
-        $rdv = RendezVous::with(['serviceZone', 'employe', 'mission'])
+        $rdv = Booking::with(['serviceZone', 'employe', 'mission'])
             ->where('id', $this->editRdvId)
             ->where('client_id', Auth::id())
             ->firstOrFail();
@@ -236,7 +236,7 @@ class MesRendezVousClient extends Component
 
     public function demanderAnnulation(int $id): void
     {
-        $rdv = RendezVous::findOrFail($id);
+        $rdv = Booking::findOrFail($id);
         Gate::authorize('cancel', $rdv);
 
         if (! $rdv->canStillBeEditedByClient()) {
@@ -256,7 +256,7 @@ class MesRendezVousClient extends Component
 
     public function confirmerAnnulation(): void
     {
-        $rdv = RendezVous::findOrFail($this->cancelRdvId);
+        $rdv = Booking::findOrFail($this->cancelRdvId);
 
         Gate::authorize('cancel', $rdv);
 
@@ -286,7 +286,7 @@ class MesRendezVousClient extends Component
     public function historyFor(int $rdvId)
     {
         return ActivityLog::query()
-            ->where('target_type', RendezVous::class)
+            ->where('target_type', Booking::class)
             ->where('target_id', $rdvId)
             ->latest()
             ->limit(5)
@@ -295,7 +295,7 @@ class MesRendezVousClient extends Component
 
     public function render(): View
     {
-        $query = RendezVous::with(['employe', 'feedback', 'serviceCatalog', 'serviceZone', 'organizationSite', 'postalCode', 'mission', 'mission.leadEmployee', 'mission.verificationCodes', 'mission.activeTrackingSession'])
+        $query = Booking::with(['employe', 'feedback', 'serviceCatalog', 'serviceZone', 'organizationSite', 'postalCode', 'mission', 'mission.leadEmployee', 'mission.verificationCodes', 'mission.activeTrackingSession'])
             ->where('client_id', Auth::id())
             ->when($this->filtreStatus, fn($q) => $q->where('status', $this->filtreStatus))
             ->when($this->dateFrom, fn($q) => $q->whereDate('date', '>=', $this->dateFrom))

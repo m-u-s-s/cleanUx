@@ -4,7 +4,7 @@ namespace App\Console\Commands;
 
 use App\Models\OrganizationAccount;
 use App\Models\OrganizationSite;
-use App\Models\RendezVous;
+use App\Models\Booking;
 use App\Models\ServiceZone;
 use App\Models\User;
 use Illuminate\Console\Command;
@@ -31,9 +31,9 @@ class AuditSeedIntegrity extends Command
             ['sites sans zone liée', OrganizationSite::query()->whereNotNull('service_zone_id')->whereDoesntHave('serviceZone')->count()],
             ['comptes sans slug', OrganizationAccount::query()->whereNull('slug')->count()],
             ['zones sans règles', ServiceZone::query()->doesntHave('zoneServiceRules')->count()],
-            ['rendez-vous sans client', RendezVous::query()->whereDoesntHave('client')->count()],
-            ['rendez-vous sans employé', RendezVous::query()->whereNotNull('employe_id')->whereDoesntHave('employe')->count()],
-            ['rendez-vous sans snapshots', RendezVous::query()->where(fn ($q) => $q->whereNull('zone_snapshot')->orWhereNull('pricing_snapshot'))->count()],
+            ['rendez-vous sans client', Booking::query()->whereDoesntHave('client')->count()],
+            ['rendez-vous sans employé', Booking::query()->whereNotNull('employe_id')->whereDoesntHave('employe')->count()],
+            ['rendez-vous sans snapshots', Booking::query()->where(fn ($q) => $q->whereNull('zone_snapshot')->orWhereNull('pricing_snapshot'))->count()],
         ];
 
         $this->table(['Check', 'Count'], $rows);

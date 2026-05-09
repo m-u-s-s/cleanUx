@@ -2,7 +2,7 @@
 
 namespace App\Livewire\Admin;
 
-use App\Models\RendezVous;
+use App\Models\Booking;
 use App\Models\User;
 use App\Support\Domain\BookingStatus;
 use Carbon\Carbon;
@@ -74,7 +74,7 @@ class PlanningAdmin extends Component
 
     protected function baseQuery(): Builder
     {
-        $query = RendezVous::query()
+        $query = Booking::query()
             ->with(['client', 'employe', 'serviceCatalog', 'serviceZone', 'organizationAccount', 'organizationSite']);
 
         /** @var User|null $user */
@@ -134,8 +134,8 @@ class PlanningAdmin extends Component
         $query = $this->planningWindowQuery();
         $rows = $query->get();
 
-        $assignedCount = $rows->filter(fn (RendezVous $rdv) => filled($rdv->employe_id))->count();
-        $totalMinutes = $rows->sum(fn (RendezVous $rdv) => ($rdv->duree ?? $rdv->duree_estimee ?? 90) + 30);
+        $assignedCount = $rows->filter(fn (Booking $rdv) => filled($rdv->employe_id))->count();
+        $totalMinutes = $rows->sum(fn (Booking $rdv) => ($rdv->duree ?? $rdv->duree_estimee ?? 90) + 30);
         $activeCount = $rows->whereIn('status', BookingStatus::active())->count();
 
         return [
@@ -145,7 +145,7 @@ class PlanningAdmin extends Component
             'attente' => $rows->where('status', BookingStatus::EN_ATTENTE)->count(),
             'termine' => $rows->where('status', BookingStatus::TERMINE)->count(),
             'urgentes' => $rows->where('priorite', 'urgente')->count(),
-            'sans_employe' => $rows->filter(fn (RendezVous $rdv) => blank($rdv->employe_id))->count(),
+            'sans_employe' => $rows->filter(fn (Booking $rdv) => blank($rdv->employe_id))->count(),
             'assigned_rate' => $rows->count() > 0 ? (int) round(($assignedCount / $rows->count()) * 100) : 0,
             'total_minutes' => $totalMinutes,
             'total_hours' => round($totalMinutes / 60, 1),
@@ -201,7 +201,7 @@ class PlanningAdmin extends Component
 
         return $this->employes->map(function (User $employe) use ($rows) {
             $rdvs = $rows->get($employe->id, collect());
-            $minutes = $rdvs->sum(fn (RendezVous $rdv) => ($rdv->duree ?? $rdv->duree_estimee ?? 90) + 30);
+            $minutes = $rdvs->sum(fn (Booking $rdv) => ($rdv->duree ?? $rdv->duree_estimee ?? 90) + 30);
 
             return [
                 'employe' => $employe,
@@ -222,8 +222,8 @@ class PlanningAdmin extends Component
     public function getWeekSummaryProperty(): array
     {
         $rows = $this->planningWindowQuery()->get();
-        $daysWithWork = $rows->groupBy(fn (RendezVous $rdv) => optional($rdv->date)->toDateString() ?? (string) $rdv->date)->count();
-        $entrepriseCount = $rows->filter(fn (RendezVous $rdv) => filled($rdv->organization_account_id))->count();
+        $daysWithWork = $rows->groupBy(fn (Booking $rdv) => optional($rdv->date)->toDateString() ?? (string) $rdv->date)->count();
+        $entrepriseCount = $rows->filter(fn (Booking $rdv) => filled($rdv->organization_account_id))->count();
 
         return [
             'days_with_work' => $daysWithWork,

@@ -2,29 +2,29 @@
 
 namespace App\Actions\Booking;
 
-use App\Models\RendezVous;
+use App\Models\Booking;
 use App\Support\ActivityLogger;
 use Illuminate\Support\Collection;
 use Illuminate\Validation\ValidationException;
 
 class CancelRecurringSeriesAction
 {
-    public function pause(RendezVous $anchor, string $scope = 'future'): Collection
+    public function pause(Booking $anchor, string $scope = 'future'): Collection
     {
         return $this->applyStatus($anchor, 'paused', null, $scope, 'booking.recurring.paused');
     }
 
-    public function resume(RendezVous $anchor, string $scope = 'future'): Collection
+    public function resume(Booking $anchor, string $scope = 'future'): Collection
     {
         return $this->applyStatus($anchor, 'active', null, $scope, 'booking.recurring.resumed');
     }
 
-    public function cancel(RendezVous $anchor, string $scope = 'future'): Collection
+    public function cancel(Booking $anchor, string $scope = 'future'): Collection
     {
         return $this->applyStatus($anchor, 'cancelled', 'refuse', $scope, 'booking.recurring.cancelled');
     }
 
-    protected function applyStatus(RendezVous $anchor, string $seriesStatus, ?string $bookingStatus, string $scope, string $action): Collection
+    protected function applyStatus(Booking $anchor, string $seriesStatus, ?string $bookingStatus, string $scope, string $action): Collection
     {
         if (! $anchor->recurring_series_id) {
             throw ValidationException::withMessages([
@@ -63,9 +63,9 @@ class CancelRecurringSeriesAction
         return $targets->map->fresh();
     }
 
-    protected function resolveTargets(RendezVous $anchor, string $scope): Collection
+    protected function resolveTargets(Booking $anchor, string $scope): Collection
     {
-        $query = RendezVous::query()
+        $query = Booking::query()
             ->where('recurring_series_id', $anchor->recurring_series_id)
             ->orderBy('series_position')
             ->orderBy('date')

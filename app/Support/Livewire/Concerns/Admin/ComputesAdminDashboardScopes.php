@@ -3,7 +3,7 @@
 namespace App\Support\Livewire\Concerns\Admin;
 
 use App\Models\ActivityLog;
-use App\Models\RendezVous;
+use App\Models\Booking;
 use App\Models\ServiceZone;
 use App\Models\User;
 use App\Support\ActivityLogger;
@@ -59,7 +59,7 @@ trait ComputesAdminDashboardScopes
 
     protected function scopedRendezVousQuery(bool $withEmployeeFilter = true): Builder
     {
-        $query = RendezVous::query();
+        $query = Booking::query();
 
         if ($withEmployeeFilter && $this->filtreEmploye) {
             $query->where('employe_id', $this->filtreEmploye);
@@ -143,7 +143,7 @@ trait ComputesAdminDashboardScopes
         return $query->where(function (Builder $logQuery) use ($rendezVousIds, $employeeIds, $zoneIdsList) {
             $logQuery
                 ->where(function (Builder $sub) use ($rendezVousIds) {
-                    $sub->where('target_type', RendezVous::class)
+                    $sub->where('target_type', Booking::class)
                         ->whereIn('target_id', $rendezVousIds);
                 })
                 ->orWhere(function (Builder $sub) use ($employeeIds) {
@@ -184,7 +184,7 @@ trait ComputesAdminDashboardScopes
         Cache::forget($this->cacheKey('zoneOverview'));
     }
 
-    protected function logActivity(string $action, ?RendezVous $rdv = null, array $meta = []): void
+    protected function logActivity(string $action, ?Booking $rdv = null, array $meta = []): void
     {
         ActivityLogger::log($action, $rdv, $meta);
     }

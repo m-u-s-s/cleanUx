@@ -3,7 +3,7 @@
 namespace App\Services\Email;
 
 use App\Models\FinanceInvoice;
-use App\Models\RendezVous;
+use App\Models\Booking;
 use App\Models\User;
 use Illuminate\Support\Carbon;
 
@@ -30,9 +30,9 @@ class ProductEmailTemplates
         ]);
     }
 
-    public static function sampleRendezVous(): RendezVous
+    public static function sampleRendezVous(): Booking
     {
-        $rdv = new RendezVous([
+        $rdv = new Booking([
             'id' => 999,
             'service_type' => 'nettoyage_standard',
             'date' => Carbon::now()->addDays(3)->toDateString(),

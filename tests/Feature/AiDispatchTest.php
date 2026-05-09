@@ -2,7 +2,7 @@
 
 namespace Tests\Feature;
 
-use App\Models\RendezVous;
+use App\Models\Booking;
 use App\Models\ServiceZone;
 use App\Models\User;
 use App\Services\Dispatch\AiDispatchService;
@@ -15,7 +15,7 @@ class AiDispatchTest extends TestCase
 
     public function test_ai_dispatch_returns_empty_when_rdv_has_no_zone(): void
     {
-        $rdv = RendezVous::factory()->create([
+        $rdv = Booking::factory()->create([
             'service_zone_id' => null,
             'date' => now()->addDay()->toDateString(),
             'heure' => '10:00',
@@ -41,7 +41,7 @@ class AiDispatchTest extends TestCase
             'is_active' => true,
         ]);
 
-        $rdv = RendezVous::factory()->create([
+        $rdv = Booking::factory()->create([
             'client_id' => $client->id,
             'service_zone_id' => $zone->id,
             'date' => now()->addDay()->toDateString(),

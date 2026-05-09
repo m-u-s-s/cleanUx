@@ -5,7 +5,7 @@ namespace App\Providers;
 use App\Models\Feedback;
 use App\Models\FinanceInvoice;
 use App\Models\Mission;
-use App\Models\RendezVous;
+use App\Models\Booking;
 use App\Models\User;
 use App\Policies\FeedbackPolicy;
 use App\Policies\FinanceInvoicePolicy;
@@ -18,7 +18,7 @@ use Illuminate\Support\Facades\Gate;
 class AuthServiceProvider extends ServiceProvider
 {
     protected $policies = [
-        RendezVous::class => RendezVousPolicy::class,
+        Booking::class => RendezVousPolicy::class,
         Feedback::class => FeedbackPolicy::class,
         User::class => UserPolicy::class,
         Mission::class => MissionPolicy::class,

@@ -22,7 +22,7 @@ class Conversation extends Model
 
     public function rendezVous()
     {
-        return $this->belongsTo(RendezVous::class);
+        return $this->belongsTo(Booking::class);
     }
 
     public function mission()

@@ -2,7 +2,7 @@
 
 namespace App\Support\Livewire\Concerns;
 
-use App\Models\RendezVous;
+use App\Models\Booking;
 use App\Models\ServiceZone;
 use App\Models\User;
 use Illuminate\Support\Carbon;
@@ -307,7 +307,7 @@ trait HandlesBookingSubmissionFlow
         }
 
         $activeStatuses = ['en_attente', 'confirme', 'en_route', 'sur_place'];
-        $zoneBookingsCount = RendezVous::query()
+        $zoneBookingsCount = Booking::query()
             ->where('service_zone_id', $zone->id)
             ->whereDate('date', $this->rdvDate)
             ->whereIn('status', $activeStatuses)
@@ -317,7 +317,7 @@ trait HandlesBookingSubmissionFlow
             return;
         }
 
-        $serviceBookingsCount = RendezVous::query()
+        $serviceBookingsCount = Booking::query()
             ->where('service_zone_id', $zone->id)
             ->where('service_catalog_id', $catalog->id)
             ->whereDate('date', $this->rdvDate)
@@ -434,7 +434,7 @@ trait HandlesBookingSubmissionFlow
 
         $activeStatuses = ['en_attente', 'confirme', 'en_route', 'sur_place'];
 
-        $zoneBookingsCount = RendezVous::query()
+        $zoneBookingsCount = Booking::query()
             ->where('service_zone_id', $zone->id)
             ->whereDate('date', $this->rdvDate)
             ->whereIn('status', $activeStatuses)
@@ -445,7 +445,7 @@ trait HandlesBookingSubmissionFlow
             return false;
         }
 
-        $serviceBookingsCount = RendezVous::query()
+        $serviceBookingsCount = Booking::query()
             ->where('service_zone_id', $zone->id)
             ->where('service_catalog_id', $catalog->id)
             ->whereDate('date', $this->rdvDate)

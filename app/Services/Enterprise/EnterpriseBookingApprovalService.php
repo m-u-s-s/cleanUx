@@ -3,7 +3,7 @@
 namespace App\Services\Enterprise;
 
 use App\Models\EnterpriseBookingApproval;
-use App\Models\RendezVous;
+use App\Models\Booking;
 use App\Models\User;
 use App\Support\ActivityLogger;
 use App\Support\Domain\BookingStatus;
@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\DB;
 
 class EnterpriseBookingApprovalService
 {
-    public function createForBooking(RendezVous $rendezVous, ?User $requestedBy = null, ?string $note = null): EnterpriseBookingApproval
+    public function createForBooking(Booking $rendezVous, ?User $requestedBy = null, ?string $note = null): EnterpriseBookingApproval
     {
         return DB::transaction(function () use ($rendezVous, $requestedBy, $note) {
             $approval = EnterpriseBookingApproval::query()->updateOrCreate(

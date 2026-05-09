@@ -5,7 +5,7 @@ namespace App\Services\Integrations;
 use App\Models\ActivityLog;
 use App\Models\GoogleCalendarConnection;
 use App\Models\GoogleCalendarEventLink;
-use App\Models\RendezVous;
+use App\Models\Booking;
 use App\Models\User;
 use App\Support\Domain\BookingStatus;
 use Carbon\Carbon;
@@ -34,7 +34,7 @@ class GoogleCalendarSyncService
 
         $stats = ['created' => 0, 'updated' => 0, 'deleted' => 0, 'skipped' => 0, 'errors' => []];
 
-        $rendezVousItems = RendezVous::query()
+        $rendezVousItems = Booking::query()
             ->with(['client', 'serviceCatalog', 'serviceZone', 'organizationSite', 'postalCode'])
             ->where('employe_id', $user->id)
             ->whereDate('date', '>=', now()->toDateString())
@@ -62,7 +62,7 @@ class GoogleCalendarSyncService
         return $stats;
     }
 
-    public function syncRendezVous(RendezVous $rendezVous, ?GoogleCalendarConnection $connection = null): string
+    public function syncRendezVous(Booking $rendezVous, ?GoogleCalendarConnection $connection = null): string
     {
         $connection ??= GoogleCalendarConnection::query()
             ->where('user_id', $rendezVous->employe_id)
@@ -148,7 +148,7 @@ class GoogleCalendarSyncService
         ];
     }
 
-    private function resolveTimes(RendezVous $rendezVous, User $user): array
+    private function resolveTimes(Booking $rendezVous, User $user): array
     {
         $timezone = $user->timezone ?: 'Europe/Brussels';
         $date = $rendezVous->date instanceof Carbon ? $rendezVous->date->format('Y-m-d') : (string) $rendezVous->date;
@@ -166,7 +166,7 @@ class GoogleCalendarSyncService
         return [$start, $end];
     }
 
-    private function buildGoogleEventPayload(RendezVous $rendezVous, Carbon $start, Carbon $end): array
+    private function buildGoogleEventPayload(Booking $rendezVous, Carbon $start, Carbon $end): array
     {
         $serviceName = $rendezVous->service_display_name ?: 'Mission CleanUx';
         $zoneName = $rendezVous->serviceZone?->name ?: 'Zone non définie';

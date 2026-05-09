@@ -2,6 +2,8 @@
 
 use App\Http\Controllers\LocaleController;
 use App\Http\Controllers\Push\PushSubscriptionController;
+use App\Livewire\Provider\MissionOfferPage;
+use App\Livewire\Provider\Onboarding\ProviderOnboardingWizard;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -39,3 +41,13 @@ Route::middleware('auth')->prefix('push')->group(function () {
 
 // Public (pas besoin d'auth pour récupérer la clé publique)
 Route::get('/push/public-key', [PushSubscriptionController::class, 'publicKey']);
+
+Route::middleware(['auth'])->group(function () {
+    Route::get('/provider/missions/{assignment}/offer', MissionOfferPage::class)
+        ->name('provider.missions.offer');
+});
+
+Route::middleware(['auth'])->group(function () {
+    Route::get('/provider/onboarding', ProviderOnboardingWizard::class)
+        ->name('provider.onboarding');
+});

@@ -3,7 +3,7 @@
 namespace App\Livewire\Employe;
 
 use App\Models\IncidentReport;
-use App\Models\RendezVous;
+use App\Models\Booking;
 use App\Support\ActivityLogger;
 use Livewire\Component;
 
@@ -19,7 +19,7 @@ class SignalerIncident extends Component
 
     public function getRendezVousOptionsProperty()
     {
-        return RendezVous::query()
+        return Booking::query()
             ->with('client')
             ->where('employe_id', auth()->id())
             ->latest('date')
@@ -63,7 +63,7 @@ class SignalerIncident extends Component
             'attachmentInput' => ['nullable', 'string', 'max:4000'],
         ]);
 
-        $rdv = filled($data['rendezVousId']) ? RendezVous::with(['client', 'organizationAccount'])->find($data['rendezVousId']) : null;
+        $rdv = filled($data['rendezVousId']) ? Booking::with(['client', 'organizationAccount'])->find($data['rendezVousId']) : null;
         $sla = $this->computeSla($data['priority']);
 
         $incident = IncidentReport::create([

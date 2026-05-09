@@ -3,7 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\Feedback;
-use App\Models\RendezVous;
+use App\Models\Booking;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -17,7 +17,7 @@ class FeedbackPolicyTest extends TestCase
         $client = User::factory()->create(['role' => 'client']);
         $employe = User::factory()->create(['role' => 'employe']);
 
-        $rdv = RendezVous::factory()->create([
+        $rdv = Booking::factory()->create([
             'client_id' => $client->id,
             'employe_id' => $employe->id,
         ]);
@@ -38,7 +38,7 @@ class FeedbackPolicyTest extends TestCase
         $autreClient = User::factory()->create(['role' => 'client']);
         $employe = User::factory()->create(['role' => 'employe']);
 
-        $rdv = RendezVous::factory()->create([
+        $rdv = Booking::factory()->create([
             'client_id' => $client->id,
             'employe_id' => $employe->id,
         ]);

@@ -3,7 +3,7 @@
 namespace App\Services\Subscription;
 
 use App\Models\ClientSubscription;
-use App\Models\RendezVous;
+use App\Models\Booking;
 use Carbon\Carbon;
 
 class SubscriptionScheduler
@@ -18,14 +18,14 @@ class SubscriptionScheduler
                 ->next($sub->day_of_week);
 
             // éviter doublons
-            $exists = RendezVous::where('client_id', $sub->client_id)
+            $exists = Booking::where('client_id', $sub->client_id)
                 ->whereDate('date', $nextDate)
                 ->where('heure', $sub->heure)
                 ->exists();
 
             if ($exists) continue;
 
-            RendezVous::create([
+            Booking::create([
                 'client_id' => $sub->client_id,
                 'service_zone_id' => $sub->service_zone_id,
                 'service_catalog_id' => $sub->service_catalog_id,

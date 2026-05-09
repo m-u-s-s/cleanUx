@@ -259,7 +259,7 @@ Route::middleware(['auth', 'verified', 'active.account'])->group(function () use
 
                     abort_unless($user && $user->canPerformCriticalAdminActions(), 403);
 
-                    $query = \App\Models\RendezVous::query()->with('serviceZone');
+                    $query = \App\Models\Booking::query()->with('serviceZone');
 
                     if ($user->isZoneScopedAdmin()) {
                         $query->where('service_zone_id', $user->managed_service_zone_id);

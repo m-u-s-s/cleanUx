@@ -3,7 +3,7 @@
 namespace Tests\Unit;
 
 use App\Models\PostalCode;
-use App\Models\RendezVous;
+use App\Models\Booking;
 use App\Models\ServiceCatalog;
 use App\Models\ServiceZone;
 use App\Models\User;
@@ -29,7 +29,7 @@ class GoogleCalendarSyncServicePayloadTest extends TestCase
         $zone = ServiceZone::factory()->create(['name' => 'Bruxelles Centre']);
         $postalCode = PostalCode::factory()->create(['code' => '1000', 'city_name' => 'Bruxelles']);
 
-        $rdv = RendezVous::factory()->create([
+        $rdv = Booking::factory()->create([
             'client_id' => $client->id,
             'employe_id' => $employee->id,
             'service_catalog_id' => $service->id,

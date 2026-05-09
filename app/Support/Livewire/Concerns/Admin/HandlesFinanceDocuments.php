@@ -3,7 +3,7 @@
 namespace App\Support\Livewire\Concerns\Admin;
 
 use App\Models\FinanceInvoice;
-use App\Models\RendezVous;
+use App\Models\Booking;
 use Barryvdh\DomPDF\Facade\Pdf;
 
 trait HandlesFinanceDocuments
@@ -84,9 +84,9 @@ trait HandlesFinanceDocuments
         ]);
     }
 
-    protected function loadRendezVous(int $rendezVousId): RendezVous
+    protected function loadRendezVous(int $rendezVousId): Booking
     {
-        return RendezVous::query()
+        return Booking::query()
             ->with(['client', 'employe', 'organizationAccount', 'organizationSite', 'serviceCatalog', 'serviceZone', 'financeQuote', 'financeInvoice.payments', 'financeInvoice.reminders'])
             ->findOrFail($rendezVousId);
     }

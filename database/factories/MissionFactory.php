@@ -3,7 +3,7 @@
 namespace Database\Factories;
 
 use App\Models\Mission;
-use App\Models\RendezVous;
+use App\Models\Booking;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 class MissionFactory extends Factory
@@ -14,43 +14,43 @@ class MissionFactory extends Factory
     {
         return [
             'rendez_vous_id' => function () {
-                return RendezVous::factory()->create()->id;
+                return Booking::factory()->create()->id;
             },
 
             'organization_account_id' => function (array $attributes) {
-                return RendezVous::query()->find($attributes['rendez_vous_id'])?->organization_account_id;
+                return Booking::query()->find($attributes['rendez_vous_id'])?->organization_account_id;
             },
 
             'organization_site_id' => function (array $attributes) {
-                return RendezVous::query()->find($attributes['rendez_vous_id'])?->organization_site_id;
+                return Booking::query()->find($attributes['rendez_vous_id'])?->organization_site_id;
             },
 
             'service_catalog_id' => function (array $attributes) {
-                return RendezVous::query()->find($attributes['rendez_vous_id'])?->service_catalog_id;
+                return Booking::query()->find($attributes['rendez_vous_id'])?->service_catalog_id;
             },
 
             'service_zone_id' => function (array $attributes) {
-                return RendezVous::query()->find($attributes['rendez_vous_id'])?->service_zone_id;
+                return Booking::query()->find($attributes['rendez_vous_id'])?->service_zone_id;
             },
 
             'lead_employee_id' => function (array $attributes) {
-                return RendezVous::query()->find($attributes['rendez_vous_id'])?->employe_id;
+                return Booking::query()->find($attributes['rendez_vous_id'])?->employe_id;
             },
 
             'status' => function (array $attributes) {
-                $rdv = RendezVous::query()->find($attributes['rendez_vous_id']);
+                $rdv = Booking::query()->find($attributes['rendez_vous_id']);
 
                 return $rdv?->employe_id ? 'assigned' : 'planned';
             },
 
             'mission_type' => function (array $attributes) {
-                $rdv = RendezVous::query()->find($attributes['rendez_vous_id']);
+                $rdv = Booking::query()->find($attributes['rendez_vous_id']);
 
                 return $rdv?->organization_account_id ? 'enterprise' : 'standard';
             },
 
             'planned_start_at' => function (array $attributes) {
-                $rdv = RendezVous::query()->find($attributes['rendez_vous_id']);
+                $rdv = Booking::query()->find($attributes['rendez_vous_id']);
 
                 if (! $rdv?->date || ! $rdv?->heure) {
                     return now()->addDay()->setTime(9, 0);
@@ -60,7 +60,7 @@ class MissionFactory extends Factory
             },
 
             'planned_end_at' => function (array $attributes) {
-                $rdv = RendezVous::query()->find($attributes['rendez_vous_id']);
+                $rdv = Booking::query()->find($attributes['rendez_vous_id']);
 
                 if (! $rdv?->date || ! $rdv?->heure) {
                     return now()->addDay()->setTime(11, 0);

@@ -2,7 +2,7 @@
 
 namespace App\Notifications;
 
-use App\Models\RendezVous;
+use App\Models\Booking;
 use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
@@ -12,7 +12,7 @@ class RendezVousReminderNotification extends Notification
     use Queueable;
 
     public function __construct(
-        public RendezVous $rendezVous,
+        public Booking $rendezVous,
         public string $type = '24h',
     ) {}
 

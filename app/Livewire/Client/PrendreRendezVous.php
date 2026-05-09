@@ -3,7 +3,7 @@
 namespace App\Livewire\Client;
 
 use App\Actions\Booking\CreateRecurringSeriesAction;
-use App\Models\RendezVous;
+use App\Models\Booking;
 use App\Services\Booking\BookingEstimatorService;
 use App\Services\Booking\CreateBookingAction;
 use App\Services\Booking\EmployeeAvailabilityService;
@@ -240,6 +240,8 @@ class PrendreRendezVous extends Component
 
         $this->asapMessage = 'Créneau ASAP trouvé : aujourd’hui à ' . $this->rdvHeure . '.';
     }
+    
+
 
     public function render(): View
     {

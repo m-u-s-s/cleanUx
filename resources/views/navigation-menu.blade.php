@@ -264,6 +264,15 @@
                 </a>
                 @endif
 
+                <a href="{{ route('admin.onboarding.providers') }}"
+                    class="...">
+                    👥 Onboarding prestataires
+                    @if ($pendingCount = \App\Models\ProviderOnboardingDocument::where('status', 'pending_review')->count())
+                    <span class="ml-2 inline-flex rounded-full bg-amber-100 text-amber-700 px-2 py-0.5 text-xs">
+                        {{ $pendingCount }}
+                    </span>
+                    @endif
+                </a>
                 @if(Route::has('login'))
                 <a href="{{ route('login') }}"
                     class="text-sm font-semibold text-slate-700 hover:text-blue-700">

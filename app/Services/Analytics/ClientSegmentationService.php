@@ -3,14 +3,14 @@
 namespace App\Services\Analytics;
 
 use App\Models\CustomerClaim;
-use App\Models\RendezVous;
+use App\Models\Booking;
 use App\Models\User;
 
 class ClientSegmentationService
 {
     public function segment(User $client): array
     {
-        $bookings = RendezVous::query()
+        $bookings = Booking::query()
             ->where('client_id', $client->id)
             ->get();
 

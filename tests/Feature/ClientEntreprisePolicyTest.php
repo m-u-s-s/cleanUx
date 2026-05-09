@@ -3,7 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\Feedback;
-use App\Models\RendezVous;
+use App\Models\Booking;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -16,7 +16,7 @@ class ClientEntreprisePolicyTest extends TestCase
     {
         $entreprise = User::factory()->entreprise()->create();
 
-        $this->assertTrue($entreprise->can('create', RendezVous::class));
+        $this->assertTrue($entreprise->can('create', Booking::class));
     }
 
     public function test_entreprise_user_can_create_and_manage_own_feedback(): void
@@ -24,7 +24,7 @@ class ClientEntreprisePolicyTest extends TestCase
         $entreprise = User::factory()->entreprise()->create();
         $employee = User::factory()->employe()->create();
 
-        $rdv = RendezVous::factory()->create([
+        $rdv = Booking::factory()->create([
             'client_id' => $entreprise->id,
             'employe_id' => $employee->id,
         ]);

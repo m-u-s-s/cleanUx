@@ -4,7 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\FinanceInvoice;
 use App\Models\FinanceQuote;
-use App\Models\RendezVous;
+use App\Models\Booking;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -22,8 +22,8 @@ class ClientFinanceDocumentsPortalTest extends TestCase
         ]);
         $other = User::factory()->client()->create();
 
-        $mine = RendezVous::factory()->for($client, 'client')->create(['status' => 'confirme']);
-        $otherRdv = RendezVous::factory()->for($other, 'client')->create(['status' => 'confirme']);
+        $mine = Booking::factory()->for($client, 'client')->create(['status' => 'confirme']);
+        $otherRdv = Booking::factory()->for($other, 'client')->create(['status' => 'confirme']);
 
         $myQuote = FinanceQuote::create([
             'rendez_vous_id' => $mine->id,
@@ -104,7 +104,7 @@ class ClientFinanceDocumentsPortalTest extends TestCase
         $client = User::factory()->client()->create();
         $other = User::factory()->client()->create();
 
-        $otherRdv = RendezVous::factory()->for($other, 'client')->create(['status' => 'confirme']);
+        $otherRdv = Booking::factory()->for($other, 'client')->create(['status' => 'confirme']);
         $otherQuote = FinanceQuote::create([
             'rendez_vous_id' => $otherRdv->id,
             'client_id' => $other->id,

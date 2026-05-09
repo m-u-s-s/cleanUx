@@ -3,7 +3,7 @@
 namespace Tests\Feature;
 
 use App\Livewire\Client\PrendreRendezVous;
-use App\Models\RendezVous;
+use App\Models\Booking;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
@@ -110,7 +110,7 @@ class ZoneAwareReservationTest extends TestCase
         $bookingDate = now()->addDays(2)->toDateString();
         $this->assignEmployeeToZone($employee, $context['zone'], [], ['date' => $bookingDate]);
 
-        RendezVous::factory()->create([
+        Booking::factory()->create([
             'client_id' => User::factory()->client()->create()->id,
             'employe_id' => $employee->id,
             'service_catalog_id' => $context['service']->id,

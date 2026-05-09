@@ -2,16 +2,16 @@
 
 namespace App\View\Components;
 
-use App\Models\RendezVous;
+use App\Models\Booking;
 use Illuminate\View\Component;
 use Illuminate\View\View;
 
 class RdvCleaningCard extends Component
 {
-    public RendezVous $rdv;
+    public Booking $rdv;
     public bool $showActions;
 
-    public function __construct(RendezVous $rdv, bool $showActions = false)
+    public function __construct(Booking $rdv, bool $showActions = false)
     {
         $this->rdv = $rdv;
         $this->showActions = $showActions;

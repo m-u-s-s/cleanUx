@@ -3,7 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\EmployeeZoneAssignment;
-use App\Models\RendezVous;
+use App\Models\Booking;
 use App\Models\ServiceZone;
 use App\Models\User;
 use App\Notifications\EmployeReaffectationSuggestionNotification;
@@ -42,7 +42,7 @@ class SendRendezVousRemindersCommandTest extends TestCase
 
         $client = User::factory()->client()->create();
 
-        RendezVous::factory()->create([
+        Booking::factory()->create([
             'client_id' => $client->id,
             'employe_id' => $overloaded->id,
             'service_zone_id' => $zoneA->id,

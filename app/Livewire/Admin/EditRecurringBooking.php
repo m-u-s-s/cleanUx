@@ -3,7 +3,7 @@
 namespace App\Livewire\Admin;
 
 use App\Support\Livewire\Concerns\InteractsWithRecurringSeries;
-use App\Models\RendezVous;
+use App\Models\Booking;
 use Livewire\Component;
 use Illuminate\Contracts\View\View;
 use Livewire\Attributes\Layout;
@@ -12,7 +12,7 @@ class EditRecurringBooking extends Component
 {
     use InteractsWithRecurringSeries;
 
-    public function mount(RendezVous $rendezVous): void
+    public function mount(Booking $rendezVous): void
     {
         $this->contextLabel = 'admin';
         $this->mountRecurringSeries($rendezVous);

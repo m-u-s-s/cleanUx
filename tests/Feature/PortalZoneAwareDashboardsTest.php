@@ -5,7 +5,7 @@ namespace Tests\Feature;
 use App\Livewire\AdminDashboard;
 use App\Livewire\ClientDashboard;
 use App\Livewire\EmployeDashboard;
-use App\Models\RendezVous;
+use App\Models\Booking;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
@@ -117,7 +117,7 @@ class PortalZoneAwareDashboardsTest extends TestCase
 
         $this->assignEmployeeToZone($employee, $brussels['zone']);
 
-        RendezVous::factory()->create([
+        Booking::factory()->create([
             'client_id' => User::factory()->client()->create()->id,
             'employe_id' => $employee->id,
             'service_catalog_id' => $wavre['service']->id,
@@ -178,7 +178,7 @@ class PortalZoneAwareDashboardsTest extends TestCase
         $clientBrussels = User::factory()->client()->create(['name' => 'Client Bruxelles']);
         $clientWavre = User::factory()->client()->create(['name' => 'Client Wavre']);
 
-        RendezVous::factory()->create([
+        Booking::factory()->create([
             'client_id' => $clientBrussels->id,
             'employe_id' => null,
             'service_catalog_id' => $brussels['service']->id,
@@ -191,7 +191,7 @@ class PortalZoneAwareDashboardsTest extends TestCase
             'code_postal' => $brussels['postalCode']->code,
         ]);
 
-        RendezVous::factory()->create([
+        Booking::factory()->create([
             'client_id' => $clientWavre->id,
             'employe_id' => null,
             'service_catalog_id' => $wavre['service']->id,

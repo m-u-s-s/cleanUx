@@ -2,7 +2,7 @@
 
 namespace App\Notifications;
 
-use App\Models\RendezVous;
+use App\Models\Booking;
 use App\Models\User;
 use App\Support\Notifications\InteractsWithUserNotificationPreferences;
 use Illuminate\Bus\Queueable;
@@ -18,7 +18,7 @@ class EmployeReaffectationSuggestionNotification extends Notification
     public string $employeSuggere;
 
     public function __construct(
-        public RendezVous $rdv,
+        public Booking $rdv,
         User|string|null $employeSurcharge,
         User|string|null $employeSuggere
     ) {

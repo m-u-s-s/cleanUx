@@ -2,7 +2,7 @@
 
 namespace App\Notifications;
 
-use App\Models\RendezVous;
+use App\Models\Booking;
 use App\Support\Domain\BookingStatus;
 use App\Support\Notifications\InteractsWithUserNotificationPreferences;
 use Illuminate\Bus\Queueable;
@@ -15,7 +15,7 @@ class StatutRendezVousNotification extends Notification implements ShouldQueue
     use Queueable;
     use InteractsWithUserNotificationPreferences;
 
-    public function __construct(public RendezVous $rdv)
+    public function __construct(public Booking $rdv)
     {
     }
 

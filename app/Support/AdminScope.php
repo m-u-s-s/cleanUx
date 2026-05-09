@@ -3,7 +3,7 @@
 namespace App\Support;
 
 use App\Models\Feedback;
-use App\Models\RendezVous;
+use App\Models\Booking;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Builder;
 
@@ -61,7 +61,7 @@ class AdminScope
         return $query;
     }
 
-    public static function canAccessRendezVous(User $admin, RendezVous $rendezVous): bool
+    public static function canAccessRendezVous(User $admin, Booking $rendezVous): bool
     {
         if (! $admin->isAdmin() || ! $admin->is_active) {
             return false;

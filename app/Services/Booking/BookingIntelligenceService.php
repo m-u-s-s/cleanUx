@@ -2,7 +2,7 @@
 
 namespace App\Services\Booking;
 
-use App\Models\RendezVous;
+use App\Models\Booking;
 use App\Models\ServiceZone;
 use App\Models\ServiceCatalog;
 

@@ -3,7 +3,7 @@
 namespace App\Livewire\Employe;
 
 use Livewire\Component;
-use App\Models\RendezVous;
+use App\Models\Booking;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 
@@ -22,13 +22,13 @@ class ValidationMultipleRdv extends Component
 
     public function validerSelection()
     {
-        $rdvs = RendezVous::whereIn('id', $this->selection)->get();
+        $rdvs = Booking::whereIn('id', $this->selection)->get();
 
         foreach ($rdvs as $rdv) {
             Gate::authorize('update', $rdv);
         }
 
-        RendezVous::whereIn('id', $this->selection)
+        Booking::whereIn('id', $this->selection)
             ->where('employe_id', Auth::id())
             ->update(['status' => 'confirme']);
 
@@ -38,13 +38,13 @@ class ValidationMultipleRdv extends Component
 
     public function refuserSelection()
     {
-        $rdvs = RendezVous::whereIn('id', $this->selection)->get();
+        $rdvs = Booking::whereIn('id', $this->selection)->get();
 
         foreach ($rdvs as $rdv) {
             Gate::authorize('update', $rdv);
         }
 
-        RendezVous::whereIn('id', $this->selection)
+        Booking::whereIn('id', $this->selection)
             ->where('employe_id', Auth::id())
             ->update(['status' => 'refuse']);
 
@@ -54,7 +54,7 @@ class ValidationMultipleRdv extends Component
 
     public function render()
     {
-        $rdvs = RendezVous::where('employe_id', Auth::id())
+        $rdvs = Booking::where('employe_id', Auth::id())
             ->where('status', 'en_attente')
             ->orderBy('date')
             ->get();

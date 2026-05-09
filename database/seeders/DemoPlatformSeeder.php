@@ -8,7 +8,7 @@ use App\Models\Feedback;
 use App\Models\OrganizationAccount;
 use App\Models\OrganizationSite;
 use App\Models\PostalCode;
-use App\Models\RendezVous;
+use App\Models\Booking;
 use App\Models\ServiceCatalog;
 use App\Models\ServiceZone;
 use App\Models\User;
@@ -387,7 +387,7 @@ class DemoPlatformSeeder extends Seeder
         ];
 
         foreach ($appointments as $appointment) {
-            $rdv = RendezVous::updateOrCreate(
+            $rdv = Booking::updateOrCreate(
                 [
                     'client_id' => $appointment['client']->id,
                     'date' => $appointment['date'],

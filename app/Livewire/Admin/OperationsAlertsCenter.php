@@ -5,7 +5,7 @@ namespace App\Livewire\Admin;
 use App\Models\CustomerClaim;
 use App\Models\FinanceInvoice;
 use App\Models\Mission;
-use App\Models\RendezVous;
+use App\Models\Booking;
 use App\Support\Domain\BookingStatus;
 use App\Support\Domain\MissionStatus;
 use Illuminate\Contracts\View\View;
@@ -90,7 +90,7 @@ class OperationsAlertsCenter extends Component
                 ->get()
             : collect();
 
-        $pendingBookings = RendezVous::query()
+        $pendingBookings = Booking::query()
             ->with(['client', 'employe', 'serviceZone'])
             ->where('status', BookingStatus::EN_ATTENTE)
             ->whereDate('date', '<=', $now->copy()->addDays(2))

@@ -4,7 +4,7 @@ namespace App\Support\Livewire\Concerns;
 
 use App\Actions\Booking\CancelRecurringSeriesAction;
 use App\Actions\Booking\UpdateRecurringSeriesAction;
-use App\Models\RendezVous;
+use App\Models\Booking;
 use App\Models\User;
 use Illuminate\Support\Facades\Gate;
 use Livewire\Attributes\Computed;
@@ -18,7 +18,7 @@ trait InteractsWithRecurringSeries
     public ?int $editEmployeId = null;
     public string $contextLabel = 'série';
 
-    public function mountRecurringSeries(RendezVous $rendezVous): void
+    public function mountRecurringSeries(Booking $rendezVous): void
     {
         Gate::authorize('view', $rendezVous);
 
@@ -31,9 +31,9 @@ trait InteractsWithRecurringSeries
     }
 
     #[Computed]
-    public function currentRendezVous(): RendezVous
+    public function currentRendezVous(): Booking
     {
-        return RendezVous::query()
+        return Booking::query()
             ->with(['employe', 'serviceZone', 'serviceCatalog', 'client'])
             ->findOrFail($this->rendezVousId);
     }
@@ -41,7 +41,7 @@ trait InteractsWithRecurringSeries
     #[Computed]
     public function seriesOccurrences()
     {
-        return RendezVous::query()
+        return Booking::query()
             ->with(['employe'])
             ->where('recurring_series_id', $this->currentRendezVous->recurring_series_id)
             ->orderBy('series_position')

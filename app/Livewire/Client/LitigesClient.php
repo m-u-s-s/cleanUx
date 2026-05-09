@@ -3,7 +3,7 @@
 namespace App\Livewire\Client;
 
 use App\Models\CustomerClaim;
-use App\Models\RendezVous;
+use App\Models\Booking;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
@@ -46,7 +46,7 @@ class LitigesClient extends Component
         $this->validate();
 
         if ($this->rendez_vous_id) {
-            $rdv = RendezVous::where('client_id', Auth::id())
+            $rdv = Booking::where('client_id', Auth::id())
                 ->whereKey($this->rendez_vous_id)
                 ->firstOrFail();
         }
@@ -169,7 +169,7 @@ class LitigesClient extends Component
                 ->latest()
                 ->paginate(8),
 
-            'rendezVous' => RendezVous::query()
+            'rendezVous' => Booking::query()
                 ->where('client_id', Auth::id())
                 ->latest()
                 ->limit(20)

@@ -2,7 +2,7 @@
 
 namespace App\Services\Booking;
 
-use App\Models\RendezVous;
+use App\Models\Booking;
 use App\Models\User;
 use App\Services\Geo\GeoDistanceService;
 use Illuminate\Support\Collection;
@@ -16,7 +16,7 @@ class SmartDispatchService
 
 
 
-    protected function asapScore(User $employee, RendezVous $rdv): int
+    protected function asapScore(User $employee, Booking $rdv): int
     {
         if (($rdv->booking_mode ?? 'scheduled') !== 'asap') {
             return 0;
@@ -40,7 +40,7 @@ class SmartDispatchService
         return $score;
     }
 
-    protected function distanceScore(User $employee, RendezVous $rdv): int
+    protected function distanceScore(User $employee, Booking $rdv): int
     {
         if (! $employee->current_lat || ! $employee->current_lng) {
             return 0;
@@ -66,7 +66,7 @@ class SmartDispatchService
         };
     }
 
-    public function explainBestMatch(RendezVous $rdv): array
+    public function explainBestMatch(Booking $rdv): array
     {
         $candidates = $this->explainScores($rdv);
 
@@ -80,7 +80,7 @@ class SmartDispatchService
         ];
     }
 
-    public function assignBestEmployee(RendezVous $rdv): ?User
+    public function assignBestEmployee(Booking $rdv): ?User
     {
         if (! $rdv->service_zone_id || ! $rdv->date || ! $rdv->heure) {
             return null;
@@ -104,7 +104,7 @@ class SmartDispatchService
             ->first();
     }
 
-    public function score(User $employee, RendezVous $rdv): int
+    public function score(User $employee, Booking $rdv): int
     {
         $score = 0;
 
@@ -120,7 +120,7 @@ class SmartDispatchService
         return $score;
     }
 
-    protected function zoneScore(User $employee, RendezVous $rdv): int
+    protected function zoneScore(User $employee, Booking $rdv): int
     {
         if (! $rdv->service_zone_id) {
             return 0;
@@ -145,7 +145,7 @@ class SmartDispatchService
         };
     }
 
-    protected function favoriteScore(User $employee, RendezVous $rdv): int
+    protected function favoriteScore(User $employee, Booking $rdv): int
     {
         if (! $rdv->client_id) {
             return 0;
@@ -172,7 +172,7 @@ class SmartDispatchService
         return (int) round($average * 2);
     }
 
-    protected function workloadScore(User $employee, RendezVous $rdv): int
+    protected function workloadScore(User $employee, Booking $rdv): int
     {
         $date = $rdv->date?->format('Y-m-d');
 
@@ -193,7 +193,7 @@ class SmartDispatchService
         };
     }
 
-    protected function premiumScore(User $employee, RendezVous $rdv): int
+    protected function premiumScore(User $employee, Booking $rdv): int
     {
         $client = $rdv->client;
 
@@ -204,7 +204,7 @@ class SmartDispatchService
         return $client->isPremium() ? 80 : 0;
     }
 
-    public function explainScores(RendezVous $rdv): Collection
+    public function explainScores(Booking $rdv): Collection
     {
         if (! $rdv->service_zone_id) {
             return collect();

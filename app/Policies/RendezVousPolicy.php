@@ -2,7 +2,7 @@
 
 namespace App\Policies;
 
-use App\Models\RendezVous;
+use App\Models\Booking;
 use App\Models\User;
 
 class RendezVousPolicy
@@ -14,7 +14,7 @@ class RendezVousPolicy
             || ($user->isAdmin() && ! $user->isReadOnlyAdmin());
     }
     
-    public function view(User $user, RendezVous $rendezVous): bool
+    public function view(User $user, Booking $rendezVous): bool
     {
         if ($user->isAdmin()) {
             return true;
@@ -32,7 +32,7 @@ class RendezVousPolicy
     }
 
 
-    public function update(User $user, RendezVous $rendezVous): bool
+    public function update(User $user, Booking $rendezVous): bool
     {
         if ($user->isAdmin() && ! $user->isReadOnlyAdmin()) {
             return true;
@@ -49,12 +49,12 @@ class RendezVousPolicy
         return false;
     }
 
-    public function reschedule(User $user, RendezVous $rendezVous): bool
+    public function reschedule(User $user, Booking $rendezVous): bool
     {
         return $this->update($user, $rendezVous);
     }
 
-    public function cancel(User $user, RendezVous $rendezVous): bool
+    public function cancel(User $user, Booking $rendezVous): bool
     {
         if ($user->isAdmin() && ! $user->isReadOnlyAdmin()) {
             return true;
@@ -68,14 +68,14 @@ class RendezVousPolicy
             ], true);
     }
 
-    public function assignEmployee(User $user, RendezVous $rendezVous): bool
+    public function assignEmployee(User $user, Booking $rendezVous): bool
     {
         return $user->isAdmin()
             && ! $user->isReadOnlyAdmin()
             && $user->hasPermission('manage-calendar');
     }
 
-    public function delete(User $user, RendezVous $rendezVous): bool
+    public function delete(User $user, Booking $rendezVous): bool
     {
         return $user->isAdmin()
             && $user->canPerformCriticalAdminActions();

@@ -3,7 +3,7 @@
 namespace App\Livewire\Admin;
 
 use App\Models\OrganizationAccount;
-use App\Models\RendezVous;
+use App\Models\Booking;
 use App\Models\User;
 use App\Support\ActivityLogger;
 use Illuminate\Support\Facades\Gate;
@@ -151,7 +151,7 @@ class ImportCsv extends Component
                     continue;
                 }
 
-                RendezVous::create([
+                Booking::create([
                     'date' => $data['date'],
                     'heure' => $data['heure'],
                     'client_id' => $data['client_id'],

@@ -2,7 +2,7 @@
 
 namespace App\Livewire\Employe;
 
-use App\Models\RendezVous;
+use App\Models\Booking;
 use App\Notifications\StatutRendezVousNotification;
 use App\Support\ActivityLogger;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
@@ -57,7 +57,7 @@ class MesRendezVous extends Component
 
     protected function rendezVousQuery()
     {
-        $query = RendezVous::with([
+        $query = Booking::with([
             'client',
             'serviceCatalog',
             'postalCode',
@@ -90,7 +90,7 @@ class MesRendezVous extends Component
 
     public function selectRdv(int $id): void
     {
-        $rdv = RendezVous::query()
+        $rdv = Booking::query()
             ->where('employe_id', Auth::id())
             ->findOrFail($id);
 
@@ -102,13 +102,13 @@ class MesRendezVous extends Component
         $this->selectedRdvId = null;
     }
 
-    public function getSelectedRendezVousProperty(): ?RendezVous
+    public function getSelectedRendezVousProperty(): ?Booking
     {
         if (! $this->selectedRdvId) {
             return null;
         }
 
-        return RendezVous::with([
+        return Booking::with([
             'client',
             'serviceCatalog',
             'postalCode',
@@ -137,7 +137,7 @@ class MesRendezVous extends Component
             abort(403);
         }
 
-        $rdv = RendezVous::findOrFail($id);
+        $rdv = Booking::findOrFail($id);
 
         Gate::authorize('update', $rdv);
 
@@ -185,7 +185,7 @@ class MesRendezVous extends Component
 
     public function ouvrirCheckInMission($id): void
     {
-        $rdv = RendezVous::findOrFail($id);
+        $rdv = Booking::findOrFail($id);
 
         Gate::authorize('update', $rdv);
 
@@ -210,7 +210,7 @@ class MesRendezVous extends Component
 
     public function sauverCheckInMission(): void
     {
-        $rdv = RendezVous::findOrFail($this->checkInRdvId);
+        $rdv = Booking::findOrFail($this->checkInRdvId);
 
         Gate::authorize('update', $rdv);
 
@@ -260,7 +260,7 @@ class MesRendezVous extends Component
 
     public function ouvrirRapportFinMission($id)
     {
-        $rdv = RendezVous::findOrFail($id);
+        $rdv = Booking::findOrFail($id);
 
         Gate::authorize('update', $rdv);
 
@@ -316,7 +316,7 @@ class MesRendezVous extends Component
 
     public function sauverRapportFinMission()
     {
-        $rdv = RendezVous::findOrFail($this->rapportRdvId);
+        $rdv = Booking::findOrFail($this->rapportRdvId);
 
         Gate::authorize('update', $rdv);
 

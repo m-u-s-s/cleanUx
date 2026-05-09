@@ -2,7 +2,7 @@
 
 namespace Tests\Feature;
 
-use App\Models\RendezVous;
+use App\Models\Booking;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -17,7 +17,7 @@ class ExportRendezVousTest extends TestCase
 
         $this->actingAs($admin);
 
-        RendezVous::factory()->count(3)->create();
+        Booking::factory()->count(3)->create();
 
         $csvResponse = $this->get(route('admin.export.pdf'));
         $csvResponse->assertStatus(200);

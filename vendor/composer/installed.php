@@ -3,7 +3,7 @@
         'name' => 'laravel/laravel',
         'pretty_version' => 'dev-main',
         'version' => 'dev-main',
-        'reference' => '199278c88975dbdf4dd2c46494b883aef433032b',
+        'reference' => 'eddbaf43551e69b9c6c27fc15645b478de5117b9',
         'type' => 'project',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
@@ -472,6 +472,15 @@
                 0 => '10.50.2',
             ),
         ),
+        'knuckleswtf/scribe' => array(
+            'pretty_version' => '5.9.0',
+            'version' => '5.9.0.0',
+            'reference' => '170cb6f8c56f1b26db692fdd1f26574b1765c6f7',
+            'type' => 'library',
+            'install_path' => __DIR__ . '/../knuckleswtf/scribe',
+            'aliases' => array(),
+            'dev_requirement' => true,
+        ),
         'kodova/hamcrest-php' => array(
             'dev_requirement' => true,
             'replaced' => array(
@@ -517,7 +526,7 @@
         'laravel/laravel' => array(
             'pretty_version' => 'dev-main',
             'version' => 'dev-main',
-            'reference' => '199278c88975dbdf4dd2c46494b883aef433032b',
+            'reference' => 'eddbaf43551e69b9c6c27fc15645b478de5117b9',
             'type' => 'project',
             'install_path' => __DIR__ . '/../../',
             'aliases' => array(),
@@ -650,9 +659,9 @@
             'dev_requirement' => false,
         ),
         'minishlink/web-push' => array(
-            'pretty_version' => 'v10.0.3',
-            'version' => '10.0.3.0',
-            'reference' => '547695eb42b062517fc604c85d6f7bb8174d31b0',
+            'pretty_version' => 'v9.0.4',
+            'version' => '9.0.4.0',
+            'reference' => 'f979f40b0017d2f86d82b9f21edbc515d031cc23',
             'type' => 'library',
             'install_path' => __DIR__ . '/../minishlink/web-push',
             'aliases' => array(),
@@ -693,6 +702,21 @@
             'install_path' => __DIR__ . '/../monolog/monolog',
             'aliases' => array(),
             'dev_requirement' => false,
+        ),
+        'mpociot/laravel-apidoc-generator' => array(
+            'dev_requirement' => true,
+            'replaced' => array(
+                0 => '*',
+            ),
+        ),
+        'mpociot/reflection-docblock' => array(
+            'pretty_version' => '1.0.1',
+            'version' => '1.0.1.0',
+            'reference' => 'c8b2e2b1f5cebbb06e2b5ccbf2958f2198867587',
+            'type' => 'library',
+            'install_path' => __DIR__ . '/../mpociot/reflection-docblock',
+            'aliases' => array(),
+            'dev_requirement' => true,
         ),
         'mtdowling/cron-expression' => array(
             'dev_requirement' => false,
@@ -780,6 +804,15 @@
             'install_path' => __DIR__ . '/../paragonie/sodium_compat',
             'aliases' => array(),
             'dev_requirement' => false,
+        ),
+        'parsedown/parsedown' => array(
+            'pretty_version' => '1.8.0',
+            'version' => '1.8.0.0',
+            'reference' => '96baaad00f71ba04d76e45b4620f54d3beabd6f7',
+            'type' => 'library',
+            'install_path' => __DIR__ . '/../parsedown/parsedown',
+            'aliases' => array(),
+            'dev_requirement' => true,
         ),
         'phar-io/manifest' => array(
             'pretty_version' => '2.0.4',
@@ -1268,6 +1301,15 @@
             'aliases' => array(),
             'dev_requirement' => true,
         ),
+        'shalvah/upgrader' => array(
+            'pretty_version' => '0.6.0',
+            'version' => '0.6.0.0',
+            'reference' => 'd95ed17fe9f5e1ee7d47ad835595f1af080a867f',
+            'type' => 'library',
+            'install_path' => __DIR__ . '/../shalvah/upgrader',
+            'aliases' => array(),
+            'dev_requirement' => true,
+        ),
         'spatie/backtrace' => array(
             'pretty_version' => '1.8.2',
             'version' => '1.8.2.0',
@@ -1508,6 +1550,15 @@
             'aliases' => array(),
             'dev_requirement' => false,
         ),
+        'symfony/polyfill-php82' => array(
+            'pretty_version' => 'v1.37.0',
+            'version' => '1.37.0.0',
+            'reference' => '34808efe3e68f69685796f7c253a2f1d8ea9df59',
+            'type' => 'library',
+            'install_path' => __DIR__ . '/../symfony/polyfill-php82',
+            'aliases' => array(),
+            'dev_requirement' => false,
+        ),
         'symfony/polyfill-php83' => array(
             'pretty_version' => 'v1.37.0',
             'version' => '1.37.0.0',
@@ -1612,6 +1663,15 @@
             'install_path' => __DIR__ . '/../symfony/var-dumper',
             'aliases' => array(),
             'dev_requirement' => false,
+        ),
+        'symfony/var-exporter' => array(
+            'pretty_version' => 'v8.0.9',
+            'version' => '8.0.9.0',
+            'reference' => '24cf67be4dd0926e4413635418682f4fff831412',
+            'type' => 'library',
+            'install_path' => __DIR__ . '/../symfony/var-exporter',
+            'aliases' => array(),
+            'dev_requirement' => true,
         ),
         'symfony/yaml' => array(
             'pretty_version' => 'v7.4.8',

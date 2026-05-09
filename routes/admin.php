@@ -4,8 +4,11 @@
 
 use App\Models\User;
 use App\Http\Controllers\Admin\MissionAdminController;
+use App\Http\Controllers\Admin\OnboardingDocumentController;
+use App\Livewire\Admin\Onboarding\AdminOnboardingDocumentsCenter;
+use App\Livewire\Admin\Onboarding\AdminOnboardingProvidersList;
 use App\Models\Feedback;
-use App\Models\RendezVous;
+use App\Models\Booking;
 use Illuminate\Support\Facades\Route;
 use Barryvdh\DomPDF\Facade\Pdf;
 
@@ -60,7 +63,7 @@ Route::middleware(['role:admin'])
             ]);
         })->name('quality.export.missions.csv');
 
-        Route::get('/rendez-vous/{rendezVous}', function (RendezVous $rendezVous) {
+        Route::get('/rendez-vous/{rendezVous}', function (Booking $rendezVous) {
             if (Route::has('admin.missions')) {
                 return redirect()->route('admin.missions');
             }
@@ -175,4 +178,16 @@ Route::middleware(['role:admin'])
         })->name('feedbacks.export.csv');
 
         Route::get('/trades', \App\Livewire\Admin\Trades::class)->name('trades');
+
+        // Phase 14.1 — Onboarding admin
+        Route::get('/onboarding-providers',  AdminOnboardingProvidersList::class)
+            ->name('onboarding.providers');
+
+        Route::get('/onboarding-documents',  AdminOnboardingDocumentsCenter::class)
+            ->name('onboarding.documents');
+
+        // Téléchargement de fichier privé via URL signée temporaire
+        Route::get('/onboarding-documents/{document}/file', [OnboardingDocumentController::class, 'show'])
+            ->middleware('signed')
+            ->name('onboarding.document.file');
     });

@@ -5,7 +5,7 @@ namespace App\Livewire\Admin;
 use App\Models\ComplaintCase;
 use App\Models\IncidentReport;
 use App\Models\QualityAudit;
-use App\Models\RendezVous;
+use App\Models\Booking;
 use App\Models\ServiceZone;
 use App\Models\User;
 use App\Support\ActivityLogger;
@@ -68,7 +68,7 @@ class IncidentsQualiteCenter extends Component
 
     public function getAuditableRendezVousProperty()
     {
-        return RendezVous::query()
+        return Booking::query()
             ->with(['client', 'employe', 'serviceZone'])
             ->whereIn('status', ['termine', 'confirme'])
             ->latest('date')
@@ -270,7 +270,7 @@ class IncidentsQualiteCenter extends Component
             'auditStatus' => ['required', 'string'],
         ]);
 
-        $rdv = $this->auditRendezVousId ? RendezVous::with(['employe', 'serviceZone'])->find($this->auditRendezVousId) : null;
+        $rdv = $this->auditRendezVousId ? Booking::with(['employe', 'serviceZone'])->find($this->auditRendezVousId) : null;
         $score = (int) round(($this->auditPunctuality + $this->auditService + $this->auditCommunication) / 3);
 
         $audit = QualityAudit::create([

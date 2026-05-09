@@ -2,7 +2,7 @@
 
 namespace Tests\Feature;
 
-use App\Models\RendezVous;
+use App\Models\Booking;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -16,7 +16,7 @@ class RendezVousPolicyTest extends TestCase
         $client = User::factory()->create(['role' => 'client']);
         $employe = User::factory()->create(['role' => 'employe']);
 
-        $rdv = RendezVous::factory()->create([
+        $rdv = Booking::factory()->create([
             'client_id' => $client->id,
             'employe_id' => $employe->id,
             'status' => 'en_attente',
@@ -32,7 +32,7 @@ class RendezVousPolicyTest extends TestCase
         $client = User::factory()->create(['role' => 'client']);
         $employe = User::factory()->create(['role' => 'employe']);
 
-        $rdv = RendezVous::factory()->create([
+        $rdv = Booking::factory()->create([
             'client_id' => $client->id,
             'employe_id' => $employe->id,
             'status' => 'termine',
@@ -49,7 +49,7 @@ class RendezVousPolicyTest extends TestCase
         $employe1 = User::factory()->create(['role' => 'employe']);
         $employe2 = User::factory()->create(['role' => 'employe']);
 
-        $rdv = RendezVous::factory()->create([
+        $rdv = Booking::factory()->create([
             'client_id' => $client->id,
             'employe_id' => $employe1->id,
             'status' => 'confirme',

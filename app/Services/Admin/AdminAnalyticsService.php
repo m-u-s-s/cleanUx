@@ -3,7 +3,7 @@
 namespace App\Services\Admin;
 
 use App\Models\Feedback;
-use App\Models\RendezVous;
+use App\Models\Booking;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
@@ -23,14 +23,14 @@ class AdminAnalyticsService
 
         $currentYear = (string) now()->year;
 
-        $monthlyRevenueRows = RendezVous::query()
+        $monthlyRevenueRows = Booking::query()
             ->selectRaw($monthExpression . ' as month, SUM(devis_estime) as total')
             ->whereRaw($yearExpression, [$currentYear])
             ->groupBy('month')
             ->orderBy('month')
             ->get();
 
-        $monthlyMissionRows = RendezVous::query()
+        $monthlyMissionRows = Booking::query()
             ->selectRaw($monthExpression . ' as month, COUNT(*) as total')
             ->whereRaw($yearExpression, [$currentYear])
             ->groupBy('month')
@@ -56,19 +56,19 @@ class AdminAnalyticsService
             }
         }
 
-        $totalRevenue = (float) RendezVous::query()->sum('devis_estime');
+        $totalRevenue = (float) Booking::query()->sum('devis_estime');
 
         $totalMargin = 0.0;
 
         if (Schema::hasColumn('rendez_vous', 'margin')) {
-            $totalMargin = (float) RendezVous::query()->sum('margin');
+            $totalMargin = (float) Booking::query()->sum('margin');
         } elseif (Schema::hasColumn('rendez_vous', 'marge')) {
-            $totalMargin = (float) RendezVous::query()->sum('marge');
+            $totalMargin = (float) Booking::query()->sum('marge');
         }
 
-        $missionsCount = RendezVous::query()->count();
+        $missionsCount = Booking::query()->count();
 
-        $completedMissions = RendezVous::query()
+        $completedMissions = Booking::query()
             ->whereIn('status', ['termine', 'terminé', 'completed'])
             ->count();
 
@@ -82,14 +82,14 @@ class AdminAnalyticsService
             }
         }
 
-        $statusBreakdown = RendezVous::query()
+        $statusBreakdown = Booking::query()
             ->select('status', DB::raw('COUNT(*) as total'))
             ->groupBy('status')
             ->pluck('total', 'status')
             ->toArray();
 
         $averageTicket = $missionsCount > 0
-            ? (float) RendezVous::query()->avg('devis_estime')
+            ? (float) Booking::query()->avg('devis_estime')
             : 0.0;
 
         return [

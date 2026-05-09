@@ -2,7 +2,7 @@
 
 namespace App\Services\Dispatch;
 
-use App\Models\RendezVous;
+use App\Models\Booking;
 use App\Models\User;
 use App\Services\Booking\EmployeeAvailabilityService;
 use Illuminate\Support\Collection;
@@ -13,12 +13,12 @@ class AiDispatchService
         protected EmployeeAvailabilityService $availability,
     ) {}
 
-    public function bestEmployeeFor(RendezVous $rdv): ?User
+    public function bestEmployeeFor(Booking $rdv): ?User
     {
         return $this->rankEmployees($rdv)->first()['employee'] ?? null;
     }
 
-    public function rankEmployees(RendezVous $rdv): Collection
+    public function rankEmployees(Booking $rdv): Collection
     {
         if (! $rdv->service_zone_id || ! $rdv->date || ! $rdv->heure) {
             return collect();
@@ -28,15 +28,16 @@ class AiDispatchService
 
         return $this->availability
             ->sortedEligibleEmployeesForZone((int) $rdv->service_zone_id)
-            ->filter(fn (User $employee) => $this->availability->employeeIsAvailableForSlot(
-                $employee->id,
-                $rdv->date->format('Y-m-d'),
-                substr((string) $rdv->heure, 0, 5),
-                $rdv->serviceZone,
-                $duration,
-                $rdv->id
-            ))
-            ->map(fn (User $employee) => [
+            ->filter(function (User $employee) use ($rdv, $duration) {
+                // Phase 11 — Filtre online si mode ASAP ou si feature flag activé
+                if ($rdv->booking_mode === 'asap') {
+                    $profile = $employee->providerProfile;
+                    if (! $profile || ! $profile->is_online) {
+                        return false;
+                    }
+                }
+            })
+            ->map(fn(User $employee) => [
                 'employee' => $employee,
                 'score' => $this->score($employee, $rdv),
                 'details' => $this->scoreDetails($employee, $rdv),
@@ -45,12 +46,12 @@ class AiDispatchService
             ->values();
     }
 
-    public function score(User $employee, RendezVous $rdv): int
+    public function score(User $employee, Booking $rdv): int
     {
         return array_sum($this->scoreDetails($employee, $rdv));
     }
 
-    public function scoreDetails(User $employee, RendezVous $rdv): array
+    public function scoreDetails(User $employee, Booking $rdv): array
     {
         return [
             'zone' => $this->zoneScore($employee, $rdv),
@@ -63,7 +64,7 @@ class AiDispatchService
         ];
     }
 
-    protected function zoneScore(User $employee, RendezVous $rdv): int
+    protected function zoneScore(User $employee, Booking $rdv): int
     {
         if ((int) $employee->primary_service_zone_id === (int) $rdv->service_zone_id) {
             return 300;
@@ -89,7 +90,7 @@ class AiDispatchService
         return $avg > 0 ? (int) round($avg * 2) : 120;
     }
 
-    protected function workloadScore(User $employee, RendezVous $rdv): int
+    protected function workloadScore(User $employee, Booking $rdv): int
     {
         $count = $employee->rendezVousEmploye()
             ->whereDate('date', $rdv->date)
@@ -104,7 +105,7 @@ class AiDispatchService
         };
     }
 
-    protected function favoriteScore(User $employee, RendezVous $rdv): int
+    protected function favoriteScore(User $employee, Booking $rdv): int
     {
         if (! $rdv->client_id) {
             return 0;
@@ -114,18 +115,18 @@ class AiDispatchService
             ->where('client_id', $rdv->client_id)
             ->wherePivot('is_favorite', true)
             ->exists()
-                ? 180
-                : 0;
+            ? 180
+            : 0;
     }
 
-    protected function premiumScore(RendezVous $rdv): int
+    protected function premiumScore(Booking $rdv): int
     {
         return $rdv->client && method_exists($rdv->client, 'isPremium') && $rdv->client->isPremium()
             ? 80
             : 0;
     }
 
-    protected function urgencyScore(RendezVous $rdv): int
+    protected function urgencyScore(Booking $rdv): int
     {
         return $rdv->priorite === 'urgente' ? 120 : 0;
     }

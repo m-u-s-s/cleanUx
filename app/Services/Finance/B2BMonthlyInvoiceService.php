@@ -4,7 +4,7 @@ namespace App\Services\Finance;
 
 use App\Models\FinanceInvoice;
 use App\Models\OrganizationAccount;
-use App\Models\RendezVous;
+use App\Models\Booking;
 use App\Support\ActivityLogger;
 use App\Support\Domain\BookingStatus;
 use Carbon\Carbon;
@@ -21,7 +21,7 @@ class B2BMonthlyInvoiceService
         $periodStart = Carbon::parse($periodStart)->startOfDay();
         $periodEnd = Carbon::parse($periodEnd)->endOfDay();
 
-        $rendezVous = RendezVous::query()
+        $rendezVous = Booking::query()
             ->with(['client', 'organizationSite', 'serviceCatalog'])
             ->where('organization_account_id', $organization->id)
             ->whereIn('status', [BookingStatus::TERMINE, BookingStatus::CONFIRME])
@@ -122,7 +122,7 @@ class B2BMonthlyInvoiceService
 
     protected function lines(Collection $rendezVous): array
     {
-        return $rendezVous->map(fn (RendezVous $rdv) => [
+        return $rendezVous->map(fn (Booking $rdv) => [
             'rendez_vous_id' => $rdv->id,
             'booking_reference' => $rdv->booking_reference,
             'date' => $rdv->date?->format('Y-m-d'),
@@ -137,7 +137,7 @@ class B2BMonthlyInvoiceService
     protected function siteBreakdown(Collection $rendezVous): array
     {
         return $rendezVous
-            ->groupBy(fn (RendezVous $rdv) => $rdv->organizationSite?->name ?? 'Sans site')
+            ->groupBy(fn (Booking $rdv) => $rdv->organizationSite?->name ?? 'Sans site')
             ->map(fn (Collection $items, string $siteName) => [
                 'site' => $siteName,
                 'count' => $items->count(),

@@ -6,7 +6,7 @@ use App\Models\FinanceInvoice;
 use App\Models\FinancePayment;
 use App\Models\FinanceQuote;
 use App\Models\FinanceReminder;
-use App\Models\RendezVous;
+use App\Models\Booking;
 use App\Notifications\FinanceReminderNotification;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Carbon;
@@ -14,7 +14,7 @@ use Illuminate\Support\Facades\DB;
 
 trait SynchronizesFinanceDocuments
 {
-    public function syncQuoteForRendezVous(RendezVous $rdv): FinanceQuote
+    public function syncQuoteForRendezVous(Booking $rdv): FinanceQuote
     {
         $amounts = $this->amountBreakdownFor($rdv);
 
@@ -51,7 +51,7 @@ trait SynchronizesFinanceDocuments
         });
     }
 
-    public function syncInvoiceForRendezVous(RendezVous $rdv): ?FinanceInvoice
+    public function syncInvoiceForRendezVous(Booking $rdv): ?FinanceInvoice
     {
         if (! in_array($rdv->status, ['confirme', 'en_route', 'sur_place', 'termine'], true)) {
             return null;
@@ -193,7 +193,7 @@ trait SynchronizesFinanceDocuments
         $quotes = 0;
         $invoices = 0;
 
-        RendezVous::query()
+        Booking::query()
             ->with(['client', 'organizationAccount', 'organizationSite', 'serviceCatalog', 'serviceZone'])
             ->chunkById(100, function ($rows) use (&$quotes, &$invoices) {
                 foreach ($rows as $rdv) {

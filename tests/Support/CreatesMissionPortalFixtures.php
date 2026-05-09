@@ -4,7 +4,7 @@ namespace Tests\Support;
 
 use App\Models\Mission;
 use App\Models\MissionVerificationCode;
-use App\Models\RendezVous;
+use App\Models\Booking;
 use App\Models\User;
 
 trait CreatesMissionPortalFixtures
@@ -38,7 +38,7 @@ trait CreatesMissionPortalFixtures
             ['date' => now()->addDays(2)->toDateString()]
         );
 
-        $rendezVous = RendezVous::factory()
+        $rendezVous = Booking::factory()
             ->forStructuredContext($context['service'], $context['zone'], $context['postalCode'])
             ->create(array_merge([
                 'client_id' => $client->id,
@@ -123,7 +123,7 @@ trait CreatesMissionPortalFixtures
             ['date' => now()->addDays(3)->toDateString()]
         );
 
-        $rendezVous = RendezVous::factory()
+        $rendezVous = Booking::factory()
             ->forStructuredContext($context['service'], $context['zone'], $context['postalCode'])
             ->recurringSeries()
             ->create([

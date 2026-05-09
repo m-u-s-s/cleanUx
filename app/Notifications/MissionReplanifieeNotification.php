@@ -2,7 +2,7 @@
 
 namespace App\Notifications;
 
-use App\Models\RendezVous;
+use App\Models\Booking;
 use App\Support\Notifications\InteractsWithUserNotificationPreferences;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -15,7 +15,7 @@ class MissionReplanifieeNotification extends Notification implements ShouldQueue
     use InteractsWithUserNotificationPreferences;
 
     public function __construct(
-        public RendezVous $rdv,
+        public Booking $rdv,
         public string $ancienEmploye,
         public string $ancienneDate,
         public string $ancienneHeure

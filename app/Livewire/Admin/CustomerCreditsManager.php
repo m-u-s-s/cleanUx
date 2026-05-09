@@ -3,7 +3,7 @@
 namespace App\Livewire\Admin;
 
 use App\Models\CustomerCredit;
-use App\Models\RendezVous;
+use App\Models\Booking;
 use App\Models\User;
 use App\Support\ActivityLogger;
 use Illuminate\Contracts\View\View;
@@ -101,7 +101,7 @@ class CustomerCreditsManager extends Component
                 ->orderBy('name')
                 ->get(),
 
-            'rendezVous' => RendezVous::query()
+            'rendezVous' => Booking::query()
                 ->when($this->client_id, fn ($query) => $query->where('client_id', $this->client_id))
                 ->latest()
                 ->limit(50)

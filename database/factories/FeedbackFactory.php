@@ -3,7 +3,7 @@
 namespace Database\Factories;
 
 use App\Models\Feedback;
-use App\Models\RendezVous;
+use App\Models\Booking;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 class FeedbackFactory extends Factory
@@ -13,7 +13,7 @@ class FeedbackFactory extends Factory
     public function definition(): array
     {
         return [
-            'rendez_vous_id' => RendezVous::factory()->state([
+            'rendez_vous_id' => Booking::factory()->state([
                 'status' => 'termine'
             ]),
             'client_id' => null,
@@ -42,7 +42,7 @@ class FeedbackFactory extends Factory
             });
     }
 
-    public function forRendezVous(RendezVous $rdv): static
+    public function forRendezVous(Booking $rdv): static
     {
         return $this->state(fn() => [
             'rendez_vous_id' => $rdv->id,

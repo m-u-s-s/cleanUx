@@ -4,7 +4,7 @@ namespace App\Livewire\Admin;
 
 use App\Models\ActivityLog;
 use App\Models\Feedback;
-use App\Models\RendezVous;
+use App\Models\Booking;
 use App\Models\User;
 use Livewire\Component;
 
@@ -16,7 +16,7 @@ class OutilsDeTest extends Component
             'utilisateurs' => User::count(),
             'clients' => User::clientFacing()->count(),
             'employes' => User::where('role', 'employe')->count(),
-            'rendez_vous' => RendezVous::count(),
+            'rendez_vous' => Booking::count(),
             'feedbacks' => Feedback::count(),
             'logs' => ActivityLog::count(),
         ];

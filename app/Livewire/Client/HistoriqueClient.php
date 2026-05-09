@@ -2,7 +2,7 @@
 
 namespace App\Livewire\Client;
 
-use App\Models\RendezVous;
+use App\Models\Booking;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -55,7 +55,7 @@ class HistoriqueClient extends Component
 
     public function render(): View
     {
-        $query = RendezVous::with([
+        $query = Booking::with([
             'employe',
             'feedback',
             'serviceCatalog',

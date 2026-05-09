@@ -2,13 +2,13 @@
 
 namespace App\Services\Notifications;
 
-use App\Models\RendezVous;
+use App\Models\Booking;
 use App\Notifications\FeedbackInviteNotification;
 use App\Notifications\RendezVousReminderNotification;
 
 class SmartNotificationService
 {
-    public function send24hReminder(RendezVous $rdv): void
+    public function send24hReminder(Booking $rdv): void
     {
         if (! $rdv->client || $rdv->rappel_24h_envoye_at) {
             return;
@@ -21,7 +21,7 @@ class SmartNotificationService
         ]);
     }
 
-    public function send2hReminder(RendezVous $rdv): void
+    public function send2hReminder(Booking $rdv): void
     {
         if (! $rdv->client || $rdv->rappel_2h_envoye_at) {
             return;
@@ -34,7 +34,7 @@ class SmartNotificationService
         ]);
     }
 
-    public function sendFeedbackInvite(RendezVous $rdv): void
+    public function sendFeedbackInvite(Booking $rdv): void
     {
         if (! $rdv->client || $rdv->feedback_demande_envoye_at) {
             return;

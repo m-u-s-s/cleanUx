@@ -7,7 +7,7 @@ use App\Models\CountryBillingProfile;
 use App\Models\CountryOperationalSetting;
 use App\Models\CountryServiceCatalogRule;
 use App\Models\PostalCode;
-use App\Models\RendezVous;
+use App\Models\Booking;
 use App\Models\ServiceCatalog;
 use App\Models\ServiceZone;
 use App\Services\Finance\FinanceDocumentService;
@@ -56,7 +56,7 @@ class FinanceDocumentServiceInternationalRulesTest extends TestCase
 
         $zone = ServiceZone::factory()->create(['country_id' => $country->id]);
         $postal = PostalCode::factory()->create(['country_id' => $country->id]);
-        $rdv = RendezVous::factory()->create([
+        $rdv = Booking::factory()->create([
             'service_catalog_id' => $catalog->id,
             'service_zone_id' => $zone->id,
             'postal_code_id' => $postal->id,

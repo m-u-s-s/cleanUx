@@ -5,7 +5,7 @@ namespace App\Services\Analytics;
 use App\Models\CustomerClaim;
 use App\Models\Feedback;
 use App\Models\Mission;
-use App\Models\RendezVous;
+use App\Models\Booking;
 use App\Support\Domain\BookingStatus;
 use App\Support\Domain\MissionStatus;
 
@@ -18,7 +18,7 @@ class OperationalQualityService
             ->when($dateTo, fn ($q) => $q->whereDate('planned_start_at', '<=', $dateTo))
             ->get();
 
-        $bookings = RendezVous::query()
+        $bookings = Booking::query()
             ->when($dateFrom, fn ($q) => $q->whereDate('date', '>=', $dateFrom))
             ->when($dateTo, fn ($q) => $q->whereDate('date', '<=', $dateTo))
             ->get();

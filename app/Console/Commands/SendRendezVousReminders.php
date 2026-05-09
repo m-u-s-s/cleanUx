@@ -3,7 +3,7 @@
 namespace App\Console\Commands;
 
 use App\Models\EmployeeZoneAssignment;
-use App\Models\RendezVous;
+use App\Models\Booking;
 use App\Models\User;
 use App\Notifications\AdminDigestNotification;
 use App\Notifications\DemandeFeedbackNotification;
@@ -40,11 +40,11 @@ class SendRendezVousReminders extends Command
         $start = now()->addDay();
         $end = now()->addDay()->addMinutes(15);
 
-        $rdvs = RendezVous::with(['client', 'serviceZone'])
+        $rdvs = Booking::with(['client', 'serviceZone'])
             ->where('status', 'confirme')
             ->whereNull('rappel_24h_envoye_at')
             ->get()
-            ->filter(fn (RendezVous $rdv) => $this->scheduledAt($rdv)?->betweenIncluded($start, $end));
+            ->filter(fn (Booking $rdv) => $this->scheduledAt($rdv)?->betweenIncluded($start, $end));
 
         foreach ($rdvs as $rdv) {
             if (! $rdv->client) {
@@ -68,11 +68,11 @@ class SendRendezVousReminders extends Command
         $start = now()->addHours(2);
         $end = now()->addHours(2)->addMinutes(15);
 
-        $rdvs = RendezVous::with(['client', 'serviceZone'])
+        $rdvs = Booking::with(['client', 'serviceZone'])
             ->where('status', 'confirme')
             ->whereNull('rappel_2h_envoye_at')
             ->get()
-            ->filter(fn (RendezVous $rdv) => $this->scheduledAt($rdv)?->betweenIncluded($start, $end));
+            ->filter(fn (Booking $rdv) => $this->scheduledAt($rdv)?->betweenIncluded($start, $end));
 
         foreach ($rdvs as $rdv) {
             if (! $rdv->client) {
@@ -93,7 +93,7 @@ class SendRendezVousReminders extends Command
 
     protected function sendFeedbackRequests(): void
     {
-        $rdvs = RendezVous::with(['client', 'feedback', 'serviceZone'])
+        $rdvs = Booking::with(['client', 'feedback', 'serviceZone'])
             ->where('status', 'termine')
             ->whereNotNull('mission_finished_at')
             ->where('mission_finished_at', '<=', now()->subHours(2))
@@ -120,7 +120,7 @@ class SendRendezVousReminders extends Command
 
     protected function sendUrgentPendingAlerts(): void
     {
-        $rdvs = RendezVous::with(['client', 'serviceZone'])
+        $rdvs = Booking::with(['client', 'serviceZone'])
             ->where('status', 'en_attente')
             ->where('priorite', 'urgente')
             ->whereNull('alerte_urgence_envoyee_at')
@@ -150,7 +150,7 @@ class SendRendezVousReminders extends Command
     {
         $admins = User::where('role', 'admin')->get();
 
-        $missions = RendezVous::query()
+        $missions = Booking::query()
             ->with('serviceCatalog:id,name')
             ->where('status', 'termine')
             ->whereNotNull('duree_estimee')
@@ -159,7 +159,7 @@ class SendRendezVousReminders extends Command
             ->get();
 
         $problematic = $missions
-            ->groupBy(fn (RendezVous $rdv) => $rdv->service_display_name)
+            ->groupBy(fn (Booking $rdv) => $rdv->service_display_name)
             ->map(function ($items) {
                 return [
                     'count' => $items->count(),
@@ -189,7 +189,7 @@ class SendRendezVousReminders extends Command
     {
         $admins = User::where('role', 'admin')->get();
 
-        $finished = RendezVous::where('status', 'termine')
+        $finished = Booking::where('status', 'termine')
             ->where('mission_finished_at', '>=', now()->subDays(30))
             ->count();
 
@@ -197,7 +197,7 @@ class SendRendezVousReminders extends Command
             return;
         }
 
-        $withFeedback = RendezVous::where('status', 'termine')
+        $withFeedback = Booking::where('status', 'termine')
             ->where('mission_finished_at', '>=', now()->subDays(30))
             ->whereHas('feedback')
             ->count();
@@ -231,7 +231,7 @@ class SendRendezVousReminders extends Command
         $employees = User::where('role', 'employe')->get();
 
         $loads = $employees->map(function ($employe) use ($today) {
-            $rdvs = RendezVous::with('serviceZone')
+            $rdvs = Booking::with('serviceZone')
                 ->where('employe_id', $employe->id)
                 ->whereDate('date', $today)
                 ->whereIn('status', ['en_attente', 'confirme', 'en_route', 'sur_place'])
@@ -297,7 +297,7 @@ class SendRendezVousReminders extends Command
         }
     }
 
-    protected function pickSuggestedEmployee(Collection $available, RendezVous $mission): ?array
+    protected function pickSuggestedEmployee(Collection $available, Booking $mission): ?array
     {
         $sameZone = $available->first(function ($row) use ($mission) {
             $zoneIds = collect($row['zone_ids'] ?? [])->map(static fn ($id) => (int) $id)->all();
@@ -312,7 +312,7 @@ class SendRendezVousReminders extends Command
         return $sameZone ?: $available->first();
     }
 
-    protected function scheduledAt(RendezVous $rdv): ?Carbon
+    protected function scheduledAt(Booking $rdv): ?Carbon
     {
         if (! $rdv->date || ! $rdv->heure) {
             return null;

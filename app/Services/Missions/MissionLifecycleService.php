@@ -4,7 +4,7 @@ namespace App\Services\Missions;
 
 use App\Events\MissionStatusUpdated;
 use App\Models\Mission;
-use App\Models\RendezVous;
+use App\Models\Booking;
 use App\Models\User;
 use App\Notifications\EmployeArriveNotification;
 use App\Notifications\EmployeEnRouteNotification;
@@ -38,7 +38,7 @@ class MissionLifecycleService
         }
     }
 
-    public function createFromRendezVous(RendezVous $rendezVous): Mission
+    public function createFromRendezVous(Booking $rendezVous): Mission
     {
         return $this->missionFromRendezVousSyncService->createFromRendezVous($rendezVous);
     }
@@ -294,7 +294,7 @@ class MissionLifecycleService
         return $mission->fresh(['assignments', 'verificationCodes']);
     }
 
-    public function syncFromRendezVous(RendezVous $rendezVous): Mission
+    public function syncFromRendezVous(Booking $rendezVous): Mission
     {
         return $this->missionFromRendezVousSyncService->syncFromRendezVous($rendezVous);
     }

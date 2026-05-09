@@ -4,7 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\EnterpriseBookingApproval;
 use App\Models\OrganizationAccount;
-use App\Models\RendezVous;
+use App\Models\Booking;
 use App\Models\User;
 use App\Services\Enterprise\EnterpriseBookingApprovalService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -34,7 +34,7 @@ class EnterpriseApprovalWorkflowTest extends TestCase
             'is_active' => true,
         ]);
 
-        $rdv = RendezVous::factory()->create([
+        $rdv = Booking::factory()->create([
             'client_id' => $client->id,
             'organization_account_id' => $organization->id,
             'status' => 'en_attente',
@@ -73,7 +73,7 @@ class EnterpriseApprovalWorkflowTest extends TestCase
             'is_active' => true,
         ]);
 
-        $rdv = RendezVous::factory()->create([
+        $rdv = Booking::factory()->create([
             'client_id' => $client->id,
             'organization_account_id' => $organization->id,
             'status' => 'en_attente',

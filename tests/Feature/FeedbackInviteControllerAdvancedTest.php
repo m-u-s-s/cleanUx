@@ -3,7 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\Feedback;
-use App\Models\RendezVous;
+use App\Models\Booking;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -15,7 +15,7 @@ class FeedbackInviteControllerAdvancedTest extends TestCase
     public function test_client_can_open_feedback_form_for_own_rendez_vous(): void
     {
         $client = User::factory()->client()->create();
-        $rdv = RendezVous::factory()->termine()->create(['client_id' => $client->id]);
+        $rdv = Booking::factory()->termine()->create(['client_id' => $client->id]);
 
         $this->actingAs($client)
             ->get(route('feedback.create', $rdv))
@@ -26,7 +26,7 @@ class FeedbackInviteControllerAdvancedTest extends TestCase
     {
         $owner = User::factory()->client()->create();
         $other = User::factory()->client()->create();
-        $rdv = RendezVous::factory()->termine()->create(['client_id' => $owner->id]);
+        $rdv = Booking::factory()->termine()->create(['client_id' => $owner->id]);
 
         $this->actingAs($other)
             ->get(route('feedback.create', $rdv))
@@ -36,7 +36,7 @@ class FeedbackInviteControllerAdvancedTest extends TestCase
     public function test_client_can_submit_feedback_once(): void
     {
         $client = User::factory()->client()->create();
-        $rdv = RendezVous::factory()->termine()->create(['client_id' => $client->id]);
+        $rdv = Booking::factory()->termine()->create(['client_id' => $client->id]);
 
         $this->actingAs($client)
             ->post(route('feedback.store', $rdv), [
@@ -55,7 +55,7 @@ class FeedbackInviteControllerAdvancedTest extends TestCase
     public function test_duplicate_feedback_is_blocked(): void
     {
         $client = User::factory()->client()->create();
-        $rdv = RendezVous::factory()->termine()->create(['client_id' => $client->id]);
+        $rdv = Booking::factory()->termine()->create(['client_id' => $client->id]);
         Feedback::factory()->forRendezVous($rdv)->create();
 
         $this->actingAs($client)

@@ -2,7 +2,7 @@
 
 namespace Tests\Feature;
 
-use App\Models\RendezVous;
+use App\Models\Booking;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -36,7 +36,7 @@ class AdminPlanningCenterExperienceTest extends TestCase
             'is_active' => true,
         ]);
 
-        $rdv = RendezVous::factory()->confirme()->create([
+        $rdv = Booking::factory()->confirme()->create([
             'date' => now()->format('Y-m-d'),
             'heure' => '09:00:00',
             'priorite' => 'urgente',

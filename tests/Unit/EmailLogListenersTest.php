@@ -4,7 +4,7 @@ namespace Tests\Unit;
 
 use App\Listeners\LogNotificationMailFailed;
 use App\Listeners\LogNotificationMailSent;
-use App\Models\RendezVous;
+use App\Models\Booking;
 use App\Models\User;
 use App\Notifications\RappelRendezVousNotification;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -19,7 +19,7 @@ class EmailLogListenersTest extends TestCase
     public function test_mail_notification_sent_and_failed_are_logged(): void
     {
         $client = User::factory()->client()->create(['email' => 'client@example.test']);
-        $rdv = RendezVous::factory()->create(['client_id' => $client->id]);
+        $rdv = Booking::factory()->create(['client_id' => $client->id]);
         $notification = new RappelRendezVousNotification($rdv, '24h');
 
         /** @var LogNotificationMailSent $sentListener */

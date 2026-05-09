@@ -34,6 +34,6 @@ class GoogleCalendarEventLink extends Model
 
     public function rendezVous(): BelongsTo
     {
-        return $this->belongsTo(RendezVous::class, 'rendez_vous_id');
+        return $this->belongsTo(Booking::class, 'rendez_vous_id');
     }
 }

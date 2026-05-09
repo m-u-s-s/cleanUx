@@ -3,7 +3,7 @@
 namespace Tests\Unit;
 
 use App\Models\ActivityLog;
-use App\Models\RendezVous;
+use App\Models\Booking;
 use App\Models\User;
 use App\Support\ActivityLogger;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -16,7 +16,7 @@ class ActivityLoggerTest extends TestCase
     public function test_log_records_authenticated_user_action_and_target(): void
     {
         $user = User::factory()->admin()->create();
-        $rdv = RendezVous::factory()->create();
+        $rdv = Booking::factory()->create();
 
         $this->actingAs($user);
 
@@ -27,7 +27,7 @@ class ActivityLoggerTest extends TestCase
         $this->assertNotNull($log);
         $this->assertSame($user->id, $log->user_id);
         $this->assertSame('test_action', $log->action);
-        $this->assertSame(RendezVous::class, $log->target_type);
+        $this->assertSame(Booking::class, $log->target_type);
         $this->assertSame($rdv->id, $log->target_id);
         $this->assertSame('phpunit', $log->meta['source']);
     }

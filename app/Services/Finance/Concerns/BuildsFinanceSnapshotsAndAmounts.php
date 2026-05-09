@@ -3,12 +3,12 @@
 namespace App\Services\Finance\Concerns;
 
 use App\Models\FinanceInvoice;
-use App\Models\RendezVous;
+use App\Models\Booking;
 use Illuminate\Support\Collection;
 
 trait BuildsFinanceSnapshotsAndAmounts
 {
-    public function amountBreakdownFor(RendezVous $rdv): array
+    public function amountBreakdownFor(Booking $rdv): array
     {
         $pricing = (array) ($rdv->pricing_snapshot ?? []);
         $basePrice = round((float) (
@@ -124,7 +124,7 @@ trait BuildsFinanceSnapshotsAndAmounts
         ];
     }
 
-    protected function quoteStatusFor(RendezVous $rdv): string
+    protected function quoteStatusFor(Booking $rdv): string
     {
         return match ($rdv->status) {
             'annule', 'refuse' => 'cancelled',
@@ -133,7 +133,7 @@ trait BuildsFinanceSnapshotsAndAmounts
         };
     }
 
-    protected function invoiceStatusFor(RendezVous $rdv): string
+    protected function invoiceStatusFor(Booking $rdv): string
     {
         return match ($rdv->status) {
             'termine' => 'issued',
@@ -142,7 +142,7 @@ trait BuildsFinanceSnapshotsAndAmounts
         };
     }
 
-    protected function snapshotFor(RendezVous $rdv): array
+    protected function snapshotFor(Booking $rdv): array
     {
         return [
             'booking_reference' => $rdv->booking_reference,
@@ -159,12 +159,12 @@ trait BuildsFinanceSnapshotsAndAmounts
         ];
     }
 
-    protected function nextQuoteNumber(RendezVous $rdv): string
+    protected function nextQuoteNumber(Booking $rdv): string
     {
         return 'DEV-' . now()->format('Y') . '-' . str_pad((string) ($rdv->id ?: 0), 6, '0', STR_PAD_LEFT);
     }
 
-    protected function nextInvoiceNumber(RendezVous $rdv): string
+    protected function nextInvoiceNumber(Booking $rdv): string
     {
         return 'FAC-' . now()->format('Y') . '-' . str_pad((string) ($rdv->id ?: 0), 6, '0', STR_PAD_LEFT);
     }

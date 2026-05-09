@@ -5,7 +5,7 @@ namespace Tests\Feature;
 use App\Actions\Booking\CancelRecurringSeriesAction;
 use App\Livewire\Admin\EditRecurringBooking as AdminEditRecurringBooking;
 use App\Livewire\Client\EditRecurringBooking as ClientEditRecurringBooking;
-use App\Models\RendezVous;
+use App\Models\Booking;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Str;
@@ -54,7 +54,7 @@ class RecurringSeriesManagementTest extends TestCase
             ->assertHasNoErrors();
 
         $this->assertTrue(
-            RendezVous::query()->where('recurring_series_id', $target->recurring_series_id)->get()->every(
+            Booking::query()->where('recurring_series_id', $target->recurring_series_id)->get()->every(
                 fn ($rdv) => substr((string) $rdv->heure, 0, 5) === '15:00'
             )
         );
@@ -71,17 +71,17 @@ class RecurringSeriesManagementTest extends TestCase
             ->call('pauseSeries', 'future')
             ->assertHasNoErrors();
 
-        $paused = RendezVous::query()->where('recurring_series_id', $target->recurring_series_id)->orderBy('series_position')->get();
+        $paused = Booking::query()->where('recurring_series_id', $target->recurring_series_id)->orderBy('series_position')->get();
         $this->assertSame('active', $paused[0]->series_status);
         $this->assertSame('paused', $paused[1]->series_status);
         $this->assertSame('paused', $paused[2]->series_status);
 
         app(CancelRecurringSeriesAction::class)->resume($target->fresh(), 'future');
-        $resumed = RendezVous::query()->where('recurring_series_id', $target->recurring_series_id)->orderBy('series_position')->get();
+        $resumed = Booking::query()->where('recurring_series_id', $target->recurring_series_id)->orderBy('series_position')->get();
         $this->assertTrue($resumed->skip(1)->every(fn ($rdv) => $rdv->series_status === 'active'));
 
         app(CancelRecurringSeriesAction::class)->cancel($target->fresh(), 'future');
-        $cancelled = RendezVous::query()->where('recurring_series_id', $target->recurring_series_id)->orderBy('series_position')->get();
+        $cancelled = Booking::query()->where('recurring_series_id', $target->recurring_series_id)->orderBy('series_position')->get();
         $this->assertSame('cancelled', $cancelled[1]->series_status);
         $this->assertSame('refuse', $cancelled[1]->status);
         $this->assertSame('cancelled', $cancelled[2]->series_status);
@@ -101,7 +101,7 @@ class RecurringSeriesManagementTest extends TestCase
 
         $seriesId = (string) Str::uuid();
         $records = collect([0, 1, 2])->map(function ($offset) use ($client, $employee, $context, $seriesId, $startDate) {
-            return RendezVous::create([
+            return Booking::create([
                 'client_id' => $client->id,
                 'employe_id' => $employee->id,
                 'service_catalog_id' => $context['service']->id,

@@ -3,14 +3,14 @@
 namespace App\Services\Finance;
 
 use App\Models\CustomerCredit;
-use App\Models\RendezVous;
+use App\Models\Booking;
 use App\Models\User;
 use App\Support\ActivityLogger;
 use Illuminate\Support\Facades\DB;
 
 class CustomerCreditApplicationService
 {
-    public function applyAvailableCredits(User $client, RendezVous $rdv): float
+    public function applyAvailableCredits(User $client, Booking $rdv): float
     {
         if ($rdv->devis_estime <= 0) {
             return 0;

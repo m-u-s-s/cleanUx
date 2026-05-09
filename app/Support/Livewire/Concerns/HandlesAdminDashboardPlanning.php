@@ -4,7 +4,7 @@ namespace App\Support\Livewire\Concerns;
 
 
 use App\Models\LimiteJournaliere;
-use App\Models\RendezVous;
+use App\Models\Booking;
 use App\Notifications\MissionReplanifieeNotification;
 use Carbon\Carbon;
 
@@ -227,7 +227,7 @@ trait HandlesAdminDashboardPlanning
             ->toArray();
     }
 
-    protected function computeEmployeScore(int $employeId, string $date, string $heure, RendezVous $rdv): array
+    protected function computeEmployeScore(int $employeId, string $date, string $heure, Booking $rdv): array
     {
         $bufferMinutes = 30;
         $duration = $rdv->duree ?? $rdv->duree_estimee ?? 90;

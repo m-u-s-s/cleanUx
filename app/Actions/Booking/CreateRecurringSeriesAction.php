@@ -5,7 +5,7 @@ namespace App\Actions\Booking;
 use App\Data\ZoneCoverageResult;
 use App\Models\OrganizationSite;
 use App\Models\PostalCode;
-use App\Models\RendezVous;
+use App\Models\Booking;
 use App\Models\ServiceCatalog;
 use App\Models\ServiceZone;
 use App\Models\User;
@@ -156,7 +156,7 @@ class CreateRecurringSeriesAction
     {
         $activeStatuses = ['en_attente', 'confirme', 'en_route', 'sur_place'];
 
-        $existingZone = RendezVous::query()
+        $existingZone = Booking::query()
             ->where('service_zone_id', $zone->id)
             ->whereDate('date', $date)
             ->whereIn('status', $activeStatuses)
@@ -168,7 +168,7 @@ class CreateRecurringSeriesAction
             ]);
         }
 
-        $existingService = RendezVous::query()
+        $existingService = Booking::query()
             ->where('service_zone_id', $zone->id)
             ->where('service_catalog_id', $catalog->id)
             ->whereDate('date', $date)

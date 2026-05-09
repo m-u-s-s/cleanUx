@@ -21,6 +21,8 @@ class Kernel extends ConsoleKernel
         $schedule->command('subscriptions:generate')->daily();
         $schedule->command('app:send-smart-rdv-notifications')->everyFifteenMinutes();
         $schedule->command('currencies:refresh')->dailyAt('06:00');
+        $schedule->command('presence:cleanup')->everyMinute()->withoutOverlapping();
+        $schedule->command('surge:recompute')->everyMinute()->withoutOverlapping();
         
 
         $schedule->command('app:ops-heartbeat')

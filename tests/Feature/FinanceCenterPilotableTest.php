@@ -3,7 +3,7 @@
 namespace Tests\Feature;
 
 use App\Livewire\Admin\FinanceCenter;
-use App\Models\RendezVous;
+use App\Models\Booking;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
@@ -22,7 +22,7 @@ class FinanceCenterPilotableTest extends TestCase
         $client = User::factory()->client()->create();
         $employee = User::factory()->employe()->create();
 
-        $rdv = RendezVous::factory()->confirme()->create([
+        $rdv = Booking::factory()->confirme()->create([
             'client_id' => $client->id,
             'employe_id' => $employee->id,
             'service_catalog_id' => $context['service']->id,

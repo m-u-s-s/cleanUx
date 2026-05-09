@@ -3,11 +3,11 @@
 namespace App\Services\Enterprise;
 
 use App\Models\OrganizationAccount;
-use App\Models\RendezVous;
+use App\Models\Booking;
 
 class ContractPolicyService
 {
-    public function validateBooking(RendezVous $rdv, OrganizationAccount $org): array
+    public function validateBooking(Booking $rdv, OrganizationAccount $org): array
     {
         $contract = $org->activeOrganizationContract;
 
@@ -43,7 +43,7 @@ class ContractPolicyService
         return ['valid' => true];
     }
 
-    public function applyDiscount(RendezVous $rdv, OrganizationAccount $org): void
+    public function applyDiscount(Booking $rdv, OrganizationAccount $org): void
     {
         $contract = $org->activeOrganizationContract;
 

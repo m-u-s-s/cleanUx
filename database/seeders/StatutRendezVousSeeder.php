@@ -3,7 +3,7 @@
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
-use App\Models\RendezVous;
+use App\Models\Booking;
 
 class StatutRendezVousSeeder extends Seeder
 {
@@ -11,7 +11,7 @@ class StatutRendezVousSeeder extends Seeder
     {
         $statuses = ['confirme', 'refuse', 'en_attente'];
 
-        RendezVous::query()->chunkById(100, function ($rdvs) use ($statuses) {
+        Booking::query()->chunkById(100, function ($rdvs) use ($statuses) {
             foreach ($rdvs as $rdv) {
                 $rdv->update([
                     'status' => $statuses[array_rand($statuses)],

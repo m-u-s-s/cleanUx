@@ -4,7 +4,7 @@ namespace App\Services\Analytics;
 
 use App\Models\CustomerClaim;
 use App\Models\Mission;
-use App\Models\RendezVous;
+use App\Models\Booking;
 use App\Models\User;
 use Carbon\Carbon;
 
@@ -26,7 +26,7 @@ class BusinessDashboardService
             'revenue_previous_month' => $previousRevenue,
             'revenue_growth' => $this->growth($currentRevenue, $previousRevenue),
 
-            'bookings_current_month' => RendezVous::whereBetween('date', [$currentMonthStart, $now])->count(),
+            'bookings_current_month' => Booking::whereBetween('date', [$currentMonthStart, $now])->count(),
             'missions_completed_current_month' => Mission::where('status', 'completed')
                 ->whereBetween('actual_end_at', [$currentMonthStart, $now])
                 ->count(),
@@ -43,7 +43,7 @@ class BusinessDashboardService
                 ? CustomerClaim::whereIn('status', ['open', 'in_review', 'waiting_client'])->count()
                 : 0,
 
-            'avg_booking_value' => round((float) RendezVous::whereBetween('date', [$currentMonthStart, $now])->avg('devis_estime'), 2),
+            'avg_booking_value' => round((float) Booking::whereBetween('date', [$currentMonthStart, $now])->avg('devis_estime'), 2),
 
             'weekly_revenue' => $this->weeklyRevenue(),
         ];
@@ -51,7 +51,7 @@ class BusinessDashboardService
 
     protected function revenueBetween($from, $to): float
     {
-        return round((float) RendezVous::whereBetween('date', [$from, $to])
+        return round((float) Booking::whereBetween('date', [$from, $to])
             ->whereIn('status', ['confirme', 'termine'])
             ->sum('devis_estime'), 2);
     }
@@ -76,7 +76,7 @@ class BusinessDashboardService
             $weeks[] = [
                 'label' => 'S'.$start->format('W'),
                 'revenue' => $this->revenueBetween($start, $end),
-                'bookings' => RendezVous::whereBetween('date', [$start, $end])->count(),
+                'bookings' => Booking::whereBetween('date', [$start, $end])->count(),
             ];
         }
 

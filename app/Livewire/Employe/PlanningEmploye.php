@@ -2,7 +2,7 @@
 
 namespace App\Livewire\Employe;
 
-use App\Models\RendezVous;
+use App\Models\Booking;
 use App\Models\ServiceZone;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
@@ -74,7 +74,7 @@ class PlanningEmploye extends Component
     {
         [$start, $end] = $this->range();
 
-        return RendezVous::with(['client', 'serviceZone', 'organizationSite', 'serviceCatalog', 'postalCode'])
+        return Booking::with(['client', 'serviceZone', 'organizationSite', 'serviceCatalog', 'postalCode'])
             ->where('employe_id', Auth::id())
             ->whereBetween('date', [$start->toDateString(), $end->toDateString()])
             ->when($this->status !== '', fn ($query) => $query->where('status', $this->status))

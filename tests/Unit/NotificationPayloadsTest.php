@@ -3,7 +3,7 @@
 namespace Tests\Unit;
 
 use App\Models\Feedback;
-use App\Models\RendezVous;
+use App\Models\Booking;
 use App\Models\User;
 use App\Notifications\AdminDigestNotification;
 use App\Notifications\DemandeFeedbackNotification;
@@ -28,7 +28,7 @@ class NotificationPayloadsTest extends TestCase
         $client = User::factory()->client()->create(['name' => 'Client Test']);
         $employe = User::factory()->employe()->create(['name' => 'Employé Test']);
         $admin = User::factory()->admin()->create();
-        $rdv = RendezVous::factory()->create([
+        $rdv = Booking::factory()->create([
             'client_id' => $client->id,
             'employe_id' => $employe->id,
             'status' => 'confirme',

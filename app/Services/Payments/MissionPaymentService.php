@@ -2,7 +2,7 @@
 
 namespace App\Services\Payments;
 
-use App\Models\RendezVous;
+use App\Models\Booking;
 use RuntimeException;
 use Stripe\PaymentIntent;
 use Stripe\Stripe;
@@ -14,7 +14,7 @@ class MissionPaymentService
         Stripe::setApiKey(config('cashier.secret'));
     }
 
-    public function authorize(RendezVous $rendezVous, string $paymentMethodId): PaymentIntent
+    public function authorize(Booking $rendezVous, string $paymentMethodId): PaymentIntent
     {
         $rendezVous->loadMissing(['client', 'employe']);
 
@@ -69,7 +69,7 @@ class MissionPaymentService
         return $intent;
     }
 
-    public function capture(RendezVous $rendezVous): ?PaymentIntent
+    public function capture(Booking $rendezVous): ?PaymentIntent
     {
         if (! $rendezVous->stripe_payment_intent_id) {
             return null;
@@ -90,7 +90,7 @@ class MissionPaymentService
         return $intent;
     }
 
-    public function markFailed(RendezVous $rendezVous): void
+    public function markFailed(Booking $rendezVous): void
     {
         $rendezVous->update([
             'payment_status' => 'failed',

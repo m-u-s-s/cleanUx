@@ -5,7 +5,7 @@ namespace App\Support\Livewire\Concerns;
 use App\Data\ZoneCoverageResult;
 use App\Models\OrganizationSite;
 use App\Models\PostalCode;
-use App\Models\RendezVous;
+use App\Models\Booking;
 use App\Models\ServiceCatalog;
 use App\Models\ServiceZone;
 use App\Models\User;
@@ -67,7 +67,7 @@ protected function currentCountryMarketContext(): array
 
     protected function prefillFromLastRendezVous(): bool
     {
-        $lastRdv = RendezVous::query()
+        $lastRdv = Booking::query()
             ->where('client_id', Auth::id())
             ->latest('date')
             ->latest('heure')
@@ -84,7 +84,7 @@ protected function currentCountryMarketContext(): array
 
     protected function prefillFromSourceRendezVous(int $sourceRdvId): bool
     {
-        $rdv = RendezVous::query()
+        $rdv = Booking::query()
             ->where('id', $sourceRdvId)
             ->where('client_id', Auth::id())
             ->first();
@@ -128,7 +128,7 @@ protected function currentCountryMarketContext(): array
         return $hasPrefill;
     }
 
-    protected function prefillFromRendezVousModel(RendezVous $rdv): void
+    protected function prefillFromRendezVousModel(Booking $rdv): void
     {
         $this->selected_service_identifier = data_get($rdv->pricing_snapshot, 'service_identifier')
             ?: data_get($rdv->pricing_snapshot, 'service.service_identifier')

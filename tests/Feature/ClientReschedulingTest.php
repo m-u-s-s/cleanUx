@@ -2,7 +2,7 @@
 
 namespace Tests\Feature;
 
-use App\Models\RendezVous;
+use App\Models\Booking;
 use App\Models\User;
 use App\Support\Domain\BookingStatus;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -19,7 +19,7 @@ class ClientReschedulingTest extends TestCase
             'is_active' => true,
         ]);
 
-        $rdv = RendezVous::factory()->create([
+        $rdv = Booking::factory()->create([
             'client_id' => $client->id,
             'status' => BookingStatus::EN_ATTENTE,
             'date' => now()->addDays(3)->toDateString(),
@@ -38,7 +38,7 @@ class ClientReschedulingTest extends TestCase
             'is_active' => true,
         ]);
 
-        $rdv = RendezVous::factory()->create([
+        $rdv = Booking::factory()->create([
             'client_id' => $client->id,
             'status' => BookingStatus::TERMINE,
         ]);
@@ -60,7 +60,7 @@ class ClientReschedulingTest extends TestCase
             'is_active' => true,
         ]);
 
-        $rdv = RendezVous::factory()->create([
+        $rdv = Booking::factory()->create([
             'client_id' => $otherClient->id,
             'status' => BookingStatus::EN_ATTENTE,
         ]);

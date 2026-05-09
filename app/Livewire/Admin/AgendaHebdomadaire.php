@@ -2,7 +2,7 @@
 
 namespace App\Livewire\Admin;
 
-use App\Models\RendezVous;
+use App\Models\Booking;
 use App\Models\User;
 use App\Support\Domain\BookingStatus;
 use Carbon\Carbon;
@@ -47,7 +47,7 @@ class AgendaHebdomadaire extends Component
         $start = $this->weekStart();
         $end = $this->weekEnd();
 
-        $rdvs = RendezVous::with(['employe', 'client', 'serviceCatalog', 'serviceZone', 'organizationAccount', 'organizationSite'])
+        $rdvs = Booking::with(['employe', 'client', 'serviceCatalog', 'serviceZone', 'organizationAccount', 'organizationSite'])
             ->whereBetween('date', [$start->toDateString(), $end->toDateString()])
             ->when($this->employeId !== '', fn ($q) => $q->where('employe_id', $this->employeId))
             ->when($this->status !== '', fn ($q) => $q->where('status', $this->status))
@@ -64,7 +64,7 @@ class AgendaHebdomadaire extends Component
             $rdvs = $rdvs->where('service_zone_id', (int) $user->managed_service_zone_id)->values();
         }
 
-        $rdvsGrouped = $rdvs->groupBy(fn (RendezVous $rdv) => optional($rdv->date)->toDateString() ?? (string) $rdv->date);
+        $rdvsGrouped = $rdvs->groupBy(fn (Booking $rdv) => optional($rdv->date)->toDateString() ?? (string) $rdv->date);
         $focusDate = $this->focusDate !== '' ? Carbon::parse($this->focusDate)->toDateString() : now()->toDateString();
 
         $jours = collect();
@@ -73,7 +73,7 @@ class AgendaHebdomadaire extends Component
             $jour = $start->copy()->addDays($i);
             /** @var Collection<int, RendezVous> $rdvsJour */
             $rdvsJour = $rdvsGrouped->get($jour->toDateString(), collect());
-            $totalMinutes = $rdvsJour->sum(fn (RendezVous $rdv) => ($rdv->duree ?? $rdv->duree_estimee ?? 90) + 30);
+            $totalMinutes = $rdvsJour->sum(fn (Booking $rdv) => ($rdv->duree ?? $rdv->duree_estimee ?? 90) + 30);
 
             $jours->push([
                 'label' => $jour->translatedFormat('l d/m'),
@@ -86,7 +86,7 @@ class AgendaHebdomadaire extends Component
                 'total_hours' => round($totalMinutes / 60, 1),
                 'active_count' => $rdvsJour->whereIn('status', BookingStatus::active())->count(),
                 'urgent_count' => $rdvsJour->where('priorite', 'urgente')->count(),
-                'unassigned_count' => $rdvsJour->filter(fn (RendezVous $rdv) => blank($rdv->employe_id))->count(),
+                'unassigned_count' => $rdvsJour->filter(fn (Booking $rdv) => blank($rdv->employe_id))->count(),
             ]);
         }
 

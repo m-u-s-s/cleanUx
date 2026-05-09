@@ -6,7 +6,7 @@ use App\Models\FinanceInvoice;
 use App\Models\FinancePayment;
 use App\Models\FinanceQuote;
 use App\Models\FinanceReminder;
-use App\Models\RendezVous;
+use App\Models\Booking;
 use App\Notifications\FinanceReminderNotification;
 use App\Services\International\CountryMarketResolver;
 use Illuminate\Support\Arr;
@@ -20,7 +20,7 @@ class FinanceDocumentService
         protected CountryMarketResolver $countryMarketResolver,
     ) {}
 
-    public function syncQuoteForRendezVous(RendezVous $rdv): FinanceQuote
+    public function syncQuoteForRendezVous(Booking $rdv): FinanceQuote
     {
         $amounts = $this->amountBreakdownFor($rdv);
         $market = $this->countryMarketResolver->resolveForRendezVous($rdv);
@@ -63,7 +63,7 @@ class FinanceDocumentService
         });
     }
 
-    public function syncInvoiceForRendezVous(RendezVous $rdv): ?FinanceInvoice
+    public function syncInvoiceForRendezVous(Booking $rdv): ?FinanceInvoice
     {
         if (! in_array($rdv->status, ['confirme', 'en_route', 'sur_place', 'termine'], true)) {
             return null;
@@ -215,7 +215,7 @@ class FinanceDocumentService
         $quotes = 0;
         $invoices = 0;
 
-        RendezVous::query()
+        Booking::query()
             ->with(['client', 'organizationAccount', 'organizationSite', 'serviceCatalog', 'serviceZone'])
             ->chunkById(100, function ($rows) use (&$quotes, &$invoices) {
                 foreach ($rows as $rdv) {
@@ -258,7 +258,7 @@ class FinanceDocumentService
         return $count;
     }
 
-    public function amountBreakdownFor(RendezVous $rdv): array
+    public function amountBreakdownFor(Booking $rdv): array
     {
         $pricing = (array) ($rdv->pricing_snapshot ?? []);
         $market = $this->countryMarketResolver->resolveForRendezVous($rdv);
@@ -361,7 +361,7 @@ class FinanceDocumentService
         ];
     }
 
-    protected function quoteStatusFor(RendezVous $rdv): string
+    protected function quoteStatusFor(Booking $rdv): string
     {
         return match ($rdv->status) {
             'annule', 'refuse' => 'cancelled',
@@ -370,7 +370,7 @@ class FinanceDocumentService
         };
     }
 
-    protected function invoiceStatusFor(RendezVous $rdv): string
+    protected function invoiceStatusFor(Booking $rdv): string
     {
         return match ($rdv->status) {
             'termine' => 'issued',
@@ -379,7 +379,7 @@ class FinanceDocumentService
         };
     }
 
-    protected function snapshotFor(RendezVous $rdv, array $market = []): array
+    protected function snapshotFor(Booking $rdv, array $market = []): array
     {
         $serviceName = $rdv->service_display_name
             ?: $rdv->serviceCatalog?->name
@@ -428,14 +428,14 @@ class FinanceDocumentService
         ];
     }
 
-    protected function nextQuoteNumber(RendezVous $rdv, array $market = []): string
+    protected function nextQuoteNumber(Booking $rdv, array $market = []): string
     {
         $prefix = (string) (data_get($market['billing_profile'] ?? null, 'quote_prefix') ?: 'DEV');
 
         return $prefix . '-' . now()->format('Y') . '-' . str_pad((string) ($rdv->id ?: 0), 6, '0', STR_PAD_LEFT);
     }
 
-    protected function nextInvoiceNumber(RendezVous $rdv, array $market = []): string
+    protected function nextInvoiceNumber(Booking $rdv, array $market = []): string
     {
         $prefix = (string) (data_get($market['billing_profile'] ?? null, 'invoice_prefix') ?: 'FAC');
 

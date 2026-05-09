@@ -88,6 +88,8 @@
     @endauth
 
     @stack('scripts')
+    <x-mobile-bottom-nav />
+    <x-pwa-install-prompt />
 </body>
 
 </html>

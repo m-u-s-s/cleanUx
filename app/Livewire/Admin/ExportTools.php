@@ -3,7 +3,7 @@
 namespace App\Livewire\Admin;
 
 use Livewire\Component;
-use App\Models\RendezVous;
+use App\Models\Booking;
 use App\Models\User;
 use App\Models\Feedback;
 use Illuminate\Support\Facades\Gate;
@@ -21,7 +21,7 @@ class ExportTools extends Component
         Gate::authorize('export', User::class);
 
         $data = match ($this->type) {
-            'rendez_vous' => RendezVous::with(['client', 'employe'])->get(),
+            'rendez_vous' => Booking::with(['client', 'employe'])->get(),
             'utilisateurs' => User::all(),
             'feedbacks' => Feedback::with(['client', 'rendezVous'])->get(),
             default => collect()

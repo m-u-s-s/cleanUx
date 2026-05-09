@@ -3,7 +3,7 @@
 namespace App\Services\Admin;
 
 use App\Models\Mission;
-use App\Models\RendezVous;
+use App\Models\Booking;
 
 class AdminAlertService
 {
@@ -53,7 +53,7 @@ class AdminAlertService
 
     protected function paymentNotCaptured()
     {
-        return RendezVous::query()
+        return Booking::query()
             ->with(['client', 'employe', 'mission'])
             ->whereHas('mission', fn ($q) => $q->where('status', 'completed'))
             ->where('payment_status', 'authorized')

@@ -2,7 +2,7 @@
 
 namespace App\Services\Booking;
 
-use App\Models\RendezVous;
+use App\Models\Booking;
 use App\Models\ServiceZone;
 use App\Models\User;
 use Carbon\Carbon;
@@ -140,7 +140,7 @@ class EmployeeAvailabilityService
 
         $activeStatuses = ['en_attente', 'confirme', 'en_route', 'sur_place'];
 
-        return ! RendezVous::query()
+        return ! Booking::query()
             ->where('employe_id', $employeeId)
             ->whereDate('date', $date)
             ->whereIn('status', $activeStatuses)

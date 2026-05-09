@@ -138,6 +138,6 @@ class ServiceZone extends Model
 
     public function rendezVous(): HasMany
     {
-        return $this->hasMany(RendezVous::class);
+        return $this->hasMany(Booking::class);
     }
 }

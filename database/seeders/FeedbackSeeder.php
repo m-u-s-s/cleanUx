@@ -5,7 +5,7 @@ namespace Database\Seeders;
 use Illuminate\Database\Seeder;
 use App\Models\Feedback;
 use App\Models\User;
-use App\Models\RendezVous;
+use App\Models\Booking;
 
 class FeedbackSeeder extends Seeder
 {
@@ -19,7 +19,7 @@ class FeedbackSeeder extends Seeder
             return;
         }
 
-        $rdvs = RendezVous::whereIn('status', ['confirme', 'refuse'])
+        $rdvs = Booking::whereIn('status', ['confirme', 'refuse'])
             ->whereDoesntHave('feedback')
             ->inRandomOrder()
             ->take(10)

@@ -2,7 +2,7 @@
 
 namespace App\Support\Livewire\Concerns\Booking;
 
-use App\Models\RendezVous;
+use App\Models\Booking;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\ValidationException;
@@ -17,7 +17,7 @@ trait HandlesBookingCreation
             return;
         }
 
-        Gate::authorize('create', RendezVous::class);
+        Gate::authorize('create', Booking::class);
 
         $this->normalizeBookingState();
         $this->normalizeRecurringInputs();
