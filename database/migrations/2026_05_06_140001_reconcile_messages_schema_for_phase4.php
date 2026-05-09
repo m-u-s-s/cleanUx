@@ -42,9 +42,17 @@ return new class extends Migration
             // Copier les valeurs sender_id → user_id
             DB::statement('UPDATE messages SET user_id = sender_id WHERE user_id IS NULL AND sender_id IS NOT NULL');
 
-            Schema::table('messages', function (Blueprint $table) {
-                $table->dropConstrainedForeignId('sender_id');
-            });
+            if (Schema::getConnection()->getDriverName() === 'sqlite') {
+                // SQLite : drop juste la colonne (la FK partira avec, depuis SQLite 3.35.0)
+                Schema::table('messages', function (Blueprint $table) {
+                    $table->dropColumn('sender_id');
+                });
+            } else {
+                // MySQL/PG : drop FK + colonne (workflow normal)
+                Schema::table('messages', function (Blueprint $table) {
+                    $table->dropConstrainedForeignId('sender_id');
+                });
+            }
         }
 
         // 2. Renommer body → content
@@ -89,8 +97,14 @@ return new class extends Migration
         // ont été perdues lors du rename). On ne droppe que les ajouts purs.
         Schema::table('messages', function (Blueprint $table) {
             if (Schema::hasColumn('messages', 'parent_id')) {
-                try { $table->dropIndex('messages_parent_id_created_at_idx'); } catch (\Throwable $e) {}
-                try { $table->dropConstrainedForeignId('parent_id'); } catch (\Throwable $e) {}
+                try {
+                    $table->dropIndex('messages_parent_id_created_at_idx');
+                } catch (\Throwable $e) {
+                }
+                try {
+                    $table->dropConstrainedForeignId('parent_id');
+                } catch (\Throwable $e) {
+                }
             }
             foreach (['replies_count', 'last_reply_at', 'deleted_at'] as $c) {
                 if (Schema::hasColumn('messages', $c)) {
