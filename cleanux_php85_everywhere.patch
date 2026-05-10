@@ -1,0 +1,203 @@
+diff --git a/.github/workflows/ci.yml b/.github/workflows/ci.yml
+index a37a3ffa..bf9f03db 100644
+--- a/.github/workflows/ci.yml
++++ b/.github/workflows/ci.yml
+@@ -23,6 +23,9 @@ jobs:
+           extensions: mbstring, dom, fileinfo, pdo_sqlite, sqlite3
+           coverage: none
+ 
++      - name: Verify PHP 8.5 runtime
++        run: ./scripts/verify_php85.sh
++
+       - name: Setup Node
+         uses: actions/setup-node@v4
+         with:
+diff --git a/.github/workflows/laravel-tests.yml b/.github/workflows/laravel-tests.yml
+index d66c0ecc..94901c4a 100644
+--- a/.github/workflows/laravel-tests.yml
++++ b/.github/workflows/laravel-tests.yml
+@@ -40,6 +40,9 @@ jobs:
+           extensions: mbstring, dom, fileinfo, sqlite, pdo_sqlite, curl, zip, gd
+           coverage: none
+ 
++      - name: Verify PHP 8.5 runtime
++        run: ./scripts/verify_php85.sh
++
+       - name: Install Composer dependencies
+         run: composer install --no-interaction --prefer-dist --optimize-autoloader
+ 
+@@ -56,4 +59,4 @@ jobs:
+           php artisan test tests/Feature/ProductionHealthCheckCommandTest.php tests/Feature/GoLiveReadinessReportCommandTest.php tests/Feature/ConsolidationFinalCheckCommandTest.php tests/Feature/AdminRouteAccessTest.php tests/Feature/OptimizedDashboardExperienceSmokeTest.php
+ 
+       - name: Run full test suite
+-        run: php artisan test
+\ No newline at end of file
++        run: php artisan test
+diff --git a/README.md b/README.md
+index 16e03d77..0ccedd9b 100644
+--- a/README.md
++++ b/README.md
+@@ -1,6 +1,6 @@
+ # CleanUx
+ 
+-CleanUx est une plateforme opérationnelle de nettoyage construite avec Laravel, Livewire et Jetstream.
++CleanUx est une plateforme opérationnelle multi-services construite avec Laravel, Livewire et Jetstream.
+ Le projet sépare désormais clairement :
+ 
+ - **RendezVous** : réservation, planification, snapshots et finance
+@@ -10,7 +10,7 @@ # CleanUx
+ - **Ops / prod** : heartbeat, health check, audit, seed profiles, readiness
+ 
+ ## Stack
+-- PHP 8.1+
++- PHP 8.5 obligatoire
+ - Laravel 10
+ - Livewire 3
+ - Jetstream
+diff --git a/composer.json b/composer.json
+index 027edd90..b1a8ae93 100644
+--- a/composer.json
++++ b/composer.json
+@@ -2,7 +2,10 @@
+     "name": "laravel/laravel",
+     "type": "project",
+     "description": "The skeleton application for the Laravel framework.",
+-    "keywords": ["laravel", "framework"],
++    "keywords": [
++        "laravel",
++        "framework"
++    ],
+     "license": "MIT",
+     "require": {
+         "php": "^8.5",
+@@ -53,6 +56,9 @@
+         ],
+         "post-create-project-cmd": [
+             "@php artisan key:generate --ansi"
++        ],
++        "check-php85": [
++            "bash scripts/verify_php85.sh"
+         ]
+     },
+     "extra": {
+diff --git a/deploy/supervisor/cleanux-worker.conf.example b/deploy/supervisor/cleanux-worker.conf.example
+index a27e4f2d..61d95a7f 100644
+--- a/deploy/supervisor/cleanux-worker.conf.example
++++ b/deploy/supervisor/cleanux-worker.conf.example
+@@ -1,6 +1,6 @@
+ [program:cleanux-worker]
+ process_name=%(program_name)s_%(process_num)02d
+-command=php /var/www/cleanux/artisan queue:work database --queue=default --sleep=3 --tries=3 --timeout=120 --max-time=3600
++command=/usr/bin/php8.5 /var/www/cleanux/artisan queue:work database --queue=default --sleep=3 --tries=3 --timeout=120 --max-time=3600
+ autostart=true
+ autorestart=true
+ numprocs=2
+diff --git a/deploy/systemd/cleanux-queue.service.example b/deploy/systemd/cleanux-queue.service.example
+index df10aea6..eb742b40 100644
+--- a/deploy/systemd/cleanux-queue.service.example
++++ b/deploy/systemd/cleanux-queue.service.example
+@@ -7,7 +7,7 @@ Type=simple
+ User=www-data
+ Group=www-data
+ WorkingDirectory=/var/www/cleanux
+-ExecStart=/usr/bin/php artisan queue:work database --queue=default --sleep=3 --tries=3 --timeout=120 --max-time=3600
++ExecStart=/usr/bin/php8.5 artisan queue:work database --queue=default --sleep=3 --tries=3 --timeout=120 --max-time=3600
+ Restart=always
+ RestartSec=5
+ 
+diff --git a/deploy/systemd/cleanux-scheduler.service.example b/deploy/systemd/cleanux-scheduler.service.example
+index 4ccb8119..71f112f8 100644
+--- a/deploy/systemd/cleanux-scheduler.service.example
++++ b/deploy/systemd/cleanux-scheduler.service.example
+@@ -7,4 +7,4 @@ Type=oneshot
+ User=www-data
+ Group=www-data
+ WorkingDirectory=/var/www/cleanux
+-ExecStart=/usr/bin/php artisan schedule:run
++ExecStart=/usr/bin/php8.5 artisan schedule:run
+diff --git a/docs/DEPLOYMENT_CHECKLIST.md b/docs/DEPLOYMENT_CHECKLIST.md
+index 40d59341..7b09af67 100644
+--- a/docs/DEPLOYMENT_CHECKLIST.md
++++ b/docs/DEPLOYMENT_CHECKLIST.md
+@@ -9,7 +9,7 @@ ## 1. Préparation du code
+ - [ ] tests verts avant build
+ 
+ ## 2. Infrastructure minimale
+-- [ ] PHP 8.2+
++- [ ] PHP 8.5 obligatoire en CLI, FPM et workers
+ - [ ] MySQL 8+
+ - [ ] Node.js 20+
+ - [ ] Supervisor ou systemd pour les workers
+@@ -52,7 +52,7 @@ ## 5. Bootstrap recommandé
+ ## 6. Scheduler
+ Cron :
+ ```bash
+-* * * * * php /chemin/vers/projet/artisan schedule:run >> /dev/null 2>&1
++* * * * * /usr/bin/php8.5 /chemin/vers/projet/artisan schedule:run >> /dev/null 2>&1
+ ```
+ 
+ Ou timer systemd : voir `deploy/systemd/`.
+diff --git a/docs/LOCAL_SETUP.md b/docs/LOCAL_SETUP.md
+index 26c56961..3cc22716 100644
+--- a/docs/LOCAL_SETUP.md
++++ b/docs/LOCAL_SETUP.md
+@@ -1,11 +1,11 @@
+ # Installation locale et workflow développeur
+ 
+ ## 1. Prérequis
+-- PHP 8.2+
++- PHP 8.5 obligatoire
+ - Composer
+ - Node.js 20+
+ - MySQL 8+
+-- extensions PHP standard Laravel (`mbstring`, `xml`, `dom`, `pdo_mysql`, etc.)
++- extensions PHP 8.5 requises : `mbstring`, `xml`, `dom`, `curl`, `zip`, `gd`, `intl`, `bcmath`, `pdo_mysql`, `pdo_sqlite`, `sqlite3`, `fileinfo`
+ 
+ ## 2. Installation projet
+ ```bash
+diff --git a/docs/README.md b/docs/README.md
+index bc201b54..b6ecd55e 100644
+--- a/docs/README.md
++++ b/docs/README.md
+@@ -69,7 +69,7 @@ ### Dossiers importants
+ ## Installation locale
+ 
+ ### Prérequis
+-- PHP 8.2+
++- PHP 8.5 obligatoire
+ - Composer
+ - Node.js 20+
+ - MySQL 8+ ou MariaDB compatible
+diff --git a/docs/production/PRODUCTION_BASELINE.md b/docs/production/PRODUCTION_BASELINE.md
+index 361b78f8..285a6f8c 100644
+--- a/docs/production/PRODUCTION_BASELINE.md
++++ b/docs/production/PRODUCTION_BASELINE.md
+@@ -36,7 +36,7 @@
+ 
+ 
+ 
+-\- PHP compatible avec composer.lock
++\- PHP 8.5 compatible avec `composer.json` et `composer.lock`
+ 
+ \- Composer installé
+ 
+diff --git a/docs/production/SERVER_CHECKLIST.md b/docs/production/SERVER_CHECKLIST.md
+index 2fddfd48..286052dd 100644
+--- a/docs/production/SERVER_CHECKLIST.md
++++ b/docs/production/SERVER_CHECKLIST.md
+@@ -8,7 +8,7 @@
+ 
+ \- OS Linux recommandé
+ 
+-\- PHP 8.4 ou 8.5 selon compatibilité composer.lock
++\- PHP 8.5 obligatoire en CLI et PHP-FPM
+ 
+ \- Composer installé
+ 
+@@ -58,5 +58,5 @@
+ 
+ ```bash
+ 
+-\* \* \* \* \* cd /path/to/CleanUx \&\& php artisan schedule:run >> /dev/null 2>\&1
++\* \* \* \* \* cd /path/to/CleanUx \&\& /usr/bin/php8.5 artisan schedule:run >> /dev/null 2>\&1
+ 

@@ -7,4 +7,4 @@ Type=oneshot
 User=www-data
 Group=www-data
 WorkingDirectory=/var/www/cleanux
-ExecStart=/usr/bin/php artisan schedule:run
+ExecStart=/usr/bin/php8.5 artisan schedule:run

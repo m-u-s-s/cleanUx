@@ -2,12 +2,14 @@
 
 namespace Database\Seeders;
 
-use App\Models\ServiceCatalog;
+use Database\Seeders\Concerns\SeedsOnlyExistingColumns;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Str;
 
 class ServiceCatalogSeeder extends Seeder
 {
+    use SeedsOnlyExistingColumns;
+
     public function run(): void
     {
         $services = [
@@ -72,20 +74,26 @@ class ServiceCatalogSeeder extends Seeder
         ];
 
         foreach ($services as $service) {
-            ServiceCatalog::updateOrCreate(
+            $this->updateOrInsertTable(
+                'service_catalogs',
                 ['code' => $service['code']],
                 [
                     'name' => $service['name'],
                     'slug' => Str::slug($service['name']),
                     'description' => $service['description'],
+                    'category' => $service['service_type'],
                     'service_type' => $service['service_type'],
                     'is_active' => true,
                     'requires_quote' => $service['requires_quote'] ?? false,
                     'requires_manual_validation' => $service['requires_manual_validation'] ?? false,
                     'is_entreprise' => $service['is_entreprise'] ?? false,
+                    'is_b2b_available' => true,
+                    'is_personal_available' => true,
                     'default_duration_minutes' => $service['default_duration_minutes'],
                     'base_price' => $service['base_price'],
+                    'currency' => 'EUR',
                     'sort_order' => $service['sort_order'],
+                    'metadata' => ['seeded_service_type' => $service['service_type']],
                 ]
             );
         }

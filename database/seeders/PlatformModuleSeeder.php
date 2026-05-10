@@ -2,11 +2,13 @@
 
 namespace Database\Seeders;
 
-use App\Models\PlatformModule;
+use Database\Seeders\Concerns\SeedsOnlyExistingColumns;
 use Illuminate\Database\Seeder;
 
 class PlatformModuleSeeder extends Seeder
 {
+    use SeedsOnlyExistingColumns;
+
     public function run(): void
     {
         $modules = [
@@ -23,7 +25,8 @@ class PlatformModuleSeeder extends Seeder
         ];
 
         foreach ($modules as $module) {
-            PlatformModule::updateOrCreate(
+            $this->updateOrInsertTable(
+                'platform_modules',
                 ['key' => $module['key']],
                 [
                     'name' => $module['name'],
@@ -33,6 +36,11 @@ class PlatformModuleSeeder extends Seeder
                     'is_enabled' => $module['is_enabled'] ?? true,
                     'is_locked' => $module['is_locked'] ?? false,
                     'sort_order' => $module['sort_order'],
+                    'settings' => [
+                        'category' => $module['category'],
+                        'rollout_strategy' => $module['rollout_strategy'] ?? 'global',
+                        'sort_order' => $module['sort_order'],
+                    ],
                 ]
             );
         }

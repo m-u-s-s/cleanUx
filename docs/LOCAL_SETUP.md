@@ -1,11 +1,11 @@
 # Installation locale et workflow développeur
 
 ## 1. Prérequis
-- PHP 8.2+
+- PHP 8.5 obligatoire
 - Composer
 - Node.js 20+
 - MySQL 8+
-- extensions PHP standard Laravel (`mbstring`, `xml`, `dom`, `pdo_mysql`, etc.)
+- extensions PHP 8.5 requises : `mbstring`, `xml`, `dom`, `curl`, `zip`, `gd`, `intl`, `bcmath`, `pdo_mysql`, `pdo_sqlite`, `sqlite3`, `fileinfo`
 
 ## 2. Installation projet
 ```bash

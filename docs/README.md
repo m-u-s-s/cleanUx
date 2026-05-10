@@ -69,7 +69,7 @@ Le projet n'est plus un simple site de prise de rendez-vous. Il s'agit désormai
 ## Installation locale
 
 ### Prérequis
-- PHP 8.2+
+- PHP 8.5 obligatoire
 - Composer
 - Node.js 20+
 - MySQL 8+ ou MariaDB compatible

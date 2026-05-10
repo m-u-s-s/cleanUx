@@ -2,19 +2,20 @@
 
 namespace Database\Seeders;
 
-use App\Models\Commune;
-use App\Models\Country;
-use App\Models\PostalCode;
-use App\Models\Province;
-use App\Models\Region;
 use Illuminate\Database\Seeder;
+use Database\Seeders\Concerns\SeedsOnlyExistingColumns;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
 
 class BelgiumGeographySeeder extends Seeder
 {
+    use SeedsOnlyExistingColumns;
+
     public function run(): void
     {
-        $country = Country::updateOrCreate(
+        $country = $this->updateOrInsertTable(
+            'countries',
             ['iso_code' => 'BE'],
             [
                 'iso3_code' => 'BEL',
@@ -22,70 +23,93 @@ class BelgiumGeographySeeder extends Seeder
                 'official_name' => 'Royaume de Belgique',
                 'default_locale' => 'fr_BE',
                 'currency_code' => 'EUR',
+                'currency' => 'EUR',
                 'phone_code' => '+32',
                 'timezone' => 'Europe/Brussels',
+                'booking_enabled' => true,
+                'market_stage' => 'active',
+                'settings' => ['locale' => 'fr_BE', 'timezone' => 'Europe/Brussels'],
                 'is_active' => true,
             ]
         );
 
-        $regions = collect($this->regions())->mapWithKeys(function (array $region) use ($country) {
-            $model = Region::updateOrCreate(
-                ['country_id' => $country->id, 'code' => $region['code']],
-                [
-                    'name' => $region['name'],
-                    'slug' => Str::slug($region['name']),
-                    'sort_order' => $region['sort_order'],
-                    'is_active' => true,
-                ]
-            );
+        if (! $country) {
+            return;
+        }
 
-            return [$region['code'] => $model];
-        });
+        $regions = collect();
+        if (Schema::hasTable('regions')) {
+            $regions = collect($this->regions())->mapWithKeys(function (array $region) use ($country) {
+                $model = $this->updateOrInsertTable(
+                    'regions',
+                    ['country_id' => $country->id, 'code' => $region['code']],
+                    [
+                        'name' => $region['name'],
+                        'slug' => Str::slug($region['name']),
+                        'sort_order' => $region['sort_order'],
+                        'is_active' => true,
+                    ]
+                );
 
-        $provinces = collect($this->provinces())->mapWithKeys(function (array $province) use ($country, $regions) {
-            $model = Province::updateOrCreate(
-                ['country_id' => $country->id, 'code' => $province['code']],
-                [
-                    'region_id' => $regions[$province['region']]->id,
-                    'name' => $province['name'],
-                    'slug' => Str::slug($province['name']),
-                    'sort_order' => $province['sort_order'],
-                    'is_active' => true,
-                ]
-            );
+                return $model ? [$region['code'] => $model] : [];
+            });
+        }
 
-            return [$province['code'] => $model];
-        });
+        $provinces = collect();
+        if (Schema::hasTable('provinces')) {
+            $provinces = collect($this->provinces())->mapWithKeys(function (array $province) use ($country, $regions) {
+                $model = $this->updateOrInsertTable(
+                    'provinces',
+                    ['country_id' => $country->id, 'code' => $province['code']],
+                    [
+                        'region_id' => $regions[$province['region']]->id ?? null,
+                        'name' => $province['name'],
+                        'slug' => Str::slug($province['name']),
+                        'sort_order' => $province['sort_order'],
+                        'is_active' => true,
+                    ]
+                );
 
-        $communes = collect($this->communes())->mapWithKeys(function (array $commune) use ($country, $regions, $provinces) {
-            $model = Commune::updateOrCreate(
-                [
-                    'country_id' => $country->id,
-                    'province_id' => $provinces[$commune['province']]->id,
-                    'name' => $commune['name'],
-                ],
-                [
-                    'region_id' => $regions[$commune['region']]->id,
-                    'nis_code' => $commune['nis_code'],
-                    'slug' => Str::slug($commune['name']),
-                    'is_active' => true,
-                ]
-            );
+                return $model ? [$province['code'] => $model] : [];
+            });
+        }
 
-            return [$commune['name'] => $model];
-        });
+        $communes = collect();
+        if (Schema::hasTable('communes')) {
+            $communes = collect($this->communes())->mapWithKeys(function (array $commune) use ($country, $regions, $provinces) {
+                $model = $this->updateOrInsertTable(
+                    'communes',
+                    [
+                        'country_id' => $country->id,
+                        'province_id' => $provinces[$commune['province']]->id ?? null,
+                        'name' => $commune['name'],
+                    ],
+                    [
+                        'region_id' => $regions[$commune['region']]->id ?? null,
+                        'nis_code' => $commune['nis_code'],
+                        'slug' => Str::slug($commune['name']),
+                        'is_active' => true,
+                    ]
+                );
+
+                return $model ? [$commune['name'] => $model] : [];
+            });
+        }
 
         foreach ($this->postalCodes() as $postalCode) {
-            PostalCode::updateOrCreate(
+            $this->updateOrInsertTable(
+                'postal_codes',
                 [
                     'country_id' => $country->id,
                     'code' => $postalCode['code'],
                     'city_name' => $postalCode['city_name'],
                 ],
                 [
-                    'region_id' => $regions[$postalCode['region']]->id,
-                    'province_id' => $provinces[$postalCode['province']]->id,
-                    'commune_id' => $communes[$postalCode['commune']]->id,
+                    'region_id' => $regions[$postalCode['region']]->id ?? null,
+                    'province_id' => $provinces[$postalCode['province']]->id ?? null,
+                    'commune_id' => $communes[$postalCode['commune']]->id ?? null,
+                    'lat' => $postalCode['latitude'] ?? null,
+                    'lng' => $postalCode['longitude'] ?? null,
                     'latitude' => $postalCode['latitude'] ?? null,
                     'longitude' => $postalCode['longitude'] ?? null,
                     'is_active' => true,
@@ -93,7 +117,7 @@ class BelgiumGeographySeeder extends Seeder
             );
         }
 
-        $this->command?->info('✅ Géographie Belgique initialisée (référentiel enrichi).');
+        $this->command?->info('✅ Géographie Belgique initialisée selon les colonnes réellement migrées.');
     }
 
     protected function regions(): array

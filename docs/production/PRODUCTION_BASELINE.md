@@ -36,7 +36,7 @@ Préparer CleanUx pour un environnement de production réel, stable, sécurisé 
 
 
 
-\- PHP compatible avec composer.lock
+\- PHP 8.5 compatible avec `composer.json` et `composer.lock`
 
 \- Composer installé
 

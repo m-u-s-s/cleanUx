@@ -7,7 +7,7 @@ Type=simple
 User=www-data
 Group=www-data
 WorkingDirectory=/var/www/cleanux
-ExecStart=/usr/bin/php artisan queue:work database --queue=default --sleep=3 --tries=3 --timeout=120 --max-time=3600
+ExecStart=/usr/bin/php8.5 artisan queue:work database --queue=default --sleep=3 --tries=3 --timeout=120 --max-time=3600
 Restart=always
 RestartSec=5
 

@@ -8,7 +8,7 @@
 
 \- OS Linux recommandé
 
-\- PHP 8.4 ou 8.5 selon compatibilité composer.lock
+\- PHP 8.5 obligatoire en CLI et PHP-FPM
 
 \- Composer installé
 
@@ -58,5 +58,5 @@ Ajouter dans le cron serveur :
 
 ```bash
 
-\* \* \* \* \* cd /path/to/CleanUx \&\& php artisan schedule:run >> /dev/null 2>\&1
+\* \* \* \* \* cd /path/to/CleanUx \&\& /usr/bin/php8.5 artisan schedule:run >> /dev/null 2>\&1
 

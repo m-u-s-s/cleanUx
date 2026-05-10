@@ -1,6 +1,6 @@
 # CleanUx
 
-CleanUx est une plateforme opérationnelle de nettoyage construite avec Laravel, Livewire et Jetstream.
+CleanUx est une plateforme opérationnelle multi-services construite avec Laravel, Livewire et Jetstream.
 Le projet sépare désormais clairement :
 
 - **RendezVous** : réservation, planification, snapshots et finance
@@ -10,7 +10,7 @@ Le projet sépare désormais clairement :
 - **Ops / prod** : heartbeat, health check, audit, seed profiles, readiness
 
 ## Stack
-- PHP 8.1+
+- PHP 8.5 obligatoire
 - Laravel 10
 - Livewire 3
 - Jetstream

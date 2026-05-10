@@ -11,9 +11,10 @@ return new class extends Migration
         Schema::create('countries', function (Blueprint $table) {
             $table->id();
 
-            $table->string('name');
             $table->string('iso_code', 2)->unique();
             $table->string('iso3_code', 3)->nullable()->unique();
+            $table->string('name');
+            $table->string('official_name')->nullable();
             $table->string('currency', 3)->default('EUR');
 
             $table->boolean('is_active')->default(true);

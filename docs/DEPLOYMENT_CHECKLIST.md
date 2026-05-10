@@ -9,7 +9,7 @@
 - [ ] tests verts avant build
 
 ## 2. Infrastructure minimale
-- [ ] PHP 8.2+
+- [ ] PHP 8.5 obligatoire en CLI, FPM et workers
 - [ ] MySQL 8+
 - [ ] Node.js 20+
 - [ ] Supervisor ou systemd pour les workers
@@ -52,7 +52,7 @@ php artisan app:audit-platform-integrity --fail-on-issues
 ## 6. Scheduler
 Cron :
 ```bash
-* * * * * php /chemin/vers/projet/artisan schedule:run >> /dev/null 2>&1
+* * * * * /usr/bin/php8.5 /chemin/vers/projet/artisan schedule:run >> /dev/null 2>&1
 ```
 
 Ou timer systemd : voir `deploy/systemd/`.

@@ -1,6 +1,6 @@
 [program:cleanux-worker]
 process_name=%(program_name)s_%(process_num)02d
-command=php /var/www/cleanux/artisan queue:work database --queue=default --sleep=3 --tries=3 --timeout=120 --max-time=3600
+command=/usr/bin/php8.5 /var/www/cleanux/artisan queue:work database --queue=default --sleep=3 --tries=3 --timeout=120 --max-time=3600
 autostart=true
 autorestart=true
 numprocs=2
