@@ -124,7 +124,7 @@ class ProviderPresenceService
             ->where('is_online', true)
             ->where(function (Builder $q) use ($threshold) {
                 $q->whereNull('last_heartbeat_at')
-                  ->orWhere('last_heartbeat_at', '<', $threshold);
+                    ->orWhere('last_heartbeat_at', '<', $threshold);
             })
             ->get();
 
@@ -150,18 +150,47 @@ class ProviderPresenceService
      * Utilise la formule haversine en SQL pour scale jusqu'à ~10K profils
      * sans recourir à PostGIS.
      */
-    public function findOnlineNear(float $lat, float $lng, float $radiusKm = 10): \Illuminate\Database\Eloquent\Collection
+    public function findOnlineNear(float $lat, float $lng, float $radiusKm = 50)
     {
-        return ProviderProfile::query()
+        $query = ProviderProfile::query()
             ->where('is_online', true)
             ->whereNotNull('current_lat')
-            ->whereNotNull('current_lng')
+            ->whereNotNull('current_lng');
+
+        if (DB::connection()->getDriverName() === 'sqlite') {
+            return $query
+                ->get()
+                ->filter(function (ProviderProfile $profile) use ($lat, $lng, $radiusKm) {
+                    return $this->distanceKm(
+                        $lat,
+                        $lng,
+                        (float) $profile->current_lat,
+                        (float) $profile->current_lng
+                    ) <= $radiusKm;
+                })
+                ->values();
+        }
+
+        return $query
             ->whereRaw(
                 '(6371 * acos(cos(radians(?)) * cos(radians(current_lat)) * cos(radians(current_lng) - radians(?)) + sin(radians(?)) * sin(radians(current_lat)))) <= ?',
                 [$lat, $lng, $lat, $radiusKm]
             )
-            ->with('user:id,name,email')
             ->get();
+    }
+
+    private function distanceKm(float $lat1, float $lng1, float $lat2, float $lng2): float
+    {
+        $earthRadius = 6371;
+
+        $dLat = deg2rad($lat2 - $lat1);
+        $dLng = deg2rad($lng2 - $lng1);
+
+        $a = sin($dLat / 2) ** 2
+            + cos(deg2rad($lat1)) * cos(deg2rad($lat2))
+            * sin($dLng / 2) ** 2;
+
+        return $earthRadius * 2 * atan2(sqrt($a), sqrt(1 - $a));
     }
 
     protected function ensureProfile(User $user): ProviderProfile
@@ -171,7 +200,7 @@ class ProviderPresenceService
         if (! $profile) {
             throw new \DomainException(
                 "L'utilisateur {$user->id} n'a pas de ProviderProfile. " .
-                "Il doit être prestataire pour utiliser le système de presence."
+                    "Il doit être prestataire pour utiliser le système de presence."
             );
         }
 

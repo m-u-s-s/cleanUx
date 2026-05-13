@@ -44,7 +44,7 @@ class ModerationService
 
             $this->log($actor, $message->channel, ModerationAction::TYPE_DELETE_MESSAGE, [
                 'message_id'    => $message->id,
-                'target_user_id'=> $message->user_id,
+                'target_user_id' => $message->user_id,
                 'reason'        => $reason,
             ]);
 
@@ -52,15 +52,19 @@ class ModerationService
         });
     }
 
-    public function pinMessage(\App\Models\User $actor, $message): void
+    public function pinMessage(User $actor, Message $message): void
     {
+        if (! $this->policy->pinMessage($actor, $message)) {
+            throw new \DomainException("Vous n'êtes pas autorisé à épingler ce message.");
+        }
+
         $message->forceFill([
             'is_pinned' => true,
             'pinned_by' => $actor->id,
             'pinned_at' => now(),
         ])->save();
 
-        $this->logAction($actor, $message->channel ?? null, $message, 'message_pinned', null);
+        $this->logAction($actor, $message->channel, $message, 'message_pinned');
     }
 
     public function unpinMessage(\App\Models\User $actor, $message): void
@@ -92,15 +96,19 @@ class ModerationService
         });
     }
 
-    public function archiveChannel(\App\Models\User $actor, $channel): void
+    public function archiveChannel(User $actor, Channel $channel): void
     {
+        if (! $this->policy->archiveChannel($actor, $channel)) {
+            throw new \DomainException("Vous n'êtes pas autorisé à archiver ce canal.");
+        }
+
         $channel->forceFill([
             'is_archived' => true,
             'archived_at' => now(),
             'archived_by' => $actor->id,
         ])->save();
 
-        $this->logAction($actor, $channel, null, 'channel_archived', null);
+        $this->logAction($actor, $channel, null, 'channel_archived');
     }
 
 

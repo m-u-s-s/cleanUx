@@ -12,27 +12,26 @@ use Illuminate\Support\Facades\Route;
 
 Route::view('/', 'home')->name('home');
 
-Route::post('/locale', function (Request $request) {
-    $locale = $request->string('locale')->toString();
 
-    abort_unless(in_array($locale, ['fr', 'nl', 'en'], true), 404);
+Route::post('/locale', function (Request $request) {
+    $locale = $request->validate([
+        'locale' => ['required', 'in:fr,nl,en'],
+    ])['locale'];
 
     session(['locale' => $locale]);
+    app()->setLocale($locale);
 
-    if (auth()->check()) {
-        /** @var User $user */
-        $user = auth()->user();
-
-        $user->forceFill([
+    if ($request->user()) {
+        $request->user()->forceFill([
             'locale' => match ($locale) {
+                'fr' => 'fr_BE',
                 'nl' => 'nl_BE',
                 'en' => 'en_US',
-                default => 'fr_BE',
             },
         ])->save();
     }
 
-    return back();
+    return redirect()->to(route('home'));
 })->name('locale.switch');
 
 Route::post('/country', function (Request $request) {

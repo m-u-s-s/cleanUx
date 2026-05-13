@@ -405,4 +405,26 @@ class User extends Authenticatable implements MustVerifyEmail
         return $this->belongsTo(self::class, 'id', 'id');
     }
 
+    public function canChooseEmployee(): bool
+    {
+        return in_array($this->plan_type ?? 'standard', ['premium', 'business', 'enterprise'], true)
+            || in_array($this->role ?? null, ['admin', 'entreprise'], true)
+            || $this->isPlatformAdmin();
+    }
+
+    public function isReadOnlyAdmin(): bool
+    {
+        return ($this->role ?? null) === 'readonly_admin'
+            || ($this->platform_role ?? null) === 'readonly_admin';
+    }
+
+    public function disponibilites(): HasMany
+    {
+        return $this->hasMany(Disponibilite::class);
+    }
+
+    public function organizationAccount(): BelongsTo
+    {
+        return $this->belongsTo(OrganizationAccount::class, 'current_organization_id');
+    }
 }

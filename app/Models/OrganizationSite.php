@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -9,10 +10,16 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class OrganizationSite extends Model
 {
+    use HasFactory;
+
     protected $fillable = [
         'organization_account_id',
         'name',
         'address',
+        'address_line_1',
+        'address_line_2',
+        'service_zone_id',
+        'postal_code_id',
         'city',
         'postal_code',
         'country',
@@ -61,6 +68,16 @@ class OrganizationSite extends Model
         return $this->hasMany(Booking::class, 'organization_site_id');
     }
 
+    public function serviceZone(): BelongsTo
+    {
+        return $this->belongsTo(ServiceZone::class, 'service_zone_id');
+    }
+
+    public function postalCode(): BelongsTo
+    {
+        return $this->belongsTo(PostalCode::class, 'postal_code_id');
+    }
+
     public function authorizedMembers(): BelongsToMany
     {
         return $this->belongsToMany(
@@ -104,5 +121,26 @@ class OrganizationSite extends Model
         return $this->bookings()
             ->whereIn('status', ['pending', 'confirmed', 'in_progress'])
             ->count();
+    }
+
+    protected static function booted(): void
+    {
+        static::saving(function (OrganizationSite $site) {
+            if (blank($site->address) && filled($site->address_line_1)) {
+                $site->address = $site->address_line_1;
+            }
+
+            if (blank($site->address) && filled($site->name)) {
+                $site->address = trim($site->name . ' ' . $site->postal_code . ' ' . $site->city);
+            }
+
+            if (blank($site->address)) {
+                $site->address = 'Adresse non renseignée';
+            }
+
+            if (blank($site->address_line_1) && filled($site->address)) {
+                $site->address_line_1 = $site->address;
+            }
+        });
     }
 }

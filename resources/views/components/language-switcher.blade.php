@@ -35,7 +35,7 @@
         class="absolute right-0 z-50 mt-1 w-44 origin-top-right rounded-lg border border-slate-200 bg-white py-1 shadow-lg"
     >
         @foreach ($locales as $code => $info)
-            <form method="POST" action="{{ route('locale.update') }}">
+            <form method="POST" action="{{ route('locale.switch') }}">
                 @csrf
                 <input type="hidden" name="locale" value="{{ $code }}">
                 <button

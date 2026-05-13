@@ -30,7 +30,6 @@ Route::middleware(['auth', 'verified', 'active.account'])->group(function () {
     require __DIR__ . '/company-dashboards.php';
     require __DIR__ . '/missing-route-fixes-advanced.php';
 
-    Route::post('/locale', [LocaleController::class, 'update'])->name('locale.update');
 });
 
 Route::middleware('auth')->prefix('push')->group(function () {

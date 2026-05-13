@@ -9,6 +9,7 @@ use App\Http\Controllers\Api\ProfileController;
 use App\Http\Controllers\Api\Provider\ProviderCancellationController;
 use App\Http\Controllers\Api\Provider\ProviderMissionLifecycleController;
 use App\Http\Controllers\Api\Provider\ProviderOnboardingController;
+use App\Http\Controllers\Api\Provider\ProviderPayoutsController;
 use App\Http\Controllers\Api\ProviderMissionAssignmentController;
 use App\Http\Controllers\Api\ProviderPresenceController;
 use Illuminate\Http\Request;
@@ -124,4 +125,9 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
             storage_path('app/private/' . $document->file_path)
         );
     })->name('admin.onboarding.document.file');
+});
+
+Route::middleware(['auth:sanctum'])->prefix('provider')->group(function () {
+    Route::get('/payouts', [ProviderPayoutsController::class, 'index']);
+    Route::get('/payouts/summary', [ProviderPayoutsController::class, 'summary']);
 });

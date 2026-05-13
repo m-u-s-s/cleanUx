@@ -80,7 +80,7 @@ return new class extends Migration
             // Si ces colonnes manquent dans la table mais sont dans le fillable,
             // on les ajoute défensivement.
             if (! Schema::hasColumn('service_catalogs', 'service_type')) {
-                $table->string('service_type', 60)->default('standard')->after('category');
+                $table->string('service_type', 60)->nullable();
             }
             if (! Schema::hasColumn('service_catalogs', 'requires_quote')) {
                 $table->boolean('requires_quote')->default(false);

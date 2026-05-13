@@ -259,20 +259,6 @@ class AdminOnboardingProvidersList extends Component
             ];
         }
 
-        dd([
-            'profiles' => \App\Models\ProviderProfile::query()
-                ->get()
-                ->map(fn($p) => [
-                    'id' => $p->id,
-                    'user_id' => $p->user_id,
-                    'status' => $p->status ?? null,
-                    'verification_status' => $p->verification_status ?? null,
-                    'onboarding_status' => $p->onboarding_status ?? null,
-                    'onboarding_completed_at' => $p->onboarding_completed_at ?? null,
-                ])
-                ->toArray(),
-            'counts' => $counts,
-        ]);
 
         return [
             'in_progress' => \App\Models\ProviderProfile::query()

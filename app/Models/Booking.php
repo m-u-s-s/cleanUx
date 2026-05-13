@@ -162,6 +162,18 @@ class Booking extends Model
         'commentaire_client',
         'devis_estime',
         'duree_estimee',
+
+        // recurrence
+        'recurrence_rule',
+        'recurring_series_id',
+        'recurrence_frequency',
+        'recurrence_interval',
+        'recurrence_until',
+        'recurrence_count',
+        'recurrence_days',
+        'is_series_master',
+        'series_position',
+        'series_status',
     ];
 
     protected $casts = [
@@ -191,7 +203,6 @@ class Booking extends Model
         'acces_parking'      => 'boolean',
         'materiel_fournit'   => 'boolean',
         'is_recurrent'       => 'boolean',
-        'is_series_master'   => 'boolean',
         'is_favorite_slot'   => 'boolean',
 
         // Décimaux
@@ -219,6 +230,15 @@ class Booking extends Model
         'zone_snapshot'       => 'array',
         'matching_snapshot'   => 'array',
         'address_components'  => 'array',
+        'metadata'            => 'array',
+
+        // recurrence
+        'is_series_master' => 'boolean',
+        'series_position' => 'integer',
+        'recurrence_interval' => 'integer',
+        'recurrence_count' => 'integer',
+        'recurrence_until' => 'date',
+        'recurrence_days' => 'array',
     ];
 
     // ──────────────────────────────────────────────────────
@@ -229,6 +249,15 @@ class Booking extends Model
     {
         static::saving(function (Booking $booking) {
             $booking->syncLegacyAliases();
+        });
+
+        static::saving(function (Booking $booking) {
+            if (
+                blank($booking->series_status)
+                && filled($booking->recurring_series_id)
+            ) {
+                $booking->series_status = 'active';
+            }
         });
     }
 
@@ -497,5 +526,15 @@ class Booking extends Model
     public function getDisplayTimeAttribute(): mixed
     {
         return $this->scheduled_time ?? $this->heure;
+    }
+
+    public function financeQuote(): HasOne
+    {
+        return $this->hasOne(FinanceQuote::class, 'booking_id');
+    }
+
+    public function financeInvoice(): HasOne
+    {
+        return $this->hasOne(FinanceInvoice::class, 'booking_id');
     }
 }

@@ -8,20 +8,32 @@ use Illuminate\Database\Eloquent\Model;
 class Feedback extends Model
 {
     use HasFactory;
-    
+
     protected $table = 'feedback';
 
     protected $fillable = [
         'rendez_vous_id',
+        'booking_id',
+        'mission_id',
         'client_id',
-        'commentaire',
+        'employe_id',
         'note',
+        'rating',
+        'commentaire',
+        'comment',
         'reponse_admin',
+        'answered_by',
+        'answered_at',
+        'status',
+        'metadata',
         'feedback',
     ];
 
     protected $casts = [
         'note' => 'integer',
+        'rating' => 'integer',
+        'answered_at' => 'datetime',
+        'metadata' => 'array',
     ];
 
     public function rendezVous()

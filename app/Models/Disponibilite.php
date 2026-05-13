@@ -14,6 +14,8 @@ class Disponibilite extends Model
         'date',
         'heure_debut',
         'heure_fin',
+        'status',
+        'notes',
     ];
 
     protected $casts = [

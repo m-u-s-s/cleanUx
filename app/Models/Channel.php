@@ -16,13 +16,20 @@ class Channel extends Model
         'name',
         'type',
         'is_private',
+        'is_locked',
+        'is_archived',
+        'archived_at',
+        'archived_by',
         'created_by',
         'settings',
     ];
 
     protected $casts = [
-        'is_private' => 'boolean',
-        'settings'   => 'array',
+        'is_private'   => 'boolean',
+        'is_locked'    => 'boolean',
+        'is_archived'  => 'boolean',
+        'archived_at'  => 'datetime',
+        'settings'     => 'array',
     ];
 
     // Types disponibles

@@ -40,6 +40,13 @@ class Message extends Model
         'edited_at',
         'replies_count',
         'last_reply_at',
+
+        // Moderation
+        'deleted_by',
+        'deleted_reason',
+        'is_pinned',
+        'pinned_at',
+        'pinned_by',
     ];
 
     protected $casts = [
@@ -47,6 +54,10 @@ class Message extends Model
         'edited_at'     => 'datetime',
         'last_reply_at' => 'datetime',
         'replies_count' => 'integer',
+
+        // Moderation
+        'is_pinned'     => 'boolean',
+        'pinned_at'     => 'datetime',
     ];
 
     // ──────────────────────────────────────────────────────

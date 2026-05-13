@@ -14,19 +14,20 @@ class MissionTrackingSession extends Model
     protected $fillable = [
         'mission_id',
         'assignment_id',
-        'employee_user_id',
-        'tracking_mode',
         'is_client_visible',
-        'is_active',
         'started_at',
         'ended_at',
         'start_lat',
         'start_lng',
-        'last_lat',
-        'last_lng',
         'point_count',
         'distance_meters',
         'meta',
+        'user_id',
+        'employee_user_id',
+        'tracking_mode',
+        'is_active',
+        'last_lat',
+        'last_lng',
     ];
 
     protected $casts = [
@@ -59,5 +60,32 @@ class MissionTrackingSession extends Model
     public function points(): HasMany
     {
         return $this->hasMany(MissionTrackingPoint::class, 'tracking_session_id');
+    }
+
+    protected static function booted(): void
+    {
+        static::creating(function (MissionTrackingSession $session) {
+            if (blank($session->user_id) && filled($session->employee_user_id)) {
+                $session->user_id = $session->employee_user_id;
+            }
+
+            if (blank($session->employee_user_id) && filled($session->user_id)) {
+                $session->employee_user_id = $session->user_id;
+            }
+
+            if (blank($session->status)) {
+                $session->status = ($session->is_active ?? false) ? 'active' : 'stopped';
+            }
+        });
+
+        static::updating(function (MissionTrackingSession $session) {
+            if (blank($session->user_id) && filled($session->employee_user_id)) {
+                $session->user_id = $session->employee_user_id;
+            }
+
+            if (blank($session->employee_user_id) && filled($session->user_id)) {
+                $session->employee_user_id = $session->user_id;
+            }
+        });
     }
 }

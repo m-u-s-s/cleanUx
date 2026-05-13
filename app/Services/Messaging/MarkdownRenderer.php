@@ -68,7 +68,10 @@ class MarkdownRenderer
             'allow_unsafe_links' => false,
         ]);
 
+        
+        
         $html = preg_replace('/<a /', '<a target="_blank" rel="noopener noreferrer" ', $html);
+        $html = $this->highlightMentions($html);
 
         return trim($html);
     }
@@ -139,4 +142,27 @@ class MarkdownRenderer
         return rtrim(substr($plain, 0, $cut)) . $ellipsis;
     }
 
+    private function highlightMentions(string $html): string
+    {
+        return preg_replace_callback(
+            '/@&quot;([^&]+)&quot;|@([a-zA-Z0-9_.-]+)/',
+            function (array $matches) {
+                $mention = $matches[1] ?: $matches[2];
+
+                $isSpecial = in_array($mention, ['here', 'all', 'channel'], true);
+
+                $class = $isSpecial
+                    ? 'mention mention-special text-amber-600'
+                    : 'mention text-blue-600';
+
+                return sprintf(
+                    '<span class="%s" data-mention="%s">@%s</span>',
+                    e($class),
+                    e($mention),
+                    e($mention)
+                );
+            },
+            $html
+        );
+    }
 }

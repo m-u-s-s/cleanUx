@@ -190,4 +190,36 @@ class CancellationFeeCalculator
             'reason_code'          => $reasonCode,
         ];
     }
+
+    private function bookingAmount(Booking $booking): float
+    {
+        return (float) (
+            $booking->final_price
+            ?? $booking->estimated_price
+            ?? $booking->devis_estime
+            ?? 0
+        );
+    }
+
+    private function scheduledAt(Booking $booking): ?Carbon
+    {
+        if ($booking->scheduled_at) {
+            return Carbon::parse($booking->scheduled_at);
+        }
+
+        if ($booking->scheduled_date && $booking->scheduled_time) {
+            return Carbon::parse(
+                $booking->scheduled_date->format('Y-m-d') . ' ' . $booking->scheduled_time->format('H:i:s')
+            );
+        }
+
+        if ($booking->date && $booking->heure) {
+            return Carbon::parse(
+                $booking->date->format('Y-m-d') . ' ' . $booking->heure
+            );
+        }
+
+        return null;
+    }
+    
 }

@@ -42,6 +42,7 @@ class EtaService
      */
     public function computeForMission(Mission $mission, bool $force = false): array
     {
+
         $session = $mission->trackingSessions()
             ->where('is_active', true)
             ->latest('started_at')
@@ -50,6 +51,38 @@ class EtaService
         if (! $session) {
             return $this->emptyResult();
         }
+
+        $tracking = $mission->trackingSessions()
+            ->where(function ($query) {
+                $query->where('is_active', true)
+                    ->orWhere('status', 'active');
+            })
+            ->latest('started_at')
+            ->first();
+
+        $originLat = $tracking?->last_lat
+            ?? $tracking?->current_lat
+            ?? $tracking?->start_lat;
+
+        $originLng = $tracking?->last_lng
+            ?? $tracking?->current_lng
+            ?? $tracking?->start_lng;
+
+        $booking = $mission->booking
+            ?? $mission->rendezVous
+            ?? null;
+
+        $destinationLat = $mission->destination_lat
+            ?? $mission->end_lat
+            ?? $booking?->destination_lat
+            ?? $booking?->latitude
+            ?? $booking?->lat;
+
+        $destinationLng = $mission->destination_lng
+            ?? $mission->end_lng
+            ?? $booking?->destination_lng
+            ?? $booking?->longitude
+            ?? $booking?->lng;
 
         $providerLat = $session->last_lat ? (float) $session->last_lat : null;
         $providerLng = $session->last_lng ? (float) $session->last_lng : null;
@@ -150,8 +183,8 @@ class EtaService
 
             // duration_in_traffic > duration si dispo (compte du trafic actuel)
             $seconds = $element['duration_in_traffic']['value']
-                    ?? $element['duration']['value']
-                    ?? null;
+                ?? $element['duration']['value']
+                ?? null;
             $meters = $element['distance']['value'] ?? null;
 
             if ($seconds === null || $meters === null) {
@@ -182,7 +215,7 @@ class EtaService
         $lngDelta = deg2rad($toLng - $fromLng);
 
         $a = sin($latDelta / 2) ** 2
-           + cos(deg2rad($fromLat)) * cos(deg2rad($toLat)) * sin($lngDelta / 2) ** 2;
+            + cos(deg2rad($fromLat)) * cos(deg2rad($toLat)) * sin($lngDelta / 2) ** 2;
 
         $distanceKm = $earthRadiusKm * 2 * atan2(sqrt($a), sqrt(1 - $a));
         $meters = (int) round($distanceKm * 1000);

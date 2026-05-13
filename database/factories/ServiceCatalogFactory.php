@@ -22,7 +22,7 @@ class ServiceCatalogFactory extends Factory
             'name' => Str::title($name),
             'slug' => Str::slug($name.'-'.fake()->unique()->numerify('###')),
             'description' => fake()->sentence(),
-            'service_type' => fake()->randomElement(['cleaning', 'deep-cleaning', 'move-out', 'windows', 'office']),
+            'service_type' => fake()->randomElement(['standard', 'cleaning', 'deep-cleaning', 'move-out', 'windows', 'office']),
             'is_active' => true,
             'requires_quote' => false,
             'requires_manual_validation' => false,

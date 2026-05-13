@@ -29,9 +29,15 @@ class LocaleController extends Controller
 
         // User
         $user = $request->user();
-        if ($user && $user->locale !== $locale) {
-            $user->locale = $locale;
-            $user->save();
+
+        if ($user) {
+            $user->forceFill([
+                'locale' => match ($locale) {
+                    'nl' => 'nl_BE',
+                    'fr' => 'fr_BE',
+                    'en' => 'en_US',
+                },
+            ])->save();
         }
 
         return back()

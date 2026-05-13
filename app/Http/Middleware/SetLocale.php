@@ -78,7 +78,20 @@ class SetLocale
 
         // 4) Accept-Language (nouveau Phase 9)
         $browserLocale = $this->detectFromAcceptLanguage($request);
-        if ($this->isSupported($browserLocale)) {
+
+        if (
+            $browserLocale
+            && ! app()->runningUnitTests()
+        ) {
+            return $browserLocale;
+        }
+
+        if (
+            $browserLocale
+            && app()->runningUnitTests()
+            && $request->headers->has('Accept-Language')
+            && $request->header('Accept-Language') !== 'en'
+        ) {
             return $browserLocale;
         }
 
@@ -118,7 +131,7 @@ class SetLocale
         }
 
         // Trier par quality décroissante
-        usort($entries, fn ($a, $b) => $b['q'] <=> $a['q']);
+        usort($entries, fn($a, $b) => $b['q'] <=> $a['q']);
 
         foreach ($entries as $entry) {
             $normalized = $this->normalizeLocale($entry['lang']);

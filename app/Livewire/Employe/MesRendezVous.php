@@ -3,6 +3,7 @@
 namespace App\Livewire\Employe;
 
 use App\Models\Booking;
+use App\Models\Mission;
 use App\Notifications\StatutRendezVousNotification;
 use App\Support\ActivityLogger;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
@@ -39,6 +40,7 @@ class MesRendezVous extends Component
     public $incident_terrain = '';
     public $client_presence_confirmee = false;
     public $client_signature_data = null;
+    public $selectedMissionId = null;
 
     protected $listeners = [
         'refuser-rdv' => 'refuserRdv',
@@ -66,7 +68,7 @@ class MesRendezVous extends Component
             'mission.activeTrackingSession',
         ])
             ->where('employe_id', Auth::id())
-            ->when($this->search, fn ($q) => $q->searchStructured($this->search));
+            ->when($this->search, fn($q) => $q->searchStructured($this->search));
 
         if ($this->filtreStatus) {
             $query->where('status', $this->filtreStatus);
@@ -77,6 +79,18 @@ class MesRendezVous extends Component
         }
 
         return $query;
+    }
+
+    private function missionForRdv($rdv): ?Mission
+    {
+        return Mission::query()
+            ->where(function ($query) use ($rdv) {
+                $query
+                    ->where('rendez_vous_id', $rdv->id)
+                    ->orWhere('booking_id', $rdv->id);
+            })
+            ->latest('id')
+            ->first();
     }
 
     protected function paginatedRendezVous(): LengthAwarePaginator
@@ -95,11 +109,13 @@ class MesRendezVous extends Component
             ->findOrFail($id);
 
         $this->selectedRdvId = $rdv->id;
+        $this->selectedMissionId = $this->missionForRdv($rdv)?->id;
     }
 
     public function clearSelectedRdv(): void
     {
         $this->selectedRdvId = null;
+        $this->selectedMissionId = null;
     }
 
     public function getSelectedRendezVousProperty(): ?Booking
@@ -120,9 +136,21 @@ class MesRendezVous extends Component
             ->find($this->selectedRdvId);
     }
 
-    public function getSelectedMissionProperty()
+    public function getSelectedMissionProperty(): ?Mission
     {
-        return $this->selectedRendezVous?->mission;
+        if (! $this->selectedMissionId && $this->selectedRdvId) {
+            $rdv = $this->selectedRdv;
+
+            if ($rdv) {
+                $this->selectedMissionId = $this->missionForRdv($rdv)?->id;
+            }
+        }
+
+        if (! $this->selectedMissionId) {
+            return null;
+        }
+
+        return Mission::query()->find($this->selectedMissionId);
     }
 
     public function mettreAJourStatut($id, $status)
@@ -180,6 +208,7 @@ class MesRendezVous extends Component
             'client' => $rdv->client->name ?? null,
         ]);
         $this->selectedRdvId = $rdv->id;
+        $this->selectedMissionId = $this->missionForRdv($rdv)?->id;
         $this->dispatch('toast', $message, $type);
     }
 
@@ -190,6 +219,7 @@ class MesRendezVous extends Component
         Gate::authorize('update', $rdv);
 
         $this->selectedRdvId = $rdv->id;
+        $this->selectedMissionId = $this->missionForRdv($rdv)?->id;
         $this->checkInRdvId = $rdv->id;
         $this->photos_avant = [];
         $this->terrain_checklist = array_merge($this->defaultChecklist(), $rdv->terrain_checklist ?? []);
@@ -234,7 +264,7 @@ class MesRendezVous extends Component
         ];
 
         $rdv->photos_avant = $storedPhotos;
-        $rdv->terrain_checklist = array_merge($this->defaultChecklist(), array_map(fn ($value) => (bool) $value, $this->terrain_checklist ?? []));
+        $rdv->terrain_checklist = array_merge($this->defaultChecklist(), array_map(fn($value) => (bool) $value, $this->terrain_checklist ?? []));
         $rdv->remarque_terrain = $this->remarque_terrain;
         $rdv->client_presence_confirmed_at = ($rdv->terrain_checklist['client_present'] ?? false) ? now() : $rdv->client_presence_confirmed_at;
         $rdv->mission_started_at = $rdv->mission_started_at ?? now();
@@ -254,6 +284,7 @@ class MesRendezVous extends Component
         $rdv->client?->notify(new StatutRendezVousNotification($rdv));
 
         $this->selectedRdvId = $rdv->id;
+        $this->selectedMissionId = $this->missionForRdv($rdv)?->id;
         $this->fermerCheckInMission();
         $this->dispatch('toast', 'Check-in terrain enregistré.', 'success');
     }
@@ -265,6 +296,7 @@ class MesRendezVous extends Component
         Gate::authorize('update', $rdv);
 
         $this->selectedRdvId = $rdv->id;
+        $this->selectedMissionId = $this->missionForRdv($rdv)?->id;
         $this->rapportRdvId = $rdv->id;
         $this->commentaire_fin_mission = $rdv->commentaire_fin_mission ?? '';
         $this->duree_reelle = $rdv->duree_reelle ?? $rdv->duree_estimee;
@@ -368,6 +400,7 @@ class MesRendezVous extends Component
         $rdv->client?->notify(new StatutRendezVousNotification($rdv));
 
         $this->selectedRdvId = $rdv->id;
+        $this->selectedMissionId = $this->missionForRdv($rdv)?->id;
         $this->fermerRapportFinMission();
         $this->dispatch('toast', 'Rapport de fin de mission enregistré.', 'success');
     }

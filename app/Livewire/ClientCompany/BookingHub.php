@@ -58,8 +58,8 @@ class BookingHub extends Component
         $orgId = Auth::user()->current_organization_id;
 
         return Booking::where('client_organization_id', $orgId)
-            ->when($this->filterStatus, fn ($q) => $q->where('status', $this->filterStatus))
-            ->when($this->filterSiteId, fn ($q) => $q->where('organization_site_id', $this->filterSiteId))
+            ->when($this->filterStatus, fn($q) => $q->where('status', $this->filterStatus))
+            ->when($this->filterSiteId, fn($q) => $q->where('organization_site_id', $this->filterSiteId))
             ->with([
                 'organizationSite:id,name,city',
                 'providerUser:id,name,profile_photo_path',
@@ -95,8 +95,13 @@ class BookingHub extends Component
         return ProviderProfile::where('status', 'active')
             ->where('verification_status', 'verified')
             ->with('user:id,name,profile_photo_path')
-            ->when($site?->preferred_provider_id, fn ($q) =>
-                $q->orderByRaw("CASE WHEN user_id = {$site->preferred_provider_id} THEN 0 ELSE 1 END")
+            ->when(
+                $site?->preferred_provider_id,
+                fn($q) =>
+                $q->orderByRaw(
+                    'CASE WHEN user_id = ? THEN 0 ELSE 1 END',
+                    [$site->preferred_provider_id]
+                )
             )
             ->limit(10)
             ->get();
