@@ -187,19 +187,40 @@ return new class extends Migration
         if (! Schema::hasTable('email_logs')) {
             Schema::create('email_logs', function (Blueprint $table) {
                 $table->id();
+
+                // Compatibilité ancienne logique
                 $table->foreignId('user_id')->nullable()->constrained('users')->nullOnDelete();
                 $table->foreignId('organization_account_id')->nullable()->constrained('organization_accounts')->nullOnDelete();
                 $table->string('mailable')->nullable();
                 $table->string('notification_type')->nullable();
                 $table->string('to_email')->nullable();
+
+                // Nouvelle logique utilisée par les notifications / logs mail
+                $table->string('template_key')->nullable();
                 $table->string('subject')->nullable();
                 $table->string('status')->default('pending');
+                $table->string('channel')->nullable();
+
+                $table->string('recipient_email')->nullable();
+
+                $table->string('notifiable_type')->nullable();
+                $table->unsignedBigInteger('notifiable_id')->nullable();
+
                 $table->text('error_message')->nullable();
+
+                $table->json('meta')->nullable();
                 $table->json('metadata')->nullable();
+
                 $table->timestamp('sent_at')->nullable();
+                $table->timestamp('failed_at')->nullable();
+
                 $table->timestamps();
+
                 $table->index(['user_id', 'status']);
                 $table->index(['organization_account_id', 'status']);
+                $table->index(['notifiable_type', 'notifiable_id']);
+                $table->index(['template_key', 'status']);
+                $table->index('recipient_email');
             });
         }
 

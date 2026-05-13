@@ -16,6 +16,28 @@ return new class extends Migration
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
 
+            $table->string('role')->default('client');
+            $table->string('account_type')->default('client_personal');
+
+            $table->string('tva_number')->nullable();
+            $table->unsignedInteger('duree_creneau')->default(90);
+
+            $table->string('plan_type')->default('standard');
+            $table->string('plan_status')->default('inactive');
+
+            $table->unsignedBigInteger('organization_account_id')->nullable();
+
+            $table->unsignedBigInteger('postal_code_id')->nullable();
+            $table->unsignedBigInteger('primary_service_zone_id')->nullable();
+
+            $table->json('permissions')->nullable();
+            $table->string('access_scope')->default('own');
+            $table->json('metadata')->nullable();
+
+            $table->string('stripe_id')->nullable();
+            $table->timestamp('premium_started_at')->nullable();
+            $table->timestamp('premium_renewal_at')->nullable();
+
             $table->string('phone')->nullable();
             $table->string('locale', 8)->default('fr');
             $table->string('timezone')->default('Europe/Brussels');

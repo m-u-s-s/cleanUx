@@ -57,54 +57,22 @@ class MarkdownRenderer
     /**
      * @param iterable|null $mentions Collection de MessageMention pour highlight @user.
      */
-    public function render(string $markdown, ?iterable $mentions = null): string
+
+    public function render(string $markdown): string
     {
-        $markdown = trim($markdown);
-        if ($markdown === '') {
-            return '';
-        }
+        $markdown = preg_replace('/<script\b[^>]*>.*?<\/script>/is', '', $markdown);
+        $markdown = strip_tags($markdown);
 
-        // 1. On masque temporairement les mentions @user / @here / @channel
-        //    pour qu'elles ne soient pas mangées par CommonMark (qui peut interpréter @
-        //    avec autolink dans certains cas).
-        $placeholders = [];
-        $i = 0;
-        $masked = preg_replace_callback(
-            '/@(?:"([^"]+)"|([a-zA-Z0-9._\-]+))/u',
-            function ($m) use (&$placeholders, &$i) {
-                $token = $m[1] !== '' ? $m[1] : $m[2];
-                $key = "%%MENTION_{$i}%%";
-                $placeholders[$key] = $token;
-                $i++;
-                return $key;
-            },
-            $markdown
-        );
+        $html = \Illuminate\Support\Str::markdown($markdown, [
+            'html_input' => 'strip',
+            'allow_unsafe_links' => false,
+        ]);
 
-        // 2. Conversion Markdown → HTML
-        $html = (string) $this->converter->convert($masked);
+        $html = preg_replace('/<a /', '<a target="_blank" rel="noopener noreferrer" ', $html);
 
-        // 3. Restauration des mentions sous forme de span stylé
-        foreach ($placeholders as $key => $token) {
-            $isSpecial = in_array(mb_strtolower($token), ['here', 'channel'], true);
-            $class = $isSpecial
-                ? 'mention mention-special font-semibold text-amber-700 bg-amber-50 px-1 rounded'
-                : 'mention font-semibold text-blue-700 bg-blue-50 px-1 rounded';
-
-            $rendered = sprintf(
-                '<span class="%s" data-mention="%s">@%s</span>',
-                $class,
-                e($token),
-                e($token)
-            );
-            $html = str_replace($key, $rendered, $html);
-        }
-
-        // 4. Sécurité supplémentaire : strip event handlers et javascript: leftover
-        $html = $this->stripDangerousAttributes($html);
-
-        return $html;
+        return trim($html);
     }
+
 
     /**
      * Strip on*= attributes et javascript:/vbscript: dans href.
@@ -151,10 +119,24 @@ class MarkdownRenderer
      * Version "preview" pour notifs / search results : strip toutes balises
      * et limite à N caractères.
      */
-    public function plainPreview(string $markdown, int $limit = 160): string
+
+    public function plainPreview(string $markdown, int $limit = 80): string
     {
-        $clean = strip_tags($this->render($markdown));
-        $clean = trim(preg_replace('/\s+/', ' ', $clean));
-        return Str::limit($clean, $limit);
+        $markdown = preg_replace('/<script\b[^>]*>.*?<\/script>/is', '', $markdown);
+        $plain = strip_tags($markdown);
+
+        $plain = preg_replace('/[`*_~>#\[\]\(\)\|]/', '', $plain);
+        $plain = preg_replace('/\s+/', ' ', $plain);
+        $plain = trim($plain);
+
+        if (strlen($plain) <= $limit) {
+            return $plain;
+        }
+
+        $ellipsis = '…';
+        $cut = max(0, $limit - strlen($ellipsis));
+
+        return rtrim(substr($plain, 0, $cut)) . $ellipsis;
     }
+
 }

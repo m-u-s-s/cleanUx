@@ -32,6 +32,28 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+
+        \Illuminate\Database\Eloquent\Builder::macro('clientFacing', function () {
+            /** @var \Illuminate\Database\Eloquent\Builder $this */
+            $model = $this->getModel();
+            $table = $model->getTable();
+
+            if (\Illuminate\Support\Facades\Schema::hasColumn($table, 'is_active')) {
+                $this->where($table . '.is_active', true);
+            }
+
+            if (\Illuminate\Support\Facades\Schema::hasColumn($table, 'is_visible')) {
+                $this->where($table . '.is_visible', true);
+            }
+
+            if (\Illuminate\Support\Facades\Schema::hasColumn($table, 'client_facing')) {
+                $this->where($table . '.client_facing', true);
+            }
+
+            return $this;
+        });
+
+
         \Carbon\Carbon::setLocale('fr');
         Booking::observe(RendezVousObserver::class);
         Gate::policy(Channel::class, ChannelPolicy::class);

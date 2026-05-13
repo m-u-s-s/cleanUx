@@ -1,0 +1,265 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        Schema::create('recurring_booking_series', function (Blueprint $table) {
+            $table->id();
+
+            $table->foreignId('customer_user_id')
+                ->nullable()
+                ->constrained('users')
+                ->nullOnDelete();
+
+            $table->foreignId('customer_organization_id')
+                ->nullable()
+                ->constrained('organization_accounts')
+                ->nullOnDelete();
+
+            $table->foreignId('organization_site_id')
+                ->nullable()
+                ->constrained('organization_sites')
+                ->nullOnDelete();
+
+            // daily, weekly, monthly.
+            $table->string('frequency');
+
+
+            $table->unsignedInteger('interval')->default(1);
+            $table->json('days')->nullable();
+
+            $table->date('starts_at');
+            $table->date('ends_at')->nullable();
+            $table->unsignedInteger('occurrence_count')->nullable();
+
+            // active, paused, cancelled, completed.
+            $table->string('status')->default('active');
+
+            $table->json('template_payload')->nullable();
+
+            $table->timestamps();
+
+            $table->index(['customer_user_id', 'status']);
+            $table->index(['customer_organization_id', 'status']);
+        });
+
+        Schema::create('bookings', function (Blueprint $table) {
+            $table->id();
+
+            $table->string('booking_reference')->unique();
+
+            $table->foreignId('recurring_booking_series_id')
+                ->nullable()
+                ->constrained('recurring_booking_series')
+                ->nullOnDelete();
+
+            $table->unsignedInteger('series_position')->nullable();
+
+            $table->foreignId('customer_user_id')
+                ->nullable()
+                ->constrained('users')
+                ->nullOnDelete();
+
+            $table->unsignedBigInteger('client_id')->nullable();
+            $table->unsignedBigInteger('employe_id')->nullable();
+
+            $table->foreignId('customer_organization_id')
+                ->nullable()
+                ->constrained('organization_accounts')
+                ->nullOnDelete();
+
+            $table->foreignId('organization_site_id')
+                ->nullable()
+                ->constrained('organization_sites')
+                ->nullOnDelete();
+
+            $table->foreignId('service_catalog_id')
+                ->nullable()
+                ->constrained('service_catalogs')
+                ->nullOnDelete();
+
+            $table->foreignId('service_zone_id')
+                ->nullable()
+                ->constrained('service_zones')
+                ->nullOnDelete();
+
+            $table->foreignId('postal_code_id')
+                ->nullable()
+                ->constrained('postal_codes')
+                ->nullOnDelete();
+
+            $table->foreignId('preferred_provider_user_id')
+                ->nullable()
+                ->constrained('users')
+                ->nullOnDelete();
+
+            $table->foreignId('assigned_provider_organization_id')
+                ->nullable()
+                ->constrained('organization_accounts')
+                ->nullOnDelete();
+
+            $table->foreignId('assigned_provider_user_id')
+                ->nullable()
+                ->constrained('users')
+                ->nullOnDelete();
+
+            $table->foreignId('provider_team_id')
+                ->nullable()
+                ->constrained('provider_teams')
+                ->nullOnDelete();
+
+            $table->date('scheduled_date')->nullable();
+            $table->time('scheduled_time')->nullable();
+
+            // scheduled, asap, recurring.
+            $table->string('booking_mode')->default('scheduled');
+
+            // draft, pending_approval, pending_assignment, confirmed, cancelled, completed, refused.
+            $table->string('status')->default('draft');
+
+            // low, normal, urgent.
+            $table->string('priority')->default('normal');
+
+
+
+            $table->string('place_type')->nullable();
+            $table->string('frequency')->nullable();
+            $table->string('type_lieu')->nullable();
+            $table->string('frequence')->nullable();
+            $table->string('priorite')->nullable();
+            $table->integer('surface_m2')->nullable();
+
+            $table->string('address')->nullable();
+            $table->string('city')->nullable();
+            $table->string('postal_code')->nullable();
+            $table->string('country', 2)->default('BE');
+
+            $table->string('contact_name')->nullable();
+            $table->string('contact_phone')->nullable();
+            $table->string('contact_email')->nullable();
+
+            $table->text('customer_comment')->nullable();
+            $table->text('internal_notes')->nullable();
+
+            $table->decimal('estimated_price', 10, 2)->nullable();
+            $table->integer('estimated_duration_minutes')->nullable();
+            $table->string('currency', 3)->default('EUR');
+
+            $table->json('options')->nullable();
+            $table->json('areas')->nullable();
+            $table->json('photos_reference')->nullable();
+
+            $table->json('pricing_snapshot')->nullable();
+            $table->json('zone_snapshot')->nullable();
+            $table->json('matching_snapshot')->nullable();
+
+            $table->foreignId('created_by')
+                ->nullable()
+                ->constrained('users')
+                ->nullOnDelete();
+
+            $table->foreignId('approved_by')
+                ->nullable()
+                ->constrained('users')
+                ->nullOnDelete();
+
+            $table->timestamp('approved_at')->nullable();
+
+            $table->timestamp('cancelled_at')->nullable();
+
+            $table->foreignId('cancelled_by')
+                ->nullable()
+                ->constrained('users')
+                ->nullOnDelete();
+
+            $table->text('cancellation_reason')->nullable();
+
+            $table->timestamps();
+
+            $table->index(['customer_user_id', 'status']);
+            $table->index(['customer_organization_id', 'status']);
+            $table->index(['assigned_provider_user_id', 'status']);
+            $table->index(['assigned_provider_organization_id', 'status']);
+            $table->index(['scheduled_date', 'scheduled_time']);
+            $table->index(['service_zone_id', 'status']);
+            $table->index(['booking_mode', 'status']);
+            $table->index('recurring_booking_series_id');
+        });
+
+        Schema::create('booking_approvals', function (Blueprint $table) {
+            $table->id();
+
+            $table->foreignId('booking_id')
+                ->constrained('bookings')
+                ->cascadeOnDelete();
+
+            $table->foreignId('organization_account_id')
+                ->constrained('organization_accounts')
+                ->cascadeOnDelete();
+
+            $table->foreignId('requested_by')
+                ->nullable()
+                ->constrained('users')
+                ->nullOnDelete();
+
+            $table->foreignId('approved_by')
+                ->nullable()
+                ->constrained('users')
+                ->nullOnDelete();
+
+            // pending, approved, rejected.
+            $table->string('status')->default('pending');
+
+            $table->text('comment')->nullable();
+
+            $table->timestamp('approved_at')->nullable();
+            $table->timestamp('rejected_at')->nullable();
+
+            $table->timestamps();
+
+            $table->index(['organization_account_id', 'status']);
+            $table->index(['booking_id', 'status']);
+        });
+
+        Schema::create('booking_attachments', function (Blueprint $table) {
+            $table->id();
+
+            $table->foreignId('booking_id')
+                ->constrained('bookings')
+                ->cascadeOnDelete();
+
+            $table->foreignId('uploaded_by')
+                ->nullable()
+                ->constrained('users')
+                ->nullOnDelete();
+
+            $table->string('disk')->default('public');
+            $table->string('path');
+            $table->string('original_name')->nullable();
+            $table->string('mime_type')->nullable();
+            $table->unsignedBigInteger('size_bytes')->nullable();
+
+            // reference, document, photo.
+            $table->string('type')->default('reference');
+
+            $table->timestamps();
+
+            $table->index(['booking_id', 'type']);
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::dropIfExists('booking_attachments');
+        Schema::dropIfExists('booking_approvals');
+        Schema::dropIfExists('bookings');
+        Schema::dropIfExists('recurring_booking_series');
+    }
+};
+
+

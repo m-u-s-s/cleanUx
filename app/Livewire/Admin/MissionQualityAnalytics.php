@@ -29,8 +29,8 @@ class MissionQualityAnalytics extends Component
             ->get();
 
         $byCountry = DB::table('missions')
-            ->leftJoin('rendez_vous', 'rendez_vous.id', '=', 'missions.rendez_vous_id')
-            ->leftJoin('postal_codes', 'postal_codes.id', '=', 'rendez_vous.postal_code_id')
+            ->leftJoin('rendez_vous', 'bookings.id', '=', 'missions.rendez_vous_id')
+            ->leftJoin('postal_codes', 'postal_codes.id', '=', 'bookings.postal_code_id')
             ->leftJoin('countries', 'countries.id', '=', 'postal_codes.country_id')
             ->whereNotNull('missions.quality_score')
             ->selectRaw('countries.name as label, AVG(missions.quality_score) as avg_score, COUNT(missions.id) as missions_count')

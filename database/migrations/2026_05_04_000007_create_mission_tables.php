@@ -12,6 +12,7 @@ return new class extends Migration
             $table->id();
 
             $table->foreignId('booking_id')
+                ->nullable()
                 ->constrained('bookings')
                 ->cascadeOnDelete();
 
@@ -61,6 +62,23 @@ return new class extends Migration
             $table->index(['provider_organization_id', 'status']);
             $table->index(['lead_provider_user_id', 'status']);
             $table->index('provider_team_id');
+
+            $table->unsignedBigInteger('rendez_vous_id')->nullable();
+            $table->unsignedBigInteger('organization_account_id')->nullable();
+            $table->unsignedBigInteger('organization_site_id')->nullable();
+            $table->unsignedBigInteger('service_catalog_id')->nullable();
+            $table->unsignedBigInteger('service_zone_id')->nullable();
+
+            $table->unsignedBigInteger('lead_employee_id')->nullable();
+
+            $table->string('mission_type')->default('standard');
+
+            $table->timestamp('planned_end_at')->nullable();
+
+            $table->decimal('destination_lat', 10, 7)->nullable();
+            $table->decimal('destination_lng', 10, 7)->nullable();
+
+            $table->text('notes')->nullable();
         });
 
         Schema::create('mission_assignments', function (Blueprint $table) {
@@ -79,10 +97,13 @@ return new class extends Migration
 
             // assigned, accepted, declined, en_route, arrived, completed.
             $table->string('status')->default('assigned');
+            $table->string('assignment_status')->default('pending');
 
             $table->timestamp('accepted_at')->nullable();
             $table->timestamp('declined_at')->nullable();
             $table->timestamp('completed_at')->nullable();
+            $table->timestamp('assigned_at')->nullable();
+
 
             $table->timestamps();
 
@@ -167,10 +188,14 @@ return new class extends Migration
                 ->constrained('missions')
                 ->cascadeOnDelete();
 
-            $table->string('title');
+            $table->unsignedBigInteger('service_catalog_id')->nullable();
+
+            $table->string('title')->nullable();
 
             // open, completed.
-            $table->string('status')->default('open');
+            $table->string('template_name')->nullable();
+            $table->string('status')->default('draft');
+            $table->unsignedTinyInteger('completion_rate')->default(0);
 
             $table->timestamps();
 
@@ -180,11 +205,15 @@ return new class extends Migration
         Schema::create('mission_checklist_items', function (Blueprint $table) {
             $table->id();
 
+            $table->string('label')->nullable();
+            $table->string('item_type')->default('checkbox');
+
             $table->foreignId('mission_checklist_id')
                 ->constrained('mission_checklists')
                 ->cascadeOnDelete();
 
-            $table->string('title');
+
+            $table->string('title')->nullable();
             $table->boolean('is_required')->default(false);
 
             // todo, done.

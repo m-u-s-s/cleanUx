@@ -34,24 +34,24 @@ class ChannelPolicy
     }
 
     /** Poster un message dans le canal. */
-    public function postMessage(User $user, Channel $channel): bool
-    {
-        if ($this->isPlatformAdmin($user)) {
-            return true;
-        }
 
-        // Canal archivé/locké : seuls modérateurs+ peuvent poster
-        if ($channel->is_archived) {
+    public function postMessage(\App\Models\User $user, $channel): bool
+    {
+        if ((bool) ($channel->is_archived ?? false)) {
             return false;
         }
 
-        if ($channel->is_locked) {
-            return $this->isAtLeast($user, $channel, self::ROLE_MODERATOR);
+        if ((bool) ($channel->is_locked ?? false)) {
+            return $this->isOwnerOrModerator($user, $channel);
         }
 
-        $role = $this->roleIn($user, $channel);
-        return $role !== null && $role !== self::ROLE_READONLY;
+        if (($channel->owner_user_id ?? null) === $user->id) {
+            return true;
+        }
+
+        return $this->isMember($user, $channel);
     }
+
 
     /** Supprimer un message : auteur OU modérateur+. */
     public function deleteMessage(User $user, Message $message): bool
@@ -121,10 +121,33 @@ class ChannelPolicy
         return method_exists($user, 'isPlatformAdmin') && $user->isPlatformAdmin();
     }
 
-    private function isMember(User $user, Channel $channel): bool
+    protected function isMember(\App\Models\User $user, $channel): bool
     {
-        return $channel->members()->where('user_id', $user->id)->exists();
+        foreach (['channel_members', 'message_channel_members', 'channel_user'] as $table) {
+            if (! \Illuminate\Support\Facades\Schema::hasTable($table)) {
+                continue;
+            }
+
+            $query = \Illuminate\Support\Facades\DB::table($table);
+
+            if (\Illuminate\Support\Facades\Schema::hasColumn($table, 'channel_id')) {
+                $query->where('channel_id', $channel->id);
+            } elseif (\Illuminate\Support\Facades\Schema::hasColumn($table, 'message_channel_id')) {
+                $query->where('message_channel_id', $channel->id);
+            }
+
+            if (\Illuminate\Support\Facades\Schema::hasColumn($table, 'user_id')) {
+                $query->where('user_id', $user->id);
+            }
+
+            if ($query->exists()) {
+                return true;
+            }
+        }
+
+        return false;
     }
+
 
     private function roleIn(User $user, Channel $channel): ?string
     {
@@ -147,5 +170,40 @@ class ChannelPolicy
         }
 
         return ($rank[$userRole] ?? -1) >= ($rank[$minRole] ?? 99);
+    }
+
+    protected function isOwnerOrModerator(\App\Models\User $user, $channel): bool
+    {
+        if (($channel->owner_user_id ?? null) === $user->id) {
+            return true;
+        }
+
+        foreach (['channel_members', 'message_channel_members', 'channel_user'] as $table) {
+            if (! \Illuminate\Support\Facades\Schema::hasTable($table)) {
+                continue;
+            }
+
+            $query = \Illuminate\Support\Facades\DB::table($table);
+
+            if (\Illuminate\Support\Facades\Schema::hasColumn($table, 'channel_id')) {
+                $query->where('channel_id', $channel->id);
+            } elseif (\Illuminate\Support\Facades\Schema::hasColumn($table, 'message_channel_id')) {
+                $query->where('message_channel_id', $channel->id);
+            }
+
+            if (\Illuminate\Support\Facades\Schema::hasColumn($table, 'user_id')) {
+                $query->where('user_id', $user->id);
+            }
+
+            if (\Illuminate\Support\Facades\Schema::hasColumn($table, 'role')) {
+                $query->whereIn('role', ['owner', 'moderator', 'admin']);
+            }
+
+            if ($query->exists()) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

@@ -5,7 +5,10 @@ namespace App\Enums;
 enum ProviderType: string
 {
     case INDEPENDENT    = 'independent';    // Nettoyeur indépendant
+    case INDIVIDUAL = 'individual';
+    case COMPANY = 'company';
     case COMPANY_WORKER = 'company_worker'; // Nettoyeur rattaché à une société
+    
 
     public function label(): string
     {

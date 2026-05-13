@@ -106,8 +106,13 @@ class ServiceCatalog extends Model
     {
         return $this->belongsToMany(ServiceZone::class, 'zone_service_rules')
             ->withPivot([
-                'is_enabled', 'requires_manual_validation', 'base_price_override',
-                'price_multiplier', 'minimum_notice_hours', 'maximum_daily_capacity', 'settings',
+                'is_enabled',
+                'requires_manual_validation',
+                'base_price_override',
+                'price_multiplier',
+                'minimum_notice_hours',
+                'maximum_daily_capacity',
+                'settings',
             ])
             ->withTimestamps();
     }
@@ -166,5 +171,18 @@ class ServiceCatalog extends Model
     public function scopeOrdered(Builder $q): Builder
     {
         return $q->orderBy('sort_order')->orderBy('name');
+    }
+
+    public function scopeClientFacing(\Illuminate\Database\Eloquent\Builder $query): \Illuminate\Database\Eloquent\Builder
+    {
+        $table = $query->getModel()->getTable();
+
+        $query->where($table . '.is_active', true);
+
+        if (\Illuminate\Support\Facades\Schema::hasColumn($table, 'is_visible')) {
+            $query->where($table . '.is_visible', true);
+        }
+
+        return $query;
     }
 }

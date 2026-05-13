@@ -91,9 +91,9 @@ class ProfilClient extends Component
             ->where('client_id', Auth::id())
             ->whereNotNull('adresse')
             ->where('adresse', '!=', '')
-            ->leftJoin('postal_codes', 'postal_codes.id', '=', 'rendez_vous.postal_code_id')
-            ->selectRaw("rendez_vous.adresse, rendez_vous.ville, COALESCE(rendez_vous.code_postal, postal_codes.code) as code_postal, MAX(rendez_vous.date) as last_date")
-            ->groupBy('rendez_vous.adresse', 'rendez_vous.ville', DB::raw('COALESCE(rendez_vous.code_postal, postal_codes.code)'))
+            ->leftJoin('postal_codes', 'postal_codes.id', '=', 'bookings.postal_code_id')
+            ->selectRaw("bookings.adresse, bookings.ville, COALESCE(bookings.code_postal, postal_codes.code) as code_postal, MAX(bookings.date) as last_date")
+            ->groupBy('bookings.adresse', 'bookings.ville', DB::raw('COALESCE(bookings.code_postal, postal_codes.code)'))
             ->orderByDesc('last_date')
             ->limit(5)
             ->get();

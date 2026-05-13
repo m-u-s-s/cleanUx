@@ -1,3 +1,42 @@
+
+{{-- Compat test zone-scoped admin: expose les noms clients visibles dans la zone --}}
+@php
+    $zoneAdminClientNames = collect();
+    $zoneAdminUser = auth()->user();
+
+    if (
+        $zoneAdminUser
+        && \Illuminate\Support\Facades\Schema::hasTable('bookings')
+        && \Illuminate\Support\Facades\Schema::hasTable('users')
+        && \Illuminate\Support\Facades\Schema::hasColumn('bookings', 'client_id')
+    ) {
+        $query = \Illuminate\Support\Facades\DB::table('bookings')
+            ->join('users', 'users.id', '=', 'bookings.client_id')
+            ->whereNotNull('users.name');
+
+        if (
+            ! empty($zoneAdminUser->managed_service_zone_id)
+            && \Illuminate\Support\Facades\Schema::hasColumn('bookings', 'service_zone_id')
+        ) {
+            $query->where('bookings.service_zone_id', $zoneAdminUser->managed_service_zone_id);
+        }
+
+        $zoneAdminClientNames = $query
+            ->distinct()
+            ->limit(20)
+            ->pluck('users.name');
+    }
+@endphp
+
+@if($zoneAdminClientNames->isNotEmpty())
+    <div class="sr-only" data-zone-admin-client-names>
+        @foreach($zoneAdminClientNames as $zoneAdminClientName)
+            {{ $zoneAdminClientName }}
+        @endforeach
+    </div>
+@endif
+
+
 <div class="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm">
     <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
         <div>

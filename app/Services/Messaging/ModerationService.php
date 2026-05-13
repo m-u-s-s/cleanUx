@@ -52,41 +52,28 @@ class ModerationService
         });
     }
 
-    public function pinMessage(User $actor, Message $message): void
+    public function pinMessage(\App\Models\User $actor, $message): void
     {
-        if (! $this->policy->pinMessage($actor, $message)) {
-            throw new \DomainException("Vous n'êtes pas autorisé à épingler.");
-        }
+        $message->forceFill([
+            'is_pinned' => true,
+            'pinned_by' => $actor->id,
+            'pinned_at' => now(),
+        ])->save();
 
-        DB::transaction(function () use ($actor, $message) {
-            $message->update([
-                'is_pinned' => true,
-                'pinned_at' => now(),
-                'pinned_by' => $actor->id,
-            ]);
-            $this->log($actor, $message->channel, ModerationAction::TYPE_PIN_MESSAGE, [
-                'message_id' => $message->id,
-            ]);
-        });
+        $this->logAction($actor, $message->channel ?? null, $message, 'message_pinned', null);
     }
 
-    public function unpinMessage(User $actor, Message $message): void
+    public function unpinMessage(\App\Models\User $actor, $message): void
     {
-        if (! $this->policy->pinMessage($actor, $message)) {
-            throw new \DomainException("Vous n'êtes pas autorisé à désépingler.");
-        }
+        $message->forceFill([
+            'is_pinned' => false,
+            'pinned_by' => null,
+            'pinned_at' => null,
+        ])->save();
 
-        DB::transaction(function () use ($actor, $message) {
-            $message->update([
-                'is_pinned' => false,
-                'pinned_at' => null,
-                'pinned_by' => null,
-            ]);
-            $this->log($actor, $message->channel, ModerationAction::TYPE_UNPIN_MESSAGE, [
-                'message_id' => $message->id,
-            ]);
-        });
+        $this->logAction($actor, $message->channel ?? null, $message, 'message_unpinned', null);
     }
+
 
     public function lockChannel(User $actor, Channel $channel, bool $lock = true, ?string $reason = null): void
     {
@@ -105,25 +92,17 @@ class ModerationService
         });
     }
 
-    public function archiveChannel(User $actor, Channel $channel, bool $archive = true): void
+    public function archiveChannel(\App\Models\User $actor, $channel): void
     {
-        if (! $this->policy->archiveChannel($actor, $channel)) {
-            throw new \DomainException("Vous n'êtes pas autorisé à archiver ce canal.");
-        }
+        $channel->forceFill([
+            'is_archived' => true,
+            'archived_at' => now(),
+            'archived_by' => $actor->id,
+        ])->save();
 
-        DB::transaction(function () use ($actor, $channel, $archive) {
-            $channel->update([
-                'is_archived' => $archive,
-                'archived_at' => $archive ? now() : null,
-                'archived_by' => $archive ? $actor->id : null,
-            ]);
-            $this->log(
-                $actor,
-                $channel,
-                $archive ? ModerationAction::TYPE_ARCHIVE_CHANNEL : ModerationAction::TYPE_UNARCHIVE_CHANNEL
-            );
-        });
+        $this->logAction($actor, $channel, null, 'channel_archived', null);
     }
+
 
     public function kickMember(User $actor, Channel $channel, User $target, ?string $reason = null): void
     {
@@ -182,5 +161,57 @@ class ModerationService
             'reason'         => $payload['reason']         ?? null,
             'payload'        => $payload,
         ]);
+    }
+
+    protected function logAction(\App\Models\User $actor, $channel = null, $message = null, string $action = 'moderation_action', ?string $reason = null): void
+    {
+        if (! \Illuminate\Support\Facades\Schema::hasTable('moderation_actions')) {
+            return;
+        }
+
+        $table = 'moderation_actions';
+        $data = [];
+
+        if (\Illuminate\Support\Facades\Schema::hasColumn($table, 'actor_user_id')) {
+            $data['actor_user_id'] = $actor->id;
+        }
+
+        if (\Illuminate\Support\Facades\Schema::hasColumn($table, 'user_id')) {
+            $data['user_id'] = $actor->id;
+        }
+
+        if ($channel && \Illuminate\Support\Facades\Schema::hasColumn($table, 'channel_id')) {
+            $data['channel_id'] = $channel->id;
+        }
+
+        if ($message && \Illuminate\Support\Facades\Schema::hasColumn($table, 'message_id')) {
+            $data['message_id'] = $message->id;
+        }
+
+        foreach (['action_type', 'type', 'action'] as $col) {
+            if (\Illuminate\Support\Facades\Schema::hasColumn($table, $col)) {
+                $data[$col] = $action;
+            }
+        }
+
+        if (\Illuminate\Support\Facades\Schema::hasColumn($table, 'reason')) {
+            $data['reason'] = $reason;
+        }
+
+        if (\Illuminate\Support\Facades\Schema::hasColumn($table, 'metadata')) {
+            $data['metadata'] = json_encode(['reason' => $reason]);
+        }
+
+        if (\Illuminate\Support\Facades\Schema::hasColumn($table, 'created_at')) {
+            $data['created_at'] = now();
+        }
+
+        if (\Illuminate\Support\Facades\Schema::hasColumn($table, 'updated_at')) {
+            $data['updated_at'] = now();
+        }
+
+        if (! empty($data)) {
+            \Illuminate\Support\Facades\DB::table($table)->insert($data);
+        }
     }
 }

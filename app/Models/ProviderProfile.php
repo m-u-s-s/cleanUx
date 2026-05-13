@@ -26,7 +26,12 @@ class ProviderProfile extends Model
         'skills',
         'settings',
         'metadata',
-    ];
+    
+        'onboarding_step',
+        'onboarding_completed_at',
+        'onboarding_started_at',
+        'verified_at',
+        'verification_notes',];
 
     protected $casts = [
         'provider_type'               => ProviderType::class,
@@ -39,7 +44,11 @@ class ProviderProfile extends Model
         'skills'                      => 'array',
         'settings'                    => 'array',
         'metadata'                    => 'array',
-    ];
+    
+        'onboarding_step' => 'integer',
+        'onboarding_completed_at' => 'datetime',
+        'onboarding_started_at' => 'datetime',
+        'verified_at' => 'datetime',];
 
     // Relations
     public function user(): BelongsTo

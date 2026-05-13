@@ -33,6 +33,19 @@ class User extends Authenticatable implements MustVerifyEmail
     use Billable;
     use HasLegacyRoleCompatibility;
 
+
+
+    public const ROLE_ADMIN = 'admin';
+    public const ROLE_CLIENT = 'client';
+    public const ROLE_EMPLOYE = 'employe';
+    public const ROLE_EMPLOYEE = 'employe';
+    public const ROLE_ENTREPRISE = 'entreprise';
+    public const ROLE_PROVIDER = 'provider';
+
+    public const ACCESS_SCOPE_ALL = 'all';
+    public const ACCESS_SCOPE_OWN = 'own';
+    public const ACCESS_SCOPE_ORGANIZATION = 'organization';
+    public const ACCESS_SCOPE_ZONE = 'zone';
     // ──────────────────────────────────────────────────────
     // Constantes platform_role (rôle global CleanUx)
     // ──────────────────────────────────────────────────────
@@ -44,15 +57,26 @@ class User extends Authenticatable implements MustVerifyEmail
         'name',
         'email',
         'password',
+
+        'account_type',
+        'role',
+        'platform_role',
+
         'phone',
+        'tva_number',
+
         'locale',
         'timezone',
-        'platform_role',
         'status',
         'is_active',
+
         'current_team_id',
         'current_organization_id',
+        'organization_account_id',
         'profile_photo_path',
+
+        'metadata',
+        'permissions',
     ];
 
     protected $hidden = [
@@ -64,9 +88,11 @@ class User extends Authenticatable implements MustVerifyEmail
 
     protected $casts = [
         'email_verified_at'          => 'datetime',
+        'password'                   => 'hashed',
         'two_factor_confirmed_at'    => 'datetime',
         'is_active'                  => 'boolean',
-        'password'                   => 'hashed',
+        'metadata'                   => 'array',
+        'permissions'                => 'array',
     ];
 
     // ──────────────────────────────────────────────────────
@@ -151,6 +177,8 @@ class User extends Authenticatable implements MustVerifyEmail
     {
         return $this->platform_role === self::PLATFORM_SUPER_ADMIN;
     }
+
+    
 
     // ──────────────────────────────────────────────────────
     // Helpers : organisation courante
@@ -245,4 +273,136 @@ class User extends Authenticatable implements MustVerifyEmail
 
         return 'dashboard';
     }
+
+    public function canAccessAdminModule(): bool
+    {
+        $isAdmin = in_array($this->role, ['admin', 'super_admin'], true)
+            || in_array($this->platform_role, ['admin', 'super_admin'], true);
+
+        if (! $isAdmin) {
+            return false;
+        }
+
+        if (isset($this->is_active) && ! $this->is_active) {
+            return false;
+        }
+
+        $permissions = $this->permissions ?? [];
+
+        if (is_string($permissions)) {
+            $decoded = json_decode($permissions, true);
+            $permissions = is_array($decoded) ? $decoded : [$permissions];
+        }
+
+        if ($permissions instanceof \Illuminate\Support\Collection) {
+            $permissions = $permissions->all();
+        }
+
+        if (! is_array($permissions)) {
+            $permissions = [];
+        }
+
+        $acceptedPermissions = [
+            'manage-modules',
+            'manage_modules',
+            'admin.modules',
+            'modules.manage',
+            'platform.modules.manage',
+            'platform_modules.manage',
+        ];
+
+        foreach ($acceptedPermissions as $permission) {
+            if (array_key_exists($permission, $permissions) && (bool) $permissions[$permission]) {
+                return true;
+            }
+
+            if (in_array($permission, $permissions, true)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public function favoriteEmployees()
+    {
+        return $this->favoriteEmployes();
+    }
+
+    public function managedServiceZone()
+    {
+        return $this->belongsTo(\App\Models\ServiceZone::class, 'managed_service_zone_id');
+    }
+
+    public function activeServiceZones()
+    {
+        return $this->serviceZones()
+            ->wherePivot('is_active', true);
+    }
+
+
+    public function isPremium(): bool
+    {
+        return ($this->plan_type ?? 'standard') === 'premium'
+            && in_array(($this->plan_status ?? 'inactive'), ['active', 'trialing', 'paid'], true);
+    }
+
+    public function favoriteEmployes(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
+    {
+        return $this->belongsToMany(
+            self::class,
+            'provider_favorites',
+            'customer_user_id',
+            'provider_user_id'
+        )->withPivot(['is_favorite', 'status'])->withTimestamps();
+    }
+
+    public function zoneAssignments(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(\App\Models\EmployeeZoneAssignment::class, 'user_id');
+    }
+
+    public function serviceZones(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
+    {
+        return $this->belongsToMany(
+            \App\Models\ServiceZone::class,
+            'employee_zone_assignments',
+            'user_id',
+            'service_zone_id'
+        )->withPivot([
+            'assignment_type',
+            'coverage_priority',
+            'is_active',
+            'starts_at',
+            'ends_at',
+            'notes',
+        ])->withTimestamps();
+    }
+
+    public function isZoneScopedAdmin(): bool
+    {
+        return ($this->role ?? null) === 'admin'
+            && (
+                ($this->access_scope ?? null) === 'zone'
+                || ! empty($this->managed_service_zone_id)
+            );
+    }
+
+
+    public function rendezVousClient(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(\App\Models\RendezVous::class, 'client_id');
+    }
+
+    public function rendezVousEmploye(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(\App\Models\RendezVous::class, 'employe_id');
+    }
+
+
+    public function user(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    {
+        return $this->belongsTo(self::class, 'id', 'id');
+    }
+
 }

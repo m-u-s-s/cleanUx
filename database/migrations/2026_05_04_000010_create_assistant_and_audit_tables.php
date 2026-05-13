@@ -110,12 +110,13 @@ return new class extends Migration
                 ->constrained('users')
                 ->nullOnDelete();
 
-            $table->foreignId('organization_account_id')
+                $table->foreignId('organization_account_id')
                 ->nullable()
                 ->constrained('organization_accounts')
                 ->nullOnDelete();
-
-            $table->string('event');
+                
+            $table->string('event')->nullable();
+            $table->string('action')->nullable();
 
             $table->nullableMorphs('target');
 
@@ -123,6 +124,7 @@ return new class extends Migration
             $table->string('domain')->nullable();
 
             $table->json('data')->nullable();
+            $table->json('meta')->nullable();
 
             $table->ipAddress('ip_address')->nullable();
             $table->text('user_agent')->nullable();

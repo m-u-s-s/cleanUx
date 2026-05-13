@@ -15,7 +15,11 @@ return new class extends Migration
             $table->string('iso3_code', 3)->nullable()->unique();
             $table->string('name');
             $table->string('official_name')->nullable();
-            $table->string('currency', 3)->default('EUR');
+
+            $table->string('default_locale')->default('fr_BE');
+            $table->string('currency_code', 3)->default('EUR');
+            $table->string('phone_code')->nullable();
+            $table->string('timezone')->default('Europe/Brussels');
 
             $table->boolean('is_active')->default(true);
             $table->boolean('booking_enabled')->default(false);
@@ -28,6 +32,57 @@ return new class extends Migration
             $table->timestamps();
 
             $table->index(['is_active', 'booking_enabled']);
+        });
+
+        Schema::create('regions', function (Blueprint $table) {
+            $table->id();
+            $table->unsignedBigInteger('country_id')->nullable();
+
+            $table->string('code')->nullable()->index();
+            $table->string('name');
+            $table->string('slug')->nullable();
+            $table->string('type')->nullable();
+
+            $table->unsignedInteger('sort_order')->default(0);
+            $table->boolean('is_active')->default(true);
+
+            $table->json('metadata')->nullable();
+            $table->timestamps();
+        });
+
+        Schema::create('provinces', function (Blueprint $table) {
+            $table->id();
+            $table->unsignedBigInteger('country_id')->nullable();
+            $table->unsignedBigInteger('region_id')->nullable();
+
+            $table->string('code')->nullable()->index();
+            $table->string('name');
+            $table->string('slug')->nullable();
+
+            $table->unsignedInteger('sort_order')->default(0);
+            $table->boolean('is_active')->default(true);
+
+            $table->json('metadata')->nullable();
+            $table->timestamps();
+        });
+
+        Schema::create('communes', function (Blueprint $table) {
+            $table->id();
+            $table->unsignedBigInteger('country_id')->nullable();
+            $table->unsignedBigInteger('region_id')->nullable();
+            $table->unsignedBigInteger('province_id')->nullable();
+
+            $table->string('code')->nullable()->index();
+            $table->string('nis_code')->nullable()->index();
+            $table->string('name');
+            $table->string('slug')->nullable();
+            $table->string('postal_code')->nullable();
+
+            $table->unsignedInteger('sort_order')->default(0);
+            $table->boolean('is_active')->default(true);
+
+            $table->json('metadata')->nullable();
+            $table->timestamps();
         });
 
         Schema::create('service_zones', function (Blueprint $table) {
@@ -50,16 +105,46 @@ return new class extends Migration
             $table->timestamps();
 
             $table->index(['country_id', 'status']);
+
+
+
+            $table->unsignedBigInteger('region_id')->nullable();
+            $table->unsignedBigInteger('province_id')->nullable();
+            $table->unsignedBigInteger('commune_id')->nullable();
+            $table->unsignedBigInteger('parent_zone_id')->nullable();
+
+            $table->string('code')->nullable()->index();
+            $table->string('coverage_type')->nullable();
+
+            $table->boolean('is_bookable')->default(true);
+            $table->boolean('is_visible')->default(true);
+
+            $table->unsignedInteger('priority')->default(0);
+            $table->unsignedInteger('minimum_notice_hours')->nullable();
+            $table->unsignedInteger('maximum_daily_jobs')->nullable();
+
+            $table->decimal('travel_surcharge', 10, 2)->default(0);
+            $table->unsignedInteger('time_buffer_minutes')->default(0);
+
+            $table->text('notes')->nullable();
+
+            $table->timestamp('activated_at')->nullable();
+            $table->timestamp('deactivated_at')->nullable();
         });
 
         Schema::create('postal_codes', function (Blueprint $table) {
             $table->id();
+
+
 
             $table->foreignId('country_id')
                 ->nullable()
                 ->constrained('countries')
                 ->nullOnDelete();
 
+            $table->unsignedBigInteger('region_id')->nullable();
+            $table->unsignedBigInteger('province_id')->nullable();
+            $table->unsignedBigInteger('commune_id')->nullable();
             $table->foreignId('service_zone_id')
                 ->nullable()
                 ->constrained('service_zones')
@@ -70,6 +155,8 @@ return new class extends Migration
 
             $table->decimal('lat', 10, 7)->nullable();
             $table->decimal('lng', 10, 7)->nullable();
+            $table->decimal('latitude', 10, 7)->nullable();
+            $table->decimal('longitude', 10, 7)->nullable();
 
             $table->boolean('is_active')->default(true);
 

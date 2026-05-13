@@ -13,6 +13,7 @@ class Mission extends Model
     use HasFactory;
 
     protected $fillable = [
+        'booking_id',
         'rendez_vous_id',
         'organization_account_id',
         'organization_site_id',
@@ -48,6 +49,7 @@ class Mission extends Model
         'margin',
         'actual_duration_minutes',
         'travel_duration_minutes',
+        
     ];
 
     protected $casts = [

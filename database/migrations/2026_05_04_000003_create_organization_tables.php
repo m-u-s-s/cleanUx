@@ -14,9 +14,22 @@ return new class extends Migration
             $table->string('name');
             $table->string('legal_name')->nullable();
             $table->string('slug')->unique();
+            $table->unsignedBigInteger('country_id')->nullable();
+            $table->unsignedBigInteger('region_id')->nullable();
+            $table->unsignedBigInteger('province_id')->nullable();
+            $table->unsignedBigInteger('commune_id')->nullable();
+            $table->unsignedBigInteger('postal_code_id')->nullable();
+
+            $table->string('address_line_1')->nullable();
+            $table->string('address_line_2')->nullable();
+            $table->string('city')->nullable();
+            $table->string('postal_code')->nullable();
+
+            $table->boolean('is_key_account')->default(false);
 
             // client_company, provider_company, provider_solo, hybrid.
             $table->string('type');
+
 
             // pending, active, suspended, archived.
             $table->string('status')->default('active');
@@ -41,6 +54,7 @@ return new class extends Migration
 
             $table->json('settings')->nullable();
             $table->json('metadata')->nullable();
+            $table->text('notes')->nullable();
 
             $table->timestamps();
 

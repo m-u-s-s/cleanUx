@@ -18,22 +18,22 @@ use Illuminate\Validation\ValidationException;
 
 trait InteractsWithBookingFormState
 {
+    public ?int $resolvedServiceZoneId = null;
+    protected function countryMarketResolver(): CountryMarketResolver
+    {
+        return app(CountryMarketResolver::class);
+    }
 
-protected function countryMarketResolver(): CountryMarketResolver
-{
-    return app(CountryMarketResolver::class);
-}
-
-protected function currentCountryMarketContext(): array
-{
-    return $this->countryMarketResolver()->resolveForBooking(
-        Auth::user(),
-        $this->currentPostalCode(),
-        $this->currentServiceZone(),
-        $this->selectedOrganizationSite(),
-        $this->currentServiceCatalog(),
-    );
-}
+    protected function currentCountryMarketContext(): array
+    {
+        return $this->countryMarketResolver()->resolveForBooking(
+            Auth::user(),
+            $this->currentPostalCode(),
+            $this->currentServiceZone(),
+            $this->selectedOrganizationSite(),
+            $this->currentServiceCatalog(),
+        );
+    }
 
     protected function hydrateFromQuery(): void
     {
@@ -434,20 +434,33 @@ protected function currentCountryMarketContext(): array
 
     public function getServicesProperty(): array
     {
+        $resolvedServiceZoneId = $this->resolvedServiceZoneId ?? null;
+
         $query = ServiceCatalog::query()
+            ->with('trade:id,name,slug,sort_order')
             ->where('is_active', true)
             ->orderBy('sort_order')
             ->orderBy('name');
 
-        if ($this->resolvedServiceZoneId) {
-            $query->whereHas('zoneServiceRules', function ($ruleQuery) {
+        if ($resolvedServiceZoneId) {
+            $query->whereHas('zoneServiceRules', function ($ruleQuery) use ($resolvedServiceZoneId) {
                 $ruleQuery
-                    ->where('service_zone_id', $this->resolvedServiceZoneId)
+                    ->where('service_zone_id', $resolvedServiceZoneId)
                     ->where('is_enabled', true);
             });
         }
 
         $catalogs = $query->get();
+
+
+        // Pas de service ? Fallback flat — la vue gère "Autres"
+        if ($catalogs->isEmpty()) {
+            return [
+                'Nettoyage' => [
+                    'nettoyage_standard' => 'Nettoyage standard',
+                ],
+            ];
+        }
 
         if ($catalogs->isNotEmpty()) {
             return $catalogs
@@ -484,16 +497,17 @@ protected function currentCountryMarketContext(): array
      */
     public function getServicesGroupedByTradeProperty(): array
     {
+        $resolvedServiceZoneId = $this->resolvedServiceZoneId ?? null;
         $query = ServiceCatalog::query()
             ->with('trade:id,name,slug,sort_order')
             ->where('is_active', true)
             ->orderBy('sort_order')
             ->orderBy('name');
 
-        if ($this->resolvedServiceZoneId) {
-            $query->whereHas('zoneServiceRules', function ($ruleQuery) {
+        if ($resolvedServiceZoneId) {
+            $query->whereHas('zoneServiceRules', function ($ruleQuery) use ($resolvedServiceZoneId){
                 $ruleQuery
-                    ->where('service_zone_id', $this->resolvedServiceZoneId)
+                    ->where('service_zone_id', $resolvedServiceZoneId)
                     ->where('is_enabled', true);
             });
         }

@@ -43,6 +43,7 @@ return new class extends Migration {
                     ->constrained('mission_assignments')
                     ->nullOnDelete();
             }
+            
         });
 
         // Index pour la recherche "assignments expirés à escalader"
