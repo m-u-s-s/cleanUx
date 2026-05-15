@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Str;
 
 /**
  * ServiceCatalog — catalogue de services proposés par la plateforme.
@@ -184,5 +185,22 @@ class ServiceCatalog extends Model
         }
 
         return $query;
+    }
+
+    protected static function booted(): void
+    {
+        static::creating(function (self $service): void {
+            if (blank($service->code)) {
+                $service->code = 'SVC-' . strtoupper(Str::random(8));
+            }
+
+            if (blank($service->service_type)) {
+                $service->service_type = 'cleaning';
+            }
+
+            if (blank($service->slug) && filled($service->name)) {
+                $service->slug = Str::slug($service->name);
+            }
+        });
     }
 }

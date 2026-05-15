@@ -47,6 +47,7 @@ class AssistantToolRegistry
     {
         $role  = $user->assistantContextRole();
         $allow = $this->allowedToolNamesForRole($role);
+        $allowedNames = $this->allowedToolNamesForRole($role);
 
         $instances = [];
         foreach ($this->allTools as $cls) {
@@ -59,6 +60,10 @@ class AssistantToolRegistry
             }
             $instances[] = $tool;
         }
+        return array_values(array_filter(
+            $this->tools,
+            fn($tool) => in_array($tool->name(), $allowedNames, true)
+        ));
         return $instances;
     }
 
@@ -79,7 +84,7 @@ class AssistantToolRegistry
     public function definitionsForUser(User $user): array
     {
         return array_map(
-            fn (AssistantTool $t) => [
+            fn(AssistantTool $t) => [
                 'name'         => $t->name(),
                 'description'  => $t->description(),
                 'input_schema' => $t->inputSchema(),
@@ -91,44 +96,40 @@ class AssistantToolRegistry
     /**
      * Whitelist de tool names par rôle.
      */
-    private function allowedToolNamesForRole(AssistantContextRole $role): array
+    private function allowedToolNamesForRole(string|\BackedEnum $role): array
     {
+        $role = $role instanceof \BackedEnum ? $role->value : $role;
+
         return match ($role) {
-            AssistantContextRole::CLIENT_PERSONAL => [
+            'personal_client', 'client', 'client_personal' => [
                 'list_my_bookings',
-                'list_services_catalog',
                 'create_booking',
                 'cancel_booking',
                 'get_invoice',
                 'report_issue',
             ],
-            AssistantContextRole::CLIENT_COMPANY => [
+
+            'company_client', 'client_company', 'entreprise', 'client_entreprise' => [
                 'list_my_bookings',
+                'create_booking',
+                'cancel_booking',
+                'get_invoice',
+                'report_issue',
                 'list_my_sites',
-                'list_services_catalog',
-                'create_booking',
-                'cancel_booking',
-                'get_invoice',
                 'register_site',
-                'report_issue',
             ],
-            AssistantContextRole::PROVIDER_INDEPENDENT => [
+
+            'provider_independent', 'provider', 'prestataire', 'employee', 'employe' => [
                 'list_my_bookings',
-                'report_issue',
-            ],
-            AssistantContextRole::PROVIDER_COMPANY => [
-                'list_my_bookings',
-                'report_issue',
-            ],
-            AssistantContextRole::ADMIN => [
-                // Admin a accès à tout
-                'list_my_bookings',
-                'list_my_sites',
-                'list_services_catalog',
-                'create_booking',
-                'cancel_booking',
                 'get_invoice',
-                'register_site',
+                'report_issue',
+            ],
+
+            'admin', 'super_admin' => array_keys($this->tools),
+
+            default => [
+                'list_my_bookings',
+                'get_invoice',
                 'report_issue',
             ],
         };

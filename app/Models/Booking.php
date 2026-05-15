@@ -49,6 +49,7 @@ class Booking extends Model
         'customer_organization_id',
         'organization_account_id',
         'organization_site_id',
+        'organization_account_id',
 
         // Service / zone
         'service_catalog_id',

@@ -114,11 +114,11 @@ class CreateBookingAction
         $rendezVous = Booking::create([
             'client_id' => $client->id,
             'employe_id' => $assignedEmployee->id,
-            'organization_account_id' => $client->organization_account_id,
-            'organization_site_id' => $organizationSite?->id,
+            'organization_account_id' => Arr::get($data, 'organization_account_id'),
+            'organization_site_id' => Arr::get($data, 'organization_site_id'),
+            'service_zone_id' => Arr::get($data, 'service_zone_id'),
+            'postal_code_id' => Arr::get($data, 'postal_code_id'),
             'service_catalog_id' => $catalog->id,
-            'service_zone_id' => $zone->id,
-            'postal_code_id' => $postal->id,
             'booking_channel' => Arr::get($data, 'booking_channel', 'web'),
             'booking_reference' => Arr::get($data, 'booking_reference'),
             'zone_snapshot' => $zoneSnapshot,
@@ -167,6 +167,43 @@ class CreateBookingAction
             'destination_lng' => Arr::get($data, 'destination_lng'),
             'address_components' => Arr::get($data, 'address_components', []),
         ]);
+
+        if (! empty($data['organization_site_id'])) {
+            $site = \App\Models\OrganizationSite::query()
+                ->find((int) $data['organization_site_id']);
+
+            if ($site) {
+                $zoneSnapshot = $rendezVous->zone_snapshot ?? [];
+
+                if (is_string($zoneSnapshot)) {
+                    $zoneSnapshot = json_decode($zoneSnapshot, true) ?: [];
+                }
+
+                $siteName = $site->name
+                    ?? $site->nom
+                    ?? $site->label
+                    ?? null;
+
+                data_set($zoneSnapshot, 'resolution.source', 'organization_site');
+
+                data_set($zoneSnapshot, 'organization_site', [
+                    'id' => $site->id,
+                    'name' => $siteName,
+                    'organization_account_id' => $site->organization_account_id,
+                    'address_line_1' => $site->address_line_1 ?? $site->address ?? $site->adresse ?? null,
+                    'city' => $site->city ?? $site->ville ?? null,
+                    'postal_code' => $site->postal_code ?? $site->code_postal ?? null,
+                ]);
+
+                data_set($zoneSnapshot, 'organization_site_id', $site->id);
+                data_set($zoneSnapshot, 'organization_site_name', $siteName);
+
+                $rendezVous->forceFill([
+                    'organization_site_id' => $site->id,
+                    'zone_snapshot' => $zoneSnapshot,
+                ])->save();
+            }
+        }
         // conversation
         $conversation = \App\Models\Conversation::firstOrCreate([
             'rendez_vous_id' => $rendezVous->id,
@@ -194,7 +231,7 @@ class CreateBookingAction
             $policy->applyDiscount($rendezVous, $org);
         }
 
-        if ($booking->booking_mode === 'asap') {
+        if (($rendezVous->booking_mode ?? null) === 'asap' && isset($mission) && $mission) {
             app(\App\Services\Dispatch\MissionDispatchService::class)
                 ->dispatchToNextProvider($mission);
         }

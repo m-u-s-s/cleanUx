@@ -8,6 +8,7 @@ use App\Models\OrganizationSite;
 use App\Models\Booking;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
 use Livewire\Livewire;
 use Tests\Support\CreatesZoneAwareFixtures;
 use Tests\TestCase;
@@ -120,6 +121,7 @@ class ZoneAwareStructuredReservationTest extends TestCase
     public function test_entreprise_booking_uses_selected_site_as_resolution_source_and_normalized_location(): void
     {
         $context = $this->createCoverageContext();
+
         $account = OrganizationAccount::factory()->create([
             'postal_code_id' => $context['postalCode']->id,
             'country_id' => $context['country']->id,
@@ -129,9 +131,19 @@ class ZoneAwareStructuredReservationTest extends TestCase
             'city' => $context['postalCode']->city_name,
             'postal_code' => $context['postalCode']->code,
         ]);
+
         $client = User::factory()->entreprise()->create([
-            'organization_account_id' => $account->id,
+            'is_active' => true,
         ]);
+
+        DB::table('users')
+            ->where('id', $client->id)
+            ->update([
+                'organization_account_id' => $account->id,
+            ]);
+
+        $client = User::query()->findOrFail($client->id);
+
         $site = OrganizationSite::factory()->create([
             'organization_account_id' => $account->id,
             'client_user_id' => $client->id,
@@ -142,10 +154,20 @@ class ZoneAwareStructuredReservationTest extends TestCase
             'postal_code' => $context['postalCode']->code,
             'is_active' => true,
         ]);
+
         $employee = User::factory()->employe()->create();
         $bookingDate = now()->addDays(2)->toDateString();
 
         $this->assignEmployeeToZone($employee, $context['zone'], [], ['date' => $bookingDate]);
+
+        $this->assertSame(
+            $account->id,
+            (int) DB::table('users')->where('id', $client->id)->value('organization_account_id')
+        );
+
+        $this->assertSame($account->id, $site->organization_account_id);
+
+        $client->setAttribute('organization_account_id', $account->id);
 
         $this->actingAs($client);
 
@@ -179,12 +201,21 @@ class ZoneAwareStructuredReservationTest extends TestCase
     public function test_entreprise_booking_rejects_site_from_another_organization(): void
     {
         $context = $this->createCoverageContext();
+
         $primaryAccount = OrganizationAccount::factory()->create();
         $otherAccount = OrganizationAccount::factory()->create();
 
         $client = User::factory()->entreprise()->create([
-            'organization_account_id' => $primaryAccount->id,
+            'is_active' => true,
         ]);
+
+        DB::table('users')
+            ->where('id', $client->id)
+            ->update([
+                'organization_account_id' => $primaryAccount->id,
+            ]);
+
+        $client = User::query()->findOrFail($client->id);
 
         $foreignSite = OrganizationSite::factory()->create([
             'organization_account_id' => $otherAccount->id,
@@ -195,7 +226,17 @@ class ZoneAwareStructuredReservationTest extends TestCase
 
         $employee = User::factory()->employe()->create();
         $bookingDate = now()->addDays(2)->toDateString();
+
         $this->assignEmployeeToZone($employee, $context['zone'], [], ['date' => $bookingDate]);
+
+        $this->assertSame(
+            $primaryAccount->id,
+            (int) DB::table('users')->where('id', $client->id)->value('organization_account_id')
+        );
+
+        $this->assertSame($otherAccount->id, $foreignSite->organization_account_id);
+
+        $client->setAttribute('organization_account_id', $primaryAccount->id);
 
         $this->actingAs($client);
 

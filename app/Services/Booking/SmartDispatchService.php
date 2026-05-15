@@ -5,6 +5,8 @@ namespace App\Services\Booking;
 use App\Models\Booking;
 use App\Models\User;
 use App\Services\Geo\GeoDistanceService;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Collection;
 
 class SmartDispatchService
@@ -151,10 +153,33 @@ class SmartDispatchService
             return 0;
         }
 
-        $isFavorite = $employee->preferredByClients()
-            ->where('client_id', $rdv->client_id)
-            ->wherePivot('is_favorite', true)
-            ->exists();
+        $isFavorite = false;
+
+        if (Schema::hasTable('client_provider_preferences')) {
+            $clientId = $rendezVous->client_id
+                ?? $rdv->client_id
+                ?? $booking->client_id
+                ?? null;
+
+            if ($clientId) {
+                $favoriteQuery = DB::table('client_provider_preferences')
+                    ->where('provider_user_id', $employee->id);
+
+                if (Schema::hasColumn('client_provider_preferences', 'client_user_id')) {
+                    $favoriteQuery->where('client_user_id', $clientId);
+                } elseif (Schema::hasColumn('client_provider_preferences', 'client_id')) {
+                    $favoriteQuery->where('client_id', $clientId);
+                } else {
+                    $favoriteQuery = null;
+                }
+
+                if ($favoriteQuery && Schema::hasColumn('client_provider_preferences', 'is_favorite')) {
+                    $favoriteQuery->where('is_favorite', true);
+                }
+
+                $isFavorite = $favoriteQuery ? $favoriteQuery->exists() : false;
+            }
+        }
 
         return $isFavorite ? 300 : 0;
     }

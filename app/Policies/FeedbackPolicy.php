@@ -23,23 +23,33 @@ class FeedbackPolicy
         }
 
         return false;
+        return $this->ownsFeedback($user, $feedback) || $this->isAdmin($user);
     }
 
     public function create(User $user): bool
     {
-        return $user->isClient();
+        return in_array($user->role, [
+            User::ROLE_CLIENT,
+            User::ROLE_ENTREPRISE,
+            'client',
+            'entreprise',
+        ], true);
     }
 
     public function update(User $user, Feedback $feedback): bool
     {
         return $user->isClient()
             && $feedback->client_id === $user->id;
+
+        return $this->ownsFeedback($user, $feedback) || $this->isAdmin($user);
     }
 
     public function delete(User $user, Feedback $feedback): bool
     {
         return $user->isClient()
             && $feedback->client_id === $user->id;
+
+        return $this->ownsFeedback($user, $feedback) || $this->isAdmin($user);
     }
 
     public function respond(User $user, Feedback $feedback): bool
@@ -52,5 +62,18 @@ class FeedbackPolicy
     public function export(User $user): bool
     {
         return $user->isAdmin() && $user->canPerformCriticalAdminActions();
+    }
+
+    private function ownsFeedback(User $user, Feedback $feedback): bool
+    {
+        return (int) $feedback->client_id === (int) $user->id;
+    }
+
+    private function isAdmin(User $user): bool
+    {
+        return in_array($user->role, [
+            User::ROLE_ADMIN,
+            'admin',
+        ], true);
     }
 }

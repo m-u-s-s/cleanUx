@@ -6,6 +6,8 @@ use App\Models\Booking;
 use App\Models\User;
 use App\Services\Booking\EmployeeAvailabilityService;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 class AiDispatchService
 {
@@ -126,12 +128,35 @@ class AiDispatchService
             return 0;
         }
 
-        return $employee->preferredByClients()
-            ->where('client_id', $rdv->client_id)
-            ->wherePivot('is_favorite', true)
-            ->exists()
-            ? 180
-            : 0;
+        if (! Schema::hasTable('client_provider_preferences')) {
+            return false;
+        }
+
+        $clientId = $rendezVous->client_id
+            ?? $rdv->client_id
+            ?? $booking->client_id
+            ?? null;
+
+        if (! $clientId) {
+            return false;
+        }
+
+        $query = DB::table('client_provider_preferences')
+            ->where('provider_user_id', $employee->id);
+
+        if (Schema::hasColumn('client_provider_preferences', 'client_user_id')) {
+            $query->where('client_user_id', $clientId);
+        } elseif (Schema::hasColumn('client_provider_preferences', 'client_id')) {
+            $query->where('client_id', $clientId);
+        } else {
+            return false;
+        }
+
+        if (Schema::hasColumn('client_provider_preferences', 'is_favorite')) {
+            $query->where('is_favorite', true);
+        }
+
+        return $query->exists();
     }
 
     protected function premiumScore(Booking $rdv): int

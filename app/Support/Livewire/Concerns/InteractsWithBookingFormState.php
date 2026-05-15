@@ -195,34 +195,63 @@ trait InteractsWithBookingFormState
 
     public function getOrganizationSitesProperty()
     {
-        if (! $this->isEntrepriseCustomer()) {
+        $organizationAccountId = $this->bookingOrganizationAccountId();
+
+        if (! $organizationAccountId) {
             return collect();
         }
 
         return OrganizationSite::query()
-            ->where('organization_account_id', Auth::user()->organization_account_id)
+            ->where('organization_account_id', $organizationAccountId)
             ->where('is_active', true)
             ->orderByDesc('is_primary')
             ->orderBy('name')
             ->get();
     }
 
+    protected function bookingOrganizationAccountId($user = null): ?int
+    {
+        $user ??= Auth::user();
+
+        $id = data_get($user, 'organization_account_id')
+            ?: data_get($user, 'current_organization_id');
+
+        if (! $id && property_exists($this, 'organization_account_id')) {
+            $id = $this->organization_account_id;
+        }
+
+        return filled($id) ? (int) $id : null;
+    }
+
     protected function selectedOrganizationSite(): ?OrganizationSite
     {
-        if (! $this->organization_site_id || ! $this->isEntrepriseCustomer()) {
+        if (! $this->organization_site_id) {
             return null;
         }
 
-        return $this->organizationSites->firstWhere('id', $this->organization_site_id);
+        $organizationAccountId = $this->bookingOrganizationAccountId();
+
+        if (! $organizationAccountId) {
+            return null;
+        }
+
+        return OrganizationSite::query()
+            ->where('organization_account_id', $organizationAccountId)
+            ->where('id', (int) $this->organization_site_id)
+            ->first();
     }
 
     public function updatedOrganizationSiteId(): void
     {
+        $this->resetErrorBag(['organization_site_id', 'postal_code_input']);
+
         $site = $this->selectedOrganizationSite();
 
         if ($site) {
             $this->applyOrganizationSite($site);
+
             $policy = $this->currentEntreprisePolicy($site);
+
             if (! filled($this->cost_center) && filled($policy['default_cost_center'] ?? null)) {
                 $this->cost_center = (string) $policy['default_cost_center'];
             }
@@ -505,7 +534,7 @@ trait InteractsWithBookingFormState
             ->orderBy('name');
 
         if ($resolvedServiceZoneId) {
-            $query->whereHas('zoneServiceRules', function ($ruleQuery) use ($resolvedServiceZoneId){
+            $query->whereHas('zoneServiceRules', function ($ruleQuery) use ($resolvedServiceZoneId) {
                 $ruleQuery
                     ->where('service_zone_id', $resolvedServiceZoneId)
                     ->where('is_enabled', true);

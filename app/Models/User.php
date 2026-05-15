@@ -8,11 +8,15 @@ use App\Enums\OrganizationRole;
 use App\Enums\OrganizationType;
 use App\Enums\ProviderType;
 use App\Services\PermissionService;
+use App\Models\FieldTeam;
+use App\Models\Mission;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Fortify\TwoFactorAuthenticatable;
@@ -116,7 +120,9 @@ class User extends Authenticatable implements MustVerifyEmail
 
     public function getOrganizationAccountIdAttribute(): ?int
     {
-        return $this->attributes['current_organization_id'] ?? null;
+        return $this->attributes['organization_account_id']
+            ?? $this->attributes['current_organization_id']
+            ?? null;
     }
 
     public function organizationMemberships(): HasMany
@@ -425,6 +431,133 @@ class User extends Authenticatable implements MustVerifyEmail
 
     public function organizationAccount(): BelongsTo
     {
-        return $this->belongsTo(OrganizationAccount::class, 'current_organization_id');
+        return $this->belongsTo(OrganizationAccount::class, 'organization_account_id');
+    }
+
+    public function activeCreditBalance(): float
+    {
+        if (! Schema::hasTable('client_credits')) {
+            return 0.0;
+        }
+
+        return (float) DB::table('client_credits')
+            ->where('user_id', $this->id)
+            ->where(function ($query) {
+                $query->whereNull('expires_at')
+                    ->orWhere('expires_at', '>', now());
+            })
+            ->sum('remaining_amount');
+    }
+
+    public function hasOrganizationContext(): bool
+    {
+        return filled($this->organization_account_id)
+            || filled($this->current_organization_id)
+            || filled(data_get($this->metadata, 'organization_account_id'))
+            || filled(data_get($this->metadata, 'entreprise_context'));
+    }
+
+    public function organizationContextId(): ?int
+    {
+        return $this->organization_account_id
+            ?? $this->current_organization_id
+            ?? data_get($this->metadata, 'organization_account_id')
+            ?? data_get($this->metadata, 'entreprise_context.organization_account_id')
+            ?? null;
+    }
+
+    public function isEntreprise(): bool
+    {
+        return in_array($this->role, [
+            self::ROLE_ENTREPRISE,
+            'entreprise',
+            'client_company',
+            'company_client',
+        ], true);
+    }
+
+    public function leadMissions()
+    {
+        $query = Mission::query();
+
+        if (Schema::hasColumn('missions', 'team_lead_user_id')) {
+            return $query->where('team_lead_user_id', $this->id);
+        }
+
+        if (Schema::hasColumn('missions', 'lead_user_id')) {
+            return $query->where('lead_user_id', $this->id);
+        }
+
+        if (
+            Schema::hasTable('mission_team_assignments')
+            && Schema::hasColumn('mission_team_assignments', 'mission_id')
+            && Schema::hasColumn('mission_team_assignments', 'user_id')
+        ) {
+            return $query->whereIn('id', function ($sub) {
+                $sub->from('mission_team_assignments')
+                    ->select('mission_id')
+                    ->where('user_id', $this->id);
+            });
+        }
+
+        return $query->whereRaw('1 = 0');
+    }
+
+    public function activeLedFieldTeams()
+    {
+        $query = FieldTeam::query();
+
+        if (Schema::hasColumn('field_teams', 'lead_user_id')) {
+            return $query->where('lead_user_id', $this->id)
+                ->when(Schema::hasColumn('field_teams', 'is_active'), fn($q) => $q->where('is_active', true));
+        }
+
+        if (Schema::hasColumn('field_teams', 'team_lead_user_id')) {
+            return $query->where('team_lead_user_id', $this->id)
+                ->when(Schema::hasColumn('field_teams', 'is_active'), fn($q) => $q->where('is_active', true));
+        }
+
+        if (
+            Schema::hasTable('field_team_members')
+            && Schema::hasColumn('field_team_members', 'field_team_id')
+            && Schema::hasColumn('field_team_members', 'user_id')
+        ) {
+            return $query->whereIn('id', function ($sub) {
+                $sub->from('field_team_members')
+                    ->select('field_team_id')
+                    ->where('user_id', $this->id)
+                    ->where(function ($q) {
+                        if (Schema::hasColumn('field_team_members', 'role')) {
+                            $q->whereIn('role', ['lead', 'leader', 'team_lead']);
+                        }
+                    });
+            })->when(Schema::hasColumn('field_teams', 'is_active'), fn($q) => $q->where('is_active', true));
+        }
+
+        return $query->whereRaw('1 = 0');
+    }
+
+    public function isFieldTeamLead(): bool
+    {
+        return $this->activeLedFieldTeams()->exists();
+    }
+
+    public function preferredByClients()
+    {
+        if (! Schema::hasTable('client_provider_preferences')) {
+            return $this->belongsToMany(
+                self::class,
+                'client_provider_preferences',
+                'provider_user_id',
+                'client_user_id'
+            )->whereRaw('1 = 0');
+        }
+
+        return $this->belongsToMany(
+            self::class,
+            'client_provider_preferences',
+            'provider_user_id',
+            'client_user_id'
+        )->withTimestamps();
     }
 }

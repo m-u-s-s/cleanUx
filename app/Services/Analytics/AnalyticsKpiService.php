@@ -48,23 +48,41 @@ class AnalyticsKpiService
      *   active_sites: array{value:int, total:int, label:string},
      * }
      */
-    public function mainKpis(?int $organizationAccountId, CarbonImmutable $from, CarbonImmutable $to): array
+    public function mainKpis(?int $organizationAccountId, \Carbon\CarbonImmutable $from, \Carbon\CarbonImmutable $to): array
     {
-        $cacheKey = $this->cacheKey('main', $organizationAccountId, $from, $to);
+        $base = $this->baseBookingQuery($organizationAccountId, $from, $to);
 
-        return Cache::remember($cacheKey, self::CACHE_TTL, function () use ($organizationAccountId, $from, $to) {
-            $previousFrom = $from->subDays($from->diffInDays($to) + 1);
-            $previousTo   = $from->subDay();
+        $totalBookings = (clone $base)->count();
 
-            return [
-                'revenue'           => $this->revenueKpi($organizationAccountId, $from, $to, $previousFrom, $previousTo),
-                'bookings_count'    => $this->bookingsCountKpi($organizationAccountId, $from, $to, $previousFrom, $previousTo),
-                'completed_count'   => $this->completedKpi($organizationAccountId, $from, $to),
-                'cancellation_rate' => $this->cancellationRateKpi($organizationAccountId, $from, $to, $previousFrom, $previousTo),
-                'average_rating'    => $this->averageRatingKpi($organizationAccountId, $from, $to),
-                'active_sites'      => $this->activeSitesKpi($organizationAccountId, $from, $to),
-            ];
-        });
+        $cancelledCount = (clone $base)
+            ->whereIn('status', $this->cancelledStatuses())
+            ->count();
+
+        $completedCount = (clone $base)
+            ->whereIn('status', $this->completedStatuses())
+            ->count();
+
+        $amountColumn = $this->bookingAmountExpression();
+
+        $revenue = (clone $base)
+            ->whereNotIn('status', $this->cancelledStatuses())
+            ->sum(\Illuminate\Support\Facades\DB::raw($amountColumn));
+
+        return [
+            'revenue' => [
+                'value' => (float) $revenue,
+            ],
+            'bookings_count' => [
+                'value' => $totalBookings,
+            ],
+            'cancellation_rate' => [
+                'value' => $totalBookings > 0 ? round(($cancelledCount / $totalBookings) * 100, 1) : 0.0,
+            ],
+            'completed_count' => [
+                'value' => $completedCount,
+                'completion_rate' => $totalBookings > 0 ? round(($completedCount / $totalBookings) * 100, 1) : 0.0,
+            ],
+        ];
     }
 
     // ──────────────────────────────────────────────────────
@@ -138,7 +156,7 @@ class AnalyticsKpiService
                 ->orderByDesc('count')
                 ->get();
 
-            return $rows->map(fn ($r) => [
+            return $rows->map(fn($r) => [
                 'status' => $r->status,
                 'label'  => $this->statusLabel($r->status),
                 'count'  => (int) $r->count,
@@ -169,7 +187,7 @@ class AnalyticsKpiService
                 ->orderByDesc('count')
                 ->limit($limit)
                 ->get()
-                ->map(fn ($r) => [
+                ->map(fn($r) => [
                     'service_id'   => (int) $r->service_id,
                     'service_name' => (string) $r->service_name,
                     'count'        => (int) $r->count,
@@ -204,7 +222,7 @@ class AnalyticsKpiService
                 ->orderByDesc('count')
                 ->limit($limit)
                 ->get()
-                ->map(fn ($r) => [
+                ->map(fn($r) => [
                     'site_id'   => (int) $r->site_id,
                     'site_name' => (string) $r->site_name,
                     'count'     => (int) $r->count,
@@ -241,7 +259,7 @@ class AnalyticsKpiService
 
             if ($organizationAccountId) {
                 $query->join('missions', 'missions.id', '=', 'mission_quality_reviews.mission_id')
-                      ->where('missions.organization_account_id', $organizationAccountId);
+                    ->where('missions.organization_account_id', $organizationAccountId);
             }
 
             $rows = $query->groupBy('ym')->orderBy('ym')->get()->keyBy('ym');
@@ -306,7 +324,7 @@ class AnalyticsKpiService
                 $incidentQuery = \App\Models\MissionIncident::query()
                     ->where('status', 'open');
                 if ($organizationAccountId) {
-                    $incidentQuery->whereHas('mission', fn ($q) => $q->where('organization_account_id', $organizationAccountId));
+                    $incidentQuery->whereHas('mission', fn($q) => $q->where('organization_account_id', $organizationAccountId));
                 }
                 $incidentsCount = $incidentQuery->count();
             }
@@ -399,7 +417,7 @@ class AnalyticsKpiService
 
         if ($orgId) {
             $query->join('missions', 'missions.id', '=', 'mission_quality_reviews.mission_id')
-                  ->where('missions.organization_account_id', $orgId);
+                ->where('missions.organization_account_id', $orgId);
         }
 
         $stats = $query->selectRaw('AVG(overall_rating) as avg, COUNT(*) as cnt')->first();
@@ -521,5 +539,51 @@ class AnalyticsKpiService
             $parts[] = "{$k}={$v}";
         }
         return implode(':', $parts);
+    }
+
+    private function bookingDateColumn(): string
+    {
+        foreach (['scheduled_at', 'starts_at', 'rdv_at', 'date_rdv', 'rdv_date', 'date'] as $column) {
+            if (\Illuminate\Support\Facades\Schema::hasColumn('rendez_vous', $column)) {
+                return $column;
+            }
+        }
+
+        return 'created_at';
+    }
+
+    private function bookingAmountExpression(): string
+    {
+        foreach (['total_amount', 'amount_total', 'prix_total', 'price_total', 'montant_total', 'total'] as $column) {
+            if (\Illuminate\Support\Facades\Schema::hasColumn('rendez_vous', $column)) {
+                return $column;
+            }
+        }
+
+        return '0';
+    }
+
+    private function baseBookingQuery(?int $organizationAccountId, \Carbon\CarbonImmutable $from, \Carbon\CarbonImmutable $to)
+    {
+        $dateColumn = $this->bookingDateColumn();
+
+        $query = \App\Models\Booking::query()
+            ->whereBetween($dateColumn, [$from->startOfDay(), $to->endOfDay()]);
+
+        if ($organizationAccountId && \Illuminate\Support\Facades\Schema::hasColumn('rendez_vous', 'organization_account_id')) {
+            $query->where('organization_account_id', $organizationAccountId);
+        }
+
+        return $query;
+    }
+
+    private function cancelledStatuses(): array
+    {
+        return ['annule', 'annulé', 'cancelled', 'canceled', 'refuse', 'refusé'];
+    }
+
+    private function completedStatuses(): array
+    {
+        return ['termine', 'terminé', 'completed', 'done'];
     }
 }

@@ -58,6 +58,31 @@ class ApplyRecurringTemplateService
                 'template_payload'         => $this->buildTemplatePayload($template, $params),
             ]);
 
+
+            $payload = [
+                'customer_user_id'         => $user->id,
+                'customer_organization_id' => $user->organization_account_id,
+                'organization_site_id'     => $params['organization_site_id'] ?? null,
+                'frequency'                => $template->frequency,
+                'interval'                 => $template->interval ?? 1,
+                'days'                     => $template->days,
+                'starts_at'                => $startsAt->toDateString(),
+                'ends_at'                  => $endsAt?->toDateString(),
+                'occurrence_count'         => $params['occurrence_count'] ?? null,
+                'status'                   => RecurringBookingSeries::STATUS_ACTIVE,
+            ];
+
+            $templatePayload = $this->buildTemplatePayload($template, $params);
+
+            if (\Illuminate\Support\Facades\Schema::hasColumn('recurring_booking_series', 'template_payload')) {
+                $payload['template_payload'] = $templatePayload;
+            } elseif (\Illuminate\Support\Facades\Schema::hasColumn('recurring_booking_series', 'metadata')) {
+                $payload['metadata'] = [
+                    'template_payload' => $templatePayload,
+                ];
+            }
+
+            $series = RecurringBookingSeries::create($payload);
             $template->incrementUsage();
 
             return $series;
@@ -69,6 +94,29 @@ class ApplyRecurringTemplateService
      * pour copier les paramètres du template (service, durée, heure, etc.)
      * sur chaque booking créé.
      */
+
+    private function normalizeTemplateTime(mixed $time): string
+    {
+        if ($time instanceof \Carbon\CarbonInterface) {
+            return $time->format('H:i:s');
+        }
+
+        if (is_string($time) && trim($time) !== '') {
+            $time = trim($time);
+
+            if (preg_match('/^\d{2}:\d{2}$/', $time)) {
+                return $time . ':00';
+            }
+
+            if (preg_match('/^\d{2}:\d{2}:\d{2}$/', $time)) {
+                return $time;
+            }
+        }
+
+        return '08:00:00';
+    }
+
+
     protected function buildTemplatePayload(RecurringTemplate $template, array $params): array
     {
         $payload = [
@@ -76,7 +124,7 @@ class ApplyRecurringTemplateService
             'template_slug' => $template->slug,
             'template_name' => $template->name,
             'service_catalog_id' => $template->default_service_catalog_id,
-            'time'          => $params['custom_time'] ?? ($template->default_time?->format('H:i:s') ?? '08:00:00'),
+            'time' => $params['custom_time'] ?? $this->normalizeTemplateTime($template->default_time ?? null),
             'duration_minutes' => $template->default_duration_minutes,
         ];
 

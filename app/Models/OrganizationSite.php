@@ -143,4 +143,14 @@ class OrganizationSite extends Model
             }
         });
     }
+
+    public function organizationAccount(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    {
+        return $this->belongsTo(\App\Models\OrganizationAccount::class, 'organization_account_id');
+    }
+
+    public function postalCodeReference(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    {
+        return $this->belongsTo(\App\Models\PostalCode::class, 'postal_code_id');
+    }
 }
