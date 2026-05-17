@@ -132,6 +132,11 @@ class GestionEquipesPartenaires extends Component
         ]);
 
         $data = $validated['teamForm'];
+
+        if (empty($data['max_concurrent_missions'])) {
+            $data['max_concurrent_missions'] = 3;
+        }
+
         $slug = Str::slug($data['name']);
         $team = FieldTeam::query()->find($this->selectedTeamId);
 

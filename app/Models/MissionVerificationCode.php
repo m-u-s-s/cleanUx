@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Facades\Schema;
 
 class MissionVerificationCode extends Model
 {
@@ -36,5 +37,27 @@ class MissionVerificationCode extends Model
     public function validatedBy(): BelongsTo
     {
         return $this->belongsTo(User::class, 'validated_by_user_id');
+    }
+
+    public function setCodeTypeAttribute($value): void
+    {
+        if (Schema::hasColumn($this->getTable(), 'code_type')) {
+            $this->attributes['code_type'] = $value;
+        }
+
+        if (Schema::hasColumn($this->getTable(), 'type')) {
+            $this->attributes['type'] = $value;
+        }
+    }
+
+    public function setTypeAttribute($value): void
+    {
+        if (Schema::hasColumn($this->getTable(), 'type')) {
+            $this->attributes['type'] = $value;
+        }
+
+        if (Schema::hasColumn($this->getTable(), 'code_type')) {
+            $this->attributes['code_type'] = $value;
+        }
     }
 }

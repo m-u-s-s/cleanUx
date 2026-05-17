@@ -27,6 +27,7 @@ class AuthServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
+        $this->registerPolicies();
         Gate::define('access-admin', fn (User $user) => $user->isAdmin() && $user->is_active);
         Gate::define('access-client', fn (User $user) => $user->isClient() && $user->is_active);
         Gate::define('access-employe', fn (User $user) => $user->isEmploye() && $user->is_active);

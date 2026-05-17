@@ -12,6 +12,9 @@ class CountryBillingProfile extends Model
 
     protected $fillable = [
         'country_id',
+        'currency_code',
+        'currency_symbol',
+        'currency_position',
         'invoice_prefix',
         'quote_prefix',
         'tax_label',
@@ -21,6 +24,14 @@ class CountryBillingProfile extends Model
         'decimal_separator',
         'thousands_separator',
         'payment_terms_days',
+        'quote_validity_days',
+        'date_format',
+        'time_format',
+        'requires_vat_number',
+        'supports_invoicing',
+        'supports_credit_notes',
+        'invoice_settings',
+        'payment_settings',
         'metadata',
     ];
 

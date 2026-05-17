@@ -7,6 +7,7 @@ use App\Models\RecurringTemplate;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 /**
  * Phase 6.1 — Application d'un template pour créer une série en 1 clic.
@@ -44,19 +45,32 @@ class ApplyRecurringTemplateService
                 throw new \DomainException("La date de fin doit être après la date de début.");
             }
 
-            $series = RecurringBookingSeries::create([
+            $payload = $this->buildTemplatePayload($template, $params);
+
+            $data = [
                 'customer_user_id'         => $user->id,
                 'customer_organization_id' => $user->organization_account_id,
                 'organization_site_id'     => $params['organization_site_id'] ?? null,
                 'frequency'                => $template->frequency,
-                'interval'                 => $template->interval,
+                'interval'                 => $template->interval ?? 1,
                 'days'                     => $template->days,
                 'starts_at'                => $startsAt->toDateString(),
                 'ends_at'                  => $endsAt?->toDateString(),
                 'occurrence_count'         => $params['occurrence_count'] ?? null,
-                'status'                   => RecurringBookingSeries::STATUS_ACTIVE,
-                'template_payload'         => $this->buildTemplatePayload($template, $params),
-            ]);
+                'status'                   => defined(RecurringBookingSeries::class . '::STATUS_ACTIVE')
+                    ? RecurringBookingSeries::STATUS_ACTIVE
+                    : 'active',
+            ];
+
+            if (Schema::hasColumn('recurring_booking_series', 'template_payload')) {
+                $data['template_payload'] = $payload;
+            } elseif (Schema::hasColumn('recurring_booking_series', 'metadata')) {
+                $data['metadata'] = [
+                    'template_payload' => $payload,
+                ];
+            }
+
+            $series = RecurringBookingSeries::create($data);
 
 
             $payload = [

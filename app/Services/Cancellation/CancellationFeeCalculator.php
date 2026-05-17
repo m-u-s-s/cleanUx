@@ -153,10 +153,23 @@ class CancellationFeeCalculator
                 : Carbon::parse($booking->scheduled_date);
 
             if ($booking->scheduled_time) {
-                $time = (string) $booking->scheduled_time;
-                $parts = explode(':', $time);
-                $h = (int) ($parts[0] ?? 0);
-                $m = (int) ($parts[1] ?? 0);
+                if ($booking->scheduled_time instanceof \DateTimeInterface) {
+                    $h = (int) $booking->scheduled_time->format('H');
+                    $m = (int) $booking->scheduled_time->format('i');
+                } else {
+                    $time = (string) $booking->scheduled_time;
+                    // Si la chaîne contient une date complète (cas SQLite "Y-m-d H:i:s"),
+                    // on ne garde que la partie heure.
+                    if (preg_match('/(\d{1,2}):(\d{2})(?::\d{2})?\s*$/', $time, $m1)) {
+                        $h = (int) $m1[1];
+                        $m = (int) $m1[2];
+                    } else {
+                        $parts = explode(':', $time);
+                        $h = (int) ($parts[0] ?? 0);
+                        $m = (int) ($parts[1] ?? 0);
+                    }
+                }
+
                 $date->setTime($h, $m);
             }
 

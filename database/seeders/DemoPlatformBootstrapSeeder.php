@@ -9,6 +9,7 @@ class DemoPlatformBootstrapSeeder extends Seeder
     public function run(): void
     {
         $this->call([
+            MultiTradeDemoServicesSeeder::class,
             DemoPlatformSeeder::class,
             LimitesJournaliereSeeder::class,
             StatutRendezVousSeeder::class,

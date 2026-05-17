@@ -22,6 +22,43 @@
     @if($rdv->mission)
     <livewire:client.mission-tracking :mission="$rdv->mission" :key="'mission-tracking-'.$rdv->mission->id" />
     @else
-    <p class="text-sm text-slate-500">Le suivi mission détaillé apparaîtra dès qu’une mission opérationnelle sera synchronisée.</p>
+    @php
+    $operationalMission = method_exists($rdv, 'operationalMission')
+    ? $rdv->operationalMission()
+    : null;
+    @endphp
+
+    @if($operationalMission)
+    @php
+    $operationalMission = method_exists($rdv, 'operationalMission')
+    ? $rdv->operationalMission()
+    : null;
+
+    $missionTrackingComponent = collect([
+    \App\Livewire\Client\MissionTrackingPanel::class,
+    \App\Livewire\Client\MissionTracking::class,
+    \App\Livewire\Client\ClientMissionTrackingPanel::class,
+    \App\Livewire\Client\RendezVous\MissionTrackingPanel::class,
+    \App\Livewire\Client\RendezVous\MissionTracking::class,
+    ])->first(fn ($class) => class_exists($class));
+    @endphp
+
+    @if($operationalMission && $missionTrackingComponent)
+    @livewire($missionTrackingComponent, ['mission' => $operationalMission], key('mission-tracking-'.$operationalMission->id))
+    @elseif($operationalMission)
+    <div class="rounded-xl border bg-white p-4 text-sm text-slate-700">
+        <p class="font-semibold text-slate-800">Code de début disponible</p>
+        <p class="mt-1 text-slate-500">Le suivi mission est disponible pour cette intervention.</p>
+    </div>
+    @else
+    <p class="text-sm text-slate-500">
+        Le suivi mission détaillé apparaîtra dès qu’une mission opérationnelle sera synchronisée.
+    </p>
+    @endif
+    @else
+    <p class="text-sm text-slate-500">
+        Le suivi mission détaillé apparaîtra dès qu’une mission opérationnelle sera synchronisée.
+    </p>
+    @endif
     @endif
 </div>

@@ -49,7 +49,7 @@ class User extends Authenticatable implements MustVerifyEmail
     public const ACCESS_SCOPE_ALL = 'all';
     public const ACCESS_SCOPE_OWN = 'own';
     public const ACCESS_SCOPE_ORGANIZATION = 'organization';
-    public const ACCESS_SCOPE_ZONE = 'zone';
+
     // ──────────────────────────────────────────────────────
     // Constantes platform_role (rôle global CleanUx)
     // ──────────────────────────────────────────────────────
@@ -81,6 +81,26 @@ class User extends Authenticatable implements MustVerifyEmail
 
         'metadata',
         'permissions',
+
+        // Plan / facturation
+        'plan_type',
+        'plan_status',
+        'premium_started_at',
+        'premium_renewal_at',
+        'stripe_id',
+        'pm_type',
+        'pm_last_four',
+        'trial_ends_at',
+
+        // Sécurité admin
+        'access_scope',
+        'managed_service_zone_id',
+        'is_super_admin',
+        'admin_permissions',
+
+        // Onboarding / provider
+        'stripe_connect_status',
+        'stripe_connect_account_id',
     ];
 
     protected $hidden = [
@@ -149,6 +169,11 @@ class User extends Authenticatable implements MustVerifyEmail
         return $this->customerProfile()->exists();
     }
 
+    public function isStandard(): bool
+    {
+        return $this->plan_type === 'standard';
+    }
+
     public function isProvider(): bool
     {
         return $this->providerProfile()->exists();
@@ -161,7 +186,11 @@ class User extends Authenticatable implements MustVerifyEmail
 
     public function isClientCompany(): bool
     {
-        return $this->customerProfile?->customer_type === CustomerType::COMPANY->value;
+        if ($this->customerProfile?->customer_type === CustomerType::COMPANY->value) {
+            return true;
+        }
+
+        return ! empty($this->organization_account_id);
     }
 
     public function isProviderIndependent(): bool
@@ -280,7 +309,7 @@ class User extends Authenticatable implements MustVerifyEmail
         return 'dashboard';
     }
 
-    public function canAccessAdminModule(): bool
+    public function canAccessAdminModule(?string $permission = null): bool
     {
         $isAdmin = in_array($this->role, ['admin', 'super_admin'], true)
             || in_array($this->platform_role, ['admin', 'super_admin'], true);
@@ -291,6 +320,16 @@ class User extends Authenticatable implements MustVerifyEmail
 
         if (isset($this->is_active) && ! $this->is_active) {
             return false;
+        }
+
+        if (($this->role ?? null) === 'super_admin'
+            || ($this->platform_role ?? null) === 'super_admin'
+            || ($this->is_super_admin ?? false)) {
+            return true;
+        }
+
+        if ($permission === null) {
+            return true;
         }
 
         $permissions = $this->permissions ?? [];
@@ -308,21 +347,22 @@ class User extends Authenticatable implements MustVerifyEmail
             $permissions = [];
         }
 
-        $acceptedPermissions = [
-            'manage-modules',
-            'manage_modules',
-            'admin.modules',
-            'modules.manage',
-            'platform.modules.manage',
-            'platform_modules.manage',
+        $aliases = [$permission];
+
+        $aliasMap = [
+            'manage-modules' => ['manage_modules', 'admin.modules', 'modules.manage', 'platform.modules.manage', 'platform_modules.manage'],
         ];
 
-        foreach ($acceptedPermissions as $permission) {
-            if (array_key_exists($permission, $permissions) && (bool) $permissions[$permission]) {
+        if (isset($aliasMap[$permission])) {
+            $aliases = array_merge($aliases, $aliasMap[$permission]);
+        }
+
+        foreach ($aliases as $alias) {
+            if (array_key_exists($alias, $permissions) && (bool) $permissions[$alias]) {
                 return true;
             }
 
-            if (in_array($permission, $permissions, true)) {
+            if (in_array($alias, $permissions, true)) {
                 return true;
             }
         }
@@ -351,6 +391,82 @@ class User extends Authenticatable implements MustVerifyEmail
     {
         return ($this->plan_type ?? 'standard') === 'premium'
             && in_array(($this->plan_status ?? 'inactive'), ['active', 'trialing', 'paid'], true);
+    }
+
+    public static function allowedAdminPermissions(): array
+    {
+        return [
+            'manage-calendar'                 => 'Gestion calendrier',
+            'manage-users'                    => 'Gestion utilisateurs',
+            'manage-services'                 => 'Gestion services',
+            'manage-entreprises'              => 'Gestion entreprises',
+            'manage-finance'                  => 'Gestion finance',
+            'manage-analytics'                => 'Analytics',
+            'manage-quality'                  => 'Qualité',
+            'manage-premium'                  => 'Clients premium',
+            'manage-audit-logs'               => 'Logs d\'audit',
+            'manage-modules'                  => 'Modules plateforme',
+            'manage-international'            => 'Opérations internationales',
+            'manage-orchestration'            => 'Orchestration terrain',
+            'manage-automation'               => 'Automatisation',
+            'perform-critical-admin-actions'  => 'Actions critiques',
+        ];
+    }
+
+    public function hasAdminPermission(string $permission): bool
+    {
+        if ($this->is_super_admin ?? false) {
+            return true;
+        }
+
+        $permissions = $this->permissions ?? [];
+
+        if (is_string($permissions)) {
+            $decoded = json_decode($permissions, true);
+            $permissions = is_array($decoded) ? $decoded : [];
+        }
+
+        if ($permissions instanceof \Illuminate\Support\Collection) {
+            $permissions = $permissions->all();
+        }
+
+        if (! is_array($permissions)) {
+            return false;
+        }
+
+        if (in_array($permission, $permissions, true)) {
+            return true;
+        }
+
+        return array_key_exists($permission, $permissions) && (bool) $permissions[$permission];
+    }
+
+    public function canPerformCriticalAdminActions(): bool
+    {
+        return $this->canAccessAdminModule('perform-critical-admin-actions') && ! $this->isReadOnlyAdmin();
+    }
+
+    public function permissionList(): array
+    {
+        $permissions = $this->permissions ?? [];
+
+        if (is_string($permissions)) {
+            $decoded = json_decode($permissions, true);
+            $permissions = is_array($decoded) ? $decoded : [];
+        }
+
+        if ($permissions instanceof \Illuminate\Support\Collection) {
+            $permissions = $permissions->all();
+        }
+
+        return is_array($permissions) ? array_values((array) $permissions) : [];
+    }
+
+    public function hasBillingIssue(): bool
+    {
+        $status = $this->plan_status ?? null;
+
+        return in_array($status, ['past_due', 'unpaid', 'incomplete', 'incomplete_expired'], true);
     }
 
     public function favoriteEmployes(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
@@ -383,6 +499,18 @@ class User extends Authenticatable implements MustVerifyEmail
             'ends_at',
             'notes',
         ])->withTimestamps();
+    }
+
+    public function fieldTeams(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
+    {
+        return $this->belongsToMany(\App\Models\FieldTeam::class, 'field_team_members')
+            ->withPivot(['role_on_team', 'is_team_lead', 'is_active', 'joined_at', 'left_at'])
+            ->withTimestamps();
+    }
+
+    public function organizationSites(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(\App\Models\OrganizationSite::class, 'organization_account_id', 'organization_account_id');
     }
 
     public function isZoneScopedAdmin(): bool
@@ -421,7 +549,9 @@ class User extends Authenticatable implements MustVerifyEmail
     public function isReadOnlyAdmin(): bool
     {
         return ($this->role ?? null) === 'readonly_admin'
-            || ($this->platform_role ?? null) === 'readonly_admin';
+            || ($this->platform_role ?? null) === 'readonly_admin'
+            || ($this->access_scope ?? null) === self::ACCESS_SCOPE_READONLY
+            || ($this->access_scope ?? null) === 'readonly';
     }
 
     public function disponibilites(): HasMany
@@ -559,5 +689,60 @@ class User extends Authenticatable implements MustVerifyEmail
             'provider_user_id',
             'client_user_id'
         )->withTimestamps();
+    }
+    // ─────────────────────────────────────────────────────
+    // Compat helpers tests / legacy UI
+    // ─────────────────────────────────────────────────────
+
+    public const ACCESS_SCOPE_GLOBAL = 'global';
+    public const ACCESS_SCOPE_ZONE = 'zone';
+    public const ACCESS_SCOPE_READONLY = 'readonly';
+
+
+    public function isAdmin(): bool
+    {
+        return $this->role === 'admin';
+    }
+
+    public function isEmploye(): bool
+    {
+        return $this->role === 'employe';
+    }
+
+    public function isClient(): bool
+    {
+        return in_array($this->role, ['client', 'entreprise']);
+    }
+    public function getIsAdminAttribute(): bool
+    {
+        return $this->isAdmin();
+    }
+
+    public function getIsEmployeAttribute(): bool
+    {
+        return $this->isEmploye();
+    }
+
+    public function getIsClientAttribute(): bool
+    {
+        return $this->isClient();
+    }
+
+    public function getIsEntrepriseAttribute(): bool
+    {
+        return $this->isEntreprise();
+    }
+
+    public function canViewEmployeeAvailability(): bool
+    {
+        return $this->isPremium()
+            || $this->isAdmin()
+            || $this->isEmploye()
+            || $this->isEntreprise();
+    }
+
+    public function primaryServiceZone()
+    {
+        return $this->belongsTo(\App\Models\ServiceZone::class, 'primary_service_zone_id');
     }
 }

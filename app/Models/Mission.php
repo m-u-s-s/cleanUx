@@ -49,7 +49,11 @@ class Mission extends Model
         'margin',
         'actual_duration_minutes',
         'travel_duration_minutes',
-        
+
+        'last_eta_meters',
+        'last_eta_seconds',
+        'last_eta_source',
+        'last_eta_calculated_at',
     ];
 
     protected $casts = [
@@ -86,7 +90,9 @@ class Mission extends Model
      */
     public function booking(): BelongsTo
     {
-        return $this->belongsTo(Booking::class, 'rendez_vous_id');
+        $fk = $this->booking_id ? 'booking_id' : 'rendez_vous_id';
+
+        return $this->belongsTo(Booking::class, $fk);
     }
 
     public function organizationAccount(): BelongsTo

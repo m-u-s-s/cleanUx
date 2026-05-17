@@ -17,9 +17,6 @@ class ReferencePlatformSeeder extends Seeder
             // Phase 1 — Backfill trade_id pour les services qui auraient été
             // créés sans (idempotent : ne touche que les NULL).
             ServiceCatalogTradeBackfillSeeder::class,
-            // Phase 1 — Services de démo pour les métiers non-Nettoyage
-            // (Peinture, Bâtiment, Levage, Jardinage). Idempotent.
-            MultiTradeDemoServicesSeeder::class,
             PlatformModuleSeeder::class,
             ZoneManagementSeeder::class,
             CoreSettingsSeeder::class,

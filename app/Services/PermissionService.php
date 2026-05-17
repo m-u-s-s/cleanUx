@@ -76,37 +76,75 @@ class PermissionService
     private const ROLE_PERMISSIONS = [
 
         OrganizationRole::OWNER->value => [
-            'bookings.create', 'bookings.view_all', 'bookings.approve', 'bookings.cancel',
-            'sites.create', 'sites.edit', 'sites.delete', 'sites.view_all', 'sites.assign_members',
-            'members.invite', 'members.edit_role', 'members.suspend', 'members.remove',
-            'finance.view', 'finance.download', 'finance.manage',
-            'missions.assign', 'missions.dispatch', 'missions.view_all', 'missions.quality',
-            'team.create', 'team.manage', 'team.view',
-            'channels.create', 'channels.manage', 'tasks.create', 'tasks.assign', 'tasks.close',
-            'analytics.view', 'analytics.export',
+            'bookings.create',
+            'bookings.view_all',
+            'bookings.approve',
+            'bookings.cancel',
+            'sites.create',
+            'sites.edit',
+            'sites.delete',
+            'sites.view_all',
+            'sites.assign_members',
+            'members.invite',
+            'members.edit_role',
+            'members.suspend',
+            'members.remove',
+            'finance.view',
+            'finance.download',
+            'finance.manage',
+            'missions.assign',
+            'missions.dispatch',
+            'missions.view_all',
+            'missions.quality',
+            'team.create',
+            'team.manage',
+            'team.view',
+            'channels.create',
+            'channels.manage',
+            'tasks.create',
+            'tasks.assign',
+            'tasks.close',
+            'analytics.view',
+            'analytics.export',
         ],
 
         OrganizationRole::MANAGER->value => [
-            'bookings.create', 'bookings.view_all', 'bookings.approve', 'bookings.cancel',
-            'sites.create', 'sites.edit', 'sites.view_all', 'sites.assign_members',
+            'bookings.create',
+            'bookings.view_all',
+            'bookings.approve',
+            'bookings.cancel',
+            'sites.create',
+            'sites.edit',
+            'sites.view_all',
+            'sites.assign_members',
             'members.invite',
-            'finance.view', 'finance.download',
-            'channels.create', 'channels.manage', 'tasks.create', 'tasks.assign', 'tasks.close',
-            'analytics.view', 'analytics.export',
+            'finance.view',
+            'finance.download',
+            'channels.create',
+            'channels.manage',
+            'tasks.create',
+            'tasks.assign',
+            'tasks.close',
+            'analytics.view',
+            'analytics.export',
         ],
 
         OrganizationRole::SITE_MANAGER->value => [
-            'bookings.create', 'bookings.cancel',
+            'bookings.create',
+            'bookings.cancel',
             'sites.edit',
-            'tasks.create', 'tasks.assign',
+            'tasks.create',
+            'tasks.assign',
             'channels.create',
             'analytics.view',
         ],
 
         OrganizationRole::FINANCE->value => [
             'bookings.view_all',
-            'finance.view', 'finance.download',
-            'analytics.view', 'analytics.export',
+            'finance.view',
+            'finance.download',
+            'analytics.view',
+            'analytics.export',
         ],
 
         OrganizationRole::REQUESTER->value => [
@@ -115,31 +153,51 @@ class PermissionService
         ],
 
         OrganizationRole::OPERATIONS_MANAGER->value => [
-            'bookings.view_all', 'bookings.approve', 'bookings.cancel',
-            'missions.assign', 'missions.dispatch', 'missions.view_all', 'missions.quality',
-            'team.create', 'team.manage', 'team.view',
+            'bookings.view_all',
+            'bookings.approve',
+            'bookings.cancel',
+            'missions.assign',
+            'missions.dispatch',
+            'missions.view_all',
+            'missions.quality',
+            'team.create',
+            'team.manage',
+            'team.view',
             'members.invite',
-            'channels.create', 'channels.manage', 'tasks.create', 'tasks.assign', 'tasks.close',
-            'analytics.view', 'analytics.export',
+            'channels.create',
+            'channels.manage',
+            'tasks.create',
+            'tasks.assign',
+            'tasks.close',
+            'analytics.view',
+            'analytics.export',
         ],
 
         OrganizationRole::DISPATCHER->value => [
             'bookings.view_all',
-            'missions.assign', 'missions.dispatch', 'missions.view_all',
+            'missions.assign',
+            'missions.dispatch',
+            'missions.view_all',
             'team.view',
-            'channels.create', 'tasks.create', 'tasks.assign',
+            'channels.create',
+            'tasks.create',
+            'tasks.assign',
             'analytics.view',
         ],
 
         OrganizationRole::TEAM_LEAD->value => [
             'missions.view_all',
             'team.view',
-            'channels.create', 'tasks.create', 'tasks.assign',
+            'channels.create',
+            'tasks.create',
+            'tasks.assign',
         ],
 
         OrganizationRole::QUALITY_MANAGER->value => [
-            'missions.view_all', 'missions.quality',
-            'analytics.view', 'analytics.export',
+            'missions.view_all',
+            'missions.quality',
+            'analytics.view',
+            'analytics.export',
             'channels.create',
         ],
 
@@ -161,8 +219,11 @@ class PermissionService
     /**
      * L'utilisateur a-t-il la permission sur cette organisation ?
      */
-    public function can(User $user, string $permission, OrganizationAccount|int $organization): bool
+    public function can(User $user, string $permission, OrganizationAccount|int|null $organization = null): bool
     {
+        if ($organization === null) {
+            return false;
+        }
         $orgId = $organization instanceof OrganizationAccount
             ? $organization->id
             : $organization;

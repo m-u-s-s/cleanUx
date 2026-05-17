@@ -76,23 +76,18 @@ class SetLocale
             return $userLocale;
         }
 
-        // 4) Accept-Language (nouveau Phase 9)
-        $browserLocale = $this->detectFromAcceptLanguage($request);
+        // 4) Accept-Language — en mode tests, on ignore l'en-tête synthétique par
+        // défaut de Symfony (`en-us,en;q=0.5`) pour ne pas écraser la langue par
+        // défaut française. Les tests qui veulent vérifier ce flow doivent passer
+        // un header explicite (différent du défaut Symfony) via withHeaders().
+        $acceptLanguage = $request->header('Accept-Language');
+        $isSymfonyTestDefault = $acceptLanguage === 'en-us,en;q=0.5';
 
-        if (
-            $browserLocale
-            && ! app()->runningUnitTests()
-        ) {
-            return $browserLocale;
-        }
-
-        if (
-            $browserLocale
-            && app()->runningUnitTests()
-            && $request->headers->has('Accept-Language')
-            && $request->header('Accept-Language') !== 'en'
-        ) {
-            return $browserLocale;
+        if (! app()->runningUnitTests() || (! $isSymfonyTestDefault && $acceptLanguage)) {
+            $browserLocale = $this->detectFromAcceptLanguage($request);
+            if ($browserLocale) {
+                return $browserLocale;
+            }
         }
 
         // 5) Cookie

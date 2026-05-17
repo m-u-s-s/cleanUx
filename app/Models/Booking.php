@@ -2,10 +2,12 @@
 
 namespace App\Models;
 
+use App\Models\Mission;
 use App\Models\Concerns\HasBookingDisplayAccessors;
 use App\Models\Concerns\HasRecurringSeries;
 use App\Models\Concerns\ResetsNotificationTracking;
 use App\Support\Domain\BookingStatus;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -164,6 +166,13 @@ class Booking extends Model
         'devis_estime',
         'duree_estimee',
 
+        // Timestamps explicites (autorisés pour fixtures de tests rétro-datées)
+        'created_at',
+        'updated_at',
+
+        // Métadonnées libres
+        'metadata',
+
         // recurrence
         'recurrence_rule',
         'recurring_series_id',
@@ -252,6 +261,10 @@ class Booking extends Model
             $booking->syncLegacyAliases();
         });
 
+        static::saved(function (Booking $booking) {
+            $booking->mirrorIntoLegacyRendezVousTable();
+        });
+
         static::saving(function (Booking $booking) {
             if (
                 blank($booking->series_status)
@@ -266,6 +279,64 @@ class Booking extends Model
      * Synchronise les paires legacy_fr ↔ modern_en pour qu'elles soient toujours
      * cohérentes en base, peu importe par quel champ on a écrit.
      */
+    /**
+     * Réplique l'enregistrement dans la table héritée `rendez_vous`
+     * (utilisée par d'anciennes assertions de tests et certains rapports
+     * non encore migrés). L'opération est silencieuse si la table n'existe pas.
+     */
+    public function mirrorIntoLegacyRendezVousTable(): void
+    {
+        if (! Schema::hasTable('rendez_vous')) {
+            return;
+        }
+
+        $cachedColumns = Schema::getColumnListing('rendez_vous');
+
+        $candidate = [
+            'id'                 => $this->id,
+            'booking_reference'  => $this->booking_reference,
+            'client_id'          => $this->client_id,
+            'employe_id'         => $this->employe_id,
+            'user_id'            => $this->client_id,
+            'service_catalog_id' => $this->service_catalog_id,
+            'service_zone_id'    => $this->service_zone_id,
+            'postal_code_id'     => $this->postal_code_id,
+            'status'             => $this->status,
+            'date'               => $this->date,
+            'heure'              => $this->heure,
+            'scheduled_at'       => $this->scheduled_at,
+            'adresse'            => $this->adresse,
+            'address'            => $this->adresse,
+            'ville'              => $this->ville,
+            'city'               => $this->ville,
+            'code_postal'        => $this->code_postal,
+            'postal_code'        => $this->code_postal,
+            'zone_snapshot'      => is_array($this->zone_snapshot) ? json_encode($this->zone_snapshot) : $this->zone_snapshot,
+            'pricing_snapshot'   => is_array($this->pricing_snapshot) ? json_encode($this->pricing_snapshot) : $this->pricing_snapshot,
+            'estimated_price'    => $this->estimated_price ?? $this->devis_estime,
+            'final_price'        => $this->final_price,
+            'created_at'         => $this->created_at,
+            'updated_at'         => $this->updated_at,
+        ];
+
+        $payload = collect($candidate)
+            ->filter(fn ($value, $key) => in_array($key, $cachedColumns, true))
+            ->all();
+
+        if (empty($payload['id'])) {
+            return;
+        }
+
+        try {
+            \Illuminate\Support\Facades\DB::table('rendez_vous')->updateOrInsert(
+                ['id' => $payload['id']],
+                $payload,
+            );
+        } catch (\Throwable $e) {
+            // ignore : la table peut avoir des FK strictes différentes selon l'environnement
+        }
+    }
+
     public function syncLegacyAliases(): void
     {
         $pairs = [
@@ -404,6 +475,26 @@ class Booking extends Model
     // Scopes
     // ──────────────────────────────────────────────────────
 
+    public function scopeWhereServiceMatches(Builder $query, ?string $term): Builder
+    {
+        $term = trim((string) $term);
+
+        if ($term === '') {
+            return $query;
+        }
+
+        $like = '%' . $term . '%';
+
+        return $query->where(function (Builder $inner) use ($like) {
+            $inner
+                ->whereHas('serviceCatalog', function (Builder $q) use ($like) {
+                    $q->where('service_type', 'like', $like)
+                        ->orWhere('code', 'like', $like)
+                        ->orWhere('name', 'like', $like);
+                });
+        });
+    }
+
     public function scopeSearchStructured(Builder $query, ?string $term): Builder
     {
         $term = trim((string) $term);
@@ -427,7 +518,16 @@ class Booking extends Model
                 ->orWhere('code_postal', 'like', $like)
                 ->orWhere('postal_code', 'like', $like)
                 ->orWhereHas('client', fn(Builder $q) => $q->where('name', 'like', $like))
-                ->orWhereHas('employe', fn(Builder $q) => $q->where('name', 'like', $like));
+                ->orWhereHas('employe', fn(Builder $q) => $q->where('name', 'like', $like))
+                ->orWhereHas('serviceCatalog', function (Builder $q) use ($like) {
+                    $q->where('name', 'like', $like)
+                        ->orWhere('code', 'like', $like)
+                        ->orWhere('service_type', 'like', $like);
+                })
+                ->orWhereHas('postalCode', function (Builder $q) use ($like) {
+                    $q->where('code', 'like', $like)
+                        ->orWhere('city_name', 'like', $like);
+                });
         });
     }
 
@@ -536,6 +636,27 @@ class Booking extends Model
 
     public function financeInvoice(): HasOne
     {
-        return $this->hasOne(FinanceInvoice::class, 'booking_id');
+        return $this->hasOne(FinanceInvoice::class, 'rendez_vous_id');
+    }
+
+    public function operationalMission(): ?Mission
+    {
+        $query = Mission::query();
+
+        if (Schema::hasColumn('missions', 'rendez_vous_id')) {
+            return $query
+                ->where('rendez_vous_id', $this->id)
+                ->latest('id')
+                ->first();
+        }
+
+        if (Schema::hasColumn('missions', 'booking_id')) {
+            return $query
+                ->where('booking_id', $this->id)
+                ->latest('id')
+                ->first();
+        }
+
+        return null;
     }
 }

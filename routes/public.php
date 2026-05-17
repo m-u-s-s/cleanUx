@@ -23,11 +23,7 @@ Route::post('/locale', function (Request $request) {
 
     if ($request->user()) {
         $request->user()->forceFill([
-            'locale' => match ($locale) {
-                'fr' => 'fr_BE',
-                'nl' => 'nl_BE',
-                'en' => 'en_US',
-            },
+            'locale' => $locale,
         ])->save();
     }
 

@@ -20,14 +20,14 @@ class DemoPlatformSeeder extends Seeder
             return;
         }
 
-        $admin = $this->seedUser('admin@cleanux.test', 'Admin CleanUx', 'admin', '+3225550000');
-        $companyContact = $this->seedUser('facilities@atlasfacilities.test', 'Atlas Facilities Manager', 'user', '+32471111222');
-        $premiumClient = $this->seedUser('premium.client@cleanux.test', 'Client Premium Bruxelles', 'user', '+32470000111');
-        $standardClient = $this->seedUser('client.standard@cleanux.test', 'Client Standard Gand', 'user', '+32470000999');
+        $admin = $this->seedUser('admin@cleanux.test', 'Admin CleanUx', 'admin', '+3225550000', 'admin');
+        $companyContact = $this->seedUser('facilities@atlasfacilities.test', 'Atlas Facilities Manager', 'user', '+32471111222', 'entreprise');
+        $premiumClient = $this->seedUser('premium.client@cleanux.test', 'Client Premium Bruxelles', 'user', '+32470000111', 'client');
+        $standardClient = $this->seedUser('client.standard@cleanux.test', 'Client Standard Gand', 'user', '+32470000999', 'client');
 
-        $brusselsProvider = $this->seedUser('bruxelles.team@cleanux.test', 'Prestataire Bruxelles', 'user', '+32461111111');
-        $gandProvider = $this->seedUser('gand.team@cleanux.test', 'Prestataire Gand', 'user', '+32462222222');
-        $anversProvider = $this->seedUser('anvers.team@cleanux.test', 'Prestataire Anvers', 'user', '+32463333333');
+        $brusselsProvider = $this->seedUser('bruxelles.team@cleanux.test', 'Prestataire Bruxelles', 'user', '+32461111111', 'employe');
+        $gandProvider = $this->seedUser('gand.team@cleanux.test', 'Prestataire Gand', 'user', '+32462222222', 'employe');
+        $anversProvider = $this->seedUser('anvers.team@cleanux.test', 'Prestataire Anvers', 'user', '+32463333333', 'employe');
 
         $this->seedCustomerProfile($premiumClient?->id, 'personal', 'premium', 'active', [
             'default_city' => 'Ixelles',
@@ -75,6 +75,14 @@ class DemoPlatformSeeder extends Seeder
         $this->seedOrganizationMember($providerOrg?->id, $gandProvider?->id, 'worker');
         $this->seedOrganizationMember($providerOrg?->id, $anversProvider?->id, 'worker');
 
+        // Rattache l'utilisateur entreprise à son compte pour satisfaire les
+        // contrôles de readiness (entreprise_users_without_account).
+        if ($companyContact && $clientOrg && \Illuminate\Support\Facades\Schema::hasColumn('users', 'organization_account_id')) {
+            \Illuminate\Support\Facades\DB::table('users')
+                ->where('id', $companyContact->id)
+                ->update(['organization_account_id' => $clientOrg->id]);
+        }
+
         $brusselsZone = $this->firstZone(['zone-bruxelles', 'belgique-couverture-nationale']);
         $gandZone = $this->firstZone(['zone-gand', 'belgique-couverture-nationale']);
 
@@ -107,6 +115,31 @@ class DemoPlatformSeeder extends Seeder
             'status' => 'active',
             'metadata' => ['site_code' => 'GNT-OPS', 'seeded' => true],
         ]);
+
+        // Assigne les employés aux zones (satisfait employees_without_active_zone_assignment).
+        $anversZone = $this->firstZone(['zone-anvers', 'belgique-couverture-nationale']) ?? $brusselsZone;
+        foreach (
+            [
+                [$brusselsProvider?->id, $brusselsZone?->id],
+                [$gandProvider?->id, $gandZone?->id],
+                [$anversProvider?->id, $anversZone?->id],
+            ] as [$userId, $zoneId]
+        ) {
+            if (! $userId || ! $zoneId) {
+                continue;
+            }
+            $this->updateOrInsertTable('employee_zone_assignments', [
+                'user_id' => $userId,
+                'service_zone_id' => $zoneId,
+            ], [
+                'user_id' => $userId,
+                'service_zone_id' => $zoneId,
+                'assignment_type' => 'primary',
+                'coverage_priority' => 100,
+                'is_active' => true,
+                'starts_at' => now(),
+            ]);
+        }
 
         $team = $this->seedProviderTeam($providerOrg?->id, 'Équipe Bruxelles', $brusselsProvider?->id, $brusselsZone?->id);
         $this->seedProviderTeamMember($team?->id, $brusselsProvider?->id, 'lead');
@@ -167,15 +200,30 @@ class DemoPlatformSeeder extends Seeder
             $this->seedFeedback($finishedBooking->id, $companyContact?->id, $clientOrg?->id);
         }
 
+        $anversZone = $this->firstZone(['zone-anvers', 'belgique-couverture-nationale']) ?? $brusselsZone;
+        $this->seedBooking('DEMO-ANV-001', $premiumClient, $anversProvider, $standardService, $anversZone, null, [
+            'date' => now()->addDays(5)->toDateString(),
+            'time' => '11:00:00',
+            'address' => 'Meir 1',
+            'city' => 'Anvers',
+            'postal_code' => '2000',
+            'place_type' => 'maison',
+            'frequency' => 'mensuel',
+            'status' => 'en_attente',
+            'legacy_status' => 'en_attente',
+            'price' => 99,
+        ]);
+
         $this->command?->info('✅ Données démo plateforme créées avec colonnes compatibles migrations.');
     }
 
-    protected function seedUser(string $email, string $name, string $platformRole, string $phone): ?object
+    protected function seedUser(string $email, string $name, string $platformRole, string $phone, ?string $role = null): ?object
     {
         return $this->updateOrInsertTable('users', ['email' => $email], [
             'name' => $name,
             'password' => Hash::make('password'),
             'phone' => $phone,
+            'role' => $role ?? ($platformRole === 'admin' ? 'admin' : 'client'),
             'platform_role' => $platformRole,
             'status' => 'active',
             'is_active' => true,
@@ -264,6 +312,12 @@ class DemoPlatformSeeder extends Seeder
     {
         if (! $organizationId) {
             return null;
+        }
+
+        if (empty($payload['postal_code_id']) && ! empty($payload['postal_code']) && \Illuminate\Support\Facades\Schema::hasTable('postal_codes')) {
+            $payload['postal_code_id'] = \Illuminate\Support\Facades\DB::table('postal_codes')
+                ->where('code', $payload['postal_code'])
+                ->value('id');
         }
 
         return $this->updateOrInsertTable('organization_sites', [
@@ -358,6 +412,13 @@ class DemoPlatformSeeder extends Seeder
         $duration = (int) ($service->default_duration_minutes ?? 90);
         $price = (float) ($payload['price'] ?? $service->base_price ?? 0);
 
+        $postalCodeId = null;
+        if (! empty($payload['postal_code']) && \Illuminate\Support\Facades\Schema::hasTable('postal_codes')) {
+            $postalCodeId = \Illuminate\Support\Facades\DB::table('postal_codes')
+                ->where('code', $payload['postal_code'])
+                ->value('id');
+        }
+
         return $this->updateOrInsertTable('bookings', ['booking_reference' => $reference], [
             'customer_user_id' => $client->id,
             'client_id' => $client->id,
@@ -365,6 +426,7 @@ class DemoPlatformSeeder extends Seeder
             'organization_site_id' => $site?->id,
             'service_catalog_id' => $service->id,
             'service_zone_id' => $zone?->id,
+            'postal_code_id' => $postalCodeId,
             'assigned_provider_user_id' => $provider?->id,
             'employe_id' => $provider?->id,
             'scheduled_date' => $payload['date'],
@@ -414,12 +476,21 @@ class DemoPlatformSeeder extends Seeder
 
     protected function seedFeedback(int $bookingId, ?int $clientId, ?int $organizationId): void
     {
-        $this->updateOrInsertTable('feedbacks', ['rendez_vous_id' => $bookingId], [
+        $table = \Illuminate\Support\Facades\Schema::hasTable('feedback')
+            ? 'feedback'
+            : (\Illuminate\Support\Facades\Schema::hasTable('feedbacks') ? 'feedbacks' : null);
+
+        if (! $table) {
+            return;
+        }
+
+        $this->updateOrInsertTable($table, ['rendez_vous_id' => $bookingId], [
             'booking_id' => $bookingId,
             'client_id' => $clientId,
             'client_user_id' => $clientId,
             'client_organization_id' => $organizationId,
             'note' => 5,
+            'rating' => 5,
             'commentaire' => 'Prestation très professionnelle et ponctuelle.',
             'feedback' => 'Prestation très professionnelle et ponctuelle.',
             'reponse_admin' => 'Merci pour votre confiance.',

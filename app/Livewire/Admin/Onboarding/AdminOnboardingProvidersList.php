@@ -222,10 +222,6 @@ class AdminOnboardingProvidersList extends Component
 
     public function render(): View
     {
-        $this->loadCounts();
-        $this->counts = $this->recalculateProviderOnboardingCountsStable();
-
-        $this->refreshProviderOnboardingCounts();
         return view('livewire.admin.onboarding.admin-onboarding-providers-list', [
             'providers' => $this->providers,
             'counts'    => $this->counts,
@@ -234,44 +230,28 @@ class AdminOnboardingProvidersList extends Component
 
     public function getCountsProperty(): array
     {
-        $hasOnboardingStatus = \Illuminate\Support\Facades\Schema::hasColumn('provider_profiles', 'onboarding_status');
-        $hasVerificationStatus = \Illuminate\Support\Facades\Schema::hasColumn('provider_profiles', 'verification_status');
+        $verifiedQuery = \App\Models\ProviderProfile::query()
+            ->where(function ($q) {
+                $q->where('verification_status', 'verified')
+                  ->orWhere('status', 'active')
+                  ->orWhereNotNull('onboarding_completed_at');
+            });
 
-        if ($hasOnboardingStatus) {
-            return [
-                'in_progress' => \App\Models\ProviderProfile::query()
-                    ->where('onboarding_status', 'in_progress')
-                    ->count(),
+        $readyQuery = \App\Models\ProviderProfile::query()
+            ->where('verification_status', '!=', 'verified')
+            ->whereNull('onboarding_completed_at')
+            ->where('onboarding_step', '>=', 5);
 
-                'ready' => \App\Models\ProviderProfile::query()
-                    ->where('onboarding_status', 'ready')
-                    ->count(),
-
-                'verified' => \App\Models\ProviderProfile::query()
-                    ->where(function ($query) use ($hasVerificationStatus) {
-                        $query->where('onboarding_status', 'verified');
-
-                        if ($hasVerificationStatus) {
-                            $query->orWhere('verification_status', 'verified');
-                        }
-                    })
-                    ->count(),
-            ];
-        }
-
+        $inProgressQuery = \App\Models\ProviderProfile::query()
+            ->where('verification_status', '!=', 'verified')
+            ->whereNull('onboarding_completed_at')
+            ->where('onboarding_step', '<', 5)
+            ->where('onboarding_step', '>=', 0);
 
         return [
-            'in_progress' => \App\Models\ProviderProfile::query()
-                ->whereIn('verification_status', ['in_progress', 'pending', 'unverified'])
-                ->count(),
-
-            'ready' => \App\Models\ProviderProfile::query()
-                ->where('verification_status', 'ready')
-                ->count(),
-
-            'verified' => \App\Models\ProviderProfile::query()
-                ->where('verification_status', 'verified')
-                ->count(),
+            'in_progress' => $inProgressQuery->count(),
+            'ready'       => $readyQuery->count(),
+            'verified'    => $verifiedQuery->count(),
         ];
     }
 

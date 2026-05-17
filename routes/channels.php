@@ -164,3 +164,4 @@ Broadcast::channel('providers.presence', function ($user) {
         method_exists($user, 'isPlatformAdmin') && $user->isPlatformAdmin()
     );
 });
+

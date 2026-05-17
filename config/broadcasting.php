@@ -80,6 +80,10 @@ return [
             'driver' => 'null',
         ],
 
+        'testing' => [
+            'driver' => 'testing',
+        ],
+
     ],
 
 ];

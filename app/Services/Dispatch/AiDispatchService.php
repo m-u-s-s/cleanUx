@@ -18,6 +18,7 @@ class AiDispatchService
     public function bestEmployeeFor(Booking $rdv): ?User
     {
         return $this->rankEmployees($rdv)->first()['employee'] ?? null;
+        
     }
 
     public function rankEmployees(Booking $rdv): Collection
@@ -31,20 +32,7 @@ class AiDispatchService
         return $this->availability
             ->sortedEligibleEmployeesForZone((int) $rdv->service_zone_id)
             ->filter(function (User $employee) use ($rdv) {
-                // Phase 11 — Pour les bookings ASAP, exiger que le prestataire
-                // soit ONLINE (sinon il ne recevra pas le push, l'offre va
-                // expirer en 15s et l'escalation va boucler dans le vide).
-                //
-                // Pour les bookings SCHEDULED, on accepte les prestataires
-                // offline : le push arrivera quand ils repasseront online,
-                // et la mission étant planifiée plus tard, ils auront le temps.
-                //
-                // BUG HISTORIQUE : la closure n'avait PAS de `return true`
-                // explicite en bas, ce qui faisait qu'elle retournait null
-                // (= falsy) pour tous les bookings non-ASAP, et le dispatch
-                // ne trouvait jamais aucun candidat pour les missions
-                // planifiées. Tout le flow Phase 11 était cassé pour
-                // scheduled. Fixé en mai 2026.
+                
                 if ($rdv->booking_mode === 'asap') {
                     $profile = $employee->providerProfile;
                     if (! $profile || ! $profile->is_online) {

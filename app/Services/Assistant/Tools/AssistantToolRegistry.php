@@ -45,14 +45,57 @@ class AssistantToolRegistry
      */
     public function toolsForUser(User $user): array
     {
-        $role  = $user->assistantContextRole();
-        $allow = $this->allowedToolNamesForRole($role);
+        $role         = $user->assistantContextRole();
         $allowedNames = $this->allowedToolNamesForRole($role);
+
+        $userRole = strtolower((string) ($user->role ?? ''));
+
+        if (in_array($userRole, [
+            'prestataire',
+            'provider',
+            'independent_provider',
+            'provider_independent',
+            'employe',
+            'employee',
+        ], true)) {
+            $allowedNames = [
+                'list_my_bookings',
+                'get_invoice',
+                'report_issue',
+            ];
+        }
+
+        $isCompanyClient = (bool) ($user->organization_account_id ?? null)
+            || in_array($userRole, [
+                'entreprise',
+                'enterprise',
+                'client_entreprise',
+                'company',
+                'client_company',
+                'b2b',
+            ], true);
+
+        if ($isCompanyClient) {
+            $allowedNames = array_values(array_unique(array_merge($allowedNames, [
+                'list_my_bookings',
+                'create_booking',
+                'cancel_booking',
+                'get_invoice',
+                'report_issue',
+                'list_my_sites',
+                'register_site',
+            ])));
+        } elseif (in_array($userRole, ['client', 'particulier', 'personal_client'], true)) {
+            $allowedNames = array_values(array_diff($allowedNames, [
+                'list_my_sites',
+                'register_site',
+            ]));
+        }
 
         $instances = [];
         foreach ($this->allTools as $cls) {
             $tool = app($cls);
-            if (! in_array($tool->name(), $allow, true)) {
+            if (! in_array($tool->name(), $allowedNames, true)) {
                 continue;
             }
             if (! $tool->authorize($user)) {
@@ -60,10 +103,7 @@ class AssistantToolRegistry
             }
             $instances[] = $tool;
         }
-        return array_values(array_filter(
-            $this->tools,
-            fn($tool) => in_array($tool->name(), $allowedNames, true)
-        ));
+
         return $instances;
     }
 
@@ -101,15 +141,11 @@ class AssistantToolRegistry
         $role = $role instanceof \BackedEnum ? $role->value : $role;
 
         return match ($role) {
-            'personal_client', 'client', 'client_personal' => [
-                'list_my_bookings',
-                'create_booking',
-                'cancel_booking',
-                'get_invoice',
-                'report_issue',
-            ],
-
-            'company_client', 'client_company', 'entreprise', 'client_entreprise' => [
+            'company_client',
+            'enterprise_client',
+            'entreprise',
+            'client_company',
+            'organization_client' => [
                 'list_my_bookings',
                 'create_booking',
                 'cancel_booking',
@@ -119,13 +155,29 @@ class AssistantToolRegistry
                 'register_site',
             ],
 
-            'provider_independent', 'provider', 'prestataire', 'employee', 'employe' => [
+            'provider',
+            'provider_independent',
+            'independent_provider',
+            'provider_company',
+            'prestataire',
+            'employee',
+            'employe' => [
                 'list_my_bookings',
                 'get_invoice',
                 'report_issue',
             ],
 
-            'admin', 'super_admin' => array_keys($this->tools),
+            'personal_client',
+            'client_personal',
+            'client',
+            'individual_client',
+            'particulier' => [
+                'list_my_bookings',
+                'create_booking',
+                'cancel_booking',
+                'get_invoice',
+                'report_issue',
+            ],
 
             default => [
                 'list_my_bookings',
@@ -133,5 +185,29 @@ class AssistantToolRegistry
                 'report_issue',
             ],
         };
+    }
+
+    private function normalizeAssistantRole(mixed $role): string
+    {
+        $parts = [];
+
+        if ($role instanceof \BackedEnum) {
+            $parts[] = (string) $role->value;
+            $parts[] = $role->name;
+        } elseif ($role instanceof \UnitEnum) {
+            $parts[] = $role->name;
+        } elseif (is_object($role)) {
+            $parts[] = class_basename($role);
+
+            if (method_exists($role, '__toString')) {
+                $parts[] = (string) $role;
+            }
+        } else {
+            $parts[] = (string) $role;
+        }
+
+        $text = strtolower(implode('_', array_filter($parts)));
+
+        return str_replace(['-', '.', ' ', '\\', ':'], '_', $text);
     }
 }

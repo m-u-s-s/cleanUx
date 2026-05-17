@@ -13,17 +13,19 @@ class FeedbackSeeder extends Seeder
 
     public function run(): void
     {
-        if (! Schema::hasTable('feedbacks') || ! Schema::hasTable('bookings')) {
+        $feedbackTable = Schema::hasTable('feedback') ? 'feedback' : (Schema::hasTable('feedbacks') ? 'feedbacks' : null);
+
+        if ($feedbackTable === null || ! Schema::hasTable('bookings')) {
             $this->command?->warn('⚠️ Tables feedbacks/bookings absentes, feedbacks ignorés.');
             return;
         }
 
         $rdvs = DB::table('bookings')
             ->whereIn('status', ['confirme', 'confirmed', 'termine', 'completed'])
-            ->whereNotExists(function ($query) {
+            ->whereNotExists(function ($query) use ($feedbackTable) {
                 $query->selectRaw('1')
-                    ->from('feedbacks')
-                    ->whereColumn('feedbacks.rendez_vous_id', 'bookings.id');
+                    ->from($feedbackTable)
+                    ->whereColumn("{$feedbackTable}.rendez_vous_id", 'bookings.id');
             })
             ->limit(10)
             ->get(['id', 'client_id', 'customer_user_id', 'customer_organization_id']);
@@ -51,7 +53,7 @@ class FeedbackSeeder extends Seeder
             ];
         }
 
-        $count = $this->insertTableRows('feedbacks', $rows);
+        $count = $this->insertTableRows($feedbackTable, $rows);
 
         $this->command?->info("✅ FeedbackSeeder exécuté : {$count} feedback(s) généré(s).");
     }

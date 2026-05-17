@@ -26,6 +26,8 @@ class ProviderProfile extends Model
         'skills',
         'settings',
         'metadata',
+        'bio',
+        'photo_path',
 
         'onboarding_step',
         'onboarding_completed_at',

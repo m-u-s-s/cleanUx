@@ -9,6 +9,8 @@ use App\Models\MissionQualityReview;
 use App\Models\User;
 use Carbon\Carbon;
 use Carbon\CarbonImmutable;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
@@ -48,43 +50,54 @@ class AnalyticsKpiService
      *   active_sites: array{value:int, total:int, label:string},
      * }
      */
-    public function mainKpis(?int $organizationAccountId, \Carbon\CarbonImmutable $from, \Carbon\CarbonImmutable $to): array
+    public function mainKpis(?int $organizationAccountId, CarbonImmutable $from, CarbonImmutable $to): array
     {
-        $base = $this->baseBookingQuery($organizationAccountId, $from, $to);
+        $baseQuery = Booking::query();
 
-        $totalBookings = (clone $base)->count();
+        $this->applyPeriod($baseQuery, $from, $to);
+        $this->applyOrganizationScope($baseQuery, $organizationAccountId);
 
-        $cancelledCount = (clone $base)
-            ->whereIn('status', $this->cancelledStatuses())
+        $totalBookings = (clone $baseQuery)->count();
+
+        $validQuery = clone $baseQuery;
+        $validQuery->whereNotIn('status', $this->nonCancelledStatuses());
+
+        $amountColumn = $this->bookingAmountColumn();
+
+        $revenue = $amountColumn
+            ? (float) (clone $validQuery)->sum($this->qualifyBookingColumn($amountColumn))
+            : 0.0;
+
+        $bookingsCount = (clone $validQuery)->count();
+
+        $cancelledCount = (clone $baseQuery)
+            ->whereIn('status', $this->nonCancelledStatuses())
             ->count();
 
-        $completedCount = (clone $base)
+        $completedCount = (clone $baseQuery)
             ->whereIn('status', $this->completedStatuses())
             ->count();
 
-        $amountColumn = $this->bookingAmountExpression();
-
-        $revenue = (clone $base)
-            ->whereNotIn('status', $this->cancelledStatuses())
-            ->sum(\Illuminate\Support\Facades\DB::raw($amountColumn));
-
         return [
             'revenue' => [
-                'value' => (float) $revenue,
+                'value' => round($revenue, 2),
             ],
             'bookings_count' => [
-                'value' => $totalBookings,
+                'value' => $bookingsCount,
             ],
             'cancellation_rate' => [
-                'value' => $totalBookings > 0 ? round(($cancelledCount / $totalBookings) * 100, 1) : 0.0,
+                'value' => $totalBookings > 0
+                    ? round(($cancelledCount / $totalBookings) * 100, 2)
+                    : 0.0,
             ],
             'completed_count' => [
                 'value' => $completedCount,
-                'completion_rate' => $totalBookings > 0 ? round(($completedCount / $totalBookings) * 100, 1) : 0.0,
+                'completion_rate' => $totalBookings > 0
+                    ? round(($completedCount / $totalBookings) * 100, 2)
+                    : 0.0,
             ],
         ];
     }
-
     // ──────────────────────────────────────────────────────
     // Séries temporelles pour graphiques
     // ──────────────────────────────────────────────────────
@@ -146,23 +159,20 @@ class AnalyticsKpiService
      */
     public function statusBreakdown(?int $organizationAccountId, CarbonImmutable $from, CarbonImmutable $to): Collection
     {
-        $cacheKey = $this->cacheKey('status_breakdown', $organizationAccountId, $from, $to);
+        $query = Booking::query();
 
-        return Cache::remember($cacheKey, self::CACHE_TTL, function () use ($organizationAccountId, $from, $to) {
-            $rows = $this->scopedBookingQuery($organizationAccountId)
-                ->selectRaw('status, COUNT(*) as count')
-                ->whereBetween('scheduled_date', [$from->toDateString(), $to->toDateString()])
-                ->groupBy('status')
-                ->orderByDesc('count')
-                ->get();
+        $this->applyPeriod($query, $from, $to);
+        $this->applyOrganizationScope($query, $organizationAccountId);
 
-            return $rows->map(fn($r) => [
-                'status' => $r->status,
-                'label'  => $this->statusLabel($r->status),
-                'count'  => (int) $r->count,
-                'color'  => $this->statusColor($r->status),
+        return $query
+            ->selectRaw('status, COUNT(*) as count')
+            ->groupBy('status')
+            ->orderBy('status')
+            ->get()
+            ->map(fn($row) => [
+                'status' => $row->status,
+                'count' => (int) $row->count,
             ]);
-        });
     }
 
     /**
@@ -172,28 +182,44 @@ class AnalyticsKpiService
      */
     public function topServices(?int $organizationAccountId, CarbonImmutable $from, CarbonImmutable $to, int $limit = 10): Collection
     {
-        $cacheKey = $this->cacheKey('top_services', $organizationAccountId, $from, $to, ['l' => $limit]);
+        $query = Booking::query();
 
-        return Cache::remember($cacheKey, self::CACHE_TTL, function () use ($organizationAccountId, $from, $to, $limit) {
-            return $this->scopedBookingQuery($organizationAccountId)
-                ->join('service_catalogs', 'service_catalogs.id', '=', 'bookings.service_catalog_id')
-                ->selectRaw('bookings.service_catalog_id as service_id')
-                ->selectRaw('service_catalogs.name as service_name')
-                ->selectRaw('COUNT(*) as count')
-                ->selectRaw('COALESCE(SUM(bookings.estimated_price), 0) as revenue')
-                ->whereBetween('bookings.scheduled_date', [$from->toDateString(), $to->toDateString()])
-                ->whereNotIn('bookings.status', ['annule', 'cancelled', 'refuse'])
-                ->groupBy('bookings.service_catalog_id', 'service_catalogs.name')
+        $this->applyPeriod($query, $from, $to);
+        $this->applyOrganizationScope($query, $organizationAccountId);
+
+        $table = $this->bookingTable();
+
+        if (Schema::hasColumn($table, 'service_catalog_id')) {
+            $query->leftJoin('service_catalogs', 'service_catalogs.id', '=', $table . '.service_catalog_id');
+
+            return $query
+                ->selectRaw('COALESCE(service_catalogs.name, "Service") as service_name, COUNT(*) as count')
+                ->groupBy('service_name')
                 ->orderByDesc('count')
                 ->limit($limit)
                 ->get()
-                ->map(fn($r) => [
-                    'service_id'   => (int) $r->service_id,
-                    'service_name' => (string) $r->service_name,
-                    'count'        => (int) $r->count,
-                    'revenue'      => (float) $r->revenue,
+                ->map(fn($row) => [
+                    'service_name' => (string) $row->service_name,
+                    'count' => (int) $row->count,
                 ]);
-        });
+        }
+
+        foreach (['type_service', 'service_type', 'service_name'] as $column) {
+            if (Schema::hasColumn($table, $column)) {
+                return $query
+                    ->selectRaw($this->qualifyBookingColumn($column) . ' as service_name, COUNT(*) as count')
+                    ->groupBy($this->qualifyBookingColumn($column))
+                    ->orderByDesc('count')
+                    ->limit($limit)
+                    ->get()
+                    ->map(fn($row) => [
+                        'service_name' => (string) $row->service_name,
+                        'count' => (int) $row->count,
+                    ]);
+            }
+        }
+
+        return collect();
     }
 
     /**
@@ -352,6 +378,7 @@ class AnalyticsKpiService
     // ──────────────────────────────────────────────────────
     // KPI calculators (private)
     // ──────────────────────────────────────────────────────
+
 
     private function revenueKpi(?int $orgId, CarbonImmutable $from, CarbonImmutable $to, CarbonImmutable $prevFrom, CarbonImmutable $prevTo): array
     {
@@ -541,10 +568,26 @@ class AnalyticsKpiService
         return implode(':', $parts);
     }
 
+    private function bookingTable(): string
+    {
+        return (new Booking())->getTable();
+    }
+
     private function bookingDateColumn(): string
     {
-        foreach (['scheduled_at', 'starts_at', 'rdv_at', 'date_rdv', 'rdv_date', 'date'] as $column) {
-            if (\Illuminate\Support\Facades\Schema::hasColumn('rendez_vous', $column)) {
+        $table = $this->bookingTable();
+
+        foreach (
+            [
+                'scheduled_date',
+                'date',
+                'rdv_date',
+                'jour',
+                'scheduled_at',
+                'created_at',
+            ] as $column
+        ) {
+            if (Schema::hasColumn($table, $column)) {
                 return $column;
             }
         }
@@ -552,38 +595,98 @@ class AnalyticsKpiService
         return 'created_at';
     }
 
-    private function bookingAmountExpression(): string
+    private function bookingAmountColumn(): ?string
     {
-        foreach (['total_amount', 'amount_total', 'prix_total', 'price_total', 'montant_total', 'total'] as $column) {
-            if (\Illuminate\Support\Facades\Schema::hasColumn('rendez_vous', $column)) {
+        $table = $this->bookingTable();
+
+        foreach (
+            [
+                'estimated_price',
+                'total_amount',
+                'montant_total',
+                'prix_total',
+                'amount',
+                'montant',
+                'prix',
+                'price',
+                'subtotal',
+            ] as $column
+        ) {
+            if (Schema::hasColumn($table, $column)) {
                 return $column;
             }
         }
 
-        return '0';
+        return null;
     }
 
-    private function baseBookingQuery(?int $organizationAccountId, \Carbon\CarbonImmutable $from, \Carbon\CarbonImmutable $to)
+    private function qualifyBookingColumn(string $column): string
     {
-        $dateColumn = $this->bookingDateColumn();
+        return $this->bookingTable() . '.' . $column;
+    }
 
-        $query = \App\Models\Booking::query()
-            ->whereBetween($dateColumn, [$from->startOfDay(), $to->endOfDay()]);
+    private function applyPeriod(
+        Builder $query,
+        CarbonImmutable $from,
+        CarbonImmutable $to
+    ): Builder {
+        $column = $this->bookingDateColumn();
+        $qualifiedColumn = $this->qualifyBookingColumn($column);
 
-        if ($organizationAccountId && \Illuminate\Support\Facades\Schema::hasColumn('rendez_vous', 'organization_account_id')) {
-            $query->where('organization_account_id', $organizationAccountId);
+        if (in_array($column, ['scheduled_at', 'created_at', 'updated_at'], true)) {
+            return $query->whereBetween($qualifiedColumn, [$from, $to]);
+        }
+
+        return $query
+            ->whereDate($qualifiedColumn, '>=', $from->toDateString())
+            ->whereDate($qualifiedColumn, '<=', $to->toDateString());
+    }
+
+    private function applyOrganizationScope(
+        Builder $query,
+        ?int $organizationAccountId
+    ): Builder {
+        if ($organizationAccountId === null) {
+            return $query;
+        }
+
+        $table = $this->bookingTable();
+
+        foreach (
+            [
+                'customer_organization_id',
+                'organization_account_id',
+                'organisation_account_id',
+                'client_organization_id',
+            ] as $column
+        ) {
+            if (Schema::hasColumn($table, $column)) {
+                return $query->where($this->qualifyBookingColumn($column), $organizationAccountId);
+            }
         }
 
         return $query;
     }
 
-    private function cancelledStatuses(): array
+    private function nonCancelledStatuses(): array
     {
-        return ['annule', 'annulé', 'cancelled', 'canceled', 'refuse', 'refusé'];
+        return [
+            'annule',
+            'annulé',
+            'cancelled',
+            'canceled',
+            'refuse',
+            'refusé',
+        ];
     }
 
     private function completedStatuses(): array
     {
-        return ['termine', 'terminé', 'completed', 'done'];
+        return [
+            'termine',
+            'terminé',
+            'completed',
+            'done',
+        ];
     }
 }
