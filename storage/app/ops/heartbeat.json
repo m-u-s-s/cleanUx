@@ -1,7 +1,7 @@
 {
     "app": "CleanUx",
     "env": "local",
-    "at": "2026-05-06T20:50:02+00:00",
-    "queue": "sync",
+    "at": "2026-05-17T17:46:22+00:00",
+    "queue": "database",
     "cache": "file"
 }

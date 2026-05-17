@@ -22,8 +22,17 @@ Route::post('/locale', function (Request $request) {
     app()->setLocale($locale);
 
     if ($request->user()) {
+        $current = (string) ($request->user()->locale ?? '');
+        $userLocale = $locale;
+        if (str_contains($current, '_')) {
+            $region = explode('_', $current, 2)[1] ?? '';
+            if ($region !== '') {
+                $userLocale = $locale . '_' . $region;
+            }
+        }
+
         $request->user()->forceFill([
-            'locale' => $locale,
+            'locale' => $userLocale,
         ])->save();
     }
 

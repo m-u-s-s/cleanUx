@@ -14259,3 +14259,76 @@ Stack trace:
 [2026-05-17 12:46:29] testing.WARNING: StripeConnectWebhook: STRIPE_CONNECT_WEBHOOK_SECRET non configuré  
 [2026-05-17 12:46:33] testing.INFO: MissionDispatchService: offre créée {"assignment_id":1,"mission_id":1,"provider_id":1,"expires_at":"2026-05-17T12:46:48+00:00"} 
 [2026-05-17 12:46:33] testing.INFO: MissionDispatchService: assignment accepté {"assignment_id":1,"response_seconds":0} 
+[2026-05-17 12:50:53] testing.WARNING: AnthropicProvider non-2xx {"status":400,"body":{"error":{"type":"invalid_request_error","message":"Bad model name"}}} 
+[2026-05-17 12:53:54] testing.WARNING: Money: pas de taux disponible EUR → XYZ  
+[2026-05-17 13:00:01] testing.INFO: Provider auto-offline (stale heartbeat) {"provider_user_id":1,"last_heartbeat_at":"2026-05-17T12:50:01+00:00"} 
+[2026-05-17 13:00:06] testing.INFO: MissionDispatchService: offre créée {"assignment_id":1,"mission_id":2,"provider_id":1,"expires_at":"2026-05-17T13:00:21+00:00"} 
+[2026-05-17 13:00:07] testing.INFO: MissionDispatchService: offre créée {"assignment_id":1,"mission_id":2,"provider_id":1,"expires_at":"2026-05-17T13:00:22+00:00"} 
+[2026-05-17 13:00:07] testing.INFO: MissionDispatchService: assignment accepté {"assignment_id":1,"response_seconds":0} 
+[2026-05-17 13:00:09] testing.INFO: MissionDispatchService: offre créée {"assignment_id":1,"mission_id":2,"provider_id":1,"expires_at":"2026-05-17T13:00:24+00:00"} 
+[2026-05-17 13:00:09] testing.INFO: MissionDispatchService: offre créée {"assignment_id":2,"mission_id":2,"provider_id":2,"expires_at":"2026-05-17T13:00:24+00:00"} 
+[2026-05-17 13:00:09] testing.INFO: MissionDispatchService: assignment accepté {"assignment_id":1,"response_seconds":0} 
+[2026-05-17 13:00:10] testing.INFO: MissionDispatchService: offre créée {"assignment_id":1,"mission_id":2,"provider_id":1,"expires_at":"2026-05-17T13:00:25+00:00"} 
+[2026-05-17 13:00:10] testing.INFO: MissionDispatchService: assignment refusé {"assignment_id":1,"reason":"too far","response_seconds":0} 
+[2026-05-17 13:00:10] testing.INFO: MissionDispatchService: aucun candidat trouvé {"mission_id":2} 
+[2026-05-17 13:00:11] testing.INFO: MissionDispatchService: offre créée {"assignment_id":1,"mission_id":2,"provider_id":1,"expires_at":"2026-05-17T13:00:26+00:00"} 
+[2026-05-17 13:00:12] testing.INFO: MissionDispatchService: offre créée {"assignment_id":1,"mission_id":2,"provider_id":1,"expires_at":"2026-05-17T13:00:27+00:00"} 
+[2026-05-17 13:00:12] testing.INFO: MissionDispatchService: assignment accepté {"assignment_id":1,"response_seconds":0} 
+[2026-05-17 13:00:13] testing.INFO: MissionDispatchService: offre créée {"assignment_id":1,"mission_id":2,"provider_id":1,"expires_at":"2026-05-17T13:00:28+00:00"} 
+[2026-05-17 13:00:13] testing.INFO: MissionDispatchService: assignment accepté {"assignment_id":1,"response_seconds":0} 
+[2026-05-17 13:00:52] testing.WARNING: StripeConnectWebhook: signature invalide {"error":"Unable to extract timestamp and signatures from header"} 
+[2026-05-17 13:00:53] testing.WARNING: StripeConnectWebhook: STRIPE_CONNECT_WEBHOOK_SECRET non configuré  
+[2026-05-17 13:01:19] testing.INFO: CancelBookingService: client cancellation {"booking_id":1,"fee_amount":50.0,"reason":"tier_2"} 
+[2026-05-17 13:02:20] testing.WARNING: StripeConnectWebhook: signature invalide {"error":"Unable to extract timestamp and signatures from header"} 
+[2026-05-17 13:02:21] testing.WARNING: StripeConnectWebhook: STRIPE_CONNECT_WEBHOOK_SECRET non configuré  
+[2026-05-17 13:02:24] testing.INFO: MissionDispatchService: offre créée {"assignment_id":1,"mission_id":1,"provider_id":1,"expires_at":"2026-05-17T13:02:39+00:00"} 
+[2026-05-17 13:02:24] testing.INFO: MissionDispatchService: assignment accepté {"assignment_id":1,"response_seconds":0} 
+[2026-05-17 16:36:12] testing.WARNING: Money: pas de taux disponible EUR → XYZ  
+[2026-05-17 16:41:11] testing.WARNING: AnthropicProvider non-2xx {"status":400,"body":{"error":{"type":"invalid_request_error","message":"Bad model name"}}} 
+[2026-05-17 16:44:45] testing.WARNING: Money: pas de taux disponible EUR → XYZ  
+[2026-05-17 16:45:56] testing.INFO: Provider auto-offline (stale heartbeat) {"provider_user_id":1,"last_heartbeat_at":"2026-05-17T16:35:56+00:00"} 
+[2026-05-17 16:46:00] testing.INFO: MissionDispatchService: offre créée {"assignment_id":1,"mission_id":2,"provider_id":1,"expires_at":"2026-05-17T16:46:15+00:00"} 
+[2026-05-17 16:46:01] testing.INFO: MissionDispatchService: offre créée {"assignment_id":1,"mission_id":2,"provider_id":1,"expires_at":"2026-05-17T16:46:16+00:00"} 
+[2026-05-17 16:46:01] testing.INFO: MissionDispatchService: assignment accepté {"assignment_id":1,"response_seconds":0} 
+[2026-05-17 16:46:02] testing.INFO: MissionDispatchService: offre créée {"assignment_id":1,"mission_id":2,"provider_id":1,"expires_at":"2026-05-17T16:46:17+00:00"} 
+[2026-05-17 16:46:02] testing.INFO: MissionDispatchService: offre créée {"assignment_id":2,"mission_id":2,"provider_id":2,"expires_at":"2026-05-17T16:46:17+00:00"} 
+[2026-05-17 16:46:02] testing.INFO: MissionDispatchService: assignment accepté {"assignment_id":1,"response_seconds":0} 
+[2026-05-17 16:46:03] testing.INFO: MissionDispatchService: offre créée {"assignment_id":1,"mission_id":2,"provider_id":1,"expires_at":"2026-05-17T16:46:18+00:00"} 
+[2026-05-17 16:46:04] testing.INFO: MissionDispatchService: assignment refusé {"assignment_id":1,"reason":"too far","response_seconds":0} 
+[2026-05-17 16:46:04] testing.INFO: MissionDispatchService: aucun candidat trouvé {"mission_id":2} 
+[2026-05-17 16:46:05] testing.INFO: MissionDispatchService: offre créée {"assignment_id":1,"mission_id":2,"provider_id":1,"expires_at":"2026-05-17T16:46:20+00:00"} 
+[2026-05-17 16:46:06] testing.INFO: MissionDispatchService: offre créée {"assignment_id":1,"mission_id":2,"provider_id":1,"expires_at":"2026-05-17T16:46:21+00:00"} 
+[2026-05-17 16:46:06] testing.INFO: MissionDispatchService: assignment accepté {"assignment_id":1,"response_seconds":0} 
+[2026-05-17 16:46:07] testing.INFO: MissionDispatchService: offre créée {"assignment_id":1,"mission_id":2,"provider_id":1,"expires_at":"2026-05-17T16:46:22+00:00"} 
+[2026-05-17 16:46:07] testing.INFO: MissionDispatchService: assignment accepté {"assignment_id":1,"response_seconds":0} 
+[2026-05-17 16:46:46] testing.WARNING: StripeConnectWebhook: signature invalide {"error":"Unable to extract timestamp and signatures from header"} 
+[2026-05-17 16:46:47] testing.WARNING: StripeConnectWebhook: STRIPE_CONNECT_WEBHOOK_SECRET non configuré  
+[2026-05-17 16:47:17] testing.INFO: CancelBookingService: client cancellation {"booking_id":1,"fee_amount":50.0,"reason":"tier_2"} 
+[2026-05-17 16:48:40] testing.WARNING: StripeConnectWebhook: signature invalide {"error":"Unable to extract timestamp and signatures from header"} 
+[2026-05-17 16:48:41] testing.WARNING: StripeConnectWebhook: STRIPE_CONNECT_WEBHOOK_SECRET non configuré  
+[2026-05-17 16:48:45] testing.INFO: MissionDispatchService: offre créée {"assignment_id":1,"mission_id":1,"provider_id":1,"expires_at":"2026-05-17T16:49:00+00:00"} 
+[2026-05-17 16:48:45] testing.INFO: MissionDispatchService: assignment accepté {"assignment_id":1,"response_seconds":0} 
+[2026-05-17 17:38:40] testing.WARNING: AnthropicProvider non-2xx {"status":400,"body":{"error":{"type":"invalid_request_error","message":"Bad model name"}}} 
+[2026-05-17 17:41:50] testing.WARNING: Money: pas de taux disponible EUR → XYZ  
+[2026-05-17 17:42:54] testing.INFO: Provider auto-offline (stale heartbeat) {"provider_user_id":1,"last_heartbeat_at":"2026-05-17T17:32:54+00:00"} 
+[2026-05-17 17:42:58] testing.INFO: MissionDispatchService: offre créée {"assignment_id":1,"mission_id":2,"provider_id":1,"expires_at":"2026-05-17T17:43:12+00:00"} 
+[2026-05-17 17:42:59] testing.INFO: MissionDispatchService: offre créée {"assignment_id":1,"mission_id":2,"provider_id":1,"expires_at":"2026-05-17T17:43:14+00:00"} 
+[2026-05-17 17:42:59] testing.INFO: MissionDispatchService: assignment accepté {"assignment_id":1,"response_seconds":0} 
+[2026-05-17 17:43:00] testing.INFO: MissionDispatchService: offre créée {"assignment_id":1,"mission_id":2,"provider_id":1,"expires_at":"2026-05-17T17:43:15+00:00"} 
+[2026-05-17 17:43:00] testing.INFO: MissionDispatchService: offre créée {"assignment_id":2,"mission_id":2,"provider_id":2,"expires_at":"2026-05-17T17:43:15+00:00"} 
+[2026-05-17 17:43:00] testing.INFO: MissionDispatchService: assignment accepté {"assignment_id":1,"response_seconds":0} 
+[2026-05-17 17:43:01] testing.INFO: MissionDispatchService: offre créée {"assignment_id":1,"mission_id":2,"provider_id":1,"expires_at":"2026-05-17T17:43:16+00:00"} 
+[2026-05-17 17:43:01] testing.INFO: MissionDispatchService: assignment refusé {"assignment_id":1,"reason":"too far","response_seconds":0} 
+[2026-05-17 17:43:01] testing.INFO: MissionDispatchService: aucun candidat trouvé {"mission_id":2} 
+[2026-05-17 17:43:02] testing.INFO: MissionDispatchService: offre créée {"assignment_id":1,"mission_id":2,"provider_id":1,"expires_at":"2026-05-17T17:43:17+00:00"} 
+[2026-05-17 17:43:04] testing.INFO: MissionDispatchService: offre créée {"assignment_id":1,"mission_id":2,"provider_id":1,"expires_at":"2026-05-17T17:43:19+00:00"} 
+[2026-05-17 17:43:04] testing.INFO: MissionDispatchService: assignment accepté {"assignment_id":1,"response_seconds":0} 
+[2026-05-17 17:43:05] testing.INFO: MissionDispatchService: offre créée {"assignment_id":1,"mission_id":2,"provider_id":1,"expires_at":"2026-05-17T17:43:20+00:00"} 
+[2026-05-17 17:43:05] testing.INFO: MissionDispatchService: assignment accepté {"assignment_id":1,"response_seconds":0} 
+[2026-05-17 17:43:44] testing.WARNING: StripeConnectWebhook: signature invalide {"error":"Unable to extract timestamp and signatures from header"} 
+[2026-05-17 17:43:45] testing.WARNING: StripeConnectWebhook: STRIPE_CONNECT_WEBHOOK_SECRET non configuré  
+[2026-05-17 17:44:12] testing.INFO: CancelBookingService: client cancellation {"booking_id":1,"fee_amount":50.0,"reason":"tier_2"} 
+[2026-05-17 17:45:14] testing.WARNING: StripeConnectWebhook: signature invalide {"error":"Unable to extract timestamp and signatures from header"} 
+[2026-05-17 17:45:15] testing.WARNING: StripeConnectWebhook: STRIPE_CONNECT_WEBHOOK_SECRET non configuré  
+[2026-05-17 17:45:19] testing.INFO: MissionDispatchService: offre créée {"assignment_id":1,"mission_id":1,"provider_id":1,"expires_at":"2026-05-17T17:45:34+00:00"} 
+[2026-05-17 17:45:19] testing.INFO: MissionDispatchService: assignment accepté {"assignment_id":1,"response_seconds":0} 
