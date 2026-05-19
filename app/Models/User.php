@@ -11,6 +11,7 @@ use App\Services\PermissionService;
 use App\Models\FieldTeam;
 use App\Models\Mission;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Illuminate\Contracts\Translation\HasLocalePreference;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -26,7 +27,7 @@ use Laravel\Sanctum\HasApiTokens;
 use App\Models\Concerns\HasLegacyRoleCompatibility;
 use Laravel\Cashier\Billable;
 
-class User extends Authenticatable implements MustVerifyEmail
+class User extends Authenticatable implements MustVerifyEmail, HasLocalePreference
 {
     use HasApiTokens;
     use HasFactory;
@@ -131,6 +132,16 @@ class User extends Authenticatable implements MustVerifyEmail
     public function providerProfile(): HasOne
     {
         return $this->hasOne(ProviderProfile::class);
+    }
+
+    public function availabilitySlots(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(AvailabilitySlot::class, 'provider_user_id');
+    }
+
+    public function availabilityExceptions(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(AvailabilityException::class, 'provider_user_id');
     }
 
     public function currentOrganization(): BelongsTo
@@ -508,6 +519,18 @@ class User extends Authenticatable implements MustVerifyEmail
             ->withTimestamps();
     }
 
+    /**
+     * Métiers (Trade) que cet utilisateur sait exécuter.
+     * Exploité par AiDispatchService pour ne proposer que les prestataires
+     * habilités au métier requis par la mission.
+     */
+    public function trades(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
+    {
+        return $this->belongsToMany(\App\Models\Trade::class, 'trade_user')
+            ->withPivot(['is_primary', 'proficiency', 'notes'])
+            ->withTimestamps();
+    }
+
     public function organizationSites(): \Illuminate\Database\Eloquent\Relations\HasMany
     {
         return $this->hasMany(\App\Models\OrganizationSite::class, 'organization_account_id', 'organization_account_id');
@@ -744,5 +767,21 @@ class User extends Authenticatable implements MustVerifyEmail
     public function primaryServiceZone()
     {
         return $this->belongsTo(\App\Models\ServiceZone::class, 'primary_service_zone_id');
+    }
+
+    /**
+     * Implémentation de HasLocalePreference — Laravel utilise cette méthode
+     * pour résoudre la locale lors de l'envoi de notifications/mails.
+     *
+     * Garantit que chaque destinataire reçoit le contenu dans SA langue
+     * (pas celle de la session de l'admin qui déclenche l'envoi).
+     */
+    public function preferredLocale(): ?string
+    {
+        $raw = $this->locale ?? null;
+        if (! $raw) {
+            return null;
+        }
+        return app(\App\Services\I18n\LocaleResolver::class)->normalize($raw);
     }
 }

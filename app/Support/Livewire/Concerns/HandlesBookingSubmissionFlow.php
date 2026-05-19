@@ -14,12 +14,22 @@ trait HandlesBookingSubmissionFlow
 {
     protected function rules(): array
     {
+        // Phase F3 — quand le Trade fournit un schema dynamique, les champs
+        // cleaning hardcodés deviennent NULLABLE : leur saisie est déléguée
+        // au schema (rendu via <x-trade-form-fields>) et leur validation est
+        // assurée par RendersTradeFormSchema::tradeFormAnswersRules().
+        $hasTradeSchema = method_exists($this, 'hasTradeFormSchema') && $this->hasTradeFormSchema();
+
+        $typeLieuRule  = $hasTradeSchema ? ['nullable', 'string', 'max:255'] : ['required', 'string', 'max:255'];
+        $frequenceRule = $hasTradeSchema ? ['nullable', 'string', 'max:255'] : ['required', 'string', 'max:255'];
+        $surfaceRule   = $hasTradeSchema ? ['nullable', 'string', 'max:255'] : ['required', Rule::in(array_keys($this->surfaces))];
+
         return [
             'selected_service_identifier' => ['required', 'string', 'max:255'],
             'booking_mode' => ['required', Rule::in(['scheduled', 'asap'])],
-            'type_lieu' => ['required', 'string', 'max:255'],
-            'frequence' => ['required', 'string', 'max:255'],
-            'surface' => ['required', Rule::in(array_keys($this->surfaces))],
+            'type_lieu' => $typeLieuRule,
+            'frequence' => $frequenceRule,
+            'surface' => $surfaceRule,
 
             'options_prestation' => ['nullable', 'array'],
             'zones_specifiques' => ['nullable', 'array'],
@@ -114,17 +124,21 @@ trait HandlesBookingSubmissionFlow
 
     protected function validateOnlyStep1(): void
     {
+        $hasTradeSchema = method_exists($this, 'hasTradeFormSchema') && $this->hasTradeFormSchema();
+
         $this->validate([
             'selected_service_identifier' => ['required', 'string', 'max:255'],
-            'type_lieu' => ['required', 'string', 'max:255'],
-            'frequence' => ['required', 'string', 'max:255'],
-            'surface' => ['required', Rule::in(array_keys($this->surfaces))],
+            'type_lieu' => $hasTradeSchema ? ['nullable', 'string', 'max:255'] : ['required', 'string', 'max:255'],
+            'frequence' => $hasTradeSchema ? ['nullable', 'string', 'max:255'] : ['required', 'string', 'max:255'],
+            'surface'   => $hasTradeSchema
+                ? ['nullable', 'string', 'max:255']
+                : ['required', Rule::in(array_keys($this->surfaces))],
         ]);
     }
 
     protected function validateOnlyStep2(): void
     {
-        $this->validate([
+        $legacyRules = [
             'options_prestation' => ['nullable', 'array'],
             'zones_specifiques' => ['nullable', 'array'],
             'materiel_specifique' => ['nullable', 'string', 'max:255'],
@@ -133,7 +147,14 @@ trait HandlesBookingSubmissionFlow
             'acces_parking' => ['boolean'],
             'materiel_fournit' => ['boolean'],
             'photos.*' => ['nullable', 'image', 'max:4096'],
-        ]);
+        ];
+
+        // Phase F3 — quand le Trade fournit un schema, valider ses answers ici
+        if (method_exists($this, 'hasTradeFormSchema') && $this->hasTradeFormSchema()) {
+            $legacyRules = array_merge($legacyRules, $this->tradeFormAnswersRules('tradeFormAnswers'));
+        }
+
+        $this->validate($legacyRules);
     }
 
     protected function validateOnlyStep3(): void

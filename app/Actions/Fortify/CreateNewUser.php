@@ -100,8 +100,37 @@ class CreateNewUser implements CreatesNewUsers
                 default => $this->createClientPersonal($user),
             };
 
+            $this->attachReferral($user, $input);
+
             return $user;
         });
+    }
+
+    private function attachReferral(User $user, array $input): void
+    {
+        $service = app(\App\Services\Promotion\ReferralService::class);
+
+        try {
+            $service->ensureReferralCode($user);
+        } catch (\Throwable $e) {
+            report($e);
+        }
+
+        $rawCode = $input['referral_code'] ?? $input['ref'] ?? null;
+        if (! $rawCode) {
+            return;
+        }
+
+        try {
+            $service->registerReferral(
+                referralCode: (string) $rawCode,
+                referee: $user,
+                sourceChannel: $input['referral_channel'] ?? 'signup',
+                ip: request()?->ip(),
+            );
+        } catch (\Throwable $e) {
+            report($e);
+        }
     }
 
     // ──────────────────────────────────────────────────────

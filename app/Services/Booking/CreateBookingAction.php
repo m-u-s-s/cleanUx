@@ -166,6 +166,8 @@ class CreateBookingAction
             'destination_lat' => Arr::get($data, 'destination_lat'),
             'destination_lng' => Arr::get($data, 'destination_lng'),
             'address_components' => Arr::get($data, 'address_components', []),
+            // Phase F2 — réponses au schema dynamique du Trade
+            'trade_form_answers' => Arr::get($data, 'trade_form_answers'),
         ]);
 
         if (! empty($data['organization_site_id'])) {
@@ -212,6 +214,14 @@ class CreateBookingAction
             'type' => 'booking',
             'status' => 'open',
         ]);
+
+        // Phase Promotions — appliquer un éventuel code promo AVANT les crédits
+        $promoCodeRaw = Arr::get($data, 'promo_code');
+        if (! empty($promoCodeRaw)) {
+            app(\App\Services\Promotion\BookingPromoCodeApplier::class)
+                ->applyToBooking($rendezVous, $client, (string) $promoCodeRaw);
+            $rendezVous->refresh();
+        }
 
         if ($client->activeCreditBalance() > 0) {
             app(\App\Services\Finance\CustomerCreditApplicationService::class)

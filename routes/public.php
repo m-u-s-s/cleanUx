@@ -75,6 +75,16 @@ Route::middleware(['auth', 'verified', 'active.account'])->group(function () {
 
 Route::get('/prendre-rendez-vous', PrendreRendezVous::class)->name('booking.create');
 
+if (class_exists(\App\Livewire\Public\ProviderPublicProfile::class)) {
+    Route::get('/providers/{provider}', \App\Livewire\Public\ProviderPublicProfile::class)
+        ->name('providers.show');
+}
+
+if (class_exists(\App\Livewire\Client\BrowseProviders::class)) {
+    Route::get('/prestataires', \App\Livewire\Client\BrowseProviders::class)
+        ->name('providers.browse.public');
+}
+
 Route::get('/terms-of-service', function () {
     return view()->exists('terms')
         ? view('terms')
@@ -97,3 +107,15 @@ Route::post('/stripe/webhook', [StripeWebhookController::class, 'handleWebhook']
 // Doit être listé dans VerifyCsrfToken::$except (déjà fait).
 Route::post('/webhooks/stripe-connect', [StripeConnectWebhookController::class, 'handle'])
     ->name('webhooks.stripe-connect');
+
+// Phase KYC v2 — Webhooks providers KYC (mock|onfido|veriff|sumsub)
+Route::post('/webhooks/kyc/{provider}', [\App\Http\Controllers\Webhooks\KycWebhookController::class, 'handle'])
+    ->name('webhooks.kyc');
+
+// Phase SMS v2 — Webhooks DLR SMS providers (mock|twilio|vonage)
+Route::post('/webhooks/sms/{provider}', [\App\Http\Controllers\Webhooks\SmsWebhookController::class, 'handle'])
+    ->name('webhooks.sms');
+
+// Phase Insurance v2 — Webhooks providers assurance (mock|hiscox|wakam)
+Route::post('/webhooks/insurance/{provider}', [\App\Http\Controllers\Webhooks\InsuranceWebhookController::class, 'handle'])
+    ->name('webhooks.insurance');

@@ -1,0 +1,17 @@
+<?php
+
+namespace App\Events\Disputes;
+
+use App\Models\ComplaintCase;
+use Illuminate\Foundation\Events\Dispatchable;
+use Illuminate\Queue\SerializesModels;
+
+class DisputeEscalated
+{
+    use Dispatchable;
+    use SerializesModels;
+
+    public function __construct(public ComplaintCase $case, public int $newLevel)
+    {
+    }
+}

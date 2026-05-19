@@ -20,6 +20,18 @@ Route::middleware(['role:client'])
             Route::get('/rendez-vous/nouveau', \App\Livewire\Client\PrendreRendezVous::class)->name('rendezvous.create');
         }
 
+        if (class_exists(\App\Livewire\Client\BrowseProviders::class)) {
+            Route::get('/prestataires', \App\Livewire\Client\BrowseProviders::class)->name('providers.browse');
+        }
+
+        if (class_exists(\App\Livewire\Client\GdprDataPage::class)) {
+            Route::get('/donnees', \App\Livewire\Client\GdprDataPage::class)->name('gdpr.data');
+        }
+
+        if (class_exists(\App\Livewire\Client\LoyaltyDashboard::class)) {
+            Route::get('/fidelite', \App\Livewire\Client\LoyaltyDashboard::class)->name('loyalty');
+        }
+
         if (class_exists(\App\Livewire\Client\MissionLiveTracking::class)) {
             Route::get('/missions/{mission}/tracking', \App\Livewire\Client\MissionLiveTracking::class)->name('missions.tracking');
         }
@@ -30,6 +42,10 @@ Route::middleware(['role:client'])
 
         if (class_exists(\App\Livewire\Conversations\ConversationPage::class)) {
             Route::get('/conversations/{conversation}', \App\Livewire\Conversations\ConversationPage::class)->name('conversations.show');
+        }
+
+        if (class_exists(\App\Livewire\Client\ReferralProgramPage::class)) {
+            Route::get('/parrainage', \App\Livewire\Client\ReferralProgramPage::class)->name('referrals');
         }
 
         if (class_exists(\App\Livewire\Client\WalletClient::class)) {

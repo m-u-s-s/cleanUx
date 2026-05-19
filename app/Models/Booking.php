@@ -110,6 +110,8 @@ class Booking extends Model
         'photos_avant',
         'photos_apres',
         'terrain_checklist',
+        // Phase F1 — réponses dynamiques au schema de formulaire du Trade
+        'trade_form_answers',
 
         // Snapshots
         'pricing_snapshot',
@@ -138,6 +140,14 @@ class Booking extends Model
         'payment_captured_at',
         'payment_cancelled_at',
         'payment_failed_at',
+        'payment_refunded_at',
+
+        // Stripe Connect & paiement (Phase Stripe v2)
+        'stripe_payment_intent_id',
+        'payment_status',
+        'payment_amount_cents',
+        'provider_amount_cents',
+        'platform_fee_cents',
 
         // Notifications tracking
         'rappel_24h_envoye_at',
@@ -235,6 +245,7 @@ class Booking extends Model
         'photos_reference'    => 'array',
         'photos_avant'        => 'array',
         'photos_apres'        => 'array',
+        'trade_form_answers'  => 'array',
         'terrain_checklist'   => 'array',
         'pricing_snapshot'    => 'array',
         'zone_snapshot'       => 'array',
@@ -419,6 +430,22 @@ class Booking extends Model
     public function serviceCatalog(): BelongsTo
     {
         return $this->belongsTo(ServiceCatalog::class);
+    }
+
+    /**
+     * Métier requis pour cette réservation, résolu via le ServiceCatalog.
+     * Null si le service n'est rattaché à aucun trade (back-compat phase de transition).
+     */
+    public function trade(): \Illuminate\Database\Eloquent\Relations\HasOneThrough
+    {
+        return $this->hasOneThrough(
+            Trade::class,
+            ServiceCatalog::class,
+            'id',                  // PK de service_catalogs
+            'id',                  // PK de trades
+            'service_catalog_id',  // FK locale (bookings)
+            'trade_id'             // FK intermédiaire (service_catalogs → trades)
+        );
     }
 
     public function serviceZone(): BelongsTo

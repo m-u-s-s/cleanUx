@@ -5,6 +5,7 @@ namespace App\Providers;
 use App\Models\Channel;
 use Illuminate\Support\ServiceProvider;
 use App\Models\Booking;
+use App\Observers\BookingObserver;
 use App\Observers\RendezVousObserver;
 use App\Policies\ChannelPolicy;
 use App\Services\Assistant\Llm\AnthropicProvider;
@@ -56,6 +57,7 @@ class AppServiceProvider extends ServiceProvider
 
         \Carbon\Carbon::setLocale('fr');
         Booking::observe(RendezVousObserver::class);
+        Booking::observe(BookingObserver::class);
         Gate::policy(Channel::class, ChannelPolicy::class);
     }
 }

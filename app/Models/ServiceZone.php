@@ -140,4 +140,16 @@ class ServiceZone extends Model
     {
         return $this->hasMany(Booking::class);
     }
+
+    public function tradeSettings(): HasMany
+    {
+        return $this->hasMany(TradeZoneSetting::class);
+    }
+
+    public function trades(): BelongsToMany
+    {
+        return $this->belongsToMany(Trade::class, 'trade_zone_settings')
+            ->withPivot(['is_active', 'price_multiplier', 'notes'])
+            ->withTimestamps();
+    }
 }

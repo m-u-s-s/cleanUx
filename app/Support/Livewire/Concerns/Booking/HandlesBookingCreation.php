@@ -176,6 +176,16 @@ trait HandlesBookingCreation
             'destination_lat' => $this->destination_lat,
             'destination_lng' => $this->destination_lng,
             'address_components' => $this->address_components,
+
+            // Phase F2 — réponses au schema dynamique du Trade (null si schema absent)
+            'trade_form_answers' => (property_exists($this, 'tradeFormAnswers') && ! empty($this->tradeFormAnswers))
+                ? $this->tradeFormAnswers
+                : null,
+
+            // Code promo saisi côté UI (validation/application déléguée à BookingPromoCodeApplier)
+            'promo_code' => property_exists($this, 'promo_code') && filled($this->promo_code)
+                ? (string) $this->promo_code
+                : null,
         ];
 
         $occurrencesCount = 1;
@@ -215,17 +225,27 @@ trait HandlesBookingCreation
                 return;
             }
 
-            $rendezVous = $this->bookingCreator()->execute(
-                client: Auth::user(),
-                postal: $postal,
-                zone: $zone,
-                catalog: $catalog,
-                rule: $rule,
-                assignedEmployee: $assignedEmployee,
-                data: $bookingData,
-                organizationSite: $organizationSite,
-                resolution: $resolution,
-            );
+            try {
+                $rendezVous = $this->bookingCreator()->execute(
+                    client: Auth::user(),
+                    postal: $postal,
+                    zone: $zone,
+                    catalog: $catalog,
+                    rule: $rule,
+                    assignedEmployee: $assignedEmployee,
+                    data: $bookingData,
+                    organizationSite: $organizationSite,
+                    resolution: $resolution,
+                );
+            } catch (ValidationException $exception) {
+                foreach ($exception->errors() as $field => $messages) {
+                    foreach ($messages as $message) {
+                        $this->addError($field, $message);
+                    }
+                }
+
+                return;
+            }
         }
 
         $rendezVous->load(['employe', 'organizationSite']);

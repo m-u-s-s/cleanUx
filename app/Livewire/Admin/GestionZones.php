@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Admin;
 
+use App\Support\Livewire\Concerns\Admin\ManagesTradeZoneSettings;
 use App\Support\Livewire\Concerns\Admin\ManagesZonesData;
 use App\Support\Livewire\Concerns\Admin\PerformsZoneManagementActions;
 use App\Models\ServiceZone;
@@ -12,9 +13,18 @@ use Livewire\Attributes\Layout;
 
 class GestionZones extends Component
 {
-    use ManagesZonesData;
+    use ManagesZonesData {
+        selectZone as protected selectZoneBase;
+    }
+    use ManagesTradeZoneSettings;
     use PerformsZoneManagementActions;
     use WithPagination;
+
+    public function selectZone(int $zoneId): void
+    {
+        $this->selectZoneBase($zoneId);
+        $this->loadTradeSettingsForZone($zoneId);
+    }
 
     public string $search = '';
     public string $statusFilter = '';

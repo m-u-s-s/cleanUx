@@ -12,6 +12,22 @@ Route::middleware(['role:employe'])
 
         Route::get('/', \App\Livewire\EmployeDashboard::class)->name('dashboard');
 
+        if (class_exists(\App\Livewire\Provider\ProviderRatingsPage::class)) {
+            Route::get('/avis', \App\Livewire\Provider\ProviderRatingsPage::class)->name('ratings');
+        }
+
+        if (class_exists(\App\Livewire\Provider\ProviderWalletPage::class)) {
+            Route::get('/portefeuille', \App\Livewire\Provider\ProviderWalletPage::class)->name('wallet');
+        }
+
+        if (class_exists(\App\Livewire\Provider\ProviderDisputesPage::class)) {
+            Route::get('/litiges', \App\Livewire\Provider\ProviderDisputesPage::class)->name('disputes');
+        }
+
+        if (class_exists(\App\Livewire\Provider\ProviderKycPage::class)) {
+            Route::get('/verification', \App\Livewire\Provider\ProviderKycPage::class)->name('kyc');
+        }
+
         if (class_exists(\App\Livewire\Employe\MissionsEmploye::class)) {
             Route::get('/missions', \App\Livewire\Employe\MissionsEmploye::class)->name('missions');
         }

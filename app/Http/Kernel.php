@@ -72,5 +72,8 @@ class Kernel extends HttpKernel
         'active.account' => \App\Http\Middleware\EnsureActiveAccount::class,
         'field.team.lead' => \App\Http\Middleware\EnsureFieldTeamLead::class,
         'assistant.ratelimit' => \App\Http\Middleware\AssistantRateLimit::class,
+        'api_scope' => \App\Http\Middleware\ApiTokensV2\EnforceTokenScope::class,
+        'api_token_throttle' => \App\Http\Middleware\ApiTokensV2\ThrottleByToken::class,
+        'api_token_audit' => \App\Http\Middleware\ApiTokensV2\LogTokenUsage::class,
     ];
 }

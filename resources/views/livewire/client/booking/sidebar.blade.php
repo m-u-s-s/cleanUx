@@ -36,6 +36,45 @@
             <div class="rounded-2xl bg-sky-50 p-4 border border-sky-100">
                 <p class="text-sm text-sky-700">Devis estimatif</p>
                 <p class="text-3xl font-extrabold text-sky-900 mt-1">{{ number_format((float) $devis_estime, 2, ',', ' ') }} €</p>
+                @if($promo_valid && $promo_discount_preview)
+                    <p class="text-xs text-emerald-700 mt-2">
+                        Avec code <span class="font-mono font-bold">{{ strtoupper($promo_code) }}</span> :
+                        <span class="font-bold">-{{ number_format((float) $promo_discount_preview, 2, ',', ' ') }} €</span>
+                    </p>
+                @endif
+            </div>
+
+            <div class="rounded-2xl bg-white border border-slate-200 p-4">
+                <label class="text-xs font-semibold uppercase text-slate-500">Code promo</label>
+                <div class="flex gap-2 mt-2">
+                    <input
+                        type="text"
+                        wire:model="promo_code"
+                        class="flex-1 rounded-xl border-gray-300 text-sm uppercase"
+                        placeholder="Ex: SUMMER25"
+                    />
+                    @if($promo_valid)
+                        <button type="button"
+                                wire:click="clearPromoCode"
+                                class="rounded-xl bg-slate-100 px-3 py-1 text-xs font-semibold hover:bg-slate-200">
+                            Retirer
+                        </button>
+                    @else
+                        <button type="button"
+                                wire:click="previewPromoCode"
+                                class="rounded-xl bg-indigo-600 px-3 py-1 text-xs font-semibold text-white hover:bg-indigo-700">
+                            Appliquer
+                        </button>
+                    @endif
+                </div>
+                @if($promo_message)
+                    <p class="text-xs mt-2 {{ $promo_valid ? 'text-emerald-700' : 'text-red-600' }}">
+                        {{ $promo_message }}
+                    </p>
+                @endif
+                @error('promo_code')
+                    <p class="text-xs mt-2 text-red-600">{{ $message }}</p>
+                @enderror
             </div>
             <div class="space-y-3 text-sm">
                 <div class="flex items-center justify-between gap-3"><span class="text-slate-500">Service</span><span class="font-semibold text-slate-800 text-right">{{ $selectedServiceLabel ?? ($services[$selected_service_identifier] ?? '—') }}</span></div>

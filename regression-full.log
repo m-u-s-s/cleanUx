@@ -1,0 +1,666 @@
+
+Deprecated: Method ReflectionMethod::setAccessible() is deprecated since 8.5, as it has no effect since PHP 8.1 in C:\Users\mmdar\Desktop\code\work\CleanUx\vendor\nunomaduro\collision\src\Adapters\Phpunit\ConfigureIO.php on line 37
+
+   PASS  Tests\Unit\RendezVousModelHelpersTest
+  ✓ search structured matches catalog name and postal code relation without legacy fallbacks                     2.90s  
+
+   PASS  Tests\Feature\AdminAnalyticsCenterExperienceTest
+  ✓ admin can render analytics center                                                                            2.00s  
+
+   PASS  Tests\Feature\Analytics\AnalyticsApiTest
+  ✓ track endpoint accepts anonymous event                                                                       1.74s  
+  ✓ track endpoint validates event required                                                                      1.82s  
+  ✓ track endpoint silently drops unknown event                                                                  1.76s  
+  ✓ track endpoint links user when authenticated                                                                 1.58s  
+  ✓ page endpoint forces page viewed                                                                             1.60s  
+  ✓ identify endpoint requires authentication                                                                    1.63s  
+  ✓ identify endpoint links anonymous events to user                                                             1.70s  
+
+   PASS  Tests\Feature\Analytics\AnalyticsFunnelTest
+  ✓ funnel computes counts and rates                                                                             1.76s  
+  ✓ funnel returns empty when no steps                                                                           1.67s  
+  ✓ funnel distinct users per step not inflated by duplicates                                                    1.64s  
+  ✓ cohort weekly groups users and measures retention                                                            1.74s  
+
+   PASS  Tests\Feature\Analytics\AnalyticsServiceTest
+  ✓ track creates event and session                                                                              1.67s  
+  ✓ track is idempotent with same key                                                                            1.70s  
+  ✓ track drops events not in whitelist                                                                          1.70s  
+  ✓ track skipped when analytics disabled                                                                        1.64s  
+  ✓ sanitize drops password token keys                                                                           1.76s  
+  ✓ sanitize hashes email and phone                                                                              1.63s  
+  ✓ sanitize truncates long strings                                                                              1.60s  
+  ✓ identify links anonymous events to user                                                                      1.56s  
+  ✓ session reused when within inactivity window                                                                 1.57s  
+  ✓ session rotated when expired                                                                                 1.55s  
+
+   PASS  Tests\Feature\Analytics\AnalyticsTest
+  ✓ resolver handles last 7d                                                                                     1.56s  
+  ✓ resolver handles this month                                                                                  1.61s  
+  ✓ resolver handles custom dates                                                                                1.62s  
+  ✓ resolver swaps inverted custom dates                                                                         1.59s  
+  ✓ resolver falls back for unknown preset                                                                       1.67s  
+  ✓ revenue kpi sums bookings in period                                                                          1.62s  
+  ✓ revenue kpi excludes cancelled bookings                                                                      1.57s  
+  ✓ cancellation rate kpi                                                                                        1.56s  
+  ✓ completion rate kpi                                                                                          1.79s  
+  ✓ monthly revenue returns continuous series                                                                    1.56s  
+  ✓ status breakdown returns grouped counts                                                                      1.57s  
+  ✓ top services orders by count desc                                                                            1.57s  
+  ✓ org scope isolates data between organizations                                                                1.58s  
+  ✓ kpis csv export returns streamed response                                                                    1.55s  
+  ✓ monthly revenue csv includes all months                                                                      1.55s  
+
+   PASS  Tests\Feature\Audit\AuditApiTest
+  ✓ index requires authentication                                                                                1.53s  
+  ✓ index returns recent events                                                                                  1.53s  
+  ✓ index filters by domain                                                                                      1.52s  
+  ✓ show returns event detail                                                                                    1.53s  
+  ✓ pin toggles is pinned flag                                                                                   1.53s  
+  ✓ export csv returns streamed response                                                                         1.52s  
+
+   PASS  Tests\Feature\Audit\AuditRedactionTest
+  ✓ drop keys are removed from context                                                                           1.52s  
+  ✓ hash keys are replaced with sha256 prefix                                                                    1.52s  
+  ✓ redaction walks nested arrays                                                                                1.53s  
+  ✓ clamp context size truncates oversized payload                                                               1.56s  
+  ✓ db regex rule redacts pattern matches                                                                        1.56s  
+  ✓ db rule scoped to other domain does not apply                                                                1.54s  
+
+   PASS  Tests\Feature\Audit\AuditRetentionTest
+  ✓ purge removes old general events                                                                             1.63s  
+  ✓ purge respects per domain retention                                                                          1.57s  
+  ✓ purge never removes pinned events                                                                            1.54s  
+  ✓ purge never removes critical severity                                                                        1.51s  
+  ✓ db policy overrides config default                                                                           1.52s  
+
+   PASS  Tests\Feature\Audit\AuditServiceTest
+  ✓ record creates event with inferred domain and severity                                                       1.51s  
+  ✓ record classifies severity from event type                                                                   1.59s  
+  ✓ record uses authenticated user as actor by default                                                           1.56s  
+  ✓ record explicit actor overrides authenticated                                                                1.52s  
+  ✓ record subject resolves type id label                                                                        1.52s  
+  ✓ record is idempotent with same key                                                                           1.53s  
+  ✓ record skipped when disabled                                                                                 1.51s  
+  ✓ record soft fail on exception                                                                                1.51s  
+  ✓ pin and unpin                                                                                                1.52s  
+
+   PASS  Tests\Feature\Availability\AvailabilityApiTest
+  ✓ index requires authentication                                                                                1.53s  
+  ✓ index returns only authenticated provider data                                                               1.52s  
+  ✓ store slot validates required fields                                                                         1.53s  
+  ✓ store slot rejects end before start                                                                          1.56s  
+  ✓ store slot creates record                                                                                    1.52s  
+  ✓ update slot rejects other provider                                                                           1.53s  
+  ✓ destroy slot removes record                                                                                  1.73s  
+  ✓ store exception requires times for partial                                                                   1.56s  
+  ✓ store exception closed does not require times                                                                1.53s  
+  ✓ windows endpoint returns iso intervals                                                                       1.53s  
+  ✓ ical endpoint returns text calendar                                                                          2.15s  
+
+   PASS  Tests\Feature\Availability\AvailabilityServiceTest
+  ✓ provider with no slots has no windows                                                                        1.63s  
+  ✓ weekly slot produces windows for matching weekday                                                            1.59s  
+  ✓ is available true within slot window                                                                         1.52s  
+  ✓ is available false outside slot window                                                                       1.52s  
+  ✓ closed exception blocks entire day                                                                           1.52s  
+  ✓ partial exception subtracts time range                                                                       1.54s  
+  ✓ open override replaces slot for that day                                                                     1.52s  
+  ✓ active hold blocks is available                                                                              1.54s  
+  ✓ create hold is idempotent                                                                                    1.54s  
+  ✓ release hold marks released at                                                                               1.53s  
+  ✓ cleanup expired holds marks released                                                                         1.51s  
+
+   PASS  Tests\Feature\Disputes\DisputeApiTest
+  ✓ client can open dispute via api                                                                              1.72s  
+  ✓ client cannot view other users dispute                                                                       1.59s  
+  ✓ client can message their dispute                                                                             1.64s  
+  ✓ index only returns own disputes                                                                              1.63s  
+
+   PASS  Tests\Feature\Disputes\DisputeLifecycleTest
+  ✓ client can open dispute                                                                                      1.57s  
+  ✓ client cannot open for other users booking                                                                   1.58s  
+  ✓ full lifecycle open assign message resolve                                                                   1.68s  
+  ✓ message after resolution is rejected                                                                         1.62s  
+  ✓ provider message transitions from awaiting provider to investigating                                         1.63s  
+  ✓ escalate increments level and changes due at                                                                 1.56s  
+  ✓ event visibility filters for provider                                                                        1.64s  
+
+   PASS  Tests\Feature\Disputes\DisputeResolutionTest
+  ✓ credit resolution creates nominative promo code                                                              1.60s  
+  ✓ refund partial requires amount                                                                               1.58s  
+  ✓ dismiss marks resolved without action                                                                        1.68s  
+  ✓ no action resolution records decision                                                                        1.62s  
+
+   PASS  Tests\Feature\Disputes\DisputeSlaTest
+  ✓ urgent priority yields shorter sla                                                                           1.52s  
+  ✓ critical severity halves sla                                                                                 1.53s  
+  ✓ find overdue for escalation picks correct cases                                                              1.55s  
+  ✓ resolved dispute is not considered overdue                                                                   1.56s  
+
+   PASS  Tests\Feature\Fx\FxApiTest
+  ✓ currencies endpoint returns active currencies                                                                1.55s  
+  ✓ rates endpoint validates quotes                                                                              1.53s  
+  ✓ rates endpoint returns rates                                                                                 1.60s  
+  ✓ convert endpoint validates required fields                                                                   1.60s  
+  ✓ convert endpoint returns target amount                                                                       1.54s  
+  ✓ convert endpoint is idempotent with key                                                                      1.54s  
+
+   PASS  Tests\Feature\Fx\FxProvidersTest
+  ✓ mock provider returns eur to usd rate                                                                        0.05s  
+  ✓ mock provider cross rate via eur                                                                             0.05s  
+  ✓ mock provider returns empty on fail trigger                                                                  0.05s  
+  ✓ mock provider returns identity for same quote                                                                0.05s  
+  ✓ mock provider returns inverted for eur quote from other base                                                 0.05s  
+
+   PASS  Tests\Feature\Fx\FxServiceTest
+  ✓ get rate returns identity for same currency                                                                  1.53s  
+  ✓ get rate fetches from mock provider and persists                                                             1.52s  
+  ✓ get rate reuses fresh db row within ttl                                                                      1.54s  
+  ✓ get rate refetches when db row stale                                                                         1.54s  
+  ✓ get rate uses fallback when quote not supported                                                              1.55s  
+  ✓ convert creates currency conversion record                                                                   1.61s  
+  ✓ convert applies fee percent                                                                                  1.59s  
+  ✓ convert is idempotent                                                                                        1.58s  
+  ✓ convert same currency is identity                                                                            1.54s  
+  ✓ refresh all creates rates for each active currency                                                           1.54s  
+  ✓ get rate caches result                                                                                       1.53s  
+
+   PASS  Tests\Feature\Gdpr\DataErasureServiceTest
+  ✓ schedule creates pending request with grace period                                                           1.54s  
+  ✓ cancel reverts user deletion scheduled                                                                       1.56s  
+  ✓ execute anonymizes user and preserves bookings                                                               1.59s  
+  ✓ execute before grace period throws                                                                           1.55s  
+  ✓ restrict processing marks user                                                                               1.60s  
+  ✓ lift restriction clears flag                                                                                 1.67s  
+
+   PASS  Tests\Feature\Gdpr\DataExportServiceTest
+  ✓ collect for returns profile and bookings                                                                     2.16s  
+  ✓ execute writes json file and marks fulfilled                                                                 1.55s  
+  ✓ execute rejects wrong request type                                                                           1.63s  
+
+   PASS  Tests\Feature\Gdpr\GdprApiTest
+  ✓ request export creates and fulfills request                                                                  1.64s  
+  ✓ request erasure requires confirm                                                                             1.59s  
+  ✓ request erasure with confirm schedules it                                                                    1.66s  
+  ✓ cannot request erasure twice simultaneously                                                                  1.56s  
+  ✓ index returns user requests only                                                                             1.54s  
+  ✓ cancel erasure endpoint                                                                                      1.55s  
+  ✓ cancel forbidden cross user                                                                                  1.52s  
+
+   PASS  Tests\Feature\Gdpr\RetentionPolicyTest
+  ✓ old activity logs are purged                                                                                 1.54s  
+  ✓ unread notifications are not purged                                                                          1.54s  
+
+   PASS  Tests\Feature\I18n\LocaleFormatterTest
+  ✓ currency formatted in french uses comma decimal                                                              0.05s  
+  ✓ currency formatted in english uses dot decimal                                                               0.05s  
+  ✓ currency formatted in german uses dot thousand separator fallback                                            0.05s  
+  ✓ number uses locale specific decimals                                                                         0.05s  
+  ✓ date returns non empty for known locale                                                                      0.05s  
+  ✓ null returns empty string                                                                                    0.05s  
+
+   PASS  Tests\Feature\I18n\LocaleListApiTest
+  ✓ endpoint returns locales with metadata                                                                       0.06s  
+
+   PASS  Tests\Feature\I18n\LocaleResolverTest
+  ✓ supported codes includes new european locales                                                                1.52s  
+  ✓ disabled locales excluded from supported                                                                     1.53s  
+  ✓ normalize handles regional variants                                                                          1.55s  
+  ✓ resolve for user returns default when no user locale                                                         1.51s  
+  ✓ resolve for user normalizes user locale                                                                      1.53s  
+  ✓ parse accept language picks highest quality supported                                                        1.73s  
+  ✓ available for switcher returns sorted locales                                                                1.56s  
+  ✓ user persisted format returns bcp47 like                                                                     1.53s  
+
+   PASS  Tests\Feature\I18n\NotificationLocaleTest
+  ✓ user implements has locale preference                                                                        1.54s  
+  ✓ preferred locale returns null when empty string                                                              1.64s  
+  ✓ preferred locale returns null when unsupported                                                               1.56s  
+  ✓ app locale unchanged after send to other locale user                                                         1.56s  
+
+   PASS  Tests\Feature\I18n\TranslationOverrideLoaderTest
+  ✓ db override takes priority over file                                                                         1.53s  
+  ✓ override unpublished is not applied                                                                          1.53s  
+  ✓ override deleted falls back to file                                                                          1.52s  
+
+   PASS  Tests\Feature\Insurance\InsuranceApiTest
+  ✓ plans endpoint lists available plans                                                                         1.56s  
+  ✓ purchase endpoint requires auth                                                                              1.52s  
+  ✓ purchase endpoint creates insurance                                                                          1.55s  
+  ✓ purchase endpoint validates plan code                                                                        1.63s  
+  ✓ index endpoint returns only user insurances                                                                  1.60s  
+  ✓ cancel endpoint rejects other user                                                                           1.58s  
+  ✓ cancel endpoint marks cancelled                                                                              1.54s  
+  ✓ file claim endpoint creates claim                                                                            1.65s  
+  ✓ file claim endpoint validates fields                                                                         1.56s  
+
+   PASS  Tests\Feature\Insurance\InsurancePricingEngineTest
+  ✓ compute premium basic formula                                                                                1.71s  
+  ✓ compute premium clamps to min                                                                                1.67s  
+  ✓ compute premium clamps to max                                                                                1.54s  
+  ✓ get available plans for booking returns all active                                                           1.53s  
+  ✓ get available plans includes premium amount                                                                  1.54s  
+  ✓ inactive plan excluded                                                                                       1.53s  
+  ✓ trade restricted plan excludes unrelated bookings                                                            1.56s  
+
+   PASS  Tests\Feature\Insurance\InsuranceServiceTest
+  ✓ purchase creates active insurance with mock provider                                                         1.55s  
+  ✓ purchase is idempotent with same booking and plan                                                            1.57s  
+  ✓ purchase rejects unknown plan                                                                                1.58s  
+  ✓ purchase handles provider failure                                                                            1.57s  
+  ✓ cancel marks status cancelled                                                                                1.60s  
+  ✓ file claim creates claim with under review status                                                            1.55s  
+  ✓ file claim rejects amount above coverage                                                                     1.81s  
+  ✓ file claim rejects incident outside window                                                                   1.64s  
+  ✓ file claim fraud simulation yields rejected                                                                  1.66s  
+  ✓ apply webhook update claim paid                                                                              1.69s  
+  ✓ apply webhook update policy cancelled                                                                        1.55s  
+
+   PASS  Tests\Feature\Insurance\InsuranceWebhookTest
+  ✓ unknown provider returns 404                                                                                 1.55s  
+  ✓ mock webhook stores event and dispatches job                                                                 1.77s  
+  ✓ duplicate webhook event not redispatched                                                                     1.58s  
+  ✓ processing webhook applies status to existing policy                                                         1.58s  
+  ✓ processing webhook unknown target marks ignored                                                              1.53s  
+
+   PASS  Tests\Feature\Kyc\KycApiTest
+  ✓ start endpoint creates verification                                                                          1.63s  
+  ✓ status endpoint returns latest verification                                                                  1.55s  
+  ✓ status returns false when no verification                                                                    1.57s  
+  ✓ sync forbidden for other user verification                                                                   1.54s  
+
+   PASS  Tests\Feature\Kyc\KycLifecycleTest
+  ✓ start creates verification and marks in review                                                               1.54s  
+  ✓ sync with clear result auto approves provider profile                                                        1.56s  
+  ✓ sync rejected user marks profile rejected                                                                    1.55s  
+  ✓ manual review email keeps profile pending                                                                    1.53s  
+  ✓ admin can manually approve                                                                                   1.56s  
+  ✓ admin can manually reject                                                                                    1.57s  
+
+   PASS  Tests\Feature\Kyc\KycWebhookTest
+  ✓ unknown provider returns 404                                                                                 1.53s  
+  ✓ mock webhook stores event and dispatches job                                                                 1.53s  
+  ✓ duplicate webhook event id is not redispatched                                                               1.59s  
+  ✓ apply webhook payload updates matching verification                                                          1.62s  
+
+   PASS  Tests\Feature\Localization\LocalizationTest
+  ✓ query param lang takes priority                                                                              1.55s  
+  ✓ invalid query lang is ignored                                                                                1.71s  
+  ✓ authenticated user locale is used                                                                            1.54s  
+  ✓ accept language header is detected                                                                           1.54s  
+  ✓ accept language quality is respected                                                                         1.54s  
+  ✓ default falls back to french                                                                                 1.54s  
+  ✓ authenticated user can change language                                                                       1.54s  
+  ✓ invalid locale is rejected                                                                                   1.56s  
+  ✓ anonymous visitor can change language via session                                                            1.54s  
+  ✓ money formats eur with french locale                                                                         1.62s  
+  ✓ money formats usd with english locale                                                                        1.54s  
+  ✓ money falls back to eur for unknown currency                                                                 1.53s  
+  ✓ money supported list includes eur usd gbp                                                                    1.53s  
+  ✓ money symbol returns correct symbol                                                                          1.53s  
+  ✓ conversion same currency returns amount unchanged                                                            1.52s  
+  ✓ conversion uses seeded rate                                                                                  1.53s  
+  ✓ conversion inverse rate works                                                                                1.53s  
+  ✓ conversion fallback when no rate returns amount                                                              1.52s  
+  ✓ translations are loaded for all locales                                                                      1.66s  
+  ✓ status translations in french                                                                                1.54s  
+  ✓ status translations in dutch                                                                                 1.65s  
+
+   PASS  Tests\Feature\Loyalty\LoyaltyApiTest
+  ✓ me endpoint returns account summary                                                                          1.63s  
+  ✓ transactions endpoint returns user only                                                                      1.55s  
+
+   PASS  Tests\Feature\Loyalty\LoyaltyHooksTest
+  ✓ completing a booking awards loyalty points                                                                   1.59s  
+  ✓ booking completion is idempotent on repeated saves                                                           1.58s  
+
+   PASS  Tests\Feature\Loyalty\LoyaltyServiceTest
+  ✓ account for creates with bronze tier                                                                         1.55s  
+  ✓ account for is idempotent                                                                                    1.55s  
+  ✓ award increments lifetime and period points                                                                  1.54s  
+  ✓ award idempotency blocks duplicate                                                                           1.56s  
+  ✓ award triggers tier upgrade                                                                                  1.57s  
+  ✓ award with tier multiplier applies                                                                           1.57s  
+  ✓ admin adjust credits or debits                                                                               1.55s  
+  ✓ award booking points calculates from amount                                                                  1.56s  
+
+   PASS  Tests\Feature\Marketing\CampaignEngineTest
+  ✓ schedule creates one recipient per member per step                                                           1.56s  
+  ✓ schedule marks opted out recipients                                                                          1.54s  
+  ✓ schedule drip sequences increments scheduled for                                                             1.54s  
+  ✓ schedule assigns ab variant deterministically                                                                1.54s  
+  ✓ dispatch one sends email and marks sent                                                                      1.55s  
+  ✓ dispatch re checks opt out at send time                                                                      1.53s  
+  ✓ cancel marks queued recipients skipped                                                                       1.75s  
+
+   PASS  Tests\Feature\Marketing\MarketingApiTest
+  ✓ preferences endpoint requires auth                                                                           1.59s  
+  ✓ preferences endpoint returns default state                                                                   1.61s  
+  ✓ opt out endpoint persists and reflects in preferences                                                        1.53s  
+  ✓ opt out endpoint validates channel enum                                                                      1.53s  
+  ✓ opt in endpoint removes opt out                                                                              1.54s  
+  ✓ opt out endpoint cross user isolation                                                                        1.64s  
+
+   PASS  Tests\Feature\Marketing\OptOutServiceTest
+  ✓ opt out email creates record                                                                                 1.54s  
+  ✓ opt out all channel covers all sub channels                                                                  1.53s  
+  ✓ opt out idempotent same channel                                                                              1.53s  
+  ✓ opt in removes record                                                                                        1.54s  
+  ✓ preferences returns full state                                                                               1.52s  
+
+   PASS  Tests\Feature\Marketing\SegmentEngineTest
+  ✓ compute empty rules yields zero members                                                                      1.53s  
+  ✓ eq role client matches only clients                                                                          1.53s  
+  ✓ and combines constraints                                                                                     1.53s  
+  ✓ or unions constraints                                                                                        1.53s  
+  ✓ older than days matches old accounts                                                                         1.52s  
+  ✓ unknown field yields zero members                                                                            1.53s  
+  ✓ unknown operator yields zero members                                                                         1.53s  
+  ✓ in operator matches set                                                                                      1.62s  
+  ✓ preview returns count and sample                                                                             1.63s  
+  ✓ recompute replaces members                                                                                   1.53s  
+
+   PASS  Tests\Feature\Matching\MatchingScoreEngineTest
+  ✓ score returns breakdown with all dimensions                                                                  1.56s  
+  ✓ higher rating yields higher score                                                                            1.54s  
+  ✓ primary zone gives max zone score                                                                            1.54s  
+  ✓ acceptance metric influences score                                                                           1.55s  
+  ✓ total score bounded 0 100                                                                                    1.55s  
+
+   PASS  Tests\Feature\Matching\MatchingV2ServiceTest
+  ✓ rank candidates returns sorted by score desc                                                                 1.57s  
+  ✓ best for records decision with breakdown                                                                     1.54s  
+  ✓ returns null when no zone                                                                                    1.54s  
+  ✓ fallback returns below threshold when no match                                                               1.54s  
+
+   PASS  Tests\Feature\Matching\ProviderPerformanceCalculatorTest
+  ✓ calculates acceptance rate from assignments                                                                  1.55s  
+  ✓ rating window only counts published feedbacks                                                                1.53s  
+  ✓ upsert replaces existing period end row                                                                      1.53s  
+
+   PASS  Tests\Feature\Messaging\ReactionAndSearchTest
+  ✓ toggle reaction adds then removes                                                                            1.59s  
+  ✓ two users can react with same emoji independently                                                            1.55s  
+  ✓ invalid empty emoji throws                                                                                   1.59s  
+  ✓ search messages with like fallback                                                                           1.57s  
+  ✓ top level scope excludes replies                                                                             1.56s  
+
+   PASS  Tests\Feature\NotificationPreferences\NotificationPreferenceApiTest
+  ✓ show requires auth                                                                                           1.72s  
+  ✓ show returns default matrix                                                                                  1.56s  
+  ✓ update single preference                                                                                     1.53s  
+  ✓ update rejects forced on pair optout                                                                         1.53s  
+  ✓ update validates channel and category                                                                        1.54s  
+  ✓ bulk update                                                                                                  1.52s  
+  ✓ audit endpoint returns user history                                                                          1.54s  
+  ✓ audit endpoint cross user isolation                                                                          1.54s  
+
+   PASS  Tests\Feature\NotificationPreferences\NotificationPreferenceServiceTest
+  ✓ is allowed returns default when no row                                                                       1.54s  
+  ✓ is allowed returns user value when row exists                                                                1.55s  
+  ✓ set preference creates row and audit                                                                         1.53s  
+  ✓ set preference increments version on change                                                                  1.54s  
+  ✓ set preference blocked for forced on pair                                                                    1.52s  
+  ✓ set preference allowed for forced on pair when turning on                                                    1.52s  
+  ✓ get preferences returns full matrix                                                                          1.52s  
+  ✓ apply defaults creates full matrix                                                                           1.51s  
+  ✓ apply defaults is idempotent                                                                                 1.53s  
+  ✓ set many processes bulk skipping forced on                                                                   1.56s  
+  ✓ sync to external modules propagates to push device tokens                                                    1.52s  
+  ✓ sync to external modules propagates marketing optout                                                         1.66s  
+  ✓ sync to external modules removes marketing optout when re enabled                                            1.62s  
+
+   PASS  Tests\Feature\Payments\StripeReconciliationServiceTest
+  ✓ run creates record even without stripe credentials                                                           1.56s  
+  ✓ run records period correctly                                                                                 1.53s  
+
+   PASS  Tests\Feature\Payments\StripeWebhookControllerTest
+  ✓ invalid signature returns 400                                                                                1.52s  
+  ✓ missing secret returns 500                                                                                   1.54s  
+  ✓ valid event is stored and dispatched                                                                         1.69s  
+  ✓ replayed event is not redispatched                                                                           1.58s  
+
+   PASS  Tests\Feature\Payments\StripeWebhookIdempotenceTest
+  ✓ storing same event id twice creates only one row                                                             1.57s  
+  ✓ dead letter after max attempts                                                                               1.52s  
+  ✓ due for retry scope finds retryable                                                                          1.66s  
+  ✓ processor marks event as processed when handled                                                              1.56s  
+  ✓ processor is noop on terminal event                                                                          1.52s  
+
+   PASS  Tests\Feature\Phase14\Phase14Test
+  ✓ approve onboarding requires identity and insurance                                                           1.53s  
+
+   PASS  Tests\Feature\Promotion\PromoCodeApiTest
+  ✓ validate endpoint returns discount for valid code                                                            1.53s  
+  ✓ validate endpoint returns 422 for invalid code                                                               1.53s  
+  ✓ referrals me returns user stats                                                                              1.52s  
+
+   PASS  Tests\Feature\Promotion\PromoCodeApplicationTest
+  ✓ apply creates redemption and increments total uses                                                           1.54s  
+  ✓ apply updates campaign totals                                                                                1.54s  
+  ✓ revert decrements usage counters                                                                             1.64s  
+
+   PASS  Tests\Feature\Promotion\PromoCodeValidationTest
+  ✓ invalid code returns not found                                                                               1.61s  
+  ✓ active percent code returns correct discount                                                                 1.54s  
+  ✓ fixed amount code caps at booking amount                                                                     1.52s  
+  ✓ max discount amount caps percent discount                                                                    1.53s  
+  ✓ expired code is rejected                                                                                     1.51s  
+  ✓ min booking amount enforced                                                                                  1.52s  
+  ✓ per user usage limit enforced                                                                                1.54s  
+  ✓ global usage limit enforced                                                                                  1.52s  
+  ✓ first booking only blocks returning customer                                                                 1.52s  
+  ✓ first booking only allows new customer                                                                       1.53s  
+  ✓ paused code is rejected                                                                                      1.52s  
+
+   PASS  Tests\Feature\Promotion\ReferralFlowTest
+  ✓ ensure referral code generates unique code                                                                   1.53s  
+  ✓ register referral creates pending referral                                                                   1.53s  
+  ✓ self referral is rejected                                                                                    1.52s  
+  ✓ qualifying booking grants rewards to both                                                                    1.59s  
+  ✓ non completed booking does not qualify                                                                       1.54s  
+  ✓ stats returns aggregated counts                                                                              1.60s  
+
+   PASS  Tests\Feature\Push\DeviceTokenServiceTest
+  ✓ register creates new device token                                                                            1.53s  
+  ✓ register refreshes existing token for same hash                                                              1.52s  
+  ✓ register reuses token invalidated by another user                                                            1.74s  
+  ✓ register rejects invalid platform                                                                            1.52s  
+  ✓ register rejects empty token                                                                                 1.52s  
+  ✓ unregister invalidates user owned token                                                                      1.53s  
+  ✓ unregister does not touch other users token                                                                  1.53s  
+  ✓ update preferences merges with existing                                                                      1.52s  
+
+   PASS  Tests\Feature\Push\PushApiTest
+  ✓ register requires authentication                                                                             1.54s  
+  ✓ register validates required fields                                                                           1.52s  
+  ✓ register validates platform enum                                                                             1.54s  
+  ✓ register creates device token and returns id                                                                 1.53s  
+  ✓ unregister invalidates token                                                                                 1.52s  
+  ✓ unregister returns 404 for unknown token                                                                     1.52s  
+  ✓ index returns only active tokens of current user                                                             1.52s  
+  ✓ update preferences persists opt out                                                                          1.56s  
+  ✓ update preferences returns 403 when token belongs to other user                                              1.54s  
+
+   PASS  Tests\Feature\Push\PushChannelTest
+  ✓ channel sends via push service using to push payload                                                         1.56s  
+  ✓ channel returns empty when notifiable is not user                                                            1.60s  
+  ✓ channel returns empty when no to push method                                                                 1.62s  
+
+   PASS  Tests\Feature\Push\PushServiceTest
+  ✓ dispatch creates push notification record                                                                    1.53s  
+  ✓ dispatch is idempotent with same key                                                                         1.69s  
+  ✓ dispatch marks opted out when user disabled category                                                         1.70s  
+  ✓ dispatch invalidates token when provider signals invalid                                                     1.55s  
+  ✓ dispatch marks failed when provider returns fail                                                             1.55s  
+  ✓ dispatch skipped when push disabled                                                                          1.60s  
+  ✓ dispatch skipped for inactive token                                                                          1.54s  
+  ✓ rate limit per token creates rate limited record                                                             1.57s  
+  ✓ dispatch to user sends to all active tokens                                                                  1.59s  
+
+   PASS  Tests\Feature\Quality\QualityInspectionServiceTest
+  ✓ start creates inspection in progress                                                                         1.64s  
+  ✓ start is idempotent with same mission phase                                                                  1.53s  
+  ✓ start rejects invalid phase                                                                                  1.56s  
+  ✓ submit item creates response                                                                                 1.63s  
+  ✓ submit item updates existing response                                                                        1.60s  
+  ✓ submit finalizes inspection with score                                                                       1.54s  
+  ✓ submit rejects different provider                                                                            1.53s  
+  ✓ validate by client requires signature by default                                                             1.53s  
+  ✓ validate by client persists signature                                                                        1.52s  
+  ✓ dispute requires min reason length                                                                           1.55s  
+  ✓ dispute changes status                                                                                       1.52s  
+  ✓ admin validate resolves dispute                                                                              1.70s  
+
+   PASS  Tests\Feature\Quality\QualityScoringEngineTest
+  ✓ boolean item awards full weight when true                                                                    1.56s  
+  ✓ boolean item awards zero when false                                                                          1.52s  
+  ✓ rating item scales by max                                                                                    1.52s  
+  ✓ photo item awards when photos count positive                                                                 1.52s  
+  ✓ grade excellent pass fail                                                                                    1.52s  
+  ✓ select item awards only for accepted values                                                                  1.52s  
+
+   PASS  Tests\Feature\Realtime\MissionLiveTrackingApiTest
+  ✓ push position requires authentication                                                                        1.57s  
+  ✓ push position returns 403 for unrelated provider                                                             1.56s  
+  ✓ push position succeeds for assigned provider                                                                 1.56s  
+  ✓ push position validates lat lng ranges                                                                       1.57s  
+  ✓ push eta succeeds for assigned provider                                                                      1.54s  
+  ✓ push eta with same sequence is idempotent                                                                    1.54s  
+
+   PASS  Tests\Feature\Realtime\RealtimeBroadcastServiceTest
+  ✓ publish records tracked event in ledger                                                                      1.54s  
+  ✓ publish is idempotent with same sequence                                                                     1.54s  
+  ✓ publish without sequence creates distinct rows                                                               1.66s  
+  ✓ publish position records with position category                                                              1.54s  
+  ✓ publish user notification uses per user audience                                                             1.53s  
+  ✓ publish untracked event returns null no ledger                                                               1.52s  
+  ✓ replay marks event sent again                                                                                1.65s  
+  ✓ replay works on archived payload without reconstructing event                                                1.63s  
+
+   PASS  Tests\Feature\Regression\PostFixesRegressionTest
+  ✓ stripe connect webhook route is registered                                                                   1.55s  
+  ✓ stripe connect webhook is excluded from csrf                                                                 1.52s  
+
+   PASS  Tests\Feature\Risk\RiskApiTest
+  ✓ evaluations endpoint requires auth                                                                           1.58s  
+  ✓ evaluations endpoint returns list for admin                                                                  1.64s  
+  ✓ holds endpoint returns only active by default                                                                1.53s  
+  ✓ review hold approved                                                                                         1.55s  
+  ✓ review hold rejected                                                                                         1.53s  
+  ✓ review hold validates decision enum                                                                          1.55s  
+
+   PASS  Tests\Feature\Risk\RiskRulesTest
+  ✓ payment decline rule hits above threshold                                                                    1.53s  
+  ✓ payment decline rule no hit below threshold                                                                  1.52s  
+  ✓ account age rule scores younger higher                                                                       1.52s  
+  ✓ account age rule returns null for old account                                                                1.51s  
+  ✓ geo mismatch rule hits when countries differ                                                                 1.52s  
+  ✓ geo mismatch rule no hit when countries match                                                                1.52s  
+  ✓ ip reputation rule hits on cidr match                                                                        1.51s  
+  ✓ ip reputation rule no hit outside cidr                                                                       1.52s  
+  ✓ ip reputation rule with no cidrs does not hit                                                                1.53s  
+
+   PASS  Tests\Feature\Risk\RiskScoringEngineTest
+  ✓ evaluate with no hits returns allow                                                                          1.53s  
+  ✓ evaluate with payment decline burst triggers review or block                                                 1.70s  
+  ✓ evaluate with very new account adds age score                                                                1.54s  
+  ✓ evaluate bypass role admin always allows                                                                     1.53s  
+  ✓ evaluate is idempotent with same key                                                                         1.52s  
+  ✓ evaluate skipped when engine disabled                                                                        1.53s  
+  ✓ review hold approved changes status and records reviewer                                                     1.53s  
+  ✓ review hold rejected blocks user                                                                             1.53s  
+  ✓ cleanup expired holds marks them expired                                                                     1.56s  
+
+   PASS  Tests\Feature\Search\AddressAutocompleteTest
+  ✓ numeric query searches by code                                                                               1.55s  
+  ✓ text query searches by city                                                                                  1.55s  
+  ✓ short query returns empty                                                                                    1.55s  
+  ✓ inactive postal codes excluded                                                                               1.57s  
+  ✓ results include lat lng when present                                                                         1.53s  
+
+   PASS  Tests\Feature\Search\ProviderSearchServiceTest
+  ✓ only active verified providers are returned                                                                  1.53s  
+  ✓ min rating filter excludes lower ratings                                                                     1.53s  
+  ✓ price range filter                                                                                           1.55s  
+  ✓ sort by rating orders descending                                                                             1.52s  
+  ✓ sort by price asc                                                                                            1.60s  
+  ✓ trade filter only includes provider with trade                                                               1.54s  
+  ✓ postal filter includes only providers in matching zone                                                       1.70s  
+  ✓ unknown postal returns empty                                                                                 1.56s  
+
+   PASS  Tests\Feature\Search\SearchApiTest
+  ✓ providers search returns paginated payload                                                                   1.54s  
+  ✓ providers search min rating filter via api                                                                   1.53s  
+  ✓ services search returns active only                                                                          1.54s  
+  ✓ postal autocomplete returns matches                                                                          1.54s  
+  ✓ postal autocomplete validates min length                                                                     1.60s  
+
+   PASS  Tests\Feature\Sms\PhoneVerificationServiceTest
+  ✓ send code creates otp record and dispatches sms                                                              1.56s  
+  ✓ send code throws on invalid phone                                                                            1.53s  
+  ✓ send code enforces cooldown                                                                                  1.62s  
+  ✓ verify with correct code marks user phone verified                                                           1.55s  
+  ✓ verify with wrong code throws validation                                                                     1.54s  
+  ✓ verify without active code throws validation                                                                 1.59s  
+  ✓ verify blocks after max attempts reached                                                                     1.60s  
+  ✓ expired code is not found as active                                                                          1.56s  
+
+   PASS  Tests\Feature\Sms\SmsApiTest
+  ✓ phone verify request requires authentication                                                                 1.62s  
+  ✓ phone verify request validates phone field                                                                   1.65s  
+  ✓ phone verify request rejects invalid e164                                                                    1.60s  
+  ✓ phone verify request creates otp code                                                                        1.54s  
+  ✓ phone verify confirm with correct code marks verified                                                        1.67s  
+  ✓ phone verify confirm returns 422 for wrong code                                                              1.68s  
+  ✓ phone verify confirm does not leak other users code                                                          1.56s  
+
+   PASS  Tests\Feature\Sms\SmsServiceTest
+  ✓ dispatch creates sms message with mock provider                                                              1.54s  
+  ✓ dispatch rejects invalid e164 phone                                                                          1.55s  
+  ✓ dispatch normalizes phone with double zero prefix                                                            1.54s  
+  ✓ dispatch is idempotent with same key                                                                         1.61s  
+  ✓ mock provider returns failed when phone contains fail keyword                                                1.56s  
+  ✓ rate limit per phone per hour creates rate limited record                                                    1.59s  
+  ✓ apply status update marks message delivered                                                                  1.62s  
+  ✓ apply status update returns null for unknown external id                                                     1.60s  
+  ✓ legacy send returns null when sms disabled                                                                   1.53s  
+  ✓ legacy send returns null for empty phone                                                                     1.61s  
+
+   PASS  Tests\Feature\Sms\SmsWebhookTest
+  ✓ unknown provider returns 404                                                                                 1.54s  
+  ✓ mock webhook stores event and dispatches job                                                                 1.56s  
+  ✓ duplicate webhook event id is not redispatched                                                               1.52s  
+  ✓ processing webhook applies status to matching message                                                        1.54s  
+  ✓ processing webhook with unknown message marks ignored                                                        1.70s  
+
+   PASS  Tests\Feature\StripeWebhookSyncTest
+  ✓ user plan can be synced to premium from stripe customer                                                      1.55s  
+  ✓ user plan can be synced to standard when subscription cancelled                                              1.68s  
+
+   FAIL  Tests\Feature\SupportQualityAdvancedTest
+  ⨯ client complaint stores attachments and sla                                                                  1.63s  
+  ✓ employee incident stores attachments and sla                                                                 1.57s  
+  ────────────────────────────────────────────────────────────────────────────────────────────────────────────────────  
+   FAILED  Tests\Feature\SupportQualityAdvancedTest > client complaint stores attachments and sla       ViewException   
+  Undefined variable $bookings (View: C:\Users\mmdar\Desktop\code\work\CleanUx\resources\views\livewire\client\litiges-client.blade.php) (View: C:\Users\mmdar\Desktop\code\work\CleanUx\resources\views\livewire\client\litiges-client.blade.php)
+
+  at storage\framework\views\822df451d636105acc752e022ddd1b0b.php:20
+     16▕                 <div>
+     17▕                     <label class="text-xs font-bold uppercase text-slate-500">Booking lié (optionnel)</label>
+     18▕                     <select wire:model="booking_id" class="mt-1 w-full rounded-xl border-gray-300 text-sm">
+     19▕                         <option value="">— Aucun</option>
+  ➜  20▕                         <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php $__currentLoopData = $bookings; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $b): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+     21▕                             <option value="<?php echo e($b->id); ?>">#<?php echo e($b->booking_reference); ?> — <?php echo e($b->date?->format('d/m/Y')); ?></option>
+     22▕                         <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+     23▕                     </select>
+     24▕                 </div>
+
+  1   storage\framework\views\822df451d636105acc752e022ddd1b0b.php:20
+  2   vendor\livewire\livewire\src\Mechanisms\ExtendBlade\ExtendedCompilerEngine.php:58
+
+
+  Tests:    1 failed, 485 passed (1345 assertions)
+  Duration: 748.53s
+

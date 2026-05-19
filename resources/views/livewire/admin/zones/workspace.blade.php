@@ -174,6 +174,76 @@
                     </div>
                 </div>
 
+                <div class="bg-white rounded-2xl shadow border p-5 space-y-4">
+                    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+                        <div>
+                            <h3 class="text-lg font-semibold text-slate-900">🧰 Métiers actifs dans la zone</h3>
+                            <p class="text-sm text-slate-500">Active ou désactive chaque corps de métier dans cette zone et applique un multiplicateur de prix spécifique.</p>
+                        </div>
+                        <div class="flex flex-wrap gap-2">
+                            <button type="button" wire:click="saveAllTradeSettings"
+                                class="inline-flex items-center px-3 py-2 rounded-xl bg-slate-900 text-white text-sm font-medium hover:bg-slate-800 transition">
+                                Tout enregistrer
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        @forelse($tradeSettings as $tradeId => $setting)
+                            <div class="border rounded-2xl p-4 bg-slate-50">
+                                <div class="flex items-start justify-between gap-3 mb-3">
+                                    <div class="flex items-center gap-3">
+                                        <span class="inline-flex items-center justify-center w-9 h-9 rounded-xl text-white text-xs font-semibold"
+                                            style="background-color: {{ $setting['trade_color'] }}">
+                                            {{ strtoupper(substr($setting['trade_name'], 0, 2)) }}
+                                        </span>
+                                        <div>
+                                            <p class="font-semibold text-slate-900">{{ $setting['trade_name'] }}</p>
+                                            <p class="text-xs text-slate-500">{{ $setting['trade_slug'] }}</p>
+                                        </div>
+                                    </div>
+                                    <button type="button" wire:click="toggleTradeActive({{ $tradeId }})"
+                                        class="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-semibold transition
+                                            {{ $setting['is_active'] ? 'bg-emerald-100 text-emerald-700 hover:bg-emerald-200' : 'bg-rose-100 text-rose-700 hover:bg-rose-200' }}">
+                                        {{ $setting['is_active'] ? 'Actif' : 'Désactivé' }}
+                                    </button>
+                                </div>
+
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                    <div>
+                                        <label class="block text-xs font-medium text-gray-600 mb-1">Multiplicateur prix</label>
+                                        <input type="number" step="0.01" min="0.1" max="10" wire:model="tradeSettings.{{ $tradeId }}.price_multiplier"
+                                            class="w-full border-gray-300 rounded-lg shadow-sm">
+                                        @error("tradeSettings.$tradeId.price_multiplier") <p class="text-xs text-rose-600 mt-1">{{ $message }}</p> @enderror
+                                    </div>
+                                    <div class="flex items-end">
+                                        <label class="inline-flex items-center gap-2 text-sm text-slate-700">
+                                            <input type="checkbox" wire:model="tradeSettings.{{ $tradeId }}.is_active" class="rounded border-gray-300 text-blue-600 shadow-sm">
+                                            Actif dans cette zone
+                                        </label>
+                                    </div>
+                                    <div class="md:col-span-2">
+                                        <label class="block text-xs font-medium text-gray-600 mb-1">Notes internes</label>
+                                        <input type="text" wire:model="tradeSettings.{{ $tradeId }}.notes" placeholder="Ex: tarif majoré dimanche"
+                                            class="w-full border-gray-300 rounded-lg shadow-sm">
+                                    </div>
+                                </div>
+
+                                <div class="mt-3 flex justify-end">
+                                    <button type="button" wire:click="saveTradeSetting({{ $tradeId }})"
+                                        class="inline-flex items-center px-3 py-2 rounded-xl bg-slate-900 text-white text-sm font-medium hover:bg-slate-800 transition">
+                                        Enregistrer ce métier
+                                    </button>
+                                </div>
+                            </div>
+                        @empty
+                            <div class="md:col-span-2 border rounded-xl p-4 text-sm text-slate-500 italic">
+                                Aucun métier actif n'est configuré. Activez-en depuis le centre Métiers.
+                            </div>
+                        @endforelse
+                    </div>
+                </div>
+
                 <div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
                     <div class="bg-white rounded-2xl shadow border p-5 space-y-4">
                         <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3">

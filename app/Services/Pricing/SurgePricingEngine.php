@@ -6,6 +6,8 @@ use App\Models\Booking;
 use App\Models\PricingZoneState;
 use App\Models\ProviderProfile;
 use App\Models\ServiceZone;
+use App\Models\Trade;
+use App\Models\TradeZoneSetting;
 use Carbon\Carbon;
 use Illuminate\Support\Carbon as IlluminateCarbon;
 use Illuminate\Support\Facades\DB;
@@ -51,10 +53,12 @@ class SurgePricingEngine
     {
         $multiplier = 1.0;
         $factors = [
-            'demand'   => 1.0,
-            'supply'   => 1.0,
-            'temporal' => 1.0,
-            'asap'     => 1.0,
+            'demand'         => 1.0,
+            'supply'         => 1.0,
+            'temporal'       => 1.0,
+            'trade_zone'     => 1.0,
+            'asap'           => 1.0,
+            'trade_business' => 1.0,
         ];
 
         $source = 'default';
@@ -84,10 +88,67 @@ class SurgePricingEngine
             $source = 'live';
         }
 
+        // 1.bis Multiplicateur trade-zone (Phase 15 — config admin par métier × zone)
+        if ($zone && ! empty($context['trade_id'])) {
+            $tradeSetting = TradeZoneSetting::query()
+                ->where('trade_id', (int) $context['trade_id'])
+                ->where('service_zone_id', $zone->id)
+                ->first();
+
+            if ($tradeSetting) {
+                $tradeMultiplier = (float) $tradeSetting->price_multiplier;
+                if ($tradeMultiplier > 0 && abs($tradeMultiplier - 1.0) > 0.0001) {
+                    $factors['trade_zone'] = $tradeMultiplier;
+                    $multiplier *= $tradeMultiplier;
+                }
+            }
+        }
+
         // 2. Extra ASAP
         if (($context['booking_mode'] ?? 'scheduled') === 'asap') {
             $factors['asap'] = (float) config('surge.asap_extra_multiplier', 1.25);
             $multiplier *= $factors['asap'];
+        }
+
+        // 2.bis Multiplicateurs métier (Chantier A — urgence/nuit/weekend par Trade)
+        //  - urgence : si bookings ASAP, le multiplicateur du Trade REMPLACE l'ASAP générique
+        //    (un serrurier urgent x3 est plus représentatif que x1.25 universel)
+        //  - nuit (22h-6h) et weekend : stackent sur les autres facteurs
+        if (! empty($context['trade_id'])) {
+            $trade = Trade::find((int) $context['trade_id']);
+            if ($trade) {
+                $tradeBusiness = 1.0;
+
+                // Urgence : remplace l'extra ASAP générique si le Trade impose son propre multiplicateur
+                $emergencyMult = (float) ($trade->emergency_multiplier ?? 1.0);
+                if (($context['booking_mode'] ?? 'scheduled') === 'asap' && $emergencyMult > 1.0) {
+                    // Annule l'ASAP générique appliqué juste avant et le remplace par le multiplicateur Trade
+                    $multiplier /= $factors['asap'];
+                    $factors['asap'] = 1.0;
+                    $tradeBusiness *= $emergencyMult;
+                }
+
+                // Nuit (22h-6h dans le fuseau app)
+                $nightMult = (float) ($trade->night_multiplier ?? 1.0);
+                if ($nightMult > 1.0) {
+                    $hour = (int) IlluminateCarbon::now(config('app.timezone', 'Europe/Brussels'))->format('H');
+                    if ($hour >= 22 || $hour < 6) {
+                        $tradeBusiness *= $nightMult;
+                    }
+                }
+
+                // Weekend (samedi/dimanche)
+                $weekendMult = (float) ($trade->weekend_multiplier ?? 1.0);
+                if ($weekendMult > 1.0
+                    && IlluminateCarbon::now(config('app.timezone', 'Europe/Brussels'))->isWeekend()) {
+                    $tradeBusiness *= $weekendMult;
+                }
+
+                if (abs($tradeBusiness - 1.0) > 0.0001) {
+                    $factors['trade_business'] = round($tradeBusiness, 4);
+                    $multiplier *= $tradeBusiness;
+                }
+            }
         }
 
         // 3. Cap absolu

@@ -96,6 +96,193 @@ Route::middleware(['role:admin'])
             Route::get('/credits-clients', \App\Livewire\Admin\CustomerCreditsManager::class)->name('customer.credits');
         }
 
+        // Ratings — Modération des avis publics
+        if (class_exists(\App\Livewire\Admin\Ratings\RatingModerationCenter::class)) {
+            Route::get('/avis', \App\Livewire\Admin\Ratings\RatingModerationCenter::class)
+                ->name('ratings.moderation');
+        }
+
+        // Matching v2 — Insights & simulator
+        if (class_exists(\App\Livewire\Admin\Matching\MatchingInsightsCenter::class)) {
+            Route::get('/matching', \App\Livewire\Admin\Matching\MatchingInsightsCenter::class)
+                ->name('matching.insights');
+        }
+
+        // Stripe v2 — Hardening center (webhooks idempotents, reconciliation, failures)
+        if (class_exists(\App\Livewire\Admin\Payments\StripeHardeningCenter::class)) {
+            Route::get('/stripe', \App\Livewire\Admin\Payments\StripeHardeningCenter::class)
+                ->name('stripe.hardening');
+        }
+
+        // i18n v2 — Centre de traductions (DB overrides + scan)
+        if (class_exists(\App\Livewire\Admin\I18n\TranslationsCenter::class)) {
+            Route::get('/translations', \App\Livewire\Admin\I18n\TranslationsCenter::class)
+                ->name('translations.center');
+        }
+
+        // Disputes v2 — Centre de gestion des litiges (SLA, escalades, résolutions)
+        if (class_exists(\App\Livewire\Admin\Disputes\DisputesCenter::class)) {
+            Route::get('/disputes', \App\Livewire\Admin\Disputes\DisputesCenter::class)
+                ->name('disputes.center');
+        }
+
+        // KYC v2 — Vérifications d'identité (Onfido / Veriff / Mock)
+        if (class_exists(\App\Livewire\Admin\Kyc\KycVerificationsCenter::class)) {
+            Route::get('/kyc', \App\Livewire\Admin\Kyc\KycVerificationsCenter::class)
+                ->name('kyc.center');
+        }
+
+        // GDPR v2 — Compliance + audit log + retention
+        if (class_exists(\App\Livewire\Admin\Gdpr\GdprCenter::class)) {
+            Route::get('/gdpr', \App\Livewire\Admin\Gdpr\GdprCenter::class)
+                ->name('gdpr.center');
+        }
+
+        // Loyalty v2 — Programme fidélité (tiers, members, adjustments)
+        if (class_exists(\App\Livewire\Admin\Loyalty\LoyaltyCenter::class)) {
+            Route::get('/loyalty', \App\Livewire\Admin\Loyalty\LoyaltyCenter::class)
+                ->name('loyalty.center');
+        }
+
+        // SMS v2 — Centre SMS / WhatsApp (KPIs, recherche, retry manuel)
+        if (class_exists(\App\Livewire\Admin\Sms\SmsCenter::class)) {
+            Route::get('/sms', \App\Livewire\Admin\Sms\SmsCenter::class)
+                ->name('sms.center');
+        }
+
+        // Push v2 — Centre Push notifications (FCM/APNs)
+        if (class_exists(\App\Livewire\Admin\Push\PushCenter::class)) {
+            Route::get('/push', \App\Livewire\Admin\Push\PushCenter::class)
+                ->name('push.center');
+        }
+
+        // Realtime v2 — Centre Broadcast / Live (ledger + replay)
+        if (class_exists(\App\Livewire\Admin\Realtime\RealtimeCenter::class)) {
+            Route::get('/realtime', \App\Livewire\Admin\Realtime\RealtimeCenter::class)
+                ->name('realtime.center');
+        }
+
+        // Analytics v2 — Centre Analytics produit (KPIs, funnel, top events)
+        if (class_exists(\App\Livewire\Admin\Analytics\AnalyticsCenter::class)) {
+            Route::get('/analytics-v2', \App\Livewire\Admin\Analytics\AnalyticsCenter::class)
+                ->name('analytics.center');
+        }
+
+        // Availability v2 — Centre Calendrier providers
+        if (class_exists(\App\Livewire\Admin\Availability\AvailabilityCenter::class)) {
+            Route::get('/availability', \App\Livewire\Admin\Availability\AvailabilityCenter::class)
+                ->name('availability.center');
+        }
+
+        // Risk v2 — Centre anti-fraude (évaluations + holds + review)
+        if (class_exists(\App\Livewire\Admin\Risk\RiskCenter::class)) {
+            Route::get('/risk', \App\Livewire\Admin\Risk\RiskCenter::class)
+                ->name('risk.center');
+        }
+
+        // Marketing v2 — Segments + Campaigns + Recipients
+        if (class_exists(\App\Livewire\Admin\Marketing\MarketingCenter::class)) {
+            Route::get('/marketing', \App\Livewire\Admin\Marketing\MarketingCenter::class)
+                ->name('marketing.center');
+        }
+
+        // Insurance v2 — Claims + Policies + Plans
+        if (class_exists(\App\Livewire\Admin\Insurance\InsuranceCenter::class)) {
+            Route::get('/insurance', \App\Livewire\Admin\Insurance\InsuranceCenter::class)
+                ->name('insurance.center');
+        }
+
+        // FX v2 — Rates + Conversions + Currencies
+        if (class_exists(\App\Livewire\Admin\Fx\FxCenter::class)) {
+            Route::get('/fx', \App\Livewire\Admin\Fx\FxCenter::class)
+                ->name('fx.center');
+        }
+
+        // Audit v2 — Events search + pin + export
+        if (class_exists(\App\Livewire\Admin\Audit\AuditCenter::class)) {
+            Route::get('/audit', \App\Livewire\Admin\Audit\AuditCenter::class)
+                ->name('audit.center');
+        }
+
+        // Notifications Preferences v2 — Centre unifié channel × category
+        if (class_exists(\App\Livewire\Admin\NotificationPreferences\NotificationPreferencesCenter::class)) {
+            Route::get('/notification-preferences', \App\Livewire\Admin\NotificationPreferences\NotificationPreferencesCenter::class)
+                ->name('notification-preferences.center');
+        }
+
+        // Quality v2 — Inspections terrain + validation admin
+        if (class_exists(\App\Livewire\Admin\Quality\QualityCenter::class)) {
+            Route::get('/quality', \App\Livewire\Admin\Quality\QualityCenter::class)
+                ->name('quality.center');
+        }
+
+        // Cancellation v2 — Policies + cancellations + overrides
+        if (class_exists(\App\Livewire\Admin\CancellationV2\CancellationsCenter::class)) {
+            Route::get('/cancellations-v2', \App\Livewire\Admin\CancellationV2\CancellationsCenter::class)
+                ->name('cancellations-v2.center');
+        }
+
+        // Onboarding v2 — Journeys + progress per user
+        if (class_exists(\App\Livewire\Admin\OnboardingV2\OnboardingV2Center::class)) {
+            Route::get('/onboarding-v2', \App\Livewire\Admin\OnboardingV2\OnboardingV2Center::class)
+                ->name('onboarding-v2.center');
+        }
+
+        // Pricing v2 — Service catalog + rules + quotes + A/B experiments
+        if (class_exists(\App\Livewire\Admin\PricingV2\PricingCenter::class)) {
+            Route::get('/pricing-v2', \App\Livewire\Admin\PricingV2\PricingCenter::class)
+                ->name('pricing-v2.center');
+        }
+
+        // Contracts v2 — Templates + documents + signatures
+        if (class_exists(\App\Livewire\Admin\ContractsV2\ContractsCenter::class)) {
+            Route::get('/contracts-v2', \App\Livewire\Admin\ContractsV2\ContractsCenter::class)
+                ->name('contracts-v2.center');
+        }
+
+        // Webhooks v2 — Outbound B2B endpoints + events + deliveries
+        if (class_exists(\App\Livewire\Admin\WebhooksV2\WebhooksCenter::class)) {
+            Route::get('/webhooks-v2', \App\Livewire\Admin\WebhooksV2\WebhooksCenter::class)
+                ->name('webhooks-v2.center');
+        }
+
+        // Geolocation v2 — Address autocomplete + geocoding + distance cache
+        if (class_exists(\App\Livewire\Admin\GeolocationV2\GeolocationCenter::class)) {
+            Route::get('/geolocation-v2', \App\Livewire\Admin\GeolocationV2\GeolocationCenter::class)
+                ->name('geolocation-v2.center');
+        }
+
+        // API Tokens v2 — Personal access tokens + scopes + usage audit
+        if (class_exists(\App\Livewire\Admin\ApiTokensV2\ApiTokensCenter::class)) {
+            Route::get('/api-tokens-v2', \App\Livewire\Admin\ApiTokensV2\ApiTokensCenter::class)
+                ->name('api-tokens-v2.center');
+        }
+
+        // Chat v2 — In-app messaging + moderation
+        if (class_exists(\App\Livewire\Admin\ChatV2\ChatCenter::class)) {
+            Route::get('/chat-v2', \App\Livewire\Admin\ChatV2\ChatCenter::class)
+                ->name('chat-v2.center');
+        }
+
+        // Subscriptions v2 — Recurring billing
+        if (class_exists(\App\Livewire\Admin\SubscriptionsV2\SubscriptionsCenter::class)) {
+            Route::get('/subscriptions-v2', \App\Livewire\Admin\SubscriptionsV2\SubscriptionsCenter::class)
+                ->name('subscriptions-v2.center');
+        }
+
+        // Promotions — Codes promo, campagnes, programme de parrainage
+        Route::prefix('promotions')->name('promotions.')->group(function () {
+            if (class_exists(\App\Livewire\Admin\Promotions\PromoCodesCenter::class)) {
+                Route::get('/codes', \App\Livewire\Admin\Promotions\PromoCodesCenter::class)->name('codes');
+            }
+            if (class_exists(\App\Livewire\Admin\Promotions\PromoCampaignsCenter::class)) {
+                Route::get('/campagnes', \App\Livewire\Admin\Promotions\PromoCampaignsCenter::class)->name('campaigns');
+            }
+            if (class_exists(\App\Livewire\Admin\Promotions\ReferralsCenter::class)) {
+                Route::get('/parrainages', \App\Livewire\Admin\Promotions\ReferralsCenter::class)->name('referrals');
+            }
+        });
+
         if (class_exists(\App\Livewire\Admin\StripeConnectProviders::class)) {
             Route::get('/stripe-connect-providers', \App\Livewire\Admin\StripeConnectProviders::class)->name('stripe-connect.providers');
         }

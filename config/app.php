@@ -164,6 +164,15 @@ return [
          * Application Service Providers...
          */
         App\Providers\AppServiceProvider::class,
+        App\Providers\I18nServiceProvider::class,
+        App\Providers\KycServiceProvider::class,
+        App\Providers\SmsServiceProvider::class,
+        App\Providers\PushServiceProvider::class,
+        App\Providers\InsuranceServiceProvider::class,
+        App\Providers\FxServiceProvider::class,
+        App\Providers\GeolocationV2ServiceProvider::class,
+        App\Providers\ApiTokensV2ServiceProvider::class,
+        App\Providers\SubscriptionsV2ServiceProvider::class,
         App\Providers\AuthServiceProvider::class,
         App\Providers\BroadcastServiceProvider::class,
         App\Providers\EventServiceProvider::class,

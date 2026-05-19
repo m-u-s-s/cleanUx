@@ -39,6 +39,12 @@ class ProviderProfile extends Model
         'went_offline_at',
         'last_heartbeat_at',
         'battery_level',
+
+        'rating_avg',
+        'rating_count',
+        'rating_distribution',
+        'rating_dimensions',
+        'rating_last_at',
     ];
 
     protected $casts = [
@@ -62,6 +68,12 @@ class ProviderProfile extends Model
         'went_offline_at' => 'datetime',
         'last_heartbeat_at' => 'datetime',
         'battery_level' => 'integer',
+
+        'rating_avg' => 'decimal:2',
+        'rating_count' => 'integer',
+        'rating_distribution' => 'array',
+        'rating_dimensions' => 'array',
+        'rating_last_at' => 'datetime',
     ];
 
     // Relations

@@ -30,6 +30,15 @@ class EventServiceProvider extends ServiceProvider
     ];
 
     /**
+     * The subscriber classes to register.
+     *
+     * @var array<int, class-string>
+     */
+    protected $subscribe = [
+        \App\Services\Analytics\AnalyticsAutoTracker::class,
+    ];
+
+    /**
      * Register any events for your application.
      */
     public function boot(): void

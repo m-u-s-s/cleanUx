@@ -2,41 +2,38 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Middleware\SetLocale;
+use App\Services\I18n\LocaleResolver;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 
 /**
- * Phase 9 — Switch de langue persisté.
+ * Phase 9+i18n v2 — Switch de langue persisté.
  *
- * Endpoint : POST /locale  (CSRF-protected)
+ * POST /locale  (CSRF-protected)
  *   - Met la locale en session
- *   - Persiste sur le user si connecté
+ *   - Persiste sur le user (au format BCP47 stocké : ex 'nl_BE') si connecté
  *   - Redirige back avec cookie 1 an
  */
 class LocaleController extends Controller
 {
+    public function __construct(protected LocaleResolver $resolver)
+    {
+    }
+
     public function update(Request $request): RedirectResponse
     {
         $locale = (string) $request->input('locale', '');
 
-        if (! in_array($locale, SetLocale::SUPPORTED, true)) {
+        if (! $this->resolver->isSupported($locale)) {
             return back()->with('error', __('messages.invalid_locale'));
         }
 
-        // Session
         $request->session()->put('locale', $locale);
 
-        // User
         $user = $request->user();
-
         if ($user) {
             $user->forceFill([
-                'locale' => match ($locale) {
-                    'nl' => 'nl_BE',
-                    'fr' => 'fr_BE',
-                    'en' => 'en_US',
-                },
+                'locale' => $this->resolver->userPersistedFormat($locale),
             ])->save();
         }
 

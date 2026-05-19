@@ -13,6 +13,7 @@ use App\Support\Livewire\Concerns\Booking\HandlesPublicBookingAuthentication;
 use App\Support\Livewire\Concerns\Booking\ManagesPublicBookingDraft;
 use App\Support\Livewire\Concerns\HandlesBookingSubmissionFlow;
 use App\Support\Livewire\Concerns\InteractsWithBookingFormState;
+use App\Support\Livewire\Concerns\RendersTradeFormSchema;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
 use Livewire\WithFileUploads;
@@ -23,6 +24,7 @@ class PrendreRendezVous extends Component
 {
     use HandlesBookingSubmissionFlow {
         updatedSelectedServiceIdentifier as protected traitUpdatedSelectedServiceIdentifier;
+        rules as protected traitRules;
     }
     use InteractsWithBookingFormState {
         updatedPostalCodeInput as protected traitUpdatedPostalCodeInput;
@@ -30,6 +32,7 @@ class PrendreRendezVous extends Component
     use ManagesPublicBookingDraft;
     use HandlesPublicBookingAuthentication;
     use HandlesBookingCreation;
+    use RendersTradeFormSchema;
     use WithFileUploads;
 
     private const PUBLIC_BOOKING_DRAFT_SESSION_KEY = 'booking.public_draft';
@@ -95,6 +98,60 @@ class PrendreRendezVous extends Component
 
     public int $duree_estimee = 0;
     public float $devis_estime = 0;
+
+    public ?string $promo_code = null;
+    public ?float $promo_discount_preview = null;
+    public ?string $promo_message = null;
+    public bool $promo_valid = false;
+
+    public function previewPromoCode(): void
+    {
+        $this->promo_discount_preview = null;
+        $this->promo_message = null;
+        $this->promo_valid = false;
+
+        if (empty(trim((string) $this->promo_code))) {
+            return;
+        }
+
+        if ((float) $this->devis_estime <= 0) {
+            $this->promo_message = 'Estimation indisponible pour évaluer le code.';
+            return;
+        }
+
+        $service = app(\App\Services\Promotion\PromoCodeService::class);
+
+        $isFirstBooking = ! \App\Models\Booking::query()
+            ->where('client_id', Auth::id())
+            ->exists();
+
+        $context = new \App\Services\Promotion\PromoCodeValidationContext(
+            user: Auth::user(),
+            bookingAmount: (float) $this->devis_estime,
+            serviceCatalogId: $this->resolvedServiceCatalogId,
+            serviceZoneId: $this->resolvedServiceZoneId,
+            isFirstBooking: $isFirstBooking,
+        );
+
+        $result = $service->validate((string) $this->promo_code, $context);
+
+        if ($result->valid) {
+            $this->promo_valid = true;
+            $this->promo_discount_preview = (float) $result->discountAmount;
+            $this->promo_message = sprintf(
+                'Code valide : -%.2f € (total : %.2f €)',
+                $result->discountAmount,
+                $result->finalAmount
+            );
+        } else {
+            $this->promo_message = $result->reason ?? 'Code invalide.';
+        }
+    }
+
+    public function clearPromoCode(): void
+    {
+        $this->reset(['promo_code', 'promo_discount_preview', 'promo_message', 'promo_valid']);
+    }
     public string $booking_mode = 'scheduled';
     public ?string $asapMessage = null;
     public ?string $google_place_id = null;
@@ -163,6 +220,32 @@ class PrendreRendezVous extends Component
     {
         $this->normalizeBookingState();
         $this->traitUpdatedSelectedServiceIdentifier();
+
+        // Phase F2 — charger le schema dynamique du Trade rattaché au service
+        $catalog = $this->currentServiceCatalog();
+        $this->loadTradeFormSchemaForTrade($catalog?->trade_id);
+    }
+
+    /**
+     * Étend les règles de validation avec celles dérivées du schema dynamique
+     * du Trade sélectionné (Phase F2). Les champs cleaning legacy restent
+     * actifs en parallèle (back-compat).
+     */
+    protected function rules(): array
+    {
+        return array_merge(
+            $this->traitRules(),
+            $this->tradeFormAnswersRules('tradeFormAnswers')
+        );
+    }
+
+    /**
+     * Base price pour le calcul des pricings en "percent" dans le schema.
+     * Utilisé par RendersTradeFormSchema::getTradeFormPriceDeltaProperty().
+     */
+    protected function tradeFormBasePriceContext(): ?float
+    {
+        return (float) ($this->devis_estime ?? 0.0);
     }
 
     public function updatedPostalCodeInput(): void

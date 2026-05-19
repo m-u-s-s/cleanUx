@@ -8,6 +8,7 @@ use App\Models\PostalCode;
 use App\Models\Booking;
 use App\Models\ServiceCatalog;
 use App\Models\ServiceZone;
+use App\Models\TradeZoneSetting;
 use App\Models\User;
 use App\Models\ZoneServiceRule;
 use App\Services\International\CountryMarketResolver;
@@ -423,6 +424,14 @@ trait InteractsWithBookingFormState
             return false;
         }
 
+        if ($resolution->serviceCatalog->trade_id) {
+            $disabled = $this->disabledTradeIdsForZone($resolution->zone->id);
+            if ($disabled->contains($resolution->serviceCatalog->trade_id)) {
+                $this->addError('selected_service_identifier', 'Ce métier est temporairement désactivé dans votre zone.');
+                return false;
+            }
+        }
+
         return true;
     }
 
@@ -448,6 +457,18 @@ trait InteractsWithBookingFormState
         $locationLabel = $organizationSite?->name ?: $postal->city_name;
 
         return trim($catalog->name . ' · ' . $locationLabel);
+    }
+
+    /**
+     * IDs des métiers explicitement désactivés dans la zone (TradeZoneSetting.is_active = false).
+     * Absence de ligne = métier implicitement actif (back-compat).
+     */
+    protected function disabledTradeIdsForZone(int $serviceZoneId): \Illuminate\Support\Collection
+    {
+        return TradeZoneSetting::query()
+            ->where('service_zone_id', $serviceZoneId)
+            ->where('is_active', false)
+            ->pluck('trade_id');
     }
 
     public function getSurfacesProperty(): array
@@ -477,6 +498,11 @@ trait InteractsWithBookingFormState
                     ->where('service_zone_id', $resolvedServiceZoneId)
                     ->where('is_enabled', true);
             });
+
+            $disabledTradeIds = $this->disabledTradeIdsForZone($resolvedServiceZoneId);
+            if ($disabledTradeIds->isNotEmpty()) {
+                $query->whereNotIn('trade_id', $disabledTradeIds);
+            }
         }
 
         $catalogs = $query->get();
@@ -539,6 +565,11 @@ trait InteractsWithBookingFormState
                     ->where('service_zone_id', $resolvedServiceZoneId)
                     ->where('is_enabled', true);
             });
+
+            $disabledTradeIds = $this->disabledTradeIdsForZone($resolvedServiceZoneId);
+            if ($disabledTradeIds->isNotEmpty()) {
+                $query->whereNotIn('trade_id', $disabledTradeIds);
+            }
         }
 
         $catalogs = $query->get();

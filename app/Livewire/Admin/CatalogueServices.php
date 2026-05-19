@@ -8,6 +8,7 @@ use App\Models\ServiceZone;
 use App\Models\Trade;
 use App\Models\ZoneServiceRule;
 use App\Support\ActivityLogger;
+use App\Support\Livewire\Concerns\Admin\ManagesServiceOptions;
 use Illuminate\Support\Str;
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -16,6 +17,7 @@ use Livewire\Attributes\Layout;
 
 class CatalogueServices extends Component
 {
+    use ManagesServiceOptions;
     use WithPagination;
 
     public $search = '';
@@ -53,6 +55,7 @@ class CatalogueServices extends Component
     public function mount(): void
     {
         $this->resetServiceForm();
+        $this->resetNewOption();
     }
 
     public function updatingSearch(): void
@@ -188,6 +191,7 @@ class CatalogueServices extends Component
         $this->selectedZoneId = null;
         $this->resetRuleForm();
         $this->editService($serviceId);
+        $this->loadOptionsForService($serviceId);
     }
 
     public function toggleActive(int $serviceId): void

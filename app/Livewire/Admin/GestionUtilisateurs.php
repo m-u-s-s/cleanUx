@@ -5,6 +5,7 @@ namespace App\Livewire\Admin;
 use App\Models\ServiceZone;
 use App\Models\User;
 use App\Support\ActivityLogger;
+use App\Support\Livewire\Concerns\Admin\ManagesEmployeeTrades;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
@@ -14,6 +15,7 @@ use Livewire\WithPagination;
 
 class GestionUtilisateurs extends Component
 {
+    use ManagesEmployeeTrades;
     use WithPagination;
 
     public string $roleFilter = '';
@@ -244,6 +246,7 @@ class GestionUtilisateurs extends Component
             'users' => $users,
             'zones' => $this->zones,
             'permissionOptions' => $this->permissionOptions,
+            'allAvailableTrades' => $this->allAvailableTrades,
         ]);
     }
 }
