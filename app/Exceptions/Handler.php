@@ -23,8 +23,11 @@ class Handler extends ExceptionHandler
      */
     public function register(): void
     {
+        // Sentry intégration si package présent
         $this->reportable(function (Throwable $e) {
-            //
+            if (app()->bound('sentry') && $this->shouldReport($e)) {
+                app('sentry')->captureException($e);
+            }
         });
     }
 }

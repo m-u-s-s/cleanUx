@@ -158,6 +158,24 @@ class ContractService
                 'signer_id' => $signer->id,
             ]);
 
+            \App\Support\Webhooks\BusinessEventEmitter::emit(
+                eventCode: 'contract.signed',
+                payload: [
+                    'document_id' => $document->id,
+                    'document_code' => $document->code,
+                    'signature_id' => $signature->id,
+                    'signature_hash' => $signature->signature_hash,
+                    'signer_id' => $signer->id,
+                    'signer_name' => $signature->signer_name,
+                    'template_code' => $document->template?->code,
+                    'template_version' => $document->template?->version,
+                    'signed_at' => $signature->signed_at?->toIso8601String(),
+                ],
+                idempotencyKey: 'contract.signed:' . $signature->id,
+                sourceType: \App\Models\ContractSignature::class,
+                sourceId: (int) $signature->id,
+            );
+
             return $signature->fresh();
         });
     }

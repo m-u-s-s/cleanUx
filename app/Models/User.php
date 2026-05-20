@@ -58,10 +58,19 @@ class User extends Authenticatable implements MustVerifyEmail, HasLocalePreferen
     public const PLATFORM_ADMIN      = 'admin';
     public const PLATFORM_SUPER_ADMIN = 'super_admin';
 
+    /**
+     * Champs auto-assignables via Eloquent::fill/update/create.
+     *
+     * SECURITY : Tout controller modifiant User DOIT utiliser `$request->validated()`
+     * et JAMAIS `$request->all()`. Si un attribut peut être self-elevé (ex: role),
+     * le retirer du payload validé via FormRequest.
+     */
     protected $fillable = [
         'name',
         'email',
         'password',
+
+        'tenant_id',
 
         'account_type',
         'role',

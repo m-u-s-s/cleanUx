@@ -96,10 +96,10 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/bookings/{booking}/eta',     [ClientBookingController::class, 'eta']);
 
         // Phase Promotions — Codes promo + parrainage
-        Route::post('/promo-codes/validate', [\App\Http\Controllers\Api\Client\PromoCodeController::class, 'validate_']);
+        Route::post('/promo-codes/validate', [\App\Http\Controllers\Api\Client\PromoCodeController::class, 'validate_'])->middleware('throttle:promo');
         Route::get('/referrals/me',          [\App\Http\Controllers\Api\Client\ReferralController::class, 'me']);
         Route::get('/referrals',             [\App\Http\Controllers\Api\Client\ReferralController::class, 'list']);
-        Route::post('/referrals/invite',     [\App\Http\Controllers\Api\Client\ReferralController::class, 'invite']);
+        Route::post('/referrals/invite',     [\App\Http\Controllers\Api\Client\ReferralController::class, 'invite'])->middleware('throttle:promo');
 
         // Phase Ratings — Avis client → provider + signalement
         Route::post('/bookings/{booking}/rating', [\App\Http\Controllers\Api\Client\RatingController::class, 'submit']);
@@ -121,9 +121,34 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/loyalty/me',                               [\App\Http\Controllers\Api\Client\LoyaltyController::class, 'me']);
         Route::get('/loyalty/transactions',                     [\App\Http\Controllers\Api\Client\LoyaltyController::class, 'transactions']);
 
+        // Loyalty Redemption Marketplace
+        Route::get('/loyalty/rewards',                          [\App\Http\Controllers\Api\Client\LoyaltyRedemptionController::class, 'catalogue']);
+        Route::post('/loyalty/rewards/redeem',                  [\App\Http\Controllers\Api\Client\LoyaltyRedemptionController::class, 'redeem']);
+        Route::get('/loyalty/redemptions',                      [\App\Http\Controllers\Api\Client\LoyaltyRedemptionController::class, 'mine']);
+
+        // Tips v2 — pourboires post-mission
+        Route::get('/bookings/{booking}/tip/suggestions',       [\App\Http\Controllers\Api\Client\TipController::class, 'suggestions']);
+        Route::post('/bookings/{booking}/tip',                  [\App\Http\Controllers\Api\Client\TipController::class, 'create']);
+        Route::get('/tips/mine',                                [\App\Http\Controllers\Api\Client\TipController::class, 'mine']);
+
+        // Trip Tracking v2 — vue client (poll position provider en mission)
+        Route::get('/bookings/{booking}/tracking',              [\App\Http\Controllers\Api\Client\TripTrackingController::class, 'currentForBooking']);
+        Route::get('/bookings/{booking}/tracking/trail',        [\App\Http\Controllers\Api\Client\TripTrackingController::class, 'trail']);
+
+        // Booking favorites — rebook 1-click
+        Route::get('/favorites',                                [\App\Http\Controllers\Api\Client\BookingFavoriteController::class, 'index']);
+        Route::post('/bookings/{booking}/favorite',             [\App\Http\Controllers\Api\Client\BookingFavoriteController::class, 'create']);
+        Route::post('/favorites/{favorite}/use',                [\App\Http\Controllers\Api\Client\BookingFavoriteController::class, 'markUsed']);
+        Route::delete('/favorites/{favorite}',                  [\App\Http\Controllers\Api\Client\BookingFavoriteController::class, 'destroy']);
+
+        // Trust & Safety — Block / Report user
+        Route::post('/users/{user}/block',     [\App\Http\Controllers\Api\Client\UserSafetyController::class, 'block']);
+        Route::delete('/users/{user}/block',   [\App\Http\Controllers\Api\Client\UserSafetyController::class, 'unblock']);
+        Route::post('/users/{user}/report',    [\App\Http\Controllers\Api\Client\UserSafetyController::class, 'report'])->middleware('throttle:promo');
+
         // Phase SMS v2 — Vérification téléphone (OTP)
-        Route::post('/phone/verify-request', [\App\Http\Controllers\Api\Client\PhoneVerificationController::class, 'requestCode']);
-        Route::post('/phone/verify-confirm', [\App\Http\Controllers\Api\Client\PhoneVerificationController::class, 'confirm']);
+        Route::post('/phone/verify-request', [\App\Http\Controllers\Api\Client\PhoneVerificationController::class, 'requestCode'])->middleware('throttle:otp');
+        Route::post('/phone/verify-confirm', [\App\Http\Controllers\Api\Client\PhoneVerificationController::class, 'confirm'])->middleware('throttle:otp');
 
         // Phase Marketing v2 — Préférences opt-in/opt-out (RGPD)
         Route::get('/marketing/preferences', [\App\Http\Controllers\Api\Client\MarketingPreferencesController::class, 'show']);
@@ -194,6 +219,19 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/missions/{mission}/live/position', [\App\Http\Controllers\Api\Provider\MissionLiveTrackingController::class, 'pushPosition']);
         Route::post('/missions/{mission}/live/eta',      [\App\Http\Controllers\Api\Provider\MissionLiveTrackingController::class, 'pushEta']);
 
+        // Trip Tracking v2 — sessions GPS persistées + auto-ETA + geofence
+        Route::post('/bookings/{booking}/tracking/start',        [\App\Http\Controllers\Api\Provider\TripTrackingController::class, 'start']);
+        Route::post('/tracking/{session}/ping',                  [\App\Http\Controllers\Api\Provider\TripTrackingController::class, 'ping']);
+        Route::post('/tracking/{session}/in-mission',            [\App\Http\Controllers\Api\Provider\TripTrackingController::class, 'markInMission']);
+        Route::post('/tracking/{session}/end',                   [\App\Http\Controllers\Api\Provider\TripTrackingController::class, 'end']);
+
+        // Presence v2 — Online/Busy/Break/Offline (4 états, coexiste avec Phase 11 binary on/off)
+        Route::get('/presence-v2',            [\App\Http\Controllers\Api\Provider\PresenceController::class, 'status']);
+        Route::post('/presence-v2/online',    [\App\Http\Controllers\Api\Provider\PresenceController::class, 'goOnline']);
+        Route::post('/presence-v2/heartbeat', [\App\Http\Controllers\Api\Provider\PresenceController::class, 'heartbeat']);
+        Route::post('/presence-v2/break',     [\App\Http\Controllers\Api\Provider\PresenceController::class, 'goBreak']);
+        Route::post('/presence-v2/offline',   [\App\Http\Controllers\Api\Provider\PresenceController::class, 'goOffline']);
+
         // Phase Quality v2 — Inspections (provider terrain)
         Route::get('/missions/{mission}/inspections',                 [\App\Http\Controllers\Api\Provider\QualityInspectionController::class, 'index']);
         Route::post('/missions/{mission}/inspections',                [\App\Http\Controllers\Api\Provider\QualityInspectionController::class, 'start']);
@@ -228,12 +266,12 @@ Route::middleware('auth:sanctum')->group(function () {
     });
 
     // Phase Matching v2 — Simulation admin
-    Route::prefix('admin/matching')->group(function () {
+    Route::prefix('admin/matching')->middleware('api_scope:admin:everything')->group(function () {
         Route::get('/bookings/{booking}/simulate',   [\App\Http\Controllers\Api\Admin\MatchingSimulationController::class, 'simulate']);
     });
 
     // Phase Risk v2 — Évaluations + holds + review (admin)
-    Route::prefix('admin/risk')->group(function () {
+    Route::prefix('admin/risk')->middleware('api_scope:admin:everything')->group(function () {
         Route::get('/evaluations',               [\App\Http\Controllers\Api\Admin\RiskController::class, 'evaluations']);
         Route::get('/holds',                     [\App\Http\Controllers\Api\Admin\RiskController::class, 'holds']);
         Route::post('/holds/{hold}/review',      [\App\Http\Controllers\Api\Admin\RiskController::class, 'reviewHold']);
@@ -245,12 +283,12 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/steps/{step}/complete',    [\App\Http\Controllers\Api\OnboardingV2Controller::class, 'completeStep']);
         Route::post('/steps/{step}/skip',        [\App\Http\Controllers\Api\OnboardingV2Controller::class, 'skipStep']);
     });
-    Route::prefix('admin/onboarding-v2')->group(function () {
+    Route::prefix('admin/onboarding-v2')->middleware('api_scope:admin:everything')->group(function () {
         Route::get('/progress',                  [\App\Http\Controllers\Api\OnboardingV2Controller::class, 'adminIndex']);
     });
 
     // Phase Pricing v2 — Admin quotes listing
-    Route::prefix('admin/pricing-v2')->group(function () {
+    Route::prefix('admin/pricing-v2')->middleware('api_scope:admin:everything')->group(function () {
         Route::get('/quotes',                    [\App\Http\Controllers\Api\PricingV2Controller::class, 'adminQuotes']);
     });
 
@@ -262,10 +300,83 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/documents/{document}/sign',       [\App\Http\Controllers\Api\ContractsV2Controller::class, 'signDocument']);
         Route::get('/documents/{document}/pdf',         [\App\Http\Controllers\Api\ContractsV2Controller::class, 'downloadPdf']);
     });
-    Route::prefix('admin/contracts-v2')->group(function () {
+    Route::prefix('admin/contracts-v2')->middleware('api_scope:read:contracts,admin:everything')->group(function () {
         Route::get('/templates',                        [\App\Http\Controllers\Api\ContractsV2Controller::class, 'adminTemplates']);
         Route::get('/documents',                        [\App\Http\Controllers\Api\ContractsV2Controller::class, 'adminDocuments']);
         Route::post('/signatures/{signature}/invalidate', [\App\Http\Controllers\Api\ContractsV2Controller::class, 'adminInvalidateSignature']);
+    });
+
+    // Phase Fleet v2 — Vehicles / Equipment / Assignments / Maintenance / Certifications
+    Route::prefix('v2/fleet')->group(function () {
+        Route::get('/me/assignments',                          [\App\Http\Controllers\Api\FleetV2Controller::class, 'listMyAssignments']);
+        Route::post('/assignments/{assignment}/return',        [\App\Http\Controllers\Api\FleetV2Controller::class, 'returnAssignment']);
+        Route::get('/available',                               [\App\Http\Controllers\Api\FleetV2Controller::class, 'findAvailable']);
+    });
+    Route::prefix('admin/fleet-v2')->middleware('api_scope:admin:everything')->group(function () {
+        Route::get('/vehicles',                                [\App\Http\Controllers\Api\FleetV2Controller::class, 'adminListVehicles']);
+        Route::post('/vehicles',                               [\App\Http\Controllers\Api\FleetV2Controller::class, 'adminCreateVehicle']);
+        Route::post('/vehicles/{vehicle}/assign',              [\App\Http\Controllers\Api\FleetV2Controller::class, 'adminAssignVehicle']);
+        Route::get('/equipment',                               [\App\Http\Controllers\Api\FleetV2Controller::class, 'adminListEquipment']);
+        Route::post('/equipment',                              [\App\Http\Controllers\Api\FleetV2Controller::class, 'adminCreateEquipment']);
+        Route::post('/equipment/{equipment}/assign',           [\App\Http\Controllers\Api\FleetV2Controller::class, 'adminAssignEquipment']);
+        Route::get('/assignments',                             [\App\Http\Controllers\Api\FleetV2Controller::class, 'adminListAssignments']);
+        Route::post('/maintenance',                            [\App\Http\Controllers\Api\FleetV2Controller::class, 'adminLogMaintenance']);
+        Route::get('/maintenance',                             [\App\Http\Controllers\Api\FleetV2Controller::class, 'adminListMaintenanceLogs']);
+        Route::get('/certifications',                          [\App\Http\Controllers\Api\FleetV2Controller::class, 'adminListCertifications']);
+        Route::post('/certifications',                         [\App\Http\Controllers\Api\FleetV2Controller::class, 'adminAddCertification']);
+        Route::post('/certifications/scan-expiring',           [\App\Http\Controllers\Api\FleetV2Controller::class, 'adminScanExpiring']);
+    });
+
+    // Phase KYB v2 — Compliance entreprises
+    Route::prefix('v2/kyb')->group(function () {
+        Route::get('/me/entities',                              [\App\Http\Controllers\Api\KybV2Controller::class, 'listMyEntities']);
+        Route::post('/me/entities',                             [\App\Http\Controllers\Api\KybV2Controller::class, 'startVerification']);
+        Route::get('/me/entities/{entity}',                     [\App\Http\Controllers\Api\KybV2Controller::class, 'showMyEntity']);
+        Route::post('/me/entities/{entity}/documents',          [\App\Http\Controllers\Api\KybV2Controller::class, 'uploadDocument']);
+        Route::get('/documents/{document}/download',            [\App\Http\Controllers\Api\KybV2Controller::class, 'downloadDocument']);
+    });
+    Route::prefix('admin/kyb-v2')->middleware('api_scope:admin:everything')->group(function () {
+        Route::get('/entities',                                 [\App\Http\Controllers\Api\KybV2Controller::class, 'adminListEntities']);
+        Route::post('/entities/{entity}/run-verifications',     [\App\Http\Controllers\Api\KybV2Controller::class, 'adminRunVerifications']);
+        Route::post('/entities/{entity}/run-sanctions',         [\App\Http\Controllers\Api\KybV2Controller::class, 'adminRunSanctions']);
+        Route::post('/entities/{entity}/approve',               [\App\Http\Controllers\Api\KybV2Controller::class, 'adminApprove']);
+        Route::post('/entities/{entity}/reject',                [\App\Http\Controllers\Api\KybV2Controller::class, 'adminReject']);
+        Route::post('/entities/{entity}/beneficial-owners',     [\App\Http\Controllers\Api\KybV2Controller::class, 'adminAddBeneficialOwner']);
+        Route::get('/documents',                                [\App\Http\Controllers\Api\KybV2Controller::class, 'adminListDocuments']);
+        Route::post('/documents/{document}/review',             [\App\Http\Controllers\Api\KybV2Controller::class, 'adminReviewDocument']);
+    });
+
+    // Phase Tenancy v2 — Multi-tenancy / White-label
+    Route::prefix('v2/tenancy')->group(function () {
+        Route::get('/me',                                       [\App\Http\Controllers\Api\TenancyV2Controller::class, 'currentTenant']);
+    });
+    Route::prefix('admin/tenancy-v2')->middleware('api_scope:admin:everything')->group(function () {
+        Route::get('/tenants',                                  [\App\Http\Controllers\Api\TenancyV2Controller::class, 'adminListTenants']);
+        Route::post('/tenants',                                 [\App\Http\Controllers\Api\TenancyV2Controller::class, 'adminCreateTenant']);
+        Route::post('/tenants/{tenant}/activate',               [\App\Http\Controllers\Api\TenancyV2Controller::class, 'adminActivateTenant']);
+        Route::post('/tenants/{tenant}/suspend',                [\App\Http\Controllers\Api\TenancyV2Controller::class, 'adminSuspendTenant']);
+        Route::post('/tenants/{tenant}/archive',                [\App\Http\Controllers\Api\TenancyV2Controller::class, 'adminArchiveTenant']);
+        Route::post('/tenants/{tenant}/change-plan',            [\App\Http\Controllers\Api\TenancyV2Controller::class, 'adminChangePlan']);
+        Route::post('/tenants/{tenant}/theming',                [\App\Http\Controllers\Api\TenancyV2Controller::class, 'adminUpdateTheming']);
+        Route::get('/tenants/{tenant}/domains',                 [\App\Http\Controllers\Api\TenancyV2Controller::class, 'adminListDomains']);
+        Route::post('/tenants/{tenant}/domains',                [\App\Http\Controllers\Api\TenancyV2Controller::class, 'adminAddDomain']);
+        Route::post('/domains/{domain}/verify',                 [\App\Http\Controllers\Api\TenancyV2Controller::class, 'adminVerifyDomain']);
+        Route::get('/tenants/{tenant}/users',                   [\App\Http\Controllers\Api\TenancyV2Controller::class, 'adminListUsers']);
+        Route::post('/tenants/{tenant}/users',                  [\App\Http\Controllers\Api\TenancyV2Controller::class, 'adminAttachUser']);
+    });
+
+    // Phase Accounting v2 — Ledger comptable + exports compta
+    // Scope api_scope:admin:everything (compta admin uniquement)
+    Route::prefix('admin/accounting-v2')->middleware('api_scope:admin:everything')->group(function () {
+        Route::get('/entries',                              [\App\Http\Controllers\Api\AccountingV2Controller::class, 'listEntries']);
+        Route::post('/entries',                             [\App\Http\Controllers\Api\AccountingV2Controller::class, 'postEntries']);
+        Route::get('/account-balance',                      [\App\Http\Controllers\Api\AccountingV2Controller::class, 'accountBalance']);
+        Route::get('/periods',                              [\App\Http\Controllers\Api\AccountingV2Controller::class, 'listPeriods']);
+        Route::post('/periods/{year}/{month}/close',        [\App\Http\Controllers\Api\AccountingV2Controller::class, 'closePeriod']);
+        Route::post('/periods/{period}/reopen',             [\App\Http\Controllers\Api\AccountingV2Controller::class, 'reopenPeriod']);
+        Route::get('/exports',                              [\App\Http\Controllers\Api\AccountingV2Controller::class, 'listExports']);
+        Route::post('/exports',                             [\App\Http\Controllers\Api\AccountingV2Controller::class, 'generateExport']);
+        Route::get('/exports/{export}/download',            [\App\Http\Controllers\Api\AccountingV2Controller::class, 'downloadExport']);
     });
 
     // Phase Subscriptions v2 — Recurring billing (plans/cycles/invoices)
@@ -279,7 +390,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/me/{subscription}/change-plan',       [\App\Http\Controllers\Api\SubscriptionsV2Controller::class, 'changePlan']);
         Route::get('/me/{subscription}/cycles',             [\App\Http\Controllers\Api\SubscriptionsV2Controller::class, 'listMyCycles']);
     });
-    Route::prefix('admin/subscriptions-v2')->group(function () {
+    Route::prefix('admin/subscriptions-v2')->middleware('api_scope:admin:everything')->group(function () {
         Route::get('/subscriptions',                        [\App\Http\Controllers\Api\SubscriptionsV2Controller::class, 'adminListSubscriptions']);
         Route::get('/cycles',                               [\App\Http\Controllers\Api\SubscriptionsV2Controller::class, 'adminListCycles']);
         Route::post('/cycles/{cycle}/retry-billing',        [\App\Http\Controllers\Api\SubscriptionsV2Controller::class, 'adminRetryBilling']);
@@ -292,12 +403,12 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/threads',                             [\App\Http\Controllers\Api\ChatV2Controller::class, 'createThread']);
         Route::get('/threads/{thread}',                     [\App\Http\Controllers\Api\ChatV2Controller::class, 'showThread']);
         Route::get('/threads/{thread}/messages',            [\App\Http\Controllers\Api\ChatV2Controller::class, 'listMessages']);
-        Route::post('/threads/{thread}/messages',           [\App\Http\Controllers\Api\ChatV2Controller::class, 'sendMessage']);
+        Route::post('/threads/{thread}/messages',           [\App\Http\Controllers\Api\ChatV2Controller::class, 'sendMessage'])->middleware('throttle:chat');
         Route::post('/threads/{thread}/read',               [\App\Http\Controllers\Api\ChatV2Controller::class, 'markAsRead']);
         Route::post('/threads/{thread}/archive',            [\App\Http\Controllers\Api\ChatV2Controller::class, 'archiveThread']);
         Route::get('/messages/{message}/attachment',        [\App\Http\Controllers\Api\ChatV2Controller::class, 'downloadAttachment']);
     });
-    Route::prefix('admin/chat-v2')->group(function () {
+    Route::prefix('admin/chat-v2')->middleware('api_scope:admin:everything')->group(function () {
         Route::get('/threads',                              [\App\Http\Controllers\Api\ChatV2Controller::class, 'adminListThreads']);
         Route::get('/flagged',                              [\App\Http\Controllers\Api\ChatV2Controller::class, 'adminListFlagged']);
         Route::post('/messages/{message}/moderate',         [\App\Http\Controllers\Api\ChatV2Controller::class, 'adminModerate']);
@@ -311,7 +422,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/me/tokens/{token}/rotate', [\App\Http\Controllers\Api\ApiTokensV2Controller::class, 'rotateMyToken']);
         Route::delete('/me/tokens/{token}',    [\App\Http\Controllers\Api\ApiTokensV2Controller::class, 'revokeMyToken']);
     });
-    Route::prefix('admin/api-tokens-v2')->group(function () {
+    Route::prefix('admin/api-tokens-v2')->middleware('api_scope:admin:everything')->group(function () {
         Route::get('/tokens',                       [\App\Http\Controllers\Api\ApiTokensV2Controller::class, 'adminListTokens']);
         Route::get('/usages',                       [\App\Http\Controllers\Api\ApiTokensV2Controller::class, 'adminListUsages']);
         Route::post('/tokens/{token}/suspend',      [\App\Http\Controllers\Api\ApiTokensV2Controller::class, 'adminSuspend']);
@@ -326,14 +437,15 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/reverse',       [\App\Http\Controllers\Api\GeolocationV2Controller::class, 'reverse']);
         Route::post('/distance',     [\App\Http\Controllers\Api\GeolocationV2Controller::class, 'distance']);
     });
-    Route::prefix('admin/geolocation-v2')->group(function () {
+    Route::prefix('admin/geolocation-v2')->middleware('api_scope:admin:everything')->group(function () {
         Route::get('/lookups',       [\App\Http\Controllers\Api\GeolocationV2Controller::class, 'adminLookups']);
         Route::get('/stats',         [\App\Http\Controllers\Api\GeolocationV2Controller::class, 'adminStats']);
         Route::post('/cache/purge',  [\App\Http\Controllers\Api\GeolocationV2Controller::class, 'adminPurgeCache']);
     });
 
     // Phase Webhooks v2 — Outbound B2B
-    Route::prefix('admin/webhooks-v2')->group(function () {
+    // Scope api_scope:admin:webhooks — session-auth (UI admin) bypasse, B2B tokens doivent avoir le scope.
+    Route::prefix('admin/webhooks-v2')->middleware('api_scope:admin:webhooks,admin:everything')->group(function () {
         Route::get('/endpoints',                            [\App\Http\Controllers\Api\WebhooksV2Controller::class, 'adminListEndpoints']);
         Route::post('/endpoints',                           [\App\Http\Controllers\Api\WebhooksV2Controller::class, 'adminCreateEndpoint']);
         Route::patch('/endpoints/{endpoint}',               [\App\Http\Controllers\Api\WebhooksV2Controller::class, 'adminUpdateEndpoint']);
@@ -354,13 +466,13 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/{booking}/cancellation-quote',  [\App\Http\Controllers\Api\CancellationV2Controller::class, 'providerQuote']);
         Route::post('/{booking}/cancel',             [\App\Http\Controllers\Api\CancellationV2Controller::class, 'providerExecute']);
     });
-    Route::prefix('admin/cancellations-v2')->group(function () {
+    Route::prefix('admin/cancellations-v2')->middleware('api_scope:admin:everything')->group(function () {
         Route::get('/',                              [\App\Http\Controllers\Api\CancellationV2Controller::class, 'adminIndex']);
         Route::post('/{cancellation}/override',      [\App\Http\Controllers\Api\CancellationV2Controller::class, 'adminOverride']);
     });
 
     // Phase Audit v2 — Events search / pin / export (admin)
-    Route::prefix('admin/audit')->group(function () {
+    Route::prefix('admin/audit')->middleware('api_scope:admin:everything')->group(function () {
         Route::get('/events',                    [\App\Http\Controllers\Api\Admin\AuditController::class, 'index']);
         Route::get('/events/export',             [\App\Http\Controllers\Api\Admin\AuditController::class, 'export']);
         Route::get('/events/{event}',            [\App\Http\Controllers\Api\Admin\AuditController::class, 'show']);

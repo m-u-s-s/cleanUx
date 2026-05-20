@@ -42,16 +42,22 @@ return new class extends Migration
             // Copier les valeurs sender_id → user_id
             DB::statement('UPDATE messages SET user_id = sender_id WHERE user_id IS NULL AND sender_id IS NOT NULL');
 
-            if (Schema::getConnection()->getDriverName() === 'sqlite') {
-                // SQLite : drop juste la colonne (la FK partira avec, depuis SQLite 3.35.0)
+            // Laravel 11 + SQLite : stricter FK/index handling sur drop column.
+            // Drop FK + index explicitement avant la colonne. Chaque op dans son propre Schema::table
+            // pour pouvoir try/catch séparément si index/FK manquant.
+            Schema::disableForeignKeyConstraints();
+            try {
+                try {
+                    Schema::table('messages', fn (Blueprint $t) => $t->dropForeign(['sender_id']));
+                } catch (\Throwable) {}
+                try {
+                    Schema::table('messages', fn (Blueprint $t) => $t->dropIndex(['sender_id']));
+                } catch (\Throwable) {}
                 Schema::table('messages', function (Blueprint $table) {
                     $table->dropColumn('sender_id');
                 });
-            } else {
-                // MySQL/PG : drop FK + colonne (workflow normal)
-                Schema::table('messages', function (Blueprint $table) {
-                    $table->dropConstrainedForeignId('sender_id');
-                });
+            } finally {
+                Schema::enableForeignKeyConstraints();
             }
         }
 

@@ -27,6 +27,9 @@ class EventServiceProvider extends ServiceProvider
         NotificationFailed::class => [
             LogNotificationMailFailed::class,
         ],
+        \App\Events\Kyc\KycCompleted::class => [
+            \App\Listeners\Kyc\EmitKycApprovedWebhook::class,
+        ],
     ];
 
     /**

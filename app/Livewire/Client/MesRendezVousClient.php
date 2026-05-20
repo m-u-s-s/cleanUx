@@ -273,7 +273,27 @@ class MesRendezVousClient extends Component
             'reason' => $this->cancelReason,
         ]);
 
-        $rdv->markCancelledByClient($this->cancelReason);
+        // CancellationV2 — engine paramétrable (tiers windows + fees + refund stripe)
+        try {
+            if (class_exists(\App\Services\CancellationV2\CancellationEngine::class)
+                && \Illuminate\Support\Facades\Schema::hasTable('booking_cancellations_v2')) {
+                app(\App\Services\CancellationV2\CancellationEngine::class)->cancel(
+                    booking: $rdv,
+                    actorRole: 'client',
+                    actor: \Illuminate\Support\Facades\Auth::user(),
+                    reason: $this->cancelReason,
+                );
+            } else {
+                $rdv->markCancelledByClient($this->cancelReason);
+            }
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::warning('[cancellation_v2] cancel failed, fallback legacy', [
+                'booking_id' => $rdv->id,
+                'error' => $e->getMessage(),
+            ]);
+            $rdv->markCancelledByClient($this->cancelReason);
+        }
+
         $this->fermerAnnulation();
         $this->dispatch('toast', message: 'Rendez-vous annulé.', type: 'success');
     }

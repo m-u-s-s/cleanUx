@@ -51,6 +51,17 @@ class TwilioSmsProvider implements SmsProviderInterface
         }
     }
 
+    /**
+     * Vérifie la signature Twilio HMAC SHA1 (X-Twilio-Signature header).
+     *
+     * Algo Twilio :
+     *   1. base = URL complete (incl. query) + params POST triés par clé
+     *   2. HMAC SHA1 avec auth token
+     *   3. base64 encode
+     *   4. compare en time-safe avec X-Twilio-Signature
+     *
+     * Le caller (controller) doit fournir headers['X-Twilio-Signature'] et headers['_url'] (URL pleine).
+     */
     public function verifyWebhook(string $payload, array $headers): array
     {
         $token = (string) config('sms.providers.twilio.token', '');
@@ -58,15 +69,43 @@ class TwilioSmsProvider implements SmsProviderInterface
             throw new RuntimeException('Twilio token missing for webhook verification.');
         }
 
-        // Twilio DLR vient en form-encoded, parsé en POST request body.
         parse_str($payload, $parsed);
         if (! is_array($parsed)) {
             $parsed = [];
         }
 
-        // Note: la vérification complète de signature Twilio requiert l'URL + body trié.
-        // Le service se contente ici de parser. La signature complète peut être
-        // vérifiée au niveau du controller si nécessaire.
+        // Skip verification only if explicitly disabled (dev mode)
+        if (! (bool) config('sms.providers.twilio.verify_signature', true)) {
+            return $parsed;
+        }
+
+        $providedSignature = $headers['x-twilio-signature']
+            ?? $headers['X-Twilio-Signature']
+            ?? ($headers['X_TWILIO_SIGNATURE'] ?? null);
+
+        if (! $providedSignature) {
+            throw new RuntimeException('Missing X-Twilio-Signature header.');
+        }
+
+        $url = $headers['_url'] ?? '';
+        if (! $url) {
+            throw new RuntimeException('Missing _url header for Twilio signature verification.');
+        }
+
+        // Concat params sorted by key (Twilio spec)
+        $sortedParams = $parsed;
+        ksort($sortedParams);
+        $data = $url;
+        foreach ($sortedParams as $k => $v) {
+            $data .= $k . (is_array($v) ? json_encode($v) : (string) $v);
+        }
+
+        $expected = base64_encode(hash_hmac('sha1', $data, $token, true));
+
+        if (! hash_equals($expected, (string) $providedSignature)) {
+            throw new RuntimeException('Invalid Twilio webhook signature.');
+        }
+
         return $parsed;
     }
 

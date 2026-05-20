@@ -32,6 +32,21 @@ Route::middleware(['role:employe'])
             Route::get('/missions', \App\Livewire\Employe\MissionsEmploye::class)->name('missions');
         }
 
+        if (class_exists(\App\Livewire\Employe\EmployeeRateClient::class)) {
+            Route::get('/missions/{bookingId}/evaluer-client', \App\Livewire\Employe\EmployeeRateClient::class)
+                ->name('rate.client');
+        }
+
+        if (class_exists(\App\Livewire\Provider\ProviderBadgesPage::class)) {
+            Route::get('/badges', \App\Livewire\Provider\ProviderBadgesPage::class)
+                ->name('badges');
+        }
+
+        if (class_exists(\App\Livewire\Provider\ProviderEarningsDashboard::class)) {
+            Route::get('/revenus', \App\Livewire\Provider\ProviderEarningsDashboard::class)
+                ->name('earnings');
+        }
+
         if (class_exists(\App\Livewire\Employe\MissionFieldPage::class)) {
             Route::get('/missions/{mission}', \App\Livewire\Employe\MissionFieldPage::class)
                 ->middleware('can:update,mission')

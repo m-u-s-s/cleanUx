@@ -144,6 +144,36 @@ Route::middleware(['role:admin'])
                 ->name('loyalty.center');
         }
 
+        // Loyalty Rewards Marketplace — catalogue récompenses + rédemptions
+        if (class_exists(\App\Livewire\Admin\Loyalty\LoyaltyRewardsCenter::class)) {
+            Route::get('/loyalty/rewards', \App\Livewire\Admin\Loyalty\LoyaltyRewardsCenter::class)
+                ->name('loyalty.rewards.center');
+        }
+
+        // Tips v2 — Centre des pourboires
+        if (class_exists(\App\Livewire\Admin\Tips\TipsCenter::class)) {
+            Route::get('/tips', \App\Livewire\Admin\Tips\TipsCenter::class)
+                ->name('tips.center');
+        }
+
+        // Trip Tracking v2 — Sessions GPS missions (live + replay)
+        if (class_exists(\App\Livewire\Admin\TripTracking\TripTrackingCenter::class)) {
+            Route::get('/trip-tracking', \App\Livewire\Admin\TripTracking\TripTrackingCenter::class)
+                ->name('trip-tracking.center');
+        }
+
+        // Presence v2 — Live online/offline status
+        if (class_exists(\App\Livewire\Admin\Presence\PresenceCenter::class)) {
+            Route::get('/presence', \App\Livewire\Admin\Presence\PresenceCenter::class)
+                ->name('presence.center');
+        }
+
+        // Analytics — Raisons d'annulation
+        if (class_exists(\App\Livewire\Admin\Analytics\CancellationReasonsCenter::class)) {
+            Route::get('/analytics/cancellations', \App\Livewire\Admin\Analytics\CancellationReasonsCenter::class)
+                ->name('analytics.cancellations');
+        }
+
         // SMS v2 — Centre SMS / WhatsApp (KPIs, recherche, retry manuel)
         if (class_exists(\App\Livewire\Admin\Sms\SmsCenter::class)) {
             Route::get('/sms', \App\Livewire\Admin\Sms\SmsCenter::class)
@@ -268,6 +298,30 @@ Route::middleware(['role:admin'])
         if (class_exists(\App\Livewire\Admin\SubscriptionsV2\SubscriptionsCenter::class)) {
             Route::get('/subscriptions-v2', \App\Livewire\Admin\SubscriptionsV2\SubscriptionsCenter::class)
                 ->name('subscriptions-v2.center');
+        }
+
+        // Accounting v2 — Ledger + periods + exports compta
+        if (class_exists(\App\Livewire\Admin\AccountingV2\AccountingCenter::class)) {
+            Route::get('/accounting-v2', \App\Livewire\Admin\AccountingV2\AccountingCenter::class)
+                ->name('accounting-v2.center');
+        }
+
+        // Tenancy v2 — Multi-tenancy / White-label
+        if (class_exists(\App\Livewire\Admin\TenancyV2\TenantsCenter::class)) {
+            Route::get('/tenancy-v2', \App\Livewire\Admin\TenancyV2\TenantsCenter::class)
+                ->name('tenancy-v2.center');
+        }
+
+        // KYB v2 — Compliance entreprises
+        if (class_exists(\App\Livewire\Admin\KybV2\KybCenter::class)) {
+            Route::get('/kyb-v2', \App\Livewire\Admin\KybV2\KybCenter::class)
+                ->name('kyb-v2.center');
+        }
+
+        // Fleet v2 — Vehicles / Equipment / Assignments / Maintenance
+        if (class_exists(\App\Livewire\Admin\FleetV2\FleetCenter::class)) {
+            Route::get('/fleet-v2', \App\Livewire\Admin\FleetV2\FleetCenter::class)
+                ->name('fleet-v2.center');
         }
 
         // Promotions — Codes promo, campagnes, programme de parrainage

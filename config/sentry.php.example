@@ -1,0 +1,76 @@
+<?php
+
+/**
+ * Sentry config skeleton — renommer en `sentry.php` après `composer require sentry/sentry-laravel`.
+ *
+ * Couvre :
+ *  - DSN env-based
+ *  - RGPD-safe : SEND_DEFAULT_PII désactivé
+ *  - Sample rates conservateurs pour ne pas exploser la quota
+ *  - Filtre `before_send` pour ignorer les soft-fails attendus
+ *  - Integration breadcrumbs depuis les helpers v2
+ */
+
+return [
+    'dsn' => env('SENTRY_LARAVEL_DSN'),
+
+    'release' => env('SENTRY_RELEASE', null),
+    'environment' => env('SENTRY_ENVIRONMENT', env('APP_ENV', 'production')),
+
+    'send_default_pii' => env('SENTRY_SEND_DEFAULT_PII', false),
+
+    'traces_sample_rate' => (float) env('SENTRY_TRACES_SAMPLE_RATE', 0.1),
+    'profiles_sample_rate' => (float) env('SENTRY_PROFILES_SAMPLE_RATE', 0.1),
+
+    'breadcrumbs' => [
+        'logs' => true,
+        'sql_queries' => true,
+        'sql_bindings' => false,   // RGPD : pas de bindings (potentielles PII)
+        'queue_info' => true,
+        'command_info' => true,
+        'http_client_requests' => true,
+    ],
+
+    /**
+     * Filter callable — ignore les soft-fail breadcrumbs prévus dans les helpers v2.
+     */
+    'before_send' => function (\Sentry\Event $event): ?\Sentry\Event {
+        $msg = (string) $event->getMessage();
+        $ignoredPrefixes = [
+            '[business_webhook]',
+            '[chat_auto]',
+            '[critical_audit]',
+            '[accounting_auto_post]',
+            '[fleet_v2]',
+            '[kyb_v2] insee error',
+            '[kyb_v2] vies error',
+            '[kyb_v2] companies_house error',
+            '[geo_v2] google error',
+            '[geo_v2] mapbox error',
+        ];
+        foreach ($ignoredPrefixes as $prefix) {
+            if (str_starts_with($msg, $prefix)) {
+                return null;
+            }
+        }
+        return $event;
+    },
+
+    /**
+     * Tags automatiques injectés dans tous les events via AppServiceProvider boot().
+     * Pour activer, ajouter dans boot() :
+     *
+     *   if (app()->bound('sentry')) {
+     *       \Sentry\configureScope(function (\Sentry\State\Scope $scope) {
+     *           $scope->setTag('app.module', 'cleanux-v2');
+     *           if (function_exists('app') && app()->bound(\App\Services\TenancyV2\TenantContext::class)) {
+     *               $tenant = app(\App\Services\TenancyV2\TenantContext::class)->current();
+     *               if ($tenant) {
+     *                   $scope->setTag('tenant.code', $tenant->code);
+     *                   $scope->setTag('tenant.plan', $tenant->plan_code);
+     *               }
+     *           }
+     *       });
+     *   }
+     */
+];

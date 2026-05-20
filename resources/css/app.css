@@ -1,229 +1,201 @@
+/* ============================================================================
+   CleanUx — Design System (consolidé)
+   ----------------------------------------------------------------------------
+   UNE MARQUE, DEUX MODES :
+     • Mode `cu-*` (clair)   → pages OUTIL : dashboards, livewire/client/*,
+                                livewire/employe/*, admin, formulaires connectés.
+                                Priorité : lisibilité, densité, rapidité.
+     • Mode `cx-*` (sombre)  → pages VITRINE : home, landing, premium, auth.
+                                Priorité : marque, storytelling, désir.
+
+   Les deux modes partagent : police (Figtree + Space Grotesk), accent ambre
+   (#ffb648), rayons, timings. C'est ce qui les fait sentir d'une même marque.
+
+   Activation du mode sombre vitrine : ajouter la classe `cx-shell` au <body>
+   (déjà fait dans layouts/guest.blade.php).
+   ========================================================================= */
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 @import './fullcalendar-overrides.css';
 
-[x-cloak] {
-    display: none;
-}
+/* ---------- Utilitaires globaux préservés ---------- */
+[x-cloak] { display: none; }
 
 @keyframes fade-in {
-    from {
-        opacity: 0;
-        transform: translateY(-10px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
+    from { opacity: 0; transform: translateY(-10px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+.animate-fade-in { animation: fade-in 0.3s ease-out; }
+
+@keyframes slideUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes shimmer {
+    0%   { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
 }
 
-.animate-fade-in {
-    animation: fade-in 0.3s ease-out;
-}
-
+/* ============================================================================
+   1) TOKENS PARTAGÉS — la même marque, peu importe le mode
+   ========================================================================= */
 :root {
-    --swift-red: #e03a2f;
-    --swift-green: #2f9e44;
-    --swift-blue: #003366;
-    --swift-gray: #f8fafc;
-    --cu-ink: #0f172a;
-    --cu-muted: #64748b;
-    --cu-border: rgba(148, 163, 184, 0.18);
-    --cu-card: rgba(255, 255, 255, 0.9);
-    --cu-card-strong: rgba(255, 255, 255, 0.96);
-    --cu-shadow: 0 14px 40px rgba(15, 23, 42, 0.08);
-    --cu-shadow-soft: 0 8px 24px rgba(15, 23, 42, 0.05);
-    --cu-ring: 0 0 0 4px rgba(59, 130, 246, 0.12);
+    /* Typographie (chargée par les layouts depuis bunny.net) */
+    --cx-display: "Space Grotesk", "Figtree", system-ui, sans-serif;
+    --cx-body:    "Figtree", system-ui, -apple-system, sans-serif;
+
+    /* Accent de marque (commun aux deux modes) */
+    --cx-amber:        #ffb648;
+    --cx-amber-deep:   #ff8a3d;
+    --cx-glow-amber:   rgba(255, 182, 72, 0.55);
+
+    /* Couleurs secondaires (vitrine + accents) */
+    --cx-cyan:         #4fe3d6;
+    --cx-violet:       #8b7bff;
+    --cx-glow-cyan:    rgba(79, 227, 214, 0.45);
+
+    /* Rayons unifiés */
+    --cx-radius-sm:    10px;
+    --cx-radius-md:    14px;
+    --cx-radius-lg:    22px;
+    --cx-radius-xl:    28px;
+    --cx-radius-pill:  999px;
+
+    /* Timings unifiés */
+    --cx-ease:         cubic-bezier(.16, 1, .3, 1);
+    --cx-dur-fast:     180ms;
+    --cx-dur:          280ms;
+    --cx-dur-slow:     420ms;
+
+    /* ----------------------------------------------------------------
+       TOKENS MODE OUTIL (cu-*) — historique, ne pas casser
+       ---------------------------------------------------------------- */
+    --cu-ink:          #0f172a;
+    --cu-muted:        #64748b;
+    --cu-border:       rgba(148, 163, 184, 0.18);
+    --cu-card:         rgba(255, 255, 255, 0.9);
+    --cu-card-strong:  rgba(255, 255, 255, 0.96);
+    --cu-shadow:       0 14px 40px rgba(15, 23, 42, 0.08);
+    --cu-shadow-soft:  0 8px 24px rgba(15, 23, 42, 0.05);
+    --cu-ring:         0 0 0 4px rgba(59, 130, 246, 0.12);
+
+    /* ----------------------------------------------------------------
+       TOKENS MODE VITRINE (cx-*) — Atelier Orbital
+       ---------------------------------------------------------------- */
+    --cx-night:        #070b14;
+    --cx-night-soft:   #0c1322;
+    --cx-panel:        #111a2e;
+    --cx-line:         rgba(148, 178, 230, 0.14);
+    --cx-text:         #e8eefc;
+    --cx-muted:        #93a4c6;
 }
 
+/* ============================================================================
+   2) BASE — html / body (mode outil par défaut, mode vitrine via .cx-shell)
+   ========================================================================= */
 @layer base {
-    html {
-        scroll-behavior: smooth;
-    }
+    html { scroll-behavior: smooth; }
 
+    /* Body par défaut = thème clair (pages outil) */
     body {
         background:
             radial-gradient(circle at top left, rgba(96, 165, 250, 0.12), transparent 26%),
             radial-gradient(circle at top right, rgba(250, 204, 21, 0.08), transparent 20%),
             linear-gradient(180deg, #f8fbff 0%, #f6f8fc 42%, #f8fafc 100%);
-        font-family: 'Inter', sans-serif;
+        font-family: var(--cx-body);
         color: var(--cu-ink);
     }
 
-    h1,
-    h2,
-    h3,
-    h4 {
-        color: var(--cu-ink);
+    /* Body en mode vitrine (ajouter class="cx-shell" sur <body>) */
+    body.cx-shell {
+        background: var(--cx-night);
+        color: var(--cx-text);
+        font-family: var(--cx-body);
+        -webkit-font-smoothing: antialiased;
+        overflow-x: hidden;
     }
+
+    h1, h2, h3, h4 { color: var(--cu-ink); }
+    body.cx-shell h1, body.cx-shell h2, body.cx-shell h3, body.cx-shell h4 { color: var(--cx-text); }
 }
 
+/* ============================================================================
+   3) MODE OUTIL (cu-*) — PRÉSERVÉ INTÉGRALEMENT
+   ---------------------------------------------------------------------------
+   Tout ce qui suit vient du système existant. Ne pas modifier sans contre-audit
+   des usages (40 classes cu-* utilisées dans les vues à ce jour).
+   ========================================================================= */
 @layer components {
     .card {
         background-color: var(--cu-card-strong);
         border-radius: 1rem;
         padding: 1.5rem;
         box-shadow: var(--cu-shadow-soft);
-        transition: transform 0.2s ease, box-shadow 0.2s ease;
+        transition: transform .2s ease, box-shadow .2s ease;
     }
+    .card:hover { transform: translateY(-1px); box-shadow: var(--cu-shadow); }
 
-    .card:hover {
-        transform: translateY(-1px);
-        box-shadow: var(--cu-shadow);
-    }
-
-    .btn {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        gap: 0.5rem;
-        padding: 0.65rem 1rem;
-        border-radius: 0.9rem;
-        font-weight: 600;
-        font-size: 0.875rem;
-        transition: all 0.2s ease;
-    }
-
-    .btn-red {
-        background-color: var(--swift-red);
-        color: white;
-    }
-
-    .btn-red:hover {
-        background-color: #b92e26;
-    }
-
-    .btn-green {
-        background-color: var(--swift-green);
-        color: white;
-    }
-
-    .btn-green:hover {
-        background-color: #238a3b;
-    }
-
-    .btn-blue {
-        background-color: var(--swift-blue);
-        color: white;
-    }
-
-    .btn-blue:hover {
-        background-color: #00294d;
-    }
-
-    input[type="text"],
-    input[type="email"],
-    input[type="password"],
-    input[type="date"],
-    input[type="number"],
-    input[type="time"],
-    select,
-    textarea {
+    /* Champs de formulaire (s'applique à TOUTES les pages — utile partout) */
+    input[type="text"], input[type="email"], input[type="password"], input[type="date"],
+    input[type="number"], input[type="time"], select, textarea {
         border: 1px solid rgba(148, 163, 184, 0.35);
         background: rgba(255, 255, 255, 0.96);
         padding: 0.72rem 0.9rem;
         border-radius: 0.9rem;
         font-size: 0.875rem;
         width: 100%;
-        transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+        transition: border-color .2s, box-shadow .2s, background-color .2s;
     }
-
-    input:focus,
-    select:focus,
-    textarea:focus {
-        border-color: #60a5fa;
-        outline: none;
-        box-shadow: var(--cu-ring);
-        background: white;
+    input:focus, select:focus, textarea:focus {
+        border-color: #60a5fa; outline: none;
+        box-shadow: var(--cu-ring); background: white;
     }
 
     .badge {
-        display: inline-flex;
-        align-items: center;
-        padding: 0.25rem 0.65rem;
-        font-size: 0.75rem;
-        border-radius: 9999px;
-        color: white;
-        font-weight: 700;
+        display: inline-flex; align-items: center;
+        padding: 0.25rem 0.65rem; font-size: 0.75rem;
+        border-radius: 9999px; color: white; font-weight: 700;
         letter-spacing: 0.01em;
     }
 
-    .badge-validé {
-        background-color: var(--swift-green);
-    }
-
-    .badge-refusé {
-        background-color: var(--swift-red);
-    }
-
-    .badge-attente {
-        background-color: var(--swift-blue);
-    }
-
     .toast {
-        background-color: var(--swift-blue);
-        color: white;
-        padding: 1rem 1.25rem;
-        border-radius: 1rem;
+        color: white; padding: 1rem 1.25rem; border-radius: 1rem;
         animation: slideUp 0.4s ease;
         box-shadow: 0 15px 45px rgba(15, 23, 42, 0.18);
+        background-color: #003366;
     }
-
-    .toast.success {
-        background-color: var(--swift-green);
-    }
-
-    .toast.error {
-        background-color: var(--swift-red);
-    }
+    .toast.success { background-color: #2f9e44; }
+    .toast.error   { background-color: #e03a2f; }
 
     .star-rating .star {
-        color: var(--swift-blue);
-        font-size: 1.25rem;
-        transition: transform 0.2s ease, color 0.2s ease;
-        cursor: pointer;
+        color: #003366; font-size: 1.25rem;
+        transition: transform .2s, color .2s; cursor: pointer;
     }
+    .star-rating .star:hover { color: #e03a2f; transform: scale(1.1); }
 
-    .star-rating .star:hover {
-        color: var(--swift-red);
-        transform: scale(1.1);
-    }
-
-    .cu-page {
-        @apply mx-auto w-full max-w-7xl space-y-6;
-    }
+    .cu-page { @apply mx-auto w-full max-w-7xl space-y-6; }
 
     .cu-hero {
         @apply relative overflow-hidden rounded-[28px] border border-white/70 bg-white/85 p-5 shadow-[0_18px_50px_rgba(15,23,42,0.08)] backdrop-blur md:p-6;
     }
-
     .cu-hero::before {
-        content: '';
-        position: absolute;
-        inset: 0;
+        content: ''; position: absolute; inset: 0;
         background:
             radial-gradient(circle at top right, rgba(59, 130, 246, 0.14), transparent 24%),
             radial-gradient(circle at left center, rgba(250, 204, 21, 0.1), transparent 20%);
         pointer-events: none;
     }
 
-.cu-card {
-    @apply relative rounded-[24px] border border-slate-200/80 shadow-[0_10px_30px_rgba(15,23,42,0.06)] backdrop-blur;
-    background-color: rgb(255 255 255 / 0.92);
-}
-
-    .cu-card-muted {
-        @apply rounded-[20px] border border-slate-200/80 bg-slate-50/90 shadow-sm;
+    .cu-card {
+        @apply relative rounded-[24px] border border-slate-200/80 shadow-[0_10px_30px_rgba(15,23,42,0.06)] backdrop-blur;
+        background-color: rgb(255 255 255 / 0.92);
     }
+    .cu-card-muted { @apply rounded-[20px] border border-slate-200/80 bg-slate-50/90 shadow-sm; }
 
-    .cu-section-title {
-        @apply text-lg font-bold tracking-tight text-slate-900 md:text-xl;
-    }
-
-    .cu-section-subtitle {
-        @apply mt-1 text-sm leading-6 text-slate-500;
-    }
+    .cu-section-title    { @apply text-lg font-bold tracking-tight text-slate-900 md:text-xl; }
+    .cu-section-subtitle { @apply mt-1 text-sm leading-6 text-slate-500; }
 
     .cu-eyebrow {
         @apply inline-flex items-center gap-2 rounded-full border border-sky-100 bg-sky-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-sky-700;
@@ -232,11 +204,9 @@
     .cu-btn-primary {
         @apply inline-flex items-center justify-center gap-2 rounded-xl bg-sky-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-sky-700 hover:shadow-md;
     }
-
     .cu-btn-secondary {
         @apply inline-flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 hover:border-slate-300;
     }
-
     .cu-btn-danger {
         @apply inline-flex items-center justify-center gap-2 rounded-xl border border-red-200 bg-red-50 px-4 py-2.5 text-sm font-semibold text-red-700 transition hover:bg-red-100;
     }
@@ -245,62 +215,62 @@
         @apply inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-600 shadow-sm;
     }
 
-    .cu-kpi {
-        @apply cu-card p-4 md:p-5;
-    }
+    .cu-kpi         { @apply cu-card p-4 md:p-5; }
+    .cu-kpi-value   { @apply mt-2 text-2xl font-bold tracking-tight text-slate-900 md:text-[1.85rem]; }
+    .cu-kpi-label   { @apply text-sm font-medium text-slate-500; }
+    .cu-kpi-hint    { @apply mt-2 text-xs text-slate-400; }
 
-    .cu-kpi-value {
-        @apply mt-2 text-2xl font-bold tracking-tight text-slate-900 md:text-[1.85rem];
-    }
-
-    .cu-kpi-label {
-        @apply text-sm font-medium text-slate-500;
-    }
-
-    .cu-kpi-hint {
-        @apply mt-2 text-xs text-slate-400;
-    }
-
-    .cu-list-item {
-        @apply rounded-2xl border border-slate-200 bg-slate-50/90 p-4 transition hover:border-slate-300 hover:bg-white;
-    }
-
-    .cu-empty {
-        @apply rounded-[24px] border border-dashed border-slate-300 bg-slate-50/90 p-8 text-center shadow-inner;
-    }
-
-    .cu-empty-icon {
-        @apply mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-white text-2xl shadow-sm ring-1 ring-slate-200;
-    }
+    .cu-list-item   { @apply rounded-2xl border border-slate-200 bg-slate-50/90 p-4 transition hover:border-slate-300 hover:bg-white; }
+    .cu-empty       { @apply rounded-[24px] border border-dashed border-slate-300 bg-slate-50/90 p-8 text-center shadow-inner; }
+    .cu-empty-icon  { @apply mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-white text-2xl shadow-sm ring-1 ring-slate-200; }
 
     .cu-skeleton {
         @apply animate-pulse rounded-xl bg-gradient-to-r from-slate-200 via-slate-100 to-slate-200 bg-[length:200%_100%];
         animation: shimmer 1.4s ease-in-out infinite;
     }
 
-    .cu-table thead th {
-        @apply border-b border-slate-200 bg-slate-50 px-4 py-3 text-left text-xs font-semibold uppercase tracking-[0.14em] text-slate-500;
-    }
+    .cu-table thead th { @apply border-b border-slate-200 bg-slate-50 px-4 py-3 text-left text-xs font-semibold uppercase tracking-[0.14em] text-slate-500; }
+    .cu-table tbody td { @apply border-b border-slate-100 px-4 py-3 align-top text-sm text-slate-700; }
+    .cu-table tbody tr:hover { @apply bg-slate-50/70; }
 
-    .cu-table tbody td {
-        @apply border-b border-slate-100 px-4 py-3 align-top text-sm text-slate-700;
-    }
+    .cu-toolbar     { @apply flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between; }
+    .cu-divider     { @apply border-t border-slate-200/80; }
+    .cu-soft-ring   { box-shadow: var(--cu-ring); }
 
-    .cu-table tbody tr:hover {
-        @apply bg-slate-50/70;
-    }
+    .cu-filter-grid       { @apply grid gap-3 md:grid-cols-2 xl:grid-cols-4; }
+    .cu-filter-grid-wide  { @apply grid gap-3 md:grid-cols-2 xl:grid-cols-6; }
+    .cu-admin-tile        { @apply rounded-2xl border border-slate-200 bg-slate-50/90 p-4 transition hover:border-slate-300 hover:bg-white; }
+    .cu-code-block        { @apply block overflow-x-auto rounded-2xl bg-slate-950 px-4 py-3 text-sm text-slate-100 shadow-inner; }
+    .cu-note              { @apply rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm leading-6 text-amber-800; }
+    .cu-inline-stat       { @apply inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-600 shadow-sm; }
+    .cu-split-grid        { @apply grid grid-cols-1 gap-6 xl:grid-cols-3; }
+    .cu-side-stack        { @apply space-y-6; }
 
-    .cu-toolbar {
-        @apply flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between;
+    .cu-page-header {
+        @apply relative overflow-hidden rounded-[28px] border border-white/70 bg-white/90 p-5 shadow-[0_18px_50px_rgba(15,23,42,0.08)] backdrop-blur md:p-6;
     }
+    .cu-page-header::before {
+        content: ''; position: absolute; inset: 0;
+        background:
+            radial-gradient(circle at top right, rgba(14, 165, 233, 0.14), transparent 24%),
+            radial-gradient(circle at left center, rgba(250, 204, 21, 0.09), transparent 18%);
+        pointer-events: none;
+    }
+    .cu-page-header > * { position: relative; }
 
-    .cu-divider {
-        @apply border-t border-slate-200/80;
-    }
+    .cu-dashboard-grid    { @apply grid grid-cols-1 gap-6 xl:grid-cols-3; }
+    .cu-dashboard-main    { @apply space-y-6 xl:col-span-2; }
+    .cu-dashboard-side    { @apply space-y-6; }
 
-    .cu-soft-ring {
-        box-shadow: var(--cu-ring);
-    }
+    .cu-action-card       { @apply flex items-start gap-3 rounded-2xl border p-4 transition hover:-translate-y-0.5 hover:shadow-md; }
+    .cu-action-card-icon  { @apply flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-white text-xl shadow-sm ring-1 ring-slate-200/80; }
+
+    .cu-mobile-safe-bottom    { padding-bottom: calc(5rem + env(safe-area-inset-bottom)); }
+
+    .cu-status-dot            { @apply inline-flex h-2.5 w-2.5 rounded-full bg-slate-400; }
+    .cu-status-dot-success    { @apply bg-emerald-500; }
+    .cu-status-dot-warning    { @apply bg-amber-500; }
+    .cu-status-dot-danger     { @apply bg-rose-500; }
 }
 
 @layer utilities {
@@ -308,123 +278,222 @@
         background: rgba(255, 255, 255, 0.82);
         backdrop-filter: blur(14px);
     }
-
-    .cu-text-balance {
-        text-wrap: balance;
-    }
+    .cu-text-balance { text-wrap: balance; }
 }
 
-@keyframes slideUp {
-    from {
-        opacity: 0;
-        transform: translateY(20px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-@keyframes shimmer {
-    0% {
-        background-position: 200% 0;
-    }
-    100% {
-        background-position: -200% 0;
-    }
-}
-
+/* ============================================================================
+   4) MODE VITRINE (cx-*) — Atelier Orbital
+   ---------------------------------------------------------------------------
+   Réservé aux pages où la marque parle (home, premium, auth, landings).
+   Activation : <body class="... cx-shell">. Les vues vitrine consomment les
+   classes définies ci-dessous au lieu de redéclarer du CSS inline.
+   ========================================================================= */
 @layer components {
-    .cu-filter-grid {
-        @apply grid gap-3 md:grid-cols-2 xl:grid-cols-4;
-    }
-
-    .cu-filter-grid-wide {
-        @apply grid gap-3 md:grid-cols-2 xl:grid-cols-6;
-    }
-
-    .cu-admin-tile {
-        @apply rounded-2xl border border-slate-200 bg-slate-50/90 p-4 transition hover:border-slate-300 hover:bg-white;
-    }
-
-    .cu-code-block {
-        @apply block overflow-x-auto rounded-2xl bg-slate-950 px-4 py-3 text-sm text-slate-100 shadow-inner;
-    }
-
-    .cu-note {
-        @apply rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm leading-6 text-amber-800;
-    }
-
-    .cu-inline-stat {
-        @apply inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-600 shadow-sm;
-    }
-
-    .cu-split-grid {
-        @apply grid grid-cols-1 gap-6 xl:grid-cols-3;
-    }
-
-    .cu-side-stack {
-        @apply space-y-6;
-    }
-}
-
-@layer components {
-    .cu-page-header {
-        @apply relative overflow-hidden rounded-[28px] border border-white/70 bg-white/90 p-5 shadow-[0_18px_50px_rgba(15,23,42,0.08)] backdrop-blur md:p-6;
-    }
-
-    .cu-page-header::before {
-        content: '';
-        position: absolute;
-        inset: 0;
+    /* ---- Atmosphère vitrine ---- */
+    .cx-starfield {
+        position: fixed; inset: 0; z-index: 0; pointer-events: none;
         background:
-            radial-gradient(circle at top right, rgba(14, 165, 233, 0.14), transparent 24%),
-            radial-gradient(circle at left center, rgba(250, 204, 21, 0.09), transparent 18%);
-        pointer-events: none;
+            radial-gradient(circle at 18% 22%, rgba(139,123,255,0.20), transparent 38%),
+            radial-gradient(circle at 82% 14%, rgba(255,182,72,0.16), transparent 42%),
+            radial-gradient(circle at 70% 86%, rgba(79,227,214,0.16), transparent 45%),
+            var(--cx-night);
+    }
+    .cx-starfield::before {
+        content: ""; position: absolute; inset: -50%;
+        background-image:
+            radial-gradient(1px 1px at 20px 30px, rgba(255,255,255,0.9), transparent),
+            radial-gradient(1px 1px at 120px 80px, rgba(255,255,255,0.5), transparent),
+            radial-gradient(1.5px 1.5px at 220px 140px, rgba(255,255,255,0.7), transparent),
+            radial-gradient(1px 1px at 320px 60px, rgba(255,255,255,0.45), transparent),
+            radial-gradient(1.5px 1.5px at 420px 200px, rgba(255,255,255,0.6), transparent);
+        background-size: 480px 320px;
+        opacity: 0.5;
+        animation: cx-drift 90s linear infinite;
+    }
+    .cx-starfield::after {
+        content: ""; position: absolute; inset: 0; opacity: 0.045;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23n)'/%3E%3C/svg%3E");
     }
 
-    .cu-page-header > * {
+    /* ---- Typographie vitrine ---- */
+    .cx-kicker {
+        font-family: var(--cx-display);
+        font-size: 12px; font-weight: 700; letter-spacing: .32em;
+        text-transform: uppercase; color: var(--cx-amber);
+    }
+    .cx-h {
+        font-family: var(--cx-display); font-weight: 700;
+        line-height: 1.04; letter-spacing: -.02em; color: var(--cx-text);
+    }
+    .cx-lede { color: var(--cx-muted); line-height: 1.7; }
+    .cx-gradient-text {
+        background: linear-gradient(115deg, var(--cx-cyan), var(--cx-amber) 55%, var(--cx-violet));
+        -webkit-background-clip: text; background-clip: text; color: transparent;
+    }
+
+    /* ---- Atomes vitrine ---- */
+    .cx-chip {
+        display: inline-flex; align-items: center; gap: .5rem;
+        padding: .5rem 1rem; border-radius: var(--cx-radius-pill);
+        border: 1px solid var(--cx-line); background: rgba(255,255,255,.04);
+        font-size: 12px; font-weight: 700; letter-spacing: .18em; text-transform: uppercase;
+        color: var(--cx-muted);
+    }
+    .cx-chip .pip {
+        height: 7px; width: 7px; border-radius: 50%;
+        background: var(--cx-cyan); box-shadow: 0 0 10px var(--cx-glow-cyan);
+    }
+
+    .cx-card {
         position: relative;
+        border: 1px solid var(--cx-line);
+        background: linear-gradient(160deg, rgba(255,255,255,.05), rgba(255,255,255,.015));
+        border-radius: var(--cx-radius-xl);
+        backdrop-filter: blur(10px);
+        transition: transform var(--cx-dur-slow) var(--cx-ease), border-color var(--cx-dur), box-shadow var(--cx-dur-slow);
+    }
+    .cx-card:hover {
+        transform: translateY(-6px);
+        border-color: rgba(255, 182, 72, .4);
+        box-shadow: 0 24px 60px -22px var(--cx-glow-amber);
     }
 
-    .cu-dashboard-grid {
-        @apply grid grid-cols-1 gap-6 xl:grid-cols-3;
+    .cx-btn {
+        display: inline-flex; align-items: center; justify-content: center; gap: .5rem;
+        font-family: var(--cx-display); font-weight: 600; letter-spacing: .01em;
+        border-radius: var(--cx-radius-md);
+        transition: transform var(--cx-dur-fast) var(--cx-ease), box-shadow var(--cx-dur), background-color var(--cx-dur-fast);
+    }
+    .cx-btn--primary {
+        background: linear-gradient(135deg, var(--cx-amber), var(--cx-amber-deep));
+        color: #1a1206; box-shadow: 0 0 0 0 var(--cx-glow-amber);
+    }
+    .cx-btn--primary:hover { transform: translateY(-2px); box-shadow: 0 10px 32px -6px var(--cx-glow-amber); }
+    .cx-btn--ghost {
+        color: var(--cx-text);
+        border: 1px solid var(--cx-line);
+        background: rgba(255,255,255,.04);
+    }
+    .cx-btn--ghost:hover { border-color: var(--cx-amber); color: var(--cx-amber); }
+
+    /* ---- Champs vitrine (formulaires sur fond sombre) ---- */
+    body.cx-shell .cx-field input,
+    body.cx-shell .cx-field select,
+    body.cx-shell .cx-field textarea {
+        background: rgba(255,255,255,.04);
+        border: 1px solid var(--cx-line);
+        color: var(--cx-text);
+        border-radius: var(--cx-radius-md);
+    }
+    body.cx-shell .cx-field input::placeholder,
+    body.cx-shell .cx-field textarea::placeholder { color: rgba(232,238,252,.4); }
+    body.cx-shell .cx-field input:focus,
+    body.cx-shell .cx-field select:focus,
+    body.cx-shell .cx-field textarea:focus {
+        border-color: var(--cx-amber);
+        box-shadow: 0 0 0 4px rgba(255,182,72,.18);
+        background: rgba(255,255,255,.06);
+    }
+    body.cx-shell .cx-field label {
+        display: block; font-size: 12px; font-weight: 700;
+        letter-spacing: .14em; text-transform: uppercase;
+        color: var(--cx-muted); margin-bottom: .5rem;
     }
 
-    .cu-dashboard-main {
-        @apply space-y-6 xl:col-span-2;
+    /* ---- Header vitrine (verre) ---- */
+    .cx-header {
+        position: fixed; top: 0; left: 0; right: 0; z-index: 80;
+        backdrop-filter: blur(18px) saturate(160%);
+        -webkit-backdrop-filter: blur(18px) saturate(160%);
+        background: rgba(7, 11, 20, 0.55);
+        border-bottom: 1px solid var(--cx-line);
+        transition: background var(--cx-dur) ease;
     }
+    .cx-logo-mark {
+        position: relative; display: flex; align-items: center; justify-content: center;
+        height: 42px; width: 42px; border-radius: var(--cx-radius-md);
+        background: linear-gradient(145deg, var(--cx-amber), var(--cx-amber-deep));
+        color: #1a1206; font-weight: 800; font-family: var(--cx-display);
+        box-shadow: 0 0 24px var(--cx-glow-amber);
+    }
+    .cx-logo-mark::after {
+        content: ""; position: absolute; inset: -6px; border-radius: 18px;
+        border: 1px solid rgba(255,182,72,.35);
+        animation: cx-orbit-ring 7s ease-in-out infinite;
+    }
+    .cx-nav-link { color: var(--cx-muted); transition: color var(--cx-dur-fast) ease; font-weight: 600; }
+    .cx-nav-link:hover { color: var(--cx-amber); }
 
-    .cu-dashboard-side {
-        @apply space-y-6;
+    /* ---- Progression de scroll + CTA flottant + Footer ---- */
+    .cx-progress {
+        position: fixed; top: 0; left: 0; right: 0; height: 3px; z-index: 90;
+        background: transparent; pointer-events: none;
     }
-
-    .cu-action-card {
-        @apply flex items-start gap-3 rounded-2xl border p-4 transition hover:-translate-y-0.5 hover:shadow-md;
+    .cx-progress__bar {
+        height: 100%; width: 0%;
+        background: linear-gradient(90deg, var(--cx-cyan), var(--cx-amber) 60%, var(--cx-amber-deep));
+        box-shadow: 0 0 14px var(--cx-glow-amber);
+        transition: width 0.12s linear;
     }
-
-    .cu-action-card-icon {
-        @apply flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-white text-xl shadow-sm ring-1 ring-slate-200/80;
+    .cx-fab {
+        position: fixed; right: 18px; bottom: 18px; z-index: 85;
+        display: inline-flex; align-items: center; gap: 10px;
+        padding: 14px 22px; border-radius: var(--cx-radius-pill);
+        font-family: var(--cx-display); font-weight: 700; font-size: 15px;
+        background: linear-gradient(135deg, var(--cx-amber), var(--cx-amber-deep));
+        color: #1a1206;
+        box-shadow: 0 14px 40px -8px var(--cx-glow-amber);
+        animation: cx-fab-pulse 3.4s ease-in-out infinite;
     }
-
-    .cu-mobile-safe-bottom {
-        padding-bottom: calc(5rem + env(safe-area-inset-bottom));
+    .cx-fab:hover { transform: translateY(-2px); }
+    .cx-fab__dot {
+        height: 8px; width: 8px; border-radius: 50%;
+        background: #1a1206; animation: cx-blink 1.6s infinite;
     }
-
-    .cu-status-dot {
-        @apply inline-flex h-2.5 w-2.5 rounded-full bg-slate-400;
+    footer.cx-footer {
+        position: relative; z-index: 1;
+        border-top: 1px solid var(--cx-line);
+        background: linear-gradient(180deg, transparent, var(--cx-night-soft));
     }
-
-    .cu-status-dot-success {
-        @apply bg-emerald-500;
-    }
-
-    .cu-status-dot-warning {
-        @apply bg-amber-500;
-    }
-
-    .cu-status-dot-danger {
-        @apply bg-rose-500;
-    }
+    .cx-footer a { color: var(--cx-muted); transition: color var(--cx-dur-fast); }
+    .cx-footer a:hover { color: var(--cx-amber); }
 }
 
+/* ============================================================================
+   5) MOTION SYSTEM PARTAGÉ — `[data-cx-reveal]` (toutes les pages)
+   ---------------------------------------------------------------------------
+   Le JS d'init est dans resources/js/app.js (IntersectionObserver). Cette
+   section gère uniquement le CSS de l'effet "reveal".
+   ========================================================================= */
+[data-cx-reveal] {
+    opacity: 0;
+    transform: translateY(28px);
+    transition: opacity var(--cx-dur-slow) var(--cx-ease),
+                transform var(--cx-dur-slow) var(--cx-ease);
+    will-change: opacity, transform;
+}
+[data-cx-reveal].cx-in { opacity: 1; transform: none; }
+[data-cx-reveal][data-cx-delay="1"] { transition-delay: .08s; }
+[data-cx-reveal][data-cx-delay="2"] { transition-delay: .16s; }
+[data-cx-reveal][data-cx-delay="3"] { transition-delay: .24s; }
+[data-cx-reveal][data-cx-delay="4"] { transition-delay: .32s; }
+
+/* ============================================================================
+   6) KEYFRAMES partagées (vitrine surtout)
+   ========================================================================= */
+@keyframes cx-drift       { to { transform: translate3d(-240px, -160px, 0); } }
+@keyframes cx-orbit-ring  { 50% { transform: scale(1.12); opacity: .4; } }
+@keyframes cx-fab-pulse   { 50% { box-shadow: 0 14px 52px -6px var(--cx-glow-amber); } }
+@keyframes cx-blink       { 50% { opacity: .3; } }
+
+/* ============================================================================
+   7) ACCESSIBILITÉ — coupe les mouvements si l'utilisateur le demande
+   ========================================================================= */
+@media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    [data-cx-reveal] { opacity: 1 !important; transform: none !important; transition: none !important; }
+    .cx-starfield::before,
+    .cx-logo-mark::after,
+    .cx-fab, .cx-fab__dot,
+    .cx-progress__bar { animation: none !important; transition: none !important; }
+}

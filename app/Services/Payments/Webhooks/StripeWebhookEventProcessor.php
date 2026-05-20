@@ -197,6 +197,22 @@ class StripeWebhookEventProcessor
             $charge['id'] ?? null,
         );
 
+        \App\Support\Webhooks\BusinessEventEmitter::emit(
+            eventCode: 'payment.refunded',
+            payload: [
+                'booking_id' => $booking->id,
+                'amount_refunded_cents' => $refundedAmountCents,
+                'currency' => $charge['currency'] ?? null,
+                'stripe_charge_id' => $charge['id'] ?? null,
+                'stripe_payment_intent_id' => $pi,
+                'is_total' => $isTotal,
+            ],
+            idempotencyKey: 'payment.refunded:' . ($charge['id'] ?? $pi),
+            sourceType: \App\Models\Booking::class,
+            sourceId: (int) $booking->id,
+        );
+        \App\Support\Accounting\BookingAutoPoster::postRefund($booking, $refundedAmountCents);
+
         return ['status' => StripeWebhookEvent::STATUS_PROCESSED, 'details' => [
             'booking_id' => $booking->id,
             'is_total' => $isTotal,
@@ -210,6 +226,9 @@ class StripeWebhookEventProcessor
             return ['status' => StripeWebhookEvent::STATUS_IGNORED];
         }
 
+        // 1) Si c'est un payment intent de TIP, confirmCharge le tip
+        $this->maybeConfirmTipCharge($intent, $piId);
+
         $booking = Booking::query()->where('stripe_payment_intent_id', $piId)->first();
         if (! $booking) {
             return ['status' => StripeWebhookEvent::STATUS_IGNORED];
@@ -221,12 +240,63 @@ class StripeWebhookEventProcessor
 
         if ($booking->payment_status === 'captured' && $previousStatus !== 'captured') {
             $this->walletService->recordEarning($booking, $intent);
+            $feeCents = (int) (data_get($intent, 'charges.data.0.balance_transaction.fee')
+                ?? data_get($intent, 'application_fee_amount')
+                ?? 0);
+            \App\Support\Webhooks\BusinessEventEmitter::emit(
+                eventCode: 'payment.succeeded',
+                payload: [
+                    'booking_id' => $booking->id,
+                    'amount_cents' => (int) ($intent['amount'] ?? 0),
+                    'currency' => $intent['currency'] ?? null,
+                    'stripe_payment_intent_id' => $piId,
+                    'fees_cents' => $feeCents,
+                ],
+                idempotencyKey: 'payment.succeeded:' . $piId,
+                sourceType: \App\Models\Booking::class,
+                sourceId: (int) $booking->id,
+            );
+            \App\Support\Accounting\BookingAutoPoster::postPayment($booking, $feeCents);
         }
 
         return ['status' => StripeWebhookEvent::STATUS_PROCESSED, 'details' => [
             'booking_id' => $booking->id,
             'transitioned_to_captured' => $booking->payment_status === 'captured' && $previousStatus !== 'captured',
         ]];
+    }
+
+    /**
+     * Si un PaymentIntent succeeded correspond à un BookingTip, le confirmCharge.
+     * Filtre via metadata.tip_id OU lookup stripe_payment_intent_id sur booking_tips.
+     */
+    protected function maybeConfirmTipCharge(array $intent, string $piId): void
+    {
+        try {
+            if (! class_exists(\App\Models\BookingTip::class)) {
+                return;
+            }
+            $tip = \App\Models\BookingTip::query()
+                ->where('stripe_payment_intent_id', $piId)
+                ->where('status', \App\Models\BookingTip::STATUS_PENDING)
+                ->first();
+            if (! $tip) {
+                $tipId = data_get($intent, 'metadata.tip_id');
+                if ($tipId) {
+                    $tip = \App\Models\BookingTip::query()
+                        ->where('id', $tipId)
+                        ->where('status', \App\Models\BookingTip::STATUS_PENDING)
+                        ->first();
+                }
+            }
+            if ($tip) {
+                app(\App\Services\Tips\TipService::class)->confirmCharge($tip, $piId);
+            }
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::warning('[tips_webhook] confirmCharge failed', [
+                'pi_id' => $piId,
+                'error' => $e->getMessage(),
+            ]);
+        }
     }
 
     protected function handlePaymentIntentFailed(array $intent): array
@@ -247,6 +317,21 @@ class StripeWebhookEventProcessor
                 'payment_failed_at' => now(),
             ]);
         }
+
+        \App\Support\Webhooks\BusinessEventEmitter::emit(
+            eventCode: 'payment.failed',
+            payload: [
+                'booking_id' => $booking->id,
+                'amount_cents' => (int) ($intent['amount'] ?? 0),
+                'currency' => $intent['currency'] ?? null,
+                'stripe_payment_intent_id' => $piId,
+                'failure_message' => data_get($intent, 'last_payment_error.message'),
+                'failure_code' => data_get($intent, 'last_payment_error.code'),
+            ],
+            idempotencyKey: 'payment.failed:' . $piId,
+            sourceType: \App\Models\Booking::class,
+            sourceId: (int) $booking->id,
+        );
 
         return ['status' => StripeWebhookEvent::STATUS_PROCESSED, 'details' => ['booking_id' => $booking->id]];
     }

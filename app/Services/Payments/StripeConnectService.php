@@ -20,9 +20,10 @@ class StripeConnectService
             return $user->stripe_connect_account_id;
         }
 
+        $country = $user->country ?? $user->business_country ?? config('services.stripe.connect_country', 'BE');
         $account = Account::create([
             'type' => 'express',
-            'country' => 'BE',
+            'country' => $country,
             'email' => $user->email,
             'capabilities' => [
                 'card_payments' => ['requested' => true],
@@ -49,8 +50,8 @@ class StripeConnectService
 
         $link = AccountLink::create([
             'account' => $accountId,
-            'refresh_url' => env('STRIPE_CONNECT_REFRESH_URL'),
-            'return_url' => env('STRIPE_CONNECT_RETURN_URL'),
+            'refresh_url' => config('services.stripe.connect_refresh_url') ?: url('/dashboard/stripe-connect/refresh'),
+            'return_url' => config('services.stripe.connect_return_url') ?: url('/dashboard/stripe-connect/return'),
             'type' => 'account_onboarding',
         ]);
 

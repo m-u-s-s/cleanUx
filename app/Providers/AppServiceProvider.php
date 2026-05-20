@@ -58,6 +58,22 @@ class AppServiceProvider extends ServiceProvider
         \Carbon\Carbon::setLocale('fr');
         Booking::observe(RendezVousObserver::class);
         Booking::observe(BookingObserver::class);
+
+        // Tips v2 — push provider on tip charged/paid_out
+        if (class_exists(\App\Models\BookingTip::class) && class_exists(\App\Observers\BookingTipObserver::class)) {
+            \App\Models\BookingTip::observe(\App\Observers\BookingTipObserver::class);
+        }
+
+        // Trip Tracking v2 — push client on enroute/arrived/in_mission transitions
+        if (class_exists(\App\Models\TripTrackingSession::class) && class_exists(\App\Observers\TripTrackingSessionObserver::class)) {
+            \App\Models\TripTrackingSession::observe(\App\Observers\TripTrackingSessionObserver::class);
+        }
+
+        // MissionTrackingPoint → MissionEtaUpdated broadcast (was unwired)
+        if (class_exists(\App\Models\MissionTrackingPoint::class) && class_exists(\App\Observers\MissionTrackingPointObserver::class)) {
+            \App\Models\MissionTrackingPoint::observe(\App\Observers\MissionTrackingPointObserver::class);
+        }
+
         Gate::policy(Channel::class, ChannelPolicy::class);
     }
 }

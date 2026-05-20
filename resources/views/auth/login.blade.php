@@ -1,155 +1,129 @@
 <x-guest-layout>
-    <main class="min-h-[calc(100vh-4rem)] bg-slate-50">
-        <section class="mx-auto grid max-w-7xl grid-cols-1 gap-10 px-4 py-10 sm:px-6 lg:grid-cols-2 lg:px-8 lg:py-16">
+    {{--
+      Page LOGIN — vitrine (cx-shell sombre)
+      Backend Fortify préservé : POST {{ route('login') }} + @csrf + champs email/password/remember
+      Composants Jetstream remplacés par du HTML brut dans .cx-field pour zéro conflit avec le thème sombre.
+      Animation : reveal sobre uniquement. Aucun scroll-storytelling sur une page formulaire.
+    --}}
 
-            {{-- LEFT --}}
-            <div class="hidden lg:flex flex-col justify-between rounded-[2rem] bg-gradient-to-br from-slate-950 via-slate-900 to-blue-950 p-10 text-white shadow-2xl">
-                <div>
-                    <span class="inline-flex rounded-full border border-white/15 bg-white/10 px-4 py-2 text-xs font-black uppercase tracking-[0.2em] text-blue-100">
-                        Espace sécurisé
-                    </span>
+    <main class="relative z-[1] min-h-screen pt-24 pb-16 sm:pt-28 sm:pb-24">
+        <section class="mx-auto grid max-w-7xl grid-cols-1 items-center gap-10 px-4 sm:px-6 lg:grid-cols-2 lg:px-8">
 
-                    <h1 class="mt-8 text-5xl font-black leading-tight">
-                        Connectez-vous à votre espace CleanUx.
+            {{-- ── PANNEAU MARQUE (gauche, desktop only) ─────────────────────── --}}
+            <aside class="hidden lg:block" data-cx-reveal>
+                <div class="cx-card relative overflow-hidden p-10">
+                    <span class="cx-chip"><span class="pip"></span> Espace sécurisé</span>
+
+                    <h1 class="cx-h mt-8 text-5xl lg:text-6xl">
+                        Bon retour<br><span class="cx-gradient-text">parmi nous.</span>
                     </h1>
-
-                    <p class="mt-5 text-lg leading-8 text-slate-300">
-                        Gérez vos rendez-vous, vos missions, vos factures, vos feedbacks et votre suivi en temps réel.
+                    <p class="cx-lede mt-6 max-w-md text-base">
+                        Vos rendez-vous, vos missions, vos factures et votre suivi en temps réel —
+                        accessibles selon votre rôle.
                     </p>
-                </div>
 
-                <div class="grid grid-cols-2 gap-4">
-                    <div class="rounded-2xl border border-white/10 bg-white/10 p-5">
-                        <p class="text-2xl font-black">Client</p>
-                        <p class="mt-1 text-sm text-slate-300">Réservations & suivi</p>
-                    </div>
-
-                    <div class="rounded-2xl border border-white/10 bg-white/10 p-5">
-                        <p class="text-2xl font-black">Employé</p>
-                        <p class="mt-1 text-sm text-slate-300">Missions terrain</p>
-                    </div>
-
-                    <div class="rounded-2xl border border-white/10 bg-white/10 p-5">
-                        <p class="text-2xl font-black">Admin</p>
-                        <p class="mt-1 text-sm text-slate-300">Pilotage complet</p>
-                    </div>
-
-                    <div class="rounded-2xl border border-white/10 bg-white/10 p-5">
-                        <p class="text-2xl font-black">B2B</p>
-                        <p class="mt-1 text-sm text-slate-300">Sites & factures</p>
+                    <div class="mt-10 grid grid-cols-2 gap-3">
+                        @foreach ([
+                            ['Client','Réservations & suivi'],
+                            ['Intervenant','Missions terrain'],
+                            ['Entreprise','Multi-sites & factures'],
+                            ['Admin','Pilotage complet'],
+                        ] as $i => $r)
+                            <div class="rounded-2xl border p-5"
+                                 style="border-color:var(--cx-line);background:rgba(255,255,255,.03)"
+                                 data-cx-reveal data-cx-delay="{{ $i }}">
+                                <p class="text-xl font-extrabold" style="font-family:var(--cx-display);color:var(--cx-text)">{{ $r[0] }}</p>
+                                <p class="mt-1 text-sm" style="color:var(--cx-muted)">{{ $r[1] }}</p>
+                            </div>
+                        @endforeach
                     </div>
                 </div>
-            </div>
+            </aside>
 
-            {{-- FORM --}}
-            <div class="flex items-center">
-                <div class="w-full rounded-[2rem] border border-slate-200 bg-white p-6 shadow-xl sm:p-8">
-                    <div class="mb-6">
-                        <p class="text-sm font-black uppercase tracking-[0.2em] text-blue-600">
-                            Connexion
-                        </p>
+            {{-- ── FORMULAIRE ────────────────────────────────────────────────── --}}
+            <div data-cx-reveal data-cx-delay="1">
+                <div class="cx-card p-7 sm:p-10">
+                    <p class="cx-kicker">Connexion</p>
+                    <h2 class="cx-h mt-3 text-3xl sm:text-4xl">Accédez à votre <span class="cx-gradient-text">espace.</span></h2>
+                    <p class="cx-lede mt-3 text-sm">
+                        Connectez-vous selon votre rôle : client, intervenant, entreprise ou admin.
+                    </p>
 
-                        <h2 class="mt-2 text-3xl font-black text-slate-900">
-                            Bon retour 👋
-                        </h2>
-
-                        <p class="mt-2 text-sm text-slate-500">
-                            Accédez à votre dashboard selon votre rôle : client, employé, entreprise ou admin.
-                        </p>
-                    </div>
-
-                    <x-validation-errors class="mb-4" />
+                    {{-- Erreurs Fortify --}}
+                    <x-validation-errors class="mt-6" />
 
                     @if (session('status'))
-                        <div class="mb-4 rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-sm font-medium text-emerald-700">
+                        <div class="mt-6 rounded-2xl border p-4 text-sm"
+                             style="border-color:rgba(79,227,214,.35);background:rgba(79,227,214,.08);color:var(--cx-cyan)">
                             {{ session('status') }}
                         </div>
                     @endif
 
-                    <form method="POST" action="{{ route('login') }}" class="space-y-5">
+                    <form method="POST" action="{{ route('login') }}" class="mt-8 space-y-5">
                         @csrf
 
-                        <div>
-                            <x-label for="email" value="Adresse e-mail" />
-                            <x-input id="email"
-                                     class="mt-1 block w-full rounded-xl"
-                                     type="email"
-                                     name="email"
-                                     :value="old('email')"
-                                     required
-                                     autofocus
-                                     autocomplete="username"
-                                     placeholder="exemple@email.com" />
+                        <div class="cx-field">
+                            <label for="email">Adresse e-mail</label>
+                            <input id="email" name="email" type="email" required autofocus
+                                   autocomplete="username" placeholder="exemple@email.com"
+                                   value="{{ old('email') }}">
                         </div>
 
-                        <div>
+                        <div class="cx-field">
                             <div class="flex items-center justify-between">
-                                <x-label for="password" value="Mot de passe" />
-
+                                <label for="password" class="!mb-0">Mot de passe</label>
                                 @if (Route::has('password.request'))
                                     <a href="{{ route('password.request') }}"
-                                       class="text-xs font-bold text-blue-600 hover:text-blue-700">
-                                        Mot de passe oublié ?
+                                       class="text-xs font-bold uppercase tracking-[0.14em]" style="color:var(--cx-amber)">
+                                        Oublié ?
                                     </a>
                                 @endif
                             </div>
-
-                            <x-input id="password"
-                                     class="mt-1 block w-full rounded-xl"
-                                     type="password"
-                                     name="password"
-                                     required
-                                     autocomplete="current-password"
-                                     placeholder="••••••••" />
+                            <input id="password" name="password" type="password" required
+                                   autocomplete="current-password" placeholder="••••••••"
+                                   class="!mt-3">
                         </div>
 
-                        <div class="flex items-center justify-between rounded-2xl bg-slate-50 p-4">
-                            <label for="remember_me" class="flex items-center">
-                                <x-checkbox id="remember_me" name="remember" />
-                                <span class="ms-2 text-sm font-medium text-slate-600">
-                                    Rester connecté
-                                </span>
-                            </label>
-
-                            <span class="hidden text-xs text-slate-400 sm:inline">
-                                Connexion sécurisée
+                        <label class="flex items-center gap-3 rounded-2xl border p-4"
+                               style="border-color:var(--cx-line);background:rgba(255,255,255,.03)">
+                            <input type="checkbox" name="remember" id="remember_me"
+                                   style="accent-color:var(--cx-amber);height:18px;width:18px">
+                            <span class="text-sm" style="color:var(--cx-muted)">Rester connecté sur cet appareil</span>
+                            <span class="ml-auto hidden text-xs uppercase tracking-[0.14em] sm:inline" style="color:var(--cx-muted)">
+                                Sécurisé
                             </span>
-                        </div>
+                        </label>
 
-                        <button type="submit"
-                                class="flex w-full items-center justify-center rounded-2xl bg-blue-600 px-5 py-3.5 text-sm font-black text-white shadow-lg shadow-blue-100 hover:bg-blue-700">
-                            Se connecter
+                        <button type="submit" class="cx-btn cx-btn--primary w-full px-5 py-4 text-base">
+                            Se connecter →
                         </button>
 
                         <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                            <a href="{{ route('booking.create') }}"
-                               class="flex items-center justify-center rounded-2xl border border-slate-200 px-4 py-3 text-sm font-bold text-slate-700 hover:bg-slate-50">
-                                Réserver sans attendre
+                            <a href="{{ route('booking.create') }}" class="cx-btn cx-btn--ghost w-full px-4 py-3 text-sm">
+                                Réserver sans compte
                             </a>
-
-                            @if(Route::has('register'))
-                                <a href="{{ route('register') }}"
-                                   class="flex items-center justify-center rounded-2xl border border-blue-200 bg-blue-50 px-4 py-3 text-sm font-bold text-blue-700 hover:bg-blue-100">
+                            @if (Route::has('register'))
+                                <a href="{{ route('register') }}" class="cx-btn cx-btn--ghost w-full px-4 py-3 text-sm"
+                                   style="border-color:rgba(255,182,72,.35);color:var(--cx-amber)">
                                     Créer un compte
                                 </a>
                             @endif
                         </div>
                     </form>
 
-                    <div class="mt-6 rounded-2xl border border-slate-200 bg-slate-50 p-4">
-                        <p class="text-sm font-bold text-slate-900">
-                            Pourquoi se connecter ?
-                        </p>
-
-                        <div class="mt-3 grid grid-cols-1 gap-2 text-sm text-slate-600 sm:grid-cols-2">
-                            <p>✅ Voir vos rendez-vous</p>
-                            <p>✅ Suivre une mission</p>
-                            <p>✅ Recevoir vos factures</p>
-                            <p>✅ Laisser un feedback</p>
+                    <div class="mt-8 rounded-2xl border p-5"
+                         style="border-color:var(--cx-line);background:rgba(255,255,255,.025)">
+                        <p class="text-xs font-bold uppercase tracking-[0.2em]" style="color:var(--cx-amber)">Dans votre espace</p>
+                        <div class="mt-3 grid grid-cols-1 gap-2 text-sm sm:grid-cols-2" style="color:var(--cx-muted)">
+                            <p>✓ Vos rendez-vous</p>
+                            <p>✓ Suivi de mission live</p>
+                            <p>✓ Factures &amp; documents</p>
+                            <p>✓ Feedback &amp; preuves</p>
                         </div>
                     </div>
                 </div>
             </div>
+
         </section>
     </main>
 </x-guest-layout>

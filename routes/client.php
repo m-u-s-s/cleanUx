@@ -78,6 +78,61 @@ Route::middleware(['role:client'])
                 ->name('subscriptions');
         }
 
+        if (class_exists(\App\Livewire\Client\ClientSubscriptionsV2::class)) {
+            Route::get('/abonnements-v2', \App\Livewire\Client\ClientSubscriptionsV2::class)
+                ->name('subscriptions-v2');
+        }
+
+        if (class_exists(\App\Livewire\Client\ClientChatInbox::class)) {
+            Route::get('/messagerie', \App\Livewire\Client\ClientChatInbox::class)
+                ->name('chat.inbox');
+        }
+
+        if (class_exists(\App\Livewire\Client\ClientApiTokens::class)) {
+            Route::get('/api-tokens', \App\Livewire\Client\ClientApiTokens::class)
+                ->name('api-tokens');
+        }
+
+        if (class_exists(\App\Livewire\Client\ClientKybOnboarding::class)) {
+            Route::get('/kyb-onboarding', \App\Livewire\Client\ClientKybOnboarding::class)
+                ->name('kyb.onboarding');
+        }
+
+        if (class_exists(\App\Livewire\Client\ClientContractSign::class)) {
+            Route::get('/contrats', \App\Livewire\Client\ClientContractSign::class)
+                ->name('contracts');
+        }
+
+        if (class_exists(\App\Livewire\Client\ClientLoyaltyRewards::class)) {
+            Route::get('/fidelite/recompenses', \App\Livewire\Client\ClientLoyaltyRewards::class)
+                ->name('loyalty.rewards');
+        }
+
+        if (class_exists(\App\Livewire\Client\ClientTipBooking::class)) {
+            Route::get('/missions/{bookingId}/pourboire', \App\Livewire\Client\ClientTipBooking::class)
+                ->name('tip.booking');
+        }
+
+        if (class_exists(\App\Livewire\Client\BookingCheckout::class)) {
+            Route::get('/missions/{bookingId}/checkout', \App\Livewire\Client\BookingCheckout::class)
+                ->name('booking.checkout');
+        }
+
+        if (class_exists(\App\Livewire\Client\SavedPaymentMethods::class)) {
+            Route::get('/paiement/cartes', \App\Livewire\Client\SavedPaymentMethods::class)
+                ->name('payment.methods');
+        }
+
+        if (class_exists(\App\Livewire\Client\ProfileEdit::class)) {
+            Route::get('/profil/editer', \App\Livewire\Client\ProfileEdit::class)
+                ->name('profile.edit');
+        }
+
+        if (class_exists(\App\Livewire\Client\ClientLiveTrackingMap::class)) {
+            Route::get('/missions/{bookingId}/tracking-map', \App\Livewire\Client\ClientLiveTrackingMap::class)
+                ->name('booking.tracking.map');
+        }
+
         Route::get('/finance/devis/{quote}/telecharger', [FinanceDocumentDownloadController::class, 'quote'])
             ->name('finance.quote.download');
 

@@ -35,6 +35,10 @@ return [
         'key' => env('STRIPE_KEY'),
         'secret' => env('STRIPE_SECRET'),
         'webhook_secret' => env('STRIPE_WEBHOOK_SECRET'),
+        'connect_webhook_secret' => env('STRIPE_CONNECT_WEBHOOK_SECRET'),
+        'connect_country' => env('STRIPE_CONNECT_COUNTRY', 'BE'),
+        'connect_refresh_url' => env('STRIPE_CONNECT_REFRESH_URL'),
+        'connect_return_url' => env('STRIPE_CONNECT_RETURN_URL'),
         'premium_price_id' => env('STRIPE_PREMIUM_PRICE_ID'),
     ],
 

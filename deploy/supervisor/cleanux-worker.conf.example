@@ -1,10 +1,28 @@
+; CleanUx queue workers (supervisor config example)
+; Couvre TOUS les channels utilisés par l'app : default + webhooks priorisés.
+; Ordre des queues = priorité (le worker draine left → right en round-robin).
+;
+; Adapter le path PHP / chemin app / user selon ton hosting.
+
 [program:cleanux-worker]
 process_name=%(program_name)s_%(process_num)02d
-command=/usr/bin/php8.5 /var/www/cleanux/artisan queue:work database --queue=default --sleep=3 --tries=3 --timeout=120 --max-time=3600
+command=/usr/bin/php8.3 /var/www/cleanux/artisan queue:work database --queue=stripe-webhooks,kyc-webhooks,sms-webhooks,insurance-webhooks,webhooks,default,antivirus --sleep=3 --tries=3 --timeout=120 --max-time=3600 --backoff=10,30,90
 autostart=true
 autorestart=true
-numprocs=2
+numprocs=4
 user=www-data
 redirect_stderr=true
 stdout_logfile=/var/log/cleanux/worker.log
+stopwaitsecs=3600
+
+; Worker dédié antivirus (scan attachments) — séparé car long-running.
+[program:cleanux-worker-av]
+process_name=%(program_name)s_%(process_num)02d
+command=/usr/bin/php8.3 /var/www/cleanux/artisan queue:work database --queue=antivirus --sleep=5 --tries=2 --timeout=600 --max-time=3600
+autostart=true
+autorestart=true
+numprocs=1
+user=www-data
+redirect_stderr=true
+stdout_logfile=/var/log/cleanux/worker-av.log
 stopwaitsecs=3600

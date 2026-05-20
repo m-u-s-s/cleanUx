@@ -1,272 +1,216 @@
 <x-guest-layout>
-<main class="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
-<section class="mx-auto grid max-w-7xl grid-cols-1 gap-10 px-4 py-10 sm:px-6 lg:grid-cols-2 lg:px-8 lg:py-16">
+    {{--
+      Page REGISTER — vitrine (cx-shell sombre)
+      Backend Fortify préservé À L'IDENTIQUE :
+        - POST {{ route('register') }} + @csrf
+    - hidden `account_type` parmi : client_personal | client_company | provider_independent | provider_company
+    - champs name / email / password / password_confirmation
+    - conditionnels : company_name + tva_number (client_company) / provider_company_name + tva_number (provider_company)
+    - checkbox `terms` si Jetstream::hasTermsAndPrivacyPolicyFeature()
+    Logique Alpine.js (x-data) conservée à l'identique.
+    Wording corrigé : "Intervenant indépendant" / "Société de services" (multi-métiers).
+    --}}
 
-    {{-- ── Panneau marketing ─────────────────────────────────────── --}}
-    <div class="hidden lg:flex flex-col justify-between rounded-[2rem] bg-gradient-to-br from-slate-950 via-slate-900 to-blue-950 p-10 text-white shadow-2xl">
-        <div>
-            <span class="inline-flex rounded-full border border-white/15 bg-white/10 px-4 py-2 text-xs font-black uppercase tracking-[0.2em] text-blue-100">
-                CleanUx Platform
-            </span>
-            <h1 class="mt-8 text-5xl font-black leading-tight">
-                Prestataire indépendant
-            </h1>
-            <p class="mt-5 text-lg leading-8 text-slate-300">
-                Réservations, missions terrain, paiements automatiques, communication d'équipe. Tout en un.
-            </p>
-        </div>
+    <main class="relative z-[1] min-h-screen pt-24 pb-16 sm:pt-28 sm:pb-24">
+        <section class="mx-auto grid max-w-7xl grid-cols-1 items-start gap-10 px-4 sm:px-6 lg:grid-cols-2 lg:px-8">
 
-        <div class="grid grid-cols-2 gap-4">
-            <div class="rounded-2xl border border-white/10 bg-white/10 p-5">
-                <p class="text-2xl font-black">GPS</p>
-                <p class="mt-1 text-sm text-slate-300">Suivi temps réel</p>
-            </div>
-            <div class="rounded-2xl border border-white/10 bg-white/10 p-5">
-                <p class="text-2xl font-black">B2B</p>
-                <p class="mt-1 text-sm text-slate-300">Multi-sites & équipes</p>
-            </div>
-            <div class="rounded-2xl border border-white/10 bg-white/10 p-5">
-                <p class="text-2xl font-black">💬</p>
-                <p class="mt-1 text-sm text-slate-300">Chat d'équipe</p>
-            </div>
-            <div class="rounded-2xl border border-white/10 bg-white/10 p-5">
-                <p class="text-2xl font-black">🤖</p>
-                <p class="mt-1 text-sm text-slate-300">Assistant IA</p>
-            </div>
-        </div>
-    </div>
+            {{-- ── PANNEAU MARQUE ─────────────────────────────────────────────── --}}
+            <aside class="hidden lg:block lg:sticky lg:top-24" data-cx-reveal>
+                <div class="cx-card relative overflow-hidden p-10">
+                    <span class="cx-chip"><span class="pip"></span> Rejoindre la plateforme</span>
 
-    {{-- ── Formulaire ─────────────────────────────────────────────── --}}
-    <div class="flex items-center">
-    <div class="w-full rounded-[2rem] border border-slate-200 bg-white p-6 shadow-xl sm:p-8">
+                    <h1 class="cx-h mt-8 text-5xl lg:text-6xl">
+                        Une seule plateforme,<br><span class="cx-gradient-text">quatre profils.</span>
+                    </h1>
+                    <p class="cx-lede mt-6 max-w-md text-base">
+                        Que vous réserviez ou interveniez, en particulier ou en entreprise — votre espace
+                        s'adapte à votre usage et à vos métiers.
+                    </p>
 
-        <div class="mb-6">
-            <p class="text-sm font-black uppercase tracking-[0.2em] text-blue-600">Inscription</p>
-            <h2 class="mt-2 text-3xl font-black text-slate-900">Créer un compte</h2>
-            <p class="mt-2 text-sm text-slate-500">Choisissez votre profil — 4 types disponibles.</p>
-        </div>
-
-        <x-validation-errors class="mb-4" />
-
-        <form
-            method="POST"
-            action="{{ route('register') }}"
-            class="space-y-5"
-            x-data="{
-                type: '{{ old('account_type', '') }}',
-                isClient() { return this.type === 'client_personal' || this.type === 'client_company'; },
-                isProvider() { return this.type === 'provider_independent' || this.type === 'provider_company'; },
-                isCompany() { return this.type === 'client_company' || this.type === 'provider_company'; },
-                isProviderCompany() { return this.type === 'provider_company'; },
-                isClientCompany() { return this.type === 'client_company'; },
-            }"
-        >
-            @csrf
-
-            {{-- ── Étape 1 : Choisir son profil ── --}}
-            <div>
-                <label class="block text-sm font-bold text-slate-700 mb-3">
-                    Je suis…
-                </label>
-                <input type="hidden" name="account_type" :value="type">
-
-                <div class="grid grid-cols-2 gap-3">
-
-                    {{-- Client particulier --}}
-                    <label
-                        :class="type === 'client_personal'
-                            ? 'border-blue-600 bg-blue-50 ring-2 ring-blue-200 shadow-md'
-                            : 'border-slate-200 bg-white hover:bg-slate-50 hover:border-slate-300'"
-                        class="relative cursor-pointer rounded-2xl border p-4 transition-all"
-                        @click="type = 'client_personal'"
-                    >
-                        <div class="text-2xl mb-2">👤</div>
-                        <p class="font-black text-slate-900 text-sm">Client particulier</p>
-                        <p class="mt-1 text-xs text-slate-500 leading-snug">Je réserve pour mon domicile</p>
-                        <div x-show="type === 'client_personal'" class="absolute top-2 right-2">
-                            <div class="flex h-5 w-5 items-center justify-center rounded-full bg-blue-600">
-                                <svg class="h-3 w-3 text-white" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"/>
-                                </svg>
-                            </div>
+                    <div class="mt-10 grid grid-cols-2 gap-3">
+                        @foreach ([
+                        ['Suivi live','Position & ETA en direct'],
+                        ['Multi-métiers','Nettoyage, peinture, bâtiment, jardinage'],
+                        ['Paiements','Stripe sécurisé'],
+                        ['B2B','Multi-sites & factures'],
+                        ] as $i => $f)
+                        <div class="rounded-2xl border p-5"
+                            style="border-color:var(--cx-line);background:rgba(255,255,255,.03)"
+                            data-cx-reveal data-cx-delay="{{ $i }}">
+                            <p class="text-lg font-extrabold" style="font-family:var(--cx-display);color:var(--cx-text)">{{ $f[0] }}</p>
+                            <p class="mt-1 text-xs" style="color:var(--cx-muted)">{{ $f[1] }}</p>
                         </div>
-                    </label>
-
-                    {{-- Client entreprise --}}
-                    <label
-                        :class="type === 'client_company'
-                            ? 'border-purple-600 bg-purple-50 ring-2 ring-purple-200 shadow-md'
-                            : 'border-slate-200 bg-white hover:bg-slate-50 hover:border-slate-300'"
-                        class="relative cursor-pointer rounded-2xl border p-4 transition-all"
-                        @click="type = 'client_company'"
-                    >
-                        <div class="text-2xl mb-2">🏢</div>
-                        <p class="font-black text-slate-900 text-sm">Client entreprise</p>
-                        <p class="mt-1 text-xs text-slate-500 leading-snug">Bureaux / multi-sites</p>
-                        <div x-show="type === 'client_company'" class="absolute top-2 right-2">
-                            <div class="flex h-5 w-5 items-center justify-center rounded-full bg-purple-600">
-                                <svg class="h-3 w-3 text-white" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"/>
-                                </svg>
-                            </div>
-                        </div>
-                    </label>
-
-                    {{-- Nettoyeur indépendant --}}
-                    <label
-                        :class="type === 'provider_independent'
-                            ? 'border-green-600 bg-green-50 ring-2 ring-green-200 shadow-md'
-                            : 'border-slate-200 bg-white hover:bg-slate-50 hover:border-slate-300'"
-                        class="relative cursor-pointer rounded-2xl border p-4 transition-all"
-                        @click="type = 'provider_independent'"
-                    >
-                        <div class="text-2xl mb-2">🧹</div>
-                        <p class="font-black text-slate-900 text-sm">Nettoyeur indépendant</p>
-                        <p class="mt-1 text-xs text-slate-500 leading-snug">Je travaille à mon compte</p>
-                        <div x-show="type === 'provider_independent'" class="absolute top-2 right-2">
-                            <div class="flex h-5 w-5 items-center justify-center rounded-full bg-green-600">
-                                <svg class="h-3 w-3 text-white" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"/>
-                                </svg>
-                            </div>
-                        </div>
-                    </label>
-
-                    {{-- Société de nettoyage --}}
-                    <label
-                        :class="type === 'provider_company'
-                            ? 'border-amber-600 bg-amber-50 ring-2 ring-amber-200 shadow-md'
-                            : 'border-slate-200 bg-white hover:bg-slate-50 hover:border-slate-300'"
-                        class="relative cursor-pointer rounded-2xl border p-4 transition-all"
-                        @click="type = 'provider_company'"
-                    >
-                        <div class="text-2xl mb-2">🏗️</div>
-                        <p class="font-black text-slate-900 text-sm">Société de nettoyage</p>
-                        <p class="mt-1 text-xs text-slate-500 leading-snug">Je gère une équipe</p>
-                        <div x-show="type === 'provider_company'" class="absolute top-2 right-2">
-                            <div class="flex h-5 w-5 items-center justify-center rounded-full bg-amber-600">
-                                <svg class="h-3 w-3 text-white" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"/>
-                                </svg>
-                            </div>
-                        </div>
-                    </label>
-
-                </div>
-            </div>
-
-            {{-- ── Champs communs ── --}}
-            <div class="grid grid-cols-1 gap-4 sm:grid-cols-2" x-show="type !== ''">
-
-                <div class="sm:col-span-2">
-                    <x-label for="name" value="Nom complet" />
-                    <x-input id="name" class="mt-1 block w-full rounded-xl"
-                        type="text" name="name" :value="old('name')"
-                        required autofocus placeholder="Jean Dupont" />
-                </div>
-
-                <div class="sm:col-span-2">
-                    <x-label for="email" value="Adresse e-mail" />
-                    <x-input id="email" class="mt-1 block w-full rounded-xl"
-                        type="email" name="email" :value="old('email')"
-                        required placeholder="jean@exemple.com" />
-                </div>
-
-                {{-- Nom de la société cliente --}}
-                <div class="sm:col-span-2" x-show="isClientCompany()" x-cloak>
-                    <div class="rounded-2xl border border-purple-100 bg-purple-50 p-4">
-                        <x-label for="company_name" value="Nom de votre entreprise" />
-                        <x-input id="company_name" class="mt-1 block w-full rounded-xl"
-                            type="text" name="company_name" :value="old('company_name')"
-                            placeholder="Acme SA" />
-                        <x-label for="tva_number" value="Numéro de TVA" class="mt-3" />
-                        <x-input id="tva_number" class="mt-1 block w-full rounded-xl"
-                            type="text" name="tva_number" :value="old('tva_number')"
-                            placeholder="BE0123.456.789" />
-                        <p class="mt-2 text-xs text-purple-600">Vous pourrez inviter vos collègues et enregistrer vos locaux après l'inscription.</p>
+                        @endforeach
                     </div>
                 </div>
+            </aside>
 
-                {{-- Nom de la société de nettoyage --}}
-                <div class="sm:col-span-2" x-show="isProviderCompany()" x-cloak>
-                    <div class="rounded-2xl border border-amber-100 bg-amber-50 p-4">
-                        <x-label for="provider_company_name" value="Nom de votre société de nettoyage" />
-                        <x-input id="provider_company_name" class="mt-1 block w-full rounded-xl"
-                            type="text" name="provider_company_name" :value="old('provider_company_name')"
-                            placeholder="CleanPro SPRL" />
-                        <x-label for="tva_number_provider" value="Numéro de TVA" class="mt-3" />
-                        <x-input id="tva_number_provider" class="mt-1 block w-full rounded-xl"
-                            type="text" name="tva_number" :value="old('tva_number')"
-                            placeholder="BE0123.456.789" />
-                        <div class="mt-2 flex items-start gap-2 text-xs text-amber-700">
-                            <span>⚠️</span>
-                            <span>Votre compte sera vérifié par notre équipe avant d'être activé. Vous pourrez ensuite inviter votre équipe.</span>
-                        </div>
-                    </div>
-                </div>
+            {{-- ── FORMULAIRE ────────────────────────────────────────────────── --}}
+            <div data-cx-reveal data-cx-delay="1">
+                <div class="cx-card p-7 sm:p-10">
+                    <p class="cx-kicker">Inscription</p>
+                    <h2 class="cx-h mt-3 text-3xl sm:text-4xl">Créer votre <span class="cx-gradient-text">compte.</span></h2>
+                    <p class="cx-lede mt-3 text-sm">Choisissez d'abord votre profil — le formulaire s'adapte.</p>
 
-                {{-- Alerte prestataire indépendant --}}
-                <div class="sm:col-span-2" x-show="type === 'provider_independent'" x-cloak>
-                    <div class="rounded-2xl border border-green-100 bg-green-50 p-3 text-xs text-green-700">
-                        ✓ En tant qu'indépendant, vous serez visible des clients dès validation de votre profil. Pensez à configurer votre compte Stripe pour recevoir vos paiements.
-                    </div>
-                </div>
+                    <x-validation-errors class="mt-6" />
 
-                <div>
-                    <x-label for="password" value="Mot de passe" />
-                    <x-input id="password" class="mt-1 block w-full rounded-xl"
-                        type="password" name="password" required placeholder="••••••••" />
-                </div>
+                    <form method="POST" action="{{ route('register') }}" class="mt-8 space-y-6"
+                        x-data="{
+                              type: '{{ old('account_type', '') }}',
+                              isProviderCompany() { return this.type === 'provider_company'; },
+                              isClientCompany()   { return this.type === 'client_company'; },
+                          }">
+                        @csrf
 
-                <div>
-                    <x-label for="password_confirmation" value="Confirmation" />
-                    <x-input id="password_confirmation" class="mt-1 block w-full rounded-xl"
-                        type="password" name="password_confirmation" required placeholder="••••••••" />
-                </div>
+                        {{-- Étape 1 : profil --}}
+                        <div>
+                            <label class="mb-3 block text-xs font-bold uppercase tracking-[0.14em]" style="color:var(--cx-muted)">
+                                Je suis…
+                            </label>
+                            <input type="hidden" name="account_type" :value="type">
 
-            </div>
+                            <div class="grid grid-cols-2 gap-3">
+                                @php
+                                $profils = [
+                                ['key'=>'client_personal', 'emoji'=>'👤', 'label'=>'Client particulier', 'hint'=>'Je réserve pour mon domicile', 'accent'=>'#4fe3d6'],
+                                ['key'=>'client_company', 'emoji'=>'🏢', 'label'=>'Client entreprise', 'hint'=>'Bureaux / multi-sites', 'accent'=>'#8b7bff'],
+                                ['key'=>'provider_independent','emoji'=>'🔧', 'label'=>'Intervenant indépendant','hint'=>'Je travaille à mon compte', 'accent'=>'#ffb648'],
+                                ['key'=>'provider_company', 'emoji'=>'🏗️', 'label'=>'Société de services', 'hint'=>'Je gère une équipe', 'accent'=>'#5fd38a'],
+                                ];
+                                @endphp
 
-            {{-- CGU --}}
-            @if (Laravel\Jetstream\Jetstream::hasTermsAndPrivacyPolicyFeature())
-                <div class="rounded-2xl bg-slate-50 p-4" x-show="type !== ''" x-cloak>
-                    <x-label for="terms">
-                        <div class="flex items-start gap-3">
-                            <x-checkbox name="terms" id="terms" required class="mt-1" />
-                            <div class="text-sm text-slate-600">
-                                {!! __('I agree to the :terms_of_service and :privacy_policy', [
-                                    'terms_of_service' => '<a target="_blank" href="'.route('terms.show').'" class="font-semibold text-blue-600 underline">'.__('Terms of Service').'</a>',
-                                    'privacy_policy'   => '<a target="_blank" href="'.route('policy.show').'" class="font-semibold text-blue-600 underline">'.__('Privacy Policy').'</a>',
-                                ]) !!}
+                                @foreach ($profils as $p)
+                                <label class="relative cursor-pointer rounded-2xl border p-4 transition"
+                                    :class="type === '{{ $p['key'] }}' ? 'ring-2' : 'hover:bg-white/[0.04]'"
+                                    :style="type === '{{ $p['key'] }}'
+                                               ? 'border-color:{{ $p['accent'] }}; background:linear-gradient(160deg, color-mix(in srgb, {{ $p['accent'] }} 12%, transparent), rgba(255,255,255,.02)); --tw-ring-color:color-mix(in srgb, {{ $p['accent'] }} 35%, transparent)'
+                                               : 'border-color:var(--cx-line); background:rgba(255,255,255,.025)'"
+                                    @click="type = '{{ $p['key'] }}'">
+                                    <div class="text-2xl">{{ $p['emoji'] }}</div>
+                                    <p class="mt-2 text-sm font-extrabold" style="font-family:var(--cx-display);color:var(--cx-text)">
+                                        {{ $p['label'] }}
+                                    </p>
+                                    <p class="mt-1 text-xs leading-snug" style="color:var(--cx-muted)">
+                                        {{ $p['hint'] }}
+                                    </p>
+                                    <div x-show="type === '{{ $p['key'] }}'" x-cloak class="absolute right-3 top-3">
+                                        <span class="flex h-6 w-6 items-center justify-center rounded-full text-xs font-black"
+                                            style="background:{{ $p['accent'] }};color:#0b1120">✓</span>
+                                    </div>
+                                </label>
+                                @endforeach
                             </div>
                         </div>
-                    </x-label>
+
+                        {{-- Étape 2 : champs communs (apparaissent après choix du profil) --}}
+                        <div class="space-y-5" x-show="type !== ''" x-cloak>
+
+                            <div class="grid grid-cols-1 gap-5 sm:grid-cols-2">
+                                <div class="cx-field sm:col-span-2">
+                                    <label for="name">Nom complet</label>
+                                    <input id="name" name="name" type="text" required autofocus
+                                        placeholder="Jean Dupont" value="{{ old('name') }}">
+                                </div>
+
+                                <div class="cx-field sm:col-span-2">
+                                    <label for="email">Adresse e-mail</label>
+                                    <input id="email" name="email" type="email" required
+                                        placeholder="jean@exemple.com" value="{{ old('email') }}">
+                                </div>
+
+                                {{-- Conditionnel : société cliente --}}
+                                <div class="sm:col-span-2" x-show="isClientCompany()" x-cloak>
+                                    <div class="rounded-2xl border p-5"
+                                        style="border-color:rgba(139,123,255,.35); background:linear-gradient(160deg, rgba(139,123,255,.10), rgba(255,255,255,.02))">
+                                        <div class="cx-field">
+                                            <label for="company_name">Nom de votre entreprise</label>
+                                            <input id="company_name" name="company_name" type="text"
+                                                placeholder="Acme SA" value="{{ old('company_name') }}">
+                                        </div>
+                                        <div class="cx-field mt-4">
+                                            <label for="tva_number">Numéro de TVA</label>
+                                            <input id="tva_number" name="tva_number" type="text"
+                                                placeholder="BE0123.456.789" value="{{ old('tva_number') }}">
+                                        </div>
+                                        <p class="mt-3 text-xs" style="color:var(--cx-violet)">
+                                            Vous pourrez inviter vos collègues et enregistrer vos sites après l'inscription.
+                                        </p>
+                                    </div>
+                                </div>
+
+                                {{-- Conditionnel : société prestataire --}}
+                                <div class="sm:col-span-2" x-show="isProviderCompany()" x-cloak>
+                                    <div class="rounded-2xl border p-5"
+                                        style="border-color:rgba(95,211,138,.35); background:linear-gradient(160deg, rgba(95,211,138,.10), rgba(255,255,255,.02))">
+                                        <div class="cx-field">
+                                            <label for="provider_company_name">Nom de votre société de services</label>
+                                            <input id="provider_company_name" name="provider_company_name" type="text"
+                                                placeholder="ProServices SPRL" value="{{ old('provider_company_name') }}">
+                                        </div>
+                                        <div class="cx-field mt-4">
+                                            <label for="tva_number_provider">Numéro de TVA</label>
+                                            <input id="tva_number_provider" name="tva_number" type="text"
+                                                placeholder="BE0123.456.789" value="{{ old('tva_number') }}">
+                                        </div>
+                                        <div class="mt-3 flex items-start gap-2 text-xs" style="color:#5fd38a">
+                                            <span>⚠</span>
+                                            <span>Votre compte sera vérifié par notre équipe avant d'être activé. Vous pourrez ensuite inviter votre équipe.</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {{-- Note prestataire indépendant --}}
+                                <div class="sm:col-span-2" x-show="type === 'provider_independent'" x-cloak>
+                                    <div class="rounded-2xl border p-4 text-xs"
+                                        style="border-color:rgba(255,182,72,.35); background:rgba(255,182,72,.08); color:var(--cx-amber)">
+                                        ✓ En tant qu'indépendant, vous serez visible des clients après validation. Pensez à configurer Stripe pour vos paiements.
+                                    </div>
+                                </div>
+
+                                <div class="cx-field">
+                                    <label for="password">Mot de passe</label>
+                                    <input id="password" name="password" type="password" required placeholder="••••••••">
+                                </div>
+
+                                <div class="cx-field">
+                                    <label for="password_confirmation">Confirmation</label>
+                                    <input id="password_confirmation" name="password_confirmation" type="password" required placeholder="••••••••">
+                                </div>
+                            </div>
+
+                            {{-- CGU --}}
+                            @if (Laravel\Jetstream\Jetstream::hasTermsAndPrivacyPolicyFeature())
+                            <label class="flex items-start gap-3 rounded-2xl border p-4"
+                                style="border-color:var(--cx-line);background:rgba(255,255,255,.03)">
+                                <input type="checkbox" name="terms" id="terms" required
+                                    style="accent-color:var(--cx-amber);height:18px;width:18px;margin-top:2px">
+                                <span class="text-sm" style="color:var(--cx-muted)">
+                                    {!! __('I agree to the :terms_of_service and :privacy_policy', [
+                                    'terms_of_service' => '<a target="_blank" href="'.route('terms.show').'" class="font-bold underline" style="color:var(--cx-amber)">'.__('Terms of Service').'</a>',
+                                    'privacy_policy' => '<a target="_blank" href="'.route('policy.show').'" class="font-bold underline" style="color:var(--cx-amber)">'.__('Privacy Policy').'</a>',
+                                    ]) !!}
+                                </span>
+                            </label>
+                            @endif
+
+                            <button type="submit" class="cx-btn cx-btn--primary w-full px-5 py-4 text-base">
+                                Créer mon compte →
+                            </button>
+                        </div>
+
+                        {{-- État initial : aide à choisir --}}
+                        <p class="text-center text-xs" style="color:var(--cx-muted)" x-show="type === ''">
+                            ↑ Sélectionnez un profil pour continuer
+                        </p>
+
+                        <div class="text-center text-sm" style="color:var(--cx-muted)">
+                            Déjà inscrit ?
+                            <a href="{{ route('login') }}" class="font-bold" style="color:var(--cx-amber)">Se connecter</a>
+                        </div>
+                    </form>
                 </div>
-            @endif
-
-            <button
-                type="submit"
-                x-show="type !== ''"
-                x-cloak
-                :class="{
-                    'bg-blue-600 shadow-blue-100 hover:bg-blue-700':   type === 'client_personal',
-                    'bg-purple-600 shadow-purple-100 hover:bg-purple-700': type === 'client_company',
-                    'bg-green-600 shadow-green-100 hover:bg-green-700':  type === 'provider_independent',
-                    'bg-amber-600 shadow-amber-100 hover:bg-amber-700':  type === 'provider_company',
-                }"
-                class="flex w-full items-center justify-center rounded-2xl px-5 py-3.5 text-sm font-black text-white shadow-lg transition"
-            >
-                Créer mon compte →
-            </button>
-
-            <div class="text-center text-sm text-slate-500">
-                Déjà inscrit ?
-                <a href="{{ route('login') }}" class="font-bold text-blue-600 hover:text-blue-700">Se connecter</a>
             </div>
 
-        </form>
-    </div>
-    </div>
-
-</section>
-</main>
+        </section>
+    </main>
 </x-guest-layout>

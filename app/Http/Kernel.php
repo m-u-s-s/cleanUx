@@ -14,15 +14,14 @@ class Kernel extends HttpKernel
      * @var array<int, class-string|string>
      */
     protected $middleware = [
-        // \App\Http\Middleware\TrustHosts::class,
+        \App\Http\Middleware\TrustHosts::class,
         \App\Http\Middleware\TrustProxies::class,
         \Illuminate\Http\Middleware\HandleCors::class,
         \App\Http\Middleware\PreventRequestsDuringMaintenance::class,
         \Illuminate\Foundation\Http\Middleware\ValidatePostSize::class,
         \App\Http\Middleware\TrimStrings::class,
         \Illuminate\Foundation\Http\Middleware\ConvertEmptyStringsToNull::class,
-        
-        
+        \App\Http\Middleware\SecurityHeaders::class,
     ];
 
     /**
@@ -75,5 +74,6 @@ class Kernel extends HttpKernel
         'api_scope' => \App\Http\Middleware\ApiTokensV2\EnforceTokenScope::class,
         'api_token_throttle' => \App\Http\Middleware\ApiTokensV2\ThrottleByToken::class,
         'api_token_audit' => \App\Http\Middleware\ApiTokensV2\LogTokenUsage::class,
+        'tenant' => \App\Http\Middleware\TenancyV2\ResolveTenant::class,
     ];
 }

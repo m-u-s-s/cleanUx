@@ -15,6 +15,7 @@ return [
             'token' => env('TWILIO_TOKEN'),
             'from' => env('TWILIO_FROM'),
             'webhook_token' => env('TWILIO_WEBHOOK_TOKEN'),
+            'verify_signature' => (bool) env('TWILIO_VERIFY_SIGNATURE', true),
         ],
         'vonage' => [
             'driver' => 'vonage',

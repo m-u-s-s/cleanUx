@@ -80,6 +80,24 @@ class DisputeService
             $this->notifyOpened($case);
             $this->autoResolver->maybeAutoResolve($case);
 
+            \App\Support\Webhooks\BusinessEventEmitter::emit(
+                eventCode: 'dispute.opened',
+                payload: [
+                    'dispute_id' => $case->id,
+                    'reference' => $case->reference,
+                    'client_id' => $case->client_id,
+                    'booking_id' => $case->booking_id,
+                    'provider_user_id' => $case->provider_user_id,
+                    'category' => $case->category,
+                    'priority' => $case->priority,
+                    'severity' => $case->severity,
+                    'subject' => $case->subject,
+                ],
+                idempotencyKey: 'dispute.opened:' . $case->id,
+                sourceType: ComplaintCase::class,
+                sourceId: (int) $case->id,
+            );
+
             return $case->fresh();
         });
     }
@@ -158,6 +176,23 @@ class DisputeService
 
         DisputeStatusChanged::dispatch($case, $oldStatus, $newStatus);
         $this->notifyUpdate($case, $actor);
+
+        if (in_array($newStatus, [ComplaintCase::STATUS_RESOLVED, ComplaintCase::STATUS_CLOSED], true)) {
+            \App\Support\Webhooks\BusinessEventEmitter::emit(
+                eventCode: 'dispute.resolved',
+                payload: [
+                    'dispute_id' => $case->id,
+                    'reference' => $case->reference,
+                    'from_status' => $oldStatus,
+                    'to_status' => $newStatus,
+                    'client_id' => $case->client_id,
+                    'booking_id' => $case->booking_id,
+                ],
+                idempotencyKey: 'dispute.resolved:' . $case->id . ':' . $newStatus,
+                sourceType: ComplaintCase::class,
+                sourceId: (int) $case->id,
+            );
+        }
 
         return $case->fresh();
     }

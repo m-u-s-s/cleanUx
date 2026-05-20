@@ -186,7 +186,24 @@ class QualityInspectionService
             'grade' => $this->scorer->gradeFor($inspection->fresh()),
         ]);
 
-        return $inspection->fresh();
+        $fresh = $inspection->fresh();
+        \App\Support\Webhooks\BusinessEventEmitter::emit(
+            eventCode: 'inspection.completed',
+            payload: [
+                'inspection_id' => $fresh->id,
+                'mission_id' => $fresh->mission_id,
+                'phase' => $fresh->phase ?? null,
+                'score_percent' => $fresh->scorePercent(),
+                'grade' => $this->scorer->gradeFor($fresh),
+                'submitted_by' => $provider->id,
+                'submitted_at' => $fresh->submitted_at?->toIso8601String(),
+            ],
+            idempotencyKey: 'inspection.completed:' . $fresh->id,
+            sourceType: MissionQualityInspection::class,
+            sourceId: (int) $fresh->id,
+        );
+
+        return $fresh;
     }
 
     public function validateByClient(

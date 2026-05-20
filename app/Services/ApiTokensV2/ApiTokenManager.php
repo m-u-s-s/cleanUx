@@ -102,9 +102,21 @@ class ApiTokenManager
 
     public function revoke(PersonalAccessTokenV2 $token): void
     {
+        $payload = [
+            'token_id' => $token->id,
+            'token_name' => $token->name,
+            'owner_role' => $token->owner_role,
+            'tokenable_type' => $token->tokenable_type,
+            'tokenable_id' => $token->tokenable_id,
+        ];
         DB::transaction(function () use ($token) {
             $token->delete();
         });
+        \App\Support\Audit\CriticalActionAuditor::record(
+            eventType: 'api_token.revoked',
+            context: $payload,
+            severity: 'warning',
+        );
     }
 
     public function suspend(PersonalAccessTokenV2 $token, string $reason): PersonalAccessTokenV2
@@ -117,6 +129,12 @@ class ApiTokenManager
             'suspended_at' => now(),
             'suspended_reason' => $reason,
         ]);
+        \App\Support\Audit\CriticalActionAuditor::record(
+            eventType: 'api_token.suspended',
+            context: ['token_id' => $token->id, 'reason' => $reason],
+            subject: $token,
+            severity: 'warning',
+        );
         return $token->fresh();
     }
 
@@ -126,6 +144,11 @@ class ApiTokenManager
             'suspended_at' => null,
             'suspended_reason' => null,
         ]);
+        \App\Support\Audit\CriticalActionAuditor::record(
+            eventType: 'api_token.unsuspended',
+            context: ['token_id' => $token->id],
+            subject: $token,
+        );
         return $token->fresh();
     }
 }

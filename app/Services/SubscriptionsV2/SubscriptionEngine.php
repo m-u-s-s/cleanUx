@@ -61,6 +61,22 @@ class SubscriptionEngine
             $cycle = $this->cycles->generateNextCycle($sub, $startAt);
             $this->cycles->advanceSubscriptionWindows($sub, $cycle);
 
+            \App\Support\Webhooks\BusinessEventEmitter::emit(
+                eventCode: 'subscription.created',
+                payload: [
+                    'subscription_id' => $sub->id,
+                    'subscription_code' => $sub->code,
+                    'plan_code' => $plan->code,
+                    'user_id' => $user->id,
+                    'status' => $sub->status,
+                    'currency' => $sub->billing_currency,
+                    'trial_ends_at' => $sub->trial_ends_at?->toIso8601String(),
+                ],
+                idempotencyKey: 'subscription.created:' . $sub->id,
+                sourceType: SubscriptionV2::class,
+                sourceId: (int) $sub->id,
+            );
+
             return $sub->fresh();
         });
     }
@@ -110,6 +126,21 @@ class SubscriptionEngine
                 'ends_at' => $sub->current_cycle_end ?: $sub->next_billing_at,
             ]);
         }
+
+        \App\Support\Webhooks\BusinessEventEmitter::emit(
+            eventCode: 'subscription.cancelled',
+            payload: [
+                'subscription_id' => $sub->id,
+                'subscription_code' => $sub->code,
+                'immediate' => $immediate,
+                'cancel_at_period_end' => (bool) $sub->cancel_at_period_end,
+                'ends_at' => optional($sub->ends_at)->toIso8601String(),
+            ],
+            idempotencyKey: 'subscription.cancelled:' . $sub->id,
+            sourceType: SubscriptionV2::class,
+            sourceId: (int) $sub->id,
+        );
+
         return $sub->fresh();
     }
 

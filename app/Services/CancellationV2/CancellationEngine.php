@@ -312,18 +312,81 @@ class CancellationEngine
         return $row;
     }
 
+    /**
+     * Effectue le refund réel via Stripe SDK. Idempotent : utilise un metadata
+     * cancellation_id unique pour éviter les double-refunds.
+     *
+     * Récupère payment_intent_id depuis bookings.stripe_payment_intent_id.
+     * Soft-fail : si Stripe SDK absent ou booking sans payment intent, retourne
+     * un status "manual" pour traitement admin.
+     */
     protected function tryStripeRefund(BookingCancellationV2 $row): array
     {
-        // Skeleton implementation. À câbler selon ton intégration Stripe :
-        //   - récupérer payment_intent_id ou charge_id depuis bookings
-        //   - appeler Stripe\Refund::create(['payment_intent' => ..., 'amount' => $row->refund_amount_cents])
-        //   - retourner ['refund_id' => ..., 'status' => 'succeeded']
-        return [
-            'skeleton' => true,
-            'refund_amount_cents' => $row->refund_amount_cents,
-            'currency' => $row->currency,
-            'note' => 'Stripe refund integration is a skeleton — wire to Stripe SDK in prod.',
-        ];
+        if ($row->refund_amount_cents <= 0) {
+            return ['status' => 'no_refund', 'refund_amount_cents' => 0];
+        }
+
+        if (! class_exists(\Stripe\Refund::class)) {
+            return [
+                'status' => 'manual',
+                'error' => 'stripe_sdk_unavailable',
+                'refund_amount_cents' => $row->refund_amount_cents,
+            ];
+        }
+
+        $booking = \App\Models\Booking::query()->find($row->booking_id);
+        $paymentIntentId = $booking?->stripe_payment_intent_id ?? null;
+        if (! $paymentIntentId) {
+            return [
+                'status' => 'manual',
+                'error' => 'no_payment_intent',
+                'refund_amount_cents' => $row->refund_amount_cents,
+                'booking_id' => $row->booking_id,
+            ];
+        }
+
+        $stripeSecret = (string) config('services.stripe.secret', '');
+        if ($stripeSecret === '') {
+            return ['status' => 'manual', 'error' => 'stripe_secret_missing'];
+        }
+
+        try {
+            \Stripe\Stripe::setApiKey($stripeSecret);
+
+            // Idempotency key sur (cancellation_id, refund_amount) pour éviter double-refund
+            $idempotencyKey = 'cancel_v2_' . $row->id . '_' . $row->refund_amount_cents;
+
+            $refund = \Stripe\Refund::create([
+                'payment_intent' => $paymentIntentId,
+                'amount' => (int) $row->refund_amount_cents,
+                'reason' => 'requested_by_customer',
+                'metadata' => [
+                    'cancellation_id' => $row->id,
+                    'booking_id' => $row->booking_id,
+                    'cancellation_reason' => $row->reason ?? '',
+                ],
+            ], [
+                'idempotency_key' => $idempotencyKey,
+            ]);
+
+            return [
+                'status' => 'succeeded',
+                'refund_id' => $refund->id,
+                'refund_amount_cents' => $row->refund_amount_cents,
+                'currency' => $row->currency,
+                'stripe_status' => $refund->status,
+            ];
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::warning('[cancellation_v2] stripe refund failed', [
+                'cancellation_id' => $row->id,
+                'error' => $e->getMessage(),
+            ]);
+            return [
+                'status' => 'failed',
+                'error' => $e->getMessage(),
+                'refund_amount_cents' => $row->refund_amount_cents,
+            ];
+        }
     }
 
     protected function ensureActorRole(string $actorRole): void

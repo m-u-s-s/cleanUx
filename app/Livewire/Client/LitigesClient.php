@@ -174,6 +174,12 @@ class LitigesClient extends Component
                 ->latest()
                 ->limit(20)
                 ->get(),
+
+            // Selection state expected by the view's detail panel (@if($selected)).
+            // This component does not yet implement claim selection — values are null
+            // so the panel block is skipped entirely.
+            'selected' => null,
+            'selectedId' => null,
         ]);
     }
 }

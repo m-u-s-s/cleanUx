@@ -114,9 +114,9 @@ class CampaignEngineTest extends TestCase
 
         $recipients = MarketingCampaignRecipient::orderBy('scheduled_for')->get();
         $this->assertCount(3, $recipients);
-        $this->assertEqualsWithDelta(0, $recipients[0]->scheduled_for->diffInMinutes(now()), 1);
-        $this->assertEqualsWithDelta(60, $recipients[1]->scheduled_for->diffInMinutes(now()), 1);
-        $this->assertEqualsWithDelta(1500, $recipients[2]->scheduled_for->diffInMinutes(now()), 1);
+        $this->assertEqualsWithDelta(0, $recipients[0]->scheduled_for->diffInMinutes(now(), true), 1);
+        $this->assertEqualsWithDelta(60, $recipients[1]->scheduled_for->diffInMinutes(now(), true), 1);
+        $this->assertEqualsWithDelta(1500, $recipients[2]->scheduled_for->diffInMinutes(now(), true), 1);
     }
 
     public function test_schedule_assigns_ab_variant_deterministically(): void

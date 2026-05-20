@@ -37,17 +37,13 @@ class FileProfilerStorage implements ProfilerStorageInterface
         }
         $this->folder = substr($dsn, 5);
 
-        if (!is_dir($this->folder) && false === @mkdir($this->folder, 0777, true) && !is_dir($this->folder)) {
+        if (!is_dir($this->folder) && false === @mkdir($this->folder, 0o777, true) && !is_dir($this->folder)) {
             throw new \RuntimeException(\sprintf('Unable to create the storage directory (%s).', $this->folder));
         }
     }
 
-    /**
-     * @param \Closure|null $filter A filter to apply on the list of tokens
-     */
-    public function find(?string $ip, ?string $url, ?int $limit, ?string $method, ?int $start = null, ?int $end = null, ?string $statusCode = null/* , \Closure $filter = null */): array
+    public function find(?string $ip, ?string $url, ?int $limit, ?string $method, ?int $start = null, ?int $end = null, ?string $statusCode = null, ?\Closure $filter = null): array
     {
-        $filter = 7 < \func_num_args() ? func_get_arg(7) : null;
         $file = $this->getIndexFilename();
 
         if (!file_exists($file)) {
@@ -78,11 +74,11 @@ class FileProfilerStorage implements ProfilerStorageInterface
                 continue;
             }
 
-            if (!empty($start) && $csvTime < $start) {
+            if ($start && $csvTime < $start) {
                 continue;
             }
 
-            if (!empty($end) && $csvTime > $end) {
+            if ($end && $csvTime > $end) {
                 continue;
             }
 
@@ -109,10 +105,7 @@ class FileProfilerStorage implements ProfilerStorageInterface
         return array_values($result);
     }
 
-    /**
-     * @return void
-     */
-    public function purge()
+    public function purge(): void
     {
         $flags = \FilesystemIterator::SKIP_DOTS;
         $iterator = new \RecursiveDirectoryIterator($this->folder, $flags);
@@ -143,7 +136,7 @@ class FileProfilerStorage implements ProfilerStorageInterface
         if (!$profileIndexed) {
             // Create directory
             $dir = \dirname($file);
-            if (!is_dir($dir) && false === @mkdir($dir, 0777, true) && !is_dir($dir)) {
+            if (!is_dir($dir) && false === @mkdir($dir, 0o777, true) && !is_dir($dir)) {
                 throw new \RuntimeException(\sprintf('Unable to create the storage directory (%s).', $dir));
             }
         }
@@ -152,7 +145,7 @@ class FileProfilerStorage implements ProfilerStorageInterface
         // when there are errors in sub-requests, the parent and/or children tokens
         // may equal the profile token, resulting in infinite loops
         $parentToken = $profile->getParentToken() !== $profileToken ? $profile->getParentToken() : null;
-        $childrenToken = array_filter(array_map(fn (Profile $p) => $profileToken !== $p->getToken() ? $p->getToken() : null, $profile->getChildren()));
+        $childrenToken = array_filter(array_map(static fn (Profile $p) => $profileToken !== $p->getToken() ? $p->getToken() : null, $profile->getChildren()));
 
         // Store profile
         $data = [
@@ -196,7 +189,7 @@ class FileProfilerStorage implements ProfilerStorageInterface
             ], ',', '"', '\\');
             fclose($file);
 
-            if (1 === mt_rand(1, 10)) {
+            if (1 === random_int(1, 10)) {
                 $this->removeExpiredProfiles();
             }
         }
@@ -269,10 +262,7 @@ class FileProfilerStorage implements ProfilerStorageInterface
         return '' === $line ? null : $line;
     }
 
-    /**
-     * @return Profile
-     */
-    protected function createProfileFromData(string $token, array $data, ?Profile $parent = null)
+    protected function createProfileFromData(string $token, array $data, ?Profile $parent = null): Profile
     {
         $profile = new Profile($token);
         $profile->setIp($data['ip']);

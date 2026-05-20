@@ -130,7 +130,11 @@ class TeamMemberManager extends Component
         if (! empty($invitationId)) {
             $model = Jetstream::teamInvitationModel();
 
-            $model::whereKey($invitationId)->delete();
+            $foreignKey = (new $model)->team()->getForeignKeyName();
+
+            $model::whereKey($invitationId)
+                ->where($foreignKey, $this->team->id)
+                ->delete();
         }
 
         $this->team = $this->team->fresh();
@@ -183,7 +187,7 @@ class TeamMemberManager extends Component
      * Remove the currently authenticated user from the team.
      *
      * @param  \Laravel\Jetstream\Contracts\RemovesTeamMembers  $remover
-     * @return void
+     * @return \Illuminate\Http\RedirectResponse
      */
     public function leaveTeam(RemovesTeamMembers $remover)
     {

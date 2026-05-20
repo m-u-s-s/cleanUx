@@ -86,16 +86,29 @@ if (class_exists(\App\Livewire\Client\BrowseProviders::class)) {
 }
 
 Route::get('/terms-of-service', function () {
-    return view()->exists('terms')
-        ? view('terms')
-        : response('<h1>Conditions générales</h1><p>Page à compléter.</p>');
+    return view('legal.terms');
 })->name('terms.show');
 
 Route::get('/privacy-policy', function () {
-    return view()->exists('policy')
-        ? view('policy')
-        : response('<h1>Politique de confidentialité</h1><p>Page à compléter.</p>');
+    return view('legal.privacy');
 })->name('policy.show');
+
+Route::get('/legal/cookies', function () {
+    return view('legal.cookies');
+})->name('legal.cookies');
+
+Route::get('/legal/mentions-legales', function () {
+    return view('legal.mentions');
+})->name('legal.mentions');
+
+// Health checks for load balancer / monitoring
+Route::get('/health', [\App\Http\Controllers\HealthCheckController::class, 'liveness'])->name('health.liveness');
+Route::get('/health/deep', [\App\Http\Controllers\HealthCheckController::class, 'readiness'])->name('health.readiness');
+
+// Help Center / FAQ
+if (class_exists(\App\Livewire\Public\HelpCenter::class)) {
+    Route::get('/aide', \App\Livewire\Public\HelpCenter::class)->name('help.center');
+}
 
 Route::post('/stripe/webhook', [StripeWebhookController::class, 'handleWebhook'])
     ->name('cashier.webhook');

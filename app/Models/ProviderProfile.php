@@ -8,6 +8,12 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class ProviderProfile extends Model
 {
+    /**
+     * SECURITY : Tous les setters sensibles (verification_status, stripe_connect_status, etc.)
+     * doivent passer par un Service composant un payload explicite après validation.
+     * NE JAMAIS faire `ProviderProfile::find($id)->update($request->all())` dans un controller —
+     * utiliser `$request->validated()` ou forceFill() depuis un Service.
+     */
     protected $fillable = [
         'user_id',
         'organization_account_id',

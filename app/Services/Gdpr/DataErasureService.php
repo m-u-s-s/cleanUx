@@ -151,6 +151,92 @@ class DataErasureService
                 ->where('tokenable_id', $user->id)
                 ->delete();
         }
+
+        $this->anonymizeV2Modules($user);
+    }
+
+    /**
+     * Anonymisation des nouveaux modules v2 (KYB/Fleet/Subscriptions/Tenancy/Chat).
+     *
+     * Stratégie : on conserve les ROWS (obligation légale 10 ans pour compta/KYB),
+     * mais on nullify les FKs et PII vers ce user pour qu'il devienne anonyme.
+     */
+    protected function anonymizeV2Modules(User $user): void
+    {
+        // KYB B2B : nullify owner/contact + email contact (rows gardés pour audit)
+        if (Schema::hasTable('business_entities')) {
+            DB::table('business_entities')
+                ->where(function ($q) use ($user) {
+                    $q->where('owner_user_id', $user->id)
+                        ->orWhere('contact_user_id', $user->id)
+                        ->orWhere('verified_by_user_id', $user->id);
+                })
+                ->update([
+                    'owner_user_id' => null,
+                    'contact_user_id' => null,
+                    'contact_email' => null,
+                ]);
+        }
+        // Fleet : libérer les véhicules/équipements + nullify dans assignments
+        if (Schema::hasTable('fleet_vehicles')) {
+            DB::table('fleet_vehicles')
+                ->where('current_provider_id', $user->id)
+                ->update(['current_provider_id' => null]);
+        }
+        if (Schema::hasTable('fleet_equipment')) {
+            DB::table('fleet_equipment')
+                ->where('current_provider_id', $user->id)
+                ->update(['current_provider_id' => null]);
+        }
+        // Subscriptions : cancel actives + nullify provider link (rows conservées pour compta)
+        if (Schema::hasTable('subscriptions_v2')) {
+            DB::table('subscriptions_v2')
+                ->where('user_id', $user->id)
+                ->whereIn('status', ['trialing', 'active', 'paused', 'past_due'])
+                ->update([
+                    'status' => 'cancelled',
+                    'cancelled_at' => now(),
+                    'ends_at' => now(),
+                ]);
+            DB::table('subscriptions_v2')
+                ->where('provider_user_id', $user->id)
+                ->update(['provider_user_id' => null]);
+        }
+        // Tenancy : marquer tenant_users left + nullify billing_owner sur tenants
+        if (Schema::hasTable('tenant_users')) {
+            DB::table('tenant_users')
+                ->where('user_id', $user->id)
+                ->update([
+                    'is_active' => false,
+                    'left_at' => now(),
+                ]);
+        }
+        if (Schema::hasTable('tenants')) {
+            DB::table('tenants')
+                ->where('billing_owner_user_id', $user->id)
+                ->update(['billing_owner_user_id' => null]);
+        }
+        // Chat : retirer participant (set left_at + can_send=false) + anonymiser sender_user_id
+        if (Schema::hasTable('chat_participants')) {
+            DB::table('chat_participants')
+                ->where('user_id', $user->id)
+                ->whereNull('left_at')
+                ->update([
+                    'left_at' => now(),
+                    'can_send' => false,
+                ]);
+        }
+        if (Schema::hasTable('chat_messages')) {
+            DB::table('chat_messages')
+                ->where('sender_user_id', $user->id)
+                ->update(['sender_user_id' => null]);
+        }
+        // Contracts : conserver les signatures (preuve légale) mais nullify signer_user_id
+        if (Schema::hasTable('contract_signatures')) {
+            DB::table('contract_signatures')
+                ->where('signer_user_id', $user->id)
+                ->update(['signer_user_id' => null]);
+        }
     }
 
     public function restrictProcessing(User $user, ?string $reason = null): GdprDataRequest

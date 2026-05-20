@@ -28,6 +28,34 @@ class RouteServiceProvider extends ServiceProvider
             return Limit::perMinute(60)->by($request->user()?->id ?: $request->ip());
         });
 
+        // SMS-cost endpoints : 5/min per IP, 20/h per user
+        RateLimiter::for('otp', function (Request $request) {
+            return [
+                Limit::perMinute(5)->by('otp:ip:' . $request->ip()),
+                Limit::perHour(20)->by('otp:user:' . ($request->user()?->id ?: $request->ip())),
+            ];
+        });
+
+        // Auth endpoints (login/register/password-reset) : 10/min per IP brute-force guard
+        RateLimiter::for('auth', function (Request $request) {
+            return Limit::perMinute(10)->by($request->ip());
+        });
+
+        // Promo/referral redeem : 10/min per user pour limiter le code abuse
+        RateLimiter::for('promo', function (Request $request) {
+            return Limit::perMinute(10)->by('promo:' . ($request->user()?->id ?: $request->ip()));
+        });
+
+        // Chat message send : 30/min per user (anti-spam)
+        RateLimiter::for('chat', function (Request $request) {
+            return Limit::perMinute(30)->by('chat:' . ($request->user()?->id ?: $request->ip()));
+        });
+
+        // External provider calls (KYB sanctions, geocoding, distance matrix) : 20/min per user
+        RateLimiter::for('external', function (Request $request) {
+            return Limit::perMinute(20)->by('ext:' . ($request->user()?->id ?: $request->ip()));
+        });
+
         $this->routes(function () {
             Route::middleware('api')
                 ->prefix('api')

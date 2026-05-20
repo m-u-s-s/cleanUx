@@ -90,6 +90,7 @@
     @stack('scripts')
     <x-mobile-bottom-nav />
     <x-pwa-install-prompt />
+    <x-cookie-banner />
 </body>
 
 </html>
