@@ -110,6 +110,10 @@ if (class_exists(\App\Livewire\Public\HelpCenter::class)) {
     Route::get('/aide', \App\Livewire\Public\HelpCenter::class)->name('help.center');
 }
 
+// SEO endpoints (sitemap.xml + robots.txt)
+Route::get('/sitemap.xml', [\App\Http\Controllers\PublicSeoController::class, 'sitemap'])->name('seo.sitemap');
+Route::get('/robots.txt', [\App\Http\Controllers\PublicSeoController::class, 'robots'])->name('seo.robots');
+
 Route::post('/stripe/webhook', [StripeWebhookController::class, 'handleWebhook'])
     ->name('cashier.webhook');
 

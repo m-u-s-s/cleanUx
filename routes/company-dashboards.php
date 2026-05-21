@@ -28,6 +28,11 @@ Route::middleware(['auth', 'verified', 'active.account'])
         Route::get('/reservations/nouveau', BookingHub::class)->name('bookings.create');
         Route::get('/membres', MembersAccess::class)->name('members');
         Route::get('/facturation', BillingCenter::class)->name('billing');
+
+        if (class_exists(\App\Livewire\ClientCompany\BulkBookingImporter::class)) {
+            Route::get('/reservations/import-bulk', \App\Livewire\ClientCompany\BulkBookingImporter::class)
+                ->name('bookings.bulk-import');
+        }
     });
 
 /*

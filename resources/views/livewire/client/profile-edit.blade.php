@@ -55,6 +55,6 @@
     <div class="rounded-2xl bg-amber-50 border border-amber-200 p-4 text-sm">
         <p class="font-semibold text-amber-900 mb-1">Supprimer mon compte</p>
         <p class="text-xs text-amber-700">La suppression de votre compte déclenche une demande RGPD avec période de grâce de 30 jours.</p>
-        <a href="{{ route('client.gdpr') }}" class="inline-block mt-2 text-xs font-semibold text-amber-900 underline">Faire une demande RGPD →</a>
+        <a href="{{ Route::has('client.gdpr.data') ? route('client.gdpr.data') : '#' }}" class="inline-block mt-2 text-xs font-semibold text-amber-900 underline">Faire une demande RGPD →</a>
     </div>
 </div>

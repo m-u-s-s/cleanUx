@@ -174,6 +174,26 @@ Route::middleware(['role:admin'])
                 ->name('analytics.cancellations');
         }
 
+        // NPS Center
+        if (class_exists(\App\Livewire\Admin\Nps\NpsCenter::class)) {
+            Route::get('/nps', \App\Livewire\Admin\Nps\NpsCenter::class)->name('nps.center');
+        }
+
+        // UserSafety Admin (block/report moderation)
+        if (class_exists(\App\Livewire\Admin\Safety\SafetyCenter::class)) {
+            Route::get('/safety', \App\Livewire\Admin\Safety\SafetyCenter::class)->name('safety.center');
+        }
+
+        // Provider Badges Admin
+        if (class_exists(\App\Livewire\Admin\Badges\BadgesCenter::class)) {
+            Route::get('/badges', \App\Livewire\Admin\Badges\BadgesCenter::class)->name('badges.center');
+        }
+
+        // Multi-trade Bundles Center (orchestration chantiers groupés)
+        if (class_exists(\App\Livewire\Admin\Bundles\BundlesCenter::class)) {
+            Route::get('/bundles', \App\Livewire\Admin\Bundles\BundlesCenter::class)->name('bundles.center');
+        }
+
         // SMS v2 — Centre SMS / WhatsApp (KPIs, recherche, retry manuel)
         if (class_exists(\App\Livewire\Admin\Sms\SmsCenter::class)) {
             Route::get('/sms', \App\Livewire\Admin\Sms\SmsCenter::class)

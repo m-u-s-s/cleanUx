@@ -19,7 +19,7 @@ jobs:
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
-          php-version: '8.5'
+          php-version: '8.3'
           extensions: mbstring, dom, fileinfo, pdo_sqlite, sqlite3
           coverage: none
 
@@ -35,8 +35,16 @@ jobs:
       - name: Install PHP dependencies
         run: composer install --no-interaction --prefer-dist
 
+      - name: Composer security audit (non-blocking)
+        run: composer audit --no-interaction --format=plain || true
+        continue-on-error: true
+
       - name: Install Node dependencies
         run: npm ci
+
+      - name: NPM security audit (non-blocking)
+        run: npm audit --omit=dev --audit-level=high || true
+        continue-on-error: true
 
       - name: Generate app key
         run: php artisan key:generate --force

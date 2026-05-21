@@ -6,8 +6,8 @@
             <h1 class="text-2xl font-bold text-slate-900">Templates de récurrence</h1>
             <p class="text-sm text-slate-500">Crée une récurrence en 1 clic à partir d'un modèle prêt à l'emploi.</p>
         </div>
-        @if (Route::has('client.recurring.index'))
-            <a href="{{ route('client.recurring.index') }}"
+        @if (Route::has('client.recurring.templates'))
+            <a href="{{ route('client.recurring.templates') }}"
                class="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50">
                 Mes récurrences actives
             </a>

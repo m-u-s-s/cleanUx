@@ -73,7 +73,7 @@ class LoyaltyRedemptionService
                 default => 'manual',
             };
 
-            return LoyaltyRedemption::query()->create([
+            $redemption = LoyaltyRedemption::query()->create([
                 'code' => LoyaltyRedemption::generateCode(),
                 'user_id' => $user->id,
                 'reward_id' => $reward->id,
@@ -87,7 +87,58 @@ class LoyaltyRedemptionService
                 'confirmed_at' => $deliveryMethod === 'email_code' ? now() : null,
                 'metadata' => $opts['metadata'] ?? null,
             ]);
+
+            // Envoi auto email voucher_code si delivery=email_code (soft-fail)
+            if ($deliveryMethod === 'email_code' && $voucherCode) {
+                $this->sendVoucherEmail($user, $reward, $redemption);
+            }
+
+            return $redemption;
         });
+    }
+
+    /**
+     * Envoie le voucher_code par email au client (soft-fail si module Email v2 absent).
+     */
+    protected function sendVoucherEmail(User $user, LoyaltyReward $reward, LoyaltyRedemption $redemption): void
+    {
+        try {
+            if (! class_exists(\App\Services\EmailV2\EmailService::class)) {
+                Log::info('[loyalty_redemption] Email v2 absent, voucher email skipped', [
+                    'redemption_id' => $redemption->id,
+                ]);
+                return;
+            }
+            $service = app(\App\Services\EmailV2\EmailService::class);
+            $expiresAt = $reward->valid_until?->format('d/m/Y') ?? 'sans limite';
+
+            $service->send([
+                'to' => $user->email,
+                'to_name' => $user->name,
+                'subject' => "🎁 Votre code de récompense CleanUx : {$redemption->voucher_code}",
+                'body_html' => "
+                    <h1>Bonjour {$user->name},</h1>
+                    <p>Merci d'avoir échangé vos points fidélité pour <strong>{$reward->name}</strong>.</p>
+                    <p>Votre code voucher :</p>
+                    <p style='font-size:24px; font-weight:bold; padding:16px; background:#f3f4f6; border-radius:8px; text-align:center; letter-spacing:3px;'>{$redemption->voucher_code}</p>
+                    <p>Validité : <strong>{$expiresAt}</strong></p>
+                    <p>Conservez ce code précieusement et présentez-le selon les instructions de la récompense.</p>
+                    <p style='color:#6b7280; font-size:12px;'>Réf. rédemption: {$redemption->code}</p>
+                ",
+                'category' => 'transactional',
+                'template_code' => 'loyalty_voucher',
+                'user_id' => $user->id,
+                'metadata' => [
+                    'redemption_id' => $redemption->id,
+                    'reward_code' => $reward->code,
+                ],
+            ]);
+        } catch (\Throwable $e) {
+            Log::warning('[loyalty_redemption] voucher email failed', [
+                'redemption_id' => $redemption->id,
+                'error' => $e->getMessage(),
+            ]);
+        }
     }
 
     public function cancel(LoyaltyRedemption $redemption, string $reason): LoyaltyRedemption

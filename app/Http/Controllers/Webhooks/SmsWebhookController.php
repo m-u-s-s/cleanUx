@@ -31,7 +31,12 @@ class SmsWebhookController extends Controller
         }
 
         $payload = $request->getContent();
-        $headers = $request->headers->all();
+        // Normalise les headers en flat key=>string (Twilio HMAC nécessite des values plain).
+        // Inject _url pour Twilio HMAC SHA1 sur URL complete + body sorted params.
+        $headers = collect($request->headers->all())
+            ->mapWithKeys(fn ($v, $k) => [strtolower($k) => is_array($v) ? ($v[0] ?? '') : (string) $v])
+            ->toArray();
+        $headers['_url'] = $request->fullUrl();
 
         try {
             $parsed = $providerInstance->verifyWebhook($payload, $headers);

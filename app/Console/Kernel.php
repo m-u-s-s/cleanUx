@@ -31,6 +31,33 @@ class Kernel extends ConsoleKernel
         $schedule->command('accounting:close-previous-month')->monthlyOn(6, '04:00')->withoutOverlapping();
         $schedule->command('fleet:scan-expiring')->dailyAt('05:00')->withoutOverlapping();
 
+        // Stripe reconciliation : audit Stripe ↔ DB chaque jour
+        $schedule->command('stripe:reconcile --scope=all --days=1')->dailyAt('05:30')->withoutOverlapping();
+
+        // Audit v2 — purge old events selon retention policies
+        if (class_exists(\App\Jobs\Audit\PurgeAuditEventsJob::class)) {
+            $schedule->job(new \App\Jobs\Audit\PurgeAuditEventsJob())->dailyAt('03:15')->withoutOverlapping();
+        }
+
+        // Marketing v2 — dispatch des steps drip + recompute segments.
+        // Laravel 11 : name() AVANT withoutOverlapping() (CallbackEvent::withoutOverlapping
+        // requires $this->description set, populated by name()).
+        if (class_exists(\App\Jobs\Marketing\DispatchCampaignStepJob::class)) {
+            $schedule->call(function () {
+                \App\Jobs\Marketing\DispatchCampaignStepJob::dispatch();
+            })->name('marketing:dispatch-steps')->everyTenMinutes()->withoutOverlapping()->onOneServer();
+        }
+        if (class_exists(\App\Jobs\Marketing\RecomputeSegmentJob::class)) {
+            $schedule->call(function () {
+                \App\Jobs\Marketing\RecomputeSegmentJob::dispatch();
+            })->name('marketing:recompute-segments')->dailyAt('02:00')->withoutOverlapping()->onOneServer();
+        }
+
+        // FX rates refresh via job async (vs sync via currencies:refresh)
+        if (class_exists(\App\Jobs\Fx\RefreshFxRatesJob::class)) {
+            $schedule->job(new \App\Jobs\Fx\RefreshFxRatesJob())->dailyAt('06:15')->withoutOverlapping();
+        }
+
         // Spatie Backup — daily backup + monitoring + cleanup
         if (class_exists(\Spatie\Backup\BackupServiceProvider::class)) {
             $schedule->command('backup:clean')->dailyAt('01:00')->withoutOverlapping();

@@ -28,6 +28,45 @@ class PushService
     }
 
     /**
+     * Sélectionne le provider adapté à la plateforme du device token.
+     *
+     * Multi-platform routing :
+     *   - ios (native APNs) → APNs si configuré, sinon FCM (qui sait router APNs)
+     *   - android (FCM) → FCM
+     *   - web (Web Push API) → FCM si configuré, sinon Web Push (sender propre)
+     *
+     * Fallback : si aucun provider disponible pour la platform, utilise le bind par défaut.
+     */
+    protected function providerFor(DeviceToken $token): PushProviderInterface
+    {
+        try {
+            $platform = strtolower((string) ($token->platform ?? ''));
+            $apnsConfigured = (bool) config('push.apns.key_path') || (bool) config('push.apns.key_id');
+            $fcmConfigured = (bool) config('push.fcm.credentials_path') || (bool) config('push.fcm.project_id');
+
+            // Provider à instancier explicitement par plateforme
+            if ($platform === 'ios' && $apnsConfigured && class_exists(\App\Services\Push\Providers\ApnsPushProvider::class)) {
+                return app(\App\Services\Push\Providers\ApnsPushProvider::class);
+            }
+            if (in_array($platform, ['android', 'web'], true) && $fcmConfigured && class_exists(\App\Services\Push\Providers\FcmPushProvider::class)) {
+                return app(\App\Services\Push\Providers\FcmPushProvider::class);
+            }
+            if ($platform === 'ios' && $fcmConfigured && class_exists(\App\Services\Push\Providers\FcmPushProvider::class)) {
+                // FCM peut router vers APNs via FCM iOS topic
+                return app(\App\Services\Push\Providers\FcmPushProvider::class);
+            }
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::warning('[push] platform routing fallback', [
+                'token_id' => $token->id,
+                'error' => $e->getMessage(),
+            ]);
+        }
+
+        // Fallback sur le provider injecté (Mock ou single-binding)
+        return $this->provider;
+    }
+
+    /**
      * Envoi push à un device token spécifique.
      */
     public function dispatch(
@@ -72,7 +111,7 @@ class PushService
             $notification = PushNotification::create([
                 'user_id' => $token->user_id,
                 'device_token_id' => $token->id,
-                'provider' => $this->provider->name(),
+                'provider' => $this->providerFor($token)->name(),
                 'title' => $title,
                 'body' => $body,
                 'data' => $data,
@@ -87,7 +126,7 @@ class PushService
             ]);
 
             try {
-                $result = $this->provider->send(new PushSendRequest(
+                $result = $this->providerFor($token)->send(new PushSendRequest(
                     token: $token->token,
                     platform: $token->platform,
                     title: $title,

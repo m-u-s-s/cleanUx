@@ -4,7 +4,7 @@
             [
                 'label' => 'Readiness',
                 'description' => 'Vérifier la préparation production.',
-                'route' => 'admin.platform-readiness',
+                'route' => 'admin.platform.readiness',
             ],
             [
                 'label' => 'Audit logs',
@@ -24,7 +24,7 @@
             [
                 'label' => 'Dashboard business',
                 'description' => 'Vue globale de pilotage.',
-                'route' => 'admin.business-dashboard',
+                'route' => 'admin.business.dashboard',
             ],
         ];
     @endphp

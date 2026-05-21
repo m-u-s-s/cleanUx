@@ -133,6 +133,18 @@ Route::middleware(['role:client'])
                 ->name('booking.tracking.map');
         }
 
+        if (class_exists(\App\Livewire\Client\NpsSurvey::class)) {
+            Route::get('/nps', \App\Livewire\Client\NpsSurvey::class)->name('nps.survey');
+        }
+
+        if (class_exists(\App\Livewire\Client\MultiTradesBundleManager::class)) {
+            Route::get('/chantiers-groupes', \App\Livewire\Client\MultiTradesBundleManager::class)->name('bundles.manage');
+        }
+
+        if (class_exists(\App\Livewire\Client\AiQuotePhoto::class)) {
+            Route::get('/devis-ia', \App\Livewire\Client\AiQuotePhoto::class)->name('ai.quote.photo');
+        }
+
         Route::get('/finance/devis/{quote}/telecharger', [FinanceDocumentDownloadController::class, 'quote'])
             ->name('finance.quote.download');
 

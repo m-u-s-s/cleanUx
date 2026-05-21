@@ -31,23 +31,64 @@
     ['label' => 'Mes rendez-vous', 'route' => 'client.rendezvous.index', 'active' => 'client.rendezvous.*', 'icon' => '📅'],
     ['label' => 'Historique', 'route' => 'client.historique', 'active' => 'client.historique', 'icon' => '🕘'],
     ],
-    'Compte client' => [
+    'Marketplace' => [
+    ['label' => 'Trouver un prestataire', 'route' => 'client.providers.browse', 'active' => 'client.providers.browse', 'icon' => '🔍'],
+    ['label' => 'Devis IA depuis photo', 'route' => 'client.ai.quote.photo', 'active' => 'client.ai.quote.photo', 'icon' => '🤖'],
+    ['label' => 'Chantiers groupés', 'route' => 'client.bundles.manage', 'active' => 'client.bundles.*', 'icon' => '🏗️'],
+    ],
+    'Engagement' => [
+    ['label' => 'Programme fidélité', 'route' => 'client.loyalty', 'active' => 'client.loyalty', 'icon' => '🎖️'],
+    ['label' => 'Récompenses', 'route' => 'client.loyalty.rewards', 'active' => 'client.loyalty.rewards', 'icon' => '🎁'],
+    ['label' => 'Parrainage', 'route' => 'client.referrals', 'active' => 'client.referrals', 'icon' => '🤝'],
+    ['label' => 'Mon avis (NPS)', 'route' => 'client.nps.survey', 'active' => 'client.nps.survey', 'icon' => '⭐'],
+    ],
+    'Finance & paiement' => [
     ['label' => 'Finance', 'route' => 'client.finance', 'active' => 'client.finance*', 'icon' => '💳'],
     ['label' => 'Portefeuille', 'route' => 'client.wallet', 'active' => 'client.wallet', 'icon' => '👛'],
-    ['label' => 'Favoris employés', 'route' => 'client.favorite-employes', 'active' => 'client.favorite-employes', 'icon' => '⭐'],
-    ['label' => 'Litiges', 'route' => 'client.claims', 'active' => 'client.claims*', 'icon' => '⚠️'],
+    ['label' => 'Cartes bancaires', 'route' => 'client.payment.methods', 'active' => 'client.payment.methods', 'icon' => '💳'],
     ['label' => 'Abonnements', 'route' => 'client.subscriptions', 'active' => 'client.subscriptions*', 'icon' => '🔁'],
+    ['label' => 'Abonnements v2', 'route' => 'client.subscriptions-v2', 'active' => 'client.subscriptions-v2', 'icon' => '🔄'],
+    ],
+    'Communication & SAV' => [
+    ['label' => 'Messagerie', 'route' => 'client.chat.inbox', 'active' => 'client.chat.inbox', 'icon' => '💬'],
+    ['label' => 'Litiges', 'route' => 'client.claims', 'active' => 'client.claims*', 'icon' => '⚠️'],
+    ['label' => 'Favoris employés', 'route' => 'client.favorite-employes', 'active' => 'client.favorite-employes', 'icon' => '❤️'],
+    ],
+    'Compte client' => [
     ['label' => 'Profil client', 'route' => 'client.profile', 'active' => 'client.profile', 'icon' => '👤'],
+    ['label' => 'Éditer mon profil', 'route' => 'client.profile.edit', 'active' => 'client.profile.edit', 'icon' => '✏️'],
+    ['label' => 'Mes données RGPD', 'route' => 'client.gdpr.data', 'active' => 'client.gdpr.data', 'icon' => '🔐'],
+    ['label' => 'API tokens', 'route' => 'client.api-tokens', 'active' => 'client.api-tokens', 'icon' => '🔑'],
+    ],
+    'Pro (compte entreprise)' => [
+    ['label' => 'Vérification entreprise (KYB)', 'route' => 'client.kyb.onboarding', 'active' => 'client.kyb.onboarding', 'icon' => '🏢'],
+    ['label' => 'Contrats', 'route' => 'client.contracts', 'active' => 'client.contracts', 'icon' => '📜'],
     ],
     ];
 
     $employeGroups = [
-    'Terrain' => [
+    'Mon travail' => [
     ['label' => 'Ma journée', 'route' => 'employe.dashboard', 'active' => 'employe.dashboard', 'icon' => '🏠'],
     ['label' => 'Mes missions', 'route' => 'employe.missions', 'active' => 'employe.missions*', 'icon' => '📋'],
     ['label' => 'Planning', 'route' => 'employe.planning', 'active' => 'employe.planning', 'icon' => '📅'],
     ['label' => 'Disponibilités', 'route' => 'employe.disponibilites', 'active' => 'employe.disponibilites', 'icon' => '🕒'],
     ['label' => 'Historique', 'route' => 'employe.historique', 'active' => 'employe.historique', 'icon' => '🕘'],
+    ['label' => 'Google Agenda', 'route' => 'employe.google.calendar', 'active' => 'employe.google.calendar', 'icon' => '🗓️'],
+    ],
+    'Mes revenus' => [
+    ['label' => 'Tableau de bord revenus', 'route' => 'employe.earnings', 'active' => 'employe.earnings', 'icon' => '💰'],
+    ['label' => 'Mon portefeuille', 'route' => 'employe.wallet', 'active' => 'employe.wallet', 'icon' => '👛'],
+    ['label' => 'Stripe Connect', 'route' => 'employe.stripe-connect.start', 'active' => 'employe.stripe-connect.*', 'icon' => '💳'],
+    ],
+    'Mes performances' => [
+    ['label' => 'Mes badges', 'route' => 'employe.badges', 'active' => 'employe.badges', 'icon' => '🏆'],
+    ['label' => 'Mes avis', 'route' => 'employe.ratings', 'active' => 'employe.ratings', 'icon' => '⭐'],
+    ['label' => 'Feedbacks reçus', 'route' => 'employe.feedbacks', 'active' => 'employe.feedbacks', 'icon' => '💬'],
+    ],
+    'Vérifications & support' => [
+    ['label' => 'KYC / Identité', 'route' => 'employe.kyc', 'active' => 'employe.kyc', 'icon' => '🛡️'],
+    ['label' => 'Mes litiges', 'route' => 'employe.disputes', 'active' => 'employe.disputes', 'icon' => '⚠️'],
+    ['label' => 'Validation multiple', 'route' => 'employe.validation.multiple', 'active' => 'employe.validation.multiple', 'icon' => '✅'],
     ],
     'Qualité & équipe' => [
     ['label' => 'Incident', 'route' => 'employe.incident', 'active' => 'employe.incident', 'icon' => '⚠️'],
@@ -92,6 +133,64 @@
     ['label' => 'Approbations', 'route' => 'admin.enterprise.approvals', 'active' => 'admin.enterprise.approvals', 'icon' => '📑'],
     ['label' => 'Stripe prestataires', 'route' => 'admin.stripe-connect.providers', 'active' => 'admin.stripe-connect.providers', 'icon' => '💳'],
     ['label' => 'Emails produit', 'route' => 'admin.emails', 'active' => 'admin.emails', 'icon' => '✉️'],
+    ],
+    'Qualité & confiance' => [
+    ['label' => 'Modération avis', 'route' => 'admin.ratings.moderation', 'active' => 'admin.ratings.moderation', 'icon' => '⭐'],
+    ['label' => 'Inspections qualité', 'route' => 'admin.quality.center', 'active' => 'admin.quality.center', 'icon' => '✔️'],
+    ['label' => 'Litiges & SAV', 'route' => 'admin.disputes.center', 'active' => 'admin.disputes.center', 'icon' => '🛟'],
+    ['label' => 'Signalements & blocks', 'route' => 'admin.safety.center', 'active' => 'admin.safety.center', 'icon' => '🚫'],
+    ['label' => 'KYC providers', 'route' => 'admin.kyc.center', 'active' => 'admin.kyc.center', 'icon' => '🪪'],
+    ['label' => 'Provider badges', 'route' => 'admin.badges.center', 'active' => 'admin.badges.center', 'icon' => '🏅'],
+    ['label' => 'Trades catalogue', 'route' => 'admin.trades', 'active' => 'admin.trades', 'icon' => '🛠️'],
+    ],
+    'Croissance & marketing' => [
+    ['label' => 'Marketing automation', 'route' => 'admin.marketing.center', 'active' => 'admin.marketing.center', 'icon' => '📣'],
+    ['label' => 'Codes promo', 'route' => 'admin.promotions.codes', 'active' => 'admin.promotions.codes', 'icon' => '🎟️'],
+    ['label' => 'Campagnes promo', 'route' => 'admin.promotions.campaigns', 'active' => 'admin.promotions.campaigns', 'icon' => '📢'],
+    ['label' => 'Parrainage', 'route' => 'admin.promotions.referrals', 'active' => 'admin.promotions.referrals', 'icon' => '🤝'],
+    ['label' => 'NPS scoring', 'route' => 'admin.nps.center', 'active' => 'admin.nps.center', 'icon' => '📊'],
+    ['label' => 'Programme fidélité', 'route' => 'admin.loyalty.center', 'active' => 'admin.loyalty.center', 'icon' => '🎖️'],
+    ['label' => 'Récompenses loyalty', 'route' => 'admin.loyalty.rewards.center', 'active' => 'admin.loyalty.rewards.center', 'icon' => '🎁'],
+    ['label' => 'Raisons annulation', 'route' => 'admin.analytics.cancellations', 'active' => 'admin.analytics.cancellations', 'icon' => '❌'],
+    ],
+    'Plateforme & risk' => [
+    ['label' => 'Risk scoring', 'route' => 'admin.risk.center', 'active' => 'admin.risk.center', 'icon' => '🚨'],
+    ['label' => 'Audit v2', 'route' => 'admin.audit.center', 'active' => 'admin.audit.center', 'icon' => '🔍'],
+    ['label' => 'GDPR / RGPD', 'route' => 'admin.gdpr.center', 'active' => 'admin.gdpr.center', 'icon' => '🔐'],
+    ['label' => 'Notifications prefs', 'route' => 'admin.notification-preferences.center', 'active' => 'admin.notification-preferences.center', 'icon' => '🔔'],
+    ['label' => 'SMS / WhatsApp', 'route' => 'admin.sms.center', 'active' => 'admin.sms.center', 'icon' => '💬'],
+    ['label' => 'Push notifications', 'route' => 'admin.push.center', 'active' => 'admin.push.center', 'icon' => '📱'],
+    ['label' => 'Realtime / Reverb', 'route' => 'admin.realtime.center', 'active' => 'admin.realtime.center', 'icon' => '⚡'],
+    ['label' => 'Webhooks B2B', 'route' => 'admin.webhooks-v2.center', 'active' => 'admin.webhooks-v2.center', 'icon' => '🔗'],
+    ['label' => 'API Tokens v2', 'route' => 'admin.api-tokens-v2.center', 'active' => 'admin.api-tokens-v2.center', 'icon' => '🔑'],
+    ['label' => 'Géolocalisation', 'route' => 'admin.geolocation-v2.center', 'active' => 'admin.geolocation-v2.center', 'icon' => '🗺️'],
+    ['label' => 'Traductions i18n', 'route' => 'admin.translations.center', 'active' => 'admin.translations.center', 'icon' => '🌐'],
+    ['label' => 'FX (devises)', 'route' => 'admin.fx.center', 'active' => 'admin.fx.center', 'icon' => '💱'],
+    ],
+    'Finance avancée' => [
+    ['label' => 'Stripe hardening', 'route' => 'admin.stripe.hardening', 'active' => 'admin.stripe.hardening', 'icon' => '💳'],
+    ['label' => 'Comptabilité (FEC/Sage)', 'route' => 'admin.accounting-v2.center', 'active' => 'admin.accounting-v2.center', 'icon' => '📒'],
+    ['label' => 'Abonnements v2', 'route' => 'admin.subscriptions-v2.center', 'active' => 'admin.subscriptions-v2.center', 'icon' => '🔁'],
+    ['label' => 'Pourboires (Tips)', 'route' => 'admin.tips.center', 'active' => 'admin.tips.center', 'icon' => '💰'],
+    ['label' => 'Annulations v2', 'route' => 'admin.cancellations-v2.center', 'active' => 'admin.cancellations-v2.center', 'icon' => '🚫'],
+    ['label' => 'Assurance', 'route' => 'admin.insurance.center', 'active' => 'admin.insurance.center', 'icon' => '🛡️'],
+    ],
+    'Opérations terrain' => [
+    ['label' => 'Trip Tracking GPS', 'route' => 'admin.trip-tracking.center', 'active' => 'admin.trip-tracking.center', 'icon' => '📍'],
+    ['label' => 'Presence providers', 'route' => 'admin.presence.center', 'active' => 'admin.presence.center', 'icon' => '🟢'],
+    ['label' => 'Disponibilités', 'route' => 'admin.availability.center', 'active' => 'admin.availability.center', 'icon' => '📆'],
+    ['label' => 'Fleet véhicules', 'route' => 'admin.fleet-v2.center', 'active' => 'admin.fleet-v2.center', 'icon' => '🚐'],
+    ['label' => 'Bundles chantiers', 'route' => 'admin.bundles.center', 'active' => 'admin.bundles.center', 'icon' => '🏗️'],
+    ['label' => 'Matching insights', 'route' => 'admin.matching.insights', 'active' => 'admin.matching.insights', 'icon' => '🎯'],
+    ['label' => 'Pricing v2 (DSL)', 'route' => 'admin.pricing-v2.center', 'active' => 'admin.pricing-v2.center', 'icon' => '💵'],
+    ['label' => 'Onboarding v2', 'route' => 'admin.onboarding-v2.center', 'active' => 'admin.onboarding-v2.center', 'icon' => '🚪'],
+    ['label' => 'Contrats v2', 'route' => 'admin.contracts-v2.center', 'active' => 'admin.contracts-v2.center', 'icon' => '📜'],
+    ['label' => 'Analytics v2', 'route' => 'admin.analytics.center', 'active' => 'admin.analytics.center', 'icon' => '📊'],
+    ],
+    'B2B & multi-tenant' => [
+    ['label' => 'Tenancy (white-label)', 'route' => 'admin.tenancy-v2.center', 'active' => 'admin.tenancy-v2.center', 'icon' => '🏛️'],
+    ['label' => 'KYB entreprises', 'route' => 'admin.kyb-v2.center', 'active' => 'admin.kyb-v2.center', 'icon' => '🏢'],
+    ['label' => 'Chat & messagerie', 'route' => 'admin.chat-v2.center', 'active' => 'admin.chat-v2.center', 'icon' => '💬'],
     ],
     ];
 

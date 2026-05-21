@@ -15,8 +15,8 @@ return [
     |
     */
 
-    'default' => env('BROADCAST_DRIVER', 'null'),
-    'default' => env('BROADCAST_CONNECTION', 'null'),
+    // Laravel 11 utilise BROADCAST_CONNECTION; legacy BROADCAST_DRIVER en fallback.
+    'default' => env('BROADCAST_CONNECTION', env('BROADCAST_DRIVER', 'null')),
 
     /*
     |--------------------------------------------------------------------------

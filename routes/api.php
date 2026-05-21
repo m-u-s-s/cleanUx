@@ -19,9 +19,9 @@ use Illuminate\Support\Facades\Route;
 // Public — Auth
 // ─────────────────────────────────────────────
 
-Route::prefix('auth')->group(function () {
+Route::prefix('auth')->middleware('throttle:auth')->group(function () {
     Route::post('/login',    [ApiAuthController::class, 'login']);
-    Route::post('/register', [ApiAuthController::class, 'register']);
+    Route::post('/register', [ApiAuthController::class, 'register'])->middleware('turnstile');
 });
 
 // ─────────────────────────────────────────────
@@ -146,6 +146,14 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::delete('/users/{user}/block',   [\App\Http\Controllers\Api\Client\UserSafetyController::class, 'unblock']);
         Route::post('/users/{user}/report',    [\App\Http\Controllers\Api\Client\UserSafetyController::class, 'report'])->middleware('throttle:promo');
 
+        // NPS surveys
+        Route::post('/nps/responses',          [\App\Http\Controllers\Api\Client\NpsController::class, 'submit']);
+        Route::get('/nps/responses/mine',      [\App\Http\Controllers\Api\Client\NpsController::class, 'mine']);
+
+        // AI quote estimation from photo (Claude Vision) — rate-limited
+        Route::post('/ai-quote/photo',         [\App\Http\Controllers\Api\Client\AiQuoteController::class, 'estimateFromPhoto'])
+            ->middleware('throttle:promo');
+
         // Phase SMS v2 — Vérification téléphone (OTP)
         Route::post('/phone/verify-request', [\App\Http\Controllers\Api\Client\PhoneVerificationController::class, 'requestCode'])->middleware('throttle:otp');
         Route::post('/phone/verify-confirm', [\App\Http\Controllers\Api\Client\PhoneVerificationController::class, 'confirm'])->middleware('throttle:otp');
@@ -224,6 +232,10 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/tracking/{session}/ping',                  [\App\Http\Controllers\Api\Provider\TripTrackingController::class, 'ping']);
         Route::post('/tracking/{session}/in-mission',            [\App\Http\Controllers\Api\Provider\TripTrackingController::class, 'markInMission']);
         Route::post('/tracking/{session}/end',                   [\App\Http\Controllers\Api\Provider\TripTrackingController::class, 'end']);
+
+        // Provider Badges (read + manual re-evaluate)
+        Route::get('/badges',              [\App\Http\Controllers\Api\Provider\BadgesController::class, 'mine']);
+        Route::post('/badges/evaluate',    [\App\Http\Controllers\Api\Provider\BadgesController::class, 'evaluate']);
 
         // Presence v2 — Online/Busy/Break/Offline (4 états, coexiste avec Phase 11 binary on/off)
         Route::get('/presence-v2',            [\App\Http\Controllers\Api\Provider\PresenceController::class, 'status']);

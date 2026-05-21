@@ -14,7 +14,7 @@
             [
                 'label' => 'Readiness',
                 'description' => 'Contrôler la préparation production.',
-                'route' => 'admin.platform-readiness',
+                'route' => 'admin.platform.readiness',
             ],
             [
                 'label' => 'Alertes',

@@ -745,6 +745,24 @@ class User extends Authenticatable implements MustVerifyEmail, HasLocalePreferen
     {
         return in_array($this->role, ['client', 'entreprise']);
     }
+
+    /**
+     * Le user (provider) peut-il recevoir des paiements Stripe Connect ?
+     * Vérifie via ProviderProfile.stripe_connect_status === 'active' OU stripe_connect_onboarded_at !== null.
+     */
+    public function canReceiveStripeConnectPayments(): bool
+    {
+        $profile = $this->providerProfile;
+        if (! $profile) {
+            return false;
+        }
+        if (! empty($profile->stripe_connect_account_id)
+            && ($profile->stripe_connect_status === 'active' || $profile->stripe_connect_onboarded_at !== null)) {
+            return true;
+        }
+        return false;
+    }
+
     public function getIsAdminAttribute(): bool
     {
         return $this->isAdmin();

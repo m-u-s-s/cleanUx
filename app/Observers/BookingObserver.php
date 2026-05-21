@@ -33,6 +33,7 @@ class BookingObserver
             BookingChatAutoCreator::archiveThreadIfBookingCompleted($booking);
             TripTrackingAutoCloser::endSessionForBooking($booking, 'booking_completed');
             PresenceAutoTransitioner::bookingEnded($booking);
+            $this->maybeEvaluateProviderBadges($booking);
         } elseif ($booking->wasChanged('status')) {
             $this->trackStatusAnalytics($booking);
             $this->emitBusinessWebhookForStatus($booking);
@@ -125,6 +126,36 @@ class BookingObserver
             );
         } catch (\Throwable $e) {
             // soft-fail, never block booking flow
+        }
+    }
+
+    /**
+     * Auto-évaluation badges provider après une mission complétée.
+     * Soft-fail : si module Badges absent, skip silencieusement.
+     */
+    protected function maybeEvaluateProviderBadges(Booking $booking): void
+    {
+        try {
+            if (! class_exists(\App\Services\Badges\ProviderBadgeEngine::class)) {
+                return;
+            }
+            if (! \Illuminate\Support\Facades\Schema::hasTable('provider_badges')) {
+                return;
+            }
+            $providerId = $booking->employe_id ?? $booking->assigned_provider_user_id ?? null;
+            if (! $providerId) {
+                return;
+            }
+            $provider = \App\Models\User::find($providerId);
+            if (! $provider) {
+                return;
+            }
+            app(\App\Services\Badges\ProviderBadgeEngine::class)->evaluate($provider);
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::warning('[badges_auto] post-mission evaluate failed', [
+                'booking_id' => $booking->id,
+                'error' => $e->getMessage(),
+            ]);
         }
     }
 

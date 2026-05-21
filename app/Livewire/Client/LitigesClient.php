@@ -27,6 +27,11 @@ class LitigesClient extends Component
     public string $subject = '';
     public string $attachmentInput = '';
 
+    // SECURITY/UX : panel detail expected by the view (@if($selected)).
+    // Currently no selection logic implemented — values stay null so panel is skipped.
+    public ?int $selectedId = null;
+    public mixed $selected = null;
+
     protected $paginationTheme = 'tailwind';
 
     public function rules(): array
@@ -174,12 +179,6 @@ class LitigesClient extends Component
                 ->latest()
                 ->limit(20)
                 ->get(),
-
-            // Selection state expected by the view's detail panel (@if($selected)).
-            // This component does not yet implement claim selection — values are null
-            // so the panel block is skipped entirely.
-            'selected' => null,
-            'selectedId' => null,
         ]);
     }
 }

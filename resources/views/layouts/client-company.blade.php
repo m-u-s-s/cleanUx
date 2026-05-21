@@ -27,13 +27,14 @@
                 Clean<span class="text-purple-600">Ux</span>
             </a>
             <div class="hidden sm:flex items-center gap-1">
-                @foreach ([
+                @foreach (collect([
                 ['route' => 'client-company.dashboard', 'label' => 'Accueil', 'icon' => '🏠'],
                 ['route' => 'client-company.sites', 'label' => 'Mes locaux', 'icon' => '📍'],
                 ['route' => 'client-company.bookings.index','label' => 'Réservations', 'icon' => '📅'],
+                ['route' => 'client-company.bookings.bulk-import','label' => 'Import bulk', 'icon' => '📤'],
                 ['route' => 'client-company.members', 'label' => 'Membres', 'icon' => '👥'],
                 ['route' => 'client-company.billing', 'label' => 'Facturation', 'icon' => '🧾'],
-                ] as $link)
+                ])->filter(fn ($link) => \Illuminate\Support\Facades\Route::has($link['route'])) as $link)
                 <a href="{{ route($link['route']) }}"
                     class="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm transition
                            {{ request()->routeIs($link['route'])

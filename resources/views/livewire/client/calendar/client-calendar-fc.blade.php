@@ -7,10 +7,12 @@
             <p class="text-sm text-slate-500">Glisse un rendez-vous pour le reprogrammer</p>
         </div>
         <div class="flex flex-wrap items-center gap-2">
-            <a href="{{ route('client.calendar.index') }}"
+            @if (Route::has('client.rendezvous.index'))
+            <a href="{{ route('client.rendezvous.index') }}"
                class="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50">
                 Vue liste
             </a>
+            @endif
         </div>
     </div>
 

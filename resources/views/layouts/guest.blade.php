@@ -121,6 +121,26 @@
                     <ul class="mt-4 space-y-2 text-sm">
                         <li><a href="{{ route('terms.show') }}">Conditions générales</a></li>
                         <li><a href="{{ route('policy.show') }}">Confidentialité</a></li>
+                        @if (Route::has('legal.cookies'))
+                            <li><a href="{{ route('legal.cookies') }}">Cookies</a></li>
+                        @endif
+                        @if (Route::has('legal.mentions'))
+                            <li><a href="{{ route('legal.mentions') }}">Mentions légales</a></li>
+                        @endif
+                    </ul>
+                </div>
+                <div>
+                    <p class="text-xs font-bold uppercase tracking-[0.2em]" style="color:var(--cx-amber)">Ressources</p>
+                    <ul class="mt-4 space-y-2 text-sm">
+                        @if (Route::has('help.center'))
+                            <li><a href="{{ route('help.center') }}">Aide / FAQ</a></li>
+                        @endif
+                        @if (Route::has('providers.browse.public'))
+                            <li><a href="{{ route('providers.browse.public') }}">Trouver un prestataire</a></li>
+                        @endif
+                        @if (Route::has('booking.create'))
+                            <li><a href="{{ route('booking.create') }}">Réserver une mission</a></li>
+                        @endif
                     </ul>
                 </div>
             </div>
