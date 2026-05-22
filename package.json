@@ -3,7 +3,10 @@
     "type": "module",
     "scripts": {
         "dev": "vite",
-        "build": "vite build"
+        "build": "vite build",
+        "test": "vitest",
+        "test:run": "vitest run --passWithNoTests",
+        "test:e2e": "playwright test"
     },
     "devDependencies": {
         "@playwright/test": "^1.60.0",
