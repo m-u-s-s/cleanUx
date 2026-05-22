@@ -1,3 +1,13 @@
+@php
+    $useV2 = \Laravel\Pennant\Feature::for(auth()->user())->active('client-mobile-v2');
+    $v2Props = $useV2 ? $this->getV2Props() : null;
+@endphp
+
+<div>
+@if($useV2)
+    @vite(['resources/css/app.css', 'resources/js/islands/mission-live.ts'])
+    <div id="mission-live-island" data-props="{{ json_encode($v2Props) }}"></div>
+@else
 <div
     class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm space-y-5"
     x-data="clientMissionLiveTracking({
@@ -352,3 +362,5 @@
 </script>
 @endpush
 @endonce
+@endif
+</div>
