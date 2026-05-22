@@ -43,4 +43,20 @@ class ClientDashboardV2Test extends TestCase
         // Name is JSON-encoded inside data-props attribute — check raw HTML
         $response->assertSee('Mohamed', false);
     }
+
+    public function test_v2_response_does_not_include_legacy_chrome(): void
+    {
+        $user = User::factory()->create(['role' => 'client', 'is_active' => true]);
+        Feature::for($user)->activate('client-mobile-v2');
+
+        $response = $this->actingAs($user)->get(route('client.dashboard'));
+
+        $response->assertOk();
+        $response->assertSee('id="client-home-island"', false);
+
+        // Legacy chrome (PWA install banner, cookie banner) Alpine markers should be absent
+        $response->assertDontSee('pwaInstallPrompt()', false);
+        $response->assertDontSee('cookieBanner()', false);
+        $response->assertDontSee('x-data="cookieBanner', false);
+    }
 }
