@@ -54,3 +54,10 @@ window.FullCalendar = {
     document.addEventListener('livewire:navigated', init);
     document.addEventListener('livewire:initialized', init);
 })();
+
+// === Vue islands ↔ Livewire bridge ===
+import { installLivewireBridge } from './livewire-bridge';
+
+document.addEventListener('livewire:initialized', () => {
+  installLivewireBridge();
+});
