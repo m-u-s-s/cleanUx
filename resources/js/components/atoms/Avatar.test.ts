@@ -24,4 +24,10 @@ describe('Avatar', () => {
     expect(wrapper.classes()).toContain('h-11');
     expect(wrapper.classes()).toContain('w-11');
   });
+
+  it('emits tap on click', async () => {
+    const wrapper = mount(Avatar, { props: { name: 'M' } });
+    await wrapper.trigger('click');
+    expect(wrapper.emitted('tap')).toHaveLength(1);
+  });
 });
