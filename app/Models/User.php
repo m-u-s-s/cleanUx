@@ -90,6 +90,7 @@ class User extends Authenticatable implements MustVerifyEmail, HasLocalePreferen
         'profile_photo_path',
 
         'metadata',
+        'settings',
         'permissions',
 
         // Plan / facturation
@@ -126,6 +127,7 @@ class User extends Authenticatable implements MustVerifyEmail, HasLocalePreferen
         'two_factor_confirmed_at'    => 'datetime',
         'is_active'                  => 'boolean',
         'metadata'                   => 'array',
+        'settings'                   => 'array',
         'permissions'                => 'array',
     ];
 
