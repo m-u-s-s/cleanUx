@@ -3,6 +3,7 @@
 namespace App\Livewire\Client;
 
 use App\Models\Mission;
+use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
 
@@ -29,9 +30,18 @@ class MissionLiveTracking extends Component
         $this->mission = $mission;
     }
 
-    public function render()
+    public function render(): View
     {
-        return view('livewire.client.mission-live-tracking');
+        $useV2 = auth()->user()
+            && \Laravel\Pennant\Feature::for(auth()->user())->active('client-mobile-v2');
+
+        if ($useV2) {
+            return view('livewire.client.mission-live-tracking-v2', [
+                'v2Props' => $this->getV2Props(),
+            ])->layout('layouts.client-mobile-v2');
+        }
+
+        return view('livewire.client.mission-live-tracking')->layout('layouts.app');
     }
 
     public function getV2Props(): array

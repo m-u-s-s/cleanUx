@@ -1,13 +1,3 @@
-@php
-    $useV2 = \Laravel\Pennant\Feature::for(auth()->user())->active('client-mobile-v2');
-    $v2Props = $useV2 ? $this->getV2Props() : null;
-@endphp
-
-<div>
-@if($useV2)
-    @vite(['resources/css/app.css', 'resources/js/islands/mission-live.ts'])
-    <div id="mission-live-island" data-props="{{ json_encode($v2Props) }}"></div>
-@else
 <div
     class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm space-y-5"
     x-data="clientMissionLiveTracking({
@@ -58,7 +48,7 @@
             <div>
                 <p class="font-semibold text-slate-900">Carte simplifiée</p>
                 <p class="text-sm text-slate-500">
-                    La position affichée dépend du GPS de l’employé.
+                    La position affichée dépend du GPS de l'employé.
                 </p>
             </div>
 
@@ -74,7 +64,7 @@
     </div>
 
     <div class="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
-        ℹ️ Quand l’employé arrive, un code de début sera affiché pour lancer officiellement la mission.
+        ℹ️ Quand l'employé arrive, un code de début sera affiché pour lancer officiellement la mission.
     </div>
 </div>
 
@@ -89,7 +79,7 @@
 <script>
     async function startMissionTracking(missionId) {
         if (!navigator.geolocation) {
-            alert('La géolocalisation n’est pas disponible sur cet appareil.');
+            alert('La géolocalisation n'est pas disponible sur cet appareil.');
             return;
         }
 
@@ -362,5 +352,3 @@
 </script>
 @endpush
 @endonce
-@endif
-</div>
