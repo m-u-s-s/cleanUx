@@ -415,6 +415,60 @@ class ClientDashboard extends Component
         $this->dispatch('toast', message: 'Rendez-vous annulé.', type: 'success');
     }
 
+    public function getV2Props(): array
+    {
+        $user = $this->currentUser();
+
+        $theme = app(\App\Services\Theme\AdaptiveThemeResolver::class)->resolveForUser($user);
+
+        $upcomingBooking = null;
+        $next = \App\Models\Booking::with(['serviceCatalog'])
+            ->where('client_id', $user->id)
+            ->whereDate('date', '>=', now()->toDateString())
+            ->whereNotIn('status', ['completed', 'cancelled', 'refunded', 'termine', 'annule'])
+            ->orderBy('date')
+            ->orderBy('heure')
+            ->first();
+
+        if ($next) {
+            $serviceName = $next->serviceCatalog?->name;
+            $dateLabel = $next->date?->format('d/m') . ' ' . substr((string) $next->heure, 0, 5);
+            $upcomingBooking = [
+                'title' => ($serviceName ? $serviceName . ' · ' : '') . $dateLabel,
+                'meta' => trim(implode(' ', array_filter([$next->adresse, $next->ville]))),
+                'tags' => array_values(array_filter([
+                    $next->devis_estime ? 'Devis ' . number_format((float) $next->devis_estime, 0, ',', ' ') . ' €' : null,
+                    $next->payment_status === 'authorized' ? 'Pré-autorisé' : null,
+                ])),
+            ];
+        }
+
+        $loyaltyAccount = \App\Models\LoyaltyAccount::with('currentTier')
+            ->where('user_id', $user->id)
+            ->first();
+
+        return [
+            'userName' => $user->name,
+            'initialTheme' => $theme,
+            'upcomingBooking' => $upcomingBooking,
+            'statusCards' => [
+                [
+                    'id' => 'loyalty',
+                    'label' => 'Fidélité',
+                    'value' => (string) ($loyaltyAccount?->redeemable_points ?? 0),
+                    'sub' => $loyaltyAccount?->currentTier?->name ?? '—',
+                ],
+                ['id' => 'credits', 'label' => 'Crédits', 'value' => '0 €', 'sub' => '—'],
+                ['id' => 'referral', 'label' => 'Parrainage', 'value' => '0 invités', 'sub' => '—'],
+            ],
+            'services' => [
+                ['emoji' => '🔑', 'name' => 'Serrurier'],
+                ['emoji' => '🏠', 'name' => 'Toiture'],
+                ['emoji' => '👶', 'name' => 'Babysit'],
+            ],
+        ];
+    }
+
     public function render(): View
     {
         return view('livewire.client-dashboard', [
