@@ -40,6 +40,7 @@ class ClientDashboardV2Test extends TestCase
 
         $response = $this->actingAs($user)->get(route('client.dashboard'));
 
-        $response->assertSeeText('Mohamed');
+        // Name is JSON-encoded inside data-props attribute — check raw HTML
+        $response->assertSee('Mohamed', false);
     }
 }

@@ -466,11 +466,27 @@ class ClientDashboard extends Component
                 ['emoji' => '🏠', 'name' => 'Toiture'],
                 ['emoji' => '👶', 'name' => 'Babysit'],
             ],
+            'profileUrl' => route('client.profile'),
+            'notificationsUrl' => route('notifications.index'),
+            'helpUrl' => url('/help/faq'),
+            'logoutUrl' => url('/logout'),
+            'csrfToken' => csrf_token(),
+            'userEmail' => $user->email,
+            'themePreference' => data_get($user->settings, 'theme_preference', 'auto'),
         ];
     }
 
     public function render(): View
     {
+        $useV2 = auth()->user()
+            && \Laravel\Pennant\Feature::for(auth()->user())->active('client-mobile-v2');
+
+        if ($useV2) {
+            return view('livewire.client-dashboard-v2', [
+                'v2Props' => $this->getV2Props(),
+            ])->layout('layouts.client-mobile-v2');
+        }
+
         return view('livewire.client-dashboard', [
             'avenir' => $this->rendezVousAvenir,
             'passe' => $this->rendezVousPasse,
@@ -486,6 +502,6 @@ class ClientDashboard extends Component
             'availableServices' => $this->availableServices,
             'organizationSitesSummary' => $this->organizationSitesSummary,
             'financeSnapshot' => $this->financeSnapshot,
-        ]);
+        ])->layout('layouts.app');
     }
 }
