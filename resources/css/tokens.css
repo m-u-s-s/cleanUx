@@ -1,0 +1,88 @@
+/* Design tokens — Adaptive multi-mode */
+
+:root {
+  /* Mode clair (par défaut) — planifié, retention */
+  --color-bg: #fafaf7;
+  --color-surface: #ffffff;
+  --color-surface-2: #f4f1ff;
+  --color-text: #0a0a0f;
+  --color-text-2: #6a6a78;
+  --color-text-3: #8a8a98;
+  --color-primary: #6366f1;
+  --color-primary-hover: #5147e0;
+  --color-accent: #a78bfa;
+  --color-urgent: #ef4444;
+  --color-urgent-hover: #dc2626;
+  --color-success: #10b981;
+  --color-warning: #f59e0b;
+  --color-border: rgba(0, 0, 0, 0.04);
+  --color-border-2: rgba(0, 0, 0, 0.08);
+  --shadow-card: 0 1px 3px rgba(99, 102, 241, 0.06), 0 12px 32px -8px rgba(99, 102, 241, 0.18);
+  --shadow-fab: 0 12px 24px -4px rgba(239, 68, 68, 0.5);
+  --shadow-cta: 0 6px 16px -2px rgba(99, 102, 241, 0.4);
+  --shadow-call: 0 4px 12px rgba(16, 185, 129, 0.4);
+
+  /* Radii */
+  --radius-sm: 6px;
+  --radius-md: 12px;
+  --radius-lg: 18px;
+  --radius-xl: 22px;
+  --radius-2xl: 28px;
+  --radius-full: 999px;
+
+  /* Spacing */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+
+  /* Typography */
+  --font-display: -apple-system, 'SF Pro Display', 'Inter Variable', 'Inter', sans-serif;
+  --font-body: -apple-system, 'SF Pro Text', 'Inter Variable', 'Inter', sans-serif;
+  --font-mono: 'JetBrains Mono', 'SF Mono', Menlo, monospace;
+
+  /* Motion */
+  --ease-apple: cubic-bezier(0.32, 0.72, 0, 1);
+  --duration-fast: 180ms;
+  --duration-base: 380ms;
+  --duration-slow: 600ms;
+}
+
+[data-theme='dark'] {
+  /* Mode sombre — mission active, urgent, nuit */
+  --color-bg: #0a0a0f;
+  --color-surface: #1a1a25;
+  --color-surface-2: #14141f;
+  --color-text: #fafaf7;
+  --color-text-2: #a8a8b8;
+  --color-text-3: #6a6a78;
+  --color-primary: #818cf8;
+  --color-primary-hover: #6366f1;
+  --color-accent: #c4b5fd;
+  --color-urgent: #ef4444;
+  --color-urgent-hover: #f87171;
+  --color-success: #10b981;
+  --color-warning: #f59e0b;
+  --color-border: rgba(255, 255, 255, 0.06);
+  --color-border-2: rgba(255, 255, 255, 0.1);
+  --shadow-card: 0 12px 32px rgba(0, 0, 0, 0.4);
+  --shadow-fab: 0 12px 24px -4px rgba(239, 68, 68, 0.5);
+  --shadow-cta: 0 8px 24px -4px rgba(99, 102, 241, 0.5);
+  --shadow-call: 0 4px 12px rgba(16, 185, 129, 0.4);
+}
+
+/* Smooth transition all themed properties */
+html {
+  transition:
+    background-color var(--duration-base) var(--ease-apple),
+    color var(--duration-base) var(--ease-apple);
+}
+
+body {
+  background-color: var(--color-bg);
+  color: var(--color-text);
+  font-family: var(--font-body);
+}
