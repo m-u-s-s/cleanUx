@@ -1,13 +1,33 @@
 {
+  "_motion-vendor-l0sNRNKZ.js": {
+    "file": "assets/motion-vendor-l0sNRNKZ.js",
+    "name": "motion-vendor"
+  },
+  "_vue-vendor-l0sNRNKZ.js": {
+    "file": "assets/vue-vendor-l0sNRNKZ.js",
+    "name": "vue-vendor"
+  },
   "resources/css/app.css": {
-    "file": "assets/app-BHtLtAf5.css",
+    "file": "assets/app-Xdu0wqbf.css",
     "src": "resources/css/app.css",
     "isEntry": true
   },
   "resources/js/app.js": {
-    "file": "assets/app-8DexvI6I.js",
+    "file": "assets/app-BrgdXhfU.js",
     "name": "app",
     "src": "resources/js/app.js",
+    "isEntry": true
+  },
+  "resources/js/islands/client-home.ts": {
+    "file": "assets/client-home-l0sNRNKZ.js",
+    "name": "client-home",
+    "src": "resources/js/islands/client-home.ts",
+    "isEntry": true
+  },
+  "resources/js/islands/mission-live.ts": {
+    "file": "assets/mission-live-l0sNRNKZ.js",
+    "name": "mission-live",
+    "src": "resources/js/islands/mission-live.ts",
     "isEntry": true
   }
 }
