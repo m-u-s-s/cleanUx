@@ -17,6 +17,13 @@ describe('ClientHomeIsland', () => {
     services: [
       { emoji: '🔑', name: 'Serrurier' },
     ],
+    userEmail: 'mohamed@example.com',
+    profileUrl: '/dashboard/client/profil',
+    notificationsUrl: '/dashboard/client/notifications',
+    helpUrl: '/help/faq',
+    logoutUrl: '/logout',
+    csrfToken: 'csrf-token-test',
+    themePreference: 'auto' as const,
   };
 
   it('renders user name', () => {
@@ -46,5 +53,19 @@ describe('ClientHomeIsland', () => {
     expect(dispatched[0].detail.id).toBe('urgent');
 
     window.removeEventListener('cleanux:client-action', handler);
+  });
+
+  it('opens user menu sheet on avatar tap', async () => {
+    const wrapper = mount(ClientHomeIsland, { props, attachTo: document.body });
+
+    // Find Avatar component in the header
+    const avatar = wrapper.findComponent({ name: 'Avatar' });
+    expect(avatar.exists()).toBe(true);
+
+    await avatar.trigger('click');
+
+    // UserMenuSheet uses Teleport — content appears in document.body
+    expect(document.body.querySelector('[data-test="sheet-container"]')).not.toBeNull();
+    wrapper.unmount();
   });
 });

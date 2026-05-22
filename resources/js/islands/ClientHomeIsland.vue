@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { ref } from 'vue';
 import { useAdaptiveTheme, type Theme } from '@/composables/useAdaptiveTheme';
 import Avatar from '@/components/atoms/Avatar.vue';
 import AdaptiveHero from '@/components/client/AdaptiveHero.vue';
@@ -7,6 +8,9 @@ import ServiceTile from '@/components/client/ServiceTile.vue';
 import StatusCardScroller from '@/components/client/StatusCardScroller.vue';
 import FabUrgence from '@/components/client/FabUrgence.vue';
 import BottomNav from '@/components/client/BottomNav.vue';
+import UserMenuSheet from '@/components/client/UserMenuSheet.vue';
+
+type ThemePref = 'light' | 'dark' | 'auto';
 
 interface UpcomingBooking {
   title: string;
@@ -33,11 +37,21 @@ interface Props {
   upcomingBooking: UpcomingBooking | null;
   statusCards: StatusCard[];
   services: Service[];
+  userEmail: string;
+  profileUrl: string;
+  notificationsUrl: string;
+  helpUrl: string;
+  logoutUrl: string;
+  csrfToken: string;
+  themePreference: ThemePref;
 }
 
 const props = defineProps<Props>();
 
-useAdaptiveTheme(props.initialTheme);
+const { setTheme } = useAdaptiveTheme(props.initialTheme);
+
+const userMenuOpen = ref(false);
+const currentThemePref = ref<ThemePref>(props.themePreference);
 
 const quickActions = [
   { id: 'urgent', icon: '⚡', label: 'Urgent' },
@@ -61,6 +75,33 @@ const dispatchClientAction = (id: string, payload: Record<string, unknown> = {})
     })
   );
 };
+
+const onThemeChange = async (theme: ThemePref) => {
+  const previous = currentThemePref.value;
+  currentThemePref.value = theme;
+  // Apply immediately for snappy UX (auto = light for now per spec OQ5)
+  setTheme(theme === 'auto' ? 'light' : theme);
+
+  try {
+    const res = await fetch('/api/me/theme', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        'X-CSRF-TOKEN': props.csrfToken,
+      },
+      credentials: 'same-origin',
+      body: JSON.stringify({ theme_preference: theme }),
+    });
+    if (!res.ok) {
+      throw new Error(`Theme save failed: ${res.status}`);
+    }
+  } catch (error) {
+    console.error('[cleanux] theme save failed, reverting', error);
+    currentThemePref.value = previous;
+    setTheme(previous === 'auto' ? 'light' : previous);
+  }
+};
 </script>
 
 <template>
@@ -70,7 +111,7 @@ const dispatchClientAction = (id: string, payload: Record<string, unknown> = {})
         <p class="text-[13px]" style="color: var(--color-text-2);">Bonjour,</p>
         <h1 class="text-[26px] font-extrabold leading-none tracking-tight">{{ userName }}</h1>
       </div>
-      <Avatar :name="userName" size="md" />
+      <Avatar :name="userName" size="md" @tap="userMenuOpen = true" />
     </header>
 
     <section v-if="upcomingBooking" class="mt-5 px-5">
@@ -121,5 +162,19 @@ const dispatchClientAction = (id: string, payload: Record<string, unknown> = {})
     <FabUrgence @trigger="dispatchClientAction('start-urgent')" />
 
     <BottomNav :items="navItems" active-id="home" @navigate="(id) => dispatchClientAction('navigate', { route: id })" />
+
+    <UserMenuSheet
+      :open="userMenuOpen"
+      :user-name="userName"
+      :user-email="userEmail"
+      :initial-theme="currentThemePref"
+      :profile-url="profileUrl"
+      :notifications-url="notificationsUrl"
+      :help-url="helpUrl"
+      :logout-url="logoutUrl"
+      :csrf-token="csrfToken"
+      @close="userMenuOpen = false"
+      @theme-change="onThemeChange"
+    />
   </div>
 </template>
