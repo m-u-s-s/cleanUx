@@ -1,16 +1,21 @@
-// This script documents what icons are needed and their specs.
-// For now, the default Expo icons are used. Replace these files with branded versions:
+// Branded icons are generated via the shared script at the repo root:
 //
-// assets/icon.png          — 1024×1024, app store icon
-// assets/adaptive-icon.png — 1024×1024, Android adaptive icon foreground
-// assets/splash-icon.png   — 200×200, centered on splash screen
-// assets/favicon.png       — 48×48, web favicon
+//   node mobile/scripts/generate-pngs.cjs
 //
-// Brand colors:
-//   Background: #070b14 (night mode)
-//   Accent: #ffb648 (amber)
-//   Text: #e8eefc (light)
+// This requires @napi-rs/canvas (installed in repo root node_modules).
+// Run from the CleanUx repo root.
 //
-// The splash screen background color is set in app.json: "#070b14"
+// Generated assets (all PNG):
+//   assets/icon.png                     1024x1024  app store / home screen
+//   assets/adaptive-icon.png            1024x1024  Android adaptive icon foreground (transparent bg)
+//   assets/android-icon-background.png  1024x1024  Android adaptive icon background (#070b14)
+//   assets/android-icon-monochrome.png  1024x1024  Android 13+ monochrome (white on transparent)
+//   assets/splash-icon.png               200x200   centered on #070b14 splash screen
+//   assets/favicon.png                    48x48    web
+//
+// Brand tokens (client):
+//   Background : #070b14 (night)
+//   Accent     : #ffb648 (amber)
+//   Splash bg  : set in app.json
 
 export {};
