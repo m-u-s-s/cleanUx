@@ -11,6 +11,8 @@ const config: Config = {
     'react-native-reanimated': '<rootDir>/node_modules/react-native-reanimated/mock',
     // safe-area-context: use local mock with named exports (the official mock uses default export)
     'react-native-safe-area-context': '<rootDir>/__mocks__/react-native-safe-area-context',
+    // pusher-js react-native build requires @react-native-community/netinfo (not installed); use mock
+    'pusher-js/react-native': '<rootDir>/__mocks__/pusher-js-react-native',
   },
 };
 
