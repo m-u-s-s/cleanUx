@@ -50,3 +50,15 @@ src/
 - **Profile** — quick access to all features
 - **Onboarding** — multi-step wizard
 - **Login** — auth screen
+
+## CI/CD
+
+- **PR checks**: TypeScript + Jest run automatically on PRs touching `mobile/`
+- **Manual build**: Go to Actions → "Mobile EAS Build" → Run workflow (choose app/profile/platform)
+- **Tag build**: Push `mobile-provider-v1.0.1` tag to trigger automatic preview build
+- **Store submit**: Go to Actions → "Mobile Store Submit" → Run workflow
+
+### Required secrets
+
+Set these in GitHub repo Settings → Secrets → Actions:
+- `EXPO_TOKEN` — generate at https://expo.dev/settings/access-tokens

@@ -1,0 +1,106 @@
+name: Mobile EAS Build
+
+on:
+  workflow_dispatch:
+    inputs:
+      app:
+        description: 'Which app to build'
+        required: true
+        type: choice
+        options:
+          - client
+          - provider
+          - both
+      profile:
+        description: 'Build profile'
+        required: true
+        type: choice
+        options:
+          - preview
+          - production
+      platform:
+        description: 'Platform'
+        required: true
+        type: choice
+        options:
+          - android
+          - ios
+          - all
+  push:
+    tags:
+      - 'mobile-client-v*'
+      - 'mobile-provider-v*'
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+jobs:
+  build-client:
+    name: Build Client
+    if: ${{ github.event_name == 'push' && startsWith(github.ref, 'refs/tags/mobile-client-v') || github.event.inputs.app == 'client' || github.event.inputs.app == 'both' }}
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: mobile/client
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+          cache-dependency-path: mobile/client/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Setup EAS
+        uses: expo/expo-github-action@v8
+        with:
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
+
+      - name: Run tests before build
+        run: npm test -- --ci
+
+      - name: Build
+        run: |
+          PROFILE=${{ github.event.inputs.profile || 'preview' }}
+          PLATFORM=${{ github.event.inputs.platform || 'android' }}
+          eas build --profile $PROFILE --platform $PLATFORM --non-interactive
+
+  build-provider:
+    name: Build Provider
+    if: ${{ github.event_name == 'push' && startsWith(github.ref, 'refs/tags/mobile-provider-v') || github.event.inputs.app == 'provider' || github.event.inputs.app == 'both' }}
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: mobile/provider
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+          cache-dependency-path: mobile/provider/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Setup EAS
+        uses: expo/expo-github-action@v8
+        with:
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
+
+      - name: Run tests before build
+        run: npm test -- --ci
+
+      - name: Build
+        run: |
+          PROFILE=${{ github.event.inputs.profile || 'preview' }}
+          PLATFORM=${{ github.event.inputs.platform || 'android' }}
+          eas build --profile $PROFILE --platform $PLATFORM --non-interactive
