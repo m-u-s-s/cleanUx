@@ -4,6 +4,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { useAuth } from '@/auth';
 import { LoginScreen } from '@/screens/LoginScreen';
 import { TabNavigator } from './TabNavigator';
+import { BookingNavigator } from './BookingNavigator';
 import { colors } from '@/theme';
 import type { RootStackParamList } from './types';
 
@@ -24,7 +25,14 @@ export function RootNavigator() {
     <View testID="root-navigator" style={{ flex: 1 }}>
       <Stack.Navigator screenOptions={{ headerShown: false }}>
         {isAuthenticated ? (
-          <Stack.Screen name="MainTabs" component={TabNavigator} />
+          <>
+            <Stack.Screen name="MainTabs" component={TabNavigator} />
+            <Stack.Screen
+              name="BookingWizard"
+              component={BookingNavigator}
+              options={{ headerShown: false, presentation: 'modal' }}
+            />
+          </>
         ) : (
           <Stack.Screen name="Login" component={LoginScreen} />
         )}
