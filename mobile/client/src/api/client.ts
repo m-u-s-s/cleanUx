@@ -1,8 +1,9 @@
 import axios from 'axios';
 import { secureStore } from '@/storage/secureStore';
 import { ApiError } from './types';
+import { env } from '@/config/env';
 
-const BASE_URL = process.env.EXPO_PUBLIC_API_URL ?? 'http://localhost:8000/api';
+const BASE_URL = env.apiUrl;
 
 export const apiClient = axios.create({
   baseURL: BASE_URL,

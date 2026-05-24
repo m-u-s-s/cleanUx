@@ -1,6 +1,7 @@
 import * as Sentry from '@sentry/react-native';
+import { env } from '@/config/env';
 
-const DSN = process.env.EXPO_PUBLIC_SENTRY_DSN ?? '';
+const DSN = env.sentryDsn;
 
 if (DSN) {
   Sentry.init({

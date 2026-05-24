@@ -9,12 +9,12 @@ import { AuthProvider } from '@/auth';
 import { RealtimeProvider } from '@/realtime';
 import { RootNavigator, linking } from '@/navigation';
 import { useRegisterPushToken } from '@/push';
+import { env } from '@/config/env';
+import { ErrorBoundary } from '@/ErrorBoundary';
 
 const queryClient = new QueryClient({
   defaultOptions: { queries: { retry: 2, staleTime: 60_000 } },
 });
-
-const STRIPE_PUBLISHABLE_KEY = process.env.EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY ?? '';
 
 function AppInner() {
   useRegisterPushToken();
@@ -30,14 +30,16 @@ function AppInner() {
 
 export default function App() {
   return (
-    <StripeProvider publishableKey={STRIPE_PUBLISHABLE_KEY} merchantIdentifier="merchant.com.cleanux.client">
-      <QueryClientProvider client={queryClient}>
-        <AuthProvider>
-          <RealtimeProvider>
-            <AppInner />
-          </RealtimeProvider>
-        </AuthProvider>
-      </QueryClientProvider>
-    </StripeProvider>
+    <ErrorBoundary>
+      <StripeProvider publishableKey={env.stripePublishableKey} merchantIdentifier="merchant.com.cleanux.client">
+        <QueryClientProvider client={queryClient}>
+          <AuthProvider>
+            <RealtimeProvider>
+              <AppInner />
+            </RealtimeProvider>
+          </AuthProvider>
+        </QueryClientProvider>
+      </StripeProvider>
+    </ErrorBoundary>
   );
 }
