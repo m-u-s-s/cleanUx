@@ -3,6 +3,8 @@ import { View, ActivityIndicator } from 'react-native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { useAuth } from '@/auth';
 import { LoginScreen } from '@/screens/LoginScreen';
+import { MissionDetailScreen } from '@/screens/MissionDetailScreen';
+import { MissionInboxScreen } from '@/screens/MissionInboxScreen';
 import { TabNavigator } from './TabNavigator';
 import { colors } from '@/theme';
 import type { RootStackParamList } from './types';
@@ -27,7 +29,19 @@ export function RootNavigator() {
     <View testID="root-navigator" style={{ flex: 1 }}>
       <Stack.Navigator screenOptions={{ headerShown: false }}>
         {isAuthenticated ? (
-          <Stack.Screen name="MainTabs" component={TabNavigator} />
+          <>
+            <Stack.Screen name="MainTabs" component={TabNavigator} />
+            <Stack.Screen
+              name="MissionDetail"
+              component={MissionDetailScreen}
+              options={{ headerShown: true, title: 'Mission' }}
+            />
+            <Stack.Screen
+              name="MissionInbox"
+              component={MissionInboxScreen}
+              options={{ headerShown: true, title: 'Missions disponibles' }}
+            />
+          </>
         ) : (
           <Stack.Screen name="Login" component={LoginScreen} />
         )}

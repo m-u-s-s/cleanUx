@@ -28,12 +28,11 @@ export function usePresence() {
   }, []);
 
   useEffect(() => {
-    if (status !== 'offline') {
-      intervalRef.current = setInterval(() => heartbeat.mutate(), HEARTBEAT_INTERVAL);
-      return () => {
-        if (intervalRef.current) clearInterval(intervalRef.current);
-      };
-    }
+    if (status === 'offline') return;
+    intervalRef.current = setInterval(() => heartbeat.mutate(), HEARTBEAT_INTERVAL);
+    return () => {
+      if (intervalRef.current) clearInterval(intervalRef.current);
+    };
   }, [status]);
 
   return { status, goOnline, setPresenceStatus };
