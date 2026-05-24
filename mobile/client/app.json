@@ -33,7 +33,7 @@
       "favicon": "./assets/favicon.png"
     },
     "scheme": "cleanux",
-    "plugins": ["expo-secure-store"],
+    "plugins": ["expo-secure-store", "@stripe/stripe-react-native"],
     "extra": {
       "eas": { "projectId": "PLACEHOLDER_EAS_PROJECT_ID" }
     }

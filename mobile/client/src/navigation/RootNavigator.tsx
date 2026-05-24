@@ -8,6 +8,8 @@ import { BookingNavigator } from './BookingNavigator';
 import { MissionTrackingScreen } from '@/screens/MissionTrackingScreen';
 import { BookingDetailScreen } from '@/screens/BookingDetailScreen';
 import { QRScanScreen } from '@/screens/QRScanScreen';
+import { PaymentCheckoutScreen } from '@/screens/PaymentCheckoutScreen';
+import { SavedPaymentMethodsScreen } from '@/screens/SavedPaymentMethodsScreen';
 import { colors } from '@/theme';
 import type { RootStackParamList } from './types';
 
@@ -49,6 +51,16 @@ export function RootNavigator() {
               name="QRScan"
               component={QRScanScreen}
               options={{ headerShown: false, presentation: 'fullScreenModal' }}
+            />
+            <Stack.Screen
+              name="PaymentCheckout"
+              component={PaymentCheckoutScreen}
+              options={{ title: 'Paiement', headerShown: true }}
+            />
+            <Stack.Screen
+              name="SavedPaymentMethods"
+              component={SavedPaymentMethodsScreen}
+              options={{ title: 'Moyens de paiement', headerShown: true }}
             />
           </>
         ) : (
