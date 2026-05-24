@@ -1,5 +1,4 @@
 import { useEffect } from 'react';
-import * as ExpoNotifications from 'expo-notifications';
 import { apiClient } from '@/api';
 import { useAuth } from '@/auth';
 import { Platform } from 'react-native';
@@ -12,6 +11,7 @@ export function useRegisterPushToken() {
 
     (async () => {
       try {
+        const ExpoNotifications = await import('expo-notifications');
         const { status } = await ExpoNotifications.requestPermissionsAsync();
         if (status !== 'granted') return;
 
@@ -24,8 +24,8 @@ export function useRegisterPushToken() {
           provider: 'expo',
         });
       } catch {
-        // Silently ignore — push registration fails in Expo Go (SDK 53+)
-        // and is best-effort in production builds
+        // Silently ignore — expo-notifications crashes in Expo Go (SDK 53+)
+        // Dynamic import ensures the crash is caught, not thrown at module load
       }
     })();
   }, [isAuthenticated]);
