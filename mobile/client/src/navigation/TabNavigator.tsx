@@ -1,8 +1,8 @@
 import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { HomeScreen } from '@/screens/HomeScreen';
-import { BookingsScreen } from '@/screens/BookingsScreen';
-import { NotificationsScreen } from '@/screens/NotificationsScreen';
+import { BrowseProvidersScreen } from '@/screens/BrowseProvidersScreen';
+import { BookingsListScreen } from '@/screens/BookingsListScreen';
 import { ProfileScreen } from '@/screens/ProfileScreen';
 import { colors } from '@/theme';
 import type { TabParamList } from './types';
@@ -20,8 +20,8 @@ export function TabNavigator() {
       }}
     >
       <Tab.Screen name="Home" component={HomeScreen} />
-      <Tab.Screen name="Bookings" component={BookingsScreen} />
-      <Tab.Screen name="Notifications" component={NotificationsScreen} />
+      <Tab.Screen name="Explore" component={BrowseProvidersScreen} />
+      <Tab.Screen name="Bookings" component={BookingsListScreen} />
       <Tab.Screen name="Profile" component={ProfileScreen} />
     </Tab.Navigator>
   );

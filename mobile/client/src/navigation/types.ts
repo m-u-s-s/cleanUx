@@ -14,7 +14,7 @@ export type BookingStackParamList = {
 
 export type TabParamList = {
   Home: undefined;
+  Explore: undefined;
   Bookings: undefined;
-  Notifications: undefined;
   Profile: undefined;
 };
