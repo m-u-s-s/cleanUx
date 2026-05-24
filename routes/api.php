@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\ApiNotificationController;
 use App\Http\Controllers\Api\Auth\ApiAuthController;
+use App\Http\Controllers\Api\AuthMeController;
 use App\Http\Controllers\Api\Client\CancellationController;
 use App\Http\Controllers\Api\Client\ClientBookingController;
 use App\Http\Controllers\Api\EmployeeMissionTrackingController;
@@ -69,7 +70,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::middleware('token.grace')->group(function () {
         Route::post('/auth/refresh', \App\Http\Controllers\Api\AuthRefreshController::class)
             ->name('api.auth.refresh');
-        Route::get('/auth/me', fn (\Illuminate\Http\Request $r) => response()->json($r->user()));
+        Route::get('/auth/me', AuthMeController::class)->name('api.auth.me');
     });
 
     // Auth

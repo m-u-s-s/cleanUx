@@ -59,6 +59,7 @@ class AuthRefreshTest extends TestCase
             ->assertOk();
 
         // Force grace_until to the past
+        $this->assertStringContainsString('|', $old);
         $tokenId = (int) explode('|', $old)[0];
         PersonalAccessTokenV2::query()->where('id', $tokenId)->update([
             'rotation_grace_until' => now()->subMinute(),
@@ -80,6 +81,7 @@ class AuthRefreshTest extends TestCase
     {
         $user = User::factory()->create();
         $old = $user->createToken('mobile')->plainTextToken;
+        $this->assertStringContainsString('|', $old);
         $oldId = (int) explode('|', $old)[0];
 
         $response = $this->withHeader('Authorization', "Bearer {$old}")
@@ -87,6 +89,7 @@ class AuthRefreshTest extends TestCase
             ->assertOk();
 
         $newPlain = $response->json('token');
+        $this->assertStringContainsString('|', $newPlain);
         $newId = (int) explode('|', $newPlain)[0];
 
         $newToken = PersonalAccessTokenV2::find($newId);
