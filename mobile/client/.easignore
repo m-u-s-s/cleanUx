@@ -1,0 +1,13 @@
+# Reduce EAS upload size — only client app code needed
+.git
+.claude
+.scribe
+.superpowers
+__mocks__
+__tests__
+*.test.ts
+*.test.tsx
+jest.config.ts
+coverage/
+docs/
+scripts/

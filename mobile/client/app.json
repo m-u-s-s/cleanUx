@@ -27,7 +27,12 @@
         "backgroundColor": "#070b14"
       },
       "package": "com.cleanux.client",
-      "permissions": ["CAMERA", "ACCESS_FINE_LOCATION", "ACCESS_COARSE_LOCATION"]
+      "permissions": [
+        "android.permission.CAMERA",
+        "android.permission.ACCESS_FINE_LOCATION",
+        "android.permission.ACCESS_COARSE_LOCATION",
+        "android.permission.RECORD_AUDIO"
+      ]
     },
     "web": {
       "favicon": "./assets/favicon.png"
@@ -35,12 +40,20 @@
     "scheme": "cleanux",
     "plugins": [
       "expo-secure-store",
-      ["@stripe/stripe-react-native", { "merchantIdentifier": "merchant.com.cleanux.client" }],
+      [
+        "@stripe/stripe-react-native",
+        {
+          "merchantIdentifier": "merchant.com.cleanux.client"
+        }
+      ],
       "expo-notifications",
       "expo-image-picker"
     ],
     "extra": {
-      "eas": { "projectId": "PLACEHOLDER_EAS_PROJECT_ID" }
-    }
+      "eas": {
+        "projectId": "208363e7-e704-4b3e-9046-c36cf14c152d"
+      }
+    },
+    "owner": "m-u-s-s"
   }
 }

@@ -19,7 +19,9 @@
         "NSCameraUsageDescription": "CleanUx Provider uses the camera to scan and display QR codes.",
         "NSLocationWhenInUseUsageDescription": "CleanUx Provider uses your location to navigate to clients and share your ETA.",
         "NSLocationAlwaysAndWhenInUseUsageDescription": "CleanUx Provider tracks your location during missions to show clients your progress.",
-        "UIBackgroundModes": ["location"]
+        "UIBackgroundModes": [
+          "location"
+        ]
       }
     },
     "android": {
@@ -29,12 +31,13 @@
       },
       "package": "com.cleanux.provider",
       "permissions": [
-        "CAMERA",
-        "ACCESS_FINE_LOCATION",
-        "ACCESS_COARSE_LOCATION",
-        "ACCESS_BACKGROUND_LOCATION",
-        "FOREGROUND_SERVICE",
-        "FOREGROUND_SERVICE_LOCATION"
+        "android.permission.CAMERA",
+        "android.permission.ACCESS_FINE_LOCATION",
+        "android.permission.ACCESS_COARSE_LOCATION",
+        "android.permission.ACCESS_BACKGROUND_LOCATION",
+        "android.permission.FOREGROUND_SERVICE",
+        "android.permission.FOREGROUND_SERVICE_LOCATION",
+        "android.permission.RECORD_AUDIO"
       ]
     },
     "scheme": "cleanux-provider",
@@ -51,7 +54,10 @@
       ]
     ],
     "extra": {
-      "eas": { "projectId": "PLACEHOLDER_EAS_PROJECT_ID_PROVIDER" }
-    }
+      "eas": {
+        "projectId": "e5338332-bd5a-4c98-92fa-fb29212e486b"
+      }
+    },
+    "owner": "m-u-s-s"
   }
 }
