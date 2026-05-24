@@ -7,8 +7,8 @@ const config: Config = {
   ],
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/src/$1',
-    // react-native-reanimated v4 requires react-native-worklets (native only)
-    'react-native-reanimated': '<rootDir>/node_modules/react-native-reanimated/mock',
+    // react-native-reanimated v4 requires native worklets — use local stub to avoid WorkletsError
+    'react-native-reanimated': '<rootDir>/__mocks__/react-native-reanimated',
     // safe-area-context: use local mock with named exports (the official mock uses default export)
     'react-native-safe-area-context': '<rootDir>/__mocks__/react-native-safe-area-context',
     // pusher-js react-native build requires @react-native-community/netinfo (not installed); use mock
