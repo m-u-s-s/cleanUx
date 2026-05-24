@@ -556,3 +556,18 @@ Route::middleware(['auth:sanctum'])->prefix('provider')->group(function () {
     Route::get('/payouts', [ProviderPayoutsController::class, 'index']);
     Route::get('/payouts/summary', [ProviderPayoutsController::class, 'summary']);
 });
+
+// ─────────────────────────────────────────────
+// Sprint 0 — Task 4 : Realtime / WebSocket (mobile)
+// ─────────────────────────────────────────────
+// GET  /api/realtime/socket-config   → returns Reverb connection params (no secret)
+// POST /api/broadcasting/auth        → channel auth via Bearer (mobile-safe, no session cookie)
+// Option (a): web route /broadcasting/auth remains for Livewire/Echo-web.
+//             Mobile uses /api/broadcasting/auth with Sanctum Bearer token.
+Route::middleware(['auth:sanctum', 'token.grace'])->group(function () {
+    Route::get('/realtime/socket-config',
+        \App\Http\Controllers\Api\Realtime\SocketConfigController::class);
+
+    Route::post('/broadcasting/auth',
+        [\Illuminate\Broadcasting\BroadcastController::class, 'authenticate']);
+});
