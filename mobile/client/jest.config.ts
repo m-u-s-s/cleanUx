@@ -7,6 +7,8 @@ const config: Config = {
   ],
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/src/$1',
+    // react-native-reanimated v4 requires react-native-worklets (native only)
+    'react-native-reanimated': '<rootDir>/node_modules/react-native-reanimated/mock',
   },
 };
 
