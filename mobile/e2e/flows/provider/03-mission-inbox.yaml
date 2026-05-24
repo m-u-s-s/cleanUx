@@ -1,0 +1,9 @@
+appId: com.cleanux.provider
+---
+- launchApp
+- tapOn: "Missions"
+- assertVisible: "Missions disponibles"
+- assertVisible:
+    anyOf:
+      - "Accepter"
+      - "Aucune mission"

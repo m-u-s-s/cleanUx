@@ -1,0 +1,14 @@
+appId: com.cleanux.client
+---
+- launchApp
+- tapOn: "Explore"
+- assertVisible: "Explorer les prestataires"
+- tapOn: "Métier"
+- inputText: "nettoyage"
+- tapOn: "Code postal"
+- inputText: "75001"
+# Should show provider cards or empty state
+- assertVisible:
+    anyOf:
+      - "⭐"
+      - "Aucun prestataire"

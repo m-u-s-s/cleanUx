@@ -1,0 +1,10 @@
+appId: com.cleanux.provider
+---
+- launchApp
+- assertVisible: "Login"
+- tapOn: "Email"
+- inputText: "provider@cleanux.dev"
+- tapOn: "Password"
+- inputText: "password123"
+- tapOn: "Se connecter"
+- assertVisible: "Bonjour"

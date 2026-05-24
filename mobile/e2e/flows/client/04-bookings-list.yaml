@@ -1,0 +1,12 @@
+appId: com.cleanux.client
+---
+- launchApp
+- tapOn: "Bookings"
+- assertVisible: "Mes réservations"
+# Should show bookings or empty state
+- assertVisible:
+    anyOf:
+      - "pending"
+      - "confirmed"
+      - "completed"
+      - "Aucune réservation"

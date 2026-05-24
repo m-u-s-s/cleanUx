@@ -1,0 +1,9 @@
+appId: com.cleanux.provider
+---
+- launchApp
+- tapOn: "Earnings"
+- assertVisible: "Revenus"
+- assertVisible:
+    anyOf:
+      - "Disponible"
+      - "Configurez Stripe"

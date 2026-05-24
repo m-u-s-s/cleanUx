@@ -1,0 +1,9 @@
+appId: com.cleanux.client
+---
+- launchApp
+- tapOn: "Profile"
+- assertVisible: "Profil"
+# Check quick access buttons exist
+- assertVisible: "Mes moyens de paiement"
+- assertVisible: "Programme fidélité"
+- assertVisible: "Parrainage"

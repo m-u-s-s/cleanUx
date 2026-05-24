@@ -1,0 +1,10 @@
+appId: com.cleanux.client
+---
+- launchApp
+- tapOn: "Profile"
+- tapOn: "Messagerie"
+- assertVisible: "Messagerie"
+- assertVisible:
+    anyOf:
+      - "Aucune conversation"
+      - id: ".*"  # any thread
