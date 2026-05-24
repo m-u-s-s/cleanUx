@@ -5,6 +5,7 @@ import { useAuth } from '@/auth';
 import { LoginScreen } from '@/screens/LoginScreen';
 import { TabNavigator } from './TabNavigator';
 import { BookingNavigator } from './BookingNavigator';
+import { MissionTrackingScreen } from '@/screens/MissionTrackingScreen';
 import { colors } from '@/theme';
 import type { RootStackParamList } from './types';
 
@@ -31,6 +32,11 @@ export function RootNavigator() {
               name="BookingWizard"
               component={BookingNavigator}
               options={{ headerShown: false, presentation: 'modal' }}
+            />
+            <Stack.Screen
+              name="MissionTracking"
+              component={MissionTrackingScreen}
+              options={{ title: 'Suivi mission' }}
             />
           </>
         ) : (

@@ -2,6 +2,7 @@ export type RootStackParamList = {
   Login: undefined;
   MainTabs: undefined;
   BookingWizard: undefined;
+  MissionTracking: { bookingId: number };
 };
 
 export type BookingStackParamList = {

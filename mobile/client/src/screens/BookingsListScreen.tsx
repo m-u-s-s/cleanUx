@@ -1,9 +1,12 @@
 import React from 'react';
-import { FlatList, View, Text, StyleSheet } from 'react-native';
+import { FlatList, View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Screen, Badge, Skeleton } from '@/ui';
 import { useBookings } from '@/booking';
 import type { Booking } from '@/booking';
 import { colors, spacing, typography, radius, shadows } from '@/theme';
+import type { RootStackParamList } from '@/navigation/types';
 
 export function BookingsListScreen() {
   const { data: bookings, isLoading, refetch } = useBookings();
@@ -39,18 +42,30 @@ const statusVariant: Record<string, 'success' | 'warning' | 'danger' | 'neutral'
 };
 
 function BookingCard({ booking }: { booking: Booking }) {
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const canTrack = ['confirmed', 'in_progress'].includes(booking.status);
+
   return (
-    <View style={styles.card}>
-      <View style={styles.cardHeader}>
-        <Text style={styles.serviceName}>{booking.service_name}</Text>
-        <Badge label={booking.status} variant={statusVariant[booking.status] ?? 'neutral'} />
+    <TouchableOpacity
+      disabled={!canTrack}
+      onPress={() => navigation.navigate('MissionTracking', { bookingId: booking.id })}
+      activeOpacity={canTrack ? 0.7 : 1}
+    >
+      <View style={styles.card}>
+        <View style={styles.cardHeader}>
+          <Text style={styles.serviceName}>{booking.service_name}</Text>
+          <Badge label={booking.status} variant={statusVariant[booking.status] ?? 'neutral'} />
+        </View>
+        <Text style={styles.cardDate}>{booking.scheduled_date} à {booking.scheduled_time}</Text>
+        <Text style={styles.cardAddress}>{booking.address}, {booking.city}</Text>
+        {booking.provider_name && (
+          <Text style={styles.cardProvider}>Prestataire: {booking.provider_name}</Text>
+        )}
+        {canTrack && (
+          <Text style={styles.trackHint}>Appuyer pour suivre</Text>
+        )}
       </View>
-      <Text style={styles.cardDate}>{booking.scheduled_date} à {booking.scheduled_time}</Text>
-      <Text style={styles.cardAddress}>{booking.address}, {booking.city}</Text>
-      {booking.provider_name && (
-        <Text style={styles.cardProvider}>Prestataire: {booking.provider_name}</Text>
-      )}
-    </View>
+    </TouchableOpacity>
   );
 }
 
@@ -99,5 +114,11 @@ const styles = StyleSheet.create({
     fontSize: typography.fontSize.xs,
     color: colors.brand[600],
     marginTop: spacing.xs,
+  },
+  trackHint: {
+    fontSize: typography.fontSize.xs,
+    color: colors.brand[500],
+    marginTop: spacing.xs,
+    fontWeight: typography.fontWeight.semibold,
   },
 });
