@@ -3,7 +3,7 @@ import type { Config } from 'jest';
 const config: Config = {
   preset: 'jest-expo',
   transformIgnorePatterns: [
-    'node_modules/(?!((jest-)?react-native|@react-native(-community)?)|expo(nent)?|@expo(nent)?/.*|@expo-google-fonts/.*|react-navigation|@react-navigation/.*|@sentry/react-native|expo-secure-store|expo-constants|expo-status-bar)',
+    'node_modules/(?!((jest-)?react-native|@react-native(-community)?)|expo(nent)?|@expo(nent)?/.*|@expo-google-fonts/.*|react-navigation|@react-navigation/.*|@sentry/react-native|expo-secure-store|expo-constants|expo-status-bar|@gorhom)',
   ],
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/src/$1',
@@ -16,6 +16,8 @@ const config: Config = {
     // @expo/vector-icons loads native fonts at runtime — mock for Jest
     '^@expo/vector-icons$': '<rootDir>/__mocks__/@expo/vector-icons',
     '^@expo/vector-icons/(.*)$': '<rootDir>/__mocks__/@expo/vector-icons',
+    // @gorhom/bottom-sheet: use official mock to avoid native gesture handler init
+    '^@gorhom/bottom-sheet$': '@gorhom/bottom-sheet/mock',
   },
 };
 
