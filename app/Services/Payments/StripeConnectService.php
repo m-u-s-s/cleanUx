@@ -5,6 +5,7 @@ namespace App\Services\Payments;
 use App\Models\User;
 use Stripe\Account;
 use Stripe\AccountLink;
+use Stripe\Payout;
 use Stripe\Stripe;
 
 class StripeConnectService
@@ -81,5 +82,90 @@ class StripeConnectService
                 ? ($user->stripe_connect_payouts_enabled_at ?? now())
                 : null,
         ]);
+    }
+
+    // ──────────────────────────────────────────────────────────────
+    // Sprint 0 — RN Provider API methods
+    // ──────────────────────────────────────────────────────────────
+
+    /**
+     * Retrieve a Stripe Connect account by ID.
+     *
+     * @return object Stripe\Account in production; may be any object in tests.
+     */
+    public function retrieveAccount(string $accountId): object
+    {
+        return Account::retrieve($accountId);
+    }
+
+    /**
+     * Create an Express account for a provider and store the account ID on the user.
+     * Returns the new account ID.
+     */
+    public function createExpressAccount(User $user): string
+    {
+        $country = $user->country_code ?? $user->country ?? config('services.stripe.connect_country', 'FR');
+
+        $account = Account::create([
+            'type' => 'express',
+            'country' => $country,
+            'email' => $user->email,
+            'capabilities' => [
+                'card_payments' => ['requested' => true],
+                'transfers' => ['requested' => true],
+            ],
+            'metadata' => [
+                'user_id' => $user->id,
+                'role' => $user->role,
+                'platform' => 'cleanux',
+            ],
+        ]);
+
+        $user->update([
+            'stripe_connect_account_id' => $account->id,
+            'stripe_connect_status' => 'pending',
+        ]);
+
+        return $account->id;
+    }
+
+    /**
+     * Create an account onboarding link for the given Stripe account ID.
+     *
+     * @return object Stripe\AccountLink in production; may be any object in tests.
+     */
+    public function createAccountLink(string $accountId, string $refreshUrl, string $returnUrl): object
+    {
+        return AccountLink::create([
+            'account' => $accountId,
+            'refresh_url' => $refreshUrl,
+            'return_url' => $returnUrl,
+            'type' => 'account_onboarding',
+        ]);
+    }
+
+    /**
+     * List Stripe payouts for a connected account.
+     *
+     * @return object Stripe\Collection in production; may be any object in tests.
+     */
+    public function listPayouts(string $accountId, int $limit = 20, ?string $startingAfter = null): object
+    {
+        $params = ['limit' => $limit];
+        if ($startingAfter) {
+            $params['starting_after'] = $startingAfter;
+        }
+
+        return Payout::all($params, ['stripe_account' => $accountId]);
+    }
+
+    /**
+     * Create a Stripe Express dashboard login link for a connected account.
+     *
+     * @return object Stripe\LoginLink in production; may be any object in tests.
+     */
+    public function createLoginLink(string $accountId): object
+    {
+        return Account::createLoginLink($accountId);
     }
 }

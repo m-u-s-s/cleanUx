@@ -283,6 +283,14 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/kyc/start',                     [\App\Http\Controllers\Api\Provider\KycController::class, 'start']);
         Route::get('/kyc/status',                     [\App\Http\Controllers\Api\Provider\KycController::class, 'status']);
         Route::post('/kyc/verifications/{verification}/sync', [\App\Http\Controllers\Api\Provider\KycController::class, 'sync']);
+
+        // Sprint 0 — Task 3 : Stripe Connect provider endpoints (RN Phase 2)
+        Route::prefix('stripe-connect')->middleware('token.grace')->group(function () {
+            Route::get('/status',         [\App\Http\Controllers\Api\Provider\StripeConnectController::class, 'status']);
+            Route::post('/onboard',       [\App\Http\Controllers\Api\Provider\StripeConnectController::class, 'onboard']);
+            Route::get('/payouts',        [\App\Http\Controllers\Api\Provider\StripeConnectController::class, 'payouts']);
+            Route::get('/dashboard-link', [\App\Http\Controllers\Api\Provider\StripeConnectController::class, 'dashboardLink']);
+        });
     });
 
     // Phase Matching v2 — Simulation admin
