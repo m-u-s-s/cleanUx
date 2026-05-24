@@ -1,216 +1,195 @@
 <x-guest-layout>
-    {{--
-      Page REGISTER — vitrine (cx-shell sombre)
-      Backend Fortify préservé À L'IDENTIQUE :
-        - POST {{ route('register') }} + @csrf
-    - hidden `account_type` parmi : client_personal | client_company | provider_independent | provider_company
-    - champs name / email / password / password_confirmation
-    - conditionnels : company_name + tva_number (client_company) / provider_company_name + tva_number (provider_company)
-    - checkbox `terms` si Jetstream::hasTermsAndPrivacyPolicyFeature()
-    Logique Alpine.js (x-data) conservée à l'identique.
-    Wording corrigé : "Intervenant indépendant" / "Société de services" (multi-métiers).
-    --}}
+    {{-- ============================================================
+         REGISTER — refonte Stripe-style (21/05/2026)
+         Backend Fortify préservé À L'IDENTIQUE :
+           POST route('register') + @csrf
+           hidden account_type ∈ {client_personal | client_company | provider_independent | provider_company}
+           champs name / email / password / password_confirmation
+           conditionnels : company_name + tva_number selon profil
+           checkbox terms si Jetstream::hasTermsAndPrivacyPolicyFeature()
+         ============================================================ --}}
 
-    <main class="relative z-[1] min-h-screen pt-24 pb-16 sm:pt-28 sm:pb-24">
-        <section class="mx-auto grid max-w-7xl grid-cols-1 items-start gap-10 px-4 sm:px-6 lg:grid-cols-2 lg:px-8">
+    <main class="min-h-screen bg-slate-50/40 px-4 py-12">
+        <div class="mx-auto max-w-2xl">
+            {{-- Brand --}}
+            <div class="text-center mb-6">
+                <a href="{{ route('home') }}" class="inline-flex items-center gap-2 text-slate-700 hover:text-brand-600 transition">
+                    <span class="grid h-10 w-10 place-items-center rounded-xl bg-brand-600 text-white font-bold text-lg shadow-soft-sm">
+                        CU
+                    </span>
+                    <span class="text-lg font-bold">{{ config('app.name', 'CleanUx') }}</span>
+                </a>
+            </div>
 
-            {{-- ── PANNEAU MARQUE ─────────────────────────────────────────────── --}}
-            <aside class="hidden lg:block lg:sticky lg:top-24" data-cx-reveal>
-                <div class="cx-card relative overflow-hidden p-10">
-                    <span class="cx-chip"><span class="pip"></span> Rejoindre la plateforme</span>
-
-                    <h1 class="cx-h mt-8 text-5xl lg:text-6xl">
-                        Une seule plateforme,<br><span class="cx-gradient-text">quatre profils.</span>
-                    </h1>
-                    <p class="cx-lede mt-6 max-w-md text-base">
-                        Que vous réserviez ou interveniez, en particulier ou en entreprise — votre espace
-                        s'adapte à votre usage et à vos métiers.
-                    </p>
-
-                    <div class="mt-10 grid grid-cols-2 gap-3">
-                        @foreach ([
-                        ['Suivi live','Position & ETA en direct'],
-                        ['Multi-métiers','Nettoyage, peinture, bâtiment, jardinage'],
-                        ['Paiements','Stripe sécurisé'],
-                        ['B2B','Multi-sites & factures'],
-                        ] as $i => $f)
-                        <div class="rounded-2xl border p-5"
-                            style="border-color:var(--cx-line);background:rgba(255,255,255,.03)"
-                            data-cx-reveal data-cx-delay="{{ $i }}">
-                            <p class="text-lg font-extrabold" style="font-family:var(--cx-display);color:var(--cx-text)">{{ $f[0] }}</p>
-                            <p class="mt-1 text-xs" style="color:var(--cx-muted)">{{ $f[1] }}</p>
-                        </div>
-                        @endforeach
-                    </div>
+            <div class="bg-white rounded-2xl border border-slate-200/80 shadow-soft p-6 sm:p-10">
+                <div class="text-center mb-6">
+                    <h1 class="text-2xl font-bold tracking-tight text-slate-900">Créer votre compte</h1>
+                    <p class="mt-2 text-sm text-slate-500">Choisissez d'abord votre profil — le formulaire s'adapte</p>
                 </div>
-            </aside>
 
-            {{-- ── FORMULAIRE ────────────────────────────────────────────────── --}}
-            <div data-cx-reveal data-cx-delay="1">
-                <div class="cx-card p-7 sm:p-10">
-                    <p class="cx-kicker">Inscription</p>
-                    <h2 class="cx-h mt-3 text-3xl sm:text-4xl">Créer votre <span class="cx-gradient-text">compte.</span></h2>
-                    <p class="cx-lede mt-3 text-sm">Choisissez d'abord votre profil — le formulaire s'adapte.</p>
+                <x-validation-errors class="mb-6" />
 
-                    <x-validation-errors class="mt-6" />
+                <form method="POST" action="{{ route('register') }}" class="space-y-6"
+                      x-data="{
+                          type: '{{ old('account_type', '') }}',
+                          isProviderCompany() { return this.type === 'provider_company'; },
+                          isClientCompany()   { return this.type === 'client_company'; },
+                      }">
+                    @csrf
 
-                    <form method="POST" action="{{ route('register') }}" class="mt-8 space-y-6"
-                        x-data="{
-                              type: '{{ old('account_type', '') }}',
-                              isProviderCompany() { return this.type === 'provider_company'; },
-                              isClientCompany()   { return this.type === 'client_company'; },
-                          }">
-                        @csrf
+                    {{-- Étape 1 : choix profil --}}
+                    <div>
+                        <label class="ui-label">Je suis…</label>
+                        <input type="hidden" name="account_type" :value="type">
 
-                        {{-- Étape 1 : profil --}}
-                        <div>
-                            <label class="mb-3 block text-xs font-bold uppercase tracking-[0.14em]" style="color:var(--cx-muted)">
-                                Je suis…
-                            </label>
-                            <input type="hidden" name="account_type" :value="type">
+                        @php
+                        $profils = [
+                            ['key' => 'client_personal',      'icon' => 'user',            'label' => 'Client particulier',  'hint' => 'Je réserve pour mon domicile'],
+                            ['key' => 'client_company',       'icon' => 'building-office', 'label' => 'Client entreprise',   'hint' => 'Bureaux / multi-sites'],
+                            ['key' => 'provider_independent', 'icon' => 'wrench',          'label' => 'Prestataire indé',    'hint' => 'Je travaille à mon compte'],
+                            ['key' => 'provider_company',     'icon' => 'briefcase',       'label' => 'Société de services', 'hint' => 'Je gère une équipe'],
+                        ];
+                        @endphp
 
-                            <div class="grid grid-cols-2 gap-3">
-                                @php
-                                $profils = [
-                                ['key'=>'client_personal', 'emoji'=>'👤', 'label'=>'Client particulier', 'hint'=>'Je réserve pour mon domicile', 'accent'=>'#4fe3d6'],
-                                ['key'=>'client_company', 'emoji'=>'🏢', 'label'=>'Client entreprise', 'hint'=>'Bureaux / multi-sites', 'accent'=>'#8b7bff'],
-                                ['key'=>'provider_independent','emoji'=>'🔧', 'label'=>'Intervenant indépendant','hint'=>'Je travaille à mon compte', 'accent'=>'#ffb648'],
-                                ['key'=>'provider_company', 'emoji'=>'🏗️', 'label'=>'Société de services', 'hint'=>'Je gère une équipe', 'accent'=>'#5fd38a'],
-                                ];
-                                @endphp
-
-                                @foreach ($profils as $p)
-                                <label class="relative cursor-pointer rounded-2xl border p-4 transition"
-                                    :class="type === '{{ $p['key'] }}' ? 'ring-2' : 'hover:bg-white/[0.04]'"
-                                    :style="type === '{{ $p['key'] }}'
-                                               ? 'border-color:{{ $p['accent'] }}; background:linear-gradient(160deg, color-mix(in srgb, {{ $p['accent'] }} 12%, transparent), rgba(255,255,255,.02)); --tw-ring-color:color-mix(in srgb, {{ $p['accent'] }} 35%, transparent)'
-                                               : 'border-color:var(--cx-line); background:rgba(255,255,255,.025)'"
-                                    @click="type = '{{ $p['key'] }}'">
-                                    <div class="text-2xl">{{ $p['emoji'] }}</div>
-                                    <p class="mt-2 text-sm font-extrabold" style="font-family:var(--cx-display);color:var(--cx-text)">
-                                        {{ $p['label'] }}
-                                    </p>
-                                    <p class="mt-1 text-xs leading-snug" style="color:var(--cx-muted)">
-                                        {{ $p['hint'] }}
-                                    </p>
-                                    <div x-show="type === '{{ $p['key'] }}'" x-cloak class="absolute right-3 top-3">
-                                        <span class="flex h-6 w-6 items-center justify-center rounded-full text-xs font-black"
-                                            style="background:{{ $p['accent'] }};color:#0b1120">✓</span>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                            @foreach ($profils as $p)
+                                <label class="relative cursor-pointer rounded-xl border-2 p-4 transition"
+                                       :class="type === '{{ $p['key'] }}' ? 'border-brand-500 bg-brand-50/50' : 'border-slate-200 hover:border-slate-300 hover:bg-slate-50/50'"
+                                       @click="type = '{{ $p['key'] }}'">
+                                    <div class="flex items-center gap-3">
+                                        <div class="grid h-10 w-10 place-items-center rounded-lg bg-white ring-1 ring-slate-200">
+                                            <x-ui.icon :name="$p['icon']" class="w-5 h-5 text-slate-600" />
+                                        </div>
+                                        <div class="flex-1 min-w-0">
+                                            <p class="text-sm font-semibold text-slate-900">{{ $p['label'] }}</p>
+                                            <p class="text-xs text-slate-500">{{ $p['hint'] }}</p>
+                                        </div>
+                                        <div x-show="type === '{{ $p['key'] }}'" x-cloak class="ml-auto">
+                                            <div class="grid h-5 w-5 place-items-center rounded-full bg-brand-600 text-white">
+                                                <x-ui.icon name="check" class="w-3 h-3" stroke="3" />
+                                            </div>
+                                        </div>
                                     </div>
                                 </label>
-                                @endforeach
+                            @endforeach
+                        </div>
+                    </div>
+
+                    {{-- Étape 2 : champs --}}
+                    <div class="space-y-4" x-show="type !== ''" x-cloak>
+                        <div>
+                            <label for="name" class="ui-label">Nom complet</label>
+                            <input id="name" name="name" type="text" required autofocus
+                                   placeholder="Jean Dupont" value="{{ old('name') }}"
+                                   class="ui-input">
+                        </div>
+
+                        <div>
+                            <label for="email" class="ui-label">Adresse e-mail</label>
+                            <input id="email" name="email" type="email" required
+                                   placeholder="jean@exemple.com" value="{{ old('email') }}"
+                                   class="ui-input">
+                        </div>
+
+                        {{-- Conditionnel : société cliente --}}
+                        <div x-show="isClientCompany()" x-cloak>
+                            <div class="rounded-xl border border-purple-200 bg-purple-50/30 p-4 space-y-3">
+                                <div>
+                                    <label for="company_name" class="ui-label">Nom de votre entreprise</label>
+                                    <input id="company_name" name="company_name" type="text"
+                                           placeholder="Acme SA" value="{{ old('company_name') }}"
+                                           class="ui-input">
+                                </div>
+                                <div>
+                                    <label for="tva_number" class="ui-label">Numéro de TVA</label>
+                                    <input id="tva_number" name="tva_number" type="text"
+                                           placeholder="BE0123.456.789" value="{{ old('tva_number') }}"
+                                           class="ui-input">
+                                </div>
+                                <p class="text-xs text-purple-700">
+                                    Vous pourrez inviter vos collègues et enregistrer vos sites après l'inscription.
+                                </p>
                             </div>
                         </div>
 
-                        {{-- Étape 2 : champs communs (apparaissent après choix du profil) --}}
-                        <div class="space-y-5" x-show="type !== ''" x-cloak>
-
-                            <div class="grid grid-cols-1 gap-5 sm:grid-cols-2">
-                                <div class="cx-field sm:col-span-2">
-                                    <label for="name">Nom complet</label>
-                                    <input id="name" name="name" type="text" required autofocus
-                                        placeholder="Jean Dupont" value="{{ old('name') }}">
+                        {{-- Conditionnel : société prestataire --}}
+                        <div x-show="isProviderCompany()" x-cloak>
+                            <div class="rounded-xl border border-emerald-200 bg-emerald-50/30 p-4 space-y-3">
+                                <div>
+                                    <label for="provider_company_name" class="ui-label">Nom de votre société de services</label>
+                                    <input id="provider_company_name" name="provider_company_name" type="text"
+                                           placeholder="ProServices SPRL" value="{{ old('provider_company_name') }}"
+                                           class="ui-input">
                                 </div>
-
-                                <div class="cx-field sm:col-span-2">
-                                    <label for="email">Adresse e-mail</label>
-                                    <input id="email" name="email" type="email" required
-                                        placeholder="jean@exemple.com" value="{{ old('email') }}">
+                                <div>
+                                    <label for="tva_number_provider" class="ui-label">Numéro de TVA</label>
+                                    <input id="tva_number_provider" name="tva_number" type="text"
+                                           placeholder="BE0123.456.789" value="{{ old('tva_number') }}"
+                                           class="ui-input">
                                 </div>
-
-                                {{-- Conditionnel : société cliente --}}
-                                <div class="sm:col-span-2" x-show="isClientCompany()" x-cloak>
-                                    <div class="rounded-2xl border p-5"
-                                        style="border-color:rgba(139,123,255,.35); background:linear-gradient(160deg, rgba(139,123,255,.10), rgba(255,255,255,.02))">
-                                        <div class="cx-field">
-                                            <label for="company_name">Nom de votre entreprise</label>
-                                            <input id="company_name" name="company_name" type="text"
-                                                placeholder="Acme SA" value="{{ old('company_name') }}">
-                                        </div>
-                                        <div class="cx-field mt-4">
-                                            <label for="tva_number">Numéro de TVA</label>
-                                            <input id="tva_number" name="tva_number" type="text"
-                                                placeholder="BE0123.456.789" value="{{ old('tva_number') }}">
-                                        </div>
-                                        <p class="mt-3 text-xs" style="color:var(--cx-violet)">
-                                            Vous pourrez inviter vos collègues et enregistrer vos sites après l'inscription.
-                                        </p>
-                                    </div>
-                                </div>
-
-                                {{-- Conditionnel : société prestataire --}}
-                                <div class="sm:col-span-2" x-show="isProviderCompany()" x-cloak>
-                                    <div class="rounded-2xl border p-5"
-                                        style="border-color:rgba(95,211,138,.35); background:linear-gradient(160deg, rgba(95,211,138,.10), rgba(255,255,255,.02))">
-                                        <div class="cx-field">
-                                            <label for="provider_company_name">Nom de votre société de services</label>
-                                            <input id="provider_company_name" name="provider_company_name" type="text"
-                                                placeholder="ProServices SPRL" value="{{ old('provider_company_name') }}">
-                                        </div>
-                                        <div class="cx-field mt-4">
-                                            <label for="tva_number_provider">Numéro de TVA</label>
-                                            <input id="tva_number_provider" name="tva_number" type="text"
-                                                placeholder="BE0123.456.789" value="{{ old('tva_number') }}">
-                                        </div>
-                                        <div class="mt-3 flex items-start gap-2 text-xs" style="color:#5fd38a">
-                                            <span>⚠</span>
-                                            <span>Votre compte sera vérifié par notre équipe avant d'être activé. Vous pourrez ensuite inviter votre équipe.</span>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                {{-- Note prestataire indépendant --}}
-                                <div class="sm:col-span-2" x-show="type === 'provider_independent'" x-cloak>
-                                    <div class="rounded-2xl border p-4 text-xs"
-                                        style="border-color:rgba(255,182,72,.35); background:rgba(255,182,72,.08); color:var(--cx-amber)">
-                                        ✓ En tant qu'indépendant, vous serez visible des clients après validation. Pensez à configurer Stripe pour vos paiements.
-                                    </div>
-                                </div>
-
-                                <div class="cx-field">
-                                    <label for="password">Mot de passe</label>
-                                    <input id="password" name="password" type="password" required placeholder="••••••••">
-                                </div>
-
-                                <div class="cx-field">
-                                    <label for="password_confirmation">Confirmation</label>
-                                    <input id="password_confirmation" name="password_confirmation" type="password" required placeholder="••••••••">
-                                </div>
+                                <p class="text-xs text-emerald-700 inline-flex items-start gap-2">
+                                    <x-ui.icon name="shield-check" class="w-4 h-4 flex-shrink-0 mt-0.5" />
+                                    Votre compte sera vérifié par notre équipe avant d'être activé.
+                                </p>
                             </div>
+                        </div>
 
-                            {{-- CGU --}}
-                            @if (Laravel\Jetstream\Jetstream::hasTermsAndPrivacyPolicyFeature())
-                            <label class="flex items-start gap-3 rounded-2xl border p-4"
-                                style="border-color:var(--cx-line);background:rgba(255,255,255,.03)">
+                        {{-- Note prestataire indépendant --}}
+                        <div x-show="type === 'provider_independent'" x-cloak>
+                            <div class="rounded-xl border border-amber-200 bg-amber-50/30 p-4 text-xs text-amber-700 inline-flex items-start gap-2">
+                                <x-ui.icon name="information-circle" class="w-4 h-4 flex-shrink-0 mt-0.5" />
+                                En tant qu'indépendant, vous serez visible des clients après validation KYC. Pensez à configurer Stripe Connect pour vos paiements.
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                                <label for="password" class="ui-label">Mot de passe</label>
+                                <input id="password" name="password" type="password" required placeholder="••••••••" class="ui-input">
+                            </div>
+                            <div>
+                                <label for="password_confirmation" class="ui-label">Confirmation</label>
+                                <input id="password_confirmation" name="password_confirmation" type="password" required placeholder="••••••••" class="ui-input">
+                            </div>
+                        </div>
+
+                        {{-- CGU --}}
+                        @if (Laravel\Jetstream\Jetstream::hasTermsAndPrivacyPolicyFeature())
+                            <label class="flex items-start gap-3 rounded-xl border border-slate-200 bg-slate-50/50 p-3">
                                 <input type="checkbox" name="terms" id="terms" required
-                                    style="accent-color:var(--cx-amber);height:18px;width:18px;margin-top:2px">
-                                <span class="text-sm" style="color:var(--cx-muted)">
+                                       class="mt-0.5 rounded border-slate-300 text-brand-600 focus:ring-brand-500">
+                                <span class="text-xs text-slate-600">
                                     {!! __('I agree to the :terms_of_service and :privacy_policy', [
-                                    'terms_of_service' => '<a target="_blank" href="'.route('terms.show').'" class="font-bold underline" style="color:var(--cx-amber)">'.__('Terms of Service').'</a>',
-                                    'privacy_policy' => '<a target="_blank" href="'.route('policy.show').'" class="font-bold underline" style="color:var(--cx-amber)">'.__('Privacy Policy').'</a>',
+                                        'terms_of_service' => '<a target="_blank" href="' . route('terms.show') . '" class="font-semibold text-brand-700 hover:text-brand-800 underline">' . __('Terms of Service') . '</a>',
+                                        'privacy_policy' => '<a target="_blank" href="' . route('policy.show') . '" class="font-semibold text-brand-700 hover:text-brand-800 underline">' . __('Privacy Policy') . '</a>',
                                     ]) !!}
                                 </span>
                             </label>
-                            @endif
+                        @endif
 
-                            <button type="submit" class="cx-btn cx-btn--primary w-full px-5 py-4 text-base">
-                                Créer mon compte →
-                            </button>
-                        </div>
+                        <x-ui.button type="submit" variant="primary" size="lg" class="w-full" iconPosition="right" icon="arrow-right">
+                            Créer mon compte
+                        </x-ui.button>
+                    </div>
 
-                        {{-- État initial : aide à choisir --}}
-                        <p class="text-center text-xs" style="color:var(--cx-muted)" x-show="type === ''">
-                            ↑ Sélectionnez un profil pour continuer
-                        </p>
+                    {{-- État initial --}}
+                    <p class="text-center text-xs text-slate-500" x-show="type === ''">
+                        ↑ Sélectionnez un profil pour continuer
+                    </p>
+                </form>
 
-                        <div class="text-center text-sm" style="color:var(--cx-muted)">
-                            Déjà inscrit ?
-                            <a href="{{ route('login') }}" class="font-bold" style="color:var(--cx-amber)">Se connecter</a>
-                        </div>
-                    </form>
+                <div class="mt-6 text-center text-sm text-slate-600">
+                    Déjà inscrit ?
+                    <a href="{{ route('login') }}" class="font-semibold text-brand-700 hover:text-brand-800">Se connecter</a>
                 </div>
             </div>
 
-        </section>
+            <div class="mt-6 text-center">
+                <p class="text-xs text-slate-500 inline-flex items-center gap-2 justify-center">
+                    <x-ui.icon name="shield-check" class="w-3.5 h-3.5 text-emerald-500" />
+                    KYC validé · RGPD compliant · Données chiffrées
+                </p>
+            </div>
+        </div>
     </main>
 </x-guest-layout>

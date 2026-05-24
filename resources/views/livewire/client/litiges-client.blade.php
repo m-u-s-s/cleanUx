@@ -2,20 +2,23 @@
     <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
 
         <div>
-            <p class="text-sm font-bold uppercase text-indigo-600">Réclamations</p>
-            <h1 class="text-3xl font-black text-slate-900">Mon SAV</h1>
-            <p class="text-sm text-slate-500 mt-2">Ouvrez une réclamation et suivez son traitement.</p>
+            <p class="ui-page-eyebrow !mt-0">Réclamations</p>
+            <h1 class="ui-page-title">Mon SAV</h1>
+            <p class="ui-page-subtitle">Ouvrez une réclamation et suivez son traitement.</p>
         </div>
 
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
             {{-- Form nouvelle réclamation --}}
-            <div class="lg:col-span-1 rounded-2xl border bg-white p-6 shadow-sm space-y-3">
-                <h2 class="text-lg font-bold">Nouvelle réclamation</h2>
+            <div class="lg:col-span-1 rounded-2xl border border-slate-200/80 bg-white shadow-soft p-5 space-y-3">
+                <h2 class="inline-flex items-center gap-2 text-base font-bold text-slate-900">
+                    <x-ui.icon name="plus" class="w-4 h-4 text-brand-600" />
+                    Nouvelle réclamation
+                </h2>
 
                 <div>
-                    <label class="text-xs font-bold uppercase text-slate-500">Booking lié (optionnel)</label>
-                    <select wire:model="booking_id" class="mt-1 w-full rounded-xl border-gray-300 text-sm">
+                    <label class="ui-label">Booking lié <span class="text-slate-400 normal-case">(optionnel)</span></label>
+                    <select wire:model="booking_id" class="ui-input">
                         <option value="">— Aucun</option>
                         @foreach($rendezVous as $b)
                             <option value="{{ $b->id }}">#{{ $b->booking_reference }} — {{ $b->date?->format('d/m/Y') }}</option>
@@ -24,10 +27,10 @@
                 </div>
 
                 <div>
-                    <label class="text-xs font-bold uppercase text-slate-500">Catégorie</label>
-                    <select wire:model="category" class="mt-1 w-full rounded-xl border-gray-300 text-sm">
+                    <label class="ui-label">Catégorie</label>
+                    <select wire:model="category" class="ui-input">
                         <option value="quality">Qualité de service</option>
-                        <option value="no_show">Provider absent (no-show)</option>
+                        <option value="no_show">Provider absent</option>
                         <option value="payment">Paiement / facturation</option>
                         <option value="damage">Dommage matériel</option>
                         <option value="safety">Sécurité</option>
@@ -38,8 +41,8 @@
 
                 <div class="grid grid-cols-2 gap-2">
                     <div>
-                        <label class="text-xs font-bold uppercase text-slate-500">Priorité</label>
-                        <select wire:model="priority" class="mt-1 w-full rounded-xl border-gray-300 text-sm">
+                        <label class="ui-label">Priorité</label>
+                        <select wire:model="priority" class="ui-input">
                             <option value="low">Basse</option>
                             <option value="normal">Normale</option>
                             <option value="high">Haute</option>
@@ -47,8 +50,8 @@
                         </select>
                     </div>
                     <div>
-                        <label class="text-xs font-bold uppercase text-slate-500">Gravité</label>
-                        <select wire:model="severity" class="mt-1 w-full rounded-xl border-gray-300 text-sm">
+                        <label class="ui-label">Gravité</label>
+                        <select wire:model="severity" class="ui-input">
                             <option value="low">Faible</option>
                             <option value="medium">Modérée</option>
                             <option value="high">Élevée</option>
@@ -58,35 +61,37 @@
                 </div>
 
                 <div>
-                    <label class="text-xs font-bold uppercase text-slate-500">Sujet</label>
-                    <input type="text" wire:model="subject" class="mt-1 w-full rounded-xl border-gray-300 text-sm" />
-                    @error('subject') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
+                    <label class="ui-label">Sujet</label>
+                    <input type="text" wire:model="subject" class="ui-input" />
+                    @error('subject') <p class="ui-error-msg">{{ $message }}</p> @enderror
                 </div>
 
                 <div>
-                    <label class="text-xs font-bold uppercase text-slate-500">Description</label>
-                    <textarea wire:model="description" rows="4" maxlength="2000"
-                              class="mt-1 w-full rounded-xl border-gray-300 text-sm"></textarea>
-                    @error('description') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
+                    <label class="ui-label">Description</label>
+                    <textarea wire:model="description" rows="4" maxlength="2000" class="ui-input"></textarea>
+                    @error('description') <p class="ui-error-msg">{{ $message }}</p> @enderror
                 </div>
 
                 <div>
-                    <label class="text-xs font-bold uppercase text-slate-500">Photos (optionnel)</label>
+                    <label class="ui-label inline-flex items-center gap-1">
+                        <x-ui.icon name="photo" class="w-3.5 h-3.5 text-slate-400" />
+                        Photos <span class="text-slate-400 normal-case">(optionnel)</span>
+                    </label>
                     <input type="file" wire:model="photos" multiple accept="image/*"
-                           class="mt-1 w-full text-xs" />
+                           class="w-full text-xs mt-1.5 file:rounded-lg file:border-0 file:bg-brand-50 file:text-brand-700 file:px-3 file:py-1.5 file:font-semibold file:hover:bg-brand-100 file:transition file:mr-2" />
                 </div>
 
-                <button wire:click="openClaim"
-                        class="w-full rounded-xl bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-indigo-700">
+                <button wire:click="openClaim" class="cu-btn-primary w-full inline-flex items-center justify-center gap-2">
+                    <x-ui.icon name="envelope" class="w-4 h-4" />
                     Envoyer la réclamation
                 </button>
             </div>
 
             {{-- Liste + détail --}}
             <div class="lg:col-span-2 space-y-4">
-                <div class="rounded-2xl border bg-white shadow-sm overflow-hidden">
-                    <div class="p-3 border-b">
-                        <select wire:model.live="filterStatus" class="rounded-xl border-gray-300 text-xs">
+                <div class="rounded-2xl border border-slate-200/80 bg-white shadow-soft overflow-hidden">
+                    <div class="p-3 border-b border-slate-100 flex items-center justify-between gap-2">
+                        <select wire:model.live="filterStatus" class="ui-input !text-xs !py-1.5 !w-auto">
                             <option value="">Toutes mes réclamations</option>
                             <option value="open">Ouvertes</option>
                             <option value="awaiting_client">Attente de ma réponse</option>
@@ -94,79 +99,105 @@
                             <option value="resolved">Résolues</option>
                             <option value="closed">Closes</option>
                         </select>
+                        <span class="text-xs text-slate-500">
+                            {{ $claims->total() }} réclamation{{ $claims->total() > 1 ? 's' : '' }}
+                        </span>
                     </div>
-                    <div class="divide-y">
+
+                    <div class="divide-y divide-slate-100">
                         @forelse($claims as $c)
+                            @php
+                                $statusTone = match(true) {
+                                    $c->status === 'resolved'                              => ['emerald', 'check-circle'],
+                                    in_array($c->status, ['closed', 'open'])               => ['slate', 'circle'],
+                                    in_array($c->status, ['assigned', 'investigating'])    => ['brand', 'magnifying-glass'],
+                                    in_array($c->status, ['awaiting_client', 'awaiting_provider']) => ['amber', 'clock'],
+                                    $c->status === 'escalated'                             => ['rose', 'exclamation-triangle'],
+                                    default                                                => ['slate', 'circle'],
+                                };
+                                [$tone, $icon] = $statusTone;
+                            @endphp
                             <button wire:click="select({{ $c->id }})"
-                                    class="w-full text-left p-4 hover:bg-slate-50 {{ $selectedId === $c->id ? 'bg-indigo-50' : '' }}">
-                                <div class="flex items-center justify-between">
-                                    <p class="font-bold text-slate-900">{{ $c->subject }}</p>
-                                    <span @class([
-                                        'inline-flex items-center rounded-full px-2 py-0.5 text-xs font-semibold',
-                                        'bg-emerald-100 text-emerald-800' => $c->status === 'resolved',
-                                        'bg-slate-100 text-slate-700' => in_array($c->status, ['closed','open']),
-                                        'bg-indigo-100 text-indigo-800' => in_array($c->status, ['assigned','investigating']),
-                                        'bg-amber-100 text-amber-800' => in_array($c->status, ['awaiting_client','awaiting_provider']),
-                                        'bg-red-100 text-red-800' => $c->status === 'escalated',
-                                    ])>{{ $c->status }}</span>
+                                    class="w-full text-left px-4 py-3 hover:bg-slate-50 transition {{ $selectedId === $c->id ? 'bg-brand-50/50' : '' }}">
+                                <div class="flex items-center justify-between gap-3">
+                                    <p class="text-sm font-semibold text-slate-900 truncate">{{ $c->subject }}</p>
+                                    <span class="inline-flex items-center gap-1 rounded-full bg-{{ $tone }}-50 border border-{{ $tone }}-200 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-{{ $tone }}-700 shrink-0">
+                                        <x-ui.icon :name="$icon" class="w-3 h-3" />
+                                        {{ $c->status }}
+                                    </span>
                                 </div>
-                                <p class="text-xs text-slate-500 mt-1">
-                                    {{ $c->reference }} · {{ $c->category }}
-                                    @if($c->booking) · #{{ $c->booking->booking_reference }} @endif
+                                <p class="mt-1 text-xs text-slate-500">
+                                    <span class="font-mono">{{ $c->reference }}</span>
+                                    <span class="text-slate-300">·</span> {{ $c->category }}
+                                    @if($c->booking)
+                                        <span class="text-slate-300">·</span> #{{ $c->booking->booking_reference }}
+                                    @endif
                                 </p>
                             </button>
                         @empty
-                            <div class="p-10 text-center text-slate-400">Aucune réclamation.</div>
+                            <div class="p-10 text-center">
+                                <div class="grid h-10 w-10 mx-auto place-items-center rounded-xl bg-slate-100 text-slate-400 mb-2">
+                                    <x-ui.icon name="chat-bubble" class="w-5 h-5" />
+                                </div>
+                                <p class="text-sm text-slate-500">Aucune réclamation.</p>
+                            </div>
                         @endforelse
                     </div>
-                    <div class="p-3">{{ $claims->links() }}</div>
+
+                    @if($claims->hasPages())
+                        <div class="p-3 border-t border-slate-100">{{ $claims->links() }}</div>
+                    @endif
                 </div>
 
                 @if($selected)
-                    <div class="rounded-2xl border bg-white shadow-sm">
-                        <div class="p-4 border-b">
+                    <div class="rounded-2xl border border-slate-200/80 bg-white shadow-soft overflow-hidden">
+                        <div class="p-5 border-b border-slate-100">
                             <p class="font-mono text-xs text-slate-500">{{ $selected->reference }}</p>
-                            <h2 class="text-xl font-black text-slate-900 mt-1">{{ $selected->subject }}</h2>
-                            <p class="text-sm text-slate-600 mt-2">{{ $selected->description }}</p>
+                            <h2 class="mt-1 text-lg font-bold tracking-tight text-slate-900">{{ $selected->subject }}</h2>
+                            <p class="mt-2 text-sm text-slate-600">{{ $selected->description }}</p>
                         </div>
 
-                        <div class="p-4 space-y-3 max-h-96 overflow-y-auto border-b">
+                        <div class="p-4 space-y-2.5 max-h-96 overflow-y-auto border-b border-slate-100">
                             @forelse($selected->events as $event)
-                                <div @class([
-                                    'rounded-xl p-3 border text-sm',
-                                    'bg-slate-50 border-slate-200' => $event->author_role === 'system',
-                                    'bg-indigo-50 border-indigo-200' => $event->author_role === 'admin',
-                                    'bg-emerald-50 border-emerald-200' => $event->author_role === 'client',
-                                    'bg-amber-50 border-amber-200' => $event->author_role === 'provider',
-                                ])>
+                                @php
+                                    $eventConfig = match($event->author_role) {
+                                        'system'   => ['slate',   'cog',         'Système'],
+                                        'admin'    => ['brand',   'shield-check', 'Support CleanUx'],
+                                        'client'   => ['emerald', 'user',         'Vous'],
+                                        'provider' => ['amber',   'wrench',       'Prestataire'],
+                                        default    => ['slate',   'user',         'Inconnu'],
+                                    };
+                                    [$eTone, $eIcon, $eLabel] = $eventConfig;
+                                @endphp
+                                <div class="rounded-xl bg-{{ $eTone }}-50 border border-{{ $eTone }}-200 p-3">
                                     <div class="flex items-center justify-between text-xs">
-                                        <span class="font-semibold">
-                                            @if($event->author_role === 'admin') 🛡 Support CleanUx
-                                            @elseif($event->author_role === 'client') Vous
-                                            @elseif($event->author_role === 'provider') Prestataire
-                                            @else Système
-                                            @endif
+                                        <span class="inline-flex items-center gap-1.5 font-semibold text-{{ $eTone }}-800">
+                                            <x-ui.icon :name="$eIcon" class="w-3 h-3" />
+                                            {{ $eLabel }}
                                         </span>
                                         <span class="text-slate-500">{{ $event->created_at->format('d/m H:i') }}</span>
                                     </div>
-                                    <p class="text-slate-700 mt-1">{{ $event->body }}</p>
+                                    <p class="mt-1.5 text-sm text-slate-700">{{ $event->body }}</p>
                                 </div>
                             @empty
-                                <p class="text-sm text-slate-400 text-center">Aucun message.</p>
+                                <p class="text-sm text-slate-400 text-center py-4">Aucun message.</p>
                             @endforelse
                         </div>
 
                         @foreach($selected->resolutions as $r)
-                            <div class="p-4 border-b">
-                                <div class="rounded-xl bg-emerald-50 border border-emerald-200 p-4">
-                                    <p class="text-xs uppercase font-bold text-emerald-800">Résolution : {{ $r->resolution_type }}</p>
+                            <div class="p-4 border-b border-slate-100">
+                                <div class="rounded-xl bg-emerald-50/60 border border-emerald-200 p-4">
+                                    <p class="inline-flex items-center gap-1.5 text-xs uppercase font-semibold text-emerald-800">
+                                        <x-ui.icon name="check-circle" class="w-3.5 h-3.5" />
+                                        Résolution : {{ $r->resolution_type }}
+                                    </p>
                                     @if($r->amount)
-                                        <p class="text-2xl font-black text-emerald-700 mt-1">
+                                        <p class="mt-2 text-2xl font-bold text-emerald-700">
                                             {{ number_format((float)$r->amount, 2, ',', ' ') }} {{ $r->currency }}
                                         </p>
                                     @endif
                                     @if($r->explanation)
-                                        <p class="text-sm text-slate-700 mt-2">{{ $r->explanation }}</p>
+                                        <p class="mt-2 text-sm text-slate-700">{{ $r->explanation }}</p>
                                     @endif
                                 </div>
                             </div>
@@ -175,12 +206,12 @@
                         @if(! in_array($selected->status, ['resolved','closed']))
                             <div class="p-4 space-y-2">
                                 <textarea wire:model="replyBody" rows="2" maxlength="2000"
-                                          class="w-full rounded-xl border-gray-300 text-sm"
-                                          placeholder="Votre réponse..."></textarea>
-                                @error('replyBody') <p class="text-xs text-red-600">{{ $message }}</p> @enderror
-                                <button wire:click="postReply"
-                                        class="rounded-xl bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700">
-                                    Envoyer
+                                          class="ui-input"
+                                          placeholder="Votre réponse…"></textarea>
+                                @error('replyBody') <p class="ui-error-msg">{{ $message }}</p> @enderror
+                                <button wire:click="postReply" class="cu-btn-primary inline-flex items-center gap-2">
+                                    <x-ui.icon name="envelope" class="w-4 h-4" />
+                                    Envoyer la réponse
                                 </button>
                             </div>
                         @endif

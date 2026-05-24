@@ -1,60 +1,90 @@
 <div class="py-8 max-w-2xl mx-auto px-4 space-y-6">
 
     <div>
-        <p class="text-sm font-bold uppercase text-indigo-600">Compte</p>
-        <h1 class="text-2xl font-black text-slate-900">Mon profil</h1>
+        <p class="ui-page-eyebrow">Compte</p>
+        <h1 class="ui-page-title">Mon profil</h1>
+        <p class="ui-page-subtitle">Gérez vos informations et la sécurité de votre compte.</p>
     </div>
 
-    <div class="rounded-2xl bg-white border shadow-sm p-6">
-        <h2 class="text-sm font-bold text-slate-900 mb-4">Informations personnelles</h2>
-        <div class="space-y-3">
+    {{-- Informations personnelles --}}
+    <div class="rounded-2xl bg-white border border-slate-200/80 shadow-soft p-6">
+        <div class="flex items-center gap-2 mb-4">
+            <x-ui.icon name="user" class="w-4 h-4 text-slate-500" />
+            <h2 class="text-sm font-bold text-slate-900">Informations personnelles</h2>
+        </div>
+
+        <div class="space-y-4">
             <div>
-                <label class="text-xs font-bold text-slate-600">Nom complet</label>
-                <input wire:model="name" type="text" class="w-full rounded-lg border-slate-300 text-sm mt-1">
-                @error('name') <p class="text-rose-500 text-xs">{{ $message }}</p> @enderror
+                <label class="ui-label">Nom complet</label>
+                <input wire:model="name" type="text" class="ui-input" autocomplete="name">
+                @error('name') <p class="ui-error-msg">{{ $message }}</p> @enderror
             </div>
             <div>
-                <label class="text-xs font-bold text-slate-600">Email</label>
-                <input wire:model="email" type="email" class="w-full rounded-lg border-slate-300 text-sm mt-1">
-                @error('email') <p class="text-rose-500 text-xs">{{ $message }}</p> @enderror
+                <label class="ui-label">Email</label>
+                <input wire:model="email" type="email" class="ui-input" autocomplete="email">
+                @error('email') <p class="ui-error-msg">{{ $message }}</p> @enderror
             </div>
             <div>
-                <label class="text-xs font-bold text-slate-600">Téléphone</label>
-                <input wire:model="phone" type="tel" class="w-full rounded-lg border-slate-300 text-sm mt-1">
-                @error('phone') <p class="text-rose-500 text-xs">{{ $message }}</p> @enderror
+                <label class="ui-label">Téléphone</label>
+                <input wire:model="phone" type="tel" class="ui-input" autocomplete="tel">
+                @error('phone') <p class="ui-error-msg">{{ $message }}</p> @enderror
             </div>
-            <button wire:click="updateProfile" class="rounded-lg bg-indigo-600 text-white px-4 py-2 text-sm font-semibold hover:bg-indigo-500">
-                Enregistrer
+
+            <button wire:click="updateProfile" class="cu-btn-primary inline-flex items-center gap-2">
+                <x-ui.icon name="check" class="w-4 h-4" />
+                <span>Enregistrer</span>
             </button>
         </div>
     </div>
 
-    <div class="rounded-2xl bg-white border shadow-sm p-6">
-        <h2 class="text-sm font-bold text-slate-900 mb-4">Changer mon mot de passe</h2>
-        <div class="space-y-3">
+    {{-- Mot de passe --}}
+    <div class="rounded-2xl bg-white border border-slate-200/80 shadow-soft p-6">
+        <div class="flex items-center gap-2 mb-4">
+            <x-ui.icon name="lock-closed" class="w-4 h-4 text-slate-500" />
+            <h2 class="text-sm font-bold text-slate-900">Changer mon mot de passe</h2>
+        </div>
+
+        <div class="space-y-4">
             <div>
-                <label class="text-xs font-bold text-slate-600">Mot de passe actuel</label>
-                <input wire:model="current_password" type="password" class="w-full rounded-lg border-slate-300 text-sm mt-1">
-                @error('current_password') <p class="text-rose-500 text-xs">{{ $message }}</p> @enderror
+                <label class="ui-label">Mot de passe actuel</label>
+                <input wire:model="current_password" type="password" class="ui-input" autocomplete="current-password">
+                @error('current_password') <p class="ui-error-msg">{{ $message }}</p> @enderror
             </div>
             <div>
-                <label class="text-xs font-bold text-slate-600">Nouveau mot de passe (min. 8 caractères)</label>
-                <input wire:model="password" type="password" class="w-full rounded-lg border-slate-300 text-sm mt-1">
-                @error('password') <p class="text-rose-500 text-xs">{{ $message }}</p> @enderror
+                <label class="ui-label">Nouveau mot de passe</label>
+                <input wire:model="password" type="password" class="ui-input" autocomplete="new-password">
+                <p class="text-xs text-slate-500 mt-1">Minimum 8 caractères</p>
+                @error('password') <p class="ui-error-msg">{{ $message }}</p> @enderror
             </div>
             <div>
-                <label class="text-xs font-bold text-slate-600">Confirmer le nouveau mot de passe</label>
-                <input wire:model="password_confirmation" type="password" class="w-full rounded-lg border-slate-300 text-sm mt-1">
+                <label class="ui-label">Confirmer le nouveau mot de passe</label>
+                <input wire:model="password_confirmation" type="password" class="ui-input" autocomplete="new-password">
             </div>
-            <button wire:click="updatePassword" class="rounded-lg bg-indigo-600 text-white px-4 py-2 text-sm font-semibold hover:bg-indigo-500">
-                Changer le mot de passe
+
+            <button wire:click="updatePassword" class="cu-btn-primary inline-flex items-center gap-2">
+                <x-ui.icon name="key" class="w-4 h-4" />
+                <span>Changer le mot de passe</span>
             </button>
         </div>
     </div>
 
-    <div class="rounded-2xl bg-amber-50 border border-amber-200 p-4 text-sm">
-        <p class="font-semibold text-amber-900 mb-1">Supprimer mon compte</p>
-        <p class="text-xs text-amber-700">La suppression de votre compte déclenche une demande RGPD avec période de grâce de 30 jours.</p>
-        <a href="{{ Route::has('client.gdpr.data') ? route('client.gdpr.data') : '#' }}" class="inline-block mt-2 text-xs font-semibold text-amber-900 underline">Faire une demande RGPD →</a>
+    {{-- Zone danger --}}
+    <div class="rounded-2xl border border-amber-200 bg-amber-50/50 p-5">
+        <div class="flex items-start gap-3">
+            <div class="grid h-9 w-9 place-items-center rounded-xl bg-amber-100 text-amber-700 shrink-0">
+                <x-ui.icon name="exclamation-triangle" class="w-4 h-4" />
+            </div>
+            <div class="min-w-0">
+                <p class="text-sm font-semibold text-amber-900">Supprimer mon compte</p>
+                <p class="mt-1 text-xs text-amber-700">
+                    La suppression déclenche une demande RGPD avec période de grâce de 30 jours.
+                </p>
+                <a href="{{ Route::has('client.gdpr.data') ? route('client.gdpr.data') : '#' }}"
+                   class="mt-3 inline-flex items-center gap-1.5 text-xs font-semibold text-amber-900 hover:text-amber-950 underline">
+                    Faire une demande RGPD
+                    <x-ui.icon name="arrow-right" class="w-3 h-3" />
+                </a>
+            </div>
+        </div>
     </div>
 </div>

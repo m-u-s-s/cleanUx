@@ -209,6 +209,36 @@
     ->values();
 
     $primaryLinks = $roleLinks->take(5);
+
+    // Mapping emoji → Heroicons (pour migration progressive sans toucher les 60+ entrées des $groups).
+    // Si emoji non mappé, fallback sur l'emoji affiché (compat-back).
+    $iconMap = [
+        '🏠' => 'home', '➕' => 'plus', '📅' => 'calendar', '🕘' => 'clock', '🗓️' => 'calendar',
+        '💳' => 'credit-card', '👛' => 'wallet', '💰' => 'banknotes', '💶' => 'currency-euro', '💵' => 'currency-euro', '🪙' => 'currency-euro', '💱' => 'currency-euro', '🧾' => 'receipt',
+        '🔍' => 'magnifying-glass', '🎯' => 'sparkles',
+        '🤖' => 'sparkles', '✨' => 'sparkles', '🌟' => 'star', '⭐' => 'star', '🏆' => 'sparkles', '🏅' => 'badge-check', '🎖️' => 'badge-check', '🎁' => 'gift',
+        '🏗️' => 'wrench', '🛠️' => 'wrench', '🧽' => 'sparkles', '🔧' => 'wrench',
+        '🤝' => 'users', '👥' => 'users', '👤' => 'user', '🧑‍💼' => 'user-circle',
+        '❤️' => 'heart', '💬' => 'chat-bubble', '📞' => 'phone', '📱' => 'phone', '📣' => 'speakerphone', '📢' => 'speakerphone', '✉️' => 'envelope',
+        '🔐' => 'lock-closed', '🔑' => 'key', '🪪' => 'identification', '🛡️' => 'shield-check', '🛟' => 'shield-check', '🚫' => 'x-mark',
+        '🏢' => 'building-office', '🏛️' => 'building-office',
+        '📜' => 'document', '📒' => 'document', '📑' => 'document', '✏️' => 'document',
+        '📋' => 'briefcase', '📂' => 'briefcase',
+        '📊' => 'chart-bar', '📈' => 'chart-bar', '🔄' => 'arrow-trending-up', '🔁' => 'arrow-trending-up',
+        '🚨' => 'exclamation-triangle', '⚠️' => 'exclamation-triangle', '🚪' => 'logout', '✅' => 'check', '✔️' => 'check',
+        '🌍' => 'globe', '🌐' => 'globe', '🗺️' => 'map-pin', '📍' => 'map-pin', '🟢' => 'check',
+        '🧩' => 'puzzle', '🔗' => 'puzzle', '🧭' => 'cube', '🚐' => 'truck', '🚗' => 'truck',
+        '⚡' => 'bolt', '🔥' => 'fire', '🚀' => 'rocket', '📆' => 'calendar', '🕒' => 'clock',
+        '📤' => 'arrow-up', '⚙️' => 'cog-6-tooth',
+    ];
+
+    $renderIcon = function (string $icon) use ($iconMap) {
+        $name = $iconMap[$icon] ?? null;
+        if ($name) {
+            return view('components.ui.icon', ['name' => $name, 'class' => 'w-4 h-4 shrink-0'])->render();
+        }
+        return '<span class="text-base leading-none">' . e($icon) . '</span>';
+    };
     @endphp
 
     <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -227,7 +257,7 @@
                     @auth
                     @foreach($primaryLinks as $link)
                     <x-nav-link :href="route($link['route'])" :active="request()->routeIs($link['active'])">
-                        <span class="me-1">{{ $link['icon'] }}</span>
+                        <span class="me-1 inline-flex items-center">{!! $renderIcon($link['icon']) !!}</span>
                         {{ $link['label'] }}
                     </x-nav-link>
                     @endforeach
@@ -256,7 +286,7 @@
 
                                     @foreach($group['links'] as $link)
                                     <x-dropdown-link :href="route($link['route'])">
-                                        <span class="me-2">{{ $link['icon'] }}</span>
+                                        <span class="me-2 inline-flex items-center">{!! $renderIcon($link['icon']) !!}</span>
                                         {{ $link['label'] }}
                                     </x-dropdown-link>
                                     @endforeach
@@ -421,7 +451,7 @@
 
             @foreach($group['links'] as $link)
             <x-responsive-nav-link :href="route($link['route'])" :active="request()->routeIs($link['active'])">
-                <span class="me-2">{{ $link['icon'] }}</span>
+                <span class="me-2 inline-flex items-center">{!! $renderIcon($link['icon']) !!}</span>
                 {{ $link['label'] }}
             </x-responsive-nav-link>
             @endforeach

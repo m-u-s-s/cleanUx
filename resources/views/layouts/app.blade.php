@@ -15,6 +15,9 @@
 
     <title>{{ config('app.name', 'CleanUx') }}</title>
 
+    {{-- Typo Inter via bunny.net (GDPR-friendly, pas de tracking Google) --}}
+    <link rel="preconnect" href="https://fonts.bunny.net" crossorigin>
+    <link href="https://fonts.bunny.net/css?family=inter:400,500,600,700,800&display=swap" rel="stylesheet">
 
     @auth
     <meta name="user-id" content="{{ auth()->id() }}">
@@ -26,7 +29,7 @@
     @stack('styles')
 </head>
 
-<body class="font-sans antialiased text-gray-800 selection:bg-sky-100 selection:text-sky-900">
+<body class="font-sans antialiased text-slate-800 bg-slate-50/30 selection:bg-brand-100 selection:text-brand-900">
     <x-banner />
 
     <div class="min-h-screen pb-20 sm:pb-0">

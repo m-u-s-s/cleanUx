@@ -1,129 +1,103 @@
 <x-guest-layout>
-    {{--
-      Page LOGIN — vitrine (cx-shell sombre)
-      Backend Fortify préservé : POST {{ route('login') }} + @csrf + champs email/password/remember
-      Composants Jetstream remplacés par du HTML brut dans .cx-field pour zéro conflit avec le thème sombre.
-      Animation : reveal sobre uniquement. Aucun scroll-storytelling sur une page formulaire.
-    --}}
+    {{-- ============================================================
+         LOGIN — refonte Stripe-style centrée (21/05/2026)
+         Backend Fortify préservé : POST route('login') + @csrf
+         ============================================================ --}}
 
-    <main class="relative z-[1] min-h-screen pt-24 pb-16 sm:pt-28 sm:pb-24">
-        <section class="mx-auto grid max-w-7xl grid-cols-1 items-center gap-10 px-4 sm:px-6 lg:grid-cols-2 lg:px-8">
+    <main class="min-h-screen flex items-center justify-center bg-slate-50/40 px-4 py-12">
+        <div class="w-full max-w-md">
+            {{-- Logo + retour --}}
+            <div class="text-center mb-8">
+                <a href="{{ route('home') }}" class="inline-flex items-center gap-2 text-slate-700 hover:text-brand-600 transition">
+                    <span class="grid h-10 w-10 place-items-center rounded-xl bg-brand-600 text-white font-bold text-lg shadow-soft-sm">
+                        CU
+                    </span>
+                    <span class="text-lg font-bold">{{ config('app.name', 'CleanUx') }}</span>
+                </a>
+            </div>
 
-            {{-- ── PANNEAU MARQUE (gauche, desktop only) ─────────────────────── --}}
-            <aside class="hidden lg:block" data-cx-reveal>
-                <div class="cx-card relative overflow-hidden p-10">
-                    <span class="cx-chip"><span class="pip"></span> Espace sécurisé</span>
-
-                    <h1 class="cx-h mt-8 text-5xl lg:text-6xl">
-                        Bon retour<br><span class="cx-gradient-text">parmi nous.</span>
-                    </h1>
-                    <p class="cx-lede mt-6 max-w-md text-base">
-                        Vos rendez-vous, vos missions, vos factures et votre suivi en temps réel —
-                        accessibles selon votre rôle.
-                    </p>
-
-                    <div class="mt-10 grid grid-cols-2 gap-3">
-                        @foreach ([
-                            ['Client','Réservations & suivi'],
-                            ['Intervenant','Missions terrain'],
-                            ['Entreprise','Multi-sites & factures'],
-                            ['Admin','Pilotage complet'],
-                        ] as $i => $r)
-                            <div class="rounded-2xl border p-5"
-                                 style="border-color:var(--cx-line);background:rgba(255,255,255,.03)"
-                                 data-cx-reveal data-cx-delay="{{ $i }}">
-                                <p class="text-xl font-extrabold" style="font-family:var(--cx-display);color:var(--cx-text)">{{ $r[0] }}</p>
-                                <p class="mt-1 text-sm" style="color:var(--cx-muted)">{{ $r[1] }}</p>
-                            </div>
-                        @endforeach
-                    </div>
+            {{-- Card formulaire --}}
+            <div class="bg-white rounded-2xl border border-slate-200/80 shadow-soft p-8">
+                <div class="text-center mb-8">
+                    <h1 class="text-2xl font-bold tracking-tight text-slate-900">Bon retour parmi nous</h1>
+                    <p class="mt-2 text-sm text-slate-500">Connectez-vous à votre espace</p>
                 </div>
-            </aside>
 
-            {{-- ── FORMULAIRE ────────────────────────────────────────────────── --}}
-            <div data-cx-reveal data-cx-delay="1">
-                <div class="cx-card p-7 sm:p-10">
-                    <p class="cx-kicker">Connexion</p>
-                    <h2 class="cx-h mt-3 text-3xl sm:text-4xl">Accédez à votre <span class="cx-gradient-text">espace.</span></h2>
-                    <p class="cx-lede mt-3 text-sm">
-                        Connectez-vous selon votre rôle : client, intervenant, entreprise ou admin.
-                    </p>
+                {{-- Erreurs --}}
+                <x-validation-errors class="mb-6" />
 
-                    {{-- Erreurs Fortify --}}
-                    <x-validation-errors class="mt-6" />
+                @session('status')
+                <div class="mb-6 rounded-lg bg-emerald-50 border border-emerald-200 p-3 text-sm text-emerald-700">
+                    {{ $value }}
+                </div>
+                @endsession
 
-                    @if (session('status'))
-                        <div class="mt-6 rounded-2xl border p-4 text-sm"
-                             style="border-color:rgba(79,227,214,.35);background:rgba(79,227,214,.08);color:var(--cx-cyan)">
-                            {{ session('status') }}
-                        </div>
-                    @endif
+                <form method="POST" action="{{ route('login') }}" class="space-y-5">
+                    @csrf
 
-                    <form method="POST" action="{{ route('login') }}" class="mt-8 space-y-5">
-                        @csrf
+                    <div>
+                        <label for="email" class="ui-label">Email</label>
+                        <input id="email"
+                               type="email"
+                               name="email"
+                               value="{{ old('email') }}"
+                               required
+                               autofocus
+                               autocomplete="username"
+                               placeholder="vous@exemple.com"
+                               class="ui-input">
+                    </div>
 
-                        <div class="cx-field">
-                            <label for="email">Adresse e-mail</label>
-                            <input id="email" name="email" type="email" required autofocus
-                                   autocomplete="username" placeholder="exemple@email.com"
-                                   value="{{ old('email') }}">
-                        </div>
-
-                        <div class="cx-field">
-                            <div class="flex items-center justify-between">
-                                <label for="password" class="!mb-0">Mot de passe</label>
-                                @if (Route::has('password.request'))
-                                    <a href="{{ route('password.request') }}"
-                                       class="text-xs font-bold uppercase tracking-[0.14em]" style="color:var(--cx-amber)">
-                                        Oublié ?
-                                    </a>
-                                @endif
-                            </div>
-                            <input id="password" name="password" type="password" required
-                                   autocomplete="current-password" placeholder="••••••••"
-                                   class="!mt-3">
-                        </div>
-
-                        <label class="flex items-center gap-3 rounded-2xl border p-4"
-                               style="border-color:var(--cx-line);background:rgba(255,255,255,.03)">
-                            <input type="checkbox" name="remember" id="remember_me"
-                                   style="accent-color:var(--cx-amber);height:18px;width:18px">
-                            <span class="text-sm" style="color:var(--cx-muted)">Rester connecté sur cet appareil</span>
-                            <span class="ml-auto hidden text-xs uppercase tracking-[0.14em] sm:inline" style="color:var(--cx-muted)">
-                                Sécurisé
-                            </span>
-                        </label>
-
-                        <button type="submit" class="cx-btn cx-btn--primary w-full px-5 py-4 text-base">
-                            Se connecter →
-                        </button>
-
-                        <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                            <a href="{{ route('booking.create') }}" class="cx-btn cx-btn--ghost w-full px-4 py-3 text-sm">
-                                Réserver sans compte
-                            </a>
-                            @if (Route::has('register'))
-                                <a href="{{ route('register') }}" class="cx-btn cx-btn--ghost w-full px-4 py-3 text-sm"
-                                   style="border-color:rgba(255,182,72,.35);color:var(--cx-amber)">
-                                    Créer un compte
+                    <div>
+                        <div class="flex items-center justify-between mb-1.5">
+                            <label for="password" class="ui-label !mb-0">Mot de passe</label>
+                            @if (Route::has('password.request'))
+                                <a href="{{ route('password.request') }}" class="text-xs font-medium text-brand-600 hover:text-brand-700">
+                                    Oublié ?
                                 </a>
                             @endif
                         </div>
-                    </form>
-
-                    <div class="mt-8 rounded-2xl border p-5"
-                         style="border-color:var(--cx-line);background:rgba(255,255,255,.025)">
-                        <p class="text-xs font-bold uppercase tracking-[0.2em]" style="color:var(--cx-amber)">Dans votre espace</p>
-                        <div class="mt-3 grid grid-cols-1 gap-2 text-sm sm:grid-cols-2" style="color:var(--cx-muted)">
-                            <p>✓ Vos rendez-vous</p>
-                            <p>✓ Suivi de mission live</p>
-                            <p>✓ Factures &amp; documents</p>
-                            <p>✓ Feedback &amp; preuves</p>
-                        </div>
+                        <input id="password"
+                               type="password"
+                               name="password"
+                               required
+                               autocomplete="current-password"
+                               placeholder="••••••••"
+                               class="ui-input">
                     </div>
+
+                    <label class="flex items-center gap-2 cursor-pointer">
+                        <input type="checkbox" name="remember" value="1" class="rounded border-slate-300 text-brand-600 focus:ring-brand-500">
+                        <span class="text-sm text-slate-600">Se souvenir de moi</span>
+                    </label>
+
+                    <x-ui.button type="submit" variant="primary" size="lg" class="w-full">
+                        Se connecter
+                    </x-ui.button>
+                </form>
+
+                {{-- Divider + register --}}
+                <div class="my-6 flex items-center gap-3">
+                    <div class="flex-1 border-t border-slate-200"></div>
+                    <span class="text-xs uppercase tracking-wider text-slate-400">ou</span>
+                    <div class="flex-1 border-t border-slate-200"></div>
                 </div>
+
+                @if (Route::has('register'))
+                    <a href="{{ route('register') }}"
+                       class="block w-full text-center rounded-lg border border-slate-200 px-4 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50 transition">
+                        Créer un compte gratuit
+                    </a>
+                @endif
             </div>
 
-        </section>
+            {{-- Trust bar --}}
+            <div class="mt-6 text-center">
+                <p class="text-xs text-slate-500 inline-flex items-center gap-2 justify-center">
+                    <x-ui.icon name="shield-check" class="w-3.5 h-3.5 text-emerald-500" />
+                    Connexion sécurisée TLS 1.3 · Données chiffrées
+                </p>
+            </div>
+        </div>
     </main>
 </x-guest-layout>

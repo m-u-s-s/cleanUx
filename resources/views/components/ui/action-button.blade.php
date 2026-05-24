@@ -3,6 +3,7 @@
     'variant' => 'secondary',
     'size' => 'md',
     'icon' => null,
+    'heroicon' => null,
     'type' => 'button',
     'target' => null,
 ])
@@ -27,14 +28,18 @@
 
 @if($href)
     <a href="{{ $href }}" target="{{ $target }}" {{ $attributes->merge(['class' => $classes]) }}>
-        @if($icon)
+        @if($heroicon)
+            <x-ui.icon :name="$heroicon" class="w-4 h-4" />
+        @elseif($icon)
             <span class="text-base leading-none">{{ $icon }}</span>
         @endif
         <span>{{ $slot }}</span>
     </a>
 @else
     <button type="{{ $type }}" {{ $attributes->merge(['class' => $classes]) }}>
-        @if($icon)
+        @if($heroicon)
+            <x-ui.icon :name="$heroicon" class="w-4 h-4" />
+        @elseif($icon)
             <span class="text-base leading-none">{{ $icon }}</span>
         @endif
         <span>{{ $slot }}</span>

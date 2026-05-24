@@ -4,6 +4,7 @@
     'hint' => null,
     'tone' => 'slate',
     'icon' => null,
+    'heroicon' => null,
 ])
 
 @php
@@ -12,9 +13,9 @@
         'red' => 'text-red-600 bg-red-50 border-red-100',
         'orange' => 'text-orange-600 bg-orange-50 border-orange-100',
         'rose' => 'text-rose-600 bg-rose-50 border-rose-100',
-        'blue' => 'text-blue-700 bg-blue-50 border-blue-100',
+        'blue' => 'text-brand-700 bg-brand-50 border-brand-100',
         'green' => 'text-emerald-700 bg-emerald-50 border-emerald-100',
-        default => 'text-slate-800 bg-slate-50 border-slate-100',
+        default => 'text-slate-700 bg-slate-50 border-slate-100',
     };
 @endphp
 
@@ -25,7 +26,11 @@
             <p class="cu-kpi-value">{{ $value }}</p>
         </div>
 
-        @if($icon)
+        @if($heroicon)
+            <div class="inline-flex h-11 w-11 items-center justify-center rounded-2xl border {{ $toneClasses }}">
+                <x-ui.icon :name="$heroicon" class="w-5 h-5" />
+            </div>
+        @elseif($icon)
             <div class="inline-flex h-11 w-11 items-center justify-center rounded-2xl border text-lg {{ $toneClasses }}">
                 {{ $icon }}
             </div>

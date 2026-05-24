@@ -3,6 +3,7 @@
     'value',
     'hint' => null,
     'icon' => null,
+    'heroicon' => null,
     'tone' => 'slate',
     'trend' => null,
 ])
@@ -13,7 +14,8 @@
         'red' => 'ui-stat-icon text-red-700 bg-red-50 border-red-100',
         'orange' => 'ui-stat-icon text-orange-700 bg-orange-50 border-orange-100',
         'rose' => 'ui-stat-icon text-rose-700 bg-rose-50 border-rose-100',
-        'blue' => 'ui-stat-icon text-blue-700 bg-blue-50 border-blue-100',
+        'blue' => 'ui-stat-icon text-brand-700 bg-brand-50 border-brand-100',
+        'emerald' => 'ui-stat-icon text-emerald-700 bg-emerald-50 border-emerald-100',
         'green' => 'ui-stat-icon text-emerald-700 bg-emerald-50 border-emerald-100',
         default => 'ui-stat-icon text-slate-700 bg-slate-50 border-slate-100',
     };
@@ -26,7 +28,11 @@
             <p class="ui-stat-value">{{ $value }}</p>
         </div>
 
-        @if($icon)
+        @if($heroicon)
+            <div class="{{ $toneClasses }}">
+                <x-ui.icon :name="$heroicon" class="w-5 h-5" />
+            </div>
+        @elseif($icon)
             <div class="{{ $toneClasses }}">
                 {{ $icon }}
             </div>
