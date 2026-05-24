@@ -11,20 +11,21 @@ export function useRegisterPushToken() {
     if (!isAuthenticated) return;
 
     (async () => {
-      const { status } = await ExpoNotifications.requestPermissionsAsync();
-      if (status !== 'granted') return;
-
-      const token = await ExpoNotifications.getExpoPushTokenAsync();
-      if (!token?.data) return;
-
       try {
+        const { status } = await ExpoNotifications.requestPermissionsAsync();
+        if (status !== 'granted') return;
+
+        const token = await ExpoNotifications.getExpoPushTokenAsync();
+        if (!token?.data) return;
+
         await apiClient.post('/client/devices/register', {
           token: token.data,
           platform: Platform.OS,
           provider: 'expo',
         });
       } catch {
-        // silently ignore — device registration is best-effort
+        // Silently ignore — push registration fails in Expo Go (SDK 53+)
+        // and is best-effort in production builds
       }
     })();
   }, [isAuthenticated]);
