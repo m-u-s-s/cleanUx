@@ -77,5 +77,6 @@ class Kernel extends HttpKernel
         'api_token_audit' => \App\Http\Middleware\ApiTokensV2\LogTokenUsage::class,
         'tenant' => \App\Http\Middleware\TenancyV2\ResolveTenant::class,
         'turnstile' => \App\Http\Middleware\VerifyTurnstileCaptcha::class,
+        'token.grace' => \App\Http\Middleware\EnforceTokenGrace::class,
     ];
 }

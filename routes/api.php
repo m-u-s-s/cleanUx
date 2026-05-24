@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\ApiNotificationController;
 use App\Http\Controllers\Api\Auth\ApiAuthController;
+use App\Http\Controllers\Api\AuthMeController;
 use App\Http\Controllers\Api\Client\CancellationController;
 use App\Http\Controllers\Api\Client\ClientBookingController;
 use App\Http\Controllers\Api\EmployeeMissionTrackingController;
@@ -64,6 +65,13 @@ Route::middleware(['signed', 'auth:sanctum'])
 // ─────────────────────────────────────────────
 
 Route::middleware('auth:sanctum')->group(function () {
+
+    // Auth — Token refresh + grace period + identity
+    Route::middleware('token.grace')->group(function () {
+        Route::post('/auth/refresh', \App\Http\Controllers\Api\AuthRefreshController::class)
+            ->name('api.auth.refresh');
+        Route::get('/auth/me', AuthMeController::class)->name('api.auth.me');
+    });
 
     // Auth
     Route::post('/auth/logout',     [ApiAuthController::class, 'logout']);
@@ -275,6 +283,14 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/kyc/start',                     [\App\Http\Controllers\Api\Provider\KycController::class, 'start']);
         Route::get('/kyc/status',                     [\App\Http\Controllers\Api\Provider\KycController::class, 'status']);
         Route::post('/kyc/verifications/{verification}/sync', [\App\Http\Controllers\Api\Provider\KycController::class, 'sync']);
+
+        // Sprint 0 — Task 3 : Stripe Connect provider endpoints (RN Phase 2)
+        Route::prefix('stripe-connect')->middleware('token.grace')->group(function () {
+            Route::get('/status',         [\App\Http\Controllers\Api\Provider\StripeConnectController::class, 'status']);
+            Route::post('/onboard',       [\App\Http\Controllers\Api\Provider\StripeConnectController::class, 'onboard']);
+            Route::get('/payouts',        [\App\Http\Controllers\Api\Provider\StripeConnectController::class, 'payouts']);
+            Route::get('/dashboard-link', [\App\Http\Controllers\Api\Provider\StripeConnectController::class, 'dashboardLink']);
+        });
     });
 
     // Phase Matching v2 — Simulation admin
@@ -539,4 +555,19 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
 Route::middleware(['auth:sanctum'])->prefix('provider')->group(function () {
     Route::get('/payouts', [ProviderPayoutsController::class, 'index']);
     Route::get('/payouts/summary', [ProviderPayoutsController::class, 'summary']);
+});
+
+// ─────────────────────────────────────────────
+// Sprint 0 — Task 4 : Realtime / WebSocket (mobile)
+// ─────────────────────────────────────────────
+// GET  /api/realtime/socket-config   → returns Reverb connection params (no secret)
+// POST /api/broadcasting/auth        → channel auth via Bearer (mobile-safe, no session cookie)
+// Option (a): web route /broadcasting/auth remains for Livewire/Echo-web.
+//             Mobile uses /api/broadcasting/auth with Sanctum Bearer token.
+Route::middleware(['auth:sanctum', 'token.grace'])->group(function () {
+    Route::get('/realtime/socket-config',
+        \App\Http\Controllers\Api\Realtime\SocketConfigController::class);
+
+    Route::post('/broadcasting/auth',
+        [\Illuminate\Broadcasting\BroadcastController::class, 'authenticate']);
 });
