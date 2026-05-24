@@ -1,0 +1,57 @@
+{
+  "expo": {
+    "name": "CleanUx Provider",
+    "slug": "cleanux-provider",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "automatic",
+    "newArchEnabled": true,
+    "splash": {
+      "image": "./assets/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#070b14"
+    },
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "com.cleanux.provider",
+      "infoPlist": {
+        "NSCameraUsageDescription": "CleanUx Provider uses the camera to scan and display QR codes.",
+        "NSLocationWhenInUseUsageDescription": "CleanUx Provider uses your location to navigate to clients and share your ETA.",
+        "NSLocationAlwaysAndWhenInUseUsageDescription": "CleanUx Provider tracks your location during missions to show clients your progress.",
+        "UIBackgroundModes": ["location"]
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#070b14"
+      },
+      "package": "com.cleanux.provider",
+      "permissions": [
+        "CAMERA",
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_COARSE_LOCATION",
+        "ACCESS_BACKGROUND_LOCATION",
+        "FOREGROUND_SERVICE",
+        "FOREGROUND_SERVICE_LOCATION"
+      ]
+    },
+    "scheme": "cleanux-provider",
+    "plugins": [
+      "expo-secure-store",
+      "expo-notifications",
+      "expo-image-picker",
+      "expo-camera",
+      [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "CleanUx Provider needs background location to share your position with clients during missions."
+        }
+      ]
+    ],
+    "extra": {
+      "eas": { "projectId": "PLACEHOLDER_EAS_PROJECT_ID_PROVIDER" }
+    }
+  }
+}
