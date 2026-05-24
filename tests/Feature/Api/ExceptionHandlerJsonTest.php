@@ -18,6 +18,20 @@ class ExceptionHandlerJsonTest extends TestCase
 {
     use RefreshDatabase;
 
+    private bool $origDebug;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->origDebug = (bool) config('app.debug');
+    }
+
+    protected function tearDown(): void
+    {
+        config(['app.debug' => $this->origDebug]);
+        parent::tearDown();
+    }
+
     // ---------------------------------------------------------------------------
     // 1. Validation error → 422
     // ---------------------------------------------------------------------------
@@ -73,17 +87,23 @@ class ExceptionHandlerJsonTest extends TestCase
 
     public function test_throttled_returns_unified_shape(): void
     {
-        // ThrottleRequests hashes the key: md5($limiterName . $byValue)
-        // The 'auth' named limiter uses ->by($request->ip())
-        // Test request IP = 127.0.0.1
-        $hashedKey = md5('auth' . '127.0.0.1');
-
-        // Exhaust the 10/min limit — 10 hits so the next request is blocked
-        for ($i = 0; $i < 10; $i++) {
-            RateLimiter::hit($hashedKey, 60);
+        // Exhaust the throttle:auth limiter (10/min) via real HTTP requests so the
+        // test is immune to any Laravel hashing-scheme changes (md5 → sha1 etc.).
+        // Bad credentials return 401 quickly (no DB heavy path), so 11 loops are fast.
+        for ($i = 0; $i < 11; $i++) {
+            $this->postJson('/api/auth/login', ['email' => 'x@x.x', 'password' => 'x']);
         }
 
-        $r = $this->postJson('/api/auth/login', ['email' => 'x@x.x', 'password' => 'wrongpassword']);
+        // Guard: confirm the limiter is actually full before the assertion request.
+        // If Laravel ever changes its internal key format this assertion will fail with
+        // a clear message instead of a silent false-positive.
+        $hashedKey = md5('auth' . '127.0.0.1');
+        $this->assertTrue(
+            RateLimiter::tooManyAttempts($hashedKey, 10),
+            'Limiter was not actually full — throttle test setup is broken (hashing scheme may have changed)'
+        );
+
+        $r = $this->postJson('/api/auth/login', ['email' => 'x@x.x', 'password' => 'x']);
 
         $r->assertStatus(429)
           ->assertJson(['ok' => false, 'error_code' => 'rate_limited']);
