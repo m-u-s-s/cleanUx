@@ -13,6 +13,9 @@ const config: Config = {
     'react-native-safe-area-context': '<rootDir>/__mocks__/react-native-safe-area-context',
     // pusher-js react-native build requires @react-native-community/netinfo (not installed); use mock
     'pusher-js/react-native': '<rootDir>/__mocks__/pusher-js-react-native',
+    // @expo/vector-icons loads native fonts at runtime — mock for Jest
+    '^@expo/vector-icons$': '<rootDir>/__mocks__/@expo/vector-icons',
+    '^@expo/vector-icons/(.*)$': '<rootDir>/__mocks__/@expo/vector-icons',
   },
 };
 
