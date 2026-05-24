@@ -3,6 +3,7 @@
 namespace App\Exceptions;
 
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
+use Illuminate\Http\Request;
 use Throwable;
 
 class Handler extends ExceptionHandler
@@ -29,5 +30,20 @@ class Handler extends ExceptionHandler
                 app('sentry')->captureException($e);
             }
         });
+    }
+
+    /**
+     * Render an exception into an HTTP response.
+     *
+     * Sprint 0 — Task 2 : all /api/* requests receive a unified JSON shape.
+     * Non-API requests fall through to the default Laravel HTML renderer.
+     */
+    public function render($request, Throwable $e)
+    {
+        if ($json = ApiJsonRenderer::render($request, $e)) {
+            return $json;
+        }
+
+        return parent::render($request, $e);
     }
 }
