@@ -1,0 +1,41 @@
+{
+  "expo": {
+    "name": "CleanUx",
+    "slug": "cleanux-client",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "automatic",
+    "newArchEnabled": true,
+    "splash": {
+      "image": "./assets/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#070b14"
+    },
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "com.cleanux.client",
+      "infoPlist": {
+        "NSCameraUsageDescription": "CleanUx uses the camera to scan QR codes for mission start/end.",
+        "NSLocationWhenInUseUsageDescription": "CleanUx uses your location to show nearby providers and track missions.",
+        "NSPhotoLibraryUsageDescription": "CleanUx uses photos for AI quote estimation and chat attachments."
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#070b14"
+      },
+      "package": "com.cleanux.client",
+      "permissions": ["CAMERA", "ACCESS_FINE_LOCATION", "ACCESS_COARSE_LOCATION"]
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "scheme": "cleanux",
+    "plugins": ["expo-secure-store"],
+    "extra": {
+      "eas": { "projectId": "PLACEHOLDER_EAS_PROJECT_ID" }
+    }
+  }
+}
