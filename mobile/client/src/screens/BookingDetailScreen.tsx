@@ -28,6 +28,7 @@ export function BookingDetailScreen({ route }: Props) {
   const canStart = booking.status === 'confirmed';
   const canEnd = booking.status === 'in_progress';
   const canTrack = ['confirmed', 'in_progress'].includes(booking.status);
+  const isCompleted = booking.status === 'completed';
 
   const statusVariant =
     booking.status === 'completed'
@@ -99,6 +100,22 @@ export function BookingDetailScreen({ route }: Props) {
               navigation.navigate('QRScan', { bookingId, action: 'end' })
             }
             variant="danger"
+            fullWidth
+          />
+        )}
+        {isCompleted && (
+          <Button
+            label="Évaluer la prestation"
+            onPress={() => navigation.navigate('Rating', { bookingId })}
+            variant="secondary"
+            fullWidth
+          />
+        )}
+        {isCompleted && (
+          <Button
+            label="Laisser un pourboire"
+            onPress={() => navigation.navigate('Tips', { bookingId })}
+            variant="secondary"
             fullWidth
           />
         )}
