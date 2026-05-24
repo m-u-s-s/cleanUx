@@ -1,0 +1,6 @@
+appId: com.cleanux.client
+---
+- launchApp
+- tapOn: "Profile"
+- tapOn: "Notifications"
+- assertVisible: "Notifications"

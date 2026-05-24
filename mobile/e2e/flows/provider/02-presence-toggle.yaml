@@ -1,0 +1,11 @@
+appId: com.cleanux.provider
+---
+- launchApp
+- assertVisible: "Hors ligne"
+- tapOn: "En ligne"
+# Should switch to online state
+- assertVisible: "En ligne"
+- tapOn: "En pause"
+- assertVisible: "En pause"
+- tapOn: "Hors ligne"
+- assertVisible: "Hors ligne"

@@ -1,0 +1,13 @@
+appId: com.cleanux.client
+---
+- launchApp
+- tapOn: "Profile"
+- tapOn: "Programme fidélité"
+- assertVisible: "Programme fidélité"
+- assertVisible:
+    anyOf:
+      - "Points"
+      - "bronze"
+      - "silver"
+      - "gold"
+      - "BRONZE"

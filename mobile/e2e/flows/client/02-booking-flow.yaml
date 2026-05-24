@@ -1,0 +1,33 @@
+appId: com.cleanux.client
+---
+- launchApp
+# Assume logged in (session persists)
+- assertVisible: "Bonjour"
+- tapOn: "Réserver un service"
+# Step 1 — Service selection
+- assertVisible: "Quel service"
+- tapOn: "Nettoyage"
+# Step 2 — Details
+- assertVisible: "Détails"
+- tapOn: "Surface"
+- inputText: "60"
+- tapOn: "Suivant"
+# Step 3 — Address
+- assertVisible: "Adresse"
+- tapOn: "Adresse"
+- inputText: "123 Rue Test"
+- tapOn: "Code postal"
+- inputText: "75001"
+- tapOn: "Ville"
+- inputText: "Paris"
+- tapOn: "Suivant"
+# Step 4 — Scheduling
+- assertVisible: "Quand"
+- tapOn: "Dès que possible"
+- tapOn: "Confirmer"
+# Step 5 — Confirmation
+- assertVisible: "Récapitulatif"
+- assertVisible: "Nettoyage"
+- assertVisible: "123 Rue Test"
+- tapOn: "Confirmer la réservation"
+- assertVisible: "Réservation confirmée"

@@ -1,0 +1,8 @@
+appId: com.cleanux.provider
+---
+- launchApp
+- tapOn: "Profile"
+- assertVisible: "Profil"
+- assertVisible: "Disponibilités"
+- assertVisible: "Badges"
+- assertVisible: "Vérification KYC"
