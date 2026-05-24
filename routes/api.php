@@ -195,6 +195,15 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/devices/register',                       [\App\Http\Controllers\Api\Client\DeviceTokenController::class, 'register']);
         Route::post('/devices/unregister',                     [\App\Http\Controllers\Api\Client\DeviceTokenController::class, 'unregister']);
         Route::patch('/devices/{deviceToken}/preferences',     [\App\Http\Controllers\Api\Client\DeviceTokenController::class, 'updatePreferences']);
+
+        // Sprint 0-bis — Payment API (consumed by mobile RN app)
+        Route::prefix('payment-methods')->group(function () {
+            Route::get('/',                        [\App\Http\Controllers\Api\Client\PaymentMethodController::class, 'index']);
+            Route::post('/setup-intent',           [\App\Http\Controllers\Api\Client\PaymentMethodController::class, 'setupIntent']);
+            Route::delete('/{paymentMethodId}',    [\App\Http\Controllers\Api\Client\PaymentMethodController::class, 'destroy']);
+        });
+
+        Route::post('/bookings/{booking}/payment-intent', [\App\Http\Controllers\Api\Client\BookingPaymentController::class, 'createPaymentIntent']);
     });
 
     // ─────────────────────────────────────────
