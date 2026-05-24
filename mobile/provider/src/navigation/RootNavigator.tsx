@@ -5,6 +5,8 @@ import { useAuth } from '@/auth';
 import { LoginScreen } from '@/screens/LoginScreen';
 import { MissionDetailScreen } from '@/screens/MissionDetailScreen';
 import { MissionInboxScreen } from '@/screens/MissionInboxScreen';
+import { MissionFieldScreen } from '@/screens/MissionFieldScreen';
+import { StripeOnboardingScreen } from '@/screens/StripeOnboardingScreen';
 import { TabNavigator } from './TabNavigator';
 import { colors } from '@/theme';
 import type { RootStackParamList } from './types';
@@ -40,6 +42,16 @@ export function RootNavigator() {
               name="MissionInbox"
               component={MissionInboxScreen}
               options={{ headerShown: true, title: 'Missions disponibles' }}
+            />
+            <Stack.Screen
+              name="MissionField"
+              component={MissionFieldScreen}
+              options={{ headerShown: true, title: 'Mission terrain' }}
+            />
+            <Stack.Screen
+              name="StripeOnboarding"
+              component={StripeOnboardingScreen}
+              options={{ headerShown: true, title: 'Stripe Connect' }}
             />
           </>
         ) : (

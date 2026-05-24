@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, Alert, StyleSheet } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
+import { useNavigation } from '@react-navigation/native';
 import { Screen, Button, Badge, Divider } from '@/ui';
 import { useMissionDetail, useMissionLifecycle } from '@/missions';
 import { colors, spacing, typography, radius, shadows } from '@/theme';
@@ -12,6 +13,7 @@ export function MissionDetailScreen({ route }: Props) {
   const { missionId } = route.params;
   const { data: mission, isLoading } = useMissionDetail(missionId);
   const lifecycle = useMissionLifecycle(missionId);
+  const navigation = useNavigation<any>();
 
   if (isLoading || !mission) {
     return (
@@ -80,12 +82,19 @@ export function MissionDetailScreen({ route }: Props) {
           />
         )}
         {mission.status === 'in_progress' && (
-          <Button
-            label="Mission terminée"
-            onPress={() => handleAction('complete', 'Terminer')}
-            variant="danger"
-            fullWidth
-          />
+          <>
+            <Button
+              label="Mission terrain"
+              onPress={() => navigation.navigate('MissionField', { missionId })}
+              fullWidth
+            />
+            <Button
+              label="Mission terminée"
+              onPress={() => handleAction('complete', 'Terminer')}
+              variant="danger"
+              fullWidth
+            />
+          </>
         )}
       </View>
     </Screen>
