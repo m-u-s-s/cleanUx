@@ -18,6 +18,10 @@ const config: Config = {
     '^@expo/vector-icons/(.*)$': '<rootDir>/__mocks__/@expo/vector-icons',
     // @gorhom/bottom-sheet: use official mock to avoid native gesture handler init
     '^@gorhom/bottom-sheet$': '@gorhom/bottom-sheet/mock',
+    // react-native-maps: use local stub to avoid native map init in Jest
+    '^react-native-maps$': '<rootDir>/__mocks__/react-native-maps.tsx',
+    // expo-camera: use local stub to avoid native camera init in Jest
+    '^expo-camera$': '<rootDir>/__mocks__/expo-camera.tsx',
   },
 };
 
