@@ -10,6 +10,20 @@ import { BookingDetailScreen } from '@/screens/BookingDetailScreen';
 import { QRScanScreen } from '@/screens/QRScanScreen';
 import { PaymentCheckoutScreen } from '@/screens/PaymentCheckoutScreen';
 import { SavedPaymentMethodsScreen } from '@/screens/SavedPaymentMethodsScreen';
+import { ChatScreen } from '@/screens/ChatScreen';
+import { ChatListScreen } from '@/screens/ChatListScreen';
+import { NotificationsScreen } from '@/screens/NotificationsScreen';
+// Sprint 9
+import { RatingScreen } from '@/screens/RatingScreen';
+import { LoyaltyScreen } from '@/screens/LoyaltyScreen';
+import { ReferralScreen } from '@/screens/ReferralScreen';
+import { AiQuoteScreen } from '@/screens/AiQuoteScreen';
+// Sprint 10
+import { DisputesScreen } from '@/screens/DisputesScreen';
+import { GDPRScreen } from '@/screens/GDPRScreen';
+import { ProfileEditScreen } from '@/screens/ProfileEditScreen';
+import { TipsScreen } from '@/screens/TipsScreen';
+import { NPSScreen } from '@/screens/NPSScreen';
 import { colors } from '@/theme';
 import type { RootStackParamList } from './types';
 
@@ -61,6 +75,68 @@ export function RootNavigator() {
               name="SavedPaymentMethods"
               component={SavedPaymentMethodsScreen}
               options={{ title: 'Moyens de paiement', headerShown: true }}
+            />
+            <Stack.Screen
+              name="ChatList"
+              component={ChatListScreen}
+              options={{ title: 'Messagerie', headerShown: true }}
+            />
+            <Stack.Screen
+              name="Chat"
+              component={ChatScreen}
+              options={({ route }) => ({ title: route.params.title, headerShown: true })}
+            />
+            <Stack.Screen
+              name="Notifications"
+              component={NotificationsScreen}
+              options={{ title: 'Notifications', headerShown: true }}
+            />
+            {/* Sprint 9 */}
+            <Stack.Screen
+              name="Rating"
+              component={RatingScreen}
+              options={{ title: 'Évaluer', headerShown: true }}
+            />
+            <Stack.Screen
+              name="Loyalty"
+              component={LoyaltyScreen}
+              options={{ title: 'Fidélité', headerShown: true }}
+            />
+            <Stack.Screen
+              name="Referral"
+              component={ReferralScreen}
+              options={{ title: 'Parrainage', headerShown: true }}
+            />
+            <Stack.Screen
+              name="AiQuote"
+              component={AiQuoteScreen}
+              options={{ title: 'Devis IA', headerShown: true }}
+            />
+            {/* Sprint 10 */}
+            <Stack.Screen
+              name="Disputes"
+              component={DisputesScreen}
+              options={{ title: 'Litiges', headerShown: true }}
+            />
+            <Stack.Screen
+              name="GDPR"
+              component={GDPRScreen}
+              options={{ title: 'Mes données', headerShown: true }}
+            />
+            <Stack.Screen
+              name="ProfileEdit"
+              component={ProfileEditScreen}
+              options={{ title: 'Modifier le profil', headerShown: true }}
+            />
+            <Stack.Screen
+              name="Tips"
+              component={TipsScreen}
+              options={{ title: 'Pourboire', headerShown: true }}
+            />
+            <Stack.Screen
+              name="NPS"
+              component={NPSScreen}
+              options={{ title: 'Votre avis', headerShown: true }}
             />
           </>
         ) : (

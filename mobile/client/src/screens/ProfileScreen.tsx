@@ -14,8 +14,62 @@ export function ProfileScreen() {
       <Text style={styles.title}>Profile</Text>
       <View style={styles.actions}>
         <Button
+          label="Modifier le profil"
+          onPress={() => navigation.navigate('ProfileEdit')}
+          variant="secondary"
+          fullWidth
+        />
+        <Button
           label="Mes moyens de paiement"
           onPress={() => navigation.navigate('SavedPaymentMethods')}
+          variant="secondary"
+          fullWidth
+        />
+        <Button
+          label="Messagerie"
+          onPress={() => navigation.navigate('ChatList')}
+          variant="secondary"
+          fullWidth
+        />
+        <Button
+          label="Notifications"
+          onPress={() => navigation.navigate('Notifications')}
+          variant="secondary"
+          fullWidth
+        />
+        <Button
+          label="Programme fidélité"
+          onPress={() => navigation.navigate('Loyalty')}
+          variant="secondary"
+          fullWidth
+        />
+        <Button
+          label="Parrainage"
+          onPress={() => navigation.navigate('Referral')}
+          variant="secondary"
+          fullWidth
+        />
+        <Button
+          label="Devis IA"
+          onPress={() => navigation.navigate('AiQuote')}
+          variant="secondary"
+          fullWidth
+        />
+        <Button
+          label="Mes litiges"
+          onPress={() => navigation.navigate('Disputes')}
+          variant="secondary"
+          fullWidth
+        />
+        <Button
+          label="Mes données (RGPD)"
+          onPress={() => navigation.navigate('GDPR')}
+          variant="secondary"
+          fullWidth
+        />
+        <Button
+          label="Donner mon avis"
+          onPress={() => navigation.navigate('NPS')}
           variant="secondary"
           fullWidth
         />

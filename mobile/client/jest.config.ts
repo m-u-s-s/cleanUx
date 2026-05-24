@@ -22,6 +22,10 @@ const config: Config = {
     '^react-native-maps$': '<rootDir>/__mocks__/react-native-maps.tsx',
     // expo-camera: use local stub to avoid native camera init in Jest
     '^expo-camera$': '<rootDir>/__mocks__/expo-camera.tsx',
+    // expo-notifications: use local stub to avoid native notification init in Jest
+    '^expo-notifications$': '<rootDir>/__mocks__/expo-notifications',
+    // expo-image-picker: use local stub to avoid native media library init in Jest
+    '^expo-image-picker$': '<rootDir>/__mocks__/expo-image-picker',
     // @stripe/stripe-react-native: use local stub to avoid native Stripe init in Jest
     '^@stripe/stripe-react-native$': '<rootDir>/__mocks__/@stripe/stripe-react-native.tsx',
   },
