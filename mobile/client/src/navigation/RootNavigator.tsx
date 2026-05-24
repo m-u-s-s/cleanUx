@@ -10,6 +10,9 @@ import { BookingDetailScreen } from '@/screens/BookingDetailScreen';
 import { QRScanScreen } from '@/screens/QRScanScreen';
 import { PaymentCheckoutScreen } from '@/screens/PaymentCheckoutScreen';
 import { SavedPaymentMethodsScreen } from '@/screens/SavedPaymentMethodsScreen';
+import { ChatScreen } from '@/screens/ChatScreen';
+import { ChatListScreen } from '@/screens/ChatListScreen';
+import { NotificationsScreen } from '@/screens/NotificationsScreen';
 import { colors } from '@/theme';
 import type { RootStackParamList } from './types';
 
@@ -61,6 +64,21 @@ export function RootNavigator() {
               name="SavedPaymentMethods"
               component={SavedPaymentMethodsScreen}
               options={{ title: 'Moyens de paiement', headerShown: true }}
+            />
+            <Stack.Screen
+              name="ChatList"
+              component={ChatListScreen}
+              options={{ title: 'Messagerie', headerShown: true }}
+            />
+            <Stack.Screen
+              name="Chat"
+              component={ChatScreen}
+              options={({ route }) => ({ title: route.params.title, headerShown: true })}
+            />
+            <Stack.Screen
+              name="Notifications"
+              component={NotificationsScreen}
+              options={{ title: 'Notifications', headerShown: true }}
             />
           </>
         ) : (

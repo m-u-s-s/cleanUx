@@ -19,6 +19,18 @@ export function ProfileScreen() {
           variant="secondary"
           fullWidth
         />
+        <Button
+          label="Messagerie"
+          onPress={() => navigation.navigate('ChatList')}
+          variant="secondary"
+          fullWidth
+        />
+        <Button
+          label="Notifications"
+          onPress={() => navigation.navigate('Notifications')}
+          variant="secondary"
+          fullWidth
+        />
       </View>
     </View>
   );

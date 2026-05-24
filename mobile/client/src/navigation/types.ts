@@ -7,6 +7,9 @@ export type RootStackParamList = {
   QRScan: { bookingId: number; action: 'start' | 'end' };
   PaymentCheckout: { bookingId: number };
   SavedPaymentMethods: undefined;
+  Chat: { threadId: number; title: string };
+  ChatList: undefined;
+  Notifications: undefined;
 };
 
 export type BookingStackParamList = {
