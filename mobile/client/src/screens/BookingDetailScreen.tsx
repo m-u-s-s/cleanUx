@@ -68,6 +68,13 @@ export function BookingDetailScreen({ route }: Props) {
       </View>
 
       <View style={styles.actions}>
+        {['pending', 'confirmed'].includes(booking.status) && booking.total_price != null && (
+          <Button
+            label={`Payer ${booking.total_price} €`}
+            onPress={() => navigation.navigate('PaymentCheckout', { bookingId })}
+            fullWidth
+          />
+        )}
         {canTrack && (
           <Button
             label="Suivre en direct"

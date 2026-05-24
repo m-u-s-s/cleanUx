@@ -5,6 +5,8 @@ export type RootStackParamList = {
   MissionTracking: { bookingId: number };
   BookingDetail: { bookingId: number };
   QRScan: { bookingId: number; action: 'start' | 'end' };
+  PaymentCheckout: { bookingId: number };
+  SavedPaymentMethods: undefined;
 };
 
 export type BookingStackParamList = {
