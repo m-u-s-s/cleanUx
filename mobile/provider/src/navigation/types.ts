@@ -9,6 +9,14 @@ export type RootStackParamList = {
   StripeOnboarding: undefined;
   KYC: undefined;
   AvailabilityEdit: undefined;
+  Availability: undefined;
+  Badges: undefined;
+  ProviderDisputes: undefined;
+  ProviderRatings: undefined;
+  Onboarding: undefined;
+  ProviderChatList: undefined;
+  ProviderChat: { threadId: number; title: string };
+  ProviderNotifications: undefined;
 };
 
 export type TabParamList = {

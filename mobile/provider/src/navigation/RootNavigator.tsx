@@ -7,6 +7,15 @@ import { MissionDetailScreen } from '@/screens/MissionDetailScreen';
 import { MissionInboxScreen } from '@/screens/MissionInboxScreen';
 import { MissionFieldScreen } from '@/screens/MissionFieldScreen';
 import { StripeOnboardingScreen } from '@/screens/StripeOnboardingScreen';
+import { AvailabilityScreen } from '@/screens/AvailabilityScreen';
+import { BadgesScreen } from '@/screens/BadgesScreen';
+import { KYCScreen } from '@/screens/KYCScreen';
+import { ProviderDisputesScreen } from '@/screens/ProviderDisputesScreen';
+import { ProviderRatingsScreen } from '@/screens/ProviderRatingsScreen';
+import { OnboardingScreen } from '@/screens/OnboardingScreen';
+import { ProviderChatListScreen } from '@/screens/ProviderChatListScreen';
+import { ProviderChatScreen } from '@/screens/ProviderChatScreen';
+import { ProviderNotificationsScreen } from '@/screens/ProviderNotificationsScreen';
 import { TabNavigator } from './TabNavigator';
 import { colors } from '@/theme';
 import type { RootStackParamList } from './types';
@@ -52,6 +61,51 @@ export function RootNavigator() {
               name="StripeOnboarding"
               component={StripeOnboardingScreen}
               options={{ headerShown: true, title: 'Stripe Connect' }}
+            />
+            <Stack.Screen
+              name="Availability"
+              component={AvailabilityScreen}
+              options={{ headerShown: true, title: 'Disponibilités' }}
+            />
+            <Stack.Screen
+              name="Badges"
+              component={BadgesScreen}
+              options={{ headerShown: true, title: 'Mes badges' }}
+            />
+            <Stack.Screen
+              name="KYC"
+              component={KYCScreen}
+              options={{ headerShown: true, title: 'Vérification identité' }}
+            />
+            <Stack.Screen
+              name="ProviderDisputes"
+              component={ProviderDisputesScreen}
+              options={{ headerShown: true, title: 'Litiges' }}
+            />
+            <Stack.Screen
+              name="ProviderRatings"
+              component={ProviderRatingsScreen}
+              options={{ headerShown: true, title: 'Avis reçus' }}
+            />
+            <Stack.Screen
+              name="Onboarding"
+              component={OnboardingScreen}
+              options={{ headerShown: true, title: 'Onboarding' }}
+            />
+            <Stack.Screen
+              name="ProviderChatList"
+              component={ProviderChatListScreen}
+              options={{ headerShown: true, title: 'Messagerie' }}
+            />
+            <Stack.Screen
+              name="ProviderChat"
+              component={ProviderChatScreen}
+              options={({ route }) => ({ headerShown: true, title: (route.params as any).title ?? 'Chat' })}
+            />
+            <Stack.Screen
+              name="ProviderNotifications"
+              component={ProviderNotificationsScreen}
+              options={{ headerShown: true, title: 'Notifications' }}
             />
           </>
         ) : (
