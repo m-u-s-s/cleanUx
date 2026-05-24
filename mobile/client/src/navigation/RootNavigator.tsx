@@ -6,6 +6,8 @@ import { LoginScreen } from '@/screens/LoginScreen';
 import { TabNavigator } from './TabNavigator';
 import { BookingNavigator } from './BookingNavigator';
 import { MissionTrackingScreen } from '@/screens/MissionTrackingScreen';
+import { BookingDetailScreen } from '@/screens/BookingDetailScreen';
+import { QRScanScreen } from '@/screens/QRScanScreen';
 import { colors } from '@/theme';
 import type { RootStackParamList } from './types';
 
@@ -37,6 +39,16 @@ export function RootNavigator() {
               name="MissionTracking"
               component={MissionTrackingScreen}
               options={{ title: 'Suivi mission' }}
+            />
+            <Stack.Screen
+              name="BookingDetail"
+              component={BookingDetailScreen}
+              options={{ title: 'Détail réservation' }}
+            />
+            <Stack.Screen
+              name="QRScan"
+              component={QRScanScreen}
+              options={{ headerShown: false, presentation: 'fullScreenModal' }}
             />
           </>
         ) : (

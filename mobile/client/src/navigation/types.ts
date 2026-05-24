@@ -3,6 +3,8 @@ export type RootStackParamList = {
   MainTabs: undefined;
   BookingWizard: undefined;
   MissionTracking: { bookingId: number };
+  BookingDetail: { bookingId: number };
+  QRScan: { bookingId: number; action: 'start' | 'end' };
 };
 
 export type BookingStackParamList = {

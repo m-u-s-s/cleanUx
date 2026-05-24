@@ -20,6 +20,8 @@ const config: Config = {
     '^@gorhom/bottom-sheet$': '@gorhom/bottom-sheet/mock',
     // react-native-maps: use local stub to avoid native map init in Jest
     '^react-native-maps$': '<rootDir>/__mocks__/react-native-maps.tsx',
+    // expo-camera: use local stub to avoid native camera init in Jest
+    '^expo-camera$': '<rootDir>/__mocks__/expo-camera.tsx',
   },
 };
 

@@ -43,13 +43,12 @@ const statusVariant: Record<string, 'success' | 'warning' | 'danger' | 'neutral'
 
 function BookingCard({ booking }: { booking: Booking }) {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
-  const canTrack = ['confirmed', 'in_progress'].includes(booking.status);
 
   return (
     <TouchableOpacity
-      disabled={!canTrack}
-      onPress={() => navigation.navigate('MissionTracking', { bookingId: booking.id })}
-      activeOpacity={canTrack ? 0.7 : 1}
+      disabled={false}
+      onPress={() => navigation.navigate('BookingDetail', { bookingId: booking.id })}
+      activeOpacity={0.7}
     >
       <View style={styles.card}>
         <View style={styles.cardHeader}>
@@ -61,9 +60,7 @@ function BookingCard({ booking }: { booking: Booking }) {
         {booking.provider_name && (
           <Text style={styles.cardProvider}>Prestataire: {booking.provider_name}</Text>
         )}
-        {canTrack && (
-          <Text style={styles.trackHint}>Appuyer pour suivre</Text>
-        )}
+        <Text style={styles.trackHint}>Appuyer pour voir le détail</Text>
       </View>
     </TouchableOpacity>
   );
