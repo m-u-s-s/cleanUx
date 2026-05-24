@@ -65,6 +65,13 @@ Route::middleware(['signed', 'auth:sanctum'])
 
 Route::middleware('auth:sanctum')->group(function () {
 
+    // Auth — Token refresh + grace period + identity
+    Route::middleware('token.grace')->group(function () {
+        Route::post('/auth/refresh', \App\Http\Controllers\Api\AuthRefreshController::class)
+            ->name('api.auth.refresh');
+        Route::get('/auth/me', fn (\Illuminate\Http\Request $r) => response()->json($r->user()));
+    });
+
     // Auth
     Route::post('/auth/logout',     [ApiAuthController::class, 'logout']);
     Route::post('/auth/logout-all', [ApiAuthController::class, 'logoutAll']);
