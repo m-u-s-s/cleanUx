@@ -25,6 +25,17 @@ Route::prefix('auth')->middleware('throttle:auth')->group(function () {
     Route::post('/register', [ApiAuthController::class, 'register'])->middleware('turnstile');
 });
 
+// POST /auth/forgot-password — silently ignores unknown emails (mobile app)
+Route::post('/auth/forgot-password', function (\Illuminate\Http\Request $request) {
+    $request->validate(['email' => 'required|email']);
+    try {
+        \Illuminate\Support\Facades\Password::sendResetLink($request->only('email'));
+    } catch (\Throwable $e) {
+        // silently ignore — don't reveal if email exists
+    }
+    return response()->json(['ok' => true, 'message' => 'If this email exists, a reset link has been sent.']);
+})->middleware('throttle:5,1');
+
 // ─────────────────────────────────────────────
 // Public — Provider profiles + ratings (no auth)
 // ─────────────────────────────────────────────
@@ -204,6 +215,40 @@ Route::middleware('auth:sanctum')->group(function () {
         });
 
         Route::post('/bookings/{booking}/payment-intent', [\App\Http\Controllers\Api\Client\BookingPaymentController::class, 'createPaymentIntent']);
+
+        // Mobile app — profile self-update (name, phone, locale)
+        Route::put('/profile', function (\Illuminate\Http\Request $request) {
+            $data = $request->validate([
+                'name'   => 'sometimes|string|max:255',
+                'phone'  => 'sometimes|nullable|string|max:30',
+                'locale' => 'sometimes|string|in:fr,nl,en',
+            ]);
+            $request->user()->update($data);
+            return response()->json(['ok' => true, 'user' => $request->user()->fresh()]);
+        });
+
+        // Mobile app — avatar upload
+        Route::post('/profile/avatar', function (\Illuminate\Http\Request $request) {
+            $request->validate(['avatar' => 'required|image|max:5120']);
+            $path = $request->file('avatar')->store('avatars', 'public');
+            $request->user()->update(['profile_photo_path' => $path]);
+            return response()->json(['ok' => true, 'avatar_url' => asset('storage/' . $path)]);
+        });
+
+        // Mobile app — NPS simplified endpoint (score only, no survey_code required)
+        Route::post('/nps', function (\Illuminate\Http\Request $request) {
+            $data = $request->validate(['score' => 'required|integer|min:0|max:10']);
+            try {
+                app(\App\Services\Nps\NpsService::class)->submit(
+                    user: $request->user(),
+                    surveyCode: 'monthly',
+                    score: (int) $data['score'],
+                );
+            } catch (\Throwable $e) {
+                \Illuminate\Support\Facades\Log::warning('NPS submit error: ' . $e->getMessage());
+            }
+            return response()->json(['ok' => true]);
+        });
     });
 
     // ─────────────────────────────────────────
@@ -292,6 +337,17 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/kyc/start',                     [\App\Http\Controllers\Api\Provider\KycController::class, 'start']);
         Route::get('/kyc/status',                     [\App\Http\Controllers\Api\Provider\KycController::class, 'status']);
         Route::post('/kyc/verifications/{verification}/sync', [\App\Http\Controllers\Api\Provider\KycController::class, 'sync']);
+
+        // Mobile app — provider profile self-update (name, phone, locale)
+        Route::put('/profile', function (\Illuminate\Http\Request $request) {
+            $data = $request->validate([
+                'name'   => 'sometimes|string|max:255',
+                'phone'  => 'sometimes|nullable|string|max:30',
+                'locale' => 'sometimes|string|in:fr,nl,en',
+            ]);
+            $request->user()->update($data);
+            return response()->json(['ok' => true, 'user' => $request->user()->fresh()]);
+        });
 
         // Sprint 0 — Task 3 : Stripe Connect provider endpoints (RN Phase 2)
         Route::prefix('stripe-connect')->middleware('token.grace')->group(function () {
