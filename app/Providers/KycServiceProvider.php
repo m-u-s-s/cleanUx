@@ -23,12 +23,23 @@ class KycServiceProvider extends ServiceProvider
 
     protected function resolveProvider(): KycProviderInterface
     {
-        $default = (string) config('kyc.default_provider', 'mock');
+        // Auto-detect: if an Onfido API token is present in the environment,
+        // use Onfido regardless of KYC_PROVIDER value (graceful upgrade path).
+        // Override by setting KYC_PROVIDER=mock explicitly to force mock even
+        // when a token is present (useful in CI / staging).
+        $configured = (string) config('kyc.default_provider', 'mock');
+        $onfidoToken = (string) config('kyc.providers.onfido.api_token', '');
 
-        return match ($default) {
+        $resolved = $configured;
+        if ($resolved === 'mock' && $onfidoToken !== '') {
+            // Token is present but config still says 'mock' → upgrade to onfido.
+            $resolved = 'onfido';
+        }
+
+        return match ($resolved) {
             'onfido' => new OnfidoProvider(),
-            'mock' => new KycMockProvider(),
-            default => throw new RuntimeException("KYC provider not implemented: {$default}"),
+            'mock'   => new KycMockProvider(),
+            default  => throw new RuntimeException("KYC provider not implemented: {$resolved}"),
         };
     }
 }
