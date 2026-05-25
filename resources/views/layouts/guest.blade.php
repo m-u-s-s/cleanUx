@@ -14,11 +14,14 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
     {{-- SEO multi-métiers --}}
-    <title>{{ config('app.name', 'CleanUx') }} | Services à domicile : nettoyage, peinture, bâtiment, jardinage</title>
+    <title>{{ config(‘app.name’, ‘CleanUx’) }} | Services à domicile : nettoyage, peinture, bâtiment, jardinage</title>
     <meta name="description" content="Réservez un service à domicile en quelques minutes : nettoyage, peinture, bâtiment, jardinage. Devis clair, suivi de l’intervenant en temps réel, validation par code et preuve photo.">
-    <meta property="og:title" content="{{ config('app.name', 'CleanUx') }} — Vos services à domicile, suivis et prouvés">
-    <meta property="og:description" content="Nettoyage, peinture, bâtiment, jardinage. Devis instantané, suivi live, preuve photo.">
+    <meta property="og:title" content="CleanUx — Marketplace de services à domicile">
+    <meta property="og:description" content="Réservez un prestataire qualifié en 5 étapes. Nettoyage, peinture, babysitting et 20+ métiers.">
     <meta property="og:type" content="website">
+    <meta property="og:url" content="{{ config(‘app.url’) }}">
+    <meta property="og:image" content="{{ asset(‘images/og-cleanux.jpg’) }}">
+    <meta name="twitter:card" content="summary_large_image">
     <meta name="robots" content="index,follow">
 
     <link rel="preconnect" href="https://fonts.bunny.net">
@@ -39,11 +42,8 @@
         <div class="cx-progress__bar" id="cxProgressBar"></div>
     </div>
 
-    {{-- Lien d'évitement : l'utilisateur pressé saute tout le storytelling --}}
-    <a href="{{ route('booking.create') }}"
-       class="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-[95] focus:rounded-xl focus:bg-amber-400 focus:px-4 focus:py-2 focus:text-sm focus:font-bold focus:text-slate-900">
-        Aller directement à la réservation
-    </a>
+    {{-- Lien d'évitement : keyboard a11y --}}
+    <a href="#main-content" class="skip-to-content">Aller au contenu principal</a>
 
     <header class="cx-header" id="cxHeader">
         <div class="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
@@ -77,7 +77,7 @@
         </div>
     </header>
 
-    {{ $slot }}
+    <main id="main-content">{{ $slot }}</main>
 
     {{-- CTA flottant permanent --}}
     @guest

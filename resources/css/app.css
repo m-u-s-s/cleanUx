@@ -285,8 +285,16 @@
     }
 
     .cu-card {
-        @apply relative rounded-[24px] border border-slate-200/80 shadow-[0_10px_30px_rgba(15,23,42,0.06)] backdrop-blur;
-        background-color: rgb(255 255 255 / 0.92);
+        background: rgba(255, 255, 255, 0.85);
+        backdrop-filter: blur(8px);
+        border: 1px solid rgba(255, 255, 255, 0.5);
+        border-radius: var(--cx-radius-lg);
+        padding: 1.5rem;
+        transition: transform var(--cx-dur) var(--cx-ease), box-shadow var(--cx-dur) var(--cx-ease);
+    }
+    .cu-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 12px 32px rgba(15, 23, 42, 0.08);
     }
     .cu-card-muted { @apply rounded-[20px] border border-slate-200/80 bg-slate-50/90 shadow-sm; }
 
@@ -773,4 +781,91 @@ button:active,
         opacity: 1 !important;
         transform: none !important;
     }
+}
+
+/* ============================================================================
+   9) REDESIGN PASS — 2026-05-25
+   Typography utilities, color hierarchy, noise texture, a11y
+   ========================================================================= */
+
+/* Typography refinements */
+.cx-headline {
+    letter-spacing: -0.025em;
+    line-height: 1.1;
+}
+
+.cx-subhead {
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--cx-amber);
+}
+
+.cx-body-readable {
+    max-width: 65ch;
+    line-height: 1.7;
+}
+
+/* Tabular figures for data */
+.cx-tabular {
+    font-variant-numeric: tabular-nums;
+}
+
+/* Text balance for orphan prevention */
+.cx-balance {
+    text-wrap: balance;
+}
+
+/* Color hierarchy: amber = brand hero, indigo = UI interactive */
+.cx-cta-primary {
+    background: linear-gradient(135deg, var(--cx-amber) 0%, var(--cx-amber-deep) 100%);
+    color: #0f172a;
+    font-weight: 700;
+    border: none;
+    box-shadow: 0 4px 14px rgba(255, 182, 72, 0.3);
+    transition: all var(--cx-dur) var(--cx-ease);
+}
+.cx-cta-primary:hover {
+    box-shadow: 0 6px 20px rgba(255, 182, 72, 0.45);
+    transform: translateY(-2px);
+}
+.cx-cta-primary:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 8px rgba(255, 182, 72, 0.25);
+}
+
+/* Noise/grain texture overlay — subtle tactile feel */
+body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: repeating-conic-gradient(rgba(0,0,0,0.01) 0% 25%, transparent 0% 50%) 0 0 / 2px 2px;
+    pointer-events: none;
+    z-index: 9999;
+}
+
+/* Skip-to-content (keyboard a11y) */
+.skip-to-content {
+    position: absolute;
+    left: -9999px;
+    top: auto;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+}
+.skip-to-content:focus {
+    position: fixed;
+    top: 1rem;
+    left: 50%;
+    transform: translateX(-50%);
+    width: auto;
+    height: auto;
+    padding: 0.75rem 1.5rem;
+    background: var(--cx-amber);
+    color: #0f172a;
+    font-weight: 700;
+    border-radius: var(--cx-radius-md);
+    z-index: 10000;
+    box-shadow: 0 4px 14px rgba(255, 182, 72, 0.4);
 }

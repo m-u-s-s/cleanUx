@@ -30,6 +30,7 @@
 </head>
 
 <body class="font-sans antialiased text-slate-800 bg-slate-50/30 selection:bg-brand-100 selection:text-brand-900">
+    <a href="#main-content" class="skip-to-content">Aller au contenu principal</a>
     <x-banner />
 
     <div class="min-h-screen pb-20 sm:pb-0">
@@ -43,7 +44,7 @@
         </header>
         @endif
 
-        <main class="px-3 py-5 sm:px-5 lg:px-8 lg:py-6">
+        <main id="main-content" class="px-3 py-5 sm:px-5 lg:px-8 lg:py-6">
             <div class="cu-page animate-fade-in">
                 {{ $slot }}
             </div>

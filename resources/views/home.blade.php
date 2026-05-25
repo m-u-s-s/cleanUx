@@ -14,17 +14,17 @@
                     <x-ui.icon name="sparkles" class="w-3.5 h-3.5" />
                     Marketplace multi-métiers • B2C & B2B
                 </div>
-                <h1 class="mt-6 text-4xl font-bold tracking-tight text-slate-900 sm:text-6xl">
+                <h1 class="mt-6 text-4xl font-bold text-slate-900 sm:text-6xl cx-headline cx-balance">
                     L'OS des services pros,
                     <span class="bg-gradient-to-br from-brand-600 to-purple-600 bg-clip-text text-transparent">
                         à la demande.
                     </span>
                 </h1>
-                <p class="mt-6 text-lg leading-8 text-slate-600">
+                <p class="mt-6 text-lg text-slate-600 cx-body-readable mx-auto">
                     Nettoyage, peinture, plomberie, jardinage, babysitting — un seul compte, trouvez un prestataire vérifié près de chez vous en quelques clics. Devis IA depuis photo, paiement sécurisé Stripe, satisfaction garantie.
                 </p>
                 <div class="mt-10 flex flex-col items-center justify-center gap-3 sm:flex-row sm:gap-4">
-                    <x-ui.button href="{{ route('booking.create') }}" variant="amber" size="lg" icon="arrow-right" iconPosition="right" class="cu-glow-amber">
+                    <x-ui.button href="{{ route('booking.create') }}" variant="amber" size="lg" icon="arrow-right" iconPosition="right" class="cu-glow-amber cx-cta-primary">
                         Réserver une mission
                     </x-ui.button>
                     @if (Route::has('providers.browse.public'))
@@ -64,45 +64,50 @@
     <section class="py-24 sm:py-32">
         <div class="mx-auto max-w-7xl px-6">
             <div class="mx-auto max-w-2xl text-center">
-                <p class="text-xs font-semibold uppercase tracking-wider text-brand-600">Comment ça marche</p>
-                <h2 class="mt-2 text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">
+                <span class="cx-subhead">Comment ça marche</span>
+                <h2 class="mt-2 text-3xl font-bold text-slate-900 sm:text-4xl cx-headline cx-balance">
                     Trouvez. Réservez. C'est fait.
                 </h2>
-                <p class="mt-4 text-base leading-7 text-slate-600">
+                <p class="mt-4 text-base text-slate-600 cx-body-readable mx-auto">
                     Plus de devis interminables, plus de no-shows. Notre IA estime, notre matching trouve, notre prestataire intervient — tracking GPS en temps réel.
                 </p>
             </div>
 
-            <div class="mx-auto mt-16 grid max-w-5xl grid-cols-1 gap-8 md:grid-cols-3">
-                <x-ui.card padding="lg" class="text-center" data-cx-reveal data-cx-delay="0">
-                    <div class="mx-auto flex h-12 w-12 items-center justify-center rounded-xl bg-brand-50 text-brand-600 ring-1 ring-brand-200">
+            <div class="mx-auto mt-16 grid max-w-5xl grid-cols-1 gap-6 md:grid-cols-3">
+                {{-- Feature 1: spans 2 columns, larger, amber border-left accent --}}
+                <div class="md:col-span-2 cu-glass rounded-2xl p-8 border-l-4 border-[#ffb648]" data-cx-reveal>
+                    <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-brand-50 text-brand-600 ring-1 ring-brand-200">
                         <x-ui.icon name="camera" class="w-6 h-6" />
                     </div>
-                    <h3 class="mt-5 text-base font-semibold text-slate-900">Devis IA depuis photo</h3>
-                    <p class="mt-2 text-sm leading-6 text-slate-600">
+                    <h3 class="mt-5 text-lg font-semibold text-slate-900">Devis IA depuis photo</h3>
+                    <p class="mt-2 text-sm leading-6 text-slate-600 cx-body-readable">
                         Prenez une photo, choisissez le métier — recevez une fourchette de prix en 10 secondes, sans appel commercial.
                     </p>
-                </x-ui.card>
+                </div>
 
-                <x-ui.card padding="lg" class="text-center" data-cx-reveal data-cx-delay="100">
-                    <div class="mx-auto flex h-12 w-12 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600 ring-1 ring-emerald-200">
+                {{-- Feature 2: single column --}}
+                <div class="cu-glass rounded-2xl p-6" data-cx-reveal data-cx-delay="100">
+                    <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600 ring-1 ring-emerald-200">
                         <x-ui.icon name="badge-check" class="w-6 h-6" />
                     </div>
                     <h3 class="mt-5 text-base font-semibold text-slate-900">Prestataires vérifiés KYC</h3>
                     <p class="mt-2 text-sm leading-6 text-slate-600">
                         Identité contrôlée Onfido/Veriff, casier judiciaire vérifié, assurance RC pro incluse sur chaque mission.
                     </p>
-                </x-ui.card>
+                </div>
 
-                <x-ui.card padding="lg" class="text-center" data-cx-reveal data-cx-delay="200">
-                    <div class="mx-auto flex h-12 w-12 items-center justify-center rounded-xl bg-purple-50 text-purple-600 ring-1 ring-purple-200">
-                        <x-ui.icon name="map-pin" class="w-6 h-6" />
+                {{-- Feature 3: full width, horizontal layout --}}
+                <div class="md:col-span-3 cu-glass rounded-2xl p-6 flex flex-col md:flex-row md:items-center gap-6" data-cx-reveal data-cx-delay="200">
+                    <div class="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-purple-50 text-purple-600 ring-1 ring-purple-200">
+                        <x-ui.icon name="map-pin" class="w-7 h-7" />
                     </div>
-                    <h3 class="mt-5 text-base font-semibold text-slate-900">Tracking GPS en direct</h3>
-                    <p class="mt-2 text-sm leading-6 text-slate-600">
-                        Suivez l'arrivée de votre prestataire sur carte, ETA en temps réel, géofence d'arrivée auto.
-                    </p>
-                </x-ui.card>
+                    <div>
+                        <h3 class="text-base font-semibold text-slate-900">Tracking GPS en direct</h3>
+                        <p class="mt-1 text-sm leading-6 text-slate-600">
+                            Suivez l'arrivée de votre prestataire sur carte, ETA en temps réel, géofence d'arrivée auto. Votre prestataire est déjà en route — vous le savez avant même qu'il sonne.
+                        </p>
+                    </div>
+                </div>
             </div>
         </div>
     </section>
@@ -198,26 +203,33 @@
     <section class="py-24 sm:py-32">
         <div class="mx-auto max-w-7xl px-6">
             <div class="mx-auto max-w-2xl text-center">
-                <p class="text-xs font-semibold uppercase tracking-wider text-brand-600">Pour les entreprises</p>
-                <h2 class="mt-2 text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">
+                <span class="cx-subhead">Pour les entreprises</span>
+                <h2 class="mt-2 text-3xl font-bold text-slate-900 sm:text-4xl cx-headline cx-balance">
                     Facility management, simplifié.
                 </h2>
-                <p class="mt-4 text-base leading-7 text-slate-600">
+                <p class="mt-4 text-base text-slate-600 cx-body-readable mx-auto">
                     API Tokens, webhooks B2B HMAC, multi-sites, bulk booking CSV, factures Peppol/Factur-X 09/2026-ready. Conçu pour scaler de 5 à 5000 sites.
                 </p>
             </div>
             <div class="mx-auto mt-16 grid max-w-5xl grid-cols-1 gap-6 md:grid-cols-3">
-                <div class="rounded-xl border border-slate-200 bg-white p-6" data-cx-reveal data-cx-delay="0">
-                    <x-ui.icon name="building-office" class="w-6 h-6 text-brand-600" />
-                    <h3 class="mt-4 font-semibold text-slate-900">Multi-sites & multi-membres</h3>
-                    <p class="mt-2 text-sm text-slate-600">Plusieurs locaux, équipe avec rôles personnalisés, validation hiérarchique.</p>
+                {{-- B2B card 1: full-width top, horizontal layout --}}
+                <div class="md:col-span-3 cu-glass rounded-2xl p-8 border-l-4 border-[#ffb648] flex flex-col md:flex-row md:items-center gap-6" data-cx-reveal data-cx-delay="0">
+                    <div class="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-brand-50 text-brand-600 ring-1 ring-brand-200">
+                        <x-ui.icon name="building-office" class="w-7 h-7" />
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-semibold text-slate-900">Multi-sites & multi-membres</h3>
+                        <p class="mt-1 text-sm text-slate-600">Plusieurs locaux, équipe avec rôles personnalisés, validation hiérarchique. De 5 à 5 000 sites — la plateforme scale avec vous.</p>
+                    </div>
                 </div>
-                <div class="rounded-xl border border-slate-200 bg-white p-6" data-cx-reveal data-cx-delay="100">
+                {{-- B2B card 2: spans 2 columns --}}
+                <div class="md:col-span-2 cu-glass rounded-2xl p-6" data-cx-reveal data-cx-delay="100">
                     <x-ui.icon name="receipt" class="w-6 h-6 text-brand-600" />
                     <h3 class="mt-4 font-semibold text-slate-900">Facturation Peppol</h3>
                     <p class="mt-2 text-sm text-slate-600">Factur-X XML CII embedded, conformité réglementation 09/2026 FR. Export FEC DGFiP/Sage/QuickBooks.</p>
                 </div>
-                <div class="rounded-xl border border-slate-200 bg-white p-6" data-cx-reveal data-cx-delay="200">
+                {{-- B2B card 3: single column --}}
+                <div class="cu-glass rounded-2xl p-6" data-cx-reveal data-cx-delay="200">
                     <x-ui.icon name="key" class="w-6 h-6 text-brand-600" />
                     <h3 class="mt-4 font-semibold text-slate-900">API + Webhooks HMAC</h3>
                     <p class="mt-2 text-sm text-slate-600">18 scopes, rotation tokens, webhooks signés HMAC SHA256 retry exponentiel.</p>
@@ -235,19 +247,19 @@
             <p class="text-center text-slate-500 mb-12">Rejoignez une communauté qui grandit chaque jour</p>
             <div class="grid grid-cols-2 md:grid-cols-4 gap-8">
                 <div class="text-center" data-cx-reveal data-cx-delay="0">
-                    <p class="text-4xl font-bold text-[#ffb648]" style="font-family: 'Space Grotesk', sans-serif;">20+</p>
+                    <p class="text-4xl font-bold text-[#ffb648] cx-tabular" style="font-family: 'Space Grotesk', sans-serif;">20+</p>
                     <p class="text-sm text-slate-500 mt-2">Métiers disponibles</p>
                 </div>
                 <div class="text-center" data-cx-reveal data-cx-delay="100">
-                    <p class="text-4xl font-bold text-[#ffb648]" style="font-family: 'Space Grotesk', sans-serif;">9</p>
+                    <p class="text-4xl font-bold text-[#ffb648] cx-tabular" style="font-family: 'Space Grotesk', sans-serif;">9</p>
                     <p class="text-sm text-slate-500 mt-2">Pays supportés</p>
                 </div>
                 <div class="text-center" data-cx-reveal data-cx-delay="200">
-                    <p class="text-4xl font-bold text-[#ffb648]" style="font-family: 'Space Grotesk', sans-serif;">4.8★</p>
+                    <p class="text-4xl font-bold text-[#ffb648] cx-tabular" style="font-family: 'Space Grotesk', sans-serif;">4.8★</p>
                     <p class="text-sm text-slate-500 mt-2">Note moyenne</p>
                 </div>
                 <div class="text-center" data-cx-reveal data-cx-delay="300">
-                    <p class="text-4xl font-bold text-[#ffb648]" style="font-family: 'Space Grotesk', sans-serif;">24/7</p>
+                    <p class="text-4xl font-bold text-[#ffb648] cx-tabular" style="font-family: 'Space Grotesk', sans-serif;">24/7</p>
                     <p class="text-sm text-slate-500 mt-2">Support disponible</p>
                 </div>
             </div>
@@ -257,42 +269,48 @@
     {{-- TESTIMONIALS --}}
     <section class="py-20 bg-white" data-cx-reveal>
         <div class="max-w-6xl mx-auto px-6">
-            <h2 class="text-3xl font-bold text-center text-slate-900 mb-12" style="font-family: 'Space Grotesk', sans-serif;">
+            <h2 class="text-3xl font-bold text-center text-slate-900 mb-12 cx-headline" style="font-family: 'Space Grotesk', sans-serif;">
                 Ce qu'ils en disent
             </h2>
-            <div class="grid md:grid-cols-3 gap-8">
-                <div class="cu-glass rounded-2xl p-6" data-cx-reveal data-cx-delay="0">
-                    <div class="flex items-center gap-3 mb-4">
-                        <div class="w-10 h-10 rounded-full bg-brand-100 flex items-center justify-center text-brand-700 font-bold">M</div>
+            <div class="grid grid-cols-1 md:grid-cols-5 gap-6">
+                {{-- Featured testimonial: spans 3 columns --}}
+                <div class="md:col-span-3 cu-glass rounded-2xl p-8" data-cx-reveal>
+                    <div class="flex items-center gap-4 mb-6">
+                        <div class="w-14 h-14 rounded-full bg-brand-100 flex items-center justify-center text-brand-700 font-bold text-xl">M</div>
                         <div>
-                            <p class="font-semibold text-slate-900">Marie D.</p>
-                            <p class="text-xs text-slate-500">Bruxelles • Cliente</p>
+                            <p class="font-semibold text-slate-900 text-lg">Marie D.</p>
+                            <p class="text-sm text-slate-500">Bruxelles • Cliente depuis 2024</p>
                         </div>
                     </div>
-                    <p class="text-sm text-slate-600">"Réservation en 2 minutes, prestataire ponctuel, paiement transparent. Je ne cherche plus ailleurs."</p>
-                    <p class="text-[#ffb648] mt-3 text-sm">★★★★★</p>
+                    <blockquote class="text-slate-700 text-lg leading-relaxed italic cx-body-readable">
+                        "Réservation en 2 minutes, prestataire ponctuel, paiement transparent. Je ne cherche plus ailleurs."
+                    </blockquote>
+                    <p class="text-[#ffb648] mt-4 text-lg">★★★★★</p>
                 </div>
-                <div class="cu-glass rounded-2xl p-6" data-cx-reveal data-cx-delay="100">
-                    <div class="flex items-center gap-3 mb-4">
-                        <div class="w-10 h-10 rounded-full bg-success-50 flex items-center justify-center text-success-700 font-bold">A</div>
-                        <div>
-                            <p class="font-semibold text-slate-900">Ahmed K.</p>
-                            <p class="text-xs text-slate-500">Paris • Prestataire</p>
+                {{-- Side column: 2 smaller testimonials stacked --}}
+                <div class="md:col-span-2 flex flex-col gap-6">
+                    <div class="cu-glass rounded-2xl p-6 flex-1" data-cx-reveal data-cx-delay="100">
+                        <div class="flex items-center gap-3 mb-4">
+                            <div class="w-10 h-10 rounded-full bg-emerald-50 flex items-center justify-center text-emerald-700 font-bold">A</div>
+                            <div>
+                                <p class="font-semibold text-slate-900">Ahmed K.</p>
+                                <p class="text-xs text-slate-500">Paris • Prestataire</p>
+                            </div>
                         </div>
+                        <p class="text-sm text-slate-600">"Grâce à CleanUx, j'ai triplé mes missions mensuelles. L'app terrain est intuitive et les paiements arrivent vite."</p>
+                        <p class="text-[#ffb648] mt-3 text-sm">★★★★★</p>
                     </div>
-                    <p class="text-sm text-slate-600">"Grâce à CleanUx, j'ai triplé mes missions mensuelles. L'app terrain est intuitive et les paiements arrivent vite."</p>
-                    <p class="text-[#ffb648] mt-3 text-sm">★★★★★</p>
-                </div>
-                <div class="cu-glass rounded-2xl p-6" data-cx-reveal data-cx-delay="200">
-                    <div class="flex items-center gap-3 mb-4">
-                        <div class="w-10 h-10 rounded-full bg-brand-50 flex items-center justify-center text-brand-600 font-bold">S</div>
-                        <div>
-                            <p class="font-semibold text-slate-900">Sophie L.</p>
-                            <p class="text-xs text-slate-500">Liège • Gestionnaire multi-sites</p>
+                    <div class="cu-glass rounded-2xl p-6 flex-1" data-cx-reveal data-cx-delay="200">
+                        <div class="flex items-center gap-3 mb-4">
+                            <div class="w-10 h-10 rounded-full bg-brand-50 flex items-center justify-center text-brand-600 font-bold">S</div>
+                            <div>
+                                <p class="font-semibold text-slate-900">Sophie L.</p>
+                                <p class="text-xs text-slate-500">Liège • Gestionnaire multi-sites</p>
+                            </div>
                         </div>
+                        <p class="text-sm text-slate-600">"Gérer 12 bureaux avec un seul tableau de bord, c'est un gain de temps énorme. Le chantier groupé est brillant."</p>
+                        <p class="text-[#ffb648] mt-3 text-sm">★★★★☆</p>
                     </div>
-                    <p class="text-sm text-slate-600">"Gérer 12 bureaux avec un seul tableau de bord, c'est un gain de temps énorme. Le chantier groupé est brillant."</p>
-                    <p class="text-[#ffb648] mt-3 text-sm">★★★★☆</p>
                 </div>
             </div>
         </div>
@@ -300,11 +318,11 @@
 
     {{-- FAQ --}}
     <section class="py-20 bg-slate-50" data-cx-reveal>
-        <div class="max-w-3xl mx-auto px-6">
-            <h2 class="text-3xl font-bold text-center text-slate-900 mb-12" style="font-family: 'Space Grotesk', sans-serif;">
+        <div class="max-w-5xl mx-auto px-6">
+            <h2 class="text-3xl font-bold text-center text-slate-900 mb-12 cx-headline" style="font-family: 'Space Grotesk', sans-serif;">
                 Questions fréquentes
             </h2>
-            <div class="space-y-4">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 @foreach([
                     ['Comment fonctionne CleanUx ?', 'Choisissez un service, précisez vos besoins, et un prestataire vérifié vous est attribué automatiquement. Suivez la mission en temps réel et payez en toute sécurité.'],
                     ['Combien ça coûte ?', 'Le prix dépend du service et de la durée estimée. Vous recevez un devis avant de confirmer — pas de surprise. Vous pouvez même obtenir un devis instantané par photo grâce à notre IA.'],
@@ -313,7 +331,7 @@
                     ['Dans quels pays est disponible CleanUx ?', 'Belgique, France, Pays-Bas, Allemagne, Espagne, Italie, Portugal, Luxembourg et Autriche. Nous étendons notre couverture régulièrement.'],
                     ['Puis-je annuler une réservation ?', 'Oui, avec des conditions selon le délai. Annulation gratuite > 24h avant. Des frais peuvent s\'appliquer dans les 24h précédant la mission.'],
                 ] as [$question, $answer])
-                    <details class="cu-glass rounded-xl p-4 group cursor-pointer" data-cx-reveal>
+                    <details class="cu-glass rounded-xl p-5 group cursor-pointer" data-cx-reveal>
                         <summary class="font-semibold text-slate-900 list-none flex justify-between items-center">
                             {{ $question }}
                             <span class="text-brand-500 group-open:rotate-45 transition-transform">+</span>
