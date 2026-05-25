@@ -17,6 +17,7 @@ import { ProviderChatListScreen } from '@/screens/ProviderChatListScreen';
 import { ProviderChatScreen } from '@/screens/ProviderChatScreen';
 import { ProviderNotificationsScreen } from '@/screens/ProviderNotificationsScreen';
 import { ForgotPasswordScreen } from '@/screens/ForgotPasswordScreen';
+import { LegalScreen } from '@/screens/LegalScreen';
 import { TabNavigator } from './TabNavigator';
 import { colors } from '@/theme';
 import type { RootStackParamList } from './types';
@@ -108,11 +109,20 @@ export function RootNavigator() {
               component={ProviderNotificationsScreen}
               options={{ headerShown: true, title: 'Notifications' }}
             />
+            <Stack.Screen
+              name="Legal"
+              component={LegalScreen}
+              options={({ route }) => ({
+                title: route.params.type === 'terms' ? 'CGU' : 'Confidentialité',
+                headerShown: true,
+              })}
+            />
           </>
         ) : (
           <>
             <Stack.Screen name="Login" component={LoginScreen} />
             <Stack.Screen name="ForgotPassword" component={ForgotPasswordScreen} options={{ title: 'Mot de passe oublié', headerShown: true }} />
+            <Stack.Screen name="Legal" component={LegalScreen} options={({ route }) => ({ title: route.params.type === 'terms' ? 'CGU' : 'Confidentialité', headerShown: true })} />
           </>
         )}
       </Stack.Navigator>

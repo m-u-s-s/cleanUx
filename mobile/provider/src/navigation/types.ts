@@ -18,6 +18,7 @@ export type RootStackParamList = {
   ProviderChat: { threadId: number; title: string };
   ProviderNotifications: undefined;
   ForgotPassword: undefined;
+  Legal: { type: 'terms' | 'privacy' };
 };
 
 export type TabParamList = {
