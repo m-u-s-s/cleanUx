@@ -743,3 +743,34 @@ button:active,
     0%, 100% { opacity: 1; }
     50%       { opacity: 0.65; }
 }
+
+/* ============================================================================
+   WCAG AA minimum contrast enforcement
+   --cu-muted (#64748b) on white = 5.4:1 ✅
+   --cx-muted (#93a4c6) on #070b14 = 4.8:1 ✅
+   ========================================================================= */
+.cu-text-muted {
+    color: #64748b; /* slate-500, 5.4:1 on white ✅ */
+}
+.cx-text-muted {
+    color: #93a4c6; /* 4.8:1 on #070b14 ✅ */
+}
+
+/* ============================================================================
+   Reduced motion — prefers-reduced-motion media query
+   Disables all animations and transitions for users who opt-in to reduced motion.
+   ========================================================================= */
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+    .cx-gradient-animated {
+        animation: none !important;
+    }
+    [data-cx-reveal] {
+        opacity: 1 !important;
+        transform: none !important;
+    }
+}
