@@ -1,6 +1,7 @@
 import React from 'react';
-import { TouchableOpacity, Text, ActivityIndicator, ViewStyle, TextStyle } from 'react-native';
-import { colors, radius, spacing, typography } from '@/theme';
+import { Pressable, Text, ActivityIndicator, ViewStyle, TextStyle } from 'react-native';
+import Animated, { useSharedValue, useAnimatedStyle, withTiming } from 'react-native-reanimated';
+import { colors, radius, spacing, typography, animation } from '@/theme';
 
 type Variant = 'primary' | 'secondary' | 'ghost' | 'danger';
 type Size = 'sm' | 'md' | 'lg';
@@ -37,6 +38,9 @@ export function Button({
   loading,
   fullWidth,
 }: ButtonProps) {
+  const scale = useSharedValue(1);
+  const animStyle = useAnimatedStyle(() => ({ transform: [{ scale: scale.value }] }));
+
   const v = variantStyles[variant];
   const s = sizeStyles[size];
 
@@ -61,20 +65,23 @@ export function Button({
   };
 
   return (
-    <TouchableOpacity
-      style={containerStyle}
-      onPress={onPress}
-      disabled={disabled || loading}
-      activeOpacity={0.7}
-    >
-      {loading ? (
-        <ActivityIndicator
-          color={v.text}
-          size="small"
-          style={{ marginRight: spacing.xs }}
-        />
-      ) : null}
-      <Text style={textStyle}>{label}</Text>
-    </TouchableOpacity>
+    <Animated.View style={[animStyle, fullWidth ? { width: '100%' } : {}]}>
+      <Pressable
+        style={containerStyle}
+        onPress={onPress}
+        disabled={disabled || loading}
+        onPressIn={() => { scale.value = withTiming(0.96, { duration: animation.duration.fast }); }}
+        onPressOut={() => { scale.value = withTiming(1, { duration: animation.duration.fast }); }}
+      >
+        {loading ? (
+          <ActivityIndicator
+            color={v.text}
+            size="small"
+            style={{ marginRight: spacing.xs }}
+          />
+        ) : null}
+        <Text style={textStyle}>{label}</Text>
+      </Pressable>
+    </Animated.View>
   );
 }

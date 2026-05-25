@@ -1,8 +1,8 @@
 import React from 'react';
 import { View, Text, Alert, StyleSheet } from 'react-native';
-import { Screen, Button, Divider } from '@/ui';
+import { Screen, Button, Divider, ProgressBar } from '@/ui';
 import { useBooking, useCreateBooking } from '@/booking';
-import { colors, spacing, typography, radius, shadows } from '@/theme';
+import { colors, spacing, typography, radius, shadows, useThemeColors } from '@/theme';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { BookingStackParamList } from '@/navigation/types';
 
@@ -11,6 +11,7 @@ type Props = NativeStackScreenProps<BookingStackParamList, 'BookingStep5'>;
 export function BookingStep5Confirmation({ navigation }: Props) {
   const { state, dispatch } = useBooking();
   const createBooking = useCreateBooking();
+  const themeColors = useThemeColors();
 
   const handleConfirm = async () => {
     if (!state.serviceId) return;
@@ -35,8 +36,9 @@ export function BookingStep5Confirmation({ navigation }: Props) {
 
   return (
     <Screen scroll>
+      <ProgressBar step={5} totalSteps={5} />
       <Text style={styles.title}>Récapitulatif</Text>
-      <View style={styles.card}>
+      <View style={[styles.card, { backgroundColor: themeColors.card }]}>
         <Row label="Service" value={state.serviceName} />
         <Divider />
         <Row
@@ -95,7 +97,6 @@ const styles = StyleSheet.create({
     marginBottom: spacing.lg,
   },
   card: {
-    backgroundColor: '#fff',
     borderRadius: radius.md,
     padding: spacing.md,
     ...shadows.soft,

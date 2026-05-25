@@ -2,21 +2,22 @@ import React from 'react';
 import { FlatList, View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { Screen, Badge, Skeleton, EmptyState, ErrorState } from '@/ui';
+import { Screen, Badge, Skeleton, EmptyState, ErrorState, AnimatedListItem } from '@/ui';
 import { useBookings } from '@/booking';
 import type { Booking } from '@/booking';
-import { colors, spacing, typography, radius, shadows } from '@/theme';
+import { colors, spacing, typography, radius, shadows, useThemeColors } from '@/theme';
 import type { RootStackParamList } from '@/navigation/types';
 
 export function BookingsListScreen() {
   const { data: bookings, isLoading, isError, refetch, isRefetching } = useBookings();
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const themeColors = useThemeColors();
 
   if (isError) return <Screen><ErrorState message="Impossible de charger vos réservations." onRetry={refetch} /></Screen>;
 
   return (
     <Screen>
-      <Text style={styles.title}>Mes réservations</Text>
+      <Text style={[styles.title, { color: themeColors.text }]}>Mes réservations</Text>
       {isLoading ? (
         <View style={styles.skeletons}>
           {[1, 2, 3].map(i => <Skeleton key={i} width="100%" height={90} />)}
@@ -25,7 +26,11 @@ export function BookingsListScreen() {
         <FlatList
           data={bookings ?? []}
           keyExtractor={item => String(item.id)}
-          renderItem={({ item }) => <BookingCard booking={item} />}
+          renderItem={({ item, index }) => (
+            <AnimatedListItem index={index}>
+              <BookingCard booking={item} />
+            </AnimatedListItem>
+          )}
           contentContainerStyle={styles.list}
           ListEmptyComponent={<EmptyState title="Pas encore de réservation" message="Réservez votre premier service pour commencer." actionLabel="Réserver" onAction={() => navigation.navigate('BookingWizard')} />}
           onRefresh={refetch}
@@ -46,6 +51,7 @@ const statusVariant: Record<string, 'success' | 'warning' | 'danger' | 'neutral'
 
 function BookingCard({ booking }: { booking: Booking }) {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const themeColors = useThemeColors();
 
   return (
     <TouchableOpacity
@@ -53,13 +59,13 @@ function BookingCard({ booking }: { booking: Booking }) {
       onPress={() => navigation.navigate('BookingDetail', { bookingId: booking.id })}
       activeOpacity={0.7}
     >
-      <View style={styles.card}>
+      <View style={[styles.card, { backgroundColor: themeColors.card }]}>
         <View style={styles.cardHeader}>
-          <Text style={styles.serviceName}>{booking.service_name}</Text>
+          <Text style={[styles.serviceName, { color: themeColors.text }]}>{booking.service_name}</Text>
           <Badge label={booking.status} variant={statusVariant[booking.status] ?? 'neutral'} />
         </View>
-        <Text style={styles.cardDate}>{booking.scheduled_date} à {booking.scheduled_time}</Text>
-        <Text style={styles.cardAddress}>{booking.address}, {booking.city}</Text>
+        <Text style={[styles.cardDate, { color: themeColors.textSecondary }]}>{booking.scheduled_date} à {booking.scheduled_time}</Text>
+        <Text style={[styles.cardAddress, { color: themeColors.textMuted }]}>{booking.address}, {booking.city}</Text>
         {booking.provider_name && (
           <Text style={styles.cardProvider}>Prestataire: {booking.provider_name}</Text>
         )}
@@ -73,13 +79,11 @@ const styles = StyleSheet.create({
   title: {
     fontSize: typography.fontSize.xl,
     fontWeight: typography.fontWeight.bold,
-    color: colors.surface[900],
     marginBottom: spacing.md,
   },
   skeletons: { gap: spacing.sm },
   list: { gap: spacing.sm, paddingBottom: spacing.xl },
   card: {
-    backgroundColor: '#fff',
     borderRadius: radius.md,
     padding: spacing.md,
     ...shadows.xs,
@@ -92,16 +96,13 @@ const styles = StyleSheet.create({
   serviceName: {
     fontSize: typography.fontSize.base,
     fontWeight: typography.fontWeight.semibold,
-    color: colors.surface[900],
   },
   cardDate: {
     fontSize: typography.fontSize.sm,
-    color: colors.surface[600],
     marginTop: spacing.xs,
   },
   cardAddress: {
     fontSize: typography.fontSize.xs,
-    color: colors.surface[400],
     marginTop: 2,
   },
   cardProvider: {

@@ -48,6 +48,7 @@ function LoginForm() {
   const login = useLogin();
   const { setUser } = useAuth();
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const passwordRef = React.useRef<any>(null);
 
   const validate = () => {
     const e: typeof errors = {};
@@ -84,14 +85,20 @@ function LoginForm() {
         autoCapitalize="none"
         autoComplete="email"
         placeholder="votre@email.com"
+        autoFocus
+        returnKeyType="next"
+        onSubmitEditing={() => passwordRef.current?.focus()}
       />
       <TextInput
+        ref={passwordRef}
         label="Mot de passe"
         value={password}
         onChangeText={(t) => { setPassword(t); setErrors(prev => ({ ...prev, password: undefined })); }}
         error={errors.password}
         secureTextEntry
         placeholder="••••••••"
+        returnKeyType="done"
+        onSubmitEditing={handleLogin}
       />
       <TouchableOpacity onPress={() => navigation.navigate('ForgotPassword')}>
         <Text style={styles.forgotText}>Mot de passe oublié ?</Text>
@@ -118,6 +125,10 @@ function RegisterForm() {
   const register = useRegister();
   const { setUser } = useAuth();
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const emailRef = React.useRef<any>(null);
+  const phoneRef = React.useRef<any>(null);
+  const passwordRef = React.useRef<any>(null);
+  const confirmRef = React.useRef<any>(null);
 
   const validate = () => {
     const e: typeof errors = {};
@@ -168,8 +179,12 @@ function RegisterForm() {
         error={errors.name}
         autoComplete="name"
         placeholder="Jean Dupont"
+        autoFocus
+        returnKeyType="next"
+        onSubmitEditing={() => emailRef.current?.focus()}
       />
       <TextInput
+        ref={emailRef}
         label="Email"
         value={email}
         onChangeText={(t) => { setEmail(t); setErrors(prev => ({ ...prev, email: undefined })); }}
@@ -178,29 +193,40 @@ function RegisterForm() {
         autoCapitalize="none"
         autoComplete="email"
         placeholder="votre@email.com"
+        returnKeyType="next"
+        onSubmitEditing={() => phoneRef.current?.focus()}
       />
       <TextInput
+        ref={phoneRef}
         label="Téléphone (optionnel)"
         value={phone}
         onChangeText={setPhone}
         keyboardType="phone-pad"
         placeholder="+32 470 12 34 56"
+        returnKeyType="next"
+        onSubmitEditing={() => passwordRef.current?.focus()}
       />
       <TextInput
+        ref={passwordRef}
         label="Mot de passe"
         value={password}
         onChangeText={(t) => { setPassword(t); setErrors(prev => ({ ...prev, password: undefined })); }}
         error={errors.password}
         secureTextEntry
         placeholder="Min. 8 caractères"
+        returnKeyType="next"
+        onSubmitEditing={() => confirmRef.current?.focus()}
       />
       <TextInput
+        ref={confirmRef}
         label="Confirmer le mot de passe"
         value={confirmPassword}
         onChangeText={(t) => { setConfirmPassword(t); setErrors(prev => ({ ...prev, confirmPassword: undefined })); }}
         error={errors.confirmPassword}
         secureTextEntry
         placeholder="••••••••"
+        returnKeyType="done"
+        onSubmitEditing={handleRegister}
       />
       <TouchableOpacity
         style={styles.termsRow}

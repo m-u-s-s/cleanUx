@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { View, Text, FlatList, TouchableOpacity, StyleSheet } from 'react-native';
-import { Screen, Button, TextInput } from '@/ui';
+import type { TextInput as RNTextInput } from 'react-native';
+import { Screen, Button, TextInput, ProgressBar } from '@/ui';
 import { useBooking, usePostalAutocomplete } from '@/booking';
 import { colors, spacing, typography, radius } from '@/theme';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -14,6 +15,8 @@ export function BookingStep3Coordinates({ navigation }: Props) {
   const [city, setCity] = useState(state.coordinates.city);
   const [postal, setPostal] = useState(state.coordinates.postalCode);
   const { data: postalSuggestions } = usePostalAutocomplete(postal);
+  const postalRef = useRef<RNTextInput>(null);
+  const cityRef = useRef<RNTextInput>(null);
 
   const selectPostal = (item: { postal_code: string; city: string }) => {
     setPostal(item.postal_code);
@@ -32,6 +35,7 @@ export function BookingStep3Coordinates({ navigation }: Props) {
 
   return (
     <Screen scroll>
+      <ProgressBar step={3} totalSteps={5} />
       <Text style={styles.title}>Adresse</Text>
       <Text style={styles.subtitle}>Où doit-on intervenir ?</Text>
       <View style={styles.form}>
@@ -40,13 +44,19 @@ export function BookingStep3Coordinates({ navigation }: Props) {
           value={address}
           onChangeText={setAddress}
           placeholder="123 Rue de la Paix"
+          autoFocus
+          returnKeyType="next"
+          onSubmitEditing={() => postalRef.current?.focus()}
         />
         <TextInput
+          ref={postalRef}
           label="Code postal"
           value={postal}
           onChangeText={setPostal}
           keyboardType="numeric"
           placeholder="75001"
+          returnKeyType="next"
+          onSubmitEditing={() => cityRef.current?.focus()}
         />
         {postalSuggestions && postalSuggestions.length > 0 && (
           <FlatList
@@ -63,10 +73,12 @@ export function BookingStep3Coordinates({ navigation }: Props) {
           />
         )}
         <TextInput
+          ref={cityRef}
           label="Ville"
           value={city}
           onChangeText={setCity}
           placeholder="Paris"
+          returnKeyType="done"
         />
       </View>
       <Button label="Suivant" onPress={handleNext} fullWidth size="lg" disabled={!isValid} />

@@ -1,8 +1,8 @@
 import React from 'react';
 import { View, FlatList, TouchableOpacity, Text, StyleSheet } from 'react-native';
-import { Screen, Skeleton } from '@/ui';
+import { Screen, Skeleton, ProgressBar } from '@/ui';
 import { useServiceCatalog, useBooking } from '@/booking';
-import { colors, spacing, typography, radius } from '@/theme';
+import { colors, spacing, typography, radius, useThemeColors } from '@/theme';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { BookingStackParamList } from '@/navigation/types';
 
@@ -11,6 +11,7 @@ type Props = NativeStackScreenProps<BookingStackParamList, 'BookingStep1'>;
 export function BookingStep1Service({ navigation }: Props) {
   const { data: categories, isLoading } = useServiceCatalog();
   const { dispatch } = useBooking();
+  const themeColors = useThemeColors();
 
   const handleSelect = (cat: { id: number; name: string; slug: string }) => {
     dispatch({ type: 'SET_SERVICE', serviceId: cat.id, serviceName: cat.name, categorySlug: cat.slug });
@@ -19,6 +20,7 @@ export function BookingStep1Service({ navigation }: Props) {
 
   return (
     <Screen scroll>
+      <ProgressBar step={1} totalSteps={5} />
       <Text style={styles.title}>Quel service ?</Text>
       <Text style={styles.subtitle}>Choisissez le type de prestation</Text>
       {isLoading ? (
@@ -35,7 +37,7 @@ export function BookingStep1Service({ navigation }: Props) {
           columnWrapperStyle={styles.row}
           keyExtractor={item => String(item.id)}
           renderItem={({ item }) => (
-            <TouchableOpacity style={styles.card} onPress={() => handleSelect(item)} activeOpacity={0.7}>
+            <TouchableOpacity style={[styles.card, { backgroundColor: themeColors.card }]} onPress={() => handleSelect(item)} activeOpacity={0.7}>
               <Text style={styles.cardText}>{item.name}</Text>
             </TouchableOpacity>
           )}
@@ -69,7 +71,6 @@ const styles = StyleSheet.create({
   },
   card: {
     flex: 1,
-    backgroundColor: '#fff',
     borderRadius: radius.md,
     padding: spacing.md,
     borderWidth: 1,

@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { View, Text, Alert, TouchableOpacity, StyleSheet } from 'react-native';
+import type { TextInput as RNTextInput } from 'react-native';
 import { Screen, Button, TextInput, Avatar } from '@/ui';
 import { useAuth } from '@/auth';
 import { apiClient } from '@/api';
@@ -15,6 +16,7 @@ export function ProfileEditScreen({ navigation }: Props) {
   const [phone, setPhone] = useState(user?.phone ?? '');
   const [saving, setSaving] = useState(false);
   const [avatarUri, setAvatarUri] = useState<string | undefined>((user as any)?.avatar_url);
+  const phoneRef = useRef<RNTextInput>(null);
 
   const pickAvatar = async () => {
     try {
@@ -70,8 +72,8 @@ export function ProfileEditScreen({ navigation }: Props) {
         <Text style={styles.changePhotoText}>Changer la photo</Text>
       </TouchableOpacity>
       <View style={styles.form}>
-        <TextInput label="Nom" value={name} onChangeText={setName} />
-        <TextInput label="Téléphone" value={phone} onChangeText={setPhone} keyboardType="phone-pad" />
+        <TextInput label="Nom" value={name} onChangeText={setName} autoFocus returnKeyType="next" onSubmitEditing={() => phoneRef.current?.focus()} />
+        <TextInput ref={phoneRef} label="Téléphone" value={phone} onChangeText={setPhone} keyboardType="phone-pad" returnKeyType="done" />
         <Button label="Enregistrer" onPress={handleSave} fullWidth loading={saving} />
       </View>
     </Screen>

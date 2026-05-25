@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import { Screen, Button, TextInput, Divider } from '@/ui';
+import type { TextInput as RNTextInput } from 'react-native';
+import { Screen, Button, TextInput, Divider, ProgressBar } from '@/ui';
 import { useBooking } from '@/booking';
 import { colors, spacing, typography } from '@/theme';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -12,6 +13,7 @@ export function BookingStep2Details({ navigation }: Props) {
   const { state, dispatch } = useBooking();
   const [surface, setSurface] = useState(state.details.surface?.toString() ?? '');
   const [comment, setComment] = useState(state.details.comment);
+  const commentRef = useRef<RNTextInput>(null);
 
   const handleNext = () => {
     dispatch({
@@ -28,6 +30,7 @@ export function BookingStep2Details({ navigation }: Props) {
 
   return (
     <Screen scroll>
+      <ProgressBar step={2} totalSteps={5} />
       <Text style={styles.title}>Détails</Text>
       <Text style={styles.subtitle}>Précisez votre demande pour {state.serviceName}</Text>
       <View style={styles.form}>
@@ -37,15 +40,20 @@ export function BookingStep2Details({ navigation }: Props) {
           onChangeText={setSurface}
           keyboardType="numeric"
           placeholder="Ex: 60"
+          autoFocus
+          returnKeyType="next"
+          onSubmitEditing={() => commentRef.current?.focus()}
         />
         <Divider />
         <TextInput
+          ref={commentRef}
           label="Commentaire (optionnel)"
           value={comment}
           onChangeText={setComment}
           multiline
           numberOfLines={3}
           placeholder="Instructions spéciales, accès, matériel…"
+          returnKeyType="done"
         />
       </View>
       <Button label="Suivant" onPress={handleNext} fullWidth size="lg" />

@@ -2,11 +2,12 @@ import React from 'react';
 import { View, FlatList, Text, StyleSheet } from 'react-native';
 import { Screen, KPICard, Badge, Button, Skeleton, EmptyState } from '@/ui';
 import { useLoyaltyAccount, useLoyaltyRewards } from '@/loyalty';
-import { colors, spacing, typography, radius, shadows } from '@/theme';
+import { colors, spacing, typography, radius, shadows, useThemeColors } from '@/theme';
 
 export function LoyaltyScreen() {
   const { data: account, isLoading: loadingAccount } = useLoyaltyAccount();
   const { data: rewards, isLoading: loadingRewards, refetch: refetchRewards, isRefetching: isRefetchingRewards } = useLoyaltyRewards();
+  const themeColors = useThemeColors();
 
   return (
     <Screen scroll>
@@ -14,7 +15,7 @@ export function LoyaltyScreen() {
       {loadingAccount ? (
         <Skeleton width="100%" height={120} />
       ) : account ? (
-        <View style={styles.tierCard}>
+        <View style={[styles.tierCard, { backgroundColor: themeColors.card }]}>
           <Badge label={account.tier.toUpperCase()} variant="brand" />
           <View style={styles.kpiRow}>
             <KPICard title="Points" value={account.redeemable_points} hint="Échangeables" tone="success" />
@@ -61,7 +62,6 @@ const styles = StyleSheet.create({
     marginBottom: spacing.md,
   },
   tierCard: {
-    backgroundColor: '#fff',
     borderRadius: radius.md,
     padding: spacing.md,
     ...shadows.soft,

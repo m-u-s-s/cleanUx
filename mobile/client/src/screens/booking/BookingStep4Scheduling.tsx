@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { View, Text, Switch, StyleSheet } from 'react-native';
-import { Screen, Button, TextInput } from '@/ui';
+import type { TextInput as RNTextInput } from 'react-native';
+import { Screen, Button, TextInput, ProgressBar } from '@/ui';
 import { useBooking } from '@/booking';
 import { colors, spacing, typography } from '@/theme';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -13,6 +14,7 @@ export function BookingStep4Scheduling({ navigation }: Props) {
   const [isAsap, setIsAsap] = useState(state.scheduling.isAsap);
   const [date, setDate] = useState(state.scheduling.date);
   const [time, setTime] = useState(state.scheduling.time);
+  const timeRef = useRef<RNTextInput>(null);
 
   const handleNext = () => {
     dispatch({
@@ -26,6 +28,7 @@ export function BookingStep4Scheduling({ navigation }: Props) {
 
   return (
     <Screen scroll>
+      <ProgressBar step={4} totalSteps={5} />
       <Text style={styles.title}>Quand ?</Text>
       <Text style={styles.subtitle}>Planifiez votre intervention</Text>
       <View style={styles.form}>
@@ -44,12 +47,17 @@ export function BookingStep4Scheduling({ navigation }: Props) {
               value={date}
               onChangeText={setDate}
               placeholder="2026-06-15"
+              autoFocus={!isAsap}
+              returnKeyType="next"
+              onSubmitEditing={() => timeRef.current?.focus()}
             />
             <TextInput
+              ref={timeRef}
               label="Heure"
               value={time}
               onChangeText={setTime}
               placeholder="09:00"
+              returnKeyType="done"
             />
           </>
         )}

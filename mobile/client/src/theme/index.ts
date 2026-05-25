@@ -4,3 +4,4 @@ export { radius } from './radius';
 export { typography } from './typography';
 export { shadows } from './shadows';
 export { animation } from './animation';
+export { useThemeColors } from './useThemeColors';

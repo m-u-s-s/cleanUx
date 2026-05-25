@@ -1,13 +1,14 @@
 import React, { useState } from 'react';
 import { View, FlatList, Text, StyleSheet } from 'react-native';
-import { Screen, TextInput, Badge, Avatar, Skeleton, EmptyState } from '@/ui';
+import { Screen, TextInput, Badge, Avatar, Skeleton, EmptyState, AnimatedListItem } from '@/ui';
 import { useBrowseProviders } from '@/booking';
 import type { Provider } from '@/booking';
-import { colors, spacing, typography, radius, shadows } from '@/theme';
+import { colors, spacing, typography, radius, shadows, useThemeColors } from '@/theme';
 
 export function BrowseProvidersScreen() {
   const [trade, setTrade] = useState('');
   const [postalCode, setPostalCode] = useState('');
+  const themeColors = useThemeColors();
   const { data, isLoading, refetch, isRefetching } = useBrowseProviders({
     trade: trade || undefined,
     postalCode: postalCode || undefined,
@@ -15,7 +16,7 @@ export function BrowseProvidersScreen() {
 
   return (
     <Screen>
-      <Text style={styles.title}>Explorer les prestataires</Text>
+      <Text style={[styles.title, { color: themeColors.text }]}>Explorer les prestataires</Text>
       <View style={styles.filters}>
         <TextInput
           label="Métier"
@@ -39,7 +40,11 @@ export function BrowseProvidersScreen() {
         <FlatList
           data={data?.data ?? []}
           keyExtractor={item => String(item.id)}
-          renderItem={({ item }) => <ProviderCard provider={item} />}
+          renderItem={({ item, index }) => (
+            <AnimatedListItem index={index}>
+              <ProviderCard provider={item} />
+            </AnimatedListItem>
+          )}
           contentContainerStyle={styles.list}
           ListEmptyComponent={<EmptyState title="Aucun prestataire trouvé" message="Essayez avec d'autres critères de recherche." />}
           onRefresh={refetch}
@@ -51,15 +56,16 @@ export function BrowseProvidersScreen() {
 }
 
 function ProviderCard({ provider }: { provider: Provider }) {
+  const themeColors = useThemeColors();
   return (
-    <View style={styles.card}>
+    <View style={[styles.card, { backgroundColor: themeColors.card }]}>
       <Avatar name={provider.name} imageUri={provider.avatar_url} size={48} />
       <View style={styles.cardContent}>
-        <Text style={styles.providerName}>{provider.name}</Text>
+        <Text style={[styles.providerName, { color: themeColors.text }]}>{provider.name}</Text>
         <View style={styles.cardMeta}>
-          <Text style={styles.rating}>⭐ {provider.rating_avg.toFixed(1)} ({provider.review_count})</Text>
+          <Text style={[styles.rating, { color: themeColors.textSecondary }]}>⭐ {provider.rating_avg.toFixed(1)} ({provider.review_count})</Text>
           {provider.distance_km != null && (
-            <Text style={styles.distance}>{provider.distance_km.toFixed(1)} km</Text>
+            <Text style={[styles.distance, { color: themeColors.textMuted }]}>{provider.distance_km.toFixed(1)} km</Text>
           )}
         </View>
         <View style={styles.trades}>
@@ -76,7 +82,6 @@ const styles = StyleSheet.create({
   title: {
     fontSize: typography.fontSize.xl,
     fontWeight: typography.fontWeight.bold,
-    color: colors.surface[900],
     marginBottom: spacing.md,
   },
   filters: { gap: spacing.sm, marginBottom: spacing.md },
@@ -84,7 +89,6 @@ const styles = StyleSheet.create({
   list: { gap: spacing.sm, paddingBottom: spacing.xl },
   card: {
     flexDirection: 'row',
-    backgroundColor: '#fff',
     borderRadius: radius.md,
     padding: spacing.md,
     ...shadows.xs,
@@ -94,11 +98,10 @@ const styles = StyleSheet.create({
   providerName: {
     fontSize: typography.fontSize.base,
     fontWeight: typography.fontWeight.semibold,
-    color: colors.surface[900],
   },
   cardMeta: { flexDirection: 'row', gap: spacing.sm, marginTop: 2 },
-  rating: { fontSize: typography.fontSize.xs, color: colors.surface[600] },
-  distance: { fontSize: typography.fontSize.xs, color: colors.surface[400] },
+  rating: { fontSize: typography.fontSize.xs },
+  distance: { fontSize: typography.fontSize.xs },
   trades: {
     flexDirection: 'row',
     gap: spacing.xs,
