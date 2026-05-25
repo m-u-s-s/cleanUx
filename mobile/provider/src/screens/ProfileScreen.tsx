@@ -1,14 +1,16 @@
 import React from 'react';
-import { View, Text, ScrollView, StyleSheet } from 'react-native';
+import { View, Text, ScrollView, StyleSheet, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { Button } from '@/ui';
+import { Button, Divider } from '@/ui';
+import { useAuth } from '@/auth';
 import { colors, typography, spacing, radius, shadows } from '@/theme';
 import type { RootStackParamList } from '@/navigation/types';
 
 export function ProfileScreen() {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const { logout } = useAuth();
 
   const actions: Array<{ label: string; screen: keyof RootStackParamList }> = [
     { label: 'Disponibilités', screen: 'Availability' },
@@ -36,6 +38,18 @@ export function ProfileScreen() {
               />
             </View>
           ))}
+          <Divider />
+          <Button
+            label="Se déconnecter"
+            onPress={() =>
+              Alert.alert('Déconnexion', 'Voulez-vous vous déconnecter ?', [
+                { text: 'Annuler', style: 'cancel' },
+                { text: 'Déconnexion', style: 'destructive', onPress: logout },
+              ])
+            }
+            variant="danger"
+            fullWidth
+          />
         </View>
       </ScrollView>
     </SafeAreaView>
