@@ -24,7 +24,7 @@
                     Nettoyage, peinture, plomberie, jardinage, babysitting — un seul compte, trouvez un prestataire vérifié près de chez vous en quelques clics. Devis IA depuis photo, paiement sécurisé Stripe, satisfaction garantie.
                 </p>
                 <div class="mt-10 flex flex-col items-center justify-center gap-3 sm:flex-row sm:gap-4">
-                    <x-ui.button href="{{ route('booking.create') }}" variant="primary" size="lg" icon="arrow-right" iconPosition="right">
+                    <x-ui.button href="{{ route('booking.create') }}" variant="amber" size="lg" icon="arrow-right" iconPosition="right" class="cu-glow-amber">
                         Réserver une mission
                     </x-ui.button>
                     @if (Route::has('providers.browse.public'))
@@ -47,12 +47,12 @@
     {{-- TRUST BAR --}}
     <section class="border-y border-slate-100 bg-slate-50/50 py-8">
         <div class="mx-auto max-w-7xl px-6">
-            <p class="text-center text-xs font-semibold uppercase tracking-wider text-slate-500">
+            <p class="text-center text-xs font-semibold uppercase tracking-wider text-slate-500" data-cx-reveal>
                 30+ métiers · 6 langues · Conformité RGPD + Factur-X EU
             </p>
             <div class="mt-6 grid grid-cols-2 gap-6 sm:grid-cols-4 lg:grid-cols-6">
-                @foreach (['Nettoyage', 'Peinture', 'Plomberie', 'Jardinage', 'Babysitting', 'Toiture'] as $trade)
-                    <div class="flex items-center justify-center text-sm font-medium text-slate-600">
+                @foreach (['Nettoyage', 'Peinture', 'Plomberie', 'Jardinage', 'Babysitting', 'Toiture'] as $i => $trade)
+                    <div class="flex items-center justify-center text-sm font-medium text-slate-600" data-cx-reveal data-cx-delay="{{ $i + 1 }}">
                         {{ $trade }}
                     </div>
                 @endforeach
@@ -74,7 +74,7 @@
             </div>
 
             <div class="mx-auto mt-16 grid max-w-5xl grid-cols-1 gap-8 md:grid-cols-3">
-                <x-ui.card padding="lg" class="text-center">
+                <x-ui.card padding="lg" class="text-center" data-cx-reveal data-cx-delay="1">
                     <div class="mx-auto flex h-12 w-12 items-center justify-center rounded-xl bg-brand-50 text-brand-600 ring-1 ring-brand-200">
                         <x-ui.icon name="camera" class="w-6 h-6" />
                     </div>
@@ -84,7 +84,7 @@
                     </p>
                 </x-ui.card>
 
-                <x-ui.card padding="lg" class="text-center">
+                <x-ui.card padding="lg" class="text-center" data-cx-reveal data-cx-delay="2">
                     <div class="mx-auto flex h-12 w-12 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600 ring-1 ring-emerald-200">
                         <x-ui.icon name="badge-check" class="w-6 h-6" />
                     </div>
@@ -94,7 +94,7 @@
                     </p>
                 </x-ui.card>
 
-                <x-ui.card padding="lg" class="text-center">
+                <x-ui.card padding="lg" class="text-center" data-cx-reveal data-cx-delay="3">
                     <div class="mx-auto flex h-12 w-12 items-center justify-center rounded-xl bg-purple-50 text-purple-600 ring-1 ring-purple-200">
                         <x-ui.icon name="map-pin" class="w-6 h-6" />
                     </div>
@@ -111,7 +111,7 @@
     <section class="bg-slate-50/40 py-24 sm:py-32">
         <div class="mx-auto max-w-7xl px-6">
             <div class="grid items-center gap-12 lg:grid-cols-2">
-                <div>
+                <div data-cx-reveal>
                     <p class="text-xs font-semibold uppercase tracking-wider text-brand-600">Différenciateur</p>
                     <h2 class="mt-2 text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">
                         Plusieurs métiers ?<br>
@@ -207,17 +207,17 @@
                 </p>
             </div>
             <div class="mx-auto mt-16 grid max-w-5xl grid-cols-1 gap-6 md:grid-cols-3">
-                <div class="rounded-xl border border-slate-200 bg-white p-6">
+                <div class="rounded-xl border border-slate-200 bg-white p-6" data-cx-reveal data-cx-delay="1">
                     <x-ui.icon name="building-office" class="w-6 h-6 text-brand-600" />
                     <h3 class="mt-4 font-semibold text-slate-900">Multi-sites & multi-membres</h3>
                     <p class="mt-2 text-sm text-slate-600">Plusieurs locaux, équipe avec rôles personnalisés, validation hiérarchique.</p>
                 </div>
-                <div class="rounded-xl border border-slate-200 bg-white p-6">
+                <div class="rounded-xl border border-slate-200 bg-white p-6" data-cx-reveal data-cx-delay="2">
                     <x-ui.icon name="receipt" class="w-6 h-6 text-brand-600" />
                     <h3 class="mt-4 font-semibold text-slate-900">Facturation Peppol</h3>
                     <p class="mt-2 text-sm text-slate-600">Factur-X XML CII embedded, conformité réglementation 09/2026 FR. Export FEC DGFiP/Sage/QuickBooks.</p>
                 </div>
-                <div class="rounded-xl border border-slate-200 bg-white p-6">
+                <div class="rounded-xl border border-slate-200 bg-white p-6" data-cx-reveal data-cx-delay="3">
                     <x-ui.icon name="key" class="w-6 h-6 text-brand-600" />
                     <h3 class="mt-4 font-semibold text-slate-900">API + Webhooks HMAC</h3>
                     <p class="mt-2 text-sm text-slate-600">18 scopes, rotation tokens, webhooks signés HMAC SHA256 retry exponentiel.</p>

@@ -15,9 +15,9 @@
 
     <title>{{ config('app.name', 'CleanUx') }}</title>
 
-    {{-- Typo Inter via bunny.net (GDPR-friendly, pas de tracking Google) --}}
+    {{-- Typo via bunny.net (GDPR-friendly, pas de tracking Google) --}}
     <link rel="preconnect" href="https://fonts.bunny.net" crossorigin>
-    <link href="https://fonts.bunny.net/css?family=inter:400,500,600,700,800&display=swap" rel="stylesheet">
+    <link href="https://fonts.bunny.net/css?family=inter:400,500,600,700,800|figtree:400,500,600,700|space-grotesk:600,700&display=swap" rel="stylesheet">
 
     @auth
     <meta name="user-id" content="{{ auth()->id() }}">

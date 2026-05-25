@@ -593,3 +593,44 @@
     .cx-fab, .cx-fab__dot,
     .cx-progress__bar { animation: none !important; transition: none !important; }
 }
+
+/* ============================================================================
+   8) PREMIUM DESIGN UTILITIES — glassmorphism, gradients, glow
+   Alignment with mobile premium feel (2026-05-25)
+   ========================================================================= */
+
+/* cx-revealed alias for cx-in (scroll-reveal compat) */
+[data-cx-reveal].cx-revealed { opacity: 1; transform: none; }
+
+/* Glassmorphism utilities */
+.cu-glass {
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.cx-glass {
+    background: rgba(7, 11, 20, 0.6);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(148, 178, 230, 0.12);
+}
+
+/* Gradient utilities */
+.cu-gradient-brand {
+    background: linear-gradient(135deg, var(--cx-amber) 0%, #ff8a3d 50%, #6366f1 100%);
+}
+
+.cu-gradient-subtle {
+    background: linear-gradient(180deg, rgba(99, 102, 241, 0.03) 0%, rgba(255, 182, 72, 0.05) 100%);
+}
+
+/* Glow effects */
+.cu-glow-amber {
+    box-shadow: 0 0 20px rgba(255, 182, 72, 0.3), 0 0 40px rgba(255, 182, 72, 0.1);
+}
+
+.cu-glow-brand {
+    box-shadow: 0 0 20px rgba(99, 102, 241, 0.2), 0 0 40px rgba(99, 102, 241, 0.08);
+}

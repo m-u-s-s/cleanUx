@@ -19,7 +19,7 @@
     };
 @endphp
 
-<div {{ $attributes->merge(['class' => 'cu-kpi']) }}>
+<div {{ $attributes->merge(['class' => 'cu-kpi cu-glass cu-gradient-subtle']) }}>
     <div class="flex items-start justify-between gap-3">
         <div>
             <p class="cu-kpi-label">{{ $title }}</p>

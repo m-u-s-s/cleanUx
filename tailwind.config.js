@@ -17,6 +17,7 @@ export default {
             // Cohérent avec Stripe/Linear (sérieux SaaS B2B + B2C).
             fontFamily: {
                 sans: [
+                    "Figtree",
                     "Inter",
                     "ui-sans-serif",
                     "system-ui",
@@ -25,6 +26,7 @@ export default {
                     ...defaultTheme.fontFamily.sans,
                 ],
                 display: [
+                    "Space Grotesk",
                     "Inter Display",
                     "Inter",
                     ...defaultTheme.fontFamily.sans,
@@ -87,6 +89,13 @@ export default {
                     red: "#E03A2F",
                     green: "#2F9E44",
                     blue: "#003366",
+                },
+                // Premium accent palette (mobile alignment)
+                accent: {
+                    amber: '#ffb648',
+                    'amber-deep': '#ff8a3d',
+                    cyan: '#4fe3d6',
+                    violet: '#8b7bff',
                 },
             },
 
