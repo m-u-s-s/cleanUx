@@ -75,6 +75,24 @@ export function ProfileScreen() {
           variant="secondary"
           fullWidth
         />
+        <Button
+          label="Préférences notifications"
+          onPress={() => navigation.navigate('NotificationPreferences')}
+          variant="secondary"
+          fullWidth
+        />
+        <Button
+          label="Langue"
+          onPress={() => navigation.navigate('Language')}
+          variant="secondary"
+          fullWidth
+        />
+        <Button
+          label="Apparence"
+          onPress={() => navigation.navigate('Appearance')}
+          variant="secondary"
+          fullWidth
+        />
         <Divider />
         <Button
           label="Conditions d'utilisation"

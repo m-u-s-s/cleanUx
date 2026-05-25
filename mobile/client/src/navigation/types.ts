@@ -23,6 +23,11 @@ export type RootStackParamList = {
   NPS: undefined;
   ForgotPassword: undefined;
   Legal: { type: 'terms' | 'privacy' };
+  // Polish — UX screens
+  Onboarding: undefined;
+  NotificationPreferences: undefined;
+  Language: undefined;
+  Appearance: undefined;
 };
 
 export type BookingStackParamList = {

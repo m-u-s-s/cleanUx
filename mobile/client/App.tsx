@@ -1,7 +1,7 @@
 import './src/sentry/init';
 import { setupForegroundNotifications } from '@/push';
 setupForegroundNotifications();
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { View } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
@@ -22,6 +22,7 @@ import { RootNavigator, linking } from '@/navigation';
 import { useRegisterPushToken } from '@/push';
 import { env } from '@/config/env';
 import { ErrorBoundary } from '@/ErrorBoundary';
+import { OnboardingScreen, hasCompletedOnboarding } from '@/screens/OnboardingScreen';
 
 const queryClient = new QueryClient({
   defaultOptions: { queries: { retry: 2, staleTime: 60_000 } },
@@ -29,6 +30,25 @@ const queryClient = new QueryClient({
 
 function AppInner() {
   useRegisterPushToken();
+  const [showOnboarding, setShowOnboarding] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    hasCompletedOnboarding().then(completed => setShowOnboarding(!completed));
+  }, []);
+
+  if (showOnboarding === null) {
+    return <View style={{ flex: 1 }} />;
+  }
+
+  if (showOnboarding) {
+    return (
+      <SafeAreaProvider>
+        <OnboardingScreen onComplete={() => setShowOnboarding(false)} />
+        <StatusBar style="light" />
+      </SafeAreaProvider>
+    );
+  }
+
   return (
     <SafeAreaProvider>
       <NavigationContainer linking={linking}>
