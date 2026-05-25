@@ -32,7 +32,7 @@ class CommissionService
 
         // Resolve provider — supports both modern assigned_provider_user_id and legacy employe_id
         $provider = $booking->assignedProvider
-            ?? $booking->employee
+            ?? $booking->employe
             ?? $booking->provider
             ?? null;
 

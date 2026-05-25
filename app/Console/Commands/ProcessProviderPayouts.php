@@ -30,8 +30,8 @@ class ProcessProviderPayouts extends Command
                   ->orWhereNotNull('payment_amount_cents');
             })
             ->with([
-                'employee',
-                'employee.providerProfile',
+                'employe',
+                'employe.providerProfile',
                 'assignedProvider',
                 'assignedProvider.providerProfile',
             ])
@@ -123,6 +123,86 @@ class ProcessProviderPayouts extends Command
 
         if (! $dryRun) {
             $this->info("Processed: {$processed}  Failed: {$failed}");
+        }
+
+        // ─────────────────────────────────────────────────────────────────
+        // Phase 2: Stripe Transfers for manual payouts
+        // For edge-case bookings NOT covered by destination charges
+        // (provider had no Connect account at authorization time).
+        // Auto-transferred bookings (transfer_data.destination was set at
+        // authorize time) already have funds on the Connect account and
+        // must NOT be transferred again.
+        // ─────────────────────────────────────────────────────────────────
+        $this->info('');
+        $this->info('Phase 2: Stripe Transfers for processed payouts without auto-transfer...');
+
+        $pendingTransfers = Booking::where('payout_status', 'processed')
+            ->whereNull('stripe_transfer_id')
+            ->with(['employe', 'assignedProvider'])
+            ->get();
+
+        if ($pendingTransfers->isEmpty()) {
+            $this->info('  No manual transfers needed (all payouts auto-transferred via destination charges).');
+        } else {
+            $stripeKey = config('cashier.secret');
+
+            foreach ($pendingTransfers as $booking) {
+                $provider  = $booking->assignedProvider ?? $booking->employe;
+                $connectId = $provider?->stripe_connect_account_id;
+
+                if (! $connectId) {
+                    $this->warn("  Booking #{$booking->id}: provider has no Stripe Connect account — skipping.");
+                    continue;
+                }
+
+                $payoutCents = $booking->provider_payout_cents
+                    ?? $booking->provider_amount_cents
+                    ?? null;
+
+                if (! $payoutCents || $payoutCents <= 0) {
+                    $this->warn("  Booking #{$booking->id}: no payout amount — skipping.");
+                    continue;
+                }
+
+                if ($dryRun) {
+                    $this->line("  [DRY] Transfer {$payoutCents}c to {$connectId} for booking #{$booking->id}");
+                    continue;
+                }
+
+                if (! $stripeKey) {
+                    $this->warn("  Stripe key not configured — skipping manual transfer for booking #{$booking->id}.");
+                    continue;
+                }
+
+                try {
+                    \Stripe\Stripe::setApiKey($stripeKey);
+
+                    $transfer = \Stripe\Transfer::create([
+                        'amount'      => $payoutCents,
+                        'currency'    => 'eur',
+                        'destination' => $connectId,
+                        'metadata'    => [
+                            'booking_id' => $booking->id,
+                            'type'       => 'manual_payout',
+                        ],
+                    ]);
+
+                    $booking->update([
+                        'stripe_transfer_id' => $transfer->id,
+                        'payout_status'      => 'transferred',
+                    ]);
+
+                    $this->line("  Booking #{$booking->id}: transferred {$payoutCents}c -> {$connectId} ({$transfer->id})");
+                } catch (\Throwable $e) {
+                    $this->error("  Booking #{$booking->id}: transfer failed — {$e->getMessage()}");
+                    Log::error('[payouts] Stripe Transfer failed', [
+                        'booking_id' => $booking->id,
+                        'connect_id' => $connectId,
+                        'error'      => $e->getMessage(),
+                    ]);
+                    $failed++;
+                }
+            }
         }
 
         return $failed > 0 ? self::FAILURE : self::SUCCESS;

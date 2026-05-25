@@ -351,6 +351,22 @@ class StripeWebhookEventProcessor
             return ['status' => StripeWebhookEvent::STATUS_PROCESSED, 'details' => ['already' => true]];
         }
 
+        // Sync stripe_transfer_id + payout_status on booking if referenced in metadata
+        $bookingId = $transfer['metadata']['booking_id'] ?? null;
+        if ($bookingId) {
+            $booking = Booking::query()->find($bookingId);
+            if ($booking && empty($booking->stripe_transfer_id)) {
+                $booking->update([
+                    'stripe_transfer_id' => $stripeTransferId,
+                    'payout_status'      => 'transferred',
+                ]);
+                return ['status' => StripeWebhookEvent::STATUS_PROCESSED, 'details' => [
+                    'booking_id'        => $booking->id,
+                    'stripe_transfer_id' => $stripeTransferId,
+                ]];
+            }
+        }
+
         return ['status' => StripeWebhookEvent::STATUS_IGNORED, 'details' => ['reason' => 'transfer_noted_no_action']];
     }
 
