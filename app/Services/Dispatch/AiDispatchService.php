@@ -29,7 +29,35 @@ class AiDispatchService
                     return $candidate;
                 }
             } catch (\Throwable $e) {
-                Log::warning('AiDispatch: MatchingV2 a échoué, fallback sur v1.', [
+                Log::warning('AiDispatch: MatchingV2 a échoué, fallback sur MatchingScorer.', [
+                    'booking_id' => $rdv->id,
+                    'error' => $e->getMessage(),
+                ]);
+            }
+
+            // MatchingScorer fallback — lightweight weighted scoring when MatchingV2 fails
+            try {
+                $scorer = app(MatchingScorer::class);
+                $candidates = $this->availability
+                    ->sortedEligibleEmployeesForZone((int) ($rdv->service_zone_id ?? 0));
+                $candidates = $this->applyTradeFilter($candidates, $rdv);
+                if ($candidates->isNotEmpty()) {
+                    $ranked = $scorer->scoreProviders($rdv, $candidates);
+                    $topId = $ranked->first()['provider_id'] ?? null;
+                    if ($topId) {
+                        $found = $candidates->firstWhere('id', $topId);
+                        if ($found) {
+                            Log::info('AiDispatch: MatchingScorer sélectionné', [
+                                'booking_id'  => $rdv->id,
+                                'provider_id' => $topId,
+                                'score'       => $ranked->first()['total_score'] ?? null,
+                            ]);
+                            return $found;
+                        }
+                    }
+                }
+            } catch (\Throwable $e) {
+                Log::warning('AiDispatch: MatchingScorer a échoué, fallback sur v1.', [
                     'booking_id' => $rdv->id,
                     'error' => $e->getMessage(),
                 ]);

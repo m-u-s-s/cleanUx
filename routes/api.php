@@ -618,6 +618,51 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/{cancellation}/override',      [\App\Http\Controllers\Api\CancellationV2Controller::class, 'adminOverride']);
     });
 
+    // Dispute resolution — admin resolve / escalate
+    Route::prefix('admin/disputes')->middleware('api_scope:admin:everything')->group(function () {
+        Route::post('/{dispute}/resolve', function (\Illuminate\Http\Request $request, \App\Models\ComplaintCase $dispute) {
+            $data = $request->validate([
+                'resolution_type' => 'required|in:refund_full,refund_partial,credit,promo_code,replacement_booking,provider_warning,provider_sanction,no_action,dismissed,other',
+                'amount'          => 'nullable|numeric|min:0',
+                'explanation'     => 'nullable|string|max:2000',
+            ]);
+            $resolution = app(\App\Services\Disputes\DisputeResolutionService::class)
+                ->apply($dispute, $request->user(), $data);
+            return response()->json(['ok' => true, 'resolution' => $resolution]);
+        });
+        Route::post('/{dispute}/escalate', function (\Illuminate\Http\Request $request, \App\Models\ComplaintCase $dispute) {
+            $data = $request->validate([
+                'reason' => 'required|string|max:1000',
+            ]);
+            $dispute->update([
+                'status'       => \App\Models\ComplaintCase::STATUS_ESCALATED,
+                'last_activity_at' => now(),
+            ]);
+            \App\Support\ActivityLogger::log('dispute.escalated', $dispute, [
+                'admin_user_id' => $request->user()->id,
+                'reason'        => $data['reason'],
+            ]);
+            return response()->json(['ok' => true, 'status' => $dispute->fresh()->status]);
+        });
+    });
+
+    // Auto-dispatch — admin triggers scored dispatch for a booking
+    Route::prefix('admin/bookings')->middleware('api_scope:admin:everything')->group(function () {
+        Route::post('/{booking}/dispatch', function (\Illuminate\Http\Request $request, \App\Models\Booking $booking) {
+            $mission = $booking->missions()->where('status', 'planned')->first();
+            if (! $mission) {
+                return response()->json(['ok' => false, 'error' => 'No planned mission found for this booking.'], 422);
+            }
+            $assignment = app(\App\Services\Dispatch\MissionDispatchService::class)
+                ->dispatchToNextProvider($mission);
+            return response()->json([
+                'ok'            => true,
+                'assignment_id' => $assignment?->id,
+                'provider_id'   => $assignment?->user_id,
+            ]);
+        });
+    });
+
     // Phase Audit v2 — Events search / pin / export (admin)
     Route::prefix('admin/audit')->middleware('api_scope:admin:everything')->group(function () {
         Route::get('/events',                    [\App\Http\Controllers\Api\Admin\AuditController::class, 'index']);

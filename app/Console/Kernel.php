@@ -31,6 +31,9 @@ class Kernel extends ConsoleKernel
         $schedule->command('accounting:close-previous-month')->monthlyOn(6, '04:00')->withoutOverlapping();
         $schedule->command('fleet:scan-expiring')->dailyAt('05:00')->withoutOverlapping();
 
+        // Provider payouts — compute commissions + Stripe Transfers for completed bookings
+        $schedule->command('payouts:process')->dailyAt('02:00')->withoutOverlapping();
+
         // Stripe reconciliation : audit Stripe ↔ DB chaque jour
         $schedule->command('stripe:reconcile --scope=all --days=1')->dailyAt('05:30')->withoutOverlapping();
 
