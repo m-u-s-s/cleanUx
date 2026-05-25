@@ -6,6 +6,7 @@ interface AvatarProps {
   name: string;
   imageUri?: string;
   size?: number;
+  accessibilityLabel?: string;
 }
 
 function getInitials(name: string): string {
@@ -16,15 +17,25 @@ function getInitials(name: string): string {
     .join('');
 }
 
-export function Avatar({ name, imageUri, size = 40 }: AvatarProps) {
+export function Avatar({ name, imageUri, size = 40, accessibilityLabel }: AvatarProps) {
   const circleStyle = { width: size, height: size, borderRadius: size / 2 };
+  const a11yLabel = accessibilityLabel ?? name;
 
   if (imageUri) {
-    return <Image source={{ uri: imageUri }} style={circleStyle} />;
+    return (
+      <Image
+        source={{ uri: imageUri }}
+        style={circleStyle}
+        accessibilityLabel={a11yLabel}
+      />
+    );
   }
 
   return (
-    <View style={[circleStyle, styles.fallback]}>
+    <View
+      style={[circleStyle, styles.fallback]}
+      accessibilityLabel={a11yLabel}
+    >
       <Text style={[styles.initials, { fontSize: size * 0.4 }]}>
         {getInitials(name)}
       </Text>

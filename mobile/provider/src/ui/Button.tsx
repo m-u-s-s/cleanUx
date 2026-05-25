@@ -43,15 +43,15 @@ export function Button({
 
   const v = variantStyles[variant];
   const s = sizeStyles[size];
+  const isDisabled = disabled || loading;
 
   const containerStyle: ViewStyle = {
-    backgroundColor: v.bg,
+    backgroundColor: isDisabled && variant === 'primary' ? colors.surface[300] : v.bg,
     paddingVertical: s.paddingV,
     paddingHorizontal: s.paddingH,
     borderRadius: radius.md,
     borderWidth: v.border ? 1 : 0,
-    borderColor: v.border,
-    opacity: disabled ? 0.5 : 1,
+    borderColor: isDisabled ? colors.surface[300] : v.border,
     alignItems: 'center',
     justifyContent: 'center',
     flexDirection: 'row',
@@ -59,7 +59,7 @@ export function Button({
   };
 
   const textStyle: TextStyle = {
-    color: v.text,
+    color: isDisabled && variant === 'primary' ? colors.surface[500] : v.text,
     fontSize: s.fontSize,
     fontWeight: typography.fontWeight.semibold,
   };
@@ -69,13 +69,22 @@ export function Button({
       <Pressable
         style={containerStyle}
         onPress={onPress}
-        disabled={disabled || loading}
-        onPressIn={() => { scale.value = withTiming(0.96, { duration: animation.duration.fast }); }}
-        onPressOut={() => { scale.value = withTiming(1, { duration: animation.duration.fast }); }}
+        disabled={isDisabled}
+        accessibilityRole="button"
+        accessibilityState={{ disabled: !!isDisabled }}
+        accessibilityLabel={label}
+        onPressIn={() => {
+          if (!isDisabled) {
+            scale.value = withTiming(0.96, { duration: animation.duration.fast });
+          }
+        }}
+        onPressOut={() => {
+          scale.value = withTiming(1, { duration: animation.duration.fast });
+        }}
       >
         {loading ? (
           <ActivityIndicator
-            color={v.text}
+            color={isDisabled ? colors.surface[500] : v.text}
             size="small"
             style={{ marginRight: spacing.xs }}
           />
