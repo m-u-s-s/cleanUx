@@ -1,10 +1,12 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import { FlatList, View, Text, Alert, StyleSheet, RefreshControl } from 'react-native';
 import Animated, { FadeIn } from 'react-native-reanimated';
-import { Screen, Button, Badge, Skeleton, EmptyState, AnimatedListItem } from '@/ui';
+import { Screen, Button, Badge, Skeleton, EmptyState, AnimatedListItem, a11y } from '@/ui';
 import { useMissionInbox, useAcceptMission, useDeclineMission } from '@/missions';
 import type { MissionAssignment } from '@/missions';
 import { colors, spacing, typography, radius, shadows, useThemeColors } from '@/theme';
+
+const MISSION_CARD_HEIGHT = 120;
 
 export function MissionInboxScreen() {
   const { data: assignments, isLoading, refetch, isRefetching } = useMissionInbox();
@@ -12,23 +14,68 @@ export function MissionInboxScreen() {
   const decline = useDeclineMission();
   const themeColors = useThemeColors();
 
-  const handleAccept = (a: MissionAssignment) => {
+  const handleAccept = useCallback((a: MissionAssignment) => {
     Alert.alert('Accepter', `Accepter la mission ${a.service_name} ?`, [
       { text: 'Annuler', style: 'cancel' },
-      { text: 'Accepter', onPress: () => accept.mutate(a.id) },
+      { text: 'Accepter', onPress: () => {
+        accept.mutate(a.id);
+        a11y.announce(`Mission ${a.service_name} acceptée`);
+      }},
     ]);
-  };
+  }, [accept]);
 
-  const handleDecline = (a: MissionAssignment) => {
+  const handleDecline = useCallback((a: MissionAssignment) => {
     Alert.alert('Décliner', 'Décliner cette mission ?', [
       { text: 'Annuler', style: 'cancel' },
-      { text: 'Décliner', style: 'destructive', onPress: () => decline.mutate(a.id) },
+      { text: 'Décliner', style: 'destructive', onPress: () => {
+        decline.mutate(a.id);
+        a11y.announce('Mission déclinée');
+      }},
     ]);
-  };
+  }, [decline]);
+
+  const renderMissionCard = useCallback(({ item, index }: { item: MissionAssignment; index: number }) => (
+    <AnimatedListItem index={index}>
+      <View style={[styles.card, { backgroundColor: themeColors.card }]}>
+        <Text style={styles.service}>{item.service_name}</Text>
+        <Text style={styles.client}>{item.client_name}</Text>
+        <Text style={styles.address}>
+          {item.address}, {item.city}
+        </Text>
+        <Text style={styles.schedule}>
+          {item.scheduled_date} à {item.scheduled_time}
+        </Text>
+        {item.distance_km != null && (
+          <Badge label={`${item.distance_km.toFixed(1)} km`} variant="brand" />
+        )}
+        <View style={styles.actions}>
+          <Button label="Accepter" onPress={() => handleAccept(item)} size="sm" />
+          <Button
+            label="Décliner"
+            onPress={() => handleDecline(item)}
+            variant="ghost"
+            size="sm"
+          />
+        </View>
+      </View>
+    </AnimatedListItem>
+  ), [themeColors.card, handleAccept, handleDecline]);
+
+  const getItemLayout = useCallback((_: any, index: number) => ({
+    length: MISSION_CARD_HEIGHT,
+    offset: MISSION_CARD_HEIGHT * index,
+    index,
+  }), []);
+
+  const handleRefresh = useCallback(() => {
+    refetch().then(() => {
+      a11y.announce(`${assignments?.length ?? 0} missions disponibles`);
+    });
+  }, [refetch, assignments?.length]);
 
   return (
     <Screen>
-      <Text style={styles.title}>Missions disponibles</Text>
+      <Text style={styles.title} accessibilityRole="header">Missions disponibles</Text>
       {isLoading ? (
         <Skeleton width="100%" height={120} />
       ) : (
@@ -36,36 +83,13 @@ export function MissionInboxScreen() {
           <FlatList
             data={assignments ?? []}
             keyExtractor={i => String(i.id)}
-            renderItem={({ item, index }) => (
-              <AnimatedListItem index={index}>
-              <View style={[styles.card, { backgroundColor: themeColors.card }]}>
-                <Text style={styles.service}>{item.service_name}</Text>
-                <Text style={styles.client}>{item.client_name}</Text>
-                <Text style={styles.address}>
-                  {item.address}, {item.city}
-                </Text>
-                <Text style={styles.schedule}>
-                  {item.scheduled_date} à {item.scheduled_time}
-                </Text>
-                {item.distance_km != null && (
-                  <Badge label={`${item.distance_km.toFixed(1)} km`} variant="brand" />
-                )}
-                <View style={styles.actions}>
-                  <Button label="Accepter" onPress={() => handleAccept(item)} size="sm" />
-                  <Button
-                    label="Décliner"
-                    onPress={() => handleDecline(item)}
-                    variant="ghost"
-                    size="sm"
-                  />
-                </View>
-              </View>
-              </AnimatedListItem>
-            )}
+            renderItem={renderMissionCard}
+            getItemLayout={getItemLayout}
+            accessibilityLabel="Liste des missions disponibles"
             refreshControl={
               <RefreshControl
                 refreshing={isRefetching}
-                onRefresh={refetch}
+                onRefresh={handleRefresh}
                 tintColor={colors.brand[500]}
                 colors={[colors.brand[500]]}
               />
@@ -117,7 +141,7 @@ const styles = StyleSheet.create({
     marginTop: spacing.sm,
   },
   empty: {
-    color: colors.surface[400],
+    color: colors.surface[500],
     textAlign: 'center',
     marginTop: spacing.xl,
   },

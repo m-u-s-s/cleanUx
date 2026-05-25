@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { Screen, KPICard, Avatar, Badge, Button, Skeleton } from '@/ui';
@@ -48,7 +48,7 @@ export function DashboardScreen() {
       {/* Pending missions preview */}
       {pendingCount > 0 && (
         <>
-          <Text style={styles.sectionTitle}>Nouvelles missions</Text>
+          <Text style={styles.sectionTitle} accessibilityRole="header">Nouvelles missions</Text>
           {assignments!.slice(0, 2).map(a => (
             <TouchableOpacity key={a.id} style={styles.missionCard} onPress={() => navigation.navigate('MissionDetail', { missionId: a.booking_id })}>
               <Text style={styles.missionService}>{a.service_name}</Text>
@@ -64,7 +64,7 @@ export function DashboardScreen() {
       )}
 
       {/* Quick actions */}
-      <Text style={styles.sectionTitle}>Accès rapide</Text>
+      <Text style={styles.sectionTitle} accessibilityRole="header">Accès rapide</Text>
       <View style={styles.quickActions}>
         {[
           { label: 'Disponibilités', screen: 'Availability' },

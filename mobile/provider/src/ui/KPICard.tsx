@@ -16,7 +16,12 @@ export function KPICard({ title, value, hint, tone = 'neutral' }: KPICardProps) 
     : colors.brand[500];
 
   return (
-    <View style={styles.container}>
+    <View
+      style={styles.container}
+      accessible
+      accessibilityRole="text"
+      accessibilityLabel={`${title}: ${value}${hint ? `, ${hint}` : ''}`}
+    >
       <Text style={styles.title}>{title}</Text>
       <Text style={[styles.value, { color: toneColor }]}>{value}</Text>
       {hint ? <Text style={styles.hint}>{hint}</Text> : null}
@@ -31,5 +36,5 @@ const styles = StyleSheet.create({
   },
   title: { fontSize: typography.fontSize.xs, color: colors.surface[500], marginBottom: spacing.xs },
   value: { fontSize: typography.fontSize.xl, fontWeight: typography.fontWeight.bold },
-  hint: { fontSize: typography.fontSize.xs, color: colors.surface[400], marginTop: spacing.xs },
+  hint: { fontSize: typography.fontSize.xs, color: colors.surface[500], marginTop: spacing.xs },
 });

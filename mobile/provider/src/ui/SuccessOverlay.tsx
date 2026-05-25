@@ -10,6 +10,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import { Button } from './Button';
 import { colors, spacing, typography, radius } from '@/theme';
+import { useReducedMotion } from './a11y';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 const CONFETTI_COLORS = [
@@ -64,18 +65,21 @@ interface Props {
 }
 
 export function SuccessOverlay({ visible, message, onDismiss }: Props) {
+  const reducedMotion = useReducedMotion();
   const scale = useSharedValue(0);
   const opacity = useSharedValue(0);
 
   useEffect(() => {
     if (visible) {
-      opacity.value = withTiming(1, { duration: 200 });
-      scale.value = withDelay(100, withSpring(1, { damping: 12, stiffness: 150 }));
+      opacity.value = withTiming(1, { duration: reducedMotion ? 0 : 200 });
+      scale.value = reducedMotion
+        ? withTiming(1, { duration: 0 })
+        : withDelay(100, withSpring(1, { damping: 12, stiffness: 150 }));
     } else {
-      opacity.value = withTiming(0, { duration: 150 });
-      scale.value = withTiming(0, { duration: 150 });
+      opacity.value = withTiming(0, { duration: reducedMotion ? 0 : 150 });
+      scale.value = withTiming(0, { duration: reducedMotion ? 0 : 150 });
     }
-  }, [visible]);
+  }, [visible, reducedMotion]);
 
   const cardStyle = useAnimatedStyle(() => ({
     transform: [{ scale: scale.value }],
@@ -90,8 +94,8 @@ export function SuccessOverlay({ visible, message, onDismiss }: Props) {
 
   return (
     <Animated.View style={[styles.overlay, overlayStyle]}>
-      {/* Confetti particles */}
-      {Array.from({ length: 30 }).map((_, i) => (
+      {/* Confetti particles — skipped when reduced motion is active */}
+      {!reducedMotion && Array.from({ length: 30 }).map((_, i) => (
         <ConfettiPiece key={i} index={i} />
       ))}
 
