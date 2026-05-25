@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { View, FlatList, Text, StyleSheet } from 'react-native';
+import { View, FlatList, Text, StyleSheet, RefreshControl } from 'react-native';
+import Animated, { FadeIn } from 'react-native-reanimated';
 import { Screen, TextInput, Badge, Avatar, Skeleton, EmptyState, AnimatedListItem } from '@/ui';
 import { useBrowseProviders } from '@/booking';
 import type { Provider } from '@/booking';
@@ -37,19 +38,27 @@ export function BrowseProvidersScreen() {
           {[1, 2, 3].map(i => <Skeleton key={i} width="100%" height={80} />)}
         </View>
       ) : (
-        <FlatList
-          data={data?.data ?? []}
-          keyExtractor={item => String(item.id)}
-          renderItem={({ item, index }) => (
-            <AnimatedListItem index={index}>
-              <ProviderCard provider={item} />
-            </AnimatedListItem>
-          )}
-          contentContainerStyle={styles.list}
-          ListEmptyComponent={<EmptyState title="Aucun prestataire trouvé" message="Essayez avec d'autres critères de recherche." />}
-          onRefresh={refetch}
-          refreshing={isRefetching}
-        />
+        <Animated.View entering={FadeIn.duration(280)} style={{ flex: 1 }}>
+          <FlatList
+            data={data?.data ?? []}
+            keyExtractor={item => String(item.id)}
+            renderItem={({ item, index }) => (
+              <AnimatedListItem index={index}>
+                <ProviderCard provider={item} />
+              </AnimatedListItem>
+            )}
+            contentContainerStyle={styles.list}
+            ListEmptyComponent={<EmptyState title="Aucun prestataire trouvé" message="Essayez avec d'autres critères de recherche." />}
+            refreshControl={
+              <RefreshControl
+                refreshing={isRefetching}
+                onRefresh={refetch}
+                tintColor={colors.brand[500]}
+                colors={[colors.brand[500]]}
+              />
+            }
+          />
+        </Animated.View>
       )}
     </Screen>
   );

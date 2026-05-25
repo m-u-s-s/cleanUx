@@ -1,5 +1,6 @@
 import React from 'react';
-import { FlatList, View, Text, StyleSheet } from 'react-native';
+import { FlatList, View, Text, StyleSheet, RefreshControl } from 'react-native';
+import Animated, { FadeIn } from 'react-native-reanimated';
 import { Screen, Button, Skeleton, EmptyState, AnimatedListItem } from '@/ui';
 import { useNotifications, useMarkAllRead } from '@/notifications';
 import type { AppNotification } from '@/notifications';
@@ -28,24 +29,32 @@ export function NotificationsScreen() {
           {[1, 2, 3, 4].map(i => <Skeleton key={i} width="100%" height={60} />)}
         </View>
       ) : (
-        <FlatList
-          data={notifs ?? []}
-          keyExtractor={item => item.id}
-          renderItem={({ item, index }: { item: AppNotification; index: number }) => (
-            <AnimatedListItem index={index}>
-              <View style={[styles.notif, !item.read_at && styles.unread]}>
-                <Text style={styles.notifTitle}>{item.title}</Text>
-                <Text style={styles.notifBody}>{item.body}</Text>
-                <Text style={styles.notifTime}>
-                  {new Date(item.created_at).toLocaleDateString()}
-                </Text>
-              </View>
-            </AnimatedListItem>
-          )}
-          onRefresh={refetch}
-          refreshing={isRefetching ?? false}
-          ListEmptyComponent={<EmptyState title="Aucune notification" message="Vous êtes à jour !" />}
-        />
+        <Animated.View entering={FadeIn.duration(280)} style={{ flex: 1 }}>
+          <FlatList
+            data={notifs ?? []}
+            keyExtractor={item => item.id}
+            renderItem={({ item, index }: { item: AppNotification; index: number }) => (
+              <AnimatedListItem index={index}>
+                <View style={[styles.notif, !item.read_at && styles.unread]}>
+                  <Text style={styles.notifTitle}>{item.title}</Text>
+                  <Text style={styles.notifBody}>{item.body}</Text>
+                  <Text style={styles.notifTime}>
+                    {new Date(item.created_at).toLocaleDateString()}
+                  </Text>
+                </View>
+              </AnimatedListItem>
+            )}
+            refreshControl={
+              <RefreshControl
+                refreshing={isRefetching ?? false}
+                onRefresh={refetch}
+                tintColor={colors.brand[500]}
+                colors={[colors.brand[500]]}
+              />
+            }
+            ListEmptyComponent={<EmptyState title="Aucune notification" message="Vous êtes à jour !" />}
+          />
+        </Animated.View>
       )}
     </Screen>
   );

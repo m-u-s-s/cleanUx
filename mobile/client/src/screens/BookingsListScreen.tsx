@@ -1,5 +1,6 @@
 import React from 'react';
-import { FlatList, View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { FlatList, View, Text, StyleSheet, TouchableOpacity, RefreshControl } from 'react-native';
+import Animated, { FadeIn } from 'react-native-reanimated';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Screen, Badge, Skeleton, EmptyState, ErrorState, AnimatedListItem } from '@/ui';
@@ -23,19 +24,27 @@ export function BookingsListScreen() {
           {[1, 2, 3].map(i => <Skeleton key={i} width="100%" height={90} />)}
         </View>
       ) : (
-        <FlatList
-          data={bookings ?? []}
-          keyExtractor={item => String(item.id)}
-          renderItem={({ item, index }) => (
-            <AnimatedListItem index={index}>
-              <BookingCard booking={item} />
-            </AnimatedListItem>
-          )}
-          contentContainerStyle={styles.list}
-          ListEmptyComponent={<EmptyState title="Pas encore de réservation" message="Réservez votre premier service pour commencer." actionLabel="Réserver" onAction={() => navigation.navigate('BookingWizard')} />}
-          onRefresh={refetch}
-          refreshing={isRefetching}
-        />
+        <Animated.View entering={FadeIn.duration(280)} style={{ flex: 1 }}>
+          <FlatList
+            data={bookings ?? []}
+            keyExtractor={item => String(item.id)}
+            renderItem={({ item, index }) => (
+              <AnimatedListItem index={index}>
+                <BookingCard booking={item} />
+              </AnimatedListItem>
+            )}
+            contentContainerStyle={styles.list}
+            ListEmptyComponent={<EmptyState title="Pas encore de réservation" message="Réservez votre premier service pour commencer." actionLabel="Réserver" onAction={() => navigation.navigate('BookingWizard')} />}
+            refreshControl={
+              <RefreshControl
+                refreshing={isRefetching}
+                onRefresh={refetch}
+                tintColor={colors.brand[500]}
+                colors={[colors.brand[500]]}
+              />
+            }
+          />
+        </Animated.View>
       )}
     </Screen>
   );

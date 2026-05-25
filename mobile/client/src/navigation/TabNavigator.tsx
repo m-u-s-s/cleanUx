@@ -6,11 +6,25 @@ import { BookingsListScreen } from '@/screens/BookingsListScreen';
 import { ProfileScreen } from '@/screens/ProfileScreen';
 import { Icon } from '@/ui';
 import { colors } from '@/theme';
+import { useNotifications } from '@/notifications';
 import type { TabParamList } from './types';
 
 const Tab = createBottomTabNavigator<TabParamList>();
 
+function useUnreadCount(): number | undefined {
+  try {
+    // eslint-disable-next-line react-hooks/rules-of-hooks
+    const { data } = useNotifications();
+    const count = data?.filter(n => !n.read_at).length ?? 0;
+    return count > 0 ? count : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
 export function TabNavigator() {
+  const unreadCount = useUnreadCount();
+
   return (
     <Tab.Navigator
       screenOptions={{
@@ -38,7 +52,11 @@ export function TabNavigator() {
       <Tab.Screen
         name="Profile"
         component={ProfileScreen}
-        options={{ tabBarIcon: ({ color, size }) => <Icon name="person-outline" size={size} color={color} /> }}
+        options={{
+          tabBarIcon: ({ color, size }) => <Icon name="person-outline" size={size} color={color} />,
+          tabBarBadge: unreadCount,
+          tabBarBadgeStyle: { backgroundColor: colors.danger[500], fontSize: 10 },
+        }}
       />
     </Tab.Navigator>
   );

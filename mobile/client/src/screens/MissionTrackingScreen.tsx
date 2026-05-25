@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useRef, useEffect, useMemo } from 'react';
 import { View, Text, StyleSheet, Dimensions } from 'react-native';
 import MapView, { Marker, Polyline, PROVIDER_DEFAULT } from 'react-native-maps';
 import { Screen, Badge, Skeleton } from '@/ui';
@@ -14,12 +14,14 @@ export function MissionTrackingScreen({ route }: Props) {
   const { data: session, isLoading } = useTrackingSession(bookingId);
   const { data: trail } = useTrackingTrail(bookingId);
   const { position: livePos, eta: liveEta } = useLiveTracking(bookingId);
+  const mapRef = useRef<MapView>(null);
 
   const currentPos = livePos ?? (trail && trail.length > 0 ? trail[trail.length - 1] : null);
   const etaMinutes = liveEta?.eta_minutes ?? session?.eta_minutes;
   const distanceKm = liveEta?.distance_km ?? session?.distance_km;
 
-  const region = useMemo(() => {
+  // Initial region only — updates happen via animateToRegion
+  const initialRegion = useMemo(() => {
     if (!currentPos) {
       return { latitude: 48.8566, longitude: 2.3522, latitudeDelta: 0.05, longitudeDelta: 0.05 };
     }
@@ -29,6 +31,21 @@ export function MissionTrackingScreen({ route }: Props) {
       latitudeDelta: 0.01,
       longitudeDelta: 0.01,
     };
+  }, []); // intentionally empty — only for initial render
+
+  // Smooth camera follow instead of prop re-render
+  useEffect(() => {
+    if (currentPos && mapRef.current) {
+      mapRef.current.animateToRegion(
+        {
+          latitude: currentPos.latitude,
+          longitude: currentPos.longitude,
+          latitudeDelta: 0.01,
+          longitudeDelta: 0.01,
+        },
+        500,
+      );
+    }
   }, [currentPos?.latitude, currentPos?.longitude]);
 
   if (isLoading) {
@@ -43,9 +60,10 @@ export function MissionTrackingScreen({ route }: Props) {
   return (
     <View style={styles.container}>
       <MapView
+        ref={mapRef}
         style={styles.map}
         provider={PROVIDER_DEFAULT}
-        region={region}
+        initialRegion={initialRegion}
         showsUserLocation
       >
         {currentPos && (
@@ -100,7 +118,7 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     right: 0,
-    backgroundColor: '#fff',
+    backgroundColor: 'rgba(255, 255, 255, 0.92)',
     borderTopLeftRadius: radius.xl,
     borderTopRightRadius: radius.xl,
     padding: spacing.lg,
