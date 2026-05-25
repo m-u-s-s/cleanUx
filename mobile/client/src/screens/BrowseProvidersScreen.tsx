@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { View, FlatList, Text, StyleSheet } from 'react-native';
-import { Screen, TextInput, Badge, Avatar, Skeleton } from '@/ui';
+import { Screen, TextInput, Badge, Avatar, Skeleton, EmptyState } from '@/ui';
 import { useBrowseProviders } from '@/booking';
 import type { Provider } from '@/booking';
 import { colors, spacing, typography, radius, shadows } from '@/theme';
@@ -8,7 +8,7 @@ import { colors, spacing, typography, radius, shadows } from '@/theme';
 export function BrowseProvidersScreen() {
   const [trade, setTrade] = useState('');
   const [postalCode, setPostalCode] = useState('');
-  const { data, isLoading } = useBrowseProviders({
+  const { data, isLoading, refetch, isRefetching } = useBrowseProviders({
     trade: trade || undefined,
     postalCode: postalCode || undefined,
   });
@@ -41,7 +41,9 @@ export function BrowseProvidersScreen() {
           keyExtractor={item => String(item.id)}
           renderItem={({ item }) => <ProviderCard provider={item} />}
           contentContainerStyle={styles.list}
-          ListEmptyComponent={<Text style={styles.empty}>Aucun prestataire trouvé</Text>}
+          ListEmptyComponent={<EmptyState title="Aucun prestataire trouvé" message="Essayez avec d'autres critères de recherche." />}
+          onRefresh={refetch}
+          refreshing={isRefetching}
         />
       )}
     </Screen>
@@ -80,12 +82,6 @@ const styles = StyleSheet.create({
   filters: { gap: spacing.sm, marginBottom: spacing.md },
   skeletons: { gap: spacing.sm },
   list: { gap: spacing.sm, paddingBottom: spacing.xl },
-  empty: {
-    fontSize: typography.fontSize.sm,
-    color: colors.surface[400],
-    textAlign: 'center',
-    marginTop: spacing.xl,
-  },
   card: {
     flexDirection: 'row',
     backgroundColor: '#fff',

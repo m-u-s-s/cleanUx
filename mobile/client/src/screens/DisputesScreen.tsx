@@ -1,18 +1,20 @@
 import React from 'react';
 import { FlatList, View, Text, StyleSheet } from 'react-native';
 import { useQuery } from '@tanstack/react-query';
-import { Screen, Badge, Skeleton } from '@/ui';
+import { Screen, Badge, Skeleton, EmptyState, ErrorState } from '@/ui';
 import { apiClient } from '@/api';
 import { colors, spacing, typography, radius } from '@/theme';
 
 export function DisputesScreen() {
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, isError, refetch, isRefetching } = useQuery({
     queryKey: ['disputes'],
     queryFn: async () => {
       const res = await apiClient.get('/client/disputes');
       return res.data.data ?? [];
     },
   });
+
+  if (isError) return <Screen><ErrorState message="Impossible de charger vos litiges." onRetry={refetch} /></Screen>;
 
   return (
     <Screen>
@@ -35,7 +37,9 @@ export function DisputesScreen() {
               <Text style={styles.cardDesc}>{item.reason ?? item.description ?? ''}</Text>
             </View>
           )}
-          ListEmptyComponent={<Text style={styles.empty}>Aucun litige en cours</Text>}
+          onRefresh={refetch}
+          refreshing={isRefetching}
+          ListEmptyComponent={<EmptyState title="Aucun litige" message="Vous n'avez aucun litige en cours." />}
         />
       )}
     </Screen>

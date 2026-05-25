@@ -1,8 +1,11 @@
 import React, { useState } from 'react';
 import { View, Text, Alert, KeyboardAvoidingView, Platform, ScrollView, TouchableOpacity, StyleSheet } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Button, TextInput, Divider } from '@/ui';
 import { useLogin, useRegister, useAuth } from '@/auth';
 import { colors, spacing, typography, radius } from '@/theme';
+import type { RootStackParamList } from '@/navigation/types';
 
 export function LoginScreen() {
   const [mode, setMode] = useState<'login' | 'register'>('login');
@@ -34,6 +37,7 @@ function LoginForm() {
   const [password, setPassword] = useState('');
   const login = useLogin();
   const { setUser } = useAuth();
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
 
   const handleLogin = async () => {
     if (!email || !password) { Alert.alert('Erreur', 'Veuillez remplir tous les champs.'); return; }
@@ -49,6 +53,9 @@ function LoginForm() {
     <View style={styles.form}>
       <TextInput label="Email" value={email} onChangeText={setEmail} keyboardType="email-address" autoCapitalize="none" autoComplete="email" placeholder="votre@email.com" />
       <TextInput label="Mot de passe" value={password} onChangeText={setPassword} secureTextEntry placeholder="••••••••" />
+      <TouchableOpacity onPress={() => navigation.navigate('ForgotPassword')}>
+        <Text style={styles.forgotText}>Mot de passe oublié ?</Text>
+      </TouchableOpacity>
       <Button label="Se connecter" onPress={handleLogin} fullWidth size="lg" loading={login.isPending} />
     </View>
   );
@@ -98,4 +105,5 @@ const styles = StyleSheet.create({
   subtitle: { fontSize: typography.fontSize.sm, color: colors.mode.showcase.muted, marginTop: spacing.sm },
   form: { gap: spacing.md, marginBottom: spacing.lg },
   switchText: { textAlign: 'center', color: colors.accent.amber, fontSize: typography.fontSize.sm, fontWeight: typography.fontWeight.medium, paddingVertical: spacing.md },
+  forgotText: { color: colors.accent.cyan, fontSize: typography.fontSize.sm, textAlign: 'right', marginTop: -spacing.xs },
 });

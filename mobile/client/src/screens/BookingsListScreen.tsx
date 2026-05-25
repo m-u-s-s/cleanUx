@@ -2,14 +2,17 @@ import React from 'react';
 import { FlatList, View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { Screen, Badge, Skeleton } from '@/ui';
+import { Screen, Badge, Skeleton, EmptyState, ErrorState } from '@/ui';
 import { useBookings } from '@/booking';
 import type { Booking } from '@/booking';
 import { colors, spacing, typography, radius, shadows } from '@/theme';
 import type { RootStackParamList } from '@/navigation/types';
 
 export function BookingsListScreen() {
-  const { data: bookings, isLoading, refetch } = useBookings();
+  const { data: bookings, isLoading, isError, refetch, isRefetching } = useBookings();
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+
+  if (isError) return <Screen><ErrorState message="Impossible de charger vos réservations." onRetry={refetch} /></Screen>;
 
   return (
     <Screen>
@@ -24,9 +27,9 @@ export function BookingsListScreen() {
           keyExtractor={item => String(item.id)}
           renderItem={({ item }) => <BookingCard booking={item} />}
           contentContainerStyle={styles.list}
-          ListEmptyComponent={<Text style={styles.empty}>Aucune réservation pour le moment</Text>}
+          ListEmptyComponent={<EmptyState title="Pas encore de réservation" message="Réservez votre premier service pour commencer." actionLabel="Réserver" onAction={() => navigation.navigate('BookingWizard')} />}
           onRefresh={refetch}
-          refreshing={isLoading}
+          refreshing={isRefetching}
         />
       )}
     </Screen>
@@ -75,12 +78,6 @@ const styles = StyleSheet.create({
   },
   skeletons: { gap: spacing.sm },
   list: { gap: spacing.sm, paddingBottom: spacing.xl },
-  empty: {
-    fontSize: typography.fontSize.sm,
-    color: colors.surface[400],
-    textAlign: 'center',
-    marginTop: spacing.xl,
-  },
   card: {
     backgroundColor: '#fff',
     borderRadius: radius.md,

@@ -24,6 +24,7 @@ import { GDPRScreen } from '@/screens/GDPRScreen';
 import { ProfileEditScreen } from '@/screens/ProfileEditScreen';
 import { TipsScreen } from '@/screens/TipsScreen';
 import { NPSScreen } from '@/screens/NPSScreen';
+import { ForgotPasswordScreen } from '@/screens/ForgotPasswordScreen';
 import { colors } from '@/theme';
 import type { RootStackParamList } from './types';
 
@@ -140,7 +141,10 @@ export function RootNavigator() {
             />
           </>
         ) : (
-          <Stack.Screen name="Login" component={LoginScreen} />
+          <>
+            <Stack.Screen name="Login" component={LoginScreen} />
+            <Stack.Screen name="ForgotPassword" component={ForgotPasswordScreen} options={{ title: 'Mot de passe oublié', headerShown: true }} />
+          </>
         )}
       </Stack.Navigator>
     </View>

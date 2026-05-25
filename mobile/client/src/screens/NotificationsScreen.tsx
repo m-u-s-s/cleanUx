@@ -1,12 +1,12 @@
 import React from 'react';
 import { FlatList, View, Text, StyleSheet } from 'react-native';
-import { Screen, Button, Skeleton } from '@/ui';
+import { Screen, Button, Skeleton, EmptyState } from '@/ui';
 import { useNotifications, useMarkAllRead } from '@/notifications';
 import type { AppNotification } from '@/notifications';
 import { colors, spacing, typography } from '@/theme';
 
 export function NotificationsScreen() {
-  const { data: notifs, isLoading, refetch } = useNotifications();
+  const { data: notifs, isLoading, refetch, isRefetching } = useNotifications();
   const markAll = useMarkAllRead();
   const unreadCount = notifs?.filter(n => !n.read_at).length ?? 0;
 
@@ -41,10 +41,8 @@ export function NotificationsScreen() {
             </View>
           )}
           onRefresh={refetch}
-          refreshing={isLoading}
-          ListEmptyComponent={
-            <Text style={styles.empty}>Aucune notification</Text>
-          }
+          refreshing={isRefetching ?? false}
+          ListEmptyComponent={<EmptyState title="Aucune notification" message="Vous êtes à jour !" />}
         />
       )}
     </Screen>

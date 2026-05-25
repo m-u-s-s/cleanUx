@@ -1,12 +1,12 @@
 import React from 'react';
 import { View, FlatList, Text, StyleSheet } from 'react-native';
-import { Screen, KPICard, Badge, Button, Skeleton } from '@/ui';
+import { Screen, KPICard, Badge, Button, Skeleton, EmptyState } from '@/ui';
 import { useLoyaltyAccount, useLoyaltyRewards } from '@/loyalty';
 import { colors, spacing, typography, radius, shadows } from '@/theme';
 
 export function LoyaltyScreen() {
   const { data: account, isLoading: loadingAccount } = useLoyaltyAccount();
-  const { data: rewards, isLoading: loadingRewards } = useLoyaltyRewards();
+  const { data: rewards, isLoading: loadingRewards, refetch: refetchRewards, isRefetching: isRefetchingRewards } = useLoyaltyRewards();
 
   return (
     <Screen scroll>
@@ -30,6 +30,8 @@ export function LoyaltyScreen() {
           data={rewards ?? []}
           scrollEnabled={false}
           keyExtractor={item => String(item.id)}
+          onRefresh={refetchRewards}
+          refreshing={isRefetchingRewards}
           renderItem={({ item }) => (
             <View style={styles.rewardCard}>
               <View style={styles.rewardInfo}>

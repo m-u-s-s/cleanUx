@@ -21,6 +21,7 @@ export type RootStackParamList = {
   ProfileEdit: undefined;
   Tips: { bookingId: number };
   NPS: undefined;
+  ForgotPassword: undefined;
 };
 
 export type BookingStackParamList = {

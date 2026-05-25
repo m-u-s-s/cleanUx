@@ -12,3 +12,5 @@ export { Skeleton } from './Skeleton';
 export { Screen } from './Screen';
 export { BottomSheet } from './BottomSheet';
 export { fadeUpConfig, fadeInConfig, shimmerConfig } from './animations';
+export { EmptyState } from './EmptyState';
+export { ErrorState } from './ErrorState';
