@@ -26,6 +26,37 @@ const interpolateColor = () => '#000000';
 const useAnimatedReaction = () => {};
 const cancelAnimation = () => {};
 
+// Entering/exiting animations (no-op stubs for tests)
+const _makeEntryExit = () => {
+  const self = {
+    duration: () => self,
+    delay: () => self,
+    easing: () => self,
+    springify: () => self,
+    damping: () => self,
+    stiffness: () => self,
+    overshootClamping: () => self,
+    restDisplacementThreshold: () => self,
+    restSpeedThreshold: () => self,
+    withInitialValues: () => self,
+    withCallback: () => self,
+    randomDelay: () => self,
+  };
+  return self;
+};
+const FadeIn = _makeEntryExit();
+const FadeOut = _makeEntryExit();
+const FadeInUp = _makeEntryExit();
+const FadeOutDown = _makeEntryExit();
+const SlideInRight = _makeEntryExit();
+const SlideOutLeft = _makeEntryExit();
+const ZoomIn = _makeEntryExit();
+const ZoomOut = _makeEntryExit();
+const BounceIn = _makeEntryExit();
+const BounceOut = _makeEntryExit();
+const Layout = _makeEntryExit();
+const LinearTransition = _makeEntryExit();
+
 const Easing = {
   linear: (t) => t,
   ease: (t) => t,
@@ -93,6 +124,19 @@ module.exports = {
   Easing,
   Extrapolation: { CLAMP: 'clamp', EXTEND: 'extend', IDENTITY: 'identity' },
   ReduceMotion: { System: 'system', Always: 'always', Never: 'never' },
+  // Entering / exiting animations
+  FadeIn,
+  FadeOut,
+  FadeInUp,
+  FadeOutDown,
+  SlideInRight,
+  SlideOutLeft,
+  ZoomIn,
+  ZoomOut,
+  BounceIn,
+  BounceOut,
+  Layout,
+  LinearTransition,
   // Re-export FlatList stub
   FlatList: require('react-native').FlatList,
 };

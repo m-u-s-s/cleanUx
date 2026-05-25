@@ -8,6 +8,7 @@ import {
   TouchableOpacity,
   StyleSheet,
 } from 'react-native';
+import Animated, { FadeIn, FadeOut } from 'react-native-reanimated';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Button, TextInput, Divider, Icon } from '@/ui';
@@ -26,7 +27,15 @@ export function LoginScreen() {
           <Text style={styles.subtitle}>{mode === 'login' ? 'Espace prestataire' : 'Rejoindre en tant que prestataire'}</Text>
         </View>
 
-        {mode === 'login' ? <LoginForm /> : <RegisterForm />}
+        {mode === 'login' ? (
+          <Animated.View entering={FadeIn.duration(200)} exiting={FadeOut.duration(150)} key="login">
+            <LoginForm />
+          </Animated.View>
+        ) : (
+          <Animated.View entering={FadeIn.duration(200)} exiting={FadeOut.duration(150)} key="register">
+            <RegisterForm />
+          </Animated.View>
+        )}
 
         <Divider label="ou" />
 

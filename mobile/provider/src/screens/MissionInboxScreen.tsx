@@ -1,5 +1,6 @@
 import React from 'react';
-import { FlatList, View, Text, Alert, StyleSheet } from 'react-native';
+import { FlatList, View, Text, Alert, StyleSheet, RefreshControl } from 'react-native';
+import Animated, { FadeIn } from 'react-native-reanimated';
 import { Screen, Button, Badge, Skeleton, EmptyState, AnimatedListItem } from '@/ui';
 import { useMissionInbox, useAcceptMission, useDeclineMission } from '@/missions';
 import type { MissionAssignment } from '@/missions';
@@ -31,39 +32,47 @@ export function MissionInboxScreen() {
       {isLoading ? (
         <Skeleton width="100%" height={120} />
       ) : (
-        <FlatList
-          data={assignments ?? []}
-          keyExtractor={i => String(i.id)}
-          renderItem={({ item, index }) => (
-            <AnimatedListItem index={index}>
-            <View style={[styles.card, { backgroundColor: themeColors.card }]}>
-              <Text style={styles.service}>{item.service_name}</Text>
-              <Text style={styles.client}>{item.client_name}</Text>
-              <Text style={styles.address}>
-                {item.address}, {item.city}
-              </Text>
-              <Text style={styles.schedule}>
-                {item.scheduled_date} à {item.scheduled_time}
-              </Text>
-              {item.distance_km != null && (
-                <Badge label={`${item.distance_km.toFixed(1)} km`} variant="brand" />
-              )}
-              <View style={styles.actions}>
-                <Button label="Accepter" onPress={() => handleAccept(item)} size="sm" />
-                <Button
-                  label="Décliner"
-                  onPress={() => handleDecline(item)}
-                  variant="ghost"
-                  size="sm"
-                />
+        <Animated.View entering={FadeIn.duration(280)} style={{ flex: 1 }}>
+          <FlatList
+            data={assignments ?? []}
+            keyExtractor={i => String(i.id)}
+            renderItem={({ item, index }) => (
+              <AnimatedListItem index={index}>
+              <View style={[styles.card, { backgroundColor: themeColors.card }]}>
+                <Text style={styles.service}>{item.service_name}</Text>
+                <Text style={styles.client}>{item.client_name}</Text>
+                <Text style={styles.address}>
+                  {item.address}, {item.city}
+                </Text>
+                <Text style={styles.schedule}>
+                  {item.scheduled_date} à {item.scheduled_time}
+                </Text>
+                {item.distance_km != null && (
+                  <Badge label={`${item.distance_km.toFixed(1)} km`} variant="brand" />
+                )}
+                <View style={styles.actions}>
+                  <Button label="Accepter" onPress={() => handleAccept(item)} size="sm" />
+                  <Button
+                    label="Décliner"
+                    onPress={() => handleDecline(item)}
+                    variant="ghost"
+                    size="sm"
+                  />
+                </View>
               </View>
-            </View>
-            </AnimatedListItem>
-          )}
-          onRefresh={refetch}
-          refreshing={isRefetching}
-          ListEmptyComponent={<EmptyState title="Aucune mission en attente" message="Les nouvelles missions vous seront proposées ici." />}
-        />
+              </AnimatedListItem>
+            )}
+            refreshControl={
+              <RefreshControl
+                refreshing={isRefetching}
+                onRefresh={refetch}
+                tintColor={colors.brand[500]}
+                colors={[colors.brand[500]]}
+              />
+            }
+            ListEmptyComponent={<EmptyState title="Aucune mission en attente" message="Les nouvelles missions vous seront proposées ici." />}
+          />
+        </Animated.View>
       )}
     </Screen>
   );

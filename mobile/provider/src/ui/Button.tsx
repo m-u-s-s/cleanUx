@@ -75,6 +75,12 @@ export function Button({
         accessibilityLabel={label}
         onPressIn={() => {
           if (!isDisabled) {
+            // Dynamic haptic — graceful no-op if expo-haptics not available (Expo Go / web)
+            try {
+              // eslint-disable-next-line @typescript-eslint/no-var-requires, @typescript-eslint/no-unsafe-assignment
+              const H = require('expo-haptics') as { impactAsync: (style: unknown) => Promise<void>; ImpactFeedbackStyle: { Light: unknown } };
+              void H.impactAsync(H.ImpactFeedbackStyle.Light);
+            } catch {}
             scale.value = withTiming(0.96, { duration: animation.duration.fast });
           }
         }}
