@@ -3,6 +3,7 @@
 namespace App\Services\Payments;
 
 use App\Models\User;
+use App\Services\Country\CountryConfigService;
 use Stripe\Account;
 use Stripe\AccountLink;
 use Stripe\Payout;
@@ -10,8 +11,9 @@ use Stripe\Stripe;
 
 class StripeConnectService
 {
-    public function __construct()
-    {
+    public function __construct(
+        private readonly CountryConfigService $countryConfig = new CountryConfigService(),
+    ) {
         Stripe::setApiKey(config('cashier.secret'));
     }
 
@@ -21,7 +23,8 @@ class StripeConnectService
             return $user->stripe_connect_account_id;
         }
 
-        $country = $user->country ?? $user->business_country ?? config('services.stripe.connect_country', 'BE');
+        $rawCountry = $user->country ?? $user->business_country ?? config('services.stripe.connect_country', 'BE');
+        $country = $this->countryConfig->getStripeCountry($rawCountry);
         $account = Account::create([
             'type' => 'express',
             'country' => $country,

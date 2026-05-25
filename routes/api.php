@@ -62,6 +62,15 @@ Route::get('/support/faq', function () {
 })->name('api.support.faq');
 
 // ─────────────────────────────────────────────
+// Public — Country config (cached 1h)
+// ─────────────────────────────────────────────
+
+Route::get('/countries', function () {
+    $service = app(\App\Services\Country\CountryConfigService::class);
+    return response()->json(['data' => $service->all()]);
+})->middleware('cache.headers:public;max_age=3600;etag')->name('api.countries');
+
+// ─────────────────────────────────────────────
 // Public — Auth
 // ─────────────────────────────────────────────
 

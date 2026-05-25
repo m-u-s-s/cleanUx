@@ -31,6 +31,12 @@ class AppServiceProvider extends ServiceProvider
         $this->app->singleton(\App\Services\Payments\CommissionService::class);
         $this->app->singleton(\App\Services\Payments\StripeCountryMapper::class);
         $this->app->singleton(\App\Services\Tax\TaxCalculator::class);
+
+        // Multi-country config — singleton, pure data (no I/O)
+        $this->app->singleton(\App\Services\Country\CountryConfigService::class);
+
+        // Dispatch — scoring engine singleton (stateless, thread-safe)
+        $this->app->singleton(\App\Services\Dispatch\MatchingScorer::class);
     }
 
     /**

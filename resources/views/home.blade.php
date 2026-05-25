@@ -226,6 +226,105 @@
         </div>
     </section>
 
+    {{-- SOCIAL PROOF / METRICS --}}
+    <section class="py-20 bg-gradient-to-b from-white to-slate-50" data-cx-reveal>
+        <div class="max-w-6xl mx-auto px-6">
+            <h2 class="text-3xl font-bold text-center text-slate-900 mb-4" style="font-family: 'Space Grotesk', sans-serif;">
+                La confiance de nos utilisateurs
+            </h2>
+            <p class="text-center text-slate-500 mb-12">Rejoignez une communauté qui grandit chaque jour</p>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-8">
+                <div class="text-center" data-cx-reveal data-cx-delay="0">
+                    <p class="text-4xl font-bold text-[#ffb648]" style="font-family: 'Space Grotesk', sans-serif;">20+</p>
+                    <p class="text-sm text-slate-500 mt-2">Métiers disponibles</p>
+                </div>
+                <div class="text-center" data-cx-reveal data-cx-delay="100">
+                    <p class="text-4xl font-bold text-[#ffb648]" style="font-family: 'Space Grotesk', sans-serif;">9</p>
+                    <p class="text-sm text-slate-500 mt-2">Pays supportés</p>
+                </div>
+                <div class="text-center" data-cx-reveal data-cx-delay="200">
+                    <p class="text-4xl font-bold text-[#ffb648]" style="font-family: 'Space Grotesk', sans-serif;">4.8★</p>
+                    <p class="text-sm text-slate-500 mt-2">Note moyenne</p>
+                </div>
+                <div class="text-center" data-cx-reveal data-cx-delay="300">
+                    <p class="text-4xl font-bold text-[#ffb648]" style="font-family: 'Space Grotesk', sans-serif;">24/7</p>
+                    <p class="text-sm text-slate-500 mt-2">Support disponible</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    {{-- TESTIMONIALS --}}
+    <section class="py-20 bg-white" data-cx-reveal>
+        <div class="max-w-6xl mx-auto px-6">
+            <h2 class="text-3xl font-bold text-center text-slate-900 mb-12" style="font-family: 'Space Grotesk', sans-serif;">
+                Ce qu'ils en disent
+            </h2>
+            <div class="grid md:grid-cols-3 gap-8">
+                <div class="cu-glass rounded-2xl p-6" data-cx-reveal data-cx-delay="0">
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="w-10 h-10 rounded-full bg-brand-100 flex items-center justify-center text-brand-700 font-bold">M</div>
+                        <div>
+                            <p class="font-semibold text-slate-900">Marie D.</p>
+                            <p class="text-xs text-slate-500">Bruxelles • Cliente</p>
+                        </div>
+                    </div>
+                    <p class="text-sm text-slate-600">"Réservation en 2 minutes, prestataire ponctuel, paiement transparent. Je ne cherche plus ailleurs."</p>
+                    <p class="text-[#ffb648] mt-3 text-sm">★★★★★</p>
+                </div>
+                <div class="cu-glass rounded-2xl p-6" data-cx-reveal data-cx-delay="100">
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="w-10 h-10 rounded-full bg-success-50 flex items-center justify-center text-success-700 font-bold">A</div>
+                        <div>
+                            <p class="font-semibold text-slate-900">Ahmed K.</p>
+                            <p class="text-xs text-slate-500">Paris • Prestataire</p>
+                        </div>
+                    </div>
+                    <p class="text-sm text-slate-600">"Grâce à CleanUx, j'ai triplé mes missions mensuelles. L'app terrain est intuitive et les paiements arrivent vite."</p>
+                    <p class="text-[#ffb648] mt-3 text-sm">★★★★★</p>
+                </div>
+                <div class="cu-glass rounded-2xl p-6" data-cx-reveal data-cx-delay="200">
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="w-10 h-10 rounded-full bg-brand-50 flex items-center justify-center text-brand-600 font-bold">S</div>
+                        <div>
+                            <p class="font-semibold text-slate-900">Sophie L.</p>
+                            <p class="text-xs text-slate-500">Liège • Gestionnaire multi-sites</p>
+                        </div>
+                    </div>
+                    <p class="text-sm text-slate-600">"Gérer 12 bureaux avec un seul tableau de bord, c'est un gain de temps énorme. Le chantier groupé est brillant."</p>
+                    <p class="text-[#ffb648] mt-3 text-sm">★★★★☆</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    {{-- FAQ --}}
+    <section class="py-20 bg-slate-50" data-cx-reveal>
+        <div class="max-w-3xl mx-auto px-6">
+            <h2 class="text-3xl font-bold text-center text-slate-900 mb-12" style="font-family: 'Space Grotesk', sans-serif;">
+                Questions fréquentes
+            </h2>
+            <div class="space-y-4">
+                @foreach([
+                    ['Comment fonctionne CleanUx ?', 'Choisissez un service, précisez vos besoins, et un prestataire vérifié vous est attribué automatiquement. Suivez la mission en temps réel et payez en toute sécurité.'],
+                    ['Combien ça coûte ?', 'Le prix dépend du service et de la durée estimée. Vous recevez un devis avant de confirmer — pas de surprise. Vous pouvez même obtenir un devis instantané par photo grâce à notre IA.'],
+                    ['Les prestataires sont-ils vérifiés ?', "Oui. Chaque prestataire passe une vérification d'identité (KYC), fournit ses certifications professionnelles et est noté après chaque mission."],
+                    ['Comment devenir prestataire ?', "Téléchargez l'app CleanUx Provider, inscrivez-vous, complétez la vérification et commencez à recevoir des missions. Paiements directs sur votre compte via Stripe."],
+                    ['Dans quels pays est disponible CleanUx ?', 'Belgique, France, Pays-Bas, Allemagne, Espagne, Italie, Portugal, Luxembourg et Autriche. Nous étendons notre couverture régulièrement.'],
+                    ['Puis-je annuler une réservation ?', 'Oui, avec des conditions selon le délai. Annulation gratuite > 24h avant. Des frais peuvent s\'appliquer dans les 24h précédant la mission.'],
+                ] as [$question, $answer])
+                    <details class="cu-glass rounded-xl p-4 group cursor-pointer" data-cx-reveal>
+                        <summary class="font-semibold text-slate-900 list-none flex justify-between items-center">
+                            {{ $question }}
+                            <span class="text-brand-500 group-open:rotate-45 transition-transform">+</span>
+                        </summary>
+                        <p class="text-sm text-slate-600 mt-3 leading-relaxed">{{ $answer }}</p>
+                    </details>
+                @endforeach
+            </div>
+        </div>
+    </section>
+
     {{-- CTA FINAL --}}
     <section class="relative isolate overflow-hidden bg-gradient-to-br from-brand-600 to-purple-700 py-24">
         <div class="mx-auto max-w-4xl px-6 text-center">
