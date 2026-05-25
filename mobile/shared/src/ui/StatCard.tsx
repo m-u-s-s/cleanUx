@@ -44,6 +44,6 @@ const styles = StyleSheet.create({
   },
   title: { fontSize: typography.fontSize.xs, color: colors.surface[500], marginBottom: spacing.xs },
   row: { flexDirection: 'row', alignItems: 'baseline' },
-  value: { fontSize: typography.fontSize['2xl'], fontWeight: typography.fontWeight.bold },
+  value: { fontSize: typography.fontSize['2xl'], fontWeight: typography.fontWeight.bold, fontVariant: ['tabular-nums'] },
   trend: { fontSize: typography.fontSize.sm, marginLeft: spacing.xs, fontWeight: typography.fontWeight.medium },
 });

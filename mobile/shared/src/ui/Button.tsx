@@ -26,7 +26,7 @@ const variantStyles: Record<Variant, { bg: string; text: string; border?: string
 
 const sizeStyles: Record<Size, { paddingV: number; paddingH: number; fontSize: number }> = {
   sm: { paddingV: spacing.xs, paddingH: spacing.sm, fontSize: typography.fontSize.sm },
-  md: { paddingV: spacing.sm + 2, paddingH: spacing.md, fontSize: typography.fontSize.base },
+  md: { paddingV: spacing.sm + 4, paddingH: spacing.md + 4, fontSize: typography.fontSize.base },
   lg: { paddingV: spacing.sm + 6, paddingH: spacing.lg, fontSize: typography.fontSize.lg },
 };
 

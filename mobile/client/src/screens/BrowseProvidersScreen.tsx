@@ -65,7 +65,7 @@ export function BrowseProvidersScreen() {
             getItemLayout={getItemLayout}
             contentContainerStyle={styles.list}
             accessibilityLabel="Liste des prestataires"
-            ListEmptyComponent={<EmptyState title="Aucun prestataire trouvé" message="Essayez avec d'autres critères de recherche." />}
+            ListEmptyComponent={<EmptyState title="Aucun prestataire trouvé" message="Essayez avec d'autres critères de recherche." icon="search-outline" />}
             refreshControl={
               <RefreshControl
                 refreshing={isRefetching}

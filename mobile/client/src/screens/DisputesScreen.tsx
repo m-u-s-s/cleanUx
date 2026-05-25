@@ -39,7 +39,7 @@ export function DisputesScreen() {
           )}
           onRefresh={refetch}
           refreshing={isRefetching}
-          ListEmptyComponent={<EmptyState title="Aucun litige" message="Vous n'avez aucun litige en cours." />}
+          ListEmptyComponent={<EmptyState title="Aucun litige" message="Vous n'avez aucun litige en cours." icon="shield-outline" />}
         />
       )}
     </Screen>

@@ -33,6 +33,7 @@ export function LoyaltyScreen() {
           keyExtractor={item => String(item.id)}
           onRefresh={refetchRewards}
           refreshing={isRefetchingRewards}
+          ListEmptyComponent={<EmptyState title="Aucune récompense" message="Les récompenses disponibles apparaîtront ici." icon="gift-outline" />}
           renderItem={({ item }) => (
             <View style={styles.rewardCard}>
               <View style={styles.rewardInfo}>
