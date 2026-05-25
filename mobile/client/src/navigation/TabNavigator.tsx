@@ -4,6 +4,7 @@ import { HomeScreen } from '@/screens/HomeScreen';
 import { BrowseProvidersScreen } from '@/screens/BrowseProvidersScreen';
 import { BookingsListScreen } from '@/screens/BookingsListScreen';
 import { ProfileScreen } from '@/screens/ProfileScreen';
+import { Icon } from '@/ui';
 import { colors } from '@/theme';
 import type { TabParamList } from './types';
 
@@ -19,10 +20,26 @@ export function TabNavigator() {
         tabBarStyle: { backgroundColor: colors.surface[50], borderTopColor: colors.surface[200] },
       }}
     >
-      <Tab.Screen name="Home" component={HomeScreen} />
-      <Tab.Screen name="Explore" component={BrowseProvidersScreen} />
-      <Tab.Screen name="Bookings" component={BookingsListScreen} />
-      <Tab.Screen name="Profile" component={ProfileScreen} />
+      <Tab.Screen
+        name="Home"
+        component={HomeScreen}
+        options={{ tabBarIcon: ({ color, size }) => <Icon name="home-outline" size={size} color={color} /> }}
+      />
+      <Tab.Screen
+        name="Explore"
+        component={BrowseProvidersScreen}
+        options={{ tabBarIcon: ({ color, size }) => <Icon name="search-outline" size={size} color={color} /> }}
+      />
+      <Tab.Screen
+        name="Bookings"
+        component={BookingsListScreen}
+        options={{ tabBarIcon: ({ color, size }) => <Icon name="calendar-outline" size={size} color={color} /> }}
+      />
+      <Tab.Screen
+        name="Profile"
+        component={ProfileScreen}
+        options={{ tabBarIcon: ({ color, size }) => <Icon name="person-outline" size={size} color={color} /> }}
+      />
     </Tab.Navigator>
   );
 }

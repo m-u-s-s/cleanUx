@@ -1,13 +1,15 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, Alert } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { Button } from '@/ui';
+import { Button, Divider } from '@/ui';
+import { useAuth } from '@/auth';
 import { colors, spacing, typography } from '@/theme';
 import type { RootStackParamList } from '@/navigation/types';
 
 export function ProfileScreen() {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const { logout } = useAuth();
 
   return (
     <View style={styles.container}>
@@ -71,6 +73,18 @@ export function ProfileScreen() {
           label="Donner mon avis"
           onPress={() => navigation.navigate('NPS')}
           variant="secondary"
+          fullWidth
+        />
+        <Divider />
+        <Button
+          label="Se déconnecter"
+          onPress={() =>
+            Alert.alert('Déconnexion', 'Voulez-vous vous déconnecter ?', [
+              { text: 'Annuler', style: 'cancel' },
+              { text: 'Déconnexion', style: 'destructive', onPress: logout },
+            ])
+          }
+          variant="danger"
           fullWidth
         />
       </View>

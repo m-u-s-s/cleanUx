@@ -28,6 +28,10 @@ const config: Config = {
     '^expo-image-picker$': '<rootDir>/__mocks__/expo-image-picker',
     // @stripe/stripe-react-native: use local stub to avoid native Stripe init in Jest
     '^@stripe/stripe-react-native$': '<rootDir>/__mocks__/@stripe/stripe-react-native.tsx',
+    // expo-font + @expo-google-fonts: avoid native font loading in Jest
+    '^expo-font$': '<rootDir>/__mocks__/expo-font',
+    '^@expo-google-fonts/figtree$': '<rootDir>/__mocks__/@expo-google-fonts/figtree',
+    '^@expo-google-fonts/space-grotesk$': '<rootDir>/__mocks__/@expo-google-fonts/space-grotesk',
   },
 };
 

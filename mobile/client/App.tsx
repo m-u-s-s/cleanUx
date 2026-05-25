@@ -1,10 +1,19 @@
 import './src/sentry/init';
 import React from 'react';
+import { View } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { StripeProvider } from '@stripe/stripe-react-native';
+import {
+  useFonts,
+  Figtree_400Regular,
+  Figtree_500Medium,
+  Figtree_600SemiBold,
+  Figtree_700Bold,
+} from '@expo-google-fonts/figtree';
+import { SpaceGrotesk_700Bold } from '@expo-google-fonts/space-grotesk';
 import { AuthProvider } from '@/auth';
 import { RealtimeProvider } from '@/realtime';
 import { RootNavigator, linking } from '@/navigation';
@@ -29,6 +38,18 @@ function AppInner() {
 }
 
 export default function App() {
+  const [fontsLoaded] = useFonts({
+    Figtree_400Regular,
+    Figtree_500Medium,
+    Figtree_600SemiBold,
+    Figtree_700Bold,
+    SpaceGrotesk_700Bold,
+  });
+
+  if (!fontsLoaded) {
+    return <View />;
+  }
+
   return (
     <ErrorBoundary>
       <StripeProvider publishableKey={env.stripePublishableKey} merchantIdentifier="merchant.com.cleanux.client">

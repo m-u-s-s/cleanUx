@@ -2,8 +2,11 @@ import { Platform } from 'react-native';
 
 export const typography = {
   fontFamily: {
-    body: Platform.select({ ios: 'System', android: 'sans-serif', default: 'System' }),
-    display: Platform.select({ ios: 'System', android: 'sans-serif-medium', default: 'System' }),
+    body: 'Figtree_400Regular',
+    bodyMedium: 'Figtree_500Medium',
+    bodySemiBold: 'Figtree_600SemiBold',
+    bodyBold: 'Figtree_700Bold',
+    display: 'SpaceGrotesk_700Bold',
     mono: Platform.select({ ios: 'Menlo', android: 'monospace', default: 'monospace' }),
   },
   fontSize: { '2xs': 11, xs: 12, sm: 14, base: 16, lg: 18, xl: 20, '2xl': 24, '3xl': 30, '4xl': 36 },
