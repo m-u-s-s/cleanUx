@@ -1,7 +1,7 @@
 import React from 'react';
 import { FlatList, View, Text, StyleSheet } from 'react-native';
 import { useQuery } from '@tanstack/react-query';
-import { Screen, Skeleton, Avatar } from '@/ui';
+import { Screen, Skeleton, Avatar, EmptyState } from '@/ui';
 import { apiClient } from '@/api';
 import { colors, spacing, typography, radius } from '@/theme';
 
@@ -14,7 +14,7 @@ interface Rating {
 }
 
 export function ProviderRatingsScreen() {
-  const { data, isLoading } = useQuery<Rating[]>({
+  const { data, isLoading, refetch, isRefetching } = useQuery<Rating[]>({
     queryKey: ['provider', 'ratings'],
     queryFn: async () => (await apiClient.get('/provider/ratings/me')).data.data ?? [],
   });
@@ -48,7 +48,9 @@ export function ProviderRatingsScreen() {
               )}
             </View>
           )}
-          ListEmptyComponent={<Text style={styles.empty}>Aucun avis</Text>}
+          onRefresh={refetch}
+          refreshing={isRefetching}
+          ListEmptyComponent={<EmptyState title="Aucun avis" message="Vos avis clients apparaîtront ici après vos missions." />}
         />
       )}
     </Screen>

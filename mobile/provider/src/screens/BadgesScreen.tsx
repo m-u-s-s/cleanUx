@@ -1,7 +1,7 @@
 import React from 'react';
 import { FlatList, View, Text, StyleSheet } from 'react-native';
 import { useQuery } from '@tanstack/react-query';
-import { Screen, Badge, Skeleton } from '@/ui';
+import { Screen, Badge, Skeleton, EmptyState } from '@/ui';
 import { apiClient } from '@/api';
 import { colors, spacing, typography, radius, shadows } from '@/theme';
 
@@ -14,7 +14,7 @@ interface ProviderBadge {
 }
 
 export function BadgesScreen() {
-  const { data: badges, isLoading } = useQuery<ProviderBadge[]>({
+  const { data: badges, isLoading, refetch, isRefetching } = useQuery<ProviderBadge[]>({
     queryKey: ['badges'],
     queryFn: async () => (await apiClient.get('/provider/badges')).data.data ?? [],
   });
@@ -43,7 +43,9 @@ export function BadgesScreen() {
               )}
             </View>
           )}
-          ListEmptyComponent={<Text style={styles.empty}>Aucun badge</Text>}
+          onRefresh={refetch}
+          refreshing={isRefetching}
+          ListEmptyComponent={<EmptyState title="Aucun badge" message="Complétez des missions pour débloquer des badges." />}
         />
       )}
     </Screen>

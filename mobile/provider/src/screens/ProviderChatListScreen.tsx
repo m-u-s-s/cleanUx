@@ -2,14 +2,14 @@ import React from 'react';
 import { FlatList, TouchableOpacity, View, Text, StyleSheet } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { Screen, Avatar, Badge, Skeleton } from '@/ui';
+import { Screen, Avatar, Badge, Skeleton, EmptyState } from '@/ui';
 import { useChatThreads } from '@/chat';
 import type { ChatThread } from '@/chat/types';
 import { colors, spacing, typography } from '@/theme';
 import type { RootStackParamList } from '@/navigation/types';
 
 export function ProviderChatListScreen() {
-  const { data: threads, isLoading } = useChatThreads();
+  const { data: threads, isLoading, refetch, isRefetching } = useChatThreads();
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
 
   return (
@@ -47,9 +47,9 @@ export function ProviderChatListScreen() {
               )}
             </TouchableOpacity>
           )}
-          ListEmptyComponent={
-            <Text style={styles.empty}>Aucune conversation</Text>
-          }
+          onRefresh={refetch}
+          refreshing={isRefetching}
+          ListEmptyComponent={<EmptyState title="Aucune conversation" message="Vos échanges avec les clients apparaîtront ici." />}
         />
       )}
     </Screen>

@@ -16,6 +16,7 @@ import { OnboardingScreen } from '@/screens/OnboardingScreen';
 import { ProviderChatListScreen } from '@/screens/ProviderChatListScreen';
 import { ProviderChatScreen } from '@/screens/ProviderChatScreen';
 import { ProviderNotificationsScreen } from '@/screens/ProviderNotificationsScreen';
+import { ForgotPasswordScreen } from '@/screens/ForgotPasswordScreen';
 import { TabNavigator } from './TabNavigator';
 import { colors } from '@/theme';
 import type { RootStackParamList } from './types';
@@ -109,7 +110,10 @@ export function RootNavigator() {
             />
           </>
         ) : (
-          <Stack.Screen name="Login" component={LoginScreen} />
+          <>
+            <Stack.Screen name="Login" component={LoginScreen} />
+            <Stack.Screen name="ForgotPassword" component={ForgotPasswordScreen} options={{ title: 'Mot de passe oublié', headerShown: true }} />
+          </>
         )}
       </Stack.Navigator>
     </View>

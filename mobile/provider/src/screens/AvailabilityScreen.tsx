@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, FlatList, Text, Alert, StyleSheet } from 'react-native';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Screen, Button, Badge, Divider } from '@/ui';
+import { Screen, Button, Badge, Divider, EmptyState } from '@/ui';
 import { apiClient } from '@/api';
 import { colors, spacing, typography, radius, shadows } from '@/theme';
 
@@ -9,7 +9,7 @@ interface Slot { id: number; day_of_week: number; start_time: string; end_time: 
 const DAYS = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'];
 
 export function AvailabilityScreen() {
-  const { data: slots, isLoading } = useQuery<Slot[]>({
+  const { data: slots, isLoading, refetch, isRefetching } = useQuery<Slot[]>({
     queryKey: ['availability'],
     queryFn: async () => (await apiClient.get('/provider/availability')).data.data ?? [],
   });
@@ -41,9 +41,9 @@ export function AvailabilityScreen() {
             />
           </View>
         )}
-        ListEmptyComponent={
-          <Text style={styles.empty}>Aucune disponibilité configurée</Text>
-        }
+        onRefresh={refetch}
+        refreshing={isRefetching}
+        ListEmptyComponent={<EmptyState title="Aucune disponibilité" message="Configurez vos créneaux horaires pour recevoir des missions." />}
       />
       <Button
         label="Exporter iCal"

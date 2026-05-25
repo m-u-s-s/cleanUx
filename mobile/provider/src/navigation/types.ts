@@ -17,6 +17,7 @@ export type RootStackParamList = {
   ProviderChatList: undefined;
   ProviderChat: { threadId: number; title: string };
   ProviderNotifications: undefined;
+  ForgotPassword: undefined;
 };
 
 export type TabParamList = {

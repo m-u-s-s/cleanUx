@@ -1,12 +1,12 @@
 import React from 'react';
 import { FlatList, View, Text, Alert, StyleSheet } from 'react-native';
-import { Screen, Button, Badge, Skeleton } from '@/ui';
+import { Screen, Button, Badge, Skeleton, EmptyState } from '@/ui';
 import { useMissionInbox, useAcceptMission, useDeclineMission } from '@/missions';
 import type { MissionAssignment } from '@/missions';
 import { colors, spacing, typography, radius, shadows } from '@/theme';
 
 export function MissionInboxScreen() {
-  const { data: assignments, isLoading } = useMissionInbox();
+  const { data: assignments, isLoading, refetch, isRefetching } = useMissionInbox();
   const accept = useAcceptMission();
   const decline = useDeclineMission();
 
@@ -57,9 +57,9 @@ export function MissionInboxScreen() {
               </View>
             </View>
           )}
-          ListEmptyComponent={
-            <Text style={styles.empty}>Aucune mission en attente</Text>
-          }
+          onRefresh={refetch}
+          refreshing={isRefetching}
+          ListEmptyComponent={<EmptyState title="Aucune mission en attente" message="Les nouvelles missions vous seront proposées ici." />}
         />
       )}
     </Screen>
