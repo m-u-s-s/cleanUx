@@ -92,4 +92,18 @@ return [
         'private_key' => env('VAPID_PRIVATE_KEY'),
         'subject'     => env('VAPID_SUBJECT', 'mailto:contact@cleanux.local'),
     ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Onfido (KYC — Phase KYC module)
+    |--------------------------------------------------------------------------
+    | REST API token from https://dashboard.onfido.com/
+    | region: eu | us | ca
+    */
+    'onfido' => [
+        'api_token'     => env('ONFIDO_API_TOKEN'),
+        'base_url'      => env('ONFIDO_BASE_URL', 'https://api.eu.onfido.com/v3.6'),
+        'webhook_token' => env('ONFIDO_WEBHOOK_TOKEN'),
+        'region'        => env('ONFIDO_REGION', 'eu'),
+    ],
 ];

@@ -26,6 +26,11 @@ class AppServiceProvider extends ServiceProvider
         // instance HTTP-clientée durant un cycle de requête.
         $this->app->singleton(LlmProvider::class, AnthropicProvider::class);
         $this->app->singleton(\App\Services\Assistant\Llm\AnthropicStreamingProvider::class);
+
+        // Monetisation — singletons for stateless calculators
+        $this->app->singleton(\App\Services\Payments\CommissionService::class);
+        $this->app->singleton(\App\Services\Payments\StripeCountryMapper::class);
+        $this->app->singleton(\App\Services\Tax\TaxCalculator::class);
     }
 
     /**

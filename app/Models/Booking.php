@@ -149,6 +149,11 @@ class Booking extends Model
         'provider_amount_cents',
         'platform_fee_cents',
 
+        // Payout engine (Phase monetisation)
+        'payout_status',
+        'provider_payout_cents',
+        'stripe_transfer_id',
+
         // Notifications tracking
         'rappel_24h_envoye_at',
         'rappel_2h_envoye_at',

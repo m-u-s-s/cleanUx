@@ -587,6 +587,14 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::prefix('client/bookings')->group(function () {
         Route::get('/{booking}/cancellation-quote', [CancellationController::class, 'quote']);
         Route::post('/{booking}/cancel-with-fee',   [CancellationController::class, 'cancelWithFee']);
+
+        // Commission preview — lets client see platform fee before confirming
+        Route::get('/{booking}/commission', function (\Illuminate\Http\Request $request, \App\Models\Booking $booking) {
+            $clientId = (int) ($booking->client_id ?? $booking->customer_user_id ?? 0);
+            abort_unless($clientId && $clientId === (int) $request->user()->id, 403);
+            $calc = app(\App\Services\Payments\CommissionService::class)->calculateForBooking($booking);
+            return response()->json(['ok' => true, ...$calc]);
+        });
     });
 
     // Phase 14 — Cancellation provider
