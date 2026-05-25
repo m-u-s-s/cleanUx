@@ -836,6 +836,68 @@ Route::middleware('auth:sanctum')->group(function () {
             \App\Jobs\Marketing\RecomputeSegmentJob::dispatch($segment->id);
             return response()->json(['ok' => true, 'queued' => true]);
         });
+
+        // ── Marketing — Campaign stats endpoint ──────────────────────────────
+        Route::get('/campaigns/{campaign}/stats', function (\App\Models\MarketingCampaign $campaign) {
+            $q = \App\Models\MarketingCampaignRecipient::where('campaign_id', $campaign->id);
+            return response()->json([
+                'total'      => (clone $q)->count(),
+                'sent'       => (clone $q)->where('status', \App\Models\MarketingCampaignRecipient::STATUS_SENT)->count(),
+                'failed'     => (clone $q)->where('status', \App\Models\MarketingCampaignRecipient::STATUS_FAILED)->count(),
+                'opted_out'  => (clone $q)->where('status', \App\Models\MarketingCampaignRecipient::STATUS_OPTED_OUT)->count(),
+                'pending'    => (clone $q)->where('status', \App\Models\MarketingCampaignRecipient::STATUS_QUEUED)->count(),
+                'open_rate'  => null,
+                'click_rate' => null,
+            ]);
+        });
+
+        // ── Marketing — Campaign step CRUD ───────────────────────────────────
+        Route::post('/campaigns/{campaign}/steps', function (\Illuminate\Http\Request $request, \App\Models\MarketingCampaign $campaign) {
+            $data = $request->validate([
+                'channel'       => 'required|in:email,sms,push',
+                'subject'       => 'nullable|string|max:255',
+                'body'          => 'required|string',
+                'delay_hours'   => 'nullable|integer|min:0',
+                'variant_label' => 'nullable|string|max:50',
+            ]);
+            $position = $campaign->steps()->count() + 1;
+            $step = $campaign->steps()->create([
+                'channel'       => $data['channel'],
+                'subject'       => $data['subject'] ?? null,
+                'template_code' => 'inline_' . \Illuminate\Support\Str::random(8),
+                'delay_minutes' => isset($data['delay_hours']) ? $data['delay_hours'] * 60 : 0,
+                'variant_label' => $data['variant_label'] ?? null,
+                'position'      => $position,
+                'is_active'     => true,
+            ]);
+            return response()->json(['data' => $step], 201);
+        });
+
+        Route::put('/campaigns/{campaign}/steps/{step}', function (\Illuminate\Http\Request $request, \App\Models\MarketingCampaign $campaign, \App\Models\MarketingCampaignStep $step) {
+            $step->update($request->validate([
+                'subject'       => 'sometimes|string|max:255',
+                'body'          => 'sometimes|string',
+                'delay_hours'   => 'sometimes|integer|min:0',
+                'variant_label' => 'sometimes|nullable|string|max:50',
+            ]));
+            return response()->json(['data' => $step->fresh()]);
+        });
+
+        Route::delete('/campaigns/{campaign}/steps/{step}', function (\App\Models\MarketingCampaign $campaign, \App\Models\MarketingCampaignStep $step) {
+            $step->delete();
+            return response()->json(['ok' => true]);
+        });
+
+        // ── Marketing — A/B test config ──────────────────────────────────────
+        Route::patch('/campaigns/{campaign}/ab-config', function (\Illuminate\Http\Request $request, \App\Models\MarketingCampaign $campaign) {
+            $data = $request->validate([
+                'variants'           => 'required|array|min:2',
+                'variants.*.label'   => 'required|string|max:50',
+                'variants.*.weight'  => 'required|numeric|min:0|max:1',
+            ]);
+            $campaign->update(['ab_test_config' => $data['variants']]);
+            return response()->json(['ok' => true, 'ab_test_config' => $campaign->fresh()->ab_test_config]);
+        });
     });
 
     // ── Fleet v2 — Provider my-vehicles endpoint ──────────────────────────────
@@ -848,13 +910,51 @@ Route::middleware('auth:sanctum')->group(function () {
                 ->get();
             return response()->json(['data' => $assignments]);
         });
+
+        // ── Fleet — Provider return assignment ───────────────────────────────
+        Route::post('/fleet/assignments/{assignment}/return', function (\Illuminate\Http\Request $request, \App\Models\FleetAssignment $assignment) {
+            $user = $request->user();
+            abort_unless($assignment->provider_user_id === $user->id, 403, 'Not your assignment');
+
+            $data = $request->validate([
+                'condition' => 'required|in:ok,damaged,lost,needs_maintenance',
+                'notes'     => 'nullable|string|max:500',
+            ]);
+
+            $assignment = app(\App\Services\FleetV2\FleetService::class)
+                ->returnAssignment($assignment, $data['condition'], $data['notes'] ?? null);
+
+            if (in_array($data['condition'], ['damaged', 'lost'], true)) {
+                \Illuminate\Support\Facades\Log::warning('Fleet alert: ' . $data['condition'] . ' reported', [
+                    'assignment_id' => $assignment->id,
+                    'provider_id'   => $user->id,
+                    'vehicle_id'    => $assignment->fleet_vehicle_id,
+                ]);
+            }
+
+            return response()->json(['ok' => true, 'assignment' => $assignment->fresh()->load('vehicle')]);
+        });
     });
 
-    // ── Accounting v2 — Period pre-validation endpoint ────────────────────────
+    // ── Accounting v2 — Period pre-validation + delete entry guard ───────────
     Route::prefix('admin/accounting-v2')->middleware('api_scope:admin:everything')->group(function () {
         Route::get('/periods/{period}/validate', function (\App\Models\AccountingPeriod $period) {
             $result = app(\App\Services\AccountingV2\PeriodCloser::class)->canClose($period);
             return response()->json($result);
+        });
+
+        Route::delete('/entries/{entry}', function (\App\Models\AccountingEntry $entry) {
+            // Guard: reject deletion if the entry falls in a closed accounting period
+            $postingDate = $entry->posting_date;
+            if ($postingDate) {
+                $period = \App\Models\AccountingPeriod::query()
+                    ->where('period_year', $postingDate->year)
+                    ->where('period_month', $postingDate->month)
+                    ->first();
+                abort_if($period && $period->is_closed, 422, 'Cannot delete entries from a closed accounting period.');
+            }
+            $entry->delete();
+            return response()->json(['ok' => true]);
         });
     });
 

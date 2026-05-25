@@ -284,7 +284,56 @@ class InsuranceService
             'notes'       => $notes,
         ]);
 
+        $this->notifyClaimStatusChange($claim->fresh(), $newStatus);
+
         return $claim->fresh();
+    }
+
+    private function notifyClaimStatusChange(InsuranceClaim $claim, string $newStatus): void
+    {
+        try {
+            $claimant = $claim->claimant;
+            if (! $claimant) {
+                return;
+            }
+
+            $messages = [
+                InsuranceClaim::STATUS_UNDER_REVIEW   => "Votre réclamation assurance #{$claim->id} est en cours d'examen.",
+                InsuranceClaim::STATUS_ACCEPTED        => "Bonne nouvelle ! Votre réclamation assurance #{$claim->id} a été acceptée.",
+                InsuranceClaim::STATUS_REJECTED        => "Votre réclamation assurance #{$claim->id} a été refusée.",
+                InsuranceClaim::STATUS_PAID            => "Le remboursement de votre réclamation assurance #{$claim->id} a été effectué.",
+                InsuranceClaim::STATUS_INFO_REQUESTED  => "Des informations supplémentaires sont requises pour votre réclamation #{$claim->id}.",
+                InsuranceClaim::STATUS_CANCELLED       => "Votre réclamation assurance #{$claim->id} a été annulée.",
+            ];
+
+            $msg = $messages[$newStatus] ?? "Mise à jour réclamation #{$claim->id} : {$newStatus}";
+
+            // DB notification (Laravel notifications table)
+            DB::table('notifications')->insert([
+                'id'              => \Illuminate\Support\Str::uuid()->toString(),
+                'type'            => 'insurance_claim_status',
+                'notifiable_type' => get_class($claimant),
+                'notifiable_id'   => $claimant->id,
+                'data'            => json_encode([
+                    'title'    => "Réclamation #{$claim->id}",
+                    'body'     => $msg,
+                    'claim_id' => $claim->id,
+                    'status'   => $newStatus,
+                ]),
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+
+            // SMS best-effort
+            if ($claimant->phone) {
+                app(\App\Services\Notifications\SmsService::class)->send($claimant->phone, "CleanUx: {$msg}");
+            }
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::warning("Insurance claim notification failed: {$e->getMessage()}", [
+                'claim_id'  => $claim->id,
+                'to_status' => $newStatus,
+            ]);
+        }
     }
 
     public function applyWebhookUpdate(InsuranceWebhookUpdate $update): ?object

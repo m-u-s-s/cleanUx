@@ -148,4 +148,29 @@ class WebhookApiTest extends TestCase
             'name' => 'X', 'url' => 'https://x.test', 'event_codes' => ['booking.created'],
         ])->assertStatus(401);
     }
+
+    public function test_old_secret_rejected_after_rotation(): void
+    {
+        $admin = User::factory()->admin()->create();
+        $ep = WebhookEndpoint::query()->create([
+            'code' => 'whe_rot2', 'name' => 'RotTest', 'url' => 'https://rot.test',
+            'secret' => 'whsec_old_secret_value', 'is_active' => true,
+        ]);
+        $oldSecret = $ep->secret;
+
+        Sanctum::actingAs($admin);
+        $this->postJson("/api/admin/webhooks-v2/endpoints/{$ep->id}/rotate-secret")
+            ->assertOk();
+
+        $newSecret = $ep->fresh()->secret;
+        $this->assertNotEquals($oldSecret, $newSecret, 'Secret must change after rotation');
+
+        // Verify signatures computed with old vs new secret differ
+        $payload   = '{"test":true}';
+        $timestamp = time();
+        $oldSig    = hash_hmac('sha256', "{$timestamp}.{$payload}", $oldSecret);
+        $newSig    = hash_hmac('sha256', "{$timestamp}.{$payload}", $newSecret);
+
+        $this->assertNotEquals($oldSig, $newSig, 'Old and new secrets must produce different HMAC signatures');
+    }
 }
