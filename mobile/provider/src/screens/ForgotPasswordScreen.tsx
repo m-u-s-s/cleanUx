@@ -30,7 +30,7 @@ export function ForgotPasswordScreen({ navigation }: Props) {
     <View style={styles.container}>
       <Text style={styles.title}>Mot de passe oublié</Text>
       <Text style={styles.subtitle}>Entrez votre email pour recevoir un lien de réinitialisation</Text>
-      <TextInput label="Email" value={email} onChangeText={setEmail} keyboardType="email-address" autoCapitalize="none" placeholder="votre@email.com" />
+      <TextInput label="Email" value={email} onChangeText={setEmail} keyboardType="email-address" autoCapitalize="none" placeholder="votre@email.com" autoFocus returnKeyType="done" onSubmitEditing={handleSubmit} />
       <Button label="Envoyer le lien" onPress={handleSubmit} fullWidth size="lg" loading={reset.isPending} />
     </View>
   );

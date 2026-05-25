@@ -1,14 +1,15 @@
 import React from 'react';
 import { FlatList, View, Text, Alert, StyleSheet } from 'react-native';
-import { Screen, Button, Badge, Skeleton, EmptyState } from '@/ui';
+import { Screen, Button, Badge, Skeleton, EmptyState, AnimatedListItem } from '@/ui';
 import { useMissionInbox, useAcceptMission, useDeclineMission } from '@/missions';
 import type { MissionAssignment } from '@/missions';
-import { colors, spacing, typography, radius, shadows } from '@/theme';
+import { colors, spacing, typography, radius, shadows, useThemeColors } from '@/theme';
 
 export function MissionInboxScreen() {
   const { data: assignments, isLoading, refetch, isRefetching } = useMissionInbox();
   const accept = useAcceptMission();
   const decline = useDeclineMission();
+  const themeColors = useThemeColors();
 
   const handleAccept = (a: MissionAssignment) => {
     Alert.alert('Accepter', `Accepter la mission ${a.service_name} ?`, [
@@ -33,8 +34,9 @@ export function MissionInboxScreen() {
         <FlatList
           data={assignments ?? []}
           keyExtractor={i => String(i.id)}
-          renderItem={({ item }) => (
-            <View style={styles.card}>
+          renderItem={({ item, index }) => (
+            <AnimatedListItem index={index}>
+            <View style={[styles.card, { backgroundColor: themeColors.card }]}>
               <Text style={styles.service}>{item.service_name}</Text>
               <Text style={styles.client}>{item.client_name}</Text>
               <Text style={styles.address}>
@@ -56,6 +58,7 @@ export function MissionInboxScreen() {
                 />
               </View>
             </View>
+            </AnimatedListItem>
           )}
           onRefresh={refetch}
           refreshing={isRefetching}
@@ -74,7 +77,6 @@ const styles = StyleSheet.create({
     marginBottom: spacing.md,
   },
   card: {
-    backgroundColor: '#fff',
     borderRadius: radius.md,
     padding: spacing.md,
     ...shadows.soft,

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { forwardRef, useState } from 'react';
 import {
   View,
   Text,
@@ -13,13 +13,17 @@ interface TextInputProps extends Omit<RNInputProps, 'style'> {
   error?: string;
 }
 
-export function TextInput({ label, error, ...props }: TextInputProps) {
+export const TextInput = forwardRef<RNTextInput, TextInputProps>(function TextInput(
+  { label, error, ...props },
+  ref,
+) {
   const [focused, setFocused] = useState(false);
 
   return (
     <View style={styles.container}>
       <Text style={styles.label}>{label}</Text>
       <RNTextInput
+        ref={ref}
         {...props}
         style={[
           styles.input,
@@ -39,7 +43,7 @@ export function TextInput({ label, error, ...props }: TextInputProps) {
       {error ? <Text style={styles.error}>{error}</Text> : null}
     </View>
   );
-}
+});
 
 const styles = StyleSheet.create({
   container: {

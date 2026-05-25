@@ -4,7 +4,7 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useNavigation } from '@react-navigation/native';
 import { Screen, Button, Badge, Divider } from '@/ui';
 import { useMissionDetail, useMissionLifecycle } from '@/missions';
-import { colors, spacing, typography, radius, shadows } from '@/theme';
+import { colors, spacing, typography, radius, shadows, useThemeColors } from '@/theme';
 import type { RootStackParamList } from '@/navigation/types';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'MissionDetail'>;
@@ -14,6 +14,7 @@ export function MissionDetailScreen({ route }: Props) {
   const { data: mission, isLoading } = useMissionDetail(missionId);
   const lifecycle = useMissionLifecycle(missionId);
   const navigation = useNavigation<any>();
+  const themeColors = useThemeColors();
 
   if (isLoading || !mission) {
     return (
@@ -43,7 +44,7 @@ export function MissionDetailScreen({ route }: Props) {
         <Text style={styles.title}>{mission.service_name}</Text>
         <Badge label={mission.status} variant={badgeVariant} />
       </View>
-      <View style={styles.card}>
+      <View style={[styles.card, { backgroundColor: themeColors.card }]}>
         <DetailRow label="Client" value={mission.client_name} />
         <Divider />
         <DetailRow label="Adresse" value={`${mission.address}, ${mission.city}`} />
@@ -129,7 +130,6 @@ const styles = StyleSheet.create({
     color: colors.surface[900],
   },
   card: {
-    backgroundColor: '#fff',
     borderRadius: radius.md,
     padding: spacing.md,
     ...shadows.soft,

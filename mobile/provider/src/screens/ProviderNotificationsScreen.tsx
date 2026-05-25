@@ -1,6 +1,6 @@
 import React from 'react';
 import { FlatList, View, Text, StyleSheet } from 'react-native';
-import { Screen, Button, Skeleton, EmptyState } from '@/ui';
+import { Screen, Button, Skeleton, EmptyState, AnimatedListItem } from '@/ui';
 import { useNotifications, useMarkAllRead } from '@/notifications';
 import type { AppNotification } from '@/notifications';
 import { colors, spacing, typography } from '@/theme';
@@ -31,14 +31,16 @@ export function ProviderNotificationsScreen() {
         <FlatList
           data={notifs ?? []}
           keyExtractor={item => item.id}
-          renderItem={({ item }: { item: AppNotification }) => (
-            <View style={[styles.notif, !item.read_at && styles.unread]}>
-              <Text style={styles.notifTitle}>{item.title}</Text>
-              <Text style={styles.notifBody}>{item.body}</Text>
-              <Text style={styles.notifTime}>
-                {new Date(item.created_at).toLocaleDateString()}
-              </Text>
-            </View>
+          renderItem={({ item, index }: { item: AppNotification; index: number }) => (
+            <AnimatedListItem index={index}>
+              <View style={[styles.notif, !item.read_at && styles.unread]}>
+                <Text style={styles.notifTitle}>{item.title}</Text>
+                <Text style={styles.notifBody}>{item.body}</Text>
+                <Text style={styles.notifTime}>
+                  {new Date(item.created_at).toLocaleDateString()}
+                </Text>
+              </View>
+            </AnimatedListItem>
           )}
           onRefresh={refetch}
           refreshing={isRefetching ?? false}

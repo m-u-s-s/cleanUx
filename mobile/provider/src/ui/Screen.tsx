@@ -1,7 +1,8 @@
 import React from 'react';
 import { ScrollView, View, StyleSheet, ViewProps } from 'react-native';
 import { SafeAreaView, Edge } from 'react-native-safe-area-context';
-import { colors, spacing } from '@/theme';
+import { spacing } from '@/theme';
+import { useThemeColors } from '@/theme/useThemeColors';
 
 interface ScreenProps extends ViewProps {
   scroll?: boolean;
@@ -10,8 +11,15 @@ interface ScreenProps extends ViewProps {
 }
 
 export function Screen({ scroll, edges = ['top', 'left', 'right'], children, style, ...props }: ScreenProps) {
+  const { bg } = useThemeColors();
+
   const content = scroll ? (
-    <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+    <ScrollView
+      contentContainerStyle={styles.scrollContent}
+      showsVerticalScrollIndicator={false}
+      keyboardShouldPersistTaps="handled"
+      keyboardDismissMode="on-drag"
+    >
       {children}
     </ScrollView>
   ) : (
@@ -21,14 +29,14 @@ export function Screen({ scroll, edges = ['top', 'left', 'right'], children, sty
   );
 
   return (
-    <SafeAreaView style={styles.safe} edges={edges}>
+    <SafeAreaView style={[styles.safe, { backgroundColor: bg }]} edges={edges}>
       {content}
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: colors.surface[50] },
+  safe: { flex: 1 },
   content: { flex: 1, paddingHorizontal: spacing.md },
   scrollContent: { paddingHorizontal: spacing.md, paddingBottom: spacing.xl },
 });

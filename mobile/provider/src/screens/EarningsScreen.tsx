@@ -3,7 +3,7 @@ import { View, FlatList, Text, StyleSheet } from 'react-native';
 import { Screen, KPICard, Badge, Button, Skeleton, Divider } from '@/ui';
 import { useWalletBalance, useWalletTransactions, useStripeConnectStatus } from '@/earnings';
 import { useNavigation } from '@react-navigation/native';
-import { colors, spacing, typography, radius, shadows } from '@/theme';
+import { colors, spacing, typography, radius, shadows, useThemeColors } from '@/theme';
 
 export function EarningsScreen() {
   const { data: balance, isLoading: loadingBalance } = useWalletBalance();

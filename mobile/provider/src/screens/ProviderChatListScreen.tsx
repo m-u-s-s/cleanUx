@@ -2,7 +2,7 @@ import React from 'react';
 import { FlatList, TouchableOpacity, View, Text, StyleSheet } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { Screen, Avatar, Badge, Skeleton, EmptyState } from '@/ui';
+import { Screen, Avatar, Badge, Skeleton, EmptyState, AnimatedListItem } from '@/ui';
 import { useChatThreads } from '@/chat';
 import type { ChatThread } from '@/chat/types';
 import { colors, spacing, typography } from '@/theme';
@@ -23,7 +23,8 @@ export function ProviderChatListScreen() {
         <FlatList
           data={threads ?? []}
           keyExtractor={item => String(item.id)}
-          renderItem={({ item }: { item: ChatThread }) => (
+          renderItem={({ item, index }: { item: ChatThread; index: number }) => (
+            <AnimatedListItem index={index}>
             <TouchableOpacity
               style={styles.row}
               onPress={() => navigation.navigate('ProviderChat', {
@@ -46,6 +47,7 @@ export function ProviderChatListScreen() {
                 <Badge label={String(item.unread_count)} variant="danger" />
               )}
             </TouchableOpacity>
+            </AnimatedListItem>
           )}
           onRefresh={refetch}
           refreshing={isRefetching}
