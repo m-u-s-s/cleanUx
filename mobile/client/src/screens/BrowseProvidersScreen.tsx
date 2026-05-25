@@ -1,10 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { View, FlatList, Text, StyleSheet, RefreshControl } from 'react-native';
 import Animated, { FadeIn } from 'react-native-reanimated';
 import { Screen, TextInput, Badge, Avatar, Skeleton, EmptyState, AnimatedListItem } from '@/ui';
 import { useBrowseProviders } from '@/booking';
 import type { Provider } from '@/booking';
 import { colors, spacing, typography, radius, shadows, useThemeColors } from '@/theme';
+
+const PROVIDER_CARD_HEIGHT = 100;
 
 export function BrowseProvidersScreen() {
   const [trade, setTrade] = useState('');
@@ -15,9 +17,26 @@ export function BrowseProvidersScreen() {
     postalCode: postalCode || undefined,
   });
 
+  const renderProviderCard = useCallback(({ item, index }: { item: Provider; index: number }) => (
+    <AnimatedListItem index={index}>
+      <ProviderCard provider={item} />
+    </AnimatedListItem>
+  ), []);
+
+  const getItemLayout = useCallback((_: any, index: number) => ({
+    length: PROVIDER_CARD_HEIGHT,
+    offset: PROVIDER_CARD_HEIGHT * index,
+    index,
+  }), []);
+
   return (
     <Screen>
-      <Text style={[styles.title, { color: themeColors.text }]}>Explorer les prestataires</Text>
+      <Text
+        style={[styles.title, { color: themeColors.text }]}
+        accessibilityRole="header"
+      >
+        Explorer les prestataires
+      </Text>
       <View style={styles.filters}>
         <TextInput
           label="Métier"
@@ -42,12 +61,10 @@ export function BrowseProvidersScreen() {
           <FlatList
             data={data?.data ?? []}
             keyExtractor={item => String(item.id)}
-            renderItem={({ item, index }) => (
-              <AnimatedListItem index={index}>
-                <ProviderCard provider={item} />
-              </AnimatedListItem>
-            )}
+            renderItem={renderProviderCard}
+            getItemLayout={getItemLayout}
             contentContainerStyle={styles.list}
+            accessibilityLabel="Liste des prestataires"
             ListEmptyComponent={<EmptyState title="Aucun prestataire trouvé" message="Essayez avec d'autres critères de recherche." />}
             refreshControl={
               <RefreshControl

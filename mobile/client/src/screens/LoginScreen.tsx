@@ -12,7 +12,7 @@ import {
 import Animated, { FadeIn, FadeOut } from 'react-native-reanimated';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { Button, TextInput, Divider, Icon } from '@/ui';
+import { Button, TextInput, Divider, Icon, a11y } from '@/ui';
 import { useLogin, useRegister, useAuth } from '@/auth';
 import { colors, spacing, typography } from '@/theme';
 import type { RootStackParamList } from '@/navigation/types';
@@ -40,7 +40,11 @@ export function LoginScreen() {
 
         <Divider label="ou" />
 
-        <TouchableOpacity onPress={() => setMode(mode === 'login' ? 'register' : 'login')}>
+        <TouchableOpacity
+          style={styles.switchTouchable}
+          onPress={() => setMode(mode === 'login' ? 'register' : 'login')}
+          accessibilityRole="button"
+        >
           <Text style={styles.switchText}>
             {mode === 'login' ? "Pas encore de compte ? S'inscrire" : 'Déjà un compte ? Se connecter'}
           </Text>
@@ -75,12 +79,15 @@ function LoginForm() {
     try {
       const result = await login.mutateAsync({ email, password });
       setUser(result.user);
+      a11y.announce('Connexion réussie');
     } catch (e: any) {
+      const errorMsg = e.errors?.email?.[0] ?? e.errors?.password?.[0] ?? e.message ?? 'Identifiants incorrects.';
       if (e.errors) {
         setErrors({ email: e.errors.email?.[0], password: e.errors.password?.[0] });
       } else {
-        setErrors({ email: e.message ?? 'Identifiants incorrects.' });
+        setErrors({ email: errorMsg });
       }
+      a11y.announce(`Erreur : ${errorMsg}`);
     }
   };
 
@@ -114,12 +121,19 @@ function LoginForm() {
         <TouchableOpacity
           onPress={() => setShowPassword(v => !v)}
           style={styles.eyeButton}
+          hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
           accessibilityLabel={showPassword ? 'Masquer le mot de passe' : 'Afficher le mot de passe'}
+          accessibilityRole="button"
         >
-          <Icon name={showPassword ? 'eye-off-outline' : 'eye-outline'} size={20} color={colors.surface[400]} />
+          <Icon name={showPassword ? 'eye-off-outline' : 'eye-outline'} size={20} color={colors.surface[500]} />
         </TouchableOpacity>
       </View>
-      <TouchableOpacity onPress={() => navigation.navigate('ForgotPassword')}>
+      <TouchableOpacity
+        onPress={() => navigation.navigate('ForgotPassword')}
+        style={styles.forgotTouchable}
+        accessibilityRole="button"
+        accessibilityLabel="Mot de passe oublié ?"
+      >
         <Text style={styles.forgotText}>Mot de passe oublié ?</Text>
       </TouchableOpacity>
       <Button label="Se connecter" onPress={handleLogin} fullWidth size="lg" loading={login.isPending} />
@@ -286,4 +300,6 @@ const styles = StyleSheet.create({
   errorText: { fontSize: typography.fontSize.xs, color: colors.danger[500], marginTop: -spacing.xs },
   passwordWrapper: { position: 'relative' },
   eyeButton: { position: 'absolute', right: 12, top: 32, zIndex: 1 },
+  forgotTouchable: { minHeight: 44, justifyContent: 'center' },
+  switchTouchable: { minHeight: 44, justifyContent: 'center', alignItems: 'center' },
 });

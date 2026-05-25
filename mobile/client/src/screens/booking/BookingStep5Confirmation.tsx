@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, Alert, StyleSheet } from 'react-native';
-import { Screen, Button, Divider, ProgressBar, SuccessOverlay } from '@/ui';
+import { Screen, Button, Divider, ProgressBar, SuccessOverlay, a11y } from '@/ui';
 import { useBooking, useCreateBooking } from '@/booking';
 import { colors, spacing, typography, radius, shadows, useThemeColors } from '@/theme';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -25,6 +25,7 @@ export function BookingStep5Confirmation({ navigation }: Props) {
       });
       dispatch({ type: 'RESET' });
       setShowSuccess(true);
+      a11y.announce('Réservation confirmée avec succès');
     } catch (e: unknown) {
       const message = e instanceof Error ? e.message : 'Impossible de créer la réservation.';
       Alert.alert('Erreur', message);

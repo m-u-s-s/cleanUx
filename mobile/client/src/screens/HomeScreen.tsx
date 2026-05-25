@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import { View, Text, TouchableOpacity, ScrollView, StyleSheet } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -27,6 +27,11 @@ export function HomeScreen() {
   const completedCount = bookings?.filter(b => b.status === 'completed').length ?? 0;
 
   const isFirstTime = !isLoading && activeBookings.length === 0 && completedCount === 0;
+
+  const handleNavigateBookingWizard = useCallback(() => navigation.navigate('BookingWizard'), [navigation]);
+  const handleNavigateChatList = useCallback(() => navigation.navigate('ChatList' as any), [navigation]);
+  const handleNavigateLoyalty = useCallback(() => navigation.navigate('Loyalty' as any), [navigation]);
+  const handleNavigateAiQuote = useCallback(() => navigation.navigate('AiQuote' as any), [navigation]);
 
   return (
     <Screen scroll>
@@ -65,7 +70,7 @@ export function HomeScreen() {
       )}
 
       {/* Quick actions */}
-      <Text style={[styles.sectionTitle, { color: themeColors.textSecondary }]}>Accès rapide</Text>
+      <Text style={[styles.sectionTitle, { color: themeColors.textSecondary }]} accessibilityRole="header">Accès rapide</Text>
       <View style={styles.quickActions}>
         {QUICK_ACTIONS.map(item => (
           <TouchableOpacity
@@ -84,7 +89,7 @@ export function HomeScreen() {
       {/* Active bookings preview */}
       {activeBookings.length > 0 && (
         <>
-          <Text style={[styles.sectionTitle, { color: themeColors.textSecondary }]}>Réservations actives</Text>
+          <Text style={[styles.sectionTitle, { color: themeColors.textSecondary }]} accessibilityRole="header">Réservations actives</Text>
           {activeBookings.slice(0, 3).map(b => (
             <TouchableOpacity key={b.id} style={[styles.bookingCard, { backgroundColor: themeColors.card }]} onPress={() => (navigation as any).navigate('BookingDetail', { bookingId: b.id })}>
               <View style={styles.bookingHeader}>

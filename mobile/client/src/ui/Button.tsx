@@ -2,6 +2,7 @@ import React from 'react';
 import { Pressable, Text, ActivityIndicator, ViewStyle, TextStyle } from 'react-native';
 import Animated, { useSharedValue, useAnimatedStyle, withTiming } from 'react-native-reanimated';
 import { colors, radius, spacing, typography, animation } from '@/theme';
+import { useReducedMotion } from './a11y';
 
 type Variant = 'primary' | 'secondary' | 'ghost' | 'danger';
 type Size = 'sm' | 'md' | 'lg';
@@ -38,6 +39,7 @@ export function Button({
   loading,
   fullWidth,
 }: ButtonProps) {
+  const reducedMotion = useReducedMotion();
   const scale = useSharedValue(1);
   const animStyle = useAnimatedStyle(() => ({ transform: [{ scale: scale.value }] }));
 
@@ -74,7 +76,7 @@ export function Button({
         accessibilityState={{ disabled: !!isDisabled }}
         accessibilityLabel={label}
         onPressIn={() => {
-          if (!isDisabled) {
+          if (!isDisabled && !reducedMotion) {
             // Dynamic haptic — graceful no-op if expo-haptics not available (Expo Go / web)
             try {
               // eslint-disable-next-line @typescript-eslint/no-var-requires, @typescript-eslint/no-unsafe-assignment

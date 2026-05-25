@@ -1,20 +1,50 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import { FlatList, View, Text, StyleSheet, RefreshControl } from 'react-native';
 import Animated, { FadeIn } from 'react-native-reanimated';
-import { Screen, Button, Skeleton, EmptyState, AnimatedListItem } from '@/ui';
+import { Screen, Button, Skeleton, EmptyState, AnimatedListItem, a11y } from '@/ui';
 import { useNotifications, useMarkAllRead } from '@/notifications';
 import type { AppNotification } from '@/notifications';
 import { colors, spacing, typography } from '@/theme';
+
+const NOTIF_ITEM_HEIGHT = 70;
 
 export function NotificationsScreen() {
   const { data: notifs, isLoading, refetch, isRefetching } = useNotifications();
   const markAll = useMarkAllRead();
   const unreadCount = notifs?.filter(n => !n.read_at).length ?? 0;
 
+  const handleRefresh = useCallback(() => {
+    refetch().then(() => {
+      a11y.announce(`${notifs?.length ?? 0} notifications chargées`);
+    });
+  }, [refetch, notifs?.length]);
+
+  const renderNotifItem = useCallback(({ item, index }: { item: AppNotification; index: number }) => (
+    <AnimatedListItem index={index}>
+      <View
+        style={[styles.notif, !item.read_at && styles.unread]}
+        accessible
+        accessibilityLabel={`${item.title}. ${item.body}${!item.read_at ? '. Non lu' : ''}`}
+      >
+        <Text style={styles.notifTitle}>{item.title}</Text>
+        <Text style={styles.notifBody}>{item.body}</Text>
+        <Text style={styles.notifTime}>
+          {new Date(item.created_at).toLocaleDateString()}
+        </Text>
+      </View>
+    </AnimatedListItem>
+  ), []);
+
+  const getItemLayout = useCallback((_: any, index: number) => ({
+    length: NOTIF_ITEM_HEIGHT,
+    offset: NOTIF_ITEM_HEIGHT * index,
+    index,
+  }), []);
+
   return (
     <Screen>
       <View style={styles.header}>
-        <Text style={styles.title}>Notifications</Text>
+        <Text style={styles.title} accessibilityRole="header">Notifications</Text>
         {unreadCount > 0 && (
           <Button
             label="Tout marquer lu"
@@ -33,21 +63,13 @@ export function NotificationsScreen() {
           <FlatList
             data={notifs ?? []}
             keyExtractor={item => item.id}
-            renderItem={({ item, index }: { item: AppNotification; index: number }) => (
-              <AnimatedListItem index={index}>
-                <View style={[styles.notif, !item.read_at && styles.unread]}>
-                  <Text style={styles.notifTitle}>{item.title}</Text>
-                  <Text style={styles.notifBody}>{item.body}</Text>
-                  <Text style={styles.notifTime}>
-                    {new Date(item.created_at).toLocaleDateString()}
-                  </Text>
-                </View>
-              </AnimatedListItem>
-            )}
+            renderItem={renderNotifItem}
+            getItemLayout={getItemLayout}
+            accessibilityLabel="Liste des notifications"
             refreshControl={
               <RefreshControl
                 refreshing={isRefetching ?? false}
-                onRefresh={refetch}
+                onRefresh={handleRefresh}
                 tintColor={colors.brand[500]}
                 colors={[colors.brand[500]]}
               />
@@ -91,12 +113,12 @@ const styles = StyleSheet.create({
   },
   notifTime: {
     fontSize: 10,
-    color: colors.surface[400],
+    color: colors.surface[500],
     marginTop: 4,
   },
   empty: {
     fontSize: typography.fontSize.sm,
-    color: colors.surface[400],
+    color: colors.surface[500],
     textAlign: 'center',
     marginTop: spacing.xl,
   },

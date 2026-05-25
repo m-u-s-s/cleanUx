@@ -22,7 +22,12 @@ const trendArrows: Record<string, string> = { up: '↑', down: '↓', flat: '→
 
 export function StatCard({ title, value, trend, tone = 'neutral' }: StatCardProps) {
   return (
-    <View style={styles.container}>
+    <View
+      style={styles.container}
+      accessible
+      accessibilityRole="text"
+      accessibilityLabel={`${title}: ${value}${trend ? ` tendance ${trend}` : ''}`}
+    >
       <Text style={styles.title}>{title}</Text>
       <View style={styles.row}>
         <Text style={[styles.value, { color: toneColors[tone] }]}>{value}</Text>
