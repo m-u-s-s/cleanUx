@@ -687,3 +687,59 @@ input[type="password"]:focus {
     transform: translateY(-2px);
     box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08), 0 16px 48px rgba(15, 23, 42, 0.04);
 }
+
+/* ============================================================================
+   FINAL POLISH — Page transitions, micro hovers, universal interactions
+   ========================================================================= */
+
+/* Item 8: Smooth Livewire navigation crossfade (View Transitions API) */
+[wire\:navigate] {
+    view-transition-name: page;
+}
+@keyframes vt-fade-out {
+    from { opacity: 1; }
+    to   { opacity: 0; }
+}
+@keyframes vt-fade-in {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+}
+::view-transition-old(page) {
+    animation: vt-fade-out var(--cx-dur-fast) var(--cx-ease);
+}
+::view-transition-new(page) {
+    animation: vt-fade-in var(--cx-dur-fast) var(--cx-ease);
+}
+
+/* Item 9: Universal interactive hover lift */
+a, button, [role="button"], .cu-btn, [wire\:click] {
+    transition: transform var(--cx-dur-fast) var(--cx-ease),
+                opacity var(--cx-dur-fast) var(--cx-ease);
+}
+a:hover:not([disabled]),
+button:not(:disabled):hover,
+.cu-btn:hover {
+    transform: translateY(-1px);
+}
+a:active:not([disabled]),
+button:active,
+.cu-btn:active {
+    transform: translateY(0);
+}
+
+/* Table row hover highlight */
+.cu-table tbody tr {
+    transition: background-color var(--cx-dur-fast);
+}
+.cu-table tbody tr:hover {
+    background-color: rgba(99, 102, 241, 0.03);
+}
+
+/* Badge pulse for "new" items */
+.cu-badge-new {
+    animation: softPulse 1.8s ease-in-out infinite;
+}
+@keyframes softPulse {
+    0%, 100% { opacity: 1; }
+    50%       { opacity: 0.65; }
+}
