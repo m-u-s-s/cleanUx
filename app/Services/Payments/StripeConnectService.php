@@ -104,7 +104,7 @@ class StripeConnectService
      */
     public function createExpressAccount(User $user): string
     {
-        $country = $user->country_code ?? $user->country ?? config('services.stripe.connect_country', 'FR');
+        $country = $user->country ?? $user->business_country ?? config('services.stripe.connect_country', 'BE');
 
         $account = Account::create([
             'type' => 'express',

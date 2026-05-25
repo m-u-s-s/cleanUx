@@ -561,7 +561,7 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
     })->name('admin.onboarding.document.file');
 });
 
-Route::middleware(['auth:sanctum'])->prefix('provider')->group(function () {
+Route::middleware(['auth:sanctum', 'token.grace'])->prefix('provider')->group(function () {
     Route::get('/payouts', [ProviderPayoutsController::class, 'index']);
     Route::get('/payouts/summary', [ProviderPayoutsController::class, 'summary']);
 });

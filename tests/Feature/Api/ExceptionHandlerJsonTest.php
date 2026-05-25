@@ -131,7 +131,26 @@ class ExceptionHandlerJsonTest extends TestCase
     }
 
     // ---------------------------------------------------------------------------
-    // 6. Non-API HTML request keeps default Laravel behavior (HTML page, not JSON)
+    // 6. AccessDeniedHttpException → 403 with error_code 'forbidden'
+    // ---------------------------------------------------------------------------
+
+    public function test_access_denied_returns_forbidden_error_code(): void
+    {
+        $user = User::factory()->create();
+        Sanctum::actingAs($user);
+
+        // Register a test route that throws AccessDeniedHttpException
+        \Illuminate\Support\Facades\Route::middleware('auth:sanctum')
+            ->get('/api/test-forbidden', fn () => throw new \Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException('No access'));
+
+        $r = $this->getJson('/api/test-forbidden');
+
+        $r->assertStatus(403)
+          ->assertJson(['ok' => false, 'error_code' => 'forbidden']);
+    }
+
+    // ---------------------------------------------------------------------------
+    // 7. Non-API HTML request keeps default Laravel behavior (HTML page, not JSON)
     // ---------------------------------------------------------------------------
 
     public function test_html_request_keeps_default_behavior(): void

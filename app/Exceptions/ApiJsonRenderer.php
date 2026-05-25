@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
+use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\HttpKernel\Exception\TooManyRequestsHttpException;
@@ -67,6 +68,9 @@ class ApiJsonRenderer
         }
         if ($e instanceof TooManyRequestsHttpException) {
             return [429, 'rate_limited', 'Too many requests.', null];
+        }
+        if ($e instanceof AccessDeniedHttpException) {
+            return [403, 'forbidden', $e->getMessage() ?: 'Access denied.', null];
         }
         if ($e instanceof HttpException) {
             return [$e->getStatusCode(), 'http_error', $e->getMessage() ?: 'HTTP error.', null];
