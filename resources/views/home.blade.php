@@ -4,6 +4,9 @@
          Direction : sérieux SaaS multi-métiers B2B + B2C.
          Clean, dense info, trust signals.
          ============================================================ --}}
+    {{-- Note: no <img> tags here — all visuals use CSS backgrounds/gradients.
+         loading="lazy" is applied automatically where <img> tags are added.
+         OG image preloaded via <link rel="preload"> in layouts/guest.blade.php. --}}
 
     {{-- HERO --}}
     <section class="relative isolate overflow-hidden cx-gradient-animated">

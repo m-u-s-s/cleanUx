@@ -52,7 +52,7 @@ export function HomeScreen() {
         </View>
       ) : isFirstTime ? (
         <View style={[styles.welcomeCard, { backgroundColor: themeColors.card }]}>
-          <Text style={styles.welcomeEmoji}>🏠</Text>
+          <Icon name="home-outline" size={48} color={colors.brand[400]} style={styles.welcomeIcon} />
           <Text style={[styles.welcomeTitle, { color: themeColors.text }]}>Bienvenue sur CleanUx</Text>
           <Text style={[styles.welcomeText, { color: themeColors.textSecondary }]}>Réservez votre premier service et découvrez une nouvelle façon de gérer votre maison.</Text>
           <Button label="Réserver mon premier service" onPress={() => navigation.navigate('BookingWizard')} fullWidth size="lg" />
@@ -113,7 +113,7 @@ const styles = StyleSheet.create({
   role: { fontSize: typography.fontSize.sm, marginTop: 2 },
   kpiRow: { flexDirection: 'row', gap: spacing.sm, marginBottom: spacing.lg },
   welcomeCard: { borderRadius: radius.md, padding: spacing.lg, ...shadows.soft, marginBottom: spacing.lg, alignItems: 'center', gap: spacing.sm },
-  welcomeEmoji: { fontSize: 48 },
+  welcomeIcon: { marginBottom: spacing.xs },
   welcomeTitle: { fontSize: typography.fontSize.xl, fontWeight: typography.fontWeight.bold, textAlign: 'center' },
   welcomeText: { fontSize: typography.fontSize.sm, textAlign: 'center', lineHeight: 20, marginBottom: spacing.sm },
   sectionTitle: { fontSize: typography.fontSize.lg, fontWeight: typography.fontWeight.semibold, marginTop: spacing.xl, marginBottom: spacing.sm },
