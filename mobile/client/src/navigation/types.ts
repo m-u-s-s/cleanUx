@@ -24,7 +24,6 @@ export type RootStackParamList = {
   ForgotPassword: undefined;
   Legal: { type: 'terms' | 'privacy' };
   // Polish — UX screens
-  Onboarding: undefined;
   NotificationPreferences: undefined;
   Language: undefined;
   Appearance: undefined;

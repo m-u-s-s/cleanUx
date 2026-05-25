@@ -4,11 +4,8 @@ export type RootStackParamList = {
   MissionDetail: { missionId: number };
   MissionInbox: undefined;
   MissionField: { missionId: number };
-  QRShow: { missionId: number; action: 'start' | 'end' };
-  Checklist: { missionId: number; inspectionId: number };
   StripeOnboarding: undefined;
   KYC: undefined;
-  AvailabilityEdit: undefined;
   Availability: undefined;
   Badges: undefined;
   ProviderDisputes: undefined;
@@ -20,7 +17,6 @@ export type RootStackParamList = {
   ForgotPassword: undefined;
   Legal: { type: 'terms' | 'privacy' };
   // Polish — UX screens
-  Walkthrough: undefined;
   NotificationPreferences: undefined;
   Language: undefined;
   Appearance: undefined;

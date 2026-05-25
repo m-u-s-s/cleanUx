@@ -40,7 +40,7 @@ export function useAddressAutocomplete(query: string) {
   return useQuery<Array<{ label: string; place_id: string; lat?: number; lng?: number }>>({
     queryKey: ['geo', 'autocomplete', query],
     queryFn: async () => {
-      const res = await apiClient.get('/geo/v2/autocomplete', { params: { q: query } });
+      const res = await apiClient.get('/v2/geo/autocomplete', { params: { q: query } });
       return res.data.data ?? res.data;
     },
     enabled: query.length >= 3,

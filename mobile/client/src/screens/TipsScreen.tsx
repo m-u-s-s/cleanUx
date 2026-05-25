@@ -1,25 +1,43 @@
 import React, { useState } from 'react';
-import { View, Text, Alert, StyleSheet } from 'react-native';
+import { View, Text, Alert, StyleSheet, ActivityIndicator } from 'react-native';
 import { Screen, Button } from '@/ui';
 import { apiClient } from '@/api';
 import { colors, spacing, typography } from '@/theme';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '@/navigation/types';
+import { useQuery } from '@tanstack/react-query';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Tips'>;
 
-const PRESETS = [10, 15, 20];
+interface TipSuggestion {
+  label: string;
+  percent: number;
+  amount_cents: number;
+  amount_formatted: string;
+}
 
 export function TipsScreen({ route, navigation }: Props) {
   const { bookingId } = route.params;
-  const [selected, setSelected] = useState<number | null>(null);
+  const [selected, setSelected] = useState<TipSuggestion | null>(null);
   const [sending, setSending] = useState(false);
+
+  const { data: suggestions = [], isLoading } = useQuery<TipSuggestion[]>({
+    queryKey: ['tips', 'suggestions', bookingId],
+    queryFn: async () => {
+      const res = await apiClient.get(`/client/bookings/${bookingId}/tip/suggestions`);
+      return res.data.data ?? [];
+    },
+  });
 
   const handleSend = async () => {
     if (selected === null) return;
     setSending(true);
     try {
-      await apiClient.post(`/client/bookings/${bookingId}/tip`, { percentage: selected });
+      await apiClient.post(`/client/bookings/${bookingId}/tip`, {
+        amount_cents: selected.amount_cents,
+        preset_percent: selected.percent,
+        preset_label: selected.label,
+      });
       Alert.alert('Merci !', 'Votre pourboire a été envoyé.', [{ text: 'OK', onPress: () => navigation.goBack() }]);
     } catch (e: any) {
       Alert.alert('Erreur', e.message);
@@ -32,22 +50,28 @@ export function TipsScreen({ route, navigation }: Props) {
     <Screen>
       <Text style={styles.title}>Pourboire</Text>
       <Text style={styles.subtitle}>Merci de valoriser le travail du prestataire</Text>
-      <View style={styles.presets}>
-        {PRESETS.map(p => (
-          <Button
-            key={p}
-            label={`${p}%`}
-            variant={selected === p ? 'primary' : 'secondary'}
-            onPress={() => setSelected(p)}
-          />
-        ))}
-      </View>
+      {isLoading ? (
+        <ActivityIndicator size="large" color={colors.brand[500]} style={{ marginVertical: spacing.xl }} />
+      ) : suggestions.length === 0 ? (
+        <Text style={styles.noSuggestions}>Aucune suggestion disponible pour ce service.</Text>
+      ) : (
+        <View style={styles.presets}>
+          {suggestions.map(s => (
+            <Button
+              key={s.percent}
+              label={`${s.label}\n${s.amount_formatted}`}
+              variant={selected?.percent === s.percent ? 'primary' : 'secondary'}
+              onPress={() => setSelected(s)}
+            />
+          ))}
+        </View>
+      )}
       <Button
         label="Envoyer"
         onPress={handleSend}
         fullWidth
         size="lg"
-        disabled={selected === null}
+        disabled={selected === null || sending}
         loading={sending}
       />
     </Screen>
@@ -72,5 +96,11 @@ const styles = StyleSheet.create({
     gap: spacing.sm,
     justifyContent: 'center',
     marginBottom: spacing.xl,
+  },
+  noSuggestions: {
+    fontSize: typography.fontSize.sm,
+    color: colors.surface[500],
+    textAlign: 'center',
+    marginVertical: spacing.xl,
   },
 });
