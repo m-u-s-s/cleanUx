@@ -25,6 +25,7 @@ import { ProfileEditScreen } from '@/screens/ProfileEditScreen';
 import { TipsScreen } from '@/screens/TipsScreen';
 import { NPSScreen } from '@/screens/NPSScreen';
 import { ForgotPasswordScreen } from '@/screens/ForgotPasswordScreen';
+import { LegalScreen } from '@/screens/LegalScreen';
 import { colors } from '@/theme';
 import type { RootStackParamList } from './types';
 
@@ -139,11 +140,20 @@ export function RootNavigator() {
               component={NPSScreen}
               options={{ title: 'Votre avis', headerShown: true }}
             />
+            <Stack.Screen
+              name="Legal"
+              component={LegalScreen}
+              options={({ route }) => ({
+                title: route.params.type === 'terms' ? "CGU" : 'Confidentialité',
+                headerShown: true,
+              })}
+            />
           </>
         ) : (
           <>
             <Stack.Screen name="Login" component={LoginScreen} />
             <Stack.Screen name="ForgotPassword" component={ForgotPasswordScreen} options={{ title: 'Mot de passe oublié', headerShown: true }} />
+            <Stack.Screen name="Legal" component={LegalScreen} options={({ route }) => ({ title: route.params.type === 'terms' ? "CGU" : 'Confidentialité', headerShown: true })} />
           </>
         )}
       </Stack.Navigator>

@@ -77,6 +77,19 @@ export function ProfileScreen() {
         />
         <Divider />
         <Button
+          label="Conditions d'utilisation"
+          onPress={() => navigation.navigate('Legal', { type: 'terms' })}
+          variant="ghost"
+          fullWidth
+        />
+        <Button
+          label="Politique de confidentialité"
+          onPress={() => navigation.navigate('Legal', { type: 'privacy' })}
+          variant="ghost"
+          fullWidth
+        />
+        <Divider />
+        <Button
           label="Se déconnecter"
           onPress={() =>
             Alert.alert('Déconnexion', 'Voulez-vous vous déconnecter ?', [

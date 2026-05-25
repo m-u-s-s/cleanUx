@@ -22,6 +22,7 @@ export type RootStackParamList = {
   Tips: { bookingId: number };
   NPS: undefined;
   ForgotPassword: undefined;
+  Legal: { type: 'terms' | 'privacy' };
 };
 
 export type BookingStackParamList = {

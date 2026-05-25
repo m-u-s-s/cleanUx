@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
-import { View, Alert, StyleSheet } from 'react-native';
-import { Screen, Button, TextInput } from '@/ui';
+import { View, Text, Alert, TouchableOpacity, StyleSheet } from 'react-native';
+import { Screen, Button, TextInput, Avatar } from '@/ui';
 import { useAuth } from '@/auth';
 import { apiClient } from '@/api';
-import { spacing } from '@/theme';
+import { colors, spacing, typography } from '@/theme';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '@/navigation/types';
 
@@ -14,6 +14,40 @@ export function ProfileEditScreen({ navigation }: Props) {
   const [name, setName] = useState(user?.name ?? '');
   const [phone, setPhone] = useState(user?.phone ?? '');
   const [saving, setSaving] = useState(false);
+  const [avatarUri, setAvatarUri] = useState<string | undefined>((user as any)?.avatar_url);
+
+  const pickAvatar = async () => {
+    try {
+      const ImagePicker = await import('expo-image-picker');
+      const perm = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (!perm.granted) {
+        Alert.alert('Permission requise', 'Veuillez autoriser l\'accès à la galerie.');
+        return;
+      }
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ['images'] as any,
+        allowsEditing: true,
+        aspect: [1, 1],
+        quality: 0.7,
+      });
+      if (!result.canceled && result.assets[0]) {
+        const uri = result.assets[0].uri;
+        setAvatarUri(uri);
+        // Upload to server (best-effort)
+        try {
+          const formData = new FormData();
+          formData.append('avatar', { uri, type: 'image/jpeg', name: 'avatar.jpg' } as any);
+          await apiClient.post('/client/profile/avatar', formData, {
+            headers: { 'Content-Type': 'multipart/form-data' },
+          });
+        } catch {
+          // best-effort — photo shown locally even if upload fails
+        }
+      }
+    } catch {
+      // expo-image-picker not available
+    }
+  };
 
   const handleSave = async () => {
     setSaving(true);
@@ -31,6 +65,10 @@ export function ProfileEditScreen({ navigation }: Props) {
 
   return (
     <Screen scroll>
+      <TouchableOpacity onPress={pickAvatar} style={styles.avatarWrapper}>
+        <Avatar name={user?.name ?? '?'} imageUri={avatarUri} size={80} />
+        <Text style={styles.changePhotoText}>Changer la photo</Text>
+      </TouchableOpacity>
       <View style={styles.form}>
         <TextInput label="Nom" value={name} onChangeText={setName} />
         <TextInput label="Téléphone" value={phone} onChangeText={setPhone} keyboardType="phone-pad" />
@@ -41,5 +79,7 @@ export function ProfileEditScreen({ navigation }: Props) {
 }
 
 const styles = StyleSheet.create({
-  form: { gap: spacing.md, marginTop: spacing.md },
+  avatarWrapper: { alignItems: 'center', marginBottom: spacing.lg, marginTop: spacing.md },
+  changePhotoText: { color: colors.brand[500], fontSize: typography.fontSize.sm, marginTop: spacing.xs },
+  form: { gap: spacing.md },
 });

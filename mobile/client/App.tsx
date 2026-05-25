@@ -1,4 +1,6 @@
 import './src/sentry/init';
+import { setupForegroundNotifications } from '@/push';
+setupForegroundNotifications();
 import React from 'react';
 import { View } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
