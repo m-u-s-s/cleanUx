@@ -14,13 +14,13 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
     {{-- SEO multi-métiers --}}
-    <title>{{ config(‘app.name’, ‘CleanUx’) }} | Services à domicile : nettoyage, peinture, bâtiment, jardinage</title>
-    <meta name="description" content="Réservez un service à domicile en quelques minutes : nettoyage, peinture, bâtiment, jardinage. Devis clair, suivi de l’intervenant en temps réel, validation par code et preuve photo.">
+    <title>{{ config('app.name', 'CleanUx') }} | Services à domicile : nettoyage, peinture, bâtiment, jardinage</title>
+    <meta name="description" content="Réservez un service à domicile en quelques minutes : nettoyage, peinture, bâtiment, jardinage. Devis clair, suivi de l'intervenant en temps réel, validation par code et preuve photo.">
     <meta property="og:title" content="CleanUx — Marketplace de services à domicile">
     <meta property="og:description" content="Réservez un prestataire qualifié en 5 étapes. Nettoyage, peinture, babysitting et 20+ métiers.">
     <meta property="og:type" content="website">
-    <meta property="og:url" content="{{ config(‘app.url’) }}">
-    <meta property="og:image" content="{{ asset(‘images/og-cleanux.jpg’) }}">
+    <meta property="og:url" content="{{ config('app.url') }}">
+    <meta property="og:image" content="{{ asset('images/og-cleanux.jpg') }}">
     <meta name="twitter:card" content="summary_large_image">
     <meta name="robots" content="index,follow">
 
@@ -95,7 +95,7 @@
                         <span class="text-lg font-extrabold" style="font-family:var(--cx-display)">{{ config('app.name', 'CleanUx') }}</span>
                     </div>
                     <p class="mt-4 max-w-xs text-sm" style="color:var(--cx-muted)">
-                        La plateforme de services à domicile : du devis à la preuve d’exécution, en toute confiance.
+                        La plateforme de services à domicile : du devis à la preuve d'exécution, en toute confiance.
                     </p>
                 </div>
                 <div>
@@ -147,7 +147,7 @@
             <div class="mt-12 flex flex-col items-start justify-between gap-3 border-t pt-6 sm:flex-row sm:items-center"
                  style="border-color:var(--cx-line)">
                 <p class="text-xs" style="color:var(--cx-muted)">© {{ date('Y') }} {{ config('app.name', 'CleanUx') }}. Tous droits réservés.</p>
-                <p class="text-xs" style="color:var(--cx-muted)">Conçu pour la Belgique &amp; l’Europe.</p>
+                <p class="text-xs" style="color:var(--cx-muted)">Conçu pour la Belgique &amp; l'Europe.</p>
             </div>
         </div>
     </footer>
