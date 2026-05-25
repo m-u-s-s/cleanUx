@@ -14,6 +14,7 @@ class Kernel extends HttpKernel
      * @var array<int, class-string|string>
      */
     protected $middleware = [
+        \App\Http\Middleware\ForceHttps::class,
         \App\Http\Middleware\TrustHosts::class,
         \App\Http\Middleware\TrustProxies::class,
         \Illuminate\Http\Middleware\HandleCors::class,
@@ -46,6 +47,7 @@ class Kernel extends HttpKernel
             // \Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class,
             \Illuminate\Routing\Middleware\ThrottleRequests::class.':api',
             \Illuminate\Routing\Middleware\SubstituteBindings::class,
+            \App\Http\Middleware\LogSlowQueries::class,
         ],
     ];
 
@@ -78,5 +80,6 @@ class Kernel extends HttpKernel
         'tenant' => \App\Http\Middleware\TenancyV2\ResolveTenant::class,
         'turnstile' => \App\Http\Middleware\VerifyTurnstileCaptcha::class,
         'token.grace' => \App\Http\Middleware\EnforceTokenGrace::class,
+        'cache.api'   => \App\Http\Middleware\CacheApiResponse::class,
     ];
 }

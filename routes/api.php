@@ -17,6 +17,51 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 // ─────────────────────────────────────────────
+// Public — Health check + Support FAQ
+// ─────────────────────────────────────────────
+
+Route::get('/health', function () {
+    $checks = [
+        'app'      => true,
+        'database' => false,
+        'cache'    => false,
+        'queue'    => false,
+    ];
+
+    try {
+        \Illuminate\Support\Facades\DB::select('SELECT 1');
+        $checks['database'] = true;
+    } catch (\Throwable $e) {}
+
+    try {
+        \Illuminate\Support\Facades\Cache::put('health_check', true, 10);
+        $checks['cache'] = \Illuminate\Support\Facades\Cache::get('health_check') === true;
+    } catch (\Throwable $e) {}
+
+    try {
+        $checks['queue'] = config('queue.default') !== 'sync';
+    } catch (\Throwable $e) {}
+
+    $healthy = ! in_array(false, $checks);
+
+    return response()->json(
+        ['status' => $healthy ? 'healthy' : 'degraded', 'checks' => $checks],
+        $healthy ? 200 : 503
+    );
+})->name('api.health');
+
+Route::get('/support/faq', function () {
+    return response()->json(['data' => [
+        ['q' => 'Comment annuler une réservation ?',        'a' => "Allez dans Mes réservations, sélectionnez la réservation et appuyez sur Annuler. Des frais peuvent s'appliquer selon le délai."],
+        ['q' => 'Comment contacter mon prestataire ?',      'a' => 'Ouvrez le détail de votre réservation et utilisez la messagerie intégrée.'],
+        ['q' => 'Comment ajouter un moyen de paiement ?',   'a' => 'Allez dans Profil > Mes moyens de paiement > Ajouter une carte.'],
+        ['q' => 'Comment devenir prestataire ?',            'a' => "Téléchargez l'app CleanUx Provider, inscrivez-vous et complétez la vérification KYC."],
+        ['q' => 'Mes données sont-elles protégées ?',       'a' => 'Oui, CleanUx est conforme au RGPD. Vous pouvez exporter ou supprimer vos données depuis Profil > RGPD.'],
+        ['q' => 'Comment fonctionne le programme fidélité ?', 'a' => 'Cumulez des points à chaque réservation. Montez de niveau (Bronze → Platinum) et échangez vos points contre des réductions.'],
+    ]]);
+})->name('api.support.faq');
+
+// ─────────────────────────────────────────────
 // Public — Auth
 // ─────────────────────────────────────────────
 
@@ -47,8 +92,8 @@ Route::get('/providers/{provider}/ratings', [\App\Http\Controllers\Api\Public\Pr
 Route::get('/locales', [\App\Http\Controllers\Api\LocaleListController::class, 'index']);
 
 // Phase Search v2 — Recherche publique providers/services/adresses
-Route::get('/search/providers',           [\App\Http\Controllers\Api\Public\SearchController::class, 'providers']);
-Route::get('/search/services',            [\App\Http\Controllers\Api\Public\SearchController::class, 'services']);
+Route::get('/search/providers',           [\App\Http\Controllers\Api\Public\SearchController::class, 'providers'])->middleware('cache.api:60');
+Route::get('/search/services',            [\App\Http\Controllers\Api\Public\SearchController::class, 'services'])->middleware('cache.api:300');
 Route::get('/search/postal-autocomplete', [\App\Http\Controllers\Api\Public\SearchController::class, 'postalAutocomplete']);
 
 // Phase Analytics v2 — Ingestion publique (auth optionnelle via header bearer)
@@ -61,7 +106,7 @@ Route::get('/fx/rates',      [\App\Http\Controllers\Api\Public\FxController::cla
 Route::post('/fx/convert',   [\App\Http\Controllers\Api\Public\FxController::class, 'convert']);
 
 // Phase Pricing v2 — Service catalog + quote engine (public read + preview)
-Route::get('/v2/pricing/services', [\App\Http\Controllers\Api\PricingV2Controller::class, 'services']);
+Route::get('/v2/pricing/services', [\App\Http\Controllers\Api\PricingV2Controller::class, 'services'])->middleware('cache.api:300');
 Route::post('/v2/pricing/preview', [\App\Http\Controllers\Api\PricingV2Controller::class, 'preview']);
 Route::post('/v2/pricing/quote',   [\App\Http\Controllers\Api\PricingV2Controller::class, 'quote']);
 

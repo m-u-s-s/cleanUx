@@ -56,6 +56,23 @@ class RouteServiceProvider extends ServiceProvider
             return Limit::perMinute(20)->by('ext:' . ($request->user()?->id ?: $request->ip()));
         });
 
+        // Global API: 120/min authenticated, 30/min anonymous
+        RateLimiter::for('api-global', function (Request $request) {
+            return $request->user()
+                ? Limit::perMinute(120)->by($request->user()->id)
+                : Limit::perMinute(30)->by($request->ip());
+        });
+
+        // Auth endpoints hardened: 10/min per IP
+        RateLimiter::for('api-auth', function (Request $request) {
+            return Limit::perMinute(10)->by($request->ip());
+        });
+
+        // Upload endpoints: 5/min per user/IP
+        RateLimiter::for('api-upload', function (Request $request) {
+            return Limit::perMinute(5)->by($request->user()?->id ?? $request->ip());
+        });
+
         $this->routes(function () {
             Route::middleware('api')
                 ->prefix('api')
