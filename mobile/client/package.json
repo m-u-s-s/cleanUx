@@ -55,7 +55,8 @@
     "web": "expo start --web",
     "test": "jest",
     "test:watch": "jest --watch",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "sync-shared": "bash ../../mobile/scripts/sync-shared.sh"
   },
   "private": true
 }
