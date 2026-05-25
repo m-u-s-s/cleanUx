@@ -21,6 +21,9 @@ export function ProfileScreen() {
     { label: 'Onboarding', screen: 'Onboarding' },
     { label: 'Messagerie', screen: 'ProviderChatList' },
     { label: 'Notifications', screen: 'ProviderNotifications' },
+    { label: 'Préférences notifications', screen: 'NotificationPreferences' },
+    { label: 'Langue', screen: 'Language' },
+    { label: 'Apparence', screen: 'Appearance' },
   ];
 
   return (

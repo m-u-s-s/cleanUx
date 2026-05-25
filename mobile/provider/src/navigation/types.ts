@@ -19,6 +19,11 @@ export type RootStackParamList = {
   ProviderNotifications: undefined;
   ForgotPassword: undefined;
   Legal: { type: 'terms' | 'privacy' };
+  // Polish — UX screens
+  Walkthrough: undefined;
+  NotificationPreferences: undefined;
+  Language: undefined;
+  Appearance: undefined;
 };
 
 export type TabParamList = {

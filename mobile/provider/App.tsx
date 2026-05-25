@@ -1,6 +1,6 @@
 import { setupForegroundNotifications } from '@/push';
 setupForegroundNotifications();
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { View } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
@@ -18,11 +18,42 @@ import { AuthProvider } from '@/auth';
 import { RealtimeProvider } from '@/realtime';
 import { RootNavigator, linking } from '@/navigation';
 import { ErrorBoundary } from '@/ErrorBoundary';
+import { WalkthroughScreen, hasCompletedWalkthrough } from '@/screens/WalkthroughScreen';
 import './src/sentry/init';
 
 const queryClient = new QueryClient({
   defaultOptions: { queries: { retry: 2, staleTime: 60_000 } },
 });
+
+function AppInner() {
+  const [showWalkthrough, setShowWalkthrough] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    hasCompletedWalkthrough().then(completed => setShowWalkthrough(!completed));
+  }, []);
+
+  if (showWalkthrough === null) {
+    return <View style={{ flex: 1 }} />;
+  }
+
+  if (showWalkthrough) {
+    return (
+      <SafeAreaProvider>
+        <WalkthroughScreen onComplete={() => setShowWalkthrough(false)} />
+        <StatusBar style="light" />
+      </SafeAreaProvider>
+    );
+  }
+
+  return (
+    <SafeAreaProvider>
+      <NavigationContainer linking={linking}>
+        <RootNavigator />
+      </NavigationContainer>
+      <StatusBar style="auto" />
+    </SafeAreaProvider>
+  );
+}
 
 export default function App() {
   const [fontsLoaded] = useFonts({
@@ -42,12 +73,7 @@ export default function App() {
       <QueryClientProvider client={queryClient}>
         <AuthProvider>
           <RealtimeProvider>
-            <SafeAreaProvider>
-              <NavigationContainer linking={linking}>
-                <RootNavigator />
-              </NavigationContainer>
-              <StatusBar style="auto" />
-            </SafeAreaProvider>
+            <AppInner />
           </RealtimeProvider>
         </AuthProvider>
       </QueryClientProvider>

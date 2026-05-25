@@ -18,6 +18,10 @@ import { ProviderChatScreen } from '@/screens/ProviderChatScreen';
 import { ProviderNotificationsScreen } from '@/screens/ProviderNotificationsScreen';
 import { ForgotPasswordScreen } from '@/screens/ForgotPasswordScreen';
 import { LegalScreen } from '@/screens/LegalScreen';
+// Polish — UX screens
+import { NotificationPreferencesScreen } from '@/screens/NotificationPreferencesScreen';
+import { LanguageScreen } from '@/screens/LanguageScreen';
+import { AppearanceScreen } from '@/screens/AppearanceScreen';
 import { TabNavigator } from './TabNavigator';
 import { colors } from '@/theme';
 import type { RootStackParamList } from './types';
@@ -116,6 +120,22 @@ export function RootNavigator() {
                 title: route.params.type === 'terms' ? 'CGU' : 'Confidentialité',
                 headerShown: true,
               })}
+            />
+            {/* Polish — UX screens */}
+            <Stack.Screen
+              name="NotificationPreferences"
+              component={NotificationPreferencesScreen}
+              options={{ title: 'Préférences notifications', headerShown: true }}
+            />
+            <Stack.Screen
+              name="Language"
+              component={LanguageScreen}
+              options={{ title: 'Langue', headerShown: true }}
+            />
+            <Stack.Screen
+              name="Appearance"
+              component={AppearanceScreen}
+              options={{ title: 'Apparence', headerShown: true }}
             />
           </>
         ) : (
