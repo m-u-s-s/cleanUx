@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "main": "index.ts",
   "dependencies": {
+    "@cleanux/shared": "*",
     "@expo-google-fonts/figtree": "^0.4.1",
     "@expo-google-fonts/space-grotesk": "^0.4.1",
     "@expo/vector-icons": "^15.1.1",
@@ -53,8 +54,7 @@
     "web": "expo start --web",
     "test": "jest",
     "test:watch": "jest --watch",
-    "typecheck": "tsc --noEmit",
-    "sync-shared": "bash ../../mobile/scripts/sync-shared.sh"
+    "typecheck": "tsc --noEmit"
   },
   "private": true
 }

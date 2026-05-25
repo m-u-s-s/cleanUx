@@ -1,4 +1,4 @@
-{
+﻿{
   "extends": "expo/tsconfig.base",
   "compilerOptions": {
     "strict": true,
@@ -8,10 +8,35 @@
     "ignoreDeprecations": "6.0",
     "baseUrl": ".",
     "paths": {
+      "@/api": ["../shared/src/api"],
+      "@/api/*": ["../shared/src/api/*"],
+      "@/auth": ["../shared/src/auth"],
+      "@/auth/*": ["../shared/src/auth/*"],
+      "@/chat": ["../shared/src/chat"],
+      "@/chat/*": ["../shared/src/chat/*"],
+      "@/config": ["../shared/src/config"],
+      "@/config/*": ["../shared/src/config/*"],
+      "@/notifications": ["../shared/src/notifications"],
+      "@/notifications/*": ["../shared/src/notifications/*"],
+      "@/push": ["../shared/src/push"],
+      "@/push/*": ["../shared/src/push/*"],
+      "@/realtime": ["../shared/src/realtime"],
+      "@/realtime/*": ["../shared/src/realtime/*"],
+      "@/sentry": ["../shared/src/sentry"],
+      "@/sentry/*": ["../shared/src/sentry/*"],
+      "@/storage": ["../shared/src/storage"],
+      "@/storage/*": ["../shared/src/storage/*"],
+      "@/theme": ["../shared/src/theme"],
+      "@/theme/*": ["../shared/src/theme/*"],
+      "@/ui": ["../shared/src/ui"],
+      "@/ui/*": ["../shared/src/ui/*"],
+      "@/ErrorBoundary": ["../shared/src/ErrorBoundary"],
+      "@cleanux/shared": ["../shared/src"],
+      "@cleanux/shared/*": ["../shared/src/*"],
       "@/*": ["src/*"]
     },
     "types": ["jest", "node"]
   },
-  "include": ["**/*.ts", "**/*.tsx"],
+  "include": ["**/*.ts", "**/*.tsx", "../shared/src/**/*.ts", "../shared/src/**/*.tsx"],
   "exclude": ["node_modules"]
 }

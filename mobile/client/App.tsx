@@ -1,4 +1,4 @@
-import './src/sentry/init';
+import '@/sentry/init';
 import { setupForegroundNotifications } from '@/push';
 setupForegroundNotifications();
 import React, { useState, useEffect } from 'react';

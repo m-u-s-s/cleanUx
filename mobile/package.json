@@ -1,0 +1,9 @@
+{
+  "name": "cleanux-mobile",
+  "private": true,
+  "workspaces": [
+    "shared",
+    "client",
+    "provider"
+  ]
+}

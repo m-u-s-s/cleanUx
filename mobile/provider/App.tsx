@@ -19,7 +19,7 @@ import { RealtimeProvider } from '@/realtime';
 import { RootNavigator, linking } from '@/navigation';
 import { ErrorBoundary } from '@/ErrorBoundary';
 import { WalkthroughScreen, hasCompletedWalkthrough } from '@/screens/WalkthroughScreen';
-import './src/sentry/init';
+import '@/sentry/init';
 
 const queryClient = new QueryClient({
   defaultOptions: { queries: { retry: 2, staleTime: 60_000 } },

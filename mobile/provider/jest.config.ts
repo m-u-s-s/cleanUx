@@ -1,11 +1,30 @@
-import type { Config } from 'jest';
+﻿import type { Config } from 'jest';
 
 const config: Config = {
   preset: 'jest-expo',
   transformIgnorePatterns: [
     'node_modules/(?!((jest-)?react-native|@react-native(-community)?)|expo(nent)?|@expo(nent)?/.*|@expo-google-fonts/.*|react-navigation|@react-navigation/.*|@sentry/react-native|expo-secure-store|expo-constants|expo-status-bar|@gorhom)',
   ],
+  // Allow Jest to find node_modules from the provider dir when processing shared/ files
+  modulePaths: [
+    '<rootDir>/node_modules',
+  ],
+  moduleDirectories: ['node_modules', '<rootDir>/node_modules'],
   moduleNameMapper: {
+    // Shared modules — map @/ prefixed shared paths to shared/src
+    '^@/api(.*)$': '<rootDir>/../shared/src/api$1',
+    '^@/auth(.*)$': '<rootDir>/../shared/src/auth$1',
+    '^@/chat(.*)$': '<rootDir>/../shared/src/chat$1',
+    '^@/config(.*)$': '<rootDir>/../shared/src/config$1',
+    '^@/notifications(.*)$': '<rootDir>/../shared/src/notifications$1',
+    '^@/push(.*)$': '<rootDir>/../shared/src/push$1',
+    '^@/realtime(.*)$': '<rootDir>/../shared/src/realtime$1',
+    '^@/sentry(.*)$': '<rootDir>/../shared/src/sentry$1',
+    '^@/storage(.*)$': '<rootDir>/../shared/src/storage$1',
+    '^@/theme(.*)$': '<rootDir>/../shared/src/theme$1',
+    '^@/ui(.*)$': '<rootDir>/../shared/src/ui$1',
+    '^@/ErrorBoundary$': '<rootDir>/../shared/src/ErrorBoundary',
+    // Provider-only modules
     '^@/(.*)$': '<rootDir>/src/$1',
     // react-native-reanimated v4 requires native worklets — use local stub to avoid WorkletsError
     'react-native-reanimated': '<rootDir>/__mocks__/react-native-reanimated',
