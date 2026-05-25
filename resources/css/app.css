@@ -582,6 +582,18 @@
 @keyframes cx-fab-pulse   { 50% { box-shadow: 0 14px 52px -6px var(--cx-glow-amber); } }
 @keyframes cx-blink       { 50% { opacity: .3; } }
 
+@keyframes gradient-flow {
+    0%   { background-position: 0% 50%; }
+    50%  { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+.cx-gradient-animated {
+    background: linear-gradient(-45deg, #f8f9ff, #eef0ff, #fdf4e7, #f8f9ff);
+    background-size: 400% 400%;
+    animation: gradient-flow 8s ease infinite;
+}
+
 /* ============================================================================
    7) ACCESSIBILITÉ — coupe les mouvements si l'utilisateur le demande
    ========================================================================= */
@@ -629,8 +641,49 @@
 /* Glow effects */
 .cu-glow-amber {
     box-shadow: 0 0 20px rgba(255, 182, 72, 0.3), 0 0 40px rgba(255, 182, 72, 0.1);
+    transition: box-shadow var(--cx-dur) var(--cx-ease), transform var(--cx-dur) var(--cx-ease);
+}
+.cu-glow-amber:hover {
+    box-shadow: 0 0 24px rgba(255, 182, 72, 0.4), 0 0 48px rgba(255, 182, 72, 0.15);
+    transform: translateY(-1px);
+}
+.cu-glow-amber:active {
+    transform: translateY(0);
+    box-shadow: 0 0 12px rgba(255, 182, 72, 0.3);
 }
 
 .cu-glow-brand {
     box-shadow: 0 0 20px rgba(99, 102, 241, 0.2), 0 0 40px rgba(99, 102, 241, 0.08);
+    transition: box-shadow var(--cx-dur) var(--cx-ease), transform var(--cx-dur) var(--cx-ease);
+}
+.cu-glow-brand:hover {
+    box-shadow: 0 0 24px rgba(99, 102, 241, 0.3), 0 0 48px rgba(99, 102, 241, 0.1);
+    transform: translateY(-1px);
+}
+
+/* Input focus amber ring */
+input[type="text"],
+input[type="email"],
+input[type="password"] {
+    transition: border-color var(--cx-dur-fast) var(--cx-ease),
+                box-shadow var(--cx-dur-fast) var(--cx-ease);
+}
+
+input[type="text"]:focus,
+input[type="email"]:focus,
+input[type="password"]:focus {
+    border-color: var(--cx-amber) !important;
+    box-shadow: 0 0 0 3px rgba(255, 182, 72, 0.15);
+}
+
+/* Dashboard card hover lift */
+.cu-card,
+.cu-kpi {
+    transition: transform var(--cx-dur) var(--cx-ease),
+                box-shadow var(--cx-dur) var(--cx-ease);
+}
+.cu-card:hover,
+.cu-kpi:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08), 0 16px 48px rgba(15, 23, 42, 0.04);
 }

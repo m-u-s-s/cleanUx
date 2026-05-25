@@ -36,7 +36,12 @@ window.FullCalendar = {
         var io = new IntersectionObserver(function (entries) {
             entries.forEach(function (e) {
                 if (e.isIntersecting) {
-                    e.target.classList.add('cx-in');
+                    var delay = parseInt(e.target.dataset.cxDelay || '0', 10);
+                    if (delay > 0) {
+                        setTimeout(function () { e.target.classList.add('cx-in'); }, delay);
+                    } else {
+                        e.target.classList.add('cx-in');
+                    }
                     io.unobserve(e.target);
                 }
             });

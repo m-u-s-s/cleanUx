@@ -6,8 +6,8 @@
          ============================================================ --}}
 
     {{-- HERO --}}
-    <section class="relative isolate overflow-hidden bg-white">
-        <div class="absolute inset-0 -z-10 bg-gradient-to-b from-brand-50/40 via-white to-white"></div>
+    <section class="relative isolate overflow-hidden cx-gradient-animated">
+        <div class="absolute inset-0 -z-10"></div>
         <div class="mx-auto max-w-7xl px-6 pt-20 pb-24 sm:pt-28 sm:pb-32">
             <div class="mx-auto max-w-3xl text-center">
                 <div class="inline-flex items-center gap-2 rounded-full bg-brand-50 px-3 py-1 text-xs font-semibold text-brand-700 ring-1 ring-brand-200">
@@ -74,7 +74,7 @@
             </div>
 
             <div class="mx-auto mt-16 grid max-w-5xl grid-cols-1 gap-8 md:grid-cols-3">
-                <x-ui.card padding="lg" class="text-center" data-cx-reveal data-cx-delay="1">
+                <x-ui.card padding="lg" class="text-center" data-cx-reveal data-cx-delay="0">
                     <div class="mx-auto flex h-12 w-12 items-center justify-center rounded-xl bg-brand-50 text-brand-600 ring-1 ring-brand-200">
                         <x-ui.icon name="camera" class="w-6 h-6" />
                     </div>
@@ -84,7 +84,7 @@
                     </p>
                 </x-ui.card>
 
-                <x-ui.card padding="lg" class="text-center" data-cx-reveal data-cx-delay="2">
+                <x-ui.card padding="lg" class="text-center" data-cx-reveal data-cx-delay="100">
                     <div class="mx-auto flex h-12 w-12 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600 ring-1 ring-emerald-200">
                         <x-ui.icon name="badge-check" class="w-6 h-6" />
                     </div>
@@ -94,7 +94,7 @@
                     </p>
                 </x-ui.card>
 
-                <x-ui.card padding="lg" class="text-center" data-cx-reveal data-cx-delay="3">
+                <x-ui.card padding="lg" class="text-center" data-cx-reveal data-cx-delay="200">
                     <div class="mx-auto flex h-12 w-12 items-center justify-center rounded-xl bg-purple-50 text-purple-600 ring-1 ring-purple-200">
                         <x-ui.icon name="map-pin" class="w-6 h-6" />
                     </div>
@@ -207,17 +207,17 @@
                 </p>
             </div>
             <div class="mx-auto mt-16 grid max-w-5xl grid-cols-1 gap-6 md:grid-cols-3">
-                <div class="rounded-xl border border-slate-200 bg-white p-6" data-cx-reveal data-cx-delay="1">
+                <div class="rounded-xl border border-slate-200 bg-white p-6" data-cx-reveal data-cx-delay="0">
                     <x-ui.icon name="building-office" class="w-6 h-6 text-brand-600" />
                     <h3 class="mt-4 font-semibold text-slate-900">Multi-sites & multi-membres</h3>
                     <p class="mt-2 text-sm text-slate-600">Plusieurs locaux, équipe avec rôles personnalisés, validation hiérarchique.</p>
                 </div>
-                <div class="rounded-xl border border-slate-200 bg-white p-6" data-cx-reveal data-cx-delay="2">
+                <div class="rounded-xl border border-slate-200 bg-white p-6" data-cx-reveal data-cx-delay="100">
                     <x-ui.icon name="receipt" class="w-6 h-6 text-brand-600" />
                     <h3 class="mt-4 font-semibold text-slate-900">Facturation Peppol</h3>
                     <p class="mt-2 text-sm text-slate-600">Factur-X XML CII embedded, conformité réglementation 09/2026 FR. Export FEC DGFiP/Sage/QuickBooks.</p>
                 </div>
-                <div class="rounded-xl border border-slate-200 bg-white p-6" data-cx-reveal data-cx-delay="3">
+                <div class="rounded-xl border border-slate-200 bg-white p-6" data-cx-reveal data-cx-delay="200">
                     <x-ui.icon name="key" class="w-6 h-6 text-brand-600" />
                     <h3 class="mt-4 font-semibold text-slate-900">API + Webhooks HMAC</h3>
                     <p class="mt-2 text-sm text-slate-600">18 scopes, rotation tokens, webhooks signés HMAC SHA256 retry exponentiel.</p>
