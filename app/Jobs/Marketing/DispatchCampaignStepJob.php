@@ -9,7 +9,17 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Facades\Log;
 
+/**
+ * DispatchCampaignStepJob — two modes:
+ *
+ *  - Scheduled (no recipientId): processes all due recipients via CampaignEngine::dispatchDueRecipients().
+ *    Called every 10 min by Kernel::schedule().
+ *
+ *  - Per-recipient (recipientId provided): dispatches one specific recipient.
+ *    Useful for targeted re-sends.
+ */
 class DispatchCampaignStepJob implements ShouldQueue
 {
     use Dispatchable;
@@ -17,10 +27,11 @@ class DispatchCampaignStepJob implements ShouldQueue
     use Queueable;
     use SerializesModels;
 
-    public int $timeout = 60;
+    public int $timeout = 120;
     public int $tries = 3;
 
-    public function __construct(public int $recipientId)
+    /** @param int|null $recipientId  null = bulk drip mode; int = single recipient mode */
+    public function __construct(public ?int $recipientId = null)
     {
     }
 
@@ -31,10 +42,18 @@ class DispatchCampaignStepJob implements ShouldQueue
 
     public function handle(CampaignEngine $engine): void
     {
-        $recipient = MarketingCampaignRecipient::find($this->recipientId);
-        if (! $recipient) {
+        if ($this->recipientId !== null) {
+            // Single-recipient mode
+            $recipient = MarketingCampaignRecipient::find($this->recipientId);
+            if (! $recipient) {
+                return;
+            }
+            $engine->dispatchOne($recipient);
             return;
         }
-        $engine->dispatchOne($recipient);
+
+        // Bulk drip mode — process all due recipients
+        $sent = $engine->dispatchDueRecipients(limit: 200);
+        Log::info("DispatchCampaignStepJob: dispatched {$sent} recipients (drip run)");
     }
 }

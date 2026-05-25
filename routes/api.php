@@ -743,3 +743,162 @@ Route::middleware(['auth:sanctum', 'token.grace'])->group(function () {
     Route::post('/broadcasting/auth',
         [\Illuminate\Broadcasting\BroadcastController::class, 'authenticate']);
 });
+
+// ─────────────────────────────────────────────
+// Skeletal modules completion — Marketing / Fleet / Accounting / Insurance / Webhooks
+// ─────────────────────────────────────────────
+
+Route::middleware('auth:sanctum')->group(function () {
+
+    // ── Marketing v2 — Admin CRUD campaigns + segments ────────────────────────
+    Route::prefix('admin/marketing')->middleware('api_scope:admin:everything')->group(function () {
+
+        // Campaigns
+        Route::get('/campaigns', function () {
+            $items = \App\Models\MarketingCampaign::with('steps')
+                ->orderByDesc('created_at')
+                ->paginate(20);
+            return response()->json(['data' => $items->items(), 'meta' => ['total' => $items->total()]]);
+        });
+        Route::post('/campaigns', function (\Illuminate\Http\Request $request) {
+            $data = $request->validate([
+                'name'       => 'required|string|max:255',
+                'type'       => 'required|in:single_blast,drip_sequence,triggered',
+                'segment_id' => 'nullable|exists:marketing_segments,id',
+                'status'     => 'sometimes|in:draft,active,paused,completed,scheduled,running,cancelled',
+            ]);
+            if (empty($data['code'])) {
+                $data['code'] = 'camp_' . \Illuminate\Support\Str::lower(\Illuminate\Support\Str::random(12));
+            }
+            if (empty($data['status'])) {
+                $data['status'] = 'draft';
+            }
+            return response()->json(['data' => \App\Models\MarketingCampaign::create($data)], 201);
+        });
+        Route::put('/campaigns/{campaign}', function (\Illuminate\Http\Request $request, \App\Models\MarketingCampaign $campaign) {
+            $campaign->update($request->validate([
+                'name'   => 'sometimes|string|max:255',
+                'status' => 'sometimes|in:draft,active,paused,completed,scheduled,running,cancelled',
+            ]));
+            return response()->json(['data' => $campaign->fresh()]);
+        });
+        Route::delete('/campaigns/{campaign}', function (\App\Models\MarketingCampaign $campaign) {
+            $campaign->delete();
+            return response()->json(['ok' => true]);
+        });
+        Route::post('/campaigns/{campaign}/schedule', function (\App\Models\MarketingCampaign $campaign) {
+            $count = app(\App\Services\Marketing\CampaignEngine::class)->schedule($campaign);
+            return response()->json(['ok' => true, 'recipients_created' => $count]);
+        });
+        Route::post('/campaigns/{campaign}/pause', function (\App\Models\MarketingCampaign $campaign) {
+            app(\App\Services\Marketing\CampaignEngine::class)->pause($campaign);
+            return response()->json(['ok' => true, 'status' => $campaign->fresh()->status]);
+        });
+        Route::post('/campaigns/{campaign}/resume', function (\App\Models\MarketingCampaign $campaign) {
+            app(\App\Services\Marketing\CampaignEngine::class)->resume($campaign);
+            return response()->json(['ok' => true, 'status' => $campaign->fresh()->status]);
+        });
+        Route::post('/campaigns/{campaign}/cancel', function (\App\Models\MarketingCampaign $campaign) {
+            app(\App\Services\Marketing\CampaignEngine::class)->cancel($campaign);
+            return response()->json(['ok' => true, 'status' => $campaign->fresh()->status]);
+        });
+
+        // Segments
+        Route::get('/segments', function () {
+            return response()->json([
+                'data' => \App\Models\MarketingSegment::withCount('members')
+                    ->orderByDesc('created_at')
+                    ->get(),
+            ]);
+        });
+        Route::post('/segments', function (\Illuminate\Http\Request $request) {
+            $data = $request->validate([
+                'name'  => 'required|string|max:255',
+                'rules' => 'required|array',
+            ]);
+            if (empty($data['code'])) {
+                $data['code'] = 'seg_' . \Illuminate\Support\Str::lower(\Illuminate\Support\Str::random(12));
+            }
+            return response()->json(['data' => \App\Models\MarketingSegment::create($data)], 201);
+        });
+        Route::put('/segments/{segment}', function (\Illuminate\Http\Request $request, \App\Models\MarketingSegment $segment) {
+            $segment->update($request->validate([
+                'name'  => 'sometimes|string|max:255',
+                'rules' => 'sometimes|array',
+            ]));
+            return response()->json(['data' => $segment->fresh()]);
+        });
+        Route::delete('/segments/{segment}', function (\App\Models\MarketingSegment $segment) {
+            $segment->delete();
+            return response()->json(['ok' => true]);
+        });
+        Route::post('/segments/{segment}/recompute', function (\App\Models\MarketingSegment $segment) {
+            \App\Jobs\Marketing\RecomputeSegmentJob::dispatch($segment->id);
+            return response()->json(['ok' => true, 'queued' => true]);
+        });
+    });
+
+    // ── Fleet v2 — Provider my-vehicles endpoint ──────────────────────────────
+    Route::prefix('provider')->group(function () {
+        Route::get('/fleet/my-vehicles', function (\Illuminate\Http\Request $request) {
+            $assignments = \App\Models\FleetAssignment::where('provider_user_id', $request->user()->id)
+                ->where('status', \App\Models\FleetAssignment::STATUS_ACTIVE)
+                ->with(['vehicle.certifications', 'equipment'])
+                ->orderByDesc('assigned_at')
+                ->get();
+            return response()->json(['data' => $assignments]);
+        });
+    });
+
+    // ── Accounting v2 — Period pre-validation endpoint ────────────────────────
+    Route::prefix('admin/accounting-v2')->middleware('api_scope:admin:everything')->group(function () {
+        Route::get('/periods/{period}/validate', function (\App\Models\AccountingPeriod $period) {
+            $result = app(\App\Services\AccountingV2\PeriodCloser::class)->canClose($period);
+            return response()->json($result);
+        });
+    });
+
+    // ── Insurance v2 — Claim status machine (admin) + client claims list ──────
+    Route::prefix('admin/insurance-v2')->middleware('api_scope:admin:everything')->group(function () {
+        Route::patch('/claims/{claim}/status', function (\Illuminate\Http\Request $request, \App\Models\InsuranceClaim $claim) {
+            $data = $request->validate([
+                'status' => 'required|string',
+                'notes'  => 'nullable|string|max:2000',
+            ]);
+            try {
+                $updated = app(\App\Services\Insurance\InsuranceService::class)
+                    ->updateClaimStatus($claim, $data['status'], $data['notes'] ?? null);
+                return response()->json(['data' => $updated]);
+            } catch (\InvalidArgumentException $e) {
+                return response()->json(['error' => $e->getMessage()], 422);
+            }
+        });
+        Route::get('/claims', function () {
+            $claims = \App\Models\InsuranceClaim::with(['insurance.plan', 'insurance.user'])
+                ->orderByDesc('filed_at')
+                ->paginate(20);
+            return response()->json(['data' => $claims->items(), 'meta' => ['total' => $claims->total()]]);
+        });
+    });
+
+    Route::prefix('client')->group(function () {
+        Route::get('/insurance/claims', function (\Illuminate\Http\Request $request) {
+            $claims = \App\Models\InsuranceClaim::whereHas(
+                'insurance',
+                fn ($q) => $q->where('user_id', $request->user()->id)
+            )
+                ->with(['insurance.plan'])
+                ->orderByDesc('filed_at')
+                ->get();
+            return response()->json(['data' => $claims]);
+        });
+    });
+
+    // ── Webhooks v2 — Admin dead-letter a delivery ────────────────────────────
+    Route::prefix('admin/webhooks-v2')->middleware('api_scope:admin:webhooks,admin:everything')->group(function () {
+        Route::post('/deliveries/{delivery}/dead-letter', function (\App\Models\WebhookDelivery $delivery) {
+            app(\App\Services\WebhooksV2\WebhookDeliveryRunner::class)->markDeadLetter($delivery);
+            return response()->json(['ok' => true, 'status' => $delivery->fresh()->status]);
+        });
+    });
+});

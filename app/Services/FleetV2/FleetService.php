@@ -8,6 +8,7 @@ use App\Models\FleetMaintenanceLog;
 use App\Models\FleetVehicle;
 use App\Models\User;
 use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
@@ -205,6 +206,43 @@ class FleetService
             'cost_cents' => $costCents,
             'notes' => $notes ?: 'Auto-scheduled after assignment return with damage',
             'next_due_at' => null,
+        ]);
+    }
+
+    /**
+     * Retourne les véhicules disponibles (status=available), optionnellement filtrés par type.
+     */
+    public function getAvailableVehicles(?string $vehicleType = null): Collection
+    {
+        $query = FleetVehicle::query()->where('status', FleetVehicle::STATUS_AVAILABLE);
+        if ($vehicleType) {
+            $query->where('vehicle_type', $vehicleType);
+        }
+        return $query->with('certifications')->get();
+    }
+
+    /**
+     * Planifie une maintenance préventive/corrective sur un véhicule à une date donnée.
+     */
+    public function scheduleMaintenanceForVehicle(
+        FleetVehicle $vehicle,
+        string $maintenanceType,
+        Carbon $dueDate,
+        ?string $notes = null,
+    ): FleetMaintenanceLog {
+        $allowed = (array) config('fleet_v2.maintenance_types', []);
+        if (! empty($allowed) && ! in_array($maintenanceType, $allowed, true)) {
+            throw ValidationException::withMessages(['maintenance_type' => ['Type invalide.']]);
+        }
+
+        return FleetMaintenanceLog::query()->create([
+            'vehicle_id'       => $vehicle->id,
+            'equipment_id'     => null,
+            'maintenance_type' => $maintenanceType,
+            'performed_at'     => $dueDate,
+            'cost_cents'       => null,
+            'notes'            => $notes ?: "Scheduled {$maintenanceType} maintenance",
+            'next_due_at'      => $this->scheduler->computeNextDue($vehicle, $dueDate),
         ]);
     }
 

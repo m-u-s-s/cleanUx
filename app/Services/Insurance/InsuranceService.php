@@ -242,6 +242,51 @@ class InsuranceService
         });
     }
 
+    /**
+     * Transitions d'état d'une réclamation avec machine à états explicite.
+     * Lève InvalidArgumentException pour les transitions non permises.
+     */
+    public function updateClaimStatus(InsuranceClaim $claim, string $newStatus, ?string $notes = null): InsuranceClaim
+    {
+        $validTransitions = [
+            InsuranceClaim::STATUS_FILED          => [InsuranceClaim::STATUS_UNDER_REVIEW, InsuranceClaim::STATUS_CANCELLED],
+            InsuranceClaim::STATUS_UNDER_REVIEW   => [InsuranceClaim::STATUS_ACCEPTED, InsuranceClaim::STATUS_REJECTED, InsuranceClaim::STATUS_INFO_REQUESTED],
+            InsuranceClaim::STATUS_INFO_REQUESTED => [InsuranceClaim::STATUS_UNDER_REVIEW, InsuranceClaim::STATUS_CANCELLED],
+            InsuranceClaim::STATUS_ACCEPTED       => [InsuranceClaim::STATUS_PAID],
+            InsuranceClaim::STATUS_REJECTED       => [],
+            InsuranceClaim::STATUS_PAID           => [],
+            InsuranceClaim::STATUS_CANCELLED      => [],
+        ];
+
+        $allowed = $validTransitions[$claim->status] ?? [];
+        if (! in_array($newStatus, $allowed, true)) {
+            throw new \InvalidArgumentException(
+                "Cannot transition claim #{$claim->id} from '{$claim->status}' to '{$newStatus}'. "
+                . 'Allowed: [' . implode(', ', $allowed) . ']'
+            );
+        }
+
+        $claim->forceFill([
+            'status'             => $newStatus,
+            'decision_reason'    => $notes ?? $claim->decision_reason,
+            'reviewed_at'        => $claim->reviewed_at ?? (in_array($newStatus, [
+                InsuranceClaim::STATUS_ACCEPTED, InsuranceClaim::STATUS_REJECTED, InsuranceClaim::STATUS_INFO_REQUESTED,
+            ], true) ? now() : $claim->reviewed_at),
+            'decided_at'         => in_array($newStatus, [
+                InsuranceClaim::STATUS_ACCEPTED, InsuranceClaim::STATUS_REJECTED,
+            ], true) ? now() : $claim->decided_at,
+            'paid_at'            => $newStatus === InsuranceClaim::STATUS_PAID ? now() : $claim->paid_at,
+        ])->save();
+
+        ActivityLogger::log('insurance.claim_status_updated', $claim, [
+            'from_status' => $claim->getOriginal('status'),
+            'to_status'   => $newStatus,
+            'notes'       => $notes,
+        ]);
+
+        return $claim->fresh();
+    }
+
     public function applyWebhookUpdate(InsuranceWebhookUpdate $update): ?object
     {
         if ($update->target === InsuranceWebhookUpdate::TARGET_POLICY) {

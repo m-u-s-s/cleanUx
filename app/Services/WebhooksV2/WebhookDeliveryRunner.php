@@ -142,6 +142,34 @@ class WebhookDeliveryRunner
         return $delivery->fresh();
     }
 
+    /**
+     * Marque explicitement une delivery en dead-letter et log l'event.
+     * Utilisable par un admin ou un job de maintenance pour forcer la résolution.
+     */
+    public function markDeadLetter(WebhookDelivery $delivery): void
+    {
+        if ($delivery->status === WebhookDelivery::STATUS_DEAD) {
+            return; // already dead
+        }
+
+        $delivery->update([
+            'status'   => WebhookDelivery::STATUS_DEAD,
+            'next_retry_at' => null,
+        ]);
+
+        $endpoint = WebhookEndpoint::query()->find($delivery->endpoint_id);
+        $event    = WebhookEvent::query()->find($delivery->event_id);
+
+        Log::warning('[webhooks_v2] delivery dead-lettered', [
+            'delivery_id'  => $delivery->id,
+            'endpoint_id'  => $delivery->endpoint_id,
+            'endpoint_url' => $endpoint?->url,
+            'event_code'   => $event?->event_code,
+            'event_id'     => $event?->event_id,
+            'attempts'     => $delivery->attempt,
+        ]);
+    }
+
     private function buildBody(WebhookEvent $event, WebhookDelivery $delivery): string
     {
         return (string) json_encode([

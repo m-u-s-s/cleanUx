@@ -72,6 +72,36 @@ class PeriodCloser
         return $period->fresh();
     }
 
+    /**
+     * Vérifie si une période peut être fermée sans l'effectuer.
+     * Retourne ['can_close' => bool, 'errors' => string[]].
+     */
+    public function canClose(AccountingPeriod $period): array
+    {
+        $errors = [];
+
+        if ($period->is_closed) {
+            $errors[] = 'Période déjà fermée le ' . $period->closed_at?->toDateString();
+            return ['can_close' => false, 'errors' => $errors];
+        }
+
+        $totalDebit  = (int) AccountingEntry::query()->forPeriod($period->period_year, $period->period_month)->sum('debit_cents');
+        $totalCredit = (int) AccountingEntry::query()->forPeriod($period->period_year, $period->period_month)->sum('credit_cents');
+
+        if ($totalDebit !== $totalCredit) {
+            $diff = abs($totalDebit - $totalCredit);
+            $errors[] = "Débit ({$totalDebit}¢) ≠ Crédit ({$totalCredit}¢) — écart de {$diff}¢";
+        }
+
+        return [
+            'can_close'     => empty($errors),
+            'errors'        => $errors,
+            'total_debit'   => $totalDebit,
+            'total_credit'  => $totalCredit,
+            'entry_count'   => (int) AccountingEntry::query()->forPeriod($period->period_year, $period->period_month)->count(),
+        ];
+    }
+
     public function reopen(AccountingPeriod $period, User $by, string $reason): AccountingPeriod
     {
         if (! $period->is_closed) {
