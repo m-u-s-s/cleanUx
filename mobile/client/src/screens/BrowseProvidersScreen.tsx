@@ -55,11 +55,11 @@ export function BrowseProvidersScreen() {
   );
 }
 
-function ProviderCard({ provider }: { provider: Provider }) {
+const ProviderCard = React.memo(function ProviderCard({ provider }: { provider: Provider }) {
   const themeColors = useThemeColors();
   return (
     <View style={[styles.card, { backgroundColor: themeColors.card }]}>
-      <Avatar name={provider.name} imageUri={provider.avatar_url} size={48} />
+      <Avatar name={provider.name} imageUri={provider.avatar_url} size={48} accessibilityLabel={provider.name} />
       <View style={styles.cardContent}>
         <Text style={[styles.providerName, { color: themeColors.text }]}>{provider.name}</Text>
         <View style={styles.cardMeta}>
@@ -76,7 +76,7 @@ function ProviderCard({ provider }: { provider: Provider }) {
       </View>
     </View>
   );
-}
+});
 
 const styles = StyleSheet.create({
   title: {

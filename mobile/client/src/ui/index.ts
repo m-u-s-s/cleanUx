@@ -16,3 +16,4 @@ export { EmptyState } from './EmptyState';
 export { ErrorState } from './ErrorState';
 export { ProgressBar } from './ProgressBar';
 export { AnimatedListItem } from './AnimatedListItem';
+export { SuccessOverlay } from './SuccessOverlay';

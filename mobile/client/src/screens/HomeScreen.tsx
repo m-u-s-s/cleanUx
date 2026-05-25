@@ -2,13 +2,20 @@ import React from 'react';
 import { View, Text, TouchableOpacity, ScrollView, StyleSheet } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { Screen, Button, KPICard, Avatar, Badge, Skeleton } from '@/ui';
+import { Screen, Button, KPICard, Avatar, Badge, Skeleton, Icon } from '@/ui';
 import { useAuth } from '@/auth';
 import { useBookings } from '@/booking';
 import { colors, spacing, typography, radius, shadows, useThemeColors } from '@/theme';
 import type { RootStackParamList } from '@/navigation/types';
 
 type Nav = NativeStackNavigationProp<RootStackParamList>;
+
+const QUICK_ACTIONS = [
+  { label: 'Mes réservations', screen: 'MainTabs', icon: 'calendar-outline' as const },
+  { label: 'Messagerie', screen: 'ChatList', icon: 'chatbubble-outline' as const },
+  { label: 'Fidélité', screen: 'Loyalty', icon: 'gift-outline' as const },
+  { label: 'Devis IA', screen: 'AiQuote', icon: 'sparkles-outline' as const },
+] as const;
 
 export function HomeScreen() {
   const { user, logout } = useAuth();
@@ -29,7 +36,7 @@ export function HomeScreen() {
           <Text style={[styles.greeting, { color: themeColors.text }]}>Bonjour{user?.name ? `, ${user.name.split(' ')[0]}` : ''} 👋</Text>
           <Text style={[styles.role, { color: themeColors.textMuted }]}>{user?.email}</Text>
         </View>
-        <Avatar name={user?.name ?? '?'} size={48} />
+        <Avatar name={user?.name ?? '?'} size={48} accessibilityLabel={user?.name ?? 'Profil'} />
       </View>
 
       {/* KPIs or Welcome card */}
@@ -60,13 +67,15 @@ export function HomeScreen() {
       {/* Quick actions */}
       <Text style={[styles.sectionTitle, { color: themeColors.textSecondary }]}>Accès rapide</Text>
       <View style={styles.quickActions}>
-        {[
-          { label: 'Mes réservations', screen: 'MainTabs' },
-          { label: 'Messagerie', screen: 'ChatList' },
-          { label: 'Fidélité', screen: 'Loyalty' },
-          { label: 'Devis IA', screen: 'AiQuote' },
-        ].map(item => (
-          <TouchableOpacity key={item.label} style={[styles.quickCard, { backgroundColor: themeColors.card }]} onPress={() => (navigation as any).navigate(item.screen)}>
+        {QUICK_ACTIONS.map(item => (
+          <TouchableOpacity
+            key={item.label}
+            style={[styles.quickCard, { backgroundColor: themeColors.card }]}
+            onPress={() => (navigation as any).navigate(item.screen)}
+            accessibilityLabel={item.label}
+            accessibilityRole="button"
+          >
+            <Icon name={item.icon} size={24} color={colors.brand[500]} />
             <Text style={styles.quickLabel}>{item.label}</Text>
           </TouchableOpacity>
         ))}
@@ -104,7 +113,7 @@ const styles = StyleSheet.create({
   welcomeText: { fontSize: typography.fontSize.sm, textAlign: 'center', lineHeight: 20, marginBottom: spacing.sm },
   sectionTitle: { fontSize: typography.fontSize.lg, fontWeight: typography.fontWeight.semibold, marginTop: spacing.xl, marginBottom: spacing.sm },
   quickActions: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },
-  quickCard: { width: '48%', borderRadius: radius.md, padding: spacing.md, ...shadows.xs, alignItems: 'center' },
+  quickCard: { width: '48%', borderRadius: radius.md, padding: spacing.md, ...shadows.xs, alignItems: 'center', gap: spacing.xs },
   quickLabel: { fontSize: typography.fontSize.sm, fontWeight: typography.fontWeight.medium, color: colors.brand[600] },
   bookingCard: { borderRadius: radius.md, padding: spacing.md, ...shadows.xs, marginBottom: spacing.sm },
   bookingHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },

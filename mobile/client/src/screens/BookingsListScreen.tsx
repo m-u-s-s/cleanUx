@@ -49,7 +49,7 @@ const statusVariant: Record<string, 'success' | 'warning' | 'danger' | 'neutral'
   cancelled: 'danger',
 };
 
-function BookingCard({ booking }: { booking: Booking }) {
+const BookingCard = React.memo(function BookingCard({ booking }: { booking: Booking }) {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const themeColors = useThemeColors();
 
@@ -73,7 +73,7 @@ function BookingCard({ booking }: { booking: Booking }) {
       </View>
     </TouchableOpacity>
   );
-}
+});
 
 const styles = StyleSheet.create({
   title: {

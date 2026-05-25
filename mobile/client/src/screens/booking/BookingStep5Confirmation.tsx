@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { View, Text, Alert, StyleSheet } from 'react-native';
-import { Screen, Button, Divider, ProgressBar } from '@/ui';
+import { Screen, Button, Divider, ProgressBar, SuccessOverlay } from '@/ui';
 import { useBooking, useCreateBooking } from '@/booking';
 import { colors, spacing, typography, radius, shadows, useThemeColors } from '@/theme';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -12,6 +12,7 @@ export function BookingStep5Confirmation({ navigation }: Props) {
   const { state, dispatch } = useBooking();
   const createBooking = useCreateBooking();
   const themeColors = useThemeColors();
+  const [showSuccess, setShowSuccess] = useState(false);
 
   const handleConfirm = async () => {
     if (!state.serviceId) return;
@@ -23,59 +24,67 @@ export function BookingStep5Confirmation({ navigation }: Props) {
         scheduling: state.scheduling,
       });
       dispatch({ type: 'RESET' });
-      Alert.alert(
-        'Réservation confirmée',
-        'Votre demande a été envoyée. Un prestataire sera assigné bientôt.',
-        [{ text: 'OK', onPress: () => navigation.getParent()?.goBack() }],
-      );
+      setShowSuccess(true);
     } catch (e: unknown) {
       const message = e instanceof Error ? e.message : 'Impossible de créer la réservation.';
       Alert.alert('Erreur', message);
     }
   };
 
+  const handleDismissSuccess = () => {
+    setShowSuccess(false);
+    navigation.getParent()?.goBack();
+  };
+
   return (
-    <Screen scroll>
-      <ProgressBar step={5} totalSteps={5} />
-      <Text style={styles.title}>Récapitulatif</Text>
-      <View style={[styles.card, { backgroundColor: themeColors.card }]}>
-        <Row label="Service" value={state.serviceName} />
-        <Divider />
-        <Row
-          label="Adresse"
-          value={`${state.coordinates.address}, ${state.coordinates.postalCode} ${state.coordinates.city}`}
+    <>
+      <Screen scroll>
+        <ProgressBar step={5} totalSteps={5} />
+        <Text style={styles.title}>Récapitulatif</Text>
+        <View style={[styles.card, { backgroundColor: themeColors.card }]}>
+          <Row label="Service" value={state.serviceName} />
+          <Divider />
+          <Row
+            label="Adresse"
+            value={`${state.coordinates.address}, ${state.coordinates.postalCode} ${state.coordinates.city}`}
+          />
+          <Divider />
+          <Row
+            label="Date"
+            value={
+              state.scheduling.isAsap
+                ? 'Dès que possible'
+                : `${state.scheduling.date} à ${state.scheduling.time}`
+            }
+          />
+          {state.details.surface ? (
+            <>
+              <Divider />
+              <Row label="Surface" value={`${state.details.surface} m²`} />
+            </>
+          ) : null}
+          {state.details.comment ? (
+            <>
+              <Divider />
+              <Row label="Commentaire" value={state.details.comment} />
+            </>
+          ) : null}
+        </View>
+        <Button
+          label={createBooking.isPending ? 'Envoi…' : 'Confirmer la réservation'}
+          onPress={handleConfirm}
+          loading={createBooking.isPending}
+          disabled={createBooking.isPending}
+          fullWidth
+          size="lg"
         />
-        <Divider />
-        <Row
-          label="Date"
-          value={
-            state.scheduling.isAsap
-              ? 'Dès que possible'
-              : `${state.scheduling.date} à ${state.scheduling.time}`
-          }
-        />
-        {state.details.surface ? (
-          <>
-            <Divider />
-            <Row label="Surface" value={`${state.details.surface} m²`} />
-          </>
-        ) : null}
-        {state.details.comment ? (
-          <>
-            <Divider />
-            <Row label="Commentaire" value={state.details.comment} />
-          </>
-        ) : null}
-      </View>
-      <Button
-        label={createBooking.isPending ? 'Envoi…' : 'Confirmer la réservation'}
-        onPress={handleConfirm}
-        loading={createBooking.isPending}
-        disabled={createBooking.isPending}
-        fullWidth
-        size="lg"
+      </Screen>
+      <SuccessOverlay
+        visible={showSuccess}
+        message="Votre demande a été envoyée. Un prestataire sera assigné bientôt."
+        onDismiss={handleDismissSuccess}
       />
-    </Screen>
+    </>
   );
 }
 

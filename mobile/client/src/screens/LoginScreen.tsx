@@ -11,7 +11,7 @@ import {
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { Button, TextInput, Divider } from '@/ui';
+import { Button, TextInput, Divider, Icon } from '@/ui';
 import { useLogin, useRegister, useAuth } from '@/auth';
 import { colors, spacing, typography } from '@/theme';
 import type { RootStackParamList } from '@/navigation/types';
@@ -44,6 +44,7 @@ export function LoginScreen() {
 function LoginForm() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [errors, setErrors] = useState<{ email?: string; password?: string }>({});
   const login = useLogin();
   const { setUser } = useAuth();
@@ -89,17 +90,26 @@ function LoginForm() {
         returnKeyType="next"
         onSubmitEditing={() => passwordRef.current?.focus()}
       />
-      <TextInput
-        ref={passwordRef}
-        label="Mot de passe"
-        value={password}
-        onChangeText={(t) => { setPassword(t); setErrors(prev => ({ ...prev, password: undefined })); }}
-        error={errors.password}
-        secureTextEntry
-        placeholder="••••••••"
-        returnKeyType="done"
-        onSubmitEditing={handleLogin}
-      />
+      <View style={styles.passwordWrapper}>
+        <TextInput
+          ref={passwordRef}
+          label="Mot de passe"
+          value={password}
+          onChangeText={(t) => { setPassword(t); setErrors(prev => ({ ...prev, password: undefined })); }}
+          error={errors.password}
+          secureTextEntry={!showPassword}
+          placeholder="••••••••"
+          returnKeyType="done"
+          onSubmitEditing={handleLogin}
+        />
+        <TouchableOpacity
+          onPress={() => setShowPassword(v => !v)}
+          style={styles.eyeButton}
+          accessibilityLabel={showPassword ? 'Masquer le mot de passe' : 'Afficher le mot de passe'}
+        >
+          <Icon name={showPassword ? 'eye-off-outline' : 'eye-outline'} size={20} color={colors.surface[400]} />
+        </TouchableOpacity>
+      </View>
       <TouchableOpacity onPress={() => navigation.navigate('ForgotPassword')}>
         <Text style={styles.forgotText}>Mot de passe oublié ?</Text>
       </TouchableOpacity>
@@ -265,4 +275,6 @@ const styles = StyleSheet.create({
   termsText: { flex: 1, fontSize: typography.fontSize.sm, color: colors.surface[700] },
   termsLink: { color: colors.brand[500], textDecorationLine: 'underline' },
   errorText: { fontSize: typography.fontSize.xs, color: colors.danger[500], marginTop: -spacing.xs },
+  passwordWrapper: { position: 'relative' },
+  eyeButton: { position: 'absolute', right: 12, top: 32, zIndex: 1 },
 });

@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { View, FlatList, TouchableOpacity, Text, StyleSheet } from 'react-native';
-import { Screen, Skeleton, ProgressBar } from '@/ui';
+import { Screen, Skeleton, ProgressBar, AnimatedListItem } from '@/ui';
 import { useServiceCatalog, useBooking } from '@/booking';
 import { colors, spacing, typography, radius, useThemeColors } from '@/theme';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -12,10 +12,13 @@ export function BookingStep1Service({ navigation }: Props) {
   const { data: categories, isLoading } = useServiceCatalog();
   const { dispatch } = useBooking();
   const themeColors = useThemeColors();
+  const [selectedId, setSelectedId] = useState<number | null>(null);
 
   const handleSelect = (cat: { id: number; name: string; slug: string }) => {
+    setSelectedId(cat.id);
     dispatch({ type: 'SET_SERVICE', serviceId: cat.id, serviceName: cat.name, categorySlug: cat.slug });
-    navigation.navigate('BookingStep2');
+    // Brief highlight before navigating
+    setTimeout(() => navigation.navigate('BookingStep2'), 180);
   };
 
   return (
@@ -36,11 +39,29 @@ export function BookingStep1Service({ navigation }: Props) {
           scrollEnabled={false}
           columnWrapperStyle={styles.row}
           keyExtractor={item => String(item.id)}
-          renderItem={({ item }) => (
-            <TouchableOpacity style={[styles.card, { backgroundColor: themeColors.card }]} onPress={() => handleSelect(item)} activeOpacity={0.7}>
-              <Text style={styles.cardText}>{item.name}</Text>
-            </TouchableOpacity>
-          )}
+          renderItem={({ item, index }) => {
+            const isSelected = selectedId === item.id;
+            return (
+              <AnimatedListItem index={index}>
+                <TouchableOpacity
+                  style={[
+                    styles.card,
+                    { backgroundColor: themeColors.card },
+                    isSelected && styles.cardSelected,
+                  ]}
+                  onPress={() => handleSelect(item)}
+                  activeOpacity={0.7}
+                  accessibilityLabel={item.name}
+                  accessibilityRole="button"
+                >
+                  {isSelected && <Text style={styles.checkmark}>✓</Text>}
+                  <Text style={[styles.cardText, isSelected && styles.cardTextSelected]}>
+                    {item.name}
+                  </Text>
+                </TouchableOpacity>
+              </AnimatedListItem>
+            );
+          }}
         />
       )}
     </Screen>
@@ -79,10 +100,24 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     minHeight: 80,
   },
+  cardSelected: {
+    borderColor: colors.brand[500],
+    borderWidth: 2,
+    backgroundColor: colors.brand[50],
+  },
   cardText: {
     fontSize: typography.fontSize.sm,
     fontWeight: typography.fontWeight.medium,
     color: colors.surface[800],
     textAlign: 'center',
+  },
+  cardTextSelected: {
+    color: colors.brand[700],
+    fontWeight: typography.fontWeight.semibold,
+  },
+  checkmark: {
+    fontSize: 16,
+    color: colors.brand[500],
+    marginBottom: 4,
   },
 });
