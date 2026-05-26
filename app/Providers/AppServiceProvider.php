@@ -51,6 +51,10 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         Model::preventLazyLoading(!app()->isProduction());
+        Model::handleLazyLoadingViolationUsing(function ($model, $relation) {
+            $class = get_class($model);
+            logger()->warning("N+1 lazy load: {$class}.{$relation}");
+        });
 
         \Illuminate\Database\Eloquent\Builder::macro('clientFacing', function () {
             /** @var \Illuminate\Database\Eloquent\Builder $this */

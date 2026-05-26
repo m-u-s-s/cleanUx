@@ -21,8 +21,6 @@ class MissionAssignmentFactory extends Factory
             'assigned_at' => now(),
             'accepted_at' => null,
             'declined_at' => null,
-            'arrived_at' => null,
-            'completed_at' => null,
         ];
     }
 
@@ -53,7 +51,6 @@ class MissionAssignmentFactory extends Factory
         return $this->state(fn () => [
             'assignment_status' => 'arrived',
             'accepted_at' => now()->subMinutes(20),
-            'arrived_at' => now()->subMinutes(5),
         ]);
     }
 
@@ -62,8 +59,6 @@ class MissionAssignmentFactory extends Factory
         return $this->state(fn () => [
             'assignment_status' => 'completed',
             'accepted_at' => now()->subHours(2),
-            'arrived_at' => now()->subHour(),
-            'completed_at' => now(),
         ]);
     }
 
