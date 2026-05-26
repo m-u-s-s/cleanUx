@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Api\Client;
 
 use App\Exceptions\BookingException;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Api\Client\IndexBookingRequest;
+use App\Http\Requests\Api\Client\StoreBookingRequest;
 use App\Models\Booking;
 use App\Models\Mission;
 use Illuminate\Http\JsonResponse;
@@ -30,19 +32,27 @@ use Illuminate\Http\Request;
  * PrendreRendezVous existant. L'API mobile fait une création "simplifiée"
  * suffisante pour les cas d'usage mobile (booking minimal viable).
  */
+/**
+ * @group Client Bookings
+ * @authenticated
+ */
 class ClientBookingController extends Controller
 {
-    public function index(Request $request): JsonResponse
+    /**
+     * List the authenticated client's bookings.
+     *
+     * @queryParam status string Filter by booking status. Example: confirme
+     * @queryParam from date Filter bookings on or after this date (YYYY-MM-DD). Example: 2026-06-01
+     * @queryParam to date Filter bookings on or before this date (YYYY-MM-DD). Example: 2026-06-30
+     * @queryParam per_page integer Number of results per page (1-100, default 20). Example: 20
+     * @queryParam page integer Page number. Example: 1
+     * @response 200 {"ok": true, "data": [{"id": 1, "reference": "CUX-A1B2C3", "status": "confirme", "mode": "scheduled", "priority": "normal", "scheduled_date": "2026-06-15", "scheduled_time": "09:00", "service_name": "Nettoyage domicile", "address": "Rue de la Loi 1", "city": "Bruxelles", "postal_code": "1000", "estimated_price": 75.0, "currency": "EUR", "created_at": "2026-06-01T10:00:00+00:00"}], "pagination": {"current_page": 1, "last_page": 3, "per_page": 20, "total": 42}}
+     */
+    public function index(IndexBookingRequest $request): JsonResponse
     {
         $user = $request->user();
 
-        $params = $request->validate([
-            'status'      => ['nullable', 'string', 'max:32'],
-            'from'        => ['nullable', 'date'],
-            'to'          => ['nullable', 'date', 'after_or_equal:from'],
-            'per_page'    => ['nullable', 'integer', 'min:1', 'max:100'],
-            'page'        => ['nullable', 'integer', 'min:1'],
-        ]);
+        $params = $request->validated();
 
         $query = Booking::query()
             ->where(function ($q) use ($user) {
@@ -86,6 +96,12 @@ class ClientBookingController extends Controller
         ]);
     }
 
+    /**
+     * Get detailed information for a single booking.
+     *
+     * @response 200 {"ok": true, "data": {"id": 1, "reference": "CUX-A1B2C3", "status": "confirme", "mode": "scheduled", "priority": "normal", "scheduled_date": "2026-06-15", "scheduled_time": "09:00", "service_name": "Nettoyage domicile", "address": "Rue de la Loi 1", "city": "Bruxelles", "postal_code": "1000", "estimated_price": 75.0, "currency": "EUR", "created_at": "2026-06-01T10:00:00+00:00", "customer_comment": "Merci d'apporter le matériel", "surface_m2": 80, "site_name": null, "destination_lat": 50.846, "destination_lng": 4.352, "cancelled_at": null, "cancellation_reason": null, "asap_requested_at": null, "asap_deadline_at": null, "assigned_provider": {"id": 7, "name": "Jean Martin", "phone": "+32471000007"}}}
+     * @response 403 {"message": "Accès refusé."}
+     */
     public function show(Request $request, Booking $booking): JsonResponse
     {
         $this->authorizeAccess($request, $booking);
@@ -104,30 +120,33 @@ class ClientBookingController extends Controller
     }
 
     /**
-     * Création simplifiée pour mobile. Pour des cas complexes (organization sites,
-     * recurring series, etc.), le client doit utiliser le flow web complet.
+     * Create a new booking (simplified mobile flow).
+     *
+     * For complex cases (organization sites, recurring series, etc.) use the full web flow.
+     *
+     * @bodyParam service_catalog_id integer required ID of the service from the catalog. Example: 3
+     * @bodyParam address string required Street address of the intervention. Example: Rue de la Loi 1
+     * @bodyParam city string required City of the intervention. Example: Bruxelles
+     * @bodyParam postal_code string required Postal code of the intervention. Example: 1000
+     * @bodyParam country string ISO 3166-1 alpha-2 country code (default BE). Example: BE
+     * @bodyParam scheduled_date date required Date of the booking (today or later). Example: 2026-06-20
+     * @bodyParam scheduled_time string required Time of the booking in HH:MM format. Example: 09:00
+     * @bodyParam booking_mode string Mode: scheduled or asap (default scheduled). Example: scheduled
+     * @bodyParam surface_m2 number Surface area in m² (optional). Example: 80
+     * @bodyParam customer_comment string Special instructions for the provider (max 2000 chars). Example: Merci d'apporter le matériel
+     * @bodyParam priority string Priority level: normal, urgent, low (default normal). Example: normal
+     * @bodyParam contact_name string Contact name on site (defaults to authenticated user name). Example: Alice Dupont
+     * @bodyParam contact_phone string Contact phone on site. Example: +32471000001
+     * @bodyParam destination_lat number GPS latitude of destination. Example: 50.846
+     * @bodyParam destination_lng number GPS longitude of destination. Example: 4.352
+     * @response 201 {"ok": true, "data": {"id": 55, "reference": "CUX-X1Y2Z3", "status": "en_attente", "mode": "scheduled", "priority": "normal", "scheduled_date": "2026-06-20", "scheduled_time": "09:00", "service_name": "Nettoyage domicile", "address": "Rue de la Loi 1", "city": "Bruxelles", "postal_code": "1000", "estimated_price": null, "currency": "EUR", "created_at": "2026-06-01T10:00:00+00:00"}}
+     * @response 422 {"message": "The service catalog id field is required.", "errors": {"service_catalog_id": ["The service catalog id field is required."]}}
      */
-    public function store(Request $request): JsonResponse
+    public function store(StoreBookingRequest $request): JsonResponse
     {
         $user = $request->user();
 
-        $data = $request->validate([
-            'service_catalog_id'   => ['required', 'integer', 'exists:service_catalogs,id'],
-            'address'              => ['required', 'string', 'max:255'],
-            'city'                 => ['required', 'string', 'max:120'],
-            'postal_code'          => ['required', 'string', 'max:20'],
-            'country'              => ['nullable', 'string', 'size:2'],
-            'scheduled_date'       => ['required', 'date', 'after_or_equal:today'],
-            'scheduled_time'       => ['required', 'date_format:H:i'],
-            'booking_mode'         => ['nullable', 'in:scheduled,asap'],
-            'surface_m2'           => ['nullable', 'numeric', 'min:0'],
-            'customer_comment'     => ['nullable', 'string', 'max:2000'],
-            'priority'             => ['nullable', 'in:normal,urgent,low'],
-            'contact_name'         => ['nullable', 'string', 'max:120'],
-            'contact_phone'        => ['nullable', 'string', 'max:30'],
-            'destination_lat'      => ['nullable', 'numeric', 'between:-90,90'],
-            'destination_lng'      => ['nullable', 'numeric', 'between:-180,180'],
-        ]);
+        $data = $request->validated();
 
         $now = now();
         $isAsap = ($data['booking_mode'] ?? 'scheduled') === 'asap';
@@ -187,6 +206,16 @@ class ClientBookingController extends Controller
         ], 201);
     }
 
+    /**
+     * Cancel a booking.
+     *
+     * Cannot cancel bookings that are already cancelled or in a final state (termine, sur_place).
+     *
+     * @bodyParam reason string Optional reason for cancellation (max 500 chars). Example: Changement de planning
+     * @response 200 {"ok": true, "data": {"id": 1, "reference": "CUX-A1B2C3", "status": "annule", "mode": "scheduled", "priority": "normal", "scheduled_date": "2026-06-15", "scheduled_time": "09:00", "service_name": "Nettoyage domicile", "address": "Rue de la Loi 1", "city": "Bruxelles", "postal_code": "1000", "estimated_price": 75.0, "currency": "EUR", "created_at": "2026-06-01T10:00:00+00:00"}}
+     * @response 403 {"message": "Accès refusé."}
+     * @response 422 {"message": "This booking is already cancelled."}
+     */
     public function cancel(Request $request, Booking $booking): JsonResponse
     {
         $this->authorizeAccess($request, $booking);
@@ -221,15 +250,16 @@ class ClientBookingController extends Controller
     }
 
     /**
-     * ETA temps réel.
+     * Get real-time ETA for the provider en route to a booking.
      *
-     * Retourne :
-     *   - position courante du prestataire (si tracking actif)
-     *   - distance restante (calculée si on a destination_lat/lng)
-     *   - temps estimé (basé sur vitesse moyenne 30 km/h en ville)
+     * Returns the provider's current GPS position, estimated distance, and ETA
+     * calculated with Haversine at 30 km/h average. Full routing via Google
+     * Distance Matrix will arrive in Phase 13.
      *
-     * NB : la version pleine d'ETA via Google Distance Matrix viendra en
-     * Phase 13. Pour l'instant on retourne une estimation Haversine.
+     * @response 200 {"ok": true, "state": "tracking", "mission_id": 12, "mission_status": "en_route", "provider_position": {"lat": 50.843, "lng": 4.348, "last_update_at": "2026-06-15T08:45:00+00:00"}, "destination": {"lat": 50.846, "lng": 4.352}, "distance_km": 0.52, "eta_minutes": 1, "is_client_visible": true}
+     * @response 200 scenario="No mission yet" {"ok": true, "eta": null, "state": "no_mission"}
+     * @response 200 scenario="No tracking session" {"ok": true, "state": "no_tracking", "mission_id": 12, "status": "assigned"}
+     * @response 403 {"message": "Accès refusé."}
      */
     public function eta(Request $request, Booking $booking): JsonResponse
     {

@@ -36,6 +36,9 @@
     "
     class="fixed right-4 top-4 z-[9999] sm:right-6 sm:top-6"
     style="display: none;"
+    role="alert"
+    aria-live="assertive"
+    aria-atomic="true"
 >
     <div
         class="min-w-[300px] max-w-sm overflow-hidden rounded-[22px] border px-4 py-3 text-sm font-medium shadow-[0_22px_55px_rgba(15,23,42,0.18)] backdrop-blur cu-scale-in"
@@ -59,7 +62,7 @@
                 <div class="mt-1 leading-6" x-text="message"></div>
             </div>
 
-            <button type="button" @click="show = false" class="text-xs font-semibold uppercase tracking-wide opacity-70 transition hover:opacity-100">
+            <button type="button" @click="show = false" aria-label="Fermer la notification" class="text-xs font-semibold uppercase tracking-wide opacity-70 transition hover:opacity-100">
                 Fermer
             </button>
         </div>

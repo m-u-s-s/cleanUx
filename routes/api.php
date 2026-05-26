@@ -40,6 +40,13 @@ Route::middleware('auth:sanctum')->group(function () {
     // Quick user shortcut (Laravel default)
     Route::get('/user', fn(Request $request) => $request->user());
 
+    // Theme preference
+    Route::post('/user/theme', function (Request $request) {
+        $request->validate(['theme' => ['required', 'in:light,dark,system']]);
+        $request->user()->update(['theme_preference' => $request->theme]);
+        return response()->json(['ok' => true]);
+    });
+
     // Phase Analytics v2 — Identify (link anonymous_id → user_id)
     Route::post('/analytics/identify', [\App\Http\Controllers\Api\AnalyticsController::class, 'identify']);
 });

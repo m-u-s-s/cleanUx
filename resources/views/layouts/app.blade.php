@@ -1,5 +1,12 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}"
+      x-data
+      x-init="
+        const pref = localStorage.getItem('theme') || '{{ auth()->user()?->theme_preference ?? 'system' }}';
+        if (pref === 'dark' || (pref === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+        }
+      ">
 
 <head>
     {{-- Phase 8 — PWA --}}

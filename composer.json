@@ -71,7 +71,8 @@
         ],
         "post-create-project-cmd": [
             "@php artisan key:generate --ansi"
-        ]
+        ],
+        "docs": "php artisan scribe:generate"
     },
     "extra": {
         "laravel": {

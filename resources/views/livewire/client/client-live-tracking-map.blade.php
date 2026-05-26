@@ -16,6 +16,7 @@
         <div class="rounded-2xl border bg-white shadow-sm overflow-hidden"
              x-data="trackingMapWidget({
                  bookingId: {{ $booking->id }},
+                 missionId: {{ $booking->missions()->latest()->value('id') ?? 'null' }},
                  dest: {
                      lat: {{ (float) ($session->destination_lat ?? $booking->destination_lat ?? 50.8503) }},
                      lng: {{ (float) ($session->destination_lng ?? $booking->destination_lng ?? 4.3517) }}
@@ -82,8 +83,29 @@
             }).addTo(this.map).bindPopup('🏠 Votre adresse').openPopup();
 
             this.fetchAll();
-            setInterval(() => this.fetchTracking(), 8000);
-            setInterval(() => this.fetchTrail(), 25000);
+
+            if (window.Echo && cfg.missionId) {
+                window.Echo.private(`mission.${cfg.missionId}`)
+                    .listen('.position.updated', (e) => {
+                        if (e.data?.lat && e.data?.lng) {
+                            const pos = [e.data.lat, e.data.lng];
+                            if (this.providerMarker) {
+                                this.providerMarker.setLatLng(pos);
+                            }
+                            if (e.data.eta_minutes !== undefined) {
+                                this.etaMin = e.data.eta_minutes;
+                            }
+                            this.lastPing = new Date().toLocaleTimeString();
+                        }
+                    })
+                    .listen('.status.updated', (e) => {
+                        if (e.status) this.status = e.status;
+                        this.fetchTracking();
+                    });
+            }
+
+            setInterval(() => this.fetchTracking(), 15000);
+            setInterval(() => this.fetchTrail(), 30000);
         },
 
         async fetchAll() {

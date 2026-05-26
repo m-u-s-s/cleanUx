@@ -1,0 +1,108 @@
+/* ============================================================================
+   CleanUx — Premium Design Utilities
+   Glassmorphism, gradients, glow, noise texture, typography refinements
+   ========================================================================= */
+
+/* Cursor pointer on interactive cards */
+.cu-card[onclick],
+.cu-card[wire\:click],
+.cu-card a,
+[data-cx-reveal] a,
+details summary { cursor: pointer; }
+
+/* Glassmorphism */
+.cu-glass {
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.1), 0 4px 12px rgba(15, 23, 42, 0.06);
+}
+.cx-glass {
+    background: rgba(7, 11, 20, 0.6);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(148, 178, 230, 0.12);
+}
+
+/* Gradient utilities */
+.cu-gradient-brand {
+    background: linear-gradient(135deg, var(--cx-amber) 0%, #ff8a3d 50%, #6366f1 100%);
+}
+.cu-gradient-subtle {
+    background: linear-gradient(180deg, rgba(99, 102, 241, 0.03) 0%, rgba(255, 182, 72, 0.05) 100%);
+}
+
+/* Glow effects */
+.cu-glow-amber {
+    box-shadow: 0 0 20px rgba(255, 182, 72, 0.3), 0 0 40px rgba(255, 182, 72, 0.1);
+    transition: box-shadow var(--cx-dur) var(--cx-ease), transform var(--cx-dur) var(--cx-ease);
+}
+.cu-glow-amber:hover {
+    box-shadow: 0 0 24px rgba(255, 182, 72, 0.4), 0 0 48px rgba(255, 182, 72, 0.15);
+    transform: translateY(-1px);
+}
+.cu-glow-amber:active {
+    transform: translateY(0);
+    box-shadow: 0 0 12px rgba(255, 182, 72, 0.3);
+}
+.cu-glow-brand {
+    box-shadow: 0 0 20px rgba(99, 102, 241, 0.2), 0 0 40px rgba(99, 102, 241, 0.08);
+    transition: box-shadow var(--cx-dur) var(--cx-ease), transform var(--cx-dur) var(--cx-ease);
+}
+.cu-glow-brand:hover {
+    box-shadow: 0 0 24px rgba(99, 102, 241, 0.3), 0 0 48px rgba(99, 102, 241, 0.1);
+    transform: translateY(-1px);
+}
+
+/* Input amber focus ring */
+input[type="text"],
+input[type="email"],
+input[type="password"] {
+    transition: border-color var(--cx-dur-fast) var(--cx-ease),
+                box-shadow var(--cx-dur-fast) var(--cx-ease);
+}
+input[type="text"]:focus,
+input[type="email"]:focus,
+input[type="password"]:focus {
+    border-color: var(--cx-amber) !important;
+    box-shadow: 0 0 0 3px rgba(255, 182, 72, 0.15);
+}
+
+/* Dashboard card hover lift */
+.cu-card,
+.cu-kpi {
+    transition: transform var(--cx-dur) var(--cx-ease),
+                box-shadow var(--cx-dur) var(--cx-ease);
+}
+.cu-card:hover,
+.cu-kpi:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08), 0 16px 48px rgba(15, 23, 42, 0.04);
+}
+
+/* Typography refinements */
+.cx-headline { letter-spacing: -0.025em; line-height: 1.1; }
+.cx-subhead { letter-spacing: 0.02em; text-transform: uppercase; font-size: 0.75rem; font-weight: 600; color: var(--cx-amber); }
+.cx-body-readable { max-width: 65ch; line-height: 1.7; }
+.cx-tabular { font-variant-numeric: tabular-nums; }
+.cx-balance { text-wrap: balance; }
+
+/* CTA primary (amber gradient) */
+.cx-cta-primary {
+    background: linear-gradient(135deg, var(--cx-amber) 0%, var(--cx-amber-deep) 100%);
+    color: #0f172a; font-weight: 700; border: none;
+    box-shadow: 0 4px 14px rgba(255, 182, 72, 0.3);
+    transition: all var(--cx-dur) var(--cx-ease);
+}
+.cx-cta-primary:hover { box-shadow: 0 6px 20px rgba(255, 182, 72, 0.45); transform: translateY(-2px); }
+.cx-cta-primary:active { transform: translateY(0); box-shadow: 0 2px 8px rgba(255, 182, 72, 0.25); }
+
+/* Noise/grain texture overlay */
+body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background: repeating-conic-gradient(rgba(0,0,0,0.01) 0% 25%, transparent 0% 50%) 0 0 / 2px 2px;
+    pointer-events: none;
+    z-index: 1;
+}

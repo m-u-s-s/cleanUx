@@ -50,3 +50,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/provider/onboarding', ProviderOnboardingWizard::class)
         ->name('provider.onboarding');
 });
+
+Route::middleware(['auth', 'role:admin'])->group(function () {
+    Route::get('/design-system', \App\Livewire\DesignSystem::class)->name('design-system');
+});

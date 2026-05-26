@@ -35,16 +35,14 @@ jobs:
       - name: Install PHP dependencies
         run: composer install --no-interaction --prefer-dist
 
-      - name: Composer security audit (non-blocking)
-        run: composer audit --no-interaction --format=plain || true
-        continue-on-error: true
+      - name: Composer security audit
+        run: composer audit --no-interaction --format=plain --abandoned=report
 
       - name: Install Node dependencies
         run: npm ci
 
-      - name: NPM security audit (non-blocking)
-        run: npm audit --omit=dev --audit-level=high || true
-        continue-on-error: true
+      - name: NPM security audit
+        run: npm audit --omit=dev --audit-level=high
 
       - name: Generate app key
         run: php artisan key:generate --force
@@ -55,9 +53,8 @@ jobs:
       - name: Run tests with coverage
         run: php artisan test --coverage-clover=coverage.xml
 
-      - name: Coverage threshold check (non-blocking, warn below 70%)
-        run: php artisan test --coverage-min=70 || echo "::warning::Coverage below 70% threshold — please improve test coverage"
-        continue-on-error: true
+      - name: Coverage threshold check (fail below 70%)
+        run: php artisan test --coverage-min=70
 
       - name: Upload coverage report
         if: always()
@@ -69,4 +66,3 @@ jobs:
 
       - name: Run PHPStan
         run: vendor/bin/phpstan analyse --memory-limit=512M --no-progress
-        continue-on-error: true

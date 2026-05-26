@@ -20,7 +20,7 @@
 <body class="bg-slate-50 text-slate-900 antialiased">
 
     {{-- ── Topbar ── --}}
-    <nav class="sticky top-0 z-40 flex h-14 items-center justify-between border-b border-slate-200 bg-white/95 px-4 shadow-sm backdrop-blur">
+    <nav aria-label="Navigation principale" class="sticky top-0 z-40 flex h-14 items-center justify-between border-b border-slate-200 bg-white/95 px-4 shadow-sm backdrop-blur">
         <div class="flex items-center gap-3">
             <a href="{{ route('client-company.dashboard') }}"
                 class="text-lg font-black text-slate-900">

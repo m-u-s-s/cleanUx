@@ -115,6 +115,12 @@ class MissionLifecycleService
             'CleanUx : votre employé est arrivé. Code de début : ' . $generated['code']
         );
 
+        $generatedEnd = $this->verificationCodeService->createVerificationCode($mission, 'end');
+        app(\App\Services\Notifications\SmsService::class)->send(
+            $mission->rendezVous?->client?->phone ?? $mission->rendezVous?->telephone_client,
+            'CleanUx : code de fin de mission : ' . $generatedEnd['code'] . '. Communiquez-le au prestataire en fin de service.'
+        );
+
         $mission = $mission->fresh(['assignments', 'verificationCodes', 'rendezVous.client', 'leadEmployee']);
 
         if ($mission->rendezVous?->client) {

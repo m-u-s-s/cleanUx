@@ -1,4 +1,4 @@
-<nav x-data="{ open: false }" class="sticky top-0 z-40 border-b border-slate-100 bg-white/95 shadow-sm backdrop-blur">
+<nav x-data="{ open: false }" class="sticky top-0 z-40 border-b border-slate-100 bg-white/95 shadow-sm backdrop-blur dark:border-slate-700 dark:bg-slate-900/95">
     @php
     $user = auth()->user();
 
@@ -313,6 +313,23 @@
             </div>
 
             <div class="hidden sm:flex sm:items-center sm:gap-3">
+                <button
+                    x-data
+                    x-on:click="
+                        const isDark = document.documentElement.classList.toggle('dark');
+                        localStorage.setItem('theme', isDark ? 'dark' : 'light');
+                        fetch('/api/user/theme', {
+                            method: 'POST',
+                            headers: {'Content-Type': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]')?.content},
+                            body: JSON.stringify({theme: isDark ? 'dark' : 'light'})
+                        }).catch(() => {});
+                    "
+                    class="rounded-lg p-2 text-slate-500 transition hover:bg-slate-100 hover:text-slate-700 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200"
+                    aria-label="Changer le thème"
+                >
+                    <svg class="h-5 w-5 dark:hidden" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M21.752 15.002A9.718 9.718 0 0118 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 003 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 009.002-5.998z" /></svg>
+                    <svg class="hidden h-5 w-5 dark:block" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3v2.25m6.364.386l-1.591 1.591M21 12h-2.25m-.386 6.364l-1.591-1.591M12 18.75V21m-4.773-4.227l-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z" /></svg>
+                </button>
                 <x-language-switcher />
 
                 @auth

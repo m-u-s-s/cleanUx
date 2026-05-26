@@ -1,0 +1,47 @@
+/* ============================================================================
+   CleanUx — Accessibility (reduced motion, skip-to-content, contrast)
+   ========================================================================= */
+
+@media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+    [data-cx-reveal] { opacity: 1 !important; transform: none !important; transition: none !important; }
+    .cx-starfield::before,
+    .cx-logo-mark::after,
+    .cx-fab, .cx-fab__dot,
+    .cx-progress__bar,
+    .cx-gradient-animated { animation: none !important; transition: none !important; }
+}
+
+/* WCAG AA minimum contrast enforcement */
+.cu-text-muted { color: #64748b; /* 5.4:1 on white */ }
+.cx-text-muted { color: #93a4c6; /* 4.8:1 on #070b14 */ }
+
+/* Skip-to-content (keyboard a11y) */
+.skip-to-content {
+    position: absolute;
+    left: -9999px;
+    top: auto;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+}
+.skip-to-content:focus {
+    position: fixed;
+    top: 1rem;
+    left: 50%;
+    transform: translateX(-50%);
+    width: auto;
+    height: auto;
+    padding: 0.75rem 1.5rem;
+    background: var(--cx-amber);
+    color: #0f172a;
+    font-weight: 700;
+    border-radius: var(--cx-radius-md);
+    z-index: 10000;
+    box-shadow: 0 4px 14px rgba(255, 182, 72, 0.4);
+}

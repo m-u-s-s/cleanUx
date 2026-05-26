@@ -1,0 +1,40 @@
+/* ============================================================================
+   CleanUx — Base layer (html/body defaults, headings)
+   ========================================================================= */
+@layer base {
+    html { scroll-behavior: smooth; }
+
+    body {
+        background:
+            radial-gradient(circle at top left, rgba(96, 165, 250, 0.12), transparent 26%),
+            radial-gradient(circle at top right, rgba(250, 204, 21, 0.08), transparent 20%),
+            linear-gradient(180deg, #f8fbff 0%, #f6f8fc 42%, #f8fafc 100%);
+        font-family: var(--cx-body);
+        color: var(--cu-ink);
+    }
+
+    body.cx-shell {
+        background: var(--cx-night);
+        color: var(--cx-text);
+        font-family: var(--cx-body);
+        -webkit-font-smoothing: antialiased;
+        overflow-x: hidden;
+    }
+
+    h1, h2, h3, h4 { color: var(--cu-ink); }
+    body.cx-shell h1, body.cx-shell h2, body.cx-shell h3, body.cx-shell h4 { color: var(--cx-text); }
+
+    /* Dark mode (Tailwind class strategy) */
+    .dark body:not(.cx-shell) {
+        background: #0f172a;
+        color: #e2e8f0;
+    }
+    .dark h1, .dark h2, .dark h3, .dark h4 { color: #f1f5f9; }
+    .dark input[type="text"], .dark input[type="email"], .dark input[type="password"],
+    .dark input[type="date"], .dark input[type="number"], .dark input[type="time"],
+    .dark select, .dark textarea {
+        background: rgba(30, 41, 59, 0.8);
+        border-color: rgba(71, 85, 105, 0.5);
+        color: #e2e8f0;
+    }
+}

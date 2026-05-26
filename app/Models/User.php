@@ -91,6 +91,9 @@ class User extends Authenticatable implements MustVerifyEmail, HasLocalePreferen
         // Onboarding / provider
         'stripe_connect_status',
         'stripe_connect_account_id',
+
+        // UI preferences
+        'theme_preference',
     ];
 
     protected $hidden = [

@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Api\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Api\Auth\LoginRequest;
+use App\Http\Requests\Api\Auth\RegisterRequest;
 use App\Models\User;
 use App\Services\Promotion\ReferralService;
 use Illuminate\Http\JsonResponse;
@@ -25,15 +27,24 @@ use Illuminate\Validation\ValidationException;
  *   - Le token retourné est un PersonalAccessToken Sanctum, durée illimitée
  *     par défaut (configurable via config/sanctum.php)
  */
+/**
+ * @group Authentication
+ */
 class ApiAuthController extends Controller
 {
-    public function login(Request $request): JsonResponse
+    /**
+     * Authenticate a user and return a Sanctum token.
+     *
+     * @bodyParam email string required The user's email address. Example: alice@example.com
+     * @bodyParam password string required The user's password (min 6 chars). Example: secret123
+     * @bodyParam device_name string Optional device identifier stored with the token. Example: iPhone 15
+     * @response 200 {"ok": true, "token": "1|abc123def456...", "user": {"id": 1, "name": "Alice Dupont", "email": "alice@example.com", "phone": "+32471000001", "role": "client", "platform_role": "user", "locale": "fr", "is_provider": false, "is_admin": false, "organization_account_id": null}}
+     * @response 422 {"message": "Identifiants incorrects.", "errors": {"email": ["Identifiants incorrects."]}}
+     * @response 429 {"message": "Trop de tentatives. Réessaie dans 42 secondes.", "errors": {"email": ["Trop de tentatives. Réessaie dans 42 secondes."]}}
+     */
+    public function login(LoginRequest $request): JsonResponse
     {
-        $data = $request->validate([
-            'email'        => ['required', 'email', 'max:255'],
-            'password'     => ['required', 'string', 'min:6'],
-            'device_name'  => ['nullable', 'string', 'max:100'],
-        ]);
+        $data = $request->validated();
 
         // Rate limit : 5 tentatives par minute par email+IP
         $key = 'api-login:' . strtolower($data['email']) . '|' . $request->ip();
@@ -66,18 +77,24 @@ class ApiAuthController extends Controller
         ]);
     }
 
-    public function register(Request $request): JsonResponse
+    /**
+     * Register a new client account and return a Sanctum token.
+     *
+     * @bodyParam name string required Full display name. Example: Alice Dupont
+     * @bodyParam email string required Unique email address. Example: alice@example.com
+     * @bodyParam password string required Minimum 8 characters. Example: s3cur3pass!
+     * @bodyParam password_confirmation string required Must match password. Example: s3cur3pass!
+     * @bodyParam phone string Optional phone number. Example: +32471000001
+     * @bodyParam locale string Optional UI locale (fr, nl, en). Example: fr
+     * @bodyParam accept_terms boolean required Must be accepted (1/true). Example: 1
+     * @bodyParam device_name string Optional device identifier. Example: Android Pixel 8
+     * @bodyParam referral_code string Optional referral code from an existing user. Example: REF-ABCD1234
+     * @response 201 {"ok": true, "token": "2|xyz789...", "user": {"id": 42, "name": "Alice Dupont", "email": "alice@example.com", "phone": "+32471000001", "role": "client", "platform_role": "user", "locale": "fr", "is_provider": false, "is_admin": false, "organization_account_id": null}}
+     * @response 422 {"message": "The email has already been taken.", "errors": {"email": ["The email has already been taken."]}}
+     */
+    public function register(RegisterRequest $request): JsonResponse
     {
-        $data = $request->validate([
-            'name'              => ['required', 'string', 'max:255'],
-            'email'             => ['required', 'email', 'max:255', 'unique:users,email'],
-            'password'          => ['required', 'string', 'min:8', 'confirmed'],
-            'phone'             => ['nullable', 'string', 'max:30'],
-            'locale'            => ['nullable', 'string', 'in:fr,nl,en'],
-            'accept_terms'      => ['required', 'accepted'],
-            'device_name'       => ['nullable', 'string', 'max:100'],
-            'referral_code'     => ['nullable', 'string', 'max:64'],
-        ]);
+        $data = $request->validated();
 
         // Crée un user de type "client particulier" (cas mobile le plus simple)
         // Pour devenir prestataire, parcours d'onboarding séparé (Phase 13+)
@@ -116,6 +133,11 @@ class ApiAuthController extends Controller
         ], 201);
     }
 
+    /**
+     * Revoke the current access token (logout from this device only).
+     *
+     * @response 200 {"ok": true}
+     */
     public function logout(Request $request): JsonResponse
     {
         // Révoque le token courant uniquement (pas tous les devices)
@@ -127,6 +149,11 @@ class ApiAuthController extends Controller
         return response()->json(['ok' => true]);
     }
 
+    /**
+     * Revoke all access tokens for the authenticated user (logout from all devices).
+     *
+     * @response 200 {"ok": true, "revoked_all": true}
+     */
     public function logoutAll(Request $request): JsonResponse
     {
         // Révoque TOUS les tokens (utile pour "déconnecte tous mes appareils")

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api\Provider;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Api\Provider\PingTripRequest;
 use App\Models\Booking;
 use App\Models\TripTrackingSession;
 use App\Services\TripTracking\TripTrackingService;
@@ -10,8 +11,23 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 
+/**
+ * @group Trip Tracking
+ * @authenticated
+ */
 class TripTrackingController extends Controller
 {
+    /**
+     * Start a trip tracking session for a booking.
+     *
+     * Creates a new session in `enroute` status. Call once when the provider departs.
+     * The session is used to record GPS pings and share real-time ETA with the client.
+     *
+     * @bodyParam start_lat numeric Starting GPS latitude (-90 to 90). Example: 50.843
+     * @bodyParam start_lng numeric Starting GPS longitude (-180 to 180). Example: 4.348
+     * @response 201 {"data": {"id": 5, "code": "TRK-ABC123", "booking_id": 42, "status": "enroute", "destination": {"lat": 50.846, "lng": 4.352}, "last_position": {"lat": 50.843, "lng": 4.348, "speed_mps": null, "ping_at": null}, "eta_seconds": null, "total_distance_m": 0, "points_count": 0, "started_at": "2026-06-15T08:30:00+00:00", "arrived_at": null, "in_mission_at": null, "ended_at": null}}
+     * @response 403 {"message": "Not assigned to this booking."}
+     */
     public function start(Request $request, Booking $booking, TripTrackingService $service): JsonResponse
     {
         $this->authorizeProvider($request, $booking);
@@ -33,18 +49,26 @@ class TripTrackingController extends Controller
         ], 201);
     }
 
-    public function ping(Request $request, TripTrackingSession $session, TripTrackingService $service): JsonResponse
+    /**
+     * Record a GPS ping for an active tracking session.
+     *
+     * Call every 5-15 seconds while en route. Pings with duplicate `sequence` numbers are
+     * deduplicated. Auto-transitions session to `arrived` when within 150 m of destination.
+     *
+     * @bodyParam lat numeric required Current GPS latitude (-90 to 90). Example: 50.845
+     * @bodyParam lng numeric required Current GPS longitude (-180 to 180). Example: 4.351
+     * @bodyParam accuracy_m number GPS accuracy in metres. Example: 8.5
+     * @bodyParam speed_mps number Current speed in metres per second. Example: 5.2
+     * @bodyParam heading_deg number Compass heading in degrees (0-360). Example: 45.0
+     * @bodyParam sequence integer Client-side monotonic sequence number for deduplication. Example: 42
+     * @response 201 {"data": {"point_id": 87, "distance_to_dest_m": 520, "eta_seconds": 180, "session_status": "enroute"}}
+     * @response 422 {"error": "validation_failed", "errors": {"lat": ["The lat field is required."]}}
+     */
+    public function ping(PingTripRequest $request, TripTrackingSession $session, TripTrackingService $service): JsonResponse
     {
         $this->authorizeProviderForSession($request, $session);
 
-        $data = $request->validate([
-            'lat' => ['required', 'numeric', 'between:-90,90'],
-            'lng' => ['required', 'numeric', 'between:-180,180'],
-            'accuracy_m' => ['nullable', 'numeric', 'min:0', 'max:10000'],
-            'speed_mps' => ['nullable', 'numeric', 'min:0', 'max:200'],
-            'heading_deg' => ['nullable', 'numeric', 'between:0,360'],
-            'sequence' => ['nullable', 'string', 'max:64'],
-        ]);
+        $data = $request->validated();
 
         try {
             $point = $service->recordPing(
@@ -73,6 +97,13 @@ class TripTrackingController extends Controller
         }
     }
 
+    /**
+     * Transition the tracking session to in_mission (work has started on site).
+     *
+     * @response 200 {"data": {"id": 5, "code": "TRK-ABC123", "booking_id": 42, "status": "in_mission", "destination": {"lat": 50.846, "lng": 4.352}, "last_position": {"lat": 50.846, "lng": 4.352, "speed_mps": 0.0, "ping_at": "2026-06-15T09:01:00+00:00"}, "eta_seconds": 0, "total_distance_m": 1250, "points_count": 35, "started_at": "2026-06-15T08:30:00+00:00", "arrived_at": "2026-06-15T08:58:00+00:00", "in_mission_at": "2026-06-15T09:01:00+00:00", "ended_at": null}}
+     * @response 403 {"message": "Not your session."}
+     * @response 422 {"error": "validation_failed", "errors": {"status": ["Session is not in arrived state."]}}
+     */
     public function markInMission(Request $request, TripTrackingSession $session, TripTrackingService $service): JsonResponse
     {
         $this->authorizeProviderForSession($request, $session);
@@ -88,6 +119,13 @@ class TripTrackingController extends Controller
         }
     }
 
+    /**
+     * End a trip tracking session.
+     *
+     * @bodyParam reason string Optional reason for ending the session (max 255 chars). Example: Mission terminée
+     * @response 200 {"data": {"id": 5, "code": "TRK-ABC123", "booking_id": 42, "status": "ended", "destination": {"lat": 50.846, "lng": 4.352}, "last_position": {"lat": 50.846, "lng": 4.352, "speed_mps": 0.0, "ping_at": "2026-06-15T11:00:00+00:00"}, "eta_seconds": 0, "total_distance_m": 1250, "points_count": 210, "started_at": "2026-06-15T08:30:00+00:00", "arrived_at": "2026-06-15T08:58:00+00:00", "in_mission_at": "2026-06-15T09:01:00+00:00", "ended_at": "2026-06-15T11:02:00+00:00"}}
+     * @response 403 {"message": "Not your session."}
+     */
     public function end(Request $request, TripTrackingSession $session, TripTrackingService $service): JsonResponse
     {
         $this->authorizeProviderForSession($request, $session);

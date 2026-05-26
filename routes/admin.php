@@ -18,6 +18,7 @@ Route::middleware(['role:admin'])
     ->group(function () {
 
         Route::get('/dashboard', \App\Livewire\AdminDashboard::class)->name('dashboard');
+        Route::get('/home', \App\Livewire\Admin\AdminHomeDashboard::class)->name('home');
 
         if (class_exists(\App\Livewire\Admin\MissionsAdmin::class)) {
             Route::get('/missions', \App\Livewire\Admin\MissionsAdmin::class)->name('missions');

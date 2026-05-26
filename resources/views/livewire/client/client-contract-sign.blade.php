@@ -76,9 +76,9 @@
                 </div>
                 <p class="text-xs font-mono text-slate-500 mb-4">{{ $this->currentDocument->code }} · v{{ $this->currentDocument->template?->version }}</p>
 
-                {{-- Body rendu HTML --}}
+                {{-- Body rendu HTML — sanitized: only safe tags allowed --}}
                 <div class="rounded-xl border bg-slate-50 p-4 max-h-96 overflow-y-auto prose prose-sm">
-                    {!! $this->currentDocument->body_rendered_html !!}
+                    {!! strip_tags($this->currentDocument->body_rendered_html ?? '', '<p><br><strong><em><ul><ol><li><h1><h2><h3><h4><table><tr><td><th><thead><tbody><a><span><div>') !!}
                 </div>
 
                 {{-- Signature pad --}}

@@ -30,6 +30,12 @@ class EventServiceProvider extends ServiceProvider
         \App\Events\Kyc\KycCompleted::class => [
             \App\Listeners\Kyc\EmitKycApprovedWebhook::class,
         ],
+        \App\Events\Disputes\DisputeOpened::class => [
+            \App\Listeners\Disputes\NotifyOnDisputeOpened::class,
+        ],
+        \App\Events\Rating\RatingSubmitted::class => [
+            \App\Listeners\Rating\NotifyProviderOnRating::class,
+        ],
     ];
 
     /**

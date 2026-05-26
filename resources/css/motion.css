@@ -1,0 +1,91 @@
+/* ============================================================================
+   CleanUx — Motion System (keyframes, reveal-on-scroll, transitions)
+   ========================================================================= */
+
+@keyframes fade-in {
+    from { opacity: 0; transform: translateY(-10px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+.animate-fade-in { animation: fade-in 0.3s ease-out; }
+
+@keyframes slideUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes shimmer {
+    0%   { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+}
+
+/* Reveal-on-scroll (IntersectionObserver in app.js) */
+[data-cx-reveal] {
+    opacity: 0;
+    transform: translateY(28px);
+    transition: opacity var(--cx-dur-slow) var(--cx-ease),
+                transform var(--cx-dur-slow) var(--cx-ease);
+    will-change: opacity, transform;
+}
+[data-cx-reveal].cx-in { opacity: 1; transform: none; }
+[data-cx-reveal].cx-revealed { opacity: 1; transform: none; }
+[data-cx-reveal][data-cx-delay="1"] { transition-delay: .08s; }
+[data-cx-reveal][data-cx-delay="2"] { transition-delay: .16s; }
+[data-cx-reveal][data-cx-delay="3"] { transition-delay: .24s; }
+[data-cx-reveal][data-cx-delay="4"] { transition-delay: .32s; }
+
+/* Vitrine keyframes */
+@keyframes cx-drift       { to { transform: translate3d(-240px, -160px, 0); } }
+@keyframes cx-orbit-ring  { 50% { transform: scale(1.12); opacity: .4; } }
+@keyframes cx-fab-pulse   { 50% { box-shadow: 0 14px 52px -6px var(--cx-glow-amber); } }
+@keyframes cx-blink       { 50% { opacity: .3; } }
+
+@keyframes gradient-flow {
+    0%   { background-position: 0% 50%; }
+    50%  { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+.cx-gradient-animated {
+    background: linear-gradient(-45deg, #f8f9ff, #eef0ff, #fdf4e7, #f8f9ff);
+    background-size: 400% 400%;
+    animation: gradient-flow 8s ease infinite;
+}
+
+/* Livewire navigation crossfade (View Transitions API) */
+[wire\:navigate] { view-transition-name: page; }
+@keyframes vt-fade-out { from { opacity: 1; } to { opacity: 0; } }
+@keyframes vt-fade-in  { from { opacity: 0; } to { opacity: 1; } }
+::view-transition-old(page) { animation: vt-fade-out var(--cx-dur-fast) var(--cx-ease); }
+::view-transition-new(page) { animation: vt-fade-in var(--cx-dur-fast) var(--cx-ease); }
+
+/* Universal interactive hover lift */
+a, button, [role="button"], .cu-btn, [wire\:click] {
+    transition: transform var(--cx-dur-fast) var(--cx-ease),
+                opacity var(--cx-dur-fast) var(--cx-ease);
+}
+a:hover:not([disabled]),
+button:not(:disabled):hover,
+.cu-btn:hover { transform: translateY(-1px); }
+a:active:not([disabled]),
+button:active,
+.cu-btn:active { transform: translateY(0); }
+
+/* Table row hover */
+.cu-table tbody tr { transition: background-color var(--cx-dur-fast); }
+.cu-table tbody tr:hover { background-color: rgba(99, 102, 241, 0.03); }
+
+/* Badge pulse for "new" items */
+.cu-badge-new { animation: softPulse 1.8s ease-in-out infinite; }
+@keyframes softPulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.65; } }
+
+/* Stat pop animation */
+[data-cx-reveal] .cx-tabular {
+    display: inline-block;
+    transition: transform var(--cx-dur-slow) var(--cx-ease);
+}
+[data-cx-reveal].cx-in .cx-tabular {
+    animation: statPop 0.6s var(--cx-ease) forwards;
+}
+@keyframes statPop {
+    0%   { transform: scale(0.5); opacity: 0; }
+    60%  { transform: scale(1.05); }
+    100% { transform: scale(1); opacity: 1; }
+}

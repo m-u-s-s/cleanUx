@@ -3,18 +3,28 @@
 namespace App\Http\Controllers\Api\Client;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Api\Client\StoreDisputeRequest;
 use App\Models\ComplaintCase;
 use App\Models\DisputeEvent;
 use App\Services\Disputes\DisputeService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
+/**
+ * @group Disputes
+ * @authenticated
+ */
 class DisputeController extends Controller
 {
     public function __construct(protected DisputeService $service)
     {
     }
 
+    /**
+     * List the authenticated client's disputes (most recent first, max 50).
+     *
+     * @response 200 {"data": [{"id": 1, "reference": "DSP-001", "subject": "Prestataire absent", "category": "no_show", "priority": "high", "severity": "medium", "status": "open", "is_overdue": false, "sla_policy": "standard", "created_at": "2026-06-01T10:00:00+00:00", "last_activity_at": "2026-06-02T09:00:00+00:00"}]}
+     */
     public function index(Request $request): JsonResponse
     {
         $items = ComplaintCase::query()
@@ -40,6 +50,12 @@ class DisputeController extends Controller
         ]);
     }
 
+    /**
+     * Get detailed information for a single dispute including events and resolutions.
+     *
+     * @response 200 {"id": 1, "reference": "DSP-001", "subject": "Prestataire absent", "description": "Le prestataire n'est pas venu.", "status": "open", "priority": "high", "category": "no_show", "events": [{"id": 1, "type": "comment", "author_role": "client", "author_name": "Alice Dupont", "body": "Aucune nouvelle du prestataire.", "created_at": "2026-06-01T10:05:00+00:00"}], "resolutions": []}
+     * @response 403 {"message": "This action is unauthorized."}
+     */
     public function show(Request $request, ComplaintCase $dispute): JsonResponse
     {
         abort_unless((int) $dispute->client_id === (int) $request->user()->id, 403);
@@ -77,16 +93,21 @@ class DisputeController extends Controller
         ]);
     }
 
-    public function store(Request $request): JsonResponse
+    /**
+     * Open a new dispute case.
+     *
+     * @bodyParam subject string required Brief subject (3-120 chars). Example: Prestataire absent
+     * @bodyParam description string required Full description of the issue (10-2000 chars). Example: Le prestataire n'est pas venu à l'heure prévue et n'a pas répondu.
+     * @bodyParam category string required One of: quality, no_show, payment, damage, safety, communication, other. Example: no_show
+     * @bodyParam priority string Priority level: low, normal, high, urgent (default normal). Example: high
+     * @bodyParam severity string Severity level: low, medium, high, critical (default medium). Example: medium
+     * @bodyParam booking_id integer ID of the related booking (optional). Example: 42
+     * @response 201 {"id": 1, "reference": "DSP-001", "status": "open", "sla_policy": "standard"}
+     * @response 422 {"message": "The category field is required.", "errors": {"category": ["The category field is required."]}}
+     */
+    public function store(StoreDisputeRequest $request): JsonResponse
     {
-        $data = $request->validate([
-            'subject' => ['required', 'string', 'min:3', 'max:120'],
-            'description' => ['required', 'string', 'min:10', 'max:2000'],
-            'category' => ['required', 'in:quality,no_show,payment,damage,safety,communication,other'],
-            'priority' => ['nullable', 'in:low,normal,high,urgent'],
-            'severity' => ['nullable', 'in:low,medium,high,critical'],
-            'booking_id' => ['nullable', 'integer'],
-        ]);
+        $data = $request->validated();
 
         $case = $this->service->open($request->user(), $data);
 
@@ -98,6 +119,13 @@ class DisputeController extends Controller
         ], 201);
     }
 
+    /**
+     * Add a client message to an existing dispute.
+     *
+     * @bodyParam body string required Message text (1-2000 chars). Example: J'attends toujours une réponse.
+     * @response 201 {"event_id": 5, "status": "open"}
+     * @response 403 {"message": "This action is unauthorized."}
+     */
     public function message(Request $request, ComplaintCase $dispute): JsonResponse
     {
         abort_unless((int) $dispute->client_id === (int) $request->user()->id, 403);

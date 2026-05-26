@@ -12,6 +12,7 @@ use App\Observers\RendezVousObserver;
 use App\Policies\ChannelPolicy;
 use App\Services\Assistant\Llm\AnthropicProvider;
 use App\Services\Assistant\Llm\LlmProvider;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Gate;
 
 class AppServiceProvider extends ServiceProvider
@@ -49,6 +50,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        Model::preventLazyLoading(!app()->isProduction());
 
         \Illuminate\Database\Eloquent\Builder::macro('clientFacing', function () {
             /** @var \Illuminate\Database\Eloquent\Builder $this */

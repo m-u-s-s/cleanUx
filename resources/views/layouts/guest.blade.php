@@ -116,7 +116,7 @@
                 </span>
             </a>
 
-            <nav class="hidden items-center gap-7 text-sm md:flex">
+            <nav aria-label="Navigation principale" class="hidden items-center gap-7 text-sm md:flex">
                 <a href="{{ route('home') }}#metiers" class="cx-nav-link">Métiers</a>
                 <a href="{{ route('home') }}#fonctionnement" class="cx-nav-link">Fonctionnement</a>
                 <a href="{{ route('home') }}#confiance" class="cx-nav-link">Confiance</a>
@@ -134,7 +134,7 @@
         </div>
     </header>
 
-    <main id="main-content">{{ $slot }}</main>
+    <main id="main-content" role="main" aria-label="Contenu principal">{{ $slot }}</main>
 
     {{-- CTA flottant permanent --}}
     @guest
@@ -143,7 +143,7 @@
     </a>
     @endguest
 
-    <footer class="cx-footer">
+    <footer class="cx-footer" role="contentinfo">
         <div class="mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:px-8">
             <div class="grid gap-10 md:grid-cols-4">
                 <div>
