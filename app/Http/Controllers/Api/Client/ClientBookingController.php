@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api\Client;
 
+use App\Exceptions\BookingException;
 use App\Http\Controllers\Controller;
 use App\Models\Booking;
 use App\Models\Mission;
@@ -194,13 +195,16 @@ class ClientBookingController extends Controller
             'reason' => ['nullable', 'string', 'max:500'],
         ]);
 
-        // Bookings finals : pas annulables
-        $finalStatuses = ['termine', 'completed', 'annule', 'cancelled', 'refuse', 'sur_place', 'on_site'];
-        if (in_array((string) $booking->status, $finalStatuses, true)) {
-            return response()->json([
-                'ok'    => false,
-                'error' => "Cette réservation ne peut plus être annulée (statut: {$booking->status}).",
-            ], 409);
+        // Bookings already cancelled: specific exception
+        $alreadyCancelledStatuses = ['annule', 'cancelled', 'refuse'];
+        if (in_array((string) $booking->status, $alreadyCancelledStatuses, true)) {
+            throw BookingException::alreadyCancelled();
+        }
+
+        // Bookings in a final non-cancellable state
+        $nonCancellableStatuses = ['termine', 'completed', 'sur_place', 'on_site'];
+        if (in_array((string) $booking->status, $nonCancellableStatuses, true)) {
+            throw BookingException::notCancellable();
         }
 
         $booking->update([

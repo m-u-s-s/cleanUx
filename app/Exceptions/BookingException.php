@@ -16,7 +16,7 @@ class BookingException extends \RuntimeException
 
     public static function notCancellable(): self
     {
-        return new self('This booking cannot be cancelled in its current state.', 422);
+        return new self('This booking cannot be cancelled in its current state.', 409);
     }
 
     public static function providerNotAssigned(): self

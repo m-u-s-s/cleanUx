@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api\Admin;
 
+use App\Exceptions\InsuranceException;
 use App\Http\Controllers\Controller;
 use App\Models\InsuranceClaim;
 use App\Services\Insurance\InsuranceService;
@@ -32,10 +33,10 @@ class InsuranceAdminController extends Controller
 
         try {
             $updated = $this->service->updateClaimStatus($claim, $data['status'], $data['notes'] ?? null);
-
-            return response()->json(['data' => $updated]);
         } catch (\InvalidArgumentException $e) {
-            return response()->json(['error' => $e->getMessage()], 422);
+            throw InsuranceException::invalidStatusTransition($claim->status, $data['status']);
         }
+
+        return response()->json(['data' => $updated]);
     }
 }

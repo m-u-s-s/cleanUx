@@ -4,7 +4,7 @@ includes:
 parameters:
     paths:
         - app/
-    level: 5
+    level: 6
     ignoreErrors:
         - '#Call to an undefined method Illuminate\\Database\\Eloquent\\Builder#'
     excludePaths:

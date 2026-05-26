@@ -12,6 +12,8 @@ use Illuminate\Support\Facades\Route;
 
 Route::view('/', 'home')->name('home');
 
+Route::get('/pricing', \App\Http\Controllers\PricingPageController::class)->name('pricing');
+
 
 Route::post('/locale', function (Request $request) {
     $locale = $request->validate([
@@ -113,6 +115,14 @@ if (class_exists(\App\Livewire\Public\HelpCenter::class)) {
 // SEO endpoints (sitemap.xml + robots.txt)
 Route::get('/sitemap.xml', [\App\Http\Controllers\PublicSeoController::class, 'sitemap'])->name('seo.sitemap');
 Route::get('/robots.txt', [\App\Http\Controllers\PublicSeoController::class, 'robots'])->name('seo.robots');
+
+// Blog — content marketing foundation (no auth required, crawlable)
+Route::get('/blog', function () {
+    return view('pages.blog-index', [
+        'seoTitle' => 'Blog — CleanUx | Conseils, actualités, guides',
+        'seoDescription' => 'Découvrez nos articles sur les services à domicile, conseils nettoyage, guides travaux, et actualités CleanUx.',
+    ]);
+})->name('blog.index');
 
 // Programmatic SEO — service pages (no auth required, crawlable)
 Route::get('/services', [\App\Http\Controllers\ServicePageController::class, 'index'])->name('services.index');

@@ -36,7 +36,7 @@ return [
     // Provider-facing features
     // ─────────────────────────────────────────
     'presence_v2'         => true,
-    'fleet_management'    => false,
+    'fleet_management'    => true,
 
     // ─────────────────────────────────────────
     // Mobile
