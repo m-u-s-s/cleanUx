@@ -18,9 +18,9 @@ return [
     // ─────────────────────────────────────────
     // Payments & monetisation
     // ─────────────────────────────────────────
-    'surge_pricing'       => false,
-    'insurance_real'      => false,  // switch from Mock to real Hiscox/Wakam provider
-    'premium_tiers'       => false,
+    'surge_pricing'       => true,
+    'insurance_real'      => true,   // switch from Mock to real Hiscox/Wakam provider
+    'premium_tiers'       => true,
 
     // ─────────────────────────────────────────
     // Client-facing features

@@ -14,6 +14,7 @@ use App\Notifications\Promotion\ReferralRewardGrantedNotification;
 use App\Support\ActivityLogger;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
+use App\Services\Promotion\ReferralViralTierEngine;
 
 class ReferralService
 {
@@ -21,6 +22,23 @@ class ReferralService
     public const DEFAULT_REFEREE_REWARD = 10.00;
     public const REFERRAL_EXPIRY_DAYS = 90;
     public const REWARD_PROMO_EXPIRY_DAYS = 365;
+
+    protected function referrerRewardAmount(): float
+    {
+        $cents = (int) config('referral.rewards.referrer.amount', 0);
+        return $cents > 0 ? $cents / 100 : self::DEFAULT_REFERRER_REWARD;
+    }
+
+    protected function refereeRewardAmount(): float
+    {
+        $cents = (int) config('referral.rewards.referee.amount', 0);
+        return $cents > 0 ? $cents / 100 : self::DEFAULT_REFEREE_REWARD;
+    }
+
+    protected function referralExpiryDays(): int
+    {
+        return (int) config('referral.limits.referral_code_expiry_days', self::REFERRAL_EXPIRY_DAYS);
+    }
 
     public function ensureReferralCode(User $user): string
     {
@@ -69,9 +87,9 @@ class ReferralService
                 'status' => Referral::STATUS_SIGNED_UP,
                 'invited_at' => now(),
                 'signed_up_at' => now(),
-                'expires_at' => now()->addDays(self::REFERRAL_EXPIRY_DAYS),
-                'referrer_reward_amount' => self::DEFAULT_REFERRER_REWARD,
-                'referee_reward_amount' => self::DEFAULT_REFEREE_REWARD,
+                'expires_at' => now()->addDays($this->referralExpiryDays()),
+                'referrer_reward_amount' => $this->referrerRewardAmount(),
+                'referee_reward_amount' => $this->refereeRewardAmount(),
                 'currency' => 'EUR',
                 'source_channel' => $sourceChannel,
                 'ip_signup' => $ip,
@@ -127,6 +145,8 @@ class ReferralService
             $this->grantRewards($referral);
 
             $this->awardLoyaltyForReferral($referral);
+
+            $this->awardViralTiers($referral);
 
             return $referral->fresh();
         });
@@ -203,6 +223,67 @@ class ReferralService
                     ReferralReward::STATUS_CONSUMED,
                 ])
                 ->sum('amount'),
+        ];
+    }
+
+    protected function awardViralTiers(Referral $referral): void
+    {
+        try {
+            $referrer = User::find($referral->referrer_user_id);
+            if (! $referrer) {
+                return;
+            }
+            app(ReferralViralTierEngine::class)->checkAndAwardTier($referrer);
+        } catch (\Throwable $e) {
+            report($e);
+        }
+    }
+
+    /**
+     * Returns shareable data for the authenticated user:
+     * referral_code, invite_url, share messages per locale, viral tier info.
+     */
+    public function getShareData(User $user, string $locale = 'fr'): array
+    {
+        $code = $this->ensureReferralCode($user);
+        $landingTemplate = config('referral.landing_url_template', '/register?ref={code}');
+        $inviteUrl = url(str_replace('{code}', urlencode($code), $landingTemplate));
+
+        $templateKey = "message_template_{$locale}";
+        $templates = config('referral.sharing', []);
+        $template = $templates[$templateKey] ?? $templates['message_template_fr'] ?? '';
+        $message = str_replace(['{code}', '{link}'], [$code, $inviteUrl], $template);
+
+        $stats = $this->statsForUser($user);
+        $tiers = (array) config('referral.viral_tiers', []);
+        $qualified = $stats['total_qualified'];
+
+        $currentTier = null;
+        $nextTier = null;
+        foreach ($tiers as $tier) {
+            if ($qualified >= ($tier['threshold'] ?? PHP_INT_MAX)) {
+                $currentTier = $tier;
+            }
+        }
+        foreach ($tiers as $tier) {
+            if ($qualified < ($tier['threshold'] ?? PHP_INT_MAX)) {
+                $nextTier = $tier;
+                break;
+            }
+        }
+
+        return [
+            'referral_code' => $code,
+            'invite_url' => $inviteUrl,
+            'share_message' => $message,
+            'rewards' => [
+                'referrer_amount' => $this->referrerRewardAmount(),
+                'referee_amount' => $this->refereeRewardAmount(),
+                'currency' => 'EUR',
+            ],
+            'stats' => $stats,
+            'current_tier' => $currentTier,
+            'next_tier' => $nextTier,
         ];
     }
 

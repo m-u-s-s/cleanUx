@@ -22,6 +22,8 @@
             <clover outputFile="coverage.xml"/>
         </report>
     </coverage>
+    <!-- Coverage threshold: CI warns (non-blocking) if lines drop below 70% -->
+    <!-- To enforce hard failure, change failOnWarning="true" in the phpunit element -->
     <source>
         <include>
             <directory>app</directory>

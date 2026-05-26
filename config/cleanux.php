@@ -1,6 +1,8 @@
 <?php
 
 return [
+    'platform_fee_percent' => (int) env('CLEANUX_PLATFORM_FEE_PERCENT', 15),
+
     'booking' => [
         'default_duration_minutes' => 90,
         'default_buffer_minutes' => 30,

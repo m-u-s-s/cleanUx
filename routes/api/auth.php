@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\Auth\ApiAuthController;
+use App\Http\Controllers\Api\Auth\ForgotPasswordController;
 use App\Http\Controllers\Api\AuthMeController;
 use Illuminate\Support\Facades\Route;
 
@@ -14,15 +15,7 @@ Route::prefix('auth')->middleware('throttle:auth')->group(function () {
 });
 
 // POST /auth/forgot-password — silently ignores unknown emails (mobile app)
-Route::post('/auth/forgot-password', function (\Illuminate\Http\Request $request) {
-    $request->validate(['email' => 'required|email']);
-    try {
-        \Illuminate\Support\Facades\Password::sendResetLink($request->only('email'));
-    } catch (\Throwable $e) {
-        // silently ignore — don't reveal if email exists
-    }
-    return response()->json(['ok' => true, 'message' => 'If this email exists, a reset link has been sent.']);
-})->middleware('throttle:5,1');
+Route::post('/auth/forgot-password', ForgotPasswordController::class)->middleware('throttle:5,1');
 
 // ─────────────────────────────────────────────
 // Authenticated — Token management + identity

@@ -13,6 +13,7 @@ class CommissionServiceTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+        config(['cleanux.platform_fee_percent' => 15]);
         $this->service = new CommissionService();
     }
 

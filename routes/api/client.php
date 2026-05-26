@@ -24,6 +24,11 @@ Route::middleware('auth:sanctum')->prefix('client')->group(function () {
     Route::get('/referrals',             [\App\Http\Controllers\Api\Client\ReferralController::class, 'list']);
     Route::post('/referrals/invite',     [\App\Http\Controllers\Api\Client\ReferralController::class, 'invite'])->middleware('throttle:promo');
 
+    // Referral V2 — Viral sharing + tier progress (consumes config/referral.php)
+    Route::get('/referral/my-code', [\App\Http\Controllers\Api\Client\ReferralV2Controller::class, 'myCode']);
+    Route::get('/referral/stats',   [\App\Http\Controllers\Api\Client\ReferralV2Controller::class, 'stats']);
+    Route::post('/referral/share',  [\App\Http\Controllers\Api\Client\ReferralV2Controller::class, 'share'])->middleware('throttle:promo');
+
     // Phase Ratings — Avis client → provider + signalement
     Route::post('/bookings/{booking}/rating', [\App\Http\Controllers\Api\Client\RatingController::class, 'submit']);
     Route::post('/ratings/{feedback}/report', [\App\Http\Controllers\Api\Client\RatingController::class, 'report']);

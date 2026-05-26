@@ -81,5 +81,6 @@ class Kernel extends HttpKernel
         'turnstile' => \App\Http\Middleware\VerifyTurnstileCaptcha::class,
         'token.grace' => \App\Http\Middleware\EnforceTokenGrace::class,
         'cache.api'   => \App\Http\Middleware\CacheApiResponse::class,
+        'premium'     => \App\Http\Middleware\PremiumGate::class,
     ];
 }

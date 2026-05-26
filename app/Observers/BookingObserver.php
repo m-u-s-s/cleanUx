@@ -39,11 +39,11 @@ class BookingObserver
             $this->emitBusinessWebhookForStatus($booking);
             $newStatus = $booking->status;
             // Provider démarre mission → busy
-            if (in_array($newStatus, [BookingStatus::EN_ROUTE, BookingStatus::SUR_PLACE, 'en_cours', 'started', 'in_progress'], true)) {
+            if (in_array($newStatus, [BookingStatus::EN_ROUTE, BookingStatus::SUR_PLACE], true)) {
                 PresenceAutoTransitioner::bookingStarted($booking);
             }
             // Auto-end trip tracking + presence si annulation
-            if (in_array($newStatus, [BookingStatus::ANNULE, 'cancelled', 'canceled'], true)) {
+            if (in_array($newStatus, BookingStatus::cancelledAliases(), true)) {
                 TripTrackingAutoCloser::endSessionForBooking($booking, 'booking_cancelled');
                 PresenceAutoTransitioner::bookingEnded($booking);
             }
@@ -61,10 +61,9 @@ class BookingObserver
     {
         $status = $booking->status;
         $eventCode = match (true) {
-            in_array($status, [BookingStatus::CONFIRME, 'confirmed', 'scheduled'], true) => 'booking.scheduled',
-            in_array($status, ['assigned', 'assigne'], true) => 'booking.assigned',
-            in_array($status, [BookingStatus::EN_ROUTE, BookingStatus::SUR_PLACE, 'en_cours', 'started', 'in_progress'], true) => 'booking.started',
-            in_array($status, [BookingStatus::ANNULE, 'cancelled', 'canceled'], true) => 'booking.cancelled',
+            $status === BookingStatus::CONFIRME => 'booking.scheduled',
+            in_array($status, [BookingStatus::EN_ROUTE, BookingStatus::SUR_PLACE], true) => 'booking.started',
+            in_array($status, BookingStatus::cancelledAliases(), true) => 'booking.cancelled',
             default => null,
         };
         if ($eventCode) {
@@ -97,8 +96,8 @@ class BookingObserver
     {
         $status = $booking->status;
         $eventName = match (true) {
-            in_array($status, [BookingStatus::CONFIRME, 'confirmed'], true) => 'booking.confirmed',
-            in_array($status, [BookingStatus::ANNULE, 'cancelled', 'canceled'], true) => 'booking.cancelled',
+            $status === BookingStatus::CONFIRME => 'booking.confirmed',
+            in_array($status, BookingStatus::cancelledAliases(), true) => 'booking.cancelled',
             default => null,
         };
         if ($eventName) {
@@ -165,9 +164,7 @@ class BookingObserver
             return false;
         }
 
-        $completedAliases = [BookingStatus::TERMINE, 'completed', 'done'];
-
-        return in_array($booking->status, $completedAliases, true);
+        return in_array($booking->status, BookingStatus::completedAliases(), true);
     }
 
     protected function maybeQualifyReferral(Booking $booking): void

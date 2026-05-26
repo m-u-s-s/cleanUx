@@ -6,8 +6,12 @@ use App\Models\Booking;
 
 class CommissionService
 {
-    private const DEFAULT_PLATFORM_RATE = 0.15; // 15% platform commission
-    private const MINIMUM_COMMISSION    = 200;  // €2.00 minimum in cents
+    private const MINIMUM_COMMISSION = 200;  // €2.00 minimum in cents
+
+    private function platformRate(): float
+    {
+        return ((int) config('cleanux.platform_fee_percent', 15)) / 100;
+    }
 
     /**
      * Calculate the commission breakdown for a given booking.
@@ -38,7 +42,7 @@ class CommissionService
 
         $commissionRate = $provider?->providerProfile?->commission_rate !== null
             ? (float) $provider->providerProfile->commission_rate
-            : self::DEFAULT_PLATFORM_RATE;
+            : $this->platformRate();
 
         $platformFeeCents = max(
             (int) round($totalCents * $commissionRate),

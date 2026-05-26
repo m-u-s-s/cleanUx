@@ -52,15 +52,12 @@ class CancellationController extends Controller
             'accept_fee'          => ['nullable', 'boolean'],
         ]);
 
-        try {
-            $result = $this->cancelService->cancelByClient(
-                $booking,
-                $request->user(),
-                $data['reason'] ?? null,
-            );
-        } catch (\DomainException $e) {
-            return response()->json(['ok' => false, 'error' => $e->getMessage()], 409);
-        }
+        // BookingException and DomainException are handled by ApiJsonRenderer globally.
+        $result = $this->cancelService->cancelByClient(
+            $booking,
+            $request->user(),
+            $data['reason'] ?? null,
+        );
 
         return response()->json($result);
     }

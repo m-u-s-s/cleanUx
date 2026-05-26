@@ -75,6 +75,15 @@ class ApiJsonRenderer
         if ($e instanceof HttpException) {
             return [$e->getStatusCode(), 'http_error', $e->getMessage() ?: 'HTTP error.', null];
         }
+        // Domain exceptions (BookingException, DispatchException, PaymentException, etc.)
+        // carry a meaningful HTTP status code in their constructor code argument.
+        if ($e instanceof \RuntimeException && $e->getCode() >= 400 && $e->getCode() < 600) {
+            return [$e->getCode(), 'domain_error', $e->getMessage(), null];
+        }
+        // DomainException (PHP built-in) used by legacy services — treat as 409 conflict.
+        if ($e instanceof \DomainException) {
+            return [409, 'domain_error', $e->getMessage(), null];
+        }
         return [500, 'server_error', 'An unexpected error occurred.', null];
     }
 }

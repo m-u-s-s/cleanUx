@@ -127,4 +127,29 @@ final class BookingStatus
     {
         return $status === self::EN_ATTENTE;
     }
+
+    /**
+     * Statuses that represent an active/in-progress booking (provider is working).
+     * Used to consolidate legacy aliases in observers/listeners.
+     */
+    public static function activeAliases(): array
+    {
+        return [self::EN_ROUTE, self::SUR_PLACE, self::CONFIRME];
+    }
+
+    /**
+     * Statuses that represent a booking that has been cancelled (all aliases).
+     */
+    public static function cancelledAliases(): array
+    {
+        return [self::ANNULE];
+    }
+
+    /**
+     * Statuses that represent a completed booking (all aliases).
+     */
+    public static function completedAliases(): array
+    {
+        return [self::TERMINE];
+    }
 }

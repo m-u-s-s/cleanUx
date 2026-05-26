@@ -19,3 +19,4 @@ export { ProgressBar } from './ProgressBar';
 export { AnimatedListItem } from './AnimatedListItem';
 export { SuccessOverlay } from './SuccessOverlay';
 export { useReducedMotion, useScreenReader, a11y } from './a11y';
+export { OfflineBanner } from './OfflineBanner';

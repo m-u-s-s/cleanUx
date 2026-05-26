@@ -82,11 +82,8 @@ class ProviderMissionLifecycleController extends Controller
             'lng' => ['nullable', 'numeric', 'between:-180,180'],
         ]);
 
-        try {
-            $mission = $this->lifecycle->setEnRoute($mission, $request->user());
-        } catch (\Throwable $e) {
-            return response()->json(['ok' => false, 'error' => $e->getMessage()], 409);
-        }
+        // Lifecycle exceptions propagate to ApiJsonRenderer for unified JSON error shape.
+        $mission = $this->lifecycle->setEnRoute($mission, $request->user());
 
         return response()->json([
             'ok'         => true,
@@ -104,16 +101,13 @@ class ProviderMissionLifecycleController extends Controller
             'lng' => ['nullable', 'numeric', 'between:-180,180'],
         ]);
 
-        try {
-            $mission = $this->lifecycle->setArrived(
-                $mission,
-                $request->user(),
-                isset($data['lat']) ? (float) $data['lat'] : null,
-                isset($data['lng']) ? (float) $data['lng'] : null,
-            );
-        } catch (\Throwable $e) {
-            return response()->json(['ok' => false, 'error' => $e->getMessage()], 409);
-        }
+        // Lifecycle exceptions propagate to ApiJsonRenderer for unified JSON error shape.
+        $mission = $this->lifecycle->setArrived(
+            $mission,
+            $request->user(),
+            isset($data['lat']) ? (float) $data['lat'] : null,
+            isset($data['lng']) ? (float) $data['lng'] : null,
+        );
 
         return response()->json([
             'ok'         => true,
@@ -131,16 +125,13 @@ class ProviderMissionLifecycleController extends Controller
             'lng' => ['nullable', 'numeric', 'between:-180,180'],
         ]);
 
-        try {
-            $mission = $this->lifecycle->completeMission(
-                $mission,
-                $request->user(),
-                isset($data['lat']) ? (float) $data['lat'] : null,
-                isset($data['lng']) ? (float) $data['lng'] : null,
-            );
-        } catch (\Throwable $e) {
-            return response()->json(['ok' => false, 'error' => $e->getMessage()], 409);
-        }
+        // Lifecycle exceptions propagate to ApiJsonRenderer for unified JSON error shape.
+        $mission = $this->lifecycle->completeMission(
+            $mission,
+            $request->user(),
+            isset($data['lat']) ? (float) $data['lat'] : null,
+            isset($data['lng']) ? (float) $data['lng'] : null,
+        );
 
         return response()->json([
             'ok'         => true,

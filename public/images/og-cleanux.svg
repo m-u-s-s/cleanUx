@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#070b14"/>
+      <stop offset="50%" style="stop-color:#0f172a"/>
+      <stop offset="100%" style="stop-color:#1e293b"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="630" fill="url(#bg)"/>
+  <text x="600" y="240" text-anchor="middle" font-family="system-ui,sans-serif" font-size="72" font-weight="800" fill="white">Clean<tspan fill="#ffb648">Ux</tspan></text>
+  <text x="600" y="310" text-anchor="middle" font-family="system-ui,sans-serif" font-size="32" fill="#93a4c6">Services pros a la demande</text>
+  <text x="600" y="360" text-anchor="middle" font-family="system-ui,sans-serif" font-size="24" fill="#64748b">30+ metiers · Belgique · Paiement securise</text>
+  <rect x="330" y="420" width="200" height="44" rx="22" fill="rgba(255,182,72,0.15)" stroke="#ffb648" stroke-opacity="0.3"/>
+  <text x="430" y="448" text-anchor="middle" font-family="system-ui,sans-serif" font-size="16" fill="#ffb648">Providers verifies</text>
+  <rect x="560" y="420" width="210" height="44" rx="22" fill="rgba(255,182,72,0.15)" stroke="#ffb648" stroke-opacity="0.3"/>
+  <text x="665" y="448" text-anchor="middle" font-family="system-ui,sans-serif" font-size="16" fill="#ffb648">Reservation 2 min</text>
+  <rect x="800" y="420" width="80" height="44" rx="22" fill="rgba(255,182,72,0.15)" stroke="#ffb648" stroke-opacity="0.3"/>
+  <text x="840" y="448" text-anchor="middle" font-family="system-ui,sans-serif" font-size="16" fill="#ffb648">KYC</text>
+</svg>

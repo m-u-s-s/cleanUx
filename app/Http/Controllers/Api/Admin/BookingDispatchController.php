@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api\Admin;
 
+use App\Exceptions\DispatchException;
 use App\Http\Controllers\Controller;
 use App\Models\Booking;
 use App\Services\Dispatch\MissionDispatchService;
@@ -19,7 +20,7 @@ class BookingDispatchController extends Controller
         $mission = $booking->missions()->where('status', 'planned')->first();
 
         if (! $mission) {
-            return response()->json(['ok' => false, 'error' => 'No planned mission found for this booking.'], 422);
+            throw DispatchException::noPlannedMission();
         }
 
         $assignment = $this->dispatcher->dispatchToNextProvider($mission);

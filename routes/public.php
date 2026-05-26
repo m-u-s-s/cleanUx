@@ -114,6 +114,11 @@ if (class_exists(\App\Livewire\Public\HelpCenter::class)) {
 Route::get('/sitemap.xml', [\App\Http\Controllers\PublicSeoController::class, 'sitemap'])->name('seo.sitemap');
 Route::get('/robots.txt', [\App\Http\Controllers\PublicSeoController::class, 'robots'])->name('seo.robots');
 
+// Programmatic SEO — service pages (no auth required, crawlable)
+Route::get('/services', [\App\Http\Controllers\ServicePageController::class, 'index'])->name('services.index');
+Route::get('/services/{trade}', [\App\Http\Controllers\ServicePageController::class, 'show'])->name('services.show');
+Route::get('/services/{trade}/{city}', [\App\Http\Controllers\ServicePageController::class, 'show'])->name('services.show.city');
+
 Route::post('/stripe/webhook', [StripeWebhookController::class, 'handleWebhook'])
     ->name('cashier.webhook');
 

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Services\Promotion\ReferralService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -75,6 +76,7 @@ class ApiAuthController extends Controller
             'locale'            => ['nullable', 'string', 'in:fr,nl,en'],
             'accept_terms'      => ['required', 'accepted'],
             'device_name'       => ['nullable', 'string', 'max:100'],
+            'referral_code'     => ['nullable', 'string', 'max:64'],
         ]);
 
         // Crée un user de type "client particulier" (cas mobile le plus simple)
@@ -88,6 +90,21 @@ class ApiAuthController extends Controller
             'platform_role' => User::PLATFORM_USER,
             'role'          => 'client',
         ]);
+
+        // Apply referral code if provided — soft-fail, never blocks registration
+        if (! empty($data['referral_code']) && config('referral.enabled', true)) {
+            try {
+                $sourceChannel = $request->header('X-Source-Channel', 'api_register');
+                app(ReferralService::class)->registerReferral(
+                    $data['referral_code'],
+                    $user,
+                    $sourceChannel,
+                    $request->ip(),
+                );
+            } catch (\Throwable $e) {
+                report($e);
+            }
+        }
 
         $deviceName = $data['device_name'] ?? $request->userAgent() ?? 'mobile';
         $token = $user->createToken($deviceName)->plainTextToken;
