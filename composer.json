@@ -43,6 +43,7 @@
             "Database\\Seeders\\": "database/seeders/"
         },
         "files": [
+            "app/helpers.php",
             "app/Support/helpers_i18n.php"
         ]
     },

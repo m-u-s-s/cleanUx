@@ -13,16 +13,59 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    {{-- SEO multi-métiers --}}
-    <title>{{ config('app.name', 'CleanUx') }} | Services à domicile : nettoyage, peinture, bâtiment, jardinage</title>
-    <meta name="description" content="Réservez un service à domicile en quelques minutes : nettoyage, peinture, bâtiment, jardinage. Devis clair, suivi de l'intervenant en temps réel, validation par code et preuve photo.">
-    <meta property="og:title" content="CleanUx — Marketplace de services à domicile">
-    <meta property="og:description" content="Réservez un prestataire qualifié en 5 étapes. Nettoyage, peinture, babysitting et 20+ métiers.">
-    <meta property="og:type" content="website">
-    <meta property="og:url" content="{{ config('app.url') }}">
-    <meta property="og:image" content="{{ asset('images/og-cleanux.jpg') }}">
-    <meta name="twitter:card" content="summary_large_image">
+    {{-- SEO — title + description (page-overridable via $seoTitle / $seoDescription) --}}
+    <title>{{ $seoTitle ?? config('app.name', 'CleanUx') . ' — Services pros à la demande | Nettoyage, Peinture, Babysitting' }}</title>
+    <meta name="description" content="{{ $seoDescription ?? 'Réservez un professionnel vérifié en 2 minutes. 30+ métiers disponibles en Belgique. Paiement sécurisé, assurance incluse, suivi en temps réel.' }}">
+    <meta name="keywords" content="{{ $seoKeywords ?? 'services à domicile, nettoyage, peinture, babysitting, Belgique, réservation en ligne, prestataire vérifié' }}">
     <meta name="robots" content="index,follow">
+
+    {{-- Canonical + hreflang --}}
+    <link rel="canonical" href="{{ $canonicalUrl ?? url()->current() }}">
+    <link rel="alternate" hreflang="fr-BE" href="{{ url()->current() }}">
+    <link rel="alternate" hreflang="nl-BE" href="{{ str_replace('/fr/', '/nl/', url()->current()) }}">
+    <link rel="alternate" hreflang="x-default" href="{{ config('app.url') }}">
+
+    {{-- Open Graph --}}
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="{{ config('app.name', 'CleanUx') }}">
+    <meta property="og:title" content="{{ $seoTitle ?? config('app.name', 'CleanUx') . ' — Services pros à la demande' }}">
+    <meta property="og:description" content="{{ $seoDescription ?? 'Réservez un professionnel vérifié en 2 minutes. 30+ métiers en Belgique.' }}">
+    <meta property="og:url" content="{{ url()->current() }}">
+    <meta property="og:image" content="{{ asset('images/og-cleanux.jpg') }}">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:locale" content="fr_BE">
+    <meta property="og:locale:alternate" content="nl_BE">
+
+    {{-- Twitter Card --}}
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="{{ $seoTitle ?? config('app.name', 'CleanUx') . ' — Services pros à la demande' }}">
+    <meta name="twitter:description" content="{{ $seoDescription ?? 'Réservez un professionnel vérifié en 2 minutes.' }}">
+    <meta name="twitter:image" content="{{ asset('images/og-cleanux.jpg') }}">
+
+    {{-- JSON-LD Structured Data --}}
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "WebApplication",
+        "name": "{{ config('app.name', 'CleanUx') }}",
+        "url": "{{ config('app.url') }}",
+        "description": "Marketplace multi-services pour réservation de professionnels vérifiés en Belgique",
+        "applicationCategory": "BusinessApplication",
+        "operatingSystem": "Web, iOS, Android",
+        "offers": {
+            "@type": "AggregateOffer",
+            "priceCurrency": "EUR",
+            "lowPrice": "25",
+            "highPrice": "500"
+        },
+        "areaServed": {
+            "@type": "Country",
+            "name": "Belgium"
+        },
+        "availableLanguage": ["French", "Dutch", "English"]
+    }
+    </script>
 
     {{-- Preload above-the-fold OG image for LCP --}}
     <link rel="preload" as="image" href="/images/og-cleanux.jpg">

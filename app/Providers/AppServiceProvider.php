@@ -3,6 +3,8 @@
 namespace App\Providers;
 
 use App\Models\Channel;
+use App\Services\FeatureFlag\FeatureFlagService;
+use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\ServiceProvider;
 use App\Models\Booking;
 use App\Observers\BookingObserver;
@@ -37,6 +39,9 @@ class AppServiceProvider extends ServiceProvider
 
         // Dispatch — scoring engine singleton (stateless, thread-safe)
         $this->app->singleton(\App\Services\Dispatch\MatchingScorer::class);
+
+        // Feature flags — singleton, config-driven, no I/O
+        $this->app->singleton(FeatureFlagService::class);
     }
 
     /**
@@ -86,5 +91,10 @@ class AppServiceProvider extends ServiceProvider
         }
 
         Gate::policy(Channel::class, ChannelPolicy::class);
+
+        // Feature flags — Blade directive: @feature('flag') / @endfeature
+        Blade::if('feature', function (string $flag): bool {
+            return app(FeatureFlagService::class)->isEnabled($flag, auth()->user());
+        });
     }
 }

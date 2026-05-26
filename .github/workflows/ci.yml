@@ -21,7 +21,7 @@ jobs:
         with:
           php-version: '8.3'
           extensions: mbstring, dom, fileinfo, pdo_sqlite, sqlite3
-          coverage: none
+          coverage: xdebug
 
       - name: Setup Node
         uses: actions/setup-node@v4
@@ -52,5 +52,13 @@ jobs:
       - name: Build assets
         run: npm run build
 
-      - name: Run tests
-        run: php artisan test
+      - name: Run tests with coverage
+        run: php artisan test --coverage-clover=coverage.xml
+
+      - name: Upload coverage report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: coverage.xml
+          retention-days: 30

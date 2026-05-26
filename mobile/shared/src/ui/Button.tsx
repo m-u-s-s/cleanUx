@@ -4,7 +4,7 @@ import Animated, { useSharedValue, useAnimatedStyle, withTiming } from 'react-na
 import { colors, radius, spacing, typography, animation } from '@/theme';
 import { useReducedMotion } from './a11y';
 
-type Variant = 'primary' | 'secondary' | 'ghost' | 'danger';
+type Variant = 'primary' | 'secondary' | 'ghost' | 'danger' | 'success' | 'outline' | 'link' | 'amber';
 type Size = 'sm' | 'md' | 'lg';
 
 interface ButtonProps {
@@ -22,12 +22,16 @@ const variantStyles: Record<Variant, { bg: string; text: string; border?: string
   secondary: { bg: 'transparent', text: colors.brand[500], border: colors.brand[500] },
   ghost: { bg: 'transparent', text: colors.surface[600] },
   danger: { bg: colors.danger[500], text: '#ffffff' },
+  success: { bg: colors.success[500], text: '#ffffff' },
+  outline: { bg: 'transparent', text: colors.accent.amber, border: colors.accent.amber },
+  link: { bg: 'transparent', text: colors.accent.amber },
+  amber: { bg: colors.accent.amber, text: '#0f172a' },
 };
 
-const sizeStyles: Record<Size, { paddingV: number; paddingH: number; fontSize: number }> = {
-  sm: { paddingV: spacing.xs, paddingH: spacing.sm, fontSize: typography.fontSize.sm },
-  md: { paddingV: spacing.sm + 4, paddingH: spacing.md + 4, fontSize: typography.fontSize.base },
-  lg: { paddingV: spacing.sm + 6, paddingH: spacing.lg, fontSize: typography.fontSize.lg },
+const sizeStyles: Record<Size, { paddingV: number; paddingH: number; fontSize: number; fontFamily: string }> = {
+  sm: { paddingV: spacing.xs, paddingH: spacing.sm, fontSize: typography.fontSize.sm, fontFamily: typography.fontFamily.bodySemiBold },
+  md: { paddingV: spacing.sm + 4, paddingH: spacing.md + 4, fontSize: typography.preset.bodyReadable.fontSize, fontFamily: typography.fontFamily.bodySemiBold },
+  lg: { paddingV: spacing.sm + 6, paddingH: spacing.lg, fontSize: typography.fontSize.lg, fontFamily: typography.fontFamily.bodySemiBold },
 };
 
 export function Button({
@@ -47,13 +51,14 @@ export function Button({
   const s = sizeStyles[size];
   const isDisabled = disabled || loading;
 
+  const isSolidVariant = v.bg !== 'transparent';
   const containerStyle: ViewStyle = {
-    backgroundColor: isDisabled && variant === 'primary' ? colors.surface[300] : v.bg,
+    backgroundColor: isDisabled && isSolidVariant ? colors.surface[300] : v.bg,
     paddingVertical: s.paddingV,
     paddingHorizontal: s.paddingH,
-    borderRadius: radius.md,
+    borderRadius: variant === 'link' ? 0 : radius.md,
     borderWidth: v.border ? 1 : 0,
-    borderColor: isDisabled ? colors.surface[300] : v.border,
+    borderColor: isDisabled ? colors.surface[300] : (v.border ?? 'transparent'),
     alignItems: 'center',
     justifyContent: 'center',
     flexDirection: 'row',
@@ -61,9 +66,11 @@ export function Button({
   };
 
   const textStyle: TextStyle = {
-    color: isDisabled && variant === 'primary' ? colors.surface[500] : v.text,
+    color: isDisabled ? colors.surface[400] : v.text,
     fontSize: s.fontSize,
     fontWeight: typography.fontWeight.semibold,
+    fontFamily: s.fontFamily,
+    ...(variant === 'link' ? { textDecorationLine: 'underline' } : {}),
   };
 
   return (
@@ -92,7 +99,7 @@ export function Button({
       >
         {loading ? (
           <ActivityIndicator
-            color={isDisabled ? colors.surface[500] : v.text}
+            color={isDisabled ? colors.surface[400] : v.text}
             size="small"
             style={{ marginRight: spacing.xs }}
           />

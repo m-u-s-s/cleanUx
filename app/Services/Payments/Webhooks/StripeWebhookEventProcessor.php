@@ -7,6 +7,7 @@ use App\Models\ProviderPayout;
 use App\Models\ProviderWalletTransaction;
 use App\Models\StripeWebhookEvent;
 use App\Models\User;
+use App\Notifications\Payments\PaymentFailedNotification;
 use App\Services\Payments\ProviderWalletService;
 use App\Services\Payments\StripeConnectPaymentService;
 use App\Services\Payments\StripeConnectService;
@@ -311,11 +312,27 @@ class StripeWebhookEventProcessor
             return ['status' => StripeWebhookEvent::STATUS_IGNORED];
         }
 
-        if ($booking->payment_status !== 'failed') {
+        $alreadyFailed = $booking->payment_status === 'failed';
+
+        if (! $alreadyFailed) {
             $booking->update([
-                'payment_status' => 'failed',
+                'payment_status'   => 'failed',
                 'payment_failed_at' => now(),
             ]);
+
+            // Notify the client (soft-fail: don't let notification errors abort the webhook)
+            try {
+                $client = $booking->client ?? User::find($booking->customer_user_id ?? $booking->client_id);
+                if ($client) {
+                    $failureMessage = data_get($intent, 'last_payment_error.message');
+                    $client->notify(new PaymentFailedNotification($booking, $failureMessage));
+                }
+            } catch (\Throwable $e) {
+                Log::warning('[payment_failed_webhook] notification failed', [
+                    'booking_id' => $booking->id,
+                    'error'      => $e->getMessage(),
+                ]);
+            }
         }
 
         \App\Support\Webhooks\BusinessEventEmitter::emit(

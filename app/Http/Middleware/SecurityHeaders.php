@@ -37,8 +37,12 @@ class SecurityHeaders
             'geolocation=(self), camera=(self), microphone=()'
         ));
 
-        // CSP (loose default — restreindre en prod via env)
-        if ($csp = env('SECURITY_CSP')) {
+        // CSP — strict default en prod, overridable via env
+        $csp = env('SECURITY_CSP');
+        if (! $csp && $isProduction) {
+            $csp = "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://challenges.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' wss: https:; frame-src 'self' https://js.stripe.com https://challenges.cloudflare.com; object-src 'none'; base-uri 'self';";
+        }
+        if ($csp) {
             $response->headers->set('Content-Security-Policy', $csp);
         }
 

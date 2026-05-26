@@ -6,3 +6,18 @@
     <x-ui.stat title="Urgentes" :value="$statsJour['urgentes']" tone="red" heroicon="fire" hint="À prioriser" />
     <x-ui.stat title="Progression" :value="$statsJour['progression'] . '%'" tone="emerald" heroicon="arrow-trending-up" hint="Avancement" />
 </section>
+
+@if(($statsJour['total'] ?? 0) === 0)
+    <x-ui.empty-state
+        title="{{ __('Aucune mission aujourd\'hui') }}"
+        message="{{ __('Passez en ligne pour recevoir des missions. Votre planning s\'affichera ici dès qu\'une mission vous sera assignée.') }}"
+        icon="🟢"
+        class="mt-4">
+        @if(Route::has('employe.missions'))
+            <a href="{{ route('employe.missions') }}" class="cu-btn-primary inline-flex items-center gap-2">
+                <x-ui.icon name="arrow-right" class="w-4 h-4" />
+                <span>{{ __('Voir toutes les missions') }}</span>
+            </a>
+        @endif
+    </x-ui.empty-state>
+@endif

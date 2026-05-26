@@ -22,4 +22,9 @@ return [
 
     // Fenêtre pendant laquelle le client peut tipper après completion (en jours)
     'window_days' => (int) env('TIPS_WINDOW_DAYS', 7),
+
+    // Platform commission on tips (% retained by CleanUx, 0 = full pass-through to provider).
+    // Defined centrally here and mirrored in config/premium.php::tip_platform_fee_percent.
+    // TipService::confirmCharge() reads this value when applying splits.
+    'platform_fee_percent' => (int) env('TIP_PLATFORM_FEE_PERCENT', 0),
 ];

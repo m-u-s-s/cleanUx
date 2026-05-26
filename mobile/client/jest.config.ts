@@ -1,8 +1,13 @@
-﻿import type { Config } from 'jest';
+import type { Config } from 'jest';
 import path from 'path';
 
 const config: Config = {
   preset: 'jest-expo',
+  // Include the shared workspace so co-located __tests__ in shared/src are discovered
+  roots: [
+    '<rootDir>',
+    path.resolve(__dirname, '../shared/src'),
+  ],
   transformIgnorePatterns: [
     'node_modules/(?!((jest-)?react-native|@react-native(-community)?)|expo(nent)?|@expo(nent)?/.*|@expo-google-fonts/.*|react-navigation|@react-navigation/.*|@sentry/react-native|expo-secure-store|expo-constants|expo-status-bar|@gorhom)',
   ],
@@ -48,6 +53,8 @@ const config: Config = {
     '^expo-image-picker$': '<rootDir>/__mocks__/expo-image-picker',
     // @stripe/stripe-react-native: use local stub to avoid native Stripe init in Jest
     '^@stripe/stripe-react-native$': '<rootDir>/__mocks__/@stripe/stripe-react-native.tsx',
+    // @react-native-async-storage/async-storage: in-memory mock for Jest
+    '^@react-native-async-storage/async-storage$': '<rootDir>/__mocks__/@react-native-async-storage/async-storage',
     // expo-font + @expo-google-fonts: avoid native font loading in Jest
     '^expo-font$': '<rootDir>/__mocks__/expo-font',
     '^@expo-google-fonts/figtree$': '<rootDir>/__mocks__/@expo-google-fonts/figtree',

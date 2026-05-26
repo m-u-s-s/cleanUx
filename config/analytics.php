@@ -75,6 +75,26 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Active analytics provider (server-side forwarding)
+    |--------------------------------------------------------------------------
+    | internal : CleanUx ledger only (analytics_events table)
+    | posthog  : forward to PostHog EU cloud in addition to internal ledger
+    | mixpanel : forward to Mixpanel in addition to internal ledger
+    */
+    'provider' => env('ANALYTICS_PROVIDER', 'internal'),
+
+    /*
+    |--------------------------------------------------------------------------
+    | PostHog
+    |--------------------------------------------------------------------------
+    */
+    'posthog' => [
+        'api_key' => env('POSTHOG_API_KEY'),
+        'host' => env('POSTHOG_HOST', 'https://eu.posthog.com'),
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
     | External forwarders (placeholders)
     |--------------------------------------------------------------------------
     */
@@ -88,5 +108,41 @@ return [
             'enabled' => env('MIXPANEL_ENABLED', false),
             'project_token' => env('MIXPANEL_PROJECT_TOKEN'),
         ],
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Tracked events for GTM / PostHog subscription
+    |--------------------------------------------------------------------------
+    | Canonical event names for product-level tracking (GMV, take-rate, etc.).
+    */
+    'tracked_events' => [
+        'booking.created',
+        'booking.completed',
+        'booking.cancelled',
+        'payment.succeeded',
+        'payment.failed',
+        'provider.online',
+        'provider.mission_accepted',
+        'provider.mission_declined',
+        'user.registered',
+        'user.premium_upgraded',
+        'referral.sent',
+        'referral.converted',
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | KPI definitions (documentation / dashboard labelling)
+    |--------------------------------------------------------------------------
+    */
+    'kpi_definitions' => [
+        'gmv' => 'Gross Merchandise Value (total bookings amount)',
+        'take_rate' => 'Platform revenue / GMV (%)',
+        'bookings_per_day' => 'Average daily bookings',
+        'provider_earnings_avg' => 'Average provider earnings per booking',
+        'client_ltv' => 'Average client lifetime value',
+        'provider_churn_rate' => 'Monthly provider departure rate',
+        'nps' => 'Net Promoter Score (from NPS module)',
     ],
 ];

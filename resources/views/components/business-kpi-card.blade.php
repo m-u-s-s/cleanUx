@@ -1,3 +1,4 @@
+{{-- Compact KPI card for dense data grids. Minimal styling. Use for B2B/analytics views. --}}
 @props([
     'title',
     'value',

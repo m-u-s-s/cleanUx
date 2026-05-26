@@ -132,4 +132,11 @@ class ProviderOnboardingController extends Controller
             'current_step' => $profile->onboarding_step,
         ]);
     }
+
+    public function downloadDocument(ProviderOnboardingDocument $document): \Illuminate\Http\Response
+    {
+        return response()->file(
+            storage_path('app/private/' . $document->file_path)
+        );
+    }
 }

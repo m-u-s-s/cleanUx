@@ -64,6 +64,9 @@ return [
         'read:quality',
         'admin:webhooks',
         'admin:users',
+        'admin:read',
+        'admin:write',
+        'admin:critical',
         'admin:everything',
     ],
 
@@ -74,7 +77,7 @@ return [
     |--------------------------------------------------------------------------
     */
     'dangerous_scopes' => [
-        'write:payments', 'write:providers', 'admin:users', 'admin:everything',
+        'write:payments', 'write:providers', 'admin:users', 'admin:critical', 'admin:everything',
     ],
 
     /*

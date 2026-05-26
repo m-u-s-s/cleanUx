@@ -11,9 +11,12 @@
             <td align="center">
                 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:640px;background:#ffffff;border:1px solid #e2e8f0;border-radius:20px;overflow:hidden;box-shadow:0 10px 30px rgba(15,23,42,0.08);">
                     <tr>
-                        <td style="padding:24px 28px;background:linear-gradient(135deg,#0f172a,#1e293b);color:#fff;">
-                            <div style="font-size:12px;letter-spacing:0.12em;text-transform:uppercase;color:#cbd5e1;font-weight:700;">{{ $eyebrow ?? 'CleanUx' }}</div>
-                            <div style="margin-top:8px;font-size:28px;line-height:1.2;font-weight:800;">{{ $title ?? 'Notification' }}</div>
+                        <td style="padding:0;overflow:hidden;">
+                            <div style="height:3px;background:linear-gradient(90deg,#ffb648,#ff8a3d);"></div>
+                            <div style="padding:24px 28px;background:linear-gradient(135deg,#0f172a,#1e293b);color:#fff;">
+                                <div style="font-size:12px;letter-spacing:0.12em;text-transform:uppercase;color:#ffb648;font-weight:700;">{{ $eyebrow ?? 'CleanUx' }}</div>
+                                <div style="margin-top:8px;font-size:28px;line-height:1.2;font-weight:800;">{{ $title ?? 'Notification' }}</div>
+                            </div>
                         </td>
                     </tr>
                     <tr>
@@ -23,7 +26,7 @@
                             @endif
 
                             @if(!empty($highlight))
-                                <div style="margin:0 0 18px;padding:14px 16px;border-radius:14px;background:#eff6ff;border:1px solid #bfdbfe;color:#1d4ed8;font-size:14px;line-height:1.6;">
+                                <div style="margin:0 0 18px;padding:14px 16px;border-radius:14px;background:#fffbeb;border:1px solid #fde68a;color:#92400e;font-size:14px;line-height:1.6;">
                                     {{ $highlight }}
                                 </div>
                             @endif
@@ -41,7 +44,7 @@
 
                             @if(!empty($actionText) && !empty($actionUrl))
                                 <div style="margin:24px 0;">
-                                    <a href="{{ $actionUrl }}" style="display:inline-block;padding:12px 18px;border-radius:14px;background:#0ea5e9;color:#fff;text-decoration:none;font-size:14px;font-weight:700;">{{ $actionText }}</a>
+                                    <a href="{{ $actionUrl }}" style="display:inline-block;padding:12px 24px;border-radius:14px;background:linear-gradient(135deg,#ffb648,#ff8a3d);color:#0f172a;text-decoration:none;font-size:14px;font-weight:700;letter-spacing:0.01em;">{{ $actionText }}</a>
                                 </div>
                             @endif
 

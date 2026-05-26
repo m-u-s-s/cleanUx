@@ -78,7 +78,7 @@
 
             <div class="mx-auto mt-16 grid max-w-5xl grid-cols-1 gap-6 md:grid-cols-3">
                 {{-- Feature 1: spans 2 columns, larger, amber border-left accent --}}
-                <div class="md:col-span-2 cu-glass rounded-2xl p-8 border-l-4 border-[#ffb648]" data-cx-reveal>
+                <div class="md:col-span-2 cu-glass rounded-2xl p-8 border-l-4 border-accent-amber" data-cx-reveal>
                     <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-brand-50 text-brand-600 ring-1 ring-brand-200">
                         <x-ui.icon name="camera" class="w-6 h-6" />
                     </div>
@@ -216,7 +216,7 @@
             </div>
             <div class="mx-auto mt-16 grid max-w-5xl grid-cols-1 gap-6 md:grid-cols-3">
                 {{-- B2B card 1: full-width top, horizontal layout --}}
-                <div class="md:col-span-3 cu-glass rounded-2xl p-8 border-l-4 border-[#ffb648] flex flex-col md:flex-row md:items-center gap-6" data-cx-reveal data-cx-delay="0">
+                <div class="md:col-span-3 cu-glass rounded-2xl p-8 border-l-4 border-accent-amber flex flex-col md:flex-row md:items-center gap-6" data-cx-reveal data-cx-delay="0">
                     <div class="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-brand-50 text-brand-600 ring-1 ring-brand-200">
                         <x-ui.icon name="building-office" class="w-7 h-7" />
                     </div>
@@ -250,19 +250,19 @@
             <p class="text-center text-slate-500 mb-12">Rejoignez une communauté qui grandit chaque jour</p>
             <div class="grid grid-cols-2 md:grid-cols-4 gap-8">
                 <div class="text-center" data-cx-reveal data-cx-delay="0">
-                    <p class="text-4xl font-bold text-[#ffb648] cx-tabular" style="font-family: 'Space Grotesk', sans-serif;">20+</p>
+                    <p class="text-4xl font-bold text-accent-amber cx-tabular" style="font-family: 'Space Grotesk', sans-serif;">20+</p>
                     <p class="text-sm text-slate-500 mt-2">Métiers disponibles</p>
                 </div>
                 <div class="text-center" data-cx-reveal data-cx-delay="100">
-                    <p class="text-4xl font-bold text-[#ffb648] cx-tabular" style="font-family: 'Space Grotesk', sans-serif;">9</p>
+                    <p class="text-4xl font-bold text-accent-amber cx-tabular" style="font-family: 'Space Grotesk', sans-serif;">9</p>
                     <p class="text-sm text-slate-500 mt-2">Pays supportés</p>
                 </div>
                 <div class="text-center" data-cx-reveal data-cx-delay="200">
-                    <p class="text-4xl font-bold text-[#ffb648] cx-tabular" style="font-family: 'Space Grotesk', sans-serif;">4.8★</p>
+                    <p class="text-4xl font-bold text-accent-amber cx-tabular" style="font-family: 'Space Grotesk', sans-serif;">4.8★</p>
                     <p class="text-sm text-slate-500 mt-2">Note moyenne</p>
                 </div>
                 <div class="text-center" data-cx-reveal data-cx-delay="300">
-                    <p class="text-4xl font-bold text-[#ffb648] cx-tabular" style="font-family: 'Space Grotesk', sans-serif;">24/7</p>
+                    <p class="text-4xl font-bold text-accent-amber cx-tabular" style="font-family: 'Space Grotesk', sans-serif;">24/7</p>
                     <p class="text-sm text-slate-500 mt-2">Support disponible</p>
                 </div>
             </div>
@@ -288,7 +288,7 @@
                     <blockquote class="text-slate-700 text-lg leading-relaxed italic cx-body-readable">
                         "Réservation en 2 minutes, prestataire ponctuel, paiement transparent. Je ne cherche plus ailleurs."
                     </blockquote>
-                    <p class="text-[#ffb648] mt-4 text-lg">★★★★★</p>
+                    <p class="text-accent-amber mt-4 text-lg">★★★★★</p>
                 </div>
                 {{-- Side column: 2 smaller testimonials stacked --}}
                 <div class="md:col-span-2 flex flex-col gap-6">
@@ -301,7 +301,7 @@
                             </div>
                         </div>
                         <p class="text-sm text-slate-600">"Grâce à CleanUx, j'ai triplé mes missions mensuelles. L'app terrain est intuitive et les paiements arrivent vite."</p>
-                        <p class="text-[#ffb648] mt-3 text-sm">★★★★★</p>
+                        <p class="text-accent-amber mt-3 text-sm">★★★★★</p>
                     </div>
                     <div class="cu-glass rounded-2xl p-6 flex-1" data-cx-reveal data-cx-delay="200">
                         <div class="flex items-center gap-3 mb-4">
@@ -312,7 +312,7 @@
                             </div>
                         </div>
                         <p class="text-sm text-slate-600">"Gérer 12 bureaux avec un seul tableau de bord, c'est un gain de temps énorme. Le chantier groupé est brillant."</p>
-                        <p class="text-[#ffb648] mt-3 text-sm">★★★★☆</p>
+                        <p class="text-accent-amber mt-3 text-sm">★★★★☆</p>
                     </div>
                 </div>
             </div>

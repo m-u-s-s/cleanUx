@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { View, FlatList, TouchableOpacity, Text, StyleSheet } from 'react-native';
-import { Screen, Skeleton, ProgressBar, AnimatedListItem } from '@/ui';
+import { Screen, Skeleton, ProgressBar, AnimatedListItem, ErrorScreen } from '@/ui';
 import { useServiceCatalog, useBooking } from '@/booking';
 import { colors, spacing, typography, radius, useThemeColors } from '@/theme';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -9,7 +9,7 @@ import type { BookingStackParamList } from '@/navigation/types';
 type Props = NativeStackScreenProps<BookingStackParamList, 'BookingStep1'>;
 
 export function BookingStep1Service({ navigation }: Props) {
-  const { data: categories, isLoading } = useServiceCatalog();
+  const { data: categories, isLoading, isError, refetch } = useServiceCatalog();
   const { dispatch } = useBooking();
   const themeColors = useThemeColors();
   const [selectedId, setSelectedId] = useState<number | null>(null);
@@ -20,6 +20,19 @@ export function BookingStep1Service({ navigation }: Props) {
     // Brief highlight before navigating
     setTimeout(() => navigation.navigate('BookingStep2'), 180);
   };
+
+  if (isError) {
+    return (
+      <Screen scroll>
+        <ProgressBar step={1} totalSteps={5} />
+        <ErrorScreen
+          title="Impossible de charger les services"
+          message="Vérifiez votre connexion et réessayez."
+          onRetry={() => void refetch()}
+        />
+      </Screen>
+    );
+  }
 
   return (
     <Screen scroll>

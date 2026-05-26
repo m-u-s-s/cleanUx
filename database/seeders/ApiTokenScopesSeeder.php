@@ -38,6 +38,9 @@ class ApiTokenScopesSeeder extends Seeder
             // admin
             ['admin:webhooks', 'Gérer les webhooks B2B', 'CRUD endpoints + replay', 'admin', 'admin', true],
             ['admin:users', 'Gérer les utilisateurs', 'CRUD users + roles', 'admin', 'admin', true],
+            ['admin:read', 'Lecture admin', 'Accès lecture à tous les panels admin (GET)', 'admin', 'admin', false],
+            ['admin:write', 'Écriture admin', 'Créer et modifier les ressources admin (POST/PUT/PATCH)', 'admin', 'admin', true],
+            ['admin:critical', 'Opérations admin critiques', 'Suppressions, force-cancel, clôture de période (DELETE + actions irréversibles)', 'admin', 'admin', true],
             ['admin:everything', 'Accès admin total', 'Wildcard — équivalent abilities=[*]', 'admin', 'admin', true],
         ];
 

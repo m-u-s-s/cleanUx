@@ -19,7 +19,7 @@
         'success' => 'bg-success-600 text-white hover:bg-success-700 active:bg-success-700 shadow-soft-sm',
         'outline' => 'bg-transparent text-brand-700 border border-brand-300 hover:bg-brand-50 active:bg-brand-100',
         'link' => 'bg-transparent text-brand-600 hover:text-brand-700 hover:underline underline-offset-2',
-        'amber' => 'bg-[#ffb648] text-gray-900 hover:bg-[#ff8a3d] active:bg-[#e67a30] shadow-soft-sm font-semibold cu-glow-amber',
+        'amber' => 'bg-accent-amber text-slate-900 hover:bg-accent-amber-deep active:bg-amber-500 shadow-soft-sm font-semibold cu-glow-amber',
     ];
 
     $sizes = [

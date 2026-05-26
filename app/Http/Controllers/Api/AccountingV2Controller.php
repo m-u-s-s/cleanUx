@@ -162,4 +162,26 @@ class AccountingV2Controller extends Controller
             ],
         );
     }
+
+    public function validatePeriod(AccountingPeriod $period): JsonResponse
+    {
+        $result = $this->closer->canClose($period);
+
+        return response()->json($result);
+    }
+
+    public function deleteEntry(AccountingEntry $entry): JsonResponse
+    {
+        $postingDate = $entry->posting_date;
+        if ($postingDate) {
+            $period = AccountingPeriod::query()
+                ->where('period_year', $postingDate->year)
+                ->where('period_month', $postingDate->month)
+                ->first();
+            abort_if($period && $period->is_closed, 422, 'Cannot delete entries from a closed accounting period.');
+        }
+        $entry->delete();
+
+        return response()->json(['ok' => true]);
+    }
 }

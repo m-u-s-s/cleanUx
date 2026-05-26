@@ -32,7 +32,11 @@ class ReferralViralTierEngine
         $awarded = [];
 
         $qualifiedCount = $this->countQualifiedReferrals($referrer);
-        $tiers = (array) Config::get('promotions.referral_tiers', $this->defaultTiers());
+        // Priority: promotions.referral_tiers > referral.viral_tiers > hardcoded defaults
+        $tiers = (array) Config::get(
+            'promotions.referral_tiers',
+            Config::get('referral.viral_tiers', $this->defaultTiers()),
+        );
 
         foreach ($tiers as $tier) {
             if ($qualifiedCount < ($tier['threshold'] ?? PHP_INT_MAX)) {

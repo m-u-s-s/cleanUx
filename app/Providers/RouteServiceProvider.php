@@ -63,6 +63,11 @@ class RouteServiceProvider extends ServiceProvider
                 : Limit::perMinute(30)->by($request->ip());
         });
 
+        // Public API (search, pricing, FX) — scraping protection: 30/min per IP, no auth required
+        RateLimiter::for('public-api', function (Request $request) {
+            return Limit::perMinute(30)->by('pub:' . $request->ip());
+        });
+
         // Auth endpoints hardened: 10/min per IP
         RateLimiter::for('api-auth', function (Request $request) {
             return Limit::perMinute(10)->by($request->ip());

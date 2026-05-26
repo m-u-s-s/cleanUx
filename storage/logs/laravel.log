@@ -6087,3 +6087,972 @@ into your web browser: <span class="break-all" style="box-sizing: border-box; fo
 [2026-05-21 12:42:44] testing.INFO: [webhooks_v2] event ignored (not whitelisted) {"event_code":"tracking.started"} 
 [2026-05-21 12:42:44] testing.INFO: [webhooks_v2] event ignored (not whitelisted) {"event_code":"tracking.ended"} 
 [2026-05-21 12:42:44] testing.INFO: [webhooks_v2] event ignored (not whitelisted) {"event_code":"tracking.started"} 
+[2026-05-26 10:39:27] local.ERROR: Invalid route action: [AuthMeController]. {"exception":"[object] (UnexpectedValueException(code: 0): Invalid route action: [AuthMeController]. at C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Routing/RouteAction.php:92)
+[stacktrace]
+#0 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Routing/RouteAction.php(47): Illuminate/Routing/RouteAction::makeInvokable('AuthMeControlle...')
+#1 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Routing/Route.php(198): Illuminate/Routing/RouteAction::parse('api/auth/me', Array)
+#2 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Routing/Route.php(179): Illuminate/Routing/Route->parseAction(Array)
+#3 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Routing/Router.php(671): Illuminate/Routing/Route->__construct(Array, 'api/auth/me', Array)
+#4 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Routing/Router.php(563): Illuminate/Routing/Router->newRoute(Array, 'api/auth/me', Array)
+#5 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Routing/Router.php(543): Illuminate/Routing/Router->createRoute(Array, '/auth/me', Array)
+#6 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Routing/Router.php(161): Illuminate/Routing/Router->addRoute(Array, '/auth/me', 'AuthMeControlle...')
+#7 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Support/Facades/Facade.php(361): Illuminate/Routing/Router->get('/auth/me', 'AuthMeControlle...')
+#8 C:/Users/mmdar/Desktop/code/work/CleanUx/routes/api.php(127): Illuminate/Support/Facades/Facade::__callStatic('get', Array)
+#9 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Routing/Router.php(511): Illuminate/Routing/RouteFileRegistrar->{closure:{closure:C:/Users/mmdar/Desktop/code/work/CleanUx/routes/api.php:121}:124}(Object(Illuminate/Routing/Router))
+#10 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Routing/Router.php(467): Illuminate/Routing/Router->loadRoutes(Object(Closure))
+#11 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Routing/RouteRegistrar.php(207): Illuminate/Routing/Router->group(Array, Object(Closure))
+#12 C:/Users/mmdar/Desktop/code/work/CleanUx/routes/api.php(124): Illuminate/Routing/RouteRegistrar->group(Object(Closure))
+#13 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Routing/Router.php(511): Illuminate/Routing/RouteFileRegistrar->{closure:C:/Users/mmdar/Desktop/code/work/CleanUx/routes/api.php:121}(Object(Illuminate/Routing/Router))
+#14 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Routing/Router.php(467): Illuminate/Routing/Router->loadRoutes(Object(Closure))
+#15 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Routing/RouteRegistrar.php(207): Illuminate/Routing/Router->group(Array, Object(Closure))
+#16 C:/Users/mmdar/Desktop/code/work/CleanUx/routes/api.php(121): Illuminate/Routing/RouteRegistrar->group(Object(Closure))
+#17 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Routing/RouteFileRegistrar.php(35): require('C://Users//mmdar//...')
+#18 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Routing/Router.php(513): Illuminate/Routing/RouteFileRegistrar->register('C://Users//mmdar//...')
+#19 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Routing/Router.php(467): Illuminate/Routing/Router->loadRoutes('C://Users//mmdar//...')
+#20 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Routing/RouteRegistrar.php(207): Illuminate/Routing/Router->group(Array, 'C://Users//mmdar//...')
+#21 C:/Users/mmdar/Desktop/code/work/CleanUx/app/Providers/RouteServiceProvider.php(79): Illuminate/Routing/RouteRegistrar->group('C://Users//mmdar//...')
+#22 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Container/BoundMethod.php(36): App/Providers/RouteServiceProvider->{closure:App/Providers/RouteServiceProvider::boot():76}()
+#23 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Container/Util.php(43): Illuminate/Container/BoundMethod::{closure:Illuminate/Container/BoundMethod::call():35}()
+#24 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Container/BoundMethod.php(83): Illuminate/Container/Util::unwrapIfClosure(Object(Closure))
+#25 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Container/BoundMethod.php(35): Illuminate/Container/BoundMethod::callBoundMethod(Object(Illuminate/Foundation/Application), Object(Closure), Object(Closure))
+#26 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Container/Container.php(696): Illuminate/Container/BoundMethod::call(Object(Illuminate/Foundation/Application), Object(Closure), Array, NULL)
+#27 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Foundation/Support/Providers/RouteServiceProvider.php(166): Illuminate/Container/Container->call(Object(Closure))
+#28 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Foundation/Support/Providers/RouteServiceProvider.php(59): Illuminate/Foundation/Support/Providers/RouteServiceProvider->loadRoutes()
+#29 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Container/BoundMethod.php(36): Illuminate/Foundation/Support/Providers/RouteServiceProvider->{closure:Illuminate/Foundation/Support/Providers/RouteServiceProvider::register():53}()
+#30 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Container/Util.php(43): Illuminate/Container/BoundMethod::{closure:Illuminate/Container/BoundMethod::call():35}()
+#31 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Container/BoundMethod.php(83): Illuminate/Container/Util::unwrapIfClosure(Object(Closure))
+#32 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Container/BoundMethod.php(35): Illuminate/Container/BoundMethod::callBoundMethod(Object(Illuminate/Foundation/Application), Object(Closure), Object(Closure))
+#33 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Container/Container.php(696): Illuminate/Container/BoundMethod::call(Object(Illuminate/Foundation/Application), Object(Closure), Array, NULL)
+#34 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Support/ServiceProvider.php(144): Illuminate/Container/Container->call(Object(Closure))
+#35 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Foundation/Application.php(1154): Illuminate/Support/ServiceProvider->callBootedCallbacks()
+#36 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Foundation/Application.php(1132): Illuminate/Foundation/Application->bootProvider(Object(App/Providers/RouteServiceProvider))
+#37 [internal function]: Illuminate/Foundation/Application->{closure:Illuminate/Foundation/Application::boot():1131}(Object(App/Providers/RouteServiceProvider), 'App//Providers//R...')
+#38 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Foundation/Application.php(1131): array_walk(Array, Object(Closure))
+#39 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Foundation/Bootstrap/BootProviders.php(17): Illuminate/Foundation/Application->boot()
+#40 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Foundation/Application.php(342): Illuminate/Foundation/Bootstrap/BootProviders->bootstrap(Object(Illuminate/Foundation/Application))
+#41 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Foundation/Http/Kernel.php(187): Illuminate/Foundation/Application->bootstrapWith(Array)
+#42 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Foundation/Http/Kernel.php(171): Illuminate/Foundation/Http/Kernel->bootstrap()
+#43 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Foundation/Http/Kernel.php(145): Illuminate/Foundation/Http/Kernel->sendRequestThroughRouter(Object(Illuminate/Http/Request))
+#44 C:/Users/mmdar/Desktop/code/work/CleanUx/public/index.php(51): Illuminate/Foundation/Http/Kernel->handle(Object(Illuminate/Http/Request))
+#45 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Foundation/resources/server.php(23): require_once('C://Users//mmdar//...')
+#46 {main}
+"} 
+[2026-05-26 10:39:48] local.ERROR: Invalid route action: [AuthMeController]. {"exception":"[object] (UnexpectedValueException(code: 0): Invalid route action: [AuthMeController]. at C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Routing/RouteAction.php:92)
+[stacktrace]
+#0 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Routing/RouteAction.php(47): Illuminate/Routing/RouteAction::makeInvokable('AuthMeControlle...')
+#1 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Routing/Route.php(198): Illuminate/Routing/RouteAction::parse('api/auth/me', Array)
+#2 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Routing/Route.php(179): Illuminate/Routing/Route->parseAction(Array)
+#3 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Routing/Router.php(671): Illuminate/Routing/Route->__construct(Array, 'api/auth/me', Array)
+#4 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Routing/Router.php(563): Illuminate/Routing/Router->newRoute(Array, 'api/auth/me', Array)
+#5 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Routing/Router.php(543): Illuminate/Routing/Router->createRoute(Array, '/auth/me', Array)
+#6 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Routing/Router.php(161): Illuminate/Routing/Router->addRoute(Array, '/auth/me', 'AuthMeControlle...')
+#7 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Support/Facades/Facade.php(361): Illuminate/Routing/Router->get('/auth/me', 'AuthMeControlle...')
+#8 C:/Users/mmdar/Desktop/code/work/CleanUx/routes/api.php(127): Illuminate/Support/Facades/Facade::__callStatic('get', Array)
+#9 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Routing/Router.php(511): Illuminate/Routing/RouteFileRegistrar->{closure:{closure:C:/Users/mmdar/Desktop/code/work/CleanUx/routes/api.php:121}:124}(Object(Illuminate/Routing/Router))
+#10 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Routing/Router.php(467): Illuminate/Routing/Router->loadRoutes(Object(Closure))
+#11 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Routing/RouteRegistrar.php(207): Illuminate/Routing/Router->group(Array, Object(Closure))
+#12 C:/Users/mmdar/Desktop/code/work/CleanUx/routes/api.php(124): Illuminate/Routing/RouteRegistrar->group(Object(Closure))
+#13 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Routing/Router.php(511): Illuminate/Routing/RouteFileRegistrar->{closure:C:/Users/mmdar/Desktop/code/work/CleanUx/routes/api.php:121}(Object(Illuminate/Routing/Router))
+#14 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Routing/Router.php(467): Illuminate/Routing/Router->loadRoutes(Object(Closure))
+#15 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Routing/RouteRegistrar.php(207): Illuminate/Routing/Router->group(Array, Object(Closure))
+#16 C:/Users/mmdar/Desktop/code/work/CleanUx/routes/api.php(121): Illuminate/Routing/RouteRegistrar->group(Object(Closure))
+#17 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Routing/RouteFileRegistrar.php(35): require('C://Users//mmdar//...')
+#18 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Routing/Router.php(513): Illuminate/Routing/RouteFileRegistrar->register('C://Users//mmdar//...')
+#19 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Routing/Router.php(467): Illuminate/Routing/Router->loadRoutes('C://Users//mmdar//...')
+#20 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Routing/RouteRegistrar.php(207): Illuminate/Routing/Router->group(Array, 'C://Users//mmdar//...')
+#21 C:/Users/mmdar/Desktop/code/work/CleanUx/app/Providers/RouteServiceProvider.php(79): Illuminate/Routing/RouteRegistrar->group('C://Users//mmdar//...')
+#22 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Container/BoundMethod.php(36): App/Providers/RouteServiceProvider->{closure:App/Providers/RouteServiceProvider::boot():76}()
+#23 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Container/Util.php(43): Illuminate/Container/BoundMethod::{closure:Illuminate/Container/BoundMethod::call():35}()
+#24 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Container/BoundMethod.php(83): Illuminate/Container/Util::unwrapIfClosure(Object(Closure))
+#25 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Container/BoundMethod.php(35): Illuminate/Container/BoundMethod::callBoundMethod(Object(Illuminate/Foundation/Application), Object(Closure), Object(Closure))
+#26 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Container/Container.php(696): Illuminate/Container/BoundMethod::call(Object(Illuminate/Foundation/Application), Object(Closure), Array, NULL)
+#27 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Foundation/Support/Providers/RouteServiceProvider.php(166): Illuminate/Container/Container->call(Object(Closure))
+#28 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Foundation/Support/Providers/RouteServiceProvider.php(59): Illuminate/Foundation/Support/Providers/RouteServiceProvider->loadRoutes()
+#29 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Container/BoundMethod.php(36): Illuminate/Foundation/Support/Providers/RouteServiceProvider->{closure:Illuminate/Foundation/Support/Providers/RouteServiceProvider::register():53}()
+#30 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Container/Util.php(43): Illuminate/Container/BoundMethod::{closure:Illuminate/Container/BoundMethod::call():35}()
+#31 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Container/BoundMethod.php(83): Illuminate/Container/Util::unwrapIfClosure(Object(Closure))
+#32 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Container/BoundMethod.php(35): Illuminate/Container/BoundMethod::callBoundMethod(Object(Illuminate/Foundation/Application), Object(Closure), Object(Closure))
+#33 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Container/Container.php(696): Illuminate/Container/BoundMethod::call(Object(Illuminate/Foundation/Application), Object(Closure), Array, NULL)
+#34 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Support/ServiceProvider.php(144): Illuminate/Container/Container->call(Object(Closure))
+#35 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Foundation/Application.php(1154): Illuminate/Support/ServiceProvider->callBootedCallbacks()
+#36 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Foundation/Application.php(1132): Illuminate/Foundation/Application->bootProvider(Object(App/Providers/RouteServiceProvider))
+#37 [internal function]: Illuminate/Foundation/Application->{closure:Illuminate/Foundation/Application::boot():1131}(Object(App/Providers/RouteServiceProvider), 'App//Providers//R...')
+#38 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Foundation/Application.php(1131): array_walk(Array, Object(Closure))
+#39 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Foundation/Bootstrap/BootProviders.php(17): Illuminate/Foundation/Application->boot()
+#40 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Foundation/Application.php(342): Illuminate/Foundation/Bootstrap/BootProviders->bootstrap(Object(Illuminate/Foundation/Application))
+#41 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Foundation/Http/Kernel.php(187): Illuminate/Foundation/Application->bootstrapWith(Array)
+#42 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Foundation/Http/Kernel.php(171): Illuminate/Foundation/Http/Kernel->bootstrap()
+#43 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Foundation/Http/Kernel.php(145): Illuminate/Foundation/Http/Kernel->sendRequestThroughRouter(Object(Illuminate/Http/Request))
+#44 C:/Users/mmdar/Desktop/code/work/CleanUx/public/index.php(51): Illuminate/Foundation/Http/Kernel->handle(Object(Illuminate/Http/Request))
+#45 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Foundation/resources/server.php(23): require_once('C://Users//mmdar//...')
+#46 {main}
+"} 
+[2026-05-26 10:40:45] testing.INFO: InsuranceMockProvider::purchase {"plan_code":"basic","booking_id":1,"premium_cents":400} 
+[2026-05-26 10:40:45] testing.INFO: InsuranceMockProvider::purchase {"plan_code":"basic","booking_id":2,"premium_cents":400} 
+[2026-05-26 10:40:45] testing.INFO: InsuranceMockProvider::purchase {"plan_code":"basic","booking_id":1,"premium_cents":400} 
+[2026-05-26 10:40:52] testing.INFO: PushMockProvider::send {"platform":"ios","token_prefix":"tok_6a1578b4...","title":"Hi","category":"transactional","idempotency_key":null} 
+[2026-05-26 10:40:52] testing.INFO: PushMockProvider::send {"platform":"android","token_prefix":"tok_6a1578b4...","title":"Hi","category":"transactional","idempotency_key":null} 
+[2026-05-26 10:40:55] testing.INFO: [webhooks_v2] event ignored (not whitelisted) {"event_code":"subscription.created"} 
+[2026-05-26 10:46:39] testing.ERROR: boom {"exception":"[object] (RuntimeException(code: 0): boom at C:/Users/mmdar/Desktop/code/work/CleanUx/tests/Feature/Api/ExceptionHandlerJsonTest.php:121)
+[stacktrace]
+#0 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Routing/CallableDispatcher.php(40): Tests/Feature/Api/ExceptionHandlerJsonTest->{closure:Tests/Feature/Api/ExceptionHandlerJsonTest::test_server_error_returns_unified_shape_in_production():120}()
+#1 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Routing/Route.php(244): Illuminate/Routing/CallableDispatcher->dispatch(Object(Illuminate/Routing/Route), Object(Closure))
+#2 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Routing/Route.php(215): Illuminate/Routing/Route->runCallable()
+#3 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Routing/Router.php(808): Illuminate/Routing/Route->run()
+#4 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(170): Illuminate/Routing/Router->{closure:Illuminate/Routing/Router::runRouteWithinStack():807}(Object(Illuminate/Http/Request))
+#5 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(127): Illuminate/Pipeline/Pipeline->{closure:Illuminate/Pipeline/Pipeline::prepareDestination():168}(Object(Illuminate/Http/Request))
+#6 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Routing/Router.php(807): Illuminate/Pipeline/Pipeline->then(Object(Closure))
+#7 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Routing/Router.php(786): Illuminate/Routing/Router->runRouteWithinStack(Object(Illuminate/Routing/Route), Object(Illuminate/Http/Request))
+#8 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Routing/Router.php(750): Illuminate/Routing/Router->runRoute(Object(Illuminate/Http/Request), Object(Illuminate/Routing/Route))
+#9 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Routing/Router.php(739): Illuminate/Routing/Router->dispatchToRoute(Object(Illuminate/Http/Request))
+#10 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Foundation/Http/Kernel.php(201): Illuminate/Routing/Router->dispatch(Object(Illuminate/Http/Request))
+#11 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(170): Illuminate/Foundation/Http/Kernel->{closure:Illuminate/Foundation/Http/Kernel::dispatchToRouter():198}(Object(Illuminate/Http/Request))
+#12 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/livewire/livewire/src/Features/SupportDisablingBackButtonCache/DisableBackButtonCacheMiddleware.php(19): Illuminate/Pipeline/Pipeline->{closure:Illuminate/Pipeline/Pipeline::prepareDestination():168}(Object(Illuminate/Http/Request))
+#13 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(209): Livewire/Features/SupportDisablingBackButtonCache/DisableBackButtonCacheMiddleware->handle(Object(Illuminate/Http/Request), Object(Closure))
+#14 C:/Users/mmdar/Desktop/code/work/CleanUx/app/Http/Middleware/SecurityHeaders.php(18): Illuminate/Pipeline/Pipeline->{closure:{closure:Illuminate/Pipeline/Pipeline::carry():184}:185}(Object(Illuminate/Http/Request))
+#15 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(209): App/Http/Middleware/SecurityHeaders->handle(Object(Illuminate/Http/Request), Object(Closure))
+#16 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/TransformsRequest.php(21): Illuminate/Pipeline/Pipeline->{closure:{closure:Illuminate/Pipeline/Pipeline::carry():184}:185}(Object(Illuminate/Http/Request))
+#17 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/ConvertEmptyStringsToNull.php(31): Illuminate/Foundation/Http/Middleware/TransformsRequest->handle(Object(Illuminate/Http/Request), Object(Closure))
+#18 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(209): Illuminate/Foundation/Http/Middleware/ConvertEmptyStringsToNull->handle(Object(Illuminate/Http/Request), Object(Closure))
+#19 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/TransformsRequest.php(21): Illuminate/Pipeline/Pipeline->{closure:{closure:Illuminate/Pipeline/Pipeline::carry():184}:185}(Object(Illuminate/Http/Request))
+#20 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/TrimStrings.php(51): Illuminate/Foundation/Http/Middleware/TransformsRequest->handle(Object(Illuminate/Http/Request), Object(Closure))
+#21 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(209): Illuminate/Foundation/Http/Middleware/TrimStrings->handle(Object(Illuminate/Http/Request), Object(Closure))
+#22 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Http/Middleware/ValidatePostSize.php(27): Illuminate/Pipeline/Pipeline->{closure:{closure:Illuminate/Pipeline/Pipeline::carry():184}:185}(Object(Illuminate/Http/Request))
+#23 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(209): Illuminate/Http/Middleware/ValidatePostSize->handle(Object(Illuminate/Http/Request), Object(Closure))
+#24 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/PreventRequestsDuringMaintenance.php(110): Illuminate/Pipeline/Pipeline->{closure:{closure:Illuminate/Pipeline/Pipeline::carry():184}:185}(Object(Illuminate/Http/Request))
+#25 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(209): Illuminate/Foundation/Http/Middleware/PreventRequestsDuringMaintenance->handle(Object(Illuminate/Http/Request), Object(Closure))
+#26 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Http/Middleware/HandleCors.php(62): Illuminate/Pipeline/Pipeline->{closure:{closure:Illuminate/Pipeline/Pipeline::carry():184}:185}(Object(Illuminate/Http/Request))
+#27 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(209): Illuminate/Http/Middleware/HandleCors->handle(Object(Illuminate/Http/Request), Object(Closure))
+#28 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Http/Middleware/TrustProxies.php(58): Illuminate/Pipeline/Pipeline->{closure:{closure:Illuminate/Pipeline/Pipeline::carry():184}:185}(Object(Illuminate/Http/Request))
+#29 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(209): Illuminate/Http/Middleware/TrustProxies->handle(Object(Illuminate/Http/Request), Object(Closure))
+#30 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Http/Middleware/TrustHosts.php(79): Illuminate/Pipeline/Pipeline->{closure:{closure:Illuminate/Pipeline/Pipeline::carry():184}:185}(Object(Illuminate/Http/Request))
+#31 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(209): Illuminate/Http/Middleware/TrustHosts->handle(Object(Illuminate/Http/Request), Object(Closure))
+#32 C:/Users/mmdar/Desktop/code/work/CleanUx/app/Http/Middleware/ForceHttps.php(16): Illuminate/Pipeline/Pipeline->{closure:{closure:Illuminate/Pipeline/Pipeline::carry():184}:185}(Object(Illuminate/Http/Request))
+#33 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(209): App/Http/Middleware/ForceHttps->handle(Object(Illuminate/Http/Request), Object(Closure))
+#34 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(127): Illuminate/Pipeline/Pipeline->{closure:{closure:Illuminate/Pipeline/Pipeline::carry():184}:185}(Object(Illuminate/Http/Request))
+#35 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Foundation/Http/Kernel.php(176): Illuminate/Pipeline/Pipeline->then(Object(Closure))
+#36 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Foundation/Http/Kernel.php(145): Illuminate/Foundation/Http/Kernel->sendRequestThroughRouter(Object(Illuminate/Http/Request))
+#37 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Foundation/Testing/Concerns/MakesHttpRequests.php(607): Illuminate/Foundation/Http/Kernel->handle(Object(Illuminate/Http/Request))
+#38 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Foundation/Testing/Concerns/MakesHttpRequests.php(573): Illuminate/Foundation/Testing/TestCase->call('GET', '/api/test-boom', Array, Array, Array, Array, '[]')
+#39 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Foundation/Testing/Concerns/MakesHttpRequests.php(381): Illuminate/Foundation/Testing/TestCase->json('GET', '/api/test-boom', Array, Array, 0)
+#40 C:/Users/mmdar/Desktop/code/work/CleanUx/tests/Feature/Api/ExceptionHandlerJsonTest.php(124): Illuminate/Foundation/Testing/TestCase->getJson('/api/test-boom')
+#41 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/phpunit/phpunit/src/Framework/TestCase.php(1667): Tests/Feature/Api/ExceptionHandlerJsonTest->test_server_error_returns_unified_shape_in_production()
+#42 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/phpunit/phpunit/src/Framework/TestCase.php(519): PHPUnit/Framework/TestCase->runTest()
+#43 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/phpunit/phpunit/src/Framework/TestRunner/TestRunner.php(87): PHPUnit/Framework/TestCase->runBare()
+#44 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/phpunit/phpunit/src/Framework/TestCase.php(365): PHPUnit/Framework/TestRunner->run(Object(Tests/Feature/Api/ExceptionHandlerJsonTest))
+#45 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/phpunit/phpunit/src/Framework/TestSuite.php(369): PHPUnit/Framework/TestCase->run()
+#46 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/phpunit/phpunit/src/Framework/TestSuite.php(369): PHPUnit/Framework/TestSuite->run()
+#47 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/phpunit/phpunit/src/Framework/TestSuite.php(369): PHPUnit/Framework/TestSuite->run()
+#48 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/phpunit/phpunit/src/TextUI/TestRunner.php(64): PHPUnit/Framework/TestSuite->run()
+#49 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/phpunit/phpunit/src/TextUI/Application.php(211): PHPUnit/TextUI/TestRunner->run(Object(PHPUnit/TextUI/Configuration/Configuration), Object(PHPUnit/Runner/ResultCache/DefaultResultCache), Object(PHPUnit/Framework/TestSuite))
+#50 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/phpunit/phpunit/phpunit(104): PHPUnit/TextUI/Application->run(Array)
+#51 {main}
+"} 
+[2026-05-26 10:46:43] testing.WARNING: AnthropicProvider non-2xx {"status":400,"body":{"error":{"type":"invalid_request_error","message":"Bad model name"}}} 
+[2026-05-26 10:48:44] testing.WARNING: AiDispatch: aucun prestataire tagué pour le métier requis, fallback ouvert. {"booking_id":1,"required_trade_id":1,"open_candidates":2} 
+[2026-05-26 10:48:52] testing.INFO: [email_v2] rate limit hit {"to":"limit@test.com"} 
+[2026-05-26 10:49:33] testing.WARNING: FxService: all providers failed, using 1:1 fallback {"base":"EUR","quotes":["FAIL"]} 
+[2026-05-26 10:49:49] testing.INFO: InsuranceMockProvider::purchase {"plan_code":"standard","booking_id":1,"premium_cents":900} 
+[2026-05-26 10:49:49] testing.INFO: InsuranceMockProvider::purchase {"plan_code":"basic","booking_id":1,"premium_cents":400} 
+[2026-05-26 10:49:49] testing.INFO: InsuranceMockProvider::purchase {"plan_code":"basic","booking_id":2,"premium_cents":400} 
+[2026-05-26 10:49:49] testing.INFO: InsuranceMockProvider::purchase {"plan_code":"basic","booking_id":1,"premium_cents":400} 
+[2026-05-26 10:49:50] testing.INFO: InsuranceMockProvider::purchase {"plan_code":"basic","booking_id":1,"premium_cents":400} 
+[2026-05-26 10:49:50] testing.INFO: InsuranceMockProvider::cancelPolicy {"external_id":"mock_pol_5gengvq7jtjc"} 
+[2026-05-26 10:49:50] testing.INFO: InsuranceMockProvider::purchase {"plan_code":"standard","booking_id":1,"premium_cents":900} 
+[2026-05-26 10:49:50] testing.INFO: InsuranceMockProvider::fileClaim {"policy":"mock_pol_9e96xx4oqxcd","incident_type":"damage","amount":40000} 
+[2026-05-26 10:49:50] testing.INFO: InsuranceMockProvider::purchase {"plan_code":"standard","booking_id":1,"premium_cents":900} 
+[2026-05-26 10:49:52] testing.INFO: InsuranceMockProvider::purchase {"plan_code":"basic","booking_id":1,"premium_cents":400} 
+[2026-05-26 10:49:52] testing.INFO: InsuranceMockProvider::purchase {"plan_code":"basic","booking_id":1,"premium_cents":400} 
+[2026-05-26 10:49:52] testing.INFO: InsuranceMockProvider::purchase {"plan_code":"fail_plan","booking_id":1,"premium_cents":100} 
+[2026-05-26 10:49:52] testing.INFO: InsuranceMockProvider::purchase {"plan_code":"basic","booking_id":1,"premium_cents":400} 
+[2026-05-26 10:49:52] testing.INFO: InsuranceMockProvider::cancelPolicy {"external_id":"mock_pol_dkofcstzt4yv"} 
+[2026-05-26 10:49:53] testing.INFO: InsuranceMockProvider::purchase {"plan_code":"standard","booking_id":1,"premium_cents":900} 
+[2026-05-26 10:49:53] testing.INFO: InsuranceMockProvider::fileClaim {"policy":"mock_pol_evdvufzqcsic","incident_type":"damage","amount":40000} 
+[2026-05-26 10:49:53] testing.INFO: InsuranceMockProvider::purchase {"plan_code":"basic","booking_id":1,"premium_cents":400} 
+[2026-05-26 10:49:53] testing.INFO: InsuranceMockProvider::purchase {"plan_code":"standard","booking_id":1,"premium_cents":900} 
+[2026-05-26 10:49:53] testing.INFO: InsuranceMockProvider::purchase {"plan_code":"standard","booking_id":1,"premium_cents":900} 
+[2026-05-26 10:49:53] testing.INFO: InsuranceMockProvider::fileClaim {"policy":"mock_pol_0yh7cebfgpwg","incident_type":"fraud_simulation","amount":10000} 
+[2026-05-26 10:49:53] testing.INFO: InsuranceMockProvider::purchase {"plan_code":"standard","booking_id":1,"premium_cents":900} 
+[2026-05-26 10:49:53] testing.INFO: InsuranceMockProvider::fileClaim {"policy":"mock_pol_5uhp4h0bpji6","incident_type":"damage","amount":40000} 
+[2026-05-26 10:49:54] testing.INFO: InsuranceMockProvider::purchase {"plan_code":"basic","booking_id":1,"premium_cents":400} 
+[2026-05-26 10:49:54] testing.INFO: InsuranceMockProvider::purchase {"plan_code":"basic","booking_id":1,"premium_cents":300} 
+[2026-05-26 10:49:57] testing.INFO: [webhooks_v2] event ignored (not whitelisted) {"event_code":"subscription.created"} 
+[2026-05-26 10:49:58] testing.INFO: [webhooks_v2] event ignored (not whitelisted) {"event_code":"booking.created"} 
+[2026-05-26 10:49:58] testing.INFO: [webhooks_v2] event ignored (not whitelisted) {"event_code":"booking.created"} 
+[2026-05-26 10:49:59] testing.INFO: [webhooks_v2] event ignored (not whitelisted) {"event_code":"booking.created"} 
+[2026-05-26 10:49:59] testing.INFO: [webhooks_v2] event ignored (not whitelisted) {"event_code":"payment.unauthorized"} 
+[2026-05-26 10:50:00] testing.INFO: [subscriptions_v2] auto-cancelled after consecutive failures {"subscription_id":1,"failures":3} 
+[2026-05-26 10:50:17] testing.WARNING: Money: pas de taux disponible EUR → XYZ  
+[2026-05-26 10:50:18] testing.WARNING: [loyalty_redemption] voucher email failed {"redemption_id":1,"error":"Champ to_email requis."} 
+[2026-05-26 10:50:19] testing.WARNING: [loyalty_redemption] voucher email failed {"redemption_id":1,"error":"Champ to_email requis."} 
+[2026-05-26 10:50:19] testing.WARNING: [loyalty_redemption] voucher email failed {"redemption_id":1,"error":"Champ to_email requis."} 
+[2026-05-26 10:50:22] testing.INFO: Marketing email send {"to":"laurent19@example.net","subject":"Hi"} 
+[2026-05-26 10:50:56] testing.WARNING: StripeConnectWebhook: signature invalide {"error":"Unable to extract timestamp and signatures from header"} 
+[2026-05-26 10:50:56] testing.WARNING: StripeConnectWebhook: STRIPE_CONNECT_WEBHOOK_SECRET non configuré  
+[2026-05-26 10:50:57] testing.INFO: StripeConnectWebhook: stored + dispatched {"event_id":1,"stripe_event_id":"evt_test_valid","type":"payment_intent.succeeded"} 
+[2026-05-26 10:50:57] testing.INFO: StripeConnectWebhook: stored + dispatched {"event_id":1,"stripe_event_id":"evt_test_replay","type":"payment_intent.succeeded"} 
+[2026-05-26 10:50:57] testing.INFO: StripeConnectWebhook: replay détecté, skip dispatch {"event_id":1,"stripe_event_id":"evt_test_replay","status":"processed"} 
+[2026-05-26 10:50:59] testing.WARNING: StripeConnectWebhook: STRIPE_CONNECT_WEBHOOK_SECRET non configuré  
+[2026-05-26 10:51:01] testing.INFO: Provider auto-offline (stale heartbeat) {"provider_user_id":1,"last_heartbeat_at":"2026-05-26T10:41:01+00:00"} 
+[2026-05-26 10:51:02] testing.INFO: MissionDispatchService: offre créée {"assignment_id":1,"mission_id":2,"provider_id":1,"expires_at":"2026-05-26T10:51:17+00:00"} 
+[2026-05-26 10:51:02] testing.INFO: MissionDispatchService: offre créée {"assignment_id":1,"mission_id":2,"provider_id":1,"expires_at":"2026-05-26T10:51:17+00:00"} 
+[2026-05-26 10:51:02] testing.INFO: MissionDispatchService: assignment accepté {"assignment_id":1,"response_seconds":0} 
+[2026-05-26 10:51:02] testing.INFO: MissionDispatchService: offre créée {"assignment_id":1,"mission_id":2,"provider_id":1,"expires_at":"2026-05-26T10:51:17+00:00"} 
+[2026-05-26 10:51:02] testing.INFO: MissionDispatchService: offre créée {"assignment_id":2,"mission_id":2,"provider_id":2,"expires_at":"2026-05-26T10:51:17+00:00"} 
+[2026-05-26 10:51:02] testing.INFO: MissionDispatchService: assignment accepté {"assignment_id":1,"response_seconds":0} 
+[2026-05-26 10:51:02] testing.INFO: MissionDispatchService: offre créée {"assignment_id":1,"mission_id":2,"provider_id":1,"expires_at":"2026-05-26T10:51:17+00:00"} 
+[2026-05-26 10:51:02] testing.INFO: MissionDispatchService: assignment refusé {"assignment_id":1,"reason":"too far","response_seconds":0} 
+[2026-05-26 10:51:02] testing.INFO: MissionDispatchService: aucun candidat trouvé {"mission_id":2} 
+[2026-05-26 10:51:02] testing.INFO: MissionDispatchService: offre créée {"assignment_id":1,"mission_id":2,"provider_id":1,"expires_at":"2026-05-26T10:51:17+00:00"} 
+[2026-05-26 10:51:03] testing.INFO: MissionDispatchService: offre créée {"assignment_id":1,"mission_id":2,"provider_id":1,"expires_at":"2026-05-26T10:51:18+00:00"} 
+[2026-05-26 10:51:03] testing.INFO: MissionDispatchService: assignment accepté {"assignment_id":1,"response_seconds":0} 
+[2026-05-26 10:51:03] testing.INFO: MissionDispatchService: offre créée {"assignment_id":1,"mission_id":2,"provider_id":1,"expires_at":"2026-05-26T10:51:18+00:00"} 
+[2026-05-26 10:51:03] testing.INFO: MissionDispatchService: assignment accepté {"assignment_id":1,"response_seconds":0} 
+[2026-05-26 10:51:09] testing.WARNING: StripeConnectWebhook: signature invalide {"error":"Unable to extract timestamp and signatures from header"} 
+[2026-05-26 10:51:09] testing.WARNING: StripeConnectWebhook: STRIPE_CONNECT_WEBHOOK_SECRET non configuré  
+[2026-05-26 10:51:13] testing.INFO: CancelBookingService: client cancellation {"booking_id":1,"fee_amount":50.0,"reason":"tier_2"} 
+[2026-05-26 10:51:43] testing.ERROR: boom {"exception":"[object] (RuntimeException(code: 0): boom at C:/Users/mmdar/Desktop/code/work/CleanUx/tests/Feature/Api/ExceptionHandlerJsonTest.php:121)
+[stacktrace]
+#0 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Routing/CallableDispatcher.php(40): Tests/Feature/Api/ExceptionHandlerJsonTest->{closure:Tests/Feature/Api/ExceptionHandlerJsonTest::test_server_error_returns_unified_shape_in_production():120}()
+#1 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Routing/Route.php(244): Illuminate/Routing/CallableDispatcher->dispatch(Object(Illuminate/Routing/Route), Object(Closure))
+#2 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Routing/Route.php(215): Illuminate/Routing/Route->runCallable()
+#3 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Routing/Router.php(808): Illuminate/Routing/Route->run()
+#4 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(170): Illuminate/Routing/Router->{closure:Illuminate/Routing/Router::runRouteWithinStack():807}(Object(Illuminate/Http/Request))
+#5 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(127): Illuminate/Pipeline/Pipeline->{closure:Illuminate/Pipeline/Pipeline::prepareDestination():168}(Object(Illuminate/Http/Request))
+#6 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Routing/Router.php(807): Illuminate/Pipeline/Pipeline->then(Object(Closure))
+#7 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Routing/Router.php(786): Illuminate/Routing/Router->runRouteWithinStack(Object(Illuminate/Routing/Route), Object(Illuminate/Http/Request))
+#8 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Routing/Router.php(750): Illuminate/Routing/Router->runRoute(Object(Illuminate/Http/Request), Object(Illuminate/Routing/Route))
+#9 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Routing/Router.php(739): Illuminate/Routing/Router->dispatchToRoute(Object(Illuminate/Http/Request))
+#10 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Foundation/Http/Kernel.php(201): Illuminate/Routing/Router->dispatch(Object(Illuminate/Http/Request))
+#11 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(170): Illuminate/Foundation/Http/Kernel->{closure:Illuminate/Foundation/Http/Kernel::dispatchToRouter():198}(Object(Illuminate/Http/Request))
+#12 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/livewire/livewire/src/Features/SupportDisablingBackButtonCache/DisableBackButtonCacheMiddleware.php(19): Illuminate/Pipeline/Pipeline->{closure:Illuminate/Pipeline/Pipeline::prepareDestination():168}(Object(Illuminate/Http/Request))
+#13 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(209): Livewire/Features/SupportDisablingBackButtonCache/DisableBackButtonCacheMiddleware->handle(Object(Illuminate/Http/Request), Object(Closure))
+#14 C:/Users/mmdar/Desktop/code/work/CleanUx/app/Http/Middleware/SecurityHeaders.php(18): Illuminate/Pipeline/Pipeline->{closure:{closure:Illuminate/Pipeline/Pipeline::carry():184}:185}(Object(Illuminate/Http/Request))
+#15 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(209): App/Http/Middleware/SecurityHeaders->handle(Object(Illuminate/Http/Request), Object(Closure))
+#16 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/TransformsRequest.php(21): Illuminate/Pipeline/Pipeline->{closure:{closure:Illuminate/Pipeline/Pipeline::carry():184}:185}(Object(Illuminate/Http/Request))
+#17 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/ConvertEmptyStringsToNull.php(31): Illuminate/Foundation/Http/Middleware/TransformsRequest->handle(Object(Illuminate/Http/Request), Object(Closure))
+#18 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(209): Illuminate/Foundation/Http/Middleware/ConvertEmptyStringsToNull->handle(Object(Illuminate/Http/Request), Object(Closure))
+#19 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/TransformsRequest.php(21): Illuminate/Pipeline/Pipeline->{closure:{closure:Illuminate/Pipeline/Pipeline::carry():184}:185}(Object(Illuminate/Http/Request))
+#20 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/TrimStrings.php(51): Illuminate/Foundation/Http/Middleware/TransformsRequest->handle(Object(Illuminate/Http/Request), Object(Closure))
+#21 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(209): Illuminate/Foundation/Http/Middleware/TrimStrings->handle(Object(Illuminate/Http/Request), Object(Closure))
+#22 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Http/Middleware/ValidatePostSize.php(27): Illuminate/Pipeline/Pipeline->{closure:{closure:Illuminate/Pipeline/Pipeline::carry():184}:185}(Object(Illuminate/Http/Request))
+#23 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(209): Illuminate/Http/Middleware/ValidatePostSize->handle(Object(Illuminate/Http/Request), Object(Closure))
+#24 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/PreventRequestsDuringMaintenance.php(110): Illuminate/Pipeline/Pipeline->{closure:{closure:Illuminate/Pipeline/Pipeline::carry():184}:185}(Object(Illuminate/Http/Request))
+#25 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(209): Illuminate/Foundation/Http/Middleware/PreventRequestsDuringMaintenance->handle(Object(Illuminate/Http/Request), Object(Closure))
+#26 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Http/Middleware/HandleCors.php(62): Illuminate/Pipeline/Pipeline->{closure:{closure:Illuminate/Pipeline/Pipeline::carry():184}:185}(Object(Illuminate/Http/Request))
+#27 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(209): Illuminate/Http/Middleware/HandleCors->handle(Object(Illuminate/Http/Request), Object(Closure))
+#28 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Http/Middleware/TrustProxies.php(58): Illuminate/Pipeline/Pipeline->{closure:{closure:Illuminate/Pipeline/Pipeline::carry():184}:185}(Object(Illuminate/Http/Request))
+#29 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(209): Illuminate/Http/Middleware/TrustProxies->handle(Object(Illuminate/Http/Request), Object(Closure))
+#30 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Http/Middleware/TrustHosts.php(79): Illuminate/Pipeline/Pipeline->{closure:{closure:Illuminate/Pipeline/Pipeline::carry():184}:185}(Object(Illuminate/Http/Request))
+#31 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(209): Illuminate/Http/Middleware/TrustHosts->handle(Object(Illuminate/Http/Request), Object(Closure))
+#32 C:/Users/mmdar/Desktop/code/work/CleanUx/app/Http/Middleware/ForceHttps.php(16): Illuminate/Pipeline/Pipeline->{closure:{closure:Illuminate/Pipeline/Pipeline::carry():184}:185}(Object(Illuminate/Http/Request))
+#33 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(209): App/Http/Middleware/ForceHttps->handle(Object(Illuminate/Http/Request), Object(Closure))
+#34 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(127): Illuminate/Pipeline/Pipeline->{closure:{closure:Illuminate/Pipeline/Pipeline::carry():184}:185}(Object(Illuminate/Http/Request))
+#35 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Foundation/Http/Kernel.php(176): Illuminate/Pipeline/Pipeline->then(Object(Closure))
+#36 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Foundation/Http/Kernel.php(145): Illuminate/Foundation/Http/Kernel->sendRequestThroughRouter(Object(Illuminate/Http/Request))
+#37 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Foundation/Testing/Concerns/MakesHttpRequests.php(607): Illuminate/Foundation/Http/Kernel->handle(Object(Illuminate/Http/Request))
+#38 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Foundation/Testing/Concerns/MakesHttpRequests.php(573): Illuminate/Foundation/Testing/TestCase->call('GET', '/api/test-boom', Array, Array, Array, Array, '[]')
+#39 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Foundation/Testing/Concerns/MakesHttpRequests.php(381): Illuminate/Foundation/Testing/TestCase->json('GET', '/api/test-boom', Array, Array, 0)
+#40 C:/Users/mmdar/Desktop/code/work/CleanUx/tests/Feature/Api/ExceptionHandlerJsonTest.php(124): Illuminate/Foundation/Testing/TestCase->getJson('/api/test-boom')
+#41 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/phpunit/phpunit/src/Framework/TestCase.php(1667): Tests/Feature/Api/ExceptionHandlerJsonTest->test_server_error_returns_unified_shape_in_production()
+#42 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/phpunit/phpunit/src/Framework/TestCase.php(519): PHPUnit/Framework/TestCase->runTest()
+#43 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/phpunit/phpunit/src/Framework/TestRunner/TestRunner.php(87): PHPUnit/Framework/TestCase->runBare()
+#44 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/phpunit/phpunit/src/Framework/TestCase.php(365): PHPUnit/Framework/TestRunner->run(Object(Tests/Feature/Api/ExceptionHandlerJsonTest))
+#45 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/phpunit/phpunit/src/Framework/TestSuite.php(369): PHPUnit/Framework/TestCase->run()
+#46 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/phpunit/phpunit/src/Framework/TestSuite.php(369): PHPUnit/Framework/TestSuite->run()
+#47 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/phpunit/phpunit/src/Framework/TestSuite.php(369): PHPUnit/Framework/TestSuite->run()
+#48 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/phpunit/phpunit/src/TextUI/TestRunner.php(64): PHPUnit/Framework/TestSuite->run()
+#49 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/phpunit/phpunit/src/TextUI/Application.php(211): PHPUnit/TextUI/TestRunner->run(Object(PHPUnit/TextUI/Configuration/Configuration), Object(PHPUnit/Runner/ResultCache/DefaultResultCache), Object(PHPUnit/Framework/TestSuite))
+#50 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/phpunit/phpunit/phpunit(104): PHPUnit/TextUI/Application->run(Array)
+#51 {main}
+"} 
+[2026-05-26 10:51:48] testing.WARNING: AnthropicProvider non-2xx {"status":400,"body":{"error":{"type":"invalid_request_error","message":"Bad model name"}}} 
+[2026-05-26 10:51:54] testing.INFO: PushMockProvider::send {"platform":"ios","token_prefix":"tok_chan_001...","title":"Booking confirmé","category":"transactional","idempotency_key":"booking-confirmed:42:1:dev0"} 
+[2026-05-26 10:51:54] testing.INFO: PushMockProvider::send {"platform":"android","token_prefix":"tok_6a157b4a...","title":"Hello","category":"transactional","idempotency_key":null} 
+[2026-05-26 10:51:54] testing.INFO: PushMockProvider::send {"platform":"android","token_prefix":"tok_6a157b4a...","title":"A","category":"transactional","idempotency_key":"test:idem:001"} 
+[2026-05-26 10:51:55] testing.INFO: PushMockProvider::send {"platform":"android","token_prefix":"invalid_toke...","title":"t","category":"transactional","idempotency_key":null} 
+[2026-05-26 10:51:55] testing.INFO: PushMockProvider::send {"platform":"android","token_prefix":"fail_token_a...","title":"t","category":"transactional","idempotency_key":null} 
+[2026-05-26 10:51:55] testing.INFO: PushMockProvider::send {"platform":"android","token_prefix":"tok_6a157b4b...","title":"t","category":"transactional","idempotency_key":null} 
+[2026-05-26 10:51:55] testing.INFO: PushMockProvider::send {"platform":"android","token_prefix":"tok_6a157b4b...","title":"t","category":"transactional","idempotency_key":null} 
+[2026-05-26 10:51:56] testing.INFO: PushMockProvider::send {"platform":"ios","token_prefix":"tok_6a157b4c...","title":"Hi","category":"transactional","idempotency_key":null} 
+[2026-05-26 10:51:56] testing.INFO: PushMockProvider::send {"platform":"android","token_prefix":"tok_6a157b4c...","title":"Hi","category":"transactional","idempotency_key":null} 
+[2026-05-26 10:52:12] testing.WARNING: StripeConnectWebhook: signature invalide {"error":"Unable to extract timestamp and signatures from header"} 
+[2026-05-26 10:52:12] testing.WARNING: StripeConnectWebhook: STRIPE_CONNECT_WEBHOOK_SECRET non configuré  
+[2026-05-26 10:52:13] testing.INFO: MissionDispatchService: offre créée {"assignment_id":1,"mission_id":1,"provider_id":1,"expires_at":"2026-05-26T10:52:28+00:00"} 
+[2026-05-26 10:52:13] testing.INFO: MissionDispatchService: assignment accepté {"assignment_id":1,"response_seconds":0} 
+[2026-05-26 10:52:31] testing.WARNING: [webhooks_v2] delivery dead-lettered {"delivery_id":1,"endpoint_id":1,"endpoint_url":"https://example.com/hook","event_code":"booking.created","event_id":"evt_6a157b6f26597","attempts":5} 
+[2026-05-26 10:52:31] testing.INFO: SmsMockProvider::send {"to":"+32412345678","body":"CleanUx : votre code est 979702. Valide 10 min.","idempotency_key":"otp:1"} 
+[2026-05-26 10:52:32] testing.INFO: SmsMockProvider::send {"to":"+32412345678","body":"CleanUx : votre code est 028943. Valide 10 min.","idempotency_key":"otp:1"} 
+[2026-05-26 10:52:33] testing.INFO: SmsMockProvider::send {"to":"+32412345678","body":"CleanUx : votre code est 318849. Valide 10 min.","idempotency_key":"otp:1"} 
+[2026-05-26 10:52:34] testing.INFO: SmsMockProvider::send {"to":"+32412345678","body":"Bonjour, ceci est un test.","idempotency_key":null} 
+[2026-05-26 10:52:34] testing.WARNING: SmsService::dispatch invalid phone format {"phone":"0412345678"} 
+[2026-05-26 10:52:34] testing.INFO: SmsMockProvider::send {"to":"+32412345678","body":"normalize me","idempotency_key":null} 
+[2026-05-26 10:52:35] testing.INFO: SmsMockProvider::send {"to":"+32412345678","body":"msg 1","idempotency_key":"test:idempotent:001"} 
+[2026-05-26 10:52:35] testing.INFO: SmsMockProvider::send {"to":"failtest","body":"auto fail","idempotency_key":null} 
+[2026-05-26 10:52:35] testing.INFO: SmsMockProvider::send {"to":"+32412345678","body":"1","idempotency_key":null} 
+[2026-05-26 10:52:35] testing.INFO: SmsMockProvider::send {"to":"+32412345678","body":"2","idempotency_key":null} 
+[2026-05-26 10:52:35] testing.INFO: SmsMockProvider::send {"to":"+32412345678","body":"will be delivered","idempotency_key":null} 
+[2026-05-26 10:52:36] testing.INFO: SmsMockProvider::send {"to":"+32412345678","body":"pending dlr","idempotency_key":null} 
+[2026-05-26 10:52:37] testing.INFO: [webhooks_v2] event ignored (not whitelisted) {"event_code":"subscription.created"} 
+[2026-05-26 10:52:37] testing.INFO: [webhooks_v2] event ignored (not whitelisted) {"event_code":"subscription.created"} 
+[2026-05-26 10:52:38] testing.INFO: [webhooks_v2] event ignored (not whitelisted) {"event_code":"subscription.created"} 
+[2026-05-26 10:52:38] testing.INFO: [webhooks_v2] event ignored (not whitelisted) {"event_code":"subscription.created"} 
+[2026-05-26 10:52:38] testing.INFO: [subscriptions_v2] auto-cancelled after consecutive failures {"subscription_id":1,"failures":3} 
+[2026-05-26 10:52:38] testing.INFO: [webhooks_v2] event ignored (not whitelisted) {"event_code":"subscription.created"} 
+[2026-05-26 10:52:38] testing.INFO: [webhooks_v2] event ignored (not whitelisted) {"event_code":"subscription.created"} 
+[2026-05-26 10:52:38] testing.INFO: [webhooks_v2] event ignored (not whitelisted) {"event_code":"subscription.created"} 
+[2026-05-26 10:52:39] testing.INFO: [webhooks_v2] event ignored (not whitelisted) {"event_code":"subscription.created"} 
+[2026-05-26 10:52:39] testing.INFO: [webhooks_v2] event ignored (not whitelisted) {"event_code":"subscription.created"} 
+[2026-05-26 10:52:39] testing.INFO: [webhooks_v2] event ignored (not whitelisted) {"event_code":"subscription.created"} 
+[2026-05-26 10:52:39] testing.INFO: [webhooks_v2] event ignored (not whitelisted) {"event_code":"subscription.created"} 
+[2026-05-26 10:52:40] testing.INFO: [webhooks_v2] event ignored (not whitelisted) {"event_code":"subscription.created"} 
+[2026-05-26 10:52:40] testing.INFO: [webhooks_v2] event ignored (not whitelisted) {"event_code":"subscription.cancelled"} 
+[2026-05-26 10:52:40] testing.INFO: [webhooks_v2] event ignored (not whitelisted) {"event_code":"subscription.created"} 
+[2026-05-26 10:52:40] testing.INFO: [webhooks_v2] event ignored (not whitelisted) {"event_code":"subscription.cancelled"} 
+[2026-05-26 10:52:40] testing.INFO: [webhooks_v2] event ignored (not whitelisted) {"event_code":"subscription.created"} 
+[2026-05-26 10:52:40] testing.INFO: [webhooks_v2] event ignored (not whitelisted) {"event_code":"subscription.created"} 
+[2026-05-26 10:52:41] testing.INFO: [webhooks_v2] event ignored (not whitelisted) {"event_code":"subscription.created"} 
+[2026-05-26 10:52:41] testing.INFO: [webhooks_v2] event ignored (not whitelisted) {"event_code":"subscription.created"} 
+[2026-05-26 10:52:41] testing.INFO: [webhooks_v2] event ignored (not whitelisted) {"event_code":"subscription.created"} 
+[2026-05-26 10:52:41] testing.INFO: [webhooks_v2] event ignored (not whitelisted) {"event_code":"subscription.created"} 
+[2026-05-26 10:52:41] testing.INFO: [webhooks_v2] event ignored (not whitelisted) {"event_code":"subscription.cancelled"} 
+[2026-05-26 10:52:42] testing.INFO: [webhooks_v2] event ignored (not whitelisted) {"event_code":"subscription.created"} 
+[2026-05-26 10:52:42] testing.INFO: [webhooks_v2] event ignored (not whitelisted) {"event_code":"subscription.created"} 
+[2026-05-26 10:52:42] testing.INFO: [webhooks_v2] event ignored (not whitelisted) {"event_code":"subscription.created"} 
+[2026-05-26 10:52:42] testing.INFO: [webhooks_v2] event ignored (not whitelisted) {"event_code":"subscription.created"} 
+[2026-05-26 10:52:42] testing.INFO: [webhooks_v2] event ignored (not whitelisted) {"event_code":"subscription.created"} 
+[2026-05-26 10:52:42] testing.INFO: [webhooks_v2] event ignored (not whitelisted) {"event_code":"subscription.created"} 
+[2026-05-26 10:52:43] testing.INFO: [webhooks_v2] event ignored (not whitelisted) {"event_code":"subscription.created"} 
+[2026-05-26 10:53:00] testing.INFO: [webhooks_v2] event ignored (not whitelisted) {"event_code":"tracking.started"} 
+[2026-05-26 10:53:00] testing.INFO: [webhooks_v2] event ignored (not whitelisted) {"event_code":"tracking.started"} 
+[2026-05-26 10:53:00] testing.INFO: [webhooks_v2] event ignored (not whitelisted) {"event_code":"tracking.started"} 
+[2026-05-26 10:53:00] testing.WARNING: [trip_tracking] broadcast failed {"session_id":1,"error":"App\\Events\\Realtime\\MissionLivePosition::__construct(): Argument #1 ($mission) must be of type App\\Models\\Mission, App\\Models\\Booking given, called in C:\\Users\\mmdar\\Desktop\\code\\work\\CleanUx\\app\\Services\\TripTracking\\TripTrackingService.php on line 282"} 
+[2026-05-26 10:53:00] testing.WARNING: [trip_tracking] broadcast failed {"session_id":1,"error":"App\\Events\\Realtime\\MissionLivePosition::__construct(): Argument #1 ($mission) must be of type App\\Models\\Mission, App\\Models\\Booking given, called in C:\\Users\\mmdar\\Desktop\\code\\work\\CleanUx\\app\\Services\\TripTracking\\TripTrackingService.php on line 282"} 
+[2026-05-26 10:53:00] testing.INFO: [webhooks_v2] event ignored (not whitelisted) {"event_code":"tracking.started"} 
+[2026-05-26 10:53:00] testing.WARNING: [trip_tracking] broadcast failed {"session_id":1,"error":"App\\Events\\Realtime\\MissionLivePosition::__construct(): Argument #1 ($mission) must be of type App\\Models\\Mission, App\\Models\\Booking given, called in C:\\Users\\mmdar\\Desktop\\code\\work\\CleanUx\\app\\Services\\TripTracking\\TripTrackingService.php on line 282"} 
+[2026-05-26 10:53:01] testing.INFO: [webhooks_v2] event ignored (not whitelisted) {"event_code":"tracking.started"} 
+[2026-05-26 10:53:01] testing.WARNING: [trip_tracking] broadcast failed {"session_id":1,"error":"App\\Events\\Realtime\\MissionLivePosition::__construct(): Argument #1 ($mission) must be of type App\\Models\\Mission, App\\Models\\Booking given, called in C:\\Users\\mmdar\\Desktop\\code\\work\\CleanUx\\app\\Services\\TripTracking\\TripTrackingService.php on line 282"} 
+[2026-05-26 10:53:01] testing.INFO: [webhooks_v2] event ignored (not whitelisted) {"event_code":"tracking.arrived"} 
+[2026-05-26 10:53:01] testing.WARNING: [trip_tracking] broadcast failed {"session_id":1,"error":"App\\Events\\Realtime\\MissionLivePosition::__construct(): Argument #1 ($mission) must be of type App\\Models\\Mission, App\\Models\\Booking given, called in C:\\Users\\mmdar\\Desktop\\code\\work\\CleanUx\\app\\Services\\TripTracking\\TripTrackingService.php on line 282"} 
+[2026-05-26 10:53:01] testing.INFO: [webhooks_v2] event ignored (not whitelisted) {"event_code":"tracking.started"} 
+[2026-05-26 10:53:01] testing.INFO: [webhooks_v2] event ignored (not whitelisted) {"event_code":"tracking.arrived"} 
+[2026-05-26 10:53:01] testing.WARNING: [trip_tracking] broadcast failed {"session_id":1,"error":"App\\Events\\Realtime\\MissionLivePosition::__construct(): Argument #1 ($mission) must be of type App\\Models\\Mission, App\\Models\\Booking given, called in C:\\Users\\mmdar\\Desktop\\code\\work\\CleanUx\\app\\Services\\TripTracking\\TripTrackingService.php on line 282"} 
+[2026-05-26 10:53:01] testing.INFO: [webhooks_v2] event ignored (not whitelisted) {"event_code":"tracking.in_mission"} 
+[2026-05-26 10:53:01] testing.INFO: [webhooks_v2] event ignored (not whitelisted) {"event_code":"tracking.started"} 
+[2026-05-26 10:53:01] testing.INFO: [webhooks_v2] event ignored (not whitelisted) {"event_code":"tracking.ended"} 
+[2026-05-26 10:53:01] testing.INFO: [webhooks_v2] event ignored (not whitelisted) {"event_code":"tracking.started"} 
+[2026-05-26 10:53:01] testing.INFO: [webhooks_v2] event ignored (not whitelisted) {"event_code":"tracking.ended"} 
+[2026-05-26 10:53:01] testing.INFO: [webhooks_v2] event ignored (not whitelisted) {"event_code":"tracking.started"} 
+[2026-05-26 10:53:01] testing.INFO: [webhooks_v2] event ignored (not whitelisted) {"event_code":"tracking.ended"} 
+[2026-05-26 10:53:01] testing.INFO: [webhooks_v2] event ignored (not whitelisted) {"event_code":"tracking.started"} 
+[2026-05-26 10:53:02] testing.INFO: [webhooks_v2] event ignored (not whitelisted) {"event_code":"tracking.started"} 
+[2026-05-26 10:53:02] testing.WARNING: [trip_tracking] broadcast failed {"session_id":1,"error":"App\\Events\\Realtime\\MissionLivePosition::__construct(): Argument #1 ($mission) must be of type App\\Models\\Mission, App\\Models\\Booking given, called in C:\\Users\\mmdar\\Desktop\\code\\work\\CleanUx\\app\\Services\\TripTracking\\TripTrackingService.php on line 282"} 
+[2026-05-26 10:53:12] testing.INFO: [webhooks_v2] event ignored (not whitelisted) {"event_code":"forbidden.event"} 
+[2026-05-26 10:53:24] testing.WARNING: AiDispatch: aucun prestataire tagué pour le métier requis, fallback ouvert. {"booking_id":1,"required_trade_id":1,"open_candidates":2} 
+[2026-05-26 10:53:32] testing.INFO: [email_v2] rate limit hit {"to":"limit@test.com"} 
+[2026-05-26 10:53:55] testing.WARNING: FxService: all providers failed, using 1:1 fallback {"base":"EUR","quotes":["FAIL"]} 
+[2026-05-26 10:54:10] testing.INFO: InsuranceMockProvider::purchase {"plan_code":"standard","booking_id":1,"premium_cents":900} 
+[2026-05-26 10:54:11] testing.INFO: InsuranceMockProvider::purchase {"plan_code":"basic","booking_id":1,"premium_cents":400} 
+[2026-05-26 10:54:11] testing.INFO: InsuranceMockProvider::purchase {"plan_code":"basic","booking_id":2,"premium_cents":400} 
+[2026-05-26 10:54:11] testing.INFO: InsuranceMockProvider::purchase {"plan_code":"basic","booking_id":1,"premium_cents":400} 
+[2026-05-26 10:54:11] testing.INFO: InsuranceMockProvider::purchase {"plan_code":"basic","booking_id":1,"premium_cents":400} 
+[2026-05-26 10:54:11] testing.INFO: InsuranceMockProvider::cancelPolicy {"external_id":"mock_pol_ghgzi7dlktpd"} 
+[2026-05-26 10:54:12] testing.INFO: InsuranceMockProvider::purchase {"plan_code":"standard","booking_id":1,"premium_cents":900} 
+[2026-05-26 10:54:12] testing.INFO: InsuranceMockProvider::fileClaim {"policy":"mock_pol_iljcasvadbfv","incident_type":"damage","amount":40000} 
+[2026-05-26 10:54:12] testing.INFO: InsuranceMockProvider::purchase {"plan_code":"standard","booking_id":1,"premium_cents":900} 
+[2026-05-26 10:54:13] testing.INFO: InsuranceMockProvider::purchase {"plan_code":"basic","booking_id":1,"premium_cents":400} 
+[2026-05-26 10:54:13] testing.INFO: InsuranceMockProvider::purchase {"plan_code":"basic","booking_id":1,"premium_cents":400} 
+[2026-05-26 10:54:14] testing.INFO: InsuranceMockProvider::purchase {"plan_code":"fail_plan","booking_id":1,"premium_cents":100} 
+[2026-05-26 10:54:14] testing.INFO: InsuranceMockProvider::purchase {"plan_code":"basic","booking_id":1,"premium_cents":400} 
+[2026-05-26 10:54:14] testing.INFO: InsuranceMockProvider::cancelPolicy {"external_id":"mock_pol_5tfikchsfvhx"} 
+[2026-05-26 10:54:14] testing.INFO: InsuranceMockProvider::purchase {"plan_code":"standard","booking_id":1,"premium_cents":900} 
+[2026-05-26 10:54:14] testing.INFO: InsuranceMockProvider::fileClaim {"policy":"mock_pol_15omnf4lsw49","incident_type":"damage","amount":40000} 
+[2026-05-26 10:54:14] testing.INFO: InsuranceMockProvider::purchase {"plan_code":"basic","booking_id":1,"premium_cents":400} 
+[2026-05-26 10:54:15] testing.INFO: InsuranceMockProvider::purchase {"plan_code":"standard","booking_id":1,"premium_cents":900} 
+[2026-05-26 10:54:15] testing.INFO: InsuranceMockProvider::purchase {"plan_code":"standard","booking_id":1,"premium_cents":900} 
+[2026-05-26 10:54:15] testing.INFO: InsuranceMockProvider::fileClaim {"policy":"mock_pol_9cgwffbhzjx5","incident_type":"fraud_simulation","amount":10000} 
+[2026-05-26 10:54:15] testing.INFO: InsuranceMockProvider::purchase {"plan_code":"standard","booking_id":1,"premium_cents":900} 
+[2026-05-26 10:54:15] testing.INFO: InsuranceMockProvider::fileClaim {"policy":"mock_pol_rfvwvacizsva","incident_type":"damage","amount":40000} 
+[2026-05-26 10:54:15] testing.INFO: InsuranceMockProvider::purchase {"plan_code":"basic","booking_id":1,"premium_cents":400} 
+[2026-05-26 10:54:16] testing.INFO: InsuranceMockProvider::purchase {"plan_code":"basic","booking_id":1,"premium_cents":300} 
+[2026-05-26 10:54:19] testing.INFO: [webhooks_v2] event ignored (not whitelisted) {"event_code":"subscription.created"} 
+[2026-05-26 10:54:20] testing.INFO: [webhooks_v2] event ignored (not whitelisted) {"event_code":"booking.created"} 
+[2026-05-26 10:54:20] testing.INFO: [webhooks_v2] event ignored (not whitelisted) {"event_code":"booking.created"} 
+[2026-05-26 10:54:20] testing.INFO: [webhooks_v2] event ignored (not whitelisted) {"event_code":"booking.created"} 
+[2026-05-26 10:54:20] testing.INFO: [webhooks_v2] event ignored (not whitelisted) {"event_code":"payment.unauthorized"} 
+[2026-05-26 10:54:21] testing.INFO: [subscriptions_v2] auto-cancelled after consecutive failures {"subscription_id":1,"failures":3} 
+[2026-05-26 10:54:36] testing.WARNING: Money: pas de taux disponible EUR → XYZ  
+[2026-05-26 10:54:38] testing.WARNING: [loyalty_redemption] voucher email failed {"redemption_id":1,"error":"Champ to_email requis."} 
+[2026-05-26 10:54:38] testing.WARNING: [loyalty_redemption] voucher email failed {"redemption_id":1,"error":"Champ to_email requis."} 
+[2026-05-26 10:54:39] testing.WARNING: [loyalty_redemption] voucher email failed {"redemption_id":1,"error":"Champ to_email requis."} 
+[2026-05-26 10:54:41] testing.INFO: Marketing email send {"to":"frederique.maillot@example.net","subject":"Hi"} 
+[2026-05-26 10:55:12] testing.WARNING: StripeConnectWebhook: signature invalide {"error":"Unable to extract timestamp and signatures from header"} 
+[2026-05-26 10:55:12] testing.WARNING: StripeConnectWebhook: STRIPE_CONNECT_WEBHOOK_SECRET non configuré  
+[2026-05-26 10:55:12] testing.INFO: StripeConnectWebhook: stored + dispatched {"event_id":1,"stripe_event_id":"evt_test_valid","type":"payment_intent.succeeded"} 
+[2026-05-26 10:55:13] testing.INFO: StripeConnectWebhook: stored + dispatched {"event_id":1,"stripe_event_id":"evt_test_replay","type":"payment_intent.succeeded"} 
+[2026-05-26 10:55:13] testing.INFO: StripeConnectWebhook: replay détecté, skip dispatch {"event_id":1,"stripe_event_id":"evt_test_replay","status":"processed"} 
+[2026-05-26 10:55:15] testing.WARNING: StripeConnectWebhook: STRIPE_CONNECT_WEBHOOK_SECRET non configuré  
+[2026-05-26 10:55:16] testing.INFO: Provider auto-offline (stale heartbeat) {"provider_user_id":1,"last_heartbeat_at":"2026-05-26T10:45:16+00:00"} 
+[2026-05-26 10:55:17] testing.INFO: MissionDispatchService: offre créée {"assignment_id":1,"mission_id":2,"provider_id":1,"expires_at":"2026-05-26T10:55:32+00:00"} 
+[2026-05-26 10:55:17] testing.INFO: MissionDispatchService: offre créée {"assignment_id":1,"mission_id":2,"provider_id":1,"expires_at":"2026-05-26T10:55:32+00:00"} 
+[2026-05-26 10:55:17] testing.INFO: MissionDispatchService: assignment accepté {"assignment_id":1,"response_seconds":0} 
+[2026-05-26 10:55:17] testing.INFO: MissionDispatchService: offre créée {"assignment_id":1,"mission_id":2,"provider_id":1,"expires_at":"2026-05-26T10:55:32+00:00"} 
+[2026-05-26 10:55:17] testing.INFO: MissionDispatchService: offre créée {"assignment_id":2,"mission_id":2,"provider_id":2,"expires_at":"2026-05-26T10:55:32+00:00"} 
+[2026-05-26 10:55:17] testing.INFO: MissionDispatchService: assignment accepté {"assignment_id":1,"response_seconds":0} 
+[2026-05-26 10:55:17] testing.INFO: MissionDispatchService: offre créée {"assignment_id":1,"mission_id":2,"provider_id":1,"expires_at":"2026-05-26T10:55:32+00:00"} 
+[2026-05-26 10:55:17] testing.INFO: MissionDispatchService: assignment refusé {"assignment_id":1,"reason":"too far","response_seconds":0} 
+[2026-05-26 10:55:17] testing.INFO: MissionDispatchService: aucun candidat trouvé {"mission_id":2} 
+[2026-05-26 10:55:17] testing.INFO: MissionDispatchService: offre créée {"assignment_id":1,"mission_id":2,"provider_id":1,"expires_at":"2026-05-26T10:55:32+00:00"} 
+[2026-05-26 10:55:18] testing.INFO: MissionDispatchService: offre créée {"assignment_id":1,"mission_id":2,"provider_id":1,"expires_at":"2026-05-26T10:55:33+00:00"} 
+[2026-05-26 10:55:18] testing.INFO: MissionDispatchService: assignment accepté {"assignment_id":1,"response_seconds":0} 
+[2026-05-26 10:55:18] testing.INFO: MissionDispatchService: offre créée {"assignment_id":1,"mission_id":2,"provider_id":1,"expires_at":"2026-05-26T10:55:33+00:00"} 
+[2026-05-26 10:55:18] testing.INFO: MissionDispatchService: assignment accepté {"assignment_id":1,"response_seconds":0} 
+[2026-05-26 10:55:23] testing.WARNING: StripeConnectWebhook: signature invalide {"error":"Unable to extract timestamp and signatures from header"} 
+[2026-05-26 10:55:23] testing.WARNING: StripeConnectWebhook: STRIPE_CONNECT_WEBHOOK_SECRET non configuré  
+[2026-05-26 10:55:27] testing.INFO: CancelBookingService: client cancellation {"booking_id":1,"fee_amount":50.0,"reason":"tier_2"} 
+[2026-05-26 10:55:54] testing.INFO: PushMockProvider::send {"platform":"ios","token_prefix":"tok_chan_001...","title":"Booking confirmé","category":"transactional","idempotency_key":"booking-confirmed:42:1:dev0"} 
+[2026-05-26 10:55:54] testing.INFO: PushMockProvider::send {"platform":"android","token_prefix":"tok_6a157c3a...","title":"Hello","category":"transactional","idempotency_key":null} 
+[2026-05-26 10:55:54] testing.INFO: PushMockProvider::send {"platform":"android","token_prefix":"tok_6a157c3a...","title":"A","category":"transactional","idempotency_key":"test:idem:001"} 
+[2026-05-26 10:55:55] testing.INFO: PushMockProvider::send {"platform":"android","token_prefix":"invalid_toke...","title":"t","category":"transactional","idempotency_key":null} 
+[2026-05-26 10:55:55] testing.INFO: PushMockProvider::send {"platform":"android","token_prefix":"fail_token_a...","title":"t","category":"transactional","idempotency_key":null} 
+[2026-05-26 10:55:55] testing.INFO: PushMockProvider::send {"platform":"android","token_prefix":"tok_6a157c3b...","title":"t","category":"transactional","idempotency_key":null} 
+[2026-05-26 10:55:55] testing.INFO: PushMockProvider::send {"platform":"android","token_prefix":"tok_6a157c3b...","title":"t","category":"transactional","idempotency_key":null} 
+[2026-05-26 10:55:55] testing.INFO: PushMockProvider::send {"platform":"ios","token_prefix":"tok_6a157c3b...","title":"Hi","category":"transactional","idempotency_key":null} 
+[2026-05-26 10:55:55] testing.INFO: PushMockProvider::send {"platform":"android","token_prefix":"tok_6a157c3b...","title":"Hi","category":"transactional","idempotency_key":null} 
+[2026-05-26 10:56:10] testing.WARNING: StripeConnectWebhook: signature invalide {"error":"Unable to extract timestamp and signatures from header"} 
+[2026-05-26 10:56:10] testing.WARNING: StripeConnectWebhook: STRIPE_CONNECT_WEBHOOK_SECRET non configuré  
+[2026-05-26 10:56:10] testing.INFO: MissionDispatchService: offre créée {"assignment_id":1,"mission_id":1,"provider_id":1,"expires_at":"2026-05-26T10:56:25+00:00"} 
+[2026-05-26 10:56:10] testing.INFO: MissionDispatchService: assignment accepté {"assignment_id":1,"response_seconds":0} 
+[2026-05-26 10:56:28] testing.WARNING: [webhooks_v2] delivery dead-lettered {"delivery_id":1,"endpoint_id":1,"endpoint_url":"https://example.com/hook","event_code":"booking.created","event_id":"evt_6a157c5ca1d72","attempts":5} 
+[2026-05-26 10:56:29] testing.INFO: SmsMockProvider::send {"to":"+32412345678","body":"CleanUx : votre code est 581028. Valide 10 min.","idempotency_key":"otp:1"} 
+[2026-05-26 10:56:29] testing.INFO: SmsMockProvider::send {"to":"+32412345678","body":"CleanUx : votre code est 891924. Valide 10 min.","idempotency_key":"otp:1"} 
+[2026-05-26 10:56:30] testing.INFO: SmsMockProvider::send {"to":"+32412345678","body":"CleanUx : votre code est 328103. Valide 10 min.","idempotency_key":"otp:1"} 
+[2026-05-26 10:56:31] testing.INFO: SmsMockProvider::send {"to":"+32412345678","body":"Bonjour, ceci est un test.","idempotency_key":null} 
+[2026-05-26 10:56:31] testing.WARNING: SmsService::dispatch invalid phone format {"phone":"0412345678"} 
+[2026-05-26 10:56:31] testing.INFO: SmsMockProvider::send {"to":"+32412345678","body":"normalize me","idempotency_key":null} 
+[2026-05-26 10:56:32] testing.INFO: SmsMockProvider::send {"to":"+32412345678","body":"msg 1","idempotency_key":"test:idempotent:001"} 
+[2026-05-26 10:56:32] testing.INFO: SmsMockProvider::send {"to":"failtest","body":"auto fail","idempotency_key":null} 
+[2026-05-26 10:56:32] testing.INFO: SmsMockProvider::send {"to":"+32412345678","body":"1","idempotency_key":null} 
+[2026-05-26 10:56:32] testing.INFO: SmsMockProvider::send {"to":"+32412345678","body":"2","idempotency_key":null} 
+[2026-05-26 10:56:32] testing.INFO: SmsMockProvider::send {"to":"+32412345678","body":"will be delivered","idempotency_key":null} 
+[2026-05-26 10:56:33] testing.INFO: SmsMockProvider::send {"to":"+32412345678","body":"pending dlr","idempotency_key":null} 
+[2026-05-26 10:56:34] testing.INFO: [webhooks_v2] event ignored (not whitelisted) {"event_code":"subscription.created"} 
+[2026-05-26 10:56:34] testing.INFO: [webhooks_v2] event ignored (not whitelisted) {"event_code":"subscription.created"} 
+[2026-05-26 10:56:35] testing.INFO: [webhooks_v2] event ignored (not whitelisted) {"event_code":"subscription.created"} 
+[2026-05-26 10:56:35] testing.INFO: [webhooks_v2] event ignored (not whitelisted) {"event_code":"subscription.created"} 
+[2026-05-26 10:56:35] testing.INFO: [subscriptions_v2] auto-cancelled after consecutive failures {"subscription_id":1,"failures":3} 
+[2026-05-26 10:56:35] testing.INFO: [webhooks_v2] event ignored (not whitelisted) {"event_code":"subscription.created"} 
+[2026-05-26 10:56:35] testing.INFO: [webhooks_v2] event ignored (not whitelisted) {"event_code":"subscription.created"} 
+[2026-05-26 10:56:35] testing.INFO: [webhooks_v2] event ignored (not whitelisted) {"event_code":"subscription.created"} 
+[2026-05-26 10:56:36] testing.INFO: [webhooks_v2] event ignored (not whitelisted) {"event_code":"subscription.created"} 
+[2026-05-26 10:56:36] testing.INFO: [webhooks_v2] event ignored (not whitelisted) {"event_code":"subscription.created"} 
+[2026-05-26 10:56:36] testing.INFO: [webhooks_v2] event ignored (not whitelisted) {"event_code":"subscription.created"} 
+[2026-05-26 10:56:36] testing.INFO: [webhooks_v2] event ignored (not whitelisted) {"event_code":"subscription.created"} 
+[2026-05-26 10:56:37] testing.INFO: [webhooks_v2] event ignored (not whitelisted) {"event_code":"subscription.created"} 
+[2026-05-26 10:56:37] testing.INFO: [webhooks_v2] event ignored (not whitelisted) {"event_code":"subscription.cancelled"} 
+[2026-05-26 10:56:37] testing.INFO: [webhooks_v2] event ignored (not whitelisted) {"event_code":"subscription.created"} 
+[2026-05-26 10:56:37] testing.INFO: [webhooks_v2] event ignored (not whitelisted) {"event_code":"subscription.cancelled"} 
+[2026-05-26 10:56:37] testing.INFO: [webhooks_v2] event ignored (not whitelisted) {"event_code":"subscription.created"} 
+[2026-05-26 10:56:37] testing.INFO: [webhooks_v2] event ignored (not whitelisted) {"event_code":"subscription.created"} 
+[2026-05-26 10:56:38] testing.INFO: [webhooks_v2] event ignored (not whitelisted) {"event_code":"subscription.created"} 
+[2026-05-26 10:56:38] testing.INFO: [webhooks_v2] event ignored (not whitelisted) {"event_code":"subscription.created"} 
+[2026-05-26 10:56:38] testing.INFO: [webhooks_v2] event ignored (not whitelisted) {"event_code":"subscription.created"} 
+[2026-05-26 10:56:38] testing.INFO: [webhooks_v2] event ignored (not whitelisted) {"event_code":"subscription.created"} 
+[2026-05-26 10:56:38] testing.INFO: [webhooks_v2] event ignored (not whitelisted) {"event_code":"subscription.cancelled"} 
+[2026-05-26 10:56:38] testing.INFO: [webhooks_v2] event ignored (not whitelisted) {"event_code":"subscription.created"} 
+[2026-05-26 10:56:39] testing.INFO: [webhooks_v2] event ignored (not whitelisted) {"event_code":"subscription.created"} 
+[2026-05-26 10:56:39] testing.INFO: [webhooks_v2] event ignored (not whitelisted) {"event_code":"subscription.created"} 
+[2026-05-26 10:56:39] testing.INFO: [webhooks_v2] event ignored (not whitelisted) {"event_code":"subscription.created"} 
+[2026-05-26 10:56:39] testing.INFO: [webhooks_v2] event ignored (not whitelisted) {"event_code":"subscription.created"} 
+[2026-05-26 10:56:39] testing.INFO: [webhooks_v2] event ignored (not whitelisted) {"event_code":"subscription.created"} 
+[2026-05-26 10:56:39] testing.INFO: [webhooks_v2] event ignored (not whitelisted) {"event_code":"subscription.created"} 
+[2026-05-26 10:56:54] testing.INFO: [webhooks_v2] event ignored (not whitelisted) {"event_code":"tracking.started"} 
+[2026-05-26 10:56:54] testing.INFO: [webhooks_v2] event ignored (not whitelisted) {"event_code":"tracking.started"} 
+[2026-05-26 10:56:54] testing.INFO: [webhooks_v2] event ignored (not whitelisted) {"event_code":"tracking.started"} 
+[2026-05-26 10:56:54] testing.WARNING: [trip_tracking] broadcast failed {"session_id":1,"error":"App\\Events\\Realtime\\MissionLivePosition::__construct(): Argument #1 ($mission) must be of type App\\Models\\Mission, App\\Models\\Booking given, called in C:\\Users\\mmdar\\Desktop\\code\\work\\CleanUx\\app\\Services\\TripTracking\\TripTrackingService.php on line 282"} 
+[2026-05-26 10:56:54] testing.WARNING: [trip_tracking] broadcast failed {"session_id":1,"error":"App\\Events\\Realtime\\MissionLivePosition::__construct(): Argument #1 ($mission) must be of type App\\Models\\Mission, App\\Models\\Booking given, called in C:\\Users\\mmdar\\Desktop\\code\\work\\CleanUx\\app\\Services\\TripTracking\\TripTrackingService.php on line 282"} 
+[2026-05-26 10:56:55] testing.INFO: [webhooks_v2] event ignored (not whitelisted) {"event_code":"tracking.started"} 
+[2026-05-26 10:56:55] testing.WARNING: [trip_tracking] broadcast failed {"session_id":1,"error":"App\\Events\\Realtime\\MissionLivePosition::__construct(): Argument #1 ($mission) must be of type App\\Models\\Mission, App\\Models\\Booking given, called in C:\\Users\\mmdar\\Desktop\\code\\work\\CleanUx\\app\\Services\\TripTracking\\TripTrackingService.php on line 282"} 
+[2026-05-26 10:56:55] testing.INFO: [webhooks_v2] event ignored (not whitelisted) {"event_code":"tracking.started"} 
+[2026-05-26 10:56:55] testing.WARNING: [trip_tracking] broadcast failed {"session_id":1,"error":"App\\Events\\Realtime\\MissionLivePosition::__construct(): Argument #1 ($mission) must be of type App\\Models\\Mission, App\\Models\\Booking given, called in C:\\Users\\mmdar\\Desktop\\code\\work\\CleanUx\\app\\Services\\TripTracking\\TripTrackingService.php on line 282"} 
+[2026-05-26 10:56:55] testing.INFO: [webhooks_v2] event ignored (not whitelisted) {"event_code":"tracking.arrived"} 
+[2026-05-26 10:56:55] testing.WARNING: [trip_tracking] broadcast failed {"session_id":1,"error":"App\\Events\\Realtime\\MissionLivePosition::__construct(): Argument #1 ($mission) must be of type App\\Models\\Mission, App\\Models\\Booking given, called in C:\\Users\\mmdar\\Desktop\\code\\work\\CleanUx\\app\\Services\\TripTracking\\TripTrackingService.php on line 282"} 
+[2026-05-26 10:56:55] testing.INFO: [webhooks_v2] event ignored (not whitelisted) {"event_code":"tracking.started"} 
+[2026-05-26 10:56:55] testing.INFO: [webhooks_v2] event ignored (not whitelisted) {"event_code":"tracking.arrived"} 
+[2026-05-26 10:56:55] testing.WARNING: [trip_tracking] broadcast failed {"session_id":1,"error":"App\\Events\\Realtime\\MissionLivePosition::__construct(): Argument #1 ($mission) must be of type App\\Models\\Mission, App\\Models\\Booking given, called in C:\\Users\\mmdar\\Desktop\\code\\work\\CleanUx\\app\\Services\\TripTracking\\TripTrackingService.php on line 282"} 
+[2026-05-26 10:56:55] testing.INFO: [webhooks_v2] event ignored (not whitelisted) {"event_code":"tracking.in_mission"} 
+[2026-05-26 10:56:55] testing.INFO: [webhooks_v2] event ignored (not whitelisted) {"event_code":"tracking.started"} 
+[2026-05-26 10:56:55] testing.INFO: [webhooks_v2] event ignored (not whitelisted) {"event_code":"tracking.ended"} 
+[2026-05-26 10:56:55] testing.INFO: [webhooks_v2] event ignored (not whitelisted) {"event_code":"tracking.started"} 
+[2026-05-26 10:56:55] testing.INFO: [webhooks_v2] event ignored (not whitelisted) {"event_code":"tracking.ended"} 
+[2026-05-26 10:56:56] testing.INFO: [webhooks_v2] event ignored (not whitelisted) {"event_code":"tracking.started"} 
+[2026-05-26 10:56:56] testing.INFO: [webhooks_v2] event ignored (not whitelisted) {"event_code":"tracking.ended"} 
+[2026-05-26 10:56:56] testing.INFO: [webhooks_v2] event ignored (not whitelisted) {"event_code":"tracking.started"} 
+[2026-05-26 10:56:56] testing.INFO: [webhooks_v2] event ignored (not whitelisted) {"event_code":"tracking.started"} 
+[2026-05-26 10:56:56] testing.WARNING: [trip_tracking] broadcast failed {"session_id":1,"error":"App\\Events\\Realtime\\MissionLivePosition::__construct(): Argument #1 ($mission) must be of type App\\Models\\Mission, App\\Models\\Booking given, called in C:\\Users\\mmdar\\Desktop\\code\\work\\CleanUx\\app\\Services\\TripTracking\\TripTrackingService.php on line 282"} 
+[2026-05-26 10:57:00] testing.INFO: [webhooks_v2] event ignored (not whitelisted) {"event_code":"forbidden.event"} 
+[2026-05-26 11:14:15] testing.ERROR: boom {"exception":"[object] (RuntimeException(code: 0): boom at C:/Users/mmdar/Desktop/code/work/CleanUx/tests/Feature/Api/ExceptionHandlerJsonTest.php:121)
+[stacktrace]
+#0 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Routing/CallableDispatcher.php(40): Tests/Feature/Api/ExceptionHandlerJsonTest->{closure:Tests/Feature/Api/ExceptionHandlerJsonTest::test_server_error_returns_unified_shape_in_production():120}()
+#1 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Routing/Route.php(244): Illuminate/Routing/CallableDispatcher->dispatch(Object(Illuminate/Routing/Route), Object(Closure))
+#2 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Routing/Route.php(215): Illuminate/Routing/Route->runCallable()
+#3 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Routing/Router.php(808): Illuminate/Routing/Route->run()
+#4 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(170): Illuminate/Routing/Router->{closure:Illuminate/Routing/Router::runRouteWithinStack():807}(Object(Illuminate/Http/Request))
+#5 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(127): Illuminate/Pipeline/Pipeline->{closure:Illuminate/Pipeline/Pipeline::prepareDestination():168}(Object(Illuminate/Http/Request))
+#6 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Routing/Router.php(807): Illuminate/Pipeline/Pipeline->then(Object(Closure))
+#7 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Routing/Router.php(786): Illuminate/Routing/Router->runRouteWithinStack(Object(Illuminate/Routing/Route), Object(Illuminate/Http/Request))
+#8 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Routing/Router.php(750): Illuminate/Routing/Router->runRoute(Object(Illuminate/Http/Request), Object(Illuminate/Routing/Route))
+#9 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Routing/Router.php(739): Illuminate/Routing/Router->dispatchToRoute(Object(Illuminate/Http/Request))
+#10 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Foundation/Http/Kernel.php(201): Illuminate/Routing/Router->dispatch(Object(Illuminate/Http/Request))
+#11 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(170): Illuminate/Foundation/Http/Kernel->{closure:Illuminate/Foundation/Http/Kernel::dispatchToRouter():198}(Object(Illuminate/Http/Request))
+#12 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/livewire/livewire/src/Features/SupportDisablingBackButtonCache/DisableBackButtonCacheMiddleware.php(19): Illuminate/Pipeline/Pipeline->{closure:Illuminate/Pipeline/Pipeline::prepareDestination():168}(Object(Illuminate/Http/Request))
+#13 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(209): Livewire/Features/SupportDisablingBackButtonCache/DisableBackButtonCacheMiddleware->handle(Object(Illuminate/Http/Request), Object(Closure))
+#14 C:/Users/mmdar/Desktop/code/work/CleanUx/app/Http/Middleware/SecurityHeaders.php(18): Illuminate/Pipeline/Pipeline->{closure:{closure:Illuminate/Pipeline/Pipeline::carry():184}:185}(Object(Illuminate/Http/Request))
+#15 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(209): App/Http/Middleware/SecurityHeaders->handle(Object(Illuminate/Http/Request), Object(Closure))
+#16 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/TransformsRequest.php(21): Illuminate/Pipeline/Pipeline->{closure:{closure:Illuminate/Pipeline/Pipeline::carry():184}:185}(Object(Illuminate/Http/Request))
+#17 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/ConvertEmptyStringsToNull.php(31): Illuminate/Foundation/Http/Middleware/TransformsRequest->handle(Object(Illuminate/Http/Request), Object(Closure))
+#18 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(209): Illuminate/Foundation/Http/Middleware/ConvertEmptyStringsToNull->handle(Object(Illuminate/Http/Request), Object(Closure))
+#19 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/TransformsRequest.php(21): Illuminate/Pipeline/Pipeline->{closure:{closure:Illuminate/Pipeline/Pipeline::carry():184}:185}(Object(Illuminate/Http/Request))
+#20 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/TrimStrings.php(51): Illuminate/Foundation/Http/Middleware/TransformsRequest->handle(Object(Illuminate/Http/Request), Object(Closure))
+#21 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(209): Illuminate/Foundation/Http/Middleware/TrimStrings->handle(Object(Illuminate/Http/Request), Object(Closure))
+#22 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Http/Middleware/ValidatePostSize.php(27): Illuminate/Pipeline/Pipeline->{closure:{closure:Illuminate/Pipeline/Pipeline::carry():184}:185}(Object(Illuminate/Http/Request))
+#23 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(209): Illuminate/Http/Middleware/ValidatePostSize->handle(Object(Illuminate/Http/Request), Object(Closure))
+#24 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/PreventRequestsDuringMaintenance.php(110): Illuminate/Pipeline/Pipeline->{closure:{closure:Illuminate/Pipeline/Pipeline::carry():184}:185}(Object(Illuminate/Http/Request))
+#25 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(209): Illuminate/Foundation/Http/Middleware/PreventRequestsDuringMaintenance->handle(Object(Illuminate/Http/Request), Object(Closure))
+#26 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Http/Middleware/HandleCors.php(62): Illuminate/Pipeline/Pipeline->{closure:{closure:Illuminate/Pipeline/Pipeline::carry():184}:185}(Object(Illuminate/Http/Request))
+#27 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(209): Illuminate/Http/Middleware/HandleCors->handle(Object(Illuminate/Http/Request), Object(Closure))
+#28 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Http/Middleware/TrustProxies.php(58): Illuminate/Pipeline/Pipeline->{closure:{closure:Illuminate/Pipeline/Pipeline::carry():184}:185}(Object(Illuminate/Http/Request))
+#29 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(209): Illuminate/Http/Middleware/TrustProxies->handle(Object(Illuminate/Http/Request), Object(Closure))
+#30 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Http/Middleware/TrustHosts.php(79): Illuminate/Pipeline/Pipeline->{closure:{closure:Illuminate/Pipeline/Pipeline::carry():184}:185}(Object(Illuminate/Http/Request))
+#31 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(209): Illuminate/Http/Middleware/TrustHosts->handle(Object(Illuminate/Http/Request), Object(Closure))
+#32 C:/Users/mmdar/Desktop/code/work/CleanUx/app/Http/Middleware/ForceHttps.php(16): Illuminate/Pipeline/Pipeline->{closure:{closure:Illuminate/Pipeline/Pipeline::carry():184}:185}(Object(Illuminate/Http/Request))
+#33 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(209): App/Http/Middleware/ForceHttps->handle(Object(Illuminate/Http/Request), Object(Closure))
+#34 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(127): Illuminate/Pipeline/Pipeline->{closure:{closure:Illuminate/Pipeline/Pipeline::carry():184}:185}(Object(Illuminate/Http/Request))
+#35 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Foundation/Http/Kernel.php(176): Illuminate/Pipeline/Pipeline->then(Object(Closure))
+#36 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Foundation/Http/Kernel.php(145): Illuminate/Foundation/Http/Kernel->sendRequestThroughRouter(Object(Illuminate/Http/Request))
+#37 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Foundation/Testing/Concerns/MakesHttpRequests.php(607): Illuminate/Foundation/Http/Kernel->handle(Object(Illuminate/Http/Request))
+#38 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Foundation/Testing/Concerns/MakesHttpRequests.php(573): Illuminate/Foundation/Testing/TestCase->call('GET', '/api/test-boom', Array, Array, Array, Array, '[]')
+#39 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Foundation/Testing/Concerns/MakesHttpRequests.php(381): Illuminate/Foundation/Testing/TestCase->json('GET', '/api/test-boom', Array, Array, 0)
+#40 C:/Users/mmdar/Desktop/code/work/CleanUx/tests/Feature/Api/ExceptionHandlerJsonTest.php(124): Illuminate/Foundation/Testing/TestCase->getJson('/api/test-boom')
+#41 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/phpunit/phpunit/src/Framework/TestCase.php(1667): Tests/Feature/Api/ExceptionHandlerJsonTest->test_server_error_returns_unified_shape_in_production()
+#42 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/phpunit/phpunit/src/Framework/TestCase.php(519): PHPUnit/Framework/TestCase->runTest()
+#43 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/phpunit/phpunit/src/Framework/TestRunner/TestRunner.php(87): PHPUnit/Framework/TestCase->runBare()
+#44 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/phpunit/phpunit/src/Framework/TestCase.php(365): PHPUnit/Framework/TestRunner->run(Object(Tests/Feature/Api/ExceptionHandlerJsonTest))
+#45 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/phpunit/phpunit/src/Framework/TestSuite.php(369): PHPUnit/Framework/TestCase->run()
+#46 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/phpunit/phpunit/src/Framework/TestSuite.php(369): PHPUnit/Framework/TestSuite->run()
+#47 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/phpunit/phpunit/src/Framework/TestSuite.php(369): PHPUnit/Framework/TestSuite->run()
+#48 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/phpunit/phpunit/src/TextUI/TestRunner.php(64): PHPUnit/Framework/TestSuite->run()
+#49 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/phpunit/phpunit/src/TextUI/Application.php(211): PHPUnit/TextUI/TestRunner->run(Object(PHPUnit/TextUI/Configuration/Configuration), Object(PHPUnit/Runner/ResultCache/DefaultResultCache), Object(PHPUnit/Framework/TestSuite))
+#50 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/phpunit/phpunit/phpunit(104): PHPUnit/TextUI/Application->run(Array)
+#51 {main}
+"} 
+[2026-05-26 11:14:19] testing.WARNING: AnthropicProvider non-2xx {"status":400,"body":{"error":{"type":"invalid_request_error","message":"Bad model name"}}} 
+[2026-05-26 11:15:48] testing.WARNING: AiDispatch: aucun prestataire tagué pour le métier requis, fallback ouvert. {"booking_id":1,"required_trade_id":1,"open_candidates":2} 
+[2026-05-26 11:15:56] testing.INFO: [email_v2] rate limit hit {"to":"limit@test.com"} 
+[2026-05-26 11:16:18] testing.WARNING: FxService: all providers failed, using 1:1 fallback {"base":"EUR","quotes":["FAIL"]} 
+[2026-05-26 11:16:32] testing.INFO: InsuranceMockProvider::purchase {"plan_code":"standard","booking_id":1,"premium_cents":900} 
+[2026-05-26 11:16:33] testing.INFO: InsuranceMockProvider::purchase {"plan_code":"basic","booking_id":1,"premium_cents":400} 
+[2026-05-26 11:16:33] testing.INFO: InsuranceMockProvider::purchase {"plan_code":"basic","booking_id":2,"premium_cents":400} 
+[2026-05-26 11:16:33] testing.INFO: InsuranceMockProvider::purchase {"plan_code":"basic","booking_id":1,"premium_cents":400} 
+[2026-05-26 11:16:33] testing.INFO: InsuranceMockProvider::purchase {"plan_code":"basic","booking_id":1,"premium_cents":400} 
+[2026-05-26 11:16:33] testing.INFO: InsuranceMockProvider::cancelPolicy {"external_id":"mock_pol_l4xxdsfeltug"} 
+[2026-05-26 11:16:33] testing.INFO: InsuranceMockProvider::purchase {"plan_code":"standard","booking_id":1,"premium_cents":900} 
+[2026-05-26 11:16:33] testing.INFO: InsuranceMockProvider::fileClaim {"policy":"mock_pol_lybezrqn7liz","incident_type":"damage","amount":40000} 
+[2026-05-26 11:16:34] testing.INFO: InsuranceMockProvider::purchase {"plan_code":"standard","booking_id":1,"premium_cents":900} 
+[2026-05-26 11:16:35] testing.INFO: InsuranceMockProvider::purchase {"plan_code":"basic","booking_id":1,"premium_cents":400} 
+[2026-05-26 11:16:35] testing.INFO: InsuranceMockProvider::purchase {"plan_code":"basic","booking_id":1,"premium_cents":400} 
+[2026-05-26 11:16:36] testing.INFO: InsuranceMockProvider::purchase {"plan_code":"fail_plan","booking_id":1,"premium_cents":100} 
+[2026-05-26 11:16:36] testing.INFO: InsuranceMockProvider::purchase {"plan_code":"basic","booking_id":1,"premium_cents":400} 
+[2026-05-26 11:16:36] testing.INFO: InsuranceMockProvider::cancelPolicy {"external_id":"mock_pol_ka12qj72e7nk"} 
+[2026-05-26 11:16:36] testing.INFO: InsuranceMockProvider::purchase {"plan_code":"standard","booking_id":1,"premium_cents":900} 
+[2026-05-26 11:16:36] testing.INFO: InsuranceMockProvider::fileClaim {"policy":"mock_pol_hwu4nd0d9auu","incident_type":"damage","amount":40000} 
+[2026-05-26 11:16:36] testing.INFO: InsuranceMockProvider::purchase {"plan_code":"basic","booking_id":1,"premium_cents":400} 
+[2026-05-26 11:16:36] testing.INFO: InsuranceMockProvider::purchase {"plan_code":"standard","booking_id":1,"premium_cents":900} 
+[2026-05-26 11:16:37] testing.INFO: InsuranceMockProvider::purchase {"plan_code":"standard","booking_id":1,"premium_cents":900} 
+[2026-05-26 11:16:37] testing.INFO: InsuranceMockProvider::fileClaim {"policy":"mock_pol_y9hcuq74ar1c","incident_type":"fraud_simulation","amount":10000} 
+[2026-05-26 11:16:37] testing.INFO: InsuranceMockProvider::purchase {"plan_code":"standard","booking_id":1,"premium_cents":900} 
+[2026-05-26 11:16:37] testing.INFO: InsuranceMockProvider::fileClaim {"policy":"mock_pol_mnj7ofyslgrm","incident_type":"damage","amount":40000} 
+[2026-05-26 11:16:37] testing.INFO: InsuranceMockProvider::purchase {"plan_code":"basic","booking_id":1,"premium_cents":400} 
+[2026-05-26 11:16:38] testing.INFO: InsuranceMockProvider::purchase {"plan_code":"basic","booking_id":1,"premium_cents":300} 
+[2026-05-26 11:16:40] testing.INFO: [webhooks_v2] event ignored (not whitelisted) {"event_code":"subscription.created"} 
+[2026-05-26 11:16:41] testing.INFO: [webhooks_v2] event ignored (not whitelisted) {"event_code":"booking.created"} 
+[2026-05-26 11:16:41] testing.INFO: [webhooks_v2] event ignored (not whitelisted) {"event_code":"booking.created"} 
+[2026-05-26 11:16:42] testing.INFO: [webhooks_v2] event ignored (not whitelisted) {"event_code":"booking.created"} 
+[2026-05-26 11:16:42] testing.INFO: [webhooks_v2] event ignored (not whitelisted) {"event_code":"payment.unauthorized"} 
+[2026-05-26 11:16:43] testing.INFO: [subscriptions_v2] auto-cancelled after consecutive failures {"subscription_id":1,"failures":3} 
+[2026-05-26 11:16:57] testing.WARNING: Money: pas de taux disponible EUR → XYZ  
+[2026-05-26 11:16:59] testing.WARNING: [loyalty_redemption] voucher email failed {"redemption_id":1,"error":"Champ to_email requis."} 
+[2026-05-26 11:16:59] testing.WARNING: [loyalty_redemption] voucher email failed {"redemption_id":1,"error":"Champ to_email requis."} 
+[2026-05-26 11:16:59] testing.WARNING: [loyalty_redemption] voucher email failed {"redemption_id":1,"error":"Champ to_email requis."} 
+[2026-05-26 11:17:02] testing.INFO: Marketing email send {"to":"tbousquet@example.org","subject":"Hi"} 
+[2026-05-26 11:17:33] testing.WARNING: StripeConnectWebhook: signature invalide {"error":"Unable to extract timestamp and signatures from header"} 
+[2026-05-26 11:17:33] testing.WARNING: StripeConnectWebhook: STRIPE_CONNECT_WEBHOOK_SECRET non configuré  
+[2026-05-26 11:17:33] testing.INFO: StripeConnectWebhook: stored + dispatched {"event_id":1,"stripe_event_id":"evt_test_valid","type":"payment_intent.succeeded"} 
+[2026-05-26 11:17:33] testing.INFO: StripeConnectWebhook: stored + dispatched {"event_id":1,"stripe_event_id":"evt_test_replay","type":"payment_intent.succeeded"} 
+[2026-05-26 11:17:33] testing.INFO: StripeConnectWebhook: replay détecté, skip dispatch {"event_id":1,"stripe_event_id":"evt_test_replay","status":"processed"} 
+[2026-05-26 11:17:35] testing.WARNING: StripeConnectWebhook: STRIPE_CONNECT_WEBHOOK_SECRET non configuré  
+[2026-05-26 11:17:37] testing.INFO: Provider auto-offline (stale heartbeat) {"provider_user_id":1,"last_heartbeat_at":"2026-05-26T11:07:37+00:00"} 
+[2026-05-26 11:17:37] testing.INFO: MissionDispatchService: offre créée {"assignment_id":1,"mission_id":2,"provider_id":1,"expires_at":"2026-05-26T11:17:52+00:00"} 
+[2026-05-26 11:17:38] testing.INFO: MissionDispatchService: offre créée {"assignment_id":1,"mission_id":2,"provider_id":1,"expires_at":"2026-05-26T11:17:53+00:00"} 
+[2026-05-26 11:17:38] testing.INFO: MissionDispatchService: assignment accepté {"assignment_id":1,"response_seconds":0} 
+[2026-05-26 11:17:38] testing.INFO: MissionDispatchService: offre créée {"assignment_id":1,"mission_id":2,"provider_id":1,"expires_at":"2026-05-26T11:17:53+00:00"} 
+[2026-05-26 11:17:38] testing.INFO: MissionDispatchService: offre créée {"assignment_id":2,"mission_id":2,"provider_id":2,"expires_at":"2026-05-26T11:17:53+00:00"} 
+[2026-05-26 11:17:38] testing.INFO: MissionDispatchService: assignment accepté {"assignment_id":1,"response_seconds":0} 
+[2026-05-26 11:17:38] testing.INFO: MissionDispatchService: offre créée {"assignment_id":1,"mission_id":2,"provider_id":1,"expires_at":"2026-05-26T11:17:53+00:00"} 
+[2026-05-26 11:17:38] testing.INFO: MissionDispatchService: assignment refusé {"assignment_id":1,"reason":"too far","response_seconds":0} 
+[2026-05-26 11:17:38] testing.INFO: MissionDispatchService: aucun candidat trouvé {"mission_id":2} 
+[2026-05-26 11:17:38] testing.INFO: MissionDispatchService: offre créée {"assignment_id":1,"mission_id":2,"provider_id":1,"expires_at":"2026-05-26T11:17:53+00:00"} 
+[2026-05-26 11:17:38] testing.INFO: MissionDispatchService: offre créée {"assignment_id":1,"mission_id":2,"provider_id":1,"expires_at":"2026-05-26T11:17:53+00:00"} 
+[2026-05-26 11:17:38] testing.INFO: MissionDispatchService: assignment accepté {"assignment_id":1,"response_seconds":0} 
+[2026-05-26 11:17:38] testing.INFO: MissionDispatchService: offre créée {"assignment_id":1,"mission_id":2,"provider_id":1,"expires_at":"2026-05-26T11:17:53+00:00"} 
+[2026-05-26 11:17:38] testing.INFO: MissionDispatchService: assignment accepté {"assignment_id":1,"response_seconds":0} 
+[2026-05-26 11:17:43] testing.WARNING: StripeConnectWebhook: signature invalide {"error":"Unable to extract timestamp and signatures from header"} 
+[2026-05-26 11:17:44] testing.WARNING: StripeConnectWebhook: STRIPE_CONNECT_WEBHOOK_SECRET non configuré  
+[2026-05-26 11:17:47] testing.INFO: CancelBookingService: client cancellation {"booking_id":1,"fee_amount":50.0,"reason":"tier_2"} 
+[2026-05-26 11:18:14] testing.INFO: PushMockProvider::send {"platform":"ios","token_prefix":"tok_chan_001...","title":"Booking confirmé","category":"transactional","idempotency_key":"booking-confirmed:42:1:dev0"} 
+[2026-05-26 11:18:14] testing.INFO: PushMockProvider::send {"platform":"android","token_prefix":"tok_6a158176...","title":"Hello","category":"transactional","idempotency_key":null} 
+[2026-05-26 11:18:14] testing.INFO: PushMockProvider::send {"platform":"android","token_prefix":"tok_6a158176...","title":"A","category":"transactional","idempotency_key":"test:idem:001"} 
+[2026-05-26 11:18:15] testing.INFO: PushMockProvider::send {"platform":"android","token_prefix":"invalid_toke...","title":"t","category":"transactional","idempotency_key":null} 
+[2026-05-26 11:18:15] testing.INFO: PushMockProvider::send {"platform":"android","token_prefix":"fail_token_a...","title":"t","category":"transactional","idempotency_key":null} 
+[2026-05-26 11:18:15] testing.INFO: PushMockProvider::send {"platform":"android","token_prefix":"tok_6a158177...","title":"t","category":"transactional","idempotency_key":null} 
+[2026-05-26 11:18:15] testing.INFO: PushMockProvider::send {"platform":"android","token_prefix":"tok_6a158177...","title":"t","category":"transactional","idempotency_key":null} 
+[2026-05-26 11:18:15] testing.INFO: PushMockProvider::send {"platform":"ios","token_prefix":"tok_6a158177...","title":"Hi","category":"transactional","idempotency_key":null} 
+[2026-05-26 11:18:15] testing.INFO: PushMockProvider::send {"platform":"android","token_prefix":"tok_6a158177...","title":"Hi","category":"transactional","idempotency_key":null} 
+[2026-05-26 11:18:29] testing.WARNING: StripeConnectWebhook: signature invalide {"error":"Unable to extract timestamp and signatures from header"} 
+[2026-05-26 11:18:29] testing.WARNING: StripeConnectWebhook: STRIPE_CONNECT_WEBHOOK_SECRET non configuré  
+[2026-05-26 11:18:30] testing.INFO: MissionDispatchService: offre créée {"assignment_id":1,"mission_id":1,"provider_id":1,"expires_at":"2026-05-26T11:18:45+00:00"} 
+[2026-05-26 11:18:30] testing.INFO: MissionDispatchService: assignment accepté {"assignment_id":1,"response_seconds":0} 
+[2026-05-26 11:18:46] testing.WARNING: [webhooks_v2] delivery dead-lettered {"delivery_id":1,"endpoint_id":1,"endpoint_url":"https://example.com/hook","event_code":"booking.created","event_id":"evt_6a158196a71ae","attempts":5} 
+[2026-05-26 11:18:47] testing.INFO: SmsMockProvider::send {"to":"+32412345678","body":"CleanUx : votre code est 479665. Valide 10 min.","idempotency_key":"otp:1"} 
+[2026-05-26 11:18:47] testing.INFO: SmsMockProvider::send {"to":"+32412345678","body":"CleanUx : votre code est 971600. Valide 10 min.","idempotency_key":"otp:1"} 
+[2026-05-26 11:18:48] testing.INFO: SmsMockProvider::send {"to":"+32412345678","body":"CleanUx : votre code est 211285. Valide 10 min.","idempotency_key":"otp:1"} 
+[2026-05-26 11:18:49] testing.INFO: SmsMockProvider::send {"to":"+32412345678","body":"Bonjour, ceci est un test.","idempotency_key":null} 
+[2026-05-26 11:18:49] testing.WARNING: SmsService::dispatch invalid phone format {"phone":"0412345678"} 
+[2026-05-26 11:18:49] testing.INFO: SmsMockProvider::send {"to":"+32412345678","body":"normalize me","idempotency_key":null} 
+[2026-05-26 11:18:49] testing.INFO: SmsMockProvider::send {"to":"+32412345678","body":"msg 1","idempotency_key":"test:idempotent:001"} 
+[2026-05-26 11:18:49] testing.INFO: SmsMockProvider::send {"to":"failtest","body":"auto fail","idempotency_key":null} 
+[2026-05-26 11:18:50] testing.INFO: SmsMockProvider::send {"to":"+32412345678","body":"1","idempotency_key":null} 
+[2026-05-26 11:18:50] testing.INFO: SmsMockProvider::send {"to":"+32412345678","body":"2","idempotency_key":null} 
+[2026-05-26 11:18:50] testing.INFO: SmsMockProvider::send {"to":"+32412345678","body":"will be delivered","idempotency_key":null} 
+[2026-05-26 11:18:51] testing.INFO: SmsMockProvider::send {"to":"+32412345678","body":"pending dlr","idempotency_key":null} 
+[2026-05-26 11:18:51] testing.INFO: [webhooks_v2] event ignored (not whitelisted) {"event_code":"subscription.created"} 
+[2026-05-26 11:18:52] testing.INFO: [webhooks_v2] event ignored (not whitelisted) {"event_code":"subscription.created"} 
+[2026-05-26 11:18:52] testing.INFO: [webhooks_v2] event ignored (not whitelisted) {"event_code":"subscription.created"} 
+[2026-05-26 11:18:52] testing.INFO: [webhooks_v2] event ignored (not whitelisted) {"event_code":"subscription.created"} 
+[2026-05-26 11:18:52] testing.INFO: [subscriptions_v2] auto-cancelled after consecutive failures {"subscription_id":1,"failures":3} 
+[2026-05-26 11:18:52] testing.INFO: [webhooks_v2] event ignored (not whitelisted) {"event_code":"subscription.created"} 
+[2026-05-26 11:18:52] testing.INFO: [webhooks_v2] event ignored (not whitelisted) {"event_code":"subscription.created"} 
+[2026-05-26 11:18:52] testing.INFO: [webhooks_v2] event ignored (not whitelisted) {"event_code":"subscription.created"} 
+[2026-05-26 11:18:53] testing.INFO: [webhooks_v2] event ignored (not whitelisted) {"event_code":"subscription.created"} 
+[2026-05-26 11:18:53] testing.INFO: [webhooks_v2] event ignored (not whitelisted) {"event_code":"subscription.created"} 
+[2026-05-26 11:18:53] testing.INFO: [webhooks_v2] event ignored (not whitelisted) {"event_code":"subscription.created"} 
+[2026-05-26 11:18:53] testing.INFO: [webhooks_v2] event ignored (not whitelisted) {"event_code":"subscription.created"} 
+[2026-05-26 11:18:54] testing.INFO: [webhooks_v2] event ignored (not whitelisted) {"event_code":"subscription.created"} 
+[2026-05-26 11:18:54] testing.INFO: [webhooks_v2] event ignored (not whitelisted) {"event_code":"subscription.cancelled"} 
+[2026-05-26 11:18:54] testing.INFO: [webhooks_v2] event ignored (not whitelisted) {"event_code":"subscription.created"} 
+[2026-05-26 11:18:54] testing.INFO: [webhooks_v2] event ignored (not whitelisted) {"event_code":"subscription.cancelled"} 
+[2026-05-26 11:18:54] testing.INFO: [webhooks_v2] event ignored (not whitelisted) {"event_code":"subscription.created"} 
+[2026-05-26 11:18:54] testing.INFO: [webhooks_v2] event ignored (not whitelisted) {"event_code":"subscription.created"} 
+[2026-05-26 11:18:55] testing.INFO: [webhooks_v2] event ignored (not whitelisted) {"event_code":"subscription.created"} 
+[2026-05-26 11:18:55] testing.INFO: [webhooks_v2] event ignored (not whitelisted) {"event_code":"subscription.created"} 
+[2026-05-26 11:18:55] testing.INFO: [webhooks_v2] event ignored (not whitelisted) {"event_code":"subscription.created"} 
+[2026-05-26 11:18:55] testing.INFO: [webhooks_v2] event ignored (not whitelisted) {"event_code":"subscription.created"} 
+[2026-05-26 11:18:55] testing.INFO: [webhooks_v2] event ignored (not whitelisted) {"event_code":"subscription.cancelled"} 
+[2026-05-26 11:18:55] testing.INFO: [webhooks_v2] event ignored (not whitelisted) {"event_code":"subscription.created"} 
+[2026-05-26 11:18:55] testing.INFO: [webhooks_v2] event ignored (not whitelisted) {"event_code":"subscription.created"} 
+[2026-05-26 11:18:56] testing.INFO: [webhooks_v2] event ignored (not whitelisted) {"event_code":"subscription.created"} 
+[2026-05-26 11:18:56] testing.INFO: [webhooks_v2] event ignored (not whitelisted) {"event_code":"subscription.created"} 
+[2026-05-26 11:18:56] testing.INFO: [webhooks_v2] event ignored (not whitelisted) {"event_code":"subscription.created"} 
+[2026-05-26 11:18:56] testing.INFO: [webhooks_v2] event ignored (not whitelisted) {"event_code":"subscription.created"} 
+[2026-05-26 11:18:56] testing.INFO: [webhooks_v2] event ignored (not whitelisted) {"event_code":"subscription.created"} 
+[2026-05-26 11:19:10] testing.INFO: [webhooks_v2] event ignored (not whitelisted) {"event_code":"tracking.started"} 
+[2026-05-26 11:19:10] testing.INFO: [webhooks_v2] event ignored (not whitelisted) {"event_code":"tracking.started"} 
+[2026-05-26 11:19:10] testing.INFO: [webhooks_v2] event ignored (not whitelisted) {"event_code":"tracking.started"} 
+[2026-05-26 11:19:10] testing.WARNING: [trip_tracking] broadcast failed {"session_id":1,"error":"App\\Events\\Realtime\\MissionLivePosition::__construct(): Argument #1 ($mission) must be of type App\\Models\\Mission, App\\Models\\Booking given, called in C:\\Users\\mmdar\\Desktop\\code\\work\\CleanUx\\app\\Services\\TripTracking\\TripTrackingService.php on line 282"} 
+[2026-05-26 11:19:10] testing.WARNING: [trip_tracking] broadcast failed {"session_id":1,"error":"App\\Events\\Realtime\\MissionLivePosition::__construct(): Argument #1 ($mission) must be of type App\\Models\\Mission, App\\Models\\Booking given, called in C:\\Users\\mmdar\\Desktop\\code\\work\\CleanUx\\app\\Services\\TripTracking\\TripTrackingService.php on line 282"} 
+[2026-05-26 11:19:10] testing.INFO: [webhooks_v2] event ignored (not whitelisted) {"event_code":"tracking.started"} 
+[2026-05-26 11:19:10] testing.WARNING: [trip_tracking] broadcast failed {"session_id":1,"error":"App\\Events\\Realtime\\MissionLivePosition::__construct(): Argument #1 ($mission) must be of type App\\Models\\Mission, App\\Models\\Booking given, called in C:\\Users\\mmdar\\Desktop\\code\\work\\CleanUx\\app\\Services\\TripTracking\\TripTrackingService.php on line 282"} 
+[2026-05-26 11:19:10] testing.INFO: [webhooks_v2] event ignored (not whitelisted) {"event_code":"tracking.started"} 
+[2026-05-26 11:19:10] testing.WARNING: [trip_tracking] broadcast failed {"session_id":1,"error":"App\\Events\\Realtime\\MissionLivePosition::__construct(): Argument #1 ($mission) must be of type App\\Models\\Mission, App\\Models\\Booking given, called in C:\\Users\\mmdar\\Desktop\\code\\work\\CleanUx\\app\\Services\\TripTracking\\TripTrackingService.php on line 282"} 
+[2026-05-26 11:19:10] testing.INFO: [webhooks_v2] event ignored (not whitelisted) {"event_code":"tracking.arrived"} 
+[2026-05-26 11:19:10] testing.WARNING: [trip_tracking] broadcast failed {"session_id":1,"error":"App\\Events\\Realtime\\MissionLivePosition::__construct(): Argument #1 ($mission) must be of type App\\Models\\Mission, App\\Models\\Booking given, called in C:\\Users\\mmdar\\Desktop\\code\\work\\CleanUx\\app\\Services\\TripTracking\\TripTrackingService.php on line 282"} 
+[2026-05-26 11:19:11] testing.INFO: [webhooks_v2] event ignored (not whitelisted) {"event_code":"tracking.started"} 
+[2026-05-26 11:19:11] testing.INFO: [webhooks_v2] event ignored (not whitelisted) {"event_code":"tracking.arrived"} 
+[2026-05-26 11:19:11] testing.WARNING: [trip_tracking] broadcast failed {"session_id":1,"error":"App\\Events\\Realtime\\MissionLivePosition::__construct(): Argument #1 ($mission) must be of type App\\Models\\Mission, App\\Models\\Booking given, called in C:\\Users\\mmdar\\Desktop\\code\\work\\CleanUx\\app\\Services\\TripTracking\\TripTrackingService.php on line 282"} 
+[2026-05-26 11:19:11] testing.INFO: [webhooks_v2] event ignored (not whitelisted) {"event_code":"tracking.in_mission"} 
+[2026-05-26 11:19:11] testing.INFO: [webhooks_v2] event ignored (not whitelisted) {"event_code":"tracking.started"} 
+[2026-05-26 11:19:11] testing.INFO: [webhooks_v2] event ignored (not whitelisted) {"event_code":"tracking.ended"} 
+[2026-05-26 11:19:11] testing.INFO: [webhooks_v2] event ignored (not whitelisted) {"event_code":"tracking.started"} 
+[2026-05-26 11:19:11] testing.INFO: [webhooks_v2] event ignored (not whitelisted) {"event_code":"tracking.ended"} 
+[2026-05-26 11:19:11] testing.INFO: [webhooks_v2] event ignored (not whitelisted) {"event_code":"tracking.started"} 
+[2026-05-26 11:19:11] testing.INFO: [webhooks_v2] event ignored (not whitelisted) {"event_code":"tracking.ended"} 
+[2026-05-26 11:19:11] testing.INFO: [webhooks_v2] event ignored (not whitelisted) {"event_code":"tracking.started"} 
+[2026-05-26 11:19:11] testing.INFO: [webhooks_v2] event ignored (not whitelisted) {"event_code":"tracking.started"} 
+[2026-05-26 11:19:11] testing.WARNING: [trip_tracking] broadcast failed {"session_id":1,"error":"App\\Events\\Realtime\\MissionLivePosition::__construct(): Argument #1 ($mission) must be of type App\\Models\\Mission, App\\Models\\Booking given, called in C:\\Users\\mmdar\\Desktop\\code\\work\\CleanUx\\app\\Services\\TripTracking\\TripTrackingService.php on line 282"} 
+[2026-05-26 11:19:15] testing.INFO: [webhooks_v2] event ignored (not whitelisted) {"event_code":"forbidden.event"} 
+[2026-05-26 12:31:06] local.ERROR: Running Collision 8.x artisan test command in parallel requires at least ParaTest (brianium/paratest) 7.x. {"exception":"[object] (NunoMaduro\\Collision\\Adapters\\Laravel\\Exceptions\\RequirementsException(code: 0): Running Collision 8.x artisan test command in parallel requires at least ParaTest (brianium/paratest) 7.x. at C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/nunomaduro/collision/src/Adapters/Laravel/Commands/TestCommand.php:92)
+[stacktrace]
+#0 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Container/BoundMethod.php(36): NunoMaduro/Collision/Adapters/Laravel/Commands/TestCommand->handle()
+#1 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Container/Util.php(43): Illuminate/Container/BoundMethod::{closure:Illuminate/Container/BoundMethod::call():35}()
+#2 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Container/BoundMethod.php(95): Illuminate/Container/Util::unwrapIfClosure(Object(Closure))
+#3 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Container/BoundMethod.php(35): Illuminate/Container/BoundMethod::callBoundMethod(Object(Illuminate/Foundation/Application), Array, Object(Closure))
+#4 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Container/Container.php(696): Illuminate/Container/BoundMethod::call(Object(Illuminate/Foundation/Application), Array, Array, NULL)
+#5 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Console/Command.php(213): Illuminate/Container/Container->call(Array)
+#6 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/symfony/console/Command/Command.php(341): Illuminate/Console/Command->execute(Object(Symfony/Component/Console/Input/ArgvInput), Object(Illuminate/Console/OutputStyle))
+#7 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Console/Command.php(182): Symfony/Component/Console/Command/Command->run(Object(Symfony/Component/Console/Input/ArgvInput), Object(Illuminate/Console/OutputStyle))
+#8 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/symfony/console/Application.php(1117): Illuminate/Console/Command->run(Object(Symfony/Component/Console/Input/ArgvInput), Object(Symfony/Component/Console/Output/ConsoleOutput))
+#9 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/symfony/console/Application.php(356): Symfony/Component/Console/Application->doRunCommand(Object(NunoMaduro/Collision/Adapters/Laravel/Commands/TestCommand), Object(Symfony/Component/Console/Input/ArgvInput), Object(Symfony/Component/Console/Output/ConsoleOutput))
+#10 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/symfony/console/Application.php(195): Symfony/Component/Console/Application->doRun(Object(Symfony/Component/Console/Input/ArgvInput), Object(Symfony/Component/Console/Output/ConsoleOutput))
+#11 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Foundation/Console/Kernel.php(198): Symfony/Component/Console/Application->run(Object(Symfony/Component/Console/Input/ArgvInput), Object(Symfony/Component/Console/Output/ConsoleOutput))
+#12 C:/Users/mmdar/Desktop/code/work/CleanUx/artisan(35): Illuminate/Foundation/Console/Kernel->handle(Object(Symfony/Component/Console/Input/ArgvInput), Object(Symfony/Component/Console/Output/ConsoleOutput))
+#13 {main}
+"} 
+[2026-05-26 12:31:49] testing.ERROR: boom {"exception":"[object] (RuntimeException(code: 0): boom at C:/Users/mmdar/Desktop/code/work/CleanUx/tests/Feature/Api/ExceptionHandlerJsonTest.php:121)
+[stacktrace]
+#0 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Routing/CallableDispatcher.php(40): Tests/Feature/Api/ExceptionHandlerJsonTest->{closure:Tests/Feature/Api/ExceptionHandlerJsonTest::test_server_error_returns_unified_shape_in_production():120}()
+#1 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Routing/Route.php(244): Illuminate/Routing/CallableDispatcher->dispatch(Object(Illuminate/Routing/Route), Object(Closure))
+#2 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Routing/Route.php(215): Illuminate/Routing/Route->runCallable()
+#3 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Routing/Router.php(808): Illuminate/Routing/Route->run()
+#4 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(170): Illuminate/Routing/Router->{closure:Illuminate/Routing/Router::runRouteWithinStack():807}(Object(Illuminate/Http/Request))
+#5 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(127): Illuminate/Pipeline/Pipeline->{closure:Illuminate/Pipeline/Pipeline::prepareDestination():168}(Object(Illuminate/Http/Request))
+#6 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Routing/Router.php(807): Illuminate/Pipeline/Pipeline->then(Object(Closure))
+#7 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Routing/Router.php(786): Illuminate/Routing/Router->runRouteWithinStack(Object(Illuminate/Routing/Route), Object(Illuminate/Http/Request))
+#8 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Routing/Router.php(750): Illuminate/Routing/Router->runRoute(Object(Illuminate/Http/Request), Object(Illuminate/Routing/Route))
+#9 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Routing/Router.php(739): Illuminate/Routing/Router->dispatchToRoute(Object(Illuminate/Http/Request))
+#10 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Foundation/Http/Kernel.php(201): Illuminate/Routing/Router->dispatch(Object(Illuminate/Http/Request))
+#11 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(170): Illuminate/Foundation/Http/Kernel->{closure:Illuminate/Foundation/Http/Kernel::dispatchToRouter():198}(Object(Illuminate/Http/Request))
+#12 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/livewire/livewire/src/Features/SupportDisablingBackButtonCache/DisableBackButtonCacheMiddleware.php(19): Illuminate/Pipeline/Pipeline->{closure:Illuminate/Pipeline/Pipeline::prepareDestination():168}(Object(Illuminate/Http/Request))
+#13 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(209): Livewire/Features/SupportDisablingBackButtonCache/DisableBackButtonCacheMiddleware->handle(Object(Illuminate/Http/Request), Object(Closure))
+#14 C:/Users/mmdar/Desktop/code/work/CleanUx/app/Http/Middleware/SecurityHeaders.php(18): Illuminate/Pipeline/Pipeline->{closure:{closure:Illuminate/Pipeline/Pipeline::carry():184}:185}(Object(Illuminate/Http/Request))
+#15 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(209): App/Http/Middleware/SecurityHeaders->handle(Object(Illuminate/Http/Request), Object(Closure))
+#16 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/TransformsRequest.php(21): Illuminate/Pipeline/Pipeline->{closure:{closure:Illuminate/Pipeline/Pipeline::carry():184}:185}(Object(Illuminate/Http/Request))
+#17 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/ConvertEmptyStringsToNull.php(31): Illuminate/Foundation/Http/Middleware/TransformsRequest->handle(Object(Illuminate/Http/Request), Object(Closure))
+#18 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(209): Illuminate/Foundation/Http/Middleware/ConvertEmptyStringsToNull->handle(Object(Illuminate/Http/Request), Object(Closure))
+#19 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/TransformsRequest.php(21): Illuminate/Pipeline/Pipeline->{closure:{closure:Illuminate/Pipeline/Pipeline::carry():184}:185}(Object(Illuminate/Http/Request))
+#20 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/TrimStrings.php(51): Illuminate/Foundation/Http/Middleware/TransformsRequest->handle(Object(Illuminate/Http/Request), Object(Closure))
+#21 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(209): Illuminate/Foundation/Http/Middleware/TrimStrings->handle(Object(Illuminate/Http/Request), Object(Closure))
+#22 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Http/Middleware/ValidatePostSize.php(27): Illuminate/Pipeline/Pipeline->{closure:{closure:Illuminate/Pipeline/Pipeline::carry():184}:185}(Object(Illuminate/Http/Request))
+#23 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(209): Illuminate/Http/Middleware/ValidatePostSize->handle(Object(Illuminate/Http/Request), Object(Closure))
+#24 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/PreventRequestsDuringMaintenance.php(110): Illuminate/Pipeline/Pipeline->{closure:{closure:Illuminate/Pipeline/Pipeline::carry():184}:185}(Object(Illuminate/Http/Request))
+#25 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(209): Illuminate/Foundation/Http/Middleware/PreventRequestsDuringMaintenance->handle(Object(Illuminate/Http/Request), Object(Closure))
+#26 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Http/Middleware/HandleCors.php(62): Illuminate/Pipeline/Pipeline->{closure:{closure:Illuminate/Pipeline/Pipeline::carry():184}:185}(Object(Illuminate/Http/Request))
+#27 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(209): Illuminate/Http/Middleware/HandleCors->handle(Object(Illuminate/Http/Request), Object(Closure))
+#28 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Http/Middleware/TrustProxies.php(58): Illuminate/Pipeline/Pipeline->{closure:{closure:Illuminate/Pipeline/Pipeline::carry():184}:185}(Object(Illuminate/Http/Request))
+#29 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(209): Illuminate/Http/Middleware/TrustProxies->handle(Object(Illuminate/Http/Request), Object(Closure))
+#30 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Http/Middleware/TrustHosts.php(79): Illuminate/Pipeline/Pipeline->{closure:{closure:Illuminate/Pipeline/Pipeline::carry():184}:185}(Object(Illuminate/Http/Request))
+#31 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(209): Illuminate/Http/Middleware/TrustHosts->handle(Object(Illuminate/Http/Request), Object(Closure))
+#32 C:/Users/mmdar/Desktop/code/work/CleanUx/app/Http/Middleware/ForceHttps.php(16): Illuminate/Pipeline/Pipeline->{closure:{closure:Illuminate/Pipeline/Pipeline::carry():184}:185}(Object(Illuminate/Http/Request))
+#33 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(209): App/Http/Middleware/ForceHttps->handle(Object(Illuminate/Http/Request), Object(Closure))
+#34 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(127): Illuminate/Pipeline/Pipeline->{closure:{closure:Illuminate/Pipeline/Pipeline::carry():184}:185}(Object(Illuminate/Http/Request))
+#35 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Foundation/Http/Kernel.php(176): Illuminate/Pipeline/Pipeline->then(Object(Closure))
+#36 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Foundation/Http/Kernel.php(145): Illuminate/Foundation/Http/Kernel->sendRequestThroughRouter(Object(Illuminate/Http/Request))
+#37 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Foundation/Testing/Concerns/MakesHttpRequests.php(607): Illuminate/Foundation/Http/Kernel->handle(Object(Illuminate/Http/Request))
+#38 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Foundation/Testing/Concerns/MakesHttpRequests.php(573): Illuminate/Foundation/Testing/TestCase->call('GET', '/api/test-boom', Array, Array, Array, Array, '[]')
+#39 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Foundation/Testing/Concerns/MakesHttpRequests.php(381): Illuminate/Foundation/Testing/TestCase->json('GET', '/api/test-boom', Array, Array, 0)
+#40 C:/Users/mmdar/Desktop/code/work/CleanUx/tests/Feature/Api/ExceptionHandlerJsonTest.php(124): Illuminate/Foundation/Testing/TestCase->getJson('/api/test-boom')
+#41 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/phpunit/phpunit/src/Framework/TestCase.php(1667): Tests/Feature/Api/ExceptionHandlerJsonTest->test_server_error_returns_unified_shape_in_production()
+#42 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/phpunit/phpunit/src/Framework/TestCase.php(519): PHPUnit/Framework/TestCase->runTest()
+#43 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/phpunit/phpunit/src/Framework/TestRunner/TestRunner.php(87): PHPUnit/Framework/TestCase->runBare()
+#44 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/phpunit/phpunit/src/Framework/TestCase.php(365): PHPUnit/Framework/TestRunner->run(Object(Tests/Feature/Api/ExceptionHandlerJsonTest))
+#45 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/phpunit/phpunit/src/Framework/TestSuite.php(369): PHPUnit/Framework/TestCase->run()
+#46 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/phpunit/phpunit/src/Framework/TestSuite.php(369): PHPUnit/Framework/TestSuite->run()
+#47 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/phpunit/phpunit/src/Framework/TestSuite.php(369): PHPUnit/Framework/TestSuite->run()
+#48 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/phpunit/phpunit/src/TextUI/TestRunner.php(64): PHPUnit/Framework/TestSuite->run()
+#49 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/phpunit/phpunit/src/TextUI/Application.php(211): PHPUnit/TextUI/TestRunner->run(Object(PHPUnit/TextUI/Configuration/Configuration), Object(PHPUnit/Runner/ResultCache/DefaultResultCache), Object(PHPUnit/Framework/TestSuite))
+#50 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/phpunit/phpunit/phpunit(104): PHPUnit/TextUI/Application->run(Array)
+#51 {main}
+"} 
+[2026-05-26 12:31:55] testing.WARNING: AnthropicProvider non-2xx {"status":400,"body":{"error":{"type":"invalid_request_error","message":"Bad model name"}}} 
+[2026-05-26 12:32:26] testing.ERROR: boom {"exception":"[object] (RuntimeException(code: 0): boom at C:/Users/mmdar/Desktop/code/work/CleanUx/tests/Feature/Api/ExceptionHandlerJsonTest.php:121)
+[stacktrace]
+#0 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Routing/CallableDispatcher.php(40): Tests/Feature/Api/ExceptionHandlerJsonTest->{closure:Tests/Feature/Api/ExceptionHandlerJsonTest::test_server_error_returns_unified_shape_in_production():120}()
+#1 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Routing/Route.php(244): Illuminate/Routing/CallableDispatcher->dispatch(Object(Illuminate/Routing/Route), Object(Closure))
+#2 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Routing/Route.php(215): Illuminate/Routing/Route->runCallable()
+#3 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Routing/Router.php(808): Illuminate/Routing/Route->run()
+#4 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(170): Illuminate/Routing/Router->{closure:Illuminate/Routing/Router::runRouteWithinStack():807}(Object(Illuminate/Http/Request))
+#5 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(127): Illuminate/Pipeline/Pipeline->{closure:Illuminate/Pipeline/Pipeline::prepareDestination():168}(Object(Illuminate/Http/Request))
+#6 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Routing/Router.php(807): Illuminate/Pipeline/Pipeline->then(Object(Closure))
+#7 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Routing/Router.php(786): Illuminate/Routing/Router->runRouteWithinStack(Object(Illuminate/Routing/Route), Object(Illuminate/Http/Request))
+#8 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Routing/Router.php(750): Illuminate/Routing/Router->runRoute(Object(Illuminate/Http/Request), Object(Illuminate/Routing/Route))
+#9 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Routing/Router.php(739): Illuminate/Routing/Router->dispatchToRoute(Object(Illuminate/Http/Request))
+#10 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Foundation/Http/Kernel.php(201): Illuminate/Routing/Router->dispatch(Object(Illuminate/Http/Request))
+#11 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(170): Illuminate/Foundation/Http/Kernel->{closure:Illuminate/Foundation/Http/Kernel::dispatchToRouter():198}(Object(Illuminate/Http/Request))
+#12 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/livewire/livewire/src/Features/SupportDisablingBackButtonCache/DisableBackButtonCacheMiddleware.php(19): Illuminate/Pipeline/Pipeline->{closure:Illuminate/Pipeline/Pipeline::prepareDestination():168}(Object(Illuminate/Http/Request))
+#13 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(209): Livewire/Features/SupportDisablingBackButtonCache/DisableBackButtonCacheMiddleware->handle(Object(Illuminate/Http/Request), Object(Closure))
+#14 C:/Users/mmdar/Desktop/code/work/CleanUx/app/Http/Middleware/SecurityHeaders.php(18): Illuminate/Pipeline/Pipeline->{closure:{closure:Illuminate/Pipeline/Pipeline::carry():184}:185}(Object(Illuminate/Http/Request))
+#15 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(209): App/Http/Middleware/SecurityHeaders->handle(Object(Illuminate/Http/Request), Object(Closure))
+#16 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/TransformsRequest.php(21): Illuminate/Pipeline/Pipeline->{closure:{closure:Illuminate/Pipeline/Pipeline::carry():184}:185}(Object(Illuminate/Http/Request))
+#17 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/ConvertEmptyStringsToNull.php(31): Illuminate/Foundation/Http/Middleware/TransformsRequest->handle(Object(Illuminate/Http/Request), Object(Closure))
+#18 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(209): Illuminate/Foundation/Http/Middleware/ConvertEmptyStringsToNull->handle(Object(Illuminate/Http/Request), Object(Closure))
+#19 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/TransformsRequest.php(21): Illuminate/Pipeline/Pipeline->{closure:{closure:Illuminate/Pipeline/Pipeline::carry():184}:185}(Object(Illuminate/Http/Request))
+#20 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/TrimStrings.php(51): Illuminate/Foundation/Http/Middleware/TransformsRequest->handle(Object(Illuminate/Http/Request), Object(Closure))
+#21 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(209): Illuminate/Foundation/Http/Middleware/TrimStrings->handle(Object(Illuminate/Http/Request), Object(Closure))
+#22 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Http/Middleware/ValidatePostSize.php(27): Illuminate/Pipeline/Pipeline->{closure:{closure:Illuminate/Pipeline/Pipeline::carry():184}:185}(Object(Illuminate/Http/Request))
+#23 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(209): Illuminate/Http/Middleware/ValidatePostSize->handle(Object(Illuminate/Http/Request), Object(Closure))
+#24 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/PreventRequestsDuringMaintenance.php(110): Illuminate/Pipeline/Pipeline->{closure:{closure:Illuminate/Pipeline/Pipeline::carry():184}:185}(Object(Illuminate/Http/Request))
+#25 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(209): Illuminate/Foundation/Http/Middleware/PreventRequestsDuringMaintenance->handle(Object(Illuminate/Http/Request), Object(Closure))
+#26 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Http/Middleware/HandleCors.php(62): Illuminate/Pipeline/Pipeline->{closure:{closure:Illuminate/Pipeline/Pipeline::carry():184}:185}(Object(Illuminate/Http/Request))
+#27 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(209): Illuminate/Http/Middleware/HandleCors->handle(Object(Illuminate/Http/Request), Object(Closure))
+#28 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Http/Middleware/TrustProxies.php(58): Illuminate/Pipeline/Pipeline->{closure:{closure:Illuminate/Pipeline/Pipeline::carry():184}:185}(Object(Illuminate/Http/Request))
+#29 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(209): Illuminate/Http/Middleware/TrustProxies->handle(Object(Illuminate/Http/Request), Object(Closure))
+#30 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Http/Middleware/TrustHosts.php(79): Illuminate/Pipeline/Pipeline->{closure:{closure:Illuminate/Pipeline/Pipeline::carry():184}:185}(Object(Illuminate/Http/Request))
+#31 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(209): Illuminate/Http/Middleware/TrustHosts->handle(Object(Illuminate/Http/Request), Object(Closure))
+#32 C:/Users/mmdar/Desktop/code/work/CleanUx/app/Http/Middleware/ForceHttps.php(16): Illuminate/Pipeline/Pipeline->{closure:{closure:Illuminate/Pipeline/Pipeline::carry():184}:185}(Object(Illuminate/Http/Request))
+#33 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(209): App/Http/Middleware/ForceHttps->handle(Object(Illuminate/Http/Request), Object(Closure))
+#34 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(127): Illuminate/Pipeline/Pipeline->{closure:{closure:Illuminate/Pipeline/Pipeline::carry():184}:185}(Object(Illuminate/Http/Request))
+#35 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Foundation/Http/Kernel.php(176): Illuminate/Pipeline/Pipeline->then(Object(Closure))
+#36 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Foundation/Http/Kernel.php(145): Illuminate/Foundation/Http/Kernel->sendRequestThroughRouter(Object(Illuminate/Http/Request))
+#37 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Foundation/Testing/Concerns/MakesHttpRequests.php(607): Illuminate/Foundation/Http/Kernel->handle(Object(Illuminate/Http/Request))
+#38 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Foundation/Testing/Concerns/MakesHttpRequests.php(573): Illuminate/Foundation/Testing/TestCase->call('GET', '/api/test-boom', Array, Array, Array, Array, '[]')
+#39 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/laravel/framework/src/Illuminate/Foundation/Testing/Concerns/MakesHttpRequests.php(381): Illuminate/Foundation/Testing/TestCase->json('GET', '/api/test-boom', Array, Array, 0)
+#40 C:/Users/mmdar/Desktop/code/work/CleanUx/tests/Feature/Api/ExceptionHandlerJsonTest.php(124): Illuminate/Foundation/Testing/TestCase->getJson('/api/test-boom')
+#41 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/phpunit/phpunit/src/Framework/TestCase.php(1667): Tests/Feature/Api/ExceptionHandlerJsonTest->test_server_error_returns_unified_shape_in_production()
+#42 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/phpunit/phpunit/src/Framework/TestCase.php(519): PHPUnit/Framework/TestCase->runTest()
+#43 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/phpunit/phpunit/src/Framework/TestRunner/TestRunner.php(87): PHPUnit/Framework/TestCase->runBare()
+#44 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/phpunit/phpunit/src/Framework/TestCase.php(365): PHPUnit/Framework/TestRunner->run(Object(Tests/Feature/Api/ExceptionHandlerJsonTest))
+#45 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/phpunit/phpunit/src/Framework/TestSuite.php(369): PHPUnit/Framework/TestCase->run()
+#46 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/phpunit/phpunit/src/Framework/TestSuite.php(369): PHPUnit/Framework/TestSuite->run()
+#47 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/phpunit/phpunit/src/Framework/TestSuite.php(369): PHPUnit/Framework/TestSuite->run()
+#48 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/phpunit/phpunit/src/TextUI/TestRunner.php(64): PHPUnit/Framework/TestSuite->run()
+#49 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/phpunit/phpunit/src/TextUI/Application.php(211): PHPUnit/TextUI/TestRunner->run(Object(PHPUnit/TextUI/Configuration/Configuration), Object(PHPUnit/Runner/ResultCache/DefaultResultCache), Object(PHPUnit/Framework/TestSuite))
+#50 C:/Users/mmdar/Desktop/code/work/CleanUx/vendor/phpunit/phpunit/phpunit(104): PHPUnit/TextUI/Application->run(Array)
+#51 {main}
+"} 
+[2026-05-26 12:32:31] testing.WARNING: AnthropicProvider non-2xx {"status":400,"body":{"error":{"type":"invalid_request_error","message":"Bad model name"}}} 
+[2026-05-26 12:33:39] testing.WARNING: AiDispatch: aucun prestataire tagué pour le métier requis, fallback ouvert. {"booking_id":1,"required_trade_id":1,"open_candidates":2} 
+[2026-05-26 12:33:49] testing.INFO: [email_v2] rate limit hit {"to":"limit@test.com"} 
+[2026-05-26 12:34:15] testing.WARNING: FxService: all providers failed, using 1:1 fallback {"base":"EUR","quotes":["FAIL"]} 
+[2026-05-26 12:34:15] testing.WARNING: AiDispatch: aucun prestataire tagué pour le métier requis, fallback ouvert. {"booking_id":1,"required_trade_id":1,"open_candidates":2} 
+[2026-05-26 12:34:25] testing.INFO: [email_v2] rate limit hit {"to":"limit@test.com"} 
+[2026-05-26 12:34:32] testing.INFO: InsuranceMockProvider::purchase {"plan_code":"standard","booking_id":1,"premium_cents":900} 
+[2026-05-26 12:34:33] testing.INFO: InsuranceMockProvider::purchase {"plan_code":"basic","booking_id":1,"premium_cents":400} 
+[2026-05-26 12:34:33] testing.INFO: InsuranceMockProvider::purchase {"plan_code":"basic","booking_id":2,"premium_cents":400} 
+[2026-05-26 12:34:33] testing.INFO: InsuranceMockProvider::purchase {"plan_code":"basic","booking_id":1,"premium_cents":400} 
+[2026-05-26 12:34:33] testing.INFO: InsuranceMockProvider::purchase {"plan_code":"basic","booking_id":1,"premium_cents":400} 
+[2026-05-26 12:34:33] testing.INFO: InsuranceMockProvider::cancelPolicy {"external_id":"mock_pol_kkuwvsmmljas"} 
+[2026-05-26 12:34:34] testing.INFO: InsuranceMockProvider::purchase {"plan_code":"standard","booking_id":1,"premium_cents":900} 
+[2026-05-26 12:34:34] testing.INFO: InsuranceMockProvider::fileClaim {"policy":"mock_pol_jcarjui3mvf8","incident_type":"damage","amount":40000} 
+[2026-05-26 12:34:34] testing.INFO: InsuranceMockProvider::purchase {"plan_code":"standard","booking_id":1,"premium_cents":900} 
+[2026-05-26 12:34:36] testing.INFO: InsuranceMockProvider::purchase {"plan_code":"basic","booking_id":1,"premium_cents":400} 
+[2026-05-26 12:34:36] testing.INFO: InsuranceMockProvider::purchase {"plan_code":"basic","booking_id":1,"premium_cents":400} 
+[2026-05-26 12:34:36] testing.INFO: InsuranceMockProvider::purchase {"plan_code":"fail_plan","booking_id":1,"premium_cents":100} 
+[2026-05-26 12:34:36] testing.INFO: InsuranceMockProvider::purchase {"plan_code":"basic","booking_id":1,"premium_cents":400} 
+[2026-05-26 12:34:36] testing.INFO: InsuranceMockProvider::cancelPolicy {"external_id":"mock_pol_x53kak4g6rbm"} 
+[2026-05-26 12:34:37] testing.INFO: InsuranceMockProvider::purchase {"plan_code":"standard","booking_id":1,"premium_cents":900} 
+[2026-05-26 12:34:37] testing.INFO: InsuranceMockProvider::fileClaim {"policy":"mock_pol_mkma8coirl5v","incident_type":"damage","amount":40000} 
+[2026-05-26 12:34:37] testing.INFO: InsuranceMockProvider::purchase {"plan_code":"basic","booking_id":1,"premium_cents":400} 
+[2026-05-26 12:34:37] testing.INFO: InsuranceMockProvider::purchase {"plan_code":"standard","booking_id":1,"premium_cents":900} 
+[2026-05-26 12:34:37] testing.INFO: InsuranceMockProvider::purchase {"plan_code":"standard","booking_id":1,"premium_cents":900} 
+[2026-05-26 12:34:37] testing.INFO: InsuranceMockProvider::fileClaim {"policy":"mock_pol_hegpk8jd77bx","incident_type":"fraud_simulation","amount":10000} 
+[2026-05-26 12:34:37] testing.INFO: InsuranceMockProvider::purchase {"plan_code":"standard","booking_id":1,"premium_cents":900} 
+[2026-05-26 12:34:38] testing.INFO: InsuranceMockProvider::fileClaim {"policy":"mock_pol_trzv8i54vksi","incident_type":"damage","amount":40000} 
+[2026-05-26 12:34:38] testing.INFO: InsuranceMockProvider::purchase {"plan_code":"basic","booking_id":1,"premium_cents":400} 
+[2026-05-26 12:34:39] testing.INFO: InsuranceMockProvider::purchase {"plan_code":"basic","booking_id":1,"premium_cents":300} 
+[2026-05-26 12:34:42] testing.INFO: [webhooks_v2] event ignored (not whitelisted) {"event_code":"subscription.created"} 
+[2026-05-26 12:34:43] testing.INFO: [webhooks_v2] event ignored (not whitelisted) {"event_code":"booking.created"} 
+[2026-05-26 12:34:43] testing.INFO: [webhooks_v2] event ignored (not whitelisted) {"event_code":"booking.created"} 
+[2026-05-26 12:34:43] testing.INFO: [webhooks_v2] event ignored (not whitelisted) {"event_code":"booking.created"} 
+[2026-05-26 12:34:43] testing.INFO: [webhooks_v2] event ignored (not whitelisted) {"event_code":"payment.unauthorized"} 
+[2026-05-26 12:34:44] testing.INFO: [subscriptions_v2] auto-cancelled after consecutive failures {"subscription_id":1,"failures":3} 
+[2026-05-26 12:34:47] testing.WARNING: FxService: all providers failed, using 1:1 fallback {"base":"EUR","quotes":["FAIL"]} 
+[2026-05-26 12:35:00] testing.WARNING: Money: pas de taux disponible EUR → XYZ  
+[2026-05-26 12:35:01] testing.WARNING: [loyalty_redemption] voucher email failed {"redemption_id":1,"error":"Champ to_email requis."} 
+[2026-05-26 12:35:02] testing.WARNING: [loyalty_redemption] voucher email failed {"redemption_id":1,"error":"Champ to_email requis."} 
+[2026-05-26 12:35:02] testing.WARNING: [loyalty_redemption] voucher email failed {"redemption_id":1,"error":"Champ to_email requis."} 
+[2026-05-26 12:35:03] testing.INFO: InsuranceMockProvider::purchase {"plan_code":"standard","booking_id":1,"premium_cents":900} 
+[2026-05-26 12:35:03] testing.INFO: InsuranceMockProvider::purchase {"plan_code":"basic","booking_id":1,"premium_cents":400} 
+[2026-05-26 12:35:03] testing.INFO: InsuranceMockProvider::purchase {"plan_code":"basic","booking_id":2,"premium_cents":400} 
+[2026-05-26 12:35:03] testing.INFO: InsuranceMockProvider::purchase {"plan_code":"basic","booking_id":1,"premium_cents":400} 
+[2026-05-26 12:35:04] testing.INFO: InsuranceMockProvider::purchase {"plan_code":"basic","booking_id":1,"premium_cents":400} 
+[2026-05-26 12:35:04] testing.INFO: InsuranceMockProvider::cancelPolicy {"external_id":"mock_pol_1pyxhfqcmvko"} 
+[2026-05-26 12:35:04] testing.INFO: InsuranceMockProvider::purchase {"plan_code":"standard","booking_id":1,"premium_cents":900} 
+[2026-05-26 12:35:04] testing.INFO: InsuranceMockProvider::fileClaim {"policy":"mock_pol_3j9u5jkq2hsq","incident_type":"damage","amount":40000} 
+[2026-05-26 12:35:04] testing.INFO: InsuranceMockProvider::purchase {"plan_code":"standard","booking_id":1,"premium_cents":900} 
+[2026-05-26 12:35:05] testing.INFO: Marketing email send {"to":"zacharie76@example.org","subject":"Hi"} 
+[2026-05-26 12:35:06] testing.INFO: InsuranceMockProvider::purchase {"plan_code":"basic","booking_id":1,"premium_cents":400} 
+[2026-05-26 12:35:06] testing.INFO: InsuranceMockProvider::purchase {"plan_code":"basic","booking_id":1,"premium_cents":400} 
+[2026-05-26 12:35:06] testing.INFO: InsuranceMockProvider::purchase {"plan_code":"fail_plan","booking_id":1,"premium_cents":100} 
+[2026-05-26 12:35:07] testing.INFO: InsuranceMockProvider::purchase {"plan_code":"basic","booking_id":1,"premium_cents":400} 
+[2026-05-26 12:35:07] testing.INFO: InsuranceMockProvider::cancelPolicy {"external_id":"mock_pol_6lkjoqpinwtl"} 
+[2026-05-26 12:35:07] testing.INFO: InsuranceMockProvider::purchase {"plan_code":"standard","booking_id":1,"premium_cents":900} 
+[2026-05-26 12:35:07] testing.INFO: InsuranceMockProvider::fileClaim {"policy":"mock_pol_7juyrm6cwn8v","incident_type":"damage","amount":40000} 
+[2026-05-26 12:35:07] testing.INFO: InsuranceMockProvider::purchase {"plan_code":"basic","booking_id":1,"premium_cents":400} 
+[2026-05-26 12:35:07] testing.INFO: InsuranceMockProvider::purchase {"plan_code":"standard","booking_id":1,"premium_cents":900} 
+[2026-05-26 12:35:08] testing.INFO: InsuranceMockProvider::purchase {"plan_code":"standard","booking_id":1,"premium_cents":900} 
+[2026-05-26 12:35:08] testing.INFO: InsuranceMockProvider::fileClaim {"policy":"mock_pol_pxtrak5oxyhk","incident_type":"fraud_simulation","amount":10000} 
+[2026-05-26 12:35:08] testing.INFO: InsuranceMockProvider::purchase {"plan_code":"standard","booking_id":1,"premium_cents":900} 
+[2026-05-26 12:35:08] testing.INFO: InsuranceMockProvider::fileClaim {"policy":"mock_pol_7ib2lmtojg12","incident_type":"damage","amount":40000} 
+[2026-05-26 12:35:08] testing.INFO: InsuranceMockProvider::purchase {"plan_code":"basic","booking_id":1,"premium_cents":400} 
+[2026-05-26 12:35:09] testing.INFO: InsuranceMockProvider::purchase {"plan_code":"basic","booking_id":1,"premium_cents":300} 
+[2026-05-26 12:35:12] testing.INFO: [webhooks_v2] event ignored (not whitelisted) {"event_code":"subscription.created"} 
+[2026-05-26 12:35:13] testing.INFO: [webhooks_v2] event ignored (not whitelisted) {"event_code":"booking.created"} 
+[2026-05-26 12:35:13] testing.INFO: [webhooks_v2] event ignored (not whitelisted) {"event_code":"booking.created"} 
+[2026-05-26 12:35:13] testing.INFO: [webhooks_v2] event ignored (not whitelisted) {"event_code":"booking.created"} 
+[2026-05-26 12:35:14] testing.INFO: [webhooks_v2] event ignored (not whitelisted) {"event_code":"payment.unauthorized"} 
+[2026-05-26 12:35:14] testing.INFO: [subscriptions_v2] auto-cancelled after consecutive failures {"subscription_id":1,"failures":3} 
+[2026-05-26 12:35:29] testing.WARNING: Money: pas de taux disponible EUR → XYZ  
+[2026-05-26 12:35:31] testing.WARNING: [loyalty_redemption] voucher email failed {"redemption_id":1,"error":"Champ to_email requis."} 
+[2026-05-26 12:35:32] testing.WARNING: [loyalty_redemption] voucher email failed {"redemption_id":1,"error":"Champ to_email requis."} 
+[2026-05-26 12:35:32] testing.WARNING: [loyalty_redemption] voucher email failed {"redemption_id":1,"error":"Champ to_email requis."} 
+[2026-05-26 12:35:35] testing.INFO: Marketing email send {"to":"audrey.bertin@example.org","subject":"Hi"} 
+[2026-05-26 12:35:40] testing.WARNING: StripeConnectWebhook: signature invalide {"error":"Unable to extract timestamp and signatures from header"} 
+[2026-05-26 12:35:40] testing.WARNING: StripeConnectWebhook: STRIPE_CONNECT_WEBHOOK_SECRET non configuré  
+[2026-05-26 12:35:41] testing.INFO: StripeConnectWebhook: stored + dispatched {"event_id":1,"stripe_event_id":"evt_test_valid","type":"payment_intent.succeeded"} 
+[2026-05-26 12:35:41] testing.INFO: StripeConnectWebhook: stored + dispatched {"event_id":1,"stripe_event_id":"evt_test_replay","type":"payment_intent.succeeded"} 
+[2026-05-26 12:35:41] testing.INFO: StripeConnectWebhook: replay détecté, skip dispatch {"event_id":1,"stripe_event_id":"evt_test_replay","status":"processed"} 
+[2026-05-26 12:35:44] testing.WARNING: StripeConnectWebhook: STRIPE_CONNECT_WEBHOOK_SECRET non configuré  
+[2026-05-26 12:35:45] testing.INFO: Provider auto-offline (stale heartbeat) {"provider_user_id":1,"last_heartbeat_at":"2026-05-26T12:25:45+00:00"} 
+[2026-05-26 12:35:46] testing.INFO: MissionDispatchService: offre créée {"assignment_id":1,"mission_id":2,"provider_id":1,"expires_at":"2026-05-26T12:36:01+00:00"} 
+[2026-05-26 12:35:46] testing.INFO: MissionDispatchService: offre créée {"assignment_id":1,"mission_id":2,"provider_id":1,"expires_at":"2026-05-26T12:36:01+00:00"} 
+[2026-05-26 12:35:46] testing.INFO: MissionDispatchService: assignment accepté {"assignment_id":1,"response_seconds":0} 
+[2026-05-26 12:35:46] testing.INFO: MissionDispatchService: offre créée {"assignment_id":1,"mission_id":2,"provider_id":1,"expires_at":"2026-05-26T12:36:01+00:00"} 
+[2026-05-26 12:35:46] testing.INFO: MissionDispatchService: offre créée {"assignment_id":2,"mission_id":2,"provider_id":2,"expires_at":"2026-05-26T12:36:01+00:00"} 
+[2026-05-26 12:35:46] testing.INFO: MissionDispatchService: assignment accepté {"assignment_id":1,"response_seconds":0} 
+[2026-05-26 12:35:47] testing.INFO: MissionDispatchService: offre créée {"assignment_id":1,"mission_id":2,"provider_id":1,"expires_at":"2026-05-26T12:36:02+00:00"} 
+[2026-05-26 12:35:47] testing.INFO: MissionDispatchService: assignment refusé {"assignment_id":1,"reason":"too far","response_seconds":0} 
+[2026-05-26 12:35:47] testing.INFO: MissionDispatchService: aucun candidat trouvé {"mission_id":2} 
+[2026-05-26 12:35:47] testing.INFO: MissionDispatchService: offre créée {"assignment_id":1,"mission_id":2,"provider_id":1,"expires_at":"2026-05-26T12:36:02+00:00"} 
+[2026-05-26 12:35:47] testing.INFO: MissionDispatchService: offre créée {"assignment_id":1,"mission_id":2,"provider_id":1,"expires_at":"2026-05-26T12:36:02+00:00"} 
+[2026-05-26 12:35:47] testing.INFO: MissionDispatchService: assignment accepté {"assignment_id":1,"response_seconds":0} 
+[2026-05-26 12:35:47] testing.INFO: MissionDispatchService: offre créée {"assignment_id":1,"mission_id":2,"provider_id":1,"expires_at":"2026-05-26T12:36:02+00:00"} 
+[2026-05-26 12:35:47] testing.INFO: MissionDispatchService: assignment accepté {"assignment_id":1,"response_seconds":0} 
+[2026-05-26 12:35:53] testing.WARNING: StripeConnectWebhook: signature invalide {"error":"Unable to extract timestamp and signatures from header"} 
+[2026-05-26 12:35:53] testing.WARNING: StripeConnectWebhook: STRIPE_CONNECT_WEBHOOK_SECRET non configuré  
+[2026-05-26 12:35:58] testing.INFO: CancelBookingService: client cancellation {"booking_id":1,"fee_amount":50.0,"reason":"tier_2"} 
+[2026-05-26 12:36:11] testing.WARNING: StripeConnectWebhook: signature invalide {"error":"Unable to extract timestamp and signatures from header"} 
+[2026-05-26 12:36:11] testing.WARNING: StripeConnectWebhook: STRIPE_CONNECT_WEBHOOK_SECRET non configuré  
+[2026-05-26 12:36:11] testing.INFO: StripeConnectWebhook: stored + dispatched {"event_id":1,"stripe_event_id":"evt_test_valid","type":"payment_intent.succeeded"} 
+[2026-05-26 12:36:11] testing.INFO: StripeConnectWebhook: stored + dispatched {"event_id":1,"stripe_event_id":"evt_test_replay","type":"payment_intent.succeeded"} 
+[2026-05-26 12:36:11] testing.INFO: StripeConnectWebhook: replay détecté, skip dispatch {"event_id":1,"stripe_event_id":"evt_test_replay","status":"processed"} 
+[2026-05-26 12:36:14] testing.WARNING: StripeConnectWebhook: STRIPE_CONNECT_WEBHOOK_SECRET non configuré  
+[2026-05-26 12:36:16] testing.INFO: Provider auto-offline (stale heartbeat) {"provider_user_id":1,"last_heartbeat_at":"2026-05-26T12:26:16+00:00"} 
+[2026-05-26 12:36:16] testing.INFO: MissionDispatchService: offre créée {"assignment_id":1,"mission_id":2,"provider_id":1,"expires_at":"2026-05-26T12:36:31+00:00"} 
+[2026-05-26 12:36:17] testing.INFO: MissionDispatchService: offre créée {"assignment_id":1,"mission_id":2,"provider_id":1,"expires_at":"2026-05-26T12:36:32+00:00"} 
+[2026-05-26 12:36:17] testing.INFO: MissionDispatchService: assignment accepté {"assignment_id":1,"response_seconds":0} 
+[2026-05-26 12:36:17] testing.INFO: MissionDispatchService: offre créée {"assignment_id":1,"mission_id":2,"provider_id":1,"expires_at":"2026-05-26T12:36:32+00:00"} 
+[2026-05-26 12:36:17] testing.INFO: MissionDispatchService: offre créée {"assignment_id":2,"mission_id":2,"provider_id":2,"expires_at":"2026-05-26T12:36:32+00:00"} 
+[2026-05-26 12:36:17] testing.INFO: MissionDispatchService: assignment accepté {"assignment_id":1,"response_seconds":0} 
+[2026-05-26 12:36:17] testing.INFO: MissionDispatchService: offre créée {"assignment_id":1,"mission_id":2,"provider_id":1,"expires_at":"2026-05-26T12:36:32+00:00"} 
+[2026-05-26 12:36:17] testing.INFO: MissionDispatchService: assignment refusé {"assignment_id":1,"reason":"too far","response_seconds":0} 
+[2026-05-26 12:36:17] testing.INFO: MissionDispatchService: aucun candidat trouvé {"mission_id":2} 
+[2026-05-26 12:36:17] testing.INFO: MissionDispatchService: offre créée {"assignment_id":1,"mission_id":2,"provider_id":1,"expires_at":"2026-05-26T12:36:32+00:00"} 
+[2026-05-26 12:36:18] testing.INFO: MissionDispatchService: offre créée {"assignment_id":1,"mission_id":2,"provider_id":1,"expires_at":"2026-05-26T12:36:33+00:00"} 
+[2026-05-26 12:36:18] testing.INFO: MissionDispatchService: assignment accepté {"assignment_id":1,"response_seconds":0} 
+[2026-05-26 12:36:18] testing.INFO: MissionDispatchService: offre créée {"assignment_id":1,"mission_id":2,"provider_id":1,"expires_at":"2026-05-26T12:36:33+00:00"} 
+[2026-05-26 12:36:18] testing.INFO: MissionDispatchService: assignment accepté {"assignment_id":1,"response_seconds":0} 
+[2026-05-26 12:36:24] testing.WARNING: StripeConnectWebhook: signature invalide {"error":"Unable to extract timestamp and signatures from header"} 
+[2026-05-26 12:36:24] testing.WARNING: StripeConnectWebhook: STRIPE_CONNECT_WEBHOOK_SECRET non configuré  
+[2026-05-26 12:36:29] testing.INFO: CancelBookingService: client cancellation {"booking_id":1,"fee_amount":50.0,"reason":"tier_2"} 
+[2026-05-26 12:36:58] testing.INFO: PushMockProvider::send {"platform":"ios","token_prefix":"tok_chan_001...","title":"Booking confirmé","category":"transactional","idempotency_key":"booking-confirmed:42:1:dev0"} 
+[2026-05-26 12:36:58] testing.INFO: PushMockProvider::send {"platform":"android","token_prefix":"tok_6a1593ea...","title":"Hello","category":"transactional","idempotency_key":null} 
+[2026-05-26 12:36:58] testing.INFO: PushMockProvider::send {"platform":"android","token_prefix":"tok_6a1593ea...","title":"A","category":"transactional","idempotency_key":"test:idem:001"} 
+[2026-05-26 12:36:59] testing.INFO: PushMockProvider::send {"platform":"android","token_prefix":"invalid_toke...","title":"t","category":"transactional","idempotency_key":null} 
+[2026-05-26 12:36:59] testing.INFO: PushMockProvider::send {"platform":"android","token_prefix":"fail_token_a...","title":"t","category":"transactional","idempotency_key":null} 
+[2026-05-26 12:36:59] testing.INFO: PushMockProvider::send {"platform":"android","token_prefix":"tok_6a1593eb...","title":"t","category":"transactional","idempotency_key":null} 
+[2026-05-26 12:36:59] testing.INFO: PushMockProvider::send {"platform":"android","token_prefix":"tok_6a1593eb...","title":"t","category":"transactional","idempotency_key":null} 
+[2026-05-26 12:36:59] testing.INFO: PushMockProvider::send {"platform":"ios","token_prefix":"tok_6a1593eb...","title":"Hi","category":"transactional","idempotency_key":null} 
+[2026-05-26 12:36:59] testing.INFO: PushMockProvider::send {"platform":"android","token_prefix":"tok_6a1593eb...","title":"Hi","category":"transactional","idempotency_key":null} 
+[2026-05-26 12:37:15] testing.WARNING: StripeConnectWebhook: signature invalide {"error":"Unable to extract timestamp and signatures from header"} 
+[2026-05-26 12:37:15] testing.WARNING: StripeConnectWebhook: STRIPE_CONNECT_WEBHOOK_SECRET non configuré  
+[2026-05-26 12:37:16] testing.INFO: MissionDispatchService: offre créée {"assignment_id":1,"mission_id":1,"provider_id":1,"expires_at":"2026-05-26T12:37:31+00:00"} 
+[2026-05-26 12:37:16] testing.INFO: MissionDispatchService: assignment accepté {"assignment_id":1,"response_seconds":0} 

@@ -49,10 +49,17 @@ const styles = StyleSheet.create({
     backgroundColor: '#ffffff', borderRadius: radius.lg, padding: spacing.md + 4,
     ...shadows.sm, flex: 1,
   },
-  title: { fontSize: typography.fontSize.xs, color: colors.surface[500], marginBottom: spacing.xs },
+  title: {
+    ...typography.preset.subhead,
+    color: colors.surface[500],
+    marginBottom: spacing.xs,
+    fontFamily: typography.fontFamily.bodyMedium,
+  },
   value: {
+    ...typography.preset.headline,
     fontSize: typography.fontSize.xl,
     fontWeight: typography.fontWeight.bold,
+    fontFamily: typography.fontFamily.display,
     fontVariant: ['tabular-nums'],
   },
   hint: { fontSize: typography.fontSize.xs, color: colors.surface[500], marginTop: spacing.xs },

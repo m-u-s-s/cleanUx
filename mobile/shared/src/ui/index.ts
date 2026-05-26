@@ -14,6 +14,7 @@ export { BottomSheet } from './BottomSheet';
 export { fadeUpConfig, fadeInConfig, shimmerConfig } from './animations';
 export { EmptyState } from './EmptyState';
 export { ErrorState } from './ErrorState';
+export { ErrorScreen } from './ErrorScreen';
 export { ProgressBar } from './ProgressBar';
 export { AnimatedListItem } from './AnimatedListItem';
 export { SuccessOverlay } from './SuccessOverlay';

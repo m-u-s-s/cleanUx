@@ -1,3 +1,4 @@
+{{-- Full KPI card with glassmorphism background, icon, and gradient. Use for main dashboard stats. --}}
 @props([
     'title',
     'value',

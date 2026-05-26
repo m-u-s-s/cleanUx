@@ -263,7 +263,8 @@ class PermissionService
         }
 
         // 2. Permissions par défaut du rôle
-        $rolePermissions = self::ROLE_PERMISSIONS[$member->role] ?? [];
+        $role = $member->role instanceof \BackedEnum ? $member->role->value : $member->role;
+        $rolePermissions = self::ROLE_PERMISSIONS[$role] ?? [];
 
         return in_array($permission, $rolePermissions, true);
     }
@@ -276,7 +277,8 @@ class PermissionService
     public function allPermissionsFor(OrganizationMember $member): array
     {
         $allPerms = $this->allPermissionKeys();
-        $rolePerms = self::ROLE_PERMISSIONS[$member->role] ?? [];
+        $role = $member->role instanceof \BackedEnum ? $member->role->value : $member->role;
+        $rolePerms = self::ROLE_PERMISSIONS[$role] ?? [];
         $customPerms = $member->permissions ?? [];
 
         $result = [];

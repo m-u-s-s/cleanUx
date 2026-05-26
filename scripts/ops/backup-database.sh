@@ -24,3 +24,8 @@ mysqldump \
   "$DB_DATABASE" | gzip > "$BACKUP_DIR/cleanux-db-$TIMESTAMP.sql.gz"
 
 echo "Backup DB créé: $BACKUP_DIR/cleanux-db-$TIMESTAMP.sql.gz"
+
+# Rotation: keep last N daily backups
+RETENTION_DAYS=${BACKUP_RETENTION_DAYS:-30}
+find "$BACKUP_DIR" -name "*.sql.gz" -type f -mtime +$RETENTION_DAYS -delete
+echo "Cleaned backups older than $RETENTION_DAYS days"

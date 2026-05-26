@@ -165,4 +165,11 @@ class WebhooksV2Controller extends Controller
         $replayed = $this->dispatcher->replay($delivery);
         return response()->json(['ok' => true, 'delivery' => $replayed]);
     }
+
+    public function adminDeadLetter(WebhookDelivery $delivery): JsonResponse
+    {
+        app(\App\Services\WebhooksV2\WebhookDeliveryRunner::class)->markDeadLetter($delivery);
+
+        return response()->json(['ok' => true, 'status' => $delivery->fresh()->status]);
+    }
 }
