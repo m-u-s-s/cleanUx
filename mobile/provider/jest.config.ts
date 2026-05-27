@@ -43,6 +43,8 @@ const config: Config = {
     '^expo-notifications$': '<rootDir>/__mocks__/expo-notifications',
     // expo-image-picker: use local stub to avoid native media library init in Jest
     '^expo-image-picker$': '<rootDir>/__mocks__/expo-image-picker',
+    // @react-native-async-storage/async-storage: in-memory mock for Jest
+    '^@react-native-async-storage/async-storage$': '<rootDir>/__mocks__/@react-native-async-storage/async-storage',
     // expo-font + @expo-google-fonts: avoid native font loading in Jest
     '^expo-font$': '<rootDir>/__mocks__/expo-font',
     '^@expo-google-fonts/figtree$': '<rootDir>/__mocks__/@expo-google-fonts/figtree',
