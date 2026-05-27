@@ -245,8 +245,8 @@
         <div class="flex h-16 justify-between">
             <div class="flex min-w-0">
                 <div class="flex shrink-0 items-center">
-                    <a href="{{ $homeHref }}" class="flex items-center gap-2 text-xl font-black tracking-tight text-blue-700">
-                        <span class="inline-flex h-9 w-9 items-center justify-center rounded-2xl bg-blue-600 text-sm font-black text-white shadow-sm">
+                    <a href="{{ $homeHref }}" class="flex items-center gap-2 text-xl font-black tracking-tight text-blue-700 dark:text-blue-400">
+                        <span class="inline-flex h-9 w-9 items-center justify-center rounded-2xl bg-blue-600 text-sm font-black text-white shadow-sm dark:bg-blue-500">
                             CU
                         </span>
                         <span>{{ config('app.name', 'CleanUx') }}</span>
@@ -267,7 +267,7 @@
                         <x-dropdown align="left" width="60">
                             <x-slot name="trigger">
                                 <button type="button"
-                                    class="inline-flex items-center border-b-2 border-transparent px-1 pt-1 text-sm font-semibold leading-5 text-slate-500 transition hover:border-blue-300 hover:text-blue-700 focus:border-blue-400 focus:text-blue-700 focus:outline-none">
+                                    class="inline-flex items-center border-b-2 border-transparent px-1 pt-1 text-sm font-semibold leading-5 text-slate-500 transition hover:border-blue-300 hover:text-blue-700 focus:border-blue-400 focus:text-blue-700 focus:outline-none dark:text-slate-300 dark:hover:border-blue-500 dark:hover:text-blue-400 dark:focus:text-blue-400">
                                     Toutes les pages
                                     <svg class="ms-1 h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
                                         <path fill-rule="evenodd"
@@ -280,7 +280,7 @@
                             <x-slot name="content">
                                 <div class="max-h-[70vh] overflow-y-auto py-2">
                                     @foreach($groups as $group)
-                                    <div class="px-4 pb-1 pt-3 text-[11px] font-black uppercase tracking-[0.18em] text-slate-400">
+                                    <div class="px-4 pb-1 pt-3 text-[11px] font-black uppercase tracking-[0.18em] text-slate-400 dark:text-slate-500">
                                         {{ $group['group'] }}
                                     </div>
 
@@ -335,7 +335,7 @@
                 @auth
                 @if($user?->isClient() && Route::has('client.rendezvous.create'))
                 <a href="{{ route('client.rendezvous.create') }}"
-                    class="inline-flex items-center rounded-xl bg-blue-600 px-4 py-2 text-sm font-bold text-white shadow-sm transition hover:bg-blue-700">
+                    class="inline-flex items-center rounded-xl bg-blue-600 px-4 py-2 text-sm font-bold text-white shadow-sm transition hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-400">
                     ➕ Réserver
                 </a>
                 @endif
@@ -344,7 +344,7 @@
                 <a href="{{ route('client.recurring.templates') }}">⭐ Templates 1-clic</a>
                 @if(Route::has('notifications.index'))
                 <a href="{{ route('notifications.index') }}"
-                    class="relative inline-flex items-center rounded-xl bg-slate-100 px-3 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-200">
+                    class="relative inline-flex items-center rounded-xl bg-slate-100 px-3 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700 dark:hover:text-white">
                     🔔 Notifications
 
                     @if($unreadCount > 0)
@@ -358,7 +358,7 @@
                 <div class="relative ms-2">
                     <x-dropdown align="right" width="48">
                         <x-slot name="trigger">
-                            <button class="inline-flex items-center rounded-xl border border-transparent bg-slate-100 px-3 py-2 text-sm font-semibold leading-4 text-slate-700 transition hover:bg-slate-200 focus:outline-none">
+                            <button class="inline-flex items-center rounded-xl border border-transparent bg-slate-100 px-3 py-2 text-sm font-semibold leading-4 text-slate-700 transition hover:bg-slate-200 focus:outline-none dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700 dark:hover:text-white">
                                 <span class="max-w-[150px] truncate">{{ $user->name }}</span>
                                 <svg class="ms-2 h-4 w-4 fill-current" viewBox="0 0 20 20">
                                     <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" />
@@ -367,7 +367,7 @@
                         </x-slot>
 
                         <x-slot name="content">
-                            <div class="block px-4 py-2 text-xs font-bold uppercase tracking-wide text-slate-400">
+                            <div class="block px-4 py-2 text-xs font-bold uppercase tracking-wide text-slate-400 dark:text-slate-500">
                                 Compte
                             </div>
 
@@ -421,14 +421,14 @@
                 </a>
                 @if(Route::has('login'))
                 <a href="{{ route('login') }}"
-                    class="text-sm font-semibold text-slate-700 hover:text-blue-700">
+                    class="text-sm font-semibold text-slate-700 hover:text-blue-700 dark:text-slate-300 dark:hover:text-white">
                     Connexion
                 </a>
                 @endif
 
                 @if(Route::has('register'))
                 <a href="{{ route('register') }}"
-                    class="inline-flex items-center rounded-xl bg-blue-600 px-4 py-2 text-sm font-bold text-white shadow-sm transition hover:bg-blue-700">
+                    class="inline-flex items-center rounded-xl bg-blue-600 px-4 py-2 text-sm font-bold text-white shadow-sm transition hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-400">
                     Inscription
                 </a>
                 @endif
@@ -437,7 +437,7 @@
 
             <div class="-me-2 flex items-center sm:hidden">
                 <button @click="open = ! open"
-                    class="inline-flex items-center justify-center rounded-xl p-2 text-slate-500 transition hover:bg-slate-100 hover:text-slate-700 focus:outline-none">
+                    class="inline-flex items-center justify-center rounded-xl p-2 text-slate-500 transition hover:bg-slate-100 hover:text-slate-700 focus:outline-none dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200">
                     <svg class="h-6 w-6" stroke="currentColor" fill="none" viewBox="0 0 24 24">
                         <path :class="{ 'hidden': open, 'inline-flex': !open }"
                             class="inline-flex"
@@ -458,11 +458,11 @@
         </div>
     </div>
 
-    <div :class="{ 'block': open, 'hidden': !open }" class="hidden border-t border-slate-100 bg-white sm:hidden">
+    <div :class="{ 'block': open, 'hidden': !open }" class="hidden border-t border-slate-100 bg-white sm:hidden dark:border-slate-700 dark:bg-slate-900">
         <div class="space-y-1 pb-3 pt-2">
             @auth
             @foreach($groups as $group)
-            <div class="px-4 pb-1 pt-4 text-[11px] font-black uppercase tracking-[0.18em] text-slate-400">
+            <div class="px-4 pb-1 pt-4 text-[11px] font-black uppercase tracking-[0.18em] text-slate-400 dark:text-slate-500">
                 {{ $group['group'] }}
             </div>
 
@@ -502,10 +502,10 @@
         </div>
 
         @auth
-        <div class="border-t border-slate-200 pb-1 pt-4">
+        <div class="border-t border-slate-200 pb-1 pt-4 dark:border-slate-700">
             <div class="px-4">
-                <div class="text-base font-bold text-slate-800">{{ $user->name }}</div>
-                <div class="text-sm font-medium text-slate-500">{{ $user->email }}</div>
+                <div class="text-base font-bold text-slate-800 dark:text-slate-100">{{ $user->name }}</div>
+                <div class="text-sm font-medium text-slate-500 dark:text-slate-400">{{ $user->email }}</div>
                 <div class="mt-3">
                     <x-language-switcher />
                 </div>
@@ -537,7 +537,7 @@
             </div>
         </div>
         @else
-        <div class="space-y-3 border-t border-slate-200 pb-4 pt-4">
+        <div class="space-y-3 border-t border-slate-200 pb-4 pt-4 dark:border-slate-700">
             <div class="px-4">
                 <x-language-switcher />
             </div>

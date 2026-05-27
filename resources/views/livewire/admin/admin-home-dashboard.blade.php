@@ -9,7 +9,7 @@
     </div>
 
     {{-- KPI row --}}
-    <div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
+    <div class="grid grid-cols-2 gap-4 sm:grid-cols-3 xl:grid-cols-6">
         <div class="cu-kpi">
             <p class="cu-kpi-label">Réservations aujourd'hui</p>
             <p class="cu-kpi-value">{{ $bookingsToday }}</p>
@@ -24,6 +24,21 @@
             <p class="cu-kpi-label">Prestataires en ligne</p>
             <p class="cu-kpi-value">{{ $providersOnline }}</p>
         </div>
+
+        <div class="cu-kpi">
+            <p class="cu-kpi-label">CA aujourd'hui (EUR)</p>
+            <p class="cu-kpi-value">{{ number_format($revenueToday, 2, ',', ' ') }}</p>
+        </div>
+
+        <div class="cu-kpi">
+            <p class="cu-kpi-label">Versements en attente</p>
+            <p class="cu-kpi-value {{ $pendingPayouts > 0 ? 'text-amber-600 dark:text-amber-400' : '' }}">{{ $pendingPayouts }}</p>
+        </div>
+
+        <div class="cu-kpi">
+            <p class="cu-kpi-label">Webhooks échoués (24h)</p>
+            <p class="cu-kpi-value {{ $webhookFailures24h > 0 ? 'text-red-600 dark:text-red-400' : '' }}">{{ $webhookFailures24h }}</p>
+        </div>
     </div>
 
     <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
@@ -33,20 +48,20 @@
             <h3 class="cu-section-title mb-4">Litiges en cours</h3>
 
             @forelse($recentDisputes as $dispute)
-            <div class="flex items-center justify-between border-b border-slate-100 py-3 last:border-0">
+            <div class="flex items-center justify-between border-b border-slate-100 py-3 last:border-0 dark:border-slate-700">
                 <div class="min-w-0">
-                    <p class="truncate text-sm font-semibold text-slate-800">{{ $dispute->reference }}</p>
-                    <p class="truncate text-xs text-slate-500">{{ $dispute->subject }}</p>
+                    <p class="truncate text-sm font-semibold text-slate-800 dark:text-slate-200">{{ $dispute->reference }}</p>
+                    <p class="truncate text-xs text-slate-500 dark:text-slate-400">{{ $dispute->subject }}</p>
                 </div>
                 <span @class([
                     'ml-3 shrink-0 rounded-full px-2.5 py-0.5 text-xs font-bold',
-                    'bg-amber-100 text-amber-700' => $dispute->status === 'open',
-                    'bg-blue-100 text-blue-700'   => $dispute->status === 'assigned',
-                    'bg-purple-100 text-purple-700' => $dispute->status === 'investigating',
+                    'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300' => $dispute->status === 'open',
+                    'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300'   => $dispute->status === 'assigned',
+                    'bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300' => $dispute->status === 'investigating',
                 ])>{{ $dispute->status }}</span>
             </div>
             @empty
-            <p class="py-4 text-center text-sm text-slate-400">Aucun litige en cours</p>
+            <p class="py-4 text-center text-sm text-slate-400 dark:text-slate-500">Aucun litige en cours</p>
             @endforelse
         </div>
 
@@ -67,24 +82,24 @@
                     <tbody>
                         @forelse($recentBookings as $booking)
                         <tr>
-                            <td class="font-mono text-xs">{{ $booking->reference }}</td>
-                            <td>{{ $booking->serviceCatalog?->name ?? '—' }}</td>
+                            <td class="font-mono text-xs dark:text-slate-300">{{ $booking->reference }}</td>
+                            <td class="dark:text-slate-300">{{ $booking->serviceCatalog?->name ?? '—' }}</td>
                             <td>
                                 <span @class([
                                     'rounded-full px-2 py-0.5 text-xs font-bold',
-                                    'bg-slate-100 text-slate-600'     => in_array($booking->status, ['en_attente', 'draft']),
-                                    'bg-blue-100 text-blue-700'       => $booking->status === 'confirme',
-                                    'bg-emerald-100 text-emerald-700' => $booking->status === 'completed',
-                                    'bg-red-100 text-red-700'         => $booking->status === 'annule',
+                                    'bg-slate-100 text-slate-600 dark:bg-slate-700 dark:text-slate-300'     => in_array($booking->status, ['en_attente', 'draft']),
+                                    'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300'       => $booking->status === 'confirme',
+                                    'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300' => $booking->status === 'completed',
+                                    'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300'         => $booking->status === 'annule',
                                 ])>{{ $booking->status }}</span>
                             </td>
-                            <td class="text-xs text-slate-500">
+                            <td class="text-xs text-slate-500 dark:text-slate-400">
                                 {{ $booking->scheduled_date ? \Carbon\Carbon::parse($booking->scheduled_date)->format('d/m') : $booking->created_at?->format('d/m') }}
                             </td>
                         </tr>
                         @empty
                         <tr>
-                            <td colspan="4" class="py-4 text-center text-sm text-slate-400">Aucune réservation</td>
+                            <td colspan="4" class="py-4 text-center text-sm text-slate-400 dark:text-slate-500">Aucune réservation</td>
                         </tr>
                         @endforelse
                     </tbody>

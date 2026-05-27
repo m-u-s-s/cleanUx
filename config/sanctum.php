@@ -46,8 +46,8 @@ return [
     |
     */
 
-    // Token expiration in minutes. Default 90 days. null = never (legacy).
-    'expiration' => (int) env('SANCTUM_EXPIRATION_MINUTES', 60 * 24 * 90),
+    // Token expiration in minutes. Default 30 days for financial security.
+    'expiration' => (int) env('SANCTUM_EXPIRATION_MINUTES', 60 * 24 * 30),
 
     /*
     |--------------------------------------------------------------------------

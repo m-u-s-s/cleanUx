@@ -92,7 +92,7 @@ class MissionFieldActionController extends Controller
 
         if ($request->hasFile('photos_avant')) {
             foreach ($request->file('photos_avant') as $photo) {
-                $path = $photo->store('missions/photos-avant', 'public');
+                $path = $photo->store('missions/photos-avant', 'private');
 
                 $mission->media()->create([
                     'uploaded_by_user_id' => Auth::id(),
@@ -184,7 +184,7 @@ class MissionFieldActionController extends Controller
 
         if ($request->hasFile('photos_apres')) {
             foreach ($request->file('photos_apres') as $photo) {
-                $path = $photo->store('missions/photos-apres', 'public');
+                $path = $photo->store('missions/photos-apres', 'private');
 
                 $mission->media()->create([
                     'uploaded_by_user_id' => Auth::id(),

@@ -3,11 +3,13 @@
 namespace App\Models\SubscriptionsV2;
 
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class SubscriptionPlanV2 extends Model
 {
+    use HasFactory;
     protected $table = 'subscription_plans_v2';
 
     protected $fillable = [

@@ -4,11 +4,13 @@ namespace App\Models;
 
 use App\Models\Mission;
 use App\Models\Concerns\HasBookingDisplayAccessors;
+use App\Models\Concerns\HasBookingPricing;
+use App\Models\Concerns\HasLegacyBookingAliases;
 use App\Models\Concerns\HasRecurringSeries;
 use App\Models\Concerns\ResetsNotificationTracking;
 use App\Support\Domain\BookingStatus;
-use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -32,6 +34,8 @@ class Booking extends Model
     use HasFactory;
     use HasRecurringSeries;
     use HasBookingDisplayAccessors;
+    use HasBookingPricing;
+    use HasLegacyBookingAliases;
     use ResetsNotificationTracking;
 
     protected $table = 'bookings';
@@ -291,98 +295,7 @@ class Booking extends Model
         });
     }
 
-    /**
-     * Synchronise les paires legacy_fr ↔ modern_en pour qu'elles soient toujours
-     * cohérentes en base, peu importe par quel champ on a écrit.
-     */
-    /**
-     * Réplique l'enregistrement dans la table héritée `rendez_vous`
-     * (utilisée par d'anciennes assertions de tests et certains rapports
-     * non encore migrés). L'opération est silencieuse si la table n'existe pas.
-     */
-    public function mirrorIntoLegacyRendezVousTable(): void
-    {
-        if (! Schema::hasTable('rendez_vous')) {
-            return;
-        }
-
-        $cachedColumns = Schema::getColumnListing('rendez_vous');
-
-        $candidate = [
-            'id'                 => $this->id,
-            'booking_reference'  => $this->booking_reference,
-            'client_id'          => $this->client_id,
-            'employe_id'         => $this->employe_id,
-            'user_id'            => $this->client_id,
-            'service_catalog_id' => $this->service_catalog_id,
-            'service_zone_id'    => $this->service_zone_id,
-            'postal_code_id'     => $this->postal_code_id,
-            'status'             => $this->status,
-            'date'               => $this->date,
-            'heure'              => $this->heure,
-            'scheduled_at'       => $this->scheduled_at,
-            'adresse'            => $this->adresse,
-            'address'            => $this->adresse,
-            'ville'              => $this->ville,
-            'city'               => $this->ville,
-            'code_postal'        => $this->code_postal,
-            'postal_code'        => $this->code_postal,
-            'zone_snapshot'      => is_array($this->zone_snapshot) ? json_encode($this->zone_snapshot) : $this->zone_snapshot,
-            'pricing_snapshot'   => is_array($this->pricing_snapshot) ? json_encode($this->pricing_snapshot) : $this->pricing_snapshot,
-            'estimated_price'    => $this->estimated_price ?? $this->devis_estime,
-            'final_price'        => $this->final_price,
-            'created_at'         => $this->created_at,
-            'updated_at'         => $this->updated_at,
-        ];
-
-        $payload = collect($candidate)
-            ->filter(fn ($value, $key) => in_array($key, $cachedColumns, true))
-            ->all();
-
-        if (empty($payload['id'])) {
-            return;
-        }
-
-        try {
-            \Illuminate\Support\Facades\DB::table('rendez_vous')->updateOrInsert(
-                ['id' => $payload['id']],
-                $payload,
-            );
-        } catch (\Throwable $e) {
-            // ignore : la table peut avoir des FK strictes différentes selon l'environnement
-        }
-    }
-
-    public function syncLegacyAliases(): void
-    {
-        $pairs = [
-            ['client_id',           'customer_user_id'],
-            ['employe_id',          'assigned_provider_user_id'],
-            ['organization_account_id', 'customer_organization_id'],
-            ['date',                'scheduled_date'],
-            ['heure',               'scheduled_time'],
-            ['adresse',             'address'],
-            ['ville',               'city'],
-            ['code_postal',         'postal_code'],
-            ['type_lieu',           'place_type'],
-            ['surface',             'surface_m2'],
-            ['frequence',           'frequency'],
-            ['priorite',            'priority'],
-            ['commentaire_client',  'customer_comment'],
-            ['telephone_client',    'contact_phone'],
-            ['devis_estime',        'estimated_price'],
-            ['duree_estimee',       'estimated_duration_minutes'],
-        ];
-
-        foreach ($pairs as [$legacy, $modern]) {
-            if (blank($this->{$legacy}) && filled($this->{$modern})) {
-                $this->{$legacy} = $this->{$modern};
-            }
-            if (blank($this->{$modern}) && filled($this->{$legacy})) {
-                $this->{$modern} = $this->{$legacy};
-            }
-        }
-    }
+    // syncLegacyAliases() and mirrorIntoLegacyRendezVousTable() live in HasLegacyBookingAliases.
 
     // ──────────────────────────────────────────────────────
     // Relations — acteurs
@@ -628,38 +541,8 @@ class Booking extends Model
             || $this->isCancelled();
     }
 
-    // ──────────────────────────────────────────────────────
-    // Accessors d'affichage
-    // ──────────────────────────────────────────────────────
-    // Note: HasBookingDisplayAccessors fournit déjà des accessors.
-    // Les méthodes ci-dessous existaient dans l'ancien Booking.php
-    // et sont conservées pour rétrocompatibilité — si un getter de même
-    // nom existe dans le trait, le trait gagne (plus à jour).
-
-    public function getDisplayAddressAttribute(): string
-    {
-        return $this->address ?? $this->adresse ?? '';
-    }
-
-    public function getDisplayCityAttribute(): string
-    {
-        return $this->city ?? $this->ville ?? '';
-    }
-
-    public function getDisplayPostalCodeAttribute(): string
-    {
-        return $this->postal_code ?? $this->code_postal ?? '';
-    }
-
-    public function getDisplayDateAttribute(): mixed
-    {
-        return $this->scheduled_date ?? $this->date;
-    }
-
-    public function getDisplayTimeAttribute(): mixed
-    {
-        return $this->scheduled_time ?? $this->heure;
-    }
+    // Display accessors (getDisplayAddressAttribute etc.) moved to HasBookingDisplayAccessors.
+    // Pricing accessors (getFinalPriceAttribute etc.) moved to HasBookingPricing.
 
     public function financeQuote(): HasOne
     {

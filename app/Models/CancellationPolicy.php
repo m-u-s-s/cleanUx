@@ -3,11 +3,13 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class CancellationPolicy extends Model
 {
+    use HasFactory;
     public const ACTOR_CLIENT = 'client';
     public const ACTOR_PROVIDER = 'provider';
     public const ACTOR_BOTH = 'both';

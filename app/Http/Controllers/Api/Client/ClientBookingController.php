@@ -2,12 +2,12 @@
 
 namespace App\Http\Controllers\Api\Client;
 
+use App\Actions\Booking\CreateBookingFromApiAction;
 use App\Exceptions\BookingException;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\Client\IndexBookingRequest;
 use App\Http\Requests\Api\Client\StoreBookingRequest;
 use App\Models\Booking;
-use App\Models\Mission;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -142,67 +142,13 @@ class ClientBookingController extends Controller
      * @response 201 {"ok": true, "data": {"id": 55, "reference": "CUX-X1Y2Z3", "status": "en_attente", "mode": "scheduled", "priority": "normal", "scheduled_date": "2026-06-20", "scheduled_time": "09:00", "service_name": "Nettoyage domicile", "address": "Rue de la Loi 1", "city": "Bruxelles", "postal_code": "1000", "estimated_price": null, "currency": "EUR", "created_at": "2026-06-01T10:00:00+00:00"}}
      * @response 422 {"message": "The service catalog id field is required.", "errors": {"service_catalog_id": ["The service catalog id field is required."]}}
      */
-    public function store(StoreBookingRequest $request): JsonResponse
+    public function store(StoreBookingRequest $request, CreateBookingFromApiAction $action): JsonResponse
     {
-        $user = $request->user();
-
-        $data = $request->validated();
-
-        $now = now();
-        $isAsap = ($data['booking_mode'] ?? 'scheduled') === 'asap';
-
-        $booking = Booking::create([
-            'booking_reference' => $this->generateReference(),
-            'customer_user_id'  => $user->id,
-            'client_id'         => $user->id,
-            'customer_organization_id' => $user->organization_account_id ?? $user->current_organization_id ?? null,
-            'service_catalog_id' => $data['service_catalog_id'],
-            'address'           => $data['address'],
-            'city'              => $data['city'],
-            'postal_code'       => $data['postal_code'],
-            'country'           => $data['country'] ?? 'BE',
-            'scheduled_date'    => $data['scheduled_date'],
-            'scheduled_time'    => $data['scheduled_time'] . ':00',
-            'booking_mode'      => $isAsap ? 'asap' : 'scheduled',
-            'status'            => $isAsap ? 'confirme' : 'en_attente',
-            'priority'          => $data['priority'] ?? ($isAsap ? 'urgent' : 'normal'),
-            'surface_m2'        => $data['surface_m2'] ?? null,
-            'customer_comment'  => $data['customer_comment'] ?? null,
-            'contact_name'      => $data['contact_name'] ?? $user->name,
-            'contact_phone'     => $data['contact_phone'] ?? ($user->phone ?? null),
-            'destination_lat'   => $data['destination_lat'] ?? null,
-            'destination_lng'   => $data['destination_lng'] ?? null,
-            'currency'          => $user->preferred_currency ?? 'EUR',
-            'created_by'        => $user->id,
-            'asap_requested_at' => $isAsap ? $now : null,
-            'asap_deadline_at'  => $isAsap ? $now->copy()->addHours(2) : null,
-        ]);
-
-        // Créer la mission si ASAP (pour dispatch immédiat via Phase 11)
-        if ($isAsap && class_exists(Mission::class)) {
-            $mission = Mission::create([
-                'booking_id'       => $booking->id,
-                'status'           => 'planned',
-                'planned_start_at' => $now->copy()->addMinutes(30),
-            ]);
-
-            // Trigger dispatch si Phase 11 installée
-            $dispatchClass = '\App\Services\Dispatch\MissionDispatchService';
-            if (class_exists($dispatchClass)) {
-                try {
-                    app($dispatchClass)->dispatchToNextProvider($mission);
-                } catch (\Throwable $e) {
-                    \Log::warning('Auto-dispatch failed', [
-                        'mission_id' => $mission->id,
-                        'error'      => $e->getMessage(),
-                    ]);
-                }
-            }
-        }
+        $booking = $action->execute($request->user(), $request->validated());
 
         return response()->json([
             'ok'   => true,
-            'data' => $this->serialize($booking->fresh()),
+            'data' => $this->serialize($booking),
         ], 201);
     }
 
@@ -387,15 +333,6 @@ class ClientBookingController extends Controller
         }
 
         return $base;
-    }
-
-    protected function generateReference(): string
-    {
-        do {
-            $ref = 'CUX-' . strtoupper(bin2hex(random_bytes(3)));
-        } while (Booking::where('booking_reference', $ref)->exists());
-
-        return $ref;
     }
 
     /**

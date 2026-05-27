@@ -75,4 +75,31 @@ trait HasBookingDisplayAccessors
 
         return $parts !== [] ? implode(', ', $parts) : 'Adresse non précisée';
     }
+
+    // ── Compatibility accessors (previously inline in Booking) ──────────────
+
+    public function getDisplayAddressAttribute(): string
+    {
+        return $this->address ?? $this->adresse ?? '';
+    }
+
+    public function getDisplayCityAttribute(): string
+    {
+        return $this->city ?? $this->ville ?? '';
+    }
+
+    public function getDisplayPostalCodeAttribute(): string
+    {
+        return $this->postal_code ?? $this->code_postal ?? '';
+    }
+
+    public function getDisplayDateAttribute(): mixed
+    {
+        return $this->scheduled_date ?? $this->date;
+    }
+
+    public function getDisplayTimeAttribute(): mixed
+    {
+        return $this->scheduled_time ?? $this->heure;
+    }
 }

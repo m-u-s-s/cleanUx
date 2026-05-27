@@ -3,12 +3,14 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class ContractDocument extends Model
 {
+    use HasFactory;
     public const STATUS_DRAFT = 'draft';
     public const STATUS_PENDING_SIGNATURE = 'pending_signature';
     public const STATUS_SIGNED = 'signed';

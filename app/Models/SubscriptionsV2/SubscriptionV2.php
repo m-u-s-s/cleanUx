@@ -3,6 +3,7 @@
 namespace App\Models\SubscriptionsV2;
 
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -10,6 +11,7 @@ use Illuminate\Support\Str;
 
 class SubscriptionV2 extends Model
 {
+    use HasFactory;
     public const STATUS_TRIALING = 'trialing';
     public const STATUS_ACTIVE = 'active';
     public const STATUS_PAUSED = 'paused';

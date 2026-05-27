@@ -246,3 +246,91 @@
     }
     .cu-text-balance { text-wrap: balance; }
 }
+
+/* ============================================================================
+   Dark mode overrides for tool-mode components
+   ========================================================================= */
+@layer components {
+    .dark .card {
+        background-color: rgba(30, 41, 59, 0.9);
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+    }
+
+    .dark .ui-card {
+        @apply border-slate-700 bg-slate-800 shadow-none;
+    }
+    .dark .ui-card:hover { @apply shadow-lg shadow-black/20; }
+    .dark .ui-card-header { @apply border-slate-700; }
+    .dark .ui-card-title { @apply text-slate-100; }
+    .dark .ui-card-subtitle { @apply text-slate-400; }
+
+    .dark .ui-badge-neutral { @apply bg-slate-700 text-slate-200 ring-slate-600; }
+    .dark .ui-badge-brand { @apply bg-brand-900/50 text-brand-300 ring-brand-700; }
+    .dark .ui-badge-success { @apply bg-emerald-900/50 text-emerald-300 ring-emerald-700; }
+    .dark .ui-badge-warning { @apply bg-amber-900/50 text-amber-300 ring-amber-700; }
+    .dark .ui-badge-danger { @apply bg-rose-900/50 text-rose-300 ring-rose-700; }
+
+    .dark .ui-stat {
+        @apply border-slate-700 bg-slate-800;
+    }
+    .dark .ui-stat-label { @apply text-slate-400; }
+    .dark .ui-stat-value { @apply text-slate-100; }
+
+    .dark .ui-input {
+        @apply border-slate-600 bg-slate-800 text-slate-100 placeholder:text-slate-500;
+    }
+    .dark .ui-label { @apply text-slate-400; }
+    .dark .ui-help { @apply text-slate-500; }
+
+    .dark .ui-empty {
+        @apply border-slate-600 bg-slate-800/50;
+    }
+    .dark .ui-empty-icon { @apply bg-slate-700 text-slate-300 ring-slate-600; }
+    .dark .ui-empty-title { @apply text-slate-200; }
+    .dark .ui-empty-desc { @apply text-slate-400; }
+
+    .dark .ui-table thead th {
+        @apply border-slate-700 bg-slate-800/50 text-slate-400;
+    }
+    .dark .ui-table tbody td { @apply border-slate-700 text-slate-300; }
+    .dark .ui-table tbody tr:hover { @apply bg-slate-700/50; }
+
+    .dark .ui-toast {
+        @apply border-slate-600 bg-slate-800;
+    }
+
+    .dark .cu-card {
+        background: rgba(30, 41, 59, 0.85);
+        border-color: rgba(71, 85, 105, 0.5);
+    }
+
+    .dark .cu-kpi { @apply bg-slate-800/85; }
+    .dark .cu-kpi-value { @apply text-slate-100; }
+    .dark .cu-kpi-label { @apply text-slate-400; }
+
+    .dark .cu-page-header {
+        @apply border-slate-700 bg-slate-800/90;
+    }
+    .dark .cu-page-header::before {
+        background:
+            radial-gradient(circle at top right, rgba(99, 102, 241, 0.15), transparent 24%),
+            radial-gradient(circle at left center, rgba(255, 182, 72, 0.08), transparent 18%);
+    }
+
+    .dark .cu-section-title { @apply text-slate-100; }
+    .dark .cu-section-subtitle { @apply text-slate-400; }
+    .dark .cu-eyebrow { @apply border-sky-800 bg-sky-900/50 text-sky-300; }
+
+    .dark .cu-btn-primary { @apply bg-sky-500 hover:bg-sky-400; }
+    .dark .cu-btn-secondary { @apply border-slate-600 bg-slate-800 text-slate-200 hover:bg-slate-700; }
+
+    .dark .cu-list-item { @apply border-slate-700 bg-slate-800/90 hover:border-slate-600 hover:bg-slate-700; }
+    .dark .cu-empty { @apply border-slate-600 bg-slate-800/90; }
+    .dark .cu-note { @apply border-amber-700 bg-amber-900/30 text-amber-200; }
+    .dark .cu-code-block { @apply bg-slate-950; }
+    .dark .cu-admin-tile { @apply border-slate-700 bg-slate-800/90 hover:border-slate-600 hover:bg-slate-700; }
+
+    .dark .cu-table thead th { @apply border-slate-700 bg-slate-800 text-slate-400; }
+    .dark .cu-table tbody td { @apply border-slate-700 text-slate-300; }
+    .dark .cu-table tbody tr:hover { @apply bg-slate-700/40; }
+}
