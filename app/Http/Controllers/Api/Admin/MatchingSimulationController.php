@@ -8,6 +8,10 @@ use App\Services\Matching\MatchingV2Service;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
+/**
+ * @group Admin — Matching Simulation
+ * @authenticated
+ */
 class MatchingSimulationController extends Controller
 {
     public function simulate(Request $request, Booking $booking, MatchingV2Service $service): JsonResponse

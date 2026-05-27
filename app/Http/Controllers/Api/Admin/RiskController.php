@@ -10,6 +10,9 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 /**
+ * @group Admin — Risk Scoring
+ * @authenticated
+ *
  * Admin endpoints pour Risk v2 :
  *   - GET /api/admin/risk/evaluations — listing
  *   - GET /api/admin/risk/holds — listing pending

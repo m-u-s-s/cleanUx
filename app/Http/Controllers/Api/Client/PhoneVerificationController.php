@@ -8,6 +8,10 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 
+/**
+ * @group Client — Phone Verification
+ * @authenticated
+ */
 class PhoneVerificationController extends Controller
 {
     public function __construct(protected PhoneVerificationService $service)

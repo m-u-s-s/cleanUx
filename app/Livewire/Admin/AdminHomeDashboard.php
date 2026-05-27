@@ -34,7 +34,24 @@ class AdminHomeDashboard extends Component
                 ->latest()
                 ->take(10)
                 ->get(['id', 'reference', 'status', 'service_catalog_id', 'created_at', 'scheduled_date']),
+            'bookingsTrend'       => $this->bookingsTrend(),
         ]);
+    }
+
+    /**
+     * Returns 7-day booking counts for the trend sparkline chart.
+     *
+     * @return array<int, array{date: string, count: int}>
+     */
+    public function bookingsTrend(): array
+    {
+        return collect(range(6, 0))->map(function (int $daysAgo) {
+            $date = now()->subDays($daysAgo);
+            return [
+                'date'  => $date->format('d/m'),
+                'count' => Booking::whereDate('created_at', $date)->count(),
+            ];
+        })->all();
     }
 
     private function revenueToday(\Carbon\Carbon $today): float

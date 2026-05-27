@@ -7,6 +7,9 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 /**
+ * @group Authentication
+ * @authenticated
+ *
  * GET /api/auth/me
  *
  * Returns the currently authenticated user. Extracted from a closure so

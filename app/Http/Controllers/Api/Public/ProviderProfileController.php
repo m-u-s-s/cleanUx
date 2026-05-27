@@ -9,6 +9,8 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 /**
+ * @group Public — Provider Profiles
+ *
  * Endpoints publics pour profil + avis providers (consultable sans auth).
  */
 class ProviderProfileController extends Controller

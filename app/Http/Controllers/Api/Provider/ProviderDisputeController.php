@@ -9,6 +9,10 @@ use App\Services\Disputes\DisputeService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
+/**
+ * @group Provider — Disputes
+ * @authenticated
+ */
 class ProviderDisputeController extends Controller
 {
     public function __construct(protected DisputeService $service)

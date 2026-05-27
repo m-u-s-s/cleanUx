@@ -13,6 +13,10 @@ use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\ValidationException;
 
+/**
+ * @group Contracts v2
+ * @authenticated
+ */
 class ContractsV2Controller extends Controller
 {
     public function __construct(protected ContractService $svc)

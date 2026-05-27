@@ -11,6 +11,10 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
+/**
+ * @group Provider — Mission Tracking (Legacy)
+ * @authenticated
+ */
 class EmployeeMissionTrackingController extends Controller
 {
     public function start(Request $request, Mission $mission, MissionTrackingService $service): JsonResponse

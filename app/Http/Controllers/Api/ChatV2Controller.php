@@ -14,6 +14,11 @@ use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\ValidationException;
 
+/**
+ * @group Chat v2
+ * @authenticated
+ */
+
 class ChatV2Controller extends Controller
 {
     public function __construct(

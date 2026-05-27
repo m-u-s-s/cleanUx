@@ -8,6 +8,9 @@ use App\Services\Fx\FxService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
+/**
+ * @group Public — FX Rates
+ */
 class FxController extends Controller
 {
     public function __construct(protected FxService $svc)

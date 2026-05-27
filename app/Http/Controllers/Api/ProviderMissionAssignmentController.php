@@ -9,6 +9,9 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 /**
+ * @group Mission Assignments
+ * @authenticated
+ *
  * Phase 11 — Endpoints API mobile pour accept/decline d'une mission.
  *
  * Routes :

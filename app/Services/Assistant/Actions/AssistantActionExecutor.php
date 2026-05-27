@@ -2,18 +2,24 @@
 
 namespace App\Services\Assistant\Actions;
 
+use App\Models\AssistantAction;
+use App\Models\AssistantConversation;
 use App\Models\AvailabilitySlot;
 use App\Models\Booking;
+use App\Models\ComplaintCase;
+use App\Models\DisputeResolution;
 use App\Models\LoyaltyAccount;
 use App\Models\Mission;
 use App\Models\ProviderPayout;
+use App\Models\ProviderPresence;
 use App\Models\User;
 
 /**
- * Executes data-fetching assistant actions and returns formatted French text.
+ * Executes assistant actions (read-only and write-with-confirmation).
  *
- * All methods are read-only. No state is mutated here.
- * Results are formatted as human-readable French text suitable for LLM consumption.
+ * Read actions return formatted French text strings.
+ * Write actions that require confirmation return an array payload via executeWrite().
+ * Confirmed write actions are executed via confirmAction().
  */
 class AssistantActionExecutor
 {
@@ -27,22 +33,299 @@ class AssistantActionExecutor
         6 => 'Samedi',
     ];
 
+    /** Write actions that require a confirmation round-trip before execution. */
+    private const WRITE_ACTIONS = [
+        'create_booking',
+        'cancel_booking',
+        'resolve_dispute',
+    ];
+
     /**
-     * Dispatch an action by name and return its formatted result.
+     * Dispatch a read-only action by name and return its formatted French text.
      */
     public function execute(string $actionName, User $user, array $params = []): string
     {
         return match ($actionName) {
-            'list_bookings'     => $this->listBookings($user),
-            'booking_detail'    => $this->bookingDetail($user, $params['booking_id'] ?? null),
-            'loyalty_balance'   => $this->loyaltyBalance($user),
-            'next_mission'      => $this->nextMission($user),
-            'earnings_summary'  => $this->earningsSummary($user),
+            'list_bookings'      => $this->listBookings($user),
+            'booking_detail'     => $this->bookingDetail($user, $params['booking_id'] ?? null),
+            'loyalty_balance'    => $this->loyaltyBalance($user),
+            'next_mission'       => $this->nextMission($user),
+            'earnings_summary'   => $this->earningsSummary($user),
             'availability_slots' => $this->availabilitySlots($user),
-            'platform_kpis'     => $this->platformKpis(),
-            'trade_stats'       => $this->tradeStats(),
-            default             => "Action inconnue : {$actionName}",
+            'platform_kpis'      => $this->platformKpis(),
+            'trade_stats'        => $this->tradeStats(),
+            default              => "Action inconnue : {$actionName}",
         };
+    }
+
+    /**
+     * Prepare a write action: persist a pending AssistantAction record and
+     * return a confirmation payload the assistant can show to the user.
+     *
+     * @return array{action: string, requires_confirmation: bool, summary: string, params: array, action_id: int}
+     */
+    public function executeWrite(
+        string $actionName,
+        User $user,
+        array $params = [],
+        ?AssistantConversation $conversation = null,
+    ): array {
+        $summary = $this->buildConfirmationSummary($actionName, $user, $params);
+
+        $record = AssistantAction::create([
+            'assistant_conversation_id' => $conversation?->id,
+            'user_id'                   => $user->id,
+            'action_type'               => $actionName,
+            'status'                    => AssistantAction::STATUS_PENDING_CONFIRMATION,
+            'payload'                   => $params,
+        ]);
+
+        return [
+            'action'                => $actionName,
+            'requires_confirmation' => true,
+            'summary'               => $summary,
+            'params'                => $params,
+            'action_id'             => $record->id,
+        ];
+    }
+
+    /**
+     * Confirm and execute a previously prepared write action.
+     * Returns a human-readable French result string.
+     */
+    public function confirmAction(int $actionId, User $user): string
+    {
+        $action = AssistantAction::query()
+            ->where('id', $actionId)
+            ->where('user_id', $user->id)
+            ->where('status', AssistantAction::STATUS_PENDING_CONFIRMATION)
+            ->first();
+
+        if (! $action) {
+            return "Action introuvable, expirée ou déjà exécutée.";
+        }
+
+        $action->markConfirmed();
+
+        $result = $this->dispatchWrite($action->action_type, $user, $action->payload ?? []);
+
+        if (str_starts_with($result, 'Erreur')) {
+            $action->markFailed($result);
+        } else {
+            $action->markExecuted(['result_text' => $result]);
+        }
+
+        return $result;
+    }
+
+    /**
+     * Returns whether an action name is a write action requiring confirmation.
+     */
+    public function isWriteAction(string $actionName): bool
+    {
+        return in_array($actionName, self::WRITE_ACTIONS, true);
+    }
+
+    /**
+     * Execute a low-risk write action immediately (no confirmation round-trip).
+     * Currently handles: update_availability.
+     */
+    public function executeImmediateWrite(string $actionName, User $user, array $params = []): string
+    {
+        return $this->dispatchWrite($actionName, $user, $params);
+    }
+
+    // ──────────────────────────────────────────────────────
+    // Write action dispatcher
+    // ──────────────────────────────────────────────────────
+
+    private function dispatchWrite(string $actionName, User $user, array $params): string
+    {
+        return match ($actionName) {
+            'create_booking'    => $this->doCreateBooking($user, $params),
+            'cancel_booking'    => $this->doCancelBooking($user, $params),
+            'resolve_dispute'   => $this->doResolveDispute($user, $params),
+            'update_availability' => $this->doUpdateAvailability($user, $params),
+            default             => "Action d'écriture inconnue : {$actionName}",
+        };
+    }
+
+    private function buildConfirmationSummary(string $actionName, User $user, array $params): string
+    {
+        return match ($actionName) {
+            'create_booking'  => $this->summaryCreateBooking($params),
+            'cancel_booking'  => $this->summaryCancelBooking($user, $params),
+            'resolve_dispute' => $this->summaryResolveDispute($params),
+            default           => "Confirmer l'action : {$actionName} ?",
+        };
+    }
+
+    // ──────────────────────────────────────────────────────
+    // Write action implementations
+    // ──────────────────────────────────────────────────────
+
+    private function doCreateBooking(User $user, array $params): string
+    {
+        $required = ['service_catalog_id', 'address', 'city', 'postal_code', 'scheduled_date', 'scheduled_time'];
+        foreach ($required as $key) {
+            if (empty($params[$key])) {
+                return "Erreur : paramètre manquant « {$key} » pour créer la réservation.";
+            }
+        }
+
+        $booking = Booking::create([
+            'customer_user_id'   => $user->id,
+            'service_catalog_id' => (int) $params['service_catalog_id'],
+            'address'            => $params['address'],
+            'city'               => $params['city'],
+            'postal_code'        => $params['postal_code'],
+            'scheduled_date'     => $params['scheduled_date'],
+            'scheduled_time'     => $params['scheduled_time'],
+            'status'             => 'en_attente',
+            'booking_reference'  => 'CUX-' . strtoupper(substr(uniqid(), -6)),
+        ]);
+
+        $ref = $booking->booking_reference;
+        return "Réservation {$ref} créée avec succès pour le {$params['scheduled_date']} à {$params['scheduled_time']} à {$params['city']}.";
+    }
+
+    private function doCancelBooking(User $user, array $params): string
+    {
+        $bookingId = $params['booking_id'] ?? null;
+
+        if (! $bookingId) {
+            return "Erreur : identifiant de réservation manquant.";
+        }
+
+        $booking = Booking::query()
+            ->where(function ($q) use ($user) {
+                $q->where('customer_user_id', $user->id)
+                  ->orWhere('client_id', $user->id);
+            })
+            ->where(function ($q) use ($bookingId) {
+                $q->where('id', (int) $bookingId)
+                  ->orWhere('booking_reference', $bookingId);
+            })
+            ->whereNotIn('status', ['annule', 'cancelled', 'completed', 'termine'])
+            ->first();
+
+        if (! $booking) {
+            return "Réservation introuvable, déjà annulée, ou vous n'y avez pas accès.";
+        }
+
+        $booking->update(['status' => 'annule']);
+        $ref = $booking->booking_reference ?? "#{$booking->id}";
+
+        return "Réservation {$ref} annulée avec succès.";
+    }
+
+    private function doResolveDispute(User $user, array $params): string
+    {
+        $disputeId  = $params['dispute_id'] ?? null;
+        $resolution = $params['resolution'] ?? null;
+
+        if (! $disputeId || ! $resolution) {
+            return "Erreur : identifiant du litige et texte de résolution requis.";
+        }
+
+        $dispute = ComplaintCase::query()
+            ->whereNotIn('status', [ComplaintCase::STATUS_RESOLVED, ComplaintCase::STATUS_CLOSED])
+            ->find((int) $disputeId);
+
+        if (! $dispute) {
+            return "Litige #{$disputeId} introuvable ou déjà résolu.";
+        }
+
+        DisputeResolution::create([
+            'complaint_case_id' => $dispute->id,
+            'resolution_type'   => DisputeResolution::TYPE_OTHER,
+            'explanation'       => $resolution,
+            'issued_by_user_id' => $user->id,
+            'status'            => DisputeResolution::STATUS_APPLIED,
+            'applied_at'        => now(),
+        ]);
+
+        $dispute->update([
+            'status'      => ComplaintCase::STATUS_RESOLVED,
+            'resolved_at' => now(),
+            'admin_response' => $resolution,
+        ]);
+
+        return "Litige #{$disputeId} ({$dispute->reference}) résolu avec succès.";
+    }
+
+    /**
+     * update_availability is low-risk: no confirmation required, called via dispatchWrite directly.
+     */
+    private function doUpdateAvailability(User $user, array $params): string
+    {
+        $requestedStatus = $params['status'] ?? null;
+        $statusMap = [
+            'online'  => ProviderPresence::STATUS_ONLINE,
+            'offline' => ProviderPresence::STATUS_OFFLINE,
+            'break'   => ProviderPresence::STATUS_ON_BREAK,
+        ];
+
+        if (! $requestedStatus || ! isset($statusMap[$requestedStatus])) {
+            return "Statut invalide. Valeurs acceptées : online, offline, break.";
+        }
+
+        $mappedStatus = $statusMap[$requestedStatus];
+
+        ProviderPresence::updateOrCreate(
+            ['provider_user_id' => $user->id],
+            ['status' => $mappedStatus, 'last_status_change_at' => now(), 'heartbeat_at' => now()]
+        );
+
+        $labels = ['online' => 'en ligne', 'offline' => 'hors ligne', 'break' => 'en pause'];
+        return "Votre statut a été mis à jour : vous êtes maintenant {$labels[$requestedStatus]}.";
+    }
+
+    // ──────────────────────────────────────────────────────
+    // Confirmation summary helpers
+    // ──────────────────────────────────────────────────────
+
+    private function summaryCreateBooking(array $params): string
+    {
+        $date = $params['scheduled_date'] ?? '—';
+        $time = $params['scheduled_time'] ?? '—';
+        $city = $params['city'] ?? '—';
+        return "Créer une réservation le {$date} à {$time} à {$city} ?";
+    }
+
+    private function summaryCancelBooking(User $user, array $params): string
+    {
+        $bookingId = $params['booking_id'] ?? null;
+        if (! $bookingId) {
+            return "Annuler cette réservation ?";
+        }
+
+        $booking = Booking::query()
+            ->where(function ($q) use ($user) {
+                $q->where('customer_user_id', $user->id)
+                  ->orWhere('client_id', $user->id);
+            })
+            ->where(function ($q) use ($bookingId) {
+                $q->where('id', (int) $bookingId)
+                  ->orWhere('booking_reference', $bookingId);
+            })
+            ->first(['booking_reference', 'scheduled_date', 'scheduled_time']);
+
+        if (! $booking) {
+            return "Annuler la réservation #{$bookingId} ?";
+        }
+
+        $ref  = $booking->booking_reference ?? "#{$bookingId}";
+        $date = $booking->scheduled_date ?? '—';
+        $time = $booking->scheduled_time ? substr((string) $booking->scheduled_time, 0, 5) : '';
+        return "Annuler la réservation {$ref} du {$date}" . ($time ? " à {$time}" : '') . " ?";
+    }
+
+    private function summaryResolveDispute(array $params): string
+    {
+        $disputeId  = $params['dispute_id'] ?? '—';
+        $resolution = mb_strimwidth($params['resolution'] ?? '', 0, 80, '…');
+        return "Résoudre le litige #{$disputeId} avec la résolution : « {$resolution} » ?";
     }
 
     // ──────────────────────────────────────────────────────

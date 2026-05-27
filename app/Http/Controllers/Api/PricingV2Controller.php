@@ -11,6 +11,10 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Validation\ValidationException;
 
+/**
+ * @group Pricing v2
+ * @authenticated
+ */
 class PricingV2Controller extends Controller
 {
     public function __construct(protected PricingEngine $engine)

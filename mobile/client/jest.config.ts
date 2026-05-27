@@ -55,6 +55,8 @@ const config: Config = {
     '^@stripe/stripe-react-native$': '<rootDir>/__mocks__/@stripe/stripe-react-native.tsx',
     // @react-native-async-storage/async-storage: in-memory mock for Jest
     '^@react-native-async-storage/async-storage$': '<rootDir>/__mocks__/@react-native-async-storage/async-storage',
+    // @react-native-community/netinfo: simple mock to avoid native module init
+    '^@react-native-community/netinfo$': '<rootDir>/__mocks__/@react-native-community/netinfo',
     // expo-font + @expo-google-fonts: avoid native font loading in Jest
     '^expo-font$': '<rootDir>/__mocks__/expo-font',
     '^@expo-google-fonts/figtree$': '<rootDir>/__mocks__/@expo-google-fonts/figtree',

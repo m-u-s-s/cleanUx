@@ -10,6 +10,9 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 /**
+ * @group Client — Cancellation (Legacy)
+ * @authenticated
+ *
  * Phase 14 — API d'annulation côté client mobile.
  *
  *   POST /api/client/bookings/{booking}/cancel-with-fee

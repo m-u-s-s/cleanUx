@@ -9,6 +9,10 @@ use App\Support\ActivityLogger;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
+/**
+ * @group Admin — Disputes
+ * @authenticated
+ */
 class DisputeAdminController extends Controller
 {
     public function __construct(protected DisputeResolutionService $resolutionService)

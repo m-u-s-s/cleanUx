@@ -41,6 +41,12 @@
         </div>
     </div>
 
+    {{-- Tendance 7 jours --}}
+    <div class="cu-card" wire:ignore>
+        <h3 class="cu-section-title mb-4">Tendance 7 jours — Réservations</h3>
+        <div id="bookings-trend-chart"></div>
+    </div>
+
     <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
 
         {{-- Recent disputes --}}
@@ -108,4 +114,44 @@
         </div>
 
     </div>
+
 </div>
+
+@push('scripts')
+<script>
+(function () {
+    function renderBookingsTrendChart() {
+        var el = document.getElementById('bookings-trend-chart');
+        if (!el || typeof ApexCharts === 'undefined') return;
+
+        var data = @json($bookingsTrend);
+
+        new ApexCharts(el, {
+            chart: {
+                type: 'area',
+                height: 240,
+                toolbar: { show: false },
+                animations: { enabled: true, easing: 'easeinout', speed: 600 },
+            },
+            series: [{ name: 'Réservations', data: data.map(function (d) { return d.count; }) }],
+            xaxis: { categories: data.map(function (d) { return d.date; }), labels: { style: { fontSize: '11px' } } },
+            yaxis: { min: 0, tickAmount: 4, labels: { style: { fontSize: '11px' } } },
+            colors: ['#6366f1'],
+            fill: { type: 'gradient', gradient: { opacityFrom: 0.35, opacityTo: 0.02 } },
+            stroke: { curve: 'smooth', width: 2 },
+            dataLabels: { enabled: false },
+            grid: { borderColor: 'rgba(100,116,139,0.1)', strokeDashArray: 3 },
+            tooltip: { theme: document.documentElement.classList.contains('dark') ? 'dark' : 'light' },
+        }).render();
+    }
+
+    document.addEventListener('livewire:navigated', renderBookingsTrendChart);
+    document.addEventListener('livewire:initialized', renderBookingsTrendChart);
+    if (document.readyState !== 'loading') {
+        renderBookingsTrendChart();
+    } else {
+        document.addEventListener('DOMContentLoaded', renderBookingsTrendChart);
+    }
+})();
+</script>
+@endpush

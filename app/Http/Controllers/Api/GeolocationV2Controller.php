@@ -10,6 +10,10 @@ use App\Services\GeolocationV2\GeocodingService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
+/**
+ * @group Geolocation v2
+ * @authenticated
+ */
 class GeolocationV2Controller extends Controller
 {
     public function __construct(protected GeocodingService $svc) {}

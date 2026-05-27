@@ -10,6 +10,10 @@ use App\Services\Rating\RatingService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
+/**
+ * @group Provider — Ratings
+ * @authenticated
+ */
 class ProviderRatingController extends Controller
 {
     public function submit(Request $request, Booking $booking): JsonResponse

@@ -9,6 +9,10 @@ use App\Services\Loyalty\LoyaltyService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
+/**
+ * @group Client — Loyalty
+ * @authenticated
+ */
 class LoyaltyController extends Controller
 {
     public function me(Request $request, LoyaltyService $service): JsonResponse

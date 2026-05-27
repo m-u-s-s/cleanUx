@@ -11,6 +11,9 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
+/**
+ * @group Public — Search
+ */
 class SearchController extends Controller
 {
     public function providers(Request $request, ProviderSearchService $service): JsonResponse

@@ -8,6 +8,10 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
+/**
+ * @group Client — Profile
+ * @authenticated
+ */
 class ClientProfileController extends Controller
 {
     public function update(Request $request): JsonResponse

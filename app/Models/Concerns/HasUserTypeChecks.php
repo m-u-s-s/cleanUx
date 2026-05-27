@@ -41,6 +41,10 @@ trait HasUserTypeChecks
             return true;
         }
 
+        /**
+         * @deprecated Reading the legacy `role` column directly. Remove once all users
+         *             have a populated customer_profile row.
+         */
         // Legacy fallback: role column still populated during transition
         return ($this->attributes['role'] ?? $this->role ?? null) === 'client';
     }
@@ -61,6 +65,10 @@ trait HasUserTypeChecks
             return true;
         }
 
+        /**
+         * @deprecated Reading the legacy `role` column directly. Remove once all users
+         *             have a populated customer_profile row.
+         */
         // Legacy fallback: role column still populated during transition
         return ($this->attributes['role'] ?? $this->role ?? null) === 'entreprise';
     }
@@ -77,6 +85,10 @@ trait HasUserTypeChecks
             return true;
         }
 
+        /**
+         * @deprecated Reading the legacy `role` column directly. Remove once all users
+         *             have a populated provider_profile row.
+         */
         // Legacy fallback: role column still populated during transition
         return ($this->attributes['role'] ?? $this->role ?? null) === 'employe';
     }

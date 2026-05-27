@@ -6,6 +6,10 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
+/**
+ * @group Provider — Profile
+ * @authenticated
+ */
 class ProviderProfileController extends Controller
 {
     public function update(Request $request): JsonResponse

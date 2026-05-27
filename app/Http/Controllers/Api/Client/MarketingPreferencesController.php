@@ -8,6 +8,9 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 /**
+ * @group Client — Marketing Preferences
+ * @authenticated
+ *
  * Endpoints client pour gérer ses préférences marketing (RGPD).
  *
  *   - GET    /api/client/marketing/preferences

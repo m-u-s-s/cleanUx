@@ -8,6 +8,9 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 /**
+ * @group Provider — Stripe Connect
+ * @authenticated
+ *
  * Sprint 0 — Task 3 : Provider Stripe Connect API (RN Phase 2)
  *
  * GET  /api/provider/stripe-connect/status         → onboarding state + capabilities

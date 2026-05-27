@@ -10,6 +10,9 @@ use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 
 /**
+ * @group Cancellation v2
+ * @authenticated
+ *
  * Unified cancellation v2 controller — sert client / provider / admin via
  * une seule classe et discrimine par actor_role. Routes API séparées appellent
  * chacune leur méthode dédiée pour clarté.

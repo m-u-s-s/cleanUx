@@ -10,6 +10,10 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 
+/**
+ * @group Client — NPS Survey
+ * @authenticated
+ */
 class NpsController extends Controller
 {
     public function submit(Request $request, NpsService $service): JsonResponse

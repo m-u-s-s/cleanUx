@@ -10,6 +10,10 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 
+/**
+ * @group Client — Booking Favorites
+ * @authenticated
+ */
 class BookingFavoriteController extends Controller
 {
     public function index(Request $request): JsonResponse

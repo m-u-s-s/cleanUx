@@ -9,6 +9,10 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 
+/**
+ * @group Client — User Safety
+ * @authenticated
+ */
 class UserSafetyController extends Controller
 {
     public function block(Request $request, User $user, UserSafetyService $service): JsonResponse

@@ -6,6 +6,9 @@ use App\Http\Controllers\Controller;
 use App\Services\I18n\LocaleResolver;
 use Illuminate\Http\JsonResponse;
 
+/**
+ * @group Internationalisation
+ */
 class LocaleListController extends Controller
 {
     public function index(LocaleResolver $resolver): JsonResponse

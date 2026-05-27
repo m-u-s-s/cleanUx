@@ -8,6 +8,10 @@ use App\Services\Ai\PhotoQuoteEstimator;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
+/**
+ * @group Client — AI Quote
+ * @authenticated
+ */
 class AiQuoteController extends Controller
 {
     /**

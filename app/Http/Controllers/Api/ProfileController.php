@@ -8,6 +8,9 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 
 /**
+ * @group User Profile
+ * @authenticated
+ *
  * Phase 12 — Endpoints profil utilisateur.
  *
  * GET   /api/profile  → profil détaillé (incluant providerProfile si applicable)

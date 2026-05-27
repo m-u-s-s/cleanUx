@@ -9,6 +9,10 @@ use App\Services\Dispatch\MissionDispatchService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
+/**
+ * @group Admin — Booking Dispatch
+ * @authenticated
+ */
 class BookingDispatchController extends Controller
 {
     public function __construct(protected MissionDispatchService $dispatcher)

@@ -10,6 +10,10 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 
+/**
+ * @group Onboarding v2
+ * @authenticated
+ */
 class OnboardingV2Controller extends Controller
 {
     public function __construct(protected OnboardingEngine $engine)

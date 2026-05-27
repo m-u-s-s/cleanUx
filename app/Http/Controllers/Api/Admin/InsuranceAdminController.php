@@ -9,6 +9,10 @@ use App\Services\Insurance\InsuranceService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
+/**
+ * @group Admin — Insurance Claims
+ * @authenticated
+ */
 class InsuranceAdminController extends Controller
 {
     public function __construct(protected InsuranceService $service)

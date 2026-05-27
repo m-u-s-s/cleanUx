@@ -12,6 +12,10 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 
+/**
+ * @group Subscriptions v2
+ * @authenticated
+ */
 class SubscriptionsV2Controller extends Controller
 {
     public function __construct(

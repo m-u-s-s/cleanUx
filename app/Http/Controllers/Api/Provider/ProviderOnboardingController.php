@@ -9,6 +9,9 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 /**
+ * @group Provider — Onboarding (Legacy)
+ * @authenticated
+ *
  * Phase 14 — API onboarding prestataire (mobile/web).
  *
  *   POST   /api/provider/onboarding/start             → crée ProviderProfile vide

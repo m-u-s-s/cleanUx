@@ -9,6 +9,10 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 
+/**
+ * @group Provider — Wallet
+ * @authenticated
+ */
 class ProviderWalletController extends Controller
 {
     public function balance(Request $request, ProviderWalletService $wallet): JsonResponse

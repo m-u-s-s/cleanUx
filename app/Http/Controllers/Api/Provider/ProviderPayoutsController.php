@@ -10,6 +10,9 @@ use Stripe\Balance;
 use Stripe\Stripe;
 
 /**
+ * @group Provider — Payouts
+ * @authenticated
+ *
  * Phase 13 — API Payouts pour le prestataire mobile.
  *
  * GET /api/provider/payouts            → historique paginé

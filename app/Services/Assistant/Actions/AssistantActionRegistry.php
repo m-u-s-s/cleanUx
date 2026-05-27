@@ -71,6 +71,46 @@ class AssistantActionRegistry
                 'description'           => 'Get booking statistics grouped by trade/métier',
                 'requires_confirmation' => false,
             ];
+            $actions[] = [
+                'name'                  => 'resolve_dispute',
+                'description'           => 'Resolve a dispute case with a resolution text',
+                'parameters'            => ['dispute_id' => 'integer', 'resolution' => 'string'],
+                'requires_confirmation' => true,
+            ];
+        }
+
+        // Write actions — clients
+        if ($user->isClient() || $user->isEntreprise()) {
+            $actions[] = [
+                'name'                  => 'create_booking',
+                'description'           => 'Create a new booking for the client',
+                'parameters'            => [
+                    'trade_slug'         => 'string',
+                    'service_catalog_id' => 'integer',
+                    'address'            => 'string',
+                    'city'               => 'string',
+                    'postal_code'        => 'string',
+                    'scheduled_date'     => 'string (YYYY-MM-DD)',
+                    'scheduled_time'     => 'string (HH:MM)',
+                ],
+                'requires_confirmation' => true,
+            ];
+            $actions[] = [
+                'name'                  => 'cancel_booking',
+                'description'           => 'Cancel an existing booking owned by the client',
+                'parameters'            => ['booking_id' => 'integer'],
+                'requires_confirmation' => true,
+            ];
+        }
+
+        // Write actions — providers
+        if ($user->isEmploye()) {
+            $actions[] = [
+                'name'                  => 'update_availability',
+                'description'           => 'Toggle the provider online/offline status',
+                'parameters'            => ['status' => 'online|offline|break'],
+                'requires_confirmation' => false,
+            ];
         }
 
         return $actions;

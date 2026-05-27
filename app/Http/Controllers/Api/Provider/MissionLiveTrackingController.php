@@ -11,6 +11,9 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 /**
+ * @group Provider — Mission Live Tracking
+ * @authenticated
+ *
  * Endpoints "live" pour un prestataire en mission active.
  *
  *   - POST /provider/missions/{mission}/live/position

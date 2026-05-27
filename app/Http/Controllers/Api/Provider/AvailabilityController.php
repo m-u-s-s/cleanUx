@@ -12,6 +12,10 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Carbon;
 
+/**
+ * @group Provider — Availability
+ * @authenticated
+ */
 class AvailabilityController extends Controller
 {
     public function __construct(protected AvailabilityService $service)

@@ -10,6 +10,10 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 
+/**
+ * @group Client — Loyalty Redemption
+ * @authenticated
+ */
 class LoyaltyRedemptionController extends Controller
 {
     public function catalogue(Request $request): JsonResponse

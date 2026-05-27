@@ -10,6 +10,9 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 /**
+ * @group Client — Promo Codes
+ * @authenticated
+ *
  * API mobile — Validation d'un code promo.
  *
  * POST /api/client/promo-codes/validate

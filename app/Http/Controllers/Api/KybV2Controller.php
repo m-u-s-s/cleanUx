@@ -15,6 +15,10 @@ use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\ValidationException;
 
+/**
+ * @group KYB v2 (Business Onboarding)
+ * @authenticated
+ */
 class KybV2Controller extends Controller
 {
     public function __construct(protected BusinessOnboardingService $onboarding) {}

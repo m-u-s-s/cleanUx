@@ -17,6 +17,10 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 
+/**
+ * @group Fleet v2
+ * @authenticated
+ */
 class FleetV2Controller extends Controller
 {
     public function __construct(

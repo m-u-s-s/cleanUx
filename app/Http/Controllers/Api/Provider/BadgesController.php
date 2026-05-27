@@ -9,6 +9,10 @@ use App\Services\Badges\ProviderBadgeEngine;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
+/**
+ * @group Provider — Badges
+ * @authenticated
+ */
 class BadgesController extends Controller
 {
     public function mine(Request $request): JsonResponse

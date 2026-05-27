@@ -9,6 +9,10 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
+/**
+ * @group Admin — Audit Log
+ * @authenticated
+ */
 class AuditController extends Controller
 {
     public function __construct(protected AuditService $svc)

@@ -20,12 +20,14 @@ import { RootNavigator, linking } from '@/navigation';
 import { ErrorBoundary } from '@/ErrorBoundary';
 import { WalkthroughScreen, hasCompletedWalkthrough } from '@/screens/WalkthroughScreen';
 import '@/sentry/init';
+import { useOfflineSync } from '@/api';
 
 const queryClient = new QueryClient({
   defaultOptions: { queries: { retry: 2, staleTime: 60_000 } },
 });
 
 function AppInner() {
+  useOfflineSync();
   const [showWalkthrough, setShowWalkthrough] = useState<boolean | null>(null);
 
   useEffect(() => {

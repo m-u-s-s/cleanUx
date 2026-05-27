@@ -15,6 +15,10 @@ use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\ValidationException;
 
+/**
+ * @group Accounting v2
+ * @authenticated
+ */
 class AccountingV2Controller extends Controller
 {
     public function __construct(

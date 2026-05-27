@@ -10,6 +10,10 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 
+/**
+ * @group Client — Notification Preferences
+ * @authenticated
+ */
 class NotificationPreferenceController extends Controller
 {
     public function __construct(protected NotificationPreferenceService $svc)

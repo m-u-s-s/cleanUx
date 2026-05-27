@@ -9,6 +9,10 @@ use App\Services\TripTracking\TripTrackingService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
+/**
+ * @group Client — Trip Tracking
+ * @authenticated
+ */
 class TripTrackingController extends Controller
 {
     public function currentForBooking(Request $request, Booking $booking, TripTrackingService $service): JsonResponse

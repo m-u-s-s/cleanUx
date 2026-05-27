@@ -8,6 +8,9 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 /**
+ * @group Authentication
+ * @authenticated
+ *
  * POST /api/auth/refresh
  *
  * Issues a new Sanctum token for the authenticated user while keeping the

@@ -9,6 +9,10 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
+/**
+ * @group Provider — Fleet
+ * @authenticated
+ */
 class FleetProviderController extends Controller
 {
     public function __construct(protected FleetService $fleetService)

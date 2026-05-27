@@ -9,6 +9,10 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 
+/**
+ * @group Admin — Marketing Segments
+ * @authenticated
+ */
 class MarketingSegmentController extends Controller
 {
     public function index(): JsonResponse

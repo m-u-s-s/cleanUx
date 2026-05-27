@@ -23,6 +23,7 @@ import { useRegisterPushToken } from '@/push';
 import { env } from '@/config/env';
 import { ErrorBoundary } from '@/ErrorBoundary';
 import { OnboardingScreen, hasCompletedOnboarding } from '@/screens/OnboardingScreen';
+import { useOfflineSync } from '@/api';
 
 const queryClient = new QueryClient({
   defaultOptions: { queries: { retry: 2, staleTime: 60_000 } },
@@ -30,6 +31,7 @@ const queryClient = new QueryClient({
 
 function AppInner() {
   useRegisterPushToken();
+  useOfflineSync();
   const [showOnboarding, setShowOnboarding] = useState<boolean | null>(null);
 
   useEffect(() => {

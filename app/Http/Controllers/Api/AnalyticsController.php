@@ -9,6 +9,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\RateLimiter;
 
 /**
+ * @group Analytics
+ *
  * Analytics ingestion API — endpoints client SDK (web/mobile).
  *
  *   - POST /api/analytics/track     → track 1 event

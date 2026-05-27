@@ -9,6 +9,9 @@ use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 
 /**
+ * @group Provider Presence (Legacy)
+ * @authenticated
+ *
  * Phase 11 — Endpoints API mobile pour la presence prestataire.
  *
  * Routes (à déclarer dans routes/api.php) :

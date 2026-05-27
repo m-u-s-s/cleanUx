@@ -9,6 +9,10 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 
+/**
+ * @group Client — Quality Inspections
+ * @authenticated
+ */
 class QualityInspectionClientController extends Controller
 {
     public function __construct(protected QualityInspectionService $svc)

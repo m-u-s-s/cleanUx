@@ -9,6 +9,10 @@ use Illuminate\Http\Request;
 use Stripe\PaymentIntent;
 use Stripe\Stripe;
 
+/**
+ * @group Client — Booking Payment
+ * @authenticated
+ */
 class BookingPaymentController extends Controller
 {
     private function boot(): void

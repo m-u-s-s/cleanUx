@@ -9,6 +9,10 @@ use Stripe\PaymentMethod;
 use Stripe\SetupIntent;
 use Stripe\Stripe;
 
+/**
+ * @group Client — Payment Methods
+ * @authenticated
+ */
 class PaymentMethodController extends Controller
 {
     private function boot(): void

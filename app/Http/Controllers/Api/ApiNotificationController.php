@@ -7,6 +7,9 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 /**
+ * @group Notifications
+ * @authenticated
+ *
  * Phase 12 — Notifications API mobile.
  *
  * GET  /api/notifications              → liste paginée (DB notifications de Laravel)

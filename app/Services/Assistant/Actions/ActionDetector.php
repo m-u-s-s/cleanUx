@@ -50,6 +50,22 @@ class ActionDetector
             $actions[] = 'trade_stats';
         }
 
+        if ($this->matchesResolveDispute($lower) && $user->isAdmin()) {
+            $actions[] = 'resolve_dispute';
+        }
+
+        if ($this->matchesCancelBooking($lower) && ($user->isClient() || $user->isEntreprise())) {
+            $actions[] = 'cancel_booking';
+        }
+
+        if ($this->matchesCreateBooking($lower) && ($user->isClient() || $user->isEntreprise())) {
+            $actions[] = 'create_booking';
+        }
+
+        if ($this->matchesUpdateAvailability($lower) && $user->isEmploye()) {
+            $actions[] = 'update_availability';
+        }
+
         return array_values(array_unique($actions));
     }
 
@@ -128,5 +144,51 @@ class ActionDetector
             || str_contains($lower, 'par type')
             || str_contains($lower, 'nettoyage')
             || str_contains($lower, 'peinture');
+    }
+
+    private function matchesCancelBooking(string $lower): bool
+    {
+        return str_contains($lower, 'annuler')
+            || str_contains($lower, 'annule')
+            || str_contains($lower, 'annulation')
+            || str_contains($lower, 'cancel')
+            || str_contains($lower, 'supprimer ma réservation')
+            || str_contains($lower, 'supprimer ma reservation');
+    }
+
+    private function matchesCreateBooking(string $lower): bool
+    {
+        return str_contains($lower, 'créer une réservation')
+            || str_contains($lower, 'creer une reservation')
+            || str_contains($lower, 'nouvelle réservation')
+            || str_contains($lower, 'nouvelle reservation')
+            || str_contains($lower, 'prendre un rendez-vous')
+            || str_contains($lower, 'réserver un service')
+            || str_contains($lower, 'reserver un service')
+            || str_contains($lower, 'commander un service');
+    }
+
+    private function matchesUpdateAvailability(string $lower): bool
+    {
+        return str_contains($lower, 'passer en ligne')
+            || str_contains($lower, 'mettre en ligne')
+            || str_contains($lower, 'passer hors ligne')
+            || str_contains($lower, 'passer offline')
+            || str_contains($lower, 'passer online')
+            || str_contains($lower, 'en pause')
+            || str_contains($lower, 'changer mon statut')
+            || str_contains($lower, 'je suis disponible')
+            || str_contains($lower, 'je suis indisponible');
+    }
+
+    private function matchesResolveDispute(string $lower): bool
+    {
+        return str_contains($lower, 'résoudre le litige')
+            || str_contains($lower, 'resoudre le litige')
+            || str_contains($lower, 'résoudre litige')
+            || str_contains($lower, 'clore le litige')
+            || str_contains($lower, 'fermer le litige')
+            || str_contains($lower, 'résolution litige')
+            || str_contains($lower, 'resolution litige');
     }
 }

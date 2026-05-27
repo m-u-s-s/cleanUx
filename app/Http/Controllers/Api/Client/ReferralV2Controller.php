@@ -8,6 +8,9 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 /**
+ * @group Client — Referrals v2
+ * @authenticated
+ *
  * Referral V2 — Viral sharing endpoints.
  *
  * Endpoints (all require auth:sanctum):
