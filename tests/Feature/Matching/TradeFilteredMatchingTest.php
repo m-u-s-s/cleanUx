@@ -92,12 +92,12 @@ class TradeFilteredMatchingTest extends TestCase
 
         $primaryProvider->trades()->attach($this->trade->id, [
             'is_primary'  => true,
-            'proficiency' => 'expert',
+            'proficiency' => 'advanced',
         ]);
 
         $nonPrimaryProvider->trades()->attach($this->trade->id, [
             'is_primary'  => false,
-            'proficiency' => 'expert',
+            'proficiency' => 'advanced',
         ]);
 
         $booking = $this->createBookingForTrade($this->trade);
@@ -237,9 +237,8 @@ class TradeFilteredMatchingTest extends TestCase
     private function createBookingForTrade(Trade $trade): Booking
     {
         $service = ServiceCatalog::factory()->create([
-            'trade_id'     => $trade->id,
-            'is_active'    => true,
-            'billing_unit' => $trade->billing_unit ?? 'hourly',
+            'trade_id'  => $trade->id,
+            'is_active' => true,
         ]);
 
         return Booking::create([

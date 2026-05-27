@@ -3,15 +3,12 @@
     <select wire:model.live="selected_service_identifier" class="w-full rounded-2xl border-slate-300">
         <option value="">Choisir un service</option>
 
-        {{-- Phase F4 — $groupedServices is pre-filtered by trade when a trade is selected,
-             otherwise falls back to the full $servicesGroupedByTrade from the component.
-             If neither is available, falls back to the flat $services map. --}}
-        @php
-            $displayGroups = $groupedServices ?? $servicesGroupedByTrade ?? [];
-        @endphp
-
-        @if(!empty($displayGroups))
-            @foreach($displayGroups as $tradeName => $tradeServices)
+        {{-- Phase 1 multi-métiers — services groupés par Trade via <optgroup>.
+             Si la liste $servicesGroupedByTrade n'est pas dispo (ex. fallback
+             pour un appelant qui n'a pas hydraté la nouvelle propriété), on
+             retombe sur le rendu flat existant. --}}
+        @if(isset($servicesGroupedByTrade) && !empty($servicesGroupedByTrade))
+            @foreach($servicesGroupedByTrade as $tradeName => $tradeServices)
                 <optgroup label="{{ $tradeName }}">
                     @foreach($tradeServices as $key => $label)
                         <option value="{{ $key }}">{{ $label }}</option>

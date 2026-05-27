@@ -79,8 +79,8 @@ class AssistantActionRegistryTest extends TestCase
 
     public function test_to_prompt_block_returns_empty_string_for_user_with_no_actions(): void
     {
-        // A user with no role has no actions — we stub a user with no profile
-        $user = User::factory()->create(['role' => null, 'platform_role' => null]);
+        // A user with an unrecognised role has no actions — we stub a user with no profile
+        $user = User::factory()->create(['role' => 'guest', 'platform_role' => 'user']);
 
         $block = $this->registry->toPromptBlock($user);
 
