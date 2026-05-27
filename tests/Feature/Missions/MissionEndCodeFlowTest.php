@@ -54,10 +54,6 @@ class MissionEndCodeFlowTest extends TestCase
 
     public function test_complete_succeeds_with_valid_end_code(): void
     {
-        if (config('database.default') === 'sqlite') {
-            $this->markTestSkipped('completeMission() requires employee_cost column absent in SQLite test schema');
-        }
-
         [$provider, $mission] = $this->makeStartedMission();
 
         MissionVerificationCode::factory()->endCode()->create([
@@ -78,10 +74,6 @@ class MissionEndCodeFlowTest extends TestCase
 
     public function test_complete_without_end_code_works_when_no_pending_code(): void
     {
-        if (config('database.default') === 'sqlite') {
-            $this->markTestSkipped('completeMission() requires employee_cost column absent in SQLite test schema');
-        }
-
         [$provider, $mission] = $this->makeStartedMission();
 
         $response = $this->actingAs($provider, 'sanctum')

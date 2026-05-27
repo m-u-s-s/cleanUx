@@ -1,16 +1,16 @@
-<section class="grid grid-cols-1 gap-6 xl:grid-cols-[1.3fr_0.7fr]">
+<section class="grid grid-cols-1 gap-6 xl:grid-cols-[1.3fr_0.7fr]" aria-live="polite">
     <div class="space-y-6">
         <x-ui.card padding="p-5" title="Missions du jour" subtitle="Triées par ordre d'exécution et statut terrain." eyebrow="Aujourd'hui">
             <div class="space-y-3">
                 @forelse($missionsDuJour as $rdv)
-                    <div class="rounded-xl border {{ $rdv->status === 'sur_place' ? 'border-brand-300 bg-brand-50/30 ring-2 ring-brand-100' : 'border-slate-200/70 bg-white' }} p-4 transition hover:shadow-soft-sm">
+                    <div class="rounded-xl border {{ $rdv->status === 'sur_place' ? 'border-brand-300 bg-brand-50/30 ring-2 ring-brand-100 dark:border-brand-700 dark:bg-brand-900/20' : 'border-slate-200/70 bg-white dark:border-slate-700 dark:bg-slate-800/60' }} p-4 transition hover:shadow-soft-sm">
                         <div class="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
                             <div class="min-w-0">
-                                <h4 class="text-base font-semibold text-slate-900 truncate">
+                                <h4 class="text-base font-semibold text-slate-900 truncate dark:text-slate-100">
                                     {{ $rdv->service_display_name ?: 'Service non précisé' }}
                                 </h4>
 
-                                <div class="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-slate-600">
+                                <div class="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-slate-600 dark:text-slate-400">
                                     <span class="inline-flex items-center gap-1">
                                         <x-ui.icon name="user" class="w-3.5 h-3.5 text-slate-400" />
                                         {{ $rdv->client->name ?? 'Client' }}
@@ -32,29 +32,29 @@
                             </div>
                         </div>
 
-                        <dl class="mt-3 grid grid-cols-1 gap-x-4 gap-y-1 text-xs text-slate-700 md:grid-cols-2">
+                        <dl class="mt-3 grid grid-cols-1 gap-x-4 gap-y-1 text-xs text-slate-700 md:grid-cols-2 dark:text-slate-300">
                             <div class="flex gap-2">
-                                <dt class="text-slate-500">Téléphone :</dt>
+                                <dt class="text-slate-500 dark:text-slate-400">Téléphone :</dt>
                                 <dd class="font-medium">{{ $rdv->telephone_client ?? '—' }}</dd>
                             </div>
                             <div class="flex gap-2">
-                                <dt class="text-slate-500">Durée estimée :</dt>
+                                <dt class="text-slate-500 dark:text-slate-400">Durée estimée :</dt>
                                 <dd class="font-medium">{{ $rdv->duree_estimee ? $rdv->duree_estimee . ' min' : '—' }}</dd>
                             </div>
                             <div class="flex gap-2">
-                                <dt class="text-slate-500">Type de lieu :</dt>
+                                <dt class="text-slate-500 dark:text-slate-400">Type de lieu :</dt>
                                 <dd class="font-medium">{{ ucfirst($rdv->type_lieu ?? '—') }}</dd>
                             </div>
                             <div class="flex gap-2">
-                                <dt class="text-slate-500">Surface :</dt>
+                                <dt class="text-slate-500 dark:text-slate-400">Surface :</dt>
                                 <dd class="font-medium">{{ $rdv->surface ?? '—' }}</dd>
                             </div>
                             <div class="flex gap-2">
-                                <dt class="text-slate-500">Parking :</dt>
+                                <dt class="text-slate-500 dark:text-slate-400">Parking :</dt>
                                 <dd class="font-medium">{{ $rdv->acces_parking ? 'Oui' : 'Non' }}</dd>
                             </div>
                             <div class="flex gap-2">
-                                <dt class="text-slate-500">Animaux :</dt>
+                                <dt class="text-slate-500 dark:text-slate-400">Animaux :</dt>
                                 <dd class="font-medium">{{ $rdv->presence_animaux ? 'Oui' : 'Non' }}</dd>
                             </div>
                         </dl>
@@ -188,15 +188,15 @@
         <x-ui.card padding="p-5" title="Historique récent" subtitle="Vos dernières missions terminées." eyebrow="Suivi">
             <div class="space-y-2">
                 @forelse($historiqueRecent as $rdv)
-                    <div class="rounded-lg border border-slate-200/70 bg-white p-3">
-                        <p class="text-sm font-semibold text-slate-900 truncate">
+                    <div class="rounded-lg border border-slate-200/70 bg-white p-3 dark:border-slate-700 dark:bg-slate-800/60">
+                        <p class="text-sm font-semibold text-slate-900 truncate dark:text-slate-100">
                             {{ $rdv->service_display_name ?: 'Service non précisé' }}
                         </p>
-                        <p class="mt-0.5 inline-flex items-center gap-1 text-xs text-slate-600">
+                        <p class="mt-0.5 inline-flex items-center gap-1 text-xs text-slate-600 dark:text-slate-400">
                             <x-ui.icon name="calendar" class="w-3 h-3 text-slate-400" />
                             {{ $rdv->date }} à {{ substr((string) $rdv->heure, 0, 5) }}
                         </p>
-                        <p class="inline-flex items-center gap-1 text-xs text-slate-600">
+                        <p class="inline-flex items-center gap-1 text-xs text-slate-600 dark:text-slate-400">
                             <x-ui.icon name="user" class="w-3 h-3 text-slate-400" />
                             {{ $rdv->client->name ?? 'Client' }}
                         </p>

@@ -17,6 +17,23 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Queue Priority Groups
+    |--------------------------------------------------------------------------
+    |
+    | When running `php artisan queue:work --queue=$QUEUE_HIGH,$QUEUE_DEFAULT,$QUEUE_LOW`
+    | workers will drain high-priority queues before moving to lower ones.
+    | Use these env values verbatim in Supervisor / Forge worker configs.
+    |
+    */
+
+    'priorities' => [
+        'high'    => env('QUEUE_HIGH',    'payments,stripe'),
+        'default' => env('QUEUE_DEFAULT', 'default,notifications'),
+        'low'     => env('QUEUE_LOW',     'analytics,reports'),
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
     | Queue Connections
     |--------------------------------------------------------------------------
     |

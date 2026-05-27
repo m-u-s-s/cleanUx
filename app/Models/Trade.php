@@ -105,6 +105,11 @@ class Trade extends Model
         return $this->hasMany(TradeZonePricing::class);
     }
 
+    public function certifications(): HasMany
+    {
+        return $this->hasMany(\App\Models\ProviderTradeCertification::class);
+    }
+
     public function zones(): BelongsToMany
     {
         return $this->belongsToMany(ServiceZone::class, 'trade_zone_settings')

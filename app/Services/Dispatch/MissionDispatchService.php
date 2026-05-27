@@ -35,6 +35,19 @@ class MissionDispatchService
     ) {}
 
     /**
+     * Resolve the timeout in seconds for a given trade, falling back to the
+     * platform default defined in config/dispatch.php.
+     */
+    public function resolveTimeoutForMission(Mission $mission): int
+    {
+        $slug = optional($mission->booking?->trade)->slug ?? '';
+        return (int) config(
+            "dispatch.timeout_per_trade.{$slug}",
+            config('dispatch.default_timeout', self::RESPONSE_TIMEOUT_SECONDS)
+        );
+    }
+
+    /**
      * Lance le dispatch d'une mission au top scorer disponible.
      *
      * Si previousAssignmentId est fourni, on enchaîne en escalation
@@ -94,7 +107,8 @@ class MissionDispatchService
     ): MissionAssignment {
         return DB::transaction(function () use ($mission, $provider, $previousAssignmentId) {
             $now = now();
-            $expiresAt = $now->copy()->addSeconds(self::RESPONSE_TIMEOUT_SECONDS);
+            $timeout = $this->resolveTimeoutForMission($mission);
+            $expiresAt = $now->copy()->addSeconds($timeout);
 
             $assignment = MissionAssignment::create([
                 'mission_id'                    => $mission->id,

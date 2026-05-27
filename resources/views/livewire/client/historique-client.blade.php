@@ -9,15 +9,15 @@
         </a>
     </x-slot>
 
-    <div class="bg-white rounded-2xl shadow border p-4">
+    <div class="bg-white rounded-2xl shadow border p-4 dark:bg-slate-900 dark:border-slate-700" aria-live="polite">
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Recherche</label>
+                <label class="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-300">Recherche</label>
                 <input
                     type="text"
                     wire:model.live="search"
                     placeholder="Service, ville, adresse..."
-                    class="w-full border-gray-300 rounded-lg shadow-sm">
+                    class="w-full border-gray-300 rounded-lg shadow-sm dark:bg-slate-800 dark:border-slate-600 dark:text-slate-100 dark:placeholder-slate-500">
             </div>
 
             <div class="flex items-end">
@@ -32,10 +32,10 @@
 
     <div class="space-y-4">
         @forelse($historique as $rdv)
-        <div class="border rounded-2xl p-4 bg-gray-50 text-sm text-gray-700 space-y-4">
+        <div class="border rounded-2xl p-4 bg-gray-50 text-sm text-gray-700 space-y-4 dark:bg-slate-800/60 dark:border-slate-700 dark:text-slate-300">
             <div class="flex flex-col md:flex-row md:items-start md:justify-between gap-3">
                 <div>
-                    <p class="font-medium text-gray-800 text-lg">
+                    <p class="font-medium text-gray-800 text-lg dark:text-slate-100">
                         {{ $rdv->service_display_name }}
                     </p>
                     <p>{{ $rdv->date }} à {{ $rdv->heure }}</p>
@@ -57,16 +57,16 @@
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
-                    <div class="rounded-xl bg-white border p-4">
-                        <p class="text-xs font-bold uppercase text-slate-500">Durée prévue</p>
-                        <p class="mt-1 text-lg font-black text-slate-900">
+                    <div class="rounded-xl bg-white border p-4 dark:bg-slate-900 dark:border-slate-700">
+                        <p class="text-xs font-bold uppercase text-slate-500 dark:text-slate-400">Durée prévue</p>
+                        <p class="mt-1 text-lg font-black text-slate-900 dark:text-slate-100">
                             {{ $rdv->duree_estimee ? $rdv->duree_estimee.' min' : '—' }}
                         </p>
                     </div>
 
                     <div class="rounded-xl bg-white border p-4">
                         <p class="text-xs font-bold uppercase text-slate-500">Durée réelle</p>
-                        <p class="mt-1 text-lg font-black text-slate-900">
+                        <p class="mt-1 text-lg font-black text-slate-900 dark:text-slate-100">
                             {{ $rdv->duree_reelle ? $rdv->duree_reelle.' min' : '—' }}
                         </p>
                     </div>
@@ -114,13 +114,17 @@
             @endif
 
             <div class="flex flex-wrap gap-3 text-sm">
-                <a href="{{ route('client.rendezvous.create', ['source_rdv' => $rdv->id]) }}" class="text-slate-700 underline">
-                    🔁 Reprendre cette prestation
+                <a href="{{ route('client.rendezvous.create', ['source_rdv' => $rdv->id]) }}"
+                   class="text-slate-700 underline dark:text-slate-300"
+                   aria-label="{{ __('Reprendre la prestation') }} {{ $rdv->service_display_name }}">
+                    {{ __('Reprendre cette prestation') }}
                 </a>
 
                 @if(!$rdv->feedback)
-                <a href="{{ route('feedback.create', $rdv->id) }}" class="text-blue-600 underline">
-                    💬 Laisser un feedback
+                <a href="{{ route('feedback.create', $rdv->id) }}"
+                   class="text-blue-600 underline dark:text-blue-400"
+                   aria-label="{{ __('Laisser un feedback pour') }} {{ $rdv->service_display_name }}">
+                    {{ __('Laisser un feedback') }}
                 </a>
                 @endif
             </div>

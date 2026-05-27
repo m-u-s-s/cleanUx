@@ -53,8 +53,8 @@ jobs:
       - name: Run tests with coverage
         run: php artisan test --coverage-clover=coverage.xml
 
-      - name: Coverage threshold check (fail below 70%)
-        run: php artisan test --coverage-min=70
+      - name: Coverage threshold check (fail below 80%)
+        run: php artisan test --coverage-min=80
 
       - name: Upload coverage report
         if: always()

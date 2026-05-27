@@ -62,6 +62,16 @@ return [
             'visibility' => 'private',
         ],
 
+        'cdn' => [
+            'driver' => 's3',
+            'key'    => env('CDN_AWS_ACCESS_KEY_ID', env('AWS_ACCESS_KEY_ID')),
+            'secret' => env('CDN_AWS_SECRET_ACCESS_KEY', env('AWS_SECRET_ACCESS_KEY')),
+            'region' => env('CDN_AWS_DEFAULT_REGION', 'eu-west-1'),
+            'bucket' => env('CDN_BUCKET'),
+            'url'    => env('CDN_URL'),
+            'throw'  => false,
+        ],
+
     ],
 
     /*

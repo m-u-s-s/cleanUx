@@ -82,5 +82,6 @@ class Kernel extends HttpKernel
         'token.grace' => \App\Http\Middleware\EnforceTokenGrace::class,
         'cache.api'   => \App\Http\Middleware\CacheApiResponse::class,
         'premium'     => \App\Http\Middleware\PremiumGate::class,
+        'enforce_2fa' => \App\Http\Middleware\Enforce2FA::class,
     ];
 }

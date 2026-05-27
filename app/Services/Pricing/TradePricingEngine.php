@@ -36,10 +36,15 @@ class TradePricingEngine
     /**
      * Estimate the price for a service given optional form answers and zone.
      *
+     * Priority order:
+     *   1. ServiceCatalog.base_price  — service-specific price set on the catalog entry.
+     *   2. TradeZonePricing.base_rate — zone-level override for the trade (in cents).
+     *   3. Trade.default_hourly_rate  — trade-wide billing fallback.
+     *
      * @param  ServiceCatalog  $service
      * @param  array<string,mixed>  $formAnswers  Answers from trade booking form (e.g. duration_hours, surface_m2).
      * @param  int|null  $serviceZoneId
-     * @return array{billing_unit:string, unit_price:float, quantity:float, surge_multiplier:float, subtotal:float, currency:string, zone_pricing_applied:bool}
+     * @return array{billing_unit:string, unit_price:float, quantity:float, surge_multiplier:float, subtotal:float, currency:string, zone_pricing_applied:bool, price_source:string}
      */
     public function estimate(
         ServiceCatalog $service,
@@ -50,28 +55,45 @@ class TradePricingEngine
         $billingUnit = $this->normaliseUnit(
             $service->billing_unit ?? $trade?->billing_unit ?? 'hourly'
         );
-        $basePrice = (float) ($service->base_price ?? 0);
 
+        // 1. Service-catalog base price (service-specific override).
+        $serviceCatalogPrice = ($service->base_price !== null && (float) $service->base_price > 0)
+            ? (float) $service->base_price
+            : null;
+
+        // 2. Zone-level pricing for the trade.
         $zonePricing = $this->resolveZonePricing($trade?->id, $serviceZoneId);
 
-        $unitPrice = $zonePricing
-            ? ($zonePricing->base_rate_cents / 100)
-            : $basePrice;
+        // 3. Trade-wide default rate.
+        $tradeDefaultPrice = $trade?->default_hourly_rate !== null
+            ? (float) $trade->default_hourly_rate
+            : null;
+
+        // Resolve unit price following the priority chain.
+        [$unitPrice, $priceSource] = match (true) {
+            $serviceCatalogPrice !== null => [$serviceCatalogPrice,                        'service_catalog'],
+            $zonePricing !== null         => [$zonePricing->base_rate_cents / 100,         'zone_pricing'],
+            $tradeDefaultPrice !== null   => [$tradeDefaultPrice,                          'trade_default'],
+            default                       => [0.0,                                          'none'],
+        };
+
+        $basePrice = $unitPrice;
 
         $surgeMultiplier = (float) ($zonePricing?->surge_multiplier ?? 1.00);
         $quantity        = $this->resolveQuantity($billingUnit, $formAnswers);
-        $subtotal        = $unitPrice * $quantity * $surgeMultiplier;
+        $subtotal        = $basePrice * $quantity * $surgeMultiplier;
 
         $subtotal = $this->applyMinMax($subtotal, $zonePricing);
 
         return [
             'billing_unit'        => $billingUnit,
-            'unit_price'          => round($unitPrice, 2),
+            'unit_price'          => round($basePrice, 2),
             'quantity'            => $quantity,
             'surge_multiplier'    => $surgeMultiplier,
             'subtotal'            => round($subtotal, 2),
             'currency'            => 'EUR',
             'zone_pricing_applied'=> $zonePricing !== null,
+            'price_source'        => $priceSource,
         ];
     }
 

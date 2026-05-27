@@ -115,6 +115,11 @@ class AssistantActionExecutor
             $action->markExecuted(['result_text' => $result]);
         }
 
+        \App\Support\ActivityLogger::log('assistant.action_executed', $action, [
+            'action_name' => $action->action_type,
+            'user_id'     => $user->id,
+        ]);
+
         return $result;
     }
 

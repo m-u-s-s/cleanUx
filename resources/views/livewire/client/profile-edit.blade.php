@@ -7,10 +7,10 @@
     </div>
 
     {{-- Informations personnelles --}}
-    <div class="rounded-2xl bg-white border border-slate-200/80 shadow-soft p-6">
+    <div class="rounded-2xl bg-white border border-slate-200/80 shadow-soft p-6 dark:bg-slate-900 dark:border-slate-700">
         <div class="flex items-center gap-2 mb-4">
-            <x-ui.icon name="user" class="w-4 h-4 text-slate-500" />
-            <h2 class="text-sm font-bold text-slate-900">Informations personnelles</h2>
+            <x-ui.icon name="user" class="w-4 h-4 text-slate-500 dark:text-slate-400" />
+            <h2 class="text-sm font-bold text-slate-900 dark:text-slate-100">Informations personnelles</h2>
         </div>
 
         <div class="space-y-4">
@@ -38,10 +38,10 @@
     </div>
 
     {{-- Mot de passe --}}
-    <div class="rounded-2xl bg-white border border-slate-200/80 shadow-soft p-6">
+    <div class="rounded-2xl bg-white border border-slate-200/80 shadow-soft p-6 dark:bg-slate-900 dark:border-slate-700">
         <div class="flex items-center gap-2 mb-4">
-            <x-ui.icon name="lock-closed" class="w-4 h-4 text-slate-500" />
-            <h2 class="text-sm font-bold text-slate-900">Changer mon mot de passe</h2>
+            <x-ui.icon name="lock-closed" class="w-4 h-4 text-slate-500 dark:text-slate-400" />
+            <h2 class="text-sm font-bold text-slate-900 dark:text-slate-100">Changer mon mot de passe</h2>
         </div>
 
         <div class="space-y-4">

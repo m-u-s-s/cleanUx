@@ -19,7 +19,7 @@ import { SpaceGrotesk_700Bold } from '@expo-google-fonts/space-grotesk';
 import { AuthProvider } from '@/auth';
 import { RealtimeProvider } from '@/realtime';
 import { RootNavigator, linking } from '@/navigation';
-import { useRegisterPushToken } from '@/push';
+import { useRegisterPushToken, useNotificationRouting } from '@/push';
 import { env } from '@/config/env';
 import { ErrorBoundary } from '@/ErrorBoundary';
 import { OnboardingScreen, hasCompletedOnboarding } from '@/screens/OnboardingScreen';
@@ -31,6 +31,7 @@ const queryClient = new QueryClient({
 
 function AppInner() {
   useRegisterPushToken();
+  useNotificationRouting();
   useOfflineSync();
   const [showOnboarding, setShowOnboarding] = useState<boolean | null>(null);
 

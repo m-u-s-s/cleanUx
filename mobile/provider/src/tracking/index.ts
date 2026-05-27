@@ -5,3 +5,4 @@ export {
   usePushEta,
   useGpsWatcher,
 } from './hooks';
+export { startBackgroundLocation, stopBackgroundLocation } from './useBackgroundLocation';

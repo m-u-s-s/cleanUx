@@ -5,8 +5,32 @@ export const linking: LinkingOptions<RootStackParamList> = {
   prefixes: ['cleanux://', 'https://app.cleanux.com'],
   config: {
     screens: {
-      MainTabs: { screens: { Home: '', Bookings: 'bookings', Notifications: 'notifications', Profile: 'profile' } },
+      MainTabs: {
+        screens: {
+          Home: '',
+          Explore: 'explore',
+          Bookings: 'bookings',
+          Profile: 'profile',
+        },
+      },
       Login: 'login',
+      ForgotPassword: 'forgot-password',
+      BookingDetail: 'booking/:bookingId',
+      Chat: 'chat/:threadId',
+      ChatList: 'chat',
+      Loyalty: 'loyalty',
+      Referral: 'referral',
+      ProfileEdit: 'profile/edit',
+      Notifications: 'notifications',
+      Tips: 'booking/:bookingId/tips',
+      Rating: 'booking/:bookingId/rate',
+      Disputes: 'disputes',
+      GDPR: 'gdpr',
+      NPS: 'nps',
+      Legal: 'legal/:type',
+      NotificationPreferences: 'settings/notifications',
+      Language: 'settings/language',
+      Appearance: 'settings/appearance',
     },
   },
 };

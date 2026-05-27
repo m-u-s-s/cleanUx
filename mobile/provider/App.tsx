@@ -1,4 +1,4 @@
-import { setupForegroundNotifications } from '@/push';
+import { setupForegroundNotifications, useNotificationRouting } from '@/push';
 setupForegroundNotifications();
 import React, { useState, useEffect } from 'react';
 import { View } from 'react-native';
@@ -27,6 +27,7 @@ const queryClient = new QueryClient({
 });
 
 function AppInner() {
+  useNotificationRouting();
   useOfflineSync();
   const [showWalkthrough, setShowWalkthrough] = useState<boolean | null>(null);
 

@@ -2,7 +2,7 @@ import type { LinkingOptions } from '@react-navigation/native';
 import type { RootStackParamList } from './types';
 
 export const linking: LinkingOptions<RootStackParamList> = {
-  prefixes: ['cleanux-provider://', 'https://provider.cleanux.com'],
+  prefixes: ['cleanuxpro://', 'https://provider.cleanux.com'],
   config: {
     screens: {
       MainTabs: {
@@ -14,6 +14,23 @@ export const linking: LinkingOptions<RootStackParamList> = {
         },
       },
       Login: 'login',
+      ForgotPassword: 'forgot-password',
+      MissionDetail: 'mission/:missionId',
+      MissionInbox: 'inbox',
+      ProviderChatList: 'chat',
+      ProviderChat: 'chat/:threadId',
+      ProviderNotifications: 'notifications',
+      Badges: 'badges',
+      Availability: 'availability',
+      StripeOnboarding: 'stripe-onboarding',
+      KYC: 'kyc',
+      Onboarding: 'onboarding',
+      ProviderDisputes: 'disputes',
+      ProviderRatings: 'ratings',
+      Legal: 'legal/:type',
+      NotificationPreferences: 'settings/notifications',
+      Language: 'settings/language',
+      Appearance: 'settings/appearance',
     },
   },
 };

@@ -12,7 +12,7 @@ use App\Models\Booking;
 use Illuminate\Support\Facades\Route;
 use Barryvdh\DomPDF\Facade\Pdf;
 
-Route::middleware(['role:admin'])
+Route::middleware(['role:admin', 'enforce_2fa'])
     ->prefix('admin')
     ->name('admin.')
     ->group(function () {
@@ -343,6 +343,12 @@ Route::middleware(['role:admin'])
         if (class_exists(\App\Livewire\Admin\FleetV2\FleetCenter::class)) {
             Route::get('/fleet-v2', \App\Livewire\Admin\FleetV2\FleetCenter::class)
                 ->name('fleet-v2.center');
+        }
+
+        // Feature Flags — runtime toggle for config/features.php flags
+        if (class_exists(\App\Livewire\Admin\FeatureFlagsManager::class)) {
+            Route::get('/feature-flags', \App\Livewire\Admin\FeatureFlagsManager::class)
+                ->name('feature-flags.manager');
         }
 
         // Promotions — Codes promo, campagnes, programme de parrainage

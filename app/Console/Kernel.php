@@ -31,6 +31,12 @@ class Kernel extends ConsoleKernel
         $schedule->command('accounting:close-previous-month')->monthlyOn(6, '04:00')->withoutOverlapping();
         $schedule->command('fleet:scan-expiring')->dailyAt('05:00')->withoutOverlapping();
 
+        // Recurring bookings — create and dispatch daily due occurrences
+        $schedule->command('bookings:process-recurring')->dailyAt('06:30')->withoutOverlapping();
+
+        // NPS surveys — send post-booking surveys to eligible clients
+        $schedule->command('nps:send-surveys')->dailyAt('10:00')->withoutOverlapping();
+
         // Provider payouts — compute commissions + Stripe Transfers for completed bookings
         $schedule->command('payouts:process')->dailyAt('02:00')->withoutOverlapping();
 
@@ -67,6 +73,9 @@ class Kernel extends ConsoleKernel
             $schedule->command('backup:run')->dailyAt('01:30')->withoutOverlapping();
             $schedule->command('backup:monitor')->dailyAt('07:00')->withoutOverlapping();
         }
+
+        // Backup verification — monthly integrity check
+        $schedule->command('backup:verify')->monthly()->withoutOverlapping();
 
 
         $schedule->command('app:ops-heartbeat')

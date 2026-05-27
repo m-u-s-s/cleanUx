@@ -3,7 +3,7 @@ export { apiClient, ApiError } from './api';
 export type { User, ApiResponse } from './api';
 
 // Auth
-export { AuthProvider, useAuth, useLogin, useRegister, useMe } from './auth';
+export { AuthProvider, useAuth, useLogin, useRegister, useMe, authenticateWithBiometrics } from './auth';
 
 // Chat
 export { useChatThreads, useChatMessages, useSendMessage, useMarkThreadRead, useLiveChat } from './chat';
@@ -19,6 +19,7 @@ export type { AppNotification } from './notifications/hooks';
 // Push
 export { useRegisterPushToken } from './push';
 export { setupForegroundNotifications } from './push/foreground';
+export { useNotificationRouting } from './push/useNotificationRouting';
 
 // Realtime
 export { RealtimeProvider, useRealtime, useChannel, useSocketConfig } from './realtime';
@@ -60,6 +61,9 @@ export {
 } from './ui';
 export { fadeUpConfig, fadeInConfig, shimmerConfig } from './ui/animations';
 export { useReducedMotion, useScreenReader, a11y } from './ui/a11y';
+
+// Hooks
+export { maybeRequestReview, incrementCompletedBookings } from './hooks/useAppRating';
 
 // ErrorBoundary
 export { ErrorBoundary } from './ErrorBoundary';

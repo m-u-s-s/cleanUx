@@ -25,6 +25,7 @@ class CatalogueServices extends Component
     public $market = '';
     public $serviceType = '';
     public $tradeFilter = '';   // Phase 1 — filtrer par métier dans la liste
+    public bool $groupByTrade = false; // Phase 2 — affichage groupé par métier
 
     public $serviceId = null;
     public $code = '';
@@ -50,7 +51,7 @@ class CatalogueServices extends Component
     public $rule_minimum_notice_hours = null;
     public $rule_maximum_daily_capacity = null;
 
-    protected $queryString = ['search', 'status', 'market', 'serviceType', 'tradeFilter', 'page'];
+    protected $queryString = ['search', 'status', 'market', 'serviceType', 'tradeFilter', 'groupByTrade', 'page'];
 
     public function mount(): void
     {
@@ -323,6 +324,16 @@ class CatalogueServices extends Component
             ->orderBy('name')
             ->get(['id', 'name', 'slug', 'color']);
 
+        // Phase 2 — regroupement par métier (grouped view)
+        $servicesGroupedByTrade = $this->groupByTrade
+            ? $trades->mapWithKeys(fn ($trade) => [
+                $trade->id => [
+                    'trade'    => $trade,
+                    'services' => ServiceCatalog::where('trade_id', $trade->id)->orderBy('sort_order')->orderBy('name')->get(),
+                ],
+            ])->filter(fn ($group) => $group['services']->isNotEmpty())
+            : collect();
+
         $serviceLogs = $selectedService
             ? ActivityLog::query()
                 ->where(function ($query) use ($selectedService) {
@@ -340,12 +351,13 @@ class CatalogueServices extends Component
             : collect();
 
         return view('livewire.admin.catalogue-services', [
-            'services' => $services,
-            'zones' => $zones,
-            'selectedService' => $selectedService,
-            'serviceTypes' => $serviceTypes,
-            'trades' => $trades,
-            'serviceLogs' => $serviceLogs,
+            'services'                 => $services,
+            'zones'                    => $zones,
+            'selectedService'          => $selectedService,
+            'serviceTypes'             => $serviceTypes,
+            'trades'                   => $trades,
+            'serviceLogs'              => $serviceLogs,
+            'servicesGroupedByTrade'   => $servicesGroupedByTrade,
         ]);
     }
 }

@@ -148,4 +148,4 @@ Route::get('/trades', function () {
         ]);
 
     return response()->json(['data' => $trades]);
-})->middleware('cache.headers:public;max_age=300;etag')->name('api.trades.index');
+})->middleware(['cache.headers:public;max_age=300;etag', 'cache.api:300'])->name('api.trades.index');

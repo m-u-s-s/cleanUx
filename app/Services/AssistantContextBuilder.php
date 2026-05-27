@@ -8,6 +8,7 @@ use Illuminate\Support\Collection;
 use App\Services\Assistant\Stats\AssistantStats;
 use App\Services\Assistant\Actions\ActionDetector;
 use App\Services\Assistant\Actions\AssistantActionExecutor;
+use App\Services\Assistant\KnowledgeBase;
 
 /**
  * Construit le contexte dynamique pour le chatbot CleanUx.
@@ -152,12 +153,33 @@ Tu peux aider avec :
 Ne jamais exécuter d'actions destructives sans confirmation explicite.",
         };
 
+        // Inject knowledge base snippets if the user message matches an article
+        if ($userMessage !== null) {
+            $kbBlock = $this->buildKnowledgeBaseBlock($userMessage);
+            if ($kbBlock !== '') {
+                $prompt .= "\n\n---\n" . $kbBlock . "\n---";
+            }
+        }
+
         // Inject live data if a user message was provided
         if ($userMessage !== null) {
             $prompt .= $this->buildLiveDataBlock($user, $userMessage);
         }
 
         return $prompt;
+    }
+
+    /**
+     * Search the static knowledge base for articles matching the user message.
+     * Returns a formatted string block, or '' when nothing matches.
+     */
+    private function buildKnowledgeBaseBlock(string $message): string
+    {
+        try {
+            return app(KnowledgeBase::class)->search($message);
+        } catch (\Throwable) {
+            return '';
+        }
     }
 
     /**

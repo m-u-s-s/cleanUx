@@ -7,6 +7,7 @@ use App\Models\AssistantMessage;
 use App\Services\Assistant\QuickActions;
 use App\Services\Assistant\Tools\AssistantToolDispatcher;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\URL;
 use Livewire\Attributes\On;
 use Livewire\Component;
@@ -103,11 +104,23 @@ class AssistantWidget extends Component
 
         $user = Auth::user();
 
-        // Rate limit côté serveur (paranoïa : le middleware ne tape pas Livewire actions)
+        // Per-minute rate limit (20 messages/min) using Laravel RateLimiter
+        $minuteKey = 'assistant:minute:' . $user->id;
+        if (RateLimiter::tooManyAttempts($minuteKey, 20)) {
+            $this->messages[] = [
+                'sender'  => 'assistant',
+                'content' => 'Trop de messages. Veuillez patienter.',
+                'time'    => now()->format('H:i'),
+            ];
+            return;
+        }
+        RateLimiter::hit($minuteKey, 60);
+
+        // Hourly rate limit (DB-backed, checks configured per-hour cap)
         if ($this->isRateLimited($user)) {
             $this->messages[] = [
                 'sender'  => 'assistant',
-                'content' => "⏱ Tu as atteint la limite de messages. Réessaye dans quelques minutes.",
+                'content' => "Tu as atteint la limite de messages. Réessaye dans quelques minutes.",
                 'time'    => now()->format('H:i'),
             ];
             return;

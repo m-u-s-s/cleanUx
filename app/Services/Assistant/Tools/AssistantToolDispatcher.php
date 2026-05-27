@@ -133,6 +133,11 @@ class AssistantToolDispatcher
             $result = $tool->execute($user, $input);
             $action->markExecuted($result);
 
+            \App\Support\ActivityLogger::log('assistant.action_executed', $action, [
+                'action_name' => $action->action_type,
+                'user_id'     => $user->id,
+            ]);
+
             return ['ok' => true, 'result' => $result];
 
         } catch (Throwable $e) {

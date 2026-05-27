@@ -3,6 +3,9 @@
 return [
     'enabled' => env('MASKED_CALLS_ENABLED', false),
 
+    // Provider: "mock" (dev/test) or "twilio"
+    'provider' => env('MASKED_CALLS_PROVIDER', 'mock'),
+
     // Twilio Proxy : ServiceSid créé sur Twilio Console > Proxy > Services
     'twilio_service_sid' => env('TWILIO_PROXY_SERVICE_SID'),
 

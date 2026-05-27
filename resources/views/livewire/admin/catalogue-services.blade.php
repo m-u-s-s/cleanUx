@@ -142,16 +142,91 @@
                         @endforeach
                     </select>
                 </div>
+
+                {{-- Phase 2 — Toggle grouped-by-trade view --}}
+                <div class="flex items-center gap-3">
+                    <button
+                        wire:click="$toggle('groupByTrade')"
+                        class="inline-flex items-center gap-2 rounded-lg border px-3 py-1.5 text-xs font-medium transition-colors {{ $groupByTrade ? 'border-indigo-300 bg-indigo-50 text-indigo-700' : 'border-gray-300 bg-white text-gray-600 hover:bg-gray-50' }}"
+                    >
+                        {{ $groupByTrade ? 'Vue groupee par metier' : 'Grouper par metier' }}
+                    </button>
+                    @if($groupByTrade)
+                        <span class="text-xs text-gray-500">Les filtres pagination ne s'appliquent pas en mode groupé.</span>
+                    @endif
+                </div>
             </div>
 
-            <div wire:loading.delay.short wire:target="search,status,market,serviceType,tradeFilter,selectService,toggleActive" class="cu-loading-panel space-y-3">
+            <div wire:loading.delay.short wire:target="search,status,market,serviceType,tradeFilter,groupByTrade,selectService,toggleActive" class="cu-loading-panel space-y-3">
                 <x-skeleton-block height="h-5" width="w-56" />
                 <x-skeleton-block height="h-14" />
                 <x-skeleton-block height="h-14" />
                 <x-skeleton-block height="h-14" />
             </div>
 
-            <div wire:loading.remove wire:target="search,status,market,serviceType,tradeFilter,selectService,toggleActive">
+            <div wire:loading.remove wire:target="search,status,market,serviceType,tradeFilter,groupByTrade,selectService,toggleActive">
+
+                {{-- Phase 2 — Grouped-by-trade view --}}
+                @if($groupByTrade)
+                    <div class="space-y-6">
+                        @forelse($servicesGroupedByTrade as $group)
+                            <div class="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
+                                <div class="flex items-center gap-3 border-b border-gray-100 bg-gray-50 px-4 py-3">
+                                    @if($group[‘trade’]->color)
+                                        <span class="inline-block h-3 w-3 rounded-full" style="background:{{ $group[‘trade’]->color }}"></span>
+                                    @endif
+                                    <span class="font-semibold text-gray-800">{{ $group[‘trade’]->name }}</span>
+                                    <span class="ml-auto rounded-full bg-gray-200 px-2 py-0.5 text-xs text-gray-600">
+                                        {{ $group[‘services’]->count() }} service(s)
+                                    </span>
+                                </div>
+                                <table class="min-w-full cu-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Service</th>
+                                            <th>Type</th>
+                                            <th>Prix</th>
+                                            <th>Durée</th>
+                                            <th>Statut</th>
+                                            <th class="text-right">Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach($group[‘services’] as $service)
+                                            <tr class="{{ $selectedService?->id === $service->id ? ‘bg-sky-50/70’ : ‘’ }}">
+                                                <td>
+                                                    <div class="font-semibold text-slate-900">{{ $service->name }}</div>
+                                                    <div class="text-xs text-slate-500">{{ $service->code }}</div>
+                                                </td>
+                                                <td>{{ $service->service_type }}</td>
+                                                <td>€ {{ number_format((float) $service->base_price, 2, ‘,’, ‘ ‘) }}</td>
+                                                <td>{{ $service->default_duration_minutes }} min</td>
+                                                <td>
+                                                    @if($service->is_active)
+                                                        <span class="cu-chip !border-emerald-200 !bg-emerald-50 !text-emerald-700">Actif</span>
+                                                    @else
+                                                        <span class="cu-chip !border-red-200 !bg-red-50 !text-red-700">Inactif</span>
+                                                    @endif
+                                                </td>
+                                                <td class="text-right">
+                                                    <div class="flex justify-end gap-2">
+                                                        <button wire:click="selectService({{ $service->id }})" class="cu-btn-secondary">Gérer</button>
+                                                        <button wire:click="toggleActive({{ $service->id }})" class="cu-btn-secondary">Basculer</button>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        @endforeach
+                                    </tbody>
+                                </table>
+                            </div>
+                        @empty
+                            <div class="rounded-xl border border-gray-200 bg-white p-8 text-center text-gray-400">
+                                Aucun service rattaché à un métier.
+                            </div>
+                        @endforelse
+                    </div>
+                @else
+                {{-- Standard paginated table --}}
                 <x-table-shell title="Services" subtitle="Vue pilotable de l’offre commerciale active et inactive.">
                     <table class="min-w-full cu-table">
                         <thead>
@@ -213,11 +288,12 @@
                             @endforelse
                         </tbody>
                     </table>
-                </x-table-shell>
 
                 <div class="mt-4">
                     {{ $services->links() }}
                 </div>
+                </x-table-shell>
+                @endif {{-- end groupByTrade --}}
             </div>
 
             @if($selectedService)
