@@ -198,10 +198,10 @@ class TradePricingEngineTest extends TestCase
     // 6. Zone pricing overrides catalog base price
     // ──────────────────────────────────────────────────────────────────
 
-    public function test_zone_pricing_overrides_catalog_base_price(): void
+    public function test_zone_pricing_overrides_when_catalog_has_no_price(): void
     {
         $service = $this->makeService(
-            ['base_price' => '10.00', 'billing_unit' => 'hourly', 'trade_id' => 1],
+            ['base_price' => '0', 'billing_unit' => 'hourly', 'trade_id' => 1],
             ['id' => 1],
         );
 
@@ -222,7 +222,7 @@ class TradePricingEngineTest extends TestCase
     public function test_surge_multiplier_scales_subtotal(): void
     {
         $service = $this->makeService(
-            ['base_price' => '10.00', 'billing_unit' => 'hourly', 'trade_id' => 1],
+            ['base_price' => '0', 'billing_unit' => 'hourly', 'trade_id' => 1],
             ['id' => 1],
         );
 

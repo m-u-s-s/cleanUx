@@ -5,7 +5,7 @@ namespace Tests\Unit\Services;
 use App\Models\User;
 use App\Services\Safety\Data\MaskedCallSessionData;
 use App\Services\Safety\Providers\MockMaskedCallProvider;
-use Mockery;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 /**
@@ -13,6 +13,7 @@ use Tests\TestCase;
  */
 class MockMaskedCallProviderTest extends TestCase
 {
+    use RefreshDatabase;
     private MockMaskedCallProvider $provider;
 
     protected function setUp(): void
@@ -90,13 +91,8 @@ class MockMaskedCallProviderTest extends TestCase
 
     private function invokeCreateSession(): MaskedCallSessionData
     {
-        $caller   = Mockery::mock(User::class);
-        $caller->id = 1;
-        $caller->allows('getAttribute')->andReturnUsing(fn ($k) => $caller->$k ?? null);
-
-        $receiver = Mockery::mock(User::class);
-        $receiver->id = 2;
-        $receiver->allows('getAttribute')->andReturnUsing(fn ($k) => $receiver->$k ?? null);
+        $caller = User::factory()->create();
+        $receiver = User::factory()->create();
 
         return $this->provider->createMaskedSession($caller, $receiver);
     }

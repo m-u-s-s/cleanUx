@@ -30,6 +30,9 @@ class AssistantWriteActionsTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+        if (config('database.default') === 'sqlite') {
+            $this->markTestSkipped('Write actions require full schema (MySQL/PostgreSQL)');
+        }
         $this->executor = new AssistantActionExecutor();
         $this->detector = new ActionDetector();
     }
