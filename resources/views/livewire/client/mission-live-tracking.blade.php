@@ -6,7 +6,7 @@
 
     <div class="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
         <div>
-            <h3 class="text-lg font-semibold text-slate-900">🚗 Employé en route</h3>
+            <h3 class="text-lg font-semibold text-slate-900">🚗 Prestataire en route</h3>
             <p class="text-sm text-slate-500">
                 Suivi en temps réel de votre intervention.
             </p>
@@ -28,8 +28,8 @@
         </div>
 
         <div class="rounded-xl border border-slate-200 p-4 bg-slate-50">
-            <p class="text-slate-500">Employé</p>
-            <p class="mt-1 font-semibold text-slate-900" x-text="employeeName ?? 'Employé à confirmer'"></p>
+            <p class="text-slate-500">Prestataire</p>
+            <p class="mt-1 font-semibold text-slate-900" x-text="employeeName ?? 'Prestataire à confirmer'"></p>
         </div>
 
         <div class="rounded-xl border border-slate-200 p-4 bg-slate-50">
@@ -48,7 +48,7 @@
             <div>
                 <p class="font-semibold text-slate-900">Carte simplifiée</p>
                 <p class="text-sm text-slate-500">
-                    La position affichée dépend du GPS de l’employé.
+                    La position affichée dépend du GPS du prestataire.
                 </p>
             </div>
 
@@ -64,7 +64,7 @@
     </div>
 
     <div class="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
-        ℹ️ Quand l’employé arrive, un code de début sera affiché pour lancer officiellement la mission.
+        ℹ️ Quand le prestataire arrive, un code de début sera affiché pour lancer officiellement la mission.
     </div>
 </div>
 

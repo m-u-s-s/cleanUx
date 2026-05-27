@@ -41,7 +41,7 @@
             </h1>
 
             <p class="mt-3 max-w-3xl text-sm leading-6 text-slate-200 sm:text-base">
-                {{ $rdv?->service_display_name ?: $mission->serviceCatalog?->name ?: 'Service de nettoyage' }}
+                {{ $rdv?->service_display_name ?: $mission->serviceCatalog?->name ?: 'Service à la demande' }}
                 @if($client?->name)
                     <span class="text-slate-400">·</span> {{ $client->name }}
                 @endif

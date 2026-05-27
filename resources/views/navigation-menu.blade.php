@@ -52,7 +52,7 @@
     'Communication & SAV' => [
     ['label' => 'Messagerie', 'route' => 'client.chat.inbox', 'active' => 'client.chat.inbox', 'icon' => '💬'],
     ['label' => 'Litiges', 'route' => 'client.claims', 'active' => 'client.claims*', 'icon' => '⚠️'],
-    ['label' => 'Favoris employés', 'route' => 'client.favorite-employes', 'active' => 'client.favorite-employes', 'icon' => '❤️'],
+    ['label' => 'Prestataires favoris', 'route' => 'client.favorite-employes', 'active' => 'client.favorite-employes', 'icon' => '❤️'],
     ],
     'Compte client' => [
     ['label' => 'Profil client', 'route' => 'client.profile', 'active' => 'client.profile', 'icon' => '👤'],

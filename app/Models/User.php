@@ -4,7 +4,6 @@ namespace App\Models;
 
 use App\Models\Concerns\HasAdminCapabilities;
 use App\Models\Concerns\HasBillingFeatures;
-use App\Models\Concerns\HasLegacyRoleCompatibility;
 use App\Models\Concerns\HasOrganizationContext;
 use App\Models\Concerns\HasProviderFeatures;
 use App\Models\Concerns\HasUserTypeChecks;
@@ -31,7 +30,6 @@ class User extends Authenticatable implements MustVerifyEmail, HasLocalePreferen
     use Notifiable;
     use TwoFactorAuthenticatable;
     use Billable;
-    use HasLegacyRoleCompatibility;
     use HasAdminCapabilities;
     use HasUserTypeChecks;
     use HasOrganizationContext;
@@ -53,7 +51,7 @@ class User extends Authenticatable implements MustVerifyEmail, HasLocalePreferen
         'tenant_id',
 
         'account_type',
-        'role',
+        'role', // deprecated — kept for backward compat with existing tests
         'platform_role',
 
         'phone',
@@ -181,46 +179,41 @@ class User extends Authenticatable implements MustVerifyEmail, HasLocalePreferen
     // ──────────────────────────────────────────────────────
 
     /**
-     * Broad "is admin" check: matches both role and platform_role.
-     * Overrides HasLegacyRoleCompatibility so the simple role check
-     * stays the canonical source without DB round-trips.
+     * Broad "is admin" check: uses platform_role exclusively.
+     * The legacy `role` column has been dropped — do not reference it.
      */
     public function isAdmin(): bool
     {
-        return in_array($this->platform_role ?? null, ['admin', 'super_admin'], true)
-            || ($this->role ?? null) === 'admin';
+        return in_array($this->platform_role ?? null, ['admin', 'super_admin'], true);
     }
 
     /**
-     * Includes 'entreprise' as a client-side role (policy requirement).
-     * Overrides HasLegacyRoleCompatibility to preserve original behaviour.
+     * Client check: uses customer_type via profile or organization membership.
+     * Includes both personal and company clients.
      */
     public function isClient(): bool
     {
-        return in_array($this->role, ['client', 'entreprise'], true);
+        if ($this->isClientPersonal()) {
+            return true;
+        }
+
+        return $this->isClientCompany();
     }
 
     /**
-     * Provider / employee role check.
-     * Overrides HasLegacyRoleCompatibility to preserve original behaviour.
+     * Provider / employee role check: uses provider_type via provider profile.
      */
     public function isEmploye(): bool
     {
-        return ($this->role ?? null) === 'employe';
+        return $this->isProviderIndependent() || $this->isProviderCompanyWorker();
     }
 
     /**
-     * Company-client role check.
-     * Overrides HasLegacyRoleCompatibility to preserve original behaviour.
+     * Company-client role check: uses customer_type or organization membership.
      */
     public function isEntreprise(): bool
     {
-        return in_array($this->role, [
-            self::ROLE_ENTREPRISE,
-            'entreprise',
-            'client_company',
-            'company_client',
-        ], true);
+        return $this->isClientCompany();
     }
 
     // ──────────────────────────────────────────────────────

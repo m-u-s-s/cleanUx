@@ -24,7 +24,6 @@ class UserFactory extends Factory
             'remember_token' => Str::random(10),
             'profile_photo_path' => null,
             'current_team_id' => null,
-            'role' => 'client',
             'tva_number' => null,
             'duree_creneau' => 90,
             'plan_type' => 'standard',
@@ -52,6 +51,7 @@ class UserFactory extends Factory
     {
         return $this->state(fn (array $attributes) => [
             'role' => 'admin',
+            'platform_role' => 'admin',
             'tva_number' => null,
             'duree_creneau' => 90,
             'plan_type' => 'standard',
@@ -59,6 +59,10 @@ class UserFactory extends Factory
         ]);
     }
 
+    /**
+     * Client personal — creates the customer_profiles row separately if needed.
+     * The users table no longer carries a `role` column.
+     */
     public function client(): static
     {
         return $this->state(fn (array $attributes) => [
@@ -73,7 +77,6 @@ class UserFactory extends Factory
     public function premiumClient(): static
     {
         return $this->state(fn (array $attributes) => [
-            'role' => 'client',
             'plan_type' => 'premium',
             'plan_status' => 'active',
             'premium_started_at' => now()->subMonth(),
@@ -81,6 +84,10 @@ class UserFactory extends Factory
         ]);
     }
 
+    /**
+     * Provider / employe — users table carries no role column.
+     * A provider_profiles row with provider_type='independent' must be created separately in tests.
+     */
     public function employe(): static
     {
         return $this->state(fn (array $attributes) => [
@@ -92,6 +99,10 @@ class UserFactory extends Factory
         ]);
     }
 
+    /**
+     * Company client — users table carries no role column.
+     * A customer_profiles row with customer_type='company' must be created separately in tests.
+     */
     public function entreprise(): static
     {
         return $this->state(fn (array $attributes) => [

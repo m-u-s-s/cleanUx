@@ -54,6 +54,9 @@ class Trade extends Model
         'sla_response_minutes',
         // Phase F1 — schema dynamique de formulaire de réservation
         'booking_form_schema',
+        // Multi-trade spec columns (migration 2026_05_27_000000)
+        'billing_unit',
+        'requires_site_visit',
     ];
 
     protected $casts = [
@@ -73,6 +76,7 @@ class Trade extends Model
         'requires_quote_by_default' => 'boolean',
         'sla_response_minutes'      => 'integer',
         'booking_form_schema'       => 'array',
+        'requires_site_visit'       => 'boolean',
     ];
 
     // ──────────────────────────────────────────────────────
@@ -94,6 +98,11 @@ class Trade extends Model
     public function zoneSettings(): HasMany
     {
         return $this->hasMany(TradeZoneSetting::class);
+    }
+
+    public function zonePricing(): HasMany
+    {
+        return $this->hasMany(TradeZonePricing::class);
     }
 
     public function zones(): BelongsToMany

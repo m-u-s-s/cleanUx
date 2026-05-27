@@ -54,7 +54,7 @@
         <div class="flex flex-col items-center justify-center rounded-2xl border-2 border-dashed border-slate-200 bg-white py-16 text-center">
             <p class="text-5xl mb-4">🏢</p>
             <p class="text-lg font-bold text-slate-700">Aucun local enregistré</p>
-            <p class="mt-1 text-sm text-slate-400 max-w-xs">Ajoutez vos bureaux, entrepôts ou commerces pour réserver un nettoyage en 2 clics.</p>
+            <p class="mt-1 text-sm text-slate-400 max-w-xs">Ajoutez vos bureaux, entrepôts ou commerces pour réserver un service en 2 clics.</p>
             <button wire:click="openCreate" class="mt-4 rounded-xl bg-purple-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-purple-700">
                 + Ajouter mon premier local
             </button>
@@ -202,7 +202,7 @@
                 {{-- Fréquence et créneau --}}
                 <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
                     <div>
-                        <label class="block text-sm font-bold text-slate-700 mb-1">Fréquence de nettoyage</label>
+                        <label class="block text-sm font-bold text-slate-700 mb-1">Fréquence de service</label>
                         <select wire:model="cleaningFrequency"
                             class="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-purple-500">
                             <option value="one_time">Ponctuel</option>

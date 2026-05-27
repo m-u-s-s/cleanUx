@@ -4,7 +4,7 @@
     <div class="mb-6 flex flex-wrap items-center justify-between gap-4">
         <div>
             <h1 class="text-2xl font-black text-slate-900">📅 Réservations</h1>
-            <p class="text-sm text-slate-500">Gérez toutes vos demandes de nettoyage</p>
+            <p class="text-sm text-slate-500">Gérez toutes vos demandes de service</p>
         </div>
         <button wire:click="$set('showForm', true)"
             class="flex items-center gap-2 rounded-xl bg-purple-600 px-4 py-2 text-sm font-semibold text-white hover:bg-purple-700">
@@ -44,7 +44,7 @@
         <div class="flex flex-col items-center rounded-2xl border-2 border-dashed border-slate-200 bg-white py-16 text-center">
             <p class="text-5xl mb-4">📋</p>
             <p class="text-lg font-bold text-slate-700">Aucune réservation</p>
-            <p class="mt-1 text-sm text-slate-400">Créez votre première demande de nettoyage</p>
+            <p class="mt-1 text-sm text-slate-400">Créez votre première demande de service</p>
             <button wire:click="$set('showForm', true)"
                 class="mt-4 rounded-xl bg-purple-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-purple-700">
                 ⚡ Nouvelle demande
@@ -67,7 +67,7 @@
         <div class="mx-auto my-8 w-full max-w-2xl rounded-2xl bg-white shadow-2xl">
 
             <div class="flex items-center justify-between border-b border-slate-100 px-6 py-4">
-                <h3 class="text-lg font-black text-slate-900">⚡ Nouvelle demande de nettoyage</h3>
+                <h3 class="text-lg font-black text-slate-900">⚡ Nouvelle demande de service</h3>
                 <button wire:click="$set('showForm', false)" class="rounded-lg p-2 text-slate-400 hover:bg-slate-100">✕</button>
             </div>
 

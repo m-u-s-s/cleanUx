@@ -140,11 +140,18 @@
                         </td>
                         <td class="px-4 py-3 align-middle text-right">
                             <div class="flex justify-end gap-2">
+                                <a
+                                    href="{{ route('admin.trades.pricing', $trade) }}"
+                                    class="rounded border border-indigo-300 px-3 py-1 text-xs text-indigo-700 hover:bg-indigo-50 dark:border-indigo-600 dark:text-indigo-300 dark:hover:bg-indigo-900/30"
+                                    title="Tarification par zone"
+                                >
+                                    Pricing zone
+                                </a>
                                 <button
                                     wire:click="edit({{ $trade->id }})"
                                     class="rounded border border-gray-300 px-3 py-1 text-xs text-gray-700 hover:bg-gray-100 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700"
                                 >
-                                    Éditer
+                                    Editer
                                 </button>
                                 @if ($trade->services_count === 0)
                                     <button

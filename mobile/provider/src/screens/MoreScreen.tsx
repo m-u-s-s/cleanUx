@@ -1,0 +1,185 @@
+import React from 'react';
+import { View, Text, TouchableOpacity, ScrollView, StyleSheet, Alert } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { useNavigation } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { Avatar, Badge, Divider, Icon } from '@/ui';
+import { useAuth } from '@/auth';
+import { colors, spacing, typography, radius, shadows } from '@/theme';
+import type { RootStackParamList } from '@/navigation/types';
+
+interface MenuItem {
+  label: string;
+  icon: string;
+  screen?: keyof RootStackParamList;
+  onPress?: () => void;
+  badge?: string;
+  badgeVariant?: 'success' | 'warning' | 'danger' | 'brand' | 'neutral';
+}
+
+export function MoreScreen() {
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const { user, logout } = useAuth();
+
+  const navigate = (screen: keyof RootStackParamList) =>
+    navigation.navigate(screen as any);
+
+  const menuSections: Array<{ title: string; items: MenuItem[] }> = [
+    {
+      title: 'Compte',
+      items: [
+        { label: 'Profil', icon: 'person-outline', screen: 'Onboarding' },
+        { label: 'Disponibilités', icon: 'calendar-outline', screen: 'Availability' },
+        { label: 'Badges', icon: 'ribbon-outline', screen: 'Badges' },
+        { label: 'Avis reçus', icon: 'star-outline', screen: 'ProviderRatings' },
+      ],
+    },
+    {
+      title: 'Finances',
+      items: [
+        { label: 'Revenus détaillés', icon: 'wallet-outline', screen: 'MainTabs' },
+        { label: 'Stripe Connect', icon: 'card-outline', screen: 'StripeOnboarding' },
+      ],
+    },
+    {
+      title: 'Support',
+      items: [
+        { label: 'Messagerie', icon: 'chatbubbles-outline', screen: 'ProviderChatList' },
+        { label: 'Litiges', icon: 'alert-circle-outline', screen: 'ProviderDisputes' },
+        { label: 'Vérification KYC', icon: 'shield-checkmark-outline', screen: 'KYC' },
+      ],
+    },
+    {
+      title: 'Preferences',
+      items: [
+        { label: 'Langue', icon: 'language-outline', screen: 'Language' },
+        { label: 'Apparence', icon: 'color-palette-outline', screen: 'Appearance' },
+        { label: 'Notifications', icon: 'notifications-outline', screen: 'NotificationPreferences' },
+      ],
+    },
+    {
+      title: 'Legale',
+      items: [
+        { label: "Conditions d'utilisation", icon: 'document-text-outline', screen: 'Legal', onPress: () => navigation.navigate('Legal', { type: 'terms' }) },
+        { label: 'Confidentialite', icon: 'lock-closed-outline', onPress: () => navigation.navigate('Legal', { type: 'privacy' }) },
+      ],
+    },
+  ];
+
+  const handleLogout = () => {
+    Alert.alert('Deconnexion', 'Voulez-vous vous deconnecter ?', [
+      { text: 'Annuler', style: 'cancel' },
+      { text: 'Deconnexion', style: 'destructive', onPress: logout },
+    ]);
+  };
+
+  return (
+    <SafeAreaView style={styles.container} testID="more-screen">
+      <ScrollView contentContainerStyle={styles.scroll}>
+        {/* Profile header */}
+        <View style={styles.profileSection}>
+          <Avatar name={user?.name ?? '?'} size={56} />
+          <View style={styles.profileInfo}>
+            <Text style={styles.profileName}>{user?.name ?? 'Prestataire'}</Text>
+            <Text style={styles.profileEmail}>{user?.email}</Text>
+          </View>
+        </View>
+
+        {/* Menu sections */}
+        {menuSections.map((section) => (
+          <View key={section.title} style={styles.section}>
+            <Text style={styles.sectionTitle} accessibilityRole="header">
+              {section.title}
+            </Text>
+            <View style={styles.card}>
+              {section.items.map((item, idx) => (
+                <React.Fragment key={item.label}>
+                  <TouchableOpacity
+                    style={styles.menuItem}
+                    onPress={item.onPress ?? (() => item.screen && navigate(item.screen))}
+                    accessibilityRole="button"
+                    accessibilityLabel={item.label}
+                  >
+                    <Icon name={item.icon} size={20} color={colors.brand[500]} />
+                    <Text style={styles.menuLabel}>{item.label}</Text>
+                    {item.badge && (
+                      <Badge label={item.badge} variant={item.badgeVariant ?? 'neutral'} />
+                    )}
+                    <Icon name="chevron-forward-outline" size={16} color={colors.surface[400]} />
+                  </TouchableOpacity>
+                  {idx < section.items.length - 1 && <Divider />}
+                </React.Fragment>
+              ))}
+            </View>
+          </View>
+        ))}
+
+        {/* Logout */}
+        <View style={styles.section}>
+          <View style={styles.card}>
+            <TouchableOpacity
+              style={styles.menuItem}
+              onPress={handleLogout}
+              accessibilityRole="button"
+              accessibilityLabel="Se deconnecter"
+            >
+              <Icon name="log-out-outline" size={20} color={colors.danger[500]} />
+              <Text style={[styles.menuLabel, styles.dangerLabel]}>Se deconnecter</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </ScrollView>
+    </SafeAreaView>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: { flex: 1, backgroundColor: colors.surface[50] },
+  scroll: { padding: spacing.md, paddingBottom: spacing['2xl'] },
+  profileSection: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.md,
+    backgroundColor: '#fff',
+    borderRadius: radius.md,
+    padding: spacing.md,
+    marginBottom: spacing.md,
+    ...shadows.xs,
+  },
+  profileInfo: { flex: 1 },
+  profileName: {
+    fontSize: typography.fontSize.lg,
+    fontWeight: typography.fontWeight.bold,
+    color: colors.surface[900],
+  },
+  profileEmail: { fontSize: typography.fontSize.sm, color: colors.surface[500], marginTop: 2 },
+  section: { marginBottom: spacing.md },
+  sectionTitle: {
+    fontSize: typography.fontSize.xs,
+    fontWeight: typography.fontWeight.semibold,
+    color: colors.surface[500],
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+    marginBottom: spacing.xs,
+    paddingHorizontal: spacing.xs,
+  },
+  card: {
+    backgroundColor: '#fff',
+    borderRadius: radius.md,
+    ...shadows.xs,
+    overflow: 'hidden',
+  },
+  menuItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+    paddingVertical: spacing.md,
+    paddingHorizontal: spacing.md,
+  },
+  menuLabel: {
+    flex: 1,
+    fontSize: typography.fontSize.base,
+    color: colors.surface[800],
+  },
+  dangerLabel: { color: colors.danger[600] },
+});

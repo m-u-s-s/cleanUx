@@ -1,0 +1,248 @@
+import React, { useState, useCallback, useEffect } from 'react';
+import { View, Text, StyleSheet, Platform } from 'react-native';
+import type { NativeStackScreenProps } from '@react-navigation/native-stack';
+import { useNavigation } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { Screen, Button, Badge } from '@/ui';
+import { useMissionDetail, useMissionLifecycle } from '@/missions';
+import { useGpsWatcher, useSendPing, useStartTracking } from '@/tracking';
+import { colors, spacing, typography, radius, shadows } from '@/theme';
+import type { RootStackParamList } from '@/navigation/types';
+
+type Props = NativeStackScreenProps<RootStackParamList, 'MissionField'>;
+
+interface Position {
+  latitude: number;
+  longitude: number;
+  speed: number | null;
+  heading: number | null;
+}
+
+const GEOFENCE_METERS = 150;
+
+function haversineDistance(
+  lat1: number,
+  lon1: number,
+  lat2: number,
+  lon2: number,
+): number {
+  const R = 6371000;
+  const dLat = ((lat2 - lat1) * Math.PI) / 180;
+  const dLon = ((lon2 - lon1) * Math.PI) / 180;
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos((lat1 * Math.PI) / 180) *
+      Math.cos((lat2 * Math.PI) / 180) *
+      Math.sin(dLon / 2) *
+      Math.sin(dLon / 2);
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
+
+export function TrackingScreen({ route }: Props) {
+  const { missionId } = route.params;
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const { data: mission } = useMissionDetail(missionId);
+  const lifecycle = useMissionLifecycle(missionId);
+  const startTracking = useStartTracking(missionId);
+  const [sessionId, setSessionId] = useState<number | null>(null);
+  const sendPing = useSendPing(sessionId);
+  const [currentPos, setCurrentPos] = useState<Position | null>(null);
+  const [distanceMeters, setDistanceMeters] = useState<number | null>(null);
+  const [etaMinutes, setEtaMinutes] = useState<number | null>(null);
+  const [isNearDestination, setIsNearDestination] = useState(false);
+
+  useEffect(() => {
+    startTracking.mutate(undefined, {
+      onSuccess: (session) => setSessionId(session.id),
+    });
+  }, []);
+
+  const updateDistance = useCallback(
+    (pos: Position) => {
+      if (!mission?.latitude || !mission?.longitude) return;
+      const dist = haversineDistance(
+        pos.latitude,
+        pos.longitude,
+        mission.latitude,
+        mission.longitude,
+      );
+      setDistanceMeters(dist);
+      setIsNearDestination(dist <= GEOFENCE_METERS);
+      const speedMps = pos.speed ?? 11.11;
+      setEtaMinutes(Math.ceil(dist / (speedMps * 60)));
+    },
+    [mission],
+  );
+
+  useGpsWatcher(
+    true,
+    useCallback(
+      (pos) => {
+        setCurrentPos(pos);
+        updateDistance(pos);
+        if (sessionId !== null) {
+          sendPing.mutate({
+            latitude: pos.latitude,
+            longitude: pos.longitude,
+            speed: pos.speed ?? undefined,
+            heading: pos.heading ?? undefined,
+          });
+        }
+      },
+      [sessionId, sendPing, updateDistance],
+    ),
+  );
+
+  const handleArrived = useCallback(() => {
+    lifecycle.mutate('arrive', {
+      onSuccess: () => navigation.navigate('MissionField', { missionId }),
+    });
+  }, [lifecycle, navigation, missionId]);
+
+  const formatDistance = (meters: number): string => {
+    if (meters >= 1000) return `${(meters / 1000).toFixed(1)} km`;
+    return `${Math.round(meters)} m`;
+  };
+
+  const formatSpeed = (mps: number | null): string => {
+    if (mps === null) return '—';
+    return `${Math.round(mps * 3.6)} km/h`;
+  };
+
+  return (
+    <Screen scroll testID="tracking-screen">
+      <View style={styles.header}>
+        <Text style={styles.title}>En route</Text>
+        {mission && <Badge label={mission.status} variant="brand" />}
+      </View>
+
+      {/* Destination */}
+      {mission && (
+        <View style={styles.destinationCard}>
+          <Text style={styles.cardLabel}>Destination</Text>
+          <Text style={styles.destinationAddress}>
+            {mission.address}, {mission.city}
+          </Text>
+          <Text style={styles.missionService}>{mission.service_name}</Text>
+        </View>
+      )}
+
+      {/* Map placeholder — real MapView requires expo-maps or react-native-maps */}
+      <View style={styles.mapPlaceholder}>
+        <Text style={styles.mapPlaceholderText}>
+          {currentPos
+            ? `Position: ${currentPos.latitude.toFixed(5)}, ${currentPos.longitude.toFixed(5)}`
+            : 'Acquisition GPS...'}
+        </Text>
+      </View>
+
+      {/* Stats row */}
+      <View style={styles.statsRow}>
+        <View style={styles.statCard}>
+          <Text style={styles.statLabel}>Distance</Text>
+          <Text style={styles.statValue}>
+            {distanceMeters !== null ? formatDistance(distanceMeters) : '—'}
+          </Text>
+        </View>
+        <View style={styles.statCard}>
+          <Text style={styles.statLabel}>ETA</Text>
+          <Text style={styles.statValue}>
+            {etaMinutes !== null ? `${etaMinutes} min` : '—'}
+          </Text>
+        </View>
+        <View style={styles.statCard}>
+          <Text style={styles.statLabel}>Vitesse</Text>
+          <Text style={styles.statValue}>{formatSpeed(currentPos?.speed ?? null)}</Text>
+        </View>
+      </View>
+
+      {/* Arrived button — enabled when within geofence */}
+      <View style={styles.actions}>
+        <Button
+          label={isNearDestination ? 'Marquer Arrivé' : `Arrivé (${distanceMeters !== null ? formatDistance(distanceMeters) : '?'} restants)`}
+          onPress={handleArrived}
+          fullWidth
+          size="lg"
+          loading={lifecycle.isPending}
+          variant={isNearDestination ? 'primary' : 'secondary'}
+        />
+        {!isNearDestination && (
+          <Text style={styles.geofenceHint}>
+            Le bouton devient actif dans les {GEOFENCE_METERS} m de la destination
+          </Text>
+        )}
+      </View>
+    </Screen>
+  );
+}
+
+const styles = StyleSheet.create({
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginTop: spacing.md,
+    marginBottom: spacing.md,
+  },
+  title: {
+    fontSize: typography.fontSize.xl,
+    fontWeight: typography.fontWeight.bold,
+    color: colors.surface[900],
+  },
+  destinationCard: {
+    backgroundColor: '#fff',
+    borderRadius: radius.md,
+    padding: spacing.md,
+    ...shadows.xs,
+    marginBottom: spacing.md,
+  },
+  cardLabel: { fontSize: typography.fontSize.xs, color: colors.surface[400], marginBottom: 2 },
+  destinationAddress: {
+    fontSize: typography.fontSize.base,
+    fontWeight: typography.fontWeight.semibold,
+    color: colors.surface[900],
+  },
+  missionService: { fontSize: typography.fontSize.sm, color: colors.brand[600], marginTop: 2 },
+  mapPlaceholder: {
+    height: 200,
+    backgroundColor: colors.surface[100],
+    borderRadius: radius.md,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: spacing.md,
+    borderWidth: 1,
+    borderColor: colors.surface[200],
+  },
+  mapPlaceholderText: {
+    fontSize: typography.fontSize.xs,
+    color: colors.surface[500],
+    textAlign: 'center',
+    paddingHorizontal: spacing.md,
+  },
+  statsRow: {
+    flexDirection: 'row',
+    gap: spacing.sm,
+    marginBottom: spacing.lg,
+  },
+  statCard: {
+    flex: 1,
+    backgroundColor: '#fff',
+    borderRadius: radius.md,
+    padding: spacing.md,
+    alignItems: 'center',
+    ...shadows.xs,
+  },
+  statLabel: { fontSize: typography.fontSize.xs, color: colors.surface[500], marginBottom: 4 },
+  statValue: {
+    fontSize: typography.fontSize.lg,
+    fontWeight: typography.fontWeight.bold,
+    color: colors.surface[900],
+    fontVariant: ['tabular-nums'],
+  },
+  actions: { gap: spacing.sm },
+  geofenceHint: {
+    fontSize: typography.fontSize.xs,
+    color: colors.surface[400],
+    textAlign: 'center',
+  },
+});

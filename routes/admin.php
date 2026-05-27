@@ -441,6 +441,8 @@ Route::middleware(['role:admin'])
 
         Route::get('/trades', \App\Livewire\Admin\Trades::class)->name('trades');
 
+        Route::get('/trades/{trade}/pricing', \App\Livewire\Admin\TradeZonePricingManager::class)->name('trades.pricing');
+
         // Phase 14.1 — Onboarding admin
         Route::get('/onboarding-providers',  AdminOnboardingProvidersList::class)
             ->name('onboarding.providers');

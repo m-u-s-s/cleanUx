@@ -105,7 +105,7 @@
             </p>
 
             <ul class="mt-2 space-y-2 text-sm {{ $subscriptionSummary['is_premium'] ? 'text-amber-700' : 'text-slate-600' }}">
-                <li>• Choix des employés favoris</li>
+                <li>• Choix des prestataires favoris</li>
                 <li>• Meilleure visibilité sur les disponibilités</li>
                 <li>• Gestion plus simple des réservations</li>
             </ul>

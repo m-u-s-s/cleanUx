@@ -117,4 +117,19 @@ trait HasUserTypeChecks
 
         return 'dashboard';
     }
+
+    /**
+     * Unified role-string matcher used by CheckRole middleware.
+     * No longer reads the legacy `role` column — uses typed fields only.
+     */
+    public function matchesRole(string $role): bool
+    {
+        return match ($role) {
+            'admin', 'super_admin' => $this->isAdmin(),
+            'client' => $this->isClient(),
+            'employe', 'employee', 'provider' => $this->isEmploye(),
+            'entreprise', 'company' => $this->isEntreprise(),
+            default => ($this->platform_role ?? null) === $role,
+        };
+    }
 }

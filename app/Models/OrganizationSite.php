@@ -32,7 +32,9 @@ class OrganizationSite extends Model
         'contact_phone',
         'contact_email',
         'preferred_provider_id',
-        'cleaning_frequency',
+        'cleaning_frequency',   // legacy — renamed to service_frequency in migration A2
+        'service_frequency',    // multi-trade generalisation
+        'trade_preferences',    // JSON: per-trade booking preferences
         'preferred_time_slot',
         'status',
         'notes',
@@ -40,11 +42,12 @@ class OrganizationSite extends Model
     ];
 
     protected $casts = [
-        'latitude'    => 'decimal:7',
-        'longitude'   => 'decimal:7',
-        'surface_m2'  => 'integer',
-        'floor_count' => 'integer',
-        'metadata'    => 'array',
+        'latitude'         => 'decimal:7',
+        'longitude'        => 'decimal:7',
+        'surface_m2'       => 'integer',
+        'floor_count'      => 'integer',
+        'metadata'         => 'array',
+        'trade_preferences'=> 'array',
     ];
 
     // Fréquences
@@ -107,12 +110,16 @@ class OrganizationSite extends Model
 
     public function frequencyLabel(): string
     {
-        return match ($this->cleaning_frequency) {
+        // After migration A2, the column is service_frequency.
+        // Fall back to cleaning_frequency for backward compatibility.
+        $freq = $this->service_frequency ?? $this->cleaning_frequency ?? null;
+
+        return match ($freq) {
             self::FREQ_ONE_TIME => 'Ponctuel',
             self::FREQ_WEEKLY   => 'Hebdomadaire',
             self::FREQ_BIWEEKLY => 'Bi-mensuel',
             self::FREQ_MONTHLY  => 'Mensuel',
-            default             => 'Non défini',
+            default             => 'Non defini',
         };
     }
 

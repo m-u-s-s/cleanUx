@@ -49,8 +49,7 @@ trait HasAdminCapabilities
 
     public function canAccessAdminModule(?string $permission = null): bool
     {
-        $isAdmin = in_array($this->role, ['admin', 'super_admin'], true)
-            || in_array($this->platform_role, ['admin', 'super_admin'], true);
+        $isAdmin = in_array($this->platform_role, ['admin', 'super_admin'], true);
 
         if (! $isAdmin) {
             return false;
@@ -60,8 +59,7 @@ trait HasAdminCapabilities
             return false;
         }
 
-        if (($this->role ?? null) === 'super_admin'
-            || ($this->platform_role ?? null) === 'super_admin'
+        if (($this->platform_role ?? null) === 'super_admin'
             || ($this->is_super_admin ?? false)) {
             return true;
         }
@@ -143,15 +141,14 @@ trait HasAdminCapabilities
 
     public function isReadOnlyAdmin(): bool
     {
-        return ($this->role ?? null) === 'readonly_admin'
-            || ($this->platform_role ?? null) === 'readonly_admin'
+        return ($this->platform_role ?? null) === 'readonly_admin'
             || ($this->access_scope ?? null) === self::ACCESS_SCOPE_READONLY
             || ($this->access_scope ?? null) === 'readonly';
     }
 
     public function isZoneScopedAdmin(): bool
     {
-        return ($this->role ?? null) === 'admin'
+        return in_array($this->platform_role ?? null, ['admin', 'super_admin'], true)
             && (
                 ($this->access_scope ?? null) === 'zone'
                 || ! empty($this->managed_service_zone_id)

@@ -10,7 +10,7 @@
     <a
         href="{{ route('client.missions.tracking', $rdv->mission) }}"
         class="inline-flex items-center rounded-xl bg-blue-600 px-4 py-2 text-white hover:bg-blue-700">
-        Suivre mon employé
+        Suivre mon prestataire
     </a>
     @endif
 

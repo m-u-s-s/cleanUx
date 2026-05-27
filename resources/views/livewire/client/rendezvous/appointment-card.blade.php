@@ -8,7 +8,7 @@
                 📅 {{ $rdv->date }} à {{ $rdv->heure }}
             </p>
             <p class="text-sm text-gray-600">
-                🧑‍💼 {{ $rdv->employe->name ?? 'Employé à confirmer' }}
+                🧑‍💼 {{ $rdv->employe->name ?? 'Prestataire à confirmer' }}
             </p>
         </div>
 

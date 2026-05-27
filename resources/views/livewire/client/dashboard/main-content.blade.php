@@ -39,7 +39,7 @@
                     <div class="rounded-xl border border-slate-200/70 bg-slate-50/50 p-3.5">
                         <p class="inline-flex items-center gap-1.5 text-xs font-medium uppercase tracking-wide text-slate-500">
                             <x-ui.icon name="user" class="w-3.5 h-3.5" />
-                            {{ __('Employé') }}
+                            {{ __('Prestataire') }}
                         </p>
                         <p class="mt-1 text-sm font-semibold text-slate-900">
                             {{ $prochainRendezVous->employe->name ?? __('À confirmer') }}
@@ -225,7 +225,7 @@
                                     </span>
                                     <span class="inline-flex items-center gap-1">
                                         <x-ui.icon name="user" class="w-3.5 h-3.5 text-slate-400" />
-                                        {{ $rdv->employe->name ?? __('Employé à confirmer') }}
+                                        {{ $rdv->employe->name ?? __('Prestataire à confirmer') }}
                                     </span>
                                 </div>
                             </div>
@@ -316,7 +316,7 @@
                         {{ __('Vos avantages') }}
                     </p>
                     <ul class="mt-2 space-y-1.5 text-xs text-amber-700">
-                        <li>{{ __('Choix des employés favoris') }}</li>
+                        <li>{{ __('Choix des prestataires favoris') }}</li>
                         <li>{{ __('Visibilité sur les disponibilités') }}</li>
                         <li>{{ __('Expérience personnalisée') }}</li>
                     </ul>
@@ -327,7 +327,7 @@
                 <ul class="space-y-2 text-sm text-slate-600">
                     <li class="inline-flex items-start gap-2">
                         <x-ui.icon name="check" class="w-4 h-4 mt-0.5 text-emerald-600 shrink-0" />
-                        <span>{{ __('Choisissez vos employés favoris') }}</span>
+                        <span>{{ __('Choisissez vos prestataires favoris') }}</span>
                     </li>
                     <li class="inline-flex items-start gap-2">
                         <x-ui.icon name="check" class="w-4 h-4 mt-0.5 text-emerald-600 shrink-0" />
@@ -410,8 +410,8 @@
             </div>
         </x-app-card>
 
-        {{-- Employés favoris --}}
-        <x-app-card padding="p-6" :title="__('Employés favoris')" :subtitle="__('Réservez plus vite avec eux.')">
+        {{-- Prestataires favoris --}}
+        <x-app-card padding="p-6" :title="__('Prestataires favoris')" :subtitle="__('Réservez plus vite avec eux.')">
             @if($isPremium)
                 <div class="space-y-2">
                     @forelse($favoriteEmployes as $employe)
@@ -437,11 +437,11 @@
                             @endif
                         </div>
                     @empty
-                        <x-empty-state title="Aucun employé favori" message="Ajoutez vos employés préférés pour accélérer vos prochaines réservations." icon="★" />
+                        <x-empty-state title="Aucun prestataire favori" message="Ajoutez vos prestataires préférés pour accélérer vos prochaines réservations." icon="★" />
                     @endforelse
                 </div>
             @else
-                <x-empty-state title="Disponible avec Premium" message="Avec Premium, sélectionnez vos employés favoris." icon="⭐" />
+                <x-empty-state title="Disponible avec Premium" message="Avec Premium, sélectionnez vos prestataires favoris." icon="⭐" />
             @endif
         </x-app-card>
     </div>

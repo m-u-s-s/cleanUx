@@ -38,7 +38,7 @@
                         {{ $editHeure === $slot['heure'] ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-gray-700 border-gray-300 hover:bg-blue-50' }}">
                 {{ $slot['heure'] }}
                 <span class="block text-xs opacity-80">
-                    {{ $slot['same_employee'] ? 'Même employé' : $slot['employe_name'] }}
+                    {{ $slot['same_employee'] ? 'Même prestataire' : $slot['employe_name'] }}
                 </span>
             </button>
             @endforeach
@@ -56,8 +56,8 @@
             {{ $impactDevisMessage ?? 'Le devis sera recalculé si nécessaire.' }}
         </p>
         <p>
-            👤 <span class="font-medium">Employé :</span>
-            le système garde le même employé si possible, sinon il propose un autre employé disponible.
+            👤 <span class="font-medium">Prestataire :</span>
+            le système garde le même prestataire si possible, sinon il propose un autre prestataire disponible.
         </p>
     </div>
 

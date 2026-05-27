@@ -3,6 +3,7 @@
 namespace Database\Factories;
 
 use App\Models\ServiceCatalog;
+use App\Models\Trade;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Str;
 
@@ -22,6 +23,7 @@ class ServiceCatalogFactory extends Factory
             'name' => Str::title($name),
             'slug' => Str::slug($name.'-'.fake()->unique()->numerify('###')),
             'description' => fake()->sentence(),
+            'trade_id' => Trade::factory(),
             'service_type' => fake()->randomElement(['standard', 'cleaning', 'deep-cleaning', 'move-out', 'windows', 'office']),
             'is_active' => true,
             'requires_quote' => false,

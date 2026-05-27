@@ -91,7 +91,7 @@
                     </div>
 
                     <h3 class="text-lg font-bold text-slate-900">
-                        {{ $rdv->service_display_name ?? 'Mission de nettoyage' }}
+                        {{ $rdv->service_display_name ?? 'Mission' }}
                     </h3>
 
                     <p class="text-sm text-slate-500">

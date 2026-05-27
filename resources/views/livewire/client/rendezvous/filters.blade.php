@@ -5,7 +5,7 @@
             <input
                 type="text"
                 wire:model.live.debounce.350ms="search"
-                placeholder="Service, ville, adresse, employé..."
+                placeholder="Service, ville, adresse, prestataire..."
                 class="w-full rounded-xl border-gray-300 shadow-sm text-sm">
         </div>
 
