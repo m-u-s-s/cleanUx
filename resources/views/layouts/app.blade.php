@@ -116,6 +116,10 @@
     <x-mobile-bottom-nav />
     <x-pwa-install-prompt />
     <x-cookie-banner />
+
+    @auth
+        @livewire('chatbot.assistant-widget')
+    @endauth
 </body>
 
 </html>

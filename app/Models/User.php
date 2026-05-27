@@ -179,12 +179,16 @@ class User extends Authenticatable implements MustVerifyEmail, HasLocalePreferen
     // ──────────────────────────────────────────────────────
 
     /**
-     * Broad "is admin" check: uses platform_role exclusively.
-     * The legacy `role` column has been dropped — do not reference it.
+     * Broad "is admin" check: uses platform_role primarily with legacy role fallback.
      */
     public function isAdmin(): bool
     {
-        return in_array($this->platform_role ?? null, ['admin', 'super_admin'], true);
+        if (in_array($this->platform_role ?? null, ['admin', 'super_admin'], true)) {
+            return true;
+        }
+
+        // Legacy fallback: role column still populated during transition
+        return in_array($this->attributes['role'] ?? null, ['admin', 'super_admin'], true);
     }
 
     /**

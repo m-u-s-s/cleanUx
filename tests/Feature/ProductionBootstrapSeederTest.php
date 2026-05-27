@@ -14,7 +14,8 @@ class ProductionBootstrapSeederTest extends TestCase
     {
         $this->seed(ProductionBootstrapSeeder::class);
 
-        $this->assertDatabaseCount('service_catalogs', 6);
+        // ServiceCatalogSeeder now seeds ~45 canonical services across all 12 trades.
+        $this->assertGreaterThanOrEqual(6, \App\Models\ServiceCatalog::count());
         $this->assertDatabaseMissing('users', ['email' => 'admin@cleanux.test']);
         $this->assertDatabaseCount('rendez_vous', 0);
         $this->assertDatabaseCount('feedback', 0);

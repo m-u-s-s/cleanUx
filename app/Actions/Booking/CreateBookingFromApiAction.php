@@ -53,6 +53,8 @@ final class CreateBookingFromApiAction
             'created_by'               => $user->id,
             'asap_requested_at'        => $isAsap ? $now : null,
             'asap_deadline_at'         => $isAsap ? $now->copy()->addHours(2) : null,
+            // Trade-specific dynamic form answers (Phase multi-trade booking flow)
+            'trade_form_answers'       => ! empty($data['trade_form_answers']) ? $data['trade_form_answers'] : null,
         ]);
 
         if ($isAsap) {

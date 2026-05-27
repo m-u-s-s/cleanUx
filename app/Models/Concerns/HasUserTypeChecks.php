@@ -31,26 +31,65 @@ trait HasUserTypeChecks
 
     public function isClientPersonal(): bool
     {
-        return $this->customerProfile?->customer_type === CustomerType::PERSONAL->value;
+        $customerType = $this->customerProfile?->customer_type;
+
+        if ($customerType instanceof CustomerType) {
+            if ($customerType === CustomerType::PERSONAL) {
+                return true;
+            }
+        } elseif ($customerType === CustomerType::PERSONAL->value) {
+            return true;
+        }
+
+        // Legacy fallback: role column still populated during transition
+        return ($this->attributes['role'] ?? $this->role ?? null) === 'client';
     }
 
     public function isClientCompany(): bool
     {
-        if ($this->customerProfile?->customer_type === CustomerType::COMPANY->value) {
+        $customerType = $this->customerProfile?->customer_type;
+
+        if ($customerType instanceof CustomerType) {
+            if ($customerType === CustomerType::COMPANY) {
+                return true;
+            }
+        } elseif ($customerType === CustomerType::COMPANY->value) {
             return true;
         }
 
-        return ! empty($this->organization_account_id);
+        if (! empty($this->organization_account_id)) {
+            return true;
+        }
+
+        // Legacy fallback: role column still populated during transition
+        return ($this->attributes['role'] ?? $this->role ?? null) === 'entreprise';
     }
 
     public function isProviderIndependent(): bool
     {
-        return $this->providerProfile?->provider_type === ProviderType::INDEPENDENT->value;
+        $providerType = $this->providerProfile?->provider_type;
+
+        if ($providerType instanceof ProviderType) {
+            if ($providerType === ProviderType::INDEPENDENT) {
+                return true;
+            }
+        } elseif ($providerType === ProviderType::INDEPENDENT->value) {
+            return true;
+        }
+
+        // Legacy fallback: role column still populated during transition
+        return ($this->attributes['role'] ?? $this->role ?? null) === 'employe';
     }
 
     public function isProviderCompanyWorker(): bool
     {
-        return $this->providerProfile?->provider_type === ProviderType::COMPANY_WORKER->value;
+        $providerType = $this->providerProfile?->provider_type;
+
+        if ($providerType instanceof ProviderType) {
+            return $providerType === ProviderType::COMPANY_WORKER;
+        }
+
+        return $providerType === ProviderType::COMPANY_WORKER->value;
     }
 
     public function getIsEmployeAttribute(): bool

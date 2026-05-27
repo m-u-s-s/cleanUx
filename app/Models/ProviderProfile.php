@@ -3,11 +3,14 @@
 namespace App\Models;
 
 use App\Enums\ProviderType;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class ProviderProfile extends Model
 {
+    use HasFactory;
+
     /**
      * SECURITY : Tous les setters sensibles (verification_status, stripe_connect_status, etc.)
      * doivent passer par un Service composant un payload explicite après validation.

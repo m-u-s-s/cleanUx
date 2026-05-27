@@ -2,6 +2,8 @@
 
 use App\Http\Controllers\Api\Client\CancellationController;
 use App\Http\Controllers\Api\Client\ClientBookingController;
+use App\Models\Trade;
+use App\Services\Booking\TradeFormRenderer;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -144,5 +146,39 @@ Route::middleware('auth:sanctum')->prefix('client')->group(function () {
 
         // Commission preview — lets client see platform fee before confirming
         Route::get('/{booking}/commission', [\App\Http\Controllers\Api\Client\ClientProfileController::class, 'commissionPreview']);
+    });
+
+    // Multi-trade booking flow — trade form fields + services per trade (authenticated)
+    // GET /api/client/trades/{trade}/form-fields
+    Route::get('/trades/{trade}/form-fields', function (Trade $trade) {
+        return response()->json([
+            'trade' => [
+                'id'   => $trade->id,
+                'name' => $trade->name,
+                'slug' => $trade->slug,
+            ],
+            'fields'               => app(TradeFormRenderer::class)->fieldsForTrade($trade),
+            'billing_unit'         => $trade->billing_unit ?? 'hourly',
+            'requires_site_visit'  => (bool) ($trade->requires_site_visit ?? false),
+        ]);
+    });
+
+    // GET /api/client/trades/{trade}/services
+    Route::get('/trades/{trade}/services', function (Trade $trade) {
+        $services = $trade->services()
+            ->where('is_active', true)
+            ->get(['id', 'name', 'slug', 'description', 'base_price', 'billing_unit', 'is_featured', 'icon'])
+            ->map(fn ($s) => [
+                'id'          => $s->id,
+                'name'        => $s->name,
+                'slug'        => $s->slug,
+                'description' => $s->description,
+                'base_price'  => $s->base_price ? (float) $s->base_price : null,
+                'billing_unit'=> $s->billing_unit,
+                'is_featured' => (bool) ($s->is_featured ?? false),
+                'icon'        => $s->icon,
+            ]);
+
+        return response()->json(['data' => $services]);
     });
 });

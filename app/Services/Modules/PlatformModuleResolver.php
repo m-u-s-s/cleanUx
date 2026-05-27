@@ -49,7 +49,7 @@ class PlatformModuleResolver
             ->all();
 
         return [
-            'role' => $context['role'] ?? $user?->role,
+            'role' => $context['role'] ?? $this->deriveRole($user),
             'plan_type' => $context['plan_type'] ?? $user?->plan_type,
             'organization_account_id' => $context['organization_account_id'] ?? $user?->organization_account_id,
             'zone_ids' => array_values(array_unique(array_merge($userZoneIds, $contextZoneIds))),
@@ -146,5 +146,34 @@ class PlatformModuleResolver
         }
 
         return collect((array) ($audience['zone_ids'] ?? []))->intersect($allowedZones)->isNotEmpty();
+    }
+
+    /**
+     * Derive a canonical role string from the User's typed role-check methods.
+     * Falls back to the legacy `role` column so existing data is not broken.
+     */
+    protected function deriveRole(?User $user): ?string
+    {
+        if ($user === null) {
+            return null;
+        }
+
+        if ($user->isAdmin()) {
+            return 'admin';
+        }
+
+        if ($user->isEntreprise()) {
+            return 'entreprise';
+        }
+
+        if ($user->isClient()) {
+            return 'client';
+        }
+
+        if ($user->isEmploye()) {
+            return 'employe';
+        }
+
+        return $user->role ?? null;
     }
 }

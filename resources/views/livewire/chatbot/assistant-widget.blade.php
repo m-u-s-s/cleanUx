@@ -114,6 +114,22 @@
             @endif
         </div>
 
+        {{-- ────────────────────────────────────────── --}}
+        {{-- Quick actions (shown until user sends)     --}}
+        {{-- ────────────────────────────────────────── --}}
+        @if (! $isLoading && ! $pendingActionId && count($quickActions) > 0 && count(array_filter($messages, fn($m) => $m['sender'] === 'user')) === 0)
+            <div class="flex flex-wrap gap-1.5 px-4 pb-2">
+                @foreach ($quickActions as $index => $action)
+                    <button
+                        wire:click="sendQuick({{ $index }})"
+                        class="rounded-full border border-blue-200 bg-blue-50 px-3 py-1 text-xs font-medium text-blue-700 transition hover:bg-blue-100 hover:border-blue-300 active:scale-95"
+                    >
+                        {{ $action['label'] }}
+                    </button>
+                @endforeach
+            </div>
+        @endif
+
         {{-- ──────────────────────────────────────────── --}}
         {{-- Phase 5 — Bandeau confirmation action LLM   --}}
         {{-- ──────────────────────────────────────────── --}}

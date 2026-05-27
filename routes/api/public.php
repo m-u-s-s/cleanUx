@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\Trade;
 use Illuminate\Support\Facades\Route;
 
 // ─────────────────────────────────────────────
@@ -127,3 +128,24 @@ Route::middleware(['signed', 'auth:sanctum'])
     ->get('/client/gdpr/requests/{gdprRequest}/download',
         [\App\Http\Controllers\Api\Client\GdprController::class, 'downloadExport'])
     ->name('api.gdpr.download');
+
+// Multi-trade marketplace — public trades listing (no auth required)
+// GET /api/trades — returns all active trades ordered by sort_order
+Route::get('/trades', function () {
+    $trades = Trade::where('is_active', true)
+        ->orderBy('sort_order')
+        ->orderBy('name')
+        ->get(['id', 'name', 'slug', 'code', 'icon', 'description', 'billing_unit', 'requires_site_visit', 'short_description'])
+        ->map(fn ($t) => [
+            'id'               => $t->id,
+            'name'             => $t->name,
+            'slug'             => $t->slug,
+            'code'             => $t->code,
+            'icon'             => $t->icon,
+            'description'      => $t->short_description ?? $t->description,
+            'billing_unit'     => $t->billing_unit,
+            'requires_site_visit' => (bool) ($t->requires_site_visit ?? false),
+        ]);
+
+    return response()->json(['data' => $trades]);
+})->middleware('cache.headers:public;max_age=300;etag')->name('api.trades.index');

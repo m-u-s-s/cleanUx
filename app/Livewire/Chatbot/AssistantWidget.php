@@ -4,6 +4,7 @@ namespace App\Livewire\Chatbot;
 
 use App\Models\AssistantConversation;
 use App\Models\AssistantMessage;
+use App\Services\Assistant\QuickActions;
 use App\Services\Assistant\Tools\AssistantToolDispatcher;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\URL;
@@ -37,9 +38,15 @@ class AssistantWidget extends Component
     /** @var array<int, array{sender:string, content:string, time:string, message_id?:int}> */
     public array $messages = [];
 
+    /** @var array<int, array{label: string, prompt: string}> */
+    public array $quickActions = [];
+
     public function mount(): void
     {
         $user = Auth::user();
+
+        $this->quickActions = app(QuickActions::class)->forUser($user);
+
         $conversation = AssistantConversation::query()
             ->where('user_id', $user->id)
             ->where('status', AssistantConversation::STATUS_OPEN)
@@ -56,6 +63,22 @@ class AssistantWidget extends Component
                 'time'    => now()->format('H:i'),
             ]];
         }
+    }
+
+    /**
+     * Triggered when a quick-action button is clicked.
+     * Receives the array index so no string escaping is needed in the blade.
+     */
+    public function sendQuick(int $index): void
+    {
+        $prompt = $this->quickActions[$index]['prompt'] ?? '';
+
+        if (blank($prompt)) {
+            return;
+        }
+
+        $this->input = $prompt;
+        $this->send();
     }
 
     public function toggle(): void

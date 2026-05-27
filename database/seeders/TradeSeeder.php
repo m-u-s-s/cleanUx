@@ -64,7 +64,7 @@ class TradeSeeder extends Seeder
     {
         return [
             [
-                'slug'                    => 'cleaning',
+                'slug'                    => 'nettoyage',
                 'code'                    => 'CLN',
                 'name'                    => 'Nettoyage',
                 'icon'                    => 'broom',
@@ -81,7 +81,7 @@ class TradeSeeder extends Seeder
                 'booking_form_schema'     => self::cleaningBookingFormSchema(),
             ],
             [
-                'slug'                    => 'painting',
+                'slug'                    => 'peinture',
                 'code'                    => 'PNT',
                 'name'                    => 'Peinture',
                 'icon'                    => 'paint-brush',
@@ -98,7 +98,7 @@ class TradeSeeder extends Seeder
                 'booking_form_schema'     => self::paintingBookingFormSchema(),
             ],
             [
-                'slug'                    => 'construction',
+                'slug'                    => 'batiment',
                 'code'                    => 'BLD',
                 'name'                    => 'Batiment / Gros oeuvre',
                 'icon'                    => 'hammer',
@@ -149,7 +149,7 @@ class TradeSeeder extends Seeder
                 'booking_form_schema'     => self::electricalBookingFormSchema(),
             ],
             [
-                'slug'                    => 'gardening',
+                'slug'                    => 'jardinage',
                 'code'                    => 'GRD',
                 'name'                    => 'Jardinage',
                 'icon'                    => 'leaf',
@@ -217,7 +217,7 @@ class TradeSeeder extends Seeder
                 'booking_form_schema'     => self::roofingBookingFormSchema(),
             ],
             [
-                'slug'                    => 'lifting',
+                'slug'                    => 'levage',
                 'code'                    => 'LFT',
                 'name'                    => 'Levage / Lift',
                 'icon'                    => 'arrow-up',
@@ -330,6 +330,31 @@ class TradeSeeder extends Seeder
                         ['value' => 'repassage',    'label' => 'Repassage',            'price_delta' => 20],
                         ['value' => 'desinfection', 'label' => 'Desinfection complete','price_delta' => 25],
                     ],
+                ],
+                [
+                    'key'      => 'zones_specifiques',
+                    'label'    => 'Zones specifiques a nettoyer',
+                    'type'     => 'multiselect',
+                    'required' => false,
+                    'options'  => [
+                        ['value' => 'cuisine',      'label' => 'Cuisine',        'price_delta' => 0],
+                        ['value' => 'salle_bain',   'label' => 'Salle de bain',  'price_delta' => 0],
+                        ['value' => 'salon',        'label' => 'Salon',          'price_delta' => 0],
+                        ['value' => 'chambres',     'label' => 'Chambres',       'price_delta' => 0],
+                        ['value' => 'cave_grenier', 'label' => 'Cave / Grenier', 'price_delta' => 5],
+                    ],
+                ],
+                [
+                    'key'     => 'presence_animaux',
+                    'label'   => 'Presence d\'animaux domestiques',
+                    'type'    => 'boolean',
+                    'default' => false,
+                ],
+                [
+                    'key'     => 'acces_parking',
+                    'label'   => 'Parking disponible sur place',
+                    'type'    => 'boolean',
+                    'default' => false,
                 ],
                 [
                     'key'     => 'materiel_fournit',

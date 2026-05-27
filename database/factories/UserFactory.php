@@ -77,6 +77,7 @@ class UserFactory extends Factory
     public function premiumClient(): static
     {
         return $this->state(fn (array $attributes) => [
+            'role' => 'client',
             'plan_type' => 'premium',
             'plan_status' => 'active',
             'premium_started_at' => now()->subMonth(),

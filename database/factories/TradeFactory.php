@@ -13,11 +13,12 @@ class TradeFactory extends Factory
     public function definition(): array
     {
         $name = fake()->unique()->words(2, true);
+        $slug = Str::slug($name);
 
         return [
             'name' => Str::title($name),
-            'slug' => Str::slug($name),
-            'code' => strtoupper(Str::substr(Str::slug($name, ''), 0, 3)),
+            'slug' => $slug,
+            'code' => strtoupper(Str::substr(Str::slug($name, ''), 0, 3)) . '_' . strtoupper(Str::random(4)),
             'description' => fake()->sentence(),
             'icon' => fake()->randomElement(['wrench', 'paint-brush', 'bolt', 'home', 'sparkles']),
             'is_active' => true,
