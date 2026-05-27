@@ -16,7 +16,7 @@ class GenererDisponibilitesEmploye extends Command
     {
         $employe = User::find($this->argument('employe_id'));
 
-        if (!$employe || $employe->role !== 'employe') {
+        if (!$employe || ! $employe->isEmploye()) {
             $this->error("Aucun employé trouvé avec cet ID.");
             return;
         }

@@ -53,7 +53,14 @@ class FeatureFlagService
         }
 
         if (isset($flag['roles']) && $user) {
-            return in_array($user->role ?? null, (array) $flag['roles'], strict: true);
+            // Resolve role string via matchesRole to avoid direct ->role access
+            $allowedRoles = (array) $flag['roles'];
+            foreach ($allowedRoles as $allowedRole) {
+                if (method_exists($user, 'matchesRole') && $user->matchesRole((string) $allowedRole)) {
+                    return true;
+                }
+            }
+            return false;
         }
 
         return false;

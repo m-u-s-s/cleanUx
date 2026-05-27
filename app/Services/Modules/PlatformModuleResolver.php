@@ -174,6 +174,6 @@ class PlatformModuleResolver
             return 'employe';
         }
 
-        return $user->role ?? null;
+        return $user->platform_role ?? null;
     }
 }

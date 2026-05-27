@@ -100,8 +100,13 @@ class DataExportService
             'phone' => $user->phone,
             'locale' => $user->locale,
             'timezone' => $user->timezone,
-            'role' => $user->role,
             'platform_role' => $user->platform_role,
+            'user_type' => method_exists($user, 'matchesRole') ? (
+                $user->isPlatformAdmin() ? 'admin' : (
+                $user->isEntreprise() ? 'entreprise' : (
+                $user->isClientPersonal() ? 'client' : (
+                $user->isEmploye() ? 'employe' : ($user->platform_role ?? null))))
+            ) : null,
             'account_type' => $user->account_type,
             'plan_type' => $user->plan_type,
             'created_at' => $user->created_at,

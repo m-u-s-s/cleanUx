@@ -172,11 +172,12 @@ class ApiAuthController extends Controller
             'name'           => $user->name,
             'email'          => $user->email,
             'phone'          => $user->phone ?? null,
-            'role'           => $user->role ?? null,
             'platform_role'  => $user->platform_role ?? null,
             'locale'         => $user->locale ?? 'fr',
             'is_provider'    => method_exists($user, 'isProvider') && $user->isProvider(),
             'is_admin'       => method_exists($user, 'isPlatformAdmin') && $user->isPlatformAdmin(),
+            'is_client'      => method_exists($user, 'isClient') && $user->isClient(),
+            'is_entreprise'  => method_exists($user, 'isEntreprise') && $user->isEntreprise(),
             'organization_account_id' => $user->organization_account_id ?? $user->current_organization_id ?? null,
         ];
     }

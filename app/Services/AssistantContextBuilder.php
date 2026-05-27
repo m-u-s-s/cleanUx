@@ -6,6 +6,8 @@ use App\Enums\AssistantContextRole;
 use App\Models\User;
 use Illuminate\Support\Collection;
 use App\Services\Assistant\Stats\AssistantStats;
+use App\Services\Assistant\Actions\ActionDetector;
+use App\Services\Assistant\Actions\AssistantActionExecutor;
 
 /**
  * Construit le contexte dynamique pour le chatbot CleanUx.
@@ -19,12 +21,19 @@ class AssistantContextBuilder
     // Point d'entrée principal
     // ──────────────────────────────────────────────────────
 
-    public function build(User $user): array
+    /**
+     * Build the full context for the assistant.
+     *
+     * @param  string|null $userMessage  Optional: the current user message.
+     *                                   When provided, relevant data actions are auto-fetched
+     *                                   and injected into the system prompt.
+     */
+    public function build(User $user, ?string $userMessage = null): array
     {
         $contextRole = $user->assistantContextRole();
 
         return [
-            'system'  => $this->buildSystemPrompt($contextRole, $user),
+            'system'  => $this->buildSystemPrompt($contextRole, $user, $userMessage),
             'context' => $this->buildContextData($contextRole, $user),
             'tools'   => $this->availableActions($contextRole),
         ];
@@ -34,12 +43,12 @@ class AssistantContextBuilder
     // System prompts par rôle
     // ──────────────────────────────────────────────────────
 
-    private function buildSystemPrompt(AssistantContextRole $role, User $user): string
+    private function buildSystemPrompt(AssistantContextRole $role, User $user, ?string $userMessage = null): string
     {
         $base = $this->basePrompt($user);
         $ctx  = $this->buildContextData($role, $user);
 
-        return match ($role) {
+        $prompt = match ($role) {
 
             // ── Particulier ──────────────────────────────
             AssistantContextRole::CLIENT_PERSONAL => $base . "
@@ -142,6 +151,36 @@ Tu peux aider avec :
 
 Ne jamais exécuter d'actions destructives sans confirmation explicite.",
         };
+
+        // Inject live data if a user message was provided
+        if ($userMessage !== null) {
+            $prompt .= $this->buildLiveDataBlock($user, $userMessage);
+        }
+
+        return $prompt;
+    }
+
+    /**
+     * Detect relevant actions for the user message and return a formatted data block.
+     * Returns an empty string when no actions match (soft-fail).
+     */
+    private function buildLiveDataBlock(User $user, string $message): string
+    {
+        try {
+            $detector  = app(ActionDetector::class);
+            $executor  = app(AssistantActionExecutor::class);
+            $actions   = $detector->detectActions($message, $user);
+
+            if (empty($actions)) {
+                return '';
+            }
+
+            $parts = array_map(fn (string $a) => $executor->execute($a, $user), $actions);
+
+            return "\n\n---\nDonnées en temps réel :\n" . implode("\n\n", $parts) . "\n---";
+        } catch (\Throwable) {
+            return ''; // never break the conversation on data-fetch failure
+        }
     }
 
     // ──────────────────────────────────────────────────────

@@ -298,7 +298,14 @@ class OnboardingEngine
     protected function defaultJourneyCodeFor(User $user): ?string
     {
         $defaults = (array) Config::get('onboarding_v2.default_journey_per_role', []);
-        $role = (string) ($user->role ?? '');
+        // Derive role string from typed checks rather than legacy column
+        $role = match (true) {
+            $user->isPlatformAdmin()  => 'admin',
+            $user->isEntreprise()     => 'entreprise',
+            $user->isClientPersonal() => 'client',
+            $user->isEmploye()        => 'employe',
+            default                   => $user->platform_role ?? '',
+        };
         return $defaults[$role] ?? null;
     }
 

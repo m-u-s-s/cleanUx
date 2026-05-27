@@ -23,7 +23,7 @@ trait HasBillingFeatures
     public function canChooseEmployee(): bool
     {
         return in_array($this->plan_type ?? 'standard', ['premium', 'business', 'enterprise'], true)
-            || in_array($this->role ?? null, ['admin', 'entreprise'], true)
+            || $this->isEntreprise()
             || $this->isPlatformAdmin();
     }
 

@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\Client\BookingEstimateController;
 use App\Http\Controllers\Api\Client\CancellationController;
 use App\Http\Controllers\Api\Client\ClientBookingController;
 use App\Models\Trade;
@@ -14,6 +15,7 @@ use Illuminate\Support\Facades\Route;
 Route::middleware('auth:sanctum')->prefix('client')->group(function () {
 
     // Bookings
+    Route::post('/bookings/estimate',          [BookingEstimateController::class, 'estimate']);
     Route::get('/bookings',                   [ClientBookingController::class, 'index']);
     Route::post('/bookings',                  [ClientBookingController::class, 'store']);
     Route::get('/bookings/{booking}',         [ClientBookingController::class, 'show']);

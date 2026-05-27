@@ -60,8 +60,10 @@ class AssistantStreamController extends Controller
 
         abort_if(! $userMessage, 404, 'User message not found');
 
+        $userMessageText = $userMessage->content;
+
         return new StreamedResponse(function () use (
-            $user, $conversation, $streamer, $contextBuilder, $registry, $logRecorder
+            $user, $conversation, $streamer, $contextBuilder, $registry, $logRecorder, $userMessageText
         ) {
             // Désactive le buffering PHP & nginx pour vraie diffusion live
             @ini_set('output_buffering', 'off');
@@ -70,7 +72,7 @@ class AssistantStreamController extends Controller
                 @ob_end_flush();
             }
 
-            $context  = $contextBuilder->build($user);
+            $context  = $contextBuilder->build($user, $userMessageText);
             $tools    = $registry->definitionsForUser($user);
             $messages = $this->buildMessageHistory($conversation);
 

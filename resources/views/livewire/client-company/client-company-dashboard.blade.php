@@ -185,6 +185,33 @@
                 @endif
             </div>
 
+            {{-- Reservations par metier --}}
+            @if (! empty($bookingsByTrade))
+                <div>
+                    <div class="mb-3 flex items-center justify-between">
+                        <h2 class="text-sm font-bold uppercase tracking-wide text-slate-500">Reservations par metier</h2>
+                    </div>
+                    <div class="space-y-2">
+                        @php $maxCount = max(array_column($bookingsByTrade, 'count')); @endphp
+                        @foreach ($bookingsByTrade as $row)
+                            <div class="rounded-xl border border-slate-200 bg-white px-3 py-2 shadow-sm">
+                                <div class="mb-1 flex items-center justify-between">
+                                    <span class="truncate text-xs font-semibold text-slate-800">{{ $row['trade'] }}</span>
+                                    <span class="ml-2 flex-shrink-0 rounded-full bg-purple-100 px-2 py-0.5 text-[10px] font-bold text-purple-700">
+                                        {{ $row['count'] }}
+                                    </span>
+                                </div>
+                                <div class="h-1.5 w-full overflow-hidden rounded-full bg-slate-100">
+                                    <div class="h-full rounded-full bg-purple-500"
+                                         style="width: {{ $maxCount > 0 ? round($row['count'] / $maxCount * 100) : 0 }}%">
+                                    </div>
+                                </div>
+                            </div>
+                        @endforeach
+                    </div>
+                </div>
+            @endif
+
             {{-- Navigation rapide --}}
             <div>
                 <h2 class="mb-3 text-sm font-bold uppercase tracking-wide text-slate-500">⚡ Accès rapides</h2>

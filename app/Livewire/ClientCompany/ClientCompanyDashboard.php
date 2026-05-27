@@ -6,7 +6,9 @@ use App\Models\Booking;
 use App\Models\Mission;
 use App\Models\OrganizationMember;
 use App\Models\OrganizationSite;
+use App\Models\ServiceCatalog;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Livewire\Component;
 
 class ClientCompanyDashboard extends Component
@@ -73,6 +75,32 @@ class ClientCompanyDashboard extends Component
             ->get();
     }
 
+    /**
+     * Booking counts grouped by trade name for the selected period.
+     * Returns an array of ['trade' => string, 'count' => int] sorted by count desc.
+     */
+    public function getBookingsByTradeProperty(): array
+    {
+        $orgId        = Auth::user()->current_organization_id;
+        [$from, $to]  = $this->periodDates();
+
+        $rows = Booking::where('client_organization_id', $orgId)
+            ->whereBetween('created_at', [$from, $to])
+            ->whereNotNull('service_catalog_id')
+            ->join('service_catalogs', 'bookings.service_catalog_id', '=', 'service_catalogs.id')
+            ->join('trades', 'service_catalogs.trade_id', '=', 'trades.id')
+            ->select(DB::raw('trades.name as trade_name'), DB::raw('COUNT(*) as total'))
+            ->groupBy('trades.id', 'trades.name')
+            ->orderByDesc('total')
+            ->limit(8)
+            ->get();
+
+        return $rows->map(fn ($r) => [
+            'trade' => $r->trade_name,
+            'count' => (int) $r->total,
+        ])->all();
+    }
+
     private function periodDates(): array
     {
         return match ($this->period) {
@@ -89,6 +117,7 @@ class ClientCompanyDashboard extends Component
             'recentBookings'   => $this->recentBookingsProperty,
             'sitesOverview'    => $this->sitesOverviewProperty,
             'pendingApprovals' => $this->pendingApprovalsProperty,
+            'bookingsByTrade'  => $this->bookingsByTradeProperty,
         ])->layout('layouts.client-company');
     }
 }

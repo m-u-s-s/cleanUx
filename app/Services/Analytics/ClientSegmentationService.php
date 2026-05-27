@@ -24,7 +24,7 @@ class ClientSegmentationService
 
         $labels = [];
 
-        if ($client->role === 'entreprise') {
+        if ($client->isEntreprise()) {
             $labels[] = 'Entreprise';
         }
 

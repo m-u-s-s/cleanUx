@@ -277,7 +277,7 @@ trait ManagesEntrepriseSitesAndUsers
 
         $user->forceFill([
             'organization_account_id' => null,
-            'role' => $user->role === User::ROLE_ENTREPRISE ? 'client' : $user->role,
+            'role' => $user->isEntreprise() ? 'client' : ($user->platform_role ?? null),
             'metadata' => $metadata,
         ])->save();
 

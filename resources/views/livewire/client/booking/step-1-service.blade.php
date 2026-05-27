@@ -5,5 +5,7 @@
         <p class="mt-1 text-sm text-slate-500">Ces choix alimentent l’estimation et les disponibilités.</p>
     </div>
 
-    @include('livewire.client.booking.service.selection-grid')
+    @include(‘livewire.client.booking.service.trade-grid’)
+
+    @include(‘livewire.client.booking.service.selection-grid’)
 </div>

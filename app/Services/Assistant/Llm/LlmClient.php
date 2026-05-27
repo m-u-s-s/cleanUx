@@ -51,8 +51,8 @@ class LlmClient
             'content'                   => $userMessage,
         ]);
 
-        // 2. Construire le contexte
-        $context = $this->contextBuilder->build($user);
+        // 2. Construire le contexte (injecte les données live si le message déclenche des actions)
+        $context = $this->contextBuilder->build($user, $userMessage);
         $tools   = $this->toolRegistry->definitionsForUser($user);
 
         // 3. Charger l'historique (max 20 derniers messages utiles)

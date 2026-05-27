@@ -48,16 +48,7 @@ class AssistantToolRegistry
         $role         = $user->assistantContextRole();
         $allowedNames = $this->allowedToolNamesForRole($role);
 
-        $userRole = strtolower((string) ($user->role ?? ''));
-
-        if (in_array($userRole, [
-            'prestataire',
-            'provider',
-            'independent_provider',
-            'provider_independent',
-            'employe',
-            'employee',
-        ], true)) {
+        if ($user->isEmploye()) {
             $allowedNames = [
                 'list_my_bookings',
                 'get_invoice',
@@ -66,14 +57,8 @@ class AssistantToolRegistry
         }
 
         $isCompanyClient = (bool) ($user->organization_account_id ?? null)
-            || in_array($userRole, [
-                'entreprise',
-                'enterprise',
-                'client_entreprise',
-                'company',
-                'client_company',
-                'b2b',
-            ], true);
+            || $user->isEntreprise()
+            || $user->isClientCompany();
 
         if ($isCompanyClient) {
             $allowedNames = array_values(array_unique(array_merge($allowedNames, [
@@ -85,7 +70,7 @@ class AssistantToolRegistry
                 'list_my_sites',
                 'register_site',
             ])));
-        } elseif (in_array($userRole, ['client', 'particulier', 'personal_client'], true)) {
+        } elseif ($user->isClientPersonal()) {
             $allowedNames = array_values(array_diff($allowedNames, [
                 'list_my_sites',
                 'register_site',

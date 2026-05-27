@@ -35,7 +35,7 @@ class StripeConnectService
             ],
             'metadata' => [
                 'user_id' => $user->id,
-                'role' => $user->role,
+                'role' => $user->platform_role ?? null,
                 'platform' => 'cleanux',
             ],
         ]);
@@ -119,7 +119,7 @@ class StripeConnectService
             ],
             'metadata' => [
                 'user_id' => $user->id,
-                'role' => $user->role,
+                'role' => $user->platform_role ?? null,
                 'platform' => 'cleanux',
             ],
         ]);

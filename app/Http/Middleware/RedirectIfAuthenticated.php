@@ -33,12 +33,11 @@ class RedirectIfAuthenticated
             if (Auth::guard($guard)->check()) {
                 $user = Auth::guard($guard)->user();
 
-                return match ($user->role) {
-                    'admin' => redirect()->route('admin.dashboard'),
-                    'employe' => redirect()->route('employe.dashboard'),
-                    'client' => redirect()->route('client.dashboard'),
-                    default => redirect('/dashboard'),
-                };
+                return redirect()->route(
+                    method_exists($user, 'homeDashboardRoute')
+                        ? $user->homeDashboardRoute()
+                        : 'dashboard'
+                );
             }
         }
 

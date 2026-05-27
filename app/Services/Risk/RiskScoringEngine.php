@@ -222,7 +222,11 @@ class RiskScoringEngine
     protected function isBypassRole(\App\Models\User $user): bool
     {
         $bypass = (array) Config::get('risk.bypass_roles', []);
-        $role = (string) ($user->role ?? '');
-        return in_array($role, $bypass, true);
+        foreach ($bypass as $bypassRole) {
+            if (method_exists($user, 'matchesRole') && $user->matchesRole((string) $bypassRole)) {
+                return true;
+            }
+        }
+        return false;
     }
 }

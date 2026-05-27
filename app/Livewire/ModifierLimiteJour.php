@@ -32,7 +32,7 @@ class ModifierLimiteJour extends Component
     public function updatedLimite()
     {
         $targetUser = User::findOrFail($this->user_id);
-        $isAdmin = Auth::user()?->role === 'admin';
+        $isAdmin = Auth::user()?->isPlatformAdmin() ?? false;
 
         // Cas 1 : modification depuis l’admin
         if ($this->fromAdmin) {

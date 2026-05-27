@@ -4,6 +4,7 @@ namespace App\Livewire\Client;
 
 use App\Actions\Booking\CreateRecurringSeriesAction;
 use App\Models\Booking;
+use App\Models\Trade;
 use App\Services\Booking\BookingEstimatorService;
 use App\Services\Booking\CreateBookingAction;
 use App\Services\Booking\EmployeeAvailabilityService;
@@ -38,6 +39,9 @@ class PrendreRendezVous extends Component
     private const PUBLIC_BOOKING_DRAFT_SESSION_KEY = 'booking.public_draft';
 
     public int $step = 1;
+
+    /** Selected trade filter — null means "show all trades". */
+    public ?int $selectedTradeId = null;
 
     public ?string $selected_service_identifier = null;
     public ?string $type_lieu = null;
@@ -326,6 +330,79 @@ class PrendreRendezVous extends Component
     
 
 
+    /**
+     * Select a trade to filter the service catalog. Clears service + schema
+     * when the trade changes so the user starts fresh for the new trade.
+     */
+    public function selectTrade(int $tradeId): void
+    {
+        if ($this->selectedTradeId === $tradeId) {
+            return;
+        }
+
+        $this->selectedTradeId = $tradeId;
+        $this->selected_service_identifier = null;
+        $this->tradeFormSchema = null;
+        $this->tradeFormAnswers = [];
+    }
+
+    /**
+     * Clear the trade filter (show all trades / all services).
+     */
+    public function clearTrade(): void
+    {
+        $this->selectedTradeId = null;
+        $this->selected_service_identifier = null;
+        $this->tradeFormSchema = null;
+        $this->tradeFormAnswers = [];
+    }
+
+    /**
+     * Active trades with icon and short_description for the selection grid.
+     *
+     * @return array<int, array{id: int, name: string, icon: string, short_description: string|null, sort_order: int}>
+     */
+    public function getAvailableTradesProperty(): array
+    {
+        return Trade::query()
+            ->where('is_active', true)
+            ->orderBy('sort_order')
+            ->orderBy('name')
+            ->get(['id', 'name', 'icon', 'short_description', 'sort_order'])
+            ->map(fn(Trade $t) => [
+                'id'               => $t->id,
+                'name'             => $t->name,
+                'icon'             => $t->icon ?: 'briefcase',
+                'short_description' => $t->short_description,
+                'sort_order'       => $t->sort_order,
+            ])
+            ->values()
+            ->all();
+    }
+
+    /**
+     * Services filtered by the currently selected trade.
+     * Falls back to servicesGroupedByTrade when no trade is selected.
+     */
+    public function getServicesForSelectedTradeProperty(): array
+    {
+        if (! $this->selectedTradeId) {
+            return $this->servicesGroupedByTrade;
+        }
+
+        $grouped = $this->servicesGroupedByTrade;
+
+        // Find the trade name to look up in the grouped map
+        $trade = Trade::find($this->selectedTradeId);
+        if (! $trade) {
+            return $grouped;
+        }
+
+        $filtered = $grouped[$trade->name] ?? [];
+
+        return $filtered ? [$trade->name => $filtered] : [];
+    }
+
     public function render(): View
     {
         return view('livewire.client.prendre-rendez-vous', [
@@ -333,6 +410,10 @@ class PrendreRendezVous extends Component
             'services' => $this->services,
             // Phase 1 — version groupée par métier pour rendu en <optgroup>
             'servicesGroupedByTrade' => $this->servicesGroupedByTrade,
+            // Phase F4 — trades pour la grille de sélection (step 1)
+            'availableTrades' => $this->availableTrades,
+            'selectedTradeId' => $this->selectedTradeId,
+            'servicesForSelectedTrade' => $this->servicesForSelectedTrade,
             'typesLieu' => $this->typesLieux,
             'frequences' => $this->frequences,
             'priorites' => $this->priorites,

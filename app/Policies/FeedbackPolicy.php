@@ -28,12 +28,7 @@ class FeedbackPolicy
 
     public function create(User $user): bool
     {
-        return in_array($user->role, [
-            User::ROLE_CLIENT,
-            User::ROLE_ENTREPRISE,
-            'client',
-            'entreprise',
-        ], true);
+        return $user->isClient() || $user->isEntreprise();
     }
 
     public function update(User $user, Feedback $feedback): bool
@@ -71,9 +66,6 @@ class FeedbackPolicy
 
     private function isAdmin(User $user): bool
     {
-        return in_array($user->role, [
-            User::ROLE_ADMIN,
-            'admin',
-        ], true);
+        return $user->isAdmin();
     }
 }

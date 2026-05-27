@@ -244,7 +244,7 @@ class KybV2Controller extends Controller
         if (method_exists($user, 'isAdmin') && $user->isAdmin()) {
             return true;
         }
-        if (($user->role ?? null) === 'admin') {
+        if (method_exists($user, 'isPlatformAdmin') && $user->isPlatformAdmin()) {
             return true;
         }
         return false;
