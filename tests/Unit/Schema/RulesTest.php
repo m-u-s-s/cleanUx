@@ -3,6 +3,7 @@
 namespace Tests\Unit\Schema;
 
 use App\Services\Schema\DriftFinding;
+use App\Services\Schema\Rules\CastColumnsExistRule;
 use App\Services\Schema\Rules\FillableColumnsExistRule;
 use Illuminate\Database\Eloquent\Model;
 use Tests\TestCase;
@@ -60,5 +61,24 @@ class RulesTest extends TestCase
         $findings = (new FillableColumnsExistRule())->check($model, ['name' => ['name' => 'name']]);
 
         $this->assertSame([], $findings);
+    }
+
+    public function test_cast_rule_flags_cast_without_column(): void
+    {
+        $model = new class extends Model {
+            protected $table = 'widgets';
+            protected $casts = ['meta' => 'array', 'ghost' => 'array'];
+        };
+
+        $columns = [
+            'id' => ['name' => 'id'],
+            'meta' => ['name' => 'meta'],
+        ];
+
+        $findings = (new CastColumnsExistRule())->check($model, $columns);
+
+        $this->assertCount(1, $findings);
+        $this->assertSame('ghost', $findings[0]->column);
+        $this->assertSame(DriftFinding::RULE_MISSING_CAST, $findings[0]->rule);
     }
 }
