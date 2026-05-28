@@ -5,6 +5,7 @@ namespace Tests\Unit\Schema;
 use App\Services\Schema\DriftFinding;
 use App\Services\Schema\Rules\CastColumnsExistRule;
 use App\Services\Schema\Rules\FillableColumnsExistRule;
+use App\Services\Schema\Rules\UnsettableNotNullRule;
 use Illuminate\Database\Eloquent\Model;
 use Tests\TestCase;
 
@@ -80,5 +81,27 @@ class RulesTest extends TestCase
         $this->assertCount(1, $findings);
         $this->assertSame('ghost', $findings[0]->column);
         $this->assertSame(DriftFinding::RULE_MISSING_CAST, $findings[0]->rule);
+    }
+
+    public function test_unsettable_not_null_rule_flags_only_risky_column(): void
+    {
+        $model = new class extends Model {
+            protected $table = 'widgets';
+            protected $fillable = ['name'];
+        };
+
+        $columns = [
+            'id' => ['name' => 'id', 'nullable' => false, 'default' => null, 'auto_increment' => true],
+            'name' => ['name' => 'name', 'nullable' => true, 'default' => null, 'auto_increment' => false],
+            'status' => ['name' => 'status', 'nullable' => false, 'default' => 'new', 'auto_increment' => false],
+            'required_col' => ['name' => 'required_col', 'nullable' => false, 'default' => null, 'auto_increment' => false],
+            'created_at' => ['name' => 'created_at', 'nullable' => false, 'default' => null, 'auto_increment' => false],
+        ];
+
+        $findings = (new UnsettableNotNullRule())->check($model, $columns);
+
+        $this->assertCount(1, $findings);
+        $this->assertSame('required_col', $findings[0]->column);
+        $this->assertSame(DriftFinding::RULE_UNSETTABLE_NOT_NULL, $findings[0]->rule);
     }
 }
