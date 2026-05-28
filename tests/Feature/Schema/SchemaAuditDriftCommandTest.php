@@ -31,7 +31,8 @@ class SchemaAuditDriftCommandTest extends TestCase
 
     private function swapAnalyzer(Collection $findings): void
     {
-        $this->app->instance(SchemaDriftAnalyzer::class, new class($findings) extends SchemaDriftAnalyzer {
+        $this->app->instance(SchemaDriftAnalyzer::class, new class($findings) extends SchemaDriftAnalyzer
+        {
             public function __construct(private Collection $stub)
             {
                 parent::__construct();

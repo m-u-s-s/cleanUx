@@ -23,9 +23,9 @@ class SchemaDriftAnalyzer
     public function __construct(?array $rules = null)
     {
         $this->rules = $rules ?? [
-            new FillableColumnsExistRule(),
-            new CastColumnsExistRule(),
-            new UnsettableNotNullRule(),
+            new FillableColumnsExistRule,
+            new CastColumnsExistRule,
+            new UnsettableNotNullRule,
         ];
     }
 
@@ -47,7 +47,7 @@ class SchemaDriftAnalyzer
             }
 
             try {
-                $model = new $class();
+                $model = new $class;
 
                 if (! $model instanceof Model) {
                     continue;
@@ -141,7 +141,7 @@ class SchemaDriftAnalyzer
         $appPath = str_replace(['\\', '/'], '\\', app_path());
 
         $relative = substr($path, strlen($appPath) + 1, -strlen('.php'));
-        $class = 'App\\' . $relative;
+        $class = 'App\\'.$relative;
 
         return class_exists($class) ? $class : null;
     }
@@ -149,7 +149,7 @@ class SchemaDriftAnalyzer
     protected function isIgnored(DriftFinding $finding, array $ignore): bool
     {
         foreach ($ignore[$finding->modelClass] ?? [] as $entry) {
-            if ($entry === $finding->column || $entry === 'rule:' . $finding->rule) {
+            if ($entry === $finding->column || $entry === 'rule:'.$finding->rule) {
                 return true;
             }
         }

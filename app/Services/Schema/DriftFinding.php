@@ -5,9 +5,13 @@ namespace App\Services\Schema;
 class DriftFinding
 {
     public const RULE_MISSING_FILLABLE = 'missing_fillable_column';
+
     public const RULE_MISSING_CAST = 'missing_cast_column';
+
     public const RULE_UNSETTABLE_NOT_NULL = 'unsettable_not_null';
+
     public const RULE_MISSING_TABLE = 'missing_table';
+
     public const RULE_ANALYSIS_ERROR = 'analysis_error';
 
     public function __construct(

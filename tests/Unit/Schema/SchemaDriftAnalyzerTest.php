@@ -42,14 +42,14 @@ class SchemaDriftAnalyzerTest extends TestCase
 
     public function test_clean_model_yields_no_findings(): void
     {
-        $findings = (new SchemaDriftAnalyzer())->analyze([DriftCleanModel::class]);
+        $findings = (new SchemaDriftAnalyzer)->analyze([DriftCleanModel::class]);
 
         $this->assertTrue($findings->isEmpty(), $findings->map->message->implode("\n"));
     }
 
     public function test_flags_fillable_without_column(): void
     {
-        $findings = (new SchemaDriftAnalyzer())->analyze([DriftFillableModel::class]);
+        $findings = (new SchemaDriftAnalyzer)->analyze([DriftFillableModel::class]);
 
         $this->assertCount(1, $findings);
         $this->assertSame(DriftFinding::RULE_MISSING_FILLABLE, $findings->first()->rule);
@@ -58,7 +58,7 @@ class SchemaDriftAnalyzerTest extends TestCase
 
     public function test_flags_unsettable_not_null(): void
     {
-        $findings = (new SchemaDriftAnalyzer())->analyze([DriftNotNullModel::class]);
+        $findings = (new SchemaDriftAnalyzer)->analyze([DriftNotNullModel::class]);
 
         $this->assertCount(1, $findings);
         $this->assertSame(DriftFinding::RULE_UNSETTABLE_NOT_NULL, $findings->first()->rule);
@@ -67,7 +67,7 @@ class SchemaDriftAnalyzerTest extends TestCase
 
     public function test_flags_missing_table(): void
     {
-        $findings = (new SchemaDriftAnalyzer())->analyze([DriftMissingTableModel::class]);
+        $findings = (new SchemaDriftAnalyzer)->analyze([DriftMissingTableModel::class]);
 
         $this->assertCount(1, $findings);
         $this->assertSame(DriftFinding::RULE_MISSING_TABLE, $findings->first()->rule);
@@ -75,7 +75,7 @@ class SchemaDriftAnalyzerTest extends TestCase
 
     public function test_records_analysis_error_without_crashing(): void
     {
-        $findings = (new SchemaDriftAnalyzer())->analyze([DriftBoomModel::class]);
+        $findings = (new SchemaDriftAnalyzer)->analyze([DriftBoomModel::class]);
 
         $this->assertCount(1, $findings);
         $this->assertSame(DriftFinding::RULE_ANALYSIS_ERROR, $findings->first()->rule);
@@ -85,7 +85,7 @@ class SchemaDriftAnalyzerTest extends TestCase
     {
         config(['schema_drift.ignore' => [DriftFillableModel::class => ['ghost']]]);
 
-        $findings = (new SchemaDriftAnalyzer())->analyze([DriftFillableModel::class]);
+        $findings = (new SchemaDriftAnalyzer)->analyze([DriftFillableModel::class]);
 
         $this->assertTrue($findings->isEmpty());
     }
@@ -94,7 +94,7 @@ class SchemaDriftAnalyzerTest extends TestCase
     {
         config(['schema_drift.ignore_models' => [DriftMissingTableModel::class]]);
 
-        $findings = (new SchemaDriftAnalyzer())->analyze([DriftMissingTableModel::class]);
+        $findings = (new SchemaDriftAnalyzer)->analyze([DriftMissingTableModel::class]);
 
         $this->assertTrue($findings->isEmpty());
     }
@@ -103,28 +103,36 @@ class SchemaDriftAnalyzerTest extends TestCase
 class DriftCleanModel extends Model
 {
     protected $table = 'drift_clean';
+
     public $timestamps = false;
+
     protected $fillable = ['name'];
+
     protected $casts = ['meta' => 'array'];
 }
 
 class DriftFillableModel extends Model
 {
     protected $table = 'drift_fillable';
+
     public $timestamps = false;
+
     protected $fillable = ['name', 'ghost'];
 }
 
 class DriftNotNullModel extends Model
 {
     protected $table = 'drift_notnull';
+
     public $timestamps = false;
+
     protected $fillable = ['name'];
 }
 
 class DriftMissingTableModel extends Model
 {
     protected $table = 'drift_missing_table_xyz';
+
     public $timestamps = false;
 }
 
