@@ -51,13 +51,7 @@ class MissionLifecycleService
             'status' => MissionStatus::EN_ROUTE,
         ]);
 
-        event(new MissionStatusUpdated(
-            (int) $mission->id,
-            $mission->status,
-            [
-                'message' => 'Employé en route',
-            ]
-        ));
+        event(new MissionStatusUpdated($mission));
         $this->assignmentStatusService->updateAssignmentStatus($mission, $user, 'accepted', [
             'accepted_at' => now(),
         ]);
@@ -96,13 +90,7 @@ class MissionLifecycleService
             'start_lng' => $lng,
         ]);
 
-        event(new MissionStatusUpdated(
-            (int) $mission->id,
-            $mission->status,
-            [
-                'message' => 'Employé arrivé',
-            ]
-        ));
+        event(new MissionStatusUpdated($mission));
 
         $this->assignmentStatusService->updateAssignmentStatus($mission, $user, 'arrived', [
             'arrived_at' => now(),
@@ -160,13 +148,7 @@ class MissionLifecycleService
             'start_lng' => $lng ?? $mission->start_lng,
         ]);
 
-        event(new MissionStatusUpdated(
-            (int) $mission->id,
-            $mission->status,
-            [
-                'message' => 'Mission démarrée',
-            ]
-        ));
+        event(new MissionStatusUpdated($mission));
 
         $this->assignmentStatusService->updateAssignmentStatus($mission, $user, 'arrived', [
             'accepted_at' => now(),
@@ -252,14 +234,8 @@ class MissionLifecycleService
             'end_lng' => $lng,
         ]);
 
-        event(new MissionStatusUpdated(
-            (int) $mission->id,
-            $mission->status,
-            [
-                'message' => 'Mission terminée',
-            ]
-        ));
-        
+        event(new MissionStatusUpdated($mission));
+
 
         $this->assignmentStatusService->updateAssignmentStatus($mission, $user, 'completed', [
             'completed_at' => now(),
