@@ -172,12 +172,12 @@
                         @forelse($servicesGroupedByTrade as $group)
                             <div class="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
                                 <div class="flex items-center gap-3 border-b border-gray-100 bg-gray-50 px-4 py-3">
-                                    @if($group[‘trade’]->color)
-                                        <span class="inline-block h-3 w-3 rounded-full" style="background:{{ $group[‘trade’]->color }}"></span>
+                                    @if($group['trade']->color)
+                                        <span class="inline-block h-3 w-3 rounded-full" style="background:{{ $group['trade']->color }}"></span>
                                     @endif
-                                    <span class="font-semibold text-gray-800">{{ $group[‘trade’]->name }}</span>
+                                    <span class="font-semibold text-gray-800">{{ $group['trade']->name }}</span>
                                     <span class="ml-auto rounded-full bg-gray-200 px-2 py-0.5 text-xs text-gray-600">
-                                        {{ $group[‘services’]->count() }} service(s)
+                                        {{ $group['services']->count() }} service(s)
                                     </span>
                                 </div>
                                 <table class="min-w-full cu-table">
@@ -192,14 +192,14 @@
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        @foreach($group[‘services’] as $service)
-                                            <tr class="{{ $selectedService?->id === $service->id ? ‘bg-sky-50/70’ : ‘’ }}">
+                                        @foreach($group['services'] as $service)
+                                            <tr class="{{ $selectedService?->id === $service->id ? 'bg-sky-50/70' : '' }}">
                                                 <td>
                                                     <div class="font-semibold text-slate-900">{{ $service->name }}</div>
                                                     <div class="text-xs text-slate-500">{{ $service->code }}</div>
                                                 </td>
                                                 <td>{{ $service->service_type }}</td>
-                                                <td>€ {{ number_format((float) $service->base_price, 2, ‘,’, ‘ ‘) }}</td>
+                                                <td>€ {{ number_format((float) $service->base_price, 2, ',', ' ') }}</td>
                                                 <td>{{ $service->default_duration_minutes }} min</td>
                                                 <td>
                                                     @if($service->is_active)
@@ -227,7 +227,7 @@
                     </div>
                 @else
                 {{-- Standard paginated table --}}
-                <x-table-shell title="Services" subtitle="Vue pilotable de l’offre commerciale active et inactive.">
+                <x-table-shell title="Services" subtitle="Vue pilotable de l'offre commerciale active et inactive.">
                     <table class="min-w-full cu-table">
                         <thead>
                             <tr>
@@ -297,7 +297,7 @@
             </div>
 
             @if($selectedService)
-                <x-app-card padding="p-5 md:p-6" title="Règles par zone · {{ $selectedService->name }}" subtitle="Ajustez l’activation, la tarification et la validation zone par zone.">
+                <x-app-card padding="p-5 md:p-6" title="Règles par zone · {{ $selectedService->name }}" subtitle="Ajustez l'activation, la tarification et la validation zone par zone.">
                     <div class="grid grid-cols-1 gap-4 lg:grid-cols-3">
                         <div>
                             <label class="cu-field-label">Zone</label>

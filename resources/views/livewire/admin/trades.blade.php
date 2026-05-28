@@ -168,7 +168,7 @@
                 @empty
                     <tr>
                         <td colspan="7" class="px-4 py-8 text-center text-gray-500">
-                            Aucun métier {{ $search ? 'correspond à votre recherche.' : 'créé. Lance d’abord <code>php artisan db:seed --class=TradeSeeder</code>.' }}
+                            Aucun métier {{ $search ? 'correspond à votre recherche.' : 'créé. Lancez le seeder TradeSeeder.' }}
                         </td>
                     </tr>
                 @endforelse
