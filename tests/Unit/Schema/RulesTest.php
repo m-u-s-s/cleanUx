@@ -3,6 +3,8 @@
 namespace Tests\Unit\Schema;
 
 use App\Services\Schema\DriftFinding;
+use App\Services\Schema\Rules\FillableColumnsExistRule;
+use Illuminate\Database\Eloquent\Model;
 use Tests\TestCase;
 
 class RulesTest extends TestCase
@@ -27,5 +29,36 @@ class RulesTest extends TestCase
             'rule' => 'missing_fillable_column',
             'message' => 'boom',
         ], $finding->toArray());
+    }
+
+    public function test_fillable_rule_flags_attribute_without_column(): void
+    {
+        $model = new class extends Model {
+            protected $table = 'widgets';
+            protected $fillable = ['name', 'ghost', 'meta->locale'];
+        };
+
+        $columns = [
+            'name' => ['name' => 'name'],
+            'meta' => ['name' => 'meta'],
+        ];
+
+        $findings = (new FillableColumnsExistRule())->check($model, $columns);
+
+        $this->assertCount(1, $findings);
+        $this->assertSame('ghost', $findings[0]->column);
+        $this->assertSame(DriftFinding::RULE_MISSING_FILLABLE, $findings[0]->rule);
+    }
+
+    public function test_fillable_rule_passes_clean_model(): void
+    {
+        $model = new class extends Model {
+            protected $table = 'widgets';
+            protected $fillable = ['name'];
+        };
+
+        $findings = (new FillableColumnsExistRule())->check($model, ['name' => ['name' => 'name']]);
+
+        $this->assertSame([], $findings);
     }
 }
