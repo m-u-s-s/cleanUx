@@ -20,7 +20,7 @@ return [
         // RecurringBookingSeries declares optional alternate-name casts that the
         // application reads null-safely and never writes (it uses the real columns
         // starts_at/ends_at/days/metadata, plus template_payload added in migration
-        // 100008). See App\Services\Client\Templates\ApplyRecurringTemplateService
+        // 100041). See App\Services\Client\Templates\ApplyRecurringTemplateService
         // and App\Console\Commands\ProcessRecurringBookings, which both guard these
         // with Schema::hasColumn / null-coalescing. Adding real columns for these
         // pure aliases would create redundant dead schema.
@@ -40,26 +40,17 @@ return [
             'type',
         ],
 
-        // subscription_plans.slug is a NOT NULL UNIQUE column from the modern
-        // marketplace plan schema (2026_05_04 v2 feature extensions). The legacy
-        // SubscriptionPlan model (name/frequency_per_month/discount_rate/is_active)
-        // is dormant — no application code or seeder creates SubscriptionPlan
-        // records via this model (only ClientSubscription references it as a
-        // relation, and ClientSubscription's own table is created in migration
-        // 100006 for that legacy feature). Nothing inserts through the model, so
-        // the NOT NULL slug cannot fail today; relaxing a UNIQUE marketplace column
-        // to nullable would be a riskier change than this honest allowlist.
+        // The SubscriptionPlan model is dormant legacy: it points at the modern
+        // marketplace subscription_plans table (2026_05_04 v2 feature extensions),
+        // whose real columns are name/slug/is_active (slug is NOT NULL UNIQUE).
+        // `slug` is now in the model's $fillable and SubscriptionPlanFactory sets it,
+        // so it is no longer drift and is NOT allowlisted. Only frequency_per_month
+        // and discount_rate remain: they are legacy fields with no column on the
+        // modern table, and nothing in the app writes a SubscriptionPlan through this
+        // model, so adding real columns for them would just be dead schema.
         // NEEDS HUMAN DECISION if the legacy subscription feature is ever revived:
-        // either give the model a slug generator (booted creating hook) or drop it.
-        //
-        // frequency_per_month and discount_rate are the same dormant legacy model's
-        // fields: nothing in the application or any seeder writes a SubscriptionPlan
-        // record through this model, so adding real columns for them would only
-        // create dead schema on the modern marketplace subscription_plans table.
-        // Allowlisted for consistency with the dormant `slug` decision above; revisit
-        // together if the legacy subscription feature is revived.
+        // align the model with the table or drop these two fields.
         SubscriptionPlan::class => [
-            'slug',
             'frequency_per_month',
             'discount_rate',
         ],
