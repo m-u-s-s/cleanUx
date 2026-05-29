@@ -58,7 +58,7 @@ export function BookingProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (!isInitialised.current) return;
     if (state.serviceId === null) return; // do not persist empty draft
-    void bookingDraft.save(state);
+    void bookingDraft.save(state as unknown as Record<string, unknown>);
   }, [state]);
 
   return <BookingContext.Provider value={{ state, dispatch }}>{children}</BookingContext.Provider>;

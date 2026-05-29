@@ -25,7 +25,9 @@ export async function maybeRequestReview(): Promise<void> {
   if (count < THRESHOLD) return;
 
   try {
-    const StoreReview = await import('expo-store-review');
+    // expo-store-review is an optional peer dep — dynamic import with type assertion
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const StoreReview = await import('expo-store-review' as any) as { hasAction(): Promise<boolean>; requestReview(): Promise<void> };
     const canPrompt = await StoreReview.hasAction();
     if (!canPrompt) return;
     await StoreReview.requestReview();

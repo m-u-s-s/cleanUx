@@ -7,7 +7,9 @@ import { useNavigation } from '@react-navigation/native';
  * Uses a dynamic import for expo-notifications to avoid crashes in Expo Go SDK 53+.
  */
 export function useNotificationRouting(): void {
-  const navigation = useNavigation();
+  // Use the any-typed navigation to avoid coupling shared to a specific param list
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const navigation = useNavigation<any>();
 
   useEffect(() => {
     let sub: { remove: () => void } | null = null;
@@ -18,7 +20,8 @@ export function useNotificationRouting(): void {
         sub = Notifications.addNotificationResponseReceivedListener(response => {
           const data = response.notification.request.content.data;
           if (data?.screen) {
-            navigation.navigate(data.screen as never, (data.params ?? {}) as never);
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            navigation.navigate(data.screen as string, (data.params ?? {}) as any);
           }
         });
       } catch {

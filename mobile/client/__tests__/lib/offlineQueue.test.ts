@@ -11,9 +11,10 @@ describe('offlineQueue', () => {
     await offlineQueue.enqueue({ url: '/api/test', method: 'POST', body: { x: 1 } });
     const queue = await offlineQueue.getAll();
     expect(queue).toHaveLength(1);
-    expect(queue[0].url).toBe('/api/test');
-    expect(queue[0].method).toBe('POST');
-    expect(queue[0].id).toBeTruthy();
+    const first = queue[0]!;
+    expect(first.url).toBe('/api/test');
+    expect(first.method).toBe('POST');
+    expect(first.id).toBeTruthy();
   });
 
   it('enqueue appends to existing queue', async () => {

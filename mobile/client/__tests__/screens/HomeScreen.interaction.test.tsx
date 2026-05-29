@@ -118,19 +118,19 @@ describe('HomeScreen interactions', () => {
 
   it('tap "Mes réservations" navigates to MainTabs', () => {
     render(<HomeScreen />);
-    fireEvent.press(screen.getByAccessibilityLabel('Mes réservations'));
+    fireEvent.press(screen.getByLabelText('Mes réservations'));
     expect(mockNavigate).toHaveBeenCalledWith('MainTabs');
   });
 
   it('tap "Messagerie" navigates to ChatList', () => {
     render(<HomeScreen />);
-    fireEvent.press(screen.getByAccessibilityLabel('Messagerie'));
+    fireEvent.press(screen.getByLabelText('Messagerie'));
     expect(mockNavigate).toHaveBeenCalledWith('ChatList');
   });
 
   it('tap "Fidélité" navigates to Loyalty', () => {
     render(<HomeScreen />);
-    fireEvent.press(screen.getByAccessibilityLabel('Fidélité'));
+    fireEvent.press(screen.getByLabelText('Fidélité'));
     expect(mockNavigate).toHaveBeenCalledWith('Loyalty');
   });
 

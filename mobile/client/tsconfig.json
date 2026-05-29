@@ -33,10 +33,42 @@
       "@/ErrorBoundary": ["../shared/src/ErrorBoundary"],
       "@cleanux/shared": ["../shared/src"],
       "@cleanux/shared/*": ["../shared/src/*"],
-      "@/*": ["src/*"]
+      "@/*": ["src/*"],
+      "axios": ["node_modules/axios"],
+      "axios/*": ["node_modules/axios/*"],
+      "@react-native-community/netinfo": ["node_modules/@react-native-community/netinfo"],
+      "@react-native-community/netinfo/*": ["node_modules/@react-native-community/netinfo/*"],
+      "@tanstack/react-query": ["node_modules/@tanstack/react-query"],
+      "@tanstack/react-query/*": ["node_modules/@tanstack/react-query/*"],
+      "react-native-reanimated": ["node_modules/react-native-reanimated"],
+      "react-native-reanimated/*": ["node_modules/react-native-reanimated/*"],
+      "expo-secure-store": ["node_modules/expo-secure-store"],
+      "expo-secure-store/*": ["node_modules/expo-secure-store/*"],
+      "@sentry/react-native": ["node_modules/@sentry/react-native"],
+      "@sentry/react-native/*": ["node_modules/@sentry/react-native/*"],
+      "expo-local-authentication": ["node_modules/expo-local-authentication"],
+      "expo-local-authentication/*": ["node_modules/expo-local-authentication/*"],
+      "expo-store-review": ["node_modules/expo-store-review"],
+      "expo-store-review/*": ["node_modules/expo-store-review/*"],
+      "@expo/vector-icons": ["node_modules/@expo/vector-icons"],
+      "@expo/vector-icons/*": ["node_modules/@expo/vector-icons/*"],
+      "@gorhom/bottom-sheet": ["node_modules/@gorhom/bottom-sheet"],
+      "@gorhom/bottom-sheet/*": ["node_modules/@gorhom/bottom-sheet/*"],
+      "react-native-safe-area-context": ["node_modules/react-native-safe-area-context"],
+      "react-native-safe-area-context/*": ["node_modules/react-native-safe-area-context/*"],
+      "@react-navigation/native": ["node_modules/@react-navigation/native"],
+      "@react-navigation/native/*": ["node_modules/@react-navigation/native/*"],
+      "expo-notifications": ["node_modules/expo-notifications"],
+      "expo-notifications/*": ["node_modules/expo-notifications/*"]
     },
     "types": ["jest", "node"]
   },
   "include": ["**/*.ts", "**/*.tsx", "../shared/src/**/*.ts", "../shared/src/**/*.tsx"],
-  "exclude": ["node_modules"]
+  "exclude": [
+    "node_modules",
+    "e2e/**",
+    "../shared/src/**/__tests__/**",
+    "../shared/src/**/*.test.ts",
+    "../shared/src/**/*.test.tsx"
+  ]
 }

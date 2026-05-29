@@ -52,7 +52,7 @@ export function HomeScreen() {
         </View>
       ) : isFirstTime ? (
         <View style={[styles.welcomeCard, { backgroundColor: themeColors.card }]}>
-          <Icon name="home-outline" size={48} color={colors.brand[400]} style={styles.welcomeIcon} />
+          <View style={styles.welcomeIcon}><Icon name="home-outline" size={48} color={colors.brand[400]} /></View>
           <Text style={[styles.welcomeTitle, { color: themeColors.text }]}>Bienvenue sur CleanUx</Text>
           <Text style={[styles.welcomeText, { color: themeColors.textSecondary }]}>Réservez votre premier service et découvrez une nouvelle façon de gérer votre maison.</Text>
           <Button label="Réserver mon premier service" onPress={() => navigation.navigate('BookingWizard')} fullWidth size="lg" />
