@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\Auth\ApiAuthController;
 use App\Http\Controllers\Api\Auth\ForgotPasswordController;
+use App\Http\Controllers\Api\Auth\WebViewAuthController;
 use App\Http\Controllers\Api\AuthMeController;
 use App\Http\Controllers\Api\AuthRefreshController;
 use Illuminate\Support\Facades\Route;
@@ -33,4 +34,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::post('/auth/logout', [ApiAuthController::class, 'logout']);
     Route::post('/auth/logout-all', [ApiAuthController::class, 'logoutAll']);
+
+    Route::post('/auth/webview-ticket', [WebViewAuthController::class, 'ticket'])
+        ->name('api.auth.webview-ticket');
 });
