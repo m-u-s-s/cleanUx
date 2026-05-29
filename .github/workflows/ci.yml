@@ -9,7 +9,8 @@ env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
-  tests:
+  quality:
+    name: Quality gate (validate, pint, phpstan, tests, build)
     runs-on: ubuntu-latest
 
     steps:
@@ -35,8 +36,18 @@ jobs:
       - name: Install PHP dependencies
         run: composer install --no-interaction --prefer-dist
 
+      # ---- Fast static gates first (fail fast before the slow suite) ----
+      - name: Composer manifest is valid and in sync with the lock file
+        run: composer validate --strict
+
       - name: Composer security audit
         run: composer audit --no-interaction --format=plain --abandoned=report
+
+      - name: Code style (Pint)
+        run: vendor/bin/pint --test
+
+      - name: Static analysis (PHPStan / Larastan)
+        run: vendor/bin/phpstan analyse --memory-limit=1G --no-progress
 
       - name: Install Node dependencies
         run: npm ci
@@ -47,14 +58,12 @@ jobs:
       - name: Generate app key
         run: php artisan key:generate --force
 
-      - name: Build assets
+      - name: Build web assets
         run: npm run build
 
-      - name: Run tests with coverage
-        run: php artisan test --coverage-clover=coverage.xml
-
-      - name: Coverage threshold check (fail below 80%)
-        run: php artisan test --coverage-min=80
+      # ---- Test suite + coverage gate (single run) ----
+      - name: Run tests with coverage (fail below 80%)
+        run: php artisan test --coverage-clover=coverage.xml --coverage-min=80
 
       - name: Upload coverage report
         if: always()
@@ -63,6 +72,3 @@ jobs:
           name: coverage-report
           path: coverage.xml
           retention-days: 30
-
-      - name: Run PHPStan
-        run: vendor/bin/phpstan analyse --memory-limit=512M --no-progress
