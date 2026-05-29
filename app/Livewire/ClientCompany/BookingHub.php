@@ -18,21 +18,32 @@ class BookingHub extends Component
     // ──────────────────────────────────────────────────────
     // State
     // ──────────────────────────────────────────────────────
-    public string $view          = 'list'; // list | create
-    public string $filterStatus  = '';
-    public ?int   $filterSiteId  = null;
-    public int    $step          = 1;
+    public string $view = 'list'; // list | create
+
+    public string $filterStatus = '';
+
+    public ?int $filterSiteId = null;
+
+    public int $step = 1;
 
     // Formulaire de réservation
-    public ?int    $selectedSiteId      = null;
-    public ?int    $selectedTradeId     = null;
-    public ?int    $selectedProviderId  = null;
-    public string  $scheduledDate       = '';
-    public string  $scheduledTime       = '';
-    public string  $notes               = '';
-    public string  $purchaseOrderRef    = '';
-    public ?int    $estimatedHours      = null;
-    public bool    $needsApproval       = false;
+    public ?int $selectedSiteId = null;
+
+    public ?int $selectedTradeId = null;
+
+    public ?int $selectedProviderId = null;
+
+    public string $scheduledDate = '';
+
+    public string $scheduledTime = '';
+
+    public string $notes = '';
+
+    public string $purchaseOrderRef = '';
+
+    public ?int $estimatedHours = null;
+
+    public bool $needsApproval = false;
 
     // ──────────────────────────────────────────────────────
     // Mount
@@ -47,8 +58,8 @@ class BookingHub extends Component
 
         if ($site) {
             $this->selectedSiteId = $site;
-            $this->view           = 'create';
-            $this->step           = 2;
+            $this->view = 'create';
+            $this->step = 2;
         }
 
         // Vérifier si l'organisation requiert une approbation
@@ -63,8 +74,8 @@ class BookingHub extends Component
         $orgId = Auth::user()->current_organization_id;
 
         return Booking::where('client_organization_id', $orgId)
-            ->when($this->filterStatus, fn($q) => $q->where('status', $this->filterStatus))
-            ->when($this->filterSiteId, fn($q) => $q->where('organization_site_id', $this->filterSiteId))
+            ->when($this->filterStatus, fn ($q) => $q->where('status', $this->filterStatus))
+            ->when($this->filterSiteId, fn ($q) => $q->where('organization_site_id', $this->filterSiteId))
             ->with([
                 'organizationSite:id,name,city',
                 'providerUser:id,name,profile_photo_path',
@@ -90,7 +101,7 @@ class BookingHub extends Component
     public function getSelectedSiteProperty(): ?OrganizationSite
     {
         return $this->selectedSiteId
-            ? OrganizationSite::find($this->selectedSiteId)
+            ? OrganizationSite::forOrg(Auth::user()->current_organization_id)->find($this->selectedSiteId)
             : null;
     }
 
@@ -114,8 +125,7 @@ class BookingHub extends Component
             )
             ->when(
                 $site?->preferred_provider_id,
-                fn($q) =>
-                $q->orderByRaw(
+                fn ($q) => $q->orderByRaw(
                     'CASE WHEN user_id = ? THEN 0 ELSE 1 END',
                     [$site->preferred_provider_id]
                 )
@@ -130,7 +140,7 @@ class BookingHub extends Component
     public function selectSite(int $siteId): void
     {
         $this->selectedSiteId = $siteId;
-        $this->step           = 2;
+        $this->step = 2;
     }
 
     public function selectTrade(int $tradeId): void
@@ -148,11 +158,13 @@ class BookingHub extends Component
 
         if ($this->step === 3 && ! $this->selectedTradeId) {
             $this->addError('selectedTradeId', 'Veuillez choisir un métier.');
+
             return;
         }
 
         if ($this->step === 4 && blank($this->scheduledDate)) {
             $this->addError('scheduledDate', 'Veuillez choisir une date.');
+
             return;
         }
 
@@ -170,16 +182,16 @@ class BookingHub extends Component
     public function submitBooking(): void
     {
         $rules = [
-            'selectedSiteId'  => ['required', 'integer'],
+            'selectedSiteId' => ['required', 'integer'],
             'selectedTradeId' => ['required', 'integer'],
-            'scheduledDate'   => ['required', 'date', 'after:today'],
-            'scheduledTime'   => ['required'],
+            'scheduledDate' => ['required', 'date', 'after:today'],
+            'scheduledTime' => ['required'],
         ];
 
         $this->validate(array_merge($rules, $this->tradeFormAnswersRules()));
 
-        $user   = Auth::user();
-        $orgId  = $user->current_organization_id;
+        $user = Auth::user();
+        $orgId = $user->current_organization_id;
         OrganizationSite::forOrg($orgId)->findOrFail($this->selectedSiteId);
 
         $canApprove = app(PermissionService::class)->can($user, 'bookings.approve', $user->currentOrganization);
@@ -189,23 +201,23 @@ class BookingHub extends Component
             : 'pending';
 
         $booking = Booking::create([
-            'client_user_id'           => $user->id,
-            'client_organization_id'   => $orgId,
-            'organization_site_id'     => $this->selectedSiteId,
-            'provider_user_id'         => $this->selectedProviderId,
-            'scheduled_at'             => "{$this->scheduledDate} {$this->scheduledTime}",
-            'status'                   => $status,
-            'estimated_duration'       => $this->estimatedHours ? $this->estimatedHours * 60 : null,
+            'client_user_id' => $user->id,
+            'client_organization_id' => $orgId,
+            'organization_site_id' => $this->selectedSiteId,
+            'provider_user_id' => $this->selectedProviderId,
+            'scheduled_at' => "{$this->scheduledDate} {$this->scheduledTime}",
+            'status' => $status,
+            'estimated_duration' => $this->estimatedHours ? $this->estimatedHours * 60 : null,
             'purchase_order_reference' => $this->purchaseOrderRef,
-            'notes'                    => $this->notes,
-            'trade_form_answers'       => $this->hasTradeFormSchema() ? $this->tradeFormAnswers : null,
+            'notes' => $this->notes,
+            'trade_form_answers' => $this->hasTradeFormSchema() ? $this->tradeFormAnswers : null,
         ]);
 
         $this->reset([
             'selectedSiteId', 'selectedTradeId', 'selectedProviderId',
             'scheduledDate', 'scheduledTime', 'notes', 'purchaseOrderRef', 'estimatedHours',
         ]);
-        $this->tradeFormSchema  = null;
+        $this->tradeFormSchema = null;
         $this->tradeFormAnswers = [];
         $this->step = 1;
         $this->view = 'list';
@@ -242,10 +254,10 @@ class BookingHub extends Component
     public function render()
     {
         return view('livewire.client-company.booking-hub', [
-            'bookings'     => $this->bookingsProperty,
-            'sites'        => $this->sitesProperty,
-            'trades'       => $this->tradesProperty,
-            'providers'    => $this->availableProvidersProperty,
+            'bookings' => $this->bookingsProperty,
+            'sites' => $this->sitesProperty,
+            'trades' => $this->tradesProperty,
+            'providers' => $this->availableProvidersProperty,
             'selectedSite' => $this->selectedSiteProperty,
         ])->layout('layouts.client-company');
     }

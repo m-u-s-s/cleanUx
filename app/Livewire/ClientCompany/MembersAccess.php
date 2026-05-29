@@ -3,7 +3,6 @@
 namespace App\Livewire\ClientCompany;
 
 use App\Enums\OrganizationRole;
-use App\Enums\OrganizationType;
 use App\Models\OrganizationMember;
 use App\Models\User;
 use App\Services\PermissionService;
@@ -16,14 +15,26 @@ class MembersAccess extends Component
     // ──────────────────────────────────────────────────────
     // State
     // ──────────────────────────────────────────────────────
-    public bool   $showInvite      = false;
-    public bool   $showPermissions = false;
-    public ?int   $editingMemberId = null;
+    public bool $showInvite = false;
+
+    public bool $showPermissions = false;
+
+    public ?int $editingMemberId = null;
 
     // Invitation
-    public string $inviteEmail    = '';
-    public string $inviteRole     = OrganizationRole::REQUESTER->value;
-    public string $inviteMessage  = '';
+    public string $inviteEmail = '';
+
+    public string $inviteRole = OrganizationRole::REQUESTER->value;
+
+    public string $inviteMessage = '';
+
+    // ──────────────────────────────────────────────────────
+    // Mount
+    // ──────────────────────────────────────────────────────
+    public function mount(): void
+    {
+        abort_unless(Auth::user()?->isClientCompany(), 403);
+    }
 
     // ──────────────────────────────────────────────────────
     // Computed
@@ -50,7 +61,8 @@ class MembersAccess extends Component
             return null;
         }
 
-        return OrganizationMember::with('user:id,name,email')
+        return OrganizationMember::where('organization_account_id', Auth::user()->current_organization_id)
+            ->with('user:id,name,email')
             ->find($this->editingMemberId);
     }
 
@@ -68,7 +80,7 @@ class MembersAccess extends Component
 
         $this->validate([
             'inviteEmail' => ['required', 'email'],
-            'inviteRole'  => ['required', 'in:' . implode(',',
+            'inviteRole' => ['required', 'in:'.implode(',',
                 array_map(fn ($r) => $r->value, OrganizationRole::forClientCompany())
             )],
         ]);
@@ -86,18 +98,19 @@ class MembersAccess extends Component
 
             if ($alreadyMember) {
                 $this->addError('inviteEmail', 'Cet utilisateur est déjà membre de l\'organisation.');
+
                 return;
             }
 
             // Ajouter directement si l'utilisateur existe
             OrganizationMember::create([
                 'organization_account_id' => $orgId,
-                'user_id'                 => $existingUser->id,
-                'role'                    => $this->inviteRole,
-                'status'                  => 'active',
-                'invited_by'              => $user->id,
-                'invited_at'              => now(),
-                'joined_at'               => now(),
+                'user_id' => $existingUser->id,
+                'role' => $this->inviteRole,
+                'status' => 'active',
+                'invited_by' => $user->id,
+                'invited_at' => now(),
+                'joined_at' => now(),
             ]);
         } else {
             // Créer une invitation en attente (email à envoyer)
@@ -105,9 +118,9 @@ class MembersAccess extends Component
             // Mail::to($this->inviteEmail)->send(new OrganizationInvitation(...));
         }
 
-        $this->inviteEmail   = '';
+        $this->inviteEmail = '';
         $this->inviteMessage = '';
-        $this->showInvite    = false;
+        $this->showInvite = false;
 
         $this->dispatch('member-invited');
     }
@@ -117,8 +130,8 @@ class MembersAccess extends Component
     // ──────────────────────────────────────────────────────
     public function changeRole(int $memberId, string $newRole): void
     {
-        $actor  = Auth::user();
-        $orgId  = $actor->current_organization_id;
+        $actor = Auth::user();
+        $orgId = $actor->current_organization_id;
         $member = OrganizationMember::where('organization_account_id', $orgId)->findOrFail($memberId);
 
         abort_unless(
@@ -132,6 +145,7 @@ class MembersAccess extends Component
         $newRoleEnum = OrganizationRole::from($newRole);
         if ($actorMember && $newRoleEnum->rank() >= $actorMember->role->rank() && ! $actor->isPlatformAdmin()) {
             $this->addError('role', 'Vous ne pouvez pas attribuer un rôle supérieur ou égal au vôtre.');
+
             return;
         }
 
@@ -174,8 +188,8 @@ class MembersAccess extends Component
         }
 
         // Sécurité : ne pas toucher à un membre de rang supérieur
-        $actorMember  = $actor->membershipIn();
-        $targetRole   = OrganizationRole::from($member->role->value);
+        $actorMember = $actor->membershipIn();
+        $targetRole = OrganizationRole::from($member->role->value);
 
         if ($actorMember && ! $actorMember->role->canManage($targetRole) && ! $actor->isPlatformAdmin()) {
             return;
@@ -200,7 +214,15 @@ class MembersAccess extends Component
             return;
         }
 
-        $member = OrganizationMember::find($this->editingMemberId);
+        $actor = Auth::user();
+
+        abort_unless(
+            app(PermissionService::class)->can($actor, 'members.edit_role', $actor->currentOrganization),
+            403
+        );
+
+        $member = OrganizationMember::where('organization_account_id', $actor->current_organization_id)
+            ->find($this->editingMemberId);
 
         if (! $member) {
             return;
@@ -219,9 +241,9 @@ class MembersAccess extends Component
     public function render()
     {
         return view('livewire.client-company.members-access', [
-            'members'        => $this->membersProperty,
+            'members' => $this->membersProperty,
             'availableRoles' => $this->availableRolesProperty,
-            'editingMember'  => $this->editingMemberProperty,
+            'editingMember' => $this->editingMemberProperty,
             'allPermissions' => app(PermissionService::class)->allPermissionKeys(),
         ])->layout('layouts.client-company');
     }

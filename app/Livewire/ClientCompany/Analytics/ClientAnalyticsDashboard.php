@@ -4,7 +4,6 @@ namespace App\Livewire\ClientCompany\Analytics;
 
 use App\Services\Analytics\AnalyticsKpiService;
 use App\Services\Analytics\DateRangeResolver;
-use Carbon\CarbonImmutable;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Url;
@@ -36,6 +35,14 @@ class ClientAnalyticsDashboard extends Component
     #[Url(as: 'to')]
     public ?string $customTo = null;
 
+    // ──────────────────────────────────────────────────────
+    // Mount
+    // ──────────────────────────────────────────────────────
+    public function mount(): void
+    {
+        abort_unless(Auth::user()?->isClientCompany(), 403);
+    }
+
     public function setPreset(string $preset): void
     {
         if (! in_array($preset, DateRangeResolver::PRESETS, true)) {
@@ -58,7 +65,9 @@ class ClientAnalyticsDashboard extends Component
     public function render(): View
     {
         $user = Auth::user();
-        $orgId = $user->organization_account_id;
+        $orgId = $user->current_organization_id;
+
+        abort_unless((bool) $orgId, 403);
 
         $resolver = app(DateRangeResolver::class);
         [$from, $to, $periodLabel] = $resolver->resolve($this->preset, $this->customFrom, $this->customTo);
@@ -66,18 +75,18 @@ class ClientAnalyticsDashboard extends Component
         $kpis = app(AnalyticsKpiService::class);
 
         return view('livewire.client-company.analytics.client-analytics-dashboard', [
-            'mainKpis'          => $kpis->mainKpis($orgId, $from, $to),
-            'monthlyRevenue'    => $kpis->monthlyRevenue($orgId, 12),
-            'statusBreakdown'   => $kpis->statusBreakdown($orgId, $from, $to),
-            'topServices'       => $kpis->topServices($orgId, $from, $to, 10),
-            'topSites'          => $kpis->topSites($orgId, $from, $to, 10),
+            'mainKpis' => $kpis->mainKpis($orgId, $from, $to),
+            'monthlyRevenue' => $kpis->monthlyRevenue($orgId, 12),
+            'statusBreakdown' => $kpis->statusBreakdown($orgId, $from, $to),
+            'topServices' => $kpis->topServices($orgId, $from, $to, 10),
+            'topSites' => $kpis->topSites($orgId, $from, $to, 10),
             'satisfactionTrend' => $kpis->satisfactionTrend($orgId, 12),
-            'alerts'            => $kpis->alerts($orgId),
-            'periodLabel'       => $periodLabel,
-            'periodFrom'        => $from->toDateString(),
-            'periodTo'          => $to->toDateString(),
-            'presetOptions'     => $resolver->presetOptions(),
-            'isCompany'         => (bool) $orgId,
+            'alerts' => $kpis->alerts($orgId),
+            'periodLabel' => $periodLabel,
+            'periodFrom' => $from->toDateString(),
+            'periodTo' => $to->toDateString(),
+            'presetOptions' => $resolver->presetOptions(),
+            'isCompany' => (bool) $orgId,
         ]);
     }
 }
