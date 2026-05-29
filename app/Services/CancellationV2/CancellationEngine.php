@@ -4,14 +4,11 @@ namespace App\Services\CancellationV2;
 
 use App\Models\BookingCancellationV2;
 use App\Models\CancellationAudit;
-use App\Models\CancellationExemptReason;
-use App\Models\CancellationPolicy;
 use App\Models\User;
 use App\Support\ActivityLogger;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Validation\ValidationException;
 
@@ -28,9 +25,10 @@ use Illuminate\Validation\ValidationException;
  */
 class CancellationEngine
 {
-    public function __construct(protected CancellationPolicyResolver $resolver)
-    {
-    }
+    public function __construct(
+        protected CancellationPolicyResolver $resolver,
+        protected CancellationIntegrationsRunner $integrations,
+    ) {}
 
     public function quote(int $bookingId, string $actorRole, ?string $reasonCode = null, ?\DateTimeInterface $at = null): CancellationQuote
     {
@@ -171,7 +169,7 @@ class CancellationEngine
             ]);
 
             // Dispatch integrations (best-effort, soft-fail)
-            $row = $this->runIntegrations($row);
+            $row = $this->integrations->run($row);
 
             ActivityLogger::log('cancellation_v2.executed', $row, [
                 'booking_id' => $bookingId,
@@ -227,168 +225,6 @@ class CancellationEngine
         return $cancellation->fresh();
     }
 
-    protected function runIntegrations(BookingCancellationV2 $row): BookingCancellationV2
-    {
-        $integrationsCfg = (array) Config::get('cancellation_v2.integrations', []);
-        $log = (array) ($row->integrations_log ?? []);
-
-        // Stripe refund (best-effort)
-        if (! empty($integrationsCfg['stripe_refund']) && $row->refund_amount_cents > 0 && $row->refund_method === 'stripe') {
-            try {
-                $log['stripe_refund'] = $this->tryStripeRefund($row);
-                CancellationAudit::create([
-                    'cancellation_id' => $row->id,
-                    'actor_user_id' => $row->cancelled_by_user_id,
-                    'action' => CancellationAudit::ACTION_REFUNDED,
-                    'after_state' => $log['stripe_refund'],
-                    'occurred_at' => now(),
-                ]);
-            } catch (\Throwable $e) {
-                $log['stripe_refund_error'] = $e->getMessage();
-                CancellationAudit::create([
-                    'cancellation_id' => $row->id,
-                    'actor_user_id' => $row->cancelled_by_user_id,
-                    'action' => CancellationAudit::ACTION_REFUND_FAILED,
-                    'notes' => $e->getMessage(),
-                    'occurred_at' => now(),
-                ]);
-                Log::warning('CancellationEngine: stripe refund failed', [
-                    'cancellation_id' => $row->id,
-                    'error' => $e->getMessage(),
-                ]);
-            }
-        }
-
-        // Loyalty forfeit (if module available)
-        if (! empty($integrationsCfg['loyalty_forfeit'])
-            && class_exists(\App\Services\Loyalty\LoyaltyService::class)) {
-            try {
-                $log['loyalty'] = ['notified' => true];
-                // Hook : si la cancellation est ≤ window, on devrait forfeit les points
-                // gagnés via cette booking. Skeleton call ici, à câbler selon flow exact.
-            } catch (\Throwable $e) {
-                $log['loyalty_error'] = $e->getMessage();
-            }
-        }
-
-        // Promo restore
-        if (! empty($integrationsCfg['promo_restore'])
-            && Schema::hasTable('promo_code_redemptions')) {
-            try {
-                $restored = DB::table('promo_code_redemptions')
-                    ->where('booking_id', $row->booking_id)
-                    ->update(['status' => 'reversed', 'updated_at' => now()]);
-                $log['promo_restore'] = ['rows_reversed' => $restored];
-            } catch (\Throwable $e) {
-                $log['promo_restore_error'] = $e->getMessage();
-            }
-        }
-
-        // Insurance cancel (auto-cancel related insurance policies)
-        if (! empty($integrationsCfg['insurance_cancel'])
-            && class_exists(\App\Services\Insurance\InsuranceService::class)
-            && class_exists(\App\Models\BookingInsurance::class)) {
-            try {
-                $svc = app(\App\Services\Insurance\InsuranceService::class);
-                $insurances = \App\Models\BookingInsurance::query()
-                    ->where('booking_id', $row->booking_id)
-                    ->whereIn('status', [
-                        \App\Models\BookingInsurance::STATUS_ACTIVE,
-                        \App\Models\BookingInsurance::STATUS_PROPOSED,
-                    ])
-                    ->get();
-                $cancelled = 0;
-                foreach ($insurances as $insurance) {
-                    $svc->cancel($insurance);
-                    $cancelled++;
-                }
-                $log['insurance_cancel'] = ['cancelled_count' => $cancelled];
-            } catch (\Throwable $e) {
-                $log['insurance_cancel_error'] = $e->getMessage();
-            }
-        }
-
-        $row->forceFill(['integrations_log' => $log])->save();
-        return $row;
-    }
-
-    /**
-     * Effectue le refund réel via Stripe SDK. Idempotent : utilise un metadata
-     * cancellation_id unique pour éviter les double-refunds.
-     *
-     * Récupère payment_intent_id depuis bookings.stripe_payment_intent_id.
-     * Soft-fail : si Stripe SDK absent ou booking sans payment intent, retourne
-     * un status "manual" pour traitement admin.
-     */
-    protected function tryStripeRefund(BookingCancellationV2 $row): array
-    {
-        if ($row->refund_amount_cents <= 0) {
-            return ['status' => 'no_refund', 'refund_amount_cents' => 0];
-        }
-
-        if (! class_exists(\Stripe\Refund::class)) {
-            return [
-                'status' => 'manual',
-                'error' => 'stripe_sdk_unavailable',
-                'refund_amount_cents' => $row->refund_amount_cents,
-            ];
-        }
-
-        $booking = \App\Models\Booking::query()->find($row->booking_id);
-        $paymentIntentId = $booking?->stripe_payment_intent_id ?? null;
-        if (! $paymentIntentId) {
-            return [
-                'status' => 'manual',
-                'error' => 'no_payment_intent',
-                'refund_amount_cents' => $row->refund_amount_cents,
-                'booking_id' => $row->booking_id,
-            ];
-        }
-
-        $stripeSecret = (string) config('services.stripe.secret', '');
-        if ($stripeSecret === '') {
-            return ['status' => 'manual', 'error' => 'stripe_secret_missing'];
-        }
-
-        try {
-            \Stripe\Stripe::setApiKey($stripeSecret);
-
-            // Idempotency key sur (cancellation_id, refund_amount) pour éviter double-refund
-            $idempotencyKey = 'cancel_v2_' . $row->id . '_' . $row->refund_amount_cents;
-
-            $refund = \Stripe\Refund::create([
-                'payment_intent' => $paymentIntentId,
-                'amount' => (int) $row->refund_amount_cents,
-                'reason' => 'requested_by_customer',
-                'metadata' => [
-                    'cancellation_id' => $row->id,
-                    'booking_id' => $row->booking_id,
-                    'cancellation_reason' => $row->reason ?? '',
-                ],
-            ], [
-                'idempotency_key' => $idempotencyKey,
-            ]);
-
-            return [
-                'status' => 'succeeded',
-                'refund_id' => $refund->id,
-                'refund_amount_cents' => $row->refund_amount_cents,
-                'currency' => $row->currency,
-                'stripe_status' => $refund->status,
-            ];
-        } catch (\Throwable $e) {
-            \Illuminate\Support\Facades\Log::warning('[cancellation_v2] stripe refund failed', [
-                'cancellation_id' => $row->id,
-                'error' => $e->getMessage(),
-            ]);
-            return [
-                'status' => 'failed',
-                'error' => $e->getMessage(),
-                'refund_amount_cents' => $row->refund_amount_cents,
-            ];
-        }
-    }
-
     protected function ensureActorRole(string $actorRole): void
     {
         $allowed = (array) Config::get('cancellation_v2.actor_roles', ['client', 'provider', 'admin']);
@@ -402,6 +238,7 @@ class CancellationEngine
         if ($quote->refundAmountCents <= 0) {
             return 'none';
         }
+
         return (string) Config::get('cancellation_v2.default_refund_method', 'stripe');
     }
 
