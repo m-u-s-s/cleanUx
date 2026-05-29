@@ -35,4 +35,26 @@ class EmbedModeTest extends TestCase
             ->assertSee('PROBE_OK', false)
             ->assertDontSee('data-chrome="primary-nav"', false);
     }
+
+    public function test_x_embedded_header_hides_chrome(): void
+    {
+        $user = User::factory()->create();
+
+        $this->actingAs($user)
+            ->get('/__embed_probe', ['X-Embedded' => '1'])
+            ->assertOk()
+            ->assertSee('PROBE_OK', false)
+            ->assertDontSee('data-chrome="primary-nav"', false);
+    }
+
+    public function test_normal_request_renders_navigation_chrome(): void
+    {
+        $user = User::factory()->create();
+
+        $this->actingAs($user)
+            ->get('/__embed_probe')
+            ->assertOk()
+            ->assertSee('PROBE_OK', false)
+            ->assertSee('data-chrome="primary-nav"', false);
+    }
 }
