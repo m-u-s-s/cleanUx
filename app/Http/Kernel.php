@@ -10,6 +10,7 @@ use App\Http\Middleware\Authenticate;
 use App\Http\Middleware\CacheApiResponse;
 use App\Http\Middleware\CaptureUtm;
 use App\Http\Middleware\CheckRole;
+use App\Http\Middleware\EmbedMode;
 use App\Http\Middleware\EncryptCookies;
 use App\Http\Middleware\Enforce2FA;
 use App\Http\Middleware\EnforceTokenGrace;
@@ -82,6 +83,7 @@ class Kernel extends HttpKernel
             SubstituteBindings::class,
             SetLocale::class,
             CaptureUtm::class,
+            EmbedMode::class,
         ],
 
         'api' => [

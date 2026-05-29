@@ -54,8 +54,12 @@
     <a href="#main-content" class="skip-to-content">Aller au contenu principal</a>
     <x-banner />
 
-    <div class="min-h-screen pb-20 sm:pb-0">
-        @livewire('navigation-menu')
+    <div class="min-h-screen {{ ($embedded ?? false) ? '' : 'pb-20 sm:pb-0' }}">
+        @unless($embedded ?? false)
+        <div data-chrome="primary-nav">
+            @livewire('navigation-menu')
+        </div>
+        @endunless
 
         @if (isset($header))
         <header class="border-b border-white/70 bg-white/70 shadow-sm backdrop-blur">
@@ -77,12 +81,15 @@
     <audio id="success-sound" src="{{ asset('sounds/success.mp3') }}" preload="auto"></audio>
     <audio id="error-sound" src="{{ asset('sounds/error.mp3') }}" preload="auto"></audio>
 
+    @unless($embedded ?? false)
     @auth
     @if (class_exists(\App\Livewire\Notifications::class))
     @livewire('notifications')
     @endif
     @endauth
+    @endunless
 
+    @unless($embedded ?? false)
     @auth
     @if(auth()->user()->isClient())
     <x-ui.mobile-bottom-nav role="client" />
@@ -90,6 +97,7 @@
     <x-ui.mobile-bottom-nav role="employe" />
     @endif
     @endauth
+    @endunless
 
     @stack('modals')
     @livewireScripts
@@ -113,6 +121,8 @@
     @endauth
 
     @stack('scripts')
+
+    @unless($embedded ?? false)
     <x-mobile-bottom-nav />
     <x-pwa-install-prompt />
     <x-cookie-banner />
@@ -120,6 +130,7 @@
     @auth
         @livewire('chatbot.assistant-widget')
     @endauth
+    @endunless
 </body>
 
 </html>
