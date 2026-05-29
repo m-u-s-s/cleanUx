@@ -13,6 +13,7 @@ use App\Models\User;
 use App\Services\PermissionService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
+use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
 /**
@@ -68,7 +69,7 @@ class CrossOrgIsolationTest extends TestCase
     // MembersAccess – mount guard
     // ──────────────────────────────────────────────────────────────
 
-    /** @test */
+    #[Test]
     public function non_company_user_is_forbidden_from_mounting_members_access(): void
     {
         $personalClient = User::factory()->client()->create([
@@ -87,13 +88,12 @@ class CrossOrgIsolationTest extends TestCase
     // ──────────────────────────────────────────────────────────────
 
     /**
-     * @test
-     *
      * Directly exercises the org-scoped DB query without going through
      * the render lifecycle (which uses MySQL FIELD() — incompatible with SQLite).
      * The fix is in the query inside getEditingMemberProperty(); we prove it here
      * by simulating the identical scoped lookup.
      */
+    #[Test]
     public function editing_member_from_other_org_resolves_to_null(): void
     {
         [$orgA, $userA] = $this->makeCompanyUser();
@@ -113,11 +113,10 @@ class CrossOrgIsolationTest extends TestCase
     // ──────────────────────────────────────────────────────────────
 
     /**
-     * @test
-     *
      * Calls toggleCustomPermission() directly on the component instance
      * (bypassing render) to confirm the cross-org member is not mutated.
      */
+    #[Test]
     public function toggle_custom_permission_does_not_mutate_other_org_member(): void
     {
         [$orgA, $userA] = $this->makeCompanyUser();
@@ -150,11 +149,10 @@ class CrossOrgIsolationTest extends TestCase
     // ──────────────────────────────────────────────────────────────
 
     /**
-     * @test
-     *
      * Directly exercises the forOrg-scoped query used in the fixed
      * getSelectedSiteProperty(), without going through a full render.
      */
+    #[Test]
     public function selected_site_from_other_org_resolves_to_null(): void
     {
         [$orgA, $userA] = $this->makeCompanyUser();
@@ -176,7 +174,7 @@ class CrossOrgIsolationTest extends TestCase
     // ClientAnalyticsDashboard – mount guard
     // ──────────────────────────────────────────────────────────────
 
-    /** @test */
+    #[Test]
     public function non_company_user_is_forbidden_from_mounting_analytics_dashboard(): void
     {
         $personalClient = User::factory()->client()->create([
@@ -190,7 +188,7 @@ class CrossOrgIsolationTest extends TestCase
             ->assertForbidden();
     }
 
-    /** @test */
+    #[Test]
     public function company_user_without_current_org_id_is_forbidden_from_analytics_render(): void
     {
         // An entreprise user whose current_organization_id is null (e.g. removed from all orgs)

@@ -8,6 +8,7 @@
          displayDetailsOnTestsThatTriggerWarnings="false"
          displayDetailsOnTestsThatTriggerNotices="false"
          failOnDeprecation="false"
+         failOnPhpunitWarning="false"
 >
     <testsuites>
         <testsuite name="Unit">

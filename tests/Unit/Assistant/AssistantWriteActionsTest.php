@@ -12,14 +12,13 @@ use App\Models\User;
 use App\Services\Assistant\Actions\ActionDetector;
 use App\Services\Assistant\Actions\AssistantActionExecutor;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\Group;
 use Tests\TestCase;
 
-/**
- * @covers \App\Services\Assistant\Actions\AssistantActionExecutor
- * @covers \App\Services\Assistant\Actions\ActionDetector
- *
- * @group requires-mysql
- */
+#[CoversClass(AssistantActionExecutor::class)]
+#[CoversClass(ActionDetector::class)]
+#[Group('requires-mysql')]
 class AssistantWriteActionsTest extends TestCase
 {
     use RefreshDatabase;

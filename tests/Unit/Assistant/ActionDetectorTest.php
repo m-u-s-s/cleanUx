@@ -5,11 +5,10 @@ namespace Tests\Unit\Assistant;
 use App\Models\User;
 use App\Services\Assistant\Actions\ActionDetector;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use PHPUnit\Framework\Attributes\CoversClass;
 use Tests\TestCase;
 
-/**
- * @covers \App\Services\Assistant\Actions\ActionDetector
- */
+#[CoversClass(ActionDetector::class)]
 class ActionDetectorTest extends TestCase
 {
     use RefreshDatabase;
