@@ -10,8 +10,6 @@ use App\Support\ActivityLogger;
 use Carbon\CarbonImmutable;
 use Carbon\CarbonPeriod;
 use Illuminate\Support\Facades\Config;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Schema;
 
 /**
  * AvailabilityService (Phase Availability v2).
@@ -24,9 +22,13 @@ use Illuminate\Support\Facades\Schema;
  *
  * Toutes les comparaisons sont faites en UTC interne ; les inputs/outputs
  * gardent le tz du slot (ou default si absent).
+ *
+ * Data-access + schema-defensive logic is delegated to AvailabilityDataAccess.
  */
 class AvailabilityService
 {
+    public function __construct(protected AvailabilityDataAccess $dataAccess) {}
+
     public function isAvailable(User $provider, \DateTimeInterface $startsAt, \DateTimeInterface $endsAt): bool
     {
         if (! Config::get('availability.enabled', true)) {
@@ -65,7 +67,7 @@ class AvailabilityService
         }
 
         // 3) Aucun booking confirmé/en cours overlap
-        if ($this->hasOverlappingBooking($provider->id, $startsAt, $endsAt)) {
+        if ($this->dataAccess->hasOverlappingBooking($provider->id, $startsAt, $endsAt)) {
             return false;
         }
 
@@ -118,6 +120,7 @@ class AvailabilityService
             $openOverride = $dayExceptions->firstWhere('exception_type', AvailabilityException::TYPE_OPEN_OVERRIDE);
             if ($openOverride && $openOverride->start_time && $openOverride->end_time) {
                 $windows[] = $this->buildWindow($day, $openOverride->start_time, $openOverride->end_time);
+
                 continue;
             }
 
@@ -135,18 +138,18 @@ class AvailabilityService
                 if (! $partial->start_time || ! $partial->end_time) {
                     continue;
                 }
-                $blockStart = CarbonImmutable::parse($day->format('Y-m-d') . ' ' . $partial->start_time);
-                $blockEnd = CarbonImmutable::parse($day->format('Y-m-d') . ' ' . $partial->end_time);
+                $blockStart = CarbonImmutable::parse($day->format('Y-m-d').' '.$partial->start_time);
+                $blockEnd = CarbonImmutable::parse($day->format('Y-m-d').' '.$partial->end_time);
                 $dayWindows = $this->subtractRange($dayWindows, $blockStart, $blockEnd);
             }
 
             // Also subtract existing confirmed bookings (no double-booking)
-            foreach ($this->getProviderBookings($provider->id, $day) as $busy) {
+            foreach ($this->dataAccess->getProviderBookings($provider->id, $day) as $busy) {
                 $dayWindows = $this->subtractRange($dayWindows, $busy['start'], $busy['end']);
             }
 
             // And subtract active holds
-            foreach ($this->getProviderHolds($provider->id, $day) as $hold) {
+            foreach ($this->dataAccess->getProviderHolds($provider->id, $day) as $hold) {
                 $dayWindows = $this->subtractRange($dayWindows, $hold['start'], $hold['end']);
             }
 
@@ -227,9 +230,10 @@ class AvailabilityService
     protected function buildWindow(\DateTimeInterface $day, string $startTime, string $endTime): array
     {
         $base = $day->format('Y-m-d');
+
         return [
-            'start' => CarbonImmutable::parse($base . ' ' . $startTime),
-            'end' => CarbonImmutable::parse($base . ' ' . $endTime),
+            'start' => CarbonImmutable::parse($base.' '.$startTime),
+            'end' => CarbonImmutable::parse($base.' '.$endTime),
         ];
     }
 
@@ -237,7 +241,7 @@ class AvailabilityService
      * Subtracts the [blockStart, blockEnd] range from a set of windows.
      * Returns the remaining windows.
      *
-     * @param array<int, array{start:CarbonImmutable, end:CarbonImmutable}> $windows
+     * @param  array<int, array{start:CarbonImmutable, end:CarbonImmutable}>  $windows
      * @return array<int, array{start:CarbonImmutable, end:CarbonImmutable}>
      */
     protected function subtractRange(array $windows, CarbonImmutable $blockStart, CarbonImmutable $blockEnd): array
@@ -246,6 +250,7 @@ class AvailabilityService
         foreach ($windows as $w) {
             if ($blockEnd <= $w['start'] || $blockStart >= $w['end']) {
                 $result[] = $w;
+
                 continue;
             }
             if ($blockStart > $w['start']) {
@@ -255,159 +260,7 @@ class AvailabilityService
                 $result[] = ['start' => $blockEnd, 'end' => $w['end']];
             }
         }
+
         return $result;
-    }
-
-    /**
-     * @return array<int, array{start:CarbonImmutable, end:CarbonImmutable}>
-     */
-    protected function getProviderBookings(int $providerId, CarbonImmutable $day): array
-    {
-        $startCol = $this->resolveBookingStartColumn();
-        if (! $startCol) {
-            return [];
-        }
-
-        $dayStart = $day->copy()->startOfDay();
-        $dayEnd = $day->copy()->endOfDay();
-
-        $providerCols = $this->resolveBookingProviderColumns();
-        if (empty($providerCols)) {
-            return [];
-        }
-
-        $rows = DB::table('bookings')
-            ->where(function ($q) use ($providerCols, $providerId) {
-                foreach ($providerCols as $col) {
-                    $q->orWhere($col, $providerId);
-                }
-            })
-            ->whereNotIn('status', ['annule', 'cancelled', 'canceled', 'rejected'])
-            ->whereBetween($startCol, [$dayStart, $dayEnd])
-            ->get();
-
-        $endCol = $this->resolveBookingEndColumn();
-
-        $out = [];
-        foreach ($rows as $row) {
-            $start = $this->safeParse($row->{$startCol} ?? null);
-            $end = $endCol ? $this->safeParse($row->{$endCol} ?? null) : null;
-            if ($start && ! $end) {
-                $end = $start->copy()->addHours(2);  // fallback duration
-            }
-            if ($start && $end) {
-                $out[] = ['start' => $start, 'end' => $end];
-            }
-        }
-        return $out;
-    }
-
-    /**
-     * @return array<int, array{start:CarbonImmutable, end:CarbonImmutable}>
-     */
-    protected function getProviderHolds(int $providerId, CarbonImmutable $day): array
-    {
-        $dayStart = $day->copy()->startOfDay();
-        $dayEnd = $day->copy()->endOfDay();
-
-        $rows = AvailabilityHold::query()
-            ->forProvider($providerId)
-            ->active()
-            ->where('starts_at', '<', $dayEnd)
-            ->where('ends_at', '>', $dayStart)
-            ->get();
-
-        $out = [];
-        foreach ($rows as $h) {
-            $out[] = [
-                'start' => CarbonImmutable::instance($h->starts_at),
-                'end' => CarbonImmutable::instance($h->ends_at),
-            ];
-        }
-        return $out;
-    }
-
-    protected function hasOverlappingBooking(int $providerId, CarbonImmutable $startsAt, CarbonImmutable $endsAt): bool
-    {
-        $startCol = $this->resolveBookingStartColumn();
-        if (! $startCol) {
-            return false;
-        }
-
-        $endCol = $this->resolveBookingEndColumn();
-        $providerCols = $this->resolveBookingProviderColumns();
-        if (empty($providerCols)) {
-            return false;
-        }
-
-        $q = DB::table('bookings')
-            ->where(function ($inner) use ($providerCols, $providerId) {
-                foreach ($providerCols as $col) {
-                    $inner->orWhere($col, $providerId);
-                }
-            })
-            ->whereNotIn('status', ['annule', 'cancelled', 'canceled', 'rejected'])
-            ->where($startCol, '<', $endsAt);
-
-        if ($endCol) {
-            $q->where($endCol, '>', $startsAt);
-        } else {
-            $q->where($startCol, '>=', $startsAt->copy()->subHours(4));
-        }
-
-        return $q->exists();
-    }
-
-    protected function resolveBookingStartColumn(): ?string
-    {
-        if (! Schema::hasTable('bookings')) {
-            return null;
-        }
-        foreach (['start_at', 'starts_at', 'planned_start_at', 'scheduled_at'] as $col) {
-            if (Schema::hasColumn('bookings', $col)) {
-                return $col;
-            }
-        }
-        return null;
-    }
-
-    protected function resolveBookingEndColumn(): ?string
-    {
-        if (! Schema::hasTable('bookings')) {
-            return null;
-        }
-        foreach (['end_at', 'ends_at', 'planned_end_at', 'mission_finished_at'] as $col) {
-            if (Schema::hasColumn('bookings', $col)) {
-                return $col;
-            }
-        }
-        return null;
-    }
-
-    /**
-     * @return array<int,string>
-     */
-    protected function resolveBookingProviderColumns(): array
-    {
-        if (! Schema::hasTable('bookings')) {
-            return [];
-        }
-        $candidates = ['employe_id', 'provider_user_id', 'assigned_provider_user_id', 'assigned_employee_id'];
-        return array_values(array_filter(
-            $candidates,
-            fn ($c) => Schema::hasColumn('bookings', $c),
-        ));
-    }
-
-    protected function safeParse(mixed $value): ?CarbonImmutable
-    {
-        if (! $value) {
-            return null;
-        }
-        try {
-            return CarbonImmutable::parse((string) $value);
-        } catch (\Throwable $e) {
-            return null;
-        }
     }
 }
