@@ -9,10 +9,7 @@
    Activation du mode sombre vitrine : ajouter la classe `cx-shell` au <body>.
    ========================================================================= */
 
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-
+/* CSS spec: @import must precede all other statements (avoids PostCSS warning). */
 @import './tokens.css';
 @import './base.css';
 @import './tool-mode.css';
@@ -21,5 +18,9 @@
 @import './a11y.css';
 @import './premium.css';
 @import './fullcalendar-overrides.css';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
 [x-cloak] { display: none; }
