@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Push\PushSubscriptionController;
+use App\Http\Controllers\WebViewEntryController;
 use App\Livewire\DesignSystem;
 use App\Livewire\Provider\MissionOfferPage;
 use App\Livewire\Provider\Onboarding\ProviderOnboardingWizard;
@@ -40,6 +41,9 @@ Route::middleware('auth')->prefix('push')->group(function () {
 
 // Public (pas besoin d'auth pour récupérer la clé publique)
 Route::get('/push/public-key', [PushSubscriptionController::class, 'publicKey']);
+
+// WebView session handoff — redeems a single-use ticket and logs the user in
+Route::get('/m/enter', WebViewEntryController::class)->name('webview.enter');
 
 Route::middleware(['auth'])->group(function () {
     Route::get('/provider/missions/{assignment}/offer', MissionOfferPage::class)

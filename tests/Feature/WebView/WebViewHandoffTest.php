@@ -3,6 +3,7 @@
 namespace Tests\Feature\WebView;
 
 use App\Models\User;
+use App\Services\WebView\WebViewTicketService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;
@@ -61,5 +62,39 @@ class WebViewHandoffTest extends TestCase
         $this->postJson('/api/auth/webview-ticket', ['target_path' => '/dashboard'])
             ->assertOk()
             ->assertJsonPath('ok', true);
+    }
+
+    public function test_enter_redeems_ticket_logs_in_and_redirects_to_embed(): void
+    {
+        $user = User::factory()->create();
+        $ticket = app(WebViewTicketService::class)->issue($user, 'device-1', '/dashboard');
+
+        $this->get('/m/enter?ticket='.$ticket)
+            ->assertRedirect('/dashboard?embed=1');
+
+        $this->assertAuthenticatedAs($user);
+    }
+
+    public function test_enter_appends_embed_param_when_path_already_has_query(): void
+    {
+        $user = User::factory()->create();
+        $ticket = app(WebViewTicketService::class)->issue($user, 'd', '/orders?page=2');
+
+        $this->get('/m/enter?ticket='.$ticket)
+            ->assertRedirect('/orders?page=2&embed=1');
+    }
+
+    public function test_enter_with_used_ticket_returns_419(): void
+    {
+        $user = User::factory()->create();
+        $ticket = app(WebViewTicketService::class)->issue($user, 'd', '/dashboard');
+
+        $this->get('/m/enter?ticket='.$ticket)->assertRedirect();
+        $this->get('/m/enter?ticket='.$ticket)->assertStatus(419);
+    }
+
+    public function test_enter_with_unknown_ticket_returns_419(): void
+    {
+        $this->get('/m/enter?ticket=garbage')->assertStatus(419);
     }
 }
