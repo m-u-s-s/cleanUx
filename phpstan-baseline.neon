@@ -157,12 +157,6 @@ parameters:
 			path: app/Broadcasting/TestingBroadcaster.php
 
 		-
-			message: '#^Trait App\\Concerns\\BelongsToTenant is used zero times and is not analysed\.$#'
-			identifier: trait.unused
-			count: 1
-			path: app/Concerns/BelongsToTenant.php
-
-		-
 			message: '#^Unable to resolve the template type TKey in call to function collect$#'
 			identifier: argument.templateType
 			count: 2
@@ -4807,12 +4801,6 @@ parameters:
 			path: app/Livewire/Admin/SubscriptionsV2/SubscriptionsCenter.php
 
 		-
-			message: '#^Property App\\Livewire\\Admin\\TenancyV2\\TenantsCenter\:\:\$paginationTheme has no type specified\.$#'
-			identifier: missingType.property
-			count: 1
-			path: app/Livewire/Admin/TenancyV2/TenantsCenter.php
-
-		-
 			message: '#^Property App\\Livewire\\Admin\\Tips\\TipsCenter\:\:\$paginationTheme has no type specified\.$#'
 			identifier: missingType.property
 			count: 1
@@ -7359,7 +7347,7 @@ parameters:
 		-
 			message: '#^Parameter \#3 \$organization of method App\\Services\\PermissionService\:\:can\(\) expects App\\Models\\OrganizationAccount\|int\|null, Illuminate\\Database\\Eloquent\\Model\|null given\.$#'
 			identifier: argument.type
-			count: 3
+			count: 4
 			path: app/Livewire/ClientCompany/MembersAccess.php
 
 		-
@@ -15757,84 +15745,6 @@ parameters:
 			path: app/Models/Task.php
 
 		-
-			message: '#^Method App\\Models\\Tenant\:\:billingOwner\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: app/Models/Tenant.php
-
-		-
-			message: '#^Method App\\Models\\Tenant\:\:domains\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\HasMany does not specify its types\: TRelatedModel, TDeclaringModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: app/Models/Tenant.php
-
-		-
-			message: '#^Method App\\Models\\Tenant\:\:planLimits\(\) return type has no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: app/Models/Tenant.php
-
-		-
-			message: '#^Method App\\Models\\Tenant\:\:scopeUsable\(\) has parameter \$q with generic class Illuminate\\Database\\Eloquent\\Builder but does not specify its types\: TModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: app/Models/Tenant.php
-
-		-
-			message: '#^Method App\\Models\\Tenant\:\:scopeUsable\(\) return type with generic class Illuminate\\Database\\Eloquent\\Builder does not specify its types\: TModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: app/Models/Tenant.php
-
-		-
-			message: '#^Method App\\Models\\Tenant\:\:users\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\HasMany does not specify its types\: TRelatedModel, TDeclaringModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: app/Models/Tenant.php
-
-		-
-			message: '#^Method App\\Models\\TenantDomain\:\:scopeVerified\(\) has parameter \$q with generic class Illuminate\\Database\\Eloquent\\Builder but does not specify its types\: TModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: app/Models/TenantDomain.php
-
-		-
-			message: '#^Method App\\Models\\TenantDomain\:\:scopeVerified\(\) return type with generic class Illuminate\\Database\\Eloquent\\Builder does not specify its types\: TModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: app/Models/TenantDomain.php
-
-		-
-			message: '#^Method App\\Models\\TenantDomain\:\:tenant\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: app/Models/TenantDomain.php
-
-		-
-			message: '#^Method App\\Models\\TenantUser\:\:scopeActive\(\) has parameter \$q with generic class Illuminate\\Database\\Eloquent\\Builder but does not specify its types\: TModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: app/Models/TenantUser.php
-
-		-
-			message: '#^Method App\\Models\\TenantUser\:\:scopeActive\(\) return type with generic class Illuminate\\Database\\Eloquent\\Builder does not specify its types\: TModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: app/Models/TenantUser.php
-
-		-
-			message: '#^Method App\\Models\\TenantUser\:\:tenant\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: app/Models/TenantUser.php
-
-		-
-			message: '#^Method App\\Models\\TenantUser\:\:user\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: app/Models/TenantUser.php
-
-		-
 			message: '#^Class App\\Models\\Trade uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
 			identifier: missingType.generics
 			count: 1
@@ -19153,67 +19063,7 @@ parameters:
 			path: app/Services/ApiTokensV2/ScopeRegistry.php
 
 		-
-			message: '#^Access to an undefined property App\\Models\\Booking\:\:\$total\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Services/Assistant/Actions/AssistantActionExecutor.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\Booking\:\:\$trade_name\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Services/Assistant/Actions/AssistantActionExecutor.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\ComplaintCase\:\:\$reference\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Services/Assistant/Actions/AssistantActionExecutor.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$address\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Services/Assistant/Actions/AssistantActionExecutor.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$name\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Services/Assistant/Actions/AssistantActionExecutor.php
-
-		-
-			message: '#^Method App\\Services\\Assistant\\Actions\\AssistantActionExecutor\:\:buildConfirmationSummary\(\) has parameter \$params with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: app/Services/Assistant/Actions/AssistantActionExecutor.php
-
-		-
 			message: '#^Method App\\Services\\Assistant\\Actions\\AssistantActionExecutor\:\:dispatchWrite\(\) has parameter \$params with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: app/Services/Assistant/Actions/AssistantActionExecutor.php
-
-		-
-			message: '#^Method App\\Services\\Assistant\\Actions\\AssistantActionExecutor\:\:doCancelBooking\(\) has parameter \$params with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: app/Services/Assistant/Actions/AssistantActionExecutor.php
-
-		-
-			message: '#^Method App\\Services\\Assistant\\Actions\\AssistantActionExecutor\:\:doCreateBooking\(\) has parameter \$params with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: app/Services/Assistant/Actions/AssistantActionExecutor.php
-
-		-
-			message: '#^Method App\\Services\\Assistant\\Actions\\AssistantActionExecutor\:\:doResolveDispute\(\) has parameter \$params with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: app/Services/Assistant/Actions/AssistantActionExecutor.php
-
-		-
-			message: '#^Method App\\Services\\Assistant\\Actions\\AssistantActionExecutor\:\:doUpdateAvailability\(\) has parameter \$params with no value type specified in iterable type array\.$#'
 			identifier: missingType.iterableValue
 			count: 1
 			path: app/Services/Assistant/Actions/AssistantActionExecutor.php
@@ -19243,34 +19093,106 @@ parameters:
 			path: app/Services/Assistant/Actions/AssistantActionExecutor.php
 
 		-
-			message: '#^Method App\\Services\\Assistant\\Actions\\AssistantActionExecutor\:\:summaryCancelBooking\(\) has parameter \$params with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
+			message: '#^Access to an undefined property App\\Models\\Booking\:\:\$total\.$#'
+			identifier: property.notFound
 			count: 1
-			path: app/Services/Assistant/Actions/AssistantActionExecutor.php
+			path: app/Services/Assistant/Actions/AssistantReadActions.php
 
 		-
-			message: '#^Method App\\Services\\Assistant\\Actions\\AssistantActionExecutor\:\:summaryCreateBooking\(\) has parameter \$params with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
+			message: '#^Access to an undefined property App\\Models\\Booking\:\:\$trade_name\.$#'
+			identifier: property.notFound
 			count: 1
-			path: app/Services/Assistant/Actions/AssistantActionExecutor.php
+			path: app/Services/Assistant/Actions/AssistantReadActions.php
 
 		-
-			message: '#^Method App\\Services\\Assistant\\Actions\\AssistantActionExecutor\:\:summaryResolveDispute\(\) has parameter \$params with no value type specified in iterable type array\.$#'
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$address\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/Assistant/Actions/AssistantReadActions.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$name\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/Assistant/Actions/AssistantReadActions.php
+
+		-
+			message: '#^Method App\\Services\\Assistant\\Actions\\AssistantReadActions\:\:execute\(\) has parameter \$params with no value type specified in iterable type array\.$#'
 			identifier: missingType.iterableValue
 			count: 1
-			path: app/Services/Assistant/Actions/AssistantActionExecutor.php
+			path: app/Services/Assistant/Actions/AssistantReadActions.php
 
 		-
 			message: '#^Using nullsafe property access "\?\-\>address" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
 			identifier: nullsafe.neverNull
 			count: 1
-			path: app/Services/Assistant/Actions/AssistantActionExecutor.php
+			path: app/Services/Assistant/Actions/AssistantReadActions.php
 
 		-
 			message: '#^Using nullsafe property access "\?\-\>name" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
 			identifier: nullsafe.neverNull
 			count: 1
-			path: app/Services/Assistant/Actions/AssistantActionExecutor.php
+			path: app/Services/Assistant/Actions/AssistantReadActions.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\ComplaintCase\:\:\$reference\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/Assistant/Actions/AssistantWriteActions.php
+
+		-
+			message: '#^Method App\\Services\\Assistant\\Actions\\AssistantWriteActions\:\:buildConfirmationSummary\(\) has parameter \$params with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: app/Services/Assistant/Actions/AssistantWriteActions.php
+
+		-
+			message: '#^Method App\\Services\\Assistant\\Actions\\AssistantWriteActions\:\:dispatch\(\) has parameter \$params with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: app/Services/Assistant/Actions/AssistantWriteActions.php
+
+		-
+			message: '#^Method App\\Services\\Assistant\\Actions\\AssistantWriteActions\:\:doCancelBooking\(\) has parameter \$params with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: app/Services/Assistant/Actions/AssistantWriteActions.php
+
+		-
+			message: '#^Method App\\Services\\Assistant\\Actions\\AssistantWriteActions\:\:doCreateBooking\(\) has parameter \$params with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: app/Services/Assistant/Actions/AssistantWriteActions.php
+
+		-
+			message: '#^Method App\\Services\\Assistant\\Actions\\AssistantWriteActions\:\:doResolveDispute\(\) has parameter \$params with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: app/Services/Assistant/Actions/AssistantWriteActions.php
+
+		-
+			message: '#^Method App\\Services\\Assistant\\Actions\\AssistantWriteActions\:\:doUpdateAvailability\(\) has parameter \$params with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: app/Services/Assistant/Actions/AssistantWriteActions.php
+
+		-
+			message: '#^Method App\\Services\\Assistant\\Actions\\AssistantWriteActions\:\:summaryCancelBooking\(\) has parameter \$params with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: app/Services/Assistant/Actions/AssistantWriteActions.php
+
+		-
+			message: '#^Method App\\Services\\Assistant\\Actions\\AssistantWriteActions\:\:summaryCreateBooking\(\) has parameter \$params with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: app/Services/Assistant/Actions/AssistantWriteActions.php
+
+		-
+			message: '#^Method App\\Services\\Assistant\\Actions\\AssistantWriteActions\:\:summaryResolveDispute\(\) has parameter \$params with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: app/Services/Assistant/Actions/AssistantWriteActions.php
 
 		-
 			message: '#^Offset ''tags'' on array\{title\: string, content\: string, tags\: array\<string\>\} on left side of \?\? always exists and is not nullable\.$#'
@@ -20077,6 +19999,30 @@ parameters:
 			path: app/Services/Booking/EmployeeAvailabilityService.php
 
 		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$name\.$#'
+			identifier: property.notFound
+			count: 3
+			path: app/Services/Booking/PostalCodeResolver.php
+
+		-
+			message: '#^Method App\\Services\\Booking\\PostalCodeResolver\:\:cityAliasesForLookup\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: app/Services/Booking/PostalCodeResolver.php
+
+		-
+			message: '#^Method App\\Services\\Booking\\PostalCodeResolver\:\:preferPrimaryPostalCodeCandidate\(\) has parameter \$candidates with no type specified\.$#'
+			identifier: missingType.parameter
+			count: 1
+			path: app/Services/Booking/PostalCodeResolver.php
+
+		-
+			message: '#^Variable \$value on left side of \?\? always exists and is not nullable\.$#'
+			identifier: nullCoalesce.variable
+			count: 1
+			path: app/Services/Booking/PostalCodeResolver.php
+
+		-
 			message: '#^Method App\\Services\\Booking\\RecurringBookingService\:\:generateOccurrences\(\) has parameter \$settings with no value type specified in iterable type array\.$#'
 			identifier: missingType.iterableValue
 			count: 1
@@ -20209,24 +20155,6 @@ parameters:
 			path: app/Services/Booking/ZoneCoverageService.php
 
 		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$name\.$#'
-			identifier: property.notFound
-			count: 3
-			path: app/Services/Booking/ZoneCoverageService.php
-
-		-
-			message: '#^Method App\\Services\\Booking\\ZoneCoverageService\:\:cityAliasesForLookup\(\) return type has no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: app/Services/Booking/ZoneCoverageService.php
-
-		-
-			message: '#^Method App\\Services\\Booking\\ZoneCoverageService\:\:preferPrimaryPostalCodeCandidate\(\) has parameter \$candidates with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: app/Services/Booking/ZoneCoverageService.php
-
-		-
 			message: '#^Method App\\Services\\Booking\\ZoneCoverageService\:\:resolveServiceCatalog\(\) should return App\\Models\\ServiceCatalog\|null but returns Illuminate\\Database\\Eloquent\\Model\.$#'
 			identifier: return.type
 			count: 1
@@ -20248,12 +20176,6 @@ parameters:
 			message: '#^Parameter \$postalCode of class App\\Data\\ZoneCoverageResult constructor expects App\\Models\\PostalCode\|null, Illuminate\\Database\\Eloquent\\Model given\.$#'
 			identifier: argument.type
 			count: 8
-			path: app/Services/Booking/ZoneCoverageService.php
-
-		-
-			message: '#^Variable \$value on left side of \?\? always exists and is not nullable\.$#'
-			identifier: nullCoalesce.variable
-			count: 1
 			path: app/Services/Booking/ZoneCoverageService.php
 
 		-
@@ -20485,34 +20407,34 @@ parameters:
 			path: app/Services/Cancellation/CancellationFeeCalculator.php
 
 		-
-			message: '#^Dead catch \- Throwable is never thrown in the try block\.$#'
-			identifier: catch.neverThrown
-			count: 1
-			path: app/Services/CancellationV2/CancellationEngine.php
-
-		-
-			message: '#^Method App\\Services\\CancellationV2\\CancellationEngine\:\:tryStripeRefund\(\) return type has no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: app/Services/CancellationV2/CancellationEngine.php
-
-		-
-			message: '#^Parameter \#1 \$params of static method Stripe\\Refund\:\:create\(\) expects array\{amount\?\: int, charge\?\: string, currency\?\: string, customer\?\: string, expand\?\: array\<string\>, instructions_email\?\: string, metadata\?\: array\<string, string\>\|null, origin\?\: string, \.\.\.\}\|null, array\{payment_intent\: non\-falsy\-string, amount\: int\<1, max\>, reason\: ''requested_by…'', metadata\: array\{cancellation_id\: int, booking_id\: int\<0, max\>, cancellation_reason\: mixed\}\} given\.$#'
-			identifier: argument.type
-			count: 1
-			path: app/Services/CancellationV2/CancellationEngine.php
-
-		-
 			message: '#^Using nullsafe property access "\?\-\>description" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
 			identifier: nullsafe.neverNull
 			count: 1
 			path: app/Services/CancellationV2/CancellationEngine.php
 
 		-
+			message: '#^Dead catch \- Throwable is never thrown in the try block\.$#'
+			identifier: catch.neverThrown
+			count: 1
+			path: app/Services/CancellationV2/CancellationIntegrationsRunner.php
+
+		-
+			message: '#^Method App\\Services\\CancellationV2\\CancellationIntegrationsRunner\:\:tryStripeRefund\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: app/Services/CancellationV2/CancellationIntegrationsRunner.php
+
+		-
+			message: '#^Parameter \#1 \$params of static method Stripe\\Refund\:\:create\(\) expects array\{amount\?\: int, charge\?\: string, currency\?\: string, customer\?\: string, expand\?\: array\<string\>, instructions_email\?\: string, metadata\?\: array\<string, string\>\|null, origin\?\: string, \.\.\.\}\|null, array\{payment_intent\: non\-falsy\-string, amount\: int\<1, max\>, reason\: ''requested_by…'', metadata\: array\{cancellation_id\: int, booking_id\: int\<0, max\>, cancellation_reason\: mixed\}\} given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Services/CancellationV2/CancellationIntegrationsRunner.php
+
+		-
 			message: '#^Using nullsafe property access "\?\-\>stripe_payment_intent_id" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
 			identifier: nullsafe.neverNull
 			count: 1
-			path: app/Services/CancellationV2/CancellationEngine.php
+			path: app/Services/CancellationV2/CancellationIntegrationsRunner.php
 
 		-
 			message: '#^Comparison operation "\>" between int\<1, max\> and 0 is always true\.$#'
@@ -21586,7 +21508,109 @@ parameters:
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$base_price\.$#'
 			identifier: property.notFound
 			count: 1
-			path: app/Services/Finance/FinanceDocumentService.php
+			path: app/Services/Finance/FinanceDocumentCalculator.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$city_name\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/Finance/FinanceDocumentCalculator.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$code\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Services/Finance/FinanceDocumentCalculator.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$commune\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/Finance/FinanceDocumentCalculator.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$default_duration_minutes\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/Finance/FinanceDocumentCalculator.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$metadata\.$#'
+			identifier: property.notFound
+			count: 5
+			path: app/Services/Finance/FinanceDocumentCalculator.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$name\.$#'
+			identifier: property.notFound
+			count: 5
+			path: app/Services/Finance/FinanceDocumentCalculator.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$slug\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/Finance/FinanceDocumentCalculator.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$travel_surcharge\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/Finance/FinanceDocumentCalculator.php
+
+		-
+			message: '#^Method App\\Services\\Finance\\FinanceDocumentCalculator\:\:amountBreakdownFor\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: app/Services/Finance/FinanceDocumentCalculator.php
+
+		-
+			message: '#^Method App\\Services\\Finance\\FinanceDocumentCalculator\:\:nextInvoiceNumber\(\) has parameter \$market with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: app/Services/Finance/FinanceDocumentCalculator.php
+
+		-
+			message: '#^Method App\\Services\\Finance\\FinanceDocumentCalculator\:\:nextQuoteNumber\(\) has parameter \$market with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: app/Services/Finance/FinanceDocumentCalculator.php
+
+		-
+			message: '#^Method App\\Services\\Finance\\FinanceDocumentCalculator\:\:snapshotFor\(\) has parameter \$market with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: app/Services/Finance/FinanceDocumentCalculator.php
+
+		-
+			message: '#^Method App\\Services\\Finance\\FinanceDocumentCalculator\:\:snapshotFor\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: app/Services/Finance/FinanceDocumentCalculator.php
+
+		-
+			message: '#^Unable to resolve the template type TValue in call to function collect$#'
+			identifier: argument.templateType
+			count: 1
+			path: app/Services/Finance/FinanceDocumentCalculator.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>base_price" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Services/Finance/FinanceDocumentCalculator.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>default_duration_minutes" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Services/Finance/FinanceDocumentCalculator.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>travel_surcharge" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Services/Finance/FinanceDocumentCalculator.php
 
 		-
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$billing_email\.$#'
@@ -21595,57 +21619,9 @@ parameters:
 			path: app/Services/Finance/FinanceDocumentService.php
 
 		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$city_name\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Services/Finance/FinanceDocumentService.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$code\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Services/Finance/FinanceDocumentService.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$commune\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Services/Finance/FinanceDocumentService.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$default_duration_minutes\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Services/Finance/FinanceDocumentService.php
-
-		-
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$email\.$#'
 			identifier: property.notFound
 			count: 3
-			path: app/Services/Finance/FinanceDocumentService.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$metadata\.$#'
-			identifier: property.notFound
-			count: 5
-			path: app/Services/Finance/FinanceDocumentService.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$name\.$#'
-			identifier: property.notFound
-			count: 5
-			path: app/Services/Finance/FinanceDocumentService.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$slug\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Services/Finance/FinanceDocumentService.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$travel_surcharge\.$#'
-			identifier: property.notFound
-			count: 1
 			path: app/Services/Finance/FinanceDocumentService.php
 
 		-
@@ -21679,18 +21655,6 @@ parameters:
 			path: app/Services/Finance/FinanceDocumentService.php
 
 		-
-			message: '#^Method App\\Services\\Finance\\FinanceDocumentService\:\:nextInvoiceNumber\(\) has parameter \$market with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: app/Services/Finance/FinanceDocumentService.php
-
-		-
-			message: '#^Method App\\Services\\Finance\\FinanceDocumentService\:\:nextQuoteNumber\(\) has parameter \$market with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: app/Services/Finance/FinanceDocumentService.php
-
-		-
 			message: '#^Method App\\Services\\Finance\\FinanceDocumentService\:\:recordPayment\(\) has parameter \$attributes with no value type specified in iterable type array\.$#'
 			identifier: missingType.iterableValue
 			count: 1
@@ -21705,18 +21669,6 @@ parameters:
 		-
 			message: '#^Method App\\Services\\Finance\\FinanceDocumentService\:\:sendReminder\(\) should return App\\Models\\FinanceReminder but returns Illuminate\\Database\\Eloquent\\Model\|null\.$#'
 			identifier: return.type
-			count: 1
-			path: app/Services/Finance/FinanceDocumentService.php
-
-		-
-			message: '#^Method App\\Services\\Finance\\FinanceDocumentService\:\:snapshotFor\(\) has parameter \$market with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: app/Services/Finance/FinanceDocumentService.php
-
-		-
-			message: '#^Method App\\Services\\Finance\\FinanceDocumentService\:\:snapshotFor\(\) return type has no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
 			count: 1
 			path: app/Services/Finance/FinanceDocumentService.php
 
@@ -21747,30 +21699,6 @@ parameters:
 		-
 			message: '#^Parameter \#1 \$rdv of method App\\Services\\Finance\\FinanceDocumentService\:\:syncQuoteForRendezVous\(\) expects App\\Models\\Booking, App\\Services\\Finance\\RendezVous given\.$#'
 			identifier: argument.type
-			count: 1
-			path: app/Services/Finance/FinanceDocumentService.php
-
-		-
-			message: '#^Unable to resolve the template type TValue in call to function collect$#'
-			identifier: argument.templateType
-			count: 1
-			path: app/Services/Finance/FinanceDocumentService.php
-
-		-
-			message: '#^Using nullsafe property access "\?\-\>base_price" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
-			identifier: nullsafe.neverNull
-			count: 1
-			path: app/Services/Finance/FinanceDocumentService.php
-
-		-
-			message: '#^Using nullsafe property access "\?\-\>default_duration_minutes" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
-			identifier: nullsafe.neverNull
-			count: 1
-			path: app/Services/Finance/FinanceDocumentService.php
-
-		-
-			message: '#^Using nullsafe property access "\?\-\>travel_surcharge" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
-			identifier: nullsafe.neverNull
 			count: 1
 			path: app/Services/Finance/FinanceDocumentService.php
 
@@ -22177,6 +22105,24 @@ parameters:
 			path: app/Services/Insurance/InsuranceCancelResult.php
 
 		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/Insurance/InsuranceClaimsService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$phone\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/Insurance/InsuranceClaimsService.php
+
+		-
+			message: '#^Method App\\Services\\Insurance\\InsuranceClaimsService\:\:fileClaim\(\) has parameter \$evidence with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: app/Services/Insurance/InsuranceClaimsService.php
+
+		-
 			message: '#^Method App\\Services\\Insurance\\InsuranceProviderInterface\:\:mapWebhookEvent\(\) has parameter \$payload with no value type specified in iterable type array\.$#'
 			identifier: missingType.iterableValue
 			count: 1
@@ -22211,18 +22157,6 @@ parameters:
 			identifier: missingType.iterableValue
 			count: 1
 			path: app/Services/Insurance/InsurancePurchaseResult.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$id\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Services/Insurance/InsuranceService.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$phone\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Services/Insurance/InsuranceService.php
 
 		-
 			message: '#^Method App\\Services\\Insurance\\InsuranceService\:\:fileClaim\(\) has parameter \$evidence with no value type specified in iterable type array\.$#'
@@ -24139,109 +24073,7 @@ parameters:
 			path: app/Services/Payments/StripeReconciliationService.php
 
 		-
-			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Model\:\:notify\(\)\.$#'
-			identifier: method.notFound
-			count: 1
-			path: app/Services/Payments/Webhooks/StripeWebhookEventProcessor.php
-
-		-
-			message: '#^Call to function method_exists\(\) with App\\Services\\Payments\\StripeConnectService and ''syncAccountStatus'' will always evaluate to true\.$#'
-			identifier: function.alreadyNarrowedType
-			count: 1
-			path: app/Services/Payments/Webhooks/StripeWebhookEventProcessor.php
-
-		-
 			message: '#^Method App\\Services\\Payments\\Webhooks\\StripeWebhookEventProcessor\:\:dispatchByType\(\) return type has no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: app/Services/Payments/Webhooks/StripeWebhookEventProcessor.php
-
-		-
-			message: '#^Method App\\Services\\Payments\\Webhooks\\StripeWebhookEventProcessor\:\:handleAccountUpdated\(\) has parameter \$account with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: app/Services/Payments/Webhooks/StripeWebhookEventProcessor.php
-
-		-
-			message: '#^Method App\\Services\\Payments\\Webhooks\\StripeWebhookEventProcessor\:\:handleAccountUpdated\(\) return type has no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: app/Services/Payments/Webhooks/StripeWebhookEventProcessor.php
-
-		-
-			message: '#^Method App\\Services\\Payments\\Webhooks\\StripeWebhookEventProcessor\:\:handleChargeRefunded\(\) has parameter \$charge with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: app/Services/Payments/Webhooks/StripeWebhookEventProcessor.php
-
-		-
-			message: '#^Method App\\Services\\Payments\\Webhooks\\StripeWebhookEventProcessor\:\:handleChargeRefunded\(\) return type has no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: app/Services/Payments/Webhooks/StripeWebhookEventProcessor.php
-
-		-
-			message: '#^Method App\\Services\\Payments\\Webhooks\\StripeWebhookEventProcessor\:\:handlePaymentIntentFailed\(\) has parameter \$intent with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: app/Services/Payments/Webhooks/StripeWebhookEventProcessor.php
-
-		-
-			message: '#^Method App\\Services\\Payments\\Webhooks\\StripeWebhookEventProcessor\:\:handlePaymentIntentFailed\(\) return type has no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: app/Services/Payments/Webhooks/StripeWebhookEventProcessor.php
-
-		-
-			message: '#^Method App\\Services\\Payments\\Webhooks\\StripeWebhookEventProcessor\:\:handlePaymentIntentSucceeded\(\) has parameter \$intent with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: app/Services/Payments/Webhooks/StripeWebhookEventProcessor.php
-
-		-
-			message: '#^Method App\\Services\\Payments\\Webhooks\\StripeWebhookEventProcessor\:\:handlePaymentIntentSucceeded\(\) return type has no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: app/Services/Payments/Webhooks/StripeWebhookEventProcessor.php
-
-		-
-			message: '#^Method App\\Services\\Payments\\Webhooks\\StripeWebhookEventProcessor\:\:handlePayoutFailed\(\) has parameter \$payout with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: app/Services/Payments/Webhooks/StripeWebhookEventProcessor.php
-
-		-
-			message: '#^Method App\\Services\\Payments\\Webhooks\\StripeWebhookEventProcessor\:\:handlePayoutFailed\(\) return type has no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: app/Services/Payments/Webhooks/StripeWebhookEventProcessor.php
-
-		-
-			message: '#^Method App\\Services\\Payments\\Webhooks\\StripeWebhookEventProcessor\:\:handlePayoutPaid\(\) has parameter \$payout with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: app/Services/Payments/Webhooks/StripeWebhookEventProcessor.php
-
-		-
-			message: '#^Method App\\Services\\Payments\\Webhooks\\StripeWebhookEventProcessor\:\:handlePayoutPaid\(\) return type has no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: app/Services/Payments/Webhooks/StripeWebhookEventProcessor.php
-
-		-
-			message: '#^Method App\\Services\\Payments\\Webhooks\\StripeWebhookEventProcessor\:\:handleTransferCreated\(\) has parameter \$transfer with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: app/Services/Payments/Webhooks/StripeWebhookEventProcessor.php
-
-		-
-			message: '#^Method App\\Services\\Payments\\Webhooks\\StripeWebhookEventProcessor\:\:handleTransferCreated\(\) return type has no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: app/Services/Payments/Webhooks/StripeWebhookEventProcessor.php
-
-		-
-			message: '#^Method App\\Services\\Payments\\Webhooks\\StripeWebhookEventProcessor\:\:maybeConfirmTipCharge\(\) has parameter \$intent with no value type specified in iterable type array\.$#'
 			identifier: missingType.iterableValue
 			count: 1
 			path: app/Services/Payments/Webhooks/StripeWebhookEventProcessor.php
@@ -24251,6 +24083,108 @@ parameters:
 			identifier: nullCoalesce.offset
 			count: 1
 			path: app/Services/Payments/Webhooks/StripeWebhookEventProcessor.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Model\:\:notify\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Services/Payments/Webhooks/StripeWebhookHandlers.php
+
+		-
+			message: '#^Call to function method_exists\(\) with App\\Services\\Payments\\StripeConnectService and ''syncAccountStatus'' will always evaluate to true\.$#'
+			identifier: function.alreadyNarrowedType
+			count: 1
+			path: app/Services/Payments/Webhooks/StripeWebhookHandlers.php
+
+		-
+			message: '#^Method App\\Services\\Payments\\Webhooks\\StripeWebhookHandlers\:\:handleAccountUpdated\(\) has parameter \$account with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: app/Services/Payments/Webhooks/StripeWebhookHandlers.php
+
+		-
+			message: '#^Method App\\Services\\Payments\\Webhooks\\StripeWebhookHandlers\:\:handleAccountUpdated\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: app/Services/Payments/Webhooks/StripeWebhookHandlers.php
+
+		-
+			message: '#^Method App\\Services\\Payments\\Webhooks\\StripeWebhookHandlers\:\:handleChargeRefunded\(\) has parameter \$charge with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: app/Services/Payments/Webhooks/StripeWebhookHandlers.php
+
+		-
+			message: '#^Method App\\Services\\Payments\\Webhooks\\StripeWebhookHandlers\:\:handleChargeRefunded\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: app/Services/Payments/Webhooks/StripeWebhookHandlers.php
+
+		-
+			message: '#^Method App\\Services\\Payments\\Webhooks\\StripeWebhookHandlers\:\:handlePaymentIntentFailed\(\) has parameter \$intent with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: app/Services/Payments/Webhooks/StripeWebhookHandlers.php
+
+		-
+			message: '#^Method App\\Services\\Payments\\Webhooks\\StripeWebhookHandlers\:\:handlePaymentIntentFailed\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: app/Services/Payments/Webhooks/StripeWebhookHandlers.php
+
+		-
+			message: '#^Method App\\Services\\Payments\\Webhooks\\StripeWebhookHandlers\:\:handlePaymentIntentSucceeded\(\) has parameter \$intent with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: app/Services/Payments/Webhooks/StripeWebhookHandlers.php
+
+		-
+			message: '#^Method App\\Services\\Payments\\Webhooks\\StripeWebhookHandlers\:\:handlePaymentIntentSucceeded\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: app/Services/Payments/Webhooks/StripeWebhookHandlers.php
+
+		-
+			message: '#^Method App\\Services\\Payments\\Webhooks\\StripeWebhookHandlers\:\:handlePayoutFailed\(\) has parameter \$payout with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: app/Services/Payments/Webhooks/StripeWebhookHandlers.php
+
+		-
+			message: '#^Method App\\Services\\Payments\\Webhooks\\StripeWebhookHandlers\:\:handlePayoutFailed\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: app/Services/Payments/Webhooks/StripeWebhookHandlers.php
+
+		-
+			message: '#^Method App\\Services\\Payments\\Webhooks\\StripeWebhookHandlers\:\:handlePayoutPaid\(\) has parameter \$payout with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: app/Services/Payments/Webhooks/StripeWebhookHandlers.php
+
+		-
+			message: '#^Method App\\Services\\Payments\\Webhooks\\StripeWebhookHandlers\:\:handlePayoutPaid\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: app/Services/Payments/Webhooks/StripeWebhookHandlers.php
+
+		-
+			message: '#^Method App\\Services\\Payments\\Webhooks\\StripeWebhookHandlers\:\:handleTransferCreated\(\) has parameter \$transfer with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: app/Services/Payments/Webhooks/StripeWebhookHandlers.php
+
+		-
+			message: '#^Method App\\Services\\Payments\\Webhooks\\StripeWebhookHandlers\:\:handleTransferCreated\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: app/Services/Payments/Webhooks/StripeWebhookHandlers.php
+
+		-
+			message: '#^Method App\\Services\\Payments\\Webhooks\\StripeWebhookHandlers\:\:maybeConfirmTipCharge\(\) has parameter \$intent with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: app/Services/Payments/Webhooks/StripeWebhookHandlers.php
 
 		-
 			message: '#^Instanceof between App\\Enums\\OrganizationRole and BackedEnum will always evaluate to true\.$#'
@@ -25133,48 +25067,6 @@ parameters:
 			identifier: missingType.iterableValue
 			count: 1
 			path: app/Services/Tax/TaxCalculator.php
-
-		-
-			message: '#^Method App\\Services\\TenancyV2\\TenantContext\:\:runFor\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: app/Services/TenancyV2/TenantContext.php
-
-		-
-			message: '#^Method App\\Services\\TenancyV2\\TenantContext\:\:runWithout\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: app/Services/TenancyV2/TenantContext.php
-
-		-
-			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Model\:\:isUsable\(\)\.$#'
-			identifier: method.notFound
-			count: 1
-			path: app/Services/TenancyV2/TenantResolver.php
-
-		-
-			message: '#^Method App\\Services\\TenancyV2\\TenantResolver\:\:resolveByDomain\(\) should return App\\Models\\Tenant\|null but returns Illuminate\\Database\\Eloquent\\Model\|null\.$#'
-			identifier: return.type
-			count: 1
-			path: app/Services/TenancyV2/TenantResolver.php
-
-		-
-			message: '#^Method App\\Services\\TenancyV2\\TenantService\:\:create\(\) has parameter \$payload with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: app/Services/TenancyV2/TenantService.php
-
-		-
-			message: '#^Method App\\Services\\TenancyV2\\TenantThemingService\:\:configFor\(\) return type has no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: app/Services/TenancyV2/TenantThemingService.php
-
-		-
-			message: '#^Method App\\Services\\TenancyV2\\TenantThemingService\:\:updateTheming\(\) has parameter \$values with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: app/Services/TenancyV2/TenantThemingService.php
 
 		-
 			message: '#^Method App\\Services\\Tips\\TipService\:\:suggestionsForBooking\(\) return type has no value type specified in iterable type array\.$#'
