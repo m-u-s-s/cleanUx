@@ -4,13 +4,10 @@ namespace Tests\Unit\WebView;
 
 use App\Models\User;
 use App\Services\WebView\WebViewTicketService;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 class WebViewTicketServiceTest extends TestCase
 {
-    use RefreshDatabase;
-
     private function service(): WebViewTicketService
     {
         return app(WebViewTicketService::class);
@@ -18,7 +15,7 @@ class WebViewTicketServiceTest extends TestCase
 
     public function test_issue_then_redeem_returns_bound_payload(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->make(['id' => 1]);
         $svc = $this->service();
 
         $ticket = $svc->issue($user, 'device-abc', '/dashboard');
@@ -28,11 +25,12 @@ class WebViewTicketServiceTest extends TestCase
         $this->assertSame($user->id, $payload['user_id']);
         $this->assertSame('device-abc', $payload['device_id']);
         $this->assertSame('/dashboard', $payload['target_path']);
+        $this->assertNull($payload['token_id']); // no Sanctum token bound in unit context
     }
 
     public function test_ticket_is_single_use(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->make(['id' => 1]);
         $svc = $this->service();
 
         $ticket = $svc->issue($user, 'd', '/x');

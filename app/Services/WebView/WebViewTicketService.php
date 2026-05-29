@@ -11,8 +11,10 @@ use Illuminate\Support\Str;
  * mobile (Sanctum-authenticated) user off into a web session inside a WebView.
  *
  * The ticket string is a cryptographically-random opaque secret. Its SHA-256
- * is the cache key; the cache value carries the binding payload. Redemption is
- * atomic (Cache::pull = get+forget) so a ticket can be used at most once.
+ * is the cache key; the cache value carries the binding payload. Redemption
+ * uses Cache::pull (a single get-then-delete), so a ticket can be used at most
+ * once. The short TTL plus the opaque 64-char token make the residual replay
+ * window negligible.
  */
 class WebViewTicketService
 {
@@ -26,7 +28,7 @@ class WebViewTicketService
 
         Cache::put(self::key($ticket), [
             'user_id' => $user->id,
-            'token_id' => optional($user->currentAccessToken())->id,
+            'token_id' => $user->currentAccessToken()?->id,
             'device_id' => $deviceId,
             'target_path' => $targetPath,
         ], self::TTL_SECONDS);
