@@ -7,10 +7,10 @@ use Illuminate\Database\Eloquent\Model;
 class RecurringBookingSeries extends Model
 {
     public const STATUS_ACTIVE = 'active';
+
     public const STATUS_PAUSED = 'paused';
+
     public const STATUS_CANCELLED = 'cancelled';
-
-
 
     protected $table = 'recurring_booking_series';
 

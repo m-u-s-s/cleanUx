@@ -12,9 +12,13 @@ use Illuminate\Support\Str;
 class FleetVehicle extends Model
 {
     use HasFactory;
+
     public const STATUS_AVAILABLE = 'available';
+
     public const STATUS_IN_USE = 'in_use';
+
     public const STATUS_MAINTENANCE = 'maintenance';
+
     public const STATUS_RETIRED = 'retired';
 
     protected $fillable = [
@@ -40,7 +44,7 @@ class FleetVehicle extends Model
 
     public static function generateCode(): string
     {
-        return 'veh_' . Str::lower(Str::random(20));
+        return 'veh_'.Str::lower(Str::random(20));
     }
 
     public function currentProvider(): BelongsTo

@@ -18,7 +18,7 @@ class ClientSignatureFactory extends Factory
             'signer_user_id' => fn () => User::factory()->client()->create()->id,
             'signer_name' => fake()->name(),
             'signer_email_hash' => hash('sha256', fake()->safeEmail()),
-            'signature_data' => 'data:image/png;base64,' . base64_encode(fake()->text(50)),
+            'signature_data' => 'data:image/png;base64,'.base64_encode(fake()->text(50)),
             'signed_at' => now(),
             'ip_hash' => hash('sha256', fake()->ipv4()),
             'user_agent_short' => 'Mozilla/5.0',

@@ -48,7 +48,7 @@ class UserConcernsTest extends TestCase
 
     public function test_is_super_admin_returns_true_only_for_super_admin_role(): void
     {
-        $admin      = User::factory()->create(['platform_role' => 'admin']);
+        $admin = User::factory()->create(['platform_role' => 'admin']);
         $superAdmin = User::factory()->create(['platform_role' => 'super_admin']);
 
         $this->assertFalse($admin->isSuperAdmin());
@@ -65,9 +65,9 @@ class UserConcernsTest extends TestCase
     public function test_can_access_admin_module_returns_true_for_super_admin_without_permission_check(): void
     {
         $user = User::factory()->create([
-            'role'          => 'super_admin',
+            'role' => 'super_admin',
             'platform_role' => 'super_admin',
-            'is_active'     => true,
+            'is_active' => true,
         ]);
 
         $this->assertTrue($user->canAccessAdminModule('manage-finance'));
@@ -76,9 +76,9 @@ class UserConcernsTest extends TestCase
     public function test_can_access_admin_module_returns_false_for_inactive_admin(): void
     {
         $user = User::factory()->create([
-            'role'          => 'admin',
+            'role' => 'admin',
             'platform_role' => 'admin',
-            'is_active'     => false,
+            'is_active' => false,
         ]);
 
         $this->assertFalse($user->canAccessAdminModule());
@@ -87,9 +87,9 @@ class UserConcernsTest extends TestCase
     public function test_can_access_admin_module_without_permission_returns_true_for_admin(): void
     {
         $user = User::factory()->create([
-            'role'          => 'admin',
+            'role' => 'admin',
             'platform_role' => 'admin',
-            'is_active'     => true,
+            'is_active' => true,
         ]);
 
         $this->assertTrue($user->canAccessAdminModule());
@@ -174,7 +174,7 @@ class UserConcernsTest extends TestCase
     public function test_is_premium_returns_true_for_active_premium_plan(): void
     {
         $user = User::factory()->create([
-            'plan_type'   => 'premium',
+            'plan_type' => 'premium',
             'plan_status' => 'active',
         ]);
 
@@ -184,7 +184,7 @@ class UserConcernsTest extends TestCase
     public function test_is_premium_returns_true_for_trialing_plan(): void
     {
         $user = User::factory()->create([
-            'plan_type'   => 'premium',
+            'plan_type' => 'premium',
             'plan_status' => 'trialing',
         ]);
 
@@ -194,7 +194,7 @@ class UserConcernsTest extends TestCase
     public function test_is_premium_returns_false_for_standard_plan(): void
     {
         $user = User::factory()->create([
-            'plan_type'   => 'standard',
+            'plan_type' => 'standard',
             'plan_status' => 'active',
         ]);
 
@@ -204,7 +204,7 @@ class UserConcernsTest extends TestCase
     public function test_is_premium_returns_false_when_premium_plan_is_inactive(): void
     {
         $user = User::factory()->create([
-            'plan_type'   => 'premium',
+            'plan_type' => 'premium',
             'plan_status' => 'inactive',
         ]);
 

@@ -88,6 +88,7 @@ class QualityChecklistResolver
         }
 
         $trade = DB::table('trades')->where('id', $service->trade_id)->first();
+
         return $trade->code ?? null;
     }
 }

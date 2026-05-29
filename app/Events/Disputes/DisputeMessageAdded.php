@@ -11,7 +11,5 @@ class DisputeMessageAdded
     use Dispatchable;
     use SerializesModels;
 
-    public function __construct(public DisputeEventModel $event)
-    {
-    }
+    public function __construct(public DisputeEventModel $event) {}
 }

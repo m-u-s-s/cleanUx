@@ -50,16 +50,17 @@ class ApnsPushProvider implements PushProviderInterface
             $jwt = $this->buildProviderToken($keyPath, $keyId, $teamId);
         } catch (\Throwable $e) {
             Log::error('ApnsPushProvider::buildProviderToken failed', ['error' => $e->getMessage()]);
-            return PushSendResult::failed('APNs auth failed: ' . $e->getMessage(), 'apns_auth');
+
+            return PushSendResult::failed('APNs auth failed: '.$e->getMessage(), 'apns_auth');
         }
 
         $host = $env === 'sandbox'
             ? 'https://api.sandbox.push.apple.com'
             : 'https://api.push.apple.com';
 
-        $url = "{$host}/3/device/" . $request->token;
+        $url = "{$host}/3/device/".$request->token;
 
-        $priority = Config::get('push.categories.' . $request->category . '.priority', 'high');
+        $priority = Config::get('push.categories.'.$request->category.'.priority', 'high');
         $apnsPriority = $priority === 'high' ? 10 : 5;
 
         $payload = [
@@ -77,7 +78,7 @@ class ApnsPushProvider implements PushProviderInterface
         }
 
         $response = Http::withHeaders([
-            'authorization' => 'bearer ' . $jwt,
+            'authorization' => 'bearer '.$jwt,
             'apns-topic' => $bundleId,
             'apns-push-type' => 'alert',
             'apns-priority' => (string) $apnsPriority,
@@ -85,7 +86,8 @@ class ApnsPushProvider implements PushProviderInterface
             ->post($url, $payload);
 
         if ($response->successful() || $response->status() === 200) {
-            $externalId = $response->header('apns-id') ?: ('apns_' . uniqid());
+            $externalId = $response->header('apns-id') ?: ('apns_'.uniqid());
+
             return PushSendResult::accepted($externalId, 'sent', ['status' => $response->status()]);
         }
 
@@ -98,7 +100,7 @@ class ApnsPushProvider implements PushProviderInterface
 
         return PushSendResult::failed(
             $reason,
-            'apns_' . strtolower($reason),
+            'apns_'.strtolower($reason),
             tokenInvalid: $tokenInvalid,
             raw: $response->json() ?? [],
         );

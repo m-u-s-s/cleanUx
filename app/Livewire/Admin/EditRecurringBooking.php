@@ -2,11 +2,10 @@
 
 namespace App\Livewire\Admin;
 
-use App\Support\Livewire\Concerns\InteractsWithRecurringSeries;
 use App\Models\Booking;
-use Livewire\Component;
+use App\Support\Livewire\Concerns\InteractsWithRecurringSeries;
 use Illuminate\Contracts\View\View;
-use Livewire\Attributes\Layout;
+use Livewire\Component;
 
 class EditRecurringBooking extends Component
 {

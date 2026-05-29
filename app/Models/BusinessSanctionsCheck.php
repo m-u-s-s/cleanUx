@@ -9,9 +9,13 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class BusinessSanctionsCheck extends Model
 {
     public const STATUS_PENDING = 'pending';
+
     public const STATUS_CLEAR = 'clear';
+
     public const STATUS_MATCH = 'match';
+
     public const STATUS_REVIEW_REQUIRED = 'review_required';
+
     public const STATUS_ERROR = 'error';
 
     protected $fillable = [

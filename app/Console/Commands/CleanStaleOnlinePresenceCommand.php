@@ -22,6 +22,7 @@ use Illuminate\Console\Command;
 class CleanStaleOnlinePresenceCommand extends Command
 {
     protected $signature = 'presence:cleanup';
+
     protected $description = 'Auto-offline les prestataires sans heartbeat récent';
 
     public function handle(ProviderPresenceService $service): int

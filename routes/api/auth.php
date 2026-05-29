@@ -3,6 +3,7 @@
 use App\Http\Controllers\Api\Auth\ApiAuthController;
 use App\Http\Controllers\Api\Auth\ForgotPasswordController;
 use App\Http\Controllers\Api\AuthMeController;
+use App\Http\Controllers\Api\AuthRefreshController;
 use Illuminate\Support\Facades\Route;
 
 // ─────────────────────────────────────────────
@@ -10,7 +11,7 @@ use Illuminate\Support\Facades\Route;
 // ─────────────────────────────────────────────
 
 Route::prefix('auth')->middleware('throttle:auth')->group(function () {
-    Route::post('/login',    [ApiAuthController::class, 'login']);
+    Route::post('/login', [ApiAuthController::class, 'login']);
     Route::post('/register', [ApiAuthController::class, 'register'])->middleware('turnstile');
 });
 
@@ -25,11 +26,11 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Token refresh + grace period + identity
     Route::middleware('token.grace')->group(function () {
-        Route::post('/auth/refresh', \App\Http\Controllers\Api\AuthRefreshController::class)
+        Route::post('/auth/refresh', AuthRefreshController::class)
             ->name('api.auth.refresh');
         Route::get('/auth/me', AuthMeController::class)->name('api.auth.me');
     });
 
-    Route::post('/auth/logout',     [ApiAuthController::class, 'logout']);
+    Route::post('/auth/logout', [ApiAuthController::class, 'logout']);
     Route::post('/auth/logout-all', [ApiAuthController::class, 'logoutAll']);
 });

@@ -34,7 +34,7 @@ class AvailabilityCenter extends Component
         $providers = User::query()
             ->whereHas('availabilitySlots')
             ->when($this->search, function ($q) {
-                $term = '%' . $this->search . '%';
+                $term = '%'.$this->search.'%';
                 $q->where(function ($inner) use ($term) {
                     $inner->where('name', 'like', $term)
                         ->orWhere('email', 'like', $term);

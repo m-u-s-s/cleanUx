@@ -25,56 +25,56 @@ class AssistantActionRegistry
 
         if ($user->isClient() || $user->isEntreprise()) {
             $actions[] = [
-                'name'                  => 'list_bookings',
-                'description'           => 'List the user\'s recent bookings with status',
+                'name' => 'list_bookings',
+                'description' => 'List the user\'s recent bookings with status',
                 'requires_confirmation' => false,
             ];
             $actions[] = [
-                'name'                  => 'booking_detail',
-                'description'           => 'Get details of a specific booking by ID or reference',
-                'parameters'            => ['booking_id' => 'integer'],
+                'name' => 'booking_detail',
+                'description' => 'Get details of a specific booking by ID or reference',
+                'parameters' => ['booking_id' => 'integer'],
                 'requires_confirmation' => false,
             ];
             $actions[] = [
-                'name'                  => 'loyalty_balance',
-                'description'           => 'Get the user\'s loyalty points balance and tier',
+                'name' => 'loyalty_balance',
+                'description' => 'Get the user\'s loyalty points balance and tier',
                 'requires_confirmation' => false,
             ];
         }
 
         if ($user->isEmploye()) {
             $actions[] = [
-                'name'                  => 'next_mission',
-                'description'           => 'Get the provider\'s next upcoming mission',
+                'name' => 'next_mission',
+                'description' => 'Get the provider\'s next upcoming mission',
                 'requires_confirmation' => false,
             ];
             $actions[] = [
-                'name'                  => 'earnings_summary',
-                'description'           => 'Get the provider\'s earnings summary (this week, this month)',
+                'name' => 'earnings_summary',
+                'description' => 'Get the provider\'s earnings summary (this week, this month)',
                 'requires_confirmation' => false,
             ];
             $actions[] = [
-                'name'                  => 'availability_slots',
-                'description'           => 'List the provider\'s availability slots',
+                'name' => 'availability_slots',
+                'description' => 'List the provider\'s availability slots',
                 'requires_confirmation' => false,
             ];
         }
 
         if ($user->isAdmin()) {
             $actions[] = [
-                'name'                  => 'platform_kpis',
-                'description'           => 'Get today\'s platform KPIs (bookings, missions, revenue, disputes)',
+                'name' => 'platform_kpis',
+                'description' => 'Get today\'s platform KPIs (bookings, missions, revenue, disputes)',
                 'requires_confirmation' => false,
             ];
             $actions[] = [
-                'name'                  => 'trade_stats',
-                'description'           => 'Get booking statistics grouped by trade/métier',
+                'name' => 'trade_stats',
+                'description' => 'Get booking statistics grouped by trade/métier',
                 'requires_confirmation' => false,
             ];
             $actions[] = [
-                'name'                  => 'resolve_dispute',
-                'description'           => 'Resolve a dispute case with a resolution text',
-                'parameters'            => ['dispute_id' => 'integer', 'resolution' => 'string'],
+                'name' => 'resolve_dispute',
+                'description' => 'Resolve a dispute case with a resolution text',
+                'parameters' => ['dispute_id' => 'integer', 'resolution' => 'string'],
                 'requires_confirmation' => true,
             ];
         }
@@ -82,23 +82,23 @@ class AssistantActionRegistry
         // Write actions — clients
         if ($user->isClient() || $user->isEntreprise()) {
             $actions[] = [
-                'name'                  => 'create_booking',
-                'description'           => 'Create a new booking for the client',
-                'parameters'            => [
-                    'trade_slug'         => 'string',
+                'name' => 'create_booking',
+                'description' => 'Create a new booking for the client',
+                'parameters' => [
+                    'trade_slug' => 'string',
                     'service_catalog_id' => 'integer',
-                    'address'            => 'string',
-                    'city'               => 'string',
-                    'postal_code'        => 'string',
-                    'scheduled_date'     => 'string (YYYY-MM-DD)',
-                    'scheduled_time'     => 'string (HH:MM)',
+                    'address' => 'string',
+                    'city' => 'string',
+                    'postal_code' => 'string',
+                    'scheduled_date' => 'string (YYYY-MM-DD)',
+                    'scheduled_time' => 'string (HH:MM)',
                 ],
                 'requires_confirmation' => true,
             ];
             $actions[] = [
-                'name'                  => 'cancel_booking',
-                'description'           => 'Cancel an existing booking owned by the client',
-                'parameters'            => ['booking_id' => 'integer'],
+                'name' => 'cancel_booking',
+                'description' => 'Cancel an existing booking owned by the client',
+                'parameters' => ['booking_id' => 'integer'],
                 'requires_confirmation' => true,
             ];
         }
@@ -106,9 +106,9 @@ class AssistantActionRegistry
         // Write actions — providers
         if ($user->isEmploye()) {
             $actions[] = [
-                'name'                  => 'update_availability',
-                'description'           => 'Toggle the provider online/offline status',
-                'parameters'            => ['status' => 'online|offline|break'],
+                'name' => 'update_availability',
+                'description' => 'Toggle the provider online/offline status',
+                'parameters' => ['status' => 'online|offline|break'],
                 'requires_confirmation' => false,
             ];
         }
@@ -132,6 +132,6 @@ class AssistantActionRegistry
             $actions
         );
 
-        return "Actions disponibles :\n" . implode("\n", $lines);
+        return "Actions disponibles :\n".implode("\n", $lines);
     }
 }

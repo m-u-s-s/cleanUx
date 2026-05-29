@@ -12,7 +12,7 @@ class InsurancePlanFactory extends Factory
     public function definition(): array
     {
         return [
-            'code' => 'INS-' . fake()->unique()->bothify('??###'),
+            'code' => 'INS-'.fake()->unique()->bothify('??###'),
             'name' => fake()->randomElement(['Basic Protection', 'Premium Coverage', 'Full Shield']),
             'description' => fake()->sentence(),
             'trade_codes' => ['cleaning', 'painting'],

@@ -14,10 +14,11 @@ class FxServiceProvider extends ServiceProvider
     {
         $this->app->bind(FxProviderInterface::class, function ($app) {
             $name = (string) config('fx.default_provider', 'mock');
+
             return match ($name) {
-                'ecb' => new EcbFxProvider(),
-                'openexchange' => new OpenExchangeRatesFxProvider(),
-                default => new FxMockProvider(),
+                'ecb' => new EcbFxProvider,
+                'openexchange' => new OpenExchangeRatesFxProvider,
+                default => new FxMockProvider,
             };
         });
     }

@@ -31,7 +31,7 @@ class PremiumCheckoutController extends Controller
 
         return $user->newSubscription('default', $priceId)
             ->checkout([
-                'success_url' => route('premium.success') . '?session_id={CHECKOUT_SESSION_ID}',
+                'success_url' => route('premium.success').'?session_id={CHECKOUT_SESSION_ID}',
                 'cancel_url' => route('premium.cancel'),
                 'metadata' => [
                     'user_id' => (string) $user->id,

@@ -8,7 +8,6 @@ use App\Models\ProviderProfile;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Str;
 use Tests\TestCase;
 
@@ -23,13 +22,13 @@ class Phase12Test extends TestCase
     public function test_login_with_valid_credentials_returns_token(): void
     {
         $user = User::factory()->create([
-            'email'    => 'jane@test.local',
+            'email' => 'jane@test.local',
             'password' => Hash::make('secret123'),
         ]);
 
         $response = $this->postJson('/api/auth/login', [
-            'email'       => 'jane@test.local',
-            'password'    => 'secret123',
+            'email' => 'jane@test.local',
+            'password' => 'secret123',
             'device_name' => 'iPhone 15',
         ]);
 
@@ -41,12 +40,12 @@ class Phase12Test extends TestCase
     public function test_login_with_invalid_credentials_fails(): void
     {
         User::factory()->create([
-            'email'    => 'jane@test.local',
+            'email' => 'jane@test.local',
             'password' => Hash::make('secret123'),
         ]);
 
         $response = $this->postJson('/api/auth/login', [
-            'email'    => 'jane@test.local',
+            'email' => 'jane@test.local',
             'password' => 'wrong-password',
         ]);
 
@@ -56,13 +55,13 @@ class Phase12Test extends TestCase
     public function test_register_creates_user_and_returns_token(): void
     {
         $response = $this->postJson('/api/auth/register', [
-            'name'                  => 'New Client',
-            'email'                 => 'new@test.local',
-            'password'              => 'secret1234',
+            'name' => 'New Client',
+            'email' => 'new@test.local',
+            'password' => 'secret1234',
             'password_confirmation' => 'secret1234',
-            'phone'                 => '+32475123456',
-            'locale'                => 'fr',
-            'accept_terms'          => true,
+            'phone' => '+32475123456',
+            'locale' => 'fr',
+            'accept_terms' => true,
         ]);
 
         $response->assertStatus(201);
@@ -75,11 +74,11 @@ class Phase12Test extends TestCase
         User::factory()->create(['email' => 'taken@test.local']);
 
         $response = $this->postJson('/api/auth/register', [
-            'name'                  => 'Dupe',
-            'email'                 => 'taken@test.local',
-            'password'              => 'secret1234',
+            'name' => 'Dupe',
+            'email' => 'taken@test.local',
+            'password' => 'secret1234',
             'password_confirmation' => 'secret1234',
-            'accept_terms'          => true,
+            'accept_terms' => true,
         ]);
 
         $response->assertStatus(422);
@@ -91,7 +90,7 @@ class Phase12Test extends TestCase
         $token = $user->createToken('test')->plainTextToken;
 
         $response = $this->withHeader('Authorization', "Bearer {$token}")
-                         ->postJson('/api/auth/logout');
+            ->postJson('/api/auth/logout');
 
         $response->assertOk();
         $this->assertSame(0, $user->fresh()->tokens()->count());
@@ -104,7 +103,7 @@ class Phase12Test extends TestCase
     public function test_can_get_own_profile(): void
     {
         $user = User::factory()->create([
-            'name'  => 'Alice',
+            'name' => 'Alice',
             'email' => 'alice@test.local',
         ]);
 
@@ -120,7 +119,7 @@ class Phase12Test extends TestCase
         $user = User::factory()->create();
 
         $response = $this->actingAs($user, 'sanctum')->patchJson('/api/profile', [
-            'name'  => 'Updated Name',
+            'name' => 'Updated Name',
             'phone' => '+32400000000',
         ]);
 
@@ -136,8 +135,8 @@ class Phase12Test extends TestCase
         ]);
 
         $response = $this->actingAs($user, 'sanctum')->patchJson('/api/profile', [
-            'current_password'      => 'wrong',
-            'password'              => 'newpass123',
+            'current_password' => 'wrong',
+            'password' => 'newpass123',
             'password_confirmation' => 'newpass123',
         ]);
 
@@ -153,10 +152,10 @@ class Phase12Test extends TestCase
     {
         $user = User::factory()->create();
         $user->notifications()->create([
-            'id'         => Str::uuid()->toString(),
-            'type'       => 'TestNotif',
-            'data'       => ['title' => 'Test'],
-            'read_at'    => null,
+            'id' => Str::uuid()->toString(),
+            'type' => 'TestNotif',
+            'data' => ['title' => 'Test'],
+            'read_at' => null,
         ]);
 
         $response = $this->actingAs($user, 'sanctum')->getJson('/api/notifications');
@@ -170,14 +169,14 @@ class Phase12Test extends TestCase
     {
         $user = User::factory()->create();
         $notif = $user->notifications()->create([
-            'id'      => Str::uuid()->toString(),
-            'type'    => 'TestNotif',
-            'data'    => ['x' => 1],
+            'id' => Str::uuid()->toString(),
+            'type' => 'TestNotif',
+            'data' => ['x' => 1],
             'read_at' => null,
         ]);
 
         $response = $this->actingAs($user, 'sanctum')
-                         ->postJson("/api/notifications/{$notif->id}/read");
+            ->postJson("/api/notifications/{$notif->id}/read");
 
         $response->assertOk();
         $this->assertNotNull($notif->fresh()->read_at);
@@ -207,7 +206,7 @@ class Phase12Test extends TestCase
         $booking = $this->makeBooking($user);
 
         $response = $this->actingAs($user, 'sanctum')
-                         ->getJson("/api/client/bookings/{$booking->id}");
+            ->getJson("/api/client/bookings/{$booking->id}");
 
         $response->assertOk();
         $response->assertJsonPath('data.reference', $booking->booking_reference);
@@ -220,7 +219,7 @@ class Phase12Test extends TestCase
         $booking = $this->makeBooking($owner);
 
         $response = $this->actingAs($stranger, 'sanctum')
-                         ->getJson("/api/client/bookings/{$booking->id}");
+            ->getJson("/api/client/bookings/{$booking->id}");
 
         $response->assertStatus(403);
     }
@@ -231,9 +230,9 @@ class Phase12Test extends TestCase
         $booking = $this->makeBooking($user, ['status' => 'confirme']);
 
         $response = $this->actingAs($user, 'sanctum')
-                         ->postJson("/api/client/bookings/{$booking->id}/cancel", [
-                             'reason' => 'Changement de plan',
-                         ]);
+            ->postJson("/api/client/bookings/{$booking->id}/cancel", [
+                'reason' => 'Changement de plan',
+            ]);
 
         $response->assertOk();
         $this->assertSame('annule', $booking->fresh()->status);
@@ -246,7 +245,7 @@ class Phase12Test extends TestCase
         $booking = $this->makeBooking($user, ['status' => 'termine']);
 
         $response = $this->actingAs($user, 'sanctum')
-                         ->postJson("/api/client/bookings/{$booking->id}/cancel");
+            ->postJson("/api/client/bookings/{$booking->id}/cancel");
 
         $response->assertStatus(409);
     }
@@ -257,7 +256,7 @@ class Phase12Test extends TestCase
         $booking = $this->makeBooking($user);
 
         $response = $this->actingAs($user, 'sanctum')
-                         ->getJson("/api/client/bookings/{$booking->id}/eta");
+            ->getJson("/api/client/bookings/{$booking->id}/eta");
 
         $response->assertOk();
         $response->assertJsonPath('state', 'no_mission');
@@ -276,12 +275,12 @@ class Phase12Test extends TestCase
         $mission = Mission::create([
             'booking_id' => $booking->id,
             'lead_provider_user_id' => $provider->id,
-            'status'     => 'assigned',
+            'status' => 'assigned',
             'planned_start_at' => now()->addHour(),
         ]);
 
         $response = $this->actingAs($provider, 'sanctum')
-                         ->getJson('/api/provider/missions/active');
+            ->getJson('/api/provider/missions/active');
 
         $response->assertOk();
         $this->assertSame(1, $response->json('count'));
@@ -295,11 +294,11 @@ class Phase12Test extends TestCase
 
         $mission = Mission::create([
             'booking_id' => $booking->id,
-            'status'     => 'assigned',
+            'status' => 'assigned',
         ]);
 
         $response = $this->actingAs($stranger, 'sanctum')
-                         ->postJson("/api/provider/missions/{$mission->id}/start");
+            ->postJson("/api/provider/missions/{$mission->id}/start");
 
         $response->assertStatus(403);
     }
@@ -311,15 +310,15 @@ class Phase12Test extends TestCase
     protected function makeBooking(User $user, array $overrides = []): Booking
     {
         return Booking::create(array_merge([
-            'booking_reference' => 'CUX-' . strtoupper(Str::random(6)),
-            'customer_user_id'  => $user->id,
-            'client_id'         => $user->id,
-            'scheduled_date'    => now()->addDay()->toDateString(),
-            'scheduled_time'    => '10:00:00',
-            'status'            => 'en_attente',
-            'currency'          => 'EUR',
-            'priority'          => 'normal',
-            'booking_mode'      => 'scheduled',
+            'booking_reference' => 'CUX-'.strtoupper(Str::random(6)),
+            'customer_user_id' => $user->id,
+            'client_id' => $user->id,
+            'scheduled_date' => now()->addDay()->toDateString(),
+            'scheduled_time' => '10:00:00',
+            'status' => 'en_attente',
+            'currency' => 'EUR',
+            'priority' => 'normal',
+            'booking_mode' => 'scheduled',
         ], $overrides));
     }
 
@@ -332,6 +331,7 @@ class Phase12Test extends TestCase
             'status' => 'active',
             'verification_status' => 'verified',
         ], $overrides));
+
         return $user->fresh();
     }
 }

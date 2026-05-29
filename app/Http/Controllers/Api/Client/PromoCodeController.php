@@ -11,6 +11,7 @@ use Illuminate\Http\Request;
 
 /**
  * @group Client — Promo Codes
+ *
  * @authenticated
  *
  * API mobile — Validation d'un code promo.
@@ -22,9 +23,7 @@ use Illuminate\Http\Request;
  */
 class PromoCodeController extends Controller
 {
-    public function __construct(protected PromoCodeService $service)
-    {
-    }
+    public function __construct(protected PromoCodeService $service) {}
 
     public function validate_(Request $request): JsonResponse
     {

@@ -2,8 +2,8 @@
 
 namespace Tests\Unit;
 
-use App\Models\Feedback;
 use App\Models\Booking;
+use App\Models\Feedback;
 use App\Models\User;
 use App\Notifications\AdminDigestNotification;
 use App\Notifications\DemandeFeedbackNotification;

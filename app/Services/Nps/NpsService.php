@@ -35,6 +35,7 @@ class NpsService
                 'category' => NpsResponse::categorize($score),
                 'comment' => $comment,
             ]);
+
             return $existing->fresh();
         }
 

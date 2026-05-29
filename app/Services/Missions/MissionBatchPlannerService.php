@@ -57,7 +57,7 @@ class MissionBatchPlannerService
                     'service_partner_id' => $payload['service_partner_id'] ?? null,
                     'status' => 'planned',
                     'segment_type' => $payload['segment_type'] ?? 'execution_zone',
-                    'title' => ($payload['name'] ?? 'Lot') . ' · Jour ' . $dayIndex . ' · Segment ' . $sequence,
+                    'title' => ($payload['name'] ?? 'Lot').' · Jour '.$dayIndex.' · Segment '.$sequence,
                     'zone_label' => Arr::get($payload, 'zone_label'),
                     'service_date' => $date->copy(),
                     'estimated_minutes' => (int) ($payload['estimated_segment_minutes'] ?? 180),
@@ -124,6 +124,6 @@ class MissionBatchPlannerService
 
     protected function generateReference(): string
     {
-        return 'BATCH-' . now()->format('Ymd') . '-' . strtoupper(Str::random(5));
+        return 'BATCH-'.now()->format('Ymd').'-'.strtoupper(Str::random(5));
     }
 }

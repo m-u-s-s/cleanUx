@@ -14,18 +14,18 @@ class CountryServiceCatalogRuleFactory extends Factory
     public function definition(): array
     {
         return [
-            'country_id'                  => fn () => Country::factory()->create()->id,
-            'service_catalog_id'          => fn () => ServiceCatalog::factory()->create()->id,
-            'is_enabled'                  => true,
-            'requires_manual_validation'  => false,
-            'requires_quote'              => false,
-            'minimum_notice_hours'        => 24,
-            'sla_response_hours'          => 4,
-            'sla_resolution_hours'        => 48,
-            'default_team_id'             => null,
-            'default_partner_id'          => null,
-            'pricing_multiplier'          => 1.00,
-            'settings'                    => null,
+            'country_id' => fn () => Country::factory()->create()->id,
+            'service_catalog_id' => fn () => ServiceCatalog::factory()->create()->id,
+            'is_enabled' => true,
+            'requires_manual_validation' => false,
+            'requires_quote' => false,
+            'minimum_notice_hours' => 24,
+            'sla_response_hours' => 4,
+            'sla_resolution_hours' => 48,
+            'default_team_id' => null,
+            'default_partner_id' => null,
+            'pricing_multiplier' => 1.00,
+            'settings' => null,
         ];
     }
 

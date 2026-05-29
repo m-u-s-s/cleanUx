@@ -16,7 +16,8 @@ use Illuminate\Support\Facades\Schema;
  *      les deux sont set (minutes)
  *   3. Schema-defensive : skip si bookings n'existe pas
  */
-return new class extends Migration {
+return new class extends Migration
+{
     public function up(): void
     {
         if (! Schema::hasTable('bookings')) {
@@ -65,7 +66,7 @@ return new class extends Migration {
                           AND duree_reelle IS NULL
                     SQL);
                 }
-            } catch (\Throwable $e) {
+            } catch (Throwable $e) {
                 // Backfill best-effort — ne bloque pas la migration si échec
             }
         }

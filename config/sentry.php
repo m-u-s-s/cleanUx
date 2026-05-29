@@ -56,6 +56,7 @@ return [
                 return null;
             }
         }
+
         return $event;
     },
 ];

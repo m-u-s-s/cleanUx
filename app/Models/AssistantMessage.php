@@ -14,9 +14,12 @@ class AssistantMessage extends Model
 {
     use HasFactory;
 
-    public const SENDER_USER        = 'user';
-    public const SENDER_ASSISTANT   = 'assistant';
-    public const SENDER_SYSTEM      = 'system';
+    public const SENDER_USER = 'user';
+
+    public const SENDER_ASSISTANT = 'assistant';
+
+    public const SENDER_SYSTEM = 'system';
+
     public const SENDER_TOOL_RESULT = 'tool_result';
 
     protected $fillable = [
@@ -67,10 +70,10 @@ class AssistantMessage extends Model
             return [
                 'role' => 'user',
                 'content' => [[
-                    'type'         => 'tool_result',
-                    'tool_use_id'  => $this->metadata['tool_use_id'],
-                    'content'      => $this->content,
-                    'is_error'     => (bool) ($this->metadata['is_error'] ?? false),
+                    'type' => 'tool_result',
+                    'tool_use_id' => $this->metadata['tool_use_id'],
+                    'content' => $this->content,
+                    'is_error' => (bool) ($this->metadata['is_error'] ?? false),
                 ]],
             ];
         }
@@ -83,12 +86,13 @@ class AssistantMessage extends Model
             }
             foreach ($this->metadata['tool_uses'] as $use) {
                 $blocks[] = [
-                    'type'  => 'tool_use',
-                    'id'    => $use['id'],
-                    'name'  => $use['name'],
+                    'type' => 'tool_use',
+                    'id' => $use['id'],
+                    'name' => $use['name'],
                     'input' => $use['input'] ?? [],
                 ];
             }
+
             return ['role' => 'assistant', 'content' => $blocks];
         }
 

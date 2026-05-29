@@ -10,7 +10,7 @@ class PremiumGate
     public function handle(Request $request, Closure $next, string $feature)
     {
         $user = $request->user();
-        if (!$user) {
+        if (! $user) {
             abort(401);
         }
 
@@ -19,11 +19,11 @@ class PremiumGate
         $tierConfig = $tiers[$tier] ?? $tiers['free'] ?? [];
         $features = $tierConfig['features'] ?? [];
 
-        if (isset($features[$feature]) && !$features[$feature]) {
+        if (isset($features[$feature]) && ! $features[$feature]) {
             return response()->json([
                 'error' => 'premium_required',
                 'message' => 'This feature requires a Pro or Business plan.',
-                'upgrade_url' => config('app.url') . '/pricing',
+                'upgrade_url' => config('app.url').'/pricing',
             ], 403);
         }
 

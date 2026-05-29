@@ -2,7 +2,6 @@
 
 namespace App\Services\Assistant\Tools;
 
-use App\Enums\AssistantContextRole;
 use App\Models\User;
 use App\Services\Assistant\Tools\Contracts\AssistantTool;
 use App\Services\Assistant\Tools\Implementations\CancelBookingTool;
@@ -45,7 +44,7 @@ class AssistantToolRegistry
      */
     public function toolsForUser(User $user): array
     {
-        $role         = $user->assistantContextRole();
+        $role = $user->assistantContextRole();
         $allowedNames = $this->allowedToolNamesForRole($role);
 
         if ($user->isEmploye()) {
@@ -100,6 +99,7 @@ class AssistantToolRegistry
                 return $tool;
             }
         }
+
         return null;
     }
 
@@ -109,9 +109,9 @@ class AssistantToolRegistry
     public function definitionsForUser(User $user): array
     {
         return array_map(
-            fn(AssistantTool $t) => [
-                'name'         => $t->name(),
-                'description'  => $t->description(),
+            fn (AssistantTool $t) => [
+                'name' => $t->name(),
+                'description' => $t->description(),
                 'input_schema' => $t->inputSchema(),
             ],
             $this->toolsForUser($user)

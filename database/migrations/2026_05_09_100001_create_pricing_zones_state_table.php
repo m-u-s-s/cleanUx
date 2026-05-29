@@ -13,7 +13,8 @@ use Illuminate\Support\Facades\Schema;
  *
  * Cap réglementaire (BE/FR) : 3.0 max — sinon risque "prix abusif".
  */
-return new class extends Migration {
+return new class extends Migration
+{
     public function up(): void
     {
         if (Schema::hasTable('pricing_zones_state')) {

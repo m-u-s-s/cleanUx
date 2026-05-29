@@ -16,9 +16,9 @@ class PushServiceProvider extends ServiceProvider
             $name = (string) config('push.default_provider', 'mock');
 
             return match ($name) {
-                'fcm' => new FcmPushProvider(),
-                'apns' => new ApnsPushProvider(),
-                default => new PushMockProvider(),
+                'fcm' => new FcmPushProvider,
+                'apns' => new ApnsPushProvider,
+                default => new PushMockProvider,
             };
         });
     }

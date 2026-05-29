@@ -56,12 +56,12 @@ class MissionOfferNotification extends Notification
     public function toArray(object $notifiable): array
     {
         return [
-            'type'              => 'mission.offer',
-            'mission_id'        => $this->mission->id,
-            'assignment_id'     => $this->assignment->id,
+            'type' => 'mission.offer',
+            'mission_id' => $this->mission->id,
+            'assignment_id' => $this->assignment->id,
             'booking_reference' => $this->mission->booking?->booking_reference,
-            'expires_at'        => $this->assignment->expires_at?->toIso8601String(),
-            'planned_start_at'  => $this->mission->planned_start_at?->toIso8601String(),
+            'expires_at' => $this->assignment->expires_at?->toIso8601String(),
+            'planned_start_at' => $this->mission->planned_start_at?->toIso8601String(),
         ];
     }
 
@@ -81,15 +81,15 @@ class MissionOfferNotification extends Notification
 
         return [
             'title' => '🚨 Nouvelle mission',
-            'body'  => $body,
-            'url'   => "/provider/missions/{$this->assignment->id}/offer",
-            'tag'   => 'mission-offer-' . $this->assignment->id,
+            'body' => $body,
+            'url' => "/provider/missions/{$this->assignment->id}/offer",
+            'tag' => 'mission-offer-'.$this->assignment->id,
             'requireInteraction' => true,
             'data' => [
-                'mission_id'    => $this->mission->id,
+                'mission_id' => $this->mission->id,
                 'assignment_id' => $this->assignment->id,
-                'expires_at'    => $this->assignment->expires_at?->toIso8601String(),
-                'reference'     => $reference,
+                'expires_at' => $this->assignment->expires_at?->toIso8601String(),
+                'reference' => $reference,
             ],
             'actions' => [
                 ['action' => 'accept',  'title' => '✓ Accepter'],

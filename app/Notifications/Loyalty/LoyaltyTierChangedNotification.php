@@ -11,8 +11,8 @@ use Illuminate\Notifications\Notification;
 
 class LoyaltyTierChangedNotification extends Notification
 {
-    use Queueable;
     use InteractsWithUserNotificationPreferences;
+    use Queueable;
 
     public function __construct(
         public LoyaltyAccount $account,
@@ -30,17 +30,17 @@ class LoyaltyTierChangedNotification extends Notification
     {
         if ($this->isUpgrade) {
             return (new MailMessage)
-                ->subject('CleanUx · Vous passez au niveau ' . $this->newTier->name . ' ' . $this->newTier->icon)
+                ->subject('CleanUx · Vous passez au niveau '.$this->newTier->name.' '.$this->newTier->icon)
                 ->greeting('Félicitations !')
-                ->line('Vous venez de passer au niveau ' . $this->newTier->name . '.')
+                ->line('Vous venez de passer au niveau '.$this->newTier->name.'.')
                 ->line('Vos avantages :')
-                ->lines(array_map(fn ($b) => '• ' . $b, $this->newTier->benefits ?? []))
+                ->lines(array_map(fn ($b) => '• '.$b, $this->newTier->benefits ?? []))
                 ->action('Voir mon programme', url('/dashboard/client/fidelite'));
         }
 
         return (new MailMessage)
             ->subject('CleanUx · Mise à jour de votre niveau fidélité')
-            ->line('Votre niveau passe à ' . $this->newTier->name . '.')
+            ->line('Votre niveau passe à '.$this->newTier->name.'.')
             ->line('Continuez à profiter de nos services pour remonter !')
             ->action('Voir mon programme', url('/dashboard/client/fidelite'));
     }
@@ -51,9 +51,9 @@ class LoyaltyTierChangedNotification extends Notification
             'type' => $this->isUpgrade ? 'loyalty_tier_upgraded' : 'loyalty_tier_downgraded',
             'severity' => $this->isUpgrade ? 'success' : 'info',
             'title' => $this->isUpgrade
-                ? 'Niveau ' . $this->newTier->name . ' atteint !'
-                : 'Niveau ajusté à ' . $this->newTier->name,
-            'message' => 'De ' . ($this->previousTier?->name ?? 'aucun') . ' vers ' . $this->newTier->name,
+                ? 'Niveau '.$this->newTier->name.' atteint !'
+                : 'Niveau ajusté à '.$this->newTier->name,
+            'message' => 'De '.($this->previousTier?->name ?? 'aucun').' vers '.$this->newTier->name,
             'previous_tier' => $this->previousTier?->slug,
             'new_tier' => $this->newTier->slug,
             'is_upgrade' => $this->isUpgrade,

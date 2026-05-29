@@ -11,6 +11,7 @@ use Livewire\Component;
 class ProviderKycPage extends Component
 {
     public string $errorMessage = '';
+
     public string $successMessage = '';
 
     public function start(): void
@@ -21,7 +22,7 @@ class ProviderKycPage extends Component
             $verification = app(KycVerificationService::class)->start(Auth::user());
             $this->successMessage = "Vérification démarrée (référence #{$verification->id}). Suivez les instructions du provider.";
         } catch (\Throwable $e) {
-            $this->errorMessage = "Impossible de démarrer la vérification : " . $e->getMessage();
+            $this->errorMessage = 'Impossible de démarrer la vérification : '.$e->getMessage();
         }
     }
 
@@ -34,6 +35,7 @@ class ProviderKycPage extends Component
 
         if (! $verification) {
             $this->errorMessage = 'Vérification introuvable.';
+
             return;
         }
 
@@ -41,7 +43,7 @@ class ProviderKycPage extends Component
             app(KycVerificationService::class)->syncStatus($verification);
             $this->dispatch('toast', 'Statut synchronisé.', 'success');
         } catch (\Throwable $e) {
-            $this->errorMessage = 'Erreur sync : ' . $e->getMessage();
+            $this->errorMessage = 'Erreur sync : '.$e->getMessage();
         }
     }
 

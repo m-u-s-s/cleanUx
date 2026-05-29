@@ -17,9 +17,7 @@ class KycServiceProvider extends ServiceProvider
         });
     }
 
-    public function boot(): void
-    {
-    }
+    public function boot(): void {}
 
     protected function resolveProvider(): KycProviderInterface
     {
@@ -37,9 +35,9 @@ class KycServiceProvider extends ServiceProvider
         }
 
         return match ($resolved) {
-            'onfido' => new OnfidoProvider(),
-            'mock'   => new KycMockProvider(),
-            default  => throw new RuntimeException("KYC provider not implemented: {$resolved}"),
+            'onfido' => new OnfidoProvider,
+            'mock' => new KycMockProvider,
+            default => throw new RuntimeException("KYC provider not implemented: {$resolved}"),
         };
     }
 }

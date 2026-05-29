@@ -2,38 +2,47 @@
 
 namespace App\Models\Concerns;
 
+use Illuminate\Support\Collection;
+
 trait HasAdminCapabilities
 {
     public const ROLE_ADMIN = 'admin';
 
-    public const PLATFORM_USER       = 'user';
-    public const PLATFORM_ADMIN      = 'admin';
+    public const PLATFORM_USER = 'user';
+
+    public const PLATFORM_ADMIN = 'admin';
+
     public const PLATFORM_SUPER_ADMIN = 'super_admin';
 
-    public const ACCESS_SCOPE_ALL          = 'all';
-    public const ACCESS_SCOPE_OWN          = 'own';
+    public const ACCESS_SCOPE_ALL = 'all';
+
+    public const ACCESS_SCOPE_OWN = 'own';
+
     public const ACCESS_SCOPE_ORGANIZATION = 'organization';
-    public const ACCESS_SCOPE_GLOBAL       = 'global';
-    public const ACCESS_SCOPE_ZONE         = 'zone';
-    public const ACCESS_SCOPE_READONLY     = 'readonly';
+
+    public const ACCESS_SCOPE_GLOBAL = 'global';
+
+    public const ACCESS_SCOPE_ZONE = 'zone';
+
+    public const ACCESS_SCOPE_READONLY = 'readonly';
 
     public static function allowedAdminPermissions(): array
     {
         return [
-            'manage-calendar'                 => 'Gestion calendrier',
-            'manage-users'                    => 'Gestion utilisateurs',
-            'manage-services'                 => 'Gestion services',
-            'manage-entreprises'              => 'Gestion entreprises',
-            'manage-finance'                  => 'Gestion finance',
-            'manage-analytics'                => 'Analytics',
-            'manage-quality'                  => 'Qualité',
-            'manage-premium'                  => 'Clients premium',
-            'manage-audit-logs'               => 'Logs d\'audit',
-            'manage-modules'                  => 'Modules plateforme',
-            'manage-international'            => 'Opérations internationales',
-            'manage-orchestration'            => 'Orchestration terrain',
-            'manage-automation'               => 'Automatisation',
-            'perform-critical-admin-actions'  => 'Actions critiques',
+            'manage-calendar' => 'Gestion calendrier',
+            'manage-users' => 'Gestion utilisateurs',
+            'manage-services' => 'Gestion services',
+            'manage-entreprises' => 'Gestion entreprises',
+            'manage-finance' => 'Gestion finance',
+            'manage-analytics' => 'Analytics',
+            'manage-quality' => 'Qualité',
+            'manage-premium' => 'Clients premium',
+            'manage-audit-logs' => 'Logs d\'audit',
+            'manage-modules' => 'Modules plateforme',
+            'manage-international' => 'Opérations internationales',
+            'manage-orchestration' => 'Orchestration terrain',
+            'manage-automation' => 'Automatisation',
+            'perform-critical-admin-actions' => 'Actions critiques',
         ];
     }
 
@@ -75,7 +84,7 @@ trait HasAdminCapabilities
             $permissions = is_array($decoded) ? $decoded : [$permissions];
         }
 
-        if ($permissions instanceof \Illuminate\Support\Collection) {
+        if ($permissions instanceof Collection) {
             $permissions = $permissions->all();
         }
 
@@ -119,7 +128,7 @@ trait HasAdminCapabilities
             $permissions = is_array($decoded) ? $decoded : [];
         }
 
-        if ($permissions instanceof \Illuminate\Support\Collection) {
+        if ($permissions instanceof Collection) {
             $permissions = $permissions->all();
         }
 
@@ -164,7 +173,7 @@ trait HasAdminCapabilities
             $permissions = is_array($decoded) ? $decoded : [];
         }
 
-        if ($permissions instanceof \Illuminate\Support\Collection) {
+        if ($permissions instanceof Collection) {
             $permissions = $permissions->all();
         }
 

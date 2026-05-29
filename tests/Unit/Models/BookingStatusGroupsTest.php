@@ -18,12 +18,12 @@ class BookingStatusGroupsTest extends TestCase
     public function test_status_constants_are_defined(): void
     {
         $this->assertSame('en_attente', BookingStatus::EN_ATTENTE);
-        $this->assertSame('confirme',   BookingStatus::CONFIRME);
-        $this->assertSame('en_route',   BookingStatus::EN_ROUTE);
-        $this->assertSame('sur_place',  BookingStatus::SUR_PLACE);
-        $this->assertSame('termine',    BookingStatus::TERMINE);
-        $this->assertSame('annule',     BookingStatus::ANNULE);
-        $this->assertSame('refuse',     BookingStatus::REFUSE);
+        $this->assertSame('confirme', BookingStatus::CONFIRME);
+        $this->assertSame('en_route', BookingStatus::EN_ROUTE);
+        $this->assertSame('sur_place', BookingStatus::SUR_PLACE);
+        $this->assertSame('termine', BookingStatus::TERMINE);
+        $this->assertSame('annule', BookingStatus::ANNULE);
+        $this->assertSame('refuse', BookingStatus::REFUSE);
     }
 
     // ─────────────────────────────────────────────────────────────────
@@ -34,8 +34,8 @@ class BookingStatusGroupsTest extends TestCase
     {
         $active = BookingStatus::active();
 
-        $this->assertContains(BookingStatus::CONFIRME,  $active);
-        $this->assertContains(BookingStatus::EN_ROUTE,  $active);
+        $this->assertContains(BookingStatus::CONFIRME, $active);
+        $this->assertContains(BookingStatus::EN_ROUTE, $active);
         $this->assertContains(BookingStatus::SUR_PLACE, $active);
     }
 
@@ -44,8 +44,8 @@ class BookingStatusGroupsTest extends TestCase
         $active = BookingStatus::active();
 
         $this->assertNotContains(BookingStatus::TERMINE, $active);
-        $this->assertNotContains(BookingStatus::ANNULE,  $active);
-        $this->assertNotContains(BookingStatus::REFUSE,  $active);
+        $this->assertNotContains(BookingStatus::ANNULE, $active);
+        $this->assertNotContains(BookingStatus::REFUSE, $active);
     }
 
     // ─────────────────────────────────────────────────────────────────
@@ -57,8 +57,8 @@ class BookingStatusGroupsTest extends TestCase
         $final = BookingStatus::final();
 
         $this->assertContains(BookingStatus::TERMINE, $final);
-        $this->assertContains(BookingStatus::ANNULE,  $final);
-        $this->assertContains(BookingStatus::REFUSE,  $final);
+        $this->assertContains(BookingStatus::ANNULE, $final);
+        $this->assertContains(BookingStatus::REFUSE, $final);
     }
 
     public function test_final_statuses_exclude_active_states(): void
@@ -66,8 +66,8 @@ class BookingStatusGroupsTest extends TestCase
         $final = BookingStatus::final();
 
         $this->assertNotContains(BookingStatus::EN_ATTENTE, $final);
-        $this->assertNotContains(BookingStatus::CONFIRME,   $final);
-        $this->assertNotContains(BookingStatus::SUR_PLACE,  $final);
+        $this->assertNotContains(BookingStatus::CONFIRME, $final);
+        $this->assertNotContains(BookingStatus::SUR_PLACE, $final);
     }
 
     // ─────────────────────────────────────────────────────────────────
@@ -76,9 +76,9 @@ class BookingStatusGroupsTest extends TestCase
 
     public function test_all_statuses_is_superset_of_active_and_final(): void
     {
-        $all    = BookingStatus::all();
+        $all = BookingStatus::all();
         $active = BookingStatus::active();
-        $final  = BookingStatus::final();
+        $final = BookingStatus::final();
 
         foreach ($active as $status) {
             $this->assertContains($status, $all, "active status '$status' missing from all()");

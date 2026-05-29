@@ -18,9 +18,13 @@ class DisputeLifecycleTest extends TestCase
     use RefreshDatabase;
 
     protected User $client;
+
     protected User $provider;
+
     protected User $admin;
+
     protected Booking $booking;
+
     protected DisputeService $service;
 
     protected function setUp(): void
@@ -96,7 +100,7 @@ class DisputeLifecycleTest extends TestCase
             $case,
             $this->admin,
             DisputeEvent::ROLE_ADMIN,
-            "Nous étudions votre dossier.",
+            'Nous étudions votre dossier.',
         );
 
         $case->refresh();
@@ -123,7 +127,7 @@ class DisputeLifecycleTest extends TestCase
             $case->fresh(),
             $this->client,
             DisputeEvent::ROLE_CLIENT,
-            "Encore un truc",
+            'Encore un truc',
         );
     }
 
@@ -136,7 +140,7 @@ class DisputeLifecycleTest extends TestCase
             $case->fresh(),
             $this->provider,
             DisputeEvent::ROLE_PROVIDER,
-            "Je conteste la version du client.",
+            'Je conteste la version du client.',
         );
 
         $this->assertSame(ComplaintCase::STATUS_INVESTIGATING, $case->fresh()->status);
@@ -167,7 +171,7 @@ class DisputeLifecycleTest extends TestCase
             $case,
             $this->admin,
             DisputeEvent::ROLE_ADMIN,
-            "Note privée admin",
+            'Note privée admin',
             DisputeEvent::VISIBILITY_PRIVATE,
         );
 
@@ -175,7 +179,7 @@ class DisputeLifecycleTest extends TestCase
             $case,
             $this->admin,
             DisputeEvent::ROLE_ADMIN,
-            "Message visible client uniquement",
+            'Message visible client uniquement',
             DisputeEvent::VISIBILITY_CLIENT,
         );
 

@@ -12,6 +12,7 @@ use Illuminate\Http\Request;
 
 /**
  * @group Geolocation v2
+ *
  * @authenticated
  */
 class GeolocationV2Controller extends Controller
@@ -49,6 +50,7 @@ class GeolocationV2Controller extends Controller
         if (! $result) {
             return response()->json(['ok' => false, 'error' => 'not_found'], 404);
         }
+
         return response()->json(['ok' => true, 'data' => $result->toArray()]);
     }
 
@@ -63,6 +65,7 @@ class GeolocationV2Controller extends Controller
         if (! $result) {
             return response()->json(['ok' => false, 'error' => 'not_found'], 404);
         }
+
         return response()->json(['ok' => true, 'data' => $result->toArray()]);
     }
 
@@ -83,6 +86,7 @@ class GeolocationV2Controller extends Controller
             (float) $data['dest_lng'],
             $data['mode'] ?? null,
         );
+
         return response()->json(['ok' => true, 'data' => $result->toArray()]);
     }
 
@@ -92,6 +96,7 @@ class GeolocationV2Controller extends Controller
             ->orderByDesc('queried_at')
             ->limit((int) $request->integer('limit', 50))
             ->get();
+
         return response()->json(['data' => $rows]);
     }
 
@@ -112,6 +117,7 @@ class GeolocationV2Controller extends Controller
     public function adminPurgeCache(Request $request): JsonResponse
     {
         $purged = $this->svc->purgeExpired();
+
         return response()->json(['ok' => true, 'purged' => $purged]);
     }
 }

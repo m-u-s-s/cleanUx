@@ -8,33 +8,50 @@ use App\Models\Parametre;
 use App\Models\PlatformModule;
 use App\Services\Integrations\GoogleCalendarOAuthService;
 use App\Services\Integrations\GoogleCalendarSyncService;
+use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
-use Illuminate\Contracts\View\View;
-use Livewire\Attributes\Layout;
 
 class GoogleAgendaSettings extends Component
 {
     public bool $calendarSyncEnabled = false;
+
     public bool $googleCalendarEnabled = false;
+
     public bool $googleCalendarEmployeeSelfSync = false;
+
     public bool $googleCalendarAdminReadOnly = true;
+
     public string $googleCalendarClientId = '';
+
     public string $googleCalendarClientSecret = '';
+
     public string $googleCalendarRedirectUri = '';
+
     public string $googleCalendarScopes = 'openid email profile https://www.googleapis.com/auth/calendar';
+
     public string $defaultCalendarId = 'primary';
+
     public string $syncWindowPastDays = '7';
+
     public string $syncWindowFutureDays = '30';
+
     public string $notes = '';
 
     public int $activeConnectionsCount = 0;
+
     public int $employeeConnectionsCount = 0;
+
     public int $staleConnectionsCount = 0;
+
     public int $errorConnectionsCount = 0;
+
     public int $failedEventLinksCount = 0;
+
     public bool $currentUserConnected = false;
+
     public ?string $currentUserGoogleEmail = null;
+
     public array $lastSyncSummary = [];
 
     public function mount(GoogleCalendarOAuthService $oauth): void

@@ -17,25 +17,43 @@ class PromoCodesCenter extends Component
     protected $paginationTheme = 'tailwind';
 
     public string $search = '';
+
     public string $filterStatus = '';
+
     public ?int $filterCampaignId = null;
 
     public ?int $editingId = null;
+
     public string $code = '';
+
     public string $name = '';
+
     public string $description = '';
+
     public string $discount_type = PromoCode::TYPE_PERCENT;
+
     public float $discount_value = 10;
+
     public ?float $max_discount_amount = null;
+
     public ?float $min_booking_amount = null;
+
     public ?int $max_total_uses = null;
+
     public int $max_uses_per_user = 1;
+
     public ?string $valid_from = null;
+
     public ?string $valid_until = null;
+
     public bool $first_booking_only = false;
+
     public bool $stackable_with_credits = true;
+
     public string $audience_scope = PromoCode::SCOPE_ALL;
+
     public string $status = PromoCode::STATUS_DRAFT;
+
     public ?int $promo_campaign_id = null;
 
     protected function rules(): array
@@ -67,13 +85,14 @@ class PromoCodesCenter extends Component
         $this->validate(array_merge($this->rules(), [
             'code' => array_merge($this->rules()['code'], [
                 $this->editingId
-                    ? 'unique:promo_codes,code,' . $this->editingId
+                    ? 'unique:promo_codes,code,'.$this->editingId
                     : 'unique:promo_codes,code',
             ]),
         ]));
 
         if ($this->discount_type === PromoCode::TYPE_PERCENT && $this->discount_value > 100) {
             $this->addError('discount_value', 'Une remise en pourcentage ne peut pas excéder 100 %.');
+
             return;
         }
 
@@ -179,8 +198,8 @@ class PromoCodesCenter extends Component
             ->with(['campaign'])
             ->when($this->search, function ($q) {
                 $q->where(function ($inner) {
-                    $inner->where('code', 'like', '%' . $this->search . '%')
-                        ->orWhere('name', 'like', '%' . $this->search . '%');
+                    $inner->where('code', 'like', '%'.$this->search.'%')
+                        ->orWhere('name', 'like', '%'.$this->search.'%');
                 });
             })
             ->when($this->filterStatus, fn ($q) => $q->where('status', $this->filterStatus))

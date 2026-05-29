@@ -16,9 +16,9 @@ use Illuminate\Validation\ValidationException;
 
 /**
  * @group Chat v2
+ *
  * @authenticated
  */
-
 class ChatV2Controller extends Controller
 {
     public function __construct(
@@ -35,6 +35,7 @@ class ChatV2Controller extends Controller
             ->orderByDesc('last_message_at')
             ->limit((int) $request->integer('limit', 50))
             ->get();
+
         return response()->json(['data' => $rows]);
     }
 
@@ -75,6 +76,7 @@ class ChatV2Controller extends Controller
         if (! $this->isParticipant($thread, $request->user()->id)) {
             return response()->json(['ok' => false, 'error' => 'forbidden'], 403);
         }
+
         return response()->json(['data' => $thread->load('participants')]);
     }
 
@@ -89,6 +91,7 @@ class ChatV2Controller extends Controller
             ->orderByDesc('id')
             ->limit((int) $request->integer('limit', (int) config('chat_v2.messages_per_page', 50)))
             ->get();
+
         return response()->json(['data' => $rows]);
     }
 
@@ -100,7 +103,7 @@ class ChatV2Controller extends Controller
         }
 
         $data = $request->validate([
-            'body' => ['nullable', 'string', 'max:' . (int) config('chat_v2.max_message_length', 4096)],
+            'body' => ['nullable', 'string', 'max:'.(int) config('chat_v2.max_message_length', 4096)],
             'attachment' => ['nullable', 'file'],
         ]);
 
@@ -138,6 +141,7 @@ class ChatV2Controller extends Controller
         }
         $upTo = $request->integer('up_to_message_id') ?: null;
         $count = $this->chat->markAsRead($thread, $user, $upTo);
+
         return response()->json(['ok' => true, 'marked' => $count]);
     }
 
@@ -148,6 +152,7 @@ class ChatV2Controller extends Controller
             return response()->json(['ok' => false, 'error' => 'forbidden'], 403);
         }
         $this->chat->archiveThread($thread);
+
         return response()->json(['ok' => true]);
     }
 
@@ -163,12 +168,13 @@ class ChatV2Controller extends Controller
         if (! Storage::disk($disk)->exists($message->attachment_path)) {
             abort(404);
         }
+
         return response(
             Storage::disk($disk)->get($message->attachment_path),
             200,
             [
                 'Content-Type' => $message->attachment_mime ?: 'application/octet-stream',
-                'Content-Disposition' => 'attachment; filename="' . basename($message->attachment_path) . '"',
+                'Content-Disposition' => 'attachment; filename="'.basename($message->attachment_path).'"',
             ],
         );
     }
@@ -183,6 +189,7 @@ class ChatV2Controller extends Controller
             ->orderByDesc('last_message_at')
             ->limit((int) $request->integer('limit', 50))
             ->get();
+
         return response()->json(['data' => $rows]);
     }
 
@@ -193,6 +200,7 @@ class ChatV2Controller extends Controller
             ->orderByDesc('created_at')
             ->limit((int) $request->integer('limit', 100))
             ->get();
+
         return response()->json(['data' => $rows]);
     }
 
@@ -207,6 +215,7 @@ class ChatV2Controller extends Controller
         } catch (ValidationException $e) {
             return response()->json(['ok' => false, 'errors' => $e->errors()], 422);
         }
+
         return response()->json(['ok' => true, 'message' => $row]);
     }
 

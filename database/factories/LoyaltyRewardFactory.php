@@ -12,7 +12,7 @@ class LoyaltyRewardFactory extends Factory
     public function definition(): array
     {
         return [
-            'code' => 'RWD-' . fake()->unique()->bothify('??###'),
+            'code' => 'RWD-'.fake()->unique()->bothify('??###'),
             'name' => fake()->randomElement(['10% Discount', 'Free Cleaning', 'Partner Voucher', 'Charity Donation']),
             'description' => fake()->sentence(),
             'reward_type' => fake()->randomElement(['discount_code', 'service_credit', 'physical_item', 'partner_voucher', 'charity_donation']),

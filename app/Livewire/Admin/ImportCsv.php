@@ -2,8 +2,8 @@
 
 namespace App\Livewire\Admin;
 
-use App\Models\OrganizationAccount;
 use App\Models\Booking;
+use App\Models\OrganizationAccount;
 use App\Models\User;
 use App\Support\ActivityLogger;
 use Illuminate\Support\Facades\Gate;
@@ -18,6 +18,7 @@ class ImportCsv extends Component
     use WithFileUploads;
 
     public $csv;
+
     public string $type = 'clients';
 
     public function import(): void
@@ -38,6 +39,7 @@ class ImportCsv extends Component
 
         if (empty($rows)) {
             session()->flash('error', 'Le fichier CSV est vide.');
+
             return;
         }
 
@@ -52,6 +54,7 @@ class ImportCsv extends Component
             if (count($row) !== count($headers)) {
                 $skipped++;
                 $errors[] = "Ligne {$lineNumber} : nombre de colonnes invalide.";
+
                 continue;
             }
 
@@ -68,10 +71,11 @@ class ImportCsv extends Component
                 if ($validator->fails()) {
                     $skipped++;
                     $errors[] = "Ligne {$lineNumber} : client invalide.";
+
                     continue;
                 }
 
-                $role = in_array(($data['role'] ?? 'client'), [ 'entreprise'], true) ? 'entreprise' : ($data['role'] ?: 'client');
+                $role = in_array(($data['role'] ?? 'client'), ['entreprise'], true) ? 'entreprise' : ($data['role'] ?: 'client');
                 $organizationAccountId = null;
 
                 if ($role === 'entreprise') {
@@ -108,6 +112,7 @@ class ImportCsv extends Component
                 ]);
 
                 $imported++;
+
                 continue;
             }
 
@@ -133,6 +138,7 @@ class ImportCsv extends Component
                 if ($validator->fails()) {
                     $skipped++;
                     $errors[] = "Ligne {$lineNumber} : rendez-vous invalide.";
+
                     continue;
                 }
 
@@ -142,12 +148,14 @@ class ImportCsv extends Component
                 if (! $client || ! $client->isClient()) {
                     $skipped++;
                     $errors[] = "Ligne {$lineNumber} : client invalide.";
+
                     continue;
                 }
 
                 if (! $employe || ! $employe->isEmploye()) {
                     $skipped++;
                     $errors[] = "Ligne {$lineNumber} : employé invalide.";
+
                     continue;
                 }
 

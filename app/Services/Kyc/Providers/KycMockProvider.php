@@ -31,8 +31,8 @@ class KycMockProvider implements KycProviderInterface
     public function startVerification(KycStartRequest $request): KycStartResult
     {
         return new KycStartResult(
-            externalApplicantId: 'mock_app_' . Str::lower(Str::random(12)),
-            externalCheckId: 'mock_chk_' . Str::lower(Str::random(12)),
+            externalApplicantId: 'mock_app_'.Str::lower(Str::random(12)),
+            externalCheckId: 'mock_chk_'.Str::lower(Str::random(12)),
             hostedFlowUrl: null,
             raw: [
                 'simulated' => true,
@@ -71,7 +71,7 @@ class KycMockProvider implements KycProviderInterface
                 'type' => $type,
                 'result' => $checkResult,
                 'confidence' => $checkResult === KycCheck::RESULT_CLEAR ? 0.92 : 0.55,
-                'external_id' => 'mock_chk_' . Str::lower(Str::random(8)),
+                'external_id' => 'mock_chk_'.Str::lower(Str::random(8)),
             ];
         }
 
@@ -89,6 +89,7 @@ class KycMockProvider implements KycProviderInterface
     {
         // Mock : pas de signature requise
         $decoded = json_decode($payload, true);
+
         return is_array($decoded) ? $decoded : ['raw' => $payload];
     }
 

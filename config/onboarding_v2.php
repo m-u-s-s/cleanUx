@@ -1,5 +1,14 @@
 <?php
 
+use App\Services\OnboardingV2\Validators\ContractSignValidator;
+use App\Services\OnboardingV2\Validators\DocumentUploadValidator;
+use App\Services\OnboardingV2\Validators\FormStepValidator;
+use App\Services\OnboardingV2\Validators\InsurancePurchaseValidator;
+use App\Services\OnboardingV2\Validators\KycCheckValidator;
+use App\Services\OnboardingV2\Validators\PayoutsSetupValidator;
+use App\Services\OnboardingV2\Validators\ProfileCompleteValidator;
+use App\Services\OnboardingV2\Validators\SkillDeclareValidator;
+
 return [
     'enabled' => env('ONBOARDING_V2_ENABLED', true),
 
@@ -23,14 +32,14 @@ return [
     | un OnboardingStepValidation (ok bool, errors, normalized_data).
     */
     'validators' => [
-        'form'                => \App\Services\OnboardingV2\Validators\FormStepValidator::class,
-        'kyc_check'           => \App\Services\OnboardingV2\Validators\KycCheckValidator::class,
-        'insurance_purchase'  => \App\Services\OnboardingV2\Validators\InsurancePurchaseValidator::class,
-        'payouts_setup'       => \App\Services\OnboardingV2\Validators\PayoutsSetupValidator::class,
-        'contract_sign'       => \App\Services\OnboardingV2\Validators\ContractSignValidator::class,
-        'profile_complete'    => \App\Services\OnboardingV2\Validators\ProfileCompleteValidator::class,
-        'skill_declare'       => \App\Services\OnboardingV2\Validators\SkillDeclareValidator::class,
-        'document_upload'     => \App\Services\OnboardingV2\Validators\DocumentUploadValidator::class,
+        'form' => FormStepValidator::class,
+        'kyc_check' => KycCheckValidator::class,
+        'insurance_purchase' => InsurancePurchaseValidator::class,
+        'payouts_setup' => PayoutsSetupValidator::class,
+        'contract_sign' => ContractSignValidator::class,
+        'profile_complete' => ProfileCompleteValidator::class,
+        'skill_declare' => SkillDeclareValidator::class,
+        'document_upload' => DocumentUploadValidator::class,
     ],
 
     /*

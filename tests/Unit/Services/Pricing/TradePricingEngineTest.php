@@ -22,7 +22,7 @@ class TradePricingEngineTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->engine = new TradePricingEngine();
+        $this->engine = new TradePricingEngine;
     }
 
     // ──────────────────────────────────────────────────────────────────
@@ -32,14 +32,16 @@ class TradePricingEngineTest extends TestCase
     private function makeService(array $attrs = [], ?array $tradeAttrs = null): ServiceCatalog
     {
         $service = new ServiceCatalog($attrs);
-        $trade   = $tradeAttrs !== null ? new Trade($tradeAttrs) : null;
+        $trade = $tradeAttrs !== null ? new Trade($tradeAttrs) : null;
         $service->setRelation('trade', $trade);
+
         return $service;
     }
 
     private function engineWithZone(TradeZonePricing $zone): TradePricingEngine
     {
-        return new class($zone) extends TradePricingEngine {
+        return new class($zone) extends TradePricingEngine
+        {
             public function __construct(private readonly TradeZonePricing $stub) {}
 
             protected function resolveZonePricing(?int $tradeId, ?int $serviceZoneId): ?TradeZonePricing
@@ -52,11 +54,11 @@ class TradePricingEngineTest extends TestCase
     private function makeZone(array $attrs): TradeZonePricing
     {
         return new TradeZonePricing(array_merge([
-            'base_rate_cents'  => 2000,
+            'base_rate_cents' => 2000,
             'surge_multiplier' => '1.00',
-            'min_price_cents'  => null,
-            'max_price_cents'  => null,
-            'is_active'        => true,
+            'min_price_cents' => null,
+            'max_price_cents' => null,
+            'is_active' => true,
         ], $attrs));
     }
 
@@ -205,7 +207,7 @@ class TradePricingEngineTest extends TestCase
             ['id' => 1],
         );
 
-        $zone   = $this->makeZone(['base_rate_cents' => 3000]); // 30 EUR/h
+        $zone = $this->makeZone(['base_rate_cents' => 3000]); // 30 EUR/h
         $engine = $this->engineWithZone($zone);
 
         $result = $engine->estimate($service, ['duration_hours' => 2], 5);
@@ -226,7 +228,7 @@ class TradePricingEngineTest extends TestCase
             ['id' => 1],
         );
 
-        $zone   = $this->makeZone(['base_rate_cents' => 2000, 'surge_multiplier' => '1.50']);
+        $zone = $this->makeZone(['base_rate_cents' => 2000, 'surge_multiplier' => '1.50']);
         $engine = $this->engineWithZone($zone);
 
         // 20 EUR × 2 hours × 1.5 surge = 60 EUR
@@ -247,7 +249,7 @@ class TradePricingEngineTest extends TestCase
             ['id' => 2],
         );
 
-        $zone   = $this->makeZone(['base_rate_cents' => 500, 'min_price_cents' => 2000]);
+        $zone = $this->makeZone(['base_rate_cents' => 500, 'min_price_cents' => 2000]);
         $engine = $this->engineWithZone($zone);
 
         // 5 EUR × 1 h = 5 EUR → clamped to 20 EUR minimum
@@ -267,7 +269,7 @@ class TradePricingEngineTest extends TestCase
             ['id' => 3],
         );
 
-        $zone   = $this->makeZone(['base_rate_cents' => 5000, 'max_price_cents' => 10000]);
+        $zone = $this->makeZone(['base_rate_cents' => 5000, 'max_price_cents' => 10000]);
         $engine = $this->engineWithZone($zone);
 
         // 50 EUR × 10 m² = 500 EUR → clamped to 100 EUR maximum

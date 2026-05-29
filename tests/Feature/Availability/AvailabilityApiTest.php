@@ -5,6 +5,7 @@ namespace Tests\Feature\Availability;
 use App\Models\AvailabilityException;
 use App\Models\AvailabilitySlot;
 use App\Models\User;
+use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;
@@ -145,7 +146,7 @@ class AvailabilityApiTest extends TestCase
     public function test_windows_endpoint_returns_iso_intervals(): void
     {
         $provider = $this->makeProvider();
-        $monday = \Carbon\CarbonImmutable::now()->next(\Carbon\CarbonImmutable::MONDAY)->startOfDay();
+        $monday = CarbonImmutable::now()->next(CarbonImmutable::MONDAY)->startOfDay();
 
         AvailabilitySlot::create([
             'provider_user_id' => $provider->id,
@@ -156,7 +157,7 @@ class AvailabilityApiTest extends TestCase
 
         Sanctum::actingAs($provider);
 
-        $response = $this->getJson('/api/provider/availability/windows?' . http_build_query([
+        $response = $this->getJson('/api/provider/availability/windows?'.http_build_query([
             'from' => $monday->format('Y-m-d'),
             'to' => $monday->copy()->addDay()->format('Y-m-d'),
         ]));

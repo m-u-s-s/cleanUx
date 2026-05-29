@@ -27,15 +27,58 @@ class Country extends Model
         'is_active' => 'boolean',
     ];
 
-    public function regions(): HasMany { return $this->hasMany(Region::class); }
-    public function provinces(): HasMany { return $this->hasMany(Province::class); }
-    public function communes(): HasMany { return $this->hasMany(Commune::class); }
-    public function postalCodes(): HasMany { return $this->hasMany(PostalCode::class); }
-    public function serviceZones(): HasMany { return $this->hasMany(ServiceZone::class); }
-    public function operationalSetting(): HasOne { return $this->hasOne(CountryOperationalSetting::class); }
-    public function billingProfile(): HasOne { return $this->hasOne(CountryBillingProfile::class); }
-    public function launchReadiness(): HasOne { return $this->hasOne(MarketLaunchReadiness::class); }
-    public function countryServiceRules(): HasMany { return $this->hasMany(CountryServiceCatalogRule::class); }
-    public function serviceCatalogRules(): HasMany { return $this->hasMany(CountryServiceCatalogRule::class); }
-    public function marketLaunchReadiness(): HasOne { return $this->hasOne(MarketLaunchReadiness::class); }
+    public function regions(): HasMany
+    {
+        return $this->hasMany(Region::class);
+    }
+
+    public function provinces(): HasMany
+    {
+        return $this->hasMany(Province::class);
+    }
+
+    public function communes(): HasMany
+    {
+        return $this->hasMany(Commune::class);
+    }
+
+    public function postalCodes(): HasMany
+    {
+        return $this->hasMany(PostalCode::class);
+    }
+
+    public function serviceZones(): HasMany
+    {
+        return $this->hasMany(ServiceZone::class);
+    }
+
+    public function operationalSetting(): HasOne
+    {
+        return $this->hasOne(CountryOperationalSetting::class);
+    }
+
+    public function billingProfile(): HasOne
+    {
+        return $this->hasOne(CountryBillingProfile::class);
+    }
+
+    public function launchReadiness(): HasOne
+    {
+        return $this->hasOne(MarketLaunchReadiness::class);
+    }
+
+    public function countryServiceRules(): HasMany
+    {
+        return $this->hasMany(CountryServiceCatalogRule::class);
+    }
+
+    public function serviceCatalogRules(): HasMany
+    {
+        return $this->hasMany(CountryServiceCatalogRule::class);
+    }
+
+    public function marketLaunchReadiness(): HasOne
+    {
+        return $this->hasOne(MarketLaunchReadiness::class);
+    }
 }

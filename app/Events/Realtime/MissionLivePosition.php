@@ -2,6 +2,7 @@
 
 namespace App\Events\Realtime;
 
+use App\Models\BroadcastEvent;
 use App\Models\Mission;
 use App\Realtime\Contracts\TracksBroadcastLedger;
 use Illuminate\Broadcasting\InteractsWithSockets;
@@ -32,7 +33,7 @@ class MissionLivePosition implements ShouldBroadcastNow, TracksBroadcastLedger
 
     public function broadcastOn(): array
     {
-        return [new PrivateChannel('mission.' . $this->mission->id)];
+        return [new PrivateChannel('mission.'.$this->mission->id)];
     }
 
     public function broadcastAs(): string
@@ -55,7 +56,7 @@ class MissionLivePosition implements ShouldBroadcastNow, TracksBroadcastLedger
 
     public function broadcastCategory(): string
     {
-        return \App\Models\BroadcastEvent::CATEGORY_POSITION;
+        return BroadcastEvent::CATEGORY_POSITION;
     }
 
     public function broadcastIdempotencyKey(): ?string
@@ -63,7 +64,8 @@ class MissionLivePosition implements ShouldBroadcastNow, TracksBroadcastLedger
         if (! $this->sequence) {
             return null;
         }
-        return 'position:mission:' . $this->mission->id . ':' . $this->sequence;
+
+        return 'position:mission:'.$this->mission->id.':'.$this->sequence;
     }
 
     public function broadcastSourceType(): ?string

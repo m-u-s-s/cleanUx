@@ -3,14 +3,13 @@
 namespace App\Support\Platform;
 
 use Illuminate\Filesystem\Filesystem;
-use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 
 class LegacyLiteralReport
 {
     public function __construct(protected ?Filesystem $files = null)
     {
-        $this->files ??= new Filesystem();
+        $this->files ??= new Filesystem;
     }
 
     public function build(): array
@@ -77,15 +76,15 @@ class LegacyLiteralReport
         ];
 
         $files = collect($scanPaths)
-            ->flatMap(fn (string $relativePath) => $this->files->allFiles($root . DIRECTORY_SEPARATOR . $relativePath))
-            ->map(fn ($file) => str_replace('\\', '/', Str::after($file->getPathname(), $root . DIRECTORY_SEPARATOR)))
+            ->flatMap(fn (string $relativePath) => $this->files->allFiles($root.DIRECTORY_SEPARATOR.$relativePath))
+            ->map(fn ($file) => str_replace('\\', '/', Str::after($file->getPathname(), $root.DIRECTORY_SEPARATOR)))
             ->filter(fn (string $path) => ! $this->shouldIgnore($path, $ignored))
             ->values();
 
         $results = collect($patterns)->map(function (array $config, string $key) use ($files, $root) {
             $matches = $files
                 ->map(function (string $path) use ($config, $root) {
-                    $content = $this->files->get($root . DIRECTORY_SEPARATOR . $path);
+                    $content = $this->files->get($root.DIRECTORY_SEPARATOR.$path);
                     $count = 0;
 
                     foreach ($config['regexes'] as $regex) {

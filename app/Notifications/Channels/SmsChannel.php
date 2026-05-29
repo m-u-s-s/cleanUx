@@ -2,6 +2,8 @@
 
 namespace App\Notifications\Channels;
 
+use App\Models\SmsMessage;
+use App\Models\User;
 use App\Services\Notifications\SmsService;
 use Illuminate\Notifications\Notification;
 
@@ -21,9 +23,7 @@ use Illuminate\Notifications\Notification;
  */
 class SmsChannel
 {
-    public function __construct(protected SmsService $smsService)
-    {
-    }
+    public function __construct(protected SmsService $smsService) {}
 
     public function send($notifiable, Notification $notification): mixed
     {
@@ -46,12 +46,12 @@ class SmsChannel
 
         $category = method_exists($notification, 'smsCategory')
             ? (string) $notification->smsCategory()
-            : \App\Models\SmsMessage::CATEGORY_TRANSACTIONAL;
+            : SmsMessage::CATEGORY_TRANSACTIONAL;
 
         return $this->smsService->dispatch(
             toPhone: $phone,
             body: (string) $body,
-            user: $notifiable instanceof \App\Models\User ? $notifiable : null,
+            user: $notifiable instanceof User ? $notifiable : null,
             category: $category,
             idempotencyKey: $idempotencyKey,
             locale: $notifiable->preferredLocale() ?? null,

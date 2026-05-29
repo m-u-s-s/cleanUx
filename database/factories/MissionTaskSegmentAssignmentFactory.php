@@ -16,28 +16,28 @@ class MissionTaskSegmentAssignmentFactory extends Factory
     {
         return [
             'mission_task_segment_id' => fn () => MissionTaskSegment::factory()->create()->id,
-            'mission_id'              => fn () => Mission::factory()->create()->id,
-            'field_team_id'           => null,
-            'user_id'                 => fn () => User::factory()->create()->id,
-            'assigned_by_user_id'     => null,
-            'assignment_role'         => 'lead',
-            'status'                  => 'assigned',
-            'planned_minutes'         => fake()->numberBetween(60, 240),
-            'actual_minutes'          => null,
-            'sequence_order'          => 1,
-            'notes'                   => null,
-            'started_at'              => null,
-            'completed_at'            => null,
+            'mission_id' => fn () => Mission::factory()->create()->id,
+            'field_team_id' => null,
+            'user_id' => fn () => User::factory()->create()->id,
+            'assigned_by_user_id' => null,
+            'assignment_role' => 'lead',
+            'status' => 'assigned',
+            'planned_minutes' => fake()->numberBetween(60, 240),
+            'actual_minutes' => null,
+            'sequence_order' => 1,
+            'notes' => null,
+            'started_at' => null,
+            'completed_at' => null,
         ];
     }
 
     public function completed(): static
     {
         return $this->state(fn () => [
-            'status'         => 'completed',
+            'status' => 'completed',
             'actual_minutes' => fake()->numberBetween(60, 240),
-            'started_at'     => now()->subHours(2),
-            'completed_at'   => now(),
+            'started_at' => now()->subHours(2),
+            'completed_at' => now(),
         ]);
     }
 }

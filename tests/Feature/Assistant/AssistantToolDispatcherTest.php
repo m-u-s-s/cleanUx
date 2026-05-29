@@ -5,7 +5,6 @@ namespace Tests\Feature\Assistant;
 use App\Models\AssistantAction;
 use App\Models\AssistantConversation;
 use App\Models\Booking;
-use App\Models\OrganizationAccount;
 use App\Models\User;
 use App\Services\Assistant\Tools\AssistantToolDispatcher;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -18,9 +17,9 @@ class AssistantToolDispatcherTest extends TestCase
     private function createConversation(User $user): AssistantConversation
     {
         return AssistantConversation::create([
-            'user_id'      => $user->id,
+            'user_id' => $user->id,
             'context_role' => $user->assistantContextRole()->value,
-            'status'       => AssistantConversation::STATUS_OPEN,
+            'status' => AssistantConversation::STATUS_OPEN,
         ]);
     }
 
@@ -31,12 +30,12 @@ class AssistantToolDispatcherTest extends TestCase
 
         $dispatcher = app(AssistantToolDispatcher::class);
         $result = $dispatcher->dispatch($user, $conv, [
-            'id'    => 'toolu_test_1',
-            'name'  => 'list_my_bookings',
+            'id' => 'toolu_test_1',
+            'name' => 'list_my_bookings',
             'input' => ['status' => 'all', 'limit' => 5],
         ]);
 
-        $this->assertArrayHasKey('count',    $result);
+        $this->assertArrayHasKey('count', $result);
         $this->assertArrayHasKey('bookings', $result);
 
         // Aucun AssistantAction créé pour les tools en lecture
@@ -50,17 +49,17 @@ class AssistantToolDispatcherTest extends TestCase
 
         $dispatcher = app(AssistantToolDispatcher::class);
         $result = $dispatcher->dispatch($user, $conv, [
-            'id'    => 'toolu_test_2',
-            'name'  => 'create_booking',
+            'id' => 'toolu_test_2',
+            'name' => 'create_booking',
             'input' => [
                 'scheduled_date' => '2026-06-15',
                 'scheduled_time' => '10:00',
-                'place_type'     => 'apartment',
-                'surface_m2'     => 75,
-                'address'        => 'Rue des Chats 12',
-                'city'           => 'Bruxelles',
-                'postal_code'    => '1000',
-                'frequency'      => 'unique',
+                'place_type' => 'apartment',
+                'surface_m2' => 75,
+                'address' => 'Rue des Chats 12',
+                'city' => 'Bruxelles',
+                'postal_code' => '1000',
+                'frequency' => 'unique',
             ],
         ]);
 
@@ -84,16 +83,16 @@ class AssistantToolDispatcherTest extends TestCase
 
         $dispatcher = app(AssistantToolDispatcher::class);
         $dispatch = $dispatcher->dispatch($user, $conv, [
-            'id'    => 'toolu_test_3',
-            'name'  => 'create_booking',
+            'id' => 'toolu_test_3',
+            'name' => 'create_booking',
             'input' => [
                 'scheduled_date' => '2026-06-20',
                 'scheduled_time' => '14:00',
-                'place_type'     => 'house',
-                'surface_m2'     => 120,
-                'address'        => '7 Avenue Victor',
-                'city'           => 'Liège',
-                'postal_code'    => '4000',
+                'place_type' => 'house',
+                'surface_m2' => 120,
+                'address' => '7 Avenue Victor',
+                'city' => 'Liège',
+                'postal_code' => '4000',
             ],
         ]);
 
@@ -118,21 +117,21 @@ class AssistantToolDispatcherTest extends TestCase
     {
         $userA = User::factory()->create(['role' => 'client']);
         $userB = User::factory()->create(['role' => 'client']);
-        $conv  = $this->createConversation($userA);
+        $conv = $this->createConversation($userA);
 
         $dispatcher = app(AssistantToolDispatcher::class);
 
         $dispatch = $dispatcher->dispatch($userA, $conv, [
-            'id'    => 'toolu_test_4',
-            'name'  => 'create_booking',
+            'id' => 'toolu_test_4',
+            'name' => 'create_booking',
             'input' => [
                 'scheduled_date' => '2026-06-25',
                 'scheduled_time' => '09:00',
-                'place_type'     => 'office',
-                'surface_m2'     => 40,
-                'address'        => 'Rue de la Loi 1',
-                'city'           => 'Bruxelles',
-                'postal_code'    => '1000',
+                'place_type' => 'office',
+                'surface_m2' => 40,
+                'address' => 'Rue de la Loi 1',
+                'city' => 'Bruxelles',
+                'postal_code' => '1000',
             ],
         ]);
 
@@ -151,8 +150,8 @@ class AssistantToolDispatcherTest extends TestCase
 
         $dispatcher = app(AssistantToolDispatcher::class);
         $result = $dispatcher->dispatch($user, $conv, [
-            'id'    => 'toolu_test_5',
-            'name'  => 'this_tool_does_not_exist',
+            'id' => 'toolu_test_5',
+            'name' => 'this_tool_does_not_exist',
             'input' => [],
         ]);
 

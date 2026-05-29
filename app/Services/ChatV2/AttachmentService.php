@@ -36,8 +36,8 @@ class AttachmentService
 
         $disk = (string) config('chat_v2.attachments_disk', 'local');
         $prefix = trim((string) config('chat_v2.attachments_path_prefix', 'chat_attachments'), '/');
-        $name = Str::lower(Str::random(20)) . '_' . preg_replace('/[^a-z0-9_.-]+/i', '_', $file->getClientOriginalName());
-        $path = $prefix . '/' . date('Y/m/d') . '/' . $name;
+        $name = Str::lower(Str::random(20)).'_'.preg_replace('/[^a-z0-9_.-]+/i', '_', $file->getClientOriginalName());
+        $path = $prefix.'/'.date('Y/m/d').'/'.$name;
 
         Storage::disk($disk)->put($path, file_get_contents($file->getRealPath()));
 
@@ -54,6 +54,7 @@ class AttachmentService
         if (Storage::disk($disk)->exists($path)) {
             return Storage::disk($disk)->delete($path);
         }
+
         return true;
     }
 }

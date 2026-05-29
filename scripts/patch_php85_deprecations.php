@@ -10,8 +10,7 @@
  *
  * Auto-exécuté via composer.json post-install-cmd + post-update-cmd.
  */
-
-$file = __DIR__ . '/../vendor/laravel/framework/config/database.php';
+$file = __DIR__.'/../vendor/laravel/framework/config/database.php';
 
 if (! file_exists($file)) {
     fwrite(STDERR, "[patch] vendor file absent, skip\n");

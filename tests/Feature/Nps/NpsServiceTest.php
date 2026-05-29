@@ -2,7 +2,6 @@
 
 namespace Tests\Feature\Nps;
 
-use App\Models\Booking;
 use App\Models\NpsResponse;
 use App\Models\User;
 use App\Services\Nps\NpsService;

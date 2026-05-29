@@ -163,37 +163,37 @@ class Mission extends Model
             ->latestOfMany();
     }
 
-    public function clientActions(): \Illuminate\Database\Eloquent\Relations\HasMany
+    public function clientActions(): HasMany
     {
         return $this->hasMany(MissionClientAction::class);
     }
 
-    public function checklists(): \Illuminate\Database\Eloquent\Relations\HasMany
+    public function checklists(): HasMany
     {
         return $this->hasMany(MissionChecklist::class);
     }
 
-    public function media(): \Illuminate\Database\Eloquent\Relations\HasMany
+    public function media(): HasMany
     {
         return $this->hasMany(MissionMedia::class);
     }
 
-    public function incidents(): \Illuminate\Database\Eloquent\Relations\HasMany
+    public function incidents(): HasMany
     {
         return $this->hasMany(MissionIncident::class);
     }
 
-    public function qualityReviews(): \Illuminate\Database\Eloquent\Relations\HasMany
+    public function qualityReviews(): HasMany
     {
         return $this->hasMany(MissionQualityReview::class);
     }
 
-    public function report(): \Illuminate\Database\Eloquent\Relations\HasOne
+    public function report(): HasOne
     {
         return $this->hasOne(MissionReport::class);
     }
 
-    public function events(): \Illuminate\Database\Eloquent\Relations\HasMany
+    public function events(): HasMany
     {
         return $this->hasMany(MissionEvent::class)->orderBy('happened_at');
     }

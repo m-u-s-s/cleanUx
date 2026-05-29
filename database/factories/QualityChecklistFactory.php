@@ -12,7 +12,7 @@ class QualityChecklistFactory extends Factory
     public function definition(): array
     {
         return [
-            'code' => 'QC-' . fake()->unique()->bothify('??###'),
+            'code' => 'QC-'.fake()->unique()->bothify('??###'),
             'name' => fake()->randomElement(['Pre-Cleaning Check', 'Post-Painting Inspection', 'Safety Audit']),
             'description' => fake()->sentence(),
             'trade_codes' => ['cleaning'],

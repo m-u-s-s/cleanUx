@@ -43,7 +43,7 @@ return new class extends Migration
             Schema::table('bookings', function (Blueprint $table) {
                 $table->string('surface', 255)->nullable()->change();
             });
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             // Fallback brut pour MySQL/MariaDB
             if (in_array($driver, ['mysql', 'mariadb'], true)) {
                 DB::statement('ALTER TABLE `bookings` MODIFY `surface` VARCHAR(255) NULL');
@@ -67,8 +67,9 @@ return new class extends Migration
     {
         try {
             $type = Schema::getColumnType($table, $column);
+
             return in_array(strtolower($type), ['string', 'varchar', 'text', 'char'], true);
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             // Si on ne peut pas savoir, on laisse passer la conversion.
             return false;
         }

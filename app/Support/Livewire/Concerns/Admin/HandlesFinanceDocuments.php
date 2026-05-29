@@ -2,8 +2,8 @@
 
 namespace App\Support\Livewire\Concerns\Admin;
 
-use App\Models\FinanceInvoice;
 use App\Models\Booking;
+use App\Models\FinanceInvoice;
 use Barryvdh\DomPDF\Facade\Pdf;
 
 trait HandlesFinanceDocuments
@@ -22,7 +22,7 @@ trait HandlesFinanceDocuments
 
         return response()->streamDownload(function () use ($pdf) {
             echo $pdf->output();
-        }, $this->quoteNumber($rdv) . '.pdf');
+        }, $this->quoteNumber($rdv).'.pdf');
     }
 
     public function downloadInvoicePdf(int $rendezVousId)
@@ -39,13 +39,13 @@ trait HandlesFinanceDocuments
 
         return response()->streamDownload(function () use ($pdf) {
             echo $pdf->output();
-        }, $this->invoiceNumber($rdv) . '.pdf');
+        }, $this->invoiceNumber($rdv).'.pdf');
     }
 
     public function exportFinanceCsv()
     {
         $rows = $this->baseQuery()->orderBy('date')->get();
-        $filename = 'finance_export_' . now()->format('Ymd_His') . '.csv';
+        $filename = 'finance_export_'.now()->format('Ymd_His').'.csv';
 
         return response()->streamDownload(function () use ($rows) {
             $handle = fopen('php://output', 'w');
@@ -106,6 +106,7 @@ trait HandlesFinanceDocuments
 
         if (! $invoice) {
             session()->flash('warning', 'Aucune facture à générer pour ce rendez-vous dans son état actuel.');
+
             return;
         }
 
@@ -121,6 +122,7 @@ trait HandlesFinanceDocuments
 
         if (! $invoice) {
             session()->flash('warning', 'Impossible d’émettre une facture pour ce rendez-vous.');
+
             return;
         }
 
@@ -136,11 +138,13 @@ trait HandlesFinanceDocuments
 
         if (! $invoice) {
             session()->flash('warning', 'Aucune facture trouvée à solder.');
+
             return;
         }
 
         if ((float) $invoice->balance_due <= 0) {
             session()->flash('success', 'La facture est déjà soldée.');
+
             return;
         }
 
@@ -161,6 +165,7 @@ trait HandlesFinanceDocuments
 
         if (! $invoice) {
             session()->flash('warning', 'Aucune facture trouvée.');
+
             return;
         }
 
@@ -168,6 +173,7 @@ trait HandlesFinanceDocuments
 
         if ($amount <= 0 || $amount > (float) $invoice->balance_due) {
             session()->flash('warning', 'Montant de paiement invalide.');
+
             return;
         }
 
@@ -189,6 +195,7 @@ trait HandlesFinanceDocuments
 
         if (! $invoice instanceof FinanceInvoice) {
             session()->flash('warning', 'Aucune facture trouvée pour envoyer une relance.');
+
             return;
         }
 

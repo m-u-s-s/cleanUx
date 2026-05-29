@@ -45,6 +45,7 @@ trait RendersTradeFormSchema
         if (! $tradeId) {
             $this->tradeFormSchema = null;
             $this->tradeFormAnswers = [];
+
             return;
         }
 
@@ -52,6 +53,7 @@ trait RendersTradeFormSchema
         if (! $trade || empty($trade->booking_form_schema)) {
             $this->tradeFormSchema = null;
             $this->tradeFormAnswers = [];
+
             return;
         }
 
@@ -59,6 +61,7 @@ trait RendersTradeFormSchema
         if (! $result['ok'] || empty($result['normalized']['fields'])) {
             $this->tradeFormSchema = null;
             $this->tradeFormAnswers = [];
+
             return;
         }
 
@@ -78,6 +81,7 @@ trait RendersTradeFormSchema
         if (! $this->hasTradeFormSchema()) {
             return [];
         }
+
         return TradeFormSchema::answerValidationRules($this->tradeFormSchema, $prefix);
     }
 
@@ -91,6 +95,7 @@ trait RendersTradeFormSchema
             return ['total' => 0.0, 'breakdown' => []];
         }
         $basePrice = (float) ($this->tradeFormBasePriceContext() ?? 0.0);
+
         return TradeFormSchema::computePriceDelta($this->tradeFormSchema, $this->tradeFormAnswers, $basePrice);
     }
 

@@ -10,11 +10,15 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class DeviceToken extends Model
 {
     public const PLATFORM_IOS = 'ios';
+
     public const PLATFORM_ANDROID = 'android';
+
     public const PLATFORM_WEB = 'web';
 
     public const PROVIDER_FCM = 'fcm';
+
     public const PROVIDER_APNS = 'apns';
+
     public const PROVIDER_MOCK = 'mock';
 
     protected $fillable = [
@@ -64,7 +68,8 @@ class DeviceToken extends Model
             return (bool) $prefs[$category];
         }
 
-        $default = (array) (config('push.categories.' . $category, []));
+        $default = (array) (config('push.categories.'.$category, []));
+
         return (bool) ($default['default_opt_in'] ?? true);
     }
 

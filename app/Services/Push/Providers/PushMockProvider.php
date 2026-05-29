@@ -32,7 +32,7 @@ class PushMockProvider implements PushProviderInterface
     {
         Log::info('PushMockProvider::send', [
             'platform' => $request->platform,
-            'token_prefix' => substr($request->token, 0, 12) . '...',
+            'token_prefix' => substr($request->token, 0, 12).'...',
             'title' => $request->title,
             'category' => $request->category,
             'idempotency_key' => $request->idempotencyKey,
@@ -56,7 +56,7 @@ class PushMockProvider implements PushProviderInterface
         }
 
         return PushSendResult::accepted(
-            'mock_push_' . Str::lower(Str::random(16)),
+            'mock_push_'.Str::lower(Str::random(16)),
             'sent',
             ['simulated' => true],
         );

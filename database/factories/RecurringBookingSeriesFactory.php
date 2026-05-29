@@ -20,22 +20,22 @@ class RecurringBookingSeriesFactory extends Factory
         $startsAt = fake()->dateTimeBetween('now', '+30 days');
 
         return [
-            'customer_user_id'        => User::factory()->client(),
+            'customer_user_id' => User::factory()->client(),
             'customer_organization_id' => null,
-            'organization_site_id'    => null,
-            'service_catalog_id'      => ServiceCatalog::factory(),
-            'service_zone_id'         => ServiceZone::factory(),
-            'frequency'               => fake()->randomElement(['weekly', 'biweekly', 'monthly']),
-            'interval'                => 1,
-            'days'                    => ['monday', 'friday'],
-            'starts_at'               => $startsAt->format('Y-m-d'),
-            'ends_at'                 => null,
-            'occurrence_count'        => null,
-            'status'                  => RecurringBookingSeries::STATUS_ACTIVE,
-            'timezone'                => 'Europe/Brussels',
-            'next_occurrence_at'      => $startsAt,
-            'last_generated_at'       => null,
-            'metadata'                => null,
+            'organization_site_id' => null,
+            'service_catalog_id' => ServiceCatalog::factory(),
+            'service_zone_id' => ServiceZone::factory(),
+            'frequency' => fake()->randomElement(['weekly', 'biweekly', 'monthly']),
+            'interval' => 1,
+            'days' => ['monday', 'friday'],
+            'starts_at' => $startsAt->format('Y-m-d'),
+            'ends_at' => null,
+            'occurrence_count' => null,
+            'status' => RecurringBookingSeries::STATUS_ACTIVE,
+            'timezone' => 'Europe/Brussels',
+            'next_occurrence_at' => $startsAt,
+            'last_generated_at' => null,
+            'metadata' => null,
         ];
     }
 

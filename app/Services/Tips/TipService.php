@@ -5,6 +5,7 @@ namespace App\Services\Tips;
 use App\Models\Booking;
 use App\Models\BookingTip;
 use App\Models\User;
+use App\Services\Loyalty\LoyaltyService;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -42,11 +43,12 @@ class TipService
 
         return collect($presets)->map(function ($p) use ($baseAmount) {
             $amountCents = (int) round($baseAmount * ($p['percent'] / 100));
+
             return [
                 'label' => $p['label'],
                 'percent' => (int) $p['percent'],
                 'amount_cents' => $amountCents,
-                'amount_formatted' => number_format($amountCents / 100, 2, ',', ' ') . ' EUR',
+                'amount_formatted' => number_format($amountCents / 100, 2, ',', ' ').' EUR',
             ];
         })->toArray();
     }
@@ -173,6 +175,7 @@ class TipService
             'stripe_transfer_id' => $transferId ?? $tip->stripe_transfer_id,
             'paid_out_at' => now(),
         ]);
+
         return $tip->fresh();
     }
 
@@ -185,6 +188,7 @@ class TipService
             'status' => BookingTip::STATUS_FAILED,
             'metadata' => $meta,
         ]);
+
         return $tip->fresh();
     }
 
@@ -196,22 +200,23 @@ class TipService
             ]);
         }
         $tip->update(['status' => BookingTip::STATUS_CANCELLED]);
+
         return $tip->fresh();
     }
 
     protected function awardLoyaltyBonus(BookingTip $tip): void
     {
         try {
-            if (! class_exists(\App\Services\Loyalty\LoyaltyService::class)) {
+            if (! class_exists(LoyaltyService::class)) {
                 return;
             }
-            $loyalty = app(\App\Services\Loyalty\LoyaltyService::class);
+            $loyalty = app(LoyaltyService::class);
             $loyalty->award(
                 user: $tip->client,
                 type: 'earn_adjustment',
                 points: $tip->client_bonus_points,
                 source: $tip,
-                idempotencyKey: 'tip_bonus_' . $tip->id,
+                idempotencyKey: 'tip_bonus_'.$tip->id,
                 reason: "Bonus pourboire mission #{$tip->booking_id}",
             );
         } catch (\Throwable $e) {

@@ -5,6 +5,7 @@ namespace App\Http\Middleware;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
@@ -42,6 +43,7 @@ class VerifyTurnstileCaptcha
                     'message' => 'Captcha non configuré côté serveur.',
                 ], 503);
             }
+
             return $next($request);
         }
 
@@ -69,6 +71,7 @@ class VerifyTurnstileCaptcha
             $result = $response->json();
             if (! is_array($result) || ! (bool) ($result['success'] ?? false)) {
                 $errorCodes = $result['error-codes'] ?? [];
+
                 return response()->json([
                     'ok' => false,
                     'error' => 'captcha_invalid',
@@ -78,7 +81,7 @@ class VerifyTurnstileCaptcha
             }
         } catch (\Throwable $e) {
             // Si l'API Cloudflare est down, on log + bloque (fail-closed prod, fail-open dev)
-            \Illuminate\Support\Facades\Log::warning('[turnstile] verification network failure', [
+            Log::warning('[turnstile] verification network failure', [
                 'error' => $e->getMessage(),
             ]);
             if (app()->environment('production')) {

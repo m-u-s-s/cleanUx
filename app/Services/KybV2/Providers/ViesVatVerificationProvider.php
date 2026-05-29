@@ -41,10 +41,11 @@ class ViesVatVerificationProvider implements BusinessVerificationProviderContrac
                 ->timeout(15)
                 ->get("{$base}/ms/{$country}/vat/{$number}");
             if (! $response->successful()) {
-                return new VerificationResult(false, 'vies', 'tax_validity', error: 'http_' . $response->status());
+                return new VerificationResult(false, 'vies', 'tax_validity', error: 'http_'.$response->status());
             }
             $json = $response->json();
             $isValid = (bool) ($json['isValid'] ?? false);
+
             return new VerificationResult(
                 success: $isValid,
                 provider: 'vies',
@@ -55,7 +56,8 @@ class ViesVatVerificationProvider implements BusinessVerificationProviderContrac
             );
         } catch (\Throwable $e) {
             Log::warning('[kyb_v2] vies error', ['error' => $e->getMessage()]);
-            return new VerificationResult(false, 'vies', 'tax_validity', error: 'exception:' . mb_substr($e->getMessage(), 0, 200));
+
+            return new VerificationResult(false, 'vies', 'tax_validity', error: 'exception:'.mb_substr($e->getMessage(), 0, 200));
         }
     }
 }

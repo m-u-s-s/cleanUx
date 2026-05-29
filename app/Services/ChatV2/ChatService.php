@@ -2,6 +2,7 @@
 
 namespace App\Services\ChatV2;
 
+use App\Events\ChatV2\ChatMessageSentEvent;
 use App\Models\ChatMessage;
 use App\Models\ChatMessageRead;
 use App\Models\ChatParticipant;
@@ -19,7 +20,7 @@ class ChatService
     /**
      * Démarre (ou récupère) un thread pour un contexte donné.
      *
-     * @param array<int, array{user_id:int, role:string}> $participants
+     * @param  array<int, array{user_id:int, role:string}>  $participants
      */
     public function startThread(
         ?string $contextType,
@@ -43,6 +44,7 @@ class ChatService
                 ->first();
             if ($existing) {
                 $this->syncParticipants($existing, $participants);
+
                 return $existing;
             }
         }
@@ -60,12 +62,13 @@ class ChatService
                 'metadata' => $metadata,
             ]);
             $this->syncParticipants($thread, $participants);
+
             return $thread;
         });
     }
 
     /**
-     * @param array<int, array{user_id:int, role:string}> $participants
+     * @param  array<int, array{user_id:int, role:string}>  $participants
      */
     protected function syncParticipants(ChatThread $thread, array $participants): void
     {
@@ -138,12 +141,13 @@ class ChatService
                 'moderation_reason' => $moderation->reason,
             ]);
             $thread->increment('flagged_count');
+
             return $msg;
         }
 
         $persistedBody = $moderation->redactedBody;
 
-        return DB::transaction(function () use ($thread, $sender, $persistedBody, $body, $moderation, $attachment, $participant, $senderRoleOverride) {
+        return DB::transaction(function () use ($thread, $sender, $persistedBody, $moderation, $attachment, $participant, $senderRoleOverride) {
             $msg = ChatMessage::query()->create([
                 'thread_id' => $thread->id,
                 'sender_user_id' => $sender->id,
@@ -216,6 +220,7 @@ class ChatService
             'last_read_at' => now(),
             'last_read_message_id' => $lastId,
         ]);
+
         return $count;
     }
 
@@ -225,12 +230,14 @@ class ChatService
             'status' => ChatThread::STATUS_ARCHIVED,
             'is_archived' => true,
         ]);
+
         return $thread->fresh();
     }
 
     public function lockThread(ChatThread $thread): ChatThread
     {
         $thread->update(['status' => ChatThread::STATUS_LOCKED]);
+
         return $thread->fresh();
     }
 
@@ -263,6 +270,7 @@ class ChatService
                 default:
                     throw ValidationException::withMessages(['action' => ['Action de modération invalide.']]);
             }
+
             return $message->fresh();
         });
     }
@@ -273,7 +281,7 @@ class ChatService
             return;
         }
         try {
-            $eventClass = \App\Events\ChatV2\ChatMessageSentEvent::class;
+            $eventClass = ChatMessageSentEvent::class;
             if (class_exists($eventClass)) {
                 Event::dispatch(new $eventClass($thread, $message));
             }

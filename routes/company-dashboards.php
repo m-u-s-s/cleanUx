@@ -2,6 +2,7 @@
 
 use App\Livewire\ClientCompany\BillingCenter;
 use App\Livewire\ClientCompany\BookingHub;
+use App\Livewire\ClientCompany\BulkBookingImporter;
 use App\Livewire\ClientCompany\ClientCompanyDashboard;
 use App\Livewire\ClientCompany\MembersAccess;
 use App\Livewire\ClientCompany\SiteManager;
@@ -29,8 +30,8 @@ Route::middleware(['auth', 'verified', 'active.account'])
         Route::get('/membres', MembersAccess::class)->name('members');
         Route::get('/facturation', BillingCenter::class)->name('billing');
 
-        if (class_exists(\App\Livewire\ClientCompany\BulkBookingImporter::class)) {
-            Route::get('/reservations/import-bulk', \App\Livewire\ClientCompany\BulkBookingImporter::class)
+        if (class_exists(BulkBookingImporter::class)) {
+            Route::get('/reservations/import-bulk', BulkBookingImporter::class)
                 ->name('bookings.bulk-import');
         }
     });

@@ -10,10 +10,15 @@ use Illuminate\Support\Str;
 class BookingTip extends Model
 {
     public const STATUS_PENDING = 'pending';
+
     public const STATUS_CHARGED = 'charged';
+
     public const STATUS_PAID_OUT = 'paid_out';
+
     public const STATUS_FAILED = 'failed';
+
     public const STATUS_REFUNDED = 'refunded';
+
     public const STATUS_CANCELLED = 'cancelled';
 
     protected $fillable = [
@@ -37,7 +42,7 @@ class BookingTip extends Model
 
     public static function generateCode(): string
     {
-        return 'tip_' . Str::lower(Str::random(20));
+        return 'tip_'.Str::lower(Str::random(20));
     }
 
     public function booking(): BelongsTo
@@ -62,6 +67,6 @@ class BookingTip extends Model
 
     public function amountFormatted(): string
     {
-        return number_format($this->amount_cents / 100, 2, ',', ' ') . ' ' . $this->currency;
+        return number_format($this->amount_cents / 100, 2, ',', ' ').' '.$this->currency;
     }
 }

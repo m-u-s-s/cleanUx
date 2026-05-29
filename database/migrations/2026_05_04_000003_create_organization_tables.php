@@ -30,7 +30,6 @@ return new class extends Migration
             // client_company, provider_company, provider_solo, hybrid.
             $table->string('type');
 
-
             // pending, active, suspended, archived.
             $table->string('status')->default('active');
 

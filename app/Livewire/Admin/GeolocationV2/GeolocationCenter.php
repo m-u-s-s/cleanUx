@@ -21,7 +21,7 @@ class GeolocationCenter extends Component
     public function purgeCache(): void
     {
         $purged = app(GeocodingService::class)->purgeExpired();
-        $this->dispatch('toast', 'Cache purgé : ' . array_sum($purged) . ' lignes.', 'success');
+        $this->dispatch('toast', 'Cache purgé : '.array_sum($purged).' lignes.', 'success');
     }
 
     public function render(): View

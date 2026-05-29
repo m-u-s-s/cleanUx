@@ -8,7 +8,6 @@ use App\Models\MissionIncident;
 use App\Models\MissionQualityReview;
 use App\Models\MissionReport;
 use App\Models\User;
-use App\Services\Missions\MissionHistoryService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
@@ -101,7 +100,7 @@ class MissionQualityService
                 $comment,
                 ['final_status' => $satisfied ? 'satisfied' : 'problem_reported']
             );
-            
+
             return $review;
         });
     }
@@ -171,7 +170,7 @@ class MissionQualityService
             [
                 'generated_by_user_id' => $generatedBy?->id,
                 'report_number' => MissionReport::query()->where('mission_id', $mission->id)->value('report_number')
-                    ?: 'MR-' . now()->format('Ymd') . '-' . Str::upper(Str::random(6)),
+                    ?: 'MR-'.now()->format('Ymd').'-'.Str::upper(Str::random(6)),
                 'status' => 'generated',
                 'generated_at' => now(),
                 'summary' => $this->buildSummary($mission, $incidentCount, $clientReview?->final_status),

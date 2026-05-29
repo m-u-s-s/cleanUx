@@ -2,9 +2,9 @@
 
 namespace App\Console\Commands;
 
+use App\Models\Booking;
 use App\Models\OrganizationAccount;
 use App\Models\OrganizationSite;
-use App\Models\Booking;
 use App\Models\ServiceZone;
 use App\Models\User;
 use Illuminate\Console\Command;
@@ -44,10 +44,12 @@ class AuditSeedIntegrity extends Command
 
         if ($errors === 0) {
             $this->info('Audit seed OK : aucune incohérence bloquante détectée.');
+
             return self::SUCCESS;
         }
 
         $this->warn('Audit seed terminé avec incohérences détectées.');
+
         return self::FAILURE;
     }
 

@@ -5,11 +5,17 @@ namespace App\Support\Domain;
 final class BookingStatus
 {
     public const EN_ATTENTE = 'en_attente';
+
     public const CONFIRME = 'confirme';
+
     public const EN_ROUTE = 'en_route';
+
     public const SUR_PLACE = 'sur_place';
+
     public const TERMINE = 'termine';
+
     public const ANNULE = 'annule';
+
     public const REFUSE = 'refuse';
 
     public static function all(): array

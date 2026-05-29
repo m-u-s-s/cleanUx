@@ -16,6 +16,7 @@ class OpsHeartbeat extends Command
     {
         if (! config('operations.monitoring.heartbeat_enabled', true)) {
             $this->info('Heartbeat désactivé.');
+
             return self::SUCCESS;
         }
 
@@ -37,7 +38,7 @@ class OpsHeartbeat extends Command
         if ($this->option('json')) {
             $this->line(json_encode($payload, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
         } else {
-            $this->info('Heartbeat écrit: ' . $path);
+            $this->info('Heartbeat écrit: '.$path);
         }
 
         return self::SUCCESS;

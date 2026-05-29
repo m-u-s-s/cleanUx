@@ -56,7 +56,6 @@ trait ComputesAdminDashboardScopes
         return $this->scopeZoneIds()->isNotEmpty();
     }
 
-
     protected function scopedRendezVousQuery(bool $withEmployeeFilter = true): Builder
     {
         $query = Booking::query();
@@ -162,12 +161,12 @@ trait ComputesAdminDashboardScopes
         $zonePart = $this->selectedZoneId() ?: ($this->zoneScopeLocked ? 'managed' : 'all');
 
         return 'admin_dashboard.'
-            . $zonePart . '.'
-            . ($this->filtreEmploye ?: 'all_employee') . '.'
-            . ($this->filtreStatus ?: 'all_status') . '.'
-            . ($this->filtrePeriode ?: 'all_period') . '.'
-            . md5((string) $this->dashboardSearch) . '.'
-            . $suffix;
+            .$zonePart.'.'
+            .($this->filtreEmploye ?: 'all_employee').'.'
+            .($this->filtreStatus ?: 'all_status').'.'
+            .($this->filtrePeriode ?: 'all_period').'.'
+            .md5((string) $this->dashboardSearch).'.'
+            .$suffix;
     }
 
     protected function clearAdminCache(): void

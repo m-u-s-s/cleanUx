@@ -22,9 +22,9 @@ class ReportIssueTool implements AssistantTool
 
     public function description(): string
     {
-        return "Signale un incident sur une mission en cours ou récente "
-            . "(retard, équipement défectueux, accès refusé, conflit, dégâts, etc.). "
-            . "L'utilisateur doit avoir un lien avec la mission (client, prestataire, ou membre de l'org).";
+        return 'Signale un incident sur une mission en cours ou récente '
+            .'(retard, équipement défectueux, accès refusé, conflit, dégâts, etc.). '
+            ."L'utilisateur doit avoir un lien avec la mission (client, prestataire, ou membre de l'org).";
     }
 
     public function inputSchema(): array
@@ -33,22 +33,22 @@ class ReportIssueTool implements AssistantTool
             'type' => 'object',
             'properties' => [
                 'mission_id' => [
-                    'type'        => 'integer',
-                    'description' => "ID de la mission concernée.",
+                    'type' => 'integer',
+                    'description' => 'ID de la mission concernée.',
                 ],
                 'severity' => [
-                    'type'        => 'string',
-                    'enum'        => ['low', 'medium', 'high', 'critical'],
+                    'type' => 'string',
+                    'enum' => ['low', 'medium', 'high', 'critical'],
                     'description' => "Gravité estimée. 'critical' = bloque la mission ou risque de dommage.",
                 ],
                 'category' => [
-                    'type'        => 'string',
-                    'enum'        => ['delay', 'equipment', 'access', 'damage', 'conflict', 'safety', 'quality', 'other'],
+                    'type' => 'string',
+                    'enum' => ['delay', 'equipment', 'access', 'damage', 'conflict', 'safety', 'quality', 'other'],
                     'description' => "Catégorie de l'incident.",
                 ],
                 'description' => [
-                    'type'        => 'string',
-                    'maxLength'   => 2000,
+                    'type' => 'string',
+                    'maxLength' => 2000,
                     'description' => "Description détaillée de l'incident, faits objectifs, heure, contexte.",
                 ],
             ],
@@ -98,21 +98,21 @@ class ReportIssueTool implements AssistantTool
         }
 
         $incident = MissionIncident::create([
-            'mission_id'      => $mission->id,
-            'reported_by'     => $user->id,
-            'severity'        => $input['severity'],
-            'category'        => $input['category'],
-            'description'     => $input['description'],
-            'status'          => 'open',
-            'reported_at'     => now(),
+            'mission_id' => $mission->id,
+            'reported_by' => $user->id,
+            'severity' => $input['severity'],
+            'category' => $input['category'],
+            'description' => $input['description'],
+            'status' => 'open',
+            'reported_at' => now(),
         ]);
 
         return [
-            'ok'           => true,
-            'incident_id'  => $incident->id,
-            'mission_id'   => $mission->id,
-            'severity'     => $input['severity'],
-            'message'      => "Incident #{$incident->id} signalé. Notre équipe support va le traiter.",
+            'ok' => true,
+            'incident_id' => $incident->id,
+            'mission_id' => $mission->id,
+            'severity' => $input['severity'],
+            'message' => "Incident #{$incident->id} signalé. Notre équipe support va le traiter.",
         ];
     }
 }

@@ -5,7 +5,6 @@ namespace App\Livewire\Admin\Tips;
 use App\Models\BookingTip;
 use App\Services\Tips\TipService;
 use Illuminate\Contracts\View\View;
-use Illuminate\Support\Facades\DB;
 use Livewire\Component;
 use Livewire\WithPagination;
 
@@ -16,13 +15,14 @@ class TipsCenter extends Component
     protected $paginationTheme = 'tailwind';
 
     public string $statusFilter = '';
+
     public string $search = '';
 
     public function confirmTip(int $tipId): void
     {
         $tip = BookingTip::findOrFail($tipId);
         try {
-            app(TipService::class)->confirmCharge($tip, 'manual_admin_' . $tipId);
+            app(TipService::class)->confirmCharge($tip, 'manual_admin_'.$tipId);
             $this->dispatch('toast', 'Tip marqué chargé.', 'success');
         } catch (\Throwable $e) {
             $this->dispatch('toast', $e->getMessage(), 'error');
@@ -33,7 +33,7 @@ class TipsCenter extends Component
     {
         $tip = BookingTip::findOrFail($tipId);
         try {
-            app(TipService::class)->markPaidOut($tip, 'manual_payout_' . $tipId);
+            app(TipService::class)->markPaidOut($tip, 'manual_payout_'.$tipId);
             $this->dispatch('toast', 'Payout enregistré.', 'success');
         } catch (\Throwable $e) {
             $this->dispatch('toast', $e->getMessage(), 'error');
@@ -53,11 +53,11 @@ class TipsCenter extends Component
             ->with(['client:id,name,email', 'provider:id,name', 'booking:id'])
             ->when($this->statusFilter, fn ($q) => $q->where('status', $this->statusFilter))
             ->when($this->search, function ($q) {
-                $term = '%' . $this->search . '%';
+                $term = '%'.$this->search.'%';
                 $q->where(function ($w) use ($term) {
                     $w->where('code', 'like', $term)
-                      ->orWhereHas('client', fn ($u) => $u->where('name', 'like', $term)->orWhere('email', 'like', $term))
-                      ->orWhereHas('provider', fn ($u) => $u->where('name', 'like', $term));
+                        ->orWhereHas('client', fn ($u) => $u->where('name', 'like', $term)->orWhere('email', 'like', $term))
+                        ->orWhereHas('provider', fn ($u) => $u->where('name', 'like', $term));
                 });
             })
             ->orderByDesc('created_at')

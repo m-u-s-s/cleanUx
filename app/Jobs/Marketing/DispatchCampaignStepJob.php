@@ -28,12 +28,11 @@ class DispatchCampaignStepJob implements ShouldQueue
     use SerializesModels;
 
     public int $timeout = 120;
+
     public int $tries = 3;
 
     /** @param int|null $recipientId  null = bulk drip mode; int = single recipient mode */
-    public function __construct(public ?int $recipientId = null)
-    {
-    }
+    public function __construct(public ?int $recipientId = null) {}
 
     public function backoff(): array
     {
@@ -49,6 +48,7 @@ class DispatchCampaignStepJob implements ShouldQueue
                 return;
             }
             $engine->dispatchOne($recipient);
+
             return;
         }
 

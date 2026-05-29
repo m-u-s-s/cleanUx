@@ -4,6 +4,7 @@ namespace App\Broadcasting;
 
 use Illuminate\Broadcasting\Broadcasters\Broadcaster;
 use Illuminate\Broadcasting\Broadcasters\UsePusherChannelConventions;
+use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 
 /**
  * Broadcaster utilisé en environnement de tests.
@@ -25,7 +26,7 @@ class TestingBroadcaster extends Broadcaster
             || ($this->isGuardedChannel($request->channel_name)
                 && ! $this->retrieveUser($request, $channelName))
         ) {
-            throw new \Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
+            throw new AccessDeniedHttpException;
         }
 
         return parent::verifyUserCanAccessChannel($request, $channelName);
@@ -39,7 +40,7 @@ class TestingBroadcaster extends Broadcaster
 
             return response()->json([
                 'channel_data' => [
-                    'user_id'   => $user?->getAuthIdentifier(),
+                    'user_id' => $user?->getAuthIdentifier(),
                     'user_info' => is_array($result) ? $result : [],
                 ],
             ]);
@@ -47,7 +48,7 @@ class TestingBroadcaster extends Broadcaster
 
         // Pour private channels : un payload simple suffit pour les tests.
         return response()->json([
-            'auth' => 'testing:' . $request->socket_id,
+            'auth' => 'testing:'.$request->socket_id,
         ]);
     }
 

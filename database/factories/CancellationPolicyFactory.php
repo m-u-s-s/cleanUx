@@ -13,20 +13,20 @@ class CancellationPolicyFactory extends Factory
     public function definition(): array
     {
         return [
-            'code'        => 'policy_' . Str::upper(Str::random(6)),
-            'name'        => fake()->words(3, true) . ' policy',
+            'code' => 'policy_'.Str::upper(Str::random(6)),
+            'name' => fake()->words(3, true).' policy',
             'description' => fake()->sentence(),
             'trade_codes' => fake()->optional()->randomElements(['cleaning', 'painting', 'babysitting'], 2),
-            'actor_role'  => fake()->randomElement([
+            'actor_role' => fake()->randomElement([
                 CancellationPolicy::ACTOR_CLIENT,
                 CancellationPolicy::ACTOR_PROVIDER,
                 CancellationPolicy::ACTOR_BOTH,
             ]),
-            'is_active'   => true,
-            'version'     => 1,
-            'valid_from'  => now()->subMonth()->toDateString(),
+            'is_active' => true,
+            'version' => 1,
+            'valid_from' => now()->subMonth()->toDateString(),
             'valid_until' => null,
-            'metadata'    => [],
+            'metadata' => [],
         ];
     }
 

@@ -47,6 +47,7 @@ class PersonalAccessTokenV2 extends SanctumPersonalAccessToken
         if (! $this->expires_at) {
             return false;
         }
+
         return $this->expires_at->isPast();
     }
 
@@ -55,6 +56,7 @@ class PersonalAccessTokenV2 extends SanctumPersonalAccessToken
         if (! $this->rotation_grace_until) {
             return false;
         }
+
         return $this->rotation_grace_until->isPast();
     }
 
@@ -71,6 +73,7 @@ class PersonalAccessTokenV2 extends SanctumPersonalAccessToken
         if ($this->owner_role === 'admin') {
             return (int) config('api_tokens_v2.admin_rate_limit_per_minute', 600);
         }
+
         return (int) config('api_tokens_v2.default_rate_limit_per_minute', 120);
     }
 
@@ -82,6 +85,7 @@ class PersonalAccessTokenV2 extends SanctumPersonalAccessToken
         if (! $this->isUsable()) {
             return false;
         }
+
         return parent::can($ability);
     }
 

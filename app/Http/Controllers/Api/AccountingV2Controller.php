@@ -17,6 +17,7 @@ use Illuminate\Validation\ValidationException;
 
 /**
  * @group Accounting v2
+ *
  * @authenticated
  */
 class AccountingV2Controller extends Controller
@@ -45,6 +46,7 @@ class AccountingV2Controller extends Controller
         $rows = $q->orderByDesc('posting_date')->orderByDesc('id')
             ->limit((int) $request->integer('limit', 100))
             ->get();
+
         return response()->json(['data' => $rows]);
     }
 
@@ -60,6 +62,7 @@ class AccountingV2Controller extends Controller
             $data['year'] ?? null,
             $data['month'] ?? null,
         );
+
         return response()->json($balance);
     }
 
@@ -70,6 +73,7 @@ class AccountingV2Controller extends Controller
             ->orderByDesc('period_month')
             ->limit((int) $request->integer('limit', 36))
             ->get();
+
         return response()->json(['data' => $rows]);
     }
 
@@ -80,6 +84,7 @@ class AccountingV2Controller extends Controller
         } catch (ValidationException $e) {
             return response()->json(['ok' => false, 'errors' => $e->errors()], 422);
         }
+
         return response()->json(['ok' => true, 'period' => $period]);
     }
 
@@ -93,6 +98,7 @@ class AccountingV2Controller extends Controller
         } catch (ValidationException $e) {
             return response()->json(['ok' => false, 'errors' => $e->errors()], 422);
         }
+
         return response()->json(['ok' => true, 'period' => $row]);
     }
 
@@ -119,6 +125,7 @@ class AccountingV2Controller extends Controller
         } catch (ValidationException $e) {
             return response()->json(['ok' => false, 'errors' => $e->errors()], 422);
         }
+
         return response()->json(['ok' => true, 'batch_id' => $batchId], 201);
     }
 
@@ -128,6 +135,7 @@ class AccountingV2Controller extends Controller
             ->orderByDesc('created_at')
             ->limit((int) $request->integer('limit', 50))
             ->get();
+
         return response()->json(['data' => $rows]);
     }
 
@@ -144,6 +152,7 @@ class AccountingV2Controller extends Controller
             $data['month'] ?? null,
             $request->user()?->id,
         );
+
         return response()->json(['ok' => $export->status === AccountingExport::STATUS_READY, 'export' => $export]);
     }
 
@@ -157,12 +166,13 @@ class AccountingV2Controller extends Controller
             abort(404);
         }
         $mime = data_get($export->metadata, 'mime', 'application/octet-stream');
+
         return response(
             Storage::disk($disk)->get($export->file_path),
             200,
             [
                 'Content-Type' => $mime,
-                'Content-Disposition' => 'attachment; filename="' . basename($export->file_path) . '"',
+                'Content-Disposition' => 'attachment; filename="'.basename($export->file_path).'"',
             ],
         );
     }

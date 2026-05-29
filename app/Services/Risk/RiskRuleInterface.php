@@ -12,7 +12,7 @@ interface RiskRuleInterface
     /**
      * Évalue la règle pour ce contexte.
      *
-     * @return RiskRuleHit|null  Null si la règle ne s'applique pas, sinon un hit avec score + raison.
+     * @return RiskRuleHit|null Null si la règle ne s'applique pas, sinon un hit avec score + raison.
      */
     public function evaluate(RiskContext $context, ?array $params = null): ?RiskRuleHit;
 }

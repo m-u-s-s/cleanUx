@@ -26,6 +26,7 @@ class AbPricingExperiment extends Model
     public function scopeRunning(Builder $q): Builder
     {
         $now = now();
+
         return $q->where('is_active', true)
             ->where(function ($w) use ($now) {
                 $w->whereNull('starts_at')->orWhere('starts_at', '<=', $now);
@@ -41,6 +42,7 @@ class AbPricingExperiment extends Model
         if (! $services || count($services) === 0) {
             return true;
         }
+
         return in_array($serviceCode, $services, true);
     }
 }

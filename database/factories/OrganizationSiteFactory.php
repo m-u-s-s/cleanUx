@@ -19,10 +19,10 @@ class OrganizationSiteFactory extends Factory
     public function definition(): array
     {
         $address = fake()->streetAddress();
-        
+
         return [
             'organization_account_id' => OrganizationAccount::factory(),
-            'name' => fake()->company() . ' - ' . fake()->city(),
+            'name' => fake()->company().' - '.fake()->city(),
             'contact_name' => fake()->name(),
 
             // Obligatoire legacy
@@ -36,7 +36,7 @@ class OrganizationSiteFactory extends Factory
             'postal_code' => fake()->postcode(),
 
             'access_instructions' => fake()->optional()->sentence(),
-            
+
             'latitude' => fake()->latitude(49.4, 51.6),
             'longitude' => fake()->longitude(2.5, 6.4),
 

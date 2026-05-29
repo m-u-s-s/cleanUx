@@ -24,10 +24,14 @@ class Message extends Model
     use HasFactory;
     use SoftDeletes;
 
-    public const TYPE_TEXT          = 'text';
-    public const TYPE_SYSTEM        = 'system';
-    public const TYPE_FILE          = 'file';
-    public const TYPE_TASK          = 'task';
+    public const TYPE_TEXT = 'text';
+
+    public const TYPE_SYSTEM = 'system';
+
+    public const TYPE_FILE = 'file';
+
+    public const TYPE_TASK = 'task';
+
     public const TYPE_MISSION_UPDATE = 'mission_update';
 
     protected $fillable = [
@@ -50,14 +54,14 @@ class Message extends Model
     ];
 
     protected $casts = [
-        'metadata'      => 'array',
-        'edited_at'     => 'datetime',
+        'metadata' => 'array',
+        'edited_at' => 'datetime',
         'last_reply_at' => 'datetime',
         'replies_count' => 'integer',
 
         // Moderation
-        'is_pinned'     => 'boolean',
-        'pinned_at'     => 'datetime',
+        'is_pinned' => 'boolean',
+        'pinned_at' => 'datetime',
     ];
 
     // ──────────────────────────────────────────────────────
@@ -137,7 +141,7 @@ class Message extends Model
         }
 
         // SQLite (tests) ou fallback
-        return $q->where('content', 'like', '%' . $term . '%');
+        return $q->where('content', 'like', '%'.$term.'%');
     }
 
     // ──────────────────────────────────────────────────────

@@ -38,7 +38,7 @@ class MockBillingProvider implements BillingProviderContract
             success: true,
             amountCents: $cycle->planned_amount_cents,
             currency: $sub->billing_currency,
-            reference: 'mock_ch_' . Str::lower(Str::random(20)),
+            reference: 'mock_ch_'.Str::lower(Str::random(20)),
             raw: ['driver' => 'mock', 'cycle_id' => $cycle->id],
             provider: 'mock',
         );

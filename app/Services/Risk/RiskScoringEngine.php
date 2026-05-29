@@ -5,8 +5,8 @@ namespace App\Services\Risk;
 use App\Models\RiskEvaluation;
 use App\Models\RiskHold;
 use App\Models\RiskRule;
+use App\Models\User;
 use App\Support\ActivityLogger;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -72,7 +72,7 @@ class RiskScoringEngine
         return $eval;
     }
 
-    public function reviewHold(RiskHold $hold, \App\Models\User $reviewer, string $decision, ?string $notes = null): RiskHold
+    public function reviewHold(RiskHold $hold, User $reviewer, string $decision, ?string $notes = null): RiskHold
     {
         if (! in_array($decision, ['approved', 'rejected'], true)) {
             throw new \InvalidArgumentException('decision must be approved|rejected');
@@ -170,6 +170,7 @@ class RiskScoringEngine
         if ($score >= $review) {
             return RiskEvaluation::DECISION_REVIEW;
         }
+
         return RiskEvaluation::DECISION_ALLOW;
     }
 
@@ -219,7 +220,7 @@ class RiskScoringEngine
         ]);
     }
 
-    protected function isBypassRole(\App\Models\User $user): bool
+    protected function isBypassRole(User $user): bool
     {
         $bypass = (array) Config::get('risk.bypass_roles', []);
         foreach ($bypass as $bypassRole) {
@@ -227,6 +228,7 @@ class RiskScoringEngine
                 return true;
             }
         }
+
         return false;
     }
 }

@@ -73,6 +73,7 @@ class DisputeAutoResolver
     protected function isEligibleCategory(ComplaintCase $case): bool
     {
         $eligible = (array) Config::get('disputes.auto_resolution.auto_refund_categories', []);
+
         return in_array($case->category, $eligible, true);
     }
 

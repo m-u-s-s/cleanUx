@@ -42,6 +42,7 @@ class GeocodingService
             $results = $this->provider->autocomplete($query, $countryCode, $limit);
         } catch (\Throwable $e) {
             Log::warning('[geo_v2] autocomplete provider error', ['error' => $e->getMessage()]);
+
             return [];
         }
 
@@ -83,6 +84,7 @@ class GeocodingService
             $result = $this->provider->geocode($address, $countryCode);
         } catch (\Throwable $e) {
             Log::warning('[geo_v2] geocode provider error', ['error' => $e->getMessage()]);
+
             return null;
         }
         if (! $result) {
@@ -112,7 +114,7 @@ class GeocodingService
     public function reverseGeocode(float $latitude, float $longitude): ?GeocodingResult
     {
         $providerName = $this->provider->name();
-        $hash = $this->hashAddress('rev:' . round($latitude, 4) . ',' . round($longitude, 4), null);
+        $hash = $this->hashAddress('rev:'.round($latitude, 4).','.round($longitude, 4), null);
         $cached = GeocodingCacheEntry::query()
             ->where('provider', $providerName)
             ->where('address_hash', $hash)
@@ -126,6 +128,7 @@ class GeocodingService
             $result = $this->provider->reverseGeocode($latitude, $longitude);
         } catch (\Throwable $e) {
             Log::warning('[geo_v2] reverse geocode error', ['error' => $e->getMessage()]);
+
             return null;
         }
         if (! $result) {
@@ -136,7 +139,7 @@ class GeocodingService
             'provider' => $providerName,
             'address_hash' => $hash,
         ], [
-            'address_input' => 'rev:' . $latitude . ',' . $longitude,
+            'address_input' => 'rev:'.$latitude.','.$longitude,
             'country_code' => $result->countryCode,
             'latitude' => $result->latitude,
             'longitude' => $result->longitude,
@@ -189,7 +192,7 @@ class GeocodingService
         $isFallback = false;
         if (! $result && (bool) config('geolocation_v2.haversine_fallback_enabled', true)) {
             $meters = (int) round(Haversine::distanceMeters($originLat, $originLng, $destLat, $destLng));
-            $avgSpeed = (float) (config('geolocation_v2.isochrone_avg_speed_kmh.' . $mode, 35));
+            $avgSpeed = (float) (config('geolocation_v2.isochrone_avg_speed_kmh.'.$mode, 35));
             $durationSec = $avgSpeed > 0 ? (int) round(($meters / 1000) / $avgSpeed * 3600) : null;
             $result = new DistanceResult($meters, $durationSec, $mode, $providerName, true);
             $isFallback = true;
@@ -224,7 +227,8 @@ class GeocodingService
      */
     public function isochroneRadiusMeters(int $minutes, string $mode = 'driving'): int
     {
-        $avgSpeed = (float) (config('geolocation_v2.isochrone_avg_speed_kmh.' . $mode, 35));
+        $avgSpeed = (float) (config('geolocation_v2.isochrone_avg_speed_kmh.'.$mode, 35));
+
         return (int) round(($minutes / 60) * $avgSpeed * 1000);
     }
 
@@ -233,22 +237,24 @@ class GeocodingService
         $a = AddressLookup::query()->whereNotNull('expires_at')->where('expires_at', '<=', now())->delete();
         $g = GeocodingCacheEntry::query()->whereNotNull('expires_at')->where('expires_at', '<=', now())->delete();
         $d = DistanceCalculation::query()->whereNotNull('expires_at')->where('expires_at', '<=', now())->delete();
+
         return ['address_lookups' => $a, 'geocoding_results' => $g, 'distance_calculations' => $d];
     }
 
     private function hashQuery(string $q, ?string $country): string
     {
-        return hash('sha256', mb_strtolower($q) . '|' . ($country ?? ''));
+        return hash('sha256', mb_strtolower($q).'|'.($country ?? ''));
     }
 
     private function hashAddress(string $a, ?string $country): string
     {
-        return hash('sha256', mb_strtolower(trim($a)) . '|' . ($country ?? ''));
+        return hash('sha256', mb_strtolower(trim($a)).'|'.($country ?? ''));
     }
 
     private function hashDistanceSignature(float $oLat, float $oLng, float $dLat, float $dLng, string $mode): string
     {
         $key = sprintf('%.5f|%.5f|%.5f|%.5f|%s', $oLat, $oLng, $dLat, $dLng, $mode);
+
         return hash('sha256', $key);
     }
 
@@ -262,6 +268,7 @@ class GeocodingService
         if (! empty($allowed) && ! in_array($upper, $allowed, true)) {
             return null;
         }
+
         return $upper;
     }
 

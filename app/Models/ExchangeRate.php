@@ -8,9 +8,13 @@ use Illuminate\Database\Eloquent\Model;
 class ExchangeRate extends Model
 {
     public const SOURCE_MOCK = 'mock';
+
     public const SOURCE_ECB = 'ecb';
+
     public const SOURCE_OPENEXCHANGE = 'openexchange';
+
     public const SOURCE_MANUAL = 'manual';
+
     public const SOURCE_FALLBACK = 'fallback';
 
     protected $fillable = [

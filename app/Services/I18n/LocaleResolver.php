@@ -36,6 +36,7 @@ class LocaleResolver
         }
 
         $codes = array_keys($locales);
+
         return array_values($codes);
     }
 
@@ -44,6 +45,7 @@ class LocaleResolver
         if (! $locale) {
             return false;
         }
+
         return in_array($locale, $this->supportedCodes(), true);
     }
 
@@ -63,6 +65,7 @@ class LocaleResolver
         $queryLocale = $request->query('lang');
         if ($this->isSupported($queryLocale)) {
             $request->session()->put('locale', $queryLocale);
+
             return $queryLocale;
         }
 
@@ -76,6 +79,7 @@ class LocaleResolver
         $userLocale = $this->normalize(Auth::user()?->locale);
         if ($this->isSupported($userLocale)) {
             $request->session()->put('locale', $userLocale);
+
             return $userLocale;
         }
 
@@ -107,6 +111,7 @@ class LocaleResolver
                 return $userLocale;
             }
         }
+
         return $this->default();
     }
 
@@ -158,6 +163,7 @@ class LocaleResolver
     public function bcp47(string $locale): string
     {
         $config = Config::get("i18n.locales.{$locale}");
+
         return (string) ($config['bcp47'] ?? $locale);
     }
 
@@ -183,7 +189,9 @@ class LocaleResolver
         $locales = (array) Config::get('i18n.locales', []);
         $items = [];
         foreach ($locales as $code => $cfg) {
-            if (! ($cfg['enabled'] ?? true)) continue;
+            if (! ($cfg['enabled'] ?? true)) {
+                continue;
+            }
             $items[] = [
                 'code' => $code,
                 'name' => $cfg['name'] ?? $code,
@@ -194,6 +202,7 @@ class LocaleResolver
         }
 
         usort($items, fn ($a, $b) => $a['priority'] <=> $b['priority']);
+
         return $items;
     }
 }

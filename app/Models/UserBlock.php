@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class UserBlock extends Model
 {
     protected $fillable = ['blocker_user_id', 'blocked_user_id', 'reason', 'metadata'];
+
     protected $casts = ['metadata' => 'array'];
 
     public function blocker(): BelongsTo

@@ -19,7 +19,7 @@ class TradeFormRendererTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->renderer = new TradeFormRenderer();
+        $this->renderer = new TradeFormRenderer;
     }
 
     // ─────────────────────────────────────────
@@ -56,12 +56,12 @@ class TradeFormRendererTest extends TestCase
         $trade = new Trade([
             'booking_form_schema' => [
                 'version' => 1,
-                'fields'  => [
+                'fields' => [
                     [
-                        'key'         => 'description',
-                        'label'       => 'Description',
-                        'type'        => 'text',
-                        'required'    => true,
+                        'key' => 'description',
+                        'label' => 'Description',
+                        'type' => 'text',
+                        'required' => true,
                         'placeholder' => 'Enter description',
                     ],
                 ],
@@ -84,15 +84,15 @@ class TradeFormRendererTest extends TestCase
         $trade = new Trade([
             'booking_form_schema' => [
                 'version' => 1,
-                'fields'  => [
+                'fields' => [
                     [
-                        'key'      => 'surface_m2',
-                        'label'    => 'Surface (m²)',
-                        'type'     => 'number',
+                        'key' => 'surface_m2',
+                        'label' => 'Surface (m²)',
+                        'type' => 'number',
                         'required' => true,
-                        'min'      => 1,
-                        'max'      => 5000,
-                        'unit'     => 'm²',
+                        'min' => 1,
+                        'max' => 5000,
+                        'unit' => 'm²',
                     ],
                 ],
             ],
@@ -112,11 +112,11 @@ class TradeFormRendererTest extends TestCase
         $trade = new Trade([
             'booking_form_schema' => [
                 'version' => 1,
-                'fields'  => [
+                'fields' => [
                     [
-                        'key'     => 'floor_type',
-                        'label'   => 'Type de sol',
-                        'type'    => 'select',
+                        'key' => 'floor_type',
+                        'label' => 'Type de sol',
+                        'type' => 'select',
                         'options' => [
                             ['value' => 'parquet', 'label' => 'Parquet', 'price_delta' => 0],
                             ['value' => 'carrelage', 'label' => 'Carrelage', 'price_delta' => 10],
@@ -142,11 +142,11 @@ class TradeFormRendererTest extends TestCase
         $trade = new Trade([
             'booking_form_schema' => [
                 'version' => 1,
-                'fields'  => [
+                'fields' => [
                     [
-                        'key'   => 'has_pets',
+                        'key' => 'has_pets',
                         'label' => 'Présence animaux',
-                        'type'  => 'boolean',
+                        'type' => 'boolean',
                     ],
                 ],
             ],
@@ -169,7 +169,7 @@ class TradeFormRendererTest extends TestCase
         $trade = new Trade([
             'booking_form_schema' => [
                 'version' => 1,
-                'fields'  => [
+                'fields' => [
                     ['key' => 'field_a', 'label' => 'A', 'type' => 'text'],
                     ['key' => 'field_b', 'label' => 'B', 'type' => 'number'],
                     ['key' => 'field_c', 'label' => 'C', 'type' => 'textarea'],
@@ -189,7 +189,7 @@ class TradeFormRendererTest extends TestCase
         $trade = new Trade([
             'booking_form_schema' => [
                 'version' => 1,
-                'fields'  => [
+                'fields' => [
                     ['key' => 'foo', 'label' => 'Foo', 'type' => 'unknown_type'],
                 ],
             ],

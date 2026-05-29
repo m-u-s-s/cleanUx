@@ -21,10 +21,13 @@ class ProviderRatingsPage extends Component
     public string $filter = 'all';
 
     public ?int $replyingTo = null;
+
     public string $responseText = '';
 
     public ?int $reportingId = null;
+
     public string $reportReason = RatingReport::REASON_OTHER;
+
     public string $reportDetails = '';
 
     public function startReply(int $feedbackId): void

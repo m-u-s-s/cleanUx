@@ -37,17 +37,17 @@ class TaskAssigned implements ShouldBroadcast
     public function broadcastOn(): array
     {
         $channels = [
-            new PrivateChannel('user.' . $this->assignedTo->id),
+            new PrivateChannel('user.'.$this->assignedTo->id),
         ];
 
         // Si la tâche est rattachée à une organisation, on rafraîchit le board partagé
         if (! empty($this->task->organization_account_id)) {
-            $channels[] = new PrivateChannel('presence-org.' . $this->task->organization_account_id);
+            $channels[] = new PrivateChannel('presence-org.'.$this->task->organization_account_id);
         }
 
         // Si la tâche est rattachée à un canal de discussion, on rafraîchit le contexte
         if (! empty($this->task->channel_id)) {
-            $channels[] = new PrivateChannel('channel.' . $this->task->channel_id);
+            $channels[] = new PrivateChannel('channel.'.$this->task->channel_id);
         }
 
         return $channels;
@@ -56,16 +56,16 @@ class TaskAssigned implements ShouldBroadcast
     public function broadcastWith(): array
     {
         return [
-            'task_id'      => $this->task->id,
-            'title'        => $this->task->title ?? '',
-            'priority'     => $this->task->priority ?? 'normal',
-            'status'       => $this->task->status ?? 'pending',
-            'due_at'       => $this->task->due_at?->toIso8601String(),
-            'assigned_to'  => [
-                'id'   => $this->assignedTo->id,
+            'task_id' => $this->task->id,
+            'title' => $this->task->title ?? '',
+            'priority' => $this->task->priority ?? 'normal',
+            'status' => $this->task->status ?? 'pending',
+            'due_at' => $this->task->due_at?->toIso8601String(),
+            'assigned_to' => [
+                'id' => $this->assignedTo->id,
                 'name' => $this->assignedTo->name,
             ],
-            'assigned_by'  => $this->assignedBy,
+            'assigned_by' => $this->assignedBy,
         ];
     }
 

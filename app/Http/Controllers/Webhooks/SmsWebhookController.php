@@ -45,6 +45,7 @@ class SmsWebhookController extends Controller
                 'provider' => $provider,
                 'error' => $e->getMessage(),
             ]);
+
             return response()->json(['ok' => false, 'error' => 'invalid'], 400);
         }
 
@@ -56,7 +57,7 @@ class SmsWebhookController extends Controller
             ?? null;
 
         if (! $externalEventId) {
-            $externalEventId = $provider . '_' . Str::lower(Str::random(16));
+            $externalEventId = $provider.'_'.Str::lower(Str::random(16));
         }
 
         $stored = SmsWebhookEvent::firstOrCreate(
@@ -86,8 +87,8 @@ class SmsWebhookController extends Controller
     protected function resolveProvider(string $name): ?SmsProviderInterface
     {
         return match ($name) {
-            'mock' => new SmsMockProvider(),
-            'twilio' => new TwilioSmsProvider(),
+            'mock' => new SmsMockProvider,
+            'twilio' => new TwilioSmsProvider,
             default => null,
         };
     }

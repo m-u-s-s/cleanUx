@@ -24,7 +24,7 @@ class EmitKycApprovedWebhook
                 'decision' => $decision,
                 'completed_at' => optional($v->completed_at ?? null)?->toIso8601String(),
             ],
-            idempotencyKey: 'provider.kyc_approved:' . $v->id,
+            idempotencyKey: 'provider.kyc_approved:'.$v->id,
             sourceType: get_class($v),
             sourceId: (int) $v->id,
         );

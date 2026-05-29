@@ -6,6 +6,7 @@ use App\Models\BusinessEntity;
 use App\Models\User;
 use App\Services\KybV2\BusinessOnboardingService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Storage;
 use Laravel\Sanctum\Sanctum;
@@ -110,7 +111,7 @@ class KybApiTest extends TestCase
         ], $user);
 
         Sanctum::actingAs($user);
-        $file = \Illuminate\Http\UploadedFile::fake()->create('kbis.pdf', 100, 'application/pdf');
+        $file = UploadedFile::fake()->create('kbis.pdf', 100, 'application/pdf');
         $response = $this->postJson("/api/v2/kyb/me/entities/{$entity->id}/documents", [
             'document_type' => 'kbis',
             'file' => $file,

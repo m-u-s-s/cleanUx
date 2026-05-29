@@ -17,6 +17,7 @@ class PricingCenter extends Component
     protected $paginationTheme = 'tailwind';
 
     public string $tab = 'services';   // services | rules | quotes | experiments
+
     public string $search = '';
 
     public function render(): View
@@ -31,14 +32,14 @@ class PricingCenter extends Component
         if ($this->tab === 'services') {
             $items = ServiceCatalogV2::query()
                 ->when($this->search, fn ($q) => $q->where(function ($w) {
-                    $term = '%' . $this->search . '%';
+                    $term = '%'.$this->search.'%';
                     $w->where('code', 'like', $term)->orWhere('name', 'like', $term);
                 }))
                 ->orderBy('code')
                 ->paginate(20);
         } elseif ($this->tab === 'rules') {
             $items = PricingRule::query()
-                ->when($this->search, fn ($q) => $q->where('code', 'like', '%' . $this->search . '%'))
+                ->when($this->search, fn ($q) => $q->where('code', 'like', '%'.$this->search.'%'))
                 ->orderBy('priority')
                 ->paginate(25);
         } elseif ($this->tab === 'quotes') {

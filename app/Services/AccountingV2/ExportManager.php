@@ -15,9 +15,6 @@ use Illuminate\Validation\ValidationException;
 
 class ExportManager
 {
-    /**
-     * @return AccountingExport
-     */
     public function generate(string $format, int $year, ?int $month = null, ?int $userId = null): AccountingExport
     {
         if (! in_array($format, (array) config('accounting_v2.allowed_formats', []), true)) {
@@ -49,7 +46,7 @@ class ExportManager
                 substr($export->code, 0, 8),
                 ltrim($built['extension'], '.'),
             );
-            $path = $prefix . '/' . date('Y/m') . '/' . $filename;
+            $path = $prefix.'/'.date('Y/m').'/'.$filename;
             Storage::disk($disk)->put($path, $built['content']);
 
             $retention = (int) config('accounting_v2.export_retention_days', 365);
@@ -79,11 +76,11 @@ class ExportManager
     public function builderFor(string $format): ExportBuilderContract
     {
         return match ($format) {
-            'csv' => new CsvExportBuilder(),
-            'fec' => new FecExportBuilder(),
-            'sage' => new SageExportBuilder(),
-            'quickbooks_iif' => new QuickBooksIifExportBuilder(),
-            default => throw ValidationException::withMessages(['format' => ['Format inconnu : ' . $format]]),
+            'csv' => new CsvExportBuilder,
+            'fec' => new FecExportBuilder,
+            'sage' => new SageExportBuilder,
+            'quickbooks_iif' => new QuickBooksIifExportBuilder,
+            default => throw ValidationException::withMessages(['format' => ['Format inconnu : '.$format]]),
         };
     }
 }

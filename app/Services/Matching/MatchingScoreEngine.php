@@ -3,8 +3,6 @@
 namespace App\Services\Matching;
 
 use App\Models\Booking;
-use App\Models\ProviderPerformanceMetric;
-use App\Models\ProviderProfile;
 use App\Models\User;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
@@ -12,9 +10,7 @@ use Illuminate\Support\Facades\Schema;
 
 class MatchingScoreEngine
 {
-    public function __construct(protected ProviderPerformanceCalculator $perfCalculator)
-    {
-    }
+    public function __construct(protected ProviderPerformanceCalculator $perfCalculator) {}
 
     /**
      * Score a provider for a given booking. Returns 0–100 with full breakdown.
@@ -110,6 +106,7 @@ class MatchingScoreEngine
         if ($rate === null) {
             return 70.0;
         }
+
         return min(100.0, ((float) $rate) * 100);
     }
 
@@ -119,6 +116,7 @@ class MatchingScoreEngine
         if ($rate === null) {
             return 75.0;
         }
+
         return min(100.0, ((float) $rate) * 100);
     }
 
@@ -141,6 +139,7 @@ class MatchingScoreEngine
 
         $range = $poor - $excellent;
         $progress = ($seconds - $excellent) / $range;
+
         return round(100 * (1 - $progress), 2);
     }
 
@@ -259,6 +258,7 @@ class MatchingScoreEngine
         }
 
         $penalty = (float) Config::get('matching.diversification.penalty_per_recent_mission', 2.0);
+
         return max(0.0, 100.0 - ($recent * $penalty * 10));
     }
 

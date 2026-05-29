@@ -9,9 +9,13 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class LoyaltyReward extends Model
 {
     public const TYPE_DISCOUNT_CODE = 'discount_code';
+
     public const TYPE_SERVICE_CREDIT = 'service_credit';
+
     public const TYPE_PHYSICAL_ITEM = 'physical_item';
+
     public const TYPE_PARTNER_VOUCHER = 'partner_voucher';
+
     public const TYPE_CHARITY_DONATION = 'charity_donation';
 
     protected $fillable = [
@@ -70,6 +74,7 @@ class LoyaltyReward extends Model
         if (! $this->value_cents) {
             return '';
         }
-        return number_format($this->value_cents / 100, 2, ',', ' ') . ' ' . $this->currency;
+
+        return number_format($this->value_cents / 100, 2, ',', ' ').' '.$this->currency;
     }
 }

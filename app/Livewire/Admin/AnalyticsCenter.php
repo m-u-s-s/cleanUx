@@ -2,8 +2,8 @@
 
 namespace App\Livewire\Admin;
 
-use App\Models\FinanceInvoice;
 use App\Models\Booking;
+use App\Models\FinanceInvoice;
 use App\Models\ServiceCatalog;
 use App\Models\ServiceZone;
 use App\Models\User;
@@ -20,12 +20,19 @@ class AnalyticsCenter extends Component
     protected string $paginationTheme = 'tailwind';
 
     public string $search = '';
+
     public string $dateFrom = '';
+
     public string $dateTo = '';
+
     public string $status = '';
+
     public string $zoneId = '';
+
     public string $serviceId = '';
+
     public string $employeeId = '';
+
     public string $market = '';
 
     protected $queryString = [
@@ -43,14 +50,45 @@ class AnalyticsCenter extends Component
         }
     }
 
-    public function updatingSearch(): void { $this->resetPage(); }
-    public function updatingDateFrom(): void { $this->resetPage(); }
-    public function updatingDateTo(): void { $this->resetPage(); }
-    public function updatingStatus(): void { $this->resetPage(); }
-    public function updatingZoneId(): void { $this->resetPage(); }
-    public function updatingServiceId(): void { $this->resetPage(); }
-    public function updatingEmployeeId(): void { $this->resetPage(); }
-    public function updatingMarket(): void { $this->resetPage(); }
+    public function updatingSearch(): void
+    {
+        $this->resetPage();
+    }
+
+    public function updatingDateFrom(): void
+    {
+        $this->resetPage();
+    }
+
+    public function updatingDateTo(): void
+    {
+        $this->resetPage();
+    }
+
+    public function updatingStatus(): void
+    {
+        $this->resetPage();
+    }
+
+    public function updatingZoneId(): void
+    {
+        $this->resetPage();
+    }
+
+    public function updatingServiceId(): void
+    {
+        $this->resetPage();
+    }
+
+    public function updatingEmployeeId(): void
+    {
+        $this->resetPage();
+    }
+
+    public function updatingMarket(): void
+    {
+        $this->resetPage();
+    }
 
     public function getZonesProperty()
     {
@@ -248,6 +286,7 @@ class AnalyticsCenter extends Component
 
         return $zones->map(function (array $zone) use ($max) {
             $zone['intensity'] = (int) round(($zone['count'] / $max) * 100);
+
             return $zone;
         });
     }
@@ -260,7 +299,7 @@ class AnalyticsCenter extends Component
     public function exportAnalyticsCsv()
     {
         $rows = $this->filteredRowsCollection();
-        $filename = 'analytics_export_' . now()->format('Ymd_His') . '.csv';
+        $filename = 'analytics_export_'.now()->format('Ymd_His').'.csv';
 
         return response()->streamDownload(function () use ($rows) {
             $handle = fopen('php://output', 'w');
@@ -270,7 +309,7 @@ class AnalyticsCenter extends Component
 
             foreach ($rows as $rdv) {
                 fputcsv($handle, [
-                    $rdv->booking_reference ?: 'RDV-' . $rdv->id,
+                    $rdv->booking_reference ?: 'RDV-'.$rdv->id,
                     optional($rdv->date)->format('Y-m-d'),
                     substr((string) $rdv->heure, 0, 5),
                     $rdv->organizationAccount?->name ?: $rdv->client?->name,

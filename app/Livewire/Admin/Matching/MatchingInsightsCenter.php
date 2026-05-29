@@ -20,6 +20,7 @@ class MatchingInsightsCenter extends Component
     public string $tab = 'recent_decisions';
 
     public ?int $simulateBookingId = null;
+
     public ?array $simulationResult = null;
 
     public function simulate(): void
@@ -28,12 +29,14 @@ class MatchingInsightsCenter extends Component
 
         if (! $this->simulateBookingId) {
             $this->addError('simulateBookingId', 'ID de booking requis.');
+
             return;
         }
 
         $booking = Booking::find($this->simulateBookingId);
         if (! $booking) {
             $this->addError('simulateBookingId', 'Booking introuvable.');
+
             return;
         }
 
@@ -53,7 +56,7 @@ class MatchingInsightsCenter extends Component
                 ])->all(),
             ];
         } catch (\Throwable $e) {
-            $this->addError('simulateBookingId', 'Erreur simulation: ' . $e->getMessage());
+            $this->addError('simulateBookingId', 'Erreur simulation: '.$e->getMessage());
         }
     }
 

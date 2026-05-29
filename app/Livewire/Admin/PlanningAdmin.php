@@ -16,10 +16,15 @@ use Livewire\Component;
 class PlanningAdmin extends Component
 {
     public string $filtreEmploye = '';
+
     public string $filtreDate = '';
+
     public string $filtreStatus = '';
+
     public string $filtrePriorite = '';
+
     public string $recherche = '';
+
     public string $semaine = '';
 
     public function mount(): void

@@ -76,8 +76,8 @@ trait BootsAdminDashboardFilters
 
         $this->rdvs = $query->get()->map(function ($rdv) {
             return [
-                'title' => ($rdv->client->name ?? 'Client') . ' → ' . ($rdv->employe->name ?? 'Employé'),
-                'start' => $rdv->date . 'T' . substr((string) $rdv->heure, 0, 5),
+                'title' => ($rdv->client->name ?? 'Client').' → '.($rdv->employe->name ?? 'Employé'),
+                'start' => $rdv->date.'T'.substr((string) $rdv->heure, 0, 5),
                 'zone' => $rdv->serviceZone?->name,
                 'color' => match ($rdv->status) {
                     'confirme' => '#22c55e',

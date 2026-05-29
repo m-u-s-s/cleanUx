@@ -12,13 +12,12 @@ use Illuminate\Validation\ValidationException;
 
 /**
  * @group Provider — Quality Inspections
+ *
  * @authenticated
  */
 class QualityInspectionController extends Controller
 {
-    public function __construct(protected QualityInspectionService $svc)
-    {
-    }
+    public function __construct(protected QualityInspectionService $svc) {}
 
     public function index(Request $request, int $mission): JsonResponse
     {
@@ -57,6 +56,7 @@ class QualityInspectionController extends Controller
     public function show(Request $request, MissionQualityInspection $inspection): JsonResponse
     {
         $inspection->load(['checklist.items', 'items', 'photos', 'signatures']);
+
         return response()->json(['data' => $inspection]);
     }
 

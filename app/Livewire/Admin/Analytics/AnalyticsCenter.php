@@ -62,6 +62,7 @@ class AnalyticsCenter extends Component
             '30d' => now()->subDays(30),
             default => now()->subDays(7),
         };
+
         return [$from, $to];
     }
 

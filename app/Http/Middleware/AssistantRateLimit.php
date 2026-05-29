@@ -36,8 +36,8 @@ class AssistantRateLimit
             return $next($request);
         }
 
-        $perHour    = (int) config('services.assistant.rate_per_hour', 30);
-        $perDay     = (int) config('services.assistant.rate_per_day', 200);
+        $perHour = (int) config('services.assistant.rate_per_hour', 30);
+        $perDay = (int) config('services.assistant.rate_per_day', 200);
         $costPerDay = (float) config('services.assistant.cost_limit_usd_per_day', 1.0);
 
         // 1) Limite horaire
@@ -74,7 +74,7 @@ class AssistantRateLimit
 
         if ($dailyCost >= $costPerDay) {
             return $this->limited(
-                "Plafond de coût quotidien atteint (\$" . number_format($costPerDay, 2) . "). Réessaye demain.",
+                'Plafond de coût quotidien atteint ($'.number_format($costPerDay, 2).'). Réessaye demain.',
                 'cost'
             );
         }
@@ -86,9 +86,9 @@ class AssistantRateLimit
     {
         if (request()->expectsJson()) {
             return response()->json([
-                'error'         => 'rate_limit_exceeded',
-                'reason'        => $reason,
-                'message'       => $message,
+                'error' => 'rate_limit_exceeded',
+                'reason' => $reason,
+                'message' => $message,
             ], 429);
         }
 

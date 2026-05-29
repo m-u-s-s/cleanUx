@@ -10,13 +10,12 @@ use Illuminate\Validation\ValidationException;
 
 /**
  * @group Client — Phone Verification
+ *
  * @authenticated
  */
 class PhoneVerificationController extends Controller
 {
-    public function __construct(protected PhoneVerificationService $service)
-    {
-    }
+    public function __construct(protected PhoneVerificationService $service) {}
 
     public function requestCode(Request $request): JsonResponse
     {

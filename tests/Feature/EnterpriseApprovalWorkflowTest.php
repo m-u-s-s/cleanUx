@@ -2,9 +2,8 @@
 
 namespace Tests\Feature;
 
-use App\Models\EnterpriseBookingApproval;
-use App\Models\OrganizationAccount;
 use App\Models\Booking;
+use App\Models\OrganizationAccount;
 use App\Models\User;
 use App\Services\Enterprise\EnterpriseBookingApprovalService;
 use Illuminate\Foundation\Testing\RefreshDatabase;

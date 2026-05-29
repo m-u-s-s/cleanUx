@@ -2,8 +2,8 @@
 
 namespace App\Services\Email;
 
-use App\Models\FinanceInvoice;
 use App\Models\Booking;
+use App\Models\FinanceInvoice;
 use App\Models\User;
 use Illuminate\Support\Carbon;
 
@@ -83,8 +83,8 @@ class ProductEmailTemplates
                 'intro' => 'Bonne nouvelle : votre prestation a bien été validée dans CleanUx.',
                 'details' => [
                     ['label' => 'Service', 'value' => 'Nettoyage standard'],
-                    ['label' => 'Date', 'value' => Carbon::parse($rdv->date)->format('d/m/Y') . ' à ' . substr($rdv->heure, 0, 5)],
-                    ['label' => 'Adresse', 'value' => $rdv->adresse . ', ' . $rdv->ville],
+                    ['label' => 'Date', 'value' => Carbon::parse($rdv->date)->format('d/m/Y').' à '.substr($rdv->heure, 0, 5)],
+                    ['label' => 'Adresse', 'value' => $rdv->adresse.', '.$rdv->ville],
                 ],
                 'highlight' => 'Vous recevrez un rappel avant l’intervention.',
                 'action_text' => 'Voir mon espace client',
@@ -100,8 +100,8 @@ class ProductEmailTemplates
                 'intro' => 'Petit rappel : votre intervention est prévue dans 24h.',
                 'details' => [
                     ['label' => 'Service', 'value' => 'Nettoyage standard'],
-                    ['label' => 'Créneau', 'value' => Carbon::parse($rdv->date)->format('d/m/Y') . ' à ' . substr($rdv->heure, 0, 5)],
-                    ['label' => 'Lieu', 'value' => $rdv->adresse . ', ' . $rdv->ville],
+                    ['label' => 'Créneau', 'value' => Carbon::parse($rdv->date)->format('d/m/Y').' à '.substr($rdv->heure, 0, 5)],
+                    ['label' => 'Lieu', 'value' => $rdv->adresse.', '.$rdv->ville],
                 ],
                 'action_text' => 'Vérifier ma réservation',
                 'action_url' => url('/dashboard/client'),
@@ -119,7 +119,7 @@ class ProductEmailTemplates
                     ['label' => 'Intervention', 'value' => Carbon::parse($rdv->date)->format('d/m/Y')],
                 ],
                 'action_text' => 'Laisser un feedback',
-                'action_url' => url('/feedback/ajouter/' . $rdv->id),
+                'action_url' => url('/feedback/ajouter/'.$rdv->id),
                 'outro' => 'Votre retour nous aide à améliorer la qualité.',
                 'tone' => 'warning',
             ],
@@ -131,8 +131,8 @@ class ProductEmailTemplates
                 'intro' => 'Nous vous envoyons un rappel concernant une facture encore ouverte.',
                 'details' => [
                     ['label' => 'Facture', 'value' => $invoice->invoice_number],
-                    ['label' => 'Montant total', 'value' => number_format((float) $invoice->total_amount, 2, ',', ' ') . ' €'],
-                    ['label' => 'Reste à payer', 'value' => number_format((float) $invoice->balance_due, 2, ',', ' ') . ' €'],
+                    ['label' => 'Montant total', 'value' => number_format((float) $invoice->total_amount, 2, ',', ' ').' €'],
+                    ['label' => 'Reste à payer', 'value' => number_format((float) $invoice->balance_due, 2, ',', ' ').' €'],
                     ['label' => 'Échéance', 'value' => optional($invoice->due_at)->format('d/m/Y')],
                 ],
                 'action_text' => 'Voir mes documents',
@@ -164,7 +164,7 @@ class ProductEmailTemplates
                 'intro' => 'Votre intervention a été mise à jour dans votre espace client.',
                 'details' => [
                     ['label' => 'Nouveau statut', 'value' => 'Confirmée'],
-                    ['label' => 'Date', 'value' => Carbon::parse($rdv->date)->format('d/m/Y') . ' à ' . substr($rdv->heure, 0, 5)],
+                    ['label' => 'Date', 'value' => Carbon::parse($rdv->date)->format('d/m/Y').' à '.substr($rdv->heure, 0, 5)],
                 ],
                 'action_text' => 'Voir le détail',
                 'action_url' => url('/dashboard/client/rendez-vous'),

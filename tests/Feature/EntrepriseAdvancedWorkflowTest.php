@@ -14,8 +14,8 @@ use Tests\TestCase;
 
 class EntrepriseAdvancedWorkflowTest extends TestCase
 {
-    use RefreshDatabase;
     use CreatesZoneAwareFixtures;
+    use RefreshDatabase;
 
     public function test_admin_can_save_advanced_entreprise_contract_rules(): void
     {

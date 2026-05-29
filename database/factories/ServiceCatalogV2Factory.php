@@ -15,7 +15,7 @@ class ServiceCatalogV2Factory extends Factory
         $name = fake()->words(2, true);
 
         return [
-            'code' => Str::upper(Str::slug($name, '_')) . '_V2_' . fake()->unique()->numberBetween(1, 9999),
+            'code' => Str::upper(Str::slug($name, '_')).'_V2_'.fake()->unique()->numberBetween(1, 9999),
             'name' => $name,
             'description' => fake()->sentence(),
             'trade_code' => fake()->randomElement(['cleaning', 'painting', 'babysitting', 'roofing']),

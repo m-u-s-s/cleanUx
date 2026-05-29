@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 
 /**
  * @group Authentication
+ *
  * @authenticated
  *
  * GET /api/auth/me

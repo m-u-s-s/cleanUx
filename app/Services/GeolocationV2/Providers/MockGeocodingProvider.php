@@ -44,10 +44,10 @@ class MockGeocodingProvider implements GeocodingProviderContract
             if (str_contains($key, $norm) || str_contains($this->normalize($entry['formatted']), $norm)) {
                 $results[] = new AddressSuggestion(
                     description: $entry['formatted'],
-                    placeId: 'mock_' . Str::slug($key),
+                    placeId: 'mock_'.Str::slug($key),
                     countryCode: $entry['country'],
                     mainText: $entry['locality'],
-                    secondaryText: $entry['postal'] . ', ' . $entry['country'],
+                    secondaryText: $entry['postal'].', '.$entry['country'],
                     postalCode: $entry['postal'],
                     latitude: $entry['lat'],
                     longitude: $entry['lng'],
@@ -58,6 +58,7 @@ class MockGeocodingProvider implements GeocodingProviderContract
                 break;
             }
         }
+
         return $results;
     }
 
@@ -72,6 +73,7 @@ class MockGeocodingProvider implements GeocodingProviderContract
                 return $this->toGeocodingResult($entry);
             }
         }
+
         return null;
     }
 
@@ -89,6 +91,7 @@ class MockGeocodingProvider implements GeocodingProviderContract
         if (! $best) {
             return null;
         }
+
         return $this->toGeocodingResult($best);
     }
 
@@ -100,8 +103,9 @@ class MockGeocodingProvider implements GeocodingProviderContract
         string $mode = 'driving',
     ): ?DistanceResult {
         $meters = (int) round(Haversine::distanceMeters($originLat, $originLng, $destLat, $destLng));
-        $avgSpeed = (float) (config('geolocation_v2.isochrone_avg_speed_kmh.' . $mode, 35));
+        $avgSpeed = (float) (config('geolocation_v2.isochrone_avg_speed_kmh.'.$mode, 35));
         $durationSec = $avgSpeed > 0 ? (int) round(($meters / 1000) / $avgSpeed * 3600) : null;
+
         return new DistanceResult(
             distanceMeters: $meters,
             durationSeconds: $durationSec,
@@ -119,6 +123,7 @@ class MockGeocodingProvider implements GeocodingProviderContract
         $s = preg_replace('/[ïî]/u', 'i', $s);
         $s = preg_replace('/[ôö]/u', 'o', $s);
         $s = preg_replace('/\s+/', ' ', $s);
+
         return (string) $s;
     }
 
@@ -128,7 +133,7 @@ class MockGeocodingProvider implements GeocodingProviderContract
             latitude: $entry['lat'],
             longitude: $entry['lng'],
             formattedAddress: $entry['formatted'],
-            placeId: 'mock_' . Str::slug($entry['locality'] . '-' . $entry['postal']),
+            placeId: 'mock_'.Str::slug($entry['locality'].'-'.$entry['postal']),
             countryCode: $entry['country'],
             postalCode: $entry['postal'],
             locality: $entry['locality'],

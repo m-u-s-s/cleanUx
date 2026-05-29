@@ -16,8 +16,11 @@ class MatchingScoreEngineTest extends TestCase
     use RefreshDatabase;
 
     protected User $provider;
+
     protected Booking $booking;
+
     protected ServiceZone $zone;
+
     protected MatchingScoreEngine $engine;
 
     protected function setUp(): void

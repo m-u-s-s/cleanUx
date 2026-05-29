@@ -10,8 +10,11 @@ use Livewire\Component;
 class MissionClientActions extends Component
 {
     public Mission $mission;
+
     public string $issueMessage = '';
+
     public ?string $successMessage = null;
+
     public ?string $errorMessage = null;
 
     public function mount(Mission $mission): void

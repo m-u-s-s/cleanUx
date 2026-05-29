@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use Illuminate\Filesystem\FilesystemAdapter;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Storage;
@@ -19,7 +20,7 @@ class OpsHeartbeatCommandTest extends TestCase
 
         $this->artisan('app:ops-heartbeat')->assertExitCode(0);
 
-        /** @var \Illuminate\Filesystem\FilesystemAdapter $disk */
+        /** @var FilesystemAdapter $disk */
         $disk = Storage::disk('local');
 
         $disk->assertExists('ops/heartbeat.json');

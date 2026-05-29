@@ -3,11 +3,10 @@
 namespace App\Services\Search;
 
 use App\Models\PostalCode;
-use App\Models\ProviderProfile;
-use App\Models\ServiceZone;
 use App\Models\User;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 class ProviderSearchService
@@ -115,6 +114,7 @@ class ProviderSearchService
 
         if (! $postal || ! $postal->service_zone_id) {
             $query->whereRaw('1 = 0');
+
             return;
         }
 
@@ -153,7 +153,7 @@ class ProviderSearchService
         if (! $criteria->query) {
             return;
         }
-        $term = '%' . $criteria->query . '%';
+        $term = '%'.$criteria->query.'%';
         $query->where(function ($sub) use ($term) {
             $sub->where('users.name', 'like', $term)
                 ->orWhere('provider_profiles.bio', 'like', $term);
@@ -171,16 +171,16 @@ class ProviderSearchService
         $radius = $criteria->radiusKm ?? 50;
 
         // Haversine approximation (km) — colonne current_lat/current_lng
-        $haversine = "(6371 * acos(
+        $haversine = '(6371 * acos(
             cos(radians(?)) * cos(radians(provider_profiles.current_lat)) *
             cos(radians(provider_profiles.current_lng) - radians(?)) +
             sin(radians(?)) * sin(radians(provider_profiles.current_lat))
-        ))";
+        ))';
 
         $query
             ->whereNotNull('provider_profiles.current_lat')
             ->whereNotNull('provider_profiles.current_lng')
-            ->addSelect(\Illuminate\Support\Facades\DB::raw("$haversine AS distance_km"))
+            ->addSelect(DB::raw("$haversine AS distance_km"))
             ->whereRaw("$haversine <= ?", [$lat, $lng, $lat, $radius])
             ->addBinding([$lat, $lng, $lat], 'select');
     }

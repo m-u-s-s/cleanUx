@@ -57,7 +57,7 @@ class DataExportService
         } catch (\Throwable $e) {
             $request->update([
                 'status' => GdprDataRequest::STATUS_REJECTED,
-                'admin_response' => 'Export error: ' . $e->getMessage(),
+                'admin_response' => 'Export error: '.$e->getMessage(),
             ]);
             throw $e;
         }
@@ -103,9 +103,9 @@ class DataExportService
             'platform_role' => $user->platform_role,
             'user_type' => method_exists($user, 'matchesRole') ? (
                 $user->isPlatformAdmin() ? 'admin' : (
-                $user->isEntreprise() ? 'entreprise' : (
-                $user->isClientPersonal() ? 'client' : (
-                $user->isEmploye() ? 'employe' : ($user->platform_role ?? null))))
+                    $user->isEntreprise() ? 'entreprise' : (
+                        $user->isClientPersonal() ? 'client' : (
+                            $user->isEmploye() ? 'employe' : ($user->platform_role ?? null))))
             ) : null,
             'account_type' => $user->account_type,
             'plan_type' => $user->plan_type,
@@ -124,7 +124,9 @@ class DataExportService
 
     protected function collectBookings(User $user): array
     {
-        if (! Schema::hasTable('bookings')) return [];
+        if (! Schema::hasTable('bookings')) {
+            return [];
+        }
 
         return Booking::query()
             ->where('client_id', $user->id)
@@ -136,7 +138,9 @@ class DataExportService
 
     protected function collectFeedbackGiven(User $user): array
     {
-        if (! Schema::hasTable('feedback')) return [];
+        if (! Schema::hasTable('feedback')) {
+            return [];
+        }
 
         return Feedback::query()
             ->where('client_id', $user->id)
@@ -147,7 +151,9 @@ class DataExportService
 
     protected function collectFeedbackReceived(User $user): array
     {
-        if (! Schema::hasTable('feedback')) return [];
+        if (! Schema::hasTable('feedback')) {
+            return [];
+        }
 
         return Feedback::query()
             ->where('employe_id', $user->id)
@@ -160,7 +166,9 @@ class DataExportService
 
     protected function collectDisputes(User $user): array
     {
-        if (! Schema::hasTable('complaint_cases')) return [];
+        if (! Schema::hasTable('complaint_cases')) {
+            return [];
+        }
 
         return ComplaintCase::query()
             ->where('client_id', $user->id)
@@ -172,7 +180,9 @@ class DataExportService
 
     protected function collectReferrals(User $user): array
     {
-        if (! Schema::hasTable('referrals')) return [];
+        if (! Schema::hasTable('referrals')) {
+            return [];
+        }
 
         return Referral::query()
             ->where('referrer_user_id', $user->id)
@@ -184,7 +194,9 @@ class DataExportService
 
     protected function collectKyc(User $user): array
     {
-        if (! Schema::hasTable('kyc_verifications')) return [];
+        if (! Schema::hasTable('kyc_verifications')) {
+            return [];
+        }
 
         return KycVerification::query()
             ->where('user_id', $user->id)
@@ -195,7 +207,9 @@ class DataExportService
 
     protected function collectWallet(User $user): array
     {
-        if (! Schema::hasTable('provider_wallet_transactions')) return [];
+        if (! Schema::hasTable('provider_wallet_transactions')) {
+            return [];
+        }
 
         return ProviderWalletTransaction::query()
             ->where('provider_user_id', $user->id)
@@ -206,7 +220,9 @@ class DataExportService
 
     protected function collectPayouts(User $user): array
     {
-        if (! Schema::hasTable('provider_payouts')) return [];
+        if (! Schema::hasTable('provider_payouts')) {
+            return [];
+        }
 
         return ProviderPayout::query()
             ->where('provider_user_id', $user->id)
@@ -217,7 +233,9 @@ class DataExportService
 
     protected function collectNotifications(User $user): array
     {
-        if (! Schema::hasTable('notifications')) return [];
+        if (! Schema::hasTable('notifications')) {
+            return [];
+        }
 
         return \DB::table('notifications')
             ->where('notifiable_type', User::class)
@@ -229,7 +247,9 @@ class DataExportService
 
     protected function collectLoginHistory(User $user): array
     {
-        if (! Schema::hasTable('activity_logs')) return [];
+        if (! Schema::hasTable('activity_logs')) {
+            return [];
+        }
 
         return \DB::table('activity_logs')
             ->where('user_id', $user->id)

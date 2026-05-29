@@ -9,6 +9,6 @@ use App\Support\Livewire\Concerns\Admin\ComputesAdminDashboardScopes;
 trait ComputesAdminDashboardData
 {
     use BootsAdminDashboardFilters;
-    use ComputesAdminDashboardScopes;
     use ComputesAdminDashboardInsights;
+    use ComputesAdminDashboardScopes;
 }

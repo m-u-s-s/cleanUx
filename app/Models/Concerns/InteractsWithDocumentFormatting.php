@@ -61,8 +61,8 @@ trait InteractsWithDocumentFormatting
         );
 
         return $this->documentCurrencyPosition() === 'before'
-            ? $this->documentCurrencySymbol() . ' ' . $formatted
-            : $formatted . ' ' . $this->documentCurrencySymbol();
+            ? $this->documentCurrencySymbol().' '.$formatted
+            : $formatted.' '.$this->documentCurrencySymbol();
     }
 
     public function formatDocumentDate($date): string

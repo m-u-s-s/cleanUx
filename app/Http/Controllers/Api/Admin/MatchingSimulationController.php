@@ -10,6 +10,7 @@ use Illuminate\Http\Request;
 
 /**
  * @group Admin — Matching Simulation
+ *
  * @authenticated
  */
 class MatchingSimulationController extends Controller

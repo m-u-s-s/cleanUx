@@ -62,6 +62,7 @@ class ProviderPresenceService
         }
 
         $presence->update($updates);
+
         return $presence->fresh();
     }
 
@@ -94,6 +95,7 @@ class ProviderPresenceService
         }
 
         $presence->update($updates);
+
         return $presence->fresh();
     }
 
@@ -130,7 +132,7 @@ class ProviderPresenceService
                 ])
                 ->where(function ($q) use ($cutoff) {
                     $q->where('heartbeat_at', '<', $cutoff)
-                      ->orWhereNull('heartbeat_at');
+                        ->orWhereNull('heartbeat_at');
                 })
                 ->get();
 
@@ -144,6 +146,7 @@ class ProviderPresenceService
                     ]),
                 ]);
             }
+
             return $stales->count();
         });
     }
@@ -182,6 +185,7 @@ class ProviderPresenceService
         }
 
         $presence->update($updates);
+
         return $presence->fresh();
     }
 }

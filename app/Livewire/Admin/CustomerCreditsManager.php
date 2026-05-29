@@ -2,8 +2,8 @@
 
 namespace App\Livewire\Admin;
 
-use App\Models\CustomerCredit;
 use App\Models\Booking;
+use App\Models\CustomerCredit;
 use App\Models\User;
 use App\Support\ActivityLogger;
 use Illuminate\Contracts\View\View;
@@ -15,11 +15,17 @@ class CustomerCreditsManager extends Component
     use WithPagination;
 
     public ?int $client_id = null;
+
     public ?int $rendez_vous_id = null;
+
     public string $type = 'commercial_gesture';
+
     public float $amount = 0;
+
     public string $reason = '';
+
     public string $notes = '';
+
     public ?string $expires_at = null;
 
     public string $search = '';
@@ -77,6 +83,7 @@ class CustomerCreditsManager extends Component
 
         if ($credit->status !== 'active') {
             $this->dispatch('toast', 'Ce crédit ne peut pas être annulé.', 'error');
+
             return;
         }
 

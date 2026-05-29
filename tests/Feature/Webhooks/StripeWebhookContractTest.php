@@ -24,7 +24,7 @@ class StripeWebhookContractTest extends TestCase
 
     private function stripeEventId(): string
     {
-        return 'evt_test_' . Str::random(24);
+        return 'evt_test_'.Str::random(24);
     }
 
     private function subscriptionPayload(string $eventId, string $type, string $stripeCustomerId): array
@@ -36,7 +36,7 @@ class StripeWebhookContractTest extends TestCase
             'livemode' => false,
             'data' => [
                 'object' => [
-                    'id' => 'sub_test_' . Str::random(16),
+                    'id' => 'sub_test_'.Str::random(16),
                     'object' => 'subscription',
                     'customer' => $stripeCustomerId,
                     'status' => 'active',
@@ -44,7 +44,7 @@ class StripeWebhookContractTest extends TestCase
                     'items' => [
                         'data' => [
                             [
-                                'id' => 'si_test_' . Str::random(16),
+                                'id' => 'si_test_'.Str::random(16),
                                 'price' => [
                                     'id' => 'price_test',
                                     'unit_amount' => 1999,

@@ -11,6 +11,7 @@ use Livewire\Component;
 class LivewireUnusedInViews extends Command
 {
     protected $signature = 'livewire:unused-includes';
+
     protected $description = 'Liste les composants Livewire jamais appelés dans des vues, en excluant les composants full-page utilisés dans les routes';
 
     public function handle(): int
@@ -78,6 +79,7 @@ class LivewireUnusedInViews extends Command
 
         if (empty($unused)) {
             $this->info('✅ Aucun composant non inclus détecté hors composants routés.');
+
             return self::SUCCESS;
         }
 

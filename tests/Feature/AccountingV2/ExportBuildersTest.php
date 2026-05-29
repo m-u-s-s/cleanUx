@@ -47,7 +47,7 @@ class ExportBuildersTest extends TestCase
 
     public function test_csv_builder_contains_header_and_row(): void
     {
-        $built = (new CsvExportBuilder())->build(AccountingEntry::query());
+        $built = (new CsvExportBuilder)->build(AccountingEntry::query());
         $this->assertSame(2, $built['row_count']);
         $this->assertStringContainsString('entry_code;posting_date;journal_code', $built['content']);
         $this->assertStringContainsString('411000', $built['content']);
@@ -56,7 +56,7 @@ class ExportBuildersTest extends TestCase
 
     public function test_fec_builder_uses_pipe_delimiter_and_required_columns(): void
     {
-        $built = (new FecExportBuilder())->build(AccountingEntry::query());
+        $built = (new FecExportBuilder)->build(AccountingEntry::query());
         $this->assertStringStartsWith('JournalCode|JournalLib|EcritureNum', $built['content']);
         $this->assertStringContainsString('VEN|Ventes|', $built['content']);
         // Montants au format virgule decimal
@@ -65,14 +65,14 @@ class ExportBuildersTest extends TestCase
 
     public function test_sage_builder_uses_french_date_format(): void
     {
-        $built = (new SageExportBuilder())->build(AccountingEntry::query());
+        $built = (new SageExportBuilder)->build(AccountingEntry::query());
         $this->assertStringStartsWith('Date;Journal;Compte', $built['content']);
         $this->assertMatchesRegularExpression('/\d{2}\/\d{2}\/\d{4};VEN;411000/', $built['content']);
     }
 
     public function test_quickbooks_iif_emits_trns_spl_endtrns_blocks(): void
     {
-        $built = (new QuickBooksIifExportBuilder())->build(AccountingEntry::query());
+        $built = (new QuickBooksIifExportBuilder)->build(AccountingEntry::query());
         // Header lines required by IIF spec
         $this->assertStringContainsString("!TRNS\t", $built['content']);
         $this->assertStringContainsString("!SPL\t", $built['content']);

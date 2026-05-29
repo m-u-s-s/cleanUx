@@ -12,12 +12,10 @@ use Illuminate\Notifications\Notification;
 
 class StatutRendezVousNotification extends Notification implements ShouldQueue
 {
-    use Queueable;
     use InteractsWithUserNotificationPreferences;
+    use Queueable;
 
-    public function __construct(public Booking $rdv)
-    {
-    }
+    public function __construct(public Booking $rdv) {}
 
     public function via($notifiable)
     {
@@ -31,8 +29,8 @@ class StatutRendezVousNotification extends Notification implements ShouldQueue
         $mail = (new MailMessage)
             ->subject('CleanUx · Mise à jour de votre demande')
             ->line("Votre demande de {$this->rdv->service_display_name} a été {$statusText}.")
-            ->line('Date : ' . $this->rdv->date . ' à ' . $this->rdv->heure)
-            ->line('Lieu : ' . $this->rdv->location_display);
+            ->line('Date : '.$this->rdv->date.' à '.$this->rdv->heure)
+            ->line('Lieu : '.$this->rdv->location_display);
 
         if ($this->rdv->status === BookingStatus::EN_ROUTE) {
             $mail->line('Notre employé est en route vers votre adresse.');
@@ -57,7 +55,7 @@ class StatutRendezVousNotification extends Notification implements ShouldQueue
             'type' => $this->rdv->status === BookingStatus::REFUSE ? 'urgent' : 'rendezvous',
             'severity' => BookingStatus::notificationSeverity((string) $this->rdv->status),
             'title' => 'Mise à jour de rendez-vous',
-            'message' => 'Votre demande de ' . $this->rdv->service_display_name . ' a été ' . $statusText . '.',
+            'message' => 'Votre demande de '.$this->rdv->service_display_name.' a été '.$statusText.'.',
             'rdv_id' => $this->rdv->id,
             'service_identifier' => $this->rdv->service_identifier_display,
             'service_label' => $this->rdv->service_display_name,

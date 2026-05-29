@@ -24,7 +24,7 @@ class RedirectIfAuthenticated
 
         return redirect()->intended(config('fortify.home'));
     }
-    
+
     public function handle(Request $request, Closure $next, string ...$guards): Response
     {
         $guards = empty($guards) ? [null] : $guards;

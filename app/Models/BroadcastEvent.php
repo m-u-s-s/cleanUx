@@ -8,19 +8,29 @@ use Illuminate\Database\Eloquent\Model;
 class BroadcastEvent extends Model
 {
     public const STATUS_QUEUED = 'queued';
+
     public const STATUS_SENT = 'sent';
+
     public const STATUS_FAILED = 'failed';
 
     public const AUDIENCE_PER_USER = 'per_user';
+
     public const AUDIENCE_PER_CHANNEL = 'per_channel';
+
     public const AUDIENCE_PRESENCE = 'presence';
+
     public const AUDIENCE_BROADCAST = 'broadcast';
 
     public const CATEGORY_MISSION_ETA = 'mission_eta';
+
     public const CATEGORY_MISSION_STATUS = 'mission_status';
+
     public const CATEGORY_POSITION = 'position';
+
     public const CATEGORY_PRESENCE = 'presence';
+
     public const CATEGORY_CHAT = 'chat';
+
     public const CATEGORY_NOTIFICATION = 'notification';
 
     protected $fillable = [

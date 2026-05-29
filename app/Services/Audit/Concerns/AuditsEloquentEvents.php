@@ -59,7 +59,7 @@ trait AuditsEloquentEvents
                 $context['changes'] = $changes;
             }
 
-            $eventType = $domain . '.' . $action;
+            $eventType = $domain.'.'.$action;
 
             app(AuditService::class)->record($eventType, $context, [
                 'subject' => $this,

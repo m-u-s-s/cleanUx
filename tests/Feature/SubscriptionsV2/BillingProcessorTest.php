@@ -37,6 +37,7 @@ class BillingProcessorTest extends TestCase
         $sub = app(SubscriptionEngine::class)->subscribe($user, $plan, [
             'metadata' => $forceFail ? ['force_fail_billing' => true] : [],
         ]);
+
         return $sub;
     }
 

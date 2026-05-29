@@ -1,7 +1,7 @@
 <?php
 
-use App\Http\Controllers\LocaleController;
 use App\Http\Controllers\Push\PushSubscriptionController;
+use App\Livewire\DesignSystem;
 use App\Livewire\Provider\MissionOfferPage;
 use App\Livewire\Provider\Onboarding\ProviderOnboardingWizard;
 use Illuminate\Support\Facades\Route;
@@ -13,29 +13,29 @@ use Illuminate\Support\Facades\Route;
 | Central router: only loads domain-specific route files
 */
 
-require __DIR__ . '/public.php';
+require __DIR__.'/public.php';
 
 Route::middleware(['auth', 'verified', 'active.account'])->group(function () {
 
-    require __DIR__ . '/authenticated.php';
-    require __DIR__ . '/integrations.php';
+    require __DIR__.'/authenticated.php';
+    require __DIR__.'/integrations.php';
 
-    require __DIR__ . '/admin.php';
-    require __DIR__ . '/client.php';
-    require __DIR__ . '/employe.php';
+    require __DIR__.'/admin.php';
+    require __DIR__.'/client.php';
+    require __DIR__.'/employe.php';
 
-    require __DIR__ . '/feedback.php';
-    require __DIR__ . '/missions.php';
+    require __DIR__.'/feedback.php';
+    require __DIR__.'/missions.php';
 
-    require __DIR__ . '/company-dashboards.php';
-    require __DIR__ . '/missing-route-fixes-advanced.php';
+    require __DIR__.'/company-dashboards.php';
+    require __DIR__.'/missing-route-fixes-advanced.php';
 
 });
 
 Route::middleware('auth')->prefix('push')->group(function () {
-    Route::post('/subscribe',   [PushSubscriptionController::class, 'subscribe']);
+    Route::post('/subscribe', [PushSubscriptionController::class, 'subscribe']);
     Route::post('/unsubscribe', [PushSubscriptionController::class, 'unsubscribe']);
-    Route::post('/test',        [PushSubscriptionController::class, 'test']);
+    Route::post('/test', [PushSubscriptionController::class, 'test']);
 });
 
 // Public (pas besoin d'auth pour récupérer la clé publique)
@@ -52,5 +52,5 @@ Route::middleware(['auth'])->group(function () {
 });
 
 Route::middleware(['auth', 'role:admin'])->group(function () {
-    Route::get('/design-system', \App\Livewire\DesignSystem::class)->name('design-system');
+    Route::get('/design-system', DesignSystem::class)->name('design-system');
 });

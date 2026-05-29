@@ -2,12 +2,12 @@
 
 namespace App\Realtime;
 
+use App\Events\Realtime\GenericReplayedBroadcast;
 use App\Models\BroadcastEvent;
 use App\Realtime\Contracts\TracksBroadcastLedger;
 use App\Support\ActivityLogger;
 use Illuminate\Broadcasting\Channel;
 use Illuminate\Broadcasting\PresenceChannel;
-use Illuminate\Broadcasting\PrivateChannel;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcastNow;
 use Illuminate\Support\Facades\Log;
@@ -35,6 +35,7 @@ class RealtimeBroadcastService
         }
 
         $this->dispatchUntracked($event);
+
         return null;
     }
 
@@ -46,7 +47,7 @@ class RealtimeBroadcastService
             // usually wants live Eloquent models we can't serialize round-trip);
             // instead we dispatch a generic ShouldBroadcastNow whose `broadcastAs`
             // matches the original — listeners on the client side react the same.
-            $event = new \App\Events\Realtime\GenericReplayedBroadcast(
+            $event = new GenericReplayedBroadcast(
                 channelName: $row->channel,
                 broadcastAsName: $row->broadcast_as ?? class_basename($row->event_class),
                 payload: (array) $row->payload,
@@ -74,6 +75,7 @@ class RealtimeBroadcastService
                 'class' => $row->event_class,
                 'error' => $e->getMessage(),
             ]);
+
             return false;
         }
     }
@@ -199,6 +201,7 @@ class RealtimeBroadcastService
         if (preg_match('/\.(\d+)$/', $channelName, $m)) {
             return (int) $m[1];
         }
+
         return null;
     }
 }

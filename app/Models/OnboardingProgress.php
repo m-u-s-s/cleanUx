@@ -12,8 +12,11 @@ class OnboardingProgress extends Model
     protected $table = 'onboarding_journeys_user_progress';
 
     public const STATUS_NOT_STARTED = 'not_started';
+
     public const STATUS_IN_PROGRESS = 'in_progress';
+
     public const STATUS_COMPLETED = 'completed';
+
     public const STATUS_ABANDONED = 'abandoned';
 
     protected $fillable = [

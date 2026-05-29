@@ -33,7 +33,7 @@ class DispatchTimeoutConfigTest extends TestCase
 
     public function test_unknown_trade_falls_back_to_default(): void
     {
-        $slug    = 'trade_that_does_not_exist';
+        $slug = 'trade_that_does_not_exist';
         $timeout = (int) config("dispatch.timeout_per_trade.{$slug}", config('dispatch.default_timeout'));
         $this->assertSame(config('dispatch.default_timeout'), $timeout);
     }

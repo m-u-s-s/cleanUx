@@ -2,33 +2,45 @@
 
 namespace App\Livewire\Employe;
 
+use App\Models\Mission;
 use App\Models\MissionBatch;
 use App\Models\MissionReinforcementRequest;
 use App\Models\MissionTaskSegment;
+use App\Models\MissionTaskSegmentAssignment;
 use App\Models\User;
 use App\Services\Missions\TeamLeadOperationsService;
+use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
-use Illuminate\Contracts\View\View;
-use Livewire\Attributes\Layout;
 
 class TeamLeadOperationsCenter extends Component
 {
     public ?int $selectedBatchId = null;
+
     public ?int $selectedSegmentId = null;
+
     public ?int $selectedAssigneeId = null;
 
     public string $memberStatus = 'in_progress';
+
     public string $readinessStatus = 'ready';
+
     public int $progressPercent = 0;
+
     public int $minutesSpent = 0;
+
     public bool $isBlocked = false;
+
     public ?string $blockingReason = null;
+
     public ?string $memberNotes = null;
 
     public int $requestedMembers = 1;
+
     public int $requestedMinutes = 60;
+
     public string $reinforcementPriority = 'haute';
+
     public string $reinforcementReason = '';
 
     protected TeamLeadOperationsService $operations;
@@ -87,7 +99,7 @@ class TeamLeadOperationsCenter extends Component
 
     public function updateSelectedMemberStatus(int $assignmentId): void
     {
-        $assignment = \App\Models\MissionTaskSegmentAssignment::with('mission')->findOrFail($assignmentId);
+        $assignment = MissionTaskSegmentAssignment::with('mission')->findOrFail($assignmentId);
 
         $this->operations->updateMemberStatus($assignment, $assignment->user, [
             'status' => $this->memberStatus,
@@ -119,7 +131,7 @@ class TeamLeadOperationsCenter extends Component
 
     public function closeSelectedBatchMission(int $missionId): void
     {
-        $mission = \App\Models\Mission::findOrFail($missionId);
+        $mission = Mission::findOrFail($missionId);
         $this->operations->closeInterventionGlobally($mission, Auth::user());
 
         $this->dispatch('toast', 'Clôture globale exécutée.', 'success');

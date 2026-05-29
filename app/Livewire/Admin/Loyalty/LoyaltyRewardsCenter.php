@@ -16,23 +16,37 @@ class LoyaltyRewardsCenter extends Component
     protected $paginationTheme = 'tailwind';
 
     public string $tab = 'rewards';
+
     public string $search = '';
+
     public string $rewardTypeFilter = '';
+
     public string $statusFilter = '';
 
     public bool $showForm = false;
+
     public ?int $editRewardId = null;
 
     public string $form_code = '';
+
     public string $form_name = '';
+
     public string $form_description = '';
+
     public string $form_reward_type = LoyaltyReward::TYPE_DISCOUNT_CODE;
+
     public string $form_category = '';
+
     public int $form_points_cost = 100;
+
     public int $form_value_cents = 0;
+
     public string $form_currency = 'EUR';
+
     public int $form_min_tier_level = 0;
+
     public ?int $form_stock_initial = null;
+
     public bool $form_is_active = true;
 
     public function setTab(string $tab): void
@@ -44,7 +58,7 @@ class LoyaltyRewardsCenter extends Component
     public function openCreate(): void
     {
         $this->reset(['editRewardId']);
-        $this->form_code = 'rwd_' . substr(uniqid(), -8);
+        $this->form_code = 'rwd_'.substr(uniqid(), -8);
         $this->form_name = '';
         $this->form_description = '';
         $this->form_reward_type = LoyaltyReward::TYPE_DISCOUNT_CODE;
@@ -136,7 +150,7 @@ class LoyaltyRewardsCenter extends Component
             app(LoyaltyRedemptionService::class)->cancel($redemption, $reason);
             $this->dispatch('toast', 'Redemption annulée et points refundés.', 'success');
         } catch (\Throwable $e) {
-            $this->dispatch('toast', 'Erreur: ' . $e->getMessage(), 'error');
+            $this->dispatch('toast', 'Erreur: '.$e->getMessage(), 'error');
         }
     }
 
@@ -151,11 +165,11 @@ class LoyaltyRewardsCenter extends Component
     {
         $rewards = LoyaltyReward::query()
             ->when($this->search, function ($q) {
-                $term = '%' . $this->search . '%';
+                $term = '%'.$this->search.'%';
                 $q->where(function ($w) use ($term) {
                     $w->where('name', 'like', $term)
-                      ->orWhere('code', 'like', $term)
-                      ->orWhere('category', 'like', $term);
+                        ->orWhere('code', 'like', $term)
+                        ->orWhere('category', 'like', $term);
                 });
             })
             ->when($this->rewardTypeFilter, fn ($q) => $q->where('reward_type', $this->rewardTypeFilter))

@@ -21,18 +21,25 @@ class DisputesCenter extends Component
     protected $paginationTheme = 'tailwind';
 
     public string $filterStatus = '';
+
     public string $filterPriority = '';
+
     public string $filterCategory = '';
+
     public bool $showOverdueOnly = false;
+
     public string $search = '';
 
     public ?int $selectedId = null;
 
     public string $messageBody = '';
+
     public string $messageVisibility = DisputeEvent::VISIBILITY_ALL;
 
     public string $resolutionType = DisputeResolution::TYPE_REFUND_FULL;
+
     public ?float $resolutionAmount = null;
+
     public string $resolutionExplanation = '';
 
     public function select(int $id): void
@@ -119,7 +126,7 @@ class DisputesCenter extends Component
                 }
             }
         } catch (\Throwable $e) {
-            $this->dispatch('toast', 'Erreur : ' . $e->getMessage(), 'error');
+            $this->dispatch('toast', 'Erreur : '.$e->getMessage(), 'error');
         }
     }
 
@@ -145,7 +152,7 @@ class DisputesCenter extends Component
             ->when($this->filterCategory, fn ($q) => $q->where('category', $this->filterCategory))
             ->when($this->showOverdueOnly, fn ($q) => $q->overdue())
             ->when($this->search, function ($q) {
-                $term = '%' . $this->search . '%';
+                $term = '%'.$this->search.'%';
                 $q->where(function ($inner) use ($term) {
                     $inner->where('reference', 'like', $term)
                         ->orWhere('subject', 'like', $term)

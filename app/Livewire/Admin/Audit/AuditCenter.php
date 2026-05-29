@@ -15,9 +15,13 @@ class AuditCenter extends Component
     protected $paginationTheme = 'tailwind';
 
     public string $filterDomain = '';
+
     public string $filterSeverity = '';
+
     public string $filterEventType = '';
+
     public string $search = '';
+
     public bool $pinnedOnly = false;
 
     public function togglePin(int $eventId): void
@@ -48,9 +52,9 @@ class AuditCenter extends Component
         $items = AuditEvent::query()
             ->when($this->filterDomain, fn ($q) => $q->where('domain', $this->filterDomain))
             ->when($this->filterSeverity, fn ($q) => $q->where('severity', $this->filterSeverity))
-            ->when($this->filterEventType, fn ($q) => $q->where('event_type', 'like', '%' . $this->filterEventType . '%'))
+            ->when($this->filterEventType, fn ($q) => $q->where('event_type', 'like', '%'.$this->filterEventType.'%'))
             ->when($this->search, function ($q) {
-                $term = '%' . $this->search . '%';
+                $term = '%'.$this->search.'%';
                 $q->where(function ($inner) use ($term) {
                     $inner->where('actor_label', 'like', $term)
                         ->orWhere('subject_label', 'like', $term)

@@ -11,25 +11,39 @@ use App\Models\User;
 use App\Notifications\Promotion\PromoCodeAppliedNotification;
 use App\Support\ActivityLogger;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Notification;
 
 class PromoCodeService
 {
     public const ERROR_NOT_FOUND = 'not_found';
+
     public const ERROR_NOT_ACTIVE = 'not_active';
+
     public const ERROR_OUTSIDE_WINDOW = 'outside_window';
+
     public const ERROR_CAMPAIGN_INACTIVE = 'campaign_inactive';
+
     public const ERROR_CAMPAIGN_BUDGET = 'campaign_budget_exhausted';
+
     public const ERROR_GLOBAL_LIMIT = 'global_limit_reached';
+
     public const ERROR_USER_LIMIT = 'user_limit_reached';
+
     public const ERROR_MIN_AMOUNT = 'min_amount_not_reached';
+
     public const ERROR_FIRST_BOOKING_ONLY = 'first_booking_only';
+
     public const ERROR_AUDIENCE = 'audience_mismatch';
+
     public const ERROR_TRADE = 'trade_not_allowed';
+
     public const ERROR_SERVICE = 'service_not_allowed';
+
     public const ERROR_COUNTRY = 'country_not_allowed';
+
     public const ERROR_ZONE = 'zone_not_allowed';
+
     public const ERROR_USER_NOT_ALLOWED = 'user_not_allowed';
+
     public const ERROR_ISSUED_TO_OTHER = 'issued_to_other_user';
 
     public function validate(string $rawCode, PromoCodeValidationContext $context): PromoCodeValidationResult
@@ -44,7 +58,7 @@ class PromoCodeService
         $promo = PromoCode::query()->forCode($code)->first();
 
         if (! $promo) {
-            return PromoCodeValidationResult::fail(self::ERROR_NOT_FOUND, "Code promo introuvable.");
+            return PromoCodeValidationResult::fail(self::ERROR_NOT_FOUND, 'Code promo introuvable.');
         }
 
         if ($promo->status !== PromoCode::STATUS_ACTIVE) {
@@ -52,7 +66,7 @@ class PromoCodeService
         }
 
         if (! $promo->isWithinValidityWindow()) {
-            return PromoCodeValidationResult::fail(self::ERROR_OUTSIDE_WINDOW, "Ce code promo est expiré ou pas encore valable.", $promo);
+            return PromoCodeValidationResult::fail(self::ERROR_OUTSIDE_WINDOW, 'Ce code promo est expiré ou pas encore valable.', $promo);
         }
 
         if ($promo->campaign) {
@@ -60,7 +74,7 @@ class PromoCodeService
                 return PromoCodeValidationResult::fail(self::ERROR_CAMPAIGN_INACTIVE, "La campagne associée n'est plus active.", $promo);
             }
             if (! $promo->campaign->hasBudgetRemaining()) {
-                return PromoCodeValidationResult::fail(self::ERROR_CAMPAIGN_BUDGET, "Le budget de cette campagne est épuisé.", $promo);
+                return PromoCodeValidationResult::fail(self::ERROR_CAMPAIGN_BUDGET, 'Le budget de cette campagne est épuisé.', $promo);
             }
         }
 
@@ -69,23 +83,23 @@ class PromoCodeService
         }
 
         if (! $promo->hasUserUsesLeft($context->user->id)) {
-            return PromoCodeValidationResult::fail(self::ERROR_USER_LIMIT, "Vous avez déjà utilisé ce code le nombre maximum de fois.", $promo);
+            return PromoCodeValidationResult::fail(self::ERROR_USER_LIMIT, 'Vous avez déjà utilisé ce code le nombre maximum de fois.', $promo);
         }
 
         if ($promo->issued_to_user_id && (int) $promo->issued_to_user_id !== (int) $context->user->id) {
-            return PromoCodeValidationResult::fail(self::ERROR_ISSUED_TO_OTHER, "Ce code est nominatif et réservé à un autre utilisateur.", $promo);
+            return PromoCodeValidationResult::fail(self::ERROR_ISSUED_TO_OTHER, 'Ce code est nominatif et réservé à un autre utilisateur.', $promo);
         }
 
         if ($promo->min_booking_amount !== null && $context->bookingAmount < (float) $promo->min_booking_amount) {
             return PromoCodeValidationResult::fail(
                 self::ERROR_MIN_AMOUNT,
-                sprintf("Montant minimum requis : %.2f %s.", (float) $promo->min_booking_amount, $context->currency),
+                sprintf('Montant minimum requis : %.2f %s.', (float) $promo->min_booking_amount, $context->currency),
                 $promo
             );
         }
 
         if ($promo->first_booking_only && ! $context->isFirstBooking) {
-            return PromoCodeValidationResult::fail(self::ERROR_FIRST_BOOKING_ONLY, "Ce code est réservé à la première réservation.", $promo);
+            return PromoCodeValidationResult::fail(self::ERROR_FIRST_BOOKING_ONLY, 'Ce code est réservé à la première réservation.', $promo);
         }
 
         if (! $this->matchesAudience($promo, $context)) {
@@ -168,7 +182,7 @@ class PromoCodeService
             if ($promo->promo_campaign_id) {
                 PromoCampaign::query()->whereKey($promo->promo_campaign_id)->update([
                     'total_redemptions' => DB::raw('total_redemptions + 1'),
-                    'total_discounted' => DB::raw('total_discounted + ' . (float) $discount),
+                    'total_discounted' => DB::raw('total_discounted + '.(float) $discount),
                 ]);
             }
 
@@ -214,7 +228,7 @@ class PromoCodeService
                 if ($promo->promo_campaign_id) {
                     PromoCampaign::query()->whereKey($promo->promo_campaign_id)->update([
                         'total_redemptions' => DB::raw('GREATEST(total_redemptions - 1, 0)'),
-                        'total_discounted' => DB::raw('GREATEST(total_discounted - ' . (float) $redemption->discount_amount . ', 0)'),
+                        'total_discounted' => DB::raw('GREATEST(total_discounted - '.(float) $redemption->discount_amount.', 0)'),
                     ]);
                 }
             }

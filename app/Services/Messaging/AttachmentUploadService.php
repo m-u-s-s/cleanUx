@@ -2,10 +2,10 @@
 
 namespace App\Services\Messaging;
 
+use App\Jobs\Messaging\ScanAttachmentForMalware;
 use App\Models\Message;
 use App\Models\MessageAttachment;
 use App\Models\User;
-use App\Jobs\Messaging\ScanAttachmentForMalware;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -57,20 +57,20 @@ class AttachmentUploadService
         $disk = (string) config('messaging.attachments.disk', 'public');
 
         // Random subfolder par mois pour éviter les répertoires trop chargés
-        $folder = 'message-attachments/' . now()->format('Y/m');
+        $folder = 'message-attachments/'.now()->format('Y/m');
         $extension = $file->getClientOriginalExtension();
-        $filename  = Str::ulid() . ($extension ? '.' . $extension : '');
+        $filename = Str::ulid().($extension ? '.'.$extension : '');
         $path = $file->storeAs($folder, $filename, $disk);
 
         $attrs = [
-            'message_id'    => $message->id,
-            'uploaded_by'   => $uploader->id,
-            'disk'          => $disk,
-            'path'          => $path,
+            'message_id' => $message->id,
+            'uploaded_by' => $uploader->id,
+            'disk' => $disk,
+            'path' => $path,
             'original_name' => $file->getClientOriginalName(),
-            'mime_type'     => $file->getMimeType(),
-            'size_bytes'    => $file->getSize(),
-            'av_status'     => MessageAttachment::AV_STATUS_PENDING,
+            'mime_type' => $file->getMimeType(),
+            'size_bytes' => $file->getSize(),
+            'av_status' => MessageAttachment::AV_STATUS_PENDING,
         ];
 
         // Si image, on extrait dimensions et on génère une thumb
@@ -97,7 +97,7 @@ class AttachmentUploadService
         }
 
         if ($file->getSize() > self::MAX_SIZE_BYTES) {
-            throw new \DomainException("Fichier trop volumineux (max " . (self::MAX_SIZE_BYTES / 1024 / 1024) . " MB).");
+            throw new \DomainException('Fichier trop volumineux (max '.(self::MAX_SIZE_BYTES / 1024 / 1024).' MB).');
         }
 
         $mime = (string) $file->getMimeType();
@@ -117,7 +117,7 @@ class AttachmentUploadService
             // getimagesize fonctionne sans imagick — fallback safe
             $info = @getimagesize($file->getRealPath());
             if ($info && isset($info[0], $info[1])) {
-                $attrs['image_width']  = (int) $info[0];
+                $attrs['image_width'] = (int) $info[0];
                 $attrs['image_height'] = (int) $info[1];
             }
         } catch (\Throwable $e) {
@@ -131,24 +131,28 @@ class AttachmentUploadService
 
         try {
             $imageData = file_get_contents($file->getRealPath());
-            if (! $imageData) return;
+            if (! $imageData) {
+                return;
+            }
 
             $src = @imagecreatefromstring($imageData);
-            if (! $src) return;
+            if (! $src) {
+                return;
+            }
 
             [$srcW, $srcH] = [imagesx($src), imagesy($src)];
             $maxW = 480;
             $maxH = 360;
 
             $ratio = min($maxW / $srcW, $maxH / $srcH, 1);
-            $dstW  = max(1, (int) ($srcW * $ratio));
-            $dstH  = max(1, (int) ($srcH * $ratio));
+            $dstW = max(1, (int) ($srcW * $ratio));
+            $dstH = max(1, (int) ($srcH * $ratio));
 
             $dst = imagecreatetruecolor($dstW, $dstH);
             imagecopyresampled($dst, $src, 0, 0, 0, 0, $dstW, $dstH, $srcW, $srcH);
 
-            $thumbName = 'thumb_' . pathinfo($filename, PATHINFO_FILENAME) . '.jpg';
-            $thumbPath = $folder . '/' . $thumbName;
+            $thumbName = 'thumb_'.pathinfo($filename, PATHINFO_FILENAME).'.jpg';
+            $thumbPath = $folder.'/'.$thumbName;
 
             ob_start();
             imagejpeg($dst, null, 82);

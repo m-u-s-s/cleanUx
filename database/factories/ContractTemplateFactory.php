@@ -12,7 +12,7 @@ class ContractTemplateFactory extends Factory
     public function definition(): array
     {
         return [
-            'code' => 'CTR-' . fake()->unique()->bothify('??###'),
+            'code' => 'CTR-'.fake()->unique()->bothify('??###'),
             'name' => fake()->randomElement(['Conditions Générales', 'SLA Entreprise', 'Contrat Provider', 'NDA']),
             'description' => fake()->sentence(),
             'type' => fake()->randomElement(['tos', 'sla', 'client_agreement', 'provider_agreement', 'nda']),

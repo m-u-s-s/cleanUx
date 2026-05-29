@@ -7,9 +7,11 @@ use App\Models\ProviderOnboardingDocument;
 use App\Services\Onboarding\ProviderOnboardingService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 
 /**
  * @group Provider — Onboarding (Legacy)
+ *
  * @authenticated
  *
  * Phase 14 — API onboarding prestataire (mobile/web).
@@ -35,17 +37,17 @@ class ProviderOnboardingController extends Controller
         $profile = $this->onboarding->startOnboarding($request->user());
 
         return response()->json([
-            'ok'              => true,
-            'profile_id'      => $profile->id,
-            'current_step'    => $profile->onboarding_step,
-            'total_steps'     => 7,
+            'ok' => true,
+            'profile_id' => $profile->id,
+            'current_step' => $profile->onboarding_step,
+            'total_steps' => 7,
         ], 201);
     }
 
     public function progress(Request $request): JsonResponse
     {
         return response()->json([
-            'ok'       => true,
+            'ok' => true,
             'progress' => $this->onboarding->getProgress($request->user()),
         ]);
     }
@@ -53,9 +55,9 @@ class ProviderOnboardingController extends Controller
     public function setProfile(Request $request): JsonResponse
     {
         $data = $request->validate([
-            'name'  => ['nullable', 'string', 'max:255'],
+            'name' => ['nullable', 'string', 'max:255'],
             'phone' => ['nullable', 'string', 'max:30'],
-            'bio'   => ['nullable', 'string', 'max:2000'],
+            'bio' => ['nullable', 'string', 'max:2000'],
             'photo' => ['nullable', 'image', 'max:5120'], // 5 Mo
         ]);
 
@@ -66,9 +68,9 @@ class ProviderOnboardingController extends Controller
         );
 
         return response()->json([
-            'ok'           => true,
+            'ok' => true,
             'current_step' => $profile->onboarding_step,
-            'photo_path'   => $profile->photo_path,
+            'photo_path' => $profile->photo_path,
         ]);
     }
 
@@ -76,7 +78,7 @@ class ProviderOnboardingController extends Controller
     {
         $data = $request->validate([
             'document_type' => ['required', 'string', 'max:50'],
-            'file'          => ['required', 'file', 'max:10240', 'mimes:pdf,jpg,jpeg,png'], // 10 Mo
+            'file' => ['required', 'file', 'max:10240', 'mimes:pdf,jpg,jpeg,png'], // 10 Mo
         ]);
 
         try {
@@ -90,13 +92,13 @@ class ProviderOnboardingController extends Controller
         }
 
         return response()->json([
-            'ok'        => true,
-            'document'  => [
-                'id'            => $doc->id,
-                'type'          => $doc->document_type,
-                'status'        => $doc->status,
-                'file_name'     => $doc->file_name,
-                'uploaded_at'   => $doc->created_at->toIso8601String(),
+            'ok' => true,
+            'document' => [
+                'id' => $doc->id,
+                'type' => $doc->document_type,
+                'status' => $doc->status,
+                'file_name' => $doc->file_name,
+                'uploaded_at' => $doc->created_at->toIso8601String(),
             ],
         ], 201);
     }
@@ -110,7 +112,7 @@ class ProviderOnboardingController extends Controller
         $profile = $this->onboarding->setTaxInfo($request->user(), $data['tax_id'] ?? null);
 
         return response()->json([
-            'ok'           => true,
+            'ok' => true,
             'current_step' => $profile->onboarding_step,
         ]);
     }
@@ -118,9 +120,9 @@ class ProviderOnboardingController extends Controller
     public function setSkills(Request $request): JsonResponse
     {
         $data = $request->validate([
-            'skills'             => ['required', 'array', 'min:1'],
-            'skills.*'           => ['string', 'max:100'],
-            'service_zone_ids'   => ['nullable', 'array'],
+            'skills' => ['required', 'array', 'min:1'],
+            'skills.*' => ['string', 'max:100'],
+            'service_zone_ids' => ['nullable', 'array'],
             'service_zone_ids.*' => ['integer', 'exists:service_zones,id'],
         ]);
 
@@ -131,15 +133,15 @@ class ProviderOnboardingController extends Controller
         );
 
         return response()->json([
-            'ok'           => true,
+            'ok' => true,
             'current_step' => $profile->onboarding_step,
         ]);
     }
 
-    public function downloadDocument(ProviderOnboardingDocument $document): \Illuminate\Http\Response
+    public function downloadDocument(ProviderOnboardingDocument $document): Response
     {
         return response()->file(
-            storage_path('app/private/' . $document->file_path)
+            storage_path('app/private/'.$document->file_path)
         );
     }
 }

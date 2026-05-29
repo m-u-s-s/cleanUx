@@ -17,20 +17,20 @@ class LoyaltyTierFactory extends Factory
         self::$rankCounter++;
 
         $slugs = ['bronze', 'silver', 'gold', 'platinum'];
-        $slug  = fake()->randomElement($slugs) . '_' . Str::random(4);
+        $slug = fake()->randomElement($slugs).'_'.Str::random(4);
 
         return [
-            'slug'              => $slug,
-            'name'              => ucfirst($slug),
+            'slug' => $slug,
+            'name' => ucfirst($slug),
             'min_period_points' => fake()->numberBetween(0, 10000),
-            'rank'              => self::$rankCounter,
-            'color'             => fake()->hexColor(),
-            'icon'              => 'star',
-            'discount_percent'  => fake()->randomElement(['0.00', '5.00', '10.00', '15.00']),
+            'rank' => self::$rankCounter,
+            'color' => fake()->hexColor(),
+            'icon' => 'star',
+            'discount_percent' => fake()->randomElement(['0.00', '5.00', '10.00', '15.00']),
             'priority_dispatch' => fake()->boolean(),
-            'vip_support'       => fake()->boolean(),
-            'benefits'          => ['free_cancellation', 'priority_support'],
-            'is_active'         => true,
+            'vip_support' => fake()->boolean(),
+            'benefits' => ['free_cancellation', 'priority_support'],
+            'is_active' => true,
         ];
     }
 

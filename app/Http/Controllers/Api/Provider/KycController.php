@@ -10,13 +10,12 @@ use Illuminate\Http\Request;
 
 /**
  * @group Provider — KYC
+ *
  * @authenticated
  */
 class KycController extends Controller
 {
-    public function __construct(protected KycVerificationService $service)
-    {
-    }
+    public function __construct(protected KycVerificationService $service) {}
 
     public function start(Request $request): JsonResponse
     {

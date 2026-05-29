@@ -13,12 +13,13 @@ use App\Support\ActivityLogger;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Facades\URL;
+use Illuminate\Support\Str;
 use Livewire\Component;
 
 class GdprDataPage extends Component
 {
     public string $erasureReason = '';
+
     public bool $confirmErasure = false;
 
     public function requestExport(): void
@@ -31,6 +32,7 @@ class GdprDataPage extends Component
 
         if ($existing) {
             $this->dispatch('toast', 'Un export est déjà en cours.', 'info');
+
             return;
         }
 
@@ -58,7 +60,7 @@ class GdprDataPage extends Component
             Auth::user()->notify(new GdprExportReadyNotification($request));
             $this->dispatch('toast', 'Export prêt au téléchargement.', 'success');
         } catch (\Throwable $e) {
-            $this->dispatch('toast', "Erreur lors de l'export : " . $e->getMessage(), 'error');
+            $this->dispatch('toast', "Erreur lors de l'export : ".$e->getMessage(), 'error');
         }
     }
 
@@ -76,6 +78,7 @@ class GdprDataPage extends Component
 
         if (! $request) {
             $this->dispatch('toast', 'Export indisponible ou expiré.', 'error');
+
             return null;
         }
 
@@ -87,7 +90,7 @@ class GdprDataPage extends Component
 
         return Storage::disk($disk)->download(
             $request->export_file_path,
-            $request->reference . '.json',
+            $request->reference.'.json',
         );
     }
 
@@ -112,6 +115,7 @@ class GdprDataPage extends Component
 
         if ($existing) {
             $this->dispatch('toast', 'Une demande de suppression est déjà active.', 'warning');
+
             return;
         }
 
@@ -126,7 +130,7 @@ class GdprDataPage extends Component
         $this->reset(['erasureReason', 'confirmErasure']);
 
         $this->dispatch('toast',
-            'Suppression programmée — exécutée le ' . $request->grace_period_ends_at?->format('d/m/Y') . '. Vous pouvez encore annuler avant cette date.',
+            'Suppression programmée — exécutée le '.$request->grace_period_ends_at?->format('d/m/Y').'. Vous pouvez encore annuler avant cette date.',
             'success');
     }
 
@@ -181,7 +185,7 @@ class GdprDataPage extends Component
     {
         $prefix = (string) config('gdpr.reference_prefix', 'GDPR');
         do {
-            $candidate = $prefix . '-' . strtoupper(\Illuminate\Support\Str::random(10));
+            $candidate = $prefix.'-'.strtoupper(Str::random(10));
         } while (GdprDataRequest::where('reference', $candidate)->exists());
 
         return $candidate;

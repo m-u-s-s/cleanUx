@@ -3,6 +3,7 @@
 namespace App\Services\Disputes;
 
 use App\Models\ComplaintCase;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Config;
 
@@ -15,6 +16,7 @@ class DisputeSlaService
     {
         $from ??= now();
         $hours = $this->hoursFor($priority, $severity);
+
         return $from->copy()->addHours($hours);
     }
 
@@ -33,11 +35,11 @@ class DisputeSlaService
 
     public function slaPolicyLabel(string $priority, string $severity): string
     {
-        return $this->hoursFor($priority, $severity) . 'h';
+        return $this->hoursFor($priority, $severity).'h';
     }
 
     /**
-     * @return \Illuminate\Database\Eloquent\Collection<int,ComplaintCase>
+     * @return Collection<int,ComplaintCase>
      */
     public function findOverdueForEscalation()
     {
@@ -54,6 +56,7 @@ class DisputeSlaService
     protected function minEscalationGapHours(): int
     {
         $hours = Config::get('disputes.escalation_hours', [1 => 24, 2 => 48]);
+
         return is_array($hours) && count($hours) > 0 ? (int) min($hours) : 24;
     }
 }

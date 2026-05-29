@@ -10,7 +10,9 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class ChatMessage extends Model
 {
     public const MODERATION_CLEAN = 'clean';
+
     public const MODERATION_FLAGGED = 'flagged';
+
     public const MODERATION_BLOCKED = 'blocked';
 
     protected $fillable = [
@@ -36,7 +38,7 @@ class ChatMessage extends Model
 
     public function sender(): BelongsTo
     {
-        return $this->belongsTo(\App\Models\User::class, 'sender_user_id');
+        return $this->belongsTo(User::class, 'sender_user_id');
     }
 
     public function reads(): HasMany
@@ -72,6 +74,7 @@ class ChatMessage extends Model
         if ($this->isBlocked()) {
             return '[message bloqué par modération]';
         }
+
         return (string) $this->body;
     }
 }

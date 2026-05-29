@@ -11,12 +11,10 @@ use Illuminate\Notifications\Notification;
 
 class DemandeFeedbackNotification extends Notification implements ShouldQueue
 {
-    use Queueable;
     use InteractsWithUserNotificationPreferences;
+    use Queueable;
 
-    public function __construct(public Booking $rdv)
-    {
-    }
+    public function __construct(public Booking $rdv) {}
 
     public function via($notifiable): array
     {
@@ -29,7 +27,7 @@ class DemandeFeedbackNotification extends Notification implements ShouldQueue
             ->subject('CleanUx · Comment s’est passée votre intervention ?')
             ->line("Votre {$this->rdv->service_display_name} a bien eu lieu ?")
             ->line('Votre avis nous aide à améliorer la qualité de nos prestations.')
-            ->action('Laisser un feedback', url('/feedback/ajouter/' . $this->rdv->id))
+            ->action('Laisser un feedback', url('/feedback/ajouter/'.$this->rdv->id))
             ->line('Merci pour votre confiance.');
     }
 
@@ -39,12 +37,12 @@ class DemandeFeedbackNotification extends Notification implements ShouldQueue
             'type' => 'feedback',
             'severity' => 'info',
             'title' => 'Feedback demandé',
-            'message' => 'Merci de laisser votre avis sur votre intervention récente de ' . $this->rdv->service_display_name . '.',
+            'message' => 'Merci de laisser votre avis sur votre intervention récente de '.$this->rdv->service_display_name.'.',
             'rdv_id' => $this->rdv->id,
             'service_identifier' => $this->rdv->service_identifier_display,
             'service_label' => $this->rdv->service_display_name,
             'location_display' => $this->rdv->location_display,
-            'action_url' => url('/feedback/ajouter/' . $this->rdv->id),
+            'action_url' => url('/feedback/ajouter/'.$this->rdv->id),
         ]);
     }
 }

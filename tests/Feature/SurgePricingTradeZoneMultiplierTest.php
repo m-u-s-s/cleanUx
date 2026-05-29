@@ -23,9 +23,9 @@ class SurgePricingTradeZoneMultiplierTest extends TestCase
         ]);
 
         TradeZoneSetting::create([
-            'trade_id'         => $trade->id,
-            'service_zone_id'  => $context['zone']->id,
-            'is_active'        => true,
+            'trade_id' => $trade->id,
+            'service_zone_id' => $context['zone']->id,
+            'is_active' => true,
             'price_multiplier' => 1.50,
         ]);
 

@@ -50,7 +50,7 @@ return new class extends Migration
                 $table->index('assigned_to', 'complaint_cases_assigned_to_index');
                 $table->unique('reference', 'complaint_cases_reference_unique');
             });
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             // index/unique déjà présents — ignore
         }
     }
@@ -63,9 +63,15 @@ return new class extends Migration
                 'complaint_cases_provider_user_id_index',
                 'complaint_cases_assigned_to_index',
             ] as $idx) {
-                try { $table->dropIndex($idx); } catch (\Throwable $e) {}
+                try {
+                    $table->dropIndex($idx);
+                } catch (Throwable $e) {
+                }
             }
-            try { $table->dropUnique('complaint_cases_reference_unique'); } catch (\Throwable $e) {}
+            try {
+                $table->dropUnique('complaint_cases_reference_unique');
+            } catch (Throwable $e) {
+            }
 
             foreach ([
                 'rendez_vous_id', 'booking_id', 'organization_account_id',

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -10,8 +11,11 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class CancellationPolicy extends Model
 {
     use HasFactory;
+
     public const ACTOR_CLIENT = 'client';
+
     public const ACTOR_PROVIDER = 'provider';
+
     public const ACTOR_BOTH = 'both';
 
     protected $fillable = [
@@ -53,18 +57,20 @@ class CancellationPolicy extends Model
         if (! $tradeCode) {
             return false;
         }
+
         return in_array($tradeCode, $trades, true);
     }
 
     public function isWithinValidity(?\DateTimeInterface $at = null): bool
     {
-        $at = $at ? \Carbon\Carbon::instance($at) : now();
+        $at = $at ? Carbon::instance($at) : now();
         if ($this->valid_from && $at < $this->valid_from) {
             return false;
         }
         if ($this->valid_until && $at > $this->valid_until) {
             return false;
         }
+
         return true;
     }
 

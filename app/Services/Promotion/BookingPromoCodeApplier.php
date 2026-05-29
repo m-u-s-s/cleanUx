@@ -9,9 +9,7 @@ use Illuminate\Validation\ValidationException;
 
 class BookingPromoCodeApplier
 {
-    public function __construct(protected PromoCodeService $promoCodeService)
-    {
-    }
+    public function __construct(protected PromoCodeService $promoCodeService) {}
 
     /**
      * Apply a promo code to a freshly-created booking.

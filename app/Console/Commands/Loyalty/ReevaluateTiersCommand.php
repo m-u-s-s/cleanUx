@@ -4,6 +4,7 @@ namespace App\Console\Commands\Loyalty;
 
 use App\Models\LoyaltyAccount;
 use App\Services\Loyalty\LoyaltyService;
+use App\Services\Loyalty\LoyaltyTierEvaluator;
 use Illuminate\Console\Command;
 
 class ReevaluateTiersCommand extends Command
@@ -28,12 +29,14 @@ class ReevaluateTiersCommand extends Command
 
         $query->chunkById(100, function ($accounts) use ($service, $dryRun, &$upgrades, &$downgrades, &$unchanged) {
             foreach ($accounts as $account) {
-                if (! $account->user) continue;
+                if (! $account->user) {
+                    continue;
+                }
 
                 $previousTierId = $account->current_tier_id;
 
                 if ($dryRun) {
-                    $newTier = app(\App\Services\Loyalty\LoyaltyTierEvaluator::class)->evaluate($account);
+                    $newTier = app(LoyaltyTierEvaluator::class)->evaluate($account);
                 } else {
                     $service->reevaluateAndNotify($account, $account->user);
                 }

@@ -20,6 +20,7 @@ class SyncGoogleCalendarCommand extends Command
 
         if (! $enabled && ! $this->option('force')) {
             $this->warn('La synchronisation Google Calendar est désactivée dans les paramètres.');
+
             return self::SUCCESS;
         }
 
@@ -34,6 +35,7 @@ class SyncGoogleCalendarCommand extends Command
 
         if ($connections->isEmpty()) {
             $this->info('Aucune connexion Google active à synchroniser.');
+
             return self::SUCCESS;
         }
 

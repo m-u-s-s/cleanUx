@@ -12,6 +12,7 @@ use Illuminate\Validation\ValidationException;
 
 /**
  * @group Provider Presence
+ *
  * @authenticated
  */
 class PresenceController extends Controller
@@ -37,6 +38,7 @@ class PresenceController extends Controller
      * @bodyParam lng numeric GPS longitude (-180 to 180). Example: 4.35
      * @bodyParam radius_km integer Availability radius in kilometres (1-200). Example: 15
      * @bodyParam device_info string Optional device identifier string (max 255 chars). Example: iPhone 15 Pro
+     *
      * @response 200 {"data": {"status": "online", "current_lat": 50.85, "current_lng": 4.35, "available_radius_km": 15, "heartbeat_at": "2026-06-15T09:00:00+00:00", "last_online_at": "2026-06-15T09:00:00+00:00", "online_minutes_today": 0, "online_minutes_week": 1840, "is_active": true}}
      */
     public function goOnline(GoOnlineRequest $request, ProviderPresenceService $service): JsonResponse
@@ -62,6 +64,7 @@ class PresenceController extends Controller
      *
      * @bodyParam lat numeric Updated GPS latitude (-90 to 90). Example: 50.851
      * @bodyParam lng numeric Updated GPS longitude (-180 to 180). Example: 4.351
+     *
      * @response 200 {"data": {"status": "online", "current_lat": 50.851, "current_lng": 4.351, "available_radius_km": 15, "heartbeat_at": "2026-06-15T09:02:00+00:00", "last_online_at": "2026-06-15T09:00:00+00:00", "online_minutes_today": 2, "online_minutes_week": 1842, "is_active": true}}
      * @response 422 {"error": "validation_failed", "errors": {"lat": ["The lat field must be between -90 and 90."]}}
      */
@@ -78,6 +81,7 @@ class PresenceController extends Controller
                 lat: isset($data['lat']) ? (float) $data['lat'] : null,
                 lng: isset($data['lng']) ? (float) $data['lng'] : null,
             );
+
             return response()->json(['data' => $this->present($presence)]);
         } catch (ValidationException $e) {
             return response()->json([
@@ -95,6 +99,7 @@ class PresenceController extends Controller
     public function goBreak(Request $request, ProviderPresenceService $service): JsonResponse
     {
         $presence = $service->goBreak($request->user());
+
         return response()->json(['data' => $this->present($presence)]);
     }
 
@@ -106,6 +111,7 @@ class PresenceController extends Controller
     public function goOffline(Request $request, ProviderPresenceService $service): JsonResponse
     {
         $presence = $service->goOffline($request->user());
+
         return response()->json(['data' => $this->present($presence)]);
     }
 

@@ -166,10 +166,10 @@ class WebhookApiTest extends TestCase
         $this->assertNotEquals($oldSecret, $newSecret, 'Secret must change after rotation');
 
         // Verify signatures computed with old vs new secret differ
-        $payload   = '{"test":true}';
+        $payload = '{"test":true}';
         $timestamp = time();
-        $oldSig    = hash_hmac('sha256', "{$timestamp}.{$payload}", $oldSecret);
-        $newSig    = hash_hmac('sha256', "{$timestamp}.{$payload}", $newSecret);
+        $oldSig = hash_hmac('sha256', "{$timestamp}.{$payload}", $oldSecret);
+        $newSig = hash_hmac('sha256', "{$timestamp}.{$payload}", $newSecret);
 
         $this->assertNotEquals($oldSig, $newSig, 'Old and new secrets must produce different HMAC signatures');
     }

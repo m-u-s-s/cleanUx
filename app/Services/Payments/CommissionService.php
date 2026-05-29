@@ -55,11 +55,11 @@ class CommissionService
         $providerPayoutCents = $totalCents - $platformFeeCents;
 
         return [
-            'total_cents'          => $totalCents,
-            'platform_fee_cents'   => $platformFeeCents,
+            'total_cents' => $totalCents,
+            'platform_fee_cents' => $platformFeeCents,
             'provider_payout_cents' => $providerPayoutCents,
-            'commission_rate'      => $commissionRate,
-            'currency'             => 'eur',
+            'commission_rate' => $commissionRate,
+            'currency' => 'eur',
         ];
     }
 }

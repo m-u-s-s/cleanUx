@@ -1,5 +1,23 @@
 <?php
 
+use App\Providers\ApiTokensV2ServiceProvider;
+use App\Providers\AppServiceProvider;
+use App\Providers\AuthServiceProvider;
+use App\Providers\BroadcastServiceProvider;
+use App\Providers\EmailV2ServiceProvider;
+use App\Providers\EventServiceProvider;
+use App\Providers\FortifyServiceProvider;
+use App\Providers\FxServiceProvider;
+use App\Providers\GeolocationV2ServiceProvider;
+use App\Providers\I18nServiceProvider;
+use App\Providers\InsuranceServiceProvider;
+use App\Providers\JetstreamServiceProvider;
+use App\Providers\KybV2ServiceProvider;
+use App\Providers\KycServiceProvider;
+use App\Providers\PushServiceProvider;
+use App\Providers\RouteServiceProvider;
+use App\Providers\SmsServiceProvider;
+use App\Providers\SubscriptionsV2ServiceProvider;
 use Illuminate\Support\Facades\Facade;
 use Illuminate\Support\ServiceProvider;
 
@@ -163,24 +181,24 @@ return [
         /*
          * Application Service Providers...
          */
-        App\Providers\AppServiceProvider::class,
-        App\Providers\I18nServiceProvider::class,
-        App\Providers\KycServiceProvider::class,
-        App\Providers\SmsServiceProvider::class,
-        App\Providers\PushServiceProvider::class,
-        App\Providers\InsuranceServiceProvider::class,
-        App\Providers\FxServiceProvider::class,
-        App\Providers\GeolocationV2ServiceProvider::class,
-        App\Providers\ApiTokensV2ServiceProvider::class,
-        App\Providers\SubscriptionsV2ServiceProvider::class,
-        App\Providers\KybV2ServiceProvider::class,
-        App\Providers\EmailV2ServiceProvider::class,
-        App\Providers\AuthServiceProvider::class,
-        App\Providers\BroadcastServiceProvider::class,
-        App\Providers\EventServiceProvider::class,
-        App\Providers\RouteServiceProvider::class,
-        App\Providers\FortifyServiceProvider::class,
-        App\Providers\JetstreamServiceProvider::class,
+        AppServiceProvider::class,
+        I18nServiceProvider::class,
+        KycServiceProvider::class,
+        SmsServiceProvider::class,
+        PushServiceProvider::class,
+        InsuranceServiceProvider::class,
+        FxServiceProvider::class,
+        GeolocationV2ServiceProvider::class,
+        ApiTokensV2ServiceProvider::class,
+        SubscriptionsV2ServiceProvider::class,
+        KybV2ServiceProvider::class,
+        EmailV2ServiceProvider::class,
+        AuthServiceProvider::class,
+        BroadcastServiceProvider::class,
+        EventServiceProvider::class,
+        RouteServiceProvider::class,
+        FortifyServiceProvider::class,
+        JetstreamServiceProvider::class,
     ])->toArray(),
 
     /*

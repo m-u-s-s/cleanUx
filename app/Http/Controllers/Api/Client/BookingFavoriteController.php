@@ -12,6 +12,7 @@ use Illuminate\Validation\ValidationException;
 
 /**
  * @group Client — Booking Favorites
+ *
  * @authenticated
  */
 class BookingFavoriteController extends Controller
@@ -58,6 +59,7 @@ class BookingFavoriteController extends Controller
                 $booking,
                 $params['label'] ?? null,
             );
+
             return response()->json(['data' => ['id' => $favorite->id, 'label' => $favorite->label]], 201);
         } catch (ValidationException $e) {
             return response()->json(['error' => 'validation_failed', 'errors' => $e->errors()], 422);
@@ -70,6 +72,7 @@ class BookingFavoriteController extends Controller
             return response()->json(['error' => 'forbidden'], 403);
         }
         $service->markUsed($favorite);
+
         return response()->json(['data' => ['use_count' => (int) $favorite->fresh()->use_count]]);
     }
 
@@ -79,6 +82,7 @@ class BookingFavoriteController extends Controller
             return response()->json(['error' => 'forbidden'], 403);
         }
         $service->delete($favorite);
+
         return response()->json(['data' => ['deleted' => true]]);
     }
 }

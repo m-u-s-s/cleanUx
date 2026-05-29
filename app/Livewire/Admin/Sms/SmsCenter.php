@@ -17,9 +17,13 @@ class SmsCenter extends Component
     protected $paginationTheme = 'tailwind';
 
     public string $tab = 'recent';
+
     public string $filterStatus = '';
+
     public string $filterProvider = '';
+
     public string $filterCategory = '';
+
     public string $search = '';
 
     public function retry(int $messageId): void
@@ -28,6 +32,7 @@ class SmsCenter extends Component
 
         if (! in_array($message->status, [SmsMessage::STATUS_FAILED, SmsMessage::STATUS_UNDELIVERED, SmsMessage::STATUS_RATE_LIMITED], true)) {
             $this->dispatch('toast', 'Seuls les SMS failed/undelivered/rate_limited peuvent être retentés.', 'error');
+
             return;
         }
 
@@ -37,7 +42,7 @@ class SmsCenter extends Component
                 body: $message->body,
                 user: $message->user,
                 category: $message->category ?? SmsMessage::CATEGORY_TRANSACTIONAL,
-                idempotencyKey: 'retry:' . $message->id . ':' . now()->timestamp,
+                idempotencyKey: 'retry:'.$message->id.':'.now()->timestamp,
                 locale: $message->locale,
             );
 
@@ -47,7 +52,7 @@ class SmsCenter extends Component
 
             $this->dispatch('toast', 'SMS re-envoyé.', 'success');
         } catch (\Throwable $e) {
-            $this->dispatch('toast', 'Erreur retry : ' . $e->getMessage(), 'error');
+            $this->dispatch('toast', 'Erreur retry : '.$e->getMessage(), 'error');
         }
     }
 
@@ -72,7 +77,7 @@ class SmsCenter extends Component
             ->when($this->filterProvider, fn ($q) => $q->where('provider', $this->filterProvider))
             ->when($this->filterCategory, fn ($q) => $q->where('category', $this->filterCategory))
             ->when($this->search, function ($q) {
-                $term = '%' . $this->search . '%';
+                $term = '%'.$this->search.'%';
                 $q->where(function ($inner) use ($term) {
                     $inner->where('to_phone', 'like', $term)
                         ->orWhere('body', 'like', $term)

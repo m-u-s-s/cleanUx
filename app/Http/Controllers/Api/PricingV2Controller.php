@@ -13,13 +13,12 @@ use Illuminate\Validation\ValidationException;
 
 /**
  * @group Pricing v2
+ *
  * @authenticated
  */
 class PricingV2Controller extends Controller
 {
-    public function __construct(protected PricingEngine $engine)
-    {
-    }
+    public function __construct(protected PricingEngine $engine) {}
 
     public function services(Request $request): JsonResponse
     {
@@ -103,11 +102,12 @@ class PricingV2Controller extends Controller
     protected function passRateLimit(Request $request): bool
     {
         $max = (int) config('pricing_v2.quote_rate_limit_per_minute', 60);
-        $key = 'pricing:quote:' . sha1((string) $request->ip());
+        $key = 'pricing:quote:'.sha1((string) $request->ip());
         if (RateLimiter::tooManyAttempts($key, $max)) {
             return false;
         }
         RateLimiter::hit($key, 60);
+
         return true;
     }
 }

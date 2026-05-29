@@ -2,7 +2,6 @@
 
 namespace Tests\Feature\AccountingV2;
 
-use App\Models\AccountingPeriod;
 use App\Models\User;
 use App\Services\AccountingV2\AccountingService;
 use App\Services\AccountingV2\PeriodCloser;

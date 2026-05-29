@@ -5,6 +5,8 @@ namespace App\Services\Push;
 use App\Models\DeviceToken;
 use App\Models\PushNotification;
 use App\Models\User;
+use App\Services\Push\Providers\ApnsPushProvider;
+use App\Services\Push\Providers\FcmPushProvider;
 use App\Support\ActivityLogger;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Config;
@@ -23,9 +25,7 @@ use Illuminate\Support\Facades\Log;
  */
 class PushService
 {
-    public function __construct(protected PushProviderInterface $provider)
-    {
-    }
+    public function __construct(protected PushProviderInterface $provider) {}
 
     /**
      * Sélectionne le provider adapté à la plateforme du device token.
@@ -45,18 +45,18 @@ class PushService
             $fcmConfigured = (bool) config('push.fcm.credentials_path') || (bool) config('push.fcm.project_id');
 
             // Provider à instancier explicitement par plateforme
-            if ($platform === 'ios' && $apnsConfigured && class_exists(\App\Services\Push\Providers\ApnsPushProvider::class)) {
-                return app(\App\Services\Push\Providers\ApnsPushProvider::class);
+            if ($platform === 'ios' && $apnsConfigured && class_exists(ApnsPushProvider::class)) {
+                return app(ApnsPushProvider::class);
             }
-            if (in_array($platform, ['android', 'web'], true) && $fcmConfigured && class_exists(\App\Services\Push\Providers\FcmPushProvider::class)) {
-                return app(\App\Services\Push\Providers\FcmPushProvider::class);
+            if (in_array($platform, ['android', 'web'], true) && $fcmConfigured && class_exists(FcmPushProvider::class)) {
+                return app(FcmPushProvider::class);
             }
-            if ($platform === 'ios' && $fcmConfigured && class_exists(\App\Services\Push\Providers\FcmPushProvider::class)) {
+            if ($platform === 'ios' && $fcmConfigured && class_exists(FcmPushProvider::class)) {
                 // FCM peut router vers APNs via FCM iOS topic
-                return app(\App\Services\Push\Providers\FcmPushProvider::class);
+                return app(FcmPushProvider::class);
             }
         } catch (\Throwable $e) {
-            \Illuminate\Support\Facades\Log::warning('[push] platform routing fallback', [
+            Log::warning('[push] platform routing fallback', [
                 'token_id' => $token->id,
                 'error' => $e->getMessage(),
             ]);
@@ -224,6 +224,7 @@ class PushService
                 $results[] = $result;
             }
         }
+
         return $results;
     }
 

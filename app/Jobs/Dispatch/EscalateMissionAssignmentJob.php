@@ -34,6 +34,7 @@ class EscalateMissionAssignmentJob implements ShouldQueue
     use SerializesModels;
 
     public int $tries = 1;
+
     public int $timeout = 30;
 
     public function __construct(
@@ -48,6 +49,7 @@ class EscalateMissionAssignmentJob implements ShouldQueue
             Log::info('EscalateMissionAssignmentJob: assignment introuvable', [
                 'assignment_id' => $this->assignmentId,
             ]);
+
             return;
         }
 
@@ -59,6 +61,6 @@ class EscalateMissionAssignmentJob implements ShouldQueue
      */
     public function tags(): array
     {
-        return ['dispatch', 'mission-assignment-' . $this->assignmentId];
+        return ['dispatch', 'mission-assignment-'.$this->assignmentId];
     }
 }

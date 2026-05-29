@@ -10,7 +10,9 @@ use Livewire\Component;
 class MissionFinalValidation extends Component
 {
     public Mission $mission;
+
     public string $comment = '';
+
     public ?string $successMessage = null;
 
     public function mount(Mission $mission): void

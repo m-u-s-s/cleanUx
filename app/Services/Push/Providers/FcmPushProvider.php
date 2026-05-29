@@ -42,7 +42,8 @@ class FcmPushProvider implements PushProviderInterface
             $accessToken = $this->getAccessToken();
         } catch (\Throwable $e) {
             Log::error('FcmPushProvider::getAccessToken failed', ['error' => $e->getMessage()]);
-            return PushSendResult::failed('FCM auth failed: ' . $e->getMessage(), 'fcm_auth');
+
+            return PushSendResult::failed('FCM auth failed: '.$e->getMessage(), 'fcm_auth');
         }
 
         $payload = $this->buildPayload($request);
@@ -55,8 +56,9 @@ class FcmPushProvider implements PushProviderInterface
 
         if ($response->successful()) {
             $body = $response->json();
+
             return PushSendResult::accepted(
-                $body['name'] ?? ('fcm_' . uniqid()),
+                $body['name'] ?? ('fcm_'.uniqid()),
                 'sent',
                 $body,
             );
@@ -97,7 +99,7 @@ class FcmPushProvider implements PushProviderInterface
             $message['data'] = array_map('strval', $request->data);
         }
 
-        $priority = Config::get('push.categories.' . $request->category . '.priority', 'high');
+        $priority = Config::get('push.categories.'.$request->category.'.priority', 'high');
         $message['android'] = [
             'priority' => $priority === 'high' ? 'high' : 'normal',
         ];
@@ -113,7 +115,7 @@ class FcmPushProvider implements PushProviderInterface
     {
         $credentialsPath = (string) Config::get('push.providers.fcm.credentials_path', '');
         if (! $credentialsPath || ! file_exists($credentialsPath)) {
-            throw new \RuntimeException('FCM credentials file not found: ' . $credentialsPath);
+            throw new \RuntimeException('FCM credentials file not found: '.$credentialsPath);
         }
 
         // In production, prefer google/auth ServiceAccountCredentials.
@@ -138,7 +140,7 @@ class FcmPushProvider implements PushProviderInterface
         ]);
 
         if (! $resp->successful() || ! $resp->json('access_token')) {
-            throw new \RuntimeException('FCM token exchange failed: ' . $resp->body());
+            throw new \RuntimeException('FCM token exchange failed: '.$resp->body());
         }
 
         return (string) $resp->json('access_token');

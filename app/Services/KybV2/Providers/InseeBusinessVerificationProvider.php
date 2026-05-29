@@ -38,12 +38,12 @@ class InseeBusinessVerificationProvider implements BusinessVerificationProviderC
             $response = Http::withToken($apiKey)
                 ->acceptJson()
                 ->timeout(10)
-                ->get(rtrim($cfg['endpoint'], '/') . $path);
+                ->get(rtrim($cfg['endpoint'], '/').$path);
             if ($response->status() === 404) {
                 return new VerificationResult(false, 'insee', 'identity', error: 'not_found');
             }
             if (! $response->successful()) {
-                return new VerificationResult(false, 'insee', 'identity', error: 'http_' . $response->status());
+                return new VerificationResult(false, 'insee', 'identity', error: 'http_'.$response->status());
             }
             $json = $response->json();
             $etab = $identifierType === 'siret'
@@ -52,6 +52,7 @@ class InseeBusinessVerificationProvider implements BusinessVerificationProviderC
             if (! $etab) {
                 return new VerificationResult(false, 'insee', 'identity', error: 'empty_response');
             }
+
             return new VerificationResult(
                 success: true,
                 provider: 'insee',
@@ -61,7 +62,8 @@ class InseeBusinessVerificationProvider implements BusinessVerificationProviderC
             );
         } catch (\Throwable $e) {
             Log::warning('[kyb_v2] insee error', ['error' => $e->getMessage()]);
-            return new VerificationResult(false, 'insee', 'identity', error: 'exception:' . mb_substr($e->getMessage(), 0, 200));
+
+            return new VerificationResult(false, 'insee', 'identity', error: 'exception:'.mb_substr($e->getMessage(), 0, 200));
         }
     }
 

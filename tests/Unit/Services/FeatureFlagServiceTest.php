@@ -16,7 +16,7 @@ class FeatureFlagServiceTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->service = new FeatureFlagService();
+        $this->service = new FeatureFlagService;
     }
 
     public function test_returns_false_when_flag_not_in_config(): void
@@ -95,8 +95,8 @@ class FeatureFlagServiceTest extends TestCase
 
     public function test_role_based_flag_matches_user_role(): void
     {
-        $admin    = User::factory()->create(['role' => 'admin']);
-        $client   = User::factory()->create(['role' => 'client']);
+        $admin = User::factory()->create(['role' => 'admin']);
+        $client = User::factory()->create(['role' => 'client']);
 
         config(['features' => ['admin_only' => ['roles' => ['admin']]]]);
 
@@ -116,7 +116,7 @@ class FeatureFlagServiceTest extends TestCase
     public function test_returns_false_without_user_for_user_dependent_rules(): void
     {
         config(['features' => [
-            'pct_flag'  => ['percentage' => 100],
+            'pct_flag' => ['percentage' => 100],
             'user_flag' => ['users' => [1, 2]],
             'role_flag' => ['roles' => ['admin']],
         ]]);

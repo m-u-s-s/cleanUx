@@ -13,11 +13,15 @@ class Feedback extends Model
     use HasFactory;
 
     public const DIRECTION_CLIENT_TO_PROVIDER = 'client_to_provider';
+
     public const DIRECTION_PROVIDER_TO_CLIENT = 'provider_to_client';
 
     public const STATUS_DRAFT = 'draft';
+
     public const STATUS_PENDING = 'pending';
+
     public const STATUS_PUBLISHED = 'published';
+
     public const STATUS_HIDDEN = 'hidden';
 
     protected $table = 'feedback';

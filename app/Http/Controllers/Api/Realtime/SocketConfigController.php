@@ -19,14 +19,14 @@ class SocketConfigController extends Controller
     public function __invoke(): JsonResponse
     {
         $driver = (string) config('broadcasting.default');
-        $cfg    = (array)  config("broadcasting.connections.{$driver}", []);
+        $cfg = (array) config("broadcasting.connections.{$driver}", []);
 
         return response()->json([
-            'driver'        => $driver,
-            'key'           => $cfg['key'] ?? null,
-            'host'          => $cfg['options']['host'] ?? null,
-            'port'          => isset($cfg['options']['port']) ? (int) $cfg['options']['port'] : null,
-            'scheme'        => $cfg['options']['scheme'] ?? 'https',
+            'driver' => $driver,
+            'key' => $cfg['key'] ?? null,
+            'host' => $cfg['options']['host'] ?? null,
+            'port' => isset($cfg['options']['port']) ? (int) $cfg['options']['port'] : null,
+            'scheme' => $cfg['options']['scheme'] ?? 'https',
             'auth_endpoint' => '/api/broadcasting/auth',
         ]);
     }

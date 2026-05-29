@@ -19,7 +19,7 @@ class BookingInsuranceFactory extends Factory
             'booking_id' => Booking::factory(),
             'plan_id' => InsurancePlan::factory(),
             'user_id' => User::factory(),
-            'policy_number' => 'POL-' . Str::upper(Str::random(10)),
+            'policy_number' => 'POL-'.Str::upper(Str::random(10)),
             'premium_cents' => fake()->numberBetween(200, 2000),
             'coverage_amount_cents' => fake()->randomElement([50000, 100000]),
             'currency' => 'EUR',

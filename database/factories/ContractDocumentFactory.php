@@ -15,15 +15,15 @@ class ContractDocumentFactory extends Factory
     public function definition(): array
     {
         return [
-            'template_id'        => ContractTemplate::factory(),
-            'code'               => 'DOC-' . Str::upper(Str::random(8)),
-            'user_id'            => User::factory(),
+            'template_id' => ContractTemplate::factory(),
+            'code' => 'DOC-'.Str::upper(Str::random(8)),
+            'user_id' => User::factory(),
             'body_rendered_html' => '<p>Contract body rendered for testing.</p>',
-            'pdf_path'           => null,
-            'status'             => ContractDocument::STATUS_SIGNED,
-            'generated_at'       => now()->subHour(),
-            'expires_at'         => now()->addYear(),
-            'metadata'           => [],
+            'pdf_path' => null,
+            'status' => ContractDocument::STATUS_SIGNED,
+            'generated_at' => now()->subHour(),
+            'expires_at' => now()->addYear(),
+            'metadata' => [],
         ];
     }
 

@@ -34,10 +34,10 @@ class DynamicPricingMlService
     /**
      * Predict the demand-based surge multiplier for a booking slot.
      *
-     * @param  ServiceCatalog $catalog  The service being booked
-     * @param  ServiceZone    $zone     The geographic zone
-     * @param  Carbon         $slot     The desired booking start time
-     * @return float|null               Multiplier in [1.0, 2.5]. Null = model unavailable.
+     * @param  ServiceCatalog  $catalog  The service being booked
+     * @param  ServiceZone  $zone  The geographic zone
+     * @param  Carbon  $slot  The desired booking start time
+     * @return float|null Multiplier in [1.0, 2.5]. Null = model unavailable.
      *
      * TODO: implement
      */
@@ -52,9 +52,6 @@ class DynamicPricingMlService
     /**
      * Batch-predict for a full day of slots (e.g. for calendar UI heatmap).
      *
-     * @param  ServiceCatalog       $catalog
-     * @param  ServiceZone          $zone
-     * @param  Carbon               $date
      * @return array<string, float> Keys are 'H:i' strings, values are multipliers.
      *
      * TODO: implement

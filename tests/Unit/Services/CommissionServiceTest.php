@@ -14,12 +14,12 @@ class CommissionServiceTest extends TestCase
     {
         parent::setUp();
         config(['cleanux.platform_fee_percent' => 15]);
-        $this->service = new CommissionService();
+        $this->service = new CommissionService;
     }
 
     public function test_calculates_15_percent_default_commission(): void
     {
-        $booking = new Booking();
+        $booking = new Booking;
         $booking->devis_estime = 100.00;
 
         $result = $this->service->calculateForBooking($booking);
@@ -33,7 +33,7 @@ class CommissionServiceTest extends TestCase
 
     public function test_enforces_minimum_200_cents_fee_on_small_booking(): void
     {
-        $booking = new Booking();
+        $booking = new Booking;
         $booking->devis_estime = 5.00;
 
         $result = $this->service->calculateForBooking($booking);
@@ -45,7 +45,7 @@ class CommissionServiceTest extends TestCase
 
     public function test_fee_is_capped_at_booking_total(): void
     {
-        $booking = new Booking();
+        $booking = new Booking;
         $booking->devis_estime = 1.00;
 
         $result = $this->service->calculateForBooking($booking);
@@ -57,7 +57,7 @@ class CommissionServiceTest extends TestCase
 
     public function test_zero_amount_booking_returns_zero_fee(): void
     {
-        $booking = new Booking();
+        $booking = new Booking;
         $booking->devis_estime = 0.00;
 
         $result = $this->service->calculateForBooking($booking);

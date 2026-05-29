@@ -9,21 +9,33 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class ProviderWalletTransaction extends Model
 {
     public const TYPE_EARNING = 'earning';
+
     public const TYPE_TIP = 'tip';
+
     public const TYPE_PAYOUT = 'payout';
+
     public const TYPE_PLATFORM_FEE = 'platform_fee';
+
     public const TYPE_REFUND_CLAWBACK = 'refund_clawback';
+
     public const TYPE_ADJUSTMENT_CREDIT = 'adjustment_credit';
+
     public const TYPE_ADJUSTMENT_DEBIT = 'adjustment_debit';
+
     public const TYPE_BONUS = 'bonus';
 
     public const DIRECTION_CREDIT = 'credit';
+
     public const DIRECTION_DEBIT = 'debit';
 
     public const STATUS_PENDING = 'pending';
+
     public const STATUS_AVAILABLE = 'available';
+
     public const STATUS_PROCESSING = 'processing';
+
     public const STATUS_CLEARED = 'cleared';
+
     public const STATUS_REVERSED = 'reversed';
 
     protected $fillable = [

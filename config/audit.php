@@ -33,16 +33,16 @@ return [
     |--------------------------------------------------------------------------
     */
     'retention_days_by_domain' => [
-        'auth'      => 365,   // 1 an (RGPD : logs de connexion conservés)
-        'security'  => 730,   // 2 ans
-        'finance'   => 2555,  // 7 ans (obligation légale comptable)
-        'payment'   => 2555,
-        'gdpr'      => 2190,  // 6 ans (preuves consentement)
-        'kyc'       => 1825,  // 5 ans (KYC AML)
-        'risk'      => 1095,  // 3 ans
-        'audit'     => 1095,
-        'booking'   => 730,
-        'general'   => 180,
+        'auth' => 365,   // 1 an (RGPD : logs de connexion conservés)
+        'security' => 730,   // 2 ans
+        'finance' => 2555,  // 7 ans (obligation légale comptable)
+        'payment' => 2555,
+        'gdpr' => 2190,  // 6 ans (preuves consentement)
+        'kyc' => 1825,  // 5 ans (KYC AML)
+        'risk' => 1095,  // 3 ans
+        'audit' => 1095,
+        'booking' => 730,
+        'general' => 180,
     ],
 
     /*

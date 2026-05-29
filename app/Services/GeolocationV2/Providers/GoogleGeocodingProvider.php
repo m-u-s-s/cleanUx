@@ -33,7 +33,7 @@ class GoogleGeocodingProvider implements GeocodingProviderContract
                     'input' => $query,
                     'key' => $apiKey,
                     'language' => $cfg['language'] ?? 'fr',
-                    'components' => $countryCode ? 'country:' . strtolower($countryCode) : null,
+                    'components' => $countryCode ? 'country:'.strtolower($countryCode) : null,
                 ]));
             if (! $response->successful()) {
                 return [];
@@ -50,9 +50,11 @@ class GoogleGeocodingProvider implements GeocodingProviderContract
                     provider: 'google',
                 );
             }
+
             return $results;
         } catch (\Throwable $e) {
             Log::warning('[geo_v2] google autocomplete error', ['error' => $e->getMessage()]);
+
             return [];
         }
     }
@@ -79,9 +81,11 @@ class GoogleGeocodingProvider implements GeocodingProviderContract
             if (! $first) {
                 return null;
             }
+
             return $this->mapResult($first);
         } catch (\Throwable $e) {
             Log::warning('[geo_v2] google geocode error', ['error' => $e->getMessage()]);
+
             return null;
         }
     }
@@ -96,7 +100,7 @@ class GoogleGeocodingProvider implements GeocodingProviderContract
         try {
             $response = Http::timeout((int) config('geolocation_v2.timeout_seconds', 8))
                 ->get($cfg['geocode_endpoint'], [
-                    'latlng' => $latitude . ',' . $longitude,
+                    'latlng' => $latitude.','.$longitude,
                     'key' => $apiKey,
                     'language' => $cfg['language'] ?? 'fr',
                 ]);
@@ -104,9 +108,11 @@ class GoogleGeocodingProvider implements GeocodingProviderContract
                 return null;
             }
             $first = data_get($response->json(), 'results.0');
+
             return $first ? $this->mapResult($first) : null;
         } catch (\Throwable $e) {
             Log::warning('[geo_v2] google reverse error', ['error' => $e->getMessage()]);
+
             return null;
         }
     }
@@ -126,8 +132,8 @@ class GoogleGeocodingProvider implements GeocodingProviderContract
         try {
             $response = Http::timeout((int) config('geolocation_v2.timeout_seconds', 8))
                 ->get($cfg['distance_endpoint'], [
-                    'origins' => $originLat . ',' . $originLng,
-                    'destinations' => $destLat . ',' . $destLng,
+                    'origins' => $originLat.','.$originLng,
+                    'destinations' => $destLat.','.$destLng,
                     'mode' => $mode,
                     'key' => $apiKey,
                 ]);
@@ -138,6 +144,7 @@ class GoogleGeocodingProvider implements GeocodingProviderContract
             if (! $row || ($row['status'] ?? null) !== 'OK') {
                 return null;
             }
+
             return new DistanceResult(
                 distanceMeters: (int) data_get($row, 'distance.value'),
                 durationSeconds: (int) data_get($row, 'duration.value'),
@@ -147,6 +154,7 @@ class GoogleGeocodingProvider implements GeocodingProviderContract
             );
         } catch (\Throwable $e) {
             Log::warning('[geo_v2] google distance error', ['error' => $e->getMessage()]);
+
             return null;
         }
     }
@@ -160,8 +168,10 @@ class GoogleGeocodingProvider implements GeocodingProviderContract
                     return $c['short_name'] ?? $c['long_name'] ?? null;
                 }
             }
+
             return null;
         };
+
         return new GeocodingResult(
             latitude: (float) data_get($first, 'geometry.location.lat'),
             longitude: (float) data_get($first, 'geometry.location.lng'),

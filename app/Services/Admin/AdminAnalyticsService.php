@@ -2,8 +2,8 @@
 
 namespace App\Services\Admin;
 
-use App\Models\Feedback;
 use App\Models\Booking;
+use App\Models\Feedback;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
@@ -24,14 +24,14 @@ class AdminAnalyticsService
         $currentYear = (string) now()->year;
 
         $monthlyRevenueRows = Booking::query()
-            ->selectRaw($monthExpression . ' as month, SUM(devis_estime) as total')
+            ->selectRaw($monthExpression.' as month, SUM(devis_estime) as total')
             ->whereRaw($yearExpression, [$currentYear])
             ->groupBy('month')
             ->orderBy('month')
             ->get();
 
         $monthlyMissionRows = Booking::query()
-            ->selectRaw($monthExpression . ' as month, COUNT(*) as total')
+            ->selectRaw($monthExpression.' as month, COUNT(*) as total')
             ->whereRaw($yearExpression, [$currentYear])
             ->groupBy('month')
             ->orderBy('month')

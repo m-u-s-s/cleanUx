@@ -18,7 +18,9 @@ class SubscriptionsCenter extends Component
     protected $paginationTheme = 'tailwind';
 
     public string $tab = 'subscriptions';   // plans | subscriptions | cycles
+
     public string $filterStatus = '';
+
     public string $filterCycleStatus = '';
 
     public function retryBilling(int $cycleId): void

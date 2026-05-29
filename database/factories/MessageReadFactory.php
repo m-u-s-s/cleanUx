@@ -15,8 +15,8 @@ class MessageReadFactory extends Factory
     {
         return [
             'message_id' => fn () => Message::factory()->create()->id,
-            'user_id'    => fn () => User::factory()->create()->id,
-            'read_at'    => now(),
+            'user_id' => fn () => User::factory()->create()->id,
+            'read_at' => now(),
         ];
     }
 }

@@ -31,6 +31,7 @@ class ReconcileStripeCommand extends Command
             $run = $service->run($scope, $from, $to);
         } catch (\Throwable $e) {
             $this->error("Erreur : {$e->getMessage()}");
+
             return self::FAILURE;
         }
 

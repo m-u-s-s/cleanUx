@@ -33,9 +33,9 @@ class ProviderTradeCertification extends Model
     ];
 
     protected $casts = [
-        'metadata'    => 'array',
+        'metadata' => 'array',
         'verified_at' => 'datetime',
-        'expires_at'  => 'datetime',
+        'expires_at' => 'datetime',
     ];
 
     // ──────────────────────────────────────────────────────────────

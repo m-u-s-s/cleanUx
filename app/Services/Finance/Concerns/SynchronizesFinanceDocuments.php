@@ -2,11 +2,11 @@
 
 namespace App\Services\Finance\Concerns;
 
+use App\Models\Booking;
 use App\Models\FinanceInvoice;
 use App\Models\FinancePayment;
 use App\Models\FinanceQuote;
 use App\Models\FinanceReminder;
-use App\Models\Booking;
 use App\Notifications\FinanceReminderNotification;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Carbon;
@@ -134,7 +134,7 @@ trait SynchronizesFinanceDocuments
     public function recordPayment(FinanceInvoice $invoice, float $amount, array $attributes = []): FinancePayment
     {
         $payment = $invoice->payments()->create([
-            'payment_reference' => Arr::get($attributes, 'payment_reference') ?: 'PAY-' . now()->format('YmdHis') . '-' . $invoice->id,
+            'payment_reference' => Arr::get($attributes, 'payment_reference') ?: 'PAY-'.now()->format('YmdHis').'-'.$invoice->id,
             'provider' => Arr::get($attributes, 'provider'),
             'method' => Arr::get($attributes, 'method', 'manual'),
             'status' => Arr::get($attributes, 'status', 'paid'),

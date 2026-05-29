@@ -38,14 +38,14 @@ class SmsMockProvider implements SmsProviderInterface
 
         if (str_contains(strtolower($request->toPhone), 'undeliver')) {
             return SmsSendResult::accepted(
-                'mock_sms_' . Str::lower(Str::random(12)),
+                'mock_sms_'.Str::lower(Str::random(12)),
                 'sent',
                 ['simulated' => true],
             );
         }
 
         return SmsSendResult::accepted(
-            'mock_sms_' . Str::lower(Str::random(12)),
+            'mock_sms_'.Str::lower(Str::random(12)),
             'sent',
             ['simulated' => true, 'len' => strlen($request->body)],
         );
@@ -54,6 +54,7 @@ class SmsMockProvider implements SmsProviderInterface
     public function verifyWebhook(string $payload, array $headers): array
     {
         $decoded = json_decode($payload, true);
+
         return is_array($decoded) ? $decoded : ['raw' => $payload];
     }
 

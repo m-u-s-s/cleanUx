@@ -3,9 +3,9 @@
 namespace App\Actions\Booking;
 
 use App\Data\ZoneCoverageResult;
+use App\Models\Booking;
 use App\Models\OrganizationSite;
 use App\Models\PostalCode;
-use App\Models\Booking;
 use App\Models\ServiceCatalog;
 use App\Models\ServiceZone;
 use App\Models\User;
@@ -24,8 +24,7 @@ class CreateRecurringSeriesAction
         protected CreateBookingAction $bookingAction,
         protected EmployeeAvailabilityService $employeeAvailabilityService,
         protected RecurringBookingService $recurringBookingService,
-    ) {
-    }
+    ) {}
 
     public function execute(
         User $client,

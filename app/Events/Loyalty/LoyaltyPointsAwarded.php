@@ -11,7 +11,5 @@ class LoyaltyPointsAwarded
     use Dispatchable;
     use SerializesModels;
 
-    public function __construct(public LoyaltyTransaction $transaction)
-    {
-    }
+    public function __construct(public LoyaltyTransaction $transaction) {}
 }

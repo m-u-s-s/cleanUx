@@ -19,7 +19,7 @@ class ActionDetector
      */
     public function detectActions(string $message, User $user): array
     {
-        $lower   = mb_strtolower($message);
+        $lower = mb_strtolower($message);
         $actions = [];
 
         if ($this->matchesBookings($lower) && ($user->isClient() || $user->isEntreprise())) {

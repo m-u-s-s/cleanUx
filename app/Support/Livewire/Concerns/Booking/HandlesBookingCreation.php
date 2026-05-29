@@ -5,7 +5,6 @@ namespace App\Support\Livewire\Concerns\Booking;
 use App\Models\Booking;
 use App\Models\OrganizationSite;
 use App\Models\User;
-use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
@@ -89,9 +88,9 @@ trait HandlesBookingCreation
 
         $commentaireClient = collect([
             $this->commentaire_client,
-            $this->site_instructions ? 'Consignes site : ' . $this->site_instructions : null,
-            $this->purchase_order_reference ? 'Référence PO : ' . $this->purchase_order_reference : null,
-            $this->cost_center ? 'Centre de coût : ' . $this->cost_center : null,
+            $this->site_instructions ? 'Consignes site : '.$this->site_instructions : null,
+            $this->purchase_order_reference ? 'Référence PO : '.$this->purchase_order_reference : null,
+            $this->cost_center ? 'Centre de coût : '.$this->cost_center : null,
         ])->filter()->implode("\n");
 
         $bookingData = [
@@ -260,11 +259,11 @@ trait HandlesBookingCreation
         $this->createdEmployeName = $rendezVous->employe?->name;
 
         $this->createdStatusLabel = $this->is_recurrent
-            ? 'Série créée • ' . $occurrencesCount . ' occurrence(s)'
+            ? 'Série créée • '.$occurrencesCount.' occurrence(s)'
             : ($manualValidationRequired ? 'En attente de validation' : 'En attente');
 
         $successMessage = $this->is_recurrent
-            ? 'Votre série récurrente a bien été créée (' . $occurrencesCount . ' occurrence(s)).'
+            ? 'Votre série récurrente a bien été créée ('.$occurrencesCount.' occurrence(s)).'
             : ($manualValidationRequired
                 ? 'Votre demande a été enregistrée. Une validation manuelle est nécessaire avant confirmation.'
                 : 'Votre demande a bien été envoyée.');

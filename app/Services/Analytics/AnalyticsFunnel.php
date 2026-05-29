@@ -3,7 +3,6 @@
 namespace App\Services\Analytics;
 
 use App\Models\AnalyticsEvent;
-use Illuminate\Support\Facades\DB;
 
 /**
  * Funnel analyzer — calcule un funnel ordonné d'event_names sur une période.
@@ -22,21 +21,26 @@ class AnalyticsFunnel
 {
     /** @var array<int,string> */
     protected array $steps = [];
+
     protected string $groupBy = 'user_id';
+
     protected \DateTimeInterface $from;
+
     protected \DateTimeInterface $to;
 
     public static function for(\DateTimeInterface $from, \DateTimeInterface $to): self
     {
-        $i = new self();
+        $i = new self;
         $i->from = $from;
         $i->to = $to;
+
         return $i;
     }
 
     public function steps(array $names): self
     {
         $this->steps = array_values(array_filter($names, fn ($s) => is_string($s) && $s !== ''));
+
         return $this;
     }
 
@@ -46,6 +50,7 @@ class AnalyticsFunnel
             throw new \InvalidArgumentException('groupBy must be user_id|session_id|anonymous_id');
         }
         $this->groupBy = $col;
+
         return $this;
     }
 

@@ -51,6 +51,7 @@ class FxMockProvider implements FxProviderInterface
             $quote = strtoupper($quote);
             if ($quote === $base) {
                 $rates[] = new FxRate($base, $quote, 1.0, $this->name(), now(), ['identity' => true]);
+
                 continue;
             }
 
@@ -81,6 +82,7 @@ class FxMockProvider implements FxProviderInterface
         if ($eurFromBase === null || $quoteFromEur === null) {
             return null;
         }
+
         return round($quoteFromEur / $eurFromBase, 8);
     }
 }

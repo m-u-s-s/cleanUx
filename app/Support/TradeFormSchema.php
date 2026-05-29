@@ -43,6 +43,7 @@ namespace App\Support;
 class TradeFormSchema
 {
     public const SUPPORTED_TYPES = ['number', 'boolean', 'select', 'multiselect', 'text', 'textarea'];
+
     public const SUPPORTED_MODIFIERS = ['fixed', 'percent', 'per_unit'];
 
     /**
@@ -76,16 +77,19 @@ class TradeFormSchema
 
             if (! is_array($field)) {
                 $errors[] = "Champ #$position : doit être un objet.";
+
                 continue;
             }
 
             $key = $field['key'] ?? null;
             if (! is_string($key) || ! preg_match('/^[a-z][a-z0-9_]{0,79}$/', $key)) {
                 $errors[] = "Champ #$position : la clé \"key\" est requise (snake_case, max 80 chars, commençant par une lettre).";
+
                 continue;
             }
             if (isset($seenKeys[$key])) {
                 $errors[] = "Champ #$position : clé \"$key\" dupliquée.";
+
                 continue;
             }
             $seenKeys[$key] = true;
@@ -93,29 +97,31 @@ class TradeFormSchema
             $type = $field['type'] ?? null;
             if (! in_array($type, self::SUPPORTED_TYPES, true)) {
                 $errors[] = "Champ \"$key\" : type \"$type\" non supporté (autorisés: ".implode(', ', self::SUPPORTED_TYPES).').';
+
                 continue;
             }
 
             $label = $field['label'] ?? null;
             if (! is_string($label) || trim($label) === '') {
                 $errors[] = "Champ \"$key\" : label requis.";
+
                 continue;
             }
 
             $normalized = [
-                'key'       => $key,
-                'label'     => trim($label),
-                'type'      => $type,
-                'required'  => (bool) ($field['required'] ?? false),
-                'help'      => isset($field['help']) && is_string($field['help']) ? trim($field['help']) : null,
-                'unit'      => isset($field['unit']) && is_string($field['unit']) ? trim($field['unit']) : null,
-                'default'   => $field['default'] ?? null,
+                'key' => $key,
+                'label' => trim($label),
+                'type' => $type,
+                'required' => (bool) ($field['required'] ?? false),
+                'help' => isset($field['help']) && is_string($field['help']) ? trim($field['help']) : null,
+                'unit' => isset($field['unit']) && is_string($field['unit']) ? trim($field['unit']) : null,
+                'default' => $field['default'] ?? null,
             ];
 
             // Spécifique au type
             if ($type === 'number') {
-                $normalized['min']  = isset($field['min']) && is_numeric($field['min']) ? (float) $field['min'] : null;
-                $normalized['max']  = isset($field['max']) && is_numeric($field['max']) ? (float) $field['max'] : null;
+                $normalized['min'] = isset($field['min']) && is_numeric($field['min']) ? (float) $field['min'] : null;
+                $normalized['max'] = isset($field['max']) && is_numeric($field['max']) ? (float) $field['max'] : null;
                 $normalized['step'] = isset($field['step']) && is_numeric($field['step']) ? (float) $field['step'] : null;
 
                 if ($normalized['min'] !== null && $normalized['max'] !== null && $normalized['min'] > $normalized['max']) {
@@ -133,6 +139,7 @@ class TradeFormSchema
                 $options = $field['options'] ?? null;
                 if (! is_array($options) || $options === []) {
                     $errors[] = "Champ \"$key\" : type $type requiert un tableau \"options\" non vide.";
+
                     continue;
                 }
 
@@ -140,28 +147,32 @@ class TradeFormSchema
                 $seenValues = [];
                 foreach ($options as $optIdx => $opt) {
                     if (! is_array($opt)) {
-                        $errors[] = "Champ \"$key\", option #" . ($optIdx + 1) . " : doit être un objet.";
+                        $errors[] = "Champ \"$key\", option #".($optIdx + 1).' : doit être un objet.';
+
                         continue;
                     }
                     $value = $opt['value'] ?? null;
                     $optLabel = $opt['label'] ?? null;
                     if (! is_string($value) && ! is_int($value)) {
-                        $errors[] = "Champ \"$key\", option #" . ($optIdx + 1) . " : \"value\" requis (string ou int).";
+                        $errors[] = "Champ \"$key\", option #".($optIdx + 1).' : "value" requis (string ou int).';
+
                         continue;
                     }
                     $value = (string) $value;
                     if (! is_string($optLabel) || trim($optLabel) === '') {
                         $errors[] = "Champ \"$key\", option \"$value\" : label requis.";
+
                         continue;
                     }
                     if (isset($seenValues[$value])) {
                         $errors[] = "Champ \"$key\", option \"$value\" : value dupliquée.";
+
                         continue;
                     }
                     $seenValues[$value] = true;
                     $normalizedOptions[] = [
-                        'value'       => $value,
-                        'label'       => trim($optLabel),
+                        'value' => $value,
+                        'label' => trim($optLabel),
                         'price_delta' => isset($opt['price_delta']) && is_numeric($opt['price_delta'])
                             ? (float) $opt['price_delta']
                             : 0.0,
@@ -184,7 +195,7 @@ class TradeFormSchema
                 } else {
                     $normalized['pricing'] = [
                         'modifier' => $modifier,
-                        'value'    => (float) $value,
+                        'value' => (float) $value,
                     ];
                 }
             }
@@ -197,8 +208,8 @@ class TradeFormSchema
         }
 
         return [
-            'ok'         => true,
-            'errors'     => [],
+            'ok' => true,
+            'errors' => [],
             'normalized' => ['version' => (int) ($schema['version'] ?? 1), 'fields' => $normalizedFields],
         ];
     }
@@ -221,8 +232,12 @@ class TradeFormSchema
             switch ($field['type']) {
                 case 'number':
                     $r = array_merge($base, ['numeric']);
-                    if (($field['min'] ?? null) !== null) $r[] = 'min:'.$field['min'];
-                    if (($field['max'] ?? null) !== null) $r[] = 'max:'.$field['max'];
+                    if (($field['min'] ?? null) !== null) {
+                        $r[] = 'min:'.$field['min'];
+                    }
+                    if (($field['max'] ?? null) !== null) {
+                        $r[] = 'max:'.$field['max'];
+                    }
                     $rules[$path] = $r;
                     break;
                 case 'boolean':
@@ -247,7 +262,9 @@ class TradeFormSchema
                 case 'text':
                 case 'textarea':
                     $r = array_merge($base, ['string']);
-                    if (($field['max_length'] ?? null) !== null) $r[] = 'max:'.$field['max_length'];
+                    if (($field['max_length'] ?? null) !== null) {
+                        $r[] = 'max:'.$field['max_length'];
+                    }
                     $rules[$path] = $r;
                     break;
             }
@@ -267,15 +284,17 @@ class TradeFormSchema
             $key = $field['key'];
             if (array_key_exists('default', $field) && $field['default'] !== null) {
                 $out[$key] = $field['default'];
+
                 continue;
             }
             $out[$key] = match ($field['type']) {
-                'boolean'      => false,
-                'multiselect'  => [],
-                'number'       => null,
-                default        => '',
+                'boolean' => false,
+                'multiselect' => [],
+                'number' => null,
+                default => '',
             };
         }
+
         return $out;
     }
 
@@ -306,8 +325,8 @@ class TradeFormSchema
                     if ($pricing && is_numeric($answer) && (float) $answer > 0) {
                         $delta = match ($pricing['modifier']) {
                             'per_unit' => (float) $answer * (float) $pricing['value'],
-                            'fixed'    => (float) $pricing['value'],
-                            default    => 0.0,
+                            'fixed' => (float) $pricing['value'],
+                            default => 0.0,
                         };
                     }
                     break;
@@ -316,9 +335,9 @@ class TradeFormSchema
                     $pricing = $field['pricing'] ?? null;
                     if ($pricing && (bool) $answer === true) {
                         $delta = match ($pricing['modifier']) {
-                            'fixed'   => (float) $pricing['value'],
+                            'fixed' => (float) $pricing['value'],
                             'percent' => $basePrice * (float) $pricing['value'] / 100.0,
-                            default   => 0.0,
+                            default => 0.0,
                         };
                     }
                     break;
@@ -347,7 +366,7 @@ class TradeFormSchema
 
             if (abs($delta) > 0.0001) {
                 $breakdown[] = [
-                    'key'   => $key,
+                    'key' => $key,
                     'label' => $field['label'],
                     'delta' => round($delta, 2),
                 ];

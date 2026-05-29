@@ -47,7 +47,7 @@ class DisputeApiTest extends TestCase
 
         Sanctum::actingAs($clientA);
 
-        $this->getJson('/api/client/disputes/' . $case->id)->assertStatus(403);
+        $this->getJson('/api/client/disputes/'.$case->id)->assertStatus(403);
     }
 
     public function test_client_can_message_their_dispute(): void

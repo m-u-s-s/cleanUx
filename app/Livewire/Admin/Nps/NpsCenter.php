@@ -16,7 +16,9 @@ class NpsCenter extends Component
     protected $paginationTheme = 'tailwind';
 
     public string $period = '30d';
+
     public string $surveyFilter = '';
+
     public string $categoryFilter = '';
 
     public function setPeriod(string $period): void

@@ -23,12 +23,13 @@ class ContractRenderer
         $body = $template->bodyForLocale($locale);
         $resolved = $this->resolveVariables($user, $variables, $template->version);
         $substituted = $this->substitute($body, $resolved);
+
         return $this->markdownToHtml($substituted);
     }
 
     public function buildSignableHash(string $bodyHtml, string $signerName, string $signedAt): string
     {
-        return hash('sha256', $bodyHtml . '|' . $signerName . '|' . $signedAt);
+        return hash('sha256', $bodyHtml.'|'.$signerName.'|'.$signedAt);
     }
 
     /**
@@ -57,6 +58,7 @@ class ContractRenderer
 
         return preg_replace_callback($pattern, function ($m) use ($vars) {
             $key = (string) $m[1];
+
             return isset($vars[$key]) ? e((string) $vars[$key]) : $m[0];
         }, $body) ?? $body;
     }
@@ -77,17 +79,20 @@ class ContractRenderer
 
             if (preg_match('/^#\s+(.+)$/', $line, $m)) {
                 $this->closeList($html, $inList);
-                $html[] = '<h1>' . e($m[1]) . '</h1>';
+                $html[] = '<h1>'.e($m[1]).'</h1>';
+
                 continue;
             }
             if (preg_match('/^##\s+(.+)$/', $line, $m)) {
                 $this->closeList($html, $inList);
-                $html[] = '<h2>' . e($m[1]) . '</h2>';
+                $html[] = '<h2>'.e($m[1]).'</h2>';
+
                 continue;
             }
             if (preg_match('/^###\s+(.+)$/', $line, $m)) {
                 $this->closeList($html, $inList);
-                $html[] = '<h3>' . e($m[1]) . '</h3>';
+                $html[] = '<h3>'.e($m[1]).'</h3>';
+
                 continue;
             }
             if (preg_match('/^[-*]\s+(.+)$/', $line, $m)) {
@@ -95,17 +100,19 @@ class ContractRenderer
                     $html[] = '<ul>';
                     $inList = true;
                 }
-                $html[] = '<li>' . $this->inlineFormat($m[1]) . '</li>';
+                $html[] = '<li>'.$this->inlineFormat($m[1]).'</li>';
+
                 continue;
             }
             if (trim($line) === '') {
                 $this->closeList($html, $inList);
                 $html[] = '';
+
                 continue;
             }
 
             $this->closeList($html, $inList);
-            $html[] = '<p>' . $this->inlineFormat($line) . '</p>';
+            $html[] = '<p>'.$this->inlineFormat($line).'</p>';
         }
 
         $this->closeList($html, $inList);
@@ -128,6 +135,7 @@ class ContractRenderer
         $text = preg_replace('/\*\*([^\*]+)\*\*/', '<strong>$1</strong>', $text);
         // *italic*
         $text = preg_replace('/\*([^\*]+)\*/', '<em>$1</em>', $text);
+
         return $text;
     }
 }

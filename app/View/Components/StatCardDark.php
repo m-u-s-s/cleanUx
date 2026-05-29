@@ -11,7 +11,13 @@ class StatCardDark extends Component
     /**
      * Create a new component instance.
      */
-    public $title, $value, $change, $changeColor;
+    public $title;
+
+    public $value;
+
+    public $change;
+
+    public $changeColor;
 
     public function __construct($title, $value, $change = null, $changeColor = 'text-green-400')
     {
@@ -20,7 +26,6 @@ class StatCardDark extends Component
         $this->change = $change;
         $this->changeColor = $changeColor;
     }
-
 
     /**
      * Get the view / contents that represent the component.

@@ -14,10 +14,11 @@ class InsuranceServiceProvider extends ServiceProvider
     {
         $this->app->bind(InsuranceProviderInterface::class, function ($app) {
             $name = (string) config('insurance.default_provider', 'mock');
+
             return match ($name) {
-                'hiscox' => new HiscoxInsuranceProvider(),
-                'wakam'  => new WakamInsuranceProvider(),
-                default  => new InsuranceMockProvider(),
+                'hiscox' => new HiscoxInsuranceProvider,
+                'wakam' => new WakamInsuranceProvider,
+                default => new InsuranceMockProvider,
             };
         });
     }

@@ -15,8 +15,11 @@ class AiDispatchCenter extends Component
     use WithPagination;
 
     public string $search = '';
+
     public string $status = 'en_attente';
+
     public ?int $previewRdvId = null;
+
     public array $ranking = [];
 
     protected $paginationTheme = 'tailwind';
@@ -53,6 +56,7 @@ class AiDispatchCenter extends Component
 
         if (! $employee) {
             $this->dispatch('toast', 'Aucun employé disponible trouvé.', 'error');
+
             return;
         }
 

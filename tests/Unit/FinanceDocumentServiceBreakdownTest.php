@@ -2,8 +2,8 @@
 
 namespace Tests\Unit;
 
-use App\Models\OrganizationAccount;
 use App\Models\Booking;
+use App\Models\OrganizationAccount;
 use App\Models\User;
 use App\Services\Finance\FinanceDocumentService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -56,7 +56,6 @@ class FinanceDocumentServiceBreakdownTest extends TestCase
         $this->assertSame(63.0, $breakdown['estimated_margin_amount']);
     }
 
-
     public function test_quote_snapshot_prefers_structured_labels_for_service_and_location(): void
     {
         $context = $this->createCoverageContext([
@@ -88,5 +87,4 @@ class FinanceDocumentServiceBreakdownTest extends TestCase
         $this->assertSame('1000', $snapshot['postal_code']);
         $this->assertSame('Avenue Finance 22, 1000, Bruxelles', $snapshot['location_display']);
     }
-
 }

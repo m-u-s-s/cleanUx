@@ -10,9 +10,13 @@ use Illuminate\Support\Str;
 class SubscriptionInvoiceV2 extends Model
 {
     public const STATUS_DRAFT = 'draft';
+
     public const STATUS_OPEN = 'open';
+
     public const STATUS_PAID = 'paid';
+
     public const STATUS_FAILED = 'failed';
+
     public const STATUS_VOID = 'void';
 
     protected $table = 'subscription_invoices_v2';
@@ -33,7 +37,7 @@ class SubscriptionInvoiceV2 extends Model
 
     public static function generateCode(): string
     {
-        return 'inv_' . Str::lower(Str::random(20));
+        return 'inv_'.Str::lower(Str::random(20));
     }
 
     public function subscription(): BelongsTo

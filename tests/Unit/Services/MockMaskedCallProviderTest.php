@@ -5,6 +5,7 @@ namespace Tests\Unit\Services;
 use App\Models\User;
 use App\Services\Safety\Data\MaskedCallSessionData;
 use App\Services\Safety\Providers\MockMaskedCallProvider;
+use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -14,12 +15,13 @@ use Tests\TestCase;
 class MockMaskedCallProviderTest extends TestCase
 {
     use RefreshDatabase;
+
     private MockMaskedCallProvider $provider;
 
     protected function setUp(): void
     {
         parent::setUp();
-        $this->provider = new MockMaskedCallProvider();
+        $this->provider = new MockMaskedCallProvider;
     }
 
     public function test_provider_name_is_mock(): void
@@ -49,7 +51,7 @@ class MockMaskedCallProviderTest extends TestCase
     {
         $result = $this->invokeCreateSession();
         $this->assertNotNull($result->expiresAt);
-        $this->assertTrue(now()->lt(\Carbon\Carbon::parse($result->expiresAt)));
+        $this->assertTrue(now()->lt(Carbon::parse($result->expiresAt)));
     }
 
     public function test_metadata_contains_provider_key(): void

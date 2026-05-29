@@ -30,6 +30,7 @@ class RecomputeSurgeJob implements ShouldQueue
     use SerializesModels;
 
     public int $tries = 1;
+
     public int $timeout = 60;
 
     public function __construct(
@@ -54,14 +55,14 @@ class RecomputeSurgeJob implements ShouldQueue
             } catch (\Throwable $e) {
                 Log::warning('RecomputeSurgeJob: échec sur zone', [
                     'zone_id' => $zone->id,
-                    'error'   => $e->getMessage(),
+                    'error' => $e->getMessage(),
                 ]);
             }
         }
 
         Log::info('RecomputeSurgeJob: terminé', [
             'zones_processed' => $count,
-            'total_zones'     => $zones->count(),
+            'total_zones' => $zones->count(),
         ]);
     }
 

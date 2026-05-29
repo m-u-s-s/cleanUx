@@ -30,6 +30,7 @@ class PhotoQuoteEstimator
         $apiKey = (string) config('services.anthropic.key', env('ANTHROPIC_API_KEY', ''));
         if ($apiKey === '') {
             Log::info('[ai_quote] Anthropic API key missing, estimation skipped');
+
             return null;
         }
 
@@ -50,8 +51,8 @@ class PhotoQuoteEstimator
             [
                 'type' => 'text',
                 'text' => $userNote
-                    ? "Note utilisateur : " . $userNote . "\n\nAnalyse cette photo et fournis un devis estimé selon les instructions du système."
-                    : "Analyse cette photo et fournis un devis estimé selon les instructions du système.",
+                    ? 'Note utilisateur : '.$userNote."\n\nAnalyse cette photo et fournis un devis estimé selon les instructions du système."
+                    : 'Analyse cette photo et fournis un devis estimé selon les instructions du système.',
             ],
         ];
 
@@ -76,6 +77,7 @@ class PhotoQuoteEstimator
                     'status' => $response->status(),
                     'body' => mb_substr($response->body(), 0, 500),
                 ]);
+
                 return null;
             }
 
@@ -88,6 +90,7 @@ class PhotoQuoteEstimator
                 'trade' => $trade->code ?? 'unknown',
                 'error' => $e->getMessage(),
             ]);
+
             return null;
         }
     }
@@ -139,9 +142,10 @@ PROMPT;
         if (str_starts_with($signature, "\xff\xd8")) {
             return 'image/jpeg';
         }
-        if (str_starts_with($signature, "RIFF")) {
+        if (str_starts_with($signature, 'RIFF')) {
             return 'image/webp';
         }
+
         return 'image/jpeg';
     }
 
@@ -156,6 +160,7 @@ PROMPT;
 
         if (! is_array($decoded)) {
             Log::warning('[ai_quote] failed to parse Claude JSON', ['text' => mb_substr($text, 0, 300)]);
+
             return null;
         }
 

@@ -45,7 +45,7 @@ return [
     'google' => [
         'maps_api_key' => env('GOOGLE_MAPS_API_KEY'),
         // Used by GeoDistanceService::drivingDistanceKm() (Distance Matrix API)
-        'maps_key'     => env('GOOGLE_MAPS_KEY', env('GOOGLE_MAPS_API_KEY')),
+        'maps_key' => env('GOOGLE_MAPS_KEY', env('GOOGLE_MAPS_API_KEY')),
     ],
 
     'google_maps' => [
@@ -66,11 +66,11 @@ return [
     | Récupère ta clé sur https://console.anthropic.com/settings/keys
     */
     'anthropic' => [
-        'key'        => env('ANTHROPIC_API_KEY'),
-        'model'      => env('ANTHROPIC_MODEL', 'claude-sonnet-4-20250514'),
+        'key' => env('ANTHROPIC_API_KEY'),
+        'model' => env('ANTHROPIC_MODEL', 'claude-sonnet-4-20250514'),
         'max_tokens' => (int) env('ANTHROPIC_MAX_TOKENS', 1024),
-        'timeout'    => (int) env('ANTHROPIC_TIMEOUT', 30),
-        'retries'    => (int) env('ANTHROPIC_RETRIES', 1),
+        'timeout' => (int) env('ANTHROPIC_TIMEOUT', 30),
+        'retries' => (int) env('ANTHROPIC_RETRIES', 1),
     ],
 
     /*
@@ -79,20 +79,20 @@ return [
     |--------------------------------------------------------------------------
     */
     'openai' => [
-        'key'   => env('OPENAI_API_KEY'),
+        'key' => env('OPENAI_API_KEY'),
         'model' => env('OPENAI_MODEL', 'gpt-4o-mini'),
     ],
 
     'assistant' => [
-        'rate_per_hour'           => (int) env('ASSISTANT_RATE_PER_HOUR', 30),
-        'rate_per_day'            => (int) env('ASSISTANT_RATE_PER_DAY', 200),
-        'cost_limit_usd_per_day'  => (float) env('ASSISTANT_COST_LIMIT_USD_PER_DAY', 1.0),
+        'rate_per_hour' => (int) env('ASSISTANT_RATE_PER_HOUR', 30),
+        'rate_per_day' => (int) env('ASSISTANT_RATE_PER_DAY', 200),
+        'cost_limit_usd_per_day' => (float) env('ASSISTANT_COST_LIMIT_USD_PER_DAY', 1.0),
     ],
 
     'webpush' => [
-        'public_key'  => env('VAPID_PUBLIC_KEY'),
+        'public_key' => env('VAPID_PUBLIC_KEY'),
         'private_key' => env('VAPID_PRIVATE_KEY'),
-        'subject'     => env('VAPID_SUBJECT', 'mailto:contact@cleanux.local'),
+        'subject' => env('VAPID_SUBJECT', 'mailto:contact@cleanux.local'),
     ],
 
     /*
@@ -103,9 +103,9 @@ return [
     | region: eu | us | ca
     */
     'onfido' => [
-        'api_token'     => env('ONFIDO_API_TOKEN'),
-        'base_url'      => env('ONFIDO_BASE_URL', 'https://api.eu.onfido.com/v3.6'),
+        'api_token' => env('ONFIDO_API_TOKEN'),
+        'base_url' => env('ONFIDO_BASE_URL', 'https://api.eu.onfido.com/v3.6'),
         'webhook_token' => env('ONFIDO_WEBHOOK_TOKEN'),
-        'region'        => env('ONFIDO_REGION', 'eu'),
+        'region' => env('ONFIDO_REGION', 'eu'),
     ],
 ];

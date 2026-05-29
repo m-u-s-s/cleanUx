@@ -16,11 +16,11 @@ class AssistantConversationFactory extends Factory
     public function definition(): array
     {
         return [
-            'user_id'                 => User::factory(),
+            'user_id' => User::factory(),
             'organization_account_id' => null,
-            'context_role'            => fake()->randomElement(['client', 'provider', 'admin', 'enterprise']),
-            'status'                  => AssistantConversation::STATUS_OPEN,
-            'context_snapshot'        => null,
+            'context_role' => fake()->randomElement(['client', 'provider', 'admin', 'enterprise']),
+            'status' => AssistantConversation::STATUS_OPEN,
+            'context_snapshot' => null,
         ];
     }
 

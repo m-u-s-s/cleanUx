@@ -15,9 +15,7 @@ use NumberFormatter;
  */
 class LocaleFormatter
 {
-    public function __construct(protected LocaleResolver $resolver)
-    {
-    }
+    public function __construct(protected LocaleResolver $resolver) {}
 
     public function date(DateTimeInterface|string|null $value, ?string $locale = null, string $style = 'medium'): string
     {
@@ -66,7 +64,7 @@ class LocaleFormatter
             }
         }
 
-        return $this->fallbackDate($dt, $locale, $style) . ' ' . $dt->format('H:i');
+        return $this->fallbackDate($dt, $locale, $style).' '.$dt->format('H:i');
     }
 
     public function currency(float|int|string|null $amount, ?string $currency = null, ?string $locale = null): string
@@ -120,6 +118,7 @@ class LocaleFormatter
         if ($value instanceof CarbonInterface) {
             return $value->toDateTime();
         }
+
         return new \DateTime((string) $value);
     }
 
@@ -142,6 +141,7 @@ class LocaleFormatter
             'nl' => 'd-m-Y',
             default => 'd/m/Y',
         };
+
         return $dt->format($format);
     }
 
@@ -150,8 +150,8 @@ class LocaleFormatter
         $formatted = $this->fallbackNumber($amount, $locale, 2);
 
         return match ($locale) {
-            'en' => ($currency === 'EUR' ? '€' : $currency) . $formatted,
-            default => $formatted . ' ' . ($currency === 'EUR' ? '€' : $currency),
+            'en' => ($currency === 'EUR' ? '€' : $currency).$formatted,
+            default => $formatted.' '.($currency === 'EUR' ? '€' : $currency),
         };
     }
 

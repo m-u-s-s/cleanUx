@@ -10,14 +10,13 @@ use Illuminate\Notifications\Notification;
 
 class FinanceReminderNotification extends Notification
 {
-    use Queueable;
     use InteractsWithUserNotificationPreferences;
+    use Queueable;
 
     public function __construct(
         public FinanceInvoice $invoice,
         public string $reminderType = 'gentle'
-    ) {
-    }
+    ) {}
 
     public function via(object $notifiable): array
     {
@@ -34,10 +33,10 @@ class FinanceReminderNotification extends Notification
 
         return (new MailMessage)
             ->subject($subject)
-            ->line('Un rappel est émis concernant votre facture ' . $this->invoice->invoice_number . '.')
-            ->line('Montant total : ' . number_format((float) $this->invoice->total_amount, 2, ',', ' ') . ' €')
-            ->line('Solde restant dû : ' . number_format((float) $this->invoice->balance_due, 2, ',', ' ') . ' €')
-            ->line('Échéance : ' . optional($this->invoice->due_at)->format('d/m/Y'))
+            ->line('Un rappel est émis concernant votre facture '.$this->invoice->invoice_number.'.')
+            ->line('Montant total : '.number_format((float) $this->invoice->total_amount, 2, ',', ' ').' €')
+            ->line('Solde restant dû : '.number_format((float) $this->invoice->balance_due, 2, ',', ' ').' €')
+            ->line('Échéance : '.optional($this->invoice->due_at)->format('d/m/Y'))
             ->action('Ouvrir mon espace client', url('/dashboard/client'));
     }
 
@@ -47,7 +46,7 @@ class FinanceReminderNotification extends Notification
             'type' => 'finance',
             'severity' => $this->reminderType === 'final' ? 'danger' : 'warning',
             'title' => 'Rappel de facture',
-            'message' => 'Rappel facture ' . $this->invoice->invoice_number,
+            'message' => 'Rappel facture '.$this->invoice->invoice_number,
             'invoice_id' => $this->invoice->id,
             'invoice_number' => $this->invoice->invoice_number,
             'reminder_type' => $this->reminderType,

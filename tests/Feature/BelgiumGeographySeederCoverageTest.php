@@ -2,6 +2,8 @@
 
 namespace Tests\Feature;
 
+use App\Models\Commune;
+use App\Models\PostalCode;
 use Database\Seeders\BelgiumGeographySeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -22,7 +24,7 @@ class BelgiumGeographySeederCoverageTest extends TestCase
         $this->assertDatabaseHas('postal_codes', ['code' => '4000', 'city_name' => 'Luik']);
         $this->assertDatabaseHas('postal_codes', ['code' => '1400', 'city_name' => 'Nijvel']);
 
-        $this->assertGreaterThanOrEqual(60, \App\Models\PostalCode::query()->count());
-        $this->assertGreaterThanOrEqual(30, \App\Models\Commune::query()->count());
+        $this->assertGreaterThanOrEqual(60, PostalCode::query()->count());
+        $this->assertGreaterThanOrEqual(30, Commune::query()->count());
     }
 }

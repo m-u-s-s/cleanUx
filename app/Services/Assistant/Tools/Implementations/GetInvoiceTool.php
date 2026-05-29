@@ -22,8 +22,8 @@ class GetInvoiceTool implements AssistantTool
     public function description(): string
     {
         return "Récupère les détails d'une facture par son numéro ou son ID. "
-            . "Utile pour répondre 'qu'est-ce que je dois payer', 'pourquoi ce montant', "
-            . "'quand est due ma facture'. Retourne montant, statut, dates et détails.";
+            ."Utile pour répondre 'qu'est-ce que je dois payer', 'pourquoi ce montant', "
+            ."'quand est due ma facture'. Retourne montant, statut, dates et détails.";
     }
 
     public function inputSchema(): array
@@ -32,11 +32,11 @@ class GetInvoiceTool implements AssistantTool
             'type' => 'object',
             'properties' => [
                 'invoice_id' => [
-                    'type'        => 'integer',
-                    'description' => "ID interne de la facture.",
+                    'type' => 'integer',
+                    'description' => 'ID interne de la facture.',
                 ],
                 'invoice_number' => [
-                    'type'        => 'string',
+                    'type' => 'string',
                     'description' => "Numéro de facture (ex: 'INV-2026-0042'). Alternative à invoice_id.",
                 ],
             ],
@@ -70,7 +70,7 @@ class GetInvoiceTool implements AssistantTool
         $invoice = $query->first();
 
         if (! $invoice) {
-            return ['ok' => false, 'error' => "Facture introuvable."];
+            return ['ok' => false, 'error' => 'Facture introuvable.'];
         }
 
         // Ownership : client direct ou même org
@@ -85,7 +85,7 @@ class GetInvoiceTool implements AssistantTool
         }
 
         return [
-            'ok'      => true,
+            'ok' => true,
             'invoice' => $this->format($invoice),
         ];
     }
@@ -99,7 +99,7 @@ class GetInvoiceTool implements AssistantTool
         if ($user->organization_account_id) {
             $query->where(function ($q) use ($user) {
                 $q->where('client_id', $user->id)
-                  ->orWhere('organization_account_id', $user->organization_account_id);
+                    ->orWhere('organization_account_id', $user->organization_account_id);
             });
         } else {
             $query->where('client_id', $user->id);
@@ -108,8 +108,8 @@ class GetInvoiceTool implements AssistantTool
         $invoices = $query->get();
 
         return [
-            'ok'       => true,
-            'count'    => $invoices->count(),
+            'ok' => true,
+            'count' => $invoices->count(),
             'invoices' => $invoices->map(fn ($i) => $this->format($i))->all(),
         ];
     }
@@ -117,19 +117,19 @@ class GetInvoiceTool implements AssistantTool
     private function format(FinanceInvoice $invoice): array
     {
         return [
-            'id'             => $invoice->id,
+            'id' => $invoice->id,
             'invoice_number' => $invoice->invoice_number,
-            'status'         => $invoice->status,
-            'currency'       => $invoice->currency ?? 'EUR',
-            'subtotal'       => (float) $invoice->subtotal,
-            'tax_amount'     => (float) $invoice->tax_amount,
-            'total_amount'   => (float) $invoice->total_amount,
-            'balance_due'    => (float) $invoice->balance_due,
-            'issued_at'      => $invoice->issued_at?->format('d/m/Y'),
-            'due_at'         => $invoice->due_at?->format('d/m/Y'),
-            'paid_at'        => $invoice->paid_at?->format('d/m/Y'),
-            'is_paid'        => $invoice->paid_at !== null,
-            'is_overdue'     => $invoice->due_at && $invoice->due_at->isPast() && $invoice->paid_at === null,
+            'status' => $invoice->status,
+            'currency' => $invoice->currency ?? 'EUR',
+            'subtotal' => (float) $invoice->subtotal,
+            'tax_amount' => (float) $invoice->tax_amount,
+            'total_amount' => (float) $invoice->total_amount,
+            'balance_due' => (float) $invoice->balance_due,
+            'issued_at' => $invoice->issued_at?->format('d/m/Y'),
+            'due_at' => $invoice->due_at?->format('d/m/Y'),
+            'paid_at' => $invoice->paid_at?->format('d/m/Y'),
+            'is_paid' => $invoice->paid_at !== null,
+            'is_overdue' => $invoice->due_at && $invoice->due_at->isPast() && $invoice->paid_at === null,
         ];
     }
 }

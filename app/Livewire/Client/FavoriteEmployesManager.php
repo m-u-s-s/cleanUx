@@ -45,7 +45,7 @@ class FavoriteEmployesManager extends Component
         return User::query()
             ->where('role', 'employe')
             ->when($this->search !== '', function ($query) {
-                $query->where('name', 'like', '%' . $this->search . '%');
+                $query->where('name', 'like', '%'.$this->search.'%');
             })
             ->orderBy('name')
             ->get();
@@ -57,6 +57,7 @@ class FavoriteEmployesManager extends Component
 
         if (! $client || ! $client->isPremium()) {
             $this->dispatch('toast', 'Cette fonctionnalité est réservée aux clients Premium.', 'error');
+
             return;
         }
 
@@ -75,6 +76,7 @@ class FavoriteEmployesManager extends Component
 
         if (! $client || ! $client->isPremium()) {
             $this->dispatch('toast', 'Cette fonctionnalité est réservée aux clients Premium.', 'error');
+
             return;
         }
 

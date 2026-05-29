@@ -1,6 +1,8 @@
 <?php
 
 use App\Http\Controllers\GoogleCalendarAuthController;
+use App\Livewire\Admin\GoogleAgendaSettings;
+use App\Livewire\Employe\GoogleAgendaEmploye;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/google/calendar/connect', [GoogleCalendarAuthController::class, 'redirect'])
@@ -13,8 +15,8 @@ Route::match(['POST', 'DELETE'], '/google/calendar/disconnect', [GoogleCalendarA
     ->name('google.calendar.disconnect');
 
 Route::middleware(['role:admin'])->group(function () {
-    $googleAgendaSettings = class_exists(\App\Livewire\Admin\GoogleAgendaSettings::class)
-        ? \App\Livewire\Admin\GoogleAgendaSettings::class
+    $googleAgendaSettings = class_exists(GoogleAgendaSettings::class)
+        ? GoogleAgendaSettings::class
         : function () {
             abort(501, 'La page Google Agenda admin n’est pas encore disponible.');
         };
@@ -24,8 +26,8 @@ Route::middleware(['role:admin'])->group(function () {
 });
 
 Route::middleware(['role:employe'])->group(function () {
-    $googleAgendaEmploye = class_exists(\App\Livewire\Employe\GoogleAgendaEmploye::class)
-        ? \App\Livewire\Employe\GoogleAgendaEmploye::class
+    $googleAgendaEmploye = class_exists(GoogleAgendaEmploye::class)
+        ? GoogleAgendaEmploye::class
         : function () {
             abort(501, 'La page Google Agenda employé n’est pas encore disponible.');
         };

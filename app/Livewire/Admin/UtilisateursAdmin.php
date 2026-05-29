@@ -3,16 +3,16 @@
 namespace App\Livewire\Admin;
 
 use App\Models\User;
+use Illuminate\Contracts\View\View;
 use Livewire\Component;
 use Livewire\WithPagination;
-use Illuminate\Contracts\View\View;
-use Livewire\Attributes\Layout;
 
 class UtilisateursAdmin extends Component
 {
     use WithPagination;
 
     public $search = '';
+
     public $role = '';
 
     protected $queryString = ['search', 'role', 'page'];
@@ -32,9 +32,9 @@ class UtilisateursAdmin extends Component
         $query = User::query()
             ->when($this->search, function ($q) {
                 $q->where(function ($sub) {
-                    $sub->where('name', 'like', '%' . $this->search . '%')
-                        ->orWhere('email', 'like', '%' . $this->search . '%')
-                        ->orWhere('tva_number', 'like', '%' . $this->search . '%');
+                    $sub->where('name', 'like', '%'.$this->search.'%')
+                        ->orWhere('email', 'like', '%'.$this->search.'%')
+                        ->orWhere('tva_number', 'like', '%'.$this->search.'%');
                 });
             })
             ->when($this->role, fn ($q) => $q->where('role', $this->role));

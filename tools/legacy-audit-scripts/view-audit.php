@@ -1,10 +1,10 @@
 
     <?php
 
-    require_once __DIR__ . '/vendor/autoload.php';
+    require_once __DIR__.'/vendor/autoload.php';
 
     $root = __DIR__;
-    $outputDir = $root . '/storage/app/view-audit';
+    $outputDir = $root.'/storage/app/view-audit';
 
     if (! is_dir($outputDir)) {
         mkdir($outputDir, 0777, true);
@@ -38,9 +38,9 @@
         $path = str_replace('.', DIRECTORY_SEPARATOR, $view);
 
         $candidates = [
-            $root . '/resources/views/' . $path . '.blade.php',
-            $root . '/resources/views/' . $path . '.php',
-            $root . '/resources/views/' . $path . '.html',
+            $root.'/resources/views/'.$path.'.blade.php',
+            $root.'/resources/views/'.$path.'.php',
+            $root.'/resources/views/'.$path.'.html',
         ];
 
         foreach ($candidates as $candidate) {
@@ -60,7 +60,7 @@
             return str_replace(' ', '', ucwords($part));
         }, $parts);
 
-        $class = 'App\\View\\Components\\' . implode('\\', $classParts);
+        $class = 'App\\View\\Components\\'.implode('\\', $classParts);
 
         return class_exists($class);
     }
@@ -71,8 +71,8 @@
         $path = str_replace('.', DIRECTORY_SEPARATOR, $component);
 
         $candidates = [
-            $root . '/resources/views/components/' . $path . '.blade.php',
-            $root . '/resources/views/components/' . $path . '/index.blade.php',
+            $root.'/resources/views/components/'.$path.'.blade.php',
+            $root.'/resources/views/components/'.$path.'/index.blade.php',
         ];
 
         foreach ($candidates as $candidate) {
@@ -85,7 +85,7 @@
     }
 
     foreach ($scanDirs as $dir) {
-        $fullDir = $root . DIRECTORY_SEPARATOR . $dir;
+        $fullDir = $root.DIRECTORY_SEPARATOR.$dir;
 
         if (! is_dir($fullDir)) {
             continue;
@@ -106,13 +106,13 @@
                 continue;
             }
 
-            $relativePath = str_replace($root . DIRECTORY_SEPARATOR, '', $path);
+            $relativePath = str_replace($root.DIRECTORY_SEPARATOR, '', $path);
             $content = file_get_contents($path);
             $lines = preg_split('/\R/', $content);
 
             foreach ($lines as $index => $line) {
                 $lineNumber = $index + 1;
-                $location = $relativePath . ':' . $lineNumber;
+                $location = $relativePath.':'.$lineNumber;
 
                 /*
             |--------------------------------------------------------------------------
@@ -171,7 +171,7 @@
                     && ! preg_match('/(?<![A-Za-z0-9_])view\s*\(\s*[\'"]/', $line)
                     && ! preg_match('/@(include|includeIf|includeWhen|includeUnless|extends|component)\s*\(\s*[\'"]/', $line)
                 ) {
-                    $dynamicViews[] = $location . ' => ' . trim($line);
+                    $dynamicViews[] = $location.' => '.trim($line);
                 }
 
                 /*
@@ -197,7 +197,7 @@
                 }
 
                 if (str_contains($line, '<x-dynamic-component')) {
-                    $dynamicComponents[] = $location . ' => ' . trim($line);
+                    $dynamicComponents[] = $location.' => '.trim($line);
                 }
             }
         }
@@ -239,10 +239,10 @@
     $missingViewsText = '';
 
     foreach ($missingViews as $view => $locations) {
-        $missingViewsText .= $view . PHP_EOL;
+        $missingViewsText .= $view.PHP_EOL;
 
         foreach ($locations as $location) {
-            $missingViewsText .= '  - ' . $location . PHP_EOL;
+            $missingViewsText .= '  - '.$location.PHP_EOL;
         }
 
         $missingViewsText .= PHP_EOL;
@@ -255,10 +255,10 @@
     $missingComponentsText = '';
 
     foreach ($missingComponents as $component => $locations) {
-        $missingComponentsText .= $component . PHP_EOL;
+        $missingComponentsText .= $component.PHP_EOL;
 
         foreach ($locations as $location) {
-            $missingComponentsText .= '  - ' . $location . PHP_EOL;
+            $missingComponentsText .= '  - '.$location.PHP_EOL;
         }
 
         $missingComponentsText .= PHP_EOL;
@@ -284,19 +284,19 @@
         $dynamicComponentsText .= PHP_EOL;
     }
 
-    file_put_contents($outputDir . '/missing-views.txt', $missingViewsText);
-    file_put_contents($outputDir . '/missing-components.txt', $missingComponentsText);
-    file_put_contents($outputDir . '/dynamic-views.txt', $dynamicViewsText);
-    file_put_contents($outputDir . '/dynamic-components.txt', $dynamicComponentsText);
+    file_put_contents($outputDir.'/missing-views.txt', $missingViewsText);
+    file_put_contents($outputDir.'/missing-components.txt', $missingComponentsText);
+    file_put_contents($outputDir.'/dynamic-views.txt', $dynamicViewsText);
+    file_put_contents($outputDir.'/dynamic-components.txt', $dynamicComponentsText);
 
     file_put_contents(
-        $outputDir . '/used-views.txt',
-        implode(PHP_EOL, array_keys($directViews)) . PHP_EOL
+        $outputDir.'/used-views.txt',
+        implode(PHP_EOL, array_keys($directViews)).PHP_EOL
     );
 
     file_put_contents(
-        $outputDir . '/used-components.txt',
-        implode(PHP_EOL, array_keys($bladeComponents)) . PHP_EOL
+        $outputDir.'/used-components.txt',
+        implode(PHP_EOL, array_keys($bladeComponents)).PHP_EOL
     );
 
     echo PHP_EOL;
@@ -308,13 +308,13 @@
     echo PHP_EOL;
 
     echo "===== VUES MANQUANTES =====\n";
-    echo $missingViewsText . PHP_EOL;
+    echo $missingViewsText.PHP_EOL;
 
     echo "===== COMPOSANTS BLADE MANQUANTS =====\n";
-    echo $missingComponentsText . PHP_EOL;
+    echo $missingComponentsText.PHP_EOL;
 
     echo "===== VUES DYNAMIQUES À VÉRIFIER =====\n";
-    echo $dynamicViewsText . PHP_EOL;
+    echo $dynamicViewsText.PHP_EOL;
 
     echo "===== COMPOSANTS DYNAMIQUES À VÉRIFIER =====\n";
-    echo $dynamicComponentsText . PHP_EOL;
+    echo $dynamicComponentsText.PHP_EOL;

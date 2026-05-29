@@ -8,7 +8,6 @@ use App\Models\Trade;
 use App\Models\User;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
 
 /**
  * Service d'import bulk de bookings depuis un CSV (cas B2B facility management).
@@ -32,10 +31,8 @@ use Illuminate\Support\Facades\Log;
 class BulkBookingImporter
 {
     /**
-     * @param User $orderer Le user qui importe (doit être membre de l'organization)
-     * @param int $organizationId
-     * @param string $csvContent
-     * @param string $separator ',' ou ';'
+     * @param  User  $orderer  Le user qui importe (doit être membre de l'organization)
+     * @param  string  $separator  ',' ou ';'
      */
     public function import(User $orderer, int $organizationId, string $csvContent, string $separator = ','): array
     {
@@ -69,6 +66,7 @@ class BulkBookingImporter
             DB::commit();
         } catch (\Throwable $e) {
             DB::rollBack();
+
             return ['ok' => false, 'error' => 'transaction_failed', 'message' => $e->getMessage()];
         }
 
@@ -91,6 +89,7 @@ class BulkBookingImporter
             $lines[] = $row;
         }
         fclose($fp);
+
         return $lines;
     }
 
@@ -100,6 +99,7 @@ class BulkBookingImporter
         foreach ($header as $i => $key) {
             $data[strtolower(trim((string) $key))] = isset($row[$i]) ? trim((string) $row[$i]) : '';
         }
+
         return $data;
     }
 

@@ -53,11 +53,11 @@ class SurgePricingEngine
     {
         $multiplier = 1.0;
         $factors = [
-            'demand'         => 1.0,
-            'supply'         => 1.0,
-            'temporal'       => 1.0,
-            'trade_zone'     => 1.0,
-            'asap'           => 1.0,
+            'demand' => 1.0,
+            'supply' => 1.0,
+            'temporal' => 1.0,
+            'trade_zone' => 1.0,
+            'asap' => 1.0,
             'trade_business' => 1.0,
         ];
 
@@ -75,8 +75,8 @@ class SurgePricingEngine
             } else {
                 // Calcul live si pas de state ou expiré
                 $live = $this->computeForZone($zone);
-                $factors['demand']   = $live['demand_factor'];
-                $factors['supply']   = $live['supply_factor'];
+                $factors['demand'] = $live['demand_factor'];
+                $factors['supply'] = $live['supply_factor'];
                 $factors['temporal'] = $live['temporal_factor'];
                 $multiplier = $live['multiplier'];
                 $source = 'live';
@@ -158,13 +158,13 @@ class SurgePricingEngine
         $finalPrice = round($basePrice * $multiplier, 2);
 
         return [
-            'base_price'     => round($basePrice, 2),
-            'final_price'    => $finalPrice,
-            'multiplier'     => round($multiplier, 2),
-            'factors'        => array_map(fn($f) => round($f, 2), $factors),
-            'is_visible'     => $multiplier >= (float) config('surge.visible_threshold', 1.20),
-            'source'         => $source,
-            'capped'         => $multiplier >= $maxMultiplier,
+            'base_price' => round($basePrice, 2),
+            'final_price' => $finalPrice,
+            'multiplier' => round($multiplier, 2),
+            'factors' => array_map(fn ($f) => round($f, 2), $factors),
+            'is_visible' => $multiplier >= (float) config('surge.visible_threshold', 1.20),
+            'source' => $source,
+            'capped' => $multiplier >= $maxMultiplier,
         ];
     }
 
@@ -182,16 +182,16 @@ class SurgePricingEngine
             return PricingZoneState::updateOrCreate(
                 ['service_zone_id' => $zone->id],
                 [
-                    'multiplier'             => $live['multiplier'],
-                    'demand_factor'          => $live['demand_factor'],
-                    'supply_factor'          => $live['supply_factor'],
-                    'temporal_factor'        => $live['temporal_factor'],
-                    'open_bookings_count'    => $live['open_bookings_count'],
+                    'multiplier' => $live['multiplier'],
+                    'demand_factor' => $live['demand_factor'],
+                    'supply_factor' => $live['supply_factor'],
+                    'temporal_factor' => $live['temporal_factor'],
+                    'open_bookings_count' => $live['open_bookings_count'],
                     'online_providers_count' => $live['online_providers_count'],
-                    'expires_at'             => now()->addSeconds($ttl),
-                    'metadata'               => [
-                        'computed_at'  => now()->toIso8601String(),
-                        'is_weekend'   => now()->isWeekend(),
+                    'expires_at' => now()->addSeconds($ttl),
+                    'metadata' => [
+                        'computed_at' => now()->toIso8601String(),
+                        'is_weekend' => now()->isWeekend(),
                     ],
                 ]
             );
@@ -212,11 +212,11 @@ class SurgePricingEngine
         $multiplier = min($multiplier, $maxMultiplier);
 
         return [
-            'multiplier'             => round($multiplier, 2),
-            'demand_factor'          => round($demand['factor'], 2),
-            'supply_factor'          => round($supply['factor'], 2),
-            'temporal_factor'        => round($temporal, 2),
-            'open_bookings_count'    => $demand['count'],
+            'multiplier' => round($multiplier, 2),
+            'demand_factor' => round($demand['factor'], 2),
+            'supply_factor' => round($supply['factor'], 2),
+            'temporal_factor' => round($temporal, 2),
+            'open_bookings_count' => $demand['count'],
             'online_providers_count' => $supply['count'],
         ];
     }

@@ -9,7 +9,7 @@ class BookingEstimatorServiceIdentifierTest extends TestCase
 {
     public function test_service_identifier_context_is_used_when_catalog_is_missing(): void
     {
-        $service = new BookingEstimatorService();
+        $service = new BookingEstimatorService;
 
         $duration = $service->estimateDuration(null, [
             'service_identifier' => 'nettoyage_profond',

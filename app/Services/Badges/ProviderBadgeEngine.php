@@ -98,7 +98,7 @@ class ProviderBadgeEngine
         return Booking::query()
             ->where(function ($q) use ($provider) {
                 $q->where('employe_id', $provider->id)
-                  ->orWhere('assigned_employee_id', $provider->id);
+                    ->orWhere('assigned_employee_id', $provider->id);
             })
             ->whereIn('status', ['termine', 'completed', 'closed'])
             ->count();
@@ -123,6 +123,7 @@ class ProviderBadgeEngine
         if (! Schema::hasTable('booking_tips')) {
             return 0;
         }
+
         return (int) DB::table('booking_tips')
             ->where('provider_user_id', $provider->id)
             ->whereIn('status', ['charged', 'paid_out'])
@@ -134,6 +135,7 @@ class ProviderBadgeEngine
         if (! $provider->created_at) {
             return 0;
         }
+
         return (int) $provider->created_at->diffInDays(now());
     }
 
@@ -170,6 +172,7 @@ class ProviderBadgeEngine
                 break;
             }
         }
+
         return $streak;
     }
 }

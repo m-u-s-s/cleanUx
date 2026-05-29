@@ -69,7 +69,7 @@ class EmployeeAvailabilityService
     {
         return $this->eligibleEmployeesQuery($zoneId)
             ->get()
-            ->sortByDesc(fn(User $employee) => $this->employeeCoverageScore($employee, $zoneId))
+            ->sortByDesc(fn (User $employee) => $this->employeeCoverageScore($employee, $zoneId))
             ->values();
     }
 
@@ -111,7 +111,7 @@ class EmployeeAvailabilityService
         $bufferMinutes = (int) ($zone?->time_buffer_minutes ?? 0);
         $estimatedDuration = max(30, $estimatedDuration);
 
-        $slotStart = Carbon::createFromFormat('Y-m-d H:i', $date . ' ' . $heure, $timezone);
+        $slotStart = Carbon::createFromFormat('Y-m-d H:i', $date.' '.$heure, $timezone);
         $slotEnd = $slotStart->copy()->addMinutes($estimatedDuration);
 
         $employee = User::query()->whereKey($employeeId)->first();
@@ -126,8 +126,8 @@ class EmployeeAvailabilityService
 
         if ($availabilities->isNotEmpty()) {
             $withinAvailability = $availabilities->contains(function ($availability) use ($slotStart, $slotEnd, $date, $timezone) {
-                $availableStart = Carbon::createFromFormat('Y-m-d H:i:s', $date . ' ' . $availability->heure_debut, $timezone);
-                $availableEnd = Carbon::createFromFormat('Y-m-d H:i:s', $date . ' ' . $availability->heure_fin, $timezone);
+                $availableStart = Carbon::createFromFormat('Y-m-d H:i:s', $date.' '.$availability->heure_debut, $timezone);
+                $availableEnd = Carbon::createFromFormat('Y-m-d H:i:s', $date.' '.$availability->heure_fin, $timezone);
 
                 return $slotStart->greaterThanOrEqualTo($availableStart)
                     && $slotEnd->lessThanOrEqualTo($availableEnd);
@@ -146,7 +146,7 @@ class EmployeeAvailabilityService
             ->whereIn('status', $activeStatuses)
             ->get()
             ->contains(function ($existing) use ($slotStart, $slotEnd, $bufferMinutes, $timezone) {
-                $existingStart = Carbon::createFromFormat('Y-m-d H:i', $existing->date->format('Y-m-d') . ' ' . substr((string) $existing->heure, 0, 5), $timezone);
+                $existingStart = Carbon::createFromFormat('Y-m-d H:i', $existing->date->format('Y-m-d').' '.substr((string) $existing->heure, 0, 5), $timezone);
                 $existingDuration = max(30, (int) ($existing->duree_estimee ?: $existing->duree ?: 90));
                 $existingEnd = $existingStart->copy()->addMinutes($existingDuration);
 
@@ -163,7 +163,7 @@ class EmployeeAvailabilityService
         ?int $ignoreRendezVousId = null,
     ): ?User {
         return $this->sortedEligibleEmployeesForZone((int) $zone->id)
-            ->first(fn(User $employee) => $this->employeeIsAvailableForSlot(
+            ->first(fn (User $employee) => $this->employeeIsAvailableForSlot(
                 $employee->id,
                 $date,
                 $heure,

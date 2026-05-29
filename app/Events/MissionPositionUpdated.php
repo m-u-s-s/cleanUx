@@ -19,7 +19,7 @@ class MissionPositionUpdated implements ShouldBroadcastNow
 
     public function broadcastOn(): PrivateChannel
     {
-        return new PrivateChannel('mission.' . $this->missionId);
+        return new PrivateChannel('mission.'.$this->missionId);
     }
 
     public function broadcastAs(): string

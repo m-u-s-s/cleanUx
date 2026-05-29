@@ -4,7 +4,6 @@ namespace App\Services\Analytics;
 
 use App\Models\AnalyticsEvent;
 use Illuminate\Support\Carbon;
-use Illuminate\Support\Collection;
 
 /**
  * Cohort retention analyzer.

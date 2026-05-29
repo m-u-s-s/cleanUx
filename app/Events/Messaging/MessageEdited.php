@@ -20,7 +20,7 @@ class MessageEdited implements ShouldBroadcast
     public function broadcastOn(): array
     {
         return [
-            new PrivateChannel('channel.' . $this->message->channel_id),
+            new PrivateChannel('channel.'.$this->message->channel_id),
         ];
     }
 
@@ -29,8 +29,8 @@ class MessageEdited implements ShouldBroadcast
         return [
             'message_id' => $this->message->id,
             'channel_id' => $this->message->channel_id,
-            'content'    => $this->message->content,
-            'edited_at'  => $this->message->edited_at?->toIso8601String(),
+            'content' => $this->message->content,
+            'edited_at' => $this->message->edited_at?->toIso8601String(),
         ];
     }
 

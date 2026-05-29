@@ -49,10 +49,12 @@ return new class extends Migration
             try {
                 try {
                     Schema::table('messages', fn (Blueprint $t) => $t->dropForeign(['sender_id']));
-                } catch (\Throwable) {}
+                } catch (Throwable) {
+                }
                 try {
                     Schema::table('messages', fn (Blueprint $t) => $t->dropIndex(['sender_id']));
-                } catch (\Throwable) {}
+                } catch (Throwable) {
+                }
                 Schema::table('messages', function (Blueprint $table) {
                     $table->dropColumn('sender_id');
                 });
@@ -105,11 +107,11 @@ return new class extends Migration
             if (Schema::hasColumn('messages', 'parent_id')) {
                 try {
                     $table->dropIndex('messages_parent_id_created_at_idx');
-                } catch (\Throwable $e) {
+                } catch (Throwable $e) {
                 }
                 try {
                     $table->dropConstrainedForeignId('parent_id');
-                } catch (\Throwable $e) {
+                } catch (Throwable $e) {
                 }
             }
             foreach (['replies_count', 'last_reply_at', 'deleted_at'] as $c) {

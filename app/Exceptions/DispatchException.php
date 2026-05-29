@@ -21,6 +21,6 @@ class DispatchException extends \RuntimeException
 
     public static function providerIneligible(string $reason): self
     {
-        return new self('Provider is ineligible for dispatch: ' . $reason, 422);
+        return new self('Provider is ineligible for dispatch: '.$reason, 422);
     }
 }

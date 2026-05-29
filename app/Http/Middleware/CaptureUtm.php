@@ -2,8 +2,10 @@
 
 namespace App\Http\Middleware;
 
+use App\Services\Analytics\AnalyticsService;
 use Closure;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Schema;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
@@ -54,13 +56,13 @@ class CaptureUtm
     protected function trackAttributionEvent(Request $request, array $utm): void
     {
         try {
-            if (! class_exists(\App\Services\Analytics\AnalyticsService::class)) {
+            if (! class_exists(AnalyticsService::class)) {
                 return;
             }
-            if (! \Illuminate\Support\Facades\Schema::hasTable('analytics_events')) {
+            if (! Schema::hasTable('analytics_events')) {
                 return;
             }
-            app(\App\Services\Analytics\AnalyticsService::class)->track(
+            app(AnalyticsService::class)->track(
                 'acquisition.utm_captured',
                 array_merge($utm, ['url' => mb_substr((string) $request->fullUrl(), 0, 500)]),
                 [
@@ -81,7 +83,7 @@ class CaptureUtm
     {
         try {
             $user = $request->user();
-            if (! $user || ! \Illuminate\Support\Facades\Schema::hasColumn('users', 'acquisition_metadata')) {
+            if (! $user || ! Schema::hasColumn('users', 'acquisition_metadata')) {
                 return;
             }
             $existing = (array) ($user->acquisition_metadata ?? []);

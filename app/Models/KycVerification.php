@@ -10,18 +10,29 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class KycVerification extends Model
 {
     public const STATUS_PENDING = 'pending';
+
     public const STATUS_IN_REVIEW = 'in_review';
+
     public const STATUS_AWAITING_DOCS = 'awaiting_documents';
+
     public const STATUS_CLEAR = 'clear';
+
     public const STATUS_CONSIDER = 'consider';
+
     public const STATUS_UNIDENTIFIED = 'unidentified';
+
     public const STATUS_REJECTED = 'rejected';
+
     public const STATUS_EXPIRED = 'expired';
+
     public const STATUS_CANCELLED = 'cancelled';
 
     public const DECISION_PENDING = 'pending';
+
     public const DECISION_APPROVED = 'approved';
+
     public const DECISION_REJECTED = 'rejected';
+
     public const DECISION_MANUAL_REVIEW = 'manual_review';
 
     public const FINAL_STATUSES = [

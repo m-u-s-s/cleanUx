@@ -17,7 +17,7 @@ class ReferralServiceTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->service = new ReferralService();
+        $this->service = new ReferralService;
     }
 
     // ─────────────────────────────────────────────────────────────────
@@ -60,7 +60,7 @@ class ReferralServiceTest extends TestCase
     {
         config([
             'referral.sharing.message_template_fr' => 'Rejoins CleanUx avec mon code {code} !',
-            'referral.landing_url_template'         => '/register?ref={code}',
+            'referral.landing_url_template' => '/register?ref={code}',
         ]);
 
         $user = User::factory()->create(['referral_code' => null]);
@@ -73,7 +73,7 @@ class ReferralServiceTest extends TestCase
     {
         config([
             'referral.sharing.message_template_fr' => 'Code: {code}',
-            'referral.landing_url_template'         => '/register?ref={code}',
+            'referral.landing_url_template' => '/register?ref={code}',
         ]);
 
         $user = User::factory()->create(['referral_code' => null]);
@@ -88,7 +88,7 @@ class ReferralServiceTest extends TestCase
     {
         config([
             'referral.sharing.message_template_fr' => 'Code FR: {code}',
-            'referral.landing_url_template'         => '/register?ref={code}',
+            'referral.landing_url_template' => '/register?ref={code}',
         ]);
 
         $user = User::factory()->create(['referral_code' => null]);
@@ -101,7 +101,7 @@ class ReferralServiceTest extends TestCase
     {
         config([
             'referral.sharing.message_template_fr' => 'Inscription via {link}',
-            'referral.landing_url_template'         => '/register?ref={code}',
+            'referral.landing_url_template' => '/register?ref={code}',
         ]);
 
         $user = User::factory()->create(['referral_code' => null]);
@@ -132,13 +132,13 @@ class ReferralServiceTest extends TestCase
         config(['referral.rewards.referrer.amount' => 0, 'referral.rewards.referee.amount' => 0]);
 
         $referrer = User::factory()->create(['referral_code' => 'CONF0001']);
-        $referee  = User::factory()->create(['referral_code' => null]);
+        $referee = User::factory()->create(['referral_code' => null]);
 
         $referral = $this->service->registerReferral('CONF0001', $referee);
 
         $this->assertNotNull($referral);
         $this->assertEquals(ReferralService::DEFAULT_REFERRER_REWARD, (float) $referral->referrer_reward_amount);
-        $this->assertEquals(ReferralService::DEFAULT_REFEREE_REWARD,  (float) $referral->referee_reward_amount);
+        $this->assertEquals(ReferralService::DEFAULT_REFEREE_REWARD, (float) $referral->referee_reward_amount);
     }
 
     public function test_reward_amounts_come_from_config_when_set(): void
@@ -147,7 +147,7 @@ class ReferralServiceTest extends TestCase
         config(['referral.rewards.referrer.amount' => 2000, 'referral.rewards.referee.amount' => 1500]);
 
         $referrer = User::factory()->create(['referral_code' => 'CONF0002']);
-        $referee  = User::factory()->create(['referral_code' => null]);
+        $referee = User::factory()->create(['referral_code' => null]);
 
         $referral = $this->service->registerReferral('CONF0002', $referee);
 
@@ -172,21 +172,21 @@ class ReferralServiceTest extends TestCase
     public function test_expired_referral_is_not_reused_for_same_referee(): void
     {
         $referrer = User::factory()->create(['referral_code' => 'EXPI0001']);
-        $referee  = User::factory()->create(['referral_code' => null]);
+        $referee = User::factory()->create(['referral_code' => null]);
 
         // Simulate an already-expired referral record for this referee
         Referral::create([
-            'referrer_user_id'       => $referrer->id,
-            'referee_user_id'        => $referee->id,
-            'referee_email'          => $referee->email,
-            'referral_code'          => 'EXPI0001',
-            'status'                 => Referral::STATUS_EXPIRED,
-            'invited_at'             => now()->subDays(100),
-            'signed_up_at'           => now()->subDays(100),
-            'expires_at'             => now()->subDays(10),
+            'referrer_user_id' => $referrer->id,
+            'referee_user_id' => $referee->id,
+            'referee_email' => $referee->email,
+            'referral_code' => 'EXPI0001',
+            'status' => Referral::STATUS_EXPIRED,
+            'invited_at' => now()->subDays(100),
+            'signed_up_at' => now()->subDays(100),
+            'expires_at' => now()->subDays(10),
             'referrer_reward_amount' => 15.00,
-            'referee_reward_amount'  => 10.00,
-            'currency'               => 'EUR',
+            'referee_reward_amount' => 10.00,
+            'currency' => 'EUR',
         ]);
 
         // Since the only existing referral is expired, registerReferral should create a new one

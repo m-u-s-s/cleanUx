@@ -28,8 +28,11 @@ class TradeFilteredMatchingTest extends TestCase
     use RefreshDatabase;
 
     private ServiceZone $zone;
+
     private Trade $trade;
+
     private MatchingV2Service $service;
+
     private MatchingScoreEngine $scoreEngine;
 
     protected function setUp(): void
@@ -39,20 +42,20 @@ class TradeFilteredMatchingTest extends TestCase
         Config::set('matching.thresholds.min_acceptable_score', 0);
         Config::set('matching.thresholds.fallback_if_no_match', true);
         Config::set('matching.weights', [
-            'rating'          => 25,
+            'rating' => 25,
             'acceptance_rate' => 10,
             'completion_rate' => 10,
-            'response_time'   => 10,
-            'zone_proximity'  => 15,
-            'workload'        => 10,
+            'response_time' => 10,
+            'zone_proximity' => 15,
+            'workload' => 10,
             'client_affinity' => 5,
             'trade_specialty' => 10,
             'recency_balance' => 5,
         ]);
 
-        $this->zone        = ServiceZone::factory()->create();
-        $this->trade       = Trade::factory()->create(['billing_unit' => 'hourly', 'is_active' => true]);
-        $this->service     = app(MatchingV2Service::class);
+        $this->zone = ServiceZone::factory()->create();
+        $this->trade = Trade::factory()->create(['billing_unit' => 'hourly', 'is_active' => true]);
+        $this->service = app(MatchingV2Service::class);
         $this->scoreEngine = app(MatchingScoreEngine::class);
     }
 
@@ -62,12 +65,12 @@ class TradeFilteredMatchingTest extends TestCase
 
     public function test_provider_without_trade_is_excluded_from_candidates(): void
     {
-        $providerWithTrade    = $this->createProvider(rating: 4.0, ratingCount: 10);
+        $providerWithTrade = $this->createProvider(rating: 4.0, ratingCount: 10);
         $providerWithoutTrade = $this->createProvider(rating: 4.9, ratingCount: 30);
 
         // Only providerWithTrade gets the required trade
         $providerWithTrade->trades()->attach($this->trade->id, [
-            'is_primary'  => true,
+            'is_primary' => true,
             'proficiency' => 'expert',
         ]);
 
@@ -87,25 +90,25 @@ class TradeFilteredMatchingTest extends TestCase
 
     public function test_primary_trade_provider_scores_higher_in_trade_specialty(): void
     {
-        $primaryProvider     = $this->createProvider(rating: 4.0, ratingCount: 10);
-        $nonPrimaryProvider  = $this->createProvider(rating: 4.0, ratingCount: 10);
+        $primaryProvider = $this->createProvider(rating: 4.0, ratingCount: 10);
+        $nonPrimaryProvider = $this->createProvider(rating: 4.0, ratingCount: 10);
 
         $primaryProvider->trades()->attach($this->trade->id, [
-            'is_primary'  => true,
+            'is_primary' => true,
             'proficiency' => 'advanced',
         ]);
 
         $nonPrimaryProvider->trades()->attach($this->trade->id, [
-            'is_primary'  => false,
+            'is_primary' => false,
             'proficiency' => 'advanced',
         ]);
 
         $booking = $this->createBookingForTrade($this->trade);
 
-        $primaryBreakdown    = $this->scoreEngine->score($primaryProvider, $booking);
+        $primaryBreakdown = $this->scoreEngine->score($primaryProvider, $booking);
         $nonPrimaryBreakdown = $this->scoreEngine->score($nonPrimaryProvider, $booking);
 
-        $primaryTradeScore    = $primaryBreakdown->components['trade_specialty']['raw'] ?? 0;
+        $primaryTradeScore = $primaryBreakdown->components['trade_specialty']['raw'] ?? 0;
         $nonPrimaryTradeScore = $nonPrimaryBreakdown->components['trade_specialty']['raw'] ?? 0;
 
         $this->assertGreaterThan(
@@ -123,7 +126,7 @@ class TradeFilteredMatchingTest extends TestCase
     {
         // Create a provider in the zone but attach them to a DIFFERENT trade
         $otherTrade = Trade::factory()->create(['billing_unit' => 'fixed', 'is_active' => true]);
-        $provider   = $this->createProvider(rating: 4.0, ratingCount: 5);
+        $provider = $this->createProvider(rating: 4.0, ratingCount: 5);
         $provider->trades()->attach($otherTrade->id, ['is_primary' => true, 'proficiency' => 'advanced']);
 
         // Booking requires the main trade (which no one has)
@@ -146,13 +149,13 @@ class TradeFilteredMatchingTest extends TestCase
         // Provider has no trade attached
 
         $booking = Booking::create([
-            'client_id'       => User::factory()->client()->create()->id,
+            'client_id' => User::factory()->client()->create()->id,
             'service_zone_id' => $this->zone->id,
-            'date'            => now()->addDay(),
-            'heure'           => '10:00',
-            'status'          => 'en_attente',
-            'devis_estime'    => 80,
-            'booking_mode'    => 'scheduled',
+            'date' => now()->addDay(),
+            'heure' => '10:00',
+            'status' => 'en_attente',
+            'devis_estime' => 80,
+            'booking_mode' => 'scheduled',
             // No service_catalog_id — no trade filter
         ]);
 
@@ -183,22 +186,22 @@ class TradeFilteredMatchingTest extends TestCase
 
     public function test_expert_proficiency_scores_higher_than_beginner(): void
     {
-        $expertProvider   = $this->createProvider(rating: 4.0, ratingCount: 10);
+        $expertProvider = $this->createProvider(rating: 4.0, ratingCount: 10);
         $beginnerProvider = $this->createProvider(rating: 4.0, ratingCount: 10);
 
         $expertProvider->trades()->attach($this->trade->id, [
-            'is_primary'  => false,
+            'is_primary' => false,
             'proficiency' => 'expert',
         ]);
 
         $beginnerProvider->trades()->attach($this->trade->id, [
-            'is_primary'  => false,
+            'is_primary' => false,
             'proficiency' => 'beginner',
         ]);
 
         $booking = $this->createBookingForTrade($this->trade);
 
-        $expertScore   = $this->scoreEngine->score($expertProvider, $booking)->components['trade_specialty']['raw'];
+        $expertScore = $this->scoreEngine->score($expertProvider, $booking)->components['trade_specialty']['raw'];
         $beginnerScore = $this->scoreEngine->score($beginnerProvider, $booking)->components['trade_specialty']['raw'];
 
         $this->assertGreaterThan($beginnerScore, $expertScore);
@@ -211,24 +214,24 @@ class TradeFilteredMatchingTest extends TestCase
     private function createProvider(float $rating, int $ratingCount): User
     {
         $user = User::factory()->create([
-            'role'                    => 'employe',
+            'role' => 'employe',
             'primary_service_zone_id' => $this->zone->id,
-            'is_active'               => true,
+            'is_active' => true,
         ]);
 
         ProviderProfile::create([
-            'user_id'             => $user->id,
-            'provider_type'       => 'independent',
-            'status'              => 'active',
+            'user_id' => $user->id,
+            'provider_type' => 'independent',
+            'status' => 'active',
             'verification_status' => 'verified',
-            'rating_avg'          => $rating,
-            'rating_count'        => $ratingCount,
-            'is_online'           => true,
+            'rating_avg' => $rating,
+            'rating_count' => $ratingCount,
+            'is_online' => true,
         ]);
 
         $user->serviceZones()->attach($this->zone->id, [
             'assignment_type' => 'primary',
-            'is_active'       => true,
+            'is_active' => true,
         ]);
 
         return $user;
@@ -237,19 +240,19 @@ class TradeFilteredMatchingTest extends TestCase
     private function createBookingForTrade(Trade $trade): Booking
     {
         $service = ServiceCatalog::factory()->create([
-            'trade_id'  => $trade->id,
+            'trade_id' => $trade->id,
             'is_active' => true,
         ]);
 
         return Booking::create([
-            'client_id'          => User::factory()->client()->create()->id,
-            'service_zone_id'    => $this->zone->id,
+            'client_id' => User::factory()->client()->create()->id,
+            'service_zone_id' => $this->zone->id,
             'service_catalog_id' => $service->id,
-            'date'               => now()->addDay(),
-            'heure'              => '10:00',
-            'status'             => 'en_attente',
-            'devis_estime'       => 100,
-            'booking_mode'       => 'scheduled',
+            'date' => now()->addDay(),
+            'heure' => '10:00',
+            'status' => 'en_attente',
+            'devis_estime' => 100,
+            'booking_mode' => 'scheduled',
         ]);
     }
 }

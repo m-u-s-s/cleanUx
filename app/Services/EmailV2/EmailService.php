@@ -4,9 +4,7 @@ namespace App\Services\EmailV2;
 
 use App\Models\EmailMessage;
 use App\Models\EmailTemplate;
-use App\Models\User;
 use App\Services\EmailV2\Contracts\EmailProviderContract;
-use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
@@ -72,12 +70,14 @@ class EmailService
             && (bool) config('email_v2.check_opt_outs', true)
             && $this->isOptedOut($payload['to_email'])) {
             Log::info('[email_v2] skipping marketing email (opted out)', ['to' => $payload['to_email']]);
+
             return null;
         }
 
         // Rate limit check
         if ($this->isRateLimited($payload['to_email'])) {
             Log::info('[email_v2] rate limit hit', ['to' => $payload['to_email']]);
+
             return null;
         }
 
@@ -110,6 +110,7 @@ class EmailService
         });
 
         $this->dispatch($message);
+
         return $message->fresh();
     }
 
@@ -135,6 +136,7 @@ class EmailService
                 'last_error' => $result->error,
             ]);
         }
+
         return $message->fresh();
     }
 
@@ -152,11 +154,12 @@ class EmailService
         foreach ($variables as $key => $value) {
             $keyClean = preg_replace('/[^a-zA-Z0-9_]/', '', (string) $key);
             if (empty($allowed) || in_array($keyClean, $allowed, true)) {
-                $needle = '{{' . $keyClean . '}}';
+                $needle = '{{'.$keyClean.'}}';
                 $subject = str_replace($needle, (string) $value, $subject);
                 $html = str_replace($needle, (string) $value, $html);
             }
         }
+
         return [
             'subject' => $subject,
             'body_html' => $html,
@@ -183,6 +186,7 @@ class EmailService
         if (Schema::hasTable('marketing_opt_outs')) {
             return DB::table('marketing_opt_outs')->where('email', $email)->exists();
         }
+
         return false;
     }
 
@@ -212,6 +216,7 @@ class EmailService
                 return true;
             }
         }
+
         return false;
     }
 }

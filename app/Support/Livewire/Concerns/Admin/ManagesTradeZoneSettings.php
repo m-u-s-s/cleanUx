@@ -26,6 +26,7 @@ trait ManagesTradeZoneSettings
     {
         if (! $zoneId) {
             $this->tradeSettings = [];
+
             return;
         }
 
@@ -44,15 +45,15 @@ trait ManagesTradeZoneSettings
 
                 return [
                     $trade->id => [
-                        'trade_name'       => (string) $trade->name,
-                        'trade_slug'       => (string) $trade->slug,
-                        'trade_color'      => (string) ($trade->color ?: '#64748b'),
-                        'trade_icon'       => (string) ($trade->icon ?: 'briefcase'),
-                        'is_active'        => $setting === null ? true : (bool) $setting->is_active,
+                        'trade_name' => (string) $trade->name,
+                        'trade_slug' => (string) $trade->slug,
+                        'trade_color' => (string) ($trade->color ?: '#64748b'),
+                        'trade_icon' => (string) ($trade->icon ?: 'briefcase'),
+                        'is_active' => $setting === null ? true : (bool) $setting->is_active,
                         'price_multiplier' => $setting?->price_multiplier !== null
                             ? (string) $setting->price_multiplier
                             : '1.00',
-                        'notes'            => (string) ($setting?->notes ?? ''),
+                        'notes' => (string) ($setting?->notes ?? ''),
                     ],
                 ];
             })
@@ -70,13 +71,13 @@ trait ManagesTradeZoneSettings
         return TradeZoneSetting::updateOrCreate(
             ['trade_id' => $tradeId, 'service_zone_id' => $zone->id],
             [
-                'is_active'        => (bool) ($payload['is_active'] ?? true),
+                'is_active' => (bool) ($payload['is_active'] ?? true),
                 'price_multiplier' => filled($payload['price_multiplier'] ?? null)
                     ? (float) $payload['price_multiplier']
                     : 1.00,
-                'notes'            => filled($payload['notes'] ?? null) ? $payload['notes'] : null,
-                'updated_by'       => auth()->id(),
-                'created_by'       => auth()->id(),
+                'notes' => filled($payload['notes'] ?? null) ? $payload['notes'] : null,
+                'updated_by' => auth()->id(),
+                'created_by' => auth()->id(),
             ]
         );
     }
@@ -86,10 +87,10 @@ trait ManagesTradeZoneSettings
         $this->authorizeTradeZoneManagement();
 
         $this->validate([
-            'selectedZoneId'                            => ['required', 'exists:service_zones,id'],
-            "tradeSettings.$tradeId.is_active"          => ['boolean'],
-            "tradeSettings.$tradeId.price_multiplier"   => ['nullable', 'numeric', 'min:0.1', 'max:10'],
-            "tradeSettings.$tradeId.notes"              => ['nullable', 'string', 'max:1000'],
+            'selectedZoneId' => ['required', 'exists:service_zones,id'],
+            "tradeSettings.$tradeId.is_active" => ['boolean'],
+            "tradeSettings.$tradeId.price_multiplier" => ['nullable', 'numeric', 'min:0.1', 'max:10'],
+            "tradeSettings.$tradeId.notes" => ['nullable', 'string', 'max:1000'],
         ]);
 
         $zone = ServiceZone::findOrFail($this->selectedZoneId);
@@ -99,9 +100,9 @@ trait ManagesTradeZoneSettings
         $setting = $this->persistTradeSetting($zone, $tradeId, $payload);
 
         ActivityLogger::log('zone_trade_setting.updated', $zone, [
-            'trade_id'   => $tradeId,
+            'trade_id' => $tradeId,
             'setting_id' => $setting->id,
-            'payload'    => Arr::only($payload, ['is_active', 'price_multiplier', 'notes']),
+            'payload' => Arr::only($payload, ['is_active', 'price_multiplier', 'notes']),
         ]);
 
         session()->flash('success', 'Métier mis à jour pour cette zone.');
@@ -113,10 +114,10 @@ trait ManagesTradeZoneSettings
         $this->authorizeTradeZoneManagement();
 
         $this->validate([
-            'selectedZoneId'                       => ['required', 'exists:service_zones,id'],
-            'tradeSettings.*.is_active'            => ['boolean'],
-            'tradeSettings.*.price_multiplier'     => ['nullable', 'numeric', 'min:0.1', 'max:10'],
-            'tradeSettings.*.notes'                => ['nullable', 'string', 'max:1000'],
+            'selectedZoneId' => ['required', 'exists:service_zones,id'],
+            'tradeSettings.*.is_active' => ['boolean'],
+            'tradeSettings.*.price_multiplier' => ['nullable', 'numeric', 'min:0.1', 'max:10'],
+            'tradeSettings.*.notes' => ['nullable', 'string', 'max:1000'],
         ]);
 
         $zone = ServiceZone::findOrFail($this->selectedZoneId);
@@ -146,7 +147,7 @@ trait ManagesTradeZoneSettings
         $setting = $this->persistTradeSetting($zone, $tradeId, $payload);
 
         ActivityLogger::log('zone_trade_setting.toggled', $zone, [
-            'trade_id'  => $tradeId,
+            'trade_id' => $tradeId,
             'is_active' => $setting->fresh()->is_active,
         ]);
 

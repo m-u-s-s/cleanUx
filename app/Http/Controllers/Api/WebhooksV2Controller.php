@@ -3,10 +3,12 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Jobs\WebhooksV2\DeliverWebhookJob;
 use App\Models\WebhookDelivery;
 use App\Models\WebhookEndpoint;
 use App\Models\WebhookEvent;
 use App\Models\WebhookSubscription;
+use App\Services\WebhooksV2\WebhookDeliveryRunner;
 use App\Services\WebhooksV2\WebhookDispatcher;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -14,6 +16,7 @@ use Illuminate\Validation\Rule;
 
 /**
  * @group Webhooks v2 (Outbound B2B)
+ *
  * @authenticated
  */
 class WebhooksV2Controller extends Controller
@@ -92,12 +95,14 @@ class WebhooksV2Controller extends Controller
         }
 
         $endpoint->update(array_filter($data, fn ($v) => $v !== null));
+
         return response()->json(['ok' => true, 'endpoint' => $endpoint->fresh()]);
     }
 
     public function adminRotateSecret(WebhookEndpoint $endpoint): JsonResponse
     {
         $endpoint->update(['secret' => WebhookEndpoint::generateSecret()]);
+
         return response()->json([
             'ok' => true,
             'endpoint' => $endpoint->fresh()->makeVisible(['secret']),
@@ -107,6 +112,7 @@ class WebhooksV2Controller extends Controller
     public function adminDeleteEndpoint(WebhookEndpoint $endpoint): JsonResponse
     {
         $endpoint->delete();
+
         return response()->json(['ok' => true]);
     }
 
@@ -135,10 +141,11 @@ class WebhooksV2Controller extends Controller
                     'attempt' => 0,
                     'max_attempts' => $endpoint->max_attempts,
                 ]);
-                \App\Jobs\WebhooksV2\DeliverWebhookJob::dispatch($delivery->id)
+                DeliverWebhookJob::dispatch($delivery->id)
                     ->onQueue((string) config('webhooks_v2.queue', 'webhooks'));
             }
         }
+
         return response()->json(['ok' => true, 'event' => $event]);
     }
 
@@ -149,6 +156,7 @@ class WebhooksV2Controller extends Controller
             ->orderByDesc('id')
             ->limit((int) $request->integer('limit', 50))
             ->get();
+
         return response()->json(['data' => $rows]);
     }
 
@@ -161,18 +169,20 @@ class WebhooksV2Controller extends Controller
             ->orderByDesc('id')
             ->limit((int) $request->integer('limit', 50))
             ->get();
+
         return response()->json(['data' => $rows]);
     }
 
     public function adminReplayDelivery(WebhookDelivery $delivery): JsonResponse
     {
         $replayed = $this->dispatcher->replay($delivery);
+
         return response()->json(['ok' => true, 'delivery' => $replayed]);
     }
 
     public function adminDeadLetter(WebhookDelivery $delivery): JsonResponse
     {
-        app(\App\Services\WebhooksV2\WebhookDeliveryRunner::class)->markDeadLetter($delivery);
+        app(WebhookDeliveryRunner::class)->markDeadLetter($delivery);
 
         return response()->json(['ok' => true, 'status' => $delivery->fresh()->status]);
     }

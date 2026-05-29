@@ -7,7 +7,6 @@ use App\Models\ReferralReward;
 use App\Models\User;
 use App\Support\ActivityLogger;
 use Illuminate\Contracts\View\View;
-use Illuminate\Support\Facades\DB;
 use Livewire\Component;
 use Livewire\WithPagination;
 
@@ -18,6 +17,7 @@ class ReferralsCenter extends Component
     protected $paginationTheme = 'tailwind';
 
     public string $search = '';
+
     public string $filterStatus = '';
 
     public function flagFraud(int $referralId): void
@@ -79,7 +79,7 @@ class ReferralsCenter extends Component
             ->with(['referrer:id,name,email', 'referee:id,name,email'])
             ->when($this->filterStatus, fn ($q) => $q->where('status', $this->filterStatus))
             ->when($this->search, function ($q) {
-                $term = '%' . $this->search . '%';
+                $term = '%'.$this->search.'%';
                 $q->where(function ($inner) use ($term) {
                     $inner->where('referral_code', 'like', $term)
                         ->orWhere('referee_email', 'like', $term)

@@ -3,10 +3,12 @@
 namespace Tests\Feature\Api;
 
 use App\Models\User;
-use Illuminate\Support\Facades\RateLimiter;
-use Laravel\Sanctum\Sanctum;
-use Tests\TestCase;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Support\Facades\Route;
+use Laravel\Sanctum\Sanctum;
+use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
+use Tests\TestCase;
 
 /**
  * Sprint 0 — Task 2 : JSON exception handler unifié.
@@ -45,8 +47,8 @@ class ExceptionHandlerJsonTest extends TestCase
         $r = $this->postJson('/api/client/bookings', []);
 
         $r->assertStatus(422)
-          ->assertJson(['ok' => false, 'error_code' => 'validation_failed'])
-          ->assertJsonStructure(['ok', 'error_code', 'message', 'errors']);
+            ->assertJson(['ok' => false, 'error_code' => 'validation_failed'])
+            ->assertJsonStructure(['ok', 'error_code', 'message', 'errors']);
     }
 
     // ---------------------------------------------------------------------------
@@ -58,8 +60,8 @@ class ExceptionHandlerJsonTest extends TestCase
         $r = $this->getJson('/api/auth/me');
 
         $r->assertStatus(401)
-          ->assertJson(['ok' => false, 'error_code' => 'unauthenticated'])
-          ->assertJsonStructure(['ok', 'error_code', 'message']);
+            ->assertJson(['ok' => false, 'error_code' => 'unauthenticated'])
+            ->assertJsonStructure(['ok', 'error_code', 'message']);
     }
 
     // ---------------------------------------------------------------------------
@@ -74,7 +76,7 @@ class ExceptionHandlerJsonTest extends TestCase
         $r = $this->getJson('/api/client/bookings/99999999');
 
         $r->assertStatus(404)
-          ->assertJson(['ok' => false, 'error_code' => 'not_found']);
+            ->assertJson(['ok' => false, 'error_code' => 'not_found']);
     }
 
     // ---------------------------------------------------------------------------
@@ -97,7 +99,7 @@ class ExceptionHandlerJsonTest extends TestCase
         // Guard: confirm the limiter is actually full before the assertion request.
         // If Laravel ever changes its internal key format this assertion will fail with
         // a clear message instead of a silent false-positive.
-        $hashedKey = md5('auth' . '127.0.0.1');
+        $hashedKey = md5('auth'.'127.0.0.1');
         $this->assertTrue(
             RateLimiter::tooManyAttempts($hashedKey, 10),
             'Limiter was not actually full — throttle test setup is broken (hashing scheme may have changed)'
@@ -106,7 +108,7 @@ class ExceptionHandlerJsonTest extends TestCase
         $r = $this->postJson('/api/auth/login', ['email' => 'x@x.x', 'password' => 'x']);
 
         $r->assertStatus(429)
-          ->assertJson(['ok' => false, 'error_code' => 'rate_limited']);
+            ->assertJson(['ok' => false, 'error_code' => 'rate_limited']);
     }
 
     // ---------------------------------------------------------------------------
@@ -117,14 +119,14 @@ class ExceptionHandlerJsonTest extends TestCase
     {
         config(['app.debug' => false]);
 
-        \Illuminate\Support\Facades\Route::get('/api/test-boom', function () {
+        Route::get('/api/test-boom', function () {
             throw new \RuntimeException('boom');
         });
 
         $r = $this->getJson('/api/test-boom');
 
         $r->assertStatus(500)
-          ->assertJson(['ok' => false, 'error_code' => 'server_error']);
+            ->assertJson(['ok' => false, 'error_code' => 'server_error']);
 
         $this->assertStringNotContainsString('boom', $r->getContent());
         $this->assertArrayNotHasKey('debug', $r->json());
@@ -140,13 +142,13 @@ class ExceptionHandlerJsonTest extends TestCase
         Sanctum::actingAs($user);
 
         // Register a test route that throws AccessDeniedHttpException
-        \Illuminate\Support\Facades\Route::middleware('auth:sanctum')
-            ->get('/api/test-forbidden', fn () => throw new \Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException('No access'));
+        Route::middleware('auth:sanctum')
+            ->get('/api/test-forbidden', fn () => throw new AccessDeniedHttpException('No access'));
 
         $r = $this->getJson('/api/test-forbidden');
 
         $r->assertStatus(403)
-          ->assertJson(['ok' => false, 'error_code' => 'forbidden']);
+            ->assertJson(['ok' => false, 'error_code' => 'forbidden']);
     }
 
     // ---------------------------------------------------------------------------

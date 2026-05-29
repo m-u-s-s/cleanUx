@@ -9,9 +9,13 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class AnalyticsEvent extends Model
 {
     public const CATEGORY_LIFECYCLE = 'lifecycle';
+
     public const CATEGORY_FUNNEL = 'funnel';
+
     public const CATEGORY_ENGAGEMENT = 'engagement';
+
     public const CATEGORY_TRANSACTION = 'transaction';
+
     public const CATEGORY_ERROR = 'error';
 
     protected $fillable = [

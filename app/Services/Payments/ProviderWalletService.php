@@ -93,7 +93,7 @@ class ProviderWalletService
                 'source_id' => $booking->id,
                 'stripe_payment_intent_id' => $intent['id'] ?? $booking->stripe_payment_intent_id,
                 'idempotency_key' => $idempotencyKey,
-                'description' => 'Mission ' . ($booking->booking_reference ?? '#'.$booking->id),
+                'description' => 'Mission '.($booking->booking_reference ?? '#'.$booking->id),
                 'occurred_at' => now(),
             ]);
 
@@ -108,7 +108,7 @@ class ProviderWalletService
                     'source_type' => 'booking',
                     'source_id' => $booking->id,
                     'stripe_payment_intent_id' => $intent['id'] ?? $booking->stripe_payment_intent_id,
-                    'idempotency_key' => $idempotencyKey . ':platform_fee',
+                    'idempotency_key' => $idempotencyKey.':platform_fee',
                     'description' => 'Commission plateforme',
                     'occurred_at' => now(),
                 ]);

@@ -14,15 +14,15 @@ class MissionMediaFactory extends Factory
     public function definition(): array
     {
         return [
-            'mission_id'          => fn () => Mission::factory()->create()->id,
+            'mission_id' => fn () => Mission::factory()->create()->id,
             'uploaded_by_user_id' => fn () => User::factory()->create()->id,
-            'media_type'          => fake()->randomElement(['photo', 'video', 'document']),
-            'path'                => 'missions/' . fake()->uuid() . '.jpg',
-            'caption'             => null,
-            'taken_at'            => now(),
-            'lat'                 => fake()->latitude(49.5, 51.5),
-            'lng'                 => fake()->longitude(2.5, 6.5),
-            'meta'                => null,
+            'media_type' => fake()->randomElement(['photo', 'video', 'document']),
+            'path' => 'missions/'.fake()->uuid().'.jpg',
+            'caption' => null,
+            'taken_at' => now(),
+            'lat' => fake()->latitude(49.5, 51.5),
+            'lng' => fake()->longitude(2.5, 6.5),
+            'meta' => null,
         ];
     }
 }

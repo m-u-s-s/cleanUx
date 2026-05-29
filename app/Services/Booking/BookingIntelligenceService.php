@@ -2,9 +2,8 @@
 
 namespace App\Services\Booking;
 
-use App\Models\Booking;
-use App\Models\ServiceZone;
 use App\Models\ServiceCatalog;
+use App\Models\ServiceZone;
 
 class BookingIntelligenceService
 {

@@ -2,13 +2,13 @@
 
 namespace App\Support\Platform;
 
+use App\Models\Booking;
 use App\Models\Country;
 use App\Models\EmployeeZoneAssignment;
 use App\Models\Feedback;
 use App\Models\OrganizationAccount;
 use App\Models\OrganizationSite;
 use App\Models\PostalCode;
-use App\Models\Booking;
 use App\Models\ServiceCatalog;
 use App\Models\ServiceZone;
 use App\Models\User;

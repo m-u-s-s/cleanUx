@@ -28,17 +28,17 @@ return [
         // Bookings ouverts dans la zone dans la dernière heure
         // multiplier = 1 + max(0, (count - threshold) * weight)
         'lookback_minutes' => 60,
-        'threshold'        => 5,    // pas de surge demand sous 5 bookings
-        'weight'           => 0.05, // +5% par booking au-dessus du seuil
-        'cap'              => 1.5,  // demand seul ne dépasse pas 1.5
+        'threshold' => 5,    // pas de surge demand sous 5 bookings
+        'weight' => 0.05, // +5% par booking au-dessus du seuil
+        'cap' => 1.5,  // demand seul ne dépasse pas 1.5
     ],
 
     'supply' => [
         // Inverse : moins il y a de prestataires online, plus ça monte
         // multiplier = 1 + max(0, (threshold - count) * weight)
         'threshold' => 3,
-        'weight'    => 0.15, // +15% par "trou"
-        'cap'       => 1.6,
+        'weight' => 0.15, // +15% par "trou"
+        'cap' => 1.6,
     ],
 
     'temporal' => [

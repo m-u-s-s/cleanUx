@@ -5,17 +5,20 @@ namespace App\Livewire\Employe;
 use App\Models\Disponibilite;
 use App\Support\ActivityLogger;
 use Carbon\Carbon;
+use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
-use Illuminate\Contracts\View\View;
-use Livewire\Attributes\Layout;
 
 class DisponibilitesEmploye extends Component
 {
     public string $weekStart = '';
+
     public string $date = '';
+
     public string $heure_debut = '08:00';
+
     public string $heure_fin = '12:00';
+
     public ?int $editingId = null;
 
     public function mount(): void
@@ -71,6 +74,7 @@ class DisponibilitesEmploye extends Component
 
             if ($exists) {
                 $this->addError('heure_debut', 'Ce créneau chevauche déjà une disponibilité.');
+
                 return;
             }
 

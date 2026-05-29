@@ -5,6 +5,8 @@ namespace App\Services\Push;
 use App\Models\PushSubscription;
 use App\Models\User;
 use Illuminate\Support\Facades\Log;
+use Minishlink\WebPush\Subscription;
+use Minishlink\WebPush\WebPush;
 
 /**
  * Phase 8 — Envoi de notifications Web Push.
@@ -61,25 +63,27 @@ class WebPushSender
 
     protected function sendToSubscriptions($subscriptions, array $payload): array
     {
-        if (! class_exists(\Minishlink\WebPush\WebPush::class)) {
+        if (! class_exists(WebPush::class)) {
             Log::warning('WebPushSender: minishlink/web-push not installed. Run: composer require minishlink/web-push');
+
             return ['sent' => 0, 'failed' => 0, 'deactivated' => 0];
         }
 
         $vapid = $this->vapidConfig();
         if (! $vapid) {
             Log::warning('WebPushSender: VAPID keys not configured. Set VAPID_PUBLIC_KEY and VAPID_PRIVATE_KEY in .env');
+
             return ['sent' => 0, 'failed' => 0, 'deactivated' => 0];
         }
 
-        $webPush = new \Minishlink\WebPush\WebPush(['VAPID' => $vapid]);
+        $webPush = new WebPush(['VAPID' => $vapid]);
         $payloadJson = json_encode($this->normalizePayload($payload), JSON_UNESCAPED_UNICODE);
 
         // Map endpoint_hash → modèle pour traiter les rapports après flush()
         $subById = [];
 
         foreach ($subscriptions as $sub) {
-            $webPushSub = \Minishlink\WebPush\Subscription::create($sub->toWebPushArray());
+            $webPushSub = Subscription::create($sub->toWebPushArray());
             $webPush->queueNotification($webPushSub, $payloadJson);
             $subById[$sub->endpoint_hash] = $sub;
         }
@@ -110,8 +114,8 @@ class WebPushSender
 
                 Log::info('WebPush failed', [
                     'endpoint' => substr($endpoint, 0, 80),
-                    'status'   => $statusCode,
-                    'reason'   => $report->getReason(),
+                    'status' => $statusCode,
+                    'reason' => $report->getReason(),
                 ]);
             }
         }
@@ -130,8 +134,8 @@ class WebPushSender
         }
 
         return [
-            'subject'    => $subject,
-            'publicKey'  => $public,
+            'subject' => $subject,
+            'publicKey' => $public,
             'privateKey' => $private,
         ];
     }
@@ -140,11 +144,11 @@ class WebPushSender
     {
         return array_merge([
             'title' => 'CleanUx',
-            'body'  => '',
-            'icon'  => '/icons/icon-192.png',
+            'body' => '',
+            'icon' => '/icons/icon-192.png',
             'badge' => '/icons/badge-72.png',
-            'url'   => '/',
-            'tag'   => null,
+            'url' => '/',
+            'tag' => null,
             'requireInteraction' => false,
         ], $payload);
     }

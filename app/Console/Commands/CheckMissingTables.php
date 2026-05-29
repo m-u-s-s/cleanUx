@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Schema;
 class CheckMissingTables extends Command
 {
     protected $signature = 'db:check-missing-tables';
+
     protected $description = 'Vérifie les tables manquantes ou mal reliées dans la base de données';
 
     public function handle()
@@ -29,7 +30,7 @@ class CheckMissingTables extends Command
         $missing = [];
 
         foreach ($requiredTables as $table) {
-            if (!in_array($table, $existingTables)) {
+            if (! in_array($table, $existingTables)) {
                 $missing[] = $table;
             }
         }
@@ -39,7 +40,7 @@ class CheckMissingTables extends Command
         } else {
             $this->error('❌ Tables manquantes :');
             foreach ($missing as $table) {
-                $this->line('- ' . $table);
+                $this->line('- '.$table);
             }
         }
 

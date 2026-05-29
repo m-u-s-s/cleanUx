@@ -25,7 +25,7 @@ class ApiTokensCenter extends Component
             app(ApiTokenManager::class)->suspend($token, $reason);
             $this->dispatch('toast', 'Token suspendu.', 'success');
         } catch (\Throwable $e) {
-            $this->dispatch('toast', 'Erreur : ' . $e->getMessage(), 'error');
+            $this->dispatch('toast', 'Erreur : '.$e->getMessage(), 'error');
         }
     }
 

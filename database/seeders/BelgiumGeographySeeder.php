@@ -2,9 +2,8 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
 use Database\Seeders\Concerns\SeedsOnlyExistingColumns;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
 

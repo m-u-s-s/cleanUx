@@ -21,7 +21,7 @@ class FeatureFlagEdgeCasesTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->service = new FeatureFlagService();
+        $this->service = new FeatureFlagService;
     }
 
     // ─────────────────────────────────────────────────────────────────
@@ -57,8 +57,8 @@ class FeatureFlagEdgeCasesTest extends TestCase
     {
         config(['features' => ['stable_rollout' => ['percentage' => 50]]]);
 
-        $user   = User::factory()->create();
-        $first  = $this->service->isEnabled('stable_rollout', $user);
+        $user = User::factory()->create();
+        $first = $this->service->isEnabled('stable_rollout', $user);
 
         for ($i = 0; $i < 10; $i++) {
             $this->assertSame($first, $this->service->isEnabled('stable_rollout', $user),
@@ -71,13 +71,13 @@ class FeatureFlagEdgeCasesTest extends TestCase
         // Two flags at 50% with the same user may differ — just verify no exception is thrown
         config(['features' => [
             'flag_alpha' => ['percentage' => 50],
-            'flag_beta'  => ['percentage' => 50],
+            'flag_beta' => ['percentage' => 50],
         ]]);
 
         $user = User::factory()->create();
 
         $resultAlpha = $this->service->isEnabled('flag_alpha', $user);
-        $resultBeta  = $this->service->isEnabled('flag_beta', $user);
+        $resultBeta = $this->service->isEnabled('flag_beta', $user);
 
         $this->assertIsBool($resultAlpha);
         $this->assertIsBool($resultBeta);
@@ -88,10 +88,10 @@ class FeatureFlagEdgeCasesTest extends TestCase
         config(['features' => ['diverge_flag' => ['percentage' => 50]]]);
 
         // With enough users at 50%, we expect at least one enabled and one disabled.
-        $users   = User::factory()->count(20)->create();
+        $users = User::factory()->count(20)->create();
         $results = $users->map(fn ($u) => $this->service->isEnabled('diverge_flag', $u));
 
-        $this->assertContains(true,  $results->all(), 'Expected at least one enabled user at 50%');
+        $this->assertContains(true, $results->all(), 'Expected at least one enabled user at 50%');
         $this->assertContains(false, $results->all(), 'Expected at least one disabled user at 50%');
     }
 

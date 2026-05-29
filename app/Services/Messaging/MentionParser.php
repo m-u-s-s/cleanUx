@@ -13,8 +13,11 @@ use App\Models\User;
  * Stratégie :
  *   - On ne fait PAS d'autocomplete côté serveur (UI/JS s'en charge)
  *   - On accepte 2 syntaxes :
+ *
  *       @here   ou @channel  → mention spéciale
+ *
  *       @"prénom nom"        → guillemets pour gérer espaces
+ *
  *       @username            → format simple sans espace
  *   - On résout les usernames en cherchant les MEMBRES DU CHANNEL uniquement
  *     (pas un user random de la plateforme — sécurité)
@@ -29,8 +32,11 @@ class MentionParser
 
     /**
      * Pattern :
+     *
      *   @here / @channel
+     *
      *   @"first last"
+     *
      *   @firstname (jusqu'à espace ou ponctuation)
      */
     private const PATTERN = '/@(?:"([^"]+)"|([a-zA-Z0-9._\-]+))/u';
@@ -59,25 +65,26 @@ class MentionParser
 
         $candidates = $this->matchAll($content);
 
-        $resolvedUsers   = [];
+        $resolvedUsers = [];
         $resolvedSpecial = [];
 
         foreach ($candidates as $cand) {
-            $token       = $cand['token'];
+            $token = $cand['token'];
             $startOffset = $cand['offset'];
-            $length      = $cand['length'];
+            $length = $cand['length'];
 
             // 1) Mentions spéciales
             if (in_array($token, self::SPECIAL, true)) {
                 $resolvedSpecial[] = $token;
                 MessageMention::firstOrCreate([
-                    'message_id'        => $message->id,
+                    'message_id' => $message->id,
                     'mentioned_user_id' => null,
-                    'mention_type'      => $token === 'here' ? MessageMention::TYPE_HERE : MessageMention::TYPE_CHANNEL,
+                    'mention_type' => $token === 'here' ? MessageMention::TYPE_HERE : MessageMention::TYPE_CHANNEL,
                 ], [
                     'start_offset' => $startOffset,
-                    'length'       => $length,
+                    'length' => $length,
                 ]);
+
                 continue;
             }
 
@@ -93,12 +100,12 @@ class MentionParser
             }
 
             MessageMention::firstOrCreate([
-                'message_id'        => $message->id,
+                'message_id' => $message->id,
                 'mentioned_user_id' => $matched->id,
             ], [
                 'mention_type' => MessageMention::TYPE_USER,
                 'start_offset' => $startOffset,
-                'length'       => $length,
+                'length' => $length,
             ]);
 
             $resolvedUsers[] = $matched;
@@ -119,18 +126,18 @@ class MentionParser
         $results = [];
         foreach ($matches[0] as $i => $whole) {
             $rawMatch = $whole[0]; // full @xxx
-            $offset   = $whole[1];
+            $offset = $whole[1];
 
-            $quoted   = $matches[1][$i][0] ?? '';
-            $simple   = $matches[2][$i][0] ?? '';
-            $token    = trim($quoted !== '' ? $quoted : $simple);
+            $quoted = $matches[1][$i][0] ?? '';
+            $simple = $matches[2][$i][0] ?? '';
+            $token = trim($quoted !== '' ? $quoted : $simple);
 
             if ($token === '') {
                 continue;
             }
 
             $results[] = [
-                'token'  => mb_strtolower($token),
+                'token' => mb_strtolower($token),
                 'offset' => mb_strlen(substr($content, 0, $offset)),
                 'length' => mb_strlen($rawMatch),
             ];

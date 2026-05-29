@@ -88,6 +88,7 @@ class BookingSnapshotFactory
         if ($serviceIdentifier === '') {
             throw new \LogicException('Impossible de générer un pricing snapshot sans service_identifier.');
         }
+
         return [
             'service' => [
                 'id' => $catalog->id,

@@ -9,58 +9,95 @@ use App\Models\CountryServiceCatalogRule;
 use App\Models\MarketLaunchReadiness;
 use App\Models\ServiceCatalog;
 use App\Support\ActivityLogger;
-use Livewire\Component;
 use Illuminate\Contracts\View\View;
-use Livewire\Attributes\Layout;
+use Livewire\Component;
 
 class InternationalOperationsCenter extends Component
 {
     public string $search = '';
+
     public string $stageFilter = '';
+
     public ?int $selectedCountryId = null;
 
     public bool $booking_enabled = false;
+
     public bool $mission_enabled = false;
+
     public bool $billing_enabled = false;
+
     public bool $partner_network_enabled = false;
+
     public string $readiness_stage = 'draft';
+
     public string $currency_symbol = '€';
+
     public string $date_format = 'd/m/Y';
+
     public string $time_format = 'H:i';
+
     public string $address_format = 'line1_postal_city_country';
+
     public string $phone_format = 'international';
+
     public bool $requires_vat_number_for_companies = true;
+
     public string $default_distance_unit = 'km';
+
     public string $default_surface_unit = 'm2';
+
     public ?float $default_tax_rate = 21.0;
 
     public string $invoice_prefix = 'INV';
+
     public string $quote_prefix = 'QUO';
+
     public string $tax_label = 'TVA';
+
     public bool $prices_include_tax = false;
+
     public string $rounding_mode = 'half_up';
+
     public string $decimal_separator = ',';
+
     public string $thousands_separator = ' ';
+
     public int $payment_terms_days = 30;
 
     public bool $catalog_ready = false;
+
     public bool $booking_ready = false;
+
     public bool $mission_ready = false;
+
     public bool $billing_ready = false;
+
     public bool $partner_network_ready = false;
+
     public bool $compliance_ready = false;
+
     public bool $support_ready = false;
+
     public string $readiness_notes = '';
 
     public ?int $service_catalog_id = null;
+
     public bool $service_is_enabled = true;
+
     public bool $service_requires_manual_validation = false;
+
     public bool $service_requires_quote = false;
+
     public int $service_minimum_notice_hours = 24;
+
     public ?int $service_sla_response_hours = null;
+
     public ?int $service_sla_resolution_hours = null;
+
     public ?float $service_pricing_multiplier = 1.0;
+
     public ?int $service_default_team_id = null;
+
     public ?int $service_default_partner_id = null;
 
     protected $queryString = [
@@ -357,14 +394,14 @@ class InternationalOperationsCenter extends Component
                 $search = trim($this->search);
 
                 $query->where(function ($sub) use ($search) {
-                    $sub->where('name', 'like', '%' . $search . '%')
-                        ->orWhere('official_name', 'like', '%' . $search . '%')
-                        ->orWhere('iso_code', 'like', '%' . $search . '%')
-                        ->orWhere('currency_code', 'like', '%' . $search . '%');
+                    $sub->where('name', 'like', '%'.$search.'%')
+                        ->orWhere('official_name', 'like', '%'.$search.'%')
+                        ->orWhere('iso_code', 'like', '%'.$search.'%')
+                        ->orWhere('currency_code', 'like', '%'.$search.'%');
                 });
             })
             ->when($this->stageFilter !== '', function ($query) {
-                $query->whereHas('operationalSetting', fn($q) => $q->where('readiness_stage', $this->stageFilter));
+                $query->whereHas('operationalSetting', fn ($q) => $q->where('readiness_stage', $this->stageFilter));
             })
             ->orderByDesc('is_active')
             ->orderBy('name')

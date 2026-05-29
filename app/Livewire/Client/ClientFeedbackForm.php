@@ -15,15 +15,23 @@ class ClientFeedbackForm extends Component
     public Booking $rendezVous;
 
     public int $rating = 5;
+
     public ?int $punctuality = null;
+
     public ?int $quality = null;
+
     public ?int $communication = null;
+
     public ?int $value = null;
+
     public string $comment = '';
+
     public bool $is_public = true;
 
     public ?Feedback $existingFeedback = null;
+
     public bool $submitted = false;
+
     public ?string $globalError = null;
 
     public function mount(Booking $rendezVous): void

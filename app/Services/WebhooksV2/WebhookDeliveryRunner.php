@@ -29,6 +29,7 @@ class WebhookDeliveryRunner
                 'status' => WebhookDelivery::STATUS_CANCELLED,
                 'last_error' => 'event or endpoint missing',
             ]);
+
             return $delivery->fresh();
         }
         if (! $endpoint->isDeliverable()) {
@@ -36,13 +37,14 @@ class WebhookDeliveryRunner
                 'status' => WebhookDelivery::STATUS_CANCELLED,
                 'last_error' => 'endpoint inactive or suspended',
             ]);
+
             return $delivery->fresh();
         }
 
         $body = $this->buildBody($event, $delivery);
         $timestamp = time();
         $signature = $this->signer->sign($body, $endpoint->secret, $timestamp);
-        $idempotencyKey = $event->event_id . ':' . $endpoint->id;
+        $idempotencyKey = $event->event_id.':'.$endpoint->id;
         $sigHeaderName = (string) config('webhooks_v2.signature_header', 'X-CleanUx-Signature');
 
         $headers = array_merge(
@@ -113,6 +115,7 @@ class WebhookDeliveryRunner
                 'last_success_at' => now(),
                 'consecutive_failures' => 0,
             ]);
+
             return $delivery->fresh();
         }
 
@@ -123,7 +126,7 @@ class WebhookDeliveryRunner
             'status' => $isLast ? WebhookDelivery::STATUS_DEAD : WebhookDelivery::STATUS_FAILED,
             'last_response_status' => $status,
             'last_response_body' => $responseBody,
-            'last_error' => $errorMessage ?: ('http_' . ($status ?? 'unknown')),
+            'last_error' => $errorMessage ?: ('http_'.($status ?? 'unknown')),
             'last_latency_ms' => $latencyMs,
             'next_retry_at' => $isLast ? null : $this->computeNextRetryAt($nextAttempt),
         ]);
@@ -135,7 +138,7 @@ class WebhookDeliveryRunner
             'consecutive_failures' => $consecutive,
             'is_suspended' => $shouldSuspend ? true : $endpoint->is_suspended,
             'suspension_reason' => $shouldSuspend
-                ? 'auto-suspended after ' . $consecutive . ' consecutive failures'
+                ? 'auto-suspended after '.$consecutive.' consecutive failures'
                 : $endpoint->suspension_reason,
         ]);
 
@@ -153,20 +156,20 @@ class WebhookDeliveryRunner
         }
 
         $delivery->update([
-            'status'   => WebhookDelivery::STATUS_DEAD,
+            'status' => WebhookDelivery::STATUS_DEAD,
             'next_retry_at' => null,
         ]);
 
         $endpoint = WebhookEndpoint::query()->find($delivery->endpoint_id);
-        $event    = WebhookEvent::query()->find($delivery->event_id);
+        $event = WebhookEvent::query()->find($delivery->event_id);
 
         Log::warning('[webhooks_v2] delivery dead-lettered', [
-            'delivery_id'  => $delivery->id,
-            'endpoint_id'  => $delivery->endpoint_id,
+            'delivery_id' => $delivery->id,
+            'endpoint_id' => $delivery->endpoint_id,
             'endpoint_url' => $endpoint?->url,
-            'event_code'   => $event?->event_code,
-            'event_id'     => $event?->event_id,
-            'attempts'     => $delivery->attempt,
+            'event_code' => $event?->event_code,
+            'event_id' => $event?->event_id,
+            'attempts' => $delivery->attempt,
         ]);
     }
 
@@ -186,6 +189,7 @@ class WebhookDeliveryRunner
         $schedule = (array) config('webhooks_v2.backoff_schedule_seconds', [30, 120, 600, 1800, 7200, 21600]);
         $idx = max(0, min($attempt - 1, count($schedule) - 1));
         $delay = (int) ($schedule[$idx] ?? 1800);
+
         return now()->addSeconds($delay);
     }
 
@@ -195,6 +199,7 @@ class WebhookDeliveryRunner
             return null;
         }
         $max = (int) config('webhooks_v2.response_body_max_length', 4096);
+
         return mb_strlen($text) > $max ? mb_substr($text, 0, $max) : $text;
     }
 }

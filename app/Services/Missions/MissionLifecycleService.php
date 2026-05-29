@@ -3,14 +3,21 @@
 namespace App\Services\Missions;
 
 use App\Events\MissionStatusUpdated;
-use App\Models\Mission;
 use App\Models\Booking;
+use App\Models\Mission;
+use App\Models\ProviderPayout;
 use App\Models\User;
 use App\Notifications\EmployeArriveNotification;
 use App\Notifications\EmployeEnRouteNotification;
 use App\Notifications\MissionCompletedNotification;
 use App\Notifications\MissionStartedNotification;
+use App\Services\Notifications\SmsService;
+use App\Services\Payments\CommissionService;
+use App\Services\Payments\MissionPaymentService;
 use App\Support\Domain\MissionStatus;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Schema;
 use RuntimeException;
 
 class MissionLifecycleService
@@ -28,11 +35,11 @@ class MissionLifecycleService
         $mission->loadMissing('checklists.items');
 
         $missingRequiredItems = $mission->checklists
-            ->flatMap(fn($checklist) => $checklist->items)
-            ->filter(fn($item) => $item->is_required && $item->status !== 'done');
+            ->flatMap(fn ($checklist) => $checklist->items)
+            ->filter(fn ($item) => $item->is_required && $item->status !== 'done');
 
         if ($missingRequiredItems->isNotEmpty()) {
-            throw new \RuntimeException(
+            throw new RuntimeException(
                 'Impossible de terminer la mission : certaines tâches obligatoires ne sont pas cochées.'
             );
         }
@@ -62,7 +69,7 @@ class MissionLifecycleService
             $mission->rendezVous->client->notify(new EmployeEnRouteNotification($mission));
         }
 
-        app(\App\Services\Notifications\SmsService::class)->send(
+        app(SmsService::class)->send(
             $mission->rendezVous?->client?->phone ?? $mission->rendezVous?->telephone_client,
             'CleanUx : votre employé est en route. Vous pouvez suivre sa position depuis votre espace client.'
         );
@@ -97,16 +104,16 @@ class MissionLifecycleService
         ]);
 
         $generated = $this->verificationCodeService->createVerificationCode($mission, 'start');
-        session()->put('mission_start_code_' . $mission->id, $generated['code']);
-        app(\App\Services\Notifications\SmsService::class)->send(
+        session()->put('mission_start_code_'.$mission->id, $generated['code']);
+        app(SmsService::class)->send(
             $mission->rendezVous?->client?->phone ?? $mission->rendezVous?->telephone_client,
-            'CleanUx : votre employé est arrivé. Code de début : ' . $generated['code']
+            'CleanUx : votre employé est arrivé. Code de début : '.$generated['code']
         );
 
         $generatedEnd = $this->verificationCodeService->createVerificationCode($mission, 'end');
-        app(\App\Services\Notifications\SmsService::class)->send(
+        app(SmsService::class)->send(
             $mission->rendezVous?->client?->phone ?? $mission->rendezVous?->telephone_client,
-            'CleanUx : code de fin de mission : ' . $generatedEnd['code'] . '. Communiquez-le au prestataire en fin de service.'
+            'CleanUx : code de fin de mission : '.$generatedEnd['code'].'. Communiquez-le au prestataire en fin de service.'
         );
 
         $mission = $mission->fresh(['assignments', 'verificationCodes', 'rendezVous.client', 'leadEmployee']);
@@ -221,7 +228,7 @@ class MissionLifecycleService
 
     public function completeMission(Mission $mission, User $user, ?float $lat = null, ?float $lng = null): Mission
     {
-        $mission = app(\App\Services\Missions\MissionProfitService::class)
+        $mission = app(MissionProfitService::class)
             ->calculate($mission);
         $this->assignmentStatusService->assertAssignedToMission($mission, $user);
         $this->assertRequiredChecklistCompleted($mission);
@@ -236,14 +243,13 @@ class MissionLifecycleService
 
         event(new MissionStatusUpdated($mission));
 
-
         $this->assignmentStatusService->updateAssignmentStatus($mission, $user, 'completed', [
             'completed_at' => now(),
         ]);
 
         $mission = $mission->fresh(['assignments', 'verificationCodes', 'rendezVous.client', 'leadEmployee']);
         if ($mission->rendezVous) {
-            app(\App\Services\Payments\MissionPaymentService::class)
+            app(MissionPaymentService::class)
                 ->capture($mission->rendezVous);
         }
 
@@ -251,16 +257,16 @@ class MissionLifecycleService
         $mission = $mission->fresh(['assignments', 'rendezVous', 'leadProvider']);
         if ($mission->rendezVous && $mission->rendezVous->payment_status === 'captured') {
             try {
-                $commission = app(\App\Services\Payments\CommissionService::class)
+                $commission = app(CommissionService::class)
                     ->calculateForBooking($mission->rendezVous);
 
                 $updates = [
                     'payout_status' => 'processed',
                     'platform_fee_cents' => $commission['platform_fee_cents'],
                 ];
-                if (\Illuminate\Support\Facades\Schema::hasColumn('bookings', 'provider_payout_cents')) {
+                if (Schema::hasColumn('bookings', 'provider_payout_cents')) {
                     $updates['provider_payout_cents'] = $commission['provider_payout_cents'];
-                } elseif (\Illuminate\Support\Facades\Schema::hasColumn('bookings', 'provider_amount_cents')) {
+                } elseif (Schema::hasColumn('bookings', 'provider_amount_cents')) {
                     $updates['provider_amount_cents'] = $commission['provider_payout_cents'];
                 }
                 $mission->rendezVous->update($updates);
@@ -269,44 +275,62 @@ class MissionLifecycleService
                     ?? $mission->assignments()->where('assignment_status', 'accepted')->value('user_id');
 
                 if ($providerId) {
-                    \App\Models\ProviderPayout::create([
+                    ProviderPayout::create([
                         'provider_user_id' => $providerId,
-                        'amount'           => $commission['provider_payout_cents'] / 100,
-                        'currency'         => 'eur',
-                        'status'           => \App\Models\ProviderPayout::STATUS_PENDING,
-                        'provider'         => 'stripe_connect',
-                        'period_start'     => now()->toDateString(),
-                        'period_end'       => now()->toDateString(),
-                        'metadata'         => [
-                            'mission_id'               => $mission->id,
-                            'booking_id'               => $mission->rendezVous->id,
+                        'amount' => $commission['provider_payout_cents'] / 100,
+                        'currency' => 'eur',
+                        'status' => ProviderPayout::STATUS_PENDING,
+                        'provider' => 'stripe_connect',
+                        'period_start' => now()->toDateString(),
+                        'period_end' => now()->toDateString(),
+                        'metadata' => [
+                            'mission_id' => $mission->id,
+                            'booking_id' => $mission->rendezVous->id,
                             'stripe_payment_intent_id' => $mission->rendezVous->stripe_payment_intent_id,
-                            'commission_rate'          => $commission['commission_rate'],
-                            'platform_fee_cents'       => $commission['platform_fee_cents'],
-                            'auto_transferred'         => true,
+                            'commission_rate' => $commission['commission_rate'],
+                            'platform_fee_cents' => $commission['platform_fee_cents'],
+                            'auto_transferred' => true,
                         ],
                     ]);
 
                     // Credit provider wallet ledger (soft-insert, schema-defensive)
-                    if (\Illuminate\Support\Facades\Schema::hasTable('provider_wallet_transactions')) {
-                        $cols = \Illuminate\Support\Facades\DB::getSchemaBuilder()->getColumnListing('provider_wallet_transactions');
+                    if (Schema::hasTable('provider_wallet_transactions')) {
+                        $cols = DB::getSchemaBuilder()->getColumnListing('provider_wallet_transactions');
                         $row = ['created_at' => now(), 'updated_at' => now()];
-                        if (in_array('user_id', $cols))      $row['user_id']      = $providerId;
-                        if (in_array('provider_id', $cols))  $row['provider_id']  = $providerId;
-                        if (in_array('booking_id', $cols))   $row['booking_id']   = $mission->rendezVous->id;
-                        if (in_array('type', $cols))         $row['type']         = 'earning';
-                        if (in_array('amount', $cols))       $row['amount']       = $commission['provider_payout_cents'] / 100;
-                        if (in_array('amount_cents', $cols)) $row['amount_cents'] = $commission['provider_payout_cents'];
-                        if (in_array('currency', $cols))     $row['currency']     = 'eur';
-                        if (in_array('description', $cols))  $row['description']  = "Mission #{$mission->id} paiement capturé";
-                        if (in_array('status', $cols))       $row['status']       = 'available';
-                        \Illuminate\Support\Facades\DB::table('provider_wallet_transactions')->insert($row);
+                        if (in_array('user_id', $cols)) {
+                            $row['user_id'] = $providerId;
+                        }
+                        if (in_array('provider_id', $cols)) {
+                            $row['provider_id'] = $providerId;
+                        }
+                        if (in_array('booking_id', $cols)) {
+                            $row['booking_id'] = $mission->rendezVous->id;
+                        }
+                        if (in_array('type', $cols)) {
+                            $row['type'] = 'earning';
+                        }
+                        if (in_array('amount', $cols)) {
+                            $row['amount'] = $commission['provider_payout_cents'] / 100;
+                        }
+                        if (in_array('amount_cents', $cols)) {
+                            $row['amount_cents'] = $commission['provider_payout_cents'];
+                        }
+                        if (in_array('currency', $cols)) {
+                            $row['currency'] = 'eur';
+                        }
+                        if (in_array('description', $cols)) {
+                            $row['description'] = "Mission #{$mission->id} paiement capturé";
+                        }
+                        if (in_array('status', $cols)) {
+                            $row['status'] = 'available';
+                        }
+                        DB::table('provider_wallet_transactions')->insert($row);
                     }
                 }
             } catch (\Throwable $e) {
-                \Illuminate\Support\Facades\Log::warning('[payout] Ledger creation failed (non-blocking)', [
+                Log::warning('[payout] Ledger creation failed (non-blocking)', [
                     'mission_id' => $mission->id,
-                    'error'      => $e->getMessage(),
+                    'error' => $e->getMessage(),
                 ]);
             }
         }
@@ -314,7 +338,7 @@ class MissionLifecycleService
         if ($mission->rendezVous?->client) {
             $mission->rendezVous->client->notify(new MissionCompletedNotification($mission));
         }
-        app(\App\Services\Notifications\SmsService::class)->send(
+        app(SmsService::class)->send(
             $mission->rendezVous?->client?->phone ?? $mission->rendezVous?->telephone_client,
             'CleanUx : votre mission est terminée. Merci de laisser votre avis depuis votre espace client.'
         );
@@ -330,7 +354,7 @@ class MissionLifecycleService
             'La mission a été clôturée avec validation client.'
         );
 
-        $reportPath = app(\App\Services\Missions\MissionReportService::class)
+        $reportPath = app(MissionReportService::class)
             ->generate($mission);
 
         $mission->update([

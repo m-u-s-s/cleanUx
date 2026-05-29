@@ -29,7 +29,6 @@ return new class extends Migration
             $table->foreignId('current_team_id')->nullable();
             $table->string('profile_photo_path', 2048)->nullable();
 
-
             $table->index('role');
             $table->index('plan_type');
             $table->index('plan_status');

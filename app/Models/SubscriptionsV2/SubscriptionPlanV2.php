@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class SubscriptionPlanV2 extends Model
 {
     use HasFactory;
+
     protected $table = 'subscription_plans_v2';
 
     protected $fillable = [
@@ -44,11 +45,12 @@ class SubscriptionPlanV2 extends Model
     public function periodDays(): int
     {
         $map = (array) config('subscriptions_v2.periods', []);
+
         return (int) ($map[$this->billing_period] ?? 30);
     }
 
     public function priceFormatted(): string
     {
-        return number_format($this->price_cents / 100, 2, ',', ' ') . ' ' . $this->currency;
+        return number_format($this->price_cents / 100, 2, ',', ' ').' '.$this->currency;
     }
 }

@@ -37,7 +37,7 @@ class PushChannelTest extends TestCase
             'last_used_at' => now(),
         ]);
 
-        $notification = new TestPushNotification();
+        $notification = new TestPushNotification;
 
         $channel = app(PushChannel::class);
         $results = $channel->send($user, $notification);
@@ -51,10 +51,10 @@ class PushChannelTest extends TestCase
 
     public function test_channel_returns_empty_when_notifiable_is_not_user(): void
     {
-        $notification = new TestPushNotification();
+        $notification = new TestPushNotification;
 
         $channel = app(PushChannel::class);
-        $result = $channel->send(new \stdClass(), $notification);
+        $result = $channel->send(new \stdClass, $notification);
 
         $this->assertSame([], $result);
     }
@@ -62,7 +62,8 @@ class PushChannelTest extends TestCase
     public function test_channel_returns_empty_when_no_to_push_method(): void
     {
         $user = User::factory()->client()->create();
-        $notification = new class extends Notification {
+        $notification = new class extends Notification
+        {
             // No toPush method
         };
 
@@ -92,6 +93,6 @@ class TestPushNotification extends Notification
 
     public function pushIdempotencyKey($notifiable): ?string
     {
-        return 'booking-confirmed:42:' . $notifiable->id;
+        return 'booking-confirmed:42:'.$notifiable->id;
     }
 }

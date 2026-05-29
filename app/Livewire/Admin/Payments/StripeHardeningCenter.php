@@ -20,9 +20,13 @@ class StripeHardeningCenter extends Component
     protected $paginationTheme = 'tailwind';
 
     public string $tab = 'webhooks';
+
     public string $statusFilter = '';
+
     public ?string $reconcileFromDate = null;
+
     public ?string $reconcileToDate = null;
+
     public string $reconcileScope = 'all';
 
     public function mount(): void
@@ -37,6 +41,7 @@ class StripeHardeningCenter extends Component
 
         if (! $event->canRetry() && $event->status !== StripeWebhookEvent::STATUS_DEAD_LETTER) {
             $this->dispatch('toast', 'Cet event ne peut pas être relancé.', 'error');
+
             return;
         }
 
@@ -85,12 +90,12 @@ class StripeHardeningCenter extends Component
             );
 
             $this->dispatch('toast', sprintf(
-                "Réconciliation terminée : %d items, %d écart(s).",
+                'Réconciliation terminée : %d items, %d écart(s).',
                 $run->items_checked,
                 $run->mismatches_found,
             ), $run->mismatches_found > 0 ? 'warning' : 'success');
         } catch (\Throwable $e) {
-            $this->dispatch('toast', 'Erreur réconciliation : ' . $e->getMessage(), 'error');
+            $this->dispatch('toast', 'Erreur réconciliation : '.$e->getMessage(), 'error');
         }
     }
 

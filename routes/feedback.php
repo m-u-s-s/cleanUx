@@ -1,7 +1,7 @@
 <?php
 
-use App\Models\Feedback;
 use App\Models\Booking;
+use App\Models\Feedback;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 

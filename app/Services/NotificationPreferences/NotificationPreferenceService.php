@@ -52,7 +52,7 @@ class NotificationPreferenceService
     /**
      * Returns full matrix for a user, initialising missing pairs from defaults.
      *
-     * @return array<string, array<string, bool>>  [channel][category] => bool
+     * @return array<string, array<string, bool>> [channel][category] => bool
      */
     public function getPreferences(User $user): array
     {
@@ -62,7 +62,7 @@ class NotificationPreferenceService
         $existing = NotificationPreference::query()
             ->forUser($user->id)
             ->get()
-            ->keyBy(fn ($p) => $p->channel . ':' . $p->category);
+            ->keyBy(fn ($p) => $p->channel.':'.$p->category);
 
         $matrix = [];
         foreach ($channels as $ch) {
@@ -73,6 +73,7 @@ class NotificationPreferenceService
                     : $this->defaultFor($ch, $cat);
             }
         }
+
         return $matrix;
     }
 
@@ -163,7 +164,7 @@ class NotificationPreferenceService
     /**
      * Bulk update preferences.
      *
-     * @param array<int, array{channel: string, category: string, is_allowed: bool}> $prefs
+     * @param  array<int, array{channel: string, category: string, is_allowed: bool}>  $prefs
      */
     public function setMany(User $user, array $prefs, string $source = NotificationPreference::SOURCE_USER, ?Request $request = null): array
     {
@@ -180,6 +181,7 @@ class NotificationPreferenceService
                 continue;
             }
         }
+
         return $results;
     }
 
@@ -192,7 +194,7 @@ class NotificationPreferenceService
         $existing = NotificationPreference::query()
             ->forUser($user->id)
             ->get()
-            ->mapWithKeys(fn ($p) => [$p->channel . ':' . $p->category => true])
+            ->mapWithKeys(fn ($p) => [$p->channel.':'.$p->category => true])
             ->all();
 
         $inserted = 0;
@@ -213,6 +215,7 @@ class NotificationPreferenceService
                 $inserted++;
             }
         }
+
         return $inserted;
     }
 
@@ -273,6 +276,7 @@ class NotificationPreferenceService
     public function defaultFor(string $channel, string $category): bool
     {
         $matrix = (array) Config::get('notification_preferences.default_matrix', []);
+
         return (bool) ($matrix[$channel][$category] ?? false);
     }
 
@@ -284,6 +288,7 @@ class NotificationPreferenceService
                 return true;
             }
         }
+
         return false;
     }
 

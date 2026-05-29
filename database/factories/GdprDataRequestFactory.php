@@ -16,7 +16,7 @@ class GdprDataRequestFactory extends Factory
             'user_id' => User::factory(),
             'type' => fake()->randomElement(['export', 'erasure']),
             'status' => 'pending',
-            'reference' => 'GDPR-' . fake()->unique()->numerify('######'),
+            'reference' => 'GDPR-'.fake()->unique()->numerify('######'),
             'reason' => fake()->optional()->sentence(),
             'export_format' => 'json',
             'requested_at' => now(),

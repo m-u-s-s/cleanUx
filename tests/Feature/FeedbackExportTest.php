@@ -2,10 +2,11 @@
 
 namespace Tests\Feature;
 
+use App\Models\Booking;
+use App\Models\Feedback;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
-use App\Models\{User, RendezVous, Feedback, Booking};
-
 
 class FeedbackExportTest extends TestCase
 {

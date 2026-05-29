@@ -10,17 +10,27 @@ use Livewire\Component;
 class CountryOperationsCenter extends Component
 {
     public string $search = '';
+
     public string $statusFilter = '';
+
     public ?int $selectedCountryId = null;
 
     public string $iso_code = '';
+
     public string $iso3_code = '';
+
     public string $name = '';
+
     public string $official_name = '';
+
     public string $default_locale = 'fr_BE';
+
     public string $currency_code = 'EUR';
+
     public string $phone_code = '';
+
     public string $timezone = 'Europe/Brussels';
+
     public bool $is_active = true;
 
     protected $queryString = [

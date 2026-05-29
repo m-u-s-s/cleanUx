@@ -30,14 +30,14 @@ class PricingZoneState extends Model
     ];
 
     protected $casts = [
-        'multiplier'             => 'decimal:2',
-        'demand_factor'          => 'decimal:2',
-        'supply_factor'          => 'decimal:2',
-        'temporal_factor'        => 'decimal:2',
-        'open_bookings_count'    => 'integer',
+        'multiplier' => 'decimal:2',
+        'demand_factor' => 'decimal:2',
+        'supply_factor' => 'decimal:2',
+        'temporal_factor' => 'decimal:2',
+        'open_bookings_count' => 'integer',
         'online_providers_count' => 'integer',
-        'expires_at'             => 'datetime',
-        'metadata'               => 'array',
+        'expires_at' => 'datetime',
+        'metadata' => 'array',
     ];
 
     public function serviceZone(): BelongsTo

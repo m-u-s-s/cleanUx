@@ -4,6 +4,7 @@ namespace App\Livewire\ProviderCompany;
 
 use App\Events\MissionStatusUpdated;
 use App\Models\Mission;
+use App\Models\MissionAssignment;
 use App\Models\OrganizationMember;
 use App\Services\PermissionService;
 use Illuminate\Support\Facades\Auth;
@@ -12,10 +13,13 @@ use Livewire\Component;
 
 class DispatchCenter extends Component
 {
-    public string $filterDate   = '';
+    public string $filterDate = '';
+
     public string $filterStatus = '';
-    public ?int   $assigningId  = null;
-    public ?int   $assigneeId   = null;
+
+    public ?int $assigningId = null;
+
+    public ?int $assigneeId = null;
 
     public function mount(): void
     {
@@ -33,11 +37,9 @@ class DispatchCenter extends Component
         $orgId = Auth::user()->current_organization_id;
 
         return Mission::where('organization_account_id', $orgId)
-            ->when($this->filterDate, fn ($q) =>
-                $q->whereDate('scheduled_at', $this->filterDate)
+            ->when($this->filterDate, fn ($q) => $q->whereDate('scheduled_at', $this->filterDate)
             )
-            ->when($this->filterStatus, fn ($q) =>
-                $q->where('status', $this->filterStatus)
+            ->when($this->filterStatus, fn ($q) => $q->where('status', $this->filterStatus)
             )
             ->with([
                 'assignments.provider:id,name,profile_photo_path',
@@ -61,7 +63,7 @@ class DispatchCenter extends Component
     public function startAssign(int $missionId): void
     {
         $this->assigningId = $missionId;
-        $this->assigneeId  = null;
+        $this->assigneeId = null;
     }
 
     public function confirmAssign(): void
@@ -70,7 +72,7 @@ class DispatchCenter extends Component
             return;
         }
 
-        $user    = Auth::user();
+        $user = Auth::user();
         $mission = Mission::where('organization_account_id', $user->current_organization_id)
             ->findOrFail($this->assigningId);
 
@@ -79,7 +81,7 @@ class DispatchCenter extends Component
             ->firstOrFail();
 
         // Créer l'assignment
-        \App\Models\MissionAssignment::updateOrCreate(
+        MissionAssignment::updateOrCreate(
             ['mission_id' => $mission->id, 'provider_user_id' => $worker->user_id],
             ['assigned_by' => $user->id, 'assigned_at' => now(), 'role' => 'primary']
         );
@@ -90,13 +92,13 @@ class DispatchCenter extends Component
         broadcast(new MissionStatusUpdated($mission));
 
         $this->assigningId = null;
-        $this->assigneeId  = null;
+        $this->assigneeId = null;
     }
 
     public function cancelAssign(): void
     {
         $this->assigningId = null;
-        $this->assigneeId  = null;
+        $this->assigneeId = null;
     }
 
     #[On('echo-private:mission.{assigningId},MissionStatusUpdated')]
@@ -108,7 +110,7 @@ class DispatchCenter extends Component
     public function render()
     {
         return view('livewire.provider-company.dispatch-center', [
-            'missions'         => $this->missionsProperty,
+            'missions' => $this->missionsProperty,
             'availableWorkers' => $this->availableWorkersProperty,
         ])->layout('layouts.provider-company');
     }

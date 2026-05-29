@@ -3,7 +3,10 @@
 namespace App\Services\Finance\EInvoicing;
 
 use App\Models\FinanceInvoice;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 
 /**
  * Builder PDF/A-3 + XML CII embedded (norme Factur-X / ZUGFeRD).
@@ -49,7 +52,7 @@ class FacturXBuilder
     </ram:GuidelineSpecifiedDocumentContextParameter>
   </rsm:ExchangedDocumentContext>
   <rsm:ExchangedDocument>
-    <ram:ID>{$this->esc($invoice->reference ?? 'INV-' . $invoice->id)}</ram:ID>
+    <ram:ID>{$this->esc($invoice->reference ?? 'INV-'.$invoice->id)}</ram:ID>
     <ram:TypeCode>380</ram:TypeCode>
     <ram:IssueDateTime>
       <udt:DateTimeString format="102">{$issued->format('Ymd')}</udt:DateTimeString>
@@ -103,23 +106,23 @@ XML;
 
         // Stocke XML séparé (en attendant embed PDF/A-3 lib)
         $disk = config('accounting_v2.export_disk', 'local');
-        $path = ('exports/einvoicing/' . now()->format('Y/m/d') . '/' . $invoice->id);
-        \Illuminate\Support\Facades\Storage::disk($disk)->put($path . '.xml', $xml);
+        $path = ('exports/einvoicing/'.now()->format('Y/m/d').'/'.$invoice->id);
+        Storage::disk($disk)->put($path.'.xml', $xml);
 
         // PDF visuel humain via DomPDF (déjà installé)
-        if (class_exists(\Barryvdh\DomPDF\Facade\Pdf::class)) {
+        if (class_exists(Pdf::class)) {
             try {
-                $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('emails.invoice', ['invoice' => $invoice]);
+                $pdf = Pdf::loadView('emails.invoice', ['invoice' => $invoice]);
                 $pdfContent = $pdf->output();
-                \Illuminate\Support\Facades\Storage::disk($disk)->put($path . '.pdf', $pdfContent);
+                Storage::disk($disk)->put($path.'.pdf', $pdfContent);
             } catch (\Throwable $e) {
-                \Illuminate\Support\Facades\Log::warning('[factur_x] PDF gen failed', ['error' => $e->getMessage()]);
+                Log::warning('[factur_x] PDF gen failed', ['error' => $e->getMessage()]);
             }
         }
 
         return [
-            'xml_path' => $path . '.xml',
-            'pdf_path' => $path . '.pdf',
+            'xml_path' => $path.'.xml',
+            'pdf_path' => $path.'.pdf',
             'disk' => $disk,
             'standard' => 'Factur-X 1.0.06 MINIMUM',
             'note' => 'XML CII et PDF générés séparément. Pour PDF/A-3 avec XML embedded, installer atgp/factur-x.',

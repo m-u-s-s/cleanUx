@@ -18,8 +18,11 @@ class PushCenter extends Component
     protected $paginationTheme = 'tailwind';
 
     public string $filterStatus = '';
+
     public string $filterProvider = '';
+
     public string $filterCategory = '';
+
     public string $search = '';
 
     public function retry(int $notificationId): void
@@ -31,11 +34,13 @@ class PushCenter extends Component
             PushNotification::STATUS_RATE_LIMITED,
         ], true)) {
             $this->dispatch('toast', 'Seuls les push failed/rate_limited peuvent être retentés.', 'error');
+
             return;
         }
 
         if (! $notif->deviceToken || ! $notif->deviceToken->isActive()) {
             $this->dispatch('toast', 'Le device token est invalide.', 'error');
+
             return;
         }
 
@@ -46,7 +51,7 @@ class PushCenter extends Component
                 body: $notif->body,
                 data: $notif->data ?? [],
                 category: $notif->category ?? PushNotification::CATEGORY_TRANSACTIONAL,
-                idempotencyKey: 'retry:' . $notif->id . ':' . now()->timestamp,
+                idempotencyKey: 'retry:'.$notif->id.':'.now()->timestamp,
                 locale: $notif->locale,
             );
 
@@ -56,7 +61,7 @@ class PushCenter extends Component
 
             $this->dispatch('toast', 'Push re-envoyé.', 'success');
         } catch (\Throwable $e) {
-            $this->dispatch('toast', 'Erreur retry : ' . $e->getMessage(), 'error');
+            $this->dispatch('toast', 'Erreur retry : '.$e->getMessage(), 'error');
         }
     }
 
@@ -83,7 +88,7 @@ class PushCenter extends Component
             ->when($this->filterProvider, fn ($q) => $q->where('provider', $this->filterProvider))
             ->when($this->filterCategory, fn ($q) => $q->where('category', $this->filterCategory))
             ->when($this->search, function ($q) {
-                $term = '%' . $this->search . '%';
+                $term = '%'.$this->search.'%';
                 $q->where(function ($inner) use ($term) {
                     $inner->where('title', 'like', $term)
                         ->orWhere('body', 'like', $term)

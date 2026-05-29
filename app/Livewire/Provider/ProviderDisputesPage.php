@@ -18,7 +18,9 @@ class ProviderDisputesPage extends Component
     protected $paginationTheme = 'tailwind';
 
     public ?int $selectedId = null;
+
     public string $responseBody = '';
+
     public string $filterStatus = '';
 
     public function select(int $id): void
@@ -29,6 +31,7 @@ class ProviderDisputesPage extends Component
 
         if (! $case) {
             $this->dispatch('toast', 'Litige introuvable.', 'error');
+
             return;
         }
 

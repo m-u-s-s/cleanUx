@@ -11,7 +11,5 @@ class RatingReported
     use Dispatchable;
     use SerializesModels;
 
-    public function __construct(public RatingReport $report)
-    {
-    }
+    public function __construct(public RatingReport $report) {}
 }

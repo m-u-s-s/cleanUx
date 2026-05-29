@@ -12,7 +12,7 @@ class CountryConfigServiceTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->service = new CountryConfigService();
+        $this->service = new CountryConfigService;
     }
 
     public function test_get_returns_correct_config_for_belgium(): void

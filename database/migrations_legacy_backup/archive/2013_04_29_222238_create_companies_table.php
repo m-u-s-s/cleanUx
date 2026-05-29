@@ -39,7 +39,7 @@ return new class extends Migration
             $table->string('stripe_connect_status')->default('not_connected');
 
             // 🔹 Business model
-            $table->string('type')->default('client'); 
+            $table->string('type')->default('client');
             // client / prestataire / partenaire
 
             // 🔹 Paramètres CleanUx

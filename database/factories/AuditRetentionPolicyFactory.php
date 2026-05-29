@@ -13,7 +13,7 @@ class AuditRetentionPolicyFactory extends Factory
     public function definition(): array
     {
         return [
-            'code' => 'ret_' . Str::lower(Str::random(8)),
+            'code' => 'ret_'.Str::lower(Str::random(8)),
             'name' => fake()->words(3, true),
             'domain' => fake()->randomElement(['booking', 'payment', 'auth', 'admin']),
             'retention_days' => fake()->randomElement([30, 90, 180, 365]),

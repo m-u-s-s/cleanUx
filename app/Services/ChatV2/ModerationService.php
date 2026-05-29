@@ -20,7 +20,7 @@ class ModerationService
             if ($toxic !== null) {
                 return new ModerationResult(
                     status: 'blocked',
-                    reason: 'toxic_word:' . $toxic,
+                    reason: 'toxic_word:'.$toxic,
                     redactedBody: $body,
                     originalHash: hash('sha256', $body),
                 );
@@ -33,7 +33,7 @@ class ModerationService
         if (! empty($cfg['pii_redaction_enabled'])) {
             foreach ((array) ($cfg['pii_patterns'] ?? []) as $type => $pattern) {
                 $count = 0;
-                $newBody = @preg_replace($pattern, '[REDACTED:' . $type . ']', $redacted, -1, $count);
+                $newBody = @preg_replace($pattern, '[REDACTED:'.$type.']', $redacted, -1, $count);
                 if ($newBody !== null && $count > 0) {
                     $piiFlags[] = $type;
                     $redacted = $newBody;
@@ -44,7 +44,7 @@ class ModerationService
         if (! empty($piiFlags)) {
             return new ModerationResult(
                 status: 'flagged',
-                reason: 'pii_redacted:' . implode(',', $piiFlags),
+                reason: 'pii_redacted:'.implode(',', $piiFlags),
                 redactedBody: $redacted,
                 originalHash: hash('sha256', $body),
             );
@@ -69,10 +69,11 @@ class ModerationService
             if ($lw === '') {
                 continue;
             }
-            if (preg_match('/\b' . preg_quote($lw, '/') . '\b/u', $lower)) {
+            if (preg_match('/\b'.preg_quote($lw, '/').'\b/u', $lower)) {
                 return $lw;
             }
         }
+
         return null;
     }
 }

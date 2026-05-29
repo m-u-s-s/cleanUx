@@ -45,8 +45,8 @@ class PrivateChannelAuthorizationTest extends TestCase
 
         // Simuler la requête d'auth broadcasting
         $response = $this->postJson('/broadcasting/auth', [
-            'socket_id'    => '12345.67890',
-            'channel_name' => 'private-channel.' . $channel->id,
+            'socket_id' => '12345.67890',
+            'channel_name' => 'private-channel.'.$channel->id,
         ]);
 
         $response->assertStatus(200);
@@ -71,8 +71,8 @@ class PrivateChannelAuthorizationTest extends TestCase
         $this->actingAs($intruder);
 
         $response = $this->postJson('/broadcasting/auth', [
-            'socket_id'    => '12345.67890',
-            'channel_name' => 'private-channel.' . $channel->id,
+            'socket_id' => '12345.67890',
+            'channel_name' => 'private-channel.'.$channel->id,
         ]);
 
         $response->assertStatus(403);
@@ -85,8 +85,8 @@ class PrivateChannelAuthorizationTest extends TestCase
         $this->actingAs($user);
 
         $response = $this->postJson('/broadcasting/auth', [
-            'socket_id'    => '12345.67890',
-            'channel_name' => 'private-user.' . $user->id,
+            'socket_id' => '12345.67890',
+            'channel_name' => 'private-user.'.$user->id,
         ]);
 
         $response->assertStatus(200);
@@ -100,8 +100,8 @@ class PrivateChannelAuthorizationTest extends TestCase
         $this->actingAs($userA);
 
         $response = $this->postJson('/broadcasting/auth', [
-            'socket_id'    => '12345.67890',
-            'channel_name' => 'private-user.' . $userB->id,
+            'socket_id' => '12345.67890',
+            'channel_name' => 'private-user.'.$userB->id,
         ]);
 
         $response->assertStatus(403);
@@ -115,8 +115,8 @@ class PrivateChannelAuthorizationTest extends TestCase
         $this->actingAs($user);
 
         $response = $this->postJson('/broadcasting/auth', [
-            'socket_id'    => '12345.67890',
-            'channel_name' => 'presence-presence-org.' . $org->id,
+            'socket_id' => '12345.67890',
+            'channel_name' => 'presence-presence-org.'.$org->id,
         ]);
 
         // Une presence channel renvoie 200 + les meta de l'utilisateur
@@ -135,8 +135,8 @@ class PrivateChannelAuthorizationTest extends TestCase
         $this->actingAs($user);
 
         $response = $this->postJson('/broadcasting/auth', [
-            'socket_id'    => '12345.67890',
-            'channel_name' => 'presence-presence-org.' . $orgB->id,
+            'socket_id' => '12345.67890',
+            'channel_name' => 'presence-presence-org.'.$orgB->id,
         ]);
 
         $response->assertStatus(403);

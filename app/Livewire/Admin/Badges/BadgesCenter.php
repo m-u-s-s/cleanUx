@@ -15,17 +15,27 @@ class BadgesCenter extends Component
     protected $paginationTheme = 'tailwind';
 
     public string $tab = 'catalog';
+
     public string $search = '';
 
     public bool $showForm = false;
+
     public ?int $editBadgeId = null;
+
     public string $form_code = '';
+
     public string $form_name = '';
+
     public string $form_description = '';
+
     public string $form_icon = '🏆';
+
     public string $form_tier = 'bronze';
+
     public string $form_criterion_type = 'missions_count';
+
     public int $form_threshold = 10;
+
     public bool $form_is_active = true;
 
     public function setTab(string $tab): void
@@ -37,7 +47,7 @@ class BadgesCenter extends Component
     public function openCreate(): void
     {
         $this->reset(['editBadgeId']);
-        $this->form_code = 'badge_' . substr(uniqid(), -6);
+        $this->form_code = 'badge_'.substr(uniqid(), -6);
         $this->form_name = '';
         $this->form_description = '';
         $this->form_icon = '🏆';
@@ -112,7 +122,7 @@ class BadgesCenter extends Component
     {
         $badges = ProviderBadge::query()
             ->when($this->search, function ($q) {
-                $term = '%' . $this->search . '%';
+                $term = '%'.$this->search.'%';
                 $q->where(function ($w) use ($term) {
                     $w->where('name', 'like', $term)->orWhere('code', 'like', $term);
                 });

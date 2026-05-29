@@ -54,7 +54,7 @@ return new class extends Migration
             Schema::table('bookings', function (Blueprint $table) {
                 $table->index('stripe_payment_intent_id', 'bookings_stripe_payment_intent_id_index');
             });
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             // index already exists — ignore
         }
     }
@@ -64,7 +64,7 @@ return new class extends Migration
         Schema::table('bookings', function (Blueprint $table) {
             try {
                 $table->dropIndex('bookings_stripe_payment_intent_id_index');
-            } catch (\Throwable $e) {
+            } catch (Throwable $e) {
                 // index missing — ignore
             }
 

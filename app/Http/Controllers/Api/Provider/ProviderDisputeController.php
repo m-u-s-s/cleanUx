@@ -11,13 +11,12 @@ use Illuminate\Http\Request;
 
 /**
  * @group Provider — Disputes
+ *
  * @authenticated
  */
 class ProviderDisputeController extends Controller
 {
-    public function __construct(protected DisputeService $service)
-    {
-    }
+    public function __construct(protected DisputeService $service) {}
 
     public function index(Request $request): JsonResponse
     {

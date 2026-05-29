@@ -17,6 +17,7 @@ class ChatCenter extends Component
     protected $paginationTheme = 'tailwind';
 
     public string $tab = 'threads';   // threads | flagged | blocked
+
     public string $filterStatus = '';
 
     public function moderateDelete(int $messageId): void

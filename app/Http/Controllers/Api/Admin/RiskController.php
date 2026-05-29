@@ -11,6 +11,7 @@ use Illuminate\Http\Request;
 
 /**
  * @group Admin — Risk Scoring
+ *
  * @authenticated
  *
  * Admin endpoints pour Risk v2 :
@@ -20,9 +21,7 @@ use Illuminate\Http\Request;
  */
 class RiskController extends Controller
 {
-    public function __construct(protected RiskScoringEngine $engine)
-    {
-    }
+    public function __construct(protected RiskScoringEngine $engine) {}
 
     public function evaluations(Request $request): JsonResponse
     {

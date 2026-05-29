@@ -10,14 +10,21 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class MarketingCampaign extends Model
 {
     public const TYPE_SINGLE_BLAST = 'single_blast';
+
     public const TYPE_DRIP_SEQUENCE = 'drip_sequence';
+
     public const TYPE_TRIGGERED = 'triggered';
 
     public const STATUS_DRAFT = 'draft';
+
     public const STATUS_SCHEDULED = 'scheduled';
+
     public const STATUS_RUNNING = 'running';
+
     public const STATUS_PAUSED = 'paused';
+
     public const STATUS_COMPLETED = 'completed';
+
     public const STATUS_CANCELLED = 'cancelled';
 
     protected $fillable = [

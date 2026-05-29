@@ -13,6 +13,7 @@ use Illuminate\Validation\ValidationException;
 
 /**
  * @group Tips
+ *
  * @authenticated
  */
 class TipController extends Controller
@@ -46,6 +47,7 @@ class TipController extends Controller
      * @bodyParam preset_label string Optional label for the chosen preset (max 16 chars). Example: 10%
      * @bodyParam preset_percent integer Optional preset percentage applied (1-100). Example: 10
      * @bodyParam message string Optional personal message to the provider (max 280 chars). Example: Super travail, merci!
+     *
      * @response 201 {"data": {"id": 3, "code": "TIP-ABC123", "booking_id": 42, "provider": {"id": 7, "name": "Jean Martin"}, "amount_cents": 500, "currency": "EUR", "status": "pending", "message": "Super travail, merci!", "preset_label": "10%", "client_bonus_points": 5, "charged_at": null, "paid_out_at": null, "created_at": "2026-06-15T11:00:00+00:00"}}
      * @response 422 {"error": "validation_failed", "errors": {"amount_cents": ["Un pourboire existe déjà pour cette réservation."]}}
      */
@@ -79,6 +81,7 @@ class TipController extends Controller
      *
      * @queryParam status string Filter by tip status (pending, charged, paid_out, cancelled, failed). Example: charged
      * @queryParam limit integer Maximum number of results (1-100, default 50). Example: 20
+     *
      * @response 200 {"data": [{"id": 3, "code": "TIP-ABC123", "booking_id": 42, "provider": {"id": 7, "name": "Jean Martin"}, "amount_cents": 500, "currency": "EUR", "status": "charged", "message": null, "preset_label": "10%", "client_bonus_points": 5, "charged_at": "2026-06-15T12:00:00+00:00", "paid_out_at": null, "created_at": "2026-06-15T11:00:00+00:00"}]}
      */
     public function mine(Request $request): JsonResponse

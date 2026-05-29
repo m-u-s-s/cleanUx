@@ -26,17 +26,17 @@ class AnalyticsService
     /**
      * Public entrypoint.
      *
-     * @param array<string,mixed> $options
-     *   - user: ?User (optional)
-     *   - source: ?Model (booking, mission, etc.) — fills source_type/source_id via properties.source
-     *   - session_id: ?string
-     *   - anonymous_id: ?string
-     *   - request: ?Request (for IP/locale/url inference)
-     *   - idempotency_key: ?string
-     *   - revenue_cents: ?int
-     *   - currency: ?string
-     *   - category: ?string
-     *   - occurred_at: ?\DateTimeInterface
+     * @param  array<string,mixed>  $options
+     *                                        - user: ?User (optional)
+     *                                        - source: ?Model (booking, mission, etc.) — fills source_type/source_id via properties.source
+     *                                        - session_id: ?string
+     *                                        - anonymous_id: ?string
+     *                                        - request: ?Request (for IP/locale/url inference)
+     *                                        - idempotency_key: ?string
+     *                                        - revenue_cents: ?int
+     *                                        - currency: ?string
+     *                                        - category: ?string
+     *                                        - occurred_at: ?\DateTimeInterface
      */
     public function track(string $name, array $properties = [], array $options = []): ?AnalyticsEvent
     {
@@ -105,6 +105,7 @@ class AnalyticsService
                 'name' => $name,
                 'error' => $e->getMessage(),
             ]);
+
             return null;
         }
     }
@@ -137,7 +138,7 @@ class AnalyticsService
             ?: null;
 
         if (! $sessionId) {
-            $sessionId = 'sess_' . Str::lower(Str::random(20));
+            $sessionId = 'sess_'.Str::lower(Str::random(20));
         }
 
         $session = AnalyticsSession::query()
@@ -149,7 +150,7 @@ class AnalyticsService
             if ($session->isExpired($inactivity)) {
                 $session->forceFill(['ended_at' => $session->last_seen_at])->save();
                 $session = null;
-                $sessionId = 'sess_' . Str::lower(Str::random(20));
+                $sessionId = 'sess_'.Str::lower(Str::random(20));
             }
         }
 
@@ -192,8 +193,9 @@ class AnalyticsService
 
             if (in_array(strtolower($k), array_map('strtolower', $hashKeys), true)) {
                 if ($v !== null && $v !== '') {
-                    $clean[$k] = 'sha256:' . substr(hash('sha256', (string) $v), 0, 16);
+                    $clean[$k] = 'sha256:'.substr(hash('sha256', (string) $v), 0, 16);
                 }
+
                 continue;
             }
 
@@ -225,6 +227,7 @@ class AnalyticsService
         if (str_starts_with($name, 'error.')) {
             return AnalyticsEvent::CATEGORY_ERROR;
         }
+
         return AnalyticsEvent::CATEGORY_ENGAGEMENT;
     }
 
@@ -240,6 +243,7 @@ class AnalyticsService
         if (str_starts_with($request->path(), 'api/')) {
             return 'api';
         }
+
         return 'web';
     }
 
@@ -248,6 +252,7 @@ class AnalyticsService
         if ($value === null || $value === '') {
             return null;
         }
+
         return strlen($value) > $max ? substr($value, 0, $max) : $value;
     }
 }

@@ -15,7 +15,7 @@ class BookingTipFactory extends Factory
     public function definition(): array
     {
         return [
-            'code' => 'tip_' . Str::lower(Str::random(20)),
+            'code' => 'tip_'.Str::lower(Str::random(20)),
             'booking_id' => Booking::factory(),
             'client_user_id' => User::factory(),
             'provider_user_id' => User::factory(),

@@ -2,10 +2,9 @@
 
 namespace App\Livewire\Client;
 
+use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
-use Illuminate\Contracts\View\View;
-use Livewire\Attributes\Layout;
 
 class PremiumOfferPage extends Component
 {

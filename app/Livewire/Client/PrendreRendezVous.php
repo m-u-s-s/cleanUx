@@ -5,34 +5,37 @@ namespace App\Livewire\Client;
 use App\Actions\Booking\CreateRecurringSeriesAction;
 use App\Models\Booking;
 use App\Models\Trade;
+use App\Services\Booking\AsapBookingService;
 use App\Services\Booking\BookingEstimatorService;
+use App\Services\Booking\BookingIntelligenceService;
 use App\Services\Booking\CreateBookingAction;
 use App\Services\Booking\EmployeeAvailabilityService;
 use App\Services\Booking\ZoneCoverageService;
+use App\Services\Promotion\PromoCodeService;
+use App\Services\Promotion\PromoCodeValidationContext;
 use App\Support\Livewire\Concerns\Booking\HandlesBookingCreation;
 use App\Support\Livewire\Concerns\Booking\HandlesPublicBookingAuthentication;
 use App\Support\Livewire\Concerns\Booking\ManagesPublicBookingDraft;
 use App\Support\Livewire\Concerns\HandlesBookingSubmissionFlow;
 use App\Support\Livewire\Concerns\InteractsWithBookingFormState;
 use App\Support\Livewire\Concerns\RendersTradeFormSchema;
+use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
 use Livewire\WithFileUploads;
-use Illuminate\Contracts\View\View;
-use Livewire\Attributes\Layout;
 
 class PrendreRendezVous extends Component
 {
+    use HandlesBookingCreation;
     use HandlesBookingSubmissionFlow {
         updatedSelectedServiceIdentifier as protected traitUpdatedSelectedServiceIdentifier;
         rules as protected traitRules;
     }
+    use HandlesPublicBookingAuthentication;
     use InteractsWithBookingFormState {
         updatedPostalCodeInput as protected traitUpdatedPostalCodeInput;
     }
     use ManagesPublicBookingDraft;
-    use HandlesPublicBookingAuthentication;
-    use HandlesBookingCreation;
     use RendersTradeFormSchema;
     use WithFileUploads;
 
@@ -44,68 +47,111 @@ class PrendreRendezVous extends Component
     public ?int $selectedTradeId = null;
 
     public ?string $selected_service_identifier = null;
+
     public ?string $type_lieu = null;
+
     public ?string $frequence = null;
+
     public ?string $surface = null;
 
     public array $options_prestation = [];
+
     public array $zones_specifiques = [];
 
     public ?string $materiel_specifique = null;
+
     public ?string $commentaire_client = null;
 
     public bool $presence_animaux = false;
+
     public bool $acces_parking = false;
+
     public bool $materiel_fournit = false;
+
     public bool $prefilledFromLast = false;
+
     public bool $prefilledFromSource = false;
+
     public bool $prefilledFromAddress = false;
 
     public ?int $resolvedPostalCodeId = null;
+
     public ?int $resolvedServiceZoneId = null;
+
     public ?int $resolvedServiceCatalogId = null;
+
     public ?string $coverageStatus = null;
+
     public ?string $coverageMessage = null;
 
     public ?string $adresse = null;
+
     public ?string $ville = null;
+
     public ?string $code_postal = null;
+
     public ?string $postal_code_input = null;
+
     public ?string $telephone_client = null;
+
     public ?string $priorite = 'normale';
+
     public ?int $organization_site_id = null;
+
     public ?string $site_contact_name = null;
+
     public ?string $site_contact_phone = null;
+
     public ?string $purchase_order_reference = null;
+
     public ?string $cost_center = null;
+
     public ?string $site_instructions = null;
 
     public ?int $employe_id = null;
+
     public ?string $rdvDate = null;
+
     public ?string $rdvHeure = null;
+
     public ?string $createdReference = null;
+
     public ?string $createdEmployeName = null;
+
     public ?string $createdStatusLabel = null;
 
     public bool $is_recurrent = false;
+
     public ?string $recurrence_rule = null;
+
     public ?string $recurrence_frequency = null;
+
     public int $recurrence_interval = 1;
+
     public ?string $recurrence_until = null;
+
     public ?int $recurrence_count = null;
+
     public array $recurrence_days = [];
+
     public bool $is_favorite_slot = false;
 
     public array $photos = [];
+
     public array $creneauxDisponibles = [];
+
     public array $employesDisponibles = [];
 
     public int $duree_estimee = 0;
+
     public float $devis_estime = 0;
 
     public ?string $promo_code = null;
+
     public ?float $promo_discount_preview = null;
+
     public ?string $promo_message = null;
+
     public bool $promo_valid = false;
 
     public function previewPromoCode(): void
@@ -120,16 +166,17 @@ class PrendreRendezVous extends Component
 
         if ((float) $this->devis_estime <= 0) {
             $this->promo_message = 'Estimation indisponible pour évaluer le code.';
+
             return;
         }
 
-        $service = app(\App\Services\Promotion\PromoCodeService::class);
+        $service = app(PromoCodeService::class);
 
-        $isFirstBooking = ! \App\Models\Booking::query()
+        $isFirstBooking = ! Booking::query()
             ->where('client_id', Auth::id())
             ->exists();
 
-        $context = new \App\Services\Promotion\PromoCodeValidationContext(
+        $context = new PromoCodeValidationContext(
             user: Auth::user(),
             bookingAmount: (float) $this->devis_estime,
             serviceCatalogId: $this->resolvedServiceCatalogId,
@@ -156,11 +203,17 @@ class PrendreRendezVous extends Component
     {
         $this->reset(['promo_code', 'promo_discount_preview', 'promo_message', 'promo_valid']);
     }
+
     public string $booking_mode = 'scheduled';
+
     public ?string $asapMessage = null;
+
     public ?string $google_place_id = null;
+
     public ?float $destination_lat = null;
+
     public ?float $destination_lng = null;
+
     public array $address_components = [];
 
     public function mount(): void
@@ -264,9 +317,9 @@ class PrendreRendezVous extends Component
         $this->traitUpdatedPostalCodeInput();
     }
 
-    protected function asapBookingService(): \App\Services\Booking\AsapBookingService
+    protected function asapBookingService(): AsapBookingService
     {
-        return app(\App\Services\Booking\AsapBookingService::class);
+        return app(AsapBookingService::class);
     }
 
     public function updatedBookingMode(): void
@@ -286,6 +339,7 @@ class PrendreRendezVous extends Component
 
         if (! $zone) {
             $this->asapMessage = 'Entrez d’abord une adresse couverte.';
+
             return;
         }
 
@@ -303,7 +357,7 @@ class PrendreRendezVous extends Component
             $suggestions = [];
 
             if ($zone && $catalog) {
-                $suggestions = app(\App\Services\Booking\BookingIntelligenceService::class)
+                $suggestions = app(BookingIntelligenceService::class)
                     ->suggestAlternativeSlots($zone, $catalog);
             }
 
@@ -315,7 +369,7 @@ class PrendreRendezVous extends Component
                 : 'Aucun employé disponible sous 2h. Choisissez un créneau planifié.';
 
             $this->creneauxDisponibles = collect($suggestions)
-                ->map(fn($slot) => $slot['date'] . ' ' . $slot['heure'])
+                ->map(fn ($slot) => $slot['date'].' '.$slot['heure'])
                 ->toArray();
 
             return;
@@ -325,10 +379,8 @@ class PrendreRendezVous extends Component
         $this->rdvHeure = $result['heure'];
         $this->employe_id = $result['employee']->id;
 
-        $this->asapMessage = 'Créneau ASAP trouvé : aujourd’hui à ' . $this->rdvHeure . '.';
+        $this->asapMessage = 'Créneau ASAP trouvé : aujourd’hui à '.$this->rdvHeure.'.';
     }
-    
-
 
     /**
      * Select a trade to filter the service catalog. Clears service + schema
@@ -369,12 +421,12 @@ class PrendreRendezVous extends Component
             ->orderBy('sort_order')
             ->orderBy('name')
             ->get(['id', 'name', 'icon', 'short_description', 'sort_order'])
-            ->map(fn(Trade $t) => [
-                'id'               => $t->id,
-                'name'             => $t->name,
-                'icon'             => $t->icon ?: 'briefcase',
+            ->map(fn (Trade $t) => [
+                'id' => $t->id,
+                'name' => $t->name,
+                'icon' => $t->icon ?: 'briefcase',
                 'short_description' => $t->short_description,
-                'sort_order'       => $t->sort_order,
+                'sort_order' => $t->sort_order,
             ])
             ->values()
             ->all();

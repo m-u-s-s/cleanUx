@@ -42,12 +42,14 @@ class EcbFxProvider implements FxProviderInterface
             $response = Http::timeout($timeout)->get($url);
             if (! $response->ok()) {
                 Log::warning('EcbFxProvider: HTTP error', ['status' => $response->status()]);
+
                 return [];
             }
 
             $xml = @simplexml_load_string($response->body());
             if (! $xml) {
                 Log::warning('EcbFxProvider: failed to parse XML');
+
                 return [];
             }
 
@@ -66,6 +68,7 @@ class EcbFxProvider implements FxProviderInterface
                 $quote = strtoupper($quote);
                 if ($quote === 'EUR') {
                     $out[] = new FxRate('EUR', 'EUR', 1.0, $this->name(), now());
+
                     continue;
                 }
                 if (! isset($ratesByCode[$quote])) {
@@ -73,9 +76,11 @@ class EcbFxProvider implements FxProviderInterface
                 }
                 $out[] = new FxRate('EUR', $quote, $ratesByCode[$quote], $this->name(), now());
             }
+
             return $out;
         } catch (\Throwable $e) {
             Log::warning('EcbFxProvider: exception', ['error' => $e->getMessage()]);
+
             return [];
         }
     }

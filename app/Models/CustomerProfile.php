@@ -5,7 +5,6 @@ namespace App\Models;
 use App\Enums\CustomerType;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class CustomerProfile extends Model
 {
@@ -25,8 +24,8 @@ class CustomerProfile extends Model
     ];
 
     protected $casts = [
-        'customer_type'      => CustomerType::class,
-        'preferences'        => 'array',
+        'customer_type' => CustomerType::class,
+        'preferences' => 'array',
         'premium_started_at' => 'datetime',
         'premium_renewal_at' => 'datetime',
     ];

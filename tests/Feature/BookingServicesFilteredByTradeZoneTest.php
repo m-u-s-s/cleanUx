@@ -46,34 +46,34 @@ class BookingServicesFilteredByTradeZoneTest extends TestCase
         ]);
 
         $paintService = ServiceCatalog::factory()->create([
-            'trade_id'  => $peinture->id,
-            'name'      => 'Peinture intérieure',
-            'slug'      => 'peinture-interieure-test',
-            'code'      => 'PAINT_INT',
+            'trade_id' => $peinture->id,
+            'name' => 'Peinture intérieure',
+            'slug' => 'peinture-interieure-test',
+            'code' => 'PAINT_INT',
             'is_active' => true,
         ]);
         $gardenService = ServiceCatalog::factory()->create([
-            'trade_id'  => $jardinage->id,
-            'name'      => 'Tonte pelouse',
-            'slug'      => 'tonte-pelouse-test',
-            'code'      => 'GARDEN_LAWN',
+            'trade_id' => $jardinage->id,
+            'name' => 'Tonte pelouse',
+            'slug' => 'tonte-pelouse-test',
+            'code' => 'GARDEN_LAWN',
             'is_active' => true,
         ]);
 
         // Les deux services sont activés dans la zone par défaut
         foreach ([$paintService, $gardenService] as $service) {
             ZoneServiceRule::create([
-                'service_zone_id'    => $context['zone']->id,
+                'service_zone_id' => $context['zone']->id,
                 'service_catalog_id' => $service->id,
-                'is_enabled'         => true,
+                'is_enabled' => true,
             ]);
         }
 
         // On désactive explicitement le métier Peinture dans la zone
         TradeZoneSetting::create([
-            'trade_id'         => $peinture->id,
-            'service_zone_id'  => $context['zone']->id,
-            'is_active'        => false,
+            'trade_id' => $peinture->id,
+            'service_zone_id' => $context['zone']->id,
+            'is_active' => false,
             'price_multiplier' => 1.00,
         ]);
 
@@ -101,17 +101,17 @@ class BookingServicesFilteredByTradeZoneTest extends TestCase
         ]);
 
         $service = ServiceCatalog::factory()->create([
-            'trade_id'  => $trade->id,
-            'name'      => 'Peinture facade',
-            'slug'      => 'peinture-facade-test',
-            'code'      => 'PAINT_FACADE',
+            'trade_id' => $trade->id,
+            'name' => 'Peinture facade',
+            'slug' => 'peinture-facade-test',
+            'code' => 'PAINT_FACADE',
             'is_active' => true,
         ]);
 
         ZoneServiceRule::create([
-            'service_zone_id'    => $context['zone']->id,
+            'service_zone_id' => $context['zone']->id,
             'service_catalog_id' => $service->id,
-            'is_enabled'         => true,
+            'is_enabled' => true,
         ]);
 
         $holder = new FakeBookingFormHolder($context['zone']->id);

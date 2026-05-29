@@ -7,6 +7,7 @@ use App\Models\Feedback;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 /**
  * @group Public — Provider Profiles
@@ -29,7 +30,7 @@ class ProviderProfileController extends Controller
         return response()->json([
             'id' => $provider->id,
             'name' => $provider->name,
-            'photo_url' => $profile->photo_path ? \Illuminate\Support\Facades\Storage::url($profile->photo_path) : null,
+            'photo_url' => $profile->photo_path ? Storage::url($profile->photo_path) : null,
             'bio' => $profile->bio,
             'trades' => $provider->trades->map(fn ($t) => [
                 'id' => $t->id,

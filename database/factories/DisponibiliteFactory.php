@@ -14,7 +14,7 @@ class DisponibiliteFactory extends Factory
     {
         $date = fake()->dateTimeBetween('now', '+14 days')->format('Y-m-d');
         $heureDebut = fake()->randomElement($this->horairesDisponibles());
-        $heureFin = date('H:i:s', strtotime($heureDebut . ' +30 minutes'));
+        $heureFin = date('H:i:s', strtotime($heureDebut.' +30 minutes'));
 
         return [
             'user_id' => User::factory()->employe(),
@@ -39,7 +39,7 @@ class DisponibiliteFactory extends Factory
             return [
                 'date' => now()->toDateString(),
                 'heure_debut' => $heureDebut,
-                'heure_fin' => date('H:i:s', strtotime($heureDebut . ' +30 minutes')),
+                'heure_fin' => date('H:i:s', strtotime($heureDebut.' +30 minutes')),
             ];
         });
     }
@@ -53,7 +53,7 @@ class DisponibiliteFactory extends Factory
             return [
                 'date' => $date,
                 'heure_debut' => $heureDebut,
-                'heure_fin' => date('H:i:s', strtotime($heureDebut . ' +30 minutes')),
+                'heure_fin' => date('H:i:s', strtotime($heureDebut.' +30 minutes')),
             ];
         });
     }

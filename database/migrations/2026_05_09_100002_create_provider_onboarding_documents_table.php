@@ -13,7 +13,8 @@ use Illuminate\Support\Facades\Schema;
  *   2. Admin valide → status='approved'
  *   3. Si tous les documents requis sont approved → ProviderProfile.verification_status='verified'
  */
-return new class extends Migration {
+return new class extends Migration
+{
     public function up(): void
     {
         if (Schema::hasTable('provider_onboarding_documents')) {

@@ -47,7 +47,7 @@ class GestionEntreprisesEnterpriseTest extends TestCase
 
         $this->assertSame('active', data_get($account->metadata, 'contract_status'));
         $this->assertSame('hybrid', data_get($account->metadata, 'approval_mode'));
-        $this->assertEquals([ $primaryContext['zone']->id, $secondaryContext['zone']->id ], $account->priority_zone_ids);
+        $this->assertEquals([$primaryContext['zone']->id, $secondaryContext['zone']->id], $account->priority_zone_ids);
         $this->assertTrue((bool) data_get($account->metadata, 'require_po'));
         $this->assertSame('HQ-BRU', data_get($account->metadata, 'default_cost_center'));
     }

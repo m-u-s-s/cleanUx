@@ -23,7 +23,7 @@ class ConsolidationFinalCheck extends Command
             ['Catégorie', 'Occurrences', 'Exemples de fichiers'],
             collect($report['checks'])->map(function (array $check) {
                 $examples = collect($check['files'])
-                    ->map(fn (array $file) => $file['file'] . ' (' . $file['count'] . ')')
+                    ->map(fn (array $file) => $file['file'].' ('.$file['count'].')')
                     ->implode("\n");
 
                 return [
@@ -36,6 +36,7 @@ class ConsolidationFinalCheck extends Command
 
         if (($report['summary']['total_flags'] ?? 0) === 0) {
             $this->info('Consolidation finale OK : aucun littéral legacy détecté.');
+
             return self::SUCCESS;
         }
 

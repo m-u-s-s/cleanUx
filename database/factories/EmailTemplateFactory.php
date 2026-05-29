@@ -12,17 +12,17 @@ class EmailTemplateFactory extends Factory
     public function definition(): array
     {
         return [
-            'code'                => fake()->unique()->slug(2),
-            'name'                => fake()->words(3, true),
-            'description'         => fake()->sentence(),
-            'category'            => 'transactional',
-            'subject_pattern'     => fake()->sentence(),
-            'body_html_pattern'   => '<p>{{ greeting }},</p><p>' . fake()->paragraph() . '</p>',
-            'body_text_pattern'   => fake()->paragraph(),
-            'locale_overrides'    => null,
-            'required_variables'  => ['greeting', 'name'],
-            'is_active'           => true,
-            'metadata'            => null,
+            'code' => fake()->unique()->slug(2),
+            'name' => fake()->words(3, true),
+            'description' => fake()->sentence(),
+            'category' => 'transactional',
+            'subject_pattern' => fake()->sentence(),
+            'body_html_pattern' => '<p>{{ greeting }},</p><p>'.fake()->paragraph().'</p>',
+            'body_text_pattern' => fake()->paragraph(),
+            'locale_overrides' => null,
+            'required_variables' => ['greeting', 'name'],
+            'is_active' => true,
+            'metadata' => null,
         ];
     }
 

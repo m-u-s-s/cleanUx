@@ -3,11 +3,10 @@
 namespace Tests\Feature;
 
 use App\Livewire\Employe\TeamLeadOperationsCenter;
-use App\Models\MissionBatch;
 use App\Models\User;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
 use Tests\TestCase;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class TeamLeadOperationsCenterTest extends TestCase
 {

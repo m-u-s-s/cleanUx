@@ -2,8 +2,15 @@
 
 namespace App\Providers;
 
+use App\Events\Disputes\DisputeOpened;
+use App\Events\Kyc\KycCompleted;
+use App\Events\Rating\RatingSubmitted;
+use App\Listeners\Disputes\NotifyOnDisputeOpened;
+use App\Listeners\Kyc\EmitKycApprovedWebhook;
 use App\Listeners\LogNotificationMailFailed;
 use App\Listeners\LogNotificationMailSent;
+use App\Listeners\Rating\NotifyProviderOnRating;
+use App\Services\Analytics\AnalyticsAutoTracker;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Auth\Listeners\SendEmailVerificationNotification;
 use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
@@ -27,14 +34,14 @@ class EventServiceProvider extends ServiceProvider
         NotificationFailed::class => [
             LogNotificationMailFailed::class,
         ],
-        \App\Events\Kyc\KycCompleted::class => [
-            \App\Listeners\Kyc\EmitKycApprovedWebhook::class,
+        KycCompleted::class => [
+            EmitKycApprovedWebhook::class,
         ],
-        \App\Events\Disputes\DisputeOpened::class => [
-            \App\Listeners\Disputes\NotifyOnDisputeOpened::class,
+        DisputeOpened::class => [
+            NotifyOnDisputeOpened::class,
         ],
-        \App\Events\Rating\RatingSubmitted::class => [
-            \App\Listeners\Rating\NotifyProviderOnRating::class,
+        RatingSubmitted::class => [
+            NotifyProviderOnRating::class,
         ],
     ];
 
@@ -44,7 +51,7 @@ class EventServiceProvider extends ServiceProvider
      * @var array<int, class-string>
      */
     protected $subscribe = [
-        \App\Services\Analytics\AnalyticsAutoTracker::class,
+        AnalyticsAutoTracker::class,
     ];
 
     /**

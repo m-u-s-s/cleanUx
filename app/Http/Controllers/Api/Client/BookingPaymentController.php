@@ -11,6 +11,7 @@ use Stripe\Stripe;
 
 /**
  * @group Client — Booking Payment
+ *
  * @authenticated
  */
 class BookingPaymentController extends Controller

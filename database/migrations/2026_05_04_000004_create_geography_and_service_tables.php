@@ -106,8 +106,6 @@ return new class extends Migration
 
             $table->index(['country_id', 'status']);
 
-
-
             $table->unsignedBigInteger('region_id')->nullable();
             $table->unsignedBigInteger('province_id')->nullable();
             $table->unsignedBigInteger('commune_id')->nullable();
@@ -134,8 +132,6 @@ return new class extends Migration
 
         Schema::create('postal_codes', function (Blueprint $table) {
             $table->id();
-
-
 
             $table->foreignId('country_id')
                 ->nullable()

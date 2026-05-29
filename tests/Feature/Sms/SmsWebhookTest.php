@@ -83,7 +83,7 @@ class SmsWebhookTest extends TestCase
 
         $event = SmsWebhookEvent::create([
             'provider' => 'mock',
-            'external_event_id' => 'evt_' . $sms->external_id,
+            'external_event_id' => 'evt_'.$sms->external_id,
             'event_type' => 'delivered',
             'payload' => [
                 'external_id' => $sms->external_id,

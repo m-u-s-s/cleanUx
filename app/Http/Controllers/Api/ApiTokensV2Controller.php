@@ -14,6 +14,7 @@ use Illuminate\Validation\ValidationException;
 
 /**
  * @group API Tokens v2
+ *
  * @authenticated
  */
 class ApiTokensV2Controller extends Controller
@@ -30,6 +31,7 @@ class ApiTokensV2Controller extends Controller
             ->orderBy('category')
             ->orderBy('code')
             ->get(['code', 'name', 'description', 'category', 'required_role', 'is_dangerous']);
+
         return response()->json(['data' => $rows]);
     }
 
@@ -41,6 +43,7 @@ class ApiTokensV2Controller extends Controller
             ->where('tokenable_id', $user->id)
             ->orderByDesc('created_at')
             ->get();
+
         return response()->json([
             'data' => $rows->map(fn ($t) => $this->presentToken($t))->all(),
         ]);
@@ -79,6 +82,7 @@ class ApiTokensV2Controller extends Controller
             return response()->json(['ok' => false, 'error' => 'forbidden'], 403);
         }
         $new = $this->manager->rotate($token);
+
         return response()->json([
             'ok' => true,
             'plain_text_token' => $new->plainTextToken,
@@ -93,6 +97,7 @@ class ApiTokensV2Controller extends Controller
             return response()->json(['ok' => false, 'error' => 'forbidden'], 403);
         }
         $this->manager->revoke($token);
+
         return response()->json(['ok' => true]);
     }
 
@@ -109,6 +114,7 @@ class ApiTokensV2Controller extends Controller
             ->orderByDesc('created_at')
             ->limit((int) $request->integer('limit', 50))
             ->get();
+
         return response()->json([
             'data' => $rows->map(fn ($t) => $this->presentToken($t, includeOwner: true))->all(),
         ]);
@@ -122,6 +128,7 @@ class ApiTokensV2Controller extends Controller
             ->orderByDesc('occurred_at')
             ->limit((int) $request->integer('limit', 100))
             ->get();
+
         return response()->json(['data' => $rows]);
     }
 
@@ -135,18 +142,21 @@ class ApiTokensV2Controller extends Controller
         } catch (ValidationException $e) {
             return response()->json(['ok' => false, 'errors' => $e->errors()], 422);
         }
+
         return response()->json(['ok' => true, 'token' => $this->presentToken($row)]);
     }
 
     public function adminUnsuspend(PersonalAccessTokenV2 $token): JsonResponse
     {
         $row = $this->manager->unsuspend($token);
+
         return response()->json(['ok' => true, 'token' => $this->presentToken($row)]);
     }
 
     public function adminRevoke(PersonalAccessTokenV2 $token): JsonResponse
     {
         $this->manager->revoke($token);
+
         return response()->json(['ok' => true]);
     }
 
@@ -176,6 +186,7 @@ class ApiTokensV2Controller extends Controller
                 'email' => optional($t->tokenable)->email ?? null,
             ];
         }
+
         return $payload;
     }
 }

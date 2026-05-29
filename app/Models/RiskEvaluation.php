@@ -10,12 +10,17 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class RiskEvaluation extends Model
 {
     public const DECISION_ALLOW = 'allow';
+
     public const DECISION_REVIEW = 'review';
+
     public const DECISION_BLOCK = 'block';
 
     public const CONTEXT_BOOKING_CREATE = 'booking_create';
+
     public const CONTEXT_PAYMENT_ATTEMPT = 'payment_attempt';
+
     public const CONTEXT_LOGIN = 'login';
+
     public const CONTEXT_SIGNUP = 'signup';
 
     protected $fillable = [

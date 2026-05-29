@@ -32,17 +32,19 @@ class BookingChatAutoCreator
             if ($providerId > 0 && $providerId !== $clientId) {
                 $participants[] = ['user_id' => $providerId, 'role' => ChatParticipant::ROLE_PROVIDER];
             }
+
             return app(ChatService::class)->startThread(
                 contextType: 'booking',
                 contextId: (int) $booking->id,
                 participants: $participants,
-                title: 'Booking #' . $booking->id,
+                title: 'Booking #'.$booking->id,
                 metadata: ['auto_created' => true, 'source' => 'BookingObserver'],
             );
         } catch (\Throwable $e) {
             Log::warning('[chat_auto] ensureThreadForBooking failed', [
                 'booking_id' => $booking->id, 'error' => $e->getMessage(),
             ]);
+
             return null;
         }
     }
@@ -74,6 +76,7 @@ class BookingChatAutoCreator
         if (! (bool) config('chat_v2.enabled', true)) {
             return false;
         }
+
         return Schema::hasTable('chat_threads') && Schema::hasTable('chat_participants');
     }
 }

@@ -12,13 +12,12 @@ use Illuminate\Http\Request;
 
 /**
  * @group Disputes
+ *
  * @authenticated
  */
 class DisputeController extends Controller
 {
-    public function __construct(protected DisputeService $service)
-    {
-    }
+    public function __construct(protected DisputeService $service) {}
 
     /**
      * List the authenticated client's disputes (most recent first, max 50).
@@ -102,6 +101,7 @@ class DisputeController extends Controller
      * @bodyParam priority string Priority level: low, normal, high, urgent (default normal). Example: high
      * @bodyParam severity string Severity level: low, medium, high, critical (default medium). Example: medium
      * @bodyParam booking_id integer ID of the related booking (optional). Example: 42
+     *
      * @response 201 {"id": 1, "reference": "DSP-001", "status": "open", "sla_policy": "standard"}
      * @response 422 {"message": "The category field is required.", "errors": {"category": ["The category field is required."]}}
      */
@@ -123,6 +123,7 @@ class DisputeController extends Controller
      * Add a client message to an existing dispute.
      *
      * @bodyParam body string required Message text (1-2000 chars). Example: J'attends toujours une réponse.
+     *
      * @response 201 {"event_id": 5, "status": "open"}
      * @response 403 {"message": "This action is unauthorized."}
      */

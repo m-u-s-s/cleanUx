@@ -10,6 +10,7 @@ use Illuminate\Http\Request;
 
 /**
  * @group Client — AI Quote
+ *
  * @authenticated
  */
 class AiQuoteController extends Controller

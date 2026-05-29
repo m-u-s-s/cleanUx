@@ -6,6 +6,7 @@ use App\Models\SubscriptionsV2\SubscriptionCycleV2;
 use App\Services\SubscriptionsV2\BillingResult;
 use App\Services\SubscriptionsV2\Contracts\BillingProviderContract;
 use Illuminate\Support\Facades\Log;
+use Stripe\StripeClient;
 
 /**
  * Stripe PaymentIntent driver. Squelette : nécessite un `stripe_customer_id`
@@ -46,21 +47,21 @@ class StripeBillingProvider implements BillingProviderContract
 
             // Off-session payment intent — nécessite Stripe SDK + secret_key
             $stripeKey = (string) config('cashier.secret') ?: (string) config('services.stripe.secret');
-            if (! $stripeKey || ! class_exists(\Stripe\StripeClient::class)) {
+            if (! $stripeKey || ! class_exists(StripeClient::class)) {
                 return new BillingResult(
                     false, $cycle->planned_amount_cents, $sub->billing_currency,
                     error: 'stripe_not_configured', provider: 'stripe',
                 );
             }
 
-            $stripe = new \Stripe\StripeClient($stripeKey);
+            $stripe = new StripeClient($stripeKey);
             $intent = $stripe->paymentIntents->create([
                 'amount' => $cycle->planned_amount_cents,
                 'currency' => strtolower($sub->billing_currency),
                 'customer' => $stripeCustomerId,
                 'off_session' => true,
                 'confirm' => true,
-                'description' => 'CleanUx subscription cycle #' . $cycle->cycle_number,
+                'description' => 'CleanUx subscription cycle #'.$cycle->cycle_number,
                 'metadata' => [
                     'subscription_id' => $sub->id,
                     'cycle_id' => $cycle->id,
@@ -82,7 +83,7 @@ class StripeBillingProvider implements BillingProviderContract
 
             return new BillingResult(
                 false, $cycle->planned_amount_cents, $sub->billing_currency,
-                error: 'intent_status_' . $intent->status,
+                error: 'intent_status_'.$intent->status,
                 raw: $intent->toArray(),
                 provider: 'stripe',
             );
@@ -90,9 +91,10 @@ class StripeBillingProvider implements BillingProviderContract
             Log::warning('[subscriptions_v2] stripe charge error', [
                 'cycle_id' => $cycle->id, 'error' => $e->getMessage(),
             ]);
+
             return new BillingResult(
                 false, $cycle->planned_amount_cents, $sub->billing_currency,
-                error: 'exception:' . mb_substr($e->getMessage(), 0, 200),
+                error: 'exception:'.mb_substr($e->getMessage(), 0, 200),
                 provider: 'stripe',
             );
         }

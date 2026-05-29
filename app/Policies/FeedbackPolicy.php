@@ -23,6 +23,7 @@ class FeedbackPolicy
         }
 
         return false;
+
         return $this->ownsFeedback($user, $feedback) || $this->isAdmin($user);
     }
 

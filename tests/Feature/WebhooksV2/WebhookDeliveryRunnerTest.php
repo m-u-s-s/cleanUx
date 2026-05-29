@@ -31,7 +31,7 @@ class WebhookDeliveryRunnerTest extends TestCase
     private function makePair(array $epOverrides = [], array $eventOverrides = []): array
     {
         $ep = WebhookEndpoint::query()->create(array_merge([
-            'code' => 'whe_run_' . uniqid(),
+            'code' => 'whe_run_'.uniqid(),
             'name' => 'Runner EP',
             'url' => 'https://target.test/hook',
             'secret' => 'whsec_runner',
@@ -41,7 +41,7 @@ class WebhookDeliveryRunnerTest extends TestCase
         ], $epOverrides));
 
         $event = WebhookEvent::query()->create(array_merge([
-            'event_id' => 'evt_run_' . uniqid(),
+            'event_id' => 'evt_run_'.uniqid(),
             'event_code' => 'booking.created',
             'payload' => ['booking_id' => 7],
             'occurred_at' => now(),
@@ -65,7 +65,7 @@ class WebhookDeliveryRunnerTest extends TestCase
         ]);
         [$ep, $event, $delivery] = $this->makePair();
 
-        $runner = new WebhookDeliveryRunner(new WebhookSigner());
+        $runner = new WebhookDeliveryRunner(new WebhookSigner);
         $result = $runner->run($delivery);
 
         $this->assertSame(WebhookDelivery::STATUS_DELIVERED, $result->status);
@@ -90,7 +90,7 @@ class WebhookDeliveryRunnerTest extends TestCase
         ]);
         [$ep, , $delivery] = $this->makePair();
 
-        $result = (new WebhookDeliveryRunner(new WebhookSigner()))->run($delivery);
+        $result = (new WebhookDeliveryRunner(new WebhookSigner))->run($delivery);
 
         $this->assertSame(WebhookDelivery::STATUS_FAILED, $result->status);
         $this->assertSame(502, $result->last_response_status);
@@ -107,7 +107,7 @@ class WebhookDeliveryRunnerTest extends TestCase
         [$ep, , $delivery] = $this->makePair(['max_attempts' => 2]);
         $delivery->update(['attempt' => 1, 'max_attempts' => 2]);
 
-        $result = (new WebhookDeliveryRunner(new WebhookSigner()))->run($delivery);
+        $result = (new WebhookDeliveryRunner(new WebhookSigner))->run($delivery);
 
         $this->assertSame(WebhookDelivery::STATUS_DEAD, $result->status);
         $this->assertNull($result->next_retry_at);
@@ -129,7 +129,7 @@ class WebhookDeliveryRunnerTest extends TestCase
             'status' => WebhookDelivery::STATUS_PENDING, 'attempt' => 0, 'max_attempts' => 10,
         ]);
 
-        (new WebhookDeliveryRunner(new WebhookSigner()))->run($delivery);
+        (new WebhookDeliveryRunner(new WebhookSigner))->run($delivery);
 
         $this->assertTrue($ep->fresh()->is_suspended);
         $this->assertStringContainsString('auto-suspended', (string) $ep->fresh()->suspension_reason);
@@ -139,7 +139,7 @@ class WebhookDeliveryRunnerTest extends TestCase
     {
         [$ep, , $delivery] = $this->makePair(['is_suspended' => true]);
 
-        $result = (new WebhookDeliveryRunner(new WebhookSigner()))->run($delivery);
+        $result = (new WebhookDeliveryRunner(new WebhookSigner))->run($delivery);
 
         $this->assertSame(WebhookDelivery::STATUS_CANCELLED, $result->status);
         $this->assertStringContainsString('suspended', (string) $result->last_error);
@@ -151,13 +151,14 @@ class WebhookDeliveryRunnerTest extends TestCase
             'target.test/*' => Http::response('', 200),
         ]);
         [$ep, , $delivery] = $this->makePair();
-        $signer = new WebhookSigner();
+        $signer = new WebhookSigner;
         $runner = new WebhookDeliveryRunner($signer);
         $result = $runner->run($delivery);
 
         $captured = null;
         Http::assertSent(function ($req) use (&$captured) {
             $captured = ['body' => $req->body(), 'sig' => $req->header('X-CleanUx-Signature')[0] ?? null];
+
             return true;
         });
 

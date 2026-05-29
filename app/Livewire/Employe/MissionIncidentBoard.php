@@ -12,9 +12,13 @@ class MissionIncidentBoard extends Component
     public Mission $mission;
 
     public string $title = '';
+
     public string $description = '';
+
     public string $incidentType = 'general';
+
     public string $severity = 'medium';
+
     public bool $clientVisible = true;
 
     public ?string $successMessage = null;

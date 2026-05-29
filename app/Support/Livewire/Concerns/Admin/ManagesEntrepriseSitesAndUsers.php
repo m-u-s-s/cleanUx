@@ -7,8 +7,8 @@ use App\Models\OrganizationSite;
 use App\Models\PostalCode;
 use App\Models\User;
 use App\Support\ActivityLogger;
-use Illuminate\Support\Str;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 
 trait ManagesEntrepriseSitesAndUsers
@@ -106,15 +106,15 @@ trait ManagesEntrepriseSitesAndUsers
         if ((bool) $this->site_is_primary) {
             OrganizationSite::query()
                 ->where('organization_account_id', $accountId)
-                ->when($this->siteId, fn($query) => $query->where('id', '!=', $this->siteId))
+                ->when($this->siteId, fn ($query) => $query->where('id', '!=', $this->siteId))
                 ->update(['is_primary' => false]);
         }
 
         $site = $this->siteId
             ? OrganizationSite::query()
-            ->where('organization_account_id', $accountId)
-            ->findOrFail((int) $this->siteId)
-            : new OrganizationSite();
+                ->where('organization_account_id', $accountId)
+                ->findOrFail((int) $this->siteId)
+            : new OrganizationSite;
 
         $existingMetadata = $this->normalizeMetadata($site->metadata ?? []);
 
@@ -141,7 +141,7 @@ trait ManagesEntrepriseSitesAndUsers
                 'priority_level' => filled($validated['site_priority_level'] ?? null) ? $validated['site_priority_level'] : null,
                 'requires_manual_validation' => (bool) ($validated['site_requires_manual_validation'] ?? false),
                 'site_tags' => collect(explode(',', (string) ($validated['site_tags'] ?? '')))
-                    ->map(fn($tag) => trim($tag))
+                    ->map(fn ($tag) => trim($tag))
                     ->filter()
                     ->values()
                     ->all(),
@@ -196,13 +196,13 @@ trait ManagesEntrepriseSitesAndUsers
             'user_allowed_site_ids.*' => [
                 'integer',
                 Rule::exists('organization_sites', 'id')
-                    ->where(fn($query) => $query->where('organization_account_id', $accountId)),
+                    ->where(fn ($query) => $query->where('organization_account_id', $accountId)),
             ],
             'user_site_ids' => ['nullable', 'array'],
             'user_site_ids.*' => [
                 'integer',
                 Rule::exists('organization_sites', 'id')
-                    ->where(fn($query) => $query->where('organization_account_id', $accountId)),
+                    ->where(fn ($query) => $query->where('organization_account_id', $accountId)),
             ],
         ]);
 
@@ -214,19 +214,19 @@ trait ManagesEntrepriseSitesAndUsers
 
         $rawSiteIds = collect($this->user_allowed_site_ids ?? [])
             ->merge($this->user_site_ids ?? [])
-            ->filter(fn($id) => filled($id))
-            ->map(fn($id) => (int) $id)
+            ->filter(fn ($id) => filled($id))
+            ->map(fn ($id) => (int) $id)
             ->unique()
             ->values();
 
         $allowedSiteIds = $siteScope === 'selected'
             ? OrganizationSite::query()
-            ->where('organization_account_id', $accountId)
-            ->whereIn('id', $rawSiteIds)
-            ->pluck('id')
-            ->map(fn($id) => (int) $id)
-            ->values()
-            ->all()
+                ->where('organization_account_id', $accountId)
+                ->whereIn('id', $rawSiteIds)
+                ->pluck('id')
+                ->map(fn ($id) => (int) $id)
+                ->values()
+                ->all()
             : [];
 
         $metadata = $this->normalizeMetadata($user->metadata ?? []);
@@ -321,11 +321,11 @@ trait ManagesEntrepriseSitesAndUsers
 
         while (
             OrganizationAccount::query()
-            ->when($ignoreId, fn($query) => $query->where('id', '!=', $ignoreId))
-            ->where('slug', $slug)
-            ->exists()
+                ->when($ignoreId, fn ($query) => $query->where('id', '!=', $ignoreId))
+                ->where('slug', $slug)
+                ->exists()
         ) {
-            $slug = $base . '-' . $i;
+            $slug = $base.'-'.$i;
             $i++;
         }
 

@@ -27,7 +27,7 @@ class AnthropicStreamingProvider
      * Stream une conversation, invoquant $onEvent pour chaque StreamEvent
      * dès qu'il arrive du serveur Anthropic.
      *
-     * @param callable(StreamEvent): void $onEvent
+     * @param  callable(StreamEvent): void  $onEvent
      */
     public function chatStream(
         string $systemPrompt,
@@ -40,44 +40,45 @@ class AnthropicStreamingProvider
 
         if (empty($apiKey)) {
             $onEvent(StreamEvent::error("ANTHROPIC_API_KEY n'est pas configurée."));
+
             return;
         }
 
         $payload = [
-            'model'      => $options['model']      ?? config('services.anthropic.model', 'claude-sonnet-4-20250514'),
+            'model' => $options['model'] ?? config('services.anthropic.model', 'claude-sonnet-4-20250514'),
             'max_tokens' => $options['max_tokens'] ?? config('services.anthropic.max_tokens', 1024),
-            'system'     => $systemPrompt,
-            'messages'   => $messages,
-            'stream'     => true,
+            'system' => $systemPrompt,
+            'messages' => $messages,
+            'stream' => true,
         ];
 
         if (! empty($tools)) {
             $payload['tools'] = $tools;
         }
 
-        $ch     = curl_init('https://api.anthropic.com/v1/messages');
+        $ch = curl_init('https://api.anthropic.com/v1/messages');
         $buffer = '';
 
         curl_setopt_array($ch, [
-            CURLOPT_POST           => true,
-            CURLOPT_HTTPHEADER     => [
-                'x-api-key: ' . $apiKey,
+            CURLOPT_POST => true,
+            CURLOPT_HTTPHEADER => [
+                'x-api-key: '.$apiKey,
                 'anthropic-version: 2023-06-01',
                 'Content-Type: application/json',
                 'Accept: text/event-stream',
             ],
-            CURLOPT_POSTFIELDS     => json_encode($payload),
-            CURLOPT_TIMEOUT        => $options['timeout'] ?? 120,
+            CURLOPT_POSTFIELDS => json_encode($payload),
+            CURLOPT_TIMEOUT => $options['timeout'] ?? 120,
             CURLOPT_RETURNTRANSFER => false,
 
             // Le streaming réel : à chaque chunk reçu de Anthropic, on parse
             // les frames complètes et on appelle $onEvent immédiatement.
-            CURLOPT_WRITEFUNCTION  => function ($ch, $chunk) use (&$buffer, $onEvent) {
+            CURLOPT_WRITEFUNCTION => function ($ch, $chunk) use (&$buffer, $onEvent) {
                 $buffer .= $chunk;
 
                 while (($pos = strpos($buffer, "\n\n")) !== false) {
                     $rawFrame = substr($buffer, 0, $pos);
-                    $buffer   = substr($buffer, $pos + 2);
+                    $buffer = substr($buffer, $pos + 2);
 
                     $frame = $this->parseSseFrame($rawFrame);
                     $event = $this->mapToStreamEvent($frame);
@@ -103,8 +104,8 @@ class AnthropicStreamingProvider
         ]);
 
         $success = curl_exec($ch);
-        $error   = curl_error($ch);
-        $code    = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        $error = curl_error($ch);
+        $code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
         curl_close($ch);
 
         if (! $success && ! connection_aborted()) {
@@ -175,7 +176,7 @@ class AnthropicStreamingProvider
     private function mapContentBlockStart(array $data): ?StreamEvent
     {
         $block = $data['content_block'] ?? [];
-        $type  = $block['type'] ?? null;
+        $type = $block['type'] ?? null;
 
         if ($type === 'text') {
             return StreamEvent::textBlockStart(index: (int) ($data['index'] ?? 0));
@@ -195,8 +196,8 @@ class AnthropicStreamingProvider
     private function mapContentBlockDelta(array $data): ?StreamEvent
     {
         $delta = $data['delta'] ?? [];
-        $type  = $delta['type'] ?? null;
-        $idx   = (int) ($data['index'] ?? 0);
+        $type = $delta['type'] ?? null;
+        $idx = (int) ($data['index'] ?? 0);
 
         if ($type === 'text_delta') {
             return StreamEvent::textDelta(index: $idx, text: (string) ($delta['text'] ?? ''));

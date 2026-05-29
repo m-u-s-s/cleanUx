@@ -10,12 +10,17 @@ use Illuminate\Support\Str;
 class FleetAssignment extends Model
 {
     public const STATUS_ACTIVE = 'active';
+
     public const STATUS_COMPLETED = 'completed';
+
     public const STATUS_CANCELLED = 'cancelled';
 
     public const CONDITION_OK = 'ok';
+
     public const CONDITION_DAMAGED = 'damaged';
+
     public const CONDITION_LOST = 'lost';
+
     public const CONDITION_NEEDS_MAINTENANCE = 'needs_maintenance';
 
     protected $fillable = [
@@ -36,7 +41,7 @@ class FleetAssignment extends Model
 
     public static function generateCode(): string
     {
-        return 'fa_' . Str::lower(Str::random(20));
+        return 'fa_'.Str::lower(Str::random(20));
     }
 
     public function vehicle(): BelongsTo

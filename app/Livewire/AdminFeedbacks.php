@@ -21,8 +21,11 @@ class AdminFeedbacks extends Component
     public ?int $scopeId = null;
 
     public string $employe_id = '';
+
     public string $client_id = '';
+
     public string $status = '';
+
     public string $search = '';
 
     public $perPage = 8;
@@ -127,7 +130,7 @@ class AdminFeedbacks extends Component
 
     protected function applySearch(Builder $query, string $search): Builder
     {
-        $like = '%' . str_replace(['%', '_'], ['\%', '\_'], $search) . '%';
+        $like = '%'.str_replace(['%', '_'], ['\%', '\_'], $search).'%';
 
         return $query->where(function (Builder $searchQuery) use ($like) {
             $searchQuery
@@ -206,7 +209,7 @@ class AdminFeedbacks extends Component
         return [
             'total' => $rows->count(),
             'average_note' => $average ? round((float) $average, 1) : 0,
-            'average_note_label' => $average ? round((float) $average, 1) . '/5' : '0/5',
+            'average_note_label' => $average ? round((float) $average, 1).'/5' : '0/5',
             'answered' => $answered,
             'unanswered' => max(0, $rows->count() - $answered),
             'low_scores' => $lowScores,
@@ -276,6 +279,7 @@ class AdminFeedbacks extends Component
 
         if (mb_strlen($value) > 2000) {
             $this->dispatch('toast', 'La réponse est trop longue.', 'error');
+
             return;
         }
 
@@ -292,6 +296,7 @@ class AdminFeedbacks extends Component
 
         if (! $feedback) {
             $this->dispatch('toast', 'Feedback introuvable.', 'error');
+
             return;
         }
 
@@ -329,7 +334,7 @@ class AdminFeedbacks extends Component
 
         return $count === 0
             ? 'Aucun filtre actif'
-            : $count . ' filtre(s) actif(s)';
+            : $count.' filtre(s) actif(s)';
     }
 
     public function render(): View

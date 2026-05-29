@@ -15,7 +15,7 @@ class KnowledgeBaseTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->kb = new KnowledgeBase();
+        $this->kb = new KnowledgeBase;
     }
 
     public function test_search_finds_annulation_article(): void

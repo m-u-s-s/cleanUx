@@ -38,6 +38,7 @@ class AuditRetentionService
                     Log::warning('AuditRetentionService::purge time limit reached', [
                         'deleted_so_far' => $totalDeleted,
                     ]);
+
                     return $totalDeleted;
                 }
 
@@ -57,7 +58,7 @@ class AuditRetentionService
     }
 
     /**
-     * @return array<string, int>  domain => retention_days
+     * @return array<string, int> domain => retention_days
      */
     public function resolveAllDomains(): array
     {

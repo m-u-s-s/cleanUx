@@ -3,6 +3,7 @@
 namespace Tests\Unit\Services;
 
 use App\Services\Geo\GeoDistanceService;
+use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Support\Facades\Http;
 use Tests\TestCase;
 
@@ -16,7 +17,7 @@ class GeoDistanceServiceDrivingTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->service = new GeoDistanceService();
+        $this->service = new GeoDistanceService;
     }
 
     public function test_returns_null_when_api_key_absent(): void
@@ -36,9 +37,9 @@ class GeoDistanceServiceDrivingTest extends TestCase
         Http::fake([
             'maps.googleapis.com/*' => Http::response([
                 'status' => 'OK',
-                'rows'   => [[
+                'rows' => [[
                     'elements' => [[
-                        'status'   => 'OK',
+                        'status' => 'OK',
                         'distance' => ['value' => 287000, 'text' => '287 km'],
                         'duration' => ['value' => 9600,   'text' => '2h 40min'],
                     ]],
@@ -75,7 +76,7 @@ class GeoDistanceServiceDrivingTest extends TestCase
         Http::fake([
             'maps.googleapis.com/*' => Http::response([
                 'status' => 'OK',
-                'rows'   => [[
+                'rows' => [[
                     'elements' => [[
                         'status' => 'ZERO_RESULTS',
                     ]],
@@ -94,7 +95,7 @@ class GeoDistanceServiceDrivingTest extends TestCase
 
         Http::fake([
             'maps.googleapis.com/*' => function () {
-                throw new \Illuminate\Http\Client\ConnectionException('timeout');
+                throw new ConnectionException('timeout');
             },
         ]);
 

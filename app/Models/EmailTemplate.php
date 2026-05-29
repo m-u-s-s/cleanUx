@@ -31,6 +31,7 @@ class EmailTemplate extends Model
         if ($locale && isset($this->locale_overrides[$locale]['subject'])) {
             return $this->locale_overrides[$locale]['subject'];
         }
+
         return $this->subject_pattern;
     }
 
@@ -39,6 +40,7 @@ class EmailTemplate extends Model
         if ($locale && isset($this->locale_overrides[$locale]['body_html'])) {
             return $this->locale_overrides[$locale]['body_html'];
         }
+
         return $this->body_html_pattern;
     }
 }

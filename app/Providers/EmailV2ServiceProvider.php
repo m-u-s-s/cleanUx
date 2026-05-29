@@ -13,8 +13,8 @@ class EmailV2ServiceProvider extends ServiceProvider
     {
         $this->app->singleton(EmailProviderContract::class, function () {
             return match ((string) config('email_v2.provider', 'mock')) {
-                'smtp', 'mailgun', 'ses', 'sendgrid' => new SmtpEmailProvider(),
-                default => new MockEmailProvider(),
+                'smtp', 'mailgun', 'ses', 'sendgrid' => new SmtpEmailProvider,
+                default => new MockEmailProvider,
             };
         });
     }

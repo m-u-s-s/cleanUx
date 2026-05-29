@@ -35,17 +35,17 @@ class WebhookEndpoint extends Model
 
     public static function generateCode(): string
     {
-        return 'whe_' . Str::lower(Str::random(20));
+        return 'whe_'.Str::lower(Str::random(20));
     }
 
     public static function generateSecret(): string
     {
-        return 'whsec_' . Str::random(48);
+        return 'whsec_'.Str::random(48);
     }
 
     public function owner(): BelongsTo
     {
-        return $this->belongsTo(\App\Models\User::class, 'owner_user_id');
+        return $this->belongsTo(User::class, 'owner_user_id');
     }
 
     public function subscriptions(): HasMany

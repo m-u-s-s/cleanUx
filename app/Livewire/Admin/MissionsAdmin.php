@@ -4,27 +4,33 @@ namespace App\Livewire\Admin;
 
 use App\Models\Booking;
 use App\Models\User;
-use Livewire\Component;
-use Livewire\WithPagination;
-use Illuminate\Contracts\View\View;
-use Livewire\Attributes\Layout;
 use App\Services\Booking\SmartDispatchService;
 use App\Services\Missions\MissionFromRendezVousSyncService;
+use App\Support\ActivityLogger;
+use App\Support\Domain\BookingStatus;
+use Illuminate\Contracts\View\View;
+use Livewire\Component;
+use Livewire\WithPagination;
 
 class MissionsAdmin extends Component
 {
     use WithPagination;
 
     public $search = '';
+
     public $filtreEmploye = '';
+
     public $filtreStatus = '';
+
     public $filtrePriorite = '';
+
     public $tri = 'desc';
+
     public ?int $dispatchPreviewRdvId = null;
+
     public array $dispatchPreview = [];
 
     protected $queryString = ['search', 'filtreEmploye', 'filtreStatus', 'filtrePriorite', 'page'];
-
 
     public function updatingSearch()
     {
@@ -53,7 +59,7 @@ class MissionsAdmin extends Component
 
     public function dispatchRendezVous(int $rdvId): void
     {
-        $rdv = \App\Models\Booking::with([
+        $rdv = Booking::with([
             'client',
             'serviceZone',
             'employe',
@@ -64,6 +70,7 @@ class MissionsAdmin extends Component
 
         if (! $employee) {
             $this->dispatch('toast', 'Aucun employé disponible pour ce rendez-vous.', 'error');
+
             return;
         }
 
@@ -71,25 +78,23 @@ class MissionsAdmin extends Component
 
         $rdv->update([
             'employe_id' => $employee->id,
-            'status' => \App\Support\Domain\BookingStatus::CONFIRME,
+            'status' => BookingStatus::CONFIRME,
         ]);
 
         app(MissionFromRendezVousSyncService::class)->syncFromRendezVous($rdv->fresh());
 
-        \App\Support\ActivityLogger::log('rdv_auto_dispatched', $rdv, [
+        ActivityLogger::log('rdv_auto_dispatched', $rdv, [
             'old_employee_id' => $oldEmployeeId,
             'new_employee_id' => $employee->id,
             'new_employee_name' => $employee->name,
         ]);
 
-        $this->dispatch('toast', 'Rendez-vous assigné à ' . $employee->name . '.', 'success');
+        $this->dispatch('toast', 'Rendez-vous assigné à '.$employee->name.'.', 'success');
     }
-
-
 
     public function previewDispatch(int $rdvId): void
     {
-        $rdv = \App\Models\Booking::with([
+        $rdv = Booking::with([
             'client',
             'serviceZone',
             'employe',
@@ -97,7 +102,7 @@ class MissionsAdmin extends Component
 
         $this->dispatchPreviewRdvId = $rdv->id;
 
-        $this->dispatchPreview = app(\App\Services\Booking\SmartDispatchService::class)
+        $this->dispatchPreview = app(SmartDispatchService::class)
             ->explainScores($rdv)
             ->toArray();
     }
@@ -111,10 +116,10 @@ class MissionsAdmin extends Component
     public function render(): View
     {
         $query = Booking::with(['client', 'employe', 'serviceCatalog', 'postalCode'])
-            ->when($this->search, fn($q) => $q->searchStructured($this->search))
-            ->when($this->filtreEmploye, fn($q) => $q->where('employe_id', $this->filtreEmploye))
-            ->when($this->filtreStatus, fn($q) => $q->where('status', $this->filtreStatus))
-            ->when($this->filtrePriorite, fn($q) => $q->where('priorite', $this->filtrePriorite));
+            ->when($this->search, fn ($q) => $q->searchStructured($this->search))
+            ->when($this->filtreEmploye, fn ($q) => $q->where('employe_id', $this->filtreEmploye))
+            ->when($this->filtreStatus, fn ($q) => $q->where('status', $this->filtreStatus))
+            ->when($this->filtrePriorite, fn ($q) => $q->where('priorite', $this->filtrePriorite));
 
         return view('livewire.admin.missions-admin', [
             'missions' => $query->orderBy('date', $this->tri)->orderBy('heure', $this->tri)->paginate(10),

@@ -2,6 +2,7 @@
 
 namespace App\Services\I18n;
 
+use App\Models\TranslationOverride;
 use Illuminate\Contracts\Translation\Loader;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Config;
@@ -19,9 +20,7 @@ use Illuminate\Support\Facades\Schema;
  */
 class TranslationOverrideLoader implements Loader
 {
-    public function __construct(protected Loader $inner)
-    {
-    }
+    public function __construct(protected Loader $inner) {}
 
     public function load($locale, $group, $namespace = null)
     {
@@ -102,7 +101,7 @@ class TranslationOverrideLoader implements Loader
     protected function fetchOverrides(string $locale, string $group, string $namespace): array
     {
         try {
-            return \App\Models\TranslationOverride::query()
+            return TranslationOverride::query()
                 ->published()
                 ->forLocale($locale)
                 ->where('group', $group)
@@ -111,6 +110,7 @@ class TranslationOverrideLoader implements Loader
                 ->all();
         } catch (\Throwable $e) {
             report($e);
+
             return [];
         }
     }
@@ -120,6 +120,7 @@ class TranslationOverrideLoader implements Loader
         // Pas d'iterator de keys universel → on flush par patterns connus
         if ($locale && $group) {
             Cache::forget("i18n:overrides:*:{$locale}:{$group}");
+
             return;
         }
 
@@ -127,6 +128,7 @@ class TranslationOverrideLoader implements Loader
             foreach (['app', 'ui', 'messages', 'validation', 'auth', '*'] as $g) {
                 Cache::forget("i18n:overrides:*:{$locale}:{$g}");
             }
+
             return;
         }
 

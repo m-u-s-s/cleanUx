@@ -68,6 +68,7 @@ class BookingFavoriteService
             'use_count' => (int) $favorite->use_count + 1,
             'last_used_at' => now(),
         ]);
+
         return $favorite->fresh();
     }
 
@@ -83,8 +84,9 @@ class BookingFavoriteService
             $parts[] = mb_substr((string) $booking->adresse_complete, 0, 40);
         }
         if ($booking->getAttribute('duree_estimee')) {
-            $parts[] = $booking->duree_estimee . 'min';
+            $parts[] = $booking->duree_estimee.'min';
         }
-        return $parts ? implode(' · ', $parts) : 'Favori #' . $booking->id;
+
+        return $parts ? implode(' · ', $parts) : 'Favori #'.$booking->id;
     }
 }

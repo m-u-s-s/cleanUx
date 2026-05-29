@@ -33,8 +33,9 @@ class BillingProcessor
         if (! $sub || in_array($sub->status, $skipStatuses, true)) {
             $cycle->update([
                 'billing_status' => SubscriptionCycleV2::STATUS_SKIPPED,
-                'last_error' => 'subscription_not_chargeable_' . ($sub?->status ?? 'missing'),
+                'last_error' => 'subscription_not_chargeable_'.($sub?->status ?? 'missing'),
             ]);
+
             return $cycle->fresh();
         }
 
@@ -71,6 +72,7 @@ class BillingProcessor
                             ? SubscriptionV2::STATUS_ACTIVE
                             : $sub->status),
                 ]);
+
                 return $cycle->fresh();
             }
 
@@ -120,6 +122,7 @@ class BillingProcessor
         if ($existing) {
             return $existing;
         }
+
         return SubscriptionInvoiceV2::query()->create([
             'code' => SubscriptionInvoiceV2::generateCode(),
             'subscription_id' => $cycle->subscription_id,

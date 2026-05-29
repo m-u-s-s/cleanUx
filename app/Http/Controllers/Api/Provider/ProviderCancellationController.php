@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Api\Provider;
 
 use App\Http\Controllers\Controller;
-use App\Models\Booking;
 use App\Models\Mission;
 use App\Services\Cancellation\CancelBookingService;
 use Illuminate\Http\JsonResponse;
@@ -11,6 +10,7 @@ use Illuminate\Http\Request;
 
 /**
  * @group Provider — Cancellation
+ *
  * @authenticated
  *
  * Phase 14 — API d'annulation côté prestataire.

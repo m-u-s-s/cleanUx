@@ -14,24 +14,37 @@ class PromoCode extends Model
     use HasFactory;
 
     public const TYPE_PERCENT = 'percent';
+
     public const TYPE_FIXED = 'fixed_amount';
+
     public const TYPE_FREE_FIRST = 'free_first_booking';
 
     public const STATUS_DRAFT = 'draft';
+
     public const STATUS_ACTIVE = 'active';
+
     public const STATUS_PAUSED = 'paused';
+
     public const STATUS_EXPIRED = 'expired';
+
     public const STATUS_ARCHIVED = 'archived';
 
     public const SOURCE_MANUAL = 'manual';
+
     public const SOURCE_CAMPAIGN = 'campaign';
+
     public const SOURCE_REFERRAL = 'referral';
+
     public const SOURCE_SYSTEM = 'system';
 
     public const SCOPE_ALL = 'all';
+
     public const SCOPE_NEW = 'new_customers';
+
     public const SCOPE_RETURNING = 'returning_customers';
+
     public const SCOPE_B2B = 'b2b';
+
     public const SCOPE_SPECIFIC = 'specific_users';
 
     protected $fillable = [

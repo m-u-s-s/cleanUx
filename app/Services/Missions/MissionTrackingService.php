@@ -25,9 +25,9 @@ class MissionTrackingService
 
         $isAssigned = $mission->lead_employee_id === $employee->id
             || MissionAssignment::query()
-            ->where('mission_id', $mission->id)
-            ->where('user_id', $employee->id)
-            ->exists();
+                ->where('mission_id', $mission->id)
+                ->where('user_id', $employee->id)
+                ->exists();
 
         if (! $isAssigned) {
             throw new RuntimeException('Cet employé n’est pas assigné à cette mission.');
@@ -169,7 +169,6 @@ class MissionTrackingService
         return $earthRadius * $c;
     }
 
-
     public function stopActiveForMission(Mission $mission, ?float $lat = null, ?float $lng = null): ?MissionTrackingSession
     {
         $session = MissionTrackingSession::query()
@@ -193,9 +192,9 @@ class MissionTrackingService
 
         $latestPoint = $session
             ? MissionTrackingPoint::query()
-            ->where('tracking_session_id', $session->id)
-            ->latest('recorded_at')
-            ->first()
+                ->where('tracking_session_id', $session->id)
+                ->latest('recorded_at')
+                ->first()
             : null;
 
         $employeeLat = $latestPoint?->lat ? (float) $latestPoint->lat : ($session?->last_lat !== null ? (float) $session->last_lat : null);

@@ -4,6 +4,7 @@ namespace App\Services\ApiTokensV2;
 
 use App\Models\Sanctum\PersonalAccessTokenV2;
 use App\Models\User;
+use App\Support\Audit\CriticalActionAuditor;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 use Laravel\Sanctum\NewAccessToken;
@@ -39,7 +40,7 @@ class ApiTokenManager
         $filtered = $this->scopes->filterForRole($requested, $role);
         if (! empty($filtered['invalid'])) {
             throw ValidationException::withMessages([
-                'scopes' => ['Scopes invalides ou non autorisés pour ce rôle : ' . implode(', ', $filtered['invalid'])],
+                'scopes' => ['Scopes invalides ou non autorisés pour ce rôle : '.implode(', ', $filtered['invalid'])],
             ]);
         }
         $abilities = $filtered['valid'] ?: ['*'];
@@ -82,7 +83,7 @@ class ApiTokenManager
             $expiresAt = now()->addDays((int) config('api_tokens_v2.default_expiry_days', 365));
         }
 
-        $new = $owner->createToken($token->name . ' (rotated)', $abilities, $expiresAt);
+        $new = $owner->createToken($token->name.' (rotated)', $abilities, $expiresAt);
         $newToken = $new->accessToken;
         $newToken->forceFill(array_filter([
             'display_name' => $token->display_name,
@@ -112,7 +113,7 @@ class ApiTokenManager
         DB::transaction(function () use ($token) {
             $token->delete();
         });
-        \App\Support\Audit\CriticalActionAuditor::record(
+        CriticalActionAuditor::record(
             eventType: 'api_token.revoked',
             context: $payload,
             severity: 'warning',
@@ -129,12 +130,13 @@ class ApiTokenManager
             'suspended_at' => now(),
             'suspended_reason' => $reason,
         ]);
-        \App\Support\Audit\CriticalActionAuditor::record(
+        CriticalActionAuditor::record(
             eventType: 'api_token.suspended',
             context: ['token_id' => $token->id, 'reason' => $reason],
             subject: $token,
             severity: 'warning',
         );
+
         return $token->fresh();
     }
 
@@ -144,11 +146,12 @@ class ApiTokenManager
             'suspended_at' => null,
             'suspended_reason' => null,
         ]);
-        \App\Support\Audit\CriticalActionAuditor::record(
+        CriticalActionAuditor::record(
             eventType: 'api_token.unsuspended',
             context: ['token_id' => $token->id],
             subject: $token,
         );
+
         return $token->fresh();
     }
 }

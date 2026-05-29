@@ -1,10 +1,10 @@
 
 <?php
 
-require_once __DIR__ . '/vendor/autoload.php';
+require_once __DIR__.'/vendor/autoload.php';
 
 $root = __DIR__;
-$outputDir = $root . '/storage/app/deep-audit';
+$outputDir = $root.'/storage/app/deep-audit';
 
 if (! is_dir($outputDir)) {
     mkdir($outputDir, 0777, true);
@@ -27,7 +27,7 @@ function collectPhpFiles(string $root, array $dirs): array
     $files = [];
 
     foreach ($dirs as $dir) {
-        $fullDir = $root . DIRECTORY_SEPARATOR . $dir;
+        $fullDir = $root.DIRECTORY_SEPARATOR.$dir;
 
         if (! is_dir($fullDir)) {
             continue;
@@ -60,7 +60,7 @@ function collectBladeFiles(string $root, array $dirs): array
     $files = [];
 
     foreach ($dirs as $dir) {
-        $fullDir = $root . DIRECTORY_SEPARATOR . $dir;
+        $fullDir = $root.DIRECTORY_SEPARATOR.$dir;
 
         if (! is_dir($fullDir)) {
             continue;
@@ -115,7 +115,7 @@ function extractFqcn(string $content): ?string
         return null;
     }
 
-    return $namespace . '\\' . $class;
+    return $namespace.'\\'.$class;
 }
 
 function kebabCaseForAudit(string $value): string
@@ -139,7 +139,7 @@ function livewireConventionView(string $fqcn): ?string
 
     $viewParts = array_map(fn ($part) => kebabCaseForAudit($part), $parts);
 
-    return 'livewire.' . implode('.', $viewParts);
+    return 'livewire.'.implode('.', $viewParts);
 }
 
 function viewExistsForAudit(string $root, string $view): bool
@@ -153,8 +153,8 @@ function viewExistsForAudit(string $root, string $view): bool
     $path = str_replace('.', DIRECTORY_SEPARATOR, $view);
 
     $candidates = [
-        $root . '/resources/views/' . $path . '.blade.php',
-        $root . '/resources/views/' . $path . '.php',
+        $root.'/resources/views/'.$path.'.blade.php',
+        $root.'/resources/views/'.$path.'.php',
     ];
 
     foreach ($candidates as $candidate) {
@@ -200,7 +200,7 @@ function resolveClassNameForAudit(string $raw, ?string $namespace, array $uses):
     }
 
     if ($namespace) {
-        return $namespace . '\\' . $raw;
+        return $namespace.'\\'.$raw;
     }
 
     return $raw;
@@ -208,7 +208,7 @@ function resolveClassNameForAudit(string $raw, ?string $namespace, array $uses):
 
 function routeListForAudit(string $root): array
 {
-    $rawJson = shell_exec(PHP_BINARY . ' artisan route:list --json --no-ansi 2>&1');
+    $rawJson = shell_exec(PHP_BINARY.' artisan route:list --json --no-ansi 2>&1');
 
     if ($rawJson === null || trim($rawJson) === '') {
         return [[], []];
@@ -249,7 +249,7 @@ function urlMatchesKnownRoute(string $url, array $uris): bool
     foreach ($uris as $uri) {
         $pattern = preg_quote(trim($uri, '/'), '#');
         $pattern = preg_replace('/\\\\\{[^}]+\\\\\}/', '[^/]+', $pattern);
-        $pattern = '#^' . $pattern . '$#';
+        $pattern = '#^'.$pattern.'$#';
 
         if (preg_match($pattern, $url)) {
             return true;
@@ -262,16 +262,16 @@ function urlMatchesKnownRoute(string $url, array $uris): bool
 function textReport(array $items, string $emptyMessage): string
 {
     if ($items === []) {
-        return $emptyMessage . PHP_EOL;
+        return $emptyMessage.PHP_EOL;
     }
 
     $text = '';
 
     foreach ($items as $name => $locations) {
-        $text .= $name . PHP_EOL;
+        $text .= $name.PHP_EOL;
 
         foreach ($locations as $location) {
-            $text .= '  - ' . $location . PHP_EOL;
+            $text .= '  - '.$location.PHP_EOL;
         }
 
         $text .= PHP_EOL;
@@ -342,7 +342,7 @@ foreach (collectPhpFiles($root, ['app/Livewire']) as $file) {
 
     foreach ($views as $view) {
         if (! viewExistsForAudit($root, $view)) {
-            addIssue($missingLivewireViews, $view, $relative . ' => ' . $fqcn);
+            addIssue($missingLivewireViews, $view, $relative.' => '.$fqcn);
         }
     }
 }
@@ -355,7 +355,7 @@ foreach (collectPhpFiles($root, ['app/Livewire']) as $file) {
 
 $psr4Issues = [];
 
-$composerPath = $root . '/composer.json';
+$composerPath = $root.'/composer.json';
 $composer = file_exists($composerPath)
     ? json_decode(file_get_contents($composerPath), true)
     : [];
@@ -374,7 +374,7 @@ foreach (['autoload', 'autoload-dev'] as $section) {
 }
 
 foreach ($psr4Maps as $map) {
-    $baseDir = $root . DIRECTORY_SEPARATOR . $map['dir'];
+    $baseDir = $root.DIRECTORY_SEPARATOR.$map['dir'];
 
     if (! is_dir($baseDir)) {
         continue;
@@ -392,22 +392,22 @@ foreach ($psr4Maps as $map) {
             addIssue(
                 $psr4Issues,
                 'Namespace hors préfixe PSR-4',
-                relativePathForAudit($root, $file) . ' => ' . $fqcn . ' attendu sous ' . $map['prefix']
+                relativePathForAudit($root, $file).' => '.$fqcn.' attendu sous '.$map['prefix']
             );
 
             continue;
         }
 
         $relativeClass = substr($fqcn, strlen($map['prefix']));
-        $expected = normalizePathForAudit($root . '/' . $map['dir'] . '/' . str_replace('\\', '/', $relativeClass) . '.php');
+        $expected = normalizePathForAudit($root.'/'.$map['dir'].'/'.str_replace('\\', '/', $relativeClass).'.php');
         $actual = normalizePathForAudit($file);
 
         if ($expected !== $actual) {
             addIssue(
                 $psr4Issues,
                 $fqcn,
-                'Actuel:  ' . relativePathForAudit($root, $actual) . PHP_EOL .
-                '    Attendu: ' . relativePathForAudit($root, $expected)
+                'Actuel:  '.relativePathForAudit($root, $actual).PHP_EOL.
+                '    Attendu: '.relativePathForAudit($root, $expected)
             );
         }
     }
@@ -433,6 +433,7 @@ foreach (collectPhpFiles($root, ['app']) as $file) {
 
     if (! class_exists($fqcn) && ! trait_exists($fqcn)) {
         addIssue($unloadableClasses, $fqcn, $relative);
+
         continue;
     }
 
@@ -443,7 +444,8 @@ foreach (collectPhpFiles($root, ['app']) as $file) {
     try {
         $reflection = new ReflectionClass($fqcn);
     } catch (Throwable $e) {
-        addIssue($unloadableClasses, $fqcn, $relative . ' => ' . $e->getMessage());
+        addIssue($unloadableClasses, $fqcn, $relative.' => '.$e->getMessage());
+
         continue;
     }
 
@@ -472,8 +474,8 @@ foreach (collectPhpFiles($root, ['app']) as $file) {
 
             addIssue(
                 $thisMethodIssues,
-                $fqcn . '::$this->' . $method . '()',
-                $relative . ':' . $line
+                $fqcn.'::$this->'.$method.'()',
+                $relative.':'.$line
             );
         }
     }
@@ -501,7 +503,7 @@ foreach (collectPhpFiles($root, ['tests']) as $file) {
 
     foreach ($lines as $index => $line) {
         $lineNumber = $index + 1;
-        $location = $relative . ':' . $lineNumber;
+        $location = $relative.':'.$lineNumber;
 
         if (preg_match_all('/route\s*\(\s*[\'"]([A-Za-z0-9_.-]+)[\'"]/', $line, $matches)) {
             foreach ($matches[1] as $routeName) {
@@ -585,16 +587,16 @@ $reports = [
 ];
 
 foreach ($reports as $filename => $content) {
-    file_put_contents($outputDir . '/' . $filename, $content);
+    file_put_contents($outputDir.'/'.$filename, $content);
 }
 
 file_put_contents(
-    $outputDir . '/livewire-components.txt',
+    $outputDir.'/livewire-components.txt',
     implode(PHP_EOL, array_map(
-        fn ($fqcn, $data) => $fqcn . ' => ' . $data['file'] . ' => ' . implode(', ', $data['views']),
+        fn ($fqcn, $data) => $fqcn.' => '.$data['file'].' => '.implode(', ', $data['views']),
         array_keys($livewireComponents),
         $livewireComponents
-    )) . PHP_EOL
+    )).PHP_EOL
 );
 
 echo PHP_EOL;
@@ -604,5 +606,5 @@ echo PHP_EOL;
 
 foreach ($reports as $filename => $content) {
     echo "===== {$filename} =====\n";
-    echo $content . PHP_EOL;
+    echo $content.PHP_EOL;
 }

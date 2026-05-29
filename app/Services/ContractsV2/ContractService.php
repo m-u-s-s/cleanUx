@@ -8,6 +8,7 @@ use App\Models\ContractSignatureAudit;
 use App\Models\ContractTemplate;
 use App\Models\User;
 use App\Support\ActivityLogger;
+use App\Support\Webhooks\BusinessEventEmitter;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
@@ -69,7 +70,7 @@ class ContractService
 
         $doc = ContractDocument::create([
             'template_id' => $template->id,
-            'code' => 'doc_' . Str::lower(Str::random(16)),
+            'code' => 'doc_'.Str::lower(Str::random(16)),
             'user_id' => $user->id,
             'body_rendered_html' => $bodyHtml,
             'status' => ContractDocument::STATUS_PENDING_SIGNATURE,
@@ -158,7 +159,7 @@ class ContractService
                 'signer_id' => $signer->id,
             ]);
 
-            \App\Support\Webhooks\BusinessEventEmitter::emit(
+            BusinessEventEmitter::emit(
                 eventCode: 'contract.signed',
                 payload: [
                     'document_id' => $document->id,
@@ -171,8 +172,8 @@ class ContractService
                     'template_version' => $document->template?->version,
                     'signed_at' => $signature->signed_at?->toIso8601String(),
                 ],
-                idempotencyKey: 'contract.signed:' . $signature->id,
-                sourceType: \App\Models\ContractSignature::class,
+                idempotencyKey: 'contract.signed:'.$signature->id,
+                sourceType: ContractSignature::class,
                 sourceId: (int) $signature->id,
             );
 

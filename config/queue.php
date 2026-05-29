@@ -27,9 +27,9 @@ return [
     */
 
     'priorities' => [
-        'high'    => env('QUEUE_HIGH',    'payments,stripe'),
+        'high' => env('QUEUE_HIGH', 'payments,stripe'),
         'default' => env('QUEUE_DEFAULT', 'default,notifications'),
-        'low'     => env('QUEUE_LOW',     'analytics,reports'),
+        'low' => env('QUEUE_LOW', 'analytics,reports'),
     ],
 
     /*

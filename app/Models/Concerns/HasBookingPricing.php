@@ -66,7 +66,7 @@ trait HasBookingPricing
         $amount = $this->getFinalPriceAttribute() ?? (float) ($this->estimated_price ?? $this->devis_estime ?? 0);
         $currency = $this->currency ?? 'EUR';
 
-        return number_format($amount, 2, ',', ' ') . ' ' . $currency;
+        return number_format($amount, 2, ',', ' ').' '.$currency;
     }
 
     /**

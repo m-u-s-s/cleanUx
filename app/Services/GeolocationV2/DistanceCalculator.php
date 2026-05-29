@@ -10,7 +10,7 @@ class DistanceCalculator
      * Filtre les points dans un rayon donné autour d'une origine (haversine).
      * Retourne les points enrichis avec _distance_meters trié ascendant.
      *
-     * @param array<int, array{latitude:float, longitude:float}> $points
+     * @param  array<int, array{latitude:float, longitude:float}>  $points
      * @return array<int, array>
      */
     public function withinRadius(float $originLat, float $originLng, array $points, float $radiusMeters): array
@@ -26,6 +26,7 @@ class DistanceCalculator
             }
         }
         usort($out, fn ($a, $b) => $a['_distance_meters'] <=> $b['_distance_meters']);
+
         return $out;
     }
 

@@ -12,6 +12,7 @@ use Illuminate\Validation\ValidationException;
 
 /**
  * @group Client — NPS Survey
+ *
  * @authenticated
  */
 class NpsController extends Controller

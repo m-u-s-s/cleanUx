@@ -3,12 +3,11 @@
 namespace App\Services\Messaging;
 
 use App\Events\MessageSent;
-use App\Events\Messaging\MessageEdited;
 use App\Events\Messaging\MessageDeleted;
+use App\Events\Messaging\MessageEdited;
 use App\Events\Messaging\UserMentioned;
 use App\Models\Channel;
 use App\Models\Message;
-use App\Models\MessageMention;
 use App\Models\User;
 use App\Notifications\MentionedInMessageNotification;
 use Illuminate\Support\Facades\DB;
@@ -44,11 +43,11 @@ class MessageService
 
             $message = Message::create([
                 'channel_id' => $channel->id,
-                'user_id'    => $sender->id,
-                'content'    => $content,
-                'type'       => $type,
-                'parent_id'  => $parentId,
-                'metadata'   => $metadata ?: null,
+                'user_id' => $sender->id,
+                'content' => $content,
+                'type' => $type,
+                'parent_id' => $parentId,
+                'metadata' => $metadata ?: null,
             ]);
 
             // Mentions
@@ -78,7 +77,7 @@ class MessageService
     public function edit(Message $message, User $editor, string $newContent): Message
     {
         if ((int) $message->user_id !== (int) $editor->id) {
-            throw new \DomainException("Vous ne pouvez éditer que vos propres messages.");
+            throw new \DomainException('Vous ne pouvez éditer que vos propres messages.');
         }
 
         return DB::transaction(function () use ($message, $newContent) {
@@ -92,6 +91,7 @@ class MessageService
             $this->notifyMentioned($message, $resolved['users'], onlyNew: true);
 
             broadcast(new MessageEdited($message))->toOthers();
+
             return $message->fresh();
         });
     }
@@ -102,7 +102,7 @@ class MessageService
 
         // Modérateurs / Admin peuvent supprimer aussi (vérification déléguée à PolicyService côté Controller)
         if (! $isAuthor && ! $actor->isAdmin()) {
-            throw new \DomainException("Vous ne pouvez supprimer que vos propres messages.");
+            throw new \DomainException('Vous ne pouvez supprimer que vos propres messages.');
         }
 
         DB::transaction(function () use ($message) {
@@ -117,7 +117,7 @@ class MessageService
     }
 
     /**
-     * @param array<int, User> $users
+     * @param  array<int, User>  $users
      */
     protected function notifyMentioned(Message $message, array $users, bool $onlyNew = false): void
     {

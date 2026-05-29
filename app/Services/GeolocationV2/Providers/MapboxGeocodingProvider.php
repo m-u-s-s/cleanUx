@@ -29,7 +29,7 @@ class MapboxGeocodingProvider implements GeocodingProviderContract
         }
         $encoded = rawurlencode($query);
         try {
-            $url = rtrim($cfg['geocode_endpoint'], '/') . "/{$encoded}.json";
+            $url = rtrim($cfg['geocode_endpoint'], '/')."/{$encoded}.json";
             $response = Http::timeout((int) config('geolocation_v2.timeout_seconds', 8))
                 ->get($url, array_filter([
                     'access_token' => $token,
@@ -56,9 +56,11 @@ class MapboxGeocodingProvider implements GeocodingProviderContract
                     provider: 'mapbox',
                 );
             }
+
             return $results;
         } catch (\Throwable $e) {
             Log::warning('[geo_v2] mapbox autocomplete error', ['error' => $e->getMessage()]);
+
             return [];
         }
     }
@@ -70,6 +72,7 @@ class MapboxGeocodingProvider implements GeocodingProviderContract
         if (! $first || $first->latitude === null) {
             return null;
         }
+
         return new GeocodingResult(
             latitude: $first->latitude,
             longitude: $first->longitude,
@@ -90,7 +93,7 @@ class MapboxGeocodingProvider implements GeocodingProviderContract
             return null;
         }
         try {
-            $url = rtrim($cfg['geocode_endpoint'], '/') . "/{$longitude},{$latitude}.json";
+            $url = rtrim($cfg['geocode_endpoint'], '/')."/{$longitude},{$latitude}.json";
             $response = Http::timeout((int) config('geolocation_v2.timeout_seconds', 8))
                 ->get($url, ['access_token' => $token]);
             if (! $response->successful()) {
@@ -101,6 +104,7 @@ class MapboxGeocodingProvider implements GeocodingProviderContract
                 return null;
             }
             $coords = $first['geometry']['coordinates'] ?? [null, null];
+
             return new GeocodingResult(
                 latitude: (float) ($coords[1] ?? 0),
                 longitude: (float) ($coords[0] ?? 0),
@@ -114,6 +118,7 @@ class MapboxGeocodingProvider implements GeocodingProviderContract
             );
         } catch (\Throwable $e) {
             Log::warning('[geo_v2] mapbox reverse error', ['error' => $e->getMessage()]);
+
             return null;
         }
     }
@@ -136,7 +141,7 @@ class MapboxGeocodingProvider implements GeocodingProviderContract
                 'bicycling' => 'cycling',
                 default => 'driving',
             };
-            $url = rtrim($cfg['directions_endpoint'], '/') . "/{$profile}/{$originLng},{$originLat};{$destLng},{$destLat}";
+            $url = rtrim($cfg['directions_endpoint'], '/')."/{$profile}/{$originLng},{$originLat};{$destLng},{$destLat}";
             $response = Http::timeout((int) config('geolocation_v2.timeout_seconds', 8))
                 ->get($url, [
                     'access_token' => $token,
@@ -150,6 +155,7 @@ class MapboxGeocodingProvider implements GeocodingProviderContract
             if ($meters <= 0) {
                 return null;
             }
+
             return new DistanceResult(
                 distanceMeters: $meters,
                 durationSeconds: $duration ?: null,
@@ -158,6 +164,7 @@ class MapboxGeocodingProvider implements GeocodingProviderContract
             );
         } catch (\Throwable $e) {
             Log::warning('[geo_v2] mapbox distance error', ['error' => $e->getMessage()]);
+
             return null;
         }
     }
@@ -169,6 +176,7 @@ class MapboxGeocodingProvider implements GeocodingProviderContract
             return null;
         }
         $iso = strtoupper((string) $iso);
+
         return strlen($iso) === 2 ? $iso : null;
     }
 
@@ -177,10 +185,11 @@ class MapboxGeocodingProvider implements GeocodingProviderContract
         $context = (array) ($feature['context'] ?? []);
         foreach ($context as $c) {
             $id = (string) ($c['id'] ?? '');
-            if (str_starts_with($id, $type . '.')) {
+            if (str_starts_with($id, $type.'.')) {
                 return $c[$field] ?? ($c['text'] ?? null);
             }
         }
+
         return null;
     }
 }

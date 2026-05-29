@@ -9,9 +9,13 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class SubscriptionCycleV2 extends Model
 {
     public const STATUS_PENDING = 'pending';
+
     public const STATUS_INVOICED = 'invoiced';
+
     public const STATUS_PAID = 'paid';
+
     public const STATUS_FAILED = 'failed';
+
     public const STATUS_SKIPPED = 'skipped';
 
     protected $table = 'subscription_cycles_v2';

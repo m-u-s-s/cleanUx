@@ -3,7 +3,6 @@
 namespace Database\Factories;
 
 use App\Models\AccountingExport;
-use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 class AccountingExportFactory extends Factory
@@ -18,7 +17,7 @@ class AccountingExportFactory extends Factory
             'period_year' => now()->year,
             'period_month' => now()->month,
             'status' => AccountingExport::STATUS_READY,
-            'file_path' => 'exports/accounting/' . fake()->uuid() . '.csv',
+            'file_path' => 'exports/accounting/'.fake()->uuid().'.csv',
             'file_size_bytes' => fake()->numberBetween(1000, 500000),
             'file_hash' => hash('sha256', fake()->text()),
             'row_count' => fake()->numberBetween(10, 1000),

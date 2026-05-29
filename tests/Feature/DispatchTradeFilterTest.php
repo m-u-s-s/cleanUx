@@ -18,8 +18,8 @@ class DispatchTradeFilterTest extends TestCase
     protected function makeEmployee(?int $zoneId = null): User
     {
         return User::factory()->create([
-            'role'                    => User::ROLE_EMPLOYE,
-            'is_active'               => true,
+            'role' => User::ROLE_EMPLOYE,
+            'is_active' => true,
             'primary_service_zone_id' => $zoneId,
         ]);
     }
@@ -40,7 +40,7 @@ class DispatchTradeFilterTest extends TestCase
         $serrurerie = $this->makeTrade('serrurerie');
 
         $service = ServiceCatalog::factory()->create([
-            'trade_id'  => $serrurerie->id,
+            'trade_id' => $serrurerie->id,
             'is_active' => true,
         ]);
 
@@ -53,13 +53,13 @@ class DispatchTradeFilterTest extends TestCase
         $client = User::factory()->create(['role' => User::ROLE_CLIENT, 'is_active' => true]);
 
         $rdv = Booking::factory()->create([
-            'client_id'           => $client->id,
-            'service_zone_id'     => $zone->id,
-            'service_catalog_id'  => $service->id,
-            'date'                => now()->addDay()->toDateString(),
-            'heure'               => '10:00',
-            'duree_estimee'       => 90,
-            'status'              => 'en_attente',
+            'client_id' => $client->id,
+            'service_zone_id' => $zone->id,
+            'service_catalog_id' => $service->id,
+            'date' => now()->addDay()->toDateString(),
+            'heure' => '10:00',
+            'duree_estimee' => 90,
+            'status' => 'en_attente',
         ]);
 
         $ranking = app(AiDispatchService::class)->rankEmployees(
@@ -78,7 +78,7 @@ class DispatchTradeFilterTest extends TestCase
         $serrurerie = $this->makeTrade('serrurerie');
 
         $service = ServiceCatalog::factory()->create([
-            'trade_id'  => $serrurerie->id,
+            'trade_id' => $serrurerie->id,
             'is_active' => true,
         ]);
 
@@ -88,13 +88,13 @@ class DispatchTradeFilterTest extends TestCase
         $client = User::factory()->create(['role' => User::ROLE_CLIENT, 'is_active' => true]);
 
         $rdv = Booking::factory()->create([
-            'client_id'           => $client->id,
-            'service_zone_id'     => $zone->id,
-            'service_catalog_id'  => $service->id,
-            'date'                => now()->addDay()->toDateString(),
-            'heure'               => '10:00',
-            'duree_estimee'       => 90,
-            'status'              => 'en_attente',
+            'client_id' => $client->id,
+            'service_zone_id' => $zone->id,
+            'service_catalog_id' => $service->id,
+            'date' => now()->addDay()->toDateString(),
+            'heure' => '10:00',
+            'duree_estimee' => 90,
+            'status' => 'en_attente',
         ]);
 
         $ranking = app(AiDispatchService::class)->rankEmployees(
@@ -112,7 +112,7 @@ class DispatchTradeFilterTest extends TestCase
         $peinture = $this->makeTrade('peinture');
 
         $service = ServiceCatalog::factory()->create([
-            'trade_id'  => null,           // service legacy sans trade
+            'trade_id' => null,           // service legacy sans trade
             'is_active' => true,
         ]);
 
@@ -124,13 +124,13 @@ class DispatchTradeFilterTest extends TestCase
         $client = User::factory()->create(['role' => User::ROLE_CLIENT, 'is_active' => true]);
 
         $rdv = Booking::factory()->create([
-            'client_id'           => $client->id,
-            'service_zone_id'     => $zone->id,
-            'service_catalog_id'  => $service->id,
-            'date'                => now()->addDay()->toDateString(),
-            'heure'               => '10:00',
-            'duree_estimee'       => 90,
-            'status'              => 'en_attente',
+            'client_id' => $client->id,
+            'service_zone_id' => $zone->id,
+            'service_catalog_id' => $service->id,
+            'date' => now()->addDay()->toDateString(),
+            'heure' => '10:00',
+            'duree_estimee' => 90,
+            'status' => 'en_attente',
         ]);
 
         $ranking = app(AiDispatchService::class)->rankEmployees(
@@ -147,7 +147,7 @@ class DispatchTradeFilterTest extends TestCase
     {
         $trade = $this->makeTrade('peinture');
         $service = ServiceCatalog::factory()->create([
-            'trade_id'  => $trade->id,
+            'trade_id' => $trade->id,
             'is_active' => true,
         ]);
 

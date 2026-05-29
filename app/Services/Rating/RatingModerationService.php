@@ -15,9 +15,7 @@ class RatingModerationService
 {
     public const AUTO_HIDE_REPORTS_THRESHOLD = 3;
 
-    public function __construct(protected RatingAggregationService $aggregator)
-    {
-    }
+    public function __construct(protected RatingAggregationService $aggregator) {}
 
     public function report(Feedback $feedback, User $reporter, string $reason, ?string $details = null): RatingReport
     {

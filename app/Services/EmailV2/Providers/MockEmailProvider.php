@@ -27,10 +27,11 @@ class MockEmailProvider implements EmailProviderContract
                 error: 'mock_forced_failure',
             );
         }
+
         return new EmailSendResult(
             success: true,
             provider: 'mock',
-            providerMessageId: 'mock_msg_' . Str::lower(Str::random(20)),
+            providerMessageId: 'mock_msg_'.Str::lower(Str::random(20)),
         );
     }
 }

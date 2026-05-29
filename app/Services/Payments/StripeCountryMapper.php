@@ -14,39 +14,39 @@ class StripeCountryMapper
 {
     private const SUPPORTED_COUNTRIES = [
         'BE' => [
-            'currency'     => 'eur',
+            'currency' => 'eur',
             'capabilities' => ['card_payments', 'transfers'],
         ],
         'FR' => [
-            'currency'     => 'eur',
+            'currency' => 'eur',
             'capabilities' => ['card_payments', 'transfers'],
         ],
         'NL' => [
-            'currency'     => 'eur',
+            'currency' => 'eur',
             'capabilities' => ['card_payments', 'transfers', 'ideal_payments'],
         ],
         'DE' => [
-            'currency'     => 'eur',
+            'currency' => 'eur',
             'capabilities' => ['card_payments', 'transfers', 'sepa_debit_payments'],
         ],
         'ES' => [
-            'currency'     => 'eur',
+            'currency' => 'eur',
             'capabilities' => ['card_payments', 'transfers'],
         ],
         'IT' => [
-            'currency'     => 'eur',
+            'currency' => 'eur',
             'capabilities' => ['card_payments', 'transfers'],
         ],
         'PT' => [
-            'currency'     => 'eur',
+            'currency' => 'eur',
             'capabilities' => ['card_payments', 'transfers'],
         ],
         'LU' => [
-            'currency'     => 'eur',
+            'currency' => 'eur',
             'capabilities' => ['card_payments', 'transfers'],
         ],
         'AT' => [
-            'currency'     => 'eur',
+            'currency' => 'eur',
             'capabilities' => ['card_payments', 'transfers'],
         ],
     ];
@@ -64,6 +64,7 @@ class StripeCountryMapper
     public function getConfig(string $countryCode): array
     {
         $code = strtoupper(trim($countryCode));
+
         return self::SUPPORTED_COUNTRIES[$code] ?? self::SUPPORTED_COUNTRIES[self::FALLBACK_COUNTRY];
     }
 

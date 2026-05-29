@@ -21,7 +21,8 @@ use Illuminate\Support\Facades\Schema;
  * Index unique sur (base, quote, effective_at) pour permettre l'historique
  * tout en empêchant les doublons exacts.
  */
-return new class extends Migration {
+return new class extends Migration
+{
     public function up(): void
     {
         if (Schema::hasTable('currency_rates')) {
@@ -43,7 +44,7 @@ return new class extends Migration {
 
         // Seed initial : quelques taux de référence pour ne pas crasher en dev
         $now = now();
-        \DB::table('currency_rates')->insert([
+        DB::table('currency_rates')->insert([
             // EUR base
             ['base_currency' => 'EUR', 'quote_currency' => 'USD', 'rate' => 1.087, 'effective_at' => $now, 'source' => 'seed', 'created_at' => $now, 'updated_at' => $now],
             ['base_currency' => 'EUR', 'quote_currency' => 'GBP', 'rate' => 0.857, 'effective_at' => $now, 'source' => 'seed', 'created_at' => $now, 'updated_at' => $now],

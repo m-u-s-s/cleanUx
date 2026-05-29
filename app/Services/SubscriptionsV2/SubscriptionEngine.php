@@ -5,6 +5,7 @@ namespace App\Services\SubscriptionsV2;
 use App\Models\SubscriptionsV2\SubscriptionPlanV2;
 use App\Models\SubscriptionsV2\SubscriptionV2;
 use App\Models\User;
+use App\Support\Webhooks\BusinessEventEmitter;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
@@ -61,7 +62,7 @@ class SubscriptionEngine
             $cycle = $this->cycles->generateNextCycle($sub, $startAt);
             $this->cycles->advanceSubscriptionWindows($sub, $cycle);
 
-            \App\Support\Webhooks\BusinessEventEmitter::emit(
+            BusinessEventEmitter::emit(
                 eventCode: 'subscription.created',
                 payload: [
                     'subscription_id' => $sub->id,
@@ -72,7 +73,7 @@ class SubscriptionEngine
                     'currency' => $sub->billing_currency,
                     'trial_ends_at' => $sub->trial_ends_at?->toIso8601String(),
                 ],
-                idempotencyKey: 'subscription.created:' . $sub->id,
+                idempotencyKey: 'subscription.created:'.$sub->id,
                 sourceType: SubscriptionV2::class,
                 sourceId: (int) $sub->id,
             );
@@ -90,6 +91,7 @@ class SubscriptionEngine
             'status' => SubscriptionV2::STATUS_PAUSED,
             'paused_at' => now(),
         ]);
+
         return $sub->fresh();
     }
 
@@ -102,6 +104,7 @@ class SubscriptionEngine
             'status' => SubscriptionV2::STATUS_ACTIVE,
             'paused_at' => null,
         ]);
+
         return $sub->fresh();
     }
 
@@ -127,7 +130,7 @@ class SubscriptionEngine
             ]);
         }
 
-        \App\Support\Webhooks\BusinessEventEmitter::emit(
+        BusinessEventEmitter::emit(
             eventCode: 'subscription.cancelled',
             payload: [
                 'subscription_id' => $sub->id,
@@ -136,7 +139,7 @@ class SubscriptionEngine
                 'cancel_at_period_end' => (bool) $sub->cancel_at_period_end,
                 'ends_at' => optional($sub->ends_at)->toIso8601String(),
             ],
-            idempotencyKey: 'subscription.cancelled:' . $sub->id,
+            idempotencyKey: 'subscription.cancelled:'.$sub->id,
             sourceType: SubscriptionV2::class,
             sourceId: (int) $sub->id,
         );
@@ -164,6 +167,7 @@ class SubscriptionEngine
                 'previous_plan_code' => $sub->plan?->code,
             ]),
         ]);
+
         return $sub->fresh();
     }
 
@@ -179,6 +183,7 @@ class SubscriptionEngine
                 'status' => SubscriptionV2::STATUS_CANCELLED,
                 'cancelled_at' => now(),
             ]);
+
             return $sub->fresh();
         }
         if (! $sub->isUsable() && $sub->status !== SubscriptionV2::STATUS_PAST_DUE) {

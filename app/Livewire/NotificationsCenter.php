@@ -16,7 +16,9 @@ class NotificationsCenter extends Component
     use WithPagination;
 
     public string $filter = 'all';
+
     public string $type = 'all';
+
     public string $search = '';
 
     protected $queryString = [

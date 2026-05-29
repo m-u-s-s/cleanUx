@@ -78,6 +78,7 @@ class BookingAutoPoster
         if (! Schema::hasTable('accounting_entries')) {
             return false;
         }
+
         return true;
     }
 
@@ -104,6 +105,7 @@ class BookingAutoPoster
                 return (int) round(((float) $v) * 100);
             }
         }
+
         return 0;
     }
 
@@ -117,6 +119,7 @@ class BookingAutoPoster
             ?? ($booking->metadata['country_code'] ?? null)
             ?? config('accounting_v2.default_country_code', 'BE');
         $rates = (array) config('accounting_v2.vat_rates', []);
+
         return (float) ($rates[$country] ?? 21.0);
     }
 }

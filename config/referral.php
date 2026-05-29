@@ -92,9 +92,9 @@ return [
     | Placeholders: {code} = referral code, {link} = referral landing URL.
     */
     'sharing' => [
-        'message_template_fr' => "Découvrez CleanUx ! Utilisez mon code {code} et obtenez 15€ de réduction sur votre premier service. {link}",
-        'message_template_nl' => "Ontdek CleanUx! Gebruik mijn code {code} en krijg 15€ korting op je eerste dienst. {link}",
-        'message_template_en' => "Discover CleanUx! Use my code {code} and get €15 off your first service. {link}",
+        'message_template_fr' => 'Découvrez CleanUx ! Utilisez mon code {code} et obtenez 15€ de réduction sur votre premier service. {link}',
+        'message_template_nl' => 'Ontdek CleanUx! Gebruik mijn code {code} en krijg 15€ korting op je eerste dienst. {link}',
+        'message_template_en' => 'Discover CleanUx! Use my code {code} and get €15 off your first service. {link}',
     ],
 
     /*

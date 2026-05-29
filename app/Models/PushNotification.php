@@ -9,16 +9,25 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class PushNotification extends Model
 {
     public const STATUS_QUEUED = 'queued';
+
     public const STATUS_SENT = 'sent';
+
     public const STATUS_DELIVERED = 'delivered';
+
     public const STATUS_FAILED = 'failed';
+
     public const STATUS_OPTED_OUT = 'opted_out';
+
     public const STATUS_INVALID_TOKEN = 'invalid_token';
+
     public const STATUS_RATE_LIMITED = 'rate_limited';
 
     public const CATEGORY_TRANSACTIONAL = 'transactional';
+
     public const CATEGORY_VERIFICATION = 'verification';
+
     public const CATEGORY_REMINDER = 'reminder';
+
     public const CATEGORY_MARKETING = 'marketing';
 
     protected $fillable = [

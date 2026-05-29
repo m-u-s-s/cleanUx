@@ -11,6 +11,7 @@ use App\Models\OrganizationAccount;
 use App\Models\OrganizationMember;
 use App\Models\ProviderProfile;
 use App\Models\User;
+use App\Services\Promotion\ReferralService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
@@ -108,7 +109,7 @@ class CreateNewUser implements CreatesNewUsers
 
     private function attachReferral(User $user, array $input): void
     {
-        $service = app(\App\Services\Promotion\ReferralService::class);
+        $service = app(ReferralService::class);
 
         try {
             $service->ensureReferralCode($user);
@@ -228,7 +229,7 @@ class CreateNewUser implements CreatesNewUsers
         $i = 1;
 
         while (OrganizationAccount::where('slug', $slug)->exists()) {
-            $slug = $baseSlug . '-' . $i++;
+            $slug = $baseSlug.'-'.$i++;
         }
 
         return OrganizationAccount::create([

@@ -13,26 +13,26 @@ class EmailLogFactory extends Factory
     public function definition(): array
     {
         return [
-            'template_key'       => fake()->randomElement(['welcome', 'booking_confirmed', 'invoice', 'reminder']),
-            'subject'            => fake()->sentence(),
-            'status'             => 'sent',
-            'channel'            => 'email',
-            'recipient_email'    => fake()->safeEmail(),
-            'notifiable_type'    => User::class,
-            'notifiable_id'      => fn () => User::factory()->create()->id,
+            'template_key' => fake()->randomElement(['welcome', 'booking_confirmed', 'invoice', 'reminder']),
+            'subject' => fake()->sentence(),
+            'status' => 'sent',
+            'channel' => 'email',
+            'recipient_email' => fake()->safeEmail(),
+            'notifiable_type' => User::class,
+            'notifiable_id' => fn () => User::factory()->create()->id,
             'previewed_by_user_id' => null,
-            'context'            => null,
-            'meta'               => null,
-            'sent_at'            => now(),
-            'failed_at'          => null,
+            'context' => null,
+            'meta' => null,
+            'sent_at' => now(),
+            'failed_at' => null,
         ];
     }
 
     public function failed(): static
     {
         return $this->state(fn () => [
-            'status'    => 'failed',
-            'sent_at'   => null,
+            'status' => 'failed',
+            'sent_at' => null,
             'failed_at' => now(),
         ]);
     }

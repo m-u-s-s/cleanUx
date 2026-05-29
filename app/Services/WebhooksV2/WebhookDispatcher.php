@@ -17,7 +17,7 @@ class WebhookDispatcher
      * Persist event + fanout deliveries for every active subscription matching event_code.
      * Idempotent : if idempotency_key given and already used, returns the existing event.
      *
-     * @return WebhookEvent|null  null if event not whitelisted or feature disabled
+     * @return WebhookEvent|null null if event not whitelisted or feature disabled
      */
     public function emit(
         string $eventCode,
@@ -33,6 +33,7 @@ class WebhookDispatcher
         $allowed = (array) config('webhooks_v2.allowed_events', []);
         if (! in_array($eventCode, $allowed, true)) {
             Log::info('[webhooks_v2] event ignored (not whitelisted)', ['event_code' => $eventCode]);
+
             return null;
         }
 
@@ -101,6 +102,7 @@ class WebhookDispatcher
         ]);
         DeliverWebhookJob::dispatch($delivery->id)
             ->onQueue((string) config('webhooks_v2.queue', 'webhooks'));
+
         return $delivery->fresh();
     }
 
@@ -120,6 +122,7 @@ class WebhookDispatcher
                 return false;
             }
         }
+
         return true;
     }
 }

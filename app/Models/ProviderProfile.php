@@ -57,16 +57,16 @@ class ProviderProfile extends Model
     ];
 
     protected $casts = [
-        'provider_type'               => ProviderType::class,
-        'hourly_rate'                 => 'decimal:2',
-        'commission_rate'             => 'decimal:2',
-        'current_lat'                 => 'decimal:7',
-        'current_lng'                 => 'decimal:7',
-        'last_location_at'            => 'datetime',
+        'provider_type' => ProviderType::class,
+        'hourly_rate' => 'decimal:2',
+        'commission_rate' => 'decimal:2',
+        'current_lat' => 'decimal:7',
+        'current_lng' => 'decimal:7',
+        'last_location_at' => 'datetime',
         'stripe_connect_onboarded_at' => 'datetime',
-        'skills'                      => 'array',
-        'settings'                    => 'array',
-        'metadata'                    => 'array',
+        'skills' => 'array',
+        'settings' => 'array',
+        'metadata' => 'array',
 
         'onboarding_step' => 'integer',
         'onboarding_completed_at' => 'datetime',
@@ -126,8 +126,8 @@ class ProviderProfile extends Model
     public function updateLocation(float $lat, float $lng): void
     {
         $this->update([
-            'current_lat'      => $lat,
-            'current_lng'      => $lng,
+            'current_lat' => $lat,
+            'current_lng' => $lng,
             'last_location_at' => now(),
         ]);
     }

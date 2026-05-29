@@ -8,6 +8,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\Client\IndexBookingRequest;
 use App\Http\Requests\Api\Client\StoreBookingRequest;
 use App\Models\Booking;
+use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -34,6 +35,7 @@ use Illuminate\Http\Request;
  */
 /**
  * @group Client Bookings
+ *
  * @authenticated
  */
 class ClientBookingController extends Controller
@@ -46,6 +48,7 @@ class ClientBookingController extends Controller
      * @queryParam to date Filter bookings on or before this date (YYYY-MM-DD). Example: 2026-06-30
      * @queryParam per_page integer Number of results per page (1-100, default 20). Example: 20
      * @queryParam page integer Page number. Example: 1
+     *
      * @response 200 {"ok": true, "data": [{"id": 1, "reference": "CUX-A1B2C3", "status": "confirme", "mode": "scheduled", "priority": "normal", "scheduled_date": "2026-06-15", "scheduled_time": "09:00", "service_name": "Nettoyage domicile", "address": "Rue de la Loi 1", "city": "Bruxelles", "postal_code": "1000", "estimated_price": 75.0, "currency": "EUR", "created_at": "2026-06-01T10:00:00+00:00"}], "pagination": {"current_page": 1, "last_page": 3, "per_page": 20, "total": 42}}
      */
     public function index(IndexBookingRequest $request): JsonResponse
@@ -57,7 +60,7 @@ class ClientBookingController extends Controller
         $query = Booking::query()
             ->where(function ($q) use ($user) {
                 $q->where('customer_user_id', $user->id)
-                  ->orWhere('client_id', $user->id);
+                    ->orWhere('client_id', $user->id);
 
                 $orgId = $user->organization_account_id ?? $user->current_organization_id ?? null;
                 if ($orgId) {
@@ -85,13 +88,13 @@ class ClientBookingController extends Controller
         $paginator = $query->paginate($perPage);
 
         return response()->json([
-            'ok'         => true,
-            'data'       => collect($paginator->items())->map(fn ($b) => $this->serialize($b))->all(),
+            'ok' => true,
+            'data' => collect($paginator->items())->map(fn ($b) => $this->serialize($b))->all(),
             'pagination' => [
                 'current_page' => $paginator->currentPage(),
-                'last_page'    => $paginator->lastPage(),
-                'per_page'     => $paginator->perPage(),
-                'total'        => $paginator->total(),
+                'last_page' => $paginator->lastPage(),
+                'per_page' => $paginator->perPage(),
+                'total' => $paginator->total(),
             ],
         ]);
     }
@@ -114,7 +117,7 @@ class ClientBookingController extends Controller
         ]);
 
         return response()->json([
-            'ok'   => true,
+            'ok' => true,
             'data' => $this->serialize($booking, detailed: true),
         ]);
     }
@@ -139,6 +142,7 @@ class ClientBookingController extends Controller
      * @bodyParam contact_phone string Contact phone on site. Example: +32471000001
      * @bodyParam destination_lat number GPS latitude of destination. Example: 50.846
      * @bodyParam destination_lng number GPS longitude of destination. Example: 4.352
+     *
      * @response 201 {"ok": true, "data": {"id": 55, "reference": "CUX-X1Y2Z3", "status": "en_attente", "mode": "scheduled", "priority": "normal", "scheduled_date": "2026-06-20", "scheduled_time": "09:00", "service_name": "Nettoyage domicile", "address": "Rue de la Loi 1", "city": "Bruxelles", "postal_code": "1000", "estimated_price": null, "currency": "EUR", "created_at": "2026-06-01T10:00:00+00:00"}}
      * @response 422 {"message": "The service catalog id field is required.", "errors": {"service_catalog_id": ["The service catalog id field is required."]}}
      */
@@ -147,7 +151,7 @@ class ClientBookingController extends Controller
         $booking = $action->execute($request->user(), $request->validated());
 
         return response()->json([
-            'ok'   => true,
+            'ok' => true,
             'data' => $this->serialize($booking),
         ], 201);
     }
@@ -158,6 +162,7 @@ class ClientBookingController extends Controller
      * Cannot cancel bookings that are already cancelled or in a final state (termine, sur_place).
      *
      * @bodyParam reason string Optional reason for cancellation (max 500 chars). Example: Changement de planning
+     *
      * @response 200 {"ok": true, "data": {"id": 1, "reference": "CUX-A1B2C3", "status": "annule", "mode": "scheduled", "priority": "normal", "scheduled_date": "2026-06-15", "scheduled_time": "09:00", "service_name": "Nettoyage domicile", "address": "Rue de la Loi 1", "city": "Bruxelles", "postal_code": "1000", "estimated_price": 75.0, "currency": "EUR", "created_at": "2026-06-01T10:00:00+00:00"}}
      * @response 403 {"message": "Accès refusé."}
      * @response 422 {"message": "This booking is already cancelled."}
@@ -183,14 +188,14 @@ class ClientBookingController extends Controller
         }
 
         $booking->update([
-            'status'              => 'annule',
-            'cancelled_at'        => now(),
-            'cancelled_by'        => $request->user()->id,
+            'status' => 'annule',
+            'cancelled_at' => now(),
+            'cancelled_by' => $request->user()->id,
             'cancellation_reason' => $data['reason'] ?? null,
         ]);
 
         return response()->json([
-            'ok'   => true,
+            'ok' => true,
             'data' => $this->serialize($booking->fresh()),
         ]);
     }
@@ -214,8 +219,8 @@ class ClientBookingController extends Controller
         $mission = $booking->missions()->latest()->first();
         if (! $mission) {
             return response()->json([
-                'ok'    => true,
-                'eta'   => null,
+                'ok' => true,
+                'eta' => null,
                 'state' => 'no_mission',
             ]);
         }
@@ -228,10 +233,10 @@ class ClientBookingController extends Controller
 
         if (! $session) {
             return response()->json([
-                'ok'         => true,
-                'state'      => 'no_tracking',
+                'ok' => true,
+                'state' => 'no_tracking',
                 'mission_id' => $mission->id,
-                'status'     => $mission->status,
+                'status' => $mission->status,
             ]);
         }
 
@@ -250,22 +255,22 @@ class ClientBookingController extends Controller
         }
 
         return response()->json([
-            'ok'                  => true,
-            'state'               => 'tracking',
-            'mission_id'          => $mission->id,
-            'mission_status'      => $mission->status,
-            'provider_position'   => [
-                'lat'              => $providerLat,
-                'lng'              => $providerLng,
-                'last_update_at'   => $session->updated_at?->toIso8601String(),
+            'ok' => true,
+            'state' => 'tracking',
+            'mission_id' => $mission->id,
+            'mission_status' => $mission->status,
+            'provider_position' => [
+                'lat' => $providerLat,
+                'lng' => $providerLng,
+                'last_update_at' => $session->updated_at?->toIso8601String(),
             ],
-            'destination'         => $destLat && $destLng ? [
+            'destination' => $destLat && $destLng ? [
                 'lat' => $destLat,
                 'lng' => $destLng,
             ] : null,
-            'distance_km'         => $distanceKm ? round($distanceKm, 2) : null,
-            'eta_minutes'         => $etaMinutes,
-            'is_client_visible'   => (bool) $session->is_client_visible,
+            'distance_km' => $distanceKm ? round($distanceKm, 2) : null,
+            'eta_minutes' => $etaMinutes,
+            'is_client_visible' => (bool) $session->is_client_visible,
         ]);
     }
 
@@ -287,46 +292,46 @@ class ClientBookingController extends Controller
 
         $isAdmin = method_exists($user, 'isPlatformAdmin') && $user->isPlatformAdmin();
 
-        abort_if(! $isOwner && ! $isOrgMember && ! $isAdmin, 403, "Accès refusé.");
+        abort_if(! $isOwner && ! $isOrgMember && ! $isAdmin, 403, 'Accès refusé.');
     }
 
     protected function serialize(Booking $b, bool $detailed = false): array
     {
         $base = [
-            'id'                 => $b->id,
-            'reference'          => $b->booking_reference,
-            'status'             => $b->status,
-            'mode'               => $b->booking_mode ?? 'scheduled',
-            'priority'           => $b->priority ?? 'normal',
-            'scheduled_date'     => $b->scheduled_date instanceof \Carbon\Carbon
+            'id' => $b->id,
+            'reference' => $b->booking_reference,
+            'status' => $b->status,
+            'mode' => $b->booking_mode ?? 'scheduled',
+            'priority' => $b->priority ?? 'normal',
+            'scheduled_date' => $b->scheduled_date instanceof Carbon
                                     ? $b->scheduled_date->toDateString()
                                     : (string) $b->scheduled_date,
-            'scheduled_time'     => $b->scheduled_time
-                                    ? \Carbon\Carbon::parse($b->scheduled_time)->format('H:i')
+            'scheduled_time' => $b->scheduled_time
+                                    ? Carbon::parse($b->scheduled_time)->format('H:i')
                                     : null,
-            'service_name'       => $b->serviceCatalog?->name,
-            'address'            => $b->address,
-            'city'               => $b->city,
-            'postal_code'        => $b->postal_code,
-            'estimated_price'    => $b->estimated_price ? (float) $b->estimated_price : null,
-            'currency'           => $b->currency ?? 'EUR',
-            'created_at'         => $b->created_at?->toIso8601String(),
+            'service_name' => $b->serviceCatalog?->name,
+            'address' => $b->address,
+            'city' => $b->city,
+            'postal_code' => $b->postal_code,
+            'estimated_price' => $b->estimated_price ? (float) $b->estimated_price : null,
+            'currency' => $b->currency ?? 'EUR',
+            'created_at' => $b->created_at?->toIso8601String(),
         ];
 
         if ($detailed) {
             $base = array_merge($base, [
                 'customer_comment' => $b->customer_comment ?? null,
-                'surface_m2'       => $b->surface_m2,
-                'site_name'        => $b->organizationSite?->name,
-                'destination_lat'  => $b->destination_lat,
-                'destination_lng'  => $b->destination_lng,
-                'cancelled_at'     => $b->cancelled_at?->toIso8601String(),
+                'surface_m2' => $b->surface_m2,
+                'site_name' => $b->organizationSite?->name,
+                'destination_lat' => $b->destination_lat,
+                'destination_lng' => $b->destination_lng,
+                'cancelled_at' => $b->cancelled_at?->toIso8601String(),
                 'cancellation_reason' => $b->cancellation_reason,
                 'asap_requested_at' => $b->asap_requested_at?->toIso8601String(),
-                'asap_deadline_at'  => $b->asap_deadline_at?->toIso8601String(),
+                'asap_deadline_at' => $b->asap_deadline_at?->toIso8601String(),
                 'assigned_provider' => $b->assignedProvider ? [
-                    'id'    => $b->assignedProvider->id,
-                    'name'  => $b->assignedProvider->name,
+                    'id' => $b->assignedProvider->id,
+                    'name' => $b->assignedProvider->name,
                     'phone' => $b->assignedProvider->phone ?? null,
                 ] : null,
             ]);

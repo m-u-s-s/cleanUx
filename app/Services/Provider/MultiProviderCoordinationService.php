@@ -4,6 +4,7 @@ namespace App\Services\Provider;
 
 use App\Models\Booking;
 use App\Models\Mission;
+use App\Models\MissionAssignment;
 
 /**
  * 7.9 — Multi-provider coordination for large or complex bookings.
@@ -37,9 +38,9 @@ class MultiProviderCoordinationService
     /**
      * Dispatch a booking to multiple providers simultaneously.
      *
-     * @param  Mission $mission            The mission needing multiple providers
-     * @param  int     $providersRequired  Number of providers needed
-     * @return array<int, \App\Models\MissionAssignment>  Created assignments
+     * @param  Mission  $mission  The mission needing multiple providers
+     * @param  int  $providersRequired  Number of providers needed
+     * @return array<int, MissionAssignment> Created assignments
      *
      * TODO: implement
      */

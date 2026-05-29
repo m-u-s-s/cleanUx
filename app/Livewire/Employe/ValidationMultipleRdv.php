@@ -2,10 +2,10 @@
 
 namespace App\Livewire\Employe;
 
-use Livewire\Component;
 use App\Models\Booking;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
+use Livewire\Component;
 
 class ValidationMultipleRdv extends Component
 {

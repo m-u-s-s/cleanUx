@@ -8,11 +8,15 @@ use App\Enums\ProviderType;
 
 trait HasUserTypeChecks
 {
-    public const ROLE_CLIENT    = 'client';
-    public const ROLE_EMPLOYE   = 'employe';
-    public const ROLE_EMPLOYEE  = 'employe';
+    public const ROLE_CLIENT = 'client';
+
+    public const ROLE_EMPLOYE = 'employe';
+
+    public const ROLE_EMPLOYEE = 'employe';
+
     public const ROLE_ENTREPRISE = 'entreprise';
-    public const ROLE_PROVIDER  = 'provider';
+
+    public const ROLE_PROVIDER = 'provider';
 
     public function isCustomer(): bool
     {

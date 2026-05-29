@@ -11,7 +11,5 @@ class RatingSubmitted
     use Dispatchable;
     use SerializesModels;
 
-    public function __construct(public Feedback $feedback)
-    {
-    }
+    public function __construct(public Feedback $feedback) {}
 }

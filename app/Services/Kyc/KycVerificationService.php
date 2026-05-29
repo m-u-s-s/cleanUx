@@ -13,12 +13,11 @@ use App\Support\ActivityLogger;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Schema;
 
 class KycVerificationService
 {
-    public function __construct(protected KycProviderInterface $provider)
-    {
-    }
+    public function __construct(protected KycProviderInterface $provider) {}
 
     public function start(User $user, ?string $countryCode = null, array $checks = []): KycVerification
     {
@@ -130,6 +129,7 @@ class KycVerificationService
         }
 
         $this->applyStatusResult($verification, $result);
+
         return $verification->fresh();
     }
 
@@ -259,7 +259,7 @@ class KycVerificationService
 
         // verified_at est legacy/optionnel selon le schema ; on l'ajoute seulement
         // si la colonne existe (certaines installations n'ont jamais migré).
-        if (\Illuminate\Support\Facades\Schema::hasColumn('provider_profiles', 'verified_at')) {
+        if (Schema::hasColumn('provider_profiles', 'verified_at')) {
             $attrs['verified_at'] = $profile->verified_at ?? now();
         }
 

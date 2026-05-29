@@ -13,6 +13,7 @@ use App\Models\User;
 use App\Notifications\Disputes\DisputeOpenedNotification;
 use App\Notifications\Disputes\DisputeUpdatedNotification;
 use App\Support\ActivityLogger;
+use App\Support\Webhooks\BusinessEventEmitter;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
@@ -36,7 +37,7 @@ class DisputeService
 
         if ($booking && (int) $booking->client_id !== (int) $client->id) {
             throw ValidationException::withMessages([
-                'booking_id' => "Ce booking ne vous appartient pas.",
+                'booking_id' => 'Ce booking ne vous appartient pas.',
             ]);
         }
 
@@ -80,7 +81,7 @@ class DisputeService
             $this->notifyOpened($case);
             $this->autoResolver->maybeAutoResolve($case);
 
-            \App\Support\Webhooks\BusinessEventEmitter::emit(
+            BusinessEventEmitter::emit(
                 eventCode: 'dispute.opened',
                 payload: [
                     'dispute_id' => $case->id,
@@ -93,7 +94,7 @@ class DisputeService
                     'severity' => $case->severity,
                     'subject' => $case->subject,
                 ],
-                idempotencyKey: 'dispute.opened:' . $case->id,
+                idempotencyKey: 'dispute.opened:'.$case->id,
                 sourceType: ComplaintCase::class,
                 sourceId: (int) $case->id,
             );
@@ -112,7 +113,7 @@ class DisputeService
     ): DisputeEvent {
         if ($case->isFinal()) {
             throw ValidationException::withMessages([
-                'body' => "Cette dispute est clôturée, vous ne pouvez plus y répondre.",
+                'body' => 'Cette dispute est clôturée, vous ne pouvez plus y répondre.',
             ]);
         }
 
@@ -178,7 +179,7 @@ class DisputeService
         $this->notifyUpdate($case, $actor);
 
         if (in_array($newStatus, [ComplaintCase::STATUS_RESOLVED, ComplaintCase::STATUS_CLOSED], true)) {
-            \App\Support\Webhooks\BusinessEventEmitter::emit(
+            BusinessEventEmitter::emit(
                 eventCode: 'dispute.resolved',
                 payload: [
                     'dispute_id' => $case->id,
@@ -188,7 +189,7 @@ class DisputeService
                     'client_id' => $case->client_id,
                     'booking_id' => $case->booking_id,
                 ],
-                idempotencyKey: 'dispute.resolved:' . $case->id . ':' . $newStatus,
+                idempotencyKey: 'dispute.resolved:'.$case->id.':'.$newStatus,
                 sourceType: ComplaintCase::class,
                 sourceId: (int) $case->id,
             );
@@ -240,7 +241,7 @@ class DisputeService
 
         $this->recordEvent($case, DisputeEvent::TYPE_ESCALATED, [
             'author_role' => DisputeEvent::ROLE_SYSTEM,
-            'body' => $reason ?? "Escaladé automatiquement (SLA dépassé)",
+            'body' => $reason ?? 'Escaladé automatiquement (SLA dépassé)',
             'visibility' => DisputeEvent::VISIBILITY_PRIVATE,
             'payload' => ['new_level' => $newLevel, 'reason' => $reason],
         ]);
@@ -276,6 +277,7 @@ class DisputeService
         if ((int) $actor->id === (int) $case->client_id) {
             return DisputeEvent::ROLE_CLIENT;
         }
+
         return DisputeEvent::ROLE_SYSTEM;
     }
 
@@ -294,7 +296,9 @@ class DisputeService
     {
         try {
             foreach ([$case->client, $case->provider] as $recipient) {
-                if (! $recipient) continue;
+                if (! $recipient) {
+                    continue;
+                }
                 if ($author && (int) $recipient->id === (int) $author->id) {
                     continue;
                 }
@@ -309,7 +313,7 @@ class DisputeService
     {
         $prefix = (string) config('disputes.reference_prefix', 'DSP');
         do {
-            $candidate = $prefix . '-' . strtoupper(Str::random(8));
+            $candidate = $prefix.'-'.strtoupper(Str::random(8));
         } while (ComplaintCase::where('reference', $candidate)->exists());
 
         return $candidate;

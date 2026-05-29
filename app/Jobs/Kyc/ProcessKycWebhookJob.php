@@ -18,11 +18,10 @@ class ProcessKycWebhookJob implements ShouldQueue
     use SerializesModels;
 
     public int $tries = 3;
+
     public int $timeout = 60;
 
-    public function __construct(public int $eventId)
-    {
-    }
+    public function __construct(public int $eventId) {}
 
     public function backoff(): array
     {

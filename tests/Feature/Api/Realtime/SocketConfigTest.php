@@ -21,10 +21,10 @@ class SocketConfigTest extends TestCase
     public function test_returns_socket_config_for_authenticated_user(): void
     {
         config([
-            'broadcasting.default'                           => 'reverb',
-            'broadcasting.connections.reverb.key'            => 'pk_test_123',
-            'broadcasting.connections.reverb.options.host'   => 'realtime.cleanux.test',
-            'broadcasting.connections.reverb.options.port'   => 443,
+            'broadcasting.default' => 'reverb',
+            'broadcasting.connections.reverb.key' => 'pk_test_123',
+            'broadcasting.connections.reverb.options.host' => 'realtime.cleanux.test',
+            'broadcasting.connections.reverb.options.port' => 443,
             'broadcasting.connections.reverb.options.scheme' => 'https',
         ]);
 
@@ -33,11 +33,11 @@ class SocketConfigTest extends TestCase
         $r = $this->getJson('/api/realtime/socket-config');
 
         $r->assertOk()->assertJson([
-            'driver'        => 'reverb',
-            'key'           => 'pk_test_123',
-            'host'          => 'realtime.cleanux.test',
-            'port'          => 443,
-            'scheme'        => 'https',
+            'driver' => 'reverb',
+            'key' => 'pk_test_123',
+            'host' => 'realtime.cleanux.test',
+            'port' => 443,
+            'scheme' => 'https',
             'auth_endpoint' => '/api/broadcasting/auth',
         ]);
     }
@@ -50,10 +50,10 @@ class SocketConfigTest extends TestCase
     public function test_socket_config_does_not_leak_secret(): void
     {
         config([
-            'broadcasting.default'                        => 'reverb',
-            'broadcasting.connections.reverb.secret'      => 'sk_super_secret',
-            'broadcasting.connections.reverb.key'         => 'pk_test_456',
-            'broadcasting.connections.reverb.options.host'=> 'realtime.cleanux.test',
+            'broadcasting.default' => 'reverb',
+            'broadcasting.connections.reverb.secret' => 'sk_super_secret',
+            'broadcasting.connections.reverb.key' => 'pk_test_456',
+            'broadcasting.connections.reverb.options.host' => 'realtime.cleanux.test',
         ]);
 
         Sanctum::actingAs(User::factory()->create());
@@ -74,14 +74,14 @@ class SocketConfigTest extends TestCase
         // {auth: "testing:<socket_id>"} for private channels.
         config(['broadcasting.default' => 'testing']);
 
-        $user  = User::factory()->create();
+        $user = User::factory()->create();
         $token = $user->createToken('mobile')->plainTextToken;
 
         // private-user.{userId} — authorized when $user->id === $userId (see routes/channels.php)
         $r = $this->withHeader('Authorization', "Bearer {$token}")
             ->postJson('/api/broadcasting/auth', [
-                'socket_id'    => '123.456',
-                'channel_name' => 'private-user.' . $user->id,
+                'socket_id' => '123.456',
+                'channel_name' => 'private-user.'.$user->id,
             ]);
 
         $r->assertOk()->assertJsonStructure(['auth']);
@@ -90,7 +90,7 @@ class SocketConfigTest extends TestCase
     public function test_broadcasting_auth_rejects_unauthenticated_request(): void
     {
         $this->postJson('/api/broadcasting/auth', [
-            'socket_id'    => '123.456',
+            'socket_id' => '123.456',
             'channel_name' => 'private-user.1',
         ])->assertUnauthorized();
     }

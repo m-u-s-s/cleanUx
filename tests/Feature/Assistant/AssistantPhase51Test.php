@@ -61,9 +61,9 @@ class AssistantPhase51Test extends TestCase
     {
         $user = User::factory()->create();
         $conv = AssistantConversation::create([
-            'user_id'      => $user->id,
+            'user_id' => $user->id,
             'context_role' => $user->assistantContextRole()->value,
-            'status'       => AssistantConversation::STATUS_OPEN,
+            'status' => AssistantConversation::STATUS_OPEN,
         ]);
 
         $response = new LlmResponse(
@@ -84,7 +84,7 @@ class AssistantPhase51Test extends TestCase
 
         $this->assertSame(AssistantApiLog::STATUS_SUCCESS, $log->status);
         $this->assertSame(100, $log->input_tokens);
-        $this->assertSame(50,  $log->output_tokens);
+        $this->assertSame(50, $log->output_tokens);
         $this->assertSame(150, $log->total_tokens);
         $this->assertSame(850, $log->latency_ms);
         $this->assertNotNull($log->cost_usd);
@@ -128,7 +128,7 @@ class AssistantPhase51Test extends TestCase
 
         $this->assertSame(2, $log->tool_use_count);
         $this->assertContains('list_my_bookings', $log->tools_used);
-        $this->assertContains('create_booking',  $log->tools_used);
+        $this->assertContains('create_booking', $log->tools_used);
     }
 
     // ──────────────────────────────────────────────────────
@@ -150,7 +150,7 @@ class AssistantPhase51Test extends TestCase
 
     public function test_registry_exposes_register_site_for_company_client(): void
     {
-        $org  = OrganizationAccount::factory()->create();
+        $org = OrganizationAccount::factory()->create();
         $user = User::factory()->create([
             'role' => 'client',
             'organization_account_id' => $org->id,
@@ -167,7 +167,7 @@ class AssistantPhase51Test extends TestCase
         $allowed = (new \ReflectionClass(AssistantToolRegistry::class))
             ->getMethod('allowedToolNamesForRole');
         $allowed->setAccessible(true);
-        $list = $allowed->invoke(new AssistantToolRegistry(), $user->assistantContextRole());
+        $list = $allowed->invoke(new AssistantToolRegistry, $user->assistantContextRole());
 
         $this->assertContains('register_site', $list);
     }
@@ -176,7 +176,7 @@ class AssistantPhase51Test extends TestCase
     {
         $user = User::factory()->create(['role' => 'client']);
 
-        $defs  = app(AssistantToolRegistry::class)->definitionsForUser($user);
+        $defs = app(AssistantToolRegistry::class)->definitionsForUser($user);
         $names = array_column($defs, 'name');
 
         $this->assertContains('get_invoice', $names);

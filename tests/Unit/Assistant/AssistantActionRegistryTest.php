@@ -19,7 +19,7 @@ class AssistantActionRegistryTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->registry = new AssistantActionRegistry();
+        $this->registry = new AssistantActionRegistry;
     }
 
     public function test_client_user_gets_booking_and_loyalty_actions(): void

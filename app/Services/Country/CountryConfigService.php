@@ -21,10 +21,33 @@ class CountryConfigService
         return self::COUNTRIES[strtoupper($code)] ?? self::COUNTRIES['BE'];
     }
 
-    public function all(): array { return self::COUNTRIES; }
-    public function supported(): array { return array_keys(self::COUNTRIES); }
-    public function getVatRate(string $code): float { return $this->get($code)['vat_rate']; }
-    public function getKycDocs(string $code): array { return $this->get($code)['kyc_docs']; }
-    public function getStripeCountry(string $code): string { return $this->get($code)['stripe_country']; }
-    public function getTimezone(string $code): string { return $this->get($code)['timezone']; }
+    public function all(): array
+    {
+        return self::COUNTRIES;
+    }
+
+    public function supported(): array
+    {
+        return array_keys(self::COUNTRIES);
+    }
+
+    public function getVatRate(string $code): float
+    {
+        return $this->get($code)['vat_rate'];
+    }
+
+    public function getKycDocs(string $code): array
+    {
+        return $this->get($code)['kyc_docs'];
+    }
+
+    public function getStripeCountry(string $code): string
+    {
+        return $this->get($code)['stripe_country'];
+    }
+
+    public function getTimezone(string $code): string
+    {
+        return $this->get($code)['timezone'];
+    }
 }

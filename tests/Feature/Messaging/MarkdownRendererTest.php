@@ -104,7 +104,7 @@ class MarkdownRendererTest extends TestCase
     public function test_plain_preview_strips_html_and_limits(): void
     {
         $preview = $this->renderer->plainPreview(
-            "**Important** @alice — voici une longue notification qui devrait être tronquée à 30 chars",
+            '**Important** @alice — voici une longue notification qui devrait être tronquée à 30 chars',
             30
         );
 

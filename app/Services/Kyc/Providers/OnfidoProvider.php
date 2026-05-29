@@ -41,7 +41,7 @@ class OnfidoProvider implements KycProviderInterface
         ]);
 
         if ($applicant->failed()) {
-            throw new RuntimeException('Onfido create applicant failed: ' . $applicant->body());
+            throw new RuntimeException('Onfido create applicant failed: '.$applicant->body());
         }
 
         $applicantId = (string) $applicant->json('id');
@@ -66,7 +66,7 @@ class OnfidoProvider implements KycProviderInterface
 
         $check = $this->client()->get("/checks/{$checkId}");
         if ($check->failed()) {
-            throw new RuntimeException('Onfido fetch check failed: ' . $check->body());
+            throw new RuntimeException('Onfido fetch check failed: '.$check->body());
         }
 
         return $this->mapCheckResponse($check->json() ?? []);
@@ -90,6 +90,7 @@ class OnfidoProvider implements KycProviderInterface
         }
 
         $decoded = json_decode($payload, true);
+
         return is_array($decoded) ? $decoded : [];
     }
 
@@ -174,12 +175,14 @@ class OnfidoProvider implements KycProviderInterface
     protected function firstName($user): string
     {
         $parts = preg_split('/\s+/', (string) $user->name, 2);
+
         return $parts[0] ?? 'Unknown';
     }
 
     protected function lastName($user): string
     {
         $parts = preg_split('/\s+/', (string) $user->name, 2);
+
         return $parts[1] ?? '-';
     }
 }

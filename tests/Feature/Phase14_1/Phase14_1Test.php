@@ -5,7 +5,6 @@ namespace Tests\Feature\Phase14_1;
 use App\Livewire\Admin\Onboarding\AdminOnboardingDocumentsCenter;
 use App\Livewire\Admin\Onboarding\AdminOnboardingProvidersList;
 use App\Livewire\Provider\Onboarding\ProviderOnboardingWizard;
-use App\Models\ProviderOnboardingDocument;
 use App\Models\ProviderProfile;
 use App\Models\User;
 use App\Services\Onboarding\ProviderOnboardingService;
@@ -275,9 +274,9 @@ class Phase14_1Test extends TestCase
             ->assertSet('currentStep', 2);
 
         $this->assertDatabaseHas('provider_onboarding_documents', [
-            'user_id'       => $user->id,
+            'user_id' => $user->id,
             'document_type' => 'identity_card',
-            'status'        => 'pending_review',
+            'status' => 'pending_review',
         ]);
     }
 

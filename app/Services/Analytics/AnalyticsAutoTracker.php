@@ -17,9 +17,7 @@ use Illuminate\Events\Dispatcher;
  */
 class AnalyticsAutoTracker
 {
-    public function __construct(protected AnalyticsService $analytics)
-    {
-    }
+    public function __construct(protected AnalyticsService $analytics) {}
 
     public function onRatingPublished(RatingPublished $event): void
     {
@@ -34,7 +32,7 @@ class AnalyticsAutoTracker
             'booking_id' => $feedback->rendez_vous_id ?? null,
         ], [
             'user' => $feedback->author_user ?? null,
-            'idempotency_key' => 'rating.published:' . $feedback->id,
+            'idempotency_key' => 'rating.published:'.$feedback->id,
         ]);
     }
 
@@ -54,7 +52,7 @@ class AnalyticsAutoTracker
             'user' => $redemption->user ?? null,
             'revenue_cents' => isset($redemption->discount_cents) ? -1 * (int) $redemption->discount_cents : null,
             'currency' => $redemption->currency ?? null,
-            'idempotency_key' => 'promo.redeemed:' . $redemption->id,
+            'idempotency_key' => 'promo.redeemed:'.$redemption->id,
         ]);
     }
 
@@ -71,7 +69,7 @@ class AnalyticsAutoTracker
             'reason' => $transaction->reason ?? null,
         ], [
             'user' => $transaction->account?->user ?? null,
-            'idempotency_key' => 'loyalty.points_awarded:' . $transaction->id,
+            'idempotency_key' => 'loyalty.points_awarded:'.$transaction->id,
         ]);
     }
 
@@ -88,7 +86,7 @@ class AnalyticsAutoTracker
             'provider' => $verification->provider ?? null,
         ], [
             'user' => $verification->user ?? null,
-            'idempotency_key' => 'kyc.completed:' . $verification->id,
+            'idempotency_key' => 'kyc.completed:'.$verification->id,
         ]);
     }
 

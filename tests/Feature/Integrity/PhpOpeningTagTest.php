@@ -61,7 +61,7 @@ class PhpOpeningTagTest extends TestCase
         $this->assertSame(
             [],
             $offenders,
-            "These PHP files do not start with the exact bytes \"<?php\" (a missing tag, "
+            'These PHP files do not start with the exact bytes "<?php" (a missing tag, '
                 ."leading whitespace/blank lines, or a BOM breaks autoload output and namespaces):\n - "
                 .implode("\n - ", $offenders)
         );

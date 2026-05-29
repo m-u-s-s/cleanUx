@@ -41,14 +41,14 @@ class BookingPostingService
             [
                 'account_code' => $this->chart->clientAccount(),
                 'debit_cents' => $ttcCents,
-                'label' => 'Facturation booking #' . $booking->id,
+                'label' => 'Facturation booking #'.$booking->id,
                 'counterparty_type' => 'client',
                 'counterparty_id' => $booking->user_id,
             ],
             [
                 'account_code' => $this->chart->salesAccount('booking'),
                 'credit_cents' => $htCents,
-                'label' => 'Vente booking #' . $booking->id,
+                'label' => 'Vente booking #'.$booking->id,
                 'vat_rate' => $rate,
                 'vat_amount_cents' => $vatCents,
             ],
@@ -57,14 +57,14 @@ class BookingPostingService
             $lines[] = [
                 'account_code' => $this->chart->vatCollected(),
                 'credit_cents' => $vatCents,
-                'label' => 'TVA collectée booking #' . $booking->id,
+                'label' => 'TVA collectée booking #'.$booking->id,
                 'vat_rate' => $rate,
             ];
         }
 
         return $this->accounting->postIdempotent('Booking', (int) $booking->id, $lines, [
             'journal_code' => 'VEN',
-            'reference' => 'BOOK-' . $booking->id,
+            'reference' => 'BOOK-'.$booking->id,
         ]);
     }
 
@@ -79,12 +79,12 @@ class BookingPostingService
             [
                 'account_code' => $this->chart->bankAccount('stripe'),
                 'debit_cents' => $netCents,
-                'label' => 'Encaissement booking #' . $booking->id,
+                'label' => 'Encaissement booking #'.$booking->id,
             ],
             [
                 'account_code' => $this->chart->clientAccount(),
                 'credit_cents' => $ttcCents,
-                'label' => 'Lettrage booking #' . $booking->id,
+                'label' => 'Lettrage booking #'.$booking->id,
                 'counterparty_type' => 'client',
                 'counterparty_id' => $booking->user_id,
             ],
@@ -93,12 +93,13 @@ class BookingPostingService
             $lines[] = [
                 'account_code' => $this->chart->stripeFeesAccount(),
                 'debit_cents' => $stripeFeeCents,
-                'label' => 'Frais Stripe booking #' . $booking->id,
+                'label' => 'Frais Stripe booking #'.$booking->id,
             ];
         }
+
         return $this->accounting->postIdempotent('Booking.payment', (int) $booking->id, $lines, [
             'journal_code' => 'BANK',
-            'reference' => 'BOOK-' . $booking->id,
+            'reference' => 'BOOK-'.$booking->id,
         ]);
     }
 
@@ -111,17 +112,18 @@ class BookingPostingService
             [
                 'account_code' => $this->chart->refundAccount(),
                 'debit_cents' => $refundCents,
-                'label' => 'Refund booking #' . $booking->id,
+                'label' => 'Refund booking #'.$booking->id,
             ],
             [
                 'account_code' => $this->chart->bankAccount('stripe'),
                 'credit_cents' => $refundCents,
-                'label' => 'Refund Stripe booking #' . $booking->id,
+                'label' => 'Refund Stripe booking #'.$booking->id,
             ],
         ];
+
         return $this->accounting->postIdempotent('Booking.refund', (int) $booking->id, $lines, [
             'journal_code' => 'BANK',
-            'reference' => 'REFUND-BOOK-' . $booking->id,
+            'reference' => 'REFUND-BOOK-'.$booking->id,
         ]);
     }
 }

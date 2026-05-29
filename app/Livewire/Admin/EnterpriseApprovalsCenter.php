@@ -14,9 +14,13 @@ class EnterpriseApprovalsCenter extends Component
     use WithPagination;
 
     public string $status = '';
+
     public string $search = '';
+
     public ?int $selectedApprovalId = null;
+
     public string $note = '';
+
     public string $rejectionReason = '';
 
     protected $paginationTheme = 'tailwind';

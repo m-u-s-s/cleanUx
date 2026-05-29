@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\AssistantConversation;
 use App\Models\AssistantMessage;
 use App\Services\Assistant\Llm\AnthropicStreamingProvider;
+use App\Services\Assistant\Llm\LlmResponse;
 use App\Services\Assistant\Logging\LogRecorder;
 use App\Services\Assistant\Streaming\StreamEvent;
 use App\Services\Assistant\Tools\AssistantToolRegistry;
@@ -39,7 +40,7 @@ class AssistantStreamController extends Controller
         abort_if(! $user, 401);
 
         $conversationId = (int) $request->query('conversation_id');
-        $userMessageId  = (int) $request->query('user_message_id');
+        $userMessageId = (int) $request->query('user_message_id');
 
         abort_if(! $conversationId || ! $userMessageId, 400, 'Missing conversation_id or user_message_id');
 
@@ -72,16 +73,16 @@ class AssistantStreamController extends Controller
                 @ob_end_flush();
             }
 
-            $context  = $contextBuilder->build($user, $userMessageText);
-            $tools    = $registry->definitionsForUser($user);
+            $context = $contextBuilder->build($user, $userMessageText);
+            $tools = $registry->definitionsForUser($user);
             $messages = $this->buildMessageHistory($conversation);
 
-            $startTime    = microtime(true);
-            $accText      = '';
-            $toolUses     = [];
+            $startTime = microtime(true);
+            $accText = '';
+            $toolUses = [];
             $outputTokens = 0;
-            $stopReason   = null;
-            $modelUsed    = null;
+            $stopReason = null;
+            $modelUsed = null;
 
             try {
                 $streamer->chatStream(
@@ -104,8 +105,8 @@ class AssistantStreamController extends Controller
                                 break;
                             case StreamEvent::TYPE_TOOL_USE_START:
                                 $toolUses[$event->payload['index']] = [
-                                    'id'    => $event->payload['tool_use_id'],
-                                    'name'  => $event->payload['tool_name'],
+                                    'id' => $event->payload['tool_use_id'],
+                                    'name' => $event->payload['tool_name'],
                                     'input' => '',
                                 ];
                                 break;
@@ -116,7 +117,7 @@ class AssistantStreamController extends Controller
                                 }
                                 break;
                             case StreamEvent::TYPE_MESSAGE_DELTA:
-                                $stopReason   = $event->payload['stop_reason']   ?? $stopReason;
+                                $stopReason = $event->payload['stop_reason'] ?? $stopReason;
                                 $outputTokens = $event->payload['output_tokens'] ?? $outputTokens;
                                 break;
                         }
@@ -126,29 +127,30 @@ class AssistantStreamController extends Controller
                 // Persiste le message assistant final
                 $finalToolUses = array_values(array_map(function ($t) {
                     $t['input'] = json_decode($t['input'], true) ?: [];
+
                     return $t;
                 }, $toolUses));
 
                 $assistantMessage = AssistantMessage::create([
                     'assistant_conversation_id' => $conversation->id,
-                    'sender_type'               => AssistantMessage::SENDER_ASSISTANT,
-                    'content'                   => $accText,
-                    'metadata'                  => $finalToolUses
+                    'sender_type' => AssistantMessage::SENDER_ASSISTANT,
+                    'content' => $accText,
+                    'metadata' => $finalToolUses
                         ? ['tool_uses' => $finalToolUses, 'streamed' => true]
                         : ['streamed' => true],
                 ]);
 
                 // Émet un event de fin avec l'ID du message persisté
                 $this->emitRaw('persisted', [
-                    'message_id'  => $assistantMessage->id,
-                    'has_tools'   => count($finalToolUses) > 0,
+                    'message_id' => $assistantMessage->id,
+                    'has_tools' => count($finalToolUses) > 0,
                 ]);
 
                 // Logue l'appel
                 $latencyMs = (int) ((microtime(true) - $startTime) * 1000);
 
                 // Pour le streaming on construit une LlmResponse pseudo pour réutiliser le LogRecorder
-                $pseudoResponse = new \App\Services\Assistant\Llm\LlmResponse(
+                $pseudoResponse = new LlmResponse(
                     text: $accText,
                     stopReason: $stopReason ?? 'end_turn',
                     toolUses: $finalToolUses,
@@ -166,7 +168,7 @@ class AssistantStreamController extends Controller
 
             } catch (\Throwable $e) {
                 report($e);
-                $this->emit(StreamEvent::error("Erreur de streaming : " . $e->getMessage()));
+                $this->emit(StreamEvent::error('Erreur de streaming : '.$e->getMessage()));
                 $logRecorder->recordError(
                     $user,
                     $conversation,
@@ -177,10 +179,10 @@ class AssistantStreamController extends Controller
                 );
             }
         }, 200, [
-            'Content-Type'      => 'text/event-stream',
-            'Cache-Control'     => 'no-cache, no-transform',
+            'Content-Type' => 'text/event-stream',
+            'Cache-Control' => 'no-cache, no-transform',
             'X-Accel-Buffering' => 'no',     // désactive le buffering nginx
-            'Connection'        => 'keep-alive',
+            'Connection' => 'keep-alive',
         ]);
     }
 
@@ -195,7 +197,7 @@ class AssistantStreamController extends Controller
     private function emitRaw(string $eventName, array $payload): void
     {
         echo "event: {$eventName}\n";
-        echo 'data: ' . json_encode($payload, JSON_UNESCAPED_UNICODE) . "\n\n";
+        echo 'data: '.json_encode($payload, JSON_UNESCAPED_UNICODE)."\n\n";
 
         if (function_exists('ob_flush')) {
             @ob_flush();

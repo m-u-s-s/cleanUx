@@ -14,13 +14,13 @@ class ModerationActionFactory extends Factory
     public function definition(): array
     {
         return [
-            'actor_user_id'  => fn () => User::factory()->create()->id,
-            'channel_id'     => fn () => Channel::factory()->create()->id,
-            'message_id'     => null,
+            'actor_user_id' => fn () => User::factory()->create()->id,
+            'channel_id' => fn () => Channel::factory()->create()->id,
+            'message_id' => null,
             'target_user_id' => null,
-            'action_type'    => ModerationAction::TYPE_LOCK_CHANNEL,
-            'reason'         => fake()->sentence(),
-            'payload'        => null,
+            'action_type' => ModerationAction::TYPE_LOCK_CHANNEL,
+            'reason' => fake()->sentence(),
+            'payload' => null,
         ];
     }
 

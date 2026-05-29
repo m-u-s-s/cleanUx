@@ -9,18 +9,29 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class GdprDataRequest extends Model
 {
     public const TYPE_EXPORT = 'export';
+
     public const TYPE_ERASURE = 'erasure';
+
     public const TYPE_RESTRICTION = 'restriction';
+
     public const TYPE_RECTIFICATION = 'rectification';
+
     public const TYPE_OBJECTION = 'objection';
 
     public const STATUS_PENDING = 'pending';
+
     public const STATUS_PROCESSING = 'processing';
+
     public const STATUS_AWAITING_CONFIRMATION = 'awaiting_confirmation';
+
     public const STATUS_AWAITING_GRACE_PERIOD = 'awaiting_grace_period';
+
     public const STATUS_FULFILLED = 'fulfilled';
+
     public const STATUS_REJECTED = 'rejected';
+
     public const STATUS_EXPIRED = 'expired';
+
     public const STATUS_CANCELLED = 'cancelled';
 
     protected $fillable = [
@@ -69,6 +80,7 @@ class GdprDataRequest extends Model
         if ($this->status !== self::STATUS_AWAITING_GRACE_PERIOD) {
             return false;
         }
+
         return $this->grace_period_ends_at !== null
             && $this->grace_period_ends_at->isPast();
     }

@@ -22,21 +22,27 @@ class Task extends Model
     ];
 
     protected $casts = [
-        'due_date'     => 'date',
+        'due_date' => 'date',
         'completed_at' => 'datetime',
-        'metadata'     => 'array',
+        'metadata' => 'array',
     ];
 
     // Statuts
-    public const STATUS_TODO       = 'todo';
+    public const STATUS_TODO = 'todo';
+
     public const STATUS_IN_PROGRESS = 'in_progress';
-    public const STATUS_DONE       = 'done';
-    public const STATUS_CANCELLED  = 'cancelled';
+
+    public const STATUS_DONE = 'done';
+
+    public const STATUS_CANCELLED = 'cancelled';
 
     // Priorités
-    public const PRIORITY_LOW    = 'low';
+    public const PRIORITY_LOW = 'low';
+
     public const PRIORITY_MEDIUM = 'medium';
-    public const PRIORITY_HIGH   = 'high';
+
+    public const PRIORITY_HIGH = 'high';
+
     public const PRIORITY_URGENT = 'urgent';
 
     public function organization(): BelongsTo
@@ -62,9 +68,20 @@ class Task extends Model
     }
 
     // Scopes
-    public function scopeTodo($query)        { return $query->where('status', self::STATUS_TODO); }
-    public function scopeInProgress($query)  { return $query->where('status', self::STATUS_IN_PROGRESS); }
-    public function scopeDone($query)        { return $query->where('status', self::STATUS_DONE); }
+    public function scopeTodo($query)
+    {
+        return $query->where('status', self::STATUS_TODO);
+    }
+
+    public function scopeInProgress($query)
+    {
+        return $query->where('status', self::STATUS_IN_PROGRESS);
+    }
+
+    public function scopeDone($query)
+    {
+        return $query->where('status', self::STATUS_DONE);
+    }
 
     public function scopeForOrg($query, int $orgId)
     {
@@ -88,20 +105,20 @@ class Task extends Model
     {
         return match ($this->priority) {
             self::PRIORITY_URGENT => 'red',
-            self::PRIORITY_HIGH   => 'orange',
+            self::PRIORITY_HIGH => 'orange',
             self::PRIORITY_MEDIUM => 'blue',
-            default               => 'slate',
+            default => 'slate',
         };
     }
 
     public function statusLabel(): string
     {
         return match ($this->status) {
-            self::STATUS_TODO        => 'À faire',
+            self::STATUS_TODO => 'À faire',
             self::STATUS_IN_PROGRESS => 'En cours',
-            self::STATUS_DONE        => 'Terminé',
-            self::STATUS_CANCELLED   => 'Annulé',
-            default                  => $this->status,
+            self::STATUS_DONE => 'Terminé',
+            self::STATUS_CANCELLED => 'Annulé',
+            default => $this->status,
         };
     }
 }

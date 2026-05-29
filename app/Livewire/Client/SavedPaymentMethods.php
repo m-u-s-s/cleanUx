@@ -13,6 +13,7 @@ use Livewire\Component;
 class SavedPaymentMethods extends Component
 {
     public ?string $newCardSetupIntent = null;
+
     public string $error = '';
 
     public function startAdd(): void
@@ -24,6 +25,7 @@ class SavedPaymentMethods extends Component
                 $user->createAsStripeCustomer();
             } catch (\Throwable $e) {
                 $this->error = $e->getMessage();
+
                 return;
             }
         }
@@ -46,7 +48,7 @@ class SavedPaymentMethods extends Component
             $user->updateDefaultPaymentMethod($paymentMethodId);
             $this->dispatch('toast', 'Carte par défaut mise à jour.', 'success');
         } catch (\Throwable $e) {
-            $this->dispatch('toast', 'Erreur : ' . $e->getMessage(), 'error');
+            $this->dispatch('toast', 'Erreur : '.$e->getMessage(), 'error');
         }
     }
 
@@ -60,7 +62,7 @@ class SavedPaymentMethods extends Component
                 $this->dispatch('toast', 'Carte supprimée.', 'success');
             }
         } catch (\Throwable $e) {
-            $this->dispatch('toast', 'Erreur : ' . $e->getMessage(), 'error');
+            $this->dispatch('toast', 'Erreur : '.$e->getMessage(), 'error');
         }
     }
 

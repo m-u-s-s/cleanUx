@@ -11,6 +11,7 @@ use Illuminate\Http\Request;
 
 /**
  * @group Provider — Badges
+ *
  * @authenticated
  */
 class BadgesController extends Controller

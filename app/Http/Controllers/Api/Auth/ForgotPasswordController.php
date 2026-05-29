@@ -23,7 +23,7 @@ class ForgotPasswordController extends Controller
         }
 
         return response()->json([
-            'ok'      => true,
+            'ok' => true,
             'message' => 'If this email exists, a reset link has been sent.',
         ]);
     }

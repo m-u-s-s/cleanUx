@@ -14,7 +14,7 @@ class PhoneVerificationCodeFactory extends Factory
     {
         return [
             'user_id' => fn () => User::factory()->create()->id,
-            'phone' => '+32' . fake()->numerify('4########'),
+            'phone' => '+32'.fake()->numerify('4########'),
             'code_hash' => hash('sha256', fake()->numerify('######')),
             'attempts' => 0,
             'max_attempts' => 3,

@@ -60,20 +60,26 @@ class QualityScoringEngine
         switch ($checklistItem->item_type) {
             case QualityChecklistItem::TYPE_BOOLEAN:
                 $ok = (bool) ($value['answer'] ?? $value ?? false);
+
                 return $ok ? $weight : 0;
 
             case QualityChecklistItem::TYPE_RATING:
                 $rating = (int) ($value['rating'] ?? 0);
                 $max = (int) ($checklistItem->valid_options['max'] ?? 5);
-                if ($max <= 0) return 0;
+                if ($max <= 0) {
+                    return 0;
+                }
+
                 return (int) round(($rating / $max) * $weight);
 
             case QualityChecklistItem::TYPE_PHOTO:
                 $hasPhotos = (int) $item->photos_count > 0;
+
                 return $hasPhotos ? $weight : 0;
 
             case QualityChecklistItem::TYPE_TEXT:
                 $text = (string) ($value['text'] ?? '');
+
                 return strlen(trim($text)) > 0 ? $weight : 0;
 
             case QualityChecklistItem::TYPE_SELECT:
@@ -82,6 +88,7 @@ class QualityScoringEngine
                 if (! $expected || ! is_array($expected)) {
                     return $selected ? $weight : 0;
                 }
+
                 return in_array($selected, $expected, true) ? $weight : 0;
 
             case QualityChecklistItem::TYPE_MEASUREMENT:
@@ -89,8 +96,13 @@ class QualityScoringEngine
                 $min = $checklistItem->expected_value['min'] ?? null;
                 $max = $checklistItem->expected_value['max'] ?? null;
                 $ok = true;
-                if ($min !== null && $val < (float) $min) $ok = false;
-                if ($max !== null && $val > (float) $max) $ok = false;
+                if ($min !== null && $val < (float) $min) {
+                    $ok = false;
+                }
+                if ($max !== null && $val > (float) $max) {
+                    $ok = false;
+                }
+
                 return $ok ? $weight : 0;
 
             default:
@@ -106,6 +118,7 @@ class QualityScoringEngine
         }
         $excellent = (float) Config::get('quality.thresholds.excellent', 90.0);
         $pass = (float) Config::get('quality.thresholds.pass', 70.0);
+
         return match (true) {
             $percent >= $excellent => 'excellent',
             $percent >= $pass => 'pass',

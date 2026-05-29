@@ -3,6 +3,7 @@
 namespace App\Http\Middleware;
 
 use App\Services\I18n\LocaleResolver;
+use Carbon\Carbon;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\App;
@@ -34,9 +35,7 @@ class SetLocale
      */
     public const DEFAULT = 'fr';
 
-    public function __construct(protected LocaleResolver $resolver)
-    {
-    }
+    public function __construct(protected LocaleResolver $resolver) {}
 
     public static function supported(): array
     {
@@ -56,8 +55,8 @@ class SetLocale
 
         @setlocale(LC_TIME, $this->setlocaleVariants($locale));
 
-        if (class_exists(\Carbon\Carbon::class)) {
-            \Carbon\Carbon::setLocale($locale);
+        if (class_exists(Carbon::class)) {
+            Carbon::setLocale($locale);
         }
 
         $response = $next($request);

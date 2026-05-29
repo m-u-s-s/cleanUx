@@ -21,9 +21,7 @@ use Symfony\Component\HttpFoundation\Response;
  */
 class CheckOrganizationPermission
 {
-    public function __construct(private PermissionService $permissions)
-    {
-    }
+    public function __construct(private PermissionService $permissions) {}
 
     public function handle(Request $request, Closure $next, string ...$requiredPermissions): Response
     {

@@ -10,12 +10,10 @@ use Illuminate\Notifications\Notification;
 
 class DisputeUpdatedNotification extends Notification
 {
-    use Queueable;
     use InteractsWithUserNotificationPreferences;
+    use Queueable;
 
-    public function __construct(public ComplaintCase $case)
-    {
-    }
+    public function __construct(public ComplaintCase $case) {}
 
     public function via($notifiable): array
     {
@@ -25,9 +23,9 @@ class DisputeUpdatedNotification extends Notification
     public function toMail($notifiable): MailMessage
     {
         return (new MailMessage)
-            ->subject('CleanUx · Mise à jour de votre réclamation ' . $this->case->reference)
+            ->subject('CleanUx · Mise à jour de votre réclamation '.$this->case->reference)
             ->line('Votre réclamation a évolué.')
-            ->line('Statut : ' . $this->case->status)
+            ->line('Statut : '.$this->case->status)
             ->action('Voir le détail', url('/dashboard/client/litiges'));
     }
 
@@ -37,7 +35,7 @@ class DisputeUpdatedNotification extends Notification
             'type' => 'dispute_updated',
             'severity' => 'info',
             'title' => 'Réclamation mise à jour',
-            'message' => $this->case->reference . ' — ' . $this->case->status,
+            'message' => $this->case->reference.' — '.$this->case->status,
             'dispute_id' => $this->case->id,
             'reference' => $this->case->reference,
             'status' => $this->case->status,

@@ -11,6 +11,7 @@ use Illuminate\Support\Str;
 
 /**
  * @group Admin — Marketing Segments
+ *
  * @authenticated
  */
 class MarketingSegmentController extends Controller
@@ -27,12 +28,12 @@ class MarketingSegmentController extends Controller
     public function store(Request $request): JsonResponse
     {
         $data = $request->validate([
-            'name'  => 'required|string|max:255',
+            'name' => 'required|string|max:255',
             'rules' => 'required|array',
         ]);
 
         if (empty($data['code'])) {
-            $data['code'] = 'seg_' . Str::lower(Str::random(12));
+            $data['code'] = 'seg_'.Str::lower(Str::random(12));
         }
 
         return response()->json(['data' => MarketingSegment::create($data)], 201);
@@ -41,7 +42,7 @@ class MarketingSegmentController extends Controller
     public function update(Request $request, MarketingSegment $segment): JsonResponse
     {
         $segment->update($request->validate([
-            'name'  => 'sometimes|string|max:255',
+            'name' => 'sometimes|string|max:255',
             'rules' => 'sometimes|array',
         ]));
 

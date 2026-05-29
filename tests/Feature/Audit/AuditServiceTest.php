@@ -5,7 +5,6 @@ namespace Tests\Feature\Audit;
 use App\Models\AuditEvent;
 use App\Models\User;
 use App\Services\Audit\AuditService;
-use Database\Seeders\AuditDefaultsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Config;
 use Tests\TestCase;

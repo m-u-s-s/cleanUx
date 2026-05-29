@@ -8,19 +8,31 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class DisputeResolution extends Model
 {
     public const TYPE_REFUND_FULL = 'refund_full';
+
     public const TYPE_REFUND_PARTIAL = 'refund_partial';
+
     public const TYPE_CREDIT = 'credit';
+
     public const TYPE_PROMO_CODE = 'promo_code';
+
     public const TYPE_REPLACEMENT_BOOKING = 'replacement_booking';
+
     public const TYPE_PROVIDER_WARNING = 'provider_warning';
+
     public const TYPE_PROVIDER_SANCTION = 'provider_sanction';
+
     public const TYPE_NO_ACTION = 'no_action';
+
     public const TYPE_DISMISSED = 'dismissed';
+
     public const TYPE_OTHER = 'other';
 
     public const STATUS_PROPOSED = 'proposed';
+
     public const STATUS_APPLIED = 'applied';
+
     public const STATUS_FAILED = 'failed';
+
     public const STATUS_REVERSED = 'reversed';
 
     protected $fillable = [

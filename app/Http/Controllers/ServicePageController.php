@@ -24,7 +24,7 @@ final class ServicePageController extends Controller
     {
         $trade = Trade::where(function ($q) use ($tradeSlug) {
             $q->where('slug', $tradeSlug)
-              ->orWhere('code', $tradeSlug);
+                ->orWhere('code', $tradeSlug);
         })
             ->where('is_active', true)
             ->firstOrFail();
@@ -34,10 +34,10 @@ final class ServicePageController extends Controller
             : ServiceZone::where('is_bookable', true)->orderBy('name')->get();
 
         $cityLabel = $city ? ucfirst(str_replace('-', ' ', $city)) : null;
-        $seoTitle = $trade->name . ($cityLabel ? ' a ' . $cityLabel : '') . ' — CleanUx';
-        $seoDescription = 'Reservez un ' . strtolower($trade->name) . ' verifie'
-            . ($cityLabel ? ' a ' . $cityLabel : ' en Belgique')
-            . '. Paiement securise, suivi en temps reel. Devis gratuit en 2 minutes.';
+        $seoTitle = $trade->name.($cityLabel ? ' a '.$cityLabel : '').' — CleanUx';
+        $seoDescription = 'Reservez un '.strtolower($trade->name).' verifie'
+            .($cityLabel ? ' a '.$cityLabel : ' en Belgique')
+            .'. Paiement securise, suivi en temps reel. Devis gratuit en 2 minutes.';
 
         return view('pages.service-trade', compact(
             'trade',

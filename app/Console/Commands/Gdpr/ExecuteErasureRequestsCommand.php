@@ -18,6 +18,7 @@ class ExecuteErasureRequestsCommand extends Command
 
         if ($ready->isEmpty()) {
             $this->info('Aucune demande à exécuter.');
+
             return self::SUCCESS;
         }
 
@@ -41,7 +42,7 @@ class ExecuteErasureRequestsCommand extends Command
                 $service->execute($request);
                 $executed++;
             } catch (\Throwable $e) {
-                $this->error('  ⚠ Erreur #' . $request->id . ' : ' . $e->getMessage());
+                $this->error('  ⚠ Erreur #'.$request->id.' : '.$e->getMessage());
                 $failed++;
             }
         }

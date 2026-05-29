@@ -13,7 +13,7 @@ class RendezVousPolicy
             || $user->isEntreprise()
             || ($user->isAdmin() && ! $user->isReadOnlyAdmin());
     }
-    
+
     public function view(User $user, Booking $rendezVous): bool
     {
         if ($user->isAdmin()) {
@@ -30,7 +30,6 @@ class RendezVousPolicy
 
         return false;
     }
-
 
     public function update(User $user, Booking $rendezVous): bool
     {

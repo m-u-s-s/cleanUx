@@ -17,7 +17,9 @@ class QualityCenter extends Component
     protected $paginationTheme = 'tailwind';
 
     public string $tab = 'pending';  // pending | disputes | history | checklists
+
     public string $filterPhase = '';
+
     public string $search = '';
 
     public function validate_(int $inspectionId): void
@@ -27,7 +29,7 @@ class QualityCenter extends Component
             app(QualityInspectionService::class)->validateByAdmin($inspection, Auth::user());
             $this->dispatch('toast', 'Inspection validée admin.', 'success');
         } catch (\Throwable $e) {
-            $this->dispatch('toast', 'Erreur : ' . $e->getMessage(), 'error');
+            $this->dispatch('toast', 'Erreur : '.$e->getMessage(), 'error');
         }
     }
 
@@ -38,7 +40,7 @@ class QualityCenter extends Component
             app(QualityInspectionService::class)->reject($inspection, Auth::user(), 'Rejected via admin UI');
             $this->dispatch('toast', 'Inspection rejetée.', 'success');
         } catch (\Throwable $e) {
-            $this->dispatch('toast', 'Erreur : ' . $e->getMessage(), 'error');
+            $this->dispatch('toast', 'Erreur : '.$e->getMessage(), 'error');
         }
     }
 

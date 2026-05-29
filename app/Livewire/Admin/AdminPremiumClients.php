@@ -3,17 +3,18 @@
 namespace App\Livewire\Admin;
 
 use App\Models\User;
-use Livewire\Component;
 use Illuminate\Contracts\View\View;
+use Livewire\Component;
 use Livewire\WithPagination;
-use Livewire\Attributes\Layout;
 
 class AdminPremiumClients extends Component
 {
     use WithPagination;
 
     public string $search = '';
+
     public string $filterPlan = 'all';
+
     public string $filterStatus = 'all';
 
     protected $paginationTheme = 'tailwind';
@@ -41,7 +42,7 @@ class AdminPremiumClients extends Component
             ->when($this->search !== '', function ($query) {
                 $query->where(function ($q) {
                     $q->where('name', 'like', '%'.$this->search.'%')
-                      ->orWhere('email', 'like', '%'.$this->search.'%');
+                        ->orWhere('email', 'like', '%'.$this->search.'%');
                 });
             })
             ->when($this->filterPlan !== 'all', fn ($q) => $q->where('plan_type', $this->filterPlan))

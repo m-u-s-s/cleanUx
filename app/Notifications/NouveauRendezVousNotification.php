@@ -9,12 +9,10 @@ use Illuminate\Notifications\Notification;
 
 class NouveauRendezVousNotification extends Notification
 {
-    use Queueable;
     use InteractsWithUserNotificationPreferences;
+    use Queueable;
 
-    public function __construct(public $rdv)
-    {
-    }
+    public function __construct(public $rdv) {}
 
     public function via($notifiable)
     {
@@ -28,15 +26,15 @@ class NouveauRendezVousNotification extends Notification
         $mail = (new MailMessage)
             ->subject($this->rdv->priorite === 'urgente' ? 'CleanUx · Demande urgente de nettoyage' : 'CleanUx · Nouvelle demande de nettoyage')
             ->line('Une nouvelle demande d’intervention a été envoyée.')
-            ->line('Client : ' . ($this->rdv->client->name ?? '—'))
-            ->line('Service : ' . $this->rdv->service_display_name)
-            ->line('Date : ' . $this->rdv->date . ' à ' . $this->rdv->heure)
-            ->line('Adresse : ' . $this->rdv->location_display)
-            ->line('Priorité : ' . $priorite)
-            ->line('Animaux : ' . ($this->rdv->presence_animaux ? 'Oui' : 'Non'))
-            ->line('Parking : ' . ($this->rdv->acces_parking ? 'Oui' : 'Non'))
-            ->line('Matériel fourni : ' . ($this->rdv->materiel_fournit ? 'Oui' : 'Non'))
-            ->line('Photos de référence : ' . (! empty($this->rdv->photos_reference) ? 'Oui' : 'Non'))
+            ->line('Client : '.($this->rdv->client->name ?? '—'))
+            ->line('Service : '.$this->rdv->service_display_name)
+            ->line('Date : '.$this->rdv->date.' à '.$this->rdv->heure)
+            ->line('Adresse : '.$this->rdv->location_display)
+            ->line('Priorité : '.$priorite)
+            ->line('Animaux : '.($this->rdv->presence_animaux ? 'Oui' : 'Non'))
+            ->line('Parking : '.($this->rdv->acces_parking ? 'Oui' : 'Non'))
+            ->line('Matériel fourni : '.($this->rdv->materiel_fournit ? 'Oui' : 'Non'))
+            ->line('Photos de référence : '.(! empty($this->rdv->photos_reference) ? 'Oui' : 'Non'))
             ->action('Voir mes rendez-vous', url('/dashboard/employe'))
             ->line('Merci de confirmer ou refuser cette intervention rapidement.');
 
@@ -53,7 +51,7 @@ class NouveauRendezVousNotification extends Notification
             'type' => $this->rdv->priorite === 'urgente' ? 'urgent' : 'rendezvous',
             'severity' => $this->rdv->priorite === 'urgente' ? 'danger' : 'info',
             'title' => $this->rdv->priorite === 'urgente' ? 'Nouvelle demande urgente' : 'Nouvelle demande de nettoyage',
-            'message' => ($this->rdv->priorite === 'urgente' ? '🚨 Demande urgente : ' : 'Nouvelle demande de nettoyage : ') . $this->rdv->service_display_name,
+            'message' => ($this->rdv->priorite === 'urgente' ? '🚨 Demande urgente : ' : 'Nouvelle demande de nettoyage : ').$this->rdv->service_display_name,
             'rdv_id' => $this->rdv->id,
             'client' => $this->rdv->client->name ?? '—',
             'date' => $this->rdv->date,

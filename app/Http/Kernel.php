@@ -2,7 +2,48 @@
 
 namespace App\Http;
 
+use App\Http\Middleware\ApiTokensV2\EnforceTokenScope;
+use App\Http\Middleware\ApiTokensV2\LogTokenUsage;
+use App\Http\Middleware\ApiTokensV2\ThrottleByToken;
+use App\Http\Middleware\AssistantRateLimit;
+use App\Http\Middleware\Authenticate;
+use App\Http\Middleware\CacheApiResponse;
+use App\Http\Middleware\CaptureUtm;
+use App\Http\Middleware\CheckRole;
+use App\Http\Middleware\EncryptCookies;
+use App\Http\Middleware\Enforce2FA;
+use App\Http\Middleware\EnforceTokenGrace;
+use App\Http\Middleware\EnsureActiveAccount;
+use App\Http\Middleware\EnsureFieldTeamLead;
+use App\Http\Middleware\ForceHttps;
+use App\Http\Middleware\LogSlowQueries;
+use App\Http\Middleware\PremiumGate;
+use App\Http\Middleware\PreventRequestsDuringMaintenance;
+use App\Http\Middleware\RedirectIfAuthenticated;
+use App\Http\Middleware\SecurityHeaders;
+use App\Http\Middleware\SetLocale;
+use App\Http\Middleware\TrimStrings;
+use App\Http\Middleware\TrustHosts;
+use App\Http\Middleware\TrustProxies;
+use App\Http\Middleware\ValidateSignature;
+use App\Http\Middleware\VerifyCsrfToken;
+use App\Http\Middleware\VerifyTurnstileCaptcha;
+use Illuminate\Auth\Middleware\AuthenticateWithBasicAuth;
+use Illuminate\Auth\Middleware\Authorize;
+use Illuminate\Auth\Middleware\EnsureEmailIsVerified;
+use Illuminate\Auth\Middleware\RequirePassword;
+use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Foundation\Http\Kernel as HttpKernel;
+use Illuminate\Foundation\Http\Middleware\ConvertEmptyStringsToNull;
+use Illuminate\Foundation\Http\Middleware\HandlePrecognitiveRequests;
+use Illuminate\Foundation\Http\Middleware\ValidatePostSize;
+use Illuminate\Http\Middleware\HandleCors;
+use Illuminate\Http\Middleware\SetCacheHeaders;
+use Illuminate\Routing\Middleware\SubstituteBindings;
+use Illuminate\Routing\Middleware\ThrottleRequests;
+use Illuminate\Session\Middleware\AuthenticateSession;
+use Illuminate\Session\Middleware\StartSession;
+use Illuminate\View\Middleware\ShareErrorsFromSession;
 
 class Kernel extends HttpKernel
 {
@@ -14,15 +55,15 @@ class Kernel extends HttpKernel
      * @var array<int, class-string|string>
      */
     protected $middleware = [
-        \App\Http\Middleware\ForceHttps::class,
-        \App\Http\Middleware\TrustHosts::class,
-        \App\Http\Middleware\TrustProxies::class,
-        \Illuminate\Http\Middleware\HandleCors::class,
-        \App\Http\Middleware\PreventRequestsDuringMaintenance::class,
-        \Illuminate\Foundation\Http\Middleware\ValidatePostSize::class,
-        \App\Http\Middleware\TrimStrings::class,
-        \Illuminate\Foundation\Http\Middleware\ConvertEmptyStringsToNull::class,
-        \App\Http\Middleware\SecurityHeaders::class,
+        ForceHttps::class,
+        TrustHosts::class,
+        TrustProxies::class,
+        HandleCors::class,
+        PreventRequestsDuringMaintenance::class,
+        ValidatePostSize::class,
+        TrimStrings::class,
+        ConvertEmptyStringsToNull::class,
+        SecurityHeaders::class,
     ];
 
     /**
@@ -32,22 +73,22 @@ class Kernel extends HttpKernel
      */
     protected $middlewareGroups = [
         'web' => [
-            \App\Http\Middleware\EncryptCookies::class,
-            \Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse::class,
-            \Illuminate\Session\Middleware\StartSession::class,
-            \App\Http\Middleware\SetLocale::class,
-            \Illuminate\View\Middleware\ShareErrorsFromSession::class,
-            \App\Http\Middleware\VerifyCsrfToken::class,
-            \Illuminate\Routing\Middleware\SubstituteBindings::class,
-            \App\Http\Middleware\SetLocale::class,
-            \App\Http\Middleware\CaptureUtm::class,
+            EncryptCookies::class,
+            AddQueuedCookiesToResponse::class,
+            StartSession::class,
+            SetLocale::class,
+            ShareErrorsFromSession::class,
+            VerifyCsrfToken::class,
+            SubstituteBindings::class,
+            SetLocale::class,
+            CaptureUtm::class,
         ],
 
         'api' => [
             // \Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class,
-            \Illuminate\Routing\Middleware\ThrottleRequests::class.':api',
-            \Illuminate\Routing\Middleware\SubstituteBindings::class,
-            \App\Http\Middleware\LogSlowQueries::class,
+            ThrottleRequests::class.':api',
+            SubstituteBindings::class,
+            LogSlowQueries::class,
         ],
     ];
 
@@ -59,28 +100,28 @@ class Kernel extends HttpKernel
      * @var array<string, class-string|string>
      */
     protected $middlewareAliases = [
-        'auth' => \App\Http\Middleware\Authenticate::class,
-        'auth.basic' => \Illuminate\Auth\Middleware\AuthenticateWithBasicAuth::class,
-        'auth.session' => \Illuminate\Session\Middleware\AuthenticateSession::class,
-        'cache.headers' => \Illuminate\Http\Middleware\SetCacheHeaders::class,
-        'can' => \Illuminate\Auth\Middleware\Authorize::class,
-        'guest' => \App\Http\Middleware\RedirectIfAuthenticated::class,
-        'password.confirm' => \Illuminate\Auth\Middleware\RequirePassword::class,
-        'precognitive' => \Illuminate\Foundation\Http\Middleware\HandlePrecognitiveRequests::class,
-        'signed' => \App\Http\Middleware\ValidateSignature::class,
-        'throttle' => \Illuminate\Routing\Middleware\ThrottleRequests::class,
-        'verified' => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
-        'role' => \App\Http\Middleware\CheckRole::class,
-        'active.account' => \App\Http\Middleware\EnsureActiveAccount::class,
-        'field.team.lead' => \App\Http\Middleware\EnsureFieldTeamLead::class,
-        'assistant.ratelimit' => \App\Http\Middleware\AssistantRateLimit::class,
-        'api_scope' => \App\Http\Middleware\ApiTokensV2\EnforceTokenScope::class,
-        'api_token_throttle' => \App\Http\Middleware\ApiTokensV2\ThrottleByToken::class,
-        'api_token_audit' => \App\Http\Middleware\ApiTokensV2\LogTokenUsage::class,
-        'turnstile' => \App\Http\Middleware\VerifyTurnstileCaptcha::class,
-        'token.grace' => \App\Http\Middleware\EnforceTokenGrace::class,
-        'cache.api'   => \App\Http\Middleware\CacheApiResponse::class,
-        'premium'     => \App\Http\Middleware\PremiumGate::class,
-        'enforce_2fa' => \App\Http\Middleware\Enforce2FA::class,
+        'auth' => Authenticate::class,
+        'auth.basic' => AuthenticateWithBasicAuth::class,
+        'auth.session' => AuthenticateSession::class,
+        'cache.headers' => SetCacheHeaders::class,
+        'can' => Authorize::class,
+        'guest' => RedirectIfAuthenticated::class,
+        'password.confirm' => RequirePassword::class,
+        'precognitive' => HandlePrecognitiveRequests::class,
+        'signed' => ValidateSignature::class,
+        'throttle' => ThrottleRequests::class,
+        'verified' => EnsureEmailIsVerified::class,
+        'role' => CheckRole::class,
+        'active.account' => EnsureActiveAccount::class,
+        'field.team.lead' => EnsureFieldTeamLead::class,
+        'assistant.ratelimit' => AssistantRateLimit::class,
+        'api_scope' => EnforceTokenScope::class,
+        'api_token_throttle' => ThrottleByToken::class,
+        'api_token_audit' => LogTokenUsage::class,
+        'turnstile' => VerifyTurnstileCaptcha::class,
+        'token.grace' => EnforceTokenGrace::class,
+        'cache.api' => CacheApiResponse::class,
+        'premium' => PremiumGate::class,
+        'enforce_2fa' => Enforce2FA::class,
     ];
 }

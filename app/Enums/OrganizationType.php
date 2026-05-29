@@ -4,18 +4,18 @@ namespace App\Enums;
 
 enum OrganizationType: string
 {
-    case CLIENT_COMPANY   = 'client_company';   // Entreprise qui demande le service
+    case CLIENT_COMPANY = 'client_company';   // Entreprise qui demande le service
     case PROVIDER_COMPANY = 'provider_company'; // Entreprise qui fournit le service
-    case PROVIDER_SOLO    = 'provider_solo';    // Indépendant avec structure légale
-    case HYBRID           = 'hybrid';           // Les deux à la fois (rare)
+    case PROVIDER_SOLO = 'provider_solo';    // Indépendant avec structure légale
+    case HYBRID = 'hybrid';           // Les deux à la fois (rare)
 
     public function label(): string
     {
         return match ($this) {
-            self::CLIENT_COMPANY   => 'Entreprise cliente',
+            self::CLIENT_COMPANY => 'Entreprise cliente',
             self::PROVIDER_COMPANY => 'Société de nettoyage',
-            self::PROVIDER_SOLO    => 'Indépendant',
-            self::HYBRID           => 'Hybride',
+            self::PROVIDER_SOLO => 'Indépendant',
+            self::HYBRID => 'Hybride',
         };
     }
 
@@ -33,10 +33,10 @@ enum OrganizationType: string
     public function availableRoles(): array
     {
         return match ($this) {
-            self::CLIENT_COMPANY   => OrganizationRole::forClientCompany(),
+            self::CLIENT_COMPANY => OrganizationRole::forClientCompany(),
             self::PROVIDER_COMPANY,
-            self::PROVIDER_SOLO    => OrganizationRole::forProviderCompany(),
-            self::HYBRID           => array_merge(
+            self::PROVIDER_SOLO => OrganizationRole::forProviderCompany(),
+            self::HYBRID => array_merge(
                 OrganizationRole::forClientCompany(),
                 OrganizationRole::forProviderCompany()
             ),

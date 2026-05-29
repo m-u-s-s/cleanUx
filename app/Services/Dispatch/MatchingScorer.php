@@ -16,28 +16,28 @@ use Illuminate\Support\Collection;
 class MatchingScorer
 {
     private const WEIGHTS = [
-        'distance'        => 0.30,
-        'rating'          => 0.25,
-        'availability'    => 0.20,
+        'distance' => 0.30,
+        'rating' => 0.25,
+        'availability' => 0.20,
         'completion_rate' => 0.15,
-        'price'           => 0.10,
+        'price' => 0.10,
     ];
 
     /**
      * Score a collection of provider Users for the given Booking.
      *
-     * @param  Collection<int, User> $candidates
+     * @param  Collection<int, User>  $candidates
      * @return Collection<int, array{provider_id: int, provider_name: string, total_score: float, scores: array}>
      */
     public function scoreProviders(Booking $booking, Collection $candidates): Collection
     {
         return $candidates->map(function (User $provider) use ($booking) {
             $scores = [
-                'distance'        => $this->scoreDistance($booking, $provider),
-                'rating'          => $this->scoreRating($provider),
-                'availability'    => $this->scoreAvailability($provider),
+                'distance' => $this->scoreDistance($booking, $provider),
+                'rating' => $this->scoreRating($provider),
+                'availability' => $this->scoreAvailability($provider),
                 'completion_rate' => $this->scoreCompletionRate($provider),
-                'price'           => $this->scorePrice($booking, $provider),
+                'price' => $this->scorePrice($booking, $provider),
             ];
 
             $weighted = collect($scores)
@@ -45,10 +45,10 @@ class MatchingScorer
                 ->sum();
 
             return [
-                'provider_id'   => $provider->id,
+                'provider_id' => $provider->id,
                 'provider_name' => $provider->name,
-                'total_score'   => round($weighted, 4),
-                'scores'        => $scores,
+                'total_score' => round($weighted, 4),
+                'scores' => $scores,
             ];
         })->sortByDesc('total_score')->values();
     }
@@ -76,6 +76,7 @@ class MatchingScorer
     private function scoreRating(User $provider): float
     {
         $avg = (float) ($provider->providerProfile?->rating_avg ?? 3.0);
+
         return min(1.0, max(0.0, $avg / 5.0));
     }
 
@@ -94,11 +95,11 @@ class MatchingScorer
         }
 
         return match ($presence->status) {
-            'online'    => 1.0,
-            'on_break'  => 0.5,
-            'busy'      => 0.3,
-            'offline'   => 0.0,
-            default     => 0.3,
+            'online' => 1.0,
+            'on_break' => 0.5,
+            'busy' => 0.3,
+            'offline' => 0.0,
+            default => 0.3,
         };
     }
 
@@ -135,7 +136,7 @@ class MatchingScorer
         $earthRadius = 6371.0;
         $dLat = deg2rad($lat2 - $lat1);
         $dLon = deg2rad($lon2 - $lon1);
-        $a    = sin($dLat / 2) ** 2
+        $a = sin($dLat / 2) ** 2
               + cos(deg2rad($lat1)) * cos(deg2rad($lat2)) * sin($dLon / 2) ** 2;
 
         return $earthRadius * 2.0 * atan2(sqrt($a), sqrt(1.0 - $a));

@@ -19,20 +19,20 @@ class AuditRedactionRuleFactory extends Factory
         ]);
 
         $patterns = [
-            AuditRedactionRule::MATCH_KEY   => 'password',
+            AuditRedactionRule::MATCH_KEY => 'password',
             AuditRedactionRule::MATCH_REGEX => '/\d{4}[\s\-]?\d{4}[\s\-]?\d{4}[\s\-]?\d{4}/',
-            AuditRedactionRule::MATCH_PATH  => 'data.user.email',
+            AuditRedactionRule::MATCH_PATH => 'data.user.email',
         ];
 
         return [
-            'code'         => 'rule_' . Str::lower(Str::random(8)),
-            'name'         => fake()->words(3, true),
-            'pattern'      => $patterns[$matchType],
-            'match_type'   => $matchType,
-            'replacement'  => '[REDACTED]',
+            'code' => 'rule_'.Str::lower(Str::random(8)),
+            'name' => fake()->words(3, true),
+            'pattern' => $patterns[$matchType],
+            'match_type' => $matchType,
+            'replacement' => '[REDACTED]',
             'scope_domain' => fake()->optional()->randomElement(['payments', 'users', 'kyc']),
-            'is_active'    => true,
-            'priority'     => fake()->numberBetween(1, 100),
+            'is_active' => true,
+            'priority' => fake()->numberBetween(1, 100),
         ];
     }
 

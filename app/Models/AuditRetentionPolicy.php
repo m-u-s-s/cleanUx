@@ -28,6 +28,7 @@ class AuditRetentionPolicy extends Model
         if (! $this->applies_to_severity) {
             return true;
         }
+
         return in_array($severity, $this->applies_to_severity, true);
     }
 }

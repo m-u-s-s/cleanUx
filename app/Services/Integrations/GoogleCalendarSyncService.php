@@ -3,9 +3,9 @@
 namespace App\Services\Integrations;
 
 use App\Models\ActivityLog;
+use App\Models\Booking;
 use App\Models\GoogleCalendarConnection;
 use App\Models\GoogleCalendarEventLink;
-use App\Models\Booking;
 use App\Models\User;
 use App\Support\Domain\BookingStatus;
 use Carbon\Carbon;
@@ -18,8 +18,7 @@ class GoogleCalendarSyncService
     public function __construct(
         private readonly GoogleCalendarOAuthService $oauth,
         private readonly Client $http = new Client(['timeout' => 20])
-    ) {
-    }
+    ) {}
 
     public function syncFutureRendezVousForUser(User $user, int $futureDays = 30): array
     {
@@ -82,6 +81,7 @@ class GoogleCalendarSyncService
             if ($existingLink) {
                 $this->deleteRemoteEvent($connection, $existingLink);
                 $existingLink->delete();
+
                 return 'deleted';
             }
 
@@ -154,7 +154,7 @@ class GoogleCalendarSyncService
         $date = $rendezVous->date instanceof Carbon ? $rendezVous->date->format('Y-m-d') : (string) $rendezVous->date;
         $heure = substr((string) $rendezVous->heure, 0, 8) ?: '09:00:00';
 
-        $start = Carbon::parse($date . ' ' . $heure, $timezone);
+        $start = Carbon::parse($date.' '.$heure, $timezone);
 
         $duration = (int) ($rendezVous->duree_estimee
             ?: $rendezVous->duree
@@ -174,21 +174,21 @@ class GoogleCalendarSyncService
         $location = $rendezVous->location_display;
 
         $descriptionLines = array_filter([
-            'Référence : ' . ($rendezVous->booking_reference ?: 'RDV-' . $rendezVous->id),
-            'Client : ' . ($rendezVous->client?->name ?: 'N/A'),
-            'Téléphone : ' . ($rendezVous->telephone_client ?: $rendezVous->client?->phone ?: 'N/A'),
-            'Zone : ' . $zoneName,
-            $siteName ? 'Site : ' . $siteName : null,
-            'Adresse : ' . $location,
-            'Service : ' . $serviceName,
-            'Identifiant service : ' . $rendezVous->service_identifier_display,
-            'Motif : ' . ($rendezVous->motif ?: '—'),
-            'Commentaire : ' . ($rendezVous->commentaire_client ?: '—'),
-            'Statut : ' . $rendezVous->status,
+            'Référence : '.($rendezVous->booking_reference ?: 'RDV-'.$rendezVous->id),
+            'Client : '.($rendezVous->client?->name ?: 'N/A'),
+            'Téléphone : '.($rendezVous->telephone_client ?: $rendezVous->client?->phone ?: 'N/A'),
+            'Zone : '.$zoneName,
+            $siteName ? 'Site : '.$siteName : null,
+            'Adresse : '.$location,
+            'Service : '.$serviceName,
+            'Identifiant service : '.$rendezVous->service_identifier_display,
+            'Motif : '.($rendezVous->motif ?: '—'),
+            'Commentaire : '.($rendezVous->commentaire_client ?: '—'),
+            'Statut : '.$rendezVous->status,
         ]);
 
         return [
-            'summary' => 'CleanUx · ' . $serviceName . ' · ' . $zoneName,
+            'summary' => 'CleanUx · '.$serviceName.' · '.$zoneName,
             'description' => implode("\n", $descriptionLines),
             'location' => $location,
             'start' => [
@@ -210,7 +210,7 @@ class GoogleCalendarSyncService
             ],
             'source' => [
                 'title' => 'CleanUx',
-                'url' => rtrim(config('app.url'), '/') . '/dashboard',
+                'url' => rtrim(config('app.url'), '/').'/dashboard',
             ],
         ];
     }
@@ -245,7 +245,7 @@ class GoogleCalendarSyncService
     private function headers(GoogleCalendarConnection $connection): array
     {
         return [
-            'Authorization' => 'Bearer ' . $this->oauth->accessTokenFor($connection),
+            'Authorization' => 'Bearer '.$this->oauth->accessTokenFor($connection),
             'Accept' => 'application/json',
             'Content-Type' => 'application/json',
         ];
@@ -256,7 +256,7 @@ class GoogleCalendarSyncService
         $calendarId = rawurlencode($connection->calendar_id ?: 'primary');
         $base = sprintf('https://www.googleapis.com/calendar/v3/calendars/%s/events', $calendarId);
 
-        return $eventId ? $base . '/' . rawurlencode($eventId) : $base;
+        return $eventId ? $base.'/'.rawurlencode($eventId) : $base;
     }
 
     private function log(string $action, ?int $targetId, array $meta = []): void

@@ -110,11 +110,11 @@ return new class extends Migration
                 ->constrained('users')
                 ->nullOnDelete();
 
-                $table->foreignId('organization_account_id')
+            $table->foreignId('organization_account_id')
                 ->nullable()
                 ->constrained('organization_accounts')
                 ->nullOnDelete();
-                
+
             $table->string('event')->nullable();
             $table->string('action')->nullable();
 

@@ -5,6 +5,7 @@ namespace App\Services\Loyalty;
 use App\Models\LoyaltyRedemption;
 use App\Models\LoyaltyReward;
 use App\Models\User;
+use App\Services\EmailV2\EmailService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
@@ -62,7 +63,7 @@ class LoyaltyRedemptionService
             // Détermine voucher_code selon reward_type
             $voucherCode = match ($reward->reward_type) {
                 LoyaltyReward::TYPE_DISCOUNT_CODE,
-                LoyaltyReward::TYPE_PARTNER_VOUCHER => strtoupper('CLX-' . Str::random(10)),
+                LoyaltyReward::TYPE_PARTNER_VOUCHER => strtoupper('CLX-'.Str::random(10)),
                 default => null,
             };
             $deliveryMethod = match ($reward->reward_type) {
@@ -103,13 +104,14 @@ class LoyaltyRedemptionService
     protected function sendVoucherEmail(User $user, LoyaltyReward $reward, LoyaltyRedemption $redemption): void
     {
         try {
-            if (! class_exists(\App\Services\EmailV2\EmailService::class)) {
+            if (! class_exists(EmailService::class)) {
                 Log::info('[loyalty_redemption] Email v2 absent, voucher email skipped', [
                     'redemption_id' => $redemption->id,
                 ]);
+
                 return;
             }
-            $service = app(\App\Services\EmailV2\EmailService::class);
+            $service = app(EmailService::class);
             $expiresAt = $reward->valid_until?->format('d/m/Y') ?? 'sans limite';
 
             $service->send([
@@ -165,6 +167,7 @@ class LoyaltyRedemptionService
                 'cancelled_at' => now(),
                 'cancellation_reason' => $reason,
             ]);
+
             return $redemption->fresh();
         });
     }
@@ -178,6 +181,7 @@ class LoyaltyRedemptionService
             'status' => LoyaltyRedemption::STATUS_DELIVERED,
             'delivered_at' => now(),
         ]);
+
         return $redemption->fresh();
     }
 
@@ -188,6 +192,7 @@ class LoyaltyRedemptionService
             $balance = DB::table('loyalty_accounts')
                 ->where('user_id', $user->id)
                 ->value('redeemable_points');
+
             return (int) ($balance ?? 0);
         }
         // Fallback (table de test legacy)
@@ -195,8 +200,10 @@ class LoyaltyRedemptionService
             $balance = DB::table('loyalty_balances')
                 ->where('user_id', $user->id)
                 ->value('points_balance');
+
             return (int) ($balance ?? 0);
         }
+
         return 0;
     }
 
@@ -207,6 +214,7 @@ class LoyaltyRedemptionService
                 ->leftJoin('loyalty_tiers', 'loyalty_accounts.current_tier_id', '=', 'loyalty_tiers.id')
                 ->where('loyalty_accounts.user_id', $user->id)
                 ->value('loyalty_tiers.slug');
+
             return match ($tierSlug) {
                 'platinum' => 3,
                 'gold' => 2,
@@ -218,6 +226,7 @@ class LoyaltyRedemptionService
             $tier = DB::table('loyalty_balances')
                 ->where('user_id', $user->id)
                 ->value('current_tier_code');
+
             return match ($tier) {
                 'platinum' => 3,
                 'gold' => 2,
@@ -225,15 +234,16 @@ class LoyaltyRedemptionService
                 default => 0,
             };
         }
+
         return 0;
     }
 
     protected function debitPoints(User $user, int $points, LoyaltyReward $reward): void
     {
         try {
-            $loyaltyService = app(\App\Services\Loyalty\LoyaltyService::class);
+            $loyaltyService = app(LoyaltyService::class);
             if (method_exists($loyaltyService, 'awardPoints')) {
-                $loyaltyService->awardPoints($user, -$points, 'redemption.' . $reward->code, [
+                $loyaltyService->awardPoints($user, -$points, 'redemption.'.$reward->code, [
                     'reward_id' => $reward->id,
                     'reward_code' => $reward->code,
                 ]);
@@ -250,14 +260,16 @@ class LoyaltyRedemptionService
     protected function creditPointsBack(User $user, int $points, LoyaltyReward $reward): void
     {
         try {
-            $loyaltyService = app(\App\Services\Loyalty\LoyaltyService::class);
+            $loyaltyService = app(LoyaltyService::class);
             if (method_exists($loyaltyService, 'awardPoints')) {
-                $loyaltyService->awardPoints($user, $points, 'redemption.refund.' . $reward->code, [
+                $loyaltyService->awardPoints($user, $points, 'redemption.refund.'.$reward->code, [
                     'reward_id' => $reward->id,
                 ]);
+
                 return;
             }
-        } catch (\Throwable) {}
+        } catch (\Throwable) {
+        }
         $this->updateBalanceFallback($user, $points);
     }
 
@@ -274,6 +286,7 @@ class LoyaltyRedemptionService
                     'created_at' => now(),
                     'updated_at' => now(),
                 ]);
+
                 return;
             }
             DB::table('loyalty_accounts')
@@ -282,6 +295,7 @@ class LoyaltyRedemptionService
                     'redeemable_points' => DB::raw("MAX(0, CAST(COALESCE(redeemable_points, 0) AS INTEGER) + ({$delta}))"),
                     'updated_at' => now(),
                 ]);
+
             return;
         }
         if (Schema::hasTable('loyalty_balances')) {

@@ -30,6 +30,7 @@ class RiskApiTest extends TestCase
             extra: ['decline_count_last_24h' => 5],
         );
         app(RiskScoringEngine::class)->evaluate($context);
+
         return RiskHold::first();
     }
 

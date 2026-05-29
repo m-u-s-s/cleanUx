@@ -13,17 +13,17 @@ class ServicePartnerLoadSnapshotFactory extends Factory
     public function definition(): array
     {
         $capacity = fake()->numberBetween(100, 500);
-        $planned  = fake()->numberBetween(0, $capacity);
+        $planned = fake()->numberBetween(0, $capacity);
 
         return [
-            'service_partner_id'      => fn () => ServicePartner::factory()->create()->id,
-            'snapshot_date'           => now()->toDateString(),
-            'active_missions_count'   => fake()->numberBetween(0, 20),
-            'planned_segments_count'  => fake()->numberBetween(0, 30),
-            'planned_minutes'         => $planned,
-            'daily_capacity'          => $capacity,
-            'utilization_percent'     => $capacity > 0 ? round($planned / $capacity * 100, 2) : 0,
-            'metadata'                => null,
+            'service_partner_id' => fn () => ServicePartner::factory()->create()->id,
+            'snapshot_date' => now()->toDateString(),
+            'active_missions_count' => fake()->numberBetween(0, 20),
+            'planned_segments_count' => fake()->numberBetween(0, 30),
+            'planned_minutes' => $planned,
+            'daily_capacity' => $capacity,
+            'utilization_percent' => $capacity > 0 ? round($planned / $capacity * 100, 2) : 0,
+            'metadata' => null,
         ];
     }
 }

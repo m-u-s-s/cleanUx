@@ -11,6 +11,7 @@ use Stripe\Stripe;
 
 /**
  * @group Provider — Payouts
+ *
  * @authenticated
  *
  * Phase 13 — API Payouts pour le prestataire mobile.
@@ -29,11 +30,11 @@ class ProviderPayoutsController extends Controller
         $this->abortIfNotProvider($user);
 
         $params = $request->validate([
-            'status'   => ['nullable', 'in:pending,processing,paid,failed'],
-            'from'     => ['nullable', 'date'],
-            'to'       => ['nullable', 'date', 'after_or_equal:from'],
+            'status' => ['nullable', 'in:pending,processing,paid,failed'],
+            'from' => ['nullable', 'date'],
+            'to' => ['nullable', 'date', 'after_or_equal:from'],
             'per_page' => ['nullable', 'integer', 'min:1', 'max:100'],
-            'page'     => ['nullable', 'integer', 'min:1'],
+            'page' => ['nullable', 'integer', 'min:1'],
         ]);
 
         $query = ProviderPayout::query()
@@ -54,13 +55,13 @@ class ProviderPayoutsController extends Controller
         $paginator = $query->paginate($perPage);
 
         return response()->json([
-            'ok'         => true,
-            'data'       => collect($paginator->items())->map(fn ($p) => $this->serialize($p))->all(),
+            'ok' => true,
+            'data' => collect($paginator->items())->map(fn ($p) => $this->serialize($p))->all(),
             'pagination' => [
                 'current_page' => $paginator->currentPage(),
-                'last_page'    => $paginator->lastPage(),
-                'per_page'     => $paginator->perPage(),
-                'total'        => $paginator->total(),
+                'last_page' => $paginator->lastPage(),
+                'per_page' => $paginator->perPage(),
+                'total' => $paginator->total(),
             ],
         ]);
     }
@@ -74,26 +75,26 @@ class ProviderPayoutsController extends Controller
 
         $thisMonthStart = now()->startOfMonth();
         $lastMonthStart = now()->subMonth()->startOfMonth();
-        $lastMonthEnd   = now()->subMonth()->endOfMonth();
+        $lastMonthEnd = now()->subMonth()->endOfMonth();
 
-        $thisMonthPaid    = (clone $base)->paid()->where('created_at', '>=', $thisMonthStart)->sum('amount');
+        $thisMonthPaid = (clone $base)->paid()->where('created_at', '>=', $thisMonthStart)->sum('amount');
         $thisMonthPending = (clone $base)->pending()->where('created_at', '>=', $thisMonthStart)->sum('amount');
-        $lastMonthPaid    = (clone $base)->paid()->whereBetween('created_at', [$lastMonthStart, $lastMonthEnd])->sum('amount');
-        $totalPaid        = (clone $base)->paid()->sum('amount');
-        $totalPending     = (clone $base)->pending()->sum('amount');
+        $lastMonthPaid = (clone $base)->paid()->whereBetween('created_at', [$lastMonthStart, $lastMonthEnd])->sum('amount');
+        $totalPaid = (clone $base)->paid()->sum('amount');
+        $totalPending = (clone $base)->pending()->sum('amount');
 
         return response()->json([
             'ok' => true,
             'currency' => 'EUR',
             'this_month' => [
-                'paid_amount'    => round((float) $thisMonthPaid, 2),
+                'paid_amount' => round((float) $thisMonthPaid, 2),
                 'pending_amount' => round((float) $thisMonthPending, 2),
             ],
             'last_month' => [
                 'paid_amount' => round((float) $lastMonthPaid, 2),
             ],
             'all_time' => [
-                'paid_amount'    => round((float) $totalPaid, 2),
+                'paid_amount' => round((float) $totalPaid, 2),
                 'pending_amount' => round((float) $totalPending, 2),
             ],
         ]);
@@ -106,14 +107,14 @@ class ProviderPayoutsController extends Controller
 
         if (! $user->stripe_connect_account_id) {
             return response()->json([
-                'ok'    => false,
+                'ok' => false,
                 'error' => 'Compte Stripe Connect non configuré.',
             ], 400);
         }
 
         if (! ($key = config('cashier.secret'))) {
             return response()->json([
-                'ok'    => false,
+                'ok' => false,
                 'error' => 'Stripe non configuré côté serveur.',
             ], 500);
         }
@@ -124,8 +125,8 @@ class ProviderPayoutsController extends Controller
             $balance = Balance::retrieve(['stripe_account' => $user->stripe_connect_account_id]);
         } catch (\Throwable $e) {
             return response()->json([
-                'ok'    => false,
-                'error' => 'Échec récupération balance : ' . $e->getMessage(),
+                'ok' => false,
+                'error' => 'Échec récupération balance : '.$e->getMessage(),
             ], 502);
         }
 
@@ -133,7 +134,7 @@ class ProviderPayoutsController extends Controller
             'ok' => true,
             'balance' => [
                 'available' => $this->normalizeBalance($balance->available ?? []),
-                'pending'   => $this->normalizeBalance($balance->pending ?? []),
+                'pending' => $this->normalizeBalance($balance->pending ?? []),
             ],
         ]);
     }
@@ -154,18 +155,18 @@ class ProviderPayoutsController extends Controller
     protected function serialize(ProviderPayout $p): array
     {
         return [
-            'id'                  => $p->id,
-            'amount'              => (float) $p->amount,
-            'currency'            => $p->currency,
-            'status'              => $p->status,
-            'provider'            => $p->provider,
-            'provider_payout_id'  => $p->provider_payout_id,
-            'period_start'        => $p->period_start?->toDateString(),
-            'period_end'          => $p->period_end?->toDateString(),
-            'mission_id'          => $p->metadata['mission_id'] ?? null,
-            'booking_reference'   => $p->metadata['booking_reference'] ?? null,
-            'created_at'          => $p->created_at?->toIso8601String(),
-            'updated_at'          => $p->updated_at?->toIso8601String(),
+            'id' => $p->id,
+            'amount' => (float) $p->amount,
+            'currency' => $p->currency,
+            'status' => $p->status,
+            'provider' => $p->provider,
+            'provider_payout_id' => $p->provider_payout_id,
+            'period_start' => $p->period_start?->toDateString(),
+            'period_end' => $p->period_end?->toDateString(),
+            'mission_id' => $p->metadata['mission_id'] ?? null,
+            'booking_reference' => $p->metadata['booking_reference'] ?? null,
+            'created_at' => $p->created_at?->toIso8601String(),
+            'updated_at' => $p->updated_at?->toIso8601String(),
         ];
     }
 
@@ -176,6 +177,7 @@ class ProviderPayoutsController extends Controller
             $currency = strtoupper($item->currency ?? 'EUR');
             $result[$currency] = round(((float) ($item->amount ?? 0)) / 100, 2);
         }
+
         return $result;
     }
 }

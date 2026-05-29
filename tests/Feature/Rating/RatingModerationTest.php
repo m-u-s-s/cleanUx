@@ -7,6 +7,7 @@ use App\Models\Feedback;
 use App\Models\ProviderProfile;
 use App\Models\RatingReport;
 use App\Models\User;
+use App\Services\Rating\RatingAggregationService;
 use App\Services\Rating\RatingModerationService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -16,9 +17,13 @@ class RatingModerationTest extends TestCase
     use RefreshDatabase;
 
     protected User $client;
+
     protected User $provider;
+
     protected User $reporter;
+
     protected Feedback $publishedFeedback;
+
     protected RatingModerationService $service;
 
     protected function setUp(): void
@@ -109,7 +114,7 @@ class RatingModerationTest extends TestCase
     public function test_hidden_rating_does_not_count_in_aggregates(): void
     {
         // First aggregate it
-        app(\App\Services\Rating\RatingAggregationService::class)
+        app(RatingAggregationService::class)
             ->recalculateForProvider($this->provider->id);
 
         $profile = ProviderProfile::query()->where('user_id', $this->provider->id)->first();

@@ -16,7 +16,8 @@ use Illuminate\Support\Facades\Schema;
  *
  * Approche défensive : Schema::hasColumn pour idempotence.
  */
-return new class extends Migration {
+return new class extends Migration
+{
     public function up(): void
     {
         if (! Schema::hasTable('missions')) {

@@ -9,9 +9,13 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class RiskHold extends Model
 {
     public const STATUS_ACTIVE = 'active';
+
     public const STATUS_REVIEWED_APPROVED = 'reviewed_approved';
+
     public const STATUS_REVIEWED_REJECTED = 'reviewed_rejected';
+
     public const STATUS_EXPIRED = 'expired';
+
     public const STATUS_AUTO_RELEASED = 'auto_released';
 
     protected $fillable = [

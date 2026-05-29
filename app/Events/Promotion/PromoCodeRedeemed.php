@@ -11,7 +11,5 @@ class PromoCodeRedeemed
     use Dispatchable;
     use SerializesModels;
 
-    public function __construct(public PromoCodeRedemption $redemption)
-    {
-    }
+    public function __construct(public PromoCodeRedemption $redemption) {}
 }

@@ -10,12 +10,10 @@ use Illuminate\Notifications\Notification;
 
 class DisputeResolvedNotification extends Notification
 {
-    use Queueable;
     use InteractsWithUserNotificationPreferences;
+    use Queueable;
 
-    public function __construct(public ComplaintCase $case)
-    {
-    }
+    public function __construct(public ComplaintCase $case) {}
 
     public function via($notifiable): array
     {
@@ -28,12 +26,12 @@ class DisputeResolvedNotification extends Notification
             ?? $this->case->resolutions()->latest()->first();
 
         $mail = (new MailMessage)
-            ->subject('CleanUx · Votre réclamation ' . $this->case->reference . ' est résolue')
+            ->subject('CleanUx · Votre réclamation '.$this->case->reference.' est résolue')
             ->greeting('Bonne nouvelle !')
             ->line('Votre réclamation a été résolue.');
 
         if ($resolution) {
-            $mail->line('Résolution : ' . $resolution->resolution_type);
+            $mail->line('Résolution : '.$resolution->resolution_type);
             if ($resolution->amount) {
                 $mail->line(sprintf(
                     'Montant : %.2f %s',
@@ -58,7 +56,7 @@ class DisputeResolvedNotification extends Notification
             'type' => 'dispute_resolved',
             'severity' => 'success',
             'title' => 'Réclamation résolue',
-            'message' => $this->case->reference . ($resolution ? ' — ' . $resolution->resolution_type : ''),
+            'message' => $this->case->reference.($resolution ? ' — '.$resolution->resolution_type : ''),
             'dispute_id' => $this->case->id,
             'reference' => $this->case->reference,
             'resolution_type' => $resolution?->resolution_type,

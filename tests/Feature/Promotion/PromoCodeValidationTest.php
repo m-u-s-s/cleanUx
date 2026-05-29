@@ -2,7 +2,6 @@
 
 namespace Tests\Feature\Promotion;
 
-use App\Models\Booking;
 use App\Models\PromoCode;
 use App\Models\PromoCodeRedemption;
 use App\Models\User;

@@ -17,17 +17,19 @@ class CancellationsCenter extends Component
     protected $paginationTheme = 'tailwind';
 
     public string $tab = 'recent';  // recent | overrides | policies
+
     public string $filterActorRole = '';
+
     public string $search = '';
 
     public function override(int $cancellationId, string $reason = ''): void
     {
         $row = BookingCancellationV2::findOrFail($cancellationId);
         try {
-            app(CancellationEngine::class)->override($row, Auth::user(), $reason ?: 'Override via admin UI: ' . now()->toIso8601String());
+            app(CancellationEngine::class)->override($row, Auth::user(), $reason ?: 'Override via admin UI: '.now()->toIso8601String());
             $this->dispatch('toast', 'Cancellation overridden — fee waived.', 'success');
         } catch (\Throwable $e) {
-            $this->dispatch('toast', 'Erreur : ' . $e->getMessage(), 'error');
+            $this->dispatch('toast', 'Erreur : '.$e->getMessage(), 'error');
         }
     }
 
@@ -50,7 +52,7 @@ class CancellationsCenter extends Component
                 ->with(['policy:id,code,name', 'cancelledBy:id,email,name'])
                 ->when($this->filterActorRole, fn ($q) => $q->where('actor_role', $this->filterActorRole))
                 ->when($this->search, function ($q) {
-                    $term = '%' . $this->search . '%';
+                    $term = '%'.$this->search.'%';
                     $q->whereHas('cancelledBy', fn ($u) => $u->where('email', 'like', $term));
                 })
                 ->orderByDesc('cancelled_at')

@@ -10,9 +10,13 @@ use Illuminate\Support\Str;
 class LoyaltyRedemption extends Model
 {
     public const STATUS_PENDING = 'pending';
+
     public const STATUS_CONFIRMED = 'confirmed';
+
     public const STATUS_DELIVERED = 'delivered';
+
     public const STATUS_CANCELLED = 'cancelled';
+
     public const STATUS_REFUNDED = 'refunded';
 
     protected $fillable = [
@@ -32,7 +36,7 @@ class LoyaltyRedemption extends Model
 
     public static function generateCode(): string
     {
-        return 'red_' . Str::lower(Str::random(20));
+        return 'red_'.Str::lower(Str::random(20));
     }
 
     public function user(): BelongsTo

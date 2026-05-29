@@ -3,10 +3,9 @@
 namespace Tests\Feature\Integration;
 
 use App\Models\Booking;
-use App\Models\StripeWebhookEvent;
 use App\Models\User;
 use App\Models\WebhookEvent;
-use App\Services\Payments\Webhooks\StripeWebhookEventProcessor;
+use App\Support\Webhooks\BusinessEventEmitter;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Schema;
@@ -50,6 +49,7 @@ class StripePaymentWebhookChainTest extends TestCase
         } else {
             $this->markTestSkipped('bookings.stripe_payment_intent_id column missing');
         }
+
         return $booking->fresh();
     }
 
@@ -69,7 +69,7 @@ class StripePaymentWebhookChainTest extends TestCase
         $booking->forceFill(['payment_status' => 'captured'])->save();
 
         // Émettre webhook directement (le processor body conditional logic)
-        \App\Support\Webhooks\BusinessEventEmitter::emit(
+        BusinessEventEmitter::emit(
             eventCode: 'payment.succeeded',
             payload: [
                 'booking_id' => $booking->id,
@@ -93,7 +93,7 @@ class StripePaymentWebhookChainTest extends TestCase
     {
         $booking = $this->makeBooking('pi_fail_001');
 
-        \App\Support\Webhooks\BusinessEventEmitter::emit(
+        BusinessEventEmitter::emit(
             eventCode: 'payment.failed',
             payload: [
                 'booking_id' => $booking->id,
@@ -118,7 +118,7 @@ class StripePaymentWebhookChainTest extends TestCase
     {
         $booking = $this->makeBooking('pi_ref_001');
 
-        \App\Support\Webhooks\BusinessEventEmitter::emit(
+        BusinessEventEmitter::emit(
             eventCode: 'payment.refunded',
             payload: [
                 'booking_id' => $booking->id,
@@ -144,7 +144,7 @@ class StripePaymentWebhookChainTest extends TestCase
         Config::set('webhooks_v2.enabled', false);
         $booking = $this->makeBooking('pi_off_001');
 
-        \App\Support\Webhooks\BusinessEventEmitter::emit(
+        BusinessEventEmitter::emit(
             eventCode: 'payment.succeeded',
             payload: ['booking_id' => $booking->id],
             idempotencyKey: 'payment.succeeded:pi_off_001',
@@ -157,7 +157,7 @@ class StripePaymentWebhookChainTest extends TestCase
     {
         Config::set('webhooks_v2.allowed_events', ['payment.succeeded']);
 
-        \App\Support\Webhooks\BusinessEventEmitter::emit(
+        BusinessEventEmitter::emit(
             eventCode: 'payment.unauthorized',
             payload: ['booking_id' => 1],
         );

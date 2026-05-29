@@ -20,7 +20,7 @@ class TipServiceTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->service = new TipService();
+        $this->service = new TipService;
     }
 
     // ─────────────────────────────────────────────────────────────────
@@ -35,7 +35,7 @@ class TipServiceTest extends TestCase
             ['label' => '20%', 'percent' => 20],
         ]]);
 
-        $booking = new Booking();
+        $booking = new Booking;
         $booking->devis_estime = 100.00;
 
         $suggestions = $this->service->suggestionsForBooking($booking);
@@ -49,7 +49,7 @@ class TipServiceTest extends TestCase
             ['label' => '10%', 'percent' => 10],
         ]]);
 
-        $booking = new Booking();
+        $booking = new Booking;
         $booking->devis_estime = 80.00;
 
         $suggestions = $this->service->suggestionsForBooking($booking);
@@ -70,7 +70,7 @@ class TipServiceTest extends TestCase
             ['label' => '10%', 'percent' => 10],
         ]]);
 
-        $booking = new Booking();
+        $booking = new Booking;
         $booking->devis_estime = 100.00; // 10 000 cents
 
         $suggestions = $this->service->suggestionsForBooking($booking);
@@ -85,7 +85,7 @@ class TipServiceTest extends TestCase
             ['label' => '15%', 'percent' => 15],
         ]]);
 
-        $booking = new Booking();
+        $booking = new Booking;
         $booking->devis_estime = 100.00; // 10 000 cents → 15% = 1 500 cents
 
         $suggestions = $this->service->suggestionsForBooking($booking);
@@ -99,7 +99,7 @@ class TipServiceTest extends TestCase
             ['label' => '20%', 'percent' => 20],
         ]]);
 
-        $booking = new Booking();
+        $booking = new Booking;
         $booking->devis_estime = 100.00; // 10 000 cents → 20% = 2 000 cents
 
         $suggestions = $this->service->suggestionsForBooking($booking);
@@ -113,7 +113,7 @@ class TipServiceTest extends TestCase
             ['label' => '10%', 'percent' => 10],
         ]]);
 
-        $booking = new Booking();
+        $booking = new Booking;
         $booking->devis_estime = 33.33; // 3 333 cents → 10% = 333.3 → rounds to 333
 
         $suggestions = $this->service->suggestionsForBooking($booking);
@@ -127,7 +127,7 @@ class TipServiceTest extends TestCase
 
     public function test_returns_empty_array_when_devis_estime_is_zero(): void
     {
-        $booking = new Booking();
+        $booking = new Booking;
         $booking->devis_estime = 0.00;
 
         $suggestions = $this->service->suggestionsForBooking($booking);
@@ -137,7 +137,7 @@ class TipServiceTest extends TestCase
 
     public function test_returns_empty_array_when_devis_estime_is_null(): void
     {
-        $booking = new Booking();
+        $booking = new Booking;
         $booking->devis_estime = null;
 
         $suggestions = $this->service->suggestionsForBooking($booking);
@@ -153,7 +153,7 @@ class TipServiceTest extends TestCase
             ['label' => '20%', 'percent' => 20],
         ]]);
 
-        $booking = new Booking();
+        $booking = new Booking;
         $booking->devis_estime = 50.00;
 
         $suggestions = $this->service->suggestionsForBooking($booking);
@@ -169,7 +169,7 @@ class TipServiceTest extends TestCase
             ['label' => '10%', 'percent' => 10],
         ]]);
 
-        $booking = new Booking();
+        $booking = new Booking;
         $booking->devis_estime = 100.00;
 
         $suggestions = $this->service->suggestionsForBooking($booking);
@@ -183,7 +183,7 @@ class TipServiceTest extends TestCase
             ['label' => '5%', 'percent' => 5],
         ]]);
 
-        $booking = new Booking();
+        $booking = new Booking;
         $booking->devis_estime = 200.00; // 20 000 cents → 5% = 1 000 cents
 
         $suggestions = $this->service->suggestionsForBooking($booking);
@@ -198,7 +198,7 @@ class TipServiceTest extends TestCase
             ['label' => '20%', 'percent' => 20],
         ]]);
 
-        $booking = new Booking();
+        $booking = new Booking;
         $booking->devis_estime = 9999.99; // ~999 999 cents → 20% = ~200 000 cents
 
         $suggestions = $this->service->suggestionsForBooking($booking);

@@ -12,7 +12,9 @@ class AssistantApiLog extends Model
     use HasFactory;
 
     public const STATUS_SUCCESS = 'success';
-    public const STATUS_ERROR   = 'error';
+
+    public const STATUS_ERROR = 'error';
+
     public const STATUS_TIMEOUT = 'timeout';
 
     protected $fillable = [
@@ -33,12 +35,12 @@ class AssistantApiLog extends Model
     ];
 
     protected $casts = [
-        'cost_usd'       => 'decimal:6',
-        'tools_used'     => 'array',
-        'input_tokens'   => 'integer',
-        'output_tokens'  => 'integer',
-        'total_tokens'   => 'integer',
-        'latency_ms'     => 'integer',
+        'cost_usd' => 'decimal:6',
+        'tools_used' => 'array',
+        'input_tokens' => 'integer',
+        'output_tokens' => 'integer',
+        'total_tokens' => 'integer',
+        'latency_ms' => 'integer',
         'tool_use_count' => 'integer',
     ];
 

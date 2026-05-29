@@ -31,7 +31,7 @@ class PublicProviderProfileApiTest extends TestCase
 
         app(RatingAggregationService::class)->recalculateForProvider($provider->id);
 
-        $response = $this->getJson('/api/providers/' . $provider->id);
+        $response = $this->getJson('/api/providers/'.$provider->id);
 
         $response->assertOk();
         $response->assertJsonPath('id', $provider->id);
@@ -50,7 +50,7 @@ class PublicProviderProfileApiTest extends TestCase
             'verification_status' => 'unverified',
         ]);
 
-        $this->getJson('/api/providers/' . $provider->id)->assertStatus(404);
+        $this->getJson('/api/providers/'.$provider->id)->assertStatus(404);
     }
 
     public function test_public_ratings_endpoint_returns_only_public_visible(): void
@@ -70,7 +70,7 @@ class PublicProviderProfileApiTest extends TestCase
         // Hidden rating
         $this->createPublishedFeedback($client, $provider, 3, null, hidden: true);
 
-        $response = $this->getJson('/api/providers/' . $provider->id . '/ratings?sort=highest');
+        $response = $this->getJson('/api/providers/'.$provider->id.'/ratings?sort=highest');
         $response->assertOk();
 
         $data = $response->json('data');
@@ -93,7 +93,7 @@ class PublicProviderProfileApiTest extends TestCase
         $this->createPublishedFeedback($client, $provider, 5);
         $this->createPublishedFeedback($client, $provider, 2);
 
-        $response = $this->getJson('/api/providers/' . $provider->id . '/ratings?min_rating=4');
+        $response = $this->getJson('/api/providers/'.$provider->id.'/ratings?min_rating=4');
         $data = $response->json('data');
         $this->assertCount(1, $data);
         $this->assertSame(5, $data[0]['rating']);

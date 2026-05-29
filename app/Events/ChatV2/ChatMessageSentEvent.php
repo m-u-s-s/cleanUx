@@ -2,6 +2,7 @@
 
 namespace App\Events\ChatV2;
 
+use App\Models\BroadcastEvent;
 use App\Models\ChatMessage;
 use App\Models\ChatThread;
 use App\Realtime\Contracts\TracksBroadcastLedger;
@@ -28,7 +29,7 @@ class ChatMessageSentEvent implements ShouldBroadcastNow, TracksBroadcastLedger
 
     public function broadcastOn(): array
     {
-        return [new PrivateChannel('chat.thread.' . $this->thread->id)];
+        return [new PrivateChannel('chat.thread.'.$this->thread->id)];
     }
 
     public function broadcastAs(): string
@@ -53,12 +54,12 @@ class ChatMessageSentEvent implements ShouldBroadcastNow, TracksBroadcastLedger
 
     public function broadcastCategory(): string
     {
-        return \App\Models\BroadcastEvent::CATEGORY_CHAT;
+        return BroadcastEvent::CATEGORY_CHAT;
     }
 
     public function broadcastIdempotencyKey(): ?string
     {
-        return 'chat:message:' . $this->message->id;
+        return 'chat:message:'.$this->message->id;
     }
 
     public function broadcastSourceType(): ?string

@@ -33,9 +33,9 @@ class ProviderPresenceChanged implements ShouldBroadcast
     public function broadcastWith(): array
     {
         return [
-            'user_id'   => $this->userId,
+            'user_id' => $this->userId,
             'is_online' => $this->isOnline,
-            'at'        => now()->toIso8601String(),
+            'at' => now()->toIso8601String(),
         ];
     }
 

@@ -9,8 +9,11 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class BusinessBeneficialOwner extends Model
 {
     public const AML_PENDING = 'pending';
+
     public const AML_CLEAR = 'clear';
+
     public const AML_FLAGGED = 'flagged';
+
     public const AML_REVIEW = 'review';
 
     protected $fillable = [

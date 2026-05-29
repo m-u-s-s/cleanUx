@@ -19,11 +19,10 @@ class ProcessSmsWebhookJob implements ShouldQueue
     use SerializesModels;
 
     public int $tries = 3;
+
     public int $timeout = 30;
 
-    public function __construct(public int $eventId)
-    {
-    }
+    public function __construct(public int $eventId) {}
 
     public function backoff(): array
     {
@@ -47,6 +46,7 @@ class ProcessSmsWebhookJob implements ShouldQueue
                     'status' => SmsWebhookEvent::STATUS_IGNORED,
                     'processed_at' => now(),
                 ]);
+
                 return;
             }
 

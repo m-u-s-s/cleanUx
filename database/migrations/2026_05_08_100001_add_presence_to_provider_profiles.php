@@ -16,7 +16,8 @@ use Illuminate\Support\Facades\Schema;
  * Approche défensive : Schema::hasColumn pour idempotence.
  * down() retire les colonnes pour permettre rollback propre.
  */
-return new class extends Migration {
+return new class extends Migration
+{
     public function up(): void
     {
         if (! Schema::hasTable('provider_profiles')) {
@@ -46,7 +47,7 @@ return new class extends Migration {
         Schema::table('provider_profiles', function (Blueprint $table) {
             try {
                 $table->index(['is_online', 'last_heartbeat_at'], 'provider_profiles_online_heartbeat_idx');
-            } catch (\Throwable $e) {
+            } catch (Throwable $e) {
                 // Index existe déjà
             }
         });
@@ -61,7 +62,7 @@ return new class extends Migration {
         Schema::table('provider_profiles', function (Blueprint $table) {
             try {
                 $table->dropIndex('provider_profiles_online_heartbeat_idx');
-            } catch (\Throwable $e) {
+            } catch (Throwable $e) {
                 // Index n'existe pas
             }
 

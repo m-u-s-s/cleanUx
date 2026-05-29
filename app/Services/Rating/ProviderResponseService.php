@@ -34,7 +34,7 @@ class ProviderResponseService
         }
         if (strlen($response) > self::MAX_LENGTH) {
             throw ValidationException::withMessages([
-                'response' => 'La réponse est trop longue (max ' . self::MAX_LENGTH . ' caractères).',
+                'response' => 'La réponse est trop longue (max '.self::MAX_LENGTH.' caractères).',
             ]);
         }
 

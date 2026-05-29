@@ -2,34 +2,42 @@
 
 namespace App\Livewire\Client;
 
-use App\Models\CustomerClaim;
 use App\Models\Booking;
+use App\Models\ComplaintCase;
+use App\Models\CustomerClaim;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
 use Livewire\WithFileUploads;
 use Livewire\WithPagination;
-use App\Models\ComplaintCase;
 
 class LitigesClient extends Component
 {
-    use WithPagination;
     use WithFileUploads;
+    use WithPagination;
 
     public ?int $rendez_vous_id = null;
+
     public string $category = 'quality';
+
     public string $priority = 'normal';
+
     public string $title = '';
+
     public string $description = '';
+
     public array $photos = [];
 
     public string $filterStatus = '';
+
     public string $subject = '';
+
     public string $attachmentInput = '';
 
     // SECURITY/UX : panel detail expected by the view (@if($selected)).
     // Currently no selection logic implemented — values stay null so panel is skipped.
     public ?int $selectedId = null;
+
     public mixed $selected = null;
 
     protected $paginationTheme = 'tailwind';
@@ -140,7 +148,7 @@ class LitigesClient extends Component
         $attachments = collect(preg_split('/\R+/', trim($this->attachmentInput)))
             ->filter()
             ->values()
-            ->map(fn($value) => [
+            ->map(fn ($value) => [
                 'path' => $value,
                 'original_name' => basename($value),
             ])
@@ -170,7 +178,7 @@ class LitigesClient extends Component
             'claims' => CustomerClaim::query()
                 ->with('rendezVous')
                 ->where('client_id', Auth::id())
-                ->when($this->filterStatus, fn($query) => $query->where('status', $this->filterStatus))
+                ->when($this->filterStatus, fn ($query) => $query->where('status', $this->filterStatus))
                 ->latest()
                 ->paginate(8),
 

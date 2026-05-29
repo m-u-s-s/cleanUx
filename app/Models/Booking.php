@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-use App\Models\Mission;
 use App\Models\Concerns\HasBookingDisplayAccessors;
 use App\Models\Concerns\HasBookingPricing;
 use App\Models\Concerns\HasLegacyBookingAliases;
@@ -10,12 +9,13 @@ use App\Models\Concerns\HasRecurringSeries;
 use App\Models\Concerns\ResetsNotificationTracking;
 use App\Support\Domain\BookingStatus;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\Relations\HasOneThrough;
+use Illuminate\Support\Facades\Schema;
 
 /**
  * Booking — entité canonique des réservations CleanUx.
@@ -31,11 +31,11 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
  */
 class Booking extends Model
 {
-    use HasFactory;
-    use HasRecurringSeries;
     use HasBookingDisplayAccessors;
     use HasBookingPricing;
+    use HasFactory;
     use HasLegacyBookingAliases;
+    use HasRecurringSeries;
     use ResetsNotificationTracking;
 
     protected $table = 'bookings';
@@ -207,60 +207,60 @@ class Booking extends Model
 
     protected $casts = [
         // Dates & datetimes
-        'scheduled_date'                => 'date',
-        'scheduled_time'                => 'datetime:H:i',
-        'date'                          => 'date',
-        'approved_at'                   => 'datetime',
-        'cancelled_at'                  => 'datetime',
-        'mission_started_at'            => 'datetime',
-        'mission_arrived_at'            => 'datetime',
-        'mission_finished_at'           => 'datetime',
-        'client_presence_confirmed_at'  => 'datetime',
-        'asap_requested_at'             => 'datetime',
-        'asap_deadline_at'              => 'datetime',
-        'matched_at'                    => 'datetime',
-        'payment_authorized_at'         => 'datetime',
-        'payment_captured_at'           => 'datetime',
-        'payment_cancelled_at'          => 'datetime',
-        'payment_failed_at'             => 'datetime',
-        'rappel_24h_envoye_at'          => 'datetime',
-        'rappel_2h_envoye_at'           => 'datetime',
-        'alerte_urgence_envoyee_at'     => 'datetime',
+        'scheduled_date' => 'date',
+        'scheduled_time' => 'datetime:H:i',
+        'date' => 'date',
+        'approved_at' => 'datetime',
+        'cancelled_at' => 'datetime',
+        'mission_started_at' => 'datetime',
+        'mission_arrived_at' => 'datetime',
+        'mission_finished_at' => 'datetime',
+        'client_presence_confirmed_at' => 'datetime',
+        'asap_requested_at' => 'datetime',
+        'asap_deadline_at' => 'datetime',
+        'matched_at' => 'datetime',
+        'payment_authorized_at' => 'datetime',
+        'payment_captured_at' => 'datetime',
+        'payment_cancelled_at' => 'datetime',
+        'payment_failed_at' => 'datetime',
+        'rappel_24h_envoye_at' => 'datetime',
+        'rappel_2h_envoye_at' => 'datetime',
+        'alerte_urgence_envoyee_at' => 'datetime',
 
         // Booléens
-        'presence_animaux'   => 'boolean',
-        'acces_parking'      => 'boolean',
-        'materiel_fournit'   => 'boolean',
-        'is_recurrent'       => 'boolean',
-        'is_favorite_slot'   => 'boolean',
+        'presence_animaux' => 'boolean',
+        'acces_parking' => 'boolean',
+        'materiel_fournit' => 'boolean',
+        'is_recurrent' => 'boolean',
+        'is_favorite_slot' => 'boolean',
 
         // Décimaux
-        'estimated_price'   => 'decimal:2',
-        'devis_estime'      => 'decimal:2',
-        'destination_lat'   => 'decimal:7',
-        'destination_lng'   => 'decimal:7',
+        'estimated_price' => 'decimal:2',
+        'devis_estime' => 'decimal:2',
+        'destination_lat' => 'decimal:7',
+        'destination_lng' => 'decimal:7',
 
         // Entiers
         'estimated_duration_minutes' => 'integer',
-        'duree_estimee'              => 'integer',
-        'surface_m2'                 => 'integer',
+        'duree_estimee' => 'integer',
+        'surface_m2' => 'integer',
 
         // JSON / arrays
-        'options'             => 'array',
-        'options_prestation'  => 'array',
-        'areas'               => 'array',
-        'zones_specifiques'   => 'array',
+        'options' => 'array',
+        'options_prestation' => 'array',
+        'areas' => 'array',
+        'zones_specifiques' => 'array',
         'materiel_specifique' => 'array',
-        'photos_reference'    => 'array',
-        'photos_avant'        => 'array',
-        'photos_apres'        => 'array',
-        'trade_form_answers'  => 'array',
-        'terrain_checklist'   => 'array',
-        'pricing_snapshot'    => 'array',
-        'zone_snapshot'       => 'array',
-        'matching_snapshot'   => 'array',
-        'address_components'  => 'array',
-        'metadata'            => 'array',
+        'photos_reference' => 'array',
+        'photos_avant' => 'array',
+        'photos_apres' => 'array',
+        'trade_form_answers' => 'array',
+        'terrain_checklist' => 'array',
+        'pricing_snapshot' => 'array',
+        'zone_snapshot' => 'array',
+        'matching_snapshot' => 'array',
+        'address_components' => 'array',
+        'metadata' => 'array',
 
         // recurrence
         'is_series_master' => 'boolean',
@@ -354,7 +354,7 @@ class Booking extends Model
      * Métier requis pour cette réservation, résolu via le ServiceCatalog.
      * Null si le service n'est rattaché à aucun trade (back-compat phase de transition).
      */
-    public function trade(): \Illuminate\Database\Eloquent\Relations\HasOneThrough
+    public function trade(): HasOneThrough
     {
         return $this->hasOneThrough(
             Trade::class,
@@ -428,7 +428,7 @@ class Booking extends Model
             return $query;
         }
 
-        $like = '%' . $term . '%';
+        $like = '%'.$term.'%';
 
         return $query->where(function (Builder $inner) use ($like) {
             $inner
@@ -448,7 +448,7 @@ class Booking extends Model
             return $query;
         }
 
-        $like = '%' . $term . '%';
+        $like = '%'.$term.'%';
 
         return $query->where(function (Builder $searchQuery) use ($like) {
             $searchQuery
@@ -462,8 +462,8 @@ class Booking extends Model
                 ->orWhere('motif', 'like', $like)
                 ->orWhere('code_postal', 'like', $like)
                 ->orWhere('postal_code', 'like', $like)
-                ->orWhereHas('client', fn(Builder $q) => $q->where('name', 'like', $like))
-                ->orWhereHas('employe', fn(Builder $q) => $q->where('name', 'like', $like))
+                ->orWhereHas('client', fn (Builder $q) => $q->where('name', 'like', $like))
+                ->orWhereHas('employe', fn (Builder $q) => $q->where('name', 'like', $like))
                 ->orWhereHas('serviceCatalog', function (Builder $q) use ($like) {
                     $q->where('name', 'like', $like)
                         ->orWhere('code', 'like', $like)

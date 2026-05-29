@@ -26,17 +26,20 @@ foreach ($files as $relativePath) {
     if (! file_exists($fullPath)) {
         fwrite(STDOUT, "[missing] {$relativePath}\n");
         $missing++;
+
         continue;
     }
 
     if (! $apply) {
         fwrite(STDOUT, "[delete] {$relativePath}\n");
+
         continue;
     }
 
     if (@unlink($fullPath)) {
         fwrite(STDOUT, "[deleted] {$relativePath}\n");
         $deleted++;
+
         continue;
     }
 

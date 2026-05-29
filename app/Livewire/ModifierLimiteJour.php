@@ -11,9 +11,13 @@ use Livewire\Component;
 class ModifierLimiteJour extends Component
 {
     public $date;
+
     public $user_id;
+
     public $limite;
+
     public $fromAdmin = false;
+
     public $record;
 
     public function mount($date, $user_id, $fromAdmin = false)
@@ -57,12 +61,13 @@ class ModifierLimiteJour extends Component
         );
 
         // Si verrouillé par admin, un utilisateur normal ne peut plus modifier
-        if ($record->verrou_admin && !$isAdmin && !$this->fromAdmin) {
+        if ($record->verrou_admin && ! $isAdmin && ! $this->fromAdmin) {
             $this->dispatch(
                 'toast',
                 __('Modification refusée : cette limite est verrouillée par un administrateur.'),
                 'error'
             );
+
             return;
         }
 

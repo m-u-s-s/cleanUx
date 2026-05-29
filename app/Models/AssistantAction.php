@@ -19,10 +19,14 @@ class AssistantAction extends Model
     use HasFactory;
 
     public const STATUS_PENDING_CONFIRMATION = 'pending_confirmation';
-    public const STATUS_CONFIRMED            = 'confirmed';
-    public const STATUS_EXECUTED             = 'executed';
-    public const STATUS_CANCELLED            = 'cancelled';
-    public const STATUS_FAILED               = 'failed';
+
+    public const STATUS_CONFIRMED = 'confirmed';
+
+    public const STATUS_EXECUTED = 'executed';
+
+    public const STATUS_CANCELLED = 'cancelled';
+
+    public const STATUS_FAILED = 'failed';
 
     protected $fillable = [
         'assistant_conversation_id',
@@ -35,9 +39,9 @@ class AssistantAction extends Model
     ];
 
     protected $casts = [
-        'payload'      => 'array',
+        'payload' => 'array',
         'confirmed_at' => 'datetime',
-        'executed_at'  => 'datetime',
+        'executed_at' => 'datetime',
     ];
 
     public function conversation(): BelongsTo
@@ -53,7 +57,7 @@ class AssistantAction extends Model
     public function markConfirmed(): void
     {
         $this->update([
-            'status'       => self::STATUS_CONFIRMED,
+            'status' => self::STATUS_CONFIRMED,
             'confirmed_at' => now(),
         ]);
     }
@@ -66,9 +70,9 @@ class AssistantAction extends Model
         }
 
         $this->update([
-            'status'      => self::STATUS_EXECUTED,
+            'status' => self::STATUS_EXECUTED,
             'executed_at' => now(),
-            'payload'     => $payload,
+            'payload' => $payload,
         ]);
     }
 
@@ -78,7 +82,7 @@ class AssistantAction extends Model
         $payload['failure_reason'] = $reason;
 
         $this->update([
-            'status'  => self::STATUS_FAILED,
+            'status' => self::STATUS_FAILED,
             'payload' => $payload,
         ]);
     }

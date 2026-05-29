@@ -28,7 +28,7 @@ class PushServiceTest extends TestCase
     protected function makeToken(?User $user = null, array $overrides = []): DeviceToken
     {
         $user ??= User::factory()->client()->create();
-        $raw = $overrides['token'] ?? 'tok_' . uniqid();
+        $raw = $overrides['token'] ?? 'tok_'.uniqid();
 
         return DeviceToken::create(array_merge([
             'user_id' => $user->id,

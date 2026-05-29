@@ -3,6 +3,7 @@
 namespace App\Services\FleetV2;
 
 use App\Models\FleetCertification;
+use Illuminate\Support\Collection;
 
 class CertificationExpiryScanner
 {
@@ -49,11 +50,12 @@ class CertificationExpiryScanner
     /**
      * Retourne les certifications qui vont expirer dans les N jours (pour alertes admin/email).
      *
-     * @return \Illuminate\Support\Collection<int, FleetCertification>
+     * @return Collection<int, FleetCertification>
      */
-    public function listExpiringSoon(?int $days = null): \Illuminate\Support\Collection
+    public function listExpiringSoon(?int $days = null): Collection
     {
         $days ??= (int) config('fleet_v2.expiring_soon_days', 30);
+
         return FleetCertification::query()
             ->expiringWithin($days)
             ->orderBy('expires_at')

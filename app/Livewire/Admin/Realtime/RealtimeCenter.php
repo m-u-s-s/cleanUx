@@ -17,8 +17,11 @@ class RealtimeCenter extends Component
     protected $paginationTheme = 'tailwind';
 
     public string $filterCategory = '';
+
     public string $filterAudience = '';
+
     public string $filterStatus = '';
+
     public string $search = '';
 
     public function replay(int $broadcastEventId): void
@@ -33,7 +36,7 @@ class RealtimeCenter extends Component
         ]);
 
         $this->dispatch('toast',
-            $ok ? 'Broadcast rejoué avec succès.' : 'Échec du replay : ' . $event->failed_reason,
+            $ok ? 'Broadcast rejoué avec succès.' : 'Échec du replay : '.$event->failed_reason,
             $ok ? 'success' : 'error',
         );
     }
@@ -59,7 +62,7 @@ class RealtimeCenter extends Component
             ->when($this->filterAudience, fn ($q) => $q->where('audience', $this->filterAudience))
             ->when($this->filterStatus, fn ($q) => $q->where('status', $this->filterStatus))
             ->when($this->search, function ($q) {
-                $term = '%' . $this->search . '%';
+                $term = '%'.$this->search.'%';
                 $q->where(function ($inner) use ($term) {
                     $inner->where('channel', 'like', $term)
                         ->orWhere('event_class', 'like', $term)

@@ -13,7 +13,6 @@ use Tests\TestCase;
 
 class RecurringBookingTest extends TestCase
 {
-
     protected function setUp(): void
     {
         parent::setUp();
@@ -27,6 +26,7 @@ class RecurringBookingTest extends TestCase
 
         parent::tearDown();
     }
+
     use CreatesZoneAwareFixtures;
     use RefreshDatabase;
 

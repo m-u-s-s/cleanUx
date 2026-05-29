@@ -19,12 +19,13 @@ class FleetCenter extends Component
     protected $paginationTheme = 'tailwind';
 
     public string $tab = 'vehicles';   // vehicles | equipment | assignments | maintenance | certifications
+
     public string $filterStatus = '';
 
     public function scanExpiring(): void
     {
         $counts = app(CertificationExpiryScanner::class)->scanAndUpdate();
-        $this->dispatch('toast', 'Scan terminé : ' . array_sum($counts) . ' certifications mises à jour.', 'success');
+        $this->dispatch('toast', 'Scan terminé : '.array_sum($counts).' certifications mises à jour.', 'success');
     }
 
     public function render(): View

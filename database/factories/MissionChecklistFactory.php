@@ -17,23 +17,23 @@ class MissionChecklistFactory extends Factory
     public function definition(): array
     {
         return [
-            'mission_id'       => Mission::factory(),
+            'mission_id' => Mission::factory(),
             'service_catalog_id' => ServiceCatalog::factory(),
-            'template_name'    => fake()->randomElement([
+            'template_name' => fake()->randomElement([
                 'Checklist Nettoyage Standard',
                 'Checklist Peinture Intérieure',
                 'Checklist Jardin',
                 'Checklist Bureaux',
             ]),
-            'status'           => fake()->randomElement(['pending', 'in_progress', 'completed']),
-            'completion_rate'  => fake()->randomFloat(2, 0, 100),
+            'status' => fake()->randomElement(['pending', 'in_progress', 'completed']),
+            'completion_rate' => fake()->randomFloat(2, 0, 100),
         ];
     }
 
     public function completed(): static
     {
         return $this->state([
-            'status'          => 'completed',
+            'status' => 'completed',
             'completion_rate' => 100.0,
         ]);
     }

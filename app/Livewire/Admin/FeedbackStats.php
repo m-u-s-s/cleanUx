@@ -2,13 +2,15 @@
 
 namespace App\Livewire\Admin;
 
-use Livewire\Component;
 use App\Models\Feedback;
+use Livewire\Component;
 
 class FeedbackStats extends Component
 {
     public $moyenne = 0;
+
     public $total = 0;
+
     public ?int $scopeId = null;
 
     public function mount(?int $scopeId = null)

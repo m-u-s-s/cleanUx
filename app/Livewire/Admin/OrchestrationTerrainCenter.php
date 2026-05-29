@@ -2,28 +2,39 @@
 
 namespace App\Livewire\Admin;
 
+use App\Models\FieldTeam;
 use App\Models\MissionBatch;
 use App\Models\OrganizationAccount;
 use App\Models\OrganizationSite;
 use App\Models\ServicePartner;
 use App\Services\Missions\MissionBatchPlannerService;
-use Livewire\Component;
 use Illuminate\Contracts\View\View;
-use Livewire\Attributes\Layout;
+use Livewire\Component;
 
 class OrchestrationTerrainCenter extends Component
 {
     public ?int $organization_account_id = null;
+
     public ?int $organization_site_id = null;
+
     public ?int $field_team_id = null;
+
     public ?int $service_partner_id = null;
+
     public string $name = '';
+
     public string $starts_on = '';
+
     public string $ends_on = '';
+
     public string $batch_type = 'multi_day_site';
+
     public int $segments_per_day = 1;
+
     public int $crew_size = 2;
+
     public int $estimated_segment_minutes = 180;
+
     public ?string $notes = null;
 
     public function mount(): void
@@ -85,8 +96,8 @@ class OrchestrationTerrainCenter extends Component
 
     public function getTeamsProperty()
     {
-        return class_exists(\App\Models\FieldTeam::class)
-            ? \App\Models\FieldTeam::query()->orderBy('name')->get()
+        return class_exists(FieldTeam::class)
+            ? FieldTeam::query()->orderBy('name')->get()
             : collect();
     }
 

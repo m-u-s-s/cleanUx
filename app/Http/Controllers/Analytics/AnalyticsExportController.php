@@ -28,6 +28,7 @@ class AnalyticsExportController extends Controller
     public function kpis(Request $request): StreamedResponse
     {
         [$from, $to] = $this->resolvePeriod($request);
+
         return $this->exporter->kpisCsv(
             $request->user()->organization_account_id,
             $from,
@@ -49,6 +50,7 @@ class AnalyticsExportController extends Controller
     public function bookings(Request $request): StreamedResponse
     {
         [$from, $to] = $this->resolvePeriod($request);
+
         return $this->exporter->bookingsDetailedCsv(
             $request->user()->organization_account_id,
             $from,
@@ -59,10 +61,11 @@ class AnalyticsExportController extends Controller
     private function resolvePeriod(Request $request): array
     {
         $preset = $request->query('preset', 'last_30d');
-        $from   = $request->query('from');
-        $to     = $request->query('to');
+        $from = $request->query('from');
+        $to = $request->query('to');
 
         [$fromCarbon, $toCarbon] = $this->dateResolver->resolve($preset, $from, $to);
+
         return [$fromCarbon, $toCarbon];
     }
 }

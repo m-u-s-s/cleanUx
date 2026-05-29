@@ -24,9 +24,7 @@ use Illuminate\Notifications\Notification;
  */
 class PushChannel
 {
-    public function __construct(protected PushService $service)
-    {
-    }
+    public function __construct(protected PushService $service) {}
 
     public function send(mixed $notifiable, Notification $notification): array
     {

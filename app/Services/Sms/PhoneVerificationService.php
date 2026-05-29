@@ -3,19 +3,18 @@
 namespace App\Services\Sms;
 
 use App\Models\PhoneVerificationCode;
+use App\Models\SmsMessage;
 use App\Models\User;
 use App\Services\Notifications\SmsService;
 use App\Support\ActivityLogger;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Validation\ValidationException;
 
 class PhoneVerificationService
 {
-    public function __construct(protected SmsService $smsService)
-    {
-    }
+    public function __construct(protected SmsService $smsService) {}
 
     public function sendCode(User $user, string $phone, string $purpose = 'phone_verification'): PhoneVerificationCode
     {
@@ -23,7 +22,7 @@ class PhoneVerificationService
 
         if (! $this->smsService->isValidE164($phone)) {
             throw ValidationException::withMessages([
-                'phone' => "Numéro de téléphone invalide (format E.164 requis, ex: +32412345678).",
+                'phone' => 'Numéro de téléphone invalide (format E.164 requis, ex: +32412345678).',
             ]);
         }
 
@@ -68,8 +67,8 @@ class PhoneVerificationService
             body: $body,
             user: $user,
             source: $record,
-            category: \App\Models\SmsMessage::CATEGORY_VERIFICATION,
-            idempotencyKey: 'otp:' . $record->id,
+            category: SmsMessage::CATEGORY_VERIFICATION,
+            idempotencyKey: 'otp:'.$record->id,
         );
 
         ActivityLogger::log('phone_verification.code_sent', $record, [
@@ -115,7 +114,7 @@ class PhoneVerificationService
         $active->forceFill(['used_at' => now()])->save();
 
         // Mark user phone verified
-        if (\Illuminate\Support\Facades\Schema::hasColumn('users', 'phone_verified_at')) {
+        if (Schema::hasColumn('users', 'phone_verified_at')) {
             $user->forceFill([
                 'phone' => $active->phone,
                 'phone_verified_at' => now(),
@@ -137,6 +136,7 @@ class PhoneVerificationService
         for ($i = 0; $i < $length; $i++) {
             $code .= random_int(0, 9);
         }
+
         return $code;
     }
 }

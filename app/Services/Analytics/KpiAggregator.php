@@ -3,8 +3,11 @@
 namespace App\Services\Analytics;
 
 use App\Models\Booking;
+use App\Models\EnterpriseBookingApproval;
 use App\Models\FinanceInvoice;
+use App\Models\MissionIncident;
 use App\Models\MissionQualityReview;
+use App\Models\OrganizationSite;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
@@ -59,7 +62,7 @@ class KpiAggregator
             : "DATE_FORMAT(scheduled_date, '%Y-%m')";
 
         $col = $this->bookingDateColumn();
-        $q   = $this->scopedQuery($orgId)
+        $q = $this->scopedQuery($orgId)
             ->selectRaw("{$monthExpr} as ym")
             ->selectRaw('COALESCE(SUM(estimated_price), 0) as revenue')
             ->selectRaw('COUNT(*) as bookings_count')
@@ -94,7 +97,8 @@ class KpiAggregator
         $table = $this->bookingTable();
 
         if (Schema::hasColumn($table, 'service_catalog_id')) {
-            $query->leftJoin('service_catalogs', 'service_catalogs.id', '=', $table . '.service_catalog_id');
+            $query->leftJoin('service_catalogs', 'service_catalogs.id', '=', $table.'.service_catalog_id');
+
             return $query
                 ->selectRaw('COALESCE(service_catalogs.name, "Service") as service_name, COUNT(*) as count')
                 ->groupBy('service_name')
@@ -106,7 +110,7 @@ class KpiAggregator
         foreach (['type_service', 'service_type', 'service_name'] as $column) {
             if (Schema::hasColumn($table, $column)) {
                 return $query
-                    ->selectRaw($this->qualifyColumn($column) . ' as service_name, COUNT(*) as count')
+                    ->selectRaw($this->qualifyColumn($column).' as service_name, COUNT(*) as count')
                     ->groupBy($this->qualifyColumn($column))
                     ->orderByDesc('count')
                     ->limit($limit)
@@ -134,8 +138,8 @@ class KpiAggregator
             ->limit($limit);
 
         // Use whereDate for plain date columns to handle datetime storage correctly.
-        $q->whereDate('bookings.' . $col, '>=', $from->toDateString())
-          ->whereDate('bookings.' . $col, '<=', $to->toDateString());
+        $q->whereDate('bookings.'.$col, '>=', $from->toDateString())
+            ->whereDate('bookings.'.$col, '<=', $to->toDateString());
 
         return $q->get();
     }
@@ -186,7 +190,7 @@ class KpiAggregator
 
     public function activeSiteStats(int $orgId, CarbonImmutable $from, CarbonImmutable $to): array
     {
-        $total = \App\Models\OrganizationSite::query()
+        $total = OrganizationSite::query()
             ->where('organization_account_id', $orgId)
             ->count();
 
@@ -212,8 +216,8 @@ class KpiAggregator
         }
 
         $approvalsCount = 0;
-        if (class_exists(\App\Models\EnterpriseBookingApproval::class)) {
-            $q = \App\Models\EnterpriseBookingApproval::query()->where('status', 'pending');
+        if (class_exists(EnterpriseBookingApproval::class)) {
+            $q = EnterpriseBookingApproval::query()->where('status', 'pending');
             if ($orgId) {
                 $q->where('organization_account_id', $orgId);
             }
@@ -221,10 +225,10 @@ class KpiAggregator
         }
 
         $incidentsCount = 0;
-        if (class_exists(\App\Models\MissionIncident::class)) {
-            $q = \App\Models\MissionIncident::query()->where('status', 'open');
+        if (class_exists(MissionIncident::class)) {
+            $q = MissionIncident::query()->where('status', 'open');
             if ($orgId) {
-                $q->whereHas('mission', fn($q2) => $q2->where('organization_account_id', $orgId));
+                $q->whereHas('mission', fn ($q2) => $q2->where('organization_account_id', $orgId));
             }
             $incidentsCount = $q->count();
         }
@@ -235,10 +239,10 @@ class KpiAggregator
             ->count();
 
         return [
-            'overdue_invoices'  => $invoiceQuery->count(),
+            'overdue_invoices' => $invoiceQuery->count(),
             'pending_approvals' => $approvalsCount,
-            'open_incidents'    => $incidentsCount,
-            'bookings_at_risk'  => $atRisk,
+            'open_incidents' => $incidentsCount,
+            'bookings_at_risk' => $atRisk,
         ];
     }
 
@@ -252,12 +256,13 @@ class KpiAggregator
         if ($orgId !== null) {
             $q->where('customer_organization_id', $orgId);
         }
+
         return $q;
     }
 
     public function bookingTable(): string
     {
-        return (new Booking())->getTable();
+        return (new Booking)->getTable();
     }
 
     public function bookingDateColumn(): string
@@ -268,6 +273,7 @@ class KpiAggregator
                 return $column;
             }
         }
+
         return 'created_at';
     }
 
@@ -279,12 +285,13 @@ class KpiAggregator
                 return $column;
             }
         }
+
         return null;
     }
 
     public function qualifyColumn(string $column): string
     {
-        return $this->bookingTable() . '.' . $column;
+        return $this->bookingTable().'.'.$column;
     }
 
     public function cancelledStatuses(): array
@@ -303,7 +310,7 @@ class KpiAggregator
      */
     private function applyDateRange(Builder $query, CarbonImmutable $from, CarbonImmutable $to): Builder
     {
-        $column    = $this->bookingDateColumn();
+        $column = $this->bookingDateColumn();
         $qualified = $this->qualifyColumn($column);
 
         if (in_array($column, ['scheduled_at', 'created_at', 'updated_at'], true)) {
@@ -317,16 +324,17 @@ class KpiAggregator
 
     private function applyPeriod(Builder $query, CarbonImmutable $from, CarbonImmutable $to): void
     {
-        $column    = $this->bookingDateColumn();
+        $column = $this->bookingDateColumn();
         $qualified = $this->qualifyColumn($column);
 
         if (in_array($column, ['scheduled_at', 'created_at', 'updated_at'], true)) {
             $query->whereBetween($qualified, [$from, $to]);
+
             return;
         }
 
         $query->whereDate($qualified, '>=', $from->toDateString())
-              ->whereDate($qualified, '<=', $to->toDateString());
+            ->whereDate($qualified, '<=', $to->toDateString());
     }
 
     private function applyOrganizationScope(Builder $query, ?int $orgId): void
@@ -339,6 +347,7 @@ class KpiAggregator
         foreach (['customer_organization_id', 'organization_account_id', 'organisation_account_id', 'client_organization_id'] as $column) {
             if (Schema::hasColumn($table, $column)) {
                 $query->where($this->qualifyColumn($column), $orgId);
+
                 return;
             }
         }

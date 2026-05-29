@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Controllers\Api\Realtime\SocketConfigController;
+use Illuminate\Broadcasting\BroadcastController;
 use Illuminate\Support\Facades\Route;
 
 // ─────────────────────────────────────────────
@@ -12,8 +14,8 @@ use Illuminate\Support\Facades\Route;
 
 Route::middleware(['auth:sanctum', 'token.grace'])->group(function () {
     Route::get('/realtime/socket-config',
-        \App\Http\Controllers\Api\Realtime\SocketConfigController::class);
+        SocketConfigController::class);
 
     Route::post('/broadcasting/auth',
-        [\Illuminate\Broadcasting\BroadcastController::class, 'authenticate']);
+        [BroadcastController::class, 'authenticate']);
 });

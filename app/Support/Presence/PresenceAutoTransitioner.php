@@ -87,6 +87,7 @@ class PresenceAutoTransitioner
         if (! Schema::hasTable('provider_presence')) {
             return false;
         }
+
         return (bool) Config::get('presence.enabled', true);
     }
 
@@ -99,6 +100,7 @@ class PresenceAutoTransitioner
         if (! $providerId) {
             return null;
         }
+
         return User::find($providerId);
     }
 }

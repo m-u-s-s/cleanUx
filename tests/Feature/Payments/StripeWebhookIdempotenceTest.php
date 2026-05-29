@@ -3,6 +3,7 @@
 namespace Tests\Feature\Payments;
 
 use App\Models\StripeWebhookEvent;
+use App\Services\Payments\Webhooks\StripeWebhookEventProcessor;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Queue;
 use Tests\TestCase;
@@ -105,7 +106,7 @@ class StripeWebhookIdempotenceTest extends TestCase
             'received_at' => now(),
         ]);
 
-        $processor = app(\App\Services\Payments\Webhooks\StripeWebhookEventProcessor::class);
+        $processor = app(StripeWebhookEventProcessor::class);
         $processor->process($event);
 
         $event->refresh();
@@ -128,7 +129,7 @@ class StripeWebhookIdempotenceTest extends TestCase
 
         $before = (int) $event->fresh()->attempts;
 
-        $processor = app(\App\Services\Payments\Webhooks\StripeWebhookEventProcessor::class);
+        $processor = app(StripeWebhookEventProcessor::class);
         $processor->process($event);
 
         $this->assertSame($before, (int) $event->fresh()->attempts);

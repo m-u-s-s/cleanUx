@@ -19,6 +19,7 @@ class SyncTranslationsCommand extends Command
 
         if (! is_dir($sourceDir)) {
             $this->error("Source lang/{$source} introuvable.");
+
             return self::FAILURE;
         }
 
@@ -33,6 +34,7 @@ class SyncTranslationsCommand extends Command
         foreach ($targets as $target) {
             if (! $resolver->isSupported($target)) {
                 $this->warn("Locale cible {$target} non supportée — skipped");
+
                 continue;
             }
 
@@ -41,12 +43,13 @@ class SyncTranslationsCommand extends Command
                 File::makeDirectory($targetDir, 0755, true);
             }
 
-            foreach (glob($sourceDir . '/*.php') as $file) {
+            foreach (glob($sourceDir.'/*.php') as $file) {
                 $name = basename($file);
-                $dest = $targetDir . '/' . $name;
+                $dest = $targetDir.'/'.$name;
 
                 if (file_exists($dest) && ! $force) {
                     $skipped++;
+
                     continue;
                 }
 

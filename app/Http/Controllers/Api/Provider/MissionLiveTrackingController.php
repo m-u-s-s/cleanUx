@@ -12,6 +12,7 @@ use Illuminate\Http\Request;
 
 /**
  * @group Provider — Mission Live Tracking
+ *
  * @authenticated
  *
  * Endpoints "live" pour un prestataire en mission active.
@@ -25,9 +26,7 @@ use Illuminate\Http\Request;
  */
 class MissionLiveTrackingController extends Controller
 {
-    public function __construct(protected RealtimeBroadcastService $realtime)
-    {
-    }
+    public function __construct(protected RealtimeBroadcastService $realtime) {}
 
     public function pushPosition(Request $request, Mission $mission): JsonResponse
     {
@@ -56,7 +55,7 @@ class MissionLiveTrackingController extends Controller
         return response()->json([
             'ok' => true,
             'broadcast_id' => $ledger?->id,
-            'channel' => 'mission.' . $mission->id,
+            'channel' => 'mission.'.$mission->id,
         ]);
     }
 
@@ -84,7 +83,7 @@ class MissionLiveTrackingController extends Controller
         return response()->json([
             'ok' => true,
             'broadcast_id' => $ledger?->id,
-            'channel' => 'mission.' . $mission->id,
+            'channel' => 'mission.'.$mission->id,
         ]);
     }
 

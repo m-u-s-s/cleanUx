@@ -37,7 +37,7 @@ class EnforceTokenScopeTest extends TestCase
             'name' => 'reader', 'scopes' => ['read:bookings'],
         ]);
 
-        $response = $this->withHeaders(['Authorization' => 'Bearer ' . $new->plainTextToken])
+        $response = $this->withHeaders(['Authorization' => 'Bearer '.$new->plainTextToken])
             ->getJson('/test/scoped-read');
         $response->assertOk();
     }
@@ -49,7 +49,7 @@ class EnforceTokenScopeTest extends TestCase
             'name' => 'reader', 'scopes' => ['read:bookings'],
         ]);
 
-        $response = $this->withHeaders(['Authorization' => 'Bearer ' . $new->plainTextToken])
+        $response = $this->withHeaders(['Authorization' => 'Bearer '.$new->plainTextToken])
             ->getJson('/test/scoped-write');
         $response->assertStatus(403);
         $this->assertSame('missing_scope', $response->json('error'));
@@ -62,9 +62,9 @@ class EnforceTokenScopeTest extends TestCase
             'name' => 'wild', 'scopes' => ['admin:everything'], 'owner_role' => 'admin',
         ]);
 
-        $r1 = $this->withHeaders(['Authorization' => 'Bearer ' . $new->plainTextToken])
+        $r1 = $this->withHeaders(['Authorization' => 'Bearer '.$new->plainTextToken])
             ->getJson('/test/scoped-read');
-        $r2 = $this->withHeaders(['Authorization' => 'Bearer ' . $new->plainTextToken])
+        $r2 = $this->withHeaders(['Authorization' => 'Bearer '.$new->plainTextToken])
             ->getJson('/test/scoped-write');
         $r1->assertOk();
         $r2->assertOk();
@@ -78,7 +78,7 @@ class EnforceTokenScopeTest extends TestCase
         ]);
         app(ApiTokenManager::class)->suspend($new->accessToken, 'test suspension scenario');
 
-        $response = $this->withHeaders(['Authorization' => 'Bearer ' . $new->plainTextToken])
+        $response = $this->withHeaders(['Authorization' => 'Bearer '.$new->plainTextToken])
             ->getJson('/test/scoped-read');
         $response->assertStatus(403);
         $this->assertSame('token_suspended', $response->json('error'));
@@ -94,12 +94,12 @@ class EnforceTokenScopeTest extends TestCase
         ]);
         $new->accessToken->forceFill(['expires_at' => now()->subDay()])->save();
 
-        $response = $this->withHeaders(['Authorization' => 'Bearer ' . $new->plainTextToken])
+        $response = $this->withHeaders(['Authorization' => 'Bearer '.$new->plainTextToken])
             ->getJson('/test/scoped-read');
         $response->assertStatus(401);
     }
 
-    public function test_isUsable_returns_false_for_expired_or_suspended_or_rotated(): void
+    public function test_is_usable_returns_false_for_expired_or_suspended_or_rotated(): void
     {
         $user = User::factory()->create();
         $new = app(ApiTokenManager::class)->createForUser($user, [

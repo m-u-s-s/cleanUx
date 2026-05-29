@@ -30,9 +30,7 @@ use Illuminate\Support\Facades\Log;
  */
 class FxService
 {
-    public function __construct(protected FxProviderInterface $defaultProvider)
-    {
-    }
+    public function __construct(protected FxProviderInterface $defaultProvider) {}
 
     /**
      * Resolve the current rate (most recent ExchangeRate) for the pair.
@@ -71,12 +69,13 @@ class FxService
 
             // Need to fetch — try primary then fallback chain
             $rate = $this->fetchAndPersist($base, [$quote]);
+
             return $rate;
         });
     }
 
     /**
-     * @param array<int,string> $quotes
+     * @param  array<int,string>  $quotes
      */
     public function fetchAndPersist(string $base, array $quotes): ?ExchangeRate
     {
@@ -133,6 +132,7 @@ class FxService
 
         if (! empty($quotes)) {
             $quote = $quotes[0];
+
             return ExchangeRate::create([
                 'base_currency' => $base,
                 'quote_currency' => $quote,
@@ -256,9 +256,9 @@ class FxService
                 continue;
             }
             $instance = match ($name) {
-                'mock' => new FxMockProvider(),
-                'ecb' => new EcbFxProvider(),
-                'openexchange' => new OpenExchangeRatesFxProvider(),
+                'mock' => new FxMockProvider,
+                'ecb' => new EcbFxProvider,
+                'openexchange' => new OpenExchangeRatesFxProvider,
                 default => null,
             };
             if ($instance) {

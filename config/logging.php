@@ -129,9 +129,9 @@ return [
 
         'slow-queries' => [
             'driver' => 'daily',
-            'path'   => storage_path('logs/slow-queries.log'),
-            'level'  => 'warning',
-            'days'   => 14,
+            'path' => storage_path('logs/slow-queries.log'),
+            'level' => 'warning',
+            'days' => 14,
         ],
     ],
 

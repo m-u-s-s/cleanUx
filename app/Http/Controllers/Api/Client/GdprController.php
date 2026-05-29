@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers\Api\Client;
 
-use App\Http\Controllers\Controller;
-use App\Http\Requests\Api\Client\RequestGdprErasureRequest;
 use App\Events\Gdpr\GdprExportReady;
 use App\Events\Gdpr\GdprRequestCreated;
+use App\Http\Controllers\Controller;
+use App\Http\Requests\Api\Client\RequestGdprErasureRequest;
 use App\Models\GdprDataRequest;
 use App\Notifications\Gdpr\GdprExportReadyNotification;
 use App\Notifications\Gdpr\GdprRequestCreatedNotification;
@@ -20,6 +20,7 @@ use Illuminate\Support\Str;
 
 /**
  * @group GDPR
+ *
  * @authenticated
  */
 class GdprController extends Controller
@@ -116,6 +117,7 @@ class GdprController extends Controller
      *
      * @bodyParam confirm boolean required Must be accepted (1/true) to confirm intent. Example: 1
      * @bodyParam reason string Optional reason for the erasure request (max 2000 chars). Example: Je n'utilise plus le service.
+     *
      * @response 201 {"request_id": 2, "reference": "GDPR-ZZZZZZZZZZ", "status": "awaiting_grace_period", "grace_period_ends_at": "2026-07-01T10:00:00+00:00"}
      * @response 409 {"ok": false, "error": "Une demande d'erasure est déjà active.", "request_id": 2}
      * @response 422 {"message": "The confirm field must be accepted.", "errors": {"confirm": ["The confirm field must be accepted."]}}
@@ -216,7 +218,7 @@ class GdprController extends Controller
 
         return Storage::disk($disk)->download(
             $gdprRequest->export_file_path,
-            $gdprRequest->reference . '.json',
+            $gdprRequest->reference.'.json',
         );
     }
 
@@ -233,7 +235,7 @@ class GdprController extends Controller
     {
         $prefix = (string) config('gdpr.reference_prefix', 'GDPR');
         do {
-            $candidate = $prefix . '-' . strtoupper(Str::random(10));
+            $candidate = $prefix.'-'.strtoupper(Str::random(10));
         } while (GdprDataRequest::where('reference', $candidate)->exists());
 
         return $candidate;

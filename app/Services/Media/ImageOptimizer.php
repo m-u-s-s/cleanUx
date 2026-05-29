@@ -13,12 +13,12 @@ class ImageOptimizer
     /**
      * Optimize an image file in-place (overwrites the original).
      *
-     * @param  string  $path      Absolute filesystem path to the image.
-     * @param  int     $maxWidth  Maximum output width in pixels (aspect ratio preserved).
-     * @param  int     $quality   JPEG quality 1–100.
-     * @return string  The same $path, for fluent chaining.
+     * @param  string  $path  Absolute filesystem path to the image.
+     * @param  int  $maxWidth  Maximum output width in pixels (aspect ratio preserved).
+     * @param  int  $quality  JPEG quality 1–100.
+     * @return string The same $path, for fluent chaining.
      *
-     * @throws RuntimeException  When GD is not loaded or the file cannot be read.
+     * @throws RuntimeException When GD is not loaded or the file cannot be read.
      */
     public function optimize(string $path, int $maxWidth = 1200, int $quality = 80): string
     {
@@ -54,19 +54,19 @@ class ImageOptimizer
             return [$w, $h];
         }
         $ratio = $maxW / $w;
+
         return [$maxW, (int) round($h * $ratio)];
     }
 
-    /** @return \GdImage */
     private function loadImage(string $path): \GdImage
     {
         $mime = mime_content_type($path);
 
         $image = match ($mime) {
             'image/jpeg', 'image/jpg' => imagecreatefromjpeg($path),
-            'image/png'               => imagecreatefrompng($path),
-            'image/webp'              => imagecreatefromwebp($path),
-            default                   => throw new RuntimeException("Unsupported image type: {$mime}"),
+            'image/png' => imagecreatefrompng($path),
+            'image/webp' => imagecreatefromwebp($path),
+            default => throw new RuntimeException("Unsupported image type: {$mime}"),
         };
 
         if ($image === false) {

@@ -60,11 +60,11 @@ class MissionLiveTrackingApiTest extends TestCase
         $response->assertOk();
         $response->assertJson([
             'ok' => true,
-            'channel' => 'mission.' . $mission->id,
+            'channel' => 'mission.'.$mission->id,
         ]);
 
         $this->assertSame(1, BroadcastEvent::query()
-            ->forChannel('private-mission.' . $mission->id)
+            ->forChannel('private-mission.'.$mission->id)
             ->forCategory(BroadcastEvent::CATEGORY_POSITION)
             ->count());
     }
@@ -100,7 +100,7 @@ class MissionLiveTrackingApiTest extends TestCase
         $response->assertOk();
 
         $row = BroadcastEvent::query()
-            ->forChannel('private-mission.' . $mission->id)
+            ->forChannel('private-mission.'.$mission->id)
             ->forCategory(BroadcastEvent::CATEGORY_MISSION_ETA)
             ->first();
 

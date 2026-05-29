@@ -30,7 +30,7 @@ class ProviderSearchServiceTest extends TestCase
         $unverified = $this->makeProvider(['verification_status' => 'unverified', 'status' => 'active']);
         $inactive = $this->makeProvider(['verification_status' => 'verified', 'status' => 'pending']);
 
-        $results = $this->service->search(new ProviderSearchCriteria());
+        $results = $this->service->search(new ProviderSearchCriteria);
 
         $ids = collect($results->items())->pluck('id')->all();
         $this->assertContains($verified->id, $ids);
@@ -152,9 +152,9 @@ class ProviderSearchServiceTest extends TestCase
     protected function makeTrade(?string $name = null): Trade
     {
         return Trade::create([
-            'name' => $name ?? 'Test Trade ' . uniqid(),
-            'slug' => 'test-trade-' . uniqid(),
-            'code' => strtoupper('TT' . substr(uniqid(), -6)),
+            'name' => $name ?? 'Test Trade '.uniqid(),
+            'slug' => 'test-trade-'.uniqid(),
+            'code' => strtoupper('TT'.substr(uniqid(), -6)),
             'is_active' => true,
         ]);
     }

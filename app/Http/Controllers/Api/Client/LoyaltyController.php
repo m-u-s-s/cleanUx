@@ -11,6 +11,7 @@ use Illuminate\Http\Request;
 
 /**
  * @group Client — Loyalty
+ *
  * @authenticated
  */
 class LoyaltyController extends Controller

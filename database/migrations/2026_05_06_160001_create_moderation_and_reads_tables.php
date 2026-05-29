@@ -57,7 +57,7 @@ return new class extends Migration
         Schema::table('messages', function (Blueprint $table) {
             try {
                 $table->index(['channel_id', 'is_pinned'], 'messages_channel_pinned_idx');
-            } catch (\Throwable $e) {
+            } catch (Throwable $e) {
                 // index probablement déjà présent
             }
         });
@@ -153,7 +153,10 @@ return new class extends Migration
         Schema::dropIfExists('message_reads');
 
         Schema::table('messages', function (Blueprint $table) {
-            try { $table->dropIndex('messages_channel_pinned_idx'); } catch (\Throwable $e) {}
+            try {
+                $table->dropIndex('messages_channel_pinned_idx');
+            } catch (Throwable $e) {
+            }
             foreach (['deleted_by', 'deleted_reason', 'is_pinned', 'pinned_at', 'pinned_by'] as $c) {
                 if (Schema::hasColumn('messages', $c)) {
                     if (in_array($c, ['deleted_by', 'pinned_by'])) {

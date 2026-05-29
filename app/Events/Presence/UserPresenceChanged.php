@@ -21,10 +21,14 @@ use Illuminate\Queue\SerializesModels;
 class UserPresenceChanged implements ShouldBroadcast
 {
     public const STATUS_AVAILABLE = 'available';
-    public const STATUS_BUSY      = 'busy';
-    public const STATUS_AWAY      = 'away';
-    public const STATUS_DND       = 'dnd';     // do not disturb
-    public const STATUS_OFFLINE   = 'offline';
+
+    public const STATUS_BUSY = 'busy';
+
+    public const STATUS_AWAY = 'away';
+
+    public const STATUS_DND = 'dnd';     // do not disturb
+
+    public const STATUS_OFFLINE = 'offline';
 
     use Dispatchable;
     use InteractsWithSockets;
@@ -42,11 +46,11 @@ class UserPresenceChanged implements ShouldBroadcast
         $orgId = $this->organizationAccountId ?? $this->user->organization_account_id;
 
         $channels = [
-            new PrivateChannel('user.' . $this->user->id),
+            new PrivateChannel('user.'.$this->user->id),
         ];
 
         if ($orgId) {
-            $channels[] = new PrivateChannel('presence-org.' . $orgId);
+            $channels[] = new PrivateChannel('presence-org.'.$orgId);
         }
 
         return $channels;
@@ -55,11 +59,11 @@ class UserPresenceChanged implements ShouldBroadcast
     public function broadcastWith(): array
     {
         return [
-            'user_id'        => $this->user->id,
-            'name'           => $this->user->name,
-            'status'         => $this->status,
+            'user_id' => $this->user->id,
+            'name' => $this->user->name,
+            'status' => $this->status,
             'custom_message' => $this->customMessage,
-            'changed_at'     => now()->toIso8601String(),
+            'changed_at' => now()->toIso8601String(),
         ];
     }
 

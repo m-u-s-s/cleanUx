@@ -8,7 +8,6 @@ use App\Models\User;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
-use Illuminate\Validation\ValidationException;
 
 trait HandlesBookingSubmissionFlow
 {
@@ -20,9 +19,9 @@ trait HandlesBookingSubmissionFlow
         // assurée par RendersTradeFormSchema::tradeFormAnswersRules().
         $hasTradeSchema = method_exists($this, 'hasTradeFormSchema') && $this->hasTradeFormSchema();
 
-        $typeLieuRule  = $hasTradeSchema ? ['nullable', 'string', 'max:255'] : ['required', 'string', 'max:255'];
+        $typeLieuRule = $hasTradeSchema ? ['nullable', 'string', 'max:255'] : ['required', 'string', 'max:255'];
         $frequenceRule = $hasTradeSchema ? ['nullable', 'string', 'max:255'] : ['required', 'string', 'max:255'];
-        $surfaceRule   = $hasTradeSchema ? ['nullable', 'string', 'max:255'] : ['required', Rule::in(array_keys($this->surfaces))];
+        $surfaceRule = $hasTradeSchema ? ['nullable', 'string', 'max:255'] : ['required', Rule::in(array_keys($this->surfaces))];
 
         return [
             'selected_service_identifier' => ['required', 'string', 'max:255'],
@@ -58,7 +57,7 @@ trait HandlesBookingSubmissionFlow
                 : ['nullable'],
             'site_contact_name' => ['nullable', 'string', 'max:255'],
             'site_contact_phone' => ['nullable', 'string', 'max:30'],
-            'purchase_order_reference' => [Rule::requiredIf(fn() => $this->isEntrepriseCustomer() && (bool) ($this->currentEntreprisePolicy()['purchase_order_required'] ?? false)), 'nullable', 'string', 'max:100'],
+            'purchase_order_reference' => [Rule::requiredIf(fn () => $this->isEntrepriseCustomer() && (bool) ($this->currentEntreprisePolicy()['purchase_order_required'] ?? false)), 'nullable', 'string', 'max:100'],
             'cost_center' => ['nullable', 'string', 'max:100'],
             'site_instructions' => ['nullable', 'string', 'max:1000'],
 
@@ -130,7 +129,7 @@ trait HandlesBookingSubmissionFlow
             'selected_service_identifier' => ['required', 'string', 'max:255'],
             'type_lieu' => $hasTradeSchema ? ['nullable', 'string', 'max:255'] : ['required', 'string', 'max:255'],
             'frequence' => $hasTradeSchema ? ['nullable', 'string', 'max:255'] : ['required', 'string', 'max:255'],
-            'surface'   => $hasTradeSchema
+            'surface' => $hasTradeSchema
                 ? ['nullable', 'string', 'max:255']
                 : ['required', Rule::in(array_keys($this->surfaces))],
         ]);
@@ -167,7 +166,7 @@ trait HandlesBookingSubmissionFlow
             'priorite' => ['required', Rule::in(['normale', 'haute', 'urgente'])],
             'site_contact_name' => ['nullable', 'string', 'max:255'],
             'site_contact_phone' => ['nullable', 'string', 'max:30'],
-            'purchase_order_reference' => [Rule::requiredIf(fn() => $this->isEntrepriseCustomer() && (bool) ($this->currentEntreprisePolicy()['purchase_order_required'] ?? false)), 'nullable', 'string', 'max:100'],
+            'purchase_order_reference' => [Rule::requiredIf(fn () => $this->isEntrepriseCustomer() && (bool) ($this->currentEntreprisePolicy()['purchase_order_required'] ?? false)), 'nullable', 'string', 'max:100'],
             'cost_center' => ['nullable', 'string', 'max:100'],
             'site_instructions' => ['nullable', 'string', 'max:1000'],
         ];
@@ -228,7 +227,6 @@ trait HandlesBookingSubmissionFlow
             $this->chargerCreneauxDisponibles();
         }
     }
-
 
     public function updatedIsRecurrent(): void
     {
@@ -298,7 +296,7 @@ trait HandlesBookingSubmissionFlow
     protected function chargerEmployesDisponibles(): void
     {
         $this->employesDisponibles = $this->employes
-            ->map(fn($employe) => [
+            ->map(fn ($employe) => [
                 'id' => $employe->id,
                 'name' => $employe->name,
             ])->toArray();
@@ -324,6 +322,7 @@ trait HandlesBookingSubmissionFlow
 
         if (! $zone || ! $catalog || ! $rule) {
             $this->creneauxDisponibles = [];
+
             return;
         }
 
@@ -354,7 +353,7 @@ trait HandlesBookingSubmissionFlow
         $timezone = config('app.timezone', 'Europe/Brussels');
 
         $slots = collect($slots)->filter(function ($heure) use ($minimumNoticeHours, $timezone, $zone) {
-            $requestedAt = Carbon::createFromFormat('Y-m-d H:i', $this->rdvDate . ' ' . $heure, $timezone);
+            $requestedAt = Carbon::createFromFormat('Y-m-d H:i', $this->rdvDate.' '.$heure, $timezone);
 
             if ($requestedAt->lt(now($timezone)->addHours($minimumNoticeHours))) {
                 return false;
@@ -417,6 +416,7 @@ trait HandlesBookingSubmissionFlow
 
         if (! $zone || ! $catalog || ! $rule || ! $this->rdvDate || ! $this->rdvHeure) {
             $this->addError('rdvDate', 'Impossible de valider ce créneau pour cette zone et ce service.');
+
             return false;
         }
 
@@ -424,16 +424,18 @@ trait HandlesBookingSubmissionFlow
 
         if (! $this->countryMarketResolver()->bookingEnabled($countryMarket)) {
             $this->addError('postal_code_input', 'La réservation n’est pas encore active pour ce marché.');
+
             return false;
         }
 
         if (! $this->countryMarketResolver()->serviceEnabled($countryMarket)) {
             $this->addError('selected_service_identifier', 'Ce service n’est pas encore disponible dans ce pays.');
+
             return false;
         }
 
         $timezone = config('app.timezone', 'Europe/Brussels');
-        $requestedAt = Carbon::createFromFormat('Y-m-d H:i', $this->rdvDate . ' ' . $this->rdvHeure, $timezone);
+        $requestedAt = Carbon::createFromFormat('Y-m-d H:i', $this->rdvDate.' '.$this->rdvHeure, $timezone);
 
         $minimumNoticeHours = max(
             (int) ($zone->minimum_notice_hours ?? 0),
@@ -444,11 +446,13 @@ trait HandlesBookingSubmissionFlow
         if ($this->booking_mode === 'asap') {
             if ($requestedAt->gt(now($timezone)->addHours(2))) {
                 $this->addError('booking_mode', 'Le mode ASAP doit trouver un créneau dans les 2 heures.');
+
                 return false;
             }
         } else {
             if ($requestedAt->lt(now($timezone)->addHours($minimumNoticeHours))) {
                 $this->addError('rdvDate', 'Ce créneau est trop proche par rapport au délai minimum de réservation de votre zone.');
+
                 return false;
             }
         }
@@ -463,6 +467,7 @@ trait HandlesBookingSubmissionFlow
 
         if ($zone->maximum_daily_jobs && $zoneBookingsCount >= (int) $zone->maximum_daily_jobs) {
             $this->addError('rdvDate', 'La capacité journalière maximale de cette zone est atteinte.');
+
             return false;
         }
 
@@ -475,21 +480,25 @@ trait HandlesBookingSubmissionFlow
 
         if ($rule->maximum_daily_capacity && $serviceBookingsCount >= (int) $rule->maximum_daily_capacity) {
             $this->addError('selected_service_identifier', 'La capacité maximale pour ce service est atteinte dans votre zone.');
+
             return false;
         }
 
         if ($this->isPremiumClient() && $this->employe_id) {
             if (! $this->employeeCanCoverZone((int) $this->employe_id, (int) $zone->id)) {
                 $this->addError('employe_id', 'Cet employé ne couvre pas votre zone.');
+
                 return false;
             }
 
             if (! $this->employeeIsAvailableForSlot((int) $this->employe_id, $this->rdvDate, $this->rdvHeure, $zone)) {
                 $this->addError('rdvHeure', 'Ce créneau n’est plus disponible pour cet employé.');
+
                 return false;
             }
         } elseif (! $this->hasAnyAvailableEmployeeForSlot($this->rdvDate, $this->rdvHeure, $zone)) {
             $this->addError('rdvHeure', 'Aucun employé disponible ne couvre cette zone pour ce créneau.');
+
             return false;
         }
 

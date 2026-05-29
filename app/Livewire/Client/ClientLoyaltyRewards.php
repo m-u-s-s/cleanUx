@@ -2,8 +2,8 @@
 
 namespace App\Livewire\Client;
 
-use App\Models\LoyaltyReward;
 use App\Models\LoyaltyRedemption;
+use App\Models\LoyaltyReward;
 use App\Services\Loyalty\LoyaltyRedemptionService;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Auth;
@@ -20,7 +20,9 @@ class ClientLoyaltyRewards extends Component
     protected $paginationTheme = 'tailwind';
 
     public string $tab = 'catalogue';
+
     public string $typeFilter = '';
+
     public ?int $selectedRewardId = null;
 
     public function setTab(string $tab): void
@@ -52,7 +54,7 @@ class ClientLoyaltyRewards extends Component
             $firstError = collect($e->errors())->flatten()->first();
             $this->dispatch('toast', $firstError ?? 'Échec rédemption.', 'error');
         } catch (\Throwable $e) {
-            $this->dispatch('toast', 'Erreur : ' . $e->getMessage(), 'error');
+            $this->dispatch('toast', 'Erreur : '.$e->getMessage(), 'error');
         }
     }
 

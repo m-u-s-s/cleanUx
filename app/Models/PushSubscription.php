@@ -31,10 +31,10 @@ class PushSubscription extends Model
     ];
 
     protected $casts = [
-        'is_active'       => 'boolean',
-        'failure_count'   => 'integer',
+        'is_active' => 'boolean',
+        'failure_count' => 'integer',
         'last_failure_at' => 'datetime',
-        'last_used_at'    => 'datetime',
+        'last_used_at' => 'datetime',
     ];
 
     public function user(): BelongsTo
@@ -58,9 +58,9 @@ class PushSubscription extends Model
     public function toWebPushArray(): array
     {
         return [
-            'endpoint'        => $this->endpoint,
-            'publicKey'       => $this->p256dh,
-            'authToken'       => $this->auth,
+            'endpoint' => $this->endpoint,
+            'publicKey' => $this->p256dh,
+            'authToken' => $this->auth,
             'contentEncoding' => 'aesgcm',
         ];
     }
@@ -68,7 +68,7 @@ class PushSubscription extends Model
     public function recordSuccess(): void
     {
         $this->update([
-            'last_used_at'  => now(),
+            'last_used_at' => now(),
             'failure_count' => 0,
         ]);
     }

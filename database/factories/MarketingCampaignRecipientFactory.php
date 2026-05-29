@@ -4,7 +4,6 @@ namespace Database\Factories;
 
 use App\Models\MarketingCampaign;
 use App\Models\MarketingCampaignRecipient;
-use App\Models\MarketingCampaignStep;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Str;

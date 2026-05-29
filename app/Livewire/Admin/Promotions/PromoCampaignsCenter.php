@@ -16,13 +16,21 @@ class PromoCampaignsCenter extends Component
     protected $paginationTheme = 'tailwind';
 
     public ?int $editingId = null;
+
     public string $name = '';
+
     public string $slug = '';
+
     public string $description = '';
+
     public string $status = PromoCampaign::STATUS_DRAFT;
+
     public ?string $starts_at = null;
+
     public ?string $ends_at = null;
+
     public ?float $budget_cap = null;
+
     public string $target_audience = '';
 
     protected function rules(): array
@@ -51,7 +59,7 @@ class PromoCampaignsCenter extends Component
         $this->validate(array_merge($this->rules(), [
             'slug' => array_merge($this->rules()['slug'], [
                 $this->editingId
-                    ? 'unique:promo_campaigns,slug,' . $this->editingId
+                    ? 'unique:promo_campaigns,slug,'.$this->editingId
                     : 'unique:promo_campaigns,slug',
             ]),
         ]));

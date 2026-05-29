@@ -13,14 +13,14 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * Permet de surcharger le default_hourly_rate du Trade par zone géographique,
  * avec un multiplicateur de surge et des planchers/plafonds en centimes.
  *
- * @property int    $id
- * @property int    $trade_id
- * @property int    $service_zone_id
- * @property int    $base_rate_cents
+ * @property int $id
+ * @property int $trade_id
+ * @property int $service_zone_id
+ * @property int $base_rate_cents
  * @property string $surge_multiplier
  * @property int|null $min_price_cents
  * @property int|null $max_price_cents
- * @property bool   $is_active
+ * @property bool $is_active
  * @property array|null $metadata
  */
 class TradeZonePricing extends Model
@@ -41,12 +41,12 @@ class TradeZonePricing extends Model
     ];
 
     protected $casts = [
-        'base_rate_cents'  => 'integer',
+        'base_rate_cents' => 'integer',
         'surge_multiplier' => 'decimal:2',
-        'min_price_cents'  => 'integer',
-        'max_price_cents'  => 'integer',
-        'is_active'        => 'boolean',
-        'metadata'         => 'array',
+        'min_price_cents' => 'integer',
+        'max_price_cents' => 'integer',
+        'is_active' => 'boolean',
+        'metadata' => 'array',
     ];
 
     // ──────────────────────────────────────────────────────

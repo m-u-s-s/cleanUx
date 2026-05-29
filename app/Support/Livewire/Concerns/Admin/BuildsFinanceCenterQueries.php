@@ -2,9 +2,9 @@
 
 namespace App\Support\Livewire\Concerns\Admin;
 
+use App\Models\Booking;
 use App\Models\FinanceInvoice;
 use App\Models\OrganizationAccount;
-use App\Models\Booking;
 use App\Models\ServiceCatalog;
 use App\Models\ServiceZone;
 use App\Services\Finance\FinanceDocumentService;
@@ -12,16 +12,55 @@ use Illuminate\Database\Eloquent\Builder;
 
 trait BuildsFinanceCenterQueries
 {
-    public function updatingSearch(): void { $this->resetPage(); }
-    public function updatingDateFrom(): void { $this->resetPage(); }
-    public function updatingDateTo(): void { $this->resetPage(); }
-    public function updatingStatus(): void { $this->resetPage(); }
-    public function updatingZoneId(): void { $this->resetPage(); }
-    public function updatingServiceId(): void { $this->resetPage(); }
-    public function updatingOrganizationId(): void { $this->resetPage(); }
-    public function updatingMarket(): void { $this->resetPage(); }
-    public function updatingViewMode(): void { $this->resetPage(); }
-    public function updatingPaymentFilter(): void { $this->resetPage(); }
+    public function updatingSearch(): void
+    {
+        $this->resetPage();
+    }
+
+    public function updatingDateFrom(): void
+    {
+        $this->resetPage();
+    }
+
+    public function updatingDateTo(): void
+    {
+        $this->resetPage();
+    }
+
+    public function updatingStatus(): void
+    {
+        $this->resetPage();
+    }
+
+    public function updatingZoneId(): void
+    {
+        $this->resetPage();
+    }
+
+    public function updatingServiceId(): void
+    {
+        $this->resetPage();
+    }
+
+    public function updatingOrganizationId(): void
+    {
+        $this->resetPage();
+    }
+
+    public function updatingMarket(): void
+    {
+        $this->resetPage();
+    }
+
+    public function updatingViewMode(): void
+    {
+        $this->resetPage();
+    }
+
+    public function updatingPaymentFilter(): void
+    {
+        $this->resetPage();
+    }
 
     public function getZonesProperty()
     {
@@ -65,7 +104,7 @@ trait BuildsFinanceCenterQueries
                 $sq->where('balance_due', '>', 0)->whereNotNull('due_at')->where('due_at', '<', now());
             }))
             ->when(filled($this->search), function (Builder $query) {
-                $term = '%' . $this->search . '%';
+                $term = '%'.$this->search.'%';
 
                 $query->where(function (Builder $q) use ($term) {
                     $q->where('booking_reference', 'like', $term)
@@ -186,11 +225,11 @@ trait BuildsFinanceCenterQueries
 
     protected function quoteNumber(Booking $rdv): string
     {
-        return $rdv->financeQuote?->quote_number ?: 'DEV-' . ($rdv->booking_reference ?: $rdv->id);
+        return $rdv->financeQuote?->quote_number ?: 'DEV-'.($rdv->booking_reference ?: $rdv->id);
     }
 
     protected function invoiceNumber(Booking $rdv): string
     {
-        return $rdv->financeInvoice?->invoice_number ?: 'FAC-' . ($rdv->booking_reference ?: $rdv->id);
+        return $rdv->financeInvoice?->invoice_number ?: 'FAC-'.($rdv->booking_reference ?: $rdv->id);
     }
 }

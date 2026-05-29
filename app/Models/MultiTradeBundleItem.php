@@ -8,10 +8,15 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class MultiTradeBundleItem extends Model
 {
     public const STATUS_DRAFT = 'draft';
+
     public const STATUS_QUOTED = 'quoted';
+
     public const STATUS_ACCEPTED = 'accepted';
+
     public const STATUS_IN_PROGRESS = 'in_progress';
+
     public const STATUS_COMPLETED = 'completed';
+
     public const STATUS_CANCELLED = 'cancelled';
 
     protected $fillable = [

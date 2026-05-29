@@ -3,7 +3,6 @@
 namespace Tests\Unit\Assistant;
 
 use App\Models\AssistantAction;
-use App\Models\AssistantConversation;
 use App\Models\Booking;
 use App\Models\ComplaintCase;
 use App\Models\DisputeResolution;
@@ -18,6 +17,7 @@ use Tests\TestCase;
 /**
  * @covers \App\Services\Assistant\Actions\AssistantActionExecutor
  * @covers \App\Services\Assistant\Actions\ActionDetector
+ *
  * @group requires-mysql
  */
 class AssistantWriteActionsTest extends TestCase
@@ -25,6 +25,7 @@ class AssistantWriteActionsTest extends TestCase
     use RefreshDatabase;
 
     private AssistantActionExecutor $executor;
+
     private ActionDetector $detector;
 
     protected function setUp(): void
@@ -33,8 +34,8 @@ class AssistantWriteActionsTest extends TestCase
         if (config('database.default') === 'sqlite') {
             $this->markTestSkipped('Write actions require full schema (MySQL/PostgreSQL)');
         }
-        $this->executor = new AssistantActionExecutor();
-        $this->detector = new ActionDetector();
+        $this->executor = new AssistantActionExecutor;
+        $this->detector = new ActionDetector;
     }
 
     // ──────────────────────────────────────────────────────
@@ -127,7 +128,7 @@ class AssistantWriteActionsTest extends TestCase
 
     public function test_execute_write_cancel_booking_returns_confirmation_payload(): void
     {
-        $user    = User::factory()->client()->create();
+        $user = User::factory()->client()->create();
         $booking = Booking::factory()->create(['customer_user_id' => $user->id, 'status' => 'confirme']);
 
         $result = $this->executor->executeWrite('cancel_booking', $user, ['booking_id' => $booking->id]);
@@ -145,9 +146,9 @@ class AssistantWriteActionsTest extends TestCase
         $this->executor->executeWrite('cancel_booking', $user, ['booking_id' => 99]);
 
         $this->assertDatabaseHas('assistant_actions', [
-            'user_id'     => $user->id,
+            'user_id' => $user->id,
             'action_type' => 'cancel_booking',
-            'status'      => AssistantAction::STATUS_PENDING_CONFIRMATION,
+            'status' => AssistantAction::STATUS_PENDING_CONFIRMATION,
         ]);
     }
 
@@ -157,11 +158,11 @@ class AssistantWriteActionsTest extends TestCase
 
         $result = $this->executor->executeWrite('create_booking', $user, [
             'service_catalog_id' => 1,
-            'address'            => '10 rue de la Paix',
-            'city'               => 'Bruxelles',
-            'postal_code'        => '1000',
-            'scheduled_date'     => '2026-07-01',
-            'scheduled_time'     => '09:00',
+            'address' => '10 rue de la Paix',
+            'city' => 'Bruxelles',
+            'postal_code' => '1000',
+            'scheduled_date' => '2026-07-01',
+            'scheduled_time' => '09:00',
         ]);
 
         $this->assertStringContainsString('2026-07-01', $result['summary']);
@@ -174,27 +175,27 @@ class AssistantWriteActionsTest extends TestCase
 
     public function test_confirm_cancel_booking_cancels_and_returns_success_message(): void
     {
-        $user    = User::factory()->client()->create();
+        $user = User::factory()->client()->create();
         $booking = Booking::factory()->create([
-            'customer_user_id'  => $user->id,
-            'status'            => 'confirme',
+            'customer_user_id' => $user->id,
+            'status' => 'confirme',
             'booking_reference' => 'CUX-TEST01',
         ]);
 
         $pending = $this->executor->executeWrite('cancel_booking', $user, ['booking_id' => $booking->id]);
-        $result  = $this->executor->confirmAction($pending['action_id'], $user);
+        $result = $this->executor->confirmAction($pending['action_id'], $user);
 
         $this->assertStringContainsString('annulée', mb_strtolower($result));
         $this->assertDatabaseHas('bookings', ['id' => $booking->id, 'status' => 'annule']);
         $this->assertDatabaseHas('assistant_actions', [
-            'id'     => $pending['action_id'],
+            'id' => $pending['action_id'],
             'status' => AssistantAction::STATUS_EXECUTED,
         ]);
     }
 
     public function test_confirm_action_not_found_returns_error(): void
     {
-        $user   = User::factory()->client()->create();
+        $user = User::factory()->client()->create();
         $result = $this->executor->confirmAction(999999, $user);
 
         $this->assertStringContainsString('introuvable', mb_strtolower($result));
@@ -206,7 +207,7 @@ class AssistantWriteActionsTest extends TestCase
         $other = User::factory()->client()->create();
 
         $pending = $this->executor->executeWrite('cancel_booking', $owner, ['booking_id' => 1]);
-        $result  = $this->executor->confirmAction($pending['action_id'], $other);
+        $result = $this->executor->confirmAction($pending['action_id'], $other);
 
         $this->assertStringContainsString('introuvable', mb_strtolower($result));
     }
@@ -217,14 +218,14 @@ class AssistantWriteActionsTest extends TestCase
 
     public function test_cancel_already_cancelled_booking_returns_error(): void
     {
-        $user    = User::factory()->client()->create();
+        $user = User::factory()->client()->create();
         $booking = Booking::factory()->create([
             'customer_user_id' => $user->id,
-            'status'           => 'annule',
+            'status' => 'annule',
         ]);
 
         $pending = $this->executor->executeWrite('cancel_booking', $user, ['booking_id' => $booking->id]);
-        $result  = $this->executor->confirmAction($pending['action_id'], $user);
+        $result = $this->executor->confirmAction($pending['action_id'], $user);
 
         $this->assertStringContainsString('erreur', mb_strtolower($result));
     }
@@ -242,13 +243,13 @@ class AssistantWriteActionsTest extends TestCase
         $this->assertStringContainsString('en ligne', $result);
         $this->assertDatabaseHas('provider_presence', [
             'provider_user_id' => $user->id,
-            'status'           => ProviderPresence::STATUS_ONLINE,
+            'status' => ProviderPresence::STATUS_ONLINE,
         ]);
     }
 
     public function test_update_availability_invalid_status_returns_error(): void
     {
-        $user   = User::factory()->employe()->create();
+        $user = User::factory()->employe()->create();
         $result = $this->executor->executeImmediateWrite('update_availability', $user, ['status' => 'sleeping']);
 
         $this->assertStringContainsString('invalide', mb_strtolower($result));
@@ -260,9 +261,9 @@ class AssistantWriteActionsTest extends TestCase
 
     public function test_confirm_resolve_dispute_resolves_complaint_case(): void
     {
-        $admin   = User::factory()->admin()->create();
+        $admin = User::factory()->admin()->create();
         $dispute = ComplaintCase::factory()->create([
-            'status'   => ComplaintCase::STATUS_OPEN,
+            'status' => ComplaintCase::STATUS_OPEN,
             'category' => ComplaintCase::CATEGORY_QUALITY,
         ]);
 
@@ -274,18 +275,18 @@ class AssistantWriteActionsTest extends TestCase
 
         $this->assertStringContainsString('résolu', mb_strtolower($result));
         $this->assertDatabaseHas('complaint_cases', [
-            'id'     => $dispute->id,
+            'id' => $dispute->id,
             'status' => ComplaintCase::STATUS_RESOLVED,
         ]);
         $this->assertDatabaseHas('dispute_resolutions', [
             'complaint_case_id' => $dispute->id,
-            'status'            => DisputeResolution::STATUS_APPLIED,
+            'status' => DisputeResolution::STATUS_APPLIED,
         ]);
     }
 
     public function test_resolve_dispute_already_resolved_returns_error(): void
     {
-        $admin   = User::factory()->admin()->create();
+        $admin = User::factory()->admin()->create();
         $dispute = ComplaintCase::factory()->create(['status' => ComplaintCase::STATUS_RESOLVED]);
 
         $pending = $this->executor->executeWrite('resolve_dispute', $admin, [
@@ -303,25 +304,25 @@ class AssistantWriteActionsTest extends TestCase
 
     public function test_confirm_create_booking_creates_booking_record(): void
     {
-        $user    = User::factory()->client()->create();
+        $user = User::factory()->client()->create();
         $catalog = ServiceCatalog::factory()->create();
 
         $pending = $this->executor->executeWrite('create_booking', $user, [
             'service_catalog_id' => $catalog->id,
-            'address'            => '5 avenue Louise',
-            'city'               => 'Bruxelles',
-            'postal_code'        => '1050',
-            'scheduled_date'     => '2026-08-10',
-            'scheduled_time'     => '14:00',
+            'address' => '5 avenue Louise',
+            'city' => 'Bruxelles',
+            'postal_code' => '1050',
+            'scheduled_date' => '2026-08-10',
+            'scheduled_time' => '14:00',
         ]);
         $result = $this->executor->confirmAction($pending['action_id'], $user);
 
         $this->assertStringContainsString('créée', $result);
         $this->assertDatabaseHas('bookings', [
-            'customer_user_id'   => $user->id,
+            'customer_user_id' => $user->id,
             'service_catalog_id' => $catalog->id,
-            'city'               => 'Bruxelles',
-            'status'             => 'en_attente',
+            'city' => 'Bruxelles',
+            'status' => 'en_attente',
         ]);
     }
 

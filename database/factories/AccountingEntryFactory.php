@@ -14,7 +14,7 @@ class AccountingEntryFactory extends Factory
         $isDebit = fake()->boolean();
 
         return [
-            'entry_code' => 'ACC-' . fake()->unique()->numerify('########'),
+            'entry_code' => 'ACC-'.fake()->unique()->numerify('########'),
             'batch_id' => fake()->uuid(),
             'posting_date' => fake()->date(),
             'journal_code' => fake()->randomElement(['VE', 'AC', 'BQ', 'OD']),
@@ -23,7 +23,7 @@ class AccountingEntryFactory extends Factory
             'debit_cents' => $isDebit ? fake()->numberBetween(1000, 100000) : 0,
             'credit_cents' => $isDebit ? 0 : fake()->numberBetween(1000, 100000),
             'label' => fake()->sentence(4),
-            'reference' => 'CUX-' . fake()->numerify('######'),
+            'reference' => 'CUX-'.fake()->numerify('######'),
             'currency' => 'EUR',
             'exchange_rate' => 1.0,
             'metadata' => [],

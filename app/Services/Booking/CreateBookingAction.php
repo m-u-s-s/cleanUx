@@ -3,17 +3,23 @@
 namespace App\Services\Booking;
 
 use App\Data\ZoneCoverageResult;
+use App\Models\Booking;
+use App\Models\Conversation;
 use App\Models\OrganizationSite;
 use App\Models\PostalCode;
-use App\Models\Booking;
 use App\Models\ServiceCatalog;
 use App\Models\ServiceZone;
 use App\Models\User;
 use App\Models\ZoneServiceRule;
-use App\Services\International\CountryMarketResolver;
-use App\Support\ActivityLogger;
 use App\Notifications\NouveauRendezVousNotification;
 use App\Notifications\RdvConfirmeNotification;
+use App\Services\Dispatch\MissionDispatchService;
+use App\Services\Enterprise\ContractPolicyService;
+use App\Services\Enterprise\EnterpriseBookingApprovalService;
+use App\Services\Finance\CustomerCreditApplicationService;
+use App\Services\International\CountryMarketResolver;
+use App\Services\Promotion\BookingPromoCodeApplier;
+use App\Support\ActivityLogger;
 use Illuminate\Support\Arr;
 use Illuminate\Validation\ValidationException;
 
@@ -41,7 +47,7 @@ class CreateBookingAction
             serviceCatalog: $catalog,
             zoneServiceRule: $rule,
             status: Arr::get($data, 'entreprise_approval_required', false) ? 'manual_validation' : 'covered',
-            message: 'Zone couverte : ' . $zone->name,
+            message: 'Zone couverte : '.$zone->name,
             resolutionSource: Arr::get($data, 'resolution_source'),
         );
 
@@ -171,7 +177,7 @@ class CreateBookingAction
         ]);
 
         if (! empty($data['organization_site_id'])) {
-            $site = \App\Models\OrganizationSite::query()
+            $site = OrganizationSite::query()
                 ->find((int) $data['organization_site_id']);
 
             if ($site) {
@@ -207,7 +213,7 @@ class CreateBookingAction
             }
         }
         // conversation
-        $conversation = \App\Models\Conversation::firstOrCreate([
+        $conversation = Conversation::firstOrCreate([
             'rendez_vous_id' => $rendezVous->id,
         ], [
             'mission_id' => null,
@@ -218,19 +224,19 @@ class CreateBookingAction
         // Phase Promotions — appliquer un éventuel code promo AVANT les crédits
         $promoCodeRaw = Arr::get($data, 'promo_code');
         if (! empty($promoCodeRaw)) {
-            app(\App\Services\Promotion\BookingPromoCodeApplier::class)
+            app(BookingPromoCodeApplier::class)
                 ->applyToBooking($rendezVous, $client, (string) $promoCodeRaw);
             $rendezVous->refresh();
         }
 
         if ($client->activeCreditBalance() > 0) {
-            app(\App\Services\Finance\CustomerCreditApplicationService::class)
+            app(CustomerCreditApplicationService::class)
                 ->applyAvailableCredits($client, $rendezVous);
         }
         $org = $rendezVous->organizationAccount;
 
         if ($org) {
-            $policy = app(\App\Services\Enterprise\ContractPolicyService::class);
+            $policy = app(ContractPolicyService::class);
 
             $check = $policy->validateBooking($rendezVous, $org);
 
@@ -242,11 +248,11 @@ class CreateBookingAction
         }
 
         if (($rendezVous->booking_mode ?? null) === 'asap' && isset($mission) && $mission) {
-            app(\App\Services\Dispatch\MissionDispatchService::class)
+            app(MissionDispatchService::class)
                 ->dispatchToNextProvider($mission);
         }
         if ($client->isEntreprise() || $client->hasOrganizationContext() || Arr::get($data, 'entreprise_approval_required', false)) {
-            app(\App\Services\Enterprise\EnterpriseBookingApprovalService::class)
+            app(EnterpriseBookingApprovalService::class)
                 ->createForBooking(
                     $rendezVous,
                     $client,
@@ -254,10 +260,10 @@ class CreateBookingAction
                 );
         }
 
-        $bestEmployee = app(\App\Services\Booking\SmartDispatchService::class)
+        $bestEmployee = app(SmartDispatchService::class)
             ->assignBestEmployee($rendezVous->fresh(['client', 'serviceZone']));
 
-        $dispatchService = app(\App\Services\Booking\SmartDispatchService::class);
+        $dispatchService = app(SmartDispatchService::class);
 
         $freshRdv = $rendezVous->fresh(['client', 'serviceZone']);
 

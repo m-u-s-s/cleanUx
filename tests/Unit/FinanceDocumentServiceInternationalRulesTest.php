@@ -2,12 +2,12 @@
 
 namespace Tests\Unit;
 
+use App\Models\Booking;
 use App\Models\Country;
 use App\Models\CountryBillingProfile;
 use App\Models\CountryOperationalSetting;
 use App\Models\CountryServiceCatalogRule;
 use App\Models\PostalCode;
-use App\Models\Booking;
 use App\Models\ServiceCatalog;
 use App\Models\ServiceZone;
 use App\Services\Finance\FinanceDocumentService;

@@ -17,7 +17,7 @@ class AnalyticsEventFactory extends Factory
             'event_category' => fake()->randomElement(['lifecycle', 'funnel', 'engagement', 'transaction', 'error']),
             'session_id' => fake()->uuid(),
             'user_id' => User::factory(),
-            'properties' => ['page' => '/' . fake()->slug()],
+            'properties' => ['page' => '/'.fake()->slug()],
             'source' => fake()->randomElement(['web', 'mobile', 'api']),
             'platform' => fake()->randomElement(['ios', 'android', 'web']),
             'locale' => fake()->randomElement(['fr', 'nl', 'en']),

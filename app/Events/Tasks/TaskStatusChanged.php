@@ -33,16 +33,16 @@ class TaskStatusChanged implements ShouldBroadcast
         $channels = [];
 
         if (! empty($this->task->organization_account_id)) {
-            $channels[] = new PrivateChannel('presence-org.' . $this->task->organization_account_id);
+            $channels[] = new PrivateChannel('presence-org.'.$this->task->organization_account_id);
         }
 
         if (! empty($this->task->channel_id)) {
-            $channels[] = new PrivateChannel('channel.' . $this->task->channel_id);
+            $channels[] = new PrivateChannel('channel.'.$this->task->channel_id);
         }
 
         // Notifier l'assigné s'il y en a un
         if (! empty($this->task->assigned_to_user_id)) {
-            $channels[] = new PrivateChannel('user.' . $this->task->assigned_to_user_id);
+            $channels[] = new PrivateChannel('user.'.$this->task->assigned_to_user_id);
         }
 
         return $channels;
@@ -51,11 +51,11 @@ class TaskStatusChanged implements ShouldBroadcast
     public function broadcastWith(): array
     {
         return [
-            'task_id'         => $this->task->id,
+            'task_id' => $this->task->id,
             'previous_status' => $this->previousStatus,
-            'new_status'      => $this->newStatus,
-            'changed_by'      => $this->changedBy,
-            'changed_at'      => now()->toIso8601String(),
+            'new_status' => $this->newStatus,
+            'changed_by' => $this->changedBy,
+            'changed_at' => now()->toIso8601String(),
         ];
     }
 

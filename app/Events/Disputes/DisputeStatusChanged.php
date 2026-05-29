@@ -15,6 +15,5 @@ class DisputeStatusChanged
         public ComplaintCase $case,
         public string $fromStatus,
         public string $toStatus,
-    ) {
-    }
+    ) {}
 }

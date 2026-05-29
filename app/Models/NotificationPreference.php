@@ -9,9 +9,13 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class NotificationPreference extends Model
 {
     public const SOURCE_DEFAULT = 'default';
+
     public const SOURCE_USER = 'user';
+
     public const SOURCE_ADMIN = 'admin';
+
     public const SOURCE_WEBHOOK = 'webhook';
+
     public const SOURCE_SYSTEM = 'system';
 
     protected $fillable = [

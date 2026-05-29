@@ -10,12 +10,10 @@ use Illuminate\Notifications\Notification;
 
 class PromoCodeAppliedNotification extends Notification
 {
-    use Queueable;
     use InteractsWithUserNotificationPreferences;
+    use Queueable;
 
-    public function __construct(public PromoCodeRedemption $redemption)
-    {
-    }
+    public function __construct(public PromoCodeRedemption $redemption) {}
 
     public function via($notifiable): array
     {

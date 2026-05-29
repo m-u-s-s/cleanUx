@@ -39,6 +39,7 @@ class KycWebhookController extends Controller
                 'provider' => $provider,
                 'error' => $e->getMessage(),
             ]);
+
             return response()->json(['ok' => false, 'error' => 'invalid'], 400);
         }
 
@@ -48,7 +49,7 @@ class KycWebhookController extends Controller
             ?? null;
 
         if (! $externalEventId) {
-            $externalEventId = $provider . '_' . Str::lower(Str::random(16));
+            $externalEventId = $provider.'_'.Str::lower(Str::random(16));
         }
 
         $stored = KycWebhookEvent::firstOrCreate(
@@ -78,8 +79,8 @@ class KycWebhookController extends Controller
     protected function resolveProvider(string $name): ?KycProviderInterface
     {
         return match ($name) {
-            'mock' => new KycMockProvider(),
-            'onfido' => new OnfidoProvider(),
+            'mock' => new KycMockProvider,
+            'onfido' => new OnfidoProvider,
             default => null,
         };
     }

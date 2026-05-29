@@ -15,28 +15,28 @@ class RecurringTemplateFactory extends Factory
         $name = fake()->words(3, true);
 
         return [
-            'name'                      => $name,
-            'slug'                      => Str::slug($name) . '-' . Str::random(4),
-            'description'               => fake()->sentence(),
-            'category'                  => fake()->randomElement([
+            'name' => $name,
+            'slug' => Str::slug($name).'-'.Str::random(4),
+            'description' => fake()->sentence(),
+            'category' => fake()->randomElement([
                 RecurringTemplate::CATEGORY_OFFICE,
                 RecurringTemplate::CATEGORY_RESIDENTIAL,
                 RecurringTemplate::CATEGORY_RETAIL,
             ]),
-            'icon'                      => null,
-            'is_system'                 => false,
-            'owner_user_id'             => null,
-            'owner_organization_id'     => null,
+            'icon' => null,
+            'is_system' => false,
+            'owner_user_id' => null,
+            'owner_organization_id' => null,
             'default_service_catalog_id' => null,
-            'frequency'                 => RecurringTemplate::FREQ_WEEKLY,
-            'interval'                  => 1,
-            'days'                      => ['monday', 'thursday'],
-            'default_time'              => '09:00',
-            'default_duration_minutes'  => 120,
-            'payload'                   => null,
-            'usage_count'               => 0,
-            'is_active'                 => true,
-            'display_order'             => fake()->numberBetween(1, 100),
+            'frequency' => RecurringTemplate::FREQ_WEEKLY,
+            'interval' => 1,
+            'days' => ['monday', 'thursday'],
+            'default_time' => '09:00',
+            'default_duration_minutes' => 120,
+            'payload' => null,
+            'usage_count' => 0,
+            'is_active' => true,
+            'display_order' => fake()->numberBetween(1, 100),
         ];
     }
 

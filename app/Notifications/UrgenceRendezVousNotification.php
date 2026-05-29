@@ -11,12 +11,10 @@ use Illuminate\Notifications\Notification;
 
 class UrgenceRendezVousNotification extends Notification implements ShouldQueue
 {
-    use Queueable;
     use InteractsWithUserNotificationPreferences;
+    use Queueable;
 
-    public function __construct(public Booking $rdv)
-    {
-    }
+    public function __construct(public Booking $rdv) {}
 
     public function via($notifiable): array
     {
@@ -28,10 +26,10 @@ class UrgenceRendezVousNotification extends Notification implements ShouldQueue
         return (new MailMessage)
             ->subject('CleanUx · Intervention urgente en attente')
             ->line('Une demande urgente est toujours en attente de traitement.')
-            ->line('Client : ' . ($this->rdv->client->name ?? '—'))
-            ->line('Service : ' . $this->rdv->service_display_name)
-            ->line('Lieu : ' . $this->rdv->location_display)
-            ->line('Date : ' . $this->rdv->date . ' à ' . $this->rdv->heure)
+            ->line('Client : '.($this->rdv->client->name ?? '—'))
+            ->line('Service : '.$this->rdv->service_display_name)
+            ->line('Lieu : '.$this->rdv->location_display)
+            ->line('Date : '.$this->rdv->date.' à '.$this->rdv->heure)
             ->action('Voir le tableau de bord admin', url('/admin/dashboard'));
     }
 
@@ -41,7 +39,7 @@ class UrgenceRendezVousNotification extends Notification implements ShouldQueue
             'type' => 'urgent',
             'severity' => 'danger',
             'title' => 'Urgence en attente',
-            'message' => '🚨 Une demande urgente est toujours en attente pour ' . $this->rdv->service_display_name . '.',
+            'message' => '🚨 Une demande urgente est toujours en attente pour '.$this->rdv->service_display_name.'.',
             'rdv_id' => $this->rdv->id,
             'service_identifier' => $this->rdv->service_identifier_display,
             'service_label' => $this->rdv->service_display_name,

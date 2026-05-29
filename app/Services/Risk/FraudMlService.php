@@ -30,10 +30,10 @@ class FraudMlService
     /**
      * Score a booking for fraud risk using the ML model.
      *
-     * @param  User    $user     Actor creating or paying for the booking
-     * @param  Booking $booking  Booking being evaluated
-     * @return float|null        Score in [0.0, 1.0] where 1.0 = certain fraud.
-     *                           Null means model unavailable; fall back to rule engine.
+     * @param  User  $user  Actor creating or paying for the booking
+     * @param  Booking  $booking  Booking being evaluated
+     * @return float|null Score in [0.0, 1.0] where 1.0 = certain fraud.
+     *                    Null means model unavailable; fall back to rule engine.
      *
      * TODO: implement
      */

@@ -2,8 +2,8 @@
 
 namespace App\Services\Analytics;
 
-use App\Models\CustomerClaim;
 use App\Models\Booking;
+use App\Models\CustomerClaim;
 use App\Models\User;
 
 class ClientSegmentationService

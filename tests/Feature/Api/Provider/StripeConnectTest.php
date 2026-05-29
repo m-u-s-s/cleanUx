@@ -36,9 +36,9 @@ class StripeConnectTest extends TestCase
         $user = User::factory()->employe()->create($attributes);
 
         ProviderProfile::create([
-            'user_id'       => $user->id,
+            'user_id' => $user->id,
             'provider_type' => 'independent',
-            'status'        => 'active',
+            'status' => 'active',
         ]);
 
         return $user;
@@ -56,10 +56,10 @@ class StripeConnectTest extends TestCase
         $r = $this->getJson('/api/provider/stripe-connect/status');
 
         $r->assertOk()->assertJson([
-            'onboarded'       => false,
+            'onboarded' => false,
             'charges_enabled' => false,
             'payouts_enabled' => false,
-            'requirements'    => [],
+            'requirements' => [],
         ]);
     }
 
@@ -73,23 +73,23 @@ class StripeConnectTest extends TestCase
         Sanctum::actingAs($provider);
 
         // Build a fake Stripe Account object
-        $fakeAccount = new \stdClass();
+        $fakeAccount = new \stdClass;
         $fakeAccount->charges_enabled = true;
         $fakeAccount->payouts_enabled = true;
-        $fakeAccount->requirements    = (object) ['currently_due' => []];
-        $fakeAccount->capabilities    = null;
+        $fakeAccount->requirements = (object) ['currently_due' => []];
+        $fakeAccount->capabilities = null;
 
         $this->mock(StripeConnectService::class, function ($m) use ($fakeAccount) {
             $m->shouldReceive('retrieveAccount')
-              ->once()
-              ->with('acct_test_xxx')
-              ->andReturn($fakeAccount);
+                ->once()
+                ->with('acct_test_xxx')
+                ->andReturn($fakeAccount);
         });
 
         $r = $this->getJson('/api/provider/stripe-connect/status');
 
         $r->assertOk()->assertJson([
-            'onboarded'       => true,
+            'onboarded' => true,
             'charges_enabled' => true,
             'payouts_enabled' => true,
         ]);
@@ -113,21 +113,22 @@ class StripeConnectTest extends TestCase
         $provider = $this->makeProvider(['stripe_connect_account_id' => null]);
         Sanctum::actingAs($provider);
 
-        $fakeLink             = new \stdClass();
-        $fakeLink->url        = 'https://connect.stripe.com/express/onboarding/abc';
+        $fakeLink = new \stdClass;
+        $fakeLink->url = 'https://connect.stripe.com/express/onboarding/abc';
         $fakeLink->expires_at = time() + 3600;
 
-        $this->mock(StripeConnectService::class, function ($m) use ($fakeLink, $provider) {
+        $this->mock(StripeConnectService::class, function ($m) use ($fakeLink) {
             $m->shouldReceive('createExpressAccount')
-              ->once()
-              ->andReturnUsing(function (User $u) use ($provider) {
-                  // Simulate the service storing the account id on the user
-                  $u->update(['stripe_connect_account_id' => 'acct_test_new']);
-                  return 'acct_test_new';
-              });
+                ->once()
+                ->andReturnUsing(function (User $u) {
+                    // Simulate the service storing the account id on the user
+                    $u->update(['stripe_connect_account_id' => 'acct_test_new']);
+
+                    return 'acct_test_new';
+                });
             $m->shouldReceive('createAccountLink')
-              ->once()
-              ->andReturn($fakeLink);
+                ->once()
+                ->andReturn($fakeLink);
         });
 
         $r = $this->postJson('/api/provider/stripe-connect/onboard');
@@ -146,14 +147,14 @@ class StripeConnectTest extends TestCase
         $provider = $this->makeProvider(['stripe_connect_account_id' => 'acct_test_xyz']);
         Sanctum::actingAs($provider);
 
-        $fakeList           = new \stdClass();
-        $fakeList->data     = [];
+        $fakeList = new \stdClass;
+        $fakeList->data = [];
         $fakeList->has_more = false;
 
         $this->mock(StripeConnectService::class, function ($m) use ($fakeList) {
             $m->shouldReceive('listPayouts')
-              ->once()
-              ->andReturn($fakeList);
+                ->once()
+                ->andReturn($fakeList);
         });
 
         $r = $this->getJson('/api/provider/stripe-connect/payouts');

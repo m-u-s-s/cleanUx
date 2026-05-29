@@ -36,6 +36,7 @@ class CancellationPolicyTier extends Model
         if ($this->max_hours_before !== null && $hours >= (int) $this->max_hours_before) {
             return false;
         }
+
         return true;
     }
 }

@@ -39,6 +39,7 @@ class GenericReplayedBroadcast implements ShouldBroadcastNow
         if (str_starts_with($this->channelName, 'presence-')) {
             return [new PresenceChannel($name)];
         }
+
         return [new Channel($name)];
     }
 
@@ -59,6 +60,7 @@ class GenericReplayedBroadcast implements ShouldBroadcastNow
                 return substr($channel, strlen($prefix));
             }
         }
+
         return $channel;
     }
 }

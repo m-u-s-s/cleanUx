@@ -19,6 +19,7 @@ use Illuminate\Validation\ValidationException;
 
 /**
  * @group Fleet v2
+ *
  * @authenticated
  */
 class FleetV2Controller extends Controller
@@ -39,6 +40,7 @@ class FleetV2Controller extends Controller
             ->orderByDesc('assigned_at')
             ->limit((int) $request->integer('limit', 50))
             ->get();
+
         return response()->json(['data' => $rows]);
     }
 
@@ -62,6 +64,7 @@ class FleetV2Controller extends Controller
         } catch (ValidationException $e) {
             return response()->json(['ok' => false, 'errors' => $e->errors()], 422);
         }
+
         return response()->json(['ok' => true, 'assignment' => $row]);
     }
 
@@ -90,6 +93,7 @@ class FleetV2Controller extends Controller
             ->orderBy('plate')
             ->limit((int) $request->integer('limit', 100))
             ->get();
+
         return response()->json(['data' => $rows]);
     }
 
@@ -102,8 +106,8 @@ class FleetV2Controller extends Controller
             'brand' => ['nullable', 'string', 'max:64'],
             'model' => ['nullable', 'string', 'max:64'],
             'year' => ['nullable', 'integer', 'min:1900', 'max:2100'],
-            'vehicle_type' => ['required', 'string', 'in:' . implode(',', $allowedTypes)],
-            'fuel_type' => ['nullable', 'string', 'in:' . implode(',', $allowedFuels)],
+            'vehicle_type' => ['required', 'string', 'in:'.implode(',', $allowedTypes)],
+            'fuel_type' => ['nullable', 'string', 'in:'.implode(',', $allowedFuels)],
             'capacity_kg' => ['nullable', 'integer', 'min:0'],
             'capacity_volume_m3' => ['nullable', 'numeric', 'min:0'],
             'registered_country' => ['nullable', 'string', 'size:2'],
@@ -117,6 +121,7 @@ class FleetV2Controller extends Controller
             'code' => FleetVehicle::generateCode(),
             'status' => FleetVehicle::STATUS_AVAILABLE,
         ]));
+
         return response()->json(['ok' => true, 'vehicle' => $vehicle], 201);
     }
 
@@ -126,8 +131,8 @@ class FleetV2Controller extends Controller
         $allowedCategories = (array) config('fleet_v2.equipment_categories', []);
         $data = $request->validate([
             'name' => ['required', 'string', 'max:191'],
-            'equipment_type' => ['required', 'string', 'in:' . implode(',', $allowedTypes)],
-            'category' => ['nullable', 'string', 'in:' . implode(',', $allowedCategories)],
+            'equipment_type' => ['required', 'string', 'in:'.implode(',', $allowedTypes)],
+            'category' => ['nullable', 'string', 'in:'.implode(',', $allowedCategories)],
             'serial_number' => ['nullable', 'string', 'max:64'],
             'brand' => ['nullable', 'string', 'max:64'],
             'model' => ['nullable', 'string', 'max:64'],
@@ -140,6 +145,7 @@ class FleetV2Controller extends Controller
             'code' => FleetEquipment::generateCode(),
             'status' => FleetEquipment::STATUS_AVAILABLE,
         ]));
+
         return response()->json(['ok' => true, 'equipment' => $equipment], 201);
     }
 
@@ -151,6 +157,7 @@ class FleetV2Controller extends Controller
             ->orderBy('name')
             ->limit((int) $request->integer('limit', 100))
             ->get();
+
         return response()->json(['data' => $rows]);
     }
 
@@ -175,6 +182,7 @@ class FleetV2Controller extends Controller
         } catch (ValidationException $e) {
             return response()->json(['ok' => false, 'errors' => $e->errors()], 422);
         }
+
         return response()->json(['ok' => true, 'assignment' => $assignment], 201);
     }
 
@@ -199,6 +207,7 @@ class FleetV2Controller extends Controller
         } catch (ValidationException $e) {
             return response()->json(['ok' => false, 'errors' => $e->errors()], 422);
         }
+
         return response()->json(['ok' => true, 'assignment' => $assignment], 201);
     }
 
@@ -211,6 +220,7 @@ class FleetV2Controller extends Controller
             ->orderByDesc('assigned_at')
             ->limit((int) $request->integer('limit', 100))
             ->get();
+
         return response()->json(['data' => $rows]);
     }
 
@@ -242,6 +252,7 @@ class FleetV2Controller extends Controller
         } catch (ValidationException $e) {
             return response()->json(['ok' => false, 'errors' => $e->errors()], 422);
         }
+
         return response()->json(['ok' => true, 'log' => $row], 201);
     }
 
@@ -252,6 +263,7 @@ class FleetV2Controller extends Controller
             ->orderByDesc('performed_at')
             ->limit((int) $request->integer('limit', 100))
             ->get();
+
         return response()->json(['data' => $rows]);
     }
 
@@ -261,7 +273,7 @@ class FleetV2Controller extends Controller
         $data = $request->validate([
             'subject_type' => ['required', 'string', 'in:vehicle,equipment,provider'],
             'subject_id' => ['required', 'integer'],
-            'certification_type' => ['required', 'string', 'in:' . implode(',', $allowedTypes)],
+            'certification_type' => ['required', 'string', 'in:'.implode(',', $allowedTypes)],
             'reference' => ['nullable', 'string', 'max:191'],
             'issued_at' => ['nullable', 'date'],
             'expires_at' => ['nullable', 'date'],
@@ -272,6 +284,7 @@ class FleetV2Controller extends Controller
             'created_by_user_id' => $request->user()->id,
         ]));
         $this->scanner->scanAndUpdate();
+
         return response()->json(['ok' => true, 'certification' => $cert->fresh()], 201);
     }
 
@@ -283,12 +296,14 @@ class FleetV2Controller extends Controller
             ->orderBy('expires_at')
             ->limit((int) $request->integer('limit', 100))
             ->get();
+
         return response()->json(['data' => $rows]);
     }
 
     public function adminScanExpiring(): JsonResponse
     {
         $counts = $this->scanner->scanAndUpdate();
+
         return response()->json(['ok' => true, 'counts' => $counts]);
     }
 }

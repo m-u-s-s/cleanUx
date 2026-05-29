@@ -19,7 +19,9 @@ class KybCenter extends Component
     protected $paginationTheme = 'tailwind';
 
     public string $tab = 'entities';   // entities | documents | verifications | sanctions
+
     public string $filterStatus = '';
+
     public string $filterRiskLevel = '';
 
     public function runVerifications(int $entityId): void
@@ -50,7 +52,7 @@ class KybCenter extends Component
             app(BusinessOnboardingService::class)->reject($entity, $reason, Auth::user());
             $this->dispatch('toast', 'Entité rejetée.', 'success');
         } catch (\Throwable $e) {
-            $this->dispatch('toast', 'Erreur : ' . $e->getMessage(), 'error');
+            $this->dispatch('toast', 'Erreur : '.$e->getMessage(), 'error');
         }
     }
 

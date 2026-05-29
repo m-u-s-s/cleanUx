@@ -6,6 +6,7 @@ use App\Models\RecurringBookingSeries;
 use App\Models\RecurringTemplate;
 use App\Models\User;
 use Carbon\Carbon;
+use Carbon\CarbonInterface;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
@@ -42,22 +43,22 @@ class ApplyRecurringTemplateService
 
             $endsAt = isset($params['ends_at']) ? Carbon::parse($params['ends_at']) : null;
             if ($endsAt && $endsAt->lessThanOrEqualTo($startsAt)) {
-                throw new \DomainException("La date de fin doit être après la date de début.");
+                throw new \DomainException('La date de fin doit être après la date de début.');
             }
 
             $payload = $this->buildTemplatePayload($template, $params);
 
             $data = [
-                'customer_user_id'         => $user->id,
+                'customer_user_id' => $user->id,
                 'customer_organization_id' => $user->organization_account_id,
-                'organization_site_id'     => $params['organization_site_id'] ?? null,
-                'frequency'                => $template->frequency,
-                'interval'                 => $template->interval ?? 1,
-                'days'                     => $template->days,
-                'starts_at'                => $startsAt->toDateString(),
-                'ends_at'                  => $endsAt?->toDateString(),
-                'occurrence_count'         => $params['occurrence_count'] ?? null,
-                'status'                   => defined(RecurringBookingSeries::class . '::STATUS_ACTIVE')
+                'organization_site_id' => $params['organization_site_id'] ?? null,
+                'frequency' => $template->frequency,
+                'interval' => $template->interval ?? 1,
+                'days' => $template->days,
+                'starts_at' => $startsAt->toDateString(),
+                'ends_at' => $endsAt?->toDateString(),
+                'occurrence_count' => $params['occurrence_count'] ?? null,
+                'status' => defined(RecurringBookingSeries::class.'::STATUS_ACTIVE')
                     ? RecurringBookingSeries::STATUS_ACTIVE
                     : 'active',
             ];
@@ -72,25 +73,24 @@ class ApplyRecurringTemplateService
 
             $series = RecurringBookingSeries::create($data);
 
-
             $payload = [
-                'customer_user_id'         => $user->id,
+                'customer_user_id' => $user->id,
                 'customer_organization_id' => $user->organization_account_id,
-                'organization_site_id'     => $params['organization_site_id'] ?? null,
-                'frequency'                => $template->frequency,
-                'interval'                 => $template->interval ?? 1,
-                'days'                     => $template->days,
-                'starts_at'                => $startsAt->toDateString(),
-                'ends_at'                  => $endsAt?->toDateString(),
-                'occurrence_count'         => $params['occurrence_count'] ?? null,
-                'status'                   => RecurringBookingSeries::STATUS_ACTIVE,
+                'organization_site_id' => $params['organization_site_id'] ?? null,
+                'frequency' => $template->frequency,
+                'interval' => $template->interval ?? 1,
+                'days' => $template->days,
+                'starts_at' => $startsAt->toDateString(),
+                'ends_at' => $endsAt?->toDateString(),
+                'occurrence_count' => $params['occurrence_count'] ?? null,
+                'status' => RecurringBookingSeries::STATUS_ACTIVE,
             ];
 
             $templatePayload = $this->buildTemplatePayload($template, $params);
 
-            if (\Illuminate\Support\Facades\Schema::hasColumn('recurring_booking_series', 'template_payload')) {
+            if (Schema::hasColumn('recurring_booking_series', 'template_payload')) {
                 $payload['template_payload'] = $templatePayload;
-            } elseif (\Illuminate\Support\Facades\Schema::hasColumn('recurring_booking_series', 'metadata')) {
+            } elseif (Schema::hasColumn('recurring_booking_series', 'metadata')) {
                 $payload['metadata'] = [
                     'template_payload' => $templatePayload,
                 ];
@@ -108,10 +108,9 @@ class ApplyRecurringTemplateService
      * pour copier les paramètres du template (service, durée, heure, etc.)
      * sur chaque booking créé.
      */
-
     private function normalizeTemplateTime(mixed $time): string
     {
-        if ($time instanceof \Carbon\CarbonInterface) {
+        if ($time instanceof CarbonInterface) {
             return $time->format('H:i:s');
         }
 
@@ -119,7 +118,7 @@ class ApplyRecurringTemplateService
             $time = trim($time);
 
             if (preg_match('/^\d{2}:\d{2}$/', $time)) {
-                return $time . ':00';
+                return $time.':00';
             }
 
             if (preg_match('/^\d{2}:\d{2}:\d{2}$/', $time)) {
@@ -130,11 +129,10 @@ class ApplyRecurringTemplateService
         return '08:00:00';
     }
 
-
     protected function buildTemplatePayload(RecurringTemplate $template, array $params): array
     {
         $payload = [
-            'template_id'   => $template->id,
+            'template_id' => $template->id,
             'template_slug' => $template->slug,
             'template_name' => $template->name,
             'service_catalog_id' => $template->default_service_catalog_id,

@@ -24,17 +24,17 @@ class OnboardingStepFactory extends Factory
         ]);
 
         return [
-            'journey_id'       => OnboardingJourney::factory(),
-            'position'         => fake()->numberBetween(1, 10),
-            'code'             => Str::slug(fake()->unique()->words(3, true)),
-            'label'            => fake()->sentence(3),
-            'description'      => fake()->sentence(),
-            'step_type'        => $type,
-            'required'         => true,
-            'validator_class'  => null,
-            'depends_on'       => null,
-            'is_skippable'     => false,
-            'metadata'         => null,
+            'journey_id' => OnboardingJourney::factory(),
+            'position' => fake()->numberBetween(1, 10),
+            'code' => Str::slug(fake()->unique()->words(3, true)),
+            'label' => fake()->sentence(3),
+            'description' => fake()->sentence(),
+            'step_type' => $type,
+            'required' => true,
+            'validator_class' => null,
+            'depends_on' => null,
+            'is_skippable' => false,
+            'metadata' => null,
         ];
     }
 

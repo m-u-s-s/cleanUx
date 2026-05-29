@@ -5,9 +5,9 @@ namespace App\Services\Booking;
 use App\Models\Booking;
 use App\Models\User;
 use App\Services\Geo\GeoDistanceService;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
-use Illuminate\Support\Collection;
 
 class SmartDispatchService
 {
@@ -15,8 +15,6 @@ class SmartDispatchService
         protected EmployeeAvailabilityService $availabilityService,
         protected GeoDistanceService $geoDistanceService,
     ) {}
-
-
 
     protected function asapScore(User $employee, Booking $rdv): int
     {
@@ -94,7 +92,7 @@ class SmartDispatchService
             ->sortedEligibleEmployeesForZone((int) $rdv->service_zone_id);
 
         return $employees
-            ->filter(fn(User $employee) => $this->availabilityService->employeeIsAvailableForSlot(
+            ->filter(fn (User $employee) => $this->availabilityService->employeeIsAvailableForSlot(
                 $employee->id,
                 $rdv->date->format('Y-m-d'),
                 substr((string) $rdv->heure, 0, 5),
@@ -102,7 +100,7 @@ class SmartDispatchService
                 $duration,
                 $rdv->id
             ))
-            ->sortByDesc(fn(User $employee) => $this->score($employee, $rdv))
+            ->sortByDesc(fn (User $employee) => $this->score($employee, $rdv))
             ->first();
     }
 
@@ -117,7 +115,6 @@ class SmartDispatchService
         $score += $this->premiumScore($employee, $rdv);
         $score += $this->asapScore($employee, $rdv);
         $score += $this->distanceScore($employee, $rdv);
-
 
         return $score;
     }

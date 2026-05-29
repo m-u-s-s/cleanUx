@@ -14,13 +14,13 @@ class CurrencyFactory extends Factory
         static $codes = ['EUR', 'USD', 'GBP', 'CHF', 'NOK', 'SEK', 'DKK', 'PLN', 'CZK', 'HUF'];
 
         return [
-            'code'       => fake()->unique()->randomElement($codes),
-            'name'       => fake()->word(),
-            'symbol'     => fake()->randomElement(['EUR', '$', 'GBP']),
-            'decimals'   => 2,
-            'is_active'  => true,
+            'code' => fake()->unique()->randomElement($codes),
+            'name' => fake()->word(),
+            'symbol' => fake()->randomElement(['EUR', '$', 'GBP']),
+            'decimals' => 2,
+            'is_active' => true,
             'sort_order' => fake()->numberBetween(1, 100),
-            'metadata'   => null,
+            'metadata' => null,
         ];
     }
 

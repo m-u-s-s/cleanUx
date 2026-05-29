@@ -73,8 +73,8 @@ class SearchApiTest extends TestCase
     {
         $trade = Trade::create([
             'name' => 'Search test trade',
-            'slug' => 'search-test-' . uniqid(),
-            'code' => 'STT' . substr(uniqid(), -6),
+            'slug' => 'search-test-'.uniqid(),
+            'code' => 'STT'.substr(uniqid(), -6),
             'is_active' => true,
         ]);
         ServiceCatalog::factory()->create(['trade_id' => $trade->id, 'is_active' => true, 'name' => 'Active service']);

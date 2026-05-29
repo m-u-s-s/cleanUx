@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Services\Analytics\AnalyticsService;
+use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\RateLimiter;
@@ -23,9 +24,7 @@ use Illuminate\Support\Facades\RateLimiter;
  */
 class AnalyticsController extends Controller
 {
-    public function __construct(protected AnalyticsService $analytics)
-    {
-    }
+    public function __construct(protected AnalyticsService $analytics) {}
 
     public function track(Request $request): JsonResponse
     {
@@ -57,7 +56,7 @@ class AnalyticsController extends Controller
                 'url' => $data['url'] ?? null,
                 'referrer' => $data['referrer'] ?? null,
                 'platform' => $data['platform'] ?? null,
-                'occurred_at' => isset($data['occurred_at']) ? \Carbon\Carbon::parse($data['occurred_at']) : null,
+                'occurred_at' => isset($data['occurred_at']) ? Carbon::parse($data['occurred_at']) : null,
             ],
         );
 
@@ -76,6 +75,7 @@ class AnalyticsController extends Controller
     public function page(Request $request): JsonResponse
     {
         $request->merge(['event' => 'page.viewed']);
+
         return $this->track($request);
     }
 
@@ -103,14 +103,14 @@ class AnalyticsController extends Controller
         $perIp = (int) config('analytics.rate_limits.per_ip_per_minute', 240);
         $perUser = (int) config('analytics.rate_limits.per_user_per_minute', 300);
 
-        $ipKey = 'analytics:ip:' . sha1((string) $request->ip());
+        $ipKey = 'analytics:ip:'.sha1((string) $request->ip());
         if (RateLimiter::tooManyAttempts($ipKey, $perIp)) {
             return false;
         }
         RateLimiter::hit($ipKey, 60);
 
         if ($user = $request->user()) {
-            $userKey = 'analytics:user:' . $user->id;
+            $userKey = 'analytics:user:'.$user->id;
             if (RateLimiter::tooManyAttempts($userKey, $perUser)) {
                 return false;
             }

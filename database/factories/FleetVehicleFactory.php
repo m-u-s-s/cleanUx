@@ -13,7 +13,7 @@ class FleetVehicleFactory extends Factory
     public function definition(): array
     {
         return [
-            'code' => 'VEH-' . fake()->unique()->numerify('####'),
+            'code' => 'VEH-'.fake()->unique()->numerify('####'),
             'plate' => fake()->bothify('?-???-###'),
             'brand' => fake()->randomElement(['Renault', 'Peugeot', 'Citroën', 'Volkswagen', 'Mercedes']),
             'model' => fake()->word(),

@@ -14,10 +14,10 @@ class WebhookEndpointFactory extends Factory
     public function definition(): array
     {
         return [
-            'code' => 'whep_' . Str::random(16),
-            'name' => fake()->company() . ' Webhook',
+            'code' => 'whep_'.Str::random(16),
+            'name' => fake()->company().' Webhook',
             'owner_user_id' => User::factory(),
-            'url' => fake()->url() . '/webhooks',
+            'url' => fake()->url().'/webhooks',
             'secret' => Str::random(40),
             'headers' => ['Content-Type' => 'application/json'],
             'timeout_seconds' => 30,

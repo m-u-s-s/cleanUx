@@ -93,19 +93,19 @@ class BookingRescheduleService
             ? Carbon::parse($booking->scheduled_time)->format('H:i')
             : '08:00');
 
-        $target = Carbon::parse($newDate->toDateString() . ' ' . $time);
+        $target = Carbon::parse($newDate->toDateString().' '.$time);
 
         // Pas dans le passé
         if ($target->lessThan(now()->addMinutes(30))) {
             throw new \DomainException(
-                "La nouvelle date doit être au moins 30 minutes dans le futur."
+                'La nouvelle date doit être au moins 30 minutes dans le futur.'
             );
         }
 
         // Pas trop loin dans le futur (sécurité contre erreur de drag)
         if ($target->greaterThan(now()->addMonths(6))) {
             throw new \DomainException(
-                "La nouvelle date ne peut pas dépasser 6 mois dans le futur."
+                'La nouvelle date ne peut pas dépasser 6 mois dans le futur.'
             );
         }
     }
@@ -121,19 +121,19 @@ class BookingRescheduleService
     ): void {
         try {
             DB::table('booking_reschedule_history')->insert([
-                'booking_id'    => $booking->id,
-                'user_id'       => $user->id,
-                'old_date'      => $oldDate instanceof Carbon ? $oldDate->toDateString() : (string) $oldDate,
-                'old_time'      => $oldTime ? Carbon::parse($oldTime)->format('H:i:s') : null,
-                'new_date'      => $newDate->toDateString(),
-                'new_time'      => $newTime ? $newTime . ':00' : null,
-                'reason'        => $reason,
-                'created_at'    => now(),
-                'updated_at'    => now(),
+                'booking_id' => $booking->id,
+                'user_id' => $user->id,
+                'old_date' => $oldDate instanceof Carbon ? $oldDate->toDateString() : (string) $oldDate,
+                'old_time' => $oldTime ? Carbon::parse($oldTime)->format('H:i:s') : null,
+                'new_date' => $newDate->toDateString(),
+                'new_time' => $newTime ? $newTime.':00' : null,
+                'reason' => $reason,
+                'created_at' => now(),
+                'updated_at' => now(),
             ]);
         } catch (\Throwable $e) {
             // La table peut ne pas exister yet → log mais ne bloque pas
-            \Log::warning('booking_reschedule_history insert failed: ' . $e->getMessage());
+            \Log::warning('booking_reschedule_history insert failed: '.$e->getMessage());
         }
     }
 }

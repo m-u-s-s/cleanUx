@@ -4,8 +4,7 @@ namespace Tests\Feature\Analytics;
 
 use App\Models\Booking;
 use App\Models\OrganizationAccount;
-use App\Models\OrganizationSite;
-use App\Models\User;
+use App\Models\ServiceCatalog;
 use App\Services\Analytics\AnalyticsExporter;
 use App\Services\Analytics\AnalyticsKpiService;
 use App\Services\Analytics\DateRangeResolver;
@@ -22,14 +21,14 @@ class AnalyticsTest extends TestCase
     private function makeBooking(array $overrides = []): Booking
     {
         return Booking::create(array_merge([
-            'booking_reference' => 'CUX-' . strtoupper(Str::random(6)),
-            'scheduled_date'    => Carbon::today()->toDateString(),
-            'scheduled_time'    => '09:00:00',
-            'status'            => 'confirme',
-            'estimated_price'   => 100.00,
-            'currency'          => 'EUR',
-            'priority'          => 'normal',
-            'booking_mode'      => 'scheduled',
+            'booking_reference' => 'CUX-'.strtoupper(Str::random(6)),
+            'scheduled_date' => Carbon::today()->toDateString(),
+            'scheduled_time' => '09:00:00',
+            'status' => 'confirme',
+            'estimated_price' => 100.00,
+            'currency' => 'EUR',
+            'priority' => 'normal',
+            'booking_mode' => 'scheduled',
         ], $overrides));
     }
 
@@ -217,9 +216,9 @@ class AnalyticsTest extends TestCase
         $org = OrganizationAccount::factory()->create();
 
         // Service 1 : 1 booking
-        $service1 = \App\Models\ServiceCatalog::create(['name' => 'Service A', 'slug' => 'service-a']);
+        $service1 = ServiceCatalog::create(['name' => 'Service A', 'slug' => 'service-a']);
         // Service 2 : 3 bookings
-        $service2 = \App\Models\ServiceCatalog::create(['name' => 'Service B', 'slug' => 'service-b']);
+        $service2 = ServiceCatalog::create(['name' => 'Service B', 'slug' => 'service-b']);
 
         $this->makeBooking(['customer_organization_id' => $org->id, 'service_catalog_id' => $service1->id]);
         $this->makeBooking(['customer_organization_id' => $org->id, 'service_catalog_id' => $service2->id]);

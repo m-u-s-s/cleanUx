@@ -2,10 +2,10 @@
 
 namespace App\Services\Analytics;
 
+use App\Models\Booking;
 use App\Models\CustomerClaim;
 use App\Models\Feedback;
 use App\Models\Mission;
-use App\Models\Booking;
 use App\Support\Domain\BookingStatus;
 use App\Support\Domain\MissionStatus;
 

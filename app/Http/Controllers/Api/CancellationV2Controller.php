@@ -11,6 +11,7 @@ use Illuminate\Validation\ValidationException;
 
 /**
  * @group Cancellation v2
+ *
  * @authenticated
  *
  * Unified cancellation v2 controller — sert client / provider / admin via
@@ -19,9 +20,7 @@ use Illuminate\Validation\ValidationException;
  */
 class CancellationV2Controller extends Controller
 {
-    public function __construct(protected CancellationEngine $engine)
-    {
-    }
+    public function __construct(protected CancellationEngine $engine) {}
 
     public function quote(Request $request, int $booking, string $actorRole): JsonResponse
     {

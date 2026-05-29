@@ -49,7 +49,7 @@ class WakamInsuranceProvider implements InsuranceProviderInterface
             )
             : InsurancePurchaseResult::failed(
                 $response->json('error') ?? 'Wakam error',
-                'wakam_http_' . $response->status(),
+                'wakam_http_'.$response->status(),
                 $response->json() ?? [],
             );
     }
@@ -112,6 +112,7 @@ class WakamInsuranceProvider implements InsuranceProviderInterface
         if (! is_array($decoded)) {
             throw new \RuntimeException('Wakam webhook payload not JSON');
         }
+
         return $decoded;
     }
 

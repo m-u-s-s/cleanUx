@@ -33,7 +33,7 @@ class RefreshProviderMetricsCommand extends Command
                     $calculator->calculate($provider, $windowDays);
                     $count++;
                 } catch (\Throwable $e) {
-                    $this->error("Erreur pour user #{$provider->id}: " . $e->getMessage());
+                    $this->error("Erreur pour user #{$provider->id}: ".$e->getMessage());
                     report($e);
                 }
             }

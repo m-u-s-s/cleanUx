@@ -14,14 +14,14 @@ class GoogleCalendarEventLinkFactory extends Factory
     {
         return [
             'google_calendar_connection_id' => fn () => GoogleCalendarConnection::factory()->create()->id,
-            'rendez_vous_id'               => null,
-            'google_event_id'              => fake()->lexify('?????????????????????????'),
-            'google_calendar_id'           => 'primary',
-            'etag'                         => '"' . fake()->sha1() . '"',
-            'last_synced_at'               => now(),
-            'sync_status'                  => 'synced',
-            'last_error'                   => null,
-            'meta'                         => null,
+            'rendez_vous_id' => null,
+            'google_event_id' => fake()->lexify('?????????????????????????'),
+            'google_calendar_id' => 'primary',
+            'etag' => '"'.fake()->sha1().'"',
+            'last_synced_at' => now(),
+            'sync_status' => 'synced',
+            'last_error' => null,
+            'meta' => null,
         ];
     }
 
@@ -29,7 +29,7 @@ class GoogleCalendarEventLinkFactory extends Factory
     {
         return $this->state(fn () => [
             'sync_status' => 'failed',
-            'last_error'  => 'Event not found',
+            'last_error' => 'Event not found',
         ]);
     }
 }

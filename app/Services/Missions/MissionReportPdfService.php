@@ -4,7 +4,6 @@ namespace App\Services\Missions;
 
 use App\Models\Mission;
 use Barryvdh\DomPDF\Facade\Pdf;
-use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class MissionReportPdfService
 {

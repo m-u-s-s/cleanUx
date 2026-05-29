@@ -14,28 +14,28 @@ class MissionReinforcementRequestFactory extends Factory
     public function definition(): array
     {
         return [
-            'mission_id'             => fn () => Mission::factory()->create()->id,
-            'mission_batch_id'       => null,
-            'mission_batch_day_id'   => null,
+            'mission_id' => fn () => Mission::factory()->create()->id,
+            'mission_batch_id' => null,
+            'mission_batch_day_id' => null,
             'mission_task_segment_id' => null,
-            'requested_by_user_id'   => fn () => User::factory()->create()->id,
-            'field_team_id'          => null,
-            'service_partner_id'     => null,
-            'status'                 => 'pending',
-            'priority'               => 'normal',
-            'requested_members'      => fake()->numberBetween(1, 3),
-            'requested_minutes'      => fake()->numberBetween(30, 120),
-            'reason'                 => fake()->sentence(),
-            'resolution_notes'       => null,
-            'resolved_by_user_id'    => null,
-            'resolved_at'            => null,
+            'requested_by_user_id' => fn () => User::factory()->create()->id,
+            'field_team_id' => null,
+            'service_partner_id' => null,
+            'status' => 'pending',
+            'priority' => 'normal',
+            'requested_members' => fake()->numberBetween(1, 3),
+            'requested_minutes' => fake()->numberBetween(30, 120),
+            'reason' => fake()->sentence(),
+            'resolution_notes' => null,
+            'resolved_by_user_id' => null,
+            'resolved_at' => null,
         ];
     }
 
     public function resolved(): static
     {
         return $this->state(fn () => [
-            'status'      => 'resolved',
+            'status' => 'resolved',
             'resolved_at' => now(),
         ]);
     }

@@ -2,8 +2,6 @@
 
 namespace App\Services\I18n;
 
-use Illuminate\Support\Facades\Config;
-
 /**
  * Scanne les fichiers de langue et détecte les clés manquantes par locale.
  *
@@ -14,9 +12,7 @@ use Illuminate\Support\Facades\Config;
  */
 class TranslationScanner
 {
-    public function __construct(protected LocaleResolver $resolver)
-    {
-    }
+    public function __construct(protected LocaleResolver $resolver) {}
 
     /**
      * @return array<string, array{total:int, missing:array<int,string>, untranslated:array<int,string>}>
@@ -50,6 +46,7 @@ class TranslationScanner
             foreach ($unionKeys as $key) {
                 if (! array_key_exists($key, $entries)) {
                     $missing[] = $key;
+
                     continue;
                 }
                 if ($locale !== $fallback
@@ -79,11 +76,13 @@ class TranslationScanner
         $langPath = base_path("lang/{$locale}");
 
         if (is_dir($langPath)) {
-            foreach (glob($langPath . '/*.php') as $file) {
+            foreach (glob($langPath.'/*.php') as $file) {
                 $group = pathinfo($file, PATHINFO_FILENAME);
                 $values = require $file;
-                if (! is_array($values)) continue;
-                foreach ($this->flatten($values, $group . '.') as $k => $v) {
+                if (! is_array($values)) {
+                    continue;
+                }
+                foreach ($this->flatten($values, $group.'.') as $k => $v) {
                     $flat[$k] = $v;
                 }
             }
@@ -110,13 +109,14 @@ class TranslationScanner
     {
         $out = [];
         foreach ($array as $key => $value) {
-            $compoundKey = $prefix . $key;
+            $compoundKey = $prefix.$key;
             if (is_array($value)) {
-                $out = array_merge($out, $this->flatten($value, $compoundKey . '.'));
+                $out = array_merge($out, $this->flatten($value, $compoundKey.'.'));
             } else {
                 $out[$compoundKey] = is_scalar($value) ? (string) $value : '';
             }
         }
+
         return $out;
     }
 }

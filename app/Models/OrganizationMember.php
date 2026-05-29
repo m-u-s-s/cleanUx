@@ -21,10 +21,10 @@ class OrganizationMember extends Model
     ];
 
     protected $casts = [
-        'role'        => OrganizationRole::class,
+        'role' => OrganizationRole::class,
         'permissions' => 'array',
-        'invited_at'  => 'datetime',
-        'joined_at'   => 'datetime',
+        'invited_at' => 'datetime',
+        'joined_at' => 'datetime',
     ];
 
     // ──────────────────────────────────────────────────────
@@ -99,9 +99,9 @@ class OrganizationMember extends Model
      */
     public function grantPermission(string $permission): void
     {
-        $perms               = $this->permissions ?? [];
-        $perms[$permission]  = true;
-        $this->permissions   = $perms;
+        $perms = $this->permissions ?? [];
+        $perms[$permission] = true;
+        $this->permissions = $perms;
         $this->save();
 
         app(PermissionService::class)->invalidateCache($this->user_id, $this->organization_account_id);
@@ -109,9 +109,9 @@ class OrganizationMember extends Model
 
     public function revokePermission(string $permission): void
     {
-        $perms               = $this->permissions ?? [];
-        $perms[$permission]  = false;
-        $this->permissions   = $perms;
+        $perms = $this->permissions ?? [];
+        $perms[$permission] = false;
+        $this->permissions = $perms;
         $this->save();
 
         app(PermissionService::class)->invalidateCache($this->user_id, $this->organization_account_id);

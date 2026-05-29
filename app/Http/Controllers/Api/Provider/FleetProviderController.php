@@ -11,13 +11,12 @@ use Illuminate\Support\Facades\Log;
 
 /**
  * @group Provider — Fleet
+ *
  * @authenticated
  */
 class FleetProviderController extends Controller
 {
-    public function __construct(protected FleetService $fleetService)
-    {
-    }
+    public function __construct(protected FleetService $fleetService) {}
 
     public function myVehicles(Request $request): JsonResponse
     {
@@ -37,16 +36,16 @@ class FleetProviderController extends Controller
 
         $data = $request->validate([
             'condition' => 'required|in:ok,damaged,lost,needs_maintenance',
-            'notes'     => 'nullable|string|max:500',
+            'notes' => 'nullable|string|max:500',
         ]);
 
         $assignment = $this->fleetService->returnAssignment($assignment, $data['condition'], $data['notes'] ?? null);
 
         if (in_array($data['condition'], ['damaged', 'lost'], true)) {
-            Log::warning('Fleet alert: ' . $data['condition'] . ' reported', [
+            Log::warning('Fleet alert: '.$data['condition'].' reported', [
                 'assignment_id' => $assignment->id,
-                'provider_id'   => $user->id,
-                'vehicle_id'    => $assignment->fleet_vehicle_id,
+                'provider_id' => $user->id,
+                'vehicle_id' => $assignment->fleet_vehicle_id,
             ]);
         }
 

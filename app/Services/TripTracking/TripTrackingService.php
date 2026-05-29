@@ -5,9 +5,11 @@ namespace App\Services\TripTracking;
 use App\Events\Realtime\MissionLiveEta;
 use App\Events\Realtime\MissionLivePosition;
 use App\Models\Booking;
+use App\Models\Mission;
 use App\Models\TripTrackingPoint;
 use App\Models\TripTrackingSession;
 use App\Models\User;
+use App\Realtime\RealtimeBroadcastService;
 use App\Services\GeolocationV2\DistanceCalculator;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
@@ -30,8 +32,7 @@ class TripTrackingService
 {
     public function __construct(
         protected DistanceCalculator $distance,
-    ) {
-    }
+    ) {}
 
     /**
      * Démarre une session tracking pour un booking.
@@ -194,6 +195,7 @@ class TripTrackingService
             'status' => TripTrackingSession::STATUS_IN_MISSION,
             'in_mission_at' => now(),
         ]);
+
         return $session->fresh();
     }
 
@@ -214,6 +216,7 @@ class TripTrackingService
             'ended_at' => now(),
             'metadata' => $meta,
         ]);
+
         return $session->fresh();
     }
 
@@ -229,6 +232,7 @@ class TripTrackingService
             'ended_at' => now(),
             'metadata' => $meta,
         ]);
+
         return $session->fresh();
     }
 
@@ -263,7 +267,7 @@ class TripTrackingService
     protected function broadcastPing(TripTrackingSession $session, TripTrackingPoint $point): void
     {
         try {
-            if (! class_exists(\App\Realtime\RealtimeBroadcastService::class)) {
+            if (! class_exists(RealtimeBroadcastService::class)) {
                 return;
             }
             $booking = $session->booking;
@@ -277,7 +281,7 @@ class TripTrackingService
                 return;
             }
 
-            $realtime = app(\App\Realtime\RealtimeBroadcastService::class);
+            $realtime = app(RealtimeBroadcastService::class);
 
             $posEvent = new MissionLivePosition(
                 mission: $missionLike,
@@ -317,15 +321,17 @@ class TripTrackingService
     protected function makeMissionLikeForBroadcast(TripTrackingSession $session): mixed
     {
         try {
-            if (class_exists(\App\Models\Mission::class)) {
-                $mission = \App\Models\Mission::query()
+            if (class_exists(Mission::class)) {
+                $mission = Mission::query()
                     ->where('booking_id', $session->booking_id)
                     ->first();
                 if ($mission) {
                     return $mission;
                 }
             }
-        } catch (\Throwable) {}
+        } catch (\Throwable) {
+        }
+
         return $session->booking;
     }
 }

@@ -14,10 +14,11 @@ class GeolocationV2ServiceProvider extends ServiceProvider
     {
         $this->app->singleton(GeocodingProviderContract::class, function ($app) {
             $name = (string) config('geolocation_v2.provider', 'mock');
+
             return match ($name) {
-                'google' => new GoogleGeocodingProvider(),
-                'mapbox' => new MapboxGeocodingProvider(),
-                default => new MockGeocodingProvider(),
+                'google' => new GoogleGeocodingProvider,
+                'mapbox' => new MapboxGeocodingProvider,
+                default => new MockGeocodingProvider,
             };
         });
     }

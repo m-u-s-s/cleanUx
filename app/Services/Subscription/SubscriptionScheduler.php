@@ -2,8 +2,8 @@
 
 namespace App\Services\Subscription;
 
-use App\Models\ClientSubscription;
 use App\Models\Booking;
+use App\Models\ClientSubscription;
 use Carbon\Carbon;
 
 class SubscriptionScheduler
@@ -23,7 +23,9 @@ class SubscriptionScheduler
                 ->where('heure', $sub->heure)
                 ->exists();
 
-            if ($exists) continue;
+            if ($exists) {
+                continue;
+            }
 
             Booking::create([
                 'client_id' => $sub->client_id,

@@ -11,6 +11,7 @@ class BookingEstimatorService
     protected function resolveServiceIdentifier(array $context): ?string
     {
         $identifier = $context['service_identifier'] ?? null;
+
         return filled($identifier) ? (string) $identifier : null;
     }
 
@@ -39,7 +40,7 @@ class BookingEstimatorService
         $zonesMinutes = count((array) ($context['zones_specifiques'] ?? [])) * 10;
         $animauxMinutes = ! empty($context['presence_animaux']) ? 10 : 0;
 
-        return app(\App\Services\Booking\BookingIntelligenceService::class)
+        return app(BookingIntelligenceService::class)
             ->predictDuration(
                 $baseMinutes + $surfaceMinutes + $optionsMinutes + $zonesMinutes + $animauxMinutes,
                 $context
@@ -95,7 +96,7 @@ class BookingEstimatorService
         };
 
         return round($subtotal, 2);
-        $subtotal = app(\App\Services\Booking\BookingIntelligenceService::class)
+        $subtotal = app(BookingIntelligenceService::class)
             ->dynamicPrice($subtotal, $context);
     }
 }

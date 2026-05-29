@@ -4,9 +4,12 @@ namespace App\Models\Concerns;
 
 use App\Models\AvailabilityException;
 use App\Models\AvailabilitySlot;
+use App\Models\EmployeeZoneAssignment;
 use App\Models\FieldTeam;
 use App\Models\Mission;
 use App\Models\ProviderProfile;
+use App\Models\ServiceZone;
+use App\Models\Trade;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -32,7 +35,7 @@ trait HasProviderFeatures
 
     public function trades(): BelongsToMany
     {
-        return $this->belongsToMany(\App\Models\Trade::class, 'trade_user')
+        return $this->belongsToMany(Trade::class, 'trade_user')
             ->withPivot(['is_primary', 'proficiency', 'notes'])
             ->withTimestamps();
     }
@@ -40,7 +43,7 @@ trait HasProviderFeatures
     public function serviceZones(): BelongsToMany
     {
         return $this->belongsToMany(
-            \App\Models\ServiceZone::class,
+            ServiceZone::class,
             'employee_zone_assignments',
             'user_id',
             'service_zone_id'
@@ -56,24 +59,24 @@ trait HasProviderFeatures
 
     public function zoneAssignments(): HasMany
     {
-        return $this->hasMany(\App\Models\EmployeeZoneAssignment::class, 'user_id');
+        return $this->hasMany(EmployeeZoneAssignment::class, 'user_id');
     }
 
     public function fieldTeams(): BelongsToMany
     {
-        return $this->belongsToMany(\App\Models\FieldTeam::class, 'field_team_members')
+        return $this->belongsToMany(FieldTeam::class, 'field_team_members')
             ->withPivot(['role_on_team', 'is_team_lead', 'is_active', 'joined_at', 'left_at'])
             ->withTimestamps();
     }
 
     public function managedServiceZone(): BelongsTo
     {
-        return $this->belongsTo(\App\Models\ServiceZone::class, 'managed_service_zone_id');
+        return $this->belongsTo(ServiceZone::class, 'managed_service_zone_id');
     }
 
     public function primaryServiceZone(): BelongsTo
     {
-        return $this->belongsTo(\App\Models\ServiceZone::class, 'primary_service_zone_id');
+        return $this->belongsTo(ServiceZone::class, 'primary_service_zone_id');
     }
 
     public function activeServiceZones(): BelongsToMany
@@ -115,12 +118,12 @@ trait HasProviderFeatures
 
         if (Schema::hasColumn('field_teams', 'lead_user_id')) {
             return $query->where('lead_user_id', $this->id)
-                ->when(Schema::hasColumn('field_teams', 'is_active'), fn($q) => $q->where('is_active', true));
+                ->when(Schema::hasColumn('field_teams', 'is_active'), fn ($q) => $q->where('is_active', true));
         }
 
         if (Schema::hasColumn('field_teams', 'team_lead_user_id')) {
             return $query->where('team_lead_user_id', $this->id)
-                ->when(Schema::hasColumn('field_teams', 'is_active'), fn($q) => $q->where('is_active', true));
+                ->when(Schema::hasColumn('field_teams', 'is_active'), fn ($q) => $q->where('is_active', true));
         }
 
         if (
@@ -137,7 +140,7 @@ trait HasProviderFeatures
                             $q->whereIn('role', ['lead', 'leader', 'team_lead']);
                         }
                     });
-            })->when(Schema::hasColumn('field_teams', 'is_active'), fn($q) => $q->where('is_active', true));
+            })->when(Schema::hasColumn('field_teams', 'is_active'), fn ($q) => $q->where('is_active', true));
         }
 
         return $query->whereRaw('1 = 0');

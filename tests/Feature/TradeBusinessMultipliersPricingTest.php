@@ -23,14 +23,14 @@ class TradeBusinessMultipliersPricingTest extends TestCase
     protected function makeTrade(array $overrides = []): Trade
     {
         return Trade::create(array_merge([
-            'slug'                  => 'serrurerie',
-            'code'                  => 'LOCK',
-            'name'                  => 'Serrurerie',
-            'is_active'             => true,
-            'sort_order'            => 10,
-            'emergency_multiplier'  => 1.00,
-            'night_multiplier'      => 1.00,
-            'weekend_multiplier'    => 1.00,
+            'slug' => 'serrurerie',
+            'code' => 'LOCK',
+            'name' => 'Serrurerie',
+            'is_active' => true,
+            'sort_order' => 10,
+            'emergency_multiplier' => 1.00,
+            'night_multiplier' => 1.00,
+            'weekend_multiplier' => 1.00,
         ], $overrides));
     }
 
@@ -44,7 +44,7 @@ class TradeBusinessMultipliersPricingTest extends TestCase
 
         $engine = app(SurgePricingEngine::class);
         $result = $engine->calculate(100.0, $context['zone'], [
-            'trade_id'     => $trade->id,
+            'trade_id' => $trade->id,
             'booking_mode' => 'asap',
         ]);
 
@@ -101,7 +101,7 @@ class TradeBusinessMultipliersPricingTest extends TestCase
 
         $context = $this->createCoverageContext();
         $trade = $this->makeTrade([
-            'night_multiplier'   => 2.00,
+            'night_multiplier' => 2.00,
             'weekend_multiplier' => 1.50,
         ]);
 

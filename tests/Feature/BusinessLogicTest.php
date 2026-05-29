@@ -25,7 +25,7 @@ class BusinessLogicTest extends TestCase
 
     public function test_commission_calculates_15_percent_default(): void
     {
-        $service = new CommissionService();
+        $service = new CommissionService;
         $booking = Booking::factory()->create(['devis_estime' => 100]);
 
         $result = $service->calculateForBooking($booking);
@@ -39,7 +39,7 @@ class BusinessLogicTest extends TestCase
 
     public function test_commission_respects_minimum(): void
     {
-        $service = new CommissionService();
+        $service = new CommissionService;
         // €5 booking × 15% = €0.75 → below €2 minimum → clamp to €2
         $booking = Booking::factory()->create(['devis_estime' => 5]);
 
@@ -51,7 +51,7 @@ class BusinessLogicTest extends TestCase
 
     public function test_commission_fee_never_exceeds_total(): void
     {
-        $service = new CommissionService();
+        $service = new CommissionService;
         // €1 booking — minimum fee would exceed total, must be capped
         $booking = Booking::factory()->create(['devis_estime' => 1]);
 
@@ -63,7 +63,7 @@ class BusinessLogicTest extends TestCase
 
     public function test_commission_zero_booking_value(): void
     {
-        $service = new CommissionService();
+        $service = new CommissionService;
         $booking = Booking::factory()->create(['devis_estime' => 0]);
 
         $result = $service->calculateForBooking($booking);
@@ -76,7 +76,7 @@ class BusinessLogicTest extends TestCase
 
     public function test_vat_calculator_belgium(): void
     {
-        $calc   = new TaxCalculator();
+        $calc = new TaxCalculator;
         $result = $calc->calculateVat(100, 'BE');
 
         $this->assertEquals(0.21, $result['vat_rate']);
@@ -87,7 +87,7 @@ class BusinessLogicTest extends TestCase
 
     public function test_vat_calculator_france(): void
     {
-        $calc   = new TaxCalculator();
+        $calc = new TaxCalculator;
         $result = $calc->calculateVat(100, 'FR');
 
         $this->assertEquals(0.20, $result['vat_rate']);
@@ -97,7 +97,7 @@ class BusinessLogicTest extends TestCase
 
     public function test_vat_calculator_germany(): void
     {
-        $calc   = new TaxCalculator();
+        $calc = new TaxCalculator;
         $result = $calc->calculateVat(100, 'DE');
 
         $this->assertEquals(0.19, $result['vat_rate']);
@@ -106,7 +106,7 @@ class BusinessLogicTest extends TestCase
 
     public function test_vat_calculator_unknown_country_uses_fallback(): void
     {
-        $calc   = new TaxCalculator();
+        $calc = new TaxCalculator;
         $result = $calc->calculateVat(100, 'XX');
 
         $this->assertEquals(0.21, $result['vat_rate']); // fallback = BE
@@ -114,17 +114,17 @@ class BusinessLogicTest extends TestCase
 
     public function test_vat_extractor_roundtrips(): void
     {
-        $calc = new TaxCalculator();
+        $calc = new TaxCalculator;
 
         $calculated = $calc->calculateVat(100, 'BE');
-        $extracted  = $calc->extractVat($calculated['amount_incl_vat'], 'BE');
+        $extracted = $calc->extractVat($calculated['amount_incl_vat'], 'BE');
 
         $this->assertEquals(100.0, $extracted['amount_excl_vat']);
     }
 
     public function test_vat_supported_countries_list(): void
     {
-        $calc = new TaxCalculator();
+        $calc = new TaxCalculator;
 
         $this->assertContains('BE', $calc->supportedCountries());
         $this->assertContains('FR', $calc->supportedCountries());
@@ -135,8 +135,8 @@ class BusinessLogicTest extends TestCase
 
     public function test_matching_scorer_returns_sorted_providers(): void
     {
-        $scorer   = new MatchingScorer();
-        $booking  = Booking::factory()->create();
+        $scorer = new MatchingScorer;
+        $booking = Booking::factory()->create();
         $providers = User::factory()->count(3)->create(['role' => 'employe']);
 
         $results = $scorer->scoreProviders($booking, $providers);
@@ -153,12 +153,12 @@ class BusinessLogicTest extends TestCase
 
     public function test_matching_scorer_scores_have_expected_keys(): void
     {
-        $scorer  = new MatchingScorer();
+        $scorer = new MatchingScorer;
         $booking = Booking::factory()->create();
-        $user    = User::factory()->create(['role' => 'employe']);
+        $user = User::factory()->create(['role' => 'employe']);
 
         $results = $scorer->scoreProviders($booking, collect([$user]));
-        $scores  = $results->first()['scores'];
+        $scores = $results->first()['scores'];
 
         $this->assertArrayHasKey('distance', $scores);
         $this->assertArrayHasKey('rating', $scores);
@@ -169,7 +169,7 @@ class BusinessLogicTest extends TestCase
 
     public function test_matching_scorer_empty_collection(): void
     {
-        $scorer  = new MatchingScorer();
+        $scorer = new MatchingScorer;
         $booking = Booking::factory()->create();
 
         $results = $scorer->scoreProviders($booking, collect([]));
@@ -181,28 +181,28 @@ class BusinessLogicTest extends TestCase
 
     public function test_stripe_country_mapper_nl_has_ideal(): void
     {
-        $mapper = new StripeCountryMapper();
+        $mapper = new StripeCountryMapper;
 
         $this->assertContains('ideal_payments', $mapper->getConfig('NL')['capabilities']);
     }
 
     public function test_stripe_country_mapper_fr_no_ideal(): void
     {
-        $mapper = new StripeCountryMapper();
+        $mapper = new StripeCountryMapper;
 
         $this->assertNotContains('ideal_payments', $mapper->getConfig('FR')['capabilities']);
     }
 
     public function test_stripe_country_mapper_de_has_sepa(): void
     {
-        $mapper = new StripeCountryMapper();
+        $mapper = new StripeCountryMapper;
 
         $this->assertContains('sepa_debit_payments', $mapper->getConfig('DE')['capabilities']);
     }
 
     public function test_stripe_country_mapper_unsupported_falls_back_to_be(): void
     {
-        $mapper = new StripeCountryMapper();
+        $mapper = new StripeCountryMapper;
 
         $config = $mapper->getConfig('ZZ');
         $this->assertEquals('eur', $config['currency']);
@@ -211,8 +211,8 @@ class BusinessLogicTest extends TestCase
 
     public function test_stripe_country_mapper_capabilities_format(): void
     {
-        $mapper = new StripeCountryMapper();
-        $caps   = $mapper->getCapabilities('BE');
+        $mapper = new StripeCountryMapper;
+        $caps = $mapper->getCapabilities('BE');
 
         $this->assertArrayHasKey('card_payments', $caps);
         $this->assertEquals(['requested' => true], $caps['card_payments']);
@@ -220,7 +220,7 @@ class BusinessLogicTest extends TestCase
 
     public function test_stripe_country_mapper_supports_capability(): void
     {
-        $mapper = new StripeCountryMapper();
+        $mapper = new StripeCountryMapper;
 
         $this->assertTrue($mapper->supportsCapability('NL', 'ideal_payments'));
         $this->assertFalse($mapper->supportsCapability('FR', 'ideal_payments'));

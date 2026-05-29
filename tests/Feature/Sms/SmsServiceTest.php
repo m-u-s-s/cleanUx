@@ -7,6 +7,7 @@ use App\Models\User;
 use App\Services\Notifications\SmsService;
 use App\Services\Sms\Providers\SmsMockProvider;
 use App\Services\Sms\SmsProviderInterface;
+use App\Services\Sms\SmsSendRequest;
 use App\Services\Sms\SmsStatusUpdate;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Config;
@@ -88,9 +89,9 @@ class SmsServiceTest extends TestCase
     {
         // E.164 validation in SmsService blocks letters; the mock provider's
         // "fail" trigger is only reachable when calling the provider directly.
-        $provider = new SmsMockProvider();
+        $provider = new SmsMockProvider;
 
-        $result = $provider->send(new \App\Services\Sms\SmsSendRequest(
+        $result = $provider->send(new SmsSendRequest(
             toPhone: 'failtest',
             body: 'auto fail',
         ));

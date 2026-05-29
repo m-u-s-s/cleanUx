@@ -11,17 +11,17 @@ class AddressLookupFactory extends Factory
 
     public function definition(): array
     {
-        $query = fake()->city() . ', Belgique';
+        $query = fake()->city().', Belgique';
 
         return [
-            'provider'     => 'mock',
-            'query_hash'   => sha1($query . '|BE'),
-            'query'        => $query,
+            'provider' => 'mock',
+            'query_hash' => sha1($query.'|BE'),
+            'query' => $query,
             'country_code' => 'BE',
-            'results'      => [['label' => $query, 'lat' => 50.85, 'lng' => 4.35]],
+            'results' => [['label' => $query, 'lat' => 50.85, 'lng' => 4.35]],
             'result_count' => 1,
-            'queried_at'   => now(),
-            'expires_at'   => now()->addHours(24),
+            'queried_at' => now(),
+            'expires_at' => now()->addHours(24),
         ];
     }
 

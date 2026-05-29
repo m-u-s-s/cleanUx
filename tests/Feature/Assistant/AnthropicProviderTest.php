@@ -25,14 +25,14 @@ class AnthropicProviderTest extends TestCase
 
         Http::fake([
             'api.anthropic.com/*' => Http::response([
-                'id'      => 'msg_test',
-                'role'    => 'assistant',
-                'model'   => 'claude-sonnet-4-20250514',
+                'id' => 'msg_test',
+                'role' => 'assistant',
+                'model' => 'claude-sonnet-4-20250514',
                 'stop_reason' => 'end_turn',
                 'content' => [
                     ['type' => 'text', 'text' => 'Bonjour, je peux t\'aider.'],
                 ],
-                'usage'   => ['input_tokens' => 10, 'output_tokens' => 8],
+                'usage' => ['input_tokens' => 10, 'output_tokens' => 8],
             ], 200),
         ]);
 
@@ -56,9 +56,9 @@ class AnthropicProviderTest extends TestCase
                 'content' => [
                     ['type' => 'text', 'text' => 'Je vais consulter tes réservations.'],
                     [
-                        'type'  => 'tool_use',
-                        'id'    => 'toolu_abc',
-                        'name'  => 'list_my_bookings',
+                        'type' => 'tool_use',
+                        'id' => 'toolu_abc',
+                        'name' => 'list_my_bookings',
                         'input' => ['status' => 'pending', 'limit' => 5],
                     ],
                 ],
@@ -99,16 +99,16 @@ class AnthropicProviderTest extends TestCase
         Http::fake([
             'api.anthropic.com/*' => Http::response([
                 'stop_reason' => 'end_turn',
-                'content'     => [['type' => 'text', 'text' => 'ok']],
+                'content' => [['type' => 'text', 'text' => 'ok']],
             ], 200),
         ]);
 
         $provider = app(AnthropicProvider::class);
         $tools = [
             [
-                'name'         => 'list_x',
-                'description'  => 'lists',
-                'input_schema' => ['type' => 'object', 'properties' => new \stdClass(), 'required' => []],
+                'name' => 'list_x',
+                'description' => 'lists',
+                'input_schema' => ['type' => 'object', 'properties' => new \stdClass, 'required' => []],
             ],
         ];
 
@@ -116,6 +116,7 @@ class AnthropicProviderTest extends TestCase
 
         Http::assertSent(function ($req) {
             $body = $req->data();
+
             return ! empty($body['tools'])
                 && $body['tools'][0]['name'] === 'list_x';
         });

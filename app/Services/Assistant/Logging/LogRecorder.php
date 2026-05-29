@@ -28,24 +28,24 @@ class LogRecorder
         LlmResponse $response,
         int $latencyMs,
     ): AssistantApiLog {
-        $usage  = $response->usage;
-        $input  = (int) ($usage['input_tokens']  ?? 0);
+        $usage = $response->usage;
+        $input = (int) ($usage['input_tokens'] ?? 0);
         $output = (int) ($usage['output_tokens'] ?? 0);
 
         return AssistantApiLog::create([
-            'user_id'                   => $user?->id,
+            'user_id' => $user?->id,
             'assistant_conversation_id' => $conversation?->id,
-            'provider'                  => $provider,
-            'model'                     => $model,
-            'input_tokens'              => $input ?: null,
-            'output_tokens'             => $output ?: null,
-            'total_tokens'              => ($input + $output) ?: null,
-            'cost_usd'                  => $this->costCalculator->compute($model, $input, $output),
-            'latency_ms'                => $latencyMs,
-            'status'                    => AssistantApiLog::STATUS_SUCCESS,
-            'stop_reason'               => $response->stopReason,
-            'tool_use_count'            => count($response->toolUses),
-            'tools_used'                => array_map(fn ($t) => $t['name'] ?? '', $response->toolUses),
+            'provider' => $provider,
+            'model' => $model,
+            'input_tokens' => $input ?: null,
+            'output_tokens' => $output ?: null,
+            'total_tokens' => ($input + $output) ?: null,
+            'cost_usd' => $this->costCalculator->compute($model, $input, $output),
+            'latency_ms' => $latencyMs,
+            'status' => AssistantApiLog::STATUS_SUCCESS,
+            'stop_reason' => $response->stopReason,
+            'tool_use_count' => count($response->toolUses),
+            'tools_used' => array_map(fn ($t) => $t['name'] ?? '', $response->toolUses),
         ]);
     }
 
@@ -59,13 +59,13 @@ class LogRecorder
         bool $isTimeout = false,
     ): AssistantApiLog {
         return AssistantApiLog::create([
-            'user_id'                   => $user?->id,
+            'user_id' => $user?->id,
             'assistant_conversation_id' => $conversation?->id,
-            'provider'                  => $provider,
-            'model'                     => $model,
-            'latency_ms'                => $latencyMs,
-            'status'                    => $isTimeout ? AssistantApiLog::STATUS_TIMEOUT : AssistantApiLog::STATUS_ERROR,
-            'error_message'             => mb_substr($errorMessage, 0, 1000),
+            'provider' => $provider,
+            'model' => $model,
+            'latency_ms' => $latencyMs,
+            'status' => $isTimeout ? AssistantApiLog::STATUS_TIMEOUT : AssistantApiLog::STATUS_ERROR,
+            'error_message' => mb_substr($errorMessage, 0, 1000),
         ]);
     }
 }

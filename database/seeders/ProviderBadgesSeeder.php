@@ -31,7 +31,7 @@ class ProviderBadgesSeeder extends Seeder
 
             // Streak 5★
             ['code' => 'streak_10',    'name' => 'Streak parfait',   'description' => '10 missions consécutives 5★', 'icon' => '🔥', 'tier' => 'gold',     'criterion_type' => 'streak_5stars', 'threshold' => 10],
-            ['code' => 'streak_25',    'name' => 'Streak légendaire','description' => '25 missions consécutives 5★', 'icon' => '⚡', 'tier' => 'platinum', 'criterion_type' => 'streak_5stars', 'threshold' => 25],
+            ['code' => 'streak_25',    'name' => 'Streak légendaire', 'description' => '25 missions consécutives 5★', 'icon' => '⚡', 'tier' => 'platinum', 'criterion_type' => 'streak_5stars', 'threshold' => 25],
         ];
 
         foreach ($badges as $b) {

@@ -9,6 +9,7 @@ use Illuminate\Http\Request;
 
 /**
  * @group Provider — Performance
+ *
  * @authenticated
  */
 class ProviderPerformanceController extends Controller

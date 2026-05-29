@@ -8,9 +8,13 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class OnboardingStepCompletion extends Model
 {
     public const STATUS_PENDING = 'pending';
+
     public const STATUS_IN_PROGRESS = 'in_progress';
+
     public const STATUS_COMPLETED = 'completed';
+
     public const STATUS_SKIPPED = 'skipped';
+
     public const STATUS_FAILED = 'failed';
 
     protected $fillable = [

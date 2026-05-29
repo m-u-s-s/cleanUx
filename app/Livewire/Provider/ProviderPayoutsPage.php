@@ -24,18 +24,31 @@ class ProviderPayoutsPage extends Component
     use WithPagination;
 
     public ?string $status = null;
+
     public ?string $fromDate = null;
+
     public ?string $toDate = null;
 
     protected $queryString = [
-        'status'   => ['except' => null],
+        'status' => ['except' => null],
         'fromDate' => ['except' => null],
-        'toDate'   => ['except' => null],
+        'toDate' => ['except' => null],
     ];
 
-    public function updatingStatus(): void   { $this->resetPage(); }
-    public function updatingFromDate(): void { $this->resetPage(); }
-    public function updatingToDate(): void   { $this->resetPage(); }
+    public function updatingStatus(): void
+    {
+        $this->resetPage();
+    }
+
+    public function updatingFromDate(): void
+    {
+        $this->resetPage();
+    }
+
+    public function updatingToDate(): void
+    {
+        $this->resetPage();
+    }
 
     public function clearFilters(): void
     {
@@ -65,14 +78,14 @@ class ProviderPayoutsPage extends Component
 
         $thisMonthStart = now()->startOfMonth();
         $lastMonthStart = now()->subMonth()->startOfMonth();
-        $lastMonthEnd   = now()->subMonth()->endOfMonth();
+        $lastMonthEnd = now()->subMonth()->endOfMonth();
 
         return [
-            'this_month_paid'    => (float) (clone $base)->paid()->where('created_at', '>=', $thisMonthStart)->sum('amount'),
+            'this_month_paid' => (float) (clone $base)->paid()->where('created_at', '>=', $thisMonthStart)->sum('amount'),
             'this_month_pending' => (float) (clone $base)->pending()->where('created_at', '>=', $thisMonthStart)->sum('amount'),
-            'last_month_paid'    => (float) (clone $base)->paid()->whereBetween('created_at', [$lastMonthStart, $lastMonthEnd])->sum('amount'),
-            'all_time_paid'      => (float) (clone $base)->paid()->sum('amount'),
-            'all_time_pending'   => (float) (clone $base)->pending()->sum('amount'),
+            'last_month_paid' => (float) (clone $base)->paid()->whereBetween('created_at', [$lastMonthStart, $lastMonthEnd])->sum('amount'),
+            'all_time_paid' => (float) (clone $base)->paid()->sum('amount'),
+            'all_time_pending' => (float) (clone $base)->pending()->sum('amount'),
         ];
     }
 

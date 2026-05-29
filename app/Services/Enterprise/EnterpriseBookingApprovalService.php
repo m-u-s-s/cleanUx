@@ -2,8 +2,8 @@
 
 namespace App\Services\Enterprise;
 
-use App\Models\EnterpriseBookingApproval;
 use App\Models\Booking;
+use App\Models\EnterpriseBookingApproval;
 use App\Models\User;
 use App\Support\ActivityLogger;
 use App\Support\Domain\BookingStatus;

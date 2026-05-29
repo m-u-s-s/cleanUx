@@ -18,6 +18,7 @@ class ProcessDisputeSlaCommand extends Command
 
         if ($overdue->isEmpty()) {
             $this->info('Aucune dispute en retard.');
+
             return self::SUCCESS;
         }
 
@@ -38,7 +39,7 @@ class ProcessDisputeSlaCommand extends Command
                     $disputes->escalate($case, 'SLA dépassé');
                     $escalated++;
                 } catch (\Throwable $e) {
-                    $this->error("  ⚠ Erreur escalade #{$case->id}: " . $e->getMessage());
+                    $this->error("  ⚠ Erreur escalade #{$case->id}: ".$e->getMessage());
                 }
             }
         }

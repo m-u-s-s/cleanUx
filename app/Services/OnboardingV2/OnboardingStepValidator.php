@@ -8,7 +8,7 @@ use App\Models\User;
 interface OnboardingStepValidator
 {
     /**
-     * @param array<string,mixed> $payload  Payload submitted by the user (form fields, etc.)
+     * @param  array<string,mixed>  $payload  Payload submitted by the user (form fields, etc.)
      */
     public function validate(User $user, OnboardingStep $step, array $payload): OnboardingStepValidation;
 }

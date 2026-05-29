@@ -10,11 +10,17 @@ use Illuminate\Support\Str;
 class MultiTradeBundle extends Model
 {
     public const STATUS_DRAFT = 'draft';
+
     public const STATUS_QUOTING = 'quoting';
+
     public const STATUS_QUOTED = 'quoted';
+
     public const STATUS_ACCEPTED = 'accepted';
+
     public const STATUS_IN_PROGRESS = 'in_progress';
+
     public const STATUS_COMPLETED = 'completed';
+
     public const STATUS_CANCELLED = 'cancelled';
 
     protected $fillable = [
@@ -38,7 +44,7 @@ class MultiTradeBundle extends Model
 
     public static function generateCode(): string
     {
-        return 'bndl_' . Str::lower(Str::random(20));
+        return 'bndl_'.Str::lower(Str::random(20));
     }
 
     public function client(): BelongsTo

@@ -13,10 +13,15 @@ class Referral extends Model
     use HasFactory;
 
     public const STATUS_INVITED = 'invited';
+
     public const STATUS_SIGNED_UP = 'signed_up';
+
     public const STATUS_QUALIFIED = 'qualified';
+
     public const STATUS_REWARDED = 'rewarded';
+
     public const STATUS_EXPIRED = 'expired';
+
     public const STATUS_FRAUD = 'fraud_flagged';
 
     protected $fillable = [

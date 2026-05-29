@@ -47,20 +47,20 @@ class LlmClient
         // 1. Persister le message user
         AssistantMessage::create([
             'assistant_conversation_id' => $conversation->id,
-            'sender_type'               => AssistantMessage::SENDER_USER,
-            'content'                   => $userMessage,
+            'sender_type' => AssistantMessage::SENDER_USER,
+            'content' => $userMessage,
         ]);
 
         // 2. Construire le contexte (injecte les données live si le message déclenche des actions)
         $context = $this->contextBuilder->build($user, $userMessage);
-        $tools   = $this->toolRegistry->definitionsForUser($user);
+        $tools = $this->toolRegistry->definitionsForUser($user);
 
         // 3. Charger l'historique (max 20 derniers messages utiles)
         $messages = $this->buildApiMessages($conversation);
 
         // 4. Boucle agentique
         $pendingActionId = null;
-        $finalText       = '';
+        $finalText = '';
 
         for ($iteration = 0; $iteration < self::MAX_TOOL_ITERATIONS; $iteration++) {
             $startTime = microtime(true);
@@ -68,7 +68,7 @@ class LlmClient
             $response = $this->provider->chat($context['system'], $messages, $tools);
 
             $latencyMs = (int) ((microtime(true) - $startTime) * 1000);
-            $model     = config('services.anthropic.model');
+            $model = config('services.anthropic.model');
 
             if ($response->isError()) {
                 $this->logRecorder->recordError(
@@ -79,7 +79,7 @@ class LlmClient
                     $response->error ?? 'unknown',
                     $latencyMs,
                 );
-                $finalText = "Désolé, le service assistant rencontre un problème : " . ($response->error ?? 'erreur inconnue');
+                $finalText = 'Désolé, le service assistant rencontre un problème : '.($response->error ?? 'erreur inconnue');
                 break;
             }
 
@@ -94,16 +94,16 @@ class LlmClient
             $response = $this->provider->chat($context['system'], $messages, $tools);
 
             if ($response->isError()) {
-                $finalText = "Désolé, le service assistant rencontre un problème : " . ($response->error ?? 'erreur inconnue');
+                $finalText = 'Désolé, le service assistant rencontre un problème : '.($response->error ?? 'erreur inconnue');
                 break;
             }
 
             // Persister la réponse du LLM (avec ses tool_uses si présents)
             $assistantMsg = AssistantMessage::create([
                 'assistant_conversation_id' => $conversation->id,
-                'sender_type'               => AssistantMessage::SENDER_ASSISTANT,
-                'content'                   => $response->text,
-                'metadata'                  => $response->hasToolUses()
+                'sender_type' => AssistantMessage::SENDER_ASSISTANT,
+                'content' => $response->text,
+                'metadata' => $response->hasToolUses()
                     ? ['tool_uses' => $response->toolUses, 'usage' => $response->usage]
                     : ['usage' => $response->usage],
             ]);
@@ -130,28 +130,28 @@ class LlmClient
                 }
 
                 $toolResultBlocks[] = [
-                    'type'        => 'tool_result',
+                    'type' => 'tool_result',
                     'tool_use_id' => $toolUse['id'],
-                    'content'     => json_encode($result, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
-                    'is_error'    => empty($result['ok']) && isset($result['error']),
+                    'content' => json_encode($result, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
+                    'is_error' => empty($result['ok']) && isset($result['error']),
                 ];
 
                 // Persister le tool_result
                 AssistantMessage::create([
                     'assistant_conversation_id' => $conversation->id,
-                    'sender_type'               => AssistantMessage::SENDER_TOOL_RESULT,
-                    'content'                   => json_encode($result, JSON_UNESCAPED_UNICODE),
-                    'metadata'                  => [
+                    'sender_type' => AssistantMessage::SENDER_TOOL_RESULT,
+                    'content' => json_encode($result, JSON_UNESCAPED_UNICODE),
+                    'metadata' => [
                         'tool_use_id' => $toolUse['id'],
-                        'tool_name'   => $toolUse['name'],
-                        'is_error'    => empty($result['ok']) && isset($result['error']),
+                        'tool_name' => $toolUse['name'],
+                        'is_error' => empty($result['ok']) && isset($result['error']),
                     ],
                 ]);
             }
 
             // Ajouter les tool_results comme un seul message user à l'historique
             $messages[] = [
-                'role'    => 'user',
+                'role' => 'user',
                 'content' => $toolResultBlocks,
             ];
 
@@ -163,9 +163,9 @@ class LlmClient
         }
 
         return [
-            'text'                  => $finalText,
-            'has_pending_action'    => $pendingActionId !== null,
-            'pending_action_id'     => $pendingActionId,
+            'text' => $finalText,
+            'has_pending_action' => $pendingActionId !== null,
+            'pending_action_id' => $pendingActionId,
         ];
     }
 
@@ -190,8 +190,8 @@ class LlmClient
             ->values();
 
         return $rows
-            ->map(fn(AssistantMessage $m) => $m->toApiPayload())
-            ->filter(fn($p) => ! empty($p))
+            ->map(fn (AssistantMessage $m) => $m->toApiPayload())
+            ->filter(fn ($p) => ! empty($p))
             ->values()
             ->all();
     }

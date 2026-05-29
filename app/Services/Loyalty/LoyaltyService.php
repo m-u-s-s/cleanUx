@@ -3,9 +3,10 @@
 namespace App\Services\Loyalty;
 
 use App\Events\Loyalty\LoyaltyPointsAwarded;
-use App\Events\Loyalty\LoyaltyTierUpgraded;
 use App\Events\Loyalty\LoyaltyTierDowngraded;
+use App\Events\Loyalty\LoyaltyTierUpgraded;
 use App\Models\LoyaltyAccount;
+use App\Models\LoyaltyTier;
 use App\Models\LoyaltyTransaction;
 use App\Models\User;
 use App\Notifications\Loyalty\LoyaltyTierChangedNotification;
@@ -16,9 +17,7 @@ use Illuminate\Support\Facades\DB;
 
 class LoyaltyService
 {
-    public function __construct(protected LoyaltyTierEvaluator $evaluator)
-    {
-    }
+    public function __construct(protected LoyaltyTierEvaluator $evaluator) {}
 
     public function accountFor(User $user): LoyaltyAccount
     {
@@ -51,9 +50,9 @@ class LoyaltyService
     /**
      * Awarde des points à un utilisateur, idempotent via `idempotency_key`.
      *
-     * @param  string  $type        Une des constantes LoyaltyTransaction::TYPE_*
-     * @param  int     $points      Nombre de points (positif)
-     * @param  Model|null $source    Modèle source pour traçabilité
+     * @param  string  $type  Une des constantes LoyaltyTransaction::TYPE_*
+     * @param  int  $points  Nombre de points (positif)
+     * @param  Model|null  $source  Modèle source pour traçabilité
      * @param  string  $idempotencyKey  Clé unique pour éviter doubles award
      */
     public function award(
@@ -150,7 +149,7 @@ class LoyaltyService
                 'balance_after' => $direction === LoyaltyTransaction::DIRECTION_CREDIT
                     ? $account->lifetime_points + $abs
                     : max(0, $account->lifetime_points - $abs),
-                'idempotency_key' => 'admin_adjust:' . uniqid('', true),
+                'idempotency_key' => 'admin_adjust:'.uniqid('', true),
                 'reason' => $reason,
                 'actor_user_id' => $admin->id,
                 'occurred_at' => now(),
@@ -188,7 +187,7 @@ class LoyaltyService
         }
 
         $previousTier = $previousTierId
-            ? \App\Models\LoyaltyTier::find($previousTierId)
+            ? LoyaltyTier::find($previousTierId)
             : null;
 
         $isUpgrade = $previousTier === null
@@ -244,14 +243,15 @@ class LoyaltyService
             LoyaltyTransaction::TYPE_EARN_BOOKING,
             $points,
             $booking,
-            'booking_completed:' . $bookingId,
+            'booking_completed:'.$bookingId,
             sprintf('Mission %s — %.2f €', $booking->booking_reference ?? "#{$bookingId}", $amount),
         );
     }
 
     protected function buildIdempotencyKey(int $userId, string $type, ?Model $source): string
     {
-        $sourceKey = $source ? get_class($source) . ':' . $source->getKey() : 'none';
+        $sourceKey = $source ? get_class($source).':'.$source->getKey() : 'none';
+
         return sprintf('%s:%d:%s', $type, $userId, $sourceKey);
     }
 }

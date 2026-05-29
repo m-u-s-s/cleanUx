@@ -70,7 +70,7 @@ class TripTrackingSessionObserver
                     'booking_id' => $session->booking_id,
                 ],
                 category: PushNotification::CATEGORY_TRANSACTIONAL,
-                idempotencyKey: 'tracking_enroute_' . $session->id,
+                idempotencyKey: 'tracking_enroute_'.$session->id,
                 source: $session,
             );
         } catch (\Throwable $e) {
@@ -96,7 +96,7 @@ class TripTrackingSessionObserver
                     'booking_id' => $session->booking_id,
                 ],
                 category: PushNotification::CATEGORY_TRANSACTIONAL,
-                idempotencyKey: 'tracking_arrived_' . $session->id,
+                idempotencyKey: 'tracking_arrived_'.$session->id,
                 source: $session,
             );
         } catch (\Throwable $e) {
@@ -122,7 +122,7 @@ class TripTrackingSessionObserver
                     'booking_id' => $session->booking_id,
                 ],
                 category: PushNotification::CATEGORY_TRANSACTIONAL,
-                idempotencyKey: 'tracking_in_mission_' . $session->id,
+                idempotencyKey: 'tracking_in_mission_'.$session->id,
                 source: $session,
             );
         } catch (\Throwable $e) {
@@ -147,7 +147,7 @@ class TripTrackingSessionObserver
                 'points_count' => (int) $session->points_count,
                 'current_eta_seconds' => $session->current_eta_seconds,
             ],
-            idempotencyKey: $eventCode . '_' . $session->id,
+            idempotencyKey: $eventCode.'_'.$session->id,
             sourceType: TripTrackingSession::class,
             sourceId: $session->id,
         );

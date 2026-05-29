@@ -11,7 +11,5 @@ class DisputeEscalated
     use Dispatchable;
     use SerializesModels;
 
-    public function __construct(public ComplaintCase $case, public int $newLevel)
-    {
-    }
+    public function __construct(public ComplaintCase $case, public int $newLevel) {}
 }

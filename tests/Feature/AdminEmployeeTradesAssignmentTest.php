@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Livewire\Admin\GestionUtilisateurs;
 use App\Models\Trade;
 use App\Models\User;
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
 use Tests\TestCase;
@@ -16,16 +17,16 @@ class AdminEmployeeTradesAssignmentTest extends TestCase
     protected function createAdmin(): User
     {
         return User::factory()->admin()->create([
-            'permissions'  => ['manage-services', 'perform-critical-admin-actions'],
+            'permissions' => ['manage-services', 'perform-critical-admin-actions'],
             'access_scope' => User::ACCESS_SCOPE_ALL,
-            'is_active'    => true,
+            'is_active' => true,
         ]);
     }
 
     protected function makeEmployee(): User
     {
         return User::factory()->create([
-            'role'      => User::ROLE_EMPLOYE,
+            'role' => User::ROLE_EMPLOYE,
             'is_active' => true,
         ]);
     }
@@ -74,13 +75,13 @@ class AdminEmployeeTradesAssignmentTest extends TestCase
         $this->assertCount(2, $employee->trades);
 
         $this->assertDatabaseHas('trade_user', [
-            'user_id'  => $employee->id,
+            'user_id' => $employee->id,
             'trade_id' => $peinture->id,
             'is_primary' => false,
             'proficiency' => 'expert',
         ]);
         $this->assertDatabaseHas('trade_user', [
-            'user_id'  => $employee->id,
+            'user_id' => $employee->id,
             'trade_id' => $serrurerie->id,
             'is_primary' => true,
         ]);
@@ -142,7 +143,7 @@ class AdminEmployeeTradesAssignmentTest extends TestCase
             ->assertHasErrors(["employeeTradesSelection.$trade->id.proficiency"]);
 
         $this->assertDatabaseMissing('trade_user', [
-            'user_id'  => $employee->id,
+            'user_id' => $employee->id,
             'trade_id' => $trade->id,
         ]);
     }
@@ -162,7 +163,7 @@ class AdminEmployeeTradesAssignmentTest extends TestCase
                 ->call('openEmployeeTrades', $employee->id);
         } catch (\Throwable $e) {
             $this->assertTrue(
-                $e instanceof \Illuminate\Auth\Access\AuthorizationException
+                $e instanceof AuthorizationException
                 || str_contains(strtolower($e->getMessage()), 'unauthorized')
                 || str_contains(strtolower($e->getMessage()), 'forbidden'),
                 'Non-admin doit être bloqué par autorisation.'
@@ -170,7 +171,7 @@ class AdminEmployeeTradesAssignmentTest extends TestCase
         }
 
         $this->assertDatabaseMissing('trade_user', [
-            'user_id'  => $employee->id,
+            'user_id' => $employee->id,
             'trade_id' => $trade->id,
         ]);
     }

@@ -5,11 +5,9 @@ namespace App\Services\Client\Exports;
 use App\Models\Booking;
 use App\Models\User;
 use Carbon\Carbon;
-use Illuminate\Http\Response;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Style\Alignment;
-use PhpOffice\PhpSpreadsheet\Style\Border;
 use PhpOffice\PhpSpreadsheet\Style\Fill;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
@@ -37,7 +35,7 @@ class ClientBookingExcelExporter
             ->limit(10000)
             ->get();
 
-        $spreadsheet = new Spreadsheet();
+        $spreadsheet = new Spreadsheet;
 
         // Onglet 1 : Synthèse
         $this->buildSummarySheet($spreadsheet, $bookings, $filters);
@@ -61,9 +59,9 @@ class ClientBookingExcelExporter
             $writer = IOFactory::createWriter($spreadsheet, 'Xlsx');
             $writer->save('php://output');
         }, 200, [
-            'Content-Type'        => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
             'Content-Disposition' => "attachment; filename=\"{$filename}\"",
-            'Cache-Control'       => 'no-cache, must-revalidate',
+            'Cache-Control' => 'no-cache, must-revalidate',
         ]);
     }
 
@@ -83,11 +81,11 @@ class ClientBookingExcelExporter
 
         // Période
         $periodLabel = $this->describePeriod($filters);
-        $sheet->setCellValue('A2', 'Période : ' . $periodLabel);
+        $sheet->setCellValue('A2', 'Période : '.$periodLabel);
         $sheet->mergeCells('A2:D2');
         $sheet->getStyle('A2')->getFont()->setItalic(true)->getColor()->setRGB('64748B');
 
-        $sheet->setCellValue('A3', 'Généré le : ' . now()->format('d/m/Y à H:i'));
+        $sheet->setCellValue('A3', 'Généré le : '.now()->format('d/m/Y à H:i'));
         $sheet->mergeCells('A3:D3');
         $sheet->getStyle('A3')->getFont()->setItalic(true)->getColor()->setRGB('64748B');
 
@@ -104,9 +102,9 @@ class ClientBookingExcelExporter
             ['En attente',         $bookings->whereIn('status', ['en_attente', 'pending'])->count()],
             ['Confirmés',          $bookings->whereIn('status', ['confirme', 'confirmed'])->count()],
             ['Annulés',            $bookings->whereIn('status', ['annule', 'cancelled', 'refuse'])->count()],
-            ['CA estimé total',    number_format((float) $bookings->whereNotIn('status', ['annule', 'cancelled'])->sum('estimated_price'), 2, ',', ' ') . ' €'],
-            ['CA total annulé',    number_format((float) $bookings->whereIn('status', ['annule', 'cancelled'])->sum('estimated_price'), 2, ',', ' ') . ' €'],
-            ['Surface moyenne',    $bookings->avg('surface_m2') ? round($bookings->avg('surface_m2')) . ' m²' : '—'],
+            ['CA estimé total',    number_format((float) $bookings->whereNotIn('status', ['annule', 'cancelled'])->sum('estimated_price'), 2, ',', ' ').' €'],
+            ['CA total annulé',    number_format((float) $bookings->whereIn('status', ['annule', 'cancelled'])->sum('estimated_price'), 2, ',', ' ').' €'],
+            ['Surface moyenne',    $bookings->avg('surface_m2') ? round($bookings->avg('surface_m2')).' m²' : '—'],
         ];
 
         foreach ($stats as $stat) {
@@ -129,7 +127,7 @@ class ClientBookingExcelExporter
         // Headers row
         $col = 'A';
         foreach ($headers as $h) {
-            $sheet->setCellValue($col . '1', $h);
+            $sheet->setCellValue($col.'1', $h);
             $col++;
         }
         $this->styleHeaderRow($sheet, 1);
@@ -165,11 +163,11 @@ class ClientBookingExcelExporter
 
         // Format colonne prix en monétaire
         if ($row > 2) {
-            $sheet->getStyle("J2:J" . ($row - 1))->getNumberFormat()->setFormatCode('#,##0.00 €');
+            $sheet->getStyle('J2:J'.($row - 1))->getNumberFormat()->setFormatCode('#,##0.00 €');
 
             // Total ligne
             $sheet->setCellValue("I{$row}", 'TOTAL');
-            $sheet->setCellValue("J{$row}", '=SUM(J2:J' . ($row - 1) . ')');
+            $sheet->setCellValue("J{$row}", '=SUM(J2:J'.($row - 1).')');
             $sheet->getStyle("I{$row}:J{$row}")->getFont()->setBold(true);
             $sheet->getStyle("J{$row}")->getNumberFormat()->setFormatCode('#,##0.00 €');
         }
@@ -185,7 +183,7 @@ class ClientBookingExcelExporter
         $headers = ['Site', 'Nb RDV', 'Terminés', 'Annulés', 'CA estimé'];
         $col = 'A';
         foreach ($headers as $h) {
-            $sheet->setCellValue($col . '1', $h);
+            $sheet->setCellValue($col.'1', $h);
             $col++;
         }
         $this->styleHeaderRow($sheet, 1);
@@ -202,7 +200,7 @@ class ClientBookingExcelExporter
         }
 
         if ($row > 2) {
-            $sheet->getStyle("E2:E" . ($row - 1))->getNumberFormat()->setFormatCode('#,##0.00 €');
+            $sheet->getStyle('E2:E'.($row - 1))->getNumberFormat()->setFormatCode('#,##0.00 €');
         }
 
         $this->autoSizeColumns($sheet, count($headers));
@@ -216,7 +214,7 @@ class ClientBookingExcelExporter
         $headers = ['Mois', 'Nb RDV', 'Terminés', 'Annulés', 'CA estimé'];
         $col = 'A';
         foreach ($headers as $h) {
-            $sheet->setCellValue($col . '1', $h);
+            $sheet->setCellValue($col.'1', $h);
             $col++;
         }
         $this->styleHeaderRow($sheet, 1);
@@ -224,11 +222,12 @@ class ClientBookingExcelExporter
         $row = 2;
         $byMonth = $bookings->groupBy(function ($b) {
             $date = $b->scheduled_date instanceof Carbon ? $b->scheduled_date : Carbon::parse((string) $b->scheduled_date);
+
             return $date->format('Y-m');
         })->sortKeys();
 
         foreach ($byMonth as $month => $monthBookings) {
-            $monthLabel = Carbon::parse($month . '-01')->locale('fr')->isoFormat('MMMM YYYY');
+            $monthLabel = Carbon::parse($month.'-01')->locale('fr')->isoFormat('MMMM YYYY');
             $sheet->setCellValue("A{$row}", $monthLabel);
             $sheet->setCellValue("B{$row}", $monthBookings->count());
             $sheet->setCellValue("C{$row}", $monthBookings->whereIn('status', ['termine', 'completed'])->count());
@@ -238,7 +237,7 @@ class ClientBookingExcelExporter
         }
 
         if ($row > 2) {
-            $sheet->getStyle("E2:E" . ($row - 1))->getNumberFormat()->setFormatCode('#,##0.00 €');
+            $sheet->getStyle('E2:E'.($row - 1))->getNumberFormat()->setFormatCode('#,##0.00 €');
         }
 
         $this->autoSizeColumns($sheet, count($headers));
@@ -268,13 +267,13 @@ class ClientBookingExcelExporter
     protected function statusColor(string $status): string
     {
         return match ($status) {
-            'en_attente', 'pending'                  => 'F59E0B',
-            'confirme', 'confirmed'                  => '3B82F6',
-            'en_route', 'on_route'                   => '8B5CF6',
-            'sur_place', 'on_site', 'in_progress'    => '06B6D4',
-            'termine', 'completed', 'done'           => '10B981',
-            'annule', 'cancelled', 'refuse'          => 'EF4444',
-            default                                  => '64748B',
+            'en_attente', 'pending' => 'F59E0B',
+            'confirme', 'confirmed' => '3B82F6',
+            'en_route', 'on_route' => '8B5CF6',
+            'sur_place', 'on_site', 'in_progress' => '06B6D4',
+            'termine', 'completed', 'done' => '10B981',
+            'annule', 'cancelled', 'refuse' => 'EF4444',
+            default => '64748B',
         };
     }
 
@@ -286,12 +285,12 @@ class ClientBookingExcelExporter
         if ($user->organization_account_id) {
             $query->where(function ($q) use ($user) {
                 $q->where('customer_organization_id', $user->organization_account_id)
-                  ->orWhere('customer_user_id', $user->id);
+                    ->orWhere('customer_user_id', $user->id);
             });
         } else {
             $query->where(function ($q) use ($user) {
                 $q->where('customer_user_id', $user->id)
-                  ->orWhere('client_id', $user->id);
+                    ->orWhere('client_id', $user->id);
             });
         }
 
@@ -314,11 +313,18 @@ class ClientBookingExcelExporter
     protected function describePeriod(array $filters): string
     {
         $from = ! empty($filters['from']) ? Carbon::parse($filters['from'])->format('d/m/Y') : null;
-        $to   = ! empty($filters['to'])   ? Carbon::parse($filters['to'])->format('d/m/Y')   : null;
+        $to = ! empty($filters['to']) ? Carbon::parse($filters['to'])->format('d/m/Y') : null;
 
-        if ($from && $to)  return "Du {$from} au {$to}";
-        if ($from)         return "À partir du {$from}";
-        if ($to)           return "Jusqu'au {$to}";
+        if ($from && $to) {
+            return "Du {$from} au {$to}";
+        }
+        if ($from) {
+            return "À partir du {$from}";
+        }
+        if ($to) {
+            return "Jusqu'au {$to}";
+        }
+
         return 'Toutes périodes';
     }
 }

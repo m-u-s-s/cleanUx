@@ -60,7 +60,6 @@ class ServicePartner extends Model
         return $this->hasMany(MissionPartnerAssignment::class);
     }
 
-
     public function organizationContracts(): HasMany
     {
         return $this->hasMany(OrganizationContract::class, 'default_service_partner_id');
@@ -75,5 +74,4 @@ class ServicePartner extends Model
     {
         return $this->hasMany(MissionBatch::class, 'assigned_service_partner_id');
     }
-
 }

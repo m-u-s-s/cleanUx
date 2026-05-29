@@ -2,9 +2,8 @@
 
 namespace App\Support\Livewire\Concerns;
 
-
-use App\Models\LimiteJournaliere;
 use App\Models\Booking;
+use App\Models\LimiteJournaliere;
 use App\Notifications\MissionReplanifieeNotification;
 use Carbon\Carbon;
 
@@ -106,7 +105,7 @@ trait HandlesAdminDashboardPlanning
         $ancienEmployeId = $rdv->employe_id;
         $ancienStatus = $rdv->status;
 
-        $newStart = Carbon::parse($this->planningDate . ' ' . $this->planningHeure);
+        $newStart = Carbon::parse($this->planningDate.' '.$this->planningHeure);
         $newDuration = $rdv->duree ?? $rdv->duree_estimee ?? 90;
         $bufferMinutes = 30;
         $newEnd = $newStart->copy()->addMinutes($newDuration + $bufferMinutes);
@@ -118,7 +117,7 @@ trait HandlesAdminDashboardPlanning
             ->whereIn('status', ['confirme', 'en_attente', 'en_route', 'sur_place'])
             ->get()
             ->contains(function ($other) use ($newStart, $newEnd, $bufferMinutes) {
-                $otherStart = Carbon::parse($other->date . ' ' . $other->heure);
+                $otherStart = Carbon::parse($other->date.' '.$other->heure);
                 $otherDuration = $other->duree ?? $other->duree_estimee ?? 90;
                 $otherEnd = $otherStart->copy()->addMinutes($otherDuration + $bufferMinutes);
 
@@ -127,6 +126,7 @@ trait HandlesAdminDashboardPlanning
 
         if ($conflict) {
             $this->addError('planningHeure', 'Conflit détecté : cet employé a déjà une mission sur ce créneau.');
+
             return;
         }
 
@@ -231,7 +231,7 @@ trait HandlesAdminDashboardPlanning
     {
         $bufferMinutes = 30;
         $duration = $rdv->duree ?? $rdv->duree_estimee ?? 90;
-        $start = Carbon::parse($date . ' ' . $heure);
+        $start = Carbon::parse($date.' '.$heure);
         $end = $start->copy()->addMinutes($duration + $bufferMinutes);
 
         $rdvsJour = $this->scopedRendezVousQuery(false)
@@ -241,7 +241,7 @@ trait HandlesAdminDashboardPlanning
             ->get();
 
         $hasConflict = $rdvsJour->contains(function ($other) use ($start, $end, $bufferMinutes) {
-            $otherStart = Carbon::parse($other->date . ' ' . $other->heure);
+            $otherStart = Carbon::parse($other->date.' '.$other->heure);
             $otherDuration = $other->duree ?? $other->duree_estimee ?? 90;
             $otherEnd = $otherStart->copy()->addMinutes($otherDuration + $bufferMinutes);
 
@@ -340,5 +340,4 @@ trait HandlesAdminDashboardPlanning
             ->limit(10)
             ->get();
     }
-
 }

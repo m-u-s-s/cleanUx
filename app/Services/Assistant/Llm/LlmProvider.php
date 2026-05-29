@@ -20,8 +20,6 @@ interface LlmProvider
      *   - $systemPrompt   : prompt de base contextualisé par rôle
      *   - $messages       : historique [{role: user|assistant, content: ...}]
      *   - $tools          : array de définitions de tools (format Anthropic)
-     *
-     * @return LlmResponse
      */
     public function chat(
         string $systemPrompt,

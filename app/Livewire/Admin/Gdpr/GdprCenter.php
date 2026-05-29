@@ -4,9 +4,9 @@ namespace App\Livewire\Admin\Gdpr;
 
 use App\Models\ActivityLog;
 use App\Models\GdprDataRequest;
+use App\Models\User;
 use App\Services\Gdpr\DataErasureService;
 use App\Services\Gdpr\RetentionPolicyService;
-use App\Support\ActivityLogger;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Schema;
@@ -20,11 +20,15 @@ class GdprCenter extends Component
     protected $paginationTheme = 'tailwind';
 
     public string $tab = 'requests';
+
     public string $filterStatus = '';
+
     public string $filterType = '';
+
     public string $search = '';
 
     public string $auditSearch = '';
+
     public string $auditDomain = '';
 
     public function cancelRequest(int $requestId): void
@@ -40,6 +44,7 @@ class GdprCenter extends Component
 
         if ($req->type !== GdprDataRequest::TYPE_ERASURE) {
             $this->dispatch('toast', 'Action disponible uniquement pour les erasures.', 'error');
+
             return;
         }
 
@@ -50,7 +55,7 @@ class GdprCenter extends Component
             app(DataErasureService::class)->execute($req->fresh());
             $this->dispatch('toast', 'Erasure exécutée.', 'success');
         } catch (\Throwable $e) {
-            $this->dispatch('toast', 'Erreur: ' . $e->getMessage(), 'error');
+            $this->dispatch('toast', 'Erreur: '.$e->getMessage(), 'error');
         }
     }
 
@@ -73,7 +78,7 @@ class GdprCenter extends Component
                 ->where('status', GdprDataRequest::STATUS_AWAITING_GRACE_PERIOD)
                 ->count(),
             'ready_for_execution' => GdprDataRequest::query()->readyForExecution()->count(),
-            'anonymized_total' => \App\Models\User::query()->whereNotNull('anonymized_at')->count(),
+            'anonymized_total' => User::query()->whereNotNull('anonymized_at')->count(),
         ];
 
         $items = collect();
@@ -86,7 +91,7 @@ class GdprCenter extends Component
                 ->when($this->filterStatus, fn ($q) => $q->where('status', $this->filterStatus))
                 ->when($this->filterType, fn ($q) => $q->where('type', $this->filterType))
                 ->when($this->search, function ($q) {
-                    $term = '%' . $this->search . '%';
+                    $term = '%'.$this->search.'%';
                     $q->where(function ($inner) use ($term) {
                         $inner->where('reference', 'like', $term)
                             ->orWhereHas('user', fn ($u) => $u->where('name', 'like', $term)->orWhere('email', 'like', $term));
@@ -99,7 +104,7 @@ class GdprCenter extends Component
                 $auditItems = ActivityLog::query()
                     ->when($this->auditDomain, fn ($q) => $q->where('domain', $this->auditDomain))
                     ->when($this->auditSearch, function ($q) {
-                        $term = '%' . $this->auditSearch . '%';
+                        $term = '%'.$this->auditSearch.'%';
                         $q->where(function ($inner) use ($term) {
                             $inner->where('action', 'like', $term)
                                 ->orWhere('target_type', 'like', $term);

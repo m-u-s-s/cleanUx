@@ -8,7 +8,9 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class NpsResponse extends Model
 {
     public const CATEGORY_DETRACTOR = 'detractor';   // 0-6
+
     public const CATEGORY_PASSIVE = 'passive';       // 7-8
+
     public const CATEGORY_PROMOTER = 'promoter';     // 9-10
 
     protected $fillable = [
@@ -24,8 +26,13 @@ class NpsResponse extends Model
 
     public static function categorize(int $score): string
     {
-        if ($score <= 6) return self::CATEGORY_DETRACTOR;
-        if ($score <= 8) return self::CATEGORY_PASSIVE;
+        if ($score <= 6) {
+            return self::CATEGORY_DETRACTOR;
+        }
+        if ($score <= 8) {
+            return self::CATEGORY_PASSIVE;
+        }
+
         return self::CATEGORY_PROMOTER;
     }
 

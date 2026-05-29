@@ -6,6 +6,7 @@ use App\Models\Booking;
 use App\Models\ServiceCatalog;
 use App\Models\User;
 use App\Services\Assistant\Tools\Contracts\AssistantTool;
+use App\Services\PermissionService;
 use Illuminate\Support\Str;
 
 /**
@@ -32,9 +33,9 @@ class CreateBookingTool implements AssistantTool
     public function description(): string
     {
         return "Crée une nouvelle réservation après confirmation explicite de l'utilisateur. "
-            . "Tu dois TOUJOURS demander à l'utilisateur la date, l'heure, le type de lieu (appartement/maison/bureau), "
-            . "et la surface approximative AVANT d'appeler ce tool. "
-            . "Le tool ne crée pas immédiatement : il prépare une demande qui sera confirmée par l'utilisateur dans l'UI.";
+            ."Tu dois TOUJOURS demander à l'utilisateur la date, l'heure, le type de lieu (appartement/maison/bureau), "
+            ."et la surface approximative AVANT d'appeler ce tool. "
+            ."Le tool ne crée pas immédiatement : il prépare une demande qui sera confirmée par l'utilisateur dans l'UI.";
     }
 
     public function inputSchema(): array
@@ -43,54 +44,54 @@ class CreateBookingTool implements AssistantTool
             'type' => 'object',
             'properties' => [
                 'service_catalog_id' => [
-                    'type'        => 'integer',
+                    'type' => 'integer',
                     'description' => "Identifiant du service du catalogue. Si tu ne connais pas, utilise list_services_catalog d'abord.",
                 ],
                 'service_slug' => [
-                    'type'        => 'string',
+                    'type' => 'string',
                     'description' => "Alternative au service_catalog_id : slug du service (ex: 'cleaning-home-standard').",
                 ],
                 'scheduled_date' => [
-                    'type'        => 'string',
-                    'format'      => 'date',
-                    'description' => "Date au format YYYY-MM-DD.",
+                    'type' => 'string',
+                    'format' => 'date',
+                    'description' => 'Date au format YYYY-MM-DD.',
                 ],
                 'scheduled_time' => [
-                    'type'        => 'string',
-                    'pattern'     => '^([01][0-9]|2[0-3]):[0-5][0-9]$',
-                    'description' => "Heure au format HH:MM (24h).",
+                    'type' => 'string',
+                    'pattern' => '^([01][0-9]|2[0-3]):[0-5][0-9]$',
+                    'description' => 'Heure au format HH:MM (24h).',
                 ],
                 'place_type' => [
-                    'type'        => 'string',
-                    'enum'        => ['apartment', 'house', 'office', 'shop', 'other'],
-                    'description' => "Type de lieu.",
+                    'type' => 'string',
+                    'enum' => ['apartment', 'house', 'office', 'shop', 'other'],
+                    'description' => 'Type de lieu.',
                 ],
                 'surface_m2' => [
-                    'type'        => 'integer',
-                    'minimum'     => 5,
-                    'maximum'     => 5000,
-                    'description' => "Surface approximative en m².",
+                    'type' => 'integer',
+                    'minimum' => 5,
+                    'maximum' => 5000,
+                    'description' => 'Surface approximative en m².',
                 ],
                 'address' => [
-                    'type'        => 'string',
-                    'description' => "Adresse complète (rue + numéro).",
+                    'type' => 'string',
+                    'description' => 'Adresse complète (rue + numéro).',
                 ],
                 'city' => [
-                    'type'        => 'string',
-                    'description' => "Ville.",
+                    'type' => 'string',
+                    'description' => 'Ville.',
                 ],
                 'postal_code' => [
-                    'type'        => 'string',
-                    'description' => "Code postal.",
+                    'type' => 'string',
+                    'description' => 'Code postal.',
                 ],
                 'frequency' => [
-                    'type'        => 'string',
-                    'enum'        => ['unique', 'weekly', 'biweekly', 'monthly'],
+                    'type' => 'string',
+                    'enum' => ['unique', 'weekly', 'biweekly', 'monthly'],
                     'description' => "Fréquence : 'unique' = une fois, sinon récurrent.",
                 ],
                 'customer_comment' => [
-                    'type'        => 'string',
-                    'description' => "Note libre du client (étages, accès, animaux…).",
+                    'type' => 'string',
+                    'description' => 'Note libre du client (étages, accès, animaux…).',
                 ],
             ],
             'required' => ['scheduled_date', 'scheduled_time', 'place_type', 'surface_m2', 'address', 'city', 'postal_code'],
@@ -102,9 +103,10 @@ class CreateBookingTool implements AssistantTool
         // Tout utilisateur authentifié peut créer une réservation pour lui-même
         // Pour entreprise : seuls les rôles habilités (cf. PermissionService.bookings.create)
         if ($user->organization_account_id) {
-            return app(\App\Services\PermissionService::class)
+            return app(PermissionService::class)
                 ->can($user, 'bookings.create', $user->currentOrganization);
         }
+
         return true;
     }
 
@@ -127,36 +129,36 @@ class CreateBookingTool implements AssistantTool
         $reference = $this->generateUniqueBookingReference();
 
         $booking = Booking::create([
-            'booking_reference'        => $reference,
-            'customer_user_id'         => $user->id,
-            'client_id'                => $user->id, // legacy alias
-            'service_catalog_id'       => $serviceId,
-            'scheduled_date'           => $input['scheduled_date'],
-            'scheduled_time'           => $input['scheduled_time'],
-            'place_type'               => $input['place_type'],
-            'surface_m2'               => (int) $input['surface_m2'],
-            'address'                  => $input['address'],
-            'city'                     => $input['city'],
-            'postal_code'              => $input['postal_code'],
-            'country'                  => $input['country'] ?? 'BE',
-            'frequency'                => $input['frequency'] ?? 'unique',
-            'customer_comment'         => $input['customer_comment'] ?? null,
-            'status'                   => 'pending',
-            'booking_mode'             => 'assistant',
-            'created_by'               => $user->id,
-            'currency'                 => 'EUR',
+            'booking_reference' => $reference,
+            'customer_user_id' => $user->id,
+            'client_id' => $user->id, // legacy alias
+            'service_catalog_id' => $serviceId,
+            'scheduled_date' => $input['scheduled_date'],
+            'scheduled_time' => $input['scheduled_time'],
+            'place_type' => $input['place_type'],
+            'surface_m2' => (int) $input['surface_m2'],
+            'address' => $input['address'],
+            'city' => $input['city'],
+            'postal_code' => $input['postal_code'],
+            'country' => $input['country'] ?? 'BE',
+            'frequency' => $input['frequency'] ?? 'unique',
+            'customer_comment' => $input['customer_comment'] ?? null,
+            'status' => 'pending',
+            'booking_mode' => 'assistant',
+            'created_by' => $user->id,
+            'currency' => 'EUR',
             'customer_organization_id' => $user->organization_account_id,
         ]);
 
         return [
-            'ok'                => true,
-            'booking_id'        => $booking->id,
+            'ok' => true,
+            'booking_id' => $booking->id,
             'booking_reference' => $booking->booking_reference,
-            'message'           => "Réservation créée. Référence : {$booking->booking_reference}",
+            'message' => "Réservation créée. Référence : {$booking->booking_reference}",
             // ⚙ REVIEW FIX : route('client.bookings.show') n'existait pas dans
             // routes/client.php. La vraie route pour voir ses RDV est
             // 'client.rendezvous.index' (Livewire MesRendezVousClient).
-            'view_url'          => $this->resolveBookingViewUrl($booking),
+            'view_url' => $this->resolveBookingViewUrl($booking),
         ];
     }
 
@@ -167,13 +169,14 @@ class CreateBookingTool implements AssistantTool
     protected function generateUniqueBookingReference(int $maxAttempts = 8): string
     {
         for ($i = 0; $i < $maxAttempts; $i++) {
-            $candidate = 'CUX-' . strtoupper(Str::random(6));
+            $candidate = 'CUX-'.strtoupper(Str::random(6));
             if (! Booking::where('booking_reference', $candidate)->exists()) {
                 return $candidate;
             }
         }
+
         // Fallback ULID (extrêmement peu probable d'arriver ici)
-        return 'CUX-' . strtoupper(substr((string) Str::ulid(), -8));
+        return 'CUX-'.strtoupper(substr((string) Str::ulid(), -8));
     }
 
     /**

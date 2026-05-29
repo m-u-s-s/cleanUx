@@ -10,12 +10,10 @@ use Illuminate\Notifications\Notification;
 
 class ReferralRewardGrantedNotification extends Notification
 {
-    use Queueable;
     use InteractsWithUserNotificationPreferences;
+    use Queueable;
 
-    public function __construct(public ReferralReward $reward)
-    {
-    }
+    public function __construct(public ReferralReward $reward) {}
 
     public function via($notifiable): array
     {

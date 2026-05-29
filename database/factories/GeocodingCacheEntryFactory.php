@@ -4,7 +4,6 @@ namespace Database\Factories;
 
 use App\Models\GeocodingCacheEntry;
 use Illuminate\Database\Eloquent\Factories\Factory;
-use Illuminate\Support\Str;
 
 class GeocodingCacheEntryFactory extends Factory
 {
@@ -12,7 +11,7 @@ class GeocodingCacheEntryFactory extends Factory
 
     public function definition(): array
     {
-        $address = fake()->streetAddress() . ', ' . fake()->city() . ', Belgium';
+        $address = fake()->streetAddress().', '.fake()->city().', Belgium';
 
         return [
             'provider' => fake()->randomElement(['mock', 'google', 'mapbox']),

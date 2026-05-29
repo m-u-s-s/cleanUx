@@ -8,7 +8,9 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class MarketingCampaignStep extends Model
 {
     public const CHANNEL_EMAIL = 'email';
+
     public const CHANNEL_SMS = 'sms';
+
     public const CHANNEL_PUSH = 'push';
 
     protected $fillable = [

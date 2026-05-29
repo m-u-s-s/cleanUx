@@ -8,8 +8,11 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class CancellationAudit extends Model
 {
     public const ACTION_CREATED = 'created';
+
     public const ACTION_OVERRIDDEN = 'overridden';
+
     public const ACTION_REFUNDED = 'refunded';
+
     public const ACTION_REFUND_FAILED = 'refund_failed';
 
     protected $fillable = [

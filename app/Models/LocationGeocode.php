@@ -55,7 +55,7 @@ class LocationGeocode extends Model
 
             $hash = $geocode->lookup_hash
                 ?? $geocode->address_hash
-                ?? sha1($address . '|' . ($geocode->postal_code ?? '') . '|' . ($geocode->city ?? ''));
+                ?? sha1($address.'|'.($geocode->postal_code ?? '').'|'.($geocode->city ?? ''));
 
             if (blank($geocode->lookup_hash)) {
                 $geocode->lookup_hash = $hash;

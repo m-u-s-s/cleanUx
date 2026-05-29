@@ -9,7 +9,9 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class FleetMaintenanceLog extends Model
 {
     public const TYPE_PREVENTIVE = 'preventive';
+
     public const TYPE_CORRECTIVE = 'corrective';
+
     public const TYPE_INSPECTION = 'inspection';
 
     protected $fillable = [

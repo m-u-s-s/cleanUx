@@ -119,6 +119,7 @@ class SegmentEngine
                     });
                 }
             });
+
             return;
         }
 
@@ -130,6 +131,7 @@ class SegmentEngine
                     });
                 }
             });
+
             return;
         }
 
@@ -137,6 +139,7 @@ class SegmentEngine
             $q->whereNot(function ($inner) use ($node, $hasBookings) {
                 $this->applyNode($inner, $node['not'], $hasBookings);
             });
+
             return;
         }
 
@@ -155,6 +158,7 @@ class SegmentEngine
         if (! in_array($field, $allowedFields, true) || ! in_array($op, $allowedOps, true)) {
             // Reject unknown field/op silently — segment never matches anyone if rule is invalid
             $q->whereRaw('1=0');
+
             return;
         }
 
@@ -162,19 +166,22 @@ class SegmentEngine
         if (in_array($field, ['bookings_count', 'last_booking_at', 'total_spent_cents'], true)) {
             if (! $hasBookings) {
                 $q->whereRaw('1=0');
+
                 return;
             }
             $this->applyBookingDerivedField($q, $field, $op, $value);
+
             return;
         }
 
         // Special leaf : email_domain
         if ($field === 'email_domain') {
             $this->applyOperator($q, 'users.email', $this->wrapForDomain($op, $value), $op);
+
             return;
         }
 
-        $this->applyOperator($q, 'users.' . $field, $value, $op);
+        $this->applyOperator($q, 'users.'.$field, $value, $op);
     }
 
     protected function applyOperator($q, string $column, mixed $value, string $op): void
@@ -217,13 +224,13 @@ class SegmentEngine
                 $q->whereNotNull($column);
                 break;
             case 'contains':
-                $q->where($column, 'like', '%' . str_replace('%', '\\%', (string) $value) . '%');
+                $q->where($column, 'like', '%'.str_replace('%', '\\%', (string) $value).'%');
                 break;
             case 'starts_with':
-                $q->where($column, 'like', str_replace('%', '\\%', (string) $value) . '%');
+                $q->where($column, 'like', str_replace('%', '\\%', (string) $value).'%');
                 break;
             case 'ends_with':
-                $q->where($column, 'like', '%' . str_replace('%', '\\%', (string) $value));
+                $q->where($column, 'like', '%'.str_replace('%', '\\%', (string) $value));
                 break;
         }
     }
@@ -244,19 +251,20 @@ class SegmentEngine
 
         if (empty($clientCols)) {
             $q->whereRaw('1=0');
+
             return;
         }
 
         // Build subquery selecting users.id with aggregate
         if ($field === 'bookings_count') {
             $sub = DB::table('bookings')
-                ->select(DB::raw('COUNT(*) AS agg'), $clientCols[0] . ' AS uid')
+                ->select(DB::raw('COUNT(*) AS agg'), $clientCols[0].' AS uid')
                 ->groupBy($clientCols[0]);
             $alias = 'b_count_agg';
             $aggCol = 'agg';
         } elseif ($field === 'last_booking_at') {
             $sub = DB::table('bookings')
-                ->select(DB::raw('MAX(created_at) AS agg'), $clientCols[0] . ' AS uid')
+                ->select(DB::raw('MAX(created_at) AS agg'), $clientCols[0].' AS uid')
                 ->groupBy($clientCols[0]);
             $alias = 'b_lastat_agg';
             $aggCol = 'agg';
@@ -265,10 +273,11 @@ class SegmentEngine
                    (Schema::hasColumn('bookings', 'payment_amount_cents') ? 'payment_amount_cents' : null);
             if (! $col) {
                 $q->whereRaw('1=0');
+
                 return;
             }
             $sub = DB::table('bookings')
-                ->select(DB::raw("SUM($col) AS agg"), $clientCols[0] . ' AS uid')
+                ->select(DB::raw("SUM($col) AS agg"), $clientCols[0].' AS uid')
                 ->groupBy($clientCols[0]);
             $alias = 'b_spent_agg';
             $aggCol = 'agg';

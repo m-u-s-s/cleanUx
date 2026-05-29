@@ -50,11 +50,12 @@ trait ManagesEmployeeTrades
                 if ($isPrimary) {
                     $this->employeeTradesPrimary = $trade->id;
                 }
+
                 return [
                     $trade->id => [
-                        'selected'    => true,
+                        'selected' => true,
                         'proficiency' => (string) ($trade->pivot->proficiency ?? ''),
-                        'notes'       => (string) ($trade->pivot->notes ?? ''),
+                        'notes' => (string) ($trade->pivot->notes ?? ''),
                     ],
                 ];
             })
@@ -72,9 +73,9 @@ trait ManagesEmployeeTrades
     public function toggleEmployeeTrade(int $tradeId): void
     {
         $entry = $this->employeeTradesSelection[$tradeId] ?? [
-            'selected'    => false,
+            'selected' => false,
             'proficiency' => '',
-            'notes'       => '',
+            'notes' => '',
         ];
         $entry['selected'] = ! (bool) ($entry['selected'] ?? false);
         $this->employeeTradesSelection[$tradeId] = $entry;
@@ -89,6 +90,7 @@ trait ManagesEmployeeTrades
     {
         if ($tradeId === null) {
             $this->employeeTradesPrimary = null;
+
             return;
         }
 
@@ -109,12 +111,12 @@ trait ManagesEmployeeTrades
         abort_unless($this->editingTradesUserId !== null, 422);
 
         $this->validate([
-            'editingTradesUserId'                  => ['required', 'exists:users,id'],
-            'employeeTradesSelection'              => ['array'],
-            'employeeTradesSelection.*.selected'   => ['boolean'],
-            'employeeTradesSelection.*.proficiency'=> ['nullable', 'in:basic,standard,expert,'],
-            'employeeTradesSelection.*.notes'      => ['nullable', 'string', 'max:1000'],
-            'employeeTradesPrimary'                => ['nullable', 'integer', 'exists:trades,id'],
+            'editingTradesUserId' => ['required', 'exists:users,id'],
+            'employeeTradesSelection' => ['array'],
+            'employeeTradesSelection.*.selected' => ['boolean'],
+            'employeeTradesSelection.*.proficiency' => ['nullable', 'in:basic,standard,expert,'],
+            'employeeTradesSelection.*.notes' => ['nullable', 'string', 'max:1000'],
+            'employeeTradesPrimary' => ['nullable', 'integer', 'exists:trades,id'],
         ]);
 
         $user = User::findOrFail($this->editingTradesUserId);
@@ -123,11 +125,12 @@ trait ManagesEmployeeTrades
             ->filter(fn ($entry, $tradeId) => (bool) ($entry['selected'] ?? false))
             ->mapWithKeys(function ($entry, $tradeId) {
                 $tradeId = (int) $tradeId;
+
                 return [$tradeId => [
-                    'is_primary'  => $tradeId === $this->employeeTradesPrimary,
+                    'is_primary' => $tradeId === $this->employeeTradesPrimary,
                     'proficiency' => filled($entry['proficiency'] ?? null) ? $entry['proficiency'] : null,
-                    'notes'       => filled($entry['notes'] ?? null) ? $entry['notes'] : null,
-                    'created_by'  => auth()->id(),
+                    'notes' => filled($entry['notes'] ?? null) ? $entry['notes'] : null,
+                    'created_by' => auth()->id(),
                 ]];
             })
             ->toArray();
@@ -140,8 +143,8 @@ trait ManagesEmployeeTrades
         $user->trades()->sync($sync);
 
         ActivityLogger::critical('admin.user.trades_assigned', $user, [
-            'domain'     => 'security',
-            'trade_ids'  => array_keys($sync),
+            'domain' => 'security',
+            'trade_ids' => array_keys($sync),
             'primary_id' => $this->employeeTradesPrimary,
         ]);
 

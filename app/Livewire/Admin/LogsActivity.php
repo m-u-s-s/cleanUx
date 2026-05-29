@@ -11,7 +11,9 @@ class LogsActivity extends Component
     use WithPagination;
 
     public string $search = '';
+
     public string $actionFilter = '';
+
     public int $perPage = 10;
 
     protected $paginationTheme = 'tailwind';
@@ -46,12 +48,12 @@ class LogsActivity extends Component
             ->with('user')
             ->when($this->search !== '', function ($query) {
                 $query->where(function ($q) {
-                    $q->where('action', 'like', '%' . $this->search . '%')
-                        ->orWhere('target_type', 'like', '%' . $this->search . '%')
-                        ->orWhere('target_id', 'like', '%' . $this->search . '%')
+                    $q->where('action', 'like', '%'.$this->search.'%')
+                        ->orWhere('target_type', 'like', '%'.$this->search.'%')
+                        ->orWhere('target_id', 'like', '%'.$this->search.'%')
                         ->orWhereHas('user', function ($userQuery) {
-                            $userQuery->where('name', 'like', '%' . $this->search . '%')
-                                ->orWhere('email', 'like', '%' . $this->search . '%');
+                            $userQuery->where('name', 'like', '%'.$this->search.'%')
+                                ->orWhere('email', 'like', '%'.$this->search.'%');
                         });
                 });
             })

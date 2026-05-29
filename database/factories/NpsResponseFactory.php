@@ -18,7 +18,7 @@ class NpsResponseFactory extends Factory
         return [
             'user_id' => User::factory(),
             'booking_id' => Booking::factory(),
-            'survey_code' => 'NPS-' . fake()->numerify('####'),
+            'survey_code' => 'NPS-'.fake()->numerify('####'),
             'score' => $score,
             'category' => $score >= 9 ? 'promoter' : ($score >= 7 ? 'passive' : 'detractor'),
             'comment' => fake()->optional()->sentence(),

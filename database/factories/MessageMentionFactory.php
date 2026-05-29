@@ -14,12 +14,12 @@ class MessageMentionFactory extends Factory
     public function definition(): array
     {
         return [
-            'message_id'        => fn () => Message::factory()->create()->id,
+            'message_id' => fn () => Message::factory()->create()->id,
             'mentioned_user_id' => fn () => User::factory()->create()->id,
-            'mention_type'      => MessageMention::TYPE_USER,
-            'start_offset'      => fake()->numberBetween(0, 50),
-            'length'            => fake()->numberBetween(5, 20),
-            'read_at'           => null,
+            'mention_type' => MessageMention::TYPE_USER,
+            'start_offset' => fake()->numberBetween(0, 50),
+            'length' => fake()->numberBetween(5, 20),
+            'read_at' => null,
         ];
     }
 

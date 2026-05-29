@@ -7,12 +7,14 @@ use App\Models\BookingInsurance;
 use App\Models\InsuranceClaim;
 use App\Services\Insurance\InsurancePricingEngine;
 use App\Services\Insurance\InsuranceService;
+use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 
 /**
  * @group Client — Insurance
+ *
  * @authenticated
  */
 class InsuranceController extends Controller
@@ -109,7 +111,7 @@ class InsuranceController extends Controller
                 claimant: $request->user(),
                 incidentType: $data['incident_type'],
                 description: $data['description'],
-                incidentDate: \Carbon\Carbon::parse($data['incident_date']),
+                incidentDate: Carbon::parse($data['incident_date']),
                 amountClaimedCents: (int) $data['amount_claimed_cents'],
                 evidence: $data['evidence'] ?? [],
             );

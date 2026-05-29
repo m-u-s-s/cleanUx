@@ -11,8 +11,11 @@ class PromoCodeRedemption extends Model
     use HasFactory;
 
     public const STATUS_RESERVED = 'reserved';
+
     public const STATUS_APPLIED = 'applied';
+
     public const STATUS_REVERTED = 'reverted';
+
     public const STATUS_EXPIRED = 'expired';
 
     protected $fillable = [

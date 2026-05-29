@@ -64,7 +64,7 @@ class GeoMatchingEnhancer
     /**
      * Filtre une liste de providers selon rayon en km.
      *
-     * @param iterable<User> $providers
+     * @param  iterable<User>  $providers
      * @return array<int, array{provider:User, distance_km:float}>
      */
     public function filterWithinRadius(iterable $providers, Booking $booking, float $radiusKm): array
@@ -89,6 +89,7 @@ class GeoMatchingEnhancer
             }
         }
         usort($out, fn ($a, $b) => $a['distance_km'] <=> $b['distance_km']);
+
         return $out;
     }
 
@@ -105,7 +106,11 @@ class GeoMatchingEnhancer
         // ProviderProfile relation
         $profile = $provider->relationLoaded('providerProfile') ? $provider->providerProfile : null;
         if (! $profile && method_exists($provider, 'providerProfile')) {
-            try { $profile = $provider->providerProfile; } catch (\Throwable) { $profile = null; }
+            try {
+                $profile = $provider->providerProfile;
+            } catch (\Throwable) {
+                $profile = null;
+            }
         }
         if ($profile && isset($profile->latitude, $profile->longitude)
             && is_numeric($profile->latitude) && is_numeric($profile->longitude)) {
@@ -123,6 +128,7 @@ class GeoMatchingEnhancer
                 Log::warning('[geo_matching] provider geocode failed', ['error' => $e->getMessage()]);
             }
         }
+
         return null;
     }
 
@@ -143,6 +149,7 @@ class GeoMatchingEnhancer
                 Log::warning('[geo_matching] booking geocode failed', ['error' => $e->getMessage()]);
             }
         }
+
         return null;
     }
 }

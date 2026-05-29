@@ -5,7 +5,6 @@ namespace Tests\Feature\ChatV2;
 use App\Models\ChatMessage;
 use App\Models\ChatMessageRead;
 use App\Models\ChatParticipant;
-use App\Models\ChatThread;
 use App\Models\User;
 use App\Services\ChatV2\ChatService;
 use Illuminate\Foundation\Testing\RefreshDatabase;

@@ -11,14 +11,13 @@ use Illuminate\Notifications\Notification;
 
 class RappelRendezVousNotification extends Notification implements ShouldQueue
 {
-    use Queueable;
     use InteractsWithUserNotificationPreferences;
+    use Queueable;
 
     public function __construct(
         public Booking $rdv,
         public string $timing = '24h'
-    ) {
-    }
+    ) {}
 
     public function via($notifiable): array
     {
@@ -32,8 +31,8 @@ class RappelRendezVousNotification extends Notification implements ShouldQueue
         return (new MailMessage)
             ->subject('CleanUx · Rappel de votre intervention')
             ->line("Petit rappel : votre {$this->rdv->service_display_name} est prévu dans {$this->timing}.")
-            ->line('Date : ' . $this->rdv->date . ' à ' . $this->rdv->heure)
-            ->line('Adresse : ' . $this->rdv->location_display)
+            ->line('Date : '.$this->rdv->date.' à '.$this->rdv->heure)
+            ->line('Adresse : '.$this->rdv->location_display)
             ->action('Voir mon espace client', url('/dashboard/client'));
     }
 

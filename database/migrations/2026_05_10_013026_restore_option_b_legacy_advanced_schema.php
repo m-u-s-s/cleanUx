@@ -28,25 +28,25 @@ return new class extends Migration
         };
 
         // platform_modules
-        $addColumn('platform_modules', 'category', fn(Blueprint $table) => $table->string('category')->default('core'));
-        $addColumn('platform_modules', 'rollout_strategy', fn(Blueprint $table) => $table->string('rollout_strategy')->default('global'));
-        $addColumn('platform_modules', 'is_locked', fn(Blueprint $table) => $table->boolean('is_locked')->default(false));
-        $addColumn('platform_modules', 'sort_order', fn(Blueprint $table) => $table->unsignedInteger('sort_order')->default(0));
-        $addColumn('platform_modules', 'audience_rules', fn(Blueprint $table) => $table->json('audience_rules')->nullable());
+        $addColumn('platform_modules', 'category', fn (Blueprint $table) => $table->string('category')->default('core'));
+        $addColumn('platform_modules', 'rollout_strategy', fn (Blueprint $table) => $table->string('rollout_strategy')->default('global'));
+        $addColumn('platform_modules', 'is_locked', fn (Blueprint $table) => $table->boolean('is_locked')->default(false));
+        $addColumn('platform_modules', 'sort_order', fn (Blueprint $table) => $table->unsignedInteger('sort_order')->default(0));
+        $addColumn('platform_modules', 'audience_rules', fn (Blueprint $table) => $table->json('audience_rules')->nullable());
 
         // email_logs
-        $addColumn('email_logs', 'previewed_by_user_id', fn(Blueprint $table) => $table->unsignedBigInteger('previewed_by_user_id')->nullable());
-        $addColumn('email_logs', 'context', fn(Blueprint $table) => $table->json('context')->nullable());
+        $addColumn('email_logs', 'previewed_by_user_id', fn (Blueprint $table) => $table->unsignedBigInteger('previewed_by_user_id')->nullable());
+        $addColumn('email_logs', 'context', fn (Blueprint $table) => $table->json('context')->nullable());
 
         // service_catalogs
-        $addColumn('service_catalogs', 'settings', fn(Blueprint $table) => $table->json('settings')->nullable());
+        $addColumn('service_catalogs', 'settings', fn (Blueprint $table) => $table->json('settings')->nullable());
 
         // employee_zone_assignments
-        $addColumn('employee_zone_assignments', 'assignment_type', fn(Blueprint $table) => $table->string('assignment_type')->default('primary'));
-        $addColumn('employee_zone_assignments', 'coverage_priority', fn(Blueprint $table) => $table->unsignedInteger('coverage_priority')->default(0));
-        $addColumn('employee_zone_assignments', 'starts_at', fn(Blueprint $table) => $table->timestamp('starts_at')->nullable());
-        $addColumn('employee_zone_assignments', 'ends_at', fn(Blueprint $table) => $table->timestamp('ends_at')->nullable());
-        $addColumn('employee_zone_assignments', 'notes', fn(Blueprint $table) => $table->text('notes')->nullable());
+        $addColumn('employee_zone_assignments', 'assignment_type', fn (Blueprint $table) => $table->string('assignment_type')->default('primary'));
+        $addColumn('employee_zone_assignments', 'coverage_priority', fn (Blueprint $table) => $table->unsignedInteger('coverage_priority')->default(0));
+        $addColumn('employee_zone_assignments', 'starts_at', fn (Blueprint $table) => $table->timestamp('starts_at')->nullable());
+        $addColumn('employee_zone_assignments', 'ends_at', fn (Blueprint $table) => $table->timestamp('ends_at')->nullable());
+        $addColumn('employee_zone_assignments', 'notes', fn (Blueprint $table) => $table->text('notes')->nullable());
 
         // Pivot service_zone_postal_code
         if (! Schema::hasTable('service_zone_postal_code')) {

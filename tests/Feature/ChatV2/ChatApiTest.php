@@ -3,7 +3,6 @@
 namespace Tests\Feature\ChatV2;
 
 use App\Models\ChatMessage;
-use App\Models\ChatThread;
 use App\Models\User;
 use App\Services\ChatV2\ChatService;
 use Illuminate\Foundation\Testing\RefreshDatabase;

@@ -70,16 +70,17 @@ class OptOutService
     }
 
     /**
-     * @return array<string,bool>  ['email' => false, 'sms' => true, 'push' => false, 'all' => false]
+     * @return array<string,bool> ['email' => false, 'sms' => true, 'push' => false, 'all' => false]
      */
     public function preferences(User $user): array
     {
         $rows = MarketingOptOut::query()->forUser($user->id)->pluck('channel')->all();
+
         return [
             'email' => in_array('email', $rows, true) || in_array('all', $rows, true),
-            'sms'   => in_array('sms', $rows, true) || in_array('all', $rows, true),
-            'push'  => in_array('push', $rows, true) || in_array('all', $rows, true),
-            'all'   => in_array('all', $rows, true),
+            'sms' => in_array('sms', $rows, true) || in_array('all', $rows, true),
+            'push' => in_array('push', $rows, true) || in_array('all', $rows, true),
+            'all' => in_array('all', $rows, true),
         ];
     }
 }

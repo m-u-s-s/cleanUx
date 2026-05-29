@@ -8,12 +8,17 @@ use Illuminate\Database\Eloquent\Model;
 class FleetCertification extends Model
 {
     public const STATUS_ACTIVE = 'active';
+
     public const STATUS_EXPIRING_SOON = 'expiring_soon';
+
     public const STATUS_EXPIRED = 'expired';
+
     public const STATUS_REVOKED = 'revoked';
 
     public const SUBJECT_VEHICLE = 'vehicle';
+
     public const SUBJECT_EQUIPMENT = 'equipment';
+
     public const SUBJECT_PROVIDER = 'provider';
 
     protected $fillable = [
@@ -56,6 +61,7 @@ class FleetCertification extends Model
         if (! $this->expires_at) {
             return false;
         }
+
         return $this->expires_at->isAfter(now()) && $this->expires_at->isBefore(now()->addDays($days));
     }
 }

@@ -9,6 +9,7 @@ namespace App\Services\Insurance;
 class InsuranceWebhookUpdate
 {
     public const TARGET_POLICY = 'policy';
+
     public const TARGET_CLAIM = 'claim';
 
     public function __construct(

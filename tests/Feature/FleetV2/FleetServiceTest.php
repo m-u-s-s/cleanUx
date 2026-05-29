@@ -34,7 +34,7 @@ class FleetServiceTest extends TestCase
     {
         return FleetVehicle::query()->create(array_merge([
             'code' => FleetVehicle::generateCode(),
-            'plate' => '1-TST-' . random_int(100, 999),
+            'plate' => '1-TST-'.random_int(100, 999),
             'vehicle_type' => 'van',
             'fuel_type' => 'diesel',
             'status' => FleetVehicle::STATUS_AVAILABLE,

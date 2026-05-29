@@ -14,7 +14,7 @@ class CacheApiResponse
             return $next($request);
         }
 
-        $key    = 'api_cache:' . md5($request->fullUrl() . '|' . ($request->user()?->id ?? 'anon'));
+        $key = 'api_cache:'.md5($request->fullUrl().'|'.($request->user()?->id ?? 'anon'));
         $cached = Cache::get($key);
 
         if ($cached) {
@@ -26,7 +26,7 @@ class CacheApiResponse
 
         if ($response->isSuccessful()) {
             Cache::put($key, [
-                'data'   => json_decode($response->getContent(), true),
+                'data' => json_decode($response->getContent(), true),
                 'status' => $response->getStatusCode(),
             ], $ttl);
         }

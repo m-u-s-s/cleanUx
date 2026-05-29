@@ -5,7 +5,6 @@ namespace App\Livewire\Admin\Analytics;
 use App\Models\Booking;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Carbon;
-use Illuminate\Support\Facades\DB;
 use Livewire\Component;
 
 /**
@@ -15,6 +14,7 @@ use Livewire\Component;
 class CancellationReasonsCenter extends Component
 {
     public string $period = '30d';
+
     public string $groupBy = 'reason';
 
     public function setPeriod(string $period): void
@@ -41,14 +41,14 @@ class CancellationReasonsCenter extends Component
             ->whereIn('status', ['annule', 'cancelled', 'canceled'])
             ->where(function ($q) use ($since) {
                 $q->where('cancelled_at', '>=', $since)
-                  ->orWhere('updated_at', '>=', $since);
+                    ->orWhere('updated_at', '>=', $since);
             });
 
         $totalCancelled = (clone $base)->count();
         $totalAll = Booking::query()
             ->where(function ($q) use ($since) {
                 $q->where('created_at', '>=', $since)
-                  ->orWhere('updated_at', '>=', $since);
+                    ->orWhere('updated_at', '>=', $since);
             })
             ->count();
 

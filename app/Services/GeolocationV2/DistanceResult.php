@@ -23,6 +23,7 @@ class DistanceResult
         if ($this->durationSeconds === null) {
             return null;
         }
+
         return (int) ceil($this->durationSeconds / 60);
     }
 

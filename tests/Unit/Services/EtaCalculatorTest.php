@@ -19,7 +19,7 @@ class EtaCalculatorTest extends TestCase
     {
         parent::setUp();
         config(['geolocation_v2.earth_radius_meters' => 6_371_000]);
-        $this->calculator = new DistanceCalculator();
+        $this->calculator = new DistanceCalculator;
     }
 
     // ────────────────────────────────────────────────
@@ -104,7 +104,7 @@ class EtaCalculatorTest extends TestCase
     public function test_distance_meters_delegates_to_haversine(): void
     {
         $expected = Haversine::distanceMeters(50.8503, 4.3517, 50.6326, 5.5797);
-        $result   = $this->calculator->distanceMeters(50.8503, 4.3517, 50.6326, 5.5797);
+        $result = $this->calculator->distanceMeters(50.8503, 4.3517, 50.6326, 5.5797);
 
         $this->assertSame($expected, $result);
     }
@@ -163,9 +163,9 @@ class EtaCalculatorTest extends TestCase
     public function test_eta_at_constant_speed_is_correct(): void
     {
         // 1000 m at 10 m/s → 100 seconds
-        $dist  = 1000.0;
+        $dist = 1000.0;
         $speed = 10.0;
-        $eta   = (int) round($dist / $speed);
+        $eta = (int) round($dist / $speed);
 
         $this->assertSame(100, $eta);
     }
@@ -173,9 +173,9 @@ class EtaCalculatorTest extends TestCase
     public function test_eta_fallback_speed_11_mps_for_1km(): void
     {
         // Default fallback speed is 11.11 m/s (≈ 40 km/h urban)
-        $dist         = 1000.0;
+        $dist = 1000.0;
         $fallbackSpeed = 11.11;
-        $eta          = (int) round($dist / $fallbackSpeed);
+        $eta = (int) round($dist / $fallbackSpeed);
 
         // Should be ~90 seconds
         $this->assertSame(90, $eta);

@@ -9,17 +9,27 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class InsuranceClaim extends Model
 {
     public const STATUS_FILED = 'filed';
+
     public const STATUS_UNDER_REVIEW = 'under_review';
+
     public const STATUS_INFO_REQUESTED = 'info_requested';
+
     public const STATUS_ACCEPTED = 'accepted';
+
     public const STATUS_REJECTED = 'rejected';
+
     public const STATUS_PAID = 'paid';
+
     public const STATUS_CANCELLED = 'cancelled';
 
     public const INCIDENT_DAMAGE = 'damage';
+
     public const INCIDENT_THEFT = 'theft';
+
     public const INCIDENT_INJURY = 'injury';
+
     public const INCIDENT_LIABILITY = 'liability';
+
     public const INCIDENT_OTHER = 'other';
 
     protected $fillable = [

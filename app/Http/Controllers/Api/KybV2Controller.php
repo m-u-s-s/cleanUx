@@ -6,8 +6,6 @@ use App\Http\Controllers\Controller;
 use App\Models\BusinessBeneficialOwner;
 use App\Models\BusinessDocument;
 use App\Models\BusinessEntity;
-use App\Models\BusinessSanctionsCheck;
-use App\Models\BusinessVerification;
 use App\Services\KybV2\BusinessOnboardingService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -17,6 +15,7 @@ use Illuminate\Validation\ValidationException;
 
 /**
  * @group KYB v2 (Business Onboarding)
+ *
  * @authenticated
  */
 class KybV2Controller extends Controller
@@ -34,6 +33,7 @@ class KybV2Controller extends Controller
             })
             ->orderByDesc('created_at')
             ->get();
+
         return response()->json(['data' => $rows]);
     }
 
@@ -56,6 +56,7 @@ class KybV2Controller extends Controller
         } catch (ValidationException $e) {
             return response()->json(['ok' => false, 'errors' => $e->errors()], 422);
         }
+
         return response()->json(['ok' => true, 'entity' => $entity], 201);
     }
 
@@ -64,6 +65,7 @@ class KybV2Controller extends Controller
         if (! $this->canAccess($request, $entity)) {
             return response()->json(['ok' => false, 'error' => 'forbidden'], 403);
         }
+
         return response()->json([
             'data' => $entity->load(['documents', 'verifications', 'sanctionsChecks', 'beneficialOwners']),
         ]);
@@ -78,8 +80,8 @@ class KybV2Controller extends Controller
         $allowedMimes = (array) config('kyb_v2.allowed_mime_types', []);
         $maxKb = (int) config('kyb_v2.document_max_size_kb', 10240);
         $data = $request->validate([
-            'document_type' => ['required', 'string', 'in:' . implode(',', $allowedTypes)],
-            'file' => ['required', 'file', 'max:' . $maxKb],
+            'document_type' => ['required', 'string', 'in:'.implode(',', $allowedTypes)],
+            'file' => ['required', 'file', 'max:'.$maxKb],
             'expires_at' => ['nullable', 'date'],
         ]);
         $file = $request->file('file');
@@ -89,8 +91,8 @@ class KybV2Controller extends Controller
         }
         $disk = (string) config('kyb_v2.document_storage_disk', 'local');
         $prefix = trim((string) config('kyb_v2.document_path_prefix', 'kyb_documents'), '/');
-        $name = uniqid('doc_', true) . '_' . preg_replace('/[^a-z0-9_.-]+/i', '_', $file->getClientOriginalName());
-        $path = $prefix . '/' . date('Y/m/d') . '/entity-' . $entity->id . '/' . $name;
+        $name = uniqid('doc_', true).'_'.preg_replace('/[^a-z0-9_.-]+/i', '_', $file->getClientOriginalName());
+        $path = $prefix.'/'.date('Y/m/d').'/entity-'.$entity->id.'/'.$name;
         Storage::disk($disk)->put($path, file_get_contents($file->getRealPath()));
 
         $doc = BusinessDocument::query()->create([
@@ -104,6 +106,7 @@ class KybV2Controller extends Controller
             'status' => BusinessDocument::STATUS_PENDING,
             'expires_at' => $data['expires_at'] ?? null,
         ]);
+
         return response()->json(['ok' => true, 'document' => $doc], 201);
     }
 
@@ -118,24 +121,28 @@ class KybV2Controller extends Controller
             ->orderByDesc('created_at')
             ->limit((int) $request->integer('limit', 50))
             ->get();
+
         return response()->json(['data' => $rows]);
     }
 
     public function adminRunVerifications(BusinessEntity $entity): JsonResponse
     {
         $row = $this->onboarding->runVerifications($entity);
+
         return response()->json(['ok' => true, 'entity' => $row]);
     }
 
     public function adminRunSanctions(BusinessEntity $entity): JsonResponse
     {
         $row = $this->onboarding->runSanctionsScreening($entity);
+
         return response()->json(['ok' => true, 'entity' => $row]);
     }
 
     public function adminApprove(Request $request, BusinessEntity $entity): JsonResponse
     {
         $row = $this->onboarding->approve($entity, $request->user());
+
         return response()->json(['ok' => true, 'entity' => $row]);
     }
 
@@ -149,6 +156,7 @@ class KybV2Controller extends Controller
         } catch (ValidationException $e) {
             return response()->json(['ok' => false, 'errors' => $e->errors()], 422);
         }
+
         return response()->json(['ok' => true, 'entity' => $row]);
     }
 
@@ -160,6 +168,7 @@ class KybV2Controller extends Controller
             ->orderByDesc('created_at')
             ->limit((int) $request->integer('limit', 100))
             ->get();
+
         return response()->json(['data' => $rows]);
     }
 
@@ -187,6 +196,7 @@ class KybV2Controller extends Controller
                 'rejection_reason' => $data['reason'],
             ]);
         }
+
         return response()->json(['ok' => true, 'document' => $document->fresh()]);
     }
 
@@ -206,6 +216,7 @@ class KybV2Controller extends Controller
             'aml_status' => BusinessBeneficialOwner::AML_PENDING,
         ]));
         $this->onboarding->refreshRiskAndStatus($entity);
+
         return response()->json(['ok' => true, 'owner' => $owner], 201);
     }
 
@@ -225,12 +236,13 @@ class KybV2Controller extends Controller
         if (! Storage::disk($disk)->exists($document->file_path)) {
             abort(404);
         }
+
         return response(
             Storage::disk($disk)->get($document->file_path),
             200,
             [
                 'Content-Type' => $document->mime_type,
-                'Content-Disposition' => 'attachment; filename="' . basename($document->file_path) . '"',
+                'Content-Disposition' => 'attachment; filename="'.basename($document->file_path).'"',
             ],
         );
     }
@@ -251,6 +263,7 @@ class KybV2Controller extends Controller
         if (method_exists($user, 'isPlatformAdmin') && $user->isPlatformAdmin()) {
             return true;
         }
+
         return false;
     }
 }

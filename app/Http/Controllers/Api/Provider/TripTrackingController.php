@@ -13,6 +13,7 @@ use Illuminate\Validation\ValidationException;
 
 /**
  * @group Trip Tracking
+ *
  * @authenticated
  */
 class TripTrackingController extends Controller
@@ -25,6 +26,7 @@ class TripTrackingController extends Controller
      *
      * @bodyParam start_lat numeric Starting GPS latitude (-90 to 90). Example: 50.843
      * @bodyParam start_lng numeric Starting GPS longitude (-180 to 180). Example: 4.348
+     *
      * @response 201 {"data": {"id": 5, "code": "TRK-ABC123", "booking_id": 42, "status": "enroute", "destination": {"lat": 50.846, "lng": 4.352}, "last_position": {"lat": 50.843, "lng": 4.348, "speed_mps": null, "ping_at": null}, "eta_seconds": null, "total_distance_m": 0, "points_count": 0, "started_at": "2026-06-15T08:30:00+00:00", "arrived_at": null, "in_mission_at": null, "ended_at": null}}
      * @response 403 {"message": "Not assigned to this booking."}
      */
@@ -61,6 +63,7 @@ class TripTrackingController extends Controller
      * @bodyParam speed_mps number Current speed in metres per second. Example: 5.2
      * @bodyParam heading_deg number Compass heading in degrees (0-360). Example: 45.0
      * @bodyParam sequence integer Client-side monotonic sequence number for deduplication. Example: 42
+     *
      * @response 201 {"data": {"point_id": 87, "distance_to_dest_m": 520, "eta_seconds": 180, "session_status": "enroute"}}
      * @response 422 {"error": "validation_failed", "errors": {"lat": ["The lat field is required."]}}
      */
@@ -110,6 +113,7 @@ class TripTrackingController extends Controller
 
         try {
             $updated = $service->markInMission($session);
+
             return response()->json(['data' => $this->presentSession($updated)]);
         } catch (ValidationException $e) {
             return response()->json([
@@ -123,6 +127,7 @@ class TripTrackingController extends Controller
      * End a trip tracking session.
      *
      * @bodyParam reason string Optional reason for ending the session (max 255 chars). Example: Mission terminée
+     *
      * @response 200 {"data": {"id": 5, "code": "TRK-ABC123", "booking_id": 42, "status": "ended", "destination": {"lat": 50.846, "lng": 4.352}, "last_position": {"lat": 50.846, "lng": 4.352, "speed_mps": 0.0, "ping_at": "2026-06-15T11:00:00+00:00"}, "eta_seconds": 0, "total_distance_m": 1250, "points_count": 210, "started_at": "2026-06-15T08:30:00+00:00", "arrived_at": "2026-06-15T08:58:00+00:00", "in_mission_at": "2026-06-15T09:01:00+00:00", "ended_at": "2026-06-15T11:02:00+00:00"}}
      * @response 403 {"message": "Not your session."}
      */
@@ -133,6 +138,7 @@ class TripTrackingController extends Controller
             'reason' => ['nullable', 'string', 'max:255'],
         ]);
         $updated = $service->endSession($session, $params['reason'] ?? null);
+
         return response()->json(['data' => $this->presentSession($updated)]);
     }
 

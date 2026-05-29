@@ -17,8 +17,11 @@ use Livewire\Component;
 class FinanceDocumentsClient extends Component
 {
     public string $documentType = 'all';
+
     public string $status = 'all';
+
     public string $search = '';
+
     public string $sort = 'recent';
 
     protected function currentUser(): ?User
@@ -110,7 +113,7 @@ class FinanceDocumentsClient extends Component
             return $query;
         }
 
-        $like = '%' . $search . '%';
+        $like = '%'.$search.'%';
 
         return $query->where(function (Builder $searchQuery) use ($like, $numberColumn) {
             $searchQuery
@@ -328,7 +331,7 @@ class FinanceDocumentsClient extends Component
         }
 
         if (trim($this->search) !== '') {
-            $parts[] = 'Recherche : ' . trim($this->search);
+            $parts[] = 'Recherche : '.trim($this->search);
         }
 
         return implode(' · ', $parts);

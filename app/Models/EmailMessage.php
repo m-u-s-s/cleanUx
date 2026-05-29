@@ -11,18 +11,29 @@ use Illuminate\Support\Str;
 class EmailMessage extends Model
 {
     public const STATUS_PENDING = 'pending';
+
     public const STATUS_QUEUED = 'queued';
+
     public const STATUS_SENT = 'sent';
+
     public const STATUS_DELIVERED = 'delivered';
+
     public const STATUS_OPENED = 'opened';
+
     public const STATUS_CLICKED = 'clicked';
+
     public const STATUS_BOUNCED = 'bounced';
+
     public const STATUS_COMPLAINED = 'complained';
+
     public const STATUS_FAILED = 'failed';
 
     public const CATEGORY_TRANSACTIONAL = 'transactional';
+
     public const CATEGORY_MARKETING = 'marketing';
+
     public const CATEGORY_NOTIFICATION = 'notification';
+
     public const CATEGORY_SYSTEM = 'system';
 
     protected $fillable = [
@@ -55,7 +66,7 @@ class EmailMessage extends Model
 
     public static function generateCode(): string
     {
-        return 'em_' . Str::lower(Str::random(20));
+        return 'em_'.Str::lower(Str::random(20));
     }
 
     public function toUser(): BelongsTo

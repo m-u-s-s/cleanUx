@@ -11,6 +11,7 @@ use Illuminate\Validation\ValidationException;
 
 /**
  * @group Client — User Safety
+ *
  * @authenticated
  */
 class UserSafetyController extends Controller
@@ -20,6 +21,7 @@ class UserSafetyController extends Controller
         $data = $request->validate(['reason' => ['nullable', 'string', 'max:255']]);
         try {
             $block = $service->block($request->user(), $user, $data['reason'] ?? null);
+
             return response()->json(['data' => ['blocked' => true, 'block_id' => $block->id]], 201);
         } catch (ValidationException $e) {
             return response()->json(['error' => 'validation_failed', 'errors' => $e->errors()], 422);
@@ -29,6 +31,7 @@ class UserSafetyController extends Controller
     public function unblock(Request $request, User $user, UserSafetyService $service): JsonResponse
     {
         $service->unblock($request->user(), $user);
+
         return response()->json(['data' => ['blocked' => false]]);
     }
 
@@ -47,6 +50,7 @@ class UserSafetyController extends Controller
                 $data['description'],
                 $data['evidence'] ?? [],
             );
+
             return response()->json(['data' => [
                 'code' => $report->code,
                 'status' => $report->status,

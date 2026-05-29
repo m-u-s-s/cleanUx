@@ -44,8 +44,8 @@ return [
     'provider' => [
         // Annulation par le prestataire = pénalité (impacte sa fiabilité)
         // car ça oblige le client à attendre + redispatch
-        'penalty_eur'             => 5.00,    // pénalité fixe par annulation
-        'reliability_penalty'     => 10,       // points retirés du score reliability
+        'penalty_eur' => 5.00,    // pénalité fixe par annulation
+        'reliability_penalty' => 10,       // points retirés du score reliability
         'free_cancellation_minutes' => 30,    // Plus de X min avant : pas de pénalité
 
         // Au-delà de N annulations / 30 jours, déclencher review admin
@@ -61,7 +61,7 @@ return [
         'grace_minutes' => 15,
 
         // Si client no-show : fee = 100% du prix
-        'client_fee_percent'   => 100,
+        'client_fee_percent' => 100,
 
         // Si provider no-show : pénalité forte
         'provider_penalty_eur' => 20.00,

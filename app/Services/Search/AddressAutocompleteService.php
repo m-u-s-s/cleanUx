@@ -4,7 +4,6 @@ namespace App\Services\Search;
 
 use App\Models\PostalCode;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Schema;
 
 /**
  * Autocomplétion d'adresse basée sur les `postal_codes` connus de la DB.
@@ -29,7 +28,7 @@ class AddressAutocompleteService
             $builder->where('country_id', $countryId);
         }
 
-        $term = $query . '%';
+        $term = $query.'%';
         if ($isNumeric) {
             $builder->where('code', 'like', $term);
         } else {
@@ -48,7 +47,7 @@ class AddressAutocompleteService
                 'id' => $p->id,
                 'code' => $p->code,
                 'city_name' => $p->city_name,
-                'label' => $p->code . ' ' . $p->city_name,
+                'label' => $p->code.' '.$p->city_name,
                 'lat' => $p->lat !== null ? (float) $p->lat : null,
                 'lng' => $p->lng !== null ? (float) $p->lng : null,
                 'service_zone_id' => $p->service_zone_id,
@@ -65,12 +64,19 @@ class AddressAutocompleteService
         $score = 0;
 
         if ($isNumeric) {
-            if ($code === $query) $score += 1000;
-            elseif (str_starts_with($code, $query)) $score += 100;
+            if ($code === $query) {
+                $score += 1000;
+            } elseif (str_starts_with($code, $query)) {
+                $score += 100;
+            }
         } else {
-            if ($city === $query) $score += 1000;
-            elseif (str_starts_with($city, $query)) $score += 100;
-            elseif (str_contains($city, $query)) $score += 10;
+            if ($city === $query) {
+                $score += 1000;
+            } elseif (str_starts_with($city, $query)) {
+                $score += 100;
+            } elseif (str_contains($city, $query)) {
+                $score += 10;
+            }
         }
 
         return $score;

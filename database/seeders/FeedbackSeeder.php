@@ -17,6 +17,7 @@ class FeedbackSeeder extends Seeder
 
         if ($feedbackTable === null || ! Schema::hasTable('bookings')) {
             $this->command?->warn('⚠️ Tables feedbacks/bookings absentes, feedbacks ignorés.');
+
             return;
         }
 
@@ -32,6 +33,7 @@ class FeedbackSeeder extends Seeder
 
         if ($rdvs->isEmpty()) {
             $this->command?->warn('⚠️ Aucun rendez-vous disponible pour générer des feedbacks.');
+
             return;
         }
 

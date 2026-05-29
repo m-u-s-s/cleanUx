@@ -18,10 +18,12 @@ class FleetScanExpiringCommand extends Command
     {
         if (! config('fleet_v2.enabled', true)) {
             $this->warn('Fleet v2 disabled. Skip.');
+
             return self::SUCCESS;
         }
         if (! Schema::hasTable('fleet_certifications')) {
             $this->warn('fleet_certifications table missing. Skip.');
+
             return self::SUCCESS;
         }
 

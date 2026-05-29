@@ -2,15 +2,22 @@
 
 namespace App\Console;
 
+use App\Console\Commands\BackfillMissionDestinations;
+use App\Jobs\Audit\PurgeAuditEventsJob;
+use App\Jobs\Fx\RefreshFxRatesJob;
+use App\Jobs\Marketing\DispatchCampaignStepJob;
+use App\Jobs\Marketing\RecomputeSegmentJob;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
+use Spatie\Backup\BackupServiceProvider;
 
 class Kernel extends ConsoleKernel
 {
     protected $commands = [
-        \App\Console\Commands\BackfillMissionDestinations::class,
-        
+        BackfillMissionDestinations::class,
+
     ];
+
     protected function schedule(Schedule $schedule): void
     {
         $schedule->command('app:send-rendezvous-reminders')->everyFifteenMinutes()->withoutOverlapping();
@@ -44,31 +51,31 @@ class Kernel extends ConsoleKernel
         $schedule->command('stripe:reconcile --scope=all --days=1')->dailyAt('05:30')->withoutOverlapping();
 
         // Audit v2 — purge old events selon retention policies
-        if (class_exists(\App\Jobs\Audit\PurgeAuditEventsJob::class)) {
-            $schedule->job(new \App\Jobs\Audit\PurgeAuditEventsJob())->dailyAt('03:15')->withoutOverlapping();
+        if (class_exists(PurgeAuditEventsJob::class)) {
+            $schedule->job(new PurgeAuditEventsJob)->dailyAt('03:15')->withoutOverlapping();
         }
 
         // Marketing v2 — dispatch des steps drip + recompute segments.
         // Laravel 11 : name() AVANT withoutOverlapping() (CallbackEvent::withoutOverlapping
         // requires $this->description set, populated by name()).
-        if (class_exists(\App\Jobs\Marketing\DispatchCampaignStepJob::class)) {
+        if (class_exists(DispatchCampaignStepJob::class)) {
             $schedule->call(function () {
-                \App\Jobs\Marketing\DispatchCampaignStepJob::dispatch();
+                DispatchCampaignStepJob::dispatch();
             })->name('marketing:dispatch-steps')->everyTenMinutes()->withoutOverlapping()->onOneServer();
         }
-        if (class_exists(\App\Jobs\Marketing\RecomputeSegmentJob::class)) {
+        if (class_exists(RecomputeSegmentJob::class)) {
             $schedule->call(function () {
-                \App\Jobs\Marketing\RecomputeSegmentJob::dispatch();
+                RecomputeSegmentJob::dispatch();
             })->name('marketing:recompute-segments')->dailyAt('02:00')->withoutOverlapping()->onOneServer();
         }
 
         // FX rates refresh via job async (vs sync via currencies:refresh)
-        if (class_exists(\App\Jobs\Fx\RefreshFxRatesJob::class)) {
-            $schedule->job(new \App\Jobs\Fx\RefreshFxRatesJob())->dailyAt('06:15')->withoutOverlapping();
+        if (class_exists(RefreshFxRatesJob::class)) {
+            $schedule->job(new RefreshFxRatesJob)->dailyAt('06:15')->withoutOverlapping();
         }
 
         // Spatie Backup — daily backup + monitoring + cleanup
-        if (class_exists(\Spatie\Backup\BackupServiceProvider::class)) {
+        if (class_exists(BackupServiceProvider::class)) {
             $schedule->command('backup:clean')->dailyAt('01:00')->withoutOverlapping();
             $schedule->command('backup:run')->dailyAt('01:30')->withoutOverlapping();
             $schedule->command('backup:monitor')->dailyAt('07:00')->withoutOverlapping();
@@ -76,7 +83,6 @@ class Kernel extends ConsoleKernel
 
         // Backup verification — monthly integrity check
         $schedule->command('backup:verify')->monthly()->withoutOverlapping();
-
 
         $schedule->command('app:ops-heartbeat')
             ->everyFiveMinutes()
@@ -90,7 +96,7 @@ class Kernel extends ConsoleKernel
 
     protected function commands(): void
     {
-        $this->load(__DIR__ . '/Commands');
+        $this->load(__DIR__.'/Commands');
 
         require base_path('routes/console.php');
     }

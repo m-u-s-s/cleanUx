@@ -22,7 +22,7 @@ use Illuminate\Support\Facades\Config;
 class PricingDsl
 {
     /**
-     * @param array<string,mixed> $variables
+     * @param  array<string,mixed>  $variables
      */
     public function evaluate(array $tree, array $variables): bool
     {
@@ -36,6 +36,7 @@ class PricingDsl
                     return false;
                 }
             }
+
             return true;
         }
 
@@ -45,6 +46,7 @@ class PricingDsl
                     return true;
                 }
             }
+
             return false;
         }
 
@@ -71,13 +73,13 @@ class PricingDsl
         $varValue = $variables[$field] ?? null;
 
         return match ($op) {
-            'eq'  => $varValue == $value,
+            'eq' => $varValue == $value,
             'neq' => $varValue != $value,
-            'in'  => is_array($value) && in_array($varValue, $value, true),
+            'in' => is_array($value) && in_array($varValue, $value, true),
             'not_in' => is_array($value) && ! in_array($varValue, $value, true),
-            'gt'  => $varValue !== null && $varValue > $value,
+            'gt' => $varValue !== null && $varValue > $value,
             'gte' => $varValue !== null && $varValue >= $value,
-            'lt'  => $varValue !== null && $varValue < $value,
+            'lt' => $varValue !== null && $varValue < $value,
             'lte' => $varValue !== null && $varValue <= $value,
             'between' => is_array($value) && $varValue !== null
                 && $varValue >= ($value[0] ?? PHP_INT_MIN)

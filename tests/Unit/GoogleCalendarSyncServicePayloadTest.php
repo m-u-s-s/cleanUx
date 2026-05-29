@@ -2,8 +2,8 @@
 
 namespace Tests\Unit;
 
-use App\Models\PostalCode;
 use App\Models\Booking;
+use App\Models\PostalCode;
 use App\Models\ServiceCatalog;
 use App\Models\ServiceZone;
 use App\Models\User;

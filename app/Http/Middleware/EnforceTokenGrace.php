@@ -2,11 +2,10 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\Sanctum\PersonalAccessTokenV2;
 use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
-
-use App\Models\Sanctum\PersonalAccessTokenV2;
 
 /**
  * EnforceTokenGrace
@@ -48,9 +47,9 @@ class EnforceTokenGrace
             && $fresh->rotation_grace_until->isPast()
         ) {
             return response()->json([
-                'ok'         => false,
+                'ok' => false,
                 'error_code' => 'token_grace_expired',
-                'message'    => 'Token has been rotated and is no longer valid.',
+                'message' => 'Token has been rotated and is no longer valid.',
             ], 401);
         }
 

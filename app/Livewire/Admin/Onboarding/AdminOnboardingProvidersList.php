@@ -4,9 +4,10 @@ namespace App\Livewire\Admin\Onboarding;
 
 use App\Models\ProviderOnboardingDocument;
 use App\Models\ProviderProfile;
-use App\Services\Onboarding\ProviderOnboardingService;
 use Illuminate\Contracts\View\View;
-use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -28,6 +29,7 @@ class AdminOnboardingProvidersList extends Component
     protected $paginationTheme = 'tailwind';
 
     public string $search = '';
+
     public string $filterStatus = 'in_progress'; // in_progress | ready | verified | all
 
     public function updatingSearch()
@@ -67,7 +69,7 @@ class AdminOnboardingProvidersList extends Component
 
         // Recherche
         $query->when($this->search !== '', function ($q) {
-            $term = '%' . trim($this->search) . '%';
+            $term = '%'.trim($this->search).'%';
             $q->whereHas('user', function ($u) use ($term) {
                 $u->where('name', 'like', $term)
                     ->orWhere('email', 'like', $term);
@@ -76,7 +78,6 @@ class AdminOnboardingProvidersList extends Component
 
         return $query->paginate(15);
     }
-
 
     public function approveOnboarding(int $providerId): void
     {
@@ -88,19 +89,19 @@ class AdminOnboardingProvidersList extends Component
             $profile = ProviderProfile::query()->findOrFail($providerId);
         }
 
-
-        $documentsQuery = \App\Models\ProviderOnboardingDocument::query()
+        $documentsQuery = ProviderOnboardingDocument::query()
             ->where('user_id', $providerId);
 
         $totalDocuments = $documentsQuery->count();
 
-        $hasBlockingDocuments = \App\Models\ProviderOnboardingDocument::query()
+        $hasBlockingDocuments = ProviderOnboardingDocument::query()
             ->where('user_id', $providerId)
             ->whereNotIn('status', ['approved', 'valid', 'validated'])
             ->exists();
 
         if ($totalDocuments === 0 || $hasBlockingDocuments) {
             $this->addError('onboarding', 'Impossible d’approuver ce prestataire : les documents requis ne sont pas encore validés.');
+
             return;
         }
 
@@ -121,14 +122,13 @@ class AdminOnboardingProvidersList extends Component
     public function documentsCountFor(int $userId): array
     {
         return [
-            'pending'  => ProviderOnboardingDocument::forUser($userId)->where('status', 'pending_review')->count(),
+            'pending' => ProviderOnboardingDocument::forUser($userId)->where('status', 'pending_review')->count(),
             'approved' => ProviderOnboardingDocument::forUser($userId)->approved()->count(),
             'rejected' => ProviderOnboardingDocument::forUser($userId)->where('status', 'rejected')->count(),
         ];
     }
 
     #[Layout('layouts.app')]
-
     public function mount(): void
     {
         $this->loadCounts();
@@ -144,10 +144,6 @@ class AdminOnboardingProvidersList extends Component
         $this->counts = $this->calculateCounts();
     }
 
-
-
-
-
     protected function refreshOnboardingCounts(): void
     {
         $this->refreshCounts();
@@ -155,7 +151,7 @@ class AdminOnboardingProvidersList extends Component
 
     protected function calculateCounts(): array
     {
-        if (! \Illuminate\Support\Facades\Schema::hasTable('provider_profiles')) {
+        if (! Schema::hasTable('provider_profiles')) {
             return [
                 'in_progress' => 0,
                 'ready' => 0,
@@ -166,7 +162,7 @@ class AdminOnboardingProvidersList extends Component
             ];
         }
 
-        $profiles = \Illuminate\Support\Facades\DB::table('provider_profiles')->get();
+        $profiles = DB::table('provider_profiles')->get();
 
         $inProgress = 0;
         $ready = 0;
@@ -182,11 +178,13 @@ class AdminOnboardingProvidersList extends Component
 
             if ($verification === 'rejected') {
                 $rejected++;
+
                 continue;
             }
 
             if ($verification === 'verified' || $status === 'active' || ! empty($completedAt)) {
                 $verified++;
+
                 continue;
             }
 
@@ -196,6 +194,7 @@ class AdminOnboardingProvidersList extends Component
 
             if ($step >= 5) {
                 $ready++;
+
                 continue;
             }
 
@@ -214,35 +213,29 @@ class AdminOnboardingProvidersList extends Component
         ];
     }
 
-
-
-
-
-
-
     public function render(): View
     {
         return view('livewire.admin.onboarding.admin-onboarding-providers-list', [
             'providers' => $this->providers,
-            'counts'    => $this->counts,
+            'counts' => $this->counts,
         ]);
     }
 
     public function getCountsProperty(): array
     {
-        $verifiedQuery = \App\Models\ProviderProfile::query()
+        $verifiedQuery = ProviderProfile::query()
             ->where(function ($q) {
                 $q->where('verification_status', 'verified')
-                  ->orWhere('status', 'active')
-                  ->orWhereNotNull('onboarding_completed_at');
+                    ->orWhere('status', 'active')
+                    ->orWhereNotNull('onboarding_completed_at');
             });
 
-        $readyQuery = \App\Models\ProviderProfile::query()
+        $readyQuery = ProviderProfile::query()
             ->where('verification_status', '!=', 'verified')
             ->whereNull('onboarding_completed_at')
             ->where('onboarding_step', '>=', 5);
 
-        $inProgressQuery = \App\Models\ProviderProfile::query()
+        $inProgressQuery = ProviderProfile::query()
             ->where('verification_status', '!=', 'verified')
             ->whereNull('onboarding_completed_at')
             ->where('onboarding_step', '<', 5)
@@ -250,11 +243,10 @@ class AdminOnboardingProvidersList extends Component
 
         return [
             'in_progress' => $inProgressQuery->count(),
-            'ready'       => $readyQuery->count(),
-            'verified'    => $verifiedQuery->count(),
+            'ready' => $readyQuery->count(),
+            'verified' => $verifiedQuery->count(),
         ];
     }
-
 
     private function refreshProviderOnboardingCounts(): void
     {
@@ -269,9 +261,9 @@ class AdminOnboardingProvidersList extends Component
             'verified' => 0,
         ];
 
-        \App\Models\ProviderProfile::query()
+        ProviderProfile::query()
             ->get()
-            ->filter(fn($profile) => $this->providerHasOnboardingSignal($profile))
+            ->filter(fn ($profile) => $this->providerHasOnboardingSignal($profile))
             ->each(function ($profile) use (&$counts) {
                 $bucket = $this->providerOnboardingBucket($profile);
 
@@ -283,7 +275,7 @@ class AdminOnboardingProvidersList extends Component
         return $counts;
     }
 
-    private function providerOnboardingBucket(\App\Models\ProviderProfile $profile): string
+    private function providerOnboardingBucket(ProviderProfile $profile): string
     {
         $verificationStatus = strtolower((string) ($profile->verification_status ?? ''));
         $onboardingStatus = strtolower((string) ($profile->onboarding_status ?? ''));
@@ -306,7 +298,7 @@ class AdminOnboardingProvidersList extends Component
         return 'in_progress';
     }
 
-    private function providerHasOnboardingSignal(\App\Models\ProviderProfile $profile): bool
+    private function providerHasOnboardingSignal(ProviderProfile $profile): bool
     {
         $verificationStatus = strtolower((string) ($profile->verification_status ?? ''));
         $onboardingStatus = strtolower((string) ($profile->onboarding_status ?? ''));
@@ -354,10 +346,7 @@ class AdminOnboardingProvidersList extends Component
         return $this->providerOnboardingDocuments($profile)->isNotEmpty();
     }
 
-
-
-
-    private function providerDocumentsAreReady(\App\Models\ProviderProfile $profile): bool
+    private function providerDocumentsAreReady(ProviderProfile $profile): bool
     {
         $documents = $this->providerOnboardingDocuments($profile);
 
@@ -379,17 +368,17 @@ class AdminOnboardingProvidersList extends Component
         });
     }
 
-    private function providerOnboardingDocuments(\App\Models\ProviderProfile $profile): \Illuminate\Support\Collection
+    private function providerOnboardingDocuments(ProviderProfile $profile): Collection
     {
-        if (! \Illuminate\Support\Facades\Schema::hasTable('provider_onboarding_documents')) {
+        if (! Schema::hasTable('provider_onboarding_documents')) {
             return collect();
         }
 
-        $hasProviderUserId = \Illuminate\Support\Facades\Schema::hasColumn('provider_onboarding_documents', 'provider_user_id');
-        $hasUserId = \Illuminate\Support\Facades\Schema::hasColumn('provider_onboarding_documents', 'user_id');
-        $hasProviderProfileId = \Illuminate\Support\Facades\Schema::hasColumn('provider_onboarding_documents', 'provider_profile_id');
+        $hasProviderUserId = Schema::hasColumn('provider_onboarding_documents', 'provider_user_id');
+        $hasUserId = Schema::hasColumn('provider_onboarding_documents', 'user_id');
+        $hasProviderProfileId = Schema::hasColumn('provider_onboarding_documents', 'provider_profile_id');
 
-        return \Illuminate\Support\Facades\DB::table('provider_onboarding_documents')
+        return DB::table('provider_onboarding_documents')
             ->where(function ($query) use ($profile, $hasProviderUserId, $hasUserId, $hasProviderProfileId) {
                 if ($hasProviderUserId) {
                     $query->orWhere('provider_user_id', $profile->user_id);
@@ -410,7 +399,6 @@ class AdminOnboardingProvidersList extends Component
             ->get();
     }
 
-
     private function recalculateProviderOnboardingCountsStable(): array
     {
         $counts = [
@@ -419,7 +407,7 @@ class AdminOnboardingProvidersList extends Component
             'verified' => 0,
         ];
 
-        $profiles = \App\Models\ProviderProfile::query()->get();
+        $profiles = ProviderProfile::query()->get();
 
         foreach ($profiles as $profile) {
             $status = $this->normalizeProviderOnboardingStatusStable($profile);
@@ -432,7 +420,7 @@ class AdminOnboardingProvidersList extends Component
         return $counts;
     }
 
-    private function normalizeProviderOnboardingStatusStable(\App\Models\ProviderProfile $profile): string
+    private function normalizeProviderOnboardingStatusStable(ProviderProfile $profile): string
     {
         $values = collect([
             $profile->onboarding_status ?? null,
@@ -440,7 +428,7 @@ class AdminOnboardingProvidersList extends Component
             $profile->status ?? null,
         ])
             ->filter()
-            ->map(fn($value) => strtolower(trim((string) $value)))
+            ->map(fn ($value) => strtolower(trim((string) $value)))
             ->values()
             ->all();
 

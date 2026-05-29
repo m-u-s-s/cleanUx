@@ -16,8 +16,11 @@ class TripTrackingCenter extends Component
     protected $paginationTheme = 'tailwind';
 
     public string $tab = 'live';
+
     public string $statusFilter = '';
+
     public string $search = '';
+
     public ?int $selectedSessionId = null;
 
     public function setTab(string $tab): void
@@ -57,10 +60,10 @@ class TripTrackingCenter extends Component
             ->with(['provider:id,name', 'booking:id,client_id'])
             ->when($this->statusFilter, fn ($q) => $q->where('status', $this->statusFilter))
             ->when($this->search, function ($q) {
-                $term = '%' . $this->search . '%';
+                $term = '%'.$this->search.'%';
                 $q->where(function ($w) use ($term) {
                     $w->where('code', 'like', $term)
-                      ->orWhereHas('provider', fn ($u) => $u->where('name', 'like', $term));
+                        ->orWhereHas('provider', fn ($u) => $u->where('name', 'like', $term));
                 });
             })
             ->orderByDesc('ended_at')

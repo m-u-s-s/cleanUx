@@ -3,11 +3,9 @@
 namespace App\Livewire\Client;
 
 use App\Models\ContractDocument;
-use App\Models\ContractSignature;
 use App\Models\ContractTemplate;
 use App\Services\ContractsV2\ContractService;
 use Illuminate\Contracts\View\View;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
 use Livewire\Attributes\Computed;
@@ -19,8 +17,11 @@ class ClientContractSign extends Component
 
     // Form fields
     public string $signerName = '';
+
     public string $signatureData = '';   // base64 PNG du canvas pad
+
     public bool $termsAccepted = false;
+
     public string $countryCode = '';
 
     public function mount(?int $documentId = null): void
@@ -35,6 +36,7 @@ class ClientContractSign extends Component
         $doc = ContractDocument::query()->find($documentId);
         if (! $doc || ($doc->user_id && $doc->user_id !== Auth::id())) {
             $this->dispatch('toast', 'Document inaccessible.', 'error');
+
             return;
         }
         $this->documentId = $doc->id;
@@ -49,7 +51,7 @@ class ClientContractSign extends Component
             $this->documentId = $doc->id;
             $this->dispatch('toast', 'Contrat généré, prêt à signer.', 'success');
         } catch (ValidationException $e) {
-            $this->dispatch('toast', 'Erreur : ' . implode(' / ', collect($e->errors())->flatten()->all()), 'error');
+            $this->dispatch('toast', 'Erreur : '.implode(' / ', collect($e->errors())->flatten()->all()), 'error');
         }
     }
 
@@ -57,6 +59,7 @@ class ClientContractSign extends Component
     {
         if (! $this->documentId) {
             $this->dispatch('toast', 'Sélectionnez un contrat d\'abord.', 'error');
+
             return;
         }
         $this->validate([
@@ -72,6 +75,7 @@ class ClientContractSign extends Component
         $doc = ContractDocument::query()->find($this->documentId);
         if (! $doc || ($doc->user_id && $doc->user_id !== Auth::id())) {
             $this->dispatch('toast', 'Document inaccessible.', 'error');
+
             return;
         }
         try {
@@ -86,7 +90,7 @@ class ClientContractSign extends Component
             $this->signatureData = '';
             $this->dispatch('toast', 'Contrat signé. Une copie PDF est disponible dans vos documents.', 'success');
         } catch (ValidationException $e) {
-            $this->dispatch('toast', 'Erreur : ' . implode(' / ', collect($e->errors())->flatten()->all()), 'error');
+            $this->dispatch('toast', 'Erreur : '.implode(' / ', collect($e->errors())->flatten()->all()), 'error');
         }
     }
 
@@ -134,6 +138,7 @@ class ClientContractSign extends Component
         if (! $doc || ($doc->user_id && $doc->user_id !== Auth::id())) {
             return null;
         }
+
         return $doc;
     }
 

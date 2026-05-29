@@ -17,29 +17,45 @@ use Livewire\WithPagination;
 
 class MesRendezVous extends Component
 {
-    use WithPagination;
     use WithFileUploads;
+    use WithPagination;
 
     public $filtreStatus = null;
+
     public $priorite = null;
+
     public $tri = 'asc';
+
     public $search = '';
+
     public $selectedRdvId = null;
 
     public $showCheckInModal = false;
+
     public $checkInRdvId = null;
+
     public $photos_avant = [];
+
     public $terrain_checklist = [];
+
     public $remarque_terrain = '';
 
     public $showRapportModal = false;
+
     public $rapportRdvId = null;
+
     public $commentaire_fin_mission = '';
+
     public $duree_reelle = null;
+
     public $photos_apres = [];
+
     public $incident_terrain = '';
+
     public $client_presence_confirmee = false;
+
     public $client_signature_data = null;
+
     public $selectedMissionId = null;
 
     protected $listeners = [
@@ -68,7 +84,7 @@ class MesRendezVous extends Component
             'mission.activeTrackingSession',
         ])
             ->where('employe_id', Auth::id())
-            ->when($this->search, fn($q) => $q->searchStructured($this->search));
+            ->when($this->search, fn ($q) => $q->searchStructured($this->search));
 
         if ($this->filtreStatus) {
             $query->where('status', $this->filtreStatus);
@@ -100,7 +116,6 @@ class MesRendezVous extends Component
             ->orderBy('heure', $this->tri)
             ->paginate(5);
     }
-
 
     public function selectRdv(int $id): void
     {
@@ -155,7 +170,7 @@ class MesRendezVous extends Component
 
     public function mettreAJourStatut($id, $status)
     {
-        if (!in_array($status, [
+        if (! in_array($status, [
             'confirme',
             'refuse',
             'en_attente',
@@ -264,7 +279,7 @@ class MesRendezVous extends Component
         ];
 
         $rdv->photos_avant = $storedPhotos;
-        $rdv->terrain_checklist = array_merge($this->defaultChecklist(), array_map(fn($value) => (bool) $value, $this->terrain_checklist ?? []));
+        $rdv->terrain_checklist = array_merge($this->defaultChecklist(), array_map(fn ($value) => (bool) $value, $this->terrain_checklist ?? []));
         $rdv->remarque_terrain = $this->remarque_terrain;
         $rdv->client_presence_confirmed_at = ($rdv->terrain_checklist['client_present'] ?? false) ? now() : $rdv->client_presence_confirmed_at;
         $rdv->mission_started_at = $rdv->mission_started_at ?? now();
@@ -340,7 +355,7 @@ class MesRendezVous extends Component
             return null;
         }
 
-        $path = 'rendezvous/signatures/' . Str::uuid() . '.' . $extension;
+        $path = 'rendezvous/signatures/'.Str::uuid().'.'.$extension;
         Storage::disk('public')->put($path, $binary);
 
         return $path;

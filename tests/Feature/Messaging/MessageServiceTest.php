@@ -7,7 +7,6 @@ use App\Events\Messaging\MessageDeleted;
 use App\Events\Messaging\MessageEdited;
 use App\Events\Messaging\UserMentioned;
 use App\Models\Channel;
-use App\Models\Message;
 use App\Models\OrganizationAccount;
 use App\Models\User;
 use App\Notifications\MentionedInMessageNotification;
@@ -23,15 +22,15 @@ class MessageServiceTest extends TestCase
 
     private function makeChannelWithUsers(int $extraMembers = 1): array
     {
-        $org    = OrganizationAccount::factory()->create();
+        $org = OrganizationAccount::factory()->create();
         $author = User::factory()->create(['organization_account_id' => $org->id]);
 
         $channel = Channel::create([
             'organization_account_id' => $org->id,
-            'name'                    => 'team-test',
-            'type'                    => Channel::TYPE_TEAM,
-            'is_private'              => false,
-            'created_by'              => $author->id,
+            'name' => 'team-test',
+            'type' => Channel::TYPE_TEAM,
+            'is_private' => false,
+            'created_by' => $author->id,
         ]);
         $channel->members()->attach($author->id);
 
@@ -56,16 +55,16 @@ class MessageServiceTest extends TestCase
 
         $message = app(MessageService::class)->send(
             channel: $ctx['channel'],
-            sender:  $ctx['author'],
+            sender: $ctx['author'],
             content: 'Salut équipe',
         );
 
         $this->assertDatabaseHas('messages', [
-            'id'         => $message->id,
+            'id' => $message->id,
             'channel_id' => $ctx['channel']->id,
-            'user_id'    => $ctx['author']->id,
-            'content'    => 'Salut équipe',
-            'parent_id'  => null,
+            'user_id' => $ctx['author']->id,
+            'content' => 'Salut équipe',
+            'parent_id' => null,
         ]);
 
         Event::assertDispatched(MessageSent::class, fn ($e) => $e->message->id === $message->id);
@@ -73,8 +72,8 @@ class MessageServiceTest extends TestCase
 
     public function test_send_with_parent_id_increments_thread_replies_count(): void
     {
-        $ctx    = $this->makeChannelWithUsers();
-        $svc    = app(MessageService::class);
+        $ctx = $this->makeChannelWithUsers();
+        $svc = app(MessageService::class);
 
         $parent = $svc->send($ctx['channel'], $ctx['author'], 'Question initiale');
 
@@ -97,13 +96,13 @@ class MessageServiceTest extends TestCase
         Notification::fake();
         Event::fake([UserMentioned::class, MessageSent::class]);
 
-        $ctx    = $this->makeChannelWithUsers(1);
-        $bob    = $ctx['others'][0];
+        $ctx = $this->makeChannelWithUsers(1);
+        $bob = $ctx['others'][0];
         // bob s'appelle "Member0 Test" → on le mentionne par "member0"
         $msg = app(MessageService::class)->send(
             $ctx['channel'],
             $ctx['author'],
-            "@member0 peux-tu valider ?",
+            '@member0 peux-tu valider ?',
         );
 
         Notification::assertSentTo($bob, MentionedInMessageNotification::class);
@@ -114,9 +113,9 @@ class MessageServiceTest extends TestCase
     {
         Event::fake([MessageEdited::class]);
 
-        $ctx     = $this->makeChannelWithUsers(1);
-        $author  = $ctx['author'];
-        $bob     = $ctx['others'][0];
+        $ctx = $this->makeChannelWithUsers(1);
+        $author = $ctx['author'];
+        $bob = $ctx['others'][0];
 
         $message = app(MessageService::class)->send($ctx['channel'], $author, 'original');
 
@@ -158,7 +157,7 @@ class MessageServiceTest extends TestCase
         $svc = app(MessageService::class);
 
         $parent = $svc->send($ctx['channel'], $ctx['author'], 'parent');
-        $reply  = $svc->send($ctx['channel'], $ctx['author'], 'reply', parentId: $parent->id);
+        $reply = $svc->send($ctx['channel'], $ctx['author'], 'reply', parentId: $parent->id);
 
         $parent->refresh();
         $this->assertSame(1, $parent->replies_count);

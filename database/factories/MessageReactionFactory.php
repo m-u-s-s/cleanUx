@@ -15,8 +15,8 @@ class MessageReactionFactory extends Factory
     {
         return [
             'message_id' => fn () => Message::factory()->create()->id,
-            'user_id'    => fn () => User::factory()->create()->id,
-            'emoji'      => fake()->randomElement(['+1', 'heart', 'rocket', 'tada', 'eyes']),
+            'user_id' => fn () => User::factory()->create()->id,
+            'emoji' => fake()->randomElement(['+1', 'heart', 'rocket', 'tada', 'eyes']),
         ];
     }
 }

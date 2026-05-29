@@ -14,7 +14,8 @@ use Illuminate\Support\Facades\Schema;
  * Ex: user belge avec preferred_currency = USD voit ses montants convertis
  *     dans le dashboard, mais en DB c'est toujours stocké en EUR.
  */
-return new class extends Migration {
+return new class extends Migration
+{
     public function up(): void
     {
         Schema::table('users', function (Blueprint $table) {

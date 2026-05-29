@@ -14,7 +14,7 @@ class ComplaintCaseFactory extends Factory
     public function definition(): array
     {
         return [
-            'reference' => 'DSP-' . fake()->unique()->numerify('######'),
+            'reference' => 'DSP-'.fake()->unique()->numerify('######'),
             'booking_id' => Booking::factory(),
             'client_id' => User::factory(),
             'category' => fake()->randomElement(['quality', 'no_show', 'payment', 'damage', 'safety', 'communication', 'other']),

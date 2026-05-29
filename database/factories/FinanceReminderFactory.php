@@ -14,21 +14,21 @@ class FinanceReminderFactory extends Factory
     {
         return [
             'finance_invoice_id' => fn () => FinanceInvoice::factory()->create()->id,
-            'reminder_type'      => fake()->randomElement(['first', 'second', 'final']),
-            'channel'            => 'email',
-            'status'             => 'sent',
-            'recipient_email'    => fake()->safeEmail(),
-            'sent_at'            => now(),
-            'error_message'      => null,
-            'meta'               => null,
+            'reminder_type' => fake()->randomElement(['first', 'second', 'final']),
+            'channel' => 'email',
+            'status' => 'sent',
+            'recipient_email' => fake()->safeEmail(),
+            'sent_at' => now(),
+            'error_message' => null,
+            'meta' => null,
         ];
     }
 
     public function failed(): static
     {
         return $this->state(fn () => [
-            'status'        => 'failed',
-            'sent_at'       => null,
+            'status' => 'failed',
+            'sent_at' => null,
             'error_message' => 'Delivery failed',
         ]);
     }

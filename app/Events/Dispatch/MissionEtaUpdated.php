@@ -30,18 +30,18 @@ class MissionEtaUpdated implements ShouldBroadcast
     public function broadcastOn(): array
     {
         return [
-            new PrivateChannel('mission.' . $this->missionId),
+            new PrivateChannel('mission.'.$this->missionId),
         ];
     }
 
     public function broadcastWith(): array
     {
         return [
-            'mission_id'      => $this->missionId,
-            'eta_seconds'     => $this->etaSeconds,
+            'mission_id' => $this->missionId,
+            'eta_seconds' => $this->etaSeconds,
             'distance_meters' => $this->distanceMeters,
-            'source'          => $this->source,
-            'calculated_at'   => now()->toIso8601String(),
+            'source' => $this->source,
+            'calculated_at' => now()->toIso8601String(),
         ];
     }
 

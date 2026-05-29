@@ -16,7 +16,7 @@ class PaymentException extends \RuntimeException
 
     public static function stripeApiError(string $stripeMessage): self
     {
-        return new self('Payment processor error: ' . $stripeMessage, 502);
+        return new self('Payment processor error: '.$stripeMessage, 502);
     }
 
     public static function noPaymentMethod(): self

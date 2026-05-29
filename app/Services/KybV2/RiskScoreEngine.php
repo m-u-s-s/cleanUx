@@ -2,10 +2,8 @@
 
 namespace App\Services\KybV2;
 
-use App\Models\BusinessBeneficialOwner;
 use App\Models\BusinessDocument;
 use App\Models\BusinessEntity;
-use App\Models\BusinessSanctionsCheck;
 use App\Models\BusinessVerification;
 
 class RiskScoreEngine
@@ -97,6 +95,7 @@ class RiskScoreEngine
         if ($score <= $highMax) {
             return BusinessEntity::RISK_HIGH;
         }
+
         return BusinessEntity::RISK_CRITICAL;
     }
 }

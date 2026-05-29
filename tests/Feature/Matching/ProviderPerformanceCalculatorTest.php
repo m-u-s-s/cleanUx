@@ -6,6 +6,7 @@ use App\Models\Booking;
 use App\Models\Feedback;
 use App\Models\Mission;
 use App\Models\MissionAssignment;
+use App\Models\ProviderPerformanceMetric;
 use App\Models\ProviderProfile;
 use App\Models\User;
 use App\Services\Matching\ProviderPerformanceCalculator;
@@ -17,6 +18,7 @@ class ProviderPerformanceCalculatorTest extends TestCase
     use RefreshDatabase;
 
     protected User $provider;
+
     protected ProviderPerformanceCalculator $calc;
 
     protected function setUp(): void
@@ -105,7 +107,7 @@ class ProviderPerformanceCalculatorTest extends TestCase
         $second = $this->calc->calculate($this->provider, 30);
 
         $this->assertSame($first->id, $second->id);
-        $this->assertSame(1, \App\Models\ProviderPerformanceMetric::query()
+        $this->assertSame(1, ProviderPerformanceMetric::query()
             ->where('user_id', $this->provider->id)
             ->count());
     }

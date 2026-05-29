@@ -22,11 +22,11 @@ class PublicSeoController extends Controller
         $now = now()->toIso8601String();
 
         $urls = [
-            ['loc' => $baseUrl . '/', 'priority' => '1.0', 'changefreq' => 'daily', 'lastmod' => $now],
-            ['loc' => $baseUrl . '/providers', 'priority' => '0.9', 'changefreq' => 'daily', 'lastmod' => $now],
-            ['loc' => $baseUrl . '/aide', 'priority' => '0.6', 'changefreq' => 'weekly', 'lastmod' => $now],
-            ['loc' => $baseUrl . '/terms-of-service', 'priority' => '0.3', 'changefreq' => 'monthly', 'lastmod' => $now],
-            ['loc' => $baseUrl . '/privacy-policy', 'priority' => '0.3', 'changefreq' => 'monthly', 'lastmod' => $now],
+            ['loc' => $baseUrl.'/', 'priority' => '1.0', 'changefreq' => 'daily', 'lastmod' => $now],
+            ['loc' => $baseUrl.'/providers', 'priority' => '0.9', 'changefreq' => 'daily', 'lastmod' => $now],
+            ['loc' => $baseUrl.'/aide', 'priority' => '0.6', 'changefreq' => 'weekly', 'lastmod' => $now],
+            ['loc' => $baseUrl.'/terms-of-service', 'priority' => '0.3', 'changefreq' => 'monthly', 'lastmod' => $now],
+            ['loc' => $baseUrl.'/privacy-policy', 'priority' => '0.3', 'changefreq' => 'monthly', 'lastmod' => $now],
         ];
 
         // Trades index pages : /providers/{trade_slug}
@@ -35,13 +35,14 @@ class PublicSeoController extends Controller
             foreach ($trades as $trade) {
                 $slug = $trade->slug ?? $trade->code;
                 $urls[] = [
-                    'loc' => $baseUrl . '/providers/' . urlencode($slug),
+                    'loc' => $baseUrl.'/providers/'.urlencode($slug),
                     'priority' => '0.8',
                     'changefreq' => 'weekly',
                     'lastmod' => ($trade->updated_at ?? now())->toIso8601String(),
                 ];
             }
-        } catch (\Throwable) {}
+        } catch (\Throwable) {
+        }
 
         // Provider profiles : /providers/{trade_slug}/{provider_slug}
         try {
@@ -52,22 +53,23 @@ class PublicSeoController extends Controller
                 ->get();
             foreach ($providers as $p) {
                 $urls[] = [
-                    'loc' => $baseUrl . '/providers/' . $p->user_id,
+                    'loc' => $baseUrl.'/providers/'.$p->user_id,
                     'priority' => '0.7',
                     'changefreq' => 'weekly',
                     'lastmod' => ($p->updated_at ?? now())->toIso8601String(),
                 ];
             }
-        } catch (\Throwable) {}
+        } catch (\Throwable) {
+        }
 
         $xml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
         $xml .= "<urlset xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\">\n";
         foreach ($urls as $u) {
             $xml .= "  <url>\n";
-            $xml .= "    <loc>" . htmlspecialchars($u['loc'], ENT_XML1, 'UTF-8') . "</loc>\n";
-            $xml .= "    <lastmod>" . $u['lastmod'] . "</lastmod>\n";
-            $xml .= "    <changefreq>" . $u['changefreq'] . "</changefreq>\n";
-            $xml .= "    <priority>" . $u['priority'] . "</priority>\n";
+            $xml .= '    <loc>'.htmlspecialchars($u['loc'], ENT_XML1, 'UTF-8')."</loc>\n";
+            $xml .= '    <lastmod>'.$u['lastmod']."</lastmod>\n";
+            $xml .= '    <changefreq>'.$u['changefreq']."</changefreq>\n";
+            $xml .= '    <priority>'.$u['priority']."</priority>\n";
             $xml .= "  </url>\n";
         }
         $xml .= "</urlset>\n";

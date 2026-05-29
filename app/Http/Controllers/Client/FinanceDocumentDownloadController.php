@@ -17,7 +17,7 @@ class FinanceDocumentDownloadController
         return $this->renderPdfOrHtml(
             'client.finance.quote-pdf',
             ['quote' => $quote],
-            'devis-' . ($quote->quote_number ?: $quote->id) . '.pdf'
+            'devis-'.($quote->quote_number ?: $quote->id).'.pdf'
         );
     }
 
@@ -29,7 +29,7 @@ class FinanceDocumentDownloadController
         return $this->renderPdfOrHtml(
             'client.finance.invoice-pdf',
             ['invoice' => $invoice],
-            'facture-' . ($invoice->invoice_number ?: $invoice->id) . '.pdf'
+            'facture-'.($invoice->invoice_number ?: $invoice->id).'.pdf'
         );
     }
 

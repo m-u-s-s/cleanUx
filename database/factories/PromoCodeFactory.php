@@ -3,7 +3,6 @@
 namespace Database\Factories;
 
 use App\Models\PromoCode;
-use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Str;
 
@@ -14,7 +13,7 @@ class PromoCodeFactory extends Factory
     public function definition(): array
     {
         return [
-            'code' => 'PROMO' . Str::upper(Str::random(6)),
+            'code' => 'PROMO'.Str::upper(Str::random(6)),
             'name' => fake()->words(3, true),
             'description' => fake()->sentence(),
             'discount_type' => fake()->randomElement(['percent', 'fixed_amount']),

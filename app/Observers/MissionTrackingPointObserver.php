@@ -46,10 +46,10 @@ class MissionTrackingPointObserver
 
         // Broadcast même si l'ETA est null (pour signaler l'update de position)
         event(new MissionEtaUpdated(
-            missionId:      $mission->id,
-            etaSeconds:     $eta['seconds'],
+            missionId: $mission->id,
+            etaSeconds: $eta['seconds'],
             distanceMeters: $eta['meters'],
-            source:         $eta['source'],
+            source: $eta['source'],
         ));
     }
 }

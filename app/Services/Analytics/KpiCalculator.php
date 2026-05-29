@@ -13,6 +13,7 @@ class KpiCalculator
         if ($total === 0) {
             return 0.0;
         }
+
         return round(($cancelled / $total) * 100, 1);
     }
 
@@ -21,6 +22,7 @@ class KpiCalculator
         if ($total === 0) {
             return null;
         }
+
         return round(($completed / $total) * 100, 1);
     }
 
@@ -33,6 +35,7 @@ class KpiCalculator
         if ($previous == 0.0) {
             return null;
         }
+
         return round((($current - $previous) / $previous) * 100, 1);
     }
 
@@ -41,6 +44,7 @@ class KpiCalculator
         if ($previous <= 0) {
             return null;
         }
+
         return round((($current - $previous) / $previous) * 100, 1);
     }
 }

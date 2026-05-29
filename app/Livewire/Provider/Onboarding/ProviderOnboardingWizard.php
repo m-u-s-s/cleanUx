@@ -37,12 +37,16 @@ class ProviderOnboardingWizard extends Component
 
     // Step 0 — Profil
     public string $name = '';
+
     public ?string $phone = '';
+
     public ?string $bio = '';
+
     public $photo = null;
 
     // Step 1 — Identité
     public string $identityType = 'identity_card';
+
     public $identityFile = null;
 
     // Step 2 — Fiscal
@@ -53,19 +57,22 @@ class ProviderOnboardingWizard extends Component
 
     // Step 4 — Compétences + zones
     public array $selectedSkills = [];
+
     public array $selectedZones = [];
+
     public array $availableSkills = [
         'cleaning_residential' => 'Nettoyage résidentiel',
-        'cleaning_office'      => 'Nettoyage bureau',
-        'plumbing'             => 'Plomberie',
-        'electrical'           => 'Électricité',
-        'gardening'            => 'Jardinage',
-        'moving'               => 'Déménagement',
-        'handyman'             => 'Bricolage / petits travaux',
-        'painting'             => 'Peinture',
+        'cleaning_office' => 'Nettoyage bureau',
+        'plumbing' => 'Plomberie',
+        'electrical' => 'Électricité',
+        'gardening' => 'Jardinage',
+        'moving' => 'Déménagement',
+        'handyman' => 'Bricolage / petits travaux',
+        'painting' => 'Peinture',
     ];
 
     public ?string $message = null;
+
     public ?string $messageType = null;
 
     public function mount(): void
@@ -112,12 +119,16 @@ class ProviderOnboardingWizard extends Component
 
     public function goToStep(int $step): void
     {
-        if ($step < 0 || $step > 6) return;
+        if ($step < 0 || $step > 6) {
+            return;
+        }
 
         // Ne peut pas sauter en avant des étapes pas faites
         $maxAllowed = max($this->currentStep, $step);
         $progress = $this->progress;
-        if ($step > $progress['current_step']) return;
+        if ($step > $progress['current_step']) {
+            return;
+        }
 
         $this->currentStep = $step;
         $this->message = null;
@@ -130,9 +141,9 @@ class ProviderOnboardingWizard extends Component
     public function saveStep0(): void
     {
         $this->validate([
-            'name'  => ['required', 'string', 'max:255'],
+            'name' => ['required', 'string', 'max:255'],
             'phone' => ['nullable', 'string', 'max:30'],
-            'bio'   => ['nullable', 'string', 'max:2000'],
+            'bio' => ['nullable', 'string', 'max:2000'],
             'photo' => ['nullable', 'image', 'max:5120'],
         ]);
 
@@ -140,9 +151,9 @@ class ProviderOnboardingWizard extends Component
             app(ProviderOnboardingService::class)->setProfileBasics(
                 Auth::user(),
                 [
-                    'name'  => $this->name,
+                    'name' => $this->name,
                     'phone' => $this->phone,
-                    'bio'   => $this->bio,
+                    'bio' => $this->bio,
                 ],
                 $this->photo,
             );
@@ -233,10 +244,10 @@ class ProviderOnboardingWizard extends Component
     public function saveStep4(): void
     {
         $this->validate([
-            'selectedSkills'   => ['required', 'array', 'min:1'],
+            'selectedSkills' => ['required', 'array', 'min:1'],
             'selectedSkills.*' => ['string'],
-            'selectedZones'    => ['nullable', 'array'],
-            'selectedZones.*'  => ['integer'],
+            'selectedZones' => ['nullable', 'array'],
+            'selectedZones.*' => ['integer'],
         ]);
 
         try {
@@ -264,7 +275,7 @@ class ProviderOnboardingWizard extends Component
             $this->dispatch('open-stripe-link', url: $url);
         } catch (\Throwable $e) {
             report($e);
-            $this->flashMessage('Erreur lors du lancement Stripe Connect : ' . $e->getMessage(), 'error');
+            $this->flashMessage('Erreur lors du lancement Stripe Connect : '.$e->getMessage(), 'error');
         }
     }
 
@@ -283,7 +294,7 @@ class ProviderOnboardingWizard extends Component
             }
         } catch (\Throwable $e) {
             report($e);
-            $this->flashMessage('Erreur lors de la vérification : ' . $e->getMessage(), 'error');
+            $this->flashMessage('Erreur lors de la vérification : '.$e->getMessage(), 'error');
         }
     }
 
@@ -307,9 +318,9 @@ class ProviderOnboardingWizard extends Component
     public function render(): View
     {
         return view('livewire.provider.onboarding.provider-onboarding-wizard', [
-            'progress'  => $this->progress,
+            'progress' => $this->progress,
             'documents' => $this->documents,
-            'zones'     => $this->zones,
+            'zones' => $this->zones,
         ]);
     }
 }

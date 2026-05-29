@@ -11,9 +11,13 @@ use Illuminate\Support\Str;
 class TripTrackingSession extends Model
 {
     public const STATUS_ENROUTE = 'enroute';
+
     public const STATUS_ARRIVED = 'arrived';
+
     public const STATUS_IN_MISSION = 'in_mission';
+
     public const STATUS_ENDED = 'ended';
+
     public const STATUS_CANCELLED = 'cancelled';
 
     protected $fillable = [
@@ -48,7 +52,7 @@ class TripTrackingSession extends Model
 
     public static function generateCode(): string
     {
-        return 'trip_' . Str::lower(Str::random(24));
+        return 'trip_'.Str::lower(Str::random(24));
     }
 
     public function booking(): BelongsTo

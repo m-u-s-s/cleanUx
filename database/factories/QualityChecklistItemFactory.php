@@ -24,17 +24,17 @@ class QualityChecklistItemFactory extends Factory
         ]);
 
         return [
-            'checklist_id'   => QualityChecklist::factory(),
-            'position'       => fake()->numberBetween(1, 20),
-            'code'           => Str::slug(fake()->unique()->words(3, true)),
-            'label'          => fake()->sentence(4),
-            'description'    => fake()->optional()->sentence(),
-            'item_type'      => $type,
-            'required'       => fake()->boolean(70),
-            'weight'         => fake()->randomElement([1, 2, 3, 5]),
-            'valid_options'  => $type === QualityChecklistItem::TYPE_RATING ? [1, 2, 3, 4, 5] : null,
+            'checklist_id' => QualityChecklist::factory(),
+            'position' => fake()->numberBetween(1, 20),
+            'code' => Str::slug(fake()->unique()->words(3, true)),
+            'label' => fake()->sentence(4),
+            'description' => fake()->optional()->sentence(),
+            'item_type' => $type,
+            'required' => fake()->boolean(70),
+            'weight' => fake()->randomElement([1, 2, 3, 5]),
+            'valid_options' => $type === QualityChecklistItem::TYPE_RATING ? [1, 2, 3, 4, 5] : null,
             'expected_value' => null,
-            'metadata'       => null,
+            'metadata' => null,
         ];
     }
 
@@ -46,7 +46,7 @@ class QualityChecklistItemFactory extends Factory
     public function rating(): static
     {
         return $this->state([
-            'item_type'     => QualityChecklistItem::TYPE_RATING,
+            'item_type' => QualityChecklistItem::TYPE_RATING,
             'valid_options' => [1, 2, 3, 4, 5],
         ]);
     }

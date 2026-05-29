@@ -4,7 +4,6 @@ namespace App\Services\Search;
 
 use App\Models\ServiceCatalog;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
-use Illuminate\Support\Facades\Schema;
 
 class ServiceCatalogSearchService
 {
@@ -33,7 +32,7 @@ class ServiceCatalogSearchService
         }
 
         if (! empty($params['q'])) {
-            $term = '%' . $params['q'] . '%';
+            $term = '%'.$params['q'].'%';
             $query->where(function ($q) use ($term) {
                 $q->where('name', 'like', $term)
                     ->orWhere('description', 'like', $term)

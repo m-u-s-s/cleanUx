@@ -13,17 +13,24 @@ class TaskBoard extends Component
     // ──────────────────────────────────────────────────────
     // State
     // ──────────────────────────────────────────────────────
-    public bool    $showCreate   = false;
-    public ?int    $editingId    = null;
-    public string  $filterMember = '';
-    public string  $filterPrio   = '';
+    public bool $showCreate = false;
+
+    public ?int $editingId = null;
+
+    public string $filterMember = '';
+
+    public string $filterPrio = '';
 
     // Formulaire
-    public string  $title        = '';
-    public string  $description  = '';
-    public string  $priority     = Task::PRIORITY_MEDIUM;
-    public string  $dueDate      = '';
-    public array   $assigneeIds  = [];
+    public string $title = '';
+
+    public string $description = '';
+
+    public string $priority = Task::PRIORITY_MEDIUM;
+
+    public string $dueDate = '';
+
+    public array $assigneeIds = [];
 
     // ──────────────────────────────────────────────────────
     // Mount
@@ -71,28 +78,28 @@ class TaskBoard extends Component
     public function createTask(): void
     {
         $this->validate([
-            'title'       => ['required', 'string', 'max:200'],
+            'title' => ['required', 'string', 'max:200'],
             'description' => ['nullable', 'string', 'max:1000'],
-            'priority'    => ['required', 'in:low,medium,high,urgent'],
-            'dueDate'     => ['nullable', 'date'],
+            'priority' => ['required', 'in:low,medium,high,urgent'],
+            'dueDate' => ['nullable', 'date'],
             'assigneeIds' => ['array'],
         ]);
 
-        $user  = Auth::user();
+        $user = Auth::user();
         $orgId = $user->current_organization_id;
 
         $task = Task::create([
             'organization_account_id' => $orgId,
-            'created_by'              => $user->id,
-            'title'                   => $this->title,
-            'description'             => $this->description,
-            'priority'                => $this->priority,
-            'status'                  => Task::STATUS_TODO,
-            'due_date'                => $this->dueDate ?: null,
+            'created_by' => $user->id,
+            'title' => $this->title,
+            'description' => $this->description,
+            'priority' => $this->priority,
+            'status' => Task::STATUS_TODO,
+            'due_date' => $this->dueDate ?: null,
         ]);
 
         // Assigner les membres
-        if (!empty($this->assigneeIds)) {
+        if (! empty($this->assigneeIds)) {
             $task->assignees()->attach($this->assigneeIds, [
                 'assigned_by' => $user->id,
                 'assigned_at' => now(),
@@ -162,12 +169,12 @@ class TaskBoard extends Component
 
     private function resetForm(): void
     {
-        $this->title       = '';
+        $this->title = '';
         $this->description = '';
-        $this->priority    = Task::PRIORITY_MEDIUM;
-        $this->dueDate     = '';
+        $this->priority = Task::PRIORITY_MEDIUM;
+        $this->dueDate = '';
         $this->assigneeIds = [];
-        $this->editingId   = null;
+        $this->editingId = null;
     }
 
     // ──────────────────────────────────────────────────────
@@ -176,10 +183,10 @@ class TaskBoard extends Component
     public function render()
     {
         return view('livewire.provider-company.task-board', [
-            'todoTasks'       => $this->todoTasksProperty,
+            'todoTasks' => $this->todoTasksProperty,
             'inProgressTasks' => $this->inProgressTasksProperty,
-            'doneTasks'       => $this->doneTasksProperty,
-            'members'         => $this->membersProperty,
+            'doneTasks' => $this->doneTasksProperty,
+            'members' => $this->membersProperty,
         ])->layout('layouts.provider-company');
     }
 }

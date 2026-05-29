@@ -71,7 +71,7 @@ Route::get('/missions/{mission}/rapport/pdf', function (Mission $mission) {
 
     abort_unless(filled($path), 404, 'Rapport PDF introuvable.');
 
-    $fullPath = storage_path('app/public/' . ltrim($path, '/'));
+    $fullPath = storage_path('app/public/'.ltrim($path, '/'));
 
     abort_unless(file_exists($fullPath), 404, 'Fichier du rapport introuvable.');
 

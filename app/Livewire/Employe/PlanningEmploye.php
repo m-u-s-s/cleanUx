@@ -5,17 +5,20 @@ namespace App\Livewire\Employe;
 use App\Models\Booking;
 use App\Models\ServiceZone;
 use Carbon\Carbon;
+use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
-use Illuminate\Contracts\View\View;
-use Livewire\Attributes\Layout;
 
 class PlanningEmploye extends Component
 {
     public string $viewMode = 'week';
+
     public string $anchorDate = '';
+
     public string $status = '';
+
     public string $zoneId = '';
+
     public string $service = '';
 
     public function mount(): void
@@ -25,7 +28,7 @@ class PlanningEmploye extends Component
 
     public function setViewMode(string $mode): void
     {
-        if (!in_array($mode, ['day', 'week', 'month'], true)) {
+        if (! in_array($mode, ['day', 'week', 'month'], true)) {
             return;
         }
 

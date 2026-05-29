@@ -13,11 +13,14 @@ class NpsSurvey extends Component
 {
     #[Url]
     public string $survey = 'post_booking';
+
     #[Url]
     public ?int $bookingId = null;
 
     public ?int $score = null;
+
     public string $comment = '';
+
     public bool $submitted = false;
 
     public function selectScore(int $score): void
@@ -29,6 +32,7 @@ class NpsSurvey extends Component
     {
         if ($this->score === null) {
             $this->dispatch('toast', 'Sélectionnez une note de 0 à 10.', 'error');
+
             return;
         }
 
@@ -46,7 +50,7 @@ class NpsSurvey extends Component
             $this->submitted = true;
             $this->dispatch('toast', 'Merci pour votre retour !', 'success');
         } catch (\Throwable $e) {
-            $this->dispatch('toast', 'Erreur : ' . $e->getMessage(), 'error');
+            $this->dispatch('toast', 'Erreur : '.$e->getMessage(), 'error');
         }
     }
 

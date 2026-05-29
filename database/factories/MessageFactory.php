@@ -14,20 +14,20 @@ class MessageFactory extends Factory
     public function definition(): array
     {
         return [
-            'channel_id'    => fn () => Channel::factory()->create()->id,
-            'user_id'       => fn () => User::factory()->create()->id,
-            'content'       => fake()->paragraph(),
-            'type'          => Message::TYPE_TEXT,
-            'parent_id'     => null,
-            'metadata'      => null,
-            'edited_at'     => null,
+            'channel_id' => fn () => Channel::factory()->create()->id,
+            'user_id' => fn () => User::factory()->create()->id,
+            'content' => fake()->paragraph(),
+            'type' => Message::TYPE_TEXT,
+            'parent_id' => null,
+            'metadata' => null,
+            'edited_at' => null,
             'replies_count' => 0,
             'last_reply_at' => null,
-            'deleted_by'    => null,
+            'deleted_by' => null,
             'deleted_reason' => null,
-            'is_pinned'     => false,
-            'pinned_at'     => null,
-            'pinned_by'     => null,
+            'is_pinned' => false,
+            'pinned_at' => null,
+            'pinned_by' => null,
         ];
     }
 

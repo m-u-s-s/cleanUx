@@ -16,7 +16,7 @@ class InspectionPhotoFactory extends Factory
         return [
             'inspection_id' => fn () => MissionQualityInspection::factory()->create()->id,
             'inspection_item_id' => null,
-            'photo_path' => 'photos/inspection/' . fake()->uuid() . '.jpg',
+            'photo_path' => 'photos/inspection/'.fake()->uuid().'.jpg',
             'photo_type' => InspectionPhoto::TYPE_AFTER,
             'uploaded_by_user_id' => fn () => User::factory()->create()->id,
             'uploaded_at' => now(),

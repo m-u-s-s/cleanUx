@@ -2,8 +2,8 @@
 
 namespace Tests\Unit;
 
-use App\Models\PostalCode;
 use App\Models\Booking;
+use App\Models\PostalCode;
 use App\Models\ServiceCatalog;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -53,7 +53,6 @@ class RendezVousModelHelpersTest extends TestCase
         $this->assertFalse($surPlace->canStillBeEditedByClient());
         $this->assertTrue($confirme->canStillBeEditedByClient());
     }
-
 
     public function test_search_structured_matches_catalog_name_and_postal_code_relation_without_legacy_fallbacks(): void
     {

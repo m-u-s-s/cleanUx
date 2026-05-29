@@ -34,6 +34,7 @@ trait ManagesServiceOptions
 
         if (! $serviceId) {
             $this->serviceOptions = [];
+
             return;
         }
 
@@ -49,40 +50,40 @@ trait ManagesServiceOptions
     public function resetNewOption(): void
     {
         $this->newOption = [
-            'slug'                  => '',
-            'label'                 => '',
-            'help_text'             => '',
-            'type'                  => 'number',
-            'values_text'           => '',
-            'unit'                  => '',
-            'is_required'           => false,
-            'price_modifier'        => 'none',
-            'price_modifier_value'  => '0',
-            'min_value'             => '',
-            'max_value'             => '',
-            'step'                  => '',
-            'sort_order'            => 0,
-            'is_active'             => true,
+            'slug' => '',
+            'label' => '',
+            'help_text' => '',
+            'type' => 'number',
+            'values_text' => '',
+            'unit' => '',
+            'is_required' => false,
+            'price_modifier' => 'none',
+            'price_modifier_value' => '0',
+            'min_value' => '',
+            'max_value' => '',
+            'step' => '',
+            'sort_order' => 0,
+            'is_active' => true,
         ];
     }
 
     protected function serializeOption(ServiceOption $o): array
     {
         return [
-            'slug'                 => (string) $o->slug,
-            'label'                => (string) $o->label,
-            'help_text'            => (string) ($o->help_text ?? ''),
-            'type'                 => (string) $o->type,
-            'values_text'          => is_array($o->values) ? implode("\n", $o->values) : '',
-            'unit'                 => (string) ($o->unit ?? ''),
-            'is_required'          => (bool) $o->is_required,
-            'price_modifier'       => (string) $o->price_modifier,
+            'slug' => (string) $o->slug,
+            'label' => (string) $o->label,
+            'help_text' => (string) ($o->help_text ?? ''),
+            'type' => (string) $o->type,
+            'values_text' => is_array($o->values) ? implode("\n", $o->values) : '',
+            'unit' => (string) ($o->unit ?? ''),
+            'is_required' => (bool) $o->is_required,
+            'price_modifier' => (string) $o->price_modifier,
             'price_modifier_value' => (string) $o->price_modifier_value,
-            'min_value'            => $o->min_value !== null ? (string) $o->min_value : '',
-            'max_value'            => $o->max_value !== null ? (string) $o->max_value : '',
-            'step'                 => $o->step !== null ? (string) $o->step : '',
-            'sort_order'           => (int) $o->sort_order,
-            'is_active'            => (bool) $o->is_active,
+            'min_value' => $o->min_value !== null ? (string) $o->min_value : '',
+            'max_value' => $o->max_value !== null ? (string) $o->max_value : '',
+            'step' => $o->step !== null ? (string) $o->step : '',
+            'sort_order' => (int) $o->sort_order,
+            'is_active' => (bool) $o->is_active,
         ];
     }
 
@@ -110,40 +111,40 @@ trait ManagesServiceOptions
         }
 
         return [
-            'slug'                 => Str::slug((string) ($payload['slug'] ?? ''), '_'),
-            'label'                => (string) ($payload['label'] ?? ''),
-            'help_text'            => filled($payload['help_text'] ?? null) ? $payload['help_text'] : null,
-            'type'                 => $type,
-            'values'               => $values,
-            'unit'                 => filled($payload['unit'] ?? null) ? $payload['unit'] : null,
-            'is_required'          => (bool) ($payload['is_required'] ?? false),
-            'price_modifier'       => $payload['price_modifier'] ?? 'none',
+            'slug' => Str::slug((string) ($payload['slug'] ?? ''), '_'),
+            'label' => (string) ($payload['label'] ?? ''),
+            'help_text' => filled($payload['help_text'] ?? null) ? $payload['help_text'] : null,
+            'type' => $type,
+            'values' => $values,
+            'unit' => filled($payload['unit'] ?? null) ? $payload['unit'] : null,
+            'is_required' => (bool) ($payload['is_required'] ?? false),
+            'price_modifier' => $payload['price_modifier'] ?? 'none',
             'price_modifier_value' => (float) ($payload['price_modifier_value'] ?? 0),
-            'min_value'            => filled($payload['min_value'] ?? null) ? (float) $payload['min_value'] : null,
-            'max_value'            => filled($payload['max_value'] ?? null) ? (float) $payload['max_value'] : null,
-            'step'                 => filled($payload['step'] ?? null) ? (float) $payload['step'] : null,
-            'sort_order'           => (int) ($payload['sort_order'] ?? 0),
-            'is_active'            => (bool) ($payload['is_active'] ?? true),
+            'min_value' => filled($payload['min_value'] ?? null) ? (float) $payload['min_value'] : null,
+            'max_value' => filled($payload['max_value'] ?? null) ? (float) $payload['max_value'] : null,
+            'step' => filled($payload['step'] ?? null) ? (float) $payload['step'] : null,
+            'sort_order' => (int) ($payload['sort_order'] ?? 0),
+            'is_active' => (bool) ($payload['is_active'] ?? true),
         ];
     }
 
     protected function validateOptionPayload(string $prefix, ?int $ignoreId = null): array
     {
         $rules = [
-            "$prefix.slug"                 => ['required', 'string', 'max:80', 'regex:/^[a-z0-9_]+$/'],
-            "$prefix.label"                => ['required', 'string', 'max:160'],
-            "$prefix.help_text"            => ['nullable', 'string', 'max:2000'],
-            "$prefix.type"                 => ['required', 'in:'.implode(',', ServiceOption::TYPES)],
-            "$prefix.values_text"          => ['nullable', 'string'],
-            "$prefix.unit"                 => ['nullable', 'string', 'max:20'],
-            "$prefix.is_required"          => ['boolean'],
-            "$prefix.price_modifier"       => ['required', 'in:'.implode(',', ServiceOption::PRICE_MODIFIERS)],
+            "$prefix.slug" => ['required', 'string', 'max:80', 'regex:/^[a-z0-9_]+$/'],
+            "$prefix.label" => ['required', 'string', 'max:160'],
+            "$prefix.help_text" => ['nullable', 'string', 'max:2000'],
+            "$prefix.type" => ['required', 'in:'.implode(',', ServiceOption::TYPES)],
+            "$prefix.values_text" => ['nullable', 'string'],
+            "$prefix.unit" => ['nullable', 'string', 'max:20'],
+            "$prefix.is_required" => ['boolean'],
+            "$prefix.price_modifier" => ['required', 'in:'.implode(',', ServiceOption::PRICE_MODIFIERS)],
             "$prefix.price_modifier_value" => ['nullable', 'numeric'],
-            "$prefix.min_value"            => ['nullable', 'numeric'],
-            "$prefix.max_value"            => ['nullable', 'numeric'],
-            "$prefix.step"                 => ['nullable', 'numeric', 'min:0'],
-            "$prefix.sort_order"           => ['nullable', 'integer', 'min:0'],
-            "$prefix.is_active"            => ['boolean'],
+            "$prefix.min_value" => ['nullable', 'numeric'],
+            "$prefix.max_value" => ['nullable', 'numeric'],
+            "$prefix.step" => ['nullable', 'numeric', 'min:0'],
+            "$prefix.sort_order" => ['nullable', 'integer', 'min:0'],
+            "$prefix.is_active" => ['boolean'],
         ];
 
         return $this->validate($rules);
@@ -163,6 +164,7 @@ trait ManagesServiceOptions
         if (ServiceOption::where('service_catalog_id', $service->id)
             ->where('slug', $payload['slug'])->exists()) {
             $this->addError('newOption.slug', 'Ce slug est déjà utilisé pour ce service.');
+
             return;
         }
 
@@ -172,8 +174,8 @@ trait ManagesServiceOptions
 
         ActivityLogger::log('service_option.created', $option, [
             'service_catalog_id' => $service->id,
-            'slug'               => $option->slug,
-            'type'               => $option->type,
+            'slug' => $option->slug,
+            'type' => $option->type,
         ]);
 
         $this->loadOptionsForService($service->id);
@@ -217,6 +219,7 @@ trait ManagesServiceOptions
             ->exists();
         if ($duplicate) {
             $this->addError("serviceOptions.$optionId.slug", 'Ce slug est déjà utilisé pour ce service.');
+
             return;
         }
 
@@ -225,9 +228,9 @@ trait ManagesServiceOptions
 
         ActivityLogger::log('service_option.updated', $option, [
             'service_catalog_id' => $option->service_catalog_id,
-            'slug'               => $option->slug,
-            'before'             => $before,
-            'after'              => Arr::only($option->fresh()->toArray(), array_keys($payload)),
+            'slug' => $option->slug,
+            'before' => $before,
+            'after' => Arr::only($option->fresh()->toArray(), array_keys($payload)),
         ]);
 
         $this->editingOptionId = null;
@@ -246,7 +249,7 @@ trait ManagesServiceOptions
 
         ActivityLogger::log('service_option.toggled', $option, [
             'service_catalog_id' => $option->service_catalog_id,
-            'is_active'          => $option->is_active,
+            'is_active' => $option->is_active,
         ]);
 
         $this->loadOptionsForService($option->service_catalog_id);
@@ -262,7 +265,7 @@ trait ManagesServiceOptions
 
         $context = [
             'service_catalog_id' => $option->service_catalog_id,
-            'slug'               => $option->slug,
+            'slug' => $option->slug,
         ];
 
         $option->delete();

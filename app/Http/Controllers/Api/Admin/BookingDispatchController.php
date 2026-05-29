@@ -11,13 +11,12 @@ use Illuminate\Http\Request;
 
 /**
  * @group Admin — Booking Dispatch
+ *
  * @authenticated
  */
 class BookingDispatchController extends Controller
 {
-    public function __construct(protected MissionDispatchService $dispatcher)
-    {
-    }
+    public function __construct(protected MissionDispatchService $dispatcher) {}
 
     public function dispatch(Request $request, Booking $booking): JsonResponse
     {
@@ -30,9 +29,9 @@ class BookingDispatchController extends Controller
         $assignment = $this->dispatcher->dispatchToNextProvider($mission);
 
         return response()->json([
-            'ok'            => true,
+            'ok' => true,
             'assignment_id' => $assignment?->id,
-            'provider_id'   => $assignment?->user_id,
+            'provider_id' => $assignment?->user_id,
         ]);
     }
 }

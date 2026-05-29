@@ -22,7 +22,7 @@ class MarketingCampaignStepFactory extends Factory
                 MarketingCampaignStep::CHANNEL_PUSH,
             ]),
             'subject' => fake()->optional()->sentence(6),
-            'template_code' => 'tpl_' . fake()->slug(2),
+            'template_code' => 'tpl_'.fake()->slug(2),
             'variant_label' => 'control',
             'is_active' => true,
             'content_overrides' => null,

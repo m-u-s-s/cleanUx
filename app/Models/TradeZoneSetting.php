@@ -27,7 +27,7 @@ class TradeZoneSetting extends Model
     ];
 
     protected $casts = [
-        'is_active'        => 'boolean',
+        'is_active' => 'boolean',
         'price_multiplier' => 'decimal:2',
     ];
 

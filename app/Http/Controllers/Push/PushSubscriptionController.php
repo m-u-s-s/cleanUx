@@ -22,29 +22,29 @@ class PushSubscriptionController extends Controller
     public function subscribe(Request $request): JsonResponse
     {
         $data = $request->validate([
-            'endpoint'    => ['required', 'string', 'url', 'max:2000'],
-            'keys'        => ['required', 'array'],
+            'endpoint' => ['required', 'string', 'url', 'max:2000'],
+            'keys' => ['required', 'array'],
             'keys.p256dh' => ['required', 'string', 'max:255'],
-            'keys.auth'   => ['required', 'string', 'max:255'],
-            'platform'    => ['nullable', 'string', 'max:50'],
-            'browser'     => ['nullable', 'string', 'max:50'],
+            'keys.auth' => ['required', 'string', 'max:255'],
+            'platform' => ['nullable', 'string', 'max:50'],
+            'browser' => ['nullable', 'string', 'max:50'],
         ]);
 
         $hash = PushSubscription::hashEndpoint($data['endpoint']);
 
         $subscription = PushSubscription::updateOrCreate(
             [
-                'user_id'       => $request->user()->id,
+                'user_id' => $request->user()->id,
                 'endpoint_hash' => $hash,
             ],
             [
-                'endpoint'      => $data['endpoint'],
-                'p256dh'        => $data['keys']['p256dh'],
-                'auth'          => $data['keys']['auth'],
-                'user_agent'    => substr((string) $request->userAgent(), 0, 500),
-                'platform'      => $data['platform'] ?? null,
-                'browser'       => $data['browser'] ?? null,
-                'is_active'     => true,
+                'endpoint' => $data['endpoint'],
+                'p256dh' => $data['keys']['p256dh'],
+                'auth' => $data['keys']['auth'],
+                'user_agent' => substr((string) $request->userAgent(), 0, 500),
+                'platform' => $data['platform'] ?? null,
+                'browser' => $data['browser'] ?? null,
+                'is_active' => true,
                 'failure_count' => 0,
             ]
         );
@@ -83,14 +83,14 @@ class PushSubscriptionController extends Controller
     {
         $result = $sender->sendToUser($request->user(), [
             'title' => '🧪 Notification test',
-            'body'  => 'Si tu vois ce message, les notifications push fonctionnent !',
-            'url'   => '/',
-            'tag'   => 'test-notification',
+            'body' => 'Si tu vois ce message, les notifications push fonctionnent !',
+            'url' => '/',
+            'tag' => 'test-notification',
             'requireInteraction' => false,
         ]);
 
         return response()->json([
-            'ok'     => true,
+            'ok' => true,
             'result' => $result,
         ]);
     }

@@ -14,7 +14,9 @@ class ProviderPublicProfile extends Component
     use WithPagination;
 
     public User $provider;
+
     public ?int $filterMinRating = null;
+
     public string $sort = 'recent';
 
     protected $paginationTheme = 'tailwind';

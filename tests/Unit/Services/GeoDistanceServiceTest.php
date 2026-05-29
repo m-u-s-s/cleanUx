@@ -12,7 +12,7 @@ class GeoDistanceServiceTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->service = new GeoDistanceService();
+        $this->service = new GeoDistanceService;
     }
 
     public function test_same_point_returns_zero_distance(): void

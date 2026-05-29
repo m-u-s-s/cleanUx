@@ -4,7 +4,6 @@ namespace Tests\Feature\Badges;
 
 use App\Models\Booking;
 use App\Models\Feedback;
-use App\Models\ProviderBadge;
 use App\Models\ProviderBadgeAward;
 use App\Models\User;
 use App\Services\Badges\ProviderBadgeEngine;

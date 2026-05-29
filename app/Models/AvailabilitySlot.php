@@ -9,11 +9,17 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class AvailabilitySlot extends Model
 {
     public const WEEKDAY_SUNDAY = 0;
+
     public const WEEKDAY_MONDAY = 1;
+
     public const WEEKDAY_TUESDAY = 2;
+
     public const WEEKDAY_WEDNESDAY = 3;
+
     public const WEEKDAY_THURSDAY = 4;
+
     public const WEEKDAY_FRIDAY = 5;
+
     public const WEEKDAY_SATURDAY = 6;
 
     protected $fillable = [

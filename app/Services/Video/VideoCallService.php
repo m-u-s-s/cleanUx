@@ -24,9 +24,9 @@ class VideoCallService
     /**
      * Create a video room for two participants tied to a booking.
      *
-     * @param  User         $host       Initiator (client or supervisor)
-     * @param  User         $guest      Recipient (provider or client)
-     * @param  Booking|null $booking    Optional booking context
+     * @param  User  $host  Initiator (client or supervisor)
+     * @param  User  $guest  Recipient (provider or client)
+     * @param  Booking|null  $booking  Optional booking context
      * @return array{room_url: string, room_sid: string, token_host: string, token_guest: string}
      *
      * @throws \RuntimeException when no video provider is configured

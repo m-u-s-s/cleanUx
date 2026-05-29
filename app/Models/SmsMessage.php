@@ -9,16 +9,25 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class SmsMessage extends Model
 {
     public const STATUS_QUEUED = 'queued';
+
     public const STATUS_SENT = 'sent';
+
     public const STATUS_DELIVERED = 'delivered';
+
     public const STATUS_FAILED = 'failed';
+
     public const STATUS_UNDELIVERED = 'undelivered';
+
     public const STATUS_RATE_LIMITED = 'rate_limited';
+
     public const STATUS_REJECTED = 'rejected';
 
     public const CATEGORY_TRANSACTIONAL = 'transactional';
+
     public const CATEGORY_VERIFICATION = 'verification';
+
     public const CATEGORY_REMINDER = 'reminder';
+
     public const CATEGORY_MARKETING = 'marketing';
 
     protected $fillable = [

@@ -22,16 +22,17 @@ use Illuminate\Support\Facades\Cache;
 class PresenceTracker
 {
     private const TTL_LAST_SEEN_SEC = 600;  // 10 min
-    private const TTL_STATUS_SEC    = 86400; // 24h
+
+    private const TTL_STATUS_SEC = 86400; // 24h
 
     public static function setStatus(User $user, string $status, ?string $customMessage = null): void
     {
         Cache::put(
             self::statusKey($user->id),
             [
-                'status'         => $status,
+                'status' => $status,
                 'custom_message' => $customMessage,
-                'set_at'         => now()->toIso8601String(),
+                'set_at' => now()->toIso8601String(),
             ],
             self::TTL_STATUS_SEC
         );
@@ -58,13 +59,13 @@ class PresenceTracker
     public static function get(User $user): array
     {
         return [
-            'status'    => Cache::get(self::statusKey($user->id), [
-                'status'         => UserPresenceChanged::STATUS_AVAILABLE,
+            'status' => Cache::get(self::statusKey($user->id), [
+                'status' => UserPresenceChanged::STATUS_AVAILABLE,
                 'custom_message' => null,
-                'set_at'         => null,
+                'set_at' => null,
             ]),
             'last_seen' => Cache::get(self::lastSeenKey($user->id)),
-            'online'    => self::isOnline($user->id),
+            'online' => self::isOnline($user->id),
         ];
     }
 

@@ -12,13 +12,14 @@ use RuntimeException;
 class GoogleCalendarOAuthService
 {
     private const AUTH_ENDPOINT = 'https://accounts.google.com/o/oauth2/v2/auth';
+
     private const TOKEN_ENDPOINT = 'https://oauth2.googleapis.com/token';
+
     private const USERINFO_ENDPOINT = 'https://www.googleapis.com/oauth2/v2/userinfo';
 
     public function __construct(
         private readonly Client $http = new Client(['timeout' => 20])
-    ) {
-    }
+    ) {}
 
     public function isConfigured(): bool
     {
@@ -31,7 +32,7 @@ class GoogleCalendarOAuthService
     {
         return (string) Parametre::getValeur(
             'google_calendar_redirect_uri',
-            config('app.url') . '/integrations/google-agenda/callback'
+            config('app.url').'/integrations/google-agenda/callback'
         );
     }
 
@@ -59,7 +60,7 @@ class GoogleCalendarOAuthService
             throw new RuntimeException('Google Calendar n’est pas configuré.');
         }
 
-        return self::AUTH_ENDPOINT . '?' . http_build_query([
+        return self::AUTH_ENDPOINT.'?'.http_build_query([
             'client_id' => $this->clientId(),
             'redirect_uri' => $this->redirectUri(),
             'response_type' => 'code',
@@ -134,7 +135,7 @@ class GoogleCalendarOAuthService
     {
         $response = $this->http->get(self::USERINFO_ENDPOINT, [
             'headers' => [
-                'Authorization' => 'Bearer ' . $accessToken,
+                'Authorization' => 'Bearer '.$accessToken,
                 'Accept' => 'application/json',
             ],
         ]);

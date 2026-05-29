@@ -9,8 +9,11 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class BusinessVerification extends Model
 {
     public const STATUS_PENDING = 'pending';
+
     public const STATUS_SUCCESS = 'success';
+
     public const STATUS_FAILED = 'failed';
+
     public const STATUS_ERROR = 'error';
 
     protected $fillable = [

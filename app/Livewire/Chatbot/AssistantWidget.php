@@ -2,8 +2,11 @@
 
 namespace App\Livewire\Chatbot;
 
+use App\Models\AssistantAction;
+use App\Models\AssistantApiLog;
 use App\Models\AssistantConversation;
 use App\Models\AssistantMessage;
+use App\Services\Assistant\Llm\LlmClient;
 use App\Services\Assistant\QuickActions;
 use App\Services\Assistant\Tools\AssistantToolDispatcher;
 use Illuminate\Support\Facades\Auth;
@@ -29,12 +32,17 @@ use Livewire\Component;
  */
 class AssistantWidget extends Component
 {
-    public bool   $isOpen          = false;
-    public bool   $isLoading       = false;
-    public string $input           = '';
-    public bool   $useStreaming    = true; // si false, fallback Phase 5 sync
-    public ?int   $conversationId  = null;
-    public ?int   $pendingActionId = null;
+    public bool $isOpen = false;
+
+    public bool $isLoading = false;
+
+    public string $input = '';
+
+    public bool $useStreaming = true; // si false, fallback Phase 5 sync
+
+    public ?int $conversationId = null;
+
+    public ?int $pendingActionId = null;
 
     /** @var array<int, array{sender:string, content:string, time:string, message_id?:int}> */
     public array $messages = [];
@@ -59,9 +67,9 @@ class AssistantWidget extends Component
             $this->loadHistory($conversation);
         } else {
             $this->messages = [[
-                'sender'  => 'assistant',
+                'sender' => 'assistant',
                 'content' => $this->welcomeMessage($user),
-                'time'    => now()->format('H:i'),
+                'time' => now()->format('H:i'),
             ]];
         }
     }
@@ -105,13 +113,14 @@ class AssistantWidget extends Component
         $user = Auth::user();
 
         // Per-minute rate limit (20 messages/min) using Laravel RateLimiter
-        $minuteKey = 'assistant:minute:' . $user->id;
+        $minuteKey = 'assistant:minute:'.$user->id;
         if (RateLimiter::tooManyAttempts($minuteKey, 20)) {
             $this->messages[] = [
-                'sender'  => 'assistant',
+                'sender' => 'assistant',
                 'content' => 'Trop de messages. Veuillez patienter.',
-                'time'    => now()->format('H:i'),
+                'time' => now()->format('H:i'),
             ];
+
             return;
         }
         RateLimiter::hit($minuteKey, 60);
@@ -119,27 +128,28 @@ class AssistantWidget extends Component
         // Hourly rate limit (DB-backed, checks configured per-hour cap)
         if ($this->isRateLimited($user)) {
             $this->messages[] = [
-                'sender'  => 'assistant',
-                'content' => "Tu as atteint la limite de messages. Réessaye dans quelques minutes.",
-                'time'    => now()->format('H:i'),
+                'sender' => 'assistant',
+                'content' => 'Tu as atteint la limite de messages. Réessaye dans quelques minutes.',
+                'time' => now()->format('H:i'),
             ];
+
             return;
         }
 
         // Render immédiat du message user
         $this->messages[] = [
-            'sender'  => 'user',
+            'sender' => 'user',
             'content' => $message,
-            'time'    => now()->format('H:i'),
+            'time' => now()->format('H:i'),
         ];
-        $this->input     = '';
+        $this->input = '';
         $this->isLoading = true;
 
         $conversation = $this->getOrCreateConversation($user);
-        $userMessage  = AssistantMessage::create([
+        $userMessage = AssistantMessage::create([
             'assistant_conversation_id' => $conversation->id,
-            'sender_type'               => AssistantMessage::SENDER_USER,
-            'content'                   => $message,
+            'sender_type' => AssistantMessage::SENDER_USER,
+            'content' => $message,
         ]);
 
         if ($this->useStreaming) {
@@ -147,14 +157,14 @@ class AssistantWidget extends Component
                 'assistant.stream',
                 now()->addMinutes(5),
                 [
-                    'conversation_id'   => $conversation->id,
-                    'user_message_id'   => $userMessage->id,
+                    'conversation_id' => $conversation->id,
+                    'user_message_id' => $userMessage->id,
                 ]
             );
 
             // Dispatch un event navigateur — le JS dans la blade ouvrira l'EventSource.
             $this->dispatch('assistant:stream-start', [
-                'url'             => $signedUrl,
+                'url' => $signedUrl,
                 'conversation_id' => $conversation->id,
                 'user_message_id' => $userMessage->id,
             ]);
@@ -188,10 +198,10 @@ class AssistantWidget extends Component
 
         // Si un tool_use a créé une action en attente, recharger l'ID pour afficher le bouton confirm
         if ($hasTools) {
-            $latestAction = \App\Models\AssistantAction::query()
+            $latestAction = AssistantAction::query()
                 ->where('assistant_conversation_id', $conversation->id)
                 ->where('user_id', $user->id)
-                ->where('status', \App\Models\AssistantAction::STATUS_PENDING_CONFIRMATION)
+                ->where('status', AssistantAction::STATUS_PENDING_CONFIRMATION)
                 ->latest('id')
                 ->first();
 
@@ -206,30 +216,30 @@ class AssistantWidget extends Component
     {
         $this->isLoading = false;
         $this->messages[] = [
-            'sender'  => 'assistant',
-            'content' => "❌ Erreur de streaming : " . ($message ?: "connexion interrompue"),
-            'time'    => now()->format('H:i'),
+            'sender' => 'assistant',
+            'content' => '❌ Erreur de streaming : '.($message ?: 'connexion interrompue'),
+            'time' => now()->format('H:i'),
         ];
     }
 
     public function confirmAction(int $actionId): void
     {
-        $user   = Auth::user();
+        $user = Auth::user();
         $result = app(AssistantToolDispatcher::class)->confirmAndExecute($user, $actionId);
 
         if (! empty($result['ok'])) {
             $resPayload = $result['result'] ?? [];
-            $msg = $resPayload['message'] ?? "Action exécutée avec succès.";
+            $msg = $resPayload['message'] ?? 'Action exécutée avec succès.';
             $this->messages[] = [
-                'sender'  => 'assistant',
-                'content' => "✅ " . $msg,
-                'time'    => now()->format('H:i'),
+                'sender' => 'assistant',
+                'content' => '✅ '.$msg,
+                'time' => now()->format('H:i'),
             ];
         } else {
             $this->messages[] = [
-                'sender'  => 'assistant',
-                'content' => "❌ " . ($result['error'] ?? "L'action n'a pas pu être exécutée."),
-                'time'    => now()->format('H:i'),
+                'sender' => 'assistant',
+                'content' => '❌ '.($result['error'] ?? "L'action n'a pas pu être exécutée."),
+                'time' => now()->format('H:i'),
             ];
         }
 
@@ -242,9 +252,9 @@ class AssistantWidget extends Component
         app(AssistantToolDispatcher::class)->cancel($user, $actionId);
 
         $this->messages[] = [
-            'sender'  => 'assistant',
-            'content' => "Action annulée.",
-            'time'    => now()->format('H:i'),
+            'sender' => 'assistant',
+            'content' => 'Action annulée.',
+            'time' => now()->format('H:i'),
         ];
         $this->pendingActionId = null;
     }
@@ -256,14 +266,14 @@ class AssistantWidget extends Component
                 ?->update(['status' => AssistantConversation::STATUS_ARCHIVED]);
         }
 
-        $this->conversationId  = null;
+        $this->conversationId = null;
         $this->pendingActionId = null;
         $user = Auth::user();
 
         $this->messages = [[
-            'sender'  => 'assistant',
+            'sender' => 'assistant',
             'content' => $this->welcomeMessage($user),
-            'time'    => now()->format('H:i'),
+            'time' => now()->format('H:i'),
         ]];
     }
 
@@ -274,10 +284,11 @@ class AssistantWidget extends Component
     private function isRateLimited($user): bool
     {
         $perHour = (int) config('services.assistant.rate_per_hour', 30);
-        $count = \App\Models\AssistantApiLog::query()
+        $count = AssistantApiLog::query()
             ->forUser($user->id)
             ->where('created_at', '>=', now()->subHour())
             ->count();
+
         return $count >= $perHour;
     }
 
@@ -294,9 +305,9 @@ class AssistantWidget extends Component
             ->get()
             ->reverse()
             ->map(fn (AssistantMessage $m) => [
-                'sender'     => $m->sender_type,
-                'content'    => $m->content !== '' ? $m->content : '(action en cours…)',
-                'time'       => $m->created_at->format('H:i'),
+                'sender' => $m->sender_type,
+                'content' => $m->content !== '' ? $m->content : '(action en cours…)',
+                'time' => $m->created_at->format('H:i'),
                 'message_id' => $m->id,
             ])
             ->values()
@@ -313,13 +324,14 @@ class AssistantWidget extends Component
         }
 
         $conversation = AssistantConversation::create([
-            'user_id'                  => $user->id,
-            'organization_account_id'  => $user->organization_account_id,
-            'context_role'             => $user->assistantContextRole()->value,
-            'status'                   => AssistantConversation::STATUS_OPEN,
+            'user_id' => $user->id,
+            'organization_account_id' => $user->organization_account_id,
+            'context_role' => $user->assistantContextRole()->value,
+            'status' => AssistantConversation::STATUS_OPEN,
         ]);
 
         $this->conversationId = $conversation->id;
+
         return $conversation;
     }
 
@@ -329,21 +341,21 @@ class AssistantWidget extends Component
     private function sendSync($user, AssistantConversation $conversation, string $message): void
     {
         try {
-            $result = app(\App\Services\Assistant\Llm\LlmClient::class)
+            $result = app(LlmClient::class)
                 ->sendUserMessage($user, $conversation, $message);
 
             $this->messages[] = [
-                'sender'  => 'assistant',
+                'sender' => 'assistant',
                 'content' => $result['text'],
-                'time'    => now()->format('H:i'),
+                'time' => now()->format('H:i'),
             ];
             $this->pendingActionId = $result['pending_action_id'] ?? null;
         } catch (\Throwable $e) {
             report($e);
             $this->messages[] = [
-                'sender'  => 'assistant',
+                'sender' => 'assistant',
                 'content' => "Une erreur est survenue. Reformule ta question s'il te plaît.",
-                'time'    => now()->format('H:i'),
+                'time' => now()->format('H:i'),
             ];
         }
         $this->isLoading = false;
@@ -356,11 +368,11 @@ class AssistantWidget extends Component
 
         return match ($role->value) {
             'client_personal' => "Bonjour {$name} 👋 Je peux t'aider à réserver, suivre une mission, ou expliquer une facture. Que veux-tu faire ?",
-            'client_company'  => "Bonjour {$name} 👋 Demande une intervention pour un de tes locaux, vois les missions actives, ou explique-moi une facture.",
+            'client_company' => "Bonjour {$name} 👋 Demande une intervention pour un de tes locaux, vois les missions actives, ou explique-moi une facture.",
             'provider_independent' => "Bonjour {$name} 👋 Tes missions, paiements Stripe, incidents — je suis là pour ça.",
             'provider_company' => "Bonjour {$name} 👋 Missions du jour, canaux d'équipe, signalement d'incident — comment je peux aider ?",
-            'admin'           => "Bonjour {$name} — assistant admin CleanUx prêt.",
-            default           => "Bonjour {$name} ! Comment puis-je vous aider ?",
+            'admin' => "Bonjour {$name} — assistant admin CleanUx prêt.",
+            default => "Bonjour {$name} ! Comment puis-je vous aider ?",
         };
     }
 

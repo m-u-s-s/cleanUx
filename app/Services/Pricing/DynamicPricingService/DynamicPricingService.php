@@ -68,4 +68,3 @@ class DynamicPricingService
         return round($basePrice * $multiplier, 2);
     }
 }
-

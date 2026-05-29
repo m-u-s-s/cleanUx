@@ -18,6 +18,7 @@ class InsuranceCenter extends Component
     protected $paginationTheme = 'tailwind';
 
     public string $tab = 'claims';  // claims | policies | plans
+
     public string $filterStatus = '';
 
     public function setClaimStatus(int $claimId, string $newStatus, ?string $reason = null): void
@@ -33,6 +34,7 @@ class InsuranceCenter extends Component
         ];
         if (! in_array($newStatus, $allowed, true)) {
             $this->dispatch('toast', 'Statut invalide', 'error');
+
             return;
         }
 

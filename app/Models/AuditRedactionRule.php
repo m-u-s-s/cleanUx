@@ -8,7 +8,9 @@ use Illuminate\Database\Eloquent\Model;
 class AuditRedactionRule extends Model
 {
     public const MATCH_KEY = 'key';
+
     public const MATCH_REGEX = 'regex';
+
     public const MATCH_PATH = 'path';
 
     protected $fillable = [

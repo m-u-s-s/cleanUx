@@ -23,23 +23,23 @@ class CostCalculator
      */
     private const PRICING = [
         // Anthropic
-        'claude-sonnet-4'    => [3.00,  15.00],
-        'claude-sonnet-3-5'  => [3.00,  15.00],
-        'claude-sonnet-3'    => [3.00,  15.00],
-        'claude-opus-4'      => [15.00, 75.00],
-        'claude-opus-3'      => [15.00, 75.00],
-        'claude-haiku-4'     => [0.80,  4.00],
-        'claude-haiku-3-5'   => [0.80,  4.00],
-        'claude-haiku-3'     => [0.25,  1.25],
+        'claude-sonnet-4' => [3.00,  15.00],
+        'claude-sonnet-3-5' => [3.00,  15.00],
+        'claude-sonnet-3' => [3.00,  15.00],
+        'claude-opus-4' => [15.00, 75.00],
+        'claude-opus-3' => [15.00, 75.00],
+        'claude-haiku-4' => [0.80,  4.00],
+        'claude-haiku-3-5' => [0.80,  4.00],
+        'claude-haiku-3' => [0.25,  1.25],
 
         // OpenAI
-        'gpt-4o-mini'        => [0.15,  0.60],
-        'gpt-4o'             => [2.50,  10.00],
-        'gpt-4-turbo'        => [10.00, 30.00],
+        'gpt-4o-mini' => [0.15,  0.60],
+        'gpt-4o' => [2.50,  10.00],
+        'gpt-4-turbo' => [10.00, 30.00],
 
         // Mistral
-        'mistral-small'      => [0.20,  0.60],
-        'mistral-large'      => [3.00,  9.00],
+        'mistral-small' => [0.20,  0.60],
+        'mistral-large' => [3.00,  9.00],
     ];
 
     /**
@@ -60,7 +60,7 @@ class CostCalculator
 
         [$inputPer1M, $outputPer1M] = $pricing;
 
-        $inputCost  = ($inputTokens  / 1_000_000) * $inputPer1M;
+        $inputCost = ($inputTokens / 1_000_000) * $inputPer1M;
         $outputCost = ($outputTokens / 1_000_000) * $outputPer1M;
 
         return round($inputCost + $outputCost, 6);

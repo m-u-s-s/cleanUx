@@ -51,7 +51,7 @@ class GoLiveReadinessReport extends Command
                 $this->newLine();
                 $this->warn('Commandes scheduler attendues mais absentes :');
                 foreach ($missingCommands as $command) {
-                    $this->line('- ' . $command);
+                    $this->line('- '.$command);
                 }
             }
 
@@ -64,6 +64,7 @@ class GoLiveReadinessReport extends Command
 
         if ($summary['ready']) {
             $this->info('Go-live readiness report OK.');
+
             return self::SUCCESS;
         }
 

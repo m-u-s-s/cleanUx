@@ -27,6 +27,7 @@ class LogTokenUsage
         if ($token instanceof PersonalAccessTokenV2 && $this->logger->shouldLog($request)) {
             $this->logger->record($request, $response, $token, $latencyMs);
         }
+
         return $response;
     }
 }

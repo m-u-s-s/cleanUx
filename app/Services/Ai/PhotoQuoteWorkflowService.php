@@ -36,11 +36,11 @@ class PhotoQuoteWorkflowService
     /**
      * Run the full estimate-to-quote workflow for multiple photos.
      *
-     * @param  string[]     $base64Images  Array of base64-encoded images (max 4)
-     * @param  Trade        $trade         The service trade
-     * @param  User         $user          Requesting user
-     * @param  string|null  $note          Optional client note
-     * @return array        Combined quote with confidence & booking readiness flag
+     * @param  string[]  $base64Images  Array of base64-encoded images (max 4)
+     * @param  Trade  $trade  The service trade
+     * @param  User  $user  Requesting user
+     * @param  string|null  $note  Optional client note
+     * @return array Combined quote with confidence & booking readiness flag
      *
      * TODO: implement multi-photo aggregation (average prices, min confidence)
      */

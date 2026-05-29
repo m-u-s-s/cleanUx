@@ -19,6 +19,7 @@ class SubscriptionsTickCommand extends Command
     {
         if (! config('subscriptions_v2.enabled', true)) {
             $this->warn('Subscriptions v2 is disabled (config subscriptions_v2.enabled=false). Skipping.');
+
             return self::SUCCESS;
         }
 
@@ -37,6 +38,7 @@ class SubscriptionsTickCommand extends Command
         foreach ($due as $sub) {
             if ($dryRun) {
                 $this->line(sprintf('  - sub#%d %s (next_billing_at=%s)', $sub->id, $sub->code, $sub->next_billing_at?->toIso8601String() ?? 'n/a'));
+
                 continue;
             }
             try {
@@ -53,6 +55,7 @@ class SubscriptionsTickCommand extends Command
         }
 
         $this->info(sprintf('Tick complete: %d processed, %d errors.', $processed, $errors));
+
         return $errors > 0 ? self::FAILURE : self::SUCCESS;
     }
 }

@@ -7,9 +7,12 @@ use App\Models\BookingTip;
 use App\Services\Tips\TipService;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
-use Livewire\Component;
 use Livewire\Attributes\Url;
+use Livewire\Component;
+use Stripe\PaymentIntent;
+use Stripe\Stripe;
 
 class ClientTipBooking extends Component
 {
@@ -17,9 +20,13 @@ class ClientTipBooking extends Component
     public ?int $bookingId = null;
 
     public ?int $selectedAmountCents = null;
+
     public ?string $selectedPresetLabel = null;
+
     public ?int $selectedPresetPercent = null;
+
     public string $message = '';
+
     public string $customAmount = '';
 
     public function mount(?int $bookingId = null): void
@@ -52,6 +59,7 @@ class ClientTipBooking extends Component
 
         if (! $this->selectedAmountCents) {
             $this->dispatch('toast', 'Sélectionnez un montant.', 'error');
+
             return;
         }
 
@@ -69,11 +77,11 @@ class ClientTipBooking extends Component
             //   - PaymentIntent::create avec metadata.tip_id pour wire dans webhook
             //   - Webhook payment_intent.succeeded → confirmCharge (cf. StripeWebhookEventProcessor)
             // En dev (non-prod) : confirmCharge immédiate pour faciliter test UX.
-            if (config('app.env') === 'production' && class_exists(\Stripe\PaymentIntent::class)
+            if (config('app.env') === 'production' && class_exists(PaymentIntent::class)
                 && config('services.stripe.secret')) {
                 try {
-                    \Stripe\Stripe::setApiKey((string) config('services.stripe.secret'));
-                    $intent = \Stripe\PaymentIntent::create([
+                    Stripe::setApiKey((string) config('services.stripe.secret'));
+                    $intent = PaymentIntent::create([
                         'amount' => (int) $tip->amount_cents,
                         'currency' => strtolower($tip->currency ?: 'eur'),
                         'customer' => $user->stripe_id ?? null,
@@ -84,16 +92,16 @@ class ClientTipBooking extends Component
                         ],
                         'description' => "CleanUx tip booking #{$tip->booking_id}",
                     ], [
-                        'idempotency_key' => 'tip_' . $tip->id,
+                        'idempotency_key' => 'tip_'.$tip->id,
                     ]);
                     $tip->update(['stripe_payment_intent_id' => $intent->id]);
                 } catch (\Throwable $e) {
-                    \Illuminate\Support\Facades\Log::warning('[tips] stripe PI create failed', [
+                    Log::warning('[tips] stripe PI create failed', [
                         'tip_id' => $tip->id, 'error' => $e->getMessage(),
                     ]);
                 }
             } else {
-                app(TipService::class)->confirmCharge($tip, 'pi_dev_' . $tip->id);
+                app(TipService::class)->confirmCharge($tip, 'pi_dev_'.$tip->id);
             }
 
             $this->dispatch('toast', 'Merci pour votre pourboire !', 'success');

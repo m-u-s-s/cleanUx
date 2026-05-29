@@ -16,9 +16,8 @@ return new class extends Migration
                 ->constrained('bookings')
                 ->cascadeOnDelete();
 
-
             $table->unsignedBigInteger('rendez_vous_id')->nullable();
-            
+
             $table->foreignId('mission_id')
                 ->nullable()
                 ->constrained('missions')

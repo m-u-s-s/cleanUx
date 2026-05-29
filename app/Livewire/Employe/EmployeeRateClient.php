@@ -8,8 +8,8 @@ use App\Services\Rating\RatingService;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
-use Livewire\Component;
 use Livewire\Attributes\Url;
+use Livewire\Component;
 
 /**
  * Provider rates the client (Uber-style reciprocal rating).
@@ -21,9 +21,13 @@ class EmployeeRateClient extends Component
     public ?int $bookingId = null;
 
     public int $rating = 5;
+
     public string $comment = '';
+
     public int $punctuality = 5;
+
     public int $quality = 5;
+
     public int $communication = 5;
 
     public function mount(?int $bookingId = null): void
@@ -64,7 +68,7 @@ class EmployeeRateClient extends Component
             $first = collect($e->errors())->flatten()->first();
             $this->dispatch('toast', $first ?? 'Échec.', 'error');
         } catch (\Throwable $e) {
-            $this->dispatch('toast', 'Erreur : ' . $e->getMessage(), 'error');
+            $this->dispatch('toast', 'Erreur : '.$e->getMessage(), 'error');
         }
     }
 
@@ -76,7 +80,7 @@ class EmployeeRateClient extends Component
                 ->where('id', $this->bookingId)
                 ->where(function ($q) use ($user) {
                     $q->where('employe_id', $user->id)
-                      ->orWhere('assigned_employee_id', $user->id);
+                        ->orWhere('assigned_employee_id', $user->id);
                 })
                 ->first()
             : null;

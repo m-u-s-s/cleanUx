@@ -8,12 +8,17 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class StripeReconciliationRun extends Model
 {
     public const SCOPE_PAYMENT_INTENTS = 'payment_intents';
+
     public const SCOPE_TRANSFERS = 'transfers';
+
     public const SCOPE_PAYOUTS = 'payouts';
+
     public const SCOPE_ALL = 'all';
 
     public const STATUS_RUNNING = 'running';
+
     public const STATUS_COMPLETED = 'completed';
+
     public const STATUS_FAILED = 'failed';
 
     protected $fillable = [

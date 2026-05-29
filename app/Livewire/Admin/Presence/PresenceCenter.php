@@ -3,6 +3,7 @@
 namespace App\Livewire\Admin\Presence;
 
 use App\Models\ProviderPresence;
+use App\Models\User;
 use App\Services\Presence\ProviderPresenceService;
 use Illuminate\Contracts\View\View;
 use Livewire\Component;
@@ -15,11 +16,12 @@ class PresenceCenter extends Component
     protected $paginationTheme = 'tailwind';
 
     public string $statusFilter = '';
+
     public string $search = '';
 
     public function forceOffline(int $userId): void
     {
-        $user = \App\Models\User::find($userId);
+        $user = User::find($userId);
         if (! $user) {
             return;
         }
@@ -42,7 +44,7 @@ class PresenceCenter extends Component
             ->with('provider:id,name,email')
             ->when($this->statusFilter, fn ($q) => $q->where('status', $this->statusFilter))
             ->when($this->search, function ($q) {
-                $term = '%' . $this->search . '%';
+                $term = '%'.$this->search.'%';
                 $q->whereHas('provider', fn ($u) => $u->where('name', 'like', $term)->orWhere('email', 'like', $term));
             })
             ->orderByDesc('heartbeat_at')

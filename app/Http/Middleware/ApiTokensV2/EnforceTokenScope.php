@@ -54,6 +54,7 @@ class EnforceTokenScope
                 // Mock incomplet en test/dev → mode permissif (jamais en prod, guard ci-dessus)
                 return $next($request);
             }
+
             return $next($request);
         }
 
@@ -62,6 +63,7 @@ class EnforceTokenScope
             $reason = $token->isSuspended()
                 ? 'token_suspended'
                 : ($token->isExpired() ? 'token_expired' : 'token_rotation_expired');
+
             return response()->json(['ok' => false, 'error' => $reason], 403);
         }
 
@@ -81,6 +83,7 @@ class EnforceTokenScope
                 return $next($request);
             }
         }
+
         return response()->json([
             'ok' => false,
             'error' => 'missing_scope',

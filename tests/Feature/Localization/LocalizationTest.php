@@ -7,7 +7,6 @@ use App\Models\User;
 use App\Services\Localization\Money;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\App;
-use Illuminate\Support\Facades\DB;
 use Tests\TestCase;
 
 class LocalizationTest extends TestCase

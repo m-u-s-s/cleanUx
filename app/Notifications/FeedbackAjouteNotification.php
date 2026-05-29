@@ -9,12 +9,10 @@ use Illuminate\Notifications\Notification;
 
 class FeedbackAjouteNotification extends Notification
 {
-    use Queueable;
     use InteractsWithUserNotificationPreferences;
+    use Queueable;
 
-    public function __construct(public Feedback $feedback)
-    {
-    }
+    public function __construct(public Feedback $feedback) {}
 
     public function via($notifiable)
     {

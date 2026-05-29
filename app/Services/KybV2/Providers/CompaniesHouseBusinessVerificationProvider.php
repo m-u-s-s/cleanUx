@@ -33,13 +33,14 @@ class CompaniesHouseBusinessVerificationProvider implements BusinessVerification
             $response = Http::withBasicAuth($apiKey, '')
                 ->acceptJson()
                 ->timeout(10)
-                ->get(rtrim($cfg['endpoint'], '/') . "/company/{$clean}");
+                ->get(rtrim($cfg['endpoint'], '/')."/company/{$clean}");
             if ($response->status() === 404) {
                 return new VerificationResult(false, 'companies_house', 'identity', error: 'not_found');
             }
             if (! $response->successful()) {
-                return new VerificationResult(false, 'companies_house', 'identity', error: 'http_' . $response->status());
+                return new VerificationResult(false, 'companies_house', 'identity', error: 'http_'.$response->status());
             }
+
             return new VerificationResult(
                 success: true,
                 provider: 'companies_house',
@@ -49,7 +50,8 @@ class CompaniesHouseBusinessVerificationProvider implements BusinessVerification
             );
         } catch (\Throwable $e) {
             Log::warning('[kyb_v2] companies_house error', ['error' => $e->getMessage()]);
-            return new VerificationResult(false, 'companies_house', 'identity', error: 'exception:' . mb_substr($e->getMessage(), 0, 200));
+
+            return new VerificationResult(false, 'companies_house', 'identity', error: 'exception:'.mb_substr($e->getMessage(), 0, 200));
         }
     }
 

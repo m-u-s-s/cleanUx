@@ -8,6 +8,7 @@ use App\Models\PricingRule;
 use App\Models\ServiceCatalogV2;
 use App\Models\User;
 use App\Support\ActivityLogger;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
@@ -30,12 +31,10 @@ use Illuminate\Validation\ValidationException;
  */
 class PricingEngine
 {
-    public function __construct(protected PricingDsl $dsl)
-    {
-    }
+    public function __construct(protected PricingDsl $dsl) {}
 
     /**
-     * @param array<string,mixed> $variables
+     * @param  array<string,mixed>  $variables
      */
     public function quote(
         string $serviceCode,
@@ -157,9 +156,9 @@ class PricingEngine
     }
 
     /**
-     * @return \Illuminate\Support\Collection<int, PricingRule>
+     * @return Collection<int, PricingRule>
      */
-    protected function loadApplicableRules(ServiceCatalogV2 $service, ?string $variant): \Illuminate\Support\Collection
+    protected function loadApplicableRules(ServiceCatalogV2 $service, ?string $variant): Collection
     {
         $now = now();
         $rules = PricingRule::query()
@@ -186,7 +185,7 @@ class PricingEngine
     /**
      * Allows experiments to override/extend the rule set for the assigned variant.
      */
-    protected function overlayExperimentRules(\Illuminate\Support\Collection $rules, ServiceCatalogV2 $service, string $variant): \Illuminate\Support\Collection
+    protected function overlayExperimentRules(Collection $rules, ServiceCatalogV2 $service, string $variant): Collection
     {
         $experiment = $this->resolveExperimentForService($service);
         if (! $experiment) {
@@ -229,7 +228,7 @@ class PricingEngine
         }
 
         $key = $user?->id ?? mt_rand(0, PHP_INT_MAX);
-        $hash = crc32($experiment->code . ':' . $key);
+        $hash = crc32($experiment->code.':'.$key);
         $idx = $hash % count($variants);
 
         return $variants[$idx]['label'] ?? null;
@@ -289,12 +288,14 @@ class PricingEngine
         if ($service->max_price_cents !== null && $price > (int) $service->max_price_cents) {
             $price = (int) $service->max_price_cents;
         }
+
         return max(0, $price);
     }
 
     protected function sanitizeVariables(array $variables): array
     {
         $allowed = (array) Config::get('pricing_v2.variable_keys', []);
+
         return array_intersect_key($variables, array_flip($allowed));
     }
 }

@@ -13,7 +13,7 @@ class AbPricingExperimentFactory extends Factory
     public function definition(): array
     {
         return [
-            'code' => 'exp_' . Str::upper(Str::random(8)),
+            'code' => 'exp_'.Str::upper(Str::random(8)),
             'name' => fake()->words(3, true),
             'description' => fake()->sentence(),
             'service_codes' => null,

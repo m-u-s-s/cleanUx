@@ -9,7 +9,9 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class AvailabilityException extends Model
 {
     public const TYPE_CLOSED = 'closed';
+
     public const TYPE_OPEN_OVERRIDE = 'open_override';
+
     public const TYPE_PARTIAL = 'partial';
 
     protected $fillable = [
@@ -46,7 +48,7 @@ class AvailabilityException extends Model
     {
         // Use range bounds rather than date strings so SQLite (which stores
         // dates with implicit 00:00:00 time) also matches correctly.
-        return $q->where('date', '>=', $from->format('Y-m-d') . ' 00:00:00')
-                 ->where('date', '<=', $to->format('Y-m-d') . ' 23:59:59');
+        return $q->where('date', '>=', $from->format('Y-m-d').' 00:00:00')
+            ->where('date', '<=', $to->format('Y-m-d').' 23:59:59');
     }
 }

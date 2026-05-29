@@ -11,7 +11,6 @@ use App\Services\Insurance\InsurancePurchaseResult;
 use App\Services\Insurance\InsuranceWebhookUpdate;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Facades\Log;
 
 /**
  * Hiscox skeleton — méthodes structurées pour câblage prod ultérieur.
@@ -127,6 +126,7 @@ class HiscoxInsuranceProvider implements InsuranceProviderInterface
         if (! is_array($decoded)) {
             throw new \RuntimeException('Hiscox webhook payload not JSON');
         }
+
         return $decoded;
     }
 

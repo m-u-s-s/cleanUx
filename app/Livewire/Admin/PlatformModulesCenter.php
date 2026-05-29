@@ -6,30 +6,45 @@ use App\Models\OrganizationAccount;
 use App\Models\PlatformModule;
 use App\Models\ServiceZone;
 use App\Support\ActivityLogger;
-use Livewire\Component;
 use Illuminate\Contracts\View\View;
-use Livewire\Attributes\Layout;
+use Livewire\Component;
 
 class PlatformModulesCenter extends Component
 {
     public string $search = '';
+
     public string $category = '';
+
     public string $strategy = '';
+
     public string $status = '';
 
     public ?int $editingModuleId = null;
+
     public string $name = '';
+
     public string $description = '';
+
     public string $category_value = 'core';
+
     public string $rollout_strategy = 'global';
+
     public bool $is_enabled = true;
+
     public bool $is_locked = false;
+
     public array $allowed_roles = [];
+
     public array $allowed_plans = [];
+
     public array $allowed_zone_ids = [];
+
     public array $allowed_organization_ids = [];
+
     public array $denied_roles = [];
+
     public array $denied_plans = [];
+
     public bool $allow_all_organizations = false;
 
     protected $queryString = ['search', 'category', 'strategy', 'status'];
@@ -129,6 +144,7 @@ class PlatformModulesCenter extends Component
 
         if ($module->is_locked) {
             session()->flash('error', 'Ce module est verrouillé.');
+
             return;
         }
 

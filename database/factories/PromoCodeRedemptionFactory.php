@@ -2,7 +2,6 @@
 
 namespace Database\Factories;
 
-use App\Models\Booking;
 use App\Models\PromoCode;
 use App\Models\PromoCodeRedemption;
 use App\Models\User;

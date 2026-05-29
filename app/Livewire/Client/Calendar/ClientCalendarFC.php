@@ -6,10 +6,8 @@ use App\Models\Booking;
 use App\Services\Client\Calendar\BookingRescheduleService;
 use App\Services\Client\Calendar\CalendarDataService;
 use Carbon\Carbon;
-use Carbon\CarbonImmutable;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Auth;
-use Livewire\Attributes\On;
 use Livewire\Component;
 
 /**
@@ -29,11 +27,14 @@ use Livewire\Component;
 class ClientCalendarFC extends Component
 {
     public ?int $selectedBookingId = null;
+
     public ?string $message = null;
+
     public ?string $messageType = null; // success | error
 
     /** Filtres simples */
-    public array $siteIds  = [];
+    public array $siteIds = [];
+
     public array $statuses = [];
 
     public function fetchEvents(string $startIso, string $endIso): array
@@ -42,25 +43,25 @@ class ClientCalendarFC extends Component
         $service = app(CalendarDataService::class);
 
         $events = $service->eventsForUser($user, [
-            'from'     => Carbon::parse($startIso),
-            'to'       => Carbon::parse($endIso),
+            'from' => Carbon::parse($startIso),
+            'to' => Carbon::parse($endIso),
             'site_ids' => $this->siteIds ?: null,
             'statuses' => $this->statuses ?: null,
         ]);
 
         return $events->map(fn ($e) => [
-            'id'              => $e['id'],
-            'title'           => $e['title'],
-            'start'           => $e['start'],
-            'end'             => $e['end'],
+            'id' => $e['id'],
+            'title' => $e['title'],
+            'start' => $e['start'],
+            'end' => $e['end'],
             'backgroundColor' => $e['color'],
-            'borderColor'     => $e['color'],
-            'editable'        => $this->isEditable($e['status']),
-            'extendedProps'   => [
-                'site_name'    => $e['site_name'] ?? null,
+            'borderColor' => $e['color'],
+            'editable' => $this->isEditable($e['status']),
+            'extendedProps' => [
+                'site_name' => $e['site_name'] ?? null,
                 'service_name' => $e['service_name'] ?? null,
-                'status'       => $e['status'],
-                'reference'    => $e['reference'] ?? null,
+                'status' => $e['status'],
+                'reference' => $e['reference'] ?? null,
             ],
         ])->all();
     }
@@ -76,6 +77,7 @@ class ClientCalendarFC extends Component
         if (! $booking) {
             $this->flashMessage('Réservation introuvable.', 'error');
             $this->dispatch('calendar:revert');
+
             return;
         }
 
@@ -90,7 +92,7 @@ class ClientCalendarFC extends Component
             );
 
             $this->flashMessage(
-                "Rendez-vous reprogrammé au " . $newStart->locale('fr')->isoFormat('ddd D MMM') . " à " . $newStart->format('H:i'),
+                'Rendez-vous reprogrammé au '.$newStart->locale('fr')->isoFormat('ddd D MMM').' à '.$newStart->format('H:i'),
                 'success'
             );
             $this->dispatch('calendar:refresh');
@@ -123,6 +125,7 @@ class ClientCalendarFC extends Component
     private function isEditable(string $status): bool
     {
         $finals = ['termine', 'completed', 'done', 'annule', 'cancelled', 'refuse', 'sur_place', 'on_site'];
+
         return ! in_array($status, $finals, true);
     }
 
@@ -134,7 +137,10 @@ class ClientCalendarFC extends Component
 
     public function getSelectedBookingProperty(): ?Booking
     {
-        if (! $this->selectedBookingId) return null;
+        if (! $this->selectedBookingId) {
+            return null;
+        }
+
         return Booking::with(['serviceCatalog:id,name', 'organizationSite:id,name'])
             ->find($this->selectedBookingId);
     }

@@ -18,8 +18,11 @@ class ContractsCenter extends Component
     protected $paginationTheme = 'tailwind';
 
     public string $tab = 'templates';   // templates | documents | signatures
+
     public string $search = '';
+
     public string $filterStatus = '';
+
     public string $filterType = '';
 
     public function invalidate(int $signatureId, string $reason = 'Invalidated via admin UI'): void
@@ -29,7 +32,7 @@ class ContractsCenter extends Component
             app(ContractService::class)->invalidateSignature($sig, Auth::user(), $reason);
             $this->dispatch('toast', 'Signature invalidée.', 'success');
         } catch (\Throwable $e) {
-            $this->dispatch('toast', 'Erreur : ' . $e->getMessage(), 'error');
+            $this->dispatch('toast', 'Erreur : '.$e->getMessage(), 'error');
         }
     }
 
@@ -46,7 +49,7 @@ class ContractsCenter extends Component
             $items = ContractTemplate::query()
                 ->when($this->filterType, fn ($q) => $q->where('type', $this->filterType))
                 ->when($this->search, fn ($q) => $q->where(function ($w) {
-                    $term = '%' . $this->search . '%';
+                    $term = '%'.$this->search.'%';
                     $w->where('code', 'like', $term)->orWhere('name', 'like', $term);
                 }))
                 ->orderBy('code')

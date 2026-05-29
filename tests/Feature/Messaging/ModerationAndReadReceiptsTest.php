@@ -3,8 +3,6 @@
 namespace Tests\Feature\Messaging;
 
 use App\Models\Channel;
-use App\Models\Message;
-use App\Models\MessageRead;
 use App\Models\ModerationAction;
 use App\Models\OrganizationAccount;
 use App\Models\User;
@@ -21,21 +19,21 @@ class ModerationAndReadReceiptsTest extends TestCase
 
     private function makeChannel(): array
     {
-        $org    = OrganizationAccount::factory()->create();
-        $owner  = User::factory()->create(['organization_account_id' => $org->id, 'name' => 'Owner']);
-        $mod    = User::factory()->create(['organization_account_id' => $org->id, 'name' => 'Mod']);
+        $org = OrganizationAccount::factory()->create();
+        $owner = User::factory()->create(['organization_account_id' => $org->id, 'name' => 'Owner']);
+        $mod = User::factory()->create(['organization_account_id' => $org->id, 'name' => 'Mod']);
         $member = User::factory()->create(['organization_account_id' => $org->id, 'name' => 'Member']);
 
         $channel = Channel::create([
             'organization_account_id' => $org->id,
-            'name'        => 'general',
-            'type'        => Channel::TYPE_TEAM,
-            'is_private'  => false,
-            'created_by'  => $owner->id,
+            'name' => 'general',
+            'type' => Channel::TYPE_TEAM,
+            'is_private' => false,
+            'created_by' => $owner->id,
         ]);
 
-        $channel->members()->attach($owner->id,  ['role' => ChannelPolicy::ROLE_OWNER]);
-        $channel->members()->attach($mod->id,    ['role' => ChannelPolicy::ROLE_MODERATOR]);
+        $channel->members()->attach($owner->id, ['role' => ChannelPolicy::ROLE_OWNER]);
+        $channel->members()->attach($mod->id, ['role' => ChannelPolicy::ROLE_MODERATOR]);
         $channel->members()->attach($member->id, ['role' => ChannelPolicy::ROLE_MEMBER]);
 
         return compact('org', 'owner', 'mod', 'member', 'channel');
@@ -60,8 +58,8 @@ class ModerationAndReadReceiptsTest extends TestCase
         $policy = app(ChannelPolicy::class);
 
         $this->assertFalse($policy->postMessage($ctx['member'], $ctx['channel']));
-        $this->assertTrue($policy->postMessage($ctx['mod'],     $ctx['channel']));
-        $this->assertTrue($policy->postMessage($ctx['owner'],   $ctx['channel']));
+        $this->assertTrue($policy->postMessage($ctx['mod'], $ctx['channel']));
+        $this->assertTrue($policy->postMessage($ctx['owner'], $ctx['channel']));
     }
 
     public function test_nobody_can_post_in_archived_channel(): void
@@ -71,8 +69,8 @@ class ModerationAndReadReceiptsTest extends TestCase
         $policy = app(ChannelPolicy::class);
 
         $this->assertFalse($policy->postMessage($ctx['member'], $ctx['channel']));
-        $this->assertFalse($policy->postMessage($ctx['mod'],    $ctx['channel']));
-        $this->assertFalse($policy->postMessage($ctx['owner'],  $ctx['channel']));
+        $this->assertFalse($policy->postMessage($ctx['mod'], $ctx['channel']));
+        $this->assertFalse($policy->postMessage($ctx['owner'], $ctx['channel']));
     }
 
     public function test_author_can_delete_own_message(): void
@@ -121,9 +119,9 @@ class ModerationAndReadReceiptsTest extends TestCase
 
         $this->assertDatabaseHas('moderation_actions', [
             'actor_user_id' => $ctx['mod']->id,
-            'channel_id'    => $ctx['channel']->id,
-            'message_id'    => $msg->id,
-            'action_type'   => ModerationAction::TYPE_DELETE_MESSAGE,
+            'channel_id' => $ctx['channel']->id,
+            'message_id' => $msg->id,
+            'action_type' => ModerationAction::TYPE_DELETE_MESSAGE,
         ]);
     }
 

@@ -2,6 +2,7 @@
 
 namespace App\Models\SubscriptionsV2;
 
+use App\Models\User;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -12,11 +13,17 @@ use Illuminate\Support\Str;
 class SubscriptionV2 extends Model
 {
     use HasFactory;
+
     public const STATUS_TRIALING = 'trialing';
+
     public const STATUS_ACTIVE = 'active';
+
     public const STATUS_PAUSED = 'paused';
+
     public const STATUS_PAST_DUE = 'past_due';
+
     public const STATUS_CANCELLED = 'cancelled';
+
     public const STATUS_EXPIRED = 'expired';
 
     protected $table = 'subscriptions_v2';
@@ -49,7 +56,7 @@ class SubscriptionV2 extends Model
 
     public static function generateCode(): string
     {
-        return 'sub_' . Str::lower(Str::random(20));
+        return 'sub_'.Str::lower(Str::random(20));
     }
 
     public function plan(): BelongsTo
@@ -59,12 +66,12 @@ class SubscriptionV2 extends Model
 
     public function user(): BelongsTo
     {
-        return $this->belongsTo(\App\Models\User::class, 'user_id');
+        return $this->belongsTo(User::class, 'user_id');
     }
 
     public function provider(): BelongsTo
     {
-        return $this->belongsTo(\App\Models\User::class, 'provider_user_id');
+        return $this->belongsTo(User::class, 'provider_user_id');
     }
 
     public function cycles(): HasMany

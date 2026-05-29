@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Services\Subscription\SubscriptionScheduler;
 use Illuminate\Console\Command;
 
 class GenerateSubscriptions extends Command
@@ -25,7 +26,7 @@ class GenerateSubscriptions extends Command
      */
     public function handle()
     {
-        app(\App\Services\Subscription\SubscriptionScheduler::class)
+        app(SubscriptionScheduler::class)
             ->generateUpcomingBookings();
 
         $this->info('Subscriptions processed.');

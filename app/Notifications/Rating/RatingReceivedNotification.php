@@ -10,12 +10,10 @@ use Illuminate\Notifications\Notification;
 
 class RatingReceivedNotification extends Notification
 {
-    use Queueable;
     use InteractsWithUserNotificationPreferences;
+    use Queueable;
 
-    public function __construct(public Feedback $feedback)
-    {
-    }
+    public function __construct(public Feedback $feedback) {}
 
     public function via($notifiable): array
     {
@@ -25,7 +23,7 @@ class RatingReceivedNotification extends Notification
     public function toMail($notifiable): MailMessage
     {
         $stars = str_repeat('★', (int) $this->feedback->effectiveRating())
-              . str_repeat('☆', max(0, 5 - (int) $this->feedback->effectiveRating()));
+              .str_repeat('☆', max(0, 5 - (int) $this->feedback->effectiveRating()));
 
         $subject = $this->feedback->isClientToProvider()
             ? 'CleanUx · Vous avez reçu un nouvel avis'

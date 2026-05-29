@@ -35,6 +35,7 @@ class ProductionHealthCheck extends Command
 
         if ($errors === 0) {
             $this->info('Production health check OK.');
+
             return self::SUCCESS;
         }
 

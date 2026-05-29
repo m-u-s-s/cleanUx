@@ -16,9 +16,7 @@ use Illuminate\Http\Request;
  */
 class LocaleController extends Controller
 {
-    public function __construct(protected LocaleResolver $resolver)
-    {
-    }
+    public function __construct(protected LocaleResolver $resolver) {}
 
     public function update(Request $request): RedirectResponse
     {

@@ -56,6 +56,7 @@ class LoyaltyAccount extends Model
             return 1.0;
         }
         $multipliers = (array) config('loyalty.tier_multipliers', []);
+
         return (float) ($multipliers[$this->currentTier->slug] ?? 1.0);
     }
 }

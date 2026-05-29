@@ -17,8 +17,7 @@ class ZoneCoverageResult
         public readonly string $status,
         public readonly string $message,
         public readonly ?string $resolutionSource = null,
-    ) {
-    }
+    ) {}
 
     public function isBookable(): bool
     {

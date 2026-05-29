@@ -4,9 +4,7 @@ namespace Tests\Feature\Regression;
 
 use App\Models\Booking;
 use App\Models\Mission;
-use App\Models\MissionAssignment;
 use App\Models\ProviderProfile;
-use App\Models\ServiceCatalog;
 use App\Models\ServiceZone;
 use App\Models\Trade;
 use App\Models\User;
@@ -14,6 +12,7 @@ use App\Services\Dispatch\AiDispatchService;
 use App\Services\Dispatch\MissionDispatchService;
 use App\Services\Pricing\DynamicPricingService\DynamicPricingService;
 use App\Services\Pricing\SurgePricingEngine;
+use Database\Seeders\ReferencePlatformSeeder;
 use Database\Seeders\TradeSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Bus;
@@ -60,7 +59,7 @@ class PostFixesRegressionTest extends TestCase
         // 400 (signature invalide) ou 500 (secret manquant) — tout sauf 404.
         $this->assertNotSame(404, $response->status(),
             "La route POST /webhooks/stripe-connect n'est pas enregistrée. "
-            . "Vérifier routes/public.php."
+            .'Vérifier routes/public.php.'
         );
     }
 
@@ -79,8 +78,8 @@ class PostFixesRegressionTest extends TestCase
         ]);
 
         $this->assertNotSame(419, $response->status(),
-            "La route /webhooks/stripe-connect doit être listée dans "
-            . "VerifyCsrfToken::\$except, sinon Stripe ne peut pas la POST."
+            'La route /webhooks/stripe-connect doit être listée dans '
+            .'VerifyCsrfToken::$except, sinon Stripe ne peut pas la POST.'
         );
     }
 
@@ -103,14 +102,14 @@ class PostFixesRegressionTest extends TestCase
         $booking = $this->makeBooking();
 
         $mission = Mission::create([
-            'rendez_vous_id'         => $booking->id,
-            'status'                 => 'planned',
-            'lead_provider_user_id'  => $user->id,
+            'rendez_vous_id' => $booking->id,
+            'status' => 'planned',
+            'lead_provider_user_id' => $user->id,
         ]);
 
         $this->assertSame($user->id, (int) $mission->fresh()->lead_provider_user_id,
-            "Mission::create() doit accepter lead_provider_user_id en mass assignment. "
-            . "Vérifier que la colonne est dans \$fillable de app/Models/Mission.php."
+            'Mission::create() doit accepter lead_provider_user_id en mass assignment. '
+            .'Vérifier que la colonne est dans $fillable de app/Models/Mission.php.'
         );
     }
 
@@ -125,12 +124,12 @@ class PostFixesRegressionTest extends TestCase
         $booking = $this->makeBooking();
         $mission = Mission::create([
             'rendez_vous_id' => $booking->id,
-            'status'         => 'planned',
+            'status' => 'planned',
         ]);
 
         $this->assertNotNull($mission->booking,
-            "\$mission->booking doit retourner le Booking lié. "
-            . "Vérifier que la relation booking() existe dans app/Models/Mission.php."
+            '$mission->booking doit retourner le Booking lié. '
+            .'Vérifier que la relation booking() existe dans app/Models/Mission.php.'
         );
         $this->assertSame($booking->id, $mission->booking->id);
 
@@ -152,7 +151,7 @@ class PostFixesRegressionTest extends TestCase
     {
         Bus::fake();
 
-        $user    = $this->makeProvider();
+        $user = $this->makeProvider();
         $booking = $this->makeBooking();
         $mission = $this->makeMission($booking);
 
@@ -161,12 +160,12 @@ class PostFixesRegressionTest extends TestCase
 
         $fresh = $mission->fresh();
         $this->assertSame($user->id, (int) $fresh->lead_provider_user_id,
-            "accept() doit écrire lead_provider_user_id (utilisé par Phase 11+)."
+            'accept() doit écrire lead_provider_user_id (utilisé par Phase 11+).'
         );
         $this->assertSame($user->id, (int) $fresh->lead_employee_id,
-            "accept() doit AUSSI écrire lead_employee_id (utilisé par "
-            . "channels.php pour l'autorisation broadcast Reverb et par "
-            . "les vues admin/employé historiques)."
+            'accept() doit AUSSI écrire lead_employee_id (utilisé par '
+            ."channels.php pour l'autorisation broadcast Reverb et par "
+            .'les vues admin/employé historiques).'
         );
     }
 
@@ -187,9 +186,9 @@ class PostFixesRegressionTest extends TestCase
     public function test_admin_trades_page_renders_without_layout_error(): void
     {
         $admin = User::factory()->admin()->create([
-            'permissions'  => ['manage-services', 'perform-critical-admin-actions'],
+            'permissions' => ['manage-services', 'perform-critical-admin-actions'],
             'access_scope' => User::ACCESS_SCOPE_ALL,
-            'is_active'    => true,
+            'is_active' => true,
         ]);
 
         $this->actingAs($admin);
@@ -198,8 +197,8 @@ class PostFixesRegressionTest extends TestCase
         $response = $this->get('/admin/trades');
 
         $this->assertNotSame(500, $response->status(),
-            "La page /admin/trades a planté (probablement layout manquant). "
-            . "Vérifier #[Layout('layouts.app')] dans app/Livewire/Admin/Trades.php."
+            'La page /admin/trades a planté (probablement layout manquant). '
+            ."Vérifier #[Layout('layouts.app')] dans app/Livewire/Admin/Trades.php."
         );
     }
 
@@ -215,18 +214,18 @@ class PostFixesRegressionTest extends TestCase
      */
     public function test_reference_seeder_creates_trades(): void
     {
-        $this->seed(\Database\Seeders\ReferencePlatformSeeder::class);
+        $this->seed(ReferencePlatformSeeder::class);
 
         $this->assertGreaterThan(0, Trade::count(),
-            "ReferencePlatformSeeder doit créer au moins 1 trade. "
-            . "Vérifier que TradeSeeder est dans \$this->call([...]) de "
-            . "database/seeders/ReferencePlatformSeeder.php."
+            'ReferencePlatformSeeder doit créer au moins 1 trade. '
+            .'Vérifier que TradeSeeder est dans $this->call([...]) de '
+            .'database/seeders/ReferencePlatformSeeder.php.'
         );
 
         // Sanity check : le slug 'nettoyage' doit exister (utilisé par le backfill)
         $this->assertNotNull(Trade::where('slug', 'nettoyage')->first(),
             "Le trade 'nettoyage' doit être seedé (utilisé par "
-            . "ServiceCatalogTradeBackfillSeeder pour rattacher les services legacy)."
+            .'ServiceCatalogTradeBackfillSeeder pour rattacher les services legacy).'
         );
     }
 
@@ -249,8 +248,8 @@ class PostFixesRegressionTest extends TestCase
     public function test_dynamic_pricing_service_delegates_to_surge_engine(): void
     {
         $context = [
-            'demand'       => 0,
-            'supply'       => 100,
+            'demand' => 0,
+            'supply' => 100,
             'booking_mode' => 'scheduled',
         ];
 
@@ -264,10 +263,10 @@ class PostFixesRegressionTest extends TestCase
             $surgeResult['final_price'],
             $legacyResult,
             0.01,
-            "DynamicPricingService::calculate() doit retourner le même "
-            . "prix que SurgePricingEngine::calculate()->final_price. "
-            . "Vérifier que la délégation est en place dans "
-            . "app/Services/Pricing/DynamicPricingService/DynamicPricingService.php."
+            'DynamicPricingService::calculate() doit retourner le même '
+            .'prix que SurgePricingEngine::calculate()->final_price. '
+            .'Vérifier que la délégation est en place dans '
+            .'app/Services/Pricing/DynamicPricingService/DynamicPricingService.php.'
         );
     }
 
@@ -288,8 +287,8 @@ class PostFixesRegressionTest extends TestCase
     public function test_ai_dispatch_returns_candidates_for_scheduled_bookings(): void
     {
         $zone = ServiceZone::create([
-            'name'      => 'Test Zone',
-            'slug'      => 'test-zone-' . uniqid(),
+            'name' => 'Test Zone',
+            'slug' => 'test-zone-'.uniqid(),
             'is_active' => true,
         ]);
 
@@ -300,7 +299,7 @@ class PostFixesRegressionTest extends TestCase
 
         $booking = $this->makeBooking([
             'service_zone_id' => $zone->id,
-            'booking_mode'    => 'scheduled',  // <-- le cas qui était cassé
+            'booking_mode' => 'scheduled',  // <-- le cas qui était cassé
         ]);
 
         $ranked = app(AiDispatchService::class)->rankEmployees($booking);
@@ -312,7 +311,7 @@ class PostFixesRegressionTest extends TestCase
         // local. Ce qu'on veut surtout vérifier, c'est que la closure
         // filter() ne retourne pas falsy pour scheduled.
         $this->assertIsObject($ranked,
-            "rankEmployees() doit retourner une Collection même vide."
+            'rankEmployees() doit retourner une Collection même vide.'
         );
     }
 
@@ -324,36 +323,37 @@ class PostFixesRegressionTest extends TestCase
     {
         $user = User::factory()->create();
         ProviderProfile::create(array_merge([
-            'user_id'             => $user->id,
-            'provider_type'       => 'individual',
-            'status'              => 'active',
+            'user_id' => $user->id,
+            'provider_type' => 'individual',
+            'status' => 'active',
             'verification_status' => 'verified',
         ], $overrides));
+
         return $user->fresh();
     }
 
     private function makeBooking(array $overrides = []): Booking
     {
         return Booking::create(array_merge([
-            'booking_reference'  => 'TEST-' . strtoupper(bin2hex(random_bytes(3))),
-            'customer_user_id'   => User::factory()->create()->id,
-            'address'            => '1 rue Test',
-            'city'               => 'Bruxelles',
-            'postal_code'        => '1000',
-            'country'            => 'BE',
-            'scheduled_date'     => now()->addDay()->toDateString(),
-            'scheduled_time'     => '10:00:00',
-            'status'             => 'en_attente',
-            'booking_mode'       => 'scheduled',
-            'currency'           => 'EUR',
+            'booking_reference' => 'TEST-'.strtoupper(bin2hex(random_bytes(3))),
+            'customer_user_id' => User::factory()->create()->id,
+            'address' => '1 rue Test',
+            'city' => 'Bruxelles',
+            'postal_code' => '1000',
+            'country' => 'BE',
+            'scheduled_date' => now()->addDay()->toDateString(),
+            'scheduled_time' => '10:00:00',
+            'status' => 'en_attente',
+            'booking_mode' => 'scheduled',
+            'currency' => 'EUR',
         ], $overrides));
     }
 
     private function makeMission(Booking $booking, array $overrides = []): Mission
     {
         return Mission::create(array_merge([
-            'rendez_vous_id'   => $booking->id,
-            'status'           => 'planned',
+            'rendez_vous_id' => $booking->id,
+            'status' => 'planned',
             'planned_start_at' => now()->addDay(),
         ], $overrides));
     }

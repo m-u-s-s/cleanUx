@@ -9,7 +9,9 @@ use Illuminate\Support\Str;
 class MaskedCallSession extends Model
 {
     public const STATUS_ACTIVE = 'active';
+
     public const STATUS_CLOSED = 'closed';
+
     public const STATUS_EXPIRED = 'expired';
 
     protected $fillable = [
@@ -30,7 +32,7 @@ class MaskedCallSession extends Model
 
     public static function generateCode(): string
     {
-        return 'mask_' . Str::lower(Str::random(20));
+        return 'mask_'.Str::lower(Str::random(20));
     }
 
     public function booking(): BelongsTo
@@ -56,6 +58,7 @@ class MaskedCallSession extends Model
         if ($this->expires_at && $this->expires_at->isPast()) {
             return false;
         }
+
         return true;
     }
 }

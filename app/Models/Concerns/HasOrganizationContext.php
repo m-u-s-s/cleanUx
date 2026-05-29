@@ -5,6 +5,7 @@ namespace App\Models\Concerns;
 use App\Enums\OrganizationRole;
 use App\Models\OrganizationAccount;
 use App\Models\OrganizationMember;
+use App\Models\OrganizationSite;
 use App\Services\PermissionService;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -76,6 +77,6 @@ trait HasOrganizationContext
 
     public function organizationSites(): HasMany
     {
-        return $this->hasMany(\App\Models\OrganizationSite::class, 'organization_account_id', 'organization_account_id');
+        return $this->hasMany(OrganizationSite::class, 'organization_account_id', 'organization_account_id');
     }
 }

@@ -24,22 +24,33 @@ class ClientKybOnboarding extends Component
     use WithFileUploads;
 
     public int $step = 1;
+
     public ?int $entityId = null;
 
     // Step 1 fields
     public string $legalName = '';
+
     public string $tradeName = '';
+
     public string $countryCode = 'BE';
+
     public string $identifierType = 'kbo';
+
     public string $identifierValue = '';
+
     public string $vatId = '';
+
     public string $legalForm = '';
+
     public string $addressStreet = '';
+
     public string $addressPostal = '';
+
     public string $addressCity = '';
 
     // Step 2 — upload
     public ?string $documentType = 'kbis';
+
     public $documentFile = null;
 
     public function mount(): void
@@ -87,7 +98,7 @@ class ClientKybOnboarding extends Component
             $this->step = 2;
             $this->dispatch('toast', 'Entité enregistrée. Téléchargez maintenant vos documents.', 'success');
         } catch (ValidationException $e) {
-            $this->dispatch('toast', 'Erreur : ' . implode(' / ', collect($e->errors())->flatten()->all()), 'error');
+            $this->dispatch('toast', 'Erreur : '.implode(' / ', collect($e->errors())->flatten()->all()), 'error');
         }
     }
 
@@ -95,6 +106,7 @@ class ClientKybOnboarding extends Component
     {
         if (! $this->entityId) {
             $this->dispatch('toast', 'Étape 1 requise d\'abord.', 'error');
+
             return;
         }
         $allowedTypes = (array) config('kyb_v2.document_types', []);
@@ -102,19 +114,20 @@ class ClientKybOnboarding extends Component
         $maxKb = (int) config('kyb_v2.document_max_size_kb', 10240);
 
         $this->validate([
-            'documentType' => 'required|string|in:' . implode(',', $allowedTypes),
-            'documentFile' => 'required|file|max:' . $maxKb,
+            'documentType' => 'required|string|in:'.implode(',', $allowedTypes),
+            'documentFile' => 'required|file|max:'.$maxKb,
         ]);
 
         if ($this->documentFile && ! empty($allowedMimes) && ! in_array($this->documentFile->getMimeType(), $allowedMimes, true)) {
             $this->dispatch('toast', 'Type MIME non autorisé.', 'error');
+
             return;
         }
 
         $disk = (string) config('kyb_v2.document_storage_disk', 'local');
         $prefix = trim((string) config('kyb_v2.document_path_prefix', 'kyb_documents'), '/');
-        $name = uniqid('doc_', true) . '_' . preg_replace('/[^a-z0-9_.-]+/i', '_', $this->documentFile->getClientOriginalName());
-        $path = $prefix . '/' . date('Y/m/d') . '/entity-' . $this->entityId . '/' . $name;
+        $name = uniqid('doc_', true).'_'.preg_replace('/[^a-z0-9_.-]+/i', '_', $this->documentFile->getClientOriginalName());
+        $path = $prefix.'/'.date('Y/m/d').'/entity-'.$this->entityId.'/'.$name;
         Storage::disk($disk)->put($path, file_get_contents($this->documentFile->getRealPath()));
 
         BusinessDocument::query()->create([

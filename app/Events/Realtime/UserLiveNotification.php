@@ -2,6 +2,7 @@
 
 namespace App\Events\Realtime;
 
+use App\Models\BroadcastEvent;
 use App\Models\User;
 use App\Realtime\Contracts\TracksBroadcastLedger;
 use Illuminate\Broadcasting\InteractsWithSockets;
@@ -33,7 +34,7 @@ class UserLiveNotification implements ShouldBroadcastNow, TracksBroadcastLedger
 
     public function broadcastOn(): array
     {
-        return [new PrivateChannel('user.' . $this->user->id)];
+        return [new PrivateChannel('user.'.$this->user->id)];
     }
 
     public function broadcastAs(): string
@@ -54,7 +55,7 @@ class UserLiveNotification implements ShouldBroadcastNow, TracksBroadcastLedger
 
     public function broadcastCategory(): string
     {
-        return \App\Models\BroadcastEvent::CATEGORY_NOTIFICATION;
+        return BroadcastEvent::CATEGORY_NOTIFICATION;
     }
 
     public function broadcastIdempotencyKey(): ?string

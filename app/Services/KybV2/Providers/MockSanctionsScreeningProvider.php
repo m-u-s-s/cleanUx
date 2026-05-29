@@ -15,6 +15,7 @@ class MockSanctionsScreeningProvider implements SanctionsScreeningProviderContra
     protected static array $sanctionedTokens = [
         'sanctioned', 'ofac', 'blacklist', 'kim jong', 'putin', 'wagner',
     ];
+
     protected static array $reviewTokens = [
         'review_required', 'partial_match',
     ];
@@ -35,7 +36,7 @@ class MockSanctionsScreeningProvider implements SanctionsScreeningProviderContra
                     matchCount: 1,
                     listName: $listName,
                     matches: [
-                        ['matched_token' => $token, 'confidence' => 0.95, 'list_entry' => 'MOCK-' . strtoupper($token)],
+                        ['matched_token' => $token, 'confidence' => 0.95, 'list_entry' => 'MOCK-'.strtoupper($token)],
                     ],
                     provider: 'mock',
                 );
@@ -52,6 +53,7 @@ class MockSanctionsScreeningProvider implements SanctionsScreeningProviderContra
                 );
             }
         }
+
         return new SanctionsResult(
             hasMatch: false,
             matchCount: 0,

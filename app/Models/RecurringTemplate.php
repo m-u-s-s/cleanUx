@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -17,14 +18,20 @@ class RecurringTemplate extends Model
 {
     use HasFactory;
 
-    public const CATEGORY_OFFICE      = 'office';
-    public const CATEGORY_RETAIL      = 'retail';
-    public const CATEGORY_HOSPITALITY = 'hospitality';
-    public const CATEGORY_RESIDENTIAL = 'residential';
-    public const CATEGORY_OTHER       = 'other';
+    public const CATEGORY_OFFICE = 'office';
 
-    public const FREQ_DAILY   = 'daily';
-    public const FREQ_WEEKLY  = 'weekly';
+    public const CATEGORY_RETAIL = 'retail';
+
+    public const CATEGORY_HOSPITALITY = 'hospitality';
+
+    public const CATEGORY_RESIDENTIAL = 'residential';
+
+    public const CATEGORY_OTHER = 'other';
+
+    public const FREQ_DAILY = 'daily';
+
+    public const FREQ_WEEKLY = 'weekly';
+
     public const FREQ_MONTHLY = 'monthly';
 
     protected $fillable = [
@@ -49,14 +56,14 @@ class RecurringTemplate extends Model
     ];
 
     protected $casts = [
-        'is_system'                => 'boolean',
-        'is_active'                => 'boolean',
-        'days'                     => 'array',
-        'payload'                  => 'array',
-        'interval'                 => 'integer',
+        'is_system' => 'boolean',
+        'is_active' => 'boolean',
+        'days' => 'array',
+        'payload' => 'array',
+        'interval' => 'integer',
         'default_duration_minutes' => 'integer',
-        'usage_count'              => 'integer',
-        'display_order'            => 'integer',
+        'usage_count' => 'integer',
+        'display_order' => 'integer',
     ];
 
     // ──────────────────────────────────────────────────────
@@ -96,7 +103,7 @@ class RecurringTemplate extends Model
     {
         return $q->where(function ($q) use ($userId, $organizationId) {
             $q->where('is_system', true)
-              ->orWhere('owner_user_id', $userId);
+                ->orWhere('owner_user_id', $userId);
 
             if ($organizationId) {
                 $q->orWhere('owner_organization_id', $organizationId);
@@ -126,28 +133,28 @@ class RecurringTemplate extends Model
         $interval = $this->interval ?: 1;
 
         $base = match ($this->frequency) {
-            self::FREQ_DAILY   => $interval === 1 ? 'Tous les jours' : "Tous les {$interval} jours",
-            self::FREQ_WEEKLY  => $interval === 1 ? 'Toutes les semaines' : "Toutes les {$interval} semaines",
+            self::FREQ_DAILY => $interval === 1 ? 'Tous les jours' : "Tous les {$interval} jours",
+            self::FREQ_WEEKLY => $interval === 1 ? 'Toutes les semaines' : "Toutes les {$interval} semaines",
             self::FREQ_MONTHLY => $interval === 1 ? 'Tous les mois' : "Tous les {$interval} mois",
-            default            => 'Récurrence personnalisée',
+            default => 'Récurrence personnalisée',
         };
 
         if ($this->frequency === self::FREQ_WEEKLY && ! empty($this->days)) {
             $dayNames = [
-                'monday'    => 'lundi',
-                'tuesday'   => 'mardi',
+                'monday' => 'lundi',
+                'tuesday' => 'mardi',
                 'wednesday' => 'mercredi',
-                'thursday'  => 'jeudi',
-                'friday'    => 'vendredi',
-                'saturday'  => 'samedi',
-                'sunday'    => 'dimanche',
+                'thursday' => 'jeudi',
+                'friday' => 'vendredi',
+                'saturday' => 'samedi',
+                'sunday' => 'dimanche',
             ];
             $labels = array_map(fn ($d) => $dayNames[strtolower($d)] ?? $d, $this->days);
-            $base .= ', ' . implode(' et ', $labels);
+            $base .= ', '.implode(' et ', $labels);
         }
 
         if ($this->default_time) {
-            $base .= ' à ' . \Carbon\Carbon::parse($this->default_time)->format('H:i');
+            $base .= ' à '.Carbon::parse($this->default_time)->format('H:i');
         }
 
         return $base;

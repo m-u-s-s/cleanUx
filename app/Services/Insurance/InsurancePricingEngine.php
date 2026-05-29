@@ -42,6 +42,7 @@ class InsurancePricingEngine
                 'currency' => $plan->currency,
             ];
         }
+
         return $out;
     }
 
@@ -56,6 +57,7 @@ class InsurancePricingEngine
         if ($plan->max_premium_cents !== null && $premium > (int) $plan->max_premium_cents) {
             $premium = (int) $plan->max_premium_cents;
         }
+
         return max(0, $premium);
     }
 

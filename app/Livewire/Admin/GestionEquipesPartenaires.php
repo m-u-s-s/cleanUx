@@ -12,21 +12,24 @@ use App\Models\ServicePartner;
 use App\Models\ServiceZone;
 use App\Models\User;
 use App\Support\ActivityLogger;
+use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Livewire\Component;
-use Illuminate\Contracts\View\View;
-use Livewire\Attributes\Layout;
 
 class GestionEquipesPartenaires extends Component
 {
     public ?int $selectedTeamId = null;
+
     public ?int $selectedPartnerId = null;
 
     public array $teamForm = [];
+
     public array $memberForm = [];
+
     public array $partnerForm = [];
+
     public array $coverageForm = [];
 
     public function mount(): void
@@ -142,7 +145,7 @@ class GestionEquipesPartenaires extends Component
 
         if (! $team) {
             $team = FieldTeam::create(array_merge($data, [
-                'slug' => Str::limit($slug . '-' . Str::lower(Str::random(6)), 255, ''),
+                'slug' => Str::limit($slug.'-'.Str::lower(Str::random(6)), 255, ''),
             ]));
             $this->selectedTeamId = $team->id;
         } else {
@@ -253,7 +256,7 @@ class GestionEquipesPartenaires extends Component
 
         if (! $partner) {
             $partner = ServicePartner::create(array_merge($data, [
-                'slug' => Str::limit($slug . '-' . Str::lower(Str::random(6)), 255, ''),
+                'slug' => Str::limit($slug.'-'.Str::lower(Str::random(6)), 255, ''),
             ]));
             $this->selectedPartnerId = $partner->id;
         } else {

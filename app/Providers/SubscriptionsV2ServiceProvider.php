@@ -13,9 +13,10 @@ class SubscriptionsV2ServiceProvider extends ServiceProvider
     {
         $this->app->singleton(BillingProviderContract::class, function () {
             $driver = (string) config('subscriptions_v2.billing_driver', 'mock');
+
             return match ($driver) {
-                'stripe' => new StripeBillingProvider(),
-                default => new MockBillingProvider(),
+                'stripe' => new StripeBillingProvider,
+                default => new MockBillingProvider,
             };
         });
     }

@@ -11,13 +11,12 @@ use Illuminate\Validation\ValidationException;
 
 /**
  * @group Client — Device Tokens
+ *
  * @authenticated
  */
 class DeviceTokenController extends Controller
 {
-    public function __construct(protected DeviceTokenService $service)
-    {
-    }
+    public function __construct(protected DeviceTokenService $service) {}
 
     public function register(Request $request): JsonResponse
     {

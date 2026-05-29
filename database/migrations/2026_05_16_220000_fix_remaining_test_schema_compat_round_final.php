@@ -136,7 +136,7 @@ return new class extends Migration
                 Schema::table('field_teams', function (Blueprint $table) {
                     $table->unsignedInteger('max_concurrent_missions')->nullable()->default(3)->change();
                 });
-            } catch (\Throwable $e) {
+            } catch (Throwable $e) {
                 // ignore — change() requiert doctrine/dbal sur certains drivers.
             }
         }
@@ -356,7 +356,7 @@ return new class extends Migration
                     Schema::table($tableName, function (Blueprint $table) {
                         $table->dropForeign(['rendez_vous_id']);
                     });
-                } catch (\Throwable $e) {
+                } catch (Throwable $e) {
                     // ignore : already dropped or never existed
                 }
             }
@@ -387,8 +387,8 @@ return new class extends Migration
         }
 
         // SQLite needs to recreate the table.
-        $tmpName = $tableName . '_legacy_fk_tmp';
-        $createTmp = preg_replace('/CREATE\s+TABLE\s+\"' . preg_quote($tableName, '/') . '\"/i', 'CREATE TABLE "' . $tmpName . '"', $newSql, 1);
+        $tmpName = $tableName.'_legacy_fk_tmp';
+        $createTmp = preg_replace('/CREATE\s+TABLE\s+\"'.preg_quote($tableName, '/').'\"/i', 'CREATE TABLE "'.$tmpName.'"', $newSql, 1);
 
         $conn->statement('PRAGMA foreign_keys = OFF');
         $conn->statement($createTmp);

@@ -51,7 +51,7 @@ class BookingTipObserver
                     'booking_id' => $tip->booking_id,
                 ],
                 category: PushNotification::CATEGORY_TRANSACTIONAL,
-                idempotencyKey: 'tip_received_' . $tip->id,
+                idempotencyKey: 'tip_received_'.$tip->id,
                 source: $tip,
             );
         } catch (\Throwable $e) {
@@ -77,7 +77,7 @@ class BookingTipObserver
                     'tip_id' => $tip->id,
                 ],
                 category: PushNotification::CATEGORY_TRANSACTIONAL,
-                idempotencyKey: 'tip_paid_out_' . $tip->id,
+                idempotencyKey: 'tip_paid_out_'.$tip->id,
                 source: $tip,
             );
         } catch (\Throwable $e) {

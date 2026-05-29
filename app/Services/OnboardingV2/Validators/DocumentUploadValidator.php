@@ -42,7 +42,7 @@ class DocumentUploadValidator implements OnboardingStepValidator
 
         if (! empty($missing)) {
             return OnboardingStepValidation::fail([
-                'documents' => 'Documents manquants : ' . implode(', ', $missing),
+                'documents' => 'Documents manquants : '.implode(', ', $missing),
             ]);
         }
 

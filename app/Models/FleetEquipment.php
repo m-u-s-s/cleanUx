@@ -11,9 +11,13 @@ use Illuminate\Support\Str;
 class FleetEquipment extends Model
 {
     public const STATUS_AVAILABLE = 'available';
+
     public const STATUS_IN_USE = 'in_use';
+
     public const STATUS_MAINTENANCE = 'maintenance';
+
     public const STATUS_RETIRED = 'retired';
+
     public const STATUS_LOST = 'lost';
 
     protected $table = 'fleet_equipment';
@@ -36,7 +40,7 @@ class FleetEquipment extends Model
 
     public static function generateCode(): string
     {
-        return 'eqp_' . Str::lower(Str::random(20));
+        return 'eqp_'.Str::lower(Str::random(20));
     }
 
     public function currentProvider(): BelongsTo

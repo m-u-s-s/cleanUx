@@ -9,13 +9,14 @@ use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Validator;
-use Livewire\Attributes\Layout;
 use Livewire\Component;
 
 class ReferralProgramPage extends Component
 {
     public string $inviteEmail = '';
+
     public string $inviteMessage = '';
+
     public ?string $copied = null;
 
     public function mount(): void
@@ -35,11 +36,11 @@ class ReferralProgramPage extends Component
             ['inviteEmail' => trim($this->inviteEmail)],
             ['inviteEmail' => ['required', 'email', 'max:255']],
             ['inviteEmail.required' => "L'adresse email est obligatoire.",
-                'inviteEmail.email' => "Veuillez saisir un email valide."]
+                'inviteEmail.email' => 'Veuillez saisir un email valide.']
         )->validate();
 
         $code = $this->referralCode();
-        $url = url('/register?ref=' . urlencode($code));
+        $url = url('/register?ref='.urlencode($code));
 
         try {
             Mail::raw(
@@ -47,10 +48,10 @@ class ReferralProgramPage extends Component
                 Auth::user()->name." vous invite à essayer CleanUx.\n\n".
                 ($this->inviteMessage ? $this->inviteMessage."\n\n" : '').
                 "Utilisez ce lien pour vous inscrire et obtenir un crédit de bienvenue :\n".$url."\n\n".
-                "Ou votre code de parrainage : ".$code,
+                'Ou votre code de parrainage : '.$code,
                 function ($message) use ($data) {
                     $message->to($data['inviteEmail'])
-                        ->subject('CleanUx · '.Auth::user()->name." vous invite");
+                        ->subject('CleanUx · '.Auth::user()->name.' vous invite');
                 }
             );
 
@@ -103,7 +104,7 @@ class ReferralProgramPage extends Component
             'stats' => $stats,
             'referrals' => $referrals,
             'rewards' => $rewards,
-            'inviteUrl' => url('/register?ref=' . urlencode($this->referralCode())),
+            'inviteUrl' => url('/register?ref='.urlencode($this->referralCode())),
         ]);
     }
 }

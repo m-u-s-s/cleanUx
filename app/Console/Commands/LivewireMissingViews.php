@@ -9,6 +9,7 @@ use Illuminate\Support\Str;
 class LivewireMissingViews extends Command
 {
     protected $signature = 'livewire:missing-views';
+
     protected $description = 'Liste les composants Livewire sans fichier blade associé';
 
     public function handle(): int
@@ -18,6 +19,7 @@ class LivewireMissingViews extends Command
 
         if (! File::isDirectory($componentDir)) {
             $this->error("Le dossier app/Livewire n'existe pas.");
+
             return self::FAILURE;
         }
 
@@ -60,6 +62,7 @@ class LivewireMissingViews extends Command
 
         if (empty($missing)) {
             $this->info('✅ Tous les composants ont leur fichier blade.');
+
             return self::SUCCESS;
         }
 

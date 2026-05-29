@@ -3,7 +3,6 @@
 namespace Database\Factories;
 
 use App\Models\MarketingSegment;
-use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Str;
 
@@ -19,17 +18,17 @@ class MarketingSegmentFactory extends Factory
         $name = fake()->unique()->words(3, true);
 
         return [
-            'code'              => Str::slug($name),
-            'name'              => ucwords($name),
-            'description'       => fake()->sentence(),
-            'rules'             => [
+            'code' => Str::slug($name),
+            'name' => ucwords($name),
+            'description' => fake()->sentence(),
+            'rules' => [
                 ['field' => 'role', 'operator' => 'eq', 'value' => 'client'],
             ],
-            'is_active'         => true,
-            'member_count'      => 0,
-            'last_computed_at'  => null,
+            'is_active' => true,
+            'member_count' => 0,
+            'last_computed_at' => null,
             'created_by_user_id' => null,
-            'metadata'          => null,
+            'metadata' => null,
         ];
     }
 

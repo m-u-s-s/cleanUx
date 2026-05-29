@@ -2,18 +2,34 @@
 
 namespace App\Providers;
 
-use App\Models\Channel;
-use App\Services\FeatureFlag\FeatureFlagService;
-use Illuminate\Support\Facades\Blade;
-use Illuminate\Support\ServiceProvider;
 use App\Models\Booking;
+use App\Models\BookingTip;
+use App\Models\Channel;
+use App\Models\MissionTrackingPoint;
+use App\Models\TripTrackingSession;
 use App\Observers\BookingObserver;
+use App\Observers\BookingTipObserver;
+use App\Observers\MissionTrackingPointObserver;
 use App\Observers\RendezVousObserver;
+use App\Observers\TripTrackingSessionObserver;
 use App\Policies\ChannelPolicy;
 use App\Services\Assistant\Llm\AnthropicProvider;
+use App\Services\Assistant\Llm\AnthropicStreamingProvider;
 use App\Services\Assistant\Llm\LlmProvider;
+use App\Services\Country\CountryConfigService;
+use App\Services\Dispatch\MatchingScorer;
+use App\Services\FeatureFlag\FeatureFlagService;
+use App\Services\Missions\MissionLifecycleService;
+use App\Services\Payments\CommissionService;
+use App\Services\Payments\StripeCountryMapper;
+use App\Services\Tax\TaxCalculator;
+use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -22,24 +38,24 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        app(\App\Services\Missions\MissionLifecycleService::class);
+        app(MissionLifecycleService::class);
 
         // Phase 5 — Bind du provider LLM pour le chatbot.
         // Singleton car LlmClient (orchestrateur agentic) doit recevoir la même
         // instance HTTP-clientée durant un cycle de requête.
         $this->app->singleton(LlmProvider::class, AnthropicProvider::class);
-        $this->app->singleton(\App\Services\Assistant\Llm\AnthropicStreamingProvider::class);
+        $this->app->singleton(AnthropicStreamingProvider::class);
 
         // Monetisation — singletons for stateless calculators
-        $this->app->singleton(\App\Services\Payments\CommissionService::class);
-        $this->app->singleton(\App\Services\Payments\StripeCountryMapper::class);
-        $this->app->singleton(\App\Services\Tax\TaxCalculator::class);
+        $this->app->singleton(CommissionService::class);
+        $this->app->singleton(StripeCountryMapper::class);
+        $this->app->singleton(TaxCalculator::class);
 
         // Multi-country config — singleton, pure data (no I/O)
-        $this->app->singleton(\App\Services\Country\CountryConfigService::class);
+        $this->app->singleton(CountryConfigService::class);
 
         // Dispatch — scoring engine singleton (stateless, thread-safe)
-        $this->app->singleton(\App\Services\Dispatch\MatchingScorer::class);
+        $this->app->singleton(MatchingScorer::class);
 
         // Feature flags — singleton, config-driven, no I/O
         $this->app->singleton(FeatureFlagService::class);
@@ -50,50 +66,49 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        Model::preventLazyLoading(!app()->isProduction());
+        Model::preventLazyLoading(! app()->isProduction());
         Model::handleLazyLoadingViolationUsing(function ($model, $relation) {
             $class = get_class($model);
             logger()->warning("N+1 lazy load: {$class}.{$relation}");
         });
 
-        \Illuminate\Database\Eloquent\Builder::macro('clientFacing', function () {
-            /** @var \Illuminate\Database\Eloquent\Builder $this */
+        Builder::macro('clientFacing', function () {
+            /** @var Builder $this */
             $model = $this->getModel();
             $table = $model->getTable();
 
-            if (\Illuminate\Support\Facades\Schema::hasColumn($table, 'is_active')) {
-                $this->where($table . '.is_active', true);
+            if (Schema::hasColumn($table, 'is_active')) {
+                $this->where($table.'.is_active', true);
             }
 
-            if (\Illuminate\Support\Facades\Schema::hasColumn($table, 'is_visible')) {
-                $this->where($table . '.is_visible', true);
+            if (Schema::hasColumn($table, 'is_visible')) {
+                $this->where($table.'.is_visible', true);
             }
 
-            if (\Illuminate\Support\Facades\Schema::hasColumn($table, 'client_facing')) {
-                $this->where($table . '.client_facing', true);
+            if (Schema::hasColumn($table, 'client_facing')) {
+                $this->where($table.'.client_facing', true);
             }
 
             return $this;
         });
 
-
-        \Carbon\Carbon::setLocale('fr');
+        Carbon::setLocale('fr');
         Booking::observe(RendezVousObserver::class);
         Booking::observe(BookingObserver::class);
 
         // Tips v2 — push provider on tip charged/paid_out
-        if (class_exists(\App\Models\BookingTip::class) && class_exists(\App\Observers\BookingTipObserver::class)) {
-            \App\Models\BookingTip::observe(\App\Observers\BookingTipObserver::class);
+        if (class_exists(BookingTip::class) && class_exists(BookingTipObserver::class)) {
+            BookingTip::observe(BookingTipObserver::class);
         }
 
         // Trip Tracking v2 — push client on enroute/arrived/in_mission transitions
-        if (class_exists(\App\Models\TripTrackingSession::class) && class_exists(\App\Observers\TripTrackingSessionObserver::class)) {
-            \App\Models\TripTrackingSession::observe(\App\Observers\TripTrackingSessionObserver::class);
+        if (class_exists(TripTrackingSession::class) && class_exists(TripTrackingSessionObserver::class)) {
+            TripTrackingSession::observe(TripTrackingSessionObserver::class);
         }
 
         // MissionTrackingPoint → MissionEtaUpdated broadcast (was unwired)
-        if (class_exists(\App\Models\MissionTrackingPoint::class) && class_exists(\App\Observers\MissionTrackingPointObserver::class)) {
-            \App\Models\MissionTrackingPoint::observe(\App\Observers\MissionTrackingPointObserver::class);
+        if (class_exists(MissionTrackingPoint::class) && class_exists(MissionTrackingPointObserver::class)) {
+            MissionTrackingPoint::observe(MissionTrackingPointObserver::class);
         }
 
         Gate::policy(Channel::class, ChannelPolicy::class);

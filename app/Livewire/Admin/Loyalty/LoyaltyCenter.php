@@ -9,7 +9,6 @@ use App\Models\User;
 use App\Services\Loyalty\LoyaltyService;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
 use Livewire\Component;
 use Livewire\WithPagination;
 
@@ -20,10 +19,13 @@ class LoyaltyCenter extends Component
     protected $paginationTheme = 'tailwind';
 
     public string $search = '';
+
     public ?int $filterTierId = null;
 
     public ?int $selectedUserId = null;
+
     public int $adjustPoints = 0;
+
     public string $adjustReason = '';
 
     public function selectUser(int $userId): void
@@ -79,7 +81,7 @@ class LoyaltyCenter extends Component
             ->with(['user:id,name,email', 'currentTier'])
             ->when($this->filterTierId, fn ($q) => $q->where('current_tier_id', $this->filterTierId))
             ->when($this->search, function ($q) {
-                $term = '%' . $this->search . '%';
+                $term = '%'.$this->search.'%';
                 $q->whereHas('user', fn ($u) => $u->where('name', 'like', $term)->orWhere('email', 'like', $term));
             })
             ->orderByDesc('lifetime_points')

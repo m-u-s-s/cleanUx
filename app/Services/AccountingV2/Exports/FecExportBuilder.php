@@ -43,7 +43,7 @@ class FecExportBuilder implements ExportBuilderContract
                     $e->posting_date->format('Ymd'),
                     $this->sanitize($e->account_code),
                     $this->sanitize((string) $e->account_name),
-                    $this->sanitize($e->counterparty_type ? $e->counterparty_type . '_' . $e->counterparty_id : ''),
+                    $this->sanitize($e->counterparty_type ? $e->counterparty_type.'_'.$e->counterparty_id : ''),
                     '',
                     $this->sanitize((string) $e->reference),
                     $e->posting_date->format('Ymd'),

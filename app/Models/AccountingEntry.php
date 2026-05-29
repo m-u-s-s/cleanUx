@@ -33,12 +33,12 @@ class AccountingEntry extends Model
 
     public static function generateEntryCode(): string
     {
-        return 'entry_' . Str::lower(Str::random(20));
+        return 'entry_'.Str::lower(Str::random(20));
     }
 
     public static function generateBatchId(): string
     {
-        return 'batch_' . Str::lower(Str::random(20));
+        return 'batch_'.Str::lower(Str::random(20));
     }
 
     public function scopeForPeriod(Builder $q, int $year, ?int $month = null): Builder
@@ -47,6 +47,7 @@ class AccountingEntry extends Model
         if ($month) {
             $q->whereMonth('posting_date', $month);
         }
+
         return $q;
     }
 

@@ -10,8 +10,7 @@ class AdminAnalyticsSnapshotService
 {
     public function __construct(
         protected FinanceDocumentService $financeService
-    ) {
-    }
+    ) {}
 
     public function monthTrend(Collection $rows): Collection
     {

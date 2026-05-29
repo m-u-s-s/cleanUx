@@ -19,7 +19,7 @@ class ActionDetectorTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->detector = new ActionDetector();
+        $this->detector = new ActionDetector;
     }
 
     public function test_booking_keyword_triggers_list_bookings_for_client(): void

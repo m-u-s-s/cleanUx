@@ -6,7 +6,6 @@ use App\Events\Dispatch\ProviderPresenceChanged;
 use App\Models\ProviderProfile;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
@@ -42,15 +41,15 @@ class ProviderPresenceService
             $wasOnline = (bool) $profile->is_online;
 
             $profile->update([
-                'is_online'         => true,
-                'went_online_at'    => $wasOnline && $profile->went_online_at
+                'is_online' => true,
+                'went_online_at' => $wasOnline && $profile->went_online_at
                     ? $profile->went_online_at
                     : now(),
                 'last_heartbeat_at' => now(),
-                'current_lat'       => $lat,
-                'current_lng'       => $lng,
-                'last_location_at'  => now(),
-                'presence_meta'     => $meta ?: null,
+                'current_lat' => $lat,
+                'current_lng' => $lng,
+                'last_location_at' => now(),
+                'presence_meta' => $meta ?: null,
             ]);
 
             if (! $wasOnline) {
@@ -72,8 +71,8 @@ class ProviderPresenceService
             $wasOnline = (bool) $profile->is_online;
 
             $profile->update([
-                'is_online'        => false,
-                'went_offline_at'  => now(),
+                'is_online' => false,
+                'went_offline_at' => now(),
             ]);
 
             if ($wasOnline) {
@@ -100,10 +99,10 @@ class ProviderPresenceService
 
         $profile->update([
             'last_heartbeat_at' => now(),
-            'current_lat'       => $lat,
-            'current_lng'       => $lng,
-            'last_location_at'  => now(),
-            'presence_meta'     => $meta ?: $profile->presence_meta,
+            'current_lat' => $lat,
+            'current_lng' => $lng,
+            'last_location_at' => now(),
+            'presence_meta' => $meta ?: $profile->presence_meta,
         ]);
 
         return $profile->fresh();
@@ -130,15 +129,15 @@ class ProviderPresenceService
 
         foreach ($stale as $profile) {
             $profile->update([
-                'is_online'       => false,
+                'is_online' => false,
                 'went_offline_at' => now(),
             ]);
 
             event(new ProviderPresenceChanged($profile->user_id, false));
 
             Log::info('Provider auto-offline (stale heartbeat)', [
-                'provider_user_id'    => $profile->user_id,
-                'last_heartbeat_at'   => $profile->last_heartbeat_at?->toIso8601String(),
+                'provider_user_id' => $profile->user_id,
+                'last_heartbeat_at' => $profile->last_heartbeat_at?->toIso8601String(),
             ]);
         }
 
@@ -199,8 +198,8 @@ class ProviderPresenceService
 
         if (! $profile) {
             throw new \DomainException(
-                "L'utilisateur {$user->id} n'a pas de ProviderProfile. " .
-                    "Il doit être prestataire pour utiliser le système de presence."
+                "L'utilisateur {$user->id} n'a pas de ProviderProfile. ".
+                    'Il doit être prestataire pour utiliser le système de presence.'
             );
         }
 

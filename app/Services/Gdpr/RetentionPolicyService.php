@@ -63,6 +63,7 @@ class RetentionPolicyService
                 ->delete();
         } catch (\Throwable $e) {
             report($e);
+
             return 0;
         }
     }
@@ -83,6 +84,7 @@ class RetentionPolicyService
                 ->delete();
         } catch (\Throwable $e) {
             report($e);
+
             return 0;
         }
     }

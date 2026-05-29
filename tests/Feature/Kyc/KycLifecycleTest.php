@@ -157,13 +157,14 @@ class KycLifecycleTest extends TestCase
 
     protected function makeProviderUser(): User
     {
-        $user = User::factory()->create(['role' => 'employe', 'email' => 'good-' . uniqid() . '@example.com']);
+        $user = User::factory()->create(['role' => 'employe', 'email' => 'good-'.uniqid().'@example.com']);
         ProviderProfile::create([
             'user_id' => $user->id,
             'provider_type' => 'independent',
             'status' => 'active',
             'verification_status' => 'pending',
         ]);
+
         return $user->fresh();
     }
 }

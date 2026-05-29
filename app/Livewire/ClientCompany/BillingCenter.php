@@ -13,9 +13,12 @@ class BillingCenter extends Component
     use WithPagination;
 
     public string $filterStatus = '';
-    public ?int   $filterSiteId = null;
+
+    public ?int $filterSiteId = null;
+
     public string $filterPeriod = 'month';
-    public string $searchRef    = '';
+
+    public string $searchRef = '';
 
     public function mount(): void
     {
@@ -29,9 +32,9 @@ class BillingCenter extends Component
     {
         return match ($this->filterPeriod) {
             'quarter' => [now()->startOfQuarter(), now()->endOfQuarter()],
-            'year'    => [now()->startOfYear(), now()->endOfYear()],
-            'all'     => [now()->subYears(10), now()],
-            default   => [now()->startOfMonth(), now()->endOfMonth()],
+            'year' => [now()->startOfYear(), now()->endOfYear()],
+            'all' => [now()->subYears(10), now()],
+            default => [now()->startOfMonth(), now()->endOfMonth()],
         };
     }
 
@@ -42,11 +45,11 @@ class BillingCenter extends Component
 
         // Données simulées — à connecter à Invoice model
         return [
-            'total_period'  => 0,
-            'total_unpaid'  => 0,
+            'total_period' => 0,
+            'total_unpaid' => 0,
             'count_overdue' => 0,
-            'from'          => $from->format('d/m/Y'),
-            'to'            => $to->format('d/m/Y'),
+            'from' => $from->format('d/m/Y'),
+            'to' => $to->format('d/m/Y'),
         ];
     }
 
@@ -60,7 +63,7 @@ class BillingCenter extends Component
     {
         return view('livewire.client-company.billing-center', [
             'summary' => $this->summaryProperty,
-            'sites'   => $this->sitesProperty,
+            'sites' => $this->sitesProperty,
         ])->layout('layouts.client-company');
     }
 }

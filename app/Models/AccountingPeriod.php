@@ -38,8 +38,9 @@ class AccountingPeriod extends Model
     public function label(): string
     {
         if ($this->period_month === 0) {
-            return 'Annuel ' . $this->period_year;
+            return 'Annuel '.$this->period_year;
         }
+
         return sprintf('%04d-%02d', $this->period_year, $this->period_month);
     }
 }

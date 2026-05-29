@@ -17,26 +17,26 @@ class ProviderTradeCertificationFactory extends Factory
     public function definition(): array
     {
         return [
-            'user_id'            => User::factory(),
-            'trade_id'           => Trade::factory(),
+            'user_id' => User::factory(),
+            'trade_id' => Trade::factory(),
             'certification_type' => $this->faker->randomElement(['diploma', 'attestation', 'experience']),
-            'document_path'      => $this->faker->boolean(60)
-                ? 'certifications/' . $this->faker->uuid() . '.pdf'
+            'document_path' => $this->faker->boolean(60)
+                ? 'certifications/'.$this->faker->uuid().'.pdf'
                 : null,
-            'status'             => 'pending',
-            'verified_by_user_id'=> null,
-            'verified_at'        => null,
-            'expires_at'         => $this->faker->boolean(40) ? $this->faker->dateTimeBetween('+6 months', '+3 years') : null,
-            'metadata'           => null,
+            'status' => 'pending',
+            'verified_by_user_id' => null,
+            'verified_at' => null,
+            'expires_at' => $this->faker->boolean(40) ? $this->faker->dateTimeBetween('+6 months', '+3 years') : null,
+            'metadata' => null,
         ];
     }
 
     public function verified(): static
     {
         return $this->state(fn () => [
-            'status'              => 'verified',
+            'status' => 'verified',
             'verified_by_user_id' => User::factory(),
-            'verified_at'         => now(),
+            'verified_at' => now(),
         ]);
     }
 

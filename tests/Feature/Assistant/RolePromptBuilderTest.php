@@ -28,7 +28,7 @@ class RolePromptBuilderTest extends TestCase
             ->willReturn(['system' => 'mocked system prompt', 'context' => [], 'tools' => []]);
 
         $builder = new RolePromptBuilder($contextBuilder);
-        $prompt  = $builder->buildSystemPrompt($user);
+        $prompt = $builder->buildSystemPrompt($user);
 
         $this->assertSame('mocked system prompt', $prompt);
     }
@@ -39,7 +39,7 @@ class RolePromptBuilderTest extends TestCase
 
     public function test_returns_non_empty_string_for_default_user(): void
     {
-        $user   = User::factory()->create();
+        $user = User::factory()->create();
         $prompt = app(RolePromptBuilder::class)->buildSystemPrompt($user);
 
         $this->assertIsString($prompt);
@@ -48,7 +48,7 @@ class RolePromptBuilderTest extends TestCase
 
     public function test_prompt_contains_cleanux_brand(): void
     {
-        $user   = User::factory()->create();
+        $user = User::factory()->create();
         $prompt = app(RolePromptBuilder::class)->buildSystemPrompt($user);
 
         $this->assertStringContainsStringIgnoringCase('CleanUx', $prompt);
@@ -56,10 +56,10 @@ class RolePromptBuilderTest extends TestCase
 
     public function test_admin_prompt_differs_from_client_prompt(): void
     {
-        $admin  = User::factory()->create(['platform_role' => 'admin']);
+        $admin = User::factory()->create(['platform_role' => 'admin']);
         $client = User::factory()->create();
 
-        $adminPrompt  = app(RolePromptBuilder::class)->buildSystemPrompt($admin);
+        $adminPrompt = app(RolePromptBuilder::class)->buildSystemPrompt($admin);
         $clientPrompt = app(RolePromptBuilder::class)->buildSystemPrompt($client);
 
         $this->assertNotSame($adminPrompt, $clientPrompt);

@@ -27,7 +27,7 @@ class Money
         'EUR' => ['symbol' => '€',  'name' => 'Euro',          'decimals' => 2],
         'USD' => ['symbol' => '$',  'name' => 'US Dollar',     'decimals' => 2],
         'GBP' => ['symbol' => '£',  'name' => 'British Pound', 'decimals' => 2],
-        'CHF' => ['symbol' => 'CHF','name' => 'Swiss Franc',   'decimals' => 2],
+        'CHF' => ['symbol' => 'CHF', 'name' => 'Swiss Franc',   'decimals' => 2],
         'CAD' => ['symbol' => 'C$', 'name' => 'Canadian Dollar', 'decimals' => 2],
     ];
 
@@ -49,6 +49,7 @@ class Money
         if (class_exists(NumberFormatter::class) && extension_loaded('intl')) {
             $formatter = new NumberFormatter($locale, NumberFormatter::CURRENCY);
             $formatted = $formatter->formatCurrency($amount, $currency);
+
             // intl peut retourner des espaces insécables (\xc2\xa0) — on normalise
             return str_replace("\xc2\xa0", ' ', $formatted);
         }
@@ -64,7 +65,7 @@ class Money
     public function convert(float $amount, string $from, string $to): float
     {
         $from = strtoupper($from);
-        $to   = strtoupper($to);
+        $to = strtoupper($to);
 
         if ($from === $to) {
             return $amount;
@@ -74,6 +75,7 @@ class Money
         if ($rate === null) {
             // Pas de taux → fallback : retourner le montant initial avec un warning
             \Log::warning("Money: pas de taux disponible {$from} → {$to}");
+
             return $amount;
         }
 
@@ -133,9 +135,9 @@ class Money
     {
         return collect(self::SUPPORTED_CURRENCIES)
             ->map(fn ($info, $code) => [
-                'code'   => $code,
+                'code' => $code,
                 'symbol' => $info['symbol'],
-                'name'   => $info['name'],
+                'name' => $info['name'],
             ])
             ->values()
             ->all();
@@ -172,7 +174,7 @@ class Money
     private function fallbackFormat(float $amount, string $currency, string $locale): string
     {
         $info = self::SUPPORTED_CURRENCIES[$currency] ?? self::SUPPORTED_CURRENCIES['EUR'];
-        $symbol   = $info['symbol'];
+        $symbol = $info['symbol'];
         $decimals = $info['decimals'];
 
         // Locales européennes (fr_BE, nl_BE, fr) : virgule décimale + espace milliers
@@ -180,15 +182,15 @@ class Money
             || str_starts_with($locale, 'nl')
             || str_starts_with($locale, 'de');
 
-        $decimalSep   = $isEuropean ? ',' : '.';
+        $decimalSep = $isEuropean ? ',' : '.';
         $thousandsSep = $isEuropean ? ' ' : ',';
 
         $formatted = number_format($amount, $decimals, $decimalSep, $thousandsSep);
 
         // Position du symbole selon la locale
         return match ($locale) {
-            'en', 'en_US', 'en_GB' => $symbol . $formatted,
-            default                => $formatted . ' ' . $symbol,
+            'en', 'en_US', 'en_GB' => $symbol.$formatted,
+            default => $formatted.' '.$symbol,
         };
     }
 

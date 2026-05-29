@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\DB;
 
 /**
  * @group Authentication
+ *
  * @authenticated
  *
  * POST /api/auth/refresh
@@ -39,7 +40,7 @@ class AuthRefreshController extends Controller
         // name when set; fall back to a per-token unique string so that tokens
         // with an empty name do not all collapse to the same device name on
         // refresh (which would break per-device revocation).
-        $deviceName = $oldToken->name ?: ('device-' . $oldToken->id);
+        $deviceName = $oldToken->name ?: ('device-'.$oldToken->id);
 
         $result = DB::transaction(function () use ($user, $oldToken, $deviceName) {
             $newToken = $user->createToken($deviceName);
@@ -58,7 +59,7 @@ class AuthRefreshController extends Controller
         });
 
         return response()->json([
-            'token'      => $result->plainTextToken,
+            'token' => $result->plainTextToken,
             'expires_at' => $result->accessToken->expires_at?->toIso8601String(),
         ]);
     }

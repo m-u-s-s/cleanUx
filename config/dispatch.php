@@ -16,15 +16,15 @@ return [
 
     'timeout_per_trade' => [
         // Trades that need more time (complex job descriptions, tool checks…)
-        'toiturier'    => (int) env('DISPATCH_TIMEOUT_TOITURIER', 30),
-        'electricite'  => (int) env('DISPATCH_TIMEOUT_ELECTRICITE', 30),
-        'plomberie'    => (int) env('DISPATCH_TIMEOUT_PLOMBERIE', 30),
+        'toiturier' => (int) env('DISPATCH_TIMEOUT_TOITURIER', 30),
+        'electricite' => (int) env('DISPATCH_TIMEOUT_ELECTRICITE', 30),
+        'plomberie' => (int) env('DISPATCH_TIMEOUT_PLOMBERIE', 30),
         'demenagement' => (int) env('DISPATCH_TIMEOUT_DEMENAGEMENT', 30),
 
         // Fast-response trades
-        'nettoyage'    => (int) env('DISPATCH_TIMEOUT_NETTOYAGE', 15),
-        'babysitting'  => (int) env('DISPATCH_TIMEOUT_BABYSITTING', 15),
-        'jardinage'    => (int) env('DISPATCH_TIMEOUT_JARDINAGE', 20),
+        'nettoyage' => (int) env('DISPATCH_TIMEOUT_NETTOYAGE', 15),
+        'babysitting' => (int) env('DISPATCH_TIMEOUT_BABYSITTING', 15),
+        'jardinage' => (int) env('DISPATCH_TIMEOUT_JARDINAGE', 20),
     ],
 
     /*

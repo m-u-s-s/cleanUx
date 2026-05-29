@@ -14,6 +14,7 @@ use Illuminate\Validation\ValidationException;
 
 /**
  * @group Subscriptions v2
+ *
  * @authenticated
  */
 class SubscriptionsV2Controller extends Controller
@@ -30,6 +31,7 @@ class SubscriptionsV2Controller extends Controller
             ->when($request->filled('billing_period'), fn ($q) => $q->where('billing_period', $request->string('billing_period')))
             ->orderBy('price_cents')
             ->get();
+
         return response()->json(['data' => $rows]);
     }
 
@@ -40,6 +42,7 @@ class SubscriptionsV2Controller extends Controller
             ->with('plan')
             ->orderByDesc('created_at')
             ->get();
+
         return response()->json(['data' => $rows]);
     }
 
@@ -80,6 +83,7 @@ class SubscriptionsV2Controller extends Controller
         } catch (ValidationException $e) {
             return response()->json(['ok' => false, 'errors' => $e->errors()], 422);
         }
+
         return response()->json(['ok' => true, 'subscription' => $sub]);
     }
 
@@ -93,6 +97,7 @@ class SubscriptionsV2Controller extends Controller
         } catch (ValidationException $e) {
             return response()->json(['ok' => false, 'errors' => $e->errors()], 422);
         }
+
         return response()->json(['ok' => true, 'subscription' => $sub]);
     }
 
@@ -103,6 +108,7 @@ class SubscriptionsV2Controller extends Controller
         }
         $immediate = (bool) $request->boolean('immediate');
         $sub = $this->engine->cancel($subscription, $immediate);
+
         return response()->json(['ok' => true, 'subscription' => $sub]);
     }
 
@@ -123,6 +129,7 @@ class SubscriptionsV2Controller extends Controller
         } catch (ValidationException $e) {
             return response()->json(['ok' => false, 'errors' => $e->errors()], 422);
         }
+
         return response()->json(['ok' => true, 'subscription' => $sub->load('plan')]);
     }
 
@@ -136,6 +143,7 @@ class SubscriptionsV2Controller extends Controller
             ->orderByDesc('cycle_number')
             ->limit((int) $request->integer('limit', 50))
             ->get();
+
         return response()->json(['data' => $rows]);
     }
 
@@ -149,6 +157,7 @@ class SubscriptionsV2Controller extends Controller
             ->orderByDesc('created_at')
             ->limit((int) $request->integer('limit', 50))
             ->get();
+
         return response()->json(['data' => $rows]);
     }
 
@@ -159,18 +168,21 @@ class SubscriptionsV2Controller extends Controller
             ->orderByDesc('id')
             ->limit((int) $request->integer('limit', 100))
             ->get();
+
         return response()->json(['data' => $rows]);
     }
 
     public function adminRetryBilling(SubscriptionCycleV2 $cycle): JsonResponse
     {
         $row = $this->billing->processCycle($cycle);
+
         return response()->json(['ok' => true, 'cycle' => $row]);
     }
 
     public function adminForceCancel(Request $request, SubscriptionV2 $subscription): JsonResponse
     {
         $sub = $this->engine->cancel($subscription, true);
+
         return response()->json(['ok' => true, 'subscription' => $sub]);
     }
 }

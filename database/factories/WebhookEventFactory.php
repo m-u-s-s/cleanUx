@@ -21,13 +21,13 @@ class WebhookEventFactory extends Factory
         ];
 
         return [
-            'event_id'       => WebhookEvent::generateEventId(),
-            'event_code'     => fake()->randomElement($eventCodes),
-            'payload'        => ['data' => ['id' => fake()->numberBetween(1, 500)]],
+            'event_id' => WebhookEvent::generateEventId(),
+            'event_code' => fake()->randomElement($eventCodes),
+            'payload' => ['data' => ['id' => fake()->numberBetween(1, 500)]],
             'idempotency_key' => Str::uuid()->toString(),
-            'source_type'    => fake()->randomElement(['booking', 'payment', 'provider']),
-            'source_id'      => fake()->numberBetween(1, 500),
-            'occurred_at'    => now()->subSeconds(fake()->numberBetween(1, 3600)),
+            'source_type' => fake()->randomElement(['booking', 'payment', 'provider']),
+            'source_id' => fake()->numberBetween(1, 500),
+            'occurred_at' => now()->subSeconds(fake()->numberBetween(1, 3600)),
         ];
     }
 }

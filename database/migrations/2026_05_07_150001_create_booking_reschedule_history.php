@@ -15,7 +15,8 @@ use Illuminate\Support\Facades\Schema;
  *   - rollback potentiel d'un déplacement accidentel
  *   - statistiques (taux de reschedule par client / par mois)
  */
-return new class extends Migration {
+return new class extends Migration
+{
     public function up(): void
     {
         if (Schema::hasTable('booking_reschedule_history')) {

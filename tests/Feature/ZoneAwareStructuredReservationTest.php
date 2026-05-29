@@ -3,9 +3,9 @@
 namespace Tests\Feature;
 
 use App\Livewire\Client\PrendreRendezVous;
+use App\Models\Booking;
 use App\Models\OrganizationAccount;
 use App\Models\OrganizationSite;
-use App\Models\Booking;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
@@ -102,7 +102,7 @@ class ZoneAwareStructuredReservationTest extends TestCase
             ->call('validerRdv')
             ->assertHasNoErrors();
 
-        $rendezVous = \App\Models\Booking::query()
+        $rendezVous = Booking::query()
             ->where('service_catalog_id', $context['service']->id)
             ->latest('id')
             ->first();

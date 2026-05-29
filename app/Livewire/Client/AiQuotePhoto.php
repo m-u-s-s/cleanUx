@@ -13,11 +13,15 @@ class AiQuotePhoto extends Component
     use WithFileUploads;
 
     public ?int $tradeId = null;
+
     public $photo;
+
     public string $note = '';
 
     public ?array $result = null;
+
     public bool $estimating = false;
+
     public string $error = '';
 
     public function estimate(): void
@@ -35,6 +39,7 @@ class AiQuotePhoto extends Component
             $trade = Trade::find($this->tradeId);
             if (! $trade) {
                 $this->error = 'Métier introuvable.';
+
                 return;
             }
 
@@ -42,18 +47,20 @@ class AiQuotePhoto extends Component
             $result = app(PhotoQuoteEstimator::class)->estimateFromPhoto($base64, $trade, $this->note ?: null);
 
             if ($result === null) {
-                $this->error = "Service IA temporairement indisponible. Réessayez ou contactez le support.";
+                $this->error = 'Service IA temporairement indisponible. Réessayez ou contactez le support.';
+
                 return;
             }
 
             if (! ($result['success'] ?? false)) {
-                $this->error = "L'IA n'a pas pu analyser cette photo : " . ($result['reason'] ?? 'photo non pertinente');
+                $this->error = "L'IA n'a pas pu analyser cette photo : ".($result['reason'] ?? 'photo non pertinente');
+
                 return;
             }
 
             $this->result = $result;
         } catch (\Throwable $e) {
-            $this->error = 'Erreur : ' . $e->getMessage();
+            $this->error = 'Erreur : '.$e->getMessage();
         } finally {
             $this->estimating = false;
         }

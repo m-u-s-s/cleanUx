@@ -3,7 +3,6 @@
 namespace App\Livewire\Client;
 
 use App\Models\MultiTradeBundle;
-use App\Models\MultiTradeBundleItem;
 use App\Models\Trade;
 use App\Services\Bundles\MultiTradeBundleService;
 use Illuminate\Contracts\View\View;
@@ -18,7 +17,9 @@ class MultiTradesBundleManager extends Component
     public string $tab = 'list';
 
     public string $bundleName = '';
+
     public string $bundleDescription = '';
+
     public array $items = [];   // [{trade_id, label, description, duration_minutes, estimated_price_eur}, ...]
 
     public function mount(): void

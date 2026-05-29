@@ -7,6 +7,7 @@ use App\Notifications\FinanceReminderNotification;
 use App\Support\Notifications\NotificationPresenter;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Notifications\DatabaseNotification;
+use Illuminate\Support\Str;
 use Tests\TestCase;
 
 class NotificationPresenterTest extends TestCase
@@ -18,7 +19,7 @@ class NotificationPresenterTest extends TestCase
         $user = User::factory()->admin()->create();
 
         $notification = new DatabaseNotification([
-            'id' => (string) \Illuminate\Support\Str::uuid(),
+            'id' => (string) Str::uuid(),
             'type' => FinanceReminderNotification::class,
             'notifiable_type' => User::class,
             'notifiable_id' => $user->id,

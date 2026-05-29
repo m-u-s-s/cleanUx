@@ -13,15 +13,15 @@ use App\Models\User;
 use App\Models\WorkOrderApproval;
 use App\Models\WorkOrderLine;
 use App\Support\ActivityLogger;
-use Illuminate\Support\Str;
-use Livewire\Component;
 use Illuminate\Contracts\View\View;
-use Livewire\Attributes\Layout;
+use Livewire\Component;
 
 class B2BOperationsCenter extends Component
 {
     public ?int $selectedAccountId = null;
+
     public ?int $contractId = null;
+
     public ?int $workOrderId = null;
 
     public array $contractForm = [

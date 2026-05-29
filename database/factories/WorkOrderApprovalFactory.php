@@ -15,12 +15,12 @@ class WorkOrderApprovalFactory extends Factory
     {
         return [
             'enterprise_work_order_id' => fn () => EnterpriseWorkOrder::factory()->create()->id,
-            'approver_user_id'         => fn () => User::factory()->create()->id,
-            'approval_status'          => 'pending',
-            'approved_at'              => null,
-            'rejected_at'              => null,
-            'comment'                  => null,
-            'metadata'                 => null,
+            'approver_user_id' => fn () => User::factory()->create()->id,
+            'approval_status' => 'pending',
+            'approved_at' => null,
+            'rejected_at' => null,
+            'comment' => null,
+            'metadata' => null,
         ];
     }
 
@@ -28,7 +28,7 @@ class WorkOrderApprovalFactory extends Factory
     {
         return $this->state(fn () => [
             'approval_status' => 'approved',
-            'approved_at'     => now(),
+            'approved_at' => now(),
         ]);
     }
 
@@ -36,8 +36,8 @@ class WorkOrderApprovalFactory extends Factory
     {
         return $this->state(fn () => [
             'approval_status' => 'rejected',
-            'rejected_at'     => now(),
-            'comment'         => 'Budget exceeded',
+            'rejected_at' => now(),
+            'comment' => 'Budget exceeded',
         ]);
     }
 }

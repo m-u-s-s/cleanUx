@@ -28,37 +28,58 @@ class Trades extends Component
 
     // ── Filtres ──
     public string $search = '';
+
     public string $status = '';   // ''|'active'|'inactive'
 
     protected $queryString = ['search', 'status', 'page'];
 
     // ── Form (create / edit) ──
     public ?int $tradeId = null;
+
     public string $slug = '';
+
     public string $code = '';
+
     public string $name = '';
+
     public string $icon = '';
+
     public string $color = '#0EA5E9';
+
     public string $short_description = '';
+
     public string $description = '';
+
     public bool $is_active = true;
+
     public bool $requires_certification = false;
+
     public bool $requires_insurance_proof = false;
+
     public bool $is_b2b_default = true;
+
     public bool $is_personal_default = true;
+
     public int $sort_order = 0;
 
     // Chantier A — propriétés métier (pricing & workflow)
     public ?string $default_hourly_rate = null;
+
     public string $emergency_multiplier = '1.00';
+
     public string $night_multiplier = '1.00';
+
     public string $weekend_multiplier = '1.00';
+
     public ?string $quote_validity_days = null;
+
     public bool $requires_quote_by_default = false;
+
     public ?string $sla_response_minutes = null;
 
     // Phase F1 — schema dynamique du formulaire de réservation
     public string $booking_form_schema_json = '';
+
     public bool $showFormSchemaPreview = false;
 
     public bool $showForm = false;
@@ -68,8 +89,15 @@ class Trades extends Component
         $this->resetForm();
     }
 
-    public function updatingSearch(): void { $this->resetPage(); }
-    public function updatingStatus(): void { $this->resetPage(); }
+    public function updatingSearch(): void
+    {
+        $this->resetPage();
+    }
+
+    public function updatingStatus(): void
+    {
+        $this->resetPage();
+    }
 
     // Auto-slug + auto-code à la création seulement
     public function updatedName($value): void
@@ -162,27 +190,27 @@ class Trades extends Component
     public function save(): void
     {
         $rules = [
-            'slug'                      => ['required', 'string', 'max:80', 'regex:/^[a-z0-9\-]+$/'],
-            'code'                      => ['required', 'string', 'max:60'],
-            'name'                      => ['required', 'string', 'max:120'],
-            'icon'                      => ['nullable', 'string', 'max:60'],
-            'color'                     => ['nullable', 'string', 'max:16'],
-            'short_description'         => ['nullable', 'string', 'max:500'],
-            'description'               => ['nullable', 'string', 'max:5000'],
-            'is_active'                 => ['boolean'],
-            'requires_certification'    => ['boolean'],
-            'requires_insurance_proof'  => ['boolean'],
-            'is_b2b_default'            => ['boolean'],
-            'is_personal_default'       => ['boolean'],
-            'sort_order'                => ['integer', 'min:0', 'max:9999'],
-            'default_hourly_rate'       => ['nullable', 'numeric', 'min:0', 'max:99999.99'],
-            'emergency_multiplier'      => ['required', 'numeric', 'min:1', 'max:10'],
-            'night_multiplier'          => ['required', 'numeric', 'min:1', 'max:10'],
-            'weekend_multiplier'        => ['required', 'numeric', 'min:1', 'max:10'],
-            'quote_validity_days'       => ['nullable', 'integer', 'min:1', 'max:365'],
+            'slug' => ['required', 'string', 'max:80', 'regex:/^[a-z0-9\-]+$/'],
+            'code' => ['required', 'string', 'max:60'],
+            'name' => ['required', 'string', 'max:120'],
+            'icon' => ['nullable', 'string', 'max:60'],
+            'color' => ['nullable', 'string', 'max:16'],
+            'short_description' => ['nullable', 'string', 'max:500'],
+            'description' => ['nullable', 'string', 'max:5000'],
+            'is_active' => ['boolean'],
+            'requires_certification' => ['boolean'],
+            'requires_insurance_proof' => ['boolean'],
+            'is_b2b_default' => ['boolean'],
+            'is_personal_default' => ['boolean'],
+            'sort_order' => ['integer', 'min:0', 'max:9999'],
+            'default_hourly_rate' => ['nullable', 'numeric', 'min:0', 'max:99999.99'],
+            'emergency_multiplier' => ['required', 'numeric', 'min:1', 'max:10'],
+            'night_multiplier' => ['required', 'numeric', 'min:1', 'max:10'],
+            'weekend_multiplier' => ['required', 'numeric', 'min:1', 'max:10'],
+            'quote_validity_days' => ['nullable', 'integer', 'min:1', 'max:365'],
             'requires_quote_by_default' => ['boolean'],
-            'sla_response_minutes'      => ['nullable', 'integer', 'min:1', 'max:43200'],
-            'booking_form_schema_json'  => ['nullable', 'string', 'max:50000'],
+            'sla_response_minutes' => ['nullable', 'integer', 'min:1', 'max:43200'],
+            'booking_form_schema_json' => ['nullable', 'string', 'max:50000'],
         ];
 
         $validated = $this->validate($rules);
@@ -209,11 +237,13 @@ class Trades extends Component
             $decoded = json_decode($schemaRaw, true);
             if (json_last_error() !== JSON_ERROR_NONE) {
                 $this->addError('booking_form_schema_json', 'JSON invalide : '.json_last_error_msg());
+
                 return;
             }
             $result = TradeFormSchema::validate($decoded);
             if (! $result['ok']) {
                 $this->addError('booking_form_schema_json', 'Schema invalide : '.implode(' · ', $result['errors']));
+
                 return;
             }
             $validated['booking_form_schema'] = $result['normalized'];
@@ -226,7 +256,8 @@ class Trades extends Component
             ->when($this->tradeId, fn ($q) => $q->where('id', '!=', $this->tradeId))
             ->exists();
         if ($duplicateSlug) {
-            $this->addError('slug', "Ce slug est déjà utilisé.");
+            $this->addError('slug', 'Ce slug est déjà utilisé.');
+
             return;
         }
 
@@ -235,7 +266,8 @@ class Trades extends Component
             ->when($this->tradeId, fn ($q) => $q->where('id', '!=', $this->tradeId))
             ->exists();
         if ($duplicateCode) {
-            $this->addError('code', "Ce code est déjà utilisé.");
+            $this->addError('code', 'Ce code est déjà utilisé.');
+
             return;
         }
 
@@ -311,6 +343,7 @@ class Trades extends Component
                 'error',
                 "Impossible de supprimer « {$trade->name} » : {$trade->services_count} service(s) encore rattaché(s)."
             );
+
             return;
         }
 
@@ -324,7 +357,7 @@ class Trades extends Component
         $trades = Trade::query()
             ->withCount('services')
             ->when($this->search !== '', function ($q) {
-                $term = '%' . $this->search . '%';
+                $term = '%'.$this->search.'%';
                 $q->where(function ($qq) use ($term) {
                     $qq->where('name', 'like', $term)
                         ->orWhere('slug', 'like', $term)

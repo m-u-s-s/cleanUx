@@ -8,9 +8,13 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class ContractSignatureAudit extends Model
 {
     public const EVENT_VIEW = 'view';
+
     public const EVENT_SENT = 'sent';
+
     public const EVENT_OPENED = 'opened';
+
     public const EVENT_SIGNED = 'signed';
+
     public const EVENT_INVALIDATED = 'invalidated';
 
     protected $fillable = [

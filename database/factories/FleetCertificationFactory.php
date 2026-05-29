@@ -14,22 +14,22 @@ class FleetCertificationFactory extends Factory
 
     public function definition(): array
     {
-        $vehicle   = FleetVehicle::factory()->create();
-        $issuedAt  = now()->subYear();
+        $vehicle = FleetVehicle::factory()->create();
+        $issuedAt = now()->subYear();
         $expiresAt = now()->addYear();
 
         return [
-            'subject_type'       => FleetCertification::SUBJECT_VEHICLE,
-            'subject_id'         => $vehicle->id,
+            'subject_type' => FleetCertification::SUBJECT_VEHICLE,
+            'subject_id' => $vehicle->id,
             'certification_type' => fake()->randomElement(['insurance', 'technical_check', 'driver_license']),
-            'reference'          => Str::upper(Str::random(10)),
-            'issued_at'          => $issuedAt->toDateString(),
-            'expires_at'         => $expiresAt->toDateString(),
-            'issuing_authority'  => fake()->company(),
-            'document_path'      => 'certifications/' . Str::uuid() . '.pdf',
-            'status'             => FleetCertification::STATUS_ACTIVE,
+            'reference' => Str::upper(Str::random(10)),
+            'issued_at' => $issuedAt->toDateString(),
+            'expires_at' => $expiresAt->toDateString(),
+            'issuing_authority' => fake()->company(),
+            'document_path' => 'certifications/'.Str::uuid().'.pdf',
+            'status' => FleetCertification::STATUS_ACTIVE,
             'created_by_user_id' => User::factory(),
-            'metadata'           => [],
+            'metadata' => [],
         ];
     }
 
@@ -37,7 +37,7 @@ class FleetCertificationFactory extends Factory
     {
         return $this->state(fn () => [
             'expires_at' => now()->subMonth()->toDateString(),
-            'status'     => FleetCertification::STATUS_EXPIRED,
+            'status' => FleetCertification::STATUS_EXPIRED,
         ]);
     }
 
@@ -45,7 +45,7 @@ class FleetCertificationFactory extends Factory
     {
         return $this->state(fn () => [
             'expires_at' => now()->addDays(15)->toDateString(),
-            'status'     => FleetCertification::STATUS_EXPIRING_SOON,
+            'status' => FleetCertification::STATUS_EXPIRING_SOON,
         ]);
     }
 
@@ -53,7 +53,7 @@ class FleetCertificationFactory extends Factory
     {
         return $this->state(fn () => [
             'subject_type' => FleetCertification::SUBJECT_PROVIDER,
-            'subject_id'   => User::factory(),
+            'subject_id' => User::factory(),
         ]);
     }
 }

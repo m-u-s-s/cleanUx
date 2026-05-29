@@ -18,7 +18,9 @@ class ProviderWalletPage extends Component
     protected $paginationTheme = 'tailwind';
 
     public float $withdrawAmount = 0;
+
     public ?string $withdrawError = null;
+
     public ?string $withdrawSuccess = null;
 
     public function withdraw(): void
@@ -44,7 +46,7 @@ class ProviderWalletPage extends Component
         } catch (ValidationException $e) {
             $this->withdrawError = collect($e->errors())->flatten()->first();
         } catch (\Throwable $e) {
-            $this->withdrawError = 'Erreur : ' . $e->getMessage();
+            $this->withdrawError = 'Erreur : '.$e->getMessage();
         }
     }
 

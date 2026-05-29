@@ -20,7 +20,7 @@ class QuickBooksIifExportBuilder implements ExportBuilderContract
     {
         $headerTrns = "!TRNS\tTRNSID\tTRNSTYPE\tDATE\tACCNT\tAMOUNT\tDOCNUM\tMEMO";
         $headerSpl = "!SPL\tSPLID\tTRNSTYPE\tDATE\tACCNT\tAMOUNT\tDOCNUM\tMEMO";
-        $headerEnd = "!ENDTRNS";
+        $headerEnd = '!ENDTRNS';
 
         $rows = [$headerTrns, $headerSpl, $headerEnd];
         $count = 0;
@@ -52,7 +52,7 @@ class QuickBooksIifExportBuilder implements ExportBuilderContract
                 }
                 $amount = number_format(($line->credit_cents - $line->debit_cents) / 100, 2, '.', '');
                 $rows[] = implode("\t", [
-                    'SPL', $batchId . '_' . $idx, 'GENERAL JOURNAL', $date,
+                    'SPL', $batchId.'_'.$idx, 'GENERAL JOURNAL', $date,
                     $line->account_code, $amount, $reference,
                     str_replace("\t", ' ', (string) $line->label),
                 ]);

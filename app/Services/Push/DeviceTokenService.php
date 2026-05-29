@@ -130,6 +130,7 @@ class DeviceTokenService
         foreach ((array) Config::get('push.categories', []) as $cat => $meta) {
             $defaults[$cat] = (bool) ($meta['default_opt_in'] ?? true);
         }
+
         return $defaults;
     }
 }

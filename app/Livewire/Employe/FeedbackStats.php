@@ -9,6 +9,7 @@ use Livewire\Component;
 class FeedbackStats extends Component
 {
     public $moyenne = 0;
+
     public $total = 0;
 
     public function mount(): void

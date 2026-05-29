@@ -2,14 +2,15 @@
 
 namespace App\Livewire\Admin;
 
-use Livewire\Component;
 use App\Models\Booking;
-use App\Models\User;
 use App\Models\Feedback;
+use App\Models\User;
+use Livewire\Component;
 
 class StatsGlobale extends Component
 {
     public $year;
+
     public $employe_id = '';
 
     public function mount()
@@ -20,18 +21,15 @@ class StatsGlobale extends Component
     public function render()
     {
         $rdvs = Booking::whereYear('date', $this->year)
-            ->when($this->employe_id, fn($q) =>
-            $q->where('employe_id', $this->employe_id))
+            ->when($this->employe_id, fn ($q) => $q->where('employe_id', $this->employe_id))
             ->get();
 
         $feedbacks = Feedback::whereYear('created_at', $this->year)
             ->when(
                 $this->employe_id,
-                fn($q) =>
-                $q->whereHas(
+                fn ($q) => $q->whereHas(
                     'rendezVous',
-                    fn($r) =>
-                    $r->where('employe_id', $this->employe_id)
+                    fn ($r) => $r->where('employe_id', $this->employe_id)
                 )
             )
             ->get();
@@ -39,8 +37,7 @@ class StatsGlobale extends Component
         $dataMonthly = collect(range(1, 12))->map(function ($month) {
             return Booking::whereYear('date', $this->year)
                 ->whereMonth('date', $month)
-                ->when($this->employe_id, fn($q) =>
-                $q->where('employe_id', $this->employe_id))
+                ->when($this->employe_id, fn ($q) => $q->where('employe_id', $this->employe_id))
                 ->count();
         });
 
@@ -53,7 +50,7 @@ class StatsGlobale extends Component
             'dataMonthly' => $dataMonthly,
             'noteAverage' => $noteAverage,
             'feedbackCount' => $feedbackCount,
-            'employes' => $employes
+            'employes' => $employes,
         ]);
     }
 }

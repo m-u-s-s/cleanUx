@@ -6,7 +6,6 @@ use App\Events\Loyalty\LoyaltyPointsAwarded;
 use App\Events\Loyalty\LoyaltyTierUpgraded;
 use App\Models\Booking;
 use App\Models\LoyaltyAccount;
-use App\Models\LoyaltyTier;
 use App\Models\LoyaltyTransaction;
 use App\Models\User;
 use App\Services\Loyalty\LoyaltyService;

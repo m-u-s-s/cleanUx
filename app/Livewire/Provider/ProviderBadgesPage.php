@@ -16,7 +16,7 @@ class ProviderBadgesPage extends Component
         $user = Auth::user();
         $awarded = app(ProviderBadgeEngine::class)->evaluate($user);
         if (! empty($awarded)) {
-            $this->dispatch('toast', count($awarded) . ' nouveau(x) badge(s) débloqué(s) !', 'success');
+            $this->dispatch('toast', count($awarded).' nouveau(x) badge(s) débloqué(s) !', 'success');
         } else {
             $this->dispatch('toast', 'Aucun nouveau badge pour le moment.', 'info');
         }

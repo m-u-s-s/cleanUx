@@ -27,13 +27,13 @@ class QuickActionsTest extends TestCase
 
     public function test_each_action_has_label_and_prompt(): void
     {
-        $user    = User::factory()->create();
+        $user = User::factory()->create();
         $actions = $this->service->forUser($user);
 
         $this->assertNotEmpty($actions);
 
         foreach ($actions as $action) {
-            $this->assertArrayHasKey('label',  $action);
+            $this->assertArrayHasKey('label', $action);
             $this->assertArrayHasKey('prompt', $action);
             $this->assertNotEmpty($action['label']);
             $this->assertNotEmpty($action['prompt']);
@@ -42,7 +42,7 @@ class QuickActionsTest extends TestCase
 
     public function test_returns_three_actions_for_every_role(): void
     {
-        $user    = User::factory()->create();
+        $user = User::factory()->create();
         $actions = $this->service->forUser($user);
 
         $this->assertCount(3, $actions);
@@ -64,7 +64,7 @@ class QuickActionsTest extends TestCase
 
     public function test_company_client_via_org_account_gets_nouveau_service(): void
     {
-        $org  = OrganizationAccount::factory()->create();
+        $org = OrganizationAccount::factory()->create();
         $user = User::factory()->create(['organization_account_id' => $org->id]);
 
         $labels = array_column($this->service->forUser($user), 'label');
@@ -77,7 +77,7 @@ class QuickActionsTest extends TestCase
     {
         $user = User::factory()->create();
         ProviderProfile::factory()->create([
-            'user_id'       => $user->id,
+            'user_id' => $user->id,
             'provider_type' => 'independent',
         ]);
         $user->refresh();
@@ -93,7 +93,7 @@ class QuickActionsTest extends TestCase
         $user = User::factory()->create();
 
         $actions = $this->service->forUser($user);
-        $labels  = array_column($actions, 'label');
+        $labels = array_column($actions, 'label');
         $prompts = array_column($actions, 'prompt');
 
         // Must contain a booking-related action
@@ -116,9 +116,9 @@ class QuickActionsTest extends TestCase
 
     public function test_admin_with_org_gets_admin_actions_not_company(): void
     {
-        $org  = OrganizationAccount::factory()->create();
+        $org = OrganizationAccount::factory()->create();
         $user = User::factory()->create([
-            'platform_role'           => 'admin',
+            'platform_role' => 'admin',
             'organization_account_id' => $org->id,
         ]);
 

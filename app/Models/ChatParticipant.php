@@ -9,9 +9,13 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class ChatParticipant extends Model
 {
     public const ROLE_CLIENT = 'client';
+
     public const ROLE_PROVIDER = 'provider';
+
     public const ROLE_ADMIN = 'admin';
+
     public const ROLE_OBSERVER = 'observer';
+
     public const ROLE_SYSTEM = 'system';
 
     protected $fillable = [
@@ -35,7 +39,7 @@ class ChatParticipant extends Model
 
     public function user(): BelongsTo
     {
-        return $this->belongsTo(\App\Models\User::class, 'user_id');
+        return $this->belongsTo(User::class, 'user_id');
     }
 
     public function scopeActive(Builder $q): Builder

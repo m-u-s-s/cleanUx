@@ -26,13 +26,19 @@ use Illuminate\Support\Facades\Storage;
  */
 class ProviderOnboardingService
 {
-    public const STEP_PROFILE_BASICS  = 0;
-    public const STEP_IDENTITY        = 1;
-    public const STEP_TAX             = 2;
-    public const STEP_INSURANCE       = 3;
-    public const STEP_SKILLS          = 4;
-    public const STEP_STRIPE_CONNECT  = 5;
-    public const STEP_READY           = 6;
+    public const STEP_PROFILE_BASICS = 0;
+
+    public const STEP_IDENTITY = 1;
+
+    public const STEP_TAX = 2;
+
+    public const STEP_INSURANCE = 3;
+
+    public const STEP_SKILLS = 4;
+
+    public const STEP_STRIPE_CONNECT = 5;
+
+    public const STEP_READY = 6;
 
     /**
      * Crée un ProviderProfile vide pour un user qui s'inscrit comme prestataire.
@@ -43,11 +49,11 @@ class ProviderOnboardingService
         return ProviderProfile::firstOrCreate(
             ['user_id' => $user->id],
             [
-                'provider_type'       => 'individual',
-                'status'              => 'pending',
+                'provider_type' => 'individual',
+                'status' => 'pending',
                 'verification_status' => 'pending',
-                'onboarding_step'     => self::STEP_PROFILE_BASICS,
-                'commission_rate'     => 20.00,
+                'onboarding_step' => self::STEP_PROFILE_BASICS,
+                'commission_rate' => 20.00,
             ]
         );
     }
@@ -115,19 +121,19 @@ class ProviderOnboardingService
 
         return DB::transaction(function () use ($user, $type, $file, $path, $existing, $profile) {
             $doc = ProviderOnboardingDocument::create([
-                'user_id'       => $user->id,
+                'user_id' => $user->id,
                 'document_type' => $type,
-                'status'        => ProviderOnboardingDocument::STATUS_PENDING,
-                'file_path'     => $path,
-                'file_name'     => $file->getClientOriginalName(),
-                'mime_type'     => $file->getMimeType(),
-                'file_size'     => $file->getSize(),
+                'status' => ProviderOnboardingDocument::STATUS_PENDING,
+                'file_path' => $path,
+                'file_name' => $file->getClientOriginalName(),
+                'mime_type' => $file->getMimeType(),
+                'file_size' => $file->getSize(),
             ]);
 
             // Si on remplace, on archive l'ancien
             if ($existing && $existing->id !== $doc->id) {
                 $existing->update([
-                    'status'   => ProviderOnboardingDocument::STATUS_REJECTED,
+                    'status' => ProviderOnboardingDocument::STATUS_REJECTED,
                     'rejection_reason' => 'Remplacé par une nouvelle version',
                 ]);
             }
@@ -137,8 +143,8 @@ class ProviderOnboardingService
                 ProviderOnboardingDocument::TYPE_IDENTITY_CARD,
                 ProviderOnboardingDocument::TYPE_PASSPORT,
                 ProviderOnboardingDocument::TYPE_RESIDENCE_PERMIT => self::STEP_IDENTITY,
-                ProviderOnboardingDocument::TYPE_INSURANCE        => self::STEP_INSURANCE,
-                default                                            => null,
+                ProviderOnboardingDocument::TYPE_INSURANCE => self::STEP_INSURANCE,
+                default => null,
             };
             if ($stepForType !== null) {
                 $this->advanceStepIfNeeded($profile, $stepForType);
@@ -177,7 +183,7 @@ class ProviderOnboardingService
         $metadata['service_zone_ids'] = array_values(array_unique(array_map('intval', $serviceZoneIds)));
 
         $profile->update([
-            'skills'   => array_values(array_unique($skills)),
+            'skills' => array_values(array_unique($skills)),
             'metadata' => $metadata,
         ]);
 
@@ -243,13 +249,13 @@ class ProviderOnboardingService
         }
 
         $profile->update([
-            'verification_status'      => 'verified',
-            'status'                   => 'active',
-            'onboarding_step'          => self::STEP_READY,
-            'onboarding_completed_at'  => now(),
-            'metadata'                 => array_merge($profile->metadata ?? [], [
+            'verification_status' => 'verified',
+            'status' => 'active',
+            'onboarding_step' => self::STEP_READY,
+            'onboarding_completed_at' => now(),
+            'metadata' => array_merge($profile->metadata ?? [], [
                 'approved_by_admin_id' => $admin->id,
-                'approved_at'          => now()->toIso8601String(),
+                'approved_at' => now()->toIso8601String(),
             ]),
         ]);
 
@@ -266,11 +272,11 @@ class ProviderOnboardingService
         ?string $rejectionReason = null,
     ): ProviderOnboardingDocument {
         $document->update([
-            'status'           => $approve
+            'status' => $approve
                 ? ProviderOnboardingDocument::STATUS_APPROVED
                 : ProviderOnboardingDocument::STATUS_REJECTED,
-            'reviewed_by'      => $admin->id,
-            'reviewed_at'      => now(),
+            'reviewed_by' => $admin->id,
+            'reviewed_at' => now(),
             'rejection_reason' => $approve ? null : $rejectionReason,
         ]);
 
@@ -285,11 +291,11 @@ class ProviderOnboardingService
         $profile = ProviderProfile::where('user_id', $user->id)->first();
         if (! $profile) {
             return [
-                'started'          => false,
-                'current_step'     => 0,
-                'total_steps'      => 7,
-                'completed'        => false,
-                'documents'        => [],
+                'started' => false,
+                'current_step' => 0,
+                'total_steps' => 7,
+                'completed' => false,
+                'documents' => [],
             ];
         }
 
@@ -298,25 +304,25 @@ class ProviderOnboardingService
             ->get()
             ->groupBy('document_type')
             ->map(fn ($docs) => [
-                'latest_status'  => $docs->first()->status,
-                'count'          => $docs->count(),
+                'latest_status' => $docs->first()->status,
+                'count' => $docs->count(),
                 'rejection_reason' => $docs->first()->rejection_reason,
             ])
             ->all();
 
         return [
-            'started'          => true,
-            'current_step'     => (int) $profile->onboarding_step,
-            'total_steps'      => 7,
-            'completed'        => $profile->onboarding_completed_at !== null,
-            'completed_at'     => $profile->onboarding_completed_at?->toIso8601String(),
+            'started' => true,
+            'current_step' => (int) $profile->onboarding_step,
+            'total_steps' => 7,
+            'completed' => $profile->onboarding_completed_at !== null,
+            'completed_at' => $profile->onboarding_completed_at?->toIso8601String(),
             'verification_status' => $profile->verification_status,
-            'documents'        => $documents,
-            'has_bio'          => filled($profile->bio),
-            'has_photo'        => filled($profile->photo_path),
-            'has_tax_id'       => filled($profile->metadata['tax_id'] ?? null),
-            'has_skills'       => is_array($profile->skills) && count($profile->skills) > 0,
-            'stripe_active'    => $user->stripe_connect_status === 'active',
+            'documents' => $documents,
+            'has_bio' => filled($profile->bio),
+            'has_photo' => filled($profile->photo_path),
+            'has_tax_id' => filled($profile->metadata['tax_id'] ?? null),
+            'has_skills' => is_array($profile->skills) && count($profile->skills) > 0,
+            'stripe_active' => $user->stripe_connect_status === 'active',
         ];
     }
 

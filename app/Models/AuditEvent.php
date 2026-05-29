@@ -9,13 +9,19 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class AuditEvent extends Model
 {
     public const SEVERITY_INFO = 'info';
+
     public const SEVERITY_WARNING = 'warning';
+
     public const SEVERITY_ERROR = 'error';
+
     public const SEVERITY_CRITICAL = 'critical';
 
     public const ACTOR_USER = 'user';
+
     public const ACTOR_SYSTEM = 'system';
+
     public const ACTOR_WEBHOOK = 'webhook';
+
     public const ACTOR_JOB = 'job';
 
     protected $fillable = [

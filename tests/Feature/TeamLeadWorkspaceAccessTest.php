@@ -2,12 +2,12 @@
 
 namespace Tests\Feature;
 
+use App\Models\Booking;
 use App\Models\Country;
 use App\Models\FieldTeam;
 use App\Models\FieldTeamMember;
 use App\Models\Mission;
 use App\Models\MissionTeamAssignment;
-use App\Models\Booking;
 use App\Models\ServiceZone;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;

@@ -10,9 +10,13 @@ class ServiceCatalogV2 extends Model
     protected $table = 'service_catalog_v2';
 
     public const UNIT_PER_HOUR = 'per_hour';
+
     public const UNIT_PER_M2 = 'per_m2';
+
     public const UNIT_PER_VISIT = 'per_visit';
+
     public const UNIT_FLAT = 'flat';
+
     public const UNIT_PER_KG = 'per_kg';
 
     protected $fillable = [

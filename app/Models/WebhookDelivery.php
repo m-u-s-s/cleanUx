@@ -9,10 +9,15 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class WebhookDelivery extends Model
 {
     public const STATUS_PENDING = 'pending';
+
     public const STATUS_IN_FLIGHT = 'in_flight';
+
     public const STATUS_DELIVERED = 'delivered';
+
     public const STATUS_FAILED = 'failed';
+
     public const STATUS_DEAD = 'dead';
+
     public const STATUS_CANCELLED = 'cancelled';
 
     protected $fillable = [

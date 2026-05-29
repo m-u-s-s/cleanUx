@@ -4,7 +4,6 @@ namespace App\Services\Rating;
 
 use App\Models\Feedback;
 use App\Models\ProviderProfile;
-use Illuminate\Support\Facades\DB;
 
 class RatingAggregationService
 {
@@ -48,6 +47,7 @@ class RatingAggregationService
                 'rating_dimensions' => null,
                 'rating_last_at' => null,
             ]);
+
             return;
         }
 

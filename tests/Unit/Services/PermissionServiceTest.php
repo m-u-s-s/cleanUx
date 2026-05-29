@@ -13,12 +13,12 @@ class PermissionServiceTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->service = new PermissionService();
+        $this->service = new PermissionService;
     }
 
     public function test_owner_can_access_all_key_permissions(): void
     {
-        $member = new OrganizationMember();
+        $member = new OrganizationMember;
         $member->role = 'owner';
         $member->permissions = [];
 
@@ -27,7 +27,7 @@ class PermissionServiceTest extends TestCase
 
     public function test_worker_cannot_access_admin_level_permissions(): void
     {
-        $member = new OrganizationMember();
+        $member = new OrganizationMember;
         $member->role = 'worker';
         $member->permissions = [];
 
@@ -36,7 +36,7 @@ class PermissionServiceTest extends TestCase
 
     public function test_custom_permission_override_grants_extra_access(): void
     {
-        $member = new OrganizationMember();
+        $member = new OrganizationMember;
         $member->role = 'worker';
         $member->permissions = ['finance.manage' => true];
 
@@ -45,7 +45,7 @@ class PermissionServiceTest extends TestCase
 
     public function test_custom_permission_override_revokes_access(): void
     {
-        $member = new OrganizationMember();
+        $member = new OrganizationMember;
         $member->role = 'owner';
         $member->permissions = ['finance.manage' => false];
 
@@ -62,7 +62,7 @@ class PermissionServiceTest extends TestCase
 
     public function test_all_permissions_for_returns_boolean_map(): void
     {
-        $member = new OrganizationMember();
+        $member = new OrganizationMember;
         $member->role = 'owner';
         $member->permissions = [];
 

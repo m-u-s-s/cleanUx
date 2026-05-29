@@ -9,8 +9,11 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class MarketingOptOut extends Model
 {
     public const CHANNEL_EMAIL = 'email';
+
     public const CHANNEL_SMS = 'sms';
+
     public const CHANNEL_PUSH = 'push';
+
     public const CHANNEL_ALL = 'all';
 
     protected $fillable = [

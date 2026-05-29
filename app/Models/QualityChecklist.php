@@ -9,8 +9,11 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class QualityChecklist extends Model
 {
     public const PHASE_PRE = 'pre';
+
     public const PHASE_DURING = 'during';
+
     public const PHASE_POST = 'post';
+
     public const PHASE_ALL = 'all';
 
     protected $fillable = [
@@ -50,6 +53,7 @@ class QualityChecklist extends Model
         if (! $tradeCode) {
             return false;
         }
+
         return in_array($tradeCode, $trades, true);
     }
 }

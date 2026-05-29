@@ -34,13 +34,13 @@ class BookingTradeSelectionGridTest extends TestCase
     private function makeTrade(string $slug, string $name, int $sort = 10, bool $active = true): Trade
     {
         return Trade::create([
-            'slug'              => $slug,
-            'code'              => strtoupper($slug),
-            'name'              => $name,
-            'icon'              => 'briefcase',
+            'slug' => $slug,
+            'code' => strtoupper($slug),
+            'name' => $name,
+            'icon' => 'briefcase',
             'short_description' => "Description de {$name}",
-            'is_active'         => $active,
-            'sort_order'        => $sort,
+            'is_active' => $active,
+            'sort_order' => $sort,
         ]);
     }
 
@@ -189,10 +189,10 @@ class BookingTradeSelectionGridTest extends TestCase
 
         // Create a painting service (without zone rule — it won't appear in grouped by zone, but will appear without zone filter)
         ServiceCatalog::factory()->create([
-            'trade_id'  => $painting->id,
-            'name'      => 'Peinture intérieure',
-            'code'      => 'PAINT_INT2',
-            'slug'      => 'peinture-int-2',
+            'trade_id' => $painting->id,
+            'name' => 'Peinture intérieure',
+            'code' => 'PAINT_INT2',
+            'slug' => 'peinture-int-2',
             'is_active' => true,
         ]);
 

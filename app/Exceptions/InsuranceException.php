@@ -16,7 +16,7 @@ class InsuranceException extends \RuntimeException
 
     public static function claimNotAllowed(string $reason): self
     {
-        return new self('Cannot file claim: ' . $reason, 422);
+        return new self('Cannot file claim: '.$reason, 422);
     }
 
     public static function invalidStatusTransition(string $from, string $to): self

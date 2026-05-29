@@ -82,7 +82,10 @@ return new class extends Migration
                 if (Schema::hasColumn('customer_credits', $col)) {
                     if ($col === 'client_id') {
                         // drop FK first (SQLite ne support pas mais idempotent via try)
-                        try { $table->dropForeign(['client_id']); } catch (\Throwable) {}
+                        try {
+                            $table->dropForeign(['client_id']);
+                        } catch (Throwable) {
+                        }
                     }
                     $table->dropColumn($col);
                 }

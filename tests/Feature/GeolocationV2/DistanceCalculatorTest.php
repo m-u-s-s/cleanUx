@@ -43,7 +43,7 @@ class DistanceCalculatorTest extends TestCase
 
     public function test_within_radius_filters_and_sorts_by_distance(): void
     {
-        $calc = new DistanceCalculator();
+        $calc = new DistanceCalculator;
         $origin = ['lat' => 50.8467, 'lng' => 4.3525];   // Bruxelles
         $points = [
             ['id' => 'paris', 'latitude' => 48.8566, 'longitude' => 2.3522],   // 260km
@@ -60,7 +60,7 @@ class DistanceCalculatorTest extends TestCase
 
     public function test_within_radius_returns_empty_when_too_far(): void
     {
-        $calc = new DistanceCalculator();
+        $calc = new DistanceCalculator;
         $r = $calc->withinRadius(50.8467, 4.3525, [
             ['latitude' => 35.0, 'longitude' => 139.0],  // Tokyo
         ], 1_000_000);

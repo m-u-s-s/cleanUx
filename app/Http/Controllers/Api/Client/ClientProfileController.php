@@ -3,13 +3,17 @@
 namespace App\Http\Controllers\Api\Client;
 
 use App\Http\Controllers\Controller;
+use App\Models\Booking;
+use App\Models\InsuranceClaim;
 use App\Services\Nps\NpsService;
+use App\Services\Payments\CommissionService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
 /**
  * @group Client — Profile
+ *
  * @authenticated
  */
 class ClientProfileController extends Controller
@@ -17,8 +21,8 @@ class ClientProfileController extends Controller
     public function update(Request $request): JsonResponse
     {
         $data = $request->validate([
-            'name'   => 'sometimes|string|max:255',
-            'phone'  => 'sometimes|nullable|string|max:30',
+            'name' => 'sometimes|string|max:255',
+            'phone' => 'sometimes|nullable|string|max:30',
             'locale' => 'sometimes|string|in:fr,nl,en',
         ]);
 
@@ -34,7 +38,7 @@ class ClientProfileController extends Controller
         $path = $request->file('avatar')->store('avatars', 'public');
         $request->user()->update(['profile_photo_path' => $path]);
 
-        return response()->json(['ok' => true, 'avatar_url' => asset('storage/' . $path)]);
+        return response()->json(['ok' => true, 'avatar_url' => asset('storage/'.$path)]);
     }
 
     public function npsSimplified(Request $request): JsonResponse
@@ -48,7 +52,7 @@ class ClientProfileController extends Controller
                 score: (int) $data['score'],
             );
         } catch (\Throwable $e) {
-            Log::warning('NPS submit error: ' . $e->getMessage());
+            Log::warning('NPS submit error: '.$e->getMessage());
         }
 
         return response()->json(['ok' => true]);
@@ -56,7 +60,7 @@ class ClientProfileController extends Controller
 
     public function claimsMine(Request $request): JsonResponse
     {
-        $claims = \App\Models\InsuranceClaim::whereHas(
+        $claims = InsuranceClaim::whereHas(
             'insurance',
             fn ($q) => $q->where('user_id', $request->user()->id)
         )
@@ -67,12 +71,12 @@ class ClientProfileController extends Controller
         return response()->json(['data' => $claims]);
     }
 
-    public function commissionPreview(Request $request, \App\Models\Booking $booking): JsonResponse
+    public function commissionPreview(Request $request, Booking $booking): JsonResponse
     {
         $clientId = (int) ($booking->client_id ?? $booking->customer_user_id ?? 0);
         abort_unless($clientId && $clientId === (int) $request->user()->id, 403);
 
-        $calc = app(\App\Services\Payments\CommissionService::class)->calculateForBooking($booking);
+        $calc = app(CommissionService::class)->calculateForBooking($booking);
 
         return response()->json(['ok' => true, ...$calc]);
     }

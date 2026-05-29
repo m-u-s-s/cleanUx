@@ -9,15 +9,14 @@ use Illuminate\Notifications\Notification;
 
 class AdminDigestNotification extends Notification
 {
-    use Queueable;
     use InteractsWithUserNotificationPreferences;
+    use Queueable;
 
     public function __construct(
         public array $items = [],
         public string $title = 'Synthèse automatique des alertes métier',
         public ?string $actionUrl = null
-    ) {
-    }
+    ) {}
 
     public function via($notifiable): array
     {
@@ -27,11 +26,11 @@ class AdminDigestNotification extends Notification
     public function toMail($notifiable): MailMessage
     {
         $mail = (new MailMessage)
-            ->subject('CleanUx · ' . $this->title)
+            ->subject('CleanUx · '.$this->title)
             ->line('Voici les points nécessitant votre attention.');
 
         foreach ($this->items as $item) {
-            $mail->line('• ' . $item);
+            $mail->line('• '.$item);
         }
 
         return $mail

@@ -12,7 +12,7 @@ use Stripe\Stripe;
 class StripeConnectService
 {
     public function __construct(
-        private readonly CountryConfigService $countryConfig = new CountryConfigService(),
+        private readonly CountryConfigService $countryConfig = new CountryConfigService,
     ) {
         Stripe::setApiKey(config('cashier.secret'));
     }

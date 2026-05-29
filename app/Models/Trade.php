@@ -15,12 +15,12 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * Regroupe les ServiceCatalog en familles cohérentes côté UI marketplace
  * et côté matching prestataire (skills_required, certifications…).
  *
- * @property int    $id
+ * @property int $id
  * @property string $slug
  * @property string $code
  * @property string $name
- * @property bool   $is_active
- * @property int    $sort_order
+ * @property bool $is_active
+ * @property int $sort_order
  */
 class Trade extends Model
 {
@@ -60,23 +60,23 @@ class Trade extends Model
     ];
 
     protected $casts = [
-        'is_active'                 => 'boolean',
-        'requires_certification'    => 'boolean',
-        'requires_insurance_proof'  => 'boolean',
-        'is_b2b_default'            => 'boolean',
-        'is_personal_default'       => 'boolean',
-        'sort_order'                => 'integer',
-        'settings'                  => 'array',
-        'metadata'                  => 'array',
-        'default_hourly_rate'       => 'decimal:2',
-        'emergency_multiplier'      => 'decimal:2',
-        'night_multiplier'          => 'decimal:2',
-        'weekend_multiplier'        => 'decimal:2',
-        'quote_validity_days'       => 'integer',
+        'is_active' => 'boolean',
+        'requires_certification' => 'boolean',
+        'requires_insurance_proof' => 'boolean',
+        'is_b2b_default' => 'boolean',
+        'is_personal_default' => 'boolean',
+        'sort_order' => 'integer',
+        'settings' => 'array',
+        'metadata' => 'array',
+        'default_hourly_rate' => 'decimal:2',
+        'emergency_multiplier' => 'decimal:2',
+        'night_multiplier' => 'decimal:2',
+        'weekend_multiplier' => 'decimal:2',
+        'quote_validity_days' => 'integer',
         'requires_quote_by_default' => 'boolean',
-        'sla_response_minutes'      => 'integer',
-        'booking_form_schema'       => 'array',
-        'requires_site_visit'       => 'boolean',
+        'sla_response_minutes' => 'integer',
+        'booking_form_schema' => 'array',
+        'requires_site_visit' => 'boolean',
     ];
 
     // ──────────────────────────────────────────────────────
@@ -107,7 +107,7 @@ class Trade extends Model
 
     public function certifications(): HasMany
     {
-        return $this->hasMany(\App\Models\ProviderTradeCertification::class);
+        return $this->hasMany(ProviderTradeCertification::class);
     }
 
     public function zones(): BelongsToMany

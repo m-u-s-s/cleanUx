@@ -325,7 +325,7 @@ class PermissionService
         OrganizationMember $actor,
         OrganizationMember $target
     ): bool {
-        $actorRole  = OrganizationRole::from($actor->role);
+        $actorRole = OrganizationRole::from($actor->role);
         $targetRole = OrganizationRole::from($target->role);
 
         return $actorRole->canManage($targetRole);

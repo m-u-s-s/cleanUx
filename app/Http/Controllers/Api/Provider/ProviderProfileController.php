@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 
 /**
  * @group Provider — Profile
+ *
  * @authenticated
  */
 class ProviderProfileController extends Controller
@@ -15,8 +16,8 @@ class ProviderProfileController extends Controller
     public function update(Request $request): JsonResponse
     {
         $data = $request->validate([
-            'name'   => 'sometimes|string|max:255',
-            'phone'  => 'sometimes|nullable|string|max:30',
+            'name' => 'sometimes|string|max:255',
+            'phone' => 'sometimes|nullable|string|max:30',
             'locale' => 'sometimes|string|in:fr,nl,en',
         ]);
 

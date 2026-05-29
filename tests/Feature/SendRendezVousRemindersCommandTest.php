@@ -2,8 +2,8 @@
 
 namespace Tests\Feature;
 
-use App\Models\EmployeeZoneAssignment;
 use App\Models\Booking;
+use App\Models\EmployeeZoneAssignment;
 use App\Models\ServiceZone;
 use App\Models\User;
 use App\Notifications\EmployeReaffectationSuggestionNotification;

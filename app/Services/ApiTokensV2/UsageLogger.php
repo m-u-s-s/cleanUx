@@ -30,6 +30,7 @@ class UsageLogger
         if ($sample <= 0.0) {
             return false;
         }
+
         return (mt_rand(1, 10000) / 10000) <= $sample;
     }
 
@@ -42,7 +43,7 @@ class UsageLogger
         try {
             $row = ApiTokenUsage::query()->create([
                 'token_id' => $token->id,
-                'route_path' => mb_substr('/' . ltrim($request->path(), '/'), 0, 191),
+                'route_path' => mb_substr('/'.ltrim($request->path(), '/'), 0, 191),
                 'method' => $request->method(),
                 'response_status' => $response->getStatusCode(),
                 'latency_ms' => $latencyMs,
@@ -56,9 +57,11 @@ class UsageLogger
                 'last_used_ip_hash' => $row->ip_hash,
                 'usage_count' => $token->usage_count + 1,
             ])->save();
+
             return $row;
         } catch (\Throwable $e) {
             Log::warning('[api_tokens_v2] usage log error', ['error' => $e->getMessage()]);
+
             return null;
         }
     }
@@ -68,8 +71,10 @@ class UsageLogger
         try {
             if ($response instanceof Response) {
                 $content = $response->getContent();
+
                 return $content === false ? null : strlen($content);
             }
+
             return null;
         } catch (\Throwable) {
             return null;

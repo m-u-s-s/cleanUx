@@ -15,7 +15,7 @@ class LoyaltyRedemptionFactory extends Factory
     public function definition(): array
     {
         return [
-            'code' => 'RDM-' . Str::upper(Str::random(10)),
+            'code' => 'RDM-'.Str::upper(Str::random(10)),
             'user_id' => User::factory(),
             'reward_id' => LoyaltyReward::factory(),
             'points_spent' => fake()->randomElement([100, 250, 500]),

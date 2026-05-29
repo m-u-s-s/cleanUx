@@ -19,13 +19,19 @@ class GestionUtilisateurs extends Component
     use WithPagination;
 
     public string $roleFilter = '';
+
     public string $search = '';
+
     public string $accessScopeFilter = '';
+
     public int $perPage = 10;
 
     public ?int $editingUserId = null;
+
     public string $securityAccessScope = User::ACCESS_SCOPE_ALL;
+
     public ?int $securityManagedZoneId = null;
+
     public array $securityPermissions = [];
 
     protected function currentAdmin(): ?User
@@ -116,7 +122,7 @@ class GestionUtilisateurs extends Component
         $validated = $this->validate([
             'securityAccessScope' => [
                 'required',
-                'in:' . implode(',', [
+                'in:'.implode(',', [
                     User::ACCESS_SCOPE_ALL,
                     User::ACCESS_SCOPE_ZONE,
                     User::ACCESS_SCOPE_READONLY,
@@ -126,7 +132,7 @@ class GestionUtilisateurs extends Component
             'securityPermissions' => ['array'],
             'securityPermissions.*' => [
                 'string',
-                'in:' . implode(',', array_keys(User::allowedAdminPermissions())),
+                'in:'.implode(',', array_keys(User::allowedAdminPermissions())),
             ],
         ]);
 
@@ -135,6 +141,7 @@ class GestionUtilisateurs extends Component
             && empty($validated['securityManagedZoneId'])
         ) {
             $this->addError('securityManagedZoneId', 'Une zone est obligatoire pour un admin scope zone.');
+
             return;
         }
 
@@ -217,6 +224,7 @@ class GestionUtilisateurs extends Component
             ->when($this->roleFilter, function (Builder $query) {
                 if ($this->roleFilter === User::ROLE_CLIENT) {
                     $query->whereIn('role', User::clientRoleValues());
+
                     return;
                 }
 
@@ -225,13 +233,14 @@ class GestionUtilisateurs extends Component
             ->when($this->accessScopeFilter !== '', function (Builder $query) {
                 if ($this->accessScopeFilter === 'none') {
                     $query->whereNull('access_scope');
+
                     return;
                 }
 
                 $query->where('access_scope', $this->accessScopeFilter);
             })
             ->when($this->search, function (Builder $query) {
-                $term = '%' . $this->search . '%';
+                $term = '%'.$this->search.'%';
 
                 $query->where(function (Builder $sub) use ($term) {
                     $sub->where('name', 'like', $term)

@@ -10,12 +10,10 @@ use Illuminate\Notifications\Notification;
 
 class DisputeOpenedNotification extends Notification
 {
-    use Queueable;
     use InteractsWithUserNotificationPreferences;
+    use Queueable;
 
-    public function __construct(public ComplaintCase $case)
-    {
-    }
+    public function __construct(public ComplaintCase $case) {}
 
     public function via($notifiable): array
     {
@@ -25,13 +23,13 @@ class DisputeOpenedNotification extends Notification
     public function toMail($notifiable): MailMessage
     {
         return (new MailMessage)
-            ->subject('CleanUx · Votre réclamation ' . $this->case->reference . ' a été enregistrée')
+            ->subject('CleanUx · Votre réclamation '.$this->case->reference.' a été enregistrée')
             ->greeting('Bonjour,')
             ->line('Votre réclamation a bien été enregistrée.')
-            ->line('Référence : ' . $this->case->reference)
-            ->line('Catégorie : ' . $this->case->category)
-            ->line('Priorité : ' . $this->case->priority)
-            ->line('Notre équipe vous répond sous ' . ($this->case->sla_policy ?? '24h') . '.')
+            ->line('Référence : '.$this->case->reference)
+            ->line('Catégorie : '.$this->case->category)
+            ->line('Priorité : '.$this->case->priority)
+            ->line('Notre équipe vous répond sous '.($this->case->sla_policy ?? '24h').'.')
             ->action('Voir ma réclamation', url('/dashboard/client/litiges'));
     }
 
@@ -41,7 +39,7 @@ class DisputeOpenedNotification extends Notification
             'type' => 'dispute_opened',
             'severity' => 'info',
             'title' => 'Réclamation enregistrée',
-            'message' => $this->case->reference . ' — ' . $this->case->subject,
+            'message' => $this->case->reference.' — '.$this->case->subject,
             'dispute_id' => $this->case->id,
             'reference' => $this->case->reference,
             'sla_policy' => $this->case->sla_policy,

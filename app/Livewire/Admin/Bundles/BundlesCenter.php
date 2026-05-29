@@ -17,10 +17,15 @@ class BundlesCenter extends Component
     protected $paginationTheme = 'tailwind';
 
     public string $statusFilter = '';
+
     public string $search = '';
+
     public ?int $selectedBundleId = null;
+
     public ?int $assigningItemId = null;
+
     public ?int $assignProviderId = null;
+
     public int $assignQuotedEur = 0;
 
     public function openBundle(int $id): void
@@ -64,7 +69,9 @@ class BundlesCenter extends Component
     public function forceCancel(int $bundleId): void
     {
         $bundle = MultiTradeBundle::find($bundleId);
-        if (! $bundle) return;
+        if (! $bundle) {
+            return;
+        }
         app(MultiTradeBundleService::class)->cancel($bundle, 'admin_force_cancel');
         $this->dispatch('toast', 'Bundle annulé.', 'success');
         $this->closeBundle();
@@ -76,11 +83,11 @@ class BundlesCenter extends Component
             ->with(['client:id,name,email', 'items.trade:id,name', 'items.provider:id,name'])
             ->when($this->statusFilter, fn ($q) => $q->where('status', $this->statusFilter))
             ->when($this->search, function ($q) {
-                $term = '%' . $this->search . '%';
+                $term = '%'.$this->search.'%';
                 $q->where(function ($w) use ($term) {
                     $w->where('code', 'like', $term)
-                      ->orWhere('name', 'like', $term)
-                      ->orWhereHas('client', fn ($u) => $u->where('email', 'like', $term)->orWhere('name', 'like', $term));
+                        ->orWhere('name', 'like', $term)
+                        ->orWhereHas('client', fn ($u) => $u->where('email', 'like', $term)->orWhere('name', 'like', $term));
                 });
             })
             ->orderByDesc('created_at')

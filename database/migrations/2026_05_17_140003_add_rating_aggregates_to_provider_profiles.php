@@ -62,9 +62,10 @@ return new class extends Migration
         try {
             if ($driver === 'mysql' || $driver === 'mariadb') {
                 $rows = $conn->select(
-                    "SELECT INDEX_NAME FROM INFORMATION_SCHEMA.STATISTICS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = ? AND INDEX_NAME = ?",
+                    'SELECT INDEX_NAME FROM INFORMATION_SCHEMA.STATISTICS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = ? AND INDEX_NAME = ?',
                     [$table, $name]
                 );
+
                 return count($rows) > 0;
             }
             if ($driver === 'sqlite') {
@@ -74,16 +75,18 @@ return new class extends Migration
                         return true;
                     }
                 }
+
                 return false;
             }
             if ($driver === 'pgsql') {
                 $rows = $conn->select(
-                    "SELECT indexname FROM pg_indexes WHERE tablename = ? AND indexname = ?",
+                    'SELECT indexname FROM pg_indexes WHERE tablename = ? AND indexname = ?',
                     [$table, $name]
                 );
+
                 return count($rows) > 0;
             }
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             return false;
         }
 

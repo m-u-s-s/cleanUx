@@ -7,6 +7,7 @@ use App\Models\RecurringTemplate;
 use App\Services\Client\Templates\ApplyRecurringTemplateService;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Route;
 use Livewire\Component;
 
 /**
@@ -22,14 +23,20 @@ class RecurringTemplatesGallery extends Component
 
     /** Modal d'application */
     public ?int $applyTemplateId = null;
-    public ?int $selectedSiteId  = null;
+
+    public ?int $selectedSiteId = null;
+
     public string $applyStartsAt = '';
+
     public ?string $applyEndsAt = null;
+
     public ?int $applyOccurrenceCount = null;
+
     public ?string $applyCustomTime = null;
 
     /** Flash */
     public ?string $flashMessage = null;
+
     public ?string $flashType = null;
 
     public function mount(): void
@@ -62,11 +69,14 @@ class RecurringTemplatesGallery extends Component
 
     public function applyTemplate(): void
     {
-        if (! $this->applyTemplateId) return;
+        if (! $this->applyTemplateId) {
+            return;
+        }
 
         $template = RecurringTemplate::find($this->applyTemplateId);
         if (! $template) {
             $this->flash('Template introuvable.', 'error');
+
             return;
         }
 
@@ -78,10 +88,10 @@ class RecurringTemplatesGallery extends Component
                 $template,
                 [
                     'organization_site_id' => $this->selectedSiteId,
-                    'starts_at'            => $this->applyStartsAt,
-                    'ends_at'              => $this->applyEndsAt,
-                    'occurrence_count'     => $this->applyOccurrenceCount,
-                    'custom_time'          => $this->applyCustomTime,
+                    'starts_at' => $this->applyStartsAt,
+                    'ends_at' => $this->applyEndsAt,
+                    'occurrence_count' => $this->applyOccurrenceCount,
+                    'custom_time' => $this->applyCustomTime,
                 ]
             );
 
@@ -92,7 +102,7 @@ class RecurringTemplatesGallery extends Component
             $this->closeApplyModal();
 
             // Redirige vers la liste des récurrences
-            if (\Illuminate\Support\Facades\Route::has('client.recurring.index')) {
+            if (Route::has('client.recurring.index')) {
                 $this->redirect(route('client.recurring.index'), navigate: true);
             }
         } catch (\DomainException $e) {
@@ -159,11 +169,11 @@ class RecurringTemplatesGallery extends Component
             : null;
 
         return view('livewire.client.templates.recurring-templates-gallery', [
-            'templates'        => $templates,
-            'categories'       => $categories,
-            'sites'            => $sites,
+            'templates' => $templates,
+            'categories' => $categories,
+            'sites' => $sites,
             'applyingTemplate' => $applyingTemplate,
-            'isCompany'        => (bool) $user->organization_account_id,
+            'isCompany' => (bool) $user->organization_account_id,
         ]);
     }
 }

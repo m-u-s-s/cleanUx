@@ -14,8 +14,7 @@ class UpdateRecurringSeriesAction
 {
     public function __construct(
         protected EmployeeAvailabilityService $employeeAvailabilityService,
-    ) {
-    }
+    ) {}
 
     public function execute(Booking $anchor, array $data, string $scope = 'occurrence'): Collection
     {
@@ -140,6 +139,7 @@ class UpdateRecurringSeriesAction
             $within = $availabilities->contains(function ($availability) use ($slotStart, $slotEnd, $date, $timezone) {
                 $availableStart = Carbon::createFromFormat('Y-m-d H:i:s', $date.' '.$availability->heure_debut, $timezone);
                 $availableEnd = Carbon::createFromFormat('Y-m-d H:i:s', $date.' '.$availability->heure_fin, $timezone);
+
                 return $slotStart->greaterThanOrEqualTo($availableStart) && $slotEnd->lessThanOrEqualTo($availableEnd);
             });
             if (! $within) {

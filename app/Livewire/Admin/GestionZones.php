@@ -2,21 +2,20 @@
 
 namespace App\Livewire\Admin;
 
+use App\Models\ServiceZone;
 use App\Support\Livewire\Concerns\Admin\ManagesTradeZoneSettings;
 use App\Support\Livewire\Concerns\Admin\ManagesZonesData;
 use App\Support\Livewire\Concerns\Admin\PerformsZoneManagementActions;
-use App\Models\ServiceZone;
+use Illuminate\Contracts\View\View;
 use Livewire\Component;
 use Livewire\WithPagination;
-use Illuminate\Contracts\View\View;
-use Livewire\Attributes\Layout;
 
 class GestionZones extends Component
 {
+    use ManagesTradeZoneSettings;
     use ManagesZonesData {
         selectZone as protected selectZoneBase;
     }
-    use ManagesTradeZoneSettings;
     use PerformsZoneManagementActions;
     use WithPagination;
 
@@ -27,31 +26,57 @@ class GestionZones extends Component
     }
 
     public string $search = '';
+
     public string $statusFilter = '';
+
     public string $regionFilter = '';
+
     public string $provinceFilter = '';
+
     public string $bookableFilter = '';
+
     public string $visibilityFilter = '';
+
     public string $coverageFilter = '';
+
     public ?int $selectedZoneId = null;
+
     public string $name = '';
+
     public string $code = '';
+
     public string $coverage_type = 'custom';
+
     public string $status = 'active';
+
     public bool $is_bookable = true;
+
     public bool $is_visible = true;
+
     public int $priority = 100;
+
     public int $minimum_notice_hours = 24;
+
     public ?int $maximum_daily_jobs = null;
+
     public float $travel_surcharge = 0;
+
     public int $time_buffer_minutes = 0;
+
     public string $notes = '';
+
     public string $employeeToAssign = '';
+
     public string $assignmentType = 'primary';
+
     public int $assignmentPriority = 100;
+
     public string $assignmentNotes = '';
+
     public string $copyRulesFromZoneId = '';
+
     public array $serviceRules = [];
+
     public array $assignmentEdits = [];
 
     protected $queryString = [

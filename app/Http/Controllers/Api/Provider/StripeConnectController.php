@@ -9,6 +9,7 @@ use Illuminate\Http\Request;
 
 /**
  * @group Provider — Stripe Connect
+ *
  * @authenticated
  *
  * Sprint 0 — Task 3 : Provider Stripe Connect API (RN Phase 2)
@@ -33,21 +34,21 @@ class StripeConnectController extends Controller
 
         if (! $user->stripe_connect_account_id) {
             return response()->json([
-                'onboarded'        => false,
-                'charges_enabled'  => false,
-                'payouts_enabled'  => false,
-                'requirements'     => [],
+                'onboarded' => false,
+                'charges_enabled' => false,
+                'payouts_enabled' => false,
+                'requirements' => [],
             ]);
         }
 
         $account = $this->stripeConnect->retrieveAccount($user->stripe_connect_account_id);
 
         return response()->json([
-            'onboarded'        => (bool) ($account->charges_enabled && $account->payouts_enabled),
-            'charges_enabled'  => (bool) $account->charges_enabled,
-            'payouts_enabled'  => (bool) $account->payouts_enabled,
-            'requirements'     => $account->requirements->currently_due ?? [],
-            'capabilities'     => $account->capabilities ?? null,
+            'onboarded' => (bool) ($account->charges_enabled && $account->payouts_enabled),
+            'charges_enabled' => (bool) $account->charges_enabled,
+            'payouts_enabled' => (bool) $account->payouts_enabled,
+            'requirements' => $account->requirements->currently_due ?? [],
+            'capabilities' => $account->capabilities ?? null,
         ]);
     }
 
@@ -69,13 +70,13 @@ class StripeConnectController extends Controller
 
         $refreshUrl = config('services.stripe.connect_refresh_url')
             ?: url('/dashboard/stripe-connect/refresh');
-        $returnUrl  = config('services.stripe.connect_return_url')
+        $returnUrl = config('services.stripe.connect_return_url')
             ?: url('/dashboard/stripe-connect/return');
 
         $link = $this->stripeConnect->createAccountLink($accountId, $refreshUrl, $returnUrl);
 
         return response()->json([
-            'url'        => $link->url,
+            'url' => $link->url,
             'expires_at' => $link->expires_at,
         ]);
     }
@@ -93,7 +94,7 @@ class StripeConnectController extends Controller
             return response()->json(['data' => [], 'has_more' => false]);
         }
 
-        $limit         = min((int) ($request->query('limit', 20)), 100);
+        $limit = min((int) ($request->query('limit', 20)), 100);
         $startingAfter = $request->query('starting_after');
 
         $result = $this->stripeConnect->listPayouts(
@@ -103,7 +104,7 @@ class StripeConnectController extends Controller
         );
 
         return response()->json([
-            'data'     => $result->data,
+            'data' => $result->data,
             'has_more' => $result->has_more,
         ]);
     }

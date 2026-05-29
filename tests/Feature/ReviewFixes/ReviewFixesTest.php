@@ -8,8 +8,10 @@ use App\Models\Booking;
 use App\Models\OrganizationAccount;
 use App\Models\Task;
 use App\Models\User;
+use App\Services\Assistant\Tools\Implementations\CreateBookingTool;
 use App\Support\Domain\BookingStatus;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Str;
 use Tests\TestCase;
 
 /**
@@ -27,7 +29,7 @@ class ReviewFixesTest extends TestCase
 
     public function test_user_organization_account_id_accessor_returns_current_organization_id(): void
     {
-        $org  = OrganizationAccount::factory()->create();
+        $org = OrganizationAccount::factory()->create();
         $user = User::factory()->create([
             'current_organization_id' => $org->id,
         ]);
@@ -102,7 +104,7 @@ class ReviewFixesTest extends TestCase
     {
         $cancelled = $this->makeBooking(['status' => BookingStatus::ANNULE]);
         $completed = $this->makeBooking(['status' => BookingStatus::TERMINE]);
-        $pending   = $this->makeBooking(['status' => BookingStatus::EN_ATTENTE]);
+        $pending = $this->makeBooking(['status' => BookingStatus::EN_ATTENTE]);
 
         $this->assertTrue($cancelled->isFinal());
         $this->assertTrue($completed->isFinal());
@@ -117,16 +119,16 @@ class ReviewFixesTest extends TestCase
     {
         $user = User::factory()->create(['role' => 'client']);
 
-        $tool = app(\App\Services\Assistant\Tools\Implementations\CreateBookingTool::class);
+        $tool = app(CreateBookingTool::class);
 
         $result = $tool->execute($user, [
             'scheduled_date' => '2026-08-10',
             'scheduled_time' => '10:00',
-            'place_type'     => 'apartment',
-            'surface_m2'     => 60,
-            'address'        => 'Rue Test 1',
-            'city'           => 'Bruxelles',
-            'postal_code'    => '1000',
+            'place_type' => 'apartment',
+            'surface_m2' => 60,
+            'address' => 'Rue Test 1',
+            'city' => 'Bruxelles',
+            'postal_code' => '1000',
         ]);
 
         $this->assertTrue($result['ok']);
@@ -138,15 +140,15 @@ class ReviewFixesTest extends TestCase
     {
         $user = User::factory()->create(['role' => 'client']);
 
-        $tool = app(\App\Services\Assistant\Tools\Implementations\CreateBookingTool::class);
+        $tool = app(CreateBookingTool::class);
         $result = $tool->execute($user, [
             'scheduled_date' => '2026-08-11',
             'scheduled_time' => '14:00',
-            'place_type'     => 'office',
-            'surface_m2'     => 100,
-            'address'        => 'Rue Test 2',
-            'city'           => 'Liège',
-            'postal_code'    => '4000',
+            'place_type' => 'office',
+            'surface_m2' => 100,
+            'address' => 'Rue Test 2',
+            'city' => 'Liège',
+            'postal_code' => '4000',
         ]);
 
         // L'URL ne doit jamais être vide ni provoquer RouteNotFoundException
@@ -160,11 +162,11 @@ class ReviewFixesTest extends TestCase
 
     public function test_task_assigned_includes_channel_when_task_has_channel_id(): void
     {
-        $org      = OrganizationAccount::factory()->create();
+        $org = OrganizationAccount::factory()->create();
         $assignee = User::factory()->create();
 
         // Construit un Task "léger" sans passer par la migration tasks (qui peut ne pas avoir channel_id)
-        $task = new Task();
+        $task = new Task;
         $task->id = 100;
         $task->organization_account_id = $org->id;
         $task->channel_id = 42;
@@ -180,10 +182,10 @@ class ReviewFixesTest extends TestCase
 
     public function test_task_status_changed_skips_channel_when_no_channel_id(): void
     {
-        $org      = OrganizationAccount::factory()->create();
+        $org = OrganizationAccount::factory()->create();
         $assignee = User::factory()->create();
 
-        $task = new Task();
+        $task = new Task;
         $task->id = 101;
         $task->organization_account_id = $org->id;
         $task->channel_id = null; // pas de canal
@@ -194,8 +196,8 @@ class ReviewFixesTest extends TestCase
 
         // Pas de private-channel.* car pas de channel_id
         $this->assertEmpty(array_filter($names, fn ($n) => str_starts_with($n, 'private-channel.')));
-        $this->assertContains('private-presence-org.' . $org->id, $names);
-        $this->assertContains('private-user.' . $assignee->id, $names);
+        $this->assertContains('private-presence-org.'.$org->id, $names);
+        $this->assertContains('private-user.'.$assignee->id, $names);
     }
 
     // ──────────────────────────────────────────────────────
@@ -205,11 +207,11 @@ class ReviewFixesTest extends TestCase
     private function makeBooking(array $overrides = []): Booking
     {
         return Booking::create(array_merge([
-            'booking_reference' => 'CUX-' . strtoupper(\Illuminate\Support\Str::random(6)),
-            'status'            => 'pending',
-            'booking_mode'      => 'scheduled',
-            'priority'          => 'normal',
-            'currency'          => 'EUR',
+            'booking_reference' => 'CUX-'.strtoupper(Str::random(6)),
+            'status' => 'pending',
+            'booking_mode' => 'scheduled',
+            'priority' => 'normal',
+            'currency' => 'EUR',
         ], $overrides));
     }
 }

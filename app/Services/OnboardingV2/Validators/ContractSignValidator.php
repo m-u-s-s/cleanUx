@@ -4,6 +4,7 @@ namespace App\Services\OnboardingV2\Validators;
 
 use App\Models\OnboardingStep;
 use App\Models\User;
+use App\Services\ContractsV2\ContractService;
 use App\Services\OnboardingV2\OnboardingStepValidation;
 use App\Services\OnboardingV2\OnboardingStepValidator;
 
@@ -23,14 +24,15 @@ class ContractSignValidator implements OnboardingStepValidator
     {
         $templateCode = (string) ($step->metadata['template_code'] ?? '');
 
-        if ($templateCode && class_exists(\App\Services\ContractsV2\ContractService::class)) {
-            $svc = app(\App\Services\ContractsV2\ContractService::class);
+        if ($templateCode && class_exists(ContractService::class)) {
+            $svc = app(ContractService::class);
             if ($svc->userHasValidSignatureFor($user, $templateCode)) {
                 return OnboardingStepValidation::pass(
                     normalizedData: ['template_code' => $templateCode],
                     metadata: ['source' => 'contracts_v2'],
                 );
             }
+
             return OnboardingStepValidation::fail([
                 'contract' => "Aucune signature valide trouvée pour '{$templateCode}'.",
             ]);

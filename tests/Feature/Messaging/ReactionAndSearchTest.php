@@ -17,16 +17,16 @@ class ReactionAndSearchTest extends TestCase
 
     private function makeContext(): array
     {
-        $org    = OrganizationAccount::factory()->create();
+        $org = OrganizationAccount::factory()->create();
         $author = User::factory()->create(['organization_account_id' => $org->id]);
-        $other  = User::factory()->create(['organization_account_id' => $org->id]);
+        $other = User::factory()->create(['organization_account_id' => $org->id]);
 
         $channel = Channel::create([
             'organization_account_id' => $org->id,
-            'name'                    => 'reactions-test',
-            'type'                    => Channel::TYPE_TEAM,
-            'is_private'              => false,
-            'created_by'              => $author->id,
+            'name' => 'reactions-test',
+            'type' => Channel::TYPE_TEAM,
+            'is_private' => false,
+            'created_by' => $author->id,
         ]);
         $channel->members()->attach([$author->id, $other->id]);
 
@@ -35,9 +35,9 @@ class ReactionAndSearchTest extends TestCase
 
     public function test_toggle_reaction_adds_then_removes(): void
     {
-        $ctx     = $this->makeContext();
+        $ctx = $this->makeContext();
         $message = app(MessageService::class)->send($ctx['channel'], $ctx['author'], 'Hello');
-        $svc     = app(ReactionService::class);
+        $svc = app(ReactionService::class);
 
         $first = $svc->toggle($message, $ctx['author'], '👍');
         $this->assertSame('added', $first['action']);
@@ -50,25 +50,25 @@ class ReactionAndSearchTest extends TestCase
 
     public function test_two_users_can_react_with_same_emoji_independently(): void
     {
-        $ctx     = $this->makeContext();
+        $ctx = $this->makeContext();
         $message = app(MessageService::class)->send($ctx['channel'], $ctx['author'], 'Hello');
-        $svc     = app(ReactionService::class);
+        $svc = app(ReactionService::class);
 
         $svc->toggle($message, $ctx['author'], '🎉');
-        $svc->toggle($message, $ctx['other'],  '🎉');
+        $svc->toggle($message, $ctx['other'], '🎉');
 
         $this->assertSame(2, $message->reactions()->count());
 
         $summary = $svc->summarize($message, $ctx['author']);
         $this->assertCount(1, $summary);
         $this->assertSame('🎉', $summary[0]['emoji']);
-        $this->assertSame(2,    $summary[0]['count']);
+        $this->assertSame(2, $summary[0]['count']);
         $this->assertTrue($summary[0]['me']);
     }
 
     public function test_invalid_empty_emoji_throws(): void
     {
-        $ctx     = $this->makeContext();
+        $ctx = $this->makeContext();
         $message = app(MessageService::class)->send($ctx['channel'], $ctx['author'], 'X');
 
         $this->expectException(\DomainException::class);

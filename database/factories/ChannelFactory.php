@@ -17,21 +17,21 @@ class ChannelFactory extends Factory
     {
         return [
             'organization_account_id' => null,
-            'mission_id'              => null,
-            'booking_id'              => null,
-            'name'                    => fake()->words(2, true),
-            'type'                    => fake()->randomElement([
+            'mission_id' => null,
+            'booking_id' => null,
+            'name' => fake()->words(2, true),
+            'type' => fake()->randomElement([
                 Channel::TYPE_TEAM,
                 Channel::TYPE_SUPPORT,
                 Channel::TYPE_PRIVATE,
             ]),
-            'is_private'  => false,
-            'is_locked'   => false,
+            'is_private' => false,
+            'is_locked' => false,
             'is_archived' => false,
             'archived_at' => null,
             'archived_by' => null,
-            'created_by'  => User::factory(),
-            'settings'    => null,
+            'created_by' => User::factory(),
+            'settings' => null,
         ];
     }
 

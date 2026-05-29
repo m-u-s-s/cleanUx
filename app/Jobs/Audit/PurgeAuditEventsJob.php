@@ -18,6 +18,7 @@ class PurgeAuditEventsJob implements ShouldQueue
     use SerializesModels;
 
     public int $timeout = 600;
+
     public int $tries = 1;
 
     public function handle(AuditRetentionService $svc): void

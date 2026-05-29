@@ -11,7 +11,5 @@ class KycRejected
     use Dispatchable;
     use SerializesModels;
 
-    public function __construct(public KycVerification $verification)
-    {
-    }
+    public function __construct(public KycVerification $verification) {}
 }

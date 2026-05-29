@@ -19,12 +19,12 @@ class ClientExcelExportController extends Controller
     public function bookings(Request $request): StreamedResponse
     {
         $filters = $request->validate([
-            'from'                  => ['nullable', 'date'],
-            'to'                    => ['nullable', 'date', 'after_or_equal:from'],
-            'site_ids'              => ['nullable', 'array'],
-            'site_ids.*'            => ['integer'],
-            'statuses'              => ['nullable', 'array'],
-            'statuses.*'            => ['string', 'max:32'],
+            'from' => ['nullable', 'date'],
+            'to' => ['nullable', 'date', 'after_or_equal:from'],
+            'site_ids' => ['nullable', 'array'],
+            'site_ids.*' => ['integer'],
+            'statuses' => ['nullable', 'array'],
+            'statuses.*' => ['string', 'max:32'],
         ]);
 
         return $this->exporter->export($request->user(), $filters);

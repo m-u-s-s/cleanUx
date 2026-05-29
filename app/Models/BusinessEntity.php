@@ -11,14 +11,21 @@ use Illuminate\Support\Str;
 class BusinessEntity extends Model
 {
     public const STATUS_PENDING = 'pending';
+
     public const STATUS_VERIFIED = 'verified';
+
     public const STATUS_REJECTED = 'rejected';
+
     public const STATUS_SUSPENDED = 'suspended';
+
     public const STATUS_NEEDS_REVIEW = 'needs_review';
 
     public const RISK_LOW = 'low';
+
     public const RISK_MEDIUM = 'medium';
+
     public const RISK_HIGH = 'high';
+
     public const RISK_CRITICAL = 'critical';
 
     protected $fillable = [
@@ -44,7 +51,7 @@ class BusinessEntity extends Model
 
     public static function generateCode(): string
     {
-        return 'biz_' . Str::lower(Str::random(20));
+        return 'biz_'.Str::lower(Str::random(20));
     }
 
     public function documents(): HasMany

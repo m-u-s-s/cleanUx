@@ -3,9 +3,12 @@
 namespace App\Services\Assistant\Stats;
 
 use App\Models\EnterpriseBookingApproval;
+use App\Models\FieldTeamMember;
 use App\Models\FinanceInvoice;
 use App\Models\Mission;
 use App\Models\MissionAssignment;
+use App\Models\MissionIncident;
+use App\Models\MissionQualityReview;
 use App\Models\User;
 use Illuminate\Support\Facades\Cache;
 
@@ -51,21 +54,21 @@ class AssistantStats
 
         return [
             // CLIENT_COMPANY
-            'active_missions'   => $this->activeMissions($user, $orgId),
+            'active_missions' => $this->activeMissions($user, $orgId),
             'pending_approvals' => $this->pendingApprovals($orgId),
-            'unpaid_invoices'   => $this->unpaidInvoices($user, $orgId),
+            'unpaid_invoices' => $this->unpaidInvoices($user, $orgId),
 
             // PROVIDER_INDEPENDENT
             'avg_rating' => $this->avgRating($user),
 
             // PROVIDER_COMPANY
-            'team_name'       => $this->teamName($user),
-            'pending_tasks'   => $this->pendingTasks($user),
+            'team_name' => $this->teamName($user),
+            'pending_tasks' => $this->pendingTasks($user),
 
             // ADMIN
             'admin_total_active_missions' => $this->totalActiveMissions(),
-            'admin_monthly_revenue'       => $this->monthlyRevenue(),
-            'admin_alerts'                => $this->alerts(),
+            'admin_monthly_revenue' => $this->monthlyRevenue(),
+            'admin_alerts' => $this->alerts(),
         ];
     }
 
@@ -120,10 +123,11 @@ class AssistantStats
         // Si tu as une table mission_quality_reviews ou similar, requêter ici.
         // Pour l'instant, on retourne null pour signifier "pas calculé".
         try {
-            $reviews = \App\Models\MissionQualityReview::query()
+            $reviews = MissionQualityReview::query()
                 ->whereHas('mission.assignments', fn ($q) => $q->where('user_id', $user->id))
                 ->whereNotNull('overall_rating')
                 ->avg('overall_rating');
+
             return $reviews ? round((float) $reviews, 2) : null;
         } catch (\Throwable $e) {
             return null;
@@ -133,10 +137,11 @@ class AssistantStats
     private function teamName(User $user): ?string
     {
         try {
-            $member = \App\Models\FieldTeamMember::query()
+            $member = FieldTeamMember::query()
                 ->with('team')
                 ->where('user_id', $user->id)
                 ->first();
+
             return $member?->team?->name;
         } catch (\Throwable $e) {
             return null;
@@ -175,7 +180,7 @@ class AssistantStats
         // Critères d'alerte à customiser selon ta logique métier.
         // Ici : nombre d'incidents critiques ouverts.
         try {
-            return \App\Models\MissionIncident::query()
+            return MissionIncident::query()
                 ->where('status', 'open')
                 ->where('severity', 'critical')
                 ->count();

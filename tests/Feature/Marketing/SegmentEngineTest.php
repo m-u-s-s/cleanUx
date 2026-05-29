@@ -16,7 +16,7 @@ class SegmentEngineTest extends TestCase
     protected function makeSegment(array $rules): MarketingSegment
     {
         return MarketingSegment::create([
-            'code' => 'seg_' . uniqid(),
+            'code' => 'seg_'.uniqid(),
             'name' => 'Test segment',
             'rules' => $rules,
             'is_active' => true,

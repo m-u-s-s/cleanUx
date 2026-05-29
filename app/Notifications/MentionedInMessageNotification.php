@@ -36,13 +36,13 @@ class MentionedInMessageNotification extends Notification
         $sender = $this->message->sender;
 
         return [
-            'type'          => 'mention',
-            'message_id'    => $this->message->id,
-            'channel_id'    => $this->message->channel_id,
-            'channel_name'  => $this->message->channel?->name,
-            'sender_id'     => $sender?->id,
-            'sender_name'   => $sender?->name,
-            'preview'       => str($this->message->content)->limit(160)->toString(),
+            'type' => 'mention',
+            'message_id' => $this->message->id,
+            'channel_id' => $this->message->channel_id,
+            'channel_name' => $this->message->channel?->name,
+            'sender_id' => $sender?->id,
+            'sender_name' => $sender?->name,
+            'preview' => str($this->message->content)->limit(160)->toString(),
         ];
     }
 
@@ -51,10 +51,10 @@ class MentionedInMessageNotification extends Notification
         $sender = $this->message->sender;
 
         return (new MailMessage)
-            ->subject("Vous avez été mentionné dans CleanUx")
+            ->subject('Vous avez été mentionné dans CleanUx')
             ->greeting("Bonjour {$notifiable->name},")
-            ->line(($sender->name ?? 'Quelqu’un') . " vous a mentionné dans #" . ($this->message->channel?->name ?? 'un canal') . " :")
-            ->line('"' . str($this->message->content)->limit(200) . '"')
-            ->action('Voir le message', url('/team/channels?focus=' . $this->message->id));
+            ->line(($sender->name ?? 'Quelqu’un').' vous a mentionné dans #'.($this->message->channel?->name ?? 'un canal').' :')
+            ->line('"'.str($this->message->content)->limit(200).'"')
+            ->action('Voir le message', url('/team/channels?focus='.$this->message->id));
     }
 }

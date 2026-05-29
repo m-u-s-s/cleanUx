@@ -9,6 +9,7 @@ use Illuminate\Console\Command;
 class BackfillMissionDestinations extends Command
 {
     protected $signature = 'missions:backfill-destinations {--force}';
+
     protected $description = 'Backfill destination lat/lng for existing missions';
 
     public function handle(GeocodingService $geocoding): int

@@ -22,7 +22,6 @@ class AccountingService
      *   counterparty_type?:string, counterparty_id?:int,
      *   metadata?:array,
      * }> $lines
-     *
      * @return string batch_id généré
      */
     public function post(array $lines, array $opts = []): string
@@ -80,7 +79,7 @@ class AccountingService
         $sourceId = $opts['source_id'] ?? null;
         $postedByUserId = $opts['posted_by_user_id'] ?? null;
 
-        DB::transaction(function () use ($lines, $batchId, $journal, $postingDate, $now, $reference, $currency, $sourceType, $sourceId, $postedByUserId, $opts) {
+        DB::transaction(function () use ($lines, $batchId, $journal, $postingDate, $reference, $currency, $sourceType, $sourceId, $postedByUserId) {
             foreach ($lines as $l) {
                 AccountingEntry::query()->create([
                     'entry_code' => AccountingEntry::generateEntryCode(),
@@ -126,6 +125,7 @@ class AccountingService
         }
         $opts['source_type'] = $sourceType;
         $opts['source_id'] = $sourceId;
+
         return $this->post($lines, $opts);
     }
 
@@ -138,7 +138,7 @@ class AccountingService
             ->first();
         if ($period) {
             throw ValidationException::withMessages([
-                'posting_date' => ['Période ' . $period->label() . ' est fermée — impossible de poster.'],
+                'posting_date' => ['Période '.$period->label().' est fermée — impossible de poster.'],
             ]);
         }
     }
@@ -152,6 +152,7 @@ class AccountingService
         $rows = $q->get(['debit_cents', 'credit_cents']);
         $debit = (int) $rows->sum('debit_cents');
         $credit = (int) $rows->sum('credit_cents');
+
         return [
             'debit_cents' => $debit,
             'credit_cents' => $credit,

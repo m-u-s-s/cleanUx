@@ -14,6 +14,7 @@ class ZoneManagementSeeder extends Seeder
     {
         if (! $this->hasTable('service_zones')) {
             $this->command?->warn('⚠️ Table service_zones absente, ZoneManagementSeeder ignoré.');
+
             return;
         }
 
@@ -21,6 +22,7 @@ class ZoneManagementSeeder extends Seeder
 
         if (! $country) {
             $this->command?->warn('⚠️ Pays BE introuvable, lance BelgiumGeographySeeder avant ZoneManagementSeeder.');
+
             return;
         }
 
@@ -83,7 +85,7 @@ class ZoneManagementSeeder extends Seeder
                 'service_zones',
                 ['slug' => $zoneData['slug']],
                 [
-                    'code' => 'PROV-' . $code,
+                    'code' => 'PROV-'.$code,
                     'country_id' => $country->id,
                     'parent_zone_id' => $nationalZone?->id,
                     'name' => $zoneData['name'],
@@ -98,7 +100,7 @@ class ZoneManagementSeeder extends Seeder
                     'time_buffer_minutes' => 20,
                     'activated_at' => now(),
                     'coverage_postal_codes' => $zonePostalCodes->all(),
-                    'metadata' => ['code' => 'PROV-' . $code, 'seeded' => true],
+                    'metadata' => ['code' => 'PROV-'.$code, 'seeded' => true],
                 ]
             );
 

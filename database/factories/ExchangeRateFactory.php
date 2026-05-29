@@ -23,15 +23,15 @@ class ExchangeRateFactory extends Factory
         [$base, $quote] = fake()->randomElement($pairs);
 
         return [
-            'base_currency'   => $base,
-            'quote_currency'  => $quote,
-            'rate'            => number_format(fake()->randomFloat(4, 0.5, 2.0), 8),
-            'source'          => ExchangeRate::SOURCE_MOCK,
-            'fetched_at'      => now()->subMinutes(fake()->numberBetween(1, 60)),
-            'valid_from'      => now()->startOfDay(),
-            'valid_until'     => now()->endOfDay(),
+            'base_currency' => $base,
+            'quote_currency' => $quote,
+            'rate' => number_format(fake()->randomFloat(4, 0.5, 2.0), 8),
+            'source' => ExchangeRate::SOURCE_MOCK,
+            'fetched_at' => now()->subMinutes(fake()->numberBetween(1, 60)),
+            'valid_from' => now()->startOfDay(),
+            'valid_until' => now()->endOfDay(),
             'idempotency_key' => Str::uuid()->toString(),
-            'metadata'        => [],
+            'metadata' => [],
         ];
     }
 

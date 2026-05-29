@@ -12,7 +12,7 @@ class PricingRuleFactory extends Factory
     public function definition(): array
     {
         return [
-            'code' => 'PR-' . fake()->unique()->bothify('??###'),
+            'code' => 'PR-'.fake()->unique()->bothify('??###'),
             'name' => fake()->randomElement(['Weekend Surcharge', 'Evening Discount', 'Bulk Rate']),
             'description' => fake()->sentence(),
             'service_code' => fake()->optional()->slug(1),

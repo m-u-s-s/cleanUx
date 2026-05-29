@@ -1,5 +1,11 @@
 <?php
 
+use App\Services\Risk\Rules\AccountAgeRule;
+use App\Services\Risk\Rules\BookingVelocityRule;
+use App\Services\Risk\Rules\GeoMismatchRule;
+use App\Services\Risk\Rules\IpReputationRule;
+use App\Services\Risk\Rules\PaymentDeclineRule;
+
 return [
     'enabled' => env('RISK_ENABLED', true),
 
@@ -31,11 +37,11 @@ return [
     |--------------------------------------------------------------------------
     */
     'rules' => [
-        \App\Services\Risk\Rules\BookingVelocityRule::class,
-        \App\Services\Risk\Rules\PaymentDeclineRule::class,
-        \App\Services\Risk\Rules\IpReputationRule::class,
-        \App\Services\Risk\Rules\AccountAgeRule::class,
-        \App\Services\Risk\Rules\GeoMismatchRule::class,
+        BookingVelocityRule::class,
+        PaymentDeclineRule::class,
+        IpReputationRule::class,
+        AccountAgeRule::class,
+        GeoMismatchRule::class,
     ],
 
     /*

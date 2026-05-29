@@ -6,7 +6,6 @@ use App\Models\AvailabilitySlot;
 use App\Models\Booking;
 use App\Models\LoyaltyAccount;
 use App\Models\LoyaltyTier;
-use App\Models\Mission;
 use App\Models\ProviderPayout;
 use App\Models\User;
 use App\Services\Assistant\Actions\AssistantActionExecutor;
@@ -25,7 +24,7 @@ class AssistantActionExecutorTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->executor = new AssistantActionExecutor();
+        $this->executor = new AssistantActionExecutor;
     }
 
     public function test_list_bookings_returns_no_bookings_message_when_empty(): void
@@ -42,11 +41,11 @@ class AssistantActionExecutorTest extends TestCase
         $user = User::factory()->client()->create();
 
         Booking::factory()->create([
-            'customer_user_id'  => $user->id,
+            'customer_user_id' => $user->id,
             'booking_reference' => 'BK-001',
-            'status'            => 'pending',
-            'scheduled_date'    => '2026-06-01',
-            'scheduled_time'    => '09:00:00',
+            'status' => 'pending',
+            'scheduled_date' => '2026-06-01',
+            'scheduled_time' => '09:00:00',
         ]);
 
         $result = $this->executor->execute('list_bookings', $user);
@@ -91,11 +90,11 @@ class AssistantActionExecutorTest extends TestCase
         $tier = LoyaltyTier::factory()->create(['name' => 'Gold', 'slug' => 'gold']);
 
         LoyaltyAccount::factory()->create([
-            'user_id'          => $user->id,
-            'current_tier_id'  => $tier->id,
+            'user_id' => $user->id,
+            'current_tier_id' => $tier->id,
             'redeemable_points' => 250,
-            'period_points'    => 300,
-            'lifetime_points'  => 1500,
+            'period_points' => 300,
+            'lifetime_points' => 1500,
         ]);
 
         $result = $this->executor->execute('loyalty_balance', $user);
@@ -110,9 +109,9 @@ class AssistantActionExecutorTest extends TestCase
 
         ProviderPayout::factory()->create([
             'provider_user_id' => $user->id,
-            'status'           => ProviderPayout::STATUS_PAID,
-            'amount'           => 150.00,
-            'period_end'       => now()->toDateString(),
+            'status' => ProviderPayout::STATUS_PAID,
+            'amount' => 150.00,
+            'period_end' => now()->toDateString(),
         ]);
 
         $result = $this->executor->execute('earnings_summary', $user);
@@ -136,10 +135,10 @@ class AssistantActionExecutorTest extends TestCase
 
         AvailabilitySlot::create([
             'provider_user_id' => $user->id,
-            'weekday'          => 1, // Monday
-            'start_time'       => '08:00:00',
-            'end_time'         => '16:00:00',
-            'is_active'        => true,
+            'weekday' => 1, // Monday
+            'start_time' => '08:00:00',
+            'end_time' => '16:00:00',
+            'is_active' => true,
         ]);
 
         $result = $this->executor->execute('availability_slots', $user);

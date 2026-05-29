@@ -11,6 +11,7 @@ use Illuminate\Http\Request;
 
 /**
  * @group Client — Trip Tracking
+ *
  * @authenticated
  */
 class TripTrackingController extends Controller

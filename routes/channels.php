@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\Channel;
+use App\Models\FieldTeam;
 use App\Models\Mission;
 use App\Models\OrganizationAccount;
 use App\Models\User;
@@ -99,9 +100,9 @@ Broadcast::channel('channel.{channelId}', function (User $user, int $channelId) 
 Broadcast::channel('presence-org.{orgId}', function (User $user, int $orgId) {
     if ($user->isAdmin()) {
         return [
-            'id'         => $user->id,
-            'name'       => $user->name,
-            'role'       => 'admin',
+            'id' => $user->id,
+            'name' => $user->name,
+            'role' => 'admin',
             'avatar_url' => method_exists($user, 'getAvatarUrl') ? $user->getAvatarUrl() : null,
         ];
     }
@@ -117,9 +118,9 @@ Broadcast::channel('presence-org.{orgId}', function (User $user, int $orgId) {
     }
 
     return [
-        'id'         => $user->id,
-        'name'       => $user->name,
-        'role'       => $user->organization_role ?? 'member',
+        'id' => $user->id,
+        'name' => $user->name,
+        'role' => $user->organization_role ?? 'member',
         'avatar_url' => method_exists($user, 'getAvatarUrl') ? $user->getAvatarUrl() : null,
     ];
 });
@@ -128,7 +129,7 @@ Broadcast::channel('presence-org.{orgId}', function (User $user, int $orgId) {
 // PHASE 3 — Presence Channel : équipe terrain
 // ──────────────────────────────────────────────────────
 Broadcast::channel('presence-team.{teamId}', function (User $user, int $teamId) {
-    $team = \App\Models\FieldTeam::with('members')->find($teamId);
+    $team = FieldTeam::with('members')->find($teamId);
     if (! $team) {
         return null;
     }
@@ -143,7 +144,7 @@ Broadcast::channel('presence-team.{teamId}', function (User $user, int $teamId) 
     }
 
     return [
-        'id'   => $user->id,
+        'id' => $user->id,
         'name' => $user->name,
         'role' => 'member',
     ];
@@ -164,4 +165,3 @@ Broadcast::channel('providers.presence', function ($user) {
         method_exists($user, 'isPlatformAdmin') && $user->isPlatformAdmin()
     );
 });
-

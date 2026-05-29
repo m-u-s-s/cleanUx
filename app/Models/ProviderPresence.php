@@ -9,8 +9,11 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class ProviderPresence extends Model
 {
     public const STATUS_ONLINE = 'online';
+
     public const STATUS_BUSY = 'busy';
+
     public const STATUS_ON_BREAK = 'on_break';
+
     public const STATUS_OFFLINE = 'offline';
 
     protected $table = 'provider_presence';
@@ -64,6 +67,7 @@ class ProviderPresence extends Model
         if (! $this->heartbeat_at) {
             return true;
         }
+
         return $this->heartbeat_at->lt(now()->subMinutes($thresholdMinutes));
     }
 }

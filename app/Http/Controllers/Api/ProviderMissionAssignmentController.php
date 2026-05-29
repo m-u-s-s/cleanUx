@@ -10,6 +10,7 @@ use Illuminate\Http\Request;
 
 /**
  * @group Mission Assignments
+ *
  * @authenticated
  *
  * Phase 11 — Endpoints API mobile pour accept/decline d'une mission.
@@ -42,7 +43,7 @@ class ProviderMissionAssignmentController extends Controller
             ->where('assignment_status', 'assigned')
             ->where(function ($q) {
                 $q->whereNull('expires_at')
-                  ->orWhere('expires_at', '>', now());
+                    ->orWhere('expires_at', '>', now());
             })
             ->with([
                 'mission:id,booking_id,planned_start_at,status,start_lat,start_lng,end_lat,end_lng',
@@ -53,9 +54,9 @@ class ProviderMissionAssignmentController extends Controller
             ->get();
 
         return response()->json([
-            'ok'    => true,
+            'ok' => true,
             'count' => $assignments->count(),
-            'data'  => $assignments->map(fn ($a) => $this->serializeAssignment($a))->all(),
+            'data' => $assignments->map(fn ($a) => $this->serializeAssignment($a))->all(),
         ]);
     }
 
@@ -73,7 +74,7 @@ class ProviderMissionAssignmentController extends Controller
         ]);
 
         return response()->json([
-            'ok'   => true,
+            'ok' => true,
             'data' => $this->serializeAssignment($assignment, detailed: true),
         ]);
     }
@@ -92,10 +93,10 @@ class ProviderMissionAssignmentController extends Controller
         }
 
         return response()->json([
-            'ok'              => true,
-            'assignment_id'   => $assignment->id,
-            'status'          => $assignment->assignment_status,
-            'response_seconds'=> $assignment->response_seconds,
+            'ok' => true,
+            'assignment_id' => $assignment->id,
+            'status' => $assignment->assignment_status,
+            'response_seconds' => $assignment->response_seconds,
         ]);
     }
 
@@ -117,9 +118,9 @@ class ProviderMissionAssignmentController extends Controller
         }
 
         return response()->json([
-            'ok'                  => true,
-            'assignment_id'       => $assignment->id,
-            'status'              => 'declined',
+            'ok' => true,
+            'assignment_id' => $assignment->id,
+            'status' => 'declined',
             'reassigned_to_other' => $next !== null,
         ]);
     }
@@ -139,29 +140,29 @@ class ProviderMissionAssignmentController extends Controller
         $booking = $mission?->booking;
 
         $base = [
-            'id'                   => $a->id,
-            'mission_id'           => $a->mission_id,
-            'assignment_status'    => $a->assignment_status,
-            'assigned_at'          => $a->assigned_at?->toIso8601String(),
-            'expires_at'           => $a->expires_at?->toIso8601String(),
-            'remaining_seconds'    => $a->expires_at
+            'id' => $a->id,
+            'mission_id' => $a->mission_id,
+            'assignment_status' => $a->assignment_status,
+            'assigned_at' => $a->assigned_at?->toIso8601String(),
+            'expires_at' => $a->expires_at?->toIso8601String(),
+            'remaining_seconds' => $a->expires_at
                 ? max(0, (int) now()->diffInSeconds($a->expires_at, false))
                 : null,
             'mission' => $mission ? [
-                'id'                          => $mission->id,
-                'planned_start_at'            => $mission->planned_start_at?->toIso8601String(),
-                'estimated_duration_minutes'  => $mission->estimated_duration_minutes ?? null,
+                'id' => $mission->id,
+                'planned_start_at' => $mission->planned_start_at?->toIso8601String(),
+                'estimated_duration_minutes' => $mission->estimated_duration_minutes ?? null,
             ] : null,
             'booking' => $booking ? [
-                'reference'      => $booking->booking_reference,
-                'service_name'   => $booking->serviceCatalog?->name,
-                'address'        => $booking->address,
-                'city'           => $booking->city,
-                'postal_code'    => $booking->postal_code,
+                'reference' => $booking->booking_reference,
+                'service_name' => $booking->serviceCatalog?->name,
+                'address' => $booking->address,
+                'city' => $booking->city,
+                'postal_code' => $booking->postal_code,
                 'scheduled_date' => $booking->scheduled_date,
                 'scheduled_time' => $booking->scheduled_time,
-                'mode'           => $booking->booking_mode,
-                'priority'       => $booking->priority,
+                'mode' => $booking->booking_mode,
+                'priority' => $booking->priority,
             ] : null,
         ];
 

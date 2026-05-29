@@ -25,6 +25,7 @@ class ServiceCatalogTradeBackfillSeeder extends Seeder
 
         if (! $cleaning) {
             $this->command?->error("Trade 'nettoyage' introuvable. Lance d'abord TradeSeeder.");
+
             return;
         }
 

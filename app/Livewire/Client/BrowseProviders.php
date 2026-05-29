@@ -39,15 +39,18 @@ class BrowseProviders extends Component
     public string $sort = 'rating';
 
     public bool $onlineOnly = false;
+
     public bool $hasPhotoOnly = false;
 
     public string $postalSearch = '';
+
     public array $postalSuggestions = [];
 
     public function updatedPostalSearch(string $value): void
     {
         if (mb_strlen($value) < 2) {
             $this->postalSuggestions = [];
+
             return;
         }
 
@@ -59,7 +62,7 @@ class BrowseProviders extends Component
     public function pickPostal(string $code, string $cityName): void
     {
         $this->postalCode = $code;
-        $this->postalSearch = $code . ' ' . $cityName;
+        $this->postalSearch = $code.' '.$cityName;
         $this->postalSuggestions = [];
         $this->resetPage();
     }

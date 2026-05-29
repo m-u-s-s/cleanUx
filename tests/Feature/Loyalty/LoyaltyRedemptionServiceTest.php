@@ -52,7 +52,7 @@ class LoyaltyRedemptionServiceTest extends TestCase
     protected function createReward(array $overrides = []): LoyaltyReward
     {
         return LoyaltyReward::query()->create(array_merge([
-            'code' => 'rwd_' . uniqid(),
+            'code' => 'rwd_'.uniqid(),
             'name' => 'Discount 10€',
             'reward_type' => LoyaltyReward::TYPE_DISCOUNT_CODE,
             'points_cost' => 100,

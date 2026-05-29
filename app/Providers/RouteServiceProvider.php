@@ -31,8 +31,8 @@ class RouteServiceProvider extends ServiceProvider
         // SMS-cost endpoints : 5/min per IP, 20/h per user
         RateLimiter::for('otp', function (Request $request) {
             return [
-                Limit::perMinute(5)->by('otp:ip:' . $request->ip()),
-                Limit::perHour(20)->by('otp:user:' . ($request->user()?->id ?: $request->ip())),
+                Limit::perMinute(5)->by('otp:ip:'.$request->ip()),
+                Limit::perHour(20)->by('otp:user:'.($request->user()?->id ?: $request->ip())),
             ];
         });
 
@@ -43,17 +43,17 @@ class RouteServiceProvider extends ServiceProvider
 
         // Promo/referral redeem : 10/min per user pour limiter le code abuse
         RateLimiter::for('promo', function (Request $request) {
-            return Limit::perMinute(10)->by('promo:' . ($request->user()?->id ?: $request->ip()));
+            return Limit::perMinute(10)->by('promo:'.($request->user()?->id ?: $request->ip()));
         });
 
         // Chat message send : 30/min per user (anti-spam)
         RateLimiter::for('chat', function (Request $request) {
-            return Limit::perMinute(30)->by('chat:' . ($request->user()?->id ?: $request->ip()));
+            return Limit::perMinute(30)->by('chat:'.($request->user()?->id ?: $request->ip()));
         });
 
         // External provider calls (KYB sanctions, geocoding, distance matrix) : 20/min per user
         RateLimiter::for('external', function (Request $request) {
-            return Limit::perMinute(20)->by('ext:' . ($request->user()?->id ?: $request->ip()));
+            return Limit::perMinute(20)->by('ext:'.($request->user()?->id ?: $request->ip()));
         });
 
         // Global API: 120/min authenticated, 30/min anonymous
@@ -65,7 +65,7 @@ class RouteServiceProvider extends ServiceProvider
 
         // Public API (search, pricing, FX) — scraping protection: 30/min per IP, no auth required
         RateLimiter::for('public-api', function (Request $request) {
-            return Limit::perMinute(30)->by('pub:' . $request->ip());
+            return Limit::perMinute(30)->by('pub:'.$request->ip());
         });
 
         // Auth endpoints hardened: 10/min per IP

@@ -2,10 +2,10 @@
 
 namespace App\Livewire;
 
+use App\Models\Booking;
 use App\Models\FinanceInvoice;
 use App\Models\FinanceQuote;
 use App\Models\OrganizationSite;
-use App\Models\Booking;
 use App\Models\ServiceCatalog;
 use App\Models\ServiceZone;
 use App\Models\User;
@@ -24,8 +24,11 @@ class ClientDashboard extends Component
     use WithPagination;
 
     public string $tri = 'asc';
+
     public $editRdvId = null;
+
     public $editDate = null;
+
     public $editHeure = null;
 
     protected $paginationTheme = 'tailwind';
@@ -257,7 +260,7 @@ class ClientDashboard extends Component
             ->whereNotNull('adresse')
             ->where('adresse', '!=', '')
             ->leftJoin('postal_codes', 'postal_codes.id', '=', 'bookings.postal_code_id')
-            ->selectRaw("bookings.adresse, bookings.ville, COALESCE(bookings.code_postal, postal_codes.code) as code_postal, MAX(bookings.date) as last_date")
+            ->selectRaw('bookings.adresse, bookings.ville, COALESCE(bookings.code_postal, postal_codes.code) as code_postal, MAX(bookings.date) as last_date')
             ->groupBy('bookings.adresse', 'bookings.ville', DB::raw('COALESCE(bookings.code_postal, postal_codes.code)'))
             ->orderByDesc('last_date')
             ->limit(5)
@@ -337,6 +340,7 @@ class ClientDashboard extends Component
 
         if (! $rdv->canStillBeEditedByClient()) {
             $this->dispatch('toast', message: 'Ce rendez-vous ne peut plus être modifié.', type: 'error');
+
             return;
         }
 
@@ -362,6 +366,7 @@ class ClientDashboard extends Component
 
         if (! $rdv->canStillBeEditedByClient()) {
             $this->dispatch('toast', message: 'Ce rendez-vous ne peut plus être modifié.', type: 'error');
+
             return;
         }
 
@@ -400,6 +405,7 @@ class ClientDashboard extends Component
 
         if (! $rdv->canStillBeEditedByClient()) {
             $this->dispatch('toast', message: 'Ce rendez-vous ne peut plus être annulé.', type: 'error');
+
             return;
         }
 

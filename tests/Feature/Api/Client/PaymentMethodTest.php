@@ -92,11 +92,11 @@ class PaymentMethodTest extends TestCase
 
     public function test_payment_intent_is_forbidden_for_other_client_bookings(): void
     {
-        $owner  = $this->makeClient();
+        $owner = $this->makeClient();
         $caller = $this->makeClient();
 
         $booking = Booking::factory()->create([
-            'client_id'    => $owner->id,
+            'client_id' => $owner->id,
             'devis_estime' => 50.00,
         ]);
 
@@ -115,7 +115,7 @@ class PaymentMethodTest extends TestCase
         $client = $this->makeClient();
 
         $booking = Booking::factory()->create([
-            'client_id'    => $client->id,
+            'client_id' => $client->id,
             'devis_estime' => 0,
         ]);
 

@@ -6,7 +6,6 @@ use App\Jobs\Payments\ProcessStripeWebhookJob;
 use App\Models\StripeWebhookEvent;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Queue;
-use Stripe\Webhook;
 use Tests\TestCase;
 
 class StripeWebhookControllerTest extends TestCase
@@ -112,7 +111,7 @@ class StripeWebhookControllerTest extends TestCase
     protected function makeStripeSignature(string $payload, string $secret): string
     {
         $timestamp = time();
-        $signedPayload = $timestamp . '.' . $payload;
+        $signedPayload = $timestamp.'.'.$payload;
         $signature = hash_hmac('sha256', $signedPayload, $secret);
 
         return "t={$timestamp},v1={$signature}";

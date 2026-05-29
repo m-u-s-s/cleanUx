@@ -15,14 +15,12 @@ class MessageSent implements ShouldBroadcast
     use InteractsWithSockets;
     use SerializesModels;
 
-    public function __construct(public Message $message)
-    {
-    }
+    public function __construct(public Message $message) {}
 
     public function broadcastOn(): array
     {
         return [
-            new PrivateChannel('channel.' . $this->message->channel_id),
+            new PrivateChannel('channel.'.$this->message->channel_id),
         ];
     }
 
@@ -31,8 +29,8 @@ class MessageSent implements ShouldBroadcast
         return [
             'message_id' => $this->message->id,
             'channel_id' => $this->message->channel_id,
-            'sender_id'  => $this->message->user_id,
-            'content'    => str($this->message->content)->limit(100)->toString(),
+            'sender_id' => $this->message->user_id,
+            'content' => str($this->message->content)->limit(100)->toString(),
         ];
     }
 

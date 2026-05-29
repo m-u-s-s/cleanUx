@@ -47,6 +47,7 @@ class CancellationFeeCalculator
         // 2. Si pas de date de start, on traite comme annulation tardive
         if (! $start) {
             $tier = $config['fee_tiers'][count($config['fee_tiers']) - 1] ?? ['fee_percent' => 100];
+
             return $this->result(
                 $this->applyMinimumFee($bookingPrice * ($tier['fee_percent'] / 100), $config),
                 (int) $tier['fee_percent'],
@@ -92,6 +93,7 @@ class CancellationFeeCalculator
 
         // 4. Aucun tier matché : fallback 100%
         $fee = $this->applyMinimumFee($bookingPrice, $config);
+
         return $this->result(round($fee, 2), 100, null, false, $minutesBeforeStart, 'tier_fallback');
     }
 
@@ -110,20 +112,20 @@ class CancellationFeeCalculator
         $freeMinutes = (int) ($config['free_cancellation_minutes'] ?? 30);
         if ($start && $minutesBeforeStart >= $freeMinutes) {
             return [
-                'penalty_eur'           => 0.0,
-                'reliability_penalty'   => 0,
-                'is_free'               => true,
-                'minutes_before_start'  => $minutesBeforeStart,
-                'reason_code'           => 'free_window',
+                'penalty_eur' => 0.0,
+                'reliability_penalty' => 0,
+                'is_free' => true,
+                'minutes_before_start' => $minutesBeforeStart,
+                'reason_code' => 'free_window',
             ];
         }
 
         return [
-            'penalty_eur'           => (float) ($config['penalty_eur'] ?? 0),
-            'reliability_penalty'   => (int) ($config['reliability_penalty'] ?? 0),
-            'is_free'               => false,
-            'minutes_before_start'  => $minutesBeforeStart,
-            'reason_code'           => 'late_cancellation',
+            'penalty_eur' => (float) ($config['penalty_eur'] ?? 0),
+            'reliability_penalty' => (int) ($config['reliability_penalty'] ?? 0),
+            'is_free' => false,
+            'minutes_before_start' => $minutesBeforeStart,
+            'reason_code' => 'late_cancellation',
         ];
     }
 
@@ -134,9 +136,12 @@ class CancellationFeeCalculator
     {
         $now = $now ?? now();
         $start = $this->bookingStartDateTime($booking);
-        if (! $start) return false;
+        if (! $start) {
+            return false;
+        }
 
         $graceMinutes = (int) config('cancellation.no_show.grace_minutes', 15);
+
         return $now->greaterThanOrEqualTo($start->copy()->addMinutes($graceMinutes));
     }
 
@@ -145,7 +150,9 @@ class CancellationFeeCalculator
      */
     protected function bookingStartDateTime(Booking $booking): ?Carbon
     {
-        if (! $booking->scheduled_date) return null;
+        if (! $booking->scheduled_date) {
+            return null;
+        }
 
         try {
             $date = $booking->scheduled_date instanceof Carbon
@@ -182,7 +189,10 @@ class CancellationFeeCalculator
     protected function applyMinimumFee(float $fee, array $config): float
     {
         $min = (float) ($config['minimum_fee_eur'] ?? 0);
-        if ($min > 0 && $fee < $min) return $min;
+        if ($min > 0 && $fee < $min) {
+            return $min;
+        }
+
         return $fee;
     }
 
@@ -195,12 +205,12 @@ class CancellationFeeCalculator
         string $reasonCode,
     ): array {
         return [
-            'fee_amount'           => round($amount, 2),
-            'fee_percent'          => $percent,
-            'tier_matched'         => $tier,
-            'is_free'              => $isFree,
+            'fee_amount' => round($amount, 2),
+            'fee_percent' => $percent,
+            'tier_matched' => $tier,
+            'is_free' => $isFree,
             'minutes_before_start' => $minutesBefore,
-            'reason_code'          => $reasonCode,
+            'reason_code' => $reasonCode,
         ];
     }
 
@@ -222,17 +232,16 @@ class CancellationFeeCalculator
 
         if ($booking->scheduled_date && $booking->scheduled_time) {
             return Carbon::parse(
-                $booking->scheduled_date->format('Y-m-d') . ' ' . $booking->scheduled_time->format('H:i:s')
+                $booking->scheduled_date->format('Y-m-d').' '.$booking->scheduled_time->format('H:i:s')
             );
         }
 
         if ($booking->date && $booking->heure) {
             return Carbon::parse(
-                $booking->date->format('Y-m-d') . ' ' . $booking->heure
+                $booking->date->format('Y-m-d').' '.$booking->heure
             );
         }
 
         return null;
     }
-    
 }

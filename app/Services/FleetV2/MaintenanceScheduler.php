@@ -15,6 +15,7 @@ class MaintenanceScheduler
         $from ??= now();
         $intervals = (array) config('fleet_v2.default_maintenance_interval_days', []);
         $days = (int) ($intervals[$vehicle->vehicle_type] ?? 365);
+
         return $from->copy()->addDays($days);
     }
 
@@ -30,8 +31,10 @@ class MaintenanceScheduler
         if (! $lastLog || ! $lastLog->next_due_at) {
             // jamais d'entretien → considéré overdue après 6 mois depuis registered_at
             $registered = $vehicle->registered_at;
+
             return $registered && $registered->copy()->addDays(180)->isPast();
         }
+
         return $lastLog->next_due_at->isPast();
     }
 }

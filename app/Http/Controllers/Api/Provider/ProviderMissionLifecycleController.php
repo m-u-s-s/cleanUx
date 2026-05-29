@@ -23,6 +23,7 @@ use Illuminate\Http\Request;
  */
 /**
  * @group Mission Lifecycle
+ *
  * @authenticated
  */
 class ProviderMissionLifecycleController extends Controller
@@ -43,10 +44,10 @@ class ProviderMissionLifecycleController extends Controller
         $missions = Mission::query()
             ->where(function ($q) use ($user) {
                 $q->where('lead_provider_user_id', $user->id)
-                  ->orWhereHas('assignments', function ($q2) use ($user) {
-                      $q2->where('user_id', $user->id)
-                         ->where('assignment_status', 'accepted');
-                  });
+                    ->orWhereHas('assignments', function ($q2) use ($user) {
+                        $q2->where('user_id', $user->id)
+                            ->where('assignment_status', 'accepted');
+                    });
             })
             ->whereIn('status', ['assigned', 'en_route', 'arrived', 'started', 'paused'])
             ->with([
@@ -57,9 +58,9 @@ class ProviderMissionLifecycleController extends Controller
             ->get();
 
         return response()->json([
-            'ok'    => true,
+            'ok' => true,
             'count' => $missions->count(),
-            'data'  => $missions->map(fn ($m) => $this->serialize($m))->all(),
+            'data' => $missions->map(fn ($m) => $this->serialize($m))->all(),
         ]);
     }
 
@@ -83,7 +84,7 @@ class ProviderMissionLifecycleController extends Controller
         ]);
 
         return response()->json([
-            'ok'   => true,
+            'ok' => true,
             'data' => $this->serialize($mission, detailed: true),
         ]);
     }
@@ -93,6 +94,7 @@ class ProviderMissionLifecycleController extends Controller
      *
      * @bodyParam lat numeric Current GPS latitude of the provider (-90 to 90). Example: 50.843
      * @bodyParam lng numeric Current GPS longitude of the provider (-180 to 180). Example: 4.348
+     *
      * @response 200 {"ok": true, "mission_id": 12, "status": "en_route"}
      * @response 403 {"message": "Vous n'êtes pas assigné à cette mission."}
      * @response 422 {"message": "Mission cannot transition from current status to en_route."}
@@ -110,9 +112,9 @@ class ProviderMissionLifecycleController extends Controller
         $mission = $this->lifecycle->setEnRoute($mission, $request->user());
 
         return response()->json([
-            'ok'         => true,
+            'ok' => true,
             'mission_id' => $mission->id,
-            'status'     => $mission->status,
+            'status' => $mission->status,
         ]);
     }
 
@@ -121,6 +123,7 @@ class ProviderMissionLifecycleController extends Controller
      *
      * @bodyParam lat numeric GPS latitude at arrival (-90 to 90). Example: 50.846
      * @bodyParam lng numeric GPS longitude at arrival (-180 to 180). Example: 4.352
+     *
      * @response 200 {"ok": true, "mission_id": 12, "status": "arrived"}
      * @response 403 {"message": "Vous n'êtes pas assigné à cette mission."}
      * @response 422 {"message": "Mission cannot transition from current status to arrived."}
@@ -143,9 +146,9 @@ class ProviderMissionLifecycleController extends Controller
         );
 
         return response()->json([
-            'ok'         => true,
+            'ok' => true,
             'mission_id' => $mission->id,
-            'status'     => $mission->status,
+            'status' => $mission->status,
         ]);
     }
 
@@ -158,6 +161,7 @@ class ProviderMissionLifecycleController extends Controller
      * @bodyParam lat numeric GPS latitude at completion (-90 to 90). Example: 50.846
      * @bodyParam lng numeric GPS longitude at completion (-180 to 180). Example: 4.352
      * @bodyParam end_code string 6-digit end verification code from client QR (required when booking has end code). Example: 482951
+     *
      * @response 200 {"ok": true, "mission_id": 12, "status": "completed", "duration_minutes": 118}
      * @response 403 {"message": "Vous n'êtes pas assigné à cette mission."}
      * @response 422 {"ok": false, "message": "Le code de fin est requis pour clôturer cette mission."}
@@ -167,8 +171,8 @@ class ProviderMissionLifecycleController extends Controller
         $this->authorizeProvider($request, $mission);
 
         $data = $request->validate([
-            'lat'      => ['nullable', 'numeric', 'between:-90,90'],
-            'lng'      => ['nullable', 'numeric', 'between:-180,180'],
+            'lat' => ['nullable', 'numeric', 'between:-90,90'],
+            'lng' => ['nullable', 'numeric', 'between:-180,180'],
             'end_code' => ['nullable', 'string', 'size:6'],
         ]);
 
@@ -179,7 +183,7 @@ class ProviderMissionLifecycleController extends Controller
 
         if ($hasPendingEndCode && empty($data['end_code'])) {
             return response()->json([
-                'ok'      => false,
+                'ok' => false,
                 'message' => 'Le code de fin est requis pour clôturer cette mission.',
             ], 422);
         }
@@ -187,16 +191,16 @@ class ProviderMissionLifecycleController extends Controller
         $lat = isset($data['lat']) ? (float) $data['lat'] : null;
         $lng = isset($data['lng']) ? (float) $data['lng'] : null;
 
-        if ($hasPendingEndCode && !empty($data['end_code'])) {
+        if ($hasPendingEndCode && ! empty($data['end_code'])) {
             $mission = $this->lifecycle->validateEndCode($mission, $request->user(), $data['end_code'], $lat, $lng);
         } else {
             $mission = $this->lifecycle->completeMission($mission, $request->user(), $lat, $lng);
         }
 
         return response()->json([
-            'ok'               => true,
-            'mission_id'       => $mission->id,
-            'status'            => $mission->status,
+            'ok' => true,
+            'mission_id' => $mission->id,
+            'status' => $mission->status,
             'duration_minutes' => $mission->actual_duration_minutes,
         ]);
     }
@@ -227,21 +231,21 @@ class ProviderMissionLifecycleController extends Controller
         $booking = $mission->booking;
 
         $base = [
-            'id'                       => $mission->id,
-            'status'                   => $mission->status,
-            'planned_start_at'         => $mission->planned_start_at?->toIso8601String(),
-            'actual_start_at'          => $mission->actual_start_at?->toIso8601String(),
-            'actual_end_at'            => $mission->actual_end_at?->toIso8601String(),
+            'id' => $mission->id,
+            'status' => $mission->status,
+            'planned_start_at' => $mission->planned_start_at?->toIso8601String(),
+            'actual_start_at' => $mission->actual_start_at?->toIso8601String(),
+            'actual_end_at' => $mission->actual_end_at?->toIso8601String(),
             'estimated_duration_minutes' => $mission->estimated_duration_minutes,
-            'actual_duration_minutes'    => $mission->actual_duration_minutes,
+            'actual_duration_minutes' => $mission->actual_duration_minutes,
             'booking' => $booking ? [
-                'reference'      => $booking->booking_reference,
-                'service_name'   => $booking->serviceCatalog?->name,
-                'address'        => $booking->address,
-                'city'           => $booking->city,
-                'postal_code'    => $booking->postal_code,
-                'destination_lat'=> $booking->destination_lat,
-                'destination_lng'=> $booking->destination_lng,
+                'reference' => $booking->booking_reference,
+                'service_name' => $booking->serviceCatalog?->name,
+                'address' => $booking->address,
+                'city' => $booking->city,
+                'postal_code' => $booking->postal_code,
+                'destination_lat' => $booking->destination_lat,
+                'destination_lng' => $booking->destination_lng,
                 'scheduled_date' => $booking->scheduled_date,
                 'scheduled_time' => $booking->scheduled_time,
             ] : null,
@@ -251,8 +255,8 @@ class ProviderMissionLifecycleController extends Controller
             $base['booking']['customer_comment'] = $booking->customer_comment ?? null;
             $client = $booking->client ?? $booking->customer ?? null;
             $base['client'] = $client ? [
-                'id'    => $client->id,
-                'name'  => $client->name,
+                'id' => $client->id,
+                'name' => $client->name,
                 'phone' => $client->phone ?? null,
             ] : null;
             $base['client_price'] = $mission->client_price;

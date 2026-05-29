@@ -4,21 +4,28 @@ namespace App\Livewire\Admin;
 
 use App\Models\ActivityLog;
 use App\Models\ServiceZone;
+use App\Models\User;
 use Livewire\Component;
 use Livewire\WithPagination;
-use App\Models\User;
 
 class AuditLogsCenter extends Component
 {
     use WithPagination;
 
     public string $search = '';
+
     public string $actionFilter = '';
+
     public string $domainFilter = '';
+
     public string $actorFilter = '';
+
     public string $severityFilter = '';
+
     public string $zoneFilter = '';
+
     public bool $criticalOnly = false;
+
     public int $perPage = 15;
 
     protected $paginationTheme = 'tailwind';
@@ -83,28 +90,28 @@ class AuditLogsCenter extends Component
             })
             ->when($this->search !== '', function ($query) {
                 $query->where(function ($q) {
-                    $q->where('action', 'like', '%' . $this->search . '%')
-                        ->orWhere('target_type', 'like', '%' . $this->search . '%')
-                        ->orWhere('target_id', 'like', '%' . $this->search . '%')
-                        ->orWhere('request_id', 'like', '%' . $this->search . '%')
+                    $q->where('action', 'like', '%'.$this->search.'%')
+                        ->orWhere('target_type', 'like', '%'.$this->search.'%')
+                        ->orWhere('target_id', 'like', '%'.$this->search.'%')
+                        ->orWhere('request_id', 'like', '%'.$this->search.'%')
                         ->orWhereHas('user', function ($userQuery) {
-                            $userQuery->where('name', 'like', '%' . $this->search . '%')
-                                ->orWhere('email', 'like', '%' . $this->search . '%');
+                            $userQuery->where('name', 'like', '%'.$this->search.'%')
+                                ->orWhere('email', 'like', '%'.$this->search.'%');
                         });
                 });
             })
-            ->when($this->actionFilter !== '', fn($query) => $query->where('action', $this->actionFilter))
-            ->when($this->domainFilter !== '', fn($query) => $query->where('domain', $this->domainFilter))
-            ->when($this->severityFilter !== '', fn($query) => $query->where('severity', $this->severityFilter))
-            ->when($this->zoneFilter !== '', fn($query) => $query->where('service_zone_id', (int) $this->zoneFilter))
-            ->when($this->actorFilter === 'system', fn($query) => $query->whereNull('user_id'))
-            ->when($this->actorFilter === 'human', fn($query) => $query->whereNotNull('user_id'))
+            ->when($this->actionFilter !== '', fn ($query) => $query->where('action', $this->actionFilter))
+            ->when($this->domainFilter !== '', fn ($query) => $query->where('domain', $this->domainFilter))
+            ->when($this->severityFilter !== '', fn ($query) => $query->where('severity', $this->severityFilter))
+            ->when($this->zoneFilter !== '', fn ($query) => $query->where('service_zone_id', (int) $this->zoneFilter))
+            ->when($this->actorFilter === 'system', fn ($query) => $query->whereNull('user_id'))
+            ->when($this->actorFilter === 'human', fn ($query) => $query->whereNotNull('user_id'))
             ->when($this->criticalOnly, function ($query) use ($criticalKeywords) {
                 $query->where(function ($q) use ($criticalKeywords) {
                     $q->where('is_critical', true);
 
                     foreach ($criticalKeywords as $keyword) {
-                        $q->orWhere('action', 'like', '%' . $keyword . '%');
+                        $q->orWhere('action', 'like', '%'.$keyword.'%');
                     }
                 });
             })

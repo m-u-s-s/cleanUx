@@ -33,13 +33,14 @@ class InsuranceWebhookController extends Controller
                 'provider' => $provider,
                 'error' => $e->getMessage(),
             ]);
+
             return response()->json(['ok' => false, 'error' => 'invalid'], 400);
         }
 
         $externalEventId = $parsed['event_id']
             ?? $parsed['id']
             ?? $parsed['external_event_id']
-            ?? ($provider . '_' . Str::lower(Str::random(16)));
+            ?? ($provider.'_'.Str::lower(Str::random(16)));
 
         $stored = InsuranceWebhookEvent::firstOrCreate(
             ['provider' => $provider, 'external_event_id' => (string) $externalEventId],
@@ -65,10 +66,10 @@ class InsuranceWebhookController extends Controller
     protected function resolveProvider(string $name): ?InsuranceProviderInterface
     {
         return match ($name) {
-            'mock'   => new InsuranceMockProvider(),
-            'hiscox' => new HiscoxInsuranceProvider(),
-            'wakam'  => new WakamInsuranceProvider(),
-            default  => null,
+            'mock' => new InsuranceMockProvider,
+            'hiscox' => new HiscoxInsuranceProvider,
+            'wakam' => new WakamInsuranceProvider,
+            default => null,
         };
     }
 }

@@ -18,11 +18,10 @@ class RecomputeSegmentJob implements ShouldQueue
     use SerializesModels;
 
     public int $timeout = 120;
+
     public int $tries = 2;
 
-    public function __construct(public int $segmentId)
-    {
-    }
+    public function __construct(public int $segmentId) {}
 
     public function handle(SegmentEngine $engine): void
     {

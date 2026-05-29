@@ -77,7 +77,7 @@ class ProductionBootstrapSeeder extends Seeder
         try {
             $this->call($class);
         } catch (\Throwable $e) {
-            $this->command?->warn("   ⚠ {$class} a échoué : " . $e->getMessage());
+            $this->command?->warn("   ⚠ {$class} a échoué : ".$e->getMessage());
         }
     }
 
@@ -88,6 +88,7 @@ class ProductionBootstrapSeeder extends Seeder
     {
         if (! Schema::hasTable($table)) {
             $this->command?->line("   ↷ Skip {$class} (table {$table} absente)");
+
             return;
         }
         $this->safeCall($class);

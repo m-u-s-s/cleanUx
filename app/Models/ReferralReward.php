@@ -11,16 +11,23 @@ class ReferralReward extends Model
     use HasFactory;
 
     public const ROLE_REFERRER = 'referrer';
+
     public const ROLE_REFEREE = 'referee';
 
     public const TYPE_CREDIT = 'credit';
+
     public const TYPE_PROMO_CODE = 'promo_code';
+
     public const TYPE_CASH = 'cash_payout';
 
     public const STATUS_PENDING = 'pending';
+
     public const STATUS_GRANTED = 'granted';
+
     public const STATUS_CONSUMED = 'consumed';
+
     public const STATUS_REVOKED = 'revoked';
+
     public const STATUS_EXPIRED = 'expired';
 
     protected $fillable = [

@@ -25,8 +25,11 @@ use Livewire\Component;
 class MissionOfferPage extends Component
 {
     public int $assignmentId;
+
     public ?string $declineReason = null;
+
     public ?string $message = null;
+
     public ?string $messageType = null;
 
     public function mount(int $assignment): void
@@ -46,7 +49,9 @@ class MissionOfferPage extends Component
     public function accept(): void
     {
         $assignment = $this->assignment;
-        if (! $this->checkOwnership($assignment)) return;
+        if (! $this->checkOwnership($assignment)) {
+            return;
+        }
 
         try {
             app(MissionDispatchService::class)->accept($assignment);
@@ -63,7 +68,9 @@ class MissionOfferPage extends Component
     public function decline(): void
     {
         $assignment = $this->assignment;
-        if (! $this->checkOwnership($assignment)) return;
+        if (! $this->checkOwnership($assignment)) {
+            return;
+        }
 
         try {
             app(MissionDispatchService::class)->decline($assignment, $this->declineReason);
@@ -87,12 +94,15 @@ class MissionOfferPage extends Component
     {
         if (! $assignment) {
             $this->flashMessage('Cette offre n\'existe plus.', 'error');
+
             return false;
         }
         if ((int) $assignment->user_id !== (int) Auth::id()) {
             $this->flashMessage('Cette offre ne vous est pas destinée.', 'error');
+
             return false;
         }
+
         return true;
     }
 

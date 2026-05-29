@@ -17,16 +17,16 @@ class KybV2ServiceProvider extends ServiceProvider
     {
         $this->app->singleton(BusinessVerificationProviderContract::class, function () {
             return match ((string) config('kyb_v2.identity_provider', 'mock')) {
-                'insee' => new InseeBusinessVerificationProvider(),
-                'companies_house' => new CompaniesHouseBusinessVerificationProvider(),
-                'vies' => new ViesVatVerificationProvider(),
-                default => new MockBusinessVerificationProvider(),
+                'insee' => new InseeBusinessVerificationProvider,
+                'companies_house' => new CompaniesHouseBusinessVerificationProvider,
+                'vies' => new ViesVatVerificationProvider,
+                default => new MockBusinessVerificationProvider,
             };
         });
 
         $this->app->singleton(SanctionsScreeningProviderContract::class, function () {
             return match ((string) config('kyb_v2.sanctions_provider', 'mock')) {
-                default => new MockSanctionsScreeningProvider(),
+                default => new MockSanctionsScreeningProvider,
             };
         });
     }

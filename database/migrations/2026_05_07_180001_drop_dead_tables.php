@@ -22,7 +22,8 @@ use Illuminate\Support\Facades\Schema;
  *   - 2026_05_04_000010_create_assistant_and_audit_tables.php
  *   - 2026_05_04_000011_create_cleanux_v2_feature_extensions.php
  */
-return new class extends Migration {
+return new class extends Migration
+{
     public function up(): void
     {
         $tables = [

@@ -22,15 +22,23 @@ namespace App\Services\Assistant\Streaming;
  */
 class StreamEvent
 {
-    public const TYPE_START               = 'start';
-    public const TYPE_TEXT_BLOCK_START    = 'text_block_start';
-    public const TYPE_TEXT_DELTA          = 'text_delta';
-    public const TYPE_TOOL_USE_START      = 'tool_use_start';
-    public const TYPE_TOOL_INPUT_DELTA    = 'tool_input_delta';
-    public const TYPE_CONTENT_BLOCK_STOP  = 'content_block_stop';
-    public const TYPE_MESSAGE_DELTA       = 'message_delta';
-    public const TYPE_STOP                = 'stop';
-    public const TYPE_ERROR               = 'error';
+    public const TYPE_START = 'start';
+
+    public const TYPE_TEXT_BLOCK_START = 'text_block_start';
+
+    public const TYPE_TEXT_DELTA = 'text_delta';
+
+    public const TYPE_TOOL_USE_START = 'tool_use_start';
+
+    public const TYPE_TOOL_INPUT_DELTA = 'tool_input_delta';
+
+    public const TYPE_CONTENT_BLOCK_STOP = 'content_block_stop';
+
+    public const TYPE_MESSAGE_DELTA = 'message_delta';
+
+    public const TYPE_STOP = 'stop';
+
+    public const TYPE_ERROR = 'error';
 
     private function __construct(
         public readonly string $type,
@@ -40,7 +48,7 @@ class StreamEvent
     public function toArray(): array
     {
         return [
-            'type'    => $this->type,
+            'type' => $this->type,
             'payload' => $this->payload,
         ];
     }
@@ -52,7 +60,7 @@ class StreamEvent
     public static function start(?string $model, int $inputTokens = 0): self
     {
         return new self(self::TYPE_START, [
-            'model'        => $model,
+            'model' => $model,
             'input_tokens' => $inputTokens,
         ]);
     }
@@ -66,23 +74,23 @@ class StreamEvent
     {
         return new self(self::TYPE_TEXT_DELTA, [
             'index' => $index,
-            'text'  => $text,
+            'text' => $text,
         ]);
     }
 
     public static function toolUseStart(int $index, string $toolUseId, string $toolName): self
     {
         return new self(self::TYPE_TOOL_USE_START, [
-            'index'        => $index,
-            'tool_use_id'  => $toolUseId,
-            'tool_name'    => $toolName,
+            'index' => $index,
+            'tool_use_id' => $toolUseId,
+            'tool_name' => $toolName,
         ]);
     }
 
     public static function toolInputDelta(int $index, string $jsonChunk): self
     {
         return new self(self::TYPE_TOOL_INPUT_DELTA, [
-            'index'      => $index,
+            'index' => $index,
             'json_chunk' => $jsonChunk,
         ]);
     }
@@ -95,7 +103,7 @@ class StreamEvent
     public static function messageDelta(?string $stopReason, int $outputTokens): self
     {
         return new self(self::TYPE_MESSAGE_DELTA, [
-            'stop_reason'   => $stopReason,
+            'stop_reason' => $stopReason,
             'output_tokens' => $outputTokens,
         ]);
     }

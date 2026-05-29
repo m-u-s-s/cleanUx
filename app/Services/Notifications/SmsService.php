@@ -27,9 +27,7 @@ use Illuminate\Support\Str;
  */
 class SmsService
 {
-    public function __construct(protected SmsProviderInterface $provider)
-    {
-    }
+    public function __construct(protected SmsProviderInterface $provider) {}
 
     /**
      * Envoi simple (legacy signature, conservée pour le code existant qui l'utilise).
@@ -62,6 +60,7 @@ class SmsService
         $toPhone = $this->normalizePhone($toPhone);
         if (! $this->isValidE164($toPhone)) {
             Log::warning('SmsService::dispatch invalid phone format', ['phone' => $toPhone]);
+
             return null;
         }
 
@@ -179,7 +178,7 @@ class SmsService
         $phone = trim($phone);
 
         if (str_starts_with($phone, '00')) {
-            $phone = '+' . substr($phone, 2);
+            $phone = '+'.substr($phone, 2);
         }
 
         $phone = preg_replace('/[\s\.\-\(\)]/', '', $phone);

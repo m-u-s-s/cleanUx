@@ -13,7 +13,7 @@ class RiskRuleFactory extends Factory
     public function definition(): array
     {
         return [
-            'code' => 'rule_' . Str::lower(Str::random(8)),
+            'code' => 'rule_'.Str::lower(Str::random(8)),
             'name' => fake()->words(3, true),
             'description' => fake()->sentence(),
             'severity' => fake()->randomElement([

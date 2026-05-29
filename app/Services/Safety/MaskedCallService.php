@@ -8,6 +8,7 @@ use App\Models\User;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
+use Twilio\Rest\Client;
 
 /**
  * Service de proxy téléphonique anonyme (Twilio Proxy).
@@ -106,7 +107,8 @@ class MaskedCallService
         if (strlen($clean) < 4) {
             return '****';
         }
-        return str_repeat('*', strlen($clean) - 4) . substr($clean, -4);
+
+        return str_repeat('*', strlen($clean) - 4).substr($clean, -4);
     }
 
     /**
@@ -124,15 +126,17 @@ class MaskedCallService
                 Log::info('[masked_call] Twilio Proxy not configured, session persisted DB-only', [
                     'session_id' => $session->id,
                 ]);
+
                 return;
             }
 
-            if (! class_exists(\Twilio\Rest\Client::class)) {
+            if (! class_exists(Client::class)) {
                 Log::warning('[masked_call] Twilio SDK absent');
+
                 return;
             }
 
-            $twilio = new \Twilio\Rest\Client($accountSid, $authToken);
+            $twilio = new Client($accountSid, $authToken);
 
             $twilioSession = $twilio->proxy->v1->services($serviceSid)->sessions->create([
                 'uniqueName' => $session->code,
@@ -179,10 +183,10 @@ class MaskedCallService
             $serviceSid = (string) config('masked_calls.twilio_service_sid', env('TWILIO_PROXY_SERVICE_SID', ''));
             $accountSid = (string) config('sms.providers.twilio.sid', env('TWILIO_SID', ''));
             $authToken = (string) config('sms.providers.twilio.token', env('TWILIO_TOKEN', ''));
-            if ($serviceSid === '' || $accountSid === '' || ! class_exists(\Twilio\Rest\Client::class)) {
+            if ($serviceSid === '' || $accountSid === '' || ! class_exists(Client::class)) {
                 return;
             }
-            $twilio = new \Twilio\Rest\Client($accountSid, $authToken);
+            $twilio = new Client($accountSid, $authToken);
             $twilio->proxy->v1->services($serviceSid)
                 ->sessions($session->twilio_session_sid)
                 ->update(['status' => 'closed']);

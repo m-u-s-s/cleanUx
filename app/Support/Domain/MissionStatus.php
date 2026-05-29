@@ -5,12 +5,19 @@ namespace App\Support\Domain;
 final class MissionStatus
 {
     public const PLANNED = 'planned';
+
     public const ASSIGNED = 'assigned';
+
     public const EN_ROUTE = 'en_route';
+
     public const ARRIVED = 'arrived';
+
     public const STARTED = 'started';
+
     public const PAUSED = 'paused';
+
     public const COMPLETED = 'completed';
+
     public const CANCELLED = 'cancelled';
 
     public static function all(): array

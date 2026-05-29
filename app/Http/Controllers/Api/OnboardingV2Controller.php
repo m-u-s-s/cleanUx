@@ -12,13 +12,12 @@ use Illuminate\Validation\ValidationException;
 
 /**
  * @group Onboarding v2
+ *
  * @authenticated
  */
 class OnboardingV2Controller extends Controller
 {
-    public function __construct(protected OnboardingEngine $engine)
-    {
-    }
+    public function __construct(protected OnboardingEngine $engine) {}
 
     public function me(Request $request): JsonResponse
     {
@@ -48,6 +47,7 @@ class OnboardingV2Controller extends Controller
             'current_step' => $currentStep,
             'steps' => $progress->journey->steps->map(function ($step) use ($progress) {
                 $compl = $progress->completions->firstWhere('step_id', $step->id);
+
                 return [
                     'id' => $step->id,
                     'position' => $step->position,
@@ -140,6 +140,7 @@ class OnboardingV2Controller extends Controller
         if (! $progress) {
             $progress = $this->engine->startFor($request->user(), $step->journey->code);
         }
+
         return $progress;
     }
 }

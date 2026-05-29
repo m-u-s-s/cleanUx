@@ -5,6 +5,7 @@ namespace App\Services\AccountingV2;
 use App\Models\AccountingEntry;
 use App\Models\AccountingPeriod;
 use App\Models\User;
+use App\Support\Audit\CriticalActionAuditor;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
@@ -21,7 +22,7 @@ class PeriodCloser
         );
         if ($period->is_closed) {
             throw ValidationException::withMessages([
-                'period' => ['Période déjà fermée le ' . $period->closed_at?->toIso8601String()],
+                'period' => ['Période déjà fermée le '.$period->closed_at?->toIso8601String()],
             ]);
         }
 
@@ -55,7 +56,7 @@ class PeriodCloser
             ]);
         });
 
-        \App\Support\Audit\CriticalActionAuditor::record(
+        CriticalActionAuditor::record(
             eventType: 'accounting.period_closed',
             context: [
                 'period_year' => $period->period_year,
@@ -81,11 +82,12 @@ class PeriodCloser
         $errors = [];
 
         if ($period->is_closed) {
-            $errors[] = 'Période déjà fermée le ' . $period->closed_at?->toDateString();
+            $errors[] = 'Période déjà fermée le '.$period->closed_at?->toDateString();
+
             return ['can_close' => false, 'errors' => $errors];
         }
 
-        $totalDebit  = (int) AccountingEntry::query()->forPeriod($period->period_year, $period->period_month)->sum('debit_cents');
+        $totalDebit = (int) AccountingEntry::query()->forPeriod($period->period_year, $period->period_month)->sum('debit_cents');
         $totalCredit = (int) AccountingEntry::query()->forPeriod($period->period_year, $period->period_month)->sum('credit_cents');
 
         if ($totalDebit !== $totalCredit) {
@@ -94,11 +96,11 @@ class PeriodCloser
         }
 
         return [
-            'can_close'     => empty($errors),
-            'errors'        => $errors,
-            'total_debit'   => $totalDebit,
-            'total_credit'  => $totalCredit,
-            'entry_count'   => (int) AccountingEntry::query()->forPeriod($period->period_year, $period->period_month)->count(),
+            'can_close' => empty($errors),
+            'errors' => $errors,
+            'total_debit' => $totalDebit,
+            'total_credit' => $totalCredit,
+            'entry_count' => (int) AccountingEntry::query()->forPeriod($period->period_year, $period->period_month)->count(),
         ];
     }
 
@@ -120,7 +122,7 @@ class PeriodCloser
             ]),
         ]);
 
-        \App\Support\Audit\CriticalActionAuditor::record(
+        CriticalActionAuditor::record(
             eventType: 'accounting.period_reopened',
             context: [
                 'period_year' => $period->period_year,

@@ -16,16 +16,16 @@ class ListMySitesTool implements AssistantTool
     public function description(): string
     {
         return "Liste les locaux/sites enregistrés par l'organisation cliente de l'utilisateur. "
-            . "Utile quand l'utilisateur demande 'mes sites', 'mes adresses', 'mes locaux', "
-            . "ou avant de créer une réservation depuis l'assistant pour identifier le site cible. "
-            . "Réservé aux utilisateurs membres d'une organisation cliente.";
+            ."Utile quand l'utilisateur demande 'mes sites', 'mes adresses', 'mes locaux', "
+            ."ou avant de créer une réservation depuis l'assistant pour identifier le site cible. "
+            ."Réservé aux utilisateurs membres d'une organisation cliente.";
     }
 
     public function inputSchema(): array
     {
         return [
             'type' => 'object',
-            'properties' => new \stdClass(), // pas de paramètres
+            'properties' => new \stdClass, // pas de paramètres
             'required' => [],
         ];
     }
@@ -44,7 +44,7 @@ class ListMySitesTool implements AssistantTool
     {
         if (! $user->organization_account_id) {
             return [
-                'ok'    => false,
+                'ok' => false,
                 'error' => "Vous n'êtes pas rattaché à une organisation.",
             ];
         }
@@ -58,12 +58,12 @@ class ListMySitesTool implements AssistantTool
         return [
             'count' => $sites->count(),
             'sites' => $sites->map(fn ($s) => [
-                'id'          => $s->id,
-                'name'        => $s->name,
-                'address'     => $s->address ?? null,
-                'city'        => $s->city ?? null,
+                'id' => $s->id,
+                'name' => $s->name,
+                'address' => $s->address ?? null,
+                'city' => $s->city ?? null,
                 'postal_code' => $s->postal_code ?? null,
-                'is_active'   => (bool) ($s->is_active ?? true),
+                'is_active' => (bool) ($s->is_active ?? true),
             ])->all(),
         ];
     }

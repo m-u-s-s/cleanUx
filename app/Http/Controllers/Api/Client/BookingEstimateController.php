@@ -15,6 +15,7 @@ use Illuminate\Http\Request;
  * No booking record is created — purely read-only.
  *
  * @group Client Bookings
+ *
  * @authenticated
  */
 class BookingEstimateController extends Controller
@@ -35,9 +36,9 @@ class BookingEstimateController extends Controller
     public function estimate(Request $request): JsonResponse
     {
         $validated = $request->validate([
-            'service_catalog_id'  => ['required', 'integer', 'min:1'],
-            'trade_form_answers'  => ['sometimes', 'array'],
-            'service_zone_id'     => ['sometimes', 'nullable', 'integer', 'min:1'],
+            'service_catalog_id' => ['required', 'integer', 'min:1'],
+            'trade_form_answers' => ['sometimes', 'array'],
+            'service_zone_id' => ['sometimes', 'nullable', 'integer', 'min:1'],
         ]);
 
         $service = ServiceCatalog::with('trade')->find($validated['service_catalog_id']);

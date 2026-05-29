@@ -2,11 +2,11 @@
 
 namespace Tests\Feature\Promotion;
 
+use App\Models\Booking;
 use App\Models\Referral;
 use App\Models\User;
 use App\Services\Promotion\ReferralService;
 use App\Services\Promotion\ReferralViralTierEngine;
-use App\Models\Booking;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Config;
 use Tests\TestCase;
@@ -110,32 +110,32 @@ class ReferralV2Test extends TestCase
         $code = app(ReferralService::class)->ensureReferralCode($referrer);
 
         $response = $this->postJson('/api/auth/register', [
-            'name'             => 'New User',
-            'email'            => 'newuser@example.com',
-            'password'         => 'password123',
+            'name' => 'New User',
+            'email' => 'newuser@example.com',
+            'password' => 'password123',
             'password_confirmation' => 'password123',
-            'accept_terms'     => '1',
-            'referral_code'    => $code,
+            'accept_terms' => '1',
+            'referral_code' => $code,
         ]);
 
         $response->assertCreated();
 
         $this->assertDatabaseHas('referrals', [
             'referrer_user_id' => $referrer->id,
-            'referral_code'    => strtoupper($code),
-            'status'           => Referral::STATUS_SIGNED_UP,
+            'referral_code' => strtoupper($code),
+            'status' => Referral::STATUS_SIGNED_UP,
         ]);
     }
 
     public function test_register_with_invalid_referral_code_does_not_fail(): void
     {
         $response = $this->postJson('/api/auth/register', [
-            'name'             => 'Another User',
-            'email'            => 'another@example.com',
-            'password'         => 'password123',
+            'name' => 'Another User',
+            'email' => 'another@example.com',
+            'password' => 'password123',
             'password_confirmation' => 'password123',
-            'accept_terms'     => '1',
-            'referral_code'    => 'INVALID-CODE-XYZ',
+            'accept_terms' => '1',
+            'referral_code' => 'INVALID-CODE-XYZ',
         ]);
 
         // Registration must succeed even with a bogus code
@@ -146,11 +146,11 @@ class ReferralV2Test extends TestCase
     public function test_register_without_referral_code_is_unaffected(): void
     {
         $response = $this->postJson('/api/auth/register', [
-            'name'             => 'Plain User',
-            'email'            => 'plain@example.com',
-            'password'         => 'password123',
+            'name' => 'Plain User',
+            'email' => 'plain@example.com',
+            'password' => 'password123',
             'password_confirmation' => 'password123',
-            'accept_terms'     => '1',
+            'accept_terms' => '1',
         ]);
 
         $response->assertCreated();
@@ -162,10 +162,10 @@ class ReferralV2Test extends TestCase
     public function test_referral_registration_uses_config_reward_amounts(): void
     {
         Config::set('referral.rewards.referrer.amount', 2000); // €20
-        Config::set('referral.rewards.referee.amount',  2500); // €25
+        Config::set('referral.rewards.referee.amount', 2500); // €25
 
         $referrer = User::factory()->client()->create();
-        $referee  = User::factory()->client()->create();
+        $referee = User::factory()->client()->create();
 
         $service = app(ReferralService::class);
         $code = $service->ensureReferralCode($referrer);
@@ -182,29 +182,31 @@ class ReferralV2Test extends TestCase
     {
         $tierEngineCalled = false;
         $this->app->bind(ReferralViralTierEngine::class, function () use (&$tierEngineCalled) {
-            return new class($tierEngineCalled) extends ReferralViralTierEngine {
+            return new class($tierEngineCalled) extends ReferralViralTierEngine
+            {
                 public function __construct(private bool &$called) {}
 
                 public function checkAndAwardTier(User $referrer): array
                 {
                     $this->called = true;
+
                     return [];
                 }
             };
         });
 
         $referrer = User::factory()->client()->create();
-        $referee  = User::factory()->client()->create();
+        $referee = User::factory()->client()->create();
 
         $service = app(ReferralService::class);
         $code = $service->ensureReferralCode($referrer);
         $service->registerReferral($code, $referee);
 
         $booking = Booking::create([
-            'client_id'    => $referee->id,
-            'date'         => now()->subDay(),
-            'heure'        => '10:00',
-            'status'       => 'termine',
+            'client_id' => $referee->id,
+            'date' => now()->subDay(),
+            'heure' => '10:00',
+            'status' => 'termine',
             'devis_estime' => 100,
         ]);
 

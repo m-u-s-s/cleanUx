@@ -2,19 +2,25 @@
 
 namespace App\Livewire\Employe;
 
-use App\Models\IncidentReport;
 use App\Models\Booking;
+use App\Models\IncidentReport;
 use App\Support\ActivityLogger;
 use Livewire\Component;
 
 class SignalerIncident extends Component
 {
     public string $rendezVousId = '';
+
     public string $type = 'incident';
+
     public string $priority = 'normale';
+
     public string $title = '';
+
     public string $description = '';
+
     public string $locationNotes = '';
+
     public string $attachmentInput = '';
 
     public function getRendezVousOptionsProperty()

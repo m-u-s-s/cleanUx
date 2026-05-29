@@ -4,7 +4,6 @@ namespace Tests\Feature\Client;
 
 use App\Models\Booking;
 use App\Models\OrganizationAccount;
-use App\Models\OrganizationSite;
 use App\Models\RecurringBookingSeries;
 use App\Models\RecurringTemplate;
 use App\Models\User;
@@ -22,16 +21,16 @@ class Phase61Test extends TestCase
     private function makeBooking(User $user, array $overrides = []): Booking
     {
         return Booking::create(array_merge([
-            'booking_reference'        => 'CUX-' . strtoupper(Str::random(6)),
-            'customer_user_id'         => $user->id,
-            'client_id'                => $user->id,
+            'booking_reference' => 'CUX-'.strtoupper(Str::random(6)),
+            'customer_user_id' => $user->id,
+            'client_id' => $user->id,
             'customer_organization_id' => $user->organization_account_id,
-            'scheduled_date'           => Carbon::now()->addDays(5)->toDateString(),
-            'scheduled_time'           => '09:00:00',
-            'status'                   => 'confirme',
-            'currency'                 => 'EUR',
-            'priority'                 => 'normal',
-            'booking_mode'             => 'scheduled',
+            'scheduled_date' => Carbon::now()->addDays(5)->toDateString(),
+            'scheduled_time' => '09:00:00',
+            'status' => 'confirme',
+            'currency' => 'EUR',
+            'priority' => 'normal',
+            'booking_mode' => 'scheduled',
         ], $overrides));
     }
 
@@ -163,8 +162,8 @@ class Phase61Test extends TestCase
 
         $this->assertDatabaseHas('booking_reschedule_history', [
             'booking_id' => $booking->id,
-            'user_id'    => $user->id,
-            'reason'     => 'Test reason',
+            'user_id' => $user->id,
+            'reason' => 'Test reason',
         ]);
     }
 
@@ -206,7 +205,7 @@ class Phase61Test extends TestCase
 
         $slugs = $templates->pluck('slug')->all();
         $this->assertContains('sys-1', $slugs);
-        $this->assertContains('mine',  $slugs);
+        $this->assertContains('mine', $slugs);
         $this->assertNotContains('other', $slugs);
     }
 
@@ -304,7 +303,7 @@ class Phase61Test extends TestCase
         $this->expectException(\DomainException::class);
         app(ApplyRecurringTemplateService::class)->apply($user, $tpl, [
             'starts_at' => Carbon::now()->addDays(10)->toDateString(),
-            'ends_at'   => Carbon::now()->addDays(5)->toDateString(),
+            'ends_at' => Carbon::now()->addDays(5)->toDateString(),
         ]);
     }
 }

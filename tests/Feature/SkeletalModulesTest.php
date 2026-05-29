@@ -2,15 +2,11 @@
 
 namespace Tests\Feature;
 
-use App\Models\AccountingEntry;
 use App\Models\AccountingPeriod;
 use App\Models\BookingInsurance;
-use App\Models\FleetAssignment;
-use App\Models\FleetVehicle;
 use App\Models\InsuranceClaim;
 use App\Models\InsurancePlan;
 use App\Models\MarketingCampaign;
-use App\Models\MarketingSegment;
 use App\Models\User;
 use App\Models\WebhookDelivery;
 use App\Models\WebhookEndpoint;
@@ -63,9 +59,9 @@ class SkeletalModulesTest extends TestCase
         Sanctum::actingAs($admin);
 
         $campaign = MarketingCampaign::create([
-            'code'   => 'TEST_' . uniqid(),
-            'name'   => 'Old Name',
-            'type'   => 'single_blast',
+            'code' => 'TEST_'.uniqid(),
+            'name' => 'Old Name',
+            'type' => 'single_blast',
             'status' => 'draft',
         ]);
 
@@ -81,9 +77,9 @@ class SkeletalModulesTest extends TestCase
         Sanctum::actingAs($admin);
 
         $campaign = MarketingCampaign::create([
-            'code'   => 'DEL_' . uniqid(),
-            'name'   => 'To Delete',
-            'type'   => 'single_blast',
+            'code' => 'DEL_'.uniqid(),
+            'name' => 'To Delete',
+            'type' => 'single_blast',
             'status' => 'draft',
         ]);
 
@@ -109,7 +105,7 @@ class SkeletalModulesTest extends TestCase
         Sanctum::actingAs($admin);
 
         $this->postJson('/api/admin/marketing/segments', [
-            'name'  => 'Active Clients',
+            'name' => 'Active Clients',
             'rules' => ['role' => 'client', 'status' => 'active'],
         ])->assertStatus(201)
             ->assertJsonPath('data.name', 'Active Clients');
@@ -143,10 +139,10 @@ class SkeletalModulesTest extends TestCase
     public function test_period_closer_can_close_balanced_period(): void
     {
         $period = AccountingPeriod::create([
-            'period_year'  => 2025,
+            'period_year' => 2025,
             'period_month' => 1,
-            'is_closed'    => false,
-            'opened_at'    => now(),
+            'is_closed' => false,
+            'opened_at' => now(),
         ]);
 
         // No entries → debit=0 = credit=0 → balanced
@@ -161,11 +157,11 @@ class SkeletalModulesTest extends TestCase
     public function test_period_closer_rejects_already_closed_period(): void
     {
         $period = AccountingPeriod::create([
-            'period_year'  => 2025,
+            'period_year' => 2025,
             'period_month' => 2,
-            'is_closed'    => true,
-            'opened_at'    => now(),
-            'closed_at'    => now(),
+            'is_closed' => true,
+            'opened_at' => now(),
+            'closed_at' => now(),
         ]);
 
         $result = app(PeriodCloser::class)->canClose($period);
@@ -180,10 +176,10 @@ class SkeletalModulesTest extends TestCase
         Sanctum::actingAs($admin);
 
         $period = AccountingPeriod::create([
-            'period_year'  => 2025,
+            'period_year' => 2025,
             'period_month' => 3,
-            'is_closed'    => false,
-            'opened_at'    => now(),
+            'is_closed' => false,
+            'opened_at' => now(),
         ]);
 
         $this->getJson("/api/admin/accounting-v2/periods/{$period->id}/validate")
@@ -195,39 +191,39 @@ class SkeletalModulesTest extends TestCase
 
     public function test_insurance_update_claim_status_valid_transition(): void
     {
-        $user    = User::factory()->create(['role' => 'client']);
-        $plan    = InsurancePlan::create([
-            'code'                  => 'PLAN_TEST_' . uniqid(),
-            'name'                  => 'Test Plan',
+        $user = User::factory()->create(['role' => 'client']);
+        $plan = InsurancePlan::create([
+            'code' => 'PLAN_TEST_'.uniqid(),
+            'name' => 'Test Plan',
             'coverage_amount_cents' => 100000,
-            'premium_base_cents'    => 2000,
-            'currency'              => 'EUR',
-            'is_active'             => true,
+            'premium_base_cents' => 2000,
+            'currency' => 'EUR',
+            'is_active' => true,
         ]);
         $insurance = BookingInsurance::create([
-            'booking_id'            => 1,
-            'plan_id'               => $plan->id,
-            'user_id'               => $user->id,
-            'premium_cents'         => 2000,
+            'booking_id' => 1,
+            'plan_id' => $plan->id,
+            'user_id' => $user->id,
+            'premium_cents' => 2000,
             'coverage_amount_cents' => 100000,
-            'currency'              => 'EUR',
-            'status'                => 'active',
-            'external_provider'     => 'mock',
-            'idempotency_key'       => 'test_' . uniqid(),
-            'purchased_at'          => now(),
-            'effective_from'        => now(),
-            'effective_until'       => now()->addYear(),
+            'currency' => 'EUR',
+            'status' => 'active',
+            'external_provider' => 'mock',
+            'idempotency_key' => 'test_'.uniqid(),
+            'purchased_at' => now(),
+            'effective_from' => now(),
+            'effective_until' => now()->addYear(),
         ]);
         $claim = InsuranceClaim::create([
             'booking_insurance_id' => $insurance->id,
-            'claimant_user_id'     => $user->id,
-            'status'               => InsuranceClaim::STATUS_FILED,
-            'incident_type'        => 'damage',
+            'claimant_user_id' => $user->id,
+            'status' => InsuranceClaim::STATUS_FILED,
+            'incident_type' => 'damage',
             'incident_description' => 'Test damage',
-            'incident_date'        => now()->subDay(),
+            'incident_date' => now()->subDay(),
             'amount_claimed_cents' => 5000,
-            'filed_at'             => now(),
-            'idempotency_key'      => 'claim_' . uniqid(),
+            'filed_at' => now(),
+            'idempotency_key' => 'claim_'.uniqid(),
         ]);
 
         /** @var InsuranceService $svc */
@@ -241,39 +237,39 @@ class SkeletalModulesTest extends TestCase
     {
         $this->expectException(\InvalidArgumentException::class);
 
-        $user    = User::factory()->create(['role' => 'client']);
-        $plan    = InsurancePlan::create([
-            'code'                  => 'PLAN_T2_' . uniqid(),
-            'name'                  => 'Plan2',
+        $user = User::factory()->create(['role' => 'client']);
+        $plan = InsurancePlan::create([
+            'code' => 'PLAN_T2_'.uniqid(),
+            'name' => 'Plan2',
             'coverage_amount_cents' => 50000,
-            'premium_base_cents'    => 1000,
-            'currency'              => 'EUR',
-            'is_active'             => true,
+            'premium_base_cents' => 1000,
+            'currency' => 'EUR',
+            'is_active' => true,
         ]);
         $insurance = BookingInsurance::create([
-            'booking_id'            => 2,
-            'plan_id'               => $plan->id,
-            'user_id'               => $user->id,
-            'premium_cents'         => 1000,
+            'booking_id' => 2,
+            'plan_id' => $plan->id,
+            'user_id' => $user->id,
+            'premium_cents' => 1000,
             'coverage_amount_cents' => 50000,
-            'currency'              => 'EUR',
-            'status'                => 'active',
-            'external_provider'     => 'mock',
-            'idempotency_key'       => 'test2_' . uniqid(),
-            'purchased_at'          => now(),
-            'effective_from'        => now(),
-            'effective_until'       => now()->addYear(),
+            'currency' => 'EUR',
+            'status' => 'active',
+            'external_provider' => 'mock',
+            'idempotency_key' => 'test2_'.uniqid(),
+            'purchased_at' => now(),
+            'effective_from' => now(),
+            'effective_until' => now()->addYear(),
         ]);
         $claim = InsuranceClaim::create([
             'booking_insurance_id' => $insurance->id,
-            'claimant_user_id'     => $user->id,
-            'status'               => InsuranceClaim::STATUS_FILED,
-            'incident_type'        => 'theft',
+            'claimant_user_id' => $user->id,
+            'status' => InsuranceClaim::STATUS_FILED,
+            'incident_type' => 'theft',
             'incident_description' => 'Stolen',
-            'incident_date'        => now()->subDay(),
+            'incident_date' => now()->subDay(),
             'amount_claimed_cents' => 3000,
-            'filed_at'             => now(),
-            'idempotency_key'      => 'claim2_' . uniqid(),
+            'filed_at' => now(),
+            'idempotency_key' => 'claim2_'.uniqid(),
         ]);
 
         // filed → paid is an invalid transition
@@ -305,26 +301,26 @@ class SkeletalModulesTest extends TestCase
     public function test_webhook_delivery_runner_mark_dead_letter(): void
     {
         $endpoint = WebhookEndpoint::create([
-            'code'                  => 'whe_test1_' . uniqid(),
-            'name'                  => 'Test Endpoint 1',
-            'url'                   => 'https://example.com/hook',
-            'secret'                => 'sec_test',
-            'is_active'             => true,
-            'is_suspended'          => false,
-            'consecutive_failures'  => 0,
-            'timeout_seconds'       => 10,
+            'code' => 'whe_test1_'.uniqid(),
+            'name' => 'Test Endpoint 1',
+            'url' => 'https://example.com/hook',
+            'secret' => 'sec_test',
+            'is_active' => true,
+            'is_suspended' => false,
+            'consecutive_failures' => 0,
+            'timeout_seconds' => 10,
         ]);
         $event = WebhookEvent::create([
-            'event_id'    => 'evt_' . uniqid(),
-            'event_code'  => 'booking.created',
+            'event_id' => 'evt_'.uniqid(),
+            'event_code' => 'booking.created',
             'occurred_at' => now(),
-            'payload'     => ['test' => true],
+            'payload' => ['test' => true],
         ]);
         $delivery = WebhookDelivery::create([
-            'event_id'    => $event->id,
+            'event_id' => $event->id,
             'endpoint_id' => $endpoint->id,
-            'status'      => WebhookDelivery::STATUS_FAILED,
-            'attempt'     => 5,
+            'status' => WebhookDelivery::STATUS_FAILED,
+            'attempt' => 5,
             'max_attempts' => 5,
         ]);
 
@@ -337,26 +333,26 @@ class SkeletalModulesTest extends TestCase
     public function test_webhook_dead_letter_idempotent(): void
     {
         $endpoint = WebhookEndpoint::create([
-            'code'                  => 'whe_test2_' . uniqid(),
-            'name'                  => 'Test Endpoint 2',
-            'url'                   => 'https://example.com/hook2',
-            'secret'                => 'sec_test2',
-            'is_active'             => true,
-            'is_suspended'          => false,
-            'consecutive_failures'  => 0,
-            'timeout_seconds'       => 10,
+            'code' => 'whe_test2_'.uniqid(),
+            'name' => 'Test Endpoint 2',
+            'url' => 'https://example.com/hook2',
+            'secret' => 'sec_test2',
+            'is_active' => true,
+            'is_suspended' => false,
+            'consecutive_failures' => 0,
+            'timeout_seconds' => 10,
         ]);
         $event = WebhookEvent::create([
-            'event_id'    => 'evt_idem_' . uniqid(),
-            'event_code'  => 'booking.updated',
+            'event_id' => 'evt_idem_'.uniqid(),
+            'event_code' => 'booking.updated',
             'occurred_at' => now(),
-            'payload'     => [],
+            'payload' => [],
         ]);
         $delivery = WebhookDelivery::create([
-            'event_id'     => $event->id,
-            'endpoint_id'  => $endpoint->id,
-            'status'       => WebhookDelivery::STATUS_DEAD,
-            'attempt'      => 3,
+            'event_id' => $event->id,
+            'endpoint_id' => $endpoint->id,
+            'status' => WebhookDelivery::STATUS_DEAD,
+            'attempt' => 3,
             'max_attempts' => 3,
         ]);
 

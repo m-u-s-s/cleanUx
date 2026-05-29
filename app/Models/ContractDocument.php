@@ -11,10 +11,15 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class ContractDocument extends Model
 {
     use HasFactory;
+
     public const STATUS_DRAFT = 'draft';
+
     public const STATUS_PENDING_SIGNATURE = 'pending_signature';
+
     public const STATUS_SIGNED = 'signed';
+
     public const STATUS_CANCELLED = 'cancelled';
+
     public const STATUS_EXPIRED = 'expired';
 
     protected $fillable = [

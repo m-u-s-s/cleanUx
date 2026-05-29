@@ -12,11 +12,11 @@ class FeatureFlagOverrideFactory extends Factory
     public function definition(): array
     {
         return [
-            'flag_key'            => 'feature-' . fake()->unique()->slug(2),
-            'is_enabled'          => fake()->boolean(),
-            'override_config'     => null,
-            'reason'              => fake()->sentence(),
-            'updated_by_user_id'  => null,
+            'flag_key' => 'feature-'.fake()->unique()->slug(2),
+            'is_enabled' => fake()->boolean(),
+            'override_config' => null,
+            'reason' => fake()->sentence(),
+            'updated_by_user_id' => null,
         ];
     }
 

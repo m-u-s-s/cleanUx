@@ -9,12 +9,19 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class MarketingCampaignRecipient extends Model
 {
     public const STATUS_QUEUED = 'queued';
+
     public const STATUS_SENT = 'sent';
+
     public const STATUS_DELIVERED = 'delivered';
+
     public const STATUS_OPENED = 'opened';
+
     public const STATUS_CLICKED = 'clicked';
+
     public const STATUS_FAILED = 'failed';
+
     public const STATUS_OPTED_OUT = 'opted_out';
+
     public const STATUS_SKIPPED = 'skipped';
 
     protected $fillable = [

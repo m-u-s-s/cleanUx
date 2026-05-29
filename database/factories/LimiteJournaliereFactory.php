@@ -13,9 +13,9 @@ class LimiteJournaliereFactory extends Factory
     public function definition(): array
     {
         return [
-            'user_id'      => fn () => User::factory()->create()->id,
-            'date'         => now()->toDateString(),
-            'limite'       => fake()->numberBetween(3, 8),
+            'user_id' => fn () => User::factory()->create()->id,
+            'date' => now()->toDateString(),
+            'limite' => fake()->numberBetween(3, 8),
             'verrou_admin' => false,
         ];
     }

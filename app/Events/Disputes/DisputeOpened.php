@@ -11,7 +11,5 @@ class DisputeOpened
     use Dispatchable;
     use SerializesModels;
 
-    public function __construct(public ComplaintCase $case)
-    {
-    }
+    public function __construct(public ComplaintCase $case) {}
 }

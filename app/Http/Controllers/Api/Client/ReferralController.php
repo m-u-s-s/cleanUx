@@ -11,13 +11,12 @@ use Illuminate\Support\Facades\Mail;
 
 /**
  * @group Client — Referrals
+ *
  * @authenticated
  */
 class ReferralController extends Controller
 {
-    public function __construct(protected ReferralService $service)
-    {
-    }
+    public function __construct(protected ReferralService $service) {}
 
     public function me(Request $request): JsonResponse
     {
@@ -26,7 +25,7 @@ class ReferralController extends Controller
 
         return response()->json([
             'referral_code' => $stats['referral_code'],
-            'invite_url' => url('/register?ref=' . urlencode($stats['referral_code'])),
+            'invite_url' => url('/register?ref='.urlencode($stats['referral_code'])),
             'stats' => [
                 'total_invited' => $stats['total_invited'],
                 'total_signed_up' => $stats['total_signed_up'],
@@ -51,7 +50,7 @@ class ReferralController extends Controller
 
         $user = $request->user();
         $code = $this->service->ensureReferralCode($user);
-        $url = url('/register?ref=' . urlencode($code));
+        $url = url('/register?ref='.urlencode($code));
 
         $referral = Referral::create([
             'referrer_user_id' => $user->id,
@@ -71,11 +70,11 @@ class ReferralController extends Controller
                 "Bonjour,\n\n".
                 $user->name." vous invite à essayer CleanUx.\n\n".
                 ($data['message'] ?? '')."\n\n".
-                "Inscrivez-vous via ce lien : ".$url."\n".
-                "Ou utilisez le code : ".$code,
+                'Inscrivez-vous via ce lien : '.$url."\n".
+                'Ou utilisez le code : '.$code,
                 function ($message) use ($data, $user) {
                     $message->to($data['email'])
-                        ->subject('CleanUx · '.$user->name." vous invite");
+                        ->subject('CleanUx · '.$user->name.' vous invite');
                 }
             );
         } catch (\Throwable $e) {

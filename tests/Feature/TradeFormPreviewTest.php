@@ -17,7 +17,7 @@ class TradeFormPreviewTest extends TestCase
             'version' => 1,
             'fields' => [
                 ['key' => 'nb', 'label' => 'Nb', 'type' => 'number',
-                 'pricing' => ['modifier' => 'per_unit', 'value' => 5]],
+                    'pricing' => ['modifier' => 'per_unit', 'value' => 5]],
             ],
         ];
 
@@ -32,7 +32,7 @@ class TradeFormPreviewTest extends TestCase
             'version' => 1,
             'fields' => [
                 ['key' => 'urgent', 'label' => 'Urgent', 'type' => 'boolean',
-                 'pricing' => ['modifier' => 'fixed', 'value' => 20]],
+                    'pricing' => ['modifier' => 'fixed', 'value' => 20]],
             ],
         ]);
 
@@ -61,15 +61,15 @@ class TradeFormPreviewTest extends TestCase
             'version' => 1,
             'fields' => [
                 ['key' => 'nb', 'label' => 'Nb', 'type' => 'number',
-                 'pricing' => ['modifier' => 'per_unit', 'value' => 5]],
+                    'pricing' => ['modifier' => 'per_unit', 'value' => 5]],
                 ['key' => 'urgent', 'label' => 'Urgent', 'type' => 'boolean',
-                 'pricing' => ['modifier' => 'fixed', 'value' => 20]],
+                    'pricing' => ['modifier' => 'fixed', 'value' => 20]],
             ],
         ];
 
         $component = Livewire::test(TradeFormPreview::class, [
             'schemaInput' => $schema,
-            'basePrice'   => 100.0,
+            'basePrice' => 100.0,
         ]);
 
         // No answers yet

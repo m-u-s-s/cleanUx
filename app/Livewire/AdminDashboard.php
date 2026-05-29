@@ -4,10 +4,9 @@ namespace App\Livewire;
 
 use App\Support\Livewire\Concerns\ComputesAdminDashboardData;
 use App\Support\Livewire\Concerns\HandlesAdminDashboardPlanning;
-use Livewire\Component;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Route;
-use Livewire\Attributes\Layout;
+use Livewire\Component;
 
 class AdminDashboard extends Component
 {
@@ -15,31 +14,51 @@ class AdminDashboard extends Component
     use HandlesAdminDashboardPlanning;
 
     public $filtreEmploye = null;
+
     public $filtreZone = null;
+
     public array $statistiquesData = [];
+
     public array $statsMensuelles = [];
+
     public array $rdvs = [];
+
     public $employes = [];
+
     public $clients = [];
+
     public $employeSelectionne = null;
+
     public bool $zoneScopeLocked = false;
 
     public $selectedMissionId = null;
+
     public $showMissionModal = false;
 
     public $showPlanningModal = false;
+
     public $planningMissionId = null;
+
     public $planningEmployeId = null;
+
     public $planningDate = null;
+
     public $planningHeure = null;
 
     public array $suggestedEmployees = [];
+
     public ?string $lastDashboardRefreshAt = null;
+
     public bool $realtimeEnabled = true;
+
     public string $filtreStatus = '';
+
     public string $filtrePeriode = 'all';
+
     public string $dashboardSearch = '';
+
     public bool $compactMode = true;
+
     public array $visibleDashboardSections = [
         'operations' => true,
         'analytics' => true,
@@ -48,8 +67,8 @@ class AdminDashboard extends Component
         'tools' => true,
         'modules' => false,
     ];
-    public bool $executiveMode = false;
 
+    public bool $executiveMode = false;
 
     public function refreshDashboard(): void
     {

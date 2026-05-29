@@ -19,13 +19,19 @@ class AccountingCenter extends Component
     protected $paginationTheme = 'tailwind';
 
     public string $tab = 'ledger';   // ledger | periods | exports
+
     public string $filterJournal = '';
+
     public string $filterAccount = '';
+
     public int $filterYear = 0;
+
     public int $filterMonth = 0;
 
     public int $exportYear;
+
     public int $exportMonth;
+
     public string $exportFormat = 'csv';
 
     public function mount(): void
@@ -42,7 +48,7 @@ class AccountingCenter extends Component
             app(PeriodCloser::class)->close($year, $month, Auth::user());
             $this->dispatch('toast', "Période {$year}-{$month} clôturée.", 'success');
         } catch (\Throwable $e) {
-            $this->dispatch('toast', 'Erreur : ' . $e->getMessage(), 'error');
+            $this->dispatch('toast', 'Erreur : '.$e->getMessage(), 'error');
         }
     }
 
@@ -57,7 +63,7 @@ class AccountingCenter extends Component
             );
             $this->dispatch('toast', 'Export généré.', 'success');
         } catch (\Throwable $e) {
-            $this->dispatch('toast', 'Erreur : ' . $e->getMessage(), 'error');
+            $this->dispatch('toast', 'Erreur : '.$e->getMessage(), 'error');
         }
     }
 

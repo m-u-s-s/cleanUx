@@ -4,6 +4,7 @@ namespace App\Livewire\Client;
 
 use App\Models\ApiTokenScope;
 use App\Models\Sanctum\PersonalAccessTokenV2;
+use App\Models\User;
 use App\Services\ApiTokensV2\ApiTokenManager;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Auth;
@@ -14,16 +15,23 @@ use Livewire\Component;
 class ClientApiTokens extends Component
 {
     public string $newName = '';
+
     public string $newDescription = '';
+
     public array $newScopes = [];
+
     public ?int $newExpiryDays = 365;
+
     public ?int $newRateLimit = null;
 
     /** Plain text token affiché APRÈS création — single shot. */
     public ?string $justCreatedToken = null;
+
     public ?array $justCreatedMeta = null;
+
     /** Plain text rotated token affiché APRÈS rotation. */
     public ?string $justRotatedToken = null;
+
     public ?array $justRotatedMeta = null;
 
     public function rules(): array
@@ -66,7 +74,7 @@ class ClientApiTokens extends Component
 
             $this->dispatch('toast', 'Token créé. Copiez-le maintenant — il ne sera plus jamais affiché.', 'success');
         } catch (ValidationException $e) {
-            $this->dispatch('toast', 'Erreur : ' . implode(' / ', collect($e->errors())->flatten()->all()), 'error');
+            $this->dispatch('toast', 'Erreur : '.implode(' / ', collect($e->errors())->flatten()->all()), 'error');
         }
     }
 
@@ -75,10 +83,11 @@ class ClientApiTokens extends Component
         $token = PersonalAccessTokenV2::query()
             ->where('id', $tokenId)
             ->where('tokenable_id', Auth::id())
-            ->where('tokenable_type', \App\Models\User::class)
+            ->where('tokenable_type', User::class)
             ->first();
         if (! $token) {
             $this->dispatch('toast', 'Token introuvable.', 'error');
+
             return;
         }
         try {
@@ -91,7 +100,7 @@ class ClientApiTokens extends Component
             ];
             $this->dispatch('toast', 'Rotation effectuée. Anciennes credentials valides pendant grace period.', 'success');
         } catch (ValidationException $e) {
-            $this->dispatch('toast', 'Erreur : ' . implode(' / ', collect($e->errors())->flatten()->all()), 'error');
+            $this->dispatch('toast', 'Erreur : '.implode(' / ', collect($e->errors())->flatten()->all()), 'error');
         }
     }
 
@@ -100,7 +109,7 @@ class ClientApiTokens extends Component
         $token = PersonalAccessTokenV2::query()
             ->where('id', $tokenId)
             ->where('tokenable_id', Auth::id())
-            ->where('tokenable_type', \App\Models\User::class)
+            ->where('tokenable_type', User::class)
             ->first();
         if (! $token) {
             return;
@@ -126,7 +135,7 @@ class ClientApiTokens extends Component
     {
         return PersonalAccessTokenV2::query()
             ->where('tokenable_id', Auth::id())
-            ->where('tokenable_type', \App\Models\User::class)
+            ->where('tokenable_type', User::class)
             ->orderByDesc('created_at')
             ->limit(50)
             ->get();

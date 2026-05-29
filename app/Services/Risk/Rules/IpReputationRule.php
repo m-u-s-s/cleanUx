@@ -66,6 +66,7 @@ class IpReputationRule implements RiskRuleInterface
                 return false;
             }
             $mask = -1 << (32 - $maskBits);
+
             return ($ipLong & $mask) === ($subnetLong & $mask);
         }
 
@@ -78,6 +79,7 @@ class IpReputationRule implements RiskRuleInterface
                 return false;
             }
             $bytes = intdiv($maskBits, 8);
+
             return substr($ipBin, 0, $bytes) === substr($subnetBin, 0, $bytes);
         }
 

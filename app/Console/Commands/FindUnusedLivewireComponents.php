@@ -10,6 +10,7 @@ use Livewire\Component;
 class FindUnusedLivewireComponents extends Command
 {
     protected $signature = 'livewire:unused';
+
     protected $description = 'Liste les composants Livewire qui ne sont utilisés dans aucune route';
 
     public function handle(): int
@@ -18,6 +19,7 @@ class FindUnusedLivewireComponents extends Command
 
         if (! File::isDirectory($componentDir)) {
             $this->error("❌ Le dossier app/Livewire n'existe pas.");
+
             return self::FAILURE;
         }
 
@@ -62,6 +64,7 @@ class FindUnusedLivewireComponents extends Command
 
         if (empty($unused)) {
             $this->info('✅ Aucun composant inutilisé trouvé.');
+
             return self::SUCCESS;
         }
 

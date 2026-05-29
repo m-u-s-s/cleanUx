@@ -30,16 +30,17 @@ class GeoDistanceService
             $response = Http::timeout(5)->get(
                 'https://maps.googleapis.com/maps/api/distancematrix/json',
                 [
-                    'origins'      => "{$fromLat},{$fromLng}",
+                    'origins' => "{$fromLat},{$fromLng}",
                     'destinations' => "{$toLat},{$toLng}",
-                    'mode'         => 'driving',
-                    'units'        => 'metric',
-                    'key'          => $apiKey,
+                    'mode' => 'driving',
+                    'units' => 'metric',
+                    'key' => $apiKey,
                 ]
             );
 
             if (! $response->ok()) {
                 Log::warning('[geo] Google Distance Matrix HTTP error', ['status' => $response->status()]);
+
                 return null;
             }
 
@@ -48,18 +49,20 @@ class GeoDistanceService
 
             if (data_get($element, 'status') !== 'OK') {
                 Log::info('[geo] Google Distance Matrix element not OK', ['element' => $element]);
+
                 return null;
             }
 
-            $distanceMeters  = (int) data_get($element, 'distance.value', 0);
+            $distanceMeters = (int) data_get($element, 'distance.value', 0);
             $durationSeconds = (int) data_get($element, 'duration.value', 0);
 
             return [
-                'distance_km'      => round($distanceMeters / 1000, 2),
+                'distance_km' => round($distanceMeters / 1000, 2),
                 'duration_minutes' => (int) ceil($durationSeconds / 60),
             ];
         } catch (\Throwable $e) {
             Log::warning('[geo] drivingDistanceKm failed', ['error' => $e->getMessage()]);
+
             return null;
         }
     }

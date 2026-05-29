@@ -45,6 +45,7 @@ class SecurityAudit extends Command
 
         if ($issues === 0) {
             $this->info('Aucune anomalie de sécurité admin détectée.');
+
             return self::SUCCESS;
         }
 

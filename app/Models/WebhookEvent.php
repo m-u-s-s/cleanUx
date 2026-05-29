@@ -21,7 +21,7 @@ class WebhookEvent extends Model
 
     public static function generateEventId(): string
     {
-        return 'evt_' . Str::lower(Str::random(24));
+        return 'evt_'.Str::lower(Str::random(24));
     }
 
     public function deliveries(): HasMany

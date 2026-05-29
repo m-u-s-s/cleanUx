@@ -9,11 +9,10 @@ use App\Models\Trade;
 use App\Models\ZoneServiceRule;
 use App\Support\ActivityLogger;
 use App\Support\Livewire\Concerns\Admin\ManagesServiceOptions;
+use Illuminate\Contracts\View\View;
 use Illuminate\Support\Str;
 use Livewire\Component;
 use Livewire\WithPagination;
-use Illuminate\Contracts\View\View;
-use Livewire\Attributes\Layout;
 
 class CatalogueServices extends Component
 {
@@ -21,34 +20,59 @@ class CatalogueServices extends Component
     use WithPagination;
 
     public $search = '';
+
     public $status = '';
+
     public $market = '';
+
     public $serviceType = '';
+
     public $tradeFilter = '';   // Phase 1 — filtrer par métier dans la liste
+
     public bool $groupByTrade = false; // Phase 2 — affichage groupé par métier
 
     public $serviceId = null;
+
     public $code = '';
+
     public $name = '';
+
     public $slug = '';
+
     public $description = '';
+
     public $service_type = 'standard';
+
     public $is_active = true;
+
     public $requires_quote = false;
+
     public $requires_manual_validation = false;
+
     public $is_entreprise = false;
+
     public $default_duration_minutes = 60;
+
     public $base_price = 0;
+
     public $sort_order = 0;
+
     public ?int $trade_id = null;   // Phase 1 — métier (Trade) auquel le service est rattaché
 
     public $selectedServiceId = null;
+
     public $selectedZoneId = null;
+
     public $rule_enabled = true;
+
     public $rule_requires_manual_validation = false;
+
     public $rule_base_price_override = null;
+
     public $rule_price_multiplier = 1;
+
     public $rule_minimum_notice_hours = null;
+
     public $rule_maximum_daily_capacity = null;
 
     protected $queryString = ['search', 'status', 'market', 'serviceType', 'tradeFilter', 'groupByTrade', 'page'];
@@ -137,8 +161,8 @@ class CatalogueServices extends Component
         ];
 
         if ($this->serviceId) {
-            $duplicateRules['code'] .= ',' . $this->serviceId;
-            $duplicateRules['slug'] .= ',' . $this->serviceId;
+            $duplicateRules['code'] .= ','.$this->serviceId;
+            $duplicateRules['slug'] .= ','.$this->serviceId;
         }
 
         $this->validate([
@@ -279,9 +303,9 @@ class CatalogueServices extends Component
             ->with('trade:id,name,slug,color')
             ->when($this->search, function ($query) {
                 $query->where(function ($sub) {
-                    $sub->where('name', 'like', '%' . $this->search . '%')
-                        ->orWhere('code', 'like', '%' . $this->search . '%')
-                        ->orWhere('slug', 'like', '%' . $this->search . '%');
+                    $sub->where('name', 'like', '%'.$this->search.'%')
+                        ->orWhere('code', 'like', '%'.$this->search.'%')
+                        ->orWhere('slug', 'like', '%'.$this->search.'%');
                 });
             })
             ->when($this->status !== '', fn ($query) => $query->where('is_active', $this->status === 'active'))
@@ -328,7 +352,7 @@ class CatalogueServices extends Component
         $servicesGroupedByTrade = $this->groupByTrade
             ? $trades->mapWithKeys(fn ($trade) => [
                 $trade->id => [
-                    'trade'    => $trade,
+                    'trade' => $trade,
                     'services' => ServiceCatalog::where('trade_id', $trade->id)->orderBy('sort_order')->orderBy('name')->get(),
                 ],
             ])->filter(fn ($group) => $group['services']->isNotEmpty())
@@ -351,13 +375,13 @@ class CatalogueServices extends Component
             : collect();
 
         return view('livewire.admin.catalogue-services', [
-            'services'                 => $services,
-            'zones'                    => $zones,
-            'selectedService'          => $selectedService,
-            'serviceTypes'             => $serviceTypes,
-            'trades'                   => $trades,
-            'serviceLogs'              => $serviceLogs,
-            'servicesGroupedByTrade'   => $servicesGroupedByTrade,
+            'services' => $services,
+            'zones' => $zones,
+            'selectedService' => $selectedService,
+            'serviceTypes' => $serviceTypes,
+            'trades' => $trades,
+            'serviceLogs' => $serviceLogs,
+            'servicesGroupedByTrade' => $servicesGroupedByTrade,
         ]);
     }
 }

@@ -5,6 +5,7 @@ namespace App\Services\Dispatch;
 use App\Models\Booking;
 use App\Models\User;
 use App\Services\Booking\EmployeeAvailabilityService;
+use App\Services\Matching\MatchingV2Service;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -20,12 +21,13 @@ class AiDispatchService
     {
         if ((bool) config('matching.enabled', true)) {
             try {
-                $v2 = app(\App\Services\Matching\MatchingV2Service::class);
+                $v2 = app(MatchingV2Service::class);
                 $candidate = $v2->bestFor($rdv);
                 if ($candidate) {
                     if ((bool) config('matching.shadow_mode', false)) {
                         $this->logShadowCompare($rdv, $candidate);
                     }
+
                     return $candidate;
                 }
             } catch (\Throwable $e) {
@@ -48,10 +50,11 @@ class AiDispatchService
                         $found = $candidates->firstWhere('id', $topId);
                         if ($found) {
                             Log::info('AiDispatch: MatchingScorer sélectionné', [
-                                'booking_id'  => $rdv->id,
+                                'booking_id' => $rdv->id,
                                 'provider_id' => $topId,
-                                'score'       => $ranked->first()['total_score'] ?? null,
+                                'score' => $ranked->first()['total_score'] ?? null,
                             ]);
+
                             return $found;
                         }
                     }
@@ -107,7 +110,7 @@ class AiDispatchService
         $candidates = $this->applyTradeFilter($candidates, $rdv);
 
         return $candidates
-            ->map(fn(User $employee) => [
+            ->map(fn (User $employee) => [
                 'employee' => $employee,
                 'score' => $this->score($employee, $rdv),
                 'details' => $this->scoreDetails($employee, $rdv),
@@ -146,10 +149,11 @@ class AiDispatchService
 
         if ($filtered->isEmpty()) {
             Log::warning('AiDispatch: aucun prestataire tagué pour le métier requis, fallback ouvert.', [
-                'booking_id'         => $rdv->id,
-                'required_trade_id'  => $tradeId,
-                'open_candidates'    => $candidates->count(),
+                'booking_id' => $rdv->id,
+                'required_trade_id' => $tradeId,
+                'open_candidates' => $candidates->count(),
             ]);
+
             return $candidates;
         }
 

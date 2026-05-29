@@ -17,16 +17,16 @@ class MissionTeamAssignmentFactory extends Factory
     public function definition(): array
     {
         return [
-            'mission_id'              => Mission::factory(),
-            'field_team_id'           => FieldTeam::factory(),
-            'lead_assignment_id'      => null,
-            'assignment_status'       => fake()->randomElement(['assigned', 'accepted', 'in_progress', 'completed']),
-            'assigned_at'             => now()->subHours(fake()->numberBetween(1, 24)),
-            'accepted_at'             => null,
-            'started_at'              => null,
-            'completed_at'            => null,
-            'instructions_snapshot'   => null,
-            'metadata'                => null,
+            'mission_id' => Mission::factory(),
+            'field_team_id' => FieldTeam::factory(),
+            'lead_assignment_id' => null,
+            'assignment_status' => fake()->randomElement(['assigned', 'accepted', 'in_progress', 'completed']),
+            'assigned_at' => now()->subHours(fake()->numberBetween(1, 24)),
+            'accepted_at' => null,
+            'started_at' => null,
+            'completed_at' => null,
+            'instructions_snapshot' => null,
+            'metadata' => null,
         ];
     }
 
@@ -34,9 +34,9 @@ class MissionTeamAssignmentFactory extends Factory
     {
         return $this->state([
             'assignment_status' => 'completed',
-            'accepted_at'       => now()->subHours(6),
-            'started_at'        => now()->subHours(5),
-            'completed_at'      => now()->subHours(2),
+            'accepted_at' => now()->subHours(6),
+            'started_at' => now()->subHours(5),
+            'completed_at' => now()->subHours(2),
         ]);
     }
 }

@@ -13,10 +13,25 @@ use Illuminate\Validation\Rule;
 
 trait ManagesEntrepriseAccounts
 {
-    public function updatingSearch(): void { $this->resetPage(); }
-    public function updatingStatus(): void { $this->resetPage(); }
-    public function updatingType(): void { $this->resetPage(); }
-    public function updatingZoneFilter(): void { $this->resetPage(); }
+    public function updatingSearch(): void
+    {
+        $this->resetPage();
+    }
+
+    public function updatingStatus(): void
+    {
+        $this->resetPage();
+    }
+
+    public function updatingType(): void
+    {
+        $this->resetPage();
+    }
+
+    public function updatingZoneFilter(): void
+    {
+        $this->resetPage();
+    }
 
     public function updatedName(string $value): void
     {

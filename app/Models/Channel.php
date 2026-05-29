@@ -4,8 +4,8 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Channel extends Model
 {
@@ -25,18 +25,22 @@ class Channel extends Model
     ];
 
     protected $casts = [
-        'is_private'   => 'boolean',
-        'is_locked'    => 'boolean',
-        'is_archived'  => 'boolean',
-        'archived_at'  => 'datetime',
-        'settings'     => 'array',
+        'is_private' => 'boolean',
+        'is_locked' => 'boolean',
+        'is_archived' => 'boolean',
+        'archived_at' => 'datetime',
+        'settings' => 'array',
     ];
 
     // Types disponibles
-    public const TYPE_TEAM         = 'team';
-    public const TYPE_MISSION      = 'mission';
-    public const TYPE_SUPPORT      = 'support';
-    public const TYPE_PRIVATE      = 'private';
+    public const TYPE_TEAM = 'team';
+
+    public const TYPE_MISSION = 'mission';
+
+    public const TYPE_SUPPORT = 'support';
+
+    public const TYPE_PRIVATE = 'private';
+
     public const TYPE_ANNOUNCEMENT = 'announcement';
 
     public function organization(): BelongsTo

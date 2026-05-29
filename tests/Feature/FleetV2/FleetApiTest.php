@@ -2,9 +2,7 @@
 
 namespace Tests\Feature\FleetV2;
 
-use App\Models\FleetAssignment;
 use App\Models\FleetCertification;
-use App\Models\FleetEquipment;
 use App\Models\FleetVehicle;
 use App\Models\User;
 use App\Services\FleetV2\FleetService;

@@ -23,7 +23,7 @@ class FeatureFlagOverride extends Model
     ];
 
     protected $casts = [
-        'is_enabled'      => 'boolean',
+        'is_enabled' => 'boolean',
         'override_config' => 'array',
     ];
 

@@ -16,11 +16,11 @@ class CompanyFactory extends Factory
 
         return [
             'name' => $name,
-            'slug' => Str::slug($name) . '-' . fake()->unique()->numberBetween(1, 9999),
-            'tva_number' => 'BE' . fake()->numerify('##########'),
+            'slug' => Str::slug($name).'-'.fake()->unique()->numberBetween(1, 9999),
+            'tva_number' => 'BE'.fake()->numerify('##########'),
             'company_number' => fake()->numerify('##########'),
             'email' => fake()->companyEmail(),
-            'phone' => '+32' . fake()->numerify('4########'),
+            'phone' => '+32'.fake()->numerify('4########'),
             'address' => fake()->streetAddress(),
             'postal_code' => fake()->numerify('####'),
             'city' => fake()->city(),

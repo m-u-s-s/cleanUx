@@ -18,8 +18,8 @@ class LogSlowQueries
         DB::listen(function ($query) use (&$queries) {
             if ($query->time > self::THRESHOLD_MS) {
                 $queries[] = [
-                    'sql'      => $query->sql,
-                    'time'     => $query->time,
+                    'sql' => $query->sql,
+                    'time' => $query->time,
                     'bindings' => $query->bindings,
                 ];
             }
@@ -29,9 +29,9 @@ class LogSlowQueries
 
         if (count($queries) > 0) {
             Log::channel('slow-queries')->warning(
-                'Slow queries on ' . $request->method() . ' ' . $request->path(),
+                'Slow queries on '.$request->method().' '.$request->path(),
                 [
-                    'queries'     => $queries,
+                    'queries' => $queries,
                     'total_count' => count($queries),
                 ]
             );

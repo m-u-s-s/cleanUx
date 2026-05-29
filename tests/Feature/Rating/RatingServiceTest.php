@@ -16,8 +16,11 @@ class RatingServiceTest extends TestCase
     use RefreshDatabase;
 
     protected User $client;
+
     protected User $provider;
+
     protected Booking $booking;
+
     protected RatingService $service;
 
     protected function setUp(): void

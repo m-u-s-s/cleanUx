@@ -13,7 +13,7 @@ class MarketingCampaignFactory extends Factory
     public function definition(): array
     {
         return [
-            'name' => fake()->words(3, true) . ' Campaign',
+            'name' => fake()->words(3, true).' Campaign',
             'description' => fake()->sentence(),
             'status' => fake()->randomElement(['draft', 'active', 'paused', 'completed']),
             'type' => fake()->randomElement(['promo_blast', 'drip', 'one_shot']),

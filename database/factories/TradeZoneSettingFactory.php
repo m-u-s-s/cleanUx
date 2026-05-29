@@ -14,13 +14,13 @@ class TradeZoneSettingFactory extends Factory
     public function definition(): array
     {
         return [
-            'trade_id'         => fn () => Trade::factory()->create()->id,
-            'service_zone_id'  => fn () => ServiceZone::factory()->create()->id,
-            'is_active'        => true,
+            'trade_id' => fn () => Trade::factory()->create()->id,
+            'service_zone_id' => fn () => ServiceZone::factory()->create()->id,
+            'is_active' => true,
             'price_multiplier' => 1.00,
-            'notes'            => null,
-            'created_by'       => null,
-            'updated_by'       => null,
+            'notes' => null,
+            'created_by' => null,
+            'updated_by' => null,
         ];
     }
 

@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Auth;
 
 /**
  * @group Provider — Mission Tracking (Legacy)
+ *
  * @authenticated
  */
 class EmployeeMissionTrackingController extends Controller

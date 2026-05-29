@@ -8,9 +8,13 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class InspectionPhoto extends Model
 {
     public const TYPE_BEFORE = 'before';
+
     public const TYPE_DURING = 'during';
+
     public const TYPE_AFTER = 'after';
+
     public const TYPE_DEFECT = 'defect';
+
     public const TYPE_SIGNATURE_PROOF = 'signature_proof';
 
     protected $fillable = [

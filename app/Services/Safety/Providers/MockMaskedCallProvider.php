@@ -22,7 +22,7 @@ class MockMaskedCallProvider implements MaskedCallProvider
         ?Booking $booking = null,
     ): MaskedCallSessionData {
         $proxyPhone = $this->generateMockProxyNumber();
-        $ref = 'mock_' . Str::uuid()->toString();
+        $ref = 'mock_'.Str::uuid()->toString();
 
         $ttlHours = (int) config('masked_calls.session_ttl_hours', 24);
         $expiresAt = now()->addHours($ttlHours)->toIso8601String();
@@ -54,6 +54,7 @@ class MockMaskedCallProvider implements MaskedCallProvider
     {
         // Belgian mobile proxy range (+32 4XX XXX XXX)
         $suffix = str_pad((string) random_int(0, 9999999), 7, '0', STR_PAD_LEFT);
-        return '+324' . $suffix;
+
+        return '+324'.$suffix;
     }
 }

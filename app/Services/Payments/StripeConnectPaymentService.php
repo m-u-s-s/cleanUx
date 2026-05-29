@@ -53,14 +53,16 @@ class StripeConnectPaymentService
             Log::info('StripeConnectPaymentService: aucun PI à capturer', [
                 'mission_id' => $mission->id,
             ]);
+
             return null;
         }
 
         if ($booking->payment_status !== 'authorized') {
             Log::info('StripeConnectPaymentService: PI pas en authorized', [
-                'mission_id'      => $mission->id,
-                'payment_status'  => $booking->payment_status,
+                'mission_id' => $mission->id,
+                'payment_status' => $booking->payment_status,
             ]);
+
             return null;
         }
 
@@ -71,19 +73,19 @@ class StripeConnectPaymentService
             } catch (\Throwable $e) {
                 Log::error('StripeConnectPaymentService: capture failed', [
                     'mission_id' => $mission->id,
-                    'pi_id'      => $booking->stripe_payment_intent_id,
-                    'error'      => $e->getMessage(),
+                    'pi_id' => $booking->stripe_payment_intent_id,
+                    'error' => $e->getMessage(),
                 ]);
 
                 $booking->update([
-                    'payment_status'    => 'failed',
+                    'payment_status' => 'failed',
                     'payment_failed_at' => now(),
                 ]);
-                throw new RuntimeException('Capture échouée : ' . $e->getMessage(), 0, $e);
+                throw new RuntimeException('Capture échouée : '.$e->getMessage(), 0, $e);
             }
 
             $booking->update([
-                'payment_status'      => 'captured',
+                'payment_status' => 'captured',
                 'payment_captured_at' => now(),
             ]);
 
@@ -91,9 +93,9 @@ class StripeConnectPaymentService
             $payout = $this->createProviderPayout($mission, $booking);
 
             Log::info('StripeConnectPaymentService: capture + payout entry OK', [
-                'mission_id'  => $mission->id,
-                'payout_id'   => $payout->id,
-                'amount'      => $payout->amount,
+                'mission_id' => $mission->id,
+                'payout_id' => $payout->id,
+                'amount' => $payout->amount,
             ]);
 
             return $payout;
@@ -132,21 +134,21 @@ class StripeConnectPaymentService
         $currency = strtoupper((string) ($booking->currency ?? 'EUR'));
 
         return ProviderPayout::create([
-            'provider_user_id'         => $providerUserId,
+            'provider_user_id' => $providerUserId,
             'provider_organization_id' => optional($mission->lead_provider_user)->current_organization_id,
-            'amount'                   => $amount,
-            'currency'                 => $currency,
-            'status'                   => ProviderPayout::STATUS_PENDING,
-            'provider'                 => 'stripe_connect',
-            'period_start'             => now()->startOfDay()->toDateString(),
-            'period_end'               => now()->endOfDay()->toDateString(),
-            'metadata'                 => [
-                'mission_id'              => $mission->id,
-                'booking_id'              => $booking->id,
-                'booking_reference'       => $booking->booking_reference,
-                'stripe_payment_intent_id'=> $booking->stripe_payment_intent_id,
-                'platform_fee_cents'      => $booking->platform_fee_cents,
-                'provider_amount_cents'   => $booking->provider_amount_cents,
+            'amount' => $amount,
+            'currency' => $currency,
+            'status' => ProviderPayout::STATUS_PENDING,
+            'provider' => 'stripe_connect',
+            'period_start' => now()->startOfDay()->toDateString(),
+            'period_end' => now()->endOfDay()->toDateString(),
+            'metadata' => [
+                'mission_id' => $mission->id,
+                'booking_id' => $booking->id,
+                'booking_reference' => $booking->booking_reference,
+                'stripe_payment_intent_id' => $booking->stripe_payment_intent_id,
+                'platform_fee_cents' => $booking->platform_fee_cents,
+                'provider_amount_cents' => $booking->provider_amount_cents,
             ],
         ]);
     }
@@ -154,9 +156,8 @@ class StripeConnectPaymentService
     /**
      * Refund total ou partiel d'un paiement déjà capturé.
      *
-     * @param Booking $booking
-     * @param int|null $amountCents Montant à refund. null = total.
-     * @param string|null $reason 'requested_by_customer' | 'duplicate' | 'fraudulent'
+     * @param  int|null  $amountCents  Montant à refund. null = total.
+     * @param  string|null  $reason  'requested_by_customer' | 'duplicate' | 'fraudulent'
      */
     public function refundMissionPayment(
         Booking $booking,
@@ -189,23 +190,23 @@ class StripeConnectPaymentService
         } catch (\Throwable $e) {
             Log::error('StripeConnectPaymentService: refund failed', [
                 'booking_id' => $booking->id,
-                'error'      => $e->getMessage(),
+                'error' => $e->getMessage(),
             ]);
-            throw new RuntimeException('Refund échoué : ' . $e->getMessage(), 0, $e);
+            throw new RuntimeException('Refund échoué : '.$e->getMessage(), 0, $e);
         }
 
         $isTotal = $amountCents === null || $amountCents >= ($booking->payment_amount_cents ?? 0);
 
         $booking->update([
-            'payment_status'   => $isTotal ? 'refunded' : 'partially_refunded',
+            'payment_status' => $isTotal ? 'refunded' : 'partially_refunded',
             'payment_refunded_at' => now(),
         ]);
 
         Log::info('StripeConnectPaymentService: refund OK', [
             'booking_id' => $booking->id,
-            'refund_id'  => $refund->id,
-            'amount'     => $refund->amount,
-            'is_total'   => $isTotal,
+            'refund_id' => $refund->id,
+            'amount' => $refund->amount,
+            'is_total' => $isTotal,
         ]);
 
         return $refund;
@@ -228,17 +229,18 @@ class StripeConnectPaymentService
                 'pi_id' => $booking->stripe_payment_intent_id,
                 'error' => $e->getMessage(),
             ]);
+
             return;
         }
 
         $statusMap = [
             'requires_payment_method' => 'pending',
-            'requires_confirmation'   => 'pending',
-            'requires_action'         => 'pending',
-            'processing'              => 'processing',
-            'requires_capture'        => 'authorized',
-            'canceled'                => 'cancelled',
-            'succeeded'               => 'captured',
+            'requires_confirmation' => 'pending',
+            'requires_action' => 'pending',
+            'processing' => 'processing',
+            'requires_capture' => 'authorized',
+            'canceled' => 'cancelled',
+            'succeeded' => 'captured',
         ];
 
         $newStatus = $statusMap[$intent->status] ?? $booking->payment_status;

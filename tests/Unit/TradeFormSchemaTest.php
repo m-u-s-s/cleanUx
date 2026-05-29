@@ -95,8 +95,8 @@ class TradeFormSchemaTest extends TestCase
             'version' => 1,
             'fields' => [
                 ['key' => 'col', 'label' => 'Col', 'type' => 'select',
-                 'options' => [['value' => 'a', 'label' => 'A']],
-                 'pricing' => ['modifier' => 'fixed', 'value' => 10]],
+                    'options' => [['value' => 'a', 'label' => 'A']],
+                    'pricing' => ['modifier' => 'fixed', 'value' => 10]],
             ],
         ]);
         $this->assertFalse($result['ok']);
@@ -108,21 +108,21 @@ class TradeFormSchemaTest extends TestCase
             'version' => 1,
             'fields' => [
                 ['key' => 'nb_enfants', 'label' => '  Nombre  ', 'type' => 'number',
-                 'required' => true, 'min' => 1, 'max' => 5, 'default' => 1,
-                 'pricing' => ['modifier' => 'per_unit', 'value' => 5]],
+                    'required' => true, 'min' => 1, 'max' => 5, 'default' => 1,
+                    'pricing' => ['modifier' => 'per_unit', 'value' => 5]],
                 ['key' => 'urgence', 'label' => 'Urgence', 'type' => 'boolean',
-                 'pricing' => ['modifier' => 'percent', 'value' => 100]],
+                    'pricing' => ['modifier' => 'percent', 'value' => 100]],
                 ['key' => 'type_serrure', 'label' => 'Serrure', 'type' => 'select',
-                 'options' => [
-                    ['value' => 'simple', 'label' => 'Simple', 'price_delta' => 0],
-                    ['value' => 'blindee', 'label' => 'Blindée', 'price_delta' => 50],
-                 ]],
+                    'options' => [
+                        ['value' => 'simple', 'label' => 'Simple', 'price_delta' => 0],
+                        ['value' => 'blindee', 'label' => 'Blindée', 'price_delta' => 50],
+                    ]],
                 ['key' => 'extras', 'label' => 'Extras', 'type' => 'multiselect',
-                 'options' => [
-                    ['value' => 'fournitures', 'label' => 'Fournitures', 'price_delta' => 30],
-                 ]],
+                    'options' => [
+                        ['value' => 'fournitures', 'label' => 'Fournitures', 'price_delta' => 30],
+                    ]],
                 ['key' => 'commentaire', 'label' => 'Commentaire', 'type' => 'textarea',
-                 'max_length' => 500],
+                    'max_length' => 500],
             ],
         ]);
 
@@ -144,7 +144,7 @@ class TradeFormSchemaTest extends TestCase
                 ['key' => 'nb', 'label' => 'Nb', 'type' => 'number', 'default' => 3],
                 ['key' => 'flag', 'label' => 'Flag', 'type' => 'boolean'],
                 ['key' => 'ms', 'label' => 'Ms', 'type' => 'multiselect',
-                 'options' => [['value' => 'a', 'label' => 'A']]],
+                    'options' => [['value' => 'a', 'label' => 'A']]],
                 ['key' => 'txt', 'label' => 'Txt', 'type' => 'text'],
             ],
         ])['normalized'];
@@ -162,29 +162,29 @@ class TradeFormSchemaTest extends TestCase
             'version' => 1,
             'fields' => [
                 ['key' => 'nb', 'label' => 'Nb', 'type' => 'number',
-                 'pricing' => ['modifier' => 'per_unit', 'value' => 5]],
+                    'pricing' => ['modifier' => 'per_unit', 'value' => 5]],
                 ['key' => 'urgent', 'label' => 'Urgent', 'type' => 'boolean',
-                 'pricing' => ['modifier' => 'percent', 'value' => 50]],
+                    'pricing' => ['modifier' => 'percent', 'value' => 50]],
                 ['key' => 'fixe', 'label' => 'Fixe', 'type' => 'boolean',
-                 'pricing' => ['modifier' => 'fixed', 'value' => 20]],
+                    'pricing' => ['modifier' => 'fixed', 'value' => 20]],
                 ['key' => 'col', 'label' => 'Col', 'type' => 'select',
-                 'options' => [
-                    ['value' => 'a', 'label' => 'A', 'price_delta' => 0],
-                    ['value' => 'b', 'label' => 'B', 'price_delta' => 80],
-                 ]],
+                    'options' => [
+                        ['value' => 'a', 'label' => 'A', 'price_delta' => 0],
+                        ['value' => 'b', 'label' => 'B', 'price_delta' => 80],
+                    ]],
                 ['key' => 'extras', 'label' => 'Extras', 'type' => 'multiselect',
-                 'options' => [
-                    ['value' => 'x', 'label' => 'X', 'price_delta' => 10],
-                    ['value' => 'y', 'label' => 'Y', 'price_delta' => 15],
-                 ]],
+                    'options' => [
+                        ['value' => 'x', 'label' => 'X', 'price_delta' => 10],
+                        ['value' => 'y', 'label' => 'Y', 'price_delta' => 15],
+                    ]],
             ],
         ])['normalized'];
 
         $delta = TradeFormSchema::computePriceDelta($schema, [
-            'nb'     => 4,
+            'nb' => 4,
             'urgent' => true,
-            'fixe'   => true,
-            'col'    => 'b',
+            'fixe' => true,
+            'col' => 'b',
             'extras' => ['x', 'y'],
         ], 200.0);
 
@@ -204,9 +204,9 @@ class TradeFormSchemaTest extends TestCase
             'version' => 1,
             'fields' => [
                 ['key' => 'nb', 'label' => 'Nb', 'type' => 'number',
-                 'pricing' => ['modifier' => 'per_unit', 'value' => 5]],
+                    'pricing' => ['modifier' => 'per_unit', 'value' => 5]],
                 ['key' => 'flag', 'label' => 'Flag', 'type' => 'boolean',
-                 'pricing' => ['modifier' => 'fixed', 'value' => 10]],
+                    'pricing' => ['modifier' => 'fixed', 'value' => 10]],
             ],
         ])['normalized'];
 
@@ -225,12 +225,12 @@ class TradeFormSchemaTest extends TestCase
             'version' => 1,
             'fields' => [
                 ['key' => 'nb', 'label' => 'Nb', 'type' => 'number', 'required' => true,
-                 'min' => 1, 'max' => 10],
+                    'min' => 1, 'max' => 10],
                 ['key' => 'flag', 'label' => 'Flag', 'type' => 'boolean'],
                 ['key' => 'col', 'label' => 'Col', 'type' => 'select', 'required' => true,
-                 'options' => [['value' => 'a', 'label' => 'A'], ['value' => 'b', 'label' => 'B']]],
+                    'options' => [['value' => 'a', 'label' => 'A'], ['value' => 'b', 'label' => 'B']]],
                 ['key' => 'ms', 'label' => 'Ms', 'type' => 'multiselect',
-                 'options' => [['value' => 'x', 'label' => 'X']]],
+                    'options' => [['value' => 'x', 'label' => 'X']]],
                 ['key' => 'txt', 'label' => 'Txt', 'type' => 'text', 'max_length' => 50],
             ],
         ])['normalized'];

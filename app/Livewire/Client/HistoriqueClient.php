@@ -3,20 +3,23 @@
 namespace App\Livewire\Client;
 
 use App\Models\Booking;
+use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
 use Livewire\WithPagination;
-use Illuminate\Contracts\View\View;
-use Livewire\Attributes\Layout;
 
 class HistoriqueClient extends Component
 {
     use WithPagination;
 
     public string $search = '';
+
     public string $tri = 'desc';
+
     public string $feedbackStatus = '';
+
     public string $dateFrom = '';
+
     public string $dateTo = '';
 
     protected $queryString = [
@@ -70,11 +73,11 @@ class HistoriqueClient extends Component
         ])
             ->where('client_id', Auth::id())
             ->where('status', 'termine')
-            ->when($this->search, fn($q) => $q->searchStructured($this->search))
-            ->when($this->feedbackStatus === 'with_feedback', fn($q) => $q->whereHas('feedback'))
-            ->when($this->feedbackStatus === 'without_feedback', fn($q) => $q->whereDoesntHave('feedback'))
-            ->when($this->dateFrom, fn($q) => $q->whereDate('date', '>=', $this->dateFrom))
-            ->when($this->dateTo, fn($q) => $q->whereDate('date', '<=', $this->dateTo));
+            ->when($this->search, fn ($q) => $q->searchStructured($this->search))
+            ->when($this->feedbackStatus === 'with_feedback', fn ($q) => $q->whereHas('feedback'))
+            ->when($this->feedbackStatus === 'without_feedback', fn ($q) => $q->whereDoesntHave('feedback'))
+            ->when($this->dateFrom, fn ($q) => $q->whereDate('date', '>=', $this->dateFrom))
+            ->when($this->dateTo, fn ($q) => $q->whereDate('date', '<=', $this->dateTo));
 
         return view('livewire.client.historique-client', [
             'historique' => $query

@@ -4,35 +4,47 @@ namespace App\Livewire\Client;
 
 use App\Models\ActivityLog;
 use App\Models\Booking;
+use App\Services\Booking\EmployeeAvailabilityService;
+use App\Services\CancellationV2\CancellationEngine;
+use App\Services\Missions\MissionFromRendezVousSyncService;
 use App\Support\ActivityLogger;
 use App\Support\Domain\BookingStatus;
-use App\Services\Booking\EmployeeAvailabilityService;
-use App\Services\Missions\MissionFromRendezVousSyncService;
+use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Schema;
 use Livewire\Component;
 use Livewire\WithPagination;
-use Illuminate\Contracts\View\View;
-use Livewire\Attributes\Layout;
 
 class MesRendezVousClient extends Component
 {
     use WithPagination;
 
     public string $tri = 'asc';
+
     public string $filtreStatus = '';
+
     public string $search = '';
+
     public string $dateFrom = '';
+
     public string $dateTo = '';
 
     public $editRdvId = null;
+
     public $editDate = null;
+
     public $editHeure = null;
 
     public ?int $cancelRdvId = null;
+
     public string $cancelReason = '';
+
     public array $creneauxDisponibles = [];
+
     public ?string $impactDevisMessage = null;
+
     public ?string $employeReplanificationMessage = null;
 
     protected $queryString = [
@@ -77,6 +89,7 @@ class MesRendezVousClient extends Component
 
         if (! $rdv->canStillBeEditedByClient()) {
             $this->dispatch('toast', message: 'Ce rendez-vous ne peut plus être modifié.', type: 'error');
+
             return;
         }
 
@@ -94,6 +107,7 @@ class MesRendezVousClient extends Component
     {
         if (! $this->editRdvId || ! $this->editDate) {
             $this->creneauxDisponibles = [];
+
             return;
         }
 
@@ -161,6 +175,7 @@ class MesRendezVousClient extends Component
 
         if (! $rdv->canStillBeEditedByClient()) {
             $this->dispatch('toast', message: 'Ce rendez-vous ne peut plus être modifié.', type: 'error');
+
             return;
         }
 
@@ -194,6 +209,7 @@ class MesRendezVousClient extends Component
 
         if (! $employee) {
             $this->dispatch('toast', message: 'Aucun employé disponible pour ce créneau.', type: 'error');
+
             return;
         }
 
@@ -241,6 +257,7 @@ class MesRendezVousClient extends Component
 
         if (! $rdv->canStillBeEditedByClient()) {
             $this->dispatch('toast', message: 'Ce rendez-vous ne peut plus être annulé.', type: 'error');
+
             return;
         }
 
@@ -262,6 +279,7 @@ class MesRendezVousClient extends Component
 
         if (! $rdv->canStillBeEditedByClient()) {
             $this->dispatch('toast', message: 'Ce rendez-vous ne peut plus être annulé.', type: 'error');
+
             return;
         }
 
@@ -275,19 +293,19 @@ class MesRendezVousClient extends Component
 
         // CancellationV2 — engine paramétrable (tiers windows + fees + refund stripe)
         try {
-            if (class_exists(\App\Services\CancellationV2\CancellationEngine::class)
-                && \Illuminate\Support\Facades\Schema::hasTable('booking_cancellations_v2')) {
-                app(\App\Services\CancellationV2\CancellationEngine::class)->cancel(
+            if (class_exists(CancellationEngine::class)
+                && Schema::hasTable('booking_cancellations_v2')) {
+                app(CancellationEngine::class)->cancel(
                     booking: $rdv,
                     actorRole: 'client',
-                    actor: \Illuminate\Support\Facades\Auth::user(),
+                    actor: Auth::user(),
                     reason: $this->cancelReason,
                 );
             } else {
                 $rdv->markCancelledByClient($this->cancelReason);
             }
         } catch (\Throwable $e) {
-            \Illuminate\Support\Facades\Log::warning('[cancellation_v2] cancel failed, fallback legacy', [
+            Log::warning('[cancellation_v2] cancel failed, fallback legacy', [
                 'booking_id' => $rdv->id,
                 'error' => $e->getMessage(),
             ]);
@@ -317,10 +335,10 @@ class MesRendezVousClient extends Component
     {
         $query = Booking::with(['employe', 'feedback', 'serviceCatalog', 'serviceZone', 'organizationSite', 'postalCode', 'mission', 'mission.leadEmployee', 'mission.verificationCodes', 'mission.activeTrackingSession'])
             ->where('client_id', Auth::id())
-            ->when($this->filtreStatus, fn($q) => $q->where('status', $this->filtreStatus))
-            ->when($this->dateFrom, fn($q) => $q->whereDate('date', '>=', $this->dateFrom))
-            ->when($this->dateTo, fn($q) => $q->whereDate('date', '<=', $this->dateTo))
-            ->when($this->search, fn($q) => $q->searchStructured($this->search));
+            ->when($this->filtreStatus, fn ($q) => $q->where('status', $this->filtreStatus))
+            ->when($this->dateFrom, fn ($q) => $q->whereDate('date', '>=', $this->dateFrom))
+            ->when($this->dateTo, fn ($q) => $q->whereDate('date', '<=', $this->dateTo))
+            ->when($this->search, fn ($q) => $q->searchStructured($this->search));
 
         return view('livewire.client.mes-rendez-vous-client', [
             'rendezVous' => $query

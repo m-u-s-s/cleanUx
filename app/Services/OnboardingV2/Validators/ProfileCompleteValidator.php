@@ -30,7 +30,7 @@ class ProfileCompleteValidator implements OnboardingStepValidator
 
         if (! empty($missing)) {
             return OnboardingStepValidation::fail([
-                'profile' => 'Champs manquants sur le profil : ' . implode(', ', $missing),
+                'profile' => 'Champs manquants sur le profil : '.implode(', ', $missing),
             ]);
         }
 

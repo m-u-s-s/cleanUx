@@ -2,9 +2,9 @@
 
 namespace App\Services\Analytics;
 
+use App\Models\Booking;
 use App\Models\CustomerClaim;
 use App\Models\Mission;
-use App\Models\Booking;
 use App\Models\User;
 use Carbon\Carbon;
 

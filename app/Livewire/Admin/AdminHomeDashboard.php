@@ -8,6 +8,7 @@ use App\Models\Mission;
 use App\Models\ProviderPayout;
 use App\Models\ProviderPresence;
 use App\Models\WebhookDelivery;
+use Carbon\Carbon;
 use Livewire\Component;
 
 class AdminHomeDashboard extends Component
@@ -17,24 +18,24 @@ class AdminHomeDashboard extends Component
         $today = now()->startOfDay();
 
         return view('livewire.admin.admin-home-dashboard', [
-            'bookingsToday'       => Booking::whereDate('created_at', $today)->count(),
-            'activeMissions'      => Mission::whereIn('status', ['planned', 'en_route', 'started'])->count(),
-            'providersOnline'     => ProviderPresence::where('status', 'online')->count(),
-            'revenueToday'        => $this->revenueToday($today),
-            'pendingPayouts'      => ProviderPayout::where('status', ProviderPayout::STATUS_PENDING)->count(),
-            'webhookFailures24h'  => WebhookDelivery::whereIn('status', [
-                                        WebhookDelivery::STATUS_FAILED,
-                                        WebhookDelivery::STATUS_DEAD,
-                                    ])->where('updated_at', '>=', now()->subHours(24))->count(),
-            'recentDisputes'      => ComplaintCase::whereIn('status', ['open', 'assigned', 'investigating'])
+            'bookingsToday' => Booking::whereDate('created_at', $today)->count(),
+            'activeMissions' => Mission::whereIn('status', ['planned', 'en_route', 'started'])->count(),
+            'providersOnline' => ProviderPresence::where('status', 'online')->count(),
+            'revenueToday' => $this->revenueToday($today),
+            'pendingPayouts' => ProviderPayout::where('status', ProviderPayout::STATUS_PENDING)->count(),
+            'webhookFailures24h' => WebhookDelivery::whereIn('status', [
+                WebhookDelivery::STATUS_FAILED,
+                WebhookDelivery::STATUS_DEAD,
+            ])->where('updated_at', '>=', now()->subHours(24))->count(),
+            'recentDisputes' => ComplaintCase::whereIn('status', ['open', 'assigned', 'investigating'])
                 ->latest()
                 ->take(5)
                 ->get(),
-            'recentBookings'      => Booking::with('serviceCatalog:id,name')
+            'recentBookings' => Booking::with('serviceCatalog:id,name')
                 ->latest()
                 ->take(10)
                 ->get(['id', 'reference', 'status', 'service_catalog_id', 'created_at', 'scheduled_date']),
-            'bookingsTrend'       => $this->bookingsTrend(),
+            'bookingsTrend' => $this->bookingsTrend(),
         ]);
     }
 
@@ -47,14 +48,15 @@ class AdminHomeDashboard extends Component
     {
         return collect(range(6, 0))->map(function (int $daysAgo) {
             $date = now()->subDays($daysAgo);
+
             return [
-                'date'  => $date->format('d/m'),
+                'date' => $date->format('d/m'),
                 'count' => Booking::whereDate('created_at', $date)->count(),
             ];
         })->all();
     }
 
-    private function revenueToday(\Carbon\Carbon $today): float
+    private function revenueToday(Carbon $today): float
     {
         return (float) Booking::whereDate('created_at', $today)
             ->whereNotNull('estimated_price')

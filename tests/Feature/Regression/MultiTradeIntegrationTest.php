@@ -6,9 +6,11 @@ use App\Livewire\Admin\CatalogueServices;
 use App\Models\ServiceCatalog;
 use App\Models\Trade;
 use App\Models\User;
-use Database\Seeders\TradeSeeder;
+use App\Support\Livewire\Concerns\InteractsWithBookingFormState;
 use Database\Seeders\MultiTradeDemoServicesSeeder;
+use Database\Seeders\TradeSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Livewire\Component;
 use Livewire\Livewire;
 use Tests\TestCase;
 
@@ -31,9 +33,9 @@ class MultiTradeIntegrationTest extends TestCase
     private function makeAdmin(): User
     {
         return User::factory()->admin()->create([
-            'permissions'  => ['manage-services', 'perform-critical-admin-actions'],
+            'permissions' => ['manage-services', 'perform-critical-admin-actions'],
             'access_scope' => User::ACCESS_SCOPE_ALL,
-            'is_active'    => true,
+            'is_active' => true,
         ]);
     }
 
@@ -62,12 +64,12 @@ class MultiTradeIntegrationTest extends TestCase
         $service = ServiceCatalog::where('slug', 'test-peinture')->first();
 
         $this->assertNotNull($service,
-            "Le service doit être créé."
+            'Le service doit être créé.'
         );
         $this->assertSame($painting->id, (int) $service->trade_id,
-            "trade_id doit être persisté. Vérifier que la propriété est dans "
-            . "la validation de saveService() et que ServiceCatalog::\$fillable "
-            . "contient 'trade_id'."
+            'trade_id doit être persisté. Vérifier que la propriété est dans '
+            .'la validation de saveService() et que ServiceCatalog::$fillable '
+            ."contient 'trade_id'."
         );
     }
 
@@ -166,9 +168,14 @@ class MultiTradeIntegrationTest extends TestCase
 
         // Instancier le composant Livewire de booking pour exercer le trait
         // qui définit getServicesGroupedByTradeProperty.
-        $component = new class extends \Livewire\Component {
-            use \App\Support\Livewire\Concerns\InteractsWithBookingFormState;
-            public function render() { return ''; }
+        $component = new class extends Component
+        {
+            use InteractsWithBookingFormState;
+
+            public function render()
+            {
+                return '';
+            }
         };
 
         $grouped = $component->servicesGroupedByTrade;
@@ -178,7 +185,7 @@ class MultiTradeIntegrationTest extends TestCase
         $this->assertArrayHasKey('Peinture', $grouped);
         $this->assertArrayHasKey('Autres', $grouped,
             "Les services sans trade doivent être groupés sous 'Autres' "
-            . "pour ne pas être perdus pendant la transition multi-métiers."
+            .'pour ne pas être perdus pendant la transition multi-métiers.'
         );
         $this->assertSame('Nettoyage A', $grouped['Nettoyage']['A'] ?? null);
         $this->assertSame('Peinture B', $grouped['Peinture']['B'] ?? null);
@@ -199,7 +206,7 @@ class MultiTradeIntegrationTest extends TestCase
             $count = ServiceCatalog::where('trade_id', $trade->id)->count();
             $this->assertGreaterThan(0, $count,
                 "Le trade '{$slug}' doit avoir au moins 1 service de démo. "
-                . "Vérifier database/seeders/MultiTradeDemoServicesSeeder.php."
+                .'Vérifier database/seeders/MultiTradeDemoServicesSeeder.php.'
             );
         }
     }
@@ -215,8 +222,8 @@ class MultiTradeIntegrationTest extends TestCase
         $countAfterSecond = ServiceCatalog::count();
 
         $this->assertSame($countAfterFirst, $countAfterSecond,
-            "Le seeder doit être idempotent (updateOrCreate sur slug). "
-            . "Re-seeder ne doit PAS dupliquer les services."
+            'Le seeder doit être idempotent (updateOrCreate sur slug). '
+            .'Re-seeder ne doit PAS dupliquer les services.'
         );
     }
 }

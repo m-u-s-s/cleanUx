@@ -2,6 +2,7 @@
 
 namespace App\Events\Realtime;
 
+use App\Models\BroadcastEvent;
 use App\Models\Mission;
 use App\Realtime\Contracts\TracksBroadcastLedger;
 use Illuminate\Broadcasting\InteractsWithSockets;
@@ -29,7 +30,7 @@ class MissionLiveEta implements ShouldBroadcastNow, TracksBroadcastLedger
 
     public function broadcastOn(): array
     {
-        return [new PrivateChannel('mission.' . $this->mission->id)];
+        return [new PrivateChannel('mission.'.$this->mission->id)];
     }
 
     public function broadcastAs(): string
@@ -50,7 +51,7 @@ class MissionLiveEta implements ShouldBroadcastNow, TracksBroadcastLedger
 
     public function broadcastCategory(): string
     {
-        return \App\Models\BroadcastEvent::CATEGORY_MISSION_ETA;
+        return BroadcastEvent::CATEGORY_MISSION_ETA;
     }
 
     public function broadcastIdempotencyKey(): ?string
@@ -58,7 +59,8 @@ class MissionLiveEta implements ShouldBroadcastNow, TracksBroadcastLedger
         if (! $this->sequence) {
             return null;
         }
-        return 'eta:mission:' . $this->mission->id . ':' . $this->sequence;
+
+        return 'eta:mission:'.$this->mission->id.':'.$this->sequence;
     }
 
     public function broadcastSourceType(): ?string

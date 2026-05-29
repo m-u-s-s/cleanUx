@@ -22,10 +22,13 @@ class MessageAttachment extends Model
     use HasFactory;
     use SoftDeletes;
 
-    public const AV_STATUS_PENDING  = 'pending';
-    public const AV_STATUS_CLEAN    = 'clean';
+    public const AV_STATUS_PENDING = 'pending';
+
+    public const AV_STATUS_CLEAN = 'clean';
+
     public const AV_STATUS_INFECTED = 'infected';
-    public const AV_STATUS_ERROR    = 'error';
+
+    public const AV_STATUS_ERROR = 'error';
 
     protected $fillable = [
         'message_id',
@@ -46,11 +49,11 @@ class MessageAttachment extends Model
     ];
 
     protected $casts = [
-        'size_bytes'    => 'integer',
-        'image_width'   => 'integer',
-        'image_height'  => 'integer',
+        'size_bytes' => 'integer',
+        'image_width' => 'integer',
+        'image_height' => 'integer',
         'av_scanned_at' => 'datetime',
-        'metadata'      => 'array',
+        'metadata' => 'array',
     ];
 
     public function message(): BelongsTo
@@ -113,16 +116,24 @@ class MessageAttachment extends Model
         if (! $this->thumbnail_path || $this->isInfected()) {
             return null;
         }
+
         return Storage::disk($this->disk)->url($this->thumbnail_path);
     }
 
     public function getHumanSizeAttribute(): string
     {
         $size = (int) $this->size_bytes;
-        if ($size < 1024) return $size . ' B';
-        if ($size < 1024 * 1024) return number_format($size / 1024, 1) . ' KB';
-        if ($size < 1024 * 1024 * 1024) return number_format($size / 1024 / 1024, 1) . ' MB';
-        return number_format($size / 1024 / 1024 / 1024, 2) . ' GB';
+        if ($size < 1024) {
+            return $size.' B';
+        }
+        if ($size < 1024 * 1024) {
+            return number_format($size / 1024, 1).' KB';
+        }
+        if ($size < 1024 * 1024 * 1024) {
+            return number_format($size / 1024 / 1024, 1).' MB';
+        }
+
+        return number_format($size / 1024 / 1024 / 1024, 2).' GB';
     }
 
     /**

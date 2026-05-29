@@ -138,6 +138,7 @@ class StripeReconciliationService
                         "PaymentIntent {$intent->id} (statut {$intent->status}) absent de la DB locale",
                         'error'
                     );
+
                     continue;
                 }
 
@@ -148,7 +149,7 @@ class StripeReconciliationService
                         'payment_intents',
                         $intent->id,
                         sprintf(
-                            "Booking #%d : status local=%s vs Stripe=%s (PI %s)",
+                            'Booking #%d : status local=%s vs Stripe=%s (PI %s)',
                             $booking->id,
                             $booking->payment_status ?? '?',
                             $expectedStatus,
@@ -207,6 +208,7 @@ class StripeReconciliationService
                         "Payout Stripe {$payout->id} (paid, montant {$payout->amount}) sans entrée locale",
                         'warning'
                     );
+
                     continue;
                 }
 
@@ -216,7 +218,7 @@ class StripeReconciliationService
                         'payouts',
                         $payout->id,
                         sprintf(
-                            "Payout #%d local=%s vs Stripe=paid",
+                            'Payout #%d local=%s vs Stripe=paid',
                             $local->id,
                             $local->status
                         ),

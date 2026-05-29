@@ -10,7 +10,9 @@ use Illuminate\Support\Str;
 class ChatThread extends Model
 {
     public const STATUS_ACTIVE = 'active';
+
     public const STATUS_ARCHIVED = 'archived';
+
     public const STATUS_LOCKED = 'locked';
 
     protected $fillable = [
@@ -29,7 +31,7 @@ class ChatThread extends Model
 
     public static function generateCode(): string
     {
-        return 'thr_' . Str::lower(Str::random(20));
+        return 'thr_'.Str::lower(Str::random(20));
     }
 
     public function participants(): HasMany

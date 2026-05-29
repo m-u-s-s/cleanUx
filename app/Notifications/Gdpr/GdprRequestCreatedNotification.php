@@ -10,12 +10,10 @@ use Illuminate\Notifications\Notification;
 
 class GdprRequestCreatedNotification extends Notification
 {
-    use Queueable;
     use InteractsWithUserNotificationPreferences;
+    use Queueable;
 
-    public function __construct(public GdprDataRequest $request)
-    {
-    }
+    public function __construct(public GdprDataRequest $request) {}
 
     public function via($notifiable): array
     {
@@ -34,18 +32,18 @@ class GdprRequestCreatedNotification extends Notification
         switch ($type) {
             case GdprDataRequest::TYPE_EXPORT:
                 $mail->line('Votre demande d\'export de données est enregistrée.')
-                    ->line('Référence : ' . $ref)
+                    ->line('Référence : '.$ref)
                     ->line('Vous recevrez un email dès que l\'export sera prêt.');
                 break;
             case GdprDataRequest::TYPE_ERASURE:
                 $mail->line('Votre demande de suppression de compte est enregistrée.')
-                    ->line('Référence : ' . $ref)
+                    ->line('Référence : '.$ref)
                     ->line('Date d\'exécution prévue : '
-                        . optional($this->request->grace_period_ends_at)->format('d/m/Y'))
+                        .optional($this->request->grace_period_ends_at)->format('d/m/Y'))
                     ->line('Pour annuler cette demande, contactez le support avant cette date.');
                 break;
             default:
-                $mail->line('Votre demande RGPD ' . $ref . ' a bien été enregistrée.');
+                $mail->line('Votre demande RGPD '.$ref.' a bien été enregistrée.');
         }
 
         return $mail->action('Voir mes demandes', url('/dashboard/client/donnees'));
@@ -57,7 +55,7 @@ class GdprRequestCreatedNotification extends Notification
             'type' => 'gdpr_request_created',
             'severity' => 'info',
             'title' => 'Demande RGPD enregistrée',
-            'message' => $this->request->reference . ' — ' . $this->request->type,
+            'message' => $this->request->reference.' — '.$this->request->type,
             'request_id' => $this->request->id,
             'reference' => $this->request->reference,
             'request_type' => $this->request->type,

@@ -17,6 +17,7 @@ class DemoPlatformSeeder extends Seeder
     {
         if (! Schema::hasTable('users')) {
             $this->command?->warn('⚠️ Table users absente, DemoPlatformSeeder ignoré.');
+
             return;
         }
 
@@ -77,8 +78,8 @@ class DemoPlatformSeeder extends Seeder
 
         // Rattache l'utilisateur entreprise à son compte pour satisfaire les
         // contrôles de readiness (entreprise_users_without_account).
-        if ($companyContact && $clientOrg && \Illuminate\Support\Facades\Schema::hasColumn('users', 'organization_account_id')) {
-            \Illuminate\Support\Facades\DB::table('users')
+        if ($companyContact && $clientOrg && Schema::hasColumn('users', 'organization_account_id')) {
+            DB::table('users')
                 ->where('id', $companyContact->id)
                 ->update(['organization_account_id' => $clientOrg->id]);
         }
@@ -314,8 +315,8 @@ class DemoPlatformSeeder extends Seeder
             return null;
         }
 
-        if (empty($payload['postal_code_id']) && ! empty($payload['postal_code']) && \Illuminate\Support\Facades\Schema::hasTable('postal_codes')) {
-            $payload['postal_code_id'] = \Illuminate\Support\Facades\DB::table('postal_codes')
+        if (empty($payload['postal_code_id']) && ! empty($payload['postal_code']) && Schema::hasTable('postal_codes')) {
+            $payload['postal_code_id'] = DB::table('postal_codes')
                 ->where('code', $payload['postal_code'])
                 ->value('id');
         }
@@ -413,8 +414,8 @@ class DemoPlatformSeeder extends Seeder
         $price = (float) ($payload['price'] ?? $service->base_price ?? 0);
 
         $postalCodeId = null;
-        if (! empty($payload['postal_code']) && \Illuminate\Support\Facades\Schema::hasTable('postal_codes')) {
-            $postalCodeId = \Illuminate\Support\Facades\DB::table('postal_codes')
+        if (! empty($payload['postal_code']) && Schema::hasTable('postal_codes')) {
+            $postalCodeId = DB::table('postal_codes')
                 ->where('code', $payload['postal_code'])
                 ->value('id');
         }
@@ -476,9 +477,9 @@ class DemoPlatformSeeder extends Seeder
 
     protected function seedFeedback(int $bookingId, ?int $clientId, ?int $organizationId): void
     {
-        $table = \Illuminate\Support\Facades\Schema::hasTable('feedback')
+        $table = Schema::hasTable('feedback')
             ? 'feedback'
-            : (\Illuminate\Support\Facades\Schema::hasTable('feedbacks') ? 'feedbacks' : null);
+            : (Schema::hasTable('feedbacks') ? 'feedbacks' : null);
 
         if (! $table) {
             return;

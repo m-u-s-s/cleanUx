@@ -11,13 +11,12 @@ use Illuminate\Http\Request;
 
 /**
  * @group Admin — Insurance Claims
+ *
  * @authenticated
  */
 class InsuranceAdminController extends Controller
 {
-    public function __construct(protected InsuranceService $service)
-    {
-    }
+    public function __construct(protected InsuranceService $service) {}
 
     public function claims(): JsonResponse
     {
@@ -32,7 +31,7 @@ class InsuranceAdminController extends Controller
     {
         $data = $request->validate([
             'status' => 'required|string',
-            'notes'  => 'nullable|string|max:2000',
+            'notes' => 'nullable|string|max:2000',
         ]);
 
         try {

@@ -2,6 +2,7 @@
 
 namespace App\Services\Assistant\Llm;
 
+use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Throwable;
@@ -41,10 +42,10 @@ class AnthropicProvider implements LlmProvider
         }
 
         $payload = [
-            'model'      => $options['model']      ?? config('services.anthropic.model', 'claude-sonnet-4-20250514'),
+            'model' => $options['model'] ?? config('services.anthropic.model', 'claude-sonnet-4-20250514'),
             'max_tokens' => $options['max_tokens'] ?? config('services.anthropic.max_tokens', 1024),
-            'system'     => $systemPrompt,
-            'messages'   => $messages,
+            'system' => $systemPrompt,
+            'messages' => $messages,
         ];
 
         if (! empty($tools)) {
@@ -56,23 +57,24 @@ class AnthropicProvider implements LlmProvider
 
         try {
             $response = Http::withHeaders([
-                'x-api-key'         => $apiKey,
+                'x-api-key' => $apiKey,
                 'anthropic-version' => '2023-06-01',
-                'Content-Type'      => 'application/json',
+                'Content-Type' => 'application/json',
             ])
                 ->timeout($timeout)
                 ->retry($retries, 500, function ($exception) {
-                    return $exception instanceof \Illuminate\Http\Client\ConnectionException;
+                    return $exception instanceof ConnectionException;
                 })
                 ->post('https://api.anthropic.com/v1/messages', $payload);
 
             if (! $response->successful()) {
                 $body = $response->json() ?? [];
-                $msg  = $body['error']['message'] ?? "HTTP {$response->status()}";
+                $msg = $body['error']['message'] ?? "HTTP {$response->status()}";
                 Log::warning('AnthropicProvider non-2xx', [
                     'status' => $response->status(),
-                    'body'   => $body,
+                    'body' => $body,
                 ]);
+
                 return LlmResponse::error("API Anthropic: {$msg}");
             }
 
@@ -80,7 +82,8 @@ class AnthropicProvider implements LlmProvider
 
         } catch (Throwable $e) {
             report($e);
-            return LlmResponse::error("Erreur réseau Anthropic: " . $e->getMessage());
+
+            return LlmResponse::error('Erreur réseau Anthropic: '.$e->getMessage());
         }
     }
 
@@ -90,18 +93,18 @@ class AnthropicProvider implements LlmProvider
     private function parseResponse(array $data): LlmResponse
     {
         $stopReason = (string) ($data['stop_reason'] ?? 'end_turn');
-        $usage      = $data['usage'] ?? [];
+        $usage = $data['usage'] ?? [];
 
         $textParts = [];
-        $toolUses  = [];
+        $toolUses = [];
 
         foreach (($data['content'] ?? []) as $block) {
             if (($block['type'] ?? null) === 'text') {
                 $textParts[] = $block['text'] ?? '';
             } elseif (($block['type'] ?? null) === 'tool_use') {
                 $toolUses[] = [
-                    'id'    => $block['id']    ?? '',
-                    'name'  => $block['name']  ?? '',
+                    'id' => $block['id'] ?? '',
+                    'name' => $block['name'] ?? '',
                     'input' => $block['input'] ?? [],
                 ];
             }

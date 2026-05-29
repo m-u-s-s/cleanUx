@@ -17,6 +17,7 @@ class RatingModerationCenter extends Component
     protected $paginationTheme = 'tailwind';
 
     public string $tab = 'pending_reports';
+
     public string $search = '';
 
     public function hide(int $feedbackId): void
@@ -84,7 +85,7 @@ class RatingModerationCenter extends Component
                 ->with(['client:id,name', 'provider:id,name'])
                 ->where('status', Feedback::STATUS_PUBLISHED)
                 ->when($this->search, function ($q) {
-                    $term = '%' . $this->search . '%';
+                    $term = '%'.$this->search.'%';
                     $q->where(function ($inner) use ($term) {
                         $inner->where('commentaire', 'like', $term)
                             ->orWhere('comment', 'like', $term)

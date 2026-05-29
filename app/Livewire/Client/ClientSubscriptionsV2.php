@@ -15,7 +15,9 @@ use Livewire\Component;
 class ClientSubscriptionsV2 extends Component
 {
     public string $tab = 'mine';   // mine | plans | cycles
+
     public ?int $detailsForSubId = null;
+
     public string $confirmCancelCode = '';
 
     public function subscribe(string $planCode): void
@@ -23,6 +25,7 @@ class ClientSubscriptionsV2 extends Component
         $plan = SubscriptionPlanV2::query()->where('code', $planCode)->active()->first();
         if (! $plan) {
             $this->dispatch('toast', 'Plan introuvable.', 'error');
+
             return;
         }
         try {
@@ -30,7 +33,7 @@ class ClientSubscriptionsV2 extends Component
             $this->dispatch('toast', 'Abonnement créé.', 'success');
             $this->tab = 'mine';
         } catch (ValidationException $e) {
-            $this->dispatch('toast', 'Erreur : ' . implode(' / ', collect($e->errors())->flatten()->all()), 'error');
+            $this->dispatch('toast', 'Erreur : '.implode(' / ', collect($e->errors())->flatten()->all()), 'error');
         }
     }
 
@@ -41,7 +44,7 @@ class ClientSubscriptionsV2 extends Component
             app(SubscriptionEngine::class)->pause($sub);
             $this->dispatch('toast', 'Abonnement en pause.', 'success');
         } catch (ValidationException $e) {
-            $this->dispatch('toast', 'Erreur : ' . implode(' / ', collect($e->errors())->flatten()->all()), 'error');
+            $this->dispatch('toast', 'Erreur : '.implode(' / ', collect($e->errors())->flatten()->all()), 'error');
         }
     }
 
@@ -52,7 +55,7 @@ class ClientSubscriptionsV2 extends Component
             app(SubscriptionEngine::class)->resume($sub);
             $this->dispatch('toast', 'Abonnement réactivé.', 'success');
         } catch (ValidationException $e) {
-            $this->dispatch('toast', 'Erreur : ' . implode(' / ', collect($e->errors())->flatten()->all()), 'error');
+            $this->dispatch('toast', 'Erreur : '.implode(' / ', collect($e->errors())->flatten()->all()), 'error');
         }
     }
 

@@ -9,6 +9,7 @@ use App\Models\MissionQualityInspection;
 use App\Models\QualityChecklistItem;
 use App\Models\User;
 use App\Support\ActivityLogger;
+use App\Support\Webhooks\BusinessEventEmitter;
 use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Config;
@@ -187,7 +188,7 @@ class QualityInspectionService
         ]);
 
         $fresh = $inspection->fresh();
-        \App\Support\Webhooks\BusinessEventEmitter::emit(
+        BusinessEventEmitter::emit(
             eventCode: 'inspection.completed',
             payload: [
                 'inspection_id' => $fresh->id,
@@ -198,7 +199,7 @@ class QualityInspectionService
                 'submitted_by' => $provider->id,
                 'submitted_at' => $fresh->submitted_at?->toIso8601String(),
             ],
-            idempotencyKey: 'inspection.completed:' . $fresh->id,
+            idempotencyKey: 'inspection.completed:'.$fresh->id,
             sourceType: MissionQualityInspection::class,
             sourceId: (int) $fresh->id,
         );

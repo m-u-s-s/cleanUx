@@ -2,11 +2,14 @@
 
 namespace App\Observers;
 
+use App\Models\AnalyticsEvent;
 use App\Models\Booking;
 use App\Models\Feedback;
 use App\Models\User;
 use App\Notifications\Rating\RatingRequestedNotification;
 use App\Services\Analytics\AnalyticsService;
+use App\Services\Badges\ProviderBadgeEngine;
+use App\Services\Loyalty\LoyaltyService;
 use App\Services\Promotion\ReferralService;
 use App\Support\Accounting\BookingAutoPoster;
 use App\Support\Chat\BookingChatAutoCreator;
@@ -14,6 +17,8 @@ use App\Support\Domain\BookingStatus;
 use App\Support\Presence\PresenceAutoTransitioner;
 use App\Support\TripTracking\TripTrackingAutoCloser;
 use App\Support\Webhooks\BusinessEventEmitter;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Schema;
 
 class BookingObserver
 {
@@ -86,7 +91,7 @@ class BookingObserver
                 'currency' => $booking->currency ?? null,
                 'occurred_at' => now()->toIso8601String(),
             ],
-            idempotencyKey: $eventCode . ':booking:' . $booking->id . ':' . now()->format('YmdHi'),
+            idempotencyKey: $eventCode.':booking:'.$booking->id.':'.now()->format('YmdHi'),
             sourceType: Booking::class,
             sourceId: (int) $booking->id,
         );
@@ -117,8 +122,8 @@ class BookingObserver
                     'amount_cents' => $booking->total_amount_cents ?? null,
                 ],
                 [
-                    'idempotency_key' => $eventName . ':' . $booking->id,
-                    'category' => \App\Models\AnalyticsEvent::CATEGORY_LIFECYCLE,
+                    'idempotency_key' => $eventName.':'.$booking->id,
+                    'category' => AnalyticsEvent::CATEGORY_LIFECYCLE,
                     'revenue_cents' => $eventName === 'booking.completed' ? ($booking->total_amount_cents ?? null) : null,
                     'currency' => $booking->currency ?? null,
                 ],
@@ -135,23 +140,23 @@ class BookingObserver
     protected function maybeEvaluateProviderBadges(Booking $booking): void
     {
         try {
-            if (! class_exists(\App\Services\Badges\ProviderBadgeEngine::class)) {
+            if (! class_exists(ProviderBadgeEngine::class)) {
                 return;
             }
-            if (! \Illuminate\Support\Facades\Schema::hasTable('provider_badges')) {
+            if (! Schema::hasTable('provider_badges')) {
                 return;
             }
             $providerId = $booking->employe_id ?? $booking->assigned_provider_user_id ?? null;
             if (! $providerId) {
                 return;
             }
-            $provider = \App\Models\User::find($providerId);
+            $provider = User::find($providerId);
             if (! $provider) {
                 return;
             }
-            app(\App\Services\Badges\ProviderBadgeEngine::class)->evaluate($provider);
+            app(ProviderBadgeEngine::class)->evaluate($provider);
         } catch (\Throwable $e) {
-            \Illuminate\Support\Facades\Log::warning('[badges_auto] post-mission evaluate failed', [
+            Log::warning('[badges_auto] post-mission evaluate failed', [
                 'booking_id' => $booking->id,
                 'error' => $e->getMessage(),
             ]);
@@ -189,7 +194,7 @@ class BookingObserver
             if (! $client) {
                 return;
             }
-            app(\App\Services\Loyalty\LoyaltyService::class)
+            app(LoyaltyService::class)
                 ->awardBookingPoints($client, $booking);
         } catch (\Throwable $e) {
             report($e);

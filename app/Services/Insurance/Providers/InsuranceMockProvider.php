@@ -2,7 +2,6 @@
 
 namespace App\Services\Insurance\Providers;
 
-use App\Models\BookingInsurance;
 use App\Models\InsuranceClaim;
 use App\Services\Insurance\ClaimFilingRequest;
 use App\Services\Insurance\ClaimFilingResult;
@@ -41,8 +40,8 @@ class InsuranceMockProvider implements InsuranceProviderInterface
         }
 
         return InsurancePurchaseResult::accepted(
-            'mock_pol_' . Str::lower(Str::random(12)),
-            'POL-' . strtoupper(Str::random(8)),
+            'mock_pol_'.Str::lower(Str::random(12)),
+            'POL-'.strtoupper(Str::random(8)),
             ['simulated' => true],
         );
     }
@@ -50,6 +49,7 @@ class InsuranceMockProvider implements InsuranceProviderInterface
     public function cancelPolicy(string $externalId): InsuranceCancelResult
     {
         Log::info('InsuranceMockProvider::cancelPolicy', ['external_id' => $externalId]);
+
         return InsuranceCancelResult::ok(['simulated' => true]);
     }
 
@@ -63,14 +63,14 @@ class InsuranceMockProvider implements InsuranceProviderInterface
 
         if ($request->incidentType === 'fraud_simulation') {
             return ClaimFilingResult::accepted(
-                'mock_clm_' . Str::lower(Str::random(12)),
+                'mock_clm_'.Str::lower(Str::random(12)),
                 InsuranceClaim::STATUS_REJECTED,
                 ['simulated' => true, 'auto_rejected' => true],
             );
         }
 
         return ClaimFilingResult::accepted(
-            'mock_clm_' . Str::lower(Str::random(12)),
+            'mock_clm_'.Str::lower(Str::random(12)),
             InsuranceClaim::STATUS_FILED,
             ['simulated' => true],
         );
@@ -79,6 +79,7 @@ class InsuranceMockProvider implements InsuranceProviderInterface
     public function verifyWebhook(string $payload, array $headers): array
     {
         $decoded = json_decode($payload, true);
+
         return is_array($decoded) ? $decoded : ['raw' => $payload];
     }
 

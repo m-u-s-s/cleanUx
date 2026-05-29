@@ -26,7 +26,7 @@ return new class extends Migration
                 $table->index('anonymized_at', 'users_anonymized_at_index');
                 $table->index('deletion_scheduled_at', 'users_deletion_scheduled_at_index');
             });
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             // index existant
         }
     }
@@ -34,8 +34,14 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('users', function (Blueprint $table) {
-            try { $table->dropIndex('users_anonymized_at_index'); } catch (\Throwable $e) {}
-            try { $table->dropIndex('users_deletion_scheduled_at_index'); } catch (\Throwable $e) {}
+            try {
+                $table->dropIndex('users_anonymized_at_index');
+            } catch (Throwable $e) {
+            }
+            try {
+                $table->dropIndex('users_deletion_scheduled_at_index');
+            } catch (Throwable $e) {
+            }
 
             foreach ([
                 'anonymized_at', 'processing_restricted_at',

@@ -8,6 +8,7 @@ use Livewire\Component;
 class HelpCenter extends Component
 {
     public string $search = '';
+
     public string $category = '';
 
     /**
@@ -21,7 +22,7 @@ class HelpCenter extends Component
                 'items' => [
                     [
                         'q' => "Qu'est-ce que CleanUx ?",
-                        'a' => "CleanUx est une marketplace multi-métiers (nettoyage, peinture, babysitting, toiturier, etc.) qui met en relation des clients avec des prestataires vérifiés.",
+                        'a' => 'CleanUx est une marketplace multi-métiers (nettoyage, peinture, babysitting, toiturier, etc.) qui met en relation des clients avec des prestataires vérifiés.',
                     ],
                     [
                         'q' => 'Comment créer un compte ?',
@@ -38,11 +39,11 @@ class HelpCenter extends Component
                     ],
                     [
                         'q' => 'Puis-je modifier ou annuler ma réservation ?',
-                        'a' => "Oui. Plus de 24h avant : remboursement intégral. Entre 24h et 2h : 50% remboursé. Moins de 2h ou no-show : 100% facturé.",
+                        'a' => 'Oui. Plus de 24h avant : remboursement intégral. Entre 24h et 2h : 50% remboursé. Moins de 2h ou no-show : 100% facturé.',
                     ],
                     [
-                        'q' => "Comment voir où en est mon prestataire ?",
-                        'a' => "Lorsque la mission est en cours, vous accédez au suivi temps réel depuis le détail de la mission (carte + ETA).",
+                        'q' => 'Comment voir où en est mon prestataire ?',
+                        'a' => 'Lorsque la mission est en cours, vous accédez au suivi temps réel depuis le détail de la mission (carte + ETA).',
                     ],
                 ],
             ],
@@ -51,14 +52,14 @@ class HelpCenter extends Component
                 'items' => [
                     [
                         'q' => 'Quels moyens de paiement acceptez-vous ?',
-                        'a' => "Cartes bancaires (Visa, Mastercard, AMEX) via Stripe. Apple Pay et Google Pay sur mobile. Virement SEPA pour B2B.",
+                        'a' => 'Cartes bancaires (Visa, Mastercard, AMEX) via Stripe. Apple Pay et Google Pay sur mobile. Virement SEPA pour B2B.',
                     ],
                     [
                         'q' => 'Quand suis-je débité ?',
-                        'a' => "Votre carte est autorisée à la réservation. Le débit effectif intervient au démarrage de la mission. Vous pouvez ajouter un pourboire après.",
+                        'a' => 'Votre carte est autorisée à la réservation. Le débit effectif intervient au démarrage de la mission. Vous pouvez ajouter un pourboire après.',
                     ],
                     [
-                        'q' => "Comment télécharger ma facture ?",
+                        'q' => 'Comment télécharger ma facture ?',
                         'a' => "Depuis 'Mes documents financiers' dans votre espace, vous pouvez télécharger devis et factures en PDF.",
                     ],
                 ],
@@ -67,16 +68,16 @@ class HelpCenter extends Component
                 'label' => 'Sécurité & confiance',
                 'items' => [
                     [
-                        'q' => "Comment vérifiez-vous les prestataires ?",
-                        'a' => "Chaque prestataire passe une vérification KYC (identité officielle), KYB (entreprise si applicable), et fournit ses assurances. Une note moyenne et des avis publics sont affichés sur son profil.",
+                        'q' => 'Comment vérifiez-vous les prestataires ?',
+                        'a' => 'Chaque prestataire passe une vérification KYC (identité officielle), KYB (entreprise si applicable), et fournit ses assurances. Une note moyenne et des avis publics sont affichés sur son profil.',
                     ],
                     [
                         'q' => 'Que faire en cas de problème pendant une mission ?',
-                        'a' => "Vous pouvez ouvrir un litige depuis le détail de la mission. Notre équipe SAV intervient sous 24h pour médiation gratuite.",
+                        'a' => 'Vous pouvez ouvrir un litige depuis le détail de la mission. Notre équipe SAV intervient sous 24h pour médiation gratuite.',
                     ],
                     [
                         'q' => 'Mes données sont-elles protégées ?',
-                        'a' => "Oui. Conforme RGPD, données chiffrées en transit (TLS 1.3) et au repos. Voir notre Politique de confidentialité.",
+                        'a' => 'Oui. Conforme RGPD, données chiffrées en transit (TLS 1.3) et au repos. Voir notre Politique de confidentialité.',
                     ],
                 ],
             ],
@@ -89,11 +90,11 @@ class HelpCenter extends Component
                     ],
                     [
                         'q' => 'Quel est le pourcentage de commission ?',
-                        'a' => "20% sur chaque mission. 0% sur les pourboires (intégralement reversés).",
+                        'a' => '20% sur chaque mission. 0% sur les pourboires (intégralement reversés).',
                     ],
                     [
                         'q' => 'Quand suis-je payé ?',
-                        'a' => "Les fonds sont versés via Stripe Connect, généralement sous 2-5 jours ouvrés après la mission selon votre banque.",
+                        'a' => 'Les fonds sont versés via Stripe Connect, généralement sous 2-5 jours ouvrés après la mission selon votre banque.',
                     ],
                 ],
             ],

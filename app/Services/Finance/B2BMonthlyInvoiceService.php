@@ -2,9 +2,9 @@
 
 namespace App\Services\Finance;
 
+use App\Models\Booking;
 use App\Models\FinanceInvoice;
 use App\Models\OrganizationAccount;
-use App\Models\Booking;
 use App\Support\ActivityLogger;
 use App\Support\Domain\BookingStatus;
 use Carbon\Carbon;

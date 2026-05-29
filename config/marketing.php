@@ -19,8 +19,8 @@ return [
     */
     'throttling' => [
         'email_per_minute' => (int) env('MARKETING_EMAIL_PER_MIN', 120),
-        'sms_per_minute'   => (int) env('MARKETING_SMS_PER_MIN', 60),
-        'push_per_minute'  => (int) env('MARKETING_PUSH_PER_MIN', 300),
+        'sms_per_minute' => (int) env('MARKETING_SMS_PER_MIN', 60),
+        'push_per_minute' => (int) env('MARKETING_PUSH_PER_MIN', 300),
     ],
 
     /*

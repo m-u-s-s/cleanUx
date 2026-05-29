@@ -15,8 +15,7 @@ class EnterpriseWorkOrderMissionGeneratorService
 {
     public function __construct(
         protected OperationalLoadCalculator $loadCalculator,
-    ) {
-    }
+    ) {}
 
     public function ensureBatchForWorkOrder(EnterpriseWorkOrder $workOrder): MissionBatch
     {
@@ -24,14 +23,14 @@ class EnterpriseWorkOrderMissionGeneratorService
         $endsAt = Carbon::parse($workOrder->scheduled_end_at ?? $workOrder->requested_end_at ?? $startsAt->copy()->addDay());
 
         $batch = $workOrder->generatedBatch ?: MissionBatch::query()->firstOrCreate(
-            ['reference' => 'WO-' . $workOrder->reference],
+            ['reference' => 'WO-'.$workOrder->reference],
             [
                 'organization_account_id' => $workOrder->organization_account_id,
                 'organization_site_id' => $workOrder->organization_site_id,
                 'enterprise_work_order_id' => $workOrder->id,
                 'field_team_id' => $workOrder->assigned_field_team_id,
                 'service_partner_id' => $workOrder->assigned_service_partner_id,
-                'name' => 'Batch ' . $workOrder->title,
+                'name' => 'Batch '.$workOrder->title,
                 'status' => 'planned',
                 'batch_type' => 'work_order_generated',
                 'starts_on' => $startsAt->toDateString(),
@@ -114,7 +113,7 @@ class EnterpriseWorkOrderMissionGeneratorService
                     'service_zone_id' => $workOrder->service_zone_id,
                     'status' => 'planned',
                     'segment_type' => 'work_order_line',
-                    'title' => $line->title ?: ('Segment ' . ($sequence + 1)),
+                    'title' => $line->title ?: ('Segment '.($sequence + 1)),
                     'zone_label' => optional($workOrder->organizationSite)->name ?? optional($workOrder->organizationAccount)->name,
                     'service_date' => $serviceDate->toDateString(),
                     'planned_start_at' => $serviceDate->copy()->setTimeFromTimeString($batch->default_start_time ?? '08:00:00')->addMinutes($sequence * 90),
@@ -186,7 +185,7 @@ class EnterpriseWorkOrderMissionGeneratorService
                 'requires_start_code' => true,
                 'requires_end_code' => true,
                 'client_presence_confirmed' => false,
-                'notes' => $segment->notes ?: ('Auto-generated from batch ' . $batch->reference),
+                'notes' => $segment->notes ?: ('Auto-generated from batch '.$batch->reference),
             ]);
 
             $segment->forceFill([

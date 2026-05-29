@@ -14,17 +14,17 @@ class MissionPartnerAssignmentFactory extends Factory
     public function definition(): array
     {
         return [
-            'mission_id'             => fn () => Mission::factory()->create()->id,
-            'service_partner_id'     => fn () => ServicePartner::factory()->create()->id,
-            'assignment_status'      => 'assigned',
-            'assigned_at'            => now(),
-            'accepted_at'            => null,
-            'started_at'             => null,
-            'completed_at'           => null,
-            'agreed_rate'            => fake()->randomFloat(2, 100, 500),
-            'sla_snapshot'           => null,
-            'instructions_snapshot'  => null,
-            'metadata'               => null,
+            'mission_id' => fn () => Mission::factory()->create()->id,
+            'service_partner_id' => fn () => ServicePartner::factory()->create()->id,
+            'assignment_status' => 'assigned',
+            'assigned_at' => now(),
+            'accepted_at' => null,
+            'started_at' => null,
+            'completed_at' => null,
+            'agreed_rate' => fake()->randomFloat(2, 100, 500),
+            'sla_snapshot' => null,
+            'instructions_snapshot' => null,
+            'metadata' => null,
         ];
     }
 
@@ -32,7 +32,7 @@ class MissionPartnerAssignmentFactory extends Factory
     {
         return $this->state(fn () => [
             'assignment_status' => 'accepted',
-            'accepted_at'       => now(),
+            'accepted_at' => now(),
         ]);
     }
 }

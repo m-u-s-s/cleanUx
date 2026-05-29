@@ -17,9 +17,11 @@ class MissionExecutionBoard extends Component
     public Mission $mission;
 
     public array $beforePhotos = [];
+
     public array $afterPhotos = [];
 
     public ?string $successMessage = null;
+
     public ?string $errorMessage = null;
 
     public function mount(Mission $mission): void

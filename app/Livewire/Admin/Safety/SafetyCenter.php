@@ -17,11 +17,15 @@ class SafetyCenter extends Component
     protected $paginationTheme = 'tailwind';
 
     public string $tab = 'reports';
+
     public string $statusFilter = '';
+
     public string $categoryFilter = '';
+
     public string $search = '';
 
     public ?int $selectedReportId = null;
+
     public string $resolutionNotes = '';
 
     public function setTab(string $tab): void
@@ -58,7 +62,7 @@ class SafetyCenter extends Component
             $this->dispatch('toast', 'Signalement résolu.', 'success');
             $this->closeReport();
         } catch (\Throwable $e) {
-            $this->dispatch('toast', 'Erreur : ' . $e->getMessage(), 'error');
+            $this->dispatch('toast', 'Erreur : '.$e->getMessage(), 'error');
         }
     }
 
@@ -69,12 +73,12 @@ class SafetyCenter extends Component
             ->when($this->statusFilter, fn ($q) => $q->where('status', $this->statusFilter))
             ->when($this->categoryFilter, fn ($q) => $q->where('category', $this->categoryFilter))
             ->when($this->search, function ($q) {
-                $term = '%' . $this->search . '%';
+                $term = '%'.$this->search.'%';
                 $q->where(function ($w) use ($term) {
                     $w->where('code', 'like', $term)
-                      ->orWhere('description', 'like', $term)
-                      ->orWhereHas('reporter', fn ($u) => $u->where('email', 'like', $term))
-                      ->orWhereHas('reported', fn ($u) => $u->where('email', 'like', $term));
+                        ->orWhere('description', 'like', $term)
+                        ->orWhereHas('reporter', fn ($u) => $u->where('email', 'like', $term))
+                        ->orWhereHas('reported', fn ($u) => $u->where('email', 'like', $term));
                 });
             })
             ->orderByDesc('created_at')

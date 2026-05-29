@@ -15,7 +15,7 @@ class ReferralFactory extends Factory
         return [
             'referrer_user_id' => User::factory(),
             'referee_email' => fake()->safeEmail(),
-            'referral_code' => 'REF' . strtoupper(fake()->bothify('????####')),
+            'referral_code' => 'REF'.strtoupper(fake()->bothify('????####')),
             'status' => 'invited',
             'referrer_reward_amount' => 10.00,
             'referee_reward_amount' => 10.00,

@@ -18,11 +18,10 @@ class ProcessStripeWebhookJob implements ShouldQueue
     use SerializesModels;
 
     public int $tries = 1;
+
     public int $timeout = 60;
 
-    public function __construct(public int $eventId)
-    {
-    }
+    public function __construct(public int $eventId) {}
 
     public function handle(StripeWebhookEventProcessor $processor): void
     {

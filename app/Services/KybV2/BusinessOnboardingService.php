@@ -8,9 +8,9 @@ use App\Models\BusinessVerification;
 use App\Models\User;
 use App\Services\KybV2\Contracts\BusinessVerificationProviderContract;
 use App\Services\KybV2\Contracts\SanctionsScreeningProviderContract;
+use App\Support\Audit\CriticalActionAuditor;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 
 class BusinessOnboardingService
@@ -34,7 +34,7 @@ class BusinessOnboardingService
             }
         }
         $country = strtoupper((string) $payload['country_code']);
-        $allowedByCountry = (array) config('kyb_v2.identifier_types_by_country.' . $country, []);
+        $allowedByCountry = (array) config('kyb_v2.identifier_types_by_country.'.$country, []);
         $idType = strtolower((string) $payload['identifier_type']);
         if (! empty($allowedByCountry) && ! in_array($idType, $allowedByCountry, true)) {
             throw ValidationException::withMessages([
@@ -99,7 +99,7 @@ class BusinessOnboardingService
 
     protected function runSingleCheck(BusinessEntity $entity, string $checkType, callable $resolver): BusinessVerification
     {
-        $idempotencyKey = $entity->id . ':' . $checkType . ':' . md5((string) $entity->identifier_value);
+        $idempotencyKey = $entity->id.':'.$checkType.':'.md5((string) $entity->identifier_value);
 
         $existing = BusinessVerification::query()
             ->where('idempotency_key', $idempotencyKey)
@@ -116,11 +116,12 @@ class BusinessOnboardingService
             Log::warning('[kyb_v2] verification failed', ['error' => $e->getMessage()]);
             $result = new VerificationResult(
                 false, $this->verificationProvider->name(), $checkType,
-                error: 'exception:' . mb_substr($e->getMessage(), 0, 200),
+                error: 'exception:'.mb_substr($e->getMessage(), 0, 200),
             );
         }
 
         $cacheDays = (int) config('kyb_v2.verification_cache_days', 90);
+
         return BusinessVerification::query()->updateOrCreate(
             ['idempotency_key' => $idempotencyKey],
             [
@@ -217,6 +218,7 @@ class BusinessOnboardingService
         }
 
         $entity->save();
+
         return $entity->fresh();
     }
 
@@ -229,7 +231,7 @@ class BusinessOnboardingService
             'rejected_at' => null,
             'rejection_reason' => null,
         ]);
-        \App\Support\Audit\CriticalActionAuditor::record(
+        CriticalActionAuditor::record(
             eventType: 'kyb.entity_approved',
             context: [
                 'entity_id' => $entity->id,
@@ -241,6 +243,7 @@ class BusinessOnboardingService
             subject: $entity,
             actor: $admin,
         );
+
         return $entity->fresh();
     }
 
@@ -256,7 +259,7 @@ class BusinessOnboardingService
             'verified_at' => null,
             'verified_by_user_id' => null,
         ]);
-        \App\Support\Audit\CriticalActionAuditor::record(
+        CriticalActionAuditor::record(
             eventType: 'kyb.entity_rejected',
             context: [
                 'entity_id' => $entity->id,
@@ -268,6 +271,7 @@ class BusinessOnboardingService
             actor: $admin,
             severity: 'warning',
         );
+
         return $entity->fresh();
     }
 }

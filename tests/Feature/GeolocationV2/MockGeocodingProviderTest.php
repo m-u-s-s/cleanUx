@@ -19,7 +19,7 @@ class MockGeocodingProviderTest extends TestCase
 
     public function test_autocomplete_matches_postal_or_locality_prefix(): void
     {
-        $p = new MockGeocodingProvider();
+        $p = new MockGeocodingProvider;
         $results = $p->autocomplete('Brux');
 
         $this->assertNotEmpty($results);
@@ -30,7 +30,7 @@ class MockGeocodingProviderTest extends TestCase
 
     public function test_autocomplete_country_filter_excludes_others(): void
     {
-        $p = new MockGeocodingProvider();
+        $p = new MockGeocodingProvider;
         $resultsFr = $p->autocomplete('Paris', 'FR');
         $resultsBe = $p->autocomplete('Paris', 'BE');
 
@@ -41,7 +41,7 @@ class MockGeocodingProviderTest extends TestCase
 
     public function test_geocode_returns_lat_lng_for_known_postal(): void
     {
-        $p = new MockGeocodingProvider();
+        $p = new MockGeocodingProvider;
         $r = $p->geocode('1050 Ixelles');
 
         $this->assertNotNull($r);
@@ -53,7 +53,7 @@ class MockGeocodingProviderTest extends TestCase
 
     public function test_reverse_geocode_returns_closest_entry(): void
     {
-        $p = new MockGeocodingProvider();
+        $p = new MockGeocodingProvider;
         // près d'Anvers
         $r = $p->reverseGeocode(51.22, 4.40);
 
@@ -64,7 +64,7 @@ class MockGeocodingProviderTest extends TestCase
 
     public function test_distance_returns_haversine_meters_and_duration(): void
     {
-        $p = new MockGeocodingProvider();
+        $p = new MockGeocodingProvider;
         // Bruxelles → Anvers (≈ 40km à vol d'oiseau)
         $r = $p->distance(50.8467, 4.3525, 51.2194, 4.4025, 'driving');
 

@@ -4,7 +4,6 @@ namespace Tests\Feature\Phase13;
 
 use App\Models\Booking;
 use App\Models\Mission;
-use App\Models\MissionTrackingPoint;
 use App\Models\MissionTrackingSession;
 use App\Models\ProviderPayout;
 use App\Models\ProviderProfile;
@@ -27,10 +26,10 @@ class Phase13Test extends TestCase
         $provider = User::factory()->create();
         $payout = ProviderPayout::create([
             'provider_user_id' => $provider->id,
-            'amount'           => 100.50,
-            'currency'         => 'EUR',
-            'status'           => ProviderPayout::STATUS_PENDING,
-            'provider'         => 'stripe_connect',
+            'amount' => 100.50,
+            'currency' => 'EUR',
+            'status' => ProviderPayout::STATUS_PENDING,
+            'provider' => 'stripe_connect',
         ]);
 
         $payout->markAsPaid('po_test_123');
@@ -107,7 +106,7 @@ class Phase13Test extends TestCase
         $booking = $this->makeBooking();
         $mission = Mission::create([
             'booking_id' => $booking->id,
-            'status'     => 'planned',
+            'status' => 'planned',
         ]);
 
         $result = app(EtaService::class)->computeForMission($mission);
@@ -124,18 +123,18 @@ class Phase13Test extends TestCase
         ]);
         $mission = Mission::create([
             'booking_id' => $booking->id,
-            'status'     => 'en_route',
+            'status' => 'en_route',
         ]);
         $employee = User::factory()->create();
 
         $session = MissionTrackingSession::create([
-            'mission_id'        => $mission->id,
-            'employee_user_id'  => $employee->id,
-            'tracking_mode'     => 'to_client',
-            'is_active'         => true,
-            'started_at'        => now(),
-            'last_lat'          => 50.85,
-            'last_lng'          => 4.35,
+            'mission_id' => $mission->id,
+            'employee_user_id' => $employee->id,
+            'tracking_mode' => 'to_client',
+            'is_active' => true,
+            'started_at' => now(),
+            'last_lat' => 50.85,
+            'last_lng' => 4.35,
         ]);
 
         $result = app(EtaService::class)->computeForMission($mission);
@@ -224,7 +223,7 @@ class Phase13Test extends TestCase
         ]);
 
         $response = $this->actingAs($provider, 'sanctum')
-                         ->getJson('/api/provider/payouts?status=paid');
+            ->getJson('/api/provider/payouts?status=paid');
 
         $response->assertOk();
         $this->assertSame(1, $response->json('pagination.total'));
@@ -270,27 +269,29 @@ class Phase13Test extends TestCase
     {
         $user = User::factory()->create();
         ProviderProfile::create([
-            'user_id'       => $user->id,
+            'user_id' => $user->id,
             'provider_type' => 'individual',
-            'status'        => 'active',
+            'status' => 'active',
             'verification_status' => 'verified',
         ]);
+
         return $user->fresh();
     }
 
     protected function makeBooking(array $overrides = []): Booking
     {
         $client = User::factory()->create();
+
         return Booking::create(array_merge([
-            'booking_reference' => 'CUX-' . strtoupper(Str::random(6)),
-            'customer_user_id'  => $client->id,
-            'client_id'         => $client->id,
-            'scheduled_date'    => now()->addDay()->toDateString(),
-            'scheduled_time'    => '10:00:00',
-            'status'            => 'confirme',
-            'currency'          => 'EUR',
-            'priority'          => 'normal',
-            'booking_mode'      => 'scheduled',
+            'booking_reference' => 'CUX-'.strtoupper(Str::random(6)),
+            'customer_user_id' => $client->id,
+            'client_id' => $client->id,
+            'scheduled_date' => now()->addDay()->toDateString(),
+            'scheduled_time' => '10:00:00',
+            'status' => 'confirme',
+            'currency' => 'EUR',
+            'priority' => 'normal',
+            'booking_mode' => 'scheduled',
         ], $overrides));
     }
 }

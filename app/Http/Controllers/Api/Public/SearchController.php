@@ -139,7 +139,7 @@ class SearchController extends Controller
                 'code' => $t->code,
             ]) ?? collect(),
             'distance_km' => isset($u->distance_km) ? round((float) $u->distance_km, 2) : null,
-            'profile_url' => url('/providers/' . $u->id),
+            'profile_url' => url('/providers/'.$u->id),
         ];
     }
 }

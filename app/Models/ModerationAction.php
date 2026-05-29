@@ -23,16 +23,26 @@ class ModerationAction extends Model
     use HasFactory;
 
     public const TYPE_DELETE_MESSAGE = 'delete_message';
-    public const TYPE_PIN_MESSAGE    = 'pin_message';
-    public const TYPE_UNPIN_MESSAGE  = 'unpin_message';
-    public const TYPE_LOCK_CHANNEL   = 'lock_channel';
+
+    public const TYPE_PIN_MESSAGE = 'pin_message';
+
+    public const TYPE_UNPIN_MESSAGE = 'unpin_message';
+
+    public const TYPE_LOCK_CHANNEL = 'lock_channel';
+
     public const TYPE_UNLOCK_CHANNEL = 'unlock_channel';
-    public const TYPE_ARCHIVE_CHANNEL   = 'archive_channel';
+
+    public const TYPE_ARCHIVE_CHANNEL = 'archive_channel';
+
     public const TYPE_UNARCHIVE_CHANNEL = 'unarchive_channel';
-    public const TYPE_KICK_MEMBER    = 'kick_member';
-    public const TYPE_MUTE_MEMBER    = 'mute_member';
-    public const TYPE_UNMUTE_MEMBER  = 'unmute_member';
-    public const TYPE_ROLE_CHANGE    = 'role_change';
+
+    public const TYPE_KICK_MEMBER = 'kick_member';
+
+    public const TYPE_MUTE_MEMBER = 'mute_member';
+
+    public const TYPE_UNMUTE_MEMBER = 'unmute_member';
+
+    public const TYPE_ROLE_CHANGE = 'role_change';
 
     protected $fillable = [
         'actor_user_id',

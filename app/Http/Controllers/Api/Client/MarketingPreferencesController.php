@@ -9,6 +9,7 @@ use Illuminate\Http\Request;
 
 /**
  * @group Client — Marketing Preferences
+ *
  * @authenticated
  *
  * Endpoints client pour gérer ses préférences marketing (RGPD).
@@ -19,9 +20,7 @@ use Illuminate\Http\Request;
  */
 class MarketingPreferencesController extends Controller
 {
-    public function __construct(protected OptOutService $optOut)
-    {
-    }
+    public function __construct(protected OptOutService $optOut) {}
 
     public function show(Request $request): JsonResponse
     {

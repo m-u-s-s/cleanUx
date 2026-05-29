@@ -104,7 +104,6 @@ return new class extends Migration
             $table->timestamp('completed_at')->nullable();
             $table->timestamp('assigned_at')->nullable();
 
-
             $table->timestamps();
 
             $table->unique(['mission_id', 'user_id']);
@@ -211,7 +210,6 @@ return new class extends Migration
             $table->foreignId('mission_checklist_id')
                 ->constrained('mission_checklists')
                 ->cascadeOnDelete();
-
 
             $table->string('title')->nullable();
             $table->boolean('is_required')->default(false);

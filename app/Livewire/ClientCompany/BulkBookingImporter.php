@@ -13,10 +13,13 @@ class BulkBookingImporter extends Component
     use WithFileUploads;
 
     public $csvFile;
+
     public string $separator = ',';
 
     public ?array $report = null;
+
     public string $error = '';
+
     public bool $importing = false;
 
     public function import(): void
@@ -29,7 +32,8 @@ class BulkBookingImporter extends Component
         $user = Auth::user();
         $orgId = (int) ($user->current_organization_id ?? $user->organization_account_id ?? 0);
         if ($orgId === 0) {
-            $this->error = "Aucune organisation sélectionnée. Vérifie ton profil ou contacte ton admin.";
+            $this->error = 'Aucune organisation sélectionnée. Vérifie ton profil ou contacte ton admin.';
+
             return;
         }
 
@@ -46,7 +50,7 @@ class BulkBookingImporter extends Component
                 $this->separator,
             );
         } catch (\Throwable $e) {
-            $this->error = 'Erreur lors de l\'import : ' . $e->getMessage();
+            $this->error = 'Erreur lors de l\'import : '.$e->getMessage();
         } finally {
             $this->importing = false;
         }

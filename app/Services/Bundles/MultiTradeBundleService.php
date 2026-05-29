@@ -2,11 +2,13 @@
 
 namespace App\Services\Bundles;
 
+use App\Models\Booking;
 use App\Models\MultiTradeBundle;
 use App\Models\MultiTradeBundleItem;
 use App\Models\Trade;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
 
 /**
@@ -73,6 +75,7 @@ class MultiTradeBundleService
             }
 
             $bundle->update(['total_estimated_cents' => $totalEstimate]);
+
             return $bundle->fresh('items');
         });
     }
@@ -148,7 +151,7 @@ class MultiTradeBundleService
                     continue;
                 }
                 try {
-                    $booking = \App\Models\Booking::query()->create([
+                    $booking = Booking::query()->create([
                         'client_id' => $bundle->client_user_id,
                         'employe_id' => $item->assigned_provider_user_id,
                         'trade_id' => $item->trade_id,
@@ -167,7 +170,7 @@ class MultiTradeBundleService
                         'status' => MultiTradeBundleItem::STATUS_ACCEPTED,
                     ]);
                 } catch (\Throwable $e) {
-                    \Illuminate\Support\Facades\Log::warning('[multi_trade] booking create failed', [
+                    Log::warning('[multi_trade] booking create failed', [
                         'bundle' => $bundle->code,
                         'item_id' => $item->id,
                         'error' => $e->getMessage(),
@@ -192,9 +195,10 @@ class MultiTradeBundleService
             $item->update(['status' => MultiTradeBundleItem::STATUS_CANCELLED]);
             if ($item->booking_id) {
                 try {
-                    \App\Models\Booking::query()->where('id', $item->booking_id)
+                    Booking::query()->where('id', $item->booking_id)
                         ->update(['status' => 'annule', 'cancellation_reason' => 'bundle_cancelled']);
-                } catch (\Throwable) {}
+                } catch (\Throwable) {
+                }
             }
         }
 

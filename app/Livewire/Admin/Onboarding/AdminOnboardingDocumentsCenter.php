@@ -6,7 +6,7 @@ use App\Models\ProviderOnboardingDocument;
 use App\Services\Onboarding\ProviderOnboardingService;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\URL;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -31,10 +31,13 @@ class AdminOnboardingDocumentsCenter extends Component
     protected $paginationTheme = 'tailwind';
 
     public string $search = '';
+
     public string $filterStatus = 'pending_review';
+
     public string $filterType = 'all';
 
     public ?int $reviewingDocumentId = null;
+
     public string $rejectionReason = '';
 
     public ?int $previewingDocumentId = null;
@@ -73,10 +76,10 @@ class AdminOnboardingDocumentsCenter extends Component
             ->when($this->filterStatus !== 'all', fn ($q) => $q->where('status', $this->filterStatus))
             ->when($this->filterType !== 'all', fn ($q) => $q->where('document_type', $this->filterType))
             ->when($this->search !== '', function ($q) {
-                $term = '%' . trim($this->search) . '%';
+                $term = '%'.trim($this->search).'%';
                 $q->whereHas('user', function ($u) use ($term) {
                     $u->where('name', 'like', $term)
-                      ->orWhere('email', 'like', $term);
+                        ->orWhere('email', 'like', $term);
                 });
             })
             ->orderByDesc('created_at')
@@ -86,7 +89,7 @@ class AdminOnboardingDocumentsCenter extends Component
     public function getCountsProperty(): array
     {
         return [
-            'pending'  => ProviderOnboardingDocument::where('status', 'pending_review')->count(),
+            'pending' => ProviderOnboardingDocument::where('status', 'pending_review')->count(),
             'approved' => ProviderOnboardingDocument::where('status', 'approved')->count(),
             'rejected' => ProviderOnboardingDocument::where('status', 'rejected')->count(),
         ];
@@ -101,6 +104,7 @@ class AdminOnboardingDocumentsCenter extends Component
         $document = ProviderOnboardingDocument::find($documentId);
         if (! $document) {
             session()->flash('error', 'Document introuvable.');
+
             return;
         }
 
@@ -137,6 +141,7 @@ class AdminOnboardingDocumentsCenter extends Component
         if (! $document) {
             session()->flash('error', 'Document introuvable.');
             $this->closeRejectModal();
+
             return;
         }
 
@@ -163,7 +168,10 @@ class AdminOnboardingDocumentsCenter extends Component
 
     public function getPreviewDocumentProperty(): ?ProviderOnboardingDocument
     {
-        if (! $this->previewingDocumentId) return null;
+        if (! $this->previewingDocumentId) {
+            return null;
+        }
+
         return ProviderOnboardingDocument::with('user:id,name,email')
             ->find($this->previewingDocumentId);
     }
@@ -174,10 +182,12 @@ class AdminOnboardingDocumentsCenter extends Component
     public function getPreviewUrlProperty(): ?string
     {
         $doc = $this->previewDocument;
-        if (! $doc) return null;
+        if (! $doc) {
+            return null;
+        }
 
         // Route admin signée (à déclarer dans routes/admin.php — voir patches)
-        return \Illuminate\Support\Facades\URL::temporarySignedRoute(
+        return URL::temporarySignedRoute(
             'admin.onboarding.document.file',
             now()->addMinutes(10),
             ['document' => $doc->id],
@@ -189,7 +199,7 @@ class AdminOnboardingDocumentsCenter extends Component
     {
         return view('livewire.admin.onboarding.admin-onboarding-documents-center', [
             'documents' => $this->documents,
-            'counts'    => $this->counts,
+            'counts' => $this->counts,
         ]);
     }
 }

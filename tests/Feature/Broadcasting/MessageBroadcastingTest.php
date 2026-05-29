@@ -33,9 +33,9 @@ class MessageBroadcastingTest extends TestCase
         ]);
         $message = Message::create([
             'channel_id' => $channel->id,
-            'user_id'    => $user->id,
-            'content'    => 'hello team',
-            'type'       => Message::TYPE_TEXT,
+            'user_id' => $user->id,
+            'content' => 'hello team',
+            'type' => Message::TYPE_TEXT,
         ]);
 
         $event = new MessageSent($message);
@@ -43,7 +43,7 @@ class MessageBroadcastingTest extends TestCase
 
         $this->assertCount(1, $channels);
         $this->assertInstanceOf(PrivateChannel::class, $channels[0]);
-        $this->assertSame('private-channel.' . $channel->id, $channels[0]->name);
+        $this->assertSame('private-channel.'.$channel->id, $channels[0]->name);
 
         $payload = $event->broadcastWith();
         $this->assertSame($message->id, $payload['message_id']);
@@ -59,7 +59,7 @@ class MessageBroadcastingTest extends TestCase
         $assigner = User::factory()->create(['organization_account_id' => $org->id]);
         $assignee = User::factory()->create(['organization_account_id' => $org->id]);
 
-        $task = new Task();
+        $task = new Task;
         $task->id = 99;
         $task->title = 'Préparer le devis';
         $task->priority = 'urgent';
@@ -72,8 +72,8 @@ class MessageBroadcastingTest extends TestCase
         $channels = $event->broadcastOn();
 
         $names = array_map(fn ($c) => $c->name, $channels);
-        $this->assertContains('private-user.' . $assignee->id, $names);
-        $this->assertContains('private-presence-org.' . $org->id, $names);
+        $this->assertContains('private-user.'.$assignee->id, $names);
+        $this->assertContains('private-presence-org.'.$org->id, $names);
         $this->assertContains('private-channel.42', $names);
 
         $payload = $event->broadcastWith();
@@ -89,7 +89,7 @@ class MessageBroadcastingTest extends TestCase
         $org = OrganizationAccount::factory()->create();
         $user = User::factory()->create(['organization_account_id' => $org->id]);
 
-        $task = new Task();
+        $task = new Task;
         $task->id = 7;
         $task->organization_account_id = $org->id;
         $task->assigned_to_user_id = $user->id;
@@ -118,8 +118,8 @@ class MessageBroadcastingTest extends TestCase
         );
 
         $names = array_map(fn ($c) => $c->name, $event->broadcastOn());
-        $this->assertContains('private-user.' . $user->id, $names);
-        $this->assertContains('private-presence-org.' . $org->id, $names);
+        $this->assertContains('private-user.'.$user->id, $names);
+        $this->assertContains('private-presence-org.'.$org->id, $names);
 
         $payload = $event->broadcastWith();
         $this->assertSame('busy', $payload['status']);

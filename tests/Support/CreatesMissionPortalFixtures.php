@@ -2,9 +2,9 @@
 
 namespace Tests\Support;
 
+use App\Models\Booking;
 use App\Models\Mission;
 use App\Models\MissionVerificationCode;
-use App\Models\Booking;
 use App\Models\User;
 
 trait CreatesMissionPortalFixtures

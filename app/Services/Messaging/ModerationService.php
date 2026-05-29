@@ -9,6 +9,7 @@ use App\Models\ModerationAction;
 use App\Models\User;
 use App\Policies\ChannelPolicy;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 /**
  * Service centralisé pour les actions de modération.
@@ -33,7 +34,7 @@ class ModerationService
 
         DB::transaction(function () use ($actor, $message, $reason) {
             $message->update([
-                'deleted_by'     => $actor->id,
+                'deleted_by' => $actor->id,
                 'deleted_reason' => $reason,
             ]);
             $message->delete(); // soft delete
@@ -43,9 +44,9 @@ class ModerationService
             }
 
             $this->log($actor, $message->channel, ModerationAction::TYPE_DELETE_MESSAGE, [
-                'message_id'    => $message->id,
+                'message_id' => $message->id,
                 'target_user_id' => $message->user_id,
-                'reason'        => $reason,
+                'reason' => $reason,
             ]);
 
             broadcast(new MessageDeleted($message))->toOthers();
@@ -67,7 +68,7 @@ class ModerationService
         $this->logAction($actor, $message->channel, $message, 'message_pinned');
     }
 
-    public function unpinMessage(\App\Models\User $actor, $message): void
+    public function unpinMessage(User $actor, $message): void
     {
         $message->forceFill([
             'is_pinned' => false,
@@ -77,7 +78,6 @@ class ModerationService
 
         $this->logAction($actor, $message->channel ?? null, $message, 'message_unpinned', null);
     }
-
 
     public function lockChannel(User $actor, Channel $channel, bool $lock = true, ?string $reason = null): void
     {
@@ -111,7 +111,6 @@ class ModerationService
         $this->logAction($actor, $channel, null, 'channel_archived');
     }
 
-
     public function kickMember(User $actor, Channel $channel, User $target, ?string $reason = null): void
     {
         if (! $this->policy->kickMember($actor, $channel, $target)) {
@@ -123,7 +122,7 @@ class ModerationService
 
             $this->log($actor, $channel, ModerationAction::TYPE_KICK_MEMBER, [
                 'target_user_id' => $target->id,
-                'reason'         => $reason,
+                'reason' => $reason,
             ]);
         });
     }
@@ -152,8 +151,8 @@ class ModerationService
 
             $this->log($actor, $channel, ModerationAction::TYPE_ROLE_CHANGE, [
                 'target_user_id' => $target->id,
-                'from'           => $previous,
-                'to'             => $newRole,
+                'from' => $previous,
+                'to' => $newRole,
             ]);
         });
     }
@@ -161,65 +160,65 @@ class ModerationService
     private function log(User $actor, Channel $channel, string $type, array $payload = []): ModerationAction
     {
         return ModerationAction::create([
-            'actor_user_id'  => $actor->id,
-            'channel_id'     => $channel->id,
-            'message_id'     => $payload['message_id']     ?? null,
+            'actor_user_id' => $actor->id,
+            'channel_id' => $channel->id,
+            'message_id' => $payload['message_id'] ?? null,
             'target_user_id' => $payload['target_user_id'] ?? null,
-            'action_type'    => $type,
-            'reason'         => $payload['reason']         ?? null,
-            'payload'        => $payload,
+            'action_type' => $type,
+            'reason' => $payload['reason'] ?? null,
+            'payload' => $payload,
         ]);
     }
 
-    protected function logAction(\App\Models\User $actor, $channel = null, $message = null, string $action = 'moderation_action', ?string $reason = null): void
+    protected function logAction(User $actor, $channel = null, $message = null, string $action = 'moderation_action', ?string $reason = null): void
     {
-        if (! \Illuminate\Support\Facades\Schema::hasTable('moderation_actions')) {
+        if (! Schema::hasTable('moderation_actions')) {
             return;
         }
 
         $table = 'moderation_actions';
         $data = [];
 
-        if (\Illuminate\Support\Facades\Schema::hasColumn($table, 'actor_user_id')) {
+        if (Schema::hasColumn($table, 'actor_user_id')) {
             $data['actor_user_id'] = $actor->id;
         }
 
-        if (\Illuminate\Support\Facades\Schema::hasColumn($table, 'user_id')) {
+        if (Schema::hasColumn($table, 'user_id')) {
             $data['user_id'] = $actor->id;
         }
 
-        if ($channel && \Illuminate\Support\Facades\Schema::hasColumn($table, 'channel_id')) {
+        if ($channel && Schema::hasColumn($table, 'channel_id')) {
             $data['channel_id'] = $channel->id;
         }
 
-        if ($message && \Illuminate\Support\Facades\Schema::hasColumn($table, 'message_id')) {
+        if ($message && Schema::hasColumn($table, 'message_id')) {
             $data['message_id'] = $message->id;
         }
 
         foreach (['action_type', 'type', 'action'] as $col) {
-            if (\Illuminate\Support\Facades\Schema::hasColumn($table, $col)) {
+            if (Schema::hasColumn($table, $col)) {
                 $data[$col] = $action;
             }
         }
 
-        if (\Illuminate\Support\Facades\Schema::hasColumn($table, 'reason')) {
+        if (Schema::hasColumn($table, 'reason')) {
             $data['reason'] = $reason;
         }
 
-        if (\Illuminate\Support\Facades\Schema::hasColumn($table, 'metadata')) {
+        if (Schema::hasColumn($table, 'metadata')) {
             $data['metadata'] = json_encode(['reason' => $reason]);
         }
 
-        if (\Illuminate\Support\Facades\Schema::hasColumn($table, 'created_at')) {
+        if (Schema::hasColumn($table, 'created_at')) {
             $data['created_at'] = now();
         }
 
-        if (\Illuminate\Support\Facades\Schema::hasColumn($table, 'updated_at')) {
+        if (Schema::hasColumn($table, 'updated_at')) {
             $data['updated_at'] = now();
         }
 
         if (! empty($data)) {
-            \Illuminate\Support\Facades\DB::table($table)->insert($data);
+            DB::table($table)->insert($data);
         }
     }
 }

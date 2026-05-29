@@ -61,7 +61,7 @@ class ReadReceiptService
             return MessageRead::updateOrCreate(
                 [
                     'message_id' => $message->id,
-                    'user_id'    => $user->id,
+                    'user_id' => $user->id,
                 ],
                 [
                     'read_at' => now(),

@@ -17,11 +17,12 @@ class QualityScoringEngineTest extends TestCase
     protected function makeChecklist(): QualityChecklist
     {
         $cl = QualityChecklist::create([
-            'code' => 'test_post_' . uniqid(),
+            'code' => 'test_post_'.uniqid(),
             'name' => 'Test',
             'phase' => QualityChecklist::PHASE_POST,
             'is_active' => true,
         ]);
+
         return $cl;
     }
 
@@ -30,7 +31,7 @@ class QualityScoringEngineTest extends TestCase
         return QualityChecklistItem::create(array_merge([
             'checklist_id' => $cl->id,
             'position' => 1,
-            'code' => 'item_' . uniqid(),
+            'code' => 'item_'.uniqid(),
             'label' => 'Test item',
             'item_type' => 'boolean',
             'required' => true,

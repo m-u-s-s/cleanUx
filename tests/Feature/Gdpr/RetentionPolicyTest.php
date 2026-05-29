@@ -2,7 +2,6 @@
 
 namespace Tests\Feature\Gdpr;
 
-use App\Models\ActivityLog;
 use App\Models\User;
 use App\Services\Gdpr\RetentionPolicyService;
 use Illuminate\Foundation\Testing\RefreshDatabase;

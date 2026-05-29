@@ -14,29 +14,29 @@ class ProviderPayoutFactory extends Factory
     {
         return [
             'provider_user_id' => User::factory()->employe(),
-            'amount'           => $this->faker->randomFloat(2, 20, 500),
-            'currency'         => 'eur',
-            'status'           => ProviderPayout::STATUS_PENDING,
-            'provider'         => 'stripe_connect',
+            'amount' => $this->faker->randomFloat(2, 20, 500),
+            'currency' => 'eur',
+            'status' => ProviderPayout::STATUS_PENDING,
+            'provider' => 'stripe_connect',
             'provider_payout_id' => null,
-            'period_start'     => now()->toDateString(),
-            'period_end'       => now()->toDateString(),
-            'metadata'         => [],
+            'period_start' => now()->toDateString(),
+            'period_end' => now()->toDateString(),
+            'metadata' => [],
         ];
     }
 
     public function paid(): static
     {
         return $this->state(fn () => [
-            'status'           => ProviderPayout::STATUS_PAID,
-            'provider_payout_id' => 'po_test_' . $this->faker->uuid(),
+            'status' => ProviderPayout::STATUS_PAID,
+            'provider_payout_id' => 'po_test_'.$this->faker->uuid(),
         ]);
     }
 
     public function failed(): static
     {
         return $this->state(fn () => [
-            'status'   => ProviderPayout::STATUS_FAILED,
+            'status' => ProviderPayout::STATUS_FAILED,
             'metadata' => ['failure_code' => 'account_closed'],
         ]);
     }

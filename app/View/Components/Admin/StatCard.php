@@ -8,6 +8,7 @@ use Illuminate\View\View;
 class StatCard extends Component
 {
     public string $title;
+
     public string|int|float $value;
 
     public function __construct(string $title, string|int|float $value)

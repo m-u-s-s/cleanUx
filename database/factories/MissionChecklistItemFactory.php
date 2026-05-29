@@ -13,21 +13,21 @@ class MissionChecklistItemFactory extends Factory
     public function definition(): array
     {
         return [
-            'mission_checklist_id'  => fn () => MissionChecklist::factory()->create()->id,
-            'label'                 => fake()->sentence(4),
-            'item_type'             => fake()->randomElement(['checkbox', 'photo', 'text']),
-            'is_required'           => true,
-            'status'                => 'pending',
-            'completed_by_user_id'  => null,
-            'completed_at'          => null,
-            'notes'                 => null,
+            'mission_checklist_id' => fn () => MissionChecklist::factory()->create()->id,
+            'label' => fake()->sentence(4),
+            'item_type' => fake()->randomElement(['checkbox', 'photo', 'text']),
+            'is_required' => true,
+            'status' => 'pending',
+            'completed_by_user_id' => null,
+            'completed_at' => null,
+            'notes' => null,
         ];
     }
 
     public function completed(): static
     {
         return $this->state(fn () => [
-            'status'       => 'completed',
+            'status' => 'completed',
             'completed_at' => now(),
         ]);
     }

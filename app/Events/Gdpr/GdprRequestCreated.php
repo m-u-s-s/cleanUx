@@ -11,7 +11,5 @@ class GdprRequestCreated
     use Dispatchable;
     use SerializesModels;
 
-    public function __construct(public GdprDataRequest $request)
-    {
-    }
+    public function __construct(public GdprDataRequest $request) {}
 }

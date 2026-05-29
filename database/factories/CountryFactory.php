@@ -22,7 +22,7 @@ class CountryFactory extends Factory
         );
 
         do {
-            $iso3 = strtoupper($iso2 . fake()->randomLetter());
+            $iso3 = strtoupper($iso2.fake()->randomLetter());
         } while (
             in_array($iso3, ['BEL'], true)
             || Country::query()->where('iso3_code', $iso3)->exists()
@@ -31,11 +31,11 @@ class CountryFactory extends Factory
         return [
             'iso_code' => $iso2,
             'iso3_code' => $iso3,
-            'name' => 'Pays ' . $iso2,
-            'official_name' => 'Pays ' . $iso2,
+            'name' => 'Pays '.$iso2,
+            'official_name' => 'Pays '.$iso2,
             'default_locale' => 'fr_BE',
             'currency_code' => 'EUR',
-            'phone_code' => '+' . fake()->numberBetween(100, 999),
+            'phone_code' => '+'.fake()->numberBetween(100, 999),
             'timezone' => 'Europe/Brussels',
             'is_active' => true,
         ];

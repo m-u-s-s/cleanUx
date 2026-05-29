@@ -13,16 +13,16 @@ class MarketingOptOutFactory extends Factory
     public function definition(): array
     {
         return [
-            'user_id'     => User::factory(),
-            'channel'     => fake()->randomElement([
+            'user_id' => User::factory(),
+            'channel' => fake()->randomElement([
                 MarketingOptOut::CHANNEL_EMAIL,
                 MarketingOptOut::CHANNEL_SMS,
                 MarketingOptOut::CHANNEL_PUSH,
                 MarketingOptOut::CHANNEL_ALL,
             ]),
             'opted_out_at' => now()->subDays(fake()->numberBetween(1, 90)),
-            'reason'       => fake()->optional()->randomElement(['unsubscribe_link', 'user_request', 'admin']),
-            'ip_hash'      => hash('sha256', fake()->ipv4()),
+            'reason' => fake()->optional()->randomElement(['unsubscribe_link', 'user_request', 'admin']),
+            'ip_hash' => hash('sha256', fake()->ipv4()),
         ];
     }
 }

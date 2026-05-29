@@ -18,13 +18,13 @@ class FieldTeamMemberFactory extends Factory
     {
         return [
             'field_team_id' => FieldTeam::factory(),
-            'user_id'       => User::factory()->employe(),
-            'role_on_team'  => fake()->randomElement(['worker', 'team_lead', 'specialist']),
-            'is_team_lead'  => false,
-            'is_active'     => true,
-            'joined_at'     => now()->subDays(fake()->numberBetween(1, 365)),
-            'left_at'       => null,
-            'metadata'      => null,
+            'user_id' => User::factory()->employe(),
+            'role_on_team' => fake()->randomElement(['worker', 'team_lead', 'specialist']),
+            'is_team_lead' => false,
+            'is_active' => true,
+            'joined_at' => now()->subDays(fake()->numberBetween(1, 365)),
+            'left_at' => null,
+            'metadata' => null,
         ];
     }
 
@@ -37,7 +37,7 @@ class FieldTeamMemberFactory extends Factory
     {
         return $this->state([
             'is_active' => false,
-            'left_at'   => now()->subDays(fake()->numberBetween(1, 90)),
+            'left_at' => now()->subDays(fake()->numberBetween(1, 90)),
         ]);
     }
 }

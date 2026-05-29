@@ -6,7 +6,11 @@ use App\Models\MarketingCampaign;
 use App\Models\MarketingCampaignRecipient;
 use App\Models\MarketingCampaignStep;
 use App\Models\MarketingSegmentMember;
+use App\Models\PushNotification;
+use App\Models\SmsMessage;
 use App\Models\User;
+use App\Services\Notifications\SmsService;
+use App\Services\Push\PushService;
 use App\Support\ActivityLogger;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
@@ -25,9 +29,7 @@ use Illuminate\Support\Facades\Log;
  */
 class CampaignEngine
 {
-    public function __construct(protected OptOutService $optOut)
-    {
-    }
+    public function __construct(protected OptOutService $optOut) {}
 
     public function schedule(MarketingCampaign $campaign): int
     {
@@ -50,6 +52,7 @@ class CampaignEngine
                 'status' => MarketingCampaign::STATUS_SCHEDULED,
                 'scheduled_at' => $campaign->scheduled_at ?? now(),
             ])->save();
+
             return 0;
         }
 
@@ -139,6 +142,7 @@ class CampaignEngine
                 ])->save();
             }
         }
+
         return $sent;
     }
 
@@ -156,6 +160,7 @@ class CampaignEngine
                 'failed_at' => now(),
                 'failed_reason' => 'user or step missing',
             ])->save();
+
             return;
         }
 
@@ -164,6 +169,7 @@ class CampaignEngine
             $recipient->forceFill([
                 'status' => MarketingCampaignRecipient::STATUS_OPTED_OUT,
             ])->save();
+
             return;
         }
 
@@ -229,14 +235,16 @@ class CampaignEngine
         if (empty($variants)) {
             return null;
         }
-        $hash = crc32($campaign->code . ':' . $user->id);
+        $hash = crc32($campaign->code.':'.$user->id);
+
         return (string) $variants[$hash % count($variants)];
     }
 
     protected function renderBody(MarketingCampaignStep $step, User $user, MarketingCampaignRecipient $recipient): string
     {
         $overrides = (array) $step->content_overrides;
-        $template = $overrides['body'] ?? "Hello {name}!";
+        $template = $overrides['body'] ?? 'Hello {name}!';
+
         return strtr($template, [
             '{name}' => $user->name ?? '',
             '{email}' => $user->email ?? '',
@@ -256,13 +264,14 @@ class CampaignEngine
 
     protected function sendSms(User $user, string $body): void
     {
-        if (class_exists(\App\Services\Notifications\SmsService::class) && $user->phone) {
-            app(\App\Services\Notifications\SmsService::class)->dispatch(
+        if (class_exists(SmsService::class) && $user->phone) {
+            app(SmsService::class)->dispatch(
                 toPhone: $user->phone,
                 body: $body,
                 user: $user,
-                category: \App\Models\SmsMessage::CATEGORY_MARKETING,
+                category: SmsMessage::CATEGORY_MARKETING,
             );
+
             return;
         }
         Log::info('Marketing sms send (no SmsService)', [
@@ -272,13 +281,14 @@ class CampaignEngine
 
     protected function sendPush(User $user, ?string $title, string $body): void
     {
-        if (class_exists(\App\Services\Push\PushService::class)) {
-            app(\App\Services\Push\PushService::class)->dispatchToUser(
+        if (class_exists(PushService::class)) {
+            app(PushService::class)->dispatchToUser(
                 user: $user,
                 title: $title,
                 body: $body,
-                category: \App\Models\PushNotification::CATEGORY_MARKETING,
+                category: PushNotification::CATEGORY_MARKETING,
             );
+
             return;
         }
         Log::info('Marketing push send (no PushService)', ['to' => $user->id]);

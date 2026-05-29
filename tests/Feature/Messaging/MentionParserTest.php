@@ -22,10 +22,10 @@ class MentionParserTest extends TestCase
 
         $channel = Channel::create([
             'organization_account_id' => $org->id,
-            'name'                    => 'general',
-            'type'                    => Channel::TYPE_TEAM,
-            'is_private'              => false,
-            'created_by'              => $owner->id,
+            'name' => 'general',
+            'type' => Channel::TYPE_TEAM,
+            'is_private' => false,
+            'created_by' => $owner->id,
         ]);
 
         $users = [$owner];
@@ -47,8 +47,8 @@ class MentionParserTest extends TestCase
 
         $message = Message::create([
             'channel_id' => $ctx['channel']->id,
-            'user_id'    => $ctx['users'][0]->id,
-            'content'    => 'Salut @alice, comment ça va ?',
+            'user_id' => $ctx['users'][0]->id,
+            'content' => 'Salut @alice, comment ça va ?',
         ]);
 
         $resolved = app(MentionParser::class)->extractAndPersist($message);
@@ -57,9 +57,9 @@ class MentionParserTest extends TestCase
         $this->assertSame($alice->id, $resolved['users'][0]->id);
 
         $this->assertDatabaseHas('message_mentions', [
-            'message_id'        => $message->id,
+            'message_id' => $message->id,
             'mentioned_user_id' => $alice->id,
-            'mention_type'      => 'user',
+            'mention_type' => 'user',
         ]);
     }
 
@@ -70,8 +70,8 @@ class MentionParserTest extends TestCase
 
         $message = Message::create([
             'channel_id' => $ctx['channel']->id,
-            'user_id'    => $ctx['users'][0]->id,
-            'content'    => 'Hey @"alice martin" tu peux check ?',
+            'user_id' => $ctx['users'][0]->id,
+            'content' => 'Hey @"alice martin" tu peux check ?',
         ]);
 
         $resolved = app(MentionParser::class)->extractAndPersist($message);
@@ -85,13 +85,13 @@ class MentionParserTest extends TestCase
         $ctx = $this->setupChannel();
         $message = Message::create([
             'channel_id' => $ctx['channel']->id,
-            'user_id'    => $ctx['users'][0]->id,
-            'content'    => 'Réunion dans 5 min @here, urgent @channel',
+            'user_id' => $ctx['users'][0]->id,
+            'content' => 'Réunion dans 5 min @here, urgent @channel',
         ]);
 
         $resolved = app(MentionParser::class)->extractAndPersist($message);
 
-        $this->assertContains('here',    $resolved['special']);
+        $this->assertContains('here', $resolved['special']);
         $this->assertContains('channel', $resolved['special']);
 
         $this->assertDatabaseHas('message_mentions', [
@@ -112,8 +112,8 @@ class MentionParserTest extends TestCase
 
         $message = Message::create([
             'channel_id' => $ctx['channel']->id,
-            'user_id'    => $ctx['users'][0]->id,
-            'content'    => '@stranger je veux te parler',
+            'user_id' => $ctx['users'][0]->id,
+            'content' => '@stranger je veux te parler',
         ]);
 
         $resolved = app(MentionParser::class)->extractAndPersist($message);
@@ -129,8 +129,8 @@ class MentionParserTest extends TestCase
 
         $message = Message::create([
             'channel_id' => $ctx['channel']->id,
-            'user_id'    => $ctx['users'][0]->id,
-            'content'    => '@alice et @bob, on synchronise ?',
+            'user_id' => $ctx['users'][0]->id,
+            'content' => '@alice et @bob, on synchronise ?',
         ]);
 
         $resolved = app(MentionParser::class)->extractAndPersist($message);
@@ -138,7 +138,7 @@ class MentionParserTest extends TestCase
         $this->assertCount(2, $resolved['users']);
         $ids = collect($resolved['users'])->pluck('id')->all();
         $this->assertContains($alice->id, $ids);
-        $this->assertContains($bob->id,   $ids);
+        $this->assertContains($bob->id, $ids);
     }
 
     public function test_does_not_create_duplicate_mention_when_user_mentioned_twice(): void
@@ -148,8 +148,8 @@ class MentionParserTest extends TestCase
 
         $message = Message::create([
             'channel_id' => $ctx['channel']->id,
-            'user_id'    => $ctx['users'][0]->id,
-            'content'    => '@alice et encore @alice pour insister',
+            'user_id' => $ctx['users'][0]->id,
+            'content' => '@alice et encore @alice pour insister',
         ]);
 
         app(MentionParser::class)->extractAndPersist($message);

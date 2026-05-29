@@ -80,7 +80,6 @@ class FieldTeam extends Model
         return $this->hasMany(MissionTeamAssignment::class);
     }
 
-
     public function organizationContracts(): HasMany
     {
         return $this->hasMany(OrganizationContract::class, 'default_field_team_id');
@@ -95,5 +94,4 @@ class FieldTeam extends Model
     {
         return $this->hasMany(MissionBatch::class, 'assigned_field_team_id');
     }
-
 }

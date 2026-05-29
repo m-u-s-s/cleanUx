@@ -52,11 +52,11 @@ return new class extends Migration
                         ->update(['provider_type' => 'independent']);
                 } else {
                     DB::table('provider_profiles')->insert([
-                        'user_id'       => $userId,
+                        'user_id' => $userId,
                         'provider_type' => 'independent',
-                        'status'        => 'pending',
-                        'created_at'    => now(),
-                        'updated_at'    => now(),
+                        'status' => 'pending',
+                        'created_at' => now(),
+                        'updated_at' => now(),
                     ]);
                 }
             }
@@ -83,10 +83,10 @@ return new class extends Migration
                         ->update(['customer_type' => $customerType]);
                 } else {
                     DB::table('customer_profiles')->insert([
-                        'user_id'       => $user->id,
+                        'user_id' => $user->id,
                         'customer_type' => $customerType,
-                        'created_at'    => now(),
-                        'updated_at'    => now(),
+                        'created_at' => now(),
+                        'updated_at' => now(),
                     ]);
                 }
             }

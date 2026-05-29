@@ -22,7 +22,7 @@ class EnforceRetentionCommand extends Command
 
         $this->table(['Table', 'Lignes purgées'], $rows);
 
-        $this->info('Total : ' . array_sum($stats) . ' ligne(s) purgée(s).');
+        $this->info('Total : '.array_sum($stats).' ligne(s) purgée(s).');
 
         return self::SUCCESS;
     }

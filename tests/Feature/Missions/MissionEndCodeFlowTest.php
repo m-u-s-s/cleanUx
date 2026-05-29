@@ -94,7 +94,7 @@ class MissionEndCodeFlowTest extends TestCase
         ]);
 
         $booking = Booking::create([
-            'booking_reference' => 'CUX-' . strtoupper(Str::random(6)),
+            'booking_reference' => 'CUX-'.strtoupper(Str::random(6)),
             'customer_user_id' => $client->id,
             'client_id' => $client->id,
             'scheduled_date' => now()->addDay()->toDateString(),

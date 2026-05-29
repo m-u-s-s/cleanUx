@@ -7,9 +7,11 @@ use App\Models\Concerns\HasBillingFeatures;
 use App\Models\Concerns\HasOrganizationContext;
 use App\Models\Concerns\HasProviderFeatures;
 use App\Models\Concerns\HasUserTypeChecks;
+use App\Services\I18n\LocaleResolver;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Contracts\Translation\HasLocalePreference;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
@@ -21,20 +23,20 @@ use Laravel\Jetstream\HasProfilePhoto;
 use Laravel\Jetstream\HasTeams;
 use Laravel\Sanctum\HasApiTokens;
 
-class User extends Authenticatable implements MustVerifyEmail, HasLocalePreference
+class User extends Authenticatable implements HasLocalePreference, MustVerifyEmail
 {
-    use HasApiTokens;
-    use HasFactory;
-    use HasProfilePhoto;
-    use HasTeams;
-    use Notifiable;
-    use TwoFactorAuthenticatable;
     use Billable;
     use HasAdminCapabilities;
-    use HasUserTypeChecks;
-    use HasOrganizationContext;
-    use HasProviderFeatures;
+    use HasApiTokens;
     use HasBillingFeatures;
+    use HasFactory;
+    use HasOrganizationContext;
+    use HasProfilePhoto;
+    use HasProviderFeatures;
+    use HasTeams;
+    use HasUserTypeChecks;
+    use Notifiable;
+    use TwoFactorAuthenticatable;
 
     /**
      * Champs auto-assignables via Eloquent::fill/update/create.
@@ -102,12 +104,12 @@ class User extends Authenticatable implements MustVerifyEmail, HasLocalePreferen
     ];
 
     protected $casts = [
-        'email_verified_at'          => 'datetime',
-        'password'                   => 'hashed',
-        'two_factor_confirmed_at'    => 'datetime',
-        'is_active'                  => 'boolean',
-        'metadata'                   => 'array',
-        'permissions'                => 'array',
+        'email_verified_at' => 'datetime',
+        'password' => 'hashed',
+        'two_factor_confirmed_at' => 'datetime',
+        'is_active' => 'boolean',
+        'metadata' => 'array',
+        'permissions' => 'array',
     ];
 
     // ──────────────────────────────────────────────────────
@@ -131,12 +133,12 @@ class User extends Authenticatable implements MustVerifyEmail, HasLocalePreferen
 
     public function rendezVousClient(): HasMany
     {
-        return $this->hasMany(\App\Models\RendezVous::class, 'client_id');
+        return $this->hasMany(RendezVous::class, 'client_id');
     }
 
     public function rendezVousEmploye(): HasMany
     {
-        return $this->hasMany(\App\Models\RendezVous::class, 'employe_id');
+        return $this->hasMany(RendezVous::class, 'employe_id');
     }
 
     public function disponibilites(): HasMany
@@ -168,7 +170,7 @@ class User extends Authenticatable implements MustVerifyEmail, HasLocalePreferen
     /**
      * Self-referencing relation (legacy usage — resolves to $this).
      */
-    public function user(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    public function user(): BelongsTo
     {
         return $this->belongsTo(self::class, 'id', 'id');
     }
@@ -236,6 +238,6 @@ class User extends Authenticatable implements MustVerifyEmail, HasLocalePreferen
             return null;
         }
 
-        return app(\App\Services\I18n\LocaleResolver::class)->normalize($raw);
+        return app(LocaleResolver::class)->normalize($raw);
     }
 }

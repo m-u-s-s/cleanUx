@@ -21,12 +21,12 @@ class AssistantToolRegistryTest extends TestCase
         ]);
 
         $registry = app(AssistantToolRegistry::class);
-        $tools    = $registry->toolsForUser($user);
-        $names    = array_map(fn ($t) => $t->name(), $tools);
+        $tools = $registry->toolsForUser($user);
+        $names = array_map(fn ($t) => $t->name(), $tools);
 
         $this->assertContains('list_my_bookings', $names);
-        $this->assertContains('create_booking',  $names);
-        $this->assertContains('cancel_booking',  $names);
+        $this->assertContains('create_booking', $names);
+        $this->assertContains('cancel_booking', $names);
 
         // Pas de tool entreprise
         $this->assertNotContains('list_my_sites', $names);
@@ -34,14 +34,14 @@ class AssistantToolRegistryTest extends TestCase
 
     public function test_company_client_gets_sites_tool(): void
     {
-        $org  = OrganizationAccount::factory()->create();
+        $org = OrganizationAccount::factory()->create();
         $user = User::factory()->create([
-            'role'                    => 'client',
+            'role' => 'client',
             'organization_account_id' => $org->id,
         ]);
 
         $registry = app(AssistantToolRegistry::class);
-        $names    = array_map(fn ($t) => $t->name(), $registry->toolsForUser($user));
+        $names = array_map(fn ($t) => $t->name(), $registry->toolsForUser($user));
 
         $this->assertContains('list_my_sites', $names);
     }
@@ -54,7 +54,7 @@ class AssistantToolRegistryTest extends TestCase
         ]);
 
         $registry = app(AssistantToolRegistry::class);
-        $names    = array_map(fn ($t) => $t->name(), $registry->toolsForUser($user));
+        $names = array_map(fn ($t) => $t->name(), $registry->toolsForUser($user));
 
         $this->assertContains('list_my_bookings', $names);
         $this->assertNotContains('create_booking', $names);
@@ -65,14 +65,14 @@ class AssistantToolRegistryTest extends TestCase
     {
         $user = User::factory()->create(['role' => 'client']);
 
-        $registry    = app(AssistantToolRegistry::class);
+        $registry = app(AssistantToolRegistry::class);
         $definitions = $registry->definitionsForUser($user);
 
         $this->assertNotEmpty($definitions);
 
         foreach ($definitions as $def) {
-            $this->assertArrayHasKey('name',         $def);
-            $this->assertArrayHasKey('description',  $def);
+            $this->assertArrayHasKey('name', $def);
+            $this->assertArrayHasKey('description', $def);
             $this->assertArrayHasKey('input_schema', $def);
             $this->assertSame('object', $def['input_schema']['type']);
         }
@@ -83,7 +83,7 @@ class AssistantToolRegistryTest extends TestCase
         $registry = app(AssistantToolRegistry::class);
 
         $this->assertInstanceOf(ListMyBookingsTool::class, $registry->find('list_my_bookings'));
-        $this->assertInstanceOf(CreateBookingTool::class,  $registry->find('create_booking'));
+        $this->assertInstanceOf(CreateBookingTool::class, $registry->find('create_booking'));
         $this->assertNull($registry->find('this_tool_does_not_exist'));
     }
 }

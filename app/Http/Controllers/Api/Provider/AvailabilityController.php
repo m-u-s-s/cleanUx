@@ -10,17 +10,15 @@ use Carbon\CarbonImmutable;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
-use Illuminate\Support\Carbon;
 
 /**
  * @group Provider — Availability
+ *
  * @authenticated
  */
 class AvailabilityController extends Controller
 {
-    public function __construct(protected AvailabilityService $service)
-    {
-    }
+    public function __construct(protected AvailabilityService $service) {}
 
     public function index(Request $request): JsonResponse
     {
@@ -54,8 +52,8 @@ class AvailabilityController extends Controller
         $slot = AvailabilitySlot::create([
             'provider_user_id' => $request->user()->id,
             'weekday' => (int) $data['weekday'],
-            'start_time' => $data['start_time'] . ':00',
-            'end_time' => $data['end_time'] . ':00',
+            'start_time' => $data['start_time'].':00',
+            'end_time' => $data['end_time'].':00',
             'valid_from' => $data['valid_from'] ?? null,
             'valid_until' => $data['valid_until'] ?? null,
             'timezone' => $data['timezone'] ?? config('availability.default_timezone'),
@@ -99,6 +97,7 @@ class AvailabilityController extends Controller
             return response()->json(['ok' => false, 'error' => 'forbidden'], 403);
         }
         $slot->delete();
+
         return response()->json(['ok' => true]);
     }
 
@@ -125,8 +124,8 @@ class AvailabilityController extends Controller
             'provider_user_id' => $request->user()->id,
             'date' => $data['date'],
             'exception_type' => $data['exception_type'],
-            'start_time' => isset($data['start_time']) ? $data['start_time'] . ':00' : null,
-            'end_time' => isset($data['end_time']) ? $data['end_time'] . ':00' : null,
+            'start_time' => isset($data['start_time']) ? $data['start_time'].':00' : null,
+            'end_time' => isset($data['end_time']) ? $data['end_time'].':00' : null,
             'reason' => $data['reason'] ?? null,
         ]);
 
@@ -139,6 +138,7 @@ class AvailabilityController extends Controller
             return response()->json(['ok' => false, 'error' => 'forbidden'], 403);
         }
         $exception->delete();
+
         return response()->json(['ok' => true]);
     }
 
@@ -186,10 +186,10 @@ class AvailabilityController extends Controller
         foreach ($windows as $i => $w) {
             $uid = sprintf('avail-%d-%s@cleanux', $user->id, $w['start']->format('YmdHis'));
             $lines[] = 'BEGIN:VEVENT';
-            $lines[] = 'UID:' . $uid;
-            $lines[] = 'DTSTAMP:' . CarbonImmutable::now()->format('Ymd\THis\Z');
-            $lines[] = 'DTSTART:' . $w['start']->utc()->format('Ymd\THis\Z');
-            $lines[] = 'DTEND:' . $w['end']->utc()->format('Ymd\THis\Z');
+            $lines[] = 'UID:'.$uid;
+            $lines[] = 'DTSTAMP:'.CarbonImmutable::now()->format('Ymd\THis\Z');
+            $lines[] = 'DTSTART:'.$w['start']->utc()->format('Ymd\THis\Z');
+            $lines[] = 'DTEND:'.$w['end']->utc()->format('Ymd\THis\Z');
             $lines[] = 'SUMMARY:Disponible';
             $lines[] = 'TRANSP:TRANSPARENT';  // available time
             $lines[] = 'END:VEVENT';
@@ -197,9 +197,9 @@ class AvailabilityController extends Controller
 
         $lines[] = 'END:VCALENDAR';
 
-        return response(implode("\r\n", $lines) . "\r\n", 200, [
+        return response(implode("\r\n", $lines)."\r\n", 200, [
             'Content-Type' => 'text/calendar; charset=utf-8',
-            'Content-Disposition' => 'attachment; filename="cleanux-availability-' . $user->id . '.ics"',
+            'Content-Disposition' => 'attachment; filename="cleanux-availability-'.$user->id.'.ics"',
         ]);
     }
 }

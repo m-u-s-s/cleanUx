@@ -7,7 +7,6 @@ use App\Services\EmailV2\Contracts\EmailProviderContract;
 use App\Services\EmailV2\EmailSendResult;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
-use Illuminate\Mail\Mailable;
 
 /**
  * SMTP provider via Laravel Mail facade. Soft-fail.
@@ -52,6 +51,7 @@ class SmtpEmailProvider implements EmailProviderContract
             Log::warning('[email_v2] smtp send failed', [
                 'message_id' => $message->id, 'error' => $e->getMessage(),
             ]);
+
             return new EmailSendResult(
                 success: false,
                 provider: 'smtp',

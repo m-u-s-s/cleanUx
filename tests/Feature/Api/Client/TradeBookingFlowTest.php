@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Api\Client;
 
+use App\Models\Booking;
 use App\Models\ServiceCatalog;
 use App\Models\Trade;
 use App\Models\User;
@@ -42,7 +43,7 @@ class TradeBookingFlowTest extends TestCase
 
     public function test_public_trades_listing_returns_active_trades(): void
     {
-        $active   = $this->makeTrade(['is_active' => true, 'sort_order' => 1]);
+        $active = $this->makeTrade(['is_active' => true, 'sort_order' => 1]);
         $inactive = $this->makeTrade(['is_active' => false, 'sort_order' => 2]);
 
         $this->getJson('/api/trades')
@@ -105,20 +106,20 @@ class TradeBookingFlowTest extends TestCase
 
         $schema = [
             'version' => 1,
-            'fields'  => [
+            'fields' => [
                 [
-                    'key'      => 'surface_m2',
-                    'label'    => 'Surface (m²)',
-                    'type'     => 'number',
+                    'key' => 'surface_m2',
+                    'label' => 'Surface (m²)',
+                    'type' => 'number',
                     'required' => true,
-                    'min'      => 1,
-                    'max'      => 5000,
-                    'unit'     => 'm²',
+                    'min' => 1,
+                    'max' => 5000,
+                    'unit' => 'm²',
                 ],
                 [
-                    'key'   => 'has_pets',
+                    'key' => 'has_pets',
                     'label' => 'Présence animaux',
-                    'type'  => 'boolean',
+                    'type' => 'boolean',
                 ],
             ],
         ];
@@ -128,8 +129,8 @@ class TradeBookingFlowTest extends TestCase
         $response = $this->getJson("/api/client/trades/{$trade->id}/form-fields")
             ->assertOk()
             ->assertJsonStructure([
-                'trade'              => ['id', 'name', 'slug'],
-                'fields'             => [
+                'trade' => ['id', 'name', 'slug'],
+                'fields' => [
                     '*' => ['name', 'type', 'label', 'required'],
                 ],
                 'billing_unit',
@@ -157,7 +158,7 @@ class TradeBookingFlowTest extends TestCase
         Sanctum::actingAs($this->makeClient());
 
         $trade = $this->makeTrade([
-            'billing_unit'        => 'per_job',
+            'billing_unit' => 'per_job',
             'requires_site_visit' => true,
         ]);
 
@@ -185,7 +186,7 @@ class TradeBookingFlowTest extends TestCase
 
         $trade = $this->makeTrade();
 
-        $active   = ServiceCatalog::factory()->create(['trade_id' => $trade->id, 'is_active' => true]);
+        $active = ServiceCatalog::factory()->create(['trade_id' => $trade->id, 'is_active' => true]);
         $inactive = ServiceCatalog::factory()->create(['trade_id' => $trade->id, 'is_active' => false]);
 
         $response = $this->getJson("/api/client/trades/{$trade->id}/services")
@@ -234,23 +235,23 @@ class TradeBookingFlowTest extends TestCase
     {
         Sanctum::actingAs($this->makeClient());
 
-        $trade   = $this->makeTrade(['billing_unit' => 'hourly']);
+        $trade = $this->makeTrade(['billing_unit' => 'hourly']);
         $service = ServiceCatalog::factory()->create([
-            'trade_id'  => $trade->id,
+            'trade_id' => $trade->id,
             'is_active' => true,
         ]);
 
         $payload = [
-            'trade_id'           => $trade->id,
+            'trade_id' => $trade->id,
             'service_catalog_id' => $service->id,
-            'address'            => 'Rue de la Loi 1',
-            'city'               => 'Bruxelles',
-            'postal_code'        => '1000',
-            'scheduled_date'     => now()->addDays(3)->format('Y-m-d'),
-            'scheduled_time'     => '10:00',
+            'address' => 'Rue de la Loi 1',
+            'city' => 'Bruxelles',
+            'postal_code' => '1000',
+            'scheduled_date' => now()->addDays(3)->format('Y-m-d'),
+            'scheduled_time' => '10:00',
             'trade_form_answers' => [
                 'surface_m2' => 80,
-                'has_pets'   => false,
+                'has_pets' => false,
             ],
         ];
 
@@ -261,7 +262,7 @@ class TradeBookingFlowTest extends TestCase
 
         $this->assertDatabaseHas('bookings', [
             'service_catalog_id' => $service->id,
-            'city'               => 'Bruxelles',
+            'city' => 'Bruxelles',
         ]);
     }
 
@@ -269,28 +270,28 @@ class TradeBookingFlowTest extends TestCase
     {
         Sanctum::actingAs($this->makeClient());
 
-        $trade   = $this->makeTrade();
+        $trade = $this->makeTrade();
         $service = ServiceCatalog::factory()->create([
-            'trade_id'  => $trade->id,
+            'trade_id' => $trade->id,
             'is_active' => true,
         ]);
 
         $answers = ['nb_rooms' => 3, 'floor_type' => 'parquet'];
 
         $response = $this->postJson('/api/client/bookings', [
-            'trade_id'           => $trade->id,
+            'trade_id' => $trade->id,
             'service_catalog_id' => $service->id,
-            'address'            => 'Avenue Louise 50',
-            'city'               => 'Bruxelles',
-            'postal_code'        => '1050',
-            'scheduled_date'     => now()->addDays(5)->format('Y-m-d'),
-            'scheduled_time'     => '14:00',
+            'address' => 'Avenue Louise 50',
+            'city' => 'Bruxelles',
+            'postal_code' => '1050',
+            'scheduled_date' => now()->addDays(5)->format('Y-m-d'),
+            'scheduled_time' => '14:00',
             'trade_form_answers' => $answers,
         ])->assertCreated();
 
         $bookingId = $response->json('data.id');
 
-        $booking = \App\Models\Booking::findOrFail($bookingId);
+        $booking = Booking::findOrFail($bookingId);
         $this->assertIsArray($booking->trade_form_answers);
         $this->assertSame(3, $booking->trade_form_answers['nb_rooms']);
         $this->assertSame('parquet', $booking->trade_form_answers['floor_type']);
@@ -304,11 +305,11 @@ class TradeBookingFlowTest extends TestCase
 
         $this->postJson('/api/client/bookings', [
             'service_catalog_id' => $service->id,
-            'address'            => 'Rue Neuve 10',
-            'city'               => 'Bruxelles',
-            'postal_code'        => '1000',
-            'scheduled_date'     => now()->addDays(2)->format('Y-m-d'),
-            'scheduled_time'     => '09:00',
+            'address' => 'Rue Neuve 10',
+            'city' => 'Bruxelles',
+            'postal_code' => '1000',
+            'scheduled_date' => now()->addDays(2)->format('Y-m-d'),
+            'scheduled_time' => '09:00',
         ])->assertCreated();
     }
 
@@ -319,14 +320,14 @@ class TradeBookingFlowTest extends TestCase
         $service = ServiceCatalog::factory()->create(['is_active' => true]);
 
         $this->postJson('/api/client/bookings', [
-            'trade_id'           => 99999,
+            'trade_id' => 99999,
             'service_catalog_id' => $service->id,
-            'address'            => 'Rue Neuve 10',
-            'city'               => 'Bruxelles',
-            'postal_code'        => '1000',
-            'scheduled_date'     => now()->addDays(2)->format('Y-m-d'),
-            'scheduled_time'     => '09:00',
+            'address' => 'Rue Neuve 10',
+            'city' => 'Bruxelles',
+            'postal_code' => '1000',
+            'scheduled_date' => now()->addDays(2)->format('Y-m-d'),
+            'scheduled_time' => '09:00',
         ])->assertUnprocessable()
-          ->assertJsonValidationErrors(['trade_id']);
+            ->assertJsonValidationErrors(['trade_id']);
     }
 }

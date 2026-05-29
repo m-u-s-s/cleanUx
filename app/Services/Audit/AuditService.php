@@ -33,18 +33,18 @@ class AuditService
     /**
      * Main entrypoint.
      *
-     * @param array<string,mixed> $options
-     *   - actor: ?User|string (User instance, 'system', 'webhook', 'job', null)
-     *   - subject: ?Model
-     *   - severity: ?string (info|warning|error|critical)
-     *   - domain: ?string (inferred from event_type prefix if absent)
-     *   - request: ?Request
-     *   - idempotency_key: ?string
-     *   - tenant_id: ?int
-     *   - service_zone_id: ?int
-     *   - occurred_at: ?\DateTimeInterface
-     *   - retention_policy_code: ?string
-     *   - is_pinned: ?bool
+     * @param  array<string,mixed>  $options
+     *                                        - actor: ?User|string (User instance, 'system', 'webhook', 'job', null)
+     *                                        - subject: ?Model
+     *                                        - severity: ?string (info|warning|error|critical)
+     *                                        - domain: ?string (inferred from event_type prefix if absent)
+     *                                        - request: ?Request
+     *                                        - idempotency_key: ?string
+     *                                        - tenant_id: ?int
+     *                                        - service_zone_id: ?int
+     *                                        - occurred_at: ?\DateTimeInterface
+     *                                        - retention_policy_code: ?string
+     *                                        - is_pinned: ?bool
      */
     public function record(string $eventType, array $context = [], array $options = []): ?AuditEvent
     {
@@ -101,6 +101,7 @@ class AuditService
                 'event_type' => $eventType,
                 'error' => $e->getMessage(),
             ]);
+
             return null;
         }
     }
@@ -108,12 +109,14 @@ class AuditService
     public function pin(AuditEvent $event): AuditEvent
     {
         $event->forceFill(['is_pinned' => true])->save();
+
         return $event->fresh();
     }
 
     public function unpin(AuditEvent $event): AuditEvent
     {
         $event->forceFill(['is_pinned' => false])->save();
+
         return $event->fresh();
     }
 
@@ -171,14 +174,16 @@ class AuditService
 
             if (in_array($keyLower, $dropKeys, true)) {
                 $redactedKeys[] = (string) $k;
+
                 continue;
             }
 
             if (in_array($keyLower, $hashKeys, true)) {
                 if ($v !== null && $v !== '') {
-                    $clean[$k] = 'sha256:' . substr(hash('sha256', (string) $v), 0, 16);
+                    $clean[$k] = 'sha256:'.substr(hash('sha256', (string) $v), 0, 16);
                 }
                 $redactedKeys[] = (string) $k;
+
                 continue;
             }
 
@@ -188,6 +193,7 @@ class AuditService
                 $clean[$k] = $v;
             }
         }
+
         return $clean;
     }
 
@@ -207,8 +213,10 @@ class AuditService
             $str = (string) $value;
             if ($matchType === AuditRedactionRule::MATCH_REGEX) {
                 $result = @preg_replace($pattern, $replacement, $str);
+
                 return $result !== null ? $result : $str;
             }
+
             return $str;
         };
 
@@ -218,10 +226,12 @@ class AuditService
             if ($matchType === AuditRedactionRule::MATCH_KEY && $keyLower === strtolower($pattern)) {
                 $redactedKeys[] = (string) $k;
                 $clean[$k] = $replacement;
+
                 continue;
             }
             $clean[$k] = $apply($v);
         }
+
         return $clean;
     }
 
@@ -230,6 +240,7 @@ class AuditService
         if (str_contains($eventType, '.')) {
             return Str::before($eventType, '.');
         }
+
         return 'general';
     }
 
@@ -265,6 +276,7 @@ class AuditService
                     'label' => Str::limit((string) ($authedUser->email ?? $authedUser->name ?? ''), 191, ''),
                 ];
             }
+
             return ['type' => AuditEvent::ACTOR_SYSTEM, 'id' => null, 'label' => null];
         }
 
@@ -282,6 +294,7 @@ class AuditService
                 AuditEvent::ACTOR_WEBHOOK,
                 AuditEvent::ACTOR_JOB,
             ], true) ? $actor : AuditEvent::ACTOR_SYSTEM;
+
             return ['type' => $type, 'id' => null, 'label' => $actor];
         }
 
@@ -296,6 +309,7 @@ class AuditService
         if (! $subject) {
             return ['type' => null, 'id' => null, 'label' => null];
         }
+
         return [
             'type' => class_basename(get_class($subject)),
             'id' => (int) $subject->getKey(),
@@ -310,6 +324,7 @@ class AuditService
                 return Str::limit((string) $subject->{$attr}, 191, '');
             }
         }
+
         return null;
     }
 
@@ -321,6 +336,7 @@ class AuditService
         if (! $request) {
             return ['ip_hash' => null, 'user_agent_short' => null, 'route_name' => null, 'request_id' => null];
         }
+
         return [
             'ip_hash' => $request->ip() ? hash('sha256', (string) $request->ip()) : null,
             'user_agent_short' => $request->userAgent() ? Str::limit((string) $request->userAgent(), 191, '') : null,
@@ -336,6 +352,7 @@ class AuditService
         if ($subject && isset($subject->organization_account_id)) {
             return $subject->organization_account_id ? (int) $subject->organization_account_id : null;
         }
+
         return null;
     }
 
@@ -347,6 +364,7 @@ class AuditService
         if ($subject && isset($subject->service_zone_id) && $subject->service_zone_id) {
             return (int) $subject->service_zone_id;
         }
+
         return null;
     }
 }

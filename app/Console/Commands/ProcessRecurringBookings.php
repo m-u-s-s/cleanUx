@@ -38,7 +38,7 @@ class ProcessRecurringBookings extends Command
     public function handle(): int
     {
         $isDryRun = (bool) $this->option('dry-run');
-        $limit    = (int) $this->option('limit');
+        $limit = (int) $this->option('limit');
 
         $dueSeries = RecurringBookingSeries::query()
             ->where('status', RecurringBookingSeries::STATUS_ACTIVE)
@@ -50,17 +50,19 @@ class ProcessRecurringBookings extends Command
 
         if ($dueSeries->isEmpty()) {
             $this->info('No recurring series due. Nothing to do.');
+
             return Command::SUCCESS;
         }
 
-        $this->info("Found {$dueSeries->count()} due series" . ($isDryRun ? ' (dry-run)' : '') . '.');
+        $this->info("Found {$dueSeries->count()} due series".($isDryRun ? ' (dry-run)' : '').'.');
 
         $created = 0;
-        $failed  = 0;
+        $failed = 0;
 
         foreach ($dueSeries as $series) {
             if ($isDryRun) {
                 $this->line("  [dry] Series #{$series->id} due at {$series->next_occurrence_at}");
+
                 continue;
             }
 
@@ -71,7 +73,7 @@ class ProcessRecurringBookings extends Command
                 $failed++;
                 Log::error('[recurring] Failed to process series', [
                     'series_id' => $series->id,
-                    'error'     => $e->getMessage(),
+                    'error' => $e->getMessage(),
                 ]);
                 $this->warn("  Series #{$series->id} failed: {$e->getMessage()}");
             }
@@ -92,9 +94,9 @@ class ProcessRecurringBookings extends Command
             $assignment = $this->dispatch->dispatchToNextProvider($mission);
 
             Log::info('[recurring] Booking created from series', [
-                'series_id'     => $series->id,
-                'booking_id'    => $booking->id,
-                'mission_id'    => $mission->id,
+                'series_id' => $series->id,
+                'booking_id' => $booking->id,
+                'mission_id' => $mission->id,
                 'assignment_id' => $assignment?->id,
             ]);
 
@@ -110,17 +112,17 @@ class ProcessRecurringBookings extends Command
 
         return Booking::create(array_merge($payload, [
             'recurring_booking_series_id' => $series->id,
-            'recurring_series_id'         => $series->id,
-            'is_recurrent'                => true,
-            'customer_user_id'            => $series->customer_user_id,
-            'customer_organization_id'    => $series->customer_organization_id,
-            'organization_site_id'        => $series->organization_site_id,
-            'service_catalog_id'          => $series->service_catalog_id,
-            'service_zone_id'             => $series->service_zone_id,
-            'scheduled_date'              => $scheduledDate,
-            'scheduled_time'              => $scheduledTime,
-            'status'                      => 'pending',
-            'created_by'                  => null,
+            'recurring_series_id' => $series->id,
+            'is_recurrent' => true,
+            'customer_user_id' => $series->customer_user_id,
+            'customer_organization_id' => $series->customer_organization_id,
+            'organization_site_id' => $series->organization_site_id,
+            'service_catalog_id' => $series->service_catalog_id,
+            'service_zone_id' => $series->service_zone_id,
+            'scheduled_date' => $scheduledDate,
+            'scheduled_time' => $scheduledTime,
+            'status' => 'pending',
+            'created_by' => null,
         ]));
     }
 
@@ -128,12 +130,12 @@ class ProcessRecurringBookings extends Command
     {
         $plannedStart = null;
         if ($booking->scheduled_date && $booking->scheduled_time) {
-            $plannedStart = $booking->scheduled_date . ' ' . $booking->scheduled_time;
+            $plannedStart = $booking->scheduled_date.' '.$booking->scheduled_time;
         }
 
         return Mission::create([
-            'booking_id'       => $booking->id,
-            'status'           => 'planned',
+            'booking_id' => $booking->id,
+            'status' => 'planned',
             'planned_start_at' => $plannedStart,
         ]);
     }
@@ -157,9 +159,9 @@ class ProcessRecurringBookings extends Command
         $interval = max(1, (int) ($series->interval ?? 1));
 
         return match ($series->frequency) {
-            'daily'   => $current->addDays($interval),
+            'daily' => $current->addDays($interval),
             'monthly' => $current->addMonthsNoOverflow($interval),
-            default   => $current->addWeeks($interval), // weekly
+            default => $current->addWeeks($interval), // weekly
         };
     }
 
@@ -171,6 +173,7 @@ class ProcessRecurringBookings extends Command
         if ($series->ends_at && $next->startOfDay()->gt(Carbon::parse($series->ends_at)->startOfDay())) {
             return true;
         }
+
         return false;
     }
 }

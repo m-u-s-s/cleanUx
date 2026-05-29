@@ -17,6 +17,7 @@ use App\Models\User;
  * Usage:
  *   app(FeatureFlagService::class)->isEnabled('chat_v2', $user)
  *   feature('chat_v2', $user)       // helper
+ *
  *   @feature('chat_v2')             // Blade directive
  */
 class FeatureFlagService
@@ -60,6 +61,7 @@ class FeatureFlagService
                     return true;
                 }
             }
+
             return false;
         }
 
@@ -69,7 +71,7 @@ class FeatureFlagService
     /** Deterministic bucket: same user always falls in same side of the rollout. */
     private function matchesPercentage(int $userId, string $feature, int $percentage): bool
     {
-        $bucket = abs(crc32($userId . ':' . $feature)) % 100;
+        $bucket = abs(crc32($userId.':'.$feature)) % 100;
 
         return $bucket < $percentage;
     }

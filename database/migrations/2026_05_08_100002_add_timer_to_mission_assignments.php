@@ -16,7 +16,8 @@ use Illuminate\Support\Facades\Schema;
  *
  * Approche défensive : Schema::hasColumn pour idempotence.
  */
-return new class extends Migration {
+return new class extends Migration
+{
     public function up(): void
     {
         if (! Schema::hasTable('mission_assignments')) {
@@ -43,14 +44,14 @@ return new class extends Migration {
                     ->constrained('mission_assignments')
                     ->nullOnDelete();
             }
-            
+
         });
 
         // Index pour la recherche "assignments expirés à escalader"
         Schema::table('mission_assignments', function (Blueprint $table) {
             try {
                 $table->index(['expires_at', 'assignment_status'], 'mission_assign_expiry_idx');
-            } catch (\Throwable $e) {
+            } catch (Throwable $e) {
                 // Index existe déjà
             }
         });
@@ -65,7 +66,7 @@ return new class extends Migration {
         Schema::table('mission_assignments', function (Blueprint $table) {
             try {
                 $table->dropIndex('mission_assign_expiry_idx');
-            } catch (\Throwable $e) {
+            } catch (Throwable $e) {
                 // n/a
             }
 
@@ -73,7 +74,7 @@ return new class extends Migration {
             if (Schema::hasColumn('mission_assignments', 'escalated_from_assignment_id')) {
                 try {
                     $table->dropForeign(['escalated_from_assignment_id']);
-                } catch (\Throwable $e) {
+                } catch (Throwable $e) {
                     // n/a
                 }
             }

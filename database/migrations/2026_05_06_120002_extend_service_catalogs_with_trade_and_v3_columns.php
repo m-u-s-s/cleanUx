@@ -97,7 +97,7 @@ return new class extends Migration
         Schema::table('service_catalogs', function (Blueprint $table) {
             try {
                 $table->index(['trade_id', 'is_active', 'sort_order'], 'svc_trade_active_sort_idx');
-            } catch (\Throwable $e) {
+            } catch (Throwable $e) {
                 // index probablement déjà présent
             }
         });
@@ -106,8 +106,14 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('service_catalogs', function (Blueprint $table) {
-            try { $table->dropIndex('svc_trade_active_sort_idx'); } catch (\Throwable $e) {}
-            try { $table->dropConstrainedForeignId('trade_id'); } catch (\Throwable $e) {}
+            try {
+                $table->dropIndex('svc_trade_active_sort_idx');
+            } catch (Throwable $e) {
+            }
+            try {
+                $table->dropConstrainedForeignId('trade_id');
+            } catch (Throwable $e) {
+            }
 
             $cols = [
                 'billing_unit', 'vat_rate', 'min_lead_time_hours', 'requires_site_visit',

@@ -11,6 +11,7 @@ use Illuminate\Validation\ValidationException;
 
 /**
  * @group Provider — Wallet
+ *
  * @authenticated
  */
 class ProviderWalletController extends Controller
@@ -18,6 +19,7 @@ class ProviderWalletController extends Controller
     public function balance(Request $request, ProviderWalletService $wallet): JsonResponse
     {
         $currency = (string) $request->query('currency', 'EUR');
+
         return response()->json($wallet->balance($request->user()->id, $currency));
     }
 

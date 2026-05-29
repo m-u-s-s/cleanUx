@@ -2,8 +2,8 @@
 
 namespace App\Exceptions;
 
-use Illuminate\Auth\AuthenticationException;
 use Illuminate\Auth\Access\AuthorizationException;
+use Illuminate\Auth\AuthenticationException;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -27,7 +27,7 @@ class ApiJsonRenderer
 {
     public static function render(Request $request, Throwable $e): ?JsonResponse
     {
-        if (!self::shouldRender($request)) {
+        if (! self::shouldRender($request)) {
             return null;
         }
 
@@ -40,7 +40,7 @@ class ApiJsonRenderer
         if (config('app.debug') && $status >= 500) {
             $payload['debug'] = [
                 'exception' => get_class($e),
-                'file'      => $e->getFile() . ':' . $e->getLine(),
+                'file' => $e->getFile().':'.$e->getLine(),
             ];
         }
 
@@ -84,6 +84,7 @@ class ApiJsonRenderer
         if ($e instanceof \DomainException) {
             return [409, 'domain_error', $e->getMessage(), null];
         }
+
         return [500, 'server_error', 'An unexpected error occurred.', null];
     }
 }

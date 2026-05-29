@@ -9,9 +9,13 @@ use Illuminate\Support\Str;
 class UserReport extends Model
 {
     public const STATUS_PENDING = 'pending';
+
     public const STATUS_UNDER_REVIEW = 'under_review';
+
     public const STATUS_RESOLVED_ACTION = 'resolved_action_taken';
+
     public const STATUS_RESOLVED_NO_ACTION = 'resolved_no_action';
+
     public const STATUS_DISMISSED = 'dismissed';
 
     public const CATEGORIES = [
@@ -36,7 +40,7 @@ class UserReport extends Model
 
     public static function generateCode(): string
     {
-        return 'rpt_' . Str::lower(Str::random(20));
+        return 'rpt_'.Str::lower(Str::random(20));
     }
 
     public function reporter(): BelongsTo

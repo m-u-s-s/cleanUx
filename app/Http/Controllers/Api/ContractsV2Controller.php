@@ -15,13 +15,12 @@ use Illuminate\Validation\ValidationException;
 
 /**
  * @group Contracts v2
+ *
  * @authenticated
  */
 class ContractsV2Controller extends Controller
 {
-    public function __construct(protected ContractService $svc)
-    {
-    }
+    public function __construct(protected ContractService $svc) {}
 
     public function activeTemplates(Request $request): JsonResponse
     {
@@ -119,7 +118,7 @@ class ContractsV2Controller extends Controller
             200,
             [
                 'Content-Type' => 'application/pdf',
-                'Content-Disposition' => 'attachment; filename="' . $document->code . '.pdf"',
+                'Content-Disposition' => 'attachment; filename="'.$document->code.'.pdf"',
             ],
         );
     }

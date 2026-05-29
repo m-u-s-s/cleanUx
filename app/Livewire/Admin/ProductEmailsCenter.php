@@ -10,9 +10,13 @@ use Livewire\Component;
 class ProductEmailsCenter extends Component
 {
     public string $templateKey = 'booking_confirmed';
+
     public string $recipientName = 'Client Démo';
+
     public string $recipientEmail = 'client@example.test';
+
     public string $previewHtml = '';
+
     public string $subject = '';
 
     public function mount(): void

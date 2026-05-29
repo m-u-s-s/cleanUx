@@ -11,17 +11,15 @@ use App\Notifications\Rating\RatingReceivedNotification;
 use App\Support\ActivityLogger;
 use App\Support\Domain\BookingStatus;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Notification;
 use Illuminate\Validation\ValidationException;
 
 class RatingService
 {
     public const RATING_WINDOW_DAYS = 14;
+
     public const EDIT_WINDOW_HOURS = 24;
 
-    public function __construct(protected RatingAggregationService $aggregator)
-    {
-    }
+    public function __construct(protected RatingAggregationService $aggregator) {}
 
     /**
      * Submit a rating from client → provider or provider → client.
@@ -46,7 +44,7 @@ class RatingService
         if ($existing && ! $this->isEditableNow($existing)) {
             throw ValidationException::withMessages([
                 'rating' => "Cet avis ne peut plus être modifié (fenêtre d'édition de "
-                    . self::EDIT_WINDOW_HOURS . "h dépassée).",
+                    .self::EDIT_WINDOW_HOURS.'h dépassée).',
             ]);
         }
 
@@ -81,6 +79,7 @@ class RatingService
                     if ($direction === Feedback::DIRECTION_CLIENT_TO_PROVIDER) {
                         $this->aggregator->recalculateForProvider($providerId);
                     }
+
                     return $existing->fresh();
                 }
                 $existing->save();
@@ -147,18 +146,18 @@ class RatingService
 
         if ($direction === Feedback::DIRECTION_CLIENT_TO_PROVIDER && (int) $author->id !== $clientId) {
             throw ValidationException::withMessages([
-                'rating' => "Seul le client peut noter le prestataire.",
+                'rating' => 'Seul le client peut noter le prestataire.',
             ]);
         }
         if ($direction === Feedback::DIRECTION_PROVIDER_TO_CLIENT && (int) $author->id !== $providerId) {
             throw ValidationException::withMessages([
-                'rating' => "Seul le prestataire peut noter le client.",
+                'rating' => 'Seul le prestataire peut noter le client.',
             ]);
         }
 
         if ($booking->mission_finished_at && $booking->mission_finished_at->lt(now()->subDays(self::RATING_WINDOW_DAYS))) {
             throw ValidationException::withMessages([
-                'rating' => "Le délai de " . self::RATING_WINDOW_DAYS . " jours pour noter cette mission est dépassé.",
+                'rating' => 'Le délai de '.self::RATING_WINDOW_DAYS.' jours pour noter cette mission est dépassé.',
             ]);
         }
     }
@@ -175,8 +174,10 @@ class RatingService
     {
         if ($feedback->status === Feedback::STATUS_PUBLISHED) {
             $window = ($feedback->published_at ?? $feedback->answered_at);
+
             return $window && $window->gt(now()->subHours(self::EDIT_WINDOW_HOURS));
         }
+
         return true;
     }
 

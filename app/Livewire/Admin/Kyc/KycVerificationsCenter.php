@@ -4,7 +4,6 @@ namespace App\Livewire\Admin\Kyc;
 
 use App\Models\KycVerification;
 use App\Services\Kyc\KycVerificationService;
-use App\Support\ActivityLogger;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
@@ -17,12 +16,17 @@ class KycVerificationsCenter extends Component
     protected $paginationTheme = 'tailwind';
 
     public string $filterStatus = '';
+
     public string $filterDecision = '';
+
     public string $filterProvider = '';
+
     public string $search = '';
 
     public ?int $selectedId = null;
+
     public string $manualNote = '';
+
     public string $manualReason = '';
 
     public function select(int $id): void
@@ -44,7 +48,7 @@ class KycVerificationsCenter extends Component
             app(KycVerificationService::class)->syncStatus($verification);
             $this->dispatch('toast', 'Statut synchronisé.', 'success');
         } catch (\Throwable $e) {
-            $this->dispatch('toast', 'Erreur sync: ' . $e->getMessage(), 'error');
+            $this->dispatch('toast', 'Erreur sync: '.$e->getMessage(), 'error');
         }
     }
 
@@ -58,7 +62,7 @@ class KycVerificationsCenter extends Component
             $this->dispatch('toast', 'Vérification approuvée manuellement.', 'success');
             $this->reset(['manualNote']);
         } catch (\Throwable $e) {
-            $this->dispatch('toast', 'Erreur: ' . $e->getMessage(), 'error');
+            $this->dispatch('toast', 'Erreur: '.$e->getMessage(), 'error');
         }
     }
 
@@ -76,7 +80,7 @@ class KycVerificationsCenter extends Component
             $this->dispatch('toast', 'Vérification rejetée.', 'success');
             $this->reset(['manualReason']);
         } catch (\Throwable $e) {
-            $this->dispatch('toast', 'Erreur: ' . $e->getMessage(), 'error');
+            $this->dispatch('toast', 'Erreur: '.$e->getMessage(), 'error');
         }
     }
 
@@ -96,7 +100,7 @@ class KycVerificationsCenter extends Component
             ->when($this->filterDecision, fn ($q) => $q->where('decision', $this->filterDecision))
             ->when($this->filterProvider, fn ($q) => $q->where('provider', $this->filterProvider))
             ->when($this->search, function ($q) {
-                $term = '%' . $this->search . '%';
+                $term = '%'.$this->search.'%';
                 $q->where(function ($inner) use ($term) {
                     $inner->where('external_applicant_id', 'like', $term)
                         ->orWhere('external_check_id', 'like', $term)

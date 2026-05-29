@@ -2,8 +2,8 @@
 
 namespace App\Services\Finance\Concerns;
 
-use App\Models\FinanceInvoice;
 use App\Models\Booking;
+use App\Models\FinanceInvoice;
 use Illuminate\Support\Collection;
 
 trait BuildsFinanceSnapshotsAndAmounts
@@ -161,11 +161,11 @@ trait BuildsFinanceSnapshotsAndAmounts
 
     protected function nextQuoteNumber(Booking $rdv): string
     {
-        return 'DEV-' . now()->format('Y') . '-' . str_pad((string) ($rdv->id ?: 0), 6, '0', STR_PAD_LEFT);
+        return 'DEV-'.now()->format('Y').'-'.str_pad((string) ($rdv->id ?: 0), 6, '0', STR_PAD_LEFT);
     }
 
     protected function nextInvoiceNumber(Booking $rdv): string
     {
-        return 'FAC-' . now()->format('Y') . '-' . str_pad((string) ($rdv->id ?: 0), 6, '0', STR_PAD_LEFT);
+        return 'FAC-'.now()->format('Y').'-'.str_pad((string) ($rdv->id ?: 0), 6, '0', STR_PAD_LEFT);
     }
 }

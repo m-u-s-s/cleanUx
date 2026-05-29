@@ -9,8 +9,11 @@ use Livewire\Component;
 class OrganizationSitesManager extends Component
 {
     public string $name = '';
+
     public string $address = '';
+
     public string $city = '';
+
     public string $cost_center = '';
 
     public function create()
@@ -34,7 +37,7 @@ class OrganizationSitesManager extends Component
             'sites' => OrganizationSite::where(
                 'organization_account_id',
                 Auth::user()->organization_account_id
-            )->get()
+            )->get(),
         ]);
     }
 }

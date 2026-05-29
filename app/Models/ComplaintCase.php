@@ -14,30 +14,49 @@ class ComplaintCase extends Model
     use HasFactory;
 
     public const STATUS_OPEN = 'open';
+
     public const STATUS_ASSIGNED = 'assigned';
+
     public const STATUS_AWAITING_CLIENT = 'awaiting_client';
+
     public const STATUS_AWAITING_PROVIDER = 'awaiting_provider';
+
     public const STATUS_INVESTIGATING = 'investigating';
+
     public const STATUS_RESOLVED = 'resolved';
+
     public const STATUS_CLOSED = 'closed';
+
     public const STATUS_ESCALATED = 'escalated';
 
     public const PRIORITY_LOW = 'low';
+
     public const PRIORITY_NORMAL = 'normal';
+
     public const PRIORITY_HIGH = 'high';
+
     public const PRIORITY_URGENT = 'urgent';
 
     public const SEVERITY_LOW = 'low';
+
     public const SEVERITY_MEDIUM = 'medium';
+
     public const SEVERITY_HIGH = 'high';
+
     public const SEVERITY_CRITICAL = 'critical';
 
     public const CATEGORY_QUALITY = 'quality';
+
     public const CATEGORY_NO_SHOW = 'no_show';
+
     public const CATEGORY_PAYMENT = 'payment';
+
     public const CATEGORY_DAMAGE = 'damage';
+
     public const CATEGORY_SAFETY = 'safety';
+
     public const CATEGORY_COMMUNICATION = 'communication';
+
     public const CATEGORY_OTHER = 'other';
 
     public const FINAL_STATUSES = [self::STATUS_RESOLVED, self::STATUS_CLOSED];

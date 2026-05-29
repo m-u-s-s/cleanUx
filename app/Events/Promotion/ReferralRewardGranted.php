@@ -11,7 +11,5 @@ class ReferralRewardGranted
     use Dispatchable;
     use SerializesModels;
 
-    public function __construct(public ReferralReward $reward)
-    {
-    }
+    public function __construct(public ReferralReward $reward) {}
 }

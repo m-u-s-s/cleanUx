@@ -7,20 +7,26 @@ use App\Models\ServiceCatalog;
 use App\Models\ServiceZone;
 use App\Models\User;
 use Carbon\Carbon;
+use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Builder;
 use Livewire\Component;
-use Illuminate\Contracts\View\View;
-use Livewire\Attributes\Layout;
 
 class CalendrierInterne extends Component
 {
     public string $viewMode = 'dayGridMonth';
+
     public string $dateFrom = '';
+
     public string $dateTo = '';
+
     public string $status = '';
+
     public string $zoneId = '';
+
     public string $serviceId = '';
+
     public string $employeId = '';
+
     public string $search = '';
 
     public function mount(): void

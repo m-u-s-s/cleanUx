@@ -23,10 +23,13 @@ class ProviderPayout extends Model
 {
     use HasFactory;
 
-    public const STATUS_PENDING    = 'pending';
+    public const STATUS_PENDING = 'pending';
+
     public const STATUS_PROCESSING = 'processing';
-    public const STATUS_PAID       = 'paid';
-    public const STATUS_FAILED     = 'failed';
+
+    public const STATUS_PAID = 'paid';
+
+    public const STATUS_FAILED = 'failed';
 
     protected $fillable = [
         'provider_user_id',
@@ -42,10 +45,10 @@ class ProviderPayout extends Model
     ];
 
     protected $casts = [
-        'amount'       => 'decimal:2',
+        'amount' => 'decimal:2',
         'period_start' => 'date',
-        'period_end'   => 'date',
-        'metadata'     => 'array',
+        'period_end' => 'date',
+        'metadata' => 'array',
     ];
 
     // ──────────────────────────────────────────────
@@ -105,7 +108,7 @@ class ProviderPayout extends Model
     public function markAsProcessing(?string $stripePayoutId = null): void
     {
         $this->update([
-            'status'             => self::STATUS_PROCESSING,
+            'status' => self::STATUS_PROCESSING,
             'provider_payout_id' => $stripePayoutId ?? $this->provider_payout_id,
         ]);
     }
@@ -113,7 +116,7 @@ class ProviderPayout extends Model
     public function markAsPaid(?string $stripePayoutId = null): void
     {
         $this->update([
-            'status'             => self::STATUS_PAID,
+            'status' => self::STATUS_PAID,
             'provider_payout_id' => $stripePayoutId ?? $this->provider_payout_id,
         ]);
     }
@@ -121,7 +124,7 @@ class ProviderPayout extends Model
     public function markAsFailed(?array $metadata = null): void
     {
         $this->update([
-            'status'   => self::STATUS_FAILED,
+            'status' => self::STATUS_FAILED,
             'metadata' => array_merge((array) $this->metadata, $metadata ?? []),
         ]);
     }

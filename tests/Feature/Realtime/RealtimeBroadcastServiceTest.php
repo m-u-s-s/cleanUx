@@ -9,6 +9,8 @@ use App\Models\BroadcastEvent;
 use App\Models\Mission;
 use App\Models\User;
 use App\Realtime\RealtimeBroadcastService;
+use Illuminate\Broadcasting\Channel;
+use Illuminate\Contracts\Broadcasting\ShouldBroadcastNow;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Event;
 use Tests\TestCase;
@@ -39,7 +41,7 @@ class RealtimeBroadcastServiceTest extends TestCase
         $row = app(RealtimeBroadcastService::class)->publish($event);
 
         $this->assertNotNull($row);
-        $this->assertSame('private-mission.' . $mission->id, $row->channel);
+        $this->assertSame('private-mission.'.$mission->id, $row->channel);
         $this->assertSame(MissionLiveEta::class, $row->event_class);
         $this->assertSame('mission.eta', $row->broadcast_as);
         $this->assertSame(BroadcastEvent::CATEGORY_MISSION_ETA, $row->category);
@@ -98,10 +100,10 @@ class RealtimeBroadcastServiceTest extends TestCase
             title: 'Confirmation',
             body: 'Votre RDV est confirmé.',
             data: ['booking_id' => 42],
-            idempotencyKey: 'notif:user:' . $user->id . ':booking-confirmed:42',
+            idempotencyKey: 'notif:user:'.$user->id.':booking-confirmed:42',
         ));
 
-        $this->assertSame('private-user.' . $user->id, $row->channel);
+        $this->assertSame('private-user.'.$user->id, $row->channel);
         $this->assertSame(BroadcastEvent::AUDIENCE_PER_USER, $row->audience);
         $this->assertSame((int) $user->id, (int) $row->audience_id);
         $this->assertSame(BroadcastEvent::CATEGORY_NOTIFICATION, $row->category);
@@ -109,8 +111,12 @@ class RealtimeBroadcastServiceTest extends TestCase
 
     public function test_publish_untracked_event_returns_null_no_ledger(): void
     {
-        $event = new class implements \Illuminate\Contracts\Broadcasting\ShouldBroadcastNow {
-            public function broadcastOn(): array { return [new \Illuminate\Broadcasting\Channel('public.test')]; }
+        $event = new class implements ShouldBroadcastNow
+        {
+            public function broadcastOn(): array
+            {
+                return [new Channel('public.test')];
+            }
         };
 
         $result = app(RealtimeBroadcastService::class)->publish($event);

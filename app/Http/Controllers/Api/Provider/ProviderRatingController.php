@@ -12,6 +12,7 @@ use Illuminate\Http\Request;
 
 /**
  * @group Provider — Ratings
+ *
  * @authenticated
  */
 class ProviderRatingController extends Controller

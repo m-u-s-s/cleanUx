@@ -1,10 +1,20 @@
 <?php
 
+use App\Http\Controllers\HealthCheckController;
 use App\Http\Controllers\PremiumCheckoutController;
+use App\Http\Controllers\PricingPageController;
+use App\Http\Controllers\PublicSeoController;
+use App\Http\Controllers\ServicePageController;
 use App\Http\Controllers\StripeWebhookController;
+use App\Http\Controllers\Webhooks\InsuranceWebhookController;
+use App\Http\Controllers\Webhooks\KycWebhookController;
+use App\Http\Controllers\Webhooks\SmsWebhookController;
 use App\Http\Controllers\Webhooks\StripeConnectWebhookController;
+use App\Livewire\Client\BrowseProviders;
 use App\Livewire\Client\PremiumOfferPage;
 use App\Livewire\Client\PrendreRendezVous;
+use App\Livewire\Public\HelpCenter;
+use App\Livewire\Public\ProviderPublicProfile;
 use App\Models\Country;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -12,8 +22,7 @@ use Illuminate\Support\Facades\Route;
 
 Route::view('/', 'home')->name('home');
 
-Route::get('/pricing', \App\Http\Controllers\PricingPageController::class)->name('pricing');
-
+Route::get('/pricing', PricingPageController::class)->name('pricing');
 
 Route::post('/locale', function (Request $request) {
     $locale = $request->validate([
@@ -29,7 +38,7 @@ Route::post('/locale', function (Request $request) {
         if (str_contains($current, '_')) {
             $region = explode('_', $current, 2)[1] ?? '';
             if ($region !== '') {
-                $userLocale = $locale . '_' . $region;
+                $userLocale = $locale.'_'.$region;
             }
         }
 
@@ -77,13 +86,13 @@ Route::middleware(['auth', 'verified', 'active.account'])->group(function () {
 
 Route::get('/prendre-rendez-vous', PrendreRendezVous::class)->name('booking.create');
 
-if (class_exists(\App\Livewire\Public\ProviderPublicProfile::class)) {
-    Route::get('/providers/{provider}', \App\Livewire\Public\ProviderPublicProfile::class)
+if (class_exists(ProviderPublicProfile::class)) {
+    Route::get('/providers/{provider}', ProviderPublicProfile::class)
         ->name('providers.show');
 }
 
-if (class_exists(\App\Livewire\Client\BrowseProviders::class)) {
-    Route::get('/prestataires', \App\Livewire\Client\BrowseProviders::class)
+if (class_exists(BrowseProviders::class)) {
+    Route::get('/prestataires', BrowseProviders::class)
         ->name('providers.browse.public');
 }
 
@@ -104,17 +113,17 @@ Route::get('/legal/mentions-legales', function () {
 })->name('legal.mentions');
 
 // Health checks for load balancer / monitoring
-Route::get('/health', [\App\Http\Controllers\HealthCheckController::class, 'liveness'])->name('health.liveness');
-Route::get('/health/deep', [\App\Http\Controllers\HealthCheckController::class, 'readiness'])->name('health.readiness');
+Route::get('/health', [HealthCheckController::class, 'liveness'])->name('health.liveness');
+Route::get('/health/deep', [HealthCheckController::class, 'readiness'])->name('health.readiness');
 
 // Help Center / FAQ
-if (class_exists(\App\Livewire\Public\HelpCenter::class)) {
-    Route::get('/aide', \App\Livewire\Public\HelpCenter::class)->name('help.center');
+if (class_exists(HelpCenter::class)) {
+    Route::get('/aide', HelpCenter::class)->name('help.center');
 }
 
 // SEO endpoints (sitemap.xml + robots.txt)
-Route::get('/sitemap.xml', [\App\Http\Controllers\PublicSeoController::class, 'sitemap'])->name('seo.sitemap');
-Route::get('/robots.txt', [\App\Http\Controllers\PublicSeoController::class, 'robots'])->name('seo.robots');
+Route::get('/sitemap.xml', [PublicSeoController::class, 'sitemap'])->name('seo.sitemap');
+Route::get('/robots.txt', [PublicSeoController::class, 'robots'])->name('seo.robots');
 
 // Blog — content marketing foundation (no auth required, crawlable)
 Route::get('/blog', function () {
@@ -125,9 +134,9 @@ Route::get('/blog', function () {
 })->name('blog.index');
 
 // Programmatic SEO — service pages (no auth required, crawlable)
-Route::get('/services', [\App\Http\Controllers\ServicePageController::class, 'index'])->name('services.index');
-Route::get('/services/{trade}', [\App\Http\Controllers\ServicePageController::class, 'show'])->name('services.show');
-Route::get('/services/{trade}/{city}', [\App\Http\Controllers\ServicePageController::class, 'show'])->name('services.show.city');
+Route::get('/services', [ServicePageController::class, 'index'])->name('services.index');
+Route::get('/services/{trade}', [ServicePageController::class, 'show'])->name('services.show');
+Route::get('/services/{trade}/{city}', [ServicePageController::class, 'show'])->name('services.show.city');
 
 Route::post('/stripe/webhook', [StripeWebhookController::class, 'handleWebhook'])
     ->name('cashier.webhook');
@@ -141,13 +150,13 @@ Route::post('/webhooks/stripe-connect', [StripeConnectWebhookController::class, 
     ->name('webhooks.stripe-connect');
 
 // Phase KYC v2 — Webhooks providers KYC (mock|onfido|veriff|sumsub)
-Route::post('/webhooks/kyc/{provider}', [\App\Http\Controllers\Webhooks\KycWebhookController::class, 'handle'])
+Route::post('/webhooks/kyc/{provider}', [KycWebhookController::class, 'handle'])
     ->name('webhooks.kyc');
 
 // Phase SMS v2 — Webhooks DLR SMS providers (mock|twilio|vonage)
-Route::post('/webhooks/sms/{provider}', [\App\Http\Controllers\Webhooks\SmsWebhookController::class, 'handle'])
+Route::post('/webhooks/sms/{provider}', [SmsWebhookController::class, 'handle'])
     ->name('webhooks.sms');
 
 // Phase Insurance v2 — Webhooks providers assurance (mock|hiscox|wakam)
-Route::post('/webhooks/insurance/{provider}', [\App\Http\Controllers\Webhooks\InsuranceWebhookController::class, 'handle'])
+Route::post('/webhooks/insurance/{provider}', [InsuranceWebhookController::class, 'handle'])
     ->name('webhooks.insurance');

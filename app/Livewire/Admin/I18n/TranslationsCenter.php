@@ -18,11 +18,15 @@ class TranslationsCenter extends Component
     protected $paginationTheme = 'tailwind';
 
     public string $locale = 'fr';
+
     public string $group = 'app';
+
     public string $search = '';
+
     public bool $showOnlyOverridden = false;
 
     public ?string $editingKey = null;
+
     public string $editingValue = '';
 
     public function mount(): void
@@ -97,7 +101,7 @@ class TranslationsCenter extends Component
         $localeEntries = $scanner->flattenLocale($this->locale);
         $fallbackEntries = $scanner->flattenLocale($resolver->fallback());
 
-        $groupPrefix = $this->group . '.';
+        $groupPrefix = $this->group.'.';
         $rows = [];
         foreach ($localeEntries as $key => $value) {
             if (! str_starts_with($key, $groupPrefix)) {
@@ -118,7 +122,7 @@ class TranslationsCenter extends Component
             ->all();
 
         foreach ($overrides as $oKey => $oVal) {
-            $compoundKey = $groupPrefix . $oKey;
+            $compoundKey = $groupPrefix.$oKey;
             if (! isset($rows[$compoundKey])) {
                 $rows[$compoundKey] = [
                     'key' => $compoundKey,
@@ -167,9 +171,10 @@ class TranslationsCenter extends Component
         if (! is_dir($dir)) {
             return [];
         }
+
         return array_map(
             fn ($f) => pathinfo($f, PATHINFO_FILENAME),
-            glob($dir . '/*.php') ?: []
+            glob($dir.'/*.php') ?: []
         );
     }
 }

@@ -8,10 +8,15 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class QualityChecklistItem extends Model
 {
     public const TYPE_BOOLEAN = 'boolean';
+
     public const TYPE_RATING = 'rating';
+
     public const TYPE_TEXT = 'text';
+
     public const TYPE_PHOTO = 'photo';
+
     public const TYPE_MEASUREMENT = 'measurement';
+
     public const TYPE_SELECT = 'select';
 
     protected $fillable = [

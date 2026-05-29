@@ -23,13 +23,13 @@ class MissionEventFactory extends Factory
         ];
 
         return [
-            'mission_id'     => Mission::factory(),
-            'actor_user_id'  => User::factory(),
-            'event_type'     => fake()->randomElement($types),
-            'title'          => fake()->sentence(5),
-            'description'    => fake()->optional()->sentence(),
-            'payload'        => null,
-            'happened_at'    => fake()->dateTimeBetween('-7 days', 'now'),
+            'mission_id' => Mission::factory(),
+            'actor_user_id' => User::factory(),
+            'event_type' => fake()->randomElement($types),
+            'title' => fake()->sentence(5),
+            'description' => fake()->optional()->sentence(),
+            'payload' => null,
+            'happened_at' => fake()->dateTimeBetween('-7 days', 'now'),
         ];
     }
 }

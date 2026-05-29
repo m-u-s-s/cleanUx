@@ -10,6 +10,7 @@ class ChartOfAccounts
     public function name(string $code): ?string
     {
         $accounts = (array) config('accounting_v2.chart_of_accounts', []);
+
         return $accounts[$code]['name'] ?? null;
     }
 
@@ -21,6 +22,7 @@ class ChartOfAccounts
     public function classOf(string $code): ?int
     {
         $accounts = (array) config('accounting_v2.chart_of_accounts', []);
+
         return isset($accounts[$code]) ? (int) ($accounts[$code]['class'] ?? 0) : null;
     }
 

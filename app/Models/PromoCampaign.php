@@ -14,9 +14,13 @@ class PromoCampaign extends Model
     use HasFactory;
 
     public const STATUS_DRAFT = 'draft';
+
     public const STATUS_SCHEDULED = 'scheduled';
+
     public const STATUS_ACTIVE = 'active';
+
     public const STATUS_PAUSED = 'paused';
+
     public const STATUS_ARCHIVED = 'archived';
 
     protected $fillable = [

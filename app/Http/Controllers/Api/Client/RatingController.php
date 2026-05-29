@@ -13,6 +13,7 @@ use Illuminate\Http\Request;
 
 /**
  * @group Ratings
+ *
  * @authenticated
  */
 class RatingController extends Controller
@@ -29,6 +30,7 @@ class RatingController extends Controller
      * @bodyParam communication integer Optional sub-rating for communication (1-5). Example: 5
      * @bodyParam value integer Optional sub-rating for value for money (1-5). Example: 4
      * @bodyParam is_public boolean Whether the review is publicly visible (default true). Example: 1
+     *
      * @response 201 {"feedback_id": 7, "status": "pending_reveal", "published_at": null}
      * @response 422 {"message": "The rating field is required.", "errors": {"rating": ["The rating field is required."]}}
      */
@@ -55,6 +57,7 @@ class RatingController extends Controller
      *
      * @bodyParam reason string required Short moderation reason (max 64 chars). Example: inappropriate
      * @bodyParam details string Optional additional context (max 1000 chars). Example: Le commentaire contient des insultes.
+     *
      * @response 201 {"report_id": 3, "status": "pending"}
      */
     public function report(Request $request, Feedback $feedback): JsonResponse

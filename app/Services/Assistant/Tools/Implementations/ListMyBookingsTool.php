@@ -21,9 +21,9 @@ class ListMyBookingsTool implements AssistantTool
     public function description(): string
     {
         return "Liste les réservations de l'utilisateur connecté. "
-            . "Utilise ce tool quand l'utilisateur demande 'mes réservations', 'mes missions', "
-            . "'mes prochains rendez-vous', ou veut connaître l'état d'une réservation. "
-            . "Retourne au maximum 10 résultats triés par date.";
+            ."Utilise ce tool quand l'utilisateur demande 'mes réservations', 'mes missions', "
+            ."'mes prochains rendez-vous', ou veut connaître l'état d'une réservation. "
+            .'Retourne au maximum 10 résultats triés par date.';
     }
 
     public function inputSchema(): array
@@ -32,15 +32,15 @@ class ListMyBookingsTool implements AssistantTool
             'type' => 'object',
             'properties' => [
                 'status' => [
-                    'type'        => 'string',
-                    'enum'        => ['pending', 'confirmed', 'in_progress', 'completed', 'cancelled', 'all'],
+                    'type' => 'string',
+                    'enum' => ['pending', 'confirmed', 'in_progress', 'completed', 'cancelled', 'all'],
                     'description' => "Filtrer par statut. 'all' (défaut) retourne tous les statuts non-annulés.",
                 ],
                 'limit' => [
-                    'type'        => 'integer',
-                    'minimum'     => 1,
-                    'maximum'     => 10,
-                    'description' => "Nombre maximum de résultats (1-10, défaut 5).",
+                    'type' => 'integer',
+                    'minimum' => 1,
+                    'maximum' => 10,
+                    'description' => 'Nombre maximum de résultats (1-10, défaut 5).',
                 ],
             ],
             'required' => [],
@@ -61,12 +61,12 @@ class ListMyBookingsTool implements AssistantTool
     public function execute(User $user, array $input): array
     {
         $status = $input['status'] ?? 'all';
-        $limit  = min((int) ($input['limit'] ?? 5), 10);
+        $limit = min((int) ($input['limit'] ?? 5), 10);
 
         $query = Booking::query()
             ->where(function ($q) use ($user) {
                 $q->where('customer_user_id', $user->id)
-                  ->orWhere('client_id', $user->id);
+                    ->orWhere('client_id', $user->id);
             })
             ->orderByDesc('scheduled_date')
             ->orderByDesc('scheduled_time')
@@ -81,18 +81,18 @@ class ListMyBookingsTool implements AssistantTool
         $bookings = $query->with(['serviceCatalog:id,name'])->get();
 
         return [
-            'count'    => $bookings->count(),
+            'count' => $bookings->count(),
             'bookings' => $bookings->map(fn ($b) => [
-                'id'            => $b->id,
-                'reference'     => $b->booking_reference,
-                'service'       => $b->serviceCatalog?->name,
-                'status'        => $b->status,
-                'scheduled_at'  => $b->scheduled_date
-                    ? $b->scheduled_date->format('d/m/Y') . ' ' . substr((string) $b->scheduled_time, 0, 5)
+                'id' => $b->id,
+                'reference' => $b->booking_reference,
+                'service' => $b->serviceCatalog?->name,
+                'status' => $b->status,
+                'scheduled_at' => $b->scheduled_date
+                    ? $b->scheduled_date->format('d/m/Y').' '.substr((string) $b->scheduled_time, 0, 5)
                     : null,
-                'address'       => $b->display_address,
-                'city'          => $b->display_city,
-                'price'         => $b->estimated_price ? number_format((float) $b->estimated_price, 2, ',', ' ') . ' €' : null,
+                'address' => $b->display_address,
+                'city' => $b->display_city,
+                'price' => $b->estimated_price ? number_format((float) $b->estimated_price, 2, ',', ' ').' €' : null,
             ])->all(),
         ];
     }

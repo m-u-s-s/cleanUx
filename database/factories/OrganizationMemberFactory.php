@@ -19,17 +19,17 @@ class OrganizationMemberFactory extends Factory
     {
         return [
             'organization_account_id' => OrganizationAccount::factory(),
-            'user_id'                 => User::factory(),
-            'role'                    => fake()->randomElement([
+            'user_id' => User::factory(),
+            'role' => fake()->randomElement([
                 OrganizationRole::WORKER->value,
                 OrganizationRole::MANAGER->value,
                 OrganizationRole::VIEWER->value,
             ]),
             'permissions' => null,
-            'status'      => 'active',
-            'invited_by'  => null,
-            'invited_at'  => now()->subDays(fake()->numberBetween(1, 60)),
-            'joined_at'   => now()->subDays(fake()->numberBetween(0, 30)),
+            'status' => 'active',
+            'invited_by' => null,
+            'invited_at' => now()->subDays(fake()->numberBetween(1, 60)),
+            'joined_at' => now()->subDays(fake()->numberBetween(0, 30)),
         ];
     }
 

@@ -9,25 +9,38 @@ use Livewire\WithPagination;
 
 class FinanceCenter extends Component
 {
-    use WithPagination;
     use BuildsFinanceCenterQueries;
     use HandlesFinanceDocuments;
+    use WithPagination;
 
     protected string $paginationTheme = 'tailwind';
 
     public string $search = '';
+
     public string $dateFrom = '';
+
     public string $dateTo = '';
+
     public string $status = '';
+
     public string $zoneId = '';
+
     public string $serviceId = '';
+
     public string $organizationId = '';
+
     public string $market = '';
+
     public string $viewMode = 'all';
+
     public string $paymentFilter = '';
+
     public int $selectedRendezVousId = 0;
+
     public float $taxRate = 21.0;
+
     public string $manualPaymentAmount = '';
+
     public string $manualPaymentMethod = 'manual';
 
     protected $queryString = [

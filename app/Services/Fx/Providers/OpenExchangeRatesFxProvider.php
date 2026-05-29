@@ -43,6 +43,7 @@ class OpenExchangeRatesFxProvider implements FxProviderInterface
 
             if (! $response->ok()) {
                 Log::warning('OpenExchangeRates: HTTP error', ['status' => $response->status()]);
+
                 return [];
             }
 
@@ -58,9 +59,11 @@ class OpenExchangeRatesFxProvider implements FxProviderInterface
                     $out[] = new FxRate($base, $code, $rate, $this->name(), now(), ['raw' => $rate]);
                 }
             }
+
             return $out;
         } catch (\Throwable $e) {
             Log::warning('OpenExchangeRates: exception', ['error' => $e->getMessage()]);
+
             return [];
         }
     }

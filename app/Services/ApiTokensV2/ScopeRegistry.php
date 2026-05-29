@@ -13,6 +13,7 @@ class ScopeRegistry
     {
         $configCodes = (array) config('api_tokens_v2.allowed_scopes', []);
         $dbCodes = ApiTokenScope::query()->active()->pluck('code')->all();
+
         return array_values(array_unique(array_merge($configCodes, $dbCodes)));
     }
 
@@ -31,6 +32,7 @@ class ScopeRegistry
             $code = (string) $code;
             if (! in_array($code, $allowed, true)) {
                 $invalid[] = $code;
+
                 continue;
             }
             $scope = ApiTokenScope::query()->where('code', $code)->first();
@@ -38,11 +40,13 @@ class ScopeRegistry
                 // exception : 'admin' peut tout détenir
                 if ($role !== 'admin') {
                     $invalid[] = $code;
+
                     continue;
                 }
             }
             $valid[] = $code;
         }
+
         return ['valid' => $valid, 'invalid' => $invalid];
     }
 
@@ -51,6 +55,7 @@ class ScopeRegistry
         if (in_array($code, (array) config('api_tokens_v2.dangerous_scopes', []), true)) {
             return true;
         }
+
         return (bool) ApiTokenScope::query()->where('code', $code)->where('is_dangerous', true)->exists();
     }
 
@@ -62,6 +67,7 @@ class ScopeRegistry
         if (in_array('admin:everything', $tokenScopes, true)) {
             return true;
         }
+
         return in_array($required, $tokenScopes, true);
     }
 

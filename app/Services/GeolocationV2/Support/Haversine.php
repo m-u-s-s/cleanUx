@@ -23,6 +23,7 @@ class Haversine
         $a = sin($dLat / 2) ** 2
             + cos($lat1Rad) * cos($lat2Rad) * sin($dLng / 2) ** 2;
         $c = 2 * atan2(sqrt($a), sqrt(1 - $a));
+
         return $R * $c;
     }
 
@@ -38,6 +39,7 @@ class Haversine
         $y = sin($dLng) * cos($lat2Rad);
         $x = cos($lat1Rad) * sin($lat2Rad) - sin($lat1Rad) * cos($lat2Rad) * cos($dLng);
         $bearing = atan2($y, $x);
+
         return fmod(rad2deg($bearing) + 360, 360);
     }
 }

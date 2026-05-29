@@ -5,8 +5,8 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class OrganizationSite extends Model
 {
@@ -42,19 +42,22 @@ class OrganizationSite extends Model
     ];
 
     protected $casts = [
-        'latitude'         => 'decimal:7',
-        'longitude'        => 'decimal:7',
-        'surface_m2'       => 'integer',
-        'floor_count'      => 'integer',
-        'metadata'         => 'array',
-        'trade_preferences'=> 'array',
+        'latitude' => 'decimal:7',
+        'longitude' => 'decimal:7',
+        'surface_m2' => 'integer',
+        'floor_count' => 'integer',
+        'metadata' => 'array',
+        'trade_preferences' => 'array',
     ];
 
     // Fréquences
-    public const FREQ_ONE_TIME  = 'one_time';
-    public const FREQ_WEEKLY    = 'weekly';
-    public const FREQ_BIWEEKLY  = 'biweekly';
-    public const FREQ_MONTHLY   = 'monthly';
+    public const FREQ_ONE_TIME = 'one_time';
+
+    public const FREQ_WEEKLY = 'weekly';
+
+    public const FREQ_BIWEEKLY = 'biweekly';
+
+    public const FREQ_MONTHLY = 'monthly';
 
     public function organization(): BelongsTo
     {
@@ -116,10 +119,10 @@ class OrganizationSite extends Model
 
         return match ($freq) {
             self::FREQ_ONE_TIME => 'Ponctuel',
-            self::FREQ_WEEKLY   => 'Hebdomadaire',
+            self::FREQ_WEEKLY => 'Hebdomadaire',
             self::FREQ_BIWEEKLY => 'Bi-mensuel',
-            self::FREQ_MONTHLY  => 'Mensuel',
-            default             => 'Non defini',
+            self::FREQ_MONTHLY => 'Mensuel',
+            default => 'Non defini',
         };
     }
 
@@ -138,7 +141,7 @@ class OrganizationSite extends Model
             }
 
             if (blank($site->address) && filled($site->name)) {
-                $site->address = trim($site->name . ' ' . $site->postal_code . ' ' . $site->city);
+                $site->address = trim($site->name.' '.$site->postal_code.' '.$site->city);
             }
 
             if (blank($site->address)) {
@@ -151,13 +154,13 @@ class OrganizationSite extends Model
         });
     }
 
-    public function organizationAccount(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    public function organizationAccount(): BelongsTo
     {
-        return $this->belongsTo(\App\Models\OrganizationAccount::class, 'organization_account_id');
+        return $this->belongsTo(OrganizationAccount::class, 'organization_account_id');
     }
 
-    public function postalCodeReference(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    public function postalCodeReference(): BelongsTo
     {
-        return $this->belongsTo(\App\Models\PostalCode::class, 'postal_code_id');
+        return $this->belongsTo(PostalCode::class, 'postal_code_id');
     }
 }

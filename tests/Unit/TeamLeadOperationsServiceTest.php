@@ -9,7 +9,7 @@ class TeamLeadOperationsServiceTest extends TestCase
 {
     public function test_service_can_be_instantiated(): void
     {
-        $service = new TeamLeadOperationsService();
+        $service = new TeamLeadOperationsService;
 
         $this->assertInstanceOf(TeamLeadOperationsService::class, $service);
     }

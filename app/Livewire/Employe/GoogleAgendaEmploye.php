@@ -2,11 +2,10 @@
 
 namespace App\Livewire\Employe;
 
-use App\Models\GoogleCalendarConnection;
 use App\Models\Booking;
-use Livewire\Component;
+use App\Models\GoogleCalendarConnection;
 use Illuminate\Contracts\View\View;
-use Livewire\Attributes\Layout;
+use Livewire\Component;
 
 class GoogleAgendaEmploye extends Component
 {

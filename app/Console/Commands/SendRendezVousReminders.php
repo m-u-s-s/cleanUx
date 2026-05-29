@@ -2,8 +2,8 @@
 
 namespace App\Console\Commands;
 
-use App\Models\EmployeeZoneAssignment;
 use App\Models\Booking;
+use App\Models\EmployeeZoneAssignment;
 use App\Models\User;
 use App\Notifications\AdminDigestNotification;
 use App\Notifications\DemandeFeedbackNotification;
@@ -18,6 +18,7 @@ use Illuminate\Support\Collection;
 class SendRendezVousReminders extends Command
 {
     protected $signature = 'app:send-rendezvous-reminders';
+
     protected $description = 'Envoie les rappels, relances, suggestions et alertes liés aux rendez-vous';
 
     public function handle(): int
@@ -173,7 +174,7 @@ class SendRendezVousReminders extends Command
         }
 
         $items = $problematic->map(function ($row, $service) {
-            return (string) $service . ' : +' . $row['avg_gap'] . ' min en moyenne.';
+            return (string) $service.' : +'.$row['avg_gap'].' min en moyenne.';
         })->values()->all();
 
         foreach ($admins as $admin) {
@@ -209,7 +210,7 @@ class SendRendezVousReminders extends Command
         }
 
         $items = [
-            'Le taux de feedback sur 30 jours est de ' . $rate . '%.',
+            'Le taux de feedback sur 30 jours est de '.$rate.'%.',
             'Envisager une relance renforcée et un CTA plus visible côté client.',
         ];
 
@@ -318,6 +319,6 @@ class SendRendezVousReminders extends Command
             return null;
         }
 
-        return Carbon::parse($rdv->date->format('Y-m-d') . ' ' . substr((string) $rdv->heure, 0, 5));
+        return Carbon::parse($rdv->date->format('Y-m-d').' '.substr((string) $rdv->heure, 0, 5));
     }
 }

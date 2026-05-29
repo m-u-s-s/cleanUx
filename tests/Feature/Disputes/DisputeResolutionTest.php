@@ -10,6 +10,7 @@ use App\Models\User;
 use App\Services\Disputes\DisputeResolutionService;
 use App\Services\Disputes\DisputeService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Validation\ValidationException;
 use Tests\TestCase;
 
 class DisputeResolutionTest extends TestCase
@@ -17,7 +18,9 @@ class DisputeResolutionTest extends TestCase
     use RefreshDatabase;
 
     protected User $client;
+
     protected User $admin;
+
     protected Booking $booking;
 
     protected function setUp(): void
@@ -65,7 +68,7 @@ class DisputeResolutionTest extends TestCase
     {
         $case = $this->openCase('payment', 'high');
 
-        $this->expectException(\Illuminate\Validation\ValidationException::class);
+        $this->expectException(ValidationException::class);
 
         app(DisputeResolutionService::class)->apply($case, $this->admin, [
             'resolution_type' => DisputeResolution::TYPE_REFUND_PARTIAL,
@@ -108,7 +111,7 @@ class DisputeResolutionTest extends TestCase
     protected function openCase(string $category, string $priority): ComplaintCase
     {
         return app(DisputeService::class)->open($this->client, [
-            'subject' => 'Test ' . $category,
+            'subject' => 'Test '.$category,
             'description' => 'Description suffisante pour passer validation',
             'category' => $category,
             'priority' => $priority,

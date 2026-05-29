@@ -19,11 +19,10 @@ class ProcessInsuranceWebhookJob implements ShouldQueue
     use SerializesModels;
 
     public int $tries = 3;
+
     public int $timeout = 30;
 
-    public function __construct(public int $eventId)
-    {
-    }
+    public function __construct(public int $eventId) {}
 
     public function backoff(): array
     {
@@ -46,6 +45,7 @@ class ProcessInsuranceWebhookJob implements ShouldQueue
                     'status' => InsuranceWebhookEvent::STATUS_IGNORED,
                     'processed_at' => now(),
                 ]);
+
                 return;
             }
 

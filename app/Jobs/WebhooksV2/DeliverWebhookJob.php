@@ -15,6 +15,7 @@ class DeliverWebhookJob implements ShouldQueue
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     public int $tries = 1;  // retries gérés en interne par WebhookDeliveryRunner via next_retry_at
+
     public int $timeout = 60;
 
     public function __construct(public int $deliveryId) {}

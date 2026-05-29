@@ -2,22 +2,24 @@
 
 namespace App\Console\Commands;
 
-use Illuminate\Console\Command;
-use App\Models\User;
 use App\Models\Disponibilite;
+use App\Models\User;
 use Carbon\Carbon;
+use Illuminate\Console\Command;
 
 class GenererDisponibilitesEmploye extends Command
 {
     protected $signature = 'dispo:generer {employe_id}';
+
     protected $description = 'Génère des créneaux de test pour un employé';
 
     public function handle()
     {
         $employe = User::find($this->argument('employe_id'));
 
-        if (!$employe || ! $employe->isEmploye()) {
-            $this->error("Aucun employé trouvé avec cet ID.");
+        if (! $employe || ! $employe->isEmploye()) {
+            $this->error('Aucun employé trouvé avec cet ID.');
+
             return;
         }
 

@@ -4,7 +4,6 @@ namespace App\Console\Commands;
 
 use App\Support\ActivityLogger;
 use Illuminate\Console\Command;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 
@@ -26,7 +25,7 @@ class VerifyBackup extends Command
 
     public function handle(): int
     {
-        $disk    = $this->option('disk');
+        $disk = $this->option('disk');
         $minSize = (int) $this->option('min-bytes');
 
         $this->info("Verifying backups on disk [{$disk}]...");
@@ -36,12 +35,14 @@ class VerifyBackup extends Command
         $this->logOutcome($result);
 
         if ($result['status'] === 'ok') {
-            $this->info('Backup verification passed: ' . $result['message']);
+            $this->info('Backup verification passed: '.$result['message']);
+
             return self::SUCCESS;
         }
 
-        $this->error('Backup verification FAILED: ' . $result['message']);
+        $this->error('Backup verification FAILED: '.$result['message']);
         Log::error('backup.verify.failed', $result);
+
         return self::FAILURE;
     }
 
@@ -75,9 +76,9 @@ class VerifyBackup extends Command
         }
 
         return [
-            'status'     => 'ok',
-            'message'    => "Backup OK — {$latest} ({$size} bytes)",
-            'file'       => $latest,
+            'status' => 'ok',
+            'message' => "Backup OK — {$latest} ({$size} bytes)",
+            'file' => $latest,
             'size_bytes' => $size,
         ];
     }
@@ -90,10 +91,10 @@ class VerifyBackup extends Command
 
     private function logOutcome(array $result): void
     {
-        ActivityLogger::system('backup.verify.' . $result['status'], null, [
-            'file'       => $result['file'],
+        ActivityLogger::system('backup.verify.'.$result['status'], null, [
+            'file' => $result['file'],
             'size_bytes' => $result['size_bytes'],
-            'message'    => $result['message'],
+            'message' => $result['message'],
         ]);
     }
 }

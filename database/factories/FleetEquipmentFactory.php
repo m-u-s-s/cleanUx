@@ -13,7 +13,7 @@ class FleetEquipmentFactory extends Factory
     public function definition(): array
     {
         return [
-            'code' => 'EQP-' . fake()->unique()->numerify('####'),
+            'code' => 'EQP-'.fake()->unique()->numerify('####'),
             'name' => fake()->randomElement(['Aspirateur pro', 'Monobrosse', 'Nettoyeur vapeur', 'Karcher', 'Échelle télescopique']),
             'equipment_type' => fake()->randomElement(['cleaning', 'painting', 'general', 'safety']),
             'category' => fake()->randomElement(['portable', 'heavy', 'vehicle_mounted']),

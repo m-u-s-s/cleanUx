@@ -25,8 +25,11 @@ use Livewire\Component;
 class ProviderPresenceToggle extends Component
 {
     public bool $isOnline = false;
+
     public ?string $wentOnlineAt = null;
+
     public ?string $message = null;
+
     public ?string $messageType = null;
 
     public function mount(): void
@@ -85,7 +88,9 @@ class ProviderPresenceToggle extends Component
      */
     public function heartbeat(float $lat, float $lng, array $meta = []): void
     {
-        if (! $this->isOnline) return;
+        if (! $this->isOnline) {
+            return;
+        }
 
         try {
             $profile = app(ProviderPresenceService::class)->heartbeat(

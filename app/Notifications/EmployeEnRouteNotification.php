@@ -11,9 +11,7 @@ class EmployeEnRouteNotification extends Notification
 {
     use Queueable;
 
-    public function __construct(public Mission $mission)
-    {
-    }
+    public function __construct(public Mission $mission) {}
 
     public function via(object $notifiable): array
     {

@@ -54,6 +54,6 @@ class Company extends Model
 
     public function rendezVous()
     {
-        return $this->hasMany(\App\Models\Booking::class);
+        return $this->hasMany(Booking::class);
     }
 }

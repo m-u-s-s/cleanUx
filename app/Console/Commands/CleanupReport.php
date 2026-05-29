@@ -10,6 +10,7 @@ use Livewire\Component;
 class CleanupReport extends Command
 {
     protected $signature = 'app:cleanup-report';
+
     protected $description = 'Rapport rapide de nettoyage du projet';
 
     public function handle(): int
@@ -36,7 +37,7 @@ class CleanupReport extends Command
 
         foreach (File::allFiles($componentDir) as $file) {
             $relative = str_replace('\\', '/', $file->getRelativePathname());
-            $class = 'App\\Livewire\\' . str_replace(['/', '.php'], ['\\', ''], $relative);
+            $class = 'App\\Livewire\\'.str_replace(['/', '.php'], ['\\', ''], $relative);
 
             if (class_exists($class) && is_subclass_of($class, Component::class)) {
                 $allComponents[] = $class;
@@ -131,9 +132,9 @@ class CleanupReport extends Command
         }
 
         $this->line('=== Livewire ===');
-        $this->line('Total composants : ' . count($components));
-        $this->line('Utilisés dans les routes : ' . count($usedInRoutes));
-        $this->line('Possiblement orphelins : ' . count($orphans));
+        $this->line('Total composants : '.count($components));
+        $this->line('Utilisés dans les routes : '.count($usedInRoutes));
+        $this->line('Possiblement orphelins : '.count($orphans));
         $this->newLine();
     }
 
@@ -144,8 +145,8 @@ class CleanupReport extends Command
             ->filter(fn ($path) => str_ends_with($path, '.blade.php'));
 
         $this->line('=== Vues ===');
-        $this->line('Total vues Blade : ' . $views->count());
-        $this->line('Vues Livewire : ' . count($livewireViews));
+        $this->line('Total vues Blade : '.$views->count());
+        $this->line('Vues Livewire : '.count($livewireViews));
         $this->newLine();
     }
 
@@ -154,9 +155,9 @@ class CleanupReport extends Command
         $routes = collect(Route::getRoutes());
 
         $this->line('=== Routes ===');
-        $this->line('Total routes : ' . $routes->count());
-        $this->line('Routes GET : ' . $routes->filter(fn ($route) => in_array('GET', $route->methods(), true))->count());
-        $this->line('Routes POST : ' . $routes->filter(fn ($route) => in_array('POST', $route->methods(), true))->count());
+        $this->line('Total routes : '.$routes->count());
+        $this->line('Routes GET : '.$routes->filter(fn ($route) => in_array('GET', $route->methods(), true))->count());
+        $this->line('Routes POST : '.$routes->filter(fn ($route) => in_array('POST', $route->methods(), true))->count());
         $this->newLine();
     }
 }

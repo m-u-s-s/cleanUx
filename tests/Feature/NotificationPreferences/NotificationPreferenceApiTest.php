@@ -3,7 +3,6 @@
 namespace Tests\Feature\NotificationPreferences;
 
 use App\Models\NotificationPreference;
-use App\Models\NotificationPreferenceAudit;
 use App\Models\User;
 use App\Services\NotificationPreferences\NotificationPreferenceService;
 use Illuminate\Foundation\Testing\RefreshDatabase;

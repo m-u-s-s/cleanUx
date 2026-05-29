@@ -12,6 +12,7 @@ class StatutRendezVousSeeder extends Seeder
     {
         if (! Schema::hasTable('bookings')) {
             $this->command?->warn('⚠️ Table bookings introuvable, StatutRendezVousSeeder ignoré.');
+
             return;
         }
 

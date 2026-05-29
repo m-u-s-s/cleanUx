@@ -29,7 +29,7 @@ class UserMentioned implements ShouldBroadcast
     public function broadcastOn(): array
     {
         return [
-            new PrivateChannel('user.' . $this->mentionedUser->id),
+            new PrivateChannel('user.'.$this->mentionedUser->id),
         ];
     }
 
@@ -38,13 +38,13 @@ class UserMentioned implements ShouldBroadcast
         $sender = $this->message->sender;
 
         return [
-            'message_id'   => $this->message->id,
-            'channel_id'   => $this->message->channel_id,
+            'message_id' => $this->message->id,
+            'channel_id' => $this->message->channel_id,
             'channel_name' => $this->message->channel?->name,
-            'sender_id'    => $sender?->id,
-            'sender_name'  => $sender?->name,
-            'preview'      => str($this->message->content)->limit(140)->toString(),
-            'created_at'   => $this->message->created_at->toIso8601String(),
+            'sender_id' => $sender?->id,
+            'sender_name' => $sender?->name,
+            'preview' => str($this->message->content)->limit(140)->toString(),
+            'created_at' => $this->message->created_at->toIso8601String(),
         ];
     }
 

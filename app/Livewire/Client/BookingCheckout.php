@@ -29,8 +29,11 @@ class BookingCheckout extends Component
     public ?int $bookingId = null;
 
     public ?string $clientSecret = null;
+
     public ?string $stripePublishableKey = null;
+
     public string $error = '';
+
     public bool $processing = false;
 
     public function mount(?int $bookingId = null): void
@@ -47,6 +50,7 @@ class BookingCheckout extends Component
 
         if (! $booking || (int) $booking->client_id !== (int) $user->id) {
             $this->error = 'Booking introuvable ou non autorisé.';
+
             return;
         }
 
@@ -54,7 +58,8 @@ class BookingCheckout extends Component
             try {
                 $user->createAsStripeCustomer();
             } catch (\Throwable $e) {
-                $this->error = 'Stripe customer creation failed: ' . $e->getMessage();
+                $this->error = 'Stripe customer creation failed: '.$e->getMessage();
+
                 return;
             }
         }
@@ -70,7 +75,7 @@ class BookingCheckout extends Component
             ]);
             $this->clientSecret = $intent->client_secret;
         } catch (\Throwable $e) {
-            $this->error = 'Impossible de créer le SetupIntent : ' . $e->getMessage();
+            $this->error = 'Impossible de créer le SetupIntent : '.$e->getMessage();
         }
     }
 
@@ -84,15 +89,16 @@ class BookingCheckout extends Component
         if (! $booking || (int) $booking->client_id !== (int) $user->id) {
             $this->error = 'Booking introuvable.';
             $this->processing = false;
+
             return;
         }
 
         try {
             app(MissionPaymentService::class)->authorize($booking, $paymentMethodId);
             $this->dispatch('toast', 'Paiement autorisé. Vous serez débité quand la mission débute.', 'success');
-            $this->redirect(route('dashboard.client') . '?booking=' . $booking->id, navigate: true);
+            $this->redirect(route('dashboard.client').'?booking='.$booking->id, navigate: true);
         } catch (\Throwable $e) {
-            $this->error = 'Erreur paiement : ' . $e->getMessage();
+            $this->error = 'Erreur paiement : '.$e->getMessage();
         } finally {
             $this->processing = false;
         }

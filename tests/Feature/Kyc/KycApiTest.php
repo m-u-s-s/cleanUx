@@ -110,7 +110,7 @@ class KycApiTest extends TestCase
 
         Sanctum::actingAs($userA);
 
-        $this->postJson('/api/provider/kyc/verifications/' . $verification->id . '/sync')
+        $this->postJson('/api/provider/kyc/verifications/'.$verification->id.'/sync')
             ->assertStatus(403);
     }
 }

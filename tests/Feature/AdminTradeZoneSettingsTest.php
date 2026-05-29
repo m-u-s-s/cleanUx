@@ -6,6 +6,7 @@ use App\Livewire\Admin\GestionZones;
 use App\Models\Trade;
 use App\Models\TradeZoneSetting;
 use App\Models\User;
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
 use Tests\Support\CreatesZoneAwareFixtures;
@@ -19,19 +20,19 @@ class AdminTradeZoneSettingsTest extends TestCase
     protected function createAdmin(): User
     {
         return User::factory()->admin()->create([
-            'permissions'  => ['manage-services', 'perform-critical-admin-actions'],
+            'permissions' => ['manage-services', 'perform-critical-admin-actions'],
             'access_scope' => User::ACCESS_SCOPE_ALL,
-            'is_active'    => true,
+            'is_active' => true,
         ]);
     }
 
     protected function makeTrade(string $slug = 'peinture'): Trade
     {
         return Trade::create([
-            'slug'       => $slug,
-            'code'       => strtoupper($slug),
-            'name'       => ucfirst($slug),
-            'is_active'  => true,
+            'slug' => $slug,
+            'code' => strtoupper($slug),
+            'name' => ucfirst($slug),
+            'is_active' => true,
             'sort_order' => 10,
         ]);
     }
@@ -64,9 +65,9 @@ class AdminTradeZoneSettingsTest extends TestCase
             ->call('toggleTradeActive', $trade->id);
 
         $this->assertDatabaseHas('trade_zone_settings', [
-            'trade_id'        => $trade->id,
+            'trade_id' => $trade->id,
             'service_zone_id' => $context['zone']->id,
-            'is_active'       => false,
+            'is_active' => false,
         ]);
     }
 
@@ -109,14 +110,14 @@ class AdminTradeZoneSettingsTest extends TestCase
             ->call('saveAllTradeSettings');
 
         $this->assertDatabaseHas('trade_zone_settings', [
-            'trade_id'         => $tradeA->id,
-            'service_zone_id'  => $context['zone']->id,
+            'trade_id' => $tradeA->id,
+            'service_zone_id' => $context['zone']->id,
             'price_multiplier' => 1.10,
         ]);
         $this->assertDatabaseHas('trade_zone_settings', [
-            'trade_id'        => $tradeB->id,
+            'trade_id' => $tradeB->id,
             'service_zone_id' => $context['zone']->id,
-            'is_active'       => false,
+            'is_active' => false,
         ]);
     }
 
@@ -134,7 +135,7 @@ class AdminTradeZoneSettingsTest extends TestCase
             ->assertHasErrors(["tradeSettings.$trade->id.price_multiplier"]);
 
         $this->assertDatabaseMissing('trade_zone_settings', [
-            'trade_id'        => $trade->id,
+            'trade_id' => $trade->id,
             'service_zone_id' => $context['zone']->id,
         ]);
     }
@@ -155,7 +156,7 @@ class AdminTradeZoneSettingsTest extends TestCase
             // Gate::authorize peut soit lancer AuthorizationException soit produire
             // une réponse 403 selon le contexte Livewire — on accepte les deux.
             $this->assertTrue(
-                $e instanceof \Illuminate\Auth\Access\AuthorizationException
+                $e instanceof AuthorizationException
                 || str_contains($e->getMessage(), 'unauthorized')
                 || str_contains($e->getMessage(), 'forbidden')
                 || str_contains($e->getMessage(), 'This action is unauthorized'),
@@ -164,7 +165,7 @@ class AdminTradeZoneSettingsTest extends TestCase
         }
 
         $this->assertDatabaseMissing('trade_zone_settings', [
-            'trade_id'        => $trade->id,
+            'trade_id' => $trade->id,
             'service_zone_id' => $context['zone']->id,
         ]);
     }

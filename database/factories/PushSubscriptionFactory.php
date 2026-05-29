@@ -13,28 +13,28 @@ class PushSubscriptionFactory extends Factory
 
     public function definition(): array
     {
-        $endpoint = 'https://fcm.googleapis.com/fcm/send/' . Str::random(32);
+        $endpoint = 'https://fcm.googleapis.com/fcm/send/'.Str::random(32);
 
         return [
-            'user_id'         => fn () => User::factory()->create()->id,
-            'endpoint'        => $endpoint,
-            'endpoint_hash'   => PushSubscription::hashEndpoint($endpoint),
-            'p256dh'          => base64_encode(random_bytes(32)),
-            'auth'            => base64_encode(random_bytes(16)),
-            'user_agent'      => 'Mozilla/5.0',
-            'platform'        => 'web',
-            'browser'         => 'Chrome',
-            'is_active'       => true,
-            'failure_count'   => 0,
+            'user_id' => fn () => User::factory()->create()->id,
+            'endpoint' => $endpoint,
+            'endpoint_hash' => PushSubscription::hashEndpoint($endpoint),
+            'p256dh' => base64_encode(random_bytes(32)),
+            'auth' => base64_encode(random_bytes(16)),
+            'user_agent' => 'Mozilla/5.0',
+            'platform' => 'web',
+            'browser' => 'Chrome',
+            'is_active' => true,
+            'failure_count' => 0,
             'last_failure_at' => null,
-            'last_used_at'    => now(),
+            'last_used_at' => now(),
         ];
     }
 
     public function inactive(): static
     {
         return $this->state(fn () => [
-            'is_active'     => false,
+            'is_active' => false,
             'failure_count' => 5,
         ]);
     }

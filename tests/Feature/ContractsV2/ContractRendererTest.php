@@ -25,7 +25,7 @@ class ContractRendererTest extends TestCase
     protected function makeTemplate(string $body, ?array $localeOverrides = null): ContractTemplate
     {
         return ContractTemplate::create([
-            'code' => 'test_' . uniqid(),
+            'code' => 'test_'.uniqid(),
             'name' => 'Test',
             'type' => ContractTemplate::TYPE_TOS,
             'role' => ContractTemplate::ROLE_CLIENT,

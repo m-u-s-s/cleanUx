@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 
 /**
  * Health check endpoint for load balancers / monitoring.
@@ -67,7 +68,7 @@ class HealthCheckController extends Controller
         // Storage disk
         try {
             $disk = config('filesystems.default');
-            \Illuminate\Support\Facades\Storage::disk($disk)->exists('/');
+            Storage::disk($disk)->exists('/');
             $checks['storage'] = ['ok' => true, 'disk' => $disk];
         } catch (\Throwable $e) {
             $checks['storage'] = ['ok' => false, 'error' => $e->getMessage()];

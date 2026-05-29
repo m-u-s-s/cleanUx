@@ -11,11 +11,15 @@ use Livewire\Component;
 class ProfileEdit extends Component
 {
     public string $name = '';
+
     public string $email = '';
+
     public string $phone = '';
 
     public string $current_password = '';
+
     public string $password = '';
+
     public string $password_confirmation = '';
 
     public function mount(): void
@@ -42,7 +46,7 @@ class ProfileEdit extends Component
             ]);
             $this->dispatch('toast', 'Profil mis à jour.', 'success');
         } catch (\Throwable $e) {
-            $this->dispatch('toast', 'Erreur : ' . $e->getMessage(), 'error');
+            $this->dispatch('toast', 'Erreur : '.$e->getMessage(), 'error');
         }
     }
 
@@ -62,7 +66,7 @@ class ProfileEdit extends Component
             $this->reset(['current_password', 'password', 'password_confirmation']);
             $this->dispatch('toast', 'Mot de passe mis à jour.', 'success');
         } catch (\Throwable $e) {
-            $this->dispatch('toast', 'Erreur : ' . $e->getMessage(), 'error');
+            $this->dispatch('toast', 'Erreur : '.$e->getMessage(), 'error');
         }
     }
 

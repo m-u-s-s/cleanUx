@@ -26,9 +26,9 @@ class AdminTradesCenterTest extends TestCase
     protected function createAdmin(): User
     {
         return User::factory()->admin()->create([
-            'permissions'  => ['manage-services', 'perform-critical-admin-actions'],
+            'permissions' => ['manage-services', 'perform-critical-admin-actions'],
             'access_scope' => User::ACCESS_SCOPE_ALL,
-            'is_active'    => true,
+            'is_active' => true,
         ]);
     }
 
@@ -181,17 +181,17 @@ class AdminTradesCenterTest extends TestCase
     public function test_edit_roundtrip_preserves_business_properties(): void
     {
         $trade = Trade::create([
-            'slug'                  => 'electricite',
-            'code'                  => 'ELEC',
-            'name'                  => 'Électricité',
-            'is_active'             => true,
-            'sort_order'            => 60,
-            'default_hourly_rate'   => 70.00,
-            'emergency_multiplier'  => 2.50,
-            'night_multiplier'      => 1.80,
-            'weekend_multiplier'    => 1.20,
-            'quote_validity_days'   => 45,
-            'sla_response_minutes'  => 120,
+            'slug' => 'electricite',
+            'code' => 'ELEC',
+            'name' => 'Électricité',
+            'is_active' => true,
+            'sort_order' => 60,
+            'default_hourly_rate' => 70.00,
+            'emergency_multiplier' => 2.50,
+            'night_multiplier' => 1.80,
+            'weekend_multiplier' => 1.20,
+            'quote_validity_days' => 45,
+            'sla_response_minutes' => 120,
             'requires_quote_by_default' => true,
         ]);
 
@@ -218,10 +218,10 @@ class AdminTradesCenterTest extends TestCase
             'version' => 1,
             'fields' => [
                 ['key' => 'nb_enfants', 'label' => 'Nombre d\'enfants', 'type' => 'number',
-                 'required' => true, 'min' => 1, 'max' => 10,
-                 'pricing' => ['modifier' => 'per_unit', 'value' => 5]],
+                    'required' => true, 'min' => 1, 'max' => 10,
+                    'pricing' => ['modifier' => 'per_unit', 'value' => 5]],
                 ['key' => 'urgence_24_7', 'label' => 'Intervention 24/7', 'type' => 'boolean',
-                 'pricing' => ['modifier' => 'percent', 'value' => 100]],
+                    'pricing' => ['modifier' => 'percent', 'value' => 100]],
             ],
         ]);
 
@@ -312,13 +312,13 @@ class AdminTradesCenterTest extends TestCase
         ]);
         // attach a service to the trade
         ServiceCatalog::create([
-            'trade_id'  => $trade->id,
-            'name'      => 'Démolition cloison',
-            'slug'      => 'demolition-cloison',
-            'code'      => 'DEMO_CLOISON',
+            'trade_id' => $trade->id,
+            'name' => 'Démolition cloison',
+            'slug' => 'demolition-cloison',
+            'code' => 'DEMO_CLOISON',
             'is_active' => true,
-            'base_price'=> 250,
-            'currency'  => 'EUR',
+            'base_price' => 250,
+            'currency' => 'EUR',
             'default_duration_minutes' => 240,
         ]);
 

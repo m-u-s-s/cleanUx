@@ -2,8 +2,8 @@
 
 namespace Database\Factories;
 
-use App\Models\Mission;
 use App\Models\Booking;
+use App\Models\Mission;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 class MissionFactory extends Factory

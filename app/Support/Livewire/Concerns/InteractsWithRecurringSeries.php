@@ -12,10 +12,15 @@ use Livewire\Attributes\Computed;
 trait InteractsWithRecurringSeries
 {
     public int $rendezVousId;
+
     public string $scope = 'occurrence';
+
     public ?string $editDate = null;
+
     public ?string $editHeure = null;
+
     public ?int $editEmployeId = null;
+
     public string $contextLabel = 'série';
 
     public function mountRecurringSeries(Booking $rendezVous): void

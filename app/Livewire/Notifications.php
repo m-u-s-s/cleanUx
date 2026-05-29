@@ -13,7 +13,9 @@ use Livewire\Component;
 class Notifications extends Component
 {
     public int $limit = 8;
+
     public string $status = 'all';
+
     public string $type = 'all';
 
     protected $listeners = [

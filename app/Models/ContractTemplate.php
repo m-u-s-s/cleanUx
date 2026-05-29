@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -13,15 +14,23 @@ class ContractTemplate extends Model
     use HasFactory;
 
     public const TYPE_TOS = 'tos';
+
     public const TYPE_SLA = 'sla';
+
     public const TYPE_CLIENT_AGREEMENT = 'client_agreement';
+
     public const TYPE_PROVIDER_AGREEMENT = 'provider_agreement';
+
     public const TYPE_NDA = 'nda';
+
     public const TYPE_OTHER = 'other';
 
     public const ROLE_CLIENT = 'client';
+
     public const ROLE_PROVIDER = 'provider';
+
     public const ROLE_ENTERPRISE = 'enterprise';
+
     public const ROLE_ALL = 'all';
 
     protected $fillable = [
@@ -69,18 +78,20 @@ class ContractTemplate extends Model
             return $this->body_markdown;
         }
         $overrides = (array) $this->body_locale_overrides;
+
         return $overrides[$locale] ?? $this->body_markdown;
     }
 
     public function isWithinValidity(?\DateTimeInterface $at = null): bool
     {
-        $at = $at ? \Carbon\Carbon::instance($at) : now();
+        $at = $at ? Carbon::instance($at) : now();
         if ($this->valid_from && $at < $this->valid_from) {
             return false;
         }
         if ($this->valid_until && $at > $this->valid_until) {
             return false;
         }
+
         return true;
     }
 }

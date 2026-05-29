@@ -8,6 +8,7 @@ use App\Models\SubscriptionsV2\SubscriptionPlanV2;
 use App\Models\SubscriptionsV2\SubscriptionV2;
 use App\Models\User;
 use App\Models\WebhookEvent;
+use App\Services\SubscriptionsV2\BillingProcessor;
 use App\Services\SubscriptionsV2\SubscriptionEngine;
 use Database\Seeders\SubscriptionPlansV2Seeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -113,7 +114,7 @@ class SubscriptionLifecycleIntegrationTest extends TestCase
             'metadata' => ['force_fail_billing' => true],
         ]);
         $cycle = SubscriptionCycleV2::query()->where('subscription_id', $sub->id)->first();
-        $processor = app(\App\Services\SubscriptionsV2\BillingProcessor::class);
+        $processor = app(BillingProcessor::class);
 
         for ($i = 0; $i < 3; $i++) {
             $processor->processCycle($cycle->fresh());

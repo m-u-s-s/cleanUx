@@ -2,7 +2,6 @@
 
 namespace Tests\Feature\Disputes;
 
-use App\Models\Booking;
 use App\Models\ComplaintCase;
 use App\Models\User;
 use App\Services\Disputes\DisputeService;

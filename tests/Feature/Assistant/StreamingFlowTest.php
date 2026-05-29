@@ -27,45 +27,45 @@ class StreamingFlowTest extends TestCase
     {
         $user = User::factory()->create();
         $conv = AssistantConversation::create([
-            'user_id'      => $user->id,
+            'user_id' => $user->id,
             'context_role' => $user->assistantContextRole()->value,
-            'status'       => AssistantConversation::STATUS_OPEN,
+            'status' => AssistantConversation::STATUS_OPEN,
         ]);
         $msg = AssistantMessage::create([
             'assistant_conversation_id' => $conv->id,
-            'sender_type'               => AssistantMessage::SENDER_USER,
-            'content'                   => 'test',
+            'sender_type' => AssistantMessage::SENDER_USER,
+            'content' => 'test',
         ]);
 
         $url = URL::temporarySignedRoute('assistant.stream', now()->addMinutes(5), [
-            'conversation_id'  => $conv->id,
-            'user_message_id'  => $msg->id,
+            'conversation_id' => $conv->id,
+            'user_message_id' => $msg->id,
         ]);
 
         $this->assertStringContainsString('signature=', $url);
         $this->assertStringContainsString('expires=', $url);
-        $this->assertStringContainsString('conversation_id=' . $conv->id, $url);
+        $this->assertStringContainsString('conversation_id='.$conv->id, $url);
     }
 
     public function test_unauthorized_user_cannot_access_signed_url_of_another_user(): void
     {
-        $owner   = User::factory()->create();
+        $owner = User::factory()->create();
         $stranger = User::factory()->create();
 
         $conv = AssistantConversation::create([
-            'user_id'      => $owner->id,
+            'user_id' => $owner->id,
             'context_role' => $owner->assistantContextRole()->value,
-            'status'       => AssistantConversation::STATUS_OPEN,
+            'status' => AssistantConversation::STATUS_OPEN,
         ]);
         $msg = AssistantMessage::create([
             'assistant_conversation_id' => $conv->id,
-            'sender_type'               => AssistantMessage::SENDER_USER,
-            'content'                   => 'test',
+            'sender_type' => AssistantMessage::SENDER_USER,
+            'content' => 'test',
         ]);
 
         $url = URL::temporarySignedRoute('assistant.stream', now()->addMinutes(5), [
-            'conversation_id'  => $conv->id,
-            'user_message_id'  => $msg->id,
+            'conversation_id' => $conv->id,
+            'user_message_id' => $msg->id,
         ]);
 
         // Stranger essaie d'accéder même avec une URL signée valide
@@ -79,14 +79,14 @@ class StreamingFlowTest extends TestCase
     {
         $user = User::factory()->create();
         $conv = AssistantConversation::create([
-            'user_id'      => $user->id,
+            'user_id' => $user->id,
             'context_role' => $user->assistantContextRole()->value,
-            'status'       => AssistantConversation::STATUS_OPEN,
+            'status' => AssistantConversation::STATUS_OPEN,
         ]);
         $msg = AssistantMessage::create([
             'assistant_conversation_id' => $conv->id,
-            'sender_type'               => AssistantMessage::SENDER_USER,
-            'content'                   => 'test',
+            'sender_type' => AssistantMessage::SENDER_USER,
+            'content' => 'test',
         ]);
 
         // URL sans signature
@@ -99,20 +99,20 @@ class StreamingFlowTest extends TestCase
     {
         $user = User::factory()->create();
         $conv = AssistantConversation::create([
-            'user_id'      => $user->id,
+            'user_id' => $user->id,
             'context_role' => $user->assistantContextRole()->value,
-            'status'       => AssistantConversation::STATUS_OPEN,
+            'status' => AssistantConversation::STATUS_OPEN,
         ]);
         $msg = AssistantMessage::create([
             'assistant_conversation_id' => $conv->id,
-            'sender_type'               => AssistantMessage::SENDER_USER,
-            'content'                   => 'test',
+            'sender_type' => AssistantMessage::SENDER_USER,
+            'content' => 'test',
         ]);
 
         // URL signée expirée (1 seconde dans le passé)
         $url = URL::temporarySignedRoute('assistant.stream', now()->subSecond(), [
-            'conversation_id'  => $conv->id,
-            'user_message_id'  => $msg->id,
+            'conversation_id' => $conv->id,
+            'user_message_id' => $msg->id,
         ]);
 
         $response = $this->actingAs($user)->get($url);

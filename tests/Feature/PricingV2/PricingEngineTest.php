@@ -4,7 +4,6 @@ namespace Tests\Feature\PricingV2;
 
 use App\Models\AbPricingExperiment;
 use App\Models\PriceQuote;
-use App\Models\PricingRule;
 use App\Models\ServiceCatalogV2;
 use App\Models\User;
 use App\Services\PricingV2\PricingEngine;

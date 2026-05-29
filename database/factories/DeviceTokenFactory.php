@@ -26,20 +26,20 @@ class DeviceTokenFactory extends Factory
         $token = Str::random(64);
 
         return [
-            'user_id'    => User::factory(),
-            'platform'   => $platform,
-            'provider'   => $provider,
-            'token'      => $token,
+            'user_id' => User::factory(),
+            'platform' => $platform,
+            'provider' => $provider,
+            'token' => $token,
             'token_hash' => DeviceToken::hashToken($token),
             'app_version' => fake()->semver(),
-            'locale'     => fake()->randomElement(['fr', 'nl', 'en']),
-            'timezone'   => fake()->timezone(),
+            'locale' => fake()->randomElement(['fr', 'nl', 'en']),
+            'timezone' => fake()->timezone(),
             'device_model' => fake()->randomElement(['iPhone 14', 'Pixel 7', 'Samsung S23']),
             'last_used_at' => now()->subMinutes(fake()->numberBetween(1, 1440)),
             'invalidated_at' => null,
             'invalidation_reason' => null,
             'preferences' => [],
-            'metadata'   => [],
+            'metadata' => [],
         ];
     }
 

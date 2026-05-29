@@ -18,7 +18,8 @@ use Illuminate\Support\Facades\Schema;
  *
  * onboarding_completed_at : quand toutes les étapes sont OK + admin valide
  */
-return new class extends Migration {
+return new class extends Migration
+{
     public function up(): void
     {
         if (! Schema::hasTable('provider_profiles')) {

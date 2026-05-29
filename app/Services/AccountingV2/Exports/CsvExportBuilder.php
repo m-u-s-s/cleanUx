@@ -55,8 +55,9 @@ class CsvExportBuilder implements ExportBuilderContract
         return implode($delimiter, array_map(function ($v) use ($delimiter) {
             $s = (string) $v;
             if (str_contains($s, $delimiter) || str_contains($s, '"') || str_contains($s, "\n")) {
-                $s = '"' . str_replace('"', '""', $s) . '"';
+                $s = '"'.str_replace('"', '""', $s).'"';
             }
+
             return $s;
         }, $row));
     }

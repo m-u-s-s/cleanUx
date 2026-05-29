@@ -11,6 +11,7 @@ use Illuminate\Console\Command;
 class CommunicationHealthCheck extends Command
 {
     protected $signature = 'app:communication-health-check {--stale-hours=24 : Nombre d\'heures avant qu\'une connexion soit considérée comme stale}';
+
     protected $description = 'Audit des communications : notifications, emails métier et synchronisation calendrier';
 
     public function handle(GoogleCalendarSyncService $syncService): int
@@ -19,23 +20,24 @@ class CommunicationHealthCheck extends Command
         $items = [];
 
         if (($summary['stale_connections'] ?? 0) > 0) {
-            $items[] = $summary['stale_connections'] . ' connexion(s) Google Agenda n’ont pas été synchronisées récemment.';
+            $items[] = $summary['stale_connections'].' connexion(s) Google Agenda n’ont pas été synchronisées récemment.';
         }
 
         if (($summary['error_connections'] ?? 0) > 0) {
-            $items[] = $summary['error_connections'] . ' connexion(s) Google Agenda sont en erreur.';
+            $items[] = $summary['error_connections'].' connexion(s) Google Agenda sont en erreur.';
         }
 
         if (($summary['expired_tokens'] ?? 0) > 0) {
-            $items[] = $summary['expired_tokens'] . ' token(s) Google sont expirés ou incomplets.';
+            $items[] = $summary['expired_tokens'].' token(s) Google sont expirés ou incomplets.';
         }
 
         if (($summary['failed_event_links'] ?? 0) > 0) {
-            $items[] = $summary['failed_event_links'] . ' événement(s) Google liés à des RDV sont marqués en échec.';
+            $items[] = $summary['failed_event_links'].' événement(s) Google liés à des RDV sont marqués en échec.';
         }
 
         if ($items === []) {
             $this->info('Aucun problème de communication détecté.');
+
             return self::SUCCESS;
         }
 

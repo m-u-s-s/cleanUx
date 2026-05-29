@@ -25,9 +25,10 @@ class ThrottleByToken
         if ($limit <= 0) {
             return $next($request);
         }
-        $key = 'api_token:' . $token->id;
+        $key = 'api_token:'.$token->id;
         if (RateLimiter::tooManyAttempts($key, $limit)) {
             $retryAfter = RateLimiter::availableIn($key);
+
             return response()->json([
                 'ok' => false,
                 'error' => 'rate_limited',
@@ -36,6 +37,7 @@ class ThrottleByToken
             ], 429)->header('Retry-After', (string) $retryAfter);
         }
         RateLimiter::hit($key, 60);
+
         return $next($request);
     }
 }

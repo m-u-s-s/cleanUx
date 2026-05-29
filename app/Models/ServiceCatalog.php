@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
 
 /**
@@ -62,24 +63,24 @@ class ServiceCatalog extends Model
 
     protected $casts = [
         // Existant
-        'is_active'                  => 'boolean',
-        'requires_quote'             => 'boolean',
+        'is_active' => 'boolean',
+        'requires_quote' => 'boolean',
         'requires_manual_validation' => 'boolean',
-        'is_entreprise'              => 'boolean',
-        'is_b2b_available'           => 'boolean',
-        'is_personal_available'      => 'boolean',
-        'base_price'                 => 'decimal:2',
-        'settings'                   => 'array',
-        'options'                    => 'array',
-        'metadata'                   => 'array',
+        'is_entreprise' => 'boolean',
+        'is_b2b_available' => 'boolean',
+        'is_personal_available' => 'boolean',
+        'base_price' => 'decimal:2',
+        'settings' => 'array',
+        'options' => 'array',
+        'metadata' => 'array',
 
         // Phase 1
-        'vat_rate'             => 'decimal:2',
-        'min_lead_time_hours'  => 'integer',
-        'requires_site_visit'  => 'boolean',
-        'tags'                 => 'array',
-        'skills_required'      => 'array',
-        'is_featured'          => 'boolean',
+        'vat_rate' => 'decimal:2',
+        'min_lead_time_hours' => 'integer',
+        'requires_site_visit' => 'boolean',
+        'tags' => 'array',
+        'skills_required' => 'array',
+        'is_featured' => 'boolean',
     ];
 
     // ──────────────────────────────────────────────────────
@@ -91,6 +92,7 @@ class ServiceCatalog extends Model
     public function getDisplayNameAttribute(): string
     {
         $name = (string) ($this->name ?: $this->code ?: $this->service_type ?: 'Service');
+
         return (string) str($name)->replace('_', ' ')->headline();
     }
 
@@ -161,6 +163,7 @@ class ServiceCatalog extends Model
     public function scopeForTrade(Builder $q, int|Trade $trade): Builder
     {
         $tradeId = $trade instanceof Trade ? $trade->id : $trade;
+
         return $q->where('trade_id', $tradeId);
     }
 
@@ -174,14 +177,14 @@ class ServiceCatalog extends Model
         return $q->orderBy('sort_order')->orderBy('name');
     }
 
-    public function scopeClientFacing(\Illuminate\Database\Eloquent\Builder $query): \Illuminate\Database\Eloquent\Builder
+    public function scopeClientFacing(Builder $query): Builder
     {
         $table = $query->getModel()->getTable();
 
-        $query->where($table . '.is_active', true);
+        $query->where($table.'.is_active', true);
 
-        if (\Illuminate\Support\Facades\Schema::hasColumn($table, 'is_visible')) {
-            $query->where($table . '.is_visible', true);
+        if (Schema::hasColumn($table, 'is_visible')) {
+            $query->where($table.'.is_visible', true);
         }
 
         return $query;
@@ -191,7 +194,7 @@ class ServiceCatalog extends Model
     {
         static::creating(function (self $service): void {
             if (blank($service->code)) {
-                $service->code = 'SVC-' . strtoupper(Str::random(8));
+                $service->code = 'SVC-'.strtoupper(Str::random(8));
             }
 
             if (blank($service->service_type)) {

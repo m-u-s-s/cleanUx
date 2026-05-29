@@ -30,8 +30,8 @@ class NpsSurveyNotification extends Notification
 
         return (new MailMessage)
             ->subject('Comment s\'etait votre experience avec CleanUx ?')
-            ->greeting('Bonjour ' . $notifiable->name . ',')
-            ->line('Votre mission du ' . $this->booking->scheduled_date . ' est terminee. Votre avis nous aide a ameliorer notre service.')
+            ->greeting('Bonjour '.$notifiable->name.',')
+            ->line('Votre mission du '.$this->booking->scheduled_date.' est terminee. Votre avis nous aide a ameliorer notre service.')
             ->action('Donner mon avis (30 secondes)', $surveyUrl)
             ->line('Merci pour votre retour !');
     }
@@ -39,11 +39,11 @@ class NpsSurveyNotification extends Notification
     public function toArray(object $notifiable): array
     {
         return [
-            'type'       => 'nps_survey',
-            'title'      => 'Donnez votre avis',
-            'message'    => 'Votre mission est terminee. Partagez votre experience en 30 secondes.',
+            'type' => 'nps_survey',
+            'title' => 'Donnez votre avis',
+            'message' => 'Votre mission est terminee. Partagez votre experience en 30 secondes.',
             'booking_id' => $this->booking->id,
-            'url'        => $this->surveyUrl(),
+            'url' => $this->surveyUrl(),
         ];
     }
 
@@ -52,7 +52,7 @@ class NpsSurveyNotification extends Notification
         try {
             return route('nps.survey', ['survey' => 'post_booking', 'bookingId' => $this->booking->id]);
         } catch (\Throwable) {
-            return url('/nps?survey=post_booking&bookingId=' . $this->booking->id);
+            return url('/nps?survey=post_booking&bookingId='.$this->booking->id);
         }
     }
 }

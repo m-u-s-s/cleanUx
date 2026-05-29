@@ -20,7 +20,7 @@ class ProviderDashboard extends Component
 
     public function getKpisProperty(): array
     {
-        $user  = Auth::user();
+        $user = Auth::user();
         $orgId = $user->current_organization_id;
 
         [$from, $to] = $this->periodDates();
@@ -28,19 +28,19 @@ class ProviderDashboard extends Component
         $base = fn () => Mission::where('provider_organization_id', $orgId);
 
         return [
-            'missions_today'    => $base()->whereDate('scheduled_at', today())->count(),
-            'missions_active'   => $base()->whereIn('status', ['dispatched', 'in_progress'])->count(),
-            'missions_done'     => $base()->where('status', 'completed')->whereBetween('completed_at', [$from, $to])->count(),
-            'missions_delayed'  => $base()->where('status', '!=', 'completed')->where('scheduled_at', '<', now())->count(),
-            'members_active'    => OrganizationMember::where('organization_account_id', $orgId)->where('status', 'active')->count(),
-            'unread_messages'   => 0, // calculé via Channel si Reverb actif
-            'pending_tasks'     => Task::forOrg($orgId)->todo()->count(),
+            'missions_today' => $base()->whereDate('scheduled_at', today())->count(),
+            'missions_active' => $base()->whereIn('status', ['dispatched', 'in_progress'])->count(),
+            'missions_done' => $base()->where('status', 'completed')->whereBetween('completed_at', [$from, $to])->count(),
+            'missions_delayed' => $base()->where('status', '!=', 'completed')->where('scheduled_at', '<', now())->count(),
+            'members_active' => OrganizationMember::where('organization_account_id', $orgId)->where('status', 'active')->count(),
+            'unread_messages' => 0, // calculé via Channel si Reverb actif
+            'pending_tasks' => Task::forOrg($orgId)->todo()->count(),
         ];
     }
 
     public function getAlertsProperty(): array
     {
-        $orgId  = Auth::user()->current_organization_id;
+        $orgId = Auth::user()->current_organization_id;
         $alerts = [];
 
         $delayed = Mission::where('provider_organization_id', $orgId)
@@ -51,19 +51,18 @@ class ProviderDashboard extends Component
         if ($delayed > 0) {
             $alerts[] = ['level' => 'red', 'icon' => '🚨',
                 'message' => "{$delayed} mission(s) en retard de +30 min",
-                'route'   => 'provider-company.dispatch'];
+                'route' => 'provider-company.dispatch'];
         }
 
         $noStripe = OrganizationMember::where('organization_account_id', $orgId)
             ->where('status', 'active')
-            ->whereHas('user.providerProfile', fn ($q) =>
-                $q->where('stripe_connect_status', '!=', 'active')
+            ->whereHas('user.providerProfile', fn ($q) => $q->where('stripe_connect_status', '!=', 'active')
             )->count();
 
         if ($noStripe > 0) {
             $alerts[] = ['level' => 'orange', 'icon' => '💳',
                 'message' => "{$noStripe} membre(s) sans Stripe Connect",
-                'route'   => 'provider-company.team'];
+                'route' => 'provider-company.team'];
         }
 
         return $alerts;
@@ -86,10 +85,10 @@ class ProviderDashboard extends Component
             ->with(['user:id,name,profile_photo_path', 'user.providerProfile'])
             ->get()
             ->map(fn ($m) => [
-                'id'     => $m->id,
-                'name'   => $m->user->name,
+                'id' => $m->id,
+                'name' => $m->user->name,
                 'avatar' => $m->user->profile_photo_url,
-                'role'   => $m->roleLabel(),
+                'role' => $m->roleLabel(),
                 'status' => 'available', // À enrichir avec GPS
             ]);
     }
@@ -97,7 +96,7 @@ class ProviderDashboard extends Component
     private function periodDates(): array
     {
         return match ($this->period) {
-            'week'  => [now()->startOfWeek(), now()->endOfWeek()],
+            'week' => [now()->startOfWeek(), now()->endOfWeek()],
             'month' => [now()->startOfMonth(), now()->endOfMonth()],
             default => [today()->startOfDay(), today()->endOfDay()],
         };
@@ -106,10 +105,10 @@ class ProviderDashboard extends Component
     public function render()
     {
         return view('livewire.provider-company.provider-dashboard', [
-            'kpis'        => $this->kpisProperty,
-            'alerts'      => $this->alertsProperty,
+            'kpis' => $this->kpisProperty,
+            'alerts' => $this->alertsProperty,
             'missionsDay' => $this->missionsOfDayProperty,
-            'teamStatus'  => $this->teamStatusProperty,
+            'teamStatus' => $this->teamStatusProperty,
         ])->layout('layouts.provider-company');
     }
 }

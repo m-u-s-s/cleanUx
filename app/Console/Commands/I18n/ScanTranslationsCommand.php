@@ -19,6 +19,7 @@ class ScanTranslationsCommand extends Command
         if ($locale) {
             if (! isset($report[$locale])) {
                 $this->error("Locale {$locale} non trouvée.");
+
                 return self::FAILURE;
             }
             $report = [$locale => $report[$locale]];
@@ -42,10 +43,10 @@ class ScanTranslationsCommand extends Command
                     $this->newLine();
                     $this->warn("[{$loc}] Clés manquantes :");
                     foreach (array_slice($data['missing'], 0, 30) as $k) {
-                        $this->line('  - ' . $k);
+                        $this->line('  - '.$k);
                     }
                     if (count($data['missing']) > 30) {
-                        $this->line('  … et ' . (count($data['missing']) - 30) . ' autres');
+                        $this->line('  … et '.(count($data['missing']) - 30).' autres');
                     }
                 }
             }

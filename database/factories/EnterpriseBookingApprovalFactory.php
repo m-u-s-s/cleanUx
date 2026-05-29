@@ -15,28 +15,28 @@ class EnterpriseBookingApprovalFactory extends Factory
     public function definition(): array
     {
         return [
-            'rendez_vous_id'                => fn () => Booking::factory()->create()->id,
-            'organization_account_id'       => fn () => OrganizationAccount::factory()->create()->id,
-            'organization_site_id'          => null,
-            'requested_by_user_id'          => fn () => User::factory()->create()->id,
-            'manager_approved_by_user_id'   => null,
-            'finance_approved_by_user_id'   => null,
-            'status'                        => 'pending_manager',
-            'request_note'                  => fake()->sentence(),
-            'manager_note'                  => null,
-            'finance_note'                  => null,
-            'rejection_reason'              => null,
-            'manager_approved_at'           => null,
-            'finance_approved_at'           => null,
-            'approved_at'                   => null,
-            'rejected_at'                   => null,
+            'rendez_vous_id' => fn () => Booking::factory()->create()->id,
+            'organization_account_id' => fn () => OrganizationAccount::factory()->create()->id,
+            'organization_site_id' => null,
+            'requested_by_user_id' => fn () => User::factory()->create()->id,
+            'manager_approved_by_user_id' => null,
+            'finance_approved_by_user_id' => null,
+            'status' => 'pending_manager',
+            'request_note' => fake()->sentence(),
+            'manager_note' => null,
+            'finance_note' => null,
+            'rejection_reason' => null,
+            'manager_approved_at' => null,
+            'finance_approved_at' => null,
+            'approved_at' => null,
+            'rejected_at' => null,
         ];
     }
 
     public function approved(): static
     {
         return $this->state(fn () => [
-            'status'      => 'approved',
+            'status' => 'approved',
             'approved_at' => now(),
         ]);
     }
@@ -44,9 +44,9 @@ class EnterpriseBookingApprovalFactory extends Factory
     public function rejected(): static
     {
         return $this->state(fn () => [
-            'status'           => 'rejected',
+            'status' => 'rejected',
             'rejection_reason' => 'Budget exceeded',
-            'rejected_at'      => now(),
+            'rejected_at' => now(),
         ]);
     }
 }

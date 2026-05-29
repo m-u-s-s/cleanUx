@@ -6,32 +6,38 @@ use App\Events\Promotion\ReferralQualified;
 use App\Events\Promotion\ReferralRegistered;
 use App\Events\Promotion\ReferralRewardGranted;
 use App\Models\Booking;
+use App\Models\LoyaltyTransaction;
 use App\Models\PromoCode;
 use App\Models\Referral;
 use App\Models\ReferralReward;
 use App\Models\User;
 use App\Notifications\Promotion\ReferralRewardGrantedNotification;
+use App\Services\Loyalty\LoyaltyService;
 use App\Support\ActivityLogger;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
-use App\Services\Promotion\ReferralViralTierEngine;
 
 class ReferralService
 {
     public const DEFAULT_REFERRER_REWARD = 15.00;
+
     public const DEFAULT_REFEREE_REWARD = 10.00;
+
     public const REFERRAL_EXPIRY_DAYS = 90;
+
     public const REWARD_PROMO_EXPIRY_DAYS = 365;
 
     protected function referrerRewardAmount(): float
     {
         $cents = (int) config('referral.rewards.referrer.amount', 0);
+
         return $cents > 0 ? $cents / 100 : self::DEFAULT_REFERRER_REWARD;
     }
 
     protected function refereeRewardAmount(): float
     {
         $cents = (int) config('referral.rewards.referee.amount', 0);
+
         return $cents > 0 ? $cents / 100 : self::DEFAULT_REFEREE_REWARD;
     }
 
@@ -161,13 +167,13 @@ class ReferralService
             }
             $points = (int) config('loyalty.earning.referral_qualified_bonus', 1000);
 
-            app(\App\Services\Loyalty\LoyaltyService::class)->award(
+            app(LoyaltyService::class)->award(
                 $referrer,
-                \App\Models\LoyaltyTransaction::TYPE_EARN_REFERRAL,
+                LoyaltyTransaction::TYPE_EARN_REFERRAL,
                 $points,
                 $referral,
-                'referral_qualified:' . $referral->id,
-                'Parrainage qualifié — filleul ' . ($referral->referee_email ?? $referral->referee_user_id),
+                'referral_qualified:'.$referral->id,
+                'Parrainage qualifié — filleul '.($referral->referee_email ?? $referral->referee_user_id),
             );
         } catch (\Throwable $e) {
             report($e);
@@ -337,7 +343,7 @@ class ReferralService
         $prefix = $role === ReferralReward::ROLE_REFERRER ? 'REFER' : 'WELCOME';
 
         do {
-            $code = $prefix . strtoupper(Str::random(8));
+            $code = $prefix.strtoupper(Str::random(8));
         } while (PromoCode::where('code', $code)->exists());
 
         return PromoCode::create([
@@ -371,7 +377,7 @@ class ReferralService
         }
 
         do {
-            $candidate = $base . strtoupper(Str::random(4));
+            $candidate = $base.strtoupper(Str::random(4));
         } while (User::query()->where('referral_code', $candidate)->exists());
 
         return $candidate;

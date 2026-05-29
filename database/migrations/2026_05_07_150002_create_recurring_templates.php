@@ -20,7 +20,8 @@ use Illuminate\Support\Facades\Schema;
  * Templates système : is_system=true, créés par seeder (catalogue commun).
  * Templates user : is_system=false, owner_user_id ou owner_organization_id.
  */
-return new class extends Migration {
+return new class extends Migration
+{
     public function up(): void
     {
         if (Schema::hasTable('recurring_templates')) {

@@ -28,7 +28,7 @@ class CampaignEngineTest extends TestCase
     protected function makeSegmentWith(array $users): MarketingSegment
     {
         $segment = MarketingSegment::create([
-            'code' => 'seg_' . uniqid(),
+            'code' => 'seg_'.uniqid(),
             'name' => 'Test',
             'rules' => [],
             'is_active' => true,
@@ -41,13 +41,14 @@ class CampaignEngineTest extends TestCase
             ]);
         }
         $segment->forceFill(['member_count' => count($users)])->save();
+
         return $segment;
     }
 
     protected function makeCampaign(MarketingSegment $segment, array $steps): MarketingCampaign
     {
         $campaign = MarketingCampaign::create([
-            'code' => 'camp_' . uniqid(),
+            'code' => 'camp_'.uniqid(),
             'name' => 'Test campaign',
             'type' => MarketingCampaign::TYPE_DRIP_SEQUENCE,
             'status' => MarketingCampaign::STATUS_DRAFT,
@@ -66,6 +67,7 @@ class CampaignEngineTest extends TestCase
                 'is_active' => true,
             ]);
         }
+
         return $campaign;
     }
 

@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Broadcasting\TestingBroadcaster;
 use Illuminate\Support\Facades\Broadcast;
 use Illuminate\Support\ServiceProvider;
 
@@ -13,7 +14,7 @@ class BroadcastServiceProvider extends ServiceProvider
     public function boot(): void
     {
         Broadcast::extend('testing', function ($app) {
-            return new \App\Broadcasting\TestingBroadcaster();
+            return new TestingBroadcaster;
         });
 
         Broadcast::routes();

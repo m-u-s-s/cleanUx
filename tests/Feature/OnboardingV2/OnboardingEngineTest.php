@@ -2,9 +2,7 @@
 
 namespace Tests\Feature\OnboardingV2;
 
-use App\Models\OnboardingJourney;
 use App\Models\OnboardingProgress;
-use App\Models\OnboardingStep;
 use App\Models\OnboardingStepCompletion;
 use App\Models\User;
 use App\Services\OnboardingV2\OnboardingEngine;
@@ -162,8 +160,14 @@ class OnboardingEngineTest extends TestCase
         $progress = app(OnboardingEngine::class)->startFor($user);
         $profileStep = $progress->journey->steps->firstWhere('code', 'profile');
 
-        try { app(OnboardingEngine::class)->markComplete($progress, $profileStep, []); } catch (\Throwable $e) {}
-        try { app(OnboardingEngine::class)->markComplete($progress, $profileStep, []); } catch (\Throwable $e) {}
+        try {
+            app(OnboardingEngine::class)->markComplete($progress, $profileStep, []);
+        } catch (\Throwable $e) {
+        }
+        try {
+            app(OnboardingEngine::class)->markComplete($progress, $profileStep, []);
+        } catch (\Throwable $e) {
+        }
 
         $compl = OnboardingStepCompletion::query()
             ->where('progress_id', $progress->id)

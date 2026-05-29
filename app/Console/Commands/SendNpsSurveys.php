@@ -5,10 +5,9 @@ namespace App\Console\Commands;
 use App\Models\Booking;
 use App\Models\NpsResponse;
 use App\Models\User;
+use App\Notifications\Nps\NpsSurveyNotification;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Notification;
-use App\Notifications\Nps\NpsSurveyNotification;
 
 /**
  * Send NPS survey notifications to clients whose booking was completed
@@ -32,8 +31,8 @@ class SendNpsSurveys extends Command
     public function handle(): int
     {
         $daysAfter = (int) $this->option('days');
-        $limit     = (int) $this->option('limit');
-        $isDryRun  = (bool) $this->option('dry-run');
+        $limit = (int) $this->option('limit');
+        $isDryRun = (bool) $this->option('dry-run');
 
         $targetDate = now()->subDays($daysAfter)->toDateString();
 
@@ -46,10 +45,11 @@ class SendNpsSurveys extends Command
 
         if ($bookings->isEmpty()) {
             $this->info("No completed bookings found for date {$targetDate}.");
+
             return Command::SUCCESS;
         }
 
-        $this->info("Checking {$bookings->count()} booking(s) completed on {$targetDate}" . ($isDryRun ? ' (dry-run)' : '') . '.');
+        $this->info("Checking {$bookings->count()} booking(s) completed on {$targetDate}".($isDryRun ? ' (dry-run)' : '').'.');
 
         $alreadySurveyed = NpsResponse::query()
             ->whereIn('booking_id', $bookings->pluck('id'))
@@ -57,25 +57,28 @@ class SendNpsSurveys extends Command
             ->pluck('booking_id')
             ->flip();
 
-        $sent   = 0;
-        $skip   = 0;
+        $sent = 0;
+        $skip = 0;
         $failed = 0;
 
         foreach ($bookings as $booking) {
             if ($alreadySurveyed->has($booking->id)) {
                 $skip++;
+
                 continue;
             }
 
             $user = $booking->customer;
             if (! $user instanceof User) {
                 $skip++;
+
                 continue;
             }
 
             if ($isDryRun) {
                 $this->line("  [dry] Booking #{$booking->id} → User #{$user->id} ({$user->email})");
                 $sent++;
+
                 continue;
             }
 
@@ -86,8 +89,8 @@ class SendNpsSurveys extends Command
                 $failed++;
                 Log::warning('[nps] Failed to send survey notification', [
                     'booking_id' => $booking->id,
-                    'user_id'    => $user->id,
-                    'error'      => $e->getMessage(),
+                    'user_id' => $user->id,
+                    'error' => $e->getMessage(),
                 ]);
             }
         }

@@ -2,7 +2,8 @@
 
 namespace App\Services\Analytics;
 
-use App\Models\User;
+use App\Models\Booking;
+use Carbon\Carbon;
 use Carbon\CarbonImmutable;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
@@ -33,14 +34,14 @@ class AnalyticsExporter
 
             fputcsv($handle, ['Indicateur', 'Valeur', 'Unité', 'Évolution (%)', 'Période'], ';');
 
-            $period = $from->format('d/m/Y') . ' → ' . $to->format('d/m/Y');
+            $period = $from->format('d/m/Y').' → '.$to->format('d/m/Y');
 
             fputcsv($handle, ['Chiffre d\'affaires', $kpis['revenue']['value'], 'EUR', $kpis['revenue']['trend'] ?? '—', $period], ';');
             fputcsv($handle, ['Nombre de rendez-vous', $kpis['bookings_count']['value'], 'unité', $kpis['bookings_count']['trend'] ?? '—', $period], ';');
             fputcsv($handle, ['Rendez-vous terminés', $kpis['completed_count']['value'], 'unité', $kpis['completed_count']['completion_rate'] ?? '—', $period], ';');
             fputcsv($handle, ['Taux d\'annulation', $kpis['cancellation_rate']['value'], '%', $kpis['cancellation_rate']['trend'] ?? '—', $period], ';');
             fputcsv($handle, ['Satisfaction moyenne', $kpis['average_rating']['value'] ?? '—', '/5', '—', $period], ';');
-            fputcsv($handle, ['Sites actifs', $kpis['active_sites']['value'], 'sur ' . $kpis['active_sites']['total'], '—', $period], ';');
+            fputcsv($handle, ['Sites actifs', $kpis['active_sites']['value'], 'sur '.$kpis['active_sites']['total'], '—', $period], ';');
         });
     }
 
@@ -87,7 +88,7 @@ class AnalyticsExporter
                 'Annulé le',
             ], ';');
 
-            $query = \App\Models\Booking::query()
+            $query = Booking::query()
                 ->with(['serviceCatalog:id,name', 'organizationSite:id,name'])
                 ->whereBetween('scheduled_date', [$from->toDateString(), $to->toDateString()]);
 
@@ -99,8 +100,8 @@ class AnalyticsExporter
                 foreach ($bookings as $b) {
                     fputcsv($handle, [
                         $b->booking_reference,
-                        $b->scheduled_date instanceof \Carbon\Carbon ? $b->scheduled_date->format('Y-m-d') : (string) $b->scheduled_date,
-                        $b->scheduled_time ? \Carbon\Carbon::parse($b->scheduled_time)->format('H:i') : '',
+                        $b->scheduled_date instanceof Carbon ? $b->scheduled_date->format('Y-m-d') : (string) $b->scheduled_date,
+                        $b->scheduled_time ? Carbon::parse($b->scheduled_time)->format('H:i') : '',
                         $b->status,
                         $b->serviceCatalog?->name ?? '',
                         $b->organizationSite?->name ?? '',
@@ -127,9 +128,9 @@ class AnalyticsExporter
             $writer($handle);
             fclose($handle);
         }, 200, [
-            'Content-Type'        => 'text/csv; charset=UTF-8',
+            'Content-Type' => 'text/csv; charset=UTF-8',
             'Content-Disposition' => "attachment; filename=\"{$filename}\"",
-            'Cache-Control'       => 'no-cache',
+            'Cache-Control' => 'no-cache',
         ]);
     }
 }

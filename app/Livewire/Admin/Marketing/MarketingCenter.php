@@ -19,6 +19,7 @@ class MarketingCenter extends Component
     protected $paginationTheme = 'tailwind';
 
     public string $tab = 'segments';  // segments | campaigns | recipients
+
     public string $search = '';
 
     public function recomputeSegment(int $segmentId): void
@@ -63,20 +64,20 @@ class MarketingCenter extends Component
 
         if ($this->tab === 'segments') {
             $items = MarketingSegment::query()
-                ->when($this->search, fn ($q) => $q->where('name', 'like', '%' . $this->search . '%'))
+                ->when($this->search, fn ($q) => $q->where('name', 'like', '%'.$this->search.'%'))
                 ->orderByDesc('updated_at')
                 ->paginate(15);
         } elseif ($this->tab === 'campaigns') {
             $items = MarketingCampaign::query()
                 ->with('segment:id,name,code')
-                ->when($this->search, fn ($q) => $q->where('name', 'like', '%' . $this->search . '%'))
+                ->when($this->search, fn ($q) => $q->where('name', 'like', '%'.$this->search.'%'))
                 ->orderByDesc('updated_at')
                 ->paginate(15);
         } else {
             $items = MarketingCampaignRecipient::query()
                 ->with(['campaign:id,name,code', 'user:id,email,name'])
                 ->when($this->search, fn ($q) => $q->whereHas('user',
-                    fn ($u) => $u->where('email', 'like', '%' . $this->search . '%')))
+                    fn ($u) => $u->where('email', 'like', '%'.$this->search.'%')))
                 ->orderByDesc('updated_at')
                 ->paginate(20);
         }

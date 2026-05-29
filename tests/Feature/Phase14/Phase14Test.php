@@ -3,10 +3,8 @@
 namespace Tests\Feature\Phase14;
 
 use App\Models\Booking;
-use App\Models\Mission;
 use App\Models\PricingZoneState;
 use App\Models\ProviderOnboardingDocument;
-use App\Models\ProviderProfile;
 use App\Models\ServiceZone;
 use App\Models\User;
 use App\Services\Cancellation\CancelBookingService;
@@ -89,19 +87,19 @@ class Phase14Test extends TestCase
     {
         $zone = ServiceZone::create([
             'name' => 'Test Zone',
-            'slug' => 'test-zone-' . Str::random(5),
+            'slug' => 'test-zone-'.Str::random(5),
             'status' => 'active',
         ]);
 
         PricingZoneState::create([
-            'service_zone_id'        => $zone->id,
-            'multiplier'             => 1.50,
-            'demand_factor'          => 1.20,
-            'supply_factor'          => 1.25,
-            'temporal_factor'        => 1.00,
-            'open_bookings_count'    => 10,
+            'service_zone_id' => $zone->id,
+            'multiplier' => 1.50,
+            'demand_factor' => 1.20,
+            'supply_factor' => 1.25,
+            'temporal_factor' => 1.00,
+            'open_bookings_count' => 10,
             'online_providers_count' => 1,
-            'expires_at'             => now()->addMinutes(5),
+            'expires_at' => now()->addMinutes(5),
         ]);
 
         $result = app(SurgePricingEngine::class)->calculate(100.0, $zone);
@@ -116,14 +114,14 @@ class Phase14Test extends TestCase
 
         $zone = ServiceZone::create([
             'name' => 'Test Zone',
-            'slug' => 'test-zone-' . Str::random(5),
+            'slug' => 'test-zone-'.Str::random(5),
             'status' => 'active',
         ]);
 
         PricingZoneState::create([
             'service_zone_id' => $zone->id,
-            'multiplier'      => 2.50,
-            'expires_at'      => now()->subMinutes(5), // expiré
+            'multiplier' => 2.50,
+            'expires_at' => now()->subMinutes(5), // expiré
         ]);
 
         $result = app(SurgePricingEngine::class)->calculate(100.0, $zone);
@@ -291,10 +289,10 @@ class Phase14Test extends TestCase
         // Booking dans 5h
         Carbon::setTestNow(Carbon::create(2026, 5, 14, 10, 0, 0));
         $booking = $this->makeBooking([
-            'scheduled_date'  => '2026-05-14',
-            'scheduled_time'  => '15:00:00',  // dans 5h
+            'scheduled_date' => '2026-05-14',
+            'scheduled_time' => '15:00:00',  // dans 5h
             'estimated_price' => 100,
-            'created_at'      => now()->subHours(48),
+            'created_at' => now()->subHours(48),
         ]);
 
         $details = app(CancellationFeeCalculator::class)->forClientCancellation($booking);
@@ -310,10 +308,10 @@ class Phase14Test extends TestCase
     {
         Carbon::setTestNow(Carbon::create(2026, 5, 14, 10, 0, 0));
         $booking = $this->makeBooking([
-            'scheduled_date'  => '2026-05-14',
-            'scheduled_time'  => '11:00:00',  // dans 1h
+            'scheduled_date' => '2026-05-14',
+            'scheduled_time' => '11:00:00',  // dans 1h
             'estimated_price' => 100,
-            'created_at'      => now()->subHours(48),
+            'created_at' => now()->subHours(48),
         ]);
 
         $details = app(CancellationFeeCalculator::class)->forClientCancellation($booking);
@@ -328,10 +326,10 @@ class Phase14Test extends TestCase
     {
         Carbon::setTestNow(Carbon::create(2026, 5, 14, 10, 0, 0));
         $booking = $this->makeBooking([
-            'scheduled_date'  => '2026-05-14',
-            'scheduled_time'  => '10:15:00',  // dans 15 min
+            'scheduled_date' => '2026-05-14',
+            'scheduled_time' => '10:15:00',  // dans 15 min
             'estimated_price' => 100,
-            'created_at'      => now()->subHours(48),
+            'created_at' => now()->subHours(48),
         ]);
 
         $details = app(CancellationFeeCalculator::class)->forClientCancellation($booking);
@@ -346,10 +344,10 @@ class Phase14Test extends TestCase
     {
         Carbon::setTestNow(Carbon::create(2026, 5, 14, 10, 0, 0));
         $booking = $this->makeBooking([
-            'scheduled_date'  => '2026-05-14',
-            'scheduled_time'  => '10:30:00',
+            'scheduled_date' => '2026-05-14',
+            'scheduled_time' => '10:30:00',
             'estimated_price' => 100,
-            'created_at'      => now()->subMinutes(2), // créé il y a 2 min
+            'created_at' => now()->subMinutes(2), // créé il y a 2 min
         ]);
 
         $details = app(CancellationFeeCalculator::class)->forClientCancellation($booking);
@@ -413,12 +411,12 @@ class Phase14Test extends TestCase
         Carbon::setTestNow(Carbon::create(2026, 5, 14, 10, 0, 0));
         $client = User::factory()->create();
         $booking = $this->makeBooking([
-            'scheduled_date'  => '2026-05-14',
-            'scheduled_time'  => '11:00:00',
+            'scheduled_date' => '2026-05-14',
+            'scheduled_time' => '11:00:00',
             'estimated_price' => 100,
-            'customer_user_id'=> $client->id,
-            'client_id'       => $client->id,
-            'created_at'      => now()->subHours(48),
+            'customer_user_id' => $client->id,
+            'client_id' => $client->id,
+            'created_at' => now()->subHours(48),
         ]);
 
         $result = app(CancelBookingService::class)->cancelByClient($booking, $client, 'changement de plans');
@@ -435,8 +433,8 @@ class Phase14Test extends TestCase
     {
         $client = User::factory()->create();
         $booking = $this->makeBooking([
-            'status'          => 'termine',
-            'customer_user_id'=> $client->id,
+            'status' => 'termine',
+            'customer_user_id' => $client->id,
         ]);
 
         $this->expectException(\DomainException::class);
@@ -450,17 +448,18 @@ class Phase14Test extends TestCase
     protected function makeBooking(array $overrides = []): Booking
     {
         $client = User::factory()->create();
+
         return Booking::create(array_merge([
-            'booking_reference' => 'CUX-' . strtoupper(Str::random(6)),
-            'customer_user_id'  => $client->id,
-            'client_id'         => $client->id,
-            'scheduled_date'    => now()->addDay()->toDateString(),
-            'scheduled_time'    => '10:00:00',
-            'status'            => 'confirme',
-            'currency'          => 'EUR',
-            'priority'          => 'normal',
-            'booking_mode'      => 'scheduled',
-            'estimated_price'   => 100,
+            'booking_reference' => 'CUX-'.strtoupper(Str::random(6)),
+            'customer_user_id' => $client->id,
+            'client_id' => $client->id,
+            'scheduled_date' => now()->addDay()->toDateString(),
+            'scheduled_time' => '10:00:00',
+            'status' => 'confirme',
+            'currency' => 'EUR',
+            'priority' => 'normal',
+            'booking_mode' => 'scheduled',
+            'estimated_price' => 100,
         ], $overrides));
     }
 }

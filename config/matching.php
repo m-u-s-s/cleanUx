@@ -20,15 +20,15 @@ return [
     'top_n' => (int) env('MATCHING_TOP_N', 5),
 
     'weights' => [
-        'rating'           => (int) env('MATCHING_W_RATING', 25),
-        'acceptance_rate'  => (int) env('MATCHING_W_ACCEPTANCE', 15),
-        'completion_rate'  => (int) env('MATCHING_W_COMPLETION', 10),
-        'response_time'    => (int) env('MATCHING_W_RESPONSE', 5),
-        'zone_proximity'   => (int) env('MATCHING_W_ZONE', 15),
-        'workload'         => (int) env('MATCHING_W_WORKLOAD', 10),
-        'client_affinity'  => (int) env('MATCHING_W_AFFINITY', 10),
-        'trade_specialty'  => (int) env('MATCHING_W_TRADE', 5),
-        'recency_balance'  => (int) env('MATCHING_W_RECENCY', 5),
+        'rating' => (int) env('MATCHING_W_RATING', 25),
+        'acceptance_rate' => (int) env('MATCHING_W_ACCEPTANCE', 15),
+        'completion_rate' => (int) env('MATCHING_W_COMPLETION', 10),
+        'response_time' => (int) env('MATCHING_W_RESPONSE', 5),
+        'zone_proximity' => (int) env('MATCHING_W_ZONE', 15),
+        'workload' => (int) env('MATCHING_W_WORKLOAD', 10),
+        'client_affinity' => (int) env('MATCHING_W_AFFINITY', 10),
+        'trade_specialty' => (int) env('MATCHING_W_TRADE', 5),
+        'recency_balance' => (int) env('MATCHING_W_RECENCY', 5),
     ],
 
     'diversification' => [

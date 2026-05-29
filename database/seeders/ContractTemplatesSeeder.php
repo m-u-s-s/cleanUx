@@ -16,7 +16,7 @@ class ContractTemplatesSeeder extends Seeder
                 'type' => ContractTemplate::TYPE_TOS,
                 'role' => ContractTemplate::ROLE_CLIENT,
                 'version' => '2026-05-v1',
-                'body_markdown' => <<<MD
+                'body_markdown' => <<<'MD'
 # Conditions générales d'utilisation
 
 Bienvenue sur **{{app_name}}**.
@@ -50,7 +50,7 @@ MD,
                 'type' => ContractTemplate::TYPE_PROVIDER_AGREEMENT,
                 'role' => ContractTemplate::ROLE_PROVIDER,
                 'version' => '2026-05-v1',
-                'body_markdown' => <<<MD
+                'body_markdown' => <<<'MD'
 # Contrat de prestation indépendante
 
 Entre **{{app_name}}** et **{{name}}** ({{email}}).
@@ -85,7 +85,7 @@ MD,
                 'type' => ContractTemplate::TYPE_NDA,
                 'role' => ContractTemplate::ROLE_ENTERPRISE,
                 'version' => '2026-05-v1',
-                'body_markdown' => <<<MD
+                'body_markdown' => <<<'MD'
 # Accord de confidentialité (NDA)
 
 Entre **{{app_name}}** et **{{company}}** représentée par {{name}} ({{email}}).

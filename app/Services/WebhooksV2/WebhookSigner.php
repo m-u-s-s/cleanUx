@@ -7,7 +7,7 @@ class WebhookSigner
     public function sign(string $body, string $secret, ?int $timestamp = null): string
     {
         $timestamp ??= time();
-        $signedPayload = $timestamp . '.' . $body;
+        $signedPayload = $timestamp.'.'.$body;
         $hmac = hash_hmac(
             (string) config('webhooks_v2.signature_algo', 'sha256'),
             $signedPayload,
@@ -15,7 +15,7 @@ class WebhookSigner
         );
         $version = (string) config('webhooks_v2.signature_version', 'v1');
 
-        return "t={$timestamp}," . $version . "={$hmac}";
+        return "t={$timestamp},".$version."={$hmac}";
     }
 
     public function verify(string $body, string $signatureHeader, string $secret, ?int $now = null): bool
@@ -33,7 +33,8 @@ class WebhookSigner
         if (abs($now - $t) > $tolerance) {
             return false;
         }
-        $expected = hash_hmac($algo, $t . '.' . $body, $secret);
+        $expected = hash_hmac($algo, $t.'.'.$body, $secret);
+
         return hash_equals($expected, (string) $parts[$version]);
     }
 
@@ -48,6 +49,7 @@ class WebhookSigner
             [$k, $v] = explode('=', $segment, 2);
             $out[trim($k)] = trim($v);
         }
+
         return $out;
     }
 }

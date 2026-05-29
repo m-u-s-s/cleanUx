@@ -10,12 +10,10 @@ use Illuminate\Notifications\Notification;
 
 class KycCompletedNotification extends Notification
 {
-    use Queueable;
     use InteractsWithUserNotificationPreferences;
+    use Queueable;
 
-    public function __construct(public KycVerification $verification)
-    {
-    }
+    public function __construct(public KycVerification $verification) {}
 
     public function via($notifiable): array
     {
@@ -41,7 +39,7 @@ class KycCompletedNotification extends Notification
                 ->line('Votre vérification d\'identité nécessite un complément ou n\'a pas pu être validée.');
 
             if ($this->verification->rejection_reason) {
-                $mail->line('Raison : ' . $this->verification->rejection_reason);
+                $mail->line('Raison : '.$this->verification->rejection_reason);
             }
 
             $mail->action('Compléter ma vérification', url('/dashboard/employe'));
@@ -59,7 +57,7 @@ class KycCompletedNotification extends Notification
                 ? 'Vérification d\'identité validée'
                 : 'Vérification d\'identité à compléter',
             'message' => $this->verification->rejection_reason
-                ?? 'Votre vérification KYC est ' . $this->verification->status,
+                ?? 'Votre vérification KYC est '.$this->verification->status,
             'verification_id' => $this->verification->id,
             'decision' => $this->verification->decision,
             'status' => $this->verification->status,

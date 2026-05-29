@@ -17,18 +17,26 @@ class TeamManagement extends Component
     // ──────────────────────────────────────────────────────
     // State
     // ──────────────────────────────────────────────────────
-    public bool   $showInvite      = false;
-    public bool   $showPermissions = false;
-    public ?int   $editingMemberId = null;
-    public string $searchQuery     = '';
-    public string $filterRole      = '';
-    public string $filterStatus    = 'active';
-    public string $activeTab       = 'members'; // members | invitations | performance
+    public bool $showInvite = false;
+
+    public bool $showPermissions = false;
+
+    public ?int $editingMemberId = null;
+
+    public string $searchQuery = '';
+
+    public string $filterRole = '';
+
+    public string $filterStatus = 'active';
+
+    public string $activeTab = 'members'; // members | invitations | performance
 
     // Formulaire invitation
     public string $inviteEmail = '';
-    public string $inviteRole  = OrganizationRole::WORKER->value;
-    public string $inviteNote  = '';
+
+    public string $inviteRole = OrganizationRole::WORKER->value;
+
+    public string $inviteNote = '';
 
     // ──────────────────────────────────────────────────────
     // Mount
@@ -52,11 +60,9 @@ class TeamManagement extends Component
         return OrganizationMember::where('organization_account_id', $orgId)
             ->when($this->filterStatus, fn ($q) => $q->where('status', $this->filterStatus))
             ->when($this->filterRole, fn ($q) => $q->where('role', $this->filterRole))
-            ->when($this->searchQuery, fn ($q) =>
-                $q->whereHas('user', fn ($u) =>
-                    $u->where('name', 'like', "%{$this->searchQuery}%")
-                      ->orWhere('email', 'like', "%{$this->searchQuery}%")
-                )
+            ->when($this->searchQuery, fn ($q) => $q->whereHas('user', fn ($u) => $u->where('name', 'like', "%{$this->searchQuery}%")
+                ->orWhere('email', 'like', "%{$this->searchQuery}%")
+            )
             )
             ->with(['user:id,name,email,profile_photo_path', 'invitedBy:id,name'])
             ->orderByRaw("FIELD(role, 'owner','operations_manager','dispatcher','team_lead','quality_manager','finance','worker','viewer')")
@@ -89,18 +95,19 @@ class TeamManagement extends Component
 
         $this->validate([
             'inviteEmail' => ['required', 'email'],
-            'inviteRole'  => ['required'],
+            'inviteRole' => ['required'],
         ]);
 
-        $orgId       = $actor->current_organization_id;
-        $targetUser  = User::where('email', $this->inviteEmail)->first();
+        $orgId = $actor->current_organization_id;
+        $targetUser = User::where('email', $this->inviteEmail)->first();
 
         // Vérifier hiérarchie
-        $actorMember   = $actor->membershipIn();
-        $newRoleEnum   = OrganizationRole::from($this->inviteRole);
+        $actorMember = $actor->membershipIn();
+        $newRoleEnum = OrganizationRole::from($this->inviteRole);
 
         if ($actorMember && $newRoleEnum->rank() >= $actorMember->role->rank() && ! $actor->isPlatformAdmin()) {
             $this->addError('inviteRole', 'Vous ne pouvez pas inviter avec un rôle supérieur ou égal au vôtre.');
+
             return;
         }
 
@@ -112,17 +119,18 @@ class TeamManagement extends Component
 
             if ($alreadyIn) {
                 $this->addError('inviteEmail', 'Cet utilisateur est déjà dans l\'organisation.');
+
                 return;
             }
 
             OrganizationMember::create([
                 'organization_account_id' => $orgId,
-                'user_id'                 => $targetUser->id,
-                'role'                    => $this->inviteRole,
-                'status'                  => 'active',
-                'invited_by'              => $actor->id,
-                'invited_at'              => now(),
-                'joined_at'               => now(),
+                'user_id' => $targetUser->id,
+                'role' => $this->inviteRole,
+                'status' => 'active',
+                'invited_by' => $actor->id,
+                'invited_at' => now(),
+                'joined_at' => now(),
             ]);
         } else {
             // TODO: Envoyer un email d'invitation et créer un token
@@ -136,7 +144,7 @@ class TeamManagement extends Component
     // ──────────────────────────────────────────────────────
     public function changeRole(int $memberId, string $newRole): void
     {
-        $actor  = Auth::user();
+        $actor = Auth::user();
         $member = $this->getOrgMember($memberId);
 
         abort_unless(
@@ -145,7 +153,7 @@ class TeamManagement extends Component
         );
 
         $actorMember = $actor->membershipIn();
-        $newEnum     = OrganizationRole::from($newRole);
+        $newEnum = OrganizationRole::from($newRole);
 
         if ($actorMember && $newEnum->rank() >= $actorMember->role->rank() && ! $actor->isPlatformAdmin()) {
             return;
@@ -172,7 +180,7 @@ class TeamManagement extends Component
 
     private function setStatus(int $memberId, string $status, string $perm): void
     {
-        $actor  = Auth::user();
+        $actor = Auth::user();
         $member = $this->getOrgMember($memberId);
 
         abort_unless(
@@ -201,7 +209,9 @@ class TeamManagement extends Component
     {
         $member = OrganizationMember::find($this->editingMemberId);
 
-        if (! $member) return;
+        if (! $member) {
+            return;
+        }
 
         $value ? $member->grantPermission($perm) : $member->revokePermission($perm);
     }
@@ -221,9 +231,9 @@ class TeamManagement extends Component
         $permService = app(PermissionService::class);
 
         return view('livewire.provider-company.team-management', [
-            'members'        => $this->membersProperty,
+            'members' => $this->membersProperty,
             'availableRoles' => $this->availableRolesProperty,
-            'editingMember'  => $this->editingMemberProperty,
+            'editingMember' => $this->editingMemberProperty,
             'allPermissions' => $permService->allPermissionKeys(),
         ])->layout('layouts.provider-company');
     }

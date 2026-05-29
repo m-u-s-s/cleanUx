@@ -5,6 +5,7 @@ namespace App\Livewire\Provider;
 use App\Models\Booking;
 use App\Models\BookingTip;
 use App\Models\ProviderWalletTransaction;
+use App\Models\Trade;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
@@ -62,6 +63,7 @@ class ProviderEarningsDashboard extends Component
     protected function periodRanges(): array
     {
         $now = Carbon::now();
+
         return match ($this->period) {
             'today' => [
                 $now->copy()->startOfDay(),
@@ -106,7 +108,7 @@ class ProviderEarningsDashboard extends Component
         $missionsQuery = Booking::query()
             ->where(function ($q) use ($userId) {
                 $q->where('employe_id', $userId)
-                  ->orWhere('assigned_employee_id', $userId);
+                    ->orWhere('assigned_employee_id', $userId);
             })
             ->whereIn('status', ['termine', 'completed', 'closed'])
             ->whereBetween('updated_at', [$start, $end]);
@@ -150,7 +152,7 @@ class ProviderEarningsDashboard extends Component
         $bookings = Booking::query()
             ->where(function ($q) use ($userId) {
                 $q->where('employe_id', $userId)
-                  ->orWhere('assigned_employee_id', $userId);
+                    ->orWhere('assigned_employee_id', $userId);
             })
             ->whereIn('status', ['termine', 'completed', 'closed'])
             ->whereBetween('updated_at', [$start, $end])
@@ -178,7 +180,7 @@ class ProviderEarningsDashboard extends Component
         $rows = Booking::query()
             ->where(function ($q) use ($userId) {
                 $q->where('employe_id', $userId)
-                  ->orWhere('assigned_employee_id', $userId);
+                    ->orWhere('assigned_employee_id', $userId);
             })
             ->whereIn('status', ['termine', 'completed', 'closed'])
             ->whereBetween('updated_at', [$start, $end])
@@ -190,9 +192,10 @@ class ProviderEarningsDashboard extends Component
             ->get();
 
         return $rows->map(function ($r) {
-            $trade = \App\Models\Trade::find($r->trade_id);
+            $trade = Trade::find($r->trade_id);
+
             return [
-                'trade_name' => $trade?->name ?? 'Trade #' . $r->trade_id,
+                'trade_name' => $trade?->name ?? 'Trade #'.$r->trade_id,
                 'missions' => (int) $r->missions,
                 'total_eur' => round(((int) $r->total_cents) / 100, 2),
             ];
@@ -204,6 +207,7 @@ class ProviderEarningsDashboard extends Component
         if ($previous === 0 || $previous === 0.0) {
             return $current > 0 ? 100.0 : null;
         }
+
         return round((($current - $previous) / $previous) * 100, 1);
     }
 }

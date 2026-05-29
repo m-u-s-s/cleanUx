@@ -68,6 +68,7 @@ class ProviderPerformanceCalculator
 
         if ($existing) {
             $existing->fill($payload)->save();
+
             return $existing->fresh();
         }
 

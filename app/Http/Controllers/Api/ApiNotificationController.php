@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 
 /**
  * @group Notifications
+ *
  * @authenticated
  *
  * Phase 12 — Notifications API mobile.
@@ -27,8 +28,8 @@ class ApiNotificationController extends Controller
 
         $params = $request->validate([
             'unread_only' => ['nullable', 'boolean'],
-            'per_page'    => ['nullable', 'integer', 'min:1', 'max:100'],
-            'page'        => ['nullable', 'integer', 'min:1'],
+            'per_page' => ['nullable', 'integer', 'min:1', 'max:100'],
+            'page' => ['nullable', 'integer', 'min:1'],
         ]);
 
         $perPage = (int) ($params['per_page'] ?? 20);
@@ -42,13 +43,13 @@ class ApiNotificationController extends Controller
         $paginator = $query->paginate($perPage);
 
         return response()->json([
-            'ok'           => true,
-            'data'         => collect($paginator->items())->map(fn ($n) => $this->serialize($n))->all(),
-            'pagination'   => [
+            'ok' => true,
+            'data' => collect($paginator->items())->map(fn ($n) => $this->serialize($n))->all(),
+            'pagination' => [
                 'current_page' => $paginator->currentPage(),
-                'last_page'    => $paginator->lastPage(),
-                'per_page'     => $paginator->perPage(),
-                'total'        => $paginator->total(),
+                'last_page' => $paginator->lastPage(),
+                'per_page' => $paginator->perPage(),
+                'total' => $paginator->total(),
             ],
             'unread_count' => $user->unreadNotifications()->count(),
         ]);
@@ -67,7 +68,7 @@ class ApiNotificationController extends Controller
         }
 
         return response()->json([
-            'ok'           => true,
+            'ok' => true,
             'unread_count' => $request->user()->unreadNotifications()->count(),
         ]);
     }
@@ -77,19 +78,19 @@ class ApiNotificationController extends Controller
         $count = $request->user()->unreadNotifications()->update(['read_at' => now()]);
 
         return response()->json([
-            'ok'                 => true,
-            'marked_as_read'     => $count,
-            'unread_count'       => 0,
+            'ok' => true,
+            'marked_as_read' => $count,
+            'unread_count' => 0,
         ]);
     }
 
     protected function serialize($notification): array
     {
         return [
-            'id'         => $notification->id,
-            'type'       => class_basename($notification->type ?? ''),
-            'data'       => $notification->data,
-            'read_at'    => $notification->read_at?->toIso8601String(),
+            'id' => $notification->id,
+            'type' => class_basename($notification->type ?? ''),
+            'data' => $notification->data,
+            'read_at' => $notification->read_at?->toIso8601String(),
             'created_at' => $notification->created_at?->toIso8601String(),
         ];
     }

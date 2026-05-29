@@ -115,6 +115,7 @@ class UserSafetyService
             'admin_notes' => $notes,
             'reviewed_at' => now(),
         ]);
+
         return $report->fresh();
     }
 }

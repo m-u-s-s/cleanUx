@@ -21,24 +21,25 @@ class ReactionService
         $emoji = trim($emoji);
 
         if ($emoji === '' || mb_strlen($emoji) > 32) {
-            throw new \DomainException("Emoji invalide.");
+            throw new \DomainException('Emoji invalide.');
         }
 
         $existing = MessageReaction::where([
             'message_id' => $message->id,
-            'user_id'    => $user->id,
-            'emoji'      => $emoji,
+            'user_id' => $user->id,
+            'emoji' => $emoji,
         ])->first();
 
         if ($existing) {
             $existing->delete();
+
             return ['action' => 'removed', 'emoji' => $emoji];
         }
 
         MessageReaction::create([
             'message_id' => $message->id,
-            'user_id'    => $user->id,
-            'emoji'      => $emoji,
+            'user_id' => $user->id,
+            'emoji' => $emoji,
         ]);
 
         return ['action' => 'added', 'emoji' => $emoji];
@@ -61,10 +62,11 @@ class ReactionService
 
         return $grouped->map(function ($group, $emoji) use ($forUser) {
             $userIds = $group->pluck('user_id')->all();
+
             return [
                 'emoji' => $emoji,
                 'count' => count($userIds),
-                'me'    => $forUser && in_array($forUser->id, $userIds, true),
+                'me' => $forUser && in_array($forUser->id, $userIds, true),
                 'users' => $group->pluck('user.name')->filter()->take(8)->values()->all(),
             ];
         })->values()->all();

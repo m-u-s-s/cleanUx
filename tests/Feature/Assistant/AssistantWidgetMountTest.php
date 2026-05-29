@@ -36,7 +36,7 @@ class AssistantWidgetMountTest extends TestCase
 
     public function test_send_quick_with_valid_index_sets_input_and_triggers_send(): void
     {
-        $user    = User::factory()->create();
+        $user = User::factory()->create();
         $actions = app(QuickActions::class)->forUser($user);
 
         // We only test that sendQuick populates $input from the right index.
@@ -70,7 +70,7 @@ class AssistantWidgetMountTest extends TestCase
 
         // Input stays empty, no additional messages
         $component->assertSet('input', '');
-        $messages     = $component->get('messages');
+        $messages = $component->get('messages');
         $userMessages = array_filter($messages, fn ($m) => $m['sender'] === 'user');
         $this->assertEmpty($userMessages);
     }

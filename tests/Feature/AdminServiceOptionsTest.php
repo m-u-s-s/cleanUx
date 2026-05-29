@@ -6,6 +6,7 @@ use App\Livewire\Admin\CatalogueServices;
 use App\Models\ServiceCatalog;
 use App\Models\ServiceOption;
 use App\Models\User;
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
 use Tests\TestCase;
@@ -17,18 +18,18 @@ class AdminServiceOptionsTest extends TestCase
     protected function createAdmin(): User
     {
         return User::factory()->admin()->create([
-            'permissions'  => ['manage-services', 'perform-critical-admin-actions'],
+            'permissions' => ['manage-services', 'perform-critical-admin-actions'],
             'access_scope' => User::ACCESS_SCOPE_ALL,
-            'is_active'    => true,
+            'is_active' => true,
         ]);
     }
 
     protected function makeService(): ServiceCatalog
     {
         return ServiceCatalog::factory()->create([
-            'name'      => 'Nettoyage bureaux',
-            'slug'      => 'nettoyage-bureaux-' . uniqid(),
-            'code'      => 'NB' . substr(uniqid(), -4),
+            'name' => 'Nettoyage bureaux',
+            'slug' => 'nettoyage-bureaux-'.uniqid(),
+            'code' => 'NB'.substr(uniqid(), -4),
             'is_active' => true,
         ]);
     }
@@ -52,11 +53,11 @@ class AdminServiceOptionsTest extends TestCase
             ->call('addOption');
 
         $this->assertDatabaseHas('service_options', [
-            'service_catalog_id'   => $service->id,
-            'slug'                 => 'surface_m2',
-            'label'                => 'Surface (m²)',
-            'type'                 => 'number',
-            'price_modifier'       => 'per_unit',
+            'service_catalog_id' => $service->id,
+            'slug' => 'surface_m2',
+            'label' => 'Surface (m²)',
+            'type' => 'number',
+            'price_modifier' => 'per_unit',
             'price_modifier_value' => 1.5000,
         ]);
     }
@@ -89,10 +90,10 @@ class AdminServiceOptionsTest extends TestCase
         $service = $this->makeService();
         ServiceOption::create([
             'service_catalog_id' => $service->id,
-            'slug'               => 'frigo',
-            'label'              => 'Frigo',
-            'type'               => 'boolean',
-            'price_modifier'     => 'fixed',
+            'slug' => 'frigo',
+            'label' => 'Frigo',
+            'type' => 'boolean',
+            'price_modifier' => 'fixed',
             'price_modifier_value' => 5,
         ]);
 
@@ -116,12 +117,12 @@ class AdminServiceOptionsTest extends TestCase
         $service = $this->makeService();
         $option = ServiceOption::create([
             'service_catalog_id' => $service->id,
-            'slug'               => 'repassage',
-            'label'              => 'Repassage',
-            'type'               => 'boolean',
-            'price_modifier'     => 'fixed',
+            'slug' => 'repassage',
+            'label' => 'Repassage',
+            'type' => 'boolean',
+            'price_modifier' => 'fixed',
             'price_modifier_value' => 20,
-            'is_active'          => true,
+            'is_active' => true,
         ]);
 
         $this->actingAs($this->createAdmin());
@@ -143,12 +144,12 @@ class AdminServiceOptionsTest extends TestCase
         $service = $this->makeService();
         $option = ServiceOption::create([
             'service_catalog_id' => $service->id,
-            'slug'               => 'vitres_ext',
-            'label'              => 'Vitres extérieures',
-            'type'               => 'boolean',
-            'price_modifier'     => 'fixed',
+            'slug' => 'vitres_ext',
+            'label' => 'Vitres extérieures',
+            'type' => 'boolean',
+            'price_modifier' => 'fixed',
             'price_modifier_value' => 15,
-            'is_active'          => true,
+            'is_active' => true,
         ]);
 
         $this->actingAs($this->createAdmin());
@@ -198,7 +199,7 @@ class AdminServiceOptionsTest extends TestCase
                 ->call('addOption');
         } catch (\Throwable $e) {
             $this->assertTrue(
-                $e instanceof \Illuminate\Auth\Access\AuthorizationException
+                $e instanceof AuthorizationException
                 || str_contains(strtolower($e->getMessage()), 'unauthorized')
                 || str_contains(strtolower($e->getMessage()), 'forbidden'),
                 'Une exception d\'autorisation devrait être levée.'
@@ -207,7 +208,7 @@ class AdminServiceOptionsTest extends TestCase
 
         $this->assertDatabaseMissing('service_options', [
             'service_catalog_id' => $service->id,
-            'slug'               => 'vitres',
+            'slug' => 'vitres',
         ]);
     }
 }

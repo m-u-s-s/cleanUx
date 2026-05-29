@@ -37,6 +37,7 @@ class StripeConnectWebhookController extends Controller
 
         if (empty($secret)) {
             Log::warning('StripeConnectWebhook: STRIPE_CONNECT_WEBHOOK_SECRET non configuré');
+
             return response()->json(['ok' => false, 'error' => 'webhook secret missing'], 500);
         }
 
@@ -47,9 +48,11 @@ class StripeConnectWebhookController extends Controller
             $event = Webhook::constructEvent($payload, $sig, $secret);
         } catch (SignatureVerificationException $e) {
             Log::warning('StripeConnectWebhook: signature invalide', ['error' => $e->getMessage()]);
+
             return response()->json(['ok' => false, 'error' => 'invalid signature'], 400);
         } catch (\Throwable $e) {
             Log::error('StripeConnectWebhook: parse error', ['error' => $e->getMessage()]);
+
             return response()->json(['ok' => false, 'error' => 'parse error'], 400);
         }
 

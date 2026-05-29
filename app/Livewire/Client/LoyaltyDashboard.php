@@ -2,7 +2,6 @@
 
 namespace App\Livewire\Client;
 
-use App\Models\LoyaltyAccount;
 use App\Models\LoyaltyTier;
 use App\Models\LoyaltyTransaction;
 use App\Services\Loyalty\LoyaltyService;

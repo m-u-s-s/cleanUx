@@ -43,15 +43,15 @@ class ServiceOption extends Model
     ];
 
     protected $casts = [
-        'values'               => 'array',
-        'is_required'          => 'boolean',
-        'is_active'            => 'boolean',
-        'default_value_num'    => 'decimal:2',
+        'values' => 'array',
+        'is_required' => 'boolean',
+        'is_active' => 'boolean',
+        'default_value_num' => 'decimal:2',
         'price_modifier_value' => 'decimal:4',
-        'min_value'            => 'decimal:2',
-        'max_value'            => 'decimal:2',
-        'step'                 => 'decimal:4',
-        'sort_order'           => 'integer',
+        'min_value' => 'decimal:2',
+        'max_value' => 'decimal:2',
+        'step' => 'decimal:4',
+        'sort_order' => 'integer',
     ];
 
     public function service(): BelongsTo

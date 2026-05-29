@@ -36,6 +36,7 @@ class MatchingV2Service
         $ranked = $candidates
             ->map(function (User $provider) use ($booking, $contextOverrides) {
                 $breakdown = $this->engine->score($provider, $booking, $contextOverrides);
+
                 return [
                     'employee' => $provider,
                     'breakdown' => $breakdown,
@@ -72,6 +73,7 @@ class MatchingV2Service
     public function topN(Booking $booking, ?int $n = null, array $contextOverrides = []): Collection
     {
         $n ??= (int) Config::get('matching.top_n', 5);
+
         return $this->rankCandidates($booking, $contextOverrides)->take($n);
     }
 
@@ -86,6 +88,7 @@ class MatchingV2Service
                         return false;
                     }
                 }
+
                 return true;
             });
 
@@ -115,6 +118,7 @@ class MatchingV2Service
                 'required_trade_id' => $tradeId,
                 'open_candidates' => $candidates->count(),
             ]);
+
             return $candidates;
         }
 

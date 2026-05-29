@@ -4,6 +4,8 @@ namespace App\Services\Promotion;
 
 use App\Models\Referral;
 use App\Models\User;
+use App\Services\Loyalty\LoyaltyService;
+use App\Services\Push\PushService;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -65,6 +67,7 @@ class ReferralViralTierEngine
         if (! Schema::hasTable('referrals')) {
             return 0;
         }
+
         return (int) Referral::query()
             ->where('referrer_user_id', $referrer->id)
             ->whereNotNull('qualified_at')
@@ -76,22 +79,23 @@ class ReferralViralTierEngine
         if (! Schema::hasTable('loyalty_transactions')) {
             return false;
         }
+
         return (bool) DB::table('loyalty_transactions')
             ->where('user_id', $referrer->id)
-            ->where('idempotency_key', 'referral_tier_' . $tierCode . '_user_' . $referrer->id)
+            ->where('idempotency_key', 'referral_tier_'.$tierCode.'_user_'.$referrer->id)
             ->exists();
     }
 
     protected function awardTier(User $referrer, array $tier, int $qualifiedCount): void
     {
         // Award loyalty points
-        if (! empty($tier['loyalty_points']) && class_exists(\App\Services\Loyalty\LoyaltyService::class)) {
+        if (! empty($tier['loyalty_points']) && class_exists(LoyaltyService::class)) {
             try {
-                app(\App\Services\Loyalty\LoyaltyService::class)->award(
+                app(LoyaltyService::class)->award(
                     user: $referrer,
                     type: 'earn_referral',
                     points: (int) $tier['loyalty_points'],
-                    idempotencyKey: 'referral_tier_' . $tier['code'] . '_user_' . $referrer->id,
+                    idempotencyKey: 'referral_tier_'.$tier['code'].'_user_'.$referrer->id,
                     reason: "Palier parrainage {$tier['code']} ({$qualifiedCount} qualifiés)",
                 );
             } catch (\Throwable $e) {
@@ -106,7 +110,7 @@ class ReferralViralTierEngine
                     'user_id' => $referrer->id,
                     'amount_cents' => (int) $tier['credit_cents'],
                     'currency' => 'EUR',
-                    'source' => 'referral_tier_' . $tier['code'],
+                    'source' => 'referral_tier_'.$tier['code'],
                     'expires_at' => now()->addMonths(6),
                     'created_at' => now(),
                     'updated_at' => now(),
@@ -123,19 +127,19 @@ class ReferralViralTierEngine
     protected function notifyTierUnlocked(User $referrer, array $tier): void
     {
         try {
-            if (! class_exists(\App\Services\Push\PushService::class)) {
+            if (! class_exists(PushService::class)) {
                 return;
             }
-            app(\App\Services\Push\PushService::class)->dispatchToUser(
+            app(PushService::class)->dispatchToUser(
                 user: $referrer,
-                title: '🎉 Nouveau palier débloqué : ' . ($tier['name'] ?? $tier['code']),
-                body: $tier['reward_description'] ?? "Votre récompense est créditée.",
+                title: '🎉 Nouveau palier débloqué : '.($tier['name'] ?? $tier['code']),
+                body: $tier['reward_description'] ?? 'Votre récompense est créditée.',
                 data: [
                     'type' => 'referral.tier_unlocked',
                     'tier_code' => $tier['code'],
                 ],
                 category: 'transactional',
-                idempotencyKey: 'referral_tier_push_' . $tier['code'] . '_' . $referrer->id,
+                idempotencyKey: 'referral_tier_push_'.$tier['code'].'_'.$referrer->id,
             );
         } catch (\Throwable $e) {
             Log::warning('[referral_viral] notify failed', ['error' => $e->getMessage()]);

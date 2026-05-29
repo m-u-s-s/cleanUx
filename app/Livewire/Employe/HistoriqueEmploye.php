@@ -3,17 +3,17 @@
 namespace App\Livewire\Employe;
 
 use App\Models\Booking;
+use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
 use Livewire\WithPagination;
-use Illuminate\Contracts\View\View;
-use Livewire\Attributes\Layout;
 
 class HistoriqueEmploye extends Component
 {
     use WithPagination;
 
     public $search = '';
+
     public $tri = 'desc';
 
     protected $queryString = [

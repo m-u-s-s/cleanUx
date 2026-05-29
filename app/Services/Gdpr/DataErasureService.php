@@ -7,6 +7,7 @@ use App\Models\User;
 use App\Support\ActivityLogger;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Str;
 
 /**
  * Droit à l'oubli (art. 17 RGPD).
@@ -265,7 +266,7 @@ class DataErasureService
     {
         $prefix = (string) config('gdpr.reference_prefix', 'GDPR');
         do {
-            $candidate = $prefix . '-' . strtoupper(\Illuminate\Support\Str::random(10));
+            $candidate = $prefix.'-'.strtoupper(Str::random(10));
         } while (GdprDataRequest::where('reference', $candidate)->exists());
 
         return $candidate;

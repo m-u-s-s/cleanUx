@@ -12,6 +12,7 @@ use Illuminate\Validation\ValidationException;
 
 /**
  * @group Client — Loyalty Redemption
+ *
  * @authenticated
  */
 class LoyaltyRedemptionController extends Controller

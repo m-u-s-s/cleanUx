@@ -17,8 +17,7 @@ class ProductionHealthReport
         protected Filesystem $files,
         protected CacheRepository $cache,
         protected ConnectionInterface $db,
-    ) {
-    }
+    ) {}
 
     /**
      * @return array{checks: array<int, array<string, mixed>>, metrics: array<string, mixed>}
@@ -146,7 +145,6 @@ class ProductionHealthReport
 
         return Arr::has(config('filesystems.disks', []), $disk);
     }
-
 
     protected function safeHasTable(string $table): bool
     {

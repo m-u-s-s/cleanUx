@@ -4,7 +4,6 @@ namespace App\Livewire\Employe;
 
 use App\Models\Mission;
 use App\Services\Missions\MissionLifecycleService;
-use App\Services\Missions\MissionTrackingService;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
 
@@ -13,12 +12,15 @@ class MissionActions extends Component
     public Mission $mission;
 
     public string $startCode = '';
+
     public string $endCode = '';
 
     public ?string $generatedStartCode = null;
+
     public ?string $generatedEndCode = null;
 
     public ?string $successMessage = null;
+
     public ?string $errorMessage = null;
 
     public function mount(Mission $mission): void
@@ -53,7 +55,7 @@ class MissionActions extends Component
                 Auth::user()
             );
 
-            $this->generatedStartCode = session('mission_start_code_' . $this->mission->id);
+            $this->generatedStartCode = session('mission_start_code_'.$this->mission->id);
             $this->successMessage = 'Arrivée confirmée. Code de début généré.';
         } catch (\Throwable $e) {
             $this->errorMessage = $e->getMessage();
@@ -91,7 +93,7 @@ class MissionActions extends Component
             $generated = $this->service()->generateEndCode($this->mission->fresh());
             $this->generatedEndCode = $generated['code'];
 
-            session()->put('mission_end_code_' . $this->mission->id, $generated['code']);
+            session()->put('mission_end_code_'.$this->mission->id, $generated['code']);
 
             $this->mission = $this->mission->fresh(['assignments', 'verificationCodes', 'rendezVous']);
 
@@ -119,8 +121,8 @@ class MissionActions extends Component
             $this->endCode = '';
             $this->generatedEndCode = null;
             $this->successMessage = 'Mission terminée avec succès.';
-            session()->forget('mission_end_code_' . $this->mission->id);
-            session()->forget('mission_start_code_' . $this->mission->id);
+            session()->forget('mission_end_code_'.$this->mission->id);
+            session()->forget('mission_start_code_'.$this->mission->id);
         } catch (\Throwable $e) {
             $this->errorMessage = $e->getMessage();
         }

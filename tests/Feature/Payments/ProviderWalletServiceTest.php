@@ -17,7 +17,9 @@ class ProviderWalletServiceTest extends TestCase
     use RefreshDatabase;
 
     protected User $provider;
+
     protected User $client;
+
     protected ProviderWalletService $wallet;
 
     protected function setUp(): void
@@ -178,7 +180,7 @@ class ProviderWalletServiceTest extends TestCase
             'currency' => 'EUR',
             'platform_fee_cents' => $feeCents,
             'provider_amount_cents' => $providerCents,
-            'stripe_payment_intent_id' => 'pi_test_' . random_int(1000, 9999),
+            'stripe_payment_intent_id' => 'pi_test_'.random_int(1000, 9999),
         ]);
     }
 }

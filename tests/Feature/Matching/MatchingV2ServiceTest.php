@@ -17,7 +17,9 @@ class MatchingV2ServiceTest extends TestCase
     use RefreshDatabase;
 
     protected ServiceZone $zone;
+
     protected Booking $booking;
+
     protected MatchingV2Service $service;
 
     protected function setUp(): void

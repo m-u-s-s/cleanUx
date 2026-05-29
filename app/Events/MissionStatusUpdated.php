@@ -15,23 +15,21 @@ class MissionStatusUpdated implements ShouldBroadcast
     use InteractsWithSockets;
     use SerializesModels;
 
-    public function __construct(public Mission $mission)
-    {
-    }
+    public function __construct(public Mission $mission) {}
 
     public function broadcastOn(): array
     {
         return [
-            new PrivateChannel('mission.' . $this->mission->id),
+            new PrivateChannel('mission.'.$this->mission->id),
         ];
     }
 
     public function broadcastWith(): array
     {
         return [
-            'mission_id'  => $this->mission->id,
-            'status'      => $this->mission->status,
-            'updated_at'  => $this->mission->updated_at->toIso8601String(),
+            'mission_id' => $this->mission->id,
+            'status' => $this->mission->status,
+            'updated_at' => $this->mission->updated_at->toIso8601String(),
         ];
     }
 

@@ -18,6 +18,7 @@ class TripTrackingServiceTest extends TestCase
     {
         $client ??= User::factory()->client()->create();
         $provider ??= User::factory()->employe()->create();
+
         return Booking::factory()->create(array_merge([
             'client_id' => $client->id,
             'employe_id' => $provider->id,

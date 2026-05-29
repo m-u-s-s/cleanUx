@@ -9,7 +9,9 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class OnboardingJourney extends Model
 {
     public const ROLE_CLIENT = 'client';
+
     public const ROLE_PROVIDER = 'provider';
+
     public const ROLE_ENTERPRISE = 'enterprise';
 
     protected $fillable = [

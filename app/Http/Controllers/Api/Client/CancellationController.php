@@ -11,6 +11,7 @@ use Illuminate\Http\Request;
 
 /**
  * @group Client — Cancellation (Legacy)
+ *
  * @authenticated
  *
  * Phase 14 — API d'annulation côté client mobile.
@@ -39,10 +40,10 @@ class CancellationController extends Controller
         $details = $this->calculator->forClientCancellation($booking);
 
         return response()->json([
-            'ok'      => true,
-            'quote'   => $details,
-            'price'   => (float) ($booking->estimated_price ?? 0),
-            'currency'=> $booking->currency ?? 'EUR',
+            'ok' => true,
+            'quote' => $details,
+            'price' => (float) ($booking->estimated_price ?? 0),
+            'currency' => $booking->currency ?? 'EUR',
         ]);
     }
 
@@ -51,8 +52,8 @@ class CancellationController extends Controller
         $this->authorizeAccess($request, $booking);
 
         $data = $request->validate([
-            'reason'              => ['nullable', 'string', 'max:500'],
-            'accept_fee'          => ['nullable', 'boolean'],
+            'reason' => ['nullable', 'string', 'max:500'],
+            'accept_fee' => ['nullable', 'boolean'],
         ]);
 
         // BookingException and DomainException are handled by ApiJsonRenderer globally.
@@ -79,6 +80,6 @@ class CancellationController extends Controller
 
         $isAdmin = method_exists($user, 'isPlatformAdmin') && $user->isPlatformAdmin();
 
-        abort_if(! $isOwner && ! $isOrgMember && ! $isAdmin, 403, "Accès refusé.");
+        abort_if(! $isOwner && ! $isOrgMember && ! $isAdmin, 403, 'Accès refusé.');
     }
 }

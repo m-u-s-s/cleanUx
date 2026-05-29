@@ -116,7 +116,6 @@ class OrganizationAccount extends Model
         return $this->hasMany(MissionBatch::class);
     }
 
-
     public function getPriorityZoneIdsAttribute(): array
     {
         $ids = (array) data_get($this->metadata, 'priority_zone_ids', []);
@@ -125,7 +124,7 @@ class OrganizationAccount extends Model
             $ids = [(int) data_get($this->metadata, 'priority_zone_id')];
         }
 
-        return collect($ids)->map(fn($id) => (int) $id)->values()->all();
+        return collect($ids)->map(fn ($id) => (int) $id)->values()->all();
     }
 
     public function bookingPolicy(): array

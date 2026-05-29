@@ -2,15 +2,17 @@
 
 namespace App\Http\Controllers;
 
+use Illuminate\View\View;
+
 class PricingPageController extends Controller
 {
-    public function __invoke(): \Illuminate\View\View
+    public function __invoke(): View
     {
         $tiers = config('premium.tiers', []);
 
         return view('pages.pricing', [
-            'tiers'          => $tiers,
-            'seoTitle'       => 'Tarifs — CleanUx',
+            'tiers' => $tiers,
+            'seoTitle' => 'Tarifs — CleanUx',
             'seoDescription' => 'Découvrez nos formules Gratuit, Pro et Business. Réservez des services professionnels en Belgique à partir de 0€/mois.',
         ]);
     }

@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Admin\WebhooksV2;
 
+use App\Jobs\WebhooksV2\DeliverWebhookJob;
 use App\Models\WebhookDelivery;
 use App\Models\WebhookEndpoint;
 use App\Models\WebhookEvent;
@@ -20,12 +21,16 @@ class WebhooksCenter extends Component
     protected $paginationTheme = 'tailwind';
 
     public string $tab = 'endpoints';   // endpoints | events | deliveries
+
     public string $filterStatus = '';
+
     public ?int $filterEndpointId = null;
 
     // create endpoint form
     public string $newName = '';
+
     public string $newUrl = '';
+
     public array $newEventCodes = [];
 
     public function rotateSecret(int $endpointId): void
@@ -66,7 +71,7 @@ class WebhooksCenter extends Component
                     'attempt' => 0,
                     'max_attempts' => $ep->max_attempts,
                 ]);
-                \App\Jobs\WebhooksV2\DeliverWebhookJob::dispatch($delivery->id)
+                DeliverWebhookJob::dispatch($delivery->id)
                     ->onQueue((string) config('webhooks_v2.queue', 'webhooks'));
             }
         }
@@ -88,10 +93,11 @@ class WebhooksCenter extends Component
                 'newName' => 'required|string|max:191',
                 'newUrl' => 'required|url|max:500',
                 'newEventCodes' => 'required|array|min:1',
-                'newEventCodes.*' => 'string|in:' . implode(',', $allowed),
+                'newEventCodes.*' => 'string|in:'.implode(',', $allowed),
             ]);
         } catch (ValidationException $e) {
-            $this->dispatch('toast', 'Validation : ' . Str::limit(json_encode($e->errors()), 200), 'error');
+            $this->dispatch('toast', 'Validation : '.Str::limit(json_encode($e->errors()), 200), 'error');
+
             return;
         }
         $ep = WebhookEndpoint::query()->create([

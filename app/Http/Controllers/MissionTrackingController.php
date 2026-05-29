@@ -84,7 +84,7 @@ class MissionTrackingController extends Controller
     public function live(Mission $mission, MissionTrackingService $service): JsonResponse
     {
         $this->authorize('view', $mission);
-        
+
         $this->abortUnlessClientCanView($mission);
 
         return response()->json([

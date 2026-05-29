@@ -11,10 +11,11 @@ use Illuminate\Notifications\Notification;
 
 class EmployeReaffectationSuggestionNotification extends Notification
 {
-    use Queueable;
     use InteractsWithUserNotificationPreferences;
+    use Queueable;
 
     public string $employeSurcharge;
+
     public string $employeSuggere;
 
     public function __construct(
@@ -36,9 +37,9 @@ class EmployeReaffectationSuggestionNotification extends Notification
         return (new MailMessage)
             ->subject('CleanUx · Suggestion automatique de réaffectation')
             ->line('Une mission pourrait être réaffectée pour équilibrer la charge.')
-            ->line('Mission #' . $this->rdv->id)
-            ->line('Employé surchargé : ' . $this->employeSurcharge)
-            ->line('Employé suggéré : ' . $this->employeSuggere)
+            ->line('Mission #'.$this->rdv->id)
+            ->line('Employé surchargé : '.$this->employeSurcharge)
+            ->line('Employé suggéré : '.$this->employeSuggere)
             ->action('Voir le dashboard admin', url('/admin/dashboard'));
     }
 
@@ -48,7 +49,7 @@ class EmployeReaffectationSuggestionNotification extends Notification
             'type' => 'admin',
             'severity' => 'warning',
             'title' => 'Suggestion de réaffectation',
-            'message' => 'Suggestion automatique de réaffectation pour la mission #' . $this->rdv->id,
+            'message' => 'Suggestion automatique de réaffectation pour la mission #'.$this->rdv->id,
             'rdv_id' => $this->rdv->id,
             'employe_surcharge' => $this->employeSurcharge,
             'employe_suggere' => $this->employeSuggere,

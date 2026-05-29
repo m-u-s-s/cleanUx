@@ -5,7 +5,6 @@ namespace Tests\Feature\Phase11;
 use App\Jobs\Dispatch\EscalateMissionAssignmentJob;
 use App\Models\Booking;
 use App\Models\Mission;
-use App\Models\MissionAssignment;
 use App\Models\ProviderProfile;
 use App\Models\User;
 use App\Services\Dispatch\AiDispatchService;
@@ -29,6 +28,7 @@ class Phase11Test extends TestCase
             'status' => 'active',
             'verification_status' => 'verified',
         ], $overrides));
+
         return $user->fresh();
     }
 
@@ -310,16 +310,17 @@ class Phase11Test extends TestCase
     protected function makeBooking(): Booking
     {
         $client = User::factory()->create();
+
         return Booking::create([
-            'booking_reference' => 'CUX-' . strtoupper(Str::random(6)),
-            'customer_user_id'  => $client->id,
-            'client_id'         => $client->id,
-            'scheduled_date'    => now()->addDay()->toDateString(),
-            'scheduled_time'    => '10:00:00',
-            'status'            => 'confirme',
-            'currency'          => 'EUR',
-            'priority'          => 'normal',
-            'booking_mode'      => 'scheduled',
+            'booking_reference' => 'CUX-'.strtoupper(Str::random(6)),
+            'customer_user_id' => $client->id,
+            'client_id' => $client->id,
+            'scheduled_date' => now()->addDay()->toDateString(),
+            'scheduled_time' => '10:00:00',
+            'status' => 'confirme',
+            'currency' => 'EUR',
+            'priority' => 'normal',
+            'booking_mode' => 'scheduled',
         ]);
     }
 
@@ -327,7 +328,7 @@ class Phase11Test extends TestCase
     {
         return Mission::create([
             'booking_id' => $booking->id,
-            'status'     => 'planned',
+            'status' => 'planned',
             'planned_start_at' => now()->addDay(),
         ]);
     }

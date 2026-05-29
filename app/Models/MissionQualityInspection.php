@@ -10,11 +10,17 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class MissionQualityInspection extends Model
 {
     public const STATUS_DRAFT = 'draft';
+
     public const STATUS_IN_PROGRESS = 'in_progress';
+
     public const STATUS_SUBMITTED = 'submitted';
+
     public const STATUS_VALIDATED_CLIENT = 'validated_client';
+
     public const STATUS_VALIDATED_ADMIN = 'validated_admin';
+
     public const STATUS_DISPUTED = 'disputed';
+
     public const STATUS_REJECTED = 'rejected';
 
     protected $fillable = [
@@ -70,6 +76,7 @@ class MissionQualityInspection extends Model
         if (! $this->score_max || $this->score_calculated === null) {
             return null;
         }
+
         return round((float) $this->score_calculated / (float) $this->score_max * 100, 2);
     }
 

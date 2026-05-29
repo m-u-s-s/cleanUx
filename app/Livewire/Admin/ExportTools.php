@@ -2,18 +2,19 @@
 
 namespace App\Livewire\Admin;
 
-use Livewire\Component;
 use App\Models\Booking;
-use App\Models\User;
 use App\Models\Feedback;
+use App\Models\User;
 use Illuminate\Support\Facades\Gate;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Response;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use Livewire\Component;
 
 class ExportTools extends Component
 {
     public $type = 'rendez_vous';
+
     public $format = 'csv';
 
     public function export()
@@ -27,7 +28,7 @@ class ExportTools extends Component
             default => collect()
         };
 
-        $filename = $this->type . '_' . now()->format('Ymd_His');
+        $filename = $this->type.'_'.now()->format('Ymd_His');
 
         if ($this->format === 'csv') {
             return $this->exportCsv($data, $filename);
@@ -35,7 +36,7 @@ class ExportTools extends Component
 
         if ($this->format === 'pdf') {
             return redirect()->route('admin.export.pdf', [
-                'type' => $this->type
+                'type' => $this->type,
             ]);
         }
     }
@@ -50,13 +51,13 @@ class ExportTools extends Component
 
         $csv = '';
         $headers = array_keys($data->first()->getAttributes());
-        $csv .= implode(',', $headers) . "\n";
+        $csv .= implode(',', $headers)."\n";
 
         foreach ($data as $item) {
             $csv .= implode(',', array_map(
-                fn($v) => '"' . Str::of($v)->replace('"', '""') . '"',
+                fn ($v) => '"'.Str::of($v)->replace('"', '""').'"',
                 $item->getAttributes()
-            )) . "\n";
+            ))."\n";
         }
 
         $path = "exports/{$filename}.csv";

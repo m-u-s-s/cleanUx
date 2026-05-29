@@ -2,7 +2,6 @@
 
 namespace Tests\Feature\Audit;
 
-use App\Models\AuditEvent;
 use App\Models\AuditRedactionRule;
 use App\Services\Audit\AuditService;
 use Illuminate\Foundation\Testing\RefreshDatabase;

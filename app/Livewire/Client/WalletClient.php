@@ -37,7 +37,7 @@ class WalletClient extends Component
             'used_count' => $credits->where('status', 'used')->count(),
             'expired_count' => $credits->where('status', 'expired')->count(),
             'total_received' => (float) $credits->sum('amount'),
-            'total_used' => (float) $credits->sum(fn($credit) => max(0, $credit->amount - $credit->remaining_amount)),
+            'total_used' => (float) $credits->sum(fn ($credit) => max(0, $credit->amount - $credit->remaining_amount)),
         ];
     }
 

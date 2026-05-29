@@ -41,29 +41,32 @@ class GeneratePwaIconsCommand extends Command
     public function handle(): int
     {
         $source = $this->option('source');
-        $bg     = $this->option('bg');
-        $label  = mb_substr((string) $this->option('label'), 0, 3) ?: 'CU';
-        $force  = (bool) $this->option('force');
+        $bg = $this->option('bg');
+        $label = mb_substr((string) $this->option('label'), 0, 3) ?: 'CU';
+        $force = (bool) $this->option('force');
 
         $convert = $this->detectConvert();
         if (! $convert) {
             $this->error("ImageMagick introuvable (ni 'convert' ni 'magick' dans le PATH).");
-            $this->line("Installe-le : apt install imagemagick (Linux) / brew install imagemagick (macOS).");
+            $this->line('Installe-le : apt install imagemagick (Linux) / brew install imagemagick (macOS).');
+
             return self::FAILURE;
         }
 
         $iconsDir = public_path('icons');
         if (! is_dir($iconsDir) && ! mkdir($iconsDir, 0755, true)) {
             $this->error("Impossible de créer le dossier {$iconsDir}.");
+
             return self::FAILURE;
         }
 
         // Garde-fou : ne pas écraser sans --force
         if (! $force) {
-            $existing = glob($iconsDir . '/icon-*.png');
+            $existing = glob($iconsDir.'/icon-*.png');
             if (! empty($existing)) {
-                $this->warn(count($existing) . ' icône(s) déjà présente(s) dans public/icons/.');
+                $this->warn(count($existing).' icône(s) déjà présente(s) dans public/icons/.');
                 $this->line('Utilise --force pour les remplacer.');
+
                 return self::INVALID;
             }
         }
@@ -76,7 +79,7 @@ class GeneratePwaIconsCommand extends Command
             $this->generateMonogram($convert, $iconsDir, $bg, $label);
         }
 
-        $count = count(glob($iconsDir . '/icon-*.png'));
+        $count = count(glob($iconsDir.'/icon-*.png'));
         $this->info("✅ {$count} icône(s) générée(s).");
         $this->line('');
         $this->line('Pour utiliser un vrai logo : php artisan pwa:icons --source=path/to/logo.png --force');
@@ -92,6 +95,7 @@ class GeneratePwaIconsCommand extends Command
                 return $bin === 'magick' ? "{$path} convert" : $path;
             }
         }
+
         return null;
     }
 
@@ -101,7 +105,7 @@ class GeneratePwaIconsCommand extends Command
             $pointsize = (int) round($size * 0.4);
             $cmd = sprintf(
                 '%s -size %dx%d -background %s -fill white -gravity center '
-                . '-font DejaVu-Sans-Bold -pointsize %d label:%s %s 2>/dev/null',
+                .'-font DejaVu-Sans-Bold -pointsize %d label:%s %s 2>/dev/null',
                 $convert, $size, $size,
                 escapeshellarg($bg),
                 $pointsize,
@@ -133,6 +137,7 @@ class GeneratePwaIconsCommand extends Command
     {
         if (! is_file($source)) {
             $this->error("Source introuvable : {$source}");
+
             return;
         }
 

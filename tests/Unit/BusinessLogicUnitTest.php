@@ -18,7 +18,7 @@ class BusinessLogicUnitTest extends TestCase
 
     public function test_tax_calculator_all_supported_countries(): void
     {
-        $calc = new TaxCalculator();
+        $calc = new TaxCalculator;
 
         $expected = [
             'BE' => 0.21,
@@ -45,7 +45,7 @@ class BusinessLogicUnitTest extends TestCase
 
     public function test_tax_calculator_unknown_country_defaults_to_21_percent(): void
     {
-        $calc = new TaxCalculator();
+        $calc = new TaxCalculator;
         $result = $calc->calculateVat(100.00, 'XX');
 
         $this->assertSame(0.21, $result['vat_rate']);
@@ -55,7 +55,7 @@ class BusinessLogicUnitTest extends TestCase
 
     public function test_tax_calculator_lowercase_country_code_normalised(): void
     {
-        $calc = new TaxCalculator();
+        $calc = new TaxCalculator;
         $result = $calc->calculateVat(200.00, 'de');
 
         $this->assertSame(0.19, $result['vat_rate']);
@@ -64,10 +64,10 @@ class BusinessLogicUnitTest extends TestCase
 
     public function test_tax_calculator_extract_vat_round_trips(): void
     {
-        $calc = new TaxCalculator();
+        $calc = new TaxCalculator;
 
         foreach (['BE', 'FR', 'IT', 'LU'] as $code) {
-            $forward  = $calc->calculateVat(100.00, $code);
+            $forward = $calc->calculateVat(100.00, $code);
             $backward = $calc->extractVat($forward['amount_incl_vat'], $code);
 
             // Allow ±0.01 for rounding; the two paths must agree on the rate.
@@ -78,14 +78,14 @@ class BusinessLogicUnitTest extends TestCase
 
     public function test_tax_calculator_get_vat_rate_returns_float(): void
     {
-        $calc = new TaxCalculator();
+        $calc = new TaxCalculator;
         $this->assertSame(0.22, $calc->getVatRate('IT'));
         $this->assertSame(0.21, $calc->getVatRate('ZZ')); // unknown → fallback
     }
 
     public function test_tax_calculator_supported_countries_lists_all_nine(): void
     {
-        $calc = new TaxCalculator();
+        $calc = new TaxCalculator;
         $this->assertCount(9, $calc->supportedCountries());
     }
 
@@ -95,7 +95,7 @@ class BusinessLogicUnitTest extends TestCase
 
     public function test_country_config_supported_returns_all_nine_countries(): void
     {
-        $service = new CountryConfigService();
+        $service = new CountryConfigService;
         $supported = $service->supported();
 
         $this->assertCount(9, $supported);
@@ -107,7 +107,7 @@ class BusinessLogicUnitTest extends TestCase
 
     public function test_country_config_returns_correct_data_for_nl(): void
     {
-        $service = new CountryConfigService();
+        $service = new CountryConfigService;
         $nl = $service->get('NL');
 
         $this->assertSame('Pays-Bas', $nl['name']);
@@ -120,7 +120,7 @@ class BusinessLogicUnitTest extends TestCase
 
     public function test_country_config_unknown_code_defaults_to_belgium(): void
     {
-        $service = new CountryConfigService();
+        $service = new CountryConfigService;
         $fallback = $service->get('ZZ');
 
         $this->assertSame('Belgique', $fallback['name']);
@@ -130,7 +130,7 @@ class BusinessLogicUnitTest extends TestCase
 
     public function test_country_config_get_vat_rate_helper(): void
     {
-        $service = new CountryConfigService();
+        $service = new CountryConfigService;
 
         $this->assertSame(0.19, $service->getVatRate('DE'));
         $this->assertSame(0.23, $service->getVatRate('PT'));
@@ -139,7 +139,7 @@ class BusinessLogicUnitTest extends TestCase
 
     public function test_country_config_lowercase_code_normalised(): void
     {
-        $service = new CountryConfigService();
+        $service = new CountryConfigService;
         $fr = $service->get('fr');
 
         $this->assertSame('France', $fr['name']);
@@ -148,13 +148,13 @@ class BusinessLogicUnitTest extends TestCase
 
     public function test_country_config_all_returns_nine_entries(): void
     {
-        $service = new CountryConfigService();
+        $service = new CountryConfigService;
         $this->assertCount(9, $service->all());
     }
 
     public function test_country_config_kyc_docs_are_arrays(): void
     {
-        $service = new CountryConfigService();
+        $service = new CountryConfigService;
         foreach ($service->all() as $code => $config) {
             $this->assertIsArray($config['kyc_docs'], "kyc_docs must be array for {$code}");
             $this->assertNotEmpty($config['kyc_docs'], "kyc_docs empty for {$code}");

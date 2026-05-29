@@ -7,6 +7,7 @@ use App\Models\FleetCertification;
 use App\Models\FleetEquipment;
 use App\Models\FleetVehicle;
 use Carbon\Carbon;
+use Illuminate\Support\Collection;
 
 class AvailabilityChecker
 {
@@ -31,6 +32,7 @@ class AvailabilityChecker
                 return false;
             }
         }
+
         return ! $this->hasConflictingAssignment('vehicle', $vehicle->id, $from, $until);
     }
 
@@ -39,14 +41,16 @@ class AvailabilityChecker
         if (! $equipment->isAvailable()) {
             return false;
         }
+
         return ! $this->hasConflictingAssignment('equipment', $equipment->id, $from, $until);
     }
 
     /**
      * Trouve les véhicules disponibles pour des critères.
-     * @return \Illuminate\Support\Collection<int, FleetVehicle>
+     *
+     * @return Collection<int, FleetVehicle>
      */
-    public function findAvailableVehicles(array $criteria = []): \Illuminate\Support\Collection
+    public function findAvailableVehicles(array $criteria = []): Collection
     {
         $q = FleetVehicle::query()->available();
         if (! empty($criteria['vehicle_type'])) {
@@ -67,10 +71,11 @@ class AvailabilityChecker
         if ((bool) config('fleet_v2.block_assignment_on_expired_cert', true)) {
             $vehicles = $vehicles->reject(fn ($v) => $v->isExpired());
         }
+
         return $vehicles->values();
     }
 
-    public function findAvailableEquipment(array $criteria = []): \Illuminate\Support\Collection
+    public function findAvailableEquipment(array $criteria = []): Collection
     {
         $q = FleetEquipment::query()->available();
         if (! empty($criteria['equipment_type'])) {
@@ -79,6 +84,7 @@ class AvailabilityChecker
         if (! empty($criteria['category'])) {
             $q->where('category', $criteria['category']);
         }
+
         return $q->orderBy('name')->get();
     }
 

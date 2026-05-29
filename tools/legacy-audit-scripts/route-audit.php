@@ -1,7 +1,7 @@
 <?php
 
 $root = __DIR__;
-$outputDir = $root . '/storage/app/route-audit';
+$outputDir = $root.'/storage/app/route-audit';
 
 if (! is_dir($outputDir)) {
     mkdir($outputDir, 0777, true);
@@ -9,7 +9,7 @@ if (! is_dir($outputDir)) {
 
 echo "🔍 Lecture des routes Laravel...\n";
 
-$rawJson = shell_exec(PHP_BINARY . ' artisan route:list --json --no-ansi 2>&1');
+$rawJson = shell_exec(PHP_BINARY.' artisan route:list --json --no-ansi 2>&1');
 
 if ($rawJson === null || trim($rawJson) === '') {
     echo "❌ Impossible d'exécuter php artisan route:list.\n";
@@ -26,7 +26,7 @@ if ($jsonStart !== false) {
 $routes = json_decode($rawJson, true);
 
 if (! is_array($routes)) {
-    file_put_contents($outputDir . '/route-list-error.txt', $rawJson);
+    file_put_contents($outputDir.'/route-list-error.txt', $rawJson);
     echo "❌ Impossible de lire le JSON de route:list.\n";
     echo "Regarde : storage/app/route-audit/route-list-error.txt\n";
     exit(1);
@@ -43,8 +43,8 @@ foreach ($routes as $route) {
 ksort($defined);
 
 file_put_contents(
-    $outputDir . '/defined-routes-names.txt',
-    implode(PHP_EOL, array_keys($defined)) . PHP_EOL
+    $outputDir.'/defined-routes-names.txt',
+    implode(PHP_EOL, array_keys($defined)).PHP_EOL
 );
 
 $scanDirs = ['app', 'resources', 'routes', 'config', 'tests'];
@@ -56,7 +56,7 @@ $dynamicCalls = [];
 echo "🔎 Scan des fichiers PHP/Blade...\n";
 
 foreach ($scanDirs as $dir) {
-    $fullDir = $root . DIRECTORY_SEPARATOR . $dir;
+    $fullDir = $root.DIRECTORY_SEPARATOR.$dir;
 
     if (! is_dir($fullDir)) {
         continue;
@@ -77,7 +77,7 @@ foreach ($scanDirs as $dir) {
             continue;
         }
 
-        $relativePath = str_replace($root . DIRECTORY_SEPARATOR, '', $path);
+        $relativePath = str_replace($root.DIRECTORY_SEPARATOR, '', $path);
         $content = file_get_contents($path);
         $lines = preg_split('/\R/', $content);
 
@@ -87,27 +87,27 @@ foreach ($scanDirs as $dir) {
             // route('name'), ->route('name'), redirect()->route('name')
             if (preg_match_all('/(?<![A-Za-z0-9_])route\s*\(\s*[\'"]([A-Za-z0-9_.-]+)[\'"]/', $line, $matches)) {
                 foreach ($matches[1] as $routeName) {
-                    $directCalls[$routeName][] = $relativePath . ':' . $lineNumber;
+                    $directCalls[$routeName][] = $relativePath.':'.$lineNumber;
                 }
             }
 
             // to_route('name')
             if (preg_match_all('/to_route\s*\(\s*[\'"]([A-Za-z0-9_.-]+)[\'"]/', $line, $matches)) {
                 foreach ($matches[1] as $routeName) {
-                    $directCalls[$routeName][] = $relativePath . ':' . $lineNumber;
+                    $directCalls[$routeName][] = $relativePath.':'.$lineNumber;
                 }
             }
 
             // Route::has('name') = optionnel, pas forcément une erreur si manquant
             if (preg_match_all('/Route::has\s*\(\s*[\'"]([A-Za-z0-9_.-]+)[\'"]/', $line, $matches)) {
                 foreach ($matches[1] as $routeName) {
-                    $optionalChecks[$routeName][] = $relativePath . ':' . $lineNumber;
+                    $optionalChecks[$routeName][] = $relativePath.':'.$lineNumber;
                 }
             }
 
             // route($variable) = à vérifier manuellement
             if (str_contains($line, 'route(') && ! preg_match('/(?<![A-Za-z0-9_])route\s*\(\s*[\'"]([A-Za-z0-9_.-]+)[\'"]/', $line)) {
-                $dynamicCalls[] = $relativePath . ':' . $lineNumber . ' => ' . trim($line);
+                $dynamicCalls[] = $relativePath.':'.$lineNumber.' => '.trim($line);
             }
         }
     }
@@ -137,10 +137,10 @@ unset($missing['token']);
 $missingText = '';
 
 foreach ($missing as $routeName => $locations) {
-    $missingText .= $routeName . PHP_EOL;
+    $missingText .= $routeName.PHP_EOL;
 
     foreach ($locations as $location) {
-        $missingText .= '  - ' . $location . PHP_EOL;
+        $missingText .= '  - '.$location.PHP_EOL;
     }
 
     $missingText .= PHP_EOL;
@@ -153,10 +153,10 @@ if ($missingText === '') {
 $optionalText = '';
 
 foreach ($optionalMissing as $routeName => $locations) {
-    $optionalText .= $routeName . PHP_EOL;
+    $optionalText .= $routeName.PHP_EOL;
 
     foreach ($locations as $location) {
-        $optionalText .= '  - ' . $location . PHP_EOL;
+        $optionalText .= '  - '.$location.PHP_EOL;
     }
 
     $optionalText .= PHP_EOL;
@@ -174,9 +174,9 @@ if ($dynamicText === '') {
     $dynamicText .= PHP_EOL;
 }
 
-file_put_contents($outputDir . '/missing-routes.txt', $missingText);
-file_put_contents($outputDir . '/optional-missing-routes.txt', $optionalText);
-file_put_contents($outputDir . '/dynamic-route-calls.txt', $dynamicText);
+file_put_contents($outputDir.'/missing-routes.txt', $missingText);
+file_put_contents($outputDir.'/optional-missing-routes.txt', $optionalText);
+file_put_contents($outputDir.'/dynamic-route-calls.txt', $dynamicText);
 
 echo PHP_EOL;
 echo "✅ Audit terminé.\n";
@@ -186,10 +186,10 @@ echo "📄 Routes dynamiques : storage/app/route-audit/dynamic-route-calls.txt\n
 echo PHP_EOL;
 
 echo "===== ROUTES DIRECTES MANQUANTES =====\n";
-echo $missingText . PHP_EOL;
+echo $missingText.PHP_EOL;
 
 echo "===== ROUTES OPTIONNELLES MANQUANTES =====\n";
-echo $optionalText . PHP_EOL;
+echo $optionalText.PHP_EOL;
 
 echo "===== ROUTES DYNAMIQUES À VÉRIFIER =====\n";
-echo $dynamicText . PHP_EOL;
+echo $dynamicText.PHP_EOL;

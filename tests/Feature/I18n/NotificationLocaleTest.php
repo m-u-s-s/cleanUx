@@ -3,9 +3,11 @@
 namespace Tests\Feature\I18n;
 
 use App\Models\User;
+use Illuminate\Contracts\Translation\HasLocalePreference;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Notification;
+use Tests\Feature\I18n\Fixtures\TestLocalizedNotification;
 use Tests\TestCase;
 
 class NotificationLocaleTest extends TestCase
@@ -16,7 +18,7 @@ class NotificationLocaleTest extends TestCase
     {
         $user = User::factory()->create(['locale' => 'nl_BE']);
         $this->assertInstanceOf(
-            \Illuminate\Contracts\Translation\HasLocalePreference::class,
+            HasLocalePreference::class,
             $user
         );
         $this->assertSame('nl', $user->preferredLocale());
@@ -44,9 +46,9 @@ class NotificationLocaleTest extends TestCase
 
         Notification::fake();
 
-        $userNl->notify(new \Tests\Feature\I18n\Fixtures\TestLocalizedNotification());
+        $userNl->notify(new TestLocalizedNotification);
 
-        Notification::assertSentTo($userNl, \Tests\Feature\I18n\Fixtures\TestLocalizedNotification::class);
+        Notification::assertSentTo($userNl, TestLocalizedNotification::class);
 
         $this->assertSame('fr', App::getLocale(), 'App locale should not be affected globally after notification');
     }

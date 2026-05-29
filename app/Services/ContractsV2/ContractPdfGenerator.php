@@ -3,6 +3,7 @@
 namespace App\Services\ContractsV2;
 
 use App\Models\ContractDocument;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
@@ -27,8 +28,9 @@ class ContractPdfGenerator
             return null;
         }
 
-        if ($engine !== 'dompdf' || ! class_exists(\Barryvdh\DomPDF\Facade\Pdf::class)) {
+        if ($engine !== 'dompdf' || ! class_exists(Pdf::class)) {
             Log::warning('ContractPdfGenerator: dompdf engine unavailable', ['engine' => $engine]);
+
             return null;
         }
 
@@ -38,12 +40,13 @@ class ContractPdfGenerator
         $html = $this->wrapAsFullHtml($document);
 
         try {
-            $pdfBinary = \Barryvdh\DomPDF\Facade\Pdf::loadHTML($html)->output();
+            $pdfBinary = Pdf::loadHTML($html)->output();
         } catch (\Throwable $e) {
             Log::warning('ContractPdfGenerator: dompdf load failed', [
                 'document_id' => $document->id,
                 'error' => $e->getMessage(),
             ]);
+
             return null;
         }
 

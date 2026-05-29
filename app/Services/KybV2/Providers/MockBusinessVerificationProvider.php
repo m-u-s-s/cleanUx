@@ -54,6 +54,7 @@ class MockBusinessVerificationProvider implements BusinessVerificationProviderCo
         // Try catalog first
         if (isset(self::$catalog[$clean])) {
             $entry = self::$catalog[$clean];
+
             return new VerificationResult(
                 success: true,
                 provider: 'mock',
@@ -83,7 +84,7 @@ class MockBusinessVerificationProvider implements BusinessVerificationProviderCo
                 payload: [
                     'identifier_type' => $identifierType,
                     'identifier_value' => $clean,
-                    'legal_name' => 'Generic Business ' . substr($clean, -4),
+                    'legal_name' => 'Generic Business '.substr($clean, -4),
                     'is_active' => true,
                 ],
             );
@@ -107,6 +108,7 @@ class MockBusinessVerificationProvider implements BusinessVerificationProviderCo
         if (! preg_match('/^[A-Z]{2}[A-Z0-9]{8,12}$/', $clean)) {
             return new VerificationResult(false, 'mock', 'tax_validity', error: 'vat_format_invalid');
         }
+
         return new VerificationResult(
             success: true,
             provider: 'mock',

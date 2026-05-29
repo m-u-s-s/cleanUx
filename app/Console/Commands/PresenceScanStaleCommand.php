@@ -31,7 +31,7 @@ class PresenceScanStaleCommand extends Command
         if ($count > 0) {
             $this->info("✓ {$count} provider(s) auto-marqué(s) offline (heartbeat > {$threshold}min).");
         } else {
-            $this->line("✓ Aucun provider stale.");
+            $this->line('✓ Aucun provider stale.');
         }
 
         return 0;

@@ -35,6 +35,7 @@ trait SeedsOnlyExistingColumns
     {
         if (! Schema::hasTable($table)) {
             $this->command?->warn("⚠️ Table [$table] absente, seed ignoré.");
+
             return null;
         }
 
@@ -43,6 +44,7 @@ trait SeedsOnlyExistingColumns
 
         if ($where === []) {
             $this->command?->warn("⚠️ Seed [$table] ignoré : aucune colonne de recherche valide.");
+
             return null;
         }
 
@@ -72,30 +74,30 @@ trait SeedsOnlyExistingColumns
         $columns = array_flip(Schema::getColumnListing('rendez_vous'));
 
         $payload = collect([
-            'id'                 => $booking->id ?? null,
-            'booking_reference'  => $booking->booking_reference ?? null,
-            'client_id'          => $booking->client_id ?? null,
-            'employe_id'         => $booking->employe_id ?? null,
-            'user_id'            => $booking->client_id ?? null,
+            'id' => $booking->id ?? null,
+            'booking_reference' => $booking->booking_reference ?? null,
+            'client_id' => $booking->client_id ?? null,
+            'employe_id' => $booking->employe_id ?? null,
+            'user_id' => $booking->client_id ?? null,
             'service_catalog_id' => $booking->service_catalog_id ?? null,
-            'service_zone_id'    => $booking->service_zone_id ?? null,
-            'postal_code_id'     => $booking->postal_code_id ?? null,
-            'status'             => $booking->status ?? null,
-            'date'               => $booking->date ?? ($booking->scheduled_date ?? null),
-            'heure'              => $booking->heure ?? ($booking->scheduled_time ?? null),
-            'scheduled_at'       => $booking->scheduled_at ?? null,
-            'adresse'            => $booking->adresse ?? ($booking->address ?? null),
-            'address'            => $booking->adresse ?? ($booking->address ?? null),
-            'ville'              => $booking->ville ?? ($booking->city ?? null),
-            'city'               => $booking->ville ?? ($booking->city ?? null),
-            'code_postal'        => $booking->code_postal ?? ($booking->postal_code ?? null),
-            'postal_code'        => $booking->code_postal ?? ($booking->postal_code ?? null),
-            'zone_snapshot'      => $booking->zone_snapshot ?? null,
-            'pricing_snapshot'   => $booking->pricing_snapshot ?? null,
-            'estimated_price'    => $booking->estimated_price ?? ($booking->devis_estime ?? null),
-            'final_price'        => $booking->final_price ?? null,
-            'created_at'         => $booking->created_at ?? null,
-            'updated_at'         => $booking->updated_at ?? null,
+            'service_zone_id' => $booking->service_zone_id ?? null,
+            'postal_code_id' => $booking->postal_code_id ?? null,
+            'status' => $booking->status ?? null,
+            'date' => $booking->date ?? ($booking->scheduled_date ?? null),
+            'heure' => $booking->heure ?? ($booking->scheduled_time ?? null),
+            'scheduled_at' => $booking->scheduled_at ?? null,
+            'adresse' => $booking->adresse ?? ($booking->address ?? null),
+            'address' => $booking->adresse ?? ($booking->address ?? null),
+            'ville' => $booking->ville ?? ($booking->city ?? null),
+            'city' => $booking->ville ?? ($booking->city ?? null),
+            'code_postal' => $booking->code_postal ?? ($booking->postal_code ?? null),
+            'postal_code' => $booking->code_postal ?? ($booking->postal_code ?? null),
+            'zone_snapshot' => $booking->zone_snapshot ?? null,
+            'pricing_snapshot' => $booking->pricing_snapshot ?? null,
+            'estimated_price' => $booking->estimated_price ?? ($booking->devis_estime ?? null),
+            'final_price' => $booking->final_price ?? null,
+            'created_at' => $booking->created_at ?? null,
+            'updated_at' => $booking->updated_at ?? null,
         ])->filter(fn ($value, $key) => isset($columns[$key]))->all();
 
         if (empty($payload['id'])) {

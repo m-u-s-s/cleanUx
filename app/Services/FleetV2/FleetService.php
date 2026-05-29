@@ -68,6 +68,7 @@ class FleetService
                     'current_provider_id' => $provider->id,
                 ]);
             }
+
             return $a;
         });
     }
@@ -115,6 +116,7 @@ class FleetService
                     'current_provider_id' => $provider->id,
                 ]);
             }
+
             return $a;
         });
     }
@@ -218,6 +220,7 @@ class FleetService
         if ($vehicleType) {
             $query->where('vehicle_type', $vehicleType);
         }
+
         return $query->with('certifications')->get();
     }
 
@@ -236,13 +239,13 @@ class FleetService
         }
 
         return FleetMaintenanceLog::query()->create([
-            'vehicle_id'       => $vehicle->id,
-            'equipment_id'     => null,
+            'vehicle_id' => $vehicle->id,
+            'equipment_id' => null,
             'maintenance_type' => $maintenanceType,
-            'performed_at'     => $dueDate,
-            'cost_cents'       => null,
-            'notes'            => $notes ?: "Scheduled {$maintenanceType} maintenance",
-            'next_due_at'      => $this->scheduler->computeNextDue($vehicle, $dueDate),
+            'performed_at' => $dueDate,
+            'cost_cents' => null,
+            'notes' => $notes ?: "Scheduled {$maintenanceType} maintenance",
+            'next_due_at' => $this->scheduler->computeNextDue($vehicle, $dueDate),
         ]);
     }
 

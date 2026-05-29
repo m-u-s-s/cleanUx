@@ -3,10 +3,8 @@
 namespace App\Livewire\ClientCompany;
 
 use App\Models\Booking;
-use App\Models\Mission;
 use App\Models\OrganizationMember;
 use App\Models\OrganizationSite;
-use App\Models\ServiceCatalog;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Livewire\Component;
@@ -22,7 +20,7 @@ class ClientCompanyDashboard extends Component
 
     public function getKpisProperty(): array
     {
-        $user  = Auth::user();
+        $user = Auth::user();
         $orgId = $user->current_organization_id;
 
         [$from, $to] = $this->periodDates();
@@ -30,12 +28,12 @@ class ClientCompanyDashboard extends Component
         $bookingBase = fn () => Booking::where('client_organization_id', $orgId);
 
         return [
-            'sites_count'       => OrganizationSite::forOrg($orgId)->active()->count(),
-            'bookings_active'   => $bookingBase()->whereIn('status', ['pending', 'confirmed', 'in_progress'])->count(),
-            'bookings_period'   => $bookingBase()->whereBetween('created_at', [$from, $to])->count(),
-            'pending_approval'  => $bookingBase()->where('status', 'pending_approval')->count(),
-            'members_count'     => OrganizationMember::where('organization_account_id', $orgId)->where('status', 'active')->count(),
-            'spend_period'      => 0, // À connecter à Invoice
+            'sites_count' => OrganizationSite::forOrg($orgId)->active()->count(),
+            'bookings_active' => $bookingBase()->whereIn('status', ['pending', 'confirmed', 'in_progress'])->count(),
+            'bookings_period' => $bookingBase()->whereBetween('created_at', [$from, $to])->count(),
+            'pending_approval' => $bookingBase()->where('status', 'pending_approval')->count(),
+            'members_count' => OrganizationMember::where('organization_account_id', $orgId)->where('status', 'active')->count(),
+            'spend_period' => 0, // À connecter à Invoice
         ];
     }
 
@@ -56,8 +54,7 @@ class ClientCompanyDashboard extends Component
 
         return OrganizationSite::forOrg($orgId)
             ->active()
-            ->withCount(['bookings as active_bookings_count' => fn ($q) =>
-                $q->whereIn('status', ['confirmed', 'in_progress'])
+            ->withCount(['bookings as active_bookings_count' => fn ($q) => $q->whereIn('status', ['confirmed', 'in_progress']),
             ])
             ->orderBy('name')
             ->limit(6)
@@ -81,8 +78,8 @@ class ClientCompanyDashboard extends Component
      */
     public function getBookingsByTradeProperty(): array
     {
-        $orgId        = Auth::user()->current_organization_id;
-        [$from, $to]  = $this->periodDates();
+        $orgId = Auth::user()->current_organization_id;
+        [$from, $to] = $this->periodDates();
 
         $rows = Booking::where('client_organization_id', $orgId)
             ->whereBetween('created_at', [$from, $to])
@@ -104,8 +101,8 @@ class ClientCompanyDashboard extends Component
     private function periodDates(): array
     {
         return match ($this->period) {
-            'week'  => [now()->startOfWeek(), now()->endOfWeek()],
-            'year'  => [now()->startOfYear(), now()->endOfYear()],
+            'week' => [now()->startOfWeek(), now()->endOfWeek()],
+            'year' => [now()->startOfYear(), now()->endOfYear()],
             default => [now()->startOfMonth(), now()->endOfMonth()],
         };
     }
@@ -113,11 +110,11 @@ class ClientCompanyDashboard extends Component
     public function render()
     {
         return view('livewire.client-company.client-company-dashboard', [
-            'kpis'             => $this->kpisProperty,
-            'recentBookings'   => $this->recentBookingsProperty,
-            'sitesOverview'    => $this->sitesOverviewProperty,
+            'kpis' => $this->kpisProperty,
+            'recentBookings' => $this->recentBookingsProperty,
+            'sitesOverview' => $this->sitesOverviewProperty,
             'pendingApprovals' => $this->pendingApprovalsProperty,
-            'bookingsByTrade'  => $this->bookingsByTradeProperty,
+            'bookingsByTrade' => $this->bookingsByTradeProperty,
         ])->layout('layouts.client-company');
     }
 }

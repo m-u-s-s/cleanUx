@@ -8,8 +8,11 @@ use Illuminate\Database\Eloquent\Model;
 class RiskRule extends Model
 {
     public const SEVERITY_LOW = 'low';
+
     public const SEVERITY_MEDIUM = 'medium';
+
     public const SEVERITY_HIGH = 'high';
+
     public const SEVERITY_CRITICAL = 'critical';
 
     protected $fillable = [

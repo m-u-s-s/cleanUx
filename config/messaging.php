@@ -9,7 +9,7 @@ return [
     */
 
     'attachments' => [
-        'disk'           => env('MESSAGING_ATTACHMENTS_DISK', 'public'),
+        'disk' => env('MESSAGING_ATTACHMENTS_DISK', 'public'),
         'max_size_bytes' => (int) env('MESSAGING_MAX_SIZE_BYTES', 25 * 1024 * 1024),
     ],
 
@@ -25,7 +25,7 @@ return [
 
     'av' => [
         'required' => (bool) env('MESSAGING_AV_REQUIRED', false),
-        'engine'   => env('MESSAGING_AV_ENGINE', 'clamav'),
+        'engine' => env('MESSAGING_AV_ENGINE', 'clamav'),
     ],
 
 ];

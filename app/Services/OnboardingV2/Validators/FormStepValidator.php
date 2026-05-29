@@ -26,7 +26,7 @@ class FormStepValidator implements OnboardingStepValidator
 
         if (! empty($missing)) {
             return OnboardingStepValidation::fail([
-                'fields' => "Champs obligatoires manquants : " . implode(', ', $missing),
+                'fields' => 'Champs obligatoires manquants : '.implode(', ', $missing),
             ]);
         }
 

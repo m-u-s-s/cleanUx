@@ -5,6 +5,7 @@ namespace App\Livewire\Admin;
 use App\Models\FeatureFlagOverride;
 use App\Support\ActivityLogger;
 use Illuminate\Contracts\View\View;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
@@ -21,36 +22,38 @@ class FeatureFlagsManager extends Component
     public string $search = '';
 
     /** flag_key => is_enabled being edited */
-    public ?string $editingKey   = null;
-    public bool    $editingValue = false;
-    public string  $editReason   = '';
+    public ?string $editingKey = null;
+
+    public bool $editingValue = false;
+
+    public string $editReason = '';
 
     public function toggleFlag(string $key): void
     {
         $this->guardAdmin('admin');
 
         $override = FeatureFlagOverride::firstOrNew(['flag_key' => $key]);
-        $current  = $override->exists ? $override->is_enabled : $this->configValue($key);
+        $current = $override->exists ? $override->is_enabled : $this->configValue($key);
 
         $override->fill([
-            'is_enabled'          => ! $current,
-            'reason'              => 'Quick toggle via admin UI',
-            'updated_by_user_id'  => Auth::id(),
+            'is_enabled' => ! $current,
+            'reason' => 'Quick toggle via admin UI',
+            'updated_by_user_id' => Auth::id(),
         ])->save();
 
         ActivityLogger::log('feature_flag.toggled', $override, [
-            'flag_key'   => $key,
+            'flag_key' => $key,
             'is_enabled' => $override->is_enabled,
         ]);
 
-        session()->flash('success', "Flag [{$key}] set to " . ($override->is_enabled ? 'enabled' : 'disabled') . '.');
+        session()->flash('success', "Flag [{$key}] set to ".($override->is_enabled ? 'enabled' : 'disabled').'.');
     }
 
     public function editFlag(string $key): void
     {
-        $this->editingKey   = $key;
+        $this->editingKey = $key;
         $this->editingValue = $this->resolvedValue($key);
-        $this->editReason   = '';
+        $this->editReason = '';
     }
 
     public function saveFlag(): void
@@ -58,23 +61,23 @@ class FeatureFlagsManager extends Component
         $this->guardAdmin('admin');
 
         $this->validate([
-            'editingKey'   => ['required', 'string', 'max:100'],
-            'editReason'   => ['nullable', 'string', 'max:255'],
+            'editingKey' => ['required', 'string', 'max:100'],
+            'editReason' => ['nullable', 'string', 'max:255'],
         ]);
 
         $override = FeatureFlagOverride::updateOrCreate(
             ['flag_key' => $this->editingKey],
             [
-                'is_enabled'         => $this->editingValue,
-                'reason'             => $this->editReason ?: null,
+                'is_enabled' => $this->editingValue,
+                'reason' => $this->editReason ?: null,
                 'updated_by_user_id' => Auth::id(),
             ]
         );
 
         ActivityLogger::log('feature_flag.updated', $override, [
-            'flag_key'   => $this->editingKey,
+            'flag_key' => $this->editingKey,
             'is_enabled' => $override->is_enabled,
-            'reason'     => $override->reason,
+            'reason' => $override->reason,
         ]);
 
         $this->editingKey = null;
@@ -94,9 +97,9 @@ class FeatureFlagsManager extends Component
 
     public function render(): View
     {
-        $configFlags   = config('features', []);
-        $overrides     = FeatureFlagOverride::all()->keyBy('flag_key');
-        $search        = strtolower(trim($this->search));
+        $configFlags = config('features', []);
+        $overrides = FeatureFlagOverride::all()->keyBy('flag_key');
+        $search = strtolower(trim($this->search));
 
         $flags = collect($configFlags)
             ->map(fn ($value, string $key) => $this->buildFlagRow($key, $value, $overrides))
@@ -110,23 +113,23 @@ class FeatureFlagsManager extends Component
     // Helpers
     // ──────────────────────────────────────────────────────────────
 
-    private function buildFlagRow(string $key, mixed $configValue, \Illuminate\Support\Collection $overrides): array
+    private function buildFlagRow(string $key, mixed $configValue, Collection $overrides): array
     {
         /** @var FeatureFlagOverride|null $override */
         $override = $overrides->get($key);
 
-        $configEnabled  = $this->parsedConfigBool($configValue);
+        $configEnabled = $this->parsedConfigBool($configValue);
         $resolvedEnabled = $override ? $override->is_enabled : $configEnabled;
 
         return [
-            'key'              => $key,
-            'config_value'     => $configValue,
-            'config_enabled'   => $configEnabled,
+            'key' => $key,
+            'config_value' => $configValue,
+            'config_enabled' => $configEnabled,
             'resolved_enabled' => $resolvedEnabled,
-            'has_override'     => $override !== null,
-            'override_reason'  => $override?->reason,
-            'updated_by'       => $override?->updatedBy?->name,
-            'updated_at'       => $override?->updated_at,
+            'has_override' => $override !== null,
+            'override_reason' => $override?->reason,
+            'updated_by' => $override?->updatedBy?->name,
+            'updated_at' => $override?->updated_at,
         ];
     }
 
@@ -138,6 +141,7 @@ class FeatureFlagsManager extends Component
         if (is_array($value)) {
             return ($value['enabled'] ?? true) !== false;
         }
+
         return (bool) $value;
     }
 
@@ -149,6 +153,7 @@ class FeatureFlagsManager extends Component
     private function resolvedValue(string $key): bool
     {
         $override = FeatureFlagOverride::where('flag_key', $key)->first();
+
         return $override ? $override->is_enabled : $this->configValue($key);
     }
 

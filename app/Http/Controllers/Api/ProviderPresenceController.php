@@ -10,6 +10,7 @@ use Illuminate\Validation\Rule;
 
 /**
  * @group Provider Presence (Legacy)
+ *
  * @authenticated
  *
  * Phase 11 — Endpoints API mobile pour la presence prestataire.
@@ -34,11 +35,11 @@ class ProviderPresenceController extends Controller
         $this->abortIfNotProvider($user);
 
         $data = $request->validate([
-            'lat'              => ['required', 'numeric', 'between:-90,90'],
-            'lng'              => ['required', 'numeric', 'between:-180,180'],
-            'accuracy_meters'  => ['nullable', 'numeric'],
-            'battery_level'    => ['nullable', 'integer', 'min:0', 'max:100'],
-            'app_version'      => ['nullable', 'string', 'max:30'],
+            'lat' => ['required', 'numeric', 'between:-90,90'],
+            'lng' => ['required', 'numeric', 'between:-180,180'],
+            'accuracy_meters' => ['nullable', 'numeric'],
+            'battery_level' => ['nullable', 'integer', 'min:0', 'max:100'],
+            'app_version' => ['nullable', 'string', 'max:30'],
         ]);
 
         $meta = collect($data)->only(['accuracy_meters', 'battery_level', 'app_version'])->filter()->all();
@@ -55,9 +56,9 @@ class ProviderPresenceController extends Controller
         }
 
         return response()->json([
-            'ok'              => true,
-            'is_online'       => true,
-            'went_online_at'  => $profile->went_online_at?->toIso8601String(),
+            'ok' => true,
+            'is_online' => true,
+            'went_online_at' => $profile->went_online_at?->toIso8601String(),
         ]);
     }
 
@@ -73,7 +74,7 @@ class ProviderPresenceController extends Controller
         }
 
         return response()->json([
-            'ok'        => true,
+            'ok' => true,
             'is_online' => false,
         ]);
     }
@@ -84,13 +85,13 @@ class ProviderPresenceController extends Controller
         $this->abortIfNotProvider($user);
 
         $data = $request->validate([
-            'lat'             => ['required', 'numeric', 'between:-90,90'],
-            'lng'             => ['required', 'numeric', 'between:-180,180'],
+            'lat' => ['required', 'numeric', 'between:-90,90'],
+            'lng' => ['required', 'numeric', 'between:-180,180'],
             'accuracy_meters' => ['nullable', 'numeric'],
-            'battery_level'   => ['nullable', 'integer', 'min:0', 'max:100'],
-            'speed_kmh'       => ['nullable', 'numeric'],
-            'heading'         => ['nullable', 'numeric'],
-            'app_state'       => ['nullable', Rule::in(['foreground', 'background'])],
+            'battery_level' => ['nullable', 'integer', 'min:0', 'max:100'],
+            'speed_kmh' => ['nullable', 'numeric'],
+            'heading' => ['nullable', 'numeric'],
+            'app_state' => ['nullable', Rule::in(['foreground', 'background'])],
         ]);
 
         $meta = collect($data)
@@ -112,16 +113,16 @@ class ProviderPresenceController extends Controller
         if (! $profile) {
             // Heartbeat envoyé alors qu'offline → le client doit re-go-online
             return response()->json([
-                'ok'        => false,
+                'ok' => false,
                 'is_online' => false,
-                'error'     => 'Not online. Call /presence/online first.',
+                'error' => 'Not online. Call /presence/online first.',
             ], 409);
         }
 
         return response()->json([
-            'ok'                  => true,
-            'is_online'           => true,
-            'last_heartbeat_at'   => $profile->last_heartbeat_at?->toIso8601String(),
+            'ok' => true,
+            'is_online' => true,
+            'last_heartbeat_at' => $profile->last_heartbeat_at?->toIso8601String(),
         ]);
     }
 
@@ -136,12 +137,12 @@ class ProviderPresenceController extends Controller
         }
 
         return response()->json([
-            'ok'                => true,
-            'is_online'         => (bool) $profile->is_online,
-            'went_online_at'    => $profile->went_online_at?->toIso8601String(),
+            'ok' => true,
+            'is_online' => (bool) $profile->is_online,
+            'went_online_at' => $profile->went_online_at?->toIso8601String(),
             'last_heartbeat_at' => $profile->last_heartbeat_at?->toIso8601String(),
-            'current_lat'       => $profile->current_lat,
-            'current_lng'       => $profile->current_lng,
+            'current_lat' => $profile->current_lat,
+            'current_lng' => $profile->current_lng,
         ]);
     }
 

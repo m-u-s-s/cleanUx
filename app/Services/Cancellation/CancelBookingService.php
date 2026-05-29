@@ -36,14 +36,14 @@ class CancelBookingService
 
         return DB::transaction(function () use ($booking, $client, $reason, $feeDetails) {
             $booking->update([
-                'status'              => 'annule',
-                'cancelled_at'        => now(),
-                'cancelled_by'        => $client->id,
+                'status' => 'annule',
+                'cancelled_at' => now(),
+                'cancelled_by' => $client->id,
                 'cancellation_reason' => $reason,
-                'metadata'            => array_merge($booking->metadata ?? [], [
-                    'cancellation_fee'        => $feeDetails['fee_amount'],
-                    'cancellation_fee_percent'=> $feeDetails['fee_percent'],
-                    'cancellation_reason_code'=> $feeDetails['reason_code'],
+                'metadata' => array_merge($booking->metadata ?? [], [
+                    'cancellation_fee' => $feeDetails['fee_amount'],
+                    'cancellation_fee_percent' => $feeDetails['fee_percent'],
+                    'cancellation_reason_code' => $feeDetails['reason_code'],
                 ]),
             ]);
 
@@ -53,14 +53,14 @@ class CancelBookingService
             Log::info('CancelBookingService: client cancellation', [
                 'booking_id' => $booking->id,
                 'fee_amount' => $feeDetails['fee_amount'],
-                'reason'     => $feeDetails['reason_code'],
+                'reason' => $feeDetails['reason_code'],
             ]);
 
             return [
-                'ok'           => true,
-                'booking_id'   => $booking->id,
-                'fee_details'  => $feeDetails,
-                'is_free'      => $feeDetails['is_free'],
+                'ok' => true,
+                'booking_id' => $booking->id,
+                'fee_details' => $feeDetails,
+                'is_free' => $feeDetails['is_free'],
             ];
         });
     }
@@ -77,13 +77,13 @@ class CancelBookingService
         return DB::transaction(function () use ($booking, $provider, $reason, $penalty) {
             // Le booking redevient "en_attente" pour redispatch
             $booking->update([
-                'status'              => 'en_attente',
-                'cancellation_reason' => "Annulé par prestataire: " . ($reason ?? 'non précisé'),
-                'metadata'            => array_merge($booking->metadata ?? [], [
-                    'provider_cancellation_at'    => now()->toIso8601String(),
-                    'provider_cancellation_user'  => $provider->id,
-                    'provider_penalty_eur'        => $penalty['penalty_eur'],
-                    'provider_reliability_penalty'=> $penalty['reliability_penalty'],
+                'status' => 'en_attente',
+                'cancellation_reason' => 'Annulé par prestataire: '.($reason ?? 'non précisé'),
+                'metadata' => array_merge($booking->metadata ?? [], [
+                    'provider_cancellation_at' => now()->toIso8601String(),
+                    'provider_cancellation_user' => $provider->id,
+                    'provider_penalty_eur' => $penalty['penalty_eur'],
+                    'provider_reliability_penalty' => $penalty['reliability_penalty'],
                 ]),
             ]);
 
@@ -96,15 +96,15 @@ class CancelBookingService
             }
 
             Log::info('CancelBookingService: provider cancellation', [
-                'booking_id'  => $booking->id,
+                'booking_id' => $booking->id,
                 'provider_id' => $provider->id,
-                'penalty'     => $penalty,
+                'penalty' => $penalty,
             ]);
 
             return [
-                'ok'           => true,
-                'booking_id'   => $booking->id,
-                'penalty'      => $penalty,
+                'ok' => true,
+                'booking_id' => $booking->id,
+                'penalty' => $penalty,
             ];
         });
     }
@@ -125,14 +125,14 @@ class CancelBookingService
 
         return DB::transaction(function () use ($booking, $reportedBy, $feeAmount, $feePercent) {
             $booking->update([
-                'status'              => 'annule',
-                'cancelled_at'        => now(),
-                'cancelled_by'        => $reportedBy->id,
+                'status' => 'annule',
+                'cancelled_at' => now(),
+                'cancelled_by' => $reportedBy->id,
                 'cancellation_reason' => 'Client no-show',
-                'metadata'            => array_merge($booking->metadata ?? [], [
-                    'no_show_type'           => 'client',
-                    'no_show_reported_by'    => $reportedBy->id,
-                    'cancellation_fee'       => $feeAmount,
+                'metadata' => array_merge($booking->metadata ?? [], [
+                    'no_show_type' => 'client',
+                    'no_show_reported_by' => $reportedBy->id,
+                    'cancellation_fee' => $feeAmount,
                     'cancellation_fee_percent' => $feePercent,
                 ]),
             ]);
@@ -141,9 +141,9 @@ class CancelBookingService
             $this->tryCaptureFull($booking);
 
             return [
-                'ok'         => true,
+                'ok' => true,
                 'fee_amount' => $feeAmount,
-                'type'       => 'client_no_show',
+                'type' => 'client_no_show',
             ];
         });
     }
@@ -168,14 +168,19 @@ class CancelBookingService
      */
     protected function tryRefundPartial(Booking $booking, array $feeDetails): void
     {
-        if (! $booking->stripe_payment_intent_id) return;
-        if (! in_array($booking->payment_status, ['authorized', 'captured'], true)) return;
+        if (! $booking->stripe_payment_intent_id) {
+            return;
+        }
+        if (! in_array($booking->payment_status, ['authorized', 'captured'], true)) {
+            return;
+        }
 
         $service = '\App\Services\Payments\StripeConnectPaymentService';
         if (! class_exists($service)) {
             Log::info('CancelBookingService: pas de Phase 13 — refund manuel requis', [
                 'booking_id' => $booking->id,
             ]);
+
             return;
         }
 
@@ -183,7 +188,9 @@ class CancelBookingService
         $feeAmount = (float) $feeDetails['fee_amount'];
         $refundAmount = max(0, $bookingPrice - $feeAmount);
 
-        if ($refundAmount <= 0) return;
+        if ($refundAmount <= 0) {
+            return;
+        }
 
         $refundCents = (int) round($refundAmount * 100);
 
@@ -192,24 +199,28 @@ class CancelBookingService
         } catch (\Throwable $e) {
             Log::error('CancelBookingService: refund échoué', [
                 'booking_id' => $booking->id,
-                'error'      => $e->getMessage(),
+                'error' => $e->getMessage(),
             ]);
         }
     }
 
     protected function tryCaptureFull(Booking $booking): void
     {
-        if ($booking->payment_status !== 'authorized') return;
+        if ($booking->payment_status !== 'authorized') {
+            return;
+        }
 
         $missionService = '\App\Services\Payments\MissionPaymentService';
-        if (! class_exists($missionService)) return;
+        if (! class_exists($missionService)) {
+            return;
+        }
 
         try {
             app($missionService)->capture($booking);
         } catch (\Throwable $e) {
             Log::error('CancelBookingService: capture no-show échouée', [
                 'booking_id' => $booking->id,
-                'error'      => $e->getMessage(),
+                'error' => $e->getMessage(),
             ]);
         }
     }
@@ -220,17 +231,21 @@ class CancelBookingService
     protected function tryRedispatch(Booking $booking): void
     {
         $mission = $booking->missions()->latest()->first();
-        if (! $mission) return;
+        if (! $mission) {
+            return;
+        }
 
         $dispatchService = '\App\Services\Dispatch\MissionDispatchService';
-        if (! class_exists($dispatchService)) return;
+        if (! class_exists($dispatchService)) {
+            return;
+        }
 
         try {
             app($dispatchService)->dispatchToNextProvider($mission);
         } catch (\Throwable $e) {
             Log::warning('CancelBookingService: redispatch échoué', [
                 'booking_id' => $booking->id,
-                'error'      => $e->getMessage(),
+                'error' => $e->getMessage(),
             ]);
         }
     }
@@ -241,7 +256,9 @@ class CancelBookingService
     protected function applyProviderPenalty(User $provider, array $penalty): void
     {
         $profile = $provider->providerProfile;
-        if (! $profile) return;
+        if (! $profile) {
+            return;
+        }
 
         $metadata = $profile->metadata ?? [];
         $currentPenalty = (int) ($metadata['reliability_penalty_total'] ?? 0);
@@ -257,9 +274,9 @@ class CancelBookingService
         $maxAllowed = (int) config('cancellation.provider.max_cancellations_per_30d', 5);
         if ($metadata['cancellations_30d_count'] >= $maxAllowed) {
             Log::warning('CancelBookingService: provider above cancellation threshold', [
-                'provider_id'              => $provider->id,
-                'cancellations_30d_count'  => $metadata['cancellations_30d_count'],
-                'threshold'                => $maxAllowed,
+                'provider_id' => $provider->id,
+                'cancellations_30d_count' => $metadata['cancellations_30d_count'],
+                'threshold' => $maxAllowed,
             ]);
         }
     }

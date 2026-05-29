@@ -2,8 +2,8 @@
 
 namespace App\Services\Finance;
 
-use App\Models\CustomerCredit;
 use App\Models\Booking;
+use App\Models\CustomerCredit;
 use App\Models\User;
 use App\Support\ActivityLogger;
 use Illuminate\Support\Facades\DB;

@@ -97,7 +97,7 @@ class TwilioSmsProvider implements SmsProviderInterface
         ksort($sortedParams);
         $data = $url;
         foreach ($sortedParams as $k => $v) {
-            $data .= $k . (is_array($v) ? json_encode($v) : (string) $v);
+            $data .= $k.(is_array($v) ? json_encode($v) : (string) $v);
         }
 
         $expected = base64_encode(hash_hmac('sha1', $data, $token, true));

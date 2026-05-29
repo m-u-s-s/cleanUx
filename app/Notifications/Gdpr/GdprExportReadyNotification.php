@@ -10,12 +10,10 @@ use Illuminate\Notifications\Notification;
 
 class GdprExportReadyNotification extends Notification
 {
-    use Queueable;
     use InteractsWithUserNotificationPreferences;
+    use Queueable;
 
-    public function __construct(public GdprDataRequest $request)
-    {
-    }
+    public function __construct(public GdprDataRequest $request) {}
 
     public function via($notifiable): array
     {
@@ -27,8 +25,8 @@ class GdprExportReadyNotification extends Notification
         return (new MailMessage)
             ->subject('CleanUx · Votre export de données est prêt')
             ->greeting('Bonne nouvelle !')
-            ->line('Votre export RGPD ' . $this->request->reference . ' est disponible au téléchargement.')
-            ->line('Disponible jusqu\'au ' . optional($this->request->expires_at)->format('d/m/Y'))
+            ->line('Votre export RGPD '.$this->request->reference.' est disponible au téléchargement.')
+            ->line('Disponible jusqu\'au '.optional($this->request->expires_at)->format('d/m/Y'))
             ->action('Télécharger mes données', url('/dashboard/client/donnees'));
     }
 
@@ -38,7 +36,7 @@ class GdprExportReadyNotification extends Notification
             'type' => 'gdpr_export_ready',
             'severity' => 'success',
             'title' => 'Export RGPD prêt',
-            'message' => 'Votre export ' . $this->request->reference . ' est disponible',
+            'message' => 'Votre export '.$this->request->reference.' est disponible',
             'request_id' => $this->request->id,
             'expires_at' => $this->request->expires_at,
         ]);

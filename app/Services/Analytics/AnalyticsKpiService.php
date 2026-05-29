@@ -49,10 +49,10 @@ class AnalyticsKpiService
     {
         $orgId = $organizationAccountId;
 
-        $total     = $this->aggregator->totalBookingsBetween($orgId, $from, $to);
+        $total = $this->aggregator->totalBookingsBetween($orgId, $from, $to);
         $cancelled = $this->aggregator->cancelledCountBetween($orgId, $from, $to);
         $completed = $this->aggregator->completedCountBetween($orgId, $from, $to);
-        $revenue   = $this->aggregator->revenueBetween($orgId, $from, $to);
+        $revenue = $this->aggregator->revenueBetween($orgId, $from, $to);
 
         // Derive non-cancelled count from total and cancelled
         $validCount = $total - $cancelled;
@@ -68,7 +68,7 @@ class AnalyticsKpiService
                 'value' => $this->calculator->cancellationRate($total, $cancelled),
             ],
             'completed_count' => [
-                'value'           => $completed,
+                'value' => $completed,
                 'completion_rate' => $this->calculator->completionRate($total, $completed),
             ],
         ];
@@ -89,7 +89,7 @@ class AnalyticsKpiService
 
         return Cache::remember($cacheKey, self::CACHE_TTL, function () use ($organizationAccountId, $months) {
             $from = CarbonImmutable::now()->subMonths($months - 1)->startOfMonth();
-            $to   = CarbonImmutable::now()->endOfMonth();
+            $to = CarbonImmutable::now()->endOfMonth();
 
             $rows = $this->aggregator->monthlyRevenueRows($organizationAccountId, $from, $to);
 
@@ -148,7 +148,7 @@ class AnalyticsKpiService
 
         return Cache::remember($cacheKey, self::CACHE_TTL, function () use ($organizationAccountId, $months) {
             $from = CarbonImmutable::now()->subMonths($months - 1)->startOfMonth();
-            $to   = CarbonImmutable::now();
+            $to = CarbonImmutable::now();
 
             $rows = $this->aggregator->satisfactionTrendRows($organizationAccountId, $from);
 
@@ -191,16 +191,17 @@ class AnalyticsKpiService
         ?CarbonImmutable $to = null,
         array $extra = []
     ): string {
-        $parts = ['analytics', $type, 'org=' . ($orgId ?? 'global')];
+        $parts = ['analytics', $type, 'org='.($orgId ?? 'global')];
         if ($from) {
-            $parts[] = 'from=' . $from->toDateString();
+            $parts[] = 'from='.$from->toDateString();
         }
         if ($to) {
-            $parts[] = 'to=' . $to->toDateString();
+            $parts[] = 'to='.$to->toDateString();
         }
         foreach ($extra as $k => $v) {
             $parts[] = "{$k}={$v}";
         }
+
         return implode(':', $parts);
     }
 }

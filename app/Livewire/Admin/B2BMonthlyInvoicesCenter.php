@@ -14,7 +14,9 @@ class B2BMonthlyInvoicesCenter extends Component
     use WithPagination;
 
     public ?int $organization_account_id = null;
+
     public string $period_start = '';
+
     public string $period_end = '';
 
     protected $paginationTheme = 'tailwind';
@@ -43,6 +45,7 @@ class B2BMonthlyInvoicesCenter extends Component
 
         if (! $invoice) {
             $this->dispatch('toast', 'Aucun rendez-vous facturable pour cette période.', 'warning');
+
             return;
         }
 

@@ -9,8 +9,11 @@ use Illuminate\Support\Str;
 class AccountingExport extends Model
 {
     public const STATUS_PENDING = 'pending';
+
     public const STATUS_READY = 'ready';
+
     public const STATUS_FAILED = 'failed';
+
     public const STATUS_EXPIRED = 'expired';
 
     protected $fillable = [
@@ -33,7 +36,7 @@ class AccountingExport extends Model
 
     public static function generateCode(): string
     {
-        return 'exp_' . Str::lower(Str::random(20));
+        return 'exp_'.Str::lower(Str::random(20));
     }
 
     public function scopeReady(Builder $q): Builder
@@ -46,6 +49,7 @@ class AccountingExport extends Model
         if (! $this->expires_at) {
             return false;
         }
+
         return $this->expires_at->isPast();
     }
 }

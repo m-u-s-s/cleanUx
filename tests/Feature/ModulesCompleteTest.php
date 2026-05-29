@@ -35,15 +35,16 @@ class ModulesCompleteTest extends TestCase
     {
         $user = User::factory()->admin()->create(['is_super_admin' => true]);
         Sanctum::actingAs($user);
+
         return $user;
     }
 
     private function makeCampaign(): MarketingCampaign
     {
         return MarketingCampaign::query()->create([
-            'code'   => 'camp_' . Str::lower(Str::random(10)),
-            'name'   => 'Test Campaign',
-            'type'   => 'single_blast',
+            'code' => 'camp_'.Str::lower(Str::random(10)),
+            'name' => 'Test Campaign',
+            'type' => 'single_blast',
             'status' => 'draft',
         ]);
     }
@@ -84,9 +85,9 @@ class ModulesCompleteTest extends TestCase
 
         $this->postJson("/api/admin/marketing/campaigns/{$campaign->id}/steps", [
             'channel' => 'email',
-            'body'    => 'Hello {name}!',
+            'body' => 'Hello {name}!',
         ])->assertStatus(201)
-          ->assertJsonStructure(['data' => ['id', 'campaign_id', 'channel', 'position']]);
+            ->assertJsonStructure(['data' => ['id', 'campaign_id', 'channel', 'position']]);
     }
 
     public function test_campaign_step_create_sets_position_incrementally(): void
@@ -94,7 +95,7 @@ class ModulesCompleteTest extends TestCase
         $this->actingAsAdmin();
         $campaign = $this->makeCampaign();
 
-        $first  = $this->postJson("/api/admin/marketing/campaigns/{$campaign->id}/steps", ['channel' => 'sms', 'body' => 'A']);
+        $first = $this->postJson("/api/admin/marketing/campaigns/{$campaign->id}/steps", ['channel' => 'sms', 'body' => 'A']);
         $second = $this->postJson("/api/admin/marketing/campaigns/{$campaign->id}/steps", ['channel' => 'push', 'body' => 'B']);
 
         $first->assertStatus(201);
@@ -117,7 +118,7 @@ class ModulesCompleteTest extends TestCase
         $this->putJson("/api/admin/marketing/campaigns/{$campaign->id}/steps/{$stepId}", [
             'subject' => 'New Subject',
         ])->assertOk()
-          ->assertJsonPath('data.subject', 'New Subject');
+            ->assertJsonPath('data.subject', 'New Subject');
     }
 
     public function test_campaign_step_delete(): void
@@ -132,8 +133,8 @@ class ModulesCompleteTest extends TestCase
         $stepId = $created->json('data.id');
 
         $this->deleteJson("/api/admin/marketing/campaigns/{$campaign->id}/steps/{$stepId}")
-             ->assertOk()
-             ->assertJson(['ok' => true]);
+            ->assertOk()
+            ->assertJson(['ok' => true]);
 
         $this->assertNull(MarketingCampaignStep::find($stepId));
     }
@@ -153,8 +154,8 @@ class ModulesCompleteTest extends TestCase
                 ['label' => 'B', 'weight' => 0.5],
             ],
         ])->assertOk()
-          ->assertJson(['ok' => true])
-          ->assertJsonPath('ab_test_config.0.label', 'A');
+            ->assertJson(['ok' => true])
+            ->assertJsonPath('ab_test_config.0.label', 'A');
 
         $this->assertCount(2, $campaign->fresh()->ab_test_config);
     }
@@ -178,27 +179,27 @@ class ModulesCompleteTest extends TestCase
     public function test_provider_fleet_return_requires_own_assignment(): void
     {
         $provider = User::factory()->employe()->create();
-        $other    = User::factory()->employe()->create();
+        $other = User::factory()->employe()->create();
         Sanctum::actingAs($provider);
 
         // Create a vehicle and assignment owned by $other
         $vehicle = FleetVehicle::query()->create([
-            'code'         => 'VH_' . Str::upper(Str::random(5)),
+            'code' => 'VH_'.Str::upper(Str::random(5)),
             'vehicle_type' => 'van',
-            'brand'        => 'Test',
-            'model'        => 'Model',
-            'plate'        => 'TEST-001',
-            'status'       => 'available',
-            'year'         => 2020,
+            'brand' => 'Test',
+            'model' => 'Model',
+            'plate' => 'TEST-001',
+            'status' => 'available',
+            'year' => 2020,
         ]);
 
         $assignment = FleetAssignment::query()->create([
-            'code'             => 'fa_' . Str::lower(Str::random(8)),
+            'code' => 'fa_'.Str::lower(Str::random(8)),
             'fleet_vehicle_id' => $vehicle->id,
             'provider_user_id' => $other->id,
-            'subject_type'     => 'vehicle',
-            'status'           => FleetAssignment::STATUS_ACTIVE,
-            'assigned_at'      => now(),
+            'subject_type' => 'vehicle',
+            'status' => FleetAssignment::STATUS_ACTIVE,
+            'assigned_at' => now(),
         ]);
 
         $this->postJson("/api/provider/fleet/assignments/{$assignment->id}/return", [
@@ -212,28 +213,28 @@ class ModulesCompleteTest extends TestCase
         Sanctum::actingAs($provider);
 
         $vehicle = FleetVehicle::query()->create([
-            'code'         => 'VH_' . Str::upper(Str::random(5)),
+            'code' => 'VH_'.Str::upper(Str::random(5)),
             'vehicle_type' => 'van',
-            'brand'        => 'Test',
-            'model'        => 'ModelX',
-            'plate'        => 'TEST-' . Str::random(4),
-            'status'       => 'available',
-            'year'         => 2021,
+            'brand' => 'Test',
+            'model' => 'ModelX',
+            'plate' => 'TEST-'.Str::random(4),
+            'status' => 'available',
+            'year' => 2021,
         ]);
 
         $assignment = FleetAssignment::query()->create([
-            'code'             => 'fa_' . Str::lower(Str::random(8)),
+            'code' => 'fa_'.Str::lower(Str::random(8)),
             'fleet_vehicle_id' => $vehicle->id,
             'provider_user_id' => $provider->id,
-            'subject_type'     => 'vehicle',
-            'status'           => FleetAssignment::STATUS_ACTIVE,
-            'assigned_at'      => now(),
+            'subject_type' => 'vehicle',
+            'status' => FleetAssignment::STATUS_ACTIVE,
+            'assigned_at' => now(),
         ]);
 
         $this->postJson("/api/provider/fleet/assignments/{$assignment->id}/return", [
             'condition' => 'ok',
         ])->assertOk()
-          ->assertJson(['ok' => true]);
+            ->assertJson(['ok' => true]);
     }
 
     // ─────────────────────────────────────────────────────────────────────────
@@ -245,21 +246,21 @@ class ModulesCompleteTest extends TestCase
         $this->actingAsAdmin();
 
         $entry = AccountingEntry::query()->create([
-            'entry_code'   => AccountingEntry::generateEntryCode(),
-            'batch_id'     => AccountingEntry::generateBatchId(),
+            'entry_code' => AccountingEntry::generateEntryCode(),
+            'batch_id' => AccountingEntry::generateBatchId(),
             'posting_date' => now()->startOfMonth(),
             'journal_code' => 'VTE',
             'account_code' => '411000',
             'account_name' => 'Client',
-            'debit_cents'  => 1000,
+            'debit_cents' => 1000,
             'credit_cents' => 0,
-            'label'        => 'Test entry',
-            'currency'     => 'EUR',
+            'label' => 'Test entry',
+            'currency' => 'EUR',
         ]);
 
         $this->deleteJson("/api/admin/accounting-v2/entries/{$entry->id}")
-             ->assertOk()
-             ->assertJson(['ok' => true]);
+            ->assertOk()
+            ->assertJson(['ok' => true]);
 
         $this->assertNull(AccountingEntry::find($entry->id));
     }
@@ -268,33 +269,33 @@ class ModulesCompleteTest extends TestCase
     {
         $this->actingAsAdmin();
 
-        $year  = (int) now()->format('Y');
+        $year = (int) now()->format('Y');
         $month = (int) now()->format('m');
 
         // Create and close the period
         AccountingPeriod::query()->create([
-            'period_year'  => $year,
+            'period_year' => $year,
             'period_month' => $month,
-            'is_closed'    => true,
-            'opened_at'    => now()->subDays(10),
-            'closed_at'    => now(),
+            'is_closed' => true,
+            'opened_at' => now()->subDays(10),
+            'closed_at' => now(),
         ]);
 
         $entry = AccountingEntry::query()->create([
-            'entry_code'   => AccountingEntry::generateEntryCode(),
-            'batch_id'     => AccountingEntry::generateBatchId(),
+            'entry_code' => AccountingEntry::generateEntryCode(),
+            'batch_id' => AccountingEntry::generateBatchId(),
             'posting_date' => now()->startOfMonth(),
             'journal_code' => 'VTE',
             'account_code' => '411000',
             'account_name' => 'Client',
-            'debit_cents'  => 2000,
+            'debit_cents' => 2000,
             'credit_cents' => 0,
-            'label'        => 'Closed period entry',
-            'currency'     => 'EUR',
+            'label' => 'Closed period entry',
+            'currency' => 'EUR',
         ]);
 
         $this->deleteJson("/api/admin/accounting-v2/entries/{$entry->id}")
-             ->assertStatus(422);
+            ->assertStatus(422);
 
         $this->assertNotNull(AccountingEntry::find($entry->id), 'Entry must NOT be deleted');
     }
@@ -309,7 +310,7 @@ class ModulesCompleteTest extends TestCase
         Sanctum::actingAs($client);
 
         $this->getJson('/api/client/insurance/claims')
-             ->assertOk()
-             ->assertJsonStructure(['data']);
+            ->assertOk()
+            ->assertJsonStructure(['data']);
     }
 }

@@ -11,17 +11,17 @@ use Illuminate\Validation\ValidationException;
 
 /**
  * @group Client — Quality Inspections
+ *
  * @authenticated
  */
 class QualityInspectionClientController extends Controller
 {
-    public function __construct(protected QualityInspectionService $svc)
-    {
-    }
+    public function __construct(protected QualityInspectionService $svc) {}
 
     public function show(Request $request, MissionQualityInspection $inspection): JsonResponse
     {
         $inspection->load(['checklist.items', 'items', 'photos']);
+
         return response()->json(['data' => $inspection]);
     }
 

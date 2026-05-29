@@ -8,7 +8,9 @@ use Illuminate\Database\Eloquent\Model;
 class ApiTokenScope extends Model
 {
     public const CATEGORY_READ = 'read';
+
     public const CATEGORY_WRITE = 'write';
+
     public const CATEGORY_ADMIN = 'admin';
 
     protected $fillable = [

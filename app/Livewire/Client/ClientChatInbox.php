@@ -10,12 +10,12 @@ use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
 use Livewire\Attributes\Computed;
-use Livewire\Attributes\On;
 use Livewire\Component;
 
 class ClientChatInbox extends Component
 {
     public ?int $activeThreadId = null;
+
     public string $body = '';
 
     protected $listeners = ['chat:refresh' => 'refresh'];
@@ -29,6 +29,7 @@ class ClientChatInbox extends Component
             ->exists();
         if (! $belongsToMe) {
             $this->dispatch('toast', 'Vous n\'avez pas accès à ce thread.', 'error');
+
             return;
         }
         $this->activeThreadId = $threadId;
@@ -89,6 +90,7 @@ class ClientChatInbox extends Component
         if (! $this->activeThreadId) {
             return collect();
         }
+
         return ChatMessage::query()
             ->where('thread_id', $this->activeThreadId)
             ->notDeleted()

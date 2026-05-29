@@ -2,8 +2,8 @@
 
 namespace Database\Factories;
 
-use App\Models\Feedback;
 use App\Models\Booking;
+use App\Models\Feedback;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 class FeedbackFactory extends Factory
@@ -14,7 +14,7 @@ class FeedbackFactory extends Factory
     {
         return [
             'rendez_vous_id' => Booking::factory()->state([
-                'status' => 'termine'
+                'status' => 'termine',
             ]),
             'client_id' => null,
             'note' => fake()->numberBetween(2, 5),
@@ -44,7 +44,7 @@ class FeedbackFactory extends Factory
 
     public function forRendezVous(Booking $rdv): static
     {
-        return $this->state(fn() => [
+        return $this->state(fn () => [
             'rendez_vous_id' => $rdv->id,
             'client_id' => $rdv->client_id,
         ]);
@@ -52,28 +52,28 @@ class FeedbackFactory extends Factory
 
     public function answered(): static
     {
-        return $this->state(fn() => [
+        return $this->state(fn () => [
             'reponse_admin' => fake()->sentence(),
         ]);
     }
 
     public function unanswered(): static
     {
-        return $this->state(fn() => [
+        return $this->state(fn () => [
             'reponse_admin' => null,
         ]);
     }
 
     public function highRating(): static
     {
-        return $this->state(fn() => [
+        return $this->state(fn () => [
             'note' => fake()->numberBetween(4, 5),
         ]);
     }
 
     public function lowRating(): static
     {
-        return $this->state(fn() => [
+        return $this->state(fn () => [
             'note' => fake()->numberBetween(1, 2),
         ]);
     }

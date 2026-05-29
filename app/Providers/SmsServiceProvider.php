@@ -16,9 +16,9 @@ class SmsServiceProvider extends ServiceProvider
             $default = (string) config('sms.default_provider', 'mock');
 
             return match ($default) {
-                'twilio' => new TwilioSmsProvider(),
+                'twilio' => new TwilioSmsProvider,
                 'vonage' => throw new RuntimeException('Vonage SMS provider not yet implemented.'),
-                'mock' => new SmsMockProvider(),
+                'mock' => new SmsMockProvider,
                 default => throw new RuntimeException("SMS provider not implemented: {$default}"),
             };
         });

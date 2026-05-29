@@ -2,7 +2,6 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Schema;
 
 /**
  * Phase 4 — Index de recherche full-text sur messages.content.
@@ -45,7 +44,7 @@ return new class extends Migration
         if ($driver === 'mysql') {
             try {
                 DB::statement('ALTER TABLE messages DROP INDEX messages_content_fulltext');
-            } catch (\Throwable $e) {
+            } catch (Throwable $e) {
                 // Index probablement déjà absent
             }
         } elseif ($driver === 'pgsql') {

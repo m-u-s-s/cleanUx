@@ -2,10 +2,10 @@
 
 namespace Database\Factories;
 
+use App\Models\Booking;
 use App\Models\OrganizationAccount;
 use App\Models\OrganizationSite;
 use App\Models\PostalCode;
-use App\Models\Booking;
 use App\Models\ServiceCatalog;
 use App\Models\ServiceZone;
 use App\Models\User;
@@ -25,14 +25,14 @@ class BookingFactory extends Factory
         $serviceType = fake()->randomElement(['nettoyage_standard', 'nettoyage_profond', 'vitres', 'bureaux']);
 
         return [
-            'service_zone_id' => fn() => ServiceZone::factory()->create([
+            'service_zone_id' => fn () => ServiceZone::factory()->create([
                 'coverage_type' => 'province',
                 'status' => 'active',
                 'is_bookable' => true,
                 'is_visible' => true,
             ])->id,
-            'postal_code_id' => fn() => PostalCode::factory()->create()->id,
-            'service_catalog_id' => fn() => ServiceCatalog::factory()->create([
+            'postal_code_id' => fn () => PostalCode::factory()->create()->id,
+            'service_catalog_id' => fn () => ServiceCatalog::factory()->create([
                 'requires_manual_validation' => false,
                 'is_entreprise' => false,
                 'default_duration_minutes' => $duree,
@@ -53,7 +53,7 @@ class BookingFactory extends Factory
             'organization_account_id' => null,
             'organization_site_id' => null,
             'booking_channel' => 'web',
-            'booking_reference' => strtoupper('CUX-' . now()->format('Ymd') . '-' . fake()->unique()->bothify('??###??')),
+            'booking_reference' => strtoupper('CUX-'.now()->format('Ymd').'-'.fake()->unique()->bothify('??###??')),
             'zone_snapshot' => null,
             'pricing_snapshot' => null,
             'date' => $date->format('Y-m-d'),
@@ -69,7 +69,7 @@ class BookingFactory extends Factory
             'type_lieu' => fake()->randomElement(['appartement', 'maison', 'bureaux']),
             'surface' => fake()->randomElement(['moins_50', '50_100', '100_150', '150_250']),
             'frequence' => fake()->randomElement(['ponctuel', 'hebdomadaire', 'mensuel']),
-            'telephone_client' => '+32' . fake()->numerify('4########'),
+            'telephone_client' => '+32'.fake()->numerify('4########'),
             'priorite' => fake()->randomElement(['normale', 'haute']),
             'commentaire_client' => fake()->sentence(),
             'options_prestation' => ['vitres'],
@@ -109,21 +109,21 @@ class BookingFactory extends Factory
 
     public function confirme(): static
     {
-        return $this->state(fn() => [
+        return $this->state(fn () => [
             'status' => 'confirme',
         ]);
     }
 
     public function refuse(): static
     {
-        return $this->state(fn() => [
+        return $this->state(fn () => [
             'status' => 'refuse',
         ]);
     }
 
     public function termine(): static
     {
-        return $this->state(fn() => [
+        return $this->state(fn () => [
             'status' => 'termine',
             'mission_started_at' => now()->subHours(2),
             'mission_finished_at' => now()->subHour(),
@@ -132,14 +132,14 @@ class BookingFactory extends Factory
 
     public function enAttente(): static
     {
-        return $this->state(fn() => [
+        return $this->state(fn () => [
             'status' => 'en_attente',
         ]);
     }
 
     public function manualValidation(): static
     {
-        return $this->state(fn() => [
+        return $this->state(fn () => [
             'status' => 'manual_validation',
             'pricing_snapshot' => [
                 'resolution' => [
@@ -155,7 +155,7 @@ class BookingFactory extends Factory
     {
         $seriesId ??= (string) Str::uuid();
 
-        return $this->state(fn() => [
+        return $this->state(fn () => [
             'is_recurrent' => true,
             'recurring_series_id' => $seriesId,
             'recurrence_rule' => 'FREQ=WEEKLY;INTERVAL=1',
@@ -238,7 +238,7 @@ class BookingFactory extends Factory
 
     public function forStructuredContext(ServiceCatalog $catalog, ServiceZone $zone, PostalCode $postalCode): static
     {
-        return $this->state(fn() => [
+        return $this->state(fn () => [
             'service_catalog_id' => $catalog->id,
             'service_zone_id' => $zone->id,
             'postal_code_id' => $postalCode->id,
@@ -278,7 +278,7 @@ class BookingFactory extends Factory
         }
 
         if (! $rendezVous->booking_reference) {
-            $rendezVous->booking_reference = strtoupper('CUX-' . now()->format('Ymd') . '-' . fake()->unique()->bothify('##??##'));
+            $rendezVous->booking_reference = strtoupper('CUX-'.now()->format('Ymd').'-'.fake()->unique()->bothify('##??##'));
         }
 
         if ($organizationAccount || $organizationSite) {

@@ -3,35 +3,46 @@
 namespace App\Livewire\Client;
 
 use App\Models\ActivityLog;
+use App\Models\Booking;
 use App\Models\OrganizationSite;
 use App\Models\PostalCode;
-use App\Models\Booking;
 use App\Models\ServiceCatalog;
 use App\Models\ServiceZone;
+use App\Services\Booking\ZoneCoverageService;
 use App\Support\ActivityLogger;
+use App\Support\Domain\BookingStatus;
+use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use App\Support\Domain\BookingStatus;
 use Illuminate\Validation\Rule;
 use Livewire\Component;
-use Illuminate\Contracts\View\View;
-use Livewire\Attributes\Layout;
 
 class ProfilClient extends Component
 {
     public ?int $editingSiteId = null;
 
     public string $site_name = '';
+
     public string $site_code = '';
+
     public string $contact_name = '';
+
     public string $site_email = '';
+
     public string $site_phone = '';
+
     public string $site_address_line_1 = '';
+
     public string $site_address_line_2 = '';
+
     public string $site_city = '';
+
     public string $site_postal_code = '';
+
     public string $access_instructions = '';
+
     public bool $is_primary = false;
+
     public bool $is_active = true;
 
     protected function rules(): array
@@ -92,7 +103,7 @@ class ProfilClient extends Component
             ->whereNotNull('adresse')
             ->where('adresse', '!=', '')
             ->leftJoin('postal_codes', 'postal_codes.id', '=', 'bookings.postal_code_id')
-            ->selectRaw("bookings.adresse, bookings.ville, COALESCE(bookings.code_postal, postal_codes.code) as code_postal, MAX(bookings.date) as last_date")
+            ->selectRaw('bookings.adresse, bookings.ville, COALESCE(bookings.code_postal, postal_codes.code) as code_postal, MAX(bookings.date) as last_date')
             ->groupBy('bookings.adresse', 'bookings.ville', DB::raw('COALESCE(bookings.code_postal, postal_codes.code)'))
             ->orderByDesc('last_date')
             ->limit(5)
@@ -250,7 +261,7 @@ class ProfilClient extends Component
 
     protected function resolvePostalReference(?string $code, ?string $city): ?PostalCode
     {
-        return app(\App\Services\Booking\ZoneCoverageService::class)->resolvePostalCode($code, $city);
+        return app(ZoneCoverageService::class)->resolvePostalCode($code, $city);
     }
 
     protected function resolveZoneForPostalReference(PostalCode $postalCode): ?ServiceZone

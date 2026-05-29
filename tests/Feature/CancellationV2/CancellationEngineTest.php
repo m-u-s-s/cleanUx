@@ -4,7 +4,6 @@ namespace Tests\Feature\CancellationV2;
 
 use App\Models\Booking;
 use App\Models\BookingCancellationV2;
-use App\Models\CancellationPolicy;
 use App\Models\User;
 use App\Services\CancellationV2\CancellationEngine;
 use Database\Seeders\CancellationPoliciesSeeder;
@@ -30,6 +29,7 @@ class CancellationEngineTest extends TestCase
     protected function makeBooking(User $client, ?\DateTimeInterface $scheduledAt = null, float $amount = 100.0): Booking
     {
         $scheduledAt ??= now()->addDays(3);
+
         return Booking::create([
             'client_id' => $client->id,
             'date' => $scheduledAt,

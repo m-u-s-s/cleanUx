@@ -40,12 +40,12 @@ class MultiTradeCatalogTest extends TestCase
 
         // Create a "legacy" service WITHOUT trade_id (simulating pre-Phase-1 state)
         $legacy = ServiceCatalog::create([
-            'name'      => 'Nettoyage bureaux legacy',
-            'slug'      => 'cleaning-offices-legacy',
-            'code'      => 'CLEAN_OFF_LEGACY',
+            'name' => 'Nettoyage bureaux legacy',
+            'slug' => 'cleaning-offices-legacy',
+            'code' => 'CLEAN_OFF_LEGACY',
             'is_active' => true,
-            'base_price'=> 0,
-            'currency'  => 'EUR',
+            'base_price' => 0,
+            'currency' => 'EUR',
             'default_duration_minutes' => 90,
         ]);
 
@@ -69,13 +69,13 @@ class MultiTradeCatalogTest extends TestCase
         ]);
 
         $service = ServiceCatalog::create([
-            'trade_id'  => $trade->id,
-            'name'      => 'Peinture intérieure',
-            'slug'      => 'peinture-interieure-test',
-            'code'      => 'PAINT_INT_TEST',
+            'trade_id' => $trade->id,
+            'name' => 'Peinture intérieure',
+            'slug' => 'peinture-interieure-test',
+            'code' => 'PAINT_INT_TEST',
             'is_active' => true,
-            'base_price'=> 35,
-            'currency'  => 'EUR',
+            'base_price' => 35,
+            'currency' => 'EUR',
             'default_duration_minutes' => 480,
             'billing_unit' => 'sqm',
         ]);
@@ -92,15 +92,15 @@ class MultiTradeCatalogTest extends TestCase
         ]);
 
         ServiceCatalog::create([
-            'trade_id'  => $trade->id, 'name' => 'Active 1', 'slug' => 'a1', 'code' => 'A1',
+            'trade_id' => $trade->id, 'name' => 'Active 1', 'slug' => 'a1', 'code' => 'A1',
             'is_active' => true, 'base_price' => 0, 'currency' => 'EUR', 'default_duration_minutes' => 60,
         ]);
         ServiceCatalog::create([
-            'trade_id'  => $trade->id, 'name' => 'Active 2', 'slug' => 'a2', 'code' => 'A2',
+            'trade_id' => $trade->id, 'name' => 'Active 2', 'slug' => 'a2', 'code' => 'A2',
             'is_active' => true, 'base_price' => 0, 'currency' => 'EUR', 'default_duration_minutes' => 60,
         ]);
         ServiceCatalog::create([
-            'trade_id'  => $trade->id, 'name' => 'Inactive 1', 'slug' => 'i1', 'code' => 'I1',
+            'trade_id' => $trade->id, 'name' => 'Inactive 1', 'slug' => 'i1', 'code' => 'I1',
             'is_active' => false, 'base_price' => 0, 'currency' => 'EUR', 'default_duration_minutes' => 60,
         ]);
 
@@ -116,27 +116,27 @@ class MultiTradeCatalogTest extends TestCase
         ]);
 
         $service = ServiceCatalog::create([
-            'trade_id'  => $trade->id,
-            'name'      => 'Service avec options',
-            'slug'      => 'svc-w-opts',
-            'code'      => 'SVC_OPTS',
+            'trade_id' => $trade->id,
+            'name' => 'Service avec options',
+            'slug' => 'svc-w-opts',
+            'code' => 'SVC_OPTS',
             'is_active' => true,
-            'base_price'=> 80,
-            'currency'  => 'EUR',
+            'base_price' => 80,
+            'currency' => 'EUR',
             'default_duration_minutes' => 120,
         ]);
 
         $opt = ServiceOption::create([
             'service_catalog_id' => $service->id,
-            'slug'   => 'surface',
-            'label'  => 'Surface (m²)',
-            'type'   => 'number',
-            'unit'   => 'm²',
+            'slug' => 'surface',
+            'label' => 'Surface (m²)',
+            'type' => 'number',
+            'unit' => 'm²',
             'is_required' => true,
             'price_modifier' => 'per_unit',
             'price_modifier_value' => 1.50,
             'min_value' => 10,
-            'step'      => 5,
+            'step' => 5,
         ]);
 
         $this->assertSame($service->id, $opt->service->id);
@@ -148,8 +148,8 @@ class MultiTradeCatalogTest extends TestCase
 
     public function test_service_catalog_scope_for_trade_filters_correctly(): void
     {
-        $a = Trade::create(['slug'=>'tA','code'=>'TA','name'=>'A','is_active'=>true,'sort_order'=>1]);
-        $b = Trade::create(['slug'=>'tB','code'=>'TB','name'=>'B','is_active'=>true,'sort_order'=>2]);
+        $a = Trade::create(['slug' => 'tA', 'code' => 'TA', 'name' => 'A', 'is_active' => true, 'sort_order' => 1]);
+        $b = Trade::create(['slug' => 'tB', 'code' => 'TB', 'name' => 'B', 'is_active' => true, 'sort_order' => 2]);
 
         ServiceCatalog::create([
             'trade_id' => $a->id, 'name' => 'svcA', 'slug' => 'svca', 'code' => 'SVCA',

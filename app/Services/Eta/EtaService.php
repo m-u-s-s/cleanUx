@@ -3,7 +3,6 @@
 namespace App\Services\Eta;
 
 use App\Models\Mission;
-use App\Models\MissionTrackingSession;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
@@ -29,6 +28,7 @@ use Illuminate\Support\Facades\Log;
 class EtaService
 {
     public const CACHE_TTL_SECONDS = 60;
+
     public const DEFAULT_AVG_SPEED_KMH = 30;
 
     /**
@@ -95,11 +95,12 @@ class EtaService
             return $this->emptyResult();
         }
 
-        $cacheKey = "eta:mission:{$mission->id}:" . md5("$providerLat,$providerLng,$destLat,$destLng");
+        $cacheKey = "eta:mission:{$mission->id}:".md5("$providerLat,$providerLng,$destLat,$destLng");
 
         if (! $force && Cache::has($cacheKey)) {
             $cached = Cache::get($cacheKey);
             $cached['source'] = 'cache';
+
             return $cached;
         }
 
@@ -110,10 +111,10 @@ class EtaService
 
             // Persiste sur la mission pour les requêtes ultérieures sans recalcul
             $mission->update([
-                'last_eta_meters'         => $result['meters'],
-                'last_eta_seconds'        => $result['seconds'],
-                'last_eta_source'         => $result['source'],
-                'last_eta_calculated_at'  => now(),
+                'last_eta_meters' => $result['meters'],
+                'last_eta_seconds' => $result['seconds'],
+                'last_eta_source' => $result['source'],
+                'last_eta_calculated_at' => now(),
             ]);
         }
 
@@ -151,18 +152,19 @@ class EtaService
     ): ?array {
         try {
             $response = Http::timeout(5)->get('https://maps.googleapis.com/maps/api/distancematrix/json', [
-                'origins'      => "$fromLat,$fromLng",
+                'origins' => "$fromLat,$fromLng",
                 'destinations' => "$toLat,$toLng",
-                'mode'         => 'driving',
-                'units'        => 'metric',
+                'mode' => 'driving',
+                'units' => 'metric',
                 'departure_time' => 'now',
-                'key'          => $apiKey,
+                'key' => $apiKey,
             ]);
 
             if (! $response->successful()) {
                 Log::warning('EtaService: Google Distance Matrix HTTP error', [
                     'status' => $response->status(),
                 ]);
+
                 return null;
             }
 
@@ -172,6 +174,7 @@ class EtaService
                 Log::warning('EtaService: Google Distance Matrix non-OK', [
                     'status' => $data['status'] ?? null,
                 ]);
+
                 return null;
             }
 
@@ -192,15 +195,16 @@ class EtaService
             }
 
             return [
-                'meters'        => (int) $meters,
-                'seconds'       => (int) $seconds,
-                'source'        => 'google',
+                'meters' => (int) $meters,
+                'seconds' => (int) $seconds,
+                'source' => 'google',
                 'calculated_at' => now()->toIso8601String(),
             ];
         } catch (\Throwable $e) {
             Log::warning('EtaService: Google Distance Matrix exception', [
                 'error' => $e->getMessage(),
             ]);
+
             return null;
         }
     }
@@ -222,9 +226,9 @@ class EtaService
         $seconds = (int) round(($distanceKm / self::DEFAULT_AVG_SPEED_KMH) * 3600);
 
         return [
-            'meters'        => $meters,
-            'seconds'       => $seconds,
-            'source'        => 'haversine',
+            'meters' => $meters,
+            'seconds' => $seconds,
+            'source' => 'haversine',
             'calculated_at' => now()->toIso8601String(),
         ];
     }
@@ -232,9 +236,9 @@ class EtaService
     protected function emptyResult(): array
     {
         return [
-            'meters'        => null,
-            'seconds'       => null,
-            'source'        => 'none',
+            'meters' => null,
+            'seconds' => null,
+            'source' => 'none',
             'calculated_at' => null,
         ];
     }

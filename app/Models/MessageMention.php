@@ -19,10 +19,13 @@ class MessageMention extends Model
 {
     use HasFactory;
 
-    public const TYPE_USER    = 'user';
-    public const TYPE_HERE    = 'here';     // notifie online seulement
+    public const TYPE_USER = 'user';
+
+    public const TYPE_HERE = 'here';     // notifie online seulement
+
     public const TYPE_CHANNEL = 'channel';  // notifie tous les membres
-    public const TYPE_TEAM    = 'team';     // notifie une FieldTeam donnée
+
+    public const TYPE_TEAM = 'team';     // notifie une FieldTeam donnée
 
     protected $fillable = [
         'message_id',
@@ -35,8 +38,8 @@ class MessageMention extends Model
 
     protected $casts = [
         'start_offset' => 'integer',
-        'length'       => 'integer',
-        'read_at'      => 'datetime',
+        'length' => 'integer',
+        'read_at' => 'datetime',
     ];
 
     public function message(): BelongsTo

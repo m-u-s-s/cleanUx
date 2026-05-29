@@ -12,13 +12,12 @@ use Illuminate\Validation\ValidationException;
 
 /**
  * @group Client — Notification Preferences
+ *
  * @authenticated
  */
 class NotificationPreferenceController extends Controller
 {
-    public function __construct(protected NotificationPreferenceService $svc)
-    {
-    }
+    public function __construct(protected NotificationPreferenceService $svc) {}
 
     public function show(Request $request): JsonResponse
     {

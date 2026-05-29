@@ -14,21 +14,22 @@ class VerifyLivewireComponents extends Command
     public function handle()
     {
         $path = app_path('Livewire');
-        if (!File::isDirectory($path)) {
-            $this->error("Le dossier app/Livewire n’existe pas.");
+        if (! File::isDirectory($path)) {
+            $this->error('Le dossier app/Livewire n’existe pas.');
+
             return;
         }
 
         $files = File::allFiles($path);
         $found = 0;
 
-        $this->info("📦 Composants Livewire trouvés dans app/Livewire :");
+        $this->info('📦 Composants Livewire trouvés dans app/Livewire :');
 
         foreach ($files as $file) {
             $className = str_replace(
                 ['/', '.php'],
                 ['\\', ''],
-                'App\\Livewire\\' . $file->getRelativePathname()
+                'App\\Livewire\\'.$file->getRelativePathname()
             );
 
             if (class_exists($className)) {
@@ -40,7 +41,7 @@ class VerifyLivewireComponents extends Command
         }
 
         if ($found === 0) {
-            $this->warn("Aucun composant valide trouvé.");
+            $this->warn('Aucun composant valide trouvé.');
         } else {
             $this->info("✅ $found composant(s) vérifié(s) avec succès.");
         }

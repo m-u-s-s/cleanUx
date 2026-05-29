@@ -3,9 +3,9 @@
 namespace App\Support\Livewire\Concerns;
 
 use App\Data\ZoneCoverageResult;
+use App\Models\Booking;
 use App\Models\OrganizationSite;
 use App\Models\PostalCode;
-use App\Models\Booking;
 use App\Models\ServiceCatalog;
 use App\Models\ServiceZone;
 use App\Models\TradeZoneSetting;
@@ -13,13 +13,14 @@ use App\Models\User;
 use App\Models\ZoneServiceRule;
 use App\Services\International\CountryMarketResolver;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
-use Illuminate\Validation\ValidationException;
 
 trait InteractsWithBookingFormState
 {
     public ?int $resolvedServiceZoneId = null;
+
     protected function countryMarketResolver(): CountryMarketResolver
     {
         return app(CountryMarketResolver::class);
@@ -318,6 +319,7 @@ trait InteractsWithBookingFormState
     {
         if (! $this->selected_service_identifier) {
             $this->resolvedServiceCatalogId = null;
+
             return null;
         }
 
@@ -391,36 +393,43 @@ trait InteractsWithBookingFormState
 
         if (! $resolution->postalCode) {
             $this->addError('postal_code_input', 'Code postal ou ville non reconnu.');
+
             return false;
         }
 
         if (! $resolution->zone) {
             $this->addError('postal_code_input', 'Cette zone n’est pas encore couverte.');
+
             return false;
         }
 
         if ($resolution->zone->status !== 'active') {
             $this->addError('postal_code_input', 'Cette zone est temporairement indisponible.');
+
             return false;
         }
 
         if (! $resolution->zone->is_bookable) {
             $this->addError('postal_code_input', 'Cette zone n’est pas réservable en ligne pour le moment.');
+
             return false;
         }
 
         if (! $resolution->serviceCatalog) {
             $this->addError('selected_service_identifier', 'Service introuvable.');
+
             return false;
         }
 
         if ($resolution->serviceCatalog->is_entreprise && ! $this->isEntrepriseCustomer()) {
             $this->addError('selected_service_identifier', 'Ce service est réservé aux comptes entreprise.');
+
             return false;
         }
 
         if (! $resolution->zoneServiceRule) {
             $this->addError('selected_service_identifier', 'Ce service n’est pas disponible dans votre zone.');
+
             return false;
         }
 
@@ -428,6 +437,7 @@ trait InteractsWithBookingFormState
             $disabled = $this->disabledTradeIdsForZone($resolution->zone->id);
             if ($disabled->contains($resolution->serviceCatalog->trade_id)) {
                 $this->addError('selected_service_identifier', 'Ce métier est temporairement désactivé dans votre zone.');
+
                 return false;
             }
         }
@@ -456,14 +466,14 @@ trait InteractsWithBookingFormState
     {
         $locationLabel = $organizationSite?->name ?: $postal->city_name;
 
-        return trim($catalog->name . ' · ' . $locationLabel);
+        return trim($catalog->name.' · '.$locationLabel);
     }
 
     /**
      * IDs des métiers explicitement désactivés dans la zone (TradeZoneSetting.is_active = false).
      * Absence de ligne = métier implicitement actif (back-compat).
      */
-    protected function disabledTradeIdsForZone(int $serviceZoneId): \Illuminate\Support\Collection
+    protected function disabledTradeIdsForZone(int $serviceZoneId): Collection
     {
         return TradeZoneSetting::query()
             ->where('service_zone_id', $serviceZoneId)
@@ -507,7 +517,6 @@ trait InteractsWithBookingFormState
 
         $catalogs = $query->get();
 
-
         // Pas de service ? Fallback flat — la vue gère "Autres"
         if ($catalogs->isEmpty()) {
             return [
@@ -519,7 +528,7 @@ trait InteractsWithBookingFormState
 
         if ($catalogs->isNotEmpty()) {
             return $catalogs
-                ->mapWithKeys(fn(ServiceCatalog $service) => [
+                ->mapWithKeys(fn (ServiceCatalog $service) => [
                     ($service->code ?: $service->slug) => $service->name,
                 ])
                 ->toArray();
@@ -579,24 +588,27 @@ trait InteractsWithBookingFormState
             return [
                 'Nettoyage' => [
                     'nettoyage_standard' => 'Nettoyage standard',
-                    'nettoyage_profond'  => 'Nettoyage en profondeur',
-                    'fin_de_chantier'    => 'Nettoyage fin de chantier',
-                    'fin_de_bail'        => 'Nettoyage fin de bail',
-                    'bureaux'            => 'Nettoyage bureaux / professionnels',
+                    'nettoyage_profond' => 'Nettoyage en profondeur',
+                    'fin_de_chantier' => 'Nettoyage fin de chantier',
+                    'fin_de_bail' => 'Nettoyage fin de bail',
+                    'bureaux' => 'Nettoyage bureaux / professionnels',
                 ],
             ];
         }
 
         // Group by trade name, preserve trade sort_order via collection
         return $catalogs
-            ->groupBy(fn(ServiceCatalog $s) => $s->trade?->name ?: 'Autres')
-            ->map(fn($group) => $group->mapWithKeys(fn(ServiceCatalog $s) => [
+            ->groupBy(fn (ServiceCatalog $s) => $s->trade?->name ?: 'Autres')
+            ->map(fn ($group) => $group->mapWithKeys(fn (ServiceCatalog $s) => [
                 ($s->code ?: $s->slug) => $s->name,
             ])->toArray())
             ->sortBy(function ($_, $tradeName) use ($catalogs) {
                 // "Autres" en dernier, sinon respecter trade.sort_order
-                if ($tradeName === 'Autres') return PHP_INT_MAX;
-                $first = $catalogs->first(fn(ServiceCatalog $s) => $s->trade?->name === $tradeName);
+                if ($tradeName === 'Autres') {
+                    return PHP_INT_MAX;
+                }
+                $first = $catalogs->first(fn (ServiceCatalog $s) => $s->trade?->name === $tradeName);
+
                 return $first?->trade?->sort_order ?? 0;
             })
             ->toArray();
@@ -631,7 +643,7 @@ trait InteractsWithBookingFormState
 
     protected function makeReference(?string $prefix = 'CUX'): string
     {
-        return $prefix . '-' . now()->format('Ymd') . '-' . strtoupper(Str::random(6));
+        return $prefix.'-'.now()->format('Ymd').'-'.strtoupper(Str::random(6));
     }
 
     public function getFrequencesProperty(): array
@@ -643,7 +655,6 @@ trait InteractsWithBookingFormState
             'mensuel' => 'Mensuel',
         ];
     }
-
 
     public function getRecurringFrequencyOptionsProperty(): array
     {
@@ -695,16 +706,19 @@ trait InteractsWithBookingFormState
 
         if (! $this->recurrence_frequency) {
             $this->addError('recurrence_frequency', 'Choisissez une fréquence de récurrence.');
+
             return false;
         }
 
         if (! $this->recurrence_until && ! $this->recurrence_count) {
             $this->addError('recurrence_count', 'Indiquez une date de fin ou un nombre d’occurrences.');
+
             return false;
         }
 
         if ($this->recurrence_frequency === 'weekly' && empty($this->normalizedRecurrenceDays())) {
             $this->addError('recurrence_days', 'Choisissez au moins un jour de passage.');
+
             return false;
         }
 
@@ -718,8 +732,8 @@ trait InteractsWithBookingFormState
         }
 
         $days = collect($this->recurrence_days)
-            ->map(fn($day) => (int) $day)
-            ->filter(fn($day) => $day >= 1 && $day <= 7)
+            ->map(fn ($day) => (int) $day)
+            ->filter(fn ($day) => $day >= 1 && $day <= 7)
             ->unique()
             ->sort()
             ->values()
@@ -810,8 +824,8 @@ trait InteractsWithBookingFormState
 
         $favoriteIds = Auth::user()->favoriteEmployes()->pluck('users.id')->toArray();
 
-        $favorites = $employes->filter(fn($e) => in_array($e->id, $favoriteIds));
-        $others = $employes->reject(fn($e) => in_array($e->id, $favoriteIds));
+        $favorites = $employes->filter(fn ($e) => in_array($e->id, $favoriteIds));
+        $others = $employes->reject(fn ($e) => in_array($e->id, $favoriteIds));
 
         return $favorites->concat($others)->values();
     }

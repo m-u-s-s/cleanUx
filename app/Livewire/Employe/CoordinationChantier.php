@@ -2,20 +2,20 @@
 
 namespace App\Livewire\Employe;
 
+use App\Models\FieldTeamMember;
 use App\Models\MissionBatch;
-use Livewire\Component;
 use Illuminate\Contracts\View\View;
-use Livewire\Attributes\Layout;
+use Livewire\Component;
 
 class CoordinationChantier extends Component
 {
     public function getLeadBatchesProperty()
     {
-        if (! class_exists(\App\Models\FieldTeamMember::class)) {
+        if (! class_exists(FieldTeamMember::class)) {
             return collect();
         }
 
-        $teamIds = \App\Models\FieldTeamMember::query()
+        $teamIds = FieldTeamMember::query()
             ->where('user_id', auth()->id())
             ->where('is_team_lead', true)
             ->pluck('field_team_id');

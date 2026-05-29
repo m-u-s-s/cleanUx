@@ -3,7 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Models\Mission;
+use App\Models\MissionChecklistItem;
+use App\Models\MissionEvent;
 use App\Services\Missions\MissionLifecycleService;
+use App\Services\Missions\MissionTrackingService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -25,10 +28,10 @@ class MissionFieldActionController extends Controller
 
             $this->authorize('update', $mission);
 
-            \App\Models\MissionEvent::create([
+            MissionEvent::create([
                 'mission_id' => $mission->id,
                 'user_id' => Auth::id(),
-                'event_type' => 'offline_' . $action['type'],
+                'event_type' => 'offline_'.$action['type'],
                 'title' => 'Action offline synchronisée',
                 'description' => 'Action terrain enregistrée hors connexion puis synchronisée.',
                 'payload' => $action['payload'] ?? [],
@@ -44,7 +47,7 @@ class MissionFieldActionController extends Controller
 
     public function toggleChecklistItem(
         Request $request,
-        \App\Models\MissionChecklistItem $item
+        MissionChecklistItem $item
     ): JsonResponse {
         $mission = $item->checklist->mission;
 
@@ -134,7 +137,7 @@ class MissionFieldActionController extends Controller
             Auth::user()
         );
 
-        $trackingSession = app(\App\Services\Missions\MissionTrackingService::class)
+        $trackingSession = app(MissionTrackingService::class)
             ->startToClientTracking(
                 $mission,
                 Auth::user(),
@@ -197,8 +200,6 @@ class MissionFieldActionController extends Controller
                 ]);
             }
         }
-
-        
 
         $mission = $service->validateEndCode(
             $mission,

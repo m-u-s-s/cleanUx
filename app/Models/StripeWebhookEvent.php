@@ -8,10 +8,15 @@ use Illuminate\Database\Eloquent\Model;
 class StripeWebhookEvent extends Model
 {
     public const STATUS_RECEIVED = 'received';
+
     public const STATUS_PROCESSING = 'processing';
+
     public const STATUS_PROCESSED = 'processed';
+
     public const STATUS_IGNORED = 'ignored';
+
     public const STATUS_FAILED = 'failed';
+
     public const STATUS_DEAD_LETTER = 'dead_letter';
 
     protected $fillable = [
@@ -59,6 +64,7 @@ class StripeWebhookEvent extends Model
     public function scopeDueForRetry(Builder $query): Builder
     {
         $now = now();
+
         return $query
             ->where('status', self::STATUS_FAILED)
             ->whereColumn('attempts', '<', 'max_attempts')

@@ -5,7 +5,6 @@ namespace App\Livewire\Admin;
 use App\Support\Livewire\Concerns\RendersTradeFormSchema;
 use App\Support\TradeFormSchema;
 use Illuminate\Contracts\View\View;
-use Livewire\Attributes\Layout;
 use Livewire\Component;
 
 /**
@@ -54,6 +53,7 @@ class TradeFormPreview extends Component
             $decoded = json_decode($input, true);
             if (json_last_error() !== JSON_ERROR_NONE) {
                 $this->schemaErrors = ['JSON invalide : '.json_last_error_msg()];
+
                 return;
             }
             $input = $decoded;
@@ -62,6 +62,7 @@ class TradeFormPreview extends Component
         $result = TradeFormSchema::validate($input);
         if (! $result['ok']) {
             $this->schemaErrors = $result['errors'];
+
             return;
         }
 

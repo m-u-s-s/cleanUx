@@ -25,7 +25,7 @@ class BookingStatusTest extends TestCase
     {
         $sql = BookingStatus::employeeDashboardCaseSql('status');
 
-        $this->assertStringContainsString("CASE status", $sql);
+        $this->assertStringContainsString('CASE status', $sql);
         $this->assertStringContainsString("WHEN 'sur_place' THEN 1", $sql);
         $this->assertStringContainsString("WHEN 'refuse' THEN 6", $sql);
     }

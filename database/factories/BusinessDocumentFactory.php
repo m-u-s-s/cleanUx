@@ -16,7 +16,7 @@ class BusinessDocumentFactory extends Factory
         return [
             'entity_id' => fn () => BusinessEntity::factory()->create()->id,
             'document_type' => fake()->randomElement(['kbis', 'statutes', 'id_card', 'bank_rib']),
-            'file_path' => 'documents/' . fake()->uuid() . '.pdf',
+            'file_path' => 'documents/'.fake()->uuid().'.pdf',
             'mime_type' => 'application/pdf',
             'size_bytes' => fake()->numberBetween(10000, 5000000),
             'uploaded_at' => now(),

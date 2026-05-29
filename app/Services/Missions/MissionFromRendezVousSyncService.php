@@ -2,8 +2,9 @@
 
 namespace App\Services\Missions;
 
-use App\Models\Mission;
 use App\Models\Booking;
+use App\Models\Mission;
+use App\Services\Dispatch\MissionDispatchService;
 use App\Services\Geocoding\GeocodingService;
 use App\Support\Domain\MissionStatus;
 use Illuminate\Support\Facades\DB;
@@ -45,15 +46,13 @@ class MissionFromRendezVousSyncService
             }
 
             if ($mission->status === 'planned' && ! $mission->assignments()->exists()) {
-                app(\App\Services\Dispatch\MissionDispatchService::class)
+                app(MissionDispatchService::class)
                     ->dispatchToNextProvider($mission);
             }
 
             return $mission->fresh(['assignments', 'rendezVous']);
         });
     }
-
-
 
     public function syncFromRendezVous(Booking $rendezVous): Mission
     {
@@ -112,7 +111,7 @@ class MissionFromRendezVousSyncService
             return null;
         }
 
-        return date('Y-m-d H:i:s', strtotime((string) $date . ' ' . substr((string) $time, 0, 8)));
+        return date('Y-m-d H:i:s', strtotime((string) $date.' '.substr((string) $time, 0, 8)));
     }
 
     protected function addMinutesToTime($time, int $minutes): ?string
@@ -121,6 +120,6 @@ class MissionFromRendezVousSyncService
             return null;
         }
 
-        return date('H:i:s', strtotime(substr((string) $time, 0, 8) . ' +' . $minutes . ' minutes'));
+        return date('H:i:s', strtotime(substr((string) $time, 0, 8).' +'.$minutes.' minutes'));
     }
 }

@@ -17,8 +17,11 @@ class RiskCenter extends Component
     protected $paginationTheme = 'tailwind';
 
     public string $tab = 'pending';  // pending | history
+
     public string $filterDecision = '';
+
     public string $filterContext = '';
+
     public string $search = '';
 
     public function approve(int $holdId): void
@@ -31,7 +34,7 @@ class RiskCenter extends Component
             );
             $this->dispatch('toast', 'Hold approuvé, user débloqué.', 'success');
         } catch (\Throwable $e) {
-            $this->dispatch('toast', 'Erreur : ' . $e->getMessage(), 'error');
+            $this->dispatch('toast', 'Erreur : '.$e->getMessage(), 'error');
         }
     }
 
@@ -45,7 +48,7 @@ class RiskCenter extends Component
             );
             $this->dispatch('toast', 'Hold rejeté, action bloquée.', 'success');
         } catch (\Throwable $e) {
-            $this->dispatch('toast', 'Erreur : ' . $e->getMessage(), 'error');
+            $this->dispatch('toast', 'Erreur : '.$e->getMessage(), 'error');
         }
     }
 
@@ -71,7 +74,7 @@ class RiskCenter extends Component
                 ->when($this->filterDecision, fn ($q) => $q->where('decision', $this->filterDecision))
                 ->when($this->filterContext, fn ($q) => $q->where('context', $this->filterContext))
                 ->when($this->search, function ($q) {
-                    $term = '%' . $this->search . '%';
+                    $term = '%'.$this->search.'%';
                     $q->whereHas('user', fn ($u) => $u->where('email', 'like', $term)->orWhere('name', 'like', $term));
                 })
                 ->orderByDesc('evaluated_at')

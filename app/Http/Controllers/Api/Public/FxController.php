@@ -13,9 +13,7 @@ use Illuminate\Http\Request;
  */
 class FxController extends Controller
 {
-    public function __construct(protected FxService $svc)
-    {
-    }
+    public function __construct(protected FxService $svc) {}
 
     /**
      * GET /api/fx/currencies

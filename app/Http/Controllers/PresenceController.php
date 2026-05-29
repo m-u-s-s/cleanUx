@@ -23,7 +23,7 @@ class PresenceController extends Controller
         PresenceTracker::touch($request->user());
 
         return response()->json([
-            'ok'           => true,
+            'ok' => true,
             'last_seen_at' => now()->toIso8601String(),
         ]);
     }
@@ -31,7 +31,7 @@ class PresenceController extends Controller
     public function setStatus(Request $request): JsonResponse
     {
         $validated = $request->validate([
-            'status'         => ['required', 'string', 'in:available,busy,away,dnd,offline'],
+            'status' => ['required', 'string', 'in:available,busy,away,dnd,offline'],
             'custom_message' => ['nullable', 'string', 'max:140'],
         ]);
 
@@ -42,8 +42,8 @@ class PresenceController extends Controller
         );
 
         return response()->json([
-            'ok'             => true,
-            'status'         => $validated['status'],
+            'ok' => true,
+            'status' => $validated['status'],
             'custom_message' => $validated['custom_message'] ?? null,
         ]);
     }

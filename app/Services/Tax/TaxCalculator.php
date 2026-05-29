@@ -35,7 +35,7 @@ class TaxCalculator
      * Calculate VAT for a given amount and country.
      *
      * @param  float  $amountExclVat  Amount before VAT in major currency units (e.g. EUR)
-     * @param  string $countryCode    ISO 3166-1 alpha-2 country code
+     * @param  string  $countryCode  ISO 3166-1 alpha-2 country code
      * @return array{
      *   amount_excl_vat: float,
      *   vat_rate: float,
@@ -53,10 +53,10 @@ class TaxCalculator
 
         return [
             'amount_excl_vat' => $amountExclVat,
-            'vat_rate'        => $rate,
-            'vat_amount'      => $vatAmount,
+            'vat_rate' => $rate,
+            'vat_amount' => $vatAmount,
             'amount_incl_vat' => round($amountExclVat + $vatAmount, 2),
-            'country_code'    => $code,
+            'country_code' => $code,
         ];
     }
 
@@ -87,14 +87,14 @@ class TaxCalculator
         $rate = self::VAT_RATES[$code] ?? self::FALLBACK_RATE;
 
         $amountExcl = round($amountInclVat / (1 + $rate), 2);
-        $vatAmount  = round($amountInclVat - $amountExcl, 2);
+        $vatAmount = round($amountInclVat - $amountExcl, 2);
 
         return [
             'amount_excl_vat' => $amountExcl,
-            'vat_rate'        => $rate,
-            'vat_amount'      => $vatAmount,
+            'vat_rate' => $rate,
+            'vat_amount' => $vatAmount,
             'amount_incl_vat' => $amountInclVat,
-            'country_code'    => $code,
+            'country_code' => $code,
         ];
     }
 }

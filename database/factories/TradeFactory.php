@@ -18,7 +18,7 @@ class TradeFactory extends Factory
         return [
             'name' => Str::title($name),
             'slug' => $slug,
-            'code' => strtoupper(Str::substr(Str::slug($name, ''), 0, 3)) . '_' . strtoupper(Str::random(4)),
+            'code' => strtoupper(Str::substr(Str::slug($name, ''), 0, 3)).'_'.strtoupper(Str::random(4)),
             'description' => fake()->sentence(),
             'icon' => fake()->randomElement(['wrench', 'paint-brush', 'bolt', 'home', 'sparkles']),
             'is_active' => true,

@@ -7,7 +7,6 @@ use App\Models\Mission;
 use App\Models\MissionAssignment;
 use App\Models\User;
 use App\Notifications\Dispatch\MissionOfferNotification;
-use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
@@ -41,6 +40,7 @@ class MissionDispatchService
     public function resolveTimeoutForMission(Mission $mission): int
     {
         $slug = optional($mission->booking?->trade)->slug ?? '';
+
         return (int) config(
             "dispatch.timeout_per_trade.{$slug}",
             config('dispatch.default_timeout', self::RESPONSE_TIMEOUT_SECONDS)
@@ -65,6 +65,7 @@ class MissionDispatchService
             Log::warning('MissionDispatchService: mission sans booking', [
                 'mission_id' => $mission->id,
             ]);
+
             return null;
         }
 
@@ -73,6 +74,7 @@ class MissionDispatchService
             Log::info('MissionDispatchService: aucun candidat trouvé', [
                 'mission_id' => $mission->id,
             ]);
+
             return null;
         }
 
@@ -87,9 +89,10 @@ class MissionDispatchService
 
         if (! $candidate) {
             Log::info('MissionDispatchService: tous les candidats déjà tentés', [
-                'mission_id'      => $mission->id,
-                'tried_user_ids'  => $alreadyTried,
+                'mission_id' => $mission->id,
+                'tried_user_ids' => $alreadyTried,
             ]);
+
             return null;
         }
 
@@ -111,14 +114,14 @@ class MissionDispatchService
             $expiresAt = $now->copy()->addSeconds($timeout);
 
             $assignment = MissionAssignment::create([
-                'mission_id'                    => $mission->id,
-                'user_id'                       => $provider->id,
-                'role_on_mission'               => 'lead',
-                'assignment_status'             => 'assigned',
-                'assigned_at'                   => $now,
-                'notification_sent_at'          => $now,
-                'expires_at'                    => $expiresAt,
-                'escalated_from_assignment_id'  => $previousAssignmentId,
+                'mission_id' => $mission->id,
+                'user_id' => $provider->id,
+                'role_on_mission' => 'lead',
+                'assignment_status' => 'assigned',
+                'assigned_at' => $now,
+                'notification_sent_at' => $now,
+                'expires_at' => $expiresAt,
+                'escalated_from_assignment_id' => $previousAssignmentId,
             ]);
 
             // Notification push (canal database + mail + webpush via Phase 8)
@@ -127,7 +130,7 @@ class MissionDispatchService
             } catch (\Throwable $e) {
                 Log::warning('Échec notification dispatch', [
                     'assignment_id' => $assignment->id,
-                    'error'         => $e->getMessage(),
+                    'error' => $e->getMessage(),
                 ]);
             }
 
@@ -137,9 +140,9 @@ class MissionDispatchService
 
             Log::info('MissionDispatchService: offre créée', [
                 'assignment_id' => $assignment->id,
-                'mission_id'    => $mission->id,
-                'provider_id'   => $provider->id,
-                'expires_at'    => $expiresAt->toIso8601String(),
+                'mission_id' => $mission->id,
+                'provider_id' => $provider->id,
+                'expires_at' => $expiresAt->toIso8601String(),
             ]);
 
             return $assignment;
@@ -182,8 +185,8 @@ class MissionDispatchService
 
             $assignment->update([
                 'assignment_status' => 'accepted',
-                'accepted_at'       => $now,
-                'response_seconds'  => $responseSeconds,
+                'accepted_at' => $now,
+                'response_seconds' => $responseSeconds,
             ]);
 
             // Mission : passe à "assigned" si elle ne l'est pas déjà
@@ -199,9 +202,9 @@ class MissionDispatchService
                 // mission dans son inbox active (Phase 12) ET ne reçoit pas
                 // les broadcasts Reverb (cassé côté client temps-réel).
                 $mission->update([
-                    'status'                => 'assigned',
+                    'status' => 'assigned',
                     'lead_provider_user_id' => $assignment->user_id,
-                    'lead_employee_id'      => $assignment->user_id,
+                    'lead_employee_id' => $assignment->user_id,
                 ]);
             }
 
@@ -211,12 +214,12 @@ class MissionDispatchService
                 ->where('assignment_status', 'assigned')
                 ->update([
                     'assignment_status' => 'cancelled',
-                    'declined_at'       => $now,
-                    'decline_reason'    => 'Autre prestataire a accepté en premier',
+                    'declined_at' => $now,
+                    'decline_reason' => 'Autre prestataire a accepté en premier',
                 ]);
 
             Log::info('MissionDispatchService: assignment accepté', [
-                'assignment_id'    => $assignment->id,
+                'assignment_id' => $assignment->id,
                 'response_seconds' => $responseSeconds,
             ]);
 
@@ -241,14 +244,14 @@ class MissionDispatchService
 
             $assignment->update([
                 'assignment_status' => 'declined',
-                'declined_at'       => $now,
-                'decline_reason'    => $reason,
-                'response_seconds'  => $responseSeconds,
+                'declined_at' => $now,
+                'decline_reason' => $reason,
+                'response_seconds' => $responseSeconds,
             ]);
 
             Log::info('MissionDispatchService: assignment refusé', [
-                'assignment_id'    => $assignment->id,
-                'reason'           => $reason,
+                'assignment_id' => $assignment->id,
+                'reason' => $reason,
                 'response_seconds' => $responseSeconds,
             ]);
 
@@ -278,8 +281,8 @@ class MissionDispatchService
 
             $assignment->update([
                 'assignment_status' => 'expired',
-                'declined_at'       => now(),
-                'decline_reason'    => 'Pas de réponse dans le délai imparti',
+                'declined_at' => now(),
+                'decline_reason' => 'Pas de réponse dans le délai imparti',
             ]);
 
             Log::info('MissionDispatchService: assignment expiré', [
@@ -299,7 +302,7 @@ class MissionDispatchService
         }
 
         if ($assignment->expires_at && $assignment->expires_at->isPast()) {
-            throw new \DomainException("Cette offre a expiré.");
+            throw new \DomainException('Cette offre a expiré.');
         }
     }
 

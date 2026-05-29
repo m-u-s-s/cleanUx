@@ -32,7 +32,7 @@ class DateRangeResolver
     ];
 
     /**
-     * @return array{0: CarbonImmutable, 1: CarbonImmutable, 2: string}  [from, to, label]
+     * @return array{0: CarbonImmutable, 1: CarbonImmutable, 2: string} [from, to, label]
      */
     public function resolve(string $preset, ?string $customFrom = null, ?string $customTo = null): array
     {
@@ -90,7 +90,7 @@ class DateRangeResolver
                 'Année précédente',
             ],
             'custom' => $this->resolveCustom($customFrom, $customTo),
-            default  => $this->resolve('last_30d'),
+            default => $this->resolve('last_30d'),
         };
     }
 
@@ -118,7 +118,7 @@ class DateRangeResolver
 
         try {
             $from = CarbonImmutable::parse($customFrom)->startOfDay();
-            $to   = CarbonImmutable::parse($customTo)->endOfDay();
+            $to = CarbonImmutable::parse($customTo)->endOfDay();
 
             // Sécurité : ne pas autoriser une période > 5 ans
             if ($from->diffInYears($to) > 5) {
@@ -133,7 +133,7 @@ class DateRangeResolver
             return [
                 $from,
                 $to,
-                $from->format('d/m/Y') . ' → ' . $to->format('d/m/Y'),
+                $from->format('d/m/Y').' → '.$to->format('d/m/Y'),
             ];
         } catch (\Throwable $e) {
             return $this->resolve('last_30d');

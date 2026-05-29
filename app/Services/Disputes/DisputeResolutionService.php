@@ -152,6 +152,7 @@ class DisputeResolutionService
             $resolution->update([
                 'external_ref' => 'no_stripe_intent',
             ]);
+
             return;
         }
 
@@ -178,8 +179,8 @@ class DisputeResolutionService
     protected function executePromoCredit(ComplaintCase $case, DisputeResolution $resolution): void
     {
         $promoCode = PromoCode::create([
-            'code' => 'SAV-' . strtoupper(Str::random(8)),
-            'name' => 'Compensation SAV — ' . $case->reference,
+            'code' => 'SAV-'.strtoupper(Str::random(8)),
+            'name' => 'Compensation SAV — '.$case->reference,
             'description' => $resolution->explanation,
             'discount_type' => PromoCode::TYPE_FIXED,
             'discount_value' => (float) $resolution->amount,

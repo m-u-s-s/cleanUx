@@ -20,7 +20,6 @@ final class TradeFormRenderer
     /**
      * Retourne les définitions de champs normalisées pour un Trade donné.
      *
-     * @param  Trade  $trade
      * @return array<int, array{name: string, type: string, label: string, required: bool, options: mixed, placeholder: string|null, validation: mixed}>
      */
     public function fieldsForTrade(Trade $trade): array
@@ -53,16 +52,16 @@ final class TradeFormRenderer
         }
 
         return [
-            'name'        => $field['key'],
-            'type'        => $type,
-            'label'       => $field['label'],
-            'required'    => (bool) ($field['required'] ?? false),
-            'options'     => $this->normalizeOptions($field),
+            'name' => $field['key'],
+            'type' => $type,
+            'label' => $field['label'],
+            'required' => (bool) ($field['required'] ?? false),
+            'options' => $this->normalizeOptions($field),
             'placeholder' => isset($field['placeholder']) ? (string) $field['placeholder'] : null,
-            'validation'  => $this->buildValidation($field),
-            'help'        => isset($field['help']) ? (string) $field['help'] : null,
-            'unit'        => isset($field['unit']) ? (string) $field['unit'] : null,
-            'default'     => $field['default'] ?? null,
+            'validation' => $this->buildValidation($field),
+            'help' => isset($field['help']) ? (string) $field['help'] : null,
+            'unit' => isset($field['unit']) ? (string) $field['unit'] : null,
+            'default' => $field['default'] ?? null,
         ];
     }
 

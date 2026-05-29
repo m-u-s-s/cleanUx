@@ -17,6 +17,7 @@ class LimitesJournaliereSeeder extends Seeder
 
         if (! Schema::hasTable($targetTable)) {
             $this->command?->warn('⚠️ Aucune table de limites journalières trouvée.');
+
             return;
         }
 
@@ -38,6 +39,7 @@ class LimitesJournaliereSeeder extends Seeder
 
         if ($providerIds->isEmpty()) {
             $this->command?->warn('⚠️ Aucun prestataire trouvé pour générer les limites journalières.');
+
             return;
         }
 

@@ -20,17 +20,17 @@ class OnboardingJourneyFactory extends Factory
             OnboardingJourney::ROLE_PROVIDER,
             OnboardingJourney::ROLE_ENTERPRISE,
         ]);
-        $name = ucfirst($role) . ' onboarding ' . fake()->unique()->numerify('v###');
+        $name = ucfirst($role).' onboarding '.fake()->unique()->numerify('v###');
 
         return [
-            'code'                => Str::slug($name),
-            'name'                => $name,
-            'description'         => fake()->sentence(),
-            'role'                => $role,
-            'is_active'           => true,
-            'version'             => 1,
-            'applies_to_country'  => null,
-            'metadata'            => null,
+            'code' => Str::slug($name),
+            'name' => $name,
+            'description' => fake()->sentence(),
+            'role' => $role,
+            'is_active' => true,
+            'version' => 1,
+            'applies_to_country' => null,
+            'metadata' => null,
         ];
     }
 
