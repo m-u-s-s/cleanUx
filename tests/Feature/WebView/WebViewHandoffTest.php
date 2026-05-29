@@ -97,4 +97,14 @@ class WebViewHandoffTest extends TestCase
     {
         $this->get('/m/enter?ticket=garbage')->assertStatus(419);
     }
+
+    public function test_enter_with_deleted_user_returns_419(): void
+    {
+        $user = User::factory()->create();
+        $ticket = app(WebViewTicketService::class)->issue($user, 'd', '/dashboard');
+
+        $user->delete();
+
+        $this->get('/m/enter?ticket='.$ticket)->assertStatus(419);
+    }
 }

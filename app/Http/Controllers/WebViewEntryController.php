@@ -28,8 +28,9 @@ class WebViewEntryController extends Controller
             return response()->view('webview.session-expired', [], 419);
         }
 
-        Auth::loginUsingId($payload['user_id']);
-        $request->session()->regenerate();
+        if (Auth::loginUsingId($payload['user_id']) === false) {
+            return response()->view('webview.session-expired', [], 419);
+        }
 
         $target = $payload['target_path'];
         $separator = str_contains($target, '?') ? '&' : '?';
