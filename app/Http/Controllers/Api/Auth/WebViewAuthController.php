@@ -29,7 +29,7 @@ class WebViewAuthController extends Controller
             'device_id' => ['nullable', 'string', 'max:255'],
         ]);
 
-        $path = $this->sanitizeInternalPath($data['target_path']);
+        $path = $this->validateInternalPath($data['target_path']);
         $ticket = $this->tickets->issue($request->user(), $data['device_id'] ?? 'unknown', $path);
 
         return response()->json([
@@ -39,21 +39,25 @@ class WebViewAuthController extends Controller
     }
 
     /**
-     * Reject anything that is not a same-origin absolute path. Prevents the
-     * handoff from being abused as an open redirect.
+     * Reject anything that is not a same-origin absolute path. Guards against
+     * open-redirect via protocol-relative (`//host`), backslash (`/\host`),
+     * scheme (`scheme://`), control characters, and percent-encoded variants
+     * of the above. Checks the raw and the URL-decoded form.
      */
-    private function sanitizeInternalPath(string $path): string
+    private function validateInternalPath(string $path): string
     {
-        if (
-            ! str_starts_with($path, '/')
-            || str_starts_with($path, '//')
-            || str_contains($path, '://')
-            || str_contains($path, "\n")
-            || str_contains($path, "\r")
-        ) {
-            throw ValidationException::withMessages([
-                'target_path' => 'target_path must be an internal absolute path.',
-            ]);
+        foreach ([$path, rawurldecode($path)] as $candidate) {
+            if (
+                ! str_starts_with($candidate, '/')
+                || str_starts_with($candidate, '//')
+                || str_starts_with($candidate, '/\\')
+                || str_contains($candidate, '://')
+                || preg_match('/[\x00-\x1F]/', $candidate) === 1
+            ) {
+                throw ValidationException::withMessages([
+                    'target_path' => 'target_path must be an internal absolute path.',
+                ]);
+            }
         }
 
         return $path;
