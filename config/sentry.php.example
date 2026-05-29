@@ -63,13 +63,6 @@ return [
      *   if (app()->bound('sentry')) {
      *       \Sentry\configureScope(function (\Sentry\State\Scope $scope) {
      *           $scope->setTag('app.module', 'cleanux-v2');
-     *           if (function_exists('app') && app()->bound(\App\Services\TenancyV2\TenantContext::class)) {
-     *               $tenant = app(\App\Services\TenancyV2\TenantContext::class)->current();
-     *               if ($tenant) {
-     *                   $scope->setTag('tenant.code', $tenant->code);
-     *                   $scope->setTag('tenant.plan', $tenant->plan_code);
-     *               }
-     *           }
      *       });
      *   }
      */
