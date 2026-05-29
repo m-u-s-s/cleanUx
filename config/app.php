@@ -173,7 +173,6 @@ return [
         App\Providers\GeolocationV2ServiceProvider::class,
         App\Providers\ApiTokensV2ServiceProvider::class,
         App\Providers\SubscriptionsV2ServiceProvider::class,
-        App\Providers\TenancyV2ServiceProvider::class,
         App\Providers\KybV2ServiceProvider::class,
         App\Providers\EmailV2ServiceProvider::class,
         App\Providers\AuthServiceProvider::class,

@@ -202,20 +202,6 @@ class DataErasureService
                 ->where('provider_user_id', $user->id)
                 ->update(['provider_user_id' => null]);
         }
-        // Tenancy : marquer tenant_users left + nullify billing_owner sur tenants
-        if (Schema::hasTable('tenant_users')) {
-            DB::table('tenant_users')
-                ->where('user_id', $user->id)
-                ->update([
-                    'is_active' => false,
-                    'left_at' => now(),
-                ]);
-        }
-        if (Schema::hasTable('tenants')) {
-            DB::table('tenants')
-                ->where('billing_owner_user_id', $user->id)
-                ->update(['billing_owner_user_id' => null]);
-        }
         // Chat : retirer participant (set left_at + can_send=false) + anonymiser sender_user_id
         if (Schema::hasTable('chat_participants')) {
             DB::table('chat_participants')

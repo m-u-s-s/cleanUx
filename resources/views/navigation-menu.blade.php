@@ -188,7 +188,6 @@
     ['label' => 'Analytics v2', 'route' => 'admin.analytics.center', 'active' => 'admin.analytics.center', 'icon' => '📊'],
     ],
     'B2B & multi-tenant' => [
-    ['label' => 'Tenancy (white-label)', 'route' => 'admin.tenancy-v2.center', 'active' => 'admin.tenancy-v2.center', 'icon' => '🏛️'],
     ['label' => 'KYB entreprises', 'route' => 'admin.kyb-v2.center', 'active' => 'admin.kyb-v2.center', 'icon' => '🏢'],
     ['label' => 'Chat & messagerie', 'route' => 'admin.chat-v2.center', 'active' => 'admin.chat-v2.center', 'icon' => '💬'],
     ],

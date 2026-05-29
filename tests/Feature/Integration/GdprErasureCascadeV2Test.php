@@ -9,13 +9,11 @@ use App\Models\FleetEquipment;
 use App\Models\FleetVehicle;
 use App\Models\SubscriptionsV2\SubscriptionPlanV2;
 use App\Models\SubscriptionsV2\SubscriptionV2;
-use App\Models\TenantUser;
 use App\Models\User;
 use App\Services\ChatV2\ChatService;
 use App\Services\Gdpr\DataErasureService;
 use App\Services\KybV2\BusinessOnboardingService;
 use App\Services\SubscriptionsV2\SubscriptionEngine;
-use App\Services\TenancyV2\TenantService;
 use Database\Seeders\SubscriptionPlansV2Seeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Config;
@@ -24,7 +22,7 @@ use Tests\TestCase;
 /**
  * Test E2E GDPR erasure cascade : vérifie que `DataErasureService::anonymizeUser()`
  * cascade correctement sur les nouveaux modules v2 (KYB, Fleet, Subscriptions,
- * Tenancy, Chat) en nullify-ant les FKs tout en conservant les rows.
+ * Chat) en nullify-ant les FKs tout en conservant les rows.
  */
 class GdprErasureCascadeV2Test extends TestCase
 {
@@ -46,8 +44,6 @@ class GdprErasureCascadeV2Test extends TestCase
         Config::set('subscriptions_v2.periods', ['monthly' => 30, 'weekly' => 7]);
         Config::set('subscriptions_v2.allowed_currencies', ['EUR']);
         Config::set('subscriptions_v2.default_currency', 'EUR');
-        Config::set('tenancy_v2.allowed_plans', ['basic', 'growth']);
-        Config::set('tenancy_v2.default_plan', 'basic');
     }
 
     public function test_erasure_cascades_to_all_v2_modules(): void
@@ -81,11 +77,7 @@ class GdprErasureCascadeV2Test extends TestCase
         $sub = app(SubscriptionEngine::class)->subscribe($user, $plan);
         $this->assertSame(SubscriptionV2::STATUS_ACTIVE, $sub->status);
 
-        // 4. Tenant user (member)
-        $tenant = app(TenantService::class)->create(['name' => 'Acme', 'code' => 'acme', 'slug' => 'acme']);
-        app(TenantService::class)->attachUser($tenant, $user, TenantUser::ROLE_MEMBER);
-
-        // 5. Chat thread + message from user
+        // 4. Chat thread + message from user
         $thread = app(ChatService::class)->startThread('generic', 1, [
             ['user_id' => $user->id, 'role' => 'client'],
         ]);
@@ -113,12 +105,6 @@ class GdprErasureCascadeV2Test extends TestCase
         $sub->refresh();
         $this->assertSame(SubscriptionV2::STATUS_CANCELLED, $sub->status);
         $this->assertNotNull($sub->cancelled_at);
-
-        // Tenant user : left_at set, is_active false
-        $tu = TenantUser::query()->where('user_id', $user->id)->first();
-        $this->assertNotNull($tu);
-        $this->assertFalse((bool) $tu->is_active);
-        $this->assertNotNull($tu->left_at);
 
         // Chat : participant marked left + can_send=false + message sender nullified, body conserved
         $participant = ChatParticipant::query()

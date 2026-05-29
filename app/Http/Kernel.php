@@ -77,7 +77,6 @@ class Kernel extends HttpKernel
         'api_scope' => \App\Http\Middleware\ApiTokensV2\EnforceTokenScope::class,
         'api_token_throttle' => \App\Http\Middleware\ApiTokensV2\ThrottleByToken::class,
         'api_token_audit' => \App\Http\Middleware\ApiTokensV2\LogTokenUsage::class,
-        'tenant' => \App\Http\Middleware\TenancyV2\ResolveTenant::class,
         'turnstile' => \App\Http\Middleware\VerifyTurnstileCaptcha::class,
         'token.grace' => \App\Http\Middleware\EnforceTokenGrace::class,
         'cache.api'   => \App\Http\Middleware\CacheApiResponse::class,

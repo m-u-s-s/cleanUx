@@ -327,11 +327,6 @@ Route::middleware(['role:admin', 'enforce_2fa'])
                 ->name('accounting-v2.center');
         }
 
-        // Tenancy v2 — Multi-tenancy / White-label
-        if (class_exists(\App\Livewire\Admin\TenancyV2\TenantsCenter::class)) {
-            Route::get('/tenancy-v2', \App\Livewire\Admin\TenancyV2\TenantsCenter::class)
-                ->name('tenancy-v2.center');
-        }
 
         // KYB v2 — Compliance entreprises
         if (class_exists(\App\Livewire\Admin\KybV2\KybCenter::class)) {

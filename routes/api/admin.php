@@ -66,21 +66,6 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/documents/{document}/review',             [\App\Http\Controllers\Api\KybV2Controller::class, 'adminReviewDocument']);
     });
 
-    // Phase Tenancy v2 — Admin tenant management
-    Route::prefix('admin/tenancy-v2')->middleware('api_scope:admin:write,admin:everything')->group(function () {
-        Route::get('/tenants',                                  [\App\Http\Controllers\Api\TenancyV2Controller::class, 'adminListTenants']);
-        Route::post('/tenants',                                 [\App\Http\Controllers\Api\TenancyV2Controller::class, 'adminCreateTenant']);
-        Route::post('/tenants/{tenant}/activate',               [\App\Http\Controllers\Api\TenancyV2Controller::class, 'adminActivateTenant']);
-        Route::post('/tenants/{tenant}/suspend',                [\App\Http\Controllers\Api\TenancyV2Controller::class, 'adminSuspendTenant']);
-        Route::post('/tenants/{tenant}/archive',                [\App\Http\Controllers\Api\TenancyV2Controller::class, 'adminArchiveTenant']);
-        Route::post('/tenants/{tenant}/change-plan',            [\App\Http\Controllers\Api\TenancyV2Controller::class, 'adminChangePlan']);
-        Route::post('/tenants/{tenant}/theming',                [\App\Http\Controllers\Api\TenancyV2Controller::class, 'adminUpdateTheming']);
-        Route::get('/tenants/{tenant}/domains',                 [\App\Http\Controllers\Api\TenancyV2Controller::class, 'adminListDomains']);
-        Route::post('/tenants/{tenant}/domains',                [\App\Http\Controllers\Api\TenancyV2Controller::class, 'adminAddDomain']);
-        Route::post('/domains/{domain}/verify',                 [\App\Http\Controllers\Api\TenancyV2Controller::class, 'adminVerifyDomain']);
-        Route::get('/tenants/{tenant}/users',                   [\App\Http\Controllers\Api\TenancyV2Controller::class, 'adminListUsers']);
-        Route::post('/tenants/{tenant}/users',                  [\App\Http\Controllers\Api\TenancyV2Controller::class, 'adminAttachUser']);
-    });
 
     // Phase Accounting v2 — Ledger + exports + period management (critical: close/delete)
     Route::prefix('admin/accounting-v2')->middleware('api_scope:admin:critical,admin:everything')->group(function () {

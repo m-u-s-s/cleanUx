@@ -40,10 +40,6 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/documents/{document}/download',            [\App\Http\Controllers\Api\KybV2Controller::class, 'downloadDocument']);
     });
 
-    // Phase Tenancy v2 — Current tenant (user-facing)
-    Route::prefix('v2/tenancy')->group(function () {
-        Route::get('/me', [\App\Http\Controllers\Api\TenancyV2Controller::class, 'currentTenant']);
-    });
 
     // Phase Subscriptions v2 — User-facing plans + self-management
     Route::prefix('v2/subscriptions')->group(function () {
