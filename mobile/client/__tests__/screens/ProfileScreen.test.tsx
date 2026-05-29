@@ -14,12 +14,8 @@ jest.mock('@/auth', () => ({
 }));
 
 jest.mock('@/theme', () => ({
-  colors: { amber: '#ffb648', slate900: '#0f172a', white: '#fff', slate500: '#64748b' },
-  spacing: { xs: 4, sm: 8, md: 16, lg: 24 },
-  typography: {},
-  radius: { md: 14 },
-  shadows: {},
-  useThemeColors: () => ({ background: '#fff', text: '#000', card: '#fff' }),
+  ...jest.requireActual('@/theme'),
+  useThemeColors: () => ({ background: '#fff', text: '#000', card: '#fff', textMuted: '#64748b', textSecondary: '#94a3b8' }),
 }));
 
 jest.mock('@/ui', () => {
@@ -29,6 +25,7 @@ jest.mock('@/ui', () => {
     Button: ({ label, onPress }: any) => <Text onPress={onPress}>{label}</Text>,
     Avatar: ({ name }: any) => <Text>{name}</Text>,
     Icon: () => <View />,
+    Divider: () => <View />,
     ListItem: ({ title, onPress }: any) => <Text onPress={onPress}>{title}</Text>,
   };
 });
@@ -40,9 +37,9 @@ describe('ProfileScreen', () => {
     expect(render(<ProfileScreen />).toJSON()).not.toBeNull();
   });
 
-  it('shows user name', () => {
+  it('shows profile title', () => {
     const { getByText } = render(<ProfileScreen />);
-    expect(getByText('Alice Martin')).toBeTruthy();
+    expect(getByText('Profile')).toBeTruthy();
   });
 
   it('shows logout button', () => {

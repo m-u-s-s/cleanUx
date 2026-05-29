@@ -25,12 +25,8 @@ jest.mock('@/booking', () => ({
 }));
 
 jest.mock('@/theme', () => ({
-  colors: { amber: '#ffb648', slate900: '#0f172a', white: '#fff' },
-  spacing: { xs: 4, sm: 8, md: 16, lg: 24 },
-  typography: {},
-  radius: { md: 14 },
-  shadows: {},
-  useThemeColors: () => ({ background: '#fff', text: '#000', card: '#fff' }),
+  ...jest.requireActual('@/theme'),
+  useThemeColors: () => ({ background: '#fff', text: '#000', card: '#fff', textMuted: '#64748b', textSecondary: '#94a3b8' }),
 }));
 
 jest.mock('@/ui', () => {
@@ -38,7 +34,7 @@ jest.mock('@/ui', () => {
   return {
     Screen: ({ children }: any) => <View>{children}</View>,
     Button: ({ label, onPress }: any) => <Text onPress={onPress}>{label}</Text>,
-    KPICard: ({ label, value }: any) => <View><Text>{label}</Text><Text>{value}</Text></View>,
+    KPICard: ({ title, value }: any) => <View><Text>{title}</Text><Text>{String(value)}</Text></View>,
     Avatar: () => <View />,
     Badge: ({ label }: any) => <Text>{label}</Text>,
     Skeleton: () => <View />,

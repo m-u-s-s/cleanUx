@@ -12,12 +12,14 @@ jest.mock('@/auth', () => ({
   }),
 }));
 
+jest.mock('@/notifications', () => ({
+  useNotifications: () => ({ data: [], isLoading: false, refetch: jest.fn().mockResolvedValue(undefined), isRefetching: false }),
+  useMarkAllRead: () => ({ mutate: jest.fn() }),
+}));
+
 jest.mock('@/theme', () => ({
-  colors: { amber: '#ffb648', slate900: '#0f172a', white: '#fff' },
-  spacing: { xs: 4, sm: 8, md: 16, lg: 24 },
-  typography: {},
-  radius: { md: 14 },
-  useThemeColors: () => ({ background: '#fff', text: '#000', card: '#fff' }),
+  ...jest.requireActual('@/theme'),
+  useThemeColors: () => ({ background: '#fff', text: '#000', card: '#fff', textMuted: '#64748b', textSecondary: '#94a3b8' }),
 }));
 
 jest.mock('@/ui', () => {
@@ -26,7 +28,10 @@ jest.mock('@/ui', () => {
     Screen: ({ children }: any) => <View>{children}</View>,
     Button: ({ label, onPress }: any) => <Text onPress={onPress}>{label}</Text>,
     Icon: () => <View />,
+    Skeleton: () => <View />,
     EmptyState: ({ title }: any) => <Text>{title}</Text>,
+    AnimatedListItem: ({ children }: any) => <View>{children}</View>,
+    a11y: { announce: jest.fn(), pressable: (label: string) => ({ accessibilityLabel: label, accessibilityRole: 'button' }) },
   };
 });
 

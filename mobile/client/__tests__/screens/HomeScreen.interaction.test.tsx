@@ -153,17 +153,17 @@ describe('HomeScreen interactions', () => {
 });
 
 describe('HomeScreen — first-time user', () => {
-  beforeEach(() => {
-    jest.resetModules();
-  });
-
   it('shows welcome card with BookingWizard CTA when no bookings', async () => {
-    jest.doMock('@/booking', () => ({
-      useBookings: () => ({ data: [], isLoading: false, isError: false }),
-    }));
+    // Override the useBookings mock to return empty data for this test.
+    // We use the already-imported HomeScreen (no resetModules) to avoid the
+    // dual-React-instance issue that causes "Cannot read properties of null
+    // (reading 'useCallback')" in React 19 + jest-expo.
+    jest.spyOn(
+      jest.requireMock('@/booking') as { useBookings: () => unknown },
+      'useBookings',
+    ).mockReturnValue({ data: [], isLoading: false, isError: false });
 
-    const { HomeScreen: HS } = require('../../src/screens/HomeScreen') as { HomeScreen: React.FC };
-    render(<HS />);
+    render(<HomeScreen />);
 
     await waitFor(() => {
       expect(screen.getByText('Réserver mon premier service')).toBeTruthy();

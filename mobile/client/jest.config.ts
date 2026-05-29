@@ -3,6 +3,12 @@ import path from 'path';
 
 const config: Config = {
   preset: 'jest-expo',
+  // Exclude Detox e2e tests — the app uses Maestro for e2e, not Detox.
+  // These files import 'detox' which is not installed.
+  testPathIgnorePatterns: [
+    '/node_modules/',
+    '<rootDir>/e2e/',
+  ],
   // Include the shared workspace so co-located __tests__ in shared/src are discovered
   roots: [
     '<rootDir>',

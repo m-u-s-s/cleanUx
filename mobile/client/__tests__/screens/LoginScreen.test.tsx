@@ -22,9 +22,8 @@ jest.mock('@/auth', () => ({
 }));
 
 jest.mock('@/theme', () => ({
-  colors: { amber: '#ffb648', slate900: '#0f172a', white: '#fff', slate500: '#64748b' },
-  spacing: { xs: 4, sm: 8, md: 16, lg: 24, xl: 32 },
-  typography: {},
+  ...jest.requireActual('@/theme'),
+  useThemeColors: () => ({ background: '#fff', text: '#000', card: '#fff', textMuted: '#64748b', textSecondary: '#94a3b8' }),
 }));
 
 jest.mock('@/ui', () => {
