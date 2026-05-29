@@ -1,0 +1,66 @@
+<?php
+
+namespace App\Http\Controllers\Api;
+
+use App\Http\Controllers\Controller;
+use App\Models\User;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+
+/**
+ * @group Parity
+ *
+ * @authenticated
+ *
+ * GET /api/parity-map
+ *
+ * Returns the modules visible to the authenticated user, each tagged with its
+ * mobile delivery mode. The mobile app builds its navigation from this list:
+ * `native` → an in-app screen, `webview` → the EmbeddedModuleScreen at `path`.
+ */
+class ParityMapController extends Controller
+{
+    public function __invoke(Request $request): JsonResponse
+    {
+        /** @var User $user */
+        $user = $request->user();
+
+        $modules = collect(config('parity.modules', []))
+            ->filter(fn (array $m) => $this->visibleTo($user, $m['roles'] ?? []))
+            ->map(fn (array $m) => [
+                'key' => $m['key'],
+                'title' => $m['title'],
+                'icon' => $m['icon'],
+                'path' => $m['path'],
+                'mobile' => $m['mobile'],
+            ])
+            ->values();
+
+        return response()->json(['data' => $modules]);
+    }
+
+    private function visibleTo(User $user, array $roles): bool
+    {
+        if ($roles === []) {
+            return true;
+        }
+
+        foreach ($roles as $role) {
+            if ($this->hasRole($user, $role)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private function hasRole(User $user, string $role): bool
+    {
+        return match ($role) {
+            'client' => method_exists($user, 'isClient') && $user->isClient(),
+            'provider' => method_exists($user, 'isProvider') && $user->isProvider(),
+            'admin' => method_exists($user, 'isPlatformAdmin') && $user->isPlatformAdmin(),
+            default => false,
+        };
+    }
+}

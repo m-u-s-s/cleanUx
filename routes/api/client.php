@@ -26,6 +26,7 @@ use App\Http\Controllers\Api\Client\ReferralV2Controller;
 use App\Http\Controllers\Api\Client\TipController;
 use App\Http\Controllers\Api\Client\TripTrackingController;
 use App\Http\Controllers\Api\Client\UserSafetyController;
+use App\Http\Controllers\Api\ParityMapController;
 use App\Models\Trade;
 use App\Services\Booking\TradeFormRenderer;
 use Illuminate\Support\Facades\Route;
@@ -206,3 +207,9 @@ Route::middleware('auth:sanctum')->prefix('client')->group(function () {
         return response()->json(['data' => $services]);
     });
 });
+
+// ─────────────────────────────────────────────
+// Parity map — shared across all authenticated roles
+// GET /api/parity-map  (no /client prefix — intentional)
+// ─────────────────────────────────────────────
+Route::middleware('auth:sanctum')->get('/parity-map', ParityMapController::class)->name('api.parity-map');
