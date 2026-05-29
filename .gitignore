@@ -20,3 +20,16 @@ yarn-error.log
 /.fleet
 /.idea
 /.vscode
+
+# Agent / tooling artifacts (claude-flow, superpowers, ruvector, scribe, expo)
+/.claude
+/.claude-flow
+/.superpowers
+/.scribe
+/.expo
+/ruvector.db
+/agentdb.rvf
+/agentdb.rvf.lock
+
+# Mobile workspace deps (root + per-app already covered above)
+mobile/node_modules
