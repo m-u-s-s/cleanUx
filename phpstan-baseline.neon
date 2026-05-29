@@ -18151,18 +18151,6 @@ parameters:
 			path: app/Realtime/RealtimeBroadcastService.php
 
 		-
-			message: '#^Anonymous function has an unused use \$now\.$#'
-			identifier: closure.unusedUse
-			count: 1
-			path: app/Services/AccountingV2/AccountingService.php
-
-		-
-			message: '#^Anonymous function has an unused use \$opts\.$#'
-			identifier: closure.unusedUse
-			count: 1
-			path: app/Services/AccountingV2/AccountingService.php
-
-		-
 			message: '#^Method App\\Services\\AccountingV2\\AccountingService\:\:balanceForAccount\(\) return type has no value type specified in iterable type array\.$#'
 			identifier: missingType.iterableValue
 			count: 1
@@ -20485,12 +20473,6 @@ parameters:
 			path: app/Services/ChatV2/ChatService.php
 
 		-
-			message: '#^Anonymous function has an unused use \$body\.$#'
-			identifier: closure.unusedUse
-			count: 1
-			path: app/Services/ChatV2/ChatService.php
-
-		-
 			message: '#^Method App\\Services\\ChatV2\\ChatService\:\:sendMessage\(\) has parameter \$attachment with no value type specified in iterable type array\.$#'
 			identifier: missingType.iterableValue
 			count: 1
@@ -21391,7 +21373,7 @@ parameters:
 			path: app/Services/FeatureFlag/FeatureFlagService.php
 
 		-
-			message: '#^PHPDoc tag @feature has invalid value \(\(''chat_v2''\)             // Blade directive\)\: Unexpected token "''chat_v2''", expected TOKEN_DOUBLE_QUOTED_STRING at offset 423 on line 14$#'
+			message: '#^PHPDoc tag @feature has invalid value \(\(''chat_v2''\)             // Blade directive\)\: Unexpected token "''chat_v2''", expected TOKEN_DOUBLE_QUOTED_STRING at offset 426 on line 15$#'
 			identifier: phpDoc.parseError
 			count: 1
 			path: app/Services/FeatureFlag/FeatureFlagService.php
@@ -23083,7 +23065,7 @@ parameters:
 			path: app/Services/Messaging/MentionParser.php
 
 		-
-			message: '#^PHPDoc tag @firstname has invalid value \(\(jusqu''à espace ou ponctuation\)\)\: Unexpected token "''à", expected ''\)'' at offset 96 on line 5$#'
+			message: '#^PHPDoc tag @firstname has invalid value \(\(jusqu''à espace ou ponctuation\)\)\: Unexpected token "''à", expected ''\)'' at offset 117 on line 8$#'
 			identifier: phpDoc.parseError
 			count: 1
 			path: app/Services/Messaging/MentionParser.php
