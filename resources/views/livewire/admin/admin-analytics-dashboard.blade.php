@@ -1,5 +1,11 @@
 {{-- resources/views/livewire/admin/admin-analytics-dashboard.blade.php --}}
 
+@once
+    @push('scripts')
+        @vite(['resources/js/apexcharts.js'])
+    @endpush
+@endonce
+
 <div class="space-y-6">
     <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
         <p class="text-xs font-black uppercase tracking-[0.18em] text-blue-600">Analytics</p>

@@ -2,20 +2,15 @@ import './bootstrap';
 import './echo-listeners';
 import './cleanux-mission-tracking';
 import './assistant-streaming';
-import './fullcalendar';
 import './push-notifications';
-import ApexCharts from 'apexcharts';
-window.ApexCharts = ApexCharts;
 import './pwa';
 
-import { Calendar } from '@fullcalendar/core';
-import dayGridPlugin from '@fullcalendar/daygrid';
-import interactionPlugin from '@fullcalendar/interaction';
-
-window.FullCalendar = {
-    Calendar,
-    plugins: [dayGridPlugin, interactionPlugin],
-};
+// FullCalendar (resources/js/fullcalendar.js → window.cleanuxFC) and ApexCharts
+// (resources/js/apexcharts.js → window.ApexCharts) are NO LONGER bundled globally.
+// They were ~heavy and loaded on every page. They are now dedicated Vite entries
+// loaded only on the pages that use them, via @push('scripts') @vite([...]).
+// The previous window.FullCalendar global was dead code (the only new FullCalendar.Calendar
+// consumers load FullCalendar from CDN).
 
 /* ============================================================================
    Reveal-on-scroll : ajoute la classe `.cx-in` aux éléments [data-cx-reveal]

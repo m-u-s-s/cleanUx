@@ -1,3 +1,9 @@
+@once
+    @push('scripts')
+        @vite(['resources/js/apexcharts.js'])
+    @endpush
+@endonce
+
 <div class="space-y-6">
 
     {{-- 🎛️ Filtres --}}

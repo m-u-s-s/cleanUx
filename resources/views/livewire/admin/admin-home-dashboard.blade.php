@@ -1,3 +1,9 @@
+@once
+    @push('scripts')
+        @vite(['resources/js/apexcharts.js'])
+    @endpush
+@endonce
+
 <div class="cu-page space-y-6" wire:poll.30s>
 
     <div class="cu-page-header">
