@@ -6,6 +6,7 @@ use App\Models\FinanceInvoice;
 use App\Models\FinanceQuote;
 use App\Models\User;
 use App\Services\Enterprise\EnterpriseRoutingService;
+use App\Support\Finance\ClientFinanceDocumentScope;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
@@ -55,29 +56,7 @@ class FinanceDocumentsClient extends Component
             return $query->whereRaw('1 = 0');
         }
 
-        $allowedSiteIds = $this->allowedSiteIdsForCurrentUser();
-        $siteScope = (string) data_get($user->metadata, 'entreprise_context.site_scope', 'all');
-        $organizationId = (int) ($user->organization_account_id ?? 0);
-
-        return $query->where(function (Builder $scoped) use ($user, $allowedSiteIds, $siteScope, $organizationId, $relationPath) {
-            $scoped->where('client_id', $user->id);
-
-            if ($organizationId > 0) {
-                $scoped->orWhere(function (Builder $orgQuery) use ($organizationId, $allowedSiteIds, $siteScope, $relationPath) {
-                    $orgQuery->where('organization_account_id', $organizationId);
-
-                    if ($siteScope === 'selected') {
-                        if ($allowedSiteIds === []) {
-                            $orgQuery->whereRaw('1 = 0');
-                        } else {
-                            $orgQuery->whereHas($relationPath, function (Builder $rdvQuery) use ($allowedSiteIds) {
-                                $rdvQuery->whereIn('organization_site_id', $allowedSiteIds);
-                            });
-                        }
-                    }
-                });
-            }
-        });
+        return ClientFinanceDocumentScope::apply($query, $user, $relationPath);
     }
 
     protected function baseQuotesQuery(): Builder
