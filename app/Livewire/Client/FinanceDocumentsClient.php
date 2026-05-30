@@ -5,7 +5,6 @@ namespace App\Livewire\Client;
 use App\Models\FinanceInvoice;
 use App\Models\FinanceQuote;
 use App\Models\User;
-use App\Services\Enterprise\EnterpriseRoutingService;
 use App\Support\Finance\ClientFinanceDocumentScope;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Builder;
@@ -30,22 +29,6 @@ class FinanceDocumentsClient extends Component
         $user = Auth::user();
 
         return $user instanceof User ? $user : null;
-    }
-
-    protected function entrepriseRouting(): EnterpriseRoutingService
-    {
-        return app(EnterpriseRoutingService::class);
-    }
-
-    protected function allowedSiteIdsForCurrentUser(): array
-    {
-        $user = $this->currentUser();
-
-        if (! $user) {
-            return [];
-        }
-
-        return $this->entrepriseRouting()->allowedSiteIdsForUser($user);
     }
 
     protected function applyClientScope(Builder $query, string $relationPath = 'rendezVous'): Builder
