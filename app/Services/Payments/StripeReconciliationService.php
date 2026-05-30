@@ -159,6 +159,32 @@ class StripeReconciliationService
                         ['booking_id' => $booking->id, 'expected' => $expectedStatus, 'local' => $booking->payment_status]
                     );
                 }
+
+                // Finding 4c — a booking captured in DB must have a matching ProviderPayout row.
+                // Without this row the provider's money ledger entry is absent: the platform
+                // cannot account for what was paid out. This is a launch-blocking gap because it
+                // silently bypasses the payment ledger for any booking where captureMissionPayment()
+                // was interrupted after the PI capture but before the DB transaction completed.
+                if ($booking->payment_status === 'captured') {
+                    $hasPayout = ProviderPayout::query()
+                        ->whereJsonContains('metadata->stripe_payment_intent_id', $intent->id)
+                        ->exists();
+
+                    if (! $hasPayout) {
+                        $mismatches[] = $this->mismatch(
+                            'captured_booking_missing_payout',
+                            'payment_intents',
+                            $intent->id,
+                            sprintf(
+                                'Booking #%d est captured mais aucun ProviderPayout enregistré pour PI %s',
+                                $booking->id,
+                                $intent->id
+                            ),
+                            'error',
+                            ['booking_id' => $booking->id]
+                        );
+                    }
+                }
             }
         } catch (\Throwable $e) {
             $mismatches[] = $this->mismatch('stripe_api_error', 'payment_intents', null, $e->getMessage(), 'error');
