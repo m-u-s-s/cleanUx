@@ -7,7 +7,7 @@ import {
   TouchableOpacity,
   ScrollView,
 } from 'react-native';
-import { Screen, Badge, Skeleton, EmptyState, ErrorState, KPICard } from '@/ui';
+import { Screen, Badge, Skeleton, EmptyState, ErrorState, KPICard, TextInput } from '@/ui';
 import {
   fetchInvoices,
   fetchInvoicesSummary,
@@ -37,9 +37,9 @@ const STATUS_FILTERS: { label: string; value: StatusFilter }[] = [
   { label: 'Brouillon', value: 'draft' },
   { label: 'Envoyé', value: 'sent' },
   { label: 'Accepté', value: 'accepted' },
-  { label: 'Émis', value: 'issued' },
+  { label: 'Émise', value: 'issued' },
   { label: 'Partiel', value: 'partial' },
-  { label: 'Payé', value: 'paid' },
+  { label: 'Payée', value: 'paid' },
   { label: 'En retard', value: 'overdue' },
 ];
 
@@ -65,7 +65,7 @@ const STATUS_LABEL: Record<string, string> = {
   draft: 'Brouillon',
   sent: 'Envoyé',
   accepted: 'Accepté',
-  issued: 'Émis',
+  issued: 'Émise',
   partial: 'Partiel',
   paid: 'Payée',
   overdue: 'En retard',
@@ -112,6 +112,7 @@ export function InvoicesScreen({ navigation }: InvoicesScreenProps) {
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [status, setStatus] = useState<StatusFilter>('all');
   const [sort, setSort] = useState<SortOption>('recent');
+  const [search, setSearch] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
 
@@ -120,12 +121,13 @@ export function InvoicesScreen({ navigation }: InvoicesScreenProps) {
   // ── Data fetching ──────────────────────────────────────────────────────────
 
   const loadList = useCallback(
-    async (s: StatusFilter, srt: SortOption) => {
+    async (s: StatusFilter, srt: SortOption, srch: string) => {
       setLoading(true);
       setError(false);
       try {
-        const filters: { status?: string; sort?: string } = { sort: srt };
+        const filters: { status?: string; sort?: string; search?: string } = { sort: srt };
         if (s !== 'all') filters.status = s;
+        if (srch !== '') filters.search = srch;
         const data = await fetchInvoices(filters);
         setInvoices(data);
       } catch {
@@ -148,7 +150,7 @@ export function InvoicesScreen({ navigation }: InvoicesScreenProps) {
 
   useEffect(() => {
     // Parallel fetch on mount
-    loadList(status, sort);
+    loadList(status, sort, search);
     loadSummary();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -158,26 +160,35 @@ export function InvoicesScreen({ navigation }: InvoicesScreenProps) {
   const handleFilterPress = useCallback(
     (s: StatusFilter) => {
       setStatus(s);
-      loadList(s, sort);
+      loadList(s, sort, search);
     },
-    [sort, loadList],
+    [sort, search, loadList],
   );
 
   const handleSortPress = useCallback(
     (srt: SortOption) => {
       setSort(srt);
-      loadList(status, srt);
+      loadList(status, srt, search);
     },
-    [status, loadList],
+    [status, search, loadList],
   );
 
   const handleReset = useCallback(() => {
     const defaultStatus: StatusFilter = 'all';
     const defaultSort: SortOption = 'recent';
+    const defaultSearch = '';
     setStatus(defaultStatus);
     setSort(defaultSort);
-    loadList(defaultStatus, defaultSort);
+    setSearch(defaultSearch);
+    loadList(defaultStatus, defaultSort, defaultSearch);
   }, [loadList]);
+
+  const handleSearchSubmit = useCallback(
+    (text: string) => {
+      loadList(status, sort, text);
+    },
+    [status, sort, loadList],
+  );
 
   // ── Error state ────────────────────────────────────────────────────────────
 
@@ -186,7 +197,7 @@ export function InvoicesScreen({ navigation }: InvoicesScreenProps) {
       <Screen>
         <ErrorState
           message="Impossible de charger vos factures."
-          onRetry={() => loadList(status, sort)}
+          onRetry={() => loadList(status, sort, search)}
         />
       </Screen>
     );
@@ -194,10 +205,11 @@ export function InvoicesScreen({ navigation }: InvoicesScreenProps) {
 
   // ── Active filter label ───────────────────────────────────────────────────
 
-  const isFiltered = status !== 'all' || sort !== 'recent';
+  const isFiltered = status !== 'all' || sort !== 'recent' || search !== '';
   const activeFilterParts: string[] = [];
   if (status !== 'all') activeFilterParts.push(`Statut : ${STATUS_LABEL[status] ?? status}`);
   if (sort !== 'recent') activeFilterParts.push(`Tri : ${SORT_LABEL[sort]}`);
+  if (search !== '') activeFilterParts.push(`Recherche : ${search}`);
   const activeFilterText = activeFilterParts.join(' · ');
 
   // ── ListHeaderComponent ────────────────────────────────────────────────────
@@ -216,7 +228,22 @@ export function InvoicesScreen({ navigation }: InvoicesScreenProps) {
         <LatestEventsPanel events={summary.latest_payment_events} />
       )}
 
-      {/* 4. Sort control */}
+      {/* 4. Search input */}
+      <View style={styles.searchRow}>
+        <TextInput
+          testID="invoices-search"
+          label="Rechercher une facture…"
+          value={search}
+          onChangeText={setSearch}
+          onSubmitEditing={e => handleSearchSubmit(e.nativeEvent.text)}
+          returnKeyType="search"
+          autoCorrect={false}
+          autoCapitalize="none"
+          clearButtonMode="while-editing"
+        />
+      </View>
+
+      {/* 5. Sort control */}
       <View style={styles.sortRow}>
         {SORT_OPTIONS.map(opt => (
           <TouchableOpacity
@@ -240,7 +267,7 @@ export function InvoicesScreen({ navigation }: InvoicesScreenProps) {
         ))}
       </View>
 
-      {/* 5. Status filter strip (8 filters) — horizontal ScrollView, not a nested FlatList */}
+      {/* 6. Status filter strip (8 filters) — horizontal ScrollView, not a nested FlatList */}
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
@@ -269,7 +296,7 @@ export function InvoicesScreen({ navigation }: InvoicesScreenProps) {
         ))}
       </ScrollView>
 
-      {/* 6 + 7. Reset filters + active filter label */}
+      {/* 7 + 8. Reset filters + active filter label */}
       <View style={styles.filterMeta}>
         {isFiltered && (
           <Text testID="active-filter-label" style={styles.activeFilterText}>
@@ -357,6 +384,11 @@ function SummaryBlock({ summary: { summary, payment_health } }: SummaryBlockProp
           title="Payées"
           value={summary.paid_count}
           tone="success"
+        />
+        <KPICard
+          title="Partielles"
+          value={summary.partial_count}
+          tone={summary.partial_count > 0 ? 'warning' : 'neutral'}
         />
         <KPICard
           title="En retard"
@@ -564,6 +596,11 @@ const styles = StyleSheet.create({
   eventDate: {
     fontSize: typography.fontSize.xs,
     color: colors.surface[400],
+  },
+
+  // Search row
+  searchRow: {
+    marginBottom: spacing.sm,
   },
 
   // Sort control

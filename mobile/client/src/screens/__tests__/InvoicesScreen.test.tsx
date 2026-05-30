@@ -114,4 +114,34 @@ describe('InvoicesScreen', () => {
       ),
     );
   });
+
+  it('search input re-fetches with the search param', async () => {
+    const { getByText, getByTestId } = render(<InvoicesScreen navigation={navigation} />);
+    await waitFor(() => getByText('F-001'));
+    fireEvent.changeText(getByTestId('invoices-search'), 'FACT-9');
+    fireEvent(getByTestId('invoices-search'), 'submitEditing', { nativeEvent: { text: 'FACT-9' } });
+    await waitFor(() =>
+      expect(inv.fetchInvoices).toHaveBeenCalledWith(
+        expect.objectContaining({ search: 'FACT-9' }),
+      ),
+    );
+  });
+
+  it('renders the partial count KPI', async () => {
+    (inv.fetchInvoicesSummary as jest.Mock).mockResolvedValue({
+      summary: {
+        invoices_count: 3,
+        paid_count: 1,
+        partial_count: 1,
+        overdue_count: 1,
+        outstanding_total: 120,
+        next_due_at: null,
+        currency_symbol: '€',
+      },
+      payment_health: { tone: 'rose', label: 'x', title: 'Factures en retard', message: 'y' },
+      latest_payment_events: [],
+    });
+    const { getByText } = render(<InvoicesScreen navigation={navigation} />);
+    await waitFor(() => getByText('Partielles'));  // the partial KPI card title (distinct from 'Partiel' filter chip)
+  });
 });
