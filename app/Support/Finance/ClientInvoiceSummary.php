@@ -14,6 +14,15 @@ use Illuminate\Support\Collection;
  *
  * All queries are scoped through ClientFinanceDocumentScope so isolation rules
  * (own + org/site) are identical to the web Livewire component.
+ *
+ * INTENTIONAL DIVERGENCE — currency_symbol resolution:
+ *   The web Livewire component (FinanceDocumentsClient::getFinanceSummaryProperty)
+ *   resolves the currency symbol from the most-recent QUOTE first, falling back
+ *   to the most-recent invoice. Quotes are not exposed on the mobile API (they
+ *   are a B2B web-only feature), so this class resolves the symbol from the
+ *   most-recent INVOICE only. The divergence is by design and documented here
+ *   so tests must NOT assert equality of `currency_symbol` between the two sides.
+ *   See tests/Feature/Finance/ClientInvoiceSummaryParityTest.php.
  */
 class ClientInvoiceSummary
 {
