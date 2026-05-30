@@ -30,6 +30,8 @@ import { LegalScreen } from '@/screens/LegalScreen';
 import { NotificationPreferencesScreen } from '@/screens/NotificationPreferencesScreen';
 import { LanguageScreen } from '@/screens/LanguageScreen';
 import { AppearanceScreen } from '@/screens/AppearanceScreen';
+// Embedded web modules
+import { EmbeddedModuleRoute } from '@/screens/EmbeddedModuleRoute';
 import { colors } from '@/theme';
 import type { RootStackParamList } from './types';
 
@@ -167,6 +169,12 @@ export function RootNavigator() {
               name="Appearance"
               component={AppearanceScreen}
               options={{ title: 'Apparence', headerShown: true }}
+            />
+            {/* Embedded web modules */}
+            <Stack.Screen
+              name="EmbeddedModule"
+              component={EmbeddedModuleRoute}
+              options={{ headerShown: true }}
             />
           </>
         ) : (

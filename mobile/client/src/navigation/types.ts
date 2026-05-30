@@ -27,6 +27,8 @@ export type RootStackParamList = {
   NotificationPreferences: undefined;
   Language: undefined;
   Appearance: undefined;
+  // Embedded web modules
+  EmbeddedModule: { path: string; title: string };
 };
 
 export type BookingStackParamList = {
