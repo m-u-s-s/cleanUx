@@ -20,6 +20,7 @@
             '@/theme': '../shared/src/theme',
             '@/ui': '../shared/src/ui',
             '@/parity': '../shared/src/parity',
+            '@/webview': '../shared/src/webview',
             '@/ErrorBoundary': '../shared/src/ErrorBoundary',
             // Client-only modules — resolve to local src/
             '@': './src',
