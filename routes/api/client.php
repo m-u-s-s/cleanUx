@@ -11,6 +11,7 @@ use App\Http\Controllers\Api\Client\DeviceTokenController;
 use App\Http\Controllers\Api\Client\DisputeController;
 use App\Http\Controllers\Api\Client\GdprController;
 use App\Http\Controllers\Api\Client\InsuranceController;
+use App\Http\Controllers\Api\Client\InvoiceApiController;
 use App\Http\Controllers\Api\Client\LoyaltyController;
 use App\Http\Controllers\Api\Client\LoyaltyRedemptionController;
 use App\Http\Controllers\Api\Client\MarketingPreferencesController;
@@ -44,6 +45,9 @@ Route::middleware('auth:sanctum')->prefix('client')->group(function () {
     Route::get('/bookings/{booking}', [ClientBookingController::class, 'show']);
     Route::post('/bookings/{booking}/cancel', [ClientBookingController::class, 'cancel']);
     Route::get('/bookings/{booking}/eta', [ClientBookingController::class, 'eta']);
+
+    // Client Invoices — list with scope isolation
+    Route::get('/invoices', [InvoiceApiController::class, 'index'])->name('api.client.invoices.index');
 
     // Phase Promotions — Codes promo + parrainage
     Route::post('/promo-codes/validate', [PromoCodeController::class, 'validate_'])->middleware('throttle:promo');
