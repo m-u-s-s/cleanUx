@@ -13,11 +13,29 @@ export interface Invoice {
   effective_status: string;
   issued_at?: string | null;
   due_at?: string | null;
+  service_name?: string;
   payments?: InvoicePayment[];
   reminders?: InvoiceReminder[];
 }
 
 export interface InvoiceFilters { status?: string; search?: string; sort?: string }
+
+export interface InvoiceSummary {
+  invoices_count: number;
+  paid_count: number;
+  partial_count: number;
+  overdue_count: number;
+  outstanding_total: number;
+  next_due_at?: string | null;
+  currency_symbol: string;
+}
+export interface PaymentHealth { tone: string; label: string; title: string; message: string }
+export interface PaymentEvent { id: number; amount: number; status?: string; reference?: string; date?: string | null }
+export interface InvoicesSummaryResponse {
+  summary: InvoiceSummary;
+  payment_health: PaymentHealth;
+  latest_payment_events: PaymentEvent[];
+}
 
 export async function fetchInvoices(filters: InvoiceFilters = {}): Promise<Invoice[]> {
   const params: Record<string, string> = {};
@@ -36,4 +54,9 @@ export async function fetchInvoice(id: number): Promise<Invoice> {
 /** Relative API path for the invoice PDF (download handled by the screen via apiClient baseURL + auth). */
 export function invoicePdfUrl(id: number): string {
   return `/client/invoices/${id}/pdf`;
+}
+
+export async function fetchInvoicesSummary(): Promise<InvoicesSummaryResponse> {
+  const res = await apiClient.get('/client/invoices/summary');
+  return res.data as InvoicesSummaryResponse;
 }
