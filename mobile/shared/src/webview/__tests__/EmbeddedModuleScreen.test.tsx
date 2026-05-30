@@ -45,4 +45,45 @@ describe('EmbeddedModuleScreen', () => {
 
     expect(onOpenNative).toHaveBeenCalledWith('/booking/new');
   });
+
+  it('retries once on sessionExpired then falls to error state (no unbounded loop)', async () => {
+    (ticket.fetchWebViewUrl as jest.Mock).mockResolvedValue('https://app/m/enter?ticket=t');
+
+    const { getByTestId } = render(
+      <EmbeddedModuleScreen path="/x" title="X" deviceId="d" />,
+    );
+
+    await waitFor(() => getByTestId('mock-webview'));
+    expect(ticket.fetchWebViewUrl).toHaveBeenCalledTimes(1);
+
+    // First sessionExpired → exactly one silent retry (re-fetch).
+    getByTestId('mock-webview').props.onMessage({
+      nativeEvent: { data: JSON.stringify({ type: 'sessionExpired' }) },
+    });
+    await waitFor(() => expect(ticket.fetchWebViewUrl).toHaveBeenCalledTimes(2));
+    await waitFor(() => getByTestId('mock-webview'));
+
+    // Second sessionExpired → NO further retry; error state instead.
+    getByTestId('mock-webview').props.onMessage({
+      nativeEvent: { data: JSON.stringify({ type: 'sessionExpired' }) },
+    });
+    await waitFor(() => expect(getByTestId('embedded-error')).toBeTruthy());
+    expect(ticket.fetchWebViewUrl).toHaveBeenCalledTimes(2); // not a third time
+  });
+
+  it('calls onRequestBack when the page posts a requestBack bridge message', async () => {
+    (ticket.fetchWebViewUrl as jest.Mock).mockResolvedValue('https://app/m/enter?ticket=t');
+    const onRequestBack = jest.fn();
+
+    const { getByTestId } = render(
+      <EmbeddedModuleScreen path="/x" title="X" deviceId="d" onRequestBack={onRequestBack} />,
+    );
+
+    await waitFor(() => getByTestId('mock-webview'));
+    getByTestId('mock-webview').props.onMessage({
+      nativeEvent: { data: JSON.stringify({ type: 'requestBack' }) },
+    });
+
+    expect(onRequestBack).toHaveBeenCalled();
+  });
 });

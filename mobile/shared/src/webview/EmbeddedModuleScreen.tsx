@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { View, ActivityIndicator } from 'react-native';
 import { WebView } from 'react-native-webview';
 import { fetchWebViewUrl } from './useWebViewTicket';
@@ -9,7 +9,7 @@ import { colors } from '@/theme';
 export interface EmbeddedModuleScreenProps {
   /** Internal web path to render (e.g. '/admin/audit'). */
   path: string;
-  /** Display title (drawn by the native header in the route wrapper). */
+  /** Display title. Consumed by the route wrapper's native header, not rendered here. */
   title: string;
   /** Stable device identifier for ticket binding. */
   deviceId: string;
@@ -20,6 +20,9 @@ export interface EmbeddedModuleScreenProps {
 }
 
 type Status = 'loading' | 'ready' | 'error';
+
+/** Max automatic silent re-handoffs before giving up (spec: one retry, then stop). */
+const MAX_SESSION_RETRIES = 1;
 
 /**
  * Renders any existing web module inside an authenticated WebView. The user is
@@ -35,15 +38,37 @@ export function EmbeddedModuleScreen({
   const [url, setUrl] = useState<string | null>(null);
   const [status, setStatus] = useState<Status>('loading');
 
+  // Survives renders without retriggering them.
+  const mountedRef = useRef(true);
+  const sessionRetriesRef = useRef(0);
+
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => {
+      mountedRef.current = false;
+    };
+  }, []);
+
   const load = useCallback(async () => {
     setStatus('loading');
     try {
-      setUrl(await fetchWebViewUrl(path, deviceId));
-      setStatus('ready');
+      const resolved = await fetchWebViewUrl(path, deviceId);
+      if (mountedRef.current) {
+        setUrl(resolved);
+        setStatus('ready');
+      }
     } catch {
-      setStatus('error');
+      if (mountedRef.current) {
+        setStatus('error');
+      }
     }
   }, [path, deviceId]);
+
+  // Manual retry (error-state button) resets the automatic-retry budget.
+  const manualRetry = useCallback(() => {
+    sessionRetriesRef.current = 0;
+    load();
+  }, [load]);
 
   useEffect(() => {
     load();
@@ -61,10 +86,21 @@ export function EmbeddedModuleScreen({
           onRequestBack?.();
           break;
         case 'sessionExpired':
-          load(); // silent re-handoff using the still-valid Sanctum token
+          // One silent re-handoff using the still-valid Sanctum token; if the
+          // page expires the session again, stop looping and surface an error.
+          if (sessionRetriesRef.current < MAX_SESSION_RETRIES) {
+            sessionRetriesRef.current += 1;
+            load();
+          } else {
+            setStatus('error');
+          }
           break;
         case 'error':
           setStatus('error');
+          break;
+        case 'ready':
+        default:
+          // 'ready' is informational; the ready UI state is driven by load().
           break;
       }
     },
@@ -76,7 +112,7 @@ export function EmbeddedModuleScreen({
       <View testID="embedded-error" style={{ flex: 1 }}>
         <ErrorState
           message="Cette section nécessite une connexion. Réessayez."
-          onRetry={load}
+          onRetry={manualRetry}
         />
       </View>
     );
