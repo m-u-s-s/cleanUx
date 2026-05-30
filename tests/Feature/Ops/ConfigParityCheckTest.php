@@ -48,6 +48,6 @@ class ConfigParityCheckTest extends TestCase
         Config::set('broadcasting.default', 'reverb');
         Config::set('session.driver', 'database');
 
-        $this->artisan('config:parity-check')->expectsOutputToContain('queue');
+        $this->artisan('config:parity-check')->expectsOutputToContain('queue')->assertExitCode(1);
     }
 }

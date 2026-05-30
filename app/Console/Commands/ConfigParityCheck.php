@@ -38,7 +38,7 @@ class ConfigParityCheck extends Command
         [
             'setting' => 'cache.default',
             'allowed' => ['redis', 'memcached', 'dynamodb'],
-            'label' => 'redis | memcached  (not file/array)',
+            'label' => 'redis | memcached | dynamodb  (not file/array)',
         ],
         [
             'setting' => 'broadcasting.default',
