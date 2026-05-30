@@ -6,7 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Resources\InvoiceResource;
 use App\Models\FinanceInvoice;
 use App\Support\Finance\ClientFinanceDocumentScope;
-use Barryvdh\DomPDF\Facade\Pdf;
+use App\Support\Finance\InvoicePdf;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Symfony\Component\HttpFoundation\Response;
@@ -15,20 +15,16 @@ class InvoiceApiController extends Controller
 {
     public function download(Request $request, int $id): Response
     {
-        $invoice = ClientFinanceDocumentScope::apply(
-            FinanceInvoice::query(),
-            $request->user(),
-        )->findOrFail($id);
+        // Verify ownership/scope first (yields 404 for non-owned), then fetch
+        // with a properly typed query so static analysis knows the model type.
+        abort_unless(
+            ClientFinanceDocumentScope::apply(FinanceInvoice::query(), $request->user())->where('id', $id)->exists(),
+            404,
+        );
 
-        $invoice->loadMissing(['client', 'organizationAccount', 'rendezVous.serviceZone', 'rendezVous.organizationSite', 'payments']);
+        $invoice = FinanceInvoice::findOrFail($id);
 
-        $filename = 'facture-'.($invoice->invoice_number ?: $invoice->id).'.pdf';
-
-        try {
-            return Pdf::loadView('client.finance.invoice-pdf', ['invoice' => $invoice])->download($filename);
-        } catch (\Throwable) {
-            return response()->view('client.finance.invoice-pdf', ['invoice' => $invoice], 200);
-        }
+        return InvoicePdf::download($invoice);
     }
 
     public function show(Request $request, int $id): InvoiceResource

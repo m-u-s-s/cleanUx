@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Client;
 use App\Models\FinanceInvoice;
 use App\Models\FinanceQuote;
 use App\Services\Enterprise\EnterpriseRoutingService;
+use App\Support\Finance\InvoicePdf;
 use Barryvdh\DomPDF\Facade\Pdf;
 
 class FinanceDocumentDownloadController
@@ -26,11 +27,13 @@ class FinanceDocumentDownloadController
         $invoice->loadMissing(['client', 'organizationAccount', 'rendezVous.serviceZone', 'rendezVous.organizationSite', 'payments']);
         $this->authorizeDocument($invoice->client_id, $invoice->organization_account_id, $invoice->rendezVous?->organizationSite, $entrepriseRouting);
 
-        return $this->renderPdfOrHtml(
-            'client.finance.invoice-pdf',
-            ['invoice' => $invoice],
-            'facture-'.($invoice->invoice_number ?: $invoice->id).'.pdf'
-        );
+        try {
+            return InvoicePdf::download($invoice);
+        } catch (\Throwable $e) {
+            report($e);
+
+            return response()->view('client.finance.invoice-pdf', ['invoice' => $invoice], 200);
+        }
     }
 
     protected function authorizeDocument(?int $clientId, ?int $organizationAccountId, $site, EnterpriseRoutingService $entrepriseRouting): void

@@ -75,6 +75,12 @@ class InvoiceApiTest extends TestCase
         $this->getJson("/api/client/invoices/{$theirs->id}")->assertStatus(404);
     }
 
+    public function test_download_requires_auth(): void
+    {
+        $invoice = FinanceInvoice::factory()->create();
+        $this->get("/api/client/invoices/{$invoice->id}/pdf")->assertUnauthorized();
+    }
+
     public function test_download_returns_pdf_for_own_invoice(): void
     {
         $me = User::factory()->create(['role' => 'client']);
