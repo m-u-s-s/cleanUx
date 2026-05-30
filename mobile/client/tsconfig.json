@@ -34,6 +34,8 @@
       "@/webview/*": ["../shared/src/webview/*"],
       "@/parity": ["../shared/src/parity"],
       "@/parity/*": ["../shared/src/parity/*"],
+      "@/finance": ["../shared/src/finance"],
+      "@/finance/*": ["../shared/src/finance/*"],
       "@/ErrorBoundary": ["../shared/src/ErrorBoundary"],
       "@cleanux/shared": ["../shared/src"],
       "@cleanux/shared/*": ["../shared/src/*"],

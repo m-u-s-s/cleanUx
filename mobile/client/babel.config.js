@@ -21,6 +21,7 @@
             '@/ui': '../shared/src/ui',
             '@/parity': '../shared/src/parity',
             '@/webview': '../shared/src/webview',
+            '@/finance': '../shared/src/finance',
             '@/ErrorBoundary': '../shared/src/ErrorBoundary',
             // Client-only modules — resolve to local src/
             '@': './src',

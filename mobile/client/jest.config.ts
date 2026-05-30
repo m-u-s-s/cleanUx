@@ -38,6 +38,7 @@ const config: Config = {
     '^@/ErrorBoundary$': '<rootDir>/../shared/src/ErrorBoundary',
     '^@/webview(.*)$': '<rootDir>/../shared/src/webview$1',
     '^@/parity(.*)$': '<rootDir>/../shared/src/parity$1',
+    '^@/finance(.*)$': '<rootDir>/../shared/src/finance$1',
     // Client-only modules
     '^@/(.*)$': '<rootDir>/src/$1',
     // react-native-reanimated v4 requires native worklets — use local stub to avoid WorkletsError
