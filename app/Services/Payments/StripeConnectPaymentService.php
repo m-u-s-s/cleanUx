@@ -66,24 +66,30 @@ class StripeConnectPaymentService
             return null;
         }
 
+        // Attempt the Stripe capture OUTSIDE the DB transaction so that a
+        // declined-card exception does not roll back the 'failed' status update.
+        // The 'failed' write must survive even when Stripe rejects the capture.
+        try {
+            $intent = PaymentIntent::retrieve($booking->stripe_payment_intent_id);
+            $intent->capture();
+        } catch (\Throwable $e) {
+            Log::error('StripeConnectPaymentService: capture failed', [
+                'mission_id' => $mission->id,
+                'pi_id' => $booking->stripe_payment_intent_id,
+                'error' => $e->getMessage(),
+            ]);
+
+            // Write 'failed' outside any transaction so it is never rolled back.
+            $booking->update([
+                'payment_status' => 'failed',
+                'payment_failed_at' => now(),
+            ]);
+            throw new RuntimeException('Capture échouée : '.$e->getMessage(), 0, $e);
+        }
+
+        // Capture succeeded — wrap only the DB writes (status + payout row) in a
+        // transaction so they are atomic with respect to each other.
         return DB::transaction(function () use ($mission, $booking) {
-            try {
-                $intent = PaymentIntent::retrieve($booking->stripe_payment_intent_id);
-                $intent->capture();
-            } catch (\Throwable $e) {
-                Log::error('StripeConnectPaymentService: capture failed', [
-                    'mission_id' => $mission->id,
-                    'pi_id' => $booking->stripe_payment_intent_id,
-                    'error' => $e->getMessage(),
-                ]);
-
-                $booking->update([
-                    'payment_status' => 'failed',
-                    'payment_failed_at' => now(),
-                ]);
-                throw new RuntimeException('Capture échouée : '.$e->getMessage(), 0, $e);
-            }
-
             $booking->update([
                 'payment_status' => 'captured',
                 'payment_captured_at' => now(),

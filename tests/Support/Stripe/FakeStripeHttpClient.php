@@ -2,6 +2,7 @@
 
 namespace Tests\Support\Stripe;
 
+use Stripe\Exception\ApiErrorException;
 use Stripe\HttpClient\ClientInterface;
 
 /**
@@ -62,8 +63,19 @@ class FakeStripeHttpClient implements ClientInterface
 
         if (isset($this->stubs[$key])) {
             [$body, $code] = $this->stubs[$key];
-            // Task 4 (F7) extends here: if $code >= 400 and $body has an 'error'
-            // key, throw a \Stripe\Exception\* so the service's try/catch fires.
+            // Task 4 (F7): if the stub represents an error response, throw a
+            // Stripe exception so the service's catch(\Throwable) fires exactly
+            // as it would against the real Stripe API. Non-error stubs (2xx) are
+            // returned normally — existing happy-path behaviour is unchanged.
+            if ($code >= 400 && isset($body['error'])) {
+                throw ApiErrorException::factory(
+                    $body['error']['message'] ?? 'Stripe error',
+                    $code,
+                    json_encode(['error' => $body['error']]),
+                    ['error' => $body['error']],
+                    []
+                );
+            }
             $this->rememberLastKnown($path, $body);
 
             return [json_encode($body), $code, []];
