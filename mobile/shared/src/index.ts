@@ -67,3 +67,11 @@ export { maybeRequestReview, incrementCompletedBookings } from './hooks/useAppRa
 
 // ErrorBoundary
 export { ErrorBoundary } from './ErrorBoundary';
+
+// WebView (parity foundation)
+export { EmbeddedModuleScreen, parseBridgeMessage, INJECTED_BRIDGE_JS, fetchWebViewUrl } from './webview';
+export type { EmbeddedModuleScreenProps, BridgeMessage } from './webview';
+
+// Parity
+export { fetchParityMap } from './parity';
+export type { ParityModule } from './parity';
