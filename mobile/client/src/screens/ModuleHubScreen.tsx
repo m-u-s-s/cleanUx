@@ -13,6 +13,7 @@ const NATIVE_ROUTES: Record<string, { screen: string; params?: object }> = {
   booking: { screen: 'BookingWizard' },
   tracking: { screen: 'MissionTracking' },
   chat: { screen: 'ChatList' },
+  invoices: { screen: 'Invoices' },
 };
 
 export function ModuleHubScreen({ navigation }: { navigation: any }) {

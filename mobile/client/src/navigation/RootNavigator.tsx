@@ -30,6 +30,9 @@ import { LegalScreen } from '@/screens/LegalScreen';
 import { NotificationPreferencesScreen } from '@/screens/NotificationPreferencesScreen';
 import { LanguageScreen } from '@/screens/LanguageScreen';
 import { AppearanceScreen } from '@/screens/AppearanceScreen';
+// Invoices
+import { InvoicesScreen } from '@/screens/InvoicesScreen';
+import { InvoiceDetailScreen } from '@/screens/InvoiceDetailScreen';
 // Embedded web modules
 import { EmbeddedModuleRoute } from '@/screens/EmbeddedModuleRoute';
 import { colors } from '@/theme';
@@ -170,6 +173,9 @@ export function RootNavigator() {
               component={AppearanceScreen}
               options={{ title: 'Apparence', headerShown: true }}
             />
+            {/* Invoices */}
+            <Stack.Screen name="Invoices" component={InvoicesScreen} options={{ headerShown: true, title: 'Factures' }} />
+            <Stack.Screen name="InvoiceDetail" component={InvoiceDetailScreen} options={{ headerShown: true, title: 'Facture' }} />
             {/* Embedded web modules */}
             <Stack.Screen
               name="EmbeddedModule"

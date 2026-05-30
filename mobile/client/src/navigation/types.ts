@@ -27,6 +27,8 @@ export type RootStackParamList = {
   NotificationPreferences: undefined;
   Language: undefined;
   Appearance: undefined;
+  Invoices: undefined;
+  InvoiceDetail: { id: number };
   // Embedded web modules
   EmbeddedModule: { path: string; title: string };
 };
