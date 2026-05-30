@@ -8,6 +8,7 @@ use App\Models\BookingInsurance;
 use App\Models\CancellationAudit;
 use App\Services\Insurance\InsuranceService;
 use App\Services\Loyalty\LoyaltyService;
+use App\Services\Payments\ProviderWalletService;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -168,6 +169,33 @@ class CancellationIntegrationsRunner
             ], [
                 'idempotency_key' => $idempotencyKey,
             ]);
+
+            // F9 fix: write a proportional wallet clawback so the provider does not
+            // retain money the client was refunded. Mirrors the formula in
+            // StripeConnectPaymentService::refundMissionPayment():
+            //   clawbackCents = round(refundCents × providerCents / max(1, totalCents))
+            // Soft-fail: a clawback failure must never prevent the Stripe refund
+            // result from being returned (the refund already happened).
+            try {
+                $totalCents = max(1, (int) ($booking->payment_amount_cents ?? 0));
+                $providerCents = (int) ($booking->provider_amount_cents ?? $booking->payment_amount_cents ?? 0);
+                $refundedCents = (int) $row->refund_amount_cents;
+                $clawbackCents = min((int) round($refundedCents * $providerCents / $totalCents), $providerCents);
+
+                if ($clawbackCents > 0) {
+                    app(ProviderWalletService::class)->recordRefundClawback(
+                        $booking,
+                        round((float) $clawbackCents / 100, 2),
+                        $refund->id,
+                    );
+                }
+            } catch (\Throwable $e) {
+                Log::warning('[cancellation_v2] wallet clawback after refund failed', [
+                    'cancellation_id' => $row->id,
+                    'refund_id' => $refund->id,
+                    'error' => $e->getMessage(),
+                ]);
+            }
 
             return [
                 'status' => 'succeeded',
