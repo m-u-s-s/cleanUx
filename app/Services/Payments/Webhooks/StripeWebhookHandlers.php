@@ -146,7 +146,7 @@ class StripeWebhookHandlers
                 if ($refundCents <= 0) {
                     continue;
                 }
-                $clawbackCents = (int) round($refundCents * $providerCents / $totalCents);
+                $clawbackCents = min((int) round($refundCents * $providerCents / $totalCents), $providerCents);
                 if ($clawbackCents <= 0) {
                     continue;
                 }
@@ -161,7 +161,7 @@ class StripeWebhookHandlers
             // Key on charge id — this path is only hit when no per-refund data is
             // available, so there is no overlap with the service path (which always
             // has a re_xxx).
-            $clawbackCents = (int) round($refundedAmountCents * $providerCents / $totalCents);
+            $clawbackCents = min((int) round($refundedAmountCents * $providerCents / $totalCents), $providerCents);
             if ($clawbackCents > 0) {
                 $this->walletService->recordRefundClawback(
                     $booking,

@@ -8,6 +8,7 @@ use App\Services\Payments\ProviderWalletService;
 use App\Services\Payments\StripeConnectPaymentService;
 use App\Services\Payments\Webhooks\StripeWebhookEventProcessor;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
 use Stripe\ApiRequestor;
 use Stripe\Stripe;
 use Tests\Support\Spine\SpineScenario;
@@ -77,7 +78,7 @@ class RefundClawbackTest extends TestCase
         $this->stripe->stub(
             'POST',
             '/v1/refunds',
-            StripeFakeResponses::refund('re_f3', $piId, 8000)
+            StripeFakeResponses::refund('re_f3', $piId, 10000)
         );
 
         // ── 3. Call refundMissionPayment (full refund — amountCents = null) ──
@@ -289,6 +290,104 @@ class RefundClawbackTest extends TestCase
             .'re_dedup, there must be exactly 1 clawback in the ledger. '
             .'The webhook must dedup on the Stripe Refund id, not the Charge id.'
         );
+    }
+
+    public function test_two_distinct_partial_refunds_each_claw_back_separately(): void
+    {
+        // Scenario: €100 booking (80 € provider / 20 € fee).
+        // Two distinct partial refunds: €30 then €20.
+        //   Refund 1: 3000 × 8000 / 10000 = 2400 cents = €24 clawback
+        //   Refund 2: 2000 × 8000 / 10000 = 1600 cents = €16 clawback
+        // Total clawed: €40; 2 distinct rows keyed on re_one / re_two.
+        //
+        // REAL BEHAVIOR NOTE (service-level guard):
+        // refundMissionPayment checks payment_status === 'captured' and throws
+        // RuntimeException for any other status.  After the first partial refund
+        // the status becomes 'partially_refunded', so a direct second call to the
+        // service would be blocked.  This is a known limitation: consecutive
+        // partial refunds via the service path are not supported without a status
+        // reset.  Production multi-partial-refund flows go through the
+        // charge.refunded webhook (each re_xxx triggers its own clawback row via
+        // recordRefundClawback).
+        //
+        // We test both clawback amounts by:
+        //   - calling refundMissionPayment for the first refund (service path, status → partially_refunded)
+        //   - forceFill the booking back to 'captured' to simulate the second admin/webhook-initiated refund
+        //   - calling refundMissionPayment again for the second refund
+        // This exercises the clawback arithmetic for both calls with distinct refund ids.
+        $s = SpineScenario::make()->withDevis(100.00)->build();
+
+        $piId = 'pi_multi';
+
+        $s->booking->forceFill([
+            'payment_status' => 'captured',
+            'stripe_payment_intent_id' => $piId,
+            'provider_amount_cents' => 8000,   // 80.00 €
+            'platform_fee_cents' => 2000,       // 20.00 €
+            'payment_amount_cents' => 10000,    // 100.00 € total
+            'currency' => 'EUR',
+        ])->save();
+
+        $walletService = app(ProviderWalletService::class);
+        $walletService->recordEarning($s->booking->fresh());
+
+        // ── First partial refund: €30 (3000 cents) → clawback €24 (2400 cents) ──
+        $this->stripe->stub(
+            'POST',
+            '/v1/refunds',
+            StripeFakeResponses::refund('re_one', $piId, 3000)
+        );
+
+        app(StripeConnectPaymentService::class)
+            ->refundMissionPayment($s->booking->fresh(), 3000);
+
+        // Status is now 'partially_refunded' — the service guard would block a
+        // second call.  Reset to 'captured' to allow the second partial refund.
+        // Use DB::table to bypass any model observers that might interfere.
+        DB::table('bookings')
+            ->where('id', $s->booking->id)
+            ->update(['payment_status' => 'captured']);
+
+        // ── Second partial refund: €20 (2000 cents) → clawback €16 (1600 cents) ──
+        $this->stripe->stub(
+            'POST',
+            '/v1/refunds',
+            StripeFakeResponses::refund('re_two', $piId, 2000)
+        );
+
+        app(StripeConnectPaymentService::class)
+            ->refundMissionPayment($s->booking->fresh(), 2000);
+
+        // ── Assertions ──
+        $clawbacks = ProviderWalletTransaction::query()
+            ->where('provider_user_id', $s->provider->id)
+            ->where('type', ProviderWalletTransaction::TYPE_REFUND_CLAWBACK)
+            ->where('direction', ProviderWalletTransaction::DIRECTION_DEBIT)
+            ->orderBy('id')
+            ->get();
+
+        $this->assertCount(2, $clawbacks, 'Two distinct partial refunds must produce two distinct clawback rows');
+
+        $this->assertEqualsWithDelta(
+            24.00,
+            (float) $clawbacks->get(0)->amount,
+            0.01,
+            'First clawback must be €24 (3000 × 8000/10000 = 2400 cents)'
+        );
+
+        $this->assertEqualsWithDelta(
+            16.00,
+            (float) $clawbacks->get(1)->amount,
+            0.01,
+            'Second clawback must be €16 (2000 × 8000/10000 = 1600 cents)'
+        );
+
+        $totalClawed = $clawbacks->sum('amount');
+        $this->assertEqualsWithDelta(40.00, (float) $totalClawed, 0.01, 'Total clawed must be €40');
+
+        // Distinct idempotency keys (keyed on re_one / re_two)
+        $keys = $clawbacks->pluck('idempotency_key')->unique();
+        $this->assertCount(2, $keys, 'Each partial refund clawback must have a distinct idempotency key');
     }
 
     public function test_clawback_is_idempotent_on_retry(): void

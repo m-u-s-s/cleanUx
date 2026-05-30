@@ -226,8 +226,15 @@ class StripeConnectPaymentService
         // handleChargeRefunded, so service-then-webhook deduplicates to one row.
         $totalCents = max(1, (int) ($booking->payment_amount_cents ?? 0));
         $providerCents = (int) ($booking->provider_amount_cents ?? $booking->payment_amount_cents ?? 0);
+
+        if ($booking->provider_amount_cents === null) {
+            Log::warning('refundMissionPayment: booking has null provider_amount_cents; clawback may over-claw', [
+                'booking_id' => $booking->id,
+            ]);
+        }
+
         $refundedCents = $amountCents ?? $totalCents;
-        $clawbackCents = (int) round($refundedCents * $providerCents / $totalCents);
+        $clawbackCents = min((int) round($refundedCents * $providerCents / $totalCents), $providerCents);
 
         if ($clawbackCents > 0) {
             $clawbackAmount = round((float) $clawbackCents / 100, 2);
