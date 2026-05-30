@@ -74,4 +74,24 @@ class InvoiceApiTest extends TestCase
 
         $this->getJson("/api/client/invoices/{$theirs->id}")->assertStatus(404);
     }
+
+    public function test_download_returns_pdf_for_own_invoice(): void
+    {
+        $me = User::factory()->create(['role' => 'client']);
+        $invoice = FinanceInvoice::factory()->create(['client_id' => $me->id]);
+        Sanctum::actingAs($me);
+
+        $res = $this->get("/api/client/invoices/{$invoice->id}/pdf");
+        $res->assertOk();
+        $this->assertStringContainsString('application/pdf', strtolower((string) $res->headers->get('content-type')));
+    }
+
+    public function test_download_returns_404_for_another_clients_invoice_pdf(): void
+    {
+        $me = User::factory()->create(['role' => 'client']);
+        $theirs = FinanceInvoice::factory()->create(['client_id' => User::factory()->create()->id]);
+        Sanctum::actingAs($me);
+
+        $this->get("/api/client/invoices/{$theirs->id}/pdf")->assertStatus(404);
+    }
 }
