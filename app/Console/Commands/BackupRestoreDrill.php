@@ -98,6 +98,13 @@ class BackupRestoreDrill extends Command
 
         $this->info("Scratch connection: [{$scratchConnection}] (primary: [{$primaryConnection}]) — safe to proceed.");
 
+        // --- 1b. Fail-fast if the scratch connection is not defined -----------
+        if (! array_key_exists($scratchConnection, config('database.connections', []))) {
+            $this->error("scratch connection '{$scratchConnection}' is not defined in config/database.connections; pass --connection=<a real connection>");
+
+            return self::FAILURE;
+        }
+
         // --- 2. Locate the backup -------------------------------------------
         $backupPath = $this->option('backup');
 
@@ -170,7 +177,7 @@ class BackupRestoreDrill extends Command
         // Try config-driven path first.
         $configPath = config('backup.restore.path');
         if ($configPath && is_dir($configPath)) {
-            $files = glob(rtrim($configPath, '/DIRECTORY_SEPARATOR').'/*.sql');
+            $files = glob(rtrim($configPath, '/\\').DIRECTORY_SEPARATOR.'*.sql');
             if ($files) {
                 usort($files, fn ($a, $b) => filemtime($b) - filemtime($a));
 
@@ -267,13 +274,14 @@ class BackupRestoreDrill extends Command
         $name = 'wallet ledger integrity';
 
         try {
-            // Compute per-provider balance: SUM(credit_amount) - SUM(debit_amount).
+            // Compute per-provider signed balance mirroring signedAmount():
+            //   direction='credit' → +amount, direction='debit' → -amount.
             // We do not assert positive balance — just that the SQL runs without error
             // and that the table itself is queryable (guards against total data loss).
             $rows = DB::connection($connection)
                 ->table('provider_wallet_transactions')
-                ->selectRaw('provider_id, SUM(credit_amount) - SUM(debit_amount) AS balance')
-                ->groupBy('provider_id')
+                ->selectRaw("provider_user_id, SUM(CASE WHEN direction = 'credit' THEN amount ELSE -amount END) AS balance")
+                ->groupBy('provider_user_id')
                 ->get();
 
             return [
