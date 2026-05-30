@@ -36,6 +36,8 @@ const config: Config = {
     '^@/theme(.*)$': '<rootDir>/../shared/src/theme$1',
     '^@/ui(.*)$': '<rootDir>/../shared/src/ui$1',
     '^@/ErrorBoundary$': '<rootDir>/../shared/src/ErrorBoundary',
+    '^@/webview(.*)$': '<rootDir>/../shared/src/webview$1',
+    '^@/parity(.*)$': '<rootDir>/../shared/src/parity$1',
     // Client-only modules
     '^@/(.*)$': '<rootDir>/src/$1',
     // react-native-reanimated v4 requires native worklets — use local stub to avoid WorkletsError
@@ -51,6 +53,8 @@ const config: Config = {
     '^@gorhom/bottom-sheet$': '@gorhom/bottom-sheet/mock',
     // react-native-maps: use local stub to avoid native map init in Jest
     '^react-native-maps$': '<rootDir>/__mocks__/react-native-maps.tsx',
+    // react-native-webview: use local stub to avoid native WebView init in Jest
+    '^react-native-webview$': '<rootDir>/__mocks__/react-native-webview.tsx',
     // expo-camera: use local stub to avoid native camera init in Jest
     '^expo-camera$': '<rootDir>/__mocks__/expo-camera.tsx',
     // expo-notifications: use local stub to avoid native notification init in Jest

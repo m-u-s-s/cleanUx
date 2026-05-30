@@ -4,6 +4,7 @@ function optionalEnv(key: string, fallback: string = ''): string {
 
 export const env = {
   apiUrl: optionalEnv('EXPO_PUBLIC_API_URL', 'http://localhost:8000/api'),
+  webUrl: optionalEnv('EXPO_PUBLIC_WEB_URL', 'http://localhost:8000'),
   stripePublishableKey: optionalEnv('EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY'),
   sentryDsn: optionalEnv('EXPO_PUBLIC_SENTRY_DSN'),
 } as const;
