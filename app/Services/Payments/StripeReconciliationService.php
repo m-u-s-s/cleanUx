@@ -3,6 +3,7 @@
 namespace App\Services\Payments;
 
 use App\Models\Booking;
+use App\Models\Mission;
 use App\Models\ProviderPayout;
 use App\Models\StripeReconciliationRun;
 use App\Models\User;
@@ -160,29 +161,49 @@ class StripeReconciliationService
                     );
                 }
 
-                // Finding 4c — a booking captured in DB must have a matching ProviderPayout row.
-                // Without this row the provider's money ledger entry is absent: the platform
-                // cannot account for what was paid out. This is a launch-blocking gap because it
-                // silently bypasses the payment ledger for any booking where captureMissionPayment()
-                // was interrupted after the PI capture but before the DB transaction completed.
+                // Finding 4c — a booking captured in DB must have a matching ProviderPayout row,
+                // BUT only when the booking is EXPECTED to produce a payout — i.e. it has an
+                // associated mission with an assigned provider (lead_provider_user_id set).
+                //
+                // Rationale for the scope guard: MissionPaymentService::capture() and
+                // StripeConnectPaymentService::syncPaymentIntent() both set payment_status=
+                // 'captured' WITHOUT creating a ProviderPayout row. Pre-payout legacy bookings
+                // also exist in this state. Flagging all of them would cause alarm fatigue and
+                // make this check useless. We only alert when there is a clear expectation that
+                // a payout SHOULD have been created (mission exists + provider assigned).
+                //
+                // Fix: use scalar JSON-path equality (->where) instead of ->whereJsonContains
+                // which is for JSON ARRAYS. Using whereJsonContains on a scalar value crashes
+                // SQLite with "malformed JSON" once a ProviderPayout row exists, and produces
+                // wrong results on MySQL. json_extract(...) = ? is correct on both drivers.
                 if ($booking->payment_status === 'captured') {
-                    $hasPayout = ProviderPayout::query()
-                        ->whereJsonContains('metadata->stripe_payment_intent_id', $intent->id)
+                    $expectsPayout = Mission::query()
+                        ->where(function ($q) use ($booking) {
+                            $q->where('booking_id', $booking->id)
+                                ->orWhere('rendez_vous_id', $booking->id);
+                        })
+                        ->whereNotNull('lead_provider_user_id')
                         ->exists();
 
-                    if (! $hasPayout) {
-                        $mismatches[] = $this->mismatch(
-                            'captured_booking_missing_payout',
-                            'payment_intents',
-                            $intent->id,
-                            sprintf(
-                                'Booking #%d est captured mais aucun ProviderPayout enregistré pour PI %s',
-                                $booking->id,
-                                $intent->id
-                            ),
-                            'error',
-                            ['booking_id' => $booking->id]
-                        );
+                    if ($expectsPayout) {
+                        $hasPayout = ProviderPayout::query()
+                            ->where('metadata->stripe_payment_intent_id', $intent->id)
+                            ->exists();
+
+                        if (! $hasPayout) {
+                            $mismatches[] = $this->mismatch(
+                                'captured_booking_missing_payout',
+                                'payment_intents',
+                                $intent->id,
+                                sprintf(
+                                    'Booking #%d est captured mais aucun ProviderPayout enregistré pour PI %s',
+                                    $booking->id,
+                                    $intent->id
+                                ),
+                                'error',
+                                ['booking_id' => $booking->id]
+                            );
+                        }
                     }
                 }
             }

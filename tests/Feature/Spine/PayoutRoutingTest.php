@@ -284,22 +284,30 @@ class PayoutRoutingTest extends TestCase
 
     /**
      * Clean case: a booking that is "captured" in DB and Stripe also reports
-     * "succeeded" → reconciliation must report ZERO payment_status_mismatch
-     * entries for this PI.
+     * "succeeded" → reconciliation must report ZERO payment_status_mismatch AND
+     * ZERO captured_booking_missing_payout entries for this PI.
+     *
+     * This booking is seeded WITHOUT an associated Mission (no lead_provider_user_id),
+     * so the scope guard in reconcilePaymentIntents() correctly determines that no
+     * payout is expected and does NOT emit a captured_booking_missing_payout mismatch.
+     * This prevents alarm fatigue from legacy captures that never had a payout row.
      */
     public function test_f8_reconciliation_reports_no_mismatch_when_db_and_stripe_agree(): void
     {
         $piId = 'pi_f8_clean';
 
-        $s = SpineScenario::make()->withDevis(100.00)->build();
-        $s->booking->forceFill([
+        // Use a plain Booking (no SpineScenario / no Mission) — the scope guard should
+        // skip the missing-payout check because there is no mission with a provider.
+        $client = User::factory()->client()->create(['stripe_id' => 'cus_test_'.uniqid()]);
+        $booking = Booking::factory()->create([
+            'client_id' => $client->id,
             'stripe_payment_intent_id' => $piId,
             'payment_status' => 'captured',   // DB = captured
             'payment_captured_at' => now(),
             'provider_amount_cents' => 8000,
             'platform_fee_cents' => 2000,
             'payment_amount_cents' => 10000,
-        ])->save();
+        ]);
 
         // Stripe also reports "succeeded" → mapPiStatusToBookingStatus('succeeded') = 'captured' ✓
         $this->stripe->stub(
@@ -324,8 +332,10 @@ class PayoutRoutingTest extends TestCase
 
         $this->assertSame(StripeReconciliationRun::STATUS_COMPLETED, $run->status);
 
+        $mismatches = (array) $run->mismatches;
+
         $statusMismatches = array_filter(
-            (array) $run->mismatches,
+            $mismatches,
             fn ($m) => ($m['type'] ?? '') === 'payment_status_mismatch'
         );
 
@@ -333,6 +343,137 @@ class PayoutRoutingTest extends TestCase
             $statusMismatches,
             'F8 (clean case): when DB and Stripe agree (both captured/succeeded), '
             .'reconciliation must report zero payment_status_mismatch entries'
+        );
+
+        // The scope guard must prevent a false-alarm: no mission-with-provider means
+        // no payout was ever expected, so no captured_booking_missing_payout mismatch.
+        $missingPayoutMismatches = array_filter(
+            $mismatches,
+            fn ($m) => ($m['type'] ?? '') === 'captured_booking_missing_payout'
+        );
+
+        $this->assertEmpty(
+            $missingPayoutMismatches,
+            'F8 (clean case, no mission): a captured booking without an associated mission+provider '
+            .'must NOT trigger a captured_booking_missing_payout alarm (scope guard)'
+        );
+    }
+
+    /**
+     * Clean case: a captured booking that DOES have a ProviderPayout row (with the
+     * correct metadata.stripe_payment_intent_id) must produce ZERO
+     * captured_booking_missing_payout mismatches.
+     *
+     * This test would have caught Fix 1's crash (whereJsonContains on a scalar string
+     * throws "malformed JSON" in SQLite once a ProviderPayout row exists) because it
+     * requires a real ProviderPayout row to be present when the JSON query runs.
+     *
+     * The scenario:
+     *   1. Authorize + captureMissionPayment (creates a real ProviderPayout row with
+     *      metadata.stripe_payment_intent_id set).
+     *   2. Stub reconciliation's PaymentIntent::all to return the PI as "succeeded".
+     *   3. Run reconciliation; assert ZERO captured_booking_missing_payout mismatches.
+     */
+    public function test_f8_reconciliation_silent_when_captured_booking_has_payout(): void
+    {
+        $piId = 'pi_f8_haspayout';
+
+        $s = SpineScenario::make()->withDevis(100.00)->build();
+
+        // ── Step 1: authorize the booking ──
+        $this->stripe->stub(
+            'POST',
+            '/v1/payment_intents',
+            StripeFakeResponses::paymentIntent($piId, 'requires_capture', [
+                'transfer_data' => ['destination' => $s->provider->stripe_connect_account_id],
+            ])
+        );
+        app(MissionPaymentService::class)->authorize($s->booking, 'pm_card_visa');
+        $s->booking->refresh();
+
+        $this->assertSame('authorized', $s->booking->payment_status);
+        $this->assertSame($piId, $s->booking->stripe_payment_intent_id);
+
+        // ── Step 2: capture the mission — creates a real ProviderPayout row ──
+        // captureMissionPayment() calls PaymentIntent::retrieve then ->capture().
+        // The FakeStripeHttpClient remembers the POST /v1/payment_intents response
+        // under /v1/payment_intents/{piId} (via rememberLastKnown), so the retrieve
+        // GET is served from the lastKnown cache automatically.
+        // We only need to stub the capture POST.
+        $this->stripe->stub(
+            'POST',
+            "/v1/payment_intents/{$piId}/capture",
+            StripeFakeResponses::paymentIntent($piId, 'succeeded', [
+                'transfer_data' => ['destination' => $s->provider->stripe_connect_account_id],
+            ])
+        );
+        $payout = app(StripeConnectPaymentService::class)->captureMissionPayment($s->mission->fresh());
+
+        $this->assertInstanceOf(ProviderPayout::class, $payout, 'Pre-condition: capture must create a ProviderPayout');
+        $this->assertSame(
+            $piId,
+            $payout->metadata['stripe_payment_intent_id'] ?? null,
+            'Pre-condition: ProviderPayout metadata must reference the PI id'
+        );
+
+        $s->booking->refresh();
+        $this->assertSame('captured', $s->booking->payment_status, 'Pre-condition: booking must be captured');
+
+        // Verify a ProviderPayout row with the correct metadata exists
+        $this->assertSame(1, ProviderPayout::count(), 'Pre-condition: exactly one ProviderPayout row must exist');
+
+        // ── Step 3: stub reconciliation's PaymentIntent::all ──
+        $this->stripe->stub(
+            'GET',
+            '/v1/payment_intents',
+            [
+                'object' => 'list',
+                'data' => [
+                    StripeFakeResponses::paymentIntent($piId, 'succeeded', [
+                        'transfer_data' => ['destination' => $s->provider->stripe_connect_account_id],
+                    ]),
+                ],
+                'has_more' => false,
+                'url' => '/v1/payment_intents',
+            ]
+        );
+
+        // ── Step 4: run reconciliation and assert no missing-payout flag ──
+        $svc = new StripeReconciliationService;
+        $run = $svc->run(
+            StripeReconciliationRun::SCOPE_PAYMENT_INTENTS,
+            Carbon::now()->subDays(1)->startOfDay(),
+            Carbon::now()->endOfDay(),
+        );
+
+        $this->assertSame(
+            StripeReconciliationRun::STATUS_COMPLETED,
+            $run->status,
+            'F8 (clean payout): reconciliation run must complete without exception'
+        );
+
+        $missingPayoutMismatches = array_filter(
+            (array) $run->mismatches,
+            fn ($m) => ($m['type'] ?? '') === 'captured_booking_missing_payout'
+        );
+
+        $this->assertEmpty(
+            $missingPayoutMismatches,
+            'F8 (clean payout): when a ProviderPayout row exists with the correct '
+            .'metadata.stripe_payment_intent_id, reconciliation must NOT emit a '
+            .'captured_booking_missing_payout mismatch. (This test validates Fix 1: '
+            .'using ->where() not ->whereJsonContains() for scalar JSON lookup.)'
+        );
+
+        // Also assert no status mismatch (both DB and Stripe say "captured/succeeded").
+        $statusMismatches = array_filter(
+            (array) $run->mismatches,
+            fn ($m) => ($m['type'] ?? '') === 'payment_status_mismatch'
+        );
+
+        $this->assertEmpty(
+            $statusMismatches,
+            'F8 (clean payout): no payment_status_mismatch when DB and Stripe both show captured/succeeded'
         );
     }
 
