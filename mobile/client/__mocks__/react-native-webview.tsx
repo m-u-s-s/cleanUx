@@ -7,6 +7,7 @@ import { View } from 'react-native';
 export const WebView = React.forwardRef(function WebView(props: any, _ref) {
   return (
     <View
+      {...props}
       testID="mock-webview"
       accessibilityLabel={props?.source?.uri ?? ''}
       onLayout={() => props?.onLoadEnd?.()}
