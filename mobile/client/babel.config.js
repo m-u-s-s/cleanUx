@@ -19,6 +19,7 @@
             '@/storage': '../shared/src/storage',
             '@/theme': '../shared/src/theme',
             '@/ui': '../shared/src/ui',
+            '@/parity': '../shared/src/parity',
             '@/ErrorBoundary': '../shared/src/ErrorBoundary',
             // Client-only modules — resolve to local src/
             '@': './src',
