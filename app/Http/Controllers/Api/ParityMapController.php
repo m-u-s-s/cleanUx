@@ -46,21 +46,11 @@ class ParityMapController extends Controller
         }
 
         foreach ($roles as $role) {
-            if ($this->hasRole($user, $role)) {
+            if (method_exists($user, 'matchesRole') && $user->matchesRole($role)) {
                 return true;
             }
         }
 
         return false;
-    }
-
-    private function hasRole(User $user, string $role): bool
-    {
-        return match ($role) {
-            'client' => method_exists($user, 'isClient') && $user->isClient(),
-            'provider' => method_exists($user, 'isProvider') && $user->isProvider(),
-            'admin' => method_exists($user, 'isPlatformAdmin') && $user->isPlatformAdmin(),
-            default => false,
-        };
     }
 }

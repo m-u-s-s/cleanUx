@@ -20,6 +20,11 @@
  */
 return [
     'modules' => [
+        // Note: company/entreprise clients are matched by the 'client' role here
+        // (isClient() is true for company clients via isClientCompany()), so they
+        // inherit all 'client' modules. Add explicit 'entreprise' role entries only
+        // if/when company-specific modules diverge from individual-client modules.
+
         // Native today (hot operational paths already built in Expo)
         ['key' => 'booking', 'title' => 'Réserver', 'icon' => 'calendar-outline', 'path' => '/client/bookings/new', 'web' => 'native', 'mobile' => 'native', 'roles' => ['client'], 'responsive_verified' => true],
         ['key' => 'tracking', 'title' => 'Suivi', 'icon' => 'navigate-outline', 'path' => '/client/tracking', 'web' => 'native', 'mobile' => 'native', 'roles' => ['client'], 'responsive_verified' => true],

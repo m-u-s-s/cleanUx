@@ -20,6 +20,7 @@ class ParityMapTest extends TestCase
             ['key' => 'booking', 'title' => 'Réserver', 'icon' => 'calendar-outline', 'path' => '/client/bookings/new', 'web' => 'native', 'mobile' => 'native', 'roles' => ['client'], 'responsive_verified' => true],
             ['key' => 'accounting', 'title' => 'Comptabilité', 'icon' => 'document-text-outline', 'path' => '/admin/accounting', 'web' => 'native', 'mobile' => 'webview', 'roles' => ['admin'], 'responsive_verified' => false],
             ['key' => 'help', 'title' => 'Aide', 'icon' => 'help-circle-outline', 'path' => '/help', 'web' => 'native', 'mobile' => 'webview', 'roles' => [], 'responsive_verified' => true],
+            ['key' => 'missions', 'title' => 'Missions', 'icon' => 'briefcase-outline', 'path' => '/employe/missions', 'web' => 'native', 'mobile' => 'native', 'roles' => ['provider'], 'responsive_verified' => true],
         ]);
     }
 
@@ -52,5 +53,25 @@ class ParityMapTest extends TestCase
 
         $this->assertSame('native', $booking['mobile']);
         $this->assertSame('/client/bookings/new', $booking['path']);
+    }
+
+    public function test_response_does_not_expose_internal_fields(): void
+    {
+        Sanctum::actingAs(User::factory()->create(['role' => 'client']));
+
+        $item = collect($this->getJson('/api/parity-map')->json('data'))->first();
+
+        $this->assertArrayNotHasKey('roles', $item);
+        $this->assertArrayNotHasKey('web', $item);
+        $this->assertArrayNotHasKey('responsive_verified', $item);
+    }
+
+    public function test_provider_sees_provider_modules_not_client_only(): void
+    {
+        Sanctum::actingAs(User::factory()->employe()->create());
+
+        $keys = collect($this->getJson('/api/parity-map')->json('data'))->pluck('key');
+        $this->assertTrue($keys->contains('missions'));
+        $this->assertFalse($keys->contains('booking')); // client-only
     }
 }
