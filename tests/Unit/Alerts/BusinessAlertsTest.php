@@ -137,9 +137,15 @@ class BusinessAlertsTest extends TestCase
         // All 5 emitters each fire exactly one event
         Event::assertDispatched(BusinessAlertRaised::class, 5);
 
-        Event::assertDispatched(
-            BusinessAlertRaised::class,
-            fn (BusinessAlertRaised $e) => $e->level === 'critical'
-        );
+        // Every dispatched event must carry level=critical — not just any one of them.
+        $dispatched = Event::dispatched(BusinessAlertRaised::class);
+        $this->assertCount(5, $dispatched, 'Expected exactly 5 dispatched BusinessAlertRaised events');
+        foreach ($dispatched as [$event]) {
+            $this->assertSame(
+                'critical',
+                $event->level,
+                "Alert [{$event->key}] must have level=critical but got [{$event->level}]",
+            );
+        }
     }
 }

@@ -102,6 +102,12 @@ class SpineHealthReport
                 return ['ok' => false, 'detail' => 'no_queue_driver_configured'];
             }
 
+            // 'sync' means jobs execute inline — no real background processing.
+            // Flag as not production-ready so a launch-hardening health check catches it.
+            if ($driver === 'sync') {
+                return ['ok' => false, 'detail' => 'driver=sync — no background processing'];
+            }
+
             $detail = "driver={$driver}";
 
             // Best-effort depth for the database driver
