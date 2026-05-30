@@ -25,7 +25,10 @@ class ParityMapController extends Controller
         /** @var User $user */
         $user = $request->user();
 
-        $modules = collect(config('parity.modules', []))
+        /** @var array<int, array<string, mixed>> $rawModules */
+        $rawModules = config('parity.modules', []);
+
+        $modules = collect($rawModules)
             ->filter(fn (array $m) => $this->visibleTo($user, $m['roles'] ?? []))
             ->map(fn (array $m) => [
                 'key' => $m['key'],
@@ -39,6 +42,9 @@ class ParityMapController extends Controller
         return response()->json(['data' => $modules]);
     }
 
+    /**
+     * @param  array<int, string>  $roles
+     */
     private function visibleTo(User $user, array $roles): bool
     {
         if ($roles === []) {
@@ -46,7 +52,7 @@ class ParityMapController extends Controller
         }
 
         foreach ($roles as $role) {
-            if (method_exists($user, 'matchesRole') && $user->matchesRole($role)) {
+            if ($user->matchesRole($role)) {
                 return true;
             }
         }

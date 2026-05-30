@@ -22,13 +22,13 @@ class WebViewTicketService
 
     private const PREFIX = 'webview_ticket:';
 
-    public function issue(User $user, string $deviceId, string $targetPath): string
+    public function issue(User $user, string $deviceId, string $targetPath, ?int $tokenId = null): string
     {
         $ticket = Str::random(64);
 
         Cache::put(self::key($ticket), [
             'user_id' => $user->id,
-            'token_id' => $user->currentAccessToken()?->id,
+            'token_id' => $tokenId,
             'device_id' => $deviceId,
             'target_path' => $targetPath,
         ], self::TTL_SECONDS);

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Models\User;
 use App\Services\WebView\WebViewTicketService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -29,8 +30,11 @@ class WebViewAuthController extends Controller
             'device_id' => ['nullable', 'string', 'max:255'],
         ]);
 
+        /** @var User $user */
+        $user = $request->user();
         $path = $this->validateInternalPath($data['target_path']);
-        $ticket = $this->tickets->issue($request->user(), $data['device_id'] ?? 'unknown', $path);
+        $tokenId = $user->currentAccessToken()->id;
+        $ticket = $this->tickets->issue($user, $data['device_id'] ?? 'unknown', $path, $tokenId);
 
         return response()->json([
             'ok' => true,
