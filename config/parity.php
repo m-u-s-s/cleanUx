@@ -36,7 +36,7 @@ return [
         ['key' => 'accounting', 'title' => 'Comptabilité', 'icon' => 'document-text-outline', 'path' => '/admin/accounting', 'web' => 'native', 'mobile' => 'webview', 'roles' => ['admin'], 'responsive_verified' => false],
         ['key' => 'audit', 'title' => 'Audit', 'icon' => 'shield-checkmark-outline', 'path' => '/admin/audit', 'web' => 'native', 'mobile' => 'webview', 'roles' => ['admin'], 'responsive_verified' => false],
         ['key' => 'kyb', 'title' => 'KYB', 'icon' => 'business-outline', 'path' => '/admin/kyb', 'web' => 'native', 'mobile' => 'webview', 'roles' => ['admin'], 'responsive_verified' => false],
-        ['key' => 'invoices', 'title' => 'Factures', 'icon' => 'receipt-outline', 'path' => '/client/invoices', 'web' => 'native', 'mobile' => 'webview', 'roles' => ['client'], 'responsive_verified' => false],
+        ['key' => 'invoices', 'title' => 'Factures', 'icon' => 'receipt-outline', 'path' => '/dashboard/client/finance', 'web' => 'native', 'mobile' => 'native', 'roles' => ['client'], 'responsive_verified' => true],
         ['key' => 'help', 'title' => 'Aide', 'icon' => 'help-circle-outline', 'path' => '/help', 'web' => 'native', 'mobile' => 'webview', 'roles' => [], 'responsive_verified' => true],
     ],
 ];
