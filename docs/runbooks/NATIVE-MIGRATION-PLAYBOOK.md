@@ -74,7 +74,7 @@ Add the new screen name(s) and their params to `RootStackParamList`:
 ```ts
 // Example
 Invoices: undefined;
-InvoiceDetail: { invoiceId: number };
+InvoiceDetail: { id: number };
 ```
 
 **4b. `mobile/client/src/navigation/RootNavigator.tsx`**
@@ -226,7 +226,7 @@ The `invoices` module is the first worked example of this playbook. It was selec
 - **Non-trivial API gap.** The Livewire-rendered invoice list and detail had no JSON API counterpart. Step 2 required building two new endpoints (`GET /api/client/invoices` list and `GET /api/client/invoices/{id}` detail) before any native screen could be written. This is the typical cost pattern for long-tail webview modules.
 - **Ownership isolation.** Each new endpoint scopes its query to `auth()->id()` and carries a cross-user isolation test (a second authenticated user must not be able to retrieve another user's invoice — asserted as 403/404). This pattern is required for every new endpoint in every migration.
 - **Device upgrade.** The rubric awarded 2 points for device leverage specifically because the native share sheet enables reliable PDF download/share on iOS and Android — something the embedded WebView renders unreliably on iOS. The native `InvoiceDetailScreen` calls the platform Share API directly.
-- **Three-file additive navigation.** The types file gained `Invoices: undefined` and `InvoiceDetail: { invoiceId: number }`; the navigator registered both screens in the authenticated block; the hub routes map gained `invoices: { screen: 'Invoices' }`.
+- **Three-file additive navigation.** The types file gained `Invoices: undefined` and `InvoiceDetail: { id: number }`; the navigator registered both screens in the authenticated block; the hub routes map gained `invoices: { screen: 'Invoices' }`.
 - **Single-line flag flip.** After all checklist items were verified green, `config/parity.php` changed one token: `'webview'` → `'native'` on the `invoices` row.
 
 Reviewing this PR alongside the playbook is the fastest way to internalise the pattern before starting a new migration.
