@@ -30,11 +30,12 @@ use Stripe\Stripe;
  */
 class StripeConnectPaymentService
 {
-    public function __construct()
+    public function __construct(private ?ProviderWalletService $walletService = null)
     {
         if ($key = config('cashier.secret')) {
             Stripe::setApiKey($key);
         }
+        $this->walletService ??= new ProviderWalletService;
     }
 
     /**
@@ -207,6 +208,21 @@ class StripeConnectPaymentService
             'payment_status' => $isTotal ? 'refunded' : 'partially_refunded',
             'payment_refunded_at' => now(),
         ]);
+
+        // F3 — clawback: debit the provider wallet so they do not keep money
+        // that was returned to the client. The clawback amount is the provider's
+        // share (provider_amount_cents) for a full refund, or the raw cents for a
+        // partial one. ProviderWalletService::recordRefundClawback is idempotent
+        // via idempotency_key, safe to call on webhook retries.
+        $clawbackCents = $amountCents ?? $booking->provider_amount_cents ?? $booking->payment_amount_cents ?? 0;
+        if ($clawbackCents > 0) {
+            $clawbackAmount = round((float) $clawbackCents / 100, 2);
+            $this->walletService->recordRefundClawback(
+                $booking,
+                $clawbackAmount,
+                $refund->id,
+            );
+        }
 
         Log::info('StripeConnectPaymentService: refund OK', [
             'booking_id' => $booking->id,
