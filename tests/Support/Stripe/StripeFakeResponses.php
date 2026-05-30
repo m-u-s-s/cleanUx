@@ -9,13 +9,15 @@ class StripeFakeResponses
 {
     public static function paymentIntent(string $id, string $status, array $overrides = []): array
     {
+        $effectiveStatus = $overrides['status'] ?? $status;
+
         return array_merge([
             'id' => $id,
             'object' => 'payment_intent',
             'status' => $status,
             'amount' => 10000,
-            'amount_capturable' => $status === 'requires_capture' ? 10000 : 0,
-            'amount_received' => $status === 'succeeded' ? 10000 : 0,
+            'amount_capturable' => $effectiveStatus === 'requires_capture' ? 10000 : 0,
+            'amount_received' => $effectiveStatus === 'succeeded' ? 10000 : 0,
             'currency' => 'eur',
             'capture_method' => 'manual',
             'application_fee_amount' => 2000,

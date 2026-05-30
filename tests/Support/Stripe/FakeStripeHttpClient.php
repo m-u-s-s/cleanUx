@@ -18,6 +18,7 @@ class FakeStripeHttpClient implements ClientInterface
     /** @var string[] */
     private array $calls = [];
 
+    /** @var array<string, array<string, mixed>> Last object body seen per resource path (for GET retrieve fallback). */
     private array $lastKnown = [];
 
     public function stub(string $method, string $path, array $body, int $code = 200): self
@@ -51,6 +52,7 @@ class FakeStripeHttpClient implements ClientInterface
 
         // Stripe absUrls are like https://api.stripe.com/v1/payment_intents
         // parse_url already returns the path portion including /v1/…
+        // defensive: SDK always sends /v1-prefixed absolute URLs
         if (! str_starts_with($path, '/v1') && ! str_starts_with($path, '/v2')) {
             $path = '/v1/'.ltrim($path, '/');
         }
@@ -60,6 +62,8 @@ class FakeStripeHttpClient implements ClientInterface
 
         if (isset($this->stubs[$key])) {
             [$body, $code] = $this->stubs[$key];
+            // Task 4 (F7) extends here: if $code >= 400 and $body has an 'error'
+            // key, throw a \Stripe\Exception\* so the service's try/catch fires.
             $this->rememberLastKnown($path, $body);
 
             return [json_encode($body), $code, []];
@@ -80,16 +84,18 @@ class FakeStripeHttpClient implements ClientInterface
             return;
         }
 
-        // After a sub-action (capture/cancel/confirm), also store under the
-        // resource path so a subsequent GET /v1/payment_intents/{id} resolves.
+        // Sub-action path (e.g. /v1/payment_intents/pi_x/capture): re-key the
+        // returned object under the stripped resource path so a later GET
+        // (retrieve) sees the post-action state. Do NOT also append the id.
         $resourcePath = (string) preg_replace('#/(capture|cancel|confirm)$#', '', $path);
         if ($resourcePath !== $path) {
             $this->lastKnown[$resourcePath] = $body;
+
+            return;
         }
 
-        // After a POST to a collection endpoint (e.g. /v1/payment_intents) that
-        // returns a resource with an id, also store under the individual resource
-        // path (/v1/payment_intents/pi_xxx) so a subsequent retrieve() works.
+        // Collection POST (e.g. POST /v1/payment_intents): index the created
+        // object under its individual resource path for retrieve().
         $individualPath = rtrim($path, '/').'/'.$body['id'];
         if ($individualPath !== $path) {
             $this->lastKnown[$individualPath] = $body;
