@@ -6,13 +6,21 @@ use App\Http\Controllers\Controller;
 use App\Http\Resources\InvoiceResource;
 use App\Models\FinanceInvoice;
 use App\Support\Finance\ClientFinanceDocumentScope;
+use App\Support\Finance\ClientInvoiceSummary;
 use App\Support\Finance\InvoicePdf;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Symfony\Component\HttpFoundation\Response;
 
 class InvoiceApiController extends Controller
 {
+    public function summary(Request $request): JsonResponse
+    {
+        return response()->json(ClientInvoiceSummary::for($request->user()));
+    }
+
     public function download(Request $request, int $id): Response
     {
         // Verify ownership/scope first (yields 404 for non-owned), then fetch
@@ -30,7 +38,7 @@ class InvoiceApiController extends Controller
     public function show(Request $request, int $id): InvoiceResource
     {
         $invoice = ClientFinanceDocumentScope::apply(
-            FinanceInvoice::query()->with(['payments', 'reminders']),
+            FinanceInvoice::query()->with(['payments', 'reminders', 'rendezVous.serviceCatalog']),
             $request->user(),
         )->findOrFail($id);
 
@@ -40,7 +48,7 @@ class InvoiceApiController extends Controller
     public function index(Request $request): AnonymousResourceCollection
     {
         $query = ClientFinanceDocumentScope::apply(
-            FinanceInvoice::query()->with(['rendezVous']),
+            FinanceInvoice::query()->with(['rendezVous.serviceCatalog']),
             $request->user(),
         );
 
@@ -50,7 +58,21 @@ class InvoiceApiController extends Controller
         }
 
         if ($search = trim((string) $request->query('search', ''))) {
-            $query->where('invoice_number', 'like', '%'.$search.'%');
+            $like = '%'.$search.'%';
+            $query->where(function (Builder $searchQuery) use ($like) {
+                $searchQuery
+                    ->where('invoice_number', 'like', $like)
+                    ->orWhere('status', 'like', $like)
+                    ->orWhereHas('rendezVous', function (Builder $rdvQuery) use ($like) {
+                        $rdvQuery
+                            ->where('ville', 'like', $like)
+                            ->orWhere('adresse', 'like', $like)
+                            ->orWhere('booking_reference', 'like', $like)
+                            ->orWhereHas('serviceCatalog', function (Builder $serviceQuery) use ($like) {
+                                $serviceQuery->where('name', 'like', $like);
+                            });
+                    });
+            });
         }
 
         match ((string) $request->query('sort', 'recent')) {

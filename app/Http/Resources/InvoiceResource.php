@@ -20,6 +20,9 @@ class InvoiceResource extends JsonResource
             'effective_status' => $this->status,
             'issued_at' => optional($this->issued_at)->toIso8601String(),
             'due_at' => optional($this->due_at)->toIso8601String(),
+            'service_name' => $this->resource->relationLoaded('rendezVous')
+                ? (($this->rendezVous !== null ? $this->rendezVous->service_display_name : null) ?? 'Service non précisé')
+                : 'Service non précisé',
             'payments' => $this->whenLoaded('payments', fn () => $this->payments->map(fn ($p) => [
                 'id' => $p->id,
                 'amount' => (float) $p->amount,

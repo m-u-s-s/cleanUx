@@ -47,6 +47,7 @@ Route::middleware('auth:sanctum')->prefix('client')->group(function () {
     Route::get('/bookings/{booking}/eta', [ClientBookingController::class, 'eta']);
 
     // Client Invoices — list with scope isolation
+    Route::get('/invoices/summary', [InvoiceApiController::class, 'summary'])->name('api.client.invoices.summary');
     Route::get('/invoices', [InvoiceApiController::class, 'index'])->name('api.client.invoices.index');
     Route::get('/invoices/{id}', [InvoiceApiController::class, 'show'])->whereNumber('id')->name('api.client.invoices.show');
     Route::get('/invoices/{id}/pdf', [InvoiceApiController::class, 'download'])->whereNumber('id')->name('api.client.invoices.pdf');
