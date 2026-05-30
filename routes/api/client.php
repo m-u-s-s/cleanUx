@@ -48,6 +48,7 @@ Route::middleware('auth:sanctum')->prefix('client')->group(function () {
 
     // Client Invoices — list with scope isolation
     Route::get('/invoices', [InvoiceApiController::class, 'index'])->name('api.client.invoices.index');
+    Route::get('/invoices/{id}', [InvoiceApiController::class, 'show'])->whereNumber('id')->name('api.client.invoices.show');
 
     // Phase Promotions — Codes promo + parrainage
     Route::post('/promo-codes/validate', [PromoCodeController::class, 'validate_'])->middleware('throttle:promo');

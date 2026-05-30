@@ -20,6 +20,18 @@ class InvoiceResource extends JsonResource
             'effective_status' => $this->status,
             'issued_at' => optional($this->issued_at)->toIso8601String(),
             'due_at' => optional($this->due_at)->toIso8601String(),
+            'payments' => $this->whenLoaded('payments', fn () => $this->payments->map(fn ($p) => [
+                'id' => $p->id,
+                'amount' => (float) $p->amount,
+                'status' => $p->status,
+                'paid_at' => optional($p->paid_at ?? $p->created_at)->toIso8601String(),
+            ])),
+            'reminders' => $this->whenLoaded('reminders', fn () => $this->reminders->map(fn ($r) => [
+                'id' => $r->id,
+                'type' => $r->reminder_type,
+                'sent_at' => optional($r->sent_at ?? $r->created_at)->toIso8601String(),
+                'channel' => $r->channel,
+            ])),
         ];
     }
 }

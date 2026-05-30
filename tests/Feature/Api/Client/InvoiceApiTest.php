@@ -52,4 +52,26 @@ class InvoiceApiTest extends TestCase
         $statuses = collect($this->getJson('/api/client/invoices?status=paid')->assertOk()->json('data'))->pluck('status');
         $this->assertTrue($statuses->every(fn ($s) => $s === 'paid'));
     }
+
+    public function test_show_returns_own_invoice_with_payments_and_reminders(): void
+    {
+        $me = User::factory()->create(['role' => 'client']);
+        $invoice = FinanceInvoice::factory()->create(['client_id' => $me->id]);
+        Sanctum::actingAs($me);
+
+        $this->getJson("/api/client/invoices/{$invoice->id}")
+            ->assertOk()
+            ->assertJsonPath('data.id', $invoice->id)
+            ->assertJsonStructure(['data' => ['id', 'number', 'amount', 'status', 'effective_status', 'payments', 'reminders']]);
+    }
+
+    public function test_show_returns_404_for_another_clients_invoice(): void
+    {
+        $me = User::factory()->create(['role' => 'client']);
+        $other = User::factory()->create(['role' => 'client']);
+        $theirs = FinanceInvoice::factory()->create(['client_id' => $other->id]);
+        Sanctum::actingAs($me);
+
+        $this->getJson("/api/client/invoices/{$theirs->id}")->assertStatus(404);
+    }
 }

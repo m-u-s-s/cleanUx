@@ -11,6 +11,16 @@ use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 
 class InvoiceApiController extends Controller
 {
+    public function show(Request $request, int $id): InvoiceResource
+    {
+        $invoice = ClientFinanceDocumentScope::apply(
+            FinanceInvoice::query()->with(['payments', 'reminders']),
+            $request->user(),
+        )->findOrFail($id);
+
+        return new InvoiceResource($invoice);
+    }
+
     public function index(Request $request): AnonymousResourceCollection
     {
         $query = ClientFinanceDocumentScope::apply(
