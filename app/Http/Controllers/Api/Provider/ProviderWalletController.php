@@ -16,8 +16,23 @@ use Illuminate\Validation\ValidationException;
  */
 class ProviderWalletController extends Controller
 {
+    /**
+     * Abort with 403 if the authenticated user is not a provider.
+     * Mirrors the same guard used by ProviderPayoutsController.
+     */
+    protected function abortIfNotProvider($user): void
+    {
+        abort_if(
+            ! $user || ! $user->providerProfile,
+            403,
+            'Vous devez être prestataire pour utiliser ces endpoints.'
+        );
+    }
+
     public function balance(Request $request, ProviderWalletService $wallet): JsonResponse
     {
+        $this->abortIfNotProvider($request->user());
+
         $currency = (string) $request->query('currency', 'EUR');
 
         return response()->json($wallet->balance($request->user()->id, $currency));
@@ -25,6 +40,7 @@ class ProviderWalletController extends Controller
 
     public function transactions(Request $request): JsonResponse
     {
+        $this->abortIfNotProvider($request->user());
         $params = $request->validate([
             'limit' => ['nullable', 'integer', 'min:1', 'max:200'],
             'type' => ['nullable', 'string', 'max:64'],
@@ -59,6 +75,8 @@ class ProviderWalletController extends Controller
 
     public function withdraw(Request $request, ProviderWalletService $wallet): JsonResponse
     {
+        $this->abortIfNotProvider($request->user());
+
         $data = $request->validate([
             'amount' => ['required', 'numeric', 'min:10'],
             'currency' => ['nullable', 'string', 'size:3'],
