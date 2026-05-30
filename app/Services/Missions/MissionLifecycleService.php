@@ -300,7 +300,9 @@ class MissionLifecycleService
                     // Passing null for $intent causes recordEarning to fall back to
                     // $booking->stripe_payment_intent_id for the idempotency key, which is the
                     // same value the webhook handler will use, ensuring proper deduplication.
-                    app(ProviderWalletService::class)->recordEarning($mission->rendezVous);
+                    if ($mission->rendezVous instanceof Booking) {
+                        app(ProviderWalletService::class)->recordEarning($mission->rendezVous);
+                    }
                 }
             } catch (\Throwable $e) {
                 Log::warning('[payout] Ledger creation failed (non-blocking)', [

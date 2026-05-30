@@ -74,9 +74,8 @@ class SpineHealthReport
         try {
             $response = Redis::connection()->ping();
 
-            // Predis returns a Status object; PhpRedis returns the string "+PONG" or true.
+            // Predis returns a Status object (stringable "PONG"); PhpRedis returns true or "+PONG".
             $ok = $response === true
-                || $response === 1
                 || (is_string($response) && stripos($response, 'PONG') !== false)
                 || (is_object($response) && method_exists($response, '__toString') && stripos((string) $response, 'PONG') !== false);
 

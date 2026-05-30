@@ -23,6 +23,8 @@ class ConfigParityCheck extends Command
      *
      * Each entry defines one config key and the set of allowed values.
      * An empty `allowed` array means "any non-null value is accepted".
+     *
+     * @var array<int, array{setting: string, allowed: list<string>, label: string}>
      */
     private array $rules = [
         [

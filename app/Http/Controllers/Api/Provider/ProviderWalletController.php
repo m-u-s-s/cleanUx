@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\Provider;
 
 use App\Http\Controllers\Controller;
 use App\Models\ProviderWalletTransaction;
+use App\Models\User;
 use App\Services\Payments\ProviderWalletService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -20,7 +21,7 @@ class ProviderWalletController extends Controller
      * Abort with 403 if the authenticated user is not a provider.
      * Mirrors the same guard used by ProviderPayoutsController.
      */
-    protected function abortIfNotProvider($user): void
+    protected function abortIfNotProvider(?User $user): void
     {
         abort_if(
             ! $user || ! $user->providerProfile,
