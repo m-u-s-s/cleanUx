@@ -197,13 +197,13 @@ export function InvoicesScreen({ navigation }: InvoicesScreenProps) {
   const isFiltered = status !== 'all' || sort !== 'recent';
   const activeFilterParts: string[] = [];
   if (status !== 'all') activeFilterParts.push(`Statut : ${STATUS_LABEL[status] ?? status}`);
-  activeFilterParts.push(`Tri : ${SORT_LABEL[sort]}`);
+  if (sort !== 'recent') activeFilterParts.push(`Tri : ${SORT_LABEL[sort]}`);
   const activeFilterText = activeFilterParts.join(' · ');
 
-  // ── Render ─────────────────────────────────────────────────────────────────
+  // ── ListHeaderComponent ────────────────────────────────────────────────────
 
-  return (
-    <Screen scroll>
+  const ListHeader = (
+    <View>
       <Text style={styles.title} accessibilityRole="header">
         Mes factures
       </Text>
@@ -240,13 +240,16 @@ export function InvoicesScreen({ navigation }: InvoicesScreenProps) {
         ))}
       </View>
 
-      {/* 5. Status filter strip (8 filters) */}
-      <FlatList
+      {/* 5. Status filter strip (8 filters) — horizontal ScrollView, not a nested FlatList */}
+      <ScrollView
         horizontal
-        data={STATUS_FILTERS}
-        keyExtractor={item => item.value}
-        renderItem={({ item }) => (
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={styles.filterBar}
+        style={styles.filterList}
+      >
+        {STATUS_FILTERS.map(item => (
           <TouchableOpacity
+            key={item.value}
             testID={`filter-chip-${item.value}`}
             onPress={() => handleFilterPress(item.value)}
             style={[
@@ -263,11 +266,8 @@ export function InvoicesScreen({ navigation }: InvoicesScreenProps) {
               {item.label}
             </Text>
           </TouchableOpacity>
-        )}
-        contentContainerStyle={styles.filterBar}
-        showsHorizontalScrollIndicator={false}
-        style={styles.filterList}
-      />
+        ))}
+      </ScrollView>
 
       {/* 6 + 7. Reset filters + active filter label */}
       <View style={styles.filterMeta}>
@@ -285,27 +285,35 @@ export function InvoicesScreen({ navigation }: InvoicesScreenProps) {
         </TouchableOpacity>
       </View>
 
-      {/* Invoice list */}
-      {loading ? (
+      {/* Skeleton rows shown in header while loading */}
+      {loading && (
         <View style={styles.skeletons}>
           {[1, 2, 3].map(i => (
             <Skeleton key={i} width="100%" height={80} />
           ))}
         </View>
-      ) : (
-        <FlatList
-          data={invoices}
-          keyExtractor={item => String(item.id)}
-          renderItem={({ item }) => (
-            <InvoiceRow
-              invoice={item}
-              onPress={() => navigation.navigate('InvoiceDetail', { id: item.id })}
-            />
-          )}
-          contentContainerStyle={styles.list}
-          accessibilityLabel="Liste des factures"
-          scrollEnabled={false}
-          ListEmptyComponent={
+      )}
+    </View>
+  );
+
+  // ── Render ─────────────────────────────────────────────────────────────────
+
+  return (
+    <Screen>
+      <FlatList
+        data={loading ? [] : invoices}
+        keyExtractor={item => String(item.id)}
+        renderItem={({ item }) => (
+          <InvoiceRow
+            invoice={item}
+            onPress={() => navigation.navigate('InvoiceDetail', { id: item.id })}
+          />
+        )}
+        contentContainerStyle={styles.list}
+        accessibilityLabel="Liste des factures"
+        ListHeaderComponent={ListHeader}
+        ListEmptyComponent={
+          loading ? null : (
             <View testID="invoices-empty">
               <EmptyState
                 title="Aucune facture"
@@ -313,9 +321,9 @@ export function InvoicesScreen({ navigation }: InvoicesScreenProps) {
                 icon="receipt-outline"
               />
             </View>
-          }
-        />
-      )}
+          )
+        }
+      />
     </Screen>
   );
 }
@@ -648,7 +656,7 @@ const styles = StyleSheet.create({
 
   // Invoice card
   card: {
-    backgroundColor: '#fff',
+    backgroundColor: colors.surface[50],
     borderRadius: radius.md,
     padding: spacing.md,
     borderWidth: 1,
