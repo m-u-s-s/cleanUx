@@ -124,11 +124,52 @@ class StripeWebhookHandlers
             ]);
         }
 
-        $this->walletService->recordRefundClawback(
-            $booking,
-            round($refundedAmountCents / 100, 2),
-            $charge['id'] ?? null,
-        );
+        // Clawback strategy: iterate refunds.data so each distinct Stripe Refund
+        // (re_xxx) gets its own idempotent clawback entry.  This unifies the
+        // service path (refundMissionPayment passes re_xxx) and the webhook path:
+        // because both keys on the Refund id, a service-then-webhook flow dedupes
+        // to a single row.  Distinct partial refunds each have their own re_xxx so
+        // they still produce separate clawbacks.
+        //
+        // Proportional formula per refund (same as StripeConnectPaymentService):
+        //   clawbackCents = round(refundCents × providerCents / max(1, totalCents))
+        $totalCents = max(1, (int) ($charge['amount'] ?? $booking->payment_amount_cents ?? 0));
+        $providerCents = (int) ($booking->provider_amount_cents ?? $totalCents);
+
+        $perRefundData = $charge['refunds']['data'] ?? [];
+
+        if (! empty($perRefundData)) {
+            // Preferred path: iterate individual refund objects keyed on re_xxx.
+            foreach ($perRefundData as $refund) {
+                $refundId = $refund['id'] ?? null;
+                $refundCents = (int) ($refund['amount'] ?? 0);
+                if ($refundCents <= 0) {
+                    continue;
+                }
+                $clawbackCents = (int) round($refundCents * $providerCents / $totalCents);
+                if ($clawbackCents <= 0) {
+                    continue;
+                }
+                $this->walletService->recordRefundClawback(
+                    $booking,
+                    round($clawbackCents / 100, 2),
+                    $refundId,
+                );
+            }
+        } else {
+            // Fallback: refunds.data absent (some legacy/test payloads).
+            // Key on charge id — this path is only hit when no per-refund data is
+            // available, so there is no overlap with the service path (which always
+            // has a re_xxx).
+            $clawbackCents = (int) round($refundedAmountCents * $providerCents / $totalCents);
+            if ($clawbackCents > 0) {
+                $this->walletService->recordRefundClawback(
+                    $booking,
+                    round($clawbackCents / 100, 2),
+                    $charge['id'] ?? null,
+                );
+            }
+        }
 
         BusinessEventEmitter::emit(
             eventCode: 'payment.refunded',

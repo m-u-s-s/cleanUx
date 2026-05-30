@@ -210,11 +210,25 @@ class StripeConnectPaymentService
         ]);
 
         // F3 — clawback: debit the provider wallet so they do not keep money
-        // that was returned to the client. The clawback amount is the provider's
-        // share (provider_amount_cents) for a full refund, or the raw cents for a
-        // partial one. ProviderWalletService::recordRefundClawback is idempotent
-        // via idempotency_key, safe to call on webhook retries.
-        $clawbackCents = $amountCents ?? $booking->provider_amount_cents ?? $booking->payment_amount_cents ?? 0;
+        // that was returned to the client.
+        //
+        // Proportional formula (unifies full + partial):
+        //   clawbackCents = round(refundedCents × providerCents / max(1, totalCents))
+        //
+        // Full refund (amountCents=null): refundedCents = payment_amount_cents
+        //   → clawbackCents = payment_amount_cents × provider_amount_cents / payment_amount_cents
+        //   → = provider_amount_cents  ✓ (provider loses their full share)
+        //
+        // Partial refund of €50 on €100 booking (€80 provider):
+        //   → 5000 × 8000 / 10000 = 4000 cents = €40  ✓ (NOT the raw €50)
+        //
+        // Idempotency key = Stripe Refund id (re_xxx), same key used by
+        // handleChargeRefunded, so service-then-webhook deduplicates to one row.
+        $totalCents = max(1, (int) ($booking->payment_amount_cents ?? 0));
+        $providerCents = (int) ($booking->provider_amount_cents ?? $booking->payment_amount_cents ?? 0);
+        $refundedCents = $amountCents ?? $totalCents;
+        $clawbackCents = (int) round($refundedCents * $providerCents / $totalCents);
+
         if ($clawbackCents > 0) {
             $clawbackAmount = round((float) $clawbackCents / 100, 2);
             $this->walletService->recordRefundClawback(

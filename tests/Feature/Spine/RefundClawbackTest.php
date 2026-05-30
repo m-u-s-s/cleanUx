@@ -3,8 +3,10 @@
 namespace Tests\Feature\Spine;
 
 use App\Models\ProviderWalletTransaction;
+use App\Models\StripeWebhookEvent;
 use App\Services\Payments\ProviderWalletService;
 use App\Services\Payments\StripeConnectPaymentService;
+use App\Services\Payments\Webhooks\StripeWebhookEventProcessor;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Stripe\ApiRequestor;
 use Stripe\Stripe;
@@ -120,6 +122,172 @@ class RefundClawbackTest extends TestCase
             'F3: after a full refund the provider available balance must be 0. '
             .'Ledger: +80 € earning − 20 € platform_fee − 80 € clawback = −20 → clamped to 0. '
             .'A non-zero positive balance means the provider keeps money the client was refunded.'
+        );
+    }
+
+    public function test_partial_refund_claws_back_proportional_share(): void
+    {
+        // Scenario: €100 booking, €80 provider share, €20 platform fee.
+        // Client gets a €50 partial refund.
+        // CORRECT clawback = 50 × (80/100) = €40.
+        // BUG before fix: clawback used the raw €50, over-charging the provider.
+        $s = SpineScenario::make()->withDevis(100.00)->build();
+
+        $piId = 'pi_partial';
+
+        $s->booking->forceFill([
+            'payment_status' => 'captured',
+            'stripe_payment_intent_id' => $piId,
+            'provider_amount_cents' => 8000,   // 80.00 €
+            'platform_fee_cents' => 2000,       // 20.00 €
+            'payment_amount_cents' => 10000,    // 100.00 € total
+            'currency' => 'EUR',
+        ])->save();
+
+        // Seed the wallet earning so the provider starts with 60 € net available.
+        $walletService = app(ProviderWalletService::class);
+        $walletService->recordEarning($s->booking->fresh());
+
+        // Stub the Stripe refund endpoint. Partial refund of 5000 cents (€50).
+        $this->stripe->stub(
+            'POST',
+            '/v1/refunds',
+            StripeFakeResponses::refund('re_partial', $piId, 5000)
+        );
+
+        // Call partial refund: amountCents = 5000 (€50)
+        app(StripeConnectPaymentService::class)
+            ->refundMissionPayment($s->booking->fresh(), 5000);
+
+        // Booking must be 'partially_refunded' (not 'refunded')
+        $s->booking->refresh();
+        $this->assertSame(
+            'partially_refunded',
+            $s->booking->payment_status,
+            'Partial refund must set payment_status to partially_refunded'
+        );
+
+        // Assert the clawback amount is PROPORTIONAL, NOT the raw refund amount.
+        $clawback = ProviderWalletTransaction::query()
+            ->where('provider_user_id', $s->provider->id)
+            ->where('type', ProviderWalletTransaction::TYPE_REFUND_CLAWBACK)
+            ->where('direction', ProviderWalletTransaction::DIRECTION_DEBIT)
+            ->first();
+
+        $this->assertNotNull($clawback, 'A clawback must be written for a partial refund');
+
+        $this->assertEqualsWithDelta(
+            40.00,
+            (float) $clawback->amount,
+            0.01,
+            'Partial refund clawback must be proportional: 50 × (80/100) = 40 €, NOT the raw 50 €. '
+            .'Over-clawing the provider for the platform fee portion is a money correctness bug.'
+        );
+
+        // Net balance: +80 earning − 20 platform_fee − 40 clawback = 20 € available.
+        $balance = $walletService->balance($s->provider->id);
+        $this->assertEqualsWithDelta(
+            20.00,
+            $balance['available'],
+            0.01,
+            'After proportional clawback: 80 − 20 − 40 = 20 € net available'
+        );
+    }
+
+    public function test_service_refund_then_charge_refunded_webhook_claws_back_once(): void
+    {
+        // Scenario: the normal Stripe flow where:
+        //   1. Our code calls refundMissionPayment → creates clawback keyed on re_dedup
+        //   2. Stripe fires a charge.refunded webhook → handleChargeRefunded runs
+        //      with the same refund id re_dedup in refunds.data[0].id
+        // EXPECTED: only ONE clawback in the ledger (idempotency on re_xxx).
+        // BUG before fix: webhook uses charge id (ch_yyy) as key → different row → double debit.
+
+        $s = SpineScenario::make()->withDevis(100.00)->build();
+        $piId = 'pi_dedup';
+        $chargeId = 'ch_dedup';
+        $refundId = 're_dedup';
+
+        $s->booking->forceFill([
+            'payment_status' => 'captured',
+            'stripe_payment_intent_id' => $piId,
+            'provider_amount_cents' => 8000,
+            'platform_fee_cents' => 2000,
+            'payment_amount_cents' => 10000,
+            'currency' => 'EUR',
+        ])->save();
+
+        // Seed earning so wallet is non-empty (easier to spot double debit).
+        $walletService = app(ProviderWalletService::class);
+        $walletService->recordEarning($s->booking->fresh());
+
+        // ── Step 1: service calls refundMissionPayment (full refund) ──
+        // Stub the refund create endpoint to return a known refund id.
+        $this->stripe->stub(
+            'POST',
+            '/v1/refunds',
+            StripeFakeResponses::refund($refundId, $piId, 10000)
+        );
+
+        app(StripeConnectPaymentService::class)
+            ->refundMissionPayment($s->booking->fresh());
+
+        // After service call: 1 clawback keyed on re_dedup.
+        $afterService = ProviderWalletTransaction::query()
+            ->where('provider_user_id', $s->provider->id)
+            ->where('type', ProviderWalletTransaction::TYPE_REFUND_CLAWBACK)
+            ->count();
+        $this->assertSame(1, $afterService, 'Service must write exactly 1 clawback');
+
+        // ── Step 2: process charge.refunded webhook with same re_dedup ──
+        // Build a realistic charge.refunded payload including refunds.data.
+        $chargeRefundedEvent = StripeWebhookEvent::create([
+            'stripe_event_id' => 'evt_dedup_charge_refunded',
+            'type' => 'charge.refunded',
+            'status' => StripeWebhookEvent::STATUS_RECEIVED,
+            'received_at' => now(),
+            'payload' => [
+                'data' => [
+                    'object' => [
+                        'id' => $chargeId,
+                        'object' => 'charge',
+                        'payment_intent' => $piId,
+                        'amount' => 10000,
+                        'amount_refunded' => 10000,
+                        'currency' => 'eur',
+                        'refunds' => [
+                            'object' => 'list',
+                            'data' => [
+                                [
+                                    'id' => $refundId,   // same re_dedup the service used
+                                    'object' => 'refund',
+                                    'amount' => 10000,
+                                    'currency' => 'eur',
+                                    'payment_intent' => $piId,
+                                    'status' => 'succeeded',
+                                ],
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+        ]);
+
+        // Booking is already 'refunded' after service call, but processor still runs.
+        app(StripeWebhookEventProcessor::class)->process($chargeRefundedEvent);
+
+        // ── Assert: still only 1 clawback (no double debit) ──
+        $afterWebhook = ProviderWalletTransaction::query()
+            ->where('provider_user_id', $s->provider->id)
+            ->where('type', ProviderWalletTransaction::TYPE_REFUND_CLAWBACK)
+            ->count();
+
+        $this->assertSame(
+            1,
+            $afterWebhook,
+            'Double-clawback bug: after service refund + charge.refunded webhook both using '
+            .'re_dedup, there must be exactly 1 clawback in the ledger. '
+            .'The webhook must dedup on the Stripe Refund id, not the Charge id.'
         );
     }
 
