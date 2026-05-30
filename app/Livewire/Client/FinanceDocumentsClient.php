@@ -233,7 +233,7 @@ class FinanceDocumentsClient extends Component
             ->latest('issued_at')
             ->limit(15)
             ->get()
-            ->flatMap(fn (FinanceInvoice $invoice) => $invoice->payments)
+            ->flatMap(fn ($invoice) => $invoice instanceof FinanceInvoice ? $invoice->payments->all() : [])
             ->sortByDesc(fn ($payment) => $payment->paid_at ?? $payment->created_at)
             ->take(5)
             ->values();

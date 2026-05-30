@@ -28,6 +28,11 @@ use Illuminate\Support\Facades\Schema;
  * Les noms FR (client_id, date, heure, adresse…) sont conservés pour rétrocompat
  * et sont synchronisés automatiquement avec leurs équivalents modernes via
  * syncLegacyAliases() au moment du save.
+ *
+ * Accessors declared in HasBookingDisplayAccessors (Larastan does not infer
+ * getXAttribute through traits at level 6):
+ *
+ * @property-read string $service_display_name
  */
 class Booking extends Model
 {

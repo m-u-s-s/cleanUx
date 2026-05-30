@@ -1489,12 +1489,6 @@ parameters:
 			path: app/Http/Controllers/Assistant/AssistantStreamController.php
 
 		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$organizationSite\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Http/Controllers/Client/FinanceDocumentDownloadController.php
-
-		-
 			message: '#^Method App\\Http\\Controllers\\Client\\FinanceDocumentDownloadController\:\:authorizeDocument\(\) has parameter \$site with no type specified\.$#'
 			identifier: missingType.parameter
 			count: 1
@@ -6073,12 +6067,6 @@ parameters:
 			path: app/Livewire/Client/FinanceDocumentsClient.php
 
 		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$created_at\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Livewire/Client/FinanceDocumentsClient.php
-
-		-
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$due_at\.$#'
 			identifier: property.notFound
 			count: 2
@@ -6201,12 +6189,6 @@ parameters:
 		-
 			message: '#^Method App\\Livewire\\Client\\FinanceDocumentsClient\:\:quotesQuery\(\) return type with generic class Illuminate\\Database\\Eloquent\\Builder does not specify its types\: TModel$#'
 			identifier: missingType.generics
-			count: 1
-			path: app/Livewire/Client/FinanceDocumentsClient.php
-
-		-
-			message: '#^Parameter \#1 \$callback of method Illuminate\\Support\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:flatMap\(\) expects callable\(Illuminate\\Database\\Eloquent\\Model, int\)\: \(array\<int, Illuminate\\Database\\Eloquent\\Model\>\|Illuminate\\Support\\Collection\<int, Illuminate\\Database\\Eloquent\\Model\>\), Closure\(App\\Models\\FinanceInvoice\)\: Illuminate\\Database\\Eloquent\\Collection\<int, Illuminate\\Database\\Eloquent\\Model\> given\.$#'
-			identifier: argument.type
 			count: 1
 			path: app/Livewire/Client/FinanceDocumentsClient.php
 
