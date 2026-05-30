@@ -55,7 +55,8 @@
         }
       ],
       "expo-notifications",
-      "expo-image-picker"
+      "expo-image-picker",
+      "expo-sharing"
     ],
     "extra": {
       "eas": {

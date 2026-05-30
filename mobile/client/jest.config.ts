@@ -72,6 +72,9 @@ const config: Config = {
     '^expo-font$': '<rootDir>/__mocks__/expo-font',
     '^@expo-google-fonts/figtree$': '<rootDir>/__mocks__/@expo-google-fonts/figtree',
     '^@expo-google-fonts/space-grotesk$': '<rootDir>/__mocks__/@expo-google-fonts/space-grotesk',
+    // expo-file-system / expo-sharing: native modules — stub for Jest
+    '^expo-file-system$': '<rootDir>/__mocks__/expo-file-system',
+    '^expo-sharing$': '<rootDir>/__mocks__/expo-sharing',
   },
 };
 
