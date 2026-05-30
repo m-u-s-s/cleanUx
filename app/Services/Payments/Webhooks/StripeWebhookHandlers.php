@@ -171,25 +171,37 @@ class StripeWebhookHandlers
         $this->paymentService->syncPaymentIntent($booking);
         $booking->refresh();
 
-        if ($booking->payment_status === 'captured' && $previousStatus !== 'captured') {
+        if ($booking->payment_status === 'captured') {
+            // recordEarning is idempotent (idempotency_key prevents double-write),
+            // so it is safe to call regardless of previousStatus.
+            // Bug fix: the original guard ($previousStatus !== 'captured') caused
+            // recordEarning to be skipped when captureMissionPayment had already
+            // set payment_status='captured' before this webhook arrived, resulting
+            // in the wallet never being credited in the standard capture→webhook flow.
             $this->walletService->recordEarning($booking, $intent);
+
             $feeCents = (int) (data_get($intent, 'charges.data.0.balance_transaction.fee')
                 ?? data_get($intent, 'application_fee_amount')
                 ?? 0);
-            BusinessEventEmitter::emit(
-                eventCode: 'payment.succeeded',
-                payload: [
-                    'booking_id' => $booking->id,
-                    'amount_cents' => (int) ($intent['amount'] ?? 0),
-                    'currency' => $intent['currency'] ?? null,
-                    'stripe_payment_intent_id' => $piId,
-                    'fees_cents' => $feeCents,
-                ],
-                idempotencyKey: 'payment.succeeded:'.$piId,
-                sourceType: Booking::class,
-                sourceId: (int) $booking->id,
-            );
-            BookingAutoPoster::postPayment($booking, $feeCents);
+
+            if ($previousStatus !== 'captured') {
+                // Only emit the business event and accounting post on the first
+                // transition to 'captured' to avoid duplicate downstream effects.
+                BusinessEventEmitter::emit(
+                    eventCode: 'payment.succeeded',
+                    payload: [
+                        'booking_id' => $booking->id,
+                        'amount_cents' => (int) ($intent['amount'] ?? 0),
+                        'currency' => $intent['currency'] ?? null,
+                        'stripe_payment_intent_id' => $piId,
+                        'fees_cents' => $feeCents,
+                    ],
+                    idempotencyKey: 'payment.succeeded:'.$piId,
+                    sourceType: Booking::class,
+                    sourceId: (int) $booking->id,
+                );
+                BookingAutoPoster::postPayment($booking, $feeCents);
+            }
         }
 
         return ['status' => StripeWebhookEvent::STATUS_PROCESSED, 'details' => [
