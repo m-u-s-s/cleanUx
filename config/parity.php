@@ -148,5 +148,17 @@ return [
         ['key' => 'admin-countries', 'title' => 'Pays', 'icon' => 'apps-outline', 'path' => '/admin/countries', 'web' => 'native', 'mobile' => 'webview', 'roles' => ['admin'], 'responsive_verified' => false],
         ['key' => 'admin-emails', 'title' => 'Emails', 'icon' => 'apps-outline', 'path' => '/admin/emails', 'web' => 'native', 'mobile' => 'webview', 'roles' => ['admin'], 'responsive_verified' => false],
         ['key' => 'admin-premium-clients', 'title' => 'Clients premium', 'icon' => 'apps-outline', 'path' => '/admin/premium-clients', 'web' => 'native', 'mobile' => 'webview', 'roles' => ['admin'], 'responsive_verified' => false],
+
+        // ── B2B / entreprise (company dashboards)
+        ['key' => 'dashboard-entreprise-client', 'title' => 'Espace entreprise', 'icon' => 'apps-outline', 'path' => '/dashboard/entreprise-client', 'web' => 'native', 'mobile' => 'webview', 'roles' => ['entreprise'], 'responsive_verified' => false],
+        ['key' => 'dashboard-entreprise-client-locaux', 'title' => 'Locaux', 'icon' => 'apps-outline', 'path' => '/dashboard/entreprise-client/locaux', 'web' => 'native', 'mobile' => 'webview', 'roles' => ['entreprise'], 'responsive_verified' => false],
+        ['key' => 'dashboard-entreprise-client-reservations', 'title' => 'Réservations', 'icon' => 'apps-outline', 'path' => '/dashboard/entreprise-client/reservations', 'web' => 'native', 'mobile' => 'webview', 'roles' => ['entreprise'], 'responsive_verified' => false],
+        ['key' => 'dashboard-entreprise-client-membres', 'title' => 'Membres', 'icon' => 'apps-outline', 'path' => '/dashboard/entreprise-client/membres', 'web' => 'native', 'mobile' => 'webview', 'roles' => ['entreprise'], 'responsive_verified' => false],
+        ['key' => 'dashboard-entreprise-client-facturation', 'title' => 'Facturation', 'icon' => 'apps-outline', 'path' => '/dashboard/entreprise-client/facturation', 'web' => 'native', 'mobile' => 'webview', 'roles' => ['entreprise'], 'responsive_verified' => false],
+        ['key' => 'dashboard-entreprise-prestataire', 'title' => 'Espace prestataire entreprise', 'icon' => 'apps-outline', 'path' => '/dashboard/entreprise-prestataire', 'web' => 'native', 'mobile' => 'webview', 'roles' => ['provider_company'], 'responsive_verified' => false],
+        ['key' => 'dashboard-entreprise-prestataire-canaux', 'title' => 'Canaux', 'icon' => 'apps-outline', 'path' => '/dashboard/entreprise-prestataire/canaux', 'web' => 'native', 'mobile' => 'webview', 'roles' => ['provider_company'], 'responsive_verified' => false],
+        ['key' => 'dashboard-entreprise-prestataire-taches', 'title' => 'Tâches', 'icon' => 'apps-outline', 'path' => '/dashboard/entreprise-prestataire/taches', 'web' => 'native', 'mobile' => 'webview', 'roles' => ['provider_company'], 'responsive_verified' => false],
+        ['key' => 'dashboard-entreprise-prestataire-dispatch', 'title' => 'Dispatch', 'icon' => 'apps-outline', 'path' => '/dashboard/entreprise-prestataire/dispatch', 'web' => 'native', 'mobile' => 'webview', 'roles' => ['provider_company'], 'responsive_verified' => false],
+        ['key' => 'dashboard-entreprise-prestataire-equipe', 'title' => 'Équipe', 'icon' => 'apps-outline', 'path' => '/dashboard/entreprise-prestataire/equipe', 'web' => 'native', 'mobile' => 'webview', 'roles' => ['provider_company'], 'responsive_verified' => false],
     ],
 ];

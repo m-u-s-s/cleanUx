@@ -23,6 +23,8 @@ class ParityScaffoldRegistry extends Command
     private const ROLE_PREFIXES = [
         'dashboard/client' => ['client'],
         'dashboard/employe' => ['provider'],
+        'dashboard/entreprise-client' => ['entreprise'],
+        'dashboard/entreprise-prestataire' => ['provider_company'],
         'admin' => ['admin'],
     ];
 

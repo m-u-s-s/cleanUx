@@ -16,6 +16,7 @@ trait HasLegacyRoleCompatibility
             'client' => $this->isClient(),
             'employe', 'employee', 'provider' => $this->isEmploye(),
             'entreprise', 'company' => $this->isEntreprise(),
+            'provider_company', 'entreprise_prestataire' => $this->isProviderCompanyWorker(),
             default => ($this->platform_role ?? null) === $role,
         };
     }
