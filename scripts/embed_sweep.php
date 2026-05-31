@@ -1,4 +1,5 @@
 <?php
+
 /**
  * SP4 Phase-2 embed render sweep (operate-together QA aid).
  * Logs in per role against the running dev server and GETs every webview
@@ -7,7 +8,6 @@
  * pages and gives objective status for all 118 (incl. the 71 admin pages
  * the SQLite embed-render test never exercised). Read-only against the app.
  */
-
 $base = getenv('SWEEP_BASE') ?: 'http://127.0.0.1:8000';
 $PW = 'QaPhase2!';
 $creds = [
@@ -25,6 +25,7 @@ function credKeyForRoles(array $roles): ?string
             return $k;
         }
     }
+
     return null; // public ([] roles) → no login
 }
 
@@ -54,6 +55,7 @@ function http_req(string $url, string $jar, string $method = 'GET', array $field
     if (preg_match('/^location:\s*(.+)$/mi', $headers, $m)) {
         $location = trim($m[1]);
     }
+
     return [$code, $body];
 }
 
@@ -65,11 +67,12 @@ function login(string $base, string $email, string $pw, string $jar): string
         return 'NO-CSRF';
     }
     $token = $m[1];
-    [$code,] = http_req("$base/login", $jar, 'POST', ['_token' => $token, 'email' => $email, 'password' => $pw], $loc);
+    [$code] = http_req("$base/login", $jar, 'POST', ['_token' => $token, 'email' => $email, 'password' => $pw], $loc);
     // Fortify: 302 to dashboard on success, back to /login on failure
     if ($code === 302 && $loc && ! str_contains($loc, '/login')) {
         return "OK→$loc";
     }
+
     return "FAIL(http=$code loc=".($loc ?? '-').')';
 }
 

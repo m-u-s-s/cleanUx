@@ -177,6 +177,9 @@ class CreateNewUser implements CreatesNewUsers
     // ──────────────────────────────────────────────────────
     // 3. Prestataire indépendant
     // ──────────────────────────────────────────────────────
+    /**
+     * @param  array<string, mixed>  $input
+     */
     private function createProviderIndependent(User $user, array $input): void
     {
         ProviderProfile::create([
@@ -219,6 +222,9 @@ class CreateNewUser implements CreatesNewUsers
         ]);
     }
 
+    /**
+     * @param  array<string, mixed>  $input
+     */
     private function attachTrades(User $user, array $input): void
     {
         $tradeIds = array_filter((array) ($input['trade_ids'] ?? []));

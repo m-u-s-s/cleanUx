@@ -102,6 +102,9 @@ class Mission extends Model
         return $this->belongsTo(OrganizationAccount::class);
     }
 
+    /**
+     * @return BelongsTo<OrganizationAccount, $this>
+     */
     public function providerOrganization(): BelongsTo
     {
         return $this->belongsTo(OrganizationAccount::class, 'provider_organization_id');

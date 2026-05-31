@@ -6,6 +6,7 @@ use App\Enums\AssistantContextRole;
 use App\Enums\CustomerType;
 use App\Enums\OrganizationType;
 use App\Enums\ProviderType;
+use App\Models\OrganizationAccount;
 
 trait HasUserTypeChecks
 {
@@ -67,8 +68,12 @@ trait HasUserTypeChecks
         }
 
         if (! empty($this->organization_account_id)) {
-            $orgType = $this->organizationAccount?->type;
-            $enum = $orgType instanceof OrganizationType ? $orgType : OrganizationType::tryFrom((string) $orgType);
+            // `organization_accounts.type` is an uncast string column; resolve
+            // it via a typed query so the value type is known (not mixed).
+            $orgType = OrganizationAccount::query()
+                ->whereKey($this->organization_account_id)
+                ->value('type');
+            $enum = OrganizationType::tryFrom((string) $orgType);
             if ($enum !== null) {
                 // CLIENT_COMPANY / HYBRID → cliente ; PROVIDER_* → non.
                 return $enum->isClient();

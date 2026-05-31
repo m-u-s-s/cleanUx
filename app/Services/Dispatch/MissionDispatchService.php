@@ -5,6 +5,7 @@ namespace App\Services\Dispatch;
 use App\Jobs\Dispatch\EscalateMissionAssignmentJob;
 use App\Models\Mission;
 use App\Models\MissionAssignment;
+use App\Models\ProviderProfile;
 use App\Models\User;
 use App\Notifications\Dispatch\MissionOfferNotification;
 use Illuminate\Support\Facades\DB;
@@ -205,8 +206,9 @@ class MissionDispatchService
                 // L'org est dérivée du profil du worker assigné (null pour un
                 // indépendant). Permet aux écrans/paiements org-scoped de
                 // retrouver l'entreprise responsable de la mission.
-                $assignedUser = User::find($assignment->user_id);
-                $providerOrgId = $assignedUser?->providerProfile?->organization_account_id;
+                $providerOrgId = ProviderProfile::query()
+                    ->where('user_id', $assignment->user_id)
+                    ->value('organization_account_id');
 
                 $mission->update([
                     'status' => 'assigned',

@@ -169,6 +169,10 @@ class EmployeeAvailabilityService
             ));
     }
 
+    /**
+     * @param  Builder<User>  $query
+     * @return Builder<User>
+     */
     private function applyProviderEligibility(Builder $query, string $providerType = 'any'): Builder
     {
         return $query
