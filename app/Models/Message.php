@@ -104,6 +104,14 @@ class Message extends Model
         return $this->hasMany(MessageAttachment::class);
     }
 
+    /**
+     * @return HasMany<MessageRead, $this>
+     */
+    public function readBy(): HasMany
+    {
+        return $this->hasMany(MessageRead::class);
+    }
+
     // ──────────────────────────────────────────────────────
     // Scopes
     // ──────────────────────────────────────────────────────

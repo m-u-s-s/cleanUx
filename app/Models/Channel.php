@@ -65,8 +65,12 @@ class Channel extends Model
             ->withTimestamps();
     }
 
-    public function scopeForOrg($query, int $orgId)
+    public function scopeForOrg($query, ?int $orgId)
     {
+        if ($orgId === null) {
+            return $query->whereRaw('1 = 0');
+        }
+
         return $query->where('organization_account_id', $orgId);
     }
 

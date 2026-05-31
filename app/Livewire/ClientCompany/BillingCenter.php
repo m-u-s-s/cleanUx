@@ -50,9 +50,10 @@ class BillingCenter extends Component
 
         // Données simulées — à connecter à Invoice model
         return [
-            'total_period' => 0,
-            'total_unpaid' => 0,
-            'count_overdue' => 0,
+            'total_month' => 0,
+            'total_year' => 0,
+            'unpaid' => 0,
+            'count_month' => 0,
             'from' => $from->format('d/m/Y'),
             'to' => $to->format('d/m/Y'),
         ];

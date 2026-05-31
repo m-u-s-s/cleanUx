@@ -83,8 +83,12 @@ class Task extends Model
         return $query->where('status', self::STATUS_DONE);
     }
 
-    public function scopeForOrg($query, int $orgId)
+    public function scopeForOrg($query, ?int $orgId)
     {
+        if ($orgId === null) {
+            return $query->whereRaw('1 = 0');
+        }
+
         return $query->where('organization_account_id', $orgId);
     }
 

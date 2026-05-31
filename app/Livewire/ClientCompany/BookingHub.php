@@ -81,7 +81,7 @@ class BookingHub extends Component
     {
         $orgId = Auth::user()->current_organization_id;
 
-        return Booking::where('client_organization_id', $orgId)
+        return Booking::where('customer_organization_id', $orgId)
             ->when($this->filterStatus, fn ($q) => $q->where('status', $this->filterStatus))
             ->when($this->filterSiteId, fn ($q) => $q->where('organization_site_id', $this->filterSiteId))
             ->with([
@@ -210,7 +210,7 @@ class BookingHub extends Component
 
         $booking = Booking::create([
             'client_user_id' => $user->id,
-            'client_organization_id' => $orgId,
+            'customer_organization_id' => $orgId,
             'organization_site_id' => $this->selectedSiteId,
             'provider_user_id' => $this->selectedProviderId,
             'scheduled_at' => "{$this->scheduledDate} {$this->scheduledTime}",
@@ -241,7 +241,7 @@ class BookingHub extends Component
             403
         );
 
-        Booking::where('client_organization_id', $user->current_organization_id)
+        Booking::where('customer_organization_id', $user->current_organization_id)
             ->findOrFail($bookingId)
             ->update(['status' => 'pending']); // → En attente prestataire
     }
@@ -254,7 +254,7 @@ class BookingHub extends Component
             403
         );
 
-        Booking::where('client_organization_id', $user->current_organization_id)
+        Booking::where('customer_organization_id', $user->current_organization_id)
             ->findOrFail($bookingId)
             ->update(['status' => 'cancelled']);
     }

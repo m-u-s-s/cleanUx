@@ -33,7 +33,7 @@ class ClientCompanyDashboard extends Component
 
         [$from, $to] = $this->periodDates();
 
-        $bookingBase = fn () => Booking::where('client_organization_id', $orgId);
+        $bookingBase = fn () => Booking::where('customer_organization_id', $orgId);
 
         return [
             'sites_count' => OrganizationSite::forOrg($orgId)->active()->count(),
@@ -49,7 +49,7 @@ class ClientCompanyDashboard extends Component
     {
         $orgId = Auth::user()->current_organization_id;
 
-        return Booking::where('client_organization_id', $orgId)
+        return Booking::where('customer_organization_id', $orgId)
             ->with(['organizationSite:id,name,city', 'providerUser:id,name,profile_photo_path'])
             ->latest()
             ->limit(8)
@@ -73,7 +73,7 @@ class ClientCompanyDashboard extends Component
     {
         $orgId = Auth::user()->current_organization_id;
 
-        return Booking::where('client_organization_id', $orgId)
+        return Booking::where('customer_organization_id', $orgId)
             ->where('status', 'pending_approval')
             ->with('organizationSite:id,name', 'clientUser:id,name')
             ->latest()
@@ -89,7 +89,7 @@ class ClientCompanyDashboard extends Component
         $orgId = Auth::user()->current_organization_id;
         [$from, $to] = $this->periodDates();
 
-        $rows = Booking::where('client_organization_id', $orgId)
+        $rows = Booking::where('customer_organization_id', $orgId)
             ->whereBetween('created_at', [$from, $to])
             ->whereNotNull('service_catalog_id')
             ->join('service_catalogs', 'bookings.service_catalog_id', '=', 'service_catalogs.id')

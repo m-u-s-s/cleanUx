@@ -42,7 +42,7 @@ class DispatchCenter extends Component
         $orgId = Auth::user()->current_organization_id;
 
         return Mission::where('organization_account_id', $orgId)
-            ->when($this->filterDate, fn ($q) => $q->whereDate('scheduled_at', $this->filterDate)
+            ->when($this->filterDate, fn ($q) => $q->whereDate('planned_start_at', $this->filterDate)
             )
             ->when($this->filterStatus, fn ($q) => $q->where('status', $this->filterStatus)
             )
@@ -50,7 +50,7 @@ class DispatchCenter extends Component
                 'assignments.provider:id,name,profile_photo_path',
                 'bookingSite:id,name,address,city,latitude,longitude',
             ])
-            ->orderBy('scheduled_at')
+            ->orderBy('planned_start_at')
             ->get();
     }
 

@@ -35,10 +35,10 @@ class ProviderDashboard extends Component
         $base = fn () => Mission::where('provider_organization_id', $orgId);
 
         return [
-            'missions_today' => $base()->whereDate('scheduled_at', today())->count(),
+            'missions_today' => $base()->whereDate('planned_start_at', today())->count(),
             'missions_active' => $base()->whereIn('status', ['dispatched', 'in_progress'])->count(),
             'missions_done' => $base()->where('status', 'completed')->whereBetween('completed_at', [$from, $to])->count(),
-            'missions_delayed' => $base()->where('status', '!=', 'completed')->where('scheduled_at', '<', now())->count(),
+            'missions_delayed' => $base()->where('status', '!=', 'completed')->where('planned_start_at', '<', now())->count(),
             'members_active' => OrganizationMember::where('organization_account_id', $orgId)->where('status', 'active')->count(),
             'unread_messages' => 0, // calculé via Channel si Reverb actif
             'pending_tasks' => Task::forOrg($orgId)->todo()->count(),
@@ -52,7 +52,7 @@ class ProviderDashboard extends Component
 
         $delayed = Mission::where('provider_organization_id', $orgId)
             ->where('status', '!=', 'completed')
-            ->where('scheduled_at', '<', now()->subMinutes(30))
+            ->where('planned_start_at', '<', now()->subMinutes(30))
             ->count();
 
         if ($delayed > 0) {
@@ -78,9 +78,9 @@ class ProviderDashboard extends Component
     public function getMissionsOfDayProperty()
     {
         return Mission::where('provider_organization_id', Auth::user()->current_organization_id)
-            ->whereDate('scheduled_at', today())
+            ->whereDate('planned_start_at', today())
             ->with(['assignedWorker:id,name,profile_photo_path'])
-            ->orderBy('scheduled_at')
+            ->orderBy('planned_start_at')
             ->limit(10)
             ->get();
     }
