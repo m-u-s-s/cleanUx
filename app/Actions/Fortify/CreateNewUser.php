@@ -78,7 +78,7 @@ class CreateNewUser implements CreatesNewUsers
 
                 'account_type' => $accountType,
 
-                'role' => $input['role'] ?? 'client',
+                'role' => $input['role'] ?? (in_array($accountType, ['provider_independent', 'provider_company'], true) ? 'employe' : 'client'),
                 'platform_role' => $input['platform_role'] ?? 'client',
 
                 'locale' => app()->getLocale() === 'nl' ? 'nl_BE' : 'fr_BE',
@@ -94,7 +94,7 @@ class CreateNewUser implements CreatesNewUsers
 
                 'client_company' => $this->createClientCompany($user, $input),
 
-                'provider_independent' => $this->createProviderIndependent($user),
+                'provider_independent' => $this->createProviderIndependent($user, $input),
 
                 'provider_company' => $this->createProviderCompany($user, $input),
 
@@ -177,7 +177,7 @@ class CreateNewUser implements CreatesNewUsers
     // ──────────────────────────────────────────────────────
     // 3. Prestataire indépendant
     // ──────────────────────────────────────────────────────
-    private function createProviderIndependent(User $user): void
+    private function createProviderIndependent(User $user, array $input): void
     {
         ProviderProfile::create([
             'user_id' => $user->id,
@@ -185,6 +185,8 @@ class CreateNewUser implements CreatesNewUsers
             'status' => 'pending',
             'verification_status' => 'unverified',
         ]);
+
+        $this->attachTrades($user, $input);
     }
 
     // ──────────────────────────────────────────────────────
@@ -207,12 +209,22 @@ class CreateNewUser implements CreatesNewUsers
             'verification_status' => 'unverified',
         ]);
 
+        $this->attachTrades($user, $input);
+
         $this->addOwner($user, $org);
 
         $user->update([
             'current_organization_id' => $org->id,
             'organization_account_id' => $org->id,
         ]);
+    }
+
+    private function attachTrades(User $user, array $input): void
+    {
+        $tradeIds = array_filter((array) ($input['trade_ids'] ?? []));
+        if ($tradeIds !== []) {
+            $user->trades()->syncWithoutDetaching($tradeIds);
+        }
     }
 
     // ──────────────────────────────────────────────────────
