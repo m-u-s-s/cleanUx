@@ -177,7 +177,7 @@ class LitigesClient extends Component
         return view('livewire.client.litiges-client', [
             'claims' => CustomerClaim::query()
                 ->with('rendezVous')
-                ->where('client_id', Auth::id())
+                ->where('customer_user_id', Auth::id())
                 ->when($this->filterStatus, fn ($query) => $query->where('status', $this->filterStatus))
                 ->latest()
                 ->paginate(8),

@@ -34,7 +34,7 @@ class AdminHomeDashboard extends Component
             'recentBookings' => Booking::with('serviceCatalog:id,name')
                 ->latest()
                 ->take(10)
-                ->get(['id', 'reference', 'status', 'service_catalog_id', 'created_at', 'scheduled_date']),
+                ->get(['id', 'booking_reference', 'status', 'service_catalog_id', 'created_at', 'scheduled_date']),
             'bookingsTrend' => $this->bookingsTrend(),
         ]);
     }

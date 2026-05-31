@@ -33,3 +33,5 @@ yarn-error.log
 
 # Mobile workspace deps (root + per-app already covered above)
 mobile/node_modules
+storage/app/parity_webview.json
+storage/app/parity_sweep_results.json
