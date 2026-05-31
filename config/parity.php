@@ -26,11 +26,11 @@ return [
         // if/when company-specific modules diverge from individual-client modules.
 
         // Native today (hot operational paths already built in Expo)
-        ['key' => 'booking', 'title' => 'Réserver', 'icon' => 'calendar-outline', 'path' => '/client/bookings/new', 'web' => 'native', 'mobile' => 'native', 'roles' => ['client'], 'responsive_verified' => true],
-        ['key' => 'tracking', 'title' => 'Suivi', 'icon' => 'navigate-outline', 'path' => '/client/tracking', 'web' => 'native', 'mobile' => 'native', 'roles' => ['client'], 'responsive_verified' => true],
-        ['key' => 'chat', 'title' => 'Messages', 'icon' => 'chatbubble-outline', 'path' => '/chat', 'web' => 'native', 'mobile' => 'native', 'roles' => [], 'responsive_verified' => true],
-        ['key' => 'missions', 'title' => 'Missions', 'icon' => 'briefcase-outline', 'path' => '/employe/missions', 'web' => 'native', 'mobile' => 'native', 'roles' => ['provider'], 'responsive_verified' => true],
-        ['key' => 'earnings', 'title' => 'Revenus', 'icon' => 'cash-outline', 'path' => '/employe/earnings', 'web' => 'native', 'mobile' => 'native', 'roles' => ['provider'], 'responsive_verified' => true],
+        ['key' => 'booking', 'title' => 'Réserver', 'icon' => 'calendar-outline', 'path' => '/prendre-rendez-vous', 'web' => 'native', 'mobile' => 'native', 'roles' => ['client'], 'responsive_verified' => true],
+        ['key' => 'tracking', 'title' => 'Suivi', 'icon' => 'navigate-outline', 'path' => '/dashboard/client/rendez-vous', 'web' => 'native', 'mobile' => 'native', 'roles' => ['client'], 'responsive_verified' => true],
+        ['key' => 'chat', 'title' => 'Messages', 'icon' => 'chatbubble-outline', 'path' => '/dashboard/client/messagerie', 'web' => 'native', 'mobile' => 'native', 'roles' => [], 'responsive_verified' => true],
+        ['key' => 'missions', 'title' => 'Missions', 'icon' => 'briefcase-outline', 'path' => '/dashboard/employe/missions', 'web' => 'native', 'mobile' => 'native', 'roles' => ['provider'], 'responsive_verified' => true],
+        ['key' => 'earnings', 'title' => 'Revenus', 'icon' => 'cash-outline', 'path' => '/dashboard/employe/revenus', 'web' => 'native', 'mobile' => 'native', 'roles' => ['provider'], 'responsive_verified' => true],
 
         // Long-tail served via embedded web (migrate to native later)
         ['key' => 'accounting', 'title' => 'Comptabilité', 'icon' => 'document-text-outline', 'path' => '/admin/accounting-v2', 'web' => 'native', 'mobile' => 'webview', 'roles' => ['admin'], 'responsive_verified' => false],
