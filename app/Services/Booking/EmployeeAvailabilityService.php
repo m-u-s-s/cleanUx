@@ -2,6 +2,7 @@
 
 namespace App\Services\Booking;
 
+use App\Enums\ProviderType;
 use App\Models\Booking;
 use App\Models\ServiceZone;
 use App\Models\User;
@@ -11,11 +12,9 @@ use Illuminate\Support\Collection;
 
 class EmployeeAvailabilityService
 {
-    public function eligibleEmployeesQuery(?int $zoneId = null): Builder
+    public function eligibleEmployeesQuery(?int $zoneId = null, string $providerType = 'any'): Builder
     {
-        $query = User::query()
-            ->where('role', 'employe')
-            ->where('is_active', true);
+        $query = $this->applyProviderEligibility(User::query(), $providerType);
 
         if (! $zoneId) {
             return $query->orderBy('name');
@@ -65,9 +64,9 @@ class EmployeeAvailabilityService
         return $score;
     }
 
-    public function sortedEligibleEmployeesForZone(int $zoneId): Collection
+    public function sortedEligibleEmployeesForZone(int $zoneId, string $providerType = 'any'): Collection
     {
-        return $this->eligibleEmployeesQuery($zoneId)
+        return $this->eligibleEmployeesQuery($zoneId, $providerType)
             ->get()
             ->sortByDesc(fn (User $employee) => $this->employeeCoverageScore($employee, $zoneId))
             ->values();
@@ -77,10 +76,7 @@ class EmployeeAvailabilityService
     {
         $now = now();
 
-        return User::query()
-            ->whereKey($employeeId)
-            ->where('role', 'employe')
-            ->where('is_active', true)
+        return $this->applyProviderEligibility(User::query()->whereKey($employeeId))
             ->where(function ($employeeQuery) use ($zoneId, $now) {
                 $employeeQuery
                     ->where('primary_service_zone_id', $zoneId)
@@ -171,5 +167,29 @@ class EmployeeAvailabilityService
                 $estimatedDuration,
                 $ignoreRendezVousId,
             ));
+    }
+
+    private function applyProviderEligibility(Builder $query, string $providerType = 'any'): Builder
+    {
+        return $query
+            ->whereHas('providerProfile', function (Builder $q) use ($providerType) {
+                $q->whereIn('provider_type', $this->providerTypeValues($providerType))
+                    ->where('status', 'active')
+                    ->where('verification_status', 'verified');
+            })
+            ->where('is_active', true);
+    }
+
+    /** @return list<string> */
+    private function providerTypeValues(string $providerType): array
+    {
+        return match ($providerType) {
+            'independent' => [ProviderType::INDEPENDENT->value, ProviderType::INDIVIDUAL->value],
+            'company' => [ProviderType::COMPANY_WORKER->value, ProviderType::COMPANY->value],
+            default => [
+                ProviderType::INDEPENDENT->value, ProviderType::INDIVIDUAL->value,
+                ProviderType::COMPANY_WORKER->value, ProviderType::COMPANY->value,
+            ],
+        };
     }
 }

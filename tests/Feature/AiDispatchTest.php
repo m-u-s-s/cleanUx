@@ -30,8 +30,7 @@ class AiDispatchTest extends TestCase
     {
         $zone = ServiceZone::factory()->create();
 
-        $employee = User::factory()->create([
-            'role' => 'employe',
+        $employee = User::factory()->employe()->create([
             'is_active' => true,
             'primary_service_zone_id' => $zone->id,
         ]);

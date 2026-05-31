@@ -17,8 +17,7 @@ class DispatchTradeFilterTest extends TestCase
 
     protected function makeEmployee(?int $zoneId = null): User
     {
-        return User::factory()->create([
-            'role' => User::ROLE_EMPLOYE,
+        return User::factory()->employe()->create([
             'is_active' => true,
             'primary_service_zone_id' => $zoneId,
         ]);
