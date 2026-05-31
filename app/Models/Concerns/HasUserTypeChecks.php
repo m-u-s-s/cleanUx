@@ -4,6 +4,7 @@ namespace App\Models\Concerns;
 
 use App\Enums\AssistantContextRole;
 use App\Enums\CustomerType;
+use App\Enums\OrganizationType;
 use App\Enums\ProviderType;
 
 trait HasUserTypeChecks
@@ -66,7 +67,13 @@ trait HasUserTypeChecks
         }
 
         if (! empty($this->organization_account_id)) {
-            return true;
+            $orgType = $this->organizationAccount?->type;
+            $enum = $orgType instanceof OrganizationType ? $orgType : OrganizationType::tryFrom((string) $orgType);
+            if ($enum !== null) {
+                // CLIENT_COMPANY / HYBRID → cliente ; PROVIDER_* → non.
+                return $enum->isClient();
+            }
+            // type inconnu : on retombe sur le fallback legacy ci-dessous.
         }
 
         /**
@@ -129,20 +136,20 @@ trait HasUserTypeChecks
             return AssistantContextRole::ADMIN;
         }
 
-        if ($this->isClientCompany()) {
-            return AssistantContextRole::CLIENT_COMPANY;
-        }
-
-        if ($this->isClientPersonal()) {
-            return AssistantContextRole::CLIENT_PERSONAL;
-        }
-
         if ($this->isProviderCompanyWorker()) {
             return AssistantContextRole::PROVIDER_COMPANY;
         }
 
         if ($this->isProviderIndependent()) {
             return AssistantContextRole::PROVIDER_INDEPENDENT;
+        }
+
+        if ($this->isClientCompany()) {
+            return AssistantContextRole::CLIENT_COMPANY;
+        }
+
+        if ($this->isClientPersonal()) {
+            return AssistantContextRole::CLIENT_PERSONAL;
         }
 
         return AssistantContextRole::CLIENT_PERSONAL; // fallback
@@ -154,20 +161,20 @@ trait HasUserTypeChecks
             return 'admin.dashboard';
         }
 
-        if ($this->isClientCompany()) {
-            return 'client-company.dashboard';
-        }
-
-        if ($this->isClientPersonal()) {
-            return 'client.dashboard';
-        }
-
         if ($this->isProviderCompanyWorker()) {
             return 'provider-company.dashboard';
         }
 
         if ($this->isProviderIndependent()) {
             return 'employe.dashboard';
+        }
+
+        if ($this->isClientCompany()) {
+            return 'client-company.dashboard';
+        }
+
+        if ($this->isClientPersonal()) {
+            return 'client.dashboard';
         }
 
         return 'dashboard';
