@@ -5,10 +5,18 @@ namespace App\Livewire\ClientCompany;
 use App\Models\Booking;
 use App\Models\OrganizationMember;
 use App\Models\OrganizationSite;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Livewire\Component;
 
+/**
+ * @property-read array<string, mixed> $kpis
+ * @property-read Collection<int, Booking> $recentBookings
+ * @property-read Collection<int, OrganizationSite> $sitesOverview
+ * @property-read Collection<int, Booking> $pendingApprovals
+ * @property-read array<int, array<string, mixed>> $bookingsByTrade
+ */
 class ClientCompanyDashboard extends Component
 {
     public string $period = 'month';

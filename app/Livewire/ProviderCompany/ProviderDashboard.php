@@ -6,9 +6,16 @@ use App\Models\Channel;
 use App\Models\Mission;
 use App\Models\OrganizationMember;
 use App\Models\Task;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
 
+/**
+ * @property-read array<string, mixed> $kpis
+ * @property-read array<int, array<string, mixed>> $alerts
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, Mission> $missionsOfDay
+ * @property-read Collection<int, array<string, mixed>> $teamStatus
+ */
 class ProviderDashboard extends Component
 {
     public string $period = 'today';

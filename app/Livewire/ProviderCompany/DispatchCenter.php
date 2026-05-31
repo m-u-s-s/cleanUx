@@ -7,10 +7,15 @@ use App\Models\Mission;
 use App\Models\MissionAssignment;
 use App\Models\OrganizationMember;
 use App\Services\PermissionService;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\On;
 use Livewire\Component;
 
+/**
+ * @property-read Collection<int, Mission> $missions
+ * @property-read Collection<int, OrganizationMember> $availableWorkers
+ */
 class DispatchCenter extends Component
 {
     public string $filterDate = '';

@@ -5,9 +5,14 @@ namespace App\Livewire\ClientCompany;
 use App\Models\OrganizationSite;
 use App\Models\ProviderProfile;
 use App\Services\PermissionService;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
 
+/**
+ * @property-read Collection<int, OrganizationSite> $sites
+ * @property-read Collection<int, ProviderProfile> $providers
+ */
 class SiteManager extends Component
 {
     // ──────────────────────────────────────────────────────

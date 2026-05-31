@@ -30,13 +30,15 @@ class ParityScaffoldRegistry extends Command
 
     public function handle(Router $router): int
     {
-        $existingPaths = collect(config('parity.modules', []))
+        /** @var array<int, array<string, mixed>> $existing */
+        $existing = config('parity.modules', []);
+        $existingPaths = collect($existing)
             ->pluck('path')
             ->map(fn ($p) => '/'.ltrim((string) $p, '/'))
             ->all();
 
         $candidates = [];
-        foreach ($router->getRoutes() as $route) {
+        foreach ($router->getRoutes()->getRoutes() as $route) {
             if (! in_array('GET', $route->methods(), true)) {
                 continue;
             }

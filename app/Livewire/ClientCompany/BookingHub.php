@@ -8,9 +8,17 @@ use App\Models\ProviderProfile;
 use App\Models\Trade;
 use App\Services\PermissionService;
 use App\Support\Livewire\Concerns\RendersTradeFormSchema;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
 
+/**
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, Booking> $bookings
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, OrganizationSite> $sites
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, Trade> $trades
+ * @property-read ?OrganizationSite $selectedSite
+ * @property-read Collection<int, mixed> $availableProviders
+ */
 class BookingHub extends Component
 {
     use RendersTradeFormSchema;

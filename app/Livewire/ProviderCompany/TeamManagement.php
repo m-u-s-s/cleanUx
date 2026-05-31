@@ -6,10 +6,16 @@ use App\Enums\OrganizationRole;
 use App\Models\OrganizationMember;
 use App\Models\User;
 use App\Services\PermissionService;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
 use Livewire\WithPagination;
 
+/**
+ * @property-read Collection<int, OrganizationMember> $members
+ * @property-read array<string, mixed> $availableRoles
+ * @property-read ?OrganizationMember $editingMember
+ */
 class TeamManagement extends Component
 {
     use WithPagination;

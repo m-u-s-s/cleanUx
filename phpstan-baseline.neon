@@ -7020,17 +7020,7 @@ parameters:
 			count: 1
 			path: app/Livewire/Client/WalletClient.php
 
-		-
-			message: '#^Access to an undefined property App\\Livewire\\ClientCompany\\BillingCenter\:\:\$sitesProperty\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Livewire/ClientCompany/BillingCenter.php
 
-		-
-			message: '#^Access to an undefined property App\\Livewire\\ClientCompany\\BillingCenter\:\:\$summaryProperty\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Livewire/ClientCompany/BillingCenter.php
 
 		-
 			message: '#^Method App\\Livewire\\ClientCompany\\BillingCenter\:\:getSitesProperty\(\) has no return type specified\.$#'
@@ -7062,35 +7052,10 @@ parameters:
 			count: 1
 			path: app/Livewire/ClientCompany/BillingCenter.php
 
-		-
-			message: '#^Access to an undefined property App\\Livewire\\ClientCompany\\BookingHub\:\:\$availableProvidersProperty\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Livewire/ClientCompany/BookingHub.php
 
-		-
-			message: '#^Access to an undefined property App\\Livewire\\ClientCompany\\BookingHub\:\:\$bookingsProperty\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Livewire/ClientCompany/BookingHub.php
 
-		-
-			message: '#^Access to an undefined property App\\Livewire\\ClientCompany\\BookingHub\:\:\$selectedSiteProperty\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Livewire/ClientCompany/BookingHub.php
 
-		-
-			message: '#^Access to an undefined property App\\Livewire\\ClientCompany\\BookingHub\:\:\$sitesProperty\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Livewire/ClientCompany/BookingHub.php
 
-		-
-			message: '#^Access to an undefined property App\\Livewire\\ClientCompany\\BookingHub\:\:\$tradesProperty\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Livewire/ClientCompany/BookingHub.php
 
 		-
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$requires_internal_approval\.$#'
@@ -7182,35 +7147,10 @@ parameters:
 			count: 1
 			path: app/Livewire/ClientCompany/BulkBookingImporter.php
 
-		-
-			message: '#^Access to an undefined property App\\Livewire\\ClientCompany\\ClientCompanyDashboard\:\:\$bookingsByTradeProperty\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Livewire/ClientCompany/ClientCompanyDashboard.php
 
-		-
-			message: '#^Access to an undefined property App\\Livewire\\ClientCompany\\ClientCompanyDashboard\:\:\$kpisProperty\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Livewire/ClientCompany/ClientCompanyDashboard.php
 
-		-
-			message: '#^Access to an undefined property App\\Livewire\\ClientCompany\\ClientCompanyDashboard\:\:\$pendingApprovalsProperty\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Livewire/ClientCompany/ClientCompanyDashboard.php
 
-		-
-			message: '#^Access to an undefined property App\\Livewire\\ClientCompany\\ClientCompanyDashboard\:\:\$recentBookingsProperty\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Livewire/ClientCompany/ClientCompanyDashboard.php
 
-		-
-			message: '#^Access to an undefined property App\\Livewire\\ClientCompany\\ClientCompanyDashboard\:\:\$sitesOverviewProperty\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Livewire/ClientCompany/ClientCompanyDashboard.php
 
 		-
 			message: '#^Access to an undefined property App\\Models\\Booking\:\:\$total\.$#'
@@ -7284,23 +7224,8 @@ parameters:
 			count: 1
 			path: app/Livewire/ClientCompany/ClientCompanyDashboard.php
 
-		-
-			message: '#^Access to an undefined property App\\Livewire\\ClientCompany\\MembersAccess\:\:\$availableRolesProperty\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Livewire/ClientCompany/MembersAccess.php
 
-		-
-			message: '#^Access to an undefined property App\\Livewire\\ClientCompany\\MembersAccess\:\:\$editingMemberProperty\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Livewire/ClientCompany/MembersAccess.php
 
-		-
-			message: '#^Access to an undefined property App\\Livewire\\ClientCompany\\MembersAccess\:\:\$membersProperty\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Livewire/ClientCompany/MembersAccess.php
 
 		-
 			message: '#^Method App\\Livewire\\ClientCompany\\MembersAccess\:\:getAvailableRolesProperty\(\) return type has no value type specified in iterable type array\.$#'
@@ -7326,17 +7251,7 @@ parameters:
 			count: 4
 			path: app/Livewire/ClientCompany/MembersAccess.php
 
-		-
-			message: '#^Access to an undefined property App\\Livewire\\ClientCompany\\SiteManager\:\:\$providersProperty\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Livewire/ClientCompany/SiteManager.php
 
-		-
-			message: '#^Access to an undefined property App\\Livewire\\ClientCompany\\SiteManager\:\:\$sitesProperty\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Livewire/ClientCompany/SiteManager.php
 
 		-
 			message: '#^Method App\\Livewire\\ClientCompany\\SiteManager\:\:getProvidersProperty\(\) has no return type specified\.$#'
@@ -8802,17 +8717,7 @@ parameters:
 			count: 1
 			path: app/Livewire/Provider/ProviderWalletPage.php
 
-		-
-			message: '#^Access to an undefined property App\\Livewire\\ProviderCompany\\DispatchCenter\:\:\$availableWorkersProperty\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Livewire/ProviderCompany/DispatchCenter.php
 
-		-
-			message: '#^Access to an undefined property App\\Livewire\\ProviderCompany\\DispatchCenter\:\:\$missionsProperty\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Livewire/ProviderCompany/DispatchCenter.php
 
 		-
 			message: '#^Method App\\Livewire\\ProviderCompany\\DispatchCenter\:\:getAvailableWorkersProperty\(\) has no return type specified\.$#'
@@ -8838,29 +8743,9 @@ parameters:
 			count: 1
 			path: app/Livewire/ProviderCompany/DispatchCenter.php
 
-		-
-			message: '#^Access to an undefined property App\\Livewire\\ProviderCompany\\ProviderDashboard\:\:\$alertsProperty\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Livewire/ProviderCompany/ProviderDashboard.php
 
-		-
-			message: '#^Access to an undefined property App\\Livewire\\ProviderCompany\\ProviderDashboard\:\:\$kpisProperty\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Livewire/ProviderCompany/ProviderDashboard.php
 
-		-
-			message: '#^Access to an undefined property App\\Livewire\\ProviderCompany\\ProviderDashboard\:\:\$missionsOfDayProperty\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Livewire/ProviderCompany/ProviderDashboard.php
 
-		-
-			message: '#^Access to an undefined property App\\Livewire\\ProviderCompany\\ProviderDashboard\:\:\$teamStatusProperty\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Livewire/ProviderCompany/ProviderDashboard.php
 
 		-
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$name\.$#'
@@ -8928,29 +8813,9 @@ parameters:
 			count: 1
 			path: app/Livewire/ProviderCompany/ProviderDashboard.php
 
-		-
-			message: '#^Access to an undefined property App\\Livewire\\ProviderCompany\\TaskBoard\:\:\$doneTasksProperty\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Livewire/ProviderCompany/TaskBoard.php
 
-		-
-			message: '#^Access to an undefined property App\\Livewire\\ProviderCompany\\TaskBoard\:\:\$inProgressTasksProperty\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Livewire/ProviderCompany/TaskBoard.php
 
-		-
-			message: '#^Access to an undefined property App\\Livewire\\ProviderCompany\\TaskBoard\:\:\$membersProperty\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Livewire/ProviderCompany/TaskBoard.php
 
-		-
-			message: '#^Access to an undefined property App\\Livewire\\ProviderCompany\\TaskBoard\:\:\$todoTasksProperty\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Livewire/ProviderCompany/TaskBoard.php
 
 		-
 			message: '#^Method App\\Livewire\\ProviderCompany\\TaskBoard\:\:getDoneTasksProperty\(\) has no return type specified\.$#'
@@ -9090,23 +8955,8 @@ parameters:
 			count: 1
 			path: app/Livewire/ProviderCompany/TeamChannels.php
 
-		-
-			message: '#^Access to an undefined property App\\Livewire\\ProviderCompany\\TeamManagement\:\:\$availableRolesProperty\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Livewire/ProviderCompany/TeamManagement.php
 
-		-
-			message: '#^Access to an undefined property App\\Livewire\\ProviderCompany\\TeamManagement\:\:\$editingMemberProperty\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Livewire/ProviderCompany/TeamManagement.php
 
-		-
-			message: '#^Access to an undefined property App\\Livewire\\ProviderCompany\\TeamManagement\:\:\$membersProperty\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Livewire/ProviderCompany/TeamManagement.php
 
 		-
 			message: '#^Method App\\Livewire\\ProviderCompany\\TeamManagement\:\:getAvailableRolesProperty\(\) return type has no value type specified in iterable type array\.$#'

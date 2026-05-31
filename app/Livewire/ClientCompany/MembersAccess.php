@@ -6,10 +6,16 @@ use App\Enums\OrganizationRole;
 use App\Models\OrganizationMember;
 use App\Models\User;
 use App\Services\PermissionService;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
 use Livewire\Component;
 
+/**
+ * @property-read Collection<int, OrganizationMember> $members
+ * @property-read array<string, mixed> $availableRoles
+ * @property-read ?OrganizationMember $editingMember
+ */
 class MembersAccess extends Component
 {
     // ──────────────────────────────────────────────────────

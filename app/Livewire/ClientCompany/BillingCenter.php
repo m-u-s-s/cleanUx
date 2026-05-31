@@ -4,10 +4,15 @@ namespace App\Livewire\ClientCompany;
 
 use App\Models\OrganizationSite;
 use App\Services\PermissionService;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
 use Livewire\WithPagination;
 
+/**
+ * @property-read array<string, mixed> $summary
+ * @property-read Collection<int, OrganizationSite> $sites
+ */
 class BillingCenter extends Component
 {
     use WithPagination;

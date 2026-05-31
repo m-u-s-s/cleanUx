@@ -5,9 +5,16 @@ namespace App\Livewire\ProviderCompany;
 use App\Models\OrganizationMember;
 use App\Models\Task;
 use App\Services\PermissionService;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
 
+/**
+ * @property-read Collection<int, Task> $todoTasks
+ * @property-read Collection<int, Task> $inProgressTasks
+ * @property-read Collection<int, Task> $doneTasks
+ * @property-read Collection<int, OrganizationMember> $members
+ */
 class TaskBoard extends Component
 {
     // ──────────────────────────────────────────────────────
