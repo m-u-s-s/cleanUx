@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Parity;
 
+use Illuminate\Support\Facades\Artisan;
 use Tests\TestCase;
 
 class ParityScaffoldRegistryTest extends TestCase
@@ -17,8 +18,12 @@ class ParityScaffoldRegistryTest extends TestCase
     {
         // The native invoices path /dashboard/client/finance is already in config/parity.php,
         // so the scaffold must NOT emit a candidate for it.
-        $this->artisan('parity:scaffold-registry --json')
-            ->assertExitCode(0)
-            ->doesntExpectOutput('/dashboard/client/finance');
+        // We match the exact JSON value line emitted by JSON_PRETTY_PRINT|JSON_UNESCAPED_SLASHES
+        // to avoid false passes on prefix-substring paths like /dashboard/client/finance-x.
+        $output = $this->artisan('parity:scaffold-registry --json')
+            ->assertExitCode(0);
+
+        $rawOutput = Artisan::output();
+        $this->assertStringNotContainsString('"path": "/dashboard/client/finance"', $rawOutput);
     }
 }

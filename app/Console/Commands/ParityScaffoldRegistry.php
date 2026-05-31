@@ -8,9 +8,10 @@ use Illuminate\Support\Str;
 
 /**
  * Dev tool: emits candidate parity-registry entries for every navigable web area
- * (GET, no path params, <=2 URI segments) under a known role prefix, EXCLUDING
- * paths already present in config/parity.php. Output is reviewed by a human and
- * pasted into config/parity.php (the registry stays a committed file).
+ * (GET, no path params, exactly one segment past its role prefix — the top-level
+ * navigable area for that role) under a known role prefix, EXCLUDING paths already
+ * present in config/parity.php. Output is reviewed by a human and pasted into
+ * config/parity.php (the registry stays a committed file).
  */
 class ParityScaffoldRegistry extends Command
 {
@@ -41,13 +42,18 @@ class ParityScaffoldRegistry extends Command
             if (str_contains($uri, '{')) {
                 continue;
             }
-            $role = $this->roleFor($uri);
-            if ($role === null) {
+
+            $match = $this->matchPrefix($uri);   // returns [prefix, roles] or null
+            if ($match === null) {
                 continue;
             }
-            if (substr_count($uri, '/') > 2) {
+            [$prefix, $roles] = $match;
+
+            // one segment past the role prefix only (true top-level navigable area)
+            if (substr_count($uri, '/') > substr_count($prefix, '/') + 1) {
                 continue;
             }
+
             $path = '/'.ltrim($uri, '/');
             if (in_array($path, $existingPaths, true)) {
                 continue;
@@ -59,7 +65,7 @@ class ParityScaffoldRegistry extends Command
                 'path' => $path,
                 'web' => 'native',
                 'mobile' => 'webview',
-                'roles' => $this->roleFor($uri),
+                'roles' => $roles,
                 'responsive_verified' => false,
             ];
         }
@@ -84,12 +90,12 @@ class ParityScaffoldRegistry extends Command
         return self::SUCCESS;
     }
 
-    /** @return list<string>|null */
-    private function roleFor(string $uri): ?array
+    /** @return array{0:string,1:list<string>}|null */
+    private function matchPrefix(string $uri): ?array
     {
         foreach (self::ROLE_PREFIXES as $prefix => $roles) {
             if (str_starts_with($uri, $prefix)) {
-                return $roles;
+                return [$prefix, $roles];
             }
         }
 
