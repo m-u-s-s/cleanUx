@@ -2,8 +2,44 @@
 
 > **Status:** Phase 1 (autonomous) DONE — registry complete (124 modules, real paths, role-scoped),
 > three parity test suites green (paths-resolve, embed-render, role-access), this scaffold merged.
-> Phase 2 (operate-together) is **pending** — every row in the tables below must reach PASS before
-> `responsive_verified` is flipped to `true`.
+> Phase 2 (operate-together) is **in progress** — automated render sweep done (see below); the
+> per-module *visual* pass at phone width is what remains before `responsive_verified` is flipped.
+
+---
+
+## Phase-2 automated render sweep — results (2026-05-31)
+
+`scripts/embed_sweep.php` logs in per role against a running server on **MySQL** (seeded demo data,
+5 role accounts) and GETs every `{path}?embed=1`, recording HTTP status + nav-chrome presence. This
+gives an objective render check across all 118 WebView modules (the embed-render PHPUnit test only
+exercises client/provider/B2B on SQLite; this also covered the 71 admin pages and resolved the 7
+deferred ones on real MySQL).
+
+**Result: 115/118 render clean (HTTP 200, nav chrome absent). Zero pages leaked nav chrome** — the
+embed-guard is applied everywhere. Render bugs found and fixed during the sweep (branch
+`fix/phase2-embed-qa`): client `litiges` + `admin-home` (schema-drift columns); the **entire B2B
+company-dashboard cluster** across 3 drift layers (`bookings.client_organization_id`→
+`customer_organization_id`, `missions.scheduled_at`→`planned_start_at`, `missions.completed_at`→
+`actual_end_at`, missing `Message::readBy` relation, null-unsafe `forOrg` scopes, `BillingCenter`
+summary keys + `$invoices`, `Booking` `providerUser`/`clientUser` alias relations, ambiguous
+`created_at` joins, Livewire `#[On]` placeholder defaults).
+
+**Still not rendering (3):**
+- `admin-feature-flags` — **local env only**: `feature_flag_overrides` table is an unrun migration;
+  the migration chain is blocked by a pre-existing broken `trade_id` migration (can't `SET NULL` FK +
+  `NOT NULL`). Not a prod bug, but the broken migration should be filed.
+- `admin-users` — **not a bug**: 302 redirect, it's an alias of `/admin/utilisateurs` (already passes).
+  Candidate to dedupe from the registry.
+- `dashboard-client-analytics` — `ClientAnalyticsDashboard` aggregator has 2 more bugs (ambiguous
+  `created_at` in a 3-table join + missing `trend` KPI key on sparse data). Follow-up.
+
+**Action-path bugs found (don't block render, break form submits — follow-up):**
+- `TaskBoard::updateStatus()` writes `tasks.completed_at` (no such column).
+- `DispatchCenter` assign-worker writes `mission_assignments.provider_user_id`/`assigned_by` (no such
+  columns; real cols `user_id`/`role`).
+
+The remaining work is the **visual** pass: open each of the 115 rendering pages at ~390px and confirm
+the 5 checks, then flip `responsive_verified`.
 
 ---
 
