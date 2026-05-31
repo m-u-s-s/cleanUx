@@ -40,8 +40,23 @@ return new class extends Migration
         $remainingNulls = DB::table('service_catalogs')->whereNull('trade_id')->count();
 
         if ($remainingNulls === 0 && config('database.default') !== 'sqlite') {
+            // MySQL refuse de passer une colonne en NOT NULL tant qu'elle porte
+            // une FK ON DELETE SET NULL : on dépose la FK, on change, on recrée.
+            Schema::table('service_catalogs', function (Blueprint $table) {
+                try {
+                    $table->dropForeign(['trade_id']);
+                } catch (Throwable $e) {
+                    // FK déjà absente : on continue.
+                }
+            });
+
             Schema::table('service_catalogs', function (Blueprint $table) {
                 $table->foreignId('trade_id')->nullable(false)->change();
+            });
+
+            Schema::table('service_catalogs', function (Blueprint $table) {
+                $table->foreign('trade_id')->references('id')->on('trades')
+                    ->cascadeOnUpdate()->restrictOnDelete();
             });
         }
     }

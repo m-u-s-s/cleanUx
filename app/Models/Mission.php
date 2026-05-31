@@ -16,6 +16,8 @@ class Mission extends Model
         'booking_id',
         'rendez_vous_id',
         'organization_account_id',
+        'provider_organization_id',
+        'provider_team_id',
         'organization_site_id',
         'service_catalog_id',
         'service_zone_id',
@@ -98,6 +100,11 @@ class Mission extends Model
     public function organizationAccount(): BelongsTo
     {
         return $this->belongsTo(OrganizationAccount::class);
+    }
+
+    public function providerOrganization(): BelongsTo
+    {
+        return $this->belongsTo(OrganizationAccount::class, 'provider_organization_id');
     }
 
     public function organizationSite(): BelongsTo
