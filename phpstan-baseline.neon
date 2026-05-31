@@ -18535,12 +18535,6 @@ parameters:
 			path: app/Services/Analytics/AnalyticsKpiService.php
 
 		-
-			message: '#^Method App\\Services\\Analytics\\AnalyticsKpiService\:\:mainKpis\(\) should return array\{revenue\: array\{value\: float, currency\: string, trend\: float\|null, label\: string\}, bookings_count\: array\{value\: int, trend\: float\|null, label\: string\}, completed_count\: array\{value\: int, completion_rate\: float\|null, label\: string\}, cancellation_rate\: array\{value\: float, trend\: float\|null, label\: string\}, average_rating\: array\{value\: float\|null, count\: int, label\: string\}, active_sites\: array\{value\: int, total\: int, label\: string\}\} but returns array\{revenue\: array\{value\: float\}, bookings_count\: array\{value\: int\}, cancellation_rate\: array\{value\: float\}, completed_count\: array\{value\: int, completion_rate\: float\|null\}\}\.$#'
-			identifier: return.type
-			count: 1
-			path: app/Services/Analytics/AnalyticsKpiService.php
-
-		-
 			message: '#^Method App\\Services\\Analytics\\AnalyticsKpiService\:\:monthlyRevenue\(\) should return Illuminate\\Support\\Collection\<int, array\{label\: string, month\: string, revenue\: float, bookings_count\: int\}\> but returns Illuminate\\Support\\Collection\<int, array\{month\: string, label\: string, revenue\: float, bookings_count\: int\}\>\.$#'
 			identifier: return.type
 			count: 1

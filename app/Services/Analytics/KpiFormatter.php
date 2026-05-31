@@ -162,6 +162,9 @@ class KpiFormatter
         return $rows->map(fn ($row) => [
             'service_name' => (string) $row->service_name,
             'count' => (int) $row->count,
+            // La blade lit toujours 'revenue' ; l'agrégat ne le calcule pas
+            // (group by service_name sans SUM) → défaut 0.0 si absent.
+            'revenue' => isset($row->revenue) ? (float) $row->revenue : 0.0,
         ]);
     }
 

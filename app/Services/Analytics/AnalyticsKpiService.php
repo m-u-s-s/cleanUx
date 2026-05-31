@@ -57,19 +57,44 @@ class AnalyticsKpiService
         // Derive non-cancelled count from total and cancelled
         $validCount = $total - $cancelled;
 
+        $ratingStats = $this->aggregator->averageRatingStats($orgId, $from, $to);
+        $siteStats = $orgId !== null
+            ? $this->aggregator->activeSiteStats($orgId, $from, $to)
+            : ['total' => 0, 'active' => 0];
+
+        // 'trend' (variation vs période précédente) n'est pas encore câblé :
+        // la clé doit néanmoins toujours exister (la blade la lit avec un garde !== null).
         return [
             'revenue' => [
                 'value' => round($revenue, 2),
+                'currency' => 'EUR',
+                'trend' => null,
+                'label' => 'Chiffre d\'affaires',
             ],
             'bookings_count' => [
                 'value' => $validCount,
+                'trend' => null,
+                'label' => 'Rendez-vous',
             ],
             'cancellation_rate' => [
                 'value' => $this->calculator->cancellationRate($total, $cancelled),
+                'trend' => null,
+                'label' => 'Taux d\'annulation',
             ],
             'completed_count' => [
                 'value' => $completed,
                 'completion_rate' => $this->calculator->completionRate($total, $completed),
+                'label' => 'Terminés',
+            ],
+            'average_rating' => [
+                'value' => $ratingStats && $ratingStats->avg !== null ? round((float) $ratingStats->avg, 1) : null,
+                'count' => $ratingStats ? (int) $ratingStats->cnt : 0,
+                'label' => 'Satisfaction',
+            ],
+            'active_sites' => [
+                'value' => (int) $siteStats['active'],
+                'total' => (int) $siteStats['total'],
+                'label' => 'Sites actifs',
             ],
         ];
     }

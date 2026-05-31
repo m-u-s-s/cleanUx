@@ -85,10 +85,12 @@ class DispatchCenter extends Component
             ->where('user_id', $this->assigneeId)
             ->firstOrFail();
 
-        // Créer l'assignment
+        // Créer l'assignment (colonnes réelles de mission_assignments :
+        // user_id, role_on_mission, assignment_status, assigned_at —
+        // pas de provider_user_id ni assigned_by ; cf. MissionAssignmentStatusService).
         MissionAssignment::updateOrCreate(
-            ['mission_id' => $mission->id, 'provider_user_id' => $worker->user_id],
-            ['assigned_by' => $user->id, 'assigned_at' => now(), 'role' => 'primary']
+            ['mission_id' => $mission->id, 'user_id' => $worker->user_id],
+            ['role_on_mission' => 'lead', 'assignment_status' => 'assigned', 'assigned_at' => now()]
         );
 
         $mission->update(['status' => 'assigned']);

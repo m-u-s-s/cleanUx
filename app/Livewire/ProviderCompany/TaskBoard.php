@@ -125,13 +125,9 @@ class TaskBoard extends Component
             return;
         }
 
-        $updates = ['status' => $newStatus];
-
-        if ($newStatus === Task::STATUS_DONE) {
-            $updates['completed_at'] = now();
-        }
-
-        $task->update($updates);
+        // La table tasks n'a pas de colonne done-timestamp (completed_at/done_at/...) :
+        // le passage du status à "done" est la source de vérité. updated_at suffit.
+        $task->update(['status' => $newStatus]);
     }
 
     public function deleteTask(int $taskId): void
