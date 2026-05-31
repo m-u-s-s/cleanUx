@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Enums\OrganizationType;
 use App\Models\Country;
 use App\Models\OrganizationAccount;
 use App\Models\PostalCode;
@@ -28,7 +29,7 @@ class OrganizationAccountFactory extends Factory
             'name' => $name,
             'legal_name' => $name.' SRL',
             'slug' => Str::slug($name.'-'.fake()->unique()->numerify('###')),
-            'type' => fake()->randomElement(['business', 'entreprise', 'partner']),
+            'type' => OrganizationType::CLIENT_COMPANY->value,
             'tva_number' => 'BE'.fake()->unique()->numerify('0#########'),
             'email' => fake()->companyEmail(),
             'phone' => fake()->phoneNumber(),
@@ -43,5 +44,19 @@ class OrganizationAccountFactory extends Factory
             'metadata' => null,
             'notes' => fake()->optional()->sentence(),
         ];
+    }
+
+    public function clientCompany(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'type' => OrganizationType::CLIENT_COMPANY->value,
+        ]);
+    }
+
+    public function providerCompany(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'type' => OrganizationType::PROVIDER_COMPANY->value,
+        ]);
     }
 }

@@ -3,7 +3,9 @@
 namespace Tests\Unit\Models;
 
 use App\Enums\AssistantContextRole;
+use App\Enums\OrganizationType;
 use App\Models\CustomerProfile;
+use App\Models\OrganizationAccount;
 use App\Models\ProviderProfile;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -154,7 +156,10 @@ class UserConcernsTest extends TestCase
 
     public function test_is_client_company_returns_true_with_organization_context(): void
     {
-        $user = User::factory()->create(['organization_account_id' => 1]);
+        $org = OrganizationAccount::factory()->create([
+            'type' => OrganizationType::CLIENT_COMPANY->value,
+        ]);
+        $user = User::factory()->create(['organization_account_id' => $org->id]);
 
         $this->assertTrue($user->isClientCompany());
     }

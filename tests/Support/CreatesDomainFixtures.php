@@ -2,6 +2,7 @@
 
 namespace Tests\Support;
 
+use App\Enums\OrganizationType;
 use App\Models\Commune;
 use App\Models\Country;
 use App\Models\EmployeeZoneAssignment;
@@ -163,7 +164,7 @@ trait CreatesDomainFixtures
             'name' => 'Organisation '.$i,
             'legal_name' => 'Organisation Legale '.$i,
             'slug' => 'organisation-'.$i,
-            'type' => 'entreprise',
+            'type' => OrganizationType::CLIENT_COMPANY->value,
             'tva_number' => 'BE0'.str_pad((string) $i, 9, '0', STR_PAD_LEFT),
             'email' => 'org'.$i.'@example.test',
             'phone' => '0102030405',

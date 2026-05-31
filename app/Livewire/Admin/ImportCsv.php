@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Admin;
 
+use App\Enums\OrganizationType;
 use App\Models\Booking;
 use App\Models\OrganizationAccount;
 use App\Models\User;
@@ -91,7 +92,7 @@ class ImportCsv extends Component
                         'name' => $orgName,
                         'legal_name' => $orgName,
                         'slug' => $slug,
-                        'type' => 'entreprise',
+                        'type' => OrganizationType::CLIENT_COMPANY->value,
                         'tva_number' => $data['tva_number'] ?? null,
                         'email' => trim($data['email']),
                         'status' => 'active',
