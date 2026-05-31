@@ -20,7 +20,8 @@
 <body class="bg-slate-900 text-slate-100 antialiased">
 
     {{-- ── Topbar ── --}}
-    <nav aria-label="Navigation principale" class="sticky top-0 z-40 flex h-14 items-center justify-between border-b border-slate-700 bg-slate-900/95 px-4 backdrop-blur">
+    @unless($embedded ?? false)
+    <nav data-chrome="primary-nav" aria-label="Navigation principale" class="sticky top-0 z-40 flex h-14 items-center justify-between border-b border-slate-700 bg-slate-900/95 px-4 backdrop-blur">
         <div class="flex items-center gap-3">
             <a href="{{ route('provider-company.dashboard') }}" class="text-lg font-black text-white">
                 CleanUx <span class="text-amber-400">Pro</span>
@@ -57,6 +58,7 @@
             </a>
         </div>
     </nav>
+    @endunless
 
     {{-- ── Contenu ── --}}
     <main>
