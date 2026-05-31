@@ -121,11 +121,6 @@ class User extends Authenticatable implements HasLocalePreference, MustVerifyEma
         return $this->hasOne(CustomerProfile::class);
     }
 
-    public function providerProfile(): HasOne
-    {
-        return $this->hasOne(ProviderProfile::class);
-    }
-
     public function bookings(): HasMany
     {
         return $this->hasMany(Booking::class, 'client_user_id');
