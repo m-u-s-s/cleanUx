@@ -41,7 +41,7 @@ class DispatchCenter extends Component
     {
         $orgId = Auth::user()->current_organization_id;
 
-        return Mission::where('organization_account_id', $orgId)
+        return Mission::where('provider_organization_id', $orgId)
             ->when($this->filterDate, fn ($q) => $q->whereDate('planned_start_at', $this->filterDate)
             )
             ->when($this->filterStatus, fn ($q) => $q->where('status', $this->filterStatus)
@@ -78,7 +78,7 @@ class DispatchCenter extends Component
         }
 
         $user = Auth::user();
-        $mission = Mission::where('organization_account_id', $user->current_organization_id)
+        $mission = Mission::where('provider_organization_id', $user->current_organization_id)
             ->findOrFail($this->assigningId);
 
         $worker = OrganizationMember::where('organization_account_id', $user->current_organization_id)
