@@ -124,11 +124,52 @@ class StripeWebhookHandlers
             ]);
         }
 
-        $this->walletService->recordRefundClawback(
-            $booking,
-            round($refundedAmountCents / 100, 2),
-            $charge['id'] ?? null,
-        );
+        // Clawback strategy: iterate refunds.data so each distinct Stripe Refund
+        // (re_xxx) gets its own idempotent clawback entry.  This unifies the
+        // service path (refundMissionPayment passes re_xxx) and the webhook path:
+        // because both keys on the Refund id, a service-then-webhook flow dedupes
+        // to a single row.  Distinct partial refunds each have their own re_xxx so
+        // they still produce separate clawbacks.
+        //
+        // Proportional formula per refund (same as StripeConnectPaymentService):
+        //   clawbackCents = round(refundCents × providerCents / max(1, totalCents))
+        $totalCents = max(1, (int) ($charge['amount'] ?? $booking->payment_amount_cents ?? 0));
+        $providerCents = (int) ($booking->provider_amount_cents ?? $totalCents);
+
+        $perRefundData = $charge['refunds']['data'] ?? [];
+
+        if (! empty($perRefundData)) {
+            // Preferred path: iterate individual refund objects keyed on re_xxx.
+            foreach ($perRefundData as $refund) {
+                $refundId = $refund['id'] ?? null;
+                $refundCents = (int) ($refund['amount'] ?? 0);
+                if ($refundCents <= 0) {
+                    continue;
+                }
+                $clawbackCents = min((int) round($refundCents * $providerCents / $totalCents), $providerCents);
+                if ($clawbackCents <= 0) {
+                    continue;
+                }
+                $this->walletService->recordRefundClawback(
+                    $booking,
+                    round($clawbackCents / 100, 2),
+                    $refundId,
+                );
+            }
+        } else {
+            // Fallback: refunds.data absent (some legacy/test payloads).
+            // Key on charge id — this path is only hit when no per-refund data is
+            // available, so there is no overlap with the service path (which always
+            // has a re_xxx).
+            $clawbackCents = min((int) round($refundedAmountCents * $providerCents / $totalCents), $providerCents);
+            if ($clawbackCents > 0) {
+                $this->walletService->recordRefundClawback(
+                    $booking,
+                    round($clawbackCents / 100, 2),
+                    $charge['id'] ?? null,
+                );
+            }
+        }
 
         BusinessEventEmitter::emit(
             eventCode: 'payment.refunded',
@@ -171,25 +212,37 @@ class StripeWebhookHandlers
         $this->paymentService->syncPaymentIntent($booking);
         $booking->refresh();
 
-        if ($booking->payment_status === 'captured' && $previousStatus !== 'captured') {
+        if ($booking->payment_status === 'captured') {
+            // recordEarning is idempotent (idempotency_key prevents double-write),
+            // so it is safe to call regardless of previousStatus.
+            // Bug fix: the original guard ($previousStatus !== 'captured') caused
+            // recordEarning to be skipped when captureMissionPayment had already
+            // set payment_status='captured' before this webhook arrived, resulting
+            // in the wallet never being credited in the standard capture→webhook flow.
             $this->walletService->recordEarning($booking, $intent);
+
             $feeCents = (int) (data_get($intent, 'charges.data.0.balance_transaction.fee')
                 ?? data_get($intent, 'application_fee_amount')
                 ?? 0);
-            BusinessEventEmitter::emit(
-                eventCode: 'payment.succeeded',
-                payload: [
-                    'booking_id' => $booking->id,
-                    'amount_cents' => (int) ($intent['amount'] ?? 0),
-                    'currency' => $intent['currency'] ?? null,
-                    'stripe_payment_intent_id' => $piId,
-                    'fees_cents' => $feeCents,
-                ],
-                idempotencyKey: 'payment.succeeded:'.$piId,
-                sourceType: Booking::class,
-                sourceId: (int) $booking->id,
-            );
-            BookingAutoPoster::postPayment($booking, $feeCents);
+
+            if ($previousStatus !== 'captured') {
+                // Only emit the business event and accounting post on the first
+                // transition to 'captured' to avoid duplicate downstream effects.
+                BusinessEventEmitter::emit(
+                    eventCode: 'payment.succeeded',
+                    payload: [
+                        'booking_id' => $booking->id,
+                        'amount_cents' => (int) ($intent['amount'] ?? 0),
+                        'currency' => $intent['currency'] ?? null,
+                        'stripe_payment_intent_id' => $piId,
+                        'fees_cents' => $feeCents,
+                    ],
+                    idempotencyKey: 'payment.succeeded:'.$piId,
+                    sourceType: Booking::class,
+                    sourceId: (int) $booking->id,
+                );
+                BookingAutoPoster::postPayment($booking, $feeCents);
+            }
         }
 
         return ['status' => StripeWebhookEvent::STATUS_PROCESSED, 'details' => [

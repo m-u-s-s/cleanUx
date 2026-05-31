@@ -30,11 +30,12 @@ use Stripe\Stripe;
  */
 class StripeConnectPaymentService
 {
-    public function __construct()
+    public function __construct(private ?ProviderWalletService $walletService = null)
     {
         if ($key = config('cashier.secret')) {
             Stripe::setApiKey($key);
         }
+        $this->walletService ??= new ProviderWalletService;
     }
 
     /**
@@ -66,24 +67,30 @@ class StripeConnectPaymentService
             return null;
         }
 
+        // Attempt the Stripe capture OUTSIDE the DB transaction so that a
+        // declined-card exception does not roll back the 'failed' status update.
+        // The 'failed' write must survive even when Stripe rejects the capture.
+        try {
+            $intent = PaymentIntent::retrieve($booking->stripe_payment_intent_id);
+            $intent->capture();
+        } catch (\Throwable $e) {
+            Log::error('StripeConnectPaymentService: capture failed', [
+                'mission_id' => $mission->id,
+                'pi_id' => $booking->stripe_payment_intent_id,
+                'error' => $e->getMessage(),
+            ]);
+
+            // Write 'failed' outside any transaction so it is never rolled back.
+            $booking->update([
+                'payment_status' => 'failed',
+                'payment_failed_at' => now(),
+            ]);
+            throw new RuntimeException('Capture échouée : '.$e->getMessage(), 0, $e);
+        }
+
+        // Capture succeeded — wrap only the DB writes (status + payout row) in a
+        // transaction so they are atomic with respect to each other.
         return DB::transaction(function () use ($mission, $booking) {
-            try {
-                $intent = PaymentIntent::retrieve($booking->stripe_payment_intent_id);
-                $intent->capture();
-            } catch (\Throwable $e) {
-                Log::error('StripeConnectPaymentService: capture failed', [
-                    'mission_id' => $mission->id,
-                    'pi_id' => $booking->stripe_payment_intent_id,
-                    'error' => $e->getMessage(),
-                ]);
-
-                $booking->update([
-                    'payment_status' => 'failed',
-                    'payment_failed_at' => now(),
-                ]);
-                throw new RuntimeException('Capture échouée : '.$e->getMessage(), 0, $e);
-            }
-
             $booking->update([
                 'payment_status' => 'captured',
                 'payment_captured_at' => now(),
@@ -201,6 +208,42 @@ class StripeConnectPaymentService
             'payment_status' => $isTotal ? 'refunded' : 'partially_refunded',
             'payment_refunded_at' => now(),
         ]);
+
+        // F3 — clawback: debit the provider wallet so they do not keep money
+        // that was returned to the client.
+        //
+        // Proportional formula (unifies full + partial):
+        //   clawbackCents = round(refundedCents × providerCents / max(1, totalCents))
+        //
+        // Full refund (amountCents=null): refundedCents = payment_amount_cents
+        //   → clawbackCents = payment_amount_cents × provider_amount_cents / payment_amount_cents
+        //   → = provider_amount_cents  ✓ (provider loses their full share)
+        //
+        // Partial refund of €50 on €100 booking (€80 provider):
+        //   → 5000 × 8000 / 10000 = 4000 cents = €40  ✓ (NOT the raw €50)
+        //
+        // Idempotency key = Stripe Refund id (re_xxx), same key used by
+        // handleChargeRefunded, so service-then-webhook deduplicates to one row.
+        $totalCents = max(1, (int) ($booking->payment_amount_cents ?? 0));
+        $providerCents = (int) ($booking->provider_amount_cents ?? $booking->payment_amount_cents ?? 0);
+
+        if ($booking->provider_amount_cents === null) {
+            Log::warning('refundMissionPayment: booking has null provider_amount_cents; clawback may over-claw', [
+                'booking_id' => $booking->id,
+            ]);
+        }
+
+        $refundedCents = $amountCents ?? $totalCents;
+        $clawbackCents = min((int) round($refundedCents * $providerCents / $totalCents), $providerCents);
+
+        if ($clawbackCents > 0) {
+            $clawbackAmount = round((float) $clawbackCents / 100, 2);
+            $this->walletService->recordRefundClawback(
+                $booking,
+                $clawbackAmount,
+                $refund->id,
+            );
+        }
 
         Log::info('StripeConnectPaymentService: refund OK', [
             'booking_id' => $booking->id,

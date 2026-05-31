@@ -2,9 +2,11 @@
 
 namespace App\Providers;
 
+use App\Events\BusinessAlertRaised;
 use App\Events\Disputes\DisputeOpened;
 use App\Events\Kyc\KycCompleted;
 use App\Events\Rating\RatingSubmitted;
+use App\Listeners\Alerts\BusinessAlertSentryListener;
 use App\Listeners\Disputes\NotifyOnDisputeOpened;
 use App\Listeners\Kyc\EmitKycApprovedWebhook;
 use App\Listeners\LogNotificationMailFailed;
@@ -27,6 +29,9 @@ class EventServiceProvider extends ServiceProvider
     protected $listen = [
         Registered::class => [
             SendEmailVerificationNotification::class,
+        ],
+        BusinessAlertRaised::class => [
+            BusinessAlertSentryListener::class,
         ],
         NotificationSent::class => [
             LogNotificationMailSent::class,

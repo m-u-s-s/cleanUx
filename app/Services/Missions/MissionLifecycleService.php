@@ -14,8 +14,8 @@ use App\Notifications\MissionStartedNotification;
 use App\Services\Notifications\SmsService;
 use App\Services\Payments\CommissionService;
 use App\Services\Payments\MissionPaymentService;
+use App\Services\Payments\ProviderWalletService;
 use App\Support\Domain\MissionStatus;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
 use RuntimeException;
@@ -293,38 +293,15 @@ class MissionLifecycleService
                         ],
                     ]);
 
-                    // Credit provider wallet ledger (soft-insert, schema-defensive)
-                    if (Schema::hasTable('provider_wallet_transactions')) {
-                        $cols = DB::getSchemaBuilder()->getColumnListing('provider_wallet_transactions');
-                        $row = ['created_at' => now(), 'updated_at' => now()];
-                        if (in_array('user_id', $cols)) {
-                            $row['user_id'] = $providerId;
-                        }
-                        if (in_array('provider_id', $cols)) {
-                            $row['provider_id'] = $providerId;
-                        }
-                        if (in_array('booking_id', $cols)) {
-                            $row['booking_id'] = $mission->rendezVous->id;
-                        }
-                        if (in_array('type', $cols)) {
-                            $row['type'] = 'earning';
-                        }
-                        if (in_array('amount', $cols)) {
-                            $row['amount'] = $commission['provider_payout_cents'] / 100;
-                        }
-                        if (in_array('amount_cents', $cols)) {
-                            $row['amount_cents'] = $commission['provider_payout_cents'];
-                        }
-                        if (in_array('currency', $cols)) {
-                            $row['currency'] = 'eur';
-                        }
-                        if (in_array('description', $cols)) {
-                            $row['description'] = "Mission #{$mission->id} paiement capturé";
-                        }
-                        if (in_array('status', $cols)) {
-                            $row['status'] = 'available';
-                        }
-                        DB::table('provider_wallet_transactions')->insert($row);
+                    // Credit provider wallet ledger via ProviderWalletService::recordEarning.
+                    // This is idempotent (deduplicates via idempotency_key = earning:booking:{id}:pi:{pi_id})
+                    // so it is safe to call even when the payment_intent.succeeded webhook also
+                    // calls recordEarning later — the second call becomes a no-op.
+                    // Passing null for $intent causes recordEarning to fall back to
+                    // $booking->stripe_payment_intent_id for the idempotency key, which is the
+                    // same value the webhook handler will use, ensuring proper deduplication.
+                    if ($mission->rendezVous instanceof Booking) {
+                        app(ProviderWalletService::class)->recordEarning($mission->rendezVous);
                     }
                 }
             } catch (\Throwable $e) {
