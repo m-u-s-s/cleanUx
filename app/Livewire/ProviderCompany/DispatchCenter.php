@@ -110,8 +110,8 @@ class DispatchCenter extends Component
     public function render()
     {
         return view('livewire.provider-company.dispatch-center', [
-            'missions' => $this->missionsProperty,
-            'availableWorkers' => $this->availableWorkersProperty,
+            'missions' => $this->missions,
+            'availableWorkers' => $this->availableWorkers,
         ])->layout('layouts.provider-company');
     }
 }

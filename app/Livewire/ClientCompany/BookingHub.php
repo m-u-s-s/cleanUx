@@ -111,7 +111,7 @@ class BookingHub extends Component
             return collect();
         }
 
-        $site = $this->selectedSiteProperty;
+        $site = $this->selectedSite;
 
         return ProviderProfile::where('status', 'active')
             ->where('verification_status', 'verified')
@@ -254,11 +254,11 @@ class BookingHub extends Component
     public function render()
     {
         return view('livewire.client-company.booking-hub', [
-            'bookings' => $this->bookingsProperty,
-            'sites' => $this->sitesProperty,
-            'trades' => $this->tradesProperty,
-            'providers' => $this->availableProvidersProperty,
-            'selectedSite' => $this->selectedSiteProperty,
+            'bookings' => $this->bookings,
+            'sites' => $this->sites,
+            'trades' => $this->trades,
+            'providers' => $this->availableProviders,
+            'selectedSite' => $this->selectedSite,
         ])->layout('layouts.client-company');
     }
 }

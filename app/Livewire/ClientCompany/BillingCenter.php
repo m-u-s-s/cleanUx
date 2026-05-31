@@ -62,8 +62,8 @@ class BillingCenter extends Component
     public function render()
     {
         return view('livewire.client-company.billing-center', [
-            'summary' => $this->summaryProperty,
-            'sites' => $this->sitesProperty,
+            'summary' => $this->summary,
+            'sites' => $this->sites,
         ])->layout('layouts.client-company');
     }
 }

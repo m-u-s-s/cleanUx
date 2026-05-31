@@ -183,10 +183,10 @@ class TaskBoard extends Component
     public function render()
     {
         return view('livewire.provider-company.task-board', [
-            'todoTasks' => $this->todoTasksProperty,
-            'inProgressTasks' => $this->inProgressTasksProperty,
-            'doneTasks' => $this->doneTasksProperty,
-            'members' => $this->membersProperty,
+            'todoTasks' => $this->todoTasks,
+            'inProgressTasks' => $this->inProgressTasks,
+            'doneTasks' => $this->doneTasks,
+            'members' => $this->members,
         ])->layout('layouts.provider-company');
     }
 }

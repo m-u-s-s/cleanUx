@@ -231,9 +231,9 @@ class TeamManagement extends Component
         $permService = app(PermissionService::class);
 
         return view('livewire.provider-company.team-management', [
-            'members' => $this->membersProperty,
-            'availableRoles' => $this->availableRolesProperty,
-            'editingMember' => $this->editingMemberProperty,
+            'members' => $this->members,
+            'availableRoles' => $this->availableRoles,
+            'editingMember' => $this->editingMember,
             'allPermissions' => $permService->allPermissionKeys(),
         ])->layout('layouts.provider-company');
     }

@@ -211,8 +211,8 @@ class SiteManager extends Component
     public function render()
     {
         return view('livewire.client-company.site-manager', [
-            'sites' => $this->sitesProperty,
-            'providers' => $this->providersProperty,
+            'sites' => $this->sites,
+            'providers' => $this->providers,
         ])->layout('layouts.client-company');
     }
 }

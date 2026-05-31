@@ -110,11 +110,11 @@ class ClientCompanyDashboard extends Component
     public function render()
     {
         return view('livewire.client-company.client-company-dashboard', [
-            'kpis' => $this->kpisProperty,
-            'recentBookings' => $this->recentBookingsProperty,
-            'sitesOverview' => $this->sitesOverviewProperty,
-            'pendingApprovals' => $this->pendingApprovalsProperty,
-            'bookingsByTrade' => $this->bookingsByTradeProperty,
+            'kpis' => $this->kpis,
+            'recentBookings' => $this->recentBookings,
+            'sitesOverview' => $this->sitesOverview,
+            'pendingApprovals' => $this->pendingApprovals,
+            'bookingsByTrade' => $this->bookingsByTrade,
         ])->layout('layouts.client-company');
     }
 }

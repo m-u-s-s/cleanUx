@@ -105,10 +105,10 @@ class ProviderDashboard extends Component
     public function render()
     {
         return view('livewire.provider-company.provider-dashboard', [
-            'kpis' => $this->kpisProperty,
-            'alerts' => $this->alertsProperty,
-            'missionsDay' => $this->missionsOfDayProperty,
-            'teamStatus' => $this->teamStatusProperty,
+            'kpis' => $this->kpis,
+            'alerts' => $this->alerts,
+            'missionsDay' => $this->missionsOfDay,
+            'teamStatus' => $this->teamStatus,
         ])->layout('layouts.provider-company');
     }
 }

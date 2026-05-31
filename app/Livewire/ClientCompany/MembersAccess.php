@@ -241,9 +241,9 @@ class MembersAccess extends Component
     public function render()
     {
         return view('livewire.client-company.members-access', [
-            'members' => $this->membersProperty,
-            'availableRoles' => $this->availableRolesProperty,
-            'editingMember' => $this->editingMemberProperty,
+            'members' => $this->members,
+            'availableRoles' => $this->availableRoles,
+            'editingMember' => $this->editingMember,
             'allPermissions' => app(PermissionService::class)->allPermissionKeys(),
         ])->layout('layouts.client-company');
     }
