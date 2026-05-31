@@ -90,7 +90,7 @@ class ClientCompanyDashboard extends Component
         [$from, $to] = $this->periodDates();
 
         $rows = Booking::where('customer_organization_id', $orgId)
-            ->whereBetween('created_at', [$from, $to])
+            ->whereBetween('bookings.created_at', [$from, $to])
             ->whereNotNull('service_catalog_id')
             ->join('service_catalogs', 'bookings.service_catalog_id', '=', 'service_catalogs.id')
             ->join('trades', 'service_catalogs.trade_id', '=', 'trades.id')

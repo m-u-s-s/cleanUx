@@ -70,6 +70,8 @@ class BillingCenter extends Component
         return view('livewire.client-company.billing-center', [
             'summary' => $this->summary,
             'sites' => $this->sites,
+            // Données simulées — à connecter à Invoice model
+            'invoices' => collect(),
         ])->layout('layouts.client-company');
     }
 }

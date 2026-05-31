@@ -26,7 +26,7 @@ class TeamChannels extends Component
     // ──────────────────────────────────────────────────────
     // State
     // ──────────────────────────────────────────────────────
-    public ?int $activeChannelId = null;
+    public int $activeChannelId = 0;
 
     public string $messageInput = '';
 
@@ -261,7 +261,7 @@ class TeamChannels extends Component
         try {
             app(ModerationService::class)->archiveChannel(Auth::user(), $channel, ! $channel->is_archived);
             $this->loadChannels();
-            $this->activeChannelId = null;
+            $this->activeChannelId = 0;
         } catch (\DomainException $e) {
             session()->flash('error', $e->getMessage());
         }

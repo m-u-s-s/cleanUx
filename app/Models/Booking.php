@@ -321,6 +321,22 @@ class Booking extends Model
         return $this->belongsTo(User::class, 'assigned_provider_user_id');
     }
 
+    /**
+     * @return BelongsTo<User, $this>
+     */
+    public function providerUser(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'assigned_provider_user_id');
+    }
+
+    /**
+     * @return BelongsTo<User, $this>
+     */
+    public function clientUser(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'customer_user_id');
+    }
+
     public function employe(): BelongsTo
     {
         return $this->belongsTo(User::class, 'employe_id');

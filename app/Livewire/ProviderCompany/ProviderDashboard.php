@@ -37,7 +37,7 @@ class ProviderDashboard extends Component
         return [
             'missions_today' => $base()->whereDate('planned_start_at', today())->count(),
             'missions_active' => $base()->whereIn('status', ['dispatched', 'in_progress'])->count(),
-            'missions_done' => $base()->where('status', 'completed')->whereBetween('completed_at', [$from, $to])->count(),
+            'missions_done' => $base()->where('status', 'completed')->whereBetween('actual_end_at', [$from, $to])->count(),
             'missions_delayed' => $base()->where('status', '!=', 'completed')->where('planned_start_at', '<', now())->count(),
             'members_active' => OrganizationMember::where('organization_account_id', $orgId)->where('status', 'active')->count(),
             'unread_messages' => 0, // calculé via Channel si Reverb actif

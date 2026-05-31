@@ -209,10 +209,10 @@ class BookingHub extends Component
             : 'pending';
 
         $booking = Booking::create([
-            'client_user_id' => $user->id,
+            'customer_user_id' => $user->id,
             'customer_organization_id' => $orgId,
             'organization_site_id' => $this->selectedSiteId,
-            'provider_user_id' => $this->selectedProviderId,
+            'assigned_provider_user_id' => $this->selectedProviderId,
             'scheduled_at' => "{$this->scheduledDate} {$this->scheduledTime}",
             'status' => $status,
             'estimated_duration' => $this->estimatedHours ? $this->estimatedHours * 60 : null,

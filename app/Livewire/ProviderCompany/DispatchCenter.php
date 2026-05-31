@@ -22,7 +22,7 @@ class DispatchCenter extends Component
 
     public string $filterStatus = '';
 
-    public ?int $assigningId = null;
+    public int $assigningId = 0;
 
     public ?int $assigneeId = null;
 
@@ -96,13 +96,13 @@ class DispatchCenter extends Component
         // Broadcast du changement de statut
         broadcast(new MissionStatusUpdated($mission));
 
-        $this->assigningId = null;
+        $this->assigningId = 0;
         $this->assigneeId = null;
     }
 
     public function cancelAssign(): void
     {
-        $this->assigningId = null;
+        $this->assigningId = 0;
         $this->assigneeId = null;
     }
 
