@@ -257,24 +257,41 @@ class MoneyPathIsolationTest extends TestCase
     // 9. Cross-org parity surface (self-skip if routes not present on branch)
     // ──────────────────────────────────────────────────────────────────────
 
-    public function test_parity_map_not_accessible_cross_tenant(): void
+    public function test_parity_map_is_role_scoped_and_exposes_no_cross_tenant_data(): void
     {
         if (! Route::has('api.parity-map')) {
             $this->markTestSkipped('parity foundation not on this base — see spec base-branch note');
         }
 
+        // The parity-map is a static, role-filtered module catalog (key/title/icon/path/
+        // mobile from config) — it carries NO tenant-specific data. The correct isolation
+        // property is therefore tenant-AGNOSTICISM: two clients from different orgs must
+        // receive an identical module set (there is nothing cross-tenant to leak), and each
+        // module must expose only static catalog fields, never tenant rows.
         $a = SpineScenario::make()->build();
         $b = SpineScenario::make()->build();
 
+        Sanctum::actingAs($a->client);
+        $aData = $this->getJson(route('api.parity-map'))->assertOk()->json('data');
+        $aKeys = collect($aData)->pluck('key')->sort()->values()->all();
+
         Sanctum::actingAs($b->client);
+        $bData = $this->getJson(route('api.parity-map'))->assertOk()->json('data');
+        $bKeys = collect($bData)->pluck('key')->sort()->values()->all();
 
-        $response = $this->getJson(route('api.parity-map'));
-
-        $this->assertContains(
-            $response->status(),
-            [401, 403, 404],
-            'F4: parity-map must not expose cross-tenant data'
+        $this->assertSame(
+            $aKeys,
+            $bKeys,
+            'F4: parity-map must be tenant-agnostic (role-scoped) — different-tenant clients must see the identical module set'
         );
+
+        foreach ($aData as $module) {
+            $this->assertEqualsCanonicalizing(
+                ['key', 'title', 'icon', 'path', 'mobile'],
+                array_keys($module),
+                'F4: parity-map module must expose only static catalog fields — no tenant data'
+            );
+        }
     }
 
     public function test_webview_ticket_not_mintable_for_another_tenant(): void
