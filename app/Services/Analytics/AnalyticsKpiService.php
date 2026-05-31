@@ -88,7 +88,7 @@ class AnalyticsKpiService
         $cacheKey = $this->cacheKey('monthly_revenue', $organizationAccountId, null, null, ['m' => $months]);
 
         return Cache::remember($cacheKey, self::CACHE_TTL, function () use ($organizationAccountId, $months) {
-            $from = CarbonImmutable::now()->subMonths($months - 1)->startOfMonth();
+            $from = CarbonImmutable::now()->subMonthsNoOverflow($months - 1)->startOfMonth();
             $to = CarbonImmutable::now()->endOfMonth();
 
             $rows = $this->aggregator->monthlyRevenueRows($organizationAccountId, $from, $to);
@@ -147,7 +147,7 @@ class AnalyticsKpiService
         $cacheKey = $this->cacheKey('satisfaction_trend', $organizationAccountId, null, null, ['m' => $months]);
 
         return Cache::remember($cacheKey, self::CACHE_TTL, function () use ($organizationAccountId, $months) {
-            $from = CarbonImmutable::now()->subMonths($months - 1)->startOfMonth();
+            $from = CarbonImmutable::now()->subMonthsNoOverflow($months - 1)->startOfMonth();
             $to = CarbonImmutable::now();
 
             $rows = $this->aggregator->satisfactionTrendRows($organizationAccountId, $from);
