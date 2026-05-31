@@ -201,10 +201,18 @@ class MissionDispatchService
                 // Sans cette double-écriture, le prestataire ne voit pas sa
                 // mission dans son inbox active (Phase 12) ET ne reçoit pas
                 // les broadcasts Reverb (cassé côté client temps-réel).
+                // SP1 Task 5 : propage la SOCIÉTÉ prestataire jusqu'à la mission.
+                // L'org est dérivée du profil du worker assigné (null pour un
+                // indépendant). Permet aux écrans/paiements org-scoped de
+                // retrouver l'entreprise responsable de la mission.
+                $assignedUser = User::find($assignment->user_id);
+                $providerOrgId = $assignedUser?->providerProfile?->organization_account_id;
+
                 $mission->update([
                     'status' => 'assigned',
                     'lead_provider_user_id' => $assignment->user_id,
                     'lead_employee_id' => $assignment->user_id,
+                    'provider_organization_id' => $providerOrgId,
                 ]);
             }
 

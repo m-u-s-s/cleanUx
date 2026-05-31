@@ -78,6 +78,13 @@ final class CreateBookingFromApiAction
             'booking_id' => $booking->id,
             'status' => 'planned',
             'planned_start_at' => $now->copy()->addMinutes(30),
+            // SP1 Task 5 : recopie les champs prestataire/org du booking (souvent
+            // null à la création — complétés ensuite par le dispatch).
+            'lead_provider_user_id' => $booking->assigned_provider_user_id,
+            'lead_employee_id' => $booking->assigned_provider_user_id,
+            'provider_organization_id' => $booking->assigned_provider_organization_id,
+            'provider_team_id' => $booking->provider_team_id,
+            'organization_account_id' => $booking->customer_organization_id,
         ]);
 
         $dispatchClass = '\App\Services\Dispatch\MissionDispatchService';
