@@ -2,11 +2,13 @@
 
 namespace Tests\Support;
 
+use App\Enums\ProviderType;
 use App\Models\Commune;
 use App\Models\Country;
 use App\Models\Disponibilite;
 use App\Models\EmployeeZoneAssignment;
 use App\Models\PostalCode;
+use App\Models\ProviderProfile;
 use App\Models\Province;
 use App\Models\Region;
 use App\Models\ServiceCatalog;
@@ -149,6 +151,18 @@ trait CreatesZoneAwareFixtures
             'ends_at' => null,
             'notes' => null,
         ];
+
+        // SP1: la matchabilité prestataire est explicite — un employé assigné à une
+        // zone doit posséder un ProviderProfile actif+vérifié pour être éligible au
+        // dispatch. updateOrCreate = idempotent (pas de collision si déjà présent).
+        ProviderProfile::updateOrCreate(
+            ['user_id' => $employee->id],
+            [
+                'provider_type' => ProviderType::INDEPENDENT->value,
+                'status' => 'active',
+                'verification_status' => 'verified',
+            ],
+        );
 
         $assignmentType = $assignmentOverrides['assignment_type'] ?? 'primary';
         unset($assignmentOverrides['assignment_type']);

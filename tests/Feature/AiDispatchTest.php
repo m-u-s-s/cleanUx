@@ -2,7 +2,9 @@
 
 namespace Tests\Feature;
 
+use App\Enums\ProviderType;
 use App\Models\Booking;
+use App\Models\ProviderProfile;
 use App\Models\ServiceZone;
 use App\Models\User;
 use App\Services\Dispatch\AiDispatchService;
@@ -34,6 +36,15 @@ class AiDispatchTest extends TestCase
             'is_active' => true,
             'primary_service_zone_id' => $zone->id,
         ]);
+
+        ProviderProfile::updateOrCreate(
+            ['user_id' => $employee->id],
+            [
+                'provider_type' => ProviderType::INDEPENDENT->value,
+                'status' => 'active',
+                'verification_status' => 'verified',
+            ],
+        );
 
         $client = User::factory()->create([
             'role' => 'client',

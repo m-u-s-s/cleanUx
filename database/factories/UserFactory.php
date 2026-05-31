@@ -2,8 +2,6 @@
 
 namespace Database\Factories;
 
-use App\Enums\ProviderType;
-use App\Models\ProviderProfile;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Str;
@@ -99,16 +97,7 @@ class UserFactory extends Factory
             'duree_creneau' => 90,
             'plan_type' => 'standard',
             'plan_status' => 'inactive',
-        ])->afterCreating(function (User $user) {
-            ProviderProfile::firstOrCreate(
-                ['user_id' => $user->id],
-                [
-                    'provider_type' => ProviderType::INDEPENDENT->value,
-                    'status' => 'active',
-                    'verification_status' => 'verified',
-                ],
-            );
-        });
+        ]);
     }
 
     /**
