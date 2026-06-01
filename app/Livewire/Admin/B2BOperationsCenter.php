@@ -24,6 +24,7 @@ use Livewire\Component;
 
 /**
  * @property-read Collection<int, ContractSlaEvent> $slaBreaches
+ * @property-read array{pending:int, breached:int, escalated:int} $slaCounts
  */
 class B2BOperationsCenter extends Component
 {
@@ -371,6 +372,16 @@ class B2BOperationsCenter extends Component
             ->latest('due_at')
             ->limit(50)
             ->get();
+    }
+
+    /** @return array{pending:int, breached:int, escalated:int} */
+    public function getSlaCountsProperty(): array
+    {
+        return [
+            'pending' => ContractSlaEvent::where('status', ContractSlaEvent::STATUS_PENDING)->count(),
+            'breached' => ContractSlaEvent::where('status', ContractSlaEvent::STATUS_BREACHED)->count(),
+            'escalated' => ContractSlaEvent::where('status', ContractSlaEvent::STATUS_ESCALATED)->count(),
+        ];
     }
 
     public function render(): View
