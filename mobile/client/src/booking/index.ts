@@ -8,5 +8,15 @@ export {
   useCreateBooking,
   useBookings,
   useBookingDetail,
+  useBookingFavorites,
 } from './hooks';
-export type { ServiceCategory, Service, Provider, Booking, BookingState, BookingAction } from './types';
+export type {
+  ServiceCategory,
+  Service,
+  Provider,
+  Booking,
+  BookingState,
+  BookingAction,
+  ProviderTypePreference,
+  BookingFavoriteSummary,
+} from './types';

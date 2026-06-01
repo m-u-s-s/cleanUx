@@ -38,6 +38,8 @@ export type BookingStackParamList = {
   BookingStep2: undefined;
   BookingStep3: undefined;
   BookingStep4: undefined;
+  // SP2 — provider selection (type + favourites + premium pick)
+  BookingStepProvider: undefined;
   BookingStep5: undefined;
 };
 

@@ -21,14 +21,24 @@ export function BookingStep4Scheduling({ navigation }: Props) {
       type: 'SET_SCHEDULING',
       scheduling: { date, time, isAsap },
     });
-    navigation.navigate('BookingStep5');
+    navigation.navigate('BookingStepProvider');
   };
 
-  const isValid = isAsap || (date.length >= 8 && time.length >= 4);
+  // SP2 nit — filter out past slots when the chosen date is today. Slots are at
+  // fixed hours; a today+earlier-than-now time must not be bookable.
+  const isFutureSlot = (() => {
+    if (isAsap) return true;
+    if (date.length < 8 || time.length < 4) return false;
+    const candidate = new Date(`${date}T${time}:00`);
+    if (Number.isNaN(candidate.getTime())) return false;
+    return candidate.getTime() > Date.now();
+  })();
+
+  const isValid = isAsap || (date.length >= 8 && time.length >= 4 && isFutureSlot);
 
   return (
     <Screen scroll>
-      <ProgressBar step={4} totalSteps={5} />
+      <ProgressBar step={4} totalSteps={6} />
       <Text style={styles.title}>Quand ?</Text>
       <Text style={styles.subtitle}>Planifiez votre intervention</Text>
       <View style={styles.form}>

@@ -30,7 +30,7 @@ export function BookingStep2Details({ navigation }: Props) {
 
   return (
     <Screen scroll>
-      <ProgressBar step={2} totalSteps={5} />
+      <ProgressBar step={2} totalSteps={6} />
       <Text style={styles.title}>Détails</Text>
       <Text style={styles.subtitle}>Précisez votre demande pour {state.serviceName}</Text>
       <View style={styles.form}>

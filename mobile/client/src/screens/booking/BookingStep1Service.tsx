@@ -24,7 +24,7 @@ export function BookingStep1Service({ navigation }: Props) {
   if (isError) {
     return (
       <Screen scroll>
-        <ProgressBar step={1} totalSteps={5} />
+        <ProgressBar step={1} totalSteps={6} />
         <ErrorScreen
           title="Impossible de charger les services"
           message="Vérifiez votre connexion et réessayez."
@@ -36,7 +36,7 @@ export function BookingStep1Service({ navigation }: Props) {
 
   return (
     <Screen scroll>
-      <ProgressBar step={1} totalSteps={5} />
+      <ProgressBar step={1} totalSteps={6} />
       <Text style={styles.title}>Quel service ?</Text>
       <Text style={styles.subtitle}>Choisissez le type de prestation</Text>
       {isLoading ? (

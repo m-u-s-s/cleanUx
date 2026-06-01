@@ -1,6 +1,13 @@
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { apiClient, ApiError } from '@/api';
-import type { Service, ServiceCategory, Provider, Booking, BookingState } from './types';
+import type {
+  Service,
+  ServiceCategory,
+  Provider,
+  Booking,
+  BookingState,
+  BookingFavoriteSummary,
+} from './types';
 
 export function useServiceCatalog() {
   return useQuery<ServiceCategory[]>({
@@ -59,8 +66,33 @@ export function usePostalAutocomplete(query: string) {
   });
 }
 
+/**
+ * SP2 — list the client's favourite providers for 1-click re-booking.
+ * Backend: GET /client/favorites (BookingFavoriteController@index).
+ */
+export function useBookingFavorites() {
+  return useQuery<BookingFavoriteSummary[]>({
+    queryKey: ['client', 'favorites'],
+    queryFn: async () => {
+      const res = await apiClient.get('/client/favorites');
+      return res.data.data ?? res.data;
+    },
+    staleTime: 5 * 60 * 1000,
+  });
+}
+
+type CreateBookingInput = Omit<
+  BookingState,
+  'serviceName' | 'categorySlug' | 'providerTypePreference' | 'preferredProviderUserId'
+> & {
+  serviceId: number;
+  // SP2 — optional so existing callers keep working; default to 'any'/null.
+  providerTypePreference?: BookingState['providerTypePreference'];
+  preferredProviderUserId?: BookingState['preferredProviderUserId'];
+};
+
 export function useCreateBooking() {
-  return useMutation<Booking, ApiError, Omit<BookingState, 'serviceName' | 'categorySlug'> & { serviceId: number }>({
+  return useMutation<Booking, ApiError, CreateBookingInput>({
     mutationFn: async (input) => {
       const res = await apiClient.post('/client/bookings', {
         service_catalog_id: input.serviceId,
@@ -77,6 +109,9 @@ export function useCreateBooking() {
         frequency: input.details.frequency,
         options: input.details.options,
         comment: input.details.comment,
+        // SP2 — client provider selection. The backend reads these 2 keys.
+        provider_type_preference: input.providerTypePreference ?? 'any',
+        preferred_provider_user_id: input.preferredProviderUserId ?? null,
       });
       return res.data.data ?? res.data;
     },

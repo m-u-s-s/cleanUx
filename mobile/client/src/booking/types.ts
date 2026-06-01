@@ -40,10 +40,21 @@ export interface Booking {
   created_at: string;
 }
 
+export type ProviderTypePreference = 'any' | 'independent' | 'company';
+
+export interface BookingFavoriteSummary {
+  id: number;
+  label: string | null;
+  preferred_provider: { id: number; name: string } | null;
+}
+
 export interface BookingState {
   serviceId: number | null;
   serviceName: string;
   categorySlug: string;
+  // SP2 — client provider selection
+  providerTypePreference: ProviderTypePreference;
+  preferredProviderUserId: number | null;
   details: {
     surface?: number;
     frequency?: string;
@@ -70,4 +81,6 @@ export type BookingAction =
   | { type: 'SET_DETAILS'; details: BookingState['details'] }
   | { type: 'SET_COORDINATES'; coordinates: BookingState['coordinates'] }
   | { type: 'SET_SCHEDULING'; scheduling: BookingState['scheduling'] }
+  | { type: 'SET_PROVIDER_TYPE'; providerTypePreference: ProviderTypePreference }
+  | { type: 'SET_PREFERRED_PROVIDER'; preferredProviderUserId: number | null }
   | { type: 'RESET' };

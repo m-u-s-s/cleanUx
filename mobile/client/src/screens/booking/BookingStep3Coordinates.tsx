@@ -35,7 +35,7 @@ export function BookingStep3Coordinates({ navigation }: Props) {
 
   return (
     <Screen scroll>
-      <ProgressBar step={3} totalSteps={5} />
+      <ProgressBar step={3} totalSteps={6} />
       <Text style={styles.title}>Adresse</Text>
       <Text style={styles.subtitle}>Où doit-on intervenir ?</Text>
       <View style={styles.form}>

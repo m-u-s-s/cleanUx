@@ -6,6 +6,9 @@ const initialState: BookingState = {
   serviceId: null,
   serviceName: '',
   categorySlug: '',
+  // SP2 — default 'any' so a client who touches nothing changes nothing.
+  providerTypePreference: 'any',
+  preferredProviderUserId: null,
   details: { options: [], comment: '' },
   coordinates: { address: '', city: '', postalCode: '' },
   scheduling: { date: '', time: '', isAsap: false },
@@ -21,6 +24,10 @@ function bookingReducer(state: BookingState, action: BookingAction): BookingStat
       return { ...state, coordinates: action.coordinates };
     case 'SET_SCHEDULING':
       return { ...state, scheduling: action.scheduling };
+    case 'SET_PROVIDER_TYPE':
+      return { ...state, providerTypePreference: action.providerTypePreference };
+    case 'SET_PREFERRED_PROVIDER':
+      return { ...state, preferredProviderUserId: action.preferredProviderUserId };
     case 'RESET':
       void bookingDraft.clear();
       return initialState;
@@ -48,6 +55,12 @@ export function BookingProvider({ children }: { children: React.ReactNode }) {
           dispatch({ type: 'SET_DETAILS', details: s.details });
           dispatch({ type: 'SET_COORDINATES', coordinates: s.coordinates });
           dispatch({ type: 'SET_SCHEDULING', scheduling: s.scheduling });
+          if (s.providerTypePreference) {
+            dispatch({ type: 'SET_PROVIDER_TYPE', providerTypePreference: s.providerTypePreference });
+          }
+          if (s.preferredProviderUserId != null) {
+            dispatch({ type: 'SET_PREFERRED_PROVIDER', preferredProviderUserId: s.preferredProviderUserId });
+          }
         }
       }
       isInitialised.current = true;

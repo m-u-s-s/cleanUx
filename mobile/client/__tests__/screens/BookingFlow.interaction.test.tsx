@@ -64,7 +64,7 @@ jest.mock('@/ui', () => {
 });
 
 jest.mock('@/theme', () => ({
-  colors: { brand: { 50: '#f0f9ff', 400: '#60a5fa', 500: '#3b82f6', 600: '#2563eb', 700: '#1d4ed8' }, surface: { 100: '#f1f5f9', 200: '#e2e8f0', 500: '#64748b', 800: '#1e293b', 900: '#0f172a' } },
+  colors: { brand: { 50: '#f0f9ff', 400: '#60a5fa', 500: '#3b82f6', 600: '#2563eb', 700: '#1d4ed8' }, surface: { 100: '#f1f5f9', 200: '#e2e8f0', 500: '#64748b', 800: '#1e293b', 900: '#0f172a' }, warning: { 50: '#fffbeb', 500: '#f59e0b', 700: '#b45309' } },
   spacing: { xs: 4, sm: 8, md: 16, lg: 24, xl: 32 },
   typography: { fontSize: { xs: 12, sm: 14, base: 16, lg: 18, xl: 20, '2xl': 24 }, fontWeight: { medium: '500', semibold: '600', bold: '700' } },
   radius: { sm: 6, md: 12 },
