@@ -54,7 +54,7 @@ export function loadModules() {
 
 // Exécution directe : liste les modules (smoke).
 // (pathToFileURL pour matcher correctement le chemin sur Windows ET POSIX.)
-if (import.meta.url === pathToFileURL(process.argv[1]).href) {
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   const mods = loadModules();
   const byCred = {};
   for (const m of mods) (byCred[m.credKey ?? 'public'] ??= []).push(m.key);
