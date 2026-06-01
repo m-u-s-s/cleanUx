@@ -4,6 +4,7 @@ namespace App\Services\Missions;
 
 use App\Models\Booking;
 use App\Models\Mission;
+use App\Services\Contracts\ContractSlaService;
 use App\Services\Dispatch\MissionDispatchService;
 use App\Services\Geocoding\GeocodingService;
 use App\Support\Domain\MissionStatus;
@@ -28,6 +29,7 @@ class MissionFromRendezVousSyncService
                     'service_catalog_id' => $rendezVous->service_catalog_id,
                     'service_zone_id' => $rendezVous->service_zone_id,
                     'lead_employee_id' => $rendezVous->employe_id,
+                    'organization_contract_id' => $rendezVous->organization_contract_id,
                     'status' => MissionStatus::initialFor((bool) $rendezVous->employe_id),
                     'mission_type' => $rendezVous->organization_account_id ? 'enterprise' : 'standard',
                     'planned_start_at' => $this->combineDateAndTime($rendezVous->date, $rendezVous->heure),
@@ -48,6 +50,10 @@ class MissionFromRendezVousSyncService
             if ($mission->status === 'planned' && ! $mission->assignments()->exists()) {
                 app(MissionDispatchService::class)
                     ->dispatchToNextProvider($mission);
+            }
+
+            if ($mission->organization_contract_id) {
+                app(ContractSlaService::class)->armForMission($mission);
             }
 
             return $mission->fresh(['assignments', 'rendezVous']);
@@ -85,6 +91,7 @@ class MissionFromRendezVousSyncService
                     'service_catalog_id' => $rendezVous->service_catalog_id,
                     'service_zone_id' => $rendezVous->service_zone_id,
                     'lead_employee_id' => $rendezVous->employe_id,
+                    'organization_contract_id' => $rendezVous->organization_contract_id,
                     'status' => MissionStatus::initialFor((bool) $rendezVous->employe_id),
                     'mission_type' => $rendezVous->organization_account_id ? 'enterprise' : 'standard',
                     'planned_start_at' => $plannedStartAt,
@@ -100,6 +107,10 @@ class MissionFromRendezVousSyncService
             }
 
             $this->missionChecklistService->ensureChecklist($mission);
+
+            if ($mission->organization_contract_id) {
+                app(ContractSlaService::class)->armForMission($mission);
+            }
 
             return $mission->fresh(['assignments', 'rendezVous']);
         });
