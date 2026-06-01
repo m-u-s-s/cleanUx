@@ -12,6 +12,7 @@ use App\Services\Booking\BookingEstimatorService;
 use App\Services\Booking\BookingIntelligenceService;
 use App\Services\Booking\CreateBookingAction;
 use App\Services\Booking\EmployeeAvailabilityService;
+use App\Services\Booking\PreferredCompanyResolver;
 use App\Services\Booking\PreferredProviderResolver;
 use App\Services\Booking\ProviderSelectionResolver;
 use App\Services\Booking\ZoneCoverageService;
@@ -165,6 +166,16 @@ class PrendreRendezVous extends Component
     public array $preferredProviderAlternativeSlots = [];
 
     public ?string $preferredProviderMessage = null;
+
+    /**
+     * SP3 Task 8 — créneaux alternatifs proposés si la société préférée n'a
+     * aucun worker disponible sur le créneau (miroir du flux presta préféré).
+     *
+     * @var list<array{date:string, heure:string}>
+     */
+    public array $preferredCompanyAlternativeSlots = [];
+
+    public ?string $preferredCompanyMessage = null;
 
     public array $photos = [];
 
@@ -465,6 +476,7 @@ class PrendreRendezVous extends Component
     protected function afterBookingCreated(Booking $rendezVous): void
     {
         $this->refreshPreferredProviderAvailability($rendezVous);
+        $this->refreshPreferredCompanyAvailability($rendezVous);
     }
 
     /**
@@ -488,6 +500,30 @@ class PrendreRendezVous extends Component
 
         $this->preferredProviderMessage = 'Votre prestataire préféré n’est pas disponible sur ce créneau. Voici ses prochaines disponibilités.';
         $this->preferredProviderAlternativeSlots = $this->filterFutureSlots($result['alternative_slots']);
+    }
+
+    /**
+     * SP3 Task 8 — détecte une société préférée sans worker disponible après
+     * création et expose ses prochaines disponibilités (miroir exact du flux
+     * presta préféré). Mutuellement exclusif avec le worker préféré.
+     */
+    protected function refreshPreferredCompanyAvailability(Booking $rdv): void
+    {
+        $this->preferredCompanyAlternativeSlots = [];
+        $this->preferredCompanyMessage = null;
+
+        if (! $rdv->assigned_provider_organization_id) {
+            return;
+        }
+
+        $result = app(PreferredCompanyResolver::class)->resolve($rdv);
+
+        if ($result['status'] !== 'unavailable') {
+            return;
+        }
+
+        $this->preferredCompanyMessage = 'Cette société n’a pas de prestataire disponible sur ce créneau. Voici ses prochaines disponibilités.';
+        $this->preferredCompanyAlternativeSlots = $this->filterFutureSlots($result['alternative_slots']);
     }
 
     /**

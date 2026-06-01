@@ -130,3 +130,30 @@
         </button>
     </div>
 @endif
+
+{{-- Flux indispo — créneaux alternatifs si la société préférée n'a aucun worker dispo --}}
+@if ($preferredCompanyMessage)
+    <div class="space-y-3 rounded-2xl border border-amber-300 bg-amber-50 p-4">
+        <p class="text-sm font-semibold text-amber-800">{{ $preferredCompanyMessage }}</p>
+
+        @if (! empty($preferredCompanyAlternativeSlots))
+            <div class="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                @foreach ($preferredCompanyAlternativeSlots as $slot)
+                    <button
+                        type="button"
+                        wire:click="$set('rdvDate', '{{ $slot['date'] }}'); $set('rdvHeure', '{{ $slot['heure'] }}')"
+                        class="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700 hover:border-blue-300 hover:bg-blue-50">
+                        {{ \Illuminate\Support\Carbon::parse($slot['date'])->format('d/m') }} · {{ $slot['heure'] }}
+                    </button>
+                @endforeach
+            </div>
+        @endif
+
+        <button
+            type="button"
+            wire:click="bookAnyAvailableProvider"
+            class="inline-flex items-center gap-2 rounded-2xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700">
+            Je suis pressé — n’importe quel prestataire disponible
+        </button>
+    </div>
+@endif
