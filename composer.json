@@ -1,10 +1,12 @@
 {
-    "name": "laravel/laravel",
+    "name": "brio/marketplace",
     "type": "project",
-    "description": "The skeleton application for the Laravel framework.",
+    "description": "brio — la marketplace multi-métiers à la demande et sous contrat (backend Laravel + mobile Expo/React Native).",
     "keywords": [
-        "laravel",
-        "framework"
+        "brio",
+        "marketplace",
+        "services",
+        "laravel"
     ],
     "license": "proprietary",
     "require": {
