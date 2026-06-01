@@ -7,6 +7,7 @@ use App\Models\OrganizationAccount;
 use App\Services\Booking\EligibleCompaniesResolver;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Collection;
+use Livewire\Attributes\Url;
 use Livewire\Component;
 
 /**
@@ -30,11 +31,38 @@ class BrowseCompanies extends Component
 
     public ?int $tradeId = null;
 
+    /**
+     * SP-Polish — filtres calqués sur BrowseProviders. Recherche par nom,
+     * note minimale et tri ; appliqués sur la collection retournée par
+     * getCompaniesProperty sans changer son type (Collection Eloquent).
+     */
+    #[Url(as: 'q')]
+    public string $query = '';
+
+    #[Url(as: 'rating')]
+    public ?float $minRating = null;
+
+    #[Url(as: 'sort')]
+    public string $sort = 'rating'; // rating | providers | name
+
     public function mount(bool $selectionMode = false, ?int $serviceZoneId = null, ?int $tradeId = null): void
     {
         $this->selectionMode = $selectionMode;
         $this->serviceZoneId = $serviceZoneId;
         $this->tradeId = $tradeId;
+    }
+
+    public function updating($name): void
+    {
+        if (in_array($name, ['query', 'minRating', 'sort'], true) && method_exists($this, 'resetPage')) {
+            $this->resetPage();
+        }
+    }
+
+    public function resetFilters(): void
+    {
+        $this->reset(['query', 'minRating']);
+        $this->sort = 'rating';
     }
 
     /**
@@ -58,17 +86,39 @@ class BrowseCompanies extends Component
     public function getCompaniesProperty(): Collection
     {
         if ($this->serviceZoneId) {
-            return app(EligibleCompaniesResolver::class)
+            $base = app(EligibleCompaniesResolver::class)
                 ->forContext($this->serviceZoneId, $this->tradeId);
+        } else {
+            $base = OrganizationAccount::query()
+                ->where('type', OrganizationType::PROVIDER_COMPANY->value)
+                ->whereNotNull('rating_avg')
+                ->withCount(['providerProfiles as providers_count' => function ($q) {
+                    $q->where('provider_type', 'company_worker')
+                        ->where('status', 'active')
+                        ->where('verification_status', 'verified');
+                }])
+                ->orderByDesc('rating_avg')
+                ->orderBy('name')
+                ->limit(20)
+                ->get();
         }
 
-        return OrganizationAccount::query()
-            ->where('type', OrganizationType::PROVIDER_COMPANY->value)
-            ->whereNotNull('rating_avg')
-            ->orderByDesc('rating_avg')
-            ->orderBy('name')
-            ->limit(20)
-            ->get();
+        return $base
+            ->when($this->query !== '', fn (Collection $c): Collection => $c->filter(
+                fn (OrganizationAccount $org): bool => str_contains(
+                    mb_strtolower((string) $org->name),
+                    mb_strtolower($this->query)
+                )
+            ))
+            ->when($this->minRating !== null, fn (Collection $c): Collection => $c->filter(
+                fn (OrganizationAccount $org): bool => (float) ($org->rating_avg ?? 0) >= $this->minRating
+            ))
+            ->sortBy(fn (OrganizationAccount $org): float|string => match ($this->sort) {
+                'name' => mb_strtolower((string) $org->name),
+                'providers' => -1 * (int) ($org->providers_count ?? 0),
+                default => -1 * (float) ($org->rating_avg ?? 0), // rating desc
+            })
+            ->values();
     }
 
     public function render(): View
