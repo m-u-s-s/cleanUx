@@ -80,7 +80,11 @@ class MatchingV2Service
     protected function eligibleCandidates(Booking $booking): Collection
     {
         $candidates = $this->availability
-            ->sortedEligibleEmployeesForZone((int) $booking->service_zone_id)
+            ->sortedEligibleEmployeesForZone(
+                (int) $booking->service_zone_id,
+                $booking->provider_type_preference ?: 'any',
+                $booking->assigned_provider_organization_id,
+            )
             ->filter(function (User $employee) use ($booking) {
                 if ($booking->booking_mode === 'asap') {
                     $profile = $employee->providerProfile;
