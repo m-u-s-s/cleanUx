@@ -126,6 +126,7 @@ class CreateBookingAction
             'postal_code_id' => Arr::get($data, 'postal_code_id'),
             'service_catalog_id' => $catalog->id,
             'preferred_provider_user_id' => Arr::get($data, 'preferred_provider_user_id'),
+            'assigned_provider_organization_id' => Arr::get($data, 'assigned_provider_organization_id'),
             'provider_type_preference' => Arr::get($data, 'provider_type_preference', 'any'),
             'booking_channel' => Arr::get($data, 'booking_channel', 'web'),
             'booking_reference' => Arr::get($data, 'booking_reference'),

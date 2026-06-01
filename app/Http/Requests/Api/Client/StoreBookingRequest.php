@@ -37,6 +37,10 @@ class StoreBookingRequest extends FormRequest
             // via ProviderSelectionResolver (frontière sécurité).
             'provider_type_preference' => ['nullable', 'in:independent,company,any'],
             'preferred_provider_user_id' => ['nullable', 'integer', 'exists:users,id'],
+            // SP3 Task 6 : société prestataire choisie. Le gating premium + la validation
+            // d'éligibilité (zone+métier) sont appliqués côté contrôleur via
+            // ProviderSelectionResolver (frontière sécurité).
+            'assigned_provider_organization_id' => ['nullable', 'integer', 'exists:organization_accounts,id'],
             // Answers from the trade-specific dynamic form (Trade.booking_form_schema).
             // Stored in Booking.trade_form_answers (JSON column).
             'trade_form_answers' => ['nullable', 'array'],

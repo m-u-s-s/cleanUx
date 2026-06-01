@@ -2,16 +2,25 @@
 
 namespace App\Services\Booking;
 
+use App\Models\Booking;
 use App\Models\BookingFavorite;
 use App\Models\CustomerProfile;
 use App\Models\User;
 use Illuminate\Auth\Access\AuthorizationException;
 
 /**
- * Résout et valide la sélection du prestataire par le client (3 paliers SP2) :
+ * Résout et valide la sélection du prestataire par le client.
+ *
+ * Paliers WORKER (SP2) — sélection d'un prestataire NOMINATIF :
  *   - palier auto    : aucun presta imposé (preferred null)              → tous
  *   - palier favori  : presta déjà favori du client                      → tous
  *   - palier nouveau : presta NON favori (découverte)                    → premium only
+ *
+ * Palier SOCIÉTÉ (SP3 Task 6) — sélection d'une SOCIÉTÉ prestataire :
+ *   - gaté au Premium (frontière sécurité, comme le palier "nouveau prestataire"),
+ *   - validé contre l'éligibilité de l'org pour CE booking (zone+métier) via
+ *     EligibleCompaniesResolver, lorsqu'un $context est fourni.
+ *   - org et worker précis sont mutuellement exclusifs : l'org PRIME.
  *
  * Retourne ce qu'on persiste sur la réservation.
  */
@@ -20,19 +29,50 @@ class ProviderSelectionResolver
     private const TYPES = ['independent', 'company', 'any'];
 
     /**
-     * @param  array{provider_type_preference?:string, preferred_provider_user_id?:int|null}  $input
-     * @return array{provider_type_preference:string, preferred_provider_user_id:?int}
+     * @param  array{provider_type_preference?:string, preferred_provider_user_id?:int|null, assigned_provider_organization_id?:int|null}  $input
+     * @param  Booking|null  $context  Booking (sauvegardé ou transitoire) portant service_zone_id +
+     *                                 service_catalog_id, utilisé pour valider l'éligibilité société.
+     * @return array{provider_type_preference:string, preferred_provider_user_id:?int, assigned_provider_organization_id:?int}
      */
-    public function resolve(User $client, array $input): array
+    public function resolve(User $client, array $input, ?Booking $context = null): array
     {
-        $type = in_array($input['provider_type_preference'] ?? 'any', self::TYPES, true)
-            ? $input['provider_type_preference']
-            : 'any';
+        $requestedType = $input['provider_type_preference'] ?? 'any';
+        $type = in_array($requestedType, self::TYPES, true) ? $requestedType : 'any';
 
+        $profile = $client->customerProfile;
+        $isPremium = $profile instanceof CustomerProfile && $profile->isPremium();
+
+        // ── Palier SOCIÉTÉ (SP3) : prime sur le worker nominatif ───────────────
+        $orgId = $input['assigned_provider_organization_id'] ?? null;
+        if ($orgId !== null) {
+            $orgId = (int) $orgId;
+
+            if (! $isPremium) {
+                throw new AuthorizationException('Le choix d’une société est réservé au pack Premium.');
+            }
+
+            if ($context instanceof Booking
+                && ! app(EligibleCompaniesResolver::class)->isEligible($context, $orgId)) {
+                throw new AuthorizationException('Société non disponible pour cette réservation.');
+            }
+
+            // org et worker précis sont mutuellement exclusifs : l'org prime.
+            return [
+                'provider_type_preference' => $type,
+                'preferred_provider_user_id' => null,
+                'assigned_provider_organization_id' => $orgId,
+            ];
+        }
+
+        // ── Paliers WORKER (SP2) ───────────────────────────────────────────────
         $preferredId = $input['preferred_provider_user_id'] ?? null;
 
         if ($preferredId === null) {
-            return ['provider_type_preference' => $type, 'preferred_provider_user_id' => null];
+            return [
+                'provider_type_preference' => $type,
+                'preferred_provider_user_id' => null,
+                'assigned_provider_organization_id' => null,
+            ];
         }
 
         $isFavorite = BookingFavorite::query()
@@ -40,12 +80,14 @@ class ProviderSelectionResolver
             ->where('preferred_provider_user_id', $preferredId)
             ->exists();
 
-        $profile = $client->customerProfile;
-        $isPremium = $profile instanceof CustomerProfile && $profile->isPremium();
         if (! $isFavorite && ! $isPremium) {
             throw new AuthorizationException('Le choix d’un nouveau prestataire est réservé au pack Premium.');
         }
 
-        return ['provider_type_preference' => $type, 'preferred_provider_user_id' => (int) $preferredId];
+        return [
+            'provider_type_preference' => $type,
+            'preferred_provider_user_id' => (int) $preferredId,
+            'assigned_provider_organization_id' => null,
+        ];
     }
 }

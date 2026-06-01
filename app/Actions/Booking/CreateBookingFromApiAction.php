@@ -61,6 +61,8 @@ final class CreateBookingFromApiAction
             // ProviderSelectionResolver. Le matching (AiDispatchService) honore le type.
             'provider_type_preference' => $data['provider_type_preference'] ?? 'any',
             'preferred_provider_user_id' => $data['preferred_provider_user_id'] ?? null,
+            // SP3 Task 6 : société choisie (premium-gated + éligibilité validée par le contrôleur).
+            'assigned_provider_organization_id' => $data['assigned_provider_organization_id'] ?? null,
         ]);
 
         if ($isAsap) {

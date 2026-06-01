@@ -9,6 +9,7 @@ use App\Http\Requests\Api\Client\IndexBookingRequest;
 use App\Http\Requests\Api\Client\StoreBookingRequest;
 use App\Models\Booking;
 use App\Services\Booking\ProviderSelectionResolver;
+use App\Services\Booking\ZoneCoverageService;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -149,21 +150,35 @@ class ClientBookingController extends Controller
      */
     public function store(StoreBookingRequest $request, CreateBookingFromApiAction $action): JsonResponse
     {
-        // SP2 — gating premium + normalisation de la sélection prestataire AVANT
+        // SP2/SP3 — gating premium + normalisation de la sélection prestataire AVANT
         // la création. Le resolver lève AuthorizationException (→ 403 via le handler
         // API) si un client non-premium tente d'imposer un nouveau prestataire non
-        // favori. C'est la frontière de sécurité côté API.
+        // favori OU une société. C'est la frontière de sécurité côté API.
+        //
+        // SP3 Task 6 : pour valider l'éligibilité de la société (zone+métier) sans
+        // créer le booking, on construit un Booking TRANSITOIRE (non sauvegardé) porteur
+        // du service_catalog_id et de la zone résolue depuis le code postal. Si la zone
+        // n'est pas résolvable (booking minimal mobile), $context reste null : seul le
+        // gate premium s'applique alors (l'éligibilité sera revérifiée au dispatch).
+        $context = new Booking([
+            'service_catalog_id' => $request->input('service_catalog_id'),
+            'service_zone_id' => $this->resolveServiceZoneId($request),
+        ]);
+
         $selection = app(ProviderSelectionResolver::class)->resolve(
             $request->user(),
             [
                 'provider_type_preference' => $request->input('provider_type_preference', 'any'),
                 'preferred_provider_user_id' => $request->input('preferred_provider_user_id'),
+                'assigned_provider_organization_id' => $request->input('assigned_provider_organization_id'),
             ],
+            $context->service_zone_id ? $context : null,
         );
 
         $data = array_merge($request->validated(), [
             'provider_type_preference' => $selection['provider_type_preference'],
             'preferred_provider_user_id' => $selection['preferred_provider_user_id'],
+            'assigned_provider_organization_id' => $selection['assigned_provider_organization_id'],
         ]);
 
         $booking = $action->execute($request->user(), $data);
@@ -295,6 +310,33 @@ class ClientBookingController extends Controller
     // ──────────────────────────────────────────────────────
     // Helpers
     // ──────────────────────────────────────────────────────
+
+    /**
+     * Résout la service_zone_id depuis le code postal de la requête (best-effort).
+     *
+     * Utilisé UNIQUEMENT pour fournir un contexte d'éligibilité au
+     * ProviderSelectionResolver lorsqu'une société est choisie. Si la zone n'est pas
+     * résolvable, on retourne null : le resolver applique alors le seul gate premium,
+     * sans validation d'éligibilité (revérifiée au dispatch).
+     */
+    protected function resolveServiceZoneId(Request $request): ?int
+    {
+        if (! $request->filled('assigned_provider_organization_id')) {
+            return null; // évite un lookup zone inutile quand aucune société n'est choisie.
+        }
+
+        try {
+            $coverage = app(ZoneCoverageService::class);
+            $postal = $coverage->resolvePostalCode(
+                $request->input('postal_code'),
+                $request->input('city'),
+            );
+
+            return $coverage->resolveServiceZone($postal)?->id;
+        } catch (\Throwable $e) {
+            return null; // soft-fail : on retombe sur le seul gate premium.
+        }
+    }
 
     protected function authorizeAccess(Request $request, Booking $booking): void
     {
