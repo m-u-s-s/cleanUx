@@ -37,6 +37,8 @@ export interface Booking {
   postal_code: string;
   total_price?: number;
   provider_name?: string;
+  contract_covered?: boolean;
+  contract_label?: string | null;
   created_at: string;
 }
 

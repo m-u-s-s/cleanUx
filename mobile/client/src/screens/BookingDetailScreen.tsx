@@ -44,6 +44,12 @@ export function BookingDetailScreen({ route }: Props) {
         <Badge label={booking.status} variant={statusVariant} />
       </View>
 
+      {booking.contract_covered ? (
+        <View style={styles.contractBadge} testID="contract-coverage-badge">
+          <Badge label="Couvert par votre contrat" variant="info" />
+        </View>
+      ) : null}
+
       <View style={styles.card}>
         <DetailRow
           label="Date"
@@ -153,6 +159,10 @@ const styles = StyleSheet.create({
     color: colors.surface[900],
     flex: 1,
     marginRight: spacing.sm,
+  },
+  contractBadge: {
+    flexDirection: 'row',
+    marginBottom: spacing.md,
   },
   card: {
     backgroundColor: '#fff',

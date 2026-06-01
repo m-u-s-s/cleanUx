@@ -72,6 +72,7 @@ class ClientBookingController extends Controller
             ->with([
                 'serviceCatalog:id,name',
                 'organizationSite:id,name',
+                'organizationContract:id,contract_reference',
             ])
             ->orderByDesc('scheduled_date')
             ->orderByDesc('scheduled_time');
@@ -116,6 +117,7 @@ class ClientBookingController extends Controller
             'organizationSite:id,name,address,city',
             'serviceZone:id,name',
             'assignedProvider:id,name,phone',
+            'organizationContract:id,contract_reference',
         ]);
 
         return response()->json([
@@ -375,6 +377,10 @@ class ClientBookingController extends Controller
             'postal_code' => $b->postal_code,
             'estimated_price' => $b->estimated_price ? (float) $b->estimated_price : null,
             'currency' => $b->currency ?? 'EUR',
+            'contract_covered' => (bool) $b->organization_contract_id,
+            'contract_label' => $b->organization_contract_id
+                                    ? optional($b->organizationContract)->contract_reference
+                                    : null,
             'created_at' => $b->created_at?->toIso8601String(),
         ];
 
