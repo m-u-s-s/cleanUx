@@ -34,9 +34,12 @@ class EligibleCompaniesResolver
             ->loadMissing(['providerProfile', 'trades:id'])
             ->filter(function (User $w) use ($tradeId) {
                 if (! $tradeId) {
-                    return true;
+                    return true; // pas de métier connu → filtre ouvert.
                 }
 
+                // Filtre métier STRICT (pas de fallback ouvert, contrairement à
+                // MatchingV2::applyTradeFilter) : un browse ne doit pas proposer une
+                // société dont aucun worker n'exerce le métier demandé.
                 return $w->trades->contains('id', $tradeId);
             });
 

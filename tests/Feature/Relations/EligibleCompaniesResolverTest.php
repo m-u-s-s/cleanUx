@@ -117,4 +117,28 @@ class EligibleCompaniesResolverTest extends TestCase
         $this->assertSame([$orgA->id, $orgB->id], $ids);
         $this->assertNotContains($orgC->id, $ids);
     }
+
+    public function test_without_a_trade_filter_all_companies_with_an_eligible_worker_are_returned(): void
+    {
+        // Sans métier (forContext tradeId null) le filtre s'ouvre VOLONTAIREMENT :
+        // toute société ayant un worker éligible dans la zone est listée (triée par note).
+        $context = $this->createCoverageContext();
+        $zoneId = $context['zone']->id;
+        $date = now()->addDays(3)->toDateString();
+        $anyTrade = Trade::factory()->create();
+
+        $orgA = OrganizationAccount::factory()->create([
+            'type' => OrganizationType::PROVIDER_COMPANY->value, 'rating_avg' => 4.0,
+        ]);
+        $orgB = OrganizationAccount::factory()->create([
+            'type' => OrganizationType::PROVIDER_COMPANY->value, 'rating_avg' => 4.9,
+        ]);
+        $this->companyWorker($zoneId, $orgA->id, $anyTrade->id, $date);
+        $this->companyWorker($zoneId, $orgB->id, $anyTrade->id, $date);
+
+        $ids = app(EligibleCompaniesResolver::class)->forContext($zoneId, null)->pluck('id')->all();
+
+        // Les deux présentes (filtre métier ouvert), triées par note desc (orgB 4.9 avant orgA 4.0).
+        $this->assertSame([$orgB->id, $orgA->id], $ids);
+    }
 }
