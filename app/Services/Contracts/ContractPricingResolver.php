@@ -46,6 +46,6 @@ class ContractPricingResolver
     {
         $res = $this->resolveCents($contract, $serviceCatalogId, (int) round($baseAmount * 100));
 
-        return ['amount' => $res['price_cents'] / 100, 'label' => $res['label']];
+        return ['amount' => (float) ($res['price_cents'] / 100), 'label' => $res['label']];
     }
 }

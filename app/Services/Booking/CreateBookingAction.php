@@ -5,6 +5,7 @@ namespace App\Services\Booking;
 use App\Data\ZoneCoverageResult;
 use App\Models\Booking;
 use App\Models\Conversation;
+use App\Models\OrganizationContract;
 use App\Models\OrganizationSite;
 use App\Models\PostalCode;
 use App\Models\ServiceCatalog;
@@ -13,6 +14,8 @@ use App\Models\User;
 use App\Models\ZoneServiceRule;
 use App\Notifications\NouveauRendezVousNotification;
 use App\Notifications\RdvConfirmeNotification;
+use App\Services\Contracts\ContractBookingHook;
+use App\Services\Contracts\ContractPricingResolver;
 use App\Services\Dispatch\MissionDispatchService;
 use App\Services\Enterprise\ContractPolicyService;
 use App\Services\Enterprise\EnterpriseBookingApprovalService;
@@ -41,6 +44,28 @@ class CreateBookingAction
         ?OrganizationSite $organizationSite = null,
         ?ZoneCoverageResult $resolution = null,
     ): Booking {
+        // SP4 — hook contrat unifié en amont (no-op sans contrat). Pose
+        // organization_contract_id, assigned_provider_organization_id (sans écraser
+        // un choix SP2/SP3 explicite), devis_estime négocié, cost_center et
+        // entreprise_approval_required. Doit s'exécuter AVANT le calcul du devis et
+        // le Booking::create pour que SmartDispatchService::assignBestEmployee honore
+        // l'org partenaire du contrat. Lève ContractPolicyException (PO manquant /
+        // service hors contrat) — remontée à l'appelant.
+        // On capture l'estimation AVANT contrat : le tarif négocié (remise %) n'est
+        // pas idempotent s'il est ré-appliqué sur une valeur déjà remisée. Le facteur
+        // pays s'applique donc à la base PRÉ-contrat, puis on applique le contrat UNE
+        // seule fois (cf. bloc $adjustedEstimate ci-dessous).
+        $preContractEstimate = Arr::has($data, 'devis_estime')
+            ? (float) Arr::get($data, 'devis_estime')
+            : null;
+
+        // Le hook a-t-il DÉJÀ négocié le tarif en amont (chemin web PrendreRendezVous) ?
+        // Si oui, $data['devis_estime'] est déjà final : on ne le re-remise PAS ici.
+        $contractPriceAlreadyApplied = Arr::get($data, 'contract_price_label') !== null;
+
+        $data = app(ContractBookingHook::class)
+            ->apply($client, $data, (string) (Arr::get($data, 'date') ?? now()->toDateString()));
+
         $resolution ??= new ZoneCoverageResult(
             postalCode: $postal,
             zone: $zone,
@@ -96,7 +121,30 @@ class CreateBookingAction
 
         $pricingSnapshot = $this->snapshotFactory->makePricingSnapshot($catalog, $zone, $rule, $resolution, $data);
         $countryMultiplier = $this->countryMarketResolver->countryPriceMultiplier($countryMarket);
-        $adjustedEstimate = round((float) (Arr::get($data, 'devis_estime', data_get($pricingSnapshot, 'devis_estime', 0))) * $countryMultiplier, 2);
+
+        if ($contractPriceAlreadyApplied) {
+            // Tarif négocié déjà posé en amont (chemin web). $data['devis_estime'] est
+            // final ; on ne ré-applique NI la remise contrat NI le facteur pays (le
+            // tarif négocié prime sur le marché ouvert).
+            $adjustedEstimate = round((float) Arr::get($data, 'devis_estime', 0), 2);
+        } elseif (Arr::get($data, 'contract_price_label') !== null && Arr::get($data, 'organization_contract_id')) {
+            // Le hook a négocié ICI (chemin direct). On applique le facteur pays à la
+            // base PRÉ-contrat, PUIS le tarif contrat UNE seule fois — pas de double remise.
+            $baseForCountry = $preContractEstimate ?? (float) data_get($pricingSnapshot, 'devis_estime', 0);
+            $countryAdjusted = round($baseForCountry * $countryMultiplier, 2);
+
+            $contract = OrganizationContract::find((int) Arr::get($data, 'organization_contract_id'));
+            $adjustedEstimate = $countryAdjusted;
+            if ($contract) {
+                $contractPrice = app(ContractPricingResolver::class)
+                    ->resolveAmount($contract, (int) $catalog->id, $countryAdjusted);
+                if ($contractPrice['label'] !== null) {
+                    $adjustedEstimate = round((float) $contractPrice['amount'], 2);
+                }
+            }
+        } else {
+            $adjustedEstimate = round((float) (Arr::get($data, 'devis_estime', data_get($pricingSnapshot, 'devis_estime', 0))) * $countryMultiplier, 2);
+        }
 
         $pricingSnapshot = array_merge($pricingSnapshot, [
             'devis_estime' => $adjustedEstimate,
@@ -127,6 +175,8 @@ class CreateBookingAction
             'service_catalog_id' => $catalog->id,
             'preferred_provider_user_id' => Arr::get($data, 'preferred_provider_user_id'),
             'assigned_provider_organization_id' => Arr::get($data, 'assigned_provider_organization_id'),
+            // SP4 Task 6 : lien contrat-cadre posé par le hook contrat.
+            'organization_contract_id' => Arr::get($data, 'organization_contract_id'),
             'provider_type_preference' => Arr::get($data, 'provider_type_preference', 'any'),
             'booking_channel' => Arr::get($data, 'booking_channel', 'web'),
             'booking_reference' => Arr::get($data, 'booking_reference'),

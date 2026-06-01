@@ -5,7 +5,10 @@ namespace App\Actions\Booking;
 use App\Models\Booking;
 use App\Models\Mission;
 use App\Models\User;
+use App\Services\Contracts\ContractBookingHook;
+use App\Services\Enterprise\EnterpriseBookingApprovalService;
 use Carbon\Carbon;
+use Illuminate\Support\Arr;
 
 /**
  * CreateBookingFromApiAction
@@ -28,6 +31,22 @@ final class CreateBookingFromApiAction
     {
         $now = now();
         $isAsap = ($data['booking_mode'] ?? 'scheduled') === 'asap';
+
+        // SP4 — hook contrat unifié (no-op sans contrat). $user est le client.
+        // Pose organization_contract_id / assigned_provider_organization_id /
+        // devis_estime négocié / cost_center / entreprise_approval_required selon
+        // le contrat-cadre applicable. Lève ContractPolicyException sur violation
+        // dure (PO manquant, service hors contrat) — remontée à l'appelant API.
+        $date = (string) ($data['date'] ?? $data['scheduled_date'] ?? now()->toDateString());
+        $data = app(ContractBookingHook::class)->apply($user, $data, $date);
+
+        // cost_center / purchase_order_number n'ont pas de colonne sur bookings :
+        // on les conserve dans metadata (idem contexte corporate du chemin web).
+        $contractMetadata = array_filter([
+            'cost_center' => Arr::get($data, 'cost_center'),
+            'purchase_order_number' => Arr::get($data, 'purchase_order_number'),
+            'contract_price_label' => Arr::get($data, 'contract_price_label'),
+        ], fn ($v) => $v !== null && $v !== '');
 
         $booking = Booking::create([
             'booking_reference' => $this->generateReference(),
@@ -62,11 +81,30 @@ final class CreateBookingFromApiAction
             'provider_type_preference' => $data['provider_type_preference'] ?? 'any',
             'preferred_provider_user_id' => $data['preferred_provider_user_id'] ?? null,
             // SP3 Task 6 : société choisie (premium-gated + éligibilité validée par le contrôleur).
-            'assigned_provider_organization_id' => $data['assigned_provider_organization_id'] ?? null,
+            'assigned_provider_organization_id' => Arr::get($data, 'assigned_provider_organization_id'),
+            // SP4 Task 6 : lien contrat-cadre + tarif négocié posés par le hook contrat.
+            'organization_contract_id' => Arr::get($data, 'organization_contract_id'),
+            'devis_estime' => Arr::get($data, 'devis_estime'),
+            'metadata' => ! empty($contractMetadata) ? $contractMetadata : null,
         ]);
 
         if ($isAsap) {
             $this->maybeDispatchAsap($booking, $now);
+        }
+
+        // SP4 — si le contrat exige une approbation manuelle (entreprise_approval_required
+        // posé par le hook), route vers le workflow d'approbation comme le fait
+        // CreateBookingAction. Soft : ne casse jamais la création.
+        if (Arr::get($data, 'entreprise_approval_required', false)) {
+            try {
+                app(EnterpriseBookingApprovalService::class)
+                    ->createForBooking($booking, $user instanceof User ? $user : null, Arr::get($data, 'site_instructions'));
+            } catch (\Throwable $e) {
+                \Log::warning('Enterprise approval creation failed (API booking)', [
+                    'booking_id' => $booking->id,
+                    'error' => $e->getMessage(),
+                ]);
+            }
         }
 
         return $booking->fresh();

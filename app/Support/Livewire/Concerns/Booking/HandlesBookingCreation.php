@@ -2,9 +2,11 @@
 
 namespace App\Support\Livewire\Concerns\Booking;
 
+use App\Exceptions\ContractPolicyException;
 use App\Models\Booking;
 use App\Models\OrganizationSite;
 use App\Models\User;
+use App\Services\Contracts\ContractBookingHook;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
@@ -194,6 +196,27 @@ trait HandlesBookingCreation
         $bookingData = $this->applyProviderSelectionToBookingData($bookingData);
 
         if ($bookingData === null) {
+            return;
+        }
+
+        // SP4 Task 6 — hook contrat unifié, APRÈS la sélection SP2/SP3 (qu'il ne
+        // doit pas écraser) et AVANT la création. No-op sans contrat. Une violation
+        // dure (PO requis manquant, service hors contrat) est exposée comme erreur
+        // Livewire au lieu de planter la requête.
+        // Le PO côté UI s'appelle purchase_order_reference (corporate_context) ; on
+        // l'expose sous la clé purchase_order_number attendue par le policy enforcer.
+        if (filled($this->purchase_order_reference ?? null)) {
+            $bookingData['purchase_order_number'] = (string) $this->purchase_order_reference;
+        }
+        if (filled($this->cost_center ?? null)) {
+            $bookingData['cost_center'] = (string) $this->cost_center;
+        }
+        try {
+            $bookingData = app(ContractBookingHook::class)
+                ->apply(Auth::user(), $bookingData, (string) ($bookingData['date'] ?? now()->toDateString()));
+        } catch (ContractPolicyException $e) {
+            $this->addError('purchase_order_reference', $e->getMessage());
+
             return;
         }
 
