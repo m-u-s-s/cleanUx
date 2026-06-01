@@ -15,9 +15,58 @@ use Livewire\Component;
  * STRICTE : la requête filtre sur `organization_account_id`.
  *
  * @property-read Collection<int, OrganizationContract> $contracts
+ * @property-read ?OrganizationContract $selectedContract
  */
 class ClientContractsCenter extends Component
 {
+    public ?int $selectedContractId = null;
+
+    /**
+     * Ouvre le détail d'un contrat — org-safe : ne sélectionne QUE si le
+     * contrat appartient à l'org du membre courant. Lecture seule.
+     */
+    public function viewContract(int $contractId): void
+    {
+        $orgId = Auth::user()?->organizationContextId();
+
+        $exists = OrganizationContract::query()
+            ->where('id', $contractId)
+            ->where('organization_account_id', $orgId)
+            ->exists();
+
+        $this->selectedContractId = $exists ? $contractId : null;
+    }
+
+    public function closeContract(): void
+    {
+        $this->selectedContractId = null;
+    }
+
+    /**
+     * Détail du contrat sélectionné — re-filtré sur l'org du membre.
+     */
+    public function getSelectedContractProperty(): ?OrganizationContract
+    {
+        if (! $this->selectedContractId) {
+            return null;
+        }
+
+        $orgId = Auth::user()?->organizationContextId();
+
+        return OrganizationContract::query()
+            ->where('id', $this->selectedContractId)
+            ->where('organization_account_id', $orgId)
+            ->with([
+                'providerOrganization:id,name',
+                'rateCards.serviceCatalog:id,name',
+                'workOrders',
+            ])
+            ->withCount([
+                'slaEvents as sla_breached_count' => fn ($q) => $q->where('status', ContractSlaEvent::STATUS_BREACHED),
+            ])
+            ->first();
+    }
+
     /** @return Collection<int, OrganizationContract> */
     public function getContractsProperty(): Collection
     {
@@ -41,6 +90,7 @@ class ClientContractsCenter extends Component
     {
         return view('livewire.client-company.client-contracts-center', [
             'contracts' => $this->contracts,
+            'selectedContract' => $this->selectedContract,
         ])->layout('layouts.client-company');
     }
 }
