@@ -23,6 +23,19 @@
     </div>
     @error('providerTypePreference') <p class="text-sm text-red-600">{{ $message }}</p> @enderror
 
+    {{-- Société actuellement imposée (SP3) --}}
+    @if ($assignedProviderOrganizationId)
+        <div class="flex items-center justify-between rounded-2xl border border-indigo-300 bg-indigo-50 px-4 py-3">
+            <div class="text-sm text-indigo-800">
+                <span class="font-semibold">Société choisie</span>
+                <span class="text-indigo-700">(#{{ $assignedProviderOrganizationId }})</span>
+            </div>
+            <button type="button" wire:click="clearAssignedCompany" class="text-sm font-semibold text-indigo-700 underline">
+                Retirer
+            </button>
+        </div>
+    @endif
+
     {{-- Prestataire actuellement imposé --}}
     @if ($preferredProviderUserId)
         <div class="flex items-center justify-between rounded-2xl border border-emerald-300 bg-emerald-50 px-4 py-3">
@@ -69,8 +82,17 @@
 
             @if ($showProviderPicker)
                 <div class="rounded-2xl border border-slate-200 bg-slate-50 p-3">
-                    <p class="mb-2 text-xs text-slate-500">Recherchez et sélectionnez un prestataire.</p>
-                    <livewire:client.browse-providers :selection-mode="true" :key="'booking-provider-picker'" />
+                    @if ($providerTypePreference === 'company')
+                        <p class="mb-2 text-xs text-slate-500">Choisissez une société prestataire.</p>
+                        <livewire:client.browse-companies
+                            :selection-mode="true"
+                            :service-zone-id="$resolvedServiceZoneId"
+                            :trade-id="$selectedTradeId"
+                            :key="'booking-company-picker'" />
+                    @else
+                        <p class="mb-2 text-xs text-slate-500">Recherchez et sélectionnez un prestataire.</p>
+                        <livewire:client.browse-providers :selection-mode="true" :key="'booking-provider-picker'" />
+                    @endif
                 </div>
             @endif
         </div>

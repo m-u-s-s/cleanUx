@@ -151,6 +151,9 @@ class PrendreRendezVous extends Component
     /** Prestataire imposé (favori re-réservé, ou nouveau presta si premium). */
     public ?int $preferredProviderUserId = null;
 
+    /** SP3 Task 8 — société imposée (palier premium). Prime sur le worker. */
+    public ?int $assignedProviderOrganizationId = null;
+
     /** Ouvre/affiche le panneau de recherche premium (BrowseProviders). */
     public bool $showProviderPicker = false;
 
@@ -301,15 +304,29 @@ class PrendreRendezVous extends Component
             return $data;
         }
 
+        // SP3 Task 8 — contexte transitoire pour valider l'éligibilité société
+        // (zone + métier) sans persister. Reflète le booking en cours.
+        $context = new Booking([
+            'service_zone_id' => $data['service_zone_id'] ?? $this->resolvedServiceZoneId,
+            'service_catalog_id' => $data['service_catalog_id'] ?? $this->resolvedServiceCatalogId,
+        ]);
+
         try {
             $selection = app(ProviderSelectionResolver::class)->resolve($client, [
                 'provider_type_preference' => $this->providerTypePreference,
                 'preferred_provider_user_id' => $this->preferredProviderUserId,
-            ]);
+                'assigned_provider_organization_id' => $this->assignedProviderOrganizationId,
+            ], $context);
         } catch (AuthorizationException $e) {
+            $field = $this->assignedProviderOrganizationId !== null
+                ? 'assignedProviderOrganizationId'
+                : 'preferredProviderUserId';
+
             $this->addError(
-                'preferredProviderUserId',
-                'Le choix d’un nouveau prestataire est réservé au pack Premium. Ajoutez-le à vos favoris ou passez Premium.'
+                $field,
+                $this->assignedProviderOrganizationId !== null
+                    ? 'Cette société n’est pas disponible pour cette réservation, ou le choix d’une société est réservé au pack Premium.'
+                    : 'Le choix d’un nouveau prestataire est réservé au pack Premium. Ajoutez-le à vos favoris ou passez Premium.'
             );
 
             return null;
@@ -358,6 +375,29 @@ class PrendreRendezVous extends Component
     {
         $this->pickPreferredProvider($providerId);
         $this->showProviderPicker = false;
+    }
+
+    /**
+     * SP3 Task 8 — listener de l'event émis par BrowseCompanies embarqué en mode
+     * sélection : pose la société préférée, vide le worker (mutuellement exclusif)
+     * et ferme le picker. La validation d'éligibilité reste côté backend.
+     */
+    #[On('companySelected')]
+    public function onCompanySelected(int $organizationId): void
+    {
+        $this->assignedProviderOrganizationId = $organizationId;
+        $this->preferredProviderUserId = null;
+        $this->showProviderPicker = false;
+        $this->preferredProviderMessage = null;
+        $this->preferredProviderAlternativeSlots = [];
+    }
+
+    /**
+     * Vide la sélection société (retour aux paliers worker / auto-match).
+     */
+    public function clearAssignedCompany(): void
+    {
+        $this->assignedProviderOrganizationId = null;
     }
 
     /**
