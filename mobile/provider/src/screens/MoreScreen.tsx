@@ -3,6 +3,7 @@ import { View, Text, TouchableOpacity, ScrollView, StyleSheet, Alert } from 'rea
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { Ionicons } from '@expo/vector-icons';
 import { Avatar, Badge, Divider, Icon } from '@/ui';
 import { useAuth } from '@/auth';
 import { colors, spacing, typography, radius, shadows } from '@/theme';
@@ -10,7 +11,7 @@ import type { RootStackParamList } from '@/navigation/types';
 
 interface MenuItem {
   label: string;
-  icon: string;
+  icon: keyof typeof Ionicons.glyphMap;
   screen?: keyof RootStackParamList;
   onPress?: () => void;
   badge?: string;
