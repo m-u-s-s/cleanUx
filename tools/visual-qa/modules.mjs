@@ -38,10 +38,13 @@ export const DEFERRED_KEYS = new Set([
   //      dashboard-entreprise-client-facturation, dashboard-entreprise-prestataire-canaux,
   //      dashboard-entreprise-prestataire-dispatch
   //
-  // ── Still deferred — NOT a schema/500 issue (both render HTTP 200) but a real
-  //    responsive-layout defect to fix in the Lot-1 visual pass, out of scope here:
-  'dashboard-client-analytics', // C2: a control < tap-target min (67×16 div) on the client analytics dashboard
-  'dashboard-entreprise-prestataire-equipe', // C3+C4: TeamManagement table overflows the 390px viewport (right:636) and clips text
+  // ── Un-deferred 2026-06-01 (mobile layout fixes shipped on fix/visual-qa-119):
+  //      dashboard-client-analytics      → header controls (period select, custom-date
+  //        inputs, apply button, CSV export links) given min-h-[44px] / inline-flex
+  //        items-center so they clear the 44px tap-target floor (C2).
+  //      dashboard-entreprise-prestataire-equipe → TeamManagement members <table>
+  //        wrapped in <div class="overflow-x-auto"> + min-w-[640px] so it scrolls inside
+  //        the 390px viewport instead of overflowing (right:636) and clipping (C3+C4).
   // Doublon : /admin/users est un alias 302 → /admin/utilisateurs (routes/admin.php).
   // Le redirect perd le query `?embed=1`, donc la cible rend HORS embed (nav chrome
   // présent → C5 faux échec). La VRAIE page est 'admin-utilisateurs' (déjà couverte).

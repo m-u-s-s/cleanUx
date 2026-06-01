@@ -7,6 +7,16 @@
      })"
      wire:ignore.self
 >
+    {{-- ApexCharts génère ses items de légende en `div[role=button]` exigus
+         (~67×16). On élargit leur zone tactile à ≥44px sans toucher au rendu
+         du graphe (mobile-safe : ne casse pas le layout desktop). --}}
+    <style>
+        .apexcharts-legend-series[role="button"] {
+            min-height: 44px;
+            display: inline-flex !important;
+            align-items: center;
+        }
+    </style>
 
     {{-- ──────────────────────────── --}}
     {{-- Header                       --}}
@@ -21,7 +31,7 @@
             {{-- Sélecteur de période --}}
             <select
                 wire:model.live="preset"
-                class="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 shadow-sm"
+                class="min-h-[44px] rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 shadow-sm"
             >
                 @foreach ($presetOptions as $opt)
                     <option value="{{ $opt['value'] }}">{{ $opt['label'] }}</option>
@@ -30,10 +40,10 @@
 
             {{-- Dates custom (visibles uniquement si preset = custom) --}}
             @if ($preset === 'custom')
-                <input type="date" wire:model="customFrom" class="rounded-lg border border-slate-200 px-2 py-1.5 text-xs">
+                <input type="date" wire:model="customFrom" class="min-h-[44px] rounded-lg border border-slate-200 px-2 py-1.5 text-xs">
                 <span class="text-xs text-slate-400">→</span>
-                <input type="date" wire:model="customTo" class="rounded-lg border border-slate-200 px-2 py-1.5 text-xs">
-                <button wire:click="applyCustomDates" class="rounded-lg bg-blue-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-blue-700">
+                <input type="date" wire:model="customTo" class="min-h-[44px] rounded-lg border border-slate-200 px-2 py-1.5 text-xs">
+                <button wire:click="applyCustomDates" class="inline-flex min-h-[44px] items-center rounded-lg bg-blue-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-blue-700">
                     Appliquer
                 </button>
             @endif
@@ -41,13 +51,13 @@
             {{-- Exports --}}
             @if (Route::has('analytics.export.kpis'))
                 <a href="{{ route('analytics.export.kpis', ['preset' => $preset, 'from' => $customFrom, 'to' => $customTo]) }}"
-                   class="inline-flex items-center gap-1 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50">
+                   class="inline-flex min-h-[44px] items-center gap-1 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50">
                     📊 KPIs CSV
                 </a>
             @endif
             @if (Route::has('analytics.export.bookings'))
                 <a href="{{ route('analytics.export.bookings', ['preset' => $preset, 'from' => $customFrom, 'to' => $customTo]) }}"
-                   class="inline-flex items-center gap-1 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50">
+                   class="inline-flex min-h-[44px] items-center gap-1 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50">
                     📋 Détail CSV
                 </a>
             @endif

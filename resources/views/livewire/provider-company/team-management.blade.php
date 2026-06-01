@@ -46,7 +46,8 @@
 
     {{-- ── Tableau membres ── --}}
     <div class="rounded-2xl border border-slate-700 overflow-hidden">
-        <table class="w-full">
+        <div class="overflow-x-auto">
+        <table class="w-full min-w-[640px]">
             <thead>
                 <tr class="border-b border-slate-700 bg-slate-800/80">
                     <th class="px-4 py-3 text-left text-xs font-bold uppercase tracking-wide text-slate-400">Membre</th>
@@ -160,6 +161,7 @@
                 @endforelse
             </tbody>
         </table>
+        </div>
     </div>
 </div>
 
