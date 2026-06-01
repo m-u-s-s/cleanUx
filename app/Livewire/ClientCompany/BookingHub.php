@@ -5,11 +5,18 @@ namespace App\Livewire\ClientCompany;
 use App\Models\Booking;
 use App\Models\OrganizationSite;
 use App\Models\ProviderProfile;
+use App\Models\ServiceCatalog;
 use App\Models\Trade;
+use App\Services\Booking\CreateBookingAction;
+use App\Services\Booking\EmployeeAvailabilityService;
+use App\Services\Booking\ProviderSelectionResolver;
+use App\Services\Booking\ZoneCoverageService;
 use App\Services\PermissionService;
 use App\Support\Livewire\Concerns\RendersTradeFormSchema;
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\ValidationException;
 use Livewire\Component;
 
 /**
@@ -40,6 +47,9 @@ class BookingHub extends Component
     public ?int $selectedTradeId = null;
 
     public ?int $selectedProviderId = null;
+
+    /** Palier de sélection SP2 : independent | company | any. */
+    public string $providerTypePreference = 'any';
 
     public string $scheduledDate = '';
 
@@ -200,26 +210,123 @@ class BookingHub extends Component
 
         $user = Auth::user();
         $orgId = $user->current_organization_id;
-        OrganizationSite::forOrg($orgId)->findOrFail($this->selectedSiteId);
+        $site = OrganizationSite::forOrg($orgId)->findOrFail($this->selectedSiteId);
+
+        // SP2 Task 8 — route via l'action canonique (CreateBookingAction) au lieu
+        // d'un Booking::create() ad-hoc qui PERDAIT le service_catalog_id et ne
+        // générait ni zone/prix/dispatch. On résout zone/catalog/rule depuis le
+        // SITE (adresse/code postal) + le MÉTIER, comme le flux web public.
+
+        // 1) Catalog du métier sélectionné.
+        $catalog = ServiceCatalog::query()
+            ->where('trade_id', $this->selectedTradeId)
+            ->where('is_active', true)
+            ->orderBy('sort_order')
+            ->first();
+
+        if (! $catalog) {
+            $this->addError('selectedTradeId', 'Aucun service n’est disponible pour ce métier.');
+
+            return;
+        }
+
+        $serviceIdentifier = (string) ($catalog->code ?: $catalog->slug ?: $catalog->service_type);
+
+        // 2) Résolution de couverture (postal/zone/catalog/rule) depuis le site,
+        //    via le MÊME service que le flux web (ZoneCoverageService).
+        $resolution = app(ZoneCoverageService::class)->resolveCoverage(
+            $site->postal_code,
+            $site->city,
+            $serviceIdentifier,
+            $site,
+        );
+
+        $postal = $resolution->postalCode;
+        $zone = $resolution->zone;
+        $catalog = $resolution->serviceCatalog ?? $catalog;
+        $rule = $resolution->zoneServiceRule;
+
+        if (! $postal || ! $zone || ! $catalog || ! $rule) {
+            $this->addError('selectedSiteId', 'Ce site n’est pas couvert pour ce métier (zone/prix introuvable).');
+
+            return;
+        }
+
+        // 3) Gating SP2 : valide le palier de sélection prestataire.
+        try {
+            $selection = app(ProviderSelectionResolver::class)->resolve($user, [
+                'provider_type_preference' => $this->providerTypePreference,
+                'preferred_provider_user_id' => $this->selectedProviderId,
+            ]);
+        } catch (AuthorizationException $e) {
+            $this->addError('selectedProviderId', $e->getMessage());
+
+            return;
+        }
+
+        // 4) Employé assigné requis par execute() — best available pour le créneau.
+        $assignedEmployee = app(EmployeeAvailabilityService::class)->resolveBestAvailableEmployeeForSlot(
+            $this->scheduledDate,
+            $this->scheduledTime,
+            $zone,
+            $this->estimatedHours ? $this->estimatedHours * 60 : 90,
+        );
+
+        if (! $assignedEmployee) {
+            $this->addError('scheduledTime', 'Aucun prestataire disponible pour ce créneau.');
+
+            return;
+        }
 
         $canApprove = app(PermissionService::class)->can($user, 'bookings.approve', $user->currentOrganization);
+        $approvalRequired = $this->needsApproval && ! $canApprove;
 
-        $status = $this->needsApproval && ! $canApprove
-            ? 'pending_approval'
-            : 'pending';
+        $data = array_merge([
+            'booking_channel' => 'client_company',
+            'organization_account_id' => $orgId,
+            'organization_site_id' => $site->id,
+            'service_zone_id' => $zone->id,
+            'postal_code_id' => $postal->id,
+            'service_identifier' => $serviceIdentifier,
+            'date' => $this->scheduledDate,
+            'heure' => $this->scheduledTime,
+            'duree_estimee' => $this->estimatedHours ? $this->estimatedHours * 60 : null,
+            'purchase_order_reference' => $this->purchaseOrderRef ?: null,
+            'commentaire_client' => $this->notes ?: null,
+            'trade_form_answers' => $this->hasTradeFormSchema() ? $this->tradeFormAnswers : null,
+            'status' => $approvalRequired ? 'en_attente' : 'en_attente',
+            'entreprise_approval_required' => $approvalRequired,
+            'site_instructions' => $site->access_instructions,
+        ], $selection);
 
-        $booking = Booking::create([
+        try {
+            $booking = app(CreateBookingAction::class)->execute(
+                client: $user,
+                postal: $postal,
+                zone: $zone,
+                catalog: $catalog,
+                rule: $rule,
+                assignedEmployee: $assignedEmployee,
+                data: $data,
+                organizationSite: $site,
+                resolution: $resolution,
+            );
+        } catch (ValidationException $e) {
+            foreach ($e->errors() as $field => $messages) {
+                foreach ($messages as $message) {
+                    $this->addError('selectedSiteId', $message);
+                }
+            }
+
+            return;
+        }
+
+        // CreateBookingAction renseigne organization_account_id mais pas le contexte
+        // client société consommé par le hub (liste filtrée sur customer_*).
+        $booking->forceFill([
             'customer_user_id' => $user->id,
             'customer_organization_id' => $orgId,
-            'organization_site_id' => $this->selectedSiteId,
-            'assigned_provider_user_id' => $this->selectedProviderId,
-            'scheduled_at' => "{$this->scheduledDate} {$this->scheduledTime}",
-            'status' => $status,
-            'estimated_duration' => $this->estimatedHours ? $this->estimatedHours * 60 : null,
-            'purchase_order_reference' => $this->purchaseOrderRef,
-            'notes' => $this->notes,
-            'trade_form_answers' => $this->hasTradeFormSchema() ? $this->tradeFormAnswers : null,
-        ]);
+        ])->save();
 
         $this->reset([
             'selectedSiteId', 'selectedTradeId', 'selectedProviderId',
