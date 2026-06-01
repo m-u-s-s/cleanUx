@@ -93,5 +93,11 @@ class RatingAggregationService
             'rating_dimensions' => $dimensions ?: null,
             'rating_last_at' => $rows->max('published_at') ?? now(),
         ]);
+
+        try {
+            app(OrganizationRatingAggregator::class)->recomputeForUser((int) $providerUserId);
+        } catch (\Throwable $e) {
+            report($e);
+        }
     }
 }

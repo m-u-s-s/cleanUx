@@ -35,12 +35,16 @@ class OrganizationAccount extends Model
         'is_key_account',
         'metadata',
         'notes',
+        'rating_avg',
+        'rating_count',
     ];
 
     protected $casts = [
         'is_multisite' => 'boolean',
         'is_key_account' => 'boolean',
         'metadata' => 'array',
+        'rating_avg' => 'decimal:2',
+        'rating_count' => 'integer',
     ];
 
     public function country(): BelongsTo
