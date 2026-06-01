@@ -88,8 +88,10 @@ class SmartDispatchService
 
         $duration = (int) ($rdv->duree_estimee ?: $rdv->duree ?: 90);
 
+        $providerType = $rdv->provider_type_preference ?: 'any';
+
         $employees = $this->availabilityService
-            ->sortedEligibleEmployeesForZone((int) $rdv->service_zone_id);
+            ->sortedEligibleEmployeesForZone((int) $rdv->service_zone_id, $providerType);
 
         return $employees
             ->filter(fn (User $employee) => $this->availabilityService->employeeIsAvailableForSlot(
