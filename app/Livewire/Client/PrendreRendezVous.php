@@ -28,6 +28,7 @@ use Illuminate\Contracts\View\View;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
+use Livewire\Attributes\On;
 use Livewire\Component;
 use Livewire\WithFileUploads;
 
@@ -346,6 +347,17 @@ class PrendreRendezVous extends Component
         $this->showProviderPicker = false;
         $this->preferredProviderMessage = null;
         $this->preferredProviderAlternativeSlots = [];
+    }
+
+    /**
+     * SP2 Task 6 — listener de l'event émis par BrowseProviders embarqué en
+     * mode sélection : pose le presta préféré et ferme le picker.
+     */
+    #[On('providerSelected')]
+    public function onProviderSelected(int $providerId): void
+    {
+        $this->pickPreferredProvider($providerId);
+        $this->showProviderPicker = false;
     }
 
     /**

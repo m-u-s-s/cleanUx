@@ -70,10 +70,7 @@
             @if ($showProviderPicker)
                 <div class="rounded-2xl border border-slate-200 bg-slate-50 p-3">
                     <p class="mb-2 text-xs text-slate-500">Recherchez et sélectionnez un prestataire.</p>
-                    <a href="{{ \Illuminate\Support\Facades\Route::has('client.providers.browse') ? route('client.providers.browse') : route('providers.browse.public') }}"
-                       class="inline-flex items-center gap-2 text-sm font-semibold text-blue-700 underline">
-                        Parcourir les prestataires
-                    </a>
+                    <livewire:client.browse-providers :selection-mode="true" :key="'booking-provider-picker'" />
                 </div>
             @endif
         </div>

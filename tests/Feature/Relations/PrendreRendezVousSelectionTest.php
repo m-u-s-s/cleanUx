@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Relations;
 
+use App\Livewire\Client\BrowseProviders;
 use App\Livewire\Client\PrendreRendezVous;
 use App\Models\BookingFavorite;
 use App\Models\CustomerProfile;
@@ -178,5 +179,40 @@ class PrendreRendezVousSelectionTest extends TestCase
             'client_id' => $client->id,
             'preferred_provider_user_id' => $stranger->id,
         ]);
+    }
+
+    #[Test]
+    public function selecting_a_provider_via_event_sets_the_preferred_provider_and_closes_the_picker(): void
+    {
+        $client = $this->premiumProfileClient();
+        $provider = User::factory()->employe()->create();
+
+        $this->actingAs($client);
+
+        Livewire::test(PrendreRendezVous::class)
+            ->set('showProviderPicker', true)
+            ->call('onProviderSelected', $provider->id)
+            ->assertSet('preferredProviderUserId', $provider->id)
+            ->assertSet('showProviderPicker', false);
+    }
+
+    #[Test]
+    public function browse_providers_in_selection_mode_dispatches_the_provider_selected_event(): void
+    {
+        $provider = User::factory()->employe()->create();
+
+        Livewire::test(BrowseProviders::class, ['selectionMode' => true])
+            ->call('selectProvider', $provider->id)
+            ->assertDispatched('providerSelected', providerId: $provider->id);
+    }
+
+    #[Test]
+    public function browse_providers_without_selection_mode_does_not_dispatch_the_event(): void
+    {
+        $provider = User::factory()->employe()->create();
+
+        Livewire::test(BrowseProviders::class)
+            ->call('selectProvider', $provider->id)
+            ->assertNotDispatched('providerSelected');
     }
 }

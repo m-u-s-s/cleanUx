@@ -130,9 +130,13 @@
                             $bio = $u->profile_bio ?? $profile?->bio;
                             $photoPath = $u->profile_photo_path ?? $profile?->photo_path;
                         @endphp
-                        <a href="{{ url('/providers/'.$u->id) }}"
-                           class="rounded-2xl border bg-white p-4 shadow-sm hover:shadow-md transition-shadow">
-                            <div class="flex items-start gap-3">
+                        <div class="rounded-2xl border bg-white p-4 shadow-sm hover:shadow-md transition-shadow flex flex-col">
+                            @if($selectionMode)
+                                <div class="flex items-start gap-3 cursor-pointer"
+                                     wire:click="selectProvider({{ $u->id }})">
+                            @else
+                                <a href="{{ url('/providers/'.$u->id) }}" class="flex items-start gap-3">
+                            @endif
                                 @if($photoPath)
                                     <img src="{{ \Illuminate\Support\Facades\Storage::url($photoPath) }}"
                                          alt="{{ $u->name }}"
@@ -164,7 +168,12 @@
                                         {{ number_format((float) $hourlyRate, 0, ',', ' ') }} €/h
                                     </span>
                                 @endif
-                            </div>
+
+                                @if($selectionMode)
+                                </div>
+                            @else
+                                </a>
+                            @endif
 
                             @if($bio)
                                 <p class="text-xs text-slate-600 mt-3 line-clamp-2">{{ $bio }}</p>
@@ -179,7 +188,15 @@
                                     @endforeach
                                 </div>
                             @endif
-                        </a>
+
+                            @if($selectionMode)
+                                <button type="button"
+                                        wire:click="selectProvider({{ $u->id }})"
+                                        class="mt-4 w-full rounded-xl bg-indigo-600 px-3 py-2 text-sm font-semibold text-white hover:bg-indigo-700">
+                                    Choisir ce prestataire
+                                </button>
+                            @endif
+                        </div>
                     @empty
                         <div class="md:col-span-2 xl:col-span-3 rounded-2xl border-2 border-dashed border-slate-200 p-10 text-center text-slate-400">
                             Aucun prestataire ne correspond aux filtres.
