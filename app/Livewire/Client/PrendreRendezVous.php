@@ -4,12 +4,15 @@ namespace App\Livewire\Client;
 
 use App\Actions\Booking\CreateRecurringSeriesAction;
 use App\Models\Booking;
+use App\Models\BookingFavorite;
 use App\Models\Trade;
 use App\Services\Booking\AsapBookingService;
 use App\Services\Booking\BookingEstimatorService;
 use App\Services\Booking\BookingIntelligenceService;
 use App\Services\Booking\CreateBookingAction;
 use App\Services\Booking\EmployeeAvailabilityService;
+use App\Services\Booking\PreferredProviderResolver;
+use App\Services\Booking\ProviderSelectionResolver;
 use App\Services\Booking\ZoneCoverageService;
 use App\Services\Promotion\PromoCodeService;
 use App\Services\Promotion\PromoCodeValidationContext;
@@ -19,7 +22,10 @@ use App\Support\Livewire\Concerns\Booking\ManagesPublicBookingDraft;
 use App\Support\Livewire\Concerns\HandlesBookingSubmissionFlow;
 use App\Support\Livewire\Concerns\InteractsWithBookingFormState;
 use App\Support\Livewire\Concerns\RendersTradeFormSchema;
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Contracts\View\View;
+use Illuminate\Support\Carbon;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
 use Livewire\WithFileUploads;
@@ -135,6 +141,21 @@ class PrendreRendezVous extends Component
     public array $recurrence_days = [];
 
     public bool $is_favorite_slot = false;
+
+    // SP2 Task 6 — sélection du type de prestataire côté client (3 paliers).
+    /** 'independent' | 'company' | 'any' (défaut : aucun filtre, auto-match). */
+    public string $providerTypePreference = 'any';
+
+    /** Prestataire imposé (favori re-réservé, ou nouveau presta si premium). */
+    public ?int $preferredProviderUserId = null;
+
+    /** Ouvre/affiche le panneau de recherche premium (BrowseProviders). */
+    public bool $showProviderPicker = false;
+
+    /** Créneaux alternatifs proposés si le presta préféré est indisponible. */
+    public array $preferredProviderAlternativeSlots = [];
+
+    public ?string $preferredProviderMessage = null;
 
     public array $photos = [];
 
@@ -253,6 +274,167 @@ class PrendreRendezVous extends Component
     protected function recurringBookingCreator(): CreateRecurringSeriesAction
     {
         return app(CreateRecurringSeriesAction::class);
+    }
+
+    /**
+     * SP2 Task 6 — résout/valide le palier de sélection prestataire avant la
+     * création de la réservation et fusionne le résultat dans $data.
+     *
+     * - Non-premium choisissant un nouveau presta (non favori) → refus :
+     *   ProviderSelectionResolver lève AuthorizationException, on pose une
+     *   erreur sur le champ et on retourne null (soumission annulée).
+     *
+     * @param  array<string, mixed>  $data
+     * @return array<string, mixed>|null
+     */
+    protected function applyProviderSelectionToBookingData(array $data): ?array
+    {
+        $client = Auth::user();
+
+        if (! $client) {
+            return $data;
+        }
+
+        try {
+            $selection = app(ProviderSelectionResolver::class)->resolve($client, [
+                'provider_type_preference' => $this->providerTypePreference,
+                'preferred_provider_user_id' => $this->preferredProviderUserId,
+            ]);
+        } catch (AuthorizationException $e) {
+            $this->addError(
+                'preferredProviderUserId',
+                'Le choix d’un nouveau prestataire est réservé au pack Premium. Ajoutez-le à vos favoris ou passez Premium.'
+            );
+
+            return null;
+        }
+
+        return array_merge($data, $selection);
+    }
+
+    /**
+     * Re-réserver un prestataire favori : impose son user_id comme préférence.
+     */
+    public function rebookFavorite(int $favoriteId): void
+    {
+        $favorite = BookingFavorite::query()
+            ->where('id', $favoriteId)
+            ->where('client_user_id', Auth::id())
+            ->first();
+
+        if (! $favorite) {
+            return;
+        }
+
+        $this->preferredProviderUserId = (int) $favorite->preferred_provider_user_id;
+        $this->preferredProviderMessage = null;
+        $this->preferredProviderAlternativeSlots = [];
+    }
+
+    /**
+     * Sélection d'un nouveau prestataire (palier premium, depuis BrowseProviders
+     * ou la liste embarquée). Émise/appelée à la sélection d'un presta.
+     */
+    public function pickPreferredProvider(int $providerUserId): void
+    {
+        $this->preferredProviderUserId = $providerUserId;
+        $this->showProviderPicker = false;
+        $this->preferredProviderMessage = null;
+        $this->preferredProviderAlternativeSlots = [];
+    }
+
+    /**
+     * Vide la préférence prestataire (retour au palier auto-match).
+     */
+    public function clearPreferredProvider(): void
+    {
+        $this->preferredProviderUserId = null;
+        $this->preferredProviderMessage = null;
+        $this->preferredProviderAlternativeSlots = [];
+    }
+
+    public function toggleProviderPicker(): void
+    {
+        $this->showProviderPicker = ! $this->showProviderPicker;
+    }
+
+    /**
+     * Bouton « je suis pressé » : abandonne le presta préféré indisponible et
+     * re-soumet en auto-match.
+     */
+    public function bookAnyAvailableProvider(): void
+    {
+        $this->clearPreferredProvider();
+        $this->providerTypePreference = 'any';
+        $this->validerRdv();
+    }
+
+    /**
+     * Favoris du client connecté pour la section « Mes prestataires favoris ».
+     *
+     * @return Collection<int, BookingFavorite>
+     */
+    public function getClientFavoritesProperty()
+    {
+        if (! Auth::check()) {
+            return collect();
+        }
+
+        return BookingFavorite::query()
+            ->where('client_user_id', Auth::id())
+            ->with('provider:id,name')
+            ->latest('last_used_at')
+            ->latest('id')
+            ->get();
+    }
+
+    protected function afterBookingCreated(Booking $rendezVous): void
+    {
+        $this->refreshPreferredProviderAvailability($rendezVous);
+    }
+
+    /**
+     * Détecte l'indisponibilité d'un presta préféré après création et expose
+     * des créneaux alternatifs (filtrés des heures passées si c'est aujourd'hui).
+     */
+    protected function refreshPreferredProviderAvailability(Booking $rdv): void
+    {
+        $this->preferredProviderAlternativeSlots = [];
+        $this->preferredProviderMessage = null;
+
+        if (! $rdv->preferred_provider_user_id) {
+            return;
+        }
+
+        $result = app(PreferredProviderResolver::class)->resolve($rdv);
+
+        if ($result['status'] !== 'unavailable') {
+            return;
+        }
+
+        $this->preferredProviderMessage = 'Votre prestataire préféré n’est pas disponible sur ce créneau. Voici ses prochaines disponibilités.';
+        $this->preferredProviderAlternativeSlots = $this->filterFutureSlots($result['alternative_slots']);
+    }
+
+    /**
+     * Filtre les créneaux déjà dépassés (heures fixes proposées pour aujourd'hui).
+     *
+     * @param  list<array{date:string, heure:string}>  $slots
+     * @return list<array{date:string, heure:string}>
+     */
+    protected function filterFutureSlots(array $slots): array
+    {
+        $timezone = config('app.timezone', 'Europe/Brussels');
+        $now = now($timezone);
+
+        return collect($slots)
+            ->filter(function (array $slot) use ($timezone, $now) {
+                $at = Carbon::createFromFormat('Y-m-d H:i', $slot['date'].' '.$slot['heure'], $timezone);
+
+                return $at !== false && $at->greaterThanOrEqualTo($now);
+            })
+            ->values()
+            ->all();
     }
 
     protected function normalizeBookingState(): void

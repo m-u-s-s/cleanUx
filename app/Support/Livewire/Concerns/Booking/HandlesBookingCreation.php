@@ -187,6 +187,16 @@ trait HandlesBookingCreation
                 : null,
         ];
 
+        // SP2 Task 6 — résout/valide le palier de sélection prestataire choisi
+        // côté UI (type + favori + premium). Renvoie null si la sélection est
+        // refusée (non-premium choisissant un nouveau presta) : l'erreur a déjà
+        // été posée sur le champ, on abandonne sans créer de réservation.
+        $bookingData = $this->applyProviderSelectionToBookingData($bookingData);
+
+        if ($bookingData === null) {
+            return;
+        }
+
         $occurrencesCount = 1;
 
         if ($this->is_recurrent) {
@@ -249,6 +259,10 @@ trait HandlesBookingCreation
 
         $rendezVous->load(['employe', 'organizationSite']);
 
+        // SP2 Task 6 — si un presta préféré a été imposé, exposer le flux
+        // d'indisponibilité (créneaux alternatifs) à la vue.
+        $this->afterBookingCreated($rendezVous);
+
         $manualValidationRequired = (bool) (
             $rule->requires_manual_validation
             || data_get($zone->metadata, 'requires_manual_validation', false)
@@ -279,6 +293,30 @@ trait HandlesBookingCreation
     public function envoyerDemande(): void
     {
         $this->validerRdv();
+    }
+
+    /**
+     * Hook SP2 — fusionne la sélection prestataire (type + favori + premium)
+     * dans les données de réservation. Par défaut neutre : les composants qui
+     * exposent la sélection (PrendreRendezVous) surchargent cette méthode.
+     * Retourne null pour annuler la soumission (sélection refusée).
+     *
+     * @param  array<string, mixed>  $data
+     * @return array<string, mixed>|null
+     */
+    protected function applyProviderSelectionToBookingData(array $data): ?array
+    {
+        return $data;
+    }
+
+    /**
+     * Hook SP2 — appelé après la création réussie de la réservation. Permet au
+     * composant (PrendreRendezVous) d'exposer le flux d'indisponibilité du
+     * prestataire préféré. Neutre par défaut.
+     */
+    protected function afterBookingCreated(Booking $rendezVous): void
+    {
+        //
     }
 
     protected function syncLocationFromSelectedOrganizationSite(?User $client = null): bool

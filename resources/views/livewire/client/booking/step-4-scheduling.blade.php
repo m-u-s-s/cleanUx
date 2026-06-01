@@ -5,6 +5,7 @@
         <p class="mt-1 text-sm text-slate-500">Sélectionnez un mode de réservation, une date et les préférences de récurrence.</p>
     </div>
 
+    @include('livewire.client.booking.scheduling.provider-selection')
     @include('livewire.client.booking.scheduling.employee-choice')
     @include('livewire.client.booking.scheduling.mode-selector')
     @include('livewire.client.booking.scheduling.asap-message')
