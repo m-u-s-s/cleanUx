@@ -1,46 +1,86 @@
 # CleanUx — Stores submission runbook (Apple App Store + Google Play)
 
-Procédure complète pour soumettre l'app native iOS + Android aux stores après wrap Capacitor.
+Procédure complète pour builder et soumettre les apps natives iOS + Android via **Expo / EAS**
+(EAS Build + EAS Submit), sans Xcode/Android Studio.
+
+> **Deux apps distinctes**, chacune son listing store + son bundle id, sous l'organisation EAS `m-u-s-s` :
+>
+> | App | Dossier | Slug EAS | Bundle id iOS / package Android |
+> |-----|---------|----------|----------------------------------|
+> | **CleanUx** (client) | `mobile/client` | `cleanux-client` | `com.cleanux.client` |
+> | **CleanUx Pro** (prestataire) | `mobile/provider` | `cleanux-provider` | `com.cleanux.provider` |
+>
+> Toutes les commandes `eas …` se lancent **depuis le dossier de l'app** (`cd mobile/client` ou
+> `cd mobile/provider`). Répète chaque étape pour les deux apps.
 
 ## Prérequis
 
-- [ ] Capacitor configuré (`capacitor.config.ts` présent, `npm run cap:sync` OK)
-- [ ] Builds locaux iOS + Android testés sur device réel
+- [ ] `eas-cli` installé (`npm i -g eas-cli`) + connecté (`eas login`, compte `m-u-s-s`)
+- [ ] `app.json` + `eas.json` présents dans chaque app (déjà configurés : profils `development` /
+      `preview` / `production` + bloc `submit`)
+- [ ] Build interne testé sur device réel : `eas build --profile preview --platform all` puis install
+      via le lien EAS / TestFlight / Internal App Sharing
 - [ ] CGV + Privacy Policy publiées sur le site web (URL prod stable)
-- [ ] Sentry actif + DSN renseigné en prod
+- [ ] Sentry actif + DSN renseigné en prod (`@sentry/react-native`, cf. `mobile/shared/src/sentry`)
 - [ ] Tous les HOT FIX 1-5 sécurité validés (CORS restrictif, TrustProxies, etc.)
+- [ ] `eas.json` → `submit.production.ios` : remplacer `PLACEHOLDER_APPLE_ID` / `PLACEHOLDER_ASC_APP_ID`
+      / `PLACEHOLDER_TEAM_ID` par les vraies valeurs (cf. §1)
+
+## 0. EAS Build & Submit — le flux
+
+Pas de build local : EAS compile dans le cloud et gère la signature.
+
+```bash
+cd mobile/client            # (puis répéter dans mobile/provider)
+
+# Build production (iOS .ipa + Android .aab), credentials gérés par EAS
+eas build --platform all --profile production
+
+# Soumission aux stores (lit eas.json -> submit.production)
+eas submit --platform ios --profile production
+eas submit --platform android --profile production
+```
+
+- **Credentials** : `eas credentials` gère le certificat/provisioning iOS et le keystore Android
+  (EAS-managed = recommandé ; pas de `keytool` ni de signing Xcode à la main).
+- **Versions** : le profil `production` a `autoIncrement: true` → le build number iOS / `versionCode`
+  Android s'incrémentent automatiquement. Le `version` (marketing) vit dans `app.json` (`1.0.0`).
+- **OTA (mises à jour JS sans review store)** : `eas update --branch production` publie un correctif
+  JS/assets via `expo-updates` — utile pour les hotfix qui ne touchent pas le natif (voir §6).
 
 ## 1. Apple App Store
 
 ### Comptes & accès
-- Apple Developer Program : **99$/an** ([signup](https://developer.apple.com/programs/enroll/))
-- App Store Connect : créer une équipe
-- DUNS Number requis pour société
+- Apple Developer Program : **99 $/an** ([signup](https://developer.apple.com/programs/enroll/))
+- App Store Connect : créer une équipe ; récupérer le **Team ID** (→ `eas.json` `appleTeamId`)
+- Créer les **deux** apps dans App Store Connect (CleanUx + CleanUx Pro) → récupérer chaque
+  **ASC App ID** (→ `eas.json` `ascAppId`)
+- DUNS Number requis pour une société
+- Recommandé : créer une **App Store Connect API Key** (Users & Access → Integrations) pour que
+  `eas submit` soumette sans mot de passe interactif
 
-### Configuration Xcode
-1. Ouvrir le projet : `npx cap open ios`
-2. Onglet **Signing & Capabilities** :
-   - Bundle Identifier : `com.cleanux.app`
-   - Team : sélectionner ton Apple Developer team
-   - Automatic signing activé
-3. Capabilities :
-   - Push Notifications (pour APNs)
-   - Background Modes : Location updates, Background fetch, Remote notifications
-   - Sign in with Apple (optionnel)
+### Configuration (app.json, pas Xcode)
+Tout ce qui était dans Xcode se déclare dans `mobile/<app>/app.json` :
+- `expo.ios.bundleIdentifier` : `com.cleanux.client` / `com.cleanux.provider`
+- Capabilities via `app.json` :
+  - Push : `expo-notifications` (plugin) + entitlement APNs géré par `eas credentials`
+  - Background : `expo.ios.infoPlist.UIBackgroundModes` = `["location", "fetch", "remote-notification"]`
+    (le suivi GPS de mission utilise `expo-location` background + `expo-task-manager`)
+  - Associated Domains (deep links) : `expo.ios.associatedDomains` = `["applinks:app.cleanux.com"]`
 
-### Assets à fournir
-- App Icon : 1024×1024 PNG (sans alpha)
-- Launch Screen : `LaunchScreen.storyboard`
+### Assets à fournir (par app)
+- App Icon : 1024×1024 PNG (sans alpha) — déclaré dans `app.json` (`expo.icon`)
+- Splash : `expo-splash-screen` (config `app.json`)
 - Screenshots requis :
   - iPhone 6.7" (iPhone 15 Pro Max) : 1290×2796 — minimum 3 screenshots
   - iPhone 6.5" (iPhone 11 Pro Max) : 1242×2688
   - iPad Pro 12.9" : 2048×2732 (si app universal)
 
 ### Métadonnées App Store Connect
-- Nom de l'app : CleanUx
-- Sous-titre (30 chars max) : "Services pro à la demande"
-- Description (4000 chars max) : préparer rédactionnel marketing
-- Keywords (100 chars max) : `nettoyage,services,prestataire,marketplace,béton,babysitting`
+- Nom : **CleanUx** (client) / **CleanUx Pro** (prestataire)
+- Sous-titre (30 chars max) : "Services pro à la demande" / "Vos missions, votre planning"
+- Description (4000 chars max) : préparer le rédactionnel marketing
+- Keywords (100 chars max) : `nettoyage,services,prestataire,marketplace,peinture,babysitting`
 - URL support : https://cleanux.com/aide
 - URL marketing : https://cleanux.com
 - Privacy policy URL : https://cleanux.com/privacy-policy
@@ -50,134 +90,128 @@ Procédure complète pour soumettre l'app native iOS + Android aux stores après
 ### App Privacy (Apple Privacy Nutrition)
 - Data linked to user : Name, Email, Phone, Physical Address, Location, Payment Info, User Content
 - Data not linked : Analytics (anonymized), Diagnostics
-- Tracking : selon usage (probablement non si pas de FB SDK)
+- Tracking : selon usage (probablement non si pas de SDK pub tiers)
 
 ### Submission
-1. Build → Archive (Product menu)
-2. Distribute App → App Store Connect → Upload
-3. Wait pour processing (~30min)
-4. Compléter "App Information" + "Pricing and Availability"
-5. Submit for Review (timing : 24h-7j en moyenne)
+```bash
+cd mobile/client   # puis mobile/provider
+eas build --platform ios --profile production     # produit le .ipa (signé par EAS)
+eas submit --platform ios --profile production     # upload vers App Store Connect
+```
+Puis dans App Store Connect : compléter "App Information" + "Pricing and Availability", attacher le
+build (TestFlight d'abord), **Submit for Review** (timing : 24h-7j). `eas submit` pousse le binaire ;
+TestFlight est dispo automatiquement pour le beta interne.
 
 ## 2. Google Play Store
 
 ### Comptes & accès
-- Google Play Developer Console : **25$ one-shot** ([signup](https://play.google.com/console/signup))
-- Bundle id : `com.cleanux.app`
+- Google Play Developer Console : **25 $ one-shot** ([signup](https://play.google.com/console/signup))
+- Créer les **deux** apps (packages `com.cleanux.client` / `com.cleanux.provider`)
+- Créer un **service account** (Google Cloud → IAM) avec accès Play Console → télécharger la clé JSON
+  → la référencer dans `eas.json` `submit.production.android.serviceAccountKeyPath`
 
-### Configuration Android Studio
-1. Ouvrir le projet : `npx cap open android`
-2. `app/build.gradle` :
-   - `applicationId = "com.cleanux.app"`
-   - `versionCode = 1`
-   - `versionName = "1.0.0"`
-3. Génère keystore signé :
-   ```bash
-   keytool -genkey -v -keystore cleanux-release.jks -alias cleanux -keyalg RSA -keysize 2048 -validity 10000
-   ```
-4. Configure signing dans `app/build.gradle` :
-   ```gradle
-   signingConfigs {
-       release {
-           storeFile file('cleanux-release.jks')
-           storePassword '...'
-           keyAlias 'cleanux'
-           keyPassword '...'
-       }
-   }
-   ```
-
-### Build
+### Build & Submit (EAS, pas Android Studio)
+Pas de `keytool` ni de `app/build.gradle` à éditer : EAS gère le keystore.
 ```bash
-cd android
-./gradlew bundleRelease
+cd mobile/client   # puis mobile/provider
+eas build --platform android --profile production   # produit le .aab signé
+eas submit --platform android --profile production   # upload sur le track "internal" (eas.json)
 ```
-Le bundle `.aab` est dans `app/build/outputs/bundle/release/`.
+`applicationId`, `versionCode`, `versionName` viennent de `app.json` (`expo.android.package`, `version`,
+`autoIncrement`). Le `.aab` n'a pas besoin d'être manipulé localement.
 
-### Play Console setup
-1. Créer l'app dans Console
-2. Renseigner :
-   - Privacy policy URL
-   - App category : Lifestyle / Productivity
-   - Contact email
-   - Data safety form (équivalent Privacy Nutrition)
-3. Releases :
-   - **Internal testing** track first (jusqu'à 100 testeurs)
-   - **Closed alpha** track (testeurs invités)
-   - **Production** rollout 1% → 10% → 50% → 100%
+### Play Console setup (par app)
+1. Renseigner : Privacy policy URL, catégorie (Lifestyle / Productivity), contact email,
+   **Data safety form** (équivalent Privacy Nutrition)
+2. Releases / tracks :
+   - **Internal testing** (jusqu'à 100 testeurs) — cible de `eas submit` (`track: internal`)
+   - **Closed testing** (alpha/beta, testeurs invités)
+   - **Production** rollout staged 1% → 10% → 50% → 100%
 
-### Submission
-1. Upload `.aab` dans Internal testing
-2. Test sur device réel via lien d'invitation
-3. Promote vers Closed alpha (testeurs externes)
-4. Promote vers Production rollout staged
+### Promotion
+Promouvoir le build d'Internal → Closed → Production se fait dans la Play Console (ou
+`eas submit --profile production` en changeant le `track`).
 
 ## 3. Push notifications
 
+Le module **Push v2** du backend Laravel envoie directement via APNs/FCM (pas le service Expo Push) ;
+côté app on récupère le **device token natif** (`expo-notifications` → `getDevicePushTokenAsync`).
+
 ### APNs (iOS)
-1. Apple Developer Portal → Certificates → Create APNs Auth Key (.p8)
-2. Stocker `.p8` dans serveur Laravel + setup `APNS_KEY_PATH`, `APNS_TEAM_ID`, `APNS_KEY_ID` dans `.env`
-3. Push v2 module utilise déjà ApnsPushProvider
+1. Apple Developer Portal → Keys → créer une **APNs Auth Key (.p8)**
+2. Côté serveur Laravel : `.p8` + `APNS_KEY_PATH`, `APNS_TEAM_ID`, `APNS_KEY_ID` dans `.env`
+   (le module Push v2 utilise `ApnsPushProvider`)
+3. L'entitlement push de l'app est posé par `expo-notifications` + `eas credentials`
 
 ### FCM (Android)
-1. Firebase Console → Add Android app `com.cleanux.app`
-2. Download `google-services.json` → place dans `android/app/`
-3. Récupère Server Key + Credentials JSON
-4. Setup `FCM_CREDENTIALS_PATH` + `FCM_PROJECT_ID` dans `.env`
+1. Firebase Console → ajouter une app Android par package (`com.cleanux.client`, `com.cleanux.provider`)
+2. Télécharger `google-services.json` → le référencer dans `app.json`
+   (`expo.android.googleServicesFile = "./google-services.json"`)
+3. Côté serveur : `FCM_CREDENTIALS_PATH` + `FCM_PROJECT_ID` dans `.env`
 
-## 4. Deep linking
+## 4. Deep linking (app.json + .well-known servis par Laravel)
 
 ### iOS Universal Links
-1. Apple Developer → App ID → Activate Associated Domains
-2. Server-side: créer `https://app.cleanux.com/.well-known/apple-app-site-association` :
+1. Apple Developer → App ID → activer **Associated Domains**
+2. `app.json` : `expo.ios.associatedDomains = ["applinks:app.cleanux.com"]`
+3. Server-side (Laravel) : servir `https://app.cleanux.com/.well-known/apple-app-site-association` :
    ```json
    {
      "applinks": {
        "apps": [],
-       "details": [{ "appID": "TEAMID.com.cleanux.app", "paths": ["*"] }]
+       "details": [
+         { "appID": "TEAMID.com.cleanux.client", "paths": ["*"] },
+         { "appID": "TEAMID.com.cleanux.provider", "paths": ["*"] }
+       ]
      }
    }
    ```
-3. Dans Xcode → Signing & Capabilities → Add Associated Domains : `applinks:app.cleanux.com`
 
 ### Android App Links
-1. `android/app/src/main/AndroidManifest.xml` :
-   ```xml
-   <intent-filter android:autoVerify="true">
-     <action android:name="android.intent.action.VIEW" />
-     <category android:name="android.intent.category.DEFAULT" />
-     <category android:name="android.intent.category.BROWSABLE" />
-     <data android:scheme="https" android:host="app.cleanux.com" />
-   </intent-filter>
-   ```
-2. Server-side: `https://app.cleanux.com/.well-known/assetlinks.json`
+1. `app.json` : `expo.android.intentFilters` avec `autoVerify: true`, scheme `https`,
+   host `app.cleanux.com`
+2. Server-side : servir `https://app.cleanux.com/.well-known/assetlinks.json` (un objet par package +
+   l'empreinte SHA-256 du certificat de signature, récupérable via `eas credentials`)
 
 ## 5. Monitoring crash mobile
 
-- **Sentry React Native SDK** pour crashes JS (Capacitor webview)
-- **Firebase Crashlytics** : iOS/Android natifs
-- Setup dans `resources/js/capacitor/index.js`
+- **Sentry React Native** (`@sentry/react-native`) — crashs JS **et** natifs (pas un webview).
+  Init dans `mobile/shared/src/sentry`. Upload des sourcemaps au build via le plugin Sentry / un hook EAS.
+- DSN par environnement (`APP_ENV` propagé via les profils `eas.json`).
+- Crashlytics optionnel si besoin de stack natives plus fines.
 
-## 6. Coûts opérationnels annuels
+## 6. EAS Update (OTA) — hotfix sans review store
+
+Pour un correctif **JS/assets uniquement** (pas de changement natif : pas de nouvelle lib native, pas de
+permission, pas de bump de version native) :
+```bash
+cd mobile/client   # ou mobile/provider
+eas update --branch production --message "hotfix: ..."
+```
+Les utilisateurs reçoivent la mise à jour au prochain lancement, **sans repasser par App Review / Play
+Review**. Un changement natif (nouvelle dépendance native, permission, SDK Expo) impose un **nouveau
+build + resubmit** (§1/§2).
+
+## 7. Coûts opérationnels annuels
 
 | Item | Coût |
 |------|------|
 | Apple Developer | 99 €/an |
 | Google Play (one-shot) | 25 € |
 | FCM | Gratuit jusqu'à 100M push/mois |
-| APNs | Gratuit (via FCM proxy) |
-| Capacitor Cloud Build (optionnel) | 35-100 €/mois |
+| APNs | Gratuit |
+| **EAS Build/Submit/Update** | Plan gratuit (builds limités/file d'attente) ou **Production ~99 $/mois** (builds prioritaires, plus de concurrence) ; facturable à l'usage |
 | Sentry Team plan | 26 €/mois (10K events) |
 
-## 7. Planning recommandé
+## 8. Planning recommandé
 
 | Semaine | Action |
 |---------|--------|
-| S1 | Setup Apple/Google accounts + DUNS |
-| S2 | Capacitor wrap iOS + Android local builds |
-| S3 | Tests device réel + push APNs/FCM |
-| S4 | Deep linking + assets stores |
-| S5 | Submission Apple TestFlight + Play Internal track |
-| S6 | Closed alpha (testeurs invités) |
-| S7 | Soumission review (Apple ~24-72h, Google ~2h) |
-| S8 | Production rollout staged 1% → 100% |
+| S1 | Setup comptes Apple/Google + DUNS + service account Play + APNs key |
+| S2 | `eas build --profile production` (client + provider) — credentials EAS-managed |
+| S3 | Tests device réel (TestFlight + Play Internal) + push APNs/FCM (device tokens) |
+| S4 | Deep linking (`.well-known` Laravel + `app.json`) + assets/screenshots stores |
+| S5 | `eas submit` → TestFlight beta + Play Internal track (× 2 apps) |
+| S6 | Closed testing (testeurs invités) |
+| S7 | Submit for Review (Apple ~24-72h, Google ~quelques heures) |
+| S8 | Production rollout staged 1% → 100% + canal `eas update` production prêt pour les hotfix |
