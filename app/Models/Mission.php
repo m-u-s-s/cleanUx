@@ -56,6 +56,11 @@ class Mission extends Model
         'last_eta_seconds',
         'last_eta_source',
         'last_eta_calculated_at',
+
+        // SP4 — contract & SLA
+        'organization_contract_id',
+        'sla_response_due_at',
+        'sla_resolution_due_at',
     ];
 
     protected $casts = [
@@ -74,6 +79,8 @@ class Mission extends Model
         'destination_lng' => 'decimal:7',
         'client_final_validated_at' => 'datetime',
         'quality_summary' => 'array',
+        'sla_response_due_at' => 'datetime',
+        'sla_resolution_due_at' => 'datetime',
     ];
 
     public function rendezVous(): BelongsTo
@@ -100,6 +107,12 @@ class Mission extends Model
     public function organizationAccount(): BelongsTo
     {
         return $this->belongsTo(OrganizationAccount::class);
+    }
+
+    /** @return BelongsTo<OrganizationContract, $this> */
+    public function organizationContract(): BelongsTo
+    {
+        return $this->belongsTo(OrganizationContract::class, 'organization_contract_id');
     }
 
     /**

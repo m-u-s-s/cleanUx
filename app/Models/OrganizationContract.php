@@ -13,6 +13,7 @@ class OrganizationContract extends Model
 
     protected $fillable = [
         'organization_account_id',
+        'provider_organization_id',
         'country_id',
         'service_zone_id',
         'default_field_team_id',
@@ -50,6 +51,18 @@ class OrganizationContract extends Model
     public function organizationAccount(): BelongsTo
     {
         return $this->belongsTo(OrganizationAccount::class);
+    }
+
+    /** @return BelongsTo<OrganizationAccount, $this> */
+    public function providerOrganization(): BelongsTo
+    {
+        return $this->belongsTo(OrganizationAccount::class, 'provider_organization_id');
+    }
+
+    /** @return HasMany<ContractRateCard> */
+    public function rateCards(): HasMany
+    {
+        return $this->hasMany(ContractRateCard::class);
     }
 
     public function country(): BelongsTo

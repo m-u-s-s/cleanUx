@@ -61,6 +61,7 @@ class Booking extends Model
         'organization_account_id',
         'organization_site_id',
         'organization_account_id',
+        'organization_contract_id',
 
         // Service / zone
         'service_catalog_id',
@@ -356,6 +357,12 @@ class Booking extends Model
     public function assignedProviderOrganization(): BelongsTo
     {
         return $this->belongsTo(OrganizationAccount::class, 'assigned_provider_organization_id');
+    }
+
+    /** @return BelongsTo<OrganizationContract, $this> */
+    public function organizationContract(): BelongsTo
+    {
+        return $this->belongsTo(OrganizationContract::class, 'organization_contract_id');
     }
 
     public function organizationSite(): BelongsTo
