@@ -5,6 +5,7 @@ namespace App\Console\Commands;
 use App\Models\Booking;
 use App\Models\Mission;
 use App\Models\RecurringBookingSeries;
+use App\Services\Contracts\ContractSlaService;
 use App\Services\Dispatch\MissionDispatchService;
 use Carbon\Carbon;
 use Illuminate\Console\Command;
@@ -133,7 +134,7 @@ class ProcessRecurringBookings extends Command
             $plannedStart = $booking->scheduled_date.' '.$booking->scheduled_time;
         }
 
-        return Mission::create([
+        $mission = Mission::create([
             'booking_id' => $booking->id,
             'status' => 'planned',
             'planned_start_at' => $plannedStart,
@@ -145,6 +146,14 @@ class ProcessRecurringBookings extends Command
             'provider_team_id' => $booking->provider_team_id,
             'organization_account_id' => $booking->customer_organization_id,
         ]);
+
+        // SP4 — propage le contrat du booking à la mission + arme le SLA (soft).
+        if ($booking->organization_contract_id) {
+            $mission->forceFill(['organization_contract_id' => $booking->organization_contract_id])->save();
+            app(ContractSlaService::class)->armForMission($mission);
+        }
+
+        return $mission;
     }
 
     private function advanceNextOccurrence(RecurringBookingSeries $series): void

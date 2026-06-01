@@ -6,6 +6,7 @@ use App\Models\Booking;
 use App\Models\Mission;
 use App\Models\User;
 use App\Services\Contracts\ContractBookingHook;
+use App\Services\Contracts\ContractSlaService;
 use App\Services\Enterprise\EnterpriseBookingApprovalService;
 use Carbon\Carbon;
 use Illuminate\Support\Arr;
@@ -131,6 +132,12 @@ final class CreateBookingFromApiAction
             'provider_team_id' => $booking->provider_team_id,
             'organization_account_id' => $booking->customer_organization_id,
         ]);
+
+        // SP4 — propage le contrat du booking à la mission + arme le SLA (soft).
+        if ($booking->organization_contract_id) {
+            $mission->forceFill(['organization_contract_id' => $booking->organization_contract_id])->save();
+            app(ContractSlaService::class)->armForMission($mission);
+        }
 
         $dispatchClass = '\App\Services\Dispatch\MissionDispatchService';
         if (! class_exists($dispatchClass)) {

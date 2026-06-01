@@ -38,6 +38,9 @@ class Kernel extends ConsoleKernel
         $schedule->command('accounting:close-previous-month')->monthlyOn(6, '04:00')->withoutOverlapping();
         $schedule->command('fleet:scan-expiring')->dailyAt('05:00')->withoutOverlapping();
 
+        // SP4 — contract SLA monitor (mark met / breached + escalate once)
+        $schedule->command('contract:scan-sla')->everyFifteenMinutes()->withoutOverlapping();
+
         // Recurring bookings — create and dispatch daily due occurrences
         $schedule->command('bookings:process-recurring')->dailyAt('06:30')->withoutOverlapping();
 
