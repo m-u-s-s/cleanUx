@@ -3,10 +3,12 @@
 namespace App\Services\PricingV2;
 
 use App\Models\AbPricingExperiment;
+use App\Models\OrganizationContract;
 use App\Models\PriceQuote;
 use App\Models\PricingRule;
 use App\Models\ServiceCatalogV2;
 use App\Models\User;
+use App\Services\Contracts\ContractPricingResolver;
 use App\Support\ActivityLogger;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Config;
@@ -59,6 +61,11 @@ class PricingEngine
             throw ValidationException::withMessages(['service_code' => "Service '{$serviceCode}' introuvable ou inactif."]);
         }
 
+        // SP4 — capture contract context from the ORIGINAL variables, BEFORE
+        // sanitizeVariables() strips unknown keys via the whitelist.
+        $contractId = $variables['__contract_id'] ?? null;
+        $contractServiceCatalogId = $variables['__service_catalog_id'] ?? null;
+
         $variables = $this->sanitizeVariables($variables);
         $variant = $this->assignVariant($service, $user);
 
@@ -90,6 +97,28 @@ class PricingEngine
         }
 
         $currentPrice = $this->clamp($currentPrice, $service);
+
+        // SP4 — adjustment contrat-scopé prioritaire (grille → remise), tracé.
+        // Lu depuis les variables ORIGINALES (cf. capture avant sanitize).
+        if ($contractId) {
+            $contract = OrganizationContract::find((int) $contractId);
+            if ($contract) {
+                $serviceCatalogId = $contractServiceCatalogId !== null ? (int) $contractServiceCatalogId : null;
+                $before = $currentPrice;
+                $res = app(ContractPricingResolver::class)
+                    ->resolveCents($contract, $serviceCatalogId, $currentPrice);
+                if ($res['label'] !== null) {
+                    $currentPrice = $res['price_cents'];
+                    $appliedRules[] = [
+                        'code' => $res['label'],
+                        'priority' => -1, // prioritaire / dernier mot contractuel
+                        'price_before_cents' => $before,
+                        'price_after_cents' => $currentPrice,
+                        'delta_cents' => $currentPrice - $before,
+                    ];
+                }
+            }
+        }
 
         $row = PriceQuote::create([
             'service_code' => $service->code,
