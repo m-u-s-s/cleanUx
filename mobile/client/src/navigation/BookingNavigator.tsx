@@ -6,6 +6,7 @@ import { BookingStep2Details } from '@/screens/booking/BookingStep2Details';
 import { BookingStep3Coordinates } from '@/screens/booking/BookingStep3Coordinates';
 import { BookingStep4Scheduling } from '@/screens/booking/BookingStep4Scheduling';
 import { BookingStepProvider } from '@/screens/booking/BookingStepProvider';
+import { BookingProviderSearchScreen } from '@/screens/booking/BookingProviderSearchScreen';
 import { BookingStep5Confirmation } from '@/screens/booking/BookingStep5Confirmation';
 import { colors } from '@/theme';
 import type { BookingStackParamList } from './types';
@@ -45,6 +46,11 @@ export function BookingNavigator() {
           name="BookingStepProvider"
           component={BookingStepProvider}
           options={{ title: 'Étape 5/6' }}
+        />
+        <Stack.Screen
+          name="BookingProviderSearch"
+          component={BookingProviderSearchScreen}
+          options={{ title: 'Choisir un prestataire' }}
         />
         <Stack.Screen
           name="BookingStep5"

@@ -40,6 +40,8 @@ export type BookingStackParamList = {
   BookingStep4: undefined;
   // SP2 — provider selection (type + favourites + premium pick)
   BookingStepProvider: undefined;
+  // SP2 palier 3 — premium provider search (selection mode returns the pick to the wizard)
+  BookingProviderSearch: undefined;
   BookingStep5: undefined;
 };
 

@@ -1,6 +1,5 @@
 import React from 'react';
 import { View, Text, Pressable, StyleSheet } from 'react-native';
-import { CommonActions } from '@react-navigation/native';
 import { Screen, Button, ProgressBar } from '@/ui';
 import { useAuth } from '@/auth';
 import { useBooking, useBookingFavorites } from '@/booking';
@@ -49,11 +48,11 @@ export function BookingStepProvider({ navigation }: Props) {
   };
 
   const openProviderBrowse = () => {
-    // Parity with web: link to the provider browse experience (Explore tab).
-    // The wizard draft is persisted, so the in-progress booking is recoverable.
-    navigation.getParent()?.dispatch(
-      CommonActions.navigate({ name: 'MainTabs' }),
-    );
+    // SP2 palier 3 — open the in-stack provider search in SELECTION mode.
+    // It shares this wizard's BookingProvider context, so tapping "Choisir"
+    // there dispatches SET_PREFERRED_PROVIDER and goes back: the pick lands
+    // straight in state.preferredProviderUserId (pinned card below).
+    navigation.navigate('BookingProviderSearch');
   };
 
   return (
