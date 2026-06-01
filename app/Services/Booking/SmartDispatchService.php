@@ -86,6 +86,16 @@ class SmartDispatchService
             return null;
         }
 
+        if ($rdv->preferred_provider_user_id) {
+            $pref = app(PreferredProviderResolver::class)->resolve($rdv);
+            if ($pref['status'] === 'assigned') {
+                return $pref['provider'];
+            }
+            if ($pref['status'] === 'unavailable') {
+                return null; // l'UI proposera les créneaux de X / le repli "pressé"
+            }
+        }
+
         $duration = (int) ($rdv->duree_estimee ?: $rdv->duree ?: 90);
 
         $providerType = $rdv->provider_type_preference ?: 'any';
