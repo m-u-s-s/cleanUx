@@ -20,6 +20,13 @@ class AuthMeController extends Controller
 {
     public function __invoke(Request $request): JsonResponse
     {
-        return response()->json($request->user());
+        $user = $request->user();
+
+        // SP2 — expose le flag premium pour piloter la sélection prestataire côté
+        // mobile (parité web). Sérialisé par-dessus l'utilisateur sans le muter.
+        $payload = $user->toArray();
+        $payload['is_premium'] = $user->customerProfile?->isPremium() ?? false;
+
+        return response()->json($payload);
     }
 }

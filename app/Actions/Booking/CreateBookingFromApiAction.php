@@ -56,6 +56,11 @@ final class CreateBookingFromApiAction
             'asap_deadline_at' => $isAsap ? $now->copy()->addHours(2) : null,
             // Trade-specific dynamic form answers (Phase multi-trade booking flow)
             'trade_form_answers' => ! empty($data['trade_form_answers']) ? $data['trade_form_answers'] : null,
+            // SP2 client selection (parité web) : type prestataire souhaité + presta
+            // nominatif. Le gating premium a déjà été appliqué par le contrôleur via
+            // ProviderSelectionResolver. Le matching (AiDispatchService) honore le type.
+            'provider_type_preference' => $data['provider_type_preference'] ?? 'any',
+            'preferred_provider_user_id' => $data['preferred_provider_user_id'] ?? null,
         ]);
 
         if ($isAsap) {

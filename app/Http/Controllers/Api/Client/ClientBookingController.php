@@ -8,6 +8,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\Client\IndexBookingRequest;
 use App\Http\Requests\Api\Client\StoreBookingRequest;
 use App\Models\Booking;
+use App\Services\Booking\ProviderSelectionResolver;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -148,7 +149,24 @@ class ClientBookingController extends Controller
      */
     public function store(StoreBookingRequest $request, CreateBookingFromApiAction $action): JsonResponse
     {
-        $booking = $action->execute($request->user(), $request->validated());
+        // SP2 — gating premium + normalisation de la sélection prestataire AVANT
+        // la création. Le resolver lève AuthorizationException (→ 403 via le handler
+        // API) si un client non-premium tente d'imposer un nouveau prestataire non
+        // favori. C'est la frontière de sécurité côté API.
+        $selection = app(ProviderSelectionResolver::class)->resolve(
+            $request->user(),
+            [
+                'provider_type_preference' => $request->input('provider_type_preference', 'any'),
+                'preferred_provider_user_id' => $request->input('preferred_provider_user_id'),
+            ],
+        );
+
+        $data = array_merge($request->validated(), [
+            'provider_type_preference' => $selection['provider_type_preference'],
+            'preferred_provider_user_id' => $selection['preferred_provider_user_id'],
+        ]);
+
+        $booking = $action->execute($request->user(), $data);
 
         return response()->json([
             'ok' => true,

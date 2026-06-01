@@ -32,6 +32,11 @@ class StoreBookingRequest extends FormRequest
             'contact_phone' => ['nullable', 'string', 'max:30'],
             'destination_lat' => ['nullable', 'numeric', 'between:-90,90'],
             'destination_lng' => ['nullable', 'numeric', 'between:-180,180'],
+            // SP2 client selection (parité web) : type de prestataire souhaité +
+            // prestataire nominatif. Le gating premium est appliqué côté contrôleur
+            // via ProviderSelectionResolver (frontière sécurité).
+            'provider_type_preference' => ['nullable', 'in:independent,company,any'],
+            'preferred_provider_user_id' => ['nullable', 'integer', 'exists:users,id'],
             // Answers from the trade-specific dynamic form (Trade.booking_form_schema).
             // Stored in Booking.trade_form_answers (JSON column).
             'trade_form_answers' => ['nullable', 'array'],

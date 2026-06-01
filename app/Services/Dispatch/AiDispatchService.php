@@ -41,7 +41,10 @@ class AiDispatchService
             try {
                 $scorer = app(MatchingScorer::class);
                 $candidates = $this->availability
-                    ->sortedEligibleEmployeesForZone((int) ($rdv->service_zone_id ?? 0));
+                    ->sortedEligibleEmployeesForZone(
+                        (int) ($rdv->service_zone_id ?? 0),
+                        $rdv->provider_type_preference ?: 'any'
+                    );
                 $candidates = $this->applyTradeFilter($candidates, $rdv);
                 if ($candidates->isNotEmpty()) {
                     $ranked = $scorer->scoreProviders($rdv, $candidates);
@@ -93,8 +96,12 @@ class AiDispatchService
 
         $duration = (int) ($rdv->duree_estimee ?: $rdv->duree ?: 90);
 
+        // SP2 — honore la préférence de type prestataire choisie par le client
+        // (parité web/SmartDispatch). Défaut 'any' → comportement inchangé.
+        $providerType = $rdv->provider_type_preference ?: 'any';
+
         $candidates = $this->availability
-            ->sortedEligibleEmployeesForZone((int) $rdv->service_zone_id)
+            ->sortedEligibleEmployeesForZone((int) $rdv->service_zone_id, $providerType)
             ->filter(function (User $employee) use ($rdv) {
 
                 if ($rdv->booking_mode === 'asap') {
