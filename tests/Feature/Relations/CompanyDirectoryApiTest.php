@@ -132,12 +132,74 @@ class CompanyDirectoryApiTest extends TestCase
             ->assertUnauthorized();
     }
 
-    public function test_requires_service_zone_id(): void
+    public function test_requires_zone_or_postal_code(): void
     {
         Sanctum::actingAs(User::factory()->create(['role' => User::ROLE_CLIENT, 'is_active' => true]));
 
+        // Ni service_zone_id ni postal_code → 422 (les deux sont required_without l'autre).
         $this->getJson('/api/client/companies')
             ->assertUnprocessable()
-            ->assertJsonValidationErrors(['service_zone_id']);
+            ->assertJsonValidationErrors(['service_zone_id', 'postal_code']);
+    }
+
+    public function test_resolves_zone_from_postal_code_same_companies_as_zone_id(): void
+    {
+        $tradeWanted = Trade::factory()->create();
+
+        // Le fixture lie le code postal '1000' à la zone via postalCodes().
+        $context = $this->createCoverageContext([
+            'postal_code' => '1000',
+            'service' => ['trade_id' => $tradeWanted->id],
+        ]);
+        $zoneId = $context['zone']->id;
+        $catalog = $context['service'];
+        $date = now()->addDays(3)->toDateString();
+
+        $orgA = OrganizationAccount::factory()->create([
+            'type' => OrganizationType::PROVIDER_COMPANY->value,
+            'rating_avg' => 4.8,
+            'rating_count' => 12,
+            'name' => 'Alpha Clean',
+        ]);
+        $orgB = OrganizationAccount::factory()->create([
+            'type' => OrganizationType::PROVIDER_COMPANY->value,
+            'rating_avg' => 4.2,
+            'rating_count' => 5,
+            'name' => 'Beta Services',
+        ]);
+
+        $this->companyWorker($zoneId, $orgA->id, $tradeWanted->id, $date);
+        $this->companyWorker($zoneId, $orgB->id, $tradeWanted->id, $date);
+
+        $client = User::factory()->create(['role' => User::ROLE_CLIENT, 'is_active' => true]);
+        Sanctum::actingAs($client);
+
+        // Via service_zone_id (chemin web inchangé).
+        $byZone = $this->getJson(
+            "/api/client/companies?service_catalog_id={$catalog->id}&service_zone_id={$zoneId}"
+        )->assertOk()->json('data');
+
+        // Via postal_code (chemin wizard mobile) → mêmes sociétés, même tri.
+        $byPostal = $this->getJson(
+            "/api/client/companies?service_catalog_id={$catalog->id}&postal_code=1000"
+        )->assertOk()->json('data');
+
+        $this->assertSame(
+            collect($byZone)->pluck('id')->all(),
+            collect($byPostal)->pluck('id')->all(),
+        );
+        $this->assertSame([$orgA->id, $orgB->id], collect($byPostal)->pluck('id')->all());
+    }
+
+    public function test_postal_code_not_covered_returns_422(): void
+    {
+        // Crée une zone pour '1000' mais interroge un postal non couvert.
+        $this->createCoverageContext(['postal_code' => '1000']);
+
+        Sanctum::actingAs(User::factory()->create(['role' => User::ROLE_CLIENT, 'is_active' => true]));
+
+        $this->getJson('/api/client/companies?postal_code=99999')
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors(['postal_code']);
     }
 }

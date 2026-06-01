@@ -6,28 +6,39 @@ use App\Http\Controllers\Controller;
 use App\Models\OrganizationAccount;
 use App\Models\ServiceCatalog;
 use App\Services\Booking\EligibleCompaniesResolver;
+use App\Services\Booking\ZoneCoverageService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 
 /**
  * SP3 Task 7 — GET /api/client/companies
  *
  * Liste les SOCIÉTÉS prestataires éligibles pour un métier (déduit de
- * service_catalog_id) + une zone (service_zone_id), triées par note décroissante,
- * pour le browse mobile + web. L'éligibilité est entièrement déléguée à
- * EligibleCompaniesResolver (SP3 Task 3) — pas de réinvention ici.
+ * service_catalog_id) + une zone, triées par note décroissante, pour le browse
+ * mobile + web. L'éligibilité est entièrement déléguée à EligibleCompaniesResolver
+ * (SP3 Task 3) — pas de réinvention ici.
+ *
+ * La zone peut être fournie directement (service_zone_id, chemin web inchangé) OU
+ * résolue depuis un code postal (postal_code) — exactement comme la création de
+ * booking (ClientBookingController). Le wizard mobile porte déjà le code postal
+ * dans son state, donc l'utilisateur n'a JAMAIS à saisir un id de zone technique.
  */
 class CompanyDirectoryController extends Controller
 {
-    public function __invoke(Request $request, EligibleCompaniesResolver $resolver): JsonResponse
+    public function __invoke(Request $request, EligibleCompaniesResolver $resolver, ZoneCoverageService $coverage): JsonResponse
     {
         $validated = $request->validate([
-            'service_zone_id' => ['required', 'integer'],
+            'service_zone_id' => ['required_without:postal_code', 'integer'],
+            'postal_code' => ['required_without:service_zone_id', 'string'],
+            'city' => ['nullable', 'string'],
             'service_catalog_id' => ['nullable', 'integer'],
         ]);
 
-        $zoneId = (int) $validated['service_zone_id'];
+        $zoneId = ! empty($validated['service_zone_id'])
+            ? (int) $validated['service_zone_id']
+            : $this->resolveZoneIdFromPostal($coverage, $validated['postal_code'], $validated['city'] ?? null);
 
         $tradeId = null;
         if (! empty($validated['service_catalog_id'])) {
@@ -48,6 +59,27 @@ class CompanyDirectoryController extends Controller
         ])->values();
 
         return response()->json(['data' => $rows]);
+    }
+
+    /**
+     * Résout une service_zone_id depuis un code postal (+ ville optionnelle), via
+     * EXACTEMENT le service de couverture utilisé par la création de booking
+     * (ClientBookingController::resolveServiceZoneId). Pas de 2e logique divergente.
+     *
+     * @throws ValidationException si le code postal ne résout aucune zone couverte.
+     */
+    private function resolveZoneIdFromPostal(ZoneCoverageService $coverage, string $postalCode, ?string $city): int
+    {
+        $postal = $coverage->resolvePostalCode($postalCode, $city);
+        $zoneId = $postal ? $coverage->resolveServiceZone($postal)?->id : null;
+
+        if (! $zoneId) {
+            throw ValidationException::withMessages([
+                'postal_code' => ["Ce code postal n'est couvert par aucune zone de service."],
+            ]);
+        }
+
+        return (int) $zoneId;
     }
 
     /**
