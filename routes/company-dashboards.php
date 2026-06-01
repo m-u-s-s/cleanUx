@@ -4,6 +4,7 @@ use App\Livewire\ClientCompany\BillingCenter;
 use App\Livewire\ClientCompany\BookingHub;
 use App\Livewire\ClientCompany\BulkBookingImporter;
 use App\Livewire\ClientCompany\ClientCompanyDashboard;
+use App\Livewire\ClientCompany\ClientContractsCenter;
 use App\Livewire\ClientCompany\MembersAccess;
 use App\Livewire\ClientCompany\SiteManager;
 use App\Livewire\ProviderCompany\DispatchCenter;
@@ -28,6 +29,7 @@ Route::middleware(['auth', 'verified', 'active.account'])
         Route::get('/reservations', BookingHub::class)->name('bookings.index');
         Route::get('/reservations/nouveau', BookingHub::class)->name('bookings.create');
         Route::get('/membres', MembersAccess::class)->name('members');
+        Route::get('/contrats', ClientContractsCenter::class)->name('contracts');
         Route::get('/facturation', BillingCenter::class)->name('billing');
 
         if (class_exists(BulkBookingImporter::class)) {

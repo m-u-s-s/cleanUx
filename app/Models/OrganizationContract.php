@@ -65,6 +65,12 @@ class OrganizationContract extends Model
         return $this->hasMany(ContractRateCard::class);
     }
 
+    /** @return HasMany<ContractSlaEvent> */
+    public function slaEvents(): HasMany
+    {
+        return $this->hasMany(ContractSlaEvent::class, 'organization_contract_id');
+    }
+
     public function country(): BelongsTo
     {
         return $this->belongsTo(Country::class);
