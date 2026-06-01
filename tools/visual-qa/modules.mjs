@@ -31,13 +31,17 @@ export function credKeyForRoles(roles = []) {
 // Pages qui exigent MySQL (500 sous SQLite harness) — hors périmètre headless.
 // (Source : docs/runbooks/EMBED-VISUAL-QA.md, section "deferred".)
 export const DEFERRED_KEYS = new Set([
-  'dashboard-client-analytics',
-  'dashboard-entreprise-client',
-  'dashboard-entreprise-client-membres',
-  'dashboard-entreprise-client-facturation',
-  'dashboard-entreprise-prestataire-canaux',
-  'dashboard-entreprise-prestataire-dispatch',
-  'dashboard-entreprise-prestataire-equipe',
+  // ── Un-deferred 2026-06-01 (SP4 migrations on MySQL dev DB + org context on the
+  //    QA accounts): these render 200 + PASS the 5 mobile criteria at 390px and are
+  //    now covered by the harness:
+  //      dashboard-entreprise-client, dashboard-entreprise-client-membres,
+  //      dashboard-entreprise-client-facturation, dashboard-entreprise-prestataire-canaux,
+  //      dashboard-entreprise-prestataire-dispatch
+  //
+  // ── Still deferred — NOT a schema/500 issue (both render HTTP 200) but a real
+  //    responsive-layout defect to fix in the Lot-1 visual pass, out of scope here:
+  'dashboard-client-analytics', // C2: a control < tap-target min (67×16 div) on the client analytics dashboard
+  'dashboard-entreprise-prestataire-equipe', // C3+C4: TeamManagement table overflows the 390px viewport (right:636) and clips text
   // Doublon : /admin/users est un alias 302 → /admin/utilisateurs (routes/admin.php).
   // Le redirect perd le query `?embed=1`, donc la cible rend HORS embed (nav chrome
   // présent → C5 faux échec). La VRAIE page est 'admin-utilisateurs' (déjà couverte).
