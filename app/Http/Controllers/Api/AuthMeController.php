@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\CustomerProfile;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -25,7 +26,8 @@ class AuthMeController extends Controller
         // SP2 — expose le flag premium pour piloter la sélection prestataire côté
         // mobile (parité web). Sérialisé par-dessus l'utilisateur sans le muter.
         $payload = $user->toArray();
-        $payload['is_premium'] = $user->customerProfile?->isPremium() ?? false;
+        $profile = $user->customerProfile;
+        $payload['is_premium'] = $profile instanceof CustomerProfile && $profile->isPremium();
 
         return response()->json($payload);
     }

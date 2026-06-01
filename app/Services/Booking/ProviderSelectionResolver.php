@@ -3,6 +3,7 @@
 namespace App\Services\Booking;
 
 use App\Models\BookingFavorite;
+use App\Models\CustomerProfile;
 use App\Models\User;
 use Illuminate\Auth\Access\AuthorizationException;
 
@@ -39,7 +40,9 @@ class ProviderSelectionResolver
             ->where('preferred_provider_user_id', $preferredId)
             ->exists();
 
-        if (! $isFavorite && ! ($client->customerProfile?->isPremium() ?? false)) {
+        $profile = $client->customerProfile;
+        $isPremium = $profile instanceof CustomerProfile && $profile->isPremium();
+        if (! $isFavorite && ! $isPremium) {
             throw new AuthorizationException('Le choix d’un nouveau prestataire est réservé au pack Premium.');
         }
 

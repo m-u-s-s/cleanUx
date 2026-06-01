@@ -5,6 +5,7 @@ namespace App\Livewire\Client;
 use App\Actions\Booking\CreateRecurringSeriesAction;
 use App\Models\Booking;
 use App\Models\BookingFavorite;
+use App\Models\CustomerProfile;
 use App\Models\Trade;
 use App\Services\Booking\AsapBookingService;
 use App\Services\Booking\BookingEstimatorService;
@@ -152,7 +153,11 @@ class PrendreRendezVous extends Component
     /** Ouvre/affiche le panneau de recherche premium (BrowseProviders). */
     public bool $showProviderPicker = false;
 
-    /** Créneaux alternatifs proposés si le presta préféré est indisponible. */
+    /**
+     * Créneaux alternatifs proposés si le presta préféré est indisponible.
+     *
+     * @var list<array{date:string, heure:string}>
+     */
     public array $preferredProviderAlternativeSlots = [];
 
     public ?string $preferredProviderMessage = null;
@@ -370,7 +375,9 @@ class PrendreRendezVous extends Component
      */
     public function canPickPremiumProvider(): bool
     {
-        return (bool) (Auth::user()?->customerProfile?->isPremium() ?? false);
+        $profile = Auth::user()?->customerProfile;
+
+        return $profile instanceof CustomerProfile && $profile->isPremium();
     }
 
     /**
@@ -446,7 +453,7 @@ class PrendreRendezVous extends Component
             ->filter(function (array $slot) use ($timezone, $now) {
                 $at = Carbon::createFromFormat('Y-m-d H:i', $slot['date'].' '.$slot['heure'], $timezone);
 
-                return $at !== false && $at->greaterThanOrEqualTo($now);
+                return $at !== null && $at->greaterThanOrEqualTo($now);
             })
             ->values()
             ->all();

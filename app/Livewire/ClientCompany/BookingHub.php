@@ -246,7 +246,8 @@ class BookingHub extends Component
         $catalog = $resolution->serviceCatalog ?? $catalog;
         $rule = $resolution->zoneServiceRule;
 
-        if (! $postal || ! $zone || ! $catalog || ! $rule) {
+        // $catalog est garanti non-null ici (guard ligne 227 + fallback ligne 246).
+        if (! $postal || ! $zone || ! $rule) {
             $this->addError('selectedSiteId', 'Ce site n’est pas couvert pour ce métier (zone/prix introuvable).');
 
             return;

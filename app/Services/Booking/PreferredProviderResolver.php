@@ -3,6 +3,7 @@
 namespace App\Services\Booking;
 
 use App\Models\Booking;
+use App\Models\ServiceZone;
 use App\Models\User;
 
 class PreferredProviderResolver
@@ -25,11 +26,12 @@ class PreferredProviderResolver
         }
 
         $duration = (int) ($rdv->duree_estimee ?: $rdv->duree ?: 90);
+        $zone = $rdv->serviceZone instanceof ServiceZone ? $rdv->serviceZone : null;
         $available = $this->availability->employeeIsAvailableForSlot(
             $provider->id,
             $rdv->date->format('Y-m-d'),
             substr((string) $rdv->heure, 0, 5),
-            $rdv->serviceZone,
+            $zone,
             $duration,
             $rdv->id,
         );
@@ -49,6 +51,7 @@ class PreferredProviderResolver
     private function alternativeSlots(User $provider, Booking $rdv, int $duration): array
     {
         $slots = [];
+        $zone = $rdv->serviceZone instanceof ServiceZone ? $rdv->serviceZone : null;
         $start = $rdv->date->copy()->startOfDay();
         for ($d = 0; $d < 7 && count($slots) < 5; $d++) {
             $day = $start->copy()->addDays($d);
@@ -57,7 +60,7 @@ class PreferredProviderResolver
                     break;
                 }
                 if ($this->availability->employeeIsAvailableForSlot(
-                    $provider->id, $day->format('Y-m-d'), $heure, $rdv->serviceZone, $duration, $rdv->id
+                    $provider->id, $day->format('Y-m-d'), $heure, $zone, $duration, $rdv->id
                 )) {
                     $slots[] = ['date' => $day->format('Y-m-d'), 'heure' => $heure];
                 }
