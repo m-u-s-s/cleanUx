@@ -100,8 +100,12 @@ class SmartDispatchService
 
         $providerType = $rdv->provider_type_preference ?: 'any';
 
+        // SP3 Task 4 — si le client a choisi une société (assigned_provider_organization_id),
+        // on RESTREINT les candidats aux workers de cette org. null → comportement inchangé.
+        $organizationId = $rdv->assigned_provider_organization_id;
+
         $employees = $this->availabilityService
-            ->sortedEligibleEmployeesForZone((int) $rdv->service_zone_id, $providerType);
+            ->sortedEligibleEmployeesForZone((int) $rdv->service_zone_id, $providerType, $organizationId);
 
         return $employees
             ->filter(fn (User $employee) => $this->availabilityService->employeeIsAvailableForSlot(

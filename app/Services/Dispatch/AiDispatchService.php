@@ -43,7 +43,8 @@ class AiDispatchService
                 $candidates = $this->availability
                     ->sortedEligibleEmployeesForZone(
                         (int) ($rdv->service_zone_id ?? 0),
-                        $rdv->provider_type_preference ?: 'any'
+                        $rdv->provider_type_preference ?: 'any',
+                        $rdv->assigned_provider_organization_id
                     );
                 $candidates = $this->applyTradeFilter($candidates, $rdv);
                 if ($candidates->isNotEmpty()) {
@@ -100,8 +101,12 @@ class AiDispatchService
         // (parité web/SmartDispatch). Défaut 'any' → comportement inchangé.
         $providerType = $rdv->provider_type_preference ?: 'any';
 
+        // SP3 Task 4 — restreint aux workers de la société choisie par le client
+        // (assigned_provider_organization_id). null → comportement inchangé.
+        $organizationId = $rdv->assigned_provider_organization_id;
+
         $candidates = $this->availability
-            ->sortedEligibleEmployeesForZone((int) $rdv->service_zone_id, $providerType)
+            ->sortedEligibleEmployeesForZone((int) $rdv->service_zone_id, $providerType, $organizationId)
             ->filter(function (User $employee) use ($rdv) {
 
                 if ($rdv->booking_mode === 'asap') {
