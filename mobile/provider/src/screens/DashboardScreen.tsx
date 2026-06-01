@@ -40,7 +40,7 @@ export function DashboardScreen() {
         ) : (
           <>
             <KPICard title="Missions en attente" value={pendingCount} tone={pendingCount > 0 ? 'warning' : 'neutral'} />
-            <KPICard title="Solde disponible" value={wallet ? `${wallet.available.toFixed(0)} ${wallet.currency}` : '—'} tone="success" />
+            <KPICard title="Solde disponible" value={wallet && wallet.available != null ? `${wallet.available.toFixed(0)} ${wallet.currency ?? ''}`.trim() : '—'} tone="success" />
           </>
         )}
       </View>

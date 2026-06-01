@@ -55,7 +55,7 @@ export function HomeScreen() {
             />
             <KPICard
               title="Solde disponible"
-              value={wallet ? `${wallet.available.toFixed(0)} ${wallet.currency}` : '—'}
+              value={wallet && wallet.available != null ? `${wallet.available.toFixed(0)} ${wallet.currency ?? ''}`.trim() : '—'}
               tone="success"
             />
           </>
