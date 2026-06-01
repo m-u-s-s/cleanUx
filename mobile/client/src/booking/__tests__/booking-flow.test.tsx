@@ -15,7 +15,7 @@ jest.mock('expo-secure-store', () => ({
 }));
 
 import { apiClient } from '@/api';
-import { useCreateBooking, useBookings, useBookingDetail } from '../hooks';
+import { useCreateBooking, useBookings, useBookingDetail, useEligibleCompanies } from '../hooks';
 import { BookingProvider, useBooking } from '../BookingProvider';
 import type { Booking, BookingAction } from '../types';
 
@@ -137,6 +137,43 @@ describe('useBookingDetail', () => {
     const { result } = renderHook(() => useBookingDetail(null), { wrapper: queryWrapper });
     expect(result.current.fetchStatus).toBe('idle');
     expect(result.current.data).toBeUndefined();
+  });
+});
+
+describe('useEligibleCompanies', () => {
+  it('sends postal_code when only a postal code is provided', async () => {
+    mock.onGet('/client/companies').replyOnce(200, { data: [] });
+
+    const { result } = renderHook(
+      () => useEligibleCompanies({ postalCode: '1000', serviceCatalogId: 7 }),
+      { wrapper: queryWrapper },
+    );
+
+    await waitFor(() => expect(result.current.loading).toBe(false));
+
+    const req = mock.history['get']!.find((r) => r.url === '/client/companies');
+    expect(req).toBeDefined();
+    expect(req!.params).toEqual({ postal_code: '1000', service_catalog_id: 7 });
+  });
+
+  it('prefers service_zone_id over postal_code when both are present', async () => {
+    mock.onGet('/client/companies').replyOnce(200, { data: [] });
+
+    const { result } = renderHook(
+      () => useEligibleCompanies({ serviceZoneId: 3, postalCode: '1000' }),
+      { wrapper: queryWrapper },
+    );
+
+    await waitFor(() => expect(result.current.loading).toBe(false));
+
+    const req = mock.history['get']!.find((r) => r.url === '/client/companies');
+    expect(req!.params).toEqual({ service_zone_id: 3 });
+  });
+
+  it('stays idle (no request) when neither zone id nor postal is provided', () => {
+    const { result } = renderHook(() => useEligibleCompanies({}), { wrapper: queryWrapper });
+    expect(result.current.companies).toEqual([]);
+    expect(mock.history['get']!.filter((r) => r.url === '/client/companies')).toHaveLength(0);
   });
 });
 

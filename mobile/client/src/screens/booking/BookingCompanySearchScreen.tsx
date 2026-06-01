@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { View, FlatList, Text, Pressable, StyleSheet } from 'react-native';
-import { Screen, TextInput, Button, Avatar, Badge, Skeleton, EmptyState } from '@/ui';
+import { Screen, Button, Avatar, Badge, Skeleton, EmptyState } from '@/ui';
 import { useEligibleCompanies, useBooking } from '@/booking';
 import type { EligibleCompany } from '@/booking';
 import { colors, spacing, typography, radius } from '@/theme';
@@ -26,15 +26,20 @@ type Props = NativeStackScreenProps<BookingStackParamList, 'BookingCompanySearch
 export function BookingCompanySearchScreen({ navigation, route }: Props) {
   const { dispatch } = useBooking();
   const serviceZoneId = route.params?.serviceZoneId ?? null;
-  const serviceCatalogId = route.params?.serviceCatalogId;
+  const postalCode = route.params?.postalCode ?? null;
+  const serviceCatalogId = route.params?.serviceCatalogId ?? null;
 
-  // The booking wizard does not yet carry a service zone id in state, so allow
-  // a manual zone id as a fallback to keep the browse usable.
-  const [manualZone, setManualZone] = useState('');
-  const effectiveZoneId =
-    serviceZoneId ?? (manualZone.trim() !== '' ? Number(manualZone.trim()) : null);
+  // The wizard carries the client's postal code (state.coordinates.postalCode),
+  // resolved server-side to a service zone. A technical zone id stays accepted
+  // for back-compat. No manual zone-id entry: if neither is present the address
+  // step upstream is incomplete.
+  const hasContext = serviceZoneId != null || !!postalCode;
 
-  const { companies, loading } = useEligibleCompanies(effectiveZoneId, serviceCatalogId);
+  const { companies, loading } = useEligibleCompanies({
+    serviceZoneId,
+    postalCode,
+    serviceCatalogId,
+  });
 
   const choose = (organizationId: number) => {
     dispatch({ type: 'SET_PREFERRED_COMPANY', assignedProviderOrganizationId: organizationId });
@@ -75,19 +80,13 @@ export function BookingCompanySearchScreen({ navigation, route }: Props) {
         Sélectionnez l'entreprise prestataire qui interviendra.
       </Text>
 
-      {serviceZoneId == null ? (
-        <View style={styles.filters}>
-          <TextInput
-            label="Zone de service"
-            value={manualZone}
-            onChangeText={setManualZone}
-            placeholder="Identifiant de zone"
-            keyboardType="numeric"
-          />
-        </View>
-      ) : null}
-
-      {loading ? (
+      {!hasContext ? (
+        <EmptyState
+          title="Adresse incomplète"
+          message="Complétez votre adresse à l'étape précédente pour voir les sociétés disponibles."
+          icon="location-outline"
+        />
+      ) : loading ? (
         <View style={styles.skeletons}>
           {[1, 2, 3].map((i) => (
             <Skeleton key={i} width="100%" height={80} />
@@ -129,7 +128,6 @@ const styles = StyleSheet.create({
     color: colors.surface[500],
     marginBottom: spacing.md,
   },
-  filters: { gap: spacing.sm, marginBottom: spacing.md },
   skeletons: { gap: spacing.sm },
   list: { gap: spacing.sm, paddingBottom: spacing.xl },
   card: {

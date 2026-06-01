@@ -56,7 +56,10 @@ export function BookingStepProvider({ navigation }: Props) {
     // this wizard's BookingProvider context, so tapping "Choisir" there dispatches
     // SET_PREFERRED_COMPANY and goes back: the org id lands in state
     // (assignedProviderOrganizationId), mutually exclusive with the worker pick.
-    navigation.navigate('BookingCompanySearch', { serviceCatalogId: state.serviceId ?? undefined });
+    navigation.navigate('BookingCompanySearch', {
+      postalCode: state.coordinates?.postalCode || undefined,
+      serviceCatalogId: state.serviceId ?? undefined,
+    });
   };
 
   const openProviderBrowse = () => {

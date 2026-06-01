@@ -143,7 +143,10 @@ describe('useEligibleCompanies', () => {
       ],
     });
 
-    const { result } = renderHook(() => useEligibleCompanies(3, 11), { wrapper: queryWrapper });
+    const { result } = renderHook(
+      () => useEligibleCompanies({ serviceZoneId: 3, serviceCatalogId: 11 }),
+      { wrapper: queryWrapper },
+    );
 
     await waitFor(() => expect(result.current.companies).toHaveLength(1));
 
@@ -155,10 +158,24 @@ describe('useEligibleCompanies', () => {
     expect(req.params).toEqual({ service_zone_id: 3, service_catalog_id: 11 });
   });
 
-  it('does not fire when serviceZoneId is missing', () => {
-    const { result } = renderHook(() => useEligibleCompanies(null), { wrapper: queryWrapper });
+  it('does not fire when neither serviceZoneId nor postalCode is provided', () => {
+    const { result } = renderHook(() => useEligibleCompanies({}), { wrapper: queryWrapper });
     expect(mock.history['get']?.length ?? 0).toBe(0);
     expect(result.current.companies).toEqual([]);
+  });
+
+  it('sends postal_code when the wizard postal code is provided', async () => {
+    mock.onGet('/client/companies').reply(200, { data: [] });
+
+    const { result } = renderHook(
+      () => useEligibleCompanies({ postalCode: '1000', serviceCatalogId: 11 }),
+      { wrapper: queryWrapper },
+    );
+
+    await waitFor(() => expect(result.current.loading).toBe(false));
+
+    const req = mock.history['get']![0]!;
+    expect(req.params).toEqual({ postal_code: '1000', service_catalog_id: 11 });
   });
 });
 

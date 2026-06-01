@@ -46,22 +46,37 @@ export function useBrowseProviders(filters: { trade?: string; postalCode?: strin
 
 /**
  * SP3 Task 9 — list provider COMPANIES eligible for a (zone + trade) context.
- * Backend: GET /client/companies (CompanyDirectoryController), service_zone_id
- * required, service_catalog_id optional. Returns { companies, loading, error }.
+ * Backend: GET /client/companies (CompanyDirectoryController). The zone can be
+ * supplied either as a technical `service_zone_id` OR as a `postal_code` string
+ * (resolved server-side, 422 if not covered); `service_catalog_id` optional.
+ * Returns { companies, loading, error }.
  *
- * Mirrors useBrowseProviders (SP2): the request only fires when a zone id is
- * known, and the backend stays the authoritative premium + eligibility gate.
+ * Mirrors useBrowseProviders (SP2): the request only fires when a zone is known
+ * (id or postal), and the backend stays the authoritative premium + eligibility
+ * gate. When both a zone id and a postal are present we prefer the zone id.
  */
-export function useEligibleCompanies(serviceZoneId: number | null, serviceCatalogId?: number) {
+export function useEligibleCompanies(args: {
+  serviceZoneId?: number | null;
+  postalCode?: string | null;
+  serviceCatalogId?: number | null;
+}) {
+  const { serviceZoneId = null, postalCode = null, serviceCatalogId = null } = args;
+  const hasZone = serviceZoneId != null || !!postalCode;
+
   const query = useQuery<EligibleCompany[]>({
-    queryKey: ['client', 'companies', serviceZoneId, serviceCatalogId ?? null],
+    queryKey: ['client', 'companies', serviceZoneId, postalCode ?? null, serviceCatalogId ?? null],
     queryFn: async () => {
-      const params: Record<string, number> = { service_zone_id: serviceZoneId as number };
+      const params: Record<string, string | number> = {};
+      if (serviceZoneId != null) {
+        params['service_zone_id'] = serviceZoneId;
+      } else if (postalCode) {
+        params['postal_code'] = postalCode;
+      }
       if (serviceCatalogId != null) params['service_catalog_id'] = serviceCatalogId;
       const res = await apiClient.get('/client/companies', { params });
       return res.data.data ?? res.data;
     },
-    enabled: serviceZoneId != null,
+    enabled: hasZone,
   });
 
   return {
