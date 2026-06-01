@@ -1,0 +1,14 @@
+{
+  "name": "cleanux-visual-qa",
+  "private": true,
+  "type": "module",
+  "version": "1.0.0",
+  "description": "Headless mobile-viewport visual QA sweep for embedded WebView pages.",
+  "scripts": {
+    "qa": "node run.mjs",
+    "modules": "node modules.mjs"
+  },
+  "devDependencies": {
+    "playwright": "^1.48.0"
+  }
+}
