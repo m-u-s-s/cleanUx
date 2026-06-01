@@ -1,5 +1,7 @@
 import React from 'react';
+import type { ReactNode } from 'react';
 import { View, Text, Pressable, StyleSheet } from 'react-native';
+import type { AccessibilityRole, AccessibilityState } from 'react-native';
 import { Screen, Button, ProgressBar } from '@/ui';
 import { useAuth } from '@/auth';
 import { useBooking, useBookingFavorites } from '@/booking';
@@ -15,6 +17,48 @@ const TYPE_OPTIONS: Array<{ value: ProviderTypePreference; title: string; subtit
   { value: 'independent', title: 'Indépendant', subtitle: 'Un prestataire particulier' },
   { value: 'company', title: 'Société', subtitle: 'Une entreprise prestataire' },
 ];
+
+type SelectableCardProps = {
+  selected: boolean;
+  onPress: () => void;
+  children: ReactNode;
+  testID?: string;
+  accessibilityRole?: AccessibilityRole;
+  accessibilityState?: AccessibilityState;
+  /** Lay out children in a row (used by the favourite cards). */
+  row?: boolean;
+};
+
+/**
+ * A tappable card with a unified resting/selected look (selected → brand tokens).
+ * Local to this screen: it backs both the provider-type selector and the
+ * favourite re-book rows so they share the exact same visual language.
+ */
+function SelectableCard({
+  selected,
+  onPress,
+  children,
+  testID,
+  accessibilityRole,
+  accessibilityState,
+  row,
+}: SelectableCardProps) {
+  return (
+    <Pressable
+      testID={testID}
+      accessibilityRole={accessibilityRole}
+      accessibilityState={accessibilityState}
+      onPress={onPress}
+      style={[
+        styles.selectableCard,
+        row && styles.selectableCardRow,
+        selected && styles.selectableCardSelected,
+      ]}
+    >
+      {children}
+    </Pressable>
+  );
+}
 
 /**
  * SP2 — Booking wizard provider-selection step (mobile parity with web Task 6).
@@ -85,17 +129,17 @@ export function BookingStepProvider({ navigation }: Props) {
         {TYPE_OPTIONS.map((opt) => {
           const selected = state.providerTypePreference === opt.value;
           return (
-            <Pressable
+            <SelectableCard
               key={opt.value}
               testID={`provider-type-${opt.value}`}
               accessibilityRole="radio"
               accessibilityState={{ selected }}
+              selected={selected}
               onPress={() => selectType(opt.value)}
-              style={[styles.typeCard, selected && styles.typeCardSelected]}
             >
               <Text style={styles.typeTitle}>{opt.title}</Text>
               <Text style={styles.typeSubtitle}>{opt.subtitle}</Text>
-            </Pressable>
+            </SelectableCard>
           );
         })}
       </View>
@@ -133,17 +177,18 @@ export function BookingStepProvider({ navigation }: Props) {
             if (providerId == null) return null;
             const selected = state.preferredProviderUserId === providerId;
             return (
-              <Pressable
+              <SelectableCard
                 key={fav.id}
                 testID={`favorite-${fav.id}`}
+                selected={selected}
                 onPress={() => rebookFavorite(providerId)}
-                style={[styles.favoriteRow, selected && styles.favoriteRowSelected]}
+                row
               >
                 <Text style={styles.favoriteName}>
                   {fav.label || fav.preferred_provider?.name || `Prestataire #${providerId}`}
                 </Text>
                 <Text style={styles.favoriteAction}>Re-réserver</Text>
-              </Pressable>
+              </SelectableCard>
             );
           })}
         </View>
@@ -219,7 +264,7 @@ const styles = StyleSheet.create({
   typeGroup: {
     gap: spacing.sm,
   },
-  typeCard: {
+  selectableCard: {
     borderRadius: radius.md,
     borderWidth: 1,
     borderColor: colors.surface[200],
@@ -227,7 +272,13 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.md,
     paddingHorizontal: spacing.md,
   },
-  typeCardSelected: {
+  selectableCardRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: spacing.sm,
+  },
+  selectableCardSelected: {
     borderColor: colors.brand[500],
     backgroundColor: colors.brand[50],
   },
@@ -263,22 +314,6 @@ const styles = StyleSheet.create({
     fontWeight: typography.fontWeight.semibold,
     color: colors.success[700],
     textDecorationLine: 'underline',
-  },
-  favoriteRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    borderRadius: radius.md,
-    borderWidth: 1,
-    borderColor: colors.surface[200],
-    backgroundColor: colors.surface[50],
-    paddingVertical: spacing.md,
-    paddingHorizontal: spacing.md,
-    marginBottom: spacing.sm,
-  },
-  favoriteRowSelected: {
-    borderColor: colors.brand[500],
-    backgroundColor: colors.brand[50],
   },
   favoriteName: {
     fontSize: typography.fontSize.base,

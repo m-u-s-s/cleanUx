@@ -5,7 +5,7 @@ import type {
   NativeStackNavigationProp,
   NativeStackScreenProps,
 } from '@react-navigation/native-stack';
-import { Screen, Button, Badge, Divider } from '@/ui';
+import { Screen, Button, Badge, Divider, DetailRow, EmptyState, ErrorState } from '@/ui';
 import { useBookingDetail } from '@/booking';
 import { colors, spacing, typography, radius, shadows } from '@/theme';
 import type { RootStackParamList } from '@/navigation/types';
@@ -14,13 +14,35 @@ type Props = NativeStackScreenProps<RootStackParamList, 'BookingDetail'>;
 
 export function BookingDetailScreen({ route }: Props) {
   const { bookingId } = route.params;
-  const { data: booking, isLoading } = useBookingDetail(bookingId);
+  const { data: booking, isLoading, isError, refetch } = useBookingDetail(bookingId);
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
 
-  if (isLoading || !booking) {
+  if (isLoading) {
     return (
       <Screen>
         <Text style={styles.loading}>Chargement...</Text>
+      </Screen>
+    );
+  }
+
+  if (isError) {
+    return (
+      <Screen>
+        <ErrorState
+          message="Impossible de charger cette réservation."
+          onRetry={() => void refetch()}
+        />
+      </Screen>
+    );
+  }
+
+  if (!booking) {
+    return (
+      <Screen>
+        <EmptyState
+          title="Réservation introuvable"
+          message="Cette réservation n'existe plus ou n'est pas accessible."
+        />
       </Screen>
     );
   }
@@ -45,7 +67,7 @@ export function BookingDetailScreen({ route }: Props) {
       </View>
 
       {booking.contract_covered ? (
-        <View style={styles.contractBadge} testID="contract-coverage-badge">
+        <View style={styles.badgeRow} testID="contract-coverage-badge">
           <Badge label="Couvert par votre contrat" variant="info" />
         </View>
       ) : null}
@@ -130,15 +152,6 @@ export function BookingDetailScreen({ route }: Props) {
   );
 }
 
-function DetailRow({ label, value }: { label: string; value: string }) {
-  return (
-    <View style={styles.row}>
-      <Text style={styles.rowLabel}>{label}</Text>
-      <Text style={styles.rowValue}>{value}</Text>
-    </View>
-  );
-}
-
 const styles = StyleSheet.create({
   loading: {
     fontSize: typography.fontSize.base,
@@ -160,8 +173,9 @@ const styles = StyleSheet.create({
     flex: 1,
     marginRight: spacing.sm,
   },
-  contractBadge: {
+  badgeRow: {
     flexDirection: 'row',
+    marginTop: -spacing.sm,
     marginBottom: spacing.md,
   },
   card: {
@@ -170,23 +184,6 @@ const styles = StyleSheet.create({
     padding: spacing.md,
     ...shadows.soft,
     marginBottom: spacing.lg,
-  },
-  row: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    paddingVertical: spacing.sm,
-  },
-  rowLabel: {
-    fontSize: typography.fontSize.sm,
-    color: colors.surface[500],
-  },
-  rowValue: {
-    fontSize: typography.fontSize.sm,
-    fontWeight: typography.fontWeight.medium,
-    color: colors.surface[900],
-    flex: 1,
-    textAlign: 'right',
-    marginLeft: spacing.sm,
   },
   actions: {
     gap: spacing.sm,

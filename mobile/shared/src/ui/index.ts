@@ -4,6 +4,8 @@ export { Icon } from './Icon';
 export { Avatar } from './Avatar';
 export { Tag } from './Tag';
 export { Divider } from './Divider';
+export { DetailRow } from './DetailRow';
+export type { DetailRowProps } from './DetailRow';
 export { TextInput } from './TextInput';
 export { StatCard } from './StatCard';
 export { KPICard } from './KPICard';
