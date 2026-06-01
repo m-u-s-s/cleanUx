@@ -18,6 +18,8 @@ use Livewire\Component;
  *
  * La frontière de sécurité reste le ProviderSelectionResolver côté backend
  * (gate premium + validation d'éligibilité zone/métier).
+ *
+ * @property-read Collection<int, OrganizationAccount> $companies
  */
 class BrowseCompanies extends Component
 {

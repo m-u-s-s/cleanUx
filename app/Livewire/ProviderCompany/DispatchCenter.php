@@ -48,7 +48,7 @@ class DispatchCenter extends Component
             )
             ->with([
                 'assignments.provider:id,name,profile_photo_path',
-                'bookingSite:id,name,address,city,latitude,longitude',
+                'bookingSite:id,name,address,city,lat,lng',
             ])
             ->orderBy('planned_start_at')
             ->get();

@@ -19765,24 +19765,6 @@ parameters:
 			path: app/Services/Booking/EmployeeAvailabilityService.php
 
 		-
-			message: '#^Method App\\Services\\Booking\\EmployeeAvailabilityService\:\:eligibleEmployeesQuery\(\) return type with generic class Illuminate\\Database\\Eloquent\\Builder does not specify its types\: TModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: app/Services/Booking/EmployeeAvailabilityService.php
-
-		-
-			message: '#^Method App\\Services\\Booking\\EmployeeAvailabilityService\:\:sortedEligibleEmployeesForZone\(\) return type with generic class Illuminate\\Support\\Collection does not specify its types\: TKey, TValue$#'
-			identifier: missingType.generics
-			count: 1
-			path: app/Services/Booking/EmployeeAvailabilityService.php
-
-		-
-			message: '#^Parameter \#1 \$callback of method Illuminate\\Support\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:sortByDesc\(\) expects array\<array\{string, string\}\|\(callable\(Illuminate\\Database\\Eloquent\\Model, Illuminate\\Database\\Eloquent\\Model\)\: mixed\)\|\(callable\(Illuminate\\Database\\Eloquent\\Model, int\)\: mixed\)\|string\>\|\(callable\(Illuminate\\Database\\Eloquent\\Model, int\)\: mixed\)\|string, Closure\(App\\Models\\User\)\: int given\.$#'
-			identifier: argument.type
-			count: 1
-			path: app/Services/Booking/EmployeeAvailabilityService.php
-
-		-
 			message: '#^Using nullsafe property access "\?\-\>time_buffer_minutes" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
 			identifier: nullsafe.neverNull
 			count: 1

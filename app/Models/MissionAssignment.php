@@ -49,4 +49,16 @@ class MissionAssignment extends Model
     {
         return $this->belongsTo(User::class);
     }
+
+    /**
+     * Alias du worker assigné (clé réelle : user_id). Le DispatchCenter société
+     * charge `assignments.provider` et la vue lit `$a->provider` ; cette relation
+     * pointe sur le même User que `user()`.
+     *
+     * @return BelongsTo<User, $this>
+     */
+    public function provider(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'user_id');
+    }
 }

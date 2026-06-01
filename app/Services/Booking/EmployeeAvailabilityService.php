@@ -12,6 +12,9 @@ use Illuminate\Support\Collection;
 
 class EmployeeAvailabilityService
 {
+    /**
+     * @return Builder<User>
+     */
     public function eligibleEmployeesQuery(?int $zoneId = null, string $providerType = 'any', ?int $organizationId = null): Builder
     {
         $query = $this->applyProviderEligibility(User::query(), $providerType, $organizationId);
@@ -64,6 +67,9 @@ class EmployeeAvailabilityService
         return $score;
     }
 
+    /**
+     * @return \Illuminate\Database\Eloquent\Collection<int, User>
+     */
     public function sortedEligibleEmployeesForZone(int $zoneId, string $providerType = 'any', ?int $organizationId = null): Collection
     {
         return $this->eligibleEmployeesQuery($zoneId, $providerType, $organizationId)

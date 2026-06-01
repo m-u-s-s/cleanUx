@@ -115,6 +115,17 @@ class Mission extends Model
         return $this->belongsTo(OrganizationSite::class);
     }
 
+    /**
+     * Alias du site de la mission (clé : organization_site_id). Le DispatchCenter
+     * société charge `bookingSite` et la vue lit `$mission->bookingSite?->name/city`.
+     *
+     * @return BelongsTo<OrganizationSite, $this>
+     */
+    public function bookingSite(): BelongsTo
+    {
+        return $this->belongsTo(OrganizationSite::class, 'organization_site_id');
+    }
+
     public function serviceCatalog(): BelongsTo
     {
         return $this->belongsTo(ServiceCatalog::class);

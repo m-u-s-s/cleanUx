@@ -5,6 +5,8 @@ namespace App\Services\Booking;
 use App\Enums\OrganizationType;
 use App\Models\Booking;
 use App\Models\OrganizationAccount;
+use App\Models\ProviderProfile;
+use App\Models\ServiceCatalog;
 use App\Models\User;
 use Illuminate\Support\Collection;
 
@@ -21,7 +23,10 @@ class EligibleCompaniesResolver
             return collect();
         }
 
-        return $this->forContext((int) $rdv->service_zone_id, $rdv->serviceCatalog?->trade_id);
+        /** @var ServiceCatalog|null $catalog */
+        $catalog = $rdv->serviceCatalog;
+
+        return $this->forContext((int) $rdv->service_zone_id, $catalog?->trade_id);
     }
 
     /**
@@ -44,7 +49,12 @@ class EligibleCompaniesResolver
             });
 
         $orgIds = $workers
-            ->map(fn (User $w) => $w->providerProfile?->organization_account_id)
+            ->map(function (User $w): ?int {
+                /** @var ProviderProfile|null $profile */
+                $profile = $w->providerProfile;
+
+                return $profile?->organization_account_id;
+            })
             ->filter()
             ->unique()
             ->values();
