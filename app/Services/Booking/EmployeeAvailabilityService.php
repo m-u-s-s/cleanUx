@@ -12,9 +12,9 @@ use Illuminate\Support\Collection;
 
 class EmployeeAvailabilityService
 {
-    public function eligibleEmployeesQuery(?int $zoneId = null, string $providerType = 'any'): Builder
+    public function eligibleEmployeesQuery(?int $zoneId = null, string $providerType = 'any', ?int $organizationId = null): Builder
     {
-        $query = $this->applyProviderEligibility(User::query(), $providerType);
+        $query = $this->applyProviderEligibility(User::query(), $providerType, $organizationId);
 
         if (! $zoneId) {
             return $query->orderBy('name');
@@ -64,9 +64,9 @@ class EmployeeAvailabilityService
         return $score;
     }
 
-    public function sortedEligibleEmployeesForZone(int $zoneId, string $providerType = 'any'): Collection
+    public function sortedEligibleEmployeesForZone(int $zoneId, string $providerType = 'any', ?int $organizationId = null): Collection
     {
-        return $this->eligibleEmployeesQuery($zoneId, $providerType)
+        return $this->eligibleEmployeesQuery($zoneId, $providerType, $organizationId)
             ->get()
             ->sortByDesc(fn (User $employee) => $this->employeeCoverageScore($employee, $zoneId))
             ->values();
@@ -173,13 +173,17 @@ class EmployeeAvailabilityService
      * @param  Builder<User>  $query
      * @return Builder<User>
      */
-    private function applyProviderEligibility(Builder $query, string $providerType = 'any'): Builder
+    private function applyProviderEligibility(Builder $query, string $providerType = 'any', ?int $organizationId = null): Builder
     {
         return $query
-            ->whereHas('providerProfile', function (Builder $q) use ($providerType) {
+            ->whereHas('providerProfile', function (Builder $q) use ($providerType, $organizationId) {
                 $q->whereIn('provider_type', $this->providerTypeValues($providerType))
                     ->where('status', 'active')
                     ->where('verification_status', 'verified');
+
+                if ($organizationId !== null) {
+                    $q->where('organization_account_id', $organizationId);
+                }
             })
             ->where('is_active', true);
     }
