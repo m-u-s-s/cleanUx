@@ -67,7 +67,8 @@ jest.mock('@/theme', () => ({
 jest.mock('react-native-reanimated', () => {
   const { View } = require('react-native');
   return {
-    default: { View },
+    __esModule: true,
+    default: { View, createAnimatedComponent: (c: any) => c },
     FadeIn: { duration: () => ({ duration: 280 }) },
   };
 });
@@ -125,7 +126,6 @@ describe('MissionInboxScreen interactions', () => {
   it('tap "Accepter" triggers Alert and confirm calls POST accept', async () => {
     apiMock.onGet('/provider/assignments/inbox').reply(200, { data: [MOCK_ASSIGNMENT] });
     apiMock.onPost('/provider/assignments/1/accept').reply(200, { ok: true });
-    apiMock.onGet('/provider/assignments/inbox').reply(200, { data: [] });
 
     const alertSpy = jest.spyOn(Alert, 'alert').mockImplementation(
       (_title, _msg, buttons) => {
@@ -158,7 +158,6 @@ describe('MissionInboxScreen interactions', () => {
   it('tap "Décliner" triggers Alert and confirm calls POST decline', async () => {
     apiMock.onGet('/provider/assignments/inbox').reply(200, { data: [MOCK_ASSIGNMENT] });
     apiMock.onPost('/provider/assignments/1/decline').reply(200, { ok: true });
-    apiMock.onGet('/provider/assignments/inbox').reply(200, { data: [] });
 
     const alertSpy = jest.spyOn(Alert, 'alert').mockImplementation(
       (_title, _msg, buttons) => {

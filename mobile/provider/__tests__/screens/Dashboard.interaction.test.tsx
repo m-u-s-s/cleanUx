@@ -138,10 +138,12 @@ describe('DashboardScreen interactions', () => {
     expect(screen.getByText(/Bonjour, Marie/)).toBeTruthy();
   });
 
-  it('tap "En ligne" presence button calls POST /provider/presence-v2/heartbeat', async () => {
+  it('tap "En ligne" presence button (from offline) calls POST /provider/presence/online', async () => {
     apiMock.onGet('/provider/assignments/inbox').reply(200, { data: [] });
     apiMock.onGet('/provider/wallet/balance').reply(200, { data: { available: 0, currency: 'EUR' } });
-    apiMock.onPost('/provider/presence-v2/heartbeat').reply(200, { ok: true });
+    // Initial presence status is 'offline', so tapping "En ligne" triggers goOnline()
+    // which POSTs to /provider/presence/online (NOT presence-v2/heartbeat).
+    apiMock.onPost('/provider/presence/online').reply(200, { ok: true });
 
     render(<DashboardScreen />, { wrapper: makeWrapper() });
 
@@ -151,7 +153,7 @@ describe('DashboardScreen interactions', () => {
 
     await waitFor(() => {
       expect(apiMock.history['post']).toHaveLength(1);
-      expect(apiMock.history['post']![0]!.url).toBe('/provider/presence-v2/heartbeat');
+      expect(apiMock.history['post']![0]!.url).toBe('/provider/presence/online');
     });
   });
 
@@ -162,13 +164,17 @@ describe('DashboardScreen interactions', () => {
 
     render(<DashboardScreen />, { wrapper: makeWrapper() });
 
+    // Initial status is 'offline', so the header label and the button both read
+    // "Hors ligne". The button is the last matching node (rendered after header).
+    const offlineNodes = screen.getAllByText('Hors ligne');
     act(() => {
-      fireEvent.press(screen.getByText('Hors ligne'));
+      fireEvent.press(offlineNodes[offlineNodes.length - 1]!);
     });
 
     await waitFor(() => {
       const postCalls = apiMock.history['post'] ?? [];
       expect(postCalls.length).toBeGreaterThanOrEqual(1);
+      expect(postCalls[0]!.url).toBe('/provider/presence-v2/heartbeat');
     });
   });
 
@@ -240,7 +246,7 @@ describe('DashboardScreen interactions', () => {
 
     await waitFor(() => screen.getByText('Voir toutes les missions'));
 
-    fireEvent.press(screen.getByAccessibilityLabel('Voir toutes les missions'));
+    fireEvent.press(screen.getByLabelText('Voir toutes les missions'));
     expect(mockNavigate).toHaveBeenCalledWith('MainTabs', { screen: 'Missions' });
   });
 
