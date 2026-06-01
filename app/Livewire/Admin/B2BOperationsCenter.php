@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Admin;
 
+use App\Exceptions\ContractPolicyException;
 use App\Models\EnterpriseWorkOrder;
 use App\Models\FieldTeam;
 use App\Models\OrganizationAccount;
@@ -12,6 +13,7 @@ use App\Models\ServiceZone;
 use App\Models\User;
 use App\Models\WorkOrderApproval;
 use App\Models\WorkOrderLine;
+use App\Services\Contracts\WorkOrderContractService;
 use App\Support\ActivityLogger;
 use Illuminate\Contracts\View\View;
 use Livewire\Component;
@@ -283,6 +285,16 @@ class B2BOperationsCenter extends Component
     public function approveWorkOrder(int $id): void
     {
         $workOrder = EnterpriseWorkOrder::findOrFail($id);
+
+        // SP4 — gate contractuel : bloque l'approbation si le contrat exige un PO absent.
+        try {
+            app(WorkOrderContractService::class)->assertApprovable($workOrder);
+        } catch (ContractPolicyException $e) {
+            $this->dispatch('toast', $e->getMessage(), 'error');
+
+            return;
+        }
+
         $workOrder->update([
             'approval_status' => 'approved',
             'status' => $workOrder->status === 'draft' ? 'approved' : $workOrder->status,

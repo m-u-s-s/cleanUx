@@ -8,6 +8,8 @@ use App\Models\MissionBatch;
 use App\Models\MissionBatchDay;
 use App\Models\MissionTaskSegment;
 use App\Models\WorkOrderLine;
+use App\Services\Contracts\ContractSlaService;
+use App\Services\Contracts\WorkOrderContractService;
 use Carbon\Carbon;
 use Illuminate\Support\Collection;
 
@@ -193,6 +195,9 @@ class EnterpriseWorkOrderMissionGeneratorService
                 'generation_status' => 'generated',
             ])->save();
 
+            // SP4 — mission de WO sous contrat : routage partenaire + SLA.
+            $this->applyContractToMission($mission, $batch);
+
             $created->push($mission);
         }
 
@@ -214,6 +219,36 @@ class EnterpriseWorkOrderMissionGeneratorService
         return $created;
     }
 
+    /**
+     * SP4 — si la WO du batch est sous contrat, stampe le contrat + l'org
+     * partenaire sur la mission générée et arme son SLA. No-op (garde fermée)
+     * pour toute mission non issue d'une WO ou d'une WO sans contrat : la
+     * génération hors-contrat reste strictement inchangée.
+     */
+    protected function applyContractToMission(Mission $mission, MissionBatch $batch): void
+    {
+        if (! $batch->enterprise_work_order_id) {
+            return;
+        }
+
+        $workOrder = EnterpriseWorkOrder::find($batch->enterprise_work_order_id);
+        if (! $workOrder || ! $workOrder->organization_contract_id) {
+            return;
+        }
+
+        $contract = $workOrder->organizationContract;
+        if (! $contract || ! $contract->provider_organization_id) {
+            return;
+        }
+
+        $mission->forceFill([
+            'organization_contract_id' => $workOrder->organization_contract_id,
+            'provider_organization_id' => $contract->provider_organization_id,
+        ])->save();
+
+        app(ContractSlaService::class)->armForMission($mission);
+    }
+
     public function runForApprovedWorkOrder(EnterpriseWorkOrder $workOrder): array
     {
         if (! $workOrder->isApproved()) {
@@ -223,6 +258,10 @@ class EnterpriseWorkOrderMissionGeneratorService
                 'status' => 'skipped_not_approved',
             ];
         }
+
+        // SP4 — applique le tarif contrat aux lignes (agreed_unit_price) avant
+        // génération. No-op sans contrat.
+        app(WorkOrderContractService::class)->priceLines($workOrder);
 
         $batch = $this->ensureBatchForWorkOrder($workOrder);
         $missions = $this->materializePendingMissionsForBatch($batch);

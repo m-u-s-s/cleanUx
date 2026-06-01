@@ -18,6 +18,7 @@ class WorkOrderLine extends Model
         'quantity',
         'unit',
         'unit_price',
+        'agreed_unit_price',
         'line_total',
         'surface_value',
         'metadata',
@@ -26,6 +27,7 @@ class WorkOrderLine extends Model
     protected $casts = [
         'quantity' => 'decimal:2',
         'unit_price' => 'decimal:2',
+        'agreed_unit_price' => 'decimal:2',
         'line_total' => 'decimal:2',
         'surface_value' => 'decimal:2',
         'metadata' => 'array',
