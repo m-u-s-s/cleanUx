@@ -7,6 +7,7 @@ use App\Http\Controllers\Api\Client\BookingPaymentController;
 use App\Http\Controllers\Api\Client\CancellationController;
 use App\Http\Controllers\Api\Client\ClientBookingController;
 use App\Http\Controllers\Api\Client\ClientProfileController;
+use App\Http\Controllers\Api\Client\CompanyDirectoryController;
 use App\Http\Controllers\Api\Client\DeviceTokenController;
 use App\Http\Controllers\Api\Client\DisputeController;
 use App\Http\Controllers\Api\Client\GdprController;
@@ -37,6 +38,9 @@ use Illuminate\Support\Facades\Route;
 // ─────────────────────────────────────────────
 
 Route::middleware('auth:sanctum')->prefix('client')->group(function () {
+
+    // SP3 — Annuaire des sociétés prestataires éligibles (browse mobile + web)
+    Route::get('/companies', CompanyDirectoryController::class);
 
     // Bookings
     Route::post('/bookings/estimate', [BookingEstimateController::class, 'estimate']);
