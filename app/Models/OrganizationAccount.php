@@ -77,6 +77,7 @@ class OrganizationAccount extends Model
         return $this->hasMany(User::class);
     }
 
+    /** @return HasMany<ProviderProfile, $this> */
     public function providerProfiles(): HasMany
     {
         return $this->hasMany(ProviderProfile::class);

@@ -52,7 +52,7 @@ class BrowseCompanies extends Component
         $this->tradeId = $tradeId;
     }
 
-    public function updating($name): void
+    public function updating(string $name): void
     {
         if (in_array($name, ['query', 'minRating', 'sort'], true) && method_exists($this, 'resetPage')) {
             $this->resetPage();
