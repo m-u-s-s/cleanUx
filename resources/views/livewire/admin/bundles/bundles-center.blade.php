@@ -50,7 +50,7 @@
                 </select>
             </div>
 
-            <table class="w-full text-sm">
+            <div class="overflow-x-auto"><table class="w-full text-sm">
                 <thead class="bg-slate-50 text-left text-xs uppercase text-slate-500">
                     <tr>
                         <th class="px-3 py-2">Code</th>
@@ -82,7 +82,7 @@
                         <tr><td colspan="8" class="px-3 py-8 text-center text-slate-400">Aucun bundle.</td></tr>
                     @endforelse
                 </tbody>
-            </table>
+            </table></div>
             <div class="p-3">{{ $bundles->links() }}</div>
         </div>
 

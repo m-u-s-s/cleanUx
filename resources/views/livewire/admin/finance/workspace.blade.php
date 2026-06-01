@@ -1,4 +1,4 @@
-<x-app-card title="Workspace finance" subtitle="Vue rapide du rendez-vous sélectionné et des actions disponibles.">
+<x-app-card title="Workspace finance" subtitle="Vue rapide du rendez-vous sélectionné et des actions disponibles." class="min-w-0">
     <h2 class="text-lg font-semibold text-slate-800">Document sélectionné</h2>
 
     @if($selectedRendezVous)

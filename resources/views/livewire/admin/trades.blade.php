@@ -66,7 +66,7 @@
     {{-- ──────────────────────────────────────────────── --}}
     {{-- Tableau                                           --}}
     {{-- ──────────────────────────────────────────────── --}}
-    <div class="overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-900">
+    <div class="overflow-x-auto rounded-lg border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-900">
         <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
             <thead class="bg-gray-50 dark:bg-gray-800">
                 <tr>
@@ -84,9 +84,9 @@
                     <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50">
                         <td class="px-4 py-3 align-middle">
                             <div class="flex flex-col items-center">
-                                <button wire:click="moveUp({{ $trade->id }})" class="text-gray-400 hover:text-blue-600" title="Monter">▲</button>
+                                <button wire:click="moveUp({{ $trade->id }})" class="inline-flex h-11 w-11 items-center justify-center text-gray-400 hover:text-blue-600" title="Monter">▲</button>
                                 <span class="text-xs font-mono text-gray-500">{{ $trade->sort_order }}</span>
-                                <button wire:click="moveDown({{ $trade->id }})" class="text-gray-400 hover:text-blue-600" title="Descendre">▼</button>
+                                <button wire:click="moveDown({{ $trade->id }})" class="inline-flex h-11 w-11 items-center justify-center text-gray-400 hover:text-blue-600" title="Descendre">▼</button>
                             </div>
                         </td>
                         <td class="px-4 py-3 align-middle">

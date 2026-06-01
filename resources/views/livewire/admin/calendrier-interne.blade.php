@@ -94,8 +94,10 @@
                 </select>
             </div>
 
-            <div wire:ignore>
-                <div id="admin-internal-calendar" class="min-h-[650px]"></div>
+            <div wire:ignore class="overflow-x-auto">
+                {{-- min-w pour que la grille mensuelle FullCalendar reste lisible et
+                     scrolle horizontalement sur mobile au lieu de cliper ses cellules. --}}
+                <div id="admin-internal-calendar" class="min-h-[650px] min-w-[560px]"></div>
             </div>
         </div>
 

@@ -16,9 +16,9 @@
             @forelse($premiumClients as $client)
                 <div class="rounded-2xl border border-amber-100 bg-white p-4 shadow-sm">
                     <div class="flex items-start justify-between gap-4">
-                        <div>
-                            <p class="font-black text-slate-900">★ {{ $client->name }}</p>
-                            <p class="mt-1 text-sm text-slate-500">{{ $client->email }}</p>
+                        <div class="min-w-0">
+                            <p class="truncate font-black text-slate-900">★ {{ $client->name }}</p>
+                            <p class="mt-1 truncate text-sm text-slate-500">{{ $client->email }}</p>
                         </div>
 
                         <span class="rounded-full bg-emerald-50 px-3 py-1 text-xs font-black text-emerald-700 ring-1 ring-emerald-200">
@@ -49,9 +49,9 @@
             @forelse($rendezVousSansEmploye as $rdv)
                 <div class="rounded-2xl border border-slate-200 bg-slate-50 p-4">
                     <div class="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-                        <div>
-                            <p class="font-black text-slate-900">{{ $rdv->client->name ?? 'Client' }}</p>
-                            <p class="mt-1 text-sm text-slate-600">{{ $rdv->service_display_name ?: 'Service non précisé' }}</p>
+                        <div class="min-w-0">
+                            <p class="truncate font-black text-slate-900">{{ $rdv->client->name ?? 'Client' }}</p>
+                            <p class="mt-1 truncate text-sm text-slate-600">{{ $rdv->service_display_name ?: 'Service non précisé' }}</p>
                             <p class="mt-2 text-sm text-slate-500">
                                 📅 {{ $rdv->date?->format('d/m/Y') ?? $rdv->date }}
                                 · 🕒 {{ substr((string) $rdv->heure, 0, 5) }}

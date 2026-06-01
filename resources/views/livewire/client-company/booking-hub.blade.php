@@ -91,13 +91,13 @@
                         </span>
                         @if ($booking->status === 'pending_approval' && $needsApproval)
                             <button wire:click="approveBooking({{ $booking->id }})"
-                                class="rounded-lg bg-amber-600 px-2 py-1 text-[10px] font-bold text-white hover:bg-amber-700">
+                                class="inline-flex min-h-[44px] items-center rounded-lg bg-amber-600 px-3 py-1 text-[10px] font-bold text-white hover:bg-amber-700">
                                 Approuver
                             </button>
                         @endif
                         <button wire:click="cancelBooking({{ $booking->id }})"
                             wire:confirm="Annuler cette reservation ?"
-                            class="rounded-lg bg-red-50 px-2 py-1 text-[10px] font-semibold text-red-600 hover:bg-red-100">
+                            class="inline-flex min-h-[44px] items-center rounded-lg bg-red-50 px-3 py-1 text-[10px] font-semibold text-red-600 hover:bg-red-100">
                             Annuler
                         </button>
                     </div>

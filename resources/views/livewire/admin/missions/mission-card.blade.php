@@ -1,6 +1,6 @@
 <div class="bg-white border rounded-2xl shadow-sm p-4">
     <div class="flex flex-col md:flex-row md:justify-between gap-3">
-        <div>
+        <div class="min-w-0 break-words">
             <p class="font-semibold text-slate-900 text-lg">
                 {{ $rdv->service_display_name }}
             </p>

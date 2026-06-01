@@ -1,4 +1,4 @@
-<x-filter-panel title="Pipeline finance" subtitle="Recherche, période, marché, zone, service et état de paiement." class="lg:col-span-3">
+<x-filter-panel title="Pipeline finance" subtitle="Recherche, période, marché, zone, service et état de paiement." class="min-w-0 lg:col-span-3">
     @include('livewire.admin.finance.pipeline-filters')
     @include('livewire.admin.finance.pipeline-table')
     @include('livewire.admin.finance.pipeline-pagination')

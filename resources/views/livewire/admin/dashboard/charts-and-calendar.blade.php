@@ -48,7 +48,9 @@
         </a>
     </div>
 
-    <div class="overflow-hidden rounded-2xl border border-slate-200 bg-slate-50 p-4">
-        <div id="fullcalendar-admin"></div>
+    <div class="overflow-x-auto rounded-2xl border border-slate-200 bg-slate-50 p-4">
+        {{-- min-w pour que FullCalendar (grille 7 colonnes) reste lisible et scrolle
+             horizontalement sur mobile au lieu de cliper ses cellules. --}}
+        <div id="fullcalendar-admin" class="min-w-[560px]"></div>
     </div>
 </div>

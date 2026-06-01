@@ -38,6 +38,11 @@ export const DEFERRED_KEYS = new Set([
   'dashboard-entreprise-prestataire-canaux',
   'dashboard-entreprise-prestataire-dispatch',
   'dashboard-entreprise-prestataire-equipe',
+  // Doublon : /admin/users est un alias 302 → /admin/utilisateurs (routes/admin.php).
+  // Le redirect perd le query `?embed=1`, donc la cible rend HORS embed (nav chrome
+  // présent → C5 faux échec). La VRAIE page est 'admin-utilisateurs' (déjà couverte).
+  // Ce n'est pas un bug de layout : on dédoublonne au lieu de "corriger" un alias.
+  'admin-users',
 ]);
 
 export function loadModules() {

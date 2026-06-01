@@ -1,4 +1,4 @@
-<div class="mt-6 overflow-hidden rounded-2xl border bg-white shadow-sm">
+<div class="mt-6 overflow-x-auto rounded-2xl border bg-white shadow-sm">
     <table class="min-w-full text-sm">
         <thead class="bg-slate-50 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
             <tr>

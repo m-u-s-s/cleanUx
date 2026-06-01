@@ -43,14 +43,14 @@
         </div>
 
         {{-- Tabs --}}
-        <div class="flex gap-2 border-b">
+        <div class="flex flex-nowrap gap-2 overflow-x-auto border-b">
             @foreach([
                 'webhooks' => 'Webhooks',
                 'failures' => 'Échecs',
                 'reconciliation' => 'Réconciliation',
             ] as $key => $label)
                 <button wire:click="$set('tab', '{{ $key }}')"
-                        class="px-4 py-2 text-sm font-semibold border-b-2 {{ $tab === $key ? 'border-indigo-600 text-indigo-600' : 'border-transparent text-slate-500 hover:text-slate-700' }}">
+                        class="px-4 py-2 min-h-[44px] inline-flex shrink-0 items-center whitespace-nowrap text-sm font-semibold border-b-2 {{ $tab === $key ? 'border-indigo-600 text-indigo-600' : 'border-transparent text-slate-500 hover:text-slate-700' }}">
                     {{ $label }}
                 </button>
             @endforeach

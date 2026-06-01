@@ -44,7 +44,7 @@
 
         @if ($tab === 'live')
             <div class="rounded-2xl border bg-white shadow-sm">
-                <table class="w-full text-sm">
+                <div class="overflow-x-auto"><table class="w-full text-sm">
                     <thead class="bg-slate-50 text-left text-xs uppercase text-slate-500">
                         <tr>
                             <th class="px-3 py-2">Code</th>
@@ -87,7 +87,7 @@
                             <tr><td colspan="9" class="px-3 py-8 text-center text-slate-400">Aucune session active.</td></tr>
                         @endforelse
                     </tbody>
-                </table>
+                </table></div>
             </div>
         @endif
 
@@ -101,7 +101,7 @@
                         <option value="cancelled">Cancelled</option>
                     </select>
                 </div>
-                <table class="w-full text-sm">
+                <div class="overflow-x-auto"><table class="w-full text-sm">
                     <thead class="bg-slate-50 text-left text-xs uppercase text-slate-500">
                         <tr>
                             <th class="px-3 py-2">Code</th>
@@ -137,7 +137,7 @@
                             <tr><td colspan="9" class="px-3 py-8 text-center text-slate-400">Aucun historique.</td></tr>
                         @endforelse
                     </tbody>
-                </table>
+                </table></div>
                 <div class="p-3">{{ $historySessions->links() }}</div>
             </div>
         @endif

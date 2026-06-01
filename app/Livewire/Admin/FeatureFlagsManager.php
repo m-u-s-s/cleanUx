@@ -16,7 +16,7 @@ use Livewire\Component;
  * Reads flags from config/features.php and merges DB overrides.
  * Toggling a flag writes (or updates) a feature_flag_overrides row.
  */
-#[Layout('layouts.admin')]
+#[Layout('layouts.app')]
 class FeatureFlagsManager extends Component
 {
     public string $search = '';

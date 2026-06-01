@@ -29,16 +29,16 @@
             </div>
         </div>
 
-        <div class="flex gap-2 border-b border-slate-200">
+        <div class="flex flex-nowrap gap-2 overflow-x-auto border-b border-slate-200">
             <button wire:click="$set('tab', 'audits')"
                     @class([
-                        'px-4 py-2 text-sm font-semibold',
+                        'px-4 py-2 min-h-[44px] inline-flex shrink-0 items-center whitespace-nowrap text-sm font-semibold',
                         'border-b-2 border-indigo-600 text-indigo-700' => $tab === 'audits',
                         'text-slate-500 hover:text-slate-900' => $tab !== 'audits',
                     ])>Audits</button>
             <button wire:click="$set('tab', 'matrix-by-channel')"
                     @class([
-                        'px-4 py-2 text-sm font-semibold',
+                        'px-4 py-2 min-h-[44px] inline-flex shrink-0 items-center whitespace-nowrap text-sm font-semibold',
                         'border-b-2 border-indigo-600 text-indigo-700' => $tab === 'matrix-by-channel',
                         'text-slate-500 hover:text-slate-900' => $tab !== 'matrix-by-channel',
                     ])>Preferences actuelles</button>

@@ -9,13 +9,16 @@ export async function loginAs(context, base, credKey) {
   if (!credKey) return; // public
   const email = CREDENTIALS[credKey];
   const page = await context.newPage();
-  await page.goto(`${base}/login`, { waitUntil: 'networkidle' });
+  await page.goto(`${base}/login`, { waitUntil: 'domcontentloaded' });
   await page.fill('input[name="email"]', email);
   await page.fill('input[name="password"]', QA_PASSWORD);
   await Promise.all([
-    page.waitForLoadState('networkidle'),
+    // 'load' (pas 'networkidle') : le dashboard de destination charge Livewire/Alpine
+    // et garde des connexions ouvertes — 'networkidle' ne se résoudrait jamais.
+    page.waitForURL((u) => !u.pathname.endsWith('/login'), { timeout: 20000 }).catch(() => {}),
     page.click('button[type="submit"], input[type="submit"]'),
   ]);
+  await page.waitForLoadState('load', { timeout: 10000 }).catch(() => {});
   const url = page.url();
   await page.close();
   if (url.includes('/login')) {
@@ -40,7 +43,13 @@ const EVAL = (tol) => {
     const s = getComputedStyle(el);
     if (s.display === 'none' || s.visibility === 'hidden' || s.opacity === '0') return false;
     const r = el.getBoundingClientRect();
-    return r.width > 0 && r.height > 0;
+    if (!(r.width > 0 && r.height > 0)) return false;
+    // Exclure les éléments visually-hidden / sr-only (skip-to-content, labels a11y) :
+    // micro-rect clippé (≤1px) OU positionné hors écran (left négatif extrême,
+    // pattern `position:absolute; left:-9999px`). Invisibles à l'œil → hors critères.
+    if (r.width <= 1 || r.height <= 1) return false;
+    if (r.right <= 0 || r.left >= vw || r.bottom <= 0) return false;
+    return true;
   };
   const inScrollable = (el) => {
     // ignore les éléments dans (ou QUI SONT) un conteneur à scroll horizontal
@@ -88,10 +97,22 @@ const EVAL = (tol) => {
   out.criteria.c2_tap_targets = smallTargets.length === 0;
   out.offenders.c2 = smallTargets.slice(0, 10);
 
-  // C3 — texte lisible : aucun élément avec clip horizontal (scrollWidth>clientWidth).
+  // C3 — texte lisible : aucun élément avec clip horizontal NON INTENTIONNEL
+  // (scrollWidth>clientWidth). On exclut le clip VOULU :
+  //  - `truncate` Tailwind = text-overflow:ellipsis (l'ellipse EST le design, lisible) ;
+  //  - tout conteneur à overflow-x scrollable (déjà géré par inScrollable).
+  const isIntentionalEllipsis = (el) => {
+    const s = getComputedStyle(el);
+    return s.textOverflow === 'ellipsis' && (s.overflowX === 'hidden' || s.overflow === 'hidden');
+  };
+  // C3 ne concerne que du TEXTE lisible : on ignore les éléments sans texte réel
+  // (dots/ping décoratifs `flex h-3 w-3`, wrappers d'icônes) dont le scrollWidth
+  // déborde à cause d'un enfant animé en position absolute, pas d'un libellé clipé.
+  const hasRealText = (el) => (el.textContent || '').replace(/\s+/g, '').length > 0;
   const clipped = [...document.querySelectorAll('p, span, h1, h2, h3, h4, a, button, td, th, li, label')]
     .filter(visible)
-    .filter((el) => el.scrollWidth > el.clientWidth + T && !inScrollable(el))
+    .filter(hasRealText)
+    .filter((el) => el.scrollWidth > el.clientWidth + T && !inScrollable(el) && !isIntentionalEllipsis(el))
     .map((el) => ({ tag: el.tagName.toLowerCase(), text: (el.textContent || '').trim().slice(0, 40) }));
   out.criteria.c3_readable_text = clipped.length === 0;
   out.offenders.c3 = clipped.slice(0, 10);
@@ -115,10 +136,14 @@ export async function checkModule(context, base, mod) {
   await page.setViewportSize(VIEWPORT);
   let httpStatus = 0;
   try {
-    const resp = await page.goto(`${base}${mod.path}?embed=1`, { waitUntil: 'networkidle', timeout: 30000 });
+    // NOTE: 'domcontentloaded' (pas 'networkidle') — les pages Livewire/Alpine
+    // gardent des connexions ouvertes (poll wire:poll, websocket Reverb, ApexCharts),
+    // donc 'networkidle' ne se résout jamais et fait timeouter toutes les pages JS.
+    const resp = await page.goto(`${base}${mod.path}?embed=1`, { waitUntil: 'domcontentloaded', timeout: 30000 });
     httpStatus = resp ? resp.status() : 0;
-    // laisser Livewire/JS poser le layout
-    await page.waitForTimeout(400);
+    // laisser Livewire/Alpine hydrater + poser le layout final (CSS appliqué).
+    await page.waitForLoadState('load', { timeout: 10000 }).catch(() => {});
+    await page.waitForTimeout(900);
     const result = await page.evaluate(EVAL, TOL);
     await page.close();
     const pass = Object.values(result.criteria).every(Boolean);
