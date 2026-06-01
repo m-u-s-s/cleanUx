@@ -5,6 +5,7 @@ namespace App\Livewire\ProviderCompany;
 use App\Events\MissionStatusUpdated;
 use App\Models\Mission;
 use App\Models\MissionAssignment;
+use App\Models\OrganizationContract;
 use App\Models\OrganizationMember;
 use App\Services\PermissionService;
 use Illuminate\Database\Eloquent\Collection;
@@ -15,6 +16,7 @@ use Livewire\Component;
 /**
  * @property-read Collection<int, Mission> $missions
  * @property-read Collection<int, OrganizationMember> $availableWorkers
+ * @property-read Collection<int, OrganizationContract> $partnerContracts
  */
 class DispatchCenter extends Component
 {
@@ -62,6 +64,27 @@ class DispatchCenter extends Component
             ->whereIn('role', ['worker', 'team_lead'])
             ->where('status', 'active')
             ->with('user:id,name,profile_photo_path')
+            ->get();
+    }
+
+    /**
+     * Contrats-cadres B2B où MON org est le partenaire prestataire (lecture seule).
+     * Isolation stricte : filtré sur provider_organization_id = current_organization_id.
+     *
+     * @return Collection<int, OrganizationContract>
+     */
+    public function getPartnerContractsProperty(): Collection
+    {
+        $orgId = Auth::user()?->current_organization_id;
+
+        if (! $orgId) {
+            return OrganizationContract::query()->whereRaw('1 = 0')->get();
+        }
+
+        return OrganizationContract::query()
+            ->where('provider_organization_id', $orgId)
+            ->with(['organizationAccount:id,name', 'rateCards'])
+            ->orderByDesc('effective_from')
             ->get();
     }
 
@@ -119,6 +142,7 @@ class DispatchCenter extends Component
         return view('livewire.provider-company.dispatch-center', [
             'missions' => $this->missions,
             'availableWorkers' => $this->availableWorkers,
+            'partnerContracts' => $this->partnerContracts,
         ])->layout('layouts.provider-company');
     }
 }

@@ -122,4 +122,81 @@
             </div>
         @endforelse
     </div>
+
+    {{-- Mes contrats partenaires (lecture seule) --}}
+    <div class="mt-10">
+        <div class="mb-3 flex items-center justify-between">
+            <h2 class="text-lg font-black text-white">🤝 Mes contrats partenaires</h2>
+            <span class="text-xs text-slate-500">Lecture seule — contrats où votre société est le partenaire</span>
+        </div>
+
+        <div class="space-y-3">
+            @forelse ($partnerContracts as $contract)
+                @php
+                    $statusBadge = match ($contract->status) {
+                        'active', 'signed', 'pilot' => ['cls' => 'border-green-700 bg-green-900/20 text-green-300', 'label' => ucfirst($contract->status)],
+                        'draft'                       => ['cls' => 'border-slate-600 bg-slate-800 text-slate-300', 'label' => 'Brouillon'],
+                        default                       => ['cls' => 'border-slate-600 bg-slate-800 text-slate-300', 'label' => ucfirst((string) $contract->status)],
+                    };
+                @endphp
+
+                <div class="rounded-2xl border border-slate-700 bg-slate-800/50 p-4">
+                    <div class="flex flex-wrap items-start justify-between gap-3">
+                        <div class="min-w-0">
+                            <p class="text-sm font-bold text-white">
+                                {{ $contract->contract_reference ?? 'Contrat #'.$contract->id }}
+                            </p>
+                            <p class="text-xs text-slate-400">
+                                Client : {{ $contract->organizationAccount?->name ?? 'Société non définie' }}
+                            </p>
+                        </div>
+                        <span class="rounded-full border px-2.5 py-1 text-[10px] font-semibold uppercase {{ $statusBadge['cls'] }}">
+                            {{ $statusBadge['label'] }}
+                        </span>
+                    </div>
+
+                    <div class="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-3">
+                        {{-- Grille / remise négociée --}}
+                        <div class="rounded-xl border border-slate-700 bg-slate-900/60 p-3">
+                            <p class="text-[10px] uppercase text-slate-500">Tarification</p>
+                            @if (($contract->rateCards ?? collect())->isNotEmpty())
+                                <p class="text-xs font-semibold text-white">
+                                    {{ $contract->rateCards->count() }} grille(s) négociée(s)
+                                </p>
+                            @elseif (($contract->negotiated_discount_percent ?? 0) > 0)
+                                <p class="text-xs font-semibold text-white">
+                                    Remise {{ rtrim(rtrim(number_format((float) $contract->negotiated_discount_percent, 2, ',', ' '), '0'), ',') }} %
+                                </p>
+                            @else
+                                <p class="text-xs text-slate-400 italic">Tarif standard</p>
+                            @endif
+                        </div>
+
+                        {{-- Fenêtre de validité --}}
+                        <div class="rounded-xl border border-slate-700 bg-slate-900/60 p-3">
+                            <p class="text-[10px] uppercase text-slate-500">Fenêtre</p>
+                            <p class="text-xs font-semibold text-white">
+                                {{ $contract->effective_from?->format('d/m/Y') ?? '–' }}
+                                →
+                                {{ $contract->effective_to?->format('d/m/Y') ?? '∞' }}
+                            </p>
+                        </div>
+
+                        {{-- Missions entrantes liées à ce contrat --}}
+                        <div class="rounded-xl border border-slate-700 bg-slate-900/60 p-3">
+                            <p class="text-[10px] uppercase text-slate-500">Missions (période)</p>
+                            <p class="text-xs font-semibold text-white">
+                                {{ $missions->where('organization_contract_id', $contract->id)->count() }}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            @empty
+                <div class="flex flex-col items-center rounded-2xl border-2 border-dashed border-slate-700 py-10 text-center">
+                    <p class="text-3xl mb-2">🤝</p>
+                    <p class="text-slate-400">Aucun contrat partenaire pour le moment</p>
+                </div>
+            @endforelse
+        </div>
+    </div>
 </div>
