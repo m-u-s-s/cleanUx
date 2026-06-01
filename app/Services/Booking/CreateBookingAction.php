@@ -125,6 +125,8 @@ class CreateBookingAction
             'service_zone_id' => Arr::get($data, 'service_zone_id'),
             'postal_code_id' => Arr::get($data, 'postal_code_id'),
             'service_catalog_id' => $catalog->id,
+            'preferred_provider_user_id' => Arr::get($data, 'preferred_provider_user_id'),
+            'provider_type_preference' => Arr::get($data, 'provider_type_preference', 'any'),
             'booking_channel' => Arr::get($data, 'booking_channel', 'web'),
             'booking_reference' => Arr::get($data, 'booking_reference'),
             'zone_snapshot' => $zoneSnapshot,
@@ -259,9 +261,6 @@ class CreateBookingAction
                     Arr::get($data, 'site_instructions')
                 );
         }
-
-        $bestEmployee = app(SmartDispatchService::class)
-            ->assignBestEmployee($rendezVous->fresh(['client', 'serviceZone']));
 
         $dispatchService = app(SmartDispatchService::class);
 
