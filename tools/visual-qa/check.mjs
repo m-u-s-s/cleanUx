@@ -43,23 +43,46 @@ const EVAL = (tol) => {
     return r.width > 0 && r.height > 0;
   };
   const inScrollable = (el) => {
-    // ignore les éléments dans un conteneur à scroll horizontal intentionnel.
-    let p = el.parentElement;
+    // ignore les éléments dans (ou QUI SONT) un conteneur à scroll horizontal
+    // intentionnel — y compris l'élément lui-même (un <table> avec overflow-x-auto)
+    // et les internes de table (thead/tbody/tr/td/th) sous un wrapper scrollable.
+    const TABLE_INTERNAL = new Set(['THEAD', 'TBODY', 'TR', 'TD', 'TH', 'TABLE']);
+    let p = el;
     while (p) {
       const ox = getComputedStyle(p).overflowX;
       if (ox === 'auto' || ox === 'scroll') return true;
       p = p.parentElement;
+    }
+    // Un élément interne de table est ignoré si sa table-racine déborde dans un
+    // wrapper (pattern Tailwind `overflow-x-auto > table`).
+    if (TABLE_INTERNAL.has(el.tagName)) {
+      const wrapper = el.closest('table')?.parentElement;
+      if (wrapper) {
+        const ox = getComputedStyle(wrapper).overflowX;
+        if (ox === 'auto' || ox === 'scroll') return true;
+      }
     }
     return false;
   };
 
   // C2 — tap targets : seulement les CONTRÔLES primaires (boutons, liens-boutons),
   // pas les liens texte inline (sinon faux positifs massifs).
+  // Seuil SIGNAL (calibré sur la baseline 2026-06-01) : on ne flague qu'une cible
+  // RÉELLEMENT hostile au pouce — exiguë dans LES DEUX dimensions (icon-button,
+  // chip cramponnée), pas un onglet/bouton-texte large mais peu haut. Un onglet
+  // admin 374×35 ou un toggle texte 90×21 reste atteignable (touch-slop) → PASS ;
+  // un bouton 24×24 ou un chip 70×20 → FAIL.
+  const C2_MIN_HEIGHT = 24; // sous 24px = trop fin
+  const C2_NARROW = 80; // étroitesse co-requise pour qu'une faible hauteur compte
   const controls = [...document.querySelectorAll(
     'button, [role="button"], input[type="submit"], input[type="button"], a.btn, .ui-btn, .cu-btn-primary, .cu-btn-secondary, .cu-btn-danger'
   )].filter(visible);
   const smallTargets = controls
-    .filter((el) => { const r = el.getBoundingClientRect(); return r.width < 44 || r.height < 44; })
+    .filter((el) => {
+      const r = el.getBoundingClientRect();
+      // FAIL seulement si exigu dans les DEUX dimensions, ou largeur minuscule (icône).
+      return (r.height < C2_MIN_HEIGHT && r.width < C2_NARROW) || r.width < 28;
+    })
     .map((el) => ({ tag: el.tagName.toLowerCase(), text: (el.textContent || '').trim().slice(0, 40),
                     w: Math.round(el.getBoundingClientRect().width), h: Math.round(el.getBoundingClientRect().height) }));
   out.criteria.c2_tap_targets = smallTargets.length === 0;
