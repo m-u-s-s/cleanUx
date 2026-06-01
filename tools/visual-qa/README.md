@@ -3,8 +3,16 @@
 Headless Playwright sweep of every embedded WebView page at 390×844, checking 5 mobile criteria.
 
 ## Prerequisites
+- **Seed the 5 QA accounts** (idempotent, password `QaPhase2!`) — required for the per-role logins:
+  ```
+  php artisan db:seed --class=QaAccountsSeeder
+  ```
+  This versioned seeder (`database/seeders/QaAccountsSeeder.php`) provisions the admin,
+  provider-company OWNER, client-company OWNER, independent provider, and personal client used by
+  `CREDENTIALS` in `modules.mjs` (and `scripts/embed_sweep.php`). Self-contained: it creates the two
+  QA orgs if absent. Re-runnable safely. It is **not** part of `DatabaseSeeder` (no QA accounts in prod).
 - A running Laravel server reachable at `VQA_BASE` (default `http://127.0.0.1:8000`):
-  `php artisan serve` from the repo root (dev DB seeded with the QA accounts).
+  `php artisan serve` from the repo root.
 - `npm install && npx playwright install chromium` in this folder.
 
 ## Run
