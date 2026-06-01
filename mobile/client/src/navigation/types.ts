@@ -42,6 +42,8 @@ export type BookingStackParamList = {
   BookingStepProvider: undefined;
   // SP2 palier 3 — premium provider search (selection mode returns the pick to the wizard)
   BookingProviderSearch: undefined;
+  // SP3 Task 9 — premium provider COMPANY search (selection mode returns the org id)
+  BookingCompanySearch: { serviceZoneId?: number; serviceCatalogId?: number } | undefined;
   BookingStep5: undefined;
 };
 

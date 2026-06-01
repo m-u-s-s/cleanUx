@@ -42,6 +42,16 @@ export interface Booking {
 
 export type ProviderTypePreference = 'any' | 'independent' | 'company';
 
+// SP3 Task 9 — provider COMPANY eligible for a (zone + trade) context.
+// Shape mirrors GET /client/companies (CompanyDirectoryController).
+export interface EligibleCompany {
+  id: number;
+  name: string;
+  rating_avg: number | null;
+  rating_count: number;
+  providers_count: number;
+}
+
 export interface BookingFavoriteSummary {
   id: number;
   label: string | null;
@@ -55,6 +65,9 @@ export interface BookingState {
   // SP2 — client provider selection
   providerTypePreference: ProviderTypePreference;
   preferredProviderUserId: number | null;
+  // SP3 Task 9 — premium pick of a provider COMPANY. Mutually exclusive with
+  // preferredProviderUserId: setting one clears the other.
+  assignedProviderOrganizationId: number | null;
   details: {
     surface?: number;
     frequency?: string;
@@ -83,4 +96,5 @@ export type BookingAction =
   | { type: 'SET_SCHEDULING'; scheduling: BookingState['scheduling'] }
   | { type: 'SET_PROVIDER_TYPE'; providerTypePreference: ProviderTypePreference }
   | { type: 'SET_PREFERRED_PROVIDER'; preferredProviderUserId: number | null }
+  | { type: 'SET_PREFERRED_COMPANY'; assignedProviderOrganizationId: number | null }
   | { type: 'RESET' };

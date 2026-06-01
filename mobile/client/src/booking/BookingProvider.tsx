@@ -9,6 +9,8 @@ const initialState: BookingState = {
   // SP2 — default 'any' so a client who touches nothing changes nothing.
   providerTypePreference: 'any',
   preferredProviderUserId: null,
+  // SP3 Task 9 — premium company pick (mutually exclusive with the worker pick).
+  assignedProviderOrganizationId: null,
   details: { options: [], comment: '' },
   coordinates: { address: '', city: '', postalCode: '' },
   scheduling: { date: '', time: '', isAsap: false },
@@ -27,7 +29,21 @@ function bookingReducer(state: BookingState, action: BookingAction): BookingStat
     case 'SET_PROVIDER_TYPE':
       return { ...state, providerTypePreference: action.providerTypePreference };
     case 'SET_PREFERRED_PROVIDER':
-      return { ...state, preferredProviderUserId: action.preferredProviderUserId };
+      // Picking a worker clears any company pick (mutual exclusion).
+      return {
+        ...state,
+        preferredProviderUserId: action.preferredProviderUserId,
+        assignedProviderOrganizationId:
+          action.preferredProviderUserId != null ? null : state.assignedProviderOrganizationId,
+      };
+    case 'SET_PREFERRED_COMPANY':
+      // Picking a company clears any worker pick (mutual exclusion).
+      return {
+        ...state,
+        assignedProviderOrganizationId: action.assignedProviderOrganizationId,
+        preferredProviderUserId:
+          action.assignedProviderOrganizationId != null ? null : state.preferredProviderUserId,
+      };
     case 'RESET':
       void bookingDraft.clear();
       return initialState;
@@ -60,6 +76,9 @@ export function BookingProvider({ children }: { children: React.ReactNode }) {
           }
           if (s.preferredProviderUserId != null) {
             dispatch({ type: 'SET_PREFERRED_PROVIDER', preferredProviderUserId: s.preferredProviderUserId });
+          }
+          if (s.assignedProviderOrganizationId != null) {
+            dispatch({ type: 'SET_PREFERRED_COMPANY', assignedProviderOrganizationId: s.assignedProviderOrganizationId });
           }
         }
       }

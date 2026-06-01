@@ -7,6 +7,7 @@ import { BookingStep3Coordinates } from '@/screens/booking/BookingStep3Coordinat
 import { BookingStep4Scheduling } from '@/screens/booking/BookingStep4Scheduling';
 import { BookingStepProvider } from '@/screens/booking/BookingStepProvider';
 import { BookingProviderSearchScreen } from '@/screens/booking/BookingProviderSearchScreen';
+import { BookingCompanySearchScreen } from '@/screens/booking/BookingCompanySearchScreen';
 import { BookingStep5Confirmation } from '@/screens/booking/BookingStep5Confirmation';
 import { colors } from '@/theme';
 import type { BookingStackParamList } from './types';
@@ -51,6 +52,11 @@ export function BookingNavigator() {
           name="BookingProviderSearch"
           component={BookingProviderSearchScreen}
           options={{ title: 'Choisir un prestataire' }}
+        />
+        <Stack.Screen
+          name="BookingCompanySearch"
+          component={BookingCompanySearchScreen}
+          options={{ title: 'Choisir une société' }}
         />
         <Stack.Screen
           name="BookingStep5"

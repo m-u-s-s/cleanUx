@@ -25,6 +25,7 @@ export function BookingStep5Confirmation({ navigation }: Props) {
       scheduling: state.scheduling,
       providerTypePreference: state.providerTypePreference,
       preferredProviderUserId,
+      assignedProviderOrganizationId: state.assignedProviderOrganizationId,
     });
     dispatch({ type: 'RESET' });
     setShowSuccess(true);
@@ -107,6 +108,12 @@ export function BookingStep5Confirmation({ navigation }: Props) {
             <>
               <Divider />
               <Row label="Prestataire choisi" value={`#${state.preferredProviderUserId}`} />
+            </>
+          ) : null}
+          {state.assignedProviderOrganizationId ? (
+            <>
+              <Divider />
+              <Row label="Société choisie" value={`#${state.assignedProviderOrganizationId}`} />
             </>
           ) : null}
         </View>

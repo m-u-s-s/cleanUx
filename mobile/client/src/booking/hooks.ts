@@ -7,6 +7,7 @@ import type {
   Booking,
   BookingState,
   BookingFavoriteSummary,
+  EligibleCompany,
 } from './types';
 
 export function useServiceCatalog() {
@@ -41,6 +42,33 @@ export function useBrowseProviders(filters: { trade?: string; postalCode?: strin
     },
     enabled: !!filters.trade || !!filters.postalCode,
   });
+}
+
+/**
+ * SP3 Task 9 — list provider COMPANIES eligible for a (zone + trade) context.
+ * Backend: GET /client/companies (CompanyDirectoryController), service_zone_id
+ * required, service_catalog_id optional. Returns { companies, loading, error }.
+ *
+ * Mirrors useBrowseProviders (SP2): the request only fires when a zone id is
+ * known, and the backend stays the authoritative premium + eligibility gate.
+ */
+export function useEligibleCompanies(serviceZoneId: number | null, serviceCatalogId?: number) {
+  const query = useQuery<EligibleCompany[]>({
+    queryKey: ['client', 'companies', serviceZoneId, serviceCatalogId ?? null],
+    queryFn: async () => {
+      const params: Record<string, number> = { service_zone_id: serviceZoneId as number };
+      if (serviceCatalogId != null) params['service_catalog_id'] = serviceCatalogId;
+      const res = await apiClient.get('/client/companies', { params });
+      return res.data.data ?? res.data;
+    },
+    enabled: serviceZoneId != null,
+  });
+
+  return {
+    companies: query.data ?? [],
+    loading: query.isLoading,
+    error: query.error ?? null,
+  };
 }
 
 export function useAddressAutocomplete(query: string) {
@@ -83,12 +111,18 @@ export function useBookingFavorites() {
 
 type CreateBookingInput = Omit<
   BookingState,
-  'serviceName' | 'categorySlug' | 'providerTypePreference' | 'preferredProviderUserId'
+  | 'serviceName'
+  | 'categorySlug'
+  | 'providerTypePreference'
+  | 'preferredProviderUserId'
+  | 'assignedProviderOrganizationId'
 > & {
   serviceId: number;
   // SP2 — optional so existing callers keep working; default to 'any'/null.
   providerTypePreference?: BookingState['providerTypePreference'];
   preferredProviderUserId?: BookingState['preferredProviderUserId'];
+  // SP3 Task 9 — optional company pick; defaults to null.
+  assignedProviderOrganizationId?: BookingState['assignedProviderOrganizationId'];
 };
 
 export function useCreateBooking() {
@@ -112,6 +146,8 @@ export function useCreateBooking() {
         // SP2 — client provider selection. The backend reads these 2 keys.
         provider_type_preference: input.providerTypePreference ?? 'any',
         preferred_provider_user_id: input.preferredProviderUserId ?? null,
+        // SP3 Task 9 — premium company pick (mutually exclusive with the worker).
+        assigned_provider_organization_id: input.assignedProviderOrganizationId ?? null,
       });
       return res.data.data ?? res.data;
     },

@@ -47,6 +47,18 @@ export function BookingStepProvider({ navigation }: Props) {
     dispatch({ type: 'SET_PREFERRED_PROVIDER', preferredProviderUserId: null });
   };
 
+  const clearCompany = () => {
+    dispatch({ type: 'SET_PREFERRED_COMPANY', assignedProviderOrganizationId: null });
+  };
+
+  const openCompanyBrowse = () => {
+    // SP3 Task 9 — open the in-stack company search in SELECTION mode. It shares
+    // this wizard's BookingProvider context, so tapping "Choisir" there dispatches
+    // SET_PREFERRED_COMPANY and goes back: the org id lands in state
+    // (assignedProviderOrganizationId), mutually exclusive with the worker pick.
+    navigation.navigate('BookingCompanySearch', { serviceCatalogId: state.serviceId ?? undefined });
+  };
+
   const openProviderBrowse = () => {
     // SP2 palier 3 — open the in-stack provider search in SELECTION mode.
     // It shares this wizard's BookingProvider context, so tapping "Choisir"
@@ -97,6 +109,18 @@ export function BookingStepProvider({ navigation }: Props) {
         </View>
       ) : null}
 
+      {/* Currently pinned company */}
+      {state.assignedProviderOrganizationId ? (
+        <View style={styles.pinnedCard}>
+          <Text style={styles.pinnedText}>
+            Société choisie (#{state.assignedProviderOrganizationId})
+          </Text>
+          <Pressable testID="clear-preferred-company" onPress={clearCompany}>
+            <Text style={styles.pinnedClear}>Retirer</Text>
+          </Pressable>
+        </View>
+      ) : null}
+
       {/* Tier 2 — favourites */}
       {favorites.length > 0 ? (
         <View style={styles.section}>
@@ -131,6 +155,16 @@ export function BookingStepProvider({ navigation }: Props) {
             onPress={openProviderBrowse}
             fullWidth
           />
+          {state.providerTypePreference === 'company' ? (
+            <View style={styles.companyPickSpacer}>
+              <Button
+                label="Choisir une société"
+                variant="secondary"
+                onPress={openCompanyBrowse}
+                fullWidth
+              />
+            </View>
+          ) : null}
         </View>
       ) : (
         <View testID="premium-upsell" style={styles.upsellCard}>
@@ -175,6 +209,9 @@ const styles = StyleSheet.create({
   },
   section: {
     marginTop: spacing.lg,
+  },
+  companyPickSpacer: {
+    marginTop: spacing.sm,
   },
   typeGroup: {
     gap: spacing.sm,
