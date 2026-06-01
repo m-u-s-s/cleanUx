@@ -25,7 +25,7 @@ php artisan serve
 - **Reverb 1** (WebSocket) + Pusher fallback
 - **Cashier 16** (Stripe) + Stripe Connect Express
 - **Sentry 4.25** + Spatie Backup 9.3
-- **Pas de Sentry/Crashlytics natif** : voir `docs/STORES_SUBMISSION_RUNBOOK.md` pour wrap mobile Capacitor
+- **Mobile** : apps Expo / React Native (`mobile/client` + `mobile/provider`) — Sentry RN, soumission EAS ; voir `docs/STORES_SUBMISSION_RUNBOOK.md`
 
 ## Modules livrés (50)
 
@@ -51,7 +51,7 @@ CGV/Privacy/Cookies/Mentions · Cookie banner · Health endpoints · UTM capture
 - `docs/GO_LIVE_CHECKLIST.md` — checklist go-live
 - `docs/sentry-integration.md` — Sentry setup
 - `docs/backup-automation-guide.md` — Spatie Backup
-- `docs/mobile-pwa-capacitor-guide.md` — wrap mobile Capacitor
+- `docs/realtime-mobile.md` — realtime côté mobile (Expo / React Native)
 
 ## Tests
 
