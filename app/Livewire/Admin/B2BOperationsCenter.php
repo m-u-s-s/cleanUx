@@ -22,6 +22,9 @@ use Illuminate\Contracts\View\View;
 use Illuminate\Support\Collection;
 use Livewire\Component;
 
+/**
+ * @property-read Collection<int, ContractSlaEvent> $slaBreaches
+ */
 class B2BOperationsCenter extends Component
 {
     public ?int $selectedAccountId = null;
@@ -78,6 +81,7 @@ class B2BOperationsCenter extends Component
         'instructions' => '',
     ];
 
+    /** @var array<string, mixed> */
     public array $rateCardForm = [
         'service_catalog_id' => null,
         'unit_price_cents' => null,

@@ -4,6 +4,7 @@ namespace App\Livewire\ClientCompany;
 
 use App\Models\ContractSlaEvent;
 use App\Models\OrganizationContract;
+use Illuminate\Contracts\View\View;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
@@ -36,7 +37,7 @@ class ClientContractsCenter extends Component
             ->get();
     }
 
-    public function render()
+    public function render(): View
     {
         return view('livewire.client-company.client-contracts-center', [
             'contracts' => $this->contracts,

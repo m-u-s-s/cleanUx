@@ -4,7 +4,9 @@ namespace App\Services\Contracts;
 
 use App\Exceptions\ContractPolicyException;
 use App\Models\EnterpriseWorkOrder;
+use App\Models\OrganizationContract;
 use App\Models\WorkOrderLine;
+use Illuminate\Database\Eloquent\Collection;
 
 class WorkOrderContractService
 {
@@ -17,13 +19,16 @@ class WorkOrderContractService
      */
     public function priceLines(EnterpriseWorkOrder $workOrder): void
     {
+        /** @var OrganizationContract|null $contract */
         $contract = $workOrder->organizationContract;
         if (! $contract) {
             return;
         }
 
-        foreach ($workOrder->lines as $line) {
-            /** @var WorkOrderLine $line */
+        /** @var Collection<int, WorkOrderLine> $lines */
+        $lines = $workOrder->lines;
+
+        foreach ($lines as $line) {
             $serviceId = $line->service_catalog_id ?: $workOrder->service_catalog_id;
             $base = (float) ($line->unit_price ?? 0);
             $res = $this->pricing->resolveAmount($contract, $serviceId ? (int) $serviceId : null, $base);
@@ -45,6 +50,7 @@ class WorkOrderContractService
      */
     public function assertApprovable(EnterpriseWorkOrder $workOrder): void
     {
+        /** @var OrganizationContract|null $contract */
         $contract = $workOrder->organizationContract;
         if (! $contract) {
             return;

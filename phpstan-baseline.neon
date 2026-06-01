@@ -31,12 +31,6 @@ parameters:
 			path: app/Actions/Booking/CancelRecurringSeriesAction.php
 
 		-
-			message: '#^Method App\\Actions\\Booking\\CreateBookingFromApiAction\:\:execute\(\) has parameter \$data with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: app/Actions/Booking/CreateBookingFromApiAction.php
-
-		-
 			message: '#^Method App\\Actions\\Booking\\CreateRecurringSeriesAction\:\:assertCapacity\(\) has parameter \$serviceLoads with no value type specified in iterable type array\.$#'
 			identifier: missingType.iterableValue
 			count: 1
@@ -2255,90 +2249,6 @@ parameters:
 			identifier: missingType.property
 			count: 1
 			path: app/Livewire/Admin/B2BMonthlyInvoicesCenter.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\OrganizationContract\:\:\$approval_mode\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Livewire/Admin/B2BOperationsCenter.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\OrganizationContract\:\:\$billing_cycle\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Livewire/Admin/B2BOperationsCenter.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\OrganizationContract\:\:\$country_id\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Livewire/Admin/B2BOperationsCenter.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\OrganizationContract\:\:\$default_cost_center\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Livewire/Admin/B2BOperationsCenter.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\OrganizationContract\:\:\$default_field_team_id\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Livewire/Admin/B2BOperationsCenter.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\OrganizationContract\:\:\$default_service_partner_id\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Livewire/Admin/B2BOperationsCenter.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\OrganizationContract\:\:\$negotiated_discount_percent\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Livewire/Admin/B2BOperationsCenter.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\OrganizationContract\:\:\$notes\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Livewire/Admin/B2BOperationsCenter.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\OrganizationContract\:\:\$payment_terms_days\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Livewire/Admin/B2BOperationsCenter.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\OrganizationContract\:\:\$pricing_model\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Livewire/Admin/B2BOperationsCenter.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\OrganizationContract\:\:\$requires_purchase_order\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Livewire/Admin/B2BOperationsCenter.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\OrganizationContract\:\:\$service_zone_id\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Livewire/Admin/B2BOperationsCenter.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\OrganizationContract\:\:\$sla_resolution_hours\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Livewire/Admin/B2BOperationsCenter.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\OrganizationContract\:\:\$sla_response_hours\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Livewire/Admin/B2BOperationsCenter.php
 
 		-
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$country_id\.$#'
@@ -13613,12 +13523,6 @@ parameters:
 			identifier: missingType.generics
 			count: 1
 			path: app/Models/OrganizationAccount.php
-
-		-
-			message: '#^Class App\\Models\\OrganizationContract uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
-			identifier: missingType.generics
-			count: 1
-			path: app/Models/OrganizationContract.php
 
 		-
 			message: '#^Method App\\Models\\OrganizationContract\:\:country\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'

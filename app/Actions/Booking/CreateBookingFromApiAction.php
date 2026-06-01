@@ -25,10 +25,10 @@ final class CreateBookingFromApiAction
      * Execute the booking creation.
      *
      * @param  User  $user  Authenticated client
-     * @param  array  $data  Validated request data
+     * @param  array<string, mixed>  $data  Validated request data
      * @return Booking The freshly created (and re-fetched) booking
      */
-    public function execute(object $user, array $data): Booking
+    public function execute(User $user, array $data): Booking
     {
         $now = now();
         $isAsap = ($data['booking_mode'] ?? 'scheduled') === 'asap';
@@ -99,7 +99,7 @@ final class CreateBookingFromApiAction
         if (Arr::get($data, 'entreprise_approval_required', false)) {
             try {
                 app(EnterpriseBookingApprovalService::class)
-                    ->createForBooking($booking, $user instanceof User ? $user : null, Arr::get($data, 'site_instructions'));
+                    ->createForBooking($booking, $user, Arr::get($data, 'site_instructions'));
             } catch (\Throwable $e) {
                 \Log::warning('Enterprise approval creation failed (API booking)', [
                     'booking_id' => $booking->id,

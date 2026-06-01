@@ -2,13 +2,49 @@
 
 namespace App\Models;
 
+use Database\Factories\OrganizationContractFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Carbon;
+use Illuminate\Support\Collection;
 
+/**
+ * OrganizationContract — contrat-cadre B2B entre une organisation cliente et
+ * (optionnellement) une organisation prestataire : tarifs négociés, SLA,
+ * politique d'approbation et fenêtre de validité.
+ *
+ * @property int $id
+ * @property int $organization_account_id
+ * @property int|null $provider_organization_id
+ * @property int|null $country_id
+ * @property int|null $service_zone_id
+ * @property int|null $default_field_team_id
+ * @property int|null $default_service_partner_id
+ * @property string|null $contract_reference
+ * @property string $status
+ * @property string|null $pricing_model
+ * @property string|null $billing_cycle
+ * @property Carbon|null $effective_from
+ * @property Carbon|null $effective_to
+ * @property string|null $approval_mode
+ * @property bool $requires_purchase_order
+ * @property string|null $default_cost_center
+ * @property float|null $negotiated_discount_percent
+ * @property int|null $payment_terms_days
+ * @property int|null $sla_response_hours
+ * @property int|null $sla_resolution_hours
+ * @property array<int, int>|null $allowed_service_catalog_ids
+ * @property array<string, mixed>|null $metadata
+ * @property string|null $notes
+ * @property-read OrganizationAccount|null $providerOrganization
+ * @property-read Collection<int, ContractRateCard> $rateCards
+ * @property-read Collection<int, ContractSlaEvent> $slaEvents
+ */
 class OrganizationContract extends Model
 {
+    /** @use HasFactory<OrganizationContractFactory> */
     use HasFactory;
 
     protected $fillable = [
@@ -59,13 +95,13 @@ class OrganizationContract extends Model
         return $this->belongsTo(OrganizationAccount::class, 'provider_organization_id');
     }
 
-    /** @return HasMany<ContractRateCard> */
+    /** @return HasMany<ContractRateCard, $this> */
     public function rateCards(): HasMany
     {
         return $this->hasMany(ContractRateCard::class);
     }
 
-    /** @return HasMany<ContractSlaEvent> */
+    /** @return HasMany<ContractSlaEvent, $this> */
     public function slaEvents(): HasMany
     {
         return $this->hasMany(ContractSlaEvent::class, 'organization_contract_id');

@@ -7,6 +7,7 @@ use App\Models\Mission;
 use App\Models\MissionBatch;
 use App\Models\MissionBatchDay;
 use App\Models\MissionTaskSegment;
+use App\Models\OrganizationContract;
 use App\Models\WorkOrderLine;
 use App\Services\Contracts\ContractSlaService;
 use App\Services\Contracts\WorkOrderContractService;
@@ -236,6 +237,7 @@ class EnterpriseWorkOrderMissionGeneratorService
             return;
         }
 
+        /** @var OrganizationContract|null $contract */
         $contract = $workOrder->organizationContract;
         if (! $contract || ! $contract->provider_organization_id) {
             return;

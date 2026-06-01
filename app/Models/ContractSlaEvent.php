@@ -2,12 +2,14 @@
 
 namespace App\Models;
 
+use Database\Factories\ContractSlaEventFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class ContractSlaEvent extends Model
 {
+    /** @use HasFactory<ContractSlaEventFactory> */
     use HasFactory;
 
     public const KIND_RESPONSE = 'response';
