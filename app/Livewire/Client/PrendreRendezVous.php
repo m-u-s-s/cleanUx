@@ -359,6 +359,21 @@ class PrendreRendezVous extends Component
     }
 
     /**
+     * SP2 Task 6 — visibilité du palier premium « choisir un NOUVEAU prestataire ».
+     *
+     * Aligné sur le gate AUTORITAIRE du backend (ProviderSelectionResolver), qui
+     * autorise ce palier uniquement si le CustomerProfile est premium
+     * (plan_type==='premium' && plan_status==='active'), particulier OU société.
+     *
+     * Volontairement distinct de isPremiumClient()/canChooseEmployee() (source
+     * User plan + isEntreprise + admin) utilisés par d'autres features hors SP2.
+     */
+    public function canPickPremiumProvider(): bool
+    {
+        return (bool) (Auth::user()?->customerProfile?->isPremium() ?? false);
+    }
+
+    /**
      * Bouton « je suis pressé » : abandonne le presta préféré indisponible et
      * re-soumet en auto-match.
      */

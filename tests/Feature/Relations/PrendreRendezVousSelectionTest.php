@@ -120,7 +120,13 @@ class PrendreRendezVousSelectionTest extends TestCase
         $client = User::factory()->client()->create();
         $stranger = User::factory()->employe()->create();
 
-        $this->bookingComponentFor($client, ['preferredProviderUserId' => $stranger->id])['component']
+        $component = $this->bookingComponentFor($client, ['preferredProviderUserId' => $stranger->id])['component'];
+
+        // Cohérence SP2 : l'affichage du picker premium est OFF pour un client
+        // sans CustomerProfile premium — la MÊME condition que le refus backend.
+        $this->assertFalse($component->instance()->canPickPremiumProvider());
+
+        $component
             ->call('validerRdv')
             ->assertHasErrors('preferredProviderUserId')
             ->assertNotSet('step', 5);
@@ -157,7 +163,13 @@ class PrendreRendezVousSelectionTest extends TestCase
         $client = $this->premiumProfileClient();
         $stranger = User::factory()->employe()->create();
 
-        $this->bookingComponentFor($client, ['preferredProviderUserId' => $stranger->id])['component']
+        $component = $this->bookingComponentFor($client, ['preferredProviderUserId' => $stranger->id])['component'];
+
+        // Cohérence SP2 : l'affichage du picker premium est ON pour un client
+        // CustomerProfile premium — et la soumission d'un nouveau presta réussit.
+        $this->assertTrue($component->instance()->canPickPremiumProvider());
+
+        $component
             ->call('validerRdv')
             ->assertHasNoErrors()
             ->assertSet('step', 5);

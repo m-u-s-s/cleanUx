@@ -57,7 +57,8 @@
     @endif
 
     {{-- Palier 3 — Choisir un NOUVEAU prestataire (premium) --}}
-    @if ($this->isPremiumClient())
+    {{-- SP2 : aligné sur le gate backend (ProviderSelectionResolver = customerProfile->isPremium). --}}
+    @if ($this->canPickPremiumProvider())
         <div class="space-y-2">
             <button
                 type="button"
