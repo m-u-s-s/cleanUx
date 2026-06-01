@@ -12,4 +12,6 @@
 
         @include('livewire.admin.b2b.operations.recent-work-orders')
     </div>
+
+    @include('livewire.admin.b2b.operations.sla-breaches')
 </div>

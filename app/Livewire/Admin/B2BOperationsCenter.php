@@ -2,7 +2,10 @@
 
 namespace App\Livewire\Admin;
 
+use App\Enums\OrganizationType;
 use App\Exceptions\ContractPolicyException;
+use App\Models\ContractRateCard;
+use App\Models\ContractSlaEvent;
 use App\Models\EnterpriseWorkOrder;
 use App\Models\FieldTeam;
 use App\Models\OrganizationAccount;
@@ -16,6 +19,7 @@ use App\Models\WorkOrderLine;
 use App\Services\Contracts\WorkOrderContractService;
 use App\Support\ActivityLogger;
 use Illuminate\Contracts\View\View;
+use Illuminate\Support\Collection;
 use Livewire\Component;
 
 class B2BOperationsCenter extends Component
@@ -28,6 +32,7 @@ class B2BOperationsCenter extends Component
 
     public array $contractForm = [
         'organization_account_id' => null,
+        'provider_organization_id' => null,
         'country_id' => null,
         'service_zone_id' => null,
         'default_field_team_id' => null,
@@ -73,6 +78,11 @@ class B2BOperationsCenter extends Component
         'instructions' => '',
     ];
 
+    public array $rateCardForm = [
+        'service_catalog_id' => null,
+        'unit_price_cents' => null,
+    ];
+
     public array $workOrderLines = [
         ['title' => '', 'service_catalog_id' => null, 'quantity' => 1, 'unit' => 'forfait', 'unit_price' => null, 'surface_value' => null],
     ];
@@ -81,6 +91,7 @@ class B2BOperationsCenter extends Component
     {
         return [
             'contractForm.organization_account_id' => ['required', 'exists:organization_accounts,id'],
+            'contractForm.provider_organization_id' => ['nullable', 'integer', 'exists:organization_accounts,id'],
             'contractForm.country_id' => ['nullable', 'exists:countries,id'],
             'contractForm.service_zone_id' => ['nullable', 'exists:service_zones,id'],
             'contractForm.default_field_team_id' => ['nullable', 'exists:field_teams,id'],
@@ -168,6 +179,7 @@ class B2BOperationsCenter extends Component
         $this->contractId = $contract->id;
         $this->contractForm = [
             'organization_account_id' => $contract->organization_account_id,
+            'provider_organization_id' => $contract->provider_organization_id,
             'country_id' => $contract->country_id,
             'service_zone_id' => $contract->service_zone_id,
             'default_field_team_id' => $contract->default_field_team_id,
@@ -332,6 +344,31 @@ class B2BOperationsCenter extends Component
         $this->dispatch('toast', 'Ordre de service rejeté.', 'error');
     }
 
+    public function addRateCard(int $contractId, int $serviceCatalogId, int $unitPriceCents): void
+    {
+        $card = ContractRateCard::updateOrCreate(
+            ['organization_contract_id' => $contractId, 'service_catalog_id' => $serviceCatalogId],
+            ['negotiated_unit_price_cents' => $unitPriceCents, 'currency' => 'EUR'],
+        );
+
+        ActivityLogger::log('contract_rate_card_saved', $card, [
+            'contract_id' => $contractId,
+            'service_catalog_id' => $serviceCatalogId,
+            'unit_price_cents' => $unitPriceCents,
+        ]);
+        $this->dispatch('toast', 'Grille tarifaire mise à jour.', 'success');
+    }
+
+    /** @return Collection<int, ContractSlaEvent> */
+    public function getSlaBreachesProperty(): Collection
+    {
+        return ContractSlaEvent::query()
+            ->whereIn('status', ['breached', 'escalated'])
+            ->latest('due_at')
+            ->limit(50)
+            ->get();
+    }
+
     public function render(): View
     {
         $accounts = OrganizationAccount::query()->withCount(['sites', 'organizationContracts', 'enterpriseWorkOrders'])->orderBy('name')->get();
@@ -350,6 +387,19 @@ class B2BOperationsCenter extends Component
             ->limit(12)
             ->get();
 
+        $providerOrganizations = OrganizationAccount::query()
+            ->where('type', OrganizationType::PROVIDER_COMPANY->value)
+            ->orderBy('name')
+            ->get(['id', 'name']);
+
+        $rateCards = $this->contractId
+            ? ContractRateCard::query()
+                ->where('organization_contract_id', $this->contractId)
+                ->with('serviceCatalog:id,name')
+                ->orderByDesc('id')
+                ->get()
+            : collect();
+
         return view('livewire.admin.b2b-operations-center', [
             'accounts' => $accounts,
             'contracts' => $contracts,
@@ -359,6 +409,9 @@ class B2BOperationsCenter extends Component
             'teams' => FieldTeam::orderBy('name')->get(['id', 'name']),
             'partners' => ServicePartner::orderBy('name')->get(['id', 'name']),
             'requesters' => User::clientFacing()->orderBy('name')->get(['id', 'name']),
+            'providerOrganizations' => $providerOrganizations,
+            'rateCards' => $rateCards,
+            'slaBreaches' => $this->slaBreaches,
         ]);
     }
 }
