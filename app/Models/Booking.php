@@ -69,6 +69,7 @@ class Booking extends Model
 
         // Provider
         'preferred_provider_user_id',
+        'provider_type_preference',
         'assigned_provider_organization_id',
         'assigned_provider_user_id',
         'provider_team_id',
@@ -495,6 +496,15 @@ class Booking extends Model
                         ->orWhere('city_name', 'like', $like);
                 });
         });
+    }
+
+    // ──────────────────────────────────────────────────────
+    // Helpers provider preference
+    // ──────────────────────────────────────────────────────
+
+    public function prefersProviderType(string $type): bool
+    {
+        return ($this->provider_type_preference ?? 'any') === $type;
     }
 
     // ──────────────────────────────────────────────────────
