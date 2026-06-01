@@ -294,7 +294,7 @@ class BookingHub extends Component
             'purchase_order_reference' => $this->purchaseOrderRef ?: null,
             'commentaire_client' => $this->notes ?: null,
             'trade_form_answers' => $this->hasTradeFormSchema() ? $this->tradeFormAnswers : null,
-            'status' => $approvalRequired ? 'en_attente' : 'en_attente',
+            'status' => $approvalRequired ? 'pending_approval' : 'pending',
             'entreprise_approval_required' => $approvalRequired,
             'site_instructions' => $site->access_instructions,
         ], $selection);
@@ -323,9 +323,24 @@ class BookingHub extends Component
 
         // CreateBookingAction renseigne organization_account_id mais pas le contexte
         // client société consommé par le hub (liste filtrée sur customer_*).
+        //
+        // L'action canonique (et EnterpriseBookingApprovalService) normalise le
+        // statut dans le vocabulaire moteur ('en_attente'/'confirme'). Or la liste
+        // du hub + approveBooking() raisonnent dans LEUR propre vocabulaire
+        // ('pending_approval'/'pending'/'confirmed') : sans réalignement, une
+        // booking 'en_attente' n'affiche jamais le bouton « Approuver ». On reposе
+        // donc le statut attendu par le hub — sauf si le moteur a déjà confirmé
+        // instantanément (ex. ASAP), auquel cas on respecte la confirmation.
+        $hubStatus = match (true) {
+            $booking->status === 'confirme' || $booking->status === 'confirmed' => 'confirmed',
+            $approvalRequired => 'pending_approval',
+            default => 'pending',
+        };
+
         $booking->forceFill([
             'customer_user_id' => $user->id,
             'customer_organization_id' => $orgId,
+            'status' => $hubStatus,
         ])->save();
 
         $this->reset([
