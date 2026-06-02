@@ -93,7 +93,7 @@ const apiMock = new MockAdapter(apiClient);
 
 function makeWrapper() {
   const client = new QueryClient({
-    defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
+    defaultOptions: { queries: { retry: false, gcTime: Infinity }, mutations: { retry: false } },
   });
   return function Wrapper({ children }: { children: React.ReactNode }) {
     return (
@@ -238,7 +238,7 @@ describe('BookingStep3Coordinates interaction', () => {
  */
 function makePrefilledWrapper() {
   const client = new QueryClient({
-    defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
+    defaultOptions: { queries: { retry: false, gcTime: Infinity }, mutations: { retry: false } },
   });
   function Wrapper({ children }: { children: React.ReactNode }) {
     return (

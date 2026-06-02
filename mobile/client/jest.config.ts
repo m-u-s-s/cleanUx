@@ -3,6 +3,17 @@ import path from 'path';
 
 const config: Config = {
   preset: 'jest-expo',
+  // react-test-renderer (used by @testing-library/react-native) is deprecated
+  // under React 19 and leaves an async operation pending at the end of a run
+  // that node cannot attribute: `jest --detectOpenHandles` reports NO leaking
+  // handle in our code, yet jest's 1s grace timer still trips and prints either
+  // "A worker process has failed to exit gracefully" (parallel) or "Jest did
+  // not exit one second after the test run" (serial). Running in a single
+  // worker plus forceExit ends the run cleanly once every suite has passed
+  // (exit code 0). This never hides a test failure; if a real handle leak is
+  // ever suspected, re-check with `jest --detectOpenHandles` (green today).
+  maxWorkers: 1,
+  forceExit: true,
   // Exclude Detox e2e tests — the app uses Maestro for e2e, not Detox.
   // These files import 'detox' which is not installed.
   testPathIgnorePatterns: [

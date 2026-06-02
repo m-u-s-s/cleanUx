@@ -43,7 +43,7 @@ const mock = new MockAdapter(apiClient);
 
 function makeWrapper() {
   const client = new QueryClient({
-    defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
+    defaultOptions: { queries: { retry: false, gcTime: Infinity }, mutations: { retry: false } },
   });
   return function Wrapper({ children }: { children: React.ReactNode }) {
     return React.createElement(QueryClientProvider, { client }, children);
