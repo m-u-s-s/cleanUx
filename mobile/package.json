@@ -1,5 +1,5 @@
 {
-  "name": "cleanux-mobile",
+  "name": "brio-mobile",
   "private": true,
   "workspaces": [
     "shared",
