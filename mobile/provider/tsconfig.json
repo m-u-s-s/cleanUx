@@ -65,7 +65,9 @@
       "@react-navigation/native": ["node_modules/@react-navigation/native"],
       "@react-navigation/native/*": ["node_modules/@react-navigation/native/*"],
       "expo-notifications": ["node_modules/expo-notifications"],
-      "expo-notifications/*": ["node_modules/expo-notifications/*"]
+      "expo-notifications/*": ["node_modules/expo-notifications/*"],
+      "pusher-js": ["node_modules/pusher-js/index.d.ts"],
+      "pusher-js/*": ["node_modules/pusher-js/*"]
     },
     "types": ["jest", "node"]
   },
