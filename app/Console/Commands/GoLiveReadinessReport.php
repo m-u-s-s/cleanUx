@@ -58,7 +58,7 @@ class GoLiveReadinessReport extends Command
             $this->newLine();
             $this->table(
                 ['Metric', 'Value'],
-                collect($health['metrics'])->map(fn ($value, $key) => [$key, is_bool($value) ? ($value ? 'true' : 'false') : (string) ($value ?? 'null')])->all()
+                collect($health['metrics'])->map(fn ($value, $key) => [$key, $this->stringifyMetric($value)])->all()
             );
         }
 
@@ -71,5 +71,18 @@ class GoLiveReadinessReport extends Command
         $this->warn('Go-live readiness report détecte des points bloquants ou incomplets.');
 
         return $this->option('strict') ? self::FAILURE : self::SUCCESS;
+    }
+
+    private function stringifyMetric(mixed $value): string
+    {
+        if (is_bool($value)) {
+            return $value ? 'true' : 'false';
+        }
+
+        if (is_array($value)) {
+            return $value === [] ? 'none' : implode(', ', array_map(fn ($item) => (string) $item, $value));
+        }
+
+        return (string) ($value ?? 'null');
     }
 }

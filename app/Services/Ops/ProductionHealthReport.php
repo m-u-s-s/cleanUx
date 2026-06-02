@@ -60,10 +60,16 @@ class ProductionHealthReport
         $this->pushCheck($checks, 'Storage public lié', $this->storageLinkExists(), 'warning', $this->storageLinkExists() ? 'linked' : 'missing');
         $this->pushCheck($checks, 'Storage et bootstrap cache inscriptibles', $this->writablePathsOk(), 'warning', $this->writablePathsOk() ? 'writable' : 'check permissions');
         $this->pushCheck($checks, 'Heartbeat monitoring activé', (bool) config('operations.monitoring.heartbeat_enabled', true), 'warning', config('operations.monitoring.heartbeat_enabled') ? 'enabled' : 'disabled');
-        $this->pushCheck($checks, 'Heartbeat récent', ! config('operations.monitoring.heartbeat_enabled', true) || ($heartbeat['exists'] && ($heartbeat['age_seconds'] ?? PHP_INT_MAX) <= (int) config('operations.monitoring.heartbeat_max_age_seconds', 900)), 'warning', $heartbeat['exists'] ? (string) ($heartbeat['age_seconds'] ?? 'unknown') : 'missing');
+        $this->pushCheck($checks, 'Heartbeat récent', ! config('operations.monitoring.heartbeat_enabled', true) || ($heartbeat['exists'] && ($heartbeat['age_seconds'] ?? PHP_INT_MAX) <= (int) config('operations.monitoring.heartbeat_max_age_seconds', 900)), 'error', $heartbeat['exists'] ? (string) ($heartbeat['age_seconds'] ?? 'unknown') : 'missing');
         $this->pushCheck($checks, 'Email de monitoring configuré', ! config('operations.monitoring.heartbeat_enabled', true) || filled(config('operations.monitoring.notify_email')), 'warning', (string) (config('operations.monitoring.notify_email') ?: 'missing'));
-        $this->pushCheck($checks, 'Configuration backups présente', $this->backupConfigOk(), 'warning', config('operations.backups.enabled') ? 'configured' : 'disabled');
-        $this->pushCheck($checks, 'Rétention backups positive', ! config('operations.backups.enabled', false) || (int) config('operations.backups.retention_days', 0) > 0, 'warning', (string) config('operations.backups.retention_days', 0));
+        $this->pushCheck($checks, 'Backups activés et configurés', (bool) config('operations.backups.enabled', false) && $this->backupConfigOk(), 'error', config('operations.backups.enabled') ? 'configured' : 'disabled');
+        $this->pushCheck($checks, 'Rétention backups positive', ! config('operations.backups.enabled', false) || (int) config('operations.backups.retention_days', 0) > 0, 'error', (string) config('operations.backups.retention_days', 0));
+
+        $pending = $this->pendingMigrationsCount();
+        $this->pushCheck($checks, 'Toutes les migrations appliquées', $pending === null || $pending === 0, 'error', $pending === null ? 'unknown' : (string) $pending);
+
+        $mock = $this->mockProviders();
+        $this->pushCheck($checks, 'Aucun provider en mode mock', count($mock) === 0, 'error', count($mock) === 0 ? 'none' : implode(', ', $mock));
 
         $metrics = [
             'app_env' => $appEnv,
@@ -79,6 +85,9 @@ class ProductionHealthReport
             'heartbeat_age_seconds' => $heartbeat['age_seconds'],
             'heartbeat_source' => $heartbeat['source'],
             'backups_enabled' => (bool) config('operations.backups.enabled', false),
+            'pending_migrations' => $pending,
+            'mock_providers' => $mock,
+            'mock_providers_count' => count($mock),
         ];
 
         return [
@@ -144,6 +153,49 @@ class ProductionHealthReport
         }
 
         return Arr::has(config('filesystems.disks', []), $disk);
+    }
+
+    /** @return list<string> */
+    protected function mockProviders(): array
+    {
+        $keys = [
+            'KYC' => 'kyc.default_provider',
+            'KYB identity' => 'kyb_v2.identity_provider',
+            'KYB VAT' => 'kyb_v2.vat_provider',
+            'KYB sanctions' => 'kyb_v2.sanctions_provider',
+            'SMS' => 'sms.default_provider',
+            'Push' => 'push.default_provider',
+            'Insurance' => 'insurance.default_provider',
+            'FX' => 'fx.default_provider',
+            'Geolocation' => 'geolocation_v2.provider',
+            'Email v2' => 'email_v2.provider',
+            'Masked calls' => 'masked_calls.provider',
+        ];
+        $mock = [];
+        foreach ($keys as $label => $key) {
+            if (strtolower((string) config($key)) === 'mock') {
+                $mock[] = $label;
+            }
+        }
+
+        return $mock;
+    }
+
+    protected function pendingMigrationsCount(): ?int
+    {
+        try {
+            $migrator = app('migrator');
+            if (! $migrator->getRepository()->repositoryExists()) {
+                return null;
+            }
+            $paths = array_merge([database_path('migrations')], $migrator->paths());
+            $files = $migrator->getMigrationFiles($paths);
+            $ran = $migrator->getRepository()->getRan();
+
+            return count(array_diff(array_keys($files), $ran));
+        } catch (Throwable) {
+            return null;
+        }
     }
 
     protected function safeHasTable(string $table): bool
