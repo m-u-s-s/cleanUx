@@ -54,26 +54,31 @@ class BusinessEntity extends Model
         return 'biz_'.Str::lower(Str::random(20));
     }
 
+    /** @return HasMany<User, $this> */
     public function documents(): HasMany
     {
         return $this->hasMany(BusinessDocument::class, 'entity_id');
     }
 
+    /** @return HasMany<User, $this> */
     public function verifications(): HasMany
     {
         return $this->hasMany(BusinessVerification::class, 'entity_id');
     }
 
+    /** @return HasMany<User, $this> */
     public function sanctionsChecks(): HasMany
     {
         return $this->hasMany(BusinessSanctionsCheck::class, 'entity_id');
     }
 
+    /** @return HasMany<User, $this> */
     public function beneficialOwners(): HasMany
     {
         return $this->hasMany(BusinessBeneficialOwner::class, 'entity_id');
     }
 
+    /** @return BelongsTo<User, $this> */
     public function owner(): BelongsTo
     {
         return $this->belongsTo(User::class, 'owner_user_id');

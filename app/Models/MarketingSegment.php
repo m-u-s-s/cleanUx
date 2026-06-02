@@ -22,11 +22,13 @@ class MarketingSegment extends Model
         'last_computed_at' => 'datetime',
     ];
 
+    /** @return HasMany<MarketingSegmentMember, $this> */
     public function memberships(): HasMany
     {
         return $this->hasMany(MarketingSegmentMember::class, 'segment_id');
     }
 
+    /** @return BelongsToMany<User, $this> */
     public function members(): BelongsToMany
     {
         return $this->belongsToMany(User::class, 'marketing_segment_members', 'segment_id', 'user_id')

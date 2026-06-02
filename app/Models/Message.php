@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Database\Factories\MessageFactory;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -21,7 +22,9 @@ use Illuminate\Support\Facades\DB;
  */
 class Message extends Model
 {
+    /** @use HasFactory<MessageFactory> */
     use HasFactory;
+
     use SoftDeletes;
 
     public const TYPE_TEXT = 'text';
@@ -68,37 +71,44 @@ class Message extends Model
     // Relations
     // ──────────────────────────────────────────────────────
 
+    /** @return BelongsTo<Channel, $this> */
     public function channel(): BelongsTo
     {
         return $this->belongsTo(Channel::class);
     }
 
+    /** @return BelongsTo<User, $this> */
     public function sender(): BelongsTo
     {
         return $this->belongsTo(User::class, 'user_id');
     }
 
+    /** @return BelongsTo<self, $this> */
     public function parent(): BelongsTo
     {
         return $this->belongsTo(self::class, 'parent_id');
     }
 
+    /** @return HasMany<self, $this> */
     public function replies(): HasMany
     {
         return $this->hasMany(self::class, 'parent_id')
             ->orderBy('created_at');
     }
 
+    /** @return HasMany<MessageReaction, $this> */
     public function reactions(): HasMany
     {
         return $this->hasMany(MessageReaction::class);
     }
 
+    /** @return HasMany<MessageMention, $this> */
     public function mentions(): HasMany
     {
         return $this->hasMany(MessageMention::class);
     }
 
+    /** @return HasMany<MessageAttachment, $this> */
     public function attachments(): HasMany
     {
         return $this->hasMany(MessageAttachment::class);

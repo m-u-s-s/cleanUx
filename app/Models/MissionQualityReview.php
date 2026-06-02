@@ -2,12 +2,14 @@
 
 namespace App\Models;
 
+use Database\Factories\MissionQualityReviewFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class MissionQualityReview extends Model
 {
+    /** @use HasFactory<MissionQualityReviewFactory> */
     use HasFactory;
 
     protected $fillable = [
@@ -29,11 +31,13 @@ class MissionQualityReview extends Model
         'meta' => 'array',
     ];
 
+    /** @return BelongsTo<Mission, $this> */
     public function mission(): BelongsTo
     {
         return $this->belongsTo(Mission::class);
     }
 
+    /** @return BelongsTo<User, $this> */
     public function reviewer(): BelongsTo
     {
         return $this->belongsTo(User::class, 'reviewer_user_id');

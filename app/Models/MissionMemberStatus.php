@@ -2,12 +2,14 @@
 
 namespace App\Models;
 
+use Database\Factories\MissionMemberStatusFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class MissionMemberStatus extends Model
 {
+    /** @use HasFactory<MissionMemberStatusFactory> */
     use HasFactory;
 
     protected $fillable = [
@@ -33,26 +35,31 @@ class MissionMemberStatus extends Model
         'last_reported_at' => 'datetime',
     ];
 
+    /** @return BelongsTo<Mission, $this> */
     public function mission(): BelongsTo
     {
         return $this->belongsTo(Mission::class);
     }
 
+    /** @return BelongsTo<MissionTaskSegment, $this> */
     public function segment(): BelongsTo
     {
         return $this->belongsTo(MissionTaskSegment::class, 'mission_task_segment_id');
     }
 
+    /** @return BelongsTo<MissionTaskSegmentAssignment, $this> */
     public function segmentAssignment(): BelongsTo
     {
         return $this->belongsTo(MissionTaskSegmentAssignment::class, 'segment_assignment_id');
     }
 
+    /** @return BelongsTo<FieldTeam, $this> */
     public function fieldTeam(): BelongsTo
     {
         return $this->belongsTo(FieldTeam::class);
     }
 
+    /** @return BelongsTo<User, $this> */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);

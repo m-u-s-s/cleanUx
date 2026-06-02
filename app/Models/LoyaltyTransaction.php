@@ -57,16 +57,19 @@ class LoyaltyTransaction extends Model
         'occurred_at' => 'datetime',
     ];
 
+    /** @return BelongsTo<LoyaltyAccount, $this> */
     public function account(): BelongsTo
     {
         return $this->belongsTo(LoyaltyAccount::class, 'loyalty_account_id');
     }
 
+    /** @return BelongsTo<User, $this> */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
+    /** @return BelongsTo<User, $this> */
     public function actor(): BelongsTo
     {
         return $this->belongsTo(User::class, 'actor_user_id');

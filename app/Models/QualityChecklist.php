@@ -29,6 +29,7 @@ class QualityChecklist extends Model
         'metadata' => 'array',
     ];
 
+    /** @return HasMany<QualityChecklistItem, $this> */
     public function items(): HasMany
     {
         return $this->hasMany(QualityChecklistItem::class, 'checklist_id')->orderBy('position');

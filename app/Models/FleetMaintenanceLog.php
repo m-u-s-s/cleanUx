@@ -31,11 +31,13 @@ class FleetMaintenanceLog extends Model
         'metadata' => 'array',
     ];
 
+    /** @return BelongsTo<FleetVehicle, $this> */
     public function vehicle(): BelongsTo
     {
         return $this->belongsTo(FleetVehicle::class, 'vehicle_id');
     }
 
+    /** @return BelongsTo<FleetEquipment, $this> */
     public function equipment(): BelongsTo
     {
         return $this->belongsTo(FleetEquipment::class, 'equipment_id');

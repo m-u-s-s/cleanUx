@@ -31,16 +31,19 @@ class OrganizationMember extends Model
     // Relations
     // ──────────────────────────────────────────────────────
 
+    /** @return BelongsTo<OrganizationAccount, $this> */
     public function organization(): BelongsTo
     {
         return $this->belongsTo(OrganizationAccount::class, 'organization_account_id');
     }
 
+    /** @return BelongsTo<User, $this> */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
+    /** @return BelongsTo<User, $this> */
     public function invitedBy(): BelongsTo
     {
         return $this->belongsTo(User::class, 'invited_by');

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Database\Factories\MessageMentionFactory;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -17,6 +18,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  */
 class MessageMention extends Model
 {
+    /** @use HasFactory<MessageMentionFactory> */
     use HasFactory;
 
     public const TYPE_USER = 'user';
@@ -42,11 +44,13 @@ class MessageMention extends Model
         'read_at' => 'datetime',
     ];
 
+    /** @return BelongsTo<Message, $this> */
     public function message(): BelongsTo
     {
         return $this->belongsTo(Message::class);
     }
 
+    /** @return BelongsTo<User, $this> */
     public function mentionedUser(): BelongsTo
     {
         return $this->belongsTo(User::class, 'mentioned_user_id');

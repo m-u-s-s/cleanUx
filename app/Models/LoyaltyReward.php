@@ -41,6 +41,7 @@ class LoyaltyReward extends Model
         'metadata' => 'array',
     ];
 
+    /** @return HasMany<LoyaltyRedemption, $this> */
     public function redemptions(): HasMany
     {
         return $this->hasMany(LoyaltyRedemption::class, 'reward_id');

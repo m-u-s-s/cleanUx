@@ -32,6 +32,7 @@ class BusinessBeneficialOwner extends Model
         'metadata' => 'array',
     ];
 
+    /** @return BelongsTo<BusinessEntity, $this> */
     public function entity(): BelongsTo
     {
         return $this->belongsTo(BusinessEntity::class, 'entity_id');

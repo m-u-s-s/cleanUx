@@ -2,12 +2,14 @@
 
 namespace App\Models;
 
+use Database\Factories\ZoneServiceRuleFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class ZoneServiceRule extends Model
 {
+    /** @use HasFactory<ZoneServiceRuleFactory> */
     use HasFactory;
 
     protected $fillable = [
@@ -30,11 +32,13 @@ class ZoneServiceRule extends Model
         'settings' => 'array',
     ];
 
+    /** @return BelongsTo<ServiceZone, $this> */
     public function serviceZone(): BelongsTo
     {
         return $this->belongsTo(ServiceZone::class);
     }
 
+    /** @return BelongsTo<ServiceCatalog, $this> */
     public function serviceCatalog(): BelongsTo
     {
         return $this->belongsTo(ServiceCatalog::class);

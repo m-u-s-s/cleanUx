@@ -2,12 +2,14 @@
 
 namespace App\Models;
 
+use Database\Factories\FieldTeamLoadSnapshotFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class FieldTeamLoadSnapshot extends Model
 {
+    /** @use HasFactory<FieldTeamLoadSnapshotFactory> */
     use HasFactory;
 
     protected $fillable = [
@@ -33,6 +35,7 @@ class FieldTeamLoadSnapshot extends Model
         'metadata' => 'array',
     ];
 
+    /** @return BelongsTo<FieldTeam, $this> */
     public function fieldTeam(): BelongsTo
     {
         return $this->belongsTo(FieldTeam::class);

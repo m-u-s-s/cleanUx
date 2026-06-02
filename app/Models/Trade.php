@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Database\Factories\TradeFactory;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -24,7 +25,9 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  */
 class Trade extends Model
 {
+    /** @use HasFactory<TradeFactory> */
     use HasFactory;
+
     use SoftDeletes;
 
     protected $fillable = [
@@ -83,6 +86,7 @@ class Trade extends Model
     // Relations
     // ──────────────────────────────────────────────────────
 
+    /** @return HasMany<ServiceCatalog, $this> */
     public function services(): HasMany
     {
         return $this->hasMany(ServiceCatalog::class)
@@ -90,26 +94,31 @@ class Trade extends Model
             ->orderBy('name');
     }
 
+    /** @return HasMany<TradeZoneSetting, $this> */
     public function activeServices(): HasMany
     {
         return $this->services()->where('is_active', true);
     }
 
+    /** @return HasMany<TradeZoneSetting, $this> */
     public function zoneSettings(): HasMany
     {
         return $this->hasMany(TradeZoneSetting::class);
     }
 
+    /** @return HasMany<TradeZonePricing, $this> */
     public function zonePricing(): HasMany
     {
         return $this->hasMany(TradeZonePricing::class);
     }
 
+    /** @return HasMany<ProviderTradeCertification, $this> */
     public function certifications(): HasMany
     {
         return $this->hasMany(ProviderTradeCertification::class);
     }
 
+    /** @return BelongsToMany<ServiceZone, $this> */
     public function zones(): BelongsToMany
     {
         return $this->belongsToMany(ServiceZone::class, 'trade_zone_settings')
@@ -119,6 +128,8 @@ class Trade extends Model
 
     /**
      * Utilisateurs (employés ou prestataires) habilités à exécuter ce métier.
+     *
+     * @return BelongsToMany<User, $this>
      */
     public function users(): BelongsToMany
     {

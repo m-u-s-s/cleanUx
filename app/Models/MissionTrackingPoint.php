@@ -2,12 +2,14 @@
 
 namespace App\Models;
 
+use Database\Factories\MissionTrackingPointFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class MissionTrackingPoint extends Model
 {
+    /** @use HasFactory<MissionTrackingPointFactory> */
     use HasFactory;
 
     protected $fillable = [
@@ -35,6 +37,7 @@ class MissionTrackingPoint extends Model
         'meta' => 'array',
     ];
 
+    /** @return BelongsTo<MissionTrackingSession, $this> */
     public function session(): BelongsTo
     {
         return $this->belongsTo(MissionTrackingSession::class, 'tracking_session_id');

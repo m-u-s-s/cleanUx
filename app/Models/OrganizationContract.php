@@ -84,6 +84,7 @@ class OrganizationContract extends Model
         'metadata' => 'array',
     ];
 
+    /** @return BelongsTo<OrganizationAccount, $this> */
     public function organizationAccount(): BelongsTo
     {
         return $this->belongsTo(OrganizationAccount::class);
@@ -107,26 +108,31 @@ class OrganizationContract extends Model
         return $this->hasMany(ContractSlaEvent::class, 'organization_contract_id');
     }
 
+    /** @return BelongsTo<Country, $this> */
     public function country(): BelongsTo
     {
         return $this->belongsTo(Country::class);
     }
 
+    /** @return BelongsTo<ServiceZone, $this> */
     public function serviceZone(): BelongsTo
     {
         return $this->belongsTo(ServiceZone::class);
     }
 
+    /** @return BelongsTo<FieldTeam, $this> */
     public function defaultFieldTeam(): BelongsTo
     {
         return $this->belongsTo(FieldTeam::class, 'default_field_team_id');
     }
 
+    /** @return BelongsTo<ServicePartner, $this> */
     public function defaultServicePartner(): BelongsTo
     {
         return $this->belongsTo(ServicePartner::class, 'default_service_partner_id');
     }
 
+    /** @return HasMany<EnterpriseWorkOrder, $this> */
     public function workOrders(): HasMany
     {
         return $this->hasMany(EnterpriseWorkOrder::class);

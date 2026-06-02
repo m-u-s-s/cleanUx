@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 trait HasRecurringSeries
 {
+    /** @return BelongsTo<self, $this> */
     public function seriesMaster(): BelongsTo
     {
         return $this->belongsTo(self::class, 'recurring_series_id', 'recurring_series_id')

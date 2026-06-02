@@ -24,6 +24,7 @@ class WebhookEvent extends Model
         return 'evt_'.Str::lower(Str::random(24));
     }
 
+    /** @return HasMany<WebhookDelivery, $this> */
     public function deliveries(): HasMany
     {
         return $this->hasMany(WebhookDelivery::class, 'event_id');

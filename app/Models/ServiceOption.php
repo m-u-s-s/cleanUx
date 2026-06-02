@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Database\Factories\ServiceOptionFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -20,6 +21,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  */
 class ServiceOption extends Model
 {
+    /** @use HasFactory<ServiceOptionFactory> */
     use HasFactory;
 
     protected $fillable = [
@@ -54,6 +56,7 @@ class ServiceOption extends Model
         'sort_order' => 'integer',
     ];
 
+    /** @return BelongsTo<ServiceCatalog, $this> */
     public function service(): BelongsTo
     {
         return $this->belongsTo(ServiceCatalog::class, 'service_catalog_id');

@@ -32,11 +32,13 @@ class OnboardingStepCompletion extends Model
         'metadata' => 'array',
     ];
 
+    /** @return BelongsTo<OnboardingProgress, $this> */
     public function progress(): BelongsTo
     {
         return $this->belongsTo(OnboardingProgress::class, 'progress_id');
     }
 
+    /** @return BelongsTo<OnboardingStep, $this> */
     public function step(): BelongsTo
     {
         return $this->belongsTo(OnboardingStep::class, 'step_id');

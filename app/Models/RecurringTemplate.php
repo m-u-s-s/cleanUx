@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Carbon\Carbon;
+use Database\Factories\RecurringTemplateFactory;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -16,6 +17,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  */
 class RecurringTemplate extends Model
 {
+    /** @use HasFactory<RecurringTemplateFactory> */
     use HasFactory;
 
     public const CATEGORY_OFFICE = 'office';
@@ -70,16 +72,19 @@ class RecurringTemplate extends Model
     // Relations
     // ──────────────────────────────────────────────────────
 
+    /** @return BelongsTo<User, $this> */
     public function ownerUser(): BelongsTo
     {
         return $this->belongsTo(User::class, 'owner_user_id');
     }
 
+    /** @return BelongsTo<OrganizationAccount, $this> */
     public function ownerOrganization(): BelongsTo
     {
         return $this->belongsTo(OrganizationAccount::class, 'owner_organization_id');
     }
 
+    /** @return BelongsTo<ServiceCatalog, $this> */
     public function defaultService(): BelongsTo
     {
         return $this->belongsTo(ServiceCatalog::class, 'default_service_catalog_id');

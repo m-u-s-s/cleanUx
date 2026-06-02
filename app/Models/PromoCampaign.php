@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Database\Factories\PromoCampaignFactory;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -11,6 +12,7 @@ use Illuminate\Support\Carbon;
 
 class PromoCampaign extends Model
 {
+    /** @use HasFactory<PromoCampaignFactory> */
     use HasFactory;
 
     public const STATUS_DRAFT = 'draft';
@@ -47,11 +49,13 @@ class PromoCampaign extends Model
         'metadata' => 'array',
     ];
 
+    /** @return HasMany<User, $this> */
     public function promoCodes(): HasMany
     {
         return $this->hasMany(PromoCode::class);
     }
 
+    /** @return BelongsTo<User, $this> */
     public function createdBy(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by_user_id');

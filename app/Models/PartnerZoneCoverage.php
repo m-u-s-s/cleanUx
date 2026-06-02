@@ -2,12 +2,14 @@
 
 namespace App\Models;
 
+use Database\Factories\PartnerZoneCoverageFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class PartnerZoneCoverage extends Model
 {
+    /** @use HasFactory<PartnerZoneCoverageFactory> */
     use HasFactory;
 
     protected $fillable = [
@@ -28,16 +30,19 @@ class PartnerZoneCoverage extends Model
         'metadata' => 'array',
     ];
 
+    /** @return BelongsTo<ServicePartner, $this> */
     public function servicePartner(): BelongsTo
     {
         return $this->belongsTo(ServicePartner::class);
     }
 
+    /** @return BelongsTo<ServiceZone, $this> */
     public function serviceZone(): BelongsTo
     {
         return $this->belongsTo(ServiceZone::class);
     }
 
+    /** @return BelongsTo<ServiceCatalog, $this> */
     public function serviceCatalog(): BelongsTo
     {
         return $this->belongsTo(ServiceCatalog::class);

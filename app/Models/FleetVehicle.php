@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Database\Factories\FleetVehicleFactory;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -11,6 +12,7 @@ use Illuminate\Support\Str;
 
 class FleetVehicle extends Model
 {
+    /** @use HasFactory<FleetVehicleFactory> */
     use HasFactory;
 
     public const STATUS_AVAILABLE = 'available';
@@ -47,16 +49,19 @@ class FleetVehicle extends Model
         return 'veh_'.Str::lower(Str::random(20));
     }
 
+    /** @return BelongsTo<User, $this> */
     public function currentProvider(): BelongsTo
     {
         return $this->belongsTo(User::class, 'current_provider_id');
     }
 
+    /** @return HasMany<FleetAssignment, $this> */
     public function assignments(): HasMany
     {
         return $this->hasMany(FleetAssignment::class, 'vehicle_id');
     }
 
+    /** @return HasMany<FleetMaintenanceLog, $this> */
     public function maintenanceLogs(): HasMany
     {
         return $this->hasMany(FleetMaintenanceLog::class, 'vehicle_id');

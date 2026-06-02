@@ -2,11 +2,13 @@
 
 namespace App\Models;
 
+use Database\Factories\DisponibiliteFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Disponibilite extends Model
 {
+    /** @use HasFactory<DisponibiliteFactory> */
     use HasFactory;
 
     protected $fillable = [

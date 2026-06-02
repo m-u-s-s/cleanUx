@@ -46,11 +46,13 @@ class RiskEvaluation extends Model
         'metadata' => 'array',
     ];
 
+    /** @return BelongsTo<User, $this> */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
+    /** @return HasMany<RiskHold, $this> */
     public function holds(): HasMany
     {
         return $this->hasMany(RiskHold::class);

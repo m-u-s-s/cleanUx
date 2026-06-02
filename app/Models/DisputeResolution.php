@@ -60,21 +60,25 @@ class DisputeResolution extends Model
         'metadata' => 'array',
     ];
 
+    /** @return BelongsTo<ComplaintCase, $this> */
     public function complaintCase(): BelongsTo
     {
         return $this->belongsTo(ComplaintCase::class);
     }
 
+    /** @return BelongsTo<User, $this> */
     public function issuedBy(): BelongsTo
     {
         return $this->belongsTo(User::class, 'issued_by_user_id');
     }
 
+    /** @return BelongsTo<PromoCode, $this> */
     public function promoCode(): BelongsTo
     {
         return $this->belongsTo(PromoCode::class);
     }
 
+    /** @return BelongsTo<Booking, $this> */
     public function replacementBooking(): BelongsTo
     {
         return $this->belongsTo(Booking::class, 'replacement_booking_id');

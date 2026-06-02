@@ -38,6 +38,7 @@ class ProviderBadge extends Model
         'metadata' => 'array',
     ];
 
+    /** @return HasMany<ProviderBadgeAward, $this> */
     public function awards(): HasMany
     {
         return $this->hasMany(ProviderBadgeAward::class, 'badge_id');

@@ -28,6 +28,7 @@ class InspectionPhoto extends Model
         'metadata' => 'array',
     ];
 
+    /** @return BelongsTo<MissionQualityInspection, $this> */
     public function inspection(): BelongsTo
     {
         return $this->belongsTo(MissionQualityInspection::class, 'inspection_id');

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Database\Factories\TradeZoneSettingFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -14,6 +15,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  */
 class TradeZoneSetting extends Model
 {
+    /** @use HasFactory<TradeZoneSettingFactory> */
     use HasFactory;
 
     protected $fillable = [
@@ -31,21 +33,25 @@ class TradeZoneSetting extends Model
         'price_multiplier' => 'decimal:2',
     ];
 
+    /** @return BelongsTo<Trade, $this> */
     public function trade(): BelongsTo
     {
         return $this->belongsTo(Trade::class);
     }
 
+    /** @return BelongsTo<ServiceZone, $this> */
     public function serviceZone(): BelongsTo
     {
         return $this->belongsTo(ServiceZone::class);
     }
 
+    /** @return BelongsTo<User, $this> */
     public function createdBy(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by');
     }
 
+    /** @return BelongsTo<User, $this> */
     public function updatedBy(): BelongsTo
     {
         return $this->belongsTo(User::class, 'updated_by');

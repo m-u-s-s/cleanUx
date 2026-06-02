@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Database\Factories\AssistantMessageFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -12,6 +13,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  */
 class AssistantMessage extends Model
 {
+    /** @use HasFactory<AssistantMessageFactory> */
     use HasFactory;
 
     public const SENDER_USER = 'user';
@@ -33,6 +35,7 @@ class AssistantMessage extends Model
         'metadata' => 'array',
     ];
 
+    /** @return BelongsTo<AssistantConversation, $this> */
     public function conversation(): BelongsTo
     {
         return $this->belongsTo(AssistantConversation::class, 'assistant_conversation_id');

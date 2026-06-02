@@ -40,11 +40,13 @@ class SubscriptionInvoiceV2 extends Model
         return 'inv_'.Str::lower(Str::random(20));
     }
 
+    /** @return BelongsTo<SubscriptionV2, $this> */
     public function subscription(): BelongsTo
     {
         return $this->belongsTo(SubscriptionV2::class, 'subscription_id');
     }
 
+    /** @return BelongsTo<SubscriptionCycleV2, $this> */
     public function cycle(): BelongsTo
     {
         return $this->belongsTo(SubscriptionCycleV2::class, 'cycle_id');

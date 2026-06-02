@@ -36,11 +36,13 @@ class AnalyticsSession extends Model
         'event_count' => 'integer',
     ];
 
+    /** @return BelongsTo<User, $this> */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
+    /** @return HasMany<AnalyticsEvent, $this> */
     public function events(): HasMany
     {
         return $this->hasMany(AnalyticsEvent::class, 'session_id', 'session_id');

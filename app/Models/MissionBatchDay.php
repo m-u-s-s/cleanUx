@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Database\Factories\MissionBatchDayFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -9,6 +10,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class MissionBatchDay extends Model
 {
+    /** @use HasFactory<MissionBatchDayFactory> */
     use HasFactory;
 
     protected $fillable = [
@@ -32,21 +34,25 @@ class MissionBatchDay extends Model
         'metadata' => 'array',
     ];
 
+    /** @return BelongsTo<MissionBatch, $this> */
     public function batch(): BelongsTo
     {
         return $this->belongsTo(MissionBatch::class, 'mission_batch_id');
     }
 
+    /** @return BelongsTo<FieldTeam, $this> */
     public function fieldTeam(): BelongsTo
     {
         return $this->belongsTo(FieldTeam::class);
     }
 
+    /** @return BelongsTo<ServicePartner, $this> */
     public function servicePartner(): BelongsTo
     {
         return $this->belongsTo(ServicePartner::class);
     }
 
+    /** @return HasMany<MissionTaskSegment, $this> */
     public function segments(): HasMany
     {
         return $this->hasMany(MissionTaskSegment::class)->orderBy('sequence');

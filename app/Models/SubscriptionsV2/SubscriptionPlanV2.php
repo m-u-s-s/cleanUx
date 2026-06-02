@@ -32,6 +32,7 @@ class SubscriptionPlanV2 extends Model
         'trial_days' => 'integer',
     ];
 
+    /** @return HasMany<SubscriptionV2, $this> */
     public function subscriptions(): HasMany
     {
         return $this->hasMany(SubscriptionV2::class, 'plan_id');

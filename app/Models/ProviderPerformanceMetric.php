@@ -47,6 +47,7 @@ class ProviderPerformanceMetric extends Model
         'computed_at' => 'datetime',
     ];
 
+    /** @return BelongsTo<User, $this> */
     public function provider(): BelongsTo
     {
         return $this->belongsTo(User::class, 'user_id');

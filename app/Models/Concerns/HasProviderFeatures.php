@@ -18,21 +18,25 @@ use Illuminate\Support\Facades\Schema;
 
 trait HasProviderFeatures
 {
+    /** @return HasOne<AvailabilitySlot, $this> */
     public function providerProfile(): HasOne
     {
         return $this->hasOne(ProviderProfile::class);
     }
 
+    /** @return HasMany<AvailabilitySlot, $this> */
     public function availabilitySlots(): HasMany
     {
         return $this->hasMany(AvailabilitySlot::class, 'provider_user_id');
     }
 
+    /** @return HasMany<AvailabilityException, $this> */
     public function availabilityExceptions(): HasMany
     {
         return $this->hasMany(AvailabilityException::class, 'provider_user_id');
     }
 
+    /** @return BelongsToMany<EmployeeZoneAssignment, $this> */
     public function trades(): BelongsToMany
     {
         return $this->belongsToMany(Trade::class, 'trade_user')
@@ -40,6 +44,7 @@ trait HasProviderFeatures
             ->withTimestamps();
     }
 
+    /** @return BelongsToMany<EmployeeZoneAssignment, $this> */
     public function serviceZones(): BelongsToMany
     {
         return $this->belongsToMany(
@@ -57,11 +62,13 @@ trait HasProviderFeatures
         ])->withTimestamps();
     }
 
+    /** @return HasMany<ServiceZone, $this> */
     public function zoneAssignments(): HasMany
     {
         return $this->hasMany(EmployeeZoneAssignment::class, 'user_id');
     }
 
+    /** @return BelongsToMany<ServiceZone, $this> */
     public function fieldTeams(): BelongsToMany
     {
         return $this->belongsToMany(FieldTeam::class, 'field_team_members')
@@ -69,11 +76,13 @@ trait HasProviderFeatures
             ->withTimestamps();
     }
 
+    /** @return BelongsTo<ServiceZone, $this> */
     public function managedServiceZone(): BelongsTo
     {
         return $this->belongsTo(ServiceZone::class, 'managed_service_zone_id');
     }
 
+    /** @return BelongsTo<ServiceZone, $this> */
     public function primaryServiceZone(): BelongsTo
     {
         return $this->belongsTo(ServiceZone::class, 'primary_service_zone_id');
@@ -151,6 +160,7 @@ trait HasProviderFeatures
         return $this->activeLedFieldTeams()->exists();
     }
 
+    /** @return BelongsToMany<self, $this> */
     public function preferredByClients(): BelongsToMany
     {
         if (! Schema::hasTable('client_provider_preferences')) {

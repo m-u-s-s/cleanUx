@@ -2,12 +2,14 @@
 
 namespace App\Models;
 
+use Database\Factories\WorkOrderLineFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class WorkOrderLine extends Model
 {
+    /** @use HasFactory<WorkOrderLineFactory> */
     use HasFactory;
 
     protected $fillable = [
@@ -33,11 +35,13 @@ class WorkOrderLine extends Model
         'metadata' => 'array',
     ];
 
+    /** @return BelongsTo<EnterpriseWorkOrder, $this> */
     public function enterpriseWorkOrder(): BelongsTo
     {
         return $this->belongsTo(EnterpriseWorkOrder::class);
     }
 
+    /** @return BelongsTo<ServiceCatalog, $this> */
     public function serviceCatalog(): BelongsTo
     {
         return $this->belongsTo(ServiceCatalog::class);

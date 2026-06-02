@@ -43,16 +43,19 @@ class UserReport extends Model
         return 'rpt_'.Str::lower(Str::random(20));
     }
 
+    /** @return BelongsTo<User, $this> */
     public function reporter(): BelongsTo
     {
         return $this->belongsTo(User::class, 'reporter_user_id');
     }
 
+    /** @return BelongsTo<User, $this> */
     public function reported(): BelongsTo
     {
         return $this->belongsTo(User::class, 'reported_user_id');
     }
 
+    /** @return BelongsTo<User, $this> */
     public function reviewer(): BelongsTo
     {
         return $this->belongsTo(User::class, 'reviewed_by_admin_id');

@@ -34,11 +34,13 @@ class ChatThread extends Model
         return 'thr_'.Str::lower(Str::random(20));
     }
 
+    /** @return HasMany<ChatParticipant, $this> */
     public function participants(): HasMany
     {
         return $this->hasMany(ChatParticipant::class, 'thread_id');
     }
 
+    /** @return HasMany<ChatMessage, $this> */
     public function messages(): HasMany
     {
         return $this->hasMany(ChatMessage::class, 'thread_id');

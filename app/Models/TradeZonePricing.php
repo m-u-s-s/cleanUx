@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Database\Factories\TradeZonePricingFactory;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -25,6 +26,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  */
 class TradeZonePricing extends Model
 {
+    /** @use HasFactory<TradeZonePricingFactory> */
     use HasFactory;
 
     protected $table = 'trade_zone_pricing';
@@ -53,11 +55,13 @@ class TradeZonePricing extends Model
     // Relations
     // ──────────────────────────────────────────────────────
 
+    /** @return BelongsTo<Trade, $this> */
     public function trade(): BelongsTo
     {
         return $this->belongsTo(Trade::class);
     }
 
+    /** @return BelongsTo<ServiceZone, $this> */
     public function serviceZone(): BelongsTo
     {
         return $this->belongsTo(ServiceZone::class);

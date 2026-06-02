@@ -23,6 +23,7 @@ class CancellationPolicyTier extends Model
         'metadata' => 'array',
     ];
 
+    /** @return BelongsTo<CancellationPolicy, $this> */
     public function policy(): BelongsTo
     {
         return $this->belongsTo(CancellationPolicy::class, 'policy_id');

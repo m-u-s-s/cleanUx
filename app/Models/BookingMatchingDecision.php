@@ -33,11 +33,13 @@ class BookingMatchingDecision extends Model
         'metadata' => 'array',
     ];
 
+    /** @return BelongsTo<Booking, $this> */
     public function booking(): BelongsTo
     {
         return $this->belongsTo(Booking::class);
     }
 
+    /** @return BelongsTo<User, $this> */
     public function selectedProvider(): BelongsTo
     {
         return $this->belongsTo(User::class, 'selected_user_id');

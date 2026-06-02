@@ -26,6 +26,7 @@ class MarketingCampaignStep extends Model
         'content_overrides' => 'array',
     ];
 
+    /** @return BelongsTo<MarketingCampaign, $this> */
     public function campaign(): BelongsTo
     {
         return $this->belongsTo(MarketingCampaign::class, 'campaign_id');

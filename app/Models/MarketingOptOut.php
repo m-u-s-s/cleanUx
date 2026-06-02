@@ -24,6 +24,7 @@ class MarketingOptOut extends Model
         'opted_out_at' => 'datetime',
     ];
 
+    /** @return BelongsTo<User, $this> */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);

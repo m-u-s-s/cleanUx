@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Database\Factories\MessageAttachmentFactory;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -19,7 +20,9 @@ use Illuminate\Support\Facades\URL;
  */
 class MessageAttachment extends Model
 {
+    /** @use HasFactory<MessageAttachmentFactory> */
     use HasFactory;
+
     use SoftDeletes;
 
     public const AV_STATUS_PENDING = 'pending';
@@ -56,11 +59,13 @@ class MessageAttachment extends Model
         'metadata' => 'array',
     ];
 
+    /** @return BelongsTo<Message, $this> */
     public function message(): BelongsTo
     {
         return $this->belongsTo(Message::class);
     }
 
+    /** @return BelongsTo<User, $this> */
     public function uploader(): BelongsTo
     {
         return $this->belongsTo(User::class, 'uploaded_by');

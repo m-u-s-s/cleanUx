@@ -17,6 +17,7 @@ class WebhookSubscription extends Model
         'is_active' => 'boolean',
     ];
 
+    /** @return BelongsTo<WebhookEndpoint, $this> */
     public function endpoint(): BelongsTo
     {
         return $this->belongsTo(WebhookEndpoint::class, 'endpoint_id');

@@ -28,6 +28,7 @@ class AvailabilityHold extends Model
         'metadata' => 'array',
     ];
 
+    /** @return BelongsTo<User, $this> */
     public function provider(): BelongsTo
     {
         return $this->belongsTo(User::class, 'provider_user_id');

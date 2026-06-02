@@ -2,12 +2,14 @@
 
 namespace App\Models;
 
+use Database\Factories\RatingReportFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class RatingReport extends Model
 {
+    /** @use HasFactory<RatingReportFactory> */
     use HasFactory;
 
     public const STATUS_PENDING = 'pending';
@@ -47,16 +49,19 @@ class RatingReport extends Model
         'reviewed_at' => 'datetime',
     ];
 
+    /** @return BelongsTo<Feedback, $this> */
     public function feedback(): BelongsTo
     {
         return $this->belongsTo(Feedback::class);
     }
 
+    /** @return BelongsTo<User, $this> */
     public function reporter(): BelongsTo
     {
         return $this->belongsTo(User::class, 'reporter_user_id');
     }
 
+    /** @return BelongsTo<User, $this> */
     public function reviewedBy(): BelongsTo
     {
         return $this->belongsTo(User::class, 'reviewed_by_user_id');

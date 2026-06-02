@@ -2,12 +2,26 @@
 
 namespace App\Models;
 
+use Database\Factories\CountryServiceCatalogRuleFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+/**
+ * @property bool $is_enabled
+ * @property bool $requires_manual_validation
+ * @property bool $requires_quote
+ * @property int $minimum_notice_hours
+ * @property ?int $sla_response_hours
+ * @property ?int $sla_resolution_hours
+ * @property ?int $default_team_id
+ * @property ?int $default_partner_id
+ * @property string $pricing_multiplier
+ * @property array $settings
+ */
 class CountryServiceCatalogRule extends Model
 {
+    /** @use HasFactory<CountryServiceCatalogRuleFactory> */
     use HasFactory;
 
     protected $fillable = [
@@ -38,11 +52,13 @@ class CountryServiceCatalogRule extends Model
         'settings' => 'array',
     ];
 
+    /** @return BelongsTo<Country, $this> */
     public function country(): BelongsTo
     {
         return $this->belongsTo(Country::class);
     }
 
+    /** @return BelongsTo<ServiceCatalog, $this> */
     public function serviceCatalog(): BelongsTo
     {
         return $this->belongsTo(ServiceCatalog::class);

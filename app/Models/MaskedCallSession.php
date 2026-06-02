@@ -35,16 +35,19 @@ class MaskedCallSession extends Model
         return 'mask_'.Str::lower(Str::random(20));
     }
 
+    /** @return BelongsTo<Booking, $this> */
     public function booking(): BelongsTo
     {
         return $this->belongsTo(Booking::class);
     }
 
+    /** @return BelongsTo<User, $this> */
     public function client(): BelongsTo
     {
         return $this->belongsTo(User::class, 'client_user_id');
     }
 
+    /** @return BelongsTo<User, $this> */
     public function provider(): BelongsTo
     {
         return $this->belongsTo(User::class, 'provider_user_id');

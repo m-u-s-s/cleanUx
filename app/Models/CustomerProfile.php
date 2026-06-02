@@ -31,11 +31,13 @@ class CustomerProfile extends Model
     ];
 
     // Relations
+    /** @return BelongsTo<User, $this> */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
+    /** @return BelongsTo<OrganizationAccount, $this> */
     public function organizationAccount(): BelongsTo
     {
         return $this->belongsTo(OrganizationAccount::class);

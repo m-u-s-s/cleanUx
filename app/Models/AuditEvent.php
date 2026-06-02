@@ -42,6 +42,7 @@ class AuditEvent extends Model
         'occurred_at' => 'datetime',
     ];
 
+    /** @return BelongsTo<User, $this> */
     public function actor(): BelongsTo
     {
         return $this->belongsTo(User::class, 'actor_id');

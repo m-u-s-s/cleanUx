@@ -37,6 +37,7 @@ class OnboardingStep extends Model
         'metadata' => 'array',
     ];
 
+    /** @return BelongsTo<OnboardingJourney, $this> */
     public function journey(): BelongsTo
     {
         return $this->belongsTo(OnboardingJourney::class, 'journey_id');

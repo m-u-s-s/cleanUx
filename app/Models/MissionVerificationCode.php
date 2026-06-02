@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Database\Factories\MissionVerificationCodeFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -9,6 +10,7 @@ use Illuminate\Support\Facades\Schema;
 
 class MissionVerificationCode extends Model
 {
+    /** @use HasFactory<MissionVerificationCodeFactory> */
     use HasFactory;
 
     protected $fillable = [
@@ -29,11 +31,13 @@ class MissionVerificationCode extends Model
         'attempts' => 'integer',
     ];
 
+    /** @return BelongsTo<Mission, $this> */
     public function mission(): BelongsTo
     {
         return $this->belongsTo(Mission::class);
     }
 
+    /** @return BelongsTo<User, $this> */
     public function validatedBy(): BelongsTo
     {
         return $this->belongsTo(User::class, 'validated_by_user_id');

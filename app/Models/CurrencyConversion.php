@@ -24,11 +24,13 @@ class CurrencyConversion extends Model
         'metadata' => 'array',
     ];
 
+    /** @return BelongsTo<ExchangeRate, $this> */
     public function exchangeRate(): BelongsTo
     {
         return $this->belongsTo(ExchangeRate::class);
     }
 
+    /** @return BelongsTo<User, $this> */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);

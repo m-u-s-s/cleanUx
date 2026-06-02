@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Database\Factories\ServiceZoneFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -10,6 +11,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class ServiceZone extends Model
 {
+    /** @use HasFactory<ServiceZoneFactory> */
     use HasFactory;
 
     protected $fillable = [
@@ -45,36 +47,43 @@ class ServiceZone extends Model
         'deactivated_at' => 'datetime',
     ];
 
+    /** @return BelongsTo<Country, $this> */
     public function country(): BelongsTo
     {
         return $this->belongsTo(Country::class);
     }
 
+    /** @return BelongsTo<Region, $this> */
     public function region(): BelongsTo
     {
         return $this->belongsTo(Region::class);
     }
 
+    /** @return BelongsTo<Province, $this> */
     public function province(): BelongsTo
     {
         return $this->belongsTo(Province::class);
     }
 
+    /** @return BelongsTo<Commune, $this> */
     public function commune(): BelongsTo
     {
         return $this->belongsTo(Commune::class);
     }
 
+    /** @return BelongsTo<self, $this> */
     public function parentZone(): BelongsTo
     {
         return $this->belongsTo(self::class, 'parent_zone_id');
     }
 
+    /** @return HasMany<self, $this> */
     public function childZones(): HasMany
     {
         return $this->hasMany(self::class, 'parent_zone_id');
     }
 
+    /** @return BelongsToMany<ZoneServiceRule, $this> */
     public function postalCodes(): BelongsToMany
     {
         return $this->belongsToMany(PostalCode::class, 'service_zone_postal_code')
@@ -82,11 +91,13 @@ class ServiceZone extends Model
             ->withTimestamps();
     }
 
+    /** @return HasMany<ZoneServiceRule, $this> */
     public function zoneServiceRules(): HasMany
     {
         return $this->hasMany(ZoneServiceRule::class);
     }
 
+    /** @return BelongsToMany<EmployeeZoneAssignment, $this> */
     public function serviceCatalogs(): BelongsToMany
     {
         return $this->belongsToMany(ServiceCatalog::class, 'zone_service_rules')
@@ -102,11 +113,13 @@ class ServiceZone extends Model
             ->withTimestamps();
     }
 
+    /** @return HasMany<EmployeeZoneAssignment, $this> */
     public function employeeAssignments(): HasMany
     {
         return $this->hasMany(EmployeeZoneAssignment::class);
     }
 
+    /** @return BelongsToMany<OrganizationSite, $this> */
     public function employees(): BelongsToMany
     {
         return $this->belongsToMany(User::class, 'employee_zone_assignments')
@@ -114,21 +127,25 @@ class ServiceZone extends Model
             ->withTimestamps();
     }
 
+    /** @return HasMany<OrganizationSite, $this> */
     public function organizationSites(): HasMany
     {
         return $this->hasMany(OrganizationSite::class);
     }
 
+    /** @return HasMany<FieldTeam, $this> */
     public function fieldTeams(): HasMany
     {
         return $this->hasMany(FieldTeam::class);
     }
 
+    /** @return HasMany<PartnerZoneCoverage, $this> */
     public function partnerZoneCoverages(): HasMany
     {
         return $this->hasMany(PartnerZoneCoverage::class);
     }
 
+    /** @return BelongsToMany<Booking, $this> */
     public function servicePartners(): BelongsToMany
     {
         return $this->belongsToMany(ServicePartner::class, 'partner_zone_coverages')
@@ -136,16 +153,19 @@ class ServiceZone extends Model
             ->withTimestamps();
     }
 
+    /** @return HasMany<Booking, $this> */
     public function rendezVous(): HasMany
     {
         return $this->hasMany(Booking::class);
     }
 
+    /** @return HasMany<TradeZoneSetting, $this> */
     public function tradeSettings(): HasMany
     {
         return $this->hasMany(TradeZoneSetting::class);
     }
 
+    /** @return BelongsToMany<Trade, $this> */
     public function trades(): BelongsToMany
     {
         return $this->belongsToMany(Trade::class, 'trade_zone_settings')

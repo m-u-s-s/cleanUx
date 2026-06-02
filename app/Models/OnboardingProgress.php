@@ -33,16 +33,19 @@ class OnboardingProgress extends Model
         'metadata' => 'array',
     ];
 
+    /** @return BelongsTo<User, $this> */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
+    /** @return BelongsTo<OnboardingJourney, $this> */
     public function journey(): BelongsTo
     {
         return $this->belongsTo(OnboardingJourney::class, 'journey_id');
     }
 
+    /** @return HasMany<OnboardingStepCompletion, $this> */
     public function completions(): HasMany
     {
         return $this->hasMany(OnboardingStepCompletion::class, 'progress_id');

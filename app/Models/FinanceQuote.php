@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Models\Concerns\InteractsWithDocumentFormatting;
+use Database\Factories\FinanceQuoteFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -13,7 +14,9 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
  */
 class FinanceQuote extends Model
 {
+    /** @use HasFactory<FinanceQuoteFactory> */
     use HasFactory;
+
     use InteractsWithDocumentFormatting;
 
     protected $fillable = [
@@ -46,21 +49,25 @@ class FinanceQuote extends Model
         'meta' => 'array',
     ];
 
+    /** @return BelongsTo<Booking, $this> */
     public function rendezVous(): BelongsTo
     {
         return $this->belongsTo(Booking::class, 'rendez_vous_id');
     }
 
+    /** @return BelongsTo<User, $this> */
     public function client(): BelongsTo
     {
         return $this->belongsTo(User::class, 'client_id');
     }
 
+    /** @return BelongsTo<OrganizationAccount, $this> */
     public function organizationAccount(): BelongsTo
     {
         return $this->belongsTo(OrganizationAccount::class, 'organization_account_id');
     }
 
+    /** @return HasOne<FinanceInvoice, $this> */
     public function invoice(): HasOne
     {
         return $this->hasOne(FinanceInvoice::class, 'finance_quote_id');

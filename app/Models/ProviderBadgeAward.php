@@ -17,11 +17,13 @@ class ProviderBadgeAward extends Model
         'awarded_at' => 'datetime',
     ];
 
+    /** @return BelongsTo<User, $this> */
     public function provider(): BelongsTo
     {
         return $this->belongsTo(User::class, 'provider_user_id');
     }
 
+    /** @return BelongsTo<ProviderBadge, $this> */
     public function badge(): BelongsTo
     {
         return $this->belongsTo(ProviderBadge::class, 'badge_id');

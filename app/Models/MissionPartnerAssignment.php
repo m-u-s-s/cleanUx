@@ -2,12 +2,14 @@
 
 namespace App\Models;
 
+use Database\Factories\MissionPartnerAssignmentFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class MissionPartnerAssignment extends Model
 {
+    /** @use HasFactory<MissionPartnerAssignmentFactory> */
     use HasFactory;
 
     protected $fillable = [
@@ -35,11 +37,13 @@ class MissionPartnerAssignment extends Model
         'metadata' => 'array',
     ];
 
+    /** @return BelongsTo<Mission, $this> */
     public function mission(): BelongsTo
     {
         return $this->belongsTo(Mission::class);
     }
 
+    /** @return BelongsTo<ServicePartner, $this> */
     public function servicePartner(): BelongsTo
     {
         return $this->belongsTo(ServicePartner::class);

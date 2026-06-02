@@ -38,16 +38,19 @@ class RiskHold extends Model
         'metadata' => 'array',
     ];
 
+    /** @return BelongsTo<User, $this> */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
+    /** @return BelongsTo<User, $this> */
     public function reviewer(): BelongsTo
     {
         return $this->belongsTo(User::class, 'reviewed_by_user_id');
     }
 
+    /** @return BelongsTo<RiskEvaluation, $this> */
     public function evaluation(): BelongsTo
     {
         return $this->belongsTo(RiskEvaluation::class, 'risk_evaluation_id');

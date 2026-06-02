@@ -41,16 +41,19 @@ class MarketingCampaignRecipient extends Model
         'metadata' => 'array',
     ];
 
+    /** @return BelongsTo<MarketingCampaign, $this> */
     public function campaign(): BelongsTo
     {
         return $this->belongsTo(MarketingCampaign::class, 'campaign_id');
     }
 
+    /** @return BelongsTo<MarketingCampaignStep, $this> */
     public function step(): BelongsTo
     {
         return $this->belongsTo(MarketingCampaignStep::class, 'step_id');
     }
 
+    /** @return BelongsTo<User, $this> */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);

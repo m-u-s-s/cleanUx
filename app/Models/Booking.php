@@ -8,6 +8,7 @@ use App\Models\Concerns\HasLegacyBookingAliases;
 use App\Models\Concerns\HasRecurringSeries;
 use App\Models\Concerns\ResetsNotificationTracking;
 use App\Support\Domain\BookingStatus;
+use Database\Factories\BookingFactory;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -15,6 +16,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\HasOneThrough;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Schema;
 
 /**
@@ -33,12 +35,76 @@ use Illuminate\Support\Facades\Schema;
  * getXAttribute through traits at level 6):
  *
  * @property-read string $service_display_name
+ * @property string $total
+ * @property ?string $trade_name
+ * @property ?int $trade_id
+ * @property ?int $postal_code_id
+ * @property ?int $user_id
+ * @property-read int $total_cents
+ * @property-read ?string $adresse_complete
+ * @property-read int|string $month
+ * @property ?Carbon $feedback_demande_envoye_at
+ * @property ?Carbon $scheduled_date
+ * @property ?Carbon $scheduled_time
+ * @property ?Carbon $date
+ * @property ?Carbon $approved_at
+ * @property ?Carbon $cancelled_at
+ * @property ?Carbon $mission_started_at
+ * @property ?Carbon $mission_arrived_at
+ * @property ?Carbon $mission_finished_at
+ * @property ?Carbon $client_presence_confirmed_at
+ * @property ?Carbon $asap_requested_at
+ * @property ?Carbon $asap_deadline_at
+ * @property ?Carbon $matched_at
+ * @property ?Carbon $payment_authorized_at
+ * @property ?Carbon $payment_captured_at
+ * @property ?Carbon $payment_cancelled_at
+ * @property ?Carbon $payment_failed_at
+ * @property ?Carbon $rappel_24h_envoye_at
+ * @property ?Carbon $rappel_2h_envoye_at
+ * @property ?Carbon $alerte_urgence_envoyee_at
+ * @property bool $presence_animaux
+ * @property bool $acces_parking
+ * @property bool $materiel_fournit
+ * @property bool $is_recurrent
+ * @property bool $is_favorite_slot
+ * @property string $estimated_price
+ * @property string $devis_estime
+ * @property string $destination_lat
+ * @property string $destination_lng
+ * @property int $estimated_duration_minutes
+ * @property int $duree_estimee
+ * @property int $surface_m2
+ * @property array $options
+ * @property array $options_prestation
+ * @property array $areas
+ * @property array $zones_specifiques
+ * @property array $materiel_specifique
+ * @property array $photos_reference
+ * @property array $photos_avant
+ * @property array $photos_apres
+ * @property array $trade_form_answers
+ * @property array $terrain_checklist
+ * @property array $pricing_snapshot
+ * @property array $zone_snapshot
+ * @property array $matching_snapshot
+ * @property array $address_components
+ * @property array $metadata
+ * @property bool $is_series_master
+ * @property int $series_position
+ * @property int $recurrence_interval
+ * @property int $recurrence_count
+ * @property ?Carbon $recurrence_until
+ * @property array $recurrence_days
  */
 class Booking extends Model
 {
     use HasBookingDisplayAccessors;
     use HasBookingPricing;
+
+    /** @use HasFactory<BookingFactory> */
     use HasFactory;
+
     use HasLegacyBookingAliases;
     use HasRecurringSeries;
     use ResetsNotificationTracking;
@@ -308,16 +374,19 @@ class Booking extends Model
     // Relations — acteurs
     // ──────────────────────────────────────────────────────
 
+    /** @return BelongsTo<User, $this> */
     public function customer(): BelongsTo
     {
         return $this->belongsTo(User::class, 'customer_user_id');
     }
 
+    /** @return BelongsTo<User, $this> */
     public function client(): BelongsTo
     {
         return $this->belongsTo(User::class, 'client_id');
     }
 
+    /** @return BelongsTo<User, $this> */
     public function assignedProvider(): BelongsTo
     {
         return $this->belongsTo(User::class, 'assigned_provider_user_id');
@@ -339,21 +408,25 @@ class Booking extends Model
         return $this->belongsTo(User::class, 'customer_user_id');
     }
 
+    /** @return BelongsTo<User, $this> */
     public function employe(): BelongsTo
     {
         return $this->belongsTo(User::class, 'employe_id');
     }
 
+    /** @return BelongsTo<OrganizationAccount, $this> */
     public function customerOrganization(): BelongsTo
     {
         return $this->belongsTo(OrganizationAccount::class, 'customer_organization_id');
     }
 
+    /** @return BelongsTo<OrganizationAccount, $this> */
     public function organizationAccount(): BelongsTo
     {
         return $this->belongsTo(OrganizationAccount::class, 'organization_account_id');
     }
 
+    /** @return BelongsTo<OrganizationAccount, $this> */
     public function assignedProviderOrganization(): BelongsTo
     {
         return $this->belongsTo(OrganizationAccount::class, 'assigned_provider_organization_id');
@@ -365,6 +438,7 @@ class Booking extends Model
         return $this->belongsTo(OrganizationContract::class, 'organization_contract_id');
     }
 
+    /** @return BelongsTo<OrganizationSite, $this> */
     public function organizationSite(): BelongsTo
     {
         return $this->belongsTo(OrganizationSite::class, 'organization_site_id');
@@ -374,6 +448,7 @@ class Booking extends Model
     // Relations — service / zone / mission
     // ──────────────────────────────────────────────────────
 
+    /** @return BelongsTo<ServiceCatalog, $this> */
     public function serviceCatalog(): BelongsTo
     {
         return $this->belongsTo(ServiceCatalog::class);
@@ -382,6 +457,8 @@ class Booking extends Model
     /**
      * Métier requis pour cette réservation, résolu via le ServiceCatalog.
      * Null si le service n'est rattaché à aucun trade (back-compat phase de transition).
+     *
+     * @return HasOneThrough<ServiceZone, $this>
      */
     public function trade(): HasOneThrough
     {
@@ -395,51 +472,61 @@ class Booking extends Model
         );
     }
 
+    /** @return BelongsTo<ServiceZone, $this> */
     public function serviceZone(): BelongsTo
     {
         return $this->belongsTo(ServiceZone::class);
     }
 
+    /** @return BelongsTo<PostalCode, $this> */
     public function postalCode(): BelongsTo
     {
         return $this->belongsTo(PostalCode::class);
     }
 
+    /** @return HasMany<Mission, $this> */
     public function missions(): HasMany
     {
         return $this->hasMany(Mission::class);
     }
 
+    /** @return HasOne<Feedback, $this> */
     public function mission(): HasOne
     {
         return $this->hasOne(Mission::class, 'booking_id');
     }
 
+    /** @return HasOne<Feedback, $this> */
     public function feedback(): HasOne
     {
         return $this->hasOne(Feedback::class, 'booking_id');
     }
 
+    /** @return HasMany<Feedback, $this> */
     public function feedbacks(): HasMany
     {
         return $this->hasMany(Feedback::class);
     }
 
+    /** @return HasOne<BookingApproval, $this> */
     public function latestFeedback(): HasOne
     {
         return $this->hasOne(Feedback::class)->latestOfMany();
     }
 
+    /** @return HasMany<BookingApproval, $this> */
     public function approvals(): HasMany
     {
         return $this->hasMany(BookingApproval::class);
     }
 
+    /** @return HasMany<BookingAttachment, $this> */
     public function attachments(): HasMany
     {
         return $this->hasMany(BookingAttachment::class);
     }
 
+    /** @return HasOne<Conversation, $this> */
     public function conversation(): HasOne
     {
         return $this->hasOne(Conversation::class, 'booking_id');
@@ -582,11 +669,13 @@ class Booking extends Model
     // Display accessors (getDisplayAddressAttribute etc.) moved to HasBookingDisplayAccessors.
     // Pricing accessors (getFinalPriceAttribute etc.) moved to HasBookingPricing.
 
+    /** @return HasOne<FinanceQuote, $this> */
     public function financeQuote(): HasOne
     {
         return $this->hasOne(FinanceQuote::class, 'booking_id');
     }
 
+    /** @return HasOne<FinanceInvoice, $this> */
     public function financeInvoice(): HasOne
     {
         return $this->hasOne(FinanceInvoice::class, 'rendez_vous_id');

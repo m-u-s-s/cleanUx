@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Database\Factories\ReferralFactory;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -10,6 +11,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Referral extends Model
 {
+    /** @use HasFactory<ReferralFactory> */
     use HasFactory;
 
     public const STATUS_INVITED = 'invited';
@@ -55,21 +57,25 @@ class Referral extends Model
         'metadata' => 'array',
     ];
 
+    /** @return BelongsTo<User, $this> */
     public function referrer(): BelongsTo
     {
         return $this->belongsTo(User::class, 'referrer_user_id');
     }
 
+    /** @return BelongsTo<User, $this> */
     public function referee(): BelongsTo
     {
         return $this->belongsTo(User::class, 'referee_user_id');
     }
 
+    /** @return BelongsTo<Booking, $this> */
     public function qualifyingBooking(): BelongsTo
     {
         return $this->belongsTo(Booking::class, 'qualifying_booking_id');
     }
 
+    /** @return HasMany<ReferralReward, $this> */
     public function rewards(): HasMany
     {
         return $this->hasMany(ReferralReward::class);

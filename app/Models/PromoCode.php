@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Database\Factories\PromoCodeFactory;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -11,6 +12,7 @@ use Illuminate\Support\Carbon;
 
 class PromoCode extends Model
 {
+    /** @use HasFactory<PromoCodeFactory> */
     use HasFactory;
 
     public const TYPE_PERCENT = 'percent';
@@ -106,21 +108,25 @@ class PromoCode extends Model
         });
     }
 
+    /** @return BelongsTo<PromoCampaign, $this> */
     public function campaign(): BelongsTo
     {
         return $this->belongsTo(PromoCampaign::class, 'promo_campaign_id');
     }
 
+    /** @return BelongsTo<User, $this> */
     public function issuedTo(): BelongsTo
     {
         return $this->belongsTo(User::class, 'issued_to_user_id');
     }
 
+    /** @return BelongsTo<User, $this> */
     public function createdBy(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by_user_id');
     }
 
+    /** @return HasMany<PromoCodeRedemption, $this> */
     public function redemptions(): HasMany
     {
         return $this->hasMany(PromoCodeRedemption::class);

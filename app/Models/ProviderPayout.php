@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Database\Factories\ProviderPayoutFactory;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -21,6 +22,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  */
 class ProviderPayout extends Model
 {
+    /** @use HasFactory<ProviderPayoutFactory> */
     use HasFactory;
 
     public const STATUS_PENDING = 'pending';
@@ -55,11 +57,13 @@ class ProviderPayout extends Model
     // Relations
     // ──────────────────────────────────────────────
 
+    /** @return BelongsTo<User, $this> */
     public function providerUser(): BelongsTo
     {
         return $this->belongsTo(User::class, 'provider_user_id');
     }
 
+    /** @return BelongsTo<OrganizationAccount, $this> */
     public function providerOrganization(): BelongsTo
     {
         return $this->belongsTo(OrganizationAccount::class, 'provider_organization_id');

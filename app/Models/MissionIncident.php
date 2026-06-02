@@ -2,12 +2,14 @@
 
 namespace App\Models;
 
+use Database\Factories\MissionIncidentFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class MissionIncident extends Model
 {
+    /** @use HasFactory<MissionIncidentFactory> */
     use HasFactory;
 
     protected $fillable = [
@@ -33,16 +35,19 @@ class MissionIncident extends Model
         'meta' => 'array',
     ];
 
+    /** @return BelongsTo<Mission, $this> */
     public function mission(): BelongsTo
     {
         return $this->belongsTo(Mission::class);
     }
 
+    /** @return BelongsTo<User, $this> */
     public function reportedBy(): BelongsTo
     {
         return $this->belongsTo(User::class, 'reported_by_user_id');
     }
 
+    /** @return BelongsTo<User, $this> */
     public function resolvedBy(): BelongsTo
     {
         return $this->belongsTo(User::class, 'resolved_by_user_id');

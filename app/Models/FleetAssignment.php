@@ -5,8 +5,15 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
 
+/**
+ * @property ?Carbon $assigned_at
+ * @property ?Carbon $expected_return_at
+ * @property ?Carbon $returned_at
+ * @property array $metadata
+ */
 class FleetAssignment extends Model
 {
     public const STATUS_ACTIVE = 'active';
@@ -44,16 +51,19 @@ class FleetAssignment extends Model
         return 'fa_'.Str::lower(Str::random(20));
     }
 
+    /** @return BelongsTo<FleetVehicle, $this> */
     public function vehicle(): BelongsTo
     {
         return $this->belongsTo(FleetVehicle::class, 'vehicle_id');
     }
 
+    /** @return BelongsTo<FleetEquipment, $this> */
     public function equipment(): BelongsTo
     {
         return $this->belongsTo(FleetEquipment::class, 'equipment_id');
     }
 
+    /** @return BelongsTo<User, $this> */
     public function provider(): BelongsTo
     {
         return $this->belongsTo(User::class, 'provider_user_id');

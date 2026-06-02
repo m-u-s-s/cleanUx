@@ -26,6 +26,7 @@ class OnboardingJourney extends Model
         'metadata' => 'array',
     ];
 
+    /** @return HasMany<OnboardingStep, $this> */
     public function steps(): HasMany
     {
         return $this->hasMany(OnboardingStep::class, 'journey_id')->orderBy('position');

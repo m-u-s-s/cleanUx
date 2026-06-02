@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Carbon\Carbon;
+use Database\Factories\CancellationPolicyFactory;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -10,6 +11,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class CancellationPolicy extends Model
 {
+    /** @use HasFactory<CancellationPolicyFactory> */
     use HasFactory;
 
     public const ACTOR_CLIENT = 'client';
@@ -33,11 +35,13 @@ class CancellationPolicy extends Model
         'metadata' => 'array',
     ];
 
+    /** @return HasMany<CancellationPolicyTier, $this> */
     public function tiers(): HasMany
     {
         return $this->hasMany(CancellationPolicyTier::class, 'policy_id')->orderBy('position');
     }
 
+    /** @return HasMany<CancellationExemptReason, $this> */
     public function exemptReasons(): HasMany
     {
         return $this->hasMany(CancellationExemptReason::class, 'policy_id');

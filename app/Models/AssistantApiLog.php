@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Database\Factories\AssistantApiLogFactory;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -9,6 +10,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class AssistantApiLog extends Model
 {
+    /** @use HasFactory<AssistantApiLogFactory> */
     use HasFactory;
 
     public const STATUS_SUCCESS = 'success';
@@ -44,11 +46,13 @@ class AssistantApiLog extends Model
         'tool_use_count' => 'integer',
     ];
 
+    /** @return BelongsTo<User, $this> */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
+    /** @return BelongsTo<AssistantConversation, $this> */
     public function conversation(): BelongsTo
     {
         return $this->belongsTo(AssistantConversation::class, 'assistant_conversation_id');

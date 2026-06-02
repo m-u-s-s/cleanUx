@@ -11,11 +11,13 @@ class UserBlock extends Model
 
     protected $casts = ['metadata' => 'array'];
 
+    /** @return BelongsTo<User, $this> */
     public function blocker(): BelongsTo
     {
         return $this->belongsTo(User::class, 'blocker_user_id');
     }
 
+    /** @return BelongsTo<User, $this> */
     public function blocked(): BelongsTo
     {
         return $this->belongsTo(User::class, 'blocked_user_id');

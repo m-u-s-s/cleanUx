@@ -2,12 +2,14 @@
 
 namespace App\Models;
 
+use Database\Factories\ReferralRewardFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class ReferralReward extends Model
 {
+    /** @use HasFactory<ReferralRewardFactory> */
     use HasFactory;
 
     public const ROLE_REFERRER = 'referrer';
@@ -57,21 +59,25 @@ class ReferralReward extends Model
         'metadata' => 'array',
     ];
 
+    /** @return BelongsTo<Referral, $this> */
     public function referral(): BelongsTo
     {
         return $this->belongsTo(Referral::class);
     }
 
+    /** @return BelongsTo<User, $this> */
     public function beneficiary(): BelongsTo
     {
         return $this->belongsTo(User::class, 'beneficiary_user_id');
     }
 
+    /** @return BelongsTo<CustomerCredit, $this> */
     public function customerCredit(): BelongsTo
     {
         return $this->belongsTo(CustomerCredit::class);
     }
 
+    /** @return BelongsTo<PromoCode, $this> */
     public function promoCode(): BelongsTo
     {
         return $this->belongsTo(PromoCode::class);

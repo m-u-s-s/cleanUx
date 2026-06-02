@@ -62,11 +62,13 @@ class PushNotification extends Model
         'failed_at' => 'datetime',
     ];
 
+    /** @return BelongsTo<User, $this> */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
+    /** @return BelongsTo<DeviceToken, $this> */
     public function deviceToken(): BelongsTo
     {
         return $this->belongsTo(DeviceToken::class);

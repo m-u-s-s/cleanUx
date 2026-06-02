@@ -2,12 +2,26 @@
 
 namespace App\Models;
 
+use Database\Factories\MarketLaunchReadinessFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Carbon;
 
+/**
+ * @property bool $catalog_ready
+ * @property bool $booking_ready
+ * @property bool $mission_ready
+ * @property bool $billing_ready
+ * @property bool $partner_network_ready
+ * @property bool $compliance_ready
+ * @property bool $support_ready
+ * @property ?Carbon $last_audited_at
+ * @property array $metadata
+ */
 class MarketLaunchReadiness extends Model
 {
+    /** @use HasFactory<MarketLaunchReadinessFactory> */
     use HasFactory;
 
     protected $table = 'market_launch_readiness';
@@ -38,6 +52,7 @@ class MarketLaunchReadiness extends Model
         'metadata' => 'array',
     ];
 
+    /** @return BelongsTo<Country, $this> */
     public function country(): BelongsTo
     {
         return $this->belongsTo(Country::class);

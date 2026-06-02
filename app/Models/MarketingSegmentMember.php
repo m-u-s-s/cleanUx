@@ -15,11 +15,13 @@ class MarketingSegmentMember extends Model
         'metadata' => 'array',
     ];
 
+    /** @return BelongsTo<MarketingSegment, $this> */
     public function segment(): BelongsTo
     {
         return $this->belongsTo(MarketingSegment::class, 'segment_id');
     }
 
+    /** @return BelongsTo<User, $this> */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Database\Factories\OrganizationAccountFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -10,6 +11,7 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class OrganizationAccount extends Model
 {
+    /** @use HasFactory<OrganizationAccountFactory> */
     use HasFactory;
 
     protected $fillable = [
@@ -47,31 +49,37 @@ class OrganizationAccount extends Model
         'rating_count' => 'integer',
     ];
 
+    /** @return BelongsTo<Country, $this> */
     public function country(): BelongsTo
     {
         return $this->belongsTo(Country::class);
     }
 
+    /** @return BelongsTo<Region, $this> */
     public function region(): BelongsTo
     {
         return $this->belongsTo(Region::class);
     }
 
+    /** @return BelongsTo<Province, $this> */
     public function province(): BelongsTo
     {
         return $this->belongsTo(Province::class);
     }
 
+    /** @return BelongsTo<Commune, $this> */
     public function commune(): BelongsTo
     {
         return $this->belongsTo(Commune::class);
     }
 
+    /** @return BelongsTo<PostalCode, $this> */
     public function postalCodeReference(): BelongsTo
     {
         return $this->belongsTo(PostalCode::class, 'postal_code_id');
     }
 
+    /** @return HasMany<User, $this> */
     public function users(): HasMany
     {
         return $this->hasMany(User::class);
@@ -83,16 +91,19 @@ class OrganizationAccount extends Model
         return $this->hasMany(ProviderProfile::class);
     }
 
+    /** @return HasMany<OrganizationSite, $this> */
     public function sites(): HasMany
     {
         return $this->hasMany(OrganizationSite::class);
     }
 
+    /** @return HasMany<OrganizationContract, $this> */
     public function organizationContracts(): HasMany
     {
         return $this->hasMany(OrganizationContract::class);
     }
 
+    /** @return HasOne<OrganizationContract, $this> */
     public function activeOrganizationContract(): HasOne
     {
         $today = now()->toDateString();
@@ -111,16 +122,19 @@ class OrganizationAccount extends Model
             });
     }
 
+    /** @return HasMany<EnterpriseWorkOrder, $this> */
     public function enterpriseWorkOrders(): HasMany
     {
         return $this->hasMany(EnterpriseWorkOrder::class);
     }
 
+    /** @return HasMany<Booking, $this> */
     public function rendezVous(): HasMany
     {
         return $this->hasMany(Booking::class);
     }
 
+    /** @return HasMany<MissionBatch, $this> */
     public function missionBatches(): HasMany
     {
         return $this->hasMany(MissionBatch::class);

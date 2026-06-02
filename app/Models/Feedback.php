@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Database\Factories\FeedbackFactory;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -10,6 +11,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Feedback extends Model
 {
+    /** @use HasFactory<FeedbackFactory> */
     use HasFactory;
 
     public const DIRECTION_CLIENT_TO_PROVIDER = 'client_to_provider';
@@ -77,31 +79,37 @@ class Feedback extends Model
         'metadata' => 'array',
     ];
 
+    /** @return BelongsTo<Booking, $this> */
     public function rendezVous(): BelongsTo
     {
         return $this->belongsTo(Booking::class, 'rendez_vous_id');
     }
 
+    /** @return BelongsTo<Booking, $this> */
     public function booking(): BelongsTo
     {
         return $this->belongsTo(Booking::class, 'booking_id');
     }
 
+    /** @return BelongsTo<Mission, $this> */
     public function mission(): BelongsTo
     {
         return $this->belongsTo(Mission::class);
     }
 
+    /** @return BelongsTo<User, $this> */
     public function client(): BelongsTo
     {
         return $this->belongsTo(User::class, 'client_id');
     }
 
+    /** @return BelongsTo<User, $this> */
     public function provider(): BelongsTo
     {
         return $this->belongsTo(User::class, 'employe_id');
     }
 
+    /** @return HasMany<RatingReport, $this> */
     public function reports(): HasMany
     {
         return $this->hasMany(RatingReport::class);

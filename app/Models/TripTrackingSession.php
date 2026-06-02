@@ -55,16 +55,19 @@ class TripTrackingSession extends Model
         return 'trip_'.Str::lower(Str::random(24));
     }
 
+    /** @return BelongsTo<Booking, $this> */
     public function booking(): BelongsTo
     {
         return $this->belongsTo(Booking::class);
     }
 
+    /** @return BelongsTo<User, $this> */
     public function provider(): BelongsTo
     {
         return $this->belongsTo(User::class, 'provider_user_id');
     }
 
+    /** @return HasMany<TripTrackingPoint, $this> */
     public function points(): HasMany
     {
         return $this->hasMany(TripTrackingPoint::class, 'session_id');

@@ -40,11 +40,13 @@ class WebhookDelivery extends Model
         'metadata' => 'array',
     ];
 
+    /** @return BelongsTo<WebhookEvent, $this> */
     public function event(): BelongsTo
     {
         return $this->belongsTo(WebhookEvent::class, 'event_id');
     }
 
+    /** @return BelongsTo<WebhookEndpoint, $this> */
     public function endpoint(): BelongsTo
     {
         return $this->belongsTo(WebhookEndpoint::class, 'endpoint_id');

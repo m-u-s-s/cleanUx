@@ -39,11 +39,13 @@ class LoyaltyRedemption extends Model
         return 'red_'.Str::lower(Str::random(20));
     }
 
+    /** @return BelongsTo<User, $this> */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
+    /** @return BelongsTo<LoyaltyReward, $this> */
     public function reward(): BelongsTo
     {
         return $this->belongsTo(LoyaltyReward::class, 'reward_id');

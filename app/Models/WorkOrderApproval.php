@@ -2,12 +2,14 @@
 
 namespace App\Models;
 
+use Database\Factories\WorkOrderApprovalFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class WorkOrderApproval extends Model
 {
+    /** @use HasFactory<WorkOrderApprovalFactory> */
     use HasFactory;
 
     protected $fillable = [
@@ -26,11 +28,13 @@ class WorkOrderApproval extends Model
         'metadata' => 'array',
     ];
 
+    /** @return BelongsTo<EnterpriseWorkOrder, $this> */
     public function enterpriseWorkOrder(): BelongsTo
     {
         return $this->belongsTo(EnterpriseWorkOrder::class);
     }
 
+    /** @return BelongsTo<User, $this> */
     public function approver(): BelongsTo
     {
         return $this->belongsTo(User::class, 'approver_user_id');

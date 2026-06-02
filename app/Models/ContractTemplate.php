@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Carbon\Carbon;
+use Database\Factories\ContractTemplateFactory;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -11,6 +12,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class ContractTemplate extends Model
 {
+    /** @use HasFactory<ContractTemplateFactory> */
     use HasFactory;
 
     public const TYPE_TOS = 'tos';
@@ -50,11 +52,13 @@ class ContractTemplate extends Model
         'metadata' => 'array',
     ];
 
+    /** @return HasMany<self, $this> */
     public function documents(): HasMany
     {
         return $this->hasMany(ContractDocument::class, 'template_id');
     }
 
+    /** @return BelongsTo<self, $this> */
     public function supersededBy(): BelongsTo
     {
         return $this->belongsTo(self::class, 'supersedes_template_id');

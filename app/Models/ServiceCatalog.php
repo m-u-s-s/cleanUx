@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Database\Factories\ServiceCatalogFactory;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -20,9 +21,27 @@ use Illuminate\Support\Str;
  * Champs ajoutés en Phase 1 :
  *   trade_id, billing_unit, vat_rate, min_lead_time_hours, requires_site_visit,
  *   icon, color, cover_image_path, tags, skills_required, is_featured
+ *
+ * @property bool $is_active
+ * @property bool $requires_quote
+ * @property bool $requires_manual_validation
+ * @property bool $is_entreprise
+ * @property bool $is_b2b_available
+ * @property bool $is_personal_available
+ * @property string $base_price
+ * @property array $settings
+ * @property array $options
+ * @property array $metadata
+ * @property string $vat_rate
+ * @property int $min_lead_time_hours
+ * @property bool $requires_site_visit
+ * @property array $tags
+ * @property array $skills_required
+ * @property bool $is_featured
  */
 class ServiceCatalog extends Model
 {
+    /** @use HasFactory<ServiceCatalogFactory> */
     use HasFactory;
 
     protected $fillable = [
@@ -100,11 +119,13 @@ class ServiceCatalog extends Model
     // Relations existantes (conservées telles quelles)
     // ──────────────────────────────────────────────────────
 
+    /** @return HasMany<ZoneServiceRule, $this> */
     public function zoneServiceRules(): HasMany
     {
         return $this->hasMany(ZoneServiceRule::class);
     }
 
+    /** @return BelongsToMany<Booking, $this> */
     public function serviceZones(): BelongsToMany
     {
         return $this->belongsToMany(ServiceZone::class, 'zone_service_rules')
@@ -120,11 +141,13 @@ class ServiceCatalog extends Model
             ->withTimestamps();
     }
 
+    /** @return HasMany<Trade, $this> */
     public function rendezVous(): HasMany
     {
         return $this->hasMany(Booking::class);
     }
 
+    /** @return HasMany<Trade, $this> */
     public function countryServiceCatalogRules(): HasMany
     {
         return $this->hasMany(CountryServiceCatalogRule::class);
@@ -134,11 +157,13 @@ class ServiceCatalog extends Model
     // Phase 1 — relations
     // ──────────────────────────────────────────────────────
 
+    /** @return BelongsTo<Trade, $this> */
     public function trade(): BelongsTo
     {
         return $this->belongsTo(Trade::class);
     }
 
+    /** @return HasMany<ServiceOption, $this> */
     public function options(): HasMany
     {
         return $this->hasMany(ServiceOption::class)

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Database\Factories\CommuneFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -9,6 +10,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Commune extends Model
 {
+    /** @use HasFactory<CommuneFactory> */
     use HasFactory;
 
     protected $fillable = [
@@ -25,26 +27,31 @@ class Commune extends Model
         'is_active' => 'boolean',
     ];
 
+    /** @return BelongsTo<Country, $this> */
     public function country(): BelongsTo
     {
         return $this->belongsTo(Country::class);
     }
 
+    /** @return BelongsTo<Region, $this> */
     public function region(): BelongsTo
     {
         return $this->belongsTo(Region::class);
     }
 
+    /** @return BelongsTo<Province, $this> */
     public function province(): BelongsTo
     {
         return $this->belongsTo(Province::class);
     }
 
+    /** @return HasMany<PostalCode, $this> */
     public function postalCodes(): HasMany
     {
         return $this->hasMany(PostalCode::class);
     }
 
+    /** @return HasMany<ServiceZone, $this> */
     public function serviceZones(): HasMany
     {
         return $this->hasMany(ServiceZone::class);

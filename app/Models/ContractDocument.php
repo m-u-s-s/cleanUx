@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Database\Factories\ContractDocumentFactory;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -10,6 +11,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class ContractDocument extends Model
 {
+    /** @use HasFactory<ContractDocumentFactory> */
     use HasFactory;
 
     public const STATUS_DRAFT = 'draft';
@@ -34,16 +36,19 @@ class ContractDocument extends Model
         'metadata' => 'array',
     ];
 
+    /** @return BelongsTo<ContractTemplate, $this> */
     public function template(): BelongsTo
     {
         return $this->belongsTo(ContractTemplate::class, 'template_id');
     }
 
+    /** @return BelongsTo<User, $this> */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
+    /** @return HasMany<ContractSignature, $this> */
     public function signatures(): HasMany
     {
         return $this->hasMany(ContractSignature::class, 'document_id');

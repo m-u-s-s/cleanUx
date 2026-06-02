@@ -43,16 +43,19 @@ class MarketingCampaign extends Model
         'ended_at' => 'datetime',
     ];
 
+    /** @return BelongsTo<MarketingSegment, $this> */
     public function segment(): BelongsTo
     {
         return $this->belongsTo(MarketingSegment::class, 'segment_id');
     }
 
+    /** @return HasMany<MarketingCampaignStep, $this> */
     public function steps(): HasMany
     {
         return $this->hasMany(MarketingCampaignStep::class, 'campaign_id')->orderBy('position');
     }
 
+    /** @return HasMany<MarketingCampaignRecipient, $this> */
     public function recipients(): HasMany
     {
         return $this->hasMany(MarketingCampaignRecipient::class, 'campaign_id');

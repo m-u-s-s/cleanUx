@@ -53,11 +53,13 @@ class InsuranceClaim extends Model
         'metadata' => 'array',
     ];
 
+    /** @return BelongsTo<BookingInsurance, $this> */
     public function insurance(): BelongsTo
     {
         return $this->belongsTo(BookingInsurance::class, 'booking_insurance_id');
     }
 
+    /** @return BelongsTo<User, $this> */
     public function claimant(): BelongsTo
     {
         return $this->belongsTo(User::class, 'claimant_user_id');

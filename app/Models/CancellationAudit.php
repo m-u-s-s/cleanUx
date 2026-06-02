@@ -26,11 +26,13 @@ class CancellationAudit extends Model
         'occurred_at' => 'datetime',
     ];
 
+    /** @return BelongsTo<BookingCancellationV2, $this> */
     public function cancellation(): BelongsTo
     {
         return $this->belongsTo(BookingCancellationV2::class, 'cancellation_id');
     }
 
+    /** @return BelongsTo<User, $this> */
     public function actor(): BelongsTo
     {
         return $this->belongsTo(User::class, 'actor_user_id');

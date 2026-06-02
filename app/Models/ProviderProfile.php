@@ -3,12 +3,14 @@
 namespace App\Models;
 
 use App\Enums\ProviderType;
+use Database\Factories\ProviderProfileFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class ProviderProfile extends Model
 {
+    /** @use HasFactory<ProviderProfileFactory> */
     use HasFactory;
 
     /**
@@ -86,11 +88,13 @@ class ProviderProfile extends Model
     ];
 
     // Relations
+    /** @return BelongsTo<User, $this> */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
+    /** @return BelongsTo<OrganizationAccount, $this> */
     public function organization(): BelongsTo
     {
         return $this->belongsTo(OrganizationAccount::class, 'organization_account_id');

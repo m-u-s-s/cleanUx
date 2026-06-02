@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Database\Factories\ProviderTradeCertificationFactory;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -18,6 +19,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  */
 class ProviderTradeCertification extends Model
 {
+    /** @use HasFactory<ProviderTradeCertificationFactory> */
     use HasFactory;
 
     protected $fillable = [
@@ -42,16 +44,19 @@ class ProviderTradeCertification extends Model
     // Relations
     // ──────────────────────────────────────────────────────────────
 
+    /** @return BelongsTo<User, $this> */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
+    /** @return BelongsTo<Trade, $this> */
     public function trade(): BelongsTo
     {
         return $this->belongsTo(Trade::class);
     }
 
+    /** @return BelongsTo<User, $this> */
     public function verifiedBy(): BelongsTo
     {
         return $this->belongsTo(User::class, 'verified_by_user_id');

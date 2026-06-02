@@ -34,6 +34,7 @@ class QualityChecklistItem extends Model
         'metadata' => 'array',
     ];
 
+    /** @return BelongsTo<QualityChecklist, $this> */
     public function checklist(): BelongsTo
     {
         return $this->belongsTo(QualityChecklist::class, 'checklist_id');

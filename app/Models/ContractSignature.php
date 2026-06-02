@@ -29,16 +29,19 @@ class ContractSignature extends Model
         'metadata' => 'array',
     ];
 
+    /** @return BelongsTo<ContractDocument, $this> */
     public function document(): BelongsTo
     {
         return $this->belongsTo(ContractDocument::class, 'document_id');
     }
 
+    /** @return BelongsTo<User, $this> */
     public function signer(): BelongsTo
     {
         return $this->belongsTo(User::class, 'signer_user_id');
     }
 
+    /** @return BelongsTo<User, $this> */
     public function invalidator(): BelongsTo
     {
         return $this->belongsTo(User::class, 'invalidated_by_user_id');

@@ -2,11 +2,17 @@
 
 namespace App\Models;
 
+use Database\Factories\ConversationMessageFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
+/**
+ * @property-read ?User $sender
+ * @property-read ?Conversation $conversation
+ */
 class ConversationMessage extends Model
 {
+    /** @use HasFactory<ConversationMessageFactory> */
     use HasFactory;
 
     protected $fillable = [

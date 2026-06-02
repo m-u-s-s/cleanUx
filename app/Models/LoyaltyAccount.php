@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Database\Factories\LoyaltyAccountFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -9,6 +10,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class LoyaltyAccount extends Model
 {
+    /** @use HasFactory<LoyaltyAccountFactory> */
     use HasFactory;
 
     protected $fillable = [
@@ -35,16 +37,19 @@ class LoyaltyAccount extends Model
         'metadata' => 'array',
     ];
 
+    /** @return BelongsTo<User, $this> */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
+    /** @return BelongsTo<LoyaltyTier, $this> */
     public function currentTier(): BelongsTo
     {
         return $this->belongsTo(LoyaltyTier::class, 'current_tier_id');
     }
 
+    /** @return HasMany<LoyaltyTransaction, $this> */
     public function transactions(): HasMany
     {
         return $this->hasMany(LoyaltyTransaction::class);

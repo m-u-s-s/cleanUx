@@ -2,12 +2,14 @@
 
 namespace App\Models;
 
+use Database\Factories\FinancePaymentFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class FinancePayment extends Model
 {
+    /** @use HasFactory<FinancePaymentFactory> */
     use HasFactory;
 
     protected $fillable = [
@@ -29,6 +31,7 @@ class FinancePayment extends Model
         'meta' => 'array',
     ];
 
+    /** @return BelongsTo<FinanceInvoice, $this> */
     public function invoice(): BelongsTo
     {
         return $this->belongsTo(FinanceInvoice::class, 'finance_invoice_id');

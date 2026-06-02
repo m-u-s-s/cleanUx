@@ -43,16 +43,19 @@ class FleetEquipment extends Model
         return 'eqp_'.Str::lower(Str::random(20));
     }
 
+    /** @return BelongsTo<User, $this> */
     public function currentProvider(): BelongsTo
     {
         return $this->belongsTo(User::class, 'current_provider_id');
     }
 
+    /** @return HasMany<FleetAssignment, $this> */
     public function assignments(): HasMany
     {
         return $this->hasMany(FleetAssignment::class, 'equipment_id');
     }
 
+    /** @return HasMany<FleetMaintenanceLog, $this> */
     public function maintenanceLogs(): HasMany
     {
         return $this->hasMany(FleetMaintenanceLog::class, 'equipment_id');

@@ -20,11 +20,13 @@ class ClientSignature extends Model
         'metadata' => 'array',
     ];
 
+    /** @return BelongsTo<MissionQualityInspection, $this> */
     public function inspection(): BelongsTo
     {
         return $this->belongsTo(MissionQualityInspection::class, 'inspection_id');
     }
 
+    /** @return BelongsTo<User, $this> */
     public function signer(): BelongsTo
     {
         return $this->belongsTo(User::class, 'signer_user_id');

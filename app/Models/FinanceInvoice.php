@@ -3,20 +3,37 @@
 namespace App\Models;
 
 use App\Models\Concerns\InteractsWithDocumentFormatting;
+use Database\Factories\FinanceInvoiceFactory;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Carbon;
 
 /**
  * @property-read Booking|null $rendezVous
  * @property-read Collection<int,FinancePayment> $payments
  * @property-read Collection<int,FinanceReminder> $reminders
+ * @property string $subtotal
+ * @property string $tax_rate
+ * @property string $tax_amount
+ * @property string $total_amount
+ * @property string $balance_due
+ * @property ?Carbon $issued_at
+ * @property ?Carbon $due_at
+ * @property ?Carbon $paid_at
+ * @property array $snapshot
+ * @property array $meta
+ * @property ?Carbon $billing_period_start
+ * @property ?Carbon $billing_period_end
+ * @property array $site_breakdown
  */
 class FinanceInvoice extends Model
 {
+    /** @use HasFactory<FinanceInvoiceFactory> */
     use HasFactory;
+
     use InteractsWithDocumentFormatting;
 
     protected $fillable = [
@@ -59,31 +76,37 @@ class FinanceInvoice extends Model
         'site_breakdown' => 'array',
     ];
 
+    /** @return BelongsTo<Booking, $this> */
     public function rendezVous(): BelongsTo
     {
         return $this->belongsTo(Booking::class, 'rendez_vous_id');
     }
 
+    /** @return BelongsTo<FinanceQuote, $this> */
     public function quote(): BelongsTo
     {
         return $this->belongsTo(FinanceQuote::class, 'finance_quote_id');
     }
 
+    /** @return BelongsTo<User, $this> */
     public function client(): BelongsTo
     {
         return $this->belongsTo(User::class, 'client_id');
     }
 
+    /** @return BelongsTo<OrganizationAccount, $this> */
     public function organizationAccount(): BelongsTo
     {
         return $this->belongsTo(OrganizationAccount::class, 'organization_account_id');
     }
 
+    /** @return HasMany<FinancePayment, $this> */
     public function payments(): HasMany
     {
         return $this->hasMany(FinancePayment::class, 'finance_invoice_id');
     }
 
+    /** @return HasMany<FinanceReminder, $this> */
     public function reminders(): HasMany
     {
         return $this->hasMany(FinanceReminder::class, 'finance_invoice_id');

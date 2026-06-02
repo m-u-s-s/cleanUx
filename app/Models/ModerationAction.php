@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Database\Factories\ModerationActionFactory;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -20,6 +21,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  */
 class ModerationAction extends Model
 {
+    /** @use HasFactory<ModerationActionFactory> */
     use HasFactory;
 
     public const TYPE_DELETE_MESSAGE = 'delete_message';
@@ -58,21 +60,25 @@ class ModerationAction extends Model
         'payload' => 'array',
     ];
 
+    /** @return BelongsTo<User, $this> */
     public function actor(): BelongsTo
     {
         return $this->belongsTo(User::class, 'actor_user_id');
     }
 
+    /** @return BelongsTo<Channel, $this> */
     public function channel(): BelongsTo
     {
         return $this->belongsTo(Channel::class);
     }
 
+    /** @return BelongsTo<Message, $this> */
     public function message(): BelongsTo
     {
         return $this->belongsTo(Message::class);
     }
 
+    /** @return BelongsTo<User, $this> */
     public function target(): BelongsTo
     {
         return $this->belongsTo(User::class, 'target_user_id');

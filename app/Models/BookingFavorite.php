@@ -19,21 +19,25 @@ class BookingFavorite extends Model
         'last_used_at' => 'datetime',
     ];
 
+    /** @return BelongsTo<User, $this> */
     public function client(): BelongsTo
     {
         return $this->belongsTo(User::class, 'client_user_id');
     }
 
+    /** @return BelongsTo<User, $this> */
     public function provider(): BelongsTo
     {
         return $this->belongsTo(User::class, 'preferred_provider_user_id');
     }
 
+    /** @return BelongsTo<Trade, $this> */
     public function trade(): BelongsTo
     {
         return $this->belongsTo(Trade::class);
     }
 
+    /** @return BelongsTo<Booking, $this> */
     public function sourceBooking(): BelongsTo
     {
         return $this->belongsTo(Booking::class, 'source_booking_id');

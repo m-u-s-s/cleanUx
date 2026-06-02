@@ -2,12 +2,14 @@
 
 namespace App\Models;
 
+use Database\Factories\QualityAuditFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class QualityAudit extends Model
 {
+    /** @use HasFactory<QualityAuditFactory> */
     use HasFactory;
 
     protected $fillable = [
@@ -39,21 +41,25 @@ class QualityAudit extends Model
         'closed_at' => 'datetime',
     ];
 
+    /** @return BelongsTo<Booking, $this> */
     public function rendezVous(): BelongsTo
     {
         return $this->belongsTo(Booking::class, 'rendez_vous_id');
     }
 
+    /** @return BelongsTo<User, $this> */
     public function employe(): BelongsTo
     {
         return $this->belongsTo(User::class, 'employe_id');
     }
 
+    /** @return BelongsTo<ServiceZone, $this> */
     public function serviceZone(): BelongsTo
     {
         return $this->belongsTo(ServiceZone::class, 'service_zone_id');
     }
 
+    /** @return BelongsTo<User, $this> */
     public function auditor(): BelongsTo
     {
         return $this->belongsTo(User::class, 'auditor_id');

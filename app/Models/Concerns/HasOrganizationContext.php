@@ -12,6 +12,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 trait HasOrganizationContext
 {
+    /** @return BelongsTo<OrganizationAccount, $this> */
     public function currentOrganization(): BelongsTo
     {
         return $this->belongsTo(OrganizationAccount::class, 'current_organization_id');
@@ -24,6 +25,7 @@ trait HasOrganizationContext
             ?? null;
     }
 
+    /** @return HasMany<OrganizationMember, $this> */
     public function organizationMemberships(): HasMany
     {
         return $this->hasMany(OrganizationMember::class);
@@ -53,6 +55,7 @@ trait HasOrganizationContext
         return app(PermissionService::class)->can($this, $permission, $org);
     }
 
+    /** @return BelongsTo<OrganizationAccount, $this> */
     public function organizationAccount(): BelongsTo
     {
         return $this->belongsTo(OrganizationAccount::class, 'organization_account_id');
@@ -75,6 +78,7 @@ trait HasOrganizationContext
             ?? null;
     }
 
+    /** @return HasMany<OrganizationSite, $this> */
     public function organizationSites(): HasMany
     {
         return $this->hasMany(OrganizationSite::class, 'organization_account_id', 'organization_account_id');

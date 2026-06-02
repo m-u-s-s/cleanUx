@@ -2,12 +2,14 @@
 
 namespace App\Models;
 
+use Database\Factories\IncidentReportFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class IncidentReport extends Model
 {
+    /** @use HasFactory<IncidentReportFactory> */
     use HasFactory;
 
     protected $fillable = [
@@ -44,26 +46,31 @@ class IncidentReport extends Model
         'closed_at' => 'datetime',
     ];
 
+    /** @return BelongsTo<Booking, $this> */
     public function rendezVous(): BelongsTo
     {
         return $this->belongsTo(Booking::class, 'rendez_vous_id');
     }
 
+    /** @return BelongsTo<User, $this> */
     public function employe(): BelongsTo
     {
         return $this->belongsTo(User::class, 'employe_id');
     }
 
+    /** @return BelongsTo<User, $this> */
     public function client(): BelongsTo
     {
         return $this->belongsTo(User::class, 'client_id');
     }
 
+    /** @return BelongsTo<OrganizationAccount, $this> */
     public function organizationAccount(): BelongsTo
     {
         return $this->belongsTo(OrganizationAccount::class, 'organization_account_id');
     }
 
+    /** @return BelongsTo<User, $this> */
     public function assignee(): BelongsTo
     {
         return $this->belongsTo(User::class, 'assigned_to');

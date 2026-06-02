@@ -68,11 +68,13 @@ class DisputeEvent extends Model
         'payload' => 'array',
     ];
 
+    /** @return BelongsTo<ComplaintCase, $this> */
     public function complaintCase(): BelongsTo
     {
         return $this->belongsTo(ComplaintCase::class);
     }
 
+    /** @return BelongsTo<User, $this> */
     public function author(): BelongsTo
     {
         return $this->belongsTo(User::class, 'author_user_id');

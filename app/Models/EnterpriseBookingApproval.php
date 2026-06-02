@@ -32,31 +32,37 @@ class EnterpriseBookingApproval extends Model
         'rejected_at' => 'datetime',
     ];
 
+    /** @return BelongsTo<Booking, $this> */
     public function rendezVous(): BelongsTo
     {
         return $this->belongsTo(Booking::class, 'rendez_vous_id');
     }
 
+    /** @return BelongsTo<OrganizationAccount, $this> */
     public function organizationAccount(): BelongsTo
     {
         return $this->belongsTo(OrganizationAccount::class);
     }
 
+    /** @return BelongsTo<OrganizationSite, $this> */
     public function organizationSite(): BelongsTo
     {
         return $this->belongsTo(OrganizationSite::class);
     }
 
+    /** @return BelongsTo<User, $this> */
     public function requestedBy(): BelongsTo
     {
         return $this->belongsTo(User::class, 'requested_by_user_id');
     }
 
+    /** @return BelongsTo<User, $this> */
     public function managerApprovedBy(): BelongsTo
     {
         return $this->belongsTo(User::class, 'manager_approved_by_user_id');
     }
 
+    /** @return BelongsTo<User, $this> */
     public function financeApprovedBy(): BelongsTo
     {
         return $this->belongsTo(User::class, 'finance_approved_by_user_id');

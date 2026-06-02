@@ -35,21 +35,25 @@ class MultiTradeBundleItem extends Model
         'sequence_order' => 'integer',
     ];
 
+    /** @return BelongsTo<MultiTradeBundle, $this> */
     public function bundle(): BelongsTo
     {
         return $this->belongsTo(MultiTradeBundle::class, 'bundle_id');
     }
 
+    /** @return BelongsTo<Trade, $this> */
     public function trade(): BelongsTo
     {
         return $this->belongsTo(Trade::class);
     }
 
+    /** @return BelongsTo<User, $this> */
     public function provider(): BelongsTo
     {
         return $this->belongsTo(User::class, 'assigned_provider_user_id');
     }
 
+    /** @return BelongsTo<Booking, $this> */
     public function booking(): BelongsTo
     {
         return $this->belongsTo(Booking::class);

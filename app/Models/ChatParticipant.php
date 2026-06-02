@@ -32,11 +32,13 @@ class ChatParticipant extends Model
         'left_at' => 'datetime',
     ];
 
+    /** @return BelongsTo<ChatThread, $this> */
     public function thread(): BelongsTo
     {
         return $this->belongsTo(ChatThread::class, 'thread_id');
     }
 
+    /** @return BelongsTo<User, $this> */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class, 'user_id');

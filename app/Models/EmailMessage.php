@@ -69,11 +69,13 @@ class EmailMessage extends Model
         return 'em_'.Str::lower(Str::random(20));
     }
 
+    /** @return BelongsTo<User, $this> */
     public function toUser(): BelongsTo
     {
         return $this->belongsTo(User::class, 'to_user_id');
     }
 
+    /** @return HasMany<EmailWebhookEvent, $this> */
     public function webhookEvents(): HasMany
     {
         return $this->hasMany(EmailWebhookEvent::class);

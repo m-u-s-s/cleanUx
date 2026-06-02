@@ -2,12 +2,14 @@
 
 namespace App\Models;
 
+use Database\Factories\MissionReinforcementRequestFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class MissionReinforcementRequest extends Model
 {
+    /** @use HasFactory<MissionReinforcementRequestFactory> */
     use HasFactory;
 
     protected $fillable = [
@@ -34,41 +36,49 @@ class MissionReinforcementRequest extends Model
         'resolved_at' => 'datetime',
     ];
 
+    /** @return BelongsTo<Mission, $this> */
     public function mission(): BelongsTo
     {
         return $this->belongsTo(Mission::class);
     }
 
+    /** @return BelongsTo<MissionBatch, $this> */
     public function batch(): BelongsTo
     {
         return $this->belongsTo(MissionBatch::class, 'mission_batch_id');
     }
 
+    /** @return BelongsTo<MissionBatchDay, $this> */
     public function batchDay(): BelongsTo
     {
         return $this->belongsTo(MissionBatchDay::class, 'mission_batch_day_id');
     }
 
+    /** @return BelongsTo<MissionTaskSegment, $this> */
     public function segment(): BelongsTo
     {
         return $this->belongsTo(MissionTaskSegment::class, 'mission_task_segment_id');
     }
 
+    /** @return BelongsTo<User, $this> */
     public function requester(): BelongsTo
     {
         return $this->belongsTo(User::class, 'requested_by_user_id');
     }
 
+    /** @return BelongsTo<User, $this> */
     public function resolver(): BelongsTo
     {
         return $this->belongsTo(User::class, 'resolved_by_user_id');
     }
 
+    /** @return BelongsTo<FieldTeam, $this> */
     public function fieldTeam(): BelongsTo
     {
         return $this->belongsTo(FieldTeam::class);
     }
 
+    /** @return BelongsTo<ServicePartner, $this> */
     public function servicePartner(): BelongsTo
     {
         return $this->belongsTo(ServicePartner::class);

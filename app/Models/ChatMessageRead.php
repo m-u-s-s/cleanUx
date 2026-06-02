@@ -15,6 +15,7 @@ class ChatMessageRead extends Model
         'read_at' => 'datetime',
     ];
 
+    /** @return BelongsTo<ChatMessage, $this> */
     public function message(): BelongsTo
     {
         return $this->belongsTo(ChatMessage::class, 'message_id');

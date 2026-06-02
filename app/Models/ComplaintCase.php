@@ -2,15 +2,34 @@
 
 namespace App\Models;
 
+use Database\Factories\ComplaintCaseFactory;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Support\Carbon;
 
+/**
+ * @property array $attachments
+ * @property array $meta
+ * @property ?Carbon $first_response_at
+ * @property ?Carbon $due_at
+ * @property ?Carbon $resolved_at
+ * @property ?Carbon $closed_at
+ * @property ?Carbon $escalated_at
+ * @property ?Carbon $last_activity_at
+ * @property bool $auto_resolved
+ * @property int $escalation_level
+ * @property ?string $reference
+ * @property string $severity
+ * @property ?int $provider_user_id
+ * @property ?int $booking_id
+ */
 class ComplaintCase extends Model
 {
+    /** @use HasFactory<ComplaintCaseFactory> */
     use HasFactory;
 
     public const STATUS_OPEN = 'open';
@@ -103,46 +122,55 @@ class ComplaintCase extends Model
         'escalation_level' => 'integer',
     ];
 
+    /** @return BelongsTo<Booking, $this> */
     public function rendezVous(): BelongsTo
     {
         return $this->belongsTo(Booking::class, 'rendez_vous_id');
     }
 
+    /** @return BelongsTo<Booking, $this> */
     public function booking(): BelongsTo
     {
         return $this->belongsTo(Booking::class, 'booking_id');
     }
 
+    /** @return BelongsTo<User, $this> */
     public function client(): BelongsTo
     {
         return $this->belongsTo(User::class, 'client_id');
     }
 
+    /** @return BelongsTo<User, $this> */
     public function provider(): BelongsTo
     {
         return $this->belongsTo(User::class, 'provider_user_id');
     }
 
+    /** @return BelongsTo<OrganizationAccount, $this> */
     public function organizationAccount(): BelongsTo
     {
         return $this->belongsTo(OrganizationAccount::class, 'organization_account_id');
     }
 
+    /** @return BelongsTo<User, $this> */
     public function assignee(): BelongsTo
     {
         return $this->belongsTo(User::class, 'assigned_to');
     }
 
+    /** @return HasMany<DisputeEvent, $this> */
     public function events(): HasMany
     {
         return $this->hasMany(DisputeEvent::class)->orderBy('created_at');
     }
 
+    /** @return HasMany<DisputeResolution, $this> */
     public function resolutions(): HasMany
     {
         return $this->hasMany(DisputeResolution::class);
     }
 
+    /** @return HasOne<DisputeResolution, $this> */
     public function appliedResolution(): HasOne
     {
         return $this->hasOne(DisputeResolution::class)

@@ -2,12 +2,21 @@
 
 namespace App\Models;
 
+use Database\Factories\PlatformModuleFactory;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
+/**
+ * @property bool $is_enabled
+ * @property bool $is_locked
+ * @property array $settings
+ * @property ?string $category
+ * @property string $rollout_strategy
+ */
 class PlatformModule extends Model
 {
+    /** @use HasFactory<PlatformModuleFactory> */
     use HasFactory;
 
     public const STRATEGIES = ['global', 'role', 'plan', 'zone', 'organization'];

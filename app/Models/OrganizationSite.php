@@ -2,14 +2,24 @@
 
 namespace App\Models;
 
+use Database\Factories\OrganizationSiteFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
+/**
+ * @property string $latitude
+ * @property string $longitude
+ * @property int $surface_m2
+ * @property int $floor_count
+ * @property array $metadata
+ * @property array $trade_preferences
+ */
 class OrganizationSite extends Model
 {
+    /** @use HasFactory<OrganizationSiteFactory> */
     use HasFactory;
 
     protected $fillable = [
@@ -59,31 +69,37 @@ class OrganizationSite extends Model
 
     public const FREQ_MONTHLY = 'monthly';
 
+    /** @return BelongsTo<OrganizationAccount, $this> */
     public function organization(): BelongsTo
     {
         return $this->belongsTo(OrganizationAccount::class, 'organization_account_id');
     }
 
+    /** @return BelongsTo<User, $this> */
     public function preferredProvider(): BelongsTo
     {
         return $this->belongsTo(User::class, 'preferred_provider_id');
     }
 
+    /** @return HasMany<ServiceZone, $this> */
     public function bookings(): HasMany
     {
         return $this->hasMany(Booking::class, 'organization_site_id');
     }
 
+    /** @return BelongsTo<ServiceZone, $this> */
     public function serviceZone(): BelongsTo
     {
         return $this->belongsTo(ServiceZone::class, 'service_zone_id');
     }
 
+    /** @return BelongsTo<PostalCode, $this> */
     public function postalCode(): BelongsTo
     {
         return $this->belongsTo(PostalCode::class, 'postal_code_id');
     }
 
+    /** @return BelongsToMany<OrganizationMember, $this> */
     public function authorizedMembers(): BelongsToMany
     {
         return $this->belongsToMany(
@@ -158,11 +174,13 @@ class OrganizationSite extends Model
         });
     }
 
+    /** @return BelongsTo<OrganizationAccount, $this> */
     public function organizationAccount(): BelongsTo
     {
         return $this->belongsTo(OrganizationAccount::class, 'organization_account_id');
     }
 
+    /** @return BelongsTo<PostalCode, $this> */
     public function postalCodeReference(): BelongsTo
     {
         return $this->belongsTo(PostalCode::class, 'postal_code_id');

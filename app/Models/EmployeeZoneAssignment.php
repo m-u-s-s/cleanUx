@@ -2,12 +2,14 @@
 
 namespace App\Models;
 
+use Database\Factories\EmployeeZoneAssignmentFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class EmployeeZoneAssignment extends Model
 {
+    /** @use HasFactory<EmployeeZoneAssignmentFactory> */
     use HasFactory;
 
     protected $fillable = [
@@ -27,11 +29,13 @@ class EmployeeZoneAssignment extends Model
         'ends_at' => 'datetime',
     ];
 
+    /** @return BelongsTo<User, $this> */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
+    /** @return BelongsTo<ServiceZone, $this> */
     public function serviceZone(): BelongsTo
     {
         return $this->belongsTo(ServiceZone::class);

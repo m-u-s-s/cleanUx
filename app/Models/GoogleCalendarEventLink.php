@@ -2,12 +2,14 @@
 
 namespace App\Models;
 
+use Database\Factories\GoogleCalendarEventLinkFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class GoogleCalendarEventLink extends Model
 {
+    /** @use HasFactory<GoogleCalendarEventLinkFactory> */
     use HasFactory;
 
     protected $fillable = [
@@ -27,11 +29,13 @@ class GoogleCalendarEventLink extends Model
         'meta' => 'array',
     ];
 
+    /** @return BelongsTo<GoogleCalendarConnection, $this> */
     public function connection(): BelongsTo
     {
         return $this->belongsTo(GoogleCalendarConnection::class, 'google_calendar_connection_id');
     }
 
+    /** @return BelongsTo<Booking, $this> */
     public function rendezVous(): BelongsTo
     {
         return $this->belongsTo(Booking::class, 'rendez_vous_id');

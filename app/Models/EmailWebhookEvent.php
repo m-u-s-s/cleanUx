@@ -17,6 +17,7 @@ class EmailWebhookEvent extends Model
         'payload' => 'array',
     ];
 
+    /** @return BelongsTo<EmailMessage, $this> */
     public function message(): BelongsTo
     {
         return $this->belongsTo(EmailMessage::class, 'email_message_id');

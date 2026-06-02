@@ -39,11 +39,13 @@ class SubscriptionCycleV2 extends Model
         'billing_raw' => 'array',
     ];
 
+    /** @return BelongsTo<SubscriptionV2, $this> */
     public function subscription(): BelongsTo
     {
         return $this->belongsTo(SubscriptionV2::class, 'subscription_id');
     }
 
+    /** @return BelongsTo<SubscriptionInvoiceV2, $this> */
     public function invoice(): BelongsTo
     {
         return $this->belongsTo(SubscriptionInvoiceV2::class, 'invoice_id');

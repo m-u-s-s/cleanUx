@@ -5,7 +5,14 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Support\Carbon;
 
+/**
+ * @property ?Carbon $due_date
+ * @property ?Carbon $due_at
+ * @property ?Carbon $completed_at
+ * @property array $metadata
+ */
 class Task extends Model
 {
     protected $fillable = [
@@ -45,21 +52,25 @@ class Task extends Model
 
     public const PRIORITY_URGENT = 'urgent';
 
+    /** @return BelongsTo<OrganizationAccount, $this> */
     public function organization(): BelongsTo
     {
         return $this->belongsTo(OrganizationAccount::class, 'organization_account_id');
     }
 
+    /** @return BelongsTo<User, $this> */
     public function creator(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by');
     }
 
+    /** @return BelongsTo<Channel, $this> */
     public function channel(): BelongsTo
     {
         return $this->belongsTo(Channel::class);
     }
 
+    /** @return BelongsToMany<User, $this> */
     public function assignees(): BelongsToMany
     {
         return $this->belongsToMany(User::class, 'task_assignees')

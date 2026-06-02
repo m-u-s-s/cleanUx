@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Database\Factories\MessageReactionFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -17,6 +18,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  */
 class MessageReaction extends Model
 {
+    /** @use HasFactory<MessageReactionFactory> */
     use HasFactory;
 
     protected $fillable = [
@@ -25,11 +27,13 @@ class MessageReaction extends Model
         'emoji',
     ];
 
+    /** @return BelongsTo<Message, $this> */
     public function message(): BelongsTo
     {
         return $this->belongsTo(Message::class);
     }
 
+    /** @return BelongsTo<User, $this> */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);

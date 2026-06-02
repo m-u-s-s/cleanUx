@@ -43,16 +43,19 @@ class WebhookEndpoint extends Model
         return 'whsec_'.Str::random(48);
     }
 
+    /** @return BelongsTo<User, $this> */
     public function owner(): BelongsTo
     {
         return $this->belongsTo(User::class, 'owner_user_id');
     }
 
+    /** @return HasMany<WebhookSubscription, $this> */
     public function subscriptions(): HasMany
     {
         return $this->hasMany(WebhookSubscription::class, 'endpoint_id');
     }
 
+    /** @return HasMany<WebhookDelivery, $this> */
     public function deliveries(): HasMany
     {
         return $this->hasMany(WebhookDelivery::class, 'endpoint_id');

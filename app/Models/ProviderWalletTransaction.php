@@ -65,6 +65,7 @@ class ProviderWalletTransaction extends Model
         'occurred_at' => 'datetime',
     ];
 
+    /** @return BelongsTo<User, $this> */
     public function provider(): BelongsTo
     {
         return $this->belongsTo(User::class, 'provider_user_id');

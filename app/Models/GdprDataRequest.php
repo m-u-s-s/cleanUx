@@ -65,11 +65,13 @@ class GdprDataRequest extends Model
         'metadata' => 'array',
     ];
 
+    /** @return BelongsTo<User, $this> */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
+    /** @return BelongsTo<User, $this> */
     public function processedBy(): BelongsTo
     {
         return $this->belongsTo(User::class, 'processed_by_user_id');

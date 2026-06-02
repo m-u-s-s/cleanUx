@@ -43,21 +43,25 @@ class Channel extends Model
 
     public const TYPE_ANNOUNCEMENT = 'announcement';
 
+    /** @return BelongsTo<OrganizationAccount, $this> */
     public function organization(): BelongsTo
     {
         return $this->belongsTo(OrganizationAccount::class, 'organization_account_id');
     }
 
+    /** @return BelongsTo<User, $this> */
     public function creator(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by');
     }
 
+    /** @return HasMany<Message, $this> */
     public function messages(): HasMany
     {
         return $this->hasMany(Message::class)->latest();
     }
 
+    /** @return BelongsToMany<User, $this> */
     public function members(): BelongsToMany
     {
         return $this->belongsToMany(User::class, 'channel_members')

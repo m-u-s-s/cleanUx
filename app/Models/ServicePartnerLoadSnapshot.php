@@ -2,12 +2,14 @@
 
 namespace App\Models;
 
+use Database\Factories\ServicePartnerLoadSnapshotFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class ServicePartnerLoadSnapshot extends Model
 {
+    /** @use HasFactory<ServicePartnerLoadSnapshotFactory> */
     use HasFactory;
 
     protected $fillable = [
@@ -31,6 +33,7 @@ class ServicePartnerLoadSnapshot extends Model
         'metadata' => 'array',
     ];
 
+    /** @return BelongsTo<ServicePartner, $this> */
     public function servicePartner(): BelongsTo
     {
         return $this->belongsTo(ServicePartner::class);

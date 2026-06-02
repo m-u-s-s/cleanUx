@@ -8,6 +8,7 @@ use App\Models\Concerns\HasOrganizationContext;
 use App\Models\Concerns\HasProviderFeatures;
 use App\Models\Concerns\HasUserTypeChecks;
 use App\Services\I18n\LocaleResolver;
+use Database\Factories\UserFactory;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Contracts\Translation\HasLocalePreference;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -16,20 +17,36 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Notifications\DatabaseNotification;
+use Illuminate\Notifications\DatabaseNotificationCollection;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Carbon;
 use Laravel\Cashier\Billable;
 use Laravel\Fortify\TwoFactorAuthenticatable;
 use Laravel\Jetstream\HasProfilePhoto;
 use Laravel\Jetstream\HasTeams;
 use Laravel\Sanctum\HasApiTokens;
 
+/**
+ * @property ?Carbon $email_verified_at
+ * @property ?Carbon $two_factor_confirmed_at
+ * @property bool $is_active
+ * @property array $metadata
+ * @property array $permissions
+ * @property ?string $current_lat
+ * @property ?string $current_lng
+ * @property-read DatabaseNotificationCollection<int, DatabaseNotification> $unreadNotifications
+ */
 class User extends Authenticatable implements HasLocalePreference, MustVerifyEmail
 {
     use Billable;
     use HasAdminCapabilities;
     use HasApiTokens;
     use HasBillingFeatures;
+
+    /** @use HasFactory<UserFactory> */
     use HasFactory;
+
     use HasOrganizationContext;
     use HasProfilePhoto;
     use HasProviderFeatures;
@@ -116,31 +133,37 @@ class User extends Authenticatable implements HasLocalePreference, MustVerifyEma
     // Core relations
     // ──────────────────────────────────────────────────────
 
+    /** @return HasOne<Booking, $this> */
     public function customerProfile(): HasOne
     {
         return $this->hasOne(CustomerProfile::class);
     }
 
+    /** @return HasMany<Booking, $this> */
     public function bookings(): HasMany
     {
         return $this->hasMany(Booking::class, 'client_user_id');
     }
 
+    /** @return HasMany<AssistantConversation, $this> */
     public function assistantConversations(): HasMany
     {
         return $this->hasMany(AssistantConversation::class);
     }
 
+    /** @return HasMany<RendezVous, $this> */
     public function rendezVousClient(): HasMany
     {
         return $this->hasMany(RendezVous::class, 'client_id');
     }
 
+    /** @return HasMany<RendezVous, $this> */
     public function rendezVousEmploye(): HasMany
     {
         return $this->hasMany(RendezVous::class, 'employe_id');
     }
 
+    /** @return HasMany<self, $this> */
     public function disponibilites(): HasMany
     {
         return $this->hasMany(Disponibilite::class);
@@ -148,6 +171,8 @@ class User extends Authenticatable implements HasLocalePreference, MustVerifyEma
 
     /**
      * Clients who have marked this user as a favourite provider.
+     *
+     * @return BelongsToMany<self, $this>
      */
     public function favoriteEmployes(): BelongsToMany
     {
@@ -161,6 +186,8 @@ class User extends Authenticatable implements HasLocalePreference, MustVerifyEma
 
     /**
      * Alias kept for backwards compatibility.
+     *
+     * @return BelongsToMany<self, $this>
      */
     public function favoriteEmployees(): BelongsToMany
     {
@@ -169,6 +196,8 @@ class User extends Authenticatable implements HasLocalePreference, MustVerifyEma
 
     /**
      * Self-referencing relation (legacy usage — resolves to $this).
+     *
+     * @return BelongsTo<self, $this>
      */
     public function user(): BelongsTo
     {

@@ -45,11 +45,13 @@ class DeviceToken extends Model
         'metadata' => 'array',
     ];
 
+    /** @return BelongsTo<User, $this> */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
+    /** @return HasMany<PushNotification, $this> */
     public function notifications(): HasMany
     {
         return $this->hasMany(PushNotification::class);

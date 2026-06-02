@@ -37,21 +37,25 @@ class BookingInsurance extends Model
         'metadata' => 'array',
     ];
 
+    /** @return BelongsTo<InsurancePlan, $this> */
     public function plan(): BelongsTo
     {
         return $this->belongsTo(InsurancePlan::class, 'plan_id');
     }
 
+    /** @return BelongsTo<User, $this> */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
+    /** @return BelongsTo<User, $this> */
     public function provider(): BelongsTo
     {
         return $this->belongsTo(User::class, 'provider_user_id');
     }
 
+    /** @return HasMany<InsuranceClaim, $this> */
     public function claims(): HasMany
     {
         return $this->hasMany(InsuranceClaim::class, 'booking_insurance_id');

@@ -28,16 +28,19 @@ class ContractSignatureAudit extends Model
         'metadata' => 'array',
     ];
 
+    /** @return BelongsTo<ContractDocument, $this> */
     public function document(): BelongsTo
     {
         return $this->belongsTo(ContractDocument::class);
     }
 
+    /** @return BelongsTo<ContractSignature, $this> */
     public function signature(): BelongsTo
     {
         return $this->belongsTo(ContractSignature::class);
     }
 
+    /** @return BelongsTo<User, $this> */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);

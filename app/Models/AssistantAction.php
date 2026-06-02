@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Database\Factories\AssistantActionFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -16,6 +17,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  */
 class AssistantAction extends Model
 {
+    /** @use HasFactory<AssistantActionFactory> */
     use HasFactory;
 
     public const STATUS_PENDING_CONFIRMATION = 'pending_confirmation';
@@ -44,11 +46,13 @@ class AssistantAction extends Model
         'executed_at' => 'datetime',
     ];
 
+    /** @return BelongsTo<AssistantConversation, $this> */
     public function conversation(): BelongsTo
     {
         return $this->belongsTo(AssistantConversation::class, 'assistant_conversation_id');
     }
 
+    /** @return BelongsTo<User, $this> */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);

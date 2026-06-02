@@ -2,12 +2,14 @@
 
 namespace App\Models;
 
+use Database\Factories\MissionAssignmentFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class MissionAssignment extends Model
 {
+    /** @use HasFactory<MissionAssignmentFactory> */
     use HasFactory;
 
     protected $fillable = [
@@ -40,11 +42,13 @@ class MissionAssignment extends Model
         'response_seconds' => 'integer',
     ];
 
+    /** @return BelongsTo<Mission, $this> */
     public function mission(): BelongsTo
     {
         return $this->belongsTo(Mission::class);
     }
 
+    /** @return BelongsTo<User, $this> */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);

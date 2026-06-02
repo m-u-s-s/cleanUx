@@ -31,16 +31,19 @@ class ChatMessage extends Model
         'metadata' => 'array',
     ];
 
+    /** @return BelongsTo<ChatThread, $this> */
     public function thread(): BelongsTo
     {
         return $this->belongsTo(ChatThread::class, 'thread_id');
     }
 
+    /** @return BelongsTo<User, $this> */
     public function sender(): BelongsTo
     {
         return $this->belongsTo(User::class, 'sender_user_id');
     }
 
+    /** @return HasMany<ChatMessageRead, $this> */
     public function reads(): HasMany
     {
         return $this->hasMany(ChatMessageRead::class, 'message_id');

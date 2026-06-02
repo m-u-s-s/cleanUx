@@ -59,26 +59,31 @@ class SubscriptionV2 extends Model
         return 'sub_'.Str::lower(Str::random(20));
     }
 
+    /** @return BelongsTo<SubscriptionPlanV2, $this> */
     public function plan(): BelongsTo
     {
         return $this->belongsTo(SubscriptionPlanV2::class, 'plan_id');
     }
 
+    /** @return BelongsTo<User, $this> */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class, 'user_id');
     }
 
+    /** @return BelongsTo<User, $this> */
     public function provider(): BelongsTo
     {
         return $this->belongsTo(User::class, 'provider_user_id');
     }
 
+    /** @return HasMany<SubscriptionCycleV2, $this> */
     public function cycles(): HasMany
     {
         return $this->hasMany(SubscriptionCycleV2::class, 'subscription_id');
     }
 
+    /** @return HasMany<SubscriptionInvoiceV2, $this> */
     public function invoices(): HasMany
     {
         return $this->hasMany(SubscriptionInvoiceV2::class, 'subscription_id');

@@ -32,26 +32,31 @@ class BookingCancellationV2 extends Model
         'metadata' => 'array',
     ];
 
+    /** @return BelongsTo<CancellationPolicy, $this> */
     public function policy(): BelongsTo
     {
         return $this->belongsTo(CancellationPolicy::class, 'policy_id');
     }
 
+    /** @return BelongsTo<CancellationPolicyTier, $this> */
     public function tier(): BelongsTo
     {
         return $this->belongsTo(CancellationPolicyTier::class, 'tier_id');
     }
 
+    /** @return BelongsTo<User, $this> */
     public function cancelledBy(): BelongsTo
     {
         return $this->belongsTo(User::class, 'cancelled_by_user_id');
     }
 
+    /** @return BelongsTo<User, $this> */
     public function overriddenBy(): BelongsTo
     {
         return $this->belongsTo(User::class, 'override_admin_user_id');
     }
 
+    /** @return HasMany<CancellationAudit, $this> */
     public function audits(): HasMany
     {
         return $this->hasMany(CancellationAudit::class, 'cancellation_id');

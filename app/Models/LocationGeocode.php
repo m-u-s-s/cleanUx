@@ -2,11 +2,13 @@
 
 namespace App\Models;
 
+use Database\Factories\LocationGeocodeFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class LocationGeocode extends Model
 {
+    /** @use HasFactory<LocationGeocodeFactory> */
     use HasFactory;
 
     protected $fillable = [

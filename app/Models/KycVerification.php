@@ -71,16 +71,19 @@ class KycVerification extends Model
         'expires_at' => 'datetime',
     ];
 
+    /** @return BelongsTo<User, $this> */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
+    /** @return BelongsTo<User, $this> */
     public function reviewer(): BelongsTo
     {
         return $this->belongsTo(User::class, 'reviewed_by_user_id');
     }
 
+    /** @return HasMany<KycCheck, $this> */
     public function checks(): HasMany
     {
         return $this->hasMany(KycCheck::class);

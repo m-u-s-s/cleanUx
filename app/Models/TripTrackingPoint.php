@@ -28,6 +28,7 @@ class TripTrackingPoint extends Model
         'created_at' => 'datetime',
     ];
 
+    /** @return BelongsTo<TripTrackingSession, $this> */
     public function session(): BelongsTo
     {
         return $this->belongsTo(TripTrackingSession::class, 'session_id');

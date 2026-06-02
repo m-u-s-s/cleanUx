@@ -47,11 +47,13 @@ class MultiTradeBundle extends Model
         return 'bndl_'.Str::lower(Str::random(20));
     }
 
+    /** @return BelongsTo<User, $this> */
     public function client(): BelongsTo
     {
         return $this->belongsTo(User::class, 'client_user_id');
     }
 
+    /** @return HasMany<MultiTradeBundleItem, $this> */
     public function items(): HasMany
     {
         return $this->hasMany(MultiTradeBundleItem::class, 'bundle_id');

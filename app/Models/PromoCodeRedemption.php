@@ -2,12 +2,14 @@
 
 namespace App\Models;
 
+use Database\Factories\PromoCodeRedemptionFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class PromoCodeRedemption extends Model
 {
+    /** @use HasFactory<PromoCodeRedemptionFactory> */
     use HasFactory;
 
     public const STATUS_RESERVED = 'reserved';
@@ -42,16 +44,19 @@ class PromoCodeRedemption extends Model
         'metadata' => 'array',
     ];
 
+    /** @return BelongsTo<PromoCode, $this> */
     public function promoCode(): BelongsTo
     {
         return $this->belongsTo(PromoCode::class);
     }
 
+    /** @return BelongsTo<User, $this> */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
+    /** @return BelongsTo<Booking, $this> */
     public function booking(): BelongsTo
     {
         return $this->belongsTo(Booking::class);

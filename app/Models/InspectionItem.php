@@ -24,16 +24,19 @@ class InspectionItem extends Model
         'metadata' => 'array',
     ];
 
+    /** @return BelongsTo<MissionQualityInspection, $this> */
     public function inspection(): BelongsTo
     {
         return $this->belongsTo(MissionQualityInspection::class, 'inspection_id');
     }
 
+    /** @return BelongsTo<QualityChecklistItem, $this> */
     public function checklistItem(): BelongsTo
     {
         return $this->belongsTo(QualityChecklistItem::class, 'checklist_item_id');
     }
 
+    /** @return HasMany<InspectionPhoto, $this> */
     public function photos(): HasMany
     {
         return $this->hasMany(InspectionPhoto::class, 'inspection_item_id');

@@ -27,6 +27,7 @@ class FeatureFlagOverride extends Model
         'override_config' => 'array',
     ];
 
+    /** @return BelongsTo<User, $this> */
     public function updatedBy(): BelongsTo
     {
         return $this->belongsTo(User::class, 'updated_by_user_id');

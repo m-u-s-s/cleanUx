@@ -2,11 +2,13 @@
 
 namespace App\Models;
 
+use Database\Factories\ClientSubscriptionFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class ClientSubscription extends Model
 {
+    /** @use HasFactory<ClientSubscriptionFactory> */
     use HasFactory;
 
     protected $fillable = [

@@ -29,6 +29,7 @@ class PhoneVerificationCode extends Model
 
     protected $hidden = ['code_hash'];
 
+    /** @return BelongsTo<User, $this> */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);

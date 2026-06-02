@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Database\Factories\MissionTrackingSessionFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -9,6 +10,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class MissionTrackingSession extends Model
 {
+    /** @use HasFactory<MissionTrackingSessionFactory> */
     use HasFactory;
 
     protected $fillable = [
@@ -42,21 +44,25 @@ class MissionTrackingSession extends Model
         'meta' => 'array',
     ];
 
+    /** @return BelongsTo<Mission, $this> */
     public function mission(): BelongsTo
     {
         return $this->belongsTo(Mission::class);
     }
 
+    /** @return BelongsTo<MissionAssignment, $this> */
     public function assignment(): BelongsTo
     {
         return $this->belongsTo(MissionAssignment::class, 'assignment_id');
     }
 
+    /** @return BelongsTo<User, $this> */
     public function employee(): BelongsTo
     {
         return $this->belongsTo(User::class, 'employee_user_id');
     }
 
+    /** @return HasMany<MissionTrackingPoint, $this> */
     public function points(): HasMany
     {
         return $this->hasMany(MissionTrackingPoint::class, 'tracking_session_id');

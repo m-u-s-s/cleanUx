@@ -51,6 +51,7 @@ class KycCheck extends Model
         'checked_at' => 'datetime',
     ];
 
+    /** @return BelongsTo<KycVerification, $this> */
     public function verification(): BelongsTo
     {
         return $this->belongsTo(KycVerification::class, 'kyc_verification_id');

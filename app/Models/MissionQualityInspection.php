@@ -41,31 +41,37 @@ class MissionQualityInspection extends Model
         'metadata' => 'array',
     ];
 
+    /** @return BelongsTo<QualityChecklist, $this> */
     public function checklist(): BelongsTo
     {
         return $this->belongsTo(QualityChecklist::class, 'checklist_id');
     }
 
+    /** @return HasMany<User, $this> */
     public function items(): HasMany
     {
         return $this->hasMany(InspectionItem::class, 'inspection_id');
     }
 
+    /** @return HasMany<User, $this> */
     public function photos(): HasMany
     {
         return $this->hasMany(InspectionPhoto::class, 'inspection_id');
     }
 
+    /** @return HasMany<User, $this> */
     public function signatures(): HasMany
     {
         return $this->hasMany(ClientSignature::class, 'inspection_id');
     }
 
+    /** @return BelongsTo<User, $this> */
     public function submitter(): BelongsTo
     {
         return $this->belongsTo(User::class, 'submitted_by_user_id');
     }
 
+    /** @return BelongsTo<User, $this> */
     public function validator(): BelongsTo
     {
         return $this->belongsTo(User::class, 'validated_by_user_id');

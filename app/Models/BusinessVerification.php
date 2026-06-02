@@ -29,6 +29,7 @@ class BusinessVerification extends Model
         'expires_at' => 'datetime',
     ];
 
+    /** @return BelongsTo<BusinessEntity, $this> */
     public function entity(): BelongsTo
     {
         return $this->belongsTo(BusinessEntity::class, 'entity_id');

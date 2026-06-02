@@ -2,12 +2,14 @@
 
 namespace App\Models;
 
+use Database\Factories\MissionChecklistItemFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class MissionChecklistItem extends Model
 {
+    /** @use HasFactory<MissionChecklistItemFactory> */
     use HasFactory;
 
     protected $fillable = [
@@ -26,11 +28,13 @@ class MissionChecklistItem extends Model
         'completed_at' => 'datetime',
     ];
 
+    /** @return BelongsTo<MissionChecklist, $this> */
     public function checklist(): BelongsTo
     {
         return $this->belongsTo(MissionChecklist::class, 'mission_checklist_id');
     }
 
+    /** @return BelongsTo<User, $this> */
     public function completedBy(): BelongsTo
     {
         return $this->belongsTo(User::class, 'completed_by_user_id');

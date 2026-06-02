@@ -2,12 +2,14 @@
 
 namespace App\Models;
 
+use Database\Factories\CountryOperationalSettingFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class CountryOperationalSetting extends Model
 {
+    /** @use HasFactory<CountryOperationalSettingFactory> */
     use HasFactory;
 
     protected $fillable = [
@@ -41,6 +43,7 @@ class CountryOperationalSetting extends Model
         'metadata' => 'array',
     ];
 
+    /** @return BelongsTo<Country, $this> */
     public function country(): BelongsTo
     {
         return $this->belongsTo(Country::class);
