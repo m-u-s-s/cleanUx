@@ -8,6 +8,13 @@ return new class extends Migration
 {
     public function up(): void
     {
+        // Idempotent: la table peut déjà exister sur une base ayant subi un drift
+        // d'historique (objet présent mais migration non enregistrée). Cohérent avec
+        // les 44 autres migrations gardées du lot.
+        if (Schema::hasTable('provider_trade_certifications')) {
+            return;
+        }
+
         Schema::create('provider_trade_certifications', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained()->cascadeOnDelete();
