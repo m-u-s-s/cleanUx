@@ -28,7 +28,7 @@ class ProductionHealthCheck extends Command
         $this->newLine();
         $this->table(
             ['Metric', 'Value'],
-            collect($report['metrics'])->map(fn ($value, $key) => [$key, is_bool($value) ? ($value ? 'true' : 'false') : (string) $value])->all()
+            collect($report['metrics'])->map(fn ($value, $key) => [$key, is_bool($value) ? ($value ? 'true' : 'false') : (is_array($value) ? ($value === [] ? 'none' : implode(', ', array_map(fn ($item) => (string) $item, $value))) : (string) ($value ?? 'null'))])->all()
         );
 
         $errors = $reporter->errorCount($report);
