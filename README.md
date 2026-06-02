@@ -2,7 +2,7 @@
 
 **Multi-trade marketplace** style Uber/Bolt — nettoyage, peinture, babysitting, toiturier, et 30+ métiers. Construit avec **Laravel 11**, **Livewire 3**, **Sanctum 4**, **Reverb**.
 
-État : **50 modules production-ready**, **1472 tests verts**, **0 CVE Symfony** (Laravel 11.53), Sentry + Spatie Backup installés.
+État : **50+ modules production-ready**, **2116 tests verts** (6007 assertions), **0 CVE Symfony** (Laravel 11.53), Sentry + Spatie Backup installés.
 
 ## Quick start
 
