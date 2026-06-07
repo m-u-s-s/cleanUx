@@ -149,6 +149,42 @@ class CancellationEngineTest extends TestCase
         app(CancellationEngine::class)->execute(99999, $client, 'client');
     }
 
+    /**
+     * B1: a completed booking must not be cancellable (which would trigger a refund/reversal
+     * on an already-delivered, already-paid mission).
+     */
+    public function test_execute_rejects_cancellation_of_completed_booking(): void
+    {
+        $client = User::factory()->client()->create();
+        $booking = $this->makeBooking($client, now()->addDays(3), 100.0);
+        $booking->forceFill(['status' => 'termine'])->save();
+
+        $this->expectException(ValidationException::class);
+        app(CancellationEngine::class)->execute($booking->id, $client, 'client');
+    }
+
+    /** B1: quoting a cancellation for a completed booking must also be refused. */
+    public function test_quote_rejects_completed_booking(): void
+    {
+        $client = User::factory()->client()->create();
+        $booking = $this->makeBooking($client, now()->addDays(3), 100.0);
+        $booking->forceFill(['status' => 'completed'])->save();
+
+        $this->expectException(ValidationException::class);
+        app(CancellationEngine::class)->quote($booking->id, 'client');
+    }
+
+    /** B1: an already-cancelled booking cannot be cancelled again by another actor. */
+    public function test_execute_rejects_recancellation_of_cancelled_booking(): void
+    {
+        $client = User::factory()->client()->create();
+        $booking = $this->makeBooking($client, now()->addDays(3), 100.0);
+        $booking->forceFill(['status' => 'annule'])->save();
+
+        $this->expectException(ValidationException::class);
+        app(CancellationEngine::class)->execute($booking->id, $client, 'provider');
+    }
+
     public function test_override_waives_fee_and_increases_refund(): void
     {
         $client = User::factory()->client()->create();

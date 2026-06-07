@@ -6,6 +6,7 @@ use App\Models\BookingCancellationV2;
 use App\Models\CancellationAudit;
 use App\Models\User;
 use App\Support\ActivityLogger;
+use App\Support\Domain\BookingStatus;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
@@ -37,6 +38,16 @@ class CancellationEngine
         $bookingMeta = $this->fetchBookingMeta($bookingId);
         if (! $bookingMeta) {
             throw ValidationException::withMessages(['booking_id' => 'Booking introuvable.']);
+        }
+
+        // B1 — terminal-state guard: a booking that is already completed (delivered + paid)
+        // or already cancelled must not be cancelled. Without this, a completed mission could
+        // be re-cancelled, triggering a real Stripe refund + loyalty/promo reversal.
+        $status = $bookingMeta['status'] ?? null;
+        if ($status !== null && in_array($status, BookingStatus::nonCancellableAliases(), true)) {
+            throw ValidationException::withMessages([
+                'status' => 'Impossible d\'annuler une réservation déjà terminée ou annulée.',
+            ]);
         }
 
         $now = $at ? CarbonImmutable::instance($at) : now()->toImmutable();
