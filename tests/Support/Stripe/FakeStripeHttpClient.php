@@ -19,6 +19,9 @@ class FakeStripeHttpClient implements ClientInterface
     /** @var string[] */
     private array $calls = [];
 
+    /** @var array<int, array{key:string, headers:array, params:array}> Full record of each request seen. */
+    private array $requests = [];
+
     /** @var array<string, array<string, mixed>> Last object body seen per resource path (for GET retrieve fallback). */
     private array $lastKnown = [];
 
@@ -33,6 +36,37 @@ class FakeStripeHttpClient implements ClientInterface
     public function calls(): array
     {
         return $this->calls;
+    }
+
+    /**
+     * Full request records (method+path key, headers, params) in call order.
+     *
+     * @return array<int, array{key:string, headers:array, params:array}>
+     */
+    public function requests(): array
+    {
+        return $this->requests;
+    }
+
+    /**
+     * The Stripe idempotency key sent for the first request matching "METHOD /path",
+     * or null if none was sent. The SDK passes it as an "Idempotency-Key: <value>" header.
+     */
+    public function idempotencyKeyFor(string $method, string $path): ?string
+    {
+        $wanted = strtoupper($method).' '.$path;
+        foreach ($this->requests as $req) {
+            if ($req['key'] !== $wanted) {
+                continue;
+            }
+            foreach ($req['headers'] as $header) {
+                if (is_string($header) && stripos($header, 'Idempotency-Key:') === 0) {
+                    return trim(substr($header, strlen('Idempotency-Key:')));
+                }
+            }
+        }
+
+        return null;
     }
 
     /**
@@ -60,6 +94,11 @@ class FakeStripeHttpClient implements ClientInterface
 
         $key = strtoupper((string) $method).' '.$path;
         $this->calls[] = $key;
+        $this->requests[] = [
+            'key' => $key,
+            'headers' => is_array($headers) ? $headers : [],
+            'params' => is_array($params) ? $params : [],
+        ];
 
         if (isset($this->stubs[$key])) {
             [$body, $code] = $this->stubs[$key];

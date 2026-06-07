@@ -27,6 +27,18 @@ class StripeFakeResponses
         ], $overrides);
     }
 
+    public static function transfer(string $id, string $destination, int $amount): array
+    {
+        return [
+            'id' => $id,
+            'object' => 'transfer',
+            'amount' => $amount,
+            'currency' => 'eur',
+            'destination' => $destination,
+            'created' => 1700000000,
+        ];
+    }
+
     public static function refund(string $id, string $piId, int $amount): array
     {
         return [

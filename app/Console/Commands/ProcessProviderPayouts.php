@@ -220,15 +220,22 @@ class ProcessProviderPayouts extends Command
                 try {
                     Stripe::setApiKey($stripeKey);
 
-                    $transfer = Transfer::create([
-                        'amount' => $payoutCents,
-                        'currency' => 'eur',
-                        'destination' => $connectId,
-                        'metadata' => [
-                            'booking_id' => $booking->id,
-                            'type' => 'manual_payout',
+                    // Deterministic idempotency key: if the process crashes between Stripe
+                    // creating the transfer and the local DB update below, the next run
+                    // re-selects this booking and calls Transfer::create again — Stripe then
+                    // returns the SAME transfer instead of creating a second real one. (A2)
+                    $transfer = Transfer::create(
+                        [
+                            'amount' => $payoutCents,
+                            'currency' => 'eur',
+                            'destination' => $connectId,
+                            'metadata' => [
+                                'booking_id' => $booking->id,
+                                'type' => 'manual_payout',
+                            ],
                         ],
-                    ]);
+                        ['idempotency_key' => 'payout:booking:'.$booking->id]
+                    );
 
                     $booking->update([
                         'stripe_transfer_id' => $transfer->id,
