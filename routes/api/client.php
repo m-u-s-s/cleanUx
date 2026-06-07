@@ -49,6 +49,9 @@ Route::middleware('auth:sanctum')->prefix('client')->group(function () {
     Route::get('/bookings/{booking}', [ClientBookingController::class, 'show']);
     Route::post('/bookings/{booking}/cancel', [ClientBookingController::class, 'cancel']);
     Route::get('/bookings/{booking}/eta', [ClientBookingController::class, 'eta']);
+    // E1 — client confirms mission start/end by scanning the on-site verification code.
+    Route::post('/bookings/{booking}/qr-start', [ClientBookingController::class, 'qrStart']);
+    Route::post('/bookings/{booking}/qr-end', [ClientBookingController::class, 'qrEnd']);
 
     // Client Invoices — list with scope isolation
     Route::get('/invoices/summary', [InvoiceApiController::class, 'summary'])->name('api.client.invoices.summary');
