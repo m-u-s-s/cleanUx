@@ -53,6 +53,9 @@ class Kernel extends ConsoleKernel
         // Stripe reconciliation : audit Stripe ↔ DB chaque jour
         $schedule->command('stripe:reconcile --scope=all --days=1')->dailyAt('05:30')->withoutOverlapping();
 
+        // M9 — re-dispatch transiently-failed Stripe webhook events that are due for retry.
+        $schedule->command('stripe:retry-failed-webhooks')->hourly()->withoutOverlapping();
+
         // Audit v2 — purge old events selon retention policies
         if (class_exists(PurgeAuditEventsJob::class)) {
             $schedule->job(new PurgeAuditEventsJob)->dailyAt('03:15')->withoutOverlapping();
