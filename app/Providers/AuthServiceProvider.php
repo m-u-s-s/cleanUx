@@ -6,10 +6,12 @@ use App\Models\Booking;
 use App\Models\Feedback;
 use App\Models\FinanceInvoice;
 use App\Models\Mission;
+use App\Models\MissionQualityInspection;
 use App\Models\User;
 use App\Policies\FeedbackPolicy;
 use App\Policies\FinanceInvoicePolicy;
 use App\Policies\MissionPolicy;
+use App\Policies\MissionQualityInspectionPolicy;
 use App\Policies\RendezVousPolicy;
 use App\Policies\UserPolicy;
 use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
@@ -23,6 +25,7 @@ class AuthServiceProvider extends ServiceProvider
         User::class => UserPolicy::class,
         Mission::class => MissionPolicy::class,
         FinanceInvoice::class => FinanceInvoicePolicy::class,
+        MissionQualityInspection::class => MissionQualityInspectionPolicy::class,
     ];
 
     public function boot(): void
