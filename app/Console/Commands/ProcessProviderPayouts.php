@@ -62,8 +62,16 @@ class ProcessProviderPayouts extends Command
             } else {
                 try {
                     DB::transaction(function () use ($booking, $calc) {
+                        // A booking captured via Stripe destination charge has already had
+                        // the provider share transferred to their Connect account at capture
+                        // time. Mark it 'auto_transferred' so Phase 2 below never re-transfers
+                        // it (double payment). Only bookings that were NOT auto-paid this way
+                        // stay 'processed' and remain eligible for a manual Phase 2 transfer.
+                        $autoTransferred = $booking->payment_status === 'captured'
+                            && ! empty($booking->stripe_payment_intent_id);
+
                         $updates = [
-                            'payout_status' => 'processed',
+                            'payout_status' => $autoTransferred ? 'auto_transferred' : 'processed',
                             'platform_fee_cents' => $calc['platform_fee_cents'],
                         ];
 
@@ -160,6 +168,15 @@ class ProcessProviderPayouts extends Command
 
         $pendingTransfers = Booking::where('payout_status', 'processed')
             ->whereNull('stripe_transfer_id')
+            // Defense-in-depth: never manually transfer a booking that was already paid
+            // via a Stripe destination charge (provider auto-credited at capture). Such a
+            // booking has a captured PaymentIntent. This excludes legacy 'processed' rows
+            // written before A1 was fixed, in addition to the 'auto_transferred' marking.
+            ->where(function ($q) {
+                $q->where('payment_status', '!=', 'captured')
+                    ->orWhereNull('payment_status')
+                    ->orWhereNull('stripe_payment_intent_id');
+            })
             ->with(['employe', 'assignedProvider'])
             ->get();
 

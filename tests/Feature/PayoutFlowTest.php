@@ -142,6 +142,53 @@ class PayoutFlowTest extends TestCase
             ->expectsOutputToContain('Found 0 bookings');
     }
 
+    /**
+     * A1 regression: a mission paid via Stripe destination charge already transferred
+     * the provider share to their Connect account at capture. Phase 2 must NOT create a
+     * second Transfer for it, even if a legacy row still carries payout_status='processed'
+     * with a null stripe_transfer_id.
+     */
+    public function test_phase2_skips_bookings_already_auto_paid_via_destination_charge(): void
+    {
+        Booking::factory()->create([
+            'status' => 'completed',
+            'devis_estime' => 100,
+            'payment_status' => 'captured',
+            'stripe_payment_intent_id' => 'pi_test_autopaid',
+            'payout_status' => 'processed',
+            'stripe_transfer_id' => null,
+            'provider_payout_cents' => 8500,
+        ]);
+
+        $this->artisan('payouts:process')
+            ->assertSuccessful()
+            ->expectsOutputToContain('No manual transfers needed');
+    }
+
+    /**
+     * A1 regression: Phase 1 must mark a captured destination-charge booking with the
+     * explicit 'auto_transferred' status so it is excluded from the Phase 2 manual transfer
+     * (which would otherwise double-pay the provider).
+     */
+    public function test_phase1_marks_captured_destination_charge_as_auto_transferred(): void
+    {
+        // No provider attached so the (separately-tracked, M5/M10) raw wallet insert path
+        // is skipped — this test isolates the Phase 1 payout_status marking behaviour.
+        $booking = Booking::factory()->create([
+            'status' => 'completed',
+            'devis_estime' => 100,
+            'payment_status' => 'captured',
+            'stripe_payment_intent_id' => 'pi_test_autopaid2',
+            'payout_status' => null,
+            'employe_id' => null,
+            'assigned_provider_user_id' => null,
+        ]);
+
+        $this->artisan('payouts:process')->assertSuccessful();
+
+        $this->assertSame('auto_transferred', $booking->fresh()->payout_status);
+    }
+
     // ──────────────────────────────────────────────
     // Webhook signature validation
     // ──────────────────────────────────────────────
