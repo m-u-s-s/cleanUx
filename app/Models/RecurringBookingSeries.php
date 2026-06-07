@@ -14,7 +14,32 @@ class RecurringBookingSeries extends Model
 
     protected $table = 'recurring_booking_series';
 
-    protected $guarded = [];
+    // L3 — explicit allowlist instead of $guarded = []. Covers every column the recurring
+    // template service assigns (and the legacy cast columns) so creation keeps working, while
+    // id + timestamps stay non-mass-assignable.
+    protected $fillable = [
+        'customer_user_id',
+        'customer_organization_id',
+        'organization_site_id',
+        'service_catalog_id',
+        'service_zone_id',
+        'frequency',
+        'interval',
+        'days',
+        'days_of_week',
+        'starts_at',
+        'ends_at',
+        'start_date',
+        'end_date',
+        'occurrence_count',
+        'status',
+        'timezone',
+        'next_occurrence_at',
+        'last_generated_at',
+        'metadata',
+        'settings',
+        'template_payload',
+    ];
 
     protected $casts = [
         'start_date' => 'date',

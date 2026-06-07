@@ -9,7 +9,32 @@ class RendezVous extends Booking
 {
     protected $table = 'rendez_vous';
 
-    protected $guarded = [];
+    // Reset the inherited Booking allowlist so the restrictive $guarded blocklist below is the
+    // operative rule (a non-empty $fillable would otherwise take precedence over $guarded).
+    protected $fillable = [];
+
+    // L1 — never allow mass-assignment of the privilege/money columns on this central booking
+    // entity. A restrictive guard (vs the previous wide-open $guarded = []) blocks the
+    // escalation vectors (forcing status, reassigning client/provider, editing amounts/payment
+    // flags) while leaving harmless fields assignable. No code mass-assigns RendezVous today;
+    // this is defense-in-depth against any future controller doing fill($request->all()).
+    protected $guarded = [
+        'id',
+        'status',
+        'client_id',
+        'employe_id',
+        'customer_user_id',
+        'assigned_provider_user_id',
+        'payment_status',
+        'payout_status',
+        'devis_estime',
+        'estimated_price',
+        'final_price',
+        'payment_amount_cents',
+        'provider_amount_cents',
+        'provider_payout_cents',
+        'platform_fee_cents',
+    ];
 
     /** @return HasMany<Feedback, $this> */
     public function feedbacks(): HasMany
