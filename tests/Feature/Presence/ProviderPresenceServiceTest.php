@@ -3,8 +3,10 @@
 namespace Tests\Feature\Presence;
 
 use App\Models\ProviderPresence;
+use App\Models\ProviderProfile;
 use App\Models\User;
 use App\Services\Presence\ProviderPresenceService;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
 use Illuminate\Validation\ValidationException;
@@ -154,5 +156,66 @@ class ProviderPresenceServiceTest extends TestCase
 
         $count = ProviderPresence::query()->where('provider_user_id', $provider->id)->count();
         $this->assertSame(1, $count);
+    }
+
+    // ── F2: presence-v2 must keep the legacy ProviderProfile.is_online flag in sync ──
+
+    private function makeProviderWithProfile(bool $online = false): User
+    {
+        $provider = User::factory()->employe()->create();
+        ProviderProfile::create(['user_id' => $provider->id, 'status' => 'active']);
+        DB::table('provider_profiles')->where('user_id', $provider->id)->update(['is_online' => $online]);
+
+        return $provider;
+    }
+
+    private function isOnline(User $provider): bool
+    {
+        return (bool) DB::table('provider_profiles')->where('user_id', $provider->id)->value('is_online');
+    }
+
+    public function test_go_online_sets_legacy_is_online_true(): void
+    {
+        $provider = $this->makeProviderWithProfile(false);
+
+        app(ProviderPresenceService::class)->goOnline($provider);
+
+        $this->assertTrue($this->isOnline($provider), 'F2: going online via v2 must set legacy is_online=true for dispatch');
+    }
+
+    public function test_go_offline_sets_legacy_is_online_false(): void
+    {
+        $provider = $this->makeProviderWithProfile(true);
+        $service = app(ProviderPresenceService::class);
+
+        $service->goOnline($provider);
+        $service->goOffline($provider);
+
+        $this->assertFalse($this->isOnline($provider));
+    }
+
+    public function test_go_busy_sets_legacy_is_online_false(): void
+    {
+        $provider = $this->makeProviderWithProfile(false);
+        $service = app(ProviderPresenceService::class);
+
+        $service->goOnline($provider);
+        $service->goBusy($provider);
+
+        $this->assertFalse($this->isOnline($provider), 'busy providers must not be ASAP-dispatchable');
+    }
+
+    public function test_scan_stale_clears_legacy_is_online(): void
+    {
+        $provider = $this->makeProviderWithProfile(false);
+        $service = app(ProviderPresenceService::class);
+
+        $service->goOnline($provider);
+        ProviderPresence::query()->where('provider_user_id', $provider->id)
+            ->update(['heartbeat_at' => now()->subMinutes(60)]);
+
+        $service->scanStale(5);
+
+        $this->assertFalse($this->isOnline($provider));
     }
 }

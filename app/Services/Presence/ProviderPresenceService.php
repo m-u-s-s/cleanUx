@@ -3,9 +3,11 @@
 namespace App\Services\Presence;
 
 use App\Models\ProviderPresence;
+use App\Models\ProviderProfile;
 use App\Models\User;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Validation\ValidationException;
 
 /**
@@ -62,6 +64,11 @@ class ProviderPresenceService
         }
 
         $presence->update($updates);
+
+        // F2 — keep the legacy ProviderProfile.is_online flag in sync. Dispatch/matching
+        // (MatchingV2Service, AiDispatchService) filter ASAP candidates on is_online, so a
+        // provider who goes online via presence-v2 must also flip is_online to be dispatchable.
+        $this->syncLegacyOnlineFlag($provider, true);
 
         return $presence->fresh();
     }
@@ -147,6 +154,13 @@ class ProviderPresenceService
                 ]);
             }
 
+            // F2 — mirror auto-offline into the legacy is_online flag so stale providers
+            // stop being dispatched.
+            $staleIds = $stales->pluck('provider_user_id')->all();
+            if ($staleIds && Schema::hasColumn('provider_profiles', 'is_online')) {
+                ProviderProfile::query()->whereIn('user_id', $staleIds)->update(['is_online' => false]);
+            }
+
             return $stales->count();
         });
     }
@@ -186,6 +200,26 @@ class ProviderPresenceService
 
         $presence->update($updates);
 
+        // F2 — only the 'online' status is dispatchable in the legacy model; busy / on_break /
+        // offline all map to is_online = false.
+        $this->syncLegacyOnlineFlag($provider, $newStatus === ProviderPresence::STATUS_ONLINE);
+
         return $presence->fresh();
+    }
+
+    /**
+     * Mirror the v2 presence state into the legacy ProviderProfile.is_online flag that the
+     * dispatch/matching path reads. No-op if the provider has no profile or the column is
+     * absent. (F2)
+     */
+    protected function syncLegacyOnlineFlag(User $provider, bool $online): void
+    {
+        if (! Schema::hasColumn('provider_profiles', 'is_online')) {
+            return;
+        }
+
+        ProviderProfile::query()
+            ->where('user_id', $provider->id)
+            ->update(['is_online' => $online]);
     }
 }
