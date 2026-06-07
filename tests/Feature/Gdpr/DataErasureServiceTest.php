@@ -3,10 +3,14 @@
 namespace Tests\Feature\Gdpr;
 
 use App\Models\Booking;
+use App\Models\ComplaintCase;
+use App\Models\Feedback;
 use App\Models\GdprDataRequest;
 use App\Models\User;
 use App\Services\Gdpr\DataErasureService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 use Tests\TestCase;
 
 class DataErasureServiceTest extends TestCase
@@ -110,5 +114,102 @@ class DataErasureServiceTest extends TestCase
         app(DataErasureService::class)->liftRestriction($user->fresh());
 
         $this->assertNull($user->fresh()->processing_restricted_at);
+    }
+
+    /**
+     * D2: anonymization must also scrub the PII the original implementation missed —
+     * booking addresses + notes, free-text feedback / complaints, notification payloads,
+     * analytics rows, and audit_events readable labels.
+     */
+    public function test_execute_scrubs_previously_missed_pii(): void
+    {
+        $user = User::factory()->client()->create([
+            'name' => 'Bob Original',
+            'email' => 'bob@example.com',
+        ]);
+
+        $booking = Booking::create([
+            'client_id' => $user->id,
+            'date' => now()->subMonth(),
+            'heure' => '10:00',
+            'status' => 'termine',
+            'devis_estime' => 80,
+            'adresse' => '12 rue Secrète',
+            'ville' => 'Bruxelles',
+            'code_postal' => '1000',
+            'notes' => 'Code portail 1234',
+        ]);
+
+        $feedback = Feedback::factory()->create([
+            'rendez_vous_id' => $booking->id,
+            'client_id' => $user->id,
+            'commentaire' => 'Mon nom est Bob et mon adresse est 12 rue Secrète',
+        ]);
+        // The factory may realign client_id from the booking; force the link explicitly.
+        $feedback->forceFill(['client_id' => $user->id])->save();
+
+        $complaint = ComplaintCase::factory()->create([
+            'client_id' => $user->id,
+            'subject' => 'Bob Original problème',
+            'description' => 'Contactez-moi au +32411111111',
+        ]);
+
+        $analyticsId = DB::table('analytics_events')->insertGetId([
+            'event_name' => 'page.viewed',
+            'user_id' => $user->id,
+            'occurred_at' => now(),
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $auditId = DB::table('audit_events')->insertGetId([
+            'event_type' => 'user.updated',
+            'domain' => 'security',
+            'severity' => 'info',
+            'actor_type' => 'user',
+            'actor_id' => $user->id,
+            'actor_label' => 'bob@example.com',
+            'subject_type' => 'User',
+            'subject_id' => $user->id,
+            'subject_label' => 'bob@example.com',
+            'occurred_at' => now(),
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $notificationId = (string) Str::uuid();
+        DB::table('notifications')->insert([
+            'id' => $notificationId,
+            'type' => 'App\\Notifications\\Dummy',
+            'notifiable_type' => User::class,
+            'notifiable_id' => $user->id,
+            'data' => json_encode(['name' => 'Bob Original', 'email' => 'bob@example.com']),
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        app(DataErasureService::class)->anonymizeUser($user);
+
+        // Booking PII scrubbed, accounting row preserved.
+        $freshBooking = $booking->fresh();
+        $this->assertNull($freshBooking->adresse);
+        $this->assertNull($freshBooking->ville);
+        $this->assertNull($freshBooking->code_postal);
+        $this->assertNull($freshBooking->notes);
+        $this->assertSame('termine', $freshBooking->status);
+        $this->assertEquals(80, (float) $freshBooking->devis_estime);
+
+        $this->assertNull($feedback->fresh()->commentaire);
+        $this->assertSame('[anonymisé]', $complaint->fresh()->subject);
+        $this->assertSame('[anonymisé]', $complaint->fresh()->description);
+        $this->assertNull(DB::table('analytics_events')->where('id', $analyticsId)->value('user_id'));
+
+        $freshAudit = DB::table('audit_events')->where('id', $auditId)->first();
+        $this->assertSame('Utilisateur supprimé', $freshAudit->actor_label);
+        $this->assertSame('Utilisateur supprimé', $freshAudit->subject_label);
+
+        $notifData = DB::table('notifications')->where('id', $notificationId)->value('data');
+        $this->assertStringNotContainsString('bob@example.com', (string) $notifData);
+        $this->assertStringNotContainsString('Bob Original', (string) $notifData);
     }
 }

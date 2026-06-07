@@ -153,7 +153,115 @@ class DataErasureService
                 ->delete();
         }
 
+        $this->anonymizeCorePii($user);
         $this->anonymizeV2Modules($user);
+    }
+
+    /**
+     * Anonymise the core (Phase 1–14) PII that the original anonymizeUser() missed (D2):
+     * booking postal addresses + notes, free-text feedback / complaint cases, notification
+     * payloads, analytics behavioural rows, and the readable email/name labels persisted in
+     * audit_events. Accounting columns (amounts, dates, FKs) are deliberately preserved for
+     * the legal retention obligation. Schema-defensive so it is safe across environments.
+     */
+    protected function anonymizeCorePii(User $user): void
+    {
+        $anonName = (string) config('gdpr.anonymized_name', 'Utilisateur supprimé');
+        $uid = $user->id;
+
+        // Bookings — the client's home address + free-text notes. Only scrub rows where this
+        // user is the CLIENT (the address belongs to the client, not the assigned provider).
+        if (Schema::hasTable('bookings')) {
+            $bookingCols = collect(['adresse', 'ville', 'code_postal', 'notes'])
+                ->filter(fn ($c) => Schema::hasColumn('bookings', $c))
+                ->mapWithKeys(fn ($c) => [$c => null])
+                ->all();
+            if ($bookingCols) {
+                DB::table('bookings')
+                    ->where(function ($q) use ($uid) {
+                        $q->where('client_id', $uid);
+                        if (Schema::hasColumn('bookings', 'customer_user_id')) {
+                            $q->orWhere('customer_user_id', $uid);
+                        }
+                    })
+                    ->update($bookingCols);
+            }
+        }
+
+        // Feedback — free text authored by or about the user.
+        if (Schema::hasTable('feedback')) {
+            $textCols = collect(['commentaire', 'comment', 'provider_response'])
+                ->filter(fn ($c) => Schema::hasColumn('feedback', $c))
+                ->mapWithKeys(fn ($c) => [$c => null])
+                ->all();
+            if ($textCols) {
+                DB::table('feedback')
+                    ->where(function ($q) use ($uid) {
+                        $q->where('client_id', $uid);
+                        if (Schema::hasColumn('feedback', 'employe_id')) {
+                            $q->orWhere('employe_id', $uid);
+                        }
+                        if (Schema::hasColumn('feedback', 'provider_user_id')) {
+                            $q->orWhere('provider_user_id', $uid);
+                        }
+                    })
+                    ->update($textCols);
+            }
+        }
+
+        // Complaint cases — subject/description free text.
+        if (Schema::hasTable('complaint_cases')) {
+            $textCols = collect(['subject', 'description'])
+                ->filter(fn ($c) => Schema::hasColumn('complaint_cases', $c))
+                ->mapWithKeys(fn ($c) => [$c => '[anonymisé]'])
+                ->all();
+            if ($textCols) {
+                DB::table('complaint_cases')
+                    ->where(function ($q) use ($uid) {
+                        $q->where('client_id', $uid);
+                        if (Schema::hasColumn('complaint_cases', 'provider_user_id')) {
+                            $q->orWhere('provider_user_id', $uid);
+                        }
+                        if (Schema::hasColumn('complaint_cases', 'user_id')) {
+                            $q->orWhere('user_id', $uid);
+                        }
+                    })
+                    ->update($textCols);
+            }
+        }
+
+        // Notifications — the serialized payload can embed name/email/address.
+        if (Schema::hasTable('notifications')) {
+            DB::table('notifications')
+                ->where('notifiable_type', User::class)
+                ->where('notifiable_id', $uid)
+                ->update(['data' => json_encode(['anonymized' => true])]);
+        }
+
+        // Analytics — detach behavioural events/sessions from the user id.
+        foreach (['analytics_events', 'analytics_sessions'] as $table) {
+            if (Schema::hasTable($table) && Schema::hasColumn($table, 'user_id')) {
+                DB::table($table)->where('user_id', $uid)->update(['user_id' => null]);
+            }
+        }
+
+        // Audit events — scrub the human-readable email/name labels while keeping the row +
+        // numeric ids for traceability. Filter by type so a colliding id of another entity
+        // (e.g. a booking with the same numeric id as a subject) is never touched.
+        if (Schema::hasTable('audit_events')) {
+            if (Schema::hasColumn('audit_events', 'actor_label')) {
+                DB::table('audit_events')
+                    ->where('actor_id', $uid)
+                    ->where('actor_type', 'user')
+                    ->update(['actor_label' => $anonName]);
+            }
+            if (Schema::hasColumn('audit_events', 'subject_label')) {
+                DB::table('audit_events')
+                    ->where('subject_id', $uid)
+                    ->where('subject_type', 'User')
+                    ->update(['subject_label' => $anonName]);
+            }
+        }
     }
 
     /**
