@@ -27,7 +27,10 @@ use Illuminate\Support\Facades\Route;
 // Authenticated — Provider endpoints
 // ─────────────────────────────────────────────
 
-Route::middleware('auth:sanctum')->group(function () {
+// M1 — defense-in-depth: gate the whole provider surface by role in addition to the
+// per-controller ownership checks, so a client account can never reach provider endpoints
+// (which is what turned the Quality module's missing checks into an exploitable IDOR).
+Route::middleware(['auth:sanctum', 'role:employe'])->group(function () {
 
     // Phase 0 — Mission tracking (existant)
     Route::post('/missions/{mission}/tracking/start', [EmployeeMissionTrackingController::class, 'start']);

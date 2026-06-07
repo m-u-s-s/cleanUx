@@ -120,7 +120,7 @@ class SkeletalModulesTest extends TestCase
 
     public function test_fleet_my_vehicles_endpoint_returns_empty_for_new_provider(): void
     {
-        $provider = User::factory()->create(['role' => 'provider']);
+        $provider = User::factory()->create(['role' => 'employe']);
         Sanctum::actingAs($provider);
 
         $this->getJson('/api/provider/fleet/my-vehicles')

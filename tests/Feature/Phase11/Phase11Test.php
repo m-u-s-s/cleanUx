@@ -21,7 +21,7 @@ class Phase11Test extends TestCase
 
     private function makeProvider(array $overrides = []): User
     {
-        $user = User::factory()->create();
+        $user = User::factory()->employe()->create();
         ProviderProfile::create(array_merge([
             'user_id' => $user->id,
             'provider_type' => 'individual',

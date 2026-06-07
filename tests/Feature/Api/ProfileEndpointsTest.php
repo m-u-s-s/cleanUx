@@ -45,7 +45,7 @@ class ProfileEndpointsTest extends TestCase
 
     public function test_provider_can_update_profile(): void
     {
-        $user = User::factory()->create(['role' => 'provider']);
+        $user = User::factory()->create(['role' => 'employe']);
         Sanctum::actingAs($user);
 
         $this->putJson('/api/provider/profile', ['name' => 'Provider Name'])
