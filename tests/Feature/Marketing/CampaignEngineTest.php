@@ -13,6 +13,7 @@ use App\Services\Marketing\OptOutService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Tests\TestCase;
 
 class CampaignEngineTest extends TestCase
@@ -199,6 +200,27 @@ class CampaignEngineTest extends TestCase
         $recipient->refresh();
         $this->assertSame(MarketingCampaignRecipient::STATUS_SENT, $recipient->status);
         $this->assertNotNull($recipient->sent_at);
+    }
+
+    /** M12 — marketing sends must not log raw email/phone PII. */
+    public function test_email_send_does_not_log_raw_pii(): void
+    {
+        $u = User::factory()->client()->create(['email' => 'secret@example.com']);
+        $segment = $this->makeSegmentWith([$u]);
+        $campaign = $this->makeCampaign($segment, [['channel' => 'email']]);
+        app(CampaignEngine::class)->schedule($campaign);
+        $recipient = MarketingCampaignRecipient::first();
+        $recipient->forceFill(['scheduled_for' => now()->subMinute()])->save();
+
+        Log::spy();
+        app(CampaignEngine::class)->dispatchOne($recipient);
+
+        Log::shouldHaveReceived('info')->withArgs(function ($message, $context = []) {
+            return $message === 'Marketing email send'
+                && ! array_key_exists('to', $context)
+                && array_key_exists('to_hash', $context)
+                && ! str_contains((string) json_encode($context), 'secret@example.com');
+        })->atLeast()->once();
     }
 
     public function test_dispatch_re_checks_opt_out_at_send_time(): void

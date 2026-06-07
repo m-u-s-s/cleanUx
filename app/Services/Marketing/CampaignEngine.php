@@ -275,8 +275,10 @@ class CampaignEngine
     {
         // In production : Mail::to($user)->queue(new GenericMarketingMail($subject, $body));
         // For now, log-only in dev/tests so no SMTP needed.
+        // M12 — never log raw PII. Identify the recipient by id + a hashed email.
         Log::info('Marketing email send', [
-            'to' => $user->email,
+            'user_id' => $user->id,
+            'to_hash' => $user->email ? hash('sha256', $user->email) : null,
             'subject' => $subject,
         ]);
     }
@@ -294,7 +296,8 @@ class CampaignEngine
             return;
         }
         Log::info('Marketing sms send (no SmsService)', [
-            'to' => $user->phone,
+            'user_id' => $user->id,
+            'to_hash' => $user->phone ? hash('sha256', $user->phone) : null,
         ]);
     }
 
