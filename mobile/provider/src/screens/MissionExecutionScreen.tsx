@@ -80,7 +80,14 @@ export function MissionExecutionScreen({ route }: Props) {
         {
           text: 'Terminer',
           style: 'destructive',
-          onPress: () => lifecycle.mutate('complete'),
+          onPress: () =>
+            lifecycle.mutate(
+              { action: 'complete', code: endCode.trim() || undefined },
+              {
+                onError: (e) =>
+                  Alert.alert('Erreur', e.message ?? 'Impossible de terminer la mission.'),
+              },
+            ),
         },
       ],
     );

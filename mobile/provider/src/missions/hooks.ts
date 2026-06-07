@@ -45,11 +45,25 @@ export function useMissionDetail(missionId: number | null) {
   });
 }
 
+/**
+ * Accepts either a bare action ('start' | 'arrive' | 'complete') for backward compatibility,
+ * or an object carrying the end-of-mission verification code, e.g.
+ * `{ action: 'complete', code: '482951' }`. The code is sent as `end_code` so the server can
+ * validate it (E2 — previously the code was collected in the UI but never transmitted).
+ */
+export type MissionLifecyclePayload =
+  | MissionLifecycleAction
+  | { action: MissionLifecycleAction; code?: string };
+
 export function useMissionLifecycle(missionId: number) {
   const qc = useQueryClient();
-  return useMutation<void, ApiError, MissionLifecycleAction>({
-    mutationFn: async (action) => {
-      await apiClient.post(`/provider/missions/${missionId}/${action}`);
+  return useMutation<void, ApiError, MissionLifecyclePayload>({
+    mutationFn: async (payload) => {
+      const action = typeof payload === 'string' ? payload : payload.action;
+      const code = typeof payload === 'string' ? undefined : payload.code;
+      const body =
+        action === 'complete' && code ? { end_code: code } : undefined;
+      await apiClient.post(`/provider/missions/${missionId}/${action}`, body);
     },
     onSuccess: () =>
       qc.invalidateQueries({ queryKey: ['provider', 'mission', missionId] }),
