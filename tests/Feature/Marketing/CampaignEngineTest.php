@@ -12,6 +12,7 @@ use App\Services\Marketing\CampaignEngine;
 use App\Services\Marketing\OptOutService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\DB;
 use Tests\TestCase;
 
 class CampaignEngineTest extends TestCase
@@ -86,6 +87,35 @@ class CampaignEngineTest extends TestCase
         $this->assertSame(4, $created);
         $this->assertSame(4, MarketingCampaignRecipient::count());
         $this->assertSame(MarketingCampaign::STATUS_SCHEDULED, $campaign->fresh()->status);
+    }
+
+    /**
+     * G1 — materialize() must not run per-member queries. The number of SELECTs must stay
+     * bounded regardless of segment size (previously ~3 SELECTs per member×step).
+     */
+    public function test_schedule_does_not_run_per_member_queries(): void
+    {
+        $users = User::factory()->client()->count(10)->create();
+        $segment = $this->makeSegmentWith($users->all());
+        $campaign = $this->makeCampaign($segment, [['channel' => 'email']]);
+
+        DB::flushQueryLog();
+        DB::enableQueryLog();
+        $created = app(CampaignEngine::class)->schedule($campaign);
+        $queries = DB::getQueryLog();
+        DB::disableQueryLog();
+
+        $this->assertSame(10, $created);
+
+        $selectCount = collect($queries)
+            ->filter(fn ($q) => str_starts_with(strtolower(ltrim((string) $q['query'])), 'select'))
+            ->count();
+
+        $this->assertLessThanOrEqual(
+            8,
+            $selectCount,
+            "Expected a bounded number of SELECTs independent of member count; got {$selectCount} (N+1 regression?)."
+        );
     }
 
     public function test_schedule_marks_opted_out_recipients(): void

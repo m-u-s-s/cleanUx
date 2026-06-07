@@ -5,6 +5,7 @@ namespace App\Services\Marketing;
 use App\Models\MarketingCampaign;
 use App\Models\MarketingCampaignRecipient;
 use App\Models\MarketingCampaignStep;
+use App\Models\MarketingOptOut;
 use App\Models\MarketingSegmentMember;
 use App\Models\PushNotification;
 use App\Models\SmsMessage;
@@ -59,14 +60,33 @@ class CampaignEngine
         $created = 0;
         $base = $campaign->scheduled_at ?? now();
 
-        DB::transaction(function () use ($campaign, $steps, $memberIds, $base, &$created) {
+        // Bulk-load everything the per-member loop needs, to avoid an N+1 explosion
+        // (previously: 1 User::find + 1 opt-out exists() + 1 recipient first() per member×step,
+        // i.e. ~tens of thousands of queries for a large segment). See G1.
+        $users = User::query()->whereIn('id', $memberIds)->get()->keyBy('id');
+
+        // user_id => list of opted-out channels (may include MarketingOptOut::CHANNEL_ALL).
+        $optOutsByUser = MarketingOptOut::query()
+            ->whereIn('user_id', $memberIds)
+            ->get(['user_id', 'channel'])
+            ->groupBy('user_id')
+            ->map(fn ($rows) => $rows->pluck('channel')->all());
+
+        // Existing recipient idempotency keys for this campaign (dedupe across re-runs).
+        $existingKeys = MarketingCampaignRecipient::query()
+            ->where('campaign_id', $campaign->id)
+            ->pluck('idempotency_key')
+            ->flip();
+
+        DB::transaction(function () use ($campaign, $steps, $memberIds, $base, $users, $optOutsByUser, $existingKeys, &$created) {
             foreach ($memberIds as $uid) {
-                $user = User::find($uid);
+                $user = $users->get($uid);
                 if (! $user) {
                     continue;
                 }
 
                 $variant = $this->assignVariant($campaign, $user);
+                $userOptOuts = $optOutsByUser->get($uid, []);
 
                 $cursor = $base;
                 foreach ($steps as $step) {
@@ -76,7 +96,8 @@ class CampaignEngine
 
                     $cursor = $cursor->copy()->addMinutes((int) $step->delay_minutes);
 
-                    $optedOut = $this->optOut->isOptedOut($user, $step->channel);
+                    $optedOut = in_array($step->channel, $userOptOuts, true)
+                        || in_array(MarketingOptOut::CHANNEL_ALL, $userOptOuts, true);
 
                     $recipientStatus = $optedOut
                         ? MarketingCampaignRecipient::STATUS_OPTED_OUT
@@ -84,9 +105,7 @@ class CampaignEngine
 
                     $idemKey = "campaign:{$campaign->id}:step:{$step->id}:user:{$user->id}";
 
-                    $existing = MarketingCampaignRecipient::query()
-                        ->where('idempotency_key', $idemKey)->first();
-                    if ($existing) {
+                    if (isset($existingKeys[$idemKey])) {
                         continue;
                     }
 
