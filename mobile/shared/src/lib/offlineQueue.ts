@@ -1,4 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { apiClient } from '../api/client';
 
 export interface QueuedAction {
   id: string;
@@ -17,11 +18,9 @@ export type ActionSender = (action: QueuedAction) => Promise<boolean>;
  * M16 — default replay goes through apiClient so the request gets the configured baseURL
  * (action.url is relative) AND the Authorization bearer token injected by the interceptor.
  * The previous bare `fetch(action.url, …)` replay always failed: relative URL + no auth.
- * Imported lazily to avoid a circular dependency between the api and lib modules.
  */
 const defaultSender: ActionSender = async (action) => {
   try {
-    const { apiClient } = await import('../api/client');
     await apiClient({ url: action.url, method: action.method, data: action.body });
 
     return true;

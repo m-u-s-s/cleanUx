@@ -119,23 +119,23 @@ describe('useOfflineSync', () => {
     expect(() => unmount()).not.toThrow();
   });
 
-  it('flushes queue when NetInfo fires connected=true event', async () => {
+  it('flushes queue via apiClient when NetInfo fires connected=true event', async () => {
     // Pre-load a queued action
     await offlineQueue.enqueue({ url: '/api/accept', method: 'POST', body: {} });
 
-    const mockFetchFn = jest.fn().mockResolvedValue({ ok: true });
-    global.fetch = mockFetchFn as unknown as typeof fetch;
+    // M16 — replay now goes through apiClient (baseURL + auth), not a bare fetch.
+    axiosMock.onPost('/api/accept').reply(200, { ok: true });
 
     renderHook(() => useOfflineSync());
 
     await act(async () => {
       listeners.forEach((cb) => cb({ isConnected: true }));
-      // Allow flush microtask to complete
-      await Promise.resolve();
-      await Promise.resolve();
+      // Allow the flush (incl. the dynamic import of apiClient) to settle.
+      await new Promise((resolve) => setTimeout(resolve, 20));
     });
 
-    expect(mockFetchFn).toHaveBeenCalledTimes(1);
+    expect(axiosMock.history['post']).toHaveLength(1);
+    expect(axiosMock.history['post'][0]!.url).toBe('/api/accept');
     expect(await offlineQueue.getAll()).toHaveLength(0);
   });
 
