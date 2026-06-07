@@ -7,6 +7,9 @@ use App\Models\User;
 use App\Services\Payments\MissionPaymentService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use RuntimeException;
+use Stripe\ApiRequestor;
+use Stripe\Stripe;
+use Tests\Support\Stripe\FakeStripeHttpClient;
 use Tests\TestCase;
 
 /**
@@ -35,16 +38,25 @@ class MissionPaymentServiceTest extends TestCase
             'devis_estime' => 100.00,
         ]);
 
-        // Service throw either RuntimeException OR BadMethodCallException
-        // (pre-existing tech debt sur User::canReceiveStripeConnectPayments).
-        // Dans les 2 cas, la mission n'est pas chargée Stripe — protected behavior.
-        $exceptionThrown = false;
+        // M24 — assert the PRECISE guard exception and prove no PaymentIntent is created.
+        config(['cashier.secret' => 'sk_test_fake']);
+        Stripe::setApiKey('sk_test_fake');
+        $stripe = new FakeStripeHttpClient; // no stubs: any Stripe call would throw "no stub"
+        ApiRequestor::setHttpClient($stripe);
+
         try {
             app(MissionPaymentService::class)->authorize($booking, 'pm_card_visa_fake');
-        } catch (\Throwable $e) {
-            $exceptionThrown = true;
+            $this->fail('authorize() must throw when the provider is not Stripe Connect ready');
+        } catch (RuntimeException $e) {
+            $this->assertStringContainsString('Stripe Connect', $e->getMessage());
+        } finally {
+            ApiRequestor::setHttpClient(null);
         }
 
-        $this->assertTrue($exceptionThrown, 'authorize() doit throw quand provider Stripe Connect pas prêt');
+        $this->assertNotContains(
+            'POST /v1/payment_intents',
+            $stripe->calls(),
+            'No PaymentIntent must be created when the provider is not onboarded'
+        );
     }
 }
