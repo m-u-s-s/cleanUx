@@ -19,8 +19,10 @@ class EmployeeAvailabilityService
     {
         $query = $this->applyProviderEligibility(User::query(), $providerType, $organizationId);
 
+        // L10 — eager-load providerProfile: MatchingScoreEngine::score() reads it for every
+        // candidate, so without this it lazy-loads once per provider (N+1) during dispatch.
         if (! $zoneId) {
-            return $query->orderBy('name');
+            return $query->with('providerProfile')->orderBy('name');
         }
 
         $now = now();
@@ -41,7 +43,7 @@ class EmployeeAvailabilityService
                             });
                     });
             })
-            ->with(['zoneAssignments' => function ($query) use ($zoneId) {
+            ->with(['providerProfile', 'zoneAssignments' => function ($query) use ($zoneId) {
                 $query->where('service_zone_id', $zoneId)->orderByDesc('coverage_priority');
             }])
             ->orderByRaw('CASE WHEN primary_service_zone_id = ? THEN 0 ELSE 1 END', [$zoneId])
