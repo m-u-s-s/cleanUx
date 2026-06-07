@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\Booking;
 use App\Models\ProviderPayout;
 use App\Models\ProviderProfile;
+use App\Models\ProviderWalletTransaction;
 use App\Models\User;
 use App\Services\Payments\CommissionService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -187,6 +188,38 @@ class PayoutFlowTest extends TestCase
         $this->artisan('payouts:process')->assertSuccessful();
 
         $this->assertSame('auto_transferred', $booking->fresh()->payout_status);
+    }
+
+    /**
+     * M5/M10 — Phase 1 must credit the wallet through the idempotent ProviderWalletService
+     * (the old raw insert mapped non-existent columns and never set the NOT NULL
+     * provider_user_id/direction/occurred_at, so it crashed whenever a provider was present).
+     */
+    public function test_phase1_credits_wallet_via_service_for_provider_booking(): void
+    {
+        $provider = User::factory()->employe()->create();
+        ProviderProfile::create(['user_id' => $provider->id, 'status' => 'active']);
+
+        $booking = Booking::factory()->create([
+            'status' => 'completed',
+            'employe_id' => $provider->id,
+            'devis_estime' => 100,
+            'payment_status' => 'authorized',
+            'stripe_payment_intent_id' => null,
+            'payout_status' => null,
+        ]);
+
+        $this->artisan('payouts:process')->assertSuccessful();
+
+        $this->assertSame('processed', $booking->fresh()->payout_status);
+
+        $earning = ProviderWalletTransaction::query()
+            ->where('provider_user_id', $provider->id)
+            ->where('type', ProviderWalletTransaction::TYPE_EARNING)
+            ->first();
+
+        $this->assertNotNull($earning, 'Phase 1 must credit the provider wallet via recordEarning');
+        $this->assertEqualsWithDelta(85.0, (float) $earning->amount, 0.01);
     }
 
     // ──────────────────────────────────────────────
