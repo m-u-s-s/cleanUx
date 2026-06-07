@@ -40,12 +40,21 @@ class ClientDashboard extends Component
         return $user instanceof User ? $user : null;
     }
 
+    /** @var Collection<int, int>|null memoised per render to avoid re-querying (L11) */
+    private ?Collection $cachedZoneIds = null;
+
     protected function coverageZoneIds(): Collection
     {
+        // L11 — this runs 3×/render (coverage zones, available services, favourite providers);
+        // memoise so the OrganizationSite / ServiceZone lookups happen once per render.
+        if ($this->cachedZoneIds !== null) {
+            return $this->cachedZoneIds;
+        }
+
         $user = $this->currentUser();
 
         if (! $user) {
-            return collect();
+            return $this->cachedZoneIds = collect();
         }
 
         $zoneIds = collect([$user->primary_service_zone_id])->filter();
@@ -70,7 +79,7 @@ class ClientDashboard extends Component
             );
         }
 
-        return $zoneIds->filter()->unique()->values();
+        return $this->cachedZoneIds = $zoneIds->filter()->unique()->values();
     }
 
     public function isPremiumClient(): bool
