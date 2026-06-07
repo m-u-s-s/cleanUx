@@ -53,6 +53,16 @@ class MissionVerificationCodeService
 
         $record->increment('attempts');
 
+        // M23 — brute-force guard: a 6-digit code must not be guessable. After N wrong
+        // attempts, consume the record so it can no longer be tried (a fresh code must be
+        // generated). Checked before the hash so a lucky late guess is still rejected.
+        $maxAttempts = (int) config('missions.verification_max_attempts', 5);
+        if ($record->attempts > $maxAttempts) {
+            $record->update(['is_consumed' => true]);
+
+            throw new RuntimeException('Trop de tentatives infructueuses. Demandez un nouveau code.');
+        }
+
         if ($record->expires_at && $record->expires_at->isPast()) {
             throw new RuntimeException('Le code a expiré.');
         }
