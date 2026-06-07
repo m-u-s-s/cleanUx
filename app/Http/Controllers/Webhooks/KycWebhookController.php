@@ -11,7 +11,6 @@ use App\Services\Kyc\Providers\OnfidoProvider;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Str;
 
 /**
  * Webhook KYC — pattern hardening identique à Stripe v2 :
@@ -49,7 +48,10 @@ class KycWebhookController extends Controller
             ?? null;
 
         if (! $externalEventId) {
-            $externalEventId = $provider.'_'.Str::lower(Str::random(16));
+            // L6 — deterministic fallback so a provider re-sending the SAME payload (e.g. after
+            // a 5xx/timeout) dedupes on (provider, external_event_id) instead of being
+            // reprocessed under a fresh random id each time.
+            $externalEventId = $provider.'_'.hash('sha256', (string) $payload);
         }
 
         $stored = KycWebhookEvent::firstOrCreate(
