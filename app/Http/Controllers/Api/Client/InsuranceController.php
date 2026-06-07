@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api\Client;
 
 use App\Http\Controllers\Controller;
+use App\Models\Booking;
 use App\Models\BookingInsurance;
 use App\Models\InsuranceClaim;
 use App\Services\Insurance\InsurancePricingEngine;
@@ -26,6 +27,8 @@ class InsuranceController extends Controller
 
     public function plansForBooking(Request $request, int $booking): JsonResponse
     {
+        $this->authorizeBookingAccess($request, $booking);
+
         $available = $this->pricing->getAvailablePlansForBooking($booking);
 
         return response()->json([
@@ -44,6 +47,8 @@ class InsuranceController extends Controller
 
     public function purchase(Request $request, int $booking): JsonResponse
     {
+        $this->authorizeBookingAccess($request, $booking);
+
         $data = $request->validate([
             'plan_code' => ['required', 'string', 'max:64'],
         ]);
@@ -120,6 +125,28 @@ class InsuranceController extends Controller
         }
 
         return response()->json(['ok' => true, 'claim' => $claim], 201);
+    }
+
+    /**
+     * Ensure the booking belongs to the authenticated client before exposing its insurance
+     * plans / pricing or attaching a policy to it (M2). Without this, any client could read
+     * pricing for, and buy insurance against, another client's booking by id enumeration.
+     */
+    protected function authorizeBookingAccess(Request $request, int $bookingId): void
+    {
+        $booking = Booking::query()->find($bookingId);
+        abort_if(! $booking, 404, 'Réservation introuvable.');
+
+        $user = $request->user();
+        $orgId = $user->organization_account_id ?? $user->current_organization_id ?? null;
+
+        $isOwner = (int) ($booking->customer_user_id ?? 0) === (int) $user->id
+            || (int) ($booking->client_id ?? 0) === (int) $user->id;
+        $isOrgMember = $orgId
+            && $booking->customer_organization_id
+            && (int) $booking->customer_organization_id === (int) $orgId;
+
+        abort_if(! $isOwner && ! $isOrgMember, 403, 'Accès refusé.');
     }
 
     public function listClaims(Request $request, BookingInsurance $insurance): JsonResponse
