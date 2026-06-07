@@ -46,6 +46,9 @@ class AppServiceProvider extends ServiceProvider
         $this->app->singleton(LlmProvider::class, AnthropicProvider::class);
         $this->app->singleton(AnthropicStreamingProvider::class);
 
+        // Feature flags — singleton so the DB-override lookup is memoised per request (M18).
+        $this->app->singleton(FeatureFlagService::class);
+
         // Monetisation — singletons for stateless calculators
         $this->app->singleton(CommissionService::class);
         $this->app->singleton(StripeCountryMapper::class);
