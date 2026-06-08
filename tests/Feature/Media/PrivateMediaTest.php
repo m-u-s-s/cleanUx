@@ -59,6 +59,23 @@ class PrivateMediaTest extends TestCase
             ->assertNotFound();
     }
 
+    public function test_rendered_photo_surface_emits_signed_url_not_public_storage(): void
+    {
+        // The dispute claim-attachments partial must render image links through the signed
+        // private-media route, never the public /storage/ symlink.
+        $claim = (object) [
+            'attachments' => [
+                ['path' => 'claims/proof.jpg', 'original_name' => 'proof.jpg'],
+            ],
+        ];
+
+        $html = view('livewire.client.litiges.claim-attachments', ['claim' => $claim])->render();
+
+        $this->assertStringContainsString('media/private', $html);
+        $this->assertStringContainsString('signature=', $html);
+        $this->assertStringNotContainsString('/storage/claims', $html);
+    }
+
     public function test_path_traversal_is_rejected(): void
     {
         Storage::fake('private');
