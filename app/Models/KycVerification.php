@@ -62,8 +62,10 @@ class KycVerification extends Model
 
     protected $casts = [
         'requested_checks' => 'array',
-        'result_summary' => 'array',
-        'metadata' => 'array',
+        // L7 — encrypt at rest: providers push identity PII (names, checks) into these. The
+        // fallback cast reads legacy plaintext rows gracefully until the backfill encrypts them.
+        'result_summary' => \App\Casts\EncryptedArrayFallback::class,
+        'metadata' => \App\Casts\EncryptedArrayFallback::class,
         'score' => 'decimal:2',
         'reviewed_at' => 'datetime',
         'started_at' => 'datetime',
