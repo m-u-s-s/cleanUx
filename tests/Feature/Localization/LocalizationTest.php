@@ -108,9 +108,11 @@ class LocalizationTest extends TestCase
         App::setLocale('fr');
         $formatted = app(Money::class)->format(1234.56, 'EUR');
 
-        // Doit contenir 1 234,56 et le symbole €
+        // Doit contenir 1 234,56 et le symbole €. The thousands separator depends on the ICU
+        // version (regular space, NBSP U+00A0, or narrow NBSP U+202F) — match any unicode space
+        // separator as a single codepoint via the /u modifier + \p{Zs}.
         $this->assertStringContainsString('€', $formatted);
-        $this->assertMatchesRegularExpression('/1[\s\xc2\xa0]?234[,.]56/', $formatted);
+        $this->assertMatchesRegularExpression('/1\p{Zs}?234[,.]56/u', $formatted);
     }
 
     public function test_money_formats_usd_with_english_locale(): void
