@@ -69,8 +69,8 @@ class RefundClawbackTest extends TestCase
         $this->assertNotNull($earning, 'Pre-condition: earning must be seeded');
 
         $balanceBefore = $walletService->balance($s->provider->id);
-        // recordEarning credits 80 € (earning) and debits 20 € (platform_fee) → net 60 € available.
-        $this->assertEqualsWithDelta(60.00, $balanceBefore['available'], 0.01, 'Provider should have 60 € net available before refund (80 € earning − 20 € platform fee)');
+        // M4 — recordEarning credits the net 80 € only (no separate platform_fee debit).
+        $this->assertEqualsWithDelta(80.00, $balanceBefore['available'], 0.01, 'Provider should have the net 80 € available before refund');
 
         // ── 2. Stub the Stripe refund endpoint ──
         // refundMissionPayment calls Refund::create which posts to /v1/refunds.
@@ -185,13 +185,13 @@ class RefundClawbackTest extends TestCase
             .'Over-clawing the provider for the platform fee portion is a money correctness bug.'
         );
 
-        // Net balance: +80 earning − 20 platform_fee − 40 clawback = 20 € available.
+        // Net balance (M4): +80 earning − 40 clawback = 40 € available (no platform_fee debit).
         $balance = $walletService->balance($s->provider->id);
         $this->assertEqualsWithDelta(
-            20.00,
+            40.00,
             $balance['available'],
             0.01,
-            'After proportional clawback: 80 − 20 − 40 = 20 € net available'
+            'After proportional clawback: 80 − 40 = 40 € net available'
         );
     }
 

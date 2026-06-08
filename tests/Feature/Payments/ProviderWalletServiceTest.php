@@ -48,8 +48,10 @@ class ProviderWalletServiceTest extends TestCase
         $this->assertSame(0.0, $balance['pending']);
     }
 
-    public function test_record_earning_creates_credit_and_platform_fee(): void
+    public function test_record_earning_credits_net_without_separate_fee_debit(): void
     {
+        // M4 — provider_amount_cents is already net (total − commission); the wallet must hold
+        // exactly that, with NO separate platform_fee debit (which previously double-deducted).
         $booking = $this->makeBooking(100.0, providerCents: 8500, feeCents: 1500);
 
         $earning = $this->wallet->recordEarning($booking);
@@ -58,13 +60,48 @@ class ProviderWalletServiceTest extends TestCase
         $this->assertSame('credit', $earning->direction);
         $this->assertEqualsWithDelta(85.0, (float) $earning->amount, 0.01);
 
-        $this->assertSame(1, ProviderWalletTransaction::query()
+        $this->assertSame(0, ProviderWalletTransaction::query()
             ->where('type', ProviderWalletTransaction::TYPE_PLATFORM_FEE)
             ->where('direction', 'debit')
-            ->count());
+            ->count(), 'no separate platform_fee debit must be written');
 
         $balance = $this->wallet->balance($this->provider->id);
-        $this->assertEqualsWithDelta(70.0, $balance['available'], 0.01);
+        $this->assertEqualsWithDelta(85.0, $balance['available'], 0.01);
+    }
+
+    public function test_m4_reversal_migration_corrects_legacy_double_deduction(): void
+    {
+        // Simulate a legacy row pair: net earning credit + the erroneous platform_fee debit.
+        ProviderWalletTransaction::create([
+            'provider_user_id' => $this->provider->id,
+            'type' => ProviderWalletTransaction::TYPE_EARNING,
+            'direction' => ProviderWalletTransaction::DIRECTION_CREDIT,
+            'amount' => 85.0, 'currency' => 'EUR',
+            'status' => ProviderWalletTransaction::STATUS_AVAILABLE,
+            'idempotency_key' => 'legacy:earning:1', 'occurred_at' => now(),
+        ]);
+        ProviderWalletTransaction::create([
+            'provider_user_id' => $this->provider->id,
+            'type' => ProviderWalletTransaction::TYPE_PLATFORM_FEE,
+            'direction' => ProviderWalletTransaction::DIRECTION_DEBIT,
+            'amount' => 15.0, 'currency' => 'EUR',
+            'status' => ProviderWalletTransaction::STATUS_AVAILABLE,
+            'idempotency_key' => 'legacy:earning:1:platform_fee', 'occurred_at' => now(),
+        ]);
+
+        // Before: 85 − 15 = 70 (buggy).
+        $this->assertEqualsWithDelta(70.0, $this->wallet->balance($this->provider->id)['available'], 0.01);
+
+        $migration = require base_path('database/migrations/2026_06_08_000004_reverse_double_platform_fee_debits.php');
+        $migration->up();
+        $migration->up(); // idempotent — second run adds nothing
+
+        // After: the debit is reversed by an adjustment_credit → balance back to net 85.
+        $this->assertEqualsWithDelta(85.0, $this->wallet->balance($this->provider->id)['available'], 0.01);
+        $this->assertSame(1, ProviderWalletTransaction::query()
+            ->where('type', ProviderWalletTransaction::TYPE_ADJUSTMENT_CREDIT)
+            ->where('idempotency_key', 'like', '%:m4_reversal')
+            ->count());
     }
 
     public function test_record_earning_is_idempotent(): void
