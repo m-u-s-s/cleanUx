@@ -5,6 +5,8 @@ namespace Tests\Feature\Security;
 use App\Models\RecurringBookingSeries;
 use App\Models\RendezVous;
 use App\Models\User;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Schema;
 use Tests\TestCase;
 
 /**
@@ -12,6 +14,8 @@ use Tests\TestCase;
  */
 class MassAssignmentGuardTest extends TestCase
 {
+    use RefreshDatabase;
+
     public function test_rendezvous_blocks_sensitive_mass_assignment(): void
     {
         $rv = (new RendezVous)->fill([
@@ -46,10 +50,17 @@ class MassAssignmentGuardTest extends TestCase
 
     public function test_user_tenant_id_is_not_mass_assignable(): void
     {
-        // M7 — dead tenant_id column must no longer be mass-assignable.
+        // M7 — dead tenant_id is not mass-assignable (and the column itself is now dropped).
         $user = (new User)->fill(['name' => 'X', 'tenant_id' => 99]);
 
         $this->assertNull($user->tenant_id);
         $this->assertSame('X', $user->name);
+    }
+
+    public function test_users_table_has_no_tenant_id_column(): void
+    {
+        // M7 column drop — the dead Tenancy-v2 column is gone (audit_events.tenant_id stays).
+        $this->assertFalse(Schema::hasColumn('users', 'tenant_id'));
+        $this->assertTrue(Schema::hasColumn('audit_events', 'tenant_id'));
     }
 }
