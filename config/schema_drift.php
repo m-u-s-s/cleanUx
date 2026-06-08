@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\Booking;
 use App\Models\Company;
 use App\Models\MissionVerificationCode;
 use App\Models\QualityAudit;
@@ -16,6 +17,16 @@ return [
     | explaining why an entry is here — the allowlist must not become a dumping ground.
     */
     'ignore' => [
+
+        // M8 — bookings.surface (a tranche string like "50_100") was renamed to surface_range to
+        // disambiguate it from the numeric surface_m2. The Booking model keeps a `surface` virtual
+        // Eloquent Attribute (accessor + mutator) bridging to surface_range, so all legacy
+        // code/views/forms/factory that read & write ->surface keep working unchanged. `surface`
+        // must stay in $fillable for mass-assignment to reach the mutator, but it is intentionally
+        // NOT a real column — surface_range is.
+        Booking::class => [
+            'surface',
+        ],
 
         // RecurringBookingSeries declares optional alternate-name casts that the
         // application reads null-safely and never writes (it uses the real columns
