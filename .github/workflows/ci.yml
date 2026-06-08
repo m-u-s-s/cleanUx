@@ -63,7 +63,7 @@ jobs:
 
       # ---- Test suite + coverage gate (single run) ----
       - name: Run tests with coverage (fail below 80%)
-        run: php artisan test --coverage-clover=coverage.xml --coverage-min=80
+        run: php artisan test --coverage --min=80 --coverage-clover=coverage.xml
 
       - name: Upload coverage report
         if: always()
