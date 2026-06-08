@@ -52,6 +52,61 @@ class CancellationEngineTest extends TestCase
         $this->assertSame(10000, $quote->refundAmountCents);
     }
 
+    public function test_client_pays_en_route_penalty_even_in_free_window(): void
+    {
+        config(['cancellation_v2.en_route_penalty_percent' => 5]);
+        $client = User::factory()->client()->create();
+        // >48h away → time tier is free, but the provider is already en route.
+        $booking = $this->makeBooking($client, now()->addHours(72), 100.0);
+        \App\Models\Mission::create(['rendez_vous_id' => $booking->id, 'status' => 'en_route']);
+
+        $quote = app(CancellationEngine::class)->quote($booking->id, 'client');
+
+        $this->assertSame(500, $quote->feeAmountCents, 'en-route penalty floor applies');
+        $this->assertSame(9500, $quote->refundAmountCents);
+        $this->assertContains('en_route_penalty_applied', $quote->warnings);
+    }
+
+    public function test_en_route_penalty_scales_with_booking_amount(): void
+    {
+        config(['cancellation_v2.en_route_penalty_percent' => 5]);
+        $client = User::factory()->client()->create();
+        // €200 booking, free time window, provider en route → 5% = €10 penalty.
+        $booking = $this->makeBooking($client, now()->addHours(72), 200.0);
+        \App\Models\Mission::create(['rendez_vous_id' => $booking->id, 'status' => 'en_route']);
+
+        $quote = app(CancellationEngine::class)->quote($booking->id, 'client');
+
+        $this->assertSame(1000, $quote->feeAmountCents, '5% of €200 = €10');
+        $this->assertSame(19000, $quote->refundAmountCents);
+    }
+
+    public function test_no_en_route_penalty_when_provider_not_en_route(): void
+    {
+        config(['cancellation_v2.en_route_penalty_percent' => 5]);
+        $client = User::factory()->client()->create();
+        $booking = $this->makeBooking($client, now()->addHours(72), 100.0);
+        \App\Models\Mission::create(['rendez_vous_id' => $booking->id, 'status' => 'assigned']);
+
+        $quote = app(CancellationEngine::class)->quote($booking->id, 'client');
+
+        $this->assertSame(0, $quote->feeAmountCents);
+        $this->assertNotContains('en_route_penalty_applied', $quote->warnings);
+    }
+
+    public function test_en_route_penalty_waived_by_exempt_reason(): void
+    {
+        config(['cancellation_v2.en_route_penalty_percent' => 5]);
+        $client = User::factory()->client()->create();
+        $booking = $this->makeBooking($client, now()->addHour(), 100.0);
+        \App\Models\Mission::create(['rendez_vous_id' => $booking->id, 'status' => 'en_route']);
+
+        $quote = app(CancellationEngine::class)->quote($booking->id, 'client', reasonCode: 'medical_emergency');
+
+        $this->assertTrue($quote->exemptApplied);
+        $this->assertSame(0, $quote->feeAmountCents, 'exempt reason waives the en-route penalty too');
+    }
+
     public function test_quote_within_24_to_48_hours_applies_25_percent_fee(): void
     {
         $client = User::factory()->client()->create();

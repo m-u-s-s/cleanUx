@@ -7,6 +7,18 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | En-route penalty (client cancellation)
+    |--------------------------------------------------------------------------
+    | Penalty charged to a CLIENT who cancels once the assigned provider is
+    | already en route / on site / mid-mission — even if the time-based tier
+    | would otherwise be free. Expressed as a PERCENT of the booking amount
+    | (intended range 3–5%) and applied as a floor on the computed fee. Waived
+    | when an exempt reason applies. Set to 0 to disable.
+    */
+    'en_route_penalty_percent' => (float) env('CANCELLATION_EN_ROUTE_PENALTY_PERCENT', 5),
+
+    /*
+    |--------------------------------------------------------------------------
     | Refund provider — stripe | wallet | mock
     |--------------------------------------------------------------------------
     | stripe : appelle Stripe refunds API via Cashier / Stripe SDK

@@ -91,6 +91,23 @@ class CancellationEngine
         $currency = $bookingMeta['currency'] ?? (string) Config::get('cancellation_v2.default_currency', 'EUR');
 
         $feeAmount = (int) round(($amount * $feePercent) / 100) + $feeFlat;
+
+        // En-route penalty: if a CLIENT cancels once the assigned provider is already en route /
+        // on site / mid-mission, charge at least a small penalty (a % of the booking amount, 3–5%)
+        // even when the time-based tier would be free — they made the provider travel for nothing.
+        // Waived if a valid exempt reason (e.g. medical) was applied.
+        $enRoutePenaltyPercent = (float) Config::get('cancellation_v2.en_route_penalty_percent', 0);
+        if ($actorRole === 'client'
+            && $enRoutePenaltyPercent > 0
+            && ! $exemptApplied
+            && $this->providerIsEnRoute($bookingId)) {
+            $enRoutePenalty = (int) round(($amount * $enRoutePenaltyPercent) / 100);
+            if ($feeAmount < $enRoutePenalty) {
+                $feeAmount = $enRoutePenalty;
+                $warnings[] = 'en_route_penalty_applied';
+            }
+        }
+
         if ($feeAmount > $amount) {
             $feeAmount = $amount;
         }
@@ -251,6 +268,32 @@ class CancellationEngine
         }
 
         return (string) Config::get('cancellation_v2.default_refund_method', 'stripe');
+    }
+
+    /**
+     * Whether the booking's assigned provider has already departed / arrived / started — the
+     * trigger for the client en-route cancellation penalty. Schema-defensive (mission links to a
+     * booking via rendez_vous_id and/or booking_id).
+     */
+    protected function providerIsEnRoute(int $bookingId): bool
+    {
+        if (! Schema::hasTable('missions') || ! Schema::hasColumn('missions', 'status')) {
+            return false;
+        }
+
+        $enRouteStatuses = ['en_route', 'arrived', 'started', 'in_mission', 'in_progress', 'sur_place'];
+
+        return DB::table('missions')
+            ->where(function ($q) use ($bookingId) {
+                if (Schema::hasColumn('missions', 'rendez_vous_id')) {
+                    $q->orWhere('rendez_vous_id', $bookingId);
+                }
+                if (Schema::hasColumn('missions', 'booking_id')) {
+                    $q->orWhere('booking_id', $bookingId);
+                }
+            })
+            ->whereIn('status', $enRouteStatuses)
+            ->exists();
     }
 
     /**
