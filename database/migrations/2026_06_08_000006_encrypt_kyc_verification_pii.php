@@ -45,7 +45,7 @@ return new class extends Migration
                             Crypt::decryptString($raw);
 
                             continue;
-                        } catch (\Throwable $e) {
+                        } catch (Throwable $e) {
                             $updates[$col] = Crypt::encryptString($raw);
                         }
                     }

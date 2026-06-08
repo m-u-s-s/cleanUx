@@ -1,0 +1,11 @@
+<svg viewBox="0 0 256 256" width="256" height="256" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="brio app icon">
+  <defs>
+    <linearGradient id="brioG" x1="0" y1="0" x2="256" y2="256" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#6366f1"/>
+      <stop offset="1" stop-color="#8b7bff"/>
+    </linearGradient>
+  </defs>
+  <rect width="256" height="256" rx="58" fill="url(#brioG)"/>
+  <path d="M128 52 C133 100 148 114 196 119 C148 124 133 138 128 186 C123 138 108 124 60 119 C108 114 123 100 128 52 Z" fill="#ffffff"/>
+  <path d="M190 60 C192 74 197 79 211 81 C197 83 192 88 190 102 C188 88 183 83 169 81 C183 79 188 74 190 60 Z" fill="#ffb648"/>
+</svg>

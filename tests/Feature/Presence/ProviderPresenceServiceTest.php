@@ -6,9 +6,9 @@ use App\Models\ProviderPresence;
 use App\Models\ProviderProfile;
 use App\Models\User;
 use App\Services\Presence\ProviderPresenceService;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 use Tests\TestCase;
 

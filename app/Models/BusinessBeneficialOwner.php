@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Casts\EncryptedStringFallback;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -26,7 +27,7 @@ class BusinessBeneficialOwner extends Model
     protected $casts = [
         // L7 — beneficial-owner DOB is identity PII; encrypted at rest (column widened DATE->string).
         // Returns the stored 'Y-m-d' string rather than a Carbon instance.
-        'date_of_birth' => \App\Casts\EncryptedStringFallback::class,
+        'date_of_birth' => EncryptedStringFallback::class,
         'ownership_percent' => 'float',
         'is_director' => 'boolean',
         'is_pep' => 'boolean',
