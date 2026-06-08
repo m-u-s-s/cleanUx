@@ -7,6 +7,8 @@ use App\Models\Booking;
 use App\Services\CancellationV2\CancellationEngine;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 
 /**
  * @group Client — Cancellation (Legacy)
@@ -37,6 +39,7 @@ class CancellationController extends Controller
     public function quote(Request $request, Booking $booking): JsonResponse
     {
         $this->authorizeAccess($request, $booking);
+        $this->logLegacyUsage('cancellation-quote', $request, $booking);
 
         $quote = $this->engine->quote($booking->id, 'client');
         $isFree = (int) $quote->feeAmountCents === 0;
@@ -59,6 +62,7 @@ class CancellationController extends Controller
     public function cancelWithFee(Request $request, Booking $booking): JsonResponse
     {
         $this->authorizeAccess($request, $booking);
+        $this->logLegacyUsage('cancel-with-fee', $request, $booking);
 
         $data = $request->validate([
             'reason' => ['nullable', 'string', 'max:500'],
@@ -85,6 +89,21 @@ class CancellationController extends Controller
                 'is_free' => $isFree,
             ],
             'is_free' => $isFree,
+        ]);
+    }
+
+    /**
+     * F1 (pre-removal) — record each hit on the legacy cancellation endpoints so we can confirm
+     * from the logs that no client still calls them before deleting the route + CancelBookingService
+     * (the destructive step quarantined in docs/AUDIT-QUARANTINE-BATCH.md).
+     */
+    protected function logLegacyUsage(string $endpoint, Request $request, Booking $booking): void
+    {
+        Log::warning('[deprecated] legacy cancellation endpoint hit', [
+            'endpoint' => $endpoint,
+            'booking_id' => $booking->id,
+            'user_id' => $request->user()?->id,
+            'user_agent' => Str::limit((string) $request->userAgent(), 191, ''),
         ]);
     }
 
