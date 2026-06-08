@@ -17,7 +17,11 @@ class MigrateMediaToPrivate extends Command
 
     protected $description = 'Move mission/dispute media (rendezvous, missions, claims, reports, quality) from the public disk to the private disk';
 
-    /** Path prefixes that hold private mission/dispute media. */
+    /**
+     * Path prefixes that hold private mission/dispute media.
+     *
+     * @var array<int, string>
+     */
     private array $prefixes = ['rendezvous', 'missions', 'claims', 'reports', 'quality'];
 
     public function handle(): int
