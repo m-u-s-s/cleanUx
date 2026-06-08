@@ -154,7 +154,9 @@ class MoneyPathIsolationTest extends TestCase
 
         Sanctum::actingAs($b->client);
 
-        $response = $this->getJson("/api/client/bookings/{$a->booking->id}/cancellation-quote");
+        // F1 removal — the legacy /api/client/bookings/{id}/cancellation-quote is gone; clients
+        // use the unified V2 endpoint, which now enforces booking ownership.
+        $response = $this->getJson("/api/v2/client/bookings/{$a->booking->id}/cancellation-quote");
 
         $this->assertContains(
             $response->status(),

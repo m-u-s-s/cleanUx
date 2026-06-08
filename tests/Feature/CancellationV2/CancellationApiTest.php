@@ -82,6 +82,7 @@ class CancellationApiTest extends TestCase
         $provider = User::factory()->employe()->create();
         $booking = Booking::create([
             'client_id' => $client->id,
+            'employe_id' => $provider->id, // provider must be assigned to quote it (ownership guard)
             'date' => now()->addHour(),
             'heure' => '10:00',
             'scheduled_at' => now()->addHour(),
@@ -95,6 +96,30 @@ class CancellationApiTest extends TestCase
         $response->assertOk();
         // Provider <2h: 3000c flat + 25% × 10000 = 5500
         $this->assertSame(5500, $response->json('quote.fee_amount_cents'));
+    }
+
+    public function test_client_cannot_quote_or_cancel_another_clients_booking(): void
+    {
+        $owner = User::factory()->client()->create();
+        $booking = $this->makeBooking($owner);
+        $stranger = User::factory()->client()->create();
+
+        Sanctum::actingAs($stranger);
+        $this->getJson("/api/v2/client/bookings/{$booking->id}/cancellation-quote")->assertForbidden();
+        $this->postJson("/api/v2/client/bookings/{$booking->id}/cancel", [])->assertForbidden();
+        $this->assertSame(0, BookingCancellationV2::count());
+    }
+
+    public function test_provider_cannot_quote_unassigned_booking(): void
+    {
+        $client = User::factory()->client()->create();
+        $assigned = User::factory()->employe()->create();
+        $booking = $this->makeBooking($client);
+        $booking->forceFill(['employe_id' => $assigned->id])->save();
+        $stranger = User::factory()->employe()->create();
+
+        Sanctum::actingAs($stranger);
+        $this->getJson("/api/v2/provider/bookings/{$booking->id}/cancellation-quote")->assertForbidden();
     }
 
     public function test_admin_override_endpoint_waives_fee(): void

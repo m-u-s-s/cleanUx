@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\Booking;
 use App\Models\BookingCancellationV2;
 use App\Services\CancellationV2\CancellationEngine;
 use Illuminate\Http\JsonResponse;
@@ -24,6 +25,8 @@ class CancellationV2Controller extends Controller
 
     public function quote(Request $request, int $booking, string $actorRole): JsonResponse
     {
+        $this->authorizeBooking($request, $booking, $actorRole);
+
         $data = $request->validate([
             'reason_code' => ['nullable', 'string', 'max:64'],
         ]);
@@ -43,6 +46,8 @@ class CancellationV2Controller extends Controller
 
     public function execute(Request $request, int $booking, string $actorRole): JsonResponse
     {
+        $this->authorizeBooking($request, $booking, $actorRole);
+
         $data = $request->validate([
             'reason_code' => ['nullable', 'string', 'max:64'],
             'reason_text' => ['nullable', 'string', 'max:2000'],
@@ -66,6 +71,40 @@ class CancellationV2Controller extends Controller
             'ok' => true,
             'cancellation' => $row,
         ], 201);
+    }
+
+    /**
+     * Ownership guard for the V2 cancellation endpoints. Previously absent — any authenticated
+     * user could quote/cancel another user's booking by id (IDOR). The client must own the
+     * booking; the provider must be assigned to it. (Surfaced while removing the legacy
+     * client cancellation controller, which already had this check.)
+     */
+    protected function authorizeBooking(Request $request, int $bookingId, string $actorRole): void
+    {
+        $booking = Booking::query()->find($bookingId);
+        abort_if(! $booking, 404, 'Réservation introuvable.');
+
+        $user = $request->user();
+        $uid = (int) $user->id;
+
+        if ($actorRole === 'client') {
+            $orgId = $user->organization_account_id ?? $user->current_organization_id ?? null;
+            $owns = (int) ($booking->customer_user_id ?? 0) === $uid
+                || (int) ($booking->client_id ?? 0) === $uid
+                || ($orgId && (int) ($booking->customer_organization_id ?? 0) === (int) $orgId);
+            abort_unless($owns, 403, 'Accès refusé.');
+
+            return;
+        }
+
+        if ($actorRole === 'provider') {
+            $assigned = (int) ($booking->employe_id ?? 0) === $uid
+                || (int) ($booking->assigned_provider_user_id ?? 0) === $uid;
+            abort_unless($assigned, 403, 'Accès refusé.');
+
+            return;
+        }
+        // Other roles (e.g. admin) are reached via separately-gated routes.
     }
 
     public function clientQuote(Request $request, int $booking): JsonResponse
