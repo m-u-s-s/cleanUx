@@ -79,4 +79,10 @@ Route::middleware('auth')->group(function () {
     Route::get('/attachments/{attachment}', [AttachmentDownloadController::class, 'download'])
         ->middleware('signed')
         ->name('messaging.attachments.download');
+
+    // M3 — authenticated streaming of mission/dispute photos on the private disk, via a
+    // short-lived signed URL (replaces the old public /storage/* links).
+    Route::get('/media/private', [\App\Http\Controllers\MediaController::class, 'show'])
+        ->middleware('signed')
+        ->name('media.private.show');
 });

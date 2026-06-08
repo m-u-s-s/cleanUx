@@ -120,5 +120,11 @@ class AppServiceProvider extends ServiceProvider
         Blade::if('feature', function (string $flag): bool {
             return app(FeatureFlagService::class)->isEnabled($flag, auth()->user());
         });
+
+        // M3 — @mediaUrl($path): signed URL to the authenticated private-media route. Use for
+        // mission/dispute photos instead of asset('storage/'.$path).
+        Blade::directive('mediaUrl', function (string $expr): string {
+            return "<?php echo e(\\App\\Support\\Media\\PrivateMedia::url({$expr})); ?>";
+        });
     }
 }
