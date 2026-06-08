@@ -67,8 +67,6 @@ class User extends Authenticatable implements HasLocalePreference, MustVerifyEma
         'email',
         'password',
 
-        'tenant_id',
-
         'account_type',
         'role', // deprecated — kept for backward compat with existing tests
         'platform_role',

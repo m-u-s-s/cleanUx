@@ -5,18 +5,15 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
 /**
- * OPTIONAL migration — Phase 2 du module Tenancy v2.
+ * OPTIONAL migration — ex-Phase 2 du module Tenancy v2 (module SUPPRIMÉ).
  *
- * Ajoute une colonne `tenant_id` nullable à la table `users`. Le `tenant_id`
- * est laissé null par défaut (compatibilité backwards). Pour populater :
- *   `php artisan tenancy:backfill --tenant=main`
+ * Ajoute une colonne `tenant_id` nullable à la table `users`.
  *
- * Une fois la colonne en place + backfill effectué, tu peux activer le trait
- * `BelongsToTenant` sur le model `User` pour scope automatique par tenant.
- *
- * Cette migration est volontairement EXÉCUTÉE comme les autres (ordre standard)
- * — la nullabilité garantit qu'aucun code legacy ne casse, et le trait n'est
- * activé que manuellement par le développeur. Permet l'opt-in progressif.
+ * DEAD COLUMN (M7) : le module Tenancy v2 a été retiré ; le trait `BelongsToTenant`
+ * et la commande `tenancy:backfill` mentionnés à l'origine n'existent pas/plus, et
+ * aucun scope ne lit `users.tenant_id`. La colonne n'est plus mass-assignable
+ * (retirée du $fillable de User). La suppression définitive de la colonne + index
+ * est en attente de validation (voir docs/AUDIT-QUARANTINE-BATCH.md).
  */
 return new class extends Migration
 {

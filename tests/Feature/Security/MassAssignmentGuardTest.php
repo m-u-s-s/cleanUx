@@ -4,6 +4,7 @@ namespace Tests\Feature\Security;
 
 use App\Models\RecurringBookingSeries;
 use App\Models\RendezVous;
+use App\Models\User;
 use Tests\TestCase;
 
 /**
@@ -41,5 +42,14 @@ class MassAssignmentGuardTest extends TestCase
         $this->assertSame('weekly', $series->frequency);
         $this->assertSame(5, $series->customer_user_id);
         $this->assertSame('active', $series->status);
+    }
+
+    public function test_user_tenant_id_is_not_mass_assignable(): void
+    {
+        // M7 — dead tenant_id column must no longer be mass-assignable.
+        $user = (new User)->fill(['name' => 'X', 'tenant_id' => 99]);
+
+        $this->assertNull($user->tenant_id);
+        $this->assertSame('X', $user->name);
     }
 }
