@@ -10,6 +10,7 @@ use App\Models\Concerns\ResetsNotificationTracking;
 use App\Support\Domain\BookingStatus;
 use Database\Factories\BookingFactory;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -250,7 +251,8 @@ class Booking extends Model
         'ville',
         'code_postal',
         'type_lieu',
-        'surface',
+        'surface',        // M8 — virtual alias bridged to surface_range (see surface() attribute)
+        'surface_range',
         'frequence',
         'priorite',
         'telephone_client',
@@ -369,6 +371,21 @@ class Booking extends Model
     }
 
     // syncLegacyAliases() and mirrorIntoLegacyRendezVousTable() live in HasLegacyBookingAliases.
+
+    /**
+     * M8 — backward-compatible bridge for the renamed column. The DB column is now
+     * `surface_range`; legacy code/views/forms still read & write `$booking->surface`, which this
+     * virtual attribute maps to surface_range transparently.
+     *
+     * @return Attribute<string|null, string|null>
+     */
+    protected function surface(): Attribute
+    {
+        return Attribute::make(
+            get: fn ($value, array $attributes) => $attributes['surface_range'] ?? null,
+            set: fn ($value) => ['surface_range' => $value],
+        );
+    }
 
     // ──────────────────────────────────────────────────────
     // Relations — acteurs
