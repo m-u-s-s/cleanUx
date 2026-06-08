@@ -88,6 +88,11 @@
         "allow-plugins": {
             "pestphp/pest-plugin": true,
             "php-http/discovery": true
+        },
+        "audit": {
+            "ignore": {
+                "CVE-2026-48019": "CRLF injection in Laravel's default email rule. No patched 11.x release exists; the fix requires a Laravel 11->12 major upgrade, tracked in issue #2. Low real-world impact for this app. Risk accepted until the upgrade ships."
+            }
         }
     },
     "minimum-stability": "stable",
