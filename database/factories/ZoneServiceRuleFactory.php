@@ -22,8 +22,10 @@ class ZoneServiceRuleFactory extends Factory
             'is_enabled' => true,
             'requires_manual_validation' => fake()->boolean(20),
             'base_price_override' => fake()->optional()->randomFloat(2, 30, 400),
-            'price_multiplier' => fake()->optional()->randomFloat(2, 0.8, 1.8),
-            'minimum_notice_hours' => fake()->optional()->randomElement([2, 4, 12, 24, 48]),
+            // price_multiplier & minimum_notice_hours are NOT NULL (with DB defaults); optional()
+            // would insert an explicit null and violate the constraint, so always provide a value.
+            'price_multiplier' => fake()->randomFloat(2, 0.8, 1.8),
+            'minimum_notice_hours' => fake()->randomElement([2, 4, 12, 24, 48]),
             'maximum_daily_capacity' => fake()->optional()->numberBetween(1, 20),
             'settings' => null,
         ];

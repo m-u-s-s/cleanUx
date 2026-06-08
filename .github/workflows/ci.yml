@@ -23,6 +23,7 @@ jobs:
           php-version: '8.4'
           extensions: mbstring, dom, fileinfo, pdo_sqlite, sqlite3
           coverage: xdebug
+          ini-values: memory_limit=-1
 
       - name: Setup Node
         uses: actions/setup-node@v4
@@ -116,6 +117,7 @@ jobs:
         with:
           php-version: '8.4'
           extensions: mbstring, dom, fileinfo, pdo_mysql, mysql
+          ini-values: memory_limit=-1
 
       - name: Copy env
         run: cp .env.testing .env
