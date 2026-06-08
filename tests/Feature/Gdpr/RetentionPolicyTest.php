@@ -7,7 +7,6 @@ use App\Models\User;
 use App\Services\Gdpr\RetentionPolicyService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
@@ -17,9 +16,6 @@ class RetentionPolicyTest extends TestCase
 
     public function test_old_activity_logs_are_purged(): void
     {
-        if (! Schema::hasTable('activity_logs')) {
-            $this->markTestSkipped('activity_logs table missing');
-        }
 
         $user = User::factory()->create();
 
@@ -48,10 +44,6 @@ class RetentionPolicyTest extends TestCase
 
     public function test_unread_notifications_are_not_purged(): void
     {
-        if (! Schema::hasTable('notifications')) {
-            $this->markTestSkipped('notifications table missing');
-        }
-
         $user = User::factory()->create();
         $oldDays = (int) config('gdpr.retention.notifications_days', 365);
 
@@ -88,9 +80,6 @@ class RetentionPolicyTest extends TestCase
     /** M14 — analytics_events past retention are purged; recent ones kept. */
     public function test_old_analytics_events_are_purged(): void
     {
-        if (! Schema::hasTable('analytics_events')) {
-            $this->markTestSkipped('analytics_events table missing');
-        }
 
         $days = (int) config('gdpr.retention.analytics_events_days', 425);
         DB::table('analytics_events')->insert([
