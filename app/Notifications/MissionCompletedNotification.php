@@ -28,7 +28,9 @@ class MissionCompletedNotification extends Notification
             ->action('Voir la mission', url('/client/dashboard'))
             ->action('Donner mon avis', url('/dashboard/client/rendez-vous/'.$this->mission->rendez_vous_id.'/feedback'))
             ->line('Votre rapport de mission est disponible.')
-            ->action('Télécharger le rapport', url('/storage/'.$this->mission->report_path));
+            // M3 — report is on the private disk; link via a longer-lived signed URL (7 days),
+            // still behind auth (login is preserved through the signed-route redirect).
+            ->action('Télécharger le rapport', \App\Support\Media\PrivateMedia::url($this->mission->report_path, 60 * 24 * 7) ?? url('/client/dashboard'));
     }
 
     public function toArray(object $notifiable): array

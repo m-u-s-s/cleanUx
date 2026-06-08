@@ -50,7 +50,7 @@
                     @foreach($beforePhotos as $photo)
                         <div class="rounded-xl overflow-hidden border bg-slate-50">
                             <img
-                                src="{{ asset('storage/'.$photo->path) }}"
+                                src="{{ \App\Support\Media\PrivateMedia::url($photo->path) }}"
                                 alt="Photo avant mission"
                                 class="h-36 w-full object-cover">
                             @if($photo->caption)
@@ -75,7 +75,7 @@
                     @foreach($afterPhotos as $photo)
                         <div class="rounded-xl overflow-hidden border bg-slate-50">
                             <img
-                                src="{{ asset('storage/'.$photo->path) }}"
+                                src="{{ \App\Support\Media\PrivateMedia::url($photo->path) }}"
                                 alt="Photo après mission"
                                 class="h-36 w-full object-cover">
                             @if($photo->caption)

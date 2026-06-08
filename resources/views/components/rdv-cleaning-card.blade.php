@@ -53,9 +53,9 @@
         <p class="text-sm font-medium text-gray-700">📷 Photos de référence</p>
         <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
             @foreach($rdv->photos_reference as $photo)
-            <a href="{{ asset('storage/' . $photo) }}" target="_blank" class="block">
+            <a href="{{ \App\Support\Media\PrivateMedia::url($photo) }}" target="_blank" class="block">
                 <img
-                    src="{{ asset('storage/' . $photo) }}"
+                    src="{{ \App\Support\Media\PrivateMedia::url($photo) }}"
                     alt="Photo de référence"
                     class="w-full h-28 object-cover rounded-lg border hover:opacity-90 transition">
             </a>
@@ -82,9 +82,9 @@
         <p class="text-sm font-medium text-gray-700">📸 Photos après intervention</p>
         <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
             @foreach($rdv->photos_apres as $photo)
-            <a href="{{ asset('storage/' . $photo) }}" target="_blank" class="block">
+            <a href="{{ \App\Support\Media\PrivateMedia::url($photo) }}" target="_blank" class="block">
                 <img
-                    src="{{ asset('storage/' . $photo) }}"
+                    src="{{ \App\Support\Media\PrivateMedia::url($photo) }}"
                     alt="Photo après intervention"
                     class="w-full h-28 object-cover rounded-lg border hover:opacity-90 transition">
             </a>

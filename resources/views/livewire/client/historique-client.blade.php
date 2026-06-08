@@ -143,8 +143,8 @@
                         @if(!empty($rdv->photos_avant))
                         <div class="grid grid-cols-2 gap-3">
                             @foreach($rdv->photos_avant as $photo)
-                            <a href="{{ asset('storage/'.$photo) }}" target="_blank">
-                                <img src="{{ asset('storage/'.$photo) }}"
+                            <a href="{{ \App\Support\Media\PrivateMedia::url($photo) }}" target="_blank">
+                                <img src="{{ \App\Support\Media\PrivateMedia::url($photo) }}"
                                     class="h-28 w-full rounded-xl object-cover border hover:opacity-90">
                             </a>
                             @endforeach
@@ -160,8 +160,8 @@
                         @if(!empty($rdv->photos_apres))
                         <div class="grid grid-cols-2 gap-3">
                             @foreach($rdv->photos_apres as $photo)
-                            <a href="{{ asset('storage/'.$photo) }}" target="_blank">
-                                <img src="{{ asset('storage/'.$photo) }}"
+                            <a href="{{ \App\Support\Media\PrivateMedia::url($photo) }}" target="_blank">
+                                <img src="{{ \App\Support\Media\PrivateMedia::url($photo) }}"
                                     class="h-28 w-full rounded-xl object-cover border hover:opacity-90">
                             </a>
                             @endforeach

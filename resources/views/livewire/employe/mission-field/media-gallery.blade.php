@@ -17,8 +17,8 @@
     @else
         <div class="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-3">
             @foreach($mission->media->take(9) as $media)
-                <a href="{{ asset('storage/'.$media->path) }}" target="_blank" class="group overflow-hidden rounded-2xl border border-slate-200 bg-slate-100">
-                    <img src="{{ asset('storage/'.$media->path) }}" alt="Média mission" class="h-28 w-full object-cover transition group-hover:scale-105">
+                <a href="{{ \App\Support\Media\PrivateMedia::url($media->path) }}" target="_blank" class="group overflow-hidden rounded-2xl border border-slate-200 bg-slate-100">
+                    <img src="{{ \App\Support\Media\PrivateMedia::url($media->path) }}" alt="Média mission" class="h-28 w-full object-cover transition group-hover:scale-105">
                     <div class="px-3 py-2 text-xs font-bold text-slate-600">
                         {{ $media->media_type ?? 'photo' }}
                     </div>

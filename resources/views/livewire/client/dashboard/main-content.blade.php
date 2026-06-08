@@ -238,7 +238,7 @@
 
                         @if($rdv->mission?->report_path)
                             <div class="mt-3 border-t border-slate-100 pt-3">
-                                <a href="{{ asset('storage/'.$rdv->mission->report_path) }}" target="_blank"
+                                <a href="{{ \App\Support\Media\PrivateMedia::url($rdv->mission->report_path) }}" target="_blank"
                                    class="inline-flex items-center gap-2 rounded-lg bg-emerald-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-emerald-700 transition">
                                     <x-ui.icon name="document" class="w-3.5 h-3.5" />
                                     {{ __('Rapport') }}

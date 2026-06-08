@@ -82,7 +82,7 @@
                             @endif
 
                             @if($rdv->mission?->report_path)
-                                <a href="{{ asset('storage/'.$rdv->mission->report_path) }}" target="_blank" class="inline-flex items-center gap-1.5 rounded-lg bg-slate-100 px-2.5 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-200 transition">
+                                <a href="{{ \App\Support\Media\PrivateMedia::url($rdv->mission->report_path) }}" target="_blank" class="inline-flex items-center gap-1.5 rounded-lg bg-slate-100 px-2.5 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-200 transition">
                                     <x-ui.icon name="document" class="w-3.5 h-3.5" />
                                     Rapport
                                 </a>
