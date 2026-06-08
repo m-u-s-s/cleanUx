@@ -158,4 +158,20 @@ final class BookingStatus
     {
         return [self::TERMINE];
     }
+
+    /**
+     * Terminal statuses for which a (new) cancellation must be refused: a booking that is
+     * already completed or already cancelled cannot be cancelled again. Includes the
+     * defensive completion aliases ('completed'/'done') used elsewhere (e.g. payouts cron).
+     *
+     * @return string[]
+     */
+    public static function nonCancellableAliases(): array
+    {
+        return array_values(array_unique(array_merge(
+            self::completedAliases(),
+            self::cancelledAliases(),
+            ['completed', 'done'],
+        )));
+    }
 }

@@ -87,7 +87,7 @@ class MissionEndCodeFlowTest extends TestCase
     protected function makeStartedMission(): array
     {
         $client = User::factory()->create();
-        $provider = User::factory()->create();
+        $provider = User::factory()->employe()->create();
         ProviderProfile::create([
             'user_id' => $provider->id,
             'status' => 'active',

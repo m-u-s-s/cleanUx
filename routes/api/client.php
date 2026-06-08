@@ -4,7 +4,6 @@ use App\Http\Controllers\Api\Client\AiQuoteController;
 use App\Http\Controllers\Api\Client\BookingEstimateController;
 use App\Http\Controllers\Api\Client\BookingFavoriteController;
 use App\Http\Controllers\Api\Client\BookingPaymentController;
-use App\Http\Controllers\Api\Client\CancellationController;
 use App\Http\Controllers\Api\Client\ClientBookingController;
 use App\Http\Controllers\Api\Client\ClientProfileController;
 use App\Http\Controllers\Api\Client\CompanyDirectoryController;
@@ -49,6 +48,9 @@ Route::middleware('auth:sanctum')->prefix('client')->group(function () {
     Route::get('/bookings/{booking}', [ClientBookingController::class, 'show']);
     Route::post('/bookings/{booking}/cancel', [ClientBookingController::class, 'cancel']);
     Route::get('/bookings/{booking}/eta', [ClientBookingController::class, 'eta']);
+    // E1 — client confirms mission start/end by scanning the on-site verification code.
+    Route::post('/bookings/{booking}/qr-start', [ClientBookingController::class, 'qrStart']);
+    Route::post('/bookings/{booking}/qr-end', [ClientBookingController::class, 'qrEnd']);
 
     // Client Invoices — list with scope isolation
     Route::get('/invoices/summary', [InvoiceApiController::class, 'summary'])->name('api.client.invoices.summary');
@@ -175,11 +177,9 @@ Route::middleware('auth:sanctum')->prefix('client')->group(function () {
     // Mobile app — NPS simplified endpoint (score only, no survey_code required)
     Route::post('/nps', [ClientProfileController::class, 'npsSimplified']);
 
-    // Phase 14 — Cancellation client (legacy)
+    // F1 removal — the legacy client cancellation routes (cancel-with-fee / cancellation-quote)
+    // were removed; clients use the unified V2 endpoints under /api/v2/client/bookings/*.
     Route::prefix('bookings')->group(function () {
-        Route::get('/{booking}/cancellation-quote', [CancellationController::class, 'quote']);
-        Route::post('/{booking}/cancel-with-fee', [CancellationController::class, 'cancelWithFee']);
-
         // Commission preview — lets client see platform fee before confirming
         Route::get('/{booking}/commission', [ClientProfileController::class, 'commissionPreview']);
     });

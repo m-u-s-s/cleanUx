@@ -2,11 +2,15 @@
 
 namespace App\Services\Onboarding;
 
+use App\Models\OnboardingProgress;
+use App\Models\OnboardingStepCompletion;
 use App\Models\ProviderOnboardingDocument;
 use App\Models\ProviderProfile;
 use App\Models\User;
+use App\Services\OnboardingV2\OnboardingEngine;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 
 /**
@@ -259,7 +263,45 @@ class ProviderOnboardingService
             ]),
         ]);
 
+        // M19 — write-through to OnboardingV2: the legacy wizard is the real onboarding path, but
+        // its progress wasn't reflected in the v2 journey (admin OnboardingV2Center showed
+        // providers as never-started). Admin approval is the authoritative completion signal, so
+        // mirror the v2 journey to complete. Soft-fail: never block the legacy approval.
+        $this->syncOnboardingV2Completed($user);
+
         return $profile->fresh();
+    }
+
+    /**
+     * Mark the user's OnboardingV2 journey complete to mirror the legacy approval. Bypasses the
+     * per-step validators on purpose — legacy admin approval is the source of truth — and never
+     * throws (the v2 module / journey seed may be absent in some environments).
+     */
+    protected function syncOnboardingV2Completed(User $user): void
+    {
+        if (! config('onboarding_v2.enabled', true)) {
+            return;
+        }
+
+        try {
+            $progress = app(OnboardingEngine::class)->startFor($user);
+
+            $progress->completions()->update([
+                'status' => OnboardingStepCompletion::STATUS_COMPLETED,
+                'completed_at' => now(),
+            ]);
+
+            $progress->forceFill([
+                'status' => OnboardingProgress::STATUS_COMPLETED,
+                'percent_complete' => 100,
+                'completed_at' => now(),
+            ])->save();
+        } catch (\Throwable $e) {
+            Log::warning('[onboarding_v2_sync] failed (non-blocking)', [
+                'user_id' => $user->id,
+                'error' => $e->getMessage(),
+            ]);
+        }
     }
 
     /**

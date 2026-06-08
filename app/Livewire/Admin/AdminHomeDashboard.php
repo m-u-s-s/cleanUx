@@ -46,12 +46,21 @@ class AdminHomeDashboard extends Component
      */
     public function bookingsTrend(): array
     {
-        return collect(range(6, 0))->map(function (int $daysAgo) {
+        // M21 — one grouped query for the 7-day window instead of 7 separate whereDate counts.
+        $start = now()->subDays(6)->startOfDay();
+
+        $counts = Booking::query()
+            ->where('created_at', '>=', $start)
+            ->selectRaw('DATE(created_at) as d, count(*) as c')
+            ->groupBy('d')
+            ->pluck('c', 'd');
+
+        return collect(range(6, 0))->map(function (int $daysAgo) use ($counts) {
             $date = now()->subDays($daysAgo);
 
             return [
                 'date' => $date->format('d/m'),
-                'count' => Booking::whereDate('created_at', $date)->count(),
+                'count' => (int) ($counts[$date->format('Y-m-d')] ?? 0),
             ];
         })->all();
     }

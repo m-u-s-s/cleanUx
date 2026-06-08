@@ -22,7 +22,7 @@ class MissionReportService
 
         $path = 'reports/mission-'.$mission->id.'.pdf';
 
-        \Storage::disk('public')->put($path, $pdf->output());
+        \Storage::disk('private')->put($path, $pdf->output()); // M3 — mission report is private
 
         return $path;
     }

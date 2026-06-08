@@ -20,7 +20,7 @@ jobs:
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
-          php-version: '8.3'
+          php-version: '8.4'
           extensions: mbstring, dom, fileinfo, pdo_sqlite, sqlite3
           coverage: xdebug
 
@@ -72,3 +72,64 @@ jobs:
           name: coverage-report
           path: coverage.xml
           retention-days: 30
+
+  # M25 — the default suite runs on SQLite with FKs disabled. This job re-runs the money /
+  # GDPR / spine suites against MySQL with foreign-key enforcement ON, so referential-integrity
+  # bugs (orphan rows, wrong FKs) that SQLite silently allows are caught. Scoped to the
+  # well-formed money/compliance suites rather than the whole suite.
+  money-integrity-mysql:
+    name: Money/GDPR integrity (MySQL, FK enforced)
+    runs-on: ubuntu-latest
+
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: cleanux_test
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -proot"
+          --health-interval=10s --health-timeout=5s --health-retries=10
+
+    env:
+      DB_CONNECTION: mysql
+      DB_HOST: 127.0.0.1
+      DB_PORT: 3306
+      DB_DATABASE: cleanux_test
+      DB_USERNAME: root
+      DB_PASSWORD: root
+      DB_FOREIGN_KEYS: 'true'
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: mbstring, dom, fileinfo, pdo_mysql, mysql
+
+      - name: Copy env
+        run: cp .env.testing .env
+
+      - name: Install PHP dependencies
+        run: composer install --no-interaction --prefer-dist
+
+      - name: Generate app key
+        run: php artisan key:generate --force
+
+      - name: Migrate (MySQL)
+        run: php artisan migrate --force
+
+      - name: Money / GDPR / spine suites with FK enforcement
+        run: |
+          php artisan test \
+            tests/Feature/Spine \
+            tests/Feature/Payments \
+            tests/Feature/PayoutFlowTest.php \
+            tests/Feature/CancellationV2 \
+            tests/Feature/Gdpr \
+            tests/Feature/Kyc

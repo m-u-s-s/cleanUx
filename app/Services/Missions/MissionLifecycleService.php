@@ -260,8 +260,14 @@ class MissionLifecycleService
                 $commission = app(CommissionService::class)
                     ->calculateForBooking($mission->rendezVous);
 
+                // This branch only runs once the PaymentIntent is captured. Because
+                // MissionPaymentService::authorize() always creates a destination charge
+                // (transfer_data.destination), capturing it has ALREADY transferred the
+                // provider's share to their Connect account. Mark the booking with the
+                // explicit 'auto_transferred' status so the payouts:process Phase 2 manual
+                // transfer never re-pays it (which would double-pay the provider). See A1.
                 $updates = [
-                    'payout_status' => 'processed',
+                    'payout_status' => 'auto_transferred',
                     'platform_fee_cents' => $commission['platform_fee_cents'],
                 ];
                 if (Schema::hasColumn('bookings', 'provider_payout_cents')) {

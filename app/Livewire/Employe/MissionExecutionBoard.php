@@ -68,7 +68,7 @@ class MissionExecutionBoard extends Component
         ]);
 
         foreach ($this->beforePhotos as $photo) {
-            $path = $photo->store('missions/'.$this->mission->id.'/before', 'public');
+            $path = $photo->store('missions/'.$this->mission->id.'/before', 'private');
 
             MissionMedia::query()->create([
                 'mission_id' => $this->mission->id,
@@ -96,7 +96,7 @@ class MissionExecutionBoard extends Component
         ]);
 
         foreach ($this->afterPhotos as $photo) {
-            $path = $photo->store('missions/'.$this->mission->id.'/after', 'public');
+            $path = $photo->store('missions/'.$this->mission->id.'/after', 'private');
 
             MissionMedia::query()->create([
                 'mission_id' => $this->mission->id,

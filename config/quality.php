@@ -8,7 +8,7 @@ return [
     | Photo storage
     |--------------------------------------------------------------------------
     */
-    'photo_storage_disk' => env('QUALITY_PHOTO_DISK', 'public'),
+    'photo_storage_disk' => env('QUALITY_PHOTO_DISK', 'private'), // M3 — inspection photos are private
     'photo_max_size_mb' => (int) env('QUALITY_PHOTO_MAX_SIZE_MB', 8),
     'photo_path_prefix' => env('QUALITY_PHOTO_PATH', 'quality/photos'),
 

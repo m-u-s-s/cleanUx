@@ -5,11 +5,11 @@
         <div class="grid grid-cols-2 gap-3 md:grid-cols-4">
             @foreach($claim->attachments as $attachment)
                 <a
-                    href="{{ asset('storage/'.$attachment['path']) }}"
+                    href="{{ \App\Support\Media\PrivateMedia::url($attachment['path']) }}"
                     target="_blank"
                     class="block overflow-hidden rounded-2xl border border-slate-200 bg-slate-50">
                     <img
-                        src="{{ asset('storage/'.$attachment['path']) }}"
+                        src="{{ \App\Support\Media\PrivateMedia::url($attachment['path']) }}"
                         class="h-24 w-full object-cover"
                         alt="Preuve litige">
                 </a>

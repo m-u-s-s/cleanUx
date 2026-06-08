@@ -54,6 +54,31 @@ class InsuranceApiTest extends TestCase
         ])->assertStatus(401);
     }
 
+    // M2 — a client must not read plans for, or buy insurance against, another client's booking.
+
+    public function test_plans_endpoint_denies_non_owner(): void
+    {
+        $owner = User::factory()->client()->create();
+        $booking = $this->makeBooking($owner);
+        $stranger = User::factory()->client()->create();
+
+        Sanctum::actingAs($stranger);
+        $this->getJson("/api/client/bookings/{$booking->id}/insurance-plans")->assertForbidden();
+    }
+
+    public function test_purchase_endpoint_denies_non_owner(): void
+    {
+        $owner = User::factory()->client()->create();
+        $booking = $this->makeBooking($owner);
+        $stranger = User::factory()->client()->create();
+
+        Sanctum::actingAs($stranger);
+        $this->postJson("/api/client/bookings/{$booking->id}/insurance", ['plan_code' => 'standard'])
+            ->assertForbidden();
+
+        $this->assertSame(0, BookingInsurance::count());
+    }
+
     public function test_purchase_endpoint_creates_insurance(): void
     {
         $user = User::factory()->client()->create();

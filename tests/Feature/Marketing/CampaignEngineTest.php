@@ -12,6 +12,8 @@ use App\Services\Marketing\CampaignEngine;
 use App\Services\Marketing\OptOutService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Tests\TestCase;
 
 class CampaignEngineTest extends TestCase
@@ -86,6 +88,35 @@ class CampaignEngineTest extends TestCase
         $this->assertSame(4, $created);
         $this->assertSame(4, MarketingCampaignRecipient::count());
         $this->assertSame(MarketingCampaign::STATUS_SCHEDULED, $campaign->fresh()->status);
+    }
+
+    /**
+     * G1 — materialize() must not run per-member queries. The number of SELECTs must stay
+     * bounded regardless of segment size (previously ~3 SELECTs per member×step).
+     */
+    public function test_schedule_does_not_run_per_member_queries(): void
+    {
+        $users = User::factory()->client()->count(10)->create();
+        $segment = $this->makeSegmentWith($users->all());
+        $campaign = $this->makeCampaign($segment, [['channel' => 'email']]);
+
+        DB::flushQueryLog();
+        DB::enableQueryLog();
+        $created = app(CampaignEngine::class)->schedule($campaign);
+        $queries = DB::getQueryLog();
+        DB::disableQueryLog();
+
+        $this->assertSame(10, $created);
+
+        $selectCount = collect($queries)
+            ->filter(fn ($q) => str_starts_with(strtolower(ltrim((string) $q['query'])), 'select'))
+            ->count();
+
+        $this->assertLessThanOrEqual(
+            8,
+            $selectCount,
+            "Expected a bounded number of SELECTs independent of member count; got {$selectCount} (N+1 regression?)."
+        );
     }
 
     public function test_schedule_marks_opted_out_recipients(): void
@@ -169,6 +200,27 @@ class CampaignEngineTest extends TestCase
         $recipient->refresh();
         $this->assertSame(MarketingCampaignRecipient::STATUS_SENT, $recipient->status);
         $this->assertNotNull($recipient->sent_at);
+    }
+
+    /** M12 — marketing sends must not log raw email/phone PII. */
+    public function test_email_send_does_not_log_raw_pii(): void
+    {
+        $u = User::factory()->client()->create(['email' => 'secret@example.com']);
+        $segment = $this->makeSegmentWith([$u]);
+        $campaign = $this->makeCampaign($segment, [['channel' => 'email']]);
+        app(CampaignEngine::class)->schedule($campaign);
+        $recipient = MarketingCampaignRecipient::first();
+        $recipient->forceFill(['scheduled_for' => now()->subMinute()])->save();
+
+        Log::spy();
+        app(CampaignEngine::class)->dispatchOne($recipient);
+
+        Log::shouldHaveReceived('info')->withArgs(function ($message, $context = []) {
+            return $message === 'Marketing email send'
+                && ! array_key_exists('to', $context)
+                && array_key_exists('to_hash', $context)
+                && ! str_contains((string) json_encode($context), 'secret@example.com');
+        })->atLeast()->once();
     }
 
     public function test_dispatch_re_checks_opt_out_at_send_time(): void

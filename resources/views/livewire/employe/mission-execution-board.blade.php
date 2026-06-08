@@ -59,7 +59,7 @@
 
             <div class="grid grid-cols-2 gap-3">
                 @foreach($beforeMedia as $media)
-                    <img src="{{ asset('storage/'.$media->path) }}" alt="Photo avant" class="h-32 w-full rounded-xl object-cover border border-slate-200">
+                    <img src="{{ \App\Support\Media\PrivateMedia::url($media->path) }}" alt="Photo avant" class="h-32 w-full rounded-xl object-cover border border-slate-200">
                 @endforeach
             </div>
         </div>
@@ -79,7 +79,7 @@
 
             <div class="grid grid-cols-2 gap-3">
                 @foreach($afterMedia as $media)
-                    <img src="{{ asset('storage/'.$media->path) }}" alt="Photo après" class="h-32 w-full rounded-xl object-cover border border-slate-200">
+                    <img src="{{ \App\Support\Media\PrivateMedia::url($media->path) }}" alt="Photo après" class="h-32 w-full rounded-xl object-cover border border-slate-200">
                 @endforeach
             </div>
         </div>

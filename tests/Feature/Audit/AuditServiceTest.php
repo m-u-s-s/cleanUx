@@ -53,7 +53,10 @@ class AuditServiceTest extends TestCase
 
         $this->assertSame(AuditEvent::ACTOR_USER, $event->actor_type);
         $this->assertSame($user->id, (int) $event->actor_id);
-        $this->assertSame($user->email, $event->actor_label);
+        // M11 — the email is masked in the label (full email must never be persisted).
+        $this->assertNotSame($user->email, $event->actor_label);
+        $this->assertStringContainsString('@'.explode('@', $user->email)[1], $event->actor_label);
+        $this->assertStringContainsString('*', $event->actor_label);
     }
 
     public function test_record_explicit_actor_overrides_authenticated(): void
@@ -75,7 +78,9 @@ class AuditServiceTest extends TestCase
 
         $this->assertSame('User', $event->subject_type);
         $this->assertSame($user->id, (int) $event->subject_id);
-        $this->assertSame($user->email, $event->subject_label);
+        // M11 — email masked in subject_label.
+        $this->assertNotSame($user->email, $event->subject_label);
+        $this->assertStringContainsString('*', (string) $event->subject_label);
     }
 
     public function test_record_is_idempotent_with_same_key(): void

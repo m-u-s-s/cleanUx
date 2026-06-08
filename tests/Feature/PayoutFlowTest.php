@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\Booking;
 use App\Models\ProviderPayout;
 use App\Models\ProviderProfile;
+use App\Models\ProviderWalletTransaction;
 use App\Models\User;
 use App\Services\Payments\CommissionService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -140,6 +141,85 @@ class PayoutFlowTest extends TestCase
         $this->artisan('payouts:process')
             ->assertSuccessful()
             ->expectsOutputToContain('Found 0 bookings');
+    }
+
+    /**
+     * A1 regression: a mission paid via Stripe destination charge already transferred
+     * the provider share to their Connect account at capture. Phase 2 must NOT create a
+     * second Transfer for it, even if a legacy row still carries payout_status='processed'
+     * with a null stripe_transfer_id.
+     */
+    public function test_phase2_skips_bookings_already_auto_paid_via_destination_charge(): void
+    {
+        Booking::factory()->create([
+            'status' => 'completed',
+            'devis_estime' => 100,
+            'payment_status' => 'captured',
+            'stripe_payment_intent_id' => 'pi_test_autopaid',
+            'payout_status' => 'processed',
+            'stripe_transfer_id' => null,
+            'provider_payout_cents' => 8500,
+        ]);
+
+        $this->artisan('payouts:process')
+            ->assertSuccessful()
+            ->expectsOutputToContain('No manual transfers needed');
+    }
+
+    /**
+     * A1 regression: Phase 1 must mark a captured destination-charge booking with the
+     * explicit 'auto_transferred' status so it is excluded from the Phase 2 manual transfer
+     * (which would otherwise double-pay the provider).
+     */
+    public function test_phase1_marks_captured_destination_charge_as_auto_transferred(): void
+    {
+        // No provider attached so the (separately-tracked, M5/M10) raw wallet insert path
+        // is skipped — this test isolates the Phase 1 payout_status marking behaviour.
+        $booking = Booking::factory()->create([
+            'status' => 'completed',
+            'devis_estime' => 100,
+            'payment_status' => 'captured',
+            'stripe_payment_intent_id' => 'pi_test_autopaid2',
+            'payout_status' => null,
+            'employe_id' => null,
+            'assigned_provider_user_id' => null,
+        ]);
+
+        $this->artisan('payouts:process')->assertSuccessful();
+
+        $this->assertSame('auto_transferred', $booking->fresh()->payout_status);
+    }
+
+    /**
+     * M5/M10 — Phase 1 must credit the wallet through the idempotent ProviderWalletService
+     * (the old raw insert mapped non-existent columns and never set the NOT NULL
+     * provider_user_id/direction/occurred_at, so it crashed whenever a provider was present).
+     */
+    public function test_phase1_credits_wallet_via_service_for_provider_booking(): void
+    {
+        $provider = User::factory()->employe()->create();
+        ProviderProfile::create(['user_id' => $provider->id, 'status' => 'active']);
+
+        $booking = Booking::factory()->create([
+            'status' => 'completed',
+            'employe_id' => $provider->id,
+            'devis_estime' => 100,
+            'payment_status' => 'authorized',
+            'stripe_payment_intent_id' => null,
+            'payout_status' => null,
+        ]);
+
+        $this->artisan('payouts:process')->assertSuccessful();
+
+        $this->assertSame('processed', $booking->fresh()->payout_status);
+
+        $earning = ProviderWalletTransaction::query()
+            ->where('provider_user_id', $provider->id)
+            ->where('type', ProviderWalletTransaction::TYPE_EARNING)
+            ->first();
+
+        $this->assertNotNull($earning, 'Phase 1 must credit the provider wallet via recordEarning');
+        $this->assertEqualsWithDelta(85.0, (float) $earning->amount, 0.01);
     }
 
     // ──────────────────────────────────────────────

@@ -8,11 +8,16 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\Client\IndexBookingRequest;
 use App\Http\Requests\Api\Client\StoreBookingRequest;
 use App\Models\Booking;
+use App\Models\Mission;
+use App\Models\User;
 use App\Services\Booking\ProviderSelectionResolver;
 use App\Services\Booking\ZoneCoverageService;
+use App\Services\Missions\MissionLifecycleService;
+use App\Services\Missions\MissionVerificationCodeService;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use RuntimeException;
 
 /**
  * Phase 12 — Bookings côté client mobile.
@@ -42,6 +47,11 @@ use Illuminate\Http\Request;
  */
 class ClientBookingController extends Controller
 {
+    public function __construct(
+        protected MissionLifecycleService $lifecycle,
+        protected MissionVerificationCodeService $verificationCodes,
+    ) {}
+
     /**
      * List the authenticated client's bookings.
      *
@@ -309,9 +319,100 @@ class ClientBookingController extends Controller
         ]);
     }
 
+    /**
+     * Confirm mission START by scanning the on-site verification code (E1).
+     *
+     * The client scans the 6-digit start code (shown as a QR on site). We verify the client
+     * owns the booking, validate the code, then transition the mission to started. The
+     * transition is attributed to the assigned provider so the existing lifecycle guards and
+     * notifications run unchanged.
+     *
+     * @bodyParam qr_code string required The scanned verification code. Example: 482951
+     *
+     * @response 200 {"ok": true, "mission_id": 12, "status": "started"}
+     * @response 403 {"message": "Accès refusé."}
+     * @response 422 {"ok": false, "message": "Code invalide."}
+     */
+    public function qrStart(Request $request, Booking $booking): JsonResponse
+    {
+        $this->authorizeAccess($request, $booking);
+        $data = $request->validate(['qr_code' => ['required', 'string', 'max:191']]);
+
+        [$mission, $provider] = $this->resolveMissionAndProvider($booking);
+
+        try {
+            $this->verificationCodes->consumeValidCode($mission, 'start', $data['qr_code'], $request->user());
+            $mission = $this->lifecycle->validateStartCodeFromQr($mission, $provider);
+        } catch (RuntimeException $e) {
+            return response()->json(['ok' => false, 'message' => $e->getMessage()], 422);
+        }
+
+        return response()->json([
+            'ok' => true,
+            'mission_id' => $mission->id,
+            'status' => $mission->status,
+        ]);
+    }
+
+    /**
+     * Confirm mission END by scanning the on-site verification code (E1).
+     *
+     * Validates the end code then completes the mission, which captures the pre-authorized
+     * PaymentIntent. Attributed to the assigned provider so capture + payout wiring run as
+     * in the provider-driven flow.
+     *
+     * @bodyParam qr_code string required The scanned end verification code. Example: 731204
+     *
+     * @response 200 {"ok": true, "mission_id": 12, "status": "completed"}
+     * @response 403 {"message": "Accès refusé."}
+     * @response 422 {"ok": false, "message": "Le code a expiré."}
+     */
+    public function qrEnd(Request $request, Booking $booking): JsonResponse
+    {
+        $this->authorizeAccess($request, $booking);
+        $data = $request->validate(['qr_code' => ['required', 'string', 'max:191']]);
+
+        [$mission, $provider] = $this->resolveMissionAndProvider($booking);
+
+        try {
+            // validateEndCode consumes the 'end' code and runs completeMission (which captures
+            // the pre-authorized PaymentIntent). The code is the security factor; the client
+            // owning the booking is verified above.
+            $mission = $this->lifecycle->validateEndCode($mission, $provider, $data['qr_code']);
+        } catch (RuntimeException $e) {
+            return response()->json(['ok' => false, 'message' => $e->getMessage()], 422);
+        }
+
+        return response()->json([
+            'ok' => true,
+            'mission_id' => $mission->id,
+            'status' => $mission->status,
+        ]);
+    }
+
     // ──────────────────────────────────────────────────────
     // Helpers
     // ──────────────────────────────────────────────────────
+
+    /**
+     * Resolve the latest mission of a booking and its assigned provider, or abort 422.
+     *
+     * @return array{0: Mission, 1: User}
+     */
+    protected function resolveMissionAndProvider(Booking $booking): array
+    {
+        $mission = $booking->missions()->latest()->first();
+        abort_if(! $mission, 422, 'Aucune mission associée à cette réservation.');
+
+        $providerId = $mission->lead_provider_user_id
+            ?? $mission->assignments()
+                ->whereIn('assignment_status', ['accepted', 'en_route', 'arrived'])
+                ->value('user_id');
+        $provider = $providerId ? User::find($providerId) : null;
+        abort_if(! $provider, 422, 'Aucun prestataire assigné à cette mission.');
+
+        return [$mission, $provider];
+    }
 
     /**
      * Résout la service_zone_id depuis le code postal de la requête (best-effort).

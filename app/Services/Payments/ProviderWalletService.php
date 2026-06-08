@@ -97,22 +97,11 @@ class ProviderWalletService
                 'occurred_at' => now(),
             ]);
 
-            if ($platformFee > 0) {
-                ProviderWalletTransaction::create([
-                    'provider_user_id' => $providerId,
-                    'type' => ProviderWalletTransaction::TYPE_PLATFORM_FEE,
-                    'direction' => ProviderWalletTransaction::DIRECTION_DEBIT,
-                    'amount' => $platformFee,
-                    'currency' => $currency,
-                    'status' => ProviderWalletTransaction::STATUS_AVAILABLE,
-                    'source_type' => 'booking',
-                    'source_id' => $booking->id,
-                    'stripe_payment_intent_id' => $intent['id'] ?? $booking->stripe_payment_intent_id,
-                    'idempotency_key' => $idempotencyKey.':platform_fee',
-                    'description' => 'Commission plateforme',
-                    'occurred_at' => now(),
-                ]);
-            }
+            // M4 — do NOT debit the platform fee here. provider_amount_cents is already the NET
+            // (total − commission), which is exactly what Stripe transfers to the Connect account
+            // via the destination charge. The previous extra TYPE_PLATFORM_FEE debit made the
+            // wallet balance = net − fee = total − 2×commission, systematically under-crediting the
+            // provider. Crediting net only keeps the internal wallet consistent with the real payout.
 
             ActivityLogger::log('wallet.earning_recorded', $booking, [
                 'provider_user_id' => $providerId,

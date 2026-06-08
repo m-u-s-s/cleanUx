@@ -72,6 +72,25 @@ class InsuranceWebhookTest extends TestCase
         Queue::assertPushed(ProcessInsuranceWebhookJob::class, 1);
     }
 
+    /** L6 — a payload without an event id must dedupe on replay via a deterministic hash. */
+    public function test_idless_payload_dedupes_on_replay(): void
+    {
+        Queue::fake();
+
+        $payload = [
+            'event_type' => 'policy.updated',
+            'target' => 'policy',
+            'external_id' => 'mock_pol_noid',
+            'status' => 'active',
+            // intentionally no event_id / id / external_event_id
+        ];
+
+        $this->postJson('/webhooks/insurance/mock', $payload)->assertOk();
+        $this->postJson('/webhooks/insurance/mock', $payload)->assertOk();
+
+        $this->assertSame(1, InsuranceWebhookEvent::count(), 'identical id-less payloads must dedupe');
+    }
+
     public function test_processing_webhook_applies_status_to_existing_policy(): void
     {
         $user = User::factory()->client()->create();

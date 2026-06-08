@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\MissionQualityInspection;
 use App\Models\QualityChecklistItem;
 use App\Services\Quality\QualityInspectionService;
+use App\Support\Quality\QualityInspectionAccess;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
@@ -21,6 +22,12 @@ class QualityInspectionController extends Controller
 
     public function index(Request $request, int $mission): JsonResponse
     {
+        abort_unless(
+            QualityInspectionAccess::providerCanAccessMission($request->user(), $mission),
+            403,
+            'Vous n\'êtes pas assigné à cette mission.'
+        );
+
         $rows = MissionQualityInspection::query()
             ->forMission($mission)
             ->with('checklist:id,code,name,phase')
@@ -36,6 +43,12 @@ class QualityInspectionController extends Controller
             'phase' => ['required', 'string', 'max:16'],
             'booking_id' => ['nullable', 'integer'],
         ]);
+
+        abort_unless(
+            QualityInspectionAccess::providerCanAccessMission($request->user(), $mission, $data['booking_id'] ?? null),
+            403,
+            'Vous n\'êtes pas assigné à cette mission.'
+        );
 
         try {
             $inspection = $this->svc->start(
@@ -55,6 +68,8 @@ class QualityInspectionController extends Controller
 
     public function show(Request $request, MissionQualityInspection $inspection): JsonResponse
     {
+        $this->authorize('viewProvider', $inspection);
+
         $inspection->load(['checklist.items', 'items', 'photos', 'signatures']);
 
         return response()->json(['data' => $inspection]);
@@ -62,6 +77,8 @@ class QualityInspectionController extends Controller
 
     public function submitItem(Request $request, MissionQualityInspection $inspection, QualityChecklistItem $checklistItem): JsonResponse
     {
+        $this->authorize('manageProvider', $inspection);
+
         $data = $request->validate([
             'value' => ['required', 'array'],
             'comment' => ['nullable', 'string', 'max:2000'],
@@ -84,6 +101,8 @@ class QualityInspectionController extends Controller
 
     public function uploadPhoto(Request $request, MissionQualityInspection $inspection): JsonResponse
     {
+        $this->authorize('manageProvider', $inspection);
+
         $data = $request->validate([
             'photo' => ['required', 'file', 'mimes:jpg,jpeg,png,webp,heic', 'max:16384'],
             'photo_type' => ['required', 'in:before,during,after,defect,signature_proof'],
@@ -108,6 +127,8 @@ class QualityInspectionController extends Controller
 
     public function submit(Request $request, MissionQualityInspection $inspection): JsonResponse
     {
+        $this->authorize('manageProvider', $inspection);
+
         try {
             $row = $this->svc->submit($inspection, $request->user());
         } catch (ValidationException $e) {

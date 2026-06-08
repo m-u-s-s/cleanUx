@@ -4,6 +4,7 @@ namespace App\Console\Commands;
 
 use App\Models\Booking;
 use App\Services\Payments\CommissionService;
+use App\Services\Payments\ProviderWalletService;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -17,7 +18,7 @@ class ProcessProviderPayouts extends Command
 
     protected $description = 'Process pending provider payouts for completed bookings';
 
-    public function handle(CommissionService $commission): int
+    public function handle(CommissionService $commission, ProviderWalletService $wallet): int
     {
         $dryRun = (bool) $this->option('dry-run');
 
@@ -61,67 +62,46 @@ class ProcessProviderPayouts extends Command
                 ));
             } else {
                 try {
-                    DB::transaction(function () use ($booking, $calc) {
+                    DB::transaction(function () use ($booking, $calc, $wallet) {
+                        // M10 — re-fetch under a row lock to close the TOCTOU window between the
+                        // unlocked ->get() above and this update (a concurrent manual run could
+                        // otherwise process the same booking twice). Skip if already processed.
+                        $locked = Booking::query()->whereKey($booking->id)->lockForUpdate()->first();
+                        if (! $locked || $locked->payout_status !== null) {
+                            return;
+                        }
+
+                        // A booking captured via Stripe destination charge has already had
+                        // the provider share transferred to their Connect account at capture
+                        // time. Mark it 'auto_transferred' so Phase 2 below never re-transfers
+                        // it (double payment). Only bookings that were NOT auto-paid this way
+                        // stay 'processed' and remain eligible for a manual Phase 2 transfer.
+                        $autoTransferred = $locked->payment_status === 'captured'
+                            && ! empty($locked->stripe_payment_intent_id);
+
                         $updates = [
-                            'payout_status' => 'processed',
+                            'payout_status' => $autoTransferred ? 'auto_transferred' : 'processed',
                             'platform_fee_cents' => $calc['platform_fee_cents'],
                         ];
 
-                        // Map to whichever column exists
+                        // Populate both payout columns when present so the wallet service (which
+                        // reads provider_amount_cents) credits the correct net amount.
                         if (Schema::hasColumn('bookings', 'provider_payout_cents')) {
                             $updates['provider_payout_cents'] = $calc['provider_payout_cents'];
-                        } elseif (Schema::hasColumn('bookings', 'provider_amount_cents')) {
+                        }
+                        if (Schema::hasColumn('bookings', 'provider_amount_cents')) {
                             $updates['provider_amount_cents'] = $calc['provider_payout_cents'];
                         }
 
-                        $booking->fill($updates)->save();
+                        $locked->fill($updates)->save();
 
-                        // Soft-insert into wallet ledger if table exists
-                        if (Schema::hasTable('provider_wallet_transactions')) {
-                            $providerId = $booking->assigned_provider_user_id
-                                ?? $booking->employe_id
-                                ?? null;
-
-                            if ($providerId) {
-                                $cols = DB::getSchemaBuilder()->getColumnListing('provider_wallet_transactions');
-
-                                $row = [
-                                    'created_at' => now(),
-                                    'updated_at' => now(),
-                                ];
-
-                                // Map flexible column names
-                                if (in_array('user_id', $cols)) {
-                                    $row['user_id'] = $providerId;
-                                }
-                                if (in_array('provider_id', $cols)) {
-                                    $row['provider_id'] = $providerId;
-                                }
-                                if (in_array('booking_id', $cols)) {
-                                    $row['booking_id'] = $booking->id;
-                                }
-                                if (in_array('type', $cols)) {
-                                    $row['type'] = 'earning';
-                                }
-                                if (in_array('amount', $cols)) {
-                                    $row['amount'] = $calc['provider_payout_cents'] / 100;
-                                }
-                                if (in_array('amount_cents', $cols)) {
-                                    $row['amount_cents'] = $calc['provider_payout_cents'];
-                                }
-                                if (in_array('currency', $cols)) {
-                                    $row['currency'] = 'eur';
-                                }
-                                if (in_array('description', $cols)) {
-                                    $row['description'] = "Paiement mission #{$booking->id}";
-                                }
-                                if (in_array('status', $cols)) {
-                                    $row['status'] = 'available';
-                                }
-
-                                DB::table('provider_wallet_transactions')->insert($row);
-                            }
-                        }
+                        // M5 — credit the wallet through the idempotent service instead of a raw
+                        // insert. The previous raw insert mapped non-existent columns
+                        // (user_id/provider_id/amount_cents) and never set the NOT NULL columns
+                        // provider_user_id/direction/occurred_at, so it actually failed whenever a
+                        // provider was present; recordEarning() dedupes via idempotency_key and
+                        // keeps the ledger consistent with completeMission().
+                        $wallet->recordEarning($locked);
                     });
                     $processed++;
                 } catch (\Throwable $e) {
@@ -160,6 +140,15 @@ class ProcessProviderPayouts extends Command
 
         $pendingTransfers = Booking::where('payout_status', 'processed')
             ->whereNull('stripe_transfer_id')
+            // Defense-in-depth: never manually transfer a booking that was already paid
+            // via a Stripe destination charge (provider auto-credited at capture). Such a
+            // booking has a captured PaymentIntent. This excludes legacy 'processed' rows
+            // written before A1 was fixed, in addition to the 'auto_transferred' marking.
+            ->where(function ($q) {
+                $q->where('payment_status', '!=', 'captured')
+                    ->orWhereNull('payment_status')
+                    ->orWhereNull('stripe_payment_intent_id');
+            })
             ->with(['employe', 'assignedProvider'])
             ->get();
 
@@ -203,15 +192,22 @@ class ProcessProviderPayouts extends Command
                 try {
                     Stripe::setApiKey($stripeKey);
 
-                    $transfer = Transfer::create([
-                        'amount' => $payoutCents,
-                        'currency' => 'eur',
-                        'destination' => $connectId,
-                        'metadata' => [
-                            'booking_id' => $booking->id,
-                            'type' => 'manual_payout',
+                    // Deterministic idempotency key: if the process crashes between Stripe
+                    // creating the transfer and the local DB update below, the next run
+                    // re-selects this booking and calls Transfer::create again — Stripe then
+                    // returns the SAME transfer instead of creating a second real one. (A2)
+                    $transfer = Transfer::create(
+                        [
+                            'amount' => $payoutCents,
+                            'currency' => 'eur',
+                            'destination' => $connectId,
+                            'metadata' => [
+                                'booking_id' => $booking->id,
+                                'type' => 'manual_payout',
+                            ],
                         ],
-                    ]);
+                        ['idempotency_key' => 'payout:booking:'.$booking->id]
+                    );
 
                     $booking->update([
                         'stripe_transfer_id' => $transfer->id,

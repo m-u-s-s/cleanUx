@@ -6,7 +6,7 @@ import { offlineQueue } from '../lib/offlineQueue';
 async function flushIfOnline(): Promise<void> {
   const netState = await NetInfo.fetch();
   if (netState.isConnected) {
-    const result = await offlineQueue.flush(fetch);
+    const result = await offlineQueue.flush();
     if (result.success > 0) {
       console.log(`[offlineSync] Synced ${result.success} queued action(s)`);
     }

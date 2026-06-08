@@ -68,7 +68,7 @@ trait HandlesBookingCreation
         $photoPaths = [];
 
         foreach ($this->photos as $photo) {
-            $photoPaths[] = $photo->store('rendezvous/references', 'public');
+            $photoPaths[] = $photo->store('rendezvous/references', 'private');
         }
 
         $bookingReference = $this->makeReference($this->is_recurrent ? 'CUXR' : 'CUX');

@@ -11,7 +11,6 @@ use App\Services\Sms\SmsProviderInterface;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Str;
 
 /**
  * Webhook DLR SMS — pattern hardening Stripe / KYC.
@@ -57,7 +56,9 @@ class SmsWebhookController extends Controller
             ?? null;
 
         if (! $externalEventId) {
-            $externalEventId = $provider.'_'.Str::lower(Str::random(16));
+            // L6 — deterministic fallback so re-sent identical payloads dedupe instead of being
+            // reprocessed under a fresh random id.
+            $externalEventId = $provider.'_'.hash('sha256', (string) $payload);
         }
 
         $stored = SmsWebhookEvent::firstOrCreate(

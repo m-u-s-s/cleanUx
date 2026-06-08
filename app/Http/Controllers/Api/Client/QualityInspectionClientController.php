@@ -20,6 +20,8 @@ class QualityInspectionClientController extends Controller
 
     public function show(Request $request, MissionQualityInspection $inspection): JsonResponse
     {
+        $this->authorize('viewClient', $inspection);
+
         $inspection->load(['checklist.items', 'items', 'photos']);
 
         return response()->json(['data' => $inspection]);
@@ -27,6 +29,8 @@ class QualityInspectionClientController extends Controller
 
     public function validate_(Request $request, MissionQualityInspection $inspection): JsonResponse
     {
+        $this->authorize('validateClient', $inspection);
+
         $data = $request->validate([
             'signature_data' => ['nullable', 'string', 'max:65536'],
             'signer_name' => ['nullable', 'string', 'max:191'],
@@ -50,6 +54,8 @@ class QualityInspectionClientController extends Controller
 
     public function dispute(Request $request, MissionQualityInspection $inspection): JsonResponse
     {
+        $this->authorize('disputeClient', $inspection);
+
         $data = $request->validate([
             'reason' => ['required', 'string', 'min:10', 'max:2000'],
         ]);

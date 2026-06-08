@@ -68,7 +68,7 @@ class LitigesClient extends Component
 
         foreach ($this->photos as $photo) {
             $attachments[] = [
-                'path' => $photo->store('claims', 'public'),
+                'path' => $photo->store('claims', 'private'),
                 'original_name' => $photo->getClientOriginalName(),
             ];
         }

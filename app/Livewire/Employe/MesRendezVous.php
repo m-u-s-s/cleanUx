@@ -268,7 +268,7 @@ class MesRendezVous extends Component
         $storedPhotos = $rdv->photos_avant ?? [];
 
         foreach ($this->photos_avant as $photo) {
-            $storedPhotos[] = $photo->store('rendezvous/photos-avant', 'public');
+            $storedPhotos[] = $photo->store('rendezvous/photos-avant', 'private');
         }
 
         $original = [
@@ -356,7 +356,7 @@ class MesRendezVous extends Component
         }
 
         $path = 'rendezvous/signatures/'.Str::uuid().'.'.$extension;
-        Storage::disk('public')->put($path, $binary);
+        Storage::disk('private')->put($path, $binary); // M3 — client signature is private
 
         return $path;
     }
@@ -378,7 +378,7 @@ class MesRendezVous extends Component
         $storedPhotos = $rdv->photos_apres ?? [];
 
         foreach ($this->photos_apres as $photo) {
-            $storedPhotos[] = $photo->store('rendezvous/photos-apres', 'public');
+            $storedPhotos[] = $photo->store('rendezvous/photos-apres', 'private');
         }
 
         $signaturePath = $this->storeSignatureFromDataUrl($this->client_signature_data);

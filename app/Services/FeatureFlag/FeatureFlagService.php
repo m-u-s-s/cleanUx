@@ -2,7 +2,10 @@
 
 namespace App\Services\FeatureFlag;
 
+use App\Models\FeatureFlagOverride;
 use App\Models\User;
+use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Schema;
 
 /**
  * Simple feature flag service.
@@ -22,8 +25,18 @@ use App\Models\User;
  */
 class FeatureFlagService
 {
+    /** @var Collection<string,bool>|null memoised admin overrides (per resolved instance) */
+    private ?Collection $overrides = null;
+
     public function isEnabled(string $feature, ?User $user = null): bool
     {
+        // M18 — an admin DB override (kill-switch / force-on from FeatureFlagsManager) wins over
+        // the config file, so toggling a flag in the admin UI actually takes effect at runtime.
+        $override = $this->overrides()->get($feature);
+        if ($override !== null) {
+            return $override;
+        }
+
         $flags = config('features', []);
 
         if (! array_key_exists($feature, $flags)) {
@@ -66,6 +79,31 @@ class FeatureFlagService
         }
 
         return false;
+    }
+
+    /**
+     * Admin overrides keyed by flag, loaded once per resolved instance (the service is a
+     * per-request singleton). Soft-fails to an empty set if the table is absent.
+     *
+     * @return Collection<string,bool>
+     */
+    private function overrides(): Collection
+    {
+        if ($this->overrides !== null) {
+            return $this->overrides;
+        }
+
+        try {
+            if (! Schema::hasTable('feature_flag_overrides')) {
+                return $this->overrides = collect();
+            }
+
+            return $this->overrides = FeatureFlagOverride::query()
+                ->pluck('is_enabled', 'flag_key')
+                ->map(fn ($v) => (bool) $v);
+        } catch (\Throwable $e) {
+            return $this->overrides = collect();
+        }
     }
 
     /** Deterministic bucket: same user always falls in same side of the rollout. */

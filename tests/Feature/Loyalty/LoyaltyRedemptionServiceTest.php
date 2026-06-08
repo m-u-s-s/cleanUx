@@ -32,9 +32,6 @@ class LoyaltyRedemptionServiceTest extends TestCase
 
     protected function seedBalance(User $user, int $points, string $tier = 'bronze'): void
     {
-        if (! Schema::hasTable('loyalty_accounts')) {
-            $this->markTestSkipped('loyalty_accounts table missing');
-        }
         $tierId = DB::table('loyalty_tiers')->where('slug', $tier)->value('id');
         DB::table('loyalty_accounts')->updateOrInsert(
             ['user_id' => $user->id],

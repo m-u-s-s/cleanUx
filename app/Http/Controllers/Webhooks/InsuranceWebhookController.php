@@ -12,7 +12,6 @@ use App\Services\Insurance\Providers\WakamInsuranceProvider;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Str;
 
 class InsuranceWebhookController extends Controller
 {
@@ -40,7 +39,8 @@ class InsuranceWebhookController extends Controller
         $externalEventId = $parsed['event_id']
             ?? $parsed['id']
             ?? $parsed['external_event_id']
-            ?? ($provider.'_'.Str::lower(Str::random(16)));
+            // L6 — deterministic fallback so re-sent identical payloads dedupe.
+            ?? ($provider.'_'.hash('sha256', (string) $payload));
 
         $stored = InsuranceWebhookEvent::firstOrCreate(
             ['provider' => $provider, 'external_event_id' => (string) $externalEventId],

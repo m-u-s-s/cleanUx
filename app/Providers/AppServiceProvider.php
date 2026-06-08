@@ -46,6 +46,9 @@ class AppServiceProvider extends ServiceProvider
         $this->app->singleton(LlmProvider::class, AnthropicProvider::class);
         $this->app->singleton(AnthropicStreamingProvider::class);
 
+        // Feature flags — singleton so the DB-override lookup is memoised per request (M18).
+        $this->app->singleton(FeatureFlagService::class);
+
         // Monetisation — singletons for stateless calculators
         $this->app->singleton(CommissionService::class);
         $this->app->singleton(StripeCountryMapper::class);
@@ -116,6 +119,12 @@ class AppServiceProvider extends ServiceProvider
         // Feature flags — Blade directive: @feature('flag') / @endfeature
         Blade::if('feature', function (string $flag): bool {
             return app(FeatureFlagService::class)->isEnabled($flag, auth()->user());
+        });
+
+        // M3 — @mediaUrl($path): signed URL to the authenticated private-media route. Use for
+        // mission/dispute photos instead of asset('storage/'.$path).
+        Blade::directive('mediaUrl', function (string $expr): string {
+            return "<?php echo e(\\App\\Support\\Media\\PrivateMedia::url({$expr})); ?>";
         });
     }
 }

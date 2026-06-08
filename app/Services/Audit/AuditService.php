@@ -273,7 +273,7 @@ class AuditService
                 return [
                     'type' => AuditEvent::ACTOR_USER,
                     'id' => $authedUser->id,
-                    'label' => Str::limit((string) ($authedUser->email ?? $authedUser->name ?? ''), 191, ''),
+                    'label' => $this->maskLabel((string) ($authedUser->email ?? $authedUser->name ?? '')),
                 ];
             }
 
@@ -284,7 +284,7 @@ class AuditService
             return [
                 'type' => AuditEvent::ACTOR_USER,
                 'id' => $actor->id,
-                'label' => Str::limit((string) ($actor->email ?? $actor->name ?? ''), 191, ''),
+                'label' => $this->maskLabel((string) ($actor->email ?? $actor->name ?? '')),
             ];
         }
 
@@ -321,11 +321,33 @@ class AuditService
     {
         foreach (['email', 'code', 'name', 'reference', 'booking_reference', 'policy_number'] as $attr) {
             if (isset($subject->{$attr}) && $subject->{$attr}) {
-                return Str::limit((string) $subject->{$attr}, 191, '');
+                return $this->maskLabel((string) $subject->{$attr});
             }
         }
 
         return null;
+    }
+
+    /**
+     * M11 — never persist a full email in actor_label / subject_label (these columns are not
+     * covered by the context redaction and audit rows are retained for years). Mask the local
+     * part of any email while keeping the domain so the label stays recognisable for admins;
+     * the authoritative link to the user remains actor_id / subject_id. Non-email labels
+     * (codes, references) are returned unchanged.
+     */
+    protected function maskLabel(?string $value): ?string
+    {
+        if ($value === null || $value === '') {
+            return $value;
+        }
+
+        if (str_contains($value, '@')) {
+            [$local, $domain] = explode('@', $value, 2);
+            $keep = mb_substr($local, 0, 2);
+            $value = $keep.str_repeat('*', max(1, mb_strlen($local) - mb_strlen($keep))).'@'.$domain;
+        }
+
+        return Str::limit($value, 191, '');
     }
 
     /**

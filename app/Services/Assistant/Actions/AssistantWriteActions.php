@@ -94,7 +94,9 @@ class AssistantWriteActions
             ->first();
 
         if (! $booking) {
-            return "Réservation introuvable, déjà annulée, ou vous n'y avez pas accès.";
+            // Prefix with "Erreur" so the executor records the action as FAILED, not EXECUTED:
+            // an already-cancelled / inaccessible booking is a non-success outcome.
+            return "Erreur : réservation introuvable, déjà annulée, ou vous n'y avez pas accès.";
         }
 
         $booking->update(['status' => 'annule']);

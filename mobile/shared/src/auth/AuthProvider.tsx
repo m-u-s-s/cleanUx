@@ -1,6 +1,7 @@
 import React, { createContext, useCallback, useEffect, useState } from 'react';
 import { secureStore } from '@/storage/secureStore';
 import { apiClient } from '@/api';
+import { onSessionExpired } from '@/api/client';
 import type { User } from '@/api/types';
 
 interface AuthContextValue {
@@ -34,6 +35,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setIsLoading(false);
     })();
   }, []);
+
+  // M17 — when the interceptor gives up refreshing an expired session, drop the local user
+  // so the UI returns to the logged-out state instead of looping failed requests.
+  useEffect(() => onSessionExpired(() => setUser(null)), []);
 
   const logout = useCallback(async () => {
     try { await apiClient.post('/auth/logout'); } catch {}

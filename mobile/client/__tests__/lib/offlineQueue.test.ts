@@ -29,10 +29,11 @@ describe('offlineQueue', () => {
     expect(queue).toEqual([]);
   });
 
-  it('flush calls fetchFn and clears successful actions', async () => {
+  it('flush calls the sender with the action and clears successful actions', async () => {
     await offlineQueue.enqueue({ url: '/api/ok', method: 'POST', body: {} });
-    const mockFetch = jest.fn().mockResolvedValue({ ok: true });
-    const { success, failed } = await offlineQueue.flush(mockFetch as any);
+    const sender = jest.fn().mockResolvedValue(true);
+    const { success, failed } = await offlineQueue.flush(sender as any);
+    expect(sender).toHaveBeenCalledWith(expect.objectContaining({ url: '/api/ok', method: 'POST' }));
     expect(success).toBe(1);
     expect(failed).toBe(0);
     expect(await offlineQueue.getAll()).toHaveLength(0);
@@ -40,17 +41,17 @@ describe('offlineQueue', () => {
 
   it('flush keeps failed actions in queue', async () => {
     await offlineQueue.enqueue({ url: '/api/fail', method: 'POST', body: {} });
-    const mockFetch = jest.fn().mockResolvedValue({ ok: false, status: 500 });
-    const { success, failed } = await offlineQueue.flush(mockFetch as any);
+    const sender = jest.fn().mockResolvedValue(false);
+    const { success, failed } = await offlineQueue.flush(sender as any);
     expect(success).toBe(0);
     expect(failed).toBe(1);
     expect(await offlineQueue.getAll()).toHaveLength(1);
   });
 
-  it('flush handles network errors gracefully', async () => {
+  it('flush handles sender errors gracefully', async () => {
     await offlineQueue.enqueue({ url: '/api/err', method: 'DELETE', body: null });
-    const mockFetch = jest.fn().mockRejectedValue(new Error('Network error'));
-    const { success, failed } = await offlineQueue.flush(mockFetch as any);
+    const sender = jest.fn().mockRejectedValue(new Error('Network error'));
+    const { success, failed } = await offlineQueue.flush(sender as any);
     expect(success).toBe(0);
     expect(failed).toBe(1);
   });

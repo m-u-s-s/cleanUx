@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { View, Text, Alert, StyleSheet } from 'react-native';
 import { useStripe } from '@stripe/stripe-react-native';
 import { Screen, Button, KPICard } from '@/ui';
@@ -16,24 +16,39 @@ export function PaymentCheckoutScreen({ route, navigation }: Props) {
   const paymentIntent = usePaymentIntent(bookingId);
   const { initPaymentSheet, presentPaymentSheet } = useStripe();
   const [ready, setReady] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [initializing, setInitializing] = useState(true);
 
-  useEffect(() => {
-    (async () => {
-      try {
-        const { client_secret } = await paymentIntent.mutateAsync();
-        const { error } = await initPaymentSheet({
-          paymentIntentClientSecret: client_secret,
-          merchantDisplayName: 'CleanUx',
-          style: 'automatic',
-          defaultBillingDetails: { email: '' },
-        });
-        if (!error) setReady(true);
-      } catch {
-        // silently fail — button stays disabled
+  // L8 — surface init failures (PaymentIntent creation / sheet init) with a retry instead of
+  // leaving the button on a permanent "Chargement..." spinner.
+  const initialize = useCallback(async () => {
+    setInitializing(true);
+    setError(null);
+    setReady(false);
+    try {
+      const { client_secret } = await paymentIntent.mutateAsync();
+      const { error: sheetError } = await initPaymentSheet({
+        paymentIntentClientSecret: client_secret,
+        merchantDisplayName: 'CleanUx',
+        style: 'automatic',
+        defaultBillingDetails: { email: '' },
+      });
+      if (sheetError) {
+        setError(sheetError.message ?? 'Impossible de préparer le paiement.');
+      } else {
+        setReady(true);
       }
-    })();
+    } catch (e: any) {
+      setError(e?.message ?? 'Impossible de préparer le paiement. Vérifiez votre connexion.');
+    } finally {
+      setInitializing(false);
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [bookingId]);
+
+  useEffect(() => {
+    void initialize();
+  }, [initialize]);
 
   const handlePay = async () => {
     const { error } = await presentPaymentSheet();
@@ -57,14 +72,21 @@ export function PaymentCheckoutScreen({ route, navigation }: Props) {
           )}
         </View>
       )}
-      <Button
-        label={ready ? 'Payer maintenant' : 'Chargement...'}
-        onPress={handlePay}
-        disabled={!ready}
-        loading={!ready}
-        fullWidth
-        size="lg"
-      />
+      {error ? (
+        <View>
+          <Text style={styles.error} accessibilityRole="alert">{error}</Text>
+          <Button label="Réessayer" onPress={() => void initialize()} fullWidth size="lg" />
+        </View>
+      ) : (
+        <Button
+          label={ready ? 'Payer maintenant' : 'Chargement...'}
+          onPress={handlePay}
+          disabled={!ready}
+          loading={initializing}
+          fullWidth
+          size="lg"
+        />
+      )}
     </Screen>
   );
 }
@@ -81,5 +103,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     gap: spacing.sm,
     marginBottom: spacing.xl,
+  },
+  error: {
+    color: colors.danger?.[600] ?? '#dc2626',
+    fontSize: typography.fontSize.sm,
+    marginBottom: spacing.md,
+    textAlign: 'center',
   },
 });

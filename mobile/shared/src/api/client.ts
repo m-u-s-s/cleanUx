@@ -5,6 +5,30 @@ import { env } from '@/config/env';
 
 const BASE_URL = env.apiUrl;
 
+// M17 — let the app react to an irrecoverable session loss. The 401-refresh interceptor
+// clears the token but cannot touch React state; AuthProvider subscribes here to reset the
+// user (so the UI doesn't stay "logged in" while every request 401s until app restart).
+type SessionListener = () => void;
+const sessionExpiredListeners = new Set<SessionListener>();
+
+export function onSessionExpired(listener: SessionListener): () => void {
+  sessionExpiredListeners.add(listener);
+
+  return () => {
+    sessionExpiredListeners.delete(listener);
+  };
+}
+
+function emitSessionExpired(): void {
+  sessionExpiredListeners.forEach((listener) => {
+    try {
+      listener();
+    } catch {
+      // a listener throwing must not break the interceptor chain
+    }
+  });
+}
+
 export const apiClient = axios.create({
   baseURL: BASE_URL,
   headers: {
@@ -72,6 +96,7 @@ apiClient.interceptors.response.use(
         return apiClient(originalConfig);
       } catch {
         await secureStore.clearToken();
+        emitSessionExpired();
         throw new ApiError(401, 'session_expired', 'Your session has expired. Please log in again.');
       }
     }
