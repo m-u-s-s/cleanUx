@@ -3,6 +3,7 @@
 namespace App\Notifications;
 
 use App\Models\Mission;
+use App\Support\Media\PrivateMedia;
 use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
@@ -30,7 +31,7 @@ class MissionCompletedNotification extends Notification
             ->line('Votre rapport de mission est disponible.')
             // M3 — report is on the private disk; link via a longer-lived signed URL (7 days),
             // still behind auth (login is preserved through the signed-route redirect).
-            ->action('Télécharger le rapport', \App\Support\Media\PrivateMedia::url($this->mission->report_path, 60 * 24 * 7) ?? url('/client/dashboard'));
+            ->action('Télécharger le rapport', PrivateMedia::url($this->mission->report_path, 60 * 24 * 7) ?? url('/client/dashboard'));
     }
 
     public function toArray(object $notifiable): array

@@ -1,0 +1,5 @@
+<svg viewBox="0 0 256 256" width="256" height="256" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="brio monochrome mark">
+  <!-- Single-colour mark. Recolour by changing fill (e.g. #0f172a on light, #ffffff on dark). -->
+  <rect width="256" height="256" rx="58" fill="none"/>
+  <path d="M128 40 C134 100 152 118 216 124 C152 130 134 148 128 208 C122 148 104 130 40 124 C104 118 122 100 128 40 Z" fill="#0f172a"/>
+</svg>

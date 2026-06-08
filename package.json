@@ -4,7 +4,7 @@
     "scripts": {
         "dev": "vite",
         "build": "vite build",
-        "prepare": "husky",
+        "prepare": "husky || true",
         "lint": "eslint resources/js/",
         "lint:fix": "eslint resources/js/ --fix",
         "format": "prettier --write resources/",

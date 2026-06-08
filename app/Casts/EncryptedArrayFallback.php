@@ -11,10 +11,14 @@ use Illuminate\Support\Facades\Crypt;
  * gracefully — so enabling the cast on a column that already holds unencrypted JSON does not
  * break existing rows (avoids DecryptException during the transition before the backfill runs).
  *
- * @implements CastsAttributes<array|null, array|null>
+ * @implements CastsAttributes<array<array-key, mixed>|null, array<array-key, mixed>|null>
  */
 class EncryptedArrayFallback implements CastsAttributes
 {
+    /**
+     * @param  array<string, mixed>  $attributes
+     * @return array<array-key, mixed>|null
+     */
     public function get(Model $model, string $key, mixed $value, array $attributes): ?array
     {
         if ($value === null || $value === '') {
@@ -33,12 +37,15 @@ class EncryptedArrayFallback implements CastsAttributes
         return is_array($decoded) ? $decoded : null;
     }
 
+    /**
+     * @param  array<string, mixed>  $attributes
+     */
     public function set(Model $model, string $key, mixed $value, array $attributes): ?string
     {
         if ($value === null) {
             return null;
         }
 
-        return Crypt::encryptString(json_encode($value));
+        return Crypt::encryptString((string) json_encode($value));
     }
 }

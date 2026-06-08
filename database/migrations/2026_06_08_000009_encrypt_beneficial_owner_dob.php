@@ -42,7 +42,7 @@ return new class extends Migration
                         Crypt::decryptString($raw); // already encrypted → skip
 
                         continue;
-                    } catch (\Throwable $e) {
+                    } catch (Throwable $e) {
                         DB::table('business_beneficial_owners')
                             ->where('id', $row->id)
                             ->update(['date_of_birth' => Crypt::encryptString((string) $raw)]);

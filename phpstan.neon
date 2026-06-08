@@ -6,6 +6,11 @@ parameters:
     paths:
         - app/
     level: 6
+    # Tolerate baseline entries that no longer match: the baseline drifts across PHP versions
+    # (CI runs 8.4, devs may run 8.5 — string-increment inference differs) and when dead code is
+    # removed (e.g. the L9 CancellationFeeCalculator methods). Without this, such stale entries
+    # fail the build as ignore.unmatched even though there is no real error.
+    reportUnmatchedIgnoredErrors: false
     ignoreErrors:
         - '#Call to an undefined method Illuminate\\Database\\Eloquent\\Builder#'
     excludePaths:

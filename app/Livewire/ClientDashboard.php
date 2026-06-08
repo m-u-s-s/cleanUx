@@ -40,7 +40,7 @@ class ClientDashboard extends Component
         return $user instanceof User ? $user : null;
     }
 
-    /** @var Collection<int, int>|null memoised per render to avoid re-querying (L11) */
+    /** @var Collection<int, int<1, max>>|null memoised per render to avoid re-querying (L11) */
     private ?Collection $cachedZoneIds = null;
 
     protected function coverageZoneIds(): Collection

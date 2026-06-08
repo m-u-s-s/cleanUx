@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Assistant\AssistantStreamController;
+use App\Http\Controllers\MediaController;
 use App\Http\Controllers\Messaging\AttachmentDownloadController;
 use App\Http\Controllers\PresenceController;
 use App\Livewire\NotificationsCenter;
@@ -82,7 +83,7 @@ Route::middleware('auth')->group(function () {
 
     // M3 — authenticated streaming of mission/dispute photos on the private disk, via a
     // short-lived signed URL (replaces the old public /storage/* links).
-    Route::get('/media/private', [\App\Http\Controllers\MediaController::class, 'show'])
+    Route::get('/media/private', [MediaController::class, 'show'])
         ->middleware('signed')
         ->name('media.private.show');
 });

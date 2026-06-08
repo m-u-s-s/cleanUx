@@ -3,6 +3,7 @@
 namespace Tests\Feature\Kyc;
 
 use App\Models\BusinessBeneficialOwner;
+use Database\Factories\BusinessEntityFactory;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Tests\TestCase;
@@ -17,7 +18,7 @@ class BeneficialOwnerDobEncryptionTest extends TestCase
 
     public function test_dob_is_encrypted_at_rest_and_round_trips(): void
     {
-        $entityId = \Database\Factories\BusinessEntityFactory::new()->create()->id;
+        $entityId = BusinessEntityFactory::new()->create()->id;
 
         $owner = BusinessBeneficialOwner::create([
             'entity_id' => $entityId,
@@ -34,7 +35,7 @@ class BeneficialOwnerDobEncryptionTest extends TestCase
 
     public function test_legacy_plaintext_is_readable_then_backfilled(): void
     {
-        $entityId = \Database\Factories\BusinessEntityFactory::new()->create()->id;
+        $entityId = BusinessEntityFactory::new()->create()->id;
 
         $id = DB::table('business_beneficial_owners')->insertGetId([
             'entity_id' => $entityId,

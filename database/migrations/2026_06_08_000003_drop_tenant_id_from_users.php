@@ -41,7 +41,7 @@ return new class extends Migration
     {
         try {
             return collect(Schema::getIndexes($table))->contains(fn ($i) => $i['name'] === $index);
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             return false;
         }
     }

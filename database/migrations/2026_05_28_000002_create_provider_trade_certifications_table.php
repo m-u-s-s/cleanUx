@@ -28,7 +28,10 @@ return new class extends Migration
             $table->json('metadata')->nullable();
             $table->timestamps();
 
-            $table->unique(['user_id', 'trade_id', 'certification_type']);
+            // Explicit short name: the auto-generated name
+            // (provider_trade_certifications_user_id_trade_id_certification_type_unique, 72 chars)
+            // exceeds MySQL's 64-char identifier limit (SQLSTATE 1059). (issue #3)
+            $table->unique(['user_id', 'trade_id', 'certification_type'], 'ptc_user_trade_type_unique');
         });
     }
 

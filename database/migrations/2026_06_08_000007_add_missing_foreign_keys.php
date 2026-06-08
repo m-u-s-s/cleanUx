@@ -51,7 +51,7 @@ return new class extends Migration
                         ->references('id')->on($fk['references'])
                         ->{$fk['onDelete']}();
                 });
-            } catch (\Throwable $e) {
+            } catch (Throwable $e) {
                 // FK already exists or engine rejected it — skip without failing the migration.
             }
         }
@@ -71,7 +71,7 @@ return new class extends Migration
                 Schema::table($fk['table'], function (Blueprint $table) use ($fk) {
                     $table->dropForeign([$fk['column']]);
                 });
-            } catch (\Throwable $e) {
+            } catch (Throwable $e) {
                 // no-op
             }
         }
