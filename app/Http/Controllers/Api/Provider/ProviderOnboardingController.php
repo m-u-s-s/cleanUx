@@ -7,7 +7,7 @@ use App\Models\ProviderOnboardingDocument;
 use App\Services\Onboarding\ProviderOnboardingService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Http\Response;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 /**
  * @group Provider — Onboarding (Legacy)
@@ -138,7 +138,8 @@ class ProviderOnboardingController extends Controller
         ]);
     }
 
-    public function downloadDocument(ProviderOnboardingDocument $document): Response
+    // Admin-only (route: auth + role:admin) — reviewers download any provider's onboarding doc.
+    public function downloadDocument(ProviderOnboardingDocument $document): BinaryFileResponse
     {
         return response()->file(
             storage_path('app/private/'.$document->file_path)

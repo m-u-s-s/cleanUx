@@ -106,7 +106,7 @@ class ClientTipBooking extends Component
 
             $this->dispatch('toast', 'Merci pour votre pourboire !', 'success');
             $this->reset(['selectedAmountCents', 'selectedPresetLabel', 'selectedPresetPercent', 'message', 'customAmount']);
-            $this->redirect(route('dashboard.client'));
+            $this->redirect(route('client.dashboard'));
         } catch (ValidationException $e) {
             $first = collect($e->errors())->flatten()->first();
             $this->dispatch('toast', $first ?? 'Échec.', 'error');

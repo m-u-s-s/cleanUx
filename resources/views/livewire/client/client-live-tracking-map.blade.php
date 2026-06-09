@@ -2,7 +2,7 @@
     @if (! $booking)
         <div class="text-center py-16">
             <p class="text-slate-500">Mission introuvable.</p>
-            <a href="{{ route('dashboard.client') }}" class="mt-4 inline-block text-indigo-600 hover:underline">← Retour</a>
+            <a href="{{ route('client.dashboard') }}" class="mt-4 inline-block text-indigo-600 hover:underline">← Retour</a>
         </div>
     @else
         <div class="flex justify-between items-center mb-4">
@@ -10,7 +10,7 @@
                 <p class="text-sm font-bold uppercase text-indigo-600">Suivi en direct</p>
                 <h1 class="text-2xl font-black text-slate-900">Mission #{{ $booking->id }}</h1>
             </div>
-            <a href="{{ route('dashboard.client') }}" class="rounded-xl border px-4 py-2 text-sm font-semibold">← Retour</a>
+            <a href="{{ route('client.dashboard') }}" class="rounded-xl border px-4 py-2 text-sm font-semibold">← Retour</a>
         </div>
 
         <div class="rounded-2xl border bg-white shadow-sm overflow-hidden"

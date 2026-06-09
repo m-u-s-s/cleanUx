@@ -63,7 +63,7 @@ class EmployeeRateClient extends Component
             );
 
             $this->dispatch('toast', 'Merci pour votre évaluation.', 'success');
-            $this->redirect(route('dashboard.employe'));
+            $this->redirect(route('employe.dashboard'));
         } catch (ValidationException $e) {
             $first = collect($e->errors())->flatten()->first();
             $this->dispatch('toast', $first ?? 'Échec.', 'error');

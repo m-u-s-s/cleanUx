@@ -3,7 +3,7 @@
     @if (!$booking)
         <div class="text-center py-16">
             <p class="text-slate-500">Mission introuvable ou non éligible.</p>
-            <a href="{{ route('dashboard.client') }}" class="mt-4 inline-block text-indigo-600 hover:underline">← Retour</a>
+            <a href="{{ route('client.dashboard') }}" class="mt-4 inline-block text-indigo-600 hover:underline">← Retour</a>
         </div>
     @elseif ($existingTip)
         <div class="rounded-2xl border bg-emerald-50 p-8 text-center">
@@ -14,7 +14,7 @@
             @if ($existingTip->client_bonus_points > 0)
                 <p class="text-xs text-indigo-600 mt-2">+{{ $existingTip->client_bonus_points }} points fidélité crédités</p>
             @endif
-            <a href="{{ route('dashboard.client') }}" class="mt-4 inline-block rounded-lg bg-indigo-600 text-white px-4 py-2 text-sm font-semibold hover:bg-indigo-500">Retour</a>
+            <a href="{{ route('client.dashboard') }}" class="mt-4 inline-block rounded-lg bg-indigo-600 text-white px-4 py-2 text-sm font-semibold hover:bg-indigo-500">Retour</a>
         </div>
     @else
         <div class="rounded-2xl bg-white border shadow-sm p-6">
@@ -69,7 +69,7 @@
                         class="w-full mt-4 rounded-lg {{ $selectedAmountCents ? 'bg-indigo-600 hover:bg-indigo-500' : 'bg-slate-300 cursor-not-allowed' }} text-white py-3 text-sm font-bold">
                     Envoyer le pourboire
                 </button>
-                <a href="{{ route('dashboard.client') }}" class="block text-center text-xs text-slate-500 hover:underline mt-2">Plus tard</a>
+                <a href="{{ route('client.dashboard') }}" class="block text-center text-xs text-slate-500 hover:underline mt-2">Plus tard</a>
             </div>
         </div>
     @endif

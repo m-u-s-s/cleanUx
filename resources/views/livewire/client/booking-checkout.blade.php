@@ -5,7 +5,7 @@
                 <x-ui.icon name="exclamation-triangle" class="w-6 h-6" />
             </div>
             <p class="text-slate-700 font-semibold">Booking introuvable</p>
-            <a href="{{ route('dashboard.client') }}" class="mt-4 inline-flex items-center gap-1.5 text-brand-700 hover:text-brand-800 text-sm font-semibold">
+            <a href="{{ route('client.dashboard') }}" class="mt-4 inline-flex items-center gap-1.5 text-brand-700 hover:text-brand-800 text-sm font-semibold">
                 <x-ui.icon name="arrow-left" class="w-4 h-4" />
                 <span>Retour</span>
             </a>
@@ -106,7 +106,7 @@
                 </p>
             @endif
 
-            <a href="{{ route('dashboard.client') }}" class="block text-center text-xs text-slate-500 hover:text-slate-700 mt-4 transition">
+            <a href="{{ route('client.dashboard') }}" class="block text-center text-xs text-slate-500 hover:text-slate-700 mt-4 transition">
                 Plus tard
             </a>
         </div>

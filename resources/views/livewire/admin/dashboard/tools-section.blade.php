@@ -18,7 +18,7 @@
         </div>
 
         @if(! $compactMode)
-            @include('livewire.admin.dashboard.employee-limits')
+            @include('livewire.admin.employe.dashboarde-limits')
         @endif
     </section>
 @endif
