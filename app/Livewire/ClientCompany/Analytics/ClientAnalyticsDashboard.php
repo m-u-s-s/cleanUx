@@ -4,6 +4,7 @@ namespace App\Livewire\ClientCompany\Analytics;
 
 use App\Services\Analytics\AnalyticsKpiService;
 use App\Services\Analytics\DateRangeResolver;
+use App\Support\Livewire\Concerns\EnforcesActiveOrgMembership;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Url;
@@ -26,6 +27,8 @@ use Livewire\Component;
  */
 class ClientAnalyticsDashboard extends Component
 {
+    use EnforcesActiveOrgMembership;
+
     #[Url(as: 'period', keep: true)]
     public string $preset = 'last_30d';
 

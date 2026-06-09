@@ -12,6 +12,7 @@ use App\Services\Booking\EmployeeAvailabilityService;
 use App\Services\Booking\ProviderSelectionResolver;
 use App\Services\Booking\ZoneCoverageService;
 use App\Services\PermissionService;
+use App\Support\Livewire\Concerns\EnforcesActiveOrgMembership;
 use App\Support\Livewire\Concerns\RendersTradeFormSchema;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Support\Collection;
@@ -28,6 +29,7 @@ use Livewire\Component;
  */
 class BookingHub extends Component
 {
+    use EnforcesActiveOrgMembership;
     use RendersTradeFormSchema;
 
     // ──────────────────────────────────────────────────────

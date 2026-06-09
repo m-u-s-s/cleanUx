@@ -5,6 +5,7 @@ namespace App\Livewire\ClientCompany;
 use App\Models\Booking;
 use App\Models\OrganizationMember;
 use App\Models\OrganizationSite;
+use App\Support\Livewire\Concerns\EnforcesActiveOrgMembership;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -19,6 +20,8 @@ use Livewire\Component;
  */
 class ClientCompanyDashboard extends Component
 {
+    use EnforcesActiveOrgMembership;
+
     public string $period = 'month';
 
     public function mount(): void

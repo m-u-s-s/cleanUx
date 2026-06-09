@@ -3,6 +3,7 @@
 namespace App\Livewire\ClientCompany;
 
 use App\Services\Bookings\BulkBookingImporter as BulkImporterService;
+use App\Support\Livewire\Concerns\EnforcesActiveOrgMembership;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
@@ -10,6 +11,7 @@ use Livewire\WithFileUploads;
 
 class BulkBookingImporter extends Component
 {
+    use EnforcesActiveOrgMembership;
     use WithFileUploads;
 
     public $csvFile;

@@ -5,6 +5,7 @@ namespace App\Livewire\ProviderCompany;
 use App\Models\OrganizationMember;
 use App\Models\Task;
 use App\Services\PermissionService;
+use App\Support\Livewire\Concerns\EnforcesActiveOrgMembership;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
@@ -17,6 +18,8 @@ use Livewire\Component;
  */
 class TaskBoard extends Component
 {
+    use EnforcesActiveOrgMembership;
+
     // ──────────────────────────────────────────────────────
     // State
     // ──────────────────────────────────────────────────────
