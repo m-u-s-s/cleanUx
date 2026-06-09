@@ -95,7 +95,8 @@ class LocaleFormatterCoverageBatch16Test extends TestCase
 
         $this->assertNotEmpty($out);
         $this->assertStringContainsString('99', $out);
-        $this->assertStringContainsString('USD', $out);
+        // The currency token depends on the ICU version ('USD', 'US$' or '$') — accept any.
+        $this->assertMatchesRegularExpression('/USD|US\$|\$/u', $out);
     }
 
     public function test_number_with_zero_decimals(): void
