@@ -7,6 +7,7 @@ use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\View;
 
 /**
  * Builder PDF/A-3 + XML CII embedded (norme Factur-X / ZUGFeRD).
@@ -32,14 +33,12 @@ class FacturXBuilder
      */
     public function buildXml(FinanceInvoice $invoice): string
     {
-        $issuer = $invoice->issuer;
-        $client = $invoice->customer;
+        $client = $invoice->client;
         $issued = Carbon::parse($invoice->issued_at ?? $invoice->created_at);
-        $due = Carbon::parse($invoice->due_at ?? $issued->copy()->addDays(30));
 
-        $totalExcl = (float) ($invoice->amount_excl_tax ?? $invoice->amount ?? 0);
-        $totalIncl = (float) ($invoice->amount_incl_tax ?? $invoice->amount ?? 0);
-        $tax = $totalIncl - $totalExcl;
+        $totalExcl = (float) ($invoice->subtotal ?? 0);
+        $totalIncl = (float) ($invoice->total_amount ?? $invoice->subtotal ?? 0);
+        $tax = (float) ($invoice->tax_amount ?? max(0.0, $totalIncl - $totalExcl));
         $currency = $invoice->currency ?? 'EUR';
 
         // Profile MINIMUM pour Factur-X (le plus simple, suffisant pour la plupart B2B FR)
@@ -52,7 +51,7 @@ class FacturXBuilder
     </ram:GuidelineSpecifiedDocumentContextParameter>
   </rsm:ExchangedDocumentContext>
   <rsm:ExchangedDocument>
-    <ram:ID>{$this->esc($invoice->reference ?? 'INV-'.$invoice->id)}</ram:ID>
+    <ram:ID>{$this->esc($invoice->invoice_number ?? 'INV-'.$invoice->id)}</ram:ID>
     <ram:TypeCode>380</ram:TypeCode>
     <ram:IssueDateTime>
       <udt:DateTimeString format="102">{$issued->format('Ymd')}</udt:DateTimeString>
@@ -105,14 +104,15 @@ XML;
         $xml = $this->buildXml($invoice);
 
         // Stocke XML séparé (en attendant embed PDF/A-3 lib)
-        $disk = config('accounting_v2.export_disk', 'local');
+        $disk = config('accounting_v2.export_storage_disk', 'local');
         $path = ('exports/einvoicing/'.now()->format('Y/m/d').'/'.$invoice->id);
         Storage::disk($disk)->put($path.'.xml', $xml);
 
-        // PDF visuel humain via DomPDF (déjà installé)
-        if (class_exists(Pdf::class)) {
+        // PDF visuel humain via DomPDF (déjà installé). Réutilise la vue PDF facture existante.
+        $view = 'client.finance.invoice-pdf';
+        if (class_exists(Pdf::class) && View::exists($view)) {
             try {
-                $pdf = Pdf::loadView('emails.invoice', ['invoice' => $invoice]);
+                $pdf = Pdf::loadView($view, ['invoice' => $invoice]);
                 $pdfContent = $pdf->output();
                 Storage::disk($disk)->put($path.'.pdf', $pdfContent);
             } catch (\Throwable $e) {
