@@ -13,6 +13,12 @@ abstract class TestCase extends BaseTestCase
     {
         parent::setUp();
 
+        // Reset Faker's unique() store between tests. The Faker generator is shared across the
+        // whole run, so factories with small unique pools (e.g. bothify('SVC-###') = 1000 values)
+        // can exhaust late in a large suite and throw OverflowException during create(). Resetting
+        // per test keeps the pool bounded and the suite order-independent.
+        fake()->unique(true);
+
         // Tests must never hit the network. The legacy GeocodingService calls
         // Nominatim (OpenStreetMap) via the Http facade when bookings/missions
         // are created; stub it with a deterministic Brussels result so the suite
