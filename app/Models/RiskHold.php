@@ -3,11 +3,14 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class RiskHold extends Model
 {
+    use HasFactory;
+
     public const STATUS_ACTIVE = 'active';
 
     public const STATUS_REVIEWED_APPROVED = 'reviewed_approved';

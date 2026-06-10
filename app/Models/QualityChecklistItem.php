@@ -2,11 +2,14 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class QualityChecklistItem extends Model
 {
+    use HasFactory;
+
     public const TYPE_BOOLEAN = 'boolean';
 
     public const TYPE_RATING = 'rating';

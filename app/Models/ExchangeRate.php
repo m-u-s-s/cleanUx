@@ -3,10 +3,13 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class ExchangeRate extends Model
 {
+    use HasFactory;
+
     public const SOURCE_MOCK = 'mock';
 
     public const SOURCE_ECB = 'ecb';

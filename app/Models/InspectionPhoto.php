@@ -2,11 +2,14 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class InspectionPhoto extends Model
 {
+    use HasFactory;
+
     public const TYPE_BEFORE = 'before';
 
     public const TYPE_DURING = 'during';

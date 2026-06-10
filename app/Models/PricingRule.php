@@ -4,10 +4,13 @@ namespace App\Models;
 
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class PricingRule extends Model
 {
+    use HasFactory;
+
     protected $fillable = [
         'code', 'name', 'description',
         'service_code', 'trade_code', 'priority', 'is_active',

@@ -236,6 +236,8 @@ class Booking extends Model
         'rappel_24h_envoye_at',
         'rappel_2h_envoye_at',
         'alerte_urgence_envoyee_at',
+        'feedback_demande_envoye_at',
+        'remarque_terrain',
 
         // Drapeaux terrain
         'presence_animaux',
@@ -301,6 +303,7 @@ class Booking extends Model
         'rappel_24h_envoye_at' => 'datetime',
         'rappel_2h_envoye_at' => 'datetime',
         'alerte_urgence_envoyee_at' => 'datetime',
+        'feedback_demande_envoye_at' => 'datetime',
 
         // Booléens
         'presence_animaux' => 'boolean',

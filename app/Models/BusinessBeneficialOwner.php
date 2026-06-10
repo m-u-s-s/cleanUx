@@ -4,11 +4,14 @@ namespace App\Models;
 
 use App\Casts\EncryptedStringFallback;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class BusinessBeneficialOwner extends Model
 {
+    use HasFactory;
+
     public const AML_PENDING = 'pending';
 
     public const AML_CLEAR = 'clear';

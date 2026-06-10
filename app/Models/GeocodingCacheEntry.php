@@ -3,10 +3,13 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class GeocodingCacheEntry extends Model
 {
+    use HasFactory;
+
     protected $table = 'geocoding_results';
 
     protected $fillable = [

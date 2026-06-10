@@ -2,11 +2,14 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class ContractSignatureAudit extends Model
 {
+    use HasFactory;
+
     public const EVENT_VIEW = 'view';
 
     public const EVENT_SENT = 'sent';

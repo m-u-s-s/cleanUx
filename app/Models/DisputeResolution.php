@@ -2,11 +2,14 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class DisputeResolution extends Model
 {
+    use HasFactory;
+
     public const TYPE_REFUND_FULL = 'refund_full';
 
     public const TYPE_REFUND_PARTIAL = 'refund_partial';

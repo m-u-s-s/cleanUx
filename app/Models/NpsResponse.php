@@ -2,11 +2,14 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class NpsResponse extends Model
 {
+    use HasFactory;
+
     public const CATEGORY_DETRACTOR = 'detractor';   // 0-6
 
     public const CATEGORY_PASSIVE = 'passive';       // 7-8

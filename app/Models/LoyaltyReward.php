@@ -3,11 +3,14 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class LoyaltyReward extends Model
 {
+    use HasFactory;
+
     public const TYPE_DISCOUNT_CODE = 'discount_code';
 
     public const TYPE_SERVICE_CREDIT = 'service_credit';

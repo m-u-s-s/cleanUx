@@ -3,11 +3,14 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class ContractSignature extends Model
 {
+    use HasFactory;
+
     protected $fillable = [
         'document_id', 'signer_user_id',
         'signer_name', 'signer_email_hash',

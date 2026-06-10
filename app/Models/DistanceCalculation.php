@@ -3,10 +3,13 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class DistanceCalculation extends Model
 {
+    use HasFactory;
+
     protected $fillable = [
         'provider', 'signature_hash',
         'origin_lat', 'origin_lng', 'dest_lat', 'dest_lng',

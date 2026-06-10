@@ -2,11 +2,14 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class EmailWebhookEvent extends Model
 {
+    use HasFactory;
+
     protected $fillable = [
         'provider', 'provider_event_id', 'provider_message_id',
         'email_message_id', 'event_type', 'occurred_at', 'payload',

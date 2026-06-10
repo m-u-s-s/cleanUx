@@ -3,11 +3,14 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class LoyaltyTransaction extends Model
 {
+    use HasFactory;
+
     public const TYPE_EARN_BOOKING = 'earn_booking';
 
     public const TYPE_EARN_REFERRAL = 'earn_referral';

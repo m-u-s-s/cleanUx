@@ -2,11 +2,14 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class CancellationPolicyTier extends Model
 {
+    use HasFactory;
+
     protected $fillable = [
         'policy_id', 'position',
         'min_hours_before', 'max_hours_before',

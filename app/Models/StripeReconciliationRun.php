@@ -2,11 +2,14 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class StripeReconciliationRun extends Model
 {
+    use HasFactory;
+
     public const SCOPE_PAYMENT_INTENTS = 'payment_intents';
 
     public const SCOPE_TRANSFERS = 'transfers';
