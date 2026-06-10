@@ -61,4 +61,10 @@ class MultiTradeBundleItem extends Model
     {
         return $this->belongsTo(Booking::class);
     }
+
+    /** Devis concurrents reçus pour cet item (marketplace). */
+    public function quotes(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(MultiTradeBundleItemQuote::class, 'bundle_item_id');
+    }
 }

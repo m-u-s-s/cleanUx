@@ -5,8 +5,11 @@ namespace App\Services\Bundles;
 use App\Models\Booking;
 use App\Models\MultiTradeBundle;
 use App\Models\MultiTradeBundleItem;
+use App\Models\MultiTradeBundleItemQuote;
 use App\Models\Trade;
 use App\Models\User;
+use App\Notifications\Bundles\BundleQuoteRequestedNotification;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
@@ -81,8 +84,13 @@ class MultiTradeBundleService
     }
 
     /**
-     * Demande quotes aux providers (transition draft → quoting).
-     * Chaque item est dispatché à un provider du trade correspondant via Matching v2.
+     * Demande de devis aux prestataires (transition draft → quoting).
+     *
+     * Bundle Marketplace P1 : pour chaque item, on sollicite le top-N des
+     * prestataires ÉLIGIBLES (bon métier + actif + KYC validé), on crée une
+     * demande de devis `pending` valable N heures, et on les notifie. Les
+     * prestataires soumettront ensuite leur prix (concurrence) et le client
+     * comparera/choisira.
      */
     public function startQuoting(MultiTradeBundle $bundle): MultiTradeBundle
     {
@@ -92,12 +100,79 @@ class MultiTradeBundleService
             ]);
         }
 
-        $bundle->update(['status' => MultiTradeBundle::STATUS_QUOTING]);
+        $topN = max(1, (int) config('bundles.quote_request_top_n', 5));
+        $ttlHours = max(1, (int) config('bundles.quote_request_ttl_hours', 48));
 
-        // Pour MVP : on ne dispatch pas auto, on attend que les providers se manifestent
-        // via UI ou que admin assigne manuellement. À enrichir avec MatchingV2Service.
+        DB::transaction(function () use ($bundle, $topN, $ttlHours) {
+            $bundle->update(['status' => MultiTradeBundle::STATUS_QUOTING]);
+
+            foreach ($bundle->items as $item) {
+                $this->solicitProvidersForItem($item, $topN, $ttlHours);
+            }
+        });
 
         return $bundle->fresh();
+    }
+
+    /**
+     * Sollicite le top-N des prestataires éligibles pour un item et leur envoie
+     * une demande de devis. Retourne le nombre de prestataires sollicités.
+     */
+    public function solicitProvidersForItem(MultiTradeBundleItem $item, int $topN, int $ttlHours): int
+    {
+        $validUntil = now()->addHours($ttlHours);
+        $alreadySolicited = $item->quotes()->pluck('provider_user_id')->all();
+
+        $providers = $this->eligibleProvidersForItem($item)
+            ->reject(fn (User $provider) => in_array($provider->id, $alreadySolicited, true))
+            ->take($topN);
+
+        foreach ($providers as $provider) {
+            MultiTradeBundleItemQuote::create([
+                'bundle_item_id' => $item->id,
+                'provider_user_id' => $provider->id,
+                'status' => MultiTradeBundleItemQuote::STATUS_PENDING,
+                'valid_until' => $validUntil,
+            ]);
+
+            try {
+                $provider->notify(new BundleQuoteRequestedNotification($item));
+            } catch (\Throwable $e) {
+                Log::warning('[bundle] échec notification demande de devis', [
+                    'item_id' => $item->id,
+                    'provider_id' => $provider->id,
+                    'error' => $e->getMessage(),
+                ]);
+            }
+        }
+
+        return $providers->count();
+    }
+
+    /**
+     * Prestataires éligibles pour quoter un item, classés par maîtrise du métier.
+     * Éligibilité : actif + KYC validé (verification_status=verified) + habilité au
+     * métier de l'item (pivot trade_user). Tri : proficiency puis métier primaire.
+     */
+    protected function eligibleProvidersForItem(MultiTradeBundleItem $item): Collection
+    {
+        $proficiencyRank = ['expert' => 4, 'advanced' => 3, 'intermediate' => 2, 'standard' => 1, 'basic' => 0];
+
+        return User::query()
+            ->where('is_active', true)
+            ->whereHas('providerProfile', fn ($q) => $q
+                ->where('status', 'active')
+                ->where('verification_status', 'verified'))
+            ->whereHas('trades', fn ($q) => $q->where('trades.id', $item->trade_id))
+            ->with(['trades' => fn ($q) => $q->where('trades.id', $item->trade_id)])
+            ->get()
+            ->sortByDesc(function (User $provider) use ($item, $proficiencyRank) {
+                $pivot = $provider->trades->firstWhere('id', $item->trade_id)?->pivot;
+                $score = $proficiencyRank[$pivot?->proficiency ?? ''] ?? 0;
+
+                return $score + (($pivot?->is_primary ?? false) ? 1 : 0);
+            })
+            ->values();
     }
 
     /**
