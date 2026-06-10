@@ -154,7 +154,9 @@ class MesRendezVous extends Component
     public function getSelectedMissionProperty(): ?Mission
     {
         if (! $this->selectedMissionId && $this->selectedRdvId) {
-            $rdv = $this->selectedRdv;
+            // The computed property is selectedRendezVous (getSelectedRendezVousProperty);
+            // $this->selectedRdv would resolve to a non-existent computed prop and return null.
+            $rdv = $this->selectedRendezVous;
 
             if ($rdv) {
                 $this->selectedMissionId = $this->missionForRdv($rdv)?->id;

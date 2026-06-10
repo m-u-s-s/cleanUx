@@ -272,8 +272,6 @@ class AdminFeedbacks extends Component
 
     public function updatedReponse($value, $key): void
     {
-        Gate::authorize('respond', Feedback::class);
-
         $scopeId = $this->effectiveScopeId();
         $value = trim((string) $value);
 
@@ -299,6 +297,10 @@ class AdminFeedbacks extends Component
 
             return;
         }
+
+        // The 'respond' policy needs the Feedback instance (zone-scope + readonly-admin check);
+        // passing Feedback::class previously triggered an ArgumentCountError.
+        Gate::authorize('respond', $feedback);
 
         $feedback->update([
             'reponse_admin' => $value !== '' ? $value : null,

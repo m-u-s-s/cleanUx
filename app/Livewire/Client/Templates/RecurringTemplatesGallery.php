@@ -6,6 +6,7 @@ use App\Models\OrganizationAccount;
 use App\Models\RecurringTemplate;
 use App\Services\Client\Templates\ApplyRecurringTemplateService;
 use Illuminate\Contracts\View\View;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 use Livewire\Component;
@@ -54,7 +55,9 @@ class RecurringTemplatesGallery extends Component
         $this->applyTemplateId = $templateId;
         $template = RecurringTemplate::find($templateId);
         if ($template?->default_time) {
-            $this->applyCustomTime = $template->default_time->format('H:i');
+            // default_time is a `time` column with no cast (a string), so parse before formatting
+            // (consistent with RecurringTemplate's own label logic).
+            $this->applyCustomTime = Carbon::parse($template->default_time)->format('H:i');
         }
     }
 
