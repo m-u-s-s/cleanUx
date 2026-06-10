@@ -176,6 +176,53 @@ class MultiTradeBundleService
     }
 
     /**
+     * P4 — Expire les demandes de devis (pending/submitted) dont le délai est dépassé.
+     * Retourne le nombre de devis expirés.
+     */
+    public function expireStaleQuotes(): int
+    {
+        return MultiTradeBundleItemQuote::query()
+            ->whereIn('status', [
+                MultiTradeBundleItemQuote::STATUS_PENDING,
+                MultiTradeBundleItemQuote::STATUS_SUBMITTED,
+            ])
+            ->whereNotNull('valid_until')
+            ->where('valid_until', '<=', now())
+            ->update(['status' => MultiTradeBundleItemQuote::STATUS_EXPIRED]);
+    }
+
+    /**
+     * P4 — Ré-escalade : pour chaque bundle en cours de devis, complète les items
+     * non encore retenus jusqu'au top-N de devis actifs en sollicitant de nouveaux
+     * prestataires éligibles. Retourne le nombre de nouvelles sollicitations.
+     */
+    public function escalateQuotingBundles(): int
+    {
+        $topN = max(1, (int) config('bundles.quote_request_top_n', 5));
+        $ttlHours = max(1, (int) config('bundles.quote_request_ttl_hours', 48));
+        $newlySolicited = 0;
+
+        MultiTradeBundle::query()
+            ->where('status', MultiTradeBundle::STATUS_QUOTING)
+            ->with('items')
+            ->get()
+            ->each(function (MultiTradeBundle $bundle) use ($topN, $ttlHours, &$newlySolicited) {
+                foreach ($bundle->items as $item) {
+                    if ($item->status === MultiTradeBundleItem::STATUS_QUOTED) {
+                        continue; // un devis a déjà été retenu pour cet item
+                    }
+
+                    $active = $item->quotes()->active()->count();
+                    if ($active < $topN) {
+                        $newlySolicited += $this->solicitProvidersForItem($item, $topN - $active, $ttlHours);
+                    }
+                }
+            });
+
+        return $newlySolicited;
+    }
+
+    /**
      * P2 — Le prestataire sollicité soumet (ou met à jour) son devis pour un item.
      * Gardes : devis du prestataire, KYC validé, demande encore ouverte et non expirée.
      */

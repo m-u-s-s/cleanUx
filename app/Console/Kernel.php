@@ -37,6 +37,7 @@ class Kernel extends ConsoleKernel
         $schedule->command('subscriptions:tick --limit=500')->dailyAt('03:00')->withoutOverlapping();
         $schedule->command('accounting:close-previous-month')->monthlyOn(6, '04:00')->withoutOverlapping();
         $schedule->command('fleet:scan-expiring')->dailyAt('05:00')->withoutOverlapping();
+        $schedule->command('bundles:scan-quote-requests')->hourly()->withoutOverlapping();
 
         // SP4 — contract SLA monitor (mark met / breached + escalate once)
         $schedule->command('contract:scan-sla')->everyFifteenMinutes()->withoutOverlapping();
