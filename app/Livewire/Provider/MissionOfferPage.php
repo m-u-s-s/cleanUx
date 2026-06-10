@@ -42,7 +42,7 @@ class MissionOfferPage extends Component
         // par accept()/decline() → "Cette offre n'existe plus.").
         $owner = MissionAssignment::whereKey($assignment)->value('user_id');
         if ($owner !== null && (int) $owner !== (int) Auth::id()) {
-            abort(403, "Cette offre ne vous est pas destinée.");
+            abort(403, 'Cette offre ne vous est pas destinée.');
         }
     }
 

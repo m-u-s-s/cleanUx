@@ -29,7 +29,7 @@ class EnsureOrganizationType
         abort_if($user === null, 401);
 
         // Les admins plateforme passent toujours.
-        if (method_exists($user, 'isPlatformAdmin') && $user->isPlatformAdmin()) {
+        if ($user->isPlatformAdmin()) {
             return $next($request);
         }
 
