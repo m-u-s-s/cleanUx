@@ -3,6 +3,7 @@
 namespace Tests\Feature\Payments;
 
 use App\Models\Booking;
+use App\Models\ProviderProfile;
 use App\Models\User;
 use App\Services\Payments\MissionPaymentService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -58,5 +59,60 @@ class MissionPaymentServiceTest extends TestCase
             $stripe->calls(),
             'No PaymentIntent must be created when the provider is not onboarded'
         );
+    }
+
+    /**
+     * Le montant prélevé par Stripe (application_fee_amount) DOIT provenir de la
+     * source de vérité unique (CommissionService) et non d'un calcul env dupliqué.
+     * Avec le flag taux-négocié ON et un prestataire à 10%, la charge réelle = 10%.
+     */
+    public function test_application_fee_uses_commission_service_single_source(): void
+    {
+        config([
+            'cashier.secret' => 'sk_test_fake',
+            'cleanux.platform_fee_percent' => 20,
+            'cleanux.use_negotiated_commission' => true,
+        ]);
+
+        $client = User::factory()->client()->create(['stripe_id' => 'cus_fake']);
+        $employe = User::factory()->employe()->create(['stripe_connect_account_id' => 'acct_fake']);
+        ProviderProfile::factory()->create([
+            'user_id' => $employe->id,
+            'commission_rate' => 0.10,
+            'stripe_connect_account_id' => 'acct_fake',
+            'stripe_connect_status' => 'active',
+        ]);
+        $booking = Booking::factory()->create([
+            'client_id' => $client->id,
+            'employe_id' => $employe->id,
+            'assigned_provider_user_id' => $employe->id,
+            'devis_estime' => 100.00,
+        ]);
+
+        Stripe::setApiKey('sk_test_fake');
+        $stripe = (new FakeStripeHttpClient)->stub('POST', '/v1/payment_intents', [
+            'id' => 'pi_fake',
+            'status' => 'requires_capture',
+            'object' => 'payment_intent',
+        ]);
+        ApiRequestor::setHttpClient($stripe);
+
+        try {
+            app(MissionPaymentService::class)->authorize($booking, 'pm_card_visa_fake');
+        } finally {
+            ApiRequestor::setHttpClient(null);
+        }
+
+        $feeSent = null;
+        foreach ($stripe->requests() as $req) {
+            if ($req['key'] === 'POST /v1/payment_intents') {
+                $feeSent = $req['params']['application_fee_amount'] ?? null;
+                break;
+            }
+        }
+
+        $this->assertSame(1000, (int) $feeSent, 'application_fee_amount must come from CommissionService (10% negotiated), not the env-based 20%.');
+        $this->assertSame(1000, (int) $booking->fresh()->platform_fee_cents);
+        $this->assertSame(9000, (int) $booking->fresh()->provider_amount_cents);
     }
 }

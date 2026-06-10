@@ -190,4 +190,13 @@ trait HasProviderFeatures
         return ! empty($profile->stripe_connect_account_id)
             && ($profile->stripe_connect_status === 'active' || $profile->stripe_connect_onboarded_at !== null);
     }
+
+    /**
+     * KYC = BLOCAGE STRICT (décision produit 2026-06-11) : un prestataire ne peut
+     * recevoir/accepter une mission que si sa vérification d'identité est validée.
+     */
+    public function hasClearedKyc(): bool
+    {
+        return (bool) $this->providerProfile?->isVerified();
+    }
 }

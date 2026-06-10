@@ -5,6 +5,7 @@ namespace Tests\Feature\Livewire\Provider;
 use App\Livewire\Provider\MissionOfferPage;
 use App\Models\Mission;
 use App\Models\MissionAssignment;
+use App\Models\ProviderProfile;
 use App\Models\User;
 use App\Services\Dispatch\MissionDispatchService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -17,6 +18,13 @@ class MissionOfferPageCoverageBatch18Test extends TestCase
 
     private function pendingOfferFor(User $owner): MissionAssignment
     {
+        // KYC blocage strict : un prestataire qui reçoit/accepte une offre est vérifié.
+        ProviderProfile::factory()->create([
+            'user_id' => $owner->id,
+            'status' => 'active',
+            'verification_status' => 'verified',
+        ]);
+
         $mission = Mission::factory()->planned()->create();
 
         return MissionAssignment::factory()->lead()->create([

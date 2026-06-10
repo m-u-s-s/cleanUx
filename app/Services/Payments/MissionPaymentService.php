@@ -9,9 +9,10 @@ use Stripe\Stripe;
 
 class MissionPaymentService
 {
-    public function __construct()
+    public function __construct(private ?CommissionService $commissionService = null)
     {
         Stripe::setApiKey(config('cashier.secret'));
+        $this->commissionService ??= app(CommissionService::class);
     }
 
     public function authorize(Booking $rendezVous, string $paymentMethodId): PaymentIntent
@@ -29,11 +30,14 @@ class MissionPaymentService
             $rendezVous->refresh()->loadMissing('client');
         }
 
-        $amount = (int) round(((float) $rendezVous->devis_estime) * 100);
-        $feePercent = (float) env('CLEANUX_PLATFORM_FEE_PERCENT', 20);
+        // Source de vérité UNIQUE pour le split commission/payout : le même calcul
+        // alimente le ledger/wallet à la complétion. Évite la divergence
+        // Stripe-charge ↔ compta (ex-bug : calcul env dupliqué ici).
+        $commission = $this->commissionService->calculateForBooking($rendezVous);
 
-        $platformFee = (int) round($amount * ($feePercent / 100));
-        $providerAmount = $amount - $platformFee;
+        $amount = $commission['total_cents'];
+        $platformFee = $commission['platform_fee_cents'];
+        $providerAmount = $commission['provider_payout_cents'];
 
         $intent = PaymentIntent::create([
             'amount' => $amount,

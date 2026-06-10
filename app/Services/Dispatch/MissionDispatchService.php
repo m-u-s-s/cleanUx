@@ -109,6 +109,15 @@ class MissionDispatchService
         User $provider,
         ?int $previousAssignmentId = null,
     ): MissionAssignment {
+        // KYC = blocage strict : aucune offre/assignation à un prestataire non vérifié.
+        // Chokepoint universel — couvre le force-assign admin et le prestataire préféré,
+        // au-delà du pool de candidats qui filtre déjà les non-vérifiés.
+        if (! $provider->hasClearedKyc()) {
+            throw new \DomainException(
+                "Ce prestataire ne peut pas recevoir de mission : sa vérification d'identité (KYC) n'est pas validée."
+            );
+        }
+
         return DB::transaction(function () use ($mission, $provider, $previousAssignmentId) {
             $now = now();
             $timeout = $this->resolveTimeoutForMission($mission);
@@ -216,6 +225,23 @@ class MissionDispatchService
                     'lead_employee_id' => $assignment->user_id,
                     'provider_organization_id' => $providerOrgId,
                 ]);
+
+                // Synchronise le booking avec l'offre acceptée. Indispensable pour
+                // le flow ASAP qui n'utilise plus QUE l'offre/escalade (plus de
+                // confirmation directe) : sans ça le client verrait sa réservation
+                // "en attente" alors que la mission est assignée. status=confirmé
+                // uniquement pour ASAP (le planifié garde son statut).
+                $booking = $mission->booking;
+                if ($booking) {
+                    $bookingUpdates = [
+                        'employe_id' => $assignment->user_id,
+                        'matched_at' => $now,
+                    ];
+                    if (($booking->booking_mode ?? null) === 'asap') {
+                        $bookingUpdates['status'] = 'confirme';
+                    }
+                    $booking->update($bookingUpdates);
+                }
             }
 
             // Annuler les autres assignments en cours pour cette mission (au cas où)
@@ -313,6 +339,14 @@ class MissionDispatchService
 
         if ($assignment->expires_at && $assignment->expires_at->isPast()) {
             throw new \DomainException('Cette offre a expiré.');
+        }
+
+        // KYC = blocage strict : si la vérification a été révoquée/expirée entre
+        // l'offre et l'acceptation, le prestataire ne peut pas accepter la mission.
+        if (! optional($assignment->user)->hasClearedKyc()) {
+            throw new \DomainException(
+                "Acceptation impossible : votre vérification d'identité (KYC) n'est pas (plus) validée."
+            );
         }
     }
 

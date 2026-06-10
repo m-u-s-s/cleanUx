@@ -313,37 +313,40 @@ class CreateBookingAction
                 );
         }
 
-        $dispatchService = app(SmartDispatchService::class);
+        // Lien conversation ↔ mission, quel que soit le mode de réservation.
+        if ($rendezVous->mission?->id) {
+            $conversation->update(['mission_id' => $rendezVous->mission->id]);
+        }
 
-        $freshRdv = $rendezVous->fresh(['client', 'serviceZone']);
+        // Confirmation directe : UNIQUEMENT pour le planifié. L'ASAP passe désormais
+        // par l'offre/escalade temps réel (dispatchToNextProvider ci-dessus) et est
+        // confirmé à l'acceptation du prestataire (MissionDispatchService::accept) —
+        // plus de double-dispatch (offre + confirmation directe en parallèle).
+        if (($rendezVous->booking_mode ?? null) !== 'asap') {
+            $dispatchService = app(SmartDispatchService::class);
 
-        $bestEmployee = $dispatchService->assignBestEmployee($freshRdv);
+            $freshRdv = $rendezVous->fresh(['client', 'serviceZone']);
 
-        if ($bestEmployee) {
-            $rendezVous->update([
-                'employe_id' => $bestEmployee->id,
-                'status' => $rendezVous->booking_mode === 'asap' ? 'confirme' : $rendezVous->status,
-                'matched_at' => now(),
-                'matching_snapshot' => array_merge(
-                    (array) ($rendezVous->matching_snapshot ?? []),
-                    [
-                        'selected_employee_id' => $bestEmployee->id,
-                        'selected_employee_name' => $bestEmployee->name,
-                        'confirmed_instantly' => $rendezVous->booking_mode === 'asap',
-                        'matched_at' => now()->toISOString(),
-                    ]
-                ),
-            ]);
+            $bestEmployee = $dispatchService->assignBestEmployee($freshRdv);
 
-            $conversation->update([
-                'mission_id' => $rendezVous->mission?->id,
-            ]);
-            $rendezVous->refresh()->load(['client', 'employe', 'serviceZone']);
+            if ($bestEmployee) {
+                $rendezVous->update([
+                    'employe_id' => $bestEmployee->id,
+                    'matched_at' => now(),
+                    'matching_snapshot' => array_merge(
+                        (array) ($rendezVous->matching_snapshot ?? []),
+                        [
+                            'selected_employee_id' => $bestEmployee->id,
+                            'selected_employee_name' => $bestEmployee->name,
+                            'confirmed_instantly' => false,
+                            'matched_at' => now()->toISOString(),
+                        ]
+                    ),
+                ]);
 
-            $bestEmployee->notify(new NouveauRendezVousNotification($rendezVous));
+                $rendezVous->refresh()->load(['client', 'employe', 'serviceZone']);
 
-            if ($rendezVous->client && $rendezVous->status === 'confirme') {
-                $rendezVous->client->notify(new RdvConfirmeNotification($rendezVous));
+                $bestEmployee->notify(new NouveauRendezVousNotification($rendezVous));
             }
         }
 
