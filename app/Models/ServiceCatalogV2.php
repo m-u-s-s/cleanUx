@@ -3,10 +3,13 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class ServiceCatalogV2 extends Model
 {
+    use HasFactory;
+
     protected $table = 'service_catalog_v2';
 
     public const UNIT_PER_HOUR = 'per_hour';

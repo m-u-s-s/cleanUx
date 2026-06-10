@@ -2,11 +2,14 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class OnboardingStep extends Model
 {
+    use HasFactory;
+
     public const TYPE_FORM = 'form';
 
     public const TYPE_KYC_CHECK = 'kyc_check';

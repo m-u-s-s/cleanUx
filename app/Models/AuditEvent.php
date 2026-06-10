@@ -3,11 +3,14 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class AuditEvent extends Model
 {
+    use HasFactory;
+
     public const SEVERITY_INFO = 'info';
 
     public const SEVERITY_WARNING = 'warning';

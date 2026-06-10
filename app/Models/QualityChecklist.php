@@ -3,11 +3,14 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class QualityChecklist extends Model
 {
+    use HasFactory;
+
     public const PHASE_PRE = 'pre';
 
     public const PHASE_DURING = 'during';

@@ -3,12 +3,15 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class MarketingCampaign extends Model
 {
+    use HasFactory;
+
     public const TYPE_SINGLE_BLAST = 'single_blast';
 
     public const TYPE_DRIP_SEQUENCE = 'drip_sequence';

@@ -2,11 +2,14 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class MarketingCampaignStep extends Model
 {
+    use HasFactory;
+
     public const CHANNEL_EMAIL = 'email';
 
     public const CHANNEL_SMS = 'sms';

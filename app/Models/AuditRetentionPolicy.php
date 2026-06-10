@@ -3,10 +3,13 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class AuditRetentionPolicy extends Model
 {
+    use HasFactory;
+
     protected $fillable = [
         'code', 'name', 'domain', 'retention_days',
         'applies_to_severity', 'is_active',

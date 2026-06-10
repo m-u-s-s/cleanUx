@@ -3,11 +3,14 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class AnalyticsEvent extends Model
 {
+    use HasFactory;
+
     public const CATEGORY_LIFECYCLE = 'lifecycle';
 
     public const CATEGORY_FUNNEL = 'funnel';

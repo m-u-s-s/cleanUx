@@ -4,10 +4,13 @@ namespace App\Models;
 
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class InsurancePlan extends Model
 {
+    use HasFactory;
+
     protected $fillable = [
         'code', 'name', 'description', 'trade_codes',
         'coverage_amount_cents', 'premium_base_cents', 'premium_percent',

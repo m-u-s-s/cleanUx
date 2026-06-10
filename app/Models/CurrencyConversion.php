@@ -2,11 +2,14 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class CurrencyConversion extends Model
 {
+    use HasFactory;
+
     protected $fillable = [
         'source_amount_cents', 'source_currency',
         'target_amount_cents', 'target_currency',

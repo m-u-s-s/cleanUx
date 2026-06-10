@@ -3,10 +3,13 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class RiskRule extends Model
 {
+    use HasFactory;
+
     public const SEVERITY_LOW = 'low';
 
     public const SEVERITY_MEDIUM = 'medium';

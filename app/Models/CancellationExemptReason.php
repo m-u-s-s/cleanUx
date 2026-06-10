@@ -3,11 +3,14 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class CancellationExemptReason extends Model
 {
+    use HasFactory;
+
     protected $fillable = [
         'policy_id', 'reason_code', 'label',
         'requires_proof', 'max_per_user_per_30d',

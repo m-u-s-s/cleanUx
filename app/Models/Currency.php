@@ -3,10 +3,13 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Currency extends Model
 {
+    use HasFactory;
+
     protected $fillable = [
         'code', 'name', 'symbol', 'decimals',
         'is_active', 'sort_order', 'metadata',

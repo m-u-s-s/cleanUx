@@ -3,12 +3,15 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class OnboardingProgress extends Model
 {
+    use HasFactory;
+
     protected $table = 'onboarding_journeys_user_progress';
 
     public const STATUS_NOT_STARTED = 'not_started';

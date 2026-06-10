@@ -2,12 +2,15 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Str;
 
 class UserReport extends Model
 {
+    use HasFactory;
+
     public const STATUS_PENDING = 'pending';
 
     public const STATUS_UNDER_REVIEW = 'under_review';

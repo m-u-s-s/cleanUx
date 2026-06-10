@@ -3,10 +3,13 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class ApiTokenUsage extends Model
 {
+    use HasFactory;
+
     protected $fillable = [
         'token_id', 'route_path', 'method',
         'response_status', 'latency_ms', 'response_size_bytes',

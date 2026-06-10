@@ -2,11 +2,14 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class BookingFavorite extends Model
 {
+    use HasFactory;
+
     protected $fillable = [
         'client_user_id', 'label', 'source_booking_id',
         'preferred_provider_user_id', 'trade_id', 'service_zone_id',

@@ -2,11 +2,14 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class ProviderBadgeAward extends Model
 {
+    use HasFactory;
+
     protected $fillable = [
         'provider_user_id', 'badge_id', 'value_at_award', 'metadata', 'awarded_at',
     ];

@@ -2,11 +2,14 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class CancellationAudit extends Model
 {
+    use HasFactory;
+
     public const ACTION_CREATED = 'created';
 
     public const ACTION_OVERRIDDEN = 'overridden';

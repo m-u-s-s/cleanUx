@@ -3,10 +3,13 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class AccountingPeriod extends Model
 {
+    use HasFactory;
+
     protected $fillable = [
         'period_year', 'period_month',
         'is_closed', 'opened_at', 'closed_at', 'closed_by_user_id',

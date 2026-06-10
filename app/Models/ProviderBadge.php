@@ -2,11 +2,14 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class ProviderBadge extends Model
 {
+    use HasFactory;
+
     public const CRITERION_MISSIONS_COUNT = 'missions_count';
 
     public const CRITERION_RATING_AVG = 'rating_avg';

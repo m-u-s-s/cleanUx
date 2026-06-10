@@ -2,11 +2,14 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class MarketingSegmentMember extends Model
 {
+    use HasFactory;
+
     protected $fillable = ['segment_id', 'user_id', 'computed_at', 'score', 'metadata'];
 
     protected $casts = [

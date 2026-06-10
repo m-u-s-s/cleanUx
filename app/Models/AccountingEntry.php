@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
@@ -20,6 +21,8 @@ use Illuminate\Support\Str;
  */
 class AccountingEntry extends Model
 {
+    use HasFactory;
+
     protected $fillable = [
         'entry_code', 'batch_id',
         'posting_date', 'journal_code',
