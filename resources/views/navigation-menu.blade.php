@@ -120,6 +120,7 @@
     ['label' => 'Utilisateurs', 'route' => 'admin.utilisateurs.manage', 'active' => 'admin.utilisateurs*', 'icon' => '👤'],
     ['label' => 'Services', 'route' => 'admin.services', 'active' => 'admin.services', 'icon' => '🧽'],
     ['label' => 'Modules', 'route' => 'admin.modules', 'active' => 'admin.modules', 'icon' => '🧩'],
+    ['label' => 'Feature flags', 'route' => 'admin.feature-flags.manager', 'active' => 'admin.feature-flags*', 'icon' => '🚩'],
     ['label' => 'Feedbacks', 'route' => 'admin.feedbacks', 'active' => 'admin.feedbacks*', 'icon' => '💬'],
     ['label' => 'Outils admin', 'route' => 'admin.outils', 'active' => 'admin.outils', 'icon' => '🛠️'],
     ['label' => 'Clients premium', 'route' => 'admin.premium.clients', 'active' => 'admin.premium.clients', 'icon' => '⭐'],

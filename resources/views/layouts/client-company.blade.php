@@ -34,6 +34,7 @@
                 ['route' => 'client-company.bookings.index','label' => 'Réservations', 'icon' => '📅'],
                 ['route' => 'client-company.bookings.bulk-import','label' => 'Import bulk', 'icon' => '📤'],
                 ['route' => 'client-company.members', 'label' => 'Membres', 'icon' => '👥'],
+                ['route' => 'client-company.contracts', 'label' => 'Contrats', 'icon' => '📄'],
                 ['route' => 'client-company.billing', 'label' => 'Facturation', 'icon' => '🧾'],
                 ])->filter(fn ($link) => \Illuminate\Support\Facades\Route::has($link['route'])) as $link)
                 <a href="{{ route($link['route']) }}"
