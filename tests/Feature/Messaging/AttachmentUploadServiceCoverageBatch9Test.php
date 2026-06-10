@@ -15,11 +15,6 @@ use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
-// ScanAttachmentForMalware declares the App\Jobs\Messaging namespace but lives
-// under app/Services/Jobs/Messaging, so PSR-4 does not autoload it. The service
-// references it for the async AV dispatch, so load it explicitly.
-require_once __DIR__.'/../../../app/Services/Jobs/Messaging/ScanAttachmentForMalware.php';
-
 class AttachmentUploadServiceCoverageBatch9Test extends TestCase
 {
     use RefreshDatabase;
