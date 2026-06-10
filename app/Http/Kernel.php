@@ -16,6 +16,7 @@ use App\Http\Middleware\Enforce2FA;
 use App\Http\Middleware\EnforceTokenGrace;
 use App\Http\Middleware\EnsureActiveAccount;
 use App\Http\Middleware\EnsureFieldTeamLead;
+use App\Http\Middleware\EnsureOrganizationType;
 use App\Http\Middleware\ForceHttps;
 use App\Http\Middleware\LogSlowQueries;
 use App\Http\Middleware\PremiumGate;
@@ -115,6 +116,7 @@ class Kernel extends HttpKernel
         'verified' => EnsureEmailIsVerified::class,
         'role' => CheckRole::class,
         'active.account' => EnsureActiveAccount::class,
+        'org.type' => EnsureOrganizationType::class,
         'field.team.lead' => EnsureFieldTeamLead::class,
         'assistant.ratelimit' => AssistantRateLimit::class,
         'api_scope' => EnforceTokenScope::class,

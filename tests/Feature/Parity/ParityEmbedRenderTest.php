@@ -153,7 +153,9 @@ class ParityEmbedRenderTest extends TestCase
             // Provider-company sub-pages gate on PermissionService::can() against the
             // user's active OrganizationMember; seed an org + OWNER membership so the
             // permission checks (channels/tasks/missions/members) authorize.
-            $org = OrganizationAccount::factory()->create();
+            // The org MUST be provider-typed: the routes carry org.type:provider, so a
+            // default (client_company) org would 403 — mirror real data with the state.
+            $org = OrganizationAccount::factory()->providerCompany()->create();
             $user->forceFill([
                 'organization_account_id' => $org->id,
                 'current_organization_id' => $org->id,
@@ -167,8 +169,9 @@ class ParityEmbedRenderTest extends TestCase
             // entreprise() state sets role='entreprise' → isClientCompany() true (legacy
             // fallback). Sub-pages gate on PermissionService::can() against the user's
             // active OrganizationMember, so seed an org + OWNER membership (OWNER carries
-            // all sites/bookings/finance permissions these pages require).
-            $org = OrganizationAccount::factory()->create();
+            // all sites/bookings/finance permissions these pages require). Client-typed
+            // org so the entreprise-client routes' org.type:client guard authorizes.
+            $org = OrganizationAccount::factory()->clientCompany()->create();
             $user = User::factory()->entreprise()->create([
                 'organization_account_id' => $org->id,
                 'current_organization_id' => $org->id,

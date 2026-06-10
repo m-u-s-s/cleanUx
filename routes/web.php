@@ -45,12 +45,10 @@ Route::get('/push/public-key', [PushSubscriptionController::class, 'publicKey'])
 // WebView session handoff — redeems a single-use ticket and logs the user in
 Route::get('/m/enter', WebViewEntryController::class)->name('webview.enter');
 
-Route::middleware(['auth'])->group(function () {
+Route::middleware(['auth', 'verified', 'active.account'])->group(function () {
     Route::get('/provider/missions/{assignment}/offer', MissionOfferPage::class)
         ->name('provider.missions.offer');
-});
 
-Route::middleware(['auth'])->group(function () {
     Route::get('/provider/onboarding', ProviderOnboardingWizard::class)
         ->name('provider.onboarding');
 });

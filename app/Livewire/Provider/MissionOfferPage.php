@@ -35,6 +35,15 @@ class MissionOfferPage extends Component
     public function mount(int $assignment): void
     {
         $this->assignmentId = $assignment;
+
+        // Anti-IDOR : une offre expose adresse client / prix / commentaires.
+        // On refuse l'accès dès le mount si elle existe et n'appartient pas au
+        // prestataire connecté (une offre inexistante reste gérée gracieusement
+        // par accept()/decline() → "Cette offre n'existe plus.").
+        $owner = MissionAssignment::whereKey($assignment)->value('user_id');
+        if ($owner !== null && (int) $owner !== (int) Auth::id()) {
+            abort(403, "Cette offre ne vous est pas destinée.");
+        }
     }
 
     public function getAssignmentProperty(): ?MissionAssignment

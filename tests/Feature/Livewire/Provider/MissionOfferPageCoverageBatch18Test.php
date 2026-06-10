@@ -59,17 +59,17 @@ class MissionOfferPageCoverageBatch18Test extends TestCase
         ]);
     }
 
-    public function test_accept_on_foreign_offer_flashes_ownership_error(): void
+    public function test_foreign_offer_is_forbidden_to_protect_client_data(): void
     {
         $owner = User::factory()->employe()->create();
         $intruder = User::factory()->employe()->create();
         $assignment = $this->pendingOfferFor($owner);
         $this->actingAs($intruder);
 
+        // Anti-IDOR : une offre étrangère expose adresse client / prix / commentaires.
+        // Le mount doit renvoyer 403, pas afficher les données puis flasher une erreur.
         Livewire::test(MissionOfferPage::class, ['assignment' => $assignment->id])
-            ->call('accept')
-            ->assertSet('messageType', 'error')
-            ->assertNoRedirect();
+            ->assertForbidden();
 
         $this->assertDatabaseHas('mission_assignments', [
             'id' => $assignment->id,

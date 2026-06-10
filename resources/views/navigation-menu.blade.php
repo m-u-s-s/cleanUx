@@ -340,8 +340,12 @@
                 </a>
                 @endif
 
+                @if($user?->isClient() && Route::has('client.calendar.interactive'))
                 <a href="{{ route('client.calendar.interactive') }}">📅 Calendrier interactif</a>
+                @endif
+                @if($user?->isClient() && Route::has('client.recurring.templates'))
                 <a href="{{ route('client.recurring.templates') }}">⭐ Templates 1-clic</a>
+                @endif
                 @if(Route::has('notifications.index'))
                 <a href="{{ route('notifications.index') }}"
                     class="relative inline-flex items-center rounded-xl bg-slate-100 px-3 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700 dark:hover:text-white">
@@ -410,15 +414,6 @@
                 </a>
                 @endif
 
-                <a href="{{ route('admin.onboarding.providers') }}"
-                    class="...">
-                    👥 Onboarding prestataires
-                    @if ($pendingCount = \App\Models\ProviderOnboardingDocument::where('status', 'pending_review')->count())
-                    <span class="ml-2 inline-flex rounded-full bg-amber-100 text-amber-700 px-2 py-0.5 text-xs">
-                        {{ $pendingCount }}
-                    </span>
-                    @endif
-                </a>
                 @if(Route::has('login'))
                 <a href="{{ route('login') }}"
                     class="text-sm font-semibold text-slate-700 hover:text-blue-700 dark:text-slate-300 dark:hover:text-white">

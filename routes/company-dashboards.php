@@ -19,7 +19,7 @@ use Illuminate\Support\Facades\Route;
 | Routes — Entreprise cliente (client_company)
 |--------------------------------------------------------------------------
 */
-Route::middleware(['auth', 'verified', 'active.account'])
+Route::middleware(['auth', 'verified', 'active.account', 'org.type:client'])
     ->prefix('dashboard/entreprise-client')
     ->name('client-company.')
     ->group(function () {
@@ -43,7 +43,7 @@ Route::middleware(['auth', 'verified', 'active.account'])
 | Routes — Entreprise prestataire (provider_company)
 |--------------------------------------------------------------------------
 */
-Route::middleware(['auth', 'verified', 'active.account'])
+Route::middleware(['auth', 'verified', 'active.account', 'org.type:provider'])
     ->prefix('dashboard/entreprise-prestataire')
     ->name('provider-company.')
     ->group(function () {

@@ -95,7 +95,7 @@ Route::middleware(['auth', 'verified', 'active.account'])->group(function () use
     |--------------------------------------------------------------------------
     */
 
-    Route::middleware(['role:admin'])
+    Route::middleware(['role:admin', 'enforce_2fa'])
         ->prefix('admin')
         ->name('admin.')
         ->group(function () use ($livewireOrFallback) {
