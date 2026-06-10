@@ -4,12 +4,14 @@ namespace App\Livewire\Admin\OnboardingV2;
 
 use App\Models\OnboardingJourney;
 use App\Models\OnboardingProgress;
+use App\Support\Livewire\Concerns\EnforcesAdminAccess;
 use Illuminate\Contracts\View\View;
 use Livewire\Component;
 use Livewire\WithPagination;
 
 class OnboardingV2Center extends Component
 {
+    use EnforcesAdminAccess;
     use WithPagination;
 
     protected $paginationTheme = 'tailwind';

@@ -6,7 +6,6 @@ use App\Livewire\Admin\CatalogueServices;
 use App\Models\ServiceCatalog;
 use App\Models\ServiceOption;
 use App\Models\User;
-use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
 use Tests\TestCase;
@@ -188,23 +187,8 @@ class AdminServiceOptionsTest extends TestCase
         $client = User::factory()->create(['role' => 'client', 'is_active' => true]);
         $this->actingAs($client);
 
-        try {
-            Livewire::test(CatalogueServices::class)
-                ->set('selectedServiceId', $service->id)
-                ->set('newOption.label', 'Vitres')
-                ->set('newOption.slug', 'vitres')
-                ->set('newOption.type', 'boolean')
-                ->set('newOption.price_modifier', 'fixed')
-                ->set('newOption.price_modifier_value', '10')
-                ->call('addOption');
-        } catch (\Throwable $e) {
-            $this->assertTrue(
-                $e instanceof AuthorizationException
-                || str_contains(strtolower($e->getMessage()), 'unauthorized')
-                || str_contains(strtolower($e->getMessage()), 'forbidden'),
-                'Une exception d\'autorisation devrait être levée.'
-            );
-        }
+        // EnforcesAdminAccess blocks a non-admin at mount/boot (before any action).
+        Livewire::test(CatalogueServices::class)->assertForbidden();
 
         $this->assertDatabaseMissing('service_options', [
             'service_catalog_id' => $service->id,

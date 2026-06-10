@@ -6,6 +6,7 @@ use App\Models\Booking;
 use App\Models\BookingMatchingDecision;
 use App\Models\ProviderPerformanceMetric;
 use App\Services\Matching\MatchingV2Service;
+use App\Support\Livewire\Concerns\EnforcesAdminAccess;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Config;
 use Livewire\Component;
@@ -13,6 +14,7 @@ use Livewire\WithPagination;
 
 class MatchingInsightsCenter extends Component
 {
+    use EnforcesAdminAccess;
     use WithPagination;
 
     protected $paginationTheme = 'tailwind';

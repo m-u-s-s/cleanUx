@@ -7,6 +7,7 @@ use App\Models\AccountingExport;
 use App\Models\AccountingPeriod;
 use App\Services\AccountingV2\ExportManager;
 use App\Services\AccountingV2\PeriodCloser;
+use App\Support\Livewire\Concerns\EnforcesAdminAccess;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
@@ -14,6 +15,7 @@ use Livewire\WithPagination;
 
 class AccountingCenter extends Component
 {
+    use EnforcesAdminAccess;
     use WithPagination;
 
     protected $paginationTheme = 'tailwind';

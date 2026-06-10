@@ -18,6 +18,7 @@ use App\Models\WorkOrderApproval;
 use App\Models\WorkOrderLine;
 use App\Services\Contracts\WorkOrderContractService;
 use App\Support\ActivityLogger;
+use App\Support\Livewire\Concerns\EnforcesAdminAccess;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Collection;
 use Livewire\Component;
@@ -28,6 +29,8 @@ use Livewire\Component;
  */
 class B2BOperationsCenter extends Component
 {
+    use EnforcesAdminAccess;
+
     public ?int $selectedAccountId = null;
 
     public ?int $contractId = null;

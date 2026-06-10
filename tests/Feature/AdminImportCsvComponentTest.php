@@ -168,15 +168,8 @@ class AdminImportCsvComponentTest extends TestCase
         $client = User::factory()->client()->create(['is_active' => true]);
         $this->actingAs($client);
 
-        $content = "name,email,password,role\nX,x@example.com,secret123,client";
-
-        // Livewire renders the AuthorizationException thrown by Gate::authorize() as a
-        // 403 response (it keeps AuthorizationException out of "withoutExceptionHandling"),
-        // so we assert on the response status rather than catching a thrown exception.
+        // EnforcesAdminAccess blocks a non-admin at mount/boot (before any action).
         Livewire::test(ImportCsv::class)
-            ->set('type', 'clients')
-            ->set('csv', $this->csvFile('clients.csv', $content))
-            ->call('import')
             ->assertForbidden();
 
         $this->assertDatabaseMissing('users', ['email' => 'x@example.com']);

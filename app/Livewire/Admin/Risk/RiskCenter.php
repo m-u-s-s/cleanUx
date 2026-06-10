@@ -5,6 +5,7 @@ namespace App\Livewire\Admin\Risk;
 use App\Models\RiskEvaluation;
 use App\Models\RiskHold;
 use App\Services\Risk\RiskScoringEngine;
+use App\Support\Livewire\Concerns\EnforcesAdminAccess;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
@@ -12,6 +13,7 @@ use Livewire\WithPagination;
 
 class RiskCenter extends Component
 {
+    use EnforcesAdminAccess;
     use WithPagination;
 
     protected $paginationTheme = 'tailwind';

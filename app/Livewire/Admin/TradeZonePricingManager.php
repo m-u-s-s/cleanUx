@@ -6,6 +6,7 @@ use App\Models\ServiceZone;
 use App\Models\Trade;
 use App\Models\TradeZonePricing;
 use App\Support\ActivityLogger;
+use App\Support\Livewire\Concerns\EnforcesAdminAccess;
 use Illuminate\Contracts\View\View;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
@@ -19,6 +20,8 @@ use Livewire\Component;
 #[Layout('layouts.app')]
 class TradeZonePricingManager extends Component
 {
+    use EnforcesAdminAccess;
+
     public int $tradeId;
 
     public string $tradeName = '';

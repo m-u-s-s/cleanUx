@@ -7,6 +7,7 @@ use App\Models\GdprDataRequest;
 use App\Models\User;
 use App\Services\Gdpr\DataErasureService;
 use App\Services\Gdpr\RetentionPolicyService;
+use App\Support\Livewire\Concerns\EnforcesAdminAccess;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Schema;
@@ -15,6 +16,7 @@ use Livewire\WithPagination;
 
 class GdprCenter extends Component
 {
+    use EnforcesAdminAccess;
     use WithPagination;
 
     protected $paginationTheme = 'tailwind';

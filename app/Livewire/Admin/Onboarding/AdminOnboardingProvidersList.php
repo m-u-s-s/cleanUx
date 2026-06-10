@@ -4,6 +4,7 @@ namespace App\Livewire\Admin\Onboarding;
 
 use App\Models\ProviderOnboardingDocument;
 use App\Models\ProviderProfile;
+use App\Support\Livewire\Concerns\EnforcesAdminAccess;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -24,6 +25,7 @@ use Livewire\WithPagination;
  */
 class AdminOnboardingProvidersList extends Component
 {
+    use EnforcesAdminAccess;
     use WithPagination;
 
     protected $paginationTheme = 'tailwind';

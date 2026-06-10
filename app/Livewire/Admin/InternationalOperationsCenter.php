@@ -9,11 +9,14 @@ use App\Models\CountryServiceCatalogRule;
 use App\Models\MarketLaunchReadiness;
 use App\Models\ServiceCatalog;
 use App\Support\ActivityLogger;
+use App\Support\Livewire\Concerns\EnforcesAdminAccess;
 use Illuminate\Contracts\View\View;
 use Livewire\Component;
 
 class InternationalOperationsCenter extends Component
 {
+    use EnforcesAdminAccess;
+
     public string $search = '';
 
     public string $stageFilter = '';

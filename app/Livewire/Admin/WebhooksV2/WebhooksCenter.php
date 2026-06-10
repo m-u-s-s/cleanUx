@@ -8,6 +8,7 @@ use App\Models\WebhookEndpoint;
 use App\Models\WebhookEvent;
 use App\Models\WebhookSubscription;
 use App\Services\WebhooksV2\WebhookDispatcher;
+use App\Support\Livewire\Concerns\EnforcesAdminAccess;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
@@ -16,6 +17,7 @@ use Livewire\WithPagination;
 
 class WebhooksCenter extends Component
 {
+    use EnforcesAdminAccess;
     use WithPagination;
 
     protected $paginationTheme = 'tailwind';

@@ -24,7 +24,7 @@ class Phase14_1Test extends TestCase
 
     public function test_admin_can_render_documents_center(): void
     {
-        $admin = User::factory()->create();
+        $admin = User::factory()->admin()->create();
         $admin->forceFill(['platform_role' => 'admin'])->save();
 
         Livewire::actingAs($admin)
@@ -35,7 +35,7 @@ class Phase14_1Test extends TestCase
     public function test_admin_documents_center_filters_by_status(): void
     {
         Storage::fake('private');
-        $admin = User::factory()->create();
+        $admin = User::factory()->admin()->create();
         $provider = User::factory()->create();
         ProviderProfile::create(['user_id' => $provider->id, 'provider_type' => 'individual', 'status' => 'pending']);
 
@@ -60,7 +60,7 @@ class Phase14_1Test extends TestCase
     public function test_admin_can_approve_document(): void
     {
         Storage::fake('private');
-        $admin = User::factory()->create();
+        $admin = User::factory()->admin()->create();
         $provider = User::factory()->create();
         ProviderProfile::create(['user_id' => $provider->id, 'provider_type' => 'individual', 'status' => 'pending']);
 
@@ -80,7 +80,7 @@ class Phase14_1Test extends TestCase
     public function test_admin_can_reject_document_with_reason(): void
     {
         Storage::fake('private');
-        $admin = User::factory()->create();
+        $admin = User::factory()->admin()->create();
         $provider = User::factory()->create();
         ProviderProfile::create(['user_id' => $provider->id, 'provider_type' => 'individual', 'status' => 'pending']);
 
@@ -103,7 +103,7 @@ class Phase14_1Test extends TestCase
     public function test_admin_reject_requires_reason(): void
     {
         Storage::fake('private');
-        $admin = User::factory()->create();
+        $admin = User::factory()->admin()->create();
         $provider = User::factory()->create();
         ProviderProfile::create(['user_id' => $provider->id, 'provider_type' => 'individual', 'status' => 'pending']);
 
@@ -128,7 +128,7 @@ class Phase14_1Test extends TestCase
 
     public function test_admin_providers_list_renders(): void
     {
-        $admin = User::factory()->create();
+        $admin = User::factory()->admin()->create();
 
         Livewire::actingAs($admin)
             ->test(AdminOnboardingProvidersList::class)
@@ -137,7 +137,7 @@ class Phase14_1Test extends TestCase
 
     public function test_admin_providers_list_counts_by_status(): void
     {
-        $admin = User::factory()->create();
+        $admin = User::factory()->admin()->create();
 
         // 1 in_progress (étape 2)
         $u1 = User::factory()->create();
@@ -174,7 +174,7 @@ class Phase14_1Test extends TestCase
     public function test_admin_can_approve_onboarding_when_all_ready(): void
     {
         Storage::fake('private');
-        $admin = User::factory()->create();
+        $admin = User::factory()->admin()->create();
 
         $provider = User::factory()->create();
         $provider->update(['stripe_connect_status' => 'active']);
@@ -204,7 +204,7 @@ class Phase14_1Test extends TestCase
 
     public function test_admin_approve_fails_without_documents(): void
     {
-        $admin = User::factory()->create();
+        $admin = User::factory()->admin()->create();
         $provider = User::factory()->create();
         $provider->update(['stripe_connect_status' => 'active']);
 

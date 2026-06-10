@@ -6,6 +6,7 @@ use App\Models\ContractDocument;
 use App\Models\ContractSignature;
 use App\Models\ContractTemplate;
 use App\Services\ContractsV2\ContractService;
+use App\Support\Livewire\Concerns\EnforcesAdminAccess;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
@@ -13,6 +14,7 @@ use Livewire\WithPagination;
 
 class ContractsCenter extends Component
 {
+    use EnforcesAdminAccess;
     use WithPagination;
 
     protected $paginationTheme = 'tailwind';

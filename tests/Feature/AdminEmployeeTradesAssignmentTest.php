@@ -5,7 +5,6 @@ namespace Tests\Feature;
 use App\Livewire\Admin\GestionUtilisateurs;
 use App\Models\Trade;
 use App\Models\User;
-use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
 use Tests\TestCase;
@@ -158,17 +157,8 @@ class AdminEmployeeTradesAssignmentTest extends TestCase
         ]);
         $this->actingAs($client);
 
-        try {
-            Livewire::test(GestionUtilisateurs::class)
-                ->call('openEmployeeTrades', $employee->id);
-        } catch (\Throwable $e) {
-            $this->assertTrue(
-                $e instanceof AuthorizationException
-                || str_contains(strtolower($e->getMessage()), 'unauthorized')
-                || str_contains(strtolower($e->getMessage()), 'forbidden'),
-                'Non-admin doit être bloqué par autorisation.'
-            );
-        }
+        // EnforcesAdminAccess blocks a non-admin at mount/boot (before any action).
+        Livewire::test(GestionUtilisateurs::class)->assertForbidden();
 
         $this->assertDatabaseMissing('trade_user', [
             'user_id' => $employee->id,

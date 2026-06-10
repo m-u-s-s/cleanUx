@@ -3,11 +3,13 @@
 namespace App\Livewire\Admin;
 
 use App\Models\ActivityLog;
+use App\Support\Livewire\Concerns\EnforcesAdminAccess;
 use Livewire\Component;
 use Livewire\WithPagination;
 
 class LogsActivity extends Component
 {
+    use EnforcesAdminAccess;
     use WithPagination;
 
     public string $search = '';

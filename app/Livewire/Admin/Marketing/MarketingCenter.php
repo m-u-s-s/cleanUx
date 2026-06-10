@@ -8,12 +8,14 @@ use App\Models\MarketingOptOut;
 use App\Models\MarketingSegment;
 use App\Services\Marketing\CampaignEngine;
 use App\Services\Marketing\SegmentEngine;
+use App\Support\Livewire\Concerns\EnforcesAdminAccess;
 use Illuminate\Contracts\View\View;
 use Livewire\Component;
 use Livewire\WithPagination;
 
 class MarketingCenter extends Component
 {
+    use EnforcesAdminAccess;
     use WithPagination;
 
     protected $paginationTheme = 'tailwind';

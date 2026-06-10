@@ -6,7 +6,6 @@ use App\Livewire\Admin\GestionZones;
 use App\Models\Trade;
 use App\Models\TradeZoneSetting;
 use App\Models\User;
-use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
 use Tests\Support\CreatesZoneAwareFixtures;
@@ -148,21 +147,8 @@ class AdminTradeZoneSettingsTest extends TestCase
         $client = User::factory()->create(['role' => 'client', 'is_active' => true]);
         $this->actingAs($client);
 
-        try {
-            Livewire::test(GestionZones::class)
-                ->set('selectedZoneId', $context['zone']->id)
-                ->call('toggleTradeActive', $trade->id);
-        } catch (\Throwable $e) {
-            // Gate::authorize peut soit lancer AuthorizationException soit produire
-            // une réponse 403 selon le contexte Livewire — on accepte les deux.
-            $this->assertTrue(
-                $e instanceof AuthorizationException
-                || str_contains($e->getMessage(), 'unauthorized')
-                || str_contains($e->getMessage(), 'forbidden')
-                || str_contains($e->getMessage(), 'This action is unauthorized'),
-                'Une exception d\'autorisation devrait être levée pour un non-admin.'
-            );
-        }
+        // EnforcesAdminAccess blocks a non-admin at mount/boot (before any action).
+        Livewire::test(GestionZones::class)->assertForbidden();
 
         $this->assertDatabaseMissing('trade_zone_settings', [
             'trade_id' => $trade->id,

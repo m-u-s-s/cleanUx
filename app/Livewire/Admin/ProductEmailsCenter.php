@@ -5,10 +5,13 @@ namespace App\Livewire\Admin;
 use App\Models\EmailLog;
 use App\Services\Email\EmailLogService;
 use App\Services\Email\ProductEmailTemplates;
+use App\Support\Livewire\Concerns\EnforcesAdminAccess;
 use Livewire\Component;
 
 class ProductEmailsCenter extends Component
 {
+    use EnforcesAdminAccess;
+
     public string $templateKey = 'booking_confirmed';
 
     public string $recipientName = 'Client Démo';

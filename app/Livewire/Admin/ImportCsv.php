@@ -7,6 +7,7 @@ use App\Models\Booking;
 use App\Models\OrganizationAccount;
 use App\Models\User;
 use App\Support\ActivityLogger;
+use App\Support\Livewire\Concerns\EnforcesAdminAccess;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
@@ -16,6 +17,7 @@ use Livewire\WithFileUploads;
 
 class ImportCsv extends Component
 {
+    use EnforcesAdminAccess;
     use WithFileUploads;
 
     public $csv;

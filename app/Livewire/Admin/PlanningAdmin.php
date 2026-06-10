@@ -5,6 +5,7 @@ namespace App\Livewire\Admin;
 use App\Models\Booking;
 use App\Models\User;
 use App\Support\Domain\BookingStatus;
+use App\Support\Livewire\Concerns\EnforcesAdminAccess;
 use Carbon\Carbon;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Builder;
@@ -15,6 +16,8 @@ use Livewire\Component;
 #[Layout('layouts.app')]
 class PlanningAdmin extends Component
 {
+    use EnforcesAdminAccess;
+
     public string $filtreEmploye = '';
 
     public string $filtreDate = '';

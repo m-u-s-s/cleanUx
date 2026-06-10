@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Livewire\Admin\TradeFormPreview;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
 use Tests\TestCase;
@@ -10,6 +11,14 @@ use Tests\TestCase;
 class TradeFormPreviewTest extends TestCase
 {
     use RefreshDatabase;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        // TradeFormPreview is an admin-only widget (nested in the admin Trades page) and now
+        // carries the EnforcesAdminAccess guard — authenticate as an admin to exercise it.
+        $this->actingAs(User::factory()->admin()->create());
+    }
 
     public function test_preview_loads_a_valid_schema_array_at_mount(): void
     {

@@ -6,12 +6,14 @@ use App\Models\AvailabilityException;
 use App\Models\AvailabilityHold;
 use App\Models\AvailabilitySlot;
 use App\Models\User;
+use App\Support\Livewire\Concerns\EnforcesAdminAccess;
 use Illuminate\Contracts\View\View;
 use Livewire\Component;
 use Livewire\WithPagination;
 
 class AvailabilityCenter extends Component
 {
+    use EnforcesAdminAccess;
     use WithPagination;
 
     protected $paginationTheme = 'tailwind';

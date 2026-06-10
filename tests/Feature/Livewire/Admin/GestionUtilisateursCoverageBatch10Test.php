@@ -226,9 +226,9 @@ class GestionUtilisateursCoverageBatch10Test extends TestCase
         $client = User::factory()->client()->create();
         $target = User::factory()->client()->create(['is_active' => true]);
 
+        // EnforcesAdminAccess now blocks a non-admin at mount/boot (before any action).
         Livewire::actingAs($client)
             ->test(GestionUtilisateurs::class)
-            ->call('toggleActivation', $target->id)
             ->assertForbidden();
 
         $this->assertTrue((bool) $target->refresh()->is_active);

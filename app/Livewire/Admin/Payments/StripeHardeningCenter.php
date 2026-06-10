@@ -7,6 +7,7 @@ use App\Models\StripeReconciliationRun;
 use App\Models\StripeWebhookEvent;
 use App\Services\Payments\StripeReconciliationService;
 use App\Support\ActivityLogger;
+use App\Support\Livewire\Concerns\EnforcesAdminAccess;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
@@ -15,6 +16,7 @@ use Livewire\WithPagination;
 
 class StripeHardeningCenter extends Component
 {
+    use EnforcesAdminAccess;
     use WithPagination;
 
     protected $paginationTheme = 'tailwind';

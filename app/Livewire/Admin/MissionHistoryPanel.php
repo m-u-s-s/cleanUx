@@ -3,10 +3,13 @@
 namespace App\Livewire\Admin;
 
 use App\Models\Mission;
+use App\Support\Livewire\Concerns\EnforcesAdminAccess;
 use Livewire\Component;
 
 class MissionHistoryPanel extends Component
 {
+    use EnforcesAdminAccess;
+
     public Mission $mission;
 
     public function mount(Mission $mission): void

@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Admin;
 
+use App\Support\Livewire\Concerns\EnforcesAdminAccess;
 use App\Support\Livewire\Concerns\RendersTradeFormSchema;
 use App\Support\TradeFormSchema;
 use Illuminate\Contracts\View\View;
@@ -16,6 +17,7 @@ use Livewire\Component;
  */
 class TradeFormPreview extends Component
 {
+    use EnforcesAdminAccess;
     use RendersTradeFormSchema;
 
     /** Schema brut en entrée (peut être JSON string ou array). */

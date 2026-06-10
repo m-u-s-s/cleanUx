@@ -8,12 +8,14 @@ use App\Models\FleetEquipment;
 use App\Models\FleetMaintenanceLog;
 use App\Models\FleetVehicle;
 use App\Services\FleetV2\CertificationExpiryScanner;
+use App\Support\Livewire\Concerns\EnforcesAdminAccess;
 use Illuminate\Contracts\View\View;
 use Livewire\Component;
 use Livewire\WithPagination;
 
 class FleetCenter extends Component
 {
+    use EnforcesAdminAccess;
     use WithPagination;
 
     protected $paginationTheme = 'tailwind';

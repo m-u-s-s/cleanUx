@@ -4,6 +4,7 @@ namespace App\Livewire\Admin;
 
 use App\Models\Trade;
 use App\Support\ActivityLogger;
+use App\Support\Livewire\Concerns\EnforcesAdminAccess;
 use App\Support\TradeFormSchema;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Str;
@@ -24,6 +25,7 @@ use Livewire\WithPagination;
 #[Layout('layouts.app')]
 class Trades extends Component
 {
+    use EnforcesAdminAccess;
     use WithPagination;
 
     // ── Filtres ──

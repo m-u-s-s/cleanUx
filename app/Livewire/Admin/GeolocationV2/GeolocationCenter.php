@@ -6,12 +6,14 @@ use App\Models\AddressLookup;
 use App\Models\DistanceCalculation;
 use App\Models\GeocodingCacheEntry;
 use App\Services\GeolocationV2\GeocodingService;
+use App\Support\Livewire\Concerns\EnforcesAdminAccess;
 use Illuminate\Contracts\View\View;
 use Livewire\Component;
 use Livewire\WithPagination;
 
 class GeolocationCenter extends Component
 {
+    use EnforcesAdminAccess;
     use WithPagination;
 
     protected $paginationTheme = 'tailwind';

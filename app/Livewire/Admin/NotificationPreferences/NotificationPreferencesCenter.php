@@ -4,12 +4,14 @@ namespace App\Livewire\Admin\NotificationPreferences;
 
 use App\Models\NotificationPreference;
 use App\Models\NotificationPreferenceAudit;
+use App\Support\Livewire\Concerns\EnforcesAdminAccess;
 use Illuminate\Contracts\View\View;
 use Livewire\Component;
 use Livewire\WithPagination;
 
 class NotificationPreferencesCenter extends Component
 {
+    use EnforcesAdminAccess;
     use WithPagination;
 
     protected $paginationTheme = 'tailwind';

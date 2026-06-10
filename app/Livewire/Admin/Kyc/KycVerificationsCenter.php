@@ -4,6 +4,7 @@ namespace App\Livewire\Admin\Kyc;
 
 use App\Models\KycVerification;
 use App\Services\Kyc\KycVerificationService;
+use App\Support\Livewire\Concerns\EnforcesAdminAccess;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
@@ -11,6 +12,7 @@ use Livewire\WithPagination;
 
 class KycVerificationsCenter extends Component
 {
+    use EnforcesAdminAccess;
     use WithPagination;
 
     protected $paginationTheme = 'tailwind';
