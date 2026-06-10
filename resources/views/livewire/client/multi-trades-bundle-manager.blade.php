@@ -74,6 +74,25 @@
                                     {{ number_format(($item->quoted_price_cents ?: $item->estimated_price_cents) / 100, 0, ',', ' ') }} €
                                 </span>
                             </div>
+
+                            @php($pending = $item->quotes->where('status', 'submitted'))
+                            @if ($item->status !== 'quoted' && $pending->count() > 0)
+                                <div class="ml-4 mb-2 space-y-1">
+                                    <p class="text-[11px] font-semibold text-slate-500">{{ $pending->count() }} devis reçu(s) — comparez et choisissez :</p>
+                                    @foreach ($pending as $quote)
+                                        <div class="flex items-center justify-between gap-2 rounded-lg bg-slate-50 border border-slate-100 px-2.5 py-1.5 text-xs">
+                                            <span class="text-slate-600 truncate">
+                                                {{ $quote->provider?->name }} —
+                                                <strong class="text-slate-900">{{ number_format(($quote->price_cents ?? 0) / 100, 2, ',', ' ') }} €</strong>
+                                            </span>
+                                            <button wire:click="selectQuote({{ $quote->id }})"
+                                                class="shrink-0 rounded-md bg-emerald-600 px-2.5 py-1 text-[11px] font-semibold text-white hover:bg-emerald-700">
+                                                Choisir
+                                            </button>
+                                        </div>
+                                    @endforeach
+                                </div>
+                            @endif
                         @endforeach
                     </div>
 

@@ -256,6 +256,68 @@ class MultiTradeBundleService
     }
 
     /**
+     * P3 — Le client retient un devis soumis pour un item.
+     * Le devis choisi passe `selected`, les concurrents `rejected`, l'item est figé
+     * sur le prestataire/prix choisi. Quand tous les items sont quotés, la remise
+     * groupage est appliquée.
+     */
+    public function selectQuote(MultiTradeBundleItemQuote $quote): MultiTradeBundleItemQuote
+    {
+        if ($quote->status !== MultiTradeBundleItemQuote::STATUS_SUBMITTED) {
+            throw ValidationException::withMessages([
+                'status' => ['Seul un devis effectivement proposé peut être retenu.'],
+            ]);
+        }
+
+        if ($quote->isExpired()) {
+            throw ValidationException::withMessages([
+                'expired' => ['Ce devis a expiré.'],
+            ]);
+        }
+
+        return DB::transaction(function () use ($quote) {
+            $item = $quote->item;
+
+            // Rejette les devis concurrents encore ouverts pour cet item.
+            MultiTradeBundleItemQuote::query()
+                ->where('bundle_item_id', $item->id)
+                ->where('id', '!=', $quote->id)
+                ->whereIn('status', [
+                    MultiTradeBundleItemQuote::STATUS_PENDING,
+                    MultiTradeBundleItemQuote::STATUS_SUBMITTED,
+                ])
+                ->update(['status' => MultiTradeBundleItemQuote::STATUS_REJECTED]);
+
+            $quote->update(['status' => MultiTradeBundleItemQuote::STATUS_SELECTED]);
+
+            $item->update([
+                'assigned_provider_user_id' => $quote->provider_user_id,
+                'quoted_price_cents' => (int) $quote->price_cents,
+                'status' => MultiTradeBundleItem::STATUS_QUOTED,
+            ]);
+
+            $bundle = $item->bundle;
+
+            // Remise groupage : appliquée une fois TOUS les items quotés (≥ 2 items).
+            $allQuoted = ! $bundle->items()
+                ->where('status', '!=', MultiTradeBundleItem::STATUS_QUOTED)
+                ->exists();
+
+            if ($allQuoted
+                && $bundle->items()->count() >= 2
+                && (float) $bundle->bundle_discount_percent <= 0) {
+                $bundle->update([
+                    'bundle_discount_percent' => (float) config('bundles.group_discount_percent', 10),
+                ]);
+            }
+
+            $this->recomputeBundleTotal($bundle->fresh());
+
+            return $quote->fresh();
+        });
+    }
+
+    /**
      * Provider quote un item du bundle.
      */
     public function quoteItem(

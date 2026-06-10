@@ -3,6 +3,7 @@
 namespace App\Livewire\Client;
 
 use App\Models\MultiTradeBundle;
+use App\Models\MultiTradeBundleItemQuote;
 use App\Models\Trade;
 use App\Services\Bundles\MultiTradeBundleService;
 use Illuminate\Contracts\View\View;
@@ -135,12 +136,44 @@ class MultiTradesBundleManager extends Component
         $this->dispatch('toast', 'Bundle annulé.', 'success');
     }
 
+    /**
+     * P3 — Le client retient un devis reçu pour un item de son chantier.
+     */
+    public function selectQuote(int $quoteId): void
+    {
+        $quote = MultiTradeBundleItemQuote::query()
+            ->where('id', $quoteId)
+            ->where('status', MultiTradeBundleItemQuote::STATUS_SUBMITTED)
+            ->whereHas('item.bundle', fn ($q) => $q->where('client_user_id', Auth::id()))
+            ->first();
+
+        if (! $quote) {
+            $this->dispatch('toast', 'Devis introuvable ou déjà traité.', 'error');
+
+            return;
+        }
+
+        try {
+            app(MultiTradeBundleService::class)->selectQuote($quote);
+            $this->dispatch('toast', 'Devis retenu.', 'success');
+        } catch (ValidationException $e) {
+            $this->dispatch('toast', collect($e->errors())->flatten()->first() ?? 'Échec.', 'error');
+        }
+    }
+
     public function render(): View
     {
         $user = Auth::user();
         $bundles = MultiTradeBundle::query()
             ->where('client_user_id', $user->id)
-            ->with(['items.trade:id,name,code', 'items.provider:id,name'])
+            ->with([
+                'items.trade:id,name,code',
+                'items.provider:id,name',
+                'items.quotes' => fn ($q) => $q->whereIn('status', [
+                    MultiTradeBundleItemQuote::STATUS_SUBMITTED,
+                    MultiTradeBundleItemQuote::STATUS_SELECTED,
+                ])->with('provider:id,name'),
+            ])
             ->orderByDesc('created_at')
             ->limit(20)
             ->get();
