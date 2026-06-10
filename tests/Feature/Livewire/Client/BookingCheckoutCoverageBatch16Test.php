@@ -6,7 +6,6 @@ use App\Livewire\Client\BookingCheckout;
 use App\Models\Booking;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\Route;
 use Livewire\Livewire;
 use Tests\TestCase;
 
@@ -21,10 +20,6 @@ class BookingCheckoutCoverageBatch16Test extends TestCase
         parent::setUp();
 
         $this->client = User::factory()->client()->create(['stripe_id' => null]);
-
-        if (! Route::has('dashboard.client')) {
-            Route::get('/test-stub/dashboard-client', fn () => 'ok')->name('dashboard.client');
-        }
     }
 
     public function test_mount_without_booking_renders_with_publishable_key(): void

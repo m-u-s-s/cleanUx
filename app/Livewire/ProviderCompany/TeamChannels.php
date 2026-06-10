@@ -13,6 +13,7 @@ use App\Services\Messaging\ModerationService;
 use App\Services\Messaging\ReactionService;
 use App\Services\Messaging\ReadReceiptService;
 use App\Services\PermissionService;
+use App\Support\Livewire\Concerns\EnforcesActiveOrgMembership;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\On;
@@ -21,6 +22,7 @@ use Livewire\WithFileUploads;
 
 class TeamChannels extends Component
 {
+    use EnforcesActiveOrgMembership;
     use WithFileUploads;
 
     // ──────────────────────────────────────────────────────

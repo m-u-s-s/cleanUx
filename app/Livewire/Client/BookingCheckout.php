@@ -96,7 +96,7 @@ class BookingCheckout extends Component
         try {
             app(MissionPaymentService::class)->authorize($booking, $paymentMethodId);
             $this->dispatch('toast', 'Paiement autorisé. Vous serez débité quand la mission débute.', 'success');
-            $this->redirect(route('dashboard.client').'?booking='.$booking->id, navigate: true);
+            $this->redirect(route('client.dashboard').'?booking='.$booking->id, navigate: true);
         } catch (\Throwable $e) {
             $this->error = 'Erreur paiement : '.$e->getMessage();
         } finally {

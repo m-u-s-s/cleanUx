@@ -120,6 +120,10 @@ class ParityEmbedRenderTest extends TestCase
                     'organization_account_id' => $org->id,
                     'current_organization_id' => $org->id,
                 ])->save();
+                // EnforcesActiveOrgMembership now requires an active membership of the current org
+                // (not just current_organization_id being set) — seed it so the guard passes and
+                // the page proceeds to its (fixture-heavy) render.
+                $this->seedOwnerMembership($org, $user);
                 break;
 
             case 'dashboard-employe-chef-equipe':

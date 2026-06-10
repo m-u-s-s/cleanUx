@@ -4,6 +4,7 @@ namespace App\Livewire\ClientCompany;
 
 use App\Models\OrganizationSite;
 use App\Services\PermissionService;
+use App\Support\Livewire\Concerns\EnforcesActiveOrgMembership;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
@@ -15,6 +16,7 @@ use Livewire\WithPagination;
  */
 class BillingCenter extends Component
 {
+    use EnforcesActiveOrgMembership;
     use WithPagination;
 
     public string $filterStatus = '';

@@ -2,7 +2,7 @@
     @if (! $booking)
         <div class="text-center py-16">
             <p class="text-slate-500">Mission introuvable.</p>
-            <a href="{{ route('dashboard.employe') }}" class="mt-4 inline-block text-indigo-600 hover:underline">← Retour</a>
+            <a href="{{ route('employe.dashboard') }}" class="mt-4 inline-block text-indigo-600 hover:underline">← Retour</a>
         </div>
     @elseif ($existing)
         <div class="rounded-2xl border bg-emerald-50 p-8 text-center">
@@ -12,7 +12,7 @@
             @if ($existing->comment)
                 <p class="text-xs text-slate-500 italic mt-3">« {{ $existing->comment }} »</p>
             @endif
-            <a href="{{ route('dashboard.employe') }}" class="mt-4 inline-block rounded-lg bg-indigo-600 text-white px-4 py-2 text-sm font-semibold hover:bg-indigo-500">Retour</a>
+            <a href="{{ route('employe.dashboard') }}" class="mt-4 inline-block rounded-lg bg-indigo-600 text-white px-4 py-2 text-sm font-semibold hover:bg-indigo-500">Retour</a>
         </div>
     @else
         <div class="rounded-2xl bg-white border shadow-sm p-6">
@@ -65,7 +65,7 @@
                         class="w-full rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white py-3 text-sm font-bold">
                     Envoyer mon évaluation
                 </button>
-                <a href="{{ route('dashboard.employe') }}" class="block text-center text-xs text-slate-500 hover:underline">Plus tard</a>
+                <a href="{{ route('employe.dashboard') }}" class="block text-center text-xs text-slate-500 hover:underline">Plus tard</a>
             </div>
         </div>
     @endif

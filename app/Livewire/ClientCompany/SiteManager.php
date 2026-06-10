@@ -5,6 +5,7 @@ namespace App\Livewire\ClientCompany;
 use App\Models\OrganizationSite;
 use App\Models\ProviderProfile;
 use App\Services\PermissionService;
+use App\Support\Livewire\Concerns\EnforcesActiveOrgMembership;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
@@ -15,6 +16,8 @@ use Livewire\Component;
  */
 class SiteManager extends Component
 {
+    use EnforcesActiveOrgMembership;
+
     // ──────────────────────────────────────────────────────
     // State
     // ──────────────────────────────────────────────────────

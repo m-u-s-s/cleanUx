@@ -6,6 +6,7 @@ use App\Models\Channel;
 use App\Models\Mission;
 use App\Models\OrganizationMember;
 use App\Models\Task;
+use App\Support\Livewire\Concerns\EnforcesActiveOrgMembership;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
@@ -18,6 +19,8 @@ use Livewire\Component;
  */
 class ProviderDashboard extends Component
 {
+    use EnforcesActiveOrgMembership;
+
     public string $period = 'today';
 
     public function mount(): void

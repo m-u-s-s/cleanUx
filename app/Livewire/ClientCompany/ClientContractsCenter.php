@@ -4,6 +4,7 @@ namespace App\Livewire\ClientCompany;
 
 use App\Models\ContractSlaEvent;
 use App\Models\OrganizationContract;
+use App\Support\Livewire\Concerns\EnforcesActiveOrgMembership;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
@@ -19,6 +20,8 @@ use Livewire\Component;
  */
 class ClientContractsCenter extends Component
 {
+    use EnforcesActiveOrgMembership;
+
     public ?int $selectedContractId = null;
 
     /**

@@ -7,7 +7,6 @@ use App\Models\Booking;
 use App\Models\BookingTip;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\Route;
 use Livewire\Livewire;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
@@ -26,11 +25,6 @@ class ClientTipBookingCoverageBatch8Test extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-
-        // The component and its blade view reference route('dashboard.client'),
-        // which is not registered as a global alias in the test router. Provide
-        // a stub so render() and the submit() redirect are reachable.
-        Route::get('/__dash_client_stub', fn () => 'ok')->name('dashboard.client');
     }
 
     private function completedBooking(User $client, User $provider): Booking
@@ -182,7 +176,7 @@ class ClientTipBookingCoverageBatch8Test extends TestCase
             ->set('message', 'Merci beaucoup !')
             ->call('submit')
             ->assertDispatched('toast')
-            ->assertRedirect(route('dashboard.client'))
+            ->assertRedirect(route('client.dashboard'))
             ->assertSet('selectedAmountCents', null)
             ->assertSet('message', '');
 

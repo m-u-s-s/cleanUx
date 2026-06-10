@@ -8,7 +8,6 @@ use App\Models\Feedback;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Notification;
-use Illuminate\Support\Facades\Route;
 use Livewire\Livewire;
 use Tests\TestCase;
 
@@ -27,11 +26,6 @@ class EmployeeRateClientCoverageBatch14Test extends TestCase
         parent::setUp();
 
         Notification::fake();
-
-        // The component + blade reference route('dashboard.employe'), which is not
-        // defined in the app (the real route is named 'employe.dashboard'). Register
-        // it at runtime so the view can render and the component is exercisable.
-        Route::get('/dashboard/employe', fn () => 'ok')->name('dashboard.employe');
 
         $this->client = User::factory()->client()->create();
         $this->provider = User::factory()->employe()->create([
@@ -109,7 +103,7 @@ class EmployeeRateClientCoverageBatch14Test extends TestCase
             ->set('communication', 3)
             ->call('submit')
             ->assertDispatched('toast')
-            ->assertRedirect(route('dashboard.employe'));
+            ->assertRedirect(route('employe.dashboard'));
 
         $feedback = Feedback::query()
             ->where('booking_id', $this->booking->id)

@@ -8,6 +8,7 @@ use App\Models\MissionAssignment;
 use App\Models\OrganizationContract;
 use App\Models\OrganizationMember;
 use App\Services\PermissionService;
+use App\Support\Livewire\Concerns\EnforcesActiveOrgMembership;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\On;
@@ -20,6 +21,8 @@ use Livewire\Component;
  */
 class DispatchCenter extends Component
 {
+    use EnforcesActiveOrgMembership;
+
     public string $filterDate = '';
 
     public string $filterStatus = '';
