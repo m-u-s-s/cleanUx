@@ -14,6 +14,7 @@ use App\Livewire\Employe\TeamLeadOperationsCenter;
 use App\Livewire\Employe\ValidationMultipleRdv;
 use App\Livewire\EmployeDashboard;
 use App\Livewire\FeedbacksEmploye;
+use App\Livewire\Provider\BundleQuoteRequests;
 use App\Livewire\Provider\ProviderBadgesPage;
 use App\Livewire\Provider\ProviderDisputesPage;
 use App\Livewire\Provider\ProviderEarningsDashboard;
@@ -39,6 +40,10 @@ Route::middleware(['role:employe'])
 
         if (class_exists(ProviderDisputesPage::class)) {
             Route::get('/litiges', ProviderDisputesPage::class)->name('disputes');
+        }
+
+        if (class_exists(BundleQuoteRequests::class)) {
+            Route::get('/devis-chantiers', BundleQuoteRequests::class)->name('bundle-quotes');
         }
 
         if (class_exists(ProviderKycPage::class)) {

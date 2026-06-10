@@ -70,6 +70,7 @@
     'Mon travail' => [
     ['label' => 'Ma journée', 'route' => 'employe.dashboard', 'active' => 'employe.dashboard', 'icon' => '🏠'],
     ['label' => 'Mes missions', 'route' => 'employe.missions', 'active' => 'employe.missions*', 'icon' => '📋'],
+    ['label' => 'Devis chantiers', 'route' => 'employe.bundle-quotes', 'active' => 'employe.bundle-quotes', 'icon' => '🏗️'],
     ['label' => 'Planning', 'route' => 'employe.planning', 'active' => 'employe.planning', 'icon' => '📅'],
     ['label' => 'Disponibilités', 'route' => 'employe.disponibilites', 'active' => 'employe.disponibilites', 'icon' => '🕒'],
     ['label' => 'Historique', 'route' => 'employe.historique', 'active' => 'employe.historique', 'icon' => '🕘'],

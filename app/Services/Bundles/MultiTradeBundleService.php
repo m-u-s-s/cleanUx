@@ -176,6 +176,86 @@ class MultiTradeBundleService
     }
 
     /**
+     * P2 — Le prestataire sollicité soumet (ou met à jour) son devis pour un item.
+     * Gardes : devis du prestataire, KYC validé, demande encore ouverte et non expirée.
+     */
+    public function submitQuote(
+        MultiTradeBundleItemQuote $quote,
+        User $provider,
+        int $priceCents,
+        ?string $message = null,
+    ): MultiTradeBundleItemQuote {
+        if ((int) $quote->provider_user_id !== (int) $provider->id) {
+            throw ValidationException::withMessages([
+                'quote' => ['Ce devis ne vous appartient pas.'],
+            ]);
+        }
+
+        if (! $provider->hasClearedKyc()) {
+            throw ValidationException::withMessages([
+                'kyc' => ['Votre vérification d’identité (KYC) doit être validée pour proposer un devis.'],
+            ]);
+        }
+
+        if (! in_array($quote->status, [
+            MultiTradeBundleItemQuote::STATUS_PENDING,
+            MultiTradeBundleItemQuote::STATUS_SUBMITTED,
+        ], true)) {
+            throw ValidationException::withMessages([
+                'status' => ['Cette demande de devis n’est plus ouverte.'],
+            ]);
+        }
+
+        if ($quote->isExpired()) {
+            throw ValidationException::withMessages([
+                'expired' => ['Le délai pour répondre à cette demande est dépassé.'],
+            ]);
+        }
+
+        if ($priceCents <= 0) {
+            throw ValidationException::withMessages([
+                'price_cents' => ['Le prix proposé doit être supérieur à zéro.'],
+            ]);
+        }
+
+        $quote->update([
+            'status' => MultiTradeBundleItemQuote::STATUS_SUBMITTED,
+            'price_cents' => $priceCents,
+            'message' => $message,
+            'submitted_at' => now(),
+        ]);
+
+        return $quote->fresh();
+    }
+
+    /**
+     * P2 — Le prestataire retire son devis (tant qu'il n'a pas été sélectionné).
+     */
+    public function withdrawQuote(
+        MultiTradeBundleItemQuote $quote,
+        User $provider,
+    ): MultiTradeBundleItemQuote {
+        if ((int) $quote->provider_user_id !== (int) $provider->id) {
+            throw ValidationException::withMessages([
+                'quote' => ['Ce devis ne vous appartient pas.'],
+            ]);
+        }
+
+        if (! in_array($quote->status, [
+            MultiTradeBundleItemQuote::STATUS_PENDING,
+            MultiTradeBundleItemQuote::STATUS_SUBMITTED,
+        ], true)) {
+            throw ValidationException::withMessages([
+                'status' => ['Ce devis ne peut plus être retiré.'],
+            ]);
+        }
+
+        $quote->update(['status' => MultiTradeBundleItemQuote::STATUS_WITHDRAWN]);
+
+        return $quote->fresh();
+    }
+
+    /**
      * Provider quote un item du bundle.
      */
     public function quoteItem(
