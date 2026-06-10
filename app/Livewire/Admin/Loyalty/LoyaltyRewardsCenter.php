@@ -5,12 +5,14 @@ namespace App\Livewire\Admin\Loyalty;
 use App\Models\LoyaltyRedemption;
 use App\Models\LoyaltyReward;
 use App\Services\Loyalty\LoyaltyRedemptionService;
+use App\Support\Livewire\Concerns\EnforcesAdminAccess;
 use Illuminate\Contracts\View\View;
 use Livewire\Component;
 use Livewire\WithPagination;
 
 class LoyaltyRewardsCenter extends Component
 {
+    use EnforcesAdminAccess;
     use WithPagination;
 
     protected $paginationTheme = 'tailwind';

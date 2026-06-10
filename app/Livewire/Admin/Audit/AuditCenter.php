@@ -4,12 +4,14 @@ namespace App\Livewire\Admin\Audit;
 
 use App\Models\AuditEvent;
 use App\Services\Audit\AuditService;
+use App\Support\Livewire\Concerns\EnforcesAdminAccess;
 use Illuminate\Contracts\View\View;
 use Livewire\Component;
 use Livewire\WithPagination;
 
 class AuditCenter extends Component
 {
+    use EnforcesAdminAccess;
     use WithPagination;
 
     protected $paginationTheme = 'tailwind';

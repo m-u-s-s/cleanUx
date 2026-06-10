@@ -5,6 +5,7 @@ namespace App\Livewire\Admin\CancellationV2;
 use App\Models\BookingCancellationV2;
 use App\Models\CancellationPolicy;
 use App\Services\CancellationV2\CancellationEngine;
+use App\Support\Livewire\Concerns\EnforcesAdminAccess;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
@@ -12,6 +13,7 @@ use Livewire\WithPagination;
 
 class CancellationsCenter extends Component
 {
+    use EnforcesAdminAccess;
     use WithPagination;
 
     protected $paginationTheme = 'tailwind';

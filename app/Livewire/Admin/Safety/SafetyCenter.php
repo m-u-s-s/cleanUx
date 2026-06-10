@@ -5,6 +5,7 @@ namespace App\Livewire\Admin\Safety;
 use App\Models\UserBlock;
 use App\Models\UserReport;
 use App\Services\Safety\UserSafetyService;
+use App\Support\Livewire\Concerns\EnforcesAdminAccess;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
@@ -12,6 +13,7 @@ use Livewire\WithPagination;
 
 class SafetyCenter extends Component
 {
+    use EnforcesAdminAccess;
     use WithPagination;
 
     protected $paginationTheme = 'tailwind';

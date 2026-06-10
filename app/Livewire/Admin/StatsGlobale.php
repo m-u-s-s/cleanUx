@@ -5,10 +5,13 @@ namespace App\Livewire\Admin;
 use App\Models\Booking;
 use App\Models\Feedback;
 use App\Models\User;
+use App\Support\Livewire\Concerns\EnforcesAdminAccess;
 use Livewire\Component;
 
 class StatsGlobale extends Component
 {
+    use EnforcesAdminAccess;
+
     public $year;
 
     public $employe_id = '';

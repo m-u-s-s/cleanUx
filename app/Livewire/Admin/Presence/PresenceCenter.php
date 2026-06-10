@@ -5,12 +5,14 @@ namespace App\Livewire\Admin\Presence;
 use App\Models\ProviderPresence;
 use App\Models\User;
 use App\Services\Presence\ProviderPresenceService;
+use App\Support\Livewire\Concerns\EnforcesAdminAccess;
 use Illuminate\Contracts\View\View;
 use Livewire\Component;
 use Livewire\WithPagination;
 
 class PresenceCenter extends Component
 {
+    use EnforcesAdminAccess;
     use WithPagination;
 
     protected $paginationTheme = 'tailwind';

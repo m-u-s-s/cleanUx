@@ -5,12 +5,14 @@ namespace App\Livewire\Admin\TripTracking;
 use App\Models\TripTrackingPoint;
 use App\Models\TripTrackingSession;
 use App\Services\TripTracking\TripTrackingService;
+use App\Support\Livewire\Concerns\EnforcesAdminAccess;
 use Illuminate\Contracts\View\View;
 use Livewire\Component;
 use Livewire\WithPagination;
 
 class TripTrackingCenter extends Component
 {
+    use EnforcesAdminAccess;
     use WithPagination;
 
     protected $paginationTheme = 'tailwind';

@@ -9,6 +9,7 @@ use App\Models\Trade;
 use App\Models\ZoneServiceRule;
 use App\Support\ActivityLogger;
 use App\Support\Livewire\Concerns\Admin\ManagesServiceOptions;
+use App\Support\Livewire\Concerns\EnforcesAdminAccess;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Str;
 use Livewire\Component;
@@ -16,6 +17,7 @@ use Livewire\WithPagination;
 
 class CatalogueServices extends Component
 {
+    use EnforcesAdminAccess;
     use ManagesServiceOptions;
     use WithPagination;
 

@@ -3,10 +3,13 @@
 namespace App\Livewire\Admin;
 
 use App\Models\Feedback;
+use App\Support\Livewire\Concerns\EnforcesAdminAccess;
 use Livewire\Component;
 
 class FeedbackStats extends Component
 {
+    use EnforcesAdminAccess;
+
     public $moyenne = 0;
 
     public $total = 0;

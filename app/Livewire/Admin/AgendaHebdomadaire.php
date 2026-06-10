@@ -5,6 +5,7 @@ namespace App\Livewire\Admin;
 use App\Models\Booking;
 use App\Models\User;
 use App\Support\Domain\BookingStatus;
+use App\Support\Livewire\Concerns\EnforcesAdminAccess;
 use Carbon\Carbon;
 use Illuminate\Support\Collection;
 use Livewire\Attributes\Reactive;
@@ -12,6 +13,8 @@ use Livewire\Component;
 
 class AgendaHebdomadaire extends Component
 {
+    use EnforcesAdminAccess;
+
     #[Reactive]
     public string $semaine = '';
 

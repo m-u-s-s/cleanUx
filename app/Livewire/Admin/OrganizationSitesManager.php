@@ -3,11 +3,14 @@
 namespace App\Livewire\Admin;
 
 use App\Models\OrganizationSite;
+use App\Support\Livewire\Concerns\EnforcesAdminAccess;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
 
 class OrganizationSitesManager extends Component
 {
+    use EnforcesAdminAccess;
+
     public string $name = '';
 
     public string $address = '';

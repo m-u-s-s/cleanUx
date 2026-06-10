@@ -8,11 +8,14 @@ use App\Models\OrganizationAccount;
 use App\Models\OrganizationSite;
 use App\Models\ServicePartner;
 use App\Services\Missions\MissionBatchPlannerService;
+use App\Support\Livewire\Concerns\EnforcesAdminAccess;
 use Illuminate\Contracts\View\View;
 use Livewire\Component;
 
 class OrchestrationTerrainCenter extends Component
 {
+    use EnforcesAdminAccess;
+
     public ?int $organization_account_id = null;
 
     public ?int $organization_site_id = null;

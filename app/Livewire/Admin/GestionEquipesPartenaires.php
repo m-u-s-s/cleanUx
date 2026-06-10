@@ -12,6 +12,7 @@ use App\Models\ServicePartner;
 use App\Models\ServiceZone;
 use App\Models\User;
 use App\Support\ActivityLogger;
+use App\Support\Livewire\Concerns\EnforcesAdminAccess;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Str;
@@ -20,6 +21,8 @@ use Livewire\Component;
 
 class GestionEquipesPartenaires extends Component
 {
+    use EnforcesAdminAccess;
+
     public ?int $selectedTeamId = null;
 
     public ?int $selectedPartnerId = null;

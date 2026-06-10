@@ -5,12 +5,14 @@ namespace App\Livewire\Admin;
 use App\Models\FinanceInvoice;
 use App\Models\OrganizationAccount;
 use App\Services\Finance\B2BMonthlyInvoiceService;
+use App\Support\Livewire\Concerns\EnforcesAdminAccess;
 use Illuminate\Contracts\View\View;
 use Livewire\Component;
 use Livewire\WithPagination;
 
 class B2BMonthlyInvoicesCenter extends Component
 {
+    use EnforcesAdminAccess;
     use WithPagination;
 
     public ?int $organization_account_id = null;

@@ -6,6 +6,7 @@ use App\Models\Booking;
 use App\Models\ServiceCatalog;
 use App\Models\ServiceZone;
 use App\Models\User;
+use App\Support\Livewire\Concerns\EnforcesAdminAccess;
 use Carbon\Carbon;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Builder;
@@ -13,6 +14,8 @@ use Livewire\Component;
 
 class CalendrierInterne extends Component
 {
+    use EnforcesAdminAccess;
+
     public string $viewMode = 'dayGridMonth';
 
     public string $dateFrom = '';

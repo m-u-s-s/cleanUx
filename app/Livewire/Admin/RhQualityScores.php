@@ -3,10 +3,13 @@
 namespace App\Livewire\Admin;
 
 use App\Models\Mission;
+use App\Support\Livewire\Concerns\EnforcesAdminAccess;
 use Livewire\Component;
 
 class RhQualityScores extends Component
 {
+    use EnforcesAdminAccess;
+
     public function render()
     {
         $employeeScores = Mission::query()

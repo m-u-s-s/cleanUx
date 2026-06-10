@@ -3,11 +3,14 @@
 namespace App\Livewire\Admin;
 
 use App\Models\Mission;
+use App\Support\Livewire\Concerns\EnforcesAdminAccess;
 use Illuminate\Support\Facades\DB;
 use Livewire\Component;
 
 class MissionQualityAnalytics extends Component
 {
+    use EnforcesAdminAccess;
+
     public function render()
     {
         $byZone = Mission::query()

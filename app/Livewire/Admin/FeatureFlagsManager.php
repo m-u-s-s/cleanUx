@@ -4,6 +4,7 @@ namespace App\Livewire\Admin;
 
 use App\Models\FeatureFlagOverride;
 use App\Support\ActivityLogger;
+use App\Support\Livewire\Concerns\EnforcesAdminAccess;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
@@ -19,6 +20,8 @@ use Livewire\Component;
 #[Layout('layouts.app')]
 class FeatureFlagsManager extends Component
 {
+    use EnforcesAdminAccess;
+
     public string $search = '';
 
     /** flag_key => is_enabled being edited */

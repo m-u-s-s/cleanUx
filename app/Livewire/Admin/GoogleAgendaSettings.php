@@ -8,12 +8,15 @@ use App\Models\Parametre;
 use App\Models\PlatformModule;
 use App\Services\Integrations\GoogleCalendarOAuthService;
 use App\Services\Integrations\GoogleCalendarSyncService;
+use App\Support\Livewire\Concerns\EnforcesAdminAccess;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
 
 class GoogleAgendaSettings extends Component
 {
+    use EnforcesAdminAccess;
+
     public bool $calendarSyncEnabled = false;
 
     public bool $googleCalendarEnabled = false;

@@ -3,6 +3,7 @@
 namespace App\Livewire\Admin\Analytics;
 
 use App\Models\Booking;
+use App\Support\Livewire\Concerns\EnforcesAdminAccess;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Carbon;
 use Livewire\Component;
@@ -13,6 +14,8 @@ use Livewire\Component;
  */
 class CancellationReasonsCenter extends Component
 {
+    use EnforcesAdminAccess;
+
     public string $period = '30d';
 
     public string $groupBy = 'reason';

@@ -5,6 +5,7 @@ namespace App\Livewire\Admin;
 use App\Models\Booking;
 use App\Models\Feedback;
 use App\Models\User;
+use App\Support\Livewire\Concerns\EnforcesAdminAccess;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Response;
 use Illuminate\Support\Facades\Storage;
@@ -13,6 +14,8 @@ use Livewire\Component;
 
 class ExportTools extends Component
 {
+    use EnforcesAdminAccess;
+
     public $type = 'rendez_vous';
 
     public $format = 'csv';

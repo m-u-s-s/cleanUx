@@ -5,11 +5,14 @@ namespace App\Livewire\Admin\Analytics;
 use App\Models\AnalyticsEvent;
 use App\Models\AnalyticsSession;
 use App\Services\Analytics\AnalyticsFunnel;
+use App\Support\Livewire\Concerns\EnforcesAdminAccess;
 use Illuminate\Contracts\View\View;
 use Livewire\Component;
 
 class AnalyticsCenter extends Component
 {
+    use EnforcesAdminAccess;
+
     public string $rangeKey = '7d';  // 24h | 7d | 30d
 
     public string $funnelType = 'booking';

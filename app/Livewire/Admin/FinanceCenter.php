@@ -4,12 +4,14 @@ namespace App\Livewire\Admin;
 
 use App\Support\Livewire\Concerns\Admin\BuildsFinanceCenterQueries;
 use App\Support\Livewire\Concerns\Admin\HandlesFinanceDocuments;
+use App\Support\Livewire\Concerns\EnforcesAdminAccess;
 use Livewire\Component;
 use Livewire\WithPagination;
 
 class FinanceCenter extends Component
 {
     use BuildsFinanceCenterQueries;
+    use EnforcesAdminAccess;
     use HandlesFinanceDocuments;
     use WithPagination;
 

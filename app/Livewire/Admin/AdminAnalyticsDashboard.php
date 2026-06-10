@@ -3,10 +3,13 @@
 namespace App\Livewire\Admin;
 
 use App\Services\Admin\AdminAnalyticsService;
+use App\Support\Livewire\Concerns\EnforcesAdminAccess;
 use Livewire\Component;
 
 class AdminAnalyticsDashboard extends Component
 {
+    use EnforcesAdminAccess;
+
     public array $stats = [];
 
     public function mount(AdminAnalyticsService $service): void

@@ -5,6 +5,7 @@ namespace App\Livewire\Admin\ChatV2;
 use App\Models\ChatMessage;
 use App\Models\ChatThread;
 use App\Services\ChatV2\ChatService;
+use App\Support\Livewire\Concerns\EnforcesAdminAccess;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
@@ -12,6 +13,7 @@ use Livewire\WithPagination;
 
 class ChatCenter extends Component
 {
+    use EnforcesAdminAccess;
     use WithPagination;
 
     protected $paginationTheme = 'tailwind';

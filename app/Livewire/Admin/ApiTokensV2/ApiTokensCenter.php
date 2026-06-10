@@ -6,12 +6,14 @@ use App\Models\ApiTokenScope;
 use App\Models\ApiTokenUsage;
 use App\Models\Sanctum\PersonalAccessTokenV2;
 use App\Services\ApiTokensV2\ApiTokenManager;
+use App\Support\Livewire\Concerns\EnforcesAdminAccess;
 use Illuminate\Contracts\View\View;
 use Livewire\Component;
 use Livewire\WithPagination;
 
 class ApiTokensCenter extends Component
 {
+    use EnforcesAdminAccess;
     use WithPagination;
 
     protected $paginationTheme = 'tailwind';

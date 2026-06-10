@@ -6,12 +6,14 @@ use App\Models\ServiceZone;
 use App\Support\Livewire\Concerns\Admin\ManagesTradeZoneSettings;
 use App\Support\Livewire\Concerns\Admin\ManagesZonesData;
 use App\Support\Livewire\Concerns\Admin\PerformsZoneManagementActions;
+use App\Support\Livewire\Concerns\EnforcesAdminAccess;
 use Illuminate\Contracts\View\View;
 use Livewire\Component;
 use Livewire\WithPagination;
 
 class GestionZones extends Component
 {
+    use EnforcesAdminAccess;
     use ManagesTradeZoneSettings;
     use ManagesZonesData {
         selectZone as protected selectZoneBase;

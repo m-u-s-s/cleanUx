@@ -8,12 +8,14 @@ use App\Services\Booking\SmartDispatchService;
 use App\Services\Missions\MissionFromRendezVousSyncService;
 use App\Support\ActivityLogger;
 use App\Support\Domain\BookingStatus;
+use App\Support\Livewire\Concerns\EnforcesAdminAccess;
 use Illuminate\Contracts\View\View;
 use Livewire\Component;
 use Livewire\WithPagination;
 
 class MissionsAdmin extends Component
 {
+    use EnforcesAdminAccess;
     use WithPagination;
 
     public $search = '';

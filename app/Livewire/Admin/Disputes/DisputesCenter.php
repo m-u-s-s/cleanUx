@@ -8,6 +8,7 @@ use App\Models\DisputeResolution;
 use App\Models\User;
 use App\Services\Disputes\DisputeResolutionService;
 use App\Services\Disputes\DisputeService;
+use App\Support\Livewire\Concerns\EnforcesAdminAccess;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
@@ -16,6 +17,7 @@ use Livewire\WithPagination;
 
 class DisputesCenter extends Component
 {
+    use EnforcesAdminAccess;
     use WithPagination;
 
     protected $paginationTheme = 'tailwind';

@@ -185,9 +185,9 @@ class FeatureFlagsManagerCoverageBatch9Test extends TestCase
 
     public function test_toggle_flag_forbidden_for_non_admin(): void
     {
+        // EnforcesAdminAccess now blocks a non-admin at mount/boot (before any action).
         Livewire::actingAs($this->client)
             ->test(FeatureFlagsManager::class)
-            ->call('toggleFlag', 'surge_pricing')
             ->assertForbidden();
 
         $this->assertDatabaseMissing('feature_flag_overrides', [

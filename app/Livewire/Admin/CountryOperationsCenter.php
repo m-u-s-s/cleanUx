@@ -4,11 +4,14 @@ namespace App\Livewire\Admin;
 
 use App\Models\Country;
 use App\Support\ActivityLogger;
+use App\Support\Livewire\Concerns\EnforcesAdminAccess;
 use Illuminate\Validation\Rule;
 use Livewire\Component;
 
 class CountryOperationsCenter extends Component
 {
+    use EnforcesAdminAccess;
+
     public string $search = '';
 
     public string $statusFilter = '';

@@ -5,11 +5,13 @@ namespace App\Livewire\Admin;
 use App\Models\OrganizationAccount;
 use App\Support\Livewire\Concerns\Admin\ManagesEntrepriseAccounts;
 use App\Support\Livewire\Concerns\Admin\ManagesEntrepriseSitesAndUsers;
+use App\Support\Livewire\Concerns\EnforcesAdminAccess;
 use Livewire\Component;
 use Livewire\WithPagination;
 
 class GestionEntreprises extends Component
 {
+    use EnforcesAdminAccess;
     use ManagesEntrepriseAccounts;
     use ManagesEntrepriseSitesAndUsers;
     use WithPagination;

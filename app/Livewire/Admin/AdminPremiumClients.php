@@ -3,12 +3,14 @@
 namespace App\Livewire\Admin;
 
 use App\Models\User;
+use App\Support\Livewire\Concerns\EnforcesAdminAccess;
 use Illuminate\Contracts\View\View;
 use Livewire\Component;
 use Livewire\WithPagination;
 
 class AdminPremiumClients extends Component
 {
+    use EnforcesAdminAccess;
     use WithPagination;
 
     public string $search = '';

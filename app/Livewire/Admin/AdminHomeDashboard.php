@@ -8,11 +8,14 @@ use App\Models\Mission;
 use App\Models\ProviderPayout;
 use App\Models\ProviderPresence;
 use App\Models\WebhookDelivery;
+use App\Support\Livewire\Concerns\EnforcesAdminAccess;
 use Carbon\Carbon;
 use Livewire\Component;
 
 class AdminHomeDashboard extends Component
 {
+    use EnforcesAdminAccess;
+
     public function render()
     {
         $today = now()->startOfDay();

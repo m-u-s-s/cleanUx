@@ -6,10 +6,13 @@ use App\Models\ActivityLog;
 use App\Models\Booking;
 use App\Models\Feedback;
 use App\Models\User;
+use App\Support\Livewire\Concerns\EnforcesAdminAccess;
 use Livewire\Component;
 
 class OutilsDeTest extends Component
 {
+    use EnforcesAdminAccess;
+
     public function getStatsProperty(): array
     {
         return [

@@ -6,11 +6,14 @@ use App\Models\OrganizationAccount;
 use App\Models\PlatformModule;
 use App\Models\ServiceZone;
 use App\Support\ActivityLogger;
+use App\Support\Livewire\Concerns\EnforcesAdminAccess;
 use Illuminate\Contracts\View\View;
 use Livewire\Component;
 
 class PlatformModulesCenter extends Component
 {
+    use EnforcesAdminAccess;
+
     public string $search = '';
 
     public string $category = '';

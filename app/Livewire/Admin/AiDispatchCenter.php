@@ -7,11 +7,13 @@ use App\Services\Dispatch\AiDispatchService;
 use App\Services\Missions\MissionFromRendezVousSyncService;
 use App\Support\ActivityLogger;
 use App\Support\Domain\BookingStatus;
+use App\Support\Livewire\Concerns\EnforcesAdminAccess;
 use Livewire\Component;
 use Livewire\WithPagination;
 
 class AiDispatchCenter extends Component
 {
+    use EnforcesAdminAccess;
     use WithPagination;
 
     public string $search = '';

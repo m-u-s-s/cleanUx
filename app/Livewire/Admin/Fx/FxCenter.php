@@ -6,12 +6,14 @@ use App\Models\Currency;
 use App\Models\CurrencyConversion;
 use App\Models\ExchangeRate;
 use App\Services\Fx\FxService;
+use App\Support\Livewire\Concerns\EnforcesAdminAccess;
 use Illuminate\Contracts\View\View;
 use Livewire\Component;
 use Livewire\WithPagination;
 
 class FxCenter extends Component
 {
+    use EnforcesAdminAccess;
     use WithPagination;
 
     protected $paginationTheme = 'tailwind';
