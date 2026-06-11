@@ -190,4 +190,74 @@ class BookingPostingService
             'reference' => 'SETTLE-'.$booking->id,
         ]);
     }
+
+    /**
+     * Audit MEDIUM — pourboire : encaissé pour le compte du prestataire, c'est une
+     * dette (pas un produit), réglée au payout. Pas de TVA (gratification).
+     *
+     *   512100 Banque Stripe   Débit  montant
+     *   467    Dette prestataire   Crédit montant
+     */
+    public function postTipSettlement(\App\Models\BookingTip $tip): ?string
+    {
+        $amount = (int) $tip->amount_cents;
+        if ($amount <= 0) {
+            return null;
+        }
+
+        $payable = (string) config('accounting_v2.marketplace.tips_payable_account', '467');
+
+        $lines = [
+            [
+                'account_code' => $this->chart->bankAccount('stripe'),
+                'debit_cents' => $amount,
+                'label' => 'Encaissement pourboire #'.$tip->id,
+            ],
+            [
+                'account_code' => $payable,
+                'credit_cents' => $amount,
+                'label' => 'Dette prestataire (pourboire) #'.$tip->id,
+            ],
+        ];
+
+        return $this->accounting->postIdempotent('BookingTip', (int) $tip->id, $lines, [
+            'journal_code' => 'BANK',
+            'reference' => 'TIP-'.$tip->id,
+        ]);
+    }
+
+    /**
+     * Audit MEDIUM — prime d'assurance : CleanUx revend une police tierce (Mock/
+     * Hiscox/Wakam). La prime encaissée est due à l'assureur = dette fournisseur.
+     *
+     *   512100 Banque Stripe   Débit  prime
+     *   401    Dette assureur      Crédit prime
+     */
+    public function postInsuranceSettlement(\App\Models\BookingInsurance $insurance): ?string
+    {
+        $premium = (int) $insurance->premium_cents;
+        if ($premium <= 0) {
+            return null;
+        }
+
+        $payable = (string) config('accounting_v2.marketplace.insurer_payable_account', '401');
+
+        $lines = [
+            [
+                'account_code' => $this->chart->bankAccount('stripe'),
+                'debit_cents' => $premium,
+                'label' => 'Encaissement prime assurance #'.$insurance->id,
+            ],
+            [
+                'account_code' => $payable,
+                'credit_cents' => $premium,
+                'label' => 'Dette assureur (prime) #'.$insurance->id,
+            ],
+        ];
+
+        return $this->accounting->postIdempotent('BookingInsurance', (int) $insurance->id, $lines, [
+            'journal_code' => 'BANK',
+            'reference' => 'INSUR-'.$insurance->id,
+        ]);
+    }
 }

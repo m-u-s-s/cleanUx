@@ -96,6 +96,10 @@ return [
         'commission_revenue_account' => env('ACCOUNTING_COMMISSION_REVENUE_ACCOUNT', '706'),
         'provider_payable_account' => env('ACCOUNTING_PROVIDER_PAYABLE_ACCOUNT', '467'),
         'commission_vat_rate' => (float) env('ACCOUNTING_COMMISSION_VAT_RATE', 21),
+        // Pourboire = pass-through au prestataire (dette). Prime d'assurance =
+        // pass-through à l'assureur revendu (dette fournisseur). À confirmer comptable.
+        'tips_payable_account' => env('ACCOUNTING_TIPS_PAYABLE_ACCOUNT', '467'),
+        'insurer_payable_account' => env('ACCOUNTING_INSURER_PAYABLE_ACCOUNT', '401'),
     ],
 
     /*

@@ -122,7 +122,14 @@ class InsuranceService
                 'status' => $insurance->fresh()->status,
             ]);
 
-            return $insurance->fresh();
+            $fresh = $insurance->fresh();
+
+            // Audit MEDIUM — écriture GL de la prime (dette assureur) si police active.
+            if ($fresh->status === BookingInsurance::STATUS_ACTIVE) {
+                \App\Support\Accounting\BookingAutoPoster::postInsurance($fresh);
+            }
+
+            return $fresh;
         });
     }
 

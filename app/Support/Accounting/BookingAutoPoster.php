@@ -78,16 +78,43 @@ class BookingAutoPoster
         }
     }
 
+    public static function postTip(\App\Models\BookingTip $tip): void
+    {
+        if (! self::glEnabled()) {
+            return;
+        }
+        try {
+            app(BookingPostingService::class)->postTipSettlement($tip);
+        } catch (\Throwable $e) {
+            Log::warning('[accounting_auto_post] tip failed', [
+                'tip_id' => $tip->id, 'error' => $e->getMessage(),
+            ]);
+        }
+    }
+
+    public static function postInsurance(\App\Models\BookingInsurance $insurance): void
+    {
+        if (! self::glEnabled()) {
+            return;
+        }
+        try {
+            app(BookingPostingService::class)->postInsuranceSettlement($insurance);
+        } catch (\Throwable $e) {
+            Log::warning('[accounting_auto_post] insurance failed', [
+                'insurance_id' => $insurance->id, 'error' => $e->getMessage(),
+            ]);
+        }
+    }
+
+    protected static function glEnabled(): bool
+    {
+        return (bool) config('accounting_v2.auto_post_enabled', false)
+            && Schema::hasTable('accounting_entries');
+    }
+
     protected static function shouldPost(Booking $booking): bool
     {
-        if (! (bool) config('accounting_v2.auto_post_enabled', false)) {
-            return false;
-        }
-        if (! Schema::hasTable('accounting_entries')) {
-            return false;
-        }
-
-        return true;
+        return self::glEnabled();
     }
 
     /**

@@ -148,6 +148,9 @@ class TipService
             'charged_at' => now(),
         ]);
 
+        // Audit MEDIUM — écriture GL du pourboire (dette prestataire), gated + soft-fail.
+        \App\Support\Accounting\BookingAutoPoster::postTip($tip->fresh());
+
         // Crédite les bonus points loyalty au client (soft-fail)
         if ($tip->client_bonus_points > 0) {
             $this->awardLoyaltyBonus($tip);
