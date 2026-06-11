@@ -16,7 +16,7 @@ use Illuminate\Support\Facades\Route;
 
 require __DIR__.'/public.php';
 
-Route::middleware(['auth', 'verified', 'active.account'])->group(function () {
+Route::middleware(['auth', 'verified', 'active.account', 'phone.verified'])->group(function () {
 
     require __DIR__.'/authenticated.php';
     require __DIR__.'/integrations.php';
@@ -45,7 +45,10 @@ Route::get('/push/public-key', [PushSubscriptionController::class, 'publicKey'])
 // WebView session handoff — redeems a single-use ticket and logs the user in
 Route::get('/m/enter', WebViewEntryController::class)->name('webview.enter');
 
-Route::middleware(['auth', 'verified', 'active.account'])->group(function () {
+// OTP téléphone — page de vérification (auth seule, hors garde phone.verified pour éviter une boucle)
+Route::middleware('auth')->get('/verify-phone', \App\Livewire\Auth\VerifyPhone::class)->name('phone.verify');
+
+Route::middleware(['auth', 'verified', 'active.account', 'phone.verified'])->group(function () {
     Route::get('/provider/missions/{assignment}/offer', MissionOfferPage::class)
         ->name('provider.missions.offer');
 

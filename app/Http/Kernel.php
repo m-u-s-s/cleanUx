@@ -127,5 +127,6 @@ class Kernel extends HttpKernel
         'cache.api' => CacheApiResponse::class,
         'premium' => PremiumGate::class,
         'enforce_2fa' => Enforce2FA::class,
+        'phone.verified' => \App\Http\Middleware\EnsurePhoneVerified::class,
     ];
 }

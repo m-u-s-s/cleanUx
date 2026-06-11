@@ -128,4 +128,8 @@ return [
 
     'enforce_2fa_for_admins' => (bool) env('ENFORCE_2FA_FOR_ADMINS', true),
 
+    // OTP téléphone — quand true, le middleware phone.verified force la vérification
+    // du numéro avant l'accès aux routes protégées. Off par défaut (opt-in).
+    'require_phone_verification' => (bool) env('AUTH_REQUIRE_PHONE_VERIFICATION', false),
+
 ];

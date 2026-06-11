@@ -72,6 +72,7 @@ class User extends Authenticatable implements HasLocalePreference, MustVerifyEma
         'platform_role',
 
         'phone',
+        'phone_verified_at',
         'tva_number',
 
         'locale',
@@ -120,6 +121,7 @@ class User extends Authenticatable implements HasLocalePreference, MustVerifyEma
 
     protected $casts = [
         'email_verified_at' => 'datetime',
+        'phone_verified_at' => 'datetime',
         'password' => 'hashed',
         'two_factor_confirmed_at' => 'datetime',
         'is_active' => 'boolean',
@@ -210,6 +212,12 @@ class User extends Authenticatable implements HasLocalePreference, MustVerifyEma
     /**
      * Broad "is admin" check: uses platform_role primarily with legacy role fallback.
      */
+    /** OTP téléphone — le numéro a-t-il été vérifié par code SMS. */
+    public function hasVerifiedPhone(): bool
+    {
+        return $this->phone_verified_at !== null;
+    }
+
     public function isAdmin(): bool
     {
         if (in_array($this->platform_role ?? null, ['admin', 'super_admin'], true)) {
