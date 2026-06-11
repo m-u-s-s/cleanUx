@@ -24,6 +24,8 @@
             <span class="font-semibold">🔁 Série récurrente</span>
             <span>Position : #{{ $rdv->series_position ?? '—' }}</span>
             <span>Statut série : {{ ucfirst($rdv->series_status ?? 'active') }}</span>
+            <a href="{{ route('client.rendezvous.series', $rdv) }}"
+               class="ml-auto font-semibold text-indigo-700 underline hover:text-indigo-900">Gérer la série</a>
         </div>
     </div>
     @endif

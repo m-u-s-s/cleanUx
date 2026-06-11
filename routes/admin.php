@@ -81,6 +81,11 @@ Route::middleware(['role:admin', 'enforce_2fa'])
         Route::get('/dashboard', AdminDashboard::class)->name('dashboard');
         Route::get('/home', AdminHomeDashboard::class)->name('home');
 
+        // Récupération d'orphelins — pages admin auparavant non routées.
+        Route::get('/zones', \App\Livewire\Admin\GestionZones::class)->name('zones');
+        Route::get('/entreprises', \App\Livewire\Admin\GestionEntreprises::class)->name('entreprises');
+        Route::get('/recurrence/{rendezVous}/serie', \App\Livewire\Admin\EditRecurringBooking::class)->name('recurrence.edit');
+
         if (class_exists(MissionsAdmin::class)) {
             Route::get('/missions', MissionsAdmin::class)->name('missions');
         } else {

@@ -48,6 +48,8 @@ Route::middleware(['role:client'])
 
         if (class_exists(MesRendezVousClient::class)) {
             Route::get('/rendez-vous', MesRendezVousClient::class)->name('rendezvous.index');
+            // Récupération d'orphelin — gestion d'une série récurrente.
+            Route::get('/rendez-vous/{rendezVous}/serie', \App\Livewire\Client\EditRecurringBooking::class)->name('rendezvous.series');
         }
 
         if (class_exists(PrendreRendezVous::class)) {

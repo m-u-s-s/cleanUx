@@ -125,6 +125,8 @@
     'Gestion' => [
     ['label' => 'Utilisateurs', 'route' => 'admin.utilisateurs.manage', 'active' => 'admin.utilisateurs*', 'icon' => '👤'],
     ['label' => 'Services', 'route' => 'admin.services', 'active' => 'admin.services', 'icon' => '🧽'],
+    ['label' => 'Zones', 'route' => 'admin.zones', 'active' => 'admin.zones', 'icon' => '🗺️'],
+    ['label' => 'Entreprises', 'route' => 'admin.entreprises', 'active' => 'admin.entreprises', 'icon' => '🏢'],
     ['label' => 'Modules', 'route' => 'admin.modules', 'active' => 'admin.modules', 'icon' => '🧩'],
     ['label' => 'Feature flags', 'route' => 'admin.feature-flags.manager', 'active' => 'admin.feature-flags*', 'icon' => '🚩'],
     ['label' => 'Feedbacks', 'route' => 'admin.feedbacks', 'active' => 'admin.feedbacks*', 'icon' => '💬'],
