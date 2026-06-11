@@ -100,6 +100,7 @@ class BookingHub extends Component
                 'organizationSite:id,name,city',
                 'providerUser:id,name,profile_photo_path',
                 'clientUser:id,name',
+                'mission:id,booking_id',
             ])
             ->latest('scheduled_at')
             ->get();

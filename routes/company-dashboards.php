@@ -9,6 +9,7 @@ use App\Livewire\ClientCompany\ClientContractsCenter;
 use App\Livewire\ClientCompany\DisputesCenter;
 use App\Livewire\ClientCompany\MembersAccess;
 use App\Livewire\ClientCompany\SiteManager;
+use App\Livewire\ClientCompany\SiteMissionPhotos;
 use App\Livewire\ProviderCompany\DispatchCenter;
 use App\Livewire\ProviderCompany\ProviderDashboard;
 use App\Livewire\ProviderCompany\TaskBoard;
@@ -40,6 +41,10 @@ Route::middleware(['auth', 'verified', 'active.account', 'org.type:client'])
 
         if (class_exists(DisputesCenter::class)) {
             Route::get('/litiges', DisputesCenter::class)->name('disputes');
+        }
+
+        if (class_exists(SiteMissionPhotos::class)) {
+            Route::get('/missions/{mission}/photos', SiteMissionPhotos::class)->name('missions.photos');
         }
 
         if (class_exists(BulkBookingImporter::class)) {
