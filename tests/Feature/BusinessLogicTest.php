@@ -25,6 +25,10 @@ class BusinessLogicTest extends TestCase
 
     public function test_commission_calculates_15_percent_default(): void
     {
+        // Scénario explicite à 15% (indépendant du taux d'env, fixé à 20% pour
+        // matcher la prod dans le reste de la suite money).
+        config(['cleanux.platform_fee_percent' => 15]);
+
         $service = new CommissionService;
         $booking = Booking::factory()->create(['devis_estime' => 100]);
 
