@@ -83,6 +83,23 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Modèle de revenu marketplace (audit MEDIUM, décision 2026-06-11)
+    |--------------------------------------------------------------------------
+    | 'principal' (défaut) : le TTC complet est en ventes (701), part prestataire
+    |   = charge — comportement historique, ne casse pas l'existant.
+    | 'agent' : seule la commission est un produit (706 HT + TVA), la part
+    |   prestataire est une dette (467) jusqu'au payout — modèle marketplace.
+    | À VALIDER avec le comptable avant de passer en 'agent' (comptes + TVA).
+    */
+    'marketplace' => [
+        'revenue_model' => env('ACCOUNTING_REVENUE_MODEL', 'principal'),
+        'commission_revenue_account' => env('ACCOUNTING_COMMISSION_REVENUE_ACCOUNT', '706'),
+        'provider_payable_account' => env('ACCOUNTING_PROVIDER_PAYABLE_ACCOUNT', '467'),
+        'commission_vat_rate' => (float) env('ACCOUNTING_COMMISSION_VAT_RATE', 21),
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
     | Export storage + retention
     |--------------------------------------------------------------------------
     */

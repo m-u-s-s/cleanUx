@@ -22,6 +22,14 @@ class BookingAutoPoster
             return;
         }
         try {
+            // Audit MEDIUM — modèle agent : la commission est le produit, la part
+            // prestataire une dette. Sinon (principal) : TTC complet en ventes.
+            if (config('accounting_v2.marketplace.revenue_model', 'principal') === 'agent') {
+                app(BookingPostingService::class)->postMarketplaceSettlement($booking);
+
+                return;
+            }
+
             $ttcCents = self::extractTtcCents($booking);
             if ($ttcCents <= 0) {
                 return;

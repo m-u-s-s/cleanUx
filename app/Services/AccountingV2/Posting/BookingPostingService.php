@@ -126,4 +126,68 @@ class BookingPostingService
             'reference' => 'REFUND-BOOK-'.$booking->id,
         ]);
     }
+
+    /**
+     * Audit MEDIUM — règlement modèle AGENT : à l'encaissement, seule la commission
+     * est un produit ; la part prestataire est une dette (467) jusqu'au payout ;
+     * TVA sur la seule commission.
+     *
+     *   512100 Banque Stripe   Débit  TTC payé client
+     *   467    Dette prestataire   Crédit part prestataire (TTC - commission)
+     *   706    Produit commission  Crédit commission HT
+     *   4457   TVA collectée       Crédit TVA sur commission
+     */
+    public function postMarketplaceSettlement(Booking $booking): ?string
+    {
+        $ttcCents = (int) ($booking->payment_amount_cents
+            ?? round(((float) ($booking->devis_estime ?? 0)) * 100));
+        if ($ttcCents <= 0) {
+            return null;
+        }
+
+        $commissionTtc = max(0, (int) ($booking->platform_fee_cents ?? 0));
+        // Dérivé pour garantir l'équilibre de l'écriture (TTC = dette + commission).
+        $providerCents = max(0, $ttcCents - $commissionTtc);
+
+        $vatRate = max(0.0, (float) config('accounting_v2.marketplace.commission_vat_rate', 21));
+        $commissionHt = $vatRate > 0 ? (int) round($commissionTtc / (1 + ($vatRate / 100))) : $commissionTtc;
+        $commissionVat = $commissionTtc - $commissionHt;
+
+        $providerPayable = (string) config('accounting_v2.marketplace.provider_payable_account', '467');
+        $commissionRevenue = (string) config('accounting_v2.marketplace.commission_revenue_account', '706');
+
+        $lines = [
+            [
+                'account_code' => $this->chart->bankAccount('stripe'),
+                'debit_cents' => $ttcCents,
+                'label' => 'Encaissement booking #'.$booking->id,
+            ],
+            [
+                'account_code' => $providerPayable,
+                'credit_cents' => $providerCents,
+                'label' => 'Dette prestataire booking #'.$booking->id,
+            ],
+            [
+                'account_code' => $commissionRevenue,
+                'credit_cents' => $commissionHt,
+                'label' => 'Commission marketplace booking #'.$booking->id,
+                'vat_rate' => $vatRate,
+                'vat_amount_cents' => $commissionVat,
+            ],
+        ];
+
+        if ($commissionVat > 0) {
+            $lines[] = [
+                'account_code' => $this->chart->vatCollected(),
+                'credit_cents' => $commissionVat,
+                'label' => 'TVA commission booking #'.$booking->id,
+                'vat_rate' => $vatRate,
+            ];
+        }
+
+        return $this->accounting->postIdempotent('Booking.settlement', (int) $booking->id, $lines, [
+            'journal_code' => 'VEN',
+            'reference' => 'SETTLE-'.$booking->id,
+        ]);
+    }
 }
