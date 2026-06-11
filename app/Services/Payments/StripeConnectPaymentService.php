@@ -245,6 +245,19 @@ class StripeConnectPaymentService
             );
         }
 
+        // Audit HIGH — avoir (credit note) pour conformité comptable BE/FR.
+        // Idempotent par refund id ; soft-fail pour ne jamais bloquer le flux d'argent.
+        try {
+            app(\App\Services\Finance\FinanceCreditNoteService::class)
+                ->createForRefund($booking, (int) $refundedCents, $refund->id, $reason);
+        } catch (\Throwable $e) {
+            Log::warning('StripeConnectPaymentService: credit note generation failed', [
+                'booking_id' => $booking->id,
+                'refund_id' => $refund->id,
+                'error' => $e->getMessage(),
+            ]);
+        }
+
         Log::info('StripeConnectPaymentService: refund OK', [
             'booking_id' => $booking->id,
             'refund_id' => $refund->id,
