@@ -36,6 +36,7 @@ class MultiTradeBundleService
         array $items,
         ?string $description = null,
         ?array $address = null,
+        ?int $serviceZoneId = null,
     ): MultiTradeBundle {
         if (count($items) < 2) {
             throw ValidationException::withMessages([
@@ -43,12 +44,13 @@ class MultiTradeBundleService
             ]);
         }
 
-        return DB::transaction(function () use ($client, $name, $description, $items, $address) {
+        return DB::transaction(function () use ($client, $name, $description, $items, $address, $serviceZoneId) {
             $bundle = MultiTradeBundle::query()->create([
                 'code' => MultiTradeBundle::generateCode(),
                 'name' => $name,
                 'description' => $description,
                 'client_user_id' => $client->id,
+                'service_zone_id' => $serviceZoneId,
                 'status' => MultiTradeBundle::STATUS_DRAFT,
                 'address' => $address,
                 'currency' => 'EUR',
@@ -158,12 +160,22 @@ class MultiTradeBundleService
     {
         $proficiencyRank = ['expert' => 4, 'advanced' => 3, 'intermediate' => 2, 'standard' => 1, 'basic' => 0];
 
+        // Zone du chantier (si renseignée) : ne solliciter que les prestataires qui
+        // la couvrent (zone primaire OU affectation de zone active).
+        $zoneId = $item->bundle?->service_zone_id;
+
         return User::query()
             ->where('is_active', true)
             ->whereHas('providerProfile', fn ($q) => $q
                 ->where('status', 'active')
                 ->where('verification_status', 'verified'))
             ->whereHas('trades', fn ($q) => $q->where('trades.id', $item->trade_id))
+            ->when($zoneId, fn ($q) => $q->where(function ($w) use ($zoneId) {
+                $w->where('primary_service_zone_id', $zoneId)
+                    ->orWhereHas('zoneAssignments', fn ($a) => $a
+                        ->where('service_zone_id', $zoneId)
+                        ->where('is_active', true));
+            }))
             ->with(['trades' => fn ($q) => $q->where('trades.id', $item->trade_id)])
             ->get()
             ->sortByDesc(function (User $provider) use ($item, $proficiencyRank) {

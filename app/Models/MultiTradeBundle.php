@@ -27,7 +27,7 @@ class MultiTradeBundle extends Model
     public const STATUS_CANCELLED = 'cancelled';
 
     protected $fillable = [
-        'code', 'name', 'description', 'client_user_id', 'status',
+        'code', 'name', 'description', 'client_user_id', 'service_zone_id', 'status',
         'total_estimated_cents', 'total_quoted_cents', 'total_final_cents', 'currency',
         'bundle_discount_percent', 'bundle_discount_cents',
         'address', 'preferred_start_date', 'preferred_end_date',

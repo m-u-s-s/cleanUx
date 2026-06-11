@@ -21,6 +21,10 @@ class MultiTradesBundleManager extends Component
 
     public string $bundleDescription = '';
 
+    public string $postalCode = '';
+
+    public string $city = '';
+
     public array $items = [];   // [{trade_id, label, description, duration_minutes, estimated_price_eur}, ...]
 
     public function mount(): void
@@ -56,11 +60,23 @@ class MultiTradesBundleManager extends Component
         $this->validate([
             'bundleName' => ['required', 'string', 'max:191'],
             'bundleDescription' => ['nullable', 'string', 'max:1000'],
+            'postalCode' => ['nullable', 'string', 'max:20'],
+            'city' => ['nullable', 'string', 'max:120'],
             'items' => ['required', 'array', 'min:2'],
             'items.*.trade_id' => ['required', 'integer', 'exists:trades,id'],
             'items.*.label' => ['required', 'string', 'max:191'],
             'items.*.estimated_price_eur' => ['required', 'numeric', 'min:0'],
         ]);
+
+        // Résout la zone de service depuis le code postal (optionnel) — sert à ne
+        // solliciter que les prestataires couvrant la zone du chantier.
+        $serviceZoneId = null;
+        if ($this->postalCode !== '') {
+            $coverage = app(\App\Services\Booking\ZoneCoverageService::class);
+            $serviceZoneId = $coverage->resolveServiceZone(
+                $coverage->resolvePostalCode($this->postalCode, $this->city ?: null)
+            )?->id;
+        }
 
         $payload = collect($this->items)->map(fn ($i) => [
             'trade_id' => (int) $i['trade_id'],
@@ -76,8 +92,9 @@ class MultiTradesBundleManager extends Component
                 name: $this->bundleName,
                 items: $payload,
                 description: $this->bundleDescription ?: null,
+                serviceZoneId: $serviceZoneId,
             );
-            $this->reset(['bundleName', 'bundleDescription', 'items']);
+            $this->reset(['bundleName', 'bundleDescription', 'postalCode', 'city', 'items']);
             $this->mount();
             $this->tab = 'list';
             $this->dispatch('toast', 'Bundle créé en brouillon.', 'success');

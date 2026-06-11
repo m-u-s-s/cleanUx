@@ -156,6 +156,19 @@
                     <label class="ui-label">Description (optionnel)</label>
                     <textarea wire:model="bundleDescription" rows="2" placeholder="Détails du projet, contraintes…" class="ui-input"></textarea>
                 </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="ui-label">Code postal du chantier (optionnel)</label>
+                        <input wire:model="postalCode" type="text" inputmode="numeric" placeholder="ex: 1000" class="ui-input">
+                        <p class="ui-help-msg">Permet de ne solliciter que les prestataires couvrant votre zone.</p>
+                        @error('postalCode') <p class="ui-error-msg">{{ $message }}</p> @enderror
+                    </div>
+                    <div>
+                        <label class="ui-label">Ville (optionnel)</label>
+                        <input wire:model="city" type="text" placeholder="ex: Bruxelles" class="ui-input">
+                        @error('city') <p class="ui-error-msg">{{ $message }}</p> @enderror
+                    </div>
+                </div>
             </div>
 
             <div class="mb-4">
