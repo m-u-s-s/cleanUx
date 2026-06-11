@@ -39,7 +39,7 @@
                 {{ $quote->formatDocumentMoney($quote->total_amount) }}
             </p>
 
-            <a href="{{ route('client.finance.quote.download', $quote) }}" class="cu-btn-secondary">
+            <a href="{{ \Illuminate\Support\Facades\URL::temporarySignedRoute('client.finance.quote.download', now()->addMinutes(config('finance.download_url_ttl_minutes', 30)), $quote) }}" class="cu-btn-secondary">
                 📥 Télécharger
             </a>
         </div>

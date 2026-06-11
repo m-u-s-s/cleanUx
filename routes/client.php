@@ -178,10 +178,13 @@ Route::middleware(['role:client'])
             Route::get('/devis-ia', AiQuotePhoto::class)->name('ai.quote.photo');
         }
 
+        // PDF finance — URL signée expirante (défense en profondeur, en plus de l'ownership).
         Route::get('/finance/devis/{quote}/telecharger', [FinanceDocumentDownloadController::class, 'quote'])
+            ->middleware('signed')
             ->name('finance.quote.download');
 
         Route::get('/finance/factures/{invoice}/telecharger', [FinanceDocumentDownloadController::class, 'invoice'])
+            ->middleware('signed')
             ->name('finance.invoice.download');
 
         // Phase 7 — Dashboard analytics
