@@ -57,6 +57,12 @@ Before starting any drill, confirm all of the following are available.
 
 ## Drills D1–D6
 
+> **Pré-vol automatisé.** Avant les drills manuels, lance `php artisan golive:preflight`
+> sur staging. Il exécute les contrôles automatisables (D1 `config:parity-check` +
+> `spine:health-report`, D5 `spine:check-stuck-missions`, et D6 `backup:restore-drill`
+> avec `--with-restore`), rend un **GO / NO-GO** consolidé (gate sur parité + missions
+> bloquées) et rappelle les drills manuels D2/D3/D4 à jouer ensuite.
+
 ---
 
 ### D1 — Staging Smoke + Parity
