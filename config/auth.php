@@ -114,4 +114,18 @@ return [
 
     'password_timeout' => 10800,
 
+    /*
+    |--------------------------------------------------------------------------
+    | Enforce 2FA for platform administrators
+    |--------------------------------------------------------------------------
+    |
+    | Audit HIGH — when enabled, any admin without a confirmed two-factor setup
+    | is redirected to enable it before reaching the admin area (middleware
+    | `enforce_2fa`, applied on /admin routes). Secure-by-default: ON unless
+    | explicitly disabled. The test suite disables it via phpunit.xml.
+    |
+    */
+
+    'enforce_2fa_for_admins' => (bool) env('ENFORCE_2FA_FOR_ADMINS', true),
+
 ];
