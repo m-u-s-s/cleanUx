@@ -409,11 +409,14 @@ class MultiTradeBundleService
                 'accepted_at' => now(),
             ]);
 
-            // Pour chaque item, créer un Booking lié au provider qui a quoté
-            foreach ($bundle->items as $item) {
+            // P5 — créer les bookings dans l'ordre d'exécution (dépendances depends_on
+            // respectées : ex. carrelage avant peinture), et tamponner execution_order.
+            $executionOrder = 0;
+            foreach ($this->orderItemsByDependency($bundle->items) as $item) {
                 if (! $item->assigned_provider_user_id) {
                     continue;
                 }
+                $executionOrder++;
                 try {
                     $booking = Booking::query()->create([
                         'client_id' => $bundle->client_user_id,
@@ -427,6 +430,7 @@ class MultiTradeBundleService
                             'source' => 'multi_trade_bundle',
                             'bundle_code' => $bundle->code,
                             'bundle_item_id' => $item->id,
+                            'execution_order' => $executionOrder,
                         ],
                     ]);
                     $item->update([
@@ -444,6 +448,51 @@ class MultiTradeBundleService
 
             return $bundle->fresh('items.booking');
         });
+    }
+
+    /**
+     * P5 — tri topologique des items par dépendances (depends_on_item_ids), avec
+     * sequence_order comme départage. Les dépendances absentes du bundle sont
+     * ignorées ; un éventuel cycle est rompu en repli sur sequence_order.
+     *
+     * @param  \Illuminate\Support\Collection<int, MultiTradeBundleItem>  $items
+     * @return list<MultiTradeBundleItem>
+     */
+    protected function orderItemsByDependency($items): array
+    {
+        $remaining = $items->sortBy('sequence_order')->values();
+        $byId = $remaining->keyBy('id');
+        $placed = [];
+        $ordered = [];
+
+        $guard = $remaining->count() + 1;
+        while (count($ordered) < $remaining->count() && $guard-- > 0) {
+            foreach ($remaining as $item) {
+                if (isset($placed[$item->id])) {
+                    continue;
+                }
+                $ready = true;
+                foreach ((array) ($item->depends_on_item_ids ?? []) as $depId) {
+                    if (isset($byId[$depId]) && ! isset($placed[$depId])) {
+                        $ready = false;
+                        break;
+                    }
+                }
+                if ($ready) {
+                    $ordered[] = $item;
+                    $placed[$item->id] = true;
+                }
+            }
+        }
+
+        // Repli : items non placés (cycle) ajoutés par sequence_order.
+        foreach ($remaining as $item) {
+            if (! isset($placed[$item->id])) {
+                $ordered[] = $item;
+            }
+        }
+
+        return $ordered;
     }
 
     public function cancel(MultiTradeBundle $bundle, string $reason): MultiTradeBundle
