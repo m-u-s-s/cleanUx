@@ -124,6 +124,16 @@
                 </div>
             @endif
 
+            {{-- Audit LOW — disclaimer légal : l'estimation IA n'est pas un devis ferme. --}}
+            <div class="mb-4 rounded-xl border border-amber-200 bg-amber-50 p-3 text-xs text-amber-800 flex items-start gap-2">
+                <span aria-hidden="true">⚠️</span>
+                <span>
+                    <strong>Estimation indicative</strong> générée par IA à partir de votre photo.
+                    Elle ne constitue <strong>pas un devis ferme</strong> : le prix définitif est confirmé
+                    par le prestataire après échange/visite, selon l'état réel et les contraintes du chantier.
+                </span>
+            </div>
+
             @if (!empty($result['etat_observe']))
                 <div class="mb-3">
                     <p class="text-xs font-semibold text-slate-500 uppercase tracking-wide">État observé</p>
