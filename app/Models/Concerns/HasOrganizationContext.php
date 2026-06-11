@@ -69,6 +69,19 @@ trait HasOrganizationContext
             || filled(data_get($this->metadata, 'entreprise_context'));
     }
 
+    /**
+     * L'utilisateur appartient-il à une entreprise CLIENTE active (espace société) ?
+     * Condition du pont de navigation vers /dashboard/entreprise-client.
+     */
+    public function belongsToClientCompany(): bool
+    {
+        $type = \App\Enums\OrganizationType::tryFrom(
+            (string) $this->currentOrganization?->type
+        );
+
+        return $type?->isClient() ?? false;
+    }
+
     public function organizationContextId(): ?int
     {
         return $this->organization_account_id

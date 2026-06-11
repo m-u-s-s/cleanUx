@@ -89,6 +89,13 @@
                         <span class="flex-shrink-0 rounded-full px-2 py-0.5 text-[10px] font-bold {{ $sc['bg'] }}">
                             {{ $sc['label'] }}
                         </span>
+                        @if ($booking->mission && \Illuminate\Support\Facades\Route::has('client-company.missions.photos'))
+                            <a href="{{ route('client-company.missions.photos', $booking->mission) }}"
+                                class="inline-flex min-h-[44px] items-center rounded-lg bg-slate-100 px-3 py-1 text-[10px] font-semibold text-slate-700 hover:bg-slate-200"
+                                title="Photos avant/après">
+                                📷 Photos
+                            </a>
+                        @endif
                         @if ($booking->status === 'pending_approval' && $needsApproval)
                             <button wire:click="approveBooking({{ $booking->id }})"
                                 class="inline-flex min-h-[44px] items-center rounded-lg bg-amber-600 px-3 py-1 text-[10px] font-bold text-white hover:bg-amber-700">

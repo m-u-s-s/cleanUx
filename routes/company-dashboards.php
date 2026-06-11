@@ -1,12 +1,15 @@
 <?php
 
+use App\Livewire\ClientCompany\Analytics\ClientAnalyticsDashboard;
 use App\Livewire\ClientCompany\BillingCenter;
 use App\Livewire\ClientCompany\BookingHub;
 use App\Livewire\ClientCompany\BulkBookingImporter;
 use App\Livewire\ClientCompany\ClientCompanyDashboard;
 use App\Livewire\ClientCompany\ClientContractsCenter;
+use App\Livewire\ClientCompany\DisputesCenter;
 use App\Livewire\ClientCompany\MembersAccess;
 use App\Livewire\ClientCompany\SiteManager;
+use App\Livewire\ClientCompany\SiteMissionPhotos;
 use App\Livewire\ProviderCompany\DispatchCenter;
 use App\Livewire\ProviderCompany\ProviderDashboard;
 use App\Livewire\ProviderCompany\TaskBoard;
@@ -31,6 +34,18 @@ Route::middleware(['auth', 'verified', 'active.account', 'org.type:client'])
         Route::get('/membres', MembersAccess::class)->name('members');
         Route::get('/contrats', ClientContractsCenter::class)->name('contracts');
         Route::get('/facturation', BillingCenter::class)->name('billing');
+
+        if (class_exists(ClientAnalyticsDashboard::class)) {
+            Route::get('/analytics', ClientAnalyticsDashboard::class)->name('analytics');
+        }
+
+        if (class_exists(DisputesCenter::class)) {
+            Route::get('/litiges', DisputesCenter::class)->name('disputes');
+        }
+
+        if (class_exists(SiteMissionPhotos::class)) {
+            Route::get('/missions/{mission}/photos', SiteMissionPhotos::class)->name('missions.photos');
+        }
 
         if (class_exists(BulkBookingImporter::class)) {
             Route::get('/reservations/import-bulk', BulkBookingImporter::class)
