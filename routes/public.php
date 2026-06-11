@@ -160,3 +160,7 @@ Route::post('/webhooks/sms/{provider}', [SmsWebhookController::class, 'handle'])
 // Phase Insurance v2 — Webhooks providers assurance (mock|hiscox|wakam)
 Route::post('/webhooks/insurance/{provider}', [InsuranceWebhookController::class, 'handle'])
     ->name('webhooks.insurance');
+
+// GCal bidirectionnel — notifications push Google Calendar (headers X-Goog-*).
+Route::post('/webhooks/google-calendar', [\App\Http\Controllers\Webhooks\GoogleCalendarWebhookController::class, 'handle'])
+    ->name('webhooks.google-calendar');

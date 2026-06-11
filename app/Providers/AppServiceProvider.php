@@ -54,6 +54,13 @@ class AppServiceProvider extends ServiceProvider
         $this->app->singleton(StripeCountryMapper::class);
         $this->app->singleton(TaxCalculator::class);
 
+        // GCal bidirectionnel — fetcher Mock par défaut (le client Google API réel
+        // sera lié ici quand l'intégration API sera activée).
+        $this->app->singleton(
+            \App\Services\Calendar\Contracts\GoogleBusyFetcher::class,
+            \App\Services\Calendar\Fetchers\MockGoogleBusyFetcher::class,
+        );
+
         // Multi-country config — singleton, pure data (no I/O)
         $this->app->singleton(CountryConfigService::class);
 
