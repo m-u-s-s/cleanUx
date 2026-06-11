@@ -412,6 +412,11 @@ php artisan tinker --execute="
 
 **Pairs with artifacts:** `BackupRestoreDrill` (`backup:restore-drill`).
 
+> **Pré-requis :** définir la connexion `scratch` via les variables `DB_SCRATCH_*`
+> (cf. `.env.example`) pointant vers une base **dédiée et vide**, distincte de
+> `DB_DATABASE`. La commande refuse de tourner sur la connexion primaire. Lancer
+> avec un dump : `php artisan backup:restore-drill --connection=scratch --backup=<chemin/dump.sql>`.
+
 #### Operator Steps
 
 ```bash

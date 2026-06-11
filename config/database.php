@@ -66,6 +66,26 @@ return [
             ]) : [],
         ],
 
+        // Connexion SCRATCH isolée — UNIQUEMENT pour backup:restore-drill (restaure un
+        // dump dans une base jetable, JAMAIS la base primaire). Sur staging : pointer
+        // DB_SCRATCH_DATABASE vers une base dédiée et vide, distincte de DB_DATABASE.
+        'scratch' => [
+            'driver' => env('DB_SCRATCH_DRIVER', 'mysql'),
+            'url' => env('DB_SCRATCH_URL'),
+            'host' => env('DB_SCRATCH_HOST', env('DB_HOST', '127.0.0.1')),
+            'port' => env('DB_SCRATCH_PORT', env('DB_PORT', '3306')),
+            'database' => env('DB_SCRATCH_DATABASE', 'cleanux_restore_drill'),
+            'username' => env('DB_SCRATCH_USERNAME', env('DB_USERNAME', 'forge')),
+            'password' => env('DB_SCRATCH_PASSWORD', env('DB_PASSWORD', '')),
+            'unix_socket' => env('DB_SCRATCH_SOCKET', ''),
+            'charset' => 'utf8mb4',
+            'collation' => 'utf8mb4_unicode_ci',
+            'prefix' => '',
+            'prefix_indexes' => true,
+            'strict' => true,
+            'engine' => null,
+        ],
+
         'pgsql' => [
             'driver' => 'pgsql',
             'url' => env('DATABASE_URL'),

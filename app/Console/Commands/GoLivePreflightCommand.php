@@ -37,7 +37,8 @@ class GoLivePreflightCommand extends Command
 
         // D6 — restore drill (optionnel ; GATE si lancé).
         if ($this->option('with-restore')) {
-            $restoreExit = Artisan::call('backup:restore-drill', ['--connection' => 'drill']);
+            $scratch = (string) config('backup.restore.scratch_connection', 'scratch');
+            $restoreExit = Artisan::call('backup:restore-drill', ['--connection' => $scratch]);
             $results[] = ['D6', 'backup:restore-drill', $restoreExit === 0, true];
         }
 
