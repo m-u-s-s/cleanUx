@@ -6,6 +6,7 @@ use App\Livewire\ClientCompany\BookingHub;
 use App\Livewire\ClientCompany\BulkBookingImporter;
 use App\Livewire\ClientCompany\ClientCompanyDashboard;
 use App\Livewire\ClientCompany\ClientContractsCenter;
+use App\Livewire\ClientCompany\DisputesCenter;
 use App\Livewire\ClientCompany\MembersAccess;
 use App\Livewire\ClientCompany\SiteManager;
 use App\Livewire\ProviderCompany\DispatchCenter;
@@ -35,6 +36,10 @@ Route::middleware(['auth', 'verified', 'active.account', 'org.type:client'])
 
         if (class_exists(ClientAnalyticsDashboard::class)) {
             Route::get('/analytics', ClientAnalyticsDashboard::class)->name('analytics');
+        }
+
+        if (class_exists(DisputesCenter::class)) {
+            Route::get('/litiges', DisputesCenter::class)->name('disputes');
         }
 
         if (class_exists(BulkBookingImporter::class)) {

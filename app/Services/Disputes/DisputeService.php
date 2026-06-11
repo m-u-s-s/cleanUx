@@ -35,7 +35,15 @@ class DisputeService
         $category = $data['category'] ?? ComplaintCase::CATEGORY_OTHER;
         $booking = isset($data['booking_id']) ? Booking::find($data['booking_id']) : null;
 
-        if ($booking && (int) $booking->client_id !== (int) $client->id) {
+        // Le booking appartient à l'utilisateur, OU il appartient à l'entreprise
+        // cliente dont l'utilisateur est membre (un manager peut ouvrir un litige
+        // pour n'importe quel site/booking de son org). Le garde-fou null empêche
+        // un particulier (sans org) d'ouvrir un litige sur le booking d'autrui.
+        $ownsBooking = (int) ($booking?->client_id) === (int) $client->id;
+        $sameOrganization = $booking?->customer_organization_id !== null
+            && (int) $booking->customer_organization_id === (int) $client->current_organization_id;
+
+        if ($booking && ! $ownsBooking && ! $sameOrganization) {
             throw ValidationException::withMessages([
                 'booking_id' => 'Ce booking ne vous appartient pas.',
             ]);

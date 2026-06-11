@@ -36,6 +36,7 @@
                 ['route' => 'client-company.members', 'label' => 'Membres', 'icon' => '👥'],
                 ['route' => 'client-company.contracts', 'label' => 'Contrats', 'icon' => '📄'],
                 ['route' => 'client-company.billing', 'label' => 'Facturation', 'icon' => '🧾'],
+                ['route' => 'client-company.disputes', 'label' => 'Litiges', 'icon' => '⚠️'],
                 ['route' => 'client-company.analytics', 'label' => 'Analytics', 'icon' => '📊'],
                 ])->filter(fn ($link) => \Illuminate\Support\Facades\Route::has($link['route'])) as $link)
                 <a href="{{ route($link['route']) }}"
