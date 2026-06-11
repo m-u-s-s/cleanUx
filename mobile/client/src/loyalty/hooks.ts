@@ -1,4 +1,4 @@
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '@/api';
 
 export interface LoyaltyAccount {
@@ -29,6 +29,29 @@ export function useLoyaltyRewards() {
     queryFn: async () => {
       const res = await apiClient.get('/client/loyalty/rewards');
       return res.data.data ?? res.data;
+    },
+  });
+}
+
+export interface RedeemResult {
+  id: number;
+  code: string;
+  status: string;
+  voucher_code?: string;
+  delivery_method?: string;
+  points_spent: number;
+}
+
+/** Échange une récompense contre des points et rafraîchit le solde + le catalogue. */
+export function useRedeemReward() {
+  const queryClient = useQueryClient();
+  return useMutation<RedeemResult, unknown, number>({
+    mutationFn: async (rewardId: number) => {
+      const res = await apiClient.post('/client/loyalty/rewards/redeem', { reward_id: rewardId });
+      return res.data.data ?? res.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['loyalty'] });
     },
   });
 }

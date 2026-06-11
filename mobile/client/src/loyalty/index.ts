@@ -1,2 +1,2 @@
-export { useLoyaltyAccount, useLoyaltyRewards } from './hooks';
-export type { LoyaltyAccount, LoyaltyReward } from './hooks';
+export { useLoyaltyAccount, useLoyaltyRewards, useRedeemReward } from './hooks';
+export type { LoyaltyAccount, LoyaltyReward, RedeemResult } from './hooks';

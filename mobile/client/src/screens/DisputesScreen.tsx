@@ -1,11 +1,22 @@
-import React from 'react';
-import { FlatList, View, Text, StyleSheet } from 'react-native';
-import { useQuery } from '@tanstack/react-query';
-import { Screen, Badge, Skeleton, EmptyState, ErrorState } from '@/ui';
+import React, { useState } from 'react';
+import { FlatList, View, Text, StyleSheet, Pressable, Alert } from 'react-native';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { Screen, Badge, Skeleton, EmptyState, ErrorState, Button, TextInput } from '@/ui';
 import { apiClient } from '@/api';
 import { colors, spacing, typography, radius } from '@/theme';
 
+const CATEGORIES: { value: string; label: string }[] = [
+  { value: 'quality', label: 'Qualité' },
+  { value: 'no_show', label: 'Absence' },
+  { value: 'payment', label: 'Paiement' },
+  { value: 'damage', label: 'Dommage' },
+  { value: 'safety', label: 'Sécurité' },
+  { value: 'communication', label: 'Communication' },
+  { value: 'other', label: 'Autre' },
+];
+
 export function DisputesScreen() {
+  const queryClient = useQueryClient();
   const { data, isLoading, isError, refetch, isRefetching } = useQuery({
     queryKey: ['disputes'],
     queryFn: async () => {
@@ -14,11 +25,62 @@ export function DisputesScreen() {
     },
   });
 
+  const [showForm, setShowForm] = useState(false);
+  const [subject, setSubject] = useState('');
+  const [description, setDescription] = useState('');
+  const [category, setCategory] = useState<string | null>(null);
+
+  const create = useMutation({
+    mutationFn: async () =>
+      (await apiClient.post('/client/disputes', { subject, description, category })).data,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['disputes'] });
+      setShowForm(false);
+      setSubject('');
+      setDescription('');
+      setCategory(null);
+      Alert.alert('Litige ouvert', 'Notre équipe va le traiter dans les meilleurs délais.');
+    },
+    onError: () => Alert.alert('Échec', "Le litige n'a pas pu être ouvert. Réessayez."),
+  });
+
+  const canSubmit = subject.trim().length >= 3 && description.trim().length >= 10 && !!category && !create.isPending;
+
   if (isError) return <Screen><ErrorState message="Impossible de charger vos litiges." onRetry={refetch} /></Screen>;
 
   return (
     <Screen>
-      <Text style={styles.title}>Mes litiges</Text>
+      <View style={styles.headerRow}>
+        <Text style={styles.title}>Mes litiges</Text>
+        <Button label={showForm ? 'Fermer' : 'Ouvrir un litige'} size="sm" onPress={() => setShowForm(v => !v)} />
+      </View>
+
+      {showForm && (
+        <View style={styles.form}>
+          <TextInput label="Sujet" placeholder="Sujet" value={subject} onChangeText={setSubject} />
+          <TextInput
+            label="Description"
+            placeholder="Décrivez le problème"
+            value={description}
+            onChangeText={setDescription}
+            multiline
+          />
+          <Text style={styles.formLabel}>Catégorie</Text>
+          <View style={styles.chips}>
+            {CATEGORIES.map(cat => (
+              <Pressable
+                key={cat.value}
+                onPress={() => setCategory(cat.value)}
+                style={[styles.chip, category === cat.value && styles.chipActive]}
+              >
+                <Text style={[styles.chipText, category === cat.value && styles.chipTextActive]}>{cat.label}</Text>
+              </Pressable>
+            ))}
+          </View>
+          <Button label="Envoyer" onPress={() => create.mutate()} disabled={!canSubmit} loading={create.isPending} />
+        </View>
+      )}
+
       {isLoading ? (
         <Skeleton width="100%" height={80} />
       ) : (
@@ -47,12 +109,40 @@ export function DisputesScreen() {
 }
 
 const styles = StyleSheet.create({
+  headerRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: spacing.md,
+  },
   title: {
     fontSize: typography.fontSize.xl,
     fontWeight: typography.fontWeight.bold,
     color: colors.surface[900],
-    marginBottom: spacing.md,
   },
+  form: {
+    backgroundColor: '#fff',
+    borderRadius: radius.md,
+    padding: spacing.md,
+    marginBottom: spacing.md,
+    gap: spacing.sm,
+  },
+  formLabel: {
+    fontSize: typography.fontSize.sm,
+    fontWeight: typography.fontWeight.semibold,
+    color: colors.surface[700],
+  },
+  chips: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.xs },
+  chip: {
+    paddingVertical: spacing.xs,
+    paddingHorizontal: spacing.sm,
+    borderRadius: radius.full,
+    borderWidth: 1,
+    borderColor: colors.surface[300],
+  },
+  chipActive: { backgroundColor: colors.brand[500], borderColor: colors.brand[500] },
+  chipText: { fontSize: typography.fontSize.xs, color: colors.surface[700] },
+  chipTextActive: { color: '#fff', fontWeight: typography.fontWeight.semibold },
   card: {
     padding: spacing.md,
     backgroundColor: '#fff',

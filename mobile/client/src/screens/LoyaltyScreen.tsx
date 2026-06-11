@@ -1,13 +1,34 @@
 import React from 'react';
-import { View, FlatList, Text, StyleSheet } from 'react-native';
+import { View, FlatList, Text, StyleSheet, Alert } from 'react-native';
 import { Screen, KPICard, Badge, Button, Skeleton, EmptyState } from '@/ui';
-import { useLoyaltyAccount, useLoyaltyRewards } from '@/loyalty';
+import { useLoyaltyAccount, useLoyaltyRewards, useRedeemReward } from '@/loyalty';
 import { colors, spacing, typography, radius, shadows, useThemeColors } from '@/theme';
 
 export function LoyaltyScreen() {
   const { data: account, isLoading: loadingAccount } = useLoyaltyAccount();
   const { data: rewards, isLoading: loadingRewards, refetch: refetchRewards, isRefetching: isRefetchingRewards } = useLoyaltyRewards();
+  const redeem = useRedeemReward();
   const themeColors = useThemeColors();
+
+  const handleRedeem = (rewardId: number, rewardName: string) => {
+    Alert.alert('Échanger cette récompense ?', rewardName, [
+      { text: 'Annuler', style: 'cancel' },
+      {
+        text: 'Échanger',
+        onPress: () =>
+          redeem.mutate(rewardId, {
+            onSuccess: (result) =>
+              Alert.alert(
+                'Échange confirmé 🎉',
+                result.voucher_code
+                  ? `Votre code : ${result.voucher_code}`
+                  : 'Votre récompense est en cours de traitement.',
+              ),
+            onError: () => Alert.alert('Échec', "L'échange n'a pas pu être effectué. Réessayez."),
+          }),
+      },
+    ]);
+  };
 
   return (
     <Screen scroll>
@@ -43,8 +64,8 @@ export function LoyaltyScreen() {
               <Button
                 label="Échanger"
                 size="sm"
-                onPress={() => {}}
-                disabled={(account?.redeemable_points ?? 0) < item.points_cost}
+                onPress={() => handleRedeem(item.id, item.name)}
+                disabled={(account?.redeemable_points ?? 0) < item.points_cost || redeem.isPending}
               />
             </View>
           )}
