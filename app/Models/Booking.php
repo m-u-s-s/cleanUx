@@ -510,6 +510,12 @@ class Booking extends Model
         return $this->hasMany(Mission::class);
     }
 
+    /** @return HasMany<ComplaintCase, $this> */
+    public function complaintCases(): HasMany
+    {
+        return $this->hasMany(ComplaintCase::class, 'booking_id');
+    }
+
     /** @return HasOne<Feedback, $this> */
     public function mission(): HasOne
     {

@@ -28,6 +28,12 @@ class ProcessProviderPayouts extends Command
                 ->orWhere('status', 'done');
         })
             ->whereNull('payout_status')
+            // Audit HIGH — gel du payout tant qu'un litige n'est pas résolu : on
+            // ne libère pas la rémunération du prestataire pendant qu'une réclamation
+            // est ouverte sur la prestation.
+            ->whereDoesntHave('complaintCases', function ($q) {
+                $q->whereNotIn('status', \App\Models\ComplaintCase::FINAL_STATUSES);
+            })
             ->where(function ($q) {
                 $q->whereNotNull('devis_estime')
                     ->orWhereNotNull('estimated_price')
@@ -140,6 +146,10 @@ class ProcessProviderPayouts extends Command
 
         $pendingTransfers = Booking::where('payout_status', 'processed')
             ->whereNull('stripe_transfer_id')
+            // Audit HIGH — ne jamais transférer un booking sous litige non résolu.
+            ->whereDoesntHave('complaintCases', function ($q) {
+                $q->whereNotIn('status', \App\Models\ComplaintCase::FINAL_STATUSES);
+            })
             // Defense-in-depth: never manually transfer a booking that was already paid
             // via a Stripe destination charge (provider auto-credited at capture). Such a
             // booking has a captured PaymentIntent. This excludes legacy 'processed' rows
