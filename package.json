@@ -8,7 +8,10 @@
         "lint": "eslint resources/js/",
         "lint:fix": "eslint resources/js/ --fix",
         "format": "prettier --write resources/",
-        "format:check": "prettier --check resources/"
+        "format:check": "prettier --check resources/",
+        "e2e": "playwright test",
+        "e2e:ui": "playwright test --ui",
+        "e2e:install": "playwright install --with-deps chromium"
     },
     "lint-staged": {
         "*.php": ["vendor/bin/pint"],
@@ -17,6 +20,7 @@
         "resources/css/**/*.css": ["prettier --write"]
     },
     "devDependencies": {
+        "@playwright/test": "^1.48.0",
         "@tailwindcss/forms": "^0.5.2",
         "@tailwindcss/typography": "^0.5.0",
         "autoprefixer": "^10.4.7",

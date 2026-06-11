@@ -1,5 +1,8 @@
 /.phpunit.cache
 /node_modules
+/playwright-report
+/test-results
+/database/e2e.sqlite
 mobile/client/node_modules/
 mobile/client/.expo/
 /public/build

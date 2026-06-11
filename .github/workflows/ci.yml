@@ -140,3 +140,84 @@ jobs:
             tests/Feature/CancellationV2 \
             tests/Feature/Gdpr \
             tests/Feature/Kyc
+
+  # E2E par rôle (Playwright) — boote l'app sur SQLite fichier + comptes QA, et
+  # vérifie en navigateur que chaque rôle se connecte et atteint son espace.
+  # Non-bloquant au départ (signal d'abord) ; passer en bloquant une fois stable.
+  e2e:
+    name: E2E (Playwright, per role)
+    runs-on: ubuntu-latest
+    continue-on-error: true
+
+    env:
+      DB_CONNECTION: sqlite
+      DB_DATABASE: ${{ github.workspace }}/database/e2e.sqlite
+      DB_FOREIGN_KEYS: 'true'
+      APP_ENV: local
+      APP_DEBUG: 'true'
+      E2E_BASE_URL: http://127.0.0.1:8000
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: mbstring, dom, fileinfo, pdo_sqlite, sqlite3
+          ini-values: memory_limit=-1
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Copy env
+        run: cp .env.testing .env
+
+      - name: Install PHP dependencies
+        run: composer install --no-interaction --prefer-dist
+
+      - name: Install Node dependencies
+        run: npm ci
+
+      - name: Generate app key
+        run: php artisan key:generate --force
+
+      - name: Prepare SQLite database
+        run: touch "$DB_DATABASE"
+
+      - name: Migrate + seed QA accounts
+        run: |
+          php artisan migrate --force
+          php artisan db:seed --class="Database\\Seeders\\QaAccountsSeeder" --force
+
+      - name: Build web assets
+        run: npm run build
+
+      - name: Install Playwright Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Serve the app
+        run: php artisan serve --host=127.0.0.1 --port=8000 &
+
+      - name: Wait for the app to be ready
+        run: |
+          for i in $(seq 1 30); do
+            if curl -sf http://127.0.0.1:8000/login >/dev/null; then echo "up"; exit 0; fi
+            sleep 2
+          done
+          echo "app did not start" && exit 1
+
+      - name: Run E2E tests
+        run: npx playwright test
+
+      - name: Upload Playwright report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: playwright-report
+          retention-days: 14
