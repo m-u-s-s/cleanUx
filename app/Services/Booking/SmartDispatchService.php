@@ -104,10 +104,16 @@ class SmartDispatchService
         // on RESTREINT les candidats aux workers de cette org. null → comportement inchangé.
         $organizationId = $rdv->assigned_provider_organization_id;
 
+        // Audit HIGH — exclure les prestataires bloqués vis-à-vis du client.
+        $blockedIds = $rdv->client_id
+            ? app(\App\Services\Safety\UserSafetyService::class)->blockedUserIdsFor((int) $rdv->client_id)
+            : [];
+
         $employees = $this->availabilityService
             ->sortedEligibleEmployeesForZone((int) $rdv->service_zone_id, $providerType, $organizationId);
 
         return $employees
+            ->reject(fn (User $employee) => in_array((int) $employee->id, $blockedIds, true))
             ->filter(fn (User $employee) => $this->availabilityService->employeeIsAvailableForSlot(
                 $employee->id,
                 $rdv->date->format('Y-m-d'),

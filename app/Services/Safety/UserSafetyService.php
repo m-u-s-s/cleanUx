@@ -44,6 +44,28 @@ class UserSafetyService
             ->exists();
     }
 
+    /**
+     * IDs des utilisateurs en relation de blocage avec $userId, dans un sens OU
+     * l'autre. Sert à exclure du matching tout prestataire bloqué par le client
+     * ou ayant bloqué le client.
+     *
+     * @return list<int>
+     */
+    public function blockedUserIdsFor(int $userId): array
+    {
+        return UserBlock::query()
+            ->where(function ($q) use ($userId) {
+                $q->where('blocker_user_id', $userId)
+                    ->orWhere('blocked_user_id', $userId);
+            })
+            ->get(['blocker_user_id', 'blocked_user_id'])
+            ->flatMap(fn ($b) => [(int) $b->blocker_user_id, (int) $b->blocked_user_id])
+            ->reject(fn ($id) => $id === $userId)
+            ->unique()
+            ->values()
+            ->all();
+    }
+
     public function isMutuallyBlocked(User $a, User $b): bool
     {
         return UserBlock::query()

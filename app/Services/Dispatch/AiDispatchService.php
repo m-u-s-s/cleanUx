@@ -105,9 +105,19 @@ class AiDispatchService
         // (assigned_provider_organization_id). null → comportement inchangé.
         $organizationId = $rdv->assigned_provider_organization_id;
 
+        // Audit HIGH — ne jamais proposer un prestataire bloqué (dans un sens ou
+        // l'autre) vis-à-vis du client de la réservation.
+        $blockedIds = $rdv->client_id
+            ? app(\App\Services\Safety\UserSafetyService::class)->blockedUserIdsFor((int) $rdv->client_id)
+            : [];
+
         $candidates = $this->availability
             ->sortedEligibleEmployeesForZone((int) $rdv->service_zone_id, $providerType, $organizationId)
-            ->filter(function (User $employee) use ($rdv) {
+            ->filter(function (User $employee) use ($rdv, $blockedIds) {
+
+                if (in_array((int) $employee->id, $blockedIds, true)) {
+                    return false;
+                }
 
                 if ($rdv->booking_mode === 'asap') {
                     $profile = $employee->providerProfile;
