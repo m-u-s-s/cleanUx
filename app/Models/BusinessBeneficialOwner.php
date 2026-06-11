@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Casts\EncryptedArrayFallback;
 use App\Casts\EncryptedStringFallback;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -35,7 +36,8 @@ class BusinessBeneficialOwner extends Model
         'is_director' => 'boolean',
         'is_pep' => 'boolean',
         'is_sanctioned' => 'boolean',
-        'metadata' => 'array',
+        // Audit LOW (RGPD) — métadonnées bénéficiaire (PII) chiffrées au repos.
+        'metadata' => EncryptedArrayFallback::class,
     ];
 
     /** @return BelongsTo<BusinessEntity, $this> */

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Casts\EncryptedArrayFallback;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -31,11 +32,12 @@ class BusinessSanctionsCheck extends Model
 
     protected $casts = [
         'match_count' => 'integer',
-        'match_payload' => 'array',
+        // Audit LOW (RGPD) — correspondances de sanctions (PII) chiffrées au repos.
+        'match_payload' => EncryptedArrayFallback::class,
         'checked_at' => 'datetime',
         'expires_at' => 'datetime',
         'reviewed_at' => 'datetime',
-        'metadata' => 'array',
+        'metadata' => EncryptedArrayFallback::class,
     ];
 
     /** @return BelongsTo<BusinessEntity, $this> */
