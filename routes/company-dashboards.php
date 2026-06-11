@@ -1,5 +1,6 @@
 <?php
 
+use App\Livewire\ClientCompany\Analytics\ClientAnalyticsDashboard;
 use App\Livewire\ClientCompany\BillingCenter;
 use App\Livewire\ClientCompany\BookingHub;
 use App\Livewire\ClientCompany\BulkBookingImporter;
@@ -31,6 +32,10 @@ Route::middleware(['auth', 'verified', 'active.account', 'org.type:client'])
         Route::get('/membres', MembersAccess::class)->name('members');
         Route::get('/contrats', ClientContractsCenter::class)->name('contracts');
         Route::get('/facturation', BillingCenter::class)->name('billing');
+
+        if (class_exists(ClientAnalyticsDashboard::class)) {
+            Route::get('/analytics', ClientAnalyticsDashboard::class)->name('analytics');
+        }
 
         if (class_exists(BulkBookingImporter::class)) {
             Route::get('/reservations/import-bulk', BulkBookingImporter::class)

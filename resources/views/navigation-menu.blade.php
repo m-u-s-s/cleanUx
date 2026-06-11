@@ -60,10 +60,15 @@
     ['label' => 'Mes données RGPD', 'route' => 'client.gdpr.data', 'active' => 'client.gdpr.data', 'icon' => '🔐'],
     ['label' => 'API tokens', 'route' => 'client.api-tokens', 'active' => 'client.api-tokens', 'icon' => '🔑'],
     ],
-    'Pro (compte entreprise)' => [
+    'Pro (compte entreprise)' => array_values(array_filter([
     ['label' => 'Vérification entreprise (KYB)', 'route' => 'client.kyb.onboarding', 'active' => 'client.kyb.onboarding', 'icon' => '🏢'],
     ['label' => 'Contrats', 'route' => 'client.contracts', 'active' => 'client.contracts', 'icon' => '📜'],
-    ],
+    // Pont vers l'espace société multi-sites — seulement si l'utilisateur appartient
+    // à une entreprise cliente (sinon le lien mènerait à un 403 org.type).
+    ($user?->belongsToClientCompany() && Route::has('client-company.dashboard'))
+    ? ['label' => 'Espace entreprise', 'route' => 'client-company.dashboard', 'active' => 'client-company.*', 'icon' => '🏢']
+    : null,
+    ])),
     ];
 
     $employeGroups = [

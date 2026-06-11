@@ -36,6 +36,7 @@
                 ['route' => 'client-company.members', 'label' => 'Membres', 'icon' => '👥'],
                 ['route' => 'client-company.contracts', 'label' => 'Contrats', 'icon' => '📄'],
                 ['route' => 'client-company.billing', 'label' => 'Facturation', 'icon' => '🧾'],
+                ['route' => 'client-company.analytics', 'label' => 'Analytics', 'icon' => '📊'],
                 ])->filter(fn ($link) => \Illuminate\Support\Facades\Route::has($link['route'])) as $link)
                 <a href="{{ route($link['route']) }}"
                     class="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm transition
@@ -53,6 +54,14 @@
                 class="hidden sm:flex items-center gap-1.5 rounded-xl bg-purple-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-purple-700">
                 ⚡ Demande rapide
             </a>
+
+            @if (\Illuminate\Support\Facades\Route::has('client.dashboard'))
+                <a href="{{ route('client.dashboard') }}"
+                    class="hidden sm:flex items-center gap-1.5 rounded-lg border border-slate-200 px-2.5 py-1.5 text-xs text-slate-600 hover:bg-slate-50"
+                    title="Revenir à mon espace personnel">
+                    👤 Mon espace perso
+                </a>
+            @endif
 
             {{-- Assistant --}}
             <livewire:chatbot.assistant-widget />
