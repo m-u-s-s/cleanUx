@@ -25,6 +25,7 @@ class TripTrackingSession extends Model
 
     protected $fillable = [
         'code', 'booking_id', 'provider_user_id', 'status',
+        'is_paused', 'paused_at',
         'destination_lat', 'destination_lng', 'geofence_radius_m',
         'start_lat', 'start_lng',
         'points_count', 'total_distance_m', 'current_eta_seconds',
@@ -41,6 +42,8 @@ class TripTrackingSession extends Model
         'last_lat' => 'float',
         'last_lng' => 'float',
         'last_speed_mps' => 'float',
+        'is_paused' => 'boolean',
+        'paused_at' => 'datetime',
         'geofence_radius_m' => 'integer',
         'points_count' => 'integer',
         'total_distance_m' => 'integer',

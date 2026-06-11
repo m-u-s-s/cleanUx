@@ -93,6 +93,13 @@ class TripTrackingService
             ]);
         }
 
+        // Audit LOW — aucune position partagée tant que le prestataire est en pause.
+        if ($session->is_paused) {
+            throw ValidationException::withMessages([
+                'session' => ['Le partage de position est en pause.'],
+            ]);
+        }
+
         // Dedup par client_sequence si fourni
         if ($clientSequence) {
             $existing = TripTrackingPoint::query()
@@ -181,6 +188,32 @@ class TripTrackingService
     /**
      * Provider démarre la mission (après être arrivé).
      */
+    /**
+     * Audit LOW — met en pause le partage de position (confidentialité prestataire).
+     */
+    public function pauseSession(TripTrackingSession $session): TripTrackingSession
+    {
+        if (! $session->isActive()) {
+            throw ValidationException::withMessages([
+                'session' => ['Session non active.'],
+            ]);
+        }
+
+        $session->update(['is_paused' => true, 'paused_at' => now()]);
+
+        return $session->fresh();
+    }
+
+    /**
+     * Reprend le partage de position après une pause.
+     */
+    public function resumeSession(TripTrackingSession $session): TripTrackingSession
+    {
+        $session->update(['is_paused' => false]);
+
+        return $session->fresh();
+    }
+
     public function markInMission(TripTrackingSession $session): TripTrackingSession
     {
         if ($session->status === TripTrackingSession::STATUS_IN_MISSION) {

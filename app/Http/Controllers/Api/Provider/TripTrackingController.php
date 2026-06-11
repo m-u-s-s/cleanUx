@@ -123,6 +123,24 @@ class TripTrackingController extends Controller
         }
     }
 
+    public function pause(Request $request, TripTrackingSession $session, TripTrackingService $service): JsonResponse
+    {
+        $this->authorizeProviderForSession($request, $session);
+
+        try {
+            return response()->json(['data' => $this->presentSession($service->pauseSession($session))]);
+        } catch (ValidationException $e) {
+            return response()->json(['error' => 'validation_failed', 'errors' => $e->errors()], 422);
+        }
+    }
+
+    public function resume(Request $request, TripTrackingSession $session, TripTrackingService $service): JsonResponse
+    {
+        $this->authorizeProviderForSession($request, $session);
+
+        return response()->json(['data' => $this->presentSession($service->resumeSession($session))]);
+    }
+
     /**
      * End a trip tracking session.
      *
