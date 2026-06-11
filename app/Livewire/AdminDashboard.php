@@ -3,6 +3,7 @@
 namespace App\Livewire;
 
 use App\Support\Livewire\Concerns\ComputesAdminDashboardData;
+use App\Support\Livewire\Concerns\EnforcesAdminAccess;
 use App\Support\Livewire\Concerns\HandlesAdminDashboardPlanning;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Route;
@@ -11,6 +12,7 @@ use Livewire\Component;
 class AdminDashboard extends Component
 {
     use ComputesAdminDashboardData;
+    use EnforcesAdminAccess;
     use HandlesAdminDashboardPlanning;
 
     public $filtreEmploye = null;

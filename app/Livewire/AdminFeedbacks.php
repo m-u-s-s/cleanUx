@@ -6,6 +6,7 @@ use App\Models\Feedback;
 use App\Models\User;
 use App\Support\ActivityLogger;
 use App\Support\Domain\BookingStatus;
+use App\Support\Livewire\Concerns\EnforcesAdminAccess;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
@@ -16,6 +17,7 @@ use Livewire\WithPagination;
 
 class AdminFeedbacks extends Component
 {
+    use EnforcesAdminAccess;
     use WithPagination;
 
     public ?int $scopeId = null;
