@@ -30,7 +30,8 @@ yarn-error.log
 /.superpowers
 /.scribe
 /.expo
-/ruvector.db
+ruvector.db
+**/ruvector.db
 /agentdb.rvf
 /agentdb.rvf.lock
 

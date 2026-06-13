@@ -6,6 +6,7 @@ use App\Enums\AssistantContextRole;
 use App\Enums\CustomerType;
 use App\Enums\OrganizationType;
 use App\Enums\ProviderType;
+use App\Http\Middleware\CheckRole;
 use App\Models\OrganizationAccount;
 
 trait HasUserTypeChecks
@@ -30,6 +31,16 @@ trait HasUserTypeChecks
         return $this->plan_type === 'standard';
     }
 
+    /**
+     * Broad "is this user a provider at all?" check — true as soon as a
+     * provider_profile row exists, regardless of provider_type.
+     *
+     * NOTE — this is NOT the check used by the `role:provider` / `role:employe`
+     * route middleware. That middleware resolves through {@see matchesRole()},
+     * which maps both `provider` and `employe` to {@see User::isEmploye()}
+     * (independent OR company-worker). Use isProvider() for "has a provider
+     * profile" gating; use isEmploye() / role:provider for route-level access.
+     */
     public function isProvider(): bool
     {
         return $this->providerProfile()->exists();
@@ -186,8 +197,15 @@ trait HasUserTypeChecks
     }
 
     /**
-     * Unified role-string matcher used by CheckRole middleware.
-     * No longer reads the legacy `role` column — uses typed fields only.
+     * Single source of truth for the role-string matching used by the
+     * `role:` route middleware ({@see CheckRole}).
+     * Uses typed fields only (no legacy `role` column — dropped in migration A3).
+     *
+     * Provider aliases (all three resolve to the SAME check, isEmploye):
+     *   - `employe`  / `employee` / `provider` → independent OR company worker
+     *   - `provider_company` / `entreprise_prestataire` → company worker only
+     * Keep `role:employe` as the canonical token in routes; `role:provider`
+     * is an accepted synonym so future code reads naturally either way.
      */
     public function matchesRole(string $role): bool
     {

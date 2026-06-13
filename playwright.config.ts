@@ -10,10 +10,15 @@ import { defineConfig, devices } from '@playwright/test';
  */
 export default defineConfig({
   testDir: './e2e',
-  fullyParallel: true,
+  // The app under test is served by single-threaded `php artisan serve`
+  // (PHP_CLI_SERVER_WORKERS is unsupported on Windows). Parallel workers
+  // hammer it with concurrent requests and deadlock → cascading goto
+  // timeouts. Keep the smoke suite serial so it is deterministic locally
+  // and in CI. Override with `--workers=N` against a real multi-worker host.
+  fullyParallel: false,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 1 : 0,
-  workers: process.env.CI ? 2 : undefined,
+  workers: 1,
   reporter: process.env.CI ? [['list'], ['html', { open: 'never' }]] : 'list',
   timeout: 45_000,
   expect: { timeout: 10_000 },

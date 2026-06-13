@@ -51,4 +51,26 @@ class Admin2FAEnforcementTest extends TestCase
             ->get(route('admin.dashboard'))
             ->assertSuccessful();
     }
+
+    /**
+     * Anti-loop guard: the page the un-enrolled admin is redirected TO must
+     * render, not bounce back into the enforcement middleware. This locks the
+     * fix that exempts profile.show + 2FA-setup routes from the redirect.
+     */
+    public function test_redirect_target_does_not_loop(): void
+    {
+        config(['auth.enforce_2fa_for_admins' => true]);
+
+        $admin = $this->admin(null);
+
+        // Blocked admin route bounces to the 2FA-setup page…
+        $this->actingAs($admin)
+            ->get(route('admin.dashboard'))
+            ->assertRedirect(route('profile.show'));
+
+        // …and that page is reachable (renders, no second redirect).
+        $this->actingAs($admin)
+            ->get(route('profile.show'))
+            ->assertSuccessful();
+    }
 }

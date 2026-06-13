@@ -31,6 +31,10 @@
         </include>
     </source>
     <php>
+        <!-- DomPDF (devis/factures/contrats PDF) dépasse les 512M par défaut de
+             PHP sur certains postes → OOM. Plafond confortable appliqué au
+             process de test par PHPUnit (memory_limit est PHP_INI_ALL). -->
+        <ini name="memory_limit" value="2048M"/>
         <env name="APP_ENV" value="testing"/>
         <!-- <env name="APP_KEY" value="base64:base64encoded32charstringhere="/> -->
         <env name="BCRYPT_ROUNDS" value="4"/>

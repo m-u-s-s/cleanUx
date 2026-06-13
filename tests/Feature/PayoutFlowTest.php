@@ -32,23 +32,23 @@ class PayoutFlowTest extends TestCase
         $result = $service->calculateForBooking($booking);
 
         $this->assertEquals(10000, $result['total_cents']);
-        // Default 15% platform rate
-        $this->assertEquals(1500, $result['platform_fee_cents']);
-        $this->assertEquals(8500, $result['provider_payout_cents']);
-        $this->assertEquals(0.15, $result['commission_rate']);
+        // Unified platform rate 20% (CLEANUX_PLATFORM_FEE_PERCENT, aligned on prod — audit B1).
+        $this->assertEquals(2000, $result['platform_fee_cents']);
+        $this->assertEquals(8000, $result['provider_payout_cents']);
+        $this->assertEquals(0.20, $result['commission_rate']);
         $this->assertEquals('eur', $result['currency']);
     }
 
     public function test_commission_enforces_minimum_fee_when_booking_large_enough(): void
     {
-        // €50 booking → 15% = 750c, above the €2 minimum
+        // €50 booking → 20% = 1000c, above the €2 minimum
         $booking = Booking::factory()->create(['devis_estime' => 50]);
 
         $result = (new CommissionService)->calculateForBooking($booking);
 
-        // 15% of 5000c = 750c, which exceeds the €2 minimum
+        // 20% of 5000c = 1000c, which exceeds the €2 minimum
         $this->assertGreaterThanOrEqual(200, $result['platform_fee_cents'], 'Platform fee below minimum');
-        $this->assertEquals(750, $result['platform_fee_cents']);
+        $this->assertEquals(1000, $result['platform_fee_cents']);
     }
 
     public function test_commission_fee_never_exceeds_total(): void
@@ -81,7 +81,7 @@ class PayoutFlowTest extends TestCase
 
         $fresh = $booking->fresh();
         $this->assertEquals('processed', $fresh->payout_status);
-        $this->assertEquals(1500, $fresh->platform_fee_cents);
+        $this->assertEquals(2000, $fresh->platform_fee_cents);
     }
 
     // ──────────────────────────────────────────────
@@ -127,7 +127,7 @@ class PayoutFlowTest extends TestCase
         $fresh = $booking->fresh();
         $this->assertEquals('processed', $fresh->payout_status);
         $this->assertNotNull($fresh->platform_fee_cents);
-        $this->assertEquals(1500, $fresh->platform_fee_cents);
+        $this->assertEquals(2000, $fresh->platform_fee_cents);
     }
 
     public function test_payout_command_skips_already_processed_bookings(): void
@@ -219,7 +219,8 @@ class PayoutFlowTest extends TestCase
             ->first();
 
         $this->assertNotNull($earning, 'Phase 1 must credit the provider wallet via recordEarning');
-        $this->assertEqualsWithDelta(85.0, (float) $earning->amount, 0.01);
+        // €100 booking, 20% platform fee → provider earns €80.
+        $this->assertEqualsWithDelta(80.0, (float) $earning->amount, 0.01);
     }
 
     // ──────────────────────────────────────────────
