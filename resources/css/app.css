@@ -17,6 +17,8 @@
 @import './motion.css';
 @import './a11y.css';
 @import './premium.css';
+@import './luxury-hero.css';
+@import './journey.css';
 @import './fullcalendar-overrides.css';
 
 @tailwind base;

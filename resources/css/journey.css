@@ -1,0 +1,297 @@
+/* ============================================================================
+   CleanUx — "Le parcours d'une mission" : scrollytelling cinématique
+   (added 14/06/2026)
+   Section qui se fige (sticky) pendant que le scroll fait défiler 7 scènes
+   SVG animées : Terre -> téléphone -> tracking -> scan QR -> travail ->
+   rescan QR -> poignée de main. GPU-only, prefers-reduced-motion-safe.
+   Pilotage du scroll : IIFE dans app.js (ajoute .is-animated + --p + .is-active).
+   ========================================================================= */
+
+.cx-journey {
+    position: relative;
+    background:
+        radial-gradient(120% 90% at 50% 0%, #f5f3ff 0%, transparent 55%),
+        linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+}
+
+/* --- Fallback statique (pas de JS / reduced-motion) : stepper --------- */
+.cx-journey:not(.is-animated) .cx-journey__sticky {
+    position: static;
+    height: auto;
+    padding: 4rem 0 5rem;
+}
+.cx-journey:not(.is-animated) .cx-stage,
+.cx-journey:not(.is-animated) .cx-journey__bar,
+.cx-journey:not(.is-animated) .cx-journey__dots { display: none; }
+.cx-journey:not(.is-animated) .cx-journey__steps { display: grid; }
+
+/* --- Mode animé : section haute + enfant sticky ----------------------- */
+/* 9 scènes (globe 3D, réserver, devis IA, chantier groupé, tracking, QR
+   départ, travail, QR fin, paiement) -> ~75vh par scène. */
+.cx-journey.is-animated { height: 680vh; }
+.cx-journey.is-animated .cx-journey__steps { display: none; }
+
+.cx-journey__sticky {
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    gap: 1.25rem;
+}
+
+.cx-journey__eyebrow {
+    font-size: .72rem;
+    font-weight: 700;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: #6366f1;
+}
+.cx-journey__title {
+    font-family: "Space Grotesk", system-ui, sans-serif;
+    font-size: clamp(1.5rem, 3.4vw, 2.25rem);
+    font-weight: 700;
+    color: #0f172a;
+    text-align: center;
+    max-width: 32ch;
+    line-height: 1.15;
+}
+
+/* --- La scène (carré) qui contient les 7 calques --------------------- */
+.cx-stage {
+    position: relative;
+    width: min(82vw, 460px);
+    aspect-ratio: 1 / 1;
+}
+.cx-scene {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1.5rem;
+    opacity: 0;
+    transform: scale(.94) translateY(14px);
+    transition: opacity .7s var(--cx-ease), transform .7s var(--cx-ease);
+    pointer-events: none;
+}
+.cx-scene.is-active {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+    pointer-events: auto;
+}
+.cx-art { width: 72%; height: auto; max-height: 64%; overflow: visible; }
+
+/* --- Globe 3D (Three.js) : remplace le SVG dans la scène 0 quand prêt --- */
+.cx-globe3d {
+    height: 64%;
+    aspect-ratio: 1 / 1;
+    width: auto;
+    display: none;            /* visible seulement quand .cx-scene.has-3d */
+}
+.cx-scene.has-3d .cx-globe3d { display: block; }
+.cx-scene.has-3d .cx-art { display: none; }
+.cx-globe3d canvas { display: block; width: 100%; height: 100%; }
+
+/* --- Monde 3D plein cadre (Three.js) : canvas + masquage des visuels SVG -- */
+.cx-journey__canvas {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 0;
+    display: none;              /* visible uniquement en .is-3d */
+}
+.cx-journey.is-3d .cx-journey__canvas { display: block; }
+/* titre, légendes, barre et puces passent au-dessus du canvas */
+.cx-journey.is-3d .cx-journey__eyebrow,
+.cx-journey.is-3d .cx-journey__title,
+.cx-journey.is-3d .cx-stage,
+.cx-journey.is-3d .cx-journey__bar,
+.cx-journey.is-3d .cx-journey__dots { position: relative; z-index: 1; }
+/* on masque les visuels dessinés (le 3D les remplace), on garde les légendes */
+.cx-journey.is-3d .cx-art,
+.cx-journey.is-3d .cx-globe3d { display: none !important; }
+.cx-journey.is-3d .cx-scene { justify-content: flex-end; padding-bottom: 4%; }
+/* légende lisible par-dessus la 3D */
+.cx-journey.is-3d .cx-scene__cap {
+    background: rgba(255, 255, 255, .72);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border: 1px solid rgba(226, 232, 240, .8);
+    border-radius: 1rem;
+    padding: .85rem 1.15rem;
+}
+
+.cx-scene__cap { text-align: center; max-width: 30ch; }
+.cx-scene__cap b {
+    display: block;
+    font-family: "Space Grotesk", system-ui, sans-serif;
+    font-size: clamp(1.05rem, 2.4vw, 1.3rem);
+    font-weight: 700;
+    color: #0f172a;
+}
+.cx-scene__cap span {
+    display: block;
+    margin-top: .35rem;
+    font-size: .92rem;
+    line-height: 1.5;
+    color: #475569;
+}
+
+/* --- Progress bar + dots --------------------------------------------- */
+.cx-journey__bar {
+    width: min(82vw, 460px);
+    height: 4px;
+    border-radius: 9999px;
+    background: #e2e8f0;
+    overflow: hidden;
+}
+.cx-journey__bar i {
+    display: block;
+    height: 100%;
+    width: calc(var(--p, 0) * 100%);
+    border-radius: inherit;
+    background: linear-gradient(90deg, #6366f1, #9333ea, #ffb648);
+    transition: width .12s linear;
+}
+.cx-journey__dots { display: flex; gap: .5rem; }
+.cx-dot {
+    width: 8px; height: 8px; border-radius: 9999px;
+    background: #cbd5e1;
+    transition: transform var(--cx-dur-fast) var(--cx-ease), background-color var(--cx-dur-fast) var(--cx-ease);
+}
+.cx-dot.is-active { background: #6366f1; transform: scale(1.5); }
+
+/* --- Stepper statique (fallback) ------------------------------------- */
+.cx-journey__steps {
+    max-width: 64rem;
+    margin: 0 auto;
+    padding: 0 1.5rem;
+    grid-template-columns: repeat(1, 1fr);
+    gap: .75rem;
+    counter-reset: jstep;
+}
+@media (min-width: 768px) { .cx-journey__steps { grid-template-columns: repeat(2, 1fr); } }
+.cx-journey__steps li {
+    list-style: none;
+    display: flex;
+    align-items: flex-start;
+    gap: .85rem;
+    padding: 1rem 1.15rem;
+    background: rgba(255, 255, 255, .7);
+    border: 1px solid #e2e8f0;
+    border-radius: 0.9rem;
+}
+.cx-journey__steps li::before {
+    counter-increment: jstep;
+    content: counter(jstep);
+    flex: 0 0 auto;
+    display: grid; place-items: center;
+    width: 1.75rem; height: 1.75rem;
+    border-radius: 9999px;
+    background: #eef2ff; color: #4f46e5;
+    font-weight: 700; font-size: .82rem;
+}
+.cx-journey__steps b { display: block; color: #0f172a; font-size: .95rem; }
+.cx-journey__steps span { color: #64748b; font-size: .85rem; }
+
+/* ============================================================================
+   Animations internes des scènes (boucles légères, actives quand visibles)
+   ========================================================================= */
+
+/* Terre qui tourne + satellite */
+.cx-earth-spin {
+    transform-box: view-box;
+    transform-origin: 120px 120px;
+    animation: cx-earth-spin 24s linear infinite;
+}
+@keyframes cx-earth-spin { to { transform: rotate(360deg); } }
+.cx-earth-sat {
+    transform-box: view-box;
+    transform-origin: 120px 120px;
+    animation: cx-earth-spin 9s linear infinite;
+}
+.cx-earth-orbit {
+    transform-box: view-box;
+    transform-origin: 120px 120px;
+    animation: cx-earth-spin 40s linear infinite reverse;
+}
+
+/* Marqueur de tracking qui suit la route (translate entre les coins) */
+.cx-track-marker { animation: cx-track-move 3.6s ease-in-out infinite; }
+@keyframes cx-track-move {
+    0%       { transform: translate(96px, 186px); }
+    28%      { transform: translate(96px, 150px); }
+    52%      { transform: translate(140px, 150px); }
+    82%, 100%{ transform: translate(140px, 92px); }
+}
+.cx-track-pulse { animation: cx-pulse 1.8s ease-in-out infinite; transform-origin: center; }
+@keyframes cx-pulse { 0%,100% { opacity: .5; transform: scale(1);} 50% { opacity: 0; transform: scale(2.4);} }
+
+/* Ligne de scan QR */
+.cx-scanline {
+    transform-box: fill-box;
+    animation: cx-scan 1.7s ease-in-out infinite alternate;
+}
+@keyframes cx-scan { from { transform: translateY(0); } to { transform: translateY(38px); } }
+
+/* Étincelles "travail en cours" */
+.cx-spark { transform-box: fill-box; transform-origin: center; animation: cx-spark 1.6s ease-in-out infinite; }
+.cx-spark--2 { animation-delay: .35s; }
+.cx-spark--3 { animation-delay: .7s; }
+@keyframes cx-spark { 0%,100% { opacity: 0; transform: scale(.4); } 50% { opacity: 1; transform: scale(1); } }
+
+/* Outil qui s'agite (scène travail) */
+.cx-tool { transform-box: fill-box; transform-origin: 50% 100%; animation: cx-tool 1.1s ease-in-out infinite alternate; }
+@keyframes cx-tool { from { transform: rotate(-10deg); } to { transform: rotate(14deg); } }
+
+/* Poignée de main (léger mouvement) */
+.cx-shake { transform-box: fill-box; transform-origin: center; animation: cx-shake 1.1s ease-in-out infinite alternate; }
+@keyframes cx-shake { from { transform: translateY(-2px); } to { transform: translateY(3px); } }
+
+/* Check qui apparaît */
+.cx-check-draw {
+    stroke-dasharray: 36; stroke-dashoffset: 36;
+    animation: cx-draw .7s var(--cx-ease) forwards;
+}
+.cx-scene.is-active .cx-check-draw { animation: cx-draw .7s var(--cx-ease) .2s forwards; }
+@keyframes cx-draw { to { stroke-dashoffset: 0; } }
+
+/* Confettis poignée de main */
+.cx-confetti { transform-box: fill-box; transform-origin: center; opacity: 0; }
+.cx-scene.is-active .cx-confetti { animation: cx-confetti 1.1s var(--cx-ease) .25s forwards; }
+.cx-confetti--2 { animation-delay: .35s !important; }
+.cx-confetti--3 { animation-delay: .5s !important; }
+@keyframes cx-confetti {
+    0%   { opacity: 0; transform: translateY(0) scale(.4); }
+    40%  { opacity: 1; }
+    100% { opacity: 0; transform: translateY(-26px) scale(1); }
+}
+
+/* Devis IA : badge prix qui apparaît / Chantier groupé : lignes en cascade.
+   On n'anime que l'opacité : les <g> portent un transform="translate(...)" de
+   positionnement qu'une animation CSS transform écraserait. */
+.cx-price-pop { opacity: 0; }
+.cx-scene.is-active .cx-price-pop { animation: cx-soft-in .55s var(--cx-ease) .5s both; }
+
+.cx-step-row { opacity: 0; }
+.cx-scene.is-active .cx-step-row { animation: cx-soft-in .5s var(--cx-ease) both; }
+.cx-scene.is-active .cx-step-row--0 { animation-delay: .12s; }
+.cx-scene.is-active .cx-step-row--1 { animation-delay: .24s; }
+.cx-scene.is-active .cx-step-row--2 { animation-delay: .36s; }
+.cx-scene.is-active .cx-step-row--3 { animation-delay: .48s; }
+@keyframes cx-soft-in { to { opacity: 1; } }
+
+/* Reduced motion : tout figé, fallback stepper (géré par :not(.is-animated)) */
+@media (prefers-reduced-motion: reduce) {
+    .cx-earth-spin, .cx-earth-sat, .cx-earth-orbit, .cx-track-marker,
+    .cx-track-pulse, .cx-scanline, .cx-spark, .cx-tool, .cx-shake,
+    .cx-check-draw, .cx-confetti { animation: none !important; }
+    /* nouvelles scènes : rester visibles sans animation */
+    .cx-price-pop, .cx-step-row { opacity: 1 !important; animation: none !important; }
+}

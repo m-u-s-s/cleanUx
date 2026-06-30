@@ -1,0 +1,151 @@
+/* ============================================================================
+   CleanUx — Premium Scroll Engine (styles)
+   Accompagne resources/js/premium-scroll.js. Chargé globalement mais sans effet
+   tant qu'une page n'opte pas via les data-attributes (les gardes ci-dessous
+   ne s'arment que sous html.has-premium-scroll, posée par le JS au démarrage).
+   Tout est en transform/opacity uniquement -> aucun layout shift.
+   ========================================================================= */
+
+/* ---- CSS requis par Lenis (smooth scroll) ------------------------------- */
+html.lenis,
+html.lenis body {
+    height: auto;
+}
+
+.lenis.lenis-smooth {
+    scroll-behavior: auto !important;
+}
+
+.lenis.lenis-smooth [data-lenis-prevent] {
+    overscroll-behavior: contain;
+}
+
+.lenis.lenis-stopped {
+    overflow: hidden;
+}
+
+.lenis.lenis-smooth iframe {
+    pointer-events: none;
+}
+
+/* ----------------------------------------------------------------------------
+   Helpers réutilisables (n'agissent que lorsque le moteur est actif)
+   ------------------------------------------------------------------------- */
+
+/* Recadre le débordement visuel d'une couche en parallaxe. */
+.has-premium-scroll [data-scroll-clip] {
+    overflow: hidden;
+}
+
+/* Indices GPU posés seulement quand le moteur tourne (pas de coût permanent). */
+.has-premium-scroll [data-scroll-parallax],
+.has-premium-scroll [data-scroll-track] {
+    will-change: transform;
+}
+
+.has-premium-scroll [data-scroll-parallax] {
+    /* La parallaxe peut sortir de sa boîte : on ne casse jamais le flux. */
+    backface-visibility: hidden;
+}
+
+/* ---- Sections horizontales (progressive enhancement) -------------------- */
+/* BASE = scroll horizontal NATIF : accessible sans JS, tactile + inertie
+   (scroll-snap + -webkit-overflow-scrolling). C'est le fallback responsive
+   (mobile, reduced-motion, JS absent). */
+[data-scroll-horizontal] {
+    position: relative;
+    height: 100vh;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch; /* inertie iOS */
+    scrollbar-width: none; /* Firefox */
+}
+[data-scroll-horizontal]::-webkit-scrollbar {
+    display: none; /* WebKit : pas de barre, on swipe */
+}
+
+[data-scroll-track] {
+    display: flex;
+    flex-wrap: nowrap;
+    height: 100%;
+    width: max-content;
+}
+
+[data-scroll-panel] {
+    flex: 0 0 100vw;
+    height: 100%;
+    min-width: 0; /* empêche les enfants de comprimer la largeur du panneau */
+    scroll-snap-align: center;
+}
+
+/* UPGRADE desktop (posé par le JS) : pin GSAP -> on coupe le scroll/snap natif,
+   le rail est translaté par ScrollTrigger. */
+.has-premium-scroll [data-scroll-horizontal].is-pinned-scroll {
+    overflow: hidden;
+    scroll-snap-type: none;
+}
+.has-premium-scroll [data-scroll-horizontal].is-pinned-scroll [data-scroll-track] {
+    will-change: transform;
+}
+
+/* Mode natif sur mobile : on laisse dépasser un aperçu du panneau suivant
+   pour signaler qu'on peut swiper. */
+@media (max-width: 767px) {
+    [data-scroll-horizontal]:not(.is-pinned-scroll) [data-scroll-panel] {
+        flex-basis: 88vw;
+    }
+}
+
+/* ---- Barre / indicateur de progression ---------------------------------- */
+/* Élément générique : son ::after se remplit via scaleX(--scroll-progress).
+   transform-origin gauche -> remplissage de gauche à droite, sans reflow. */
+.cx-scroll-progress {
+    --scroll-progress: 0;
+    position: relative;
+    overflow: hidden;
+}
+
+.cx-scroll-progress::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    transform: scaleX(var(--scroll-progress));
+    transform-origin: left center;
+    background: var(--cx-amber, #ffb648);
+    border-radius: inherit;
+    will-change: transform;
+}
+
+/* Variante "barre fixe en haut de page" prête à l'emploi. */
+.cx-scroll-progress--fixed {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    z-index: 60;
+    background: color-mix(in srgb, var(--cx-amber, #ffb648) 14%, transparent);
+}
+
+/* ----------------------------------------------------------------------------
+   Accessibilité : reduced-motion -> tout est statique et visible.
+   Le JS s'arrête déjà ; ces règles neutralisent aussi le smooth scroll Lenis
+   au cas où une instance traînerait, et figent les remplissages.
+   ------------------------------------------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+    html.lenis,
+    html.lenis body {
+        scroll-behavior: auto;
+    }
+
+    .has-premium-scroll [data-scroll-parallax],
+    .has-premium-scroll [data-scroll-track] {
+        will-change: auto;
+        transform: none !important;
+    }
+
+    .cx-scroll-progress::after {
+        transform: scaleX(1);
+    }
+}

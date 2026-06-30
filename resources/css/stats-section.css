@@ -1,0 +1,127 @@
+/* ============================================================================
+   CleanUx — Stats Section (styles)
+   Accompagne resources/js/components/StatsSection.jsx. Cartes responsive en
+   grille auto-fit (1 -> N colonnes sans media query). Tokens cx-* du design
+   system (fonctionne sur le shell sombre des pages guest). Animations gérées
+   par Framer Motion ; ici uniquement la mise en forme.
+   ========================================================================= */
+
+.cx-stats {
+    width: min(1100px, 94vw);
+    margin-inline: auto;
+}
+
+.cx-stats__head {
+    text-align: center;
+    margin-bottom: 2.5rem;
+}
+.cx-stats__eyebrow {
+    font-family: var(--cx-display, system-ui, sans-serif);
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 0.28em;
+    text-transform: uppercase;
+    color: var(--cx-amber, #f5b301);
+    margin: 0 0 0.6rem;
+}
+.cx-stats__title {
+    font-family: var(--cx-display, system-ui, sans-serif);
+    font-size: clamp(1.7rem, 4vw, 2.8rem);
+    font-weight: 800;
+    line-height: 1.05;
+    color: var(--cx-text, #f4f6fb);
+    margin: 0;
+}
+.cx-stats__desc {
+    max-width: 52ch;
+    margin: 0.9rem auto 0;
+    color: var(--cx-muted, #9aa4b8);
+    line-height: 1.6;
+}
+
+/* --- Grille responsive (auto-fit : 1 colonne mobile -> N en desktop) ------ */
+.cx-stats__grid {
+    display: grid;
+    gap: 1.1rem;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr));
+}
+
+/* --- Carte --------------------------------------------------------------- */
+.cx-stat {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 0.55rem;
+    padding: 1.6rem 1.5rem;
+    border-radius: 18px;
+    background: color-mix(in srgb, var(--cx-text, #fff) 4%, transparent);
+    border: 1px solid var(--cx-line, rgba(255, 255, 255, 0.1));
+    overflow: hidden;
+    isolation: isolate;
+}
+.cx-stat::before {
+    /* halo discret en haut de carte */
+    content: '';
+    position: absolute;
+    inset: -40% 30% auto;
+    height: 120px;
+    background: radial-gradient(
+        50% 50% at 50% 50%,
+        color-mix(in srgb, var(--cx-amber, #f5b301) 22%, transparent),
+        transparent 70%
+    );
+    opacity: 0.5;
+    z-index: -1;
+    pointer-events: none;
+}
+
+.cx-stat__icon {
+    font-size: 1.5rem;
+    line-height: 1;
+}
+.cx-stat__num {
+    font-family: var(--cx-display, system-ui, sans-serif);
+    font-size: clamp(2rem, 5vw, 2.9rem);
+    font-weight: 800;
+    line-height: 1;
+    letter-spacing: -0.02em;
+    color: var(--cx-text, #f4f6fb);
+    font-variant-numeric: tabular-nums; /* évite le jitter de largeur au comptage */
+}
+.cx-stat__label {
+    margin: 0;
+    font-size: 0.92rem;
+    font-weight: 600;
+    color: var(--cx-text, #f4f6fb);
+}
+.cx-stat__hint {
+    margin: 0;
+    font-size: 0.78rem;
+    color: var(--cx-muted, #9aa4b8);
+}
+
+/* --- Progress bar -------------------------------------------------------- */
+.cx-stat__bar {
+    margin-top: 0.35rem;
+    height: 6px;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--cx-text, #fff) 10%, transparent);
+    overflow: hidden;
+}
+.cx-stat__bar-fill {
+    display: block;
+    height: 100%;
+    border-radius: inherit;
+    background: linear-gradient(
+        90deg,
+        var(--cx-amber, #f5b301),
+        color-mix(in srgb, var(--cx-amber, #f5b301) 55%, #fff)
+    );
+}
+
+/* --- A11y : reduced-motion -> la barre est posée sans transition ---------- */
+@media (prefers-reduced-motion: reduce) {
+    .cx-stat__bar-fill {
+        transition: none !important;
+    }
+}

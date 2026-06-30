@@ -1,0 +1,88 @@
+/* ============================================================================
+   CleanUx — Cinematic Text Reveal (styles)
+   Accompagne resources/js/hooks/useTextReveal.js. Les styles de masque ne
+   s'activent qu'une fois le découpage posé par le JS (.ctr-split) -> aucun effet
+   tant que le hook n'a pas tourné. Tout en transform/opacity/clip-path : pas de
+   reflow, pas de layout shift.
+   ========================================================================= */
+
+/* L'élément cible : on évite que les mots cassés rognent les jambages. */
+.ctr {
+    /* rien d'imposé sur la typo : héritée du contexte (titres cx-*, etc.) */
+    text-wrap: balance;
+}
+
+/* ---- Masques de ligne ---------------------------------------------------- */
+.ctr-split .ctr-line {
+    display: block;
+    overflow: hidden;
+    /* Marge négative compensée : laisse respirer les jambages (g, j, p, y)
+       sans décaler la mise en page. */
+    padding-bottom: 0.12em;
+    margin-bottom: -0.12em;
+}
+
+.ctr-split .ctr-line__inner {
+    display: block;
+    transform-origin: left top;
+    will-change: transform, clip-path, opacity;
+}
+
+/* ---- Masques de mot (granularity="word") -------------------------------- */
+.ctr-split .ctr-word-mask {
+    display: inline-block;
+    overflow: hidden;
+    vertical-align: top;
+    padding-bottom: 0.12em;
+    margin-bottom: -0.12em;
+}
+
+.ctr-split .ctr-word__inner {
+    display: inline-block;
+    will-change: transform, clip-path, opacity;
+}
+
+.ctr-split .ctr-word {
+    display: inline;
+}
+
+/* ----------------------------------------------------------------------------
+   Typographie fluide réutilisable (optionnelle). clamp(min, vw, max) : la taille
+   suit la largeur du viewport sans media-queries, et le hook re-découpe les
+   lignes au resize -> rendu correct à toute taille.
+   ------------------------------------------------------------------------- */
+.ctr-display {
+    font-family: var(--cx-display, inherit);
+    font-weight: 900;
+    font-size: clamp(2.2rem, 6vw, 5.5rem);
+    line-height: 1.02;
+    letter-spacing: -0.02em;
+}
+
+.ctr-headline {
+    font-family: var(--cx-display, inherit);
+    font-weight: 800;
+    font-size: clamp(1.6rem, 4vw, 3rem);
+    line-height: 1.1;
+    letter-spacing: -0.01em;
+}
+
+.ctr-lead {
+    font-size: clamp(1rem, 2.2vw, 1.35rem);
+    line-height: 1.55;
+}
+
+/* ----------------------------------------------------------------------------
+   Accessibilité : prefers-reduced-motion -> aucun masquage résiduel.
+   Le hook ne découpe déjà pas en reduced-motion ; ce filet neutralise tout état
+   inline qui aurait pu rester (texte toujours pleinement visible).
+   ------------------------------------------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+    .ctr-split .ctr-line__inner,
+    .ctr-split .ctr-word__inner {
+        transform: none !important;
+        clip-path: none !important;
+        opacity: 1 !important;
+        will-change: auto;
+    }
+}

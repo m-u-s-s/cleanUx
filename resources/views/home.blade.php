@@ -8,54 +8,91 @@
          loading="lazy" is applied automatically where <img> tags are added.
          OG image preloaded via <link rel="preload"> in layouts/guest.blade.php. --}}
 
-    {{-- HERO --}}
-    <section class="relative isolate overflow-hidden cx-gradient-animated">
-        <div class="absolute inset-0 -z-10"></div>
-        <div class="mx-auto max-w-7xl px-6 pt-20 pb-24 sm:pt-28 sm:pb-32">
-            <div class="mx-auto max-w-3xl text-center">
-                <div class="inline-flex items-center gap-2 rounded-full bg-brand-50 px-3 py-1 text-xs font-semibold text-brand-700 ring-1 ring-brand-200">
-                    <x-ui.icon name="sparkles" class="w-3.5 h-3.5" />
-                    Marketplace multi-métiers • B2C & B2B
+    {{-- ============================================================
+         HERO — Luxury cinématique (dark, fullscreen).
+         WebGL (Three.js) + GSAP + Motion ; composants réutilisables dans
+         resources/views/components/hero/*. Bundle JS poussé en bas de page.
+         Parallaxe pointeur via le moteur partagé [data-cx-parallax] (app.js).
+         ============================================================ --}}
+    <x-hero.luxury scroll-target="#decouvrir" scroll-label="Découvrir">
+        <x-slot:eyebrow>
+            <x-hero.eyebrow>Marketplace multi-métiers • B2C &amp; B2B</x-hero.eyebrow>
+        </x-slot:eyebrow>
+
+        <x-slot:title>
+            <span class="cx-line"><span>L'excellence des services pros,</span></span>
+            <span class="cx-line"><span class="cx-lux-serif cx-lux-gradient-ink">à la demande.</span></span>
+        </x-slot:title>
+
+        Nettoyage, peinture, plomberie, jardinage, babysitting — un seul compte, un prestataire vérifié près de chez vous en quelques clics. Devis IA depuis photo, paiement sécurisé Stripe, satisfaction garantie.
+
+        <x-slot:actions>
+            <span class="cx-magnetic" data-cx-magnetic="0.3">
+                <x-ui.button href="{{ route('booking.create') }}" variant="amber" size="xl" icon="arrow-right" iconPosition="right" class="cu-glow-amber cx-cta-primary">
+                    Réserver une mission
+                </x-ui.button>
+            </span>
+            @if (Route::has('providers.browse.public'))
+                <span class="cx-magnetic" data-cx-magnetic="0.22">
+                    <a href="{{ route('providers.browse.public') }}" class="cx-lux-btn-ghost">
+                        <x-ui.icon name="magnifying-glass" class="w-5 h-5" />
+                        Trouver un prestataire
+                    </a>
+                </span>
+            @endif
+        </x-slot:actions>
+
+        <x-slot:trust>
+            <x-ui.icon name="shield-check" class="w-4 h-4" style="color: var(--cx-amber)" />
+            KYC validé
+            <span class="cx-lux-trust__sep">·</span> Stripe Connect
+            <span class="cx-lux-trust__sep">·</span> Assurance incluse
+        </x-slot:trust>
+
+        {{-- Puce d'avis compacte : visible seulement < lg (cf. .cx-lux-proof). --}}
+        <x-slot:proof>
+            <span class="cx-lux-proof__chip">
+                <span class="cx-lux-stars">★★★★★</span>
+                <strong>4.8</strong>
+                <span class="cx-lux-proof__sub">12 480 avis vérifiés</span>
+            </span>
+        </x-slot:proof>
+
+        <x-slot:media>
+            {{-- Floating mock-UI glass cards (procedural, no copyrighted assets). --}}
+            <x-hero.floating-card tone="amber" icon="star"
+                position="top: 1rem; left: 0; right: auto;" delay="0s">
+                <p class="cx-lux-card__label">Note moyenne</p>
+                <p class="cx-lux-card__value">4.8 <span class="cx-lux-stars">★★★★★</span></p>
+                <p class="cx-lux-card__sub">12 480 avis vérifiés</p>
+            </x-hero.floating-card>
+
+            <x-hero.floating-card tone="cyan" icon="map-pin"
+                position="top: 8.5rem; right: 0;" delay="-2.5s">
+                <div class="flex items-center gap-2">
+                    <span class="cx-lux-dot"></span>
+                    <p class="cx-lux-card__value">Prestataire en route</p>
                 </div>
-                <h1 class="mt-6 text-4xl font-bold text-slate-900 sm:text-6xl cx-headline cx-balance">
-                    L'OS des services pros,
-                    <span class="bg-gradient-to-br from-brand-600 to-purple-600 bg-clip-text text-transparent">
-                        à la demande.
-                    </span>
-                </h1>
-                <p class="mt-6 text-lg text-slate-600 cx-body-readable mx-auto">
-                    Nettoyage, peinture, plomberie, jardinage, babysitting — un seul compte, trouvez un prestataire vérifié près de chez vous en quelques clics. Devis IA depuis photo, paiement sécurisé Stripe, satisfaction garantie.
-                </p>
-                <div class="mt-10 flex flex-col items-center justify-center gap-3 sm:flex-row sm:gap-4">
-                    <x-ui.button href="{{ route('booking.create') }}" variant="amber" size="lg" icon="arrow-right" iconPosition="right" class="cu-glow-amber cx-cta-primary">
-                        Réserver une mission
-                    </x-ui.button>
-                    @if (Route::has('providers.browse.public'))
-                        <x-ui.button href="{{ route('providers.browse.public') }}" variant="secondary" size="lg" icon="magnifying-glass">
-                            Trouver un prestataire
-                        </x-ui.button>
-                    @endif
-                </div>
-                <p class="mt-6 text-sm text-slate-500">
-                    Aucune carte requise pour explorer •
-                    <span class="inline-flex items-center gap-1 ml-1">
-                        <x-ui.icon name="shield-check" class="w-4 h-4 text-emerald-500" />
-                        KYC validé · Stripe Connect · Assurance incluse
-                    </span>
-                </p>
-            </div>
-        </div>
-    </section>
+                <p class="cx-lux-card__sub">Plomberie · Bruxelles · ETA 8 min</p>
+            </x-hero.floating-card>
+
+            <x-hero.floating-card tone="violet" icon="sparkles"
+                position="bottom: 1.5rem; left: 1.5rem;" delay="-4.5s">
+                <p class="cx-lux-card__label">Devis IA depuis photo</p>
+                <p class="cx-lux-card__value">≈ 320 € <span class="cx-lux-card__sub" style="margin:0">en 10 s</span></p>
+            </x-hero.floating-card>
+        </x-slot:media>
+    </x-hero.luxury>
 
     {{-- TRUST BAR --}}
-    <section class="border-y border-slate-100 bg-slate-50/50 py-8">
+    <section id="decouvrir" class="border-y border-slate-100 bg-slate-50/50 py-8 scroll-mt-20">
         <div class="mx-auto max-w-7xl px-6">
             <p class="text-center text-xs font-semibold uppercase tracking-wider text-slate-500" data-cx-reveal>
                 30+ métiers · 6 langues · Conformité RGPD + Factur-X EU
             </p>
             <div class="mt-6 grid grid-cols-2 gap-6 sm:grid-cols-4 lg:grid-cols-6">
                 @foreach (['Nettoyage', 'Peinture', 'Plomberie', 'Jardinage', 'Babysitting', 'Toiture'] as $i => $trade)
-                    <div class="flex items-center justify-center text-sm font-medium text-slate-600" data-cx-reveal data-cx-delay="{{ $i + 1 }}">
+                    <div class="cx-trade-pill flex items-center justify-center text-sm font-medium text-slate-600" data-cx-reveal data-cx-delay="{{ $i + 1 }}">
                         {{ $trade }}
                     </div>
                 @endforeach
@@ -78,7 +115,7 @@
 
             <div class="mx-auto mt-16 grid max-w-5xl grid-cols-1 gap-6 md:grid-cols-3">
                 {{-- Feature 1: spans 2 columns, larger, amber border-left accent --}}
-                <div class="md:col-span-2 cu-glass rounded-2xl p-8 border-l-4 border-accent-amber" data-cx-reveal>
+                <div class="md:col-span-2 cu-glass cx-lift cx-tilt rounded-2xl p-8 border-l-4 border-accent-amber" data-cx-reveal data-cx-tilt="5">
                     <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-brand-50 text-brand-600 ring-1 ring-brand-200">
                         <x-ui.icon name="camera" class="w-6 h-6" />
                     </div>
@@ -89,7 +126,7 @@
                 </div>
 
                 {{-- Feature 2: single column --}}
-                <div class="cu-glass rounded-2xl p-6" data-cx-reveal data-cx-delay="100">
+                <div class="cu-glass cx-lift cx-tilt rounded-2xl p-6" data-cx-reveal data-cx-delay="100" data-cx-tilt="6">
                     <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600 ring-1 ring-emerald-200">
                         <x-ui.icon name="badge-check" class="w-6 h-6" />
                     </div>
@@ -100,7 +137,7 @@
                 </div>
 
                 {{-- Feature 3: full width, horizontal layout --}}
-                <div class="md:col-span-3 cu-glass rounded-2xl p-6 flex flex-col md:flex-row md:items-center gap-6" data-cx-reveal data-cx-delay="200">
+                <div class="md:col-span-3 cu-glass cx-lift rounded-2xl p-6 flex flex-col md:flex-row md:items-center gap-6" data-cx-reveal data-cx-delay="200">
                     <div class="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-purple-50 text-purple-600 ring-1 ring-purple-200">
                         <x-ui.icon name="map-pin" class="w-7 h-7" />
                     </div>
@@ -112,6 +149,87 @@
                     </div>
                 </div>
             </div>
+        </div>
+    </section>
+
+    {{-- ============================================================
+         MÉTIERS — galerie horizontale épinglée (premium-scroll engine).
+         [data-scroll-horizontal] : pin + scale/translateX/fade par panneau
+         sur desktop ; scroll natif tactile (snap + inertie) sur mobile.
+         PAS de [data-premium-scroll] ici -> on n'active PAS Lenis global :
+         le moteur ne fait QUE cette section, son cleanup est isolé via
+         gsap.matchMedia et ne touche pas le ScrollTrigger 3D du parcours.
+         id="metiers" : cible l'ancre de nav « Métiers » (était orpheline).
+         ============================================================ --}}
+    <section id="metiers" class="scroll-mt-20" data-scroll-horizontal aria-label="Nos métiers à la demande">
+        <div data-scroll-track>
+            {{-- Intro --}}
+            <article class="flex items-center justify-center bg-white" data-scroll-panel>
+                <div class="mx-auto max-w-xl px-6 text-center" data-scroll-panel-inner>
+                    <span class="cx-subhead">Nos métiers</span>
+                    <h2 class="mt-2 text-4xl font-bold tracking-tight text-slate-900 sm:text-5xl cx-headline cx-balance">
+                        30+ métiers.<br><span class="text-brand-600">Un seul compte.</span>
+                    </h2>
+                    <p class="mt-5 text-base text-slate-600 cx-body-readable mx-auto">
+                        Du ménage hebdomadaire à la rénovation complète — un prestataire vérifié pour chaque besoin, près de chez vous.
+                    </p>
+                    <p class="mt-8 inline-flex items-center gap-2 text-sm font-medium text-slate-400">
+                        Faites défiler <span aria-hidden="true">→</span>
+                    </p>
+                </div>
+            </article>
+
+            {{-- Maison & ménage --}}
+            <article class="flex items-center justify-center bg-brand-50" data-scroll-panel>
+                <div class="mx-auto max-w-md px-6 text-center" data-scroll-panel-inner>
+                    <div class="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-white text-brand-600 ring-1 ring-brand-200 shadow-soft-md">
+                        <x-ui.icon name="sparkles" class="w-8 h-8" />
+                    </div>
+                    <h3 class="mt-6 text-2xl font-bold text-slate-900">Maison &amp; ménage</h3>
+                    <p class="mt-3 text-base text-slate-600">Nettoyage régulier, grand ménage, repassage, vitres, désinfection.</p>
+                    <p class="mt-5 text-sm font-semibold text-brand-600">Nettoyage · Repassage · Vitres · Désinfection</p>
+                </div>
+            </article>
+
+            {{-- Travaux & rénovation --}}
+            <article class="flex items-center justify-center bg-amber-50" data-scroll-panel>
+                <div class="mx-auto max-w-md px-6 text-center" data-scroll-panel-inner>
+                    <div class="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-white text-amber-600 ring-1 ring-amber-200 shadow-soft-md">
+                        <x-ui.icon name="wrench" class="w-8 h-8" />
+                    </div>
+                    <h3 class="mt-6 text-2xl font-bold text-slate-900">Travaux &amp; rénovation</h3>
+                    <p class="mt-3 text-base text-slate-600">Peinture, plomberie, carrelage, menuiserie — orchestrés dans le bon ordre.</p>
+                    <p class="mt-5 text-sm font-semibold text-amber-600">Peinture · Plomberie · Carrelage · Menuiserie</p>
+                </div>
+            </article>
+
+            {{-- Énergie & confort --}}
+            <article class="flex items-center justify-center bg-emerald-50" data-scroll-panel>
+                <div class="mx-auto max-w-md px-6 text-center" data-scroll-panel-inner>
+                    <div class="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-white text-emerald-600 ring-1 ring-emerald-200 shadow-soft-md">
+                        <x-ui.icon name="bolt" class="w-8 h-8" />
+                    </div>
+                    <h3 class="mt-6 text-2xl font-bold text-slate-900">Énergie &amp; confort</h3>
+                    <p class="mt-3 text-base text-slate-600">Électricité, domotique, chauffage, bornes de recharge — par des pros assurés.</p>
+                    <p class="mt-5 text-sm font-semibold text-emerald-600">Électricité · Domotique · Chauffage · Bornes</p>
+                </div>
+            </article>
+
+            {{-- CTA --}}
+            <article class="flex items-center justify-center bg-brand-600" data-scroll-panel>
+                <div class="mx-auto max-w-md px-6 text-center" data-scroll-panel-inner>
+                    <div class="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-white/10 text-white ring-1 ring-white/20">
+                        <x-ui.icon name="star" class="w-8 h-8" />
+                    </div>
+                    <h3 class="mt-6 text-3xl font-bold text-white sm:text-4xl">Et bien plus encore.</h3>
+                    <p class="mt-4 text-base text-white/80">Babysitting, jardinage, toiture, déménagement, montage de meubles…</p>
+                    <div class="mt-8">
+                        <x-ui.button href="{{ route('booking.create') }}" variant="amber" icon="arrow-right" iconPosition="right">
+                            Réserver une mission
+                        </x-ui.button>
+                    </div>
+                </div>
+            </article>
         </div>
     </section>
 
@@ -149,8 +267,8 @@
                     </div>
                 </div>
 
-                <div class="relative">
-                    <div class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-soft-md">
+                <div class="relative" data-cx-reveal data-cx-delay="100">
+                    <div class="cx-float overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-soft-md">
                         <div class="border-b border-slate-100 bg-slate-50/50 px-5 py-3">
                             <p class="text-xs font-mono text-slate-500">bundle_demo_renovation</p>
                             <p class="text-sm font-semibold text-slate-900">Rénovation salle de bain</p>
@@ -216,7 +334,7 @@
             </div>
             <div class="mx-auto mt-16 grid max-w-5xl grid-cols-1 gap-6 md:grid-cols-3">
                 {{-- B2B card 1: full-width top, horizontal layout --}}
-                <div class="md:col-span-3 cu-glass rounded-2xl p-8 border-l-4 border-accent-amber flex flex-col md:flex-row md:items-center gap-6" data-cx-reveal data-cx-delay="0">
+                <div class="md:col-span-3 cu-glass cx-lift rounded-2xl p-8 border-l-4 border-accent-amber flex flex-col md:flex-row md:items-center gap-6" data-cx-reveal data-cx-delay="0">
                     <div class="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-brand-50 text-brand-600 ring-1 ring-brand-200">
                         <x-ui.icon name="building-office" class="w-7 h-7" />
                     </div>
@@ -226,13 +344,13 @@
                     </div>
                 </div>
                 {{-- B2B card 2: spans 2 columns --}}
-                <div class="md:col-span-2 cu-glass rounded-2xl p-6" data-cx-reveal data-cx-delay="100">
+                <div class="md:col-span-2 cu-glass cx-lift cx-tilt rounded-2xl p-6" data-cx-reveal data-cx-delay="100" data-cx-tilt="5">
                     <x-ui.icon name="receipt" class="w-6 h-6 text-brand-600" />
                     <h3 class="mt-4 font-semibold text-slate-900">Facturation Peppol</h3>
                     <p class="mt-2 text-sm text-slate-600">Factur-X XML CII embedded, conformité réglementation 09/2026 FR. Export FEC DGFiP/Sage/QuickBooks.</p>
                 </div>
                 {{-- B2B card 3: single column --}}
-                <div class="cu-glass rounded-2xl p-6" data-cx-reveal data-cx-delay="200">
+                <div class="cu-glass cx-lift cx-tilt rounded-2xl p-6" data-cx-reveal data-cx-delay="200" data-cx-tilt="6">
                     <x-ui.icon name="key" class="w-6 h-6 text-brand-600" />
                     <h3 class="mt-4 font-semibold text-slate-900">API + Webhooks HMAC</h3>
                     <p class="mt-2 text-sm text-slate-600">18 scopes, rotation tokens, webhooks signés HMAC SHA256 retry exponentiel.</p>
@@ -240,6 +358,9 @@
             </div>
         </div>
     </section>
+
+    {{-- PARCOURS D'UNE MISSION (scrollytelling cinématique) --}}
+    @include('partials.journey')
 
     {{-- SOCIAL PROOF / METRICS --}}
     <section class="py-20 bg-gradient-to-b from-white to-slate-50" data-cx-reveal>
@@ -250,15 +371,15 @@
             <p class="text-center text-slate-500 mb-12">Rejoignez une communauté qui grandit chaque jour</p>
             <div class="grid grid-cols-2 md:grid-cols-4 gap-8">
                 <div class="text-center" data-cx-reveal data-cx-delay="0">
-                    <p class="text-4xl font-bold text-accent-amber cx-tabular" style="font-family: 'Space Grotesk', sans-serif;">20+</p>
+                    <p class="text-4xl font-bold text-accent-amber cx-tabular" style="font-family: 'Space Grotesk', sans-serif;" data-cx-count="20" data-cx-suffix="+">20+</p>
                     <p class="text-sm text-slate-500 mt-2">Métiers disponibles</p>
                 </div>
                 <div class="text-center" data-cx-reveal data-cx-delay="100">
-                    <p class="text-4xl font-bold text-accent-amber cx-tabular" style="font-family: 'Space Grotesk', sans-serif;">9</p>
+                    <p class="text-4xl font-bold text-accent-amber cx-tabular" style="font-family: 'Space Grotesk', sans-serif;" data-cx-count="9">9</p>
                     <p class="text-sm text-slate-500 mt-2">Pays supportés</p>
                 </div>
                 <div class="text-center" data-cx-reveal data-cx-delay="200">
-                    <p class="text-4xl font-bold text-accent-amber cx-tabular" style="font-family: 'Space Grotesk', sans-serif;">4.8★</p>
+                    <p class="text-4xl font-bold text-accent-amber cx-tabular" style="font-family: 'Space Grotesk', sans-serif;" data-cx-count="4.8" data-cx-suffix="★">4.8★</p>
                     <p class="text-sm text-slate-500 mt-2">Note moyenne</p>
                 </div>
                 <div class="text-center" data-cx-reveal data-cx-delay="300">
@@ -277,7 +398,7 @@
             </h2>
             <div class="grid grid-cols-1 md:grid-cols-5 gap-6">
                 {{-- Featured testimonial: spans 3 columns --}}
-                <div class="md:col-span-3 cu-glass rounded-2xl p-8" data-cx-reveal>
+                <div class="md:col-span-3 cu-glass cx-lift rounded-2xl p-8" data-cx-reveal>
                     <div class="flex items-center gap-4 mb-6">
                         <div class="w-14 h-14 rounded-full bg-brand-100 flex items-center justify-center text-brand-700 font-bold text-xl">M</div>
                         <div>
@@ -292,7 +413,7 @@
                 </div>
                 {{-- Side column: 2 smaller testimonials stacked --}}
                 <div class="md:col-span-2 flex flex-col gap-6">
-                    <div class="cu-glass rounded-2xl p-6 flex-1" data-cx-reveal data-cx-delay="100">
+                    <div class="cu-glass cx-lift rounded-2xl p-6 flex-1" data-cx-reveal data-cx-delay="100">
                         <div class="flex items-center gap-3 mb-4">
                             <div class="w-10 h-10 rounded-full bg-emerald-50 flex items-center justify-center text-emerald-700 font-bold">A</div>
                             <div>
@@ -303,7 +424,7 @@
                         <p class="text-sm text-slate-600">"Grâce à CleanUx, j'ai triplé mes missions mensuelles. L'app terrain est intuitive et les paiements arrivent vite."</p>
                         <p class="text-accent-amber mt-3 text-sm">★★★★★</p>
                     </div>
-                    <div class="cu-glass rounded-2xl p-6 flex-1" data-cx-reveal data-cx-delay="200">
+                    <div class="cu-glass cx-lift rounded-2xl p-6 flex-1" data-cx-reveal data-cx-delay="200">
                         <div class="flex items-center gap-3 mb-4">
                             <div class="w-10 h-10 rounded-full bg-brand-50 flex items-center justify-center text-brand-600 font-bold">S</div>
                             <div>
@@ -334,7 +455,7 @@
                     ['Dans quels pays est disponible CleanUx ?', 'Belgique, France, Pays-Bas, Allemagne, Espagne, Italie, Portugal, Luxembourg et Autriche. Nous étendons notre couverture régulièrement.'],
                     ['Puis-je annuler une réservation ?', 'Oui, avec des conditions selon le délai. Annulation gratuite > 24h avant. Des frais peuvent s\'appliquer dans les 24h précédant la mission.'],
                 ] as [$question, $answer])
-                    <details class="cu-glass rounded-xl p-5 group cursor-pointer" data-cx-reveal>
+                    <details class="cu-glass cx-lift rounded-xl p-5 group cursor-pointer" data-cx-reveal>
                         <summary class="font-semibold text-slate-900 list-none flex justify-between items-center">
                             {{ $question }}
                             <span class="text-brand-500 group-open:rotate-45 transition-transform">+</span>
@@ -347,7 +468,7 @@
     </section>
 
     {{-- CTA FINAL --}}
-    <section class="relative isolate overflow-hidden bg-gradient-to-br from-brand-600 to-purple-700 py-24">
+    <section class="cx-cta-animated relative isolate overflow-hidden py-24">
         <div class="mx-auto max-w-4xl px-6 text-center">
             <h2 class="text-3xl font-bold tracking-tight text-white sm:text-4xl">
                 Prêt à essayer ?
@@ -356,16 +477,26 @@
                 Inscription en 30 secondes. Aucune carte requise pour explorer.
             </p>
             <div class="mt-10 flex flex-col items-center justify-center gap-3 sm:flex-row sm:gap-4">
-                <a href="{{ route('register') }}"
-                   class="inline-flex items-center gap-2 rounded-xl bg-white px-6 py-3 text-base font-semibold text-brand-700 shadow-soft-md hover:bg-brand-50 transition">
-                    Créer un compte gratuit
-                    <x-ui.icon name="arrow-right" class="w-5 h-5" />
-                </a>
-                <a href="{{ route('login') }}"
-                   class="inline-flex items-center gap-2 rounded-xl border border-white/30 bg-white/10 px-6 py-3 text-base font-semibold text-white backdrop-blur hover:bg-white/20 transition">
-                    Se connecter
-                </a>
+                <span class="cx-magnetic" data-cx-magnetic="0.3">
+                    <a href="{{ route('register') }}"
+                       class="inline-flex items-center gap-2 rounded-xl bg-white px-6 py-3 text-base font-semibold text-brand-700 shadow-soft-md hover:bg-brand-50 transition">
+                        Créer un compte gratuit
+                        <x-ui.icon name="arrow-right" class="w-5 h-5" />
+                    </a>
+                </span>
+                <span class="cx-magnetic" data-cx-magnetic="0.22">
+                    <a href="{{ route('login') }}"
+                       class="inline-flex items-center gap-2 rounded-xl border border-white/30 bg-white/10 px-6 py-3 text-base font-semibold text-white backdrop-blur hover:bg-white/20 transition">
+                        Se connecter
+                    </a>
+                </span>
             </div>
         </div>
     </section>
+
+    @push('scripts')
+        @vite('resources/js/home-journey.js')
+        @vite('resources/js/luxury-hero.js')
+        @vite('resources/js/hero-r3f.jsx')
+    @endpush
 </x-guest-layout>

@@ -22,6 +22,23 @@ use Illuminate\Support\Facades\Route;
 
 Route::view('/', 'home')->name('home');
 
+// Premium scroll engine — vitrine interactive des 6 features (smooth, pin,
+// parallax, progress, horizontal, responsive). Disponible en local/staging
+// uniquement : ne ship jamais en production, jamais indexée.
+if (! app()->isProduction()) {
+    Route::view('/premium-scroll', 'premium-scroll-demo')->name('premium-scroll.demo');
+
+    // Étude de design éditorial premium (marque FICTIVE « Northlight », contenu
+    // ORIGINAL) : démontre espacement, grille, rythme typo, mouvement,
+    // interaction et hiérarchie. Local/staging only, jamais indexée.
+    Route::view('/editorial', 'pages.editorial-study')->name('editorial.study');
+
+    // Landing luxe SOMBRE (marque FICTIVE « Obsidia », contenu ORIGINAL) : hero
+    // WebGL R3F + architecture 9 sections, réutilise tous les moteurs (thème
+    // .ed--dark). Local/staging only, jamais indexée.
+    Route::view('/luxe', 'pages.luxe')->name('luxe.landing');
+}
+
 Route::get('/pricing', PricingPageController::class)->name('pricing');
 
 Route::post('/locale', function (Request $request) {

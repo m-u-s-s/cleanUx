@@ -14,15 +14,25 @@
         "e2e:install": "playwright install --with-deps chromium"
     },
     "lint-staged": {
-        "*.php": ["vendor/bin/pint"],
-        "mobile/**/*.{ts,tsx}": ["npx tsc --noEmit --project mobile/client/tsconfig.json"],
-        "resources/js/**/*.js": ["eslint --fix", "prettier --write"],
-        "resources/css/**/*.css": ["prettier --write"]
+        "*.php": [
+            "vendor/bin/pint"
+        ],
+        "mobile/**/*.{ts,tsx}": [
+            "npx tsc --noEmit --project mobile/client/tsconfig.json"
+        ],
+        "resources/js/**/*.js": [
+            "eslint --fix",
+            "prettier --write"
+        ],
+        "resources/css/**/*.css": [
+            "prettier --write"
+        ]
     },
     "devDependencies": {
         "@playwright/test": "^1.48.0",
         "@tailwindcss/forms": "^0.5.2",
         "@tailwindcss/typography": "^0.5.0",
+        "@vitejs/plugin-react": "^4.3.4",
         "autoprefixer": "^10.4.7",
         "axios": "^1.6.4",
         "laravel-echo": "^2.3.4",
@@ -38,6 +48,13 @@
         "@fullcalendar/interaction": "^6.1.18",
         "@fullcalendar/list": "^6.1.20",
         "@fullcalendar/timegrid": "^6.1.20",
-        "apexcharts": "^4.7.0"
+        "@react-three/fiber": "^8.17.10",
+        "apexcharts": "^4.7.0",
+        "gsap": "^3.12.5",
+        "lenis": "^1.3.25",
+        "motion": "^12.40.0",
+        "react": "^18.3.1",
+        "react-dom": "^18.3.1",
+        "three": "^0.160.1"
     }
 }

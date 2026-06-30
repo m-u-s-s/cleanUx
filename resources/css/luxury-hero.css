@@ -1,0 +1,345 @@
+/* ============================================================================
+   CleanUx — Luxury Hero (dark cinematic) — added 27/06/2026
+   ----------------------------------------------------------------------------
+   Fullscreen editorial hero for the vitrine (cx-shell) home page.
+     • WebGL flowing-gradient background (Three.js, self-hosted via Vite → CSP
+       script-src 'self' safe). Static CSS gradient fallback if WebGL/JS absent.
+     • GSAP entrance timeline + Motion (Framer Motion) scroll effects, see
+       resources/js/luxury-hero.js.
+     • Floating glass "mock UI" cards (procedural, zero copyrighted assets).
+     • Pointer parallax via the shared [data-cx-parallax] engine (app.js).
+     • Fully reduced-motion safe: no canvas, no float, content visible at rest.
+   All visuals are GPU-only (transform / opacity / filter).
+   ========================================================================= */
+
+/* --- Shell -------------------------------------------------------------- */
+.cx-lux-hero {
+    position: relative;
+    isolation: isolate;
+    min-height: 100svh;
+    display: flex;
+    align-items: center;
+    overflow: hidden;
+    /* Static fallback (also the resting state under reduced-motion / no-WebGL) */
+    background:
+        radial-gradient(120% 90% at 78% 8%, rgba(255, 138, 61, 0.18), transparent 55%),
+        radial-gradient(100% 80% at 12% 92%, rgba(79, 227, 214, 0.16), transparent 55%),
+        radial-gradient(90% 70% at 50% 0%, rgba(139, 123, 255, 0.16), transparent 60%),
+        linear-gradient(180deg, var(--cx-night) 0%, var(--cx-night-soft) 60%, var(--cx-night) 100%);
+}
+
+/* R3F particle background mount (resources/js/hero-r3f.jsx). The React Three
+   Fiber <Canvas> injects its own <canvas> here; we fade the layer in once ready. */
+.cx-lux-hero__bg {
+    position: absolute;
+    inset: 0;
+    z-index: -2;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    transition: opacity 1.2s var(--cx-ease);
+    pointer-events: none;
+}
+.cx-lux-hero__bg canvas { display: block; }
+.cx-lux-hero.is-r3f .cx-lux-hero__bg { opacity: 1; }
+
+/* --- Gradient overlays : vignette + brand wash + top/bottom blend ------- */
+.cx-lux-hero__overlay {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background:
+        radial-gradient(130% 100% at 50% 50%, transparent 40%, rgba(7, 11, 20, 0.55) 100%),
+        linear-gradient(180deg, rgba(7, 11, 20, 0.55) 0%, transparent 22%, transparent 72%, var(--cx-night) 100%);
+}
+
+/* Fine film grain (inline SVG noise, no external asset) */
+.cx-lux-hero__grain {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    opacity: 0.06;
+    mix-blend-mode: overlay;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* --- Layout ------------------------------------------------------------- */
+.cx-lux-hero__inner {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    max-width: 80rem;
+    margin-inline: auto;
+    padding: 8.5rem 1.5rem 7rem;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 3rem;
+    align-items: center;
+}
+@media (min-width: 1024px) {
+    .cx-lux-hero__inner {
+        grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
+        gap: 2.5rem;
+        padding-block: 7rem;
+    }
+}
+
+.cx-lux-hero__content { max-width: 40rem; }
+
+/* --- Eyebrow ------------------------------------------------------------ */
+.cx-lux-eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.4rem 0.9rem;
+    border-radius: var(--cx-radius-pill);
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--cx-text);
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid var(--cx-line);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+}
+.cx-lux-eyebrow__dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--cx-amber);
+    box-shadow: 0 0 0 4px rgba(255, 182, 72, 0.18);
+    animation: cx-lux-pulse 2.4s ease-in-out infinite;
+}
+@keyframes cx-lux-pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.35; } }
+
+/* --- Editorial headline ------------------------------------------------- */
+.cx-lux-title {
+    margin-top: 1.6rem;
+    font-family: var(--cx-display);
+    font-weight: 700;
+    line-height: 1.02;
+    letter-spacing: -0.03em;
+    color: var(--cx-text);
+    font-size: clamp(2.6rem, 6.2vw, 5rem);
+    text-wrap: balance;
+}
+.cx-lux-title .cx-line { display: block; overflow: hidden; padding-bottom: 0.1em; margin-bottom: -0.1em; }
+/* Editorial serif accent for contrast — system serif, no embedded font */
+.cx-lux-serif {
+    font-family: Georgia, "Times New Roman", "Iowan Old Style", serif;
+    font-style: italic;
+    font-weight: 500;
+    letter-spacing: -0.01em;
+}
+/* Animated gradient ink on the accent line */
+.cx-lux-gradient-ink {
+    background: linear-gradient(100deg, var(--cx-amber) 0%, var(--cx-amber-deep) 26%, var(--cx-violet) 58%, var(--cx-cyan) 100%);
+    background-size: 220% auto;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
+    animation: cx-lux-ink 7s linear infinite;
+}
+@keyframes cx-lux-ink { to { background-position: 220% center; } }
+
+/* --- Lead paragraph + trust line --------------------------------------- */
+.cx-lux-lead {
+    margin-top: 1.6rem;
+    max-width: 34rem;
+    font-size: clamp(1.02rem, 1.5vw, 1.18rem);
+    line-height: 1.65;
+    color: var(--cx-muted);
+}
+.cx-lux-actions {
+    margin-top: 2.4rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    align-items: center;
+}
+.cx-lux-trust {
+    margin-top: 1.8rem;
+    display: inline-flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem 0.9rem;
+    font-size: 0.85rem;
+    color: var(--cx-muted);
+}
+.cx-lux-trust__sep { color: var(--cx-line); }
+
+/* Puce d'avis compacte — masquée par défaut, affichée < lg (cf. media query) où
+   le stage des cartes flottantes est caché. Conserve la preuve sociale sur mobile. */
+.cx-lux-proof { display: none; margin-top: 1.5rem; }
+.cx-lux-proof__chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.55rem;
+    padding: 0.5rem 0.95rem;
+    border-radius: var(--cx-radius-pill);
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--cx-line);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    color: var(--cx-text);
+    font-size: 0.85rem;
+}
+.cx-lux-proof__chip strong { font-family: var(--cx-display); font-size: 1rem; font-weight: 700; }
+.cx-lux-proof__sub { color: var(--cx-muted); font-size: 0.78rem; }
+
+/* Secondary glass CTA (dark) */
+.cx-lux-btn-ghost {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.7rem 1.3rem;
+    border-radius: var(--cx-radius-md);
+    font-weight: 600;
+    font-size: 1rem;
+    color: var(--cx-text);
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--cx-line);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    transition: background var(--cx-dur) var(--cx-ease), border-color var(--cx-dur) var(--cx-ease);
+}
+.cx-lux-btn-ghost:hover { background: rgba(255, 255, 255, 0.1); border-color: rgba(148, 178, 230, 0.3); }
+
+/* --- Floating media stage + glass cards --------------------------------- */
+.cx-lux-stage {
+    position: relative;
+    min-height: 28rem;
+    perspective: 1200px;
+}
+/* En 1 colonne (< lg), le stage des cartes flottantes — positionnées en absolu
+   avec des coordonnées pensées pour la colonne droite desktop — débordait sous
+   le contenu et rendait le hero plus haut que la section (cartes coupées hors
+   viewport sur mobile). Ces cartes sont décoratives (aria-hidden) : on les masque
+   sous lg pour que TOUT (bg + couches) tienne parfaitement dans la section hero. */
+@media (max-width: 1023px) {
+    .cx-lux-stage { display: none; }
+    .cx-lux-proof { display: block; }   /* la puce d'avis reste visible */
+    .cx-lux-hero__inner { padding-block: 6.5rem 3.5rem; }
+}
+
+.cx-lux-card {
+    position: absolute;
+    width: max-content;
+    max-width: 17rem;
+    padding: 0.95rem 1.1rem;
+    border-radius: var(--cx-radius-lg);
+    background: linear-gradient(160deg, rgba(17, 26, 46, 0.82), rgba(12, 19, 34, 0.72));
+    border: 1px solid var(--cx-line);
+    box-shadow: 0 24px 60px -22px rgba(0, 0, 0, 0.7), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    color: var(--cx-text);
+    will-change: transform;
+}
+.cx-lux-card__row { display: flex; align-items: center; gap: 0.7rem; }
+.cx-lux-card__icon {
+    flex: none;
+    width: 2.4rem;
+    height: 2.4rem;
+    display: grid;
+    place-items: center;
+    border-radius: var(--cx-radius-sm);
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid var(--cx-line);
+}
+.cx-lux-card__label { font-size: 0.72rem; letter-spacing: 0.04em; color: var(--cx-muted); }
+.cx-lux-card__value { font-size: 0.98rem; font-weight: 700; font-family: var(--cx-display); }
+.cx-lux-card__sub { font-size: 0.74rem; color: var(--cx-muted); margin-top: 0.15rem; }
+.cx-lux-card--amber .cx-lux-card__icon { color: var(--cx-amber); box-shadow: 0 0 24px -6px var(--cx-glow-amber); }
+.cx-lux-card--cyan  .cx-lux-card__icon { color: var(--cx-cyan);  box-shadow: 0 0 24px -6px var(--cx-glow-cyan); }
+.cx-lux-card--violet .cx-lux-card__icon { color: var(--cx-violet); }
+
+.cx-lux-dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: #34d399; box-shadow: 0 0 0 4px rgba(52, 211, 153, 0.18);
+    animation: cx-lux-pulse 2s ease-in-out infinite;
+}
+.cx-lux-stars { color: var(--cx-amber); letter-spacing: 0.1em; font-size: 0.85rem; }
+
+/* Continuous gentle float (JS adds per-card delay via inline style) */
+.cx-lux-float { animation: cx-lux-floaty 8s ease-in-out infinite; }
+@keyframes cx-lux-floaty {
+    0%, 100% { transform: translateY(0); }
+    50%      { transform: translateY(-14px); }
+}
+
+/* --- Scroll indicator --------------------------------------------------- */
+.cx-lux-scroll {
+    position: absolute;
+    left: 50%;
+    bottom: 1.6rem;
+    transform: translateX(-50%);
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.55rem;
+    color: var(--cx-muted);
+    text-decoration: none;
+}
+.cx-lux-scroll__label {
+    font-size: 0.66rem;
+    letter-spacing: 0.28em;
+    text-transform: uppercase;
+}
+.cx-lux-scroll__mouse {
+    width: 24px;
+    height: 38px;
+    border-radius: 14px;
+    border: 1.5px solid rgba(148, 178, 230, 0.4);
+    position: relative;
+}
+.cx-lux-scroll__wheel {
+    position: absolute;
+    left: 50%;
+    top: 7px;
+    width: 4px;
+    height: 7px;
+    margin-left: -2px;
+    border-radius: 2px;
+    background: var(--cx-amber);
+    animation: cx-lux-wheel 1.8s var(--cx-ease) infinite;
+}
+@keyframes cx-lux-wheel {
+    0%   { opacity: 0; transform: translateY(0); }
+    30%  { opacity: 1; }
+    100% { opacity: 0; transform: translateY(12px); }
+}
+
+/* Sur mobile (< sm), l'indicateur de scroll est superflu (contenu défilable
+   évident + FAB) et serrait la puce d'avis : on le masque. */
+@media (max-width: 767px) {
+    .cx-lux-scroll { display: none; }
+}
+
+/* --- Entrance state : JS adds .lux-js, GSAP animates [data-lux-anim] ----- */
+/* Guard so there is no flash of hidden content if JS fails or is disabled. */
+.cx-lux-hero.lux-js [data-lux-anim] { opacity: 0; }
+.cx-lux-hero.lux-js .cx-lux-card { opacity: 0; }
+
+/* --- Reduced motion : calm, fully legible, no canvas / float / sweep ---- */
+@media (prefers-reduced-motion: reduce) {
+    .cx-lux-hero__bg,
+    .cx-lux-hero__grain { display: none !important; }
+    .cx-lux-eyebrow__dot,
+    .cx-lux-dot,
+    .cx-lux-gradient-ink,
+    .cx-lux-float,
+    .cx-lux-scroll__wheel { animation: none !important; }
+    .cx-lux-gradient-ink {
+        -webkit-text-fill-color: initial;
+        color: var(--cx-amber);
+        background: none;
+    }
+    .cx-lux-hero.lux-js [data-lux-anim],
+    .cx-lux-hero.lux-js .cx-lux-card { opacity: 1 !important; }
+}

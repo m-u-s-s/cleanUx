@@ -46,21 +46,21 @@
     {{-- JSON-LD Structured Data --}}
     <script type="application/ld+json">
     {
-        "@context": "https://schema.org",
-        "@type": "WebApplication",
+        "@@context": "https://schema.org",
+        "@@type": "WebApplication",
         "name": "{{ config('app.name', 'CleanUx') }}",
         "url": "{{ config('app.url') }}",
         "description": "Marketplace multi-services pour réservation de professionnels vérifiés en Belgique",
         "applicationCategory": "BusinessApplication",
         "operatingSystem": "Web, iOS, Android",
         "offers": {
-            "@type": "AggregateOffer",
+            "@@type": "AggregateOffer",
             "priceCurrency": "EUR",
             "lowPrice": "25",
             "highPrice": "500"
         },
         "areaServed": {
-            "@type": "Country",
+            "@@type": "Country",
             "name": "Belgium"
         },
         "availableLanguage": ["French", "Dutch", "English"]
@@ -74,7 +74,29 @@
     <link href="https://fonts.bunny.net/css?family=figtree:400,500,600,700,800,900|space-grotesk:400,500,600,700&display=swap" rel="stylesheet" />
 
     {{-- Tout le design system (cx-* vitrine + cu-* outil) vit dans app.css --}}
+    {{-- React Fast Refresh runtime (dev only; emits nothing in production builds).
+         Required for the React Three Fiber island on the home hero. --}}
+    @viteReactRefresh
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+    {{-- Premium scroll engine (Lenis + GSAP ScrollTrigger). Chargé partout mais
+         inerte tant qu'une page n'opte pas via [data-premium-scroll]/[data-scroll-*].
+         Libs lourdes importées dynamiquement -> coût ~0 sur les pages non-premium. --}}
+    @vite(['resources/css/premium-scroll.css', 'resources/js/premium-scroll.js'])
+    {{-- Cinematic text reveal : CSS des masques + typo fluide. Inerte tant qu'un
+         îlot React n'appelle pas useTextReveal (les styles s'arment via .ctr-split). --}}
+    @vite(['resources/css/text-reveal.css'])
+    {{-- Image reveal : effets clip/mask/blur/scale/parallax au scroll
+         (IntersectionObserver). Inerte tant qu'aucun [data-image-reveal]. --}}
+    @vite(['resources/css/image-reveal.css', 'resources/js/image-reveal.js'])
+    {{-- Premium cursor : follower + boutons magnétiques + survol + aperçu image
+         (un seul rAF, lerp). Inerte si pointeur grossier / reduced-motion. --}}
+    @vite(['resources/css/premium-cursor.css', 'resources/js/premium-cursor.js'])
+    {{-- Stats section animée (Framer Motion) : CSS global (drop-in). L'îlot
+         React s'auto-monte sur [data-stats-section] et se charge PAR PAGE. --}}
+    @vite(['resources/css/stats-section.css'])
+    {{-- Floating nav : transparent→solide+blur, hide/reveal au scroll, menu
+         mobile accessible. Arme [data-floating-nav] (le header guest). --}}
+    @vite(['resources/css/floating-nav.css', 'resources/js/floating-nav.js'])
     @livewireStyles
 
     {{-- PostHog analytics — only loaded when POSTHOG_API_KEY is set (GDPR: loaded on user consent via cookie banner) --}}
@@ -102,8 +124,8 @@
     {{-- Lien d'évitement : keyboard a11y --}}
     <a href="#main-content" class="skip-to-content">Aller au contenu principal</a>
 
-    <header class="cx-header" id="cxHeader">
-        <div class="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
+    <header class="cx-header" id="cxHeader" data-floating-nav data-fn-solid-at="24" data-fn-hide-after="140">
+        <div class="cxnav__bar mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
             <a href="{{ route('home') }}" class="flex items-center gap-3">
                 <span class="cx-logo-mark">Cx</span>
                 <span class="leading-tight">
@@ -130,9 +152,39 @@
                     <a href="{{ route('login') }}" class="cx-btn cx-btn--ghost hidden px-4 py-2 text-sm sm:inline-flex">Connexion</a>
                     <a href="{{ route('booking.create') }}" class="cx-btn cx-btn--primary px-4 py-2 text-sm">Réserver</a>
                 @endauth
+
+                {{-- Bouton du menu mobile (caché en ≥ md, cf. floating-nav.css) --}}
+                <button type="button" class="cxnav__toggle"
+                        data-fn-toggle aria-expanded="false" aria-controls="cxnav-panel"
+                        aria-label="Ouvrir le menu"
+                        data-fn-label-open="Ouvrir le menu" data-fn-label-close="Fermer le menu">
+                    <span class="cxnav__bars" aria-hidden="true"><i></i><i></i><i></i></span>
+                </button>
             </div>
         </div>
     </header>
+
+    {{-- Menu mobile : disclosure modale accessible, piloté par floating-nav.
+         inert au repos (hors tab + masqué AT) ; focus piégé à l'ouverture. --}}
+    <div id="cxnav-panel" class="cxnav-panel" data-fn-panel role="dialog" aria-modal="true"
+         aria-label="Menu de navigation" tabindex="-1" inert>
+        <div class="cxnav-panel__backdrop" data-fn-close></div>
+        <nav class="cxnav-panel__inner" aria-label="Menu mobile">
+            <button type="button" class="cxnav-panel__close" data-fn-close aria-label="Fermer le menu">&times;</button>
+            <a href="{{ route('home') }}#metiers" class="cxnav-panel__link">Métiers</a>
+            <a href="{{ route('home') }}#fonctionnement" class="cxnav-panel__link">Fonctionnement</a>
+            <a href="{{ route('home') }}#confiance" class="cxnav-panel__link">Confiance</a>
+            <a href="{{ route('home') }}#b2b" class="cxnav-panel__link">Entreprises</a>
+            <div class="cxnav-panel__cta">
+                @auth
+                    <a href="{{ route('dashboard') }}" class="cx-btn cx-btn--ghost px-4 py-3 text-sm">Dashboard</a>
+                @else
+                    <a href="{{ route('login') }}" class="cx-btn cx-btn--ghost px-4 py-3 text-sm">Connexion</a>
+                    <a href="{{ route('booking.create') }}" class="cx-btn cx-btn--primary px-4 py-3 text-sm">Réserver</a>
+                @endauth
+            </div>
+        </nav>
+    </div>
 
     <main id="main-content" role="main" aria-label="Contenu principal">{{ $slot }}</main>
 
@@ -213,18 +265,17 @@
     @stack('scripts')
 
     <script>
-        /* Progression du voyage + opacité du header au scroll. Scroll natif. */
+        /* Barre de progression du voyage. Le header (fond/blur/hide-reveal) est
+           géré par floating-nav. Scroll natif. */
         (function () {
             var bar = document.getElementById('cxProgressBar');
-            var header = document.getElementById('cxHeader');
+            if (!bar) return;
             var ticking = false;
             function update() {
                 var h = document.documentElement;
                 var max = (h.scrollHeight - h.clientHeight) || 1;
                 var pct = Math.min(100, Math.max(0, (h.scrollTop || window.scrollY) / max * 100));
-                if (bar) bar.style.width = pct + '%';
-                if (header) header.style.background = (window.scrollY > 40)
-                    ? 'rgba(7,11,20,0.78)' : 'rgba(7,11,20,0.55)';
+                bar.style.width = pct + '%';
                 ticking = false;
             }
             window.addEventListener('scroll', function () {

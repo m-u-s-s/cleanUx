@@ -1,0 +1,97 @@
+/* ============================================================================
+   CleanUx — Image Reveal (styles)
+   Accompagne resources/js/image-reveal-core.js. Les états masqués ne s'arment
+   que sous .ir-armed (posée par le JS) -> sans JS, l'image est pleinement
+   visible (SEO/LCP). Effets ciblés via [data-ir-effect~="..."].
+   Anti-conflit transform : clip/mask/parallax sur .ir (figure), blur/scale sur
+   .ir img. Tout en transform/opacity/clip-path/filter -> pas de reflow.
+   ========================================================================= */
+
+.ir {
+    position: relative;
+    display: block;
+    overflow: hidden; /* recadre le scale + sert au clip */
+}
+
+.ir img {
+    display: block;
+    width: 100%;
+    height: auto;
+}
+
+/* --- Armé par le JS : translateY (parallaxe via --ir-py) + fade baseline --- */
+.ir-armed {
+    transform: translate3d(0, var(--ir-py, 0px), 0);
+    opacity: 0;
+    /* NB : `transform` n'est PAS transitionné (la parallaxe doit suivre le scroll
+       image par image) ; seules les propriétés de révélation le sont. */
+    transition:
+        clip-path 0.9s cubic-bezier(0.16, 1, 0.3, 1),
+        opacity 0.9s ease,
+        -webkit-mask-position 1.1s cubic-bezier(0.16, 1, 0.3, 1),
+        mask-position 1.1s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.ir-armed.is-revealed {
+    opacity: 1;
+}
+
+.ir-armed[data-ir-parallax] {
+    will-change: transform;
+}
+
+/* --- clip-path (wipe bas -> haut) ---------------------------------------- */
+.ir-armed[data-ir-effect~='clip'] {
+    clip-path: inset(0 0 100% 0);
+}
+.ir-armed[data-ir-effect~='clip'].is-revealed {
+    clip-path: inset(0 0 0 0);
+}
+
+/* --- masque gradient (wipe diagonal) ------------------------------------- */
+.ir-armed[data-ir-effect~='mask'] {
+    -webkit-mask-image: linear-gradient(115deg, #000 0 33%, transparent 70%);
+    mask-image: linear-gradient(115deg, #000 0 33%, transparent 70%);
+    -webkit-mask-size: 300% 100%;
+    mask-size: 300% 100%;
+    -webkit-mask-position: 100% 0;
+    mask-position: 100% 0;
+}
+.ir-armed[data-ir-effect~='mask'].is-revealed {
+    -webkit-mask-position: 0 0;
+    mask-position: 0 0;
+}
+
+/* --- blur -> net (sur l'image) ------------------------------------------- */
+.ir-armed[data-ir-effect~='blur'] img {
+    filter: blur(16px);
+    transition: filter 1s ease;
+}
+.ir-armed[data-ir-effect~='blur'].is-revealed img {
+    filter: blur(0);
+}
+
+/* --- scale (zoom-out, sur l'image) --------------------------------------- */
+.ir-armed[data-ir-effect~='scale'] img {
+    transform: scale(1.14);
+    transition: transform 1.1s cubic-bezier(0.16, 1, 0.3, 1);
+    will-change: transform;
+}
+.ir-armed[data-ir-effect~='scale'].is-revealed img {
+    transform: scale(1);
+}
+
+/* --- Accessibilité : reduced-motion -> tout visible, rien d'animé -------- */
+@media (prefers-reduced-motion: reduce) {
+    .ir-armed,
+    .ir-armed img {
+        transition: none !important;
+        clip-path: none !important;
+        -webkit-mask-image: none !important;
+        mask-image: none !important;
+        filter: none !important;
+        transform: none !important;
+        opacity: 1 !important;
+        will-change: auto;
+    }
+}

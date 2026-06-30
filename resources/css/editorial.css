@@ -1,0 +1,816 @@
+/* ============================================================================
+   CleanUx — Editorial Design Language (étude de système, page dev /editorial)
+   ----------------------------------------------------------------------------
+   « Editorial Luxury » : crème chaud, encre espresso, un seul accent terracotta,
+   serif à fort contraste (Fraunces) + grotesque humaniste (Plus Jakarta Sans),
+   grain film, macro-whitespace, mouvement lourd à ressort.
+
+   Ce fichier EST le livrable : il codifie 6 systèmes —
+     1) Espacement  (échelle modulaire + rythme de section macro)
+     2) Grille      (12 colonnes éditoriale + asymétries)
+     3) Typographie (échelle + interlignage + mesure + hiérarchie)
+     4) Mouvement   (tokens durée/easing + révélations d'entrée)
+     5) Interaction (liens, magnétique, curseur, nav)
+     6) Hiérarchie  (eyebrow → display → lead → corps → légende)
+
+   Les moteurs réutilisés (premium-cursor, floating-nav, image-reveal, text-reveal,
+   premium-scroll) lisent var(--cx-*) : on les re-thème ici via un pont de tokens,
+   sans toucher au code des moteurs.
+   ========================================================================= */
+
+/* ===========================================================================
+   0 · TOKENS
+   ======================================================================== */
+.ed {
+    /* — Couleur (crème éditoriale) — */
+    --ed-paper: #fbf8f1;        /* fond crème chaud */
+    --ed-paper-2: #f3ede1;      /* panneau / encart */
+    --ed-paper-3: #ece4d4;      /* contraste doux */
+    --ed-ink: #1b1714;          /* encre espresso (≈ noir) */
+    --ed-ink-2: #5b5249;        /* texte secondaire */
+    --ed-ink-3: #8a8073;        /* légende / faible */
+    --ed-line: rgba(27, 23, 20, 0.14); /* filet (jamais 1px gris générique) */
+    --ed-line-soft: rgba(27, 23, 20, 0.07);
+    --ed-accent: #b5572e;       /* terracotta — l'unique accent */
+    --ed-accent-deep: #8c3f1d;
+
+    /* — Typo — */
+    --ed-display: 'Fraunces', 'Fraunces Fallback', Georgia, 'Times New Roman', serif;
+    --ed-sans: 'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif;
+
+    /* — Espacement : échelle modulaire (base 0.25rem, pas éditoriaux larges) — */
+    --s-3xs: 0.25rem;
+    --s-2xs: 0.5rem;
+    --s-xs: 0.75rem;
+    --s-sm: 1rem;
+    --s-md: 1.5rem;
+    --s-lg: 2rem;
+    --s-xl: 3rem;
+    --s-2xl: 4rem;
+    --s-3xl: 6rem;
+    --s-4xl: 8rem;
+    --s-5xl: 12rem;
+    /* rythme de section : macro-whitespace fluide */
+    --section-y: clamp(5rem, 11vw, 11rem);
+
+    /* — Grille — */
+    --container: 78rem;          /* ≈ 1248px */
+    --container-wide: 86rem;
+    --gutter: clamp(1rem, 2.4vw, 2rem);
+    --edge: clamp(1.25rem, 5vw, 4rem); /* marge de page */
+
+    /* — Rayons (squircle exagéré) — */
+    --r-xl: 2rem;
+    --r-lg: 1.25rem;
+    --r-sm: 0.75rem;
+
+    /* — Mouvement (jamais linear/ease-in-out) — */
+    --ease: cubic-bezier(0.32, 0.72, 0, 1);     /* signature, lourd à ressort */
+    --ease-soft: cubic-bezier(0.16, 1, 0.3, 1);
+    --dur: 0.8s;
+    --dur-sm: 0.45s;
+
+    /* — Pont vers les moteurs réutilisés (cx-*) → ils adoptent le thème éditorial — */
+    --cx-amber: var(--ed-accent);
+    --cx-amber-deep: var(--ed-accent-deep);
+    --cx-text: var(--ed-ink);
+    --cx-muted: var(--ed-ink-2);
+    --cx-line: var(--ed-line);
+    --cx-display: var(--ed-display);
+    --cx-bg: var(--ed-paper);
+
+    background-color: var(--ed-paper);
+    color: var(--ed-ink);
+    font-family: var(--ed-sans);
+    font-size: 16px;
+    line-height: 1.7;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    font-feature-settings: 'ss01', 'liga', 'kern';
+}
+
+/* Reset box-sizing (la preflight Tailwind/app.css n'est PAS chargée sur ce layout ;
+   indispensable pour les panneaux 100vw du rail horizontal avec padding). */
+.ed *,
+.ed *::before,
+.ed *::after { box-sizing: border-box; }
+
+/* ===========================================================================
+   1 · GRAIN FILM (overlay fixe, pointer-events none → pas de repaint au scroll)
+   ======================================================================== */
+.ed-grain {
+    position: fixed;
+    inset: 0;
+    z-index: 60;
+    pointer-events: none;
+    opacity: 0.4;
+    mix-blend-mode: multiply;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.5'/%3E%3C/svg%3E");
+    background-size: 160px 160px;
+}
+
+/* ===========================================================================
+   2 · GRILLE éditoriale (12 colonnes + asymétries)
+   ======================================================================== */
+.ed-container {
+    width: 100%;
+    max-width: var(--container);
+    margin-inline: auto;
+    padding-inline: var(--edge);
+}
+.ed-container--wide { max-width: var(--container-wide); }
+
+.ed-grid {
+    display: grid;
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    column-gap: var(--gutter);
+    row-gap: var(--s-xl);
+}
+/* spans (desktop) */
+.ed-col-3 { grid-column: span 3; }
+.ed-col-4 { grid-column: span 4; }
+.ed-col-5 { grid-column: span 5; }
+.ed-col-6 { grid-column: span 6; }
+.ed-col-7 { grid-column: span 7; }
+.ed-col-8 { grid-column: span 8; }
+.ed-col-9 { grid-column: span 9; }
+.ed-col-12 { grid-column: 1 / -1; }
+.ed-start-2 { grid-column-start: 2; }
+.ed-start-6 { grid-column-start: 6; }
+.ed-start-7 { grid-column-start: 7; }
+
+.ed-section { padding-block: var(--section-y); }
+.ed-section--tight { padding-block: clamp(3rem, 6vw, 6rem); }
+
+/* ===========================================================================
+   3 · TYPOGRAPHIE (échelle fluide + rythme vertical)
+   ======================================================================== */
+.ed-display {
+    font-family: var(--ed-display);
+    font-weight: 340;                 /* Fraunces léger = élégance éditoriale */
+    font-optical-sizing: auto;
+    font-size: clamp(3rem, 8vw, 8rem);
+    line-height: 0.96;
+    letter-spacing: -0.02em;
+    margin: 0;
+}
+.ed-h2 {
+    font-family: var(--ed-display);
+    font-weight: 360;
+    font-size: clamp(2rem, 4.6vw, 4rem);
+    line-height: 1.02;
+    letter-spacing: -0.018em;
+    margin: 0;
+}
+.ed-h3 {
+    font-family: var(--ed-display);
+    font-weight: 420;
+    font-size: clamp(1.4rem, 2.4vw, 2rem);
+    line-height: 1.1;
+    letter-spacing: -0.01em;
+    margin: 0;
+}
+.ed-italic { font-style: italic; font-weight: 360; }   /* accent serif optique */
+.ed-accent { color: var(--ed-accent); }
+.ed-line { display: block; }   /* lignes pré-découpées (révélation cinématique) */
+
+.ed-lead {
+    font-family: var(--ed-sans);
+    font-size: clamp(1.15rem, 1.5vw, 1.5rem);
+    line-height: 1.5;
+    font-weight: 400;
+    color: var(--ed-ink);
+    max-width: 32ch;
+    margin: 0;
+}
+.ed-body {
+    font-size: 1.0625rem;
+    line-height: 1.75;
+    color: var(--ed-ink-2);
+    max-width: 62ch;       /* mesure de lecture */
+    margin: 0;
+}
+.ed-body + .ed-body { margin-top: var(--s-md); }
+
+.ed-eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-family: var(--ed-sans);
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.26em;
+    text-transform: uppercase;
+    color: var(--ed-ink-3);
+    margin: 0;
+}
+.ed-eyebrow::before {
+    content: '';
+    width: 1.75rem;
+    height: 1px;
+    background: var(--ed-accent);
+}
+.ed-eyebrow--pill {
+    padding: 0.4rem 0.8rem;
+    border-radius: 999px;
+    border: 1px solid var(--ed-line);
+    color: var(--ed-ink-2);
+}
+.ed-eyebrow--pill::before { display: none; }
+
+.ed-caption {
+    font-size: 0.82rem;
+    line-height: 1.45;
+    letter-spacing: 0.01em;
+    color: var(--ed-ink-3);
+    margin: 0;
+}
+.ed-index-num {
+    font-family: var(--ed-display);
+    font-size: 0.9rem;
+    font-weight: 500;
+    font-variant-numeric: tabular-nums;
+    color: var(--ed-accent);
+}
+
+/* ===========================================================================
+   4 · NAV éditoriale (réutilise le moteur floating-nav → on re-thème le pill)
+   Le moteur pose .is-solid sur scroll ; sa couleur de pill est codée sombre,
+   on la repasse en crème ici (specificité .ed > moteur, chargé après).
+   ======================================================================== */
+.ed [data-floating-nav].is-solid .cxnav__bar {
+    background-color: rgba(251, 248, 241, 0.82);
+    border-color: var(--ed-line);
+    box-shadow: 0 18px 50px -28px rgba(27, 23, 20, 0.45);
+}
+/* Positionnement de la barre (vitrine-mode.css n'est PAS chargé ici). */
+.ed-header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 80;
+}
+.ed-nav__bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--s-lg);
+    width: 100%;
+    max-width: var(--container);
+    margin-inline: auto;
+    height: 4.5rem;
+    padding-inline: clamp(1rem, 2.5vw, 1.75rem);
+}
+.ed-wordmark {
+    font-family: var(--ed-display);
+    font-weight: 500;
+    font-size: 1.35rem;
+    letter-spacing: -0.01em;
+    color: var(--ed-ink);
+    text-decoration: none;
+}
+.ed-wordmark sup { color: var(--ed-accent); font-size: 0.6em; }
+.ed-nav__links {
+    display: flex;
+    align-items: center;
+    gap: clamp(1.25rem, 2.5vw, 2.25rem);
+}
+.ed-navlink {
+    position: relative;
+    font-size: 0.92rem;
+    font-weight: 500;
+    color: var(--ed-ink-2);
+    text-decoration: none;
+    padding-block: 0.25rem;
+    transition: color var(--dur-sm) var(--ease);
+}
+.ed-navlink::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 100%;
+    height: 1px;
+    background: var(--ed-accent);
+    transform: scaleX(0);
+    transform-origin: right;
+    transition: transform var(--dur-sm) var(--ease);
+}
+.ed-navlink:hover { color: var(--ed-ink); }
+.ed-navlink:hover::after { transform: scaleX(1); transform-origin: left; }
+
+/* ===========================================================================
+   5 · CTA — pill « button-in-button » + physique magnétique au survol (.group)
+   ======================================================================== */
+.ed-cta {
+    --bg: var(--ed-ink);
+    --fg: var(--ed-paper);
+    display: inline-flex;
+    align-items: center;
+    gap: 0.85rem;
+    padding: 0.7rem 0.7rem 0.7rem 1.4rem;
+    border-radius: 999px;
+    background: var(--bg);
+    color: var(--fg);
+    font-family: var(--ed-sans);
+    font-size: 0.95rem;
+    font-weight: 600;
+    text-decoration: none;
+    border: none;
+    cursor: pointer;
+    transition: transform var(--dur-sm) var(--ease), background var(--dur-sm) var(--ease);
+}
+.ed-cta--ghost {
+    --bg: transparent;
+    --fg: var(--ed-ink);
+    border: 1px solid var(--ed-line);
+    padding-block: calc(0.7rem - 1px);
+}
+.ed-cta:active { transform: scale(0.98); }
+.ed-cta__icon {
+    display: grid;
+    place-items: center;
+    width: 2rem;
+    height: 2rem;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--fg) 16%, transparent);
+    transition: transform var(--dur-sm) var(--ease), background var(--dur-sm) var(--ease);
+}
+.ed-cta__icon svg { width: 0.95rem; height: 0.95rem; stroke: var(--fg); }
+.ed-cta:hover .ed-cta__icon {
+    transform: translate(2px, -2px) scale(1.06);
+    background: color-mix(in srgb, var(--fg) 26%, transparent);
+}
+
+/* ===========================================================================
+   6 · FIGURES — « double bezel » (plateau crème + cœur concentrique)
+   Visuels 100% procéduraux (dégradés/SVG) → aucune image protégée.
+   ======================================================================== */
+.ed-figure {
+    position: relative;
+    padding: 0.5rem;
+    border-radius: var(--r-xl);
+    background: var(--ed-paper-2);
+    border: 1px solid var(--ed-line-soft);
+}
+.ed-figure__core {
+    position: relative;
+    overflow: hidden;
+    border-radius: calc(var(--r-xl) - 0.5rem);
+    aspect-ratio: 4 / 5;
+    box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.5);
+}
+.ed-figure--wide .ed-figure__core { aspect-ratio: 16 / 10; }
+.ed-figure__art {
+    position: absolute;
+    inset: 0;
+    background: var(--art, radial-gradient(120% 120% at 20% 10%, #d8c4a8, #b5572e 55%, #2a1c14));
+}
+.ed-figure__art::after { /* voile grain dans la figure */
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(80% 60% at 70% 90%, rgba(0, 0, 0, 0.35), transparent 70%);
+    mix-blend-mode: multiply;
+}
+.ed-figure__meta {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: var(--s-md);
+    padding: var(--s-sm) var(--s-2xs) var(--s-3xs);
+}
+
+/* ===========================================================================
+   6b · RAIL HORIZONTAL (work archive) — moteur premium-scroll
+   Base = scroll-snap natif (mobile/tactile/sans-JS) ; desktop = pin + translateX
+   GSAP. Le moteur n'anime [data-scroll-panel-inner] (scale+translateX+fade) que
+   sur desktop → les panneaux restent visibles par défaut (rien de « bloqué »).
+   ======================================================================== */
+.ed-rail-section { background: var(--ed-paper); }
+
+.ed-panel {
+    display: flex;
+    align-items: center;
+    padding-inline: clamp(1.5rem, 6vw, 7rem);
+}
+.ed-panel__inner {
+    width: 100%;
+    max-width: var(--container);
+    margin-inline: auto;
+}
+.ed-panel--intro .ed-panel__inner { max-width: 42rem; }
+.ed-rail__cue {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    margin-top: var(--s-2xl);
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.26em;
+    text-transform: uppercase;
+    color: var(--ed-ink-3);
+}
+.ed-rail__cue::after {
+    content: '';
+    width: 2.5rem;
+    height: 1px;
+    background: var(--ed-accent);
+}
+
+.ed-panel__grid {
+    display: grid;
+    grid-template-columns: 1.1fr 0.9fr;
+    gap: clamp(2rem, 5vw, 5rem);
+    align-items: center;
+}
+.ed-panel__art {
+    position: relative;
+    height: min(62vh, 540px);
+    border-radius: var(--r-xl);
+    overflow: hidden;
+    background: var(--art, radial-gradient(120% 120% at 20% 10%, #e7cfa9, var(--ed-accent) 60%, #2a1812));
+    border: 1px solid var(--ed-line-soft);
+    box-shadow: 0 36px 80px -44px rgba(27, 23, 20, 0.55);
+}
+.ed-panel__art::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(80% 60% at 75% 95%, rgba(0, 0, 0, 0.32), transparent 70%);
+    mix-blend-mode: multiply;
+}
+.ed-panel__title {
+    font-family: var(--ed-display);
+    font-weight: 360;
+    font-size: clamp(2.4rem, 5vw, 4.4rem);
+    line-height: 0.98;
+    letter-spacing: -0.02em;
+    margin: var(--s-xs) 0 0;
+}
+
+@media (max-width: 767px) {
+    .ed-panel { padding-inline: var(--edge); }
+    .ed-panel__grid { grid-template-columns: 1fr; gap: var(--s-lg); }
+    .ed-panel__art { height: 38vh; }
+    .ed-panel--intro .ed-panel__inner { max-width: none; }
+}
+
+/* ===========================================================================
+   7 · INDEX éditorial (liste numérotée, interaction au survol)
+   ======================================================================== */
+.ed-index { border-top: 1px solid var(--ed-line); }
+.ed-index__row {
+    display: grid;
+    grid-template-columns: 4rem 1fr auto;
+    align-items: center;
+    gap: var(--s-md);
+    padding: clamp(1.25rem, 2.6vw, 2.1rem) 0;
+    border-bottom: 1px solid var(--ed-line);
+    text-decoration: none;
+    color: inherit;
+    transition: padding-left var(--dur) var(--ease), color var(--dur-sm) var(--ease);
+}
+.ed-index__row:hover { padding-left: var(--s-md); }
+.ed-index__title {
+    font-family: var(--ed-display);
+    font-weight: 400;
+    font-size: clamp(1.5rem, 3vw, 2.4rem);
+    line-height: 1.05;
+    letter-spacing: -0.015em;
+    transition: color var(--dur-sm) var(--ease);
+}
+.ed-index__row:hover .ed-index__title { color: var(--ed-accent); }
+.ed-index__desc { max-width: 34ch; color: var(--ed-ink-2); font-size: 0.95rem; }
+.ed-index__arrow {
+    width: 2.6rem;
+    height: 2.6rem;
+    border-radius: 999px;
+    border: 1px solid var(--ed-line);
+    display: grid;
+    place-items: center;
+    color: var(--ed-ink-2);
+    transition: transform var(--dur) var(--ease), background var(--dur-sm) var(--ease), color var(--dur-sm) var(--ease);
+}
+.ed-index__row:hover .ed-index__arrow {
+    transform: rotate(-45deg);
+    background: var(--ed-accent);
+    color: var(--ed-paper);
+    border-color: var(--ed-accent);
+}
+.ed-index__arrow svg { width: 1.1rem; height: 1.1rem; }
+
+/* ===========================================================================
+   8 · PULL-QUOTE
+   ======================================================================== */
+.ed-quote {
+    font-family: var(--ed-display);
+    font-weight: 320;
+    font-size: clamp(1.8rem, 4.2vw, 3.6rem);
+    line-height: 1.12;
+    letter-spacing: -0.015em;
+    max-width: 22ch;
+    margin: 0 auto;
+    text-align: center;
+    text-wrap: balance;
+}
+.ed-quote em { color: var(--ed-accent); font-style: italic; }
+
+/* ===========================================================================
+   9 · STATS (compteurs)
+   ======================================================================== */
+.ed-stat__num {
+    font-family: var(--ed-display);
+    font-weight: 360;
+    font-size: clamp(2.6rem, 6vw, 4.6rem);
+    line-height: 1;
+    letter-spacing: -0.02em;
+    font-variant-numeric: tabular-nums;
+}
+.ed-stat__label { margin-top: var(--s-2xs); color: var(--ed-ink-2); font-size: 0.95rem; }
+.ed-stat { border-top: 1px solid var(--ed-line); padding-top: var(--s-md); }
+
+/* ===========================================================================
+   10 · JOURNAL (liste d'écrits)
+   ======================================================================== */
+.ed-journal__row {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: var(--s-lg);
+    padding: var(--s-md) 0;
+    border-bottom: 1px solid var(--ed-line);
+    text-decoration: none;
+    color: inherit;
+}
+.ed-journal__title {
+    font-family: var(--ed-display);
+    font-weight: 420;
+    font-size: clamp(1.1rem, 1.8vw, 1.45rem);
+    letter-spacing: -0.01em;
+    transition: color var(--dur-sm) var(--ease);
+}
+.ed-journal__row:hover .ed-journal__title { color: var(--ed-accent); }
+.ed-journal__date { color: var(--ed-ink-3); font-size: 0.85rem; white-space: nowrap; }
+
+/* ===========================================================================
+   11 · FOOTER
+   ======================================================================== */
+.ed-footer { background: var(--ed-paper-2); border-top: 1px solid var(--ed-line); }
+.ed-footer__big {
+    font-family: var(--ed-display);
+    font-weight: 320;
+    font-size: clamp(2.4rem, 7vw, 6rem);
+    line-height: 0.98;
+    letter-spacing: -0.02em;
+}
+
+/* ===========================================================================
+   12 · MOUVEMENT — révélations d'entrée (fade-up + blur, échelonnées)
+   JS pose .is-in via IntersectionObserver (jamais de listener scroll).
+   ======================================================================== */
+[data-ed-reveal] {
+    opacity: 0;
+    transform: translateY(2rem);
+    filter: blur(8px);
+    transition:
+        opacity var(--dur) var(--ease),
+        transform var(--dur) var(--ease),
+        filter var(--dur) var(--ease);
+    transition-delay: calc(var(--i, 0) * 90ms);
+    will-change: transform, opacity;
+}
+[data-ed-reveal].is-in {
+    opacity: 1;
+    transform: none;
+    filter: none;
+}
+
+/* La figure révèle son art par un balayage clip-path (lié à .is-in du conteneur).
+   Démontre le langage de mouvement « image reveal » via le système éditorial. */
+[data-ed-reveal] .ed-figure__art {
+    clip-path: inset(0 0 100% 0);
+    transition: clip-path 1.05s var(--ease) 0.12s;
+}
+[data-ed-reveal].is-in .ed-figure__art {
+    clip-path: inset(0 0 0 0);
+}
+
+/* Ligne fine de progression de lecture (moteur premium-scroll → --scroll-progress) */
+.ed-progress {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    z-index: 70;
+    transform-origin: left;
+    transform: scaleX(var(--scroll-progress, 0));
+    background: var(--ed-accent);
+    pointer-events: none;
+}
+
+/* ===========================================================================
+   13 · RESPONSIVE (effondrement < 768px → 1 colonne, rythme préservé)
+   ======================================================================== */
+@media (max-width: 767px) {
+    .ed-nav__links { display: none; }   /* → menu mobile (moteur floating-nav, < 768) */
+}
+@media (max-width: 768px) {
+    .ed [class*='ed-col-'],
+    .ed .ed-start-2,
+    .ed .ed-start-6,
+    .ed .ed-start-7 {
+        grid-column: 1 / -1;
+        grid-column-start: auto;
+    }
+    .ed-grid { row-gap: var(--s-lg); }
+    .ed-index__row { grid-template-columns: 2.5rem 1fr; }
+    .ed-index__arrow { display: none; }
+    .ed-journal__row { flex-direction: column; gap: 0.35rem; }
+}
+
+/* ===========================================================================
+   14 · A11Y — prefers-reduced-motion : tout visible, aucun mouvement
+   ======================================================================== */
+@media (prefers-reduced-motion: reduce) {
+    [data-ed-reveal] {
+        opacity: 1 !important;
+        transform: none !important;
+        filter: none !important;
+        transition: none !important;
+    }
+    .ed-figure__art { clip-path: none !important; }
+    .ed-progress { display: none; }
+    .ed *,
+    .ed *::before,
+    .ed *::after {
+        transition-duration: 0.01ms !important;
+        animation-duration: 0.01ms !important;
+    }
+}
+
+/* ===========================================================================
+   15 · THÈME SOMBRE (.ed--dark) + LANDING LUXE « Obsidia » (page dev /luxe)
+   ----------------------------------------------------------------------------
+   Le modificateur .ed--dark ne fait QU'inverser les tokens couleur : tout le
+   système éditorial (.ed-*) + le pont --cx-* (curseur, nav) bascule en sombre.
+   Palette : quasi-noir + bone chaud + accent OR champagne. (placé après .ed →
+   les overrides de tokens priment.)
+   ======================================================================== */
+.ed--dark {
+    --ed-paper: #0c0d11;
+    --ed-paper-2: #15161c;
+    --ed-paper-3: #1e2027;
+    --ed-ink: #ece7dd;
+    --ed-ink-2: #a39d93;
+    --ed-ink-3: #6c675f;
+    --ed-line: rgba(236, 231, 221, 0.13);
+    --ed-line-soft: rgba(236, 231, 221, 0.06);
+    --ed-accent: #c9a86a;       /* or champagne */
+    --ed-accent-deep: #a6864a;
+    color-scheme: dark;
+}
+/* Grain : mélange doux sur fond sombre. */
+.ed--dark .ed-grain { mix-blend-mode: soft-light; opacity: 0.5; }
+/* Pill solide de la nav (le clair était codé en dur). */
+.ed--dark [data-floating-nav].is-solid .cxnav__bar {
+    background-color: rgba(12, 13, 17, 0.72);
+    border-color: var(--ed-line);
+    box-shadow: 0 18px 50px -28px rgba(0, 0, 0, 0.85);
+}
+/* Section sombre par défaut. */
+.ed--dark .ed-rail-section,
+.ed--dark .ed-footer { background: var(--ed-paper); }
+.ed--dark .ed-footer { background: var(--ed-paper-2); }
+
+/* ---- HERO LUXE : fullscreen + WebGL R3F + couches flottantes + voiles ------ */
+.luxe-hero {
+    position: relative;
+    min-height: 100dvh;
+    display: flex;
+    align-items: center;
+    overflow: hidden;
+    isolation: isolate;
+}
+.luxe-hero__bg {
+    position: absolute;
+    inset: 0;
+    z-index: -2;
+    background: radial-gradient(80% 80% at 72% 18%, #1a1b23, #0c0d11 72%);
+}
+.luxe-hero__bg canvas {
+    display: block;
+    opacity: 0;
+    transition: opacity 1.4s var(--ease);
+}
+.luxe-hero.is-r3f .luxe-hero__bg canvas { opacity: 1; }
+
+/* Voiles dégradés : contraste du texte + halo accent. */
+.luxe-hero__veil {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background:
+        radial-gradient(110% 70% at 50% -5%, rgba(201, 168, 106, 0.12), transparent 60%),
+        radial-gradient(100% 100% at 50% 125%, rgba(12, 13, 17, 0.92), transparent 72%),
+        linear-gradient(180deg, rgba(12, 13, 17, 0.45), rgba(12, 13, 17, 0.15) 42%, rgba(12, 13, 17, 0.88));
+}
+
+/* Couches média flottantes (procédurales) — parallaxe souris via editorial.js. */
+.luxe-hero__float {
+    position: absolute;
+    border: 1px solid var(--ed-line);
+    border-radius: 1.5rem;
+    overflow: hidden;
+    pointer-events: none;
+    box-shadow: 0 50px 100px -55px rgba(0, 0, 0, 0.85);
+    backface-visibility: hidden;
+    will-change: transform;
+}
+.luxe-hero__float--1 { width: clamp(9rem, 15vw, 16rem); aspect-ratio: 4/5; right: 6%; top: 13%; background: linear-gradient(160deg, #2a2a33, var(--ed-accent) 220%); opacity: 0.92; }
+.luxe-hero__float--2 { width: clamp(7rem, 11vw, 11rem); aspect-ratio: 1; right: 25%; bottom: 12%; border-radius: 999px; background: radial-gradient(circle at 34% 30%, #3a3a45, #0c0d11); }
+.luxe-hero__float--3 { width: clamp(6rem, 9vw, 9rem); aspect-ratio: 3/4; left: 4%; bottom: 17%; background: linear-gradient(200deg, #1a1b22, var(--ed-accent) 300%); opacity: 0.7; }
+
+.luxe-hero__content { position: relative; z-index: 1; width: 100%; }
+
+/* Indicateur de scroll. */
+.luxe-hero__cue {
+    position: absolute;
+    bottom: 1.8rem;
+    left: 50%;
+    transform: translateX(-50%);
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.7rem;
+    color: var(--ed-ink-3);
+    font-size: 0.66rem;
+    font-weight: 600;
+    letter-spacing: 0.28em;
+    text-transform: uppercase;
+    text-decoration: none;
+}
+.luxe-hero__cue::after {
+    content: '';
+    width: 1px;
+    height: 2.6rem;
+    background: linear-gradient(var(--ed-accent), transparent);
+    animation: luxe-cue 2.6s var(--ease) infinite;
+}
+@keyframes luxe-cue {
+    0% { transform: scaleY(0); transform-origin: top; }
+    45% { transform: scaleY(1); transform-origin: top; }
+    55% { transform: scaleY(1); transform-origin: bottom; }
+    100% { transform: scaleY(0); transform-origin: bottom; }
+}
+
+/* ---- Piliers (cartes) ----------------------------------------------------- */
+.luxe-pillar {
+    padding: var(--s-lg);
+    border-radius: var(--r-lg);
+    border: 1px solid var(--ed-line);
+    background: color-mix(in srgb, var(--ed-ink) 3%, transparent);
+    height: 100%;
+    transition: border-color var(--dur-sm) var(--ease), background var(--dur-sm) var(--ease), transform var(--dur) var(--ease);
+}
+.luxe-pillar:hover { border-color: color-mix(in srgb, var(--ed-accent) 45%, transparent); transform: translateY(-4px); }
+.luxe-pillar__num { font-family: var(--ed-display); color: var(--ed-accent); font-size: 0.9rem; letter-spacing: 0.1em; }
+.luxe-pillar__title { font-family: var(--ed-display); font-weight: 380; font-size: clamp(1.4rem, 2.2vw, 1.9rem); line-height: 1.05; margin: var(--s-sm) 0 var(--s-xs); }
+
+/* ---- Présence mondiale ---------------------------------------------------- */
+.luxe-globe {
+    position: relative;
+    aspect-ratio: 1;
+    border-radius: 999px;
+    background:
+        radial-gradient(circle at 38% 32%, rgba(201, 168, 106, 0.18), transparent 60%),
+        repeating-radial-gradient(circle at 50% 50%, transparent 0 13px, var(--ed-line-soft) 13px 14px);
+    border: 1px solid var(--ed-line);
+    overflow: hidden;
+}
+.luxe-globe::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: repeating-linear-gradient(90deg, transparent 0 13px, var(--ed-line-soft) 13px 14px);
+    -webkit-mask-image: radial-gradient(circle at 50% 50%, #000 60%, transparent 72%);
+    mask-image: radial-gradient(circle at 50% 50%, #000 60%, transparent 72%);
+}
+.luxe-city {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: var(--s-md);
+    padding: var(--s-sm) 0;
+    border-bottom: 1px solid var(--ed-line);
+}
+.luxe-city__name { font-family: var(--ed-display); font-weight: 400; font-size: 1.2rem; }
+.luxe-city__coord { font-size: 0.78rem; color: var(--ed-ink-3); font-variant-numeric: tabular-nums; }
+
+@media (max-width: 768px) {
+    .luxe-hero__float { display: none; }  /* pas de couches flottantes sur mobile */
+}
+

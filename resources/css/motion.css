@@ -89,3 +89,169 @@ button:active,
     60%  { transform: scale(1.05); }
     100% { transform: scale(1); opacity: 1; }
 }
+
+/* ============================================================================
+   CleanUx — Premium hero & section animations (added 14/06/2026)
+   GPU-only (transform/opacity/filter). All gated by prefers-reduced-motion
+   via the global guard in a11y.css + the explicit kill-list below.
+   ========================================================================= */
+
+/* --- Hero aurora: slow-drifting blurred colour orbs ---------------------- */
+.cx-aurora { position: absolute; inset: -20%; z-index: -1; overflow: hidden; pointer-events: none; }
+.cx-aurora__orb {
+    position: absolute;
+    border-radius: 9999px;
+    filter: blur(72px);
+    opacity: .55;
+    will-change: transform;
+}
+.cx-aurora__orb--1 {
+    width: 42vw; height: 42vw; left: -6vw; top: -10vw;
+    background: radial-gradient(circle at 30% 30%, #c7d2fe, transparent 70%);
+    animation: cx-orb-a 18s ease-in-out infinite;
+}
+.cx-aurora__orb--2 {
+    width: 38vw; height: 38vw; right: -8vw; top: -6vw;
+    background: radial-gradient(circle at 70% 30%, #fde2b8, transparent 70%);
+    animation: cx-orb-b 22s ease-in-out infinite;
+}
+.cx-aurora__orb--3 {
+    width: 34vw; height: 34vw; left: 28vw; bottom: -16vw;
+    background: radial-gradient(circle at 50% 50%, #ddd6fe, transparent 70%);
+    animation: cx-orb-c 26s ease-in-out infinite;
+}
+@keyframes cx-orb-a { 50% { transform: translate3d(8vw, 6vw, 0) scale(1.15); } }
+@keyframes cx-orb-b { 50% { transform: translate3d(-6vw, 8vw, 0) scale(1.1); } }
+@keyframes cx-orb-c { 50% { transform: translate3d(4vw, -5vw, 0) scale(1.2); } }
+
+/* --- Subtle dot grid overlay -------------------------------------------- */
+.cx-dotgrid {
+    position: absolute; inset: 0; z-index: -1; pointer-events: none;
+    background-image: radial-gradient(rgba(99, 102, 241, .12) 1px, transparent 1px);
+    background-size: 28px 28px;
+    -webkit-mask-image: radial-gradient(ellipse 70% 60% at 50% 30%, #000 0%, transparent 75%);
+            mask-image: radial-gradient(ellipse 70% 60% at 50% 30%, #000 0%, transparent 75%);
+}
+
+/* --- Shimmering gradient headline text ---------------------------------- */
+.cx-text-shimmer {
+    background: linear-gradient(100deg, #4f46e5 0%, #9333ea 28%, #ffb648 50%, #9333ea 72%, #4f46e5 100%);
+    background-size: 220% auto;
+    -webkit-background-clip: text; background-clip: text;
+    -webkit-text-fill-color: transparent; color: transparent;
+    animation: cx-shimmer-sweep 6s linear infinite;
+}
+@keyframes cx-shimmer-sweep { to { background-position: 220% center; } }
+
+/* --- Hero pill badge sheen ---------------------------------------------- */
+.cx-badge-shine { position: relative; overflow: hidden; }
+.cx-badge-shine::after {
+    content: ""; position: absolute; top: 0; left: -150%; height: 100%; width: 60%;
+    background: linear-gradient(100deg, transparent, rgba(255, 255, 255, .85), transparent);
+    transform: skewX(-20deg);
+    animation: cx-badge-sweep 4.5s ease-in-out infinite;
+}
+@keyframes cx-badge-sweep { 0%, 60% { left: -150%; } 100% { left: 150%; } }
+
+/* --- Glass card: lift + diagonal sheen on hover ------------------------- */
+.cx-lift {
+    position: relative;
+    transition: transform var(--cx-dur) var(--cx-ease),
+                box-shadow var(--cx-dur) var(--cx-ease);
+    will-change: transform;
+}
+.cx-lift:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 22px 48px -16px rgba(15, 23, 42, .25);
+}
+.cx-lift::before {
+    content: ""; position: absolute; inset: 0; border-radius: inherit;
+    background: linear-gradient(115deg, transparent 35%, rgba(255, 255, 255, .55) 50%, transparent 65%);
+    background-size: 250% 250%; background-position: 150% 0;
+    opacity: 0; transition: opacity var(--cx-dur) var(--cx-ease);
+    pointer-events: none;
+}
+.cx-lift:hover::before { opacity: 1; animation: cx-sheen 0.9s var(--cx-ease) forwards; }
+@keyframes cx-sheen { to { background-position: -120% 0; } }
+
+/* --- Gentle float (bundle demo / floating cards) ------------------------ */
+.cx-float { animation: cx-float-y 7s ease-in-out infinite; will-change: transform; }
+@keyframes cx-float-y { 50% { transform: translateY(-12px); } }
+
+/* --- Trust-bar pill hover ----------------------------------------------- */
+.cx-trade-pill { transition: transform var(--cx-dur-fast) var(--cx-ease), color var(--cx-dur-fast) var(--cx-ease); }
+.cx-trade-pill:hover { transform: translateY(-3px) scale(1.04); color: var(--cx-amber-deep); }
+
+/* --- Animated brand gradient (reused on final CTA) ---------------------- */
+.cx-cta-animated {
+    background: linear-gradient(-45deg, #4f46e5, #7c3aed, #9333ea, #4f46e5);
+    background-size: 300% 300%;
+    animation: gradient-flow 10s ease infinite;
+}
+
+/* ============================================================================
+   CleanUx — Premium interactions (added 26/06/2026)
+   Headline mask reveal · magnetic CTAs · hero pointer-parallax · 3D card tilt.
+   All GPU-only (transform/opacity). JS engines live in app.js and self-disable
+   on prefers-reduced-motion + coarse/touch pointers; the CSS below is the
+   no-JS / reduced-motion resting state.
+   ========================================================================= */
+
+/* --- Headline mask reveal (line-by-line clip) --------------------------- */
+/* Keyed off the ancestor [data-cx-reveal].cx-in added by the reveal observer. */
+.cx-mask-headline .cx-line {
+    display: block;
+    overflow: hidden;
+    /* room for descenders (p, g, j) so the clip never crops glyphs */
+    padding-bottom: .12em;
+    margin-bottom: -.12em;
+}
+.cx-mask-headline .cx-line > span {
+    display: inline-block;
+    transform: translateY(115%);
+    transition: transform .8s var(--cx-ease);
+    will-change: transform;
+}
+[data-cx-reveal].cx-in .cx-mask-headline .cx-line > span { transform: translateY(0); }
+[data-cx-reveal].cx-in .cx-mask-headline .cx-line:nth-child(1) > span { transition-delay: .05s; }
+[data-cx-reveal].cx-in .cx-mask-headline .cx-line:nth-child(2) > span { transition-delay: .20s; }
+[data-cx-reveal].cx-in .cx-mask-headline .cx-line:nth-child(3) > span { transition-delay: .35s; }
+
+/* --- Magnetic CTA wrapper ----------------------------------------------- */
+/* JS sets the translate on this inline-block wrapper; the inner button keeps
+   its own hover lift untouched. */
+.cx-magnetic {
+    display: inline-block;
+    transition: transform .25s var(--cx-ease);
+    will-change: transform;
+}
+
+/* --- Hero pointer-parallax layers --------------------------------------- */
+/* JS sets translate3d on these; the smoothing transition makes it feel fluid.
+   Applied to the aurora container + dot grid, not the orbs (which keep their
+   own drift keyframes). */
+.cx-parallax-layer {
+    transition: transform .35s cubic-bezier(.22, .61, .36, 1);
+    will-change: transform;
+}
+
+/* --- 3D card tilt -------------------------------------------------------- */
+.cx-tilt {
+    transform-style: preserve-3d;
+    will-change: transform;
+}
+
+/* Reduced-motion kill-list (belt-and-braces over the global guard) */
+@media (prefers-reduced-motion: reduce) {
+    .cx-aurora__orb, .cx-text-shimmer, .cx-badge-shine::after,
+    .cx-float, .cx-cta-animated { animation: none !important; }
+    .cx-aurora, .cx-dotgrid { display: none !important; }
+    .cx-text-shimmer {
+        -webkit-text-fill-color: initial; color: #6d28d9;
+        background: none;
+    }
+    .cx-lift:hover::before { animation: none !important; opacity: 0 !important; }
+    /* Premium interactions: hard reset to resting state */
+    .cx-mask-headline .cx-line > span { transform: none !important; transition: none !important; }
+    .cx-magnetic, .cx-parallax-layer, .cx-tilt { transform: none !important; transition: none !important; }
+}
