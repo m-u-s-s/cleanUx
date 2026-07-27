@@ -226,4 +226,21 @@ describe('ProviderMap', () => {
 
     expect(mockNavigate).toHaveBeenCalledWith('MissionDetail', { missionId: 200 });
   });
+
+  it('affiche la distance dans le callout quand une position GPS est connue', async () => {
+    apiMock.reset();
+    apiMock.onGet('/provider/assignments/inbox').reply(200, { data: [GEOLOCATED] });
+
+    render(<ProviderMap />, { wrapper: makeWrapper() });
+
+    await waitFor(() => expect(screen.getByTestId('mission-marker-200')).toBeTruthy());
+
+    // Bruxelles → Gand : ~49,8 km, assez loin pour que la valeur formatée soit sans
+    // ambiguïté (pas un arrondi qui coïnciderait par hasard avec autre chose à l'écran).
+    act(() => {
+      mockOnPosition.current?.({ latitude: 50.85, longitude: 4.35, speed: null, heading: null });
+    });
+
+    await waitFor(() => expect(screen.getByText('49.8 km')).toBeTruthy());
+  });
 });
