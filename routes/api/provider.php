@@ -84,6 +84,7 @@ Route::middleware(['auth:sanctum', 'role:employe'])->group(function () {
         Route::get('/presence-v2', [PresenceController::class, 'status']);
         Route::post('/presence-v2/online', [PresenceController::class, 'goOnline']);
         Route::post('/presence-v2/heartbeat', [PresenceController::class, 'heartbeat']);
+        Route::post('/presence-v2/busy', [PresenceController::class, 'goBusy']);
         Route::post('/presence-v2/break', [PresenceController::class, 'goBreak']);
         Route::post('/presence-v2/offline', [PresenceController::class, 'goOffline']);
 

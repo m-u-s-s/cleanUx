@@ -20,7 +20,7 @@ const statusVariants: Record<PresenceStatus, 'success' | 'urgent' | 'primary'> =
 };
 
 export function PresenceToggle() {
-  const { status, goOnline, setPresenceStatus } = usePresence();
+  const { status, error, isPending, setPresenceStatus } = usePresence();
   const statuses: PresenceStatus[] = ['online', 'busy', 'on_break', 'offline'];
 
   return (
@@ -34,9 +34,11 @@ export function PresenceToggle() {
           <TouchableOpacity
             key={s}
             style={[styles.btn, status === s && styles.btnActive]}
-            onPress={() =>
-              s === 'online' && status === 'offline' ? goOnline() : setPresenceStatus(s)
-            }
+            disabled={isPending}
+            accessibilityRole="button"
+            accessibilityState={{ selected: status === s, disabled: isPending }}
+            // Every status is a single v2 transition endpoint — no special case for online.
+            onPress={() => setPresenceStatus(s)}
           >
             <Text style={[styles.btnText, status === s && styles.btnTextActive]}>
               {statusLabels[s]}
@@ -44,6 +46,11 @@ export function PresenceToggle() {
           </TouchableOpacity>
         ))}
       </View>
+      {error && (
+        <Text style={styles.error} accessibilityRole="alert">
+          {error}
+        </Text>
+      )}
     </View>
   );
 }
@@ -86,5 +93,10 @@ const styles = StyleSheet.create({
   btnTextActive: {
     color: '#fff',
     fontWeight: typography.fontWeight.semibold,
+  },
+  error: {
+    marginTop: spacing.sm,
+    fontSize: typography.fontSize.xs,
+    color: colors.danger[600],
   },
 });

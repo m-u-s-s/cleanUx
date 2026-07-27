@@ -92,6 +92,22 @@ class PresenceController extends Controller
     }
 
     /**
+     * Mark the provider as busy (manually — e.g. finishing a job off-platform).
+     *
+     * Note: `busy` is also set automatically by BookingObserver when a mission starts, and
+     * reset to `online` when it completes; a manual call here is overridden by that flow.
+     * Like every other transition, this is idempotent.
+     *
+     * @response 200 {"data": {"status": "busy", "current_lat": 50.85, "current_lng": 4.35, "available_radius_km": 15, "heartbeat_at": "2026-06-15T11:00:00+00:00", "last_online_at": "2026-06-15T09:00:00+00:00", "online_minutes_today": 120, "online_minutes_week": 1960, "is_active": true}}
+     */
+    public function goBusy(Request $request, ProviderPresenceService $service): JsonResponse
+    {
+        $presence = $service->goBusy($request->user());
+
+        return response()->json(['data' => $this->present($presence)]);
+    }
+
+    /**
      * Mark the provider as on break (temporarily unavailable for new missions).
      *
      * @response 200 {"data": {"status": "on_break", "current_lat": 50.85, "current_lng": 4.35, "available_radius_km": 15, "heartbeat_at": "2026-06-15T12:00:00+00:00", "last_online_at": "2026-06-15T09:00:00+00:00", "online_minutes_today": 180, "online_minutes_week": 2020, "is_active": true}}

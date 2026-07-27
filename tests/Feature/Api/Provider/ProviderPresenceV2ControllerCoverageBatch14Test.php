@@ -14,6 +14,7 @@ use Tests\TestCase;
  *   - GET  /api/provider/presence-v2            status() -> offline payload
  *   - POST /api/provider/presence-v2/online     goOnline() 200 + validation 422
  *   - POST /api/provider/presence-v2/heartbeat  heartbeat() 200 online, 422 offline + validation 422
+ *   - POST /api/provider/presence-v2/busy       goBusy() 200
  *   - POST /api/provider/presence-v2/break      goBreak() 200
  *   - POST /api/provider/presence-v2/offline    goOffline() 200
  */
@@ -123,6 +124,41 @@ class ProviderPresenceV2ControllerCoverageBatch14Test extends TestCase
         $this->postJson('/api/provider/presence-v2/heartbeat', ['lng' => 999])
             ->assertStatus(422)
             ->assertJsonValidationErrors(['lng']);
+    }
+
+    public function test_go_busy_marks_provider_busy(): void
+    {
+        $provider = $this->makeProvider();
+        Sanctum::actingAs($provider);
+
+        $this->postJson('/api/provider/presence-v2/online', ['lat' => 50.0, 'lng' => 4.0])->assertOk();
+
+        $this->postJson('/api/provider/presence-v2/busy')
+            ->assertOk()
+            ->assertJsonPath('data.status', ProviderPresence::STATUS_BUSY)
+            ->assertJsonPath('data.is_active', true);
+
+        $this->assertDatabaseHas('provider_presence', [
+            'provider_user_id' => $provider->id,
+            'status' => ProviderPresence::STATUS_BUSY,
+        ]);
+    }
+
+    public function test_go_busy_is_idempotent(): void
+    {
+        $provider = $this->makeProvider();
+        Sanctum::actingAs($provider);
+
+        $this->postJson('/api/provider/presence-v2/busy')->assertOk();
+
+        $this->postJson('/api/provider/presence-v2/busy')
+            ->assertOk()
+            ->assertJsonPath('data.status', ProviderPresence::STATUS_BUSY);
+
+        $this->assertSame(
+            1,
+            ProviderPresence::query()->where('provider_user_id', $provider->id)->count(),
+        );
     }
 
     public function test_go_break_marks_provider_on_break(): void
