@@ -1,23 +1,8 @@
 import React from 'react';
 import { Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { PulseDot } from '@/ui';
-import { usePresence } from '@/presence';
-import type { PresenceStatus } from '@/presence/types';
+import { usePresence, PRESENCE_LABELS, PRESENCE_VARIANTS } from '@/presence';
 import { colors, spacing, typography, radius, shadows } from '@/theme';
-
-const labels: Record<PresenceStatus, string> = {
-  online: 'En ligne',
-  busy: 'Occupé',
-  on_break: 'En pause',
-  offline: 'Hors ligne',
-};
-
-const variants: Record<PresenceStatus, 'success' | 'urgent' | 'primary'> = {
-  online: 'success',
-  busy: 'urgent',
-  on_break: 'primary',
-  offline: 'primary',
-};
 
 /**
  * Affichage seul : la pilule n'écrit jamais le statut. Le seul chemin d'écriture reste
@@ -27,9 +12,15 @@ export function PresencePill({ onPress }: { onPress: () => void }) {
   const { status } = usePresence();
 
   return (
-    <TouchableOpacity style={styles.pill} onPress={onPress} testID="presence-pill" accessibilityRole="button">
-      {status !== 'offline' && <PulseDot variant={variants[status]} />}
-      <Text style={styles.label}>{labels[status]}</Text>
+    <TouchableOpacity
+      style={styles.pill}
+      onPress={onPress}
+      testID="presence-pill"
+      accessibilityRole="button"
+      accessibilityLabel={`Statut de présence : ${PRESENCE_LABELS[status]}. Toucher pour ouvrir les actions.`}
+    >
+      {status !== 'offline' && <PulseDot variant={PRESENCE_VARIANTS[status]} />}
+      <Text style={styles.label}>{PRESENCE_LABELS[status]}</Text>
     </TouchableOpacity>
   );
 }

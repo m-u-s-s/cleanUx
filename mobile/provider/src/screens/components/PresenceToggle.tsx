@@ -1,23 +1,9 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { PulseDot, Badge } from '@/ui';
-import { usePresence } from '@/presence';
+import { usePresence, PRESENCE_LABELS, PRESENCE_VARIANTS } from '@/presence';
 import type { PresenceStatus } from '@/presence/types';
 import { colors, spacing, typography, radius } from '@/theme';
-
-const statusLabels: Record<PresenceStatus, string> = {
-  online: 'En ligne',
-  busy: 'Occupé',
-  on_break: 'En pause',
-  offline: 'Hors ligne',
-};
-
-const statusVariants: Record<PresenceStatus, 'success' | 'urgent' | 'primary'> = {
-  online: 'success',
-  busy: 'urgent',
-  on_break: 'primary',
-  offline: 'primary',
-};
 
 export function PresenceToggle() {
   const { status, error, isPending, setPresenceStatus } = usePresence();
@@ -26,8 +12,8 @@ export function PresenceToggle() {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        {status !== 'offline' && <PulseDot variant={statusVariants[status]} />}
-        <Text style={styles.label}>{statusLabels[status]}</Text>
+        {status !== 'offline' && <PulseDot variant={PRESENCE_VARIANTS[status]} />}
+        <Text style={styles.label}>{PRESENCE_LABELS[status]}</Text>
       </View>
       <View style={styles.buttons}>
         {statuses.map(s => (
@@ -41,7 +27,7 @@ export function PresenceToggle() {
             onPress={() => setPresenceStatus(s)}
           >
             <Text style={[styles.btnText, status === s && styles.btnTextActive]}>
-              {statusLabels[s]}
+              {PRESENCE_LABELS[s]}
             </Text>
           </TouchableOpacity>
         ))}
