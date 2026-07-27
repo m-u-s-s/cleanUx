@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { useNavigation } from '@react-navigation/native';
+import { isPushModuleAvailable } from './availability';
 
 /**
  * Wires up deep navigation from push notification taps.
@@ -12,6 +13,9 @@ export function useNotificationRouting(): void {
   const navigation = useNavigation<any>();
 
   useEffect(() => {
+    // Android/Expo Go (SDK 53+): the import itself throws — see ./availability.
+    if (!isPushModuleAvailable()) return;
+
     let sub: { remove: () => void } | null = null;
 
     (async () => {

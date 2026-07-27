@@ -2,12 +2,15 @@ import { useEffect } from 'react';
 import { apiClient } from '@/api';
 import { useAuth } from '@/auth';
 import { Platform } from 'react-native';
+import { isPushModuleAvailable } from './availability';
 
 export function useRegisterPushToken() {
   const { isAuthenticated } = useAuth();
 
   useEffect(() => {
     if (!isAuthenticated) return;
+    // Android/Expo Go (SDK 53+): the import itself throws — see ./availability.
+    if (!isPushModuleAvailable()) return;
 
     (async () => {
       try {
