@@ -1,6 +1,6 @@
 import { useMutation } from '@tanstack/react-query';
 import { apiClient, ApiError } from '@/api';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import * as Location from 'expo-location';
 
 interface TrackingSession { id: number; status: string; }
@@ -30,18 +30,31 @@ export function usePushEta(missionId: number) {
   });
 }
 
+export type GpsPermission = 'pending' | 'granted' | 'denied';
+
 export function useGpsWatcher(
   enabled: boolean,
   onPosition: (pos: { latitude: number; longitude: number; speed: number | null; heading: number | null }) => void,
-) {
+): { permission: GpsPermission } {
   const subRef = useRef<Location.LocationSubscription | null>(null);
+  // Un refus était jusqu'ici avalé par un `return` nu : l'appelant ne pouvait pas l'expliquer
+  // à l'utilisateur. La carte du dashboard en a besoin pour justifier l'absence de position.
+  const [permission, setPermission] = useState<GpsPermission>('pending');
 
   useEffect(() => {
     if (!enabled) { subRef.current?.remove(); return; }
 
+    let cancelled = false;
+
     (async () => {
       const { status } = await Location.requestForegroundPermissionsAsync();
-      if (status !== 'granted') return;
+      if (cancelled) return;
+
+      if (status !== 'granted') {
+        setPermission('denied');
+        return;
+      }
+      setPermission('granted');
 
       subRef.current = await Location.watchPositionAsync(
         { accuracy: Location.Accuracy.High, distanceInterval: 10, timeInterval: 5000 },
@@ -54,6 +67,8 @@ export function useGpsWatcher(
       );
     })();
 
-    return () => { subRef.current?.remove(); };
+    return () => { cancelled = true; subRef.current?.remove(); };
   }, [enabled]);
+
+  return { permission };
 }
