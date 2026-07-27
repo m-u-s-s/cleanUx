@@ -38,7 +38,14 @@ export function MoreScreen() {
     {
       title: 'Finances',
       items: [
-        { label: 'Revenus détaillés', icon: 'wallet-outline', screen: 'MainTabs' },
+        // Same nesting trap as the dashboard quick action: the Earnings tab lives inside
+        // MainTabs, so it needs the nested param or the tap does nothing.
+        {
+          label: 'Revenus détaillés',
+          icon: 'wallet-outline',
+          screen: 'MainTabs',
+          onPress: () => navigation.navigate('MainTabs', { screen: 'Earnings' }),
+        },
         { label: 'Stripe Connect', icon: 'card-outline', screen: 'StripeOnboarding' },
       ],
     },

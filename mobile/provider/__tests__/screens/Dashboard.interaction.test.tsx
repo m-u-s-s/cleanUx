@@ -3,8 +3,7 @@
  *
  * Covers:
  *  - Renders greeting with provider first name
- *  - Presence toggle calls goOnline -> POST /provider/presence/online
- *  - Presence status buttons call setPresenceStatus -> POST /provider/presence-v2/heartbeat
+ *  - Presence buttons call setPresenceStatus -> one POST per v2 transition endpoint
  *  - Tap "Disponibilités" quick action -> navigate('Availability')
  *  - Tap "Badges" quick action -> navigate('Badges')
  *  - Tap "Messagerie" quick action -> navigate('ProviderChatList')
@@ -82,6 +81,7 @@ jest.mock('@/theme', () => ({
   colors: {
     brand: { 500: '#3b82f6', 600: '#2563eb' },
     surface: { 100: '#f1f5f9', 500: '#64748b', 600: '#475569', 800: '#1e293b', 900: '#0f172a' },
+    danger: { 500: '#ef4444', 600: '#dc2626' },
   },
   spacing: { xs: 4, sm: 8, md: 16, lg: 24 },
   typography: { fontSize: { xs: 12, sm: 14, base: 16, lg: 18, '2xl': 24 }, fontWeight: { medium: '500', semibold: '600', bold: '700' } },
@@ -138,12 +138,13 @@ describe('DashboardScreen interactions', () => {
     expect(screen.getByText(/Bonjour, Marie/)).toBeTruthy();
   });
 
-  it('tap "En ligne" presence button (from offline) calls POST /provider/presence/online', async () => {
+  it('tap "En ligne" presence button posts to the v2 online endpoint', async () => {
     apiMock.onGet('/provider/assignments/inbox').reply(200, { data: [] });
     apiMock.onGet('/provider/wallet/balance').reply(200, { data: { available: 0, currency: 'EUR' } });
-    // Initial presence status is 'offline', so tapping "En ligne" triggers goOnline()
-    // which POSTs to /provider/presence/online (NOT presence-v2/heartbeat).
-    apiMock.onPost('/provider/presence/online').reply(200, { ok: true });
+    apiMock.onGet('/provider/presence-v2').reply(200, { data: { status: 'offline' } });
+    // Presence v2 has one endpoint per transition — the legacy Phase 11 route
+    // /provider/presence/online required a provider_profiles row (403) and lat+lng (422).
+    apiMock.onPost('/provider/presence-v2/online').reply(200, { data: { status: 'online' } });
 
     render(<DashboardScreen />, { wrapper: makeWrapper() });
 
@@ -152,15 +153,35 @@ describe('DashboardScreen interactions', () => {
     });
 
     await waitFor(() => {
-      expect(apiMock.history['post']).toHaveLength(1);
-      expect(apiMock.history['post']![0]!.url).toBe('/provider/presence/online');
+      const urls = (apiMock.history['post'] ?? []).map(c => c.url);
+      expect(urls).toContain('/provider/presence-v2/online');
+      expect(urls).not.toContain('/provider/presence/online');
     });
   });
 
-  it('tap "Hors ligne" presence button calls POST /provider/presence-v2/heartbeat with offline status', async () => {
+  it('tap "Occupé" presence button posts to the v2 busy endpoint', async () => {
     apiMock.onGet('/provider/assignments/inbox').reply(200, { data: [] });
     apiMock.onGet('/provider/wallet/balance').reply(200, { data: { available: 0, currency: 'EUR' } });
-    apiMock.onPost('/provider/presence-v2/heartbeat').reply(200, { ok: true });
+    apiMock.onGet('/provider/presence-v2').reply(200, { data: { status: 'offline' } });
+    apiMock.onPost('/provider/presence-v2/busy').reply(200, { data: { status: 'busy' } });
+
+    render(<DashboardScreen />, { wrapper: makeWrapper() });
+
+    act(() => {
+      fireEvent.press(screen.getByText('Occupé'));
+    });
+
+    await waitFor(() => {
+      const urls = (apiMock.history['post'] ?? []).map(c => c.url);
+      expect(urls).toContain('/provider/presence-v2/busy');
+    });
+  });
+
+  it('tap "Hors ligne" presence button posts to the v2 offline endpoint', async () => {
+    apiMock.onGet('/provider/assignments/inbox').reply(200, { data: [] });
+    apiMock.onGet('/provider/wallet/balance').reply(200, { data: { available: 0, currency: 'EUR' } });
+    apiMock.onGet('/provider/presence-v2').reply(200, { data: { status: 'offline' } });
+    apiMock.onPost('/provider/presence-v2/offline').reply(200, { data: { status: 'offline' } });
 
     render(<DashboardScreen />, { wrapper: makeWrapper() });
 
@@ -172,9 +193,8 @@ describe('DashboardScreen interactions', () => {
     });
 
     await waitFor(() => {
-      const postCalls = apiMock.history['post'] ?? [];
-      expect(postCalls.length).toBeGreaterThanOrEqual(1);
-      expect(postCalls[0]!.url).toBe('/provider/presence-v2/heartbeat');
+      const urls = (apiMock.history['post'] ?? []).map(c => c.url);
+      expect(urls).toContain('/provider/presence-v2/offline');
     });
   });
 
@@ -188,6 +208,20 @@ describe('DashboardScreen interactions', () => {
 
     fireEvent.press(screen.getByText('Disponibilités'));
     expect(mockNavigate).toHaveBeenCalledWith('Availability');
+  });
+
+  it('tap "Revenus" quick action navigates to the Earnings tab', async () => {
+    apiMock.onGet('/provider/assignments/inbox').reply(200, { data: [] });
+    apiMock.onGet('/provider/wallet/balance').reply(200, { data: { available: 0, currency: 'EUR' } });
+
+    render(<DashboardScreen />, { wrapper: makeWrapper() });
+
+    await waitFor(() => screen.getByText('Revenus'));
+
+    fireEvent.press(screen.getByText('Revenus'));
+    // Earnings is a tab *inside* MainTabs. navigate('MainTabs') with no params is a no-op
+    // when the dashboard is already the focused tab — the button did nothing at all.
+    expect(mockNavigate).toHaveBeenCalledWith('MainTabs', { screen: 'Earnings' });
   });
 
   it('tap "Badges" quick action navigates to Badges', async () => {

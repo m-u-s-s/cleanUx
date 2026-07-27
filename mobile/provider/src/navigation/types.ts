@@ -1,6 +1,10 @@
+import type { NavigatorScreenParams } from '@react-navigation/native';
+
 export type RootStackParamList = {
   Login: undefined;
-  MainTabs: undefined;
+  // MainTabs nests TabParamList — declaring it `undefined` hid the fact that reaching a
+  // tab (e.g. Earnings) requires `{ screen: '<Tab>' }`.
+  MainTabs: NavigatorScreenParams<TabParamList> | undefined;
   MissionDetail: { missionId: number };
   MissionInbox: undefined;
   MissionField: { missionId: number };

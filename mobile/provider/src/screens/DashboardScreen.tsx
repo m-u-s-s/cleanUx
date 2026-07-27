@@ -69,10 +69,20 @@ export function DashboardScreen() {
         {[
           { label: 'Disponibilités', screen: 'Availability' },
           { label: 'Badges', screen: 'Badges' },
-          { label: 'Revenus', screen: 'MainTabs' },
+          // Earnings is a tab *inside* MainTabs, so the nested target is required:
+          // navigate('MainTabs') alone is a no-op while the dashboard tab is focused.
+          { label: 'Revenus', screen: 'MainTabs', params: { screen: 'Earnings' } },
           { label: 'Messagerie', screen: 'ProviderChatList' },
         ].map(item => (
-          <TouchableOpacity key={item.label} style={styles.quickCard} onPress={() => navigation.navigate(item.screen)}>
+          <TouchableOpacity
+            key={item.label}
+            style={styles.quickCard}
+            onPress={() =>
+              item.params
+                ? navigation.navigate(item.screen, item.params)
+                : navigation.navigate(item.screen)
+            }
+          >
             <Text style={styles.quickLabel}>{item.label}</Text>
           </TouchableOpacity>
         ))}
