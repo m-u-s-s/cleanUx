@@ -19,7 +19,7 @@ export function loadMapModule(): MapModule | null {
     const maps = require('react-native-maps');
     const MapView = maps?.default ?? maps?.MapView;
 
-    if (!MapView || !maps?.Marker) return null;
+    if (!MapView || !maps?.Marker || !maps?.Callout) return null;
 
     return { MapView, Marker: maps.Marker, Callout: maps.Callout };
   } catch {
