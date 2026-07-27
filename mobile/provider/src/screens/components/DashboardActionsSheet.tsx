@@ -1,4 +1,4 @@
-import React, { forwardRef } from 'react';
+import React, { forwardRef, useImperativeHandle, useRef, useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import type GorhomBottomSheet from '@gorhom/bottom-sheet';
 import { useNavigation } from '@react-navigation/native';
@@ -20,16 +20,70 @@ const QUICK_ACTIONS: QuickAction[] = [
 
 export const DashboardActionsSheet = forwardRef<GorhomBottomSheet>((_props, ref) => {
   const navigation = useNavigation<any>();
-  const { data: assignments, isLoading: loadingMissions } = useMissionInbox();
-  const { data: wallet, isLoading: loadingWallet } = useWalletBalance();
 
-  const go = (action: QuickAction) => {
-    if (action.params) navigation.navigate(action.screen, action.params);
-    else navigation.navigate(action.screen);
+  // Le sheet est monté en permanence (Task 10 le pilote par ref pour pouvoir l'ouvrir depuis un
+  // bouton "Actions" sur la carte) : `@/ui`'s BottomSheet ne démonte jamais ses enfants, gorhom
+  // se contente de les repositionner hors écran à index={-1}. Sans cet état local, le polling
+  // 15s de useMissionInbox et la requête de useWalletBalance tourneraient en continu pour un
+  // contenu que personne ne regarde tant que le sheet n'est pas ouvert.
+  const [isOpen, setIsOpen] = useState(false);
+  // Ref interne vers l'instance gorhom réelle : la ref exposée au parent (ci-dessous) n'est plus
+  // un pass-through direct, elle passe par useImperativeHandle pour intercepter expand()/close().
+  const innerRef = useRef<GorhomBottomSheet>(null);
+
+  const { data: assignments, isLoading: loadingMissions } = useMissionInbox(isOpen);
+  const { data: wallet, isLoading: loadingWallet } = useWalletBalance(isOpen);
+
+  const expandSheet: GorhomBottomSheet['expand'] = animationConfigs => {
+    setIsOpen(true);
+    innerRef.current?.expand(animationConfigs);
   };
 
+  const closeSheet: GorhomBottomSheet['close'] = animationConfigs => {
+    setIsOpen(false);
+    innerRef.current?.close(animationConfigs);
+  };
+
+  // Contrat exposé à l'appelant (Task 10) : inchangé — expand()/close(). En interne, ces deux
+  // méthodes synchronisent désormais `isOpen`, qui gate les requêtes ci-dessus. Les quatre autres
+  // méthodes de BottomSheetMethods sont simplement relayées vers l'instance gorhom réelle, sans
+  // toucher à `isOpen` (elles ne ferment pas le sheet).
+  useImperativeHandle(
+    ref,
+    () => ({
+      snapToIndex: (index, animationConfigs) => innerRef.current?.snapToIndex(index, animationConfigs),
+      snapToPosition: (position, animationConfigs) => innerRef.current?.snapToPosition(position, animationConfigs),
+      expand: expandSheet,
+      collapse: animationConfigs => innerRef.current?.collapse(animationConfigs),
+      close: closeSheet,
+      forceClose: animationConfigs => {
+        setIsOpen(false);
+        innerRef.current?.forceClose(animationConfigs);
+      },
+    }),
+    [],
+  );
+
+  // Ferme le sheet avant de naviguer : sinon il reste ouvert au-dessus de l'écran de destination,
+  // ou encore déplié au retour sur le dashboard.
+  const closeThenNavigate = (screen: string, params?: object) => {
+    closeSheet();
+    if (params) navigation.navigate(screen, params);
+    else navigation.navigate(screen);
+  };
+
+  const go = (action: QuickAction) => closeThenNavigate(action.screen, action.params);
+
   return (
-    <BottomSheet ref={ref} snapPoints={['60%', '90%']}>
+    <BottomSheet
+      ref={innerRef}
+      snapPoints={['60%', '90%']}
+      // Un pan-down-to-close (enablePanDownToClose, déjà actif dans @/ui's BottomSheet) ne passe
+      // jamais par notre `closeSheet` : c'est gorhom qui ferme tout seul et appelle onClose. Sans
+      // ce câblage, `isOpen` resterait bloqué à `true` et le polling continuerait après un simple
+      // geste de fermeture — le chemin que les utilisateurs emprunteront le plus souvent.
+      onClose={() => setIsOpen(false)}
+    >
       <Text style={styles.sectionTitle} accessibilityRole="header">Statut</Text>
       <PresenceToggle />
 
@@ -68,7 +122,7 @@ export const DashboardActionsSheet = forwardRef<GorhomBottomSheet>((_props, ref)
 
       <Button
         label="Voir toutes les missions"
-        onPress={() => navigation.navigate('MainTabs', { screen: 'Missions' })}
+        onPress={() => closeThenNavigate('MainTabs', { screen: 'Missions' })}
         variant="secondary"
         fullWidth
       />

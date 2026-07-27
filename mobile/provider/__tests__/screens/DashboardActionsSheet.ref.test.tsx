@@ -26,7 +26,7 @@
  * établi ailleurs dans la suite ("mocker @/ui's BottomSheet en conteneur simple").
  */
 import React from 'react';
-import { render, screen, waitFor } from '@testing-library/react-native';
+import { act, render, screen, waitFor } from '@testing-library/react-native';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { notifyManager } from '@tanstack/query-core';
 import MockAdapter from 'axios-mock-adapter';
@@ -36,15 +36,24 @@ import type GorhomBottomSheet from '@gorhom/bottom-sheet';
 // synchrone pour ne pas la laisser se déclencher hors d'un act() après le waitFor.
 notifyManager.setScheduler((callback) => callback());
 
+// Depuis le correctif de gating (voir DashboardActionsSheet.tsx), la ref exposée au parent n'est
+// plus un pass-through direct vers l'instance gorhom : c'est un objet synthétique construit par
+// useImperativeHandle, dont expand()/close() retiennent au passage `isOpen` avant de relayer
+// l'appel à l'instance interne. On ne peut donc plus observer les jest.fn() directement sur
+// `sheetRef.current` (ce ne sont plus eux). On les place à la place au niveau module, référencés
+// par les méthodes de l'instance gorhom simulée ci-dessous, pour vérifier que la chaîne complète
+// (ref exposée -> useImperativeHandle -> innerRef -> instance gorhom) transmet bien les appels.
+// Préfixe `mock` obligatoire : les factories `jest.mock` sont hissées avant les `const` du fichier.
+const mockGorhomExpand = jest.fn();
+const mockGorhomClose = jest.fn();
+
 // Contournement du bug d'interop décrit ci-dessus : mock local correctement marqué
 // `__esModule: true`, dont le `default` est bien une classe/fonction — pas le module entier.
-// On y expose `expand`/`close` en `jest.fn()` pour pouvoir vérifier qu'ils sont bien appelés,
-// sans reproduire la moindre logique d'animation ou de geste (ce n'est pas ce qui est testé ici).
 jest.mock('@gorhom/bottom-sheet', () => {
   const RN = require('react');
   class FakeGorhomBottomSheet extends RN.Component {
-    expand = jest.fn();
-    close = jest.fn();
+    expand = (...args: unknown[]) => mockGorhomExpand(...args);
+    close = (...args: unknown[]) => mockGorhomClose(...args);
     snapToIndex = jest.fn();
     snapToPosition = jest.fn();
     collapse = jest.fn();
@@ -89,6 +98,8 @@ function makeWrapper() {
 beforeEach(() => {
   apiMock.reset();
   mockNavigate.mockClear();
+  mockGorhomExpand.mockClear();
+  mockGorhomClose.mockClear();
   apiMock.onGet('/provider/assignments/inbox').reply(200, { data: [] });
   apiMock.onGet('/provider/wallet/balance').reply(200, { available: 150, pending: 0, currency: 'EUR' });
   apiMock.onGet('/provider/presence-v2').reply(200, { data: { status: 'offline' } });
@@ -105,12 +116,26 @@ describe('DashboardActionsSheet — câblage de la ref gorhom', () => {
     // @/ui's BottomSheet), sheetRef.current resterait null ici.
     expect(sheetRef.current).not.toBeNull();
 
-    // expand()/close() sont des jest.fn() sur le mock local (voir en tête de fichier) : les
-    // appeler ici et vérifier qu'ils ont été invoqués prouve que la ref pointe vraiment sur
-    // l'instance gorhom, pas seulement qu'un objet quelconque expose ces deux noms de méthode.
-    sheetRef.current?.expand();
-    sheetRef.current?.close();
-    expect(sheetRef.current?.expand).toHaveBeenCalledTimes(1);
-    expect(sheetRef.current?.close).toHaveBeenCalledTimes(1);
+    // sheetRef.current.expand()/.close() sont désormais l'objet synthétique de
+    // useImperativeHandle (voir commentaire plus haut), pas directement les jest.fn() du mock
+    // gorhom. Les appeler ici et vérifier que mockGorhomExpand/mockGorhomClose ont bien été
+    // invoqués prouve que la chaîne complète — ref exposée -> useImperativeHandle -> innerRef ->
+    // instance gorhom — transmet réellement les appels, pas seulement qu'un objet quelconque
+    // expose ces deux noms de méthode.
+    act(() => {
+      sheetRef.current?.expand();
+    });
+    // expand() active isOpen -> useMissionInbox/useWalletBalance passent enabled:true et
+    // partent chercher leurs données. Attendre que cette requête se résolve avant de continuer,
+    // sinon sa résolution retombe après la fin du test, hors de tout act().
+    await waitFor(() => {
+      const urls = (apiMock.history.get ?? []).map(c => c.url);
+      expect(urls).toContain('/provider/assignments/inbox');
+    });
+    act(() => {
+      sheetRef.current?.close();
+    });
+    expect(mockGorhomExpand).toHaveBeenCalledTimes(1);
+    expect(mockGorhomClose).toHaveBeenCalledTimes(1);
   });
 });

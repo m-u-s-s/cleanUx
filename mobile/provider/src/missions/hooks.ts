@@ -3,7 +3,10 @@ import { apiClient, ApiError } from '@/api';
 import { useChannel } from '@/realtime';
 import type { MissionAssignment, Mission, MissionLifecycleAction } from './types';
 
-export function useMissionInbox() {
+// `enabled` par défaut à `true` : aucun appelant existant (DashboardScreen, MissionInboxScreen,
+// ProviderMap, HomeScreen) n'a besoin de changer. DashboardActionsSheet le passe à `false` tant
+// que le sheet est fermé — sinon le polling 15s tournerait pour un contenu hors écran.
+export function useMissionInbox(enabled: boolean = true) {
   return useQuery<MissionAssignment[]>({
     queryKey: ['provider', 'assignments', 'inbox'],
     queryFn: async () => {
@@ -11,6 +14,7 @@ export function useMissionInbox() {
       return res.data.data ?? res.data;
     },
     refetchInterval: 15000,
+    enabled,
   });
 }
 

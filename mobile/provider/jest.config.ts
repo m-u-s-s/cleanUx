@@ -13,10 +13,10 @@ const config: Config = {
   // ever suspected, re-check with `jest --detectOpenHandles` (green today).
   maxWorkers: 1,
   forceExit: true,
-  // react-native-gesture-handler's native module (RNGestureHandlerModule.install()) has no
-  // Jest/Node implementation. App.tsx now wraps everything in GestureHandlerRootView (Task 9),
-  // so every test that mounts <App /> needs this — the package's own documented setup file,
-  // which mocks the native module for the whole suite.
+  // Le module natif de react-native-gesture-handler (RNGestureHandlerModule.install()) n'a
+  // aucune implémentation Jest/Node. App.tsx enveloppe désormais tout dans GestureHandlerRootView
+  // (Task 9), donc tout test qui monte <App /> en a besoin — c'est le fichier de setup officiel
+  // documenté par le package, qui mocke le module natif pour toute la suite.
   setupFiles: ['<rootDir>/node_modules/react-native-gesture-handler/jestSetup.js'],
   transformIgnorePatterns: [
     'node_modules/(?!((jest-)?react-native|@react-native(-community)?)|expo(nent)?|@expo(nent)?/.*|@expo-google-fonts/.*|react-navigation|@react-navigation/.*|@sentry/react-native|expo-secure-store|expo-constants|expo-status-bar|@gorhom)',
