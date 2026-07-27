@@ -24,6 +24,10 @@ describe('distance', () => {
     expect(distanceKmTo({ latitude: 50.84, longitude: 4.35 }, {})).toBeNull();
   });
 
+  it('traite une coordonnée à exactement 0 comme une position réelle, pas comme inconnue', () => {
+    expect(distanceKmTo({ latitude: 0, longitude: 0 }, { latitude: 0, longitude: 0 })).toBe(0);
+  });
+
   it('formate en mètres sous 1 km et en km au-delà', () => {
     expect(formatDistance(850)).toBe('850 m');
     expect(formatDistance(1240)).toBe('1.2 km');

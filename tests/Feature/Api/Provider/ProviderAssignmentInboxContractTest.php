@@ -33,6 +33,7 @@ class ProviderAssignmentInboxContractTest extends TestCase
             'planned_start_at' => now()->addDay(),
             'start_lat' => 50.8503,
             'start_lng' => 4.3517,
+            'estimated_duration_minutes' => 90,
         ]);
         $this->makeAssignment($mission, $provider);
 
@@ -47,11 +48,12 @@ class ProviderAssignmentInboxContractTest extends TestCase
         $response->assertJsonPath('data.0.postal_code', '1000');
         $response->assertJsonPath('data.0.latitude', 50.8503);
         $response->assertJsonPath('data.0.longitude', 4.3517);
+        $response->assertJsonPath('data.0.estimated_duration_minutes', 90);
         $response->assertJsonStructure([
             'data' => [
                 ['id', 'mission_id', 'assignment_status', 'expires_at', 'remaining_seconds',
                  'booking_id', 'service_name', 'client_name', 'address', 'city', 'postal_code',
-                 'scheduled_date', 'scheduled_time', 'latitude', 'longitude'],
+                 'scheduled_date', 'scheduled_time', 'latitude', 'longitude', 'estimated_duration_minutes'],
             ],
         ]);
     }

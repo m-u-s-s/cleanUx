@@ -100,6 +100,10 @@ const apiMock = new MockAdapter(apiClient);
 
 const MOCK_ASSIGNMENT = {
   id: 2,
+  mission_id: 20,
+  assignment_status: 'assigned',
+  expires_at: null,
+  remaining_seconds: null,
   booking_id: 200,
   service_name: 'Peinture',
   client_name: 'Paul Klee',
@@ -108,7 +112,10 @@ const MOCK_ASSIGNMENT = {
   postal_code: '9000',
   scheduled_date: '2026-06-15',
   scheduled_time: '14:00',
-  distance_km: 1.5,
+  estimated_duration_minutes: 90,
+  latitude: 51.0543,
+  longitude: 3.7174,
+  created_at: '2026-06-14T09:00:00Z',
 };
 
 function makeWrapper() {

@@ -7,6 +7,7 @@ import { PresenceToggle } from '@/screens/components/PresenceToggle';
 import { useAuth } from '@/auth';
 import { useMissionInbox } from '@/missions';
 import { useWalletBalance } from '@/earnings';
+import { useCurrentPosition, distanceKmTo } from '@/tracking';
 import { colors, spacing, typography, radius, shadows } from '@/theme';
 import type { RootStackParamList } from '@/navigation/types';
 
@@ -15,6 +16,7 @@ export function HomeScreen() {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const { data: assignments, isLoading: loadingMissions } = useMissionInbox();
   const { data: wallet, isLoading: loadingWallet } = useWalletBalance();
+  const position = useCurrentPosition();
 
   const pendingCount = assignments?.length ?? 0;
 
@@ -68,27 +70,30 @@ export function HomeScreen() {
           <Text style={styles.sectionTitle} accessibilityRole="header">
             Nouvelles missions
           </Text>
-          {assignments!.slice(0, 2).map((a) => (
-            <TouchableOpacity
-              key={a.id}
-              style={styles.missionCard}
-              onPress={() => navigation.navigate('MissionDetail', { missionId: a.booking_id })}
-              accessibilityLabel={`Mission ${a.service_name} - ${a.client_name}`}
-            >
-              <Text style={styles.missionService}>{a.service_name}</Text>
-              <Text style={styles.missionClient}>
-                {a.client_name} — {a.city}
-              </Text>
-              <View style={styles.missionMeta}>
-                <Text style={styles.missionDate}>
-                  {a.scheduled_date} à {a.scheduled_time}
+          {assignments!.slice(0, 2).map((a) => {
+            const distanceKm = distanceKmTo(position, a);
+            return (
+              <TouchableOpacity
+                key={a.id}
+                style={styles.missionCard}
+                onPress={() => navigation.navigate('MissionDetail', { missionId: a.booking_id })}
+                accessibilityLabel={`Mission ${a.service_name} - ${a.client_name}`}
+              >
+                <Text style={styles.missionService}>{a.service_name}</Text>
+                <Text style={styles.missionClient}>
+                  {a.client_name} — {a.city}
                 </Text>
-                {a.distance_km != null && (
-                  <Badge label={`${a.distance_km.toFixed(1)} km`} variant="brand" />
-                )}
-              </View>
-            </TouchableOpacity>
-          ))}
+                <View style={styles.missionMeta}>
+                  <Text style={styles.missionDate}>
+                    {a.scheduled_date} à {a.scheduled_time}
+                  </Text>
+                  {distanceKm != null && (
+                    <Badge label={`${distanceKm.toFixed(1)} km`} variant="brand" />
+                  )}
+                </View>
+              </TouchableOpacity>
+            );
+          })}
           <Button
             label="Voir toutes les offres"
             onPress={() => navigation.navigate('MissionInbox')}

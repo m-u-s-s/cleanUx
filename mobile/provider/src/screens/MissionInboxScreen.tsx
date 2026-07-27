@@ -4,6 +4,7 @@ import Animated, { FadeIn } from 'react-native-reanimated';
 import { Screen, Button, Badge, Skeleton, EmptyState, AnimatedListItem, a11y } from '@/ui';
 import { useMissionInbox, useAcceptMission, useDeclineMission } from '@/missions';
 import type { MissionAssignment } from '@/missions';
+import { useCurrentPosition, distanceKmTo } from '@/tracking';
 import { colors, spacing, typography, radius, shadows, useThemeColors } from '@/theme';
 
 const MISSION_CARD_HEIGHT = 120;
@@ -13,6 +14,7 @@ export function MissionInboxScreen() {
   const accept = useAcceptMission();
   const decline = useDeclineMission();
   const themeColors = useThemeColors();
+  const position = useCurrentPosition();
 
   const handleAccept = useCallback((a: MissionAssignment) => {
     Alert.alert('Accepter', `Accepter la mission ${a.service_name} ?`, [
@@ -45,9 +47,10 @@ export function MissionInboxScreen() {
         <Text style={styles.schedule}>
           {item.scheduled_date} à {item.scheduled_time}
         </Text>
-        {item.distance_km != null && (
-          <Badge label={`${item.distance_km.toFixed(1)} km`} variant="brand" />
-        )}
+        {(() => {
+          const km = distanceKmTo(position, item);
+          return km == null ? null : <Badge label={`${km.toFixed(1)} km`} variant="brand" />;
+        })()}
         <View style={styles.actions}>
           <Button label="Accepter" onPress={() => handleAccept(item)} size="sm" />
           <Button
@@ -59,7 +62,7 @@ export function MissionInboxScreen() {
         </View>
       </View>
     </AnimatedListItem>
-  ), [themeColors.card, handleAccept, handleDecline]);
+  ), [themeColors.card, handleAccept, handleDecline, position]);
 
   const getItemLayout = useCallback((_: any, index: number) => ({
     length: MISSION_CARD_HEIGHT,

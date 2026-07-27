@@ -71,6 +71,7 @@ class Mission extends Model
         'employee_cost',
         'client_price',
         'margin',
+        'estimated_duration_minutes',
         'actual_duration_minutes',
         'travel_duration_minutes',
 

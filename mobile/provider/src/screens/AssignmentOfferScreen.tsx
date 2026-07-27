@@ -6,6 +6,7 @@ import Animated, { FadeIn, useSharedValue, withTiming, useAnimatedStyle } from '
 import { Screen, Button, Badge, Divider } from '@/ui';
 import { useAcceptMission, useDeclineMission } from '@/missions';
 import type { MissionAssignment } from '@/missions';
+import { useCurrentPosition, distanceKmTo } from '@/tracking';
 import { colors, spacing, typography, radius, shadows } from '@/theme';
 import type { RootStackParamList } from '@/navigation/types';
 
@@ -22,6 +23,8 @@ export function AssignmentOfferScreen({ assignment, onDismiss }: Props) {
   const decline = useDeclineMission();
   const [secondsLeft, setSecondsLeft] = useState(OFFER_TIMEOUT_SECONDS);
   const progress = useSharedValue(1);
+  const position = useCurrentPosition();
+  const distanceKm = distanceKmTo(position, assignment);
 
   useEffect(() => {
     progress.value = withTiming(0, { duration: OFFER_TIMEOUT_SECONDS * 1000 });
@@ -105,12 +108,12 @@ export function AssignmentOfferScreen({ assignment, onDismiss }: Props) {
               </View>
             </>
           )}
-          {assignment.distance_km != null && (
+          {distanceKm != null && (
             <>
               <Divider />
               <View style={styles.row}>
                 <Text style={styles.label}>Distance</Text>
-                <Badge label={`${assignment.distance_km.toFixed(1)} km`} variant="brand" />
+                <Badge label={`${distanceKm.toFixed(1)} km`} variant="brand" />
               </View>
             </>
           )}

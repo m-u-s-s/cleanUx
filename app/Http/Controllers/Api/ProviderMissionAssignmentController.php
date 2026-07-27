@@ -46,7 +46,7 @@ class ProviderMissionAssignmentController extends Controller
                     ->orWhere('expires_at', '>', now());
             })
             ->with([
-                'mission:id,booking_id,rendez_vous_id,planned_start_at,status,start_lat,start_lng,end_lat,end_lng',
+                'mission:id,booking_id,rendez_vous_id,planned_start_at,status,start_lat,start_lng,end_lat,end_lng,estimated_duration_minutes',
                 'mission.bookingViaBookingId:id,customer_user_id,booking_reference,address,city,postal_code,service_catalog_id,scheduled_date,scheduled_time,booking_mode,priority',
                 'mission.bookingViaBookingId.serviceCatalog:id,name',
                 'mission.bookingViaBookingId.customer:id,name',
@@ -164,6 +164,7 @@ class ProviderMissionAssignmentController extends Controller
             'postal_code' => $booking?->postal_code,
             'scheduled_date' => $booking?->scheduled_date,
             'scheduled_time' => $booking?->scheduled_time,
+            'estimated_duration_minutes' => $mission?->estimated_duration_minutes,
             'latitude' => $mission?->start_lat !== null ? (float) $mission->start_lat : null,
             'longitude' => $mission?->start_lng !== null ? (float) $mission->start_lng : null,
             'created_at' => $a->created_at?->toIso8601String(),

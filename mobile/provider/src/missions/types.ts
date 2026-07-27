@@ -13,6 +13,7 @@ export interface MissionAssignment {
   postal_code?: string | null;
   scheduled_date: string | null;
   scheduled_time: string | null;
+  estimated_duration_minutes?: number | null;
   // Coordonnées de la mission (missions.start_lat/start_lng). Nulles si non géocodée.
   latitude?: number | null;
   longitude?: number | null;

@@ -84,6 +84,10 @@ const apiMock = new MockAdapter(apiClient);
 
 const MOCK_ASSIGNMENT = {
   id: 1,
+  mission_id: 10,
+  assignment_status: 'assigned',
+  expires_at: null,
+  remaining_seconds: null,
   booking_id: 100,
   service_name: 'Nettoyage',
   client_name: 'Jean Martin',
@@ -92,7 +96,10 @@ const MOCK_ASSIGNMENT = {
   postal_code: '4000',
   scheduled_date: '2026-06-10',
   scheduled_time: '09:00',
-  distance_km: 3.2,
+  estimated_duration_minutes: 90,
+  latitude: 50.6326,
+  longitude: 5.5797,
+  created_at: '2026-06-09T09:00:00Z',
 };
 
 function makeWrapper() {
