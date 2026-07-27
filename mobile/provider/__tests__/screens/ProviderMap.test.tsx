@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen, waitFor } from '@testing-library/react-native';
+import { render, screen, waitFor, act } from '@testing-library/react-native';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { notifyManager } from '@tanstack/query-core';
 import MockAdapter from 'axios-mock-adapter';
@@ -25,8 +25,15 @@ jest.mock('@react-native-community/netinfo', () => ({
 jest.mock('@react-navigation/native', () => ({ useNavigation: () => ({ navigate: jest.fn() }) }));
 
 const mockPermission = { current: 'granted' as 'pending' | 'granted' | 'denied' };
+// Capture le callback `onPosition` passé par ProviderMap à useGpsWatcher, pour qu'un test
+// puisse simuler l'arrivée d'une position GPS (`mockOnPosition.current?.({ ... })`) sans
+// dépendre du vrai module expo-location.
+const mockOnPosition = { current: null as ((pos: { latitude: number; longitude: number; speed: number | null; heading: number | null }) => void) | null };
 jest.mock('@/tracking', () => ({
-  useGpsWatcher: () => ({ permission: mockPermission.current }),
+  useGpsWatcher: (_enabled: boolean, onPosition: (pos: any) => void) => {
+    mockOnPosition.current = onPosition;
+    return { permission: mockPermission.current };
+  },
   distanceKmTo: jest.requireActual('../../src/tracking/distance').distanceKmTo,
   formatDistance: jest.requireActual('../../src/tracking/distance').formatDistance,
 }));
@@ -45,6 +52,11 @@ jest.mock('@/maps', () => ({
 import { apiClient } from '@/api';
 import { ProviderMap } from '@/screens/components/ProviderMap';
 
+// `require`, pas `import` : les types publiés de react-native-maps n'ont pas
+// `mockAnimateToRegion` (il n'existe que dans notre stub Jest, __mocks__/react-native-maps,
+// vers lequel `moduleNameMapper` redirige déjà 'react-native-maps' au runtime — voir plus haut).
+const { mockAnimateToRegion } = require('react-native-maps');
+
 const apiMock = new MockAdapter(apiClient);
 
 function makeWrapper() {
@@ -58,8 +70,28 @@ beforeEach(() => {
   apiMock.reset();
   mockMapModule.current = true;
   mockPermission.current = 'granted';
+  mockOnPosition.current = null;
+  mockAnimateToRegion.mockClear();
   apiMock.onGet('/provider/assignments/inbox').reply(200, { data: [] });
 });
+
+const MOCK_ASSIGNMENT = {
+  id: 1,
+  mission_id: 10,
+  assignment_status: 'assigned',
+  booking_id: 100,
+  service_name: 'Nettoyage',
+  client_name: 'Jean Martin',
+  address: '5 Rue du Bois',
+  city: 'Liege',
+  scheduled_date: '2026-06-10',
+  scheduled_time: '09:00',
+  // Coordonnées de la mission : c'est ce que le repli de centrage (Finding 1) doit utiliser
+  // quand aucune position GPS n'est encore connue.
+  latitude: 50.6326,
+  longitude: 5.5797,
+  created_at: '2026-06-09T09:00:00Z',
+};
 
 describe('ProviderMap', () => {
   it('rend la carte quand le module natif est disponible', async () => {
@@ -97,5 +129,55 @@ describe('ProviderMap', () => {
 
     await waitFor(() => expect(screen.getByText(/Réessayer/)).toBeTruthy());
     expect(screen.getByTestId('provider-map')).toBeTruthy();
+  });
+
+  it('ne recentre qu une seule fois même si plusieurs positions GPS arrivent', async () => {
+    render(<ProviderMap />, { wrapper: makeWrapper() });
+    await waitFor(() => expect(screen.getByTestId('provider-map')).toBeTruthy());
+
+    act(() => {
+      mockOnPosition.current?.({ latitude: 50.85, longitude: 4.35, speed: null, heading: null });
+    });
+    await waitFor(() => expect(mockAnimateToRegion).toHaveBeenCalledTimes(1));
+
+    act(() => {
+      mockOnPosition.current?.({ latitude: 50.9, longitude: 4.4, speed: null, heading: null });
+    });
+    // Laisse le temps à un éventuel second appel de se produire avant d'affirmer qu'il n'y en a pas :
+    // c'est le garde-fou contre une régression qui referait sauter la carte à chaque tick GPS.
+    await waitFor(() => expect(screen.getByTestId('provider-map')).toBeTruthy());
+    expect(mockAnimateToRegion).toHaveBeenCalledTimes(1);
+  });
+
+  it('centre sur la première mission géolocalisée si aucune position GPS n est encore connue', async () => {
+    apiMock.reset();
+    apiMock.onGet('/provider/assignments/inbox').reply(200, { data: [MOCK_ASSIGNMENT] });
+
+    render(<ProviderMap />, { wrapper: makeWrapper() });
+
+    await waitFor(() => expect(mockAnimateToRegion).toHaveBeenCalledTimes(1));
+    expect(mockAnimateToRegion).toHaveBeenCalledWith(
+      expect.objectContaining({ latitude: MOCK_ASSIGNMENT.latitude, longitude: MOCK_ASSIGNMENT.longitude }),
+      expect.any(Number),
+    );
+  });
+
+  it('recentre une seconde fois quand une position GPS arrive après un centrage sur une mission', async () => {
+    apiMock.reset();
+    apiMock.onGet('/provider/assignments/inbox').reply(200, { data: [MOCK_ASSIGNMENT] });
+
+    render(<ProviderMap />, { wrapper: makeWrapper() });
+
+    await waitFor(() => expect(mockAnimateToRegion).toHaveBeenCalledTimes(1));
+
+    act(() => {
+      mockOnPosition.current?.({ latitude: 50.85, longitude: 4.35, speed: null, heading: null });
+    });
+
+    await waitFor(() => expect(mockAnimateToRegion).toHaveBeenCalledTimes(2));
+    expect(mockAnimateToRegion).toHaveBeenLastCalledWith(
+      expect.objectContaining({ latitude: 50.85, longitude: 4.35 }),
+      expect.any(Number),
+    );
   });
 });

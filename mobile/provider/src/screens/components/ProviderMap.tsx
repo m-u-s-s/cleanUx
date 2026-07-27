@@ -19,7 +19,13 @@ type Position = { latitude: number; longitude: number };
 export function ProviderMap() {
   const maps = useMemo(() => loadMapModule(), []);
   const mapRef = useRef<any>(null);
+  // `hasCenteredRef` : « on a déjà centré sur quelque chose » (position OU mission).
+  // `hasCenteredOnPositionRef` : « on a déjà centré sur une vraie position GPS ». Deux
+  // drapeaux distincts pour qu'une position GPS arrivant après un centrage sur mission
+  // puisse quand même déclencher un recentrage — un centrage « mission » ne doit pas
+  // empêcher le seul recentrage qui compte vraiment (la position réelle du prestataire).
   const hasCenteredRef = useRef(false);
+  const hasCenteredOnPositionRef = useRef(false);
   const [position, setPosition] = useState<Position | null>(null);
   const { permission } = useGpsWatcher(
     true,
@@ -27,7 +33,13 @@ export function ProviderMap() {
   );
   const { data: assignments, isError, refetch } = useMissionInbox();
 
-  const located = (assignments ?? []).filter(a => a.latitude != null && a.longitude != null);
+  // Mémoïsé sur `assignments` : sans cela, `located` serait un tableau neuf à chaque
+  // rendu, ce qui ferait tourner l'effet de centrage sur mission (dépendant de `located`)
+  // à chaque rendu au lieu de seulement quand la liste change réellement.
+  const located = useMemo(
+    () => (assignments ?? []).filter(a => a.latitude != null && a.longitude != null),
+    [assignments],
+  );
   const unlocatedCount = (assignments ?? []).length - located.length;
 
   const region = useMemo(() => {
@@ -44,17 +56,50 @@ export function ProviderMap() {
     return FALLBACK_REGION;
   }, [position, located]);
 
-  // Recentrage UNE SEULE FOIS, à l'arrivée de la première position. `region` en prop
-  // contrôlée recentrerait la carte à chaque tick GPS : l'utilisateur ne pourrait plus
-  // ni déplacer ni zoomer, la vue lui sauterait des mains toutes les quelques secondes.
+  // `region` n'est utile qu'à titre de première approximation : passé en `initialRegion`,
+  // il n'est honoré qu'au montage — or au tout premier rendu `position` vaut toujours
+  // `null` et `assignments` toujours `undefined` (les deux résolvent de façon
+  // asynchrone), donc `initialRegion` vaut en pratique TOUJOURS `FALLBACK_REGION`. Les
+  // deux recentrages impératifs ci-dessous sont donc indispensables — ce n'est pas une
+  // redondance avec `region` : c'est le seul moyen d'amener la carte sur une vraie
+  // position ou une mission géolocalisée après le montage. `region` en PROP CONTRÔLÉE
+  // recentrerait la carte à chaque tick GPS : l'utilisateur ne pourrait plus ni déplacer
+  // ni zoomer, la vue lui sauterait des mains toutes les quelques secondes — d'où
+  // `initialRegion` (fixe) plus `animateToRegion` (un-shot, impératif) pour chaque cas.
+
+  // Recentrage sur la position GPS, UNE SEULE FOIS dès qu'elle arrive. Prioritaire sur le
+  // centrage-mission ci-dessous : une vraie position gagne toujours, même si on avait déjà
+  // centré sur une mission en l'absence de GPS.
   useEffect(() => {
-    if (!position || hasCenteredRef.current) return;
+    if (!position || hasCenteredOnPositionRef.current) return;
+    hasCenteredOnPositionRef.current = true;
     hasCenteredRef.current = true;
     mapRef.current?.animateToRegion(
       { ...position, latitudeDelta: 0.08, longitudeDelta: 0.08 },
       500,
     );
   }, [position]);
+
+  // Repli : tant qu'aucune position GPS n'est encore connue mais qu'une mission
+  // géolocalisée existe, centrer dessus plutôt que de laisser le prestataire sur la vue
+  // pays (FALLBACK_REGION) — le cas d'un GPS refusé mais d'une mission en attente. Ne
+  // pose QUE `hasCenteredRef` (pas `hasCenteredOnPositionRef`) : si une position GPS
+  // arrive ensuite, l'effet ci-dessus doit pouvoir recentrer une seconde fois.
+  useEffect(() => {
+    if (position || hasCenteredRef.current) return;
+    const first = located[0];
+    if (!first) return;
+    hasCenteredRef.current = true;
+    mapRef.current?.animateToRegion(
+      {
+        latitude: first.latitude as number,
+        longitude: first.longitude as number,
+        latitudeDelta: 0.08,
+        longitudeDelta: 0.08,
+      },
+      500,
+    );
+  }, [position, located]);
 
   if (!maps) {
     return (
