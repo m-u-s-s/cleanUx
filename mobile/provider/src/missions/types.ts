@@ -1,14 +1,21 @@
 export interface MissionAssignment {
   id: number;
+  mission_id: number;
+  assignment_status: string;
+  assigned_at?: string | null;
+  expires_at?: string | null;
+  remaining_seconds?: number | null;
   booking_id: number;
-  service_name: string;
-  client_name: string;
-  address: string;
-  city: string;
-  scheduled_date: string;
-  scheduled_time: string;
-  estimated_duration_minutes?: number;
-  distance_km?: number;
+  service_name: string | null;
+  client_name: string | null;
+  address: string | null;
+  city: string | null;
+  postal_code?: string | null;
+  scheduled_date: string | null;
+  scheduled_time: string | null;
+  // Coordonnées de la mission (missions.start_lat/start_lng). Nulles si non géocodée.
+  latitude?: number | null;
+  longitude?: number | null;
   created_at: string;
 }
 

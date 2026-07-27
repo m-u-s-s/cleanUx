@@ -5,7 +5,7 @@ import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Screen, Button, Badge } from '@/ui';
 import { useMissionDetail, useMissionLifecycle } from '@/missions';
-import { useGpsWatcher, useSendPing, useStartTracking } from '@/tracking';
+import { useGpsWatcher, useSendPing, useStartTracking, haversineMeters, formatDistance } from '@/tracking';
 import { colors, spacing, typography, radius, shadows } from '@/theme';
 import type { RootStackParamList } from '@/navigation/types';
 
@@ -19,24 +19,6 @@ interface Position {
 }
 
 const GEOFENCE_METERS = 150;
-
-function haversineDistance(
-  lat1: number,
-  lon1: number,
-  lat2: number,
-  lon2: number,
-): number {
-  const R = 6371000;
-  const dLat = ((lat2 - lat1) * Math.PI) / 180;
-  const dLon = ((lon2 - lon1) * Math.PI) / 180;
-  const a =
-    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-    Math.cos((lat1 * Math.PI) / 180) *
-      Math.cos((lat2 * Math.PI) / 180) *
-      Math.sin(dLon / 2) *
-      Math.sin(dLon / 2);
-  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-}
 
 export function TrackingScreen({ route }: Props) {
   const { missionId } = route.params;
@@ -60,7 +42,7 @@ export function TrackingScreen({ route }: Props) {
   const updateDistance = useCallback(
     (pos: Position) => {
       if (!mission?.latitude || !mission?.longitude) return;
-      const dist = haversineDistance(
+      const dist = haversineMeters(
         pos.latitude,
         pos.longitude,
         mission.latitude,
@@ -98,11 +80,6 @@ export function TrackingScreen({ route }: Props) {
       onSuccess: () => navigation.navigate('MissionField', { missionId }),
     });
   }, [lifecycle, navigation, missionId]);
-
-  const formatDistance = (meters: number): string => {
-    if (meters >= 1000) return `${(meters / 1000).toFixed(1)} km`;
-    return `${Math.round(meters)} m`;
-  };
 
   const formatSpeed = (mps: number | null): string => {
     if (mps === null) return '—';
