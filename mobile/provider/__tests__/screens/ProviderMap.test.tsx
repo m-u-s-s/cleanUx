@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen, waitFor, act } from '@testing-library/react-native';
+import { render, screen, waitFor, act, fireEvent } from '@testing-library/react-native';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { notifyManager } from '@tanstack/query-core';
 import MockAdapter from 'axios-mock-adapter';
@@ -22,7 +22,11 @@ jest.mock('@react-native-community/netinfo', () => ({
   fetch: jest.fn().mockResolvedValue({ isConnected: true }),
 }));
 
-jest.mock('@react-navigation/native', () => ({ useNavigation: () => ({ navigate: jest.fn() }) }));
+// `mockNavigate` doit être préfixé `mock` : les factories `jest.mock` sont hissées
+// (hoisting babel-jest) avant les déclarations `const` du fichier, donc toute variable
+// capturée par la factory doit porter ce préfixe pour survivre au hoisting.
+const mockNavigate = jest.fn();
+jest.mock('@react-navigation/native', () => ({ useNavigation: () => ({ navigate: mockNavigate }) }));
 
 const mockPermission = { current: 'granted' as 'pending' | 'granted' | 'denied' };
 // Capture le callback `onPosition` passé par ProviderMap à useGpsWatcher, pour qu'un test
@@ -72,6 +76,7 @@ beforeEach(() => {
   mockPermission.current = 'granted';
   mockOnPosition.current = null;
   mockAnimateToRegion.mockClear();
+  mockNavigate.mockClear();
   apiMock.onGet('/provider/assignments/inbox').reply(200, { data: [] });
 });
 
@@ -179,5 +184,46 @@ describe('ProviderMap', () => {
       expect.objectContaining({ latitude: 50.85, longitude: 4.35 }),
       expect.any(Number),
     );
+  });
+
+  const GEOLOCATED = {
+    id: 2, mission_id: 20, assignment_status: 'assigned', expires_at: null, remaining_seconds: null,
+    booking_id: 200, service_name: 'Peinture', client_name: 'Paul Klee', address: '10 Rue des Arts',
+    city: 'Gent', postal_code: '9000', scheduled_date: '2026-06-15', scheduled_time: '14:00',
+    latitude: 51.0543, longitude: 3.7174, created_at: '2026-06-14T09:00:00Z',
+  };
+  const UNLOCATED = { ...GEOLOCATED, id: 3, booking_id: 201, latitude: null, longitude: null };
+
+  it('trace un marqueur par mission géolocalisée', async () => {
+    apiMock.reset();
+    apiMock.onGet('/provider/assignments/inbox').reply(200, { data: [GEOLOCATED, UNLOCATED] });
+
+    render(<ProviderMap />, { wrapper: makeWrapper() });
+
+    await waitFor(() => expect(screen.getByTestId('mission-marker-200')).toBeTruthy());
+    expect(screen.queryByTestId('mission-marker-201')).toBeNull();
+    expect(screen.getByText('1 mission sans localisation')).toBeTruthy();
+  });
+
+  it('affiche le service et le client dans le callout', async () => {
+    apiMock.reset();
+    apiMock.onGet('/provider/assignments/inbox').reply(200, { data: [GEOLOCATED] });
+
+    render(<ProviderMap />, { wrapper: makeWrapper() });
+
+    await waitFor(() => expect(screen.getByText('Peinture')).toBeTruthy());
+    expect(screen.getByText('Paul Klee')).toBeTruthy();
+  });
+
+  it('navigue vers le détail au tap du callout', async () => {
+    apiMock.reset();
+    apiMock.onGet('/provider/assignments/inbox').reply(200, { data: [GEOLOCATED] });
+
+    render(<ProviderMap />, { wrapper: makeWrapper() });
+
+    await waitFor(() => screen.getByTestId('map-callout'));
+    fireEvent.press(screen.getByTestId('map-callout'));
+
+    expect(mockNavigate).toHaveBeenCalledWith('MissionDetail', { missionId: 200 });
   });
 });

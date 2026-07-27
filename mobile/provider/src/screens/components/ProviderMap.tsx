@@ -1,8 +1,9 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
 import { Button } from '@/ui';
 import { useMissionInbox } from '@/missions';
-import { useGpsWatcher } from '@/tracking';
+import { useGpsWatcher, distanceKmTo, formatDistance } from '@/tracking';
 import { loadMapModule } from '@/maps';
 import { colors, spacing, typography, radius } from '@/theme';
 
@@ -17,6 +18,7 @@ export const FALLBACK_REGION = {
 type Position = { latitude: number; longitude: number };
 
 export function ProviderMap() {
+  const navigation = useNavigation<any>();
   const maps = useMemo(() => loadMapModule(), []);
   const mapRef = useRef<any>(null);
   // `hasCenteredRef` : « on a déjà centré sur quelque chose » (position OU mission).
@@ -113,11 +115,35 @@ export function ProviderMap() {
     );
   }
 
-  const { MapView } = maps;
+  const { MapView, Marker, Callout } = maps;
 
   return (
     <View style={styles.container}>
-      <MapView ref={mapRef} style={styles.map} testID="provider-map" initialRegion={region} />
+      <MapView ref={mapRef} style={styles.map} testID="provider-map" initialRegion={region}>
+        {located.map(a => {
+          // Distance vive depuis la position GPS actuelle jusqu'à la mission — recalculée
+          // à chaque rendu (pas mémoïsée), sa dépendance `position` change de toute façon
+          // à chaque tick GPS.
+          const km = distanceKmTo(position, a);
+          return (
+            <Marker
+              key={a.booking_id}
+              testID={`mission-marker-${a.booking_id}`}
+              coordinate={{ latitude: a.latitude as number, longitude: a.longitude as number }}
+            >
+              <Callout onPress={() => navigation.navigate('MissionDetail', { missionId: a.booking_id })}>
+                <View style={styles.callout}>
+                  <Text style={styles.calloutService}>{a.service_name}</Text>
+                  <Text style={styles.calloutClient}>{a.client_name}</Text>
+                  {km != null && (
+                    <Text style={styles.calloutDistance}>{formatDistance(km * 1000)}</Text>
+                  )}
+                </View>
+              </Callout>
+            </Marker>
+          );
+        })}
+      </MapView>
 
       <View style={styles.overlay} pointerEvents="box-none">
         {permission === 'denied' && (
@@ -159,6 +185,10 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   errorRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
+  callout: { minWidth: 160, padding: spacing.xs },
+  calloutService: { fontSize: typography.fontSize.sm, fontWeight: typography.fontWeight.semibold, color: colors.surface[900] },
+  calloutClient: { fontSize: typography.fontSize.xs, color: colors.surface[600], marginTop: 2 },
+  calloutDistance: { fontSize: typography.fontSize.xs, color: colors.brand[600], marginTop: 2 },
   fallback: {
     flex: 1,
     backgroundColor: colors.surface[100],
