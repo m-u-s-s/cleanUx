@@ -6,6 +6,15 @@
     "client",
     "provider"
   ],
+  "scripts": {
+    "start": "echo \"Pick an app: npm run start:client or npm run start:provider (expo start must run inside client/ or provider/, not here)\" && exit 1",
+    "start:client": "npm run start --workspace client",
+    "start:provider": "npm run start --workspace provider",
+    "android:client": "npm run android --workspace client",
+    "android:provider": "npm run android --workspace provider",
+    "ios:client": "npm run ios --workspace client",
+    "ios:provider": "npm run ios --workspace provider"
+  },
   "devDependencies": {
     "typescript": "~6.0.3"
   }
