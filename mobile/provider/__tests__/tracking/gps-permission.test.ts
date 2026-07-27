@@ -44,4 +44,30 @@ describe('useGpsWatcher — état de permission', () => {
     expect(result.current.permission).toBe('pending');
     expect(mockRequestForegroundPermissionsAsync).not.toHaveBeenCalled();
   });
+
+  it('nettoie l\'abonnement natif si le composant est démonté pendant watchPositionAsync', async () => {
+    mockRequestForegroundPermissionsAsync.mockResolvedValue({ status: 'granted' });
+
+    // watchPositionAsync reste en attente tant qu'on ne résout pas manuellement — ça simule
+    // le cas où le démontage (ou enabled -> false) survient pendant cet await natif.
+    const removeSpy = jest.fn();
+    let resolveWatch!: (sub: { remove: () => void }) => void;
+    const watchPromise = new Promise<{ remove: () => void }>((resolve) => { resolveWatch = resolve; });
+    mockWatchPositionAsync.mockReturnValue(watchPromise);
+
+    const { unmount } = renderHook(() => useGpsWatcher(true, jest.fn()));
+
+    // La permission est accordée et watchPositionAsync a été appelé, mais n'a pas encore résolu.
+    await waitFor(() => expect(mockWatchPositionAsync).toHaveBeenCalled());
+
+    // Démontage pendant que watchPositionAsync est encore en attente.
+    unmount();
+
+    // watchPositionAsync se résout seulement maintenant, après le nettoyage.
+    resolveWatch({ remove: removeSpy });
+
+    // Sans la seconde vérification de `cancelled`, cet abonnement serait publié après coup
+    // et personne ne l'arrêterait jamais : remove() ne serait jamais appelé.
+    await waitFor(() => expect(removeSpy).toHaveBeenCalledTimes(1));
+  });
 });

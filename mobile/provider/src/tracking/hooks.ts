@@ -56,7 +56,7 @@ export function useGpsWatcher(
       }
       setPermission('granted');
 
-      subRef.current = await Location.watchPositionAsync(
+      const sub = await Location.watchPositionAsync(
         { accuracy: Location.Accuracy.High, distanceInterval: 10, timeInterval: 5000 },
         (loc) => onPosition({
           latitude: loc.coords.latitude,
@@ -65,6 +65,15 @@ export function useGpsWatcher(
           heading: loc.coords.heading,
         }),
       );
+
+      // Le nettoyage a pu s'exécuter pendant l'await : sans cette seconde vérification,
+      // l'abonnement natif serait publié après coup et plus personne ne pourrait l'arrêter.
+      if (cancelled) {
+        sub.remove();
+        return;
+      }
+
+      subRef.current = sub;
     })();
 
     return () => { cancelled = true; subRef.current?.remove(); };

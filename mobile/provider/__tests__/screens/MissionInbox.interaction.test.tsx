@@ -204,13 +204,18 @@ describe('MissionInboxScreen interactions', () => {
     });
   });
 
-  it('shows skeleton while loading', () => {
+  it('shows skeleton while loading', async () => {
     // Never resolves
     apiMock.onGet('/provider/assignments/inbox').reply(() => new Promise(() => undefined));
 
     render(<MissionInboxScreen />, { wrapper: makeWrapper() });
 
-    expect(screen.getByTestId('skeleton')).toBeTruthy();
+    // await waitFor pour laisser la chaîne de permission GPS (useCurrentPosition) se résoudre
+    // avant l'assertion finale : sinon setPermission('granted') se déclenche après la fin du
+    // test, hors d'un act(), et déclenche l'avertissement React.
+    await waitFor(() => {
+      expect(screen.getByTestId('skeleton')).toBeTruthy();
+    });
   });
 
   it('tap "Annuler" in Accept dialog does not call the API', async () => {

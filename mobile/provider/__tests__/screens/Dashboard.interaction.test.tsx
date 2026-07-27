@@ -142,7 +142,16 @@ describe('DashboardScreen interactions', () => {
 
     render(<DashboardScreen />, { wrapper: makeWrapper() });
 
-    expect(screen.getByText(/Bonjour, Marie/)).toBeTruthy();
+    // await waitFor pour laisser la chaîne de permission GPS (useCurrentPosition) et les deux
+    // requêtes réseau du montage se résoudre avant l'assertion finale : sinon setPermission
+    // ('granted') ou la notification React Query se déclenchent après la fin du test, hors
+    // d'un act(). On inclut la condition réseau car le texte de salutation, lui, est déjà vrai
+    // dès le premier rendu synchrone (issu du mock useAuth) et ne forcerait donc aucun sondage réel.
+    await waitFor(() => {
+      expect(screen.getByText(/Bonjour, Marie/)).toBeTruthy();
+      const urls = (apiMock.history['get'] ?? []).map(c => c.url);
+      expect(urls).toEqual(expect.arrayContaining(['/provider/assignments/inbox', '/provider/wallet/balance']));
+    });
   });
 
   it('tap "En ligne" presence button posts to the v2 online endpoint', async () => {
@@ -214,7 +223,11 @@ describe('DashboardScreen interactions', () => {
     await waitFor(() => screen.getByText('Disponibilités'));
 
     fireEvent.press(screen.getByText('Disponibilités'));
-    expect(mockNavigate).toHaveBeenCalledWith('Availability');
+    // await waitFor pour laisser la chaîne de permission GPS (useCurrentPosition) se résoudre
+    // avant l'assertion finale, sinon setPermission('granted') se déclenche hors d'un act().
+    await waitFor(() => {
+      expect(mockNavigate).toHaveBeenCalledWith('Availability');
+    });
   });
 
   it('tap "Revenus" quick action navigates to the Earnings tab', async () => {
@@ -228,7 +241,11 @@ describe('DashboardScreen interactions', () => {
     fireEvent.press(screen.getByText('Revenus'));
     // Earnings is a tab *inside* MainTabs. navigate('MainTabs') with no params is a no-op
     // when the dashboard is already the focused tab — the button did nothing at all.
-    expect(mockNavigate).toHaveBeenCalledWith('MainTabs', { screen: 'Earnings' });
+    // await waitFor pour laisser la chaîne de permission GPS (useCurrentPosition) se résoudre
+    // avant l'assertion finale, sinon setPermission('granted') se déclenche hors d'un act().
+    await waitFor(() => {
+      expect(mockNavigate).toHaveBeenCalledWith('MainTabs', { screen: 'Earnings' });
+    });
   });
 
   it('tap "Badges" quick action navigates to Badges', async () => {
@@ -240,7 +257,11 @@ describe('DashboardScreen interactions', () => {
     await waitFor(() => screen.getByText('Badges'));
 
     fireEvent.press(screen.getByText('Badges'));
-    expect(mockNavigate).toHaveBeenCalledWith('Badges');
+    // await waitFor pour laisser la chaîne de permission GPS (useCurrentPosition) se résoudre
+    // avant l'assertion finale, sinon setPermission('granted') se déclenche hors d'un act().
+    await waitFor(() => {
+      expect(mockNavigate).toHaveBeenCalledWith('Badges');
+    });
   });
 
   it('tap "Messagerie" quick action navigates to ProviderChatList', async () => {
@@ -252,7 +273,11 @@ describe('DashboardScreen interactions', () => {
     await waitFor(() => screen.getByText('Messagerie'));
 
     fireEvent.press(screen.getByText('Messagerie'));
-    expect(mockNavigate).toHaveBeenCalledWith('ProviderChatList');
+    // await waitFor pour laisser la chaîne de permission GPS (useCurrentPosition) se résoudre
+    // avant l'assertion finale, sinon setPermission('granted') se déclenche hors d'un act().
+    await waitFor(() => {
+      expect(mockNavigate).toHaveBeenCalledWith('ProviderChatList');
+    });
   });
 
   it('shows pending mission card when assignments exist', async () => {
