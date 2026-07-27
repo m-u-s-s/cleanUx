@@ -1,26 +1,21 @@
-import React, { useCallback } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
-import { Screen, KPICard, Avatar, Badge, Button, Skeleton } from '@/ui';
-import { PresenceToggle } from '@/screens/components/PresenceToggle';
+import React, { useCallback, useRef } from 'react';
+import { View, Text, StyleSheet } from 'react-native';
+import type GorhomBottomSheet from '@gorhom/bottom-sheet';
+import { Screen, Avatar, Button } from '@/ui';
 import { useAuth } from '@/auth';
-import { useMissionInbox } from '@/missions';
-import { useWalletBalance } from '@/earnings';
-import { useCurrentPosition, distanceKmTo } from '@/tracking';
-import { colors, spacing, typography, radius, shadows } from '@/theme';
+import { ProviderMap } from '@/screens/components/ProviderMap';
+import { PresencePill } from '@/screens/components/PresencePill';
+import { DashboardActionsSheet } from '@/screens/components/DashboardActionsSheet';
+import { colors, spacing, typography } from '@/theme';
 
 export function DashboardScreen() {
   const { user } = useAuth();
-  const navigation = useNavigation<any>();
-  const { data: assignments, isLoading: loadingMissions } = useMissionInbox();
-  const { data: wallet, isLoading: loadingWallet } = useWalletBalance();
-  const position = useCurrentPosition();
+  const sheetRef = useRef<GorhomBottomSheet>(null);
 
-  const pendingCount = assignments?.length ?? 0;
+  const openSheet = useCallback(() => sheetRef.current?.expand(), []);
 
   return (
-    <Screen scroll>
-      {/* Hero */}
+    <Screen testID="dashboard-screen">
       <View style={styles.hero}>
         <View style={styles.heroLeft}>
           <Text style={styles.greeting}>Bonjour{user?.name ? `, ${user.name.split(' ')[0]}` : ''}</Text>
@@ -29,86 +24,25 @@ export function DashboardScreen() {
         <Avatar name={user?.name ?? '?'} size={48} />
       </View>
 
-      {/* Presence */}
-      <PresenceToggle />
-
-      {/* KPIs */}
-      <View style={styles.kpiRow}>
-        {loadingMissions || loadingWallet ? (
-          <>
-            <Skeleton width="48%" height={80} />
-            <Skeleton width="48%" height={80} />
-          </>
-        ) : (
-          <>
-            <KPICard title="Missions en attente" value={pendingCount} tone={pendingCount > 0 ? 'warning' : 'neutral'} />
-            <KPICard title="Solde disponible" value={wallet && wallet.available != null ? `${wallet.available.toFixed(0)} ${wallet.currency ?? ''}`.trim() : '—'} tone="success" />
-          </>
-        )}
+      <View style={styles.mapWrap}>
+        <ProviderMap />
       </View>
 
-      {/* Pending missions preview */}
-      {pendingCount > 0 && (
-        <>
-          <Text style={styles.sectionTitle} accessibilityRole="header">Nouvelles missions</Text>
-          {assignments!.slice(0, 2).map(a => {
-            const distanceKm = distanceKmTo(position, a);
-            return (
-              <TouchableOpacity key={a.id} style={styles.missionCard} onPress={() => navigation.navigate('MissionDetail', { missionId: a.booking_id })}>
-                <Text style={styles.missionService}>{a.service_name}</Text>
-                <Text style={styles.missionClient}>{a.client_name} — {a.city}</Text>
-                <View style={styles.missionMeta}>
-                  <Text style={styles.missionDate}>{a.scheduled_date} à {a.scheduled_time}</Text>
-                  {distanceKm != null && <Badge label={`${distanceKm.toFixed(1)} km`} variant="brand" />}
-                </View>
-              </TouchableOpacity>
-            );
-          })}
-          <Button label="Voir toutes les missions" onPress={() => navigation.navigate('MainTabs', { screen: 'Missions' })} variant="secondary" fullWidth />
-        </>
-      )}
-
-      {/* Quick actions */}
-      <Text style={styles.sectionTitle} accessibilityRole="header">Accès rapide</Text>
-      <View style={styles.quickActions}>
-        {[
-          { label: 'Disponibilités', screen: 'Availability' },
-          { label: 'Badges', screen: 'Badges' },
-          // Earnings is a tab *inside* MainTabs, so the nested target is required:
-          // navigate('MainTabs') alone is a no-op while the dashboard tab is focused.
-          { label: 'Revenus', screen: 'MainTabs', params: { screen: 'Earnings' } },
-          { label: 'Messagerie', screen: 'ProviderChatList' },
-        ].map(item => (
-          <TouchableOpacity
-            key={item.label}
-            style={styles.quickCard}
-            onPress={() =>
-              item.params
-                ? navigation.navigate(item.screen, item.params)
-                : navigation.navigate(item.screen)
-            }
-          >
-            <Text style={styles.quickLabel}>{item.label}</Text>
-          </TouchableOpacity>
-        ))}
+      <View style={styles.floating} pointerEvents="box-none">
+        <PresencePill onPress={openSheet} />
+        <Button label="Actions" onPress={openSheet} fullWidth size="lg" />
       </View>
+
+      <DashboardActionsSheet ref={sheetRef} />
     </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  hero: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: spacing.md, marginBottom: spacing.md },
+  hero: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginVertical: spacing.md },
   heroLeft: { flex: 1 },
   greeting: { fontSize: typography.fontSize['2xl'], fontWeight: typography.fontWeight.bold, color: colors.surface[900] },
   role: { fontSize: typography.fontSize.sm, color: colors.surface[500], marginTop: 2 },
-  kpiRow: { flexDirection: 'row', gap: spacing.sm, marginTop: spacing.md, marginBottom: spacing.md },
-  sectionTitle: { fontSize: typography.fontSize.lg, fontWeight: typography.fontWeight.semibold, color: colors.surface[800], marginTop: spacing.lg, marginBottom: spacing.sm },
-  missionCard: { backgroundColor: '#fff', borderRadius: radius.md, padding: spacing.md, ...shadows.xs, marginBottom: spacing.sm },
-  missionService: { fontSize: typography.fontSize.base, fontWeight: typography.fontWeight.semibold, color: colors.surface[900] },
-  missionClient: { fontSize: typography.fontSize.sm, color: colors.surface[600], marginTop: 2 },
-  missionMeta: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: spacing.xs },
-  missionDate: { fontSize: typography.fontSize.xs, color: colors.brand[600] },
-  quickActions: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },
-  quickCard: { width: '48%', backgroundColor: '#fff', borderRadius: radius.md, padding: spacing.md, ...shadows.xs, alignItems: 'center' },
-  quickLabel: { fontSize: typography.fontSize.sm, fontWeight: typography.fontWeight.medium, color: colors.brand[600] },
+  mapWrap: { flex: 1, borderRadius: 12, overflow: 'hidden' },
+  floating: { position: 'absolute', left: spacing.md, right: spacing.md, bottom: spacing.lg, gap: spacing.sm },
 });
