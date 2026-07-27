@@ -46,9 +46,13 @@ class ProviderMissionAssignmentController extends Controller
                     ->orWhere('expires_at', '>', now());
             })
             ->with([
-                'mission:id,booking_id,planned_start_at,status,start_lat,start_lng,end_lat,end_lng',
-                'mission.booking:id,booking_reference,address,city,postal_code,service_catalog_id,scheduled_date,scheduled_time,booking_mode,priority',
-                'mission.booking.serviceCatalog:id,name',
+                'mission:id,booking_id,rendez_vous_id,planned_start_at,status,start_lat,start_lng,end_lat,end_lng',
+                'mission.bookingViaBookingId:id,customer_user_id,booking_reference,address,city,postal_code,service_catalog_id,scheduled_date,scheduled_time,booking_mode,priority',
+                'mission.bookingViaBookingId.serviceCatalog:id,name',
+                'mission.bookingViaBookingId.customer:id,name',
+                'mission.bookingViaRendezVous:id,customer_user_id,booking_reference,address,city,postal_code,service_catalog_id,scheduled_date,scheduled_time,booking_mode,priority',
+                'mission.bookingViaRendezVous.serviceCatalog:id,name',
+                'mission.bookingViaRendezVous.customer:id,name',
             ])
             ->orderBy('expires_at')
             ->get();
@@ -56,7 +60,7 @@ class ProviderMissionAssignmentController extends Controller
         return response()->json([
             'ok' => true,
             'count' => $assignments->count(),
-            'data' => $assignments->map(fn ($a) => $this->serializeAssignment($a))->all(),
+            'data' => $assignments->map(fn ($a) => $this->serializeForList($a))->all(),
         ]);
     }
 
@@ -132,6 +136,38 @@ class ProviderMissionAssignmentController extends Controller
             403,
             'Cette offre ne vous est pas destinée.'
         );
+    }
+
+    /**
+     * Payload de liste — plat, aligné sur le type TS MissionAssignment consommé par
+     * DashboardScreen et MissionInboxScreen. Distinct du payload de détail, qui reste imbriqué.
+     */
+    protected function serializeForList(MissionAssignment $a): array
+    {
+        $mission = $a->mission;
+        $booking = $mission?->bookingViaBookingId ?? $mission?->bookingViaRendezVous;
+
+        return [
+            'id' => $a->id,
+            'mission_id' => $a->mission_id,
+            'assignment_status' => $a->assignment_status,
+            'assigned_at' => $a->assigned_at?->toIso8601String(),
+            'expires_at' => $a->expires_at?->toIso8601String(),
+            'remaining_seconds' => $a->expires_at
+                ? max(0, (int) now()->diffInSeconds($a->expires_at, false))
+                : null,
+            'booking_id' => $booking?->id,
+            'service_name' => $booking?->serviceCatalog?->name,
+            'client_name' => $booking?->customer?->name,
+            'address' => $booking?->address,
+            'city' => $booking?->city,
+            'postal_code' => $booking?->postal_code,
+            'scheduled_date' => $booking?->scheduled_date,
+            'scheduled_time' => $booking?->scheduled_time,
+            'latitude' => $mission?->start_lat !== null ? (float) $mission->start_lat : null,
+            'longitude' => $mission?->start_lng !== null ? (float) $mission->start_lng : null,
+            'created_at' => $a->created_at?->toIso8601String(),
+        ];
     }
 
     protected function serializeAssignment(MissionAssignment $a, bool $detailed = false): array
