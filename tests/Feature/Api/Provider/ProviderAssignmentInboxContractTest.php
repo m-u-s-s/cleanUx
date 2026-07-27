@@ -67,11 +67,17 @@ class ProviderAssignmentInboxContractTest extends TestCase
         ]);
         $this->makeAssignment($mission, $provider);
 
-        $this->actingAs($provider, 'sanctum')
+        $response = $this->actingAs($provider, 'sanctum')
             ->getJson('/api/provider/assignments/inbox')
-            ->assertOk()
-            ->assertJsonPath('data.0.latitude', null)
-            ->assertJsonPath('data.0.longitude', null);
+            ->assertOk();
+
+        // assertJsonPath('data.0.latitude', null) passe aussi quand la clé est absente : ça ne
+        // prouve rien. On vérifie explicitement la présence de la clé en plus de sa valeur.
+        $payload = $response->json('data.0');
+        $this->assertArrayHasKey('latitude', $payload);
+        $this->assertArrayHasKey('longitude', $payload);
+        $this->assertNull($payload['latitude']);
+        $this->assertNull($payload['longitude']);
     }
 
     /**

@@ -129,25 +129,21 @@ class Mission extends Model
     }
 
     /**
-     * Relations dédiées à l'eager loading.
+     * Contrepartie eager-load-safe de booking() pour la colonne booking_id.
      *
      * booking() choisit sa FK depuis $this->booking_id, ce que Laravel ne peut pas faire en
      * eager load : il résout la relation sur une instance vierge, où l'attribut est toujours
-     * vide, et retombe donc systématiquement sur rendez_vous_id. Or les deux colonnes portent
-     * un bookings.id selon le chemin de création (CreateBookingFromApiAction écrit booking_id,
-     * MissionFromRendezVousSyncService écrit rendez_vous_id). D'où deux relations explicites,
-     * que l'appelant charge ensemble et combine — sans toucher au comportement de booking().
+     * vide, et retombe donc systématiquement sur rendez_vous_id. rendezVous() (ci-dessus) couvre
+     * déjà la colonne rendez_vous_id avec une FK fixe, donc déjà eager-load-safe — il ne
+     * manquait que l'équivalent pour booking_id. L'appelant charge les deux relations et
+     * combine (`bookingViaBookingId ?? rendezVous`) selon le chemin de création qui a peuplé la
+     * mission (CreateBookingFromApiAction écrit booking_id, MissionFromRendezVousSyncService
+     * écrit rendez_vous_id), sans toucher au comportement de booking().
      */
     /** @return BelongsTo<Booking, $this> */
     public function bookingViaBookingId(): BelongsTo
     {
         return $this->belongsTo(Booking::class, 'booking_id');
-    }
-
-    /** @return BelongsTo<Booking, $this> */
-    public function bookingViaRendezVous(): BelongsTo
-    {
-        return $this->belongsTo(Booking::class, 'rendez_vous_id');
     }
 
     /** @return BelongsTo<OrganizationAccount, $this> */

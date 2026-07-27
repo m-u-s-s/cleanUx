@@ -50,9 +50,9 @@ class ProviderMissionAssignmentController extends Controller
                 'mission.bookingViaBookingId:id,customer_user_id,booking_reference,address,city,postal_code,service_catalog_id,scheduled_date,scheduled_time,booking_mode,priority',
                 'mission.bookingViaBookingId.serviceCatalog:id,name',
                 'mission.bookingViaBookingId.customer:id,name',
-                'mission.bookingViaRendezVous:id,customer_user_id,booking_reference,address,city,postal_code,service_catalog_id,scheduled_date,scheduled_time,booking_mode,priority',
-                'mission.bookingViaRendezVous.serviceCatalog:id,name',
-                'mission.bookingViaRendezVous.customer:id,name',
+                'mission.rendezVous:id,customer_user_id,booking_reference,address,city,postal_code,service_catalog_id,scheduled_date,scheduled_time,booking_mode,priority',
+                'mission.rendezVous.serviceCatalog:id,name',
+                'mission.rendezVous.customer:id,name',
             ])
             ->orderBy('expires_at')
             ->get();
@@ -145,7 +145,7 @@ class ProviderMissionAssignmentController extends Controller
     protected function serializeForList(MissionAssignment $a): array
     {
         $mission = $a->mission;
-        $booking = $mission?->bookingViaBookingId ?? $mission?->bookingViaRendezVous;
+        $booking = $mission?->bookingViaBookingId ?? $mission?->rendezVous;
 
         return [
             'id' => $a->id,
