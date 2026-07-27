@@ -985,7 +985,7 @@ Attendu : ÉCHEC — `Cannot find module '@/screens/components/ProviderMap'`.
 `mobile/provider/src/screens/components/ProviderMap.tsx` :
 
 ```tsx
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { Button } from '@/ui';
 import { useMissionInbox } from '@/missions';
@@ -1005,6 +1005,8 @@ type Position = { latitude: number; longitude: number };
 
 export function ProviderMap() {
   const maps = useMemo(() => loadMapModule(), []);
+  const mapRef = useRef<any>(null);
+  const hasCenteredRef = useRef(false);
   const [position, setPosition] = useState<Position | null>(null);
   const { permission } = useGpsWatcher(
     true,
@@ -1029,6 +1031,18 @@ export function ProviderMap() {
     return FALLBACK_REGION;
   }, [position, located]);
 
+  // Recentrage UNE SEULE FOIS, à l'arrivée de la première position. `region` en prop
+  // contrôlée recentrerait la carte à chaque tick GPS : l'utilisateur ne pourrait plus
+  // ni déplacer ni zoomer, la vue lui sauterait des mains toutes les quelques secondes.
+  useEffect(() => {
+    if (!position || hasCenteredRef.current) return;
+    hasCenteredRef.current = true;
+    mapRef.current?.animateToRegion(
+      { ...position, latitudeDelta: 0.08, longitudeDelta: 0.08 },
+      500,
+    );
+  }, [position]);
+
   if (!maps) {
     return (
       <View style={styles.fallback} testID="map-fallback">
@@ -1045,7 +1059,7 @@ export function ProviderMap() {
 
   return (
     <View style={styles.container}>
-      <MapView style={styles.map} testID="provider-map" region={region} />
+      <MapView ref={mapRef} style={styles.map} testID="provider-map" initialRegion={region} />
 
       <View style={styles.overlay} pointerEvents="box-none">
         {permission === 'denied' && (
@@ -1099,6 +1113,12 @@ const styles = StyleSheet.create({
 ```
 
 Les tokens utilisés ici sont vérifiés existants : `colors.surface[700]` (`#404040`), `radius.sm`/`radius.pill`, `shadows.xs`.
+
+**Conséquence sur le stub Jest.** `MapView` reçoit désormais une `ref`, or le stub créé en Task 4
+(`__mocks__/react-native-maps.tsx`) l'expose comme un composant fonction simple : React émettrait
+« Function components cannot be given refs ». Convertir le `MapView` du stub en `React.forwardRef`
+qui pose la ref sur un objet portant `animateToRegion: jest.fn()`, afin que le recentrage unique
+soit testable et que la sortie de test reste propre.
 
 - [ ] **Step 4 : Lancer le test pour vérifier qu'il passe**
 
@@ -1180,7 +1200,7 @@ import { distanceKmTo, formatDistance } from '@/tracking';
   const navigation = useNavigation<any>();
   const { MapView, Marker, Callout } = maps;
 // ...
-      <MapView style={styles.map} testID="provider-map" region={region}>
+      <MapView ref={mapRef} style={styles.map} testID="provider-map" initialRegion={region}>
         {located.map(a => {
           const km = distanceKmTo(position, a);
           return (
