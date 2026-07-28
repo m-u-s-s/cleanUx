@@ -14,12 +14,6 @@
     },
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "automatic",
-    "newArchEnabled": true,
-    "splash": {
-      "image": "./assets/splash-icon.png",
-      "resizeMode": "contain",
-      "backgroundColor": "#070b14"
-    },
     "ios": {
       "supportsTablet": false,
       "bundleIdentifier": "com.cleanux.client",
@@ -57,7 +51,16 @@
       "expo-notifications",
       "expo-image-picker",
       "expo-sharing",
-      "expo-file-system"
+      "expo-file-system",
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/splash-icon.png",
+          "resizeMode": "contain",
+          "backgroundColor": "#070b14",
+          "imageWidth": 200
+        }
+      ]
     ],
     "extra": {
       "eas": {
