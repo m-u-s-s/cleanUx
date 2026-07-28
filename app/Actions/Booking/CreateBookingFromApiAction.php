@@ -8,6 +8,7 @@ use App\Models\Mission;
 use App\Models\User;
 use App\Services\Contracts\ContractBookingHook;
 use App\Services\Contracts\ContractSlaService;
+use App\Services\Dispatch\MissionDispatchService;
 use App\Services\Enterprise\EnterpriseBookingApprovalService;
 use Carbon\Carbon;
 use Illuminate\Support\Arr;
@@ -121,18 +122,27 @@ final class CreateBookingFromApiAction
             return;
         }
 
-        $mission = Mission::create([
-            'booking_id' => $booking->id,
-            'status' => 'planned',
-            'planned_start_at' => $now->copy()->addMinutes(30),
-            // SP1 Task 5 : recopie les champs prestataire/org du booking (souvent
-            // null à la création — complétés ensuite par le dispatch).
-            'lead_provider_user_id' => $booking->assigned_provider_user_id,
-            'lead_employee_id' => $booking->assigned_provider_user_id,
-            'provider_organization_id' => $booking->assigned_provider_organization_id,
-            'provider_team_id' => $booking->provider_team_id,
-            'organization_account_id' => $booking->customer_organization_id,
-        ]);
+        // Une réservation ASAP naît en `confirme`, ce qui réveille RendezVousObserver : celui-ci a
+        // DÉJÀ créé la mission, via rendez_vous_id. En créer une seconde ici via booking_id
+        // produisait deux missions pour une réservation — dont une seule partait en offre —, avec
+        // risque de double assignation et de comptage faussé. On reprend donc l'existante, et on
+        // ne crée que si aucune n'existe (cas d'un booking enregistré sans événements).
+        $mission = $booking->resolveMission();
+
+        if (! $mission) {
+            $mission = Mission::create([
+                'booking_id' => $booking->id,
+                'status' => 'planned',
+                'planned_start_at' => $now->copy()->addMinutes(30),
+                // SP1 Task 5 : recopie les champs prestataire/org du booking (souvent
+                // null à la création — complétés ensuite par le dispatch).
+                'lead_provider_user_id' => $booking->assigned_provider_user_id,
+                'lead_employee_id' => $booking->assigned_provider_user_id,
+                'provider_organization_id' => $booking->assigned_provider_organization_id,
+                'provider_team_id' => $booking->provider_team_id,
+                'organization_account_id' => $booking->customer_organization_id,
+            ]);
+        }
 
         // SP4 — propage le contrat du booking à la mission + arme le SLA (soft).
         if ($booking->organization_contract_id) {
@@ -145,13 +155,15 @@ final class CreateBookingFromApiAction
         // Différé car le géocodage est un appel HTTP tiers — voir GeocodeMissionDestination.
         GeocodeMissionDestination::dispatch($mission->id);
 
-        $dispatchClass = '\App\Services\Dispatch\MissionDispatchService';
-        if (! class_exists($dispatchClass)) {
+        // ::class et non une chaîne préfixée d'un antislash : '\App\...' n'est pas la même clé de
+        // conteneur que 'App\...', si bien que toute liaison enregistrée sur la classe — un
+        // décorateur, un double de test — était silencieusement contournée.
+        if (! class_exists(MissionDispatchService::class)) {
             return;
         }
 
         try {
-            app($dispatchClass)->dispatchToNextProvider($mission);
+            app(MissionDispatchService::class)->dispatchToNextProvider($mission);
         } catch (\Throwable $e) {
             \Log::warning('Auto-dispatch failed', [
                 'mission_id' => $mission->id,

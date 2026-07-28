@@ -13,7 +13,6 @@ use App\Models\ServiceZone;
 use App\Models\User;
 use App\Models\ZoneServiceRule;
 use App\Notifications\NouveauRendezVousNotification;
-use App\Notifications\RdvConfirmeNotification;
 use App\Services\Contracts\ContractBookingHook;
 use App\Services\Contracts\ContractPricingResolver;
 use App\Services\Dispatch\MissionDispatchService;
@@ -300,7 +299,17 @@ class CreateBookingAction
             $policy->applyDiscount($rendezVous, $org);
         }
 
-        if (($rendezVous->booking_mode ?? null) === 'asap' && isset($mission) && $mission) {
+        // $mission n'était JAMAIS assignée dans cette méthode : `isset($mission)` valait donc
+        // toujours faux et l'offre ASAP du chemin web ne partait jamais. Le commentaire plus bas
+        // annonce pourtant que l'ASAP « passe désormais par l'offre/escalade temps réel » — la
+        // confirmation directe étant, elle, bien désactivée pour l'ASAP. Résultat : une
+        // réservation ASAP créée depuis le web n'était proposée à personne.
+        //
+        // resolveMission() plutôt que la relation mission() : celle-ci ne lit que booking_id,
+        // alors que le chemin web crée sa mission via rendez_vous_id (RendezVousObserver).
+        $mission = $rendezVous->resolveMission();
+
+        if (($rendezVous->booking_mode ?? null) === 'asap' && $mission) {
             app(MissionDispatchService::class)
                 ->dispatchToNextProvider($mission);
         }
@@ -314,8 +323,10 @@ class CreateBookingAction
         }
 
         // Lien conversation ↔ mission, quel que soit le mode de réservation.
-        if ($rendezVous->mission?->id) {
-            $conversation->update(['mission_id' => $rendezVous->mission->id]);
+        // Même raison qu'au-dessus : la relation mission() ne lit que booking_id, colonne que ce
+        // chemin ne renseigne pas — la conversation n'était donc jamais rattachée à sa mission.
+        if ($mission?->id) {
+            $conversation->update(['mission_id' => $mission->id]);
         }
 
         // Confirmation directe : UNIQUEMENT pour le planifié. L'ASAP passe désormais

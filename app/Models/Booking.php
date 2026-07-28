@@ -522,6 +522,29 @@ class Booking extends Model
         return $this->hasOne(Mission::class, 'booking_id');
     }
 
+    /**
+     * La mission de cette réservation, quelle que soit la colonne FK employée à sa création.
+     *
+     * `missions` porte DEUX colonnes vers bookings.id : `booking_id` et `rendez_vous_id`. Selon
+     * le chemin de création, l'une ou l'autre est renseignée — MissionFromRendezVousSyncService
+     * écrit rendez_vous_id, CreateBookingFromApiAction et ProcessRecurringBookings écrivent
+     * booking_id. La relation mission() ci-dessus ne voit que la première, si bien que deux
+     * chemins pouvaient créer chacun leur mission sans jamais se voir.
+     *
+     * Point de résolution unique pour éviter d'en réinventer un troisième à chaque appelant.
+     * La normalisation des deux colonnes reste une dette ouverte.
+     */
+    public function resolveMission(): ?Mission
+    {
+        return Mission::query()
+            ->where(function ($q) {
+                $q->where('booking_id', $this->id)
+                    ->orWhere('rendez_vous_id', $this->id);
+            })
+            ->orderBy('id')
+            ->first();
+    }
+
     /** @return HasOne<Feedback, $this> */
     public function feedback(): HasOne
     {
