@@ -5,12 +5,19 @@ import { MissionsScreen } from '@/screens/MissionsScreen';
 import { EarningsScreen } from '@/screens/EarningsScreen';
 import { ProfileScreen } from '@/screens/ProfileScreen';
 import { Icon } from '@/ui';
+import { usePresenceHeartbeat } from '@/presence';
 import { colors } from '@/theme';
 import type { TabParamList } from './types';
 
 const Tab = createBottomTabNavigator<TabParamList>();
 
 export function TabNavigator() {
+  // Point de montage UNIQUE du battement de cœur de présence. TabNavigator est rendu une seule
+  // fois par session authentifiée et n'est jamais démonté tant que le prestataire est connecté :
+  // le battement ne dépend donc ni de l'onglet affiché, ni du dashboard, et ne part jamais
+  // depuis l'écran de connexion (contrairement à un montage à la racine de l'app).
+  usePresenceHeartbeat();
+
   return (
     <Tab.Navigator
       screenOptions={{

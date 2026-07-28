@@ -5,8 +5,14 @@ import { usePresence, PRESENCE_LABELS, PRESENCE_VARIANTS } from '@/presence';
 import { colors, spacing, typography, radius, shadows } from '@/theme';
 
 /**
- * Affichage seul : la pilule n'écrit jamais le statut. Le seul chemin d'écriture reste
- * PresenceToggle, dans le sheet — un point d'écriture unique, donc pas d'état divergent.
+ * Affichage seul : la pilule n'écrit jamais le statut, le seul chemin d'écriture reste
+ * PresenceToggle dans le sheet.
+ *
+ * Attention, un point d'écriture unique ne suffit PAS à garantir un affichage cohérent : ce
+ * commentaire affirmait le contraire alors que `usePresence()` tenait un `useState` par appel,
+ * si bien que la pilule et le toggle lisaient deux états indépendants et que la pilule ne
+ * bougeait jamais. C'est la LECTURE qui doit être partagée — elle l'est désormais via l'entrée
+ * de cache React Query `PRESENCE_QUERY_KEY` (cf. src/presence/hooks.ts).
  */
 export function PresencePill({ onPress }: { onPress: () => void }) {
   const { status } = usePresence();

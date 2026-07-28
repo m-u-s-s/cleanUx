@@ -21,7 +21,15 @@
 import React from 'react';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react-native';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { notifyManager } from '@tanstack/query-core';
 import MockAdapter from 'axios-mock-adapter';
+
+// PresencePill lit désormais son statut dans le cache React Query (source unique partagée avec
+// PresenceToggle). React Query planifie ses notifications via un `setTimeout(0)` par défaut :
+// cette macrotâche se déclenche après le `waitFor` qui l'attend, donc hors de toute portée
+// `act()`, et React logue « not wrapped in act ». Même remède que dans ProviderMap.test.tsx :
+// notification synchrone, dans ce fichier de test seulement.
+notifyManager.setScheduler((callback) => callback());
 
 // ── Module mocks ──────────────────────────────────────────────────────────────
 
