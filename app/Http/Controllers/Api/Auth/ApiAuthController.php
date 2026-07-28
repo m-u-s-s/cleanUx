@@ -11,10 +11,13 @@ use App\Models\OrganizationAccount;
 use App\Models\OrganizationMember;
 use App\Models\ProviderProfile;
 use App\Models\User;
+use App\Services\OnboardingV2\OnboardingEngine;
 use App\Services\Promotion\ReferralService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
@@ -202,6 +205,61 @@ class ApiAuthController extends Controller
         // forceFill : self_registered_at n'est pas assignable en masse, c'est elle qui porte la
         // restriction d'accès tant que le compte n'a pas été approuvé.
         $profile->forceFill(['self_registered_at' => now()])->save();
+
+        $this->attachDeclaredTrade($user, $data);
+        $this->openVerificationJourney($user);
+    }
+
+    /**
+     * Rattache le métier déclaré à l'inscription, avec les réponses aux questions propres à ce
+     * métier (trades.provider_form_schema).
+     *
+     * Sans métier, le matching n'a rien sur quoi travailler et le prestataire ne recevrait aucune
+     * mission — c'est aussi ce que contrôle l'étape « déclarer vos métiers » du parcours.
+     *
+     * @param  array<string, mixed>  $data
+     */
+    private function attachDeclaredTrade(User $user, array $data): void
+    {
+        $tradeId = $data['trade_id'] ?? null;
+
+        if (! $tradeId) {
+            return;
+        }
+
+        $answers = $data['trade_answers'] ?? [];
+
+        DB::table('trade_user')->insert([
+            'user_id' => $user->id,
+            'trade_id' => (int) $tradeId,
+            'is_primary' => true,
+            // `notes` est le seul champ libre du pivot : on y conserve les réponses telles quelles
+            // pour la revue admin, plutôt que de les perdre faute de colonne dédiée.
+            'notes' => $answers ? json_encode($answers, JSON_UNESCAPED_UNICODE) : null,
+            'created_by' => $user->id,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+    }
+
+    /**
+     * Ouvre le parcours de vérification obligatoire (profil, contrat, identité, documents,
+     * métiers) dès la création du compte.
+     *
+     * Soft-fail délibéré : un module désactivé ou un parcours absent ne doit pas faire échouer la
+     * création du compte. L'utilisateur se retrouverait sans compte ET sans explication, alors que
+     * le middleware provider.approved le bloque de toute façon tant qu'il n'est pas approuvé.
+     */
+    private function openVerificationJourney(User $user): void
+    {
+        try {
+            app(OnboardingEngine::class)->startFor($user);
+        } catch (\Throwable $e) {
+            Log::warning('Ouverture du parcours de vérification impossible', [
+                'user_id' => $user->id,
+                'error' => $e->getMessage(),
+            ]);
+        }
     }
 
     /**

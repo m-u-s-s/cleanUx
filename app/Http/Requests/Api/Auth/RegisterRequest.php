@@ -34,6 +34,11 @@ class RegisterRequest extends FormRequest
             'provider_kind' => ['nullable', 'string', 'in:independent,company'],
             'company_name' => ['nullable', 'required_if:provider_kind,company', 'string', 'max:255'],
             'vat_number' => ['nullable', 'string', 'max:32'],
+            // Métier visé et réponses aux questions propres à ce métier
+            // (trades.provider_form_schema). Sans métier déclaré, le matching n'a rien sur quoi
+            // travailler : le prestataire ne recevrait jamais la moindre mission.
+            'trade_id' => ['nullable', 'integer', 'exists:trades,id'],
+            'trade_answers' => ['nullable', 'array'],
         ];
     }
 }
