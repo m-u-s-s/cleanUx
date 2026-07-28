@@ -10,16 +10,16 @@ type Props = NativeStackScreenProps<RootStackParamList, 'Legal'>;
 const CONTENT = {
   terms: {
     title: "Conditions Générales d'Utilisation",
-    body: `Dernière mise à jour : Mai 2026
+    body: `Dernière mise à jour : Juillet 2026
 
 1. OBJET
-Les présentes CGU régissent l'utilisation de l'application CleanUx, marketplace de services à domicile multi-métiers.
+Les présentes CGU régissent l'utilisation de l'application brio, marketplace de services à domicile multi-métiers.
 
 2. INSCRIPTION
 L'utilisateur doit être majeur et fournir des informations exactes lors de l'inscription.
 
 3. SERVICES
-CleanUx met en relation des clients avec des prestataires de services. CleanUx n'est pas prestataire des services proposés.
+brio met en relation des clients avec des prestataires de services. brio n'est pas prestataire des services proposés.
 
 4. PAIEMENT
 Les paiements sont traités via Stripe. Le montant est pré-autorisé à la réservation et capturé à la fin de la mission.
@@ -28,7 +28,7 @@ Les paiements sont traités via Stripe. Le montant est pré-autorisé à la rés
 Les conditions d'annulation varient selon le délai. Consultez la politique d'annulation dans l'application.
 
 6. RESPONSABILITÉ
-CleanUx agit en tant qu'intermédiaire. La responsabilité des prestations incombe aux prestataires.
+brio agit en tant qu'intermédiaire. La responsabilité des prestations incombe aux prestataires.
 
 7. DONNÉES PERSONNELLES
 Voir notre Politique de Confidentialité.

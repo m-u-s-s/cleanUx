@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "CleanUx Pro",
+    "name": "brio Pro",
     "slug": "cleanux-provider",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -24,9 +24,9 @@
       "supportsTablet": false,
       "bundleIdentifier": "com.cleanux.provider",
       "infoPlist": {
-        "NSCameraUsageDescription": "CleanUx Provider uses the camera to scan and display QR codes.",
-        "NSLocationWhenInUseUsageDescription": "CleanUx Provider uses your location to navigate to clients and share your ETA.",
-        "NSLocationAlwaysAndWhenInUseUsageDescription": "CleanUx Provider tracks your location during missions to show clients your progress.",
+        "NSCameraUsageDescription": "brio Provider uses the camera to scan and display QR codes.",
+        "NSLocationWhenInUseUsageDescription": "brio Provider uses your location to navigate to clients and share your ETA.",
+        "NSLocationAlwaysAndWhenInUseUsageDescription": "brio Provider tracks your location during missions to show clients your progress.",
         "UIBackgroundModes": [
           "location"
         ]
@@ -57,7 +57,7 @@
       [
         "expo-location",
         {
-          "locationAlwaysAndWhenInUsePermission": "CleanUx Provider needs background location to share your position with clients during missions."
+          "locationAlwaysAndWhenInUsePermission": "brio Provider needs background location to share your position with clients during missions."
         }
       ]
     ],

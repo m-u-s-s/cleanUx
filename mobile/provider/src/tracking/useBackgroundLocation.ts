@@ -47,7 +47,7 @@ export async function startBackgroundLocation(): Promise<boolean> {
     distanceInterval: 50,
     showsBackgroundLocationIndicator: true,
     foregroundService: {
-      notificationTitle: 'CleanUx Pro',
+      notificationTitle: 'brio Pro',
       notificationBody: 'Suivi GPS actif pendant la mission',
     },
   });
