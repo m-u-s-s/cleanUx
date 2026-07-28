@@ -84,11 +84,15 @@ export function Button({
         accessibilityLabel={label}
         onPressIn={() => {
           if (!isDisabled && !reducedMotion) {
-            // Dynamic haptic — graceful no-op if expo-haptics not available (Expo Go / web)
+            // Dynamic haptic — graceful no-op if expo-haptics is unavailable.
+            // The catch below only covers require() failing. When the JS package
+            // resolves but its native module is not linked into the build,
+            // impactAsync() *rejects* instead, which a synchronous catch cannot
+            // see — hence the explicit .catch().
             try {
               // eslint-disable-next-line @typescript-eslint/no-var-requires, @typescript-eslint/no-unsafe-assignment
               const H = require('expo-haptics') as { impactAsync: (style: unknown) => Promise<void>; ImpactFeedbackStyle: { Light: unknown } };
-              void H.impactAsync(H.ImpactFeedbackStyle.Light);
+              void H.impactAsync(H.ImpactFeedbackStyle.Light).catch(() => {});
             } catch {}
             scale.value = withTiming(0.96, { duration: animation.duration.fast });
           }
