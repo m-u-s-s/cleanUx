@@ -10,6 +10,7 @@ use App\Http\Requests\Api\Auth\RegisterRequest;
 use App\Models\OrganizationAccount;
 use App\Models\OrganizationMember;
 use App\Models\ProviderProfile;
+use App\Models\Trade;
 use App\Models\User;
 use App\Services\OnboardingV2\OnboardingEngine;
 use App\Services\Promotion\ReferralService;
@@ -228,6 +229,18 @@ class ApiAuthController extends Controller
         }
 
         $answers = $data['trade_answers'] ?? [];
+
+        $trade = Trade::find($tradeId);
+
+        // SkillDeclareValidator ne lit PAS `trade_user` : il cherche provider_trades /
+        // provider_skills (absentes de ce schéma) ou provider_profiles.metadata.trade_codes. On y
+        // recopie donc le métier déclaré, sans quoi l'étape « déclarer vos métiers » resterait en
+        // échec alors que le prestataire l'a renseigné dès l'inscription.
+        if ($trade) {
+            ProviderProfile::query()
+                ->where('user_id', $user->id)
+                ->update(['metadata' => json_encode(['trade_codes' => [$trade->code ?: $trade->slug]])]);
+        }
 
         DB::table('trade_user')->insert([
             'user_id' => $user->id,

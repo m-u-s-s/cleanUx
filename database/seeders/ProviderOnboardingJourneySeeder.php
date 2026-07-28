@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use App\Models\OnboardingJourney;
 use App\Models\OnboardingStep;
+use App\Models\ProviderOnboardingDocument;
 use App\Services\OnboardingV2\Validators\ContractSignValidator;
 use App\Services\OnboardingV2\Validators\DocumentUploadValidator;
 use App\Services\OnboardingV2\Validators\KycCheckValidator;
@@ -31,6 +32,16 @@ use Illuminate\Database\Seeder;
 class ProviderOnboardingJourneySeeder extends Seeder
 {
     public const JOURNEY_CODE = 'provider_default';
+
+    /**
+     * Version du contrat prestataire acceptée à l'étape `contract_sign`.
+     *
+     * ContractSignValidator privilégie une signature Contracts v2 via `template_code`, mais
+     * `contract_templates` est vide : ce chemin échouerait donc systématiquement. On emploie son
+     * repli par version, autonome. À basculer sur `template_code` le jour où des modèles sont
+     * publiés — sans quoi cette étape resterait infranchissable.
+     */
+    public const CONTRACT_VERSION = '1.0';
 
     public function run(): void
     {
@@ -72,6 +83,10 @@ class ProviderOnboardingJourneySeeder extends Seeder
                 'is_skippable' => false,
                 'validator_class' => ProfileCompleteValidator::class,
                 'depends_on' => [],
+                // `phone` en plus des défauts du validateur : c'est le seul de ces champs que
+                // l'inscription ne remplit pas, donc le seul que cette étape fasse réellement
+                // compléter. Sans lui, l'étape passerait sans rien demander.
+                'metadata' => ['required_user_fields' => ['name', 'email', 'phone']],
             ],
             [
                 'code' => 'contract_sign',
@@ -82,6 +97,7 @@ class ProviderOnboardingJourneySeeder extends Seeder
                 'is_skippable' => false,
                 'validator_class' => ContractSignValidator::class,
                 'depends_on' => ['profile_complete'],
+                'metadata' => ['required_version' => self::CONTRACT_VERSION],
             ],
             [
                 'code' => 'kyc_check',
@@ -92,6 +108,7 @@ class ProviderOnboardingJourneySeeder extends Seeder
                 'is_skippable' => false,
                 'validator_class' => KycCheckValidator::class,
                 'depends_on' => ['profile_complete'],
+                'metadata' => [],
             ],
             [
                 'code' => 'document_upload',
@@ -102,6 +119,10 @@ class ProviderOnboardingJourneySeeder extends Seeder
                 'is_skippable' => false,
                 'validator_class' => DocumentUploadValidator::class,
                 'depends_on' => ['kyc_check'],
+                // Sans `document_types`, le validateur passe SANS rien exiger. La pièce
+                // d'identité est le seul justificatif universel ; l'assurance et les diplômes
+                // dépendent du métier et se demandent à la revue admin.
+                'metadata' => ['document_types' => [ProviderOnboardingDocument::TYPE_IDENTITY_CARD]],
             ],
             [
                 'code' => 'skill_declare',
@@ -112,6 +133,7 @@ class ProviderOnboardingJourneySeeder extends Seeder
                 'is_skippable' => false,
                 'validator_class' => SkillDeclareValidator::class,
                 'depends_on' => ['profile_complete'],
+                'metadata' => ['min_skills_count' => 1],
             ],
         ];
     }
