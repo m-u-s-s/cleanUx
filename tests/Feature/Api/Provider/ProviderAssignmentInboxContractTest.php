@@ -49,11 +49,16 @@ class ProviderAssignmentInboxContractTest extends TestCase
         $response->assertJsonPath('data.0.latitude', 50.8503);
         $response->assertJsonPath('data.0.longitude', 4.3517);
         $response->assertJsonPath('data.0.estimated_duration_minutes', 90);
+        // Valeurs, pas seulement présence des clés : les casts `date` / `datetime:H:i` du modèle
+        // ne s'appliquent qu'à la sérialisation DU MODÈLE, donc ces deux champs partaient en
+        // ISO-8601 complet ("2026-06-15T00:00:00.000000Z") dans un écran qui les affiche brut.
+        $response->assertJsonPath('data.0.scheduled_date', now()->addDay()->toDateString());
+        $response->assertJsonPath('data.0.scheduled_time', '10:00');
         $response->assertJsonStructure([
             'data' => [
                 ['id', 'mission_id', 'assignment_status', 'expires_at', 'remaining_seconds',
-                 'booking_id', 'service_name', 'client_name', 'address', 'city', 'postal_code',
-                 'scheduled_date', 'scheduled_time', 'latitude', 'longitude', 'estimated_duration_minutes'],
+                    'booking_id', 'service_name', 'client_name', 'address', 'city', 'postal_code',
+                    'scheduled_date', 'scheduled_time', 'latitude', 'longitude', 'estimated_duration_minutes'],
             ],
         ]);
     }

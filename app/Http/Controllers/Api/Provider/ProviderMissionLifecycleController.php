@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api\Provider;
 
+use App\Http\Controllers\Api\Concerns\FormatsBookingSchedule;
 use App\Http\Controllers\Controller;
 use App\Models\Mission;
 use App\Services\Missions\MissionLifecycleService;
@@ -28,14 +29,39 @@ use Illuminate\Http\Request;
  */
 class ProviderMissionLifecycleController extends Controller
 {
+    use FormatsBookingSchedule;
+
+    /**
+     * Colonnes de réservation nécessaires au payload plat. Chargées sur LES DEUX chaînes de
+     * résolution (bookingViaBookingId et rendezVous) — voir serialize().
+     */
+    private const BOOKING_COLUMNS = 'id,booking_reference,address,city,postal_code,scheduled_date,scheduled_time,service_catalog_id,destination_lat,destination_lng,customer_comment,client_id,customer_user_id';
+
     public function __construct(
         protected MissionLifecycleService $lifecycle,
     ) {}
 
     /**
+     * @return array<int, string>
+     */
+    private function bookingEagerLoads(): array
+    {
+        $loads = [];
+
+        foreach (['bookingViaBookingId', 'rendezVous'] as $relation) {
+            $loads[] = $relation.':'.self::BOOKING_COLUMNS;
+            $loads[] = $relation.'.serviceCatalog:id,name';
+            $loads[] = $relation.'.client:id,name,phone';
+            $loads[] = $relation.'.customer:id,name,phone';
+        }
+
+        return $loads;
+    }
+
+    /**
      * List the provider's active missions (assigned, en_route, arrived, started, paused).
      *
-     * @response 200 {"ok": true, "count": 1, "data": [{"id": 12, "status": "assigned", "planned_start_at": "2026-06-15T09:00:00+00:00", "actual_start_at": null, "actual_end_at": null, "estimated_duration_minutes": 120, "actual_duration_minutes": null, "booking": {"reference": "CUX-A1B2C3", "service_name": "Nettoyage domicile", "address": "Rue de la Loi 1", "city": "Bruxelles", "postal_code": "1000", "destination_lat": 50.846, "destination_lng": 4.352, "scheduled_date": "2026-06-15", "scheduled_time": "09:00:00"}}]}
+     * @response 200 {"ok": true, "count": 1, "data": [{"id": 12, "status": "assigned", "service_name": "Nettoyage domicile", "client_name": "Alice Dupont", "address": "Rue de la Loi 1", "city": "Bruxelles", "postal_code": "1000", "latitude": 50.846, "longitude": 4.352, "scheduled_date": "2026-06-15", "scheduled_time": "09:00", "booking_id": 4, "booking_reference": "CUX-A1B2C3", "planned_start_at": "2026-06-15T09:00:00+00:00", "actual_start_at": null, "actual_end_at": null, "estimated_duration_minutes": 120, "actual_duration_minutes": null}]}
      */
     public function active(Request $request): JsonResponse
     {
@@ -50,10 +76,7 @@ class ProviderMissionLifecycleController extends Controller
                     });
             })
             ->whereIn('status', ['assigned', 'en_route', 'arrived', 'started', 'paused'])
-            ->with([
-                'booking:id,booking_reference,address,city,postal_code,scheduled_date,scheduled_time,service_catalog_id,destination_lat,destination_lng,customer_comment',
-                'booking.serviceCatalog:id,name',
-            ])
+            ->with($this->bookingEagerLoads())
             ->orderBy('planned_start_at')
             ->get();
 
@@ -67,21 +90,17 @@ class ProviderMissionLifecycleController extends Controller
     /**
      * Get full details for a single mission including booking, client info, and checklists.
      *
-     * @response 200 {"ok": true, "data": {"id": 12, "status": "assigned", "planned_start_at": "2026-06-15T09:00:00+00:00", "actual_start_at": null, "actual_end_at": null, "estimated_duration_minutes": 120, "actual_duration_minutes": null, "booking": {"reference": "CUX-A1B2C3", "service_name": "Nettoyage domicile", "address": "Rue de la Loi 1", "city": "Bruxelles", "postal_code": "1000", "destination_lat": 50.846, "destination_lng": 4.352, "scheduled_date": "2026-06-15", "scheduled_time": "09:00:00", "customer_comment": "Apporter matériel"}, "client": {"id": 1, "name": "Alice Dupont", "phone": "+32471000001"}, "client_price": 75.0, "provider_cost": 55.0, "checklists_count": 1, "checklist_items_pending": 5}}
+     * @response 200 {"ok": true, "data": {"id": 12, "status": "assigned", "service_name": "Nettoyage domicile", "client_name": "Alice Dupont", "address": "Rue de la Loi 1", "city": "Bruxelles", "postal_code": "1000", "latitude": 50.846, "longitude": 4.352, "scheduled_date": "2026-06-15", "scheduled_time": "09:00", "booking_id": 4, "booking_reference": "CUX-A1B2C3", "planned_start_at": "2026-06-15T09:00:00+00:00", "actual_start_at": null, "actual_end_at": null, "estimated_duration_minutes": 120, "actual_duration_minutes": null, "client_phone": "+32471000001", "notes": "Apporter matériel", "total_price": 75.0, "provider_cost": 55.0, "checklists_count": 1, "checklist_items_pending": 5}}
      * @response 403 {"message": "Vous n'êtes pas assigné à cette mission."}
      */
     public function show(Request $request, Mission $mission): JsonResponse
     {
         $this->authorizeProvider($request, $mission);
 
-        $mission->load([
-            'booking:id,booking_reference,address,city,postal_code,scheduled_date,scheduled_time,service_catalog_id,destination_lat,destination_lng,customer_comment,client_id,customer_user_id',
-            'booking.serviceCatalog:id,name',
-            'booking.client:id,name,phone',
-            'booking.customer:id,name,phone',
+        $mission->load(array_merge($this->bookingEagerLoads(), [
             'assignments',
             'checklists.items',
-        ]);
+        ]));
 
         return response()->json([
             'ok' => true,
@@ -226,41 +245,53 @@ class ProviderMissionLifecycleController extends Controller
         );
     }
 
+    /**
+     * Payload PLAT, aligné sur le type TS `Mission` (mobile/provider/src/missions/types.ts) que
+     * consomment MissionDetailScreen, TrackingScreen et MissionsListScreen. Même traitement que
+     * ProviderMissionAssignmentController::serializeForList() pour l'inbox : la structure
+     * imbriquée { booking: {...}, client: {...} } rendait chacune de ces lectures `undefined`.
+     */
     protected function serialize(Mission $mission, bool $detailed = false): array
     {
-        $booking = $mission->booking;
+        // Résolution identique à celle de l'inbox : booking() choisit sa FK depuis
+        // $this->booking_id, ce que Laravel ne peut pas faire en eager load (il résout la
+        // relation sur une instance vierge, où l'attribut est toujours vide, et retombe donc
+        // toujours sur rendez_vous_id). Les deux colonnes portent un bookings.id selon le
+        // chemin de création, d'où les deux chaînes chargées puis départagées ici.
+        $booking = $mission->bookingViaBookingId ?? $mission->rendezVous;
+        $client = $booking?->client ?? $booking?->customer;
 
         $base = [
             'id' => $mission->id,
             'status' => $mission->status,
+            'service_name' => $booking?->serviceCatalog?->name,
+            'client_name' => $client?->name,
+            'address' => $booking?->address,
+            'city' => $booking?->city,
+            'postal_code' => $booking?->postal_code,
+            // Destination de la mission, c'est-à-dire l'endroit où le prestataire doit se rendre :
+            // c'est ce dont TrackingScreen a besoin pour la distance, l'ETA et le géofence
+            // d'arrivée à 150 m. Surtout PAS start_lat/end_lat, qui portent la position GPS du
+            // PRESTATAIRE au départ et à la clôture (MissionLifecycleService) : les utiliser
+            // ferait converger la distance vers zéro dès le départ.
+            'latitude' => $this->toFloat($mission->destination_lat ?? $booking?->destination_lat),
+            'longitude' => $this->toFloat($mission->destination_lng ?? $booking?->destination_lng),
+            'scheduled_date' => $this->formatScheduledDate($booking?->scheduled_date),
+            'scheduled_time' => $this->formatScheduledTime($booking?->scheduled_time),
+            'booking_id' => $booking?->id,
+            'booking_reference' => $booking?->booking_reference,
             'planned_start_at' => $mission->planned_start_at?->toIso8601String(),
             'actual_start_at' => $mission->actual_start_at?->toIso8601String(),
             'actual_end_at' => $mission->actual_end_at?->toIso8601String(),
             'estimated_duration_minutes' => $mission->estimated_duration_minutes,
             'actual_duration_minutes' => $mission->actual_duration_minutes,
-            'booking' => $booking ? [
-                'reference' => $booking->booking_reference,
-                'service_name' => $booking->serviceCatalog?->name,
-                'address' => $booking->address,
-                'city' => $booking->city,
-                'postal_code' => $booking->postal_code,
-                'destination_lat' => $booking->destination_lat,
-                'destination_lng' => $booking->destination_lng,
-                'scheduled_date' => $booking->scheduled_date,
-                'scheduled_time' => $booking->scheduled_time,
-            ] : null,
         ];
 
-        if ($detailed && $booking) {
-            $base['booking']['customer_comment'] = $booking->customer_comment ?? null;
-            $client = $booking->client ?? $booking->customer ?? null;
-            $base['client'] = $client ? [
-                'id' => $client->id,
-                'name' => $client->name,
-                'phone' => $client->phone ?? null,
-            ] : null;
-            $base['client_price'] = $mission->client_price;
-            $base['provider_cost'] = $mission->provider_cost;
+        if ($detailed) {
+            $base['client_phone'] = $client?->phone;
+            $base['notes'] = $booking?->customer_comment;
+            $base['total_price'] = $this->toFloat($mission->client_price);
+            $base['provider_cost'] = $this->toFloat($mission->provider_cost);
             $base['checklists_count'] = $mission->checklists->count();
             $base['checklist_items_pending'] = $mission->checklists
                 ->flatMap(fn ($c) => $c->items)
@@ -269,5 +300,11 @@ class ProviderMissionLifecycleController extends Controller
         }
 
         return $base;
+    }
+
+    /** Les colonnes décimales reviennent en chaîne (cast decimal:7) : le mobile attend un nombre. */
+    private function toFloat(mixed $value): ?float
+    {
+        return $value === null ? null : (float) $value;
     }
 }

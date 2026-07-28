@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Http\Controllers\Api\Concerns\FormatsBookingSchedule;
 use App\Http\Controllers\Controller;
 use App\Models\MissionAssignment;
 use App\Services\Dispatch\MissionDispatchService;
@@ -27,6 +28,8 @@ use Illuminate\Http\Request;
  */
 class ProviderMissionAssignmentController extends Controller
 {
+    use FormatsBookingSchedule;
+
     public function __construct(
         protected MissionDispatchService $dispatch,
     ) {}
@@ -162,8 +165,11 @@ class ProviderMissionAssignmentController extends Controller
             'address' => $booking?->address,
             'city' => $booking?->city,
             'postal_code' => $booking?->postal_code,
-            'scheduled_date' => $booking?->scheduled_date,
-            'scheduled_time' => $booking?->scheduled_time,
+            // Formatés, pas bruts : les casts `date` / `datetime:H:i` du modèle ne s'appliquent
+            // qu'à la sérialisation DU MODÈLE. Placés tels quels dans ce tableau, les Carbon
+            // ressortaient en ISO-8601 complet, que les écrans affichent brut.
+            'scheduled_date' => $this->formatScheduledDate($booking?->scheduled_date),
+            'scheduled_time' => $this->formatScheduledTime($booking?->scheduled_time),
             'estimated_duration_minutes' => $mission?->estimated_duration_minutes,
             'latitude' => $mission?->start_lat !== null ? (float) $mission->start_lat : null,
             'longitude' => $mission?->start_lng !== null ? (float) $mission->start_lng : null,

@@ -22,11 +22,22 @@ export interface MissionAssignment {
 
 export interface Mission {
   id: number;
+  /**
+   * Statuts réellement écrits par la table `missions` (App\Support\Domain\MissionStatus) :
+   * 'planned' et 'paused' manquaient à cette union alors que le backend les renvoie.
+   * 'started' y est ajouté pour la même raison — c'est la valeur que la base utilise pour une
+   * mission en cours. ATTENTION : 'pending' et 'in_progress' ne sont écrits par AUCUN chemin
+   * backend ; ils sont conservés le temps que les écrans qui les testent soient réalignés
+   * (MissionDetailScreen gate ses boutons d'action sur 'in_progress', voir le rapport).
+   */
   status:
     | 'pending'
+    | 'planned'
     | 'assigned'
     | 'en_route'
     | 'arrived'
+    | 'started'
+    | 'paused'
     | 'in_progress'
     | 'completed'
     | 'cancelled';

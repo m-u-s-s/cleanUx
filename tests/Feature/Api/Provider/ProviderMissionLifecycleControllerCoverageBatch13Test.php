@@ -103,9 +103,12 @@ class ProviderMissionLifecycleControllerCoverageBatch13Test extends TestCase
             ->getJson("/api/provider/missions/{$mission->id}");
 
         $response->assertOk();
+        // Payload plat depuis la réparation du contrat de détail : les clés imbriquées
+        // `client.name` / `booking.customer_comment` n'existent plus (le type TS Mission côté
+        // mobile est plat, voir ProviderMissionDetailContractTest).
         $response->assertJsonPath('data.id', $mission->id);
-        $response->assertJsonPath('data.client.name', 'Alice Dupont');
-        $response->assertJsonPath('data.booking.customer_comment', 'Apporter matériel');
+        $response->assertJsonPath('data.client_name', 'Alice Dupont');
+        $response->assertJsonPath('data.notes', 'Apporter matériel');
         $response->assertJsonPath('data.checklists_count', 1);
         $response->assertJsonPath('data.checklist_items_pending', 1);
     }
