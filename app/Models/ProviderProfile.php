@@ -65,6 +65,10 @@ class ProviderProfile extends Model
         'current_lat' => 'decimal:7',
         'current_lng' => 'decimal:7',
         'last_location_at' => 'datetime',
+        // Volontairement absent de $fillable : cette colonne PORTE la restriction des comptes
+        // auto-inscrits. La rendre assignable en masse permettrait de l'effacer, donc de lever
+        // sa propre restriction. Elle se pose par forceFill, à la création du compte.
+        'self_registered_at' => 'datetime',
         'stripe_connect_onboarded_at' => 'datetime',
         'skills' => 'array',
         'settings' => 'array',

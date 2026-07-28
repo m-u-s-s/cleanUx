@@ -22,6 +22,18 @@ class RegisterRequest extends FormRequest
             'accept_terms' => ['required', 'accepted'],
             'device_name' => ['nullable', 'string', 'max:100'],
             'referral_code' => ['nullable', 'string', 'max:64'],
+            // Quelle app inscrit : l'app cliente n'envoie rien et reste sur `client`. L'app
+            // prestataire demande `provider`, ce qui crée un compte en attente d'approbation —
+            // sans quoi un prestataire s'inscrivant depuis son app obtenait un compte client,
+            // que le garde `role:employe` enfermait hors de tout, onboarding compris.
+            'account_type' => ['nullable', 'string', 'in:client,provider'],
+            // Indépendant ou société : deux inscriptions distinctes dans l'app prestataire. Une
+            // société n'est pas un drapeau sur le compte, elle donne lieu à un OrganizationAccount
+            // `provider_company` dont le signataire est `owner` — c'est ce que consomment déjà
+            // l'espace web provider-company et le rattachement des missions.
+            'provider_kind' => ['nullable', 'string', 'in:independent,company'],
+            'company_name' => ['nullable', 'required_if:provider_kind,company', 'string', 'max:255'],
+            'vat_number' => ['nullable', 'string', 'max:32'],
         ];
     }
 }

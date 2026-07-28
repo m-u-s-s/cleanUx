@@ -17,6 +17,8 @@ use App\Http\Middleware\EnforceTokenGrace;
 use App\Http\Middleware\EnsureActiveAccount;
 use App\Http\Middleware\EnsureFieldTeamLead;
 use App\Http\Middleware\EnsureOrganizationType;
+use App\Http\Middleware\EnsurePhoneVerified;
+use App\Http\Middleware\EnsureProviderIsApproved;
 use App\Http\Middleware\ForceHttps;
 use App\Http\Middleware\LogSlowQueries;
 use App\Http\Middleware\PremiumGate;
@@ -115,6 +117,7 @@ class Kernel extends HttpKernel
         'throttle' => ThrottleRequests::class,
         'verified' => EnsureEmailIsVerified::class,
         'role' => CheckRole::class,
+        'provider.approved' => EnsureProviderIsApproved::class,
         'active.account' => EnsureActiveAccount::class,
         'org.type' => EnsureOrganizationType::class,
         'field.team.lead' => EnsureFieldTeamLead::class,
@@ -127,6 +130,6 @@ class Kernel extends HttpKernel
         'cache.api' => CacheApiResponse::class,
         'premium' => PremiumGate::class,
         'enforce_2fa' => Enforce2FA::class,
-        'phone.verified' => \App\Http\Middleware\EnsurePhoneVerified::class,
+        'phone.verified' => EnsurePhoneVerified::class,
     ];
 }

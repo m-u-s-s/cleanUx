@@ -2,15 +2,21 @@
 
 namespace App\Http\Controllers\Api\Auth;
 
+use App\Enums\OrganizationRole;
+use App\Enums\ProviderType;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\Auth\LoginRequest;
 use App\Http\Requests\Api\Auth\RegisterRequest;
+use App\Models\OrganizationAccount;
+use App\Models\OrganizationMember;
+use App\Models\ProviderProfile;
 use App\Models\User;
 use App\Services\Promotion\ReferralService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 
 /**
@@ -98,8 +104,8 @@ class ApiAuthController extends Controller
     {
         $data = $request->validated();
 
-        // Crée un user de type "client particulier" (cas mobile le plus simple)
-        // Pour devenir prestataire, parcours d'onboarding séparé (Phase 13+)
+        $asProvider = ($data['account_type'] ?? 'client') === 'provider';
+
         $user = User::create([
             'name' => $data['name'],
             'email' => $data['email'],
@@ -107,8 +113,18 @@ class ApiAuthController extends Controller
             'phone' => $data['phone'] ?? null,
             'locale' => $data['locale'] ?? 'fr',
             'platform_role' => User::PLATFORM_USER,
-            'role' => 'client',
+            'role' => $asProvider ? 'employe' : 'client',
         ]);
+
+        // L'app prestataire crée un compte capable de compléter son dossier, et rien d'autre :
+        // toute la surface prestataire est gardée par `role:employe`, y compris les routes
+        // d'onboarding. Sans rôle `employe`, le compte n'avait aucun moyen de devenir
+        // prestataire — il se connectait et recevait 403 partout, définitivement.
+        // self_registered_at est posé par forceFill car il n'est pas assignable en masse :
+        // c'est lui qui porte la restriction, le rendre fillable permettrait de la lever.
+        if ($asProvider) {
+            $this->createProviderIdentity($user, $data);
+        }
 
         // Apply referral code if provided — soft-fail, never blocks registration
         if (! empty($data['referral_code']) && config('referral.enabled', true)) {
@@ -133,6 +149,76 @@ class ApiAuthController extends Controller
             'token' => $token,
             'user' => $this->serializeUser($user),
         ], 201);
+    }
+
+    /**
+     * Crée l'identité prestataire du compte : profil seul pour un indépendant, profil rattaché à
+     * une organisation `provider_company` pour une société.
+     *
+     * Une société prestataire est modélisée par un OrganizationAccount dont le signataire est
+     * membre `owner` — c'est ce que consomment l'espace web provider-company (dispatch, équipe)
+     * et le rattachement des missions via `provider_organization_id`. Créer seulement un profil
+     * marqué « société » produirait un compte incapable d'avoir la moindre équipe.
+     *
+     * @param  array<string, mixed>  $data
+     */
+    private function createProviderIdentity(User $user, array $data): void
+    {
+        $asCompany = ($data['provider_kind'] ?? 'independent') === 'company';
+
+        $organizationId = null;
+
+        if ($asCompany) {
+            $organization = OrganizationAccount::create([
+                'name' => $data['company_name'],
+                'legal_name' => $data['company_name'],
+                'slug' => $this->uniqueOrganizationSlug($data['company_name']),
+                'type' => 'provider_company',
+                'status' => 'pending',
+                'tva_number' => $data['vat_number'] ?? null,
+                'email' => $data['email'],
+                'phone' => $data['phone'] ?? null,
+            ]);
+
+            OrganizationMember::create([
+                'organization_account_id' => $organization->id,
+                'user_id' => $user->id,
+                'role' => OrganizationRole::OWNER->value,
+                'status' => 'active',
+                'joined_at' => now(),
+            ]);
+
+            $organizationId = $organization->id;
+        }
+
+        $profile = ProviderProfile::create([
+            'user_id' => $user->id,
+            'organization_account_id' => $organizationId,
+            'provider_type' => $asCompany ? ProviderType::COMPANY : ProviderType::INDEPENDENT,
+            'status' => 'pending',
+            'verification_status' => 'unverified',
+        ]);
+
+        // forceFill : self_registered_at n'est pas assignable en masse, c'est elle qui porte la
+        // restriction d'accès tant que le compte n'a pas été approuvé.
+        $profile->forceFill(['self_registered_at' => now()])->save();
+    }
+
+    /**
+     * `organization_accounts.slug` porte un index unique : deux sociétés homonymes qui
+     * s'inscrivent ne doivent pas faire échouer la seconde inscription.
+     */
+    private function uniqueOrganizationSlug(string $name): string
+    {
+        $base = Str::slug($name) ?: 'prestataire';
+        $slug = $base;
+        $suffix = 1;
+
+        while (OrganizationAccount::where('slug', $slug)->exists()) {
+            $slug = $base.'-'.(++$suffix);
+        }
+
+        return $slug;
     }
 
     /**

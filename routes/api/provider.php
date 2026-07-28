@@ -30,7 +30,13 @@ use Illuminate\Support\Facades\Route;
 // M1 — defense-in-depth: gate the whole provider surface by role in addition to the
 // per-controller ownership checks, so a client account can never reach provider endpoints
 // (which is what turned the Quality module's missing checks into an exploitable IDOR).
-Route::middleware(['auth:sanctum', 'role:employe'])->group(function () {
+//
+// `provider.approved` ajoute une seconde condition pour les comptes créés par l'inscription en
+// libre-service de l'app prestataire : ils restent cantonnés à leur dossier tant qu'un humain
+// ne les a pas approuvés. Les routes nécessaires à ce dossier s'en excluent explicitement
+// (withoutMiddleware ci-dessous), sans quoi le compte serait enfermé hors de tout — c'est
+// exactement le défaut que ce lot corrige.
+Route::middleware(['auth:sanctum', 'role:employe', 'provider.approved'])->group(function () {
 
     // Phase 0 — Mission tracking (existant)
     Route::post('/missions/{mission}/tracking/start', [EmployeeMissionTrackingController::class, 'start']);
@@ -115,20 +121,27 @@ Route::middleware(['auth:sanctum', 'role:employe'])->group(function () {
         Route::get('/disputes', [ProviderDisputeController::class, 'index']);
         Route::post('/disputes/{dispute}/respond', [ProviderDisputeController::class, 'respond']);
 
-        // Phase KYC v2 — Vérification d'identité
-        Route::post('/kyc/start', [KycController::class, 'start']);
-        Route::get('/kyc/status', [KycController::class, 'status']);
-        Route::post('/kyc/verifications/{verification}/sync', [KycController::class, 'sync']);
+        // Constitution du dossier prestataire : accessible à un compte auto-inscrit encore en
+        // attente d'approbation. Vérifier son identité, renseigner son profil et brancher ses
+        // paiements sont précisément les étapes qui mènent à l'approbation — les fermer
+        // rendrait le compte impossible à faire avancer.
+        Route::withoutMiddleware('provider.approved')->group(function () {
 
-        // Mobile app — provider profile self-update (name, phone, locale)
-        Route::put('/profile', [ProviderProfileController::class, 'update']);
+            // Phase KYC v2 — Vérification d'identité
+            Route::post('/kyc/start', [KycController::class, 'start']);
+            Route::get('/kyc/status', [KycController::class, 'status']);
+            Route::post('/kyc/verifications/{verification}/sync', [KycController::class, 'sync']);
 
-        // Sprint 0 — Task 3: Stripe Connect provider endpoints (RN Phase 2)
-        Route::prefix('stripe-connect')->middleware('token.grace')->group(function () {
-            Route::get('/status', [StripeConnectController::class, 'status']);
-            Route::post('/onboard', [StripeConnectController::class, 'onboard']);
-            Route::get('/payouts', [StripeConnectController::class, 'payouts']);
-            Route::get('/dashboard-link', [StripeConnectController::class, 'dashboardLink']);
+            // Mobile app — provider profile self-update (name, phone, locale)
+            Route::put('/profile', [ProviderProfileController::class, 'update']);
+
+            // Sprint 0 — Task 3: Stripe Connect provider endpoints (RN Phase 2)
+            Route::prefix('stripe-connect')->middleware('token.grace')->group(function () {
+                Route::get('/status', [StripeConnectController::class, 'status']);
+                Route::post('/onboard', [StripeConnectController::class, 'onboard']);
+                Route::get('/payouts', [StripeConnectController::class, 'payouts']);
+                Route::get('/dashboard-link', [StripeConnectController::class, 'dashboardLink']);
+            });
         });
 
         // Fleet v2 — Provider my-vehicles
@@ -153,8 +166,9 @@ Route::middleware(['auth:sanctum', 'role:employe'])->group(function () {
         Route::post('/{mission}/no-show', [ProviderCancellationController::class, 'noShow']);
     });
 
-    // Phase 14 — Onboarding provider
-    Route::prefix('provider/onboarding')->group(function () {
+    // Phase 14 — Onboarding provider. Ouvert aux comptes en attente d'approbation : c'est la
+    // raison d'être de ce lot, un compte auto-inscrit doit pouvoir constituer son dossier.
+    Route::prefix('provider/onboarding')->withoutMiddleware('provider.approved')->group(function () {
         Route::post('/start', [ProviderOnboardingController::class, 'start']);
         Route::get('/progress', [ProviderOnboardingController::class, 'progress']);
         Route::post('/profile', [ProviderOnboardingController::class, 'setProfile']);
