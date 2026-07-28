@@ -35,6 +35,15 @@ jest.mock('@/ui', () => {
     ),
     Divider: () => <View />,
     Icon: () => <View />,
+    // Le widget captcha s'appuie sur react-native-webview, dont le module natif n'existe pas
+    // sous Jest. On le stube, et on signale immédiatement « pas de captcha requis » comme le
+    // fait le vrai composant quand aucune clé publique n'est configurée.
+    TurnstileWidget: ({ onSkipped, testID }: any) => {
+      const ReactLocal = require('react');
+      ReactLocal.useEffect(() => { onSkipped?.(); }, []);
+
+      return <View testID={testID} />;
+    },
     a11y: { pressable: (label: string) => ({ accessibilityLabel: label, accessibilityRole: 'button' }) },
   };
 });

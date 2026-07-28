@@ -12,7 +12,7 @@ import {
 import Animated, { FadeIn, FadeOut } from 'react-native-reanimated';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { Button, TextInput, Divider, Icon, a11y } from '@/ui';
+import { Button, TextInput, Divider, Icon, TurnstileWidget, a11y } from '@/ui';
 import { useLogin, useRegister, useAuth } from '@/auth';
 import { colors, spacing, typography } from '@/theme';
 import type { RootStackParamList } from '@/navigation/types';
@@ -148,6 +148,11 @@ function RegisterForm() {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [acceptTerms, setAcceptTerms] = useState(false);
+  // Jeton captcha : l'endpoint /auth/register porte le middleware `turnstile` et refusait
+  // l'inscription en production, aucune app n'envoyant de jeton. 'skipped' = captcha non
+  // configuré (dev), le serveur laisse alors passer.
+  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
+  const [captchaSkipped, setCaptchaSkipped] = useState(false);
   const [errors, setErrors] = useState<{
     name?: string;
     email?: string;
@@ -179,6 +184,11 @@ function RegisterForm() {
 
   const handleRegister = async () => {
     if (!validate()) return;
+    if (!captchaSkipped && !captchaToken) {
+      setErrors(prev => ({ ...prev, acceptTerms: 'Veuillez patienter, la vérification anti-robot est en cours.' }));
+
+      return;
+    }
     try {
       const result = await register.mutateAsync({
         name,
@@ -187,6 +197,7 @@ function RegisterForm() {
         passwordConfirmation: confirmPassword,
         phone: phone || undefined,
         acceptTerms: true,
+        captchaToken,
       });
       setUser(result.user);
     } catch (e: any) {
@@ -277,6 +288,11 @@ function RegisterForm() {
           </Text>
         </Text>
       </TouchableOpacity>
+      <TurnstileWidget
+        onToken={setCaptchaToken}
+        onSkipped={() => setCaptchaSkipped(true)}
+        testID="register-captcha"
+      />
       {errors.acceptTerms ? <Text style={styles.errorText}>{errors.acceptTerms}</Text> : null}
       <Button label="Créer mon compte" onPress={handleRegister} fullWidth size="lg" loading={register.isPending} />
     </View>

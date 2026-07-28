@@ -102,6 +102,21 @@ return [
     | REST API token from https://dashboard.onfido.com/
     | region: eu | us | ca
     */
+    /*
+    |--------------------------------------------------------------------------
+    | Cloudflare Turnstile (captcha sur l'inscription)
+    |--------------------------------------------------------------------------
+    | Cette entrée manquait, alors que VerifyTurnstileCaptcha la lit en premier.
+    | Le middleware retombait donc sur env(), qui renvoie null dès que la config est
+    | mise en cache — ce qui est le cas standard en production (`config:cache`).
+    | Résultat : la clé pouvait être présente dans .env et l'inscription renvoyait
+    | quand même 503 captcha_misconfigured.
+    */
+    'turnstile' => [
+        'site_key' => env('TURNSTILE_SITE_KEY'),
+        'secret_key' => env('TURNSTILE_SECRET_KEY'),
+    ],
+
     'onfido' => [
         'api_token' => env('ONFIDO_API_TOKEN'),
         'base_url' => env('ONFIDO_BASE_URL', 'https://api.eu.onfido.com/v3.6'),

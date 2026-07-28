@@ -21,7 +21,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { Button, TextInput, Divider, Icon, useReducedMotion } from '@/ui';
+import { Button, TextInput, Divider, Icon, TurnstileWidget, useReducedMotion } from '@/ui';
 import { useLogin, useRegister, useAuth } from '@/auth';
 import { ApiError } from '@/api';
 import { colors, radius, shadows, spacing, typography } from '@/theme';
@@ -213,6 +213,72 @@ function Stagger({ index, children }: { index: number; children: React.ReactNode
 }
 
 /**
+ * Choix du type d'inscription. Deux cartes plutôt qu'une liste déroulante : c'est la première
+ * décision du parcours, elle change la suite du formulaire, et elle doit se lire d'un coup d'œil.
+ */
+function KindChoice({
+  value,
+  onChange,
+}: {
+  value: 'independent' | 'company' | null;
+  onChange: (kind: 'independent' | 'company') => void;
+}) {
+  // Une teinte par type, pour que les deux cases se distinguent au-delà de la seule bordure.
+  // Les couleurs sont choisies sur leur contraste mesuré, pas à l'œil : accent.amber (1,74:1) et
+  // accent.amberDeep (2,35:1) échouent au seuil de 3:1 exigé d'un élément d'interface sur fond
+  // clair — ils seraient quasi invisibles comme indicateur de sélection. warning[700] (4,73:1)
+  // et brand[600] (5,92:1) passent, y compris comme texte sur leur propre lavis.
+  //
+  // `as const` plutôt qu'une annotation : le prop `name` d'Icon attend une union de noms
+  // Ionicons, qu'un `string` élargi ne satisfait pas.
+  const options = [
+    {
+      kind: 'independent',
+      title: 'Indépendant',
+      hint: 'Je travaille seul',
+      icon: 'person-outline',
+      accent: colors.warning[700],
+      wash: colors.warning[50],
+    },
+    {
+      kind: 'company',
+      title: 'Société',
+      hint: "J'ai une équipe",
+      icon: 'business-outline',
+      accent: colors.brand[600],
+      wash: colors.brand[50],
+    },
+  ] as const;
+
+  return (
+    <View style={styles.kindRow} accessibilityRole="radiogroup">
+      {options.map(option => {
+        const selected = value === option.kind;
+
+        return (
+          <TouchableOpacity
+            key={option.kind}
+            style={[
+              styles.kindCard,
+              selected && { borderColor: option.accent, backgroundColor: option.wash },
+            ]}
+            onPress={() => onChange(option.kind)}
+            accessibilityRole="radio"
+            accessibilityState={{ selected }}
+            accessibilityLabel={`${option.title} — ${option.hint}`}
+            testID={`register-kind-${option.kind}`}
+          >
+            <Icon name={option.icon} size={22} color={selected ? option.accent : colors.surface[400]} />
+            <Text style={[styles.kindTitle, selected && { color: option.accent }]}>{option.title}</Text>
+            <Text style={styles.kindHint}>{option.hint}</Text>
+          </TouchableOpacity>
+        );
+      })}
+    </View>
+  );
+}
+
+/**
  * Bandeau d'erreur du formulaire.
  *
  * Local plutôt que le composant partagé `ErrorState`, dont la mise en page centrée avec titre
@@ -399,14 +465,22 @@ function RegisterForm() {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [acceptTerms, setAcceptTerms] = useState(false);
+  // null tant que rien n'est choisi : le formulaire ne se révèle qu'après la décision.
+  const [providerKind, setProviderKind] = useState<'independent' | 'company' | null>(null);
+  const [companyName, setCompanyName] = useState('');
+  const [vatNumber, setVatNumber] = useState('');
   const [errors, setErrors] = useState<{
     name?: string;
+    companyName?: string;
     email?: string;
     password?: string;
     confirmPassword?: string;
     acceptTerms?: string;
   }>({});
   const [formError, setFormError] = useState<string | null>(null);
+  // null = pas encore résolu ; 'skipped' = captcha non configuré (dev), on soumet sans jeton.
+  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
+  const [captchaSkipped, setCaptchaSkipped] = useState(false);
   const register = useRegister();
   const { setUser } = useAuth();
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
@@ -418,6 +492,8 @@ function RegisterForm() {
   const validate = () => {
     const e: typeof errors = {};
     if (!name.trim()) e.name = 'Nom requis';
+    // Le serveur refuse une société sans raison sociale (required_if) : autant le dire ici.
+    if (providerKind === 'company' && !companyName.trim()) e.companyName = 'Nom de la société requis';
     if (!email) e.email = 'Email requis';
     else if (!email.includes('@')) e.email = 'Email invalide';
     if (!password) e.password = 'Mot de passe requis';
@@ -431,7 +507,16 @@ function RegisterForm() {
 
   const handleRegister = async () => {
     setFormError(null);
+    // Le bouton n'existe pas avant le choix ; garde de sûreté si le rendu changeait.
+    if (!providerKind) return;
     if (!validate()) return;
+    // Le serveur refuse l'inscription sans jeton quand le captcha est actif : mieux vaut le dire
+    // ici que laisser partir un appel voué à un 400.
+    if (!captchaSkipped && !captchaToken) {
+      setFormError('Veuillez patienter, la vérification anti-robot est en cours.');
+
+      return;
+    }
     try {
       const result = await register.mutateAsync({
         name,
@@ -440,6 +525,13 @@ function RegisterForm() {
         passwordConfirmation: confirmPassword,
         phone: phone || undefined,
         acceptTerms: true,
+        // Cette app inscrit des prestataires. Sans ce champ le serveur créait un compte client,
+        // que le garde `role:employe` enfermait hors de tout — onboarding compris.
+        accountType: 'provider',
+        providerKind,
+        companyName: providerKind === 'company' ? companyName : undefined,
+        vatNumber: providerKind === 'company' && vatNumber ? vatNumber : undefined,
+        captchaToken,
       });
       setUser(result.user);
     } catch (e: unknown) {
@@ -447,6 +539,7 @@ function RegisterForm() {
       if (fieldErrors) {
         setErrors({
           name: fieldErrors.name?.[0],
+          companyName: fieldErrors.company_name?.[0],
           email: fieldErrors.email?.[0],
           password: fieldErrors.password?.[0],
           confirmPassword: fieldErrors.password_confirmation?.[0],
@@ -460,6 +553,42 @@ function RegisterForm() {
   return (
     <View style={styles.form}>
       <Stagger index={0}>
+        <KindChoice value={providerKind} onChange={setProviderKind} />
+      </Stagger>
+
+      {/* Le formulaire ne se révèle qu'une fois le type choisi : les champs demandés diffèrent
+          selon le cas, et une seule décision à la fois se lit mieux qu'un mur de champs. */}
+      {providerKind === null ? (
+        <Text style={styles.kindPrompt}>Choisissez le type de compte pour continuer.</Text>
+      ) : null}
+
+      {providerKind !== null ? (
+        <>
+      {providerKind === 'company' ? (
+        <>
+          <Stagger index={1}>
+            <TextInput
+              label="Nom de la société"
+              value={companyName}
+              onChangeText={(t) => { setCompanyName(t); setErrors(prev => ({ ...prev, companyName: undefined })); }}
+              error={errors.companyName}
+              placeholder="Nettoyage Dupont SPRL"
+              returnKeyType="next"
+            />
+          </Stagger>
+          <Stagger index={1}>
+            <TextInput
+              label="Numéro de TVA (optionnel)"
+              value={vatNumber}
+              onChangeText={setVatNumber}
+              autoCapitalize="characters"
+              placeholder="BE0123456789"
+              returnKeyType="next"
+            />
+          </Stagger>
+        </>
+      ) : null}
+      <Stagger index={1}>
         <TextInput
           label="Nom complet"
           value={name}
@@ -531,6 +660,9 @@ function RegisterForm() {
           onPress={() => { setAcceptTerms(v => !v); setErrors(prev => ({ ...prev, acceptTerms: undefined })); }}
           accessibilityRole="checkbox"
           accessibilityState={{ checked: acceptTerms }}
+          // La case portait un rôle mais aucun nom accessible : un lecteur d'écran annonçait
+          // « case à cocher » sans dire de quoi, alors que cocher est obligatoire pour s'inscrire.
+          accessibilityLabel="J'accepte les conditions d'utilisation et la politique de confidentialité"
         >
           <View style={[styles.checkbox, acceptTerms && styles.checkboxChecked]} />
           <Text style={styles.termsText}>
@@ -546,10 +678,17 @@ function RegisterForm() {
         </TouchableOpacity>
       </Stagger>
       {errors.acceptTerms ? <Text style={styles.errorText}>{errors.acceptTerms}</Text> : null}
+      <TurnstileWidget
+        onToken={setCaptchaToken}
+        onSkipped={() => setCaptchaSkipped(true)}
+        testID="register-captcha"
+      />
       {formError ? <FormError message={formError} onRetry={handleRegister} testID="register-form-error" /> : null}
       <Stagger index={6}>
         <Button label="Créer mon compte" onPress={handleRegister} fullWidth size="lg" loading={register.isPending} />
       </Stagger>
+        </>
+      ) : null}
     </View>
   );
 }
@@ -614,6 +753,29 @@ const styles = StyleSheet.create({
   termsText: { flex: 1, fontSize: typography.fontSize.sm, color: colors.surface[700] },
   termsLink: { color: colors.brand[600], textDecorationLine: 'underline' },
   errorText: { fontSize: typography.fontSize.xs, color: colors.danger[600] },
+  kindRow: { flexDirection: 'row', gap: spacing.sm },
+  kindCard: {
+    flex: 1,
+    gap: 2,
+    paddingVertical: spacing.md,
+    paddingHorizontal: spacing.sm,
+    borderRadius: radius.md,
+    borderWidth: 1.5,
+    borderColor: colors.surface[200],
+    backgroundColor: '#ffffff',
+  },
+  kindTitle: {
+    fontSize: typography.fontSize.base,
+    fontWeight: typography.fontWeight.semibold,
+    color: colors.mode.tool.ink,
+  },
+  kindHint: { fontSize: typography.fontSize.xs, color: colors.surface[600] },
+  kindPrompt: {
+    fontSize: typography.fontSize.sm,
+    color: colors.mode.tool.muted,
+    textAlign: 'center',
+    paddingVertical: spacing.sm,
+  },
   formError: {
     flexDirection: 'row',
     alignItems: 'flex-start',

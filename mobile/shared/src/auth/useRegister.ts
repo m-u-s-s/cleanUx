@@ -6,6 +6,27 @@ import type { User } from '@/api/types';
 interface RegisterInput {
   name: string; email: string; password: string; passwordConfirmation: string;
   phone?: string; locale?: string; acceptTerms: boolean; deviceName?: string;
+  /**
+   * Quelle app inscrit. L'app cliente l'omet et obtient un compte client, comme avant.
+   * L'app prestataire demande 'provider' : sans cela le serveur créait un compte client,
+   * que le garde `role:employe` enfermait hors de TOUTE la surface prestataire — onboarding
+   * compris, donc sans aucun moyen de devenir prestataire.
+   */
+  accountType?: 'client' | 'provider';
+  /**
+   * Jeton Cloudflare Turnstile. L'endpoint porte le middleware `turnstile`, qui l'exige via
+   * l'en-tête `X-Turnstile-Token` : sans lui l'inscription était refusée en production.
+   * Absent quand le captcha n'est pas configuré (dev), où le serveur laisse passer.
+   */
+  captchaToken?: string | null;
+  /**
+   * Indépendant ou société. Une société donne lieu côté serveur à un OrganizationAccount
+   * `provider_company` dont le signataire devient `owner` — c'est ce que consomment l'espace
+   * web provider-company et le rattachement des missions. Omis = indépendant.
+   */
+  providerKind?: 'independent' | 'company';
+  companyName?: string;
+  vatNumber?: string;
 }
 interface RegisterResult { token: string; user: User; }
 
@@ -16,8 +37,12 @@ export function useRegister() {
         name: input.name, email: input.email, password: input.password,
         password_confirmation: input.passwordConfirmation,
         phone: input.phone, locale: input.locale, accept_terms: input.acceptTerms,
+        account_type: input.accountType,
+        provider_kind: input.providerKind,
+        company_name: input.companyName,
+        vat_number: input.vatNumber,
         device_name: input.deviceName ?? 'cleanux-mobile',
-      });
+      }, input.captchaToken ? { headers: { 'X-Turnstile-Token': input.captchaToken } } : undefined);
       await secureStore.setToken(res.data.token);
       return { token: res.data.token, user: res.data.user };
     },

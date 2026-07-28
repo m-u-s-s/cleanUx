@@ -108,9 +108,10 @@ jest.mock('@/ui', () => {
 
 jest.mock('@/theme', () => ({
   colors: {
-    brand: { 500: '#6366f1', 600: '#4f46e5' },
+    brand: { 50: '#eef2ff', 500: '#6366f1', 600: '#4f46e5' },
+    warning: { 50: '#fffbeb', 700: '#b45309' },
     accent: { amber: '#ffb648', amberDeep: '#ff8a3d', cyan: '#4fe3d6', violet: '#8b7bff' },
-    surface: { 200: '#e5e5e5', 400: '#a3a3a3', 500: '#737373', 700: '#404040' },
+    surface: { 200: '#e5e5e5', 400: '#a3a3a3', 500: '#737373', 600: '#525252', 700: '#404040' },
     danger: { 50: '#fef2f2', 500: '#ef4444', 600: '#dc2626', 700: '#b91c1c' },
     mode: { tool: { ink: '#0f172a', muted: '#64748b' } },
   },
