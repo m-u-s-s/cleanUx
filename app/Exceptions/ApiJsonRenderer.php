@@ -40,6 +40,11 @@ class ApiJsonRenderer
         if (config('app.debug') && $status >= 500) {
             $payload['debug'] = [
                 'exception' => get_class($e),
+                // Le message porte l'information utile — la colonne manquante, la contrainte
+                // violée. Sans lui, un 500 n'indiquait que le fichier du framework où l'erreur a
+                // fait surface, et il fallait rejouer l'appel à la main pour savoir quoi que ce
+                // soit. Reste borné au mode debug, jamais exposé en production.
+                'message' => $e->getMessage(),
                 'file' => $e->getFile().':'.$e->getLine(),
             ];
         }
@@ -77,8 +82,17 @@ class ApiJsonRenderer
         }
         // Domain exceptions (BookingException, DispatchException, PaymentException, etc.)
         // carry a meaningful HTTP status code in their constructor code argument.
-        if ($e instanceof \RuntimeException && $e->getCode() >= 400 && $e->getCode() < 600) {
-            return [$e->getCode(), 'domain_error', $e->getMessage(), null];
+        //
+        // `is_int` n'est pas décoratif. getCode() n'est pas garanti entier : PDOException — donc
+        // QueryException, qui en hérite et hérite ainsi de RuntimeException — y met le SQLSTATE,
+        // une CHAÎNE comme '42S22'. En PHP 8, comparer une chaîne non numérique à un entier se
+        // fait entre chaînes, et '42S22' passe les deux bornes. Une simple colonne manquante
+        // ressortait donc avec un statut HTTP '42S22', que le constructeur de JsonResponse refuse
+        // (TypeError) : le gestionnaire censé rendre les erreurs lisibles plantait lui-même et
+        // masquait l'erreur SQL d'origine. Les exceptions métier, elles, passent bien un entier.
+        $code = $e->getCode();
+        if ($e instanceof \RuntimeException && is_int($code) && $code >= 400 && $code < 600) {
+            return [$code, 'domain_error', $e->getMessage(), null];
         }
         // DomainException (PHP built-in) used by legacy services — treat as 409 conflict.
         if ($e instanceof \DomainException) {
