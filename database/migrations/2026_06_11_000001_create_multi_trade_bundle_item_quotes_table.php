@@ -42,7 +42,14 @@ return new class extends Migration
             $table->timestamps();
 
             // Un seul devis par prestataire par item.
-            $table->unique(['bundle_item_id', 'provider_user_id']);
+            //
+            // Nom explicite : celui que Laravel dérive automatiquement
+            // (multi_trade_bundle_item_quotes_bundle_item_id_provider_user_id_unique) fait
+            // 68 caractères, au-delà de la limite MySQL de 64 — la migration échouait avec
+            // « 1059 Identifier name is too long ». Comme MySQL n'annule pas le DDL, la table
+            // restait créée sans cette contrainte NI trace dans la table `migrations`, ce qui
+            // faisait ensuite échouer tout `php artisan migrate` sur un « table already exists ».
+            $table->unique(['bundle_item_id', 'provider_user_id'], 'mtb_item_quotes_item_provider_unique');
             $table->index(['provider_user_id', 'status']);
             $table->index(['bundle_item_id', 'status']);
         });
