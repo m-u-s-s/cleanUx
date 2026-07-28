@@ -192,6 +192,7 @@
     ['label' => 'Bundles chantiers', 'route' => 'admin.bundles.center', 'active' => 'admin.bundles.center', 'icon' => '🏗️'],
     ['label' => 'Matching insights', 'route' => 'admin.matching.insights', 'active' => 'admin.matching.insights', 'icon' => '🎯'],
     ['label' => 'Pricing v2 (DSL)', 'route' => 'admin.pricing-v2.center', 'active' => 'admin.pricing-v2.center', 'icon' => '💵'],
+    ['label' => 'Inscriptions prestataires', 'route' => 'admin.providers.registrations', 'active' => 'admin.providers.registrations', 'icon' => '🙋'],
     ['label' => 'Onboarding v2', 'route' => 'admin.onboarding-v2.center', 'active' => 'admin.onboarding-v2.center', 'icon' => '🚪'],
     ['label' => 'Contrats v2', 'route' => 'admin.contracts-v2.center', 'active' => 'admin.contracts-v2.center', 'icon' => '📜'],
     ['label' => 'Analytics v2', 'route' => 'admin.analytics.center', 'active' => 'admin.analytics.center', 'icon' => '📊'],

@@ -21,12 +21,15 @@ use App\Livewire\Admin\ChatV2\ChatCenter;
 use App\Livewire\Admin\ContractsV2\ContractsCenter;
 use App\Livewire\Admin\CustomerCreditsManager;
 use App\Livewire\Admin\Disputes\DisputesCenter;
+use App\Livewire\Admin\EditRecurringBooking;
 use App\Livewire\Admin\EnterpriseApprovalsCenter;
 use App\Livewire\Admin\FeatureFlagsManager;
 use App\Livewire\Admin\FleetV2\FleetCenter;
 use App\Livewire\Admin\Fx\FxCenter;
 use App\Livewire\Admin\Gdpr\GdprCenter;
 use App\Livewire\Admin\GeolocationV2\GeolocationCenter;
+use App\Livewire\Admin\GestionEntreprises;
+use App\Livewire\Admin\GestionZones;
 use App\Livewire\Admin\I18n\TranslationsCenter;
 use App\Livewire\Admin\Insurance\InsuranceCenter;
 use App\Livewire\Admin\KybV2\KybCenter;
@@ -49,6 +52,7 @@ use App\Livewire\Admin\PricingV2\PricingCenter;
 use App\Livewire\Admin\Promotions\PromoCampaignsCenter;
 use App\Livewire\Admin\Promotions\PromoCodesCenter;
 use App\Livewire\Admin\Promotions\ReferralsCenter;
+use App\Livewire\Admin\Providers\ProviderRegistrationsCenter;
 use App\Livewire\Admin\Push\PushCenter;
 use App\Livewire\Admin\Quality\QualityCenter;
 use App\Livewire\Admin\Ratings\RatingModerationCenter;
@@ -82,9 +86,9 @@ Route::middleware(['role:admin', 'enforce_2fa'])
         Route::get('/home', AdminHomeDashboard::class)->name('home');
 
         // Récupération d'orphelins — pages admin auparavant non routées.
-        Route::get('/zones', \App\Livewire\Admin\GestionZones::class)->name('zones');
-        Route::get('/entreprises', \App\Livewire\Admin\GestionEntreprises::class)->name('entreprises');
-        Route::get('/recurrence/{rendezVous}/serie', \App\Livewire\Admin\EditRecurringBooking::class)->name('recurrence.edit');
+        Route::get('/zones', GestionZones::class)->name('zones');
+        Route::get('/entreprises', GestionEntreprises::class)->name('entreprises');
+        Route::get('/recurrence/{rendezVous}/serie', EditRecurringBooking::class)->name('recurrence.edit');
 
         if (class_exists(MissionsAdmin::class)) {
             Route::get('/missions', MissionsAdmin::class)->name('missions');
@@ -509,6 +513,12 @@ Route::middleware(['role:admin', 'enforce_2fa'])
         Route::get('/trades', Trades::class)->name('trades');
 
         Route::get('/trades/{trade}/pricing', TradeZonePricingManager::class)->name('trades.pricing');
+
+        // Approbation des inscriptions prestataires en libre-service (app mobile).
+        // Distinct de l'onboarding ci-dessous, qui valide le DOSSIER sur pièces : ici on ouvre
+        // l'accès à un compte tout juste créé, que le middleware provider.approved bloque encore.
+        Route::get('/inscriptions-prestataires', ProviderRegistrationsCenter::class)
+            ->name('providers.registrations');
 
         // Phase 14.1 — Onboarding admin
         Route::get('/onboarding-providers', AdminOnboardingProvidersList::class)
