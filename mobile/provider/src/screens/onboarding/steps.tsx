@@ -4,6 +4,7 @@ import { useMutation } from '@tanstack/react-query';
 import { Button, TextInput, Icon } from '@/ui';
 import { apiClient } from '@/api';
 import { useTrades } from '@/trades';
+import { pickDocument, pickImage, rejectionReason, type PickedFile } from './documentPicker';
 import { colors, radius, spacing, typography } from '@/theme';
 
 /**
@@ -183,27 +184,89 @@ export function KycStep({ onDone, submitting, error }: StepProps) {
 }
 
 /**
- * Étape 4 — Justificatifs. Le validateur exige une pièce d'identité déposée.
+ * Étape 4 — Justificatifs. Le validateur exige une pièce d'identité déposée
+ * (provider_onboarding_documents, type identity_card).
  *
- * L'envoi de fichier depuis React Native demande un sélecteur de documents natif ; tant qu'il
- * n'est pas branché, cette étape indique clairement ce qui est attendu plutôt que de laisser
- * croire à une action possible. Voir la réserve consignée dans l'écran parent.
+ * Deux sources : photographier la pièce, ou choisir un fichier déjà scanné. La photo couvre le
+ * cas courant, le fichier couvre les PDF. Le format et la taille sont refusés ici quand le
+ * serveur les refuserait — inutile de faire remonter 40 Mo pour recevoir un 422.
  */
 export function DocumentsStep({ onDone, submitting, error }: StepProps) {
+  const [file, setFile] = useState<PickedFile | null>(null);
+  const [localError, setLocalError] = useState<string | null>(null);
+
+  const choose = async (pick: () => Promise<PickedFile | null>) => {
+    setLocalError(null);
+    try {
+      const picked = await pick();
+      if (!picked) return; // annulation : ce n'est pas une erreur
+
+      const reason = rejectionReason(picked, picked.size);
+      if (reason) {
+        setLocalError(reason);
+
+        return;
+      }
+      setFile(picked);
+    } catch (e) {
+      setLocalError(e instanceof Error ? e.message : 'Sélection impossible.');
+    }
+  };
+
+  const upload = useMutation({
+    mutationFn: async () => {
+      const body = new FormData();
+      body.append('document_type', 'identity_card');
+      // La forme { uri, name, type } est celle qu'attend FormData en React Native pour un
+      // fichier local ; un Blob ne fonctionne pas ici.
+      body.append('file', { uri: file!.uri, name: file!.name, type: file!.mimeType } as never);
+
+      return apiClient.post('/provider/onboarding/documents', body, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+    },
+    onSuccess: () => onDone(),
+    onError: () => setLocalError("L'envoi a échoué. Vérifiez votre connexion, puis réessayez."),
+  });
+
   return (
     <StepShell
       title="Pièce d'identité"
-      hint="Carte d'identité ou passeport, lisible et en cours de validité."
+      hint="Carte d'identité ou passeport, lisible et en cours de validité. PDF, JPG ou PNG, 10 Mo maximum."
     >
-      <View style={styles.notice}>
-        <Text style={styles.noticeText}>
-          Le dépôt depuis l'application arrive prochainement. En attendant, envoyez votre pièce
-          d'identité à support@cleanux.com : elle sera rattachée à votre dossier.
-        </Text>
-      </View>
+      {file ? (
+        <View style={styles.filePicked} testID="onboarding-document-picked">
+          <Icon name="document-text-outline" size={20} color={colors.success[600]} />
+          <Text style={styles.fileName} numberOfLines={1}>{file.name}</Text>
+          <TouchableOpacity onPress={() => setFile(null)} accessibilityLabel="Retirer le fichier">
+            <Text style={styles.fileRemove}>Retirer</Text>
+          </TouchableOpacity>
+        </View>
+      ) : (
+        <View style={styles.pickRow}>
+          <Button
+            label="Prendre en photo"
+            onPress={() => choose(() => pickImage('camera'))}
+            variant="secondary"
+            fullWidth
+          />
+          <Button
+            label="Choisir un fichier"
+            onPress={() => choose(pickDocument)}
+            variant="secondary"
+            fullWidth
+          />
+        </View>
+      )}
 
-      <StepError error={error} />
-      <Button label="J'ai envoyé ma pièce, vérifier" onPress={() => onDone()} fullWidth size="lg" loading={submitting} />
+      <StepError error={localError ?? error} />
+      <Button
+        label={file ? 'Envoyer et continuer' : 'Ajoutez votre pièce'}
+        onPress={() => (file ? upload.mutate() : setLocalError("Ajoutez votre pièce d'identité pour continuer."))}
+        fullWidth
+        size="lg"
+        loading={upload.isPending || submitting}
+      />
     </StepShell>
   );
 }
@@ -304,6 +367,19 @@ const styles = StyleSheet.create({
     backgroundColor: colors.danger[50],
   },
   errorText: { flex: 1, fontSize: typography.fontSize.sm, color: colors.danger[700] },
+  pickRow: { gap: spacing.sm },
+  filePicked: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+    padding: spacing.md,
+    borderRadius: radius.md,
+    borderWidth: 1,
+    borderColor: colors.success[600],
+    backgroundColor: '#ffffff',
+  },
+  fileName: { flex: 1, fontSize: typography.fontSize.sm, color: colors.surface[700] },
+  fileRemove: { fontSize: typography.fontSize.sm, color: colors.danger[600], fontWeight: typography.fontWeight.semibold },
   tradeGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.xs },
   tradeChip: {
     paddingVertical: spacing.xs + 2,
