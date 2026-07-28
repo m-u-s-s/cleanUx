@@ -164,3 +164,24 @@ Route::get('/trades', function () {
 
     return response()->json(['data' => $trades]);
 })->middleware(['cache.headers:public;max_age=300;etag', 'cache.api:300'])->name('api.trades.index');
+
+// Questions posées au PRESTATAIRE qui déclare exercer ce métier (trades.provider_form_schema).
+// GET /api/trades/{trade}/provider-fields
+//
+// Public à dessein : le formulaire d'inscription prestataire les affiche avant que le compte
+// n'existe. L'équivalent client (/api/client/trades/{trade}/form-fields) est authentifié et décrit
+// d'autres questions — celles posées au client qui réserve.
+Route::get('/trades/{trade}/provider-fields', function (Trade $trade) {
+    return response()->json([
+        'trade' => [
+            'id' => $trade->id,
+            'name' => $trade->name,
+            'slug' => $trade->slug,
+            'requires_certification' => (bool) $trade->requires_certification,
+            'requires_insurance_proof' => (bool) $trade->requires_insurance_proof,
+        ],
+        // Un métier sans schéma rend une liste vide plutôt qu'une erreur : le formulaire reste
+        // utilisable, il ne pose simplement aucune question spécifique.
+        'fields' => data_get($trade->provider_form_schema, 'fields', []),
+    ]);
+})->middleware(['cache.headers:public;max_age=300;etag', 'cache.api:300'])->name('api.trades.provider-fields');

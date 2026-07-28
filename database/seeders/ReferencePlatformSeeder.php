@@ -20,8 +20,14 @@ class ReferencePlatformSeeder extends Seeder
             PlatformModuleSeeder::class,
             ZoneManagementSeeder::class,
             CoreSettingsSeeder::class,
+            // Configuration, pas données de démo : le parcours de vérification et les questions
+            // métier doivent exister sur TOUS les profils, production comprise. Sans le parcours,
+            // aucune vérification ne s'applique à un compte créé. Placés après TradeSeeder, dont
+            // les questions dérivent des drapeaux de chaque métier.
+            ProviderOnboardingJourneySeeder::class,
+            ProviderTradeQuestionsSeeder::class,
         ]);
 
-        $this->command?->info('✅ Référentiel plateforme chargé (géographie, trades, services multi-métiers, modules, zones, paramètres).');
+        $this->command?->info('✅ Référentiel plateforme chargé (géographie, trades, services multi-métiers, modules, zones, paramètres, parcours prestataire).');
     }
 }

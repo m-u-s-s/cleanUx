@@ -57,6 +57,9 @@ class Trade extends Model
         'sla_response_minutes',
         // Phase F1 — schema dynamique de formulaire de réservation
         'booking_form_schema',
+        // Questions posées au PRESTATAIRE qui déclare exercer ce métier — distinctes de
+        // booking_form_schema, qui décrit celles posées au CLIENT qui réserve.
+        'provider_form_schema',
         // Multi-trade spec columns (migration 2026_05_27_000000)
         'billing_unit',
         'requires_site_visit',
@@ -79,6 +82,7 @@ class Trade extends Model
         'requires_quote_by_default' => 'boolean',
         'sla_response_minutes' => 'integer',
         'booking_form_schema' => 'array',
+        'provider_form_schema' => 'array',
         'requires_site_visit' => 'boolean',
     ];
 
