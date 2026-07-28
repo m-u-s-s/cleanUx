@@ -83,14 +83,6 @@
 
     @unless($embedded ?? false)
     @auth
-    @if (class_exists(\App\Livewire\Notifications::class))
-    @livewire('notifications')
-    @endif
-    @endauth
-    @endunless
-
-    @unless($embedded ?? false)
-    @auth
     @if(auth()->user()->isClient())
     <x-ui.mobile-bottom-nav role="client" />
     @elseif(auth()->user()->isEmploye() && request()->routeIs('employe.*'))
