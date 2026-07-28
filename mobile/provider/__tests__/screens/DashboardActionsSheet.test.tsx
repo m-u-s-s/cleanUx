@@ -193,6 +193,32 @@ describe('DashboardActionsSheet', () => {
       expect(closeOrder).toBeLessThan(navigateOrder);
     });
 
+    it('ferme le sheet avant de naviguer (action rapide « Disponibilités »)', async () => {
+      render(<DashboardActionsSheet />, { wrapper: makeWrapper() });
+
+      await waitFor(() => screen.getByText('Disponibilités'));
+      fireEvent.press(screen.getByText('Disponibilités'));
+
+      expect(mockSheetClose).toHaveBeenCalled();
+      expect(mockNavigate).toHaveBeenCalledWith('Availability');
+      const closeOrder = mockSheetClose.mock.invocationCallOrder[0] as number;
+      const navigateOrder = mockNavigate.mock.invocationCallOrder[0] as number;
+      expect(closeOrder).toBeLessThan(navigateOrder);
+    });
+
+    it('ferme le sheet avant de naviguer (action rapide « Messagerie »)', async () => {
+      render(<DashboardActionsSheet />, { wrapper: makeWrapper() });
+
+      await waitFor(() => screen.getByText('Messagerie'));
+      fireEvent.press(screen.getByText('Messagerie'));
+
+      expect(mockSheetClose).toHaveBeenCalled();
+      expect(mockNavigate).toHaveBeenCalledWith('ProviderChatList');
+      const closeOrder = mockSheetClose.mock.invocationCallOrder[0] as number;
+      const navigateOrder = mockNavigate.mock.invocationCallOrder[0] as number;
+      expect(closeOrder).toBeLessThan(navigateOrder);
+    });
+
     it('ferme le sheet avant de naviguer (« Voir toutes les missions »)', async () => {
       render(<DashboardActionsSheet />, { wrapper: makeWrapper() });
 
