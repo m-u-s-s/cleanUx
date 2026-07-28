@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import { useIsFocused, useNavigation } from '@react-navigation/native';
 import { Button } from '@/ui';
 import { useMissionInbox } from '@/missions';
 import { useGpsWatcher, distanceKmTo, formatDistance } from '@/tracking';
@@ -29,8 +29,13 @@ export function ProviderMap() {
   const hasCenteredRef = useRef(false);
   const hasCenteredOnPositionRef = useRef(false);
   const [position, setPosition] = useState<Position | null>(null);
+  // DashboardScreen est un onglet : React Navigation le garde monté une fois visité. Avec
+  // `enabled` câblé en dur, le watcher (Accuracy.High, 5 s, 10 m) continuait de tourner pendant
+  // que le prestataire regardait Missions, Revenus ou Profil — consommation entièrement
+  // nouvelle, l'ancien tableau de bord n'utilisant aucun GPS.
+  const isFocused = useIsFocused();
   const { permission } = useGpsWatcher(
-    true,
+    isFocused,
     useCallback((pos) => setPosition({ latitude: pos.latitude, longitude: pos.longitude }), []),
   );
   const { data: assignments, isError, refetch } = useMissionInbox();

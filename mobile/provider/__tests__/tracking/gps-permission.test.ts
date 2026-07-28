@@ -13,6 +13,7 @@ jest.mock('expo-location', () => ({
 }));
 
 import { useGpsWatcher } from '@/tracking/hooks';
+import { useCurrentPosition } from '@/tracking/useCurrentPosition';
 
 describe('useGpsWatcher — état de permission', () => {
   beforeEach(() => {
@@ -69,5 +70,47 @@ describe('useGpsWatcher — état de permission', () => {
     // Sans la seconde vérification de `cancelled`, cet abonnement serait publié après coup
     // et personne ne l'arrêterait jamais : remove() ne serait jamais appelé.
     await waitFor(() => expect(removeSpy).toHaveBeenCalledTimes(1));
+  });
+
+  // Les deux cas ci-dessous : un rejet (services de localisation coupés, module natif absent)
+  // n'est PAS un refus de permission, et l'IIFE asynchrone n'avait aucun catch. La promesse
+  // partait en rejet non géré et `permission` restait 'pending' à jamais — la carte affichait
+  // alors le repli pays sans position ET sans notice, donc sans la moindre explication.
+  it('rapporte "denied" quand la demande de permission elle-même échoue', async () => {
+    mockRequestForegroundPermissionsAsync.mockRejectedValue(new Error('Location services are disabled'));
+
+    const { result } = renderHook(() => useGpsWatcher(true, jest.fn()));
+
+    await waitFor(() => expect(result.current.permission).toBe('denied'));
+  });
+
+  it('rapporte "denied" quand le démarrage du suivi échoue', async () => {
+    mockRequestForegroundPermissionsAsync.mockResolvedValue({ status: 'granted' });
+    mockWatchPositionAsync.mockRejectedValue(new Error('E_LOCATION_UNAVAILABLE'));
+
+    const { result } = renderHook(() => useGpsWatcher(true, jest.fn()));
+
+    await waitFor(() => expect(result.current.permission).toBe('denied'));
+  });
+});
+
+describe('useCurrentPosition — surveillance conditionnelle', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockRequestForegroundPermissionsAsync.mockResolvedValue({ status: 'granted' });
+    mockWatchPositionAsync.mockResolvedValue({ remove: jest.fn() });
+  });
+
+  it('ne demande rien tant que l écran appelant n est pas au premier plan', () => {
+    renderHook(() => useCurrentPosition(false));
+
+    expect(mockRequestForegroundPermissionsAsync).not.toHaveBeenCalled();
+    expect(mockWatchPositionAsync).not.toHaveBeenCalled();
+  });
+
+  it('surveille par défaut, sans argument', async () => {
+    renderHook(() => useCurrentPosition());
+
+    await waitFor(() => expect(mockWatchPositionAsync).toHaveBeenCalled());
   });
 });

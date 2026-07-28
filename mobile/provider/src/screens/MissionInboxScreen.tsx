@@ -1,6 +1,7 @@
 import React, { useCallback } from 'react';
 import { FlatList, View, Text, Alert, StyleSheet, RefreshControl } from 'react-native';
 import Animated, { FadeIn } from 'react-native-reanimated';
+import { useIsFocused } from '@react-navigation/native';
 import { Screen, Button, Badge, Skeleton, EmptyState, AnimatedListItem, a11y } from '@/ui';
 import { useMissionInbox, useAcceptMission, useDeclineMission } from '@/missions';
 import type { MissionAssignment } from '@/missions';
@@ -14,7 +15,9 @@ export function MissionInboxScreen() {
   const accept = useAcceptMission();
   const decline = useDeclineMission();
   const themeColors = useThemeColors();
-  const position = useCurrentPosition();
+  // Cet écran est aussi l'onglet « Missions » (via MissionsScreen), donc monté en permanence dès
+  // la première visite : sans ce garde, son watcher GPS tournerait depuis n'importe quel onglet.
+  const position = useCurrentPosition(useIsFocused());
 
   const handleAccept = useCallback((a: MissionAssignment) => {
     Alert.alert('Accepter', `Accepter la mission ${a.service_name} ?`, [

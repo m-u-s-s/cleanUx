@@ -26,15 +26,23 @@ jest.mock('@react-native-community/netinfo', () => ({
 // (hoisting babel-jest) avant les déclarations `const` du fichier, donc toute variable
 // capturée par la factory doit porter ce préfixe pour survivre au hoisting.
 const mockNavigate = jest.fn();
-jest.mock('@react-navigation/native', () => ({ useNavigation: () => ({ navigate: mockNavigate }) }));
+const mockIsFocused = { current: true };
+jest.mock('@react-navigation/native', () => ({
+  useNavigation: () => ({ navigate: mockNavigate }),
+  useIsFocused: () => mockIsFocused.current,
+}));
 
 const mockPermission = { current: 'granted' as 'pending' | 'granted' | 'denied' };
+// Dernière valeur du drapeau `enabled` passé à useGpsWatcher : c'est lui qui décide si un
+// watcher GPS haute précision tourne pendant que le prestataire est sur un autre onglet.
+const mockGpsEnabled = { current: null as boolean | null };
 // Capture le callback `onPosition` passé par ProviderMap à useGpsWatcher, pour qu'un test
 // puisse simuler l'arrivée d'une position GPS (`mockOnPosition.current?.({ ... })`) sans
 // dépendre du vrai module expo-location.
 const mockOnPosition = { current: null as ((pos: { latitude: number; longitude: number; speed: number | null; heading: number | null }) => void) | null };
 jest.mock('@/tracking', () => ({
-  useGpsWatcher: (_enabled: boolean, onPosition: (pos: any) => void) => {
+  useGpsWatcher: (enabled: boolean, onPosition: (pos: any) => void) => {
+    mockGpsEnabled.current = enabled;
     mockOnPosition.current = onPosition;
     return { permission: mockPermission.current };
   },
@@ -74,6 +82,8 @@ beforeEach(() => {
   apiMock.reset();
   mockMapModule.current = true;
   mockPermission.current = 'granted';
+  mockIsFocused.current = true;
+  mockGpsEnabled.current = null;
   mockOnPosition.current = null;
   mockAnimateToRegion.mockClear();
   mockNavigate.mockClear();
@@ -102,6 +112,26 @@ describe('ProviderMap', () => {
   it('rend la carte quand le module natif est disponible', async () => {
     render(<ProviderMap />, { wrapper: makeWrapper() });
     await waitFor(() => expect(screen.getByTestId('provider-map')).toBeTruthy());
+  });
+
+  // DashboardScreen est un onglet : une fois visité, il reste monté pour toute la session. Un
+  // watcher GPS Accuracy.High / 5 s / 10 m câblé en dur continuerait donc de tourner pendant que
+  // le prestataire est sur Missions, Revenus ou Profil — consommation nette nouvelle, puisque
+  // l'ancien tableau de bord n'utilisait aucun GPS.
+  it('surveille le GPS quand la carte est au premier plan', async () => {
+    render(<ProviderMap />, { wrapper: makeWrapper() });
+
+    await waitFor(() => expect(screen.getByTestId('provider-map')).toBeTruthy());
+    expect(mockGpsEnabled.current).toBe(true);
+  });
+
+  it('coupe la surveillance GPS quand l écran n est plus au premier plan', async () => {
+    mockIsFocused.current = false;
+
+    render(<ProviderMap />, { wrapper: makeWrapper() });
+
+    await waitFor(() => expect(screen.getByTestId('provider-map')).toBeTruthy());
+    expect(mockGpsEnabled.current).toBe(false);
   });
 
   it('rend le placeholder texte quand le module natif est absent', async () => {

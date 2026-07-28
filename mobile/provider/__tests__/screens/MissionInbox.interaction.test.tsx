@@ -30,6 +30,13 @@ jest.mock('@react-native-community/netinfo', () => ({
   },
 }));
 
+// L'écran gate sa surveillance GPS sur useIsFocused() (il est aussi l'onglet « Missions », donc
+// monté en permanence). Ce hook exige un NavigationContainer que ce fichier ne monte pas.
+const mockIsFocused = { current: true };
+jest.mock('@react-navigation/native', () => ({
+  useIsFocused: () => mockIsFocused.current,
+}));
+
 jest.mock('@/realtime', () => ({
   useChannel: jest.fn(),
   RealtimeProvider: ({ children }: any) => children,
