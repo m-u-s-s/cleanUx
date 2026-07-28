@@ -27,6 +27,13 @@ interface RegisterInput {
   providerKind?: 'independent' | 'company';
   companyName?: string;
   vatNumber?: string;
+  /**
+   * Métier visé et réponses aux questions propres à ce métier (trades.provider_form_schema,
+   * servi par GET /api/trades/{trade}/provider-fields). Sans métier déclaré, le matching n'a
+   * rien sur quoi travailler et le prestataire ne recevrait jamais de mission.
+   */
+  tradeId?: number;
+  tradeAnswers?: Record<string, string | boolean>;
 }
 interface RegisterResult { token: string; user: User; }
 
@@ -41,6 +48,8 @@ export function useRegister() {
         provider_kind: input.providerKind,
         company_name: input.companyName,
         vat_number: input.vatNumber,
+        trade_id: input.tradeId,
+        trade_answers: input.tradeAnswers,
         device_name: input.deviceName ?? 'cleanux-mobile',
       }, input.captchaToken ? { headers: { 'X-Turnstile-Token': input.captchaToken } } : undefined);
       await secureStore.setToken(res.data.token);

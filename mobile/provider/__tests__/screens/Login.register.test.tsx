@@ -131,8 +131,10 @@ function renderScreen() {
   );
 }
 
-/** Champs communs aux deux types d'inscription. */
+/** Champs communs aux deux types d'inscription, métier compris. */
 async function fillCommonFields() {
+  await waitFor(() => screen.getByTestId(`register-trade-${TRADE_ID}`));
+  fireEvent.press(screen.getByTestId(`register-trade-${TRADE_ID}`));
   fireEvent.changeText(screen.getByLabelText('Nom complet'), 'Jean Dupont');
   fireEvent.changeText(screen.getByLabelText('Email'), 'jean@exemple.be');
   fireEvent.changeText(screen.getByLabelText('Mot de passe'), 'motdepasse123');
@@ -156,9 +158,15 @@ async function openRegisterAndSubmit() {
   fireEvent.press(screen.getByLabelText('Créer mon compte'));
 }
 
+const TRADE_ID = 3;
+
 beforeEach(() => {
   apiMock.reset();
   mockCaptcha.mode = 'skipped';
+  // Référentiel métiers : endpoints PUBLICS, appelés par le formulaire avant que le compte
+  // n'existe. Un métier sans question réglementaire, pour garder ces tests sur leur sujet.
+  apiMock.onGet('/trades').reply(200, { data: [{ id: TRADE_ID, name: 'Jardinage', slug: 'jardinage' }] });
+  apiMock.onGet(`/trades/${TRADE_ID}/provider-fields`).reply(200, { fields: [] });
   apiMock.onPost('/auth/register').reply(201, {
     token: 'tok_123',
     user: { id: 7, name: 'Jean Dupont', email: 'jean@exemple.be', role: 'employe' },
@@ -247,6 +255,53 @@ describe("Inscription depuis l'app prestataire", () => {
       expect(screen.getByTestId('input-error-Nom de la société')).toBeTruthy();
     });
     // Le serveur refuserait de toute façon (required_if) : inutile de l'appeler.
+    expect(apiMock.history['post']!.filter(c => c.url === '/auth/register')).toHaveLength(0);
+  });
+
+  it('transmet le métier déclaré et les réponses à ses questions', async () => {
+    // Un métier réglementé : le serveur ajoute ses questions selon ses propres exigences.
+    apiMock.onGet(`/trades/${TRADE_ID}/provider-fields`).reply(200, {
+      fields: [
+        { key: 'experience_years', type: 'number', label: "Années d'expérience", required: true },
+        { key: 'certification_reference', type: 'text', label: 'Référence de certification', required: true },
+      ],
+    });
+
+    renderScreen();
+    await openRegister();
+    await fillCommonFields();
+
+    await waitFor(() => screen.getByLabelText("Années d'expérience *"));
+    fireEvent.changeText(screen.getByLabelText("Années d'expérience *"), '7');
+    fireEvent.changeText(screen.getByLabelText('Référence de certification *'), 'RGIE-2024-118');
+    fireEvent.press(screen.getByLabelText('Créer mon compte'));
+
+    await waitFor(() => {
+      expect(apiMock.history['post']!.filter(c => c.url === '/auth/register')).toHaveLength(1);
+    });
+    const body = JSON.parse(apiMock.history['post']![0]!.data);
+    expect(body.trade_id).toBe(TRADE_ID);
+    expect(body.trade_answers).toEqual({ experience_years: '7', certification_reference: 'RGIE-2024-118' });
+  });
+
+  it('refuse de soumettre sans métier choisi', async () => {
+    renderScreen();
+    await openRegister();
+
+    // Tous les champs SAUF le métier.
+    fireEvent.changeText(screen.getByLabelText('Nom complet'), 'Jean Dupont');
+    fireEvent.changeText(screen.getByLabelText('Email'), 'jean@exemple.be');
+    fireEvent.changeText(screen.getByLabelText('Mot de passe'), 'motdepasse123');
+    fireEvent.changeText(screen.getByLabelText('Confirmer le mot de passe'), 'motdepasse123');
+    fireEvent.press(
+      screen.getByLabelText("J'accepte les conditions d'utilisation et la politique de confidentialité"),
+    );
+    fireEvent.press(screen.getByLabelText('Créer mon compte'));
+
+    await waitFor(() => {
+      expect(screen.getByText('Choisissez votre métier')).toBeTruthy();
+    });
+    // Sans métier, le prestataire ne recevrait aucune mission : inutile d'appeler le serveur.
     expect(apiMock.history['post']!.filter(c => c.url === '/auth/register')).toHaveLength(0);
   });
 

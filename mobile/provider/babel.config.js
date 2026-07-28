@@ -18,6 +18,7 @@ module.exports = function (api) {
             '@/sentry': '../shared/src/sentry',
             '@/storage': '../shared/src/storage',
             '@/theme': '../shared/src/theme',
+            '@/trades': '../shared/src/trades',
             '@/ui': '../shared/src/ui',
             '@/ErrorBoundary': '../shared/src/ErrorBoundary',
             // Provider-only modules — resolve to local src/

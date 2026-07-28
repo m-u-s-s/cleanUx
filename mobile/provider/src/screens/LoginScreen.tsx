@@ -23,6 +23,7 @@ import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Button, TextInput, Divider, Icon, TurnstileWidget, useReducedMotion } from '@/ui';
 import { useLogin, useRegister, useAuth } from '@/auth';
+import { useTrades, useTradeProviderFields, type ProviderField } from '@/trades';
 import { ApiError } from '@/api';
 import { colors, radius, shadows, spacing, typography } from '@/theme';
 import type { RootStackParamList } from '@/navigation/types';
@@ -279,6 +280,109 @@ function KindChoice({
 }
 
 /**
+ * Choix du métier exercé. Le référentiel vient du serveur (GET /api/trades, public) plutôt que
+ * d'une liste figée dans l'app : ajouter un métier ne doit pas demander de publier une version.
+ */
+function TradePicker({
+  value,
+  onChange,
+}: {
+  value: number | null;
+  onChange: (id: number) => void;
+}) {
+  const { data: trades, isLoading, isError } = useTrades();
+
+  if (isLoading) {
+    return <Text style={styles.kindPrompt}>Chargement des métiers…</Text>;
+  }
+
+  if (isError || !trades?.length) {
+    return <Text style={styles.fieldError}>Impossible de charger la liste des métiers.</Text>;
+  }
+
+  return (
+    <View style={styles.tradeGrid} accessibilityRole="radiogroup">
+      {trades.map(trade => {
+        const selected = value === trade.id;
+
+        return (
+          <TouchableOpacity
+            key={trade.id}
+            style={[styles.tradeChip, selected && styles.tradeChipSelected]}
+            onPress={() => onChange(trade.id)}
+            accessibilityRole="radio"
+            accessibilityState={{ selected }}
+            accessibilityLabel={trade.name}
+            testID={`register-trade-${trade.id}`}
+          >
+            <Text style={[styles.tradeChipText, selected && styles.tradeChipTextSelected]}>
+              {trade.name}
+            </Text>
+          </TouchableOpacity>
+        );
+      })}
+    </View>
+  );
+}
+
+/**
+ * Rend les questions propres au métier choisi (trades.provider_form_schema).
+ *
+ * Piloté par les données : les questions réglementaires découlent des exigences du métier côté
+ * serveur — un électricien se voit demander sa certification, un babysitter non — et en ajouter
+ * une ne demande aucune publication de l'app.
+ */
+function TradeQuestions({
+  fields,
+  answers,
+  errors,
+  onChange,
+}: {
+  fields: ProviderField[];
+  answers: Record<string, string | boolean>;
+  errors: Record<string, string>;
+  onChange: (key: string, value: string | boolean) => void;
+}) {
+  return (
+    <>
+      {fields.map(field => {
+        if (field.type === 'boolean') {
+          const checked = answers[field.key] === true;
+
+          return (
+            <TouchableOpacity
+              key={field.key}
+              style={styles.termsRow}
+              onPress={() => onChange(field.key, !checked)}
+              accessibilityRole="checkbox"
+              accessibilityState={{ checked }}
+              accessibilityLabel={field.label}
+            >
+              <View style={[styles.checkbox, checked && styles.checkboxChecked]} />
+              <Text style={styles.termsText}>{field.label}</Text>
+            </TouchableOpacity>
+          );
+        }
+
+        return (
+          <View key={field.key}>
+            <TextInput
+              label={field.required ? `${field.label} *` : field.label}
+              value={String(answers[field.key] ?? '')}
+              onChangeText={(t) => onChange(field.key, t)}
+              error={errors[field.key]}
+              keyboardType={field.type === 'number' ? 'number-pad' : 'default'}
+              returnKeyType="next"
+            />
+            {field.help ? <Text style={styles.fieldHelp}>{field.help}</Text> : null}
+          </View>
+        );
+      })}
+    </>
+  );
+}
+
+/**
  * Bandeau d'erreur du formulaire.
  *
  * Local plutôt que le composant partagé `ErrorState`, dont la mise en page centrée avec titre
@@ -469,6 +573,9 @@ function RegisterForm() {
   const [providerKind, setProviderKind] = useState<'independent' | 'company' | null>(null);
   const [companyName, setCompanyName] = useState('');
   const [vatNumber, setVatNumber] = useState('');
+  const [tradeId, setTradeId] = useState<number | null>(null);
+  const [tradeAnswers, setTradeAnswers] = useState<Record<string, string | boolean>>({});
+  const { data: tradeFields } = useTradeProviderFields(tradeId);
   const [errors, setErrors] = useState<{
     name?: string;
     companyName?: string;
@@ -476,6 +583,8 @@ function RegisterForm() {
     password?: string;
     confirmPassword?: string;
     acceptTerms?: string;
+    tradeId?: string;
+    tradeAnswers?: Record<string, string>;
   }>({});
   const [formError, setFormError] = useState<string | null>(null);
   // null = pas encore résolu ; 'skipped' = captcha non configuré (dev), on soumet sans jeton.
@@ -500,6 +609,16 @@ function RegisterForm() {
     else if (password.length < 8) e.password = 'Min. 8 caractères';
     if (!confirmPassword) e.confirmPassword = 'Confirmation requise';
     else if (password !== confirmPassword) e.confirmPassword = 'Les mots de passe ne correspondent pas';
+    if (!tradeId) e.tradeId = 'Choisissez votre métier';
+    // Les questions marquées obligatoires par le serveur le sont aussi ici : autant le dire
+    // avant l'appel plutôt que de laisser partir une requête vouée à un 422.
+    (tradeFields ?? []).forEach(field => {
+      if (!field.required || field.type === 'boolean') return;
+      const answer = tradeAnswers[field.key];
+      if (answer === undefined || String(answer).trim() === '') {
+        e.tradeAnswers = { ...(e.tradeAnswers ?? {}), [field.key]: 'Réponse requise' };
+      }
+    });
     if (!acceptTerms) e.acceptTerms = 'Vous devez accepter les CGU';
     setErrors(e);
     return Object.keys(e).length === 0;
@@ -531,6 +650,8 @@ function RegisterForm() {
         providerKind,
         companyName: providerKind === 'company' ? companyName : undefined,
         vatNumber: providerKind === 'company' && vatNumber ? vatNumber : undefined,
+        tradeId: tradeId ?? undefined,
+        tradeAnswers: Object.keys(tradeAnswers).length ? tradeAnswers : undefined,
         captchaToken,
       });
       setUser(result.user);
@@ -655,6 +776,30 @@ function RegisterForm() {
         />
       </Stagger>
       <Stagger index={5}>
+        <View style={styles.tradeBlock}>
+          <Text style={styles.sectionLabel}>Votre métier</Text>
+          <TradePicker value={tradeId} onChange={(id) => { setTradeId(id); setErrors(prev => ({ ...prev, tradeId: undefined })); }} />
+          {errors.tradeId ? <Text style={styles.fieldError}>{errors.tradeId}</Text> : null}
+        </View>
+      </Stagger>
+
+      {tradeId && (tradeFields?.length ?? 0) > 0 ? (
+        <Stagger index={5}>
+          <View style={styles.tradeBlock}>
+            <TradeQuestions
+              fields={tradeFields ?? []}
+              answers={tradeAnswers}
+              errors={errors.tradeAnswers ?? {}}
+              onChange={(key, value) => {
+                setTradeAnswers(prev => ({ ...prev, [key]: value }));
+                setErrors(prev => ({ ...prev, tradeAnswers: undefined }));
+              }}
+            />
+          </View>
+        </Stagger>
+      ) : null}
+
+      <Stagger index={6}>
         <TouchableOpacity
           style={styles.termsRow}
           onPress={() => { setAcceptTerms(v => !v); setErrors(prev => ({ ...prev, acceptTerms: undefined })); }}
@@ -684,7 +829,7 @@ function RegisterForm() {
         testID="register-captcha"
       />
       {formError ? <FormError message={formError} onRetry={handleRegister} testID="register-form-error" /> : null}
-      <Stagger index={6}>
+      <Stagger index={7}>
         <Button label="Créer mon compte" onPress={handleRegister} fullWidth size="lg" loading={register.isPending} />
       </Stagger>
         </>
@@ -776,6 +921,26 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     paddingVertical: spacing.sm,
   },
+  tradeBlock: { gap: spacing.sm },
+  sectionLabel: {
+    fontSize: typography.fontSize.sm,
+    fontWeight: typography.fontWeight.semibold,
+    color: colors.mode.tool.ink,
+  },
+  tradeGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.xs },
+  tradeChip: {
+    paddingVertical: spacing.xs + 2,
+    paddingHorizontal: spacing.sm + 2,
+    borderRadius: radius.pill,
+    borderWidth: 1,
+    borderColor: colors.surface[200],
+    backgroundColor: '#ffffff',
+  },
+  tradeChipSelected: { borderColor: colors.brand[600], backgroundColor: colors.brand[50] },
+  tradeChipText: { fontSize: typography.fontSize.sm, color: colors.surface[600] },
+  tradeChipTextSelected: { color: colors.brand[600], fontWeight: typography.fontWeight.semibold },
+  fieldHelp: { fontSize: typography.fontSize.xs, color: colors.mode.tool.muted, marginTop: 2 },
+  fieldError: { fontSize: typography.fontSize.xs, color: colors.danger[600] },
   formError: {
     flexDirection: 'row',
     alignItems: 'flex-start',
