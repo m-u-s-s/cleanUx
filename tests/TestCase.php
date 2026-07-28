@@ -22,8 +22,15 @@ abstract class TestCase extends BaseTestCase
         // Tests must never hit the network. The legacy GeocodingService calls
         // Nominatim (OpenStreetMap) via the Http facade when bookings/missions
         // are created; stub it with a deterministic Brussels result so the suite
-        // is offline-safe and not flaky. Tests that need other HTTP behaviour can
-        // still call Http::fake() themselves, which takes precedence.
+        // is offline-safe and not flaky.
+        //
+        // ATTENTION : ce stub ne peut PAS être supplanté par un Http::fake() posé plus tard dans
+        // un test. Laravel fusionne les stubs et retient le PREMIER motif qui correspond — celui
+        // enregistré ici gagne donc toujours sur les URL Nominatim, y compris face à un '*'. Un
+        // test qui croit imposer une autre réponse (échec réseau, adresse introuvable) reçoit en
+        // silence le Bruxelles ci-dessous et passe pour une mauvaise raison. Pour piloter le
+        // géocodage, injectez un GeocodingService de test plutôt que de stubber le transport HTTP
+        // (voir Tests\Feature\Missions\GeocodeMissionDestinationTest).
         Http::fake([
             'nominatim.openstreetmap.org/*' => Http::response([
                 ['lat' => '50.8503', 'lon' => '4.3517', 'address' => []],

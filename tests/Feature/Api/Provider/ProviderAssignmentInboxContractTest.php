@@ -31,8 +31,8 @@ class ProviderAssignmentInboxContractTest extends TestCase
             'booking_id' => $booking->id,
             'status' => 'planned',
             'planned_start_at' => now()->addDay(),
-            'start_lat' => 50.8503,
-            'start_lng' => 4.3517,
+            'destination_lat' => 50.8503,
+            'destination_lng' => 4.3517,
             'estimated_duration_minutes' => 90,
         ]);
         $this->makeAssignment($mission, $provider);
@@ -83,6 +83,60 @@ class ProviderAssignmentInboxContractTest extends TestCase
         $payload = $response->json('data.0');
         $this->assertArrayHasKey('latitude', $payload);
         $this->assertArrayHasKey('longitude', $payload);
+        $this->assertNull($payload['latitude']);
+        $this->assertNull($payload['longitude']);
+    }
+
+    /**
+     * missions.destination_lat n'est renseignée que par le chemin de création rendez_vous_id.
+     * Les deux chemins booking_id copient la destination du booking — mais les réservations
+     * antérieures au correctif n'ont que celle du booking. L'inbox doit donc retomber dessus,
+     * exactement comme le fait déjà l'écran de détail (ProviderMissionLifecycleController).
+     */
+    public function test_inbox_falls_back_to_the_booking_destination_when_the_mission_has_none(): void
+    {
+        $provider = $this->makeProvider();
+        $booking = $this->makeBooking(User::factory()->create());
+        $booking->update(['destination_lat' => 50.6402, 'destination_lng' => 5.5713]);
+        $mission = Mission::create([
+            'booking_id' => $booking->id,
+            'status' => 'planned',
+            'planned_start_at' => now()->addDay(),
+        ]);
+        $this->makeAssignment($mission, $provider);
+
+        $this->actingAs($provider, 'sanctum')
+            ->getJson('/api/provider/assignments/inbox')
+            ->assertOk()
+            ->assertJsonPath('data.0.latitude', 50.6402)
+            ->assertJsonPath('data.0.longitude', 5.5713);
+    }
+
+    /**
+     * Anti-régression du bloquant : missions.start_lat porte la position GPS DU PRESTATAIRE,
+     * écrite par MissionLifecycleService aux transitions `arrived` / `started`. L'inbox ne liste
+     * que des lignes `assigned`, donc antérieures à ces transitions : s'en servir comme
+     * destination affichait zéro marqueur en production, et aurait pointé le prestataire
+     * lui-même plutôt que le client sur les missions déjà démarrées.
+     */
+    public function test_inbox_never_exposes_the_provider_telemetry_start_coordinates(): void
+    {
+        $provider = $this->makeProvider();
+        $booking = $this->makeBooking(User::factory()->create());
+        $mission = Mission::create([
+            'booking_id' => $booking->id,
+            'status' => 'planned',
+            'planned_start_at' => now()->addDay(),
+            'start_lat' => 48.8566,
+            'start_lng' => 2.3522,
+        ]);
+        $this->makeAssignment($mission, $provider);
+
+        $payload = $this->actingAs($provider, 'sanctum')
+            ->getJson('/api/provider/assignments/inbox')
+            ->assertOk()
+            ->json('data.0');
+
         $this->assertNull($payload['latitude']);
         $this->assertNull($payload['longitude']);
     }

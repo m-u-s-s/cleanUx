@@ -14,7 +14,10 @@ export interface MissionAssignment {
   scheduled_date: string | null;
   scheduled_time: string | null;
   estimated_duration_minutes?: number | null;
-  // Coordonnées de la mission (missions.start_lat/start_lng). Nulles si non géocodée.
+  // Destination de la mission — l'adresse du client, résolue côté serveur depuis
+  // missions.destination_lat/lng puis, à défaut, bookings.destination_lat/lng.
+  // Nulles tant que le géocodage n'a pas abouti. Ce n'est PAS missions.start_lat,
+  // qui porte la position GPS du prestataire aux transitions arrived/started.
   latitude?: number | null;
   longitude?: number | null;
   created_at: string;

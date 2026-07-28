@@ -2,6 +2,7 @@
 
 namespace App\Actions\Booking;
 
+use App\Jobs\Missions\GeocodeMissionDestination;
 use App\Models\Booking;
 use App\Models\Mission;
 use App\Models\User;
@@ -138,6 +139,11 @@ final class CreateBookingFromApiAction
             $mission->forceFill(['organization_contract_id' => $booking->organization_contract_id])->save();
             app(ContractSlaService::class)->armForMission($mission);
         }
+
+        // Sans destination, l'offre arrive sans marqueur sur la carte du prestataire : ce chemin
+        // de création ne renseignait aucune coordonnée, contrairement au chemin rendez_vous_id.
+        // Différé car le géocodage est un appel HTTP tiers — voir GeocodeMissionDestination.
+        GeocodeMissionDestination::dispatch($mission->id);
 
         $dispatchClass = '\App\Services\Dispatch\MissionDispatchService';
         if (! class_exists($dispatchClass)) {

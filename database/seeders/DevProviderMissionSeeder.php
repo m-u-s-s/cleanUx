@@ -55,12 +55,16 @@ class DevProviderMissionSeeder extends Seeder
             'booking_mode' => 'scheduled',
         ]));
 
+        // destination_lat/lng, PAS start_lat/lng : ces dernières portent la position GPS du
+        // prestataire aux transitions arrived/started. Les renseigner ici à la main donnait une
+        // fixture qui affichait un marqueur alors que la production n'en avait aucun — c'est ce
+        // qui avait fait passer la vérification manuelle du dashboard carte.
         $mission = Mission::create([
             'booking_id' => $booking->id,
             'status' => 'planned',
             'planned_start_at' => now()->addDay(),
-            'start_lat' => 50.8466,
-            'start_lng' => 4.3528,
+            'destination_lat' => 50.8466,
+            'destination_lng' => 4.3528,
             'estimated_duration_minutes' => 90,
         ]);
 
@@ -73,6 +77,6 @@ class DevProviderMissionSeeder extends Seeder
             'expires_at' => now()->addHours(2),
         ]);
 
-        $this->command->info("Mission #{$mission->id} assignée à {$email} (Bruxelles, 50.8466 / 4.3528).");
+        $this->command->info("Mission #{$mission->id} assignée à {$email} (destination Bruxelles, 50.8466 / 4.3528).");
     }
 }

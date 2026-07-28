@@ -49,11 +49,11 @@ class ProviderMissionAssignmentController extends Controller
                     ->orWhere('expires_at', '>', now());
             })
             ->with([
-                'mission:id,booking_id,rendez_vous_id,planned_start_at,status,start_lat,start_lng,end_lat,end_lng,estimated_duration_minutes',
-                'mission.bookingViaBookingId:id,customer_user_id,booking_reference,address,city,postal_code,service_catalog_id,scheduled_date,scheduled_time,booking_mode,priority',
+                'mission:id,booking_id,rendez_vous_id,planned_start_at,status,destination_lat,destination_lng,estimated_duration_minutes',
+                'mission.bookingViaBookingId:id,customer_user_id,booking_reference,address,city,postal_code,service_catalog_id,scheduled_date,scheduled_time,booking_mode,priority,destination_lat,destination_lng',
                 'mission.bookingViaBookingId.serviceCatalog:id,name',
                 'mission.bookingViaBookingId.customer:id,name',
-                'mission.rendezVous:id,customer_user_id,booking_reference,address,city,postal_code,service_catalog_id,scheduled_date,scheduled_time,booking_mode,priority',
+                'mission.rendezVous:id,customer_user_id,booking_reference,address,city,postal_code,service_catalog_id,scheduled_date,scheduled_time,booking_mode,priority,destination_lat,destination_lng',
                 'mission.rendezVous.serviceCatalog:id,name',
                 'mission.rendezVous.customer:id,name',
             ])
@@ -171,10 +171,21 @@ class ProviderMissionAssignmentController extends Controller
             'scheduled_date' => $this->formatScheduledDate($booking?->scheduled_date),
             'scheduled_time' => $this->formatScheduledTime($booking?->scheduled_time),
             'estimated_duration_minutes' => $mission?->estimated_duration_minutes,
-            'latitude' => $mission?->start_lat !== null ? (float) $mission->start_lat : null,
-            'longitude' => $mission?->start_lng !== null ? (float) $mission->start_lng : null,
+            // Destination de la mission — l'adresse du CLIENT, seul point qu'un marqueur d'offre
+            // puisse désigner. Surtout PAS start_lat/start_lng : MissionLifecycleService y écrit
+            // la position GPS DU PRESTATAIRE aux transitions `arrived` / `started`. Comme l'inbox
+            // ne liste que des lignes `assigned`, donc antérieures à ces transitions, cette
+            // colonne y est nulle par construction : la carte n'affichait aucun marqueur en
+            // production. Même résolution que l'écran de détail (ProviderMissionLifecycleController).
+            'latitude' => $this->toFloat($mission?->destination_lat ?? $booking?->destination_lat),
+            'longitude' => $this->toFloat($mission?->destination_lng ?? $booking?->destination_lng),
             'created_at' => $a->created_at?->toIso8601String(),
         ];
+    }
+
+    protected function toFloat(mixed $value): ?float
+    {
+        return $value === null ? null : (float) $value;
     }
 
     protected function serializeAssignment(MissionAssignment $a, bool $detailed = false): array

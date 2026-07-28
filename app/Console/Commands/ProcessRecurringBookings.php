@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Jobs\Missions\GeocodeMissionDestination;
 use App\Models\Booking;
 use App\Models\Mission;
 use App\Models\RecurringBookingSeries;
@@ -152,6 +153,10 @@ class ProcessRecurringBookings extends Command
             $mission->forceFill(['organization_contract_id' => $booking->organization_contract_id])->save();
             app(ContractSlaService::class)->armForMission($mission);
         }
+
+        // Même raison que dans CreateBookingFromApiAction : ce chemin ne renseignait aucune
+        // destination, donc aucun marqueur sur la carte du prestataire.
+        GeocodeMissionDestination::dispatch($mission->id);
 
         return $mission;
     }
