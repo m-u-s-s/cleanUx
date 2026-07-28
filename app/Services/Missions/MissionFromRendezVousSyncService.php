@@ -122,7 +122,13 @@ class MissionFromRendezVousSyncService
             return null;
         }
 
-        return date('Y-m-d H:i:s', strtotime((string) $date.' '.substr((string) $time, 0, 8)));
+        $timestamp = strtotime($this->datePart($date).' '.$this->timePart($time));
+
+        // strtotime() rend false sur une entrée ininterprétable, et date(..., false) fabriquait
+        // alors 1970-01-01 00:00:00 — hors des bornes d'une colonne TIMESTAMP MySQL, donc rejeté
+        // en mode strict (erreur 1292) au milieu du chemin de réservation. planned_start_at étant
+        // nullable, null est la valeur sûre : la mission se crée, sans horaire inventé.
+        return $timestamp === false ? null : date('Y-m-d H:i:s', $timestamp);
     }
 
     protected function addMinutesToTime($time, int $minutes): ?string
@@ -131,6 +137,26 @@ class MissionFromRendezVousSyncService
             return null;
         }
 
-        return date('H:i:s', strtotime(substr((string) $time, 0, 8).' +'.$minutes.' minutes'));
+        $timestamp = strtotime($this->timePart($time).' +'.$minutes.' minutes');
+
+        return $timestamp === false ? null : date('H:i:s', $timestamp);
+    }
+
+    /**
+     * Les colonnes `date` / `heure` peuvent porter une chaîne brute ou un Carbon selon le cast
+     * du modèle et le chemin d'écriture : on ramène les deux formes à la même découpe.
+     */
+    protected function datePart($date): string
+    {
+        return $date instanceof \DateTimeInterface
+            ? $date->format('Y-m-d')
+            : substr((string) $date, 0, 10);
+    }
+
+    protected function timePart($time): string
+    {
+        return $time instanceof \DateTimeInterface
+            ? $time->format('H:i:s')
+            : substr((string) $time, 0, 8);
     }
 }

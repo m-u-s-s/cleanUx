@@ -39,6 +39,21 @@ trait HasLegacyBookingAliases
     ];
 
     /**
+     * Format attendu par les colonnes date/heure qui n'ont PAS de cast de modèle.
+     *
+     * `scheduled_time` est casté `datetime:H:i` et rend donc un Carbon. Recopié tel quel dans
+     * `heure` — colonne TIME sans cast — il y laissait un Carbon là où tout le code appelant
+     * attend "10:00:00" et pratique `substr((string) $heure, 0, 5|8)`. Ce découpage rendait
+     * alors "2026-07-", d'où un datetime ininterprétable : MissionFromRendezVousSyncService en
+     * tirait planned_start_at = 1970-01-01 00:00:00, valeur qu'une colonne TIMESTAMP MySQL
+     * refuse en mode strict. Le chemin de réservation ASAP échouait donc en production.
+     */
+    protected static array $legacyAliasDateFormats = [
+        'heure' => 'H:i:s',
+        'date' => 'Y-m-d',
+    ];
+
+    /**
      * Synchronise legacy FR ↔ modern EN so that both columns are always
      * consistent in the database regardless of which side was written.
      */
@@ -46,12 +61,27 @@ trait HasLegacyBookingAliases
     {
         foreach (static::$legacyAliasPairs as [$legacy, $modern]) {
             if (blank($this->{$legacy}) && filled($this->{$modern})) {
-                $this->{$legacy} = $this->{$modern};
+                $this->{$legacy} = $this->normaliseLegacyAliasValue($legacy, $this->{$modern});
             }
             if (blank($this->{$modern}) && filled($this->{$legacy})) {
-                $this->{$modern} = $this->{$legacy};
+                $this->{$modern} = $this->normaliseLegacyAliasValue($modern, $this->{$legacy});
             }
         }
+    }
+
+    /**
+     * Rend la valeur sous la forme attendue par l'attribut de destination.
+     *
+     * Un attribut qui possède son propre cast sait se reformater : on le laisse faire. Seuls
+     * les alias sans cast ont besoin qu'on remette la date ou l'heure en chaîne.
+     */
+    protected function normaliseLegacyAliasValue(string $attribute, mixed $value): mixed
+    {
+        if (! $value instanceof \DateTimeInterface || $this->hasCast($attribute)) {
+            return $value;
+        }
+
+        return $value->format(static::$legacyAliasDateFormats[$attribute] ?? 'Y-m-d H:i:s');
     }
 
     /**
