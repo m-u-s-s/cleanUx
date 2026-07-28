@@ -48,7 +48,9 @@ export function AssignmentOfferScreen({ assignment, onDismiss }: Props) {
   const handleAccept = useCallback(() => {
     accept.mutate(assignment.id, {
       onSuccess: () => {
-        navigation.navigate('MissionDetail', { missionId: assignment.booking_id });
+        // `mission_id`, PAS `booking_id` : la route de destination est liée au modèle Mission
+        // (GET /provider/missions/{missionId}). Même défaut que celui corrigé sur la carte.
+        navigation.navigate('MissionDetail', { missionId: assignment.mission_id });
         onDismiss();
       },
       onError: () => Alert.alert('Erreur', "Impossible d'accepter cette mission."),

@@ -200,9 +200,28 @@ describe('ProviderMap', () => {
 
     render(<ProviderMap />, { wrapper: makeWrapper() });
 
-    await waitFor(() => expect(screen.getByTestId('mission-marker-200')).toBeTruthy());
-    expect(screen.queryByTestId('mission-marker-201')).toBeNull();
+    // Marqueurs identifiés par l'id de l'AFFECTATION (a.id), pas par booking_id : ce dernier est
+    // nullable côté API (une mission dont la réservation n'est pas résolue le renvoie à null).
+    await waitFor(() => expect(screen.getByTestId(`mission-marker-${GEOLOCATED.id}`)).toBeTruthy());
+    expect(screen.queryByTestId(`mission-marker-${UNLOCATED.id}`)).toBeNull();
     expect(screen.getByText('1 mission sans localisation')).toBeTruthy();
+  });
+
+  it('trace deux marqueurs distincts pour deux missions sans booking_id résolu', async () => {
+    apiMock.reset();
+    apiMock.onGet('/provider/assignments/inbox').reply(200, {
+      data: [
+        { ...GEOLOCATED, id: 7, mission_id: 70, booking_id: null },
+        { ...GEOLOCATED, id: 8, mission_id: 80, booking_id: null, latitude: 50.63, longitude: 5.57 },
+      ],
+    });
+
+    render(<ProviderMap />, { wrapper: makeWrapper() });
+
+    // Avec key={a.booking_id}, ces deux marqueurs partageaient la clé `null` : React n'en gardait
+    // qu'un et l'autre disparaissait de la carte.
+    await waitFor(() => expect(screen.getByTestId('mission-marker-7')).toBeTruthy());
+    expect(screen.getByTestId('mission-marker-8')).toBeTruthy();
   });
 
   it('affiche le service et le client dans le callout', async () => {
@@ -215,7 +234,7 @@ describe('ProviderMap', () => {
     expect(screen.getByText('Paul Klee')).toBeTruthy();
   });
 
-  it('navigue vers le détail au tap du callout', async () => {
+  it('navigue vers le détail avec l identifiant de MISSION, pas celui de la réservation', async () => {
     apiMock.reset();
     apiMock.onGet('/provider/assignments/inbox').reply(200, { data: [GEOLOCATED] });
 
@@ -224,7 +243,10 @@ describe('ProviderMap', () => {
     await waitFor(() => screen.getByTestId('map-callout'));
     fireEvent.press(screen.getByTestId('map-callout'));
 
-    expect(mockNavigate).toHaveBeenCalledWith('MissionDetail', { missionId: 200 });
+    // MissionDetailScreen appelle GET /provider/missions/{missionId}, lié au modèle Mission :
+    // passer booking_id (200 dans cette fixture) ouvre une mission sans rapport, ou 404.
+    expect(mockNavigate).toHaveBeenCalledWith('MissionDetail', { missionId: GEOLOCATED.mission_id });
+    expect(mockNavigate).not.toHaveBeenCalledWith('MissionDetail', { missionId: GEOLOCATED.booking_id });
   });
 
   it('affiche la distance dans le callout quand une position GPS est connue', async () => {
@@ -233,7 +255,7 @@ describe('ProviderMap', () => {
 
     render(<ProviderMap />, { wrapper: makeWrapper() });
 
-    await waitFor(() => expect(screen.getByTestId('mission-marker-200')).toBeTruthy());
+    await waitFor(() => expect(screen.getByTestId(`mission-marker-${GEOLOCATED.id}`)).toBeTruthy());
 
     // Bruxelles → Gand : ~49,8 km, assez loin pour que la valeur formatée soit sans
     // ambiguïté (pas un arrondi qui coïnciderait par hasard avec autre chose à l'écran).

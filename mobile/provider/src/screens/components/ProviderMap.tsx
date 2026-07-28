@@ -126,12 +126,19 @@ export function ProviderMap() {
           // à chaque tick GPS.
           const km = distanceKmTo(position, a);
           return (
+            // Clé et testID sur `a.id` (l'identifiant de l'affectation) et non sur `booking_id` :
+            // ce dernier est nullable côté API, donc deux missions dont la réservation n'est pas
+            // résolue partageraient la clé `null` et l'une des deux disparaîtrait de la carte.
             <Marker
-              key={a.booking_id}
-              testID={`mission-marker-${a.booking_id}`}
+              key={a.id}
+              testID={`mission-marker-${a.id}`}
               coordinate={{ latitude: a.latitude as number, longitude: a.longitude as number }}
             >
-              <Callout onPress={() => navigation.navigate('MissionDetail', { missionId: a.booking_id })}>
+              {/* `mission_id`, PAS `booking_id` : MissionDetailScreen appelle
+                  GET /provider/missions/{missionId}, lié au modèle Mission. Un bookings.id y
+                  ouvre une mission sans rapport, ou répond 404 — que l'écran affiche en
+                  « Chargement... » perpétuel, donc sans le moindre signe visible. */}
+              <Callout onPress={() => navigation.navigate('MissionDetail', { missionId: a.mission_id })}>
                 <View style={styles.callout}>
                   <Text style={styles.calloutService}>{a.service_name}</Text>
                   <Text style={styles.calloutClient}>{a.client_name}</Text>

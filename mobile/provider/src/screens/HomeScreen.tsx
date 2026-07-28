@@ -76,7 +76,9 @@ export function HomeScreen() {
               <TouchableOpacity
                 key={a.id}
                 style={styles.missionCard}
-                onPress={() => navigation.navigate('MissionDetail', { missionId: a.booking_id })}
+                // `mission_id`, PAS `booking_id` : la route de destination est liée au modèle
+                // Mission (GET /provider/missions/{missionId}).
+                onPress={() => navigation.navigate('MissionDetail', { missionId: a.mission_id })}
                 accessibilityLabel={`Mission ${a.service_name} - ${a.client_name}`}
               >
                 <Text style={styles.missionService}>{a.service_name}</Text>
