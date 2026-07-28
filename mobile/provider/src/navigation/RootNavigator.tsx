@@ -2,6 +2,7 @@ import React from 'react';
 import { View, ActivityIndicator } from 'react-native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { useAuth } from '@/auth';
+import { useOnboardingProgress, isJourneyComplete } from '@/onboarding';
 import { LoginScreen } from '@/screens/LoginScreen';
 import { MissionDetailScreen } from '@/screens/MissionDetailScreen';
 import { MissionInboxScreen } from '@/screens/MissionInboxScreen';
@@ -22,6 +23,7 @@ import { LegalScreen } from '@/screens/LegalScreen';
 import { NotificationPreferencesScreen } from '@/screens/NotificationPreferencesScreen';
 import { LanguageScreen } from '@/screens/LanguageScreen';
 import { AppearanceScreen } from '@/screens/AppearanceScreen';
+import { ProviderOnboardingScreen } from '@/screens/onboarding/ProviderOnboardingScreen';
 import { TabNavigator } from './TabNavigator';
 import { colors } from '@/theme';
 import type { RootStackParamList } from './types';
@@ -30,6 +32,12 @@ const Stack = createNativeStackNavigator<RootStackParamList>();
 
 export function RootNavigator() {
   const { isAuthenticated, isLoading } = useAuth();
+
+  // Le parcours de vérification garde l'entrée de l'application. Sans lui, un compte tout juste
+  // créé atterrissait sur le tableau de bord où chaque appel échouait en 403, sans explication.
+  // La requête n'est lancée qu'une fois authentifié — l'endpoint l'exige.
+  const { data: onboarding, isLoading: onboardingLoading, isError: onboardingError } =
+    useOnboardingProgress(isAuthenticated);
 
   if (isLoading) {
     return (
@@ -45,7 +53,12 @@ export function RootNavigator() {
   return (
     <View testID="root-navigator" style={{ flex: 1 }}>
       <Stack.Navigator screenOptions={{ headerShown: false }}>
-        {isAuthenticated ? (
+        {isAuthenticated && !onboardingLoading && !onboardingError && !isJourneyComplete(onboarding) ? (
+          // Dossier incomplet : rien d'autre n'est atteignable. Une ERREUR de chargement laisse
+          // en revanche passer — mieux vaut un dashboard partiellement bloqué par le serveur
+          // qu'un utilisateur enfermé hors de son app parce qu'une requête a échoué.
+          <Stack.Screen name="ProviderOnboarding" component={ProviderOnboardingScreen} />
+        ) : isAuthenticated ? (
           <>
             <Stack.Screen name="MainTabs" component={TabNavigator} />
             <Stack.Screen

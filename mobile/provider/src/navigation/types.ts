@@ -5,6 +5,8 @@ export type RootStackParamList = {
   // MainTabs nests TabParamList — declaring it `undefined` hid the fact that reaching a
   // tab (e.g. Earnings) requires `{ screen: '<Tab>' }`.
   MainTabs: NavigatorScreenParams<TabParamList> | undefined;
+  // Parcours de vérification : seul écran atteignable tant que le dossier est incomplet.
+  ProviderOnboarding: undefined;
   MissionDetail: { missionId: number };
   MissionInbox: undefined;
   MissionField: { missionId: number };

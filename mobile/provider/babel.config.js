@@ -18,6 +18,7 @@ module.exports = function (api) {
             '@/sentry': '../shared/src/sentry',
             '@/storage': '../shared/src/storage',
             '@/theme': '../shared/src/theme',
+            '@/onboarding': '../shared/src/onboarding',
             '@/trades': '../shared/src/trades',
             '@/ui': '../shared/src/ui',
             '@/ErrorBoundary': '../shared/src/ErrorBoundary',

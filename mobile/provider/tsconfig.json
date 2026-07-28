@@ -35,6 +35,7 @@
       "@/webview/*": ["../shared/src/webview/*"],
       "@/parity": ["../shared/src/parity"],
       "@/parity/*": ["../shared/src/parity/*"],
+      "@/onboarding": ["../shared/src/onboarding"],
       "@/trades": ["../shared/src/trades"],
       "@/finance": ["../shared/src/finance"],
       "@/finance/*": ["../shared/src/finance/*"],
