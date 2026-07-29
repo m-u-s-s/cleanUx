@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\Auth\ApiAuthController;
 use App\Http\Controllers\Api\Auth\ForgotPasswordController;
+use App\Http\Controllers\Api\Auth\RegistrationPhoneController;
 use App\Http\Controllers\Api\Auth\WebViewAuthController;
 use App\Http\Controllers\Api\AuthMeController;
 use App\Http\Controllers\Api\AuthRefreshController;
@@ -14,6 +15,14 @@ use Illuminate\Support\Facades\Route;
 Route::prefix('auth')->middleware('throttle:auth')->group(function () {
     Route::post('/login', [ApiAuthController::class, 'login']);
     Route::post('/register', [ApiAuthController::class, 'register'])->middleware('turnstile');
+});
+
+// Vérification du téléphone au tout premier écran de l'inscription, donc avant que le compte
+// existe : ces deux routes sont nécessairement publiques. Elles déclenchent des SMS payants, d'où
+// `throttle:otp` plutôt que `throttle:auth`, en plus des plafonds par numéro de SmsService.
+Route::prefix('auth/phone')->middleware('throttle:otp')->group(function () {
+    Route::post('/verify-request', [RegistrationPhoneController::class, 'requestCode']);
+    Route::post('/verify-confirm', [RegistrationPhoneController::class, 'confirm']);
 });
 
 // POST /auth/forgot-password — silently ignores unknown emails (mobile app)

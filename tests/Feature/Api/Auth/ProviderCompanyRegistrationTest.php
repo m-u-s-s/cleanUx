@@ -27,7 +27,10 @@ class ProviderCompanyRegistrationTest extends TestCase
         $this->postJson('/api/auth/register', $this->payload([
             'provider_kind' => 'company',
             'company_name' => 'Nettoyage Dupont SPRL',
-            'vat_number' => 'BE0123456789',
+            // Numéro d'entreprise réel : la clé de contrôle est vérifiée depuis que
+            // `vat_number` n'est plus accepté sans examen. « BE0123456789 », employé ici
+            // à l'origine, n'a jamais été un numéro valide.
+            'vat_number' => 'BE0202239951',
         ]))->assertCreated();
 
         $user = User::where('email', 'nouveau@prestataire.test')->firstOrFail();
@@ -36,7 +39,7 @@ class ProviderCompanyRegistrationTest extends TestCase
         $org = OrganizationAccount::where('name', 'Nettoyage Dupont SPRL')->firstOrFail();
         $this->assertSame('provider_company', $org->type);
         $this->assertSame('pending', $org->status);
-        $this->assertSame('BE0123456789', $org->tva_number);
+        $this->assertSame('BE0202239951', $org->tva_number);
 
         $member = OrganizationMember::where('organization_account_id', $org->id)
             ->where('user_id', $user->id)

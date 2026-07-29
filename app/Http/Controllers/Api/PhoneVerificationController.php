@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Api\Client;
+namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Services\Sms\PhoneVerificationService;
@@ -9,7 +9,11 @@ use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 
 /**
- * @group Client — Phone Verification
+ * @group Phone Verification (compte existant)
+ *
+ * Partagé par l'app cliente et l'app prestataire : le contrôleur ne connaît que `$request->user()`.
+ * L'inscription prestataire, elle, vérifie le téléphone AVANT que le compte existe et passe donc
+ * par RegistrationPhoneController.
  *
  * @authenticated
  */

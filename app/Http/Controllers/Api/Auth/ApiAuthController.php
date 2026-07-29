@@ -14,6 +14,7 @@ use App\Models\Trade;
 use App\Models\User;
 use App\Services\OnboardingV2\OnboardingEngine;
 use App\Services\Promotion\ReferralService;
+use App\Services\Sms\PhoneVerificationService;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -21,6 +22,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 
@@ -111,15 +113,32 @@ class ApiAuthController extends Controller
 
         $asProvider = ($data['account_type'] ?? 'client') === 'provider';
 
+        // Le téléphone est vérifié par SMS au premier écran du parcours prestataire, donc avant
+        // que ce compte existe. Le jeton rendu alors est échangé ici, une seule fois, contre le
+        // numéro qu'il porte : c'est la seule façon d'arriver ici avec `phone_verified_at` posé.
+        // Un jeton absent, expiré, déjà échangé ou portant un autre numéro laisse simplement
+        // l'inscription se poursuivre avec un téléphone non vérifié, sans la faire échouer.
+        $verifiedPhone = null;
+        if (! empty($data['phone_verification_token'])) {
+            $verifiedPhone = app(PhoneVerificationService::class)->consumeRegistrationToken(
+                $data['phone_verification_token'],
+                $data['phone'] ?? null,
+            );
+        }
+
         $user = User::create([
             'name' => $data['name'],
             'email' => $data['email'],
             'password' => Hash::make($data['password']),
-            'phone' => $data['phone'] ?? null,
+            'phone' => $verifiedPhone ?? $data['phone'] ?? null,
             'locale' => $data['locale'] ?? 'fr',
             'platform_role' => User::PLATFORM_USER,
             'role' => $asProvider ? 'employe' : 'client',
         ]);
+
+        if ($verifiedPhone !== null && Schema::hasColumn('users', 'phone_verified_at')) {
+            $user->forceFill(['phone_verified_at' => now()])->save();
+        }
 
         // L'app prestataire crée un compte capable de compléter son dossier, et rien d'autre :
         // toute la surface prestataire est gardée par `role:employe`, y compris les routes

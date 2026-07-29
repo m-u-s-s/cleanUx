@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\EmployeeMissionTrackingController;
+use App\Http\Controllers\Api\PhoneVerificationController;
 use App\Http\Controllers\Api\Provider\AvailabilityController;
 use App\Http\Controllers\Api\Provider\BadgesController;
 use App\Http\Controllers\Api\Provider\FleetProviderController;
@@ -134,6 +135,14 @@ Route::middleware(['auth:sanctum', 'role:employe', 'provider.approved'])->group(
 
             // Mobile app — provider profile self-update (name, phone, locale)
             Route::put('/profile', [ProviderProfileController::class, 'update']);
+
+            // Miroir des routes OTP client. Le téléphone est vérifié dès l'inscription, mais un
+            // prestataire qui change de numéro en cours de dossier doit pouvoir le re-vérifier
+            // sans attendre son approbation — le numéro est ce par quoi le client le joint.
+            Route::post('/phone/verify-request', [PhoneVerificationController::class, 'requestCode'])
+                ->middleware('throttle:otp');
+            Route::post('/phone/verify-confirm', [PhoneVerificationController::class, 'confirm'])
+                ->middleware('throttle:otp');
 
             // Sprint 0 — Task 3: Stripe Connect provider endpoints (RN Phase 2)
             Route::prefix('stripe-connect')->middleware('token.grace')->group(function () {

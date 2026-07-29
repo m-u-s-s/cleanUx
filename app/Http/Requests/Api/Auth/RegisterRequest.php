@@ -2,6 +2,9 @@
 
 namespace App\Http\Requests\Api\Auth;
 
+use App\Models\Trade;
+use App\Rules\ValidBusinessNumber;
+use App\Support\Validation\TradeFormSchema;
 use Illuminate\Foundation\Http\FormRequest;
 
 class RegisterRequest extends FormRequest
@@ -13,11 +16,15 @@ class RegisterRequest extends FormRequest
 
     public function rules(): array
     {
-        return [
+        return array_merge([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'email', 'max:255', 'unique:users,email'],
             'password' => ['required', 'string', 'min:8', 'confirmed'],
             'phone' => ['nullable', 'string', 'max:30'],
+            // Jeton rendu par POST /api/auth/phone/verify-confirm. C'est lui — et non un booléen
+            // envoyé par le client — qui autorise à marquer le téléphone comme vérifié sur le
+            // compte créé. Il est à usage unique côté service.
+            'phone_verification_token' => ['nullable', 'string', 'max:512'],
             'locale' => ['nullable', 'string', 'in:fr,nl,en'],
             'accept_terms' => ['required', 'accepted'],
             'device_name' => ['nullable', 'string', 'max:100'],
@@ -33,12 +40,44 @@ class RegisterRequest extends FormRequest
             // l'espace web provider-company et le rattachement des missions.
             'provider_kind' => ['nullable', 'string', 'in:independent,company'],
             'company_name' => ['nullable', 'required_if:provider_kind,company', 'string', 'max:255'],
-            'vat_number' => ['nullable', 'string', 'max:32'],
+            // Ce numéro n'est pas décoratif : la vérification KYB le soumettra à l'INSEE et à
+            // VIES. Accepté sans contrôle, il n'échouait qu'à la revue du dossier, plusieurs
+            // jours plus tard — la clé est donc vérifiée dès la saisie.
+            'vat_number' => ['nullable', 'string', 'max:32', new ValidBusinessNumber],
             // Métier visé et réponses aux questions propres à ce métier
             // (trades.provider_form_schema). Sans métier déclaré, le matching n'a rien sur quoi
             // travailler : le prestataire ne recevrait jamais la moindre mission.
             'trade_id' => ['nullable', 'integer', 'exists:trades,id'],
             'trade_answers' => ['nullable', 'array'],
-        ];
+        ], TradeFormSchema::rulesFor($this->declaredTradeSchema()));
+    }
+
+    /**
+     * Les libellés du schéma nomment les erreurs comme la question est posée à l'écran.
+     *
+     * @return array<string, string>
+     */
+    public function attributes(): array
+    {
+        return TradeFormSchema::attributesFor($this->declaredTradeSchema());
+    }
+
+    /**
+     * Schéma du métier déclaré, ou null si aucun métier valide n'est demandé — auquel cas aucune
+     * règle par question n'est ajoutée et `trade_answers` reste un tableau libre.
+     *
+     * @return array<string, mixed>|null
+     */
+    private function declaredTradeSchema(): ?array
+    {
+        $tradeId = $this->input('trade_id');
+
+        if (! is_numeric($tradeId)) {
+            return null;
+        }
+
+        $schema = Trade::query()->whereKey((int) $tradeId)->value('provider_form_schema');
+
+        return is_array($schema) ? $schema : null;
     }
 }
