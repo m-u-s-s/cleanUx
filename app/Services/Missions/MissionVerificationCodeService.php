@@ -48,7 +48,7 @@ class MissionVerificationCodeService
             ->first();
 
         if (! $record) {
-            throw new RuntimeException('Aucun code valide trouvé pour cette mission.');
+            throw new RuntimeException('Aucun code valide trouvé pour cette mission.', 422);
         }
 
         $record->increment('attempts');
@@ -60,15 +60,15 @@ class MissionVerificationCodeService
         if ($record->attempts > $maxAttempts) {
             $record->update(['is_consumed' => true]);
 
-            throw new RuntimeException('Trop de tentatives infructueuses. Demandez un nouveau code.');
+            throw new RuntimeException('Trop de tentatives infructueuses. Demandez un nouveau code.', 429);
         }
 
         if ($record->expires_at && $record->expires_at->isPast()) {
-            throw new RuntimeException('Le code a expiré.');
+            throw new RuntimeException('Le code a expiré.', 422);
         }
 
         if (! Hash::check(trim($plainCode), $record->code_hash)) {
-            throw new RuntimeException('Code invalide.');
+            throw new RuntimeException('Code invalide.', 422);
         }
 
         $record->update([

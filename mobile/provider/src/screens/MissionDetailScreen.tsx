@@ -1,8 +1,8 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { View, Text, Alert, StyleSheet } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useNavigation } from '@react-navigation/native';
-import { Screen, Button, Badge, Divider } from '@/ui';
+import { Screen, Button, Badge, Divider, TextInput } from '@/ui';
 import { useMissionDetail, useMissionLifecycle } from '@/missions';
 import { colors, spacing, typography, radius, shadows, useThemeColors } from '@/theme';
 import type { RootStackParamList } from '@/navigation/types';
@@ -15,6 +15,14 @@ export function MissionDetailScreen({ route }: Props) {
   const lifecycle = useMissionLifecycle(missionId);
   const navigation = useNavigation<any>();
   const themeColors = useThemeColors();
+
+  // Code de début, communiqué au client par SMS à l'arrivée du prestataire : c'est lui qui
+  // atteste la présence sur place. Sans lui le serveur refuse le démarrage.
+  //
+  // Déclaré AVANT le retour anticipé de chargement : placé après, le hook n'existait pas au
+  // premier rendu puis apparaissait au second, ce que React refuse — « Rendered more hooks than
+  // during the previous render », et l'écran plantait.
+  const [startCode, setStartCode] = useState('');
 
   if (isLoading || !mission) {
     return (
@@ -76,13 +84,32 @@ export function MissionDetailScreen({ route }: Props) {
           />
         )}
         {mission.status === 'arrived' && (
-          <Button
-            label="Démarrer mission"
-            onPress={() => handleAction('start', 'Démarrer')}
-            fullWidth
-          />
+          <>
+            <TextInput
+              label="Code de début (donné au client par SMS)"
+              value={startCode}
+              onChangeText={setStartCode}
+              keyboardType="number-pad"
+              maxLength={6}
+              placeholder="000000"
+            />
+            {/* `begin`, PAS `start` : `start` appelle setEnRoute côté serveur, et depuis
+                `arrived` cette transition est invalide — l'ancien bouton recevait un 422. */}
+            <Button
+              label="Démarrer mission"
+              onPress={() =>
+                startCode.length === 6
+                  ? lifecycle.mutate({ action: 'begin', code: startCode })
+                  : Alert.alert('Code requis', 'Demandez au client le code à six chiffres reçu par SMS.')
+              }
+              fullWidth
+            />
+          </>
         )}
-        {mission.status === 'in_progress' && (
+        {/* `started`, PAS `in_progress` : ce dernier n'existe dans aucun statut du backend
+            (MissionStatus), si bien qu'une mission démarrée n'affichait AUCUNE action — le
+            prestataire ne pouvait ni ouvrir la mission terrain ni la clôturer. */}
+        {mission.status === 'started' && (
           <>
             <Button
               label="Mission terrain"

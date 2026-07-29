@@ -48,7 +48,13 @@ class MissionEndCodeFlowTest extends TestCase
                 'end_code' => '111111',
             ]);
 
-        $response->assertServerError();
+        // 422, pas 500 : un code erroné est une saisie invalide, pas une panne du serveur.
+        // Cette assertion exigeait auparavant assertServerError(), gravant comme attendu un
+        // défaut bien réel — MissionVerificationCodeService levait des RuntimeException sans code
+        // HTTP, que le rendu JSON ne pouvait donc que traiter en 500. Côté mobile, l'écran en
+        // déduisait « Le service est momentanément indisponible » là où il fallait dire au
+        // prestataire que le code était faux.
+        $response->assertStatus(422);
         $this->assertSame('started', $mission->fresh()->status);
     }
 

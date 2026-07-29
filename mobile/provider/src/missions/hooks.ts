@@ -65,8 +65,15 @@ export function useMissionLifecycle(missionId: number) {
     mutationFn: async (payload) => {
       const action = typeof payload === 'string' ? payload : payload.action;
       const code = typeof payload === 'string' ? undefined : payload.code;
-      const body =
-        action === 'complete' && code ? { end_code: code } : undefined;
+      // Chaque action porte son propre nom de code : le serveur valide `start_code` au
+      // démarrage et `end_code` à la clôture, tous deux communiqués au client par SMS.
+      const body = code
+        ? action === 'complete'
+          ? { end_code: code }
+          : action === 'begin'
+            ? { start_code: code }
+            : undefined
+        : undefined;
       await apiClient.post(`/provider/missions/${missionId}/${action}`, body);
     },
     onSuccess: () =>

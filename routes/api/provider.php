@@ -157,6 +157,9 @@ Route::middleware(['auth:sanctum', 'role:employe', 'provider.approved'])->group(
         Route::get('/{mission}', [ProviderMissionLifecycleController::class, 'show']);
         Route::post('/{mission}/start', [ProviderMissionLifecycleController::class, 'start']);
         Route::post('/{mission}/arrive', [ProviderMissionLifecycleController::class, 'arrive']);
+        // arrived -> started. N'existait que sur les routes web a session, donc hors de portee de
+        // l'app mobile : un prestataire arrive sur place ne pouvait pas demarrer sa mission.
+        Route::post('/{mission}/begin', [ProviderMissionLifecycleController::class, 'begin']);
         Route::post('/{mission}/complete', [ProviderMissionLifecycleController::class, 'complete']);
     });
 

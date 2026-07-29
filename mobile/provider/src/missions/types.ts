@@ -58,4 +58,8 @@ export interface Mission {
   notes?: string;
 }
 
-export type MissionLifecycleAction = 'start' | 'arrive' | 'complete';
+/**
+ * `start` met EN ROUTE (setEnRoute côté serveur), il ne démarre pas la mission.
+ * `begin` fait arrived → started, contre le code communiqué au client par SMS à l'arrivée.
+ */
+export type MissionLifecycleAction = 'start' | 'arrive' | 'begin' | 'complete';

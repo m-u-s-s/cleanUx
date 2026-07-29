@@ -185,6 +185,72 @@ class ProviderMissionLifecycleController extends Controller
      * @response 403 {"message": "Vous n'êtes pas assigné à cette mission."}
      * @response 422 {"ok": false, "message": "Le code de fin est requis pour clôturer cette mission."}
      */
+    /**
+     * Démarre une mission sur laquelle le prestataire est arrivé (arrived → started).
+     *
+     * Ce passage n'existait que sur des routes WEB à session (routes/missions.php), inaccessibles
+     * à une app authentifiée par jeton : un prestataire arrivé sur place ne pouvait pas démarrer
+     * sa mission depuis son téléphone. `start` ci-dessus ne fait PAS cela — il met en route
+     * (setEnRoute), et l'appeler depuis `arrived` produit un 422, la transition étant invalide.
+     *
+     * Le code de début est envoyé au client par SMS à l'arrivée (setArrived) : c'est lui qui
+     * atteste sa présence. Même contrat que `complete` et son end_code.
+     *
+     * @bodyParam start_code string Code à six chiffres communiqué par le client. Example: 482915
+     *
+     * @response 200 {"ok": true, "mission_id": 12, "status": "started"}
+     * @response 403 {"message": "Vous n'êtes pas assigné à cette mission."}
+     * @response 422 {"ok": false, "message": "Le code de début est requis pour démarrer cette mission."}
+     */
+    public function begin(Request $request, Mission $mission): JsonResponse
+    {
+        $this->authorizeProvider($request, $mission);
+
+        $data = $request->validate([
+            'lat' => ['nullable', 'numeric', 'between:-90,90'],
+            'lng' => ['nullable', 'numeric', 'between:-180,180'],
+            'start_code' => ['nullable', 'string', 'size:6'],
+        ]);
+
+        $hasPendingStartCode = $mission->verificationCodes()
+            ->where('code_type', 'start')
+            ->where('is_consumed', false)
+            ->exists();
+
+        if ($hasPendingStartCode && empty($data['start_code'])) {
+            return response()->json([
+                'ok' => false,
+                'message' => 'Le code de début est requis pour démarrer cette mission.',
+            ], 422);
+        }
+
+        $lat = isset($data['lat']) ? (float) $data['lat'] : null;
+        $lng = isset($data['lng']) ? (float) $data['lng'] : null;
+
+        // Sans code en attente, la mission n'a pas été marquée arrivée par le flux normal : on
+        // refuse plutôt que d'inventer un démarrage sans attestation de présence.
+        if (! $hasPendingStartCode) {
+            return response()->json([
+                'ok' => false,
+                'message' => "Aucun code de début en attente : marquez d'abord votre arrivée.",
+            ], 422);
+        }
+
+        $mission = $this->lifecycle->validateStartCode(
+            $mission,
+            $request->user(),
+            (string) $data['start_code'],
+            $lat,
+            $lng,
+        );
+
+        return response()->json([
+            'ok' => true,
+            'mission_id' => $mission->id,
+            'status' => $mission->status,
+        ]);
+    }
+
     public function complete(Request $request, Mission $mission): JsonResponse
     {
         $this->authorizeProvider($request, $mission);
