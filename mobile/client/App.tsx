@@ -3,6 +3,7 @@ import { setupForegroundNotifications } from '@/push';
 setupForegroundNotifications();
 import React, { useState, useEffect } from 'react';
 import { View } from 'react-native';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { NavigationContainer } from '@react-navigation/native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
@@ -88,16 +89,22 @@ export default function App() {
   }
 
   return (
-    <ErrorBoundary>
-      <StripeProvider publishableKey={env.stripePublishableKey} merchantIdentifier="merchant.com.cleanux.client">
-        <QueryClientProvider client={queryClient}>
-          <AuthProvider>
-            <RealtimeProvider>
-              <AppInner />
-            </RealtimeProvider>
-          </AuthProvider>
-        </QueryClientProvider>
-      </StripeProvider>
-    </ErrorBoundary>
+    // react-native-gesture-handler exige que TOUTE l'application descende de cette vue, sinon
+    // ses détecteurs de geste lèvent au montage : « GestureDetector must be used as a descendant
+    // of GestureHandlerRootView ». L'application prestataire l'a depuis toujours ; celle-ci ne
+    // l'avait pas, faute d'écran gestuel — la feuille d'actions de l'accueil en introduit un.
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <ErrorBoundary>
+        <StripeProvider publishableKey={env.stripePublishableKey} merchantIdentifier="merchant.com.cleanux.client">
+          <QueryClientProvider client={queryClient}>
+            <AuthProvider>
+              <RealtimeProvider>
+                <AppInner />
+              </RealtimeProvider>
+            </AuthProvider>
+          </QueryClientProvider>
+        </StripeProvider>
+      </ErrorBoundary>
+    </GestureHandlerRootView>
   );
 }

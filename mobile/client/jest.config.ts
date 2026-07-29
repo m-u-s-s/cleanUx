@@ -3,6 +3,11 @@ import path from 'path';
 
 const config: Config = {
   preset: 'jest-expo',
+  // Le module natif de react-native-gesture-handler (RNGestureHandlerModule.install()) n'a
+  // aucune implémentation Jest/Node. App.tsx enveloppe désormais tout dans GestureHandlerRootView
+  // — la feuille d'actions de l'accueil l'exige — donc tout test qui monte <App /> en a besoin.
+  // C'est le fichier de setup officiel du paquet, déjà employé par l'application prestataire.
+  setupFiles: ['<rootDir>/node_modules/react-native-gesture-handler/jestSetup.js'],
   // react-test-renderer (used by @testing-library/react-native) is deprecated
   // under React 19 and leaves an async operation pending at the end of a run
   // that node cannot attribute: `jest --detectOpenHandles` reports NO leaking
