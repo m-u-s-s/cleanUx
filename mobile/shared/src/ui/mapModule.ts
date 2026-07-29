@@ -6,6 +6,11 @@ export interface MapModule {
   MapView: React.ComponentType<any>;
   Marker: React.ComponentType<any>;
   Callout: React.ComponentType<any>;
+  /**
+   * Tracé d'un trajet. Facultatif à dessein : il n'est employé que par l'écran de suivi, et son
+   * absence ne doit pas faire échouer le chargement pour les écrans qui n'en ont pas besoin.
+   */
+  Polyline?: React.ComponentType<any>;
 }
 
 /**
@@ -23,7 +28,7 @@ export function loadMapModule(): MapModule | null {
 
     if (!MapView || !maps?.Marker || !maps?.Callout) return null;
 
-    return { MapView, Marker: maps.Marker, Callout: maps.Callout };
+    return { MapView, Marker: maps.Marker, Callout: maps.Callout, Polyline: maps.Polyline };
   } catch {
     return null;
   }

@@ -29,6 +29,11 @@ export interface OsmMarker {
 interface OsmMapProps {
   markers: OsmMarker[];
   position: { latitude: number; longitude: number } | null;
+  /**
+   * Trajet parcouru, tracé comme une ligne. Sur un écran de suivi c'est l'essentiel : sans lui,
+   * le repli n'afficherait qu'un point et perdrait ce que la carte sert à montrer.
+   */
+  trail?: { latitude: number; longitude: number }[];
   /** Centre initial quand aucune position ni mission n'est connue. */
   fallbackCenter: { latitude: number; longitude: number; zoom: number };
   onMarkerPress: (id: number) => void;
@@ -58,6 +63,7 @@ function buildHtml(props: {
   markers: OsmMarker[];
   position: OsmMapProps['position'];
   center: OsmMapProps['fallbackCenter'];
+  trail: { latitude: number; longitude: number }[];
 }): string {
   const payload = JSON.stringify(props).replace(/</g, '\\u003c');
 
@@ -106,6 +112,13 @@ function buildHtml(props: {
         bounds.push([m.latitude, m.longitude]);
       });
 
+      // Le trajet d'abord, pour qu'il passe SOUS les marqueurs plutôt que par-dessus.
+      if (data.trail && data.trail.length > 1) {
+        var line = data.trail.map(function (p) { return [p.latitude, p.longitude]; });
+        L.polyline(line, { color: '#6366f1', weight: 4, opacity: 0.85 }).addTo(map);
+        line.forEach(function (pt) { bounds.push(pt); });
+      }
+
       if (data.position) {
         L.marker([data.position.latitude, data.position.longitude], {
           icon: L.divIcon({ className: '', html: '<div class="cx-me"></div>', iconSize: [16, 16] }),
@@ -124,7 +137,7 @@ function buildHtml(props: {
 </html>`;
 }
 
-export function OsmMap({ markers, position, fallbackCenter, onMarkerPress, testID }: OsmMapProps) {
+export function OsmMap({ markers, position, trail, fallbackCenter, onMarkerPress, testID }: OsmMapProps) {
   const WebView = useMemo(() => loadWebView()?.WebView ?? null, []);
 
   // La position change à chaque tick GPS ; recharger le HTML à chaque fois rechargerait la carte
@@ -135,8 +148,9 @@ export function OsmMap({ markers, position, fallbackCenter, onMarkerPress, testI
     : null;
 
   const html = useMemo(
-    () => buildHtml({ markers, position: coarsePosition, center: fallbackCenter }),
-    [markers, coarsePosition?.latitude, coarsePosition?.longitude, fallbackCenter],
+    () => buildHtml({ markers, position: coarsePosition, center: fallbackCenter, trail: trail ?? [] }),
+    // Le trajet ne dépend que de sa longueur : redessiner à chaque point rechargerait la carte.
+    [markers, coarsePosition?.latitude, coarsePosition?.longitude, fallbackCenter, trail?.length],
   );
 
   const handleMessage = useCallback(

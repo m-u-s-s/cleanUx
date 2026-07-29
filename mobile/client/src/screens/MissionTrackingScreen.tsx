@@ -1,7 +1,6 @@
 import React, { useRef, useEffect, useMemo } from 'react';
 import { View, Text, StyleSheet, Dimensions } from 'react-native';
-import MapView, { Marker, Polyline, PROVIDER_DEFAULT } from 'react-native-maps';
-import { Screen, Badge, Skeleton } from '@/ui';
+import { Screen, Badge, Skeleton, OsmMap, loadMapModule, isMapRenderable } from '@/ui';
 import { useTrackingSession, useTrackingTrail, useLiveTracking } from '@/tracking';
 import { colors, spacing, typography, radius, shadows } from '@/theme';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -14,7 +13,15 @@ export function MissionTrackingScreen({ route }: Props) {
   const { data: session, isLoading } = useTrackingSession(bookingId);
   const { data: trail } = useTrackingTrail(bookingId);
   const { position: livePos, eta: liveEta } = useLiveTracking(bookingId);
-  const mapRef = useRef<MapView>(null);
+  const mapRef = useRef<any>(null);
+
+  /**
+   * Le module natif n'est chargé QUE si la carte peut réellement s'afficher. C'est la correction
+   * centrale : `react-native-maps` était importé statiquement, donc monté quoi qu'il arrive. Sur
+   * Android, sans clé Google Maps dans le manifeste, il ne dégrade pas — il lève
+   * `IllegalStateException` et emporte l'écran entier.
+   */
+  const mapModule = useMemo(() => (isMapRenderable() ? loadMapModule() : null), []);
 
   const currentPos = livePos ?? (trail && trail.length > 0 ? trail[trail.length - 1] : null);
   const etaMinutes = liveEta?.eta_minutes ?? session?.eta_minutes;
@@ -35,7 +42,10 @@ export function MissionTrackingScreen({ route }: Props) {
 
   // Smooth camera follow instead of prop re-render
   useEffect(() => {
-    if (currentPos && mapRef.current) {
+    // Le repli OpenStreetMap n'expose pas d'API impérative : il se recadre seul sur ses points.
+    // `animateToRegion` est une API impérative du module natif : on vérifie qu'elle existe avant
+    // de l'appeler, plutôt que de supposer la forme d'un module chargé dynamiquement.
+    if (currentPos && mapModule && typeof mapRef.current?.animateToRegion === 'function') {
       mapRef.current.animateToRegion(
         {
           latitude: currentPos.latitude,
@@ -59,28 +69,52 @@ export function MissionTrackingScreen({ route }: Props) {
 
   return (
     <View style={styles.container}>
-      <MapView
-        ref={mapRef}
-        style={styles.map}
-        provider={PROVIDER_DEFAULT}
-        initialRegion={initialRegion}
-        showsUserLocation
-      >
-        {currentPos && (
-          <Marker
-            coordinate={{ latitude: currentPos.latitude, longitude: currentPos.longitude }}
-            title="Prestataire"
-            pinColor={colors.brand[500]}
+      {mapModule ? (
+        <mapModule.MapView
+          ref={mapRef}
+          style={styles.map}
+          initialRegion={initialRegion}
+          showsUserLocation
+        >
+          {currentPos && (
+            <mapModule.Marker
+              coordinate={{ latitude: currentPos.latitude, longitude: currentPos.longitude }}
+              title="Prestataire"
+              pinColor={colors.brand[500]}
+            />
+          )}
+          {/* Le trajet parcouru : c'est lui qui rend le suivi lisible, pas le point seul. */}
+          {mapModule.Polyline && trail && trail.length > 1 && (
+            <mapModule.Polyline
+              coordinates={trail.map(p => ({ latitude: p.latitude, longitude: p.longitude }))}
+              strokeWidth={3}
+              strokeColor={colors.brand[400]}
+            />
+          )}
+        </mapModule.MapView>
+      ) : (
+        // Repli sans clé : OpenStreetMap en WebView, qui n'en exige aucune. Le trajet y est
+        // tracé aussi — sur un écran de suivi, un point seul ne montrerait rien d'utile.
+        <View style={styles.map}>
+          <OsmMap
+            markers={currentPos ? [{
+              id: bookingId,
+              latitude: currentPos.latitude,
+              longitude: currentPos.longitude,
+              title: 'Prestataire',
+            }] : []}
+            position={currentPos ? { latitude: currentPos.latitude, longitude: currentPos.longitude } : null}
+            trail={trail?.map(p => ({ latitude: p.latitude, longitude: p.longitude }))}
+            fallbackCenter={{
+              latitude: initialRegion.latitude,
+              longitude: initialRegion.longitude,
+              zoom: 13,
+            }}
+            onMarkerPress={() => undefined}
+            testID="mission-tracking-map-osm"
           />
-        )}
-        {trail && trail.length > 1 && (
-          <Polyline
-            coordinates={trail.map(p => ({ latitude: p.latitude, longitude: p.longitude }))}
-            strokeWidth={3}
-            strokeColor={colors.brand[400]}
-          />
-        )}
-      </MapView>
+        </View>
+      )}
 
       <View style={styles.infoCard}>
         <View style={styles.infoRow}>
