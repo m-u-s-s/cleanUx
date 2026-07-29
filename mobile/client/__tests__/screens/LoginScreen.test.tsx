@@ -2,12 +2,29 @@ import React from 'react';
 import { render, fireEvent } from '@testing-library/react-native';
 
 jest.mock('react-native-reanimated', () => {
-  const { View } = require('react-native');
+  const { View, Text } = require('react-native');
+  const ReactLocal = require('react');
+  const Passthrough = ReactLocal.forwardRef(({ children, ...rest }: any, ref: any) => (
+    <View ref={ref} {...rest}>{children}</View>
+  ));
+  const TextPassthrough = ReactLocal.forwardRef(({ children, ...rest }: any, ref: any) => (
+    <Text ref={ref} {...rest}>{children}</Text>
+  ));
+  // Chaînable : l'habillage partagé enchaîne .delay().duration().springify().damping().
+  // Le faux précédent ne rendait qu'un objet nu, et le premier maillon levait.
+  const chainable: any = new Proxy(() => chainable, { get: () => () => chainable });
   return {
     __esModule: true,
-    default: { createAnimatedComponent: (c: any) => c, View },
-    FadeIn: { duration: () => ({}) },
-    FadeOut: { duration: () => ({}) },
+    default: { View: Passthrough, Text: TextPassthrough, createAnimatedComponent: (c: any) => c },
+    FadeIn: chainable,
+    FadeOut: chainable,
+    FadeInDown: chainable,
+    Easing: { inOut: () => undefined, out: () => undefined, ease: undefined, cubic: undefined },
+    useSharedValue: (v: any) => ({ value: v }),
+    useAnimatedStyle: () => ({}),
+    withTiming: (v: any) => v,
+    withRepeat: (v: any) => v,
+    withDelay: (_d: any, v: any) => v,
   };
 });
 
@@ -44,7 +61,13 @@ jest.mock('@/ui', () => {
 
       return <View testID={testID} />;
     },
-    a11y: { pressable: (label: string) => ({ accessibilityLabel: label, accessibilityRole: 'button' }) },
+    a11y: {
+      pressable: (label: string) => ({ accessibilityLabel: label, accessibilityRole: 'button' }),
+      announce: () => undefined,
+    },
+    // L'ecran interroge desormais la preference systeme d'animation reduite : sans elle dans ce
+    // faux, l'ecran leve avant meme d'etre rendu.
+    useReducedMotion: () => false,
   };
 });
 
@@ -56,9 +79,11 @@ describe('LoginScreen', () => {
     expect(tree.toJSON()).not.toBeNull();
   });
 
-  it('shows CleanUx brand', () => {
+  // La marque affichee est « brio », et le wordmark vient de @/ui/authShell — partage avec
+  // l'application prestataire pour que les deux portes d'entree aient la meme identite.
+  it('shows brio brand', () => {
     const { getByText } = render(<LoginScreen />);
-    expect(getByText('CleanUx')).toBeTruthy();
+    expect(getByText('brio')).toBeTruthy();
   });
 
   it('renders email and password inputs', () => {

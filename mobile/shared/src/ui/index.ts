@@ -23,3 +23,12 @@ export { SuccessOverlay } from './SuccessOverlay';
 export { useReducedMotion, useScreenReader, a11y } from './a11y';
 export { OfflineBanner } from './OfflineBanner';
 export { TurnstileWidget } from './TurnstileWidget';
+export {
+  CANVAS,
+  authErrorMessage,
+  AnimatedHalo,
+  Wordmark,
+  Stagger,
+  FormError,
+  authStyles,
+} from './authShell';

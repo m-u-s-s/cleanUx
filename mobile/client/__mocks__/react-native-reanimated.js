@@ -47,6 +47,8 @@ const _makeEntryExit = () => {
 const FadeIn = _makeEntryExit();
 const FadeOut = _makeEntryExit();
 const FadeInUp = _makeEntryExit();
+const FadeInDown = _makeEntryExit();
+const FadeInRight = _makeEntryExit();
 const FadeOutDown = _makeEntryExit();
 const SlideInRight = _makeEntryExit();
 const SlideOutLeft = _makeEntryExit();
@@ -89,6 +91,8 @@ const AnimatedImage = createAnimatedComponent(Image);
 const AnimatedScrollView = createAnimatedComponent(ScrollView);
 
 module.exports = {
+  FadeInDown,
+  FadeInRight,
   default: {
     View: AnimatedView,
     Text: AnimatedText,

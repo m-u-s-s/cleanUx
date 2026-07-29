@@ -2,55 +2,109 @@ import React, { useState } from 'react';
 import {
   View,
   Text,
-  Alert,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
   TouchableOpacity,
-  StyleSheet,
 } from 'react-native';
-import Animated, { FadeIn, FadeOut } from 'react-native-reanimated';
+import Animated, { FadeIn, FadeInDown, FadeOut } from 'react-native-reanimated';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { Button, TextInput, Divider, Icon, TurnstileWidget, a11y } from '@/ui';
+import {
+  Button,
+  TextInput,
+  Divider,
+  Icon,
+  TurnstileWidget,
+  a11y,
+  useReducedMotion,
+} from '@/ui';
+// Sous-chemin volontaire : le barrel @/ui est substitue par les tests d'ecran, ce qui rendrait
+// ces composants indefinis. Les importer directement preserve leur rendu reel.
+import {
+  AnimatedHalo,
+  Wordmark,
+  Stagger,
+  FormError,
+  authErrorMessage,
+  authStyles as styles,
+} from '@/ui/authShell';
 import { useLogin, useRegister, useAuth } from '@/auth';
-import { colors, spacing, typography } from '@/theme';
+import { ApiError } from '@/api';
+import { colors } from '@/theme';
 import type { RootStackParamList } from '@/navigation/types';
 
+/**
+ * Porte d'entrée de l'application cliente.
+ *
+ * Elle affichait « CleanUx » en texte ambre sur fond nuit, alors que le kit d'interface partagé —
+ * champs, boutons, séparateurs — est entièrement conçu pour une surface claire : chaque composant
+ * luttait contre sa propre palette. L'application prestataire avait été refondue ; celle-ci était
+ * restée en arrière, donnant deux identités à un même produit.
+ *
+ * L'habillage vient désormais de `@/ui/authShell`, partagé par les deux applications : même fond,
+ * même wordmark, même mise en scène. Ce qui diffère reste ce qui doit différer — un client n'a ni
+ * métier à déclarer ni numéro d'entreprise, et son inscription tient sur un écran.
+ */
 export function LoginScreen() {
   const [mode, setMode] = useState<'login' | 'register'>('login');
+  const reducedMotion = useReducedMotion();
 
   return (
-    <KeyboardAvoidingView style={styles.container} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-      <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
-        <View style={styles.header}>
-          <Text style={styles.brand}>CleanUx</Text>
-          <Text style={styles.subtitle}>{mode === 'login' ? 'Connectez-vous à votre compte' : 'Créez votre compte'}</Text>
-        </View>
+    <View style={styles.container}>
+      <AnimatedHalo />
+      <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+        <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
+          <View style={styles.header}>
+            <Wordmark />
+            <Animated.Text
+              entering={reducedMotion ? undefined : FadeInDown.delay(260).duration(500)}
+              style={styles.subtitle}
+            >
+              {mode === 'login' ? 'Connectez-vous à votre compte' : 'Créez votre compte'}
+            </Animated.Text>
+          </View>
 
-        {mode === 'login' ? (
-          <Animated.View entering={FadeIn.duration(200)} exiting={FadeOut.duration(150)} key="login">
-            <LoginForm />
+          <Animated.View
+            entering={reducedMotion ? undefined : FadeInDown.delay(340).duration(520).springify().damping(18)}
+            style={styles.card}
+          >
+            {mode === 'login' ? (
+              <Animated.View
+                entering={reducedMotion ? undefined : FadeIn.duration(220)}
+                exiting={reducedMotion ? undefined : FadeOut.duration(140)}
+                key="login"
+              >
+                <LoginForm />
+              </Animated.View>
+            ) : (
+              <Animated.View
+                entering={reducedMotion ? undefined : FadeIn.duration(220)}
+                exiting={reducedMotion ? undefined : FadeOut.duration(140)}
+                key="register"
+              >
+                <RegisterForm />
+              </Animated.View>
+            )}
           </Animated.View>
-        ) : (
-          <Animated.View entering={FadeIn.duration(200)} exiting={FadeOut.duration(150)} key="register">
-            <RegisterForm />
+
+          <Animated.View
+            entering={reducedMotion ? undefined : FadeInDown.delay(460).duration(500)}
+            style={styles.footer}
+          >
+            <Divider label="ou" />
+            <TouchableOpacity
+              onPress={() => setMode(mode === 'login' ? 'register' : 'login')}
+              accessibilityRole="button"
+            >
+              <Text style={styles.switchText}>
+                {mode === 'login' ? "Pas encore de compte ? S'inscrire" : 'Déjà un compte ? Se connecter'}
+              </Text>
+            </TouchableOpacity>
           </Animated.View>
-        )}
-
-        <Divider label="ou" />
-
-        <TouchableOpacity
-          style={styles.switchTouchable}
-          onPress={() => setMode(mode === 'login' ? 'register' : 'login')}
-          accessibilityRole="button"
-        >
-          <Text style={styles.switchText}>
-            {mode === 'login' ? "Pas encore de compte ? S'inscrire" : 'Déjà un compte ? Se connecter'}
-          </Text>
-        </TouchableOpacity>
-      </ScrollView>
-    </KeyboardAvoidingView>
+        </ScrollView>
+      </KeyboardAvoidingView>
+    </View>
   );
 }
 
@@ -59,6 +113,10 @@ function LoginForm() {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [errors, setErrors] = useState<{ email?: string; password?: string }>({});
+  // Erreur du formulaire, distincte des erreurs de champ : elle porte ce qui ne se rattache à
+  // aucune saisie. Sans elle, une coupure réseau affichait la chaîne brute d'axios — « Network
+  // Error » — sous l'adresse email, accusant une saisie pourtant correcte.
+  const [formError, setFormError] = useState<string | null>(null);
   const login = useLogin();
   const { setUser } = useAuth();
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
@@ -75,68 +133,79 @@ function LoginForm() {
   };
 
   const handleLogin = async () => {
+    setFormError(null);
     if (!validate()) return;
     try {
       const result = await login.mutateAsync({ email, password });
       setUser(result.user);
       a11y.announce('Connexion réussie');
-    } catch (e: any) {
-      const errorMsg = e.errors?.email?.[0] ?? e.errors?.password?.[0] ?? e.message ?? 'Identifiants incorrects.';
-      if (e.errors) {
-        setErrors({ email: e.errors.email?.[0], password: e.errors.password?.[0] });
+    } catch (e: unknown) {
+      const fieldErrors = e instanceof ApiError ? e.errors : undefined;
+      if (fieldErrors) {
+        setErrors({ email: fieldErrors.email?.[0], password: fieldErrors.password?.[0] });
+        a11y.announce(`Erreur : ${fieldErrors.email?.[0] ?? fieldErrors.password?.[0] ?? ''}`);
       } else {
-        setErrors({ email: errorMsg });
+        const message = authErrorMessage(e, 'login');
+        setFormError(message);
+        a11y.announce(`Erreur : ${message}`);
       }
-      a11y.announce(`Erreur : ${errorMsg}`);
     }
   };
 
   return (
     <View style={styles.form}>
-      <TextInput
-        label="Email"
-        value={email}
-        onChangeText={(t) => { setEmail(t); setErrors(prev => ({ ...prev, email: undefined })); }}
-        error={errors.email}
-        keyboardType="email-address"
-        autoCapitalize="none"
-        autoComplete="email"
-        placeholder="votre@email.com"
-        autoFocus
-        returnKeyType="next"
-        onSubmitEditing={() => passwordRef.current?.focus()}
-      />
-      <View style={styles.passwordWrapper}>
+      <Stagger index={0}>
         <TextInput
-          ref={passwordRef}
-          label="Mot de passe"
-          value={password}
-          onChangeText={(t) => { setPassword(t); setErrors(prev => ({ ...prev, password: undefined })); }}
-          error={errors.password}
-          secureTextEntry={!showPassword}
-          placeholder="••••••••"
-          returnKeyType="done"
-          onSubmitEditing={handleLogin}
+          label="Email"
+          value={email}
+          onChangeText={(t) => { setEmail(t); setErrors(prev => ({ ...prev, email: undefined })); }}
+          error={errors.email}
+          keyboardType="email-address"
+          autoCapitalize="none"
+          autoComplete="email"
+          placeholder="votre@email.com"
+          autoFocus
+          returnKeyType="next"
+          onSubmitEditing={() => passwordRef.current?.focus()}
         />
+      </Stagger>
+      <Stagger index={1}>
+        <View style={styles.passwordWrapper}>
+          <TextInput
+            ref={passwordRef}
+            label="Mot de passe"
+            value={password}
+            onChangeText={(t) => { setPassword(t); setErrors(prev => ({ ...prev, password: undefined })); }}
+            error={errors.password}
+            secureTextEntry={!showPassword}
+            placeholder="••••••••"
+            returnKeyType="done"
+            onSubmitEditing={handleLogin}
+          />
+          <TouchableOpacity
+            onPress={() => setShowPassword(v => !v)}
+            style={styles.eyeButton}
+            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+            accessibilityLabel={showPassword ? 'Masquer le mot de passe' : 'Afficher le mot de passe'}
+            accessibilityRole="button"
+          >
+            <Icon name={showPassword ? 'eye-off-outline' : 'eye-outline'} size={20} color={colors.surface[400]} />
+          </TouchableOpacity>
+        </View>
+      </Stagger>
+      <Stagger index={2}>
         <TouchableOpacity
-          onPress={() => setShowPassword(v => !v)}
-          style={styles.eyeButton}
-          hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-          accessibilityLabel={showPassword ? 'Masquer le mot de passe' : 'Afficher le mot de passe'}
+          onPress={() => navigation.navigate('ForgotPassword')}
           accessibilityRole="button"
+          accessibilityLabel="Mot de passe oublié ?"
         >
-          <Icon name={showPassword ? 'eye-off-outline' : 'eye-outline'} size={20} color={colors.surface[500]} />
+          <Text style={styles.forgotText}>Mot de passe oublié ?</Text>
         </TouchableOpacity>
-      </View>
-      <TouchableOpacity
-        onPress={() => navigation.navigate('ForgotPassword')}
-        style={styles.forgotTouchable}
-        accessibilityRole="button"
-        accessibilityLabel="Mot de passe oublié ?"
-      >
-        <Text style={styles.forgotText}>Mot de passe oublié ?</Text>
-      </TouchableOpacity>
-      <Button label="Se connecter" onPress={handleLogin} fullWidth size="lg" loading={login.isPending} />
+      </Stagger>
+      {formError ? <FormError message={formError} onRetry={handleLogin} testID="login-form-error" /> : null}
+      <Stagger index={3}>
+        <Button label="Se connecter" onPress={handleLogin} fullWidth size="lg" loading={login.isPending} />
+      </Stagger>
     </View>
   );
 }
@@ -160,6 +229,7 @@ function RegisterForm() {
     confirmPassword?: string;
     acceptTerms?: string;
   }>({});
+  const [formError, setFormError] = useState<string | null>(null);
   const register = useRegister();
   const { setUser } = useAuth();
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
@@ -183,9 +253,10 @@ function RegisterForm() {
   };
 
   const handleRegister = async () => {
+    setFormError(null);
     if (!validate()) return;
     if (!captchaSkipped && !captchaToken) {
-      setErrors(prev => ({ ...prev, acceptTerms: 'Veuillez patienter, la vérification anti-robot est en cours.' }));
+      setFormError('Veuillez patienter, la vérification anti-robot est en cours.');
 
       return;
     }
@@ -200,122 +271,120 @@ function RegisterForm() {
         captchaToken,
       });
       setUser(result.user);
-    } catch (e: any) {
-      if (e.errors) {
+    } catch (e: unknown) {
+      const fieldErrors = e instanceof ApiError ? e.errors : undefined;
+      if (fieldErrors) {
         setErrors({
-          name: e.errors.name?.[0],
-          email: e.errors.email?.[0],
-          password: e.errors.password?.[0],
-          confirmPassword: e.errors.password_confirmation?.[0],
+          name: fieldErrors.name?.[0],
+          email: fieldErrors.email?.[0],
+          password: fieldErrors.password?.[0],
+          confirmPassword: fieldErrors.password_confirmation?.[0],
         });
       } else {
-        setErrors({ email: e.message ?? "Impossible de créer le compte." });
+        setFormError(authErrorMessage(e, 'register'));
       }
     }
   };
 
   return (
     <View style={styles.form}>
-      <TextInput
-        label="Nom complet"
-        value={name}
-        onChangeText={(t) => { setName(t); setErrors(prev => ({ ...prev, name: undefined })); }}
-        error={errors.name}
-        autoComplete="name"
-        placeholder="Jean Dupont"
-        autoFocus
-        returnKeyType="next"
-        onSubmitEditing={() => emailRef.current?.focus()}
-      />
-      <TextInput
-        ref={emailRef}
-        label="Email"
-        value={email}
-        onChangeText={(t) => { setEmail(t); setErrors(prev => ({ ...prev, email: undefined })); }}
-        error={errors.email}
-        keyboardType="email-address"
-        autoCapitalize="none"
-        autoComplete="email"
-        placeholder="votre@email.com"
-        returnKeyType="next"
-        onSubmitEditing={() => phoneRef.current?.focus()}
-      />
-      <TextInput
-        ref={phoneRef}
-        label="Téléphone (optionnel)"
-        value={phone}
-        onChangeText={setPhone}
-        keyboardType="phone-pad"
-        placeholder="+32 470 12 34 56"
-        returnKeyType="next"
-        onSubmitEditing={() => passwordRef.current?.focus()}
-      />
-      <TextInput
-        ref={passwordRef}
-        label="Mot de passe"
-        value={password}
-        onChangeText={(t) => { setPassword(t); setErrors(prev => ({ ...prev, password: undefined })); }}
-        error={errors.password}
-        secureTextEntry
-        placeholder="Min. 8 caractères"
-        returnKeyType="next"
-        onSubmitEditing={() => confirmRef.current?.focus()}
-      />
-      <TextInput
-        ref={confirmRef}
-        label="Confirmer le mot de passe"
-        value={confirmPassword}
-        onChangeText={(t) => { setConfirmPassword(t); setErrors(prev => ({ ...prev, confirmPassword: undefined })); }}
-        error={errors.confirmPassword}
-        secureTextEntry
-        placeholder="••••••••"
-        returnKeyType="done"
-        onSubmitEditing={handleRegister}
-      />
-      <TouchableOpacity
-        style={styles.termsRow}
-        onPress={() => { setAcceptTerms(v => !v); setErrors(prev => ({ ...prev, acceptTerms: undefined })); }}
-      >
-        <View style={[styles.checkbox, acceptTerms && styles.checkboxChecked]} />
-        <Text style={styles.termsText}>
-          J'accepte les{' '}
-          <Text style={styles.termsLink} onPress={() => navigation.navigate('Legal', { type: 'terms' })}>
-            Conditions d'utilisation
+      <Stagger index={0}>
+        <TextInput
+          label="Nom complet"
+          value={name}
+          onChangeText={(t) => { setName(t); setErrors(prev => ({ ...prev, name: undefined })); }}
+          error={errors.name}
+          autoComplete="name"
+          placeholder="Jean Dupont"
+          autoFocus
+          returnKeyType="next"
+          onSubmitEditing={() => emailRef.current?.focus()}
+        />
+      </Stagger>
+      <Stagger index={1}>
+        <TextInput
+          ref={emailRef}
+          label="Email"
+          value={email}
+          onChangeText={(t) => { setEmail(t); setErrors(prev => ({ ...prev, email: undefined })); }}
+          error={errors.email}
+          keyboardType="email-address"
+          autoCapitalize="none"
+          autoComplete="email"
+          placeholder="votre@email.com"
+          returnKeyType="next"
+          onSubmitEditing={() => phoneRef.current?.focus()}
+        />
+      </Stagger>
+      <Stagger index={2}>
+        <TextInput
+          ref={phoneRef}
+          label="Téléphone (optionnel)"
+          value={phone}
+          onChangeText={setPhone}
+          keyboardType="phone-pad"
+          placeholder="+32 470 12 34 56"
+          returnKeyType="next"
+          onSubmitEditing={() => passwordRef.current?.focus()}
+        />
+      </Stagger>
+      <Stagger index={3}>
+        <TextInput
+          ref={passwordRef}
+          label="Mot de passe"
+          value={password}
+          onChangeText={(t) => { setPassword(t); setErrors(prev => ({ ...prev, password: undefined })); }}
+          error={errors.password}
+          secureTextEntry
+          placeholder="Min. 8 caractères"
+          returnKeyType="next"
+          onSubmitEditing={() => confirmRef.current?.focus()}
+        />
+      </Stagger>
+      <Stagger index={4}>
+        <TextInput
+          ref={confirmRef}
+          label="Confirmer le mot de passe"
+          value={confirmPassword}
+          onChangeText={(t) => { setConfirmPassword(t); setErrors(prev => ({ ...prev, confirmPassword: undefined })); }}
+          error={errors.confirmPassword}
+          secureTextEntry
+          placeholder="••••••••"
+          returnKeyType="done"
+          onSubmitEditing={handleRegister}
+        />
+      </Stagger>
+      <Stagger index={5}>
+        <TouchableOpacity
+          style={styles.termsRow}
+          onPress={() => { setAcceptTerms(v => !v); setErrors(prev => ({ ...prev, acceptTerms: undefined })); }}
+          accessibilityRole="checkbox"
+          accessibilityState={{ checked: acceptTerms }}
+          accessibilityLabel="J'accepte les conditions d'utilisation et la politique de confidentialité"
+        >
+          <View style={[styles.checkbox, acceptTerms && styles.checkboxChecked]} />
+          <Text style={styles.termsText}>
+            J'accepte les{' '}
+            <Text style={styles.termsLink} onPress={() => navigation.navigate('Legal', { type: 'terms' })}>
+              Conditions d'utilisation
+            </Text>
+            {' '}et la{' '}
+            <Text style={styles.termsLink} onPress={() => navigation.navigate('Legal', { type: 'privacy' })}>
+              Politique de confidentialité
+            </Text>
           </Text>
-          {' '}et la{' '}
-          <Text style={styles.termsLink} onPress={() => navigation.navigate('Legal', { type: 'privacy' })}>
-            Politique de confidentialité
-          </Text>
-        </Text>
-      </TouchableOpacity>
+        </TouchableOpacity>
+      </Stagger>
+      {errors.acceptTerms ? <Text style={styles.errorText}>{errors.acceptTerms}</Text> : null}
       <TurnstileWidget
         onToken={setCaptchaToken}
         onSkipped={() => setCaptchaSkipped(true)}
         testID="register-captcha"
       />
-      {errors.acceptTerms ? <Text style={styles.errorText}>{errors.acceptTerms}</Text> : null}
-      <Button label="Créer mon compte" onPress={handleRegister} fullWidth size="lg" loading={register.isPending} />
+      {formError ? <FormError message={formError} onRetry={handleRegister} testID="register-form-error" /> : null}
+      <Stagger index={6}>
+        <Button label="Créer mon compte" onPress={handleRegister} fullWidth size="lg" loading={register.isPending} />
+      </Stagger>
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.mode.showcase.night },
-  scroll: { flexGrow: 1, justifyContent: 'center', paddingHorizontal: spacing.lg, paddingVertical: spacing.xl },
-  header: { alignItems: 'center', marginBottom: spacing['2xl'] },
-  brand: { fontSize: 36, fontWeight: '800' as const, color: colors.accent.amber, letterSpacing: 2 },
-  subtitle: { fontSize: typography.fontSize.sm, color: colors.mode.showcase.muted, marginTop: spacing.sm },
-  form: { gap: spacing.md, marginBottom: spacing.lg },
-  switchText: { textAlign: 'center', color: colors.accent.amber, fontSize: typography.fontSize.sm, fontWeight: typography.fontWeight.medium, paddingVertical: spacing.md },
-  forgotText: { color: colors.accent.cyan, fontSize: typography.fontSize.sm, textAlign: 'right', marginTop: -spacing.xs },
-  termsRow: { flexDirection: 'row', alignItems: 'flex-start', gap: spacing.sm },
-  checkbox: { width: 20, height: 20, borderRadius: 4, borderWidth: 2, borderColor: colors.surface[400], marginTop: 2, flexShrink: 0 },
-  checkboxChecked: { backgroundColor: colors.brand[500], borderColor: colors.brand[500] },
-  termsText: { flex: 1, fontSize: typography.fontSize.sm, color: colors.surface[700] },
-  termsLink: { color: colors.brand[500], textDecorationLine: 'underline' },
-  errorText: { fontSize: typography.fontSize.xs, color: colors.danger[500], marginTop: -spacing.xs },
-  passwordWrapper: { position: 'relative' },
-  eyeButton: { position: 'absolute', right: 12, top: 32, zIndex: 1 },
-  forgotTouchable: { minHeight: 44, justifyContent: 'center' },
-  switchTouchable: { minHeight: 44, justifyContent: 'center', alignItems: 'center' },
-});
