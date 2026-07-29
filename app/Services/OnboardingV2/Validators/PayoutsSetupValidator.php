@@ -10,8 +10,16 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 /**
- * Vérifie que le provider a un Stripe Connect account onboardé.
- * Sa source de vérité : `provider_profiles.stripe_account_id` + flag onboarding completed.
+ * Vérifie que le provider a un compte Stripe Connect onboardé.
+ *
+ * Ce validateur lisait `stripe_account_id`, `stripe_details_submitted` et
+ * `stripe_payouts_enabled` — TROIS colonnes qui n'existent pas sur `provider_profiles`. Comme
+ * PHP rend `null` sur une propriété absente d'un objet stdClass issu du Query Builder, il
+ * échouait donc systématiquement, quel que soit l'état réel du compte Stripe.
+ *
+ * Les vraies colonnes sont `stripe_connect_account_id`, `stripe_connect_status` et
+ * `stripe_connect_onboarded_at` (voir ProviderProfile::isStripeConnected(), qui fait déjà foi
+ * ailleurs dans le code).
  */
 class PayoutsSetupValidator implements OnboardingStepValidator
 {
@@ -27,24 +35,23 @@ class PayoutsSetupValidator implements OnboardingStepValidator
             return OnboardingStepValidation::fail(['payouts' => 'Profil provider non créé.']);
         }
 
-        $accountId = $profile->stripe_account_id ?? null;
+        $accountId = $profile->stripe_connect_account_id ?? null;
         if (! $accountId) {
             return OnboardingStepValidation::fail([
-                'payouts' => 'Compte Stripe Connect non lié. Lance /api/provider/onboarding/start pour générer le link.',
+                'payouts' => 'Compte Stripe Connect non lié. Lancez la configuration des paiements.',
             ]);
         }
 
-        // Check if onboarding flagged complete (column may not exist on legacy schema)
-        $detailsSubmitted = $profile->stripe_details_submitted ?? null;
-        $payoutsEnabled = $profile->stripe_payouts_enabled ?? null;
-        if ($detailsSubmitted === false || $payoutsEnabled === false) {
+        // Même critère que ProviderProfile::isStripeConnected() : un compte existe dès le début
+        // de l'onboarding Stripe, seul le statut `active` atteste qu'il peut recevoir des fonds.
+        if (($profile->stripe_connect_status ?? null) !== 'active') {
             return OnboardingStepValidation::fail([
-                'payouts' => 'Onboarding Stripe Connect non finalisé (details ou payouts pas enabled).',
+                'payouts' => 'Configuration Stripe Connect non finalisée : vos paiements ne sont pas encore actifs.',
             ]);
         }
 
         return OnboardingStepValidation::pass(metadata: [
-            'stripe_account_id' => $accountId,
+            'stripe_connect_account_id' => $accountId,
         ]);
     }
 }

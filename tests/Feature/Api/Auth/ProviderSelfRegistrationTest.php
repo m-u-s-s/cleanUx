@@ -4,7 +4,9 @@ namespace Tests\Feature\Api\Auth;
 
 use App\Models\ProviderProfile;
 use App\Models\User;
+use Illuminate\Auth\Events\Registered;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Event;
 use Tests\TestCase;
 
 /**
@@ -100,6 +102,20 @@ class ProviderSelfRegistrationTest extends TestCase
         ]);
 
         $this->actingAs($user, 'sanctum')->getJson(self::GATED_ROUTE)->assertOk();
+    }
+
+    /**
+     * `User implements MustVerifyEmail` et EventServiceProvider écoute Registered avec
+     * SendEmailVerificationNotification — mais l'événement n'était jamais émis à l'inscription :
+     * aucun email de vérification ne partait jamais d'une création de compte mobile.
+     */
+    public function test_registering_dispatches_the_verification_event(): void
+    {
+        Event::fake([Registered::class]);
+
+        $this->postJson('/api/auth/register', $this->payload())->assertCreated();
+
+        Event::assertDispatched(Registered::class);
     }
 
     /**

@@ -16,7 +16,6 @@ export type RootStackParamList = {
   Badges: undefined;
   ProviderDisputes: undefined;
   ProviderRatings: undefined;
-  Onboarding: undefined;
   ProviderChatList: undefined;
   ProviderChat: { threadId: number; title: string };
   ProviderNotifications: undefined;

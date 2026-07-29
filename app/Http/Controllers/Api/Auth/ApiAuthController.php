@@ -14,6 +14,7 @@ use App\Models\Trade;
 use App\Models\User;
 use App\Services\OnboardingV2\OnboardingEngine;
 use App\Services\Promotion\ReferralService;
+use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -128,6 +129,22 @@ class ApiAuthController extends Controller
         // c'est lui qui porte la restriction, le rendre fillable permettrait de la lever.
         if ($asProvider) {
             $this->createProviderIdentity($user, $data);
+        }
+
+        // `User implements MustVerifyEmail` et EventServiceProvider écoute déjà Registered avec
+        // SendEmailVerificationNotification — mais l'événement n'était JAMAIS émis ici : aucun
+        // email de vérification n'est jamais parti d'une inscription mobile.
+        //
+        // Soft-fail comme les autres effets de bord de cette méthode : une panne SMTP ne doit pas
+        // faire échouer la création du compte, l'utilisateur se retrouverait sans compte ET sans
+        // explication alors que son inscription est valide.
+        try {
+            event(new Registered($user));
+        } catch (\Throwable $e) {
+            Log::warning("Envoi de l'email de vérification impossible", [
+                'user_id' => $user->id,
+                'error' => $e->getMessage(),
+            ]);
         }
 
         // Apply referral code if provided — soft-fail, never blocks registration

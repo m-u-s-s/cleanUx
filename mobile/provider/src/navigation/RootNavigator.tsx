@@ -13,7 +13,6 @@ import { BadgesScreen } from '@/screens/BadgesScreen';
 import { KYCScreen } from '@/screens/KYCScreen';
 import { ProviderDisputesScreen } from '@/screens/ProviderDisputesScreen';
 import { ProviderRatingsScreen } from '@/screens/ProviderRatingsScreen';
-import { OnboardingScreen } from '@/screens/OnboardingScreen';
 import { ProviderChatListScreen } from '@/screens/ProviderChatListScreen';
 import { ProviderChatScreen } from '@/screens/ProviderChatScreen';
 import { ProviderNotificationsScreen } from '@/screens/ProviderNotificationsScreen';
@@ -105,11 +104,6 @@ export function RootNavigator() {
               name="ProviderRatings"
               component={ProviderRatingsScreen}
               options={{ headerShown: true, title: 'Avis reçus' }}
-            />
-            <Stack.Screen
-              name="Onboarding"
-              component={OnboardingScreen}
-              options={{ headerShown: true, title: 'Onboarding' }}
             />
             <Stack.Screen
               name="ProviderChatList"

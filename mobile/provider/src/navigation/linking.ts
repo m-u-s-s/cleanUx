@@ -24,7 +24,6 @@ export const linking: LinkingOptions<RootStackParamList> = {
       Availability: 'availability',
       StripeOnboarding: 'stripe-onboarding',
       KYC: 'kyc',
-      Onboarding: 'onboarding',
       ProviderDisputes: 'disputes',
       ProviderRatings: 'ratings',
       Legal: 'legal/:type',

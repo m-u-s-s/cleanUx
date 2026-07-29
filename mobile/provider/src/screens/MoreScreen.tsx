@@ -29,7 +29,6 @@ export function MoreScreen() {
     {
       title: 'Compte',
       items: [
-        { label: 'Profil', icon: 'person-outline', screen: 'Onboarding' },
         { label: 'Disponibilités', icon: 'calendar-outline', screen: 'Availability' },
         { label: 'Badges', icon: 'ribbon-outline', screen: 'Badges' },
         { label: 'Avis reçus', icon: 'star-outline', screen: 'ProviderRatings' },

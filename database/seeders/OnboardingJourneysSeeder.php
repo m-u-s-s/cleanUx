@@ -39,56 +39,7 @@ class OnboardingJourneysSeeder extends Seeder
                     ],
                 ],
             ],
-            [
-                'journey' => [
-                    'code' => 'provider_default',
-                    'name' => 'Onboarding provider par défaut',
-                    'description' => 'Parcours complet pour un nouveau provider (KYC + payouts + insurance)',
-                    'role' => 'provider',
-                    'is_active' => true,
-                    'version' => 1,
-                ],
-                'steps' => [
-                    [
-                        'code' => 'profile', 'label' => 'Compléter le profil', 'step_type' => 'profile_complete',
-                        'required' => true, 'is_skippable' => false,
-                        'metadata' => ['required_user_fields' => ['name', 'email', 'phone', 'locale']],
-                    ],
-                    [
-                        'code' => 'tos', 'label' => 'Accepter contrat provider', 'step_type' => 'contract_sign',
-                        'required' => true, 'is_skippable' => false,
-                        'depends_on' => ['profile'],
-                        'metadata' => ['required_version' => '2026-05-provider-v1'],
-                    ],
-                    [
-                        'code' => 'kyc', 'label' => 'Vérification d\'identité (KYC)', 'step_type' => 'kyc_check',
-                        'required' => true, 'is_skippable' => false,
-                        'depends_on' => ['tos'],
-                    ],
-                    [
-                        'code' => 'skills', 'label' => 'Déclarer ses métiers', 'step_type' => 'skill_declare',
-                        'required' => true, 'is_skippable' => false,
-                        'depends_on' => ['kyc'],
-                        'metadata' => ['min_skills_count' => 1],
-                    ],
-                    [
-                        'code' => 'documents', 'label' => 'Uploader documents officiels', 'step_type' => 'document_upload',
-                        'required' => true, 'is_skippable' => false,
-                        'depends_on' => ['kyc'],
-                        'metadata' => ['document_types' => ['id_card', 'insurance_proof']],
-                    ],
-                    [
-                        'code' => 'payouts', 'label' => 'Lier le compte Stripe Connect', 'step_type' => 'payouts_setup',
-                        'required' => true, 'is_skippable' => false,
-                        'depends_on' => ['kyc'],
-                    ],
-                    [
-                        'code' => 'insurance', 'label' => 'Couverture assurance', 'step_type' => 'insurance_purchase',
-                        'required' => false, 'is_skippable' => true,
-                        'depends_on' => ['payouts'],
-                    ],
-                ],
-            ],
+            // `provider_default` n'est PAS défini ici : voir la délégation en fin de méthode.
         ];
 
         foreach ($journeys as $template) {
@@ -106,5 +57,17 @@ class OnboardingJourneysSeeder extends Seeder
                 ], $step));
             }
         }
+
+        // Le parcours prestataire appartient à ProviderOnboardingJourneySeeder, propriétaire
+        // unique : ses codes d'étapes sont exactement ceux que l'app mobile sait rendre
+        // (STEP_COMPONENTS de ProviderOnboardingScreen). Il était AUSSI défini ici, avec sept
+        // codes différents et le steps()->delete() ci-dessus — et comme ProductionBootstrapSeeder
+        // appelle ce seeder APRÈS le référentiel, c'est cette version-là qui gagnait en
+        // production : chaque étape se serait affichée « non disponible » dans l'app.
+        //
+        // On délègue plutôt que de simplement retirer le bloc, pour que « seeder les parcours »
+        // continue de tous les produire, quel que soit le profil de seed appelé. Le seeder
+        // délégué est idempotent, le double appel de ProductionBootstrapSeeder est donc sans effet.
+        $this->call(ProviderOnboardingJourneySeeder::class);
     }
 }

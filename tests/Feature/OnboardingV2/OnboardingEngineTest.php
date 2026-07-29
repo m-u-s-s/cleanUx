@@ -146,12 +146,18 @@ class OnboardingEngineTest extends TestCase
         $svc = app(OnboardingEngine::class);
         $progress = $svc->startFor($user);
 
-        // KYC depends on TOS — should not be current until TOS done
-        $kycStep = $progress->journey->steps->firstWhere('code', 'kyc');
+        // Ce test décrit le moteur, mais s'appuie sur le parcours prestataire réellement seedé.
+        // Ses codes d'étapes sont désormais ceux de ProviderOnboardingJourneySeeder, propriétaire
+        // unique de `provider_default` — les anciens (`profile`, `tos`, `kyc`) venaient du bloc
+        // concurrent d'OnboardingJourneysSeeder, que l'app mobile ne savait pas rendre.
+        // La dépendance vérifiée ici est la même dans l'esprit : document_upload attend kyc_check.
+        $dependentStep = $progress->journey->steps->firstWhere('code', 'document_upload');
+        $this->assertNotNull($dependentStep, 'le parcours prestataire doit porter une étape dépendante');
+
         $current = $svc->getCurrentStep($progress);
 
-        $this->assertNotSame($kycStep->code, $current->code);
-        $this->assertSame('profile', $current->code);
+        $this->assertNotSame($dependentStep->code, $current->code);
+        $this->assertSame('profile_complete', $current->code);
     }
 
     public function test_failed_completion_increments_attempt_count(): void

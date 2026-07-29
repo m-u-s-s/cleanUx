@@ -18,7 +18,6 @@ export function ProfileScreen() {
     { label: 'Vérification KYC', screen: 'KYC' },
     { label: 'Litiges', screen: 'ProviderDisputes' },
     { label: 'Avis reçus', screen: 'ProviderRatings' },
-    { label: 'Onboarding', screen: 'Onboarding' },
     { label: 'Messagerie', screen: 'ProviderChatList' },
     { label: 'Notifications', screen: 'ProviderNotifications' },
     { label: 'Préférences notifications', screen: 'NotificationPreferences' },
