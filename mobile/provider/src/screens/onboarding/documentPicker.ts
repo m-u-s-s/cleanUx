@@ -19,10 +19,28 @@ export const ACCEPTED_MIME_TYPES = ['application/pdf', 'image/jpeg', 'image/png'
 
 export const MAX_FILE_BYTES = 10 * 1024 * 1024;
 
-function loadModule<T>(name: string): T | null {
+/**
+ * Chaque module se charge par un require LITTÉRAL, jamais par une variable.
+ *
+ * Metro analyse les dépendances statiquement au bundling : `require(name)` sur un paramètre lui
+ * est incompréhensible et fait échouer la construction entière du bundle
+ * (« Invalid call ... require(name) »). Jest ne le voit pas, son require résolvant à l'exécution
+ * — l'erreur n'apparaît qu'au lancement de l'application. D'où deux fonctions au lieu d'un
+ * helper générique, comme le font maps/module.ts et le widget Turnstile.
+ */
+function loadImagePicker(): any | null {
   try {
     // eslint-disable-next-line @typescript-eslint/no-var-requires
-    return require(name) as T;
+    return require('expo-image-picker');
+  } catch {
+    return null;
+  }
+}
+
+function loadDocumentPicker(): any | null {
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    return require('expo-document-picker');
   } catch {
     return null;
   }
@@ -35,7 +53,7 @@ function loadModule<T>(name: string): T | null {
  * signaler. Lève avec un message affichable quand le module natif manque.
  */
 export async function pickImage(source: 'camera' | 'library'): Promise<PickedFile | null> {
-  const picker = loadModule<any>('expo-image-picker');
+  const picker = loadImagePicker();
 
   if (!picker) {
     throw new Error("L'appareil photo n'est pas disponible sur cet appareil.");
@@ -79,7 +97,7 @@ export async function pickImage(source: 'camera' | 'library'): Promise<PickedFil
  * Choisit un fichier existant (PDF compris), pour qui a déjà un scan.
  */
 export async function pickDocument(): Promise<PickedFile | null> {
-  const picker = loadModule<any>('expo-document-picker');
+  const picker = loadDocumentPicker();
 
   if (!picker) {
     throw new Error("La sélection de fichier n'est pas disponible sur cet appareil.");
