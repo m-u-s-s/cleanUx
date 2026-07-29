@@ -219,3 +219,25 @@ export function useSignContract() {
       })).data,
   });
 }
+
+/**
+ * Zones d'intervention proposées au prestataire.
+ *
+ * `POST /provider/onboarding/skills` accepte `service_zone_ids` depuis toujours, mais rien ne
+ * permettait de connaître les zones existantes : aucun écran n'en proposait, le champ restait
+ * vide, et le matching géographique n'avait aucune donnée sur laquelle travailler.
+ */
+export interface ServiceZone {
+  id: number;
+  name: string;
+  code: string | null;
+  coverage_type: string | null;
+}
+
+export function useServiceZones(enabled: boolean = true) {
+  return useQuery<ServiceZone[]>({
+    queryKey: ['onboarding', 'service-zones'],
+    queryFn: async () => (await apiClient.get('/provider/onboarding/service-zones')).data.zones ?? [],
+    enabled,
+  });
+}

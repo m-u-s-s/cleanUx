@@ -58,8 +58,12 @@ class ProviderRegistrationsCenterTest extends TestCase
     {
         $profile = $this->selfRegistered('Alice Indépendante', 'alice@presta.test');
 
+        // Ce test porte sur l'ouverture de l'accès, pas sur la complétude du dossier — lequel
+        // est vide ici. L'approbation exigeant désormais un motif quand le dossier est
+        // incomplet, on en fournit un : c'est exactement le geste que fait l'administrateur.
         Livewire::actingAs($this->admin())
             ->test(ProviderRegistrationsCenter::class)
+            ->set("overrideReason.{$profile->id}", 'Dossier contrôlé en agence')
             ->call('approve', $profile->id);
 
         $this->assertSame('active', $profile->fresh()->status);
@@ -81,6 +85,7 @@ class ProviderRegistrationsCenterTest extends TestCase
 
         Livewire::actingAs($this->admin())
             ->test(ProviderRegistrationsCenter::class)
+            ->set("overrideReason.{$profile->id}", 'Dossier contrôlé en agence')
             ->call('approve', $profile->id);
 
         $this->assertSame('active', $profile->fresh()->status);

@@ -191,6 +191,10 @@ Route::middleware(['auth:sanctum', 'role:employe', 'provider.approved'])->group(
         Route::post('/documents', [ProviderOnboardingController::class, 'uploadDocument']);
         Route::post('/tax', [ProviderOnboardingController::class, 'setTax']);
         Route::post('/skills', [ProviderOnboardingController::class, 'setSkills']);
+        // Référentiel des zones d'intervention. `setSkills` acceptait `service_zone_ids` depuis
+        // toujours, mais rien ne permettait de savoir quelles zones existent : aucun écran ne
+        // pouvait donc en proposer, et le matching géographique restait sans données.
+        Route::get('/service-zones', [ProviderOnboardingController::class, 'serviceZones']);
     });
 });
 

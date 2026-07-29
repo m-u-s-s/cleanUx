@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\Provider;
 
 use App\Http\Controllers\Controller;
 use App\Models\ProviderOnboardingDocument;
+use App\Models\ServiceZone;
 use App\Services\Onboarding\ProviderDocumentRequirements;
 use App\Services\Onboarding\ProviderOnboardingService;
 use Illuminate\Http\JsonResponse;
@@ -115,6 +116,30 @@ class ProviderOnboardingController extends Controller
             'requirements' => $requirements,
             'documents' => $latestByType->map(fn ($doc) => $this->serializeDocument($doc))->values(),
         ]);
+    }
+
+    /**
+     * Zones où le prestataire peut intervenir.
+     *
+     * `POST /provider/onboarding/skills` accepte `service_zone_ids` depuis toujours, mais aucune
+     * route ne permettait de connaître les zones existantes : aucun écran ne pouvait donc en
+     * proposer, et le champ restait vide. Or sans zone déclarée, le matching géographique n'a
+     * rien sur quoi travailler.
+     *
+     * Seules les zones ouvertes à la réservation et visibles sont listées : proposer une zone
+     * inactive reviendrait à laisser un prestataire s'y positionner sans jamais y recevoir de
+     * mission.
+     */
+    public function serviceZones(): JsonResponse
+    {
+        $zones = ServiceZone::query()
+            ->where('is_bookable', true)
+            ->where('is_visible', true)
+            ->orderBy('priority')
+            ->orderBy('name')
+            ->get(['id', 'name', 'code', 'coverage_type']);
+
+        return response()->json(['ok' => true, 'zones' => $zones]);
     }
 
     /** @return array<string, mixed> */

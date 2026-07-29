@@ -6,11 +6,13 @@ use App\Models\OnboardingProgress;
 use App\Models\OnboardingStepCompletion;
 use App\Models\ProviderOnboardingDocument;
 use App\Models\ProviderProfile;
+use App\Models\ServiceZone;
 use App\Models\User;
 use App\Services\OnboardingV2\OnboardingEngine;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Storage;
 
 /**
@@ -177,19 +179,43 @@ class ProviderOnboardingService
     }
 
     /**
-     * Étape 4 — Compétences/métiers + zones de travail.
+     * Étape 4 — Métiers et zones d'intervention déclarés.
+     *
+     * Les zones n'étaient écrites que dans `provider_profiles.metadata.service_zone_ids` — un
+     * endroit que RIEN ne lit pour le matching. ProviderSearchService interroge le pivot
+     * `employee_zone_assignments`, tout comme la relation `serviceZones()` : un prestataire
+     * pouvait donc déclarer ses zones sans qu'aucune recherche ne l'y trouve jamais.
+     *
+     * Les deux sont désormais écrits : le pivot, qui fait foi, et les métadonnées, conservées
+     * pour les lecteurs existants. `sync()` reflète exactement la sélection — décocher une zone
+     * doit la retirer, pas seulement cesser de l'ajouter.
      */
     public function setSkills(User $user, array $skills, array $serviceZoneIds = []): ProviderProfile
     {
         $profile = $this->ensureProfile($user);
 
+        $zoneIds = array_values(array_unique(array_map('intval', $serviceZoneIds)));
+
         $metadata = $profile->metadata ?? [];
-        $metadata['service_zone_ids'] = array_values(array_unique(array_map('intval', $serviceZoneIds)));
+        $metadata['service_zone_ids'] = $zoneIds;
 
         $profile->update([
             'skills' => array_values(array_unique($skills)),
             'metadata' => $metadata,
         ]);
+
+        if (Schema::hasTable('employee_zone_assignments')) {
+            // Seules les zones qui existent réellement sont rattachées : l'API valide déjà les
+            // identifiants, mais le wizard web ne le fait pas, et une zone supprimée entre-temps
+            // ne doit pas faire échouer l'enregistrement des métiers sur une contrainte de clé
+            // étrangère. Les métadonnées conservent la demande telle quelle.
+            $existingZoneIds = ServiceZone::query()->whereKey($zoneIds)->pluck('id')->all();
+
+            $user->serviceZones()->sync(array_fill_keys($existingZoneIds, [
+                'is_active' => true,
+                'assignment_type' => 'primary',
+            ]));
+        }
 
         if (! empty($skills)) {
             $this->advanceStepIfNeeded($profile, self::STEP_SKILLS);

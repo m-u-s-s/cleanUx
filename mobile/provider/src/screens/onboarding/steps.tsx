@@ -8,6 +8,7 @@ import {
   useOnboardingDocuments,
   useKycStatus,
   useRenderContract,
+  useServiceZones,
   useSignContract,
   isKycPending,
   isKycVerified,
@@ -502,15 +503,53 @@ export function DocumentsStep({ onDone, submitting, error }: StepProps) {
  */
 export function SkillsStep({ onDone, submitting, error }: StepProps) {
   const { data: trades } = useTrades();
+  const { data: zones } = useServiceZones();
   const [selected, setSelected] = useState<string[]>([]);
+  const [selectedZones, setSelectedZones] = useState<number[]>([]);
+  const [localError, setLocalError] = useState<string | null>(null);
 
   const toggle = (slug: string) =>
     setSelected(prev => (prev.includes(slug) ? prev.filter(s => s !== slug) : [...prev, slug]));
 
+  const toggleZone = (id: number) =>
+    setSelectedZones(prev => (prev.includes(id) ? prev.filter(z => z !== id) : [...prev, id]));
+
+  /**
+   * Les zones ne passent pas par la complétion d'étape : elles se persistent sur
+   * `POST /provider/onboarding/skills`, qui les accepte depuis toujours mais qu'aucun écran
+   * n'appelait avec elles. On enregistre donc AVANT de valider l'étape.
+   */
+  const save = useMutation({
+    mutationFn: () =>
+      apiClient.post('/provider/onboarding/skills', {
+        skills: selected,
+        service_zone_ids: selectedZones,
+      }),
+    onSuccess: () => onDone({ trade_codes: selected }),
+    onError: () => setLocalError("Impossible d'enregistrer vos métiers. Réessayez."),
+  });
+
+  const submit = () => {
+    if (selected.length === 0) {
+      setLocalError('Choisissez au moins un métier.');
+
+      return;
+    }
+
+    if (selectedZones.length === 0) {
+      setLocalError("Choisissez au moins une zone d'intervention.");
+
+      return;
+    }
+
+    setLocalError(null);
+    save.mutate();
+  };
+
   return (
     <StepShell
       title="Vos métiers"
-      hint="Vous pouvez en ajouter d'autres. Ils déterminent les missions qui vous seront proposées."
+      hint="Ils déterminent les missions qui vous seront proposées, et où."
     >
       <View style={styles.tradeGrid}>
         {(trades ?? []).map(trade => {
@@ -520,7 +559,7 @@ export function SkillsStep({ onDone, submitting, error }: StepProps) {
             <TouchableOpacity
               key={trade.id}
               style={[styles.tradeChip, active && styles.tradeChipSelected]}
-              onPress={() => toggle(trade.slug)}
+              onPress={() => { toggle(trade.slug); setLocalError(null); }}
               accessibilityRole="checkbox"
               accessibilityState={{ checked: active }}
               accessibilityLabel={trade.name}
@@ -532,13 +571,34 @@ export function SkillsStep({ onDone, submitting, error }: StepProps) {
         })}
       </View>
 
-      <StepError error={error} />
+      <Text style={styles.stepHint}>Vos zones d'intervention</Text>
+      <View style={styles.tradeGrid}>
+        {(zones ?? []).map(zone => {
+          const active = selectedZones.includes(zone.id);
+
+          return (
+            <TouchableOpacity
+              key={zone.id}
+              style={[styles.tradeChip, active && styles.tradeChipSelected]}
+              onPress={() => { toggleZone(zone.id); setLocalError(null); }}
+              accessibilityRole="checkbox"
+              accessibilityState={{ checked: active }}
+              accessibilityLabel={zone.name}
+              testID={`onboarding-zone-${zone.id}`}
+            >
+              <Text style={[styles.tradeChipText, active && styles.tradeChipTextSelected]}>{zone.name}</Text>
+            </TouchableOpacity>
+          );
+        })}
+      </View>
+
+      <StepError error={localError ?? error} />
       <Button
         label="Confirmer mes métiers"
-        onPress={() => onDone(selected.length ? { trade_codes: selected } : undefined)}
+        onPress={submit}
         fullWidth
         size="lg"
-        loading={submitting}
+        loading={submitting || save.isPending}
       />
     </StepShell>
   );
