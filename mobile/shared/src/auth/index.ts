@@ -7,6 +7,7 @@ export {
   useConfirmPhoneCode,
   toE164,
   isPlausibleE164,
+  useCompanyLookup,
 } from './usePhoneVerification';
 export { isValidBusinessNumber, normaliseBusinessNumber } from './businessNumber';
 export { useMe } from './useMe';

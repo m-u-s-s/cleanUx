@@ -12,6 +12,7 @@ import {
   toE164,
   isPlausibleE164,
   isValidBusinessNumber,
+  useCompanyLookup,
 } from '@/auth';
 import { useTradeProviderFields } from '@/trades';
 import { ApiError } from '@/api';
@@ -98,6 +99,7 @@ export function RegisterWizard() {
   const [captchaSkipped, setCaptchaSkipped] = useState(false);
 
   const { data: tradeFields } = useTradeProviderFields(draft.tradeId);
+  const lookup = useCompanyLookup();
   const requestCode = useRequestPhoneCode();
   const confirmCode = useConfirmPhoneCode();
   const register = useRegister();
@@ -205,6 +207,23 @@ export function RegisterWizard() {
         return null;
     }
   }
+
+  /**
+   * Le pré-remplissage est une SUGGESTION : la raison sociale trouvée n'écrase jamais une saisie
+   * déjà faite. Un prestataire ayant corrigé son nom commercial ne doit pas le voir remplacé.
+   */
+  const runLookup = async () => {
+    setFormError(null);
+    try {
+      const found = await lookup.mutateAsync({ number: draft.vatNumber });
+      if (found?.legal_name && !draft.companyName.trim()) {
+        patch({ companyName: found.legal_name });
+      }
+    } catch {
+      // Un registre injoignable ne bloque rien : la saisie manuelle reste ouverte.
+      setFormError('Recherche impossible pour le moment. Saisissez votre raison sociale.');
+    }
+  };
 
   const sendCode = async () => {
     setFormError(null);
@@ -524,23 +543,52 @@ export function RegisterWizard() {
         return (
           <Question
             title="Votre société"
-            hint="Le numéro d'entreprise sera vérifié auprès des registres officiels."
+            hint="Saisissez votre numéro d'entreprise : nous retrouvons votre raison sociale."
           >
+            <TextInput
+              label="Numéro d'entreprise"
+              value={draft.vatNumber}
+              onChangeText={t => { patch({ vatNumber: t }); lookup.reset(); }}
+              autoCapitalize="characters"
+              placeholder="BE0202239951"
+              autoFocus
+              testID="register-vat-number"
+            />
+
+            {/* La recherche ne part qu'une fois la clé du numéro vérifiée localement : inutile
+                d'interroger un registre officiel avec un numéro qui ne peut pas exister. */}
+            {isValidBusinessNumber(draft.vatNumber) && !lookup.data ? (
+              <Button
+                label="Retrouver ma société"
+                onPress={() => void runLookup()}
+                variant="secondary"
+                fullWidth
+                loading={lookup.isPending}
+              />
+            ) : null}
+
+            {lookup.data?.legal_name ? (
+              <View style={styles.suggestion} testID="register-company-suggestion">
+                <Text style={styles.suggestionName}>{lookup.data.legal_name}</Text>
+                {lookup.data.address ? (
+                  <Text style={styles.suggestionAddress}>{lookup.data.address}</Text>
+                ) : null}
+                <Text style={styles.suggestionSource}>Trouvée au registre officiel</Text>
+              </View>
+            ) : null}
+
+            {lookup.isSuccess && lookup.data === null ? (
+              <Text style={styles.lookupMiss} testID="register-company-not-found">
+                Société introuvable au registre. Saisissez sa raison sociale ci-dessous.
+              </Text>
+            ) : null}
+
             <TextInput
               label="Raison sociale"
               value={draft.companyName}
               onChangeText={t => patch({ companyName: t })}
               placeholder="Nettoyage Dupont SPRL"
-              autoFocus
               testID="register-company-name"
-            />
-            <TextInput
-              label="Numéro d'entreprise (optionnel)"
-              value={draft.vatNumber}
-              onChangeText={t => patch({ vatNumber: t })}
-              autoCapitalize="characters"
-              placeholder="BE0202239951"
-              testID="register-vat-number"
             />
           </Question>
         );
@@ -653,5 +701,22 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   strengthFill: { height: 4, borderRadius: radius.pill },
+  suggestion: {
+    gap: 2,
+    padding: spacing.md,
+    borderRadius: radius.md,
+    borderWidth: 1,
+    borderColor: colors.success[600],
+    backgroundColor: colors.success[50],
+  },
+  suggestionName: {
+    fontSize: typography.fontSize.base,
+    fontWeight: typography.fontWeight.semibold,
+    color: colors.mode.tool.ink,
+  },
+  suggestionAddress: { fontSize: typography.fontSize.sm, color: colors.surface[700] },
+  // success[700] sur success[50] : 5,26:1, au-dessus du seuil AA pour ce corps de texte.
+  suggestionSource: { fontSize: typography.fontSize.xs, color: colors.success[700] },
+  lookupMiss: { fontSize: typography.fontSize.sm, color: colors.mode.tool.muted },
   strengthLabel: { fontSize: typography.fontSize.xs, fontWeight: typography.fontWeight.medium },
 });

@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\Auth\ApiAuthController;
+use App\Http\Controllers\Api\Auth\CompanyLookupController;
 use App\Http\Controllers\Api\Auth\ForgotPasswordController;
 use App\Http\Controllers\Api\Auth\RegistrationPhoneController;
 use App\Http\Controllers\Api\Auth\WebViewAuthController;
@@ -24,6 +25,12 @@ Route::prefix('auth/phone')->middleware('throttle:otp')->group(function () {
     Route::post('/verify-request', [RegistrationPhoneController::class, 'requestCode']);
     Route::post('/verify-confirm', [RegistrationPhoneController::class, 'confirm']);
 });
+
+// Recherche d'une entreprise dans les registres officiels pendant l'inscription : le prestataire
+// tape son numéro et confirme sa raison sociale au lieu de la recopier. Publique par nécessité —
+// le compte n'existe pas encore — donc throttlée, et la clé du numéro est contrôlée avant tout
+// appel sortant vers le registre.
+Route::post('/auth/company-lookup', CompanyLookupController::class)->middleware('throttle:otp');
 
 // POST /auth/forgot-password — silently ignores unknown emails (mobile app)
 Route::post('/auth/forgot-password', ForgotPasswordController::class)->middleware('throttle:5,1');

@@ -64,3 +64,27 @@ export function useConfirmPhoneCode() {
     },
   });
 }
+
+/**
+ * Recherche d'une entreprise dans les registres officiels à partir de son seul numéro.
+ *
+ * Le prestataire tape son SIRET ou son numéro BCE, sa raison sociale remonte : il confirme au
+ * lieu de recopier. Un registre injoignable ou un numéro inconnu rend simplement `null` — la
+ * saisie manuelle reste possible, l'inscription n'est jamais bloquée par un service tiers.
+ */
+export interface CompanySuggestion {
+  legal_name: string | null;
+  legal_form: string | null;
+  address: string | null;
+  vat_id: string | null;
+}
+
+export function useCompanyLookup() {
+  return useMutation<CompanySuggestion | null, ApiError, { number: string }>({
+    mutationFn: async ({ number }) => {
+      const { data } = await apiClient.post('/auth/company-lookup', { number });
+
+      return data.found ? (data.company as CompanySuggestion) : null;
+    },
+  });
+}

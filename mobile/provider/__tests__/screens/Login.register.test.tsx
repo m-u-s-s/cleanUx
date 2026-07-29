@@ -360,9 +360,9 @@ describe("Inscription depuis l'app prestataire", () => {
     await fillIdentity();
     await chooseKind('company');
 
-    await waitFor(() => screen.getByLabelText('Raison sociale'));
+    await waitFor(() => screen.getByLabelText("Numéro d'entreprise"));
+    fireEvent.changeText(screen.getByLabelText("Numéro d'entreprise"), 'BE0202239951');
     fireEvent.changeText(screen.getByLabelText('Raison sociale'), 'Nettoyage Dupont SPRL');
-    fireEvent.changeText(screen.getByLabelText("Numéro d'entreprise (optionnel)"), 'BE0202239951');
     fireEvent.press(screen.getByLabelText('Continuer'));
 
     await chooseTrade();
@@ -381,7 +381,7 @@ describe("Inscription depuis l'app prestataire", () => {
     await fillIdentity();
     await chooseKind('company');
 
-    await waitFor(() => screen.getByLabelText('Raison sociale'));
+    await waitFor(() => screen.getByLabelText("Numéro d'entreprise"));
     fireEvent.press(screen.getByLabelText('Continuer'));
 
     await waitFor(() => expect(screen.getByTestId('register-step-error')).toBeTruthy());
@@ -400,9 +400,9 @@ describe("Inscription depuis l'app prestataire", () => {
     await fillIdentity();
     await chooseKind('company');
 
-    await waitFor(() => screen.getByLabelText('Raison sociale'));
+    await waitFor(() => screen.getByLabelText("Numéro d'entreprise"));
+    fireEvent.changeText(screen.getByLabelText("Numéro d'entreprise"), 'BE0000000000');
     fireEvent.changeText(screen.getByLabelText('Raison sociale'), 'Nettoyage Dupont SPRL');
-    fireEvent.changeText(screen.getByLabelText("Numéro d'entreprise (optionnel)"), 'BE0000000000');
     fireEvent.press(screen.getByLabelText('Continuer'));
 
     await waitFor(() => expect(screen.getByTestId('register-step-error')).toBeTruthy());
@@ -463,6 +463,46 @@ describe("Inscription depuis l'app prestataire", () => {
 
     await waitFor(() => expect(screen.getByTestId('register-step-error')).toBeTruthy());
     expect(registerCalls()).toHaveLength(0);
+  });
+
+  /**
+   * L'effet recherché : le prestataire tape son numéro, sa raison sociale remonte du registre
+   * officiel et il confirme au lieu de recopier.
+   */
+  it("pré-remplit la raison sociale depuis le registre", async () => {
+    apiMock.onPost('/auth/company-lookup').reply(200, {
+      ok: true,
+      found: true,
+      company: { legal_name: 'Proximus SA', legal_form: 'SA', address: 'Bruxelles', vat_id: null },
+    });
+
+    renderScreen();
+    await openRegisterAndVerifyPhone();
+    await fillIdentity();
+    await chooseKind('company');
+
+    await waitFor(() => screen.getByLabelText("Numéro d'entreprise"));
+    fireEvent.changeText(screen.getByLabelText("Numéro d'entreprise"), 'BE0202239951');
+
+    await waitFor(() => screen.getByLabelText('Retrouver ma société'));
+    fireEvent.press(screen.getByLabelText('Retrouver ma société'));
+
+    await waitFor(() => expect(screen.getByTestId('register-company-suggestion')).toBeTruthy());
+    expect(screen.getByLabelText('Raison sociale').props.value).toBe('Proximus SA');
+  });
+
+  /** Une clé fausse ne doit pas partir vers le registre : le contrôle est local d'abord. */
+  it("n'interroge pas le registre avec un numéro invalide", async () => {
+    renderScreen();
+    await openRegisterAndVerifyPhone();
+    await fillIdentity();
+    await chooseKind('company');
+
+    await waitFor(() => screen.getByLabelText("Numéro d'entreprise"));
+    fireEvent.changeText(screen.getByLabelText("Numéro d'entreprise"), 'BE0000000000');
+
+    expect(screen.queryByLabelText('Retrouver ma société')).toBeNull();
+    expect(apiMock.history['post']!.filter(c => c.url === '/auth/company-lookup')).toHaveLength(0);
   });
 
   /**
