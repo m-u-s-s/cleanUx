@@ -132,3 +132,47 @@ export function isJourneyComplete(data: OnboardingProgress | undefined): boolean
     .filter(step => step.required)
     .every(step => step.completion_status === 'completed' || step.completion_status === 'skipped');
 }
+
+/**
+ * État de la vérification d'identité.
+ *
+ * `GET /provider/kyc/status` existe depuis le module KYC mais n'était appelé nulle part :
+ * l'application lançait la vérification puis affichait « lancée » indéfiniment, sans jamais
+ * savoir si elle avait abouti. La décision vient d'un tiers et tombe par webhook, donc à un
+ * moment que l'application ne choisit pas — d'où l'interrogation périodique tant qu'elle est en
+ * cours, et l'arrêt dès qu'elle est tranchée.
+ */
+export interface KycStatus {
+  has_verification: boolean;
+  verification_id?: number;
+  status?: string;
+  /** 'clear' | 'consider' | 'rejected' | null — null tant que le tiers n'a pas tranché. */
+  decision?: string | null;
+  rejection_reason?: string | null;
+  provider_verification_status?: string | null;
+}
+
+export const KYC_STATUS_QUERY_KEY = ['onboarding', 'kyc-status'] as const;
+
+/** Une vérification sans décision est encore en cours chez le prestataire d'identité. */
+export function isKycPending(status: KycStatus | undefined): boolean {
+  if (!status?.has_verification) return false;
+
+  return status.decision === null || status.decision === undefined;
+}
+
+export function isKycVerified(status: KycStatus | undefined): boolean {
+  return status?.decision === 'clear' || status?.provider_verification_status === 'verified';
+}
+
+export function useKycStatus(enabled: boolean = true) {
+  return useQuery<KycStatus>({
+    queryKey: KYC_STATUS_QUERY_KEY,
+    queryFn: async () => (await apiClient.get('/provider/kyc/status')).data,
+    enabled,
+    staleTime: 0,
+    // Cinq secondes tant que le tiers n'a pas tranché, puis plus rien : interroger en boucle une
+    // décision déjà rendue ne ferait que consommer batterie et données.
+    refetchInterval: query => (isKycPending(query.state.data) ? 5000 : false),
+  });
+}

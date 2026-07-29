@@ -1,10 +1,16 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Linking } from 'react-native';
 import { useMutation } from '@tanstack/react-query';
 import { Button, TextInput, Icon } from '@/ui';
 import { apiClient } from '@/api';
 import { useTrades } from '@/trades';
-import { useOnboardingDocuments, type DocumentRequirement } from '@/onboarding';
+import {
+  useOnboardingDocuments,
+  useKycStatus,
+  isKycPending,
+  isKycVerified,
+  type DocumentRequirement,
+} from '@/onboarding';
 import { pickDocument, pickImage, rejectionReason, type PickedFile } from './documentPicker';
 import { colors, radius, spacing, typography } from '@/theme';
 
@@ -139,41 +145,89 @@ export function ContractStep({ onDone, submitting, error }: StepProps) {
 }
 
 /**
- * Étape 3 — Identité. La vérification est asynchrone : le prestataire la démarre, un service
- * tiers décide, et l'étape ne passera qu'une fois la décision `approved`. On ne prétend donc pas
- * la valider ici — on lance et on rafraîchit.
+ * Étape 3 — Identité. Selfie, détection du vivant et lecture de la pièce, chez un prestataire
+ * d'identité tiers.
+ *
+ * `POST /provider/kyc/start` rendait déjà `hosted_flow_url` — l'adresse du parcours à ouvrir —
+ * mais elle n'était JAMAIS ouverte : l'écran affichait « vérification lancée » alors que rien ne
+ * s'était produit, et le prestataire attendait indéfiniment une décision qui ne viendrait pas.
+ * De même, `GET /provider/kyc/status` existait sans être appelé nulle part.
+ *
+ * La décision tombe par webhook, à un moment que l'application ne choisit pas : on ouvre donc le
+ * parcours, puis on interroge l'état jusqu'à ce qu'il soit tranché.
  */
 export function KycStep({ onDone, submitting, error }: StepProps) {
-  const [started, setStarted] = useState(false);
+  const { data: status, refetch } = useKycStatus();
   const [localError, setLocalError] = useState<string | null>(null);
 
   const start = useMutation({
-    mutationFn: () => apiClient.post('/provider/kyc/start'),
-    onSuccess: () => { setStarted(true); setLocalError(null); },
-    onError: () => setLocalError("Impossible de démarrer la vérification. Réessayez."),
+    mutationFn: async () => {
+      const { data } = await apiClient.post('/provider/kyc/start');
+
+      return data as { hosted_flow_url?: string | null };
+    },
+    onSuccess: async (data) => {
+      setLocalError(null);
+
+      // Linking plutôt qu'expo-web-browser : module cœur de React Native, déjà employé par le
+      // parcours Stripe. Ajouter une dépendance native imposerait de reconstruire le client de
+      // développement, et son absence dans une build existante ferait planter l'écran.
+      if (data.hosted_flow_url) {
+        try {
+          await Linking.openURL(data.hosted_flow_url);
+        } catch {
+          setLocalError("Impossible d'ouvrir la vérification. Vérifiez votre navigateur, puis réessayez.");
+        }
+      }
+
+      void refetch();
+    },
+    onError: () => setLocalError('Impossible de démarrer la vérification. Réessayez.'),
   });
+
+  const verified = isKycVerified(status);
+  const pending = isKycPending(status);
+  const refused = status?.decision === 'rejected' || status?.decision === 'consider';
 
   return (
     <StepShell
       title="Vérification d'identité"
-      hint="Contrôlée automatiquement. Elle peut prendre quelques minutes."
+      hint="Selfie et pièce d'identité, contrôlés automatiquement. Environ trois minutes."
     >
-      {started ? (
+      {verified ? (
         <View style={styles.notice}>
-          <Text style={styles.noticeText}>
-            Vérification lancée. Une fois votre identité confirmée, cette étape se validera toute
-            seule — vous pouvez revenir plus tard.
+          <Text style={styles.noticeText} testID="kyc-verified">
+            Identité vérifiée ✓
+          </Text>
+        </View>
+      ) : null}
+
+      {pending ? (
+        <View style={styles.notice}>
+          <Text style={styles.noticeText} testID="kyc-pending">
+            Vérification en cours. Elle se validera toute seule dès que votre identité sera
+            confirmée — vous pouvez fermer l'application et revenir plus tard.
+          </Text>
+        </View>
+      ) : null}
+
+      {refused ? (
+        <View style={styles.notice}>
+          <Text style={styles.noticeText} testID="kyc-refused">
+            Votre vérification n'a pas abouti
+            {status?.rejection_reason ? ` : ${status.rejection_reason}` : ''}. Vous pouvez la
+            relancer.
           </Text>
         </View>
       ) : null}
 
       <StepError error={localError ?? error} />
 
-      {started ? (
-        <Button label="J'ai terminé, vérifier" onPress={() => onDone()} fullWidth size="lg" loading={submitting} />
+      {verified ? (
+        <Button label="Continuer" onPress={() => onDone()} fullWidth size="lg" loading={submitting} />
       ) : (
         <Button
-          label="Démarrer la vérification"
+          label={pending || refused ? 'Reprendre la vérification' : 'Démarrer la vérification'}
           onPress={() => start.mutate()}
           fullWidth
           size="lg"
