@@ -4,16 +4,21 @@
     "development": {
       "developmentClient": true,
       "distribution": "internal",
-      "ios": { "simulator": true },
-      "env": { "APP_ENV": "development", "API_URL": "http://localhost:8000/api" }
+      "ios": { "simulator": true }
     },
     "preview": {
       "distribution": "internal",
-      "env": { "APP_ENV": "staging", "API_URL": "https://staging.cleanux.com/api" }
+      "env": {
+        "EXPO_PUBLIC_API_URL": "https://staging.cleanux.com/api",
+        "EXPO_PUBLIC_WEB_URL": "https://staging.cleanux.com"
+      }
     },
     "production": {
       "autoIncrement": true,
-      "env": { "APP_ENV": "production", "API_URL": "https://app.cleanux.com/api" }
+      "env": {
+        "EXPO_PUBLIC_API_URL": "https://app.cleanux.com/api",
+        "EXPO_PUBLIC_WEB_URL": "https://app.cleanux.com"
+      }
     }
   }
 }
