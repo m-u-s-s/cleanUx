@@ -180,15 +180,40 @@ trait HasProviderFeatures
         )->withTimestamps();
     }
 
+    /**
+     * Le prestataire peut-il recevoir des fonds par Stripe Connect ?
+     *
+     * Les colonnes `stripe_connect_*` existent sur `users` ET sur `provider_profiles`. Une seule
+     * est alimentée : StripeConnectService écrit sur `users`, et rien n'écrit jamais sur le
+     * profil. Cette méthode ne lisait pourtant que le profil — elle rendait donc `false` pour
+     * TOUT prestataire, y compris un compte Stripe pleinement configuré, et
+     * MissionPaymentService::authorize() refusait par conséquent chaque autorisation de paiement.
+     *
+     * Le défaut était masqué par son propre test, dont le fixture renseigne les deux tables : une
+     * forme qui ne se produit jamais en production. On lit donc `users` en premier — la seule
+     * source réellement écrite — sans cesser d'accepter le profil, que d'anciens environnements
+     * ont pu remplir.
+     */
     public function canReceiveStripeConnectPayments(): bool
     {
-        $profile = $this->providerProfile;
-        if (! $profile) {
-            return false;
+        if ($this->isStripeConnectActive($this)) {
+            return true;
         }
 
-        return ! empty($profile->stripe_connect_account_id)
-            && ($profile->stripe_connect_status === 'active' || $profile->stripe_connect_onboarded_at !== null);
+        $profile = $this->providerProfile;
+
+        return $profile !== null && $this->isStripeConnectActive($profile);
+    }
+
+    /**
+     * Un compte existe dès le début du parcours Stripe : seuls `active` ou une date
+     * d'aboutissement attestent qu'il peut effectivement recevoir des fonds.
+     */
+    private function isStripeConnectActive(object $source): bool
+    {
+        return ! empty($source->stripe_connect_account_id)
+            && (($source->stripe_connect_status ?? null) === 'active'
+                || ($source->stripe_connect_onboarded_at ?? null) !== null);
     }
 
     /**

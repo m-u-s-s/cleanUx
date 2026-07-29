@@ -7,10 +7,13 @@ import { useTrades } from '@/trades';
 import {
   useOnboardingDocuments,
   useKycStatus,
+  useRenderContract,
+  useSignContract,
   isKycPending,
   isKycVerified,
   type DocumentRequirement,
 } from '@/onboarding';
+import { useAuth } from '@/auth';
 import { pickDocument, pickImage, rejectionReason, type PickedFile } from './documentPicker';
 import { colors, radius, spacing, typography } from '@/theme';
 
@@ -92,27 +95,96 @@ export function ProfileStep({ onDone, submitting, error }: StepProps) {
   );
 }
 
+/** Modèle de contrat prestataire, seedé par ContractTemplatesSeeder. */
+const CONTRACT_TEMPLATE_CODE = 'provider_agreement';
+
 /**
- * Étape 2 — Contrat. `contract_templates` étant vide, le validateur emploie son repli par
- * version : on transmet la version acceptée, que le serveur compare à celle qu'il exige.
+ * Retire le balisage du contrat rendu.
+ *
+ * Le service rend du HTML ; React Native n'en affiche pas. Plutôt qu'un moteur de rendu ou une
+ * WebView pour un texte juridique linéaire, on en extrait le texte — et on le fait ici plutôt
+ * qu'au fil du JSX pour que le résultat reste lisible et testable.
+ */
+function contractPlainText(html: string): string {
+  return html
+    .replace(/<\s*br\s*\/?>/gi, '\n')
+    .replace(/<\/\s*(p|div|li|h[1-6])\s*>/gi, '\n\n')
+    .replace(/<[^>]+>/g, '')
+    .replace(/&nbsp;/g, ' ')
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/\n{3,}/g, '\n\n')
+    .trim();
+}
+
+/**
+ * Étape 2 — Contrat.
+ *
+ * L'écran affichait un texte codé en dur et « signait » en transmettant un numéro de version :
+ * aucune signature n'existait en base, donc aucune piste d'audit — alors que Contracts v2
+ * (modèles versionnés, rendu personnalisé, signature horodatée avec empreinte, PDF) était
+ * entièrement construit et n'était appelé de nulle part.
+ *
+ * Le contrat est maintenant rendu par le serveur, aux données du prestataire, et signé pour de
+ * bon. Le texte de repli n'est employé que là où aucun modèle n'est publié — le validateur
+ * bascule alors lui aussi sur la version, plutôt que de rendre l'étape infranchissable.
  */
 export function ContractStep({ onDone, submitting, error }: StepProps) {
   const [accepted, setAccepted] = useState(false);
   const [localError, setLocalError] = useState<string | null>(null);
+  const render = useRenderContract();
+  const sign = useSignContract();
+  const { user } = useAuth();
+
+  // Un seul rendu par ouverture de l'étape : chaque appel crée un document côté serveur.
+  React.useEffect(() => {
+    render.mutate({ templateCode: CONTRACT_TEMPLATE_CODE });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const document = render.data ?? null;
+
+  const submit = () => {
+    if (!accepted) {
+      setLocalError('Vous devez accepter le contrat pour continuer.');
+
+      return;
+    }
+
+    setLocalError(null);
+
+    // Sans document, aucun modèle n'est publié dans cet environnement : on emprunte le repli par
+    // version, que le validateur accepte dans ce cas précis.
+    if (!document) {
+      onDone({ terms_accepted_version: CONTRACT_VERSION });
+
+      return;
+    }
+
+    sign.mutate(
+      { documentId: document.id, signerName: user?.name ?? 'Prestataire' },
+      {
+        onSuccess: () => onDone({ template_code: CONTRACT_TEMPLATE_CODE }),
+        onError: () => setLocalError('La signature a échoué. Vérifiez votre connexion, puis réessayez.'),
+      },
+    );
+  };
 
   return (
-    <StepShell title="Contrat prestataire" hint={`Version ${CONTRACT_VERSION}`}>
-      <ScrollView style={styles.contractBox} nestedScrollEnabled>
+    <StepShell
+      title="Contrat prestataire"
+      hint={document ? 'Lisez le contrat, puis signez.' : `Version ${CONTRACT_VERSION}`}
+    >
+      <ScrollView style={styles.contractBox} nestedScrollEnabled testID="onboarding-contract-body">
         <Text style={styles.contractText}>
-          En tant que prestataire, je m'engage à intervenir aux horaires convenus, à traiter les
-          clients avec respect, et à signaler sans délai tout incident survenu pendant une mission.
-          {'\n\n'}
-          Je reconnais intervenir en qualité d'indépendant ou pour le compte de ma société, et non
-          comme salarié de la plateforme. Je reste responsable de mes obligations sociales et
-          fiscales, ainsi que de la validité des assurances couvrant mon activité.
-          {'\n\n'}
-          Je m'engage à ne sous-traiter aucune mission sans accord préalable, et à respecter la
-          confidentialité des informations auxquelles j'accède au domicile ou sur le site du client.
+          {document
+            ? contractPlainText(document.body_rendered_html)
+            : `En tant que prestataire, je m'engage à intervenir aux horaires convenus, à traiter les clients avec respect, et à signaler sans délai tout incident survenu pendant une mission.
+
+Je reconnais intervenir en qualité d'indépendant ou pour le compte de ma société, et non comme salarié de la plateforme. Je reste responsable de mes obligations sociales et fiscales, ainsi que de la validité des assurances couvrant mon activité.
+
+Je m'engage à ne sous-traiter aucune mission sans accord préalable, et à respecter la confidentialité des informations auxquelles j'accède au domicile ou sur le site du client.`}
         </Text>
       </ScrollView>
 
@@ -131,14 +203,10 @@ export function ContractStep({ onDone, submitting, error }: StepProps) {
       <StepError error={localError ?? error} />
       <Button
         label="Signer et continuer"
-        onPress={() =>
-          accepted
-            ? onDone({ terms_accepted_version: CONTRACT_VERSION })
-            : setLocalError('Vous devez accepter le contrat pour continuer.')
-        }
+        onPress={submit}
         fullWidth
         size="lg"
-        loading={submitting}
+        loading={submitting || sign.isPending}
       />
     </StepShell>
   );

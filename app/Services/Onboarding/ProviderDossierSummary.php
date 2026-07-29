@@ -207,11 +207,18 @@ class ProviderDossierSummary
         ];
     }
 
-    /** @return array{status: ?string, ready: bool} */
+    /**
+     * `canReceiveStripeConnectPayments()` fait foi : les colonnes `stripe_connect_*` existent sur
+     * `users` et sur `provider_profiles`, mais seule la première est écrite. Lire le profil seul
+     * rapporterait « non configuré » pour un compte Stripe pleinement actif.
+     *
+     * @return array{status: ?string, ready: bool}
+     */
     private function payoutState(User $user): array
     {
-        $status = $user->providerProfile?->stripe_connect_status;
-
-        return ['status' => $status, 'ready' => $status === 'active'];
+        return [
+            'status' => $user->stripe_connect_status ?? $user->providerProfile?->stripe_connect_status,
+            'ready' => $user->canReceiveStripeConnectPayments(),
+        ];
     }
 }

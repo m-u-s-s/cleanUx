@@ -35,10 +35,11 @@ class ProviderOnboardingJourneySeeder extends Seeder
     /**
      * Version du contrat prestataire acceptée à l'étape `contract_sign`.
      *
-     * ContractSignValidator privilégie une signature Contracts v2 via `template_code`, mais
-     * `contract_templates` est vide : ce chemin échouerait donc systématiquement. On emploie son
-     * repli par version, autonome. À basculer sur `template_code` le jour où des modèles sont
-     * publiés — sans quoi cette étape resterait infranchissable.
+     * ContractSignValidator privilégie une signature Contracts v2 via `template_code`. L'étape
+     * déclare les deux : la vraie signature là où le modèle `provider_agreement` est seedé
+     * (ProductionBootstrapSeeder l'appelle), cette version en repli ailleurs. Le validateur ne
+     * refuse plus quand le modèle est absent — exiger une signature contre un contrat
+     * introuvable rendait l'étape définitivement infranchissable.
      */
     public const CONTRACT_VERSION = '1.0';
 
@@ -96,7 +97,13 @@ class ProviderOnboardingJourneySeeder extends Seeder
                 'is_skippable' => false,
                 'validator_class' => ContractSignValidator::class,
                 'depends_on' => ['profile_complete'],
-                'metadata' => ['required_version' => self::CONTRACT_VERSION],
+                // Les deux, et pas l'un OU l'autre : `template_code` engage la vraie signature
+                // Contracts v2 quand le modèle est seedé, `required_version` reste le repli
+                // autonome d'un déploiement où il ne l'est pas. Le validateur bascule seul.
+                'metadata' => [
+                    'template_code' => 'provider_agreement',
+                    'required_version' => self::CONTRACT_VERSION,
+                ],
             ],
             [
                 'code' => 'kyc_check',

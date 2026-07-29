@@ -176,3 +176,46 @@ export function useKycStatus(enabled: boolean = true) {
     refetchInterval: query => (isKycPending(query.state.data) ? 5000 : false),
   });
 }
+
+/**
+ * Contrat prestataire, rendu et signé via Contracts v2.
+ *
+ * L'écran affichait un texte codé en dur et « signait » en transmettant un simple numéro de
+ * version : aucune signature n'existait en base, donc aucune piste d'audit, alors que le module
+ * Contracts v2 — modèles versionnés, rendu, signature horodatée avec empreinte, PDF — était
+ * entièrement construit et jamais appelé.
+ */
+export interface ContractDocument {
+  id: number;
+  code: string;
+  body_rendered_html: string;
+  status: string;
+}
+
+/** Rend le contrat pour l'utilisateur courant, en substituant ses données au modèle. */
+export function useRenderContract() {
+  return useMutation<ContractDocument, ApiError, { templateCode: string }>({
+    mutationFn: async ({ templateCode }) => {
+      const { data } = await apiClient.post('/v2/contracts/documents', {
+        template_code: templateCode,
+      });
+
+      return data.document as ContractDocument;
+    },
+  });
+}
+
+/**
+ * Signe le document. `signature_data` porte le consentement exprimé — le service en dérive une
+ * empreinte horodatée avec l'adresse et le terminal, ce qui fait la valeur probante.
+ */
+export function useSignContract() {
+  return useMutation<unknown, ApiError, { documentId: number; signerName: string }>({
+    mutationFn: async ({ documentId, signerName }) =>
+      (await apiClient.post(`/v2/contracts/documents/${documentId}/sign`, {
+        signature_data: `accepted:${signerName}`,
+        signer_name: signerName,
+        terms_accepted: true,
+      })).data,
+  });
+}
