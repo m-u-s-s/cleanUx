@@ -12,6 +12,9 @@ import {
   useSignContract,
   isKycPending,
   isKycVerified,
+  isKycRefused,
+  isKycUnderReview,
+  useSyncKycStatus,
   type DocumentRequirement,
 } from '@/onboarding';
 import { useAuth } from '@/auth';
@@ -229,6 +232,35 @@ export function KycStep({ onDone, submitting, error }: StepProps) {
   const { data: status, refetch } = useKycStatus();
   const [localError, setLocalError] = useState<string | null>(null);
 
+  const sync = useSyncKycStatus();
+
+  /**
+   * Demande au serveur d'aller chercher la décision auprès du prestataire d'identité.
+   *
+   * `GET /kyc/status` ne fait que relire la ligne en base : tant que rien ne l'a mise à jour,
+   * elle reste « en attente ». La décision arrive normalement par webhook, mais rien ne la
+   * réclame quand celui-ci n'arrive pas — en développement, où le fournisseur est simulé, elle
+   * n'arriverait jamais. `POST /kyc/verifications/{id}/sync` est le point d'entrée prévu pour
+   * cela, et il n'était appelé de nulle part.
+   */
+  const refreshDecision = () => {
+    const id = status?.verification_id;
+    if (!id) {
+      void refetch();
+
+      return;
+    }
+
+    setLocalError(null);
+    sync.mutate(
+      { verificationId: id },
+      {
+        onSuccess: () => void refetch(),
+        onError: () => setLocalError('Impossible de récupérer le résultat. Réessayez.'),
+      },
+    );
+  };
+
   const start = useMutation({
     mutationFn: async () => {
       const { data } = await apiClient.post('/provider/kyc/start');
@@ -256,7 +288,8 @@ export function KycStep({ onDone, submitting, error }: StepProps) {
 
   const verified = isKycVerified(status);
   const pending = isKycPending(status);
-  const refused = status?.decision === 'rejected' || status?.decision === 'consider';
+  const underReview = isKycUnderReview(status);
+  const refused = isKycRefused(status);
 
   return (
     <StepShell
@@ -271,11 +304,12 @@ export function KycStep({ onDone, submitting, error }: StepProps) {
         </View>
       ) : null}
 
-      {pending ? (
+      {pending || underReview ? (
         <View style={styles.notice}>
           <Text style={styles.noticeText} testID="kyc-pending">
-            Vérification en cours. Elle se validera toute seule dès que votre identité sera
-            confirmée — vous pouvez fermer l'application et revenir plus tard.
+            {underReview
+              ? "Votre dossier est examiné par une personne de notre équipe. Vous n'avez rien à faire de plus."
+              : "Vérification en cours. Elle se validera toute seule dès que votre identité sera confirmée — vous pouvez fermer l'application et revenir plus tard."}
           </Text>
         </View>
       ) : null}
@@ -294,9 +328,31 @@ export function KycStep({ onDone, submitting, error }: StepProps) {
 
       {verified ? (
         <Button label="Continuer" onPress={() => onDone()} fullWidth size="lg" loading={submitting} />
+      ) : underReview ? (
+        // Un examen humain est en cours : relancer créerait une seconde vérification pour rien.
+        // Reste l'actualisation, pour ne pas dépendre du seul webhook.
+        <Button
+          label="Actualiser"
+          onPress={() => refreshDecision()}
+          variant="secondary"
+          fullWidth
+          size="lg"
+          loading={sync.isPending}
+        />
+      ) : pending ? (
+        // Une vérification est ouverte : c'est sa décision qu'il faut aller chercher, pas une
+        // nouvelle vérification. En mode simulé comme avant l'arrivée du webhook, c'est le seul
+        // moyen de faire avancer l'étape — sans quoi elle reste « en cours » indéfiniment.
+        <Button
+          label="J'ai terminé, vérifier"
+          onPress={() => refreshDecision()}
+          fullWidth
+          size="lg"
+          loading={sync.isPending}
+        />
       ) : (
         <Button
-          label={pending || refused ? 'Reprendre la vérification' : 'Démarrer la vérification'}
+          label={refused ? 'Reprendre la vérification' : 'Démarrer la vérification'}
           onPress={() => start.mutate()}
           fullWidth
           size="lg"

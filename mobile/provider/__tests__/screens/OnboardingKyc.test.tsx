@@ -136,7 +136,7 @@ describe("Étape vérification d'identité", () => {
   });
 
   it("affiche l'attente tant que le tiers n'a pas tranché", async () => {
-    serveStatus({ has_verification: true, status: 'in_review', decision: null });
+    serveStatus({ has_verification: true, status: 'in_review', decision: 'pending' });
 
     renderStep();
 
@@ -146,7 +146,7 @@ describe("Étape vérification d'identité", () => {
   });
 
   it("ne valide pas l'étape tant que l'identité n'est pas confirmée", async () => {
-    serveStatus({ has_verification: true, status: 'in_review', decision: null });
+    serveStatus({ has_verification: true, status: 'in_review', decision: 'pending' });
 
     const onDone = renderStep();
     await waitFor(() => screen.getByTestId('kyc-pending'));
@@ -155,7 +155,7 @@ describe("Étape vérification d'identité", () => {
   });
 
   it("propose de continuer une fois l'identité vérifiée", async () => {
-    serveStatus({ has_verification: true, status: 'complete', decision: 'clear' });
+    serveStatus({ has_verification: true, status: 'clear', decision: 'approved' });
 
     const onDone = renderStep();
 
@@ -177,7 +177,7 @@ describe("Étape vérification d'identité", () => {
   it('annonce un refus avec son motif et permet de recommencer', async () => {
     serveStatus({
       has_verification: true,
-      status: 'complete',
+      status: 'rejected',
       decision: 'rejected',
       rejection_reason: 'Le document fourni est expiré',
     });
@@ -187,6 +187,56 @@ describe("Étape vérification d'identité", () => {
     await waitFor(() => expect(screen.getByTestId('kyc-refused')).toBeTruthy());
     expect(screen.getByText(/document fourni est expiré/i)).toBeTruthy();
     expect(screen.getByLabelText('Reprendre la vérification')).toBeTruthy();
+  });
+
+  /**
+   * Le défaut rapporté depuis l'appareil : après le démarrage, le serveur écrit
+   * `decision = 'pending'`, mais l'application testait `decision === null` pour l'attente,
+   * `'clear'` pour la validation et `'consider'` pour le refus — trois valeurs du vocabulaire
+   * des STATUTS, jamais des décisions. Aucun état ne correspondait, et l'écran ne changeait pas
+   * d'un iota au clic : « rien ne se passe ».
+   */
+  it("reconnaît la décision « pending » écrite par le serveur au démarrage", async () => {
+    serveStatus({ has_verification: true, status: 'in_review', decision: 'pending' });
+
+    renderStep();
+
+    await waitFor(() => expect(screen.getByTestId('kyc-pending')).toBeTruthy());
+  });
+
+  /** `manual_review` n'est ni un refus ni une validation : un humain examine le dossier. */
+  it("distingue l'examen humain d'un refus", async () => {
+    serveStatus({ has_verification: true, status: 'consider', decision: 'manual_review' });
+
+    renderStep();
+
+    await waitFor(() => expect(screen.getByTestId('kyc-pending')).toBeTruthy());
+    expect(screen.getByText(/examiné par une personne/i)).toBeTruthy();
+    expect(screen.queryByTestId('kyc-refused')).toBeNull();
+    // Relancer créerait une seconde vérification pour rien.
+    expect(screen.queryByLabelText('Reprendre la vérification')).toBeNull();
+  });
+
+  /**
+   * `GET /kyc/status` ne fait que relire la base. Sans cet appel, une vérification restait « en
+   * cours » indéfiniment en développement, où aucun webhook ne tombe jamais.
+   */
+  it('va chercher la décision auprès du serveur quand elle tarde', async () => {
+    serveStatus({ has_verification: true, verification_id: 42, status: 'in_review', decision: 'pending' });
+    apiMock.onPost('/provider/kyc/verifications/42/sync').reply(200, { ok: true });
+
+    renderStep();
+    await waitFor(() => screen.getByLabelText("J'ai terminé, vérifier"));
+
+    fireEvent.press(screen.getByLabelText("J'ai terminé, vérifier"));
+
+    await waitFor(() => {
+      expect(
+        apiMock.history['post']!.filter(c => c.url === '/provider/kyc/verifications/42/sync'),
+      ).toHaveLength(1);
+    });
+    // Aucune seconde vérification n'est ouverte.
+    expect(apiMock.history['post']!.filter(c => c.url === '/provider/kyc/start')).toHaveLength(0);
   });
 
   it("signale l'échec du démarrage sans laisser croire à une vérification lancée", async () => {

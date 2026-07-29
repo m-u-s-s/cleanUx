@@ -145,8 +145,17 @@ export function isJourneyComplete(data: OnboardingProgress | undefined): boolean
 export interface KycStatus {
   has_verification: boolean;
   verification_id?: number;
+  /**
+   * Avancement technique : pending | in_review | awaiting_documents | clear | consider |
+   * unidentified | rejected | expired | cancelled.
+   */
   status?: string;
-  /** 'clear' | 'consider' | 'rejected' | null — null tant que le tiers n'a pas tranché. */
+  /**
+   * VERDICT, et son vocabulaire est distinct de celui du statut : pending | approved |
+   * rejected | manual_review. `clear` et `consider` sont des STATUTS, jamais des décisions —
+   * les confondre faisait qu'aucun état ne correspondait après le démarrage, et l'écran ne
+   * changeait pas d'un iota au clic.
+   */
   decision?: string | null;
   rejection_reason?: string | null;
   provider_verification_status?: string | null;
@@ -154,15 +163,31 @@ export interface KycStatus {
 
 export const KYC_STATUS_QUERY_KEY = ['onboarding', 'kyc-status'] as const;
 
-/** Une vérification sans décision est encore en cours chez le prestataire d'identité. */
+/**
+ * Le tiers n'a pas encore tranché. `pending` est la valeur que le serveur écrit à la création ;
+ * l'absence de décision est traitée pareil, par prudence.
+ */
 export function isKycPending(status: KycStatus | undefined): boolean {
   if (!status?.has_verification) return false;
 
-  return status.decision === null || status.decision === undefined;
+  return status.decision === 'pending' || status.decision === null || status.decision === undefined;
 }
 
+/** Un humain examine le dossier : ce n'est ni un refus ni une validation. */
+export function isKycUnderReview(status: KycStatus | undefined): boolean {
+  return status?.decision === 'manual_review';
+}
+
+export function isKycRefused(status: KycStatus | undefined): boolean {
+  return status?.decision === 'rejected';
+}
+
+/**
+ * `provider_verification_status` compte aussi : l'auto-approbation du module d'identité le pose
+ * sur le profil, et un prestataire vérifié par une autre voie ne doit pas être redemandé.
+ */
 export function isKycVerified(status: KycStatus | undefined): boolean {
-  return status?.decision === 'clear' || status?.provider_verification_status === 'verified';
+  return status?.decision === 'approved' || status?.provider_verification_status === 'verified';
 }
 
 export function useKycStatus(enabled: boolean = true) {
@@ -173,7 +198,8 @@ export function useKycStatus(enabled: boolean = true) {
     staleTime: 0,
     // Cinq secondes tant que le tiers n'a pas tranché, puis plus rien : interroger en boucle une
     // décision déjà rendue ne ferait que consommer batterie et données.
-    refetchInterval: query => (isKycPending(query.state.data) ? 5000 : false),
+    refetchInterval: query =>
+      isKycPending(query.state.data) || isKycUnderReview(query.state.data) ? 5000 : false,
   });
 }
 
@@ -239,5 +265,21 @@ export function useServiceZones(enabled: boolean = true) {
     queryKey: ['onboarding', 'service-zones'],
     queryFn: async () => (await apiClient.get('/provider/onboarding/service-zones')).data.zones ?? [],
     enabled,
+  });
+}
+
+/**
+ * Demande au serveur d'interroger le prestataire d'identité et d'appliquer sa décision.
+ *
+ * `GET /provider/kyc/status` relit la ligne en base ; il ne la met pas à jour. La décision
+ * arrive normalement par webhook, mais `POST /provider/kyc/verifications/{id}/sync` — le point
+ * d'entrée prévu quand elle tarde ou n'arrive pas — n'était appelé de nulle part. En
+ * développement, où le fournisseur est simulé, aucun webhook ne tombe jamais : sans cet appel,
+ * l'étape identité restait « en cours » indéfiniment.
+ */
+export function useSyncKycStatus() {
+  return useMutation<unknown, ApiError, { verificationId: number }>({
+    mutationFn: async ({ verificationId }) =>
+      (await apiClient.post(`/provider/kyc/verifications/${verificationId}/sync`)).data,
   });
 }
