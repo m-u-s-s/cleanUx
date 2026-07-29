@@ -187,9 +187,15 @@ class ProviderDossierSummary
 
     /**
      * `verification_status` compte au même titre que la décision KYC : le module d'identité le
-     * pose lui-même sur une décision `clear`, et un prestataire vérifié par une autre voie ne
+     * pose lui-même sur une décision favorable, et un prestataire vérifié par une autre voie ne
      * doit pas être redemandé. Ce n'est pas circulaire tant que l'approbation ne l'écrit que
      * lorsque le dossier le justifie — c'est précisément ce que garantit `can_mark_verified`.
+     *
+     * Le vocabulaire de la DÉCISION est distinct de celui du STATUT : `pending`, `approved`,
+     * `rejected` ou `manual_review` d'un côté ; `clear`, `consider`, `in_review`… de l'autre.
+     * Cette méthode comparait la décision à `clear`, qui est un statut : aucune vérification
+     * n'était donc jamais reconnue comme aboutie, et tout dossier restait « identité non
+     * vérifiée » même après une validation automatique.
      *
      * @return array{decision: ?string, verified: bool}
      */
@@ -202,7 +208,7 @@ class ProviderDossierSummary
 
         return [
             'decision' => $verification?->decision,
-            'verified' => $verification?->decision === 'clear'
+            'verified' => $verification?->decision === KycVerification::DECISION_APPROVED
                 || $user->providerProfile?->verification_status === 'verified',
         ];
     }

@@ -7,14 +7,17 @@ use App\Enums\ProviderType;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\Auth\LoginRequest;
 use App\Http\Requests\Api\Auth\RegisterRequest;
+use App\Jobs\Kyb\VerifyBusinessEntity;
 use App\Models\OrganizationAccount;
 use App\Models\OrganizationMember;
 use App\Models\ProviderProfile;
 use App\Models\Trade;
 use App\Models\User;
+use App\Services\KybV2\BusinessOnboardingService;
 use App\Services\OnboardingV2\OnboardingEngine;
 use App\Services\Promotion\ReferralService;
 use App\Services\Sms\PhoneVerificationService;
+use App\Support\Validation\BusinessNumber;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -229,6 +232,8 @@ class ApiAuthController extends Controller
             ]);
 
             $organizationId = $organization->id;
+
+            $this->openBusinessVerification($user, $data);
         }
 
         $profile = ProviderProfile::create([
@@ -315,6 +320,60 @@ class ApiAuthController extends Controller
      * `organization_accounts.slug` porte un index unique : deux sociétés homonymes qui
      * s'inscrivent ne doivent pas faire échouer la seconde inscription.
      */
+    /**
+     * Ouvre la vérification d'entreprise d'une société qui s'inscrit.
+     *
+     * Le module de vérification d'entreprise était entièrement construit — immatriculation contre
+     * les registres officiels, TVA via VIES, criblage des sanctions, score de risque pondéré —
+     * mais AUCUNE entité n'était jamais créée : il n'avait donc jamais rien à vérifier. Une
+     * société s'inscrivait, son organisation était créée, et sa légitimité n'était contrôlée par
+     * personne.
+     *
+     * Soft-fail intégral : une inscription valide ne doit pas échouer parce qu'un registre est
+     * injoignable ou qu'un numéro sort des schémas connus. Sans entité, la société suit
+     * simplement la voie manuelle, comme avant.
+     *
+     * @param  array<string, mixed>  $data
+     */
+    private function openBusinessVerification(User $user, array $data): void
+    {
+        $number = $data['vat_number'] ?? null;
+
+        if (! $number) {
+            return;
+        }
+
+        try {
+            $country = BusinessNumber::countryFor($number);
+            $identifierType = BusinessNumber::identifierType($number);
+
+            // Chaque pays a son vocabulaire d'identifiant et le module refuse un type qu'il ne
+            // déclare pas : mieux vaut ne rien créer que de créer une entité invérifiable.
+            if (! $country || ! $identifierType) {
+                return;
+            }
+
+            $entity = app(BusinessOnboardingService::class)->startVerification([
+                'legal_name' => $data['company_name'],
+                'country_code' => $country,
+                'identifier_type' => $identifierType,
+                'identifier_value' => BusinessNumber::bareNumber($number),
+                'vat_id' => BusinessNumber::normalise($number),
+                'contact_email' => $data['email'],
+                'contact_user_id' => $user->id,
+            ], $user);
+
+            // Les appels sortants sont mis en file : les exécuter ici ralentirait l'inscription
+            // d'autant, et l'indisponibilité d'un registre la ferait échouer.
+            VerifyBusinessEntity::dispatch($entity);
+        } catch (\Throwable $e) {
+            Log::warning("Ouverture de la vérification d'entreprise impossible", [
+                'user_id' => $user->id,
+                'error' => $e->getMessage(),
+            ]);
+        }
+    }
+
     private function uniqueOrganizationSlug(string $name): string
     {
         $base = Str::slug($name) ?: 'prestataire';

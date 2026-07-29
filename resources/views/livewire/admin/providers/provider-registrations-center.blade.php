@@ -114,6 +114,17 @@
                                 @endphp
 
                                 <div class="mb-2 text-left text-xs">
+                                    @php $autoReason = $registration->metadata['auto_review_reason'] ?? null; @endphp
+
+                                    {{-- Un dossier renvoyé ici par le contrôle automatique n'est PAS refusé : il
+                                         attend un regard humain. Le dire évite de traiter à l'aveugle un compte
+                                         que le robot a seulement jugé douteux. --}}
+                                    @if ($autoReason)
+                                        <div class="mb-1 rounded bg-rose-50 px-2 py-1 font-medium text-rose-800 dark:bg-rose-950 dark:text-rose-300">
+                                            À traiter manuellement — {{ $autoReason }}
+                                        </div>
+                                    @endif
+
                                     <div class="font-medium {{ $dossier['is_complete'] ? 'text-emerald-700' : 'text-amber-700' }}">
                                         Dossier {{ $dossier['journey']['done'] }}/{{ $dossier['journey']['total'] }}
                                         — {{ $dossier['is_complete'] ? 'complet' : 'incomplet' }}

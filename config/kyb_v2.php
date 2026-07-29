@@ -65,7 +65,12 @@ return [
     | Auto-approve si toutes vérifs OK ET sanctions clear ET score < threshold
     |--------------------------------------------------------------------------
     */
-    'auto_approve_enabled' => env('KYB_AUTO_APPROVE', false),
+    // Activée par défaut : le module sait décider seul — immatriculation contre les registres
+    // officiels, TVA via VIES, criblage des sanctions, score de risque pondéré — et il était
+    // simplement débranché. Sous le seuil ci-dessous, la société est validée sans intervention ;
+    // au-dessus, elle passe en `needs_review` et un humain tranche. KYB_AUTO_APPROVE=false
+    // rétablit la revue manuelle systématique.
+    'auto_approve_enabled' => env('KYB_AUTO_APPROVE', true),
     'auto_approve_score_max' => (float) env('KYB_AUTO_APPROVE_SCORE_MAX', 30.0),
 
     /*

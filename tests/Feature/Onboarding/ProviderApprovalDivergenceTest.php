@@ -220,8 +220,10 @@ class ProviderApprovalDivergenceTest extends TestCase
         KycVerification::create([
             'user_id' => $user->id,
             'provider' => 'mock',
-            'status' => 'complete',
-            'decision' => 'clear',
+            // Vocabulaire réel : `clear` est un STATUT, la décision favorable est `approved`.
+            // Les inventer faisait passer ce test pour de mauvaises raisons.
+            'status' => 'clear',
+            'decision' => 'approved',
             'started_at' => now(),
             'completed_at' => now(),
         ]);

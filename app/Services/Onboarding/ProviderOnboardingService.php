@@ -125,7 +125,7 @@ class ProviderOnboardingService
 
         $path = $file->store("providers/{$user->id}/onboarding/{$type}", 'private');
 
-        return DB::transaction(function () use ($user, $type, $file, $path, $existing, $profile) {
+        $document = DB::transaction(function () use ($user, $type, $file, $path, $existing, $profile) {
             $doc = ProviderOnboardingDocument::create([
                 'user_id' => $user->id,
                 'document_type' => $type,
@@ -158,6 +158,20 @@ class ProviderOnboardingService
 
             return $doc;
         });
+
+        // Cette piece etait peut-etre la derniere manquante : le compte doit alors s'ouvrir sans
+        // attendre. Soft-fail — un depot reussi ne doit pas echouer parce que l'orchestration
+        // d'activation a echoue ; le dossier reste alors en attente d'un administrateur.
+        try {
+            app(ProviderAutoApproval::class)->evaluate($user);
+        } catch (\Throwable $e) {
+            Log::warning('[provider_auto_approval] reevaluation impossible apres depot', [
+                'user_id' => $user->id,
+                'error' => $e->getMessage(),
+            ]);
+        }
+
+        return $document;
     }
 
     /**

@@ -5,10 +5,12 @@ namespace App\Providers;
 use App\Events\BusinessAlertRaised;
 use App\Events\Disputes\DisputeOpened;
 use App\Events\Kyc\KycCompleted;
+use App\Events\Kyc\KycRejected;
 use App\Events\Rating\RatingSubmitted;
 use App\Listeners\Alerts\BusinessAlertSentryListener;
 use App\Listeners\Disputes\NotifyOnDisputeOpened;
 use App\Listeners\Kyc\EmitKycApprovedWebhook;
+use App\Listeners\Kyc\ReevaluateProviderApproval;
 use App\Listeners\LogNotificationMailFailed;
 use App\Listeners\LogNotificationMailSent;
 use App\Listeners\Rating\NotifyProviderOnRating;
@@ -41,6 +43,11 @@ class EventServiceProvider extends ServiceProvider
         ],
         KycCompleted::class => [
             EmitKycApprovedWebhook::class,
+            ReevaluateProviderApproval::class,
+        ],
+        // Un refus d'identite n'annule pas l'inscription : il l'oriente vers un examen humain.
+        KycRejected::class => [
+            ReevaluateProviderApproval::class,
         ],
         DisputeOpened::class => [
             NotifyOnDisputeOpened::class,

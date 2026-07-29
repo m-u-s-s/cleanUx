@@ -26,6 +26,55 @@ final class BusinessNumber
         return strtoupper((string) preg_replace('/[\s.\-\/]/', '', trim($raw)));
     }
 
+    /**
+     * Pays émetteur du numéro : son préfixe s'il en porte un, sa longueur sinon.
+     *
+     * Dix chiffres désignent la BCE belge, neuf ou quatorze un SIREN/SIRET français — les deux
+     * formats ne se recouvrent pas, ce qui rend la déduction sûre pour le marché visé.
+     */
+    public static function countryFor(string $raw): ?string
+    {
+        $value = self::normalise($raw);
+
+        if (preg_match('/^([A-Z]{2})/', $value, $m) === 1) {
+            return $m[1];
+        }
+
+        return match (true) {
+            preg_match('/^\d{10}$/', $value) === 1 => 'BE',
+            preg_match('/^\d{9}$/', $value) === 1, preg_match('/^\d{14}$/', $value) === 1 => 'FR',
+            default => null,
+        };
+    }
+
+    /**
+     * Type d'identifiant au vocabulaire du module de vérification d'entreprise.
+     *
+     * Chaque pays a le sien — `kbo` en Belgique, `siret`/`siren` en France — et le module refuse
+     * un type qui n'est pas déclaré pour le pays (config kyb_v2.identifier_types_by_country).
+     * Employer un nom générique ferait donc échouer toute création d'entité belge.
+     */
+    public static function identifierType(string $raw): ?string
+    {
+        $value = self::normalise($raw);
+        $bare = preg_match('/^[A-Z]{2}/', $value) === 1 ? substr($value, 2) : $value;
+
+        return match (true) {
+            preg_match('/^\d{14}$/', $bare) === 1 => 'siret',
+            preg_match('/^\d{9}$/', $bare) === 1 => 'siren',
+            preg_match('/^\d{10}$/', $bare) === 1 => 'kbo',
+            default => null,
+        };
+    }
+
+    /** Numéro sans son préfixe pays, tel que l'attendent les registres. */
+    public static function bareNumber(string $raw): string
+    {
+        $value = self::normalise($raw);
+
+        return preg_match('/^[A-Z]{2}/', $value) === 1 ? substr($value, 2) : $value;
+    }
+
     public static function isValid(string $raw): bool
     {
         $value = self::normalise($raw);
