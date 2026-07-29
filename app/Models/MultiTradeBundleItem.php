@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class MultiTradeBundleItem extends Model
 {
@@ -63,7 +64,7 @@ class MultiTradeBundleItem extends Model
     }
 
     /** Devis concurrents reçus pour cet item (marketplace). */
-    public function quotes(): \Illuminate\Database\Eloquent\Relations\HasMany
+    public function quotes(): HasMany
     {
         return $this->hasMany(MultiTradeBundleItemQuote::class, 'bundle_item_id');
     }

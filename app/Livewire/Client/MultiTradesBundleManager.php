@@ -5,6 +5,7 @@ namespace App\Livewire\Client;
 use App\Models\MultiTradeBundle;
 use App\Models\MultiTradeBundleItemQuote;
 use App\Models\Trade;
+use App\Services\Booking\ZoneCoverageService;
 use App\Services\Bundles\MultiTradeBundleService;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Auth;
@@ -72,7 +73,7 @@ class MultiTradesBundleManager extends Component
         // solliciter que les prestataires couvrant la zone du chantier.
         $serviceZoneId = null;
         if ($this->postalCode !== '') {
-            $coverage = app(\App\Services\Booking\ZoneCoverageService::class);
+            $coverage = app(ZoneCoverageService::class);
             $serviceZoneId = $coverage->resolveServiceZone(
                 $coverage->resolvePostalCode($this->postalCode, $this->city ?: null)
             )?->id;

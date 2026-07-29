@@ -467,7 +467,7 @@ class MultiTradeBundleService
      * sequence_order comme départage. Les dépendances absentes du bundle sont
      * ignorées ; un éventuel cycle est rompu en repli sur sequence_order.
      *
-     * @param  \Illuminate\Support\Collection<int, MultiTradeBundleItem>  $items
+     * @param  Collection<int, MultiTradeBundleItem>  $items
      * @return list<MultiTradeBundleItem>
      */
     protected function orderItemsByDependency($items): array

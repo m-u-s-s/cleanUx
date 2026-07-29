@@ -16,6 +16,8 @@ use App\Policies\ChannelPolicy;
 use App\Services\Assistant\Llm\AnthropicProvider;
 use App\Services\Assistant\Llm\AnthropicStreamingProvider;
 use App\Services\Assistant\Llm\LlmProvider;
+use App\Services\Calendar\Contracts\GoogleBusyFetcher;
+use App\Services\Calendar\Fetchers\MockGoogleBusyFetcher;
 use App\Services\Country\CountryConfigService;
 use App\Services\Dispatch\MatchingScorer;
 use App\Services\FeatureFlag\FeatureFlagService;
@@ -57,8 +59,8 @@ class AppServiceProvider extends ServiceProvider
         // GCal bidirectionnel — fetcher Mock par défaut (le client Google API réel
         // sera lié ici quand l'intégration API sera activée).
         $this->app->singleton(
-            \App\Services\Calendar\Contracts\GoogleBusyFetcher::class,
-            \App\Services\Calendar\Fetchers\MockGoogleBusyFetcher::class,
+            GoogleBusyFetcher::class,
+            MockGoogleBusyFetcher::class,
         );
 
         // Multi-country config — singleton, pure data (no I/O)

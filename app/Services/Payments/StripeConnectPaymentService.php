@@ -5,6 +5,7 @@ namespace App\Services\Payments;
 use App\Models\Booking;
 use App\Models\Mission;
 use App\Models\ProviderPayout;
+use App\Services\Finance\FinanceCreditNoteService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use RuntimeException;
@@ -248,7 +249,7 @@ class StripeConnectPaymentService
         // Audit HIGH — avoir (credit note) pour conformité comptable BE/FR.
         // Idempotent par refund id ; soft-fail pour ne jamais bloquer le flux d'argent.
         try {
-            app(\App\Services\Finance\FinanceCreditNoteService::class)
+            app(FinanceCreditNoteService::class)
                 ->createForRefund($booking, (int) $refundedCents, $refund->id, $reason);
         } catch (\Throwable $e) {
             Log::warning('StripeConnectPaymentService: credit note generation failed', [

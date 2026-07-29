@@ -3,6 +3,8 @@
 namespace App\Support\Accounting;
 
 use App\Models\Booking;
+use App\Models\BookingInsurance;
+use App\Models\BookingTip;
 use App\Services\AccountingV2\Posting\BookingPostingService;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
@@ -78,7 +80,7 @@ class BookingAutoPoster
         }
     }
 
-    public static function postTip(\App\Models\BookingTip $tip): void
+    public static function postTip(BookingTip $tip): void
     {
         if (! self::glEnabled()) {
             return;
@@ -92,7 +94,7 @@ class BookingAutoPoster
         }
     }
 
-    public static function postInsurance(\App\Models\BookingInsurance $insurance): void
+    public static function postInsurance(BookingInsurance $insurance): void
     {
         if (! self::glEnabled()) {
             return;

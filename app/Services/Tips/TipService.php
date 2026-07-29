@@ -6,6 +6,7 @@ use App\Models\Booking;
 use App\Models\BookingTip;
 use App\Models\User;
 use App\Services\Loyalty\LoyaltyService;
+use App\Support\Accounting\BookingAutoPoster;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -149,7 +150,7 @@ class TipService
         ]);
 
         // Audit MEDIUM — écriture GL du pourboire (dette prestataire), gated + soft-fail.
-        \App\Support\Accounting\BookingAutoPoster::postTip($tip->fresh());
+        BookingAutoPoster::postTip($tip->fresh());
 
         // Crédite les bonus points loyalty au client (soft-fail)
         if ($tip->client_bonus_points > 0) {

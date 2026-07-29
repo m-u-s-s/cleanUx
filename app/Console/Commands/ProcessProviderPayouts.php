@@ -3,6 +3,7 @@
 namespace App\Console\Commands;
 
 use App\Models\Booking;
+use App\Models\ComplaintCase;
 use App\Services\Payments\CommissionService;
 use App\Services\Payments\ProviderWalletService;
 use Illuminate\Console\Command;
@@ -32,7 +33,7 @@ class ProcessProviderPayouts extends Command
             // ne libère pas la rémunération du prestataire pendant qu'une réclamation
             // est ouverte sur la prestation.
             ->whereDoesntHave('complaintCases', function ($q) {
-                $q->whereNotIn('status', \App\Models\ComplaintCase::FINAL_STATUSES);
+                $q->whereNotIn('status', ComplaintCase::FINAL_STATUSES);
             })
             ->where(function ($q) {
                 $q->whereNotNull('devis_estime')
@@ -148,7 +149,7 @@ class ProcessProviderPayouts extends Command
             ->whereNull('stripe_transfer_id')
             // Audit HIGH — ne jamais transférer un booking sous litige non résolu.
             ->whereDoesntHave('complaintCases', function ($q) {
-                $q->whereNotIn('status', \App\Models\ComplaintCase::FINAL_STATUSES);
+                $q->whereNotIn('status', ComplaintCase::FINAL_STATUSES);
             })
             // Defense-in-depth: never manually transfer a booking that was already paid
             // via a Stripe destination charge (provider auto-credited at capture). Such a

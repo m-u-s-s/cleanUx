@@ -6,6 +6,7 @@ use App\Models\BookingInsurance;
 use App\Models\InsuranceClaim;
 use App\Models\InsurancePlan;
 use App\Models\User;
+use App\Support\Accounting\BookingAutoPoster;
 use App\Support\ActivityLogger;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
@@ -126,7 +127,7 @@ class InsuranceService
 
             // Audit MEDIUM — écriture GL de la prime (dette assureur) si police active.
             if ($fresh->status === BookingInsurance::STATUS_ACTIVE) {
-                \App\Support\Accounting\BookingAutoPoster::postInsurance($fresh);
+                BookingAutoPoster::postInsurance($fresh);
             }
 
             return $fresh;

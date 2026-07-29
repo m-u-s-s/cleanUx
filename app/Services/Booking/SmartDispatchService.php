@@ -5,6 +5,7 @@ namespace App\Services\Booking;
 use App\Models\Booking;
 use App\Models\User;
 use App\Services\Geo\GeoDistanceService;
+use App\Services\Safety\UserSafetyService;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
@@ -106,7 +107,7 @@ class SmartDispatchService
 
         // Audit HIGH — exclure les prestataires bloqués vis-à-vis du client.
         $blockedIds = $rdv->client_id
-            ? app(\App\Services\Safety\UserSafetyService::class)->blockedUserIdsFor((int) $rdv->client_id)
+            ? app(UserSafetyService::class)->blockedUserIdsFor((int) $rdv->client_id)
             : [];
 
         $employees = $this->availabilityService

@@ -6,6 +6,7 @@ use App\Models\Booking;
 use App\Models\User;
 use App\Services\Booking\EmployeeAvailabilityService;
 use App\Services\Matching\MatchingV2Service;
+use App\Services\Safety\UserSafetyService;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -108,7 +109,7 @@ class AiDispatchService
         // Audit HIGH — ne jamais proposer un prestataire bloqué (dans un sens ou
         // l'autre) vis-à-vis du client de la réservation.
         $blockedIds = $rdv->client_id
-            ? app(\App\Services\Safety\UserSafetyService::class)->blockedUserIdsFor((int) $rdv->client_id)
+            ? app(UserSafetyService::class)->blockedUserIdsFor((int) $rdv->client_id)
             : [];
 
         $candidates = $this->availability

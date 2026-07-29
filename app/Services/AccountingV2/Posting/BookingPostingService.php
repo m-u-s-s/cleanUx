@@ -3,6 +3,8 @@
 namespace App\Services\AccountingV2\Posting;
 
 use App\Models\Booking;
+use App\Models\BookingInsurance;
+use App\Models\BookingTip;
 use App\Services\AccountingV2\AccountingService;
 use App\Services\AccountingV2\ChartOfAccounts;
 
@@ -198,7 +200,7 @@ class BookingPostingService
      *   512100 Banque Stripe   Débit  montant
      *   467    Dette prestataire   Crédit montant
      */
-    public function postTipSettlement(\App\Models\BookingTip $tip): ?string
+    public function postTipSettlement(BookingTip $tip): ?string
     {
         $amount = (int) $tip->amount_cents;
         if ($amount <= 0) {
@@ -233,7 +235,7 @@ class BookingPostingService
      *   512100 Banque Stripe   Débit  prime
      *   401    Dette assureur      Crédit prime
      */
-    public function postInsuranceSettlement(\App\Models\BookingInsurance $insurance): ?string
+    public function postInsuranceSettlement(BookingInsurance $insurance): ?string
     {
         $premium = (int) $insurance->premium_cents;
         if ($premium <= 0) {

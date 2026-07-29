@@ -3,6 +3,7 @@
 namespace App\Models\Concerns;
 
 use App\Enums\OrganizationRole;
+use App\Enums\OrganizationType;
 use App\Models\OrganizationAccount;
 use App\Models\OrganizationMember;
 use App\Models\OrganizationSite;
@@ -75,7 +76,7 @@ trait HasOrganizationContext
      */
     public function belongsToClientCompany(): bool
     {
-        $type = \App\Enums\OrganizationType::tryFrom(
+        $type = OrganizationType::tryFrom(
             (string) $this->currentOrganization?->type
         );
 
