@@ -106,6 +106,40 @@
 
                         <td class="px-4 py-3 text-right">
                             @if ($registration->status === 'pending')
+                                @php
+                                    // L'approbation posait `status = active` sans rien vérifier :
+                                    // l'administrateur décidait à l'aveugle. Il voit désormais
+                                    // l'état réel du dossier avant de trancher.
+                                    $dossier = $this->dossierFor($registration);
+                                @endphp
+
+                                <div class="mb-2 text-left text-xs">
+                                    <div class="font-medium {{ $dossier['is_complete'] ? 'text-emerald-700' : 'text-amber-700' }}">
+                                        Dossier {{ $dossier['journey']['done'] }}/{{ $dossier['journey']['total'] }}
+                                        — {{ $dossier['is_complete'] ? 'complet' : 'incomplet' }}
+                                    </div>
+
+                                    @foreach ($dossier['blockers'] as $blocker)
+                                        <div class="text-rose-700 dark:text-rose-400">• {{ $blocker }}</div>
+                                    @endforeach
+
+                                    @foreach ($dossier['warnings'] as $warning)
+                                        <div class="text-slate-500 dark:text-slate-400">• {{ $warning }}</div>
+                                    @endforeach
+                                </div>
+
+                                @unless ($dossier['is_complete'])
+                                    {{-- Le passage en force reste possible, mais jamais silencieux :
+                                         le motif est consigné dans les métadonnées du profil. --}}
+                                    <input
+                                        type="text"
+                                        wire:model="overrideReason.{{ $registration->id }}"
+                                        placeholder="Motif d'approbation malgré le dossier incomplet"
+                                        aria-label="Motif d'approbation pour {{ $registration->user?->name }}"
+                                        class="mb-2 w-full rounded-lg border border-amber-300 px-2 py-1 text-xs dark:border-amber-600 dark:bg-slate-800"
+                                    />
+                                @endunless
+
                                 <div class="flex justify-end gap-2">
                                     <button
                                         type="button"

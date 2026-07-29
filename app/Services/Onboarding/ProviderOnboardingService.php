@@ -273,6 +273,19 @@ class ProviderOnboardingService
     }
 
     /**
+     * Point d'entrée public du pont vers Onboarding v2.
+     *
+     * L'écran d'approbation des inscriptions ne passe pas par approveOnboarding() — il approuve
+     * l'ACCÈS, là où celle-ci valide le DOSSIER sur pièces — mais il doit refléter la même chose
+     * dans le moteur v2, sans quoi un prestataire approuvé garde un cockpit affichant des étapes
+     * en attente. Les deux voies partagent donc ce pont plutôt que d'en écrire chacune un.
+     */
+    public function markOnboardingV2Completed(User $user): void
+    {
+        $this->syncOnboardingV2Completed($user);
+    }
+
+    /**
      * Mark the user's OnboardingV2 journey complete to mirror the legacy approval. Bypasses the
      * per-step validators on purpose — legacy admin approval is the source of truth — and never
      * throws (the v2 module / journey seed may be absent in some environments).
