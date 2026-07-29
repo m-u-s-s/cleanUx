@@ -4,7 +4,7 @@ import { useIsFocused, useNavigation } from '@react-navigation/native';
 import { Button } from '@/ui';
 import { useMissionInbox } from '@/missions';
 import { useGpsWatcher, distanceKmTo, formatDistance } from '@/tracking';
-import { loadMapModule, isMapRenderable } from '@/maps';
+import { loadMapModule, isMapRenderable, OsmMap } from '@/maps';
 import { colors, spacing, typography, radius } from '@/theme';
 
 /** Repli d'échelle pays centré sur Bruxelles, marché principal du projet. */
@@ -111,14 +111,47 @@ export function ProviderMap() {
     );
   }, [position, located]);
 
+  // Pas de carte Google exploitable — module absent, ou clé manquante sur Android. Plutôt qu'un
+  // simple texte, on rend OpenStreetMap via WebView : gratuit, sans clé, et sans dépendance
+  // nouvelle puisque react-native-webview est déjà là pour le captcha.
   if (!maps || !renderable) {
     return (
-      <View style={styles.fallback} testID="map-fallback">
-        <Text style={styles.fallbackText}>
-          {position
-            ? `Position : ${position.latitude.toFixed(5)}, ${position.longitude.toFixed(5)}`
-            : 'Carte indisponible sur cet appareil.'}
-        </Text>
+      <View style={styles.container}>
+        <OsmMap
+          testID="provider-map-osm"
+          markers={located.map(a => ({
+            id: a.mission_id,
+            latitude: a.latitude as number,
+            longitude: a.longitude as number,
+            title: a.service_name ?? 'Mission',
+            subtitle: a.client_name,
+            detail: (() => {
+              const km = distanceKmTo(position, a);
+              return km != null ? formatDistance(km * 1000) : null;
+            })(),
+          }))}
+          position={position}
+          fallbackCenter={{ latitude: FALLBACK_REGION.latitude, longitude: FALLBACK_REGION.longitude, zoom: 7 }}
+          // mission_id, PAS booking_id — même raison que pour la carte native : l'écran de détail
+          // appelle GET /provider/missions/{missionId}.
+          onMarkerPress={(missionId) => navigation.navigate('MissionDetail', { missionId })}
+        />
+
+        <View style={styles.overlay} pointerEvents="box-none">
+          {permission === 'denied' && (
+            <Text style={styles.notice} testID="map-permission-notice">
+              Position indisponible — autorise l'accès à ta localisation pour te voir sur la carte.
+            </Text>
+          )}
+          {unlocatedCount > 0 && (
+            <Text style={styles.notice}>
+              {unlocatedCount} mission{unlocatedCount > 1 ? 's' : ''} sans localisation
+            </Text>
+          )}
+          {!isError && located.length === 0 && (
+            <Text style={styles.notice}>Aucune mission en attente</Text>
+          )}
+        </View>
       </View>
     );
   }

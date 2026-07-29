@@ -65,6 +65,20 @@ jest.mock('@/maps', () => ({
   // sans elle le rendu LÈVE au lieu de dégrader. `mockMapRenderable` pilote ce second verrou,
   // distinct de la présence du module lui-même.
   isMapRenderable: () => mockMapRenderable.current,
+  // Carte OpenStreetMap en WebView : le repli quand Google Maps n'est pas exploitable. Stubée
+  // ici, la WebView touchant un binaire natif absent en test.
+  OsmMap: ({ testID, markers, onMarkerPress }: any) => {
+    const { View, Text, TouchableOpacity } = require('react-native');
+    return (
+      <View testID={testID}>
+        {markers.map((m: any) => (
+          <TouchableOpacity key={m.id} testID={`osm-marker-${m.id}`} onPress={() => onMarkerPress(m.id)}>
+            <Text>{m.title}</Text>
+          </TouchableOpacity>
+        ))}
+      </View>
+    );
+  },
 }));
 
 import { apiClient } from '@/api';
@@ -141,12 +155,12 @@ describe('ProviderMap', () => {
     expect(mockGpsEnabled.current).toBe(false);
   });
 
-  it('rend le placeholder texte quand le module natif est absent', async () => {
+  it('bascule sur OpenStreetMap quand le module natif est absent', async () => {
     mockMapModule.current = false;
 
     render(<ProviderMap />, { wrapper: makeWrapper() });
 
-    await waitFor(() => expect(screen.getByTestId('map-fallback')).toBeTruthy());
+    await waitFor(() => expect(screen.getByTestId('provider-map-osm')).toBeTruthy());
     expect(screen.queryByTestId('provider-map')).toBeNull();
   });
 
@@ -156,14 +170,30 @@ describe('ProviderMap', () => {
    * « IllegalStateException: API key not found » — emportant le tableau de bord entier, dont la
    * carte est l'élément principal. Le repli doit donc couvrir ce cas comme l'absence de module.
    */
-  it('rend le placeholder quand la carte est indisponible faute de clé', async () => {
+  it('bascule sur OpenStreetMap quand la clé Google Maps manque', async () => {
     mockMapModule.current = true;
     mockMapRenderable.current = false;
+    apiMock.onGet('/provider/assignments/inbox').reply(200, { data: [MOCK_ASSIGNMENT] });
 
     render(<ProviderMap />, { wrapper: makeWrapper() });
 
-    await waitFor(() => expect(screen.getByTestId('map-fallback')).toBeTruthy());
+    // La carte reste une VRAIE carte, avec ses marqueurs : sans clé Google on ne perd que le
+    // fournisseur, pas la fonctionnalité.
+    await waitFor(() => expect(screen.getByTestId('provider-map-osm')).toBeTruthy());
+    expect(screen.getByTestId(`osm-marker-${MOCK_ASSIGNMENT.mission_id}`)).toBeTruthy();
     expect(screen.queryByTestId('provider-map')).toBeNull();
+  });
+
+  it('ouvre le détail par mission_id depuis un marqueur OpenStreetMap', async () => {
+    mockMapRenderable.current = false;
+    apiMock.onGet('/provider/assignments/inbox').reply(200, { data: [MOCK_ASSIGNMENT] });
+
+    render(<ProviderMap />, { wrapper: makeWrapper() });
+
+    await waitFor(() => screen.getByTestId(`osm-marker-${MOCK_ASSIGNMENT.mission_id}`));
+    fireEvent.press(screen.getByTestId(`osm-marker-${MOCK_ASSIGNMENT.mission_id}`));
+
+    expect(mockNavigate).toHaveBeenCalledWith('MissionDetail', { missionId: MOCK_ASSIGNMENT.mission_id });
   });
 
   it('explique une permission GPS refusée', async () => {

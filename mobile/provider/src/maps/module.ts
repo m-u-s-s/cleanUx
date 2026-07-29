@@ -52,5 +52,19 @@ export function isMapRenderable(): boolean {
 
   const key = (Constants.expoConfig as any)?.android?.config?.googleMaps?.apiKey;
 
-  return typeof key === 'string' && key.length > 0;
+  return isPlausibleGoogleApiKey(key);
+}
+
+/**
+ * Une clé non vide ne suffit pas : un placeholder la contourne et laisse le crash revenir.
+ *
+ * Ce n'est pas théorique — le .env du backend porte `GOOGLE_MAPS_API_KEY=ta_cle_google_maps`, et
+ * recopier cette valeur suffirait à faire replanter le tableau de bord. On vérifie donc la FORME
+ * d'une clé Google : préfixe `AIza` et 39 caractères, ce que respectent toutes les clés émises.
+ *
+ * Le but n'est pas d'authentifier la clé — seul Google le peut — mais d'écarter ce qui n'en est
+ * manifestement pas une, pour que le repli s'affiche plutôt qu'une exception native.
+ */
+function isPlausibleGoogleApiKey(key: unknown): boolean {
+  return typeof key === 'string' && /^AIza[0-9A-Za-z_-]{35}$/.test(key);
 }
