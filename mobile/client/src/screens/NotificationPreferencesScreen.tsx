@@ -1,81 +1,171 @@
-import React, { useState } from 'react';
-import { View, Text, Switch, StyleSheet, Alert } from 'react-native';
+import React, { useMemo, useState } from 'react';
+import { View, Text, Switch, StyleSheet, Alert, ActivityIndicator } from 'react-native';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Screen, Button, Divider } from '@/ui';
 import { apiClient } from '@/api';
 import { colors, spacing, typography } from '@/theme';
 
-const CATEGORIES = [
-  { key: 'transactional', label: 'Réservations & missions', description: 'Confirmations, rappels, statuts' },
-  { key: 'chat', label: 'Messages', description: 'Nouveaux messages de prestataires' },
-  { key: 'marketing', label: 'Promotions', description: 'Offres spéciales et réductions' },
-  { key: 'reminder', label: 'Rappels', description: 'Missions à venir, évaluations en attente' },
-  { key: 'system', label: 'Système', description: 'Mises à jour, maintenance' },
-];
+/**
+ * Préférences de notification : la matrice canal × catégorie.
+ *
+ * Cet écran affichait une fiction. Il inventait ses propres catégories (`chat`, `system`, qui
+ * n'existent nulle part côté serveur), initialisait TOUT à « activé » sans jamais lire les
+ * préférences réelles — un utilisateur ayant coupé le marketing les revoyait cochées — et
+ * sauvegardait sur `/notifications/preferences`, une adresse sans route : la requête partait en
+ * 404 et l'écran annonçait pourtant « Vos préférences ont été mises à jour ».
+ *
+ * Tout vient désormais du serveur : les canaux, les catégories, l'état courant, et la liste des
+ * combinaisons légalement obligatoires. Le vocabulaire n'est plus deviné.
+ */
 
-const CHANNELS = [
-  { key: 'push', label: 'Push' },
-  { key: 'email', label: 'Email' },
-  { key: 'sms', label: 'SMS' },
-];
+const CHANNEL_LABELS: Record<string, string> = {
+  email: 'Email',
+  sms: 'SMS',
+  push: 'Push',
+  inapp: "Dans l'application",
+  webhook: 'Webhook',
+};
+
+const CATEGORY_LABELS: Record<string, { label: string; description: string }> = {
+  transactional: { label: 'Réservations & missions', description: 'Confirmations, statuts, factures' },
+  verification: { label: 'Vérifications', description: "Codes de sécurité et confirmations d'identité" },
+  reminder: { label: 'Rappels', description: 'Missions à venir, évaluations en attente' },
+  marketing: { label: 'Offres', description: 'Promotions et réductions' },
+  support: { label: 'Support', description: 'Réponses à vos demandes et litiges' },
+  security: { label: 'Sécurité', description: 'Connexions, changements de mot de passe' },
+  product: { label: 'Nouveautés', description: "Évolutions de l'application" },
+};
+
+interface PreferencesPayload {
+  channels: string[];
+  categories: string[];
+  forced_on: { channel: string; category: string }[];
+  /** Matrice indexée [canal][catégorie], telle que la rend le serveur. */
+  preferences: Record<string, Record<string, boolean>>;
+}
 
 export function NotificationPreferencesScreen() {
-  const [prefs, setPrefs] = useState<Record<string, Record<string, boolean>>>(() => {
-    const initial: Record<string, Record<string, boolean>> = {};
-    CATEGORIES.forEach(c => {
-      initial[c.key] = {} as Record<string, boolean>;
-      CHANNELS.forEach(ch => {
-        initial[c.key]![ch.key] = true;
-      });
-    });
-    return initial;
+  const queryClient = useQueryClient();
+  const [edits, setEdits] = useState<Record<string, boolean>>({});
+
+  const { data, isLoading, isError, refetch } = useQuery<PreferencesPayload>({
+    queryKey: ['notification-preferences'],
+    queryFn: async () => (await apiClient.get('/client/notifications/preferences')).data,
   });
-  const [saving, setSaving] = useState(false);
 
-  const toggle = (category: string, channel: string) => {
-    setPrefs(prev => {
-      const catPrefs = prev[category] ?? {};
-      return {
-        ...prev,
-        [category]: { ...catPrefs, [channel]: !catPrefs[channel] },
-      };
-    });
+  /** Les combinaisons imposées par la loi ou la sécurité ne se désactivent pas. */
+  const forced = useMemo(
+    () => new Set((data?.forced_on ?? []).map(f => `${f.channel}:${f.category}`)),
+    [data?.forced_on],
+  );
+
+  const valueFor = (channel: string, category: string): boolean => {
+    const key = `${channel}:${category}`;
+    if (forced.has(key)) return true;
+    if (key in edits) return edits[key]!;
+
+    return data?.preferences?.[channel]?.[category] ?? true;
   };
 
-  const handleSave = async () => {
-    setSaving(true);
-    try {
-      await apiClient.put('/notifications/preferences', { preferences: prefs });
-      Alert.alert('Sauvegardé', 'Vos préférences ont été mises à jour.');
-    } catch {
-      Alert.alert('Erreur', 'Impossible de sauvegarder.');
-    } finally {
-      setSaving(false);
-    }
-  };
+  const save = useMutation({
+    mutationFn: async () => {
+      // Le serveur attend une LISTE plate de {channel, category, is_allowed}, pas une matrice.
+      // Les combinaisons forcées sont exclues : il les refuse de toute façon, les envoyer ne
+      // ferait qu'ajouter du bruit à la piste d'audit.
+      const preferences = Object.entries(edits)
+        .filter(([key]) => !forced.has(key))
+        .map(([key, isAllowed]) => {
+          const [channel, category] = key.split(':');
+
+          return { channel, category, is_allowed: isAllowed };
+        });
+
+      if (preferences.length === 0) return;
+
+      await apiClient.put('/client/notifications/preferences/bulk', { preferences });
+    },
+    onSuccess: async () => {
+      setEdits({});
+      await queryClient.invalidateQueries({ queryKey: ['notification-preferences'] });
+      Alert.alert('Enregistré', 'Vos préférences ont été mises à jour.');
+    },
+    onError: () => Alert.alert('Erreur', "Impossible d'enregistrer vos préférences."),
+  });
+
+  if (isLoading) {
+    return (
+      <Screen>
+        <View style={styles.centered} testID="preferences-loading">
+          <ActivityIndicator color={colors.brand[500]} />
+        </View>
+      </Screen>
+    );
+  }
+
+  // Une panne de chargement ne doit pas laisser un écran vide : elle ne doit surtout pas non plus
+  // afficher une matrice inventée que l'utilisateur croirait être la sienne.
+  if (isError || !data) {
+    return (
+      <Screen>
+        <View style={styles.centered} testID="preferences-error">
+          <Text style={styles.catDesc}>Impossible de charger vos préférences.</Text>
+          <Button label="Réessayer" onPress={() => refetch()} variant="secondary" />
+        </View>
+      </Screen>
+    );
+  }
+
+  const hasChanges = Object.keys(edits).length > 0;
 
   return (
     <Screen scroll>
       <Text style={styles.title}>Préférences de notifications</Text>
-      {CATEGORIES.map(cat => (
-        <View key={cat.key} style={styles.category}>
-          <Text style={styles.catLabel}>{cat.label}</Text>
-          <Text style={styles.catDesc}>{cat.description}</Text>
-          <View style={styles.channels}>
-            {CHANNELS.map(ch => (
-              <View key={ch.key} style={styles.channelRow}>
-                <Text style={styles.channelLabel}>{ch.label}</Text>
-                <Switch
-                  value={prefs[cat.key]?.[ch.key] !== false}
-                  onValueChange={() => toggle(cat.key, ch.key)}
-                  trackColor={{ true: colors.brand[500] }}
-                />
-              </View>
-            ))}
+
+      {data.categories.map(category => {
+        const meta = CATEGORY_LABELS[category];
+
+        return (
+          <View key={category} style={styles.category} testID={`preference-category-${category}`}>
+            {/* Une catégorie ajoutée côté serveur reste lisible : son code sert de libellé de
+                repli plutôt que d'être omise de l'écran. */}
+            <Text style={styles.catLabel}>{meta?.label ?? category}</Text>
+            {meta ? <Text style={styles.catDesc}>{meta.description}</Text> : null}
+
+            <View style={styles.channels}>
+              {data.channels.map(channel => {
+                const key = `${channel}:${category}`;
+                const isForced = forced.has(key);
+
+                return (
+                  <View key={channel} style={styles.channelRow}>
+                    <Text style={styles.channelLabel}>
+                      {CHANNEL_LABELS[channel] ?? channel}
+                      {isForced ? ' — obligatoire' : ''}
+                    </Text>
+                    <Switch
+                      value={valueFor(channel, category)}
+                      disabled={isForced}
+                      onValueChange={v => setEdits(prev => ({ ...prev, [key]: v }))}
+                      trackColor={{ true: colors.brand[500] }}
+                      accessibilityLabel={`${CATEGORY_LABELS[category]?.label ?? category} par ${CHANNEL_LABELS[channel] ?? channel}`}
+                      testID={`preference-switch-${channel}-${category}`}
+                    />
+                  </View>
+                );
+              })}
+            </View>
+            <Divider />
           </View>
-          <Divider />
-        </View>
-      ))}
-      <Button label="Sauvegarder" onPress={handleSave} fullWidth loading={saving} />
+        );
+      })}
+
+      <Button
+        label={hasChanges ? 'Enregistrer' : 'Aucune modification'}
+        onPress={() => save.mutate()}
+        disabled={!hasChanges}
+        fullWidth
+        loading={save.isPending}
+      />
     </Screen>
   );
 }
@@ -88,6 +178,7 @@ const styles = StyleSheet.create({
     marginBottom: spacing.lg,
     marginTop: spacing.md,
   },
+  centered: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: spacing.md, padding: spacing.lg },
   category: { marginBottom: spacing.sm },
   catLabel: {
     fontSize: typography.fontSize.base,

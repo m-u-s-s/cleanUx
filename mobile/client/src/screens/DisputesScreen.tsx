@@ -136,7 +136,9 @@ const styles = StyleSheet.create({
   chip: {
     paddingVertical: spacing.xs,
     paddingHorizontal: spacing.sm,
-    borderRadius: radius.full,
+    // `radius.full` n'existe pas dans l'échelle : elle s'arrête à `pill`. La valeur était donc
+    // `undefined` et les puces s'affichaient à angles droits, sans que rien ne le signale.
+    borderRadius: radius.pill,
     borderWidth: 1,
     borderColor: colors.surface[300],
   },
