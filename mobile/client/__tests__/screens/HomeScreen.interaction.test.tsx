@@ -2,11 +2,11 @@
  * Interaction tests for the client HomeScreen.
  *
  * Covers:
- *  - Tap "Mes réservations" quick action -> navigate('MainTabs')
- *  - Tap "Messagerie" quick action -> navigate('ChatList')
- *  - Tap "Fidélité" quick action -> navigate('Loyalty')
+ *  - Tap "Mes réservations" (feuille d'actions) -> navigate('MainTabs', { screen: 'Bookings' })
+ *  - Tap "Messagerie" (feuille d'actions) -> navigate('ChatList')
+ *  - Tap "Fidélité" (feuille d'actions) -> navigate('Loyalty')
  *  - Tap "Réserver un service" CTA -> navigate('BookingWizard')
- *  - Tap "Réserver mon premier service" welcome card CTA -> navigate('BookingWizard')
+ *  - Tap "Réserver un service" (action flottante) -> navigate('BookingWizard')
  *  - Tap active booking card -> navigate('BookingDetail', { bookingId })
  */
 import React from 'react';
@@ -94,6 +94,10 @@ jest.mock('@/ui', () => {
     Badge: ({ label }: any) => <Text>{label}</Text>,
     Skeleton: () => <View />,
     Icon: () => <View />,
+    // La feuille d'actions emploie ces deux-la : sans eux dans le faux, l'ecran leve avant meme
+    // d'etre rendu.
+    Divider: () => <View />,
+    BottomSheet: ({ children }: any) => <View>{children}</View>,
   };
 });
 
@@ -119,19 +123,21 @@ describe('HomeScreen interactions', () => {
   it('tap "Mes réservations" navigates to MainTabs', () => {
     render(<HomeScreen />);
     fireEvent.press(screen.getByLabelText('Mes réservations'));
-    expect(mockNavigate).toHaveBeenCalledWith('MainTabs');
+    // Le paramètre imbriqué est indispensable : sans lui, la navigation atterrit sur l'onglet par
+    // défaut de MainTabs au lieu des réservations.
+    expect(mockNavigate).toHaveBeenCalledWith('MainTabs', { screen: 'Bookings' });
   });
 
   it('tap "Messagerie" navigates to ChatList', () => {
     render(<HomeScreen />);
     fireEvent.press(screen.getByLabelText('Messagerie'));
-    expect(mockNavigate).toHaveBeenCalledWith('ChatList');
+    expect(mockNavigate).toHaveBeenCalledWith('ChatList', undefined);
   });
 
   it('tap "Fidélité" navigates to Loyalty', () => {
     render(<HomeScreen />);
     fireEvent.press(screen.getByLabelText('Fidélité'));
-    expect(mockNavigate).toHaveBeenCalledWith('Loyalty');
+    expect(mockNavigate).toHaveBeenCalledWith('Loyalty', undefined);
   });
 
   it('tap "Réserver un service" CTA navigates to BookingWizard', () => {
@@ -166,10 +172,10 @@ describe('HomeScreen — first-time user', () => {
     render(<HomeScreen />);
 
     await waitFor(() => {
-      expect(screen.getByText('Réserver mon premier service')).toBeTruthy();
+      expect(screen.getByText('Réserver un service')).toBeTruthy();
     });
 
-    fireEvent.press(screen.getByText('Réserver mon premier service'));
+    fireEvent.press(screen.getByText('Réserver un service'));
     expect(mockNavigate).toHaveBeenCalledWith('BookingWizard');
   });
 });

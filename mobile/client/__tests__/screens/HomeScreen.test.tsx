@@ -39,6 +39,10 @@ jest.mock('@/ui', () => {
     Badge: ({ label }: any) => <Text>{label}</Text>,
     Skeleton: () => <View />,
     Icon: () => <View />,
+    // La feuille d'actions emploie ces deux-la : sans eux dans le faux, l'ecran leve avant meme
+    // d'etre rendu.
+    Divider: () => <View />,
+    BottomSheet: ({ children }: any) => <View>{children}</View>,
   };
 });
 

@@ -1,128 +1,181 @@
-import React, { useCallback } from 'react';
-import { View, Text, TouchableOpacity, ScrollView, StyleSheet } from 'react-native';
+import React, { useCallback, useRef } from 'react';
+import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { Screen, Button, KPICard, Avatar, Badge, Skeleton, Icon } from '@/ui';
+import type GorhomBottomSheet from '@gorhom/bottom-sheet';
+import { Screen, Button, Avatar, Badge, Skeleton, Icon } from '@/ui';
 import { useAuth } from '@/auth';
 import { useBookings } from '@/booking';
+import { HomeActionsSheet } from '@/screens/components/HomeActionsSheet';
 import { colors, spacing, typography, radius, shadows, useThemeColors } from '@/theme';
 import type { RootStackParamList } from '@/navigation/types';
 
 type Nav = NativeStackNavigationProp<RootStackParamList>;
 
-const QUICK_ACTIONS = [
-  { label: 'Mes réservations', screen: 'MainTabs', icon: 'calendar-outline' as const },
-  { label: 'Messagerie', screen: 'ChatList', icon: 'chatbubble-outline' as const },
-  { label: 'Fidélité', screen: 'Loyalty', icon: 'gift-outline' as const },
-  { label: 'Devis IA', screen: 'AiQuote', icon: 'sparkles-outline' as const },
-] as const;
-
+/**
+ * Accueil client, sur la structure du tableau de bord prestataire.
+ *
+ * Les deux écrans avaient le même en-tête et divergeaient ensuite complètement : le prestataire
+ * consacre tout l'espace à un élément focal — sa carte — avec ses commandes en surimpression et
+ * ses actions secondaires dans une feuille ; le client empilait indicateurs, pavés d'accès rapide
+ * et réservations, si bien que ce qu'il vient réellement voir, sa mission en cours, arrivait tout
+ * en bas de la page.
+ *
+ * Même structure adoptée ici, avec l'élément focal qui convient à un client : sa mission du
+ * moment. Un prestataire a besoin de voir ce qui l'entoure, un client a besoin de voir OÙ EN EST
+ * la sienne. Les accès rapides passent dans la feuille, les indicateurs avec eux.
+ */
 export function HomeScreen() {
-  const { user, logout } = useAuth();
+  const { user } = useAuth();
   const { data: bookings, isLoading } = useBookings();
   const navigation = useNavigation<Nav>();
   const themeColors = useThemeColors();
+  const sheetRef = useRef<GorhomBottomSheet>(null);
+
+  const openSheet = useCallback(() => sheetRef.current?.expand(), []);
 
   const activeBookings = bookings?.filter(b => ['pending', 'confirmed', 'in_progress'].includes(b.status)) ?? [];
   const completedCount = bookings?.filter(b => b.status === 'completed').length ?? 0;
-
   const isFirstTime = !isLoading && activeBookings.length === 0 && completedCount === 0;
 
-  const handleNavigateBookingWizard = useCallback(() => navigation.navigate('BookingWizard'), [navigation]);
-  const handleNavigateChatList = useCallback(() => navigation.navigate('ChatList' as any), [navigation]);
-  const handleNavigateLoyalty = useCallback(() => navigation.navigate('Loyalty' as any), [navigation]);
-  const handleNavigateAiQuote = useCallback(() => navigation.navigate('AiQuote' as any), [navigation]);
+  /**
+   * Une mission démarrée est suivie en direct : c'est elle qui devient l'élément focal, comme la
+   * carte l'est pour le prestataire. À défaut, la prochaine réservation prend sa place.
+   */
+  const liveBooking = activeBookings.find(b => b.status === 'in_progress');
+  const focus = liveBooking ?? activeBookings[0];
 
   return (
-    <Screen scroll>
-      {/* Hero */}
+    <Screen testID="home-screen">
       <View style={styles.hero}>
         <View style={styles.heroLeft}>
-          <Text style={[styles.greeting, { color: themeColors.text }]}>Bonjour{user?.name ? `, ${user.name.split(' ')[0]}` : ''} 👋</Text>
+          <Text style={[styles.greeting, { color: themeColors.text }]}>
+            Bonjour{user?.name ? `, ${user.name.split(' ')[0]}` : ''}
+          </Text>
           <Text style={[styles.role, { color: themeColors.textMuted }]}>{user?.email}</Text>
         </View>
         <Avatar name={user?.name ?? '?'} size={48} accessibilityLabel={user?.name ?? 'Profil'} />
       </View>
 
-      {/* KPIs or Welcome card */}
-      {isLoading ? (
-        <View style={styles.kpiRow}>
-          <Skeleton width="48%" height={80} />
-          <Skeleton width="48%" height={80} />
-        </View>
-      ) : isFirstTime ? (
-        <View style={[styles.welcomeCard, { backgroundColor: themeColors.card }]}>
-          <View style={styles.welcomeIcon}><Icon name="home-outline" size={48} color={colors.brand[400]} /></View>
-          <Text style={[styles.welcomeTitle, { color: themeColors.text }]}>Bienvenue sur CleanUx</Text>
-          <Text style={[styles.welcomeText, { color: themeColors.textSecondary }]}>Réservez votre premier service et découvrez une nouvelle façon de gérer votre maison.</Text>
-          <Button label="Réserver mon premier service" onPress={() => navigation.navigate('BookingWizard')} fullWidth size="lg" />
-        </View>
-      ) : (
-        <View style={styles.kpiRow}>
-          <KPICard title="En cours" value={activeBookings.length} tone={activeBookings.length > 0 ? 'success' : 'neutral'} />
-          <KPICard title="Terminées" value={completedCount} />
-        </View>
-      )}
-
-      {/* CTA */}
-      {!isFirstTime && (
-        <Button label="Réserver un service" onPress={() => navigation.navigate('BookingWizard')} size="lg" fullWidth />
-      )}
-
-      {/* Quick actions */}
-      <Text style={[styles.sectionTitle, { color: themeColors.textSecondary }]} accessibilityRole="header">Accès rapide</Text>
-      <View style={styles.quickActions}>
-        {QUICK_ACTIONS.map(item => (
+      <View style={styles.focusWrap}>
+        {isLoading ? (
+          <Skeleton width="100%" height={180} />
+        ) : isFirstTime ? (
+          <View style={[styles.welcomeCard, { backgroundColor: themeColors.card }]} testID="home-welcome">
+            <Icon name="home-outline" size={48} color={colors.brand[400]} />
+            <Text style={[styles.welcomeTitle, { color: themeColors.text }]}>Bienvenue sur brio</Text>
+            <Text style={[styles.welcomeText, { color: themeColors.textSecondary }]}>
+              Réservez votre premier service et découvrez une nouvelle façon de gérer votre maison.
+            </Text>
+          </View>
+        ) : focus ? (
           <TouchableOpacity
-            key={item.label}
-            style={[styles.quickCard, { backgroundColor: themeColors.card }]}
-            onPress={() => (navigation as any).navigate(item.screen)}
-            accessibilityLabel={item.label}
+            style={[styles.focusCard, { backgroundColor: themeColors.card }]}
+            onPress={() =>
+              liveBooking
+                ? navigation.navigate('MissionTracking', { bookingId: focus.id })
+                : navigation.navigate('BookingDetail', { bookingId: focus.id })
+            }
             accessibilityRole="button"
+            accessibilityLabel={`${focus.service_name} — ${liveBooking ? 'suivre en direct' : 'voir le détail'}`}
+            testID="home-focus-booking"
           >
-            <Icon name={item.icon} size={24} color={colors.brand[500]} />
-            <Text style={styles.quickLabel}>{item.label}</Text>
+            <View style={styles.focusHeader}>
+              <Text style={[styles.focusService, { color: themeColors.text }]}>{focus.service_name}</Text>
+              <Badge label={focus.status} variant={liveBooking ? 'success' : 'brand'} />
+            </View>
+            <Text style={[styles.focusDate, { color: themeColors.textSecondary }]}>
+              {focus.scheduled_date} à {focus.scheduled_time}
+            </Text>
+            <Text style={[styles.focusAddress, { color: themeColors.textMuted }]}>
+              {focus.address}, {focus.city}
+            </Text>
+
+            {/* Le suivi en direct est la seule chose qui compte pendant une mission : on le dit
+                explicitement plutôt que de compter sur l'utilisateur pour tenter le tap. */}
+            <View style={styles.focusCta}>
+              <Icon
+                name={liveBooking ? 'navigate-outline' : 'chevron-forward'}
+                size={18}
+                color={colors.brand[600]}
+              />
+              <Text style={styles.focusCtaText}>
+                {liveBooking ? 'Suivre en direct' : 'Voir le détail'}
+              </Text>
+            </View>
           </TouchableOpacity>
-        ))}
+        ) : (
+          <View style={[styles.welcomeCard, { backgroundColor: themeColors.card }]} testID="home-no-active">
+            <Icon name="calendar-outline" size={40} color={colors.brand[400]} />
+            <Text style={[styles.welcomeText, { color: themeColors.textSecondary }]}>
+              Aucune réservation en cours.
+            </Text>
+          </View>
+        )}
+
+        {activeBookings.length > 1 ? (
+          <Text style={[styles.moreLabel, { color: themeColors.textMuted }]}>
+            {activeBookings.length - 1} autre{activeBookings.length > 2 ? 's' : ''} réservation
+            {activeBookings.length > 2 ? 's' : ''} en cours
+          </Text>
+        ) : null}
       </View>
 
-      {/* Active bookings preview */}
-      {activeBookings.length > 0 && (
-        <>
-          <Text style={[styles.sectionTitle, { color: themeColors.textSecondary }]} accessibilityRole="header">Réservations actives</Text>
-          {activeBookings.slice(0, 3).map(b => (
-            <TouchableOpacity key={b.id} style={[styles.bookingCard, { backgroundColor: themeColors.card }]} onPress={() => (navigation as any).navigate('BookingDetail', { bookingId: b.id })}>
-              <View style={styles.bookingHeader}>
-                <Text style={[styles.bookingService, { color: themeColors.text }]}>{b.service_name}</Text>
-                <Badge label={b.status} variant={b.status === 'in_progress' ? 'success' : 'brand'} />
-              </View>
-              <Text style={[styles.bookingDate, { color: themeColors.textSecondary }]}>{b.scheduled_date} à {b.scheduled_time}</Text>
-              <Text style={[styles.bookingAddress, { color: themeColors.textMuted }]}>{b.address}, {b.city}</Text>
-            </TouchableOpacity>
-          ))}
-        </>
-      )}
+      {/* Commandes en surimpression, comme la pastille de présence et le bouton d'actions du
+          tableau de bord prestataire : l'action principale reste atteignable au pouce, quel que
+          soit le contenu affiché au-dessus. */}
+      <View style={styles.floating} pointerEvents="box-none">
+        <Button
+          label="Réserver un service"
+          onPress={() => navigation.navigate('BookingWizard')}
+          fullWidth
+          size="lg"
+        />
+        <Button label="Actions" onPress={openSheet} variant="secondary" fullWidth />
+      </View>
+
+      <HomeActionsSheet ref={sheetRef} />
     </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  hero: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: spacing.md, marginBottom: spacing.lg },
+  hero: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginTop: spacing.md,
+    marginBottom: spacing.lg,
+  },
   heroLeft: { flex: 1 },
   greeting: { fontSize: typography.fontSize['2xl'], fontWeight: typography.fontWeight.bold },
   role: { fontSize: typography.fontSize.sm, marginTop: 2 },
-  kpiRow: { flexDirection: 'row', gap: spacing.sm, marginBottom: spacing.lg },
-  welcomeCard: { borderRadius: radius.md, padding: spacing.lg, ...shadows.soft, marginBottom: spacing.lg, alignItems: 'center', gap: spacing.sm },
-  welcomeIcon: { marginBottom: spacing.xs },
+  focusWrap: { flex: 1, gap: spacing.sm },
+  focusCard: {
+    borderRadius: radius.md,
+    padding: spacing.lg,
+    gap: spacing.xs,
+    ...shadows.soft,
+  },
+  focusHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  focusService: { fontSize: typography.fontSize.lg, fontWeight: typography.fontWeight.semibold, flex: 1 },
+  focusDate: { fontSize: typography.fontSize.sm, marginTop: spacing.xs },
+  focusAddress: { fontSize: typography.fontSize.xs },
+  focusCta: { flexDirection: 'row', alignItems: 'center', gap: spacing.xs, marginTop: spacing.sm },
+  focusCtaText: {
+    fontSize: typography.fontSize.sm,
+    fontWeight: typography.fontWeight.semibold,
+    color: colors.brand[600],
+  },
+  moreLabel: { fontSize: typography.fontSize.xs, textAlign: 'center' },
+  welcomeCard: {
+    borderRadius: radius.md,
+    padding: spacing.lg,
+    ...shadows.soft,
+    alignItems: 'center',
+    gap: spacing.sm,
+  },
   welcomeTitle: { fontSize: typography.fontSize.xl, fontWeight: typography.fontWeight.bold, textAlign: 'center' },
-  welcomeText: { fontSize: typography.fontSize.sm, textAlign: 'center', lineHeight: 20, marginBottom: spacing.sm },
-  sectionTitle: { fontSize: typography.fontSize.lg, fontWeight: typography.fontWeight.semibold, marginTop: spacing.xl, marginBottom: spacing.sm },
-  quickActions: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },
-  quickCard: { width: '48%', borderRadius: radius.md, padding: spacing.md, ...shadows.xs, alignItems: 'center', gap: spacing.xs },
-  quickLabel: { fontSize: typography.fontSize.sm, fontWeight: typography.fontWeight.medium, color: colors.brand[600] },
-  bookingCard: { borderRadius: radius.md, padding: spacing.md, ...shadows.xs, marginBottom: spacing.sm },
-  bookingHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  bookingService: { fontSize: typography.fontSize.base, fontWeight: typography.fontWeight.semibold },
-  bookingDate: { fontSize: typography.fontSize.sm, marginTop: spacing.xs },
-  bookingAddress: { fontSize: typography.fontSize.xs, marginTop: 2 },
+  welcomeText: { fontSize: typography.fontSize.sm, textAlign: 'center', lineHeight: 20 },
+  floating: { position: 'absolute', left: spacing.md, right: spacing.md, bottom: spacing.lg, gap: spacing.sm },
 });
