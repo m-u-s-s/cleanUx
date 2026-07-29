@@ -6,7 +6,7 @@ describe('loadMapModule', () => {
   beforeEach(() => jest.resetModules());
 
   it('renvoie les composants de carte quand le module est disponible', () => {
-    const { loadMapModule } = require('@/maps/module');
+    const { loadMapModule } = require('@/ui/mapModule');
     const mod = loadMapModule();
 
     expect(mod).not.toBeNull();
@@ -20,7 +20,7 @@ describe('loadMapModule', () => {
       throw new Error('native module react-native-maps is not available');
     });
 
-    const { loadMapModule } = require('@/maps/module');
+    const { loadMapModule } = require('@/ui/mapModule');
     expect(loadMapModule()).toBeNull();
   });
 });

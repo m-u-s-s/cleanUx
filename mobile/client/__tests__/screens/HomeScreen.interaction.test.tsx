@@ -67,7 +67,9 @@ jest.mock('@/booking', () => ({
 }));
 
 jest.mock('@/theme', () => ({
-  colors: { brand: { 400: '#60a5fa', 500: '#3b82f6', 600: '#2563eb' }, surface: { 900: '#0f172a' } },
+  colors: {
+    // La carte de mission emploie cette palette : sans elle, la suite ne se charge pas.
+    mode: { tool: { ink: '#0f172a', muted: '#64748b' } }, brand: { 400: '#60a5fa', 500: '#3b82f6', 600: '#2563eb' }, surface: { 900: '#0f172a' } },
   spacing: { xs: 4, sm: 8, md: 16, lg: 24, xl: 32 },
   typography: { fontSize: { xs: 12, sm: 14, base: 16, lg: 18, xl: 20, '2xl': 24 }, fontWeight: { medium: '500', semibold: '600', bold: '700' } },
   radius: { md: 12 },

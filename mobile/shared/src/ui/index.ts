@@ -32,3 +32,7 @@ export {
   FormError,
   authStyles,
 } from './authShell';
+export { loadMapModule, isMapRenderable } from './mapModule';
+export { OsmMap } from './OsmMap';
+export type { OsmMarker } from './OsmMap';
+export type { MapModule } from './mapModule';

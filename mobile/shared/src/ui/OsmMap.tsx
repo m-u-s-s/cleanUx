@@ -1,6 +1,6 @@
 import React, { useCallback, useMemo } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import { colors, spacing, typography } from '@/theme';
+import { colors, spacing, typography } from '../theme';
 
 /**
  * Carte OpenStreetMap rendue dans une WebView, via Leaflet.

@@ -7,6 +7,7 @@ import { Screen, Button, Avatar, Badge, Skeleton, Icon } from '@/ui';
 import { useAuth } from '@/auth';
 import { useBookings } from '@/booking';
 import { HomeActionsSheet } from '@/screens/components/HomeActionsSheet';
+import { HomeMissionMap } from '@/screens/components/HomeMissionMap';
 import { colors, spacing, typography, radius, shadows, useThemeColors } from '@/theme';
 import type { RootStackParamList } from '@/navigation/types';
 
@@ -90,6 +91,10 @@ export function HomeScreen() {
             <Text style={[styles.focusAddress, { color: themeColors.textMuted }]}>
               {focus.address}, {focus.city}
             </Text>
+
+            {/* La carte n'apparaît que pendant une mission démarrée : c'est le seul moment où
+                il y a quelque chose à situer, et le seul où un client la regarde. */}
+            {liveBooking ? <HomeMissionMap bookingId={liveBooking.id} /> : null}
 
             {/* Le suivi en direct est la seule chose qui compte pendant une mission : on le dit
                 explicitement plutôt que de compter sur l'utilisateur pour tenter le tap. */}

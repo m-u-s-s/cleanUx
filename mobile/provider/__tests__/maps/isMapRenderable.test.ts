@@ -10,7 +10,7 @@
  */
 import { Platform } from 'react-native';
 import Constants from 'expo-constants';
-import { isMapRenderable } from '../../src/maps/module';
+import { isMapRenderable } from '../../../shared/src/ui/mapModule';
 
 jest.mock('expo-constants', () => ({ __esModule: true, default: { expoConfig: {} } }));
 
