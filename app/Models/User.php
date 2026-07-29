@@ -107,6 +107,12 @@ class User extends Authenticatable implements HasLocalePreference, MustVerifyEma
         // Onboarding / provider
         'stripe_connect_status',
         'stripe_connect_account_id',
+        // Écrits par StripeConnectService::syncAccountStatus(). Sans être assignables en masse,
+        // ils étaient rejetés en silence par update() : la synchronisation semblait réussir et
+        // ne persistait que le statut.
+        'stripe_connect_onboarded_at',
+        'stripe_connect_charges_enabled_at',
+        'stripe_connect_payouts_enabled_at',
 
         // UI preferences
         'theme_preference',
@@ -124,6 +130,9 @@ class User extends Authenticatable implements HasLocalePreference, MustVerifyEma
         'phone_verified_at' => 'datetime',
         'password' => 'hashed',
         'two_factor_confirmed_at' => 'datetime',
+        'stripe_connect_onboarded_at' => 'datetime',
+        'stripe_connect_charges_enabled_at' => 'datetime',
+        'stripe_connect_payouts_enabled_at' => 'datetime',
         'is_active' => 'boolean',
         'metadata' => 'array',
         'permissions' => 'array',
