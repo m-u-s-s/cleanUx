@@ -1,13 +1,17 @@
 /**
- * Le parcours de vérification garde l'entrée de l'application.
+ * Le cockpit de vérification garde l'entrée de l'application.
  *
  * Sans cette garde, un compte tout juste créé atterrissait sur le tableau de bord où chaque appel
  * échouait en 403 — le middleware provider.approved le bloque tant qu'il n'est pas approuvé —
  * sans qu'on lui dise jamais quoi faire.
  *
- * Deux garanties testées ici :
- *  - dossier incomplet → le parcours, et RIEN d'autre ;
- *  - une erreur de chargement ne doit pas enfermer l'utilisateur hors de son app.
+ * L'écran présentait UNE étape à la fois, la première non terminée, dans un ordre imposé : un
+ * prestataire bloqué sur une pièce manquante ne pouvait rien faire avancer d'autre. Chaque
+ * vérification est maintenant une carte, ouvrable dans l'ordre voulu — sauf dépendance réelle du
+ * moteur, qui verrouille en disant pourquoi.
+ *
+ * Ce qui est vérifié ici : l'ordre libre, le verrouillage motivé, l'état d'une pièce refusée, et
+ * le fait qu'une erreur de chargement n'enferme pas l'utilisateur hors de son app.
  */
 import React from 'react';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react-native';
@@ -48,8 +52,9 @@ jest.mock('@/ui', () => {
 jest.mock('@/theme', () => ({
   colors: {
     brand: { 50: '#eef2ff', 500: '#6366f1', 600: '#4f46e5' },
-    success: { 600: '#059669' },
-    surface: { 200: '#e5e5e5', 300: '#d4d4d4', 400: '#a3a3a3', 500: '#737373', 600: '#525252', 700: '#404040' },
+    success: { 50: '#ecfdf5', 600: '#059669', 700: '#047857' },
+    warning: { 50: '#fffbeb', 700: '#b45309' },
+    surface: { 100: '#f5f5f5', 200: '#e5e5e5', 300: '#d4d4d4', 400: '#a3a3a3', 500: '#737373', 600: '#525252', 700: '#404040' },
     danger: { 50: '#fef2f2', 500: '#ef4444', 600: '#dc2626', 700: '#b91c1c' },
     mode: { tool: { ink: '#0f172a', muted: '#64748b' } },
   },
@@ -65,6 +70,15 @@ import { apiClient } from '@/api';
 import { ProviderOnboardingScreen } from '@/screens/onboarding/ProviderOnboardingScreen';
 
 const apiMock = new MockAdapter(apiClient);
+
+/** Les dépendances réelles du parcours seedé : voir ProviderOnboardingJourneySeeder. */
+const DEPENDS_ON: Record<string, string[]> = {
+  profile_complete: [],
+  contract_sign: ['profile_complete'],
+  kyc_check: ['profile_complete'],
+  document_upload: ['kyc_check'],
+  skill_declare: ['profile_complete'],
+};
 
 /** Réponse de /v2/onboarding/me : `done` liste les étapes déjà terminées. */
 function progress(done: string[] = []) {
@@ -82,10 +96,15 @@ function progress(done: string[] = []) {
       step_type: code,
       required: true,
       is_skippable: false,
+      depends_on: DEPENDS_ON[code],
       completion_status: done.includes(code) ? 'completed' : 'pending',
       completed_at: null,
     })),
   };
+}
+
+function serveDocuments(requirements: unknown[] = []) {
+  apiMock.onGet('/provider/onboarding/documents').reply(200, { ok: true, requirements, documents: [] });
 }
 
 function renderScreen() {
@@ -99,28 +118,104 @@ function renderScreen() {
   );
 }
 
-beforeEach(() => apiMock.reset());
+beforeEach(() => {
+  apiMock.reset();
+  serveDocuments();
+});
 
-describe('Parcours de vérification prestataire', () => {
-  it('présente la première étape non terminée', async () => {
+describe('Cockpit de vérification prestataire', () => {
+  it('présente toutes les vérifications, pas seulement la première', async () => {
     apiMock.onGet('/v2/onboarding/me').reply(200, progress());
 
     renderScreen();
+
+    await waitFor(() => expect(screen.getByTestId('onboarding-step-profile_complete')).toBeTruthy());
+    expect(screen.getByTestId('onboarding-step-skill_declare')).toBeTruthy();
+    // Les cartes sont fermées : le formulaire n'apparaît qu'à l'ouverture.
+    expect(screen.queryByText('Vos coordonnées')).toBeNull();
+  });
+
+  it("ouvre le formulaire de la carte touchée", async () => {
+    apiMock.onGet('/v2/onboarding/me').reply(200, progress());
+
+    renderScreen();
+    await waitFor(() => screen.getByTestId('onboarding-card-profile_complete'));
+
+    fireEvent.press(screen.getByTestId('onboarding-card-profile_complete'));
 
     await waitFor(() => expect(screen.getByText('Vos coordonnées')).toBeTruthy());
   });
 
   /**
-   * L'ordre compte : une étape validée hors application — l'identité, décidée par un service
-   * tiers — doit faire avancer l'écran, sans que l'utilisateur refasse ce qui est déjà fait.
+   * Le point de la refonte : plus d'ordre imposé. Les métiers ne dépendent que du profil, on
+   * doit donc pouvoir les déclarer sans avoir signé le contrat.
    */
-  it('avance à l’étape suivante quand les précédentes sont terminées', async () => {
+  it('laisse ouvrir une carte plus loin dans le parcours', async () => {
     apiMock.onGet('/v2/onboarding/me').reply(200, progress(['profile_complete']));
 
     renderScreen();
+    await waitFor(() => screen.getByTestId('onboarding-card-skill_declare'));
 
-    await waitFor(() => expect(screen.getByText('Contrat prestataire')).toBeTruthy());
+    fireEvent.press(screen.getByTestId('onboarding-card-skill_declare'));
+
+    await waitFor(() => expect(screen.getByText('Vos métiers')).toBeTruthy());
+  });
+
+  /** Une dépendance non satisfaite verrouille, et dit laquelle. */
+  it('verrouille une carte dont la dépendance manque, en expliquant pourquoi', async () => {
+    apiMock.onGet('/v2/onboarding/me').reply(200, progress());
+
+    renderScreen();
+    await waitFor(() => screen.getByTestId('onboarding-card-document_upload'));
+
+    // document_upload dépend de kyc_check, non terminé.
+    expect(screen.getByText(/Terminez d'abord : kyc_check/)).toBeTruthy();
+
+    fireEvent.press(screen.getByTestId('onboarding-card-document_upload'));
+    // La carte ne s'ouvre pas : elle mènerait à un formulaire voué à un 422.
+    expect(screen.queryByText('Vos justificatifs')).toBeNull();
+  });
+
+  it('marque comme vérifiée une étape terminée et ne la rouvre pas', async () => {
+    apiMock.onGet('/v2/onboarding/me').reply(200, progress(['profile_complete']));
+
+    renderScreen();
+    await waitFor(() => screen.getByTestId('onboarding-card-profile_complete'));
+
+    fireEvent.press(screen.getByTestId('onboarding-card-profile_complete'));
+
     expect(screen.queryByText('Vos coordonnées')).toBeNull();
+    expect(screen.getAllByText('Vérifié').length).toBeGreaterThan(0);
+  });
+
+  /**
+   * Le parcours seul ne connaît que « déposé » : une pièce refusée y passerait pour en règle.
+   * C'est l'état du document qui fait foi, avec son motif — sans quoi la même pièce est
+   * redéposée puis refusée une seconde fois.
+   */
+  it('signale une pièce refusée avec son motif', async () => {
+    apiMock.onGet('/v2/onboarding/me').reply(200, progress(['profile_complete', 'kyc_check']));
+    serveDocuments([
+      {
+        type: 'identity_card',
+        label: "Pièce d'identité",
+        help: '',
+        required: true,
+        accepts: ['identity_card'],
+        document: {
+          id: 1,
+          type: 'identity_card',
+          status: 'rejected',
+          file_name: 'piece.jpg',
+          rejection_reason: 'Document illisible.',
+        },
+      },
+    ]);
+
+    renderScreen();
+
+    await waitFor(() => expect(screen.getByText('À corriger')).toBeTruthy());
+    expect(screen.getByTestId('onboarding-rejection-reason')).toBeTruthy();
   });
 
   it('annonce le dossier complet quand toutes les étapes sont terminées', async () => {
@@ -146,31 +241,31 @@ describe('Parcours de vérification prestataire', () => {
     });
 
     renderScreen();
-    await waitFor(() => screen.getByTestId('onboarding-accept-contract'));
+    await waitFor(() => screen.getByTestId('onboarding-card-contract_sign'));
+    fireEvent.press(screen.getByTestId('onboarding-card-contract_sign'));
 
+    await waitFor(() => screen.getByTestId('onboarding-accept-contract'));
     fireEvent.press(screen.getByTestId('onboarding-accept-contract'));
     fireEvent.press(screen.getByLabelText('Signer et continuer'));
 
-    await waitFor(() => {
-      expect(screen.getByText(/version requise/i)).toBeTruthy();
-    });
+    await waitFor(() => expect(screen.getByText(/version requise/i)).toBeTruthy());
   });
 
   it("n'appelle pas le serveur tant que le contrat n'est pas accepté", async () => {
     apiMock.onGet('/v2/onboarding/me').reply(200, progress(['profile_complete']));
 
     renderScreen();
-    await waitFor(() => screen.getByLabelText('Signer et continuer'));
+    await waitFor(() => screen.getByTestId('onboarding-card-contract_sign'));
+    fireEvent.press(screen.getByTestId('onboarding-card-contract_sign'));
 
+    await waitFor(() => screen.getByLabelText('Signer et continuer'));
     fireEvent.press(screen.getByLabelText('Signer et continuer'));
 
     await waitFor(() => expect(screen.getByText(/devez accepter le contrat/i)).toBeTruthy());
     expect(apiMock.history['post']!.filter(c => c.url?.includes('/complete'))).toHaveLength(0);
   });
 
-  /**
-   * Une panne de chargement ne doit pas laisser un écran vide sans issue.
-   */
+  /** Une panne de chargement ne doit pas laisser un écran vide sans issue. */
   it('propose de réessayer quand la progression ne se charge pas', async () => {
     apiMock.onGet('/v2/onboarding/me').reply(500);
 

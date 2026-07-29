@@ -184,6 +184,10 @@ Route::middleware(['auth:sanctum', 'role:employe', 'provider.approved'])->group(
         Route::post('/start', [ProviderOnboardingController::class, 'start']);
         Route::get('/progress', [ProviderOnboardingController::class, 'progress']);
         Route::post('/profile', [ProviderOnboardingController::class, 'setProfile']);
+        // Justificatifs exigés de CE prestataire, chacun avec son état. Rien ne permettait de
+        // relire ses propres documents : ni « en cours de vérification » ni « refusé + motif »
+        // n'étaient affichables, alors que c'est ce qui permet de corriger un dossier.
+        Route::get('/documents', [ProviderOnboardingController::class, 'documents']);
         Route::post('/documents', [ProviderOnboardingController::class, 'uploadDocument']);
         Route::post('/tax', [ProviderOnboardingController::class, 'setTax']);
         Route::post('/skills', [ProviderOnboardingController::class, 'setSkills']);

@@ -4,7 +4,6 @@ namespace Database\Seeders;
 
 use App\Models\OnboardingJourney;
 use App\Models\OnboardingStep;
-use App\Models\ProviderOnboardingDocument;
 use App\Services\OnboardingV2\Validators\ContractSignValidator;
 use App\Services\OnboardingV2\Validators\DocumentUploadValidator;
 use App\Services\OnboardingV2\Validators\KycCheckValidator;
@@ -119,10 +118,11 @@ class ProviderOnboardingJourneySeeder extends Seeder
                 'is_skippable' => false,
                 'validator_class' => DocumentUploadValidator::class,
                 'depends_on' => ['kyc_check'],
-                // Sans `document_types`, le validateur passe SANS rien exiger. La pièce
-                // d'identité est le seul justificatif universel ; l'assurance et les diplômes
-                // dépendent du métier et se demandent à la revue admin.
-                'metadata' => ['document_types' => [ProviderOnboardingDocument::TYPE_IDENTITY_CARD]],
+                // Pas de `document_types` ici : la liste se dérive des métiers déclarés
+                // (ProviderDocumentRequirements). Elle était figée sur la seule pièce d'identité,
+                // si bien qu'un électricien n'était jamais invité à déposer sa certification ni un
+                // peintre son assurance — que la validation finale du dossier exige pourtant.
+                'metadata' => [],
             ],
             [
                 'code' => 'skill_declare',

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\Provider;
 
 use App\Http\Controllers\Controller;
 use App\Models\ProviderOnboardingDocument;
+use App\Services\Onboarding\ProviderDocumentRequirements;
 use App\Services\Onboarding\ProviderOnboardingService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -30,6 +31,7 @@ class ProviderOnboardingController extends Controller
 {
     public function __construct(
         protected ProviderOnboardingService $onboarding,
+        protected ProviderDocumentRequirements $requirements,
     ) {}
 
     public function start(Request $request): JsonResponse
@@ -72,6 +74,63 @@ class ProviderOnboardingController extends Controller
             'current_step' => $profile->onboarding_step,
             'photo_path' => $profile->photo_path,
         ]);
+    }
+
+    /**
+     * Justificatifs attendus de ce prestataire, et où en est chacun.
+     *
+     * Rien ne permettait de lire ses propres documents : l'application ne pouvait donc afficher
+     * ni « en cours de vérification », ni « refusé » avec son motif — la mécanique même qui
+     * permet de corriger un dossier sans attendre un email. Chaque exigence porte ici son
+     * document courant, s'il existe.
+     */
+    public function documents(Request $request): JsonResponse
+    {
+        $user = $request->user();
+
+        $documents = ProviderOnboardingDocument::query()
+            ->forUser($user->id)
+            ->latest('id')
+            ->get();
+
+        // Le plus récent par type : `uploadDocument` archive les précédents en `rejected`
+        // (« Remplacé par une nouvelle version »), qui ne doivent pas s'afficher comme des refus.
+        $latestByType = $documents->unique('document_type');
+
+        $requirements = collect($this->requirements->for($user))
+            ->map(function (array $requirement) use ($latestByType): array {
+                $document = $latestByType->first(
+                    fn (ProviderOnboardingDocument $doc): bool => in_array($doc->document_type, $requirement['accepts'], true),
+                );
+
+                return [
+                    ...$requirement,
+                    'document' => $document ? $this->serializeDocument($document) : null,
+                ];
+            })
+            ->all();
+
+        return response()->json([
+            'ok' => true,
+            'requirements' => $requirements,
+            'documents' => $latestByType->map(fn ($doc) => $this->serializeDocument($doc))->values(),
+        ]);
+    }
+
+    /** @return array<string, mixed> */
+    private function serializeDocument(ProviderOnboardingDocument $document): array
+    {
+        return [
+            'id' => $document->id,
+            'type' => $document->document_type,
+            'status' => $document->status,
+            'file_name' => $document->file_name,
+            // Le motif est ce qui rend un refus actionnable : sans lui, le prestataire redépose
+            // la même pièce et se fait refuser une seconde fois.
+            'rejection_reason' => $document->rejection_reason,
+            'uploaded_at' => $document->created_at?->toIso8601String(),
+            'reviewed_at' => $document->reviewed_at?->toIso8601String(),
+        ];
     }
 
     public function uploadDocument(Request $request): JsonResponse

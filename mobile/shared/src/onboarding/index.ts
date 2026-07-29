@@ -20,6 +20,56 @@ export interface OnboardingStep {
   /** null tant que rien n'a été tenté, puis 'pending' | 'completed' | 'skipped'. */
   completion_status: string | null;
   completed_at: string | null;
+  /**
+   * Codes des étapes qui doivent être terminées avant celle-ci. Le serveur le renvoyait déjà ;
+   * le cockpit s'en sert pour verrouiller une carte plutôt que de laisser l'utilisateur
+   * l'ouvrir et se heurter à un 422.
+   */
+  depends_on?: string[] | null;
+}
+
+/** Statut d'une pièce justificative, tel que le prestataire doit le lire. */
+export interface OnboardingDocument {
+  id: number;
+  type: string;
+  status: 'pending_review' | 'approved' | 'rejected' | string;
+  file_name: string | null;
+  /** Renseigné sur un refus : sans lui, la même pièce est redéposée puis refusée à nouveau. */
+  rejection_reason: string | null;
+  uploaded_at: string | null;
+  reviewed_at: string | null;
+}
+
+/** Une exigence documentaire et, le cas échéant, la pièce déjà déposée pour la satisfaire. */
+export interface DocumentRequirement {
+  type: string;
+  label: string;
+  help: string;
+  required: boolean;
+  /** Types acceptés : la pièce d'identité vaut carte, passeport ou titre de séjour. */
+  accepts: string[];
+  document: OnboardingDocument | null;
+}
+
+export const ONBOARDING_DOCUMENTS_QUERY_KEY = ['onboarding', 'documents'] as const;
+
+/**
+ * Justificatifs attendus de CE prestataire, chacun avec son état.
+ *
+ * La liste dépend de ses métiers — un électricien fournit sa certification, un peintre son
+ * assurance — et c'est le serveur qui la dérive : l'application ne décide pas de ce qui est exigé.
+ */
+export function useOnboardingDocuments(enabled: boolean = true) {
+  return useQuery<{ requirements: DocumentRequirement[]; documents: OnboardingDocument[] }>({
+    queryKey: ONBOARDING_DOCUMENTS_QUERY_KEY,
+    queryFn: async () => {
+      const { data } = await apiClient.get('/provider/onboarding/documents');
+
+      return { requirements: data.requirements ?? [], documents: data.documents ?? [] };
+    },
+    enabled,
+    staleTime: 0,
+  });
 }
 
 export interface OnboardingProgress {

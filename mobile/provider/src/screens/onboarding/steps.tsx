@@ -4,6 +4,7 @@ import { useMutation } from '@tanstack/react-query';
 import { Button, TextInput, Icon } from '@/ui';
 import { apiClient } from '@/api';
 import { useTrades } from '@/trades';
+import { useOnboardingDocuments, type DocumentRequirement } from '@/onboarding';
 import { pickDocument, pickImage, rejectionReason, type PickedFile } from './documentPicker';
 import { colors, radius, spacing, typography } from '@/theme';
 
@@ -191,11 +192,27 @@ export function KycStep({ onDone, submitting, error }: StepProps) {
  * cas courant, le fichier couvre les PDF. Le format et la taille sont refusés ici quand le
  * serveur les refuserait — inutile de faire remonter 40 Mo pour recevoir un 422.
  */
+/**
+ * Étape 4 — Justificatifs.
+ *
+ * Un seul type était accepté, écrit en dur : `identity_card`. Un électricien n'était donc jamais
+ * invité à déposer sa certification, ni un peintre son assurance — que la validation finale du
+ * dossier EXIGE pourtant. Le dossier pouvait ainsi être complet côté prestataire et impossible à
+ * approuver côté admin, sans que rien ne l'indique.
+ *
+ * La liste vient maintenant du serveur, dérivée des métiers déclarés, et chaque pièce porte son
+ * propre état : en attente de vérification, approuvée, ou refusée avec son motif — c'est ce qui
+ * permet de corriger un dossier sans attendre un email.
+ */
 export function DocumentsStep({ onDone, submitting, error }: StepProps) {
-  const [file, setFile] = useState<PickedFile | null>(null);
+  const { data, isLoading, refetch } = useOnboardingDocuments();
+  const [pending, setPending] = useState<Record<string, PickedFile>>({});
   const [localError, setLocalError] = useState<string | null>(null);
+  const [uploadingType, setUploadingType] = useState<string | null>(null);
 
-  const choose = async (pick: () => Promise<PickedFile | null>) => {
+  const requirements = data?.requirements ?? [];
+
+  const choose = async (type: string, pick: () => Promise<PickedFile | null>) => {
     setLocalError(null);
     try {
       const picked = await pick();
@@ -207,65 +224,150 @@ export function DocumentsStep({ onDone, submitting, error }: StepProps) {
 
         return;
       }
-      setFile(picked);
+      setPending(prev => ({ ...prev, [type]: picked }));
     } catch (e) {
       setLocalError(e instanceof Error ? e.message : 'Sélection impossible.');
     }
   };
 
   const upload = useMutation({
-    mutationFn: async () => {
+    mutationFn: async (type: string) => {
+      const file = pending[type]!;
       const body = new FormData();
-      body.append('document_type', 'identity_card');
+      body.append('document_type', type);
       // La forme { uri, name, type } est celle qu'attend FormData en React Native pour un
       // fichier local ; un Blob ne fonctionne pas ici.
-      body.append('file', { uri: file!.uri, name: file!.name, type: file!.mimeType } as never);
+      body.append('file', { uri: file.uri, name: file.name, type: file.mimeType } as never);
 
       return apiClient.post('/provider/onboarding/documents', body, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
     },
-    onSuccess: () => onDone(),
+    onMutate: (type: string) => setUploadingType(type),
+    onSettled: () => setUploadingType(null),
+    onSuccess: (_res, type) => {
+      setPending(prev => {
+        const next = { ...prev };
+        delete next[type];
+
+        return next;
+      });
+      void refetch();
+    },
     onError: () => setLocalError("L'envoi a échoué. Vérifiez votre connexion, puis réessayez."),
   });
 
+  /**
+   * Une pièce refusée doit être redéposée : elle ne compte pas comme fournie, sans quoi le
+   * prestataire croirait son dossier complet alors qu'il est bloqué à la revue.
+   */
+  const isSatisfied = (requirement: DocumentRequirement): boolean =>
+    requirement.document !== null && requirement.document.status !== 'rejected';
+
+  const missing = requirements.filter(r => r.required && !isSatisfied(r));
+
+  if (isLoading) {
+    return (
+      <StepShell title="Vos justificatifs">
+        <Text style={styles.stepHint}>Chargement des pièces demandées…</Text>
+      </StepShell>
+    );
+  }
+
   return (
     <StepShell
-      title="Pièce d'identité"
-      hint="Carte d'identité ou passeport, lisible et en cours de validité. PDF, JPG ou PNG, 10 Mo maximum."
+      title="Vos justificatifs"
+      hint="Les pièces demandées dépendent de vos métiers. PDF, JPG ou PNG, 10 Mo maximum."
     >
-      {file ? (
-        <View style={styles.filePicked} testID="onboarding-document-picked">
-          <Icon name="document-text-outline" size={20} color={colors.success[600]} />
-          <Text style={styles.fileName} numberOfLines={1}>{file.name}</Text>
-          <TouchableOpacity onPress={() => setFile(null)} accessibilityLabel="Retirer le fichier">
-            <Text style={styles.fileRemove}>Retirer</Text>
-          </TouchableOpacity>
-        </View>
-      ) : (
-        <View style={styles.pickRow}>
-          <Button
-            label="Prendre en photo"
-            onPress={() => choose(() => pickImage('camera'))}
-            variant="secondary"
-            fullWidth
-          />
-          <Button
-            label="Choisir un fichier"
-            onPress={() => choose(pickDocument)}
-            variant="secondary"
-            fullWidth
-          />
-        </View>
-      )}
+      {requirements.map(requirement => {
+        const picked = pending[requirement.type];
+        const document = requirement.document;
+        const rejected = document?.status === 'rejected';
+
+        return (
+          <View
+            key={requirement.type}
+            style={styles.documentRow}
+            testID={`onboarding-document-${requirement.type}`}
+          >
+            <View style={styles.documentHead}>
+              <Icon
+                name={
+                  isSatisfied(requirement)
+                    ? 'checkmark-circle'
+                    : rejected
+                      ? 'alert-circle-outline'
+                      : 'ellipse-outline'
+                }
+                size={18}
+                color={
+                  isSatisfied(requirement)
+                    ? colors.success[600]
+                    : rejected
+                      ? colors.danger[600]
+                      : colors.surface[400]
+                }
+              />
+              <Text style={styles.documentLabel}>{requirement.label}</Text>
+            </View>
+
+            {requirement.help ? <Text style={styles.documentHelp}>{requirement.help}</Text> : null}
+
+            {rejected && document?.rejection_reason ? (
+              <Text style={styles.documentRejected} testID={`document-rejected-${requirement.type}`}>
+                Refusé : {document.rejection_reason}
+              </Text>
+            ) : null}
+
+            {document && !rejected ? (
+              <Text style={styles.documentStatus}>
+                {document.status === 'approved' ? 'Vérifiée ✓' : 'En cours de vérification'}
+                {document.file_name ? ` — ${document.file_name}` : ''}
+              </Text>
+            ) : null}
+
+            {picked ? (
+              <View style={styles.filePicked}>
+                <Icon name="document-text-outline" size={18} color={colors.success[600]} />
+                <Text style={styles.fileName} numberOfLines={1}>{picked.name}</Text>
+                <Button
+                  label="Envoyer"
+                  onPress={() => upload.mutate(requirement.type)}
+                  variant="secondary"
+                  loading={uploadingType === requirement.type}
+                />
+              </View>
+            ) : !document || rejected ? (
+              <View style={styles.pickRow}>
+                <Button
+                  label="Prendre en photo"
+                  onPress={() => choose(requirement.type, () => pickImage('camera'))}
+                  variant="secondary"
+                  fullWidth
+                />
+                <Button
+                  label="Choisir un fichier"
+                  onPress={() => choose(requirement.type, pickDocument)}
+                  variant="secondary"
+                  fullWidth
+                />
+              </View>
+            ) : null}
+          </View>
+        );
+      })}
 
       <StepError error={localError ?? error} />
       <Button
-        label={file ? 'Envoyer et continuer' : 'Ajoutez votre pièce'}
-        onPress={() => (file ? upload.mutate() : setLocalError("Ajoutez votre pièce d'identité pour continuer."))}
+        label={missing.length === 0 ? 'Continuer' : `${missing.length} pièce(s) manquante(s)`}
+        onPress={() =>
+          missing.length === 0
+            ? onDone()
+            : setLocalError(`Déposez : ${missing.map(m => m.label).join(', ')}.`)
+        }
         fullWidth
         size="lg"
-        loading={upload.isPending || submitting}
+        loading={submitting}
       />
     </StepShell>
   );
@@ -368,6 +470,23 @@ const styles = StyleSheet.create({
   },
   errorText: { flex: 1, fontSize: typography.fontSize.sm, color: colors.danger[700] },
   pickRow: { gap: spacing.sm },
+  documentRow: {
+    gap: spacing.xs,
+    paddingVertical: spacing.md,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.surface[200],
+  },
+  documentHead: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
+  documentLabel: {
+    flex: 1,
+    fontSize: typography.fontSize.base,
+    fontWeight: typography.fontWeight.semibold,
+    color: colors.mode.tool.ink,
+  },
+  documentHelp: { fontSize: typography.fontSize.xs, color: colors.surface[600] },
+  documentStatus: { fontSize: typography.fontSize.xs, color: colors.surface[600] },
+  // danger[700] sur fond blanc : le motif de refus est ce qu'il faut lire en premier.
+  documentRejected: { fontSize: typography.fontSize.sm, color: colors.danger[700] },
   filePicked: {
     flexDirection: 'row',
     alignItems: 'center',
