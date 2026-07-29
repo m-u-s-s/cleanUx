@@ -7,6 +7,12 @@ interface RegisterInput {
   name: string; email: string; password: string; passwordConfirmation: string;
   phone?: string; locale?: string; acceptTerms: boolean; deviceName?: string;
   /**
+   * Jeton rendu par POST /api/auth/phone/verify-confirm, quand le téléphone a été vérifié par
+   * SMS avant la création du compte. C'est lui — et non un booléen envoyé d'ici — qui autorise
+   * le serveur à poser `phone_verified_at`. Usage unique, 30 minutes de validité.
+   */
+  phoneVerificationToken?: string;
+  /**
    * Quelle app inscrit. L'app cliente l'omet et obtient un compte client, comme avant.
    * L'app prestataire demande 'provider' : sans cela le serveur créait un compte client,
    * que le garde `role:employe` enfermait hors de TOUTE la surface prestataire — onboarding
@@ -44,6 +50,7 @@ export function useRegister() {
         name: input.name, email: input.email, password: input.password,
         password_confirmation: input.passwordConfirmation,
         phone: input.phone, locale: input.locale, accept_terms: input.acceptTerms,
+        phone_verification_token: input.phoneVerificationToken,
         account_type: input.accountType,
         provider_kind: input.providerKind,
         company_name: input.companyName,

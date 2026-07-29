@@ -1,12 +1,16 @@
 /**
  * Inscription prestataire : ce que la requête doit porter, et quand elle ne doit pas partir.
  *
- * Deux défauts corrigés ici, tous deux invisibles jusqu'en production :
+ * Le parcours est désormais un wizard — une question par écran — mais les invariants restent ceux
+ * du formulaire d'origine, tous nés de défauts observés :
  *  - la requête n'annonçait pas le type de compte, donc le serveur créait un CLIENT. Comme toute
  *    la surface prestataire est gardée par `role:employe` — routes d'onboarding comprises — le
  *    compte obtenu était définitivement enfermé hors de tout.
  *  - la requête ne portait aucun jeton captcha alors que /auth/register exige le middleware
  *    `turnstile`, ce qui refusait l'inscription en production.
+ *
+ * S'y ajoute ce que le wizard introduit : le téléphone vérifié par SMS avant tout le reste, et
+ * son jeton transmis à l'inscription.
  */
 import React from 'react';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react-native';
@@ -19,6 +23,17 @@ jest.mock('expo-secure-store', () => ({
   deleteItemAsync: jest.fn().mockResolvedValue(undefined),
 }));
 
+/** Brouillon local : mémoire volatile, remise à zéro entre les tests. */
+const memoryStore: Record<string, string> = {};
+jest.mock('@react-native-async-storage/async-storage', () => ({
+  __esModule: true,
+  default: {
+    getItem: jest.fn(async (k: string) => memoryStore[k] ?? null),
+    setItem: jest.fn(async (k: string, v: string) => { memoryStore[k] = v; }),
+    removeItem: jest.fn(async (k: string) => { delete memoryStore[k]; }),
+  },
+}));
+
 jest.mock('@react-native-community/netinfo', () => ({
   addEventListener: jest.fn(() => () => undefined),
   fetch: jest.fn().mockResolvedValue({ isConnected: true }),
@@ -29,7 +44,7 @@ jest.mock('@react-native-community/netinfo', () => ({
 }));
 
 jest.mock('@react-navigation/native', () => ({
-  useNavigation: () => ({ navigate: jest.fn() }),
+  useNavigation: () => ({ navigate: jest.fn(), goBack: jest.fn() }),
 }));
 
 jest.mock('@/auth', () => {
@@ -53,6 +68,7 @@ jest.mock('react-native-reanimated', () => {
     FadeIn: chainable,
     FadeOut: chainable,
     FadeInDown: chainable,
+    FadeInRight: chainable,
     Easing: { inOut: () => undefined, out: () => undefined, ease: undefined, cubic: undefined },
     useSharedValue: (v: any) => ({ value: v }),
     useAnimatedStyle: () => ({}),
@@ -85,6 +101,7 @@ jest.mock('@/ui', () => {
     )),
     Divider: () => <View />,
     Icon: () => <View />,
+    ProgressBar: ({ step, totalSteps }: any) => <Text>{`Étape ${step} sur ${totalSteps}`}</Text>,
     useReducedMotion: () => false,
     TurnstileWidget: ({ onToken, onSkipped, testID }: any) => {
       ReactLocal.useEffect(() => {
@@ -101,8 +118,9 @@ jest.mock('@/theme', () => ({
   colors: {
     brand: { 50: '#eef2ff', 500: '#6366f1', 600: '#4f46e5' },
     warning: { 50: '#fffbeb', 700: '#b45309' },
+    success: { 600: '#059669' },
     accent: { amber: '#ffb648', amberDeep: '#ff8a3d', cyan: '#4fe3d6', violet: '#8b7bff' },
-    surface: { 200: '#e5e5e5', 400: '#a3a3a3', 500: '#737373', 600: '#525252', 700: '#404040' },
+    surface: { 200: '#e5e5e5', 300: '#d4d4d4', 400: '#a3a3a3', 500: '#737373', 600: '#525252', 700: '#404040' },
     danger: { 50: '#fef2f2', 500: '#ef4444', 600: '#dc2626', 700: '#b91c1c' },
     mode: { tool: { ink: '#0f172a', muted: '#64748b' } },
   },
@@ -110,8 +128,8 @@ jest.mock('@/theme', () => ({
   shadows: { md: {} },
   spacing: { xs: 4, sm: 8, md: 16, lg: 24, xl: 32, '2xl': 40, '3xl': 48 },
   typography: {
-    fontSize: { xs: 12, sm: 14, base: 16, lg: 18, '4xl': 36 },
-    fontWeight: { medium: '500', semibold: '600', extraBold: '800' },
+    fontSize: { xs: 12, sm: 14, base: 16, lg: 18, xl: 20, '4xl': 36 },
+    fontWeight: { medium: '500', semibold: '600', bold: '700', extraBold: '800' },
   },
 }));
 
@@ -119,6 +137,9 @@ import { apiClient } from '@/api';
 import { LoginScreen } from '@/screens/LoginScreen';
 
 const apiMock = new MockAdapter(apiClient);
+const TRADE_ID = 3;
+const PHONE_NATIONAL = '0470123456';
+const PHONE_E164 = '+32470123456';
 
 function renderScreen() {
   const client = new QueryClient({
@@ -131,40 +152,80 @@ function renderScreen() {
   );
 }
 
-/** Champs communs aux deux types d'inscription, métier compris. */
-async function fillCommonFields() {
+function registerCalls() {
+  return apiMock.history['post']!.filter(c => c.url === '/auth/register');
+}
+
+/** Ouvre l'inscription et franchit la vérification du téléphone, premier écran du parcours. */
+async function openRegisterAndVerifyPhone() {
+  fireEvent.press(screen.getByText("Pas encore de compte ? S'inscrire"));
+
+  await waitFor(() => screen.getByLabelText('Téléphone'));
+  fireEvent.changeText(screen.getByLabelText('Téléphone'), PHONE_NATIONAL);
+  fireEvent.press(screen.getByLabelText('Recevoir le code'));
+
+  await waitFor(() => screen.getByLabelText('Code de vérification'));
+  fireEvent.changeText(screen.getByLabelText('Code de vérification'), '482915');
+  fireEvent.press(screen.getByLabelText('Vérifier'));
+
+  await waitFor(() => screen.getByLabelText('Prénom'));
+}
+
+/** Prénom, nom, email, mot de passe : les quatre écrans qui suivent l'OTP. */
+async function fillIdentity() {
+  fireEvent.changeText(screen.getByLabelText('Prénom'), 'Jean');
+  fireEvent.changeText(screen.getByLabelText('Nom'), 'Dupont');
+  fireEvent.press(screen.getByLabelText('Continuer'));
+
+  await waitFor(() => screen.getByLabelText('Email'));
+  fireEvent.changeText(screen.getByLabelText('Email'), 'jean@exemple.be');
+  fireEvent.press(screen.getByLabelText('Continuer'));
+
+  await waitFor(() => screen.getByLabelText('Mot de passe'));
+  fireEvent.changeText(screen.getByLabelText('Mot de passe'), 'motdepasse123');
+  fireEvent.press(screen.getByLabelText('Continuer'));
+
+  await waitFor(() => screen.getByTestId('register-kind-independent'));
+}
+
+async function chooseKind(kind: 'independent' | 'company') {
+  fireEvent.press(screen.getByTestId(`register-kind-${kind}`));
+  fireEvent.press(screen.getByLabelText('Continuer'));
+}
+
+async function chooseTrade() {
   await waitFor(() => screen.getByTestId(`register-trade-${TRADE_ID}`));
   fireEvent.press(screen.getByTestId(`register-trade-${TRADE_ID}`));
-  fireEvent.changeText(screen.getByLabelText('Nom complet'), 'Jean Dupont');
-  fireEvent.changeText(screen.getByLabelText('Email'), 'jean@exemple.be');
-  fireEvent.changeText(screen.getByLabelText('Mot de passe'), 'motdepasse123');
-  fireEvent.changeText(screen.getByLabelText('Confirmer le mot de passe'), 'motdepasse123');
-  fireEvent.press(
-    screen.getByLabelText("J'accepte les conditions d'utilisation et la politique de confidentialité"),
-  );
+  fireEvent.press(screen.getByLabelText('Continuer'));
 }
 
-/** Ouvre l'inscription et choisit un type — le formulaire n'existe pas avant ce choix. */
-async function openRegister(kind: 'independent' | 'company' = 'independent') {
-  fireEvent.press(screen.getByText("Pas encore de compte ? S'inscrire"));
-  await waitFor(() => screen.getByTestId(`register-kind-${kind}`));
-  fireEvent.press(screen.getByTestId(`register-kind-${kind}`));
-  await waitFor(() => screen.getByLabelText('Nom complet'));
-}
-
-async function openRegisterAndSubmit() {
-  await openRegister();
-  await fillCommonFields();
+async function acceptAndSubmit() {
+  await waitFor(() => screen.getByTestId('register-accept-terms'));
+  fireEvent.press(screen.getByTestId('register-accept-terms'));
   fireEvent.press(screen.getByLabelText('Créer mon compte'));
 }
 
-const TRADE_ID = 3;
+/** Parcours complet d'un indépendant, sur un métier sans question réglementaire. */
+async function completeIndependentJourney() {
+  await openRegisterAndVerifyPhone();
+  await fillIdentity();
+  await chooseKind('independent');
+  await chooseTrade();
+  await acceptAndSubmit();
+}
 
 beforeEach(() => {
   apiMock.reset();
   mockCaptcha.mode = 'skipped';
-  // Référentiel métiers : endpoints PUBLICS, appelés par le formulaire avant que le compte
-  // n'existe. Un métier sans question réglementaire, pour garder ces tests sur leur sujet.
+  Object.keys(memoryStore).forEach(k => delete memoryStore[k]);
+
+  apiMock.onPost('/auth/phone/verify-request').reply(201, { ok: true, phone: PHONE_E164 });
+  apiMock.onPost('/auth/phone/verify-confirm').reply(200, {
+    ok: true,
+    phone_verification_token: 'jeton-telephone-test',
+  });
+  // Référentiel métiers : endpoints PUBLICS, appelés avant que le compte n'existe. Un métier sans
+  // question réglementaire, pour garder ces tests sur leur sujet.
   apiMock.onGet('/trades').reply(200, { data: [{ id: TRADE_ID, name: 'Jardinage', slug: 'jardinage' }] });
   apiMock.onGet(`/trades/${TRADE_ID}/provider-fields`).reply(200, { fields: [] });
   apiMock.onPost('/auth/register').reply(201, {
@@ -174,88 +235,178 @@ beforeEach(() => {
 });
 
 describe("Inscription depuis l'app prestataire", () => {
-  it('annonce au serveur qu\'il faut créer un compte prestataire', async () => {
+  it("annonce au serveur qu'il faut créer un compte prestataire", async () => {
     renderScreen();
-    await openRegisterAndSubmit();
+    await completeIndependentJourney();
 
-    await waitFor(() => {
-      expect(apiMock.history['post']!.filter(c => c.url === '/auth/register')).toHaveLength(1);
-    });
-    const body = JSON.parse(apiMock.history['post']![0]!.data);
-    expect(body.account_type).toBe('provider');
+    await waitFor(() => expect(registerCalls()).toHaveLength(1));
+    expect(JSON.parse(registerCalls()[0]!.data).account_type).toBe('provider');
   });
 
   it('joint le jeton captcha quand le widget en a produit un', async () => {
     mockCaptcha.mode = 'token';
 
     renderScreen();
-    await openRegisterAndSubmit();
+    await completeIndependentJourney();
 
-    await waitFor(() => {
-      expect(apiMock.history['post']!.filter(c => c.url === '/auth/register')).toHaveLength(1);
-    });
-    expect(apiMock.history['post']![0]!.headers?.['X-Turnstile-Token']).toBe('jeton-turnstile-test');
+    await waitFor(() => expect(registerCalls()).toHaveLength(1));
+    expect(registerCalls()[0]!.headers?.['X-Turnstile-Token']).toBe('jeton-turnstile-test');
   });
 
-  it("ne montre aucun champ tant que le type de compte n'est pas choisi", async () => {
+  it("retient la requête tant que le captcha n'a pas répondu", async () => {
+    mockCaptcha.mode = 'pending';
+
+    renderScreen();
+    await completeIndependentJourney();
+
+    await waitFor(() => expect(screen.getByTestId('register-form-error')).toBeTruthy());
+    expect(screen.getByText(/vérification anti-robot/i)).toBeTruthy();
+    // Une requête vouée à un 400 ne doit pas partir.
+    expect(registerCalls()).toHaveLength(0);
+  });
+
+  it('vérifie le téléphone avant de demander quoi que ce soit d\'autre', async () => {
     renderScreen();
     fireEvent.press(screen.getByText("Pas encore de compte ? S'inscrire"));
 
-    await waitFor(() => screen.getByTestId('register-kind-independent'));
-    // Les deux cases sont là, le formulaire non.
-    expect(screen.getByTestId('register-kind-company')).toBeTruthy();
-    expect(screen.queryByLabelText('Nom complet')).toBeNull();
-    expect(screen.queryByLabelText('Nom de la société')).toBeNull();
-    expect(screen.queryByLabelText('Créer mon compte')).toBeNull();
+    // Le premier écran ne pose que le téléphone : ni identité, ni email, ni mot de passe.
+    await waitFor(() => screen.getByLabelText('Téléphone'));
+    expect(screen.queryByLabelText('Prénom')).toBeNull();
+    expect(screen.queryByLabelText('Email')).toBeNull();
+    expect(screen.queryByLabelText('Mot de passe')).toBeNull();
   });
 
-  it("révèle le formulaire indépendant après le choix, sans champs de société", async () => {
+  it('transmet le jeton du téléphone vérifié', async () => {
     renderScreen();
-    await openRegister('independent');
+    await completeIndependentJourney();
 
-    expect(screen.queryByLabelText('Nom de la société')).toBeNull();
+    await waitFor(() => expect(registerCalls()).toHaveLength(1));
+    const body = JSON.parse(registerCalls()[0]!.data);
+    expect(body.phone_verification_token).toBe('jeton-telephone-test');
+    // Normalisé en E.164 avant l'envoi : le serveur refuse la forme nationale.
+    expect(body.phone).toBe(PHONE_E164);
+  });
 
-    await fillCommonFields();
-    fireEvent.press(screen.getByLabelText('Créer mon compte'));
+  it("n'appelle pas le serveur avec un numéro invalide", async () => {
+    renderScreen();
+    fireEvent.press(screen.getByText("Pas encore de compte ? S'inscrire"));
 
-    await waitFor(() => {
-      expect(apiMock.history['post']!.filter(c => c.url === '/auth/register')).toHaveLength(1);
-    });
-    const body = JSON.parse(apiMock.history['post']![0]!.data);
+    await waitFor(() => screen.getByLabelText('Téléphone'));
+    fireEvent.changeText(screen.getByLabelText('Téléphone'), '12');
+    fireEvent.press(screen.getByLabelText('Recevoir le code'));
+
+    await waitFor(() => expect(screen.getByTestId('register-step-error')).toBeTruthy());
+    expect(apiMock.history['post']!.filter(c => c.url === '/auth/phone/verify-request')).toHaveLength(0);
+  });
+
+  it('refuse une adresse email sans domaine', async () => {
+    renderScreen();
+    await openRegisterAndVerifyPhone();
+
+    fireEvent.changeText(screen.getByLabelText('Prénom'), 'Jean');
+    fireEvent.changeText(screen.getByLabelText('Nom'), 'Dupont');
+    fireEvent.press(screen.getByLabelText('Continuer'));
+
+    await waitFor(() => screen.getByLabelText('Email'));
+    // `includes('@')`, l'ancien contrôle, acceptait cette saisie.
+    fireEvent.changeText(screen.getByLabelText('Email'), 'jean@');
+    fireEvent.press(screen.getByLabelText('Continuer'));
+
+    await waitFor(() => expect(screen.getByTestId('register-step-error')).toBeTruthy());
+    expect(screen.queryByLabelText('Mot de passe')).toBeNull();
+  });
+
+  it('refuse un mot de passe trop court', async () => {
+    renderScreen();
+    await openRegisterAndVerifyPhone();
+
+    fireEvent.changeText(screen.getByLabelText('Prénom'), 'Jean');
+    fireEvent.changeText(screen.getByLabelText('Nom'), 'Dupont');
+    fireEvent.press(screen.getByLabelText('Continuer'));
+    await waitFor(() => screen.getByLabelText('Email'));
+    fireEvent.changeText(screen.getByLabelText('Email'), 'jean@exemple.be');
+    fireEvent.press(screen.getByLabelText('Continuer'));
+
+    await waitFor(() => screen.getByLabelText('Mot de passe'));
+    fireEvent.changeText(screen.getByLabelText('Mot de passe'), 'court');
+    fireEvent.press(screen.getByLabelText('Continuer'));
+
+    await waitFor(() => expect(screen.getByTestId('register-step-error')).toBeTruthy());
+    expect(screen.queryByTestId('register-kind-independent')).toBeNull();
+  });
+
+  it("ne demande rien sur la société à un indépendant", async () => {
+    renderScreen();
+    await openRegisterAndVerifyPhone();
+    await fillIdentity();
+    await chooseKind('independent');
+
+    // L'écran suivant est le métier : l'étape société est absente du parcours.
+    await waitFor(() => screen.getByTestId(`register-trade-${TRADE_ID}`));
+    expect(screen.queryByLabelText('Raison sociale')).toBeNull();
+
+    await chooseTrade();
+    await acceptAndSubmit();
+
+    await waitFor(() => expect(registerCalls()).toHaveLength(1));
+    const body = JSON.parse(registerCalls()[0]!.data);
     expect(body.provider_kind).toBe('independent');
     expect(body.company_name).toBeUndefined();
   });
 
-  it('transmet la raison sociale et la TVA quand on choisit société', async () => {
+  it("transmet la raison sociale et le numéro d'entreprise quand on choisit société", async () => {
     renderScreen();
-    await openRegister('company');
-    await waitFor(() => screen.getByLabelText('Nom de la société'));
+    await openRegisterAndVerifyPhone();
+    await fillIdentity();
+    await chooseKind('company');
 
-    fireEvent.changeText(screen.getByLabelText('Nom de la société'), 'Nettoyage Dupont SPRL');
-    fireEvent.changeText(screen.getByLabelText('Numéro de TVA (optionnel)'), 'BE0123456789');
-    await fillCommonFields();
-    fireEvent.press(screen.getByLabelText('Créer mon compte'));
+    await waitFor(() => screen.getByLabelText('Raison sociale'));
+    fireEvent.changeText(screen.getByLabelText('Raison sociale'), 'Nettoyage Dupont SPRL');
+    fireEvent.changeText(screen.getByLabelText("Numéro d'entreprise (optionnel)"), 'BE0202239951');
+    fireEvent.press(screen.getByLabelText('Continuer'));
 
-    await waitFor(() => {
-      expect(apiMock.history['post']!.filter(c => c.url === '/auth/register')).toHaveLength(1);
-    });
-    const body = JSON.parse(apiMock.history['post']![0]!.data);
+    await chooseTrade();
+    await acceptAndSubmit();
+
+    await waitFor(() => expect(registerCalls()).toHaveLength(1));
+    const body = JSON.parse(registerCalls()[0]!.data);
     expect(body.provider_kind).toBe('company');
     expect(body.company_name).toBe('Nettoyage Dupont SPRL');
-    expect(body.vat_number).toBe('BE0123456789');
+    expect(body.vat_number).toBe('BE0202239951');
   });
 
   it('refuse une société sans raison sociale sans appeler le serveur', async () => {
     renderScreen();
-    await openRegister('company');
-    await fillCommonFields();
-    fireEvent.press(screen.getByLabelText('Créer mon compte'));
+    await openRegisterAndVerifyPhone();
+    await fillIdentity();
+    await chooseKind('company');
 
-    await waitFor(() => {
-      expect(screen.getByTestId('input-error-Nom de la société')).toBeTruthy();
-    });
+    await waitFor(() => screen.getByLabelText('Raison sociale'));
+    fireEvent.press(screen.getByLabelText('Continuer'));
+
+    await waitFor(() => expect(screen.getByTestId('register-step-error')).toBeTruthy());
     // Le serveur refuserait de toute façon (required_if) : inutile de l'appeler.
-    expect(apiMock.history['post']!.filter(c => c.url === '/auth/register')).toHaveLength(0);
+    expect(registerCalls()).toHaveLength(0);
+  });
+
+  /**
+   * Contrôle de clé côté client, miroir de `App\Support\Validation\BusinessNumber`. Ce numéro
+   * part ensuite aux registres officiels : le signaler pendant la frappe évite un dossier rejeté
+   * plusieurs jours plus tard.
+   */
+  it("refuse un numéro d'entreprise dont la clé est fausse", async () => {
+    renderScreen();
+    await openRegisterAndVerifyPhone();
+    await fillIdentity();
+    await chooseKind('company');
+
+    await waitFor(() => screen.getByLabelText('Raison sociale'));
+    fireEvent.changeText(screen.getByLabelText('Raison sociale'), 'Nettoyage Dupont SPRL');
+    fireEvent.changeText(screen.getByLabelText("Numéro d'entreprise (optionnel)"), 'BE0000000000');
+    fireEvent.press(screen.getByLabelText('Continuer'));
+
+    await waitFor(() => expect(screen.getByTestId('register-step-error')).toBeTruthy());
+    expect(screen.queryByTestId(`register-trade-${TRADE_ID}`)).toBeNull();
   });
 
   it('transmet le métier déclaré et les réponses à ses questions', async () => {
@@ -268,54 +419,68 @@ describe("Inscription depuis l'app prestataire", () => {
     });
 
     renderScreen();
-    await openRegister();
-    await fillCommonFields();
+    await openRegisterAndVerifyPhone();
+    await fillIdentity();
+    await chooseKind('independent');
+    await chooseTrade();
 
     await waitFor(() => screen.getByLabelText("Années d'expérience *"));
     fireEvent.changeText(screen.getByLabelText("Années d'expérience *"), '7');
     fireEvent.changeText(screen.getByLabelText('Référence de certification *'), 'RGIE-2024-118');
-    fireEvent.press(screen.getByLabelText('Créer mon compte'));
+    fireEvent.press(screen.getByLabelText('Continuer'));
 
-    await waitFor(() => {
-      expect(apiMock.history['post']!.filter(c => c.url === '/auth/register')).toHaveLength(1);
-    });
-    const body = JSON.parse(apiMock.history['post']![0]!.data);
+    await acceptAndSubmit();
+
+    await waitFor(() => expect(registerCalls()).toHaveLength(1));
+    const body = JSON.parse(registerCalls()[0]!.data);
     expect(body.trade_id).toBe(TRADE_ID);
     expect(body.trade_answers).toEqual({ experience_years: '7', certification_reference: 'RGIE-2024-118' });
   });
 
-  it('refuse de soumettre sans métier choisi', async () => {
+  it('refuse de continuer sans métier choisi', async () => {
     renderScreen();
-    await openRegister();
+    await openRegisterAndVerifyPhone();
+    await fillIdentity();
+    await chooseKind('independent');
 
-    // Tous les champs SAUF le métier.
-    fireEvent.changeText(screen.getByLabelText('Nom complet'), 'Jean Dupont');
-    fireEvent.changeText(screen.getByLabelText('Email'), 'jean@exemple.be');
-    fireEvent.changeText(screen.getByLabelText('Mot de passe'), 'motdepasse123');
-    fireEvent.changeText(screen.getByLabelText('Confirmer le mot de passe'), 'motdepasse123');
-    fireEvent.press(
-      screen.getByLabelText("J'accepte les conditions d'utilisation et la politique de confidentialité"),
-    );
-    fireEvent.press(screen.getByLabelText('Créer mon compte'));
+    await waitFor(() => screen.getByTestId(`register-trade-${TRADE_ID}`));
+    fireEvent.press(screen.getByLabelText('Continuer'));
 
-    await waitFor(() => {
-      expect(screen.getByText('Choisissez votre métier')).toBeTruthy();
-    });
+    await waitFor(() => expect(screen.getByTestId('register-step-error')).toBeTruthy());
     // Sans métier, le prestataire ne recevrait aucune mission : inutile d'appeler le serveur.
-    expect(apiMock.history['post']!.filter(c => c.url === '/auth/register')).toHaveLength(0);
+    expect(registerCalls()).toHaveLength(0);
   });
 
-  it('retient la requête tant que le captcha n\'a pas répondu', async () => {
-    mockCaptcha.mode = 'pending';
-
+  it("n'exige pas d'accepter les conditions en silence", async () => {
     renderScreen();
-    await openRegisterAndSubmit();
+    await openRegisterAndVerifyPhone();
+    await fillIdentity();
+    await chooseKind('independent');
+    await chooseTrade();
+
+    await waitFor(() => screen.getByTestId('register-accept-terms'));
+    fireEvent.press(screen.getByLabelText('Créer mon compte'));
+
+    await waitFor(() => expect(screen.getByTestId('register-step-error')).toBeTruthy());
+    expect(registerCalls()).toHaveLength(0);
+  });
+
+  /**
+   * Un parcours en dix écrans se perd à la moindre interruption. Le mot de passe reste hors du
+   * brouillon : AsyncStorage n'est pas chiffré.
+   */
+  it('conserve les réponses localement mais jamais le mot de passe', async () => {
+    renderScreen();
+    await openRegisterAndVerifyPhone();
+    await fillIdentity();
 
     await waitFor(() => {
-      expect(screen.getByTestId('register-form-error')).toBeTruthy();
+      const saved = Object.values(memoryStore).join('');
+      expect(saved).toContain('jean@exemple.be');
     });
-    expect(screen.getByText(/vérification anti-robot/i)).toBeTruthy();
-    // Une requête vouée à un 400 ne doit pas partir.
-    expect(apiMock.history['post']!.filter(c => c.url === '/auth/register')).toHaveLength(0);
+
+    const saved = Object.values(memoryStore).join('');
+    expect(saved).toContain('Dupont');
+    expect(saved).not.toContain('motdepasse123');
   });
 });
