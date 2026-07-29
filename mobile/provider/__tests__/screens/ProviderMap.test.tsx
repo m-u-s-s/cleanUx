@@ -53,12 +53,18 @@ jest.mock('@/tracking', () => ({
 // `react-native-maps` est déjà redirigé vers __mocks__/react-native-maps par moduleNameMapper :
 // il suffit donc de faire renvoyer ce module (ou null) par loadMapModule.
 const mockMapModule = { current: true };
+const mockMapRenderable = { current: true };
+
 jest.mock('@/maps', () => ({
   loadMapModule: () => {
     if (!mockMapModule.current) return null;
     const maps = require('react-native-maps');
     return { MapView: maps.default, Marker: maps.Marker, Callout: maps.Callout };
   },
+  // Sur Android, la carte n'est affichable qu'avec une clé Google Maps dans le manifeste natif ;
+  // sans elle le rendu LÈVE au lieu de dégrader. `mockMapRenderable` pilote ce second verrou,
+  // distinct de la présence du module lui-même.
+  isMapRenderable: () => mockMapRenderable.current,
 }));
 
 import { apiClient } from '@/api';
@@ -81,6 +87,7 @@ function makeWrapper() {
 beforeEach(() => {
   apiMock.reset();
   mockMapModule.current = true;
+  mockMapRenderable.current = true;
   mockPermission.current = 'granted';
   mockIsFocused.current = true;
   mockGpsEnabled.current = null;
@@ -136,6 +143,22 @@ describe('ProviderMap', () => {
 
   it('rend le placeholder texte quand le module natif est absent', async () => {
     mockMapModule.current = false;
+
+    render(<ProviderMap />, { wrapper: makeWrapper() });
+
+    await waitFor(() => expect(screen.getByTestId('map-fallback')).toBeTruthy());
+    expect(screen.queryByTestId('provider-map')).toBeNull();
+  });
+
+  /**
+   * Le module peut être présent SANS que la carte soit affichable : sur Android, Google Maps
+   * exige une clé dans le manifeste natif et, faute de clé, LÈVE au lieu de dégrader —
+   * « IllegalStateException: API key not found » — emportant le tableau de bord entier, dont la
+   * carte est l'élément principal. Le repli doit donc couvrir ce cas comme l'absence de module.
+   */
+  it('rend le placeholder quand la carte est indisponible faute de clé', async () => {
+    mockMapModule.current = true;
+    mockMapRenderable.current = false;
 
     render(<ProviderMap />, { wrapper: makeWrapper() });
 

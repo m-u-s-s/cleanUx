@@ -1,4 +1,6 @@
 import type React from 'react';
+import { Platform } from 'react-native';
+import Constants from 'expo-constants';
 
 export interface MapModule {
   MapView: React.ComponentType<any>;
@@ -25,4 +27,30 @@ export function loadMapModule(): MapModule | null {
   } catch {
     return null;
   }
+}
+
+/**
+ * La carte peut-elle réellement s'afficher sur cet appareil ?
+ *
+ * Charger le module ne suffit pas : sur Android, react-native-maps s'appuie sur Google Maps, qui
+ * exige une clé dans le manifeste natif. Sans elle, le rendu ne dégrade pas — il LÈVE :
+ *
+ *   IllegalStateException: API key not found. Check that
+ *   <meta-data android:name="com.google.android.geo.API_KEY" ...> is in the <application> element
+ *
+ * et emporte l'écran, donc le tableau de bord entier, dont la carte est l'élément principal. On
+ * vérifie donc la présence de la clé AVANT de monter le composant, plutôt que de découvrir son
+ * absence par un crash. iOS n'est pas concerné : il s'appuie sur Apple Maps, sans clé.
+ *
+ * La clé est injectée par app.config.js depuis EXPO_PUBLIC_GOOGLE_MAPS_API_KEY, et n'est lisible
+ * qu'après une reconstruction — c'est de la configuration native, pas du JavaScript.
+ */
+export function isMapRenderable(): boolean {
+  if (Platform.OS !== 'android') {
+    return true;
+  }
+
+  const key = (Constants.expoConfig as any)?.android?.config?.googleMaps?.apiKey;
+
+  return typeof key === 'string' && key.length > 0;
 }

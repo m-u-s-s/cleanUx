@@ -4,7 +4,7 @@ import { useIsFocused, useNavigation } from '@react-navigation/native';
 import { Button } from '@/ui';
 import { useMissionInbox } from '@/missions';
 import { useGpsWatcher, distanceKmTo, formatDistance } from '@/tracking';
-import { loadMapModule } from '@/maps';
+import { loadMapModule, isMapRenderable } from '@/maps';
 import { colors, spacing, typography, radius } from '@/theme';
 
 /** Repli d'échelle pays centré sur Bruxelles, marché principal du projet. */
@@ -20,6 +20,9 @@ type Position = { latitude: number; longitude: number };
 export function ProviderMap() {
   const navigation = useNavigation<any>();
   const maps = useMemo(() => loadMapModule(), []);
+  // Le module peut charger sans que la carte soit affichable : sur Android, Google Maps LÈVE
+  // faute de clé dans le manifeste, emportant tout le tableau de bord. On le vérifie avant.
+  const renderable = useMemo(() => isMapRenderable(), []);
   const mapRef = useRef<any>(null);
   // `hasCenteredRef` : « on a déjà centré sur quelque chose » (position OU mission).
   // `hasCenteredOnPositionRef` : « on a déjà centré sur une vraie position GPS ». Deux
@@ -108,7 +111,7 @@ export function ProviderMap() {
     );
   }, [position, located]);
 
-  if (!maps) {
+  if (!maps || !renderable) {
     return (
       <View style={styles.fallback} testID="map-fallback">
         <Text style={styles.fallbackText}>
