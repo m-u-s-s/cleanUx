@@ -2,12 +2,15 @@
 
 namespace App\Http\Controllers\Api\Auth;
 
+use App\Enums\CustomerType;
 use App\Enums\OrganizationRole;
+use App\Enums\OrganizationType;
 use App\Enums\ProviderType;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\Auth\LoginRequest;
 use App\Http\Requests\Api\Auth\RegisterRequest;
 use App\Jobs\Kyb\VerifyBusinessEntity;
+use App\Models\CustomerProfile;
 use App\Models\OrganizationAccount;
 use App\Models\OrganizationMember;
 use App\Models\ProviderProfile;
@@ -151,6 +154,8 @@ class ApiAuthController extends Controller
         // c'est lui qui porte la restriction, le rendre fillable permettrait de la lever.
         if ($asProvider) {
             $this->createProviderIdentity($user, $data);
+        } else {
+            $this->createClientIdentity($user, $data);
         }
 
         // `User implements MustVerifyEmail` et EventServiceProvider écoute déjà Registered avec
@@ -192,6 +197,68 @@ class ApiAuthController extends Controller
             'token' => $token,
             'user' => $this->serializeUser($user),
         ], 201);
+    }
+
+    /**
+     * Crée l'identité cliente du compte : particulier ou société.
+     *
+     * L'inscription mobile ne créait AUCUN CustomerProfile, là où la voie web en crée un
+     * systématiquement. Or ce profil est lu par le moteur de sélection de prestataire, la prise
+     * de rendez-vous et l'identité renvoyée par /auth/me : un client inscrit depuis l'application
+     * en était donc dépourvu, sans que rien ne le signale.
+     *
+     * Une société cliente donne lieu à un OrganizationAccount `client_company` dont le signataire
+     * est `owner` — c'est ce que consomment le multi-sites, les contrats B2B et la facturation
+     * centralisée. Contrairement à une société prestataire, elle est active d'emblée : rien n'est
+     * à vérifier avant qu'elle puisse commander un service, et l'y contraindre bloquerait une
+     * cliente légitime.
+     *
+     * @param  array<string, mixed>  $data
+     */
+    private function createClientIdentity(User $user, array $data): void
+    {
+        $asCompany = ($data['client_kind'] ?? 'individual') === 'company';
+
+        try {
+            if ($asCompany) {
+                $organization = OrganizationAccount::create([
+                    'name' => $data['company_name'],
+                    'legal_name' => $data['company_name'],
+                    'slug' => $this->uniqueOrganizationSlug($data['company_name']),
+                    'type' => OrganizationType::CLIENT_COMPANY->value,
+                    'status' => 'active',
+                    'tva_number' => $data['vat_number'] ?? null,
+                    'email' => $data['email'],
+                ]);
+
+                OrganizationMember::create([
+                    'organization_account_id' => $organization->id,
+                    'user_id' => $user->id,
+                    'role' => OrganizationRole::OWNER->value,
+                    'status' => 'active',
+                    'joined_at' => now(),
+                ]);
+
+                $user->forceFill([
+                    'organization_account_id' => $organization->id,
+                    'current_organization_id' => $organization->id,
+                ])->save();
+            }
+
+            CustomerProfile::create([
+                'user_id' => $user->id,
+                'customer_type' => $asCompany ? CustomerType::COMPANY->value : CustomerType::PERSONAL->value,
+                'plan_type' => 'standard',
+                'plan_status' => 'inactive',
+            ]);
+        } catch (\Throwable $e) {
+            // Soft-fail comme les autres effets de bord de l'inscription : un compte créé sans son
+            // profil reste utilisable et rattrapable, un compte non créé ne l'est pas.
+            Log::warning("Création de l'identité cliente impossible", [
+                'user_id' => $user->id,
+                'error' => $e->getMessage(),
+            ]);
+        }
     }
 
     /**

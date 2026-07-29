@@ -19,6 +19,7 @@ jest.mock('react-native-reanimated', () => {
     FadeIn: chainable,
     FadeOut: chainable,
     FadeInDown: chainable,
+    FadeInRight: chainable,
     Easing: { inOut: () => undefined, out: () => undefined, ease: undefined, cubic: undefined },
     useSharedValue: (v: any) => ({ value: v }),
     useAnimatedStyle: () => ({}),
@@ -51,6 +52,8 @@ jest.mock('@/ui', () => {
       <RNInput placeholder={placeholder} onChangeText={onChangeText} value={value} {...props} />
     ),
     Divider: () => <View />,
+    // Employés par le wizard d'inscription : sans eux, le rendu lève avant toute assertion.
+    ProgressBar: ({ step, totalSteps }: any) => <Text>{`Étape ${step} sur ${totalSteps}`}</Text>,
     Icon: () => <View />,
     // Le widget captcha s'appuie sur react-native-webview, dont le module natif n'existe pas
     // sous Jest. On le stube, et on signale immédiatement « pas de captcha requis » comme le
@@ -102,10 +105,13 @@ describe('LoginScreen', () => {
     expect(getByText(/S'inscrire/i)).toBeTruthy();
   });
 
+  // L'inscription est désormais un wizard : le premier écran demande le type de compte, et
+  // « Créer mon compte » n'apparaît qu'à la dernière étape.
   it('switches to register mode on toggle', () => {
     const { getByText } = render(<LoginScreen />);
     fireEvent.press(getByText(/S'inscrire/i));
-    expect(getByText('Créer mon compte')).toBeTruthy();
+    expect(getByText('Vous réservez pour qui ?')).toBeTruthy();
+    expect(getByText('Continuer')).toBeTruthy();
   });
 
   it('shows forgot password link', () => {

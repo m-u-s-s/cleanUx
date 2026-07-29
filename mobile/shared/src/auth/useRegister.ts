@@ -31,6 +31,12 @@ interface RegisterInput {
    * web provider-company et le rattachement des missions. Omis = indépendant.
    */
   providerKind?: 'independent' | 'company';
+  /**
+   * Particulier ou société côté client. Une société donne lieu à un OrganizationAccount
+   * `client_company` dont le signataire devient `owner` — c'est ce que consomment le multi-sites,
+   * les contrats B2B et la facturation centralisée. Omis = particulier.
+   */
+  clientKind?: 'individual' | 'company';
   companyName?: string;
   vatNumber?: string;
   /**
@@ -53,6 +59,7 @@ export function useRegister() {
         phone_verification_token: input.phoneVerificationToken,
         account_type: input.accountType,
         provider_kind: input.providerKind,
+        client_kind: input.clientKind,
         company_name: input.companyName,
         vat_number: input.vatNumber,
         trade_id: input.tradeId,

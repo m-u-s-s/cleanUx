@@ -333,3 +333,89 @@ export const authStyles = StyleSheet.create({
   passwordWrapper: { position: 'relative' },
   eyeButton: { position: 'absolute', right: 12, top: 32, zIndex: 1 },
 });
+
+/**
+ * Choix du type de compte : deux cartes plutôt qu'une liste déroulante.
+ *
+ * C'est la première décision du parcours, elle change la suite du formulaire, et elle doit se
+ * lire d'un coup d'œil. Générique parce que les deux applications posent la même question sur des
+ * vocabulaires différents — indépendant/société côté prestataire, particulier/société côté client.
+ *
+ * Les teintes sont choisies sur leur contraste mesuré, pas à l'œil : accent.amber (1,74:1) et
+ * accent.amberDeep (2,35:1) échouent au seuil de 3:1 exigé d'un élément d'interface sur fond
+ * clair — ils seraient quasi invisibles comme indicateur de sélection. warning[700] (4,73:1) et
+ * brand[600] (5,92:1) passent, y compris comme texte sur leur propre lavis.
+ */
+export interface KindOption<T extends string> {
+  kind: T;
+  title: string;
+  hint: string;
+  /** Nom d'icône Ionicons. */
+  icon: never | string;
+}
+
+export function KindChoiceCards<T extends string>({
+  options,
+  value,
+  onChange,
+  testIdPrefix = 'register-kind',
+}: {
+  options: readonly KindOption<T>[];
+  value: T | null;
+  onChange: (kind: T) => void;
+  testIdPrefix?: string;
+}) {
+  // Deux teintes, dans l'ordre des options : la première distingue, la seconde souligne.
+  const palette = [
+    { accent: colors.warning[700], wash: colors.warning[50] },
+    { accent: colors.brand[600], wash: colors.brand[50] },
+  ];
+
+  return (
+    <View style={kindStyles.row} accessibilityRole="radiogroup">
+      {options.map((option, index) => {
+        const selected = value === option.kind;
+        const tone = palette[index % palette.length]!;
+
+        return (
+          <TouchableOpacity
+            key={option.kind}
+            style={[
+              kindStyles.card,
+              selected && { borderColor: tone.accent, backgroundColor: tone.wash },
+            ]}
+            onPress={() => onChange(option.kind)}
+            accessibilityRole="radio"
+            accessibilityState={{ selected }}
+            accessibilityLabel={`${option.title} — ${option.hint}`}
+            testID={`${testIdPrefix}-${option.kind}`}
+          >
+            <Icon name={option.icon as never} size={22} color={selected ? tone.accent : colors.surface[400]} />
+            <Text style={[kindStyles.title, selected && { color: tone.accent }]}>{option.title}</Text>
+            <Text style={kindStyles.hint}>{option.hint}</Text>
+          </TouchableOpacity>
+        );
+      })}
+    </View>
+  );
+}
+
+const kindStyles = StyleSheet.create({
+  row: { flexDirection: 'row', gap: spacing.sm },
+  card: {
+    flex: 1,
+    gap: 2,
+    paddingVertical: spacing.md,
+    paddingHorizontal: spacing.sm,
+    borderRadius: radius.md,
+    borderWidth: 1.5,
+    borderColor: colors.surface[200],
+    backgroundColor: '#ffffff',
+  },
+  title: {
+    fontSize: typography.fontSize.base,
+    fontWeight: typography.fontWeight.semibold,
+    color: colors.mode.tool.ink,
+  },
+  hint: { fontSize: typography.fontSize.xs, color: colors.surface[600] },
+});

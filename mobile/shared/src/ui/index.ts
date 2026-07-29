@@ -31,6 +31,7 @@ export {
   Stagger,
   FormError,
   authStyles,
+  KindChoiceCards,
 } from './authShell';
 export { loadMapModule, isMapRenderable } from './mapModule';
 export { OsmMap } from './OsmMap';

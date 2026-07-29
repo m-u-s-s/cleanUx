@@ -5,6 +5,7 @@ namespace Tests\Feature\Api\Auth;
 use App\Jobs\Kyb\VerifyBusinessEntity;
 use App\Models\BusinessEntity;
 use App\Models\User;
+use App\Services\KybV2\BusinessOnboardingService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Queue;
 use Tests\TestCase;
@@ -128,7 +129,7 @@ class CompanyRegistrationOpensKybTest extends TestCase
     public function test_a_failing_verification_never_breaks_the_registration(): void
     {
         Queue::fake();
-        $this->app->bind(\App\Services\KybV2\BusinessOnboardingService::class, function () {
+        $this->app->bind(BusinessOnboardingService::class, function () {
             throw new \RuntimeException('registre injoignable');
         });
 

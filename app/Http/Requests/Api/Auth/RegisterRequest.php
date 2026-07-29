@@ -39,7 +39,17 @@ class RegisterRequest extends FormRequest
             // `provider_company` dont le signataire est `owner` — c'est ce que consomment déjà
             // l'espace web provider-company et le rattachement des missions.
             'provider_kind' => ['nullable', 'string', 'in:independent,company'],
-            'company_name' => ['nullable', 'required_if:provider_kind,company', 'string', 'max:255'],
+            // Symétrique côté client : un particulier ou une société qui commande des services.
+            // Une société cliente donne lieu à un OrganizationAccount `client_company` — c'est ce
+            // que consomment le multi-sites, les contrats B2B et la facturation centralisée.
+            'client_kind' => ['nullable', 'string', 'in:individual,company'],
+            'company_name' => [
+                'nullable',
+                'required_if:provider_kind,company',
+                'required_if:client_kind,company',
+                'string',
+                'max:255',
+            ],
             // Ce numéro n'est pas décoratif : la vérification KYB le soumettra à l'INSEE et à
             // VIES. Accepté sans contrôle, il n'échouait qu'à la revue du dossier, plusieurs
             // jours plus tard — la clé est donc vérifiée dès la saisie.

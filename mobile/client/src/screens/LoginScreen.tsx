@@ -33,6 +33,7 @@ import { useLogin, useRegister, useAuth } from '@/auth';
 import { ApiError } from '@/api';
 import { colors } from '@/theme';
 import type { RootStackParamList } from '@/navigation/types';
+import { ClientRegisterWizard } from '@/screens/auth/ClientRegisterWizard';
 
 /**
  * Porte d'entrée de l'application cliente.
@@ -83,7 +84,7 @@ export function LoginScreen() {
                 exiting={reducedMotion ? undefined : FadeOut.duration(140)}
                 key="register"
               >
-                <RegisterForm />
+                <ClientRegisterWizard />
               </Animated.View>
             )}
           </Animated.View>
@@ -205,185 +206,6 @@ function LoginForm() {
       {formError ? <FormError message={formError} onRetry={handleLogin} testID="login-form-error" /> : null}
       <Stagger index={3}>
         <Button label="Se connecter" onPress={handleLogin} fullWidth size="lg" loading={login.isPending} />
-      </Stagger>
-    </View>
-  );
-}
-
-function RegisterForm() {
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
-  const [phone, setPhone] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [acceptTerms, setAcceptTerms] = useState(false);
-  // Jeton captcha : l'endpoint /auth/register porte le middleware `turnstile` et refusait
-  // l'inscription en production, aucune app n'envoyant de jeton. 'skipped' = captcha non
-  // configuré (dev), le serveur laisse alors passer.
-  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
-  const [captchaSkipped, setCaptchaSkipped] = useState(false);
-  const [errors, setErrors] = useState<{
-    name?: string;
-    email?: string;
-    password?: string;
-    confirmPassword?: string;
-    acceptTerms?: string;
-  }>({});
-  const [formError, setFormError] = useState<string | null>(null);
-  const register = useRegister();
-  const { setUser } = useAuth();
-  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
-  const emailRef = React.useRef<any>(null);
-  const phoneRef = React.useRef<any>(null);
-  const passwordRef = React.useRef<any>(null);
-  const confirmRef = React.useRef<any>(null);
-
-  const validate = () => {
-    const e: typeof errors = {};
-    if (!name.trim()) e.name = 'Nom requis';
-    if (!email) e.email = 'Email requis';
-    else if (!email.includes('@')) e.email = 'Email invalide';
-    if (!password) e.password = 'Mot de passe requis';
-    else if (password.length < 8) e.password = 'Min. 8 caractères';
-    if (!confirmPassword) e.confirmPassword = 'Confirmation requise';
-    else if (password !== confirmPassword) e.confirmPassword = 'Les mots de passe ne correspondent pas';
-    if (!acceptTerms) e.acceptTerms = 'Vous devez accepter les CGU';
-    setErrors(e);
-    return Object.keys(e).length === 0;
-  };
-
-  const handleRegister = async () => {
-    setFormError(null);
-    if (!validate()) return;
-    if (!captchaSkipped && !captchaToken) {
-      setFormError('Veuillez patienter, la vérification anti-robot est en cours.');
-
-      return;
-    }
-    try {
-      const result = await register.mutateAsync({
-        name,
-        email,
-        password,
-        passwordConfirmation: confirmPassword,
-        phone: phone || undefined,
-        acceptTerms: true,
-        captchaToken,
-      });
-      setUser(result.user);
-    } catch (e: unknown) {
-      const fieldErrors = e instanceof ApiError ? e.errors : undefined;
-      if (fieldErrors) {
-        setErrors({
-          name: fieldErrors.name?.[0],
-          email: fieldErrors.email?.[0],
-          password: fieldErrors.password?.[0],
-          confirmPassword: fieldErrors.password_confirmation?.[0],
-        });
-      } else {
-        setFormError(authErrorMessage(e, 'register'));
-      }
-    }
-  };
-
-  return (
-    <View style={styles.form}>
-      <Stagger index={0}>
-        <TextInput
-          label="Nom complet"
-          value={name}
-          onChangeText={(t) => { setName(t); setErrors(prev => ({ ...prev, name: undefined })); }}
-          error={errors.name}
-          autoComplete="name"
-          placeholder="Jean Dupont"
-          autoFocus
-          returnKeyType="next"
-          onSubmitEditing={() => emailRef.current?.focus()}
-        />
-      </Stagger>
-      <Stagger index={1}>
-        <TextInput
-          ref={emailRef}
-          label="Email"
-          value={email}
-          onChangeText={(t) => { setEmail(t); setErrors(prev => ({ ...prev, email: undefined })); }}
-          error={errors.email}
-          keyboardType="email-address"
-          autoCapitalize="none"
-          autoComplete="email"
-          placeholder="votre@email.com"
-          returnKeyType="next"
-          onSubmitEditing={() => phoneRef.current?.focus()}
-        />
-      </Stagger>
-      <Stagger index={2}>
-        <TextInput
-          ref={phoneRef}
-          label="Téléphone (optionnel)"
-          value={phone}
-          onChangeText={setPhone}
-          keyboardType="phone-pad"
-          placeholder="+32 470 12 34 56"
-          returnKeyType="next"
-          onSubmitEditing={() => passwordRef.current?.focus()}
-        />
-      </Stagger>
-      <Stagger index={3}>
-        <TextInput
-          ref={passwordRef}
-          label="Mot de passe"
-          value={password}
-          onChangeText={(t) => { setPassword(t); setErrors(prev => ({ ...prev, password: undefined })); }}
-          error={errors.password}
-          secureTextEntry
-          placeholder="Min. 8 caractères"
-          returnKeyType="next"
-          onSubmitEditing={() => confirmRef.current?.focus()}
-        />
-      </Stagger>
-      <Stagger index={4}>
-        <TextInput
-          ref={confirmRef}
-          label="Confirmer le mot de passe"
-          value={confirmPassword}
-          onChangeText={(t) => { setConfirmPassword(t); setErrors(prev => ({ ...prev, confirmPassword: undefined })); }}
-          error={errors.confirmPassword}
-          secureTextEntry
-          placeholder="••••••••"
-          returnKeyType="done"
-          onSubmitEditing={handleRegister}
-        />
-      </Stagger>
-      <Stagger index={5}>
-        <TouchableOpacity
-          style={styles.termsRow}
-          onPress={() => { setAcceptTerms(v => !v); setErrors(prev => ({ ...prev, acceptTerms: undefined })); }}
-          accessibilityRole="checkbox"
-          accessibilityState={{ checked: acceptTerms }}
-          accessibilityLabel="J'accepte les conditions d'utilisation et la politique de confidentialité"
-        >
-          <View style={[styles.checkbox, acceptTerms && styles.checkboxChecked]} />
-          <Text style={styles.termsText}>
-            J'accepte les{' '}
-            <Text style={styles.termsLink} onPress={() => navigation.navigate('Legal', { type: 'terms' })}>
-              Conditions d'utilisation
-            </Text>
-            {' '}et la{' '}
-            <Text style={styles.termsLink} onPress={() => navigation.navigate('Legal', { type: 'privacy' })}>
-              Politique de confidentialité
-            </Text>
-          </Text>
-        </TouchableOpacity>
-      </Stagger>
-      {errors.acceptTerms ? <Text style={styles.errorText}>{errors.acceptTerms}</Text> : null}
-      <TurnstileWidget
-        onToken={setCaptchaToken}
-        onSkipped={() => setCaptchaSkipped(true)}
-        testID="register-captcha"
-      />
-      {formError ? <FormError message={formError} onRetry={handleRegister} testID="register-form-error" /> : null}
-      <Stagger index={6}>
-        <Button label="Créer mon compte" onPress={handleRegister} fullWidth size="lg" loading={register.isPending} />
       </Stagger>
     </View>
   );
