@@ -24,7 +24,11 @@ import { useRegisterPushToken, useNotificationRouting } from '@/push';
 import { env } from '@/config/env';
 import { ErrorBoundary } from '@/ErrorBoundary';
 import { OnboardingScreen, hasCompletedOnboarding } from '@/screens/OnboardingScreen';
-import { useOfflineSync } from '@/api';
+import { useOfflineSync, bindAppStateToQueryFocus } from '@/api';
+
+// Relie React Query au cycle de vie de l'application : sans ce pont, aucune requête n'est
+// rejouée au retour au premier plan et l'écran reste figé sur des données périmées.
+bindAppStateToQueryFocus();
 
 const queryClient = new QueryClient({
   defaultOptions: { queries: { retry: 2, staleTime: 60_000 } },
