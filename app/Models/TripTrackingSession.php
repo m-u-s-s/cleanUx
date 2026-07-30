@@ -32,6 +32,9 @@ class TripTrackingSession extends Model
         'last_lat', 'last_lng', 'last_speed_mps',
         'metadata',
         'started_at', 'arrived_at', 'in_mission_at', 'ended_at', 'last_ping_at',
+        // Le code en clair n'est jamais stocké : seule son empreinte l'est.
+        'presence_code_hash', 'presence_code_expires_at', 'presence_code_attempts',
+        'presence_confirmed_at', 'presence_confirmed_by_user_id',
     ];
 
     protected $casts = [
@@ -54,7 +57,16 @@ class TripTrackingSession extends Model
         'in_mission_at' => 'datetime',
         'ended_at' => 'datetime',
         'last_ping_at' => 'datetime',
+        'presence_code_expires_at' => 'datetime',
+        'presence_code_attempts' => 'integer',
+        'presence_confirmed_at' => 'datetime',
     ];
+
+    /**
+     * L'empreinte du code ne doit jamais quitter le serveur : `$hidden` la retire des
+     * sérialisations, y compris celles qu'on n'a pas écrites soi-même.
+     */
+    protected $hidden = ['presence_code_hash'];
 
     public static function generateCode(): string
     {

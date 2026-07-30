@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\Provider\PingTripRequest;
 use App\Models\Booking;
 use App\Models\TripTrackingSession;
+use App\Services\TripTracking\PresenceCodeService;
 use App\Services\TripTracking\TripTrackingService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -160,6 +161,39 @@ class TripTrackingController extends Controller
         return response()->json(['data' => $this->presentSession($updated)]);
     }
 
+    /**
+     * Confirm the provider's physical presence with the code shown by the client.
+     *
+     * The geofence proves proximity, not presence — a phone 100 m from the door crosses it. The
+     * client displays a single-use code that the provider scans on site, which requires both
+     * devices in the same place.
+     *
+     * @bodyParam code string required The 6-digit code read from the client's QR. Example: 482951
+     *
+     * @response 200 {"data": {"id": 5, "status": "in_mission", "presence_confirmed_at": "2026-07-30T18:40:00+00:00"}}
+     * @response 403 {"message": "Not your session."}
+     * @response 422 {"error": "validation_failed", "errors": {"code": ["Code invalide."]}}
+     */
+    public function confirmPresence(Request $request, TripTrackingSession $session, PresenceCodeService $codes): JsonResponse
+    {
+        $this->authorizeProviderForSession($request, $session);
+
+        $data = $request->validate([
+            'code' => ['required', 'string', 'max:191'],
+        ]);
+
+        try {
+            $updated = $codes->confirm($session, $data['code'], $request->user());
+
+            return response()->json(['data' => $this->presentSession($updated)]);
+        } catch (ValidationException $e) {
+            return response()->json([
+                'error' => 'validation_failed',
+                'errors' => $e->errors(),
+            ], 422);
+        }
+    }
+
     protected function presentSession(TripTrackingSession $s): array
     {
         return [
@@ -184,6 +218,7 @@ class TripTrackingController extends Controller
             'arrived_at' => $s->arrived_at,
             'in_mission_at' => $s->in_mission_at,
             'ended_at' => $s->ended_at,
+            'presence_confirmed_at' => $s->presence_confirmed_at,
         ];
     }
 

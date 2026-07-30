@@ -5,9 +5,12 @@ namespace App\Http\Controllers\Api\Client;
 use App\Http\Controllers\Controller;
 use App\Models\Booking;
 use App\Models\TripTrackingPoint;
+use App\Models\TripTrackingSession;
+use App\Services\TripTracking\PresenceCodeService;
 use App\Services\TripTracking\TripTrackingService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
 
 /**
  * @group Client — Trip Tracking
@@ -47,6 +50,55 @@ class TripTrackingController extends Controller
                 'arrived_at' => $session->arrived_at,
                 'in_mission_at' => $session->in_mission_at,
                 'last_ping_at' => $session->last_ping_at,
+                // Interrogé périodiquement : c'est ce champ qui fait disparaître le code de
+                // l'écran client une fois le prestataire confirmé sur place.
+                'presence_confirmed_at' => $session->presence_confirmed_at,
+            ],
+        ]);
+    }
+
+    /**
+     * Issue the single-use code the client shows so the provider can confirm being on site.
+     *
+     * The geofence proves proximity, not presence. This code is displayed as a QR by the client
+     * and scanned by the provider, which requires both devices in the same place.
+     *
+     * A POST, not a GET: each call mints a new code and invalidates the previous one. The client
+     * app must therefore call it once and hold the result — polling would rotate the code out
+     * from under the provider mid-scan.
+     *
+     * @response 200 {"data": {"session_code": "trip_abc", "code": "482951", "expires_at": "2026-07-30T18:50:00+00:00"}}
+     * @response 409 {"error": "not_in_mission"}
+     */
+    public function issuePresenceCode(Request $request, Booking $booking, TripTrackingService $service, PresenceCodeService $codes): JsonResponse
+    {
+        if ((int) $booking->client_id !== (int) $request->user()->id) {
+            return response()->json(['error' => 'forbidden'], 403);
+        }
+
+        $session = $service->activeSessionForBooking((int) $booking->id);
+        if (! $session) {
+            return response()->json(['error' => 'no_session'], 404);
+        }
+
+        // Le code n'a de sens qu'une fois l'intervention démarrée : plus tôt, il attesterait
+        // d'une présence que personne n'a encore annoncée.
+        if ($session->status !== TripTrackingSession::STATUS_IN_MISSION) {
+            return response()->json(['error' => 'not_in_mission', 'status' => $session->status], 409);
+        }
+
+        try {
+            $issued = $codes->issueFor($session);
+        } catch (ValidationException $e) {
+            return response()->json(['error' => 'already_confirmed', 'errors' => $e->errors()], 409);
+        }
+
+        return response()->json([
+            'data' => [
+                'session_id' => $session->id,
+                'session_code' => $session->code,
+                'code' => $issued['code'],
+                'expires_at' => $issued['expires_at'],
             ],
         ]);
     }

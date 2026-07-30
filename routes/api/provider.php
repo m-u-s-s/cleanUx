@@ -79,6 +79,7 @@ Route::middleware(['auth:sanctum', 'role:employe', 'provider.approved'])->group(
         Route::post('/bookings/{booking}/tracking/start', [TripTrackingController::class, 'start']);
         Route::post('/tracking/{session}/ping', [TripTrackingController::class, 'ping']);
         Route::post('/tracking/{session}/in-mission', [TripTrackingController::class, 'markInMission']);
+        Route::post('/tracking/{session}/confirm-presence', [TripTrackingController::class, 'confirmPresence']);
         Route::post('/tracking/{session}/pause', [TripTrackingController::class, 'pause']);
         Route::post('/tracking/{session}/resume', [TripTrackingController::class, 'resume']);
         Route::post('/tracking/{session}/end', [TripTrackingController::class, 'end']);

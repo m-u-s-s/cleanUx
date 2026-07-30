@@ -102,6 +102,9 @@ Route::middleware('auth:sanctum')->prefix('client')->group(function () {
     // Trip Tracking v2 — vue client (poll position provider en mission)
     Route::get('/bookings/{booking}/tracking', [TripTrackingController::class, 'currentForBooking']);
     Route::get('/bookings/{booking}/tracking/trail', [TripTrackingController::class, 'trail']);
+    // Confirmation de présence : le client affiche, le prestataire scanne. POST car chaque
+    // appel forge un code neuf et périme le précédent.
+    Route::post('/bookings/{booking}/presence-code', [TripTrackingController::class, 'issuePresenceCode']);
 
     // Booking favorites — rebook 1-click
     Route::get('/favorites', [BookingFavoriteController::class, 'index']);

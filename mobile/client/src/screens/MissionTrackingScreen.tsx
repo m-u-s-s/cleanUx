@@ -2,6 +2,7 @@ import React, { useRef, useEffect, useMemo } from 'react';
 import { View, Text, StyleSheet, Dimensions } from 'react-native';
 import { Screen, Badge, Skeleton, OsmMap, loadMapModule, isMapRenderable } from '@/ui';
 import { useTrackingSession, useTrackingTrail, useLiveTracking } from '@/tracking';
+import { PresenceCodeCard } from '@/screens/components/PresenceCodeCard';
 import { colors, spacing, typography, radius, shadows } from '@/theme';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '@/navigation/types';
@@ -40,6 +41,9 @@ export function MissionTrackingScreen({ route }: Props) {
   const lastPoint = trail && trail.length > 0 ? trail[trail.length - 1] : null;
   const currentPos = livePos ?? session?.provider ?? lastPoint;
   const etaMinutes = liveEta?.eta_minutes ?? session?.eta_minutes;
+  // Le prestataire a annoncé le démarrage mais n'a pas encore prouvé sa présence : c'est le
+  // moment où le client doit lui montrer son code.
+  const awaitingPresence = session?.status === 'in_mission' && !session.presence_confirmed_at;
   // La distance restante n'est pas portée par la session : elle est relevée point par point.
   const distanceKm = liveEta?.distance_km
     ?? (lastPoint?.distance_to_dest_m != null ? lastPoint.distance_to_dest_m / 1000 : undefined);
@@ -133,28 +137,35 @@ export function MissionTrackingScreen({ route }: Props) {
         </View>
       )}
 
-      <View style={styles.infoCard}>
-        <View style={styles.infoRow}>
-          <View>
-            <Text style={styles.etaLabel}>ETA</Text>
-            <Text style={styles.etaValue}>
-              {etaMinutes != null ? `${Math.round(etaMinutes)} min` : '—'}
-            </Text>
-          </View>
-          <View>
-            <Text style={styles.etaLabel}>Distance</Text>
-            <Text style={styles.etaValue}>
-              {distanceKm != null ? `${distanceKm.toFixed(1)} km` : '—'}
-            </Text>
-          </View>
-          {session?.status && (
-            <Badge
-              label={STATUS_LABELS[session.status] ?? session.status}
-              variant={session.status === 'in_mission' ? 'success' : 'brand'}
-            />
-          )}
+      {awaitingPresence ? (
+        // L'intervention a démarré : le trajet n'apprend plus rien, la preuve de présence si.
+        <View style={styles.presenceSlot}>
+          <PresenceCodeCard bookingId={bookingId} />
         </View>
-      </View>
+      ) : (
+        <View style={styles.infoCard}>
+          <View style={styles.infoRow}>
+            <View>
+              <Text style={styles.etaLabel}>ETA</Text>
+              <Text style={styles.etaValue}>
+                {etaMinutes != null ? `${Math.round(etaMinutes)} min` : '—'}
+              </Text>
+            </View>
+            <View>
+              <Text style={styles.etaLabel}>Distance</Text>
+              <Text style={styles.etaValue}>
+                {distanceKm != null ? `${distanceKm.toFixed(1)} km` : '—'}
+              </Text>
+            </View>
+            {session?.status && (
+              <Badge
+                label={STATUS_LABELS[session.status] ?? session.status}
+                variant={session.status === 'in_mission' ? 'success' : 'brand'}
+              />
+            )}
+          </View>
+        </View>
+      )}
     </View>
   );
 }
@@ -164,6 +175,14 @@ const { height } = Dimensions.get('window');
 const styles = StyleSheet.create({
   container: { flex: 1 },
   map: { flex: 1, minHeight: height * 0.6 },
+  // Même ancrage que la carte d'information qu'elle remplace : le code doit être sous le pouce.
+  presenceSlot: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    padding: spacing.md,
+  },
   infoCard: {
     position: 'absolute',
     bottom: 0,

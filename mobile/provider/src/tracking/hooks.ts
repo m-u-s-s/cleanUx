@@ -13,9 +13,40 @@ export function useStartTracking(bookingId: number) {
 
 export function useSendPing(sessionId: number | null) {
   const pingMutation = useMutation<void, ApiError, { latitude: number; longitude: number; speed?: number; heading?: number }>({
-    mutationFn: async (pos) => { await apiClient.post(`/tracking/${sessionId}/ping`, pos); },
+    // Le préfixe `/provider` manquait : la route est `/provider/tracking/{session}/ping`, si bien
+    // qu'aucun relevé n'a jamais atteint le serveur — le client ne voyait donc jamais bouger son
+    // prestataire. Le serveur attend `lat`/`lng`, pas `latitude`/`longitude`.
+    mutationFn: async (pos) => {
+      await apiClient.post(`/provider/tracking/${sessionId}/ping`, {
+        lat: pos.latitude,
+        lng: pos.longitude,
+        speed_mps: pos.speed,
+        heading_deg: pos.heading,
+      });
+    },
   });
   return pingMutation;
+}
+
+/**
+ * Le prestataire annonce qu'il commence : la session passe à `in_mission`.
+ *
+ * La géo-barrière fait passer la session à `arrived` toute seule dès 150 m — c'est une proximité,
+ * pas une présence. Ce geste-ci est celui d'un humain qui est réellement devant la porte.
+ */
+export function useMarkInMission(sessionId: number | null) {
+  return useMutation<{ id: number; status: string }, ApiError>({
+    mutationFn: async () =>
+      (await apiClient.post(`/provider/tracking/${sessionId}/in-mission`)).data?.data,
+  });
+}
+
+/** Valide le code que le client affiche, ce qui atteste des deux appareils au même endroit. */
+export function useConfirmPresence(sessionId: number | null) {
+  return useMutation<{ id: number; presence_confirmed_at: string | null }, ApiError, { code: string }>({
+    mutationFn: async ({ code }) =>
+      (await apiClient.post(`/provider/tracking/${sessionId}/confirm-presence`, { code })).data?.data,
+  });
 }
 
 export function usePushPosition(missionId: number) {

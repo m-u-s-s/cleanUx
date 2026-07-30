@@ -10,6 +10,7 @@ export type RootStackParamList = {
   MissionDetail: { missionId: number };
   MissionInbox: undefined;
   MissionField: { missionId: number };
+  PresenceScan: { sessionId: number };
   StripeOnboarding: undefined;
   KYC: undefined;
   Availability: undefined;

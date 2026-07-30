@@ -4,8 +4,8 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Screen, Button, Badge } from '@/ui';
-import { useMissionDetail, useMissionLifecycle } from '@/missions';
-import { useGpsWatcher, useSendPing, useStartTracking, haversineMeters, formatDistance } from '@/tracking';
+import { useMissionDetail } from '@/missions';
+import { useGpsWatcher, useSendPing, useStartTracking, useMarkInMission, haversineMeters, formatDistance } from '@/tracking';
 import { colors, spacing, typography, radius, shadows } from '@/theme';
 import type { RootStackParamList } from '@/navigation/types';
 
@@ -24,10 +24,11 @@ export function TrackingScreen({ route }: Props) {
   const { missionId } = route.params;
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const { data: mission } = useMissionDetail(missionId);
-  const lifecycle = useMissionLifecycle(missionId);
+
   const startTracking = useStartTracking(missionId);
   const [sessionId, setSessionId] = useState<number | null>(null);
   const sendPing = useSendPing(sessionId);
+  const markInMission = useMarkInMission(sessionId);
   const [currentPos, setCurrentPos] = useState<Position | null>(null);
   const [distanceMeters, setDistanceMeters] = useState<number | null>(null);
   const [etaMinutes, setEtaMinutes] = useState<number | null>(null);
@@ -75,11 +76,24 @@ export function TrackingScreen({ route }: Props) {
     ),
   );
 
+  /**
+   * Annonce le démarrage de l'intervention, puis enchaîne sur la preuve de présence.
+   *
+   * Ce bouton passait par le cycle de vie des `missions`, une table qu'aucun parcours ne
+   * remplit — il ne pouvait donc pas aboutir. C'est la session de suivi qui porte réellement
+   * l'état, et elle existe dès le départ du prestataire.
+   *
+   * La géo-barrière a déjà pu faire basculer la session en `arrived` toute seule : elle atteste
+   * d'une proximité, pas d'une présence. Le scan qui suit, lui, exige les deux appareils au même
+   * endroit.
+   */
   const handleArrived = useCallback(() => {
-    lifecycle.mutate('arrive', {
-      onSuccess: () => navigation.navigate('MissionField', { missionId }),
+    if (sessionId === null) return;
+
+    markInMission.mutate(undefined, {
+      onSuccess: () => navigation.navigate('PresenceScan', { sessionId }),
     });
-  }, [lifecycle, navigation, missionId]);
+  }, [markInMission, navigation, sessionId]);
 
   const formatSpeed = (mps: number | null): string => {
     if (mps === null) return '—';
@@ -136,11 +150,12 @@ export function TrackingScreen({ route }: Props) {
       {/* Arrived button — enabled when within geofence */}
       <View style={styles.actions}>
         <Button
-          label={isNearDestination ? 'Marquer Arrivé' : `Arrivé (${distanceMeters !== null ? formatDistance(distanceMeters) : '?'} restants)`}
+          label={isNearDestination ? 'Je suis arrivé' : `Je suis arrivé (${distanceMeters !== null ? formatDistance(distanceMeters) : '?'} restants)`}
           onPress={handleArrived}
           fullWidth
           size="lg"
-          loading={lifecycle.isPending}
+          disabled={sessionId === null}
+          loading={markInMission.isPending}
           variant={isNearDestination ? 'primary' : 'secondary'}
         />
         {!isNearDestination && (

@@ -1,6 +1,8 @@
 export {
   useStartTracking,
   useSendPing,
+  useMarkInMission,
+  useConfirmPresence,
   usePushPosition,
   usePushEta,
   useGpsWatcher,

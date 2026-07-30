@@ -33,6 +33,20 @@ export interface ApiTrackingSession {
   arrived_at: string | null;
   in_mission_at: string | null;
   last_ping_at: string | null;
+  presence_confirmed_at: string | null;
+}
+
+/**
+ * Code de présence affiché par le client et scanné par le prestataire.
+ *
+ * La géo-barrière atteste d'une proximité, pas d'une présence : un téléphone à 100 m de la porte
+ * la franchit. Scanner exige les deux appareils au même endroit.
+ */
+export interface PresenceCode {
+  session_id: number;
+  session_code: string;
+  code: string;
+  expires_at: string;
 }
 
 export interface LivePosition {
@@ -61,6 +75,8 @@ export interface TrackingSession {
   arrived_at: string | null;
   in_mission_at: string | null;
   last_ping_at: string | null;
+  /** Renseigné dès que le prestataire a scanné le code affiché par le client. */
+  presence_confirmed_at: string | null;
 }
 
 export interface LiveEta {

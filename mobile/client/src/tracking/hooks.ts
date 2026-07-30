@@ -1,4 +1,4 @@
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
 import { apiClient } from '@/api';
 import { useChannel } from '@/realtime';
@@ -7,6 +7,7 @@ import type {
   ApiTrackingSession,
   LiveEta,
   LivePosition,
+  PresenceCode,
   TrackingPoint,
   TrackingSession,
 } from './types';
@@ -43,6 +44,7 @@ function toSession(raw: ApiTrackingSession): TrackingSession {
     arrived_at: raw.arrived_at ?? null,
     in_mission_at: raw.in_mission_at ?? null,
     last_ping_at: raw.last_ping_at ?? null,
+    presence_confirmed_at: raw.presence_confirmed_at ?? null,
   };
 }
 
@@ -85,6 +87,22 @@ export function useTrackingTrail(bookingId: number | null) {
     },
     enabled: bookingId !== null,
     refetchInterval: 15000,
+  });
+}
+
+/**
+ * Demande le code de présence à afficher.
+ *
+ * Une mutation, pas une requête : chaque appel forge un code neuf et périme le précédent. Une
+ * interrogation périodique le remplacerait sous le nez du prestataire en train de le scanner.
+ */
+export function usePresenceCode(bookingId: number | null) {
+  return useMutation<PresenceCode, Error>({
+    mutationFn: async () => {
+      const res = await apiClient.post(`/client/bookings/${bookingId}/presence-code`);
+
+      return (res.data?.data ?? res.data) as PresenceCode;
+    },
   });
 }
 
