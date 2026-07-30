@@ -96,7 +96,9 @@ export function MissionsListScreen() {
             ListEmptyComponent={
               <EmptyState
                 title="Aucune mission active"
-                message="Vos missions actives et à venir apparaîtront ici."
+                message="Vos missions acceptées apparaissent ici. Les nouvelles propositions sont dans les missions disponibles."
+                actionLabel="Voir les missions disponibles"
+                onAction={() => navigation.navigate('MissionInbox')}
               />
             }
             contentContainerStyle={styles.listContent}
