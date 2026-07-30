@@ -5,11 +5,15 @@ namespace App\Http\Controllers\Api\Provider;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\Provider\PingTripRequest;
 use App\Models\Booking;
+use App\Models\Mission;
 use App\Models\TripTrackingSession;
+use App\Services\Missions\MissionLifecycleService;
 use App\Services\TripTracking\PresenceCodeService;
 use App\Services\TripTracking\TripTrackingService;
+use App\Support\Domain\MissionStatus;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
 
 /**
@@ -185,12 +189,58 @@ class TripTrackingController extends Controller
         try {
             $updated = $codes->confirm($session, $data['code'], $request->user());
 
-            return response()->json(['data' => $this->presentSession($updated)]);
+            return response()->json([
+                'data' => $this->presentSession($updated),
+                'mission_started' => $this->startMissionOnPresence($updated, $request->user()),
+            ]);
         } catch (ValidationException $e) {
             return response()->json([
                 'error' => 'validation_failed',
                 'errors' => $e->errors(),
             ], 422);
+        }
+    }
+
+    /**
+     * Démarre la mission dès la présence prouvée.
+     *
+     * Le démarrage exigeait jusqu'ici un code à six chiffres envoyé au client par SMS, que le
+     * prestataire recopiait. Ce code faisait exactement le travail que fait déjà la preuve de
+     * présence — et moins bien, puisqu'un SMS se transmet à distance alors qu'un code affiché se
+     * lit sur place. Le faire saisir une seconde fois n'apportait rien.
+     *
+     * Effet de bord, jamais bloquant : la présence est un FAIT déjà gravé quand on arrive ici.
+     * Une mission introuvable, un prestataire non assigné ou un incident de notification ne
+     * doivent pas transformer une confirmation réussie en erreur — le prestataire, lui, est bien
+     * chez le client. La réponse dit ce qui s'est passé plutôt que de le taire.
+     */
+    protected function startMissionOnPresence(TripTrackingSession $session, $provider): bool
+    {
+        $mission = Mission::query()->where('booking_id', $session->booking_id)->first();
+
+        // Seul un état antérieur au démarrage est concerné : rejouer sur une mission déjà
+        // commencée écraserait `actual_start_at`, donc la durée facturée.
+        if (! $mission || ! in_array($mission->status, [MissionStatus::EN_ROUTE, MissionStatus::ARRIVED], true)) {
+            return false;
+        }
+
+        try {
+            app(MissionLifecycleService::class)->validateStartCodeFromQr(
+                $mission,
+                $provider,
+                $session->last_lat,
+                $session->last_lng,
+            );
+
+            return true;
+        } catch (\Throwable $e) {
+            Log::warning('Démarrage automatique de mission impossible après confirmation de présence.', [
+                'session_id' => $session->id,
+                'mission_id' => $mission->id,
+                'reason' => $e->getMessage(),
+            ]);
+
+            return false;
         }
     }
 

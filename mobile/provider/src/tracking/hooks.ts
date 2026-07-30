@@ -82,11 +82,32 @@ export function useArriveOnSite(bookingId: number | null, missionId: number | nu
   });
 }
 
-/** Valide le code que le client affiche, ce qui atteste des deux appareils au même endroit. */
+/**
+ * Valide le code que le client affiche, ce qui atteste des deux appareils au même endroit.
+ *
+ * Le serveur démarre la mission dans la foulée et le dit par `mission_started` — l'appelant en a
+ * besoin pour annoncer ce qui s'est réellement passé plutôt que de le supposer : le démarrage est
+ * un effet de bord, il peut ne pas avoir lieu sans que la présence en souffre.
+ */
 export function useConfirmPresence(sessionId: number | null) {
-  return useMutation<{ id: number; presence_confirmed_at: string | null }, ApiError, { code: string }>({
-    mutationFn: async ({ code }) =>
-      (await apiClient.post(`/provider/tracking/${sessionId}/confirm-presence`, { code })).data?.data,
+  const qc = useQueryClient();
+
+  return useMutation<
+    { id: number; presence_confirmed_at: string | null; mission_started: boolean },
+    ApiError,
+    { code: string }
+  >({
+    mutationFn: async ({ code }) => {
+      const body = (await apiClient.post(`/provider/tracking/${sessionId}/confirm-presence`, { code })).data;
+
+      return { ...body?.data, mission_started: body?.mission_started === true };
+    },
+    // La mission vient de changer d'état : sans invalidation, l'écran précédent afficherait
+    // encore « Sur place » alors que l'intervention a démarré.
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['provider', 'mission'] });
+      qc.invalidateQueries({ queryKey: ['provider', 'missions', 'active'] });
+    },
   });
 }
 

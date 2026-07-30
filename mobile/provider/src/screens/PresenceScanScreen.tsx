@@ -33,10 +33,17 @@ export function PresenceScanScreen({ route }: Props) {
       confirm.mutate(
         { code },
         {
-          onSuccess: () => {
-            Alert.alert('Présence confirmée', 'Le client a bien été notifié.', [
-              { text: 'Continuer', onPress: () => navigation.goBack() },
-            ]);
+          onSuccess: (result) => {
+            // Le démarrage est un effet de bord : il peut ne pas avoir lieu — mission déjà
+            // commencée, prestataire non rattaché — sans que la présence en souffre. Annoncer
+            // « mission démarrée » dans ce cas serait un mensonge.
+            Alert.alert(
+              'Présence confirmée',
+              result?.mission_started
+                ? "L'intervention a démarré. Le client a été notifié."
+                : 'Le client a bien été notifié.',
+              [{ text: 'Continuer', onPress: () => navigation.goBack() }],
+            );
           },
           onError: (e: any) => {
             // Le message du serveur est celui qui explique la cause — code expiré, déjà brûlé,

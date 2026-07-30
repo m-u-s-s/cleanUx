@@ -123,6 +123,37 @@ describe('Scan de présence côté prestataire', () => {
     );
   });
 
+  /** Le démarrage est un effet de bord : l'annoncer quand il n'a pas eu lieu serait un mensonge. */
+  it('annonce le démarrage quand le serveur l’a fait', async () => {
+    mockConfirm.mockImplementation((_vars, opts) => opts.onSuccess({ id: 42, mission_started: true }));
+
+    render(<PresenceScanScreen route={route} navigation={{} as any} />);
+    act(() => cameraState.onScan?.({ data: JSON.stringify({ t: 'cleanux.presence', v: 1, s: 42, c: '482951' }) }));
+
+    await waitFor(() =>
+      expect(Alert.alert).toHaveBeenCalledWith(
+        'Présence confirmée',
+        "L'intervention a démarré. Le client a été notifié.",
+        expect.anything(),
+      ),
+    );
+  });
+
+  it('n’annonce pas un démarrage qui n’a pas eu lieu', async () => {
+    mockConfirm.mockImplementation((_vars, opts) => opts.onSuccess({ id: 42, mission_started: false }));
+
+    render(<PresenceScanScreen route={route} navigation={{} as any} />);
+    act(() => cameraState.onScan?.({ data: JSON.stringify({ t: 'cleanux.presence', v: 1, s: 42, c: '482951' }) }));
+
+    await waitFor(() =>
+      expect(Alert.alert).toHaveBeenCalledWith(
+        'Présence confirmée',
+        'Le client a bien été notifié.',
+        expect.anything(),
+      ),
+    );
+  });
+
   it('revient en arrière une fois la présence confirmée', async () => {
     mockConfirm.mockImplementation((_vars, opts) => opts.onSuccess({ id: 42 }));
     (Alert.alert as jest.Mock).mockImplementation((_t, _m, buttons?: any[]) => buttons?.[0]?.onPress?.());
