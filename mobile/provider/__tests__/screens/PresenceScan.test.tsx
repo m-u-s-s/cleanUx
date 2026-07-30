@@ -10,7 +10,7 @@
  * corrigent pas de la même façon.
  */
 import React from 'react';
-import { act, render, screen, waitFor } from '@testing-library/react-native';
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react-native';
 import { Alert } from 'react-native';
 
 const mockConfirm = jest.fn();
@@ -44,7 +44,7 @@ jest.mock('expo-camera', () => {
 });
 
 jest.mock('@/ui', () => {
-  const { View, Text, TouchableOpacity } = require('react-native');
+  const { View, Text, TouchableOpacity, TextInput: RNTextInput } = require('react-native');
 
   return {
     Screen: ({ children, testID }: any) => <View testID={testID}>{children}</View>,
@@ -52,6 +52,9 @@ jest.mock('@/ui', () => {
       <TouchableOpacity onPress={onPress} accessibilityLabel={label}>
         <Text>{label}</Text>
       </TouchableOpacity>
+    ),
+    TextInput: ({ label, value, onChangeText, testID }: any) => (
+      <RNTextInput accessibilityLabel={label} value={value} onChangeText={onChangeText} testID={testID} />
     ),
   };
 });
@@ -128,6 +131,28 @@ describe('Scan de présence côté prestataire', () => {
     act(() => cameraState.onScan?.({ data: JSON.stringify({ t: 'cleanux.presence', v: 1, s: 42, c: '482951' }) }));
 
     await waitFor(() => expect(mockGoBack).toHaveBeenCalled());
+  });
+
+  /**
+   * L'écran du client invite à dicter les six chiffres : sans champ de saisie, cette consigne
+   * ne mènerait nulle part le jour où la caméra refuse de lire le QR.
+   */
+  it('accepte les six chiffres saisis à la main', () => {
+    render(<PresenceScanScreen route={route} navigation={{} as any} />);
+
+    fireEvent.changeText(screen.getByTestId('presence-manual-code'), '482951');
+    fireEvent.press(screen.getByLabelText('Confirmer ma présence'));
+
+    expect(mockConfirm).toHaveBeenCalledWith({ code: '482951' }, expect.anything());
+  });
+
+  it('refuse une saisie incomplète sans consommer d’essai', () => {
+    render(<PresenceScanScreen route={route} navigation={{} as any} />);
+
+    fireEvent.changeText(screen.getByTestId('presence-manual-code'), '4829');
+    fireEvent.press(screen.getByLabelText('Confirmer ma présence'));
+
+    expect(mockConfirm).not.toHaveBeenCalled();
   });
 
   it('demande la caméra plutôt que d’échouer en silence', () => {

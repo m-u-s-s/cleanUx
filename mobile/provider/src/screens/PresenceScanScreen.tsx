@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, Alert } from 'react-native';
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { Screen, Button } from '@/ui';
+import { Screen, Button, TextInput } from '@/ui';
 import { useConfirmPresence } from '@/tracking';
 import { colors, spacing, typography, radius } from '@/theme';
 import type { RootStackParamList } from '@/navigation/types';
@@ -25,6 +25,7 @@ export function PresenceScanScreen({ route }: Props) {
   const navigation = useNavigation<any>();
   const [permission, requestPermission] = useCameraPermissions();
   const [scanned, setScanned] = useState(false);
+  const [manualCode, setManualCode] = useState('');
   const confirm = useConfirmPresence(sessionId);
 
   const submit = useCallback(
@@ -123,6 +124,31 @@ export function PresenceScanScreen({ route }: Props) {
           )}
         </View>
       </CameraView>
+
+      {/* Saisie de repli : une caméra sale, un écran fêlé ou une lumière rasante ne doivent pas
+          bloquer une intervention. L'écran du client invite d'ailleurs à dicter ces six
+          chiffres — sans ce champ, cette consigne ne mènerait nulle part. */}
+      <View style={styles.manual}>
+        <TextInput
+          label="Ou saisissez les six chiffres"
+          value={manualCode}
+          onChangeText={setManualCode}
+          keyboardType="number-pad"
+          maxLength={6}
+          placeholder="000000"
+          testID="presence-manual-code"
+        />
+        <Button
+          label="Confirmer ma présence"
+          onPress={() =>
+            manualCode.length === 6
+              ? submit(manualCode)
+              : Alert.alert('Code incomplet', 'Le code du client compte six chiffres.')
+          }
+          loading={confirm.isPending}
+          fullWidth
+        />
+      </View>
     </View>
   );
 }
@@ -130,6 +156,7 @@ export function PresenceScanScreen({ route }: Props) {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#000' },
   camera: { flex: 1 },
+  manual: { padding: spacing.md, gap: spacing.sm, backgroundColor: '#fff' },
   centered: { flex: 1, justifyContent: 'center', gap: spacing.md, padding: spacing.lg },
   title: {
     fontSize: typography.fontSize.xl,
