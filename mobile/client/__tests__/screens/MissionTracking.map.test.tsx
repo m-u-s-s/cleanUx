@@ -29,13 +29,20 @@ jest.mock('@react-native-community/netinfo', () => ({
   },
 }));
 
+// Forme réelle des points, telle que la produisent les crochets : le serveur envoie `lat`/`lng`
+// et `distance_to_dest_m`, la traduction vers le vocabulaire des cartes se fait dans `@/tracking`.
 const TRAIL = [
-  { latitude: 50.84, longitude: 4.35 },
-  { latitude: 50.85, longitude: 4.36 },
+  { latitude: 50.84, longitude: 4.35, eta_seconds: 900, distance_to_dest_m: 3400, recorded_at: '2026-07-30T08:00:00Z' },
+  { latitude: 50.85, longitude: 4.36, eta_seconds: 720, distance_to_dest_m: 2600, recorded_at: '2026-07-30T08:05:00Z' },
 ];
 
+// La session ne porte PAS de distance — elle est relevée point par point. Un faux qui en
+// inventerait une validerait un champ que le serveur n'envoie pas.
 jest.mock('@/tracking', () => ({
-  useTrackingSession: () => ({ data: { status: 'enroute', eta_minutes: 12, distance_km: 3.4 }, isLoading: false }),
+  useTrackingSession: () => ({
+    data: { code: 'TRK-1', status: 'enroute', destination: null, provider: null, eta_minutes: 12, eta_seconds: 720 },
+    isLoading: false,
+  }),
   useTrackingTrail: () => ({ data: TRAIL }),
   useLiveTracking: () => ({ position: null, eta: null }),
 }));

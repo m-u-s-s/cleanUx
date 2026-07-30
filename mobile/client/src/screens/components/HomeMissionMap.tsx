@@ -39,7 +39,15 @@ export function HomeMissionMap({ bookingId }: { bookingId: number }) {
     return null;
   }
 
+  // Une fois le prestataire sur place, le serveur ramène l'ETA à zéro. L'annoncer tel quel
+  // donnerait « Arrivée dans ~0 min » : c'est le statut de la session, et non le compte à
+  // rebours, qui porte alors l'information.
   const eta = session?.eta_minutes;
+  const pillText = session?.status === 'in_mission'
+    ? 'Intervention en cours'
+    : session?.status === 'arrived'
+      ? 'Votre prestataire est arrivé'
+      : eta != null ? `Arrivée dans ~${eta} min` : null;
 
   return (
     <View style={styles.wrap} testID="home-mission-map">
@@ -76,9 +84,9 @@ export function HomeMissionMap({ bookingId }: { bookingId: number }) {
         />
       )}
 
-      {eta !== undefined && eta !== null ? (
+      {pillText ? (
         <View style={styles.etaPill} pointerEvents="none">
-          <Text style={styles.etaText}>Arrivée dans ~{eta} min</Text>
+          <Text style={styles.etaText}>{pillText}</Text>
         </View>
       ) : null}
     </View>
