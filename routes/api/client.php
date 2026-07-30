@@ -105,6 +105,8 @@ Route::middleware('auth:sanctum')->prefix('client')->group(function () {
     // Confirmation de présence : le client affiche, le prestataire scanne. POST car chaque
     // appel forge un code neuf et périme le précédent.
     Route::post('/bookings/{booking}/presence-code', [TripTrackingController::class, 'issuePresenceCode']);
+    // Clôture : même direction que la présence — le client atteste, le prestataire scanne.
+    Route::post('/bookings/{booking}/completion-code', [TripTrackingController::class, 'issueCompletionCode']);
 
     // Booking favorites — rebook 1-click
     Route::get('/favorites', [BookingFavoriteController::class, 'index']);

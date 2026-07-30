@@ -4,6 +4,7 @@ export {
   useMarkInMission,
   useArriveOnSite,
   useConfirmPresence,
+  useCompleteByQr,
   usePushPosition,
   usePushEta,
   useGpsWatcher,

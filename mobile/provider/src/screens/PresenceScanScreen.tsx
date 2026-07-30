@@ -4,7 +4,7 @@ import { CameraView, useCameraPermissions } from 'expo-camera';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { Screen, Button, TextInput } from '@/ui';
-import { useConfirmPresence } from '@/tracking';
+import { useConfirmPresence, useCompleteByQr } from '@/tracking';
 import { colors, spacing, typography, radius } from '@/theme';
 import type { RootStackParamList } from '@/navigation/types';
 
@@ -21,29 +21,43 @@ type Props = NativeStackScreenProps<RootStackParamList, 'PresenceScan'>;
  * doivent pas bloquer une intervention. Le client peut alors dicter ses six chiffres.
  */
 export function PresenceScanScreen({ route }: Props) {
-  const { sessionId } = route.params;
+  const params = route.params;
+  // Les deux bouts de la visite partagent cet écran : même caméra, même repli manuel, mêmes
+  // messages d'erreur. Seul change ce qui est validé — une session de suivi à l'arrivée, une
+  // mission à la clôture.
+  const isCompletion = params.purpose === 'completion';
+  const sessionId = 'sessionId' in params ? params.sessionId : null;
+  const missionId = 'missionId' in params ? params.missionId : null;
+
   const navigation = useNavigation<any>();
   const [permission, requestPermission] = useCameraPermissions();
   const [scanned, setScanned] = useState(false);
   const [manualCode, setManualCode] = useState('');
-  const confirm = useConfirmPresence(sessionId);
+  const presence = useConfirmPresence(sessionId);
+  const completion = useCompleteByQr(missionId);
+  const confirm = isCompletion ? completion : presence;
 
   const submit = useCallback(
     (code: string) => {
       confirm.mutate(
         { code },
         {
-          onSuccess: (result) => {
+          onSuccess: (result: any) => {
             // Le démarrage est un effet de bord : il peut ne pas avoir lieu — mission déjà
             // commencée, prestataire non rattaché — sans que la présence en souffre. Annoncer
             // « mission démarrée » dans ce cas serait un mensonge.
-            Alert.alert(
-              'Présence confirmée',
-              result?.mission_started
-                ? "L'intervention a démarré. Le client a été notifié."
-                : 'Le client a bien été notifié.',
-              [{ text: 'Continuer', onPress: () => navigation.goBack() }],
-            );
+            const [title, message] = isCompletion
+              ? ['Mission clôturée', 'Le client a validé la fin de la prestation.']
+              : [
+                  'Présence confirmée',
+                  result?.mission_started
+                    ? "L'intervention a démarré. Le client a été notifié."
+                    : 'Le client a bien été notifié.',
+                ];
+
+            Alert.alert(title, message, [
+              { text: 'Continuer', onPress: () => navigation.goBack() },
+            ]);
           },
           onError: (e: any) => {
             // Le message du serveur est celui qui explique la cause — code expiré, déjà brûlé,
@@ -68,10 +82,15 @@ export function PresenceScanScreen({ route }: Props) {
       if (scanned || confirm.isPending) return;
       setScanned(true);
 
+      // Chaque bout de la visite a son étiquette. Un code de présence envoyé au point d'entrée
+      // de clôture serait refusé par le serveur, mais consommerait un essai au passage — et
+      // laisserait le prestataire devant un « code invalide » incompréhensible.
+      const expected = isCompletion ? 'cleanux.completion' : 'cleanux.presence';
+
       let code: string | null = null;
       try {
         const parsed = JSON.parse(data);
-        if (parsed?.t === 'cleanux.presence' && typeof parsed.c === 'string') {
+        if (parsed?.t === expected && typeof parsed.c === 'string') {
           code = parsed.c;
         }
       } catch {
@@ -79,7 +98,12 @@ export function PresenceScanScreen({ route }: Props) {
       }
 
       if (!code) {
-        Alert.alert('QR non reconnu', "Ce n'est pas le code de présence du client.");
+        Alert.alert(
+          'QR non reconnu',
+          isCompletion
+            ? "Ce n'est pas le code de fin du client."
+            : "Ce n'est pas le code de présence du client.",
+        );
         setScanned(false);
 
         return;
@@ -87,7 +111,7 @@ export function PresenceScanScreen({ route }: Props) {
 
       submit(code);
     },
-    [scanned, confirm.isPending, submit],
+    [scanned, confirm.isPending, submit, isCompletion],
   );
 
   // `useCameraPermissions` rend `null` le temps de lire l'état du système.
@@ -124,7 +148,9 @@ export function PresenceScanScreen({ route }: Props) {
         <View style={styles.overlay}>
           <View style={styles.frame} />
           <Text style={styles.instruction}>
-            Scannez le code affiché sur le téléphone du client
+            {isCompletion
+              ? 'Scannez le code de fin affiché par le client'
+              : 'Scannez le code affiché sur le téléphone du client'}
           </Text>
           {scanned && !confirm.isPending && (
             <Button label="Scanner à nouveau" onPress={() => setScanned(false)} variant="secondary" />
@@ -146,7 +172,7 @@ export function PresenceScanScreen({ route }: Props) {
           testID="presence-manual-code"
         />
         <Button
-          label="Confirmer ma présence"
+          label={isCompletion ? 'Clôturer la mission' : 'Confirmer ma présence'}
           onPress={() =>
             manualCode.length === 6
               ? submit(manualCode)

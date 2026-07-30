@@ -171,6 +171,8 @@ Route::middleware(['auth:sanctum', 'role:employe', 'provider.approved'])->group(
         // l'app mobile : un prestataire arrive sur place ne pouvait pas demarrer sa mission.
         Route::post('/{mission}/begin', [ProviderMissionLifecycleController::class, 'begin']);
         Route::post('/{mission}/complete', [ProviderMissionLifecycleController::class, 'complete']);
+        // Clôture par le code que le client affiche : un SMS voyage, un écran non.
+        Route::post('/{mission}/complete-by-qr', [ProviderMissionLifecycleController::class, 'completeByQr']);
     });
 
     // Phase 14 — Cancellation provider

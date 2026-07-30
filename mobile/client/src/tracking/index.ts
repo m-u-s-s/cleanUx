@@ -1,2 +1,2 @@
-export { useTrackingSession, useTrackingTrail, useLiveTracking, usePresenceCode } from './hooks';
-export type { TrackingSession, TrackingPoint, LivePosition, LiveEta, PresenceCode } from './types';
+export { useTrackingSession, useTrackingTrail, useLiveTracking, usePresenceCode, useCompletionCode } from './hooks';
+export type { TrackingSession, TrackingPoint, LivePosition, LiveEta, PresenceCode, CompletionCode } from './types';

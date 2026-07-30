@@ -6,11 +6,13 @@ use App\Http\Controllers\Controller;
 use App\Models\Booking;
 use App\Models\TripTrackingPoint;
 use App\Models\TripTrackingSession;
+use App\Services\Missions\MissionLifecycleService;
 use App\Services\TripTracking\PresenceCodeService;
 use App\Services\TripTracking\TripTrackingService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
+use RuntimeException;
 
 /**
  * @group Client — Trip Tracking
@@ -99,6 +101,50 @@ class TripTrackingController extends Controller
                 'session_code' => $session->code,
                 'code' => $issued['code'],
                 'expires_at' => $issued['expires_at'],
+            ],
+        ]);
+    }
+
+    /**
+     * Issue the code the client shows to close the mission.
+     *
+     * Mirror of the presence code, at the other end of the visit: the client attests that the
+     * work is done by showing a code the provider scans. Closing the mission captures the
+     * pre-authorised payment, so the client's assent must be a deliberate gesture.
+     *
+     * A POST for the same reason as the presence code: each call mints a new code and burns the
+     * previous one, so the app must call it once and hold the result.
+     *
+     * @response 200 {"data": {"mission_id": 4, "code": "731204", "expires_at": "2026-07-30T21:10:00+00:00"}}
+     * @response 409 {"error": "not_started"}
+     */
+    public function issueCompletionCode(Request $request, Booking $booking, MissionLifecycleService $lifecycle): JsonResponse
+    {
+        if ((int) $booking->client_id !== (int) $request->user()->id) {
+            return response()->json(['error' => 'forbidden'], 403);
+        }
+
+        $mission = $booking->missions()->latest('id')->first();
+        if (! $mission) {
+            return response()->json(['error' => 'no_mission'], 404);
+        }
+
+        try {
+            $issued = $lifecycle->generateEndCode($mission);
+        } catch (RuntimeException $e) {
+            // La mission doit être démarrée : plus tôt, il n'y a pas de travail à attester.
+            return response()->json([
+                'error' => 'not_started',
+                'status' => $mission->status,
+                'message' => $e->getMessage(),
+            ], 409);
+        }
+
+        return response()->json([
+            'data' => [
+                'mission_id' => $mission->id,
+                'code' => $issued['code'],
+                'expires_at' => $issued['record']->expires_at,
             ],
         ]);
     }

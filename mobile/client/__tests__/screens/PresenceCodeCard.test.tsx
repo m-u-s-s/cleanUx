@@ -19,7 +19,15 @@ const mockState: { data: unknown; isPending: boolean; isError: boolean } = {
   isError: false,
 };
 
+const mockCompletionMutate = jest.fn();
+
 jest.mock('@/tracking', () => ({
+  useCompletionCode: () => ({
+    mutate: mockCompletionMutate,
+    data: { mission_id: 4, code: '731204', expires_at: '2026-07-30T21:00:00Z' },
+    isPending: false,
+    isError: false,
+  }),
   usePresenceCode: () => ({
     mutate: mockMutate,
     data: mockState.data,
@@ -61,6 +69,7 @@ import { PresenceCodeCard } from '@/screens/components/PresenceCodeCard';
 
 beforeEach(() => {
   mockMutate.mockClear();
+  mockCompletionMutate.mockClear();
   mockState.data = { session_id: 1, session_code: 'trip_x', code: '482951', expires_at: '2026-07-30T19:00:00Z' };
   mockState.isPending = false;
   mockState.isError = false;
@@ -129,5 +138,24 @@ describe('Code de présence côté client', () => {
 
     expect(screen.queryByTestId('qr')).toBeNull();
     expect(screen.getByText('Code indisponible pour le moment.')).toBeTruthy();
+  });
+
+  /**
+   * L'autre bout de la visite. L'étiquette du QR change avec lui : le scanner du prestataire
+   * refuse un code de présence au moment de clôturer, et réciproquement.
+   */
+  it('affiche le code de fin avec sa propre étiquette', () => {
+    render(<PresenceCodeCard bookingId={7} purpose="completion" />);
+
+    expect(mockCompletionMutate).toHaveBeenCalledTimes(1);
+    expect(mockMutate).not.toHaveBeenCalled();
+    expect(screen.getByLabelText(JSON.stringify({ t: 'cleanux.completion', v: 1, s: 4, c: '731204' }))).toBeTruthy();
+  });
+
+  /** La clôture encaisse : le client doit lire ce qu'il valide, pas un texte d'arrivée. */
+  it('annonce ce que la clôture déclenche', () => {
+    render(<PresenceCodeCard bookingId={7} purpose="completion" />);
+
+    expect(screen.getByText('Validez la fin de la prestation')).toBeTruthy();
   });
 });

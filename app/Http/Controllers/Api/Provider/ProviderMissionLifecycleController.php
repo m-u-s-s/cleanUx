@@ -147,6 +147,43 @@ class ProviderMissionLifecycleController extends Controller
      * @response 403 {"message": "Vous n'êtes pas assigné à cette mission."}
      * @response 422 {"message": "Mission cannot transition from current status to arrived."}
      */
+    /**
+     * Close the mission with the code the client shows on their screen.
+     *
+     * Mirror of the presence scan, at the other end of the visit. The end code was sent to the
+     * client by SMS and typed back by the provider; an SMS travels, a code read off the client's
+     * screen requires both people in the same room. Closing captures the pre-authorised payment,
+     * so the client's assent must be a deliberate gesture rather than a forwarded message.
+     *
+     * @bodyParam code string required The 6-digit code read from the client's QR. Example: 731204
+     *
+     * @response 200 {"ok": true, "mission_id": 12, "status": "completed"}
+     * @response 403 {"message": "Vous n'êtes pas assigné à cette mission."}
+     * @response 422 {"ok": false, "message": "Code invalide."}
+     */
+    public function completeByQr(Request $request, Mission $mission): JsonResponse
+    {
+        $this->authorizeProvider($request, $mission);
+
+        $data = $request->validate([
+            'code' => ['required', 'string', 'max:191'],
+        ]);
+
+        try {
+            // `validateEndCode` consomme le code PUIS clôture — encaissement compris. Un code
+            // refusé ne doit donc rien déclencher, d'où la validation en amont de la clôture.
+            $mission = $this->lifecycle->validateEndCode($mission, $request->user(), $data['code']);
+        } catch (\RuntimeException $e) {
+            return response()->json(['ok' => false, 'message' => $e->getMessage()], 422);
+        }
+
+        return response()->json([
+            'ok' => true,
+            'mission_id' => $mission->id,
+            'status' => $mission->status,
+        ]);
+    }
+
     public function arrive(Request $request, Mission $mission): JsonResponse
     {
         $this->authorizeProvider($request, $mission);

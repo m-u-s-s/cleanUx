@@ -162,6 +162,14 @@ export function MissionDetailScreen({ route }: Props) {
               onPress={() => navigation.navigate('MissionField', { missionId })}
               fullWidth
             />
+            {/* Clôture par le code que le client affiche : c'est son accord explicite, et il
+                déclenche l'encaissement. Le bouton rouge en dessous garde l'ancien chemin par
+                code SMS pour les missions sans écran client sous la main. */}
+            <Button
+              label="Clôturer avec le client"
+              onPress={() => navigation.navigate('PresenceScan', { purpose: 'completion', missionId })}
+              fullWidth
+            />
             <Button
               label="Mission terminée"
               onPress={() => handleAction('complete', 'Terminer')}

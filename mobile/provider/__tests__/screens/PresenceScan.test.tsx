@@ -16,8 +16,11 @@ import { Alert } from 'react-native';
 const mockConfirm = jest.fn();
 const mockGoBack = jest.fn();
 
+const mockComplete = jest.fn();
+
 jest.mock('@/tracking', () => ({
   useConfirmPresence: () => ({ mutate: mockConfirm, isPending: false }),
+  useCompleteByQr: () => ({ mutate: mockComplete, isPending: false }),
 }));
 
 jest.mock('@react-navigation/native', () => ({
@@ -72,6 +75,7 @@ const route = { params: { sessionId: 42 } } as any;
 
 beforeEach(() => {
   mockConfirm.mockReset();
+  mockComplete.mockReset();
   mockGoBack.mockReset();
   cameraState.permission = { granted: true };
   cameraState.onScan = null;
@@ -182,6 +186,38 @@ describe('Scan de présence côté prestataire', () => {
 
     fireEvent.changeText(screen.getByTestId('presence-manual-code'), '4829');
     fireEvent.press(screen.getByLabelText('Confirmer ma présence'));
+
+    expect(mockConfirm).not.toHaveBeenCalled();
+  });
+
+  /**
+   * Clôture : le même écran, l'autre bout de la visite. L'étiquette du QR diffère — un code de
+   * présence envoyé au point d'entrée de clôture consommerait un essai pour rien et laisserait
+   * le prestataire devant un refus incompréhensible.
+   */
+  it('clôture la mission avec un QR de fin', () => {
+    const endRoute = { params: { purpose: 'completion', missionId: 4 } } as any;
+    render(<PresenceScanScreen route={endRoute} navigation={{} as any} />);
+
+    act(() => cameraState.onScan?.({ data: JSON.stringify({ t: 'cleanux.completion', v: 1, s: 4, c: '731204' }) }));
+
+    expect(mockComplete).toHaveBeenCalledWith({ code: '731204' }, expect.anything());
+    expect(mockConfirm).not.toHaveBeenCalled();
+  });
+
+  it('refuse un code de présence au moment de clôturer', () => {
+    const endRoute = { params: { purpose: 'completion', missionId: 4 } } as any;
+    render(<PresenceScanScreen route={endRoute} navigation={{} as any} />);
+
+    act(() => cameraState.onScan?.({ data: JSON.stringify({ t: 'cleanux.presence', v: 1, s: 42, c: '482951' }) }));
+
+    expect(mockComplete).not.toHaveBeenCalled();
+  });
+
+  it('refuse un code de fin au moment de confirmer la présence', () => {
+    render(<PresenceScanScreen route={route} navigation={{} as any} />);
+
+    act(() => cameraState.onScan?.({ data: JSON.stringify({ t: 'cleanux.completion', v: 1, s: 4, c: '731204' }) }));
 
     expect(mockConfirm).not.toHaveBeenCalled();
   });

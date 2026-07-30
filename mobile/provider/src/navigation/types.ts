@@ -11,7 +11,11 @@ export type RootStackParamList = {
   MissionInbox: undefined;
   MissionField: { missionId: number };
   MissionTracking: { missionId: number; bookingId: number };
-  PresenceScan: { sessionId: number };
+  // Le même écran sert aux deux bouts de la visite : arrivée puis clôture. Ils diffèrent par
+  // ce qu'ils valident — une session de suivi d'un côté, une mission de l'autre.
+  PresenceScan:
+    | { purpose?: 'presence'; sessionId: number }
+    | { purpose: 'completion'; missionId: number };
   StripeOnboarding: undefined;
   KYC: undefined;
   Availability: undefined;

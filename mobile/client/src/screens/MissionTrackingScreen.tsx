@@ -41,9 +41,11 @@ export function MissionTrackingScreen({ route }: Props) {
   const lastPoint = trail && trail.length > 0 ? trail[trail.length - 1] : null;
   const currentPos = livePos ?? session?.provider ?? lastPoint;
   const etaMinutes = liveEta?.eta_minutes ?? session?.eta_minutes;
-  // Le prestataire a annoncé le démarrage mais n'a pas encore prouvé sa présence : c'est le
-  // moment où le client doit lui montrer son code.
-  const awaitingPresence = session?.status === 'in_mission' && !session.presence_confirmed_at;
+  // Deux moments demandent un code au client, dans cet ordre : prouver que le prestataire est
+  // bien là, puis attester que le travail est fait. Le second n'a de sens qu'après le premier.
+  const inMission = session?.status === 'in_mission';
+  const awaitingPresence = inMission && !session.presence_confirmed_at;
+  const awaitingCompletion = inMission && !!session.presence_confirmed_at;
   // La distance restante n'est pas portée par la session : elle est relevée point par point.
   const distanceKm = liveEta?.distance_km
     ?? (lastPoint?.distance_to_dest_m != null ? lastPoint.distance_to_dest_m / 1000 : undefined);
@@ -137,10 +139,13 @@ export function MissionTrackingScreen({ route }: Props) {
         </View>
       )}
 
-      {awaitingPresence ? (
-        // L'intervention a démarré : le trajet n'apprend plus rien, la preuve de présence si.
+      {awaitingPresence || awaitingCompletion ? (
+        // L'intervention a démarré : le trajet n'apprend plus rien, le code si.
         <View style={styles.presenceSlot}>
-          <PresenceCodeCard bookingId={bookingId} />
+          <PresenceCodeCard
+            bookingId={bookingId}
+            purpose={awaitingCompletion ? 'completion' : 'presence'}
+          />
         </View>
       ) : (
         <View style={styles.infoCard}>

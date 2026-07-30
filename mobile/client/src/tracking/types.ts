@@ -49,6 +49,13 @@ export interface PresenceCode {
   expires_at: string;
 }
 
+/** Code de fin de prestation : le client atteste que le travail est fait. */
+export interface CompletionCode {
+  mission_id: number;
+  code: string;
+  expires_at: string;
+}
+
 export interface LivePosition {
   latitude: number;
   longitude: number;

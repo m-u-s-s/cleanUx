@@ -7,6 +7,7 @@ import type {
   ApiTrackingSession,
   LiveEta,
   LivePosition,
+  CompletionCode,
   PresenceCode,
   TrackingPoint,
   TrackingSession,
@@ -102,6 +103,23 @@ export function usePresenceCode(bookingId: number | null) {
       const res = await apiClient.post(`/client/bookings/${bookingId}/presence-code`);
 
       return (res.data?.data ?? res.data) as PresenceCode;
+    },
+  });
+}
+
+/**
+ * Code de fin, à afficher quand le travail est terminé.
+ *
+ * Même direction que le code de présence — le client atteste, le prestataire scanne — mais
+ * l'enjeu est plus lourd : la clôture encaisse le paiement pré-autorisé. Le montrer doit donc
+ * rester un geste délibéré du client.
+ */
+export function useCompletionCode(bookingId: number | null) {
+  return useMutation<CompletionCode, Error>({
+    mutationFn: async () => {
+      const res = await apiClient.post(`/client/bookings/${bookingId}/completion-code`);
+
+      return (res.data?.data ?? res.data) as CompletionCode;
     },
   });
 }

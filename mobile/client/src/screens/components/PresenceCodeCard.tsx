@@ -2,7 +2,7 @@ import React, { useEffect, useMemo } from 'react';
 import { View, Text, StyleSheet, ActivityIndicator } from 'react-native';
 import QRCode from 'react-native-qrcode-svg';
 import { Button } from '@/ui';
-import { usePresenceCode } from '@/tracking';
+import { usePresenceCode, useCompletionCode } from '@/tracking';
 import { colors, spacing, typography, radius, shadows } from '@/theme';
 
 /**
@@ -20,28 +20,61 @@ import { colors, spacing, typography, radius, shadows } from '@/theme';
  * Les six chiffres restent lisibles sous le QR : une caméra sale, un écran fêlé ou une lumière
  * rasante ne doivent pas bloquer une intervention — le prestataire peut alors les saisir.
  */
-export function PresenceCodeCard({ bookingId }: { bookingId: number }) {
-  const { mutate, data, isPending, isError } = usePresenceCode(bookingId);
+type Purpose = 'presence' | 'completion';
+
+const WORDING: Record<Purpose, { title: string; hint: string; tag: string }> = {
+  presence: {
+    title: 'Confirmez la présence',
+    hint: "Montrez ce code à votre prestataire. Il le scanne pour attester qu'il est bien chez vous.",
+    tag: 'cleanux.presence',
+  },
+  // La clôture encaisse le paiement pré-autorisé : le client doit comprendre ce qu'il valide.
+  completion: {
+    title: 'Validez la fin de la prestation',
+    hint: 'Montrez ce code une fois le travail terminé. Il clôture la mission et déclenche le paiement.',
+    tag: 'cleanux.completion',
+  },
+};
+
+export function PresenceCodeCard({
+  bookingId,
+  purpose = 'presence',
+}: {
+  bookingId: number;
+  purpose?: Purpose;
+}) {
+  const presence = usePresenceCode(bookingId);
+  const completion = useCompletionCode(bookingId);
+  const { mutate, data, isPending, isError } = purpose === 'completion' ? completion : presence;
+  const wording = WORDING[purpose];
 
   useEffect(() => {
     mutate();
-  }, [bookingId]);
+  }, [bookingId, purpose]);
 
   /**
    * Charge utile du QR. Le libellé et la version sont explicites pour que le scanner du
    * prestataire puisse refuser un QR étranger plutôt que d'en tirer un code au hasard.
    */
   const payload = useMemo(
-    () => (data ? JSON.stringify({ t: 'cleanux.presence', v: 1, s: data.session_id, c: data.code }) : null),
-    [data],
+    () =>
+      data
+        ? JSON.stringify({
+            t: wording.tag,
+            v: 1,
+            // L'identifiant que porte le QR n'est pas le même selon le bout de la visite : le
+            // scan d'arrivée valide une session de suivi, celui de clôture une mission.
+            s: (data as any).session_id ?? (data as any).mission_id,
+            c: data.code,
+          })
+        : null,
+    [data, wording.tag],
   );
 
   return (
     <View style={styles.card} testID="presence-code-card">
-      <Text style={styles.title}>Confirmez la présence</Text>
-      <Text style={styles.hint}>
-        Montrez ce code à votre prestataire. Il le scanne pour attester qu'il est bien chez vous.
-      </Text>
+      <Text style={styles.title}>{wording.title}</Text>
+      <Text style={styles.hint}>{wording.hint}</Text>
 
       {isPending ? (
         <View style={styles.placeholder} testID="presence-code-loading">
