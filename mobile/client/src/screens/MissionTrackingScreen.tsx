@@ -8,6 +8,18 @@ import type { RootStackParamList } from '@/navigation/types';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'MissionTracking'>;
 
+/**
+ * Le statut de session est un identifiant technique anglais ; l'application est en français.
+ * Il s'affichait tel quel dans la pastille, faute de traduction.
+ */
+const STATUS_LABELS: Record<string, string> = {
+  enroute: 'En route',
+  arrived: 'Sur place',
+  in_mission: 'En cours',
+  ended: 'Terminée',
+  cancelled: 'Annulée',
+};
+
 export function MissionTrackingScreen({ route }: Props) {
   const { bookingId } = route.params;
   const { data: session, isLoading } = useTrackingSession(bookingId);
@@ -23,9 +35,14 @@ export function MissionTrackingScreen({ route }: Props) {
    */
   const mapModule = useMemo(() => (isMapRenderable() ? loadMapModule() : null), []);
 
-  const currentPos = livePos ?? (trail && trail.length > 0 ? trail[trail.length - 1] : null);
+  // Par fraîcheur décroissante : le temps réel, puis la dernière position enregistrée par le
+  // serveur — qui existe dès le premier relevé, quand la trace peut encore être vide.
+  const lastPoint = trail && trail.length > 0 ? trail[trail.length - 1] : null;
+  const currentPos = livePos ?? session?.provider ?? lastPoint;
   const etaMinutes = liveEta?.eta_minutes ?? session?.eta_minutes;
-  const distanceKm = liveEta?.distance_km ?? session?.distance_km;
+  // La distance restante n'est pas portée par la session : elle est relevée point par point.
+  const distanceKm = liveEta?.distance_km
+    ?? (lastPoint?.distance_to_dest_m != null ? lastPoint.distance_to_dest_m / 1000 : undefined);
 
   // Initial region only — updates happen via animateToRegion
   const initialRegion = useMemo(() => {
@@ -132,7 +149,7 @@ export function MissionTrackingScreen({ route }: Props) {
           </View>
           {session?.status && (
             <Badge
-              label={session.status}
+              label={STATUS_LABELS[session.status] ?? session.status}
               variant={session.status === 'in_mission' ? 'success' : 'brand'}
             />
           )}

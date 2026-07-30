@@ -26,7 +26,12 @@ export function HomeMissionMap({ bookingId }: { bookingId: number }) {
   const { data: trail } = useTrackingTrail(bookingId);
   const { position: livePosition } = useLiveTracking(bookingId);
 
-  const current = livePosition ?? (trail && trail.length > 0 ? trail[trail.length - 1] : null);
+  // Par fraîcheur décroissante. `session.provider` est la dernière position enregistrée par le
+  // serveur : elle existe dès le premier relevé, alors que la trace peut encore être vide et que
+  // le temps réel n'a rien émis depuis l'ouverture de l'écran.
+  const current = livePosition
+    ?? session?.provider
+    ?? (trail && trail.length > 0 ? trail[trail.length - 1] : null);
 
   const mapModule = useMemo(() => (isMapRenderable() ? loadMapModule() : null), []);
 

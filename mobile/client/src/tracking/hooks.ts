@@ -1,24 +1,87 @@
 import { useQuery } from '@tanstack/react-query';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { apiClient } from '@/api';
 import { useChannel } from '@/realtime';
-import type { TrackingSession, LivePosition, LiveEta } from './types';
+import type {
+  ApiTrackingPoint,
+  ApiTrackingSession,
+  LiveEta,
+  LivePosition,
+  TrackingPoint,
+  TrackingSession,
+} from './types';
 
+/**
+ * Point de traduction unique entre le vocabulaire du serveur et celui des cartes.
+ *
+ * Rien ne traduisait auparavant : les crochets renvoyaient la charge brute, et les écrans y
+ * cherchaient des champs qui n'y figuraient pas. `useTrackingSession` renvoyait même l'enveloppe
+ * `{ data: … }` entière, si bien que `session.status` et `session.eta_minutes` valaient
+ * systématiquement `undefined`.
+ */
+function toPosition(lat: number | null, lng: number | null, speed?: number | null): LivePosition | null {
+  // Une coordonnée nulle n'est pas une position à zéro : sans les deux, il n'y a rien à situer.
+  if (lat === null || lat === undefined || lng === null || lng === undefined) {
+    return null;
+  }
+
+  return {
+    latitude: Number(lat),
+    longitude: Number(lng),
+    ...(speed === null || speed === undefined ? {} : { speed: Number(speed) }),
+  };
+}
+
+function toSession(raw: ApiTrackingSession): TrackingSession {
+  return {
+    code: raw.code,
+    status: raw.status,
+    destination: toPosition(raw.destination?.lat ?? null, raw.destination?.lng ?? null),
+    provider: toPosition(raw.provider?.lat ?? null, raw.provider?.lng ?? null, raw.provider?.speed_mps),
+    eta_seconds: raw.eta_seconds ?? null,
+    eta_minutes: raw.eta_minutes ?? null,
+    arrived_at: raw.arrived_at ?? null,
+    in_mission_at: raw.in_mission_at ?? null,
+    last_ping_at: raw.last_ping_at ?? null,
+  };
+}
+
+function toPoint(raw: ApiTrackingPoint): TrackingPoint {
+  return {
+    latitude: Number(raw.lat),
+    longitude: Number(raw.lng),
+    eta_seconds: raw.eta_seconds ?? null,
+    distance_to_dest_m: raw.distance_to_dest_m ?? null,
+    recorded_at: raw.at,
+  };
+}
+
+/**
+ * Le serveur répond `{ data: null }` tant qu'aucune session n'est ouverte — une réservation
+ * confirmée mais non démarrée, par exemple. C'est une absence légitime, pas une erreur.
+ */
 export function useTrackingSession(bookingId: number | null) {
-  return useQuery<TrackingSession>({
+  return useQuery<TrackingSession | null>({
     queryKey: ['tracking', 'session', bookingId],
-    queryFn: async () => (await apiClient.get(`/client/bookings/${bookingId}/tracking`)).data,
+    queryFn: async () => {
+      const res = await apiClient.get(`/client/bookings/${bookingId}/tracking`);
+      const raw = res.data?.data ?? null;
+
+      return raw ? toSession(raw as ApiTrackingSession) : null;
+    },
     enabled: bookingId !== null,
     refetchInterval: 30000,
   });
 }
 
 export function useTrackingTrail(bookingId: number | null) {
-  return useQuery<TrackingSession['points']>({
+  return useQuery<TrackingPoint[]>({
     queryKey: ['tracking', 'trail', bookingId],
     queryFn: async () => {
       const res = await apiClient.get(`/client/bookings/${bookingId}/tracking/trail`);
-      return res.data.data ?? res.data;
+      const raw = res.data?.data ?? res.data;
+
+      return Array.isArray(raw) ? (raw as ApiTrackingPoint[]).map(toPoint) : [];
     },
     enabled: bookingId !== null,
     refetchInterval: 15000,
