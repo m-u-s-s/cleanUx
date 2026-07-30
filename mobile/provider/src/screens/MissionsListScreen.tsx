@@ -6,6 +6,7 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useQuery } from '@tanstack/react-query';
 import { Screen, Badge, Skeleton, EmptyState, AnimatedListItem } from '@/ui';
 import { apiClient } from '@/api';
+import { missionStatusLabel } from '@/missions';
 import { colors, spacing, typography, radius, shadows, useThemeColors } from '@/theme';
 import type { RootStackParamList } from '@/navigation/types';
 
@@ -49,12 +50,12 @@ export function MissionsListScreen() {
         <TouchableOpacity
           style={[styles.card, { backgroundColor: themeColors.card }]}
           onPress={() => navigation.navigate('MissionDetail', { missionId: item.id })}
-          accessibilityLabel={`Mission ${item.service_name} — ${item.status}`}
+          accessibilityLabel={`Mission ${item.service_name} — ${missionStatusLabel(item.status)}`}
           accessibilityRole="button"
         >
           <View style={styles.cardHeader}>
             <Text style={styles.service}>{item.service_name}</Text>
-            <Badge label={item.status} variant={statusBadgeVariant(item.status)} />
+            <Badge label={missionStatusLabel(item.status)} variant={statusBadgeVariant(item.status)} />
           </View>
           <Text style={styles.client}>{item.client_name}</Text>
           <Text style={styles.address}>

@@ -1,4 +1,4 @@
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient, ApiError } from '@/api';
 import { useEffect, useRef, useState } from 'react';
 import * as Location from 'expo-location';
@@ -42,19 +42,42 @@ export function useMarkInMission(sessionId: number | null) {
 }
 
 /**
- * « Je suis arrivé » depuis le détail de la mission, sans passer par l'écran de suivi.
+ * « Je suis arrivé » : fait avancer la mission ET la session de suivi.
  *
- * Ouvre la session si elle n'existe pas — `startSession` est idempotent par (prestataire,
- * réservation) — puis la fait passer à `in_mission`. Le prestataire qui a roulé sans ouvrir
- * l'écran de suivi doit pouvoir annoncer son arrivée quand même.
+ * Deux machines à états cohabitent — la mission (`en_route → arrived → started`) et la session
+ * de suivi (`enroute → arrived → in_mission`). N'en avancer qu'une laissait le prestataire
+ * devant un badge « en route » alors qu'il venait d'annoncer son arrivée.
+ *
+ * L'arrivée de la mission est SOUPLE : le serveur refuse la transition depuis un état qui ne
+ * l'admet pas — mission déjà `arrived`, par exemple, au second passage. Ce refus ne doit pas
+ * empêcher la preuve de présence, qui est l'objet du geste.
+ *
+ * La session, elle, est ouverte si besoin : `startSession` est idempotent par (prestataire,
+ * réservation), et le prestataire qui a roulé sans ouvrir l'écran de suivi doit pouvoir annoncer
+ * son arrivée quand même.
  */
-export function useArriveOnSite(bookingId: number | null) {
+export function useArriveOnSite(bookingId: number | null, missionId: number | null) {
+  const qc = useQueryClient();
+
   return useMutation<{ id: number; status: string }, ApiError>({
     mutationFn: async () => {
+      if (missionId !== null) {
+        try {
+          await apiClient.post(`/provider/missions/${missionId}/arrive`);
+        } catch {
+          // Transition déjà faite ou impossible : le suivi prime.
+        }
+      }
+
       const session = (await apiClient.post(`/provider/bookings/${bookingId}/tracking/start`)).data?.data;
       const updated = (await apiClient.post(`/provider/tracking/${session.id}/in-mission`)).data?.data;
 
       return updated ?? session;
+    },
+    // Sans cette invalidation, le badge resterait sur la valeur mise en cache avant l'appel.
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['provider', 'mission', missionId] });
+      qc.invalidateQueries({ queryKey: ['provider', 'missions', 'active'] });
     },
   });
 }

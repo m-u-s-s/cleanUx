@@ -3,7 +3,7 @@ import { View, Text, Alert, StyleSheet } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useNavigation } from '@react-navigation/native';
 import { Screen, Button, Badge, Divider, TextInput } from '@/ui';
-import { useMissionDetail, useMissionLifecycle } from '@/missions';
+import { useMissionDetail, useMissionLifecycle, missionStatusLabel } from '@/missions';
 import { useArriveOnSite } from '@/tracking';
 import { colors, spacing, typography, radius, shadows, useThemeColors } from '@/theme';
 import type { RootStackParamList } from '@/navigation/types';
@@ -14,7 +14,7 @@ export function MissionDetailScreen({ route }: Props) {
   const { missionId } = route.params;
   const { data: mission, isLoading } = useMissionDetail(missionId);
   const lifecycle = useMissionLifecycle(missionId);
-  const arriveOnSite = useArriveOnSite(mission?.booking_id ?? null);
+  const arriveOnSite = useArriveOnSite(mission?.booking_id ?? null, missionId);
   const navigation = useNavigation<any>();
   const themeColors = useThemeColors();
 
@@ -41,6 +41,23 @@ export function MissionDetailScreen({ route }: Props) {
     ]);
   };
 
+  /**
+   * Annonce l'arrivée puis ouvre la preuve de présence.
+   *
+   * Idempotent de bout en bout : l'arrivée de la mission échoue en silence si elle a déjà eu
+   * lieu, la session de suivi est réutilisée si elle existe. Le même geste sert donc à annoncer
+   * l'arrivée ET à revenir au scanner depuis une mission déjà `arrived` — sans quoi quitter
+   * l'écran laisserait le prestataire sans aucun chemin vers le code du client.
+   */
+  const handleArrival = () => {
+    if (mission.booking_id == null) return;
+
+    arriveOnSite.mutate(undefined, {
+      onSuccess: (session) => navigation.navigate('PresenceScan', { sessionId: session.id }),
+      onError: (e: any) => Alert.alert('Impossible', e?.message ?? 'Réessayez.'),
+    });
+  };
+
   const badgeVariant =
     mission.status === 'completed'
       ? 'success'
@@ -52,7 +69,7 @@ export function MissionDetailScreen({ route }: Props) {
     <Screen scroll>
       <View style={styles.header}>
         <Text style={styles.title}>{mission.service_name}</Text>
-        <Badge label={mission.status} variant={badgeVariant} />
+        <Badge label={missionStatusLabel(mission.status)} variant={badgeVariant} />
       </View>
       <View style={[styles.card, { backgroundColor: themeColors.card }]}>
         <DetailRow label="Client" value={mission.client_name} />
@@ -98,13 +115,7 @@ export function MissionDetailScreen({ route }: Props) {
                 client. */}
             <Button
               label="Je suis arrivé"
-              onPress={() => {
-                if (mission.booking_id == null) return;
-                arriveOnSite.mutate(undefined, {
-                  onSuccess: (session) => navigation.navigate('PresenceScan', { sessionId: session.id }),
-                  onError: (e: any) => Alert.alert('Impossible', e?.message ?? 'Réessayez.'),
-                });
-              }}
+              onPress={handleArrival}
               loading={arriveOnSite.isPending}
               fullWidth
             />
@@ -112,6 +123,14 @@ export function MissionDetailScreen({ route }: Props) {
         )}
         {mission.status === 'arrived' && (
           <>
+            {/* Le scan reste atteignable après l'arrivée : le prestataire qui quitte l'écran
+                doit pouvoir y revenir tant que la présence n'est pas confirmée. */}
+            <Button
+              label="Confirmer ma présence"
+              onPress={handleArrival}
+              loading={arriveOnSite.isPending}
+              fullWidth
+            />
             <TextInput
               label="Code de début (donné au client par SMS)"
               value={startCode}
