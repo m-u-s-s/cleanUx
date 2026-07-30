@@ -458,12 +458,42 @@ class ClientBookingController extends Controller
         abort_if(! $isOwner && ! $isOrgMember && ! $isAdmin, 403, 'Accès refusé.');
     }
 
+    /**
+     * Traduit le statut brut en un état stable, sur lequel une application peut s'appuyer.
+     *
+     * Réutilise les aides du modèle plutôt que de redéclarer une liste de chaînes : elles
+     * connaissent déjà les deux vocabulaires, et une valeur ajoutée au domaine sera reflétée ici
+     * sans modification.
+     */
+    protected function normalisedState(Booking $b): string
+    {
+        return match (true) {
+            $b->isCancelled() => 'cancelled',
+            $b->isInProgress() => 'in_progress',
+            $b->isConfirmed() => 'confirmed',
+            $b->isPending() => 'pending',
+            $b->isCompleted() => 'completed',
+            default => 'unknown',
+        };
+    }
+
     protected function serialize(Booking $b, bool $detailed = false): array
     {
         $base = [
             'id' => $b->id,
             'reference' => $b->booking_reference,
             'status' => $b->status,
+            // État normalisé, dérivé des aides du modèle. `status` porte la valeur BRUTE, et le
+            // domaine emploie un vocabulaire français — en_attente, confirme, en_route,
+            // sur_place, termine, annule — avec des variantes anglaises tolérées pour
+            // rétrocompatibilité. Les données réelles mélangent d'ailleurs les deux.
+            //
+            // Les applications mobiles filtraient sur des chaînes anglaises devinées : une
+            // réservation `en_attente` n'était jamais comptée comme active, et `en_route` ou
+            // `sur_place` n'étaient jamais reconnues comme en cours — si bien que la carte de
+            // suivi ne s'affichait jamais. Le vocabulaire se traduit ici, une seule fois, plutôt
+            // que d'être redeviné dans chaque client.
+            'state' => $this->normalisedState($b),
             'mode' => $b->booking_mode ?? 'scheduled',
             'priority' => $b->priority ?? 'normal',
             'scheduled_date' => $b->scheduled_date instanceof Carbon

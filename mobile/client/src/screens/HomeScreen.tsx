@@ -36,15 +36,19 @@ export function HomeScreen() {
 
   const openSheet = useCallback(() => sheetRef.current?.expand(), []);
 
-  const activeBookings = bookings?.filter(b => ['pending', 'confirmed', 'in_progress'].includes(b.status)) ?? [];
-  const completedCount = bookings?.filter(b => b.status === 'completed').length ?? 0;
+  // `state` est l'état normalisé par le serveur ; `status` reste la valeur brute du domaine, en
+  // français, que filtrer directement laissait passer à côté de la moitié des réservations.
+  const stateOf = (b: { state?: string; status: string }) => b.state ?? b.status;
+
+  const activeBookings = bookings?.filter(b => ['pending', 'confirmed', 'in_progress'].includes(stateOf(b))) ?? [];
+  const completedCount = bookings?.filter(b => stateOf(b) === 'completed').length ?? 0;
   const isFirstTime = !isLoading && activeBookings.length === 0 && completedCount === 0;
 
   /**
    * Une mission démarrée est suivie en direct : c'est elle qui devient l'élément focal, comme la
    * carte l'est pour le prestataire. À défaut, la prochaine réservation prend sa place.
    */
-  const liveBooking = activeBookings.find(b => b.status === 'in_progress');
+  const liveBooking = activeBookings.find(b => stateOf(b) === 'in_progress');
   const focus = liveBooking ?? activeBookings[0];
 
   return (

@@ -28,7 +28,15 @@ export interface Provider {
 
 export interface Booking {
   id: number;
+  /** Valeur BRUTE du domaine : vocabulaire français (en_attente, confirme, en_route…). */
   status: string;
+  /**
+   * État normalisé par le serveur : pending | confirmed | in_progress | completed | cancelled |
+   * unknown. C'est LUI qu'il faut filtrer — le statut brut mélange français et anglais, et
+   * deviner ses valeurs faisait qu'une réservation `en_route` n'était jamais reconnue comme en
+   * cours, si bien que la carte de suivi ne s'affichait jamais.
+   */
+  state?: string;
   service_name: string;
   scheduled_date: string;
   scheduled_time: string;

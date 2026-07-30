@@ -86,8 +86,10 @@ export const HomeActionsSheet = forwardRef<GorhomBottomSheet>((_props, ref) => {
   const themeColors = useThemeColors();
   const { data: bookings, isLoading } = useBookings();
 
-  const completed = bookings?.filter(b => b.status === 'completed').length ?? 0;
-  const active = bookings?.filter(b => ['pending', 'confirmed', 'in_progress'].includes(b.status)).length ?? 0;
+  // Même règle que l'accueil : c'est l'état normalisé qui fait foi, pas le statut brut.
+  const stateOf = (b: { state?: string; status: string }) => b.state ?? b.status;
+  const completed = bookings?.filter(b => stateOf(b) === 'completed').length ?? 0;
+  const active = bookings?.filter(b => ['pending', 'confirmed', 'in_progress'].includes(stateOf(b))).length ?? 0;
 
   return (
     <BottomSheet ref={ref} snapPoints={['55%']}>
