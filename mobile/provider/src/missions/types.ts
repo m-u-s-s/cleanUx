@@ -44,6 +44,12 @@ export interface Mission {
     | 'in_progress'
     | 'completed'
     | 'cancelled';
+  /**
+   * Le serveur le renvoie depuis toujours, ce type l'ignorait. C'est pourtant la clé du suivi :
+   * les sessions GPS partagées avec le client sont portées par la RÉSERVATION, pas par la
+   * mission — sans lui, aucun écran ne pouvait ouvrir la bonne session.
+   */
+  booking_id?: number | null;
   service_name: string;
   client_name: string;
   client_phone?: string;

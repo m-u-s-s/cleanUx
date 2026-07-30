@@ -9,7 +9,7 @@ import { useGpsWatcher, useSendPing, useStartTracking, useMarkInMission, haversi
 import { colors, spacing, typography, radius, shadows } from '@/theme';
 import type { RootStackParamList } from '@/navigation/types';
 
-type Props = NativeStackScreenProps<RootStackParamList, 'MissionField'>;
+type Props = NativeStackScreenProps<RootStackParamList, 'MissionTracking'>;
 
 interface Position {
   latitude: number;
@@ -21,11 +21,14 @@ interface Position {
 const GEOFENCE_METERS = 150;
 
 export function TrackingScreen({ route }: Props) {
-  const { missionId } = route.params;
+  // Deux identifiants distincts : le détail vient de la mission, la session de suivi de la
+  // RÉSERVATION. Le même nombre était passé aux deux, ce qui n'aurait ouvert la bonne session
+  // que par hasard.
+  const { missionId, bookingId } = route.params;
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const { data: mission } = useMissionDetail(missionId);
 
-  const startTracking = useStartTracking(missionId);
+  const startTracking = useStartTracking(bookingId);
   const [sessionId, setSessionId] = useState<number | null>(null);
   const sendPing = useSendPing(sessionId);
   const markInMission = useMarkInMission(sessionId);

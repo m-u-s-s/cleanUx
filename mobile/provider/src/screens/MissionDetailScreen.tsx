@@ -4,6 +4,7 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useNavigation } from '@react-navigation/native';
 import { Screen, Button, Badge, Divider, TextInput } from '@/ui';
 import { useMissionDetail, useMissionLifecycle } from '@/missions';
+import { useArriveOnSite } from '@/tracking';
 import { colors, spacing, typography, radius, shadows, useThemeColors } from '@/theme';
 import type { RootStackParamList } from '@/navigation/types';
 
@@ -13,6 +14,7 @@ export function MissionDetailScreen({ route }: Props) {
   const { missionId } = route.params;
   const { data: mission, isLoading } = useMissionDetail(missionId);
   const lifecycle = useMissionLifecycle(missionId);
+  const arriveOnSite = useArriveOnSite(mission?.booking_id ?? null);
   const navigation = useNavigation<any>();
   const themeColors = useThemeColors();
 
@@ -77,11 +79,36 @@ export function MissionDetailScreen({ route }: Props) {
           />
         )}
         {mission.status === 'en_route' && (
-          <Button
-            label="Arrivé"
-            onPress={() => handleAction('arrive', 'Arrivé sur site')}
-            fullWidth
-          />
+          <>
+            {/* Le suivi vit sur la RÉSERVATION, pas sur la mission : c'est elle qui porte la
+                session GPS partagée avec le client. */}
+            {mission.booking_id != null && (
+              <Button
+                label="Suivi GPS"
+                onPress={() => navigation.navigate('MissionTracking', {
+                  missionId,
+                  bookingId: mission.booking_id as number,
+                })}
+                variant="secondary"
+                fullWidth
+              />
+            )}
+            {/* La géo-barrière fait basculer la session toute seule à 150 m : c'est une
+                proximité, pas une présence. Ce geste-ci ouvre la preuve à scanner chez le
+                client. */}
+            <Button
+              label="Je suis arrivé"
+              onPress={() => {
+                if (mission.booking_id == null) return;
+                arriveOnSite.mutate(undefined, {
+                  onSuccess: (session) => navigation.navigate('PresenceScan', { sessionId: session.id }),
+                  onError: (e: any) => Alert.alert('Impossible', e?.message ?? 'Réessayez.'),
+                });
+              }}
+              loading={arriveOnSite.isPending}
+              fullWidth
+            />
+          </>
         )}
         {mission.status === 'arrived' && (
           <>

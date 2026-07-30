@@ -41,6 +41,24 @@ export function useMarkInMission(sessionId: number | null) {
   });
 }
 
+/**
+ * « Je suis arrivé » depuis le détail de la mission, sans passer par l'écran de suivi.
+ *
+ * Ouvre la session si elle n'existe pas — `startSession` est idempotent par (prestataire,
+ * réservation) — puis la fait passer à `in_mission`. Le prestataire qui a roulé sans ouvrir
+ * l'écran de suivi doit pouvoir annoncer son arrivée quand même.
+ */
+export function useArriveOnSite(bookingId: number | null) {
+  return useMutation<{ id: number; status: string }, ApiError>({
+    mutationFn: async () => {
+      const session = (await apiClient.post(`/provider/bookings/${bookingId}/tracking/start`)).data?.data;
+      const updated = (await apiClient.post(`/provider/tracking/${session.id}/in-mission`)).data?.data;
+
+      return updated ?? session;
+    },
+  });
+}
+
 /** Valide le code que le client affiche, ce qui atteste des deux appareils au même endroit. */
 export function useConfirmPresence(sessionId: number | null) {
   return useMutation<{ id: number; presence_confirmed_at: string | null }, ApiError, { code: string }>({

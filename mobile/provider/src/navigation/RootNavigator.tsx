@@ -8,6 +8,7 @@ import { MissionDetailScreen } from '@/screens/MissionDetailScreen';
 import { MissionInboxScreen } from '@/screens/MissionInboxScreen';
 import { MissionFieldScreen } from '@/screens/MissionFieldScreen';
 import { PresenceScanScreen } from '@/screens/PresenceScanScreen';
+import { TrackingScreen } from '@/screens/TrackingScreen';
 import { StripeOnboardingScreen } from '@/screens/StripeOnboardingScreen';
 import { AvailabilityScreen } from '@/screens/AvailabilityScreen';
 import { BadgesScreen } from '@/screens/BadgesScreen';
@@ -75,6 +76,11 @@ export function RootNavigator() {
               name="MissionField"
               component={MissionFieldScreen}
               options={{ headerShown: true, title: 'Mission terrain' }}
+            />
+            <Stack.Screen
+              name="MissionTracking"
+              component={TrackingScreen}
+              options={{ headerShown: true, title: 'Suivi GPS' }}
             />
             <Stack.Screen
               name="PresenceScan"
