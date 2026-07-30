@@ -1,7 +1,11 @@
 export type RootStackParamList = {
   Login: undefined;
   MainTabs: undefined;
-  BookingWizard: undefined;
+  /**
+   * `mode` prépositionne le créneau : `asap` pour une intervention immédiate, `scheduled` pour
+   * un rendez-vous. Optionnel — sans lui, le parcours se comporte comme avant.
+   */
+  BookingWizard: { mode?: 'asap' | 'scheduled' } | undefined;
   MissionTracking: { bookingId: number };
   BookingDetail: { bookingId: number };
   QRScan: { bookingId: number; action: 'start' | 'end' };

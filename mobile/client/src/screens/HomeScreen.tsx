@@ -24,7 +24,8 @@ type Nav = NativeStackNavigationProp<RootStackParamList>;
  *
  * Même structure adoptée ici, avec l'élément focal qui convient à un client : sa mission du
  * moment. Un prestataire a besoin de voir ce qui l'entoure, un client a besoin de voir OÙ EN EST
- * la sienne. Les accès rapides passent dans la feuille, les indicateurs avec eux.
+ * la sienne. La feuille porte l'entrée de réservation — immédiate, sur rendez-vous, ou multi-services —
+ * ainsi que les accès rapides et les indicateurs.
  */
 export function HomeScreen() {
   const { user } = useAuth();
@@ -130,13 +131,9 @@ export function HomeScreen() {
           tableau de bord prestataire : l'action principale reste atteignable au pouce, quel que
           soit le contenu affiché au-dessus. */}
       <View style={styles.floating} pointerEvents="box-none">
-        <Button
-          label="Réserver un service"
-          onPress={() => navigation.navigate('BookingWizard')}
-          fullWidth
-          size="lg"
-        />
-        <Button label="Actions" onPress={openSheet} variant="secondary" fullWidth />
+        {/* Un seul bouton : deux appels côte à côte obligeaient à choisir avant d'avoir vu les
+            options. Il ouvre la feuille, qui pose la vraie question — quel type de mission. */}
+        <Button label="Réserver un service" onPress={openSheet} fullWidth size="lg" />
       </View>
 
       <HomeActionsSheet ref={sheetRef} />

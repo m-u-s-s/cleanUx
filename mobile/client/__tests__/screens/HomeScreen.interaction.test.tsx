@@ -5,8 +5,8 @@
  *  - Tap "Mes réservations" (feuille d'actions) -> navigate('MainTabs', { screen: 'Bookings' })
  *  - Tap "Messagerie" (feuille d'actions) -> navigate('ChatList')
  *  - Tap "Fidélité" (feuille d'actions) -> navigate('Loyalty')
- *  - Tap "Réserver un service" CTA -> navigate('BookingWizard')
- *  - Tap "Réserver un service" (action flottante) -> navigate('BookingWizard')
+ *  - Tap "Réserver un service" ouvre la feuille, qui pose le choix du mode
+ *  - Tap "Intervention immédiate" -> navigate('BookingWizard', { mode: 'asap' })
  *  - Tap active booking card -> navigate('BookingDetail', { bookingId })
  */
 import React from 'react';
@@ -142,10 +142,43 @@ describe('HomeScreen interactions', () => {
     expect(mockNavigate).toHaveBeenCalledWith('Loyalty', undefined);
   });
 
-  it('tap "Réserver un service" CTA navigates to BookingWizard', () => {
+  /**
+   * L'accueil n'a plus qu'un bouton : il OUVRE la feuille au lieu de lancer une réservation dont
+   * le type n'a pas encore été choisi. Deux appels côte à côte obligeaient à trancher avant
+   * d'avoir vu les options.
+   */
+  it('tap "Réserver un service" ne lance pas directement une réservation', () => {
     render(<HomeScreen />);
-    fireEvent.press(screen.getByText('Réserver un service'));
-    expect(mockNavigate).toHaveBeenCalledWith('BookingWizard');
+    fireEvent.press(screen.getAllByText('Réserver un service')[0]!);
+    // `not.toHaveBeenCalledWith('BookingWizard', expect.anything())` ne suffisait pas : un appel
+    // à un seul argument ne correspond pas à ce motif, donc l'assertion passait alors même que le
+    // bouton relançait une réservation. C'est l'absence TOTALE de navigation qui compte.
+    expect(mockNavigate).not.toHaveBeenCalled();
+  });
+
+  it('le mode immédiat prépositionne le créneau ASAP', () => {
+    render(<HomeScreen />);
+    fireEvent.press(screen.getByTestId('booking-mode-asap'));
+    expect(mockNavigate).toHaveBeenCalledWith('BookingWizard', { mode: 'asap' });
+  });
+
+  it('le mode rendez-vous laisse choisir la date', () => {
+    render(<HomeScreen />);
+    fireEvent.press(screen.getByTestId('booking-mode-scheduled'));
+    expect(mockNavigate).toHaveBeenCalledWith('BookingWizard', { mode: 'scheduled' });
+  });
+
+  /**
+   * Le multi-métiers n'a pas d'écran natif : il est servi par la page web cliente. Pointer vers
+   * un écran inexistant aurait produit un bouton mort.
+   */
+  it('le mode multi-services ouvre la page dédiée', () => {
+    render(<HomeScreen />);
+    fireEvent.press(screen.getByTestId('booking-mode-bundle'));
+    expect(mockNavigate).toHaveBeenCalledWith('EmbeddedModule', {
+      path: '/dashboard/client/chantiers-groupes',
+      title: 'Chantier multi-services',
+    });
   });
 
   it('shows active booking card with service name', () => {
@@ -161,7 +194,7 @@ describe('HomeScreen interactions', () => {
 });
 
 describe('HomeScreen — first-time user', () => {
-  it('shows welcome card with BookingWizard CTA when no bookings', async () => {
+  it('shows welcome card and a single booking entry point when no bookings', async () => {
     // Override the useBookings mock to return empty data for this test.
     // We use the already-imported HomeScreen (no resetModules) to avoid the
     // dual-React-instance issue that causes "Cannot read properties of null
@@ -177,7 +210,7 @@ describe('HomeScreen — first-time user', () => {
       expect(screen.getByText('Réserver un service')).toBeTruthy();
     });
 
-    fireEvent.press(screen.getByText('Réserver un service'));
-    expect(mockNavigate).toHaveBeenCalledWith('BookingWizard');
+    fireEvent.press(screen.getByTestId('booking-mode-scheduled'));
+    expect(mockNavigate).toHaveBeenCalledWith('BookingWizard', { mode: 'scheduled' });
   });
 });

@@ -57,8 +57,22 @@ const BookingContext = createContext<{ state: BookingState; dispatch: React.Disp
   dispatch: () => {},
 });
 
-export function BookingProvider({ children }: { children: React.ReactNode }) {
-  const [state, dispatch] = useReducer(bookingReducer, initialState);
+export function BookingProvider({
+  children,
+  initialAsap = false,
+}: {
+  children: React.ReactNode;
+  /**
+   * Prépositionne le mode immédiat, choisi sur l'accueil. Le brouillon restauré reste
+   * prioritaire : un parcours interrompu ne doit pas voir son créneau réécrit par le mode
+   * d'entrée d'une session ultérieure.
+   */
+  initialAsap?: boolean;
+}) {
+  const [state, dispatch] = useReducer(bookingReducer, {
+    ...initialState,
+    scheduling: { ...initialState.scheduling, isAsap: initialAsap },
+  });
   const isInitialised = useRef(false);
 
   // Restore draft on mount

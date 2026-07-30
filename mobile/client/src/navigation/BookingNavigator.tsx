@@ -1,5 +1,6 @@
 import React from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { useRoute, type RouteProp } from '@react-navigation/native';
 import { BookingProvider } from '@/booking';
 import { BookingStep1Service } from '@/screens/booking/BookingStep1Service';
 import { BookingStep2Details } from '@/screens/booking/BookingStep2Details';
@@ -10,13 +11,18 @@ import { BookingProviderSearchScreen } from '@/screens/booking/BookingProviderSe
 import { BookingCompanySearchScreen } from '@/screens/booking/BookingCompanySearchScreen';
 import { BookingStep5Confirmation } from '@/screens/booking/BookingStep5Confirmation';
 import { colors } from '@/theme';
-import type { BookingStackParamList } from './types';
+import type { BookingStackParamList, RootStackParamList } from './types';
 
 const Stack = createNativeStackNavigator<BookingStackParamList>();
 
 export function BookingNavigator() {
+  // Le mode choisi sur l'accueil prépositionne le créneau : demander « immédiat » puis devoir
+  // cocher la case ASAP à l'étape 4 rendrait le choix initial décoratif.
+  const route = useRoute<RouteProp<RootStackParamList, 'BookingWizard'>>();
+  const asap = route.params?.mode === 'asap';
+
   return (
-    <BookingProvider>
+    <BookingProvider initialAsap={asap}>
       <Stack.Navigator
         screenOptions={{
           headerStyle: { backgroundColor: colors.surface[50] },

@@ -18,6 +18,51 @@ import { colors, spacing, typography, radius, useThemeColors } from '@/theme';
  * donc aucune requête supplémentaire. Le gating sur l'ouverture qu'emploie la feuille prestataire
  * n'a pas lieu d'être ici — il y protège une interrogation périodique, absente de ce côté.
  */
+/**
+ * Les trois façons de commander un service. C'est la raison d'être de cette feuille : l'accueil
+ * n'expose plus qu'un seul bouton, et le choix du mode se fait ici plutôt que d'être deviné au
+ * milieu du parcours de réservation.
+ */
+type BookingMode = {
+  key: string;
+  title: string;
+  hint: string;
+  icon: 'flash-outline' | 'calendar-outline' | 'layers-outline';
+  navigate: (navigate: (screen: string, params?: object) => void) => void;
+};
+
+const BOOKING_MODES: BookingMode[] = [
+  {
+    key: 'asap',
+    title: 'Intervention immédiate',
+    hint: 'Un prestataire disponible maintenant',
+    icon: 'flash-outline',
+    // Le mode prépositionne le créneau : demander « immédiat » puis devoir cocher la case ASAP
+    // à l'étape 4 rendrait ce choix décoratif.
+    navigate: go => go('BookingWizard', { mode: 'asap' }),
+  },
+  {
+    key: 'scheduled',
+    title: 'Prendre rendez-vous',
+    hint: 'Choisissez votre date et votre heure',
+    icon: 'calendar-outline',
+    navigate: go => go('BookingWizard', { mode: 'scheduled' }),
+  },
+  {
+    key: 'bundle',
+    title: 'Plusieurs services',
+    hint: 'Un chantier regroupant plusieurs métiers',
+    icon: 'layers-outline',
+    // Le multi-métiers n'existe pas encore en écran natif : il est servi par la page web
+    // cliente, via la vue embarquée déjà employée par le hub des modules. Pointer vers un
+    // écran inexistant aurait produit un bouton mort.
+    navigate: go => go('EmbeddedModule', {
+      path: '/dashboard/client/chantiers-groupes',
+      title: 'Chantier multi-services',
+    }),
+  },
+];
+
 type QuickAction = {
   label: string;
   screen: string;
@@ -47,6 +92,32 @@ export const HomeActionsSheet = forwardRef<GorhomBottomSheet>((_props, ref) => {
   return (
     <BottomSheet ref={ref} snapPoints={['55%']}>
       <View style={styles.body} testID="home-actions-sheet">
+        <Text style={styles.sectionTitle} accessibilityRole="header">Quel type de mission ?</Text>
+
+        <View style={styles.modes}>
+          {BOOKING_MODES.map(mode => (
+            <TouchableOpacity
+              key={mode.key}
+              style={[styles.modeCard, { backgroundColor: themeColors.card }]}
+              onPress={() => mode.navigate((screen, params) => navigation.navigate(screen, params))}
+              accessibilityRole="button"
+              accessibilityLabel={`${mode.title} — ${mode.hint}`}
+              testID={`booking-mode-${mode.key}`}
+            >
+              <View style={styles.modeIcon}>
+                <Icon name={mode.icon} size={22} color={colors.brand[600]} />
+              </View>
+              <View style={styles.modeBody}>
+                <Text style={[styles.modeTitle, { color: themeColors.text }]}>{mode.title}</Text>
+                <Text style={styles.modeHint}>{mode.hint}</Text>
+              </View>
+              <Icon name="chevron-forward" size={18} color={colors.surface[400]} />
+            </TouchableOpacity>
+          ))}
+        </View>
+
+        <Divider />
+
         {isLoading ? (
           <View style={styles.kpiRow}>
             <Skeleton width="48%" height={80} />
@@ -85,6 +156,32 @@ HomeActionsSheet.displayName = 'HomeActionsSheet';
 
 const styles = StyleSheet.create({
   body: { gap: spacing.md, paddingHorizontal: spacing.md, paddingBottom: spacing.lg },
+  sectionTitle: {
+    fontSize: typography.fontSize.base,
+    fontWeight: typography.fontWeight.semibold,
+    color: colors.surface[700],
+  },
+  modes: { gap: spacing.sm },
+  // La carte entière est la cible tactile, bien au-delà des 44 pt recommandés.
+  modeCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.md,
+    padding: spacing.md,
+    borderRadius: radius.md,
+    minHeight: 64,
+  },
+  modeIcon: {
+    width: 40,
+    height: 40,
+    borderRadius: radius.md,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: colors.brand[50],
+  },
+  modeBody: { flex: 1, gap: 2 },
+  modeTitle: { fontSize: typography.fontSize.base, fontWeight: typography.fontWeight.semibold },
+  modeHint: { fontSize: typography.fontSize.xs, color: colors.surface[600] },
   kpiRow: { flexDirection: 'row', gap: spacing.sm },
   actions: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },
   // Deux par ligne, comme la grille d'origine : la disposition est conservée, seule sa place
