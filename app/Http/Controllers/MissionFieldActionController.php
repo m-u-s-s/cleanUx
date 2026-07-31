@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Mission;
 use App\Models\MissionChecklistItem;
 use App\Models\MissionEvent;
+use App\Models\MissionMedia;
 use App\Services\Missions\MissionLifecycleService;
 use App\Services\Missions\MissionTrackingService;
 use Illuminate\Http\JsonResponse;
@@ -106,7 +107,7 @@ class MissionFieldActionController extends Controller
         return response()->json([
             'ok' => true,
             'status' => $mission->status,
-            'photos_stored' => $this->storePhotos($request, $mission, 'photos_avant', 'before', $data),
+            'photos_stored' => $this->storePhotos($request, $mission, 'photos_avant', MissionMedia::TYPE_BEFORE_PHOTO, $data),
         ]);
     }
 
@@ -193,7 +194,7 @@ class MissionFieldActionController extends Controller
         return response()->json([
             'ok' => true,
             'status' => $mission->status,
-            'photos_stored' => $this->storePhotos($request, $mission, 'photos_apres', 'after', $data),
+            'photos_stored' => $this->storePhotos($request, $mission, 'photos_apres', MissionMedia::TYPE_AFTER_PHOTO, $data),
         ]);
     }
 
@@ -211,6 +212,13 @@ class MissionFieldActionController extends Controller
      * une clôture qui a réussi — le prestataire se heurterait alors à un code déjà consommé, sans
      * comprendre. Le compte renvoyé dit ce qui a réellement été gardé.
      *
+     * Le type vient de {@see MissionMedia} et non d'une chaîne écrite ici. Ce contrôleur posait
+     * `before`/`after` quand tout le reste de l'application lit `before_photo`/`after_photo` : les
+     * photos prises sur place étaient donc invisibles pour le client, absentes du rapport PDF et
+     * comptées à zéro par le score qualité. Chaque moitié était cohérente avec elle-même, ce qui
+     * est exactement pourquoi l'écart n'a rien déclenché.
+     *
+     * @param  MissionMedia::TYPE_*  $mediaType
      * @param  array<string, mixed>  $data
      * @return int Nombre de photos effectivement enregistrées.
      */
@@ -225,8 +233,9 @@ class MissionFieldActionController extends Controller
             return 0;
         }
 
-        $directory = $mediaType === 'before' ? 'missions/photos-avant' : 'missions/photos-apres';
-        $caption = $mediaType === 'before' ? 'Photo avant mission' : 'Photo après mission';
+        $isBefore = $mediaType === MissionMedia::TYPE_BEFORE_PHOTO;
+        $directory = $isBefore ? 'missions/photos-avant' : 'missions/photos-apres';
+        $caption = $isBefore ? 'Photo avant mission' : 'Photo après mission';
         $stored = 0;
 
         foreach ($request->file($field) as $photo) {

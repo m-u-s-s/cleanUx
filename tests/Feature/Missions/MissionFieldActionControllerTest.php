@@ -8,6 +8,7 @@ use App\Models\MissionAssignment;
 use App\Models\MissionChecklist;
 use App\Models\MissionChecklistItem;
 use App\Models\MissionEvent;
+use App\Models\MissionMedia;
 use App\Models\MissionTrackingSession;
 use App\Models\MissionVerificationCode;
 use App\Models\ProviderProfile;
@@ -177,7 +178,7 @@ class MissionFieldActionControllerTest extends TestCase
         $response->assertJsonPath('status', 'started');
 
         $this->assertSame('started', $mission->fresh()->status);
-        $this->assertSame(1, $mission->media()->where('media_type', 'before')->count());
+        $this->assertSame(1, $mission->media()->where('media_type', MissionMedia::TYPE_BEFORE_PHOTO)->count());
     }
 
     public function test_start_rejects_invalid_code(): void
@@ -272,7 +273,7 @@ class MissionFieldActionControllerTest extends TestCase
         $response->assertJsonPath('status', 'completed');
 
         $this->assertSame('completed', $mission->fresh()->status);
-        $this->assertSame(1, $mission->media()->where('media_type', 'after')->count());
+        $this->assertSame(1, $mission->media()->where('media_type', MissionMedia::TYPE_AFTER_PHOTO)->count());
     }
 
     /** @return array{0: User, 1: Mission} */
