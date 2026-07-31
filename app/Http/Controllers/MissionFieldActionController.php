@@ -10,6 +10,7 @@ use App\Services\Missions\MissionTrackingService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 
 class MissionFieldActionController extends Controller
 {
@@ -93,22 +94,7 @@ class MissionFieldActionController extends Controller
             'photos_avant.*' => ['nullable', 'image', 'max:4096'],
         ]);
 
-        if ($request->hasFile('photos_avant')) {
-            foreach ($request->file('photos_avant') as $photo) {
-                $path = $photo->store('missions/photos-avant', 'private');
-
-                $mission->media()->create([
-                    'uploaded_by_user_id' => Auth::id(),
-                    'media_type' => 'before',
-                    'path' => $path,
-                    'caption' => 'Photo avant mission',
-                    'taken_at' => now(),
-                    'lat' => $data['lat'] ?? null,
-                    'lng' => $data['lng'] ?? null,
-                ]);
-            }
-        }
-
+        // Le code est validé AVANT d'enregistrer quoi que ce soit — voir storePhotos().
         $mission = $service->validateStartCode(
             $mission,
             Auth::user(),
@@ -120,6 +106,7 @@ class MissionFieldActionController extends Controller
         return response()->json([
             'ok' => true,
             'status' => $mission->status,
+            'photos_stored' => $this->storePhotos($request, $mission, 'photos_avant', 'before', $data),
         ]);
     }
 
@@ -186,26 +173,12 @@ class MissionFieldActionController extends Controller
             'photos_apres.*' => ['nullable', 'image', 'max:4096'],
         ]);
 
-        if ($request->hasFile('photos_apres')) {
-            foreach ($request->file('photos_apres') as $photo) {
-                $path = $photo->store('missions/photos-apres', 'private');
-
-                $mission->media()->create([
-                    'uploaded_by_user_id' => Auth::id(),
-                    'media_type' => 'after',
-                    'path' => $path,
-                    'caption' => 'Photo après mission',
-                    'taken_at' => now(),
-                    'lat' => $data['lat'] ?? null,
-                    'lng' => $data['lng'] ?? null,
-                ]);
-            }
-        }
-
         // Clôturer encaisse : la position est exigée ici comme sur mobile. La vue relève déjà le
         // navigateur avant d'appeler — elle se contentait jusqu'ici de continuer sans, ce qui
         // laissait la preuve facultative alors que c'est elle qui rend le code inutilisable à
         // distance.
+        //
+        // Les photos sont enregistrées APRÈS — voir storePhotos().
         $mission = $service->validateEndCode(
             $mission,
             Auth::user(),
@@ -220,6 +193,63 @@ class MissionFieldActionController extends Controller
         return response()->json([
             'ok' => true,
             'status' => $mission->status,
+            'photos_stored' => $this->storePhotos($request, $mission, 'photos_apres', 'after', $data),
         ]);
+    }
+
+    /**
+     * Enregistre les photos du terrain, UNE FOIS la transition acquise.
+     *
+     * L'ordre est le correctif. Les photos étaient stockées avant la validation du code : chaque
+     * tentative refusée — mauvais code, et depuis peu position trop lointaine — laissait donc ses
+     * fichiers et ses lignes en base sur une mission qui n'avait pas bougé. Trois essais, trois
+     * jeux de photos identiques ; et le prestataire qui réessaie est précisément celui dont on
+     * vient de refuser la tentative.
+     *
+     * L'échec d'une photo ne remet PAS la transition en cause : elle est acquise, et pour la
+     * clôture le paiement est déjà encaissé. Répondre en erreur à ce stade inviterait à rejouer
+     * une clôture qui a réussi — le prestataire se heurterait alors à un code déjà consommé, sans
+     * comprendre. Le compte renvoyé dit ce qui a réellement été gardé.
+     *
+     * @param  array<string, mixed>  $data
+     * @return int Nombre de photos effectivement enregistrées.
+     */
+    private function storePhotos(
+        Request $request,
+        Mission $mission,
+        string $field,
+        string $mediaType,
+        array $data,
+    ): int {
+        if (! $request->hasFile($field)) {
+            return 0;
+        }
+
+        $directory = $mediaType === 'before' ? 'missions/photos-avant' : 'missions/photos-apres';
+        $caption = $mediaType === 'before' ? 'Photo avant mission' : 'Photo après mission';
+        $stored = 0;
+
+        foreach ($request->file($field) as $photo) {
+            try {
+                $mission->media()->create([
+                    'uploaded_by_user_id' => Auth::id(),
+                    'media_type' => $mediaType,
+                    'path' => $photo->store($directory, 'private'),
+                    'caption' => $caption,
+                    'taken_at' => now(),
+                    'lat' => $data['lat'] ?? null,
+                    'lng' => $data['lng'] ?? null,
+                ]);
+                $stored++;
+            } catch (\Throwable $e) {
+                Log::warning('Photo de mission non enregistrée après une transition réussie.', [
+                    'mission_id' => $mission->id,
+                    'media_type' => $mediaType,
+                    'error' => $e->getMessage(),
+                ]);
+            }
+        }
+
+        return $stored;
     }
 }
