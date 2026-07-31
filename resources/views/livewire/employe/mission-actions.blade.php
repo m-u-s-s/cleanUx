@@ -135,8 +135,9 @@
                 maxlength="6"
                 placeholder="Code fin"
                 class="w-full rounded-xl border border-slate-300 px-4 py-3 text-sm focus:border-slate-500 focus:outline-none">
+            {{-- Le relevé précède l'appel : clôturer encaisse, et le serveur exige d'être sur place. --}}
             <button
-                wire:click="finishMission"
+                onclick="finishMissionWithPosition(this)"
                 type="button"
                 class="rounded-xl bg-red-600 px-4 py-3 text-sm font-medium text-white disabled:opacity-50"
                 @disabled(! in_array($mission->status, ['started', 'paused']))
@@ -151,6 +152,67 @@
     </div>
 </div>
 <script>
+    /**
+     * Lit la position du navigateur, ou rend null.
+     *
+     * `null` couvre indifféremment le refus de permission, l'échec matériel et le délai dépassé :
+     * la page ne décide pas de ce qu'il faut en conclure. C'est le serveur qui tranche — lui seul
+     * n'est pas sur l'appareil de la personne contrôlée.
+     *
+     * `navigator.geolocation` est ABSENT hors contexte sécurisé : en HTTP simple, hors localhost,
+     * les navigateurs le retirent purement et simplement. D'où la vérification d'existence avant
+     * l'appel, sans quoi la page planterait au lieu de laisser le serveur expliquer.
+     */
+    async function readBrowserPosition() {
+        if (!navigator.geolocation) {
+            return null;
+        }
+
+        return new Promise((resolve) => {
+            navigator.geolocation.getCurrentPosition(
+                (position) => resolve({
+                    lat: position.coords.latitude,
+                    lng: position.coords.longitude,
+                    accuracy_m: position.coords.accuracy ?? null,
+                }),
+                () => resolve(null),
+                { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 },
+            );
+        });
+    }
+
+    /**
+     * Clôture avec la position relevée à l'instant.
+     *
+     * Le bouton est neutralisé pendant le relevé : sans cela, un double clic partirait une seconde
+     * fois avec les propriétés de la première tentative, et la lenteur du GPS passerait pour une
+     * page figée.
+     */
+    async function finishMissionWithPosition(button) {
+        // Le composant est retrouvé DEPUIS le bouton, et non via `@this` : ce script vit après
+        // l'élément racine du composant, où `@this` ne se résout pas de façon fiable.
+        const root = button.closest('[wire\\:id]');
+        const component = root ? window.Livewire.find(root.getAttribute('wire:id')) : null;
+
+        if (!component) {
+            return;
+        }
+
+        button.disabled = true;
+
+        try {
+            const position = await readBrowserPosition();
+
+            await component.set('lat', position ? position.lat : null, true);
+            await component.set('lng', position ? position.lng : null, true);
+            await component.set('accuracyM', position ? position.accuracy_m : null, true);
+
+            await component.call('finishMission');
+        } finally {
+            button.disabled = false;
+        }
+    }
+
     async function startMissionWithCode(event, missionId) {
         event.preventDefault();
 

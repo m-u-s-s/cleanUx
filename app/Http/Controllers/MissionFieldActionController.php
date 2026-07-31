@@ -182,6 +182,7 @@ class MissionFieldActionController extends Controller
             'code' => ['required', 'string', 'max:20'],
             'lat' => ['nullable', 'numeric'],
             'lng' => ['nullable', 'numeric'],
+            'accuracy_m' => ['nullable', 'numeric', 'min:0'],
             'photos_apres.*' => ['nullable', 'image', 'max:4096'],
         ]);
 
@@ -201,12 +202,19 @@ class MissionFieldActionController extends Controller
             }
         }
 
+        // Clôturer encaisse : la position est exigée ici comme sur mobile. La vue relève déjà le
+        // navigateur avant d'appeler — elle se contentait jusqu'ici de continuer sans, ce qui
+        // laissait la preuve facultative alors que c'est elle qui rend le code inutilisable à
+        // distance.
         $mission = $service->validateEndCode(
             $mission,
             Auth::user(),
             $data['code'],
             isset($data['lat']) ? (float) $data['lat'] : null,
-            isset($data['lng']) ? (float) $data['lng'] : null
+            isset($data['lng']) ? (float) $data['lng'] : null,
+            isset($data['accuracy_m']) ? (float) $data['accuracy_m'] : null,
+            false,
+            requirePosition: true,
         );
 
         return response()->json([

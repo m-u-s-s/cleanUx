@@ -23,6 +23,20 @@ class MissionActions extends Component
 
     public ?string $errorMessage = null;
 
+    /**
+     * Position lue par le navigateur au moment de clôturer.
+     *
+     * Renseignée depuis la vue avant l'appel à {@see finishMission()}. Elle vient du client, donc
+     * de la partie contrôlée — comme sur mobile. Ce n'est pas ce qui la rend inutile : le serveur
+     * ne lui fait pas confiance, il la CONFRONTE au lieu de l'intervention. Mentir suppose de
+     * choisir des coordonnées, pas seulement d'omettre une preuve.
+     */
+    public ?float $lat = null;
+
+    public ?float $lng = null;
+
+    public ?float $accuracyM = null;
+
     public function mount(Mission $mission): void
     {
         $this->mission = $mission->load(['assignments', 'verificationCodes', 'rendezVous']);
@@ -103,6 +117,14 @@ class MissionActions extends Component
         }
     }
 
+    /**
+     * Clôture la mission — encaissement compris — et exige d'être sur place.
+     *
+     * Le code de fin atteste d'une possession : photographié ou dicté au téléphone, il permettrait
+     * de facturer une intervention quittée depuis longtemps. Ce tableau de bord est celui du
+     * prestataire (route `role:employe`), pas un outil d'administration : exiger la position n'y
+     * bloque aucune correction faite depuis un bureau.
+     */
     public function finishMission(): void
     {
         $this->resetMessages();
@@ -115,7 +137,12 @@ class MissionActions extends Component
             $this->mission = $this->service()->validateEndCode(
                 $this->mission->fresh(),
                 Auth::user(),
-                $this->endCode
+                $this->endCode,
+                $this->lat,
+                $this->lng,
+                $this->accuracyM,
+                false,
+                requirePosition: true,
             );
 
             $this->endCode = '';
@@ -124,6 +151,13 @@ class MissionActions extends Component
             session()->forget('mission_end_code_'.$this->mission->id);
             session()->forget('mission_start_code_'.$this->mission->id);
         } catch (\Throwable $e) {
+            /*
+             * Le motif remonte tel quel, y compris pour un refus de position : `summarize()` place
+             * le premier message d'une ValidationException dans `getMessage()`. Un traitement
+             * dédié n'ajouterait rien — vérifié plutôt que supposé, un bloc `catch` séparé s'est
+             * révélé strictement équivalent. Ce que le prestataire doit lire, c'est qu'il est trop
+             * loin ou que sa localisation est coupée, pas une formule générique.
+             */
             $this->errorMessage = $e->getMessage();
         }
     }

@@ -84,7 +84,14 @@
         const result = await response.json();
 
         if (!result.ok) {
-            alert('Code invalide ou clôture impossible.');
+            // Le serveur refuse pour des raisons qui n'appellent pas le même geste : code expiré,
+            // code déjà utilisé, ou trop loin du lieu de l'intervention. Les résumer toutes en
+            // « code invalide » enverrait redemander un code qui n'a aucun problème.
+            alert(
+                result.errors?.position?.[0]
+                ?? result.message
+                ?? 'Code invalide ou clôture impossible.'
+            );
             return;
         }
 
