@@ -219,13 +219,15 @@ describe('Scan de présence côté prestataire', () => {
    * présence envoyé au point d'entrée de clôture consommerait un essai pour rien et laisserait
    * le prestataire devant un refus incompréhensible.
    */
-  it('clôture la mission avec un QR de fin', () => {
+  it('clôture la mission avec un QR de fin', async () => {
     const endRoute = { params: { purpose: 'completion', missionId: 4 } } as any;
     render(<PresenceScanScreen route={endRoute} navigation={{} as any} />);
 
     act(() => cameraState.onScan?.({ data: JSON.stringify({ t: 'cleanux.completion', v: 1, s: 4, c: '731204' }) }));
 
-    expect(mockComplete).toHaveBeenCalledWith({ code: '731204' }, expect.anything());
+    await waitFor(() =>
+      expect(mockComplete).toHaveBeenCalledWith({ code: '731204', position: ON_SITE }, expect.anything()),
+    );
     expect(mockConfirm).not.toHaveBeenCalled();
   });
 
@@ -304,15 +306,20 @@ describe('Scan de présence côté prestataire', () => {
     );
   });
 
-  /** La clôture n'a pas encore de croisement : ne pas relever évite de faire croire le contraire. */
-  it('ne relève pas de position pour une clôture', async () => {
+  /**
+   * La clôture est relevée comme l'arrivée, et elle y a même plus d'intérêt : c'est elle qui
+   * encaisse le paiement pré-autorisé. Un code de fin photographié ou dicté permettrait sinon de
+   * facturer une intervention quittée depuis longtemps.
+   */
+  it('relève aussi la position pour une clôture', async () => {
     const endRoute = { params: { purpose: 'completion', missionId: 4 } } as any;
     render(<PresenceScanScreen route={endRoute} navigation={{} as any} />);
 
     act(() => cameraState.onScan?.({ data: JSON.stringify({ t: 'cleanux.completion', v: 1, s: 4, c: '731204' }) }));
 
-    await waitFor(() => expect(mockComplete).toHaveBeenCalled());
-    expect(mockReadScanPosition).not.toHaveBeenCalled();
+    await waitFor(() =>
+      expect(mockComplete).toHaveBeenCalledWith({ code: '731204', position: ON_SITE }, expect.anything()),
+    );
   });
 
   it('demande la caméra plutôt que d’échouer en silence', () => {

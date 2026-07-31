@@ -167,12 +167,29 @@ class ProviderMissionLifecycleController extends Controller
 
         $data = $request->validate([
             'code' => ['required', 'string', 'max:191'],
+            'lat' => ['nullable', 'numeric', 'between:-90,90'],
+            'lng' => ['nullable', 'numeric', 'between:-180,180'],
+            'accuracy_m' => ['nullable', 'numeric', 'min:0'],
+            'mocked' => ['nullable', 'boolean'],
         ]);
 
         try {
             // `validateEndCode` consomme le code PUIS clôture — encaissement compris. Un code
             // refusé ne doit donc rien déclencher, d'où la validation en amont de la clôture.
-            $mission = $this->lifecycle->validateEndCode($mission, $request->user(), $data['code']);
+            //
+            // C'est le SEUL chemin de clôture où la position est exigée, et c'est voulu : ici
+            // l'application en dispose toujours, et c'est ici qu'un code photographié ou dicté
+            // servirait à clôturer à distance. Les chemins web n'ont pas de position à offrir.
+            $mission = $this->lifecycle->validateEndCode(
+                $mission,
+                $request->user(),
+                $data['code'],
+                isset($data['lat']) ? (float) $data['lat'] : null,
+                isset($data['lng']) ? (float) $data['lng'] : null,
+                isset($data['accuracy_m']) ? (float) $data['accuracy_m'] : null,
+                (bool) ($data['mocked'] ?? false),
+                requirePosition: (bool) config('trip_tracking.presence_require_position', true),
+            );
         } catch (\RuntimeException $e) {
             return response()->json(['ok' => false, 'message' => $e->getMessage()], 422);
         }

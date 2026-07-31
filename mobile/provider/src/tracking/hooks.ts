@@ -136,13 +136,31 @@ export function useConfirmPresence(sessionId: number | null) {
  * Symétrique du scan de présence, à l'autre bout de la visite — mais l'enjeu est plus lourd :
  * la clôture encaisse le paiement pré-autorisé. Un code refusé ne doit donc rien déclencher, et
  * c'est le serveur qui l'établit.
+ *
+ * La position relevée AU MOMENT DU SCAN accompagne le code, pour la même raison qu'à l'arrivée :
+ * le code atteste d'une possession, et un code de fin photographié ou dicté permettrait de
+ * facturer une intervention quittée depuis longtemps.
  */
 export function useCompleteByQr(missionId: number | null) {
   const qc = useQueryClient();
 
-  return useMutation<{ mission_id: number; status: string }, ApiError, { code: string }>({
-    mutationFn: async ({ code }) =>
-      (await apiClient.post(`/provider/missions/${missionId}/complete-by-qr`, { code })).data,
+  return useMutation<
+    { mission_id: number; status: string },
+    ApiError,
+    { code: string; position: ScanPosition | null }
+  >({
+    mutationFn: async ({ code, position }) =>
+      (await apiClient.post(`/provider/missions/${missionId}/complete-by-qr`, {
+        code,
+        ...(position
+          ? {
+              lat: position.lat,
+              lng: position.lng,
+              accuracy_m: position.accuracy_m,
+              mocked: position.mocked,
+            }
+          : {}),
+      })).data,
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['provider', 'mission'] });
       qc.invalidateQueries({ queryKey: ['provider', 'missions', 'active'] });

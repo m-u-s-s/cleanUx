@@ -4,10 +4,9 @@ namespace App\Services\TripTracking;
 
 use App\Models\TripTrackingSession;
 use App\Models\User;
-use App\Services\GeolocationV2\DistanceCalculator;
+use App\Services\Geo\OnSiteVerifier;
 use App\Services\Missions\MissionVerificationCodeService;
 use Illuminate\Support\Carbon;
-use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
@@ -35,23 +34,26 @@ class PresenceCodeService
     /** Au-delà, le code est brûlé et il faut en demander un neuf. */
     public const MAX_ATTEMPTS = 5;
 
-    /** Position fournie et située dans le rayon accepté. */
-    public const GEO_PASSED = 'passed';
+    /**
+     * Verdicts, repris de {@see OnSiteVerifier}.
+     *
+     * La politique — rayon, précision tolérée, position simulée — vit là-bas, partagée avec la
+     * clôture : les deux bouts de la visite posent la même question et doivent y répondre pareil.
+     * Ces alias évitent d'avoir à connaître cette classe depuis les tests et les appelants.
+     */
+    public const GEO_PASSED = OnSiteVerifier::PASSED;
 
-    /** Contrôle désactivé par configuration : la position est notée, elle ne décide de rien. */
-    public const GEO_SKIPPED_DISABLED = 'skipped_disabled';
+    public const GEO_SKIPPED_DISABLED = OnSiteVerifier::SKIPPED_DISABLED;
 
-    /** Le lieu de l'intervention n'a pas de coordonnées : il n'y a rien à comparer. */
-    public const GEO_SKIPPED_NO_DESTINATION = 'skipped_no_destination';
+    public const GEO_SKIPPED_NO_DESTINATION = OnSiteVerifier::SKIPPED_NO_DESTINATION;
 
-    /** Aucune position transmise, et la configuration n'en exige pas. */
-    public const GEO_SKIPPED_NO_POSITION = 'skipped_no_position';
+    public const GEO_SKIPPED_NO_POSITION = OnSiteVerifier::SKIPPED_NO_POSITION;
 
     /** Au-delà, les refus les plus anciens sont oubliés : une série d'essais ne doit pas gonfler la ligne sans fin. */
     protected const MAX_REJECTIONS_KEPT = 10;
 
     public function __construct(
-        protected DistanceCalculator $distance,
+        protected OnSiteVerifier $onSite,
     ) {}
 
     /**
@@ -214,70 +216,9 @@ class PresenceCodeService
         ?float $accuracyM,
         bool $mocked,
     ): array {
-        $pass = fn (string $verdict, ?int $distance = null): array => [
-            'failure' => null, 'verdict' => $verdict, 'distance_m' => $distance,
-        ];
-        $refuse = fn (string $message, ?int $distance = null): array => [
-            'failure' => ['position' => [$message]], 'verdict' => null, 'distance_m' => $distance,
-        ];
-
-        if (! Config::get('trip_tracking.presence_geo_check', true)) {
-            return $pass(self::GEO_SKIPPED_DISABLED);
-        }
-
-        if ($mocked && Config::get('trip_tracking.presence_reject_mocked', true)) {
-            return $refuse(
-                'Votre téléphone signale une position simulée. Désactivez les positions fictives pour confirmer votre présence.'
-            );
-        }
-
-        if ($lat === null || $lng === null) {
-            // Sans exigence, on note l'absence plutôt que de la taire : une confirmation non
-            // appuyée par une position doit rester reconnaissable après coup.
-            return Config::get('trip_tracking.presence_require_position', true)
-                ? $refuse('Position indisponible. Activez la localisation pour confirmer votre présence sur place.')
-                : $pass(self::GEO_SKIPPED_NO_POSITION);
-        }
-
         [$destLat, $destLng] = $this->resolveDestination($session);
-        if ($destLat === null || $destLng === null) {
-            // Rien à comparer : refuser ici punirait le prestataire d'une lacune du dossier.
-            return $pass(self::GEO_SKIPPED_NO_DESTINATION);
-        }
 
-        $distanceM = (int) round($this->distance->distanceMeters($lat, $lng, $destLat, $destLng));
-
-        if ($distanceM > $this->allowedRadiusM($accuracyM)) {
-            return $refuse(
-                sprintf(
-                    'Vous semblez être à %s du lieu de l’intervention. Rapprochez-vous puis réessayez.',
-                    $this->humanDistance($distanceM),
-                ),
-                $distanceM,
-            );
-        }
-
-        return $pass(self::GEO_PASSED, $distanceM);
-    }
-
-    /**
-     * Rayon effectivement toléré, élargi si l'appareil annonce un relevé imprécis.
-     *
-     * Un relevé honnête mais mauvais mérite d'être jugé sur la précision qu'il annonce plutôt que
-     * refusé sèchement. Mais cette valeur vient de l'appareil, donc de la partie contrôlée : sans
-     * plafond, annoncer une précision de 50 km rouvrirait la porte en grand.
-     */
-    protected function allowedRadiusM(?float $accuracyM): int
-    {
-        $base = (int) Config::get('trip_tracking.presence_max_distance_m', 250);
-
-        if ($accuracyM === null || $accuracyM <= 0) {
-            return $base;
-        }
-
-        $cap = (int) Config::get('trip_tracking.presence_max_accuracy_allowance_m', 500);
-
-        return max($base, min((int) round($accuracyM), $cap));
+        return $this->onSite->verify($lat, $lng, $destLat, $destLng, $accuracyM, $mocked);
     }
 
     /**
@@ -341,14 +282,6 @@ class PresenceCodeService
         $meta['presence_geo_rejections'] = array_slice($rejections, -self::MAX_REJECTIONS_KEPT);
 
         $session->update(['metadata' => $meta]);
-    }
-
-    /** Une distance ne se lit pas en mètres au-delà du kilomètre. */
-    protected function humanDistance(int $meters): string
-    {
-        return $meters >= 1000
-            ? str_replace('.', ',', (string) round($meters / 1000, 1)).' km'
-            : $meters.' m';
     }
 
     protected function generatePlainCode(): string

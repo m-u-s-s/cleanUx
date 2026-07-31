@@ -84,18 +84,21 @@ export function PresenceScanScreen({ route }: Props) {
 
   const submit = useCallback(
     async (code: string) => {
-      if (isCompletion) {
-        completion.mutate({ code }, handlers);
-
-        return;
-      }
-
       // Relevé pris ICI, à l'instant de la validation, et non repris du suivi en cours : celui-ci
-      // se fige sur sa dernière valeur dès qu'on cesse d'émettre, ce qui suffirait à confirmer
+      // se fige sur sa dernière valeur dès qu'on cesse d'émettre, ce qui suffirait à valider
       // depuis n'importe où après avoir quitté les lieux.
+      //
+      // Les deux bouts de la visite le font. La clôture y a même plus d'intérêt que l'arrivée :
+      // c'est elle qui encaisse.
       setLocating(true);
       const position = await readScanPosition();
       setLocating(false);
+
+      if (isCompletion) {
+        completion.mutate({ code, position }, handlers);
+
+        return;
+      }
 
       presence.mutate({ code, position }, handlers);
     },

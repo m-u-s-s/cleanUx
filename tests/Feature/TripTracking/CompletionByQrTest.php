@@ -11,6 +11,7 @@ use App\Support\Domain\MissionStatus;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Notification;
+use Illuminate\Testing\TestResponse;
 use Tests\TestCase;
 
 /**
@@ -22,10 +23,19 @@ use Tests\TestCase;
  *
  * L'enjeu est plus lourd qu'au démarrage : la clôture encaisse le paiement pré-autorisé.
  * L'accord du client doit donc être un geste délibéré, pas un message transféré.
+ *
+ * Le croisement avec la position du scan est vérifié à part, dans {@see CompletionGeoProofTest}.
+ * Ici la mission porte des coordonnées et toutes les clôtures envoient une position valide : sans
+ * elles, ces tests passeraient sans jamais exercer le contrôle — verts pour rien.
  */
 class CompletionByQrTest extends TestCase
 {
     use RefreshDatabase;
+
+    /** Le lieu de l'intervention, tel que posé par `scenario()`. */
+    private const SITE_LAT = 50.8467;
+
+    private const SITE_LNG = 4.3525;
 
     public function test_the_client_gets_a_code_once_the_work_has_started(): void
     {
@@ -87,8 +97,7 @@ class CompletionByQrTest extends TestCase
             ->postJson("/api/client/bookings/{$booking->id}/completion-code")
             ->json('data.code');
 
-        $this->actingAs($provider, 'sanctum')
-            ->postJson("/api/provider/missions/{$mission->id}/complete-by-qr", ['code' => $code])
+        $this->close($provider, $mission, $code)
             ->assertOk()
             ->assertJsonPath('status', MissionStatus::COMPLETED);
 
@@ -108,9 +117,7 @@ class CompletionByQrTest extends TestCase
 
         $this->actingAs($client, 'sanctum')->postJson("/api/client/bookings/{$booking->id}/completion-code");
 
-        $this->actingAs($provider, 'sanctum')
-            ->postJson("/api/provider/missions/{$mission->id}/complete-by-qr", ['code' => '000000'])
-            ->assertStatus(422);
+        $this->close($provider, $mission, '000000')->assertStatus(422);
 
         $mission->refresh();
         $this->assertSame(MissionStatus::STARTED, $mission->status);
@@ -127,13 +134,9 @@ class CompletionByQrTest extends TestCase
             ->postJson("/api/client/bookings/{$booking->id}/completion-code")
             ->json('data.code');
 
-        $this->actingAs($provider, 'sanctum')
-            ->postJson("/api/provider/missions/{$mission->id}/complete-by-qr", ['code' => $code])
-            ->assertOk();
+        $this->close($provider, $mission, $code)->assertOk();
 
-        $this->actingAs($provider, 'sanctum')
-            ->postJson("/api/provider/missions/{$mission->id}/complete-by-qr", ['code' => $code])
-            ->assertStatus(422);
+        $this->close($provider, $mission, $code)->assertStatus(422);
     }
 
     /** Une mission n'appartient qu'à ceux qui y sont affectés. */
@@ -147,11 +150,24 @@ class CompletionByQrTest extends TestCase
             ->postJson("/api/client/bookings/{$booking->id}/completion-code")
             ->json('data.code');
 
-        $this->actingAs($intruder, 'sanctum')
-            ->postJson("/api/provider/missions/{$mission->id}/complete-by-qr", ['code' => $code])
-            ->assertStatus(403);
+        $this->close($intruder, $mission, $code)->assertStatus(403);
 
         $this->assertSame(MissionStatus::STARTED, $mission->fresh()->status);
+    }
+
+    /**
+     * Clôture comme le fait l'application : avec la position relevée au moment du scan.
+     *
+     * @return TestResponse
+     */
+    private function close(User $provider, Mission $mission, string $code)
+    {
+        return $this->actingAs($provider, 'sanctum')
+            ->postJson("/api/provider/missions/{$mission->id}/complete-by-qr", [
+                'code' => $code,
+                'lat' => self::SITE_LAT,
+                'lng' => self::SITE_LNG,
+            ]);
     }
 
     /**
@@ -175,6 +191,8 @@ class CompletionByQrTest extends TestCase
             'lead_employee_id' => $provider->id,
             'planned_start_at' => now()->subHours(2),
             'actual_start_at' => $missionStatus === MissionStatus::STARTED ? now()->subHour() : null,
+            'destination_lat' => self::SITE_LAT,
+            'destination_lng' => self::SITE_LNG,
         ]);
 
         MissionAssignment::query()->create([
