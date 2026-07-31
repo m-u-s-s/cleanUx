@@ -172,11 +172,22 @@ class TripTrackingController extends Controller
      * client displays a single-use code that the provider scans on site, which requires both
      * devices in the same place.
      *
+     * The code alone proves possession, not presence: photographed and forwarded, or simply read
+     * out over the phone, it validates from anywhere during its ten-minute life. The provider's
+     * position at scan time is cross-checked against the job address to close that gap.
+     *
+     * `lat`/`lng` must be read AT SCAN TIME. The session's last ping is not used: a provider need
+     * only stop pinging when leaving to freeze it on a flattering value.
+     *
      * @bodyParam code string required The 6-digit code read from the client's QR. Example: 482951
+     * @bodyParam lat numeric Provider latitude at scan time (-90 to 90). Required unless the geo check is relaxed. Example: 50.8467
+     * @bodyParam lng numeric Provider longitude at scan time (-180 to 180). Example: 4.3525
+     * @bodyParam accuracy_m number Reported GPS accuracy in metres — widens the accepted radius, capped. Example: 12.5
+     * @bodyParam mocked boolean Device reports a mock location (Android). Example: false
      *
      * @response 200 {"data": {"id": 5, "status": "in_mission", "presence_confirmed_at": "2026-07-30T18:40:00+00:00"}}
      * @response 403 {"message": "Not your session."}
-     * @response 422 {"error": "validation_failed", "errors": {"code": ["Code invalide."]}}
+     * @response 422 {"error": "validation_failed", "errors": {"position": ["Vous semblez être à 12,4 km du lieu de l’intervention. Rapprochez-vous puis réessayez."]}}
      */
     public function confirmPresence(Request $request, TripTrackingSession $session, PresenceCodeService $codes): JsonResponse
     {
@@ -184,10 +195,22 @@ class TripTrackingController extends Controller
 
         $data = $request->validate([
             'code' => ['required', 'string', 'max:191'],
+            'lat' => ['nullable', 'numeric', 'between:-90,90'],
+            'lng' => ['nullable', 'numeric', 'between:-180,180'],
+            'accuracy_m' => ['nullable', 'numeric', 'min:0'],
+            'mocked' => ['nullable', 'boolean'],
         ]);
 
         try {
-            $updated = $codes->confirm($session, $data['code'], $request->user());
+            $updated = $codes->confirm(
+                $session,
+                $data['code'],
+                $request->user(),
+                isset($data['lat']) ? (float) $data['lat'] : null,
+                isset($data['lng']) ? (float) $data['lng'] : null,
+                isset($data['accuracy_m']) ? (float) $data['accuracy_m'] : null,
+                (bool) ($data['mocked'] ?? false),
+            );
 
             return response()->json([
                 'data' => $this->presentSession($updated),
@@ -225,11 +248,14 @@ class TripTrackingController extends Controller
         }
 
         try {
+            // La position du scan plutôt que le dernier relevé : c'est la seule des deux qui ait
+            // été confrontée au lieu de l'intervention. Le repli sur `last_*` couvre les cas où le
+            // contrôle a été sauté — dossier sans coordonnées, contrôle désactivé.
             app(MissionLifecycleService::class)->validateStartCodeFromQr(
                 $mission,
                 $provider,
-                $session->last_lat,
-                $session->last_lng,
+                $session->presence_confirmed_lat ?? $session->last_lat,
+                $session->presence_confirmed_lng ?? $session->last_lng,
             );
 
             return true;

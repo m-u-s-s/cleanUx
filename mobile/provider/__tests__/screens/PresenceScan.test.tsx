@@ -17,11 +17,16 @@ const mockConfirm = jest.fn();
 const mockGoBack = jest.fn();
 
 const mockComplete = jest.fn();
+const mockReadScanPosition = jest.fn();
 
 jest.mock('@/tracking', () => ({
   useConfirmPresence: () => ({ mutate: mockConfirm, isPending: false }),
   useCompleteByQr: () => ({ mutate: mockComplete, isPending: false }),
+  readScanPosition: (...args: unknown[]) => mockReadScanPosition(...args),
 }));
+
+/** Relevé nominal : sur place, précision honnête, pas de simulation. */
+const ON_SITE = { lat: 50.8467, lng: 4.3525, accuracy_m: 12, mocked: false };
 
 jest.mock('@react-navigation/native', () => ({
   useNavigation: () => ({ goBack: mockGoBack, navigate: jest.fn() }),
@@ -77,6 +82,8 @@ beforeEach(() => {
   mockConfirm.mockReset();
   mockComplete.mockReset();
   mockGoBack.mockReset();
+  mockReadScanPosition.mockReset();
+  mockReadScanPosition.mockResolvedValue(ON_SITE);
   cameraState.permission = { granted: true };
   cameraState.onScan = null;
   jest.spyOn(Alert, 'alert').mockImplementation(() => undefined);
@@ -85,12 +92,14 @@ beforeEach(() => {
 afterEach(() => jest.restoreAllMocks());
 
 describe('Scan de présence côté prestataire', () => {
-  it('envoie le code lu dans un QR CleanUx', () => {
+  it('envoie le code lu dans un QR CleanUx, avec la position du moment', async () => {
     render(<PresenceScanScreen route={route} navigation={{} as any} />);
 
     act(() => cameraState.onScan?.({ data: JSON.stringify({ t: 'cleanux.presence', v: 1, s: 42, c: '482951' }) }));
 
-    expect(mockConfirm).toHaveBeenCalledWith({ code: '482951' }, expect.anything());
+    await waitFor(() =>
+      expect(mockConfirm).toHaveBeenCalledWith({ code: '482951', position: ON_SITE }, expect.anything()),
+    );
   });
 
   /**
@@ -172,13 +181,28 @@ describe('Scan de présence côté prestataire', () => {
    * L'écran du client invite à dicter les six chiffres : sans champ de saisie, cette consigne
    * ne mènerait nulle part le jour où la caméra refuse de lire le QR.
    */
-  it('accepte les six chiffres saisis à la main', () => {
+  it('accepte les six chiffres saisis à la main', async () => {
     render(<PresenceScanScreen route={route} navigation={{} as any} />);
 
     fireEvent.changeText(screen.getByTestId('presence-manual-code'), '482951');
     fireEvent.press(screen.getByLabelText('Confirmer ma présence'));
 
-    expect(mockConfirm).toHaveBeenCalledWith({ code: '482951' }, expect.anything());
+    await waitFor(() =>
+      expect(mockConfirm).toHaveBeenCalledWith({ code: '482951', position: ON_SITE }, expect.anything()),
+    );
+  });
+
+  /**
+   * La saisie manuelle est la voie qui se dicte au téléphone : c'est par elle qu'une confirmation
+   * à distance passerait le plus facilement. Elle doit donc être relevée comme le scan, pas moins.
+   */
+  it('relève aussi la position pour une saisie manuelle', async () => {
+    render(<PresenceScanScreen route={route} navigation={{} as any} />);
+
+    fireEvent.changeText(screen.getByTestId('presence-manual-code'), '482951');
+    fireEvent.press(screen.getByLabelText('Confirmer ma présence'));
+
+    await waitFor(() => expect(mockReadScanPosition).toHaveBeenCalled());
   });
 
   it('refuse une saisie incomplète sans consommer d’essai', () => {
@@ -220,6 +244,75 @@ describe('Scan de présence côté prestataire', () => {
     act(() => cameraState.onScan?.({ data: JSON.stringify({ t: 'cleanux.completion', v: 1, s: 4, c: '731204' }) }));
 
     expect(mockConfirm).not.toHaveBeenCalled();
+  });
+
+  /**
+   * Le code seul atteste d'une possession : photographié puis envoyé, ou dicté au téléphone, il se
+   * valide depuis n'importe où. Partir SANS attendre le relevé viderait le croisement de son sens
+   * tout en le laissant paraître en place — la pire des deux situations.
+   */
+  it('ne part pas avant d’avoir relevé la position', async () => {
+    let release: (p: unknown) => void = () => {};
+    mockReadScanPosition.mockReturnValue(new Promise((resolve) => { release = resolve; }));
+
+    render(<PresenceScanScreen route={route} navigation={{} as any} />);
+    act(() => cameraState.onScan?.({ data: JSON.stringify({ t: 'cleanux.presence', v: 1, s: 42, c: '482951' }) }));
+
+    expect(mockConfirm).not.toHaveBeenCalled();
+
+    await act(async () => { release(ON_SITE); });
+
+    await waitFor(() => expect(mockConfirm).toHaveBeenCalled());
+  });
+
+  /**
+   * Localisation refusée ou relevé impossible : on envoie `null` plutôt que d'inventer une valeur
+   * ou de bloquer sur place. C'est au serveur de trancher — lui seul n'est pas sur l'appareil de
+   * la personne contrôlée.
+   */
+  it('envoie une position nulle quand le relevé échoue', async () => {
+    mockReadScanPosition.mockResolvedValue(null);
+
+    render(<PresenceScanScreen route={route} navigation={{} as any} />);
+    act(() => cameraState.onScan?.({ data: JSON.stringify({ t: 'cleanux.presence', v: 1, s: 42, c: '482951' }) }));
+
+    await waitFor(() =>
+      expect(mockConfirm).toHaveBeenCalledWith({ code: '482951', position: null }, expect.anything()),
+    );
+  });
+
+  /**
+   * Un refus de position n'a rien à voir avec un mauvais code. Les confondre sous « Code refusé »
+   * enverrait le prestataire redemander au client un code qui n'a aucun problème, pendant que la
+   * vraie cause — il n'est pas au bon endroit — resterait invisible.
+   */
+  it('distingue un refus de position d’un refus de code', async () => {
+    mockConfirm.mockImplementation((_vars, opts) =>
+      opts.onError({
+        response: { data: { errors: { position: ['Vous semblez être à 12,4 km du lieu de l’intervention.'] } } },
+      }),
+    );
+
+    render(<PresenceScanScreen route={route} navigation={{} as any} />);
+    act(() => cameraState.onScan?.({ data: JSON.stringify({ t: 'cleanux.presence', v: 1, s: 42, c: '482951' }) }));
+
+    await waitFor(() =>
+      expect(Alert.alert).toHaveBeenCalledWith(
+        'Position refusée',
+        'Vous semblez être à 12,4 km du lieu de l’intervention.',
+      ),
+    );
+  });
+
+  /** La clôture n'a pas encore de croisement : ne pas relever évite de faire croire le contraire. */
+  it('ne relève pas de position pour une clôture', async () => {
+    const endRoute = { params: { purpose: 'completion', missionId: 4 } } as any;
+    render(<PresenceScanScreen route={endRoute} navigation={{} as any} />);
+
+    act(() => cameraState.onScan?.({ data: JSON.stringify({ t: 'cleanux.completion', v: 1, s: 4, c: '731204' }) }));
+
+    await waitFor(() => expect(mockComplete).toHaveBeenCalled());
+    expect(mockReadScanPosition).not.toHaveBeenCalled();
   });
 
   it('demande la caméra plutôt que d’échouer en silence', () => {

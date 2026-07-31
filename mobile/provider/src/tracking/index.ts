@@ -12,3 +12,5 @@ export {
 export { startBackgroundLocation, stopBackgroundLocation } from './useBackgroundLocation';
 export { haversineMeters, distanceKmTo, formatDistance } from './distance';
 export { useCurrentPosition } from './useCurrentPosition';
+export { readScanPosition, SCAN_POSITION_TIMEOUT_MS } from './scanPosition';
+export type { ScanPosition } from './scanPosition';

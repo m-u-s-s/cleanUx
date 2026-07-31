@@ -8,6 +8,7 @@ use App\Models\User;
 use App\Services\TripTracking\PresenceCodeService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Testing\TestResponse;
 use Tests\TestCase;
 
 /**
@@ -20,10 +21,19 @@ use Tests\TestCase;
  *
  * Ce qui est verrouillé ici : le code ne quitte jamais la base en clair, il périme, il ne se
  * devine pas, et il n'est délivré qu'une fois l'intervention démarrée.
+ *
+ * Le croisement avec la position du scan est vérifié à part, dans {@see PresenceGeoProofTest}.
+ * Ici, toutes les confirmations envoient une position valide — l'application le fait toujours, et
+ * l'omettre ferait passer ces tests-ci pour une raison étrangère à ce qu'ils prétendent établir.
  */
 class PresenceConfirmationTest extends TestCase
 {
     use RefreshDatabase;
+
+    /** Le lieu de l'intervention, tel que posé par `scenario()`. */
+    private const SITE_LAT = 50.8467;
+
+    private const SITE_LNG = 4.3525;
 
     public function test_the_client_gets_a_code_once_the_mission_has_started(): void
     {
@@ -93,8 +103,7 @@ class PresenceConfirmationTest extends TestCase
             ->postJson("/api/client/bookings/{$booking->id}/presence-code")
             ->json('data.code');
 
-        $this->actingAs($provider, 'sanctum')
-            ->postJson("/api/provider/tracking/{$session->id}/confirm-presence", ['code' => $code])
+        $this->confirm($provider, $session, $code)
             ->assertOk()
             ->assertJsonPath('data.status', TripTrackingSession::STATUS_IN_MISSION);
 
@@ -111,9 +120,7 @@ class PresenceConfirmationTest extends TestCase
             ->postJson("/api/client/bookings/{$booking->id}/presence-code")
             ->json('data.code');
 
-        $this->actingAs($provider, 'sanctum')
-            ->postJson("/api/provider/tracking/{$session->id}/confirm-presence", ['code' => $code])
-            ->assertOk();
+        $this->confirm($provider, $session, $code)->assertOk();
 
         $this->assertNull($session->fresh()->presence_code_hash);
     }
@@ -124,9 +131,7 @@ class PresenceConfirmationTest extends TestCase
 
         $this->actingAs($client, 'sanctum')->postJson("/api/client/bookings/{$booking->id}/presence-code");
 
-        $this->actingAs($provider, 'sanctum')
-            ->postJson("/api/provider/tracking/{$session->id}/confirm-presence", ['code' => '000000'])
-            ->assertStatus(422);
+        $this->confirm($provider, $session, '000000')->assertStatus(422);
 
         $this->assertNull($session->fresh()->presence_confirmed_at);
     }
@@ -144,15 +149,11 @@ class PresenceConfirmationTest extends TestCase
             ->json('data.code');
 
         for ($i = 0; $i < PresenceCodeService::MAX_ATTEMPTS; $i++) {
-            $this->actingAs($provider, 'sanctum')
-                ->postJson("/api/provider/tracking/{$session->id}/confirm-presence", ['code' => '000000'])
-                ->assertStatus(422);
+            $this->confirm($provider, $session, '000000')->assertStatus(422);
         }
 
         // Le bon code arrive trop tard : la série d'essais l'a déjà brûlé.
-        $this->actingAs($provider, 'sanctum')
-            ->postJson("/api/provider/tracking/{$session->id}/confirm-presence", ['code' => $code])
-            ->assertStatus(422);
+        $this->confirm($provider, $session, $code)->assertStatus(422);
 
         $this->assertNull($session->fresh()->presence_confirmed_at);
     }
@@ -167,9 +168,7 @@ class PresenceConfirmationTest extends TestCase
 
         $this->travel(PresenceCodeService::TTL_MINUTES + 1)->minutes();
 
-        $this->actingAs($provider, 'sanctum')
-            ->postJson("/api/provider/tracking/{$session->id}/confirm-presence", ['code' => $code])
-            ->assertStatus(422);
+        $this->confirm($provider, $session, $code)->assertStatus(422);
 
         $this->assertNull($session->fresh()->presence_confirmed_at);
     }
@@ -184,9 +183,7 @@ class PresenceConfirmationTest extends TestCase
             ->postJson("/api/client/bookings/{$booking->id}/presence-code")
             ->json('data.code');
 
-        $this->actingAs($intruder, 'sanctum')
-            ->postJson("/api/provider/tracking/{$session->id}/confirm-presence", ['code' => $code])
-            ->assertStatus(403);
+        $this->confirm($intruder, $session, $code)->assertStatus(403);
     }
 
     /** Le client interroge cet état périodiquement pour retirer le code de son écran. */
@@ -202,8 +199,7 @@ class PresenceConfirmationTest extends TestCase
         $code = $this->actingAs($client, 'sanctum')
             ->postJson("/api/client/bookings/{$booking->id}/presence-code")
             ->json('data.code');
-        $this->actingAs($provider, 'sanctum')
-            ->postJson("/api/provider/tracking/{$session->id}/confirm-presence", ['code' => $code]);
+        $this->confirm($provider, $session, $code);
 
         $this->assertNotNull(
             $this->actingAs($client, 'sanctum')
@@ -220,13 +216,27 @@ class PresenceConfirmationTest extends TestCase
         $code = $this->actingAs($client, 'sanctum')
             ->postJson("/api/client/bookings/{$booking->id}/presence-code")
             ->json('data.code');
-        $this->actingAs($provider, 'sanctum')
-            ->postJson("/api/provider/tracking/{$session->id}/confirm-presence", ['code' => $code]);
+        $this->confirm($provider, $session, $code);
 
         $this->actingAs($client, 'sanctum')
             ->postJson("/api/client/bookings/{$booking->id}/presence-code")
             ->assertStatus(409)
             ->assertJsonPath('error', 'already_confirmed');
+    }
+
+    /**
+     * Confirme comme le fait l'application : avec la position relevée au moment du scan.
+     *
+     * @return TestResponse
+     */
+    private function confirm(User $provider, TripTrackingSession $session, string $code)
+    {
+        return $this->actingAs($provider, 'sanctum')
+            ->postJson("/api/provider/tracking/{$session->id}/confirm-presence", [
+                'code' => $code,
+                'lat' => self::SITE_LAT,
+                'lng' => self::SITE_LNG,
+            ]);
     }
 
     /**

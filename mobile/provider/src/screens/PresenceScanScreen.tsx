@@ -1,10 +1,10 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import { View, Text, StyleSheet, Alert } from 'react-native';
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { Screen, Button, TextInput } from '@/ui';
-import { useConfirmPresence, useCompleteByQr } from '@/tracking';
+import { useConfirmPresence, useCompleteByQr, readScanPosition } from '@/tracking';
 import { colors, spacing, typography, radius } from '@/theme';
 import type { RootStackParamList } from '@/navigation/types';
 
@@ -19,6 +19,10 @@ type Props = NativeStackScreenProps<RootStackParamList, 'PresenceScan'>;
  *
  * La saisie manuelle reste ouverte : une caméra sale, un écran fêlé ou une lumière rasante ne
  * doivent pas bloquer une intervention. Le client peut alors dicter ses six chiffres.
+ *
+ * Elle ouvre en revanche une brèche que le scan n'avait pas : six chiffres se dictent au
+ * téléphone. La position relevée au moment de la validation part donc avec le code, et le serveur
+ * la confronte au lieu de l'intervention — dicté ou scanné, le code ne vaut que sur place.
  */
 export function PresenceScanScreen({ route }: Props) {
   const params = route.params;
@@ -33,43 +37,69 @@ export function PresenceScanScreen({ route }: Props) {
   const [permission, requestPermission] = useCameraPermissions();
   const [scanned, setScanned] = useState(false);
   const [manualCode, setManualCode] = useState('');
+  // Le relevé de position précède l'envoi et prend jusqu'à huit secondes : sans état dédié, le
+  // bouton resterait inerte pendant ce temps, et l'attente passerait pour un plantage.
+  const [locating, setLocating] = useState(false);
   const presence = useConfirmPresence(sessionId);
   const completion = useCompleteByQr(missionId);
   const confirm = isCompletion ? completion : presence;
+  const busy = confirm.isPending || locating;
+
+  const handlers = useMemo(
+    () => ({
+      onSuccess: (result: any) => {
+        // Le démarrage est un effet de bord : il peut ne pas avoir lieu — mission déjà
+        // commencée, prestataire non rattaché — sans que la présence en souffre. Annoncer
+        // « mission démarrée » dans ce cas serait un mensonge.
+        const [title, message] = isCompletion
+          ? ['Mission clôturée', 'Le client a validé la fin de la prestation.']
+          : [
+              'Présence confirmée',
+              result?.mission_started
+                ? "L'intervention a démarré. Le client a été notifié."
+                : 'Le client a bien été notifié.',
+            ];
+
+        Alert.alert(title, message, [
+          { text: 'Continuer', onPress: () => navigation.goBack() },
+        ]);
+      },
+      onError: (e: any) => {
+        // Le message du serveur est celui qui explique la cause — code expiré, déjà brûlé, trop
+        // de tentatives, ou trop loin des lieux. Le remplacer par un texte générique le priverait
+        // de sens. Un refus de POSITION n'a rien à voir avec un mauvais code : les confondre sous
+        // « Code refusé » enverrait le prestataire redemander un code qui n'a aucun problème.
+        const errors = e?.response?.data?.errors ?? {};
+        const position = errors.position?.[0];
+
+        Alert.alert(
+          position ? 'Position refusée' : 'Code refusé',
+          position ?? errors.code?.[0] ?? e?.message ?? 'Ce code n’est pas valide.',
+        );
+        setScanned(false);
+      },
+    }),
+    [isCompletion, navigation],
+  );
 
   const submit = useCallback(
-    (code: string) => {
-      confirm.mutate(
-        { code },
-        {
-          onSuccess: (result: any) => {
-            // Le démarrage est un effet de bord : il peut ne pas avoir lieu — mission déjà
-            // commencée, prestataire non rattaché — sans que la présence en souffre. Annoncer
-            // « mission démarrée » dans ce cas serait un mensonge.
-            const [title, message] = isCompletion
-              ? ['Mission clôturée', 'Le client a validé la fin de la prestation.']
-              : [
-                  'Présence confirmée',
-                  result?.mission_started
-                    ? "L'intervention a démarré. Le client a été notifié."
-                    : 'Le client a bien été notifié.',
-                ];
+    async (code: string) => {
+      if (isCompletion) {
+        completion.mutate({ code }, handlers);
 
-            Alert.alert(title, message, [
-              { text: 'Continuer', onPress: () => navigation.goBack() },
-            ]);
-          },
-          onError: (e: any) => {
-            // Le message du serveur est celui qui explique la cause — code expiré, déjà brûlé,
-            // trop de tentatives. Le remplacer par un texte générique le priverait de sens.
-            const detail = e?.response?.data?.errors?.code?.[0] ?? e?.message;
-            Alert.alert('Code refusé', detail ?? 'Ce code n’est pas valide.');
-            setScanned(false);
-          },
-        },
-      );
+        return;
+      }
+
+      // Relevé pris ICI, à l'instant de la validation, et non repris du suivi en cours : celui-ci
+      // se fige sur sa dernière valeur dès qu'on cesse d'émettre, ce qui suffirait à confirmer
+      // depuis n'importe où après avoir quitté les lieux.
+      setLocating(true);
+      const position = await readScanPosition();
+      setLocating(false);
+
+      presence.mutate({ code, position }, handlers);
     },
-    [confirm, navigation],
+    [isCompletion, completion, presence, handlers],
   );
 
   /**
@@ -79,7 +109,7 @@ export function PresenceScanScreen({ route }: Props) {
    */
   const handleScan = useCallback(
     ({ data }: { data: string }) => {
-      if (scanned || confirm.isPending) return;
+      if (scanned || busy) return;
       setScanned(true);
 
       // Chaque bout de la visite a son étiquette. Un code de présence envoyé au point d'entrée
@@ -111,7 +141,7 @@ export function PresenceScanScreen({ route }: Props) {
 
       submit(code);
     },
-    [scanned, confirm.isPending, submit, isCompletion],
+    [scanned, busy, submit, isCompletion],
   );
 
   // `useCameraPermissions` rend `null` le temps de lire l'état du système.
@@ -152,7 +182,12 @@ export function PresenceScanScreen({ route }: Props) {
               ? 'Scannez le code de fin affiché par le client'
               : 'Scannez le code affiché sur le téléphone du client'}
           </Text>
-          {scanned && !confirm.isPending && (
+          {locating && (
+            <Text style={styles.instruction} testID="presence-locating">
+              Relevé de votre position…
+            </Text>
+          )}
+          {scanned && !busy && (
             <Button label="Scanner à nouveau" onPress={() => setScanned(false)} variant="secondary" />
           )}
         </View>
@@ -178,7 +213,7 @@ export function PresenceScanScreen({ route }: Props) {
               ? submit(manualCode)
               : Alert.alert('Code incomplet', 'Le code du client compte six chiffres.')
           }
-          loading={confirm.isPending}
+          loading={busy}
           fullWidth
         />
       </View>

@@ -35,6 +35,9 @@ class TripTrackingSession extends Model
         // Le code en clair n'est jamais stocké : seule son empreinte l'est.
         'presence_code_hash', 'presence_code_expires_at', 'presence_code_attempts',
         'presence_confirmed_at', 'presence_confirmed_by_user_id',
+        // Où se trouvait le prestataire au moment du scan, et ce que le contrôle en a conclu.
+        'presence_confirmed_lat', 'presence_confirmed_lng', 'presence_confirmed_accuracy_m',
+        'presence_confirmed_distance_m', 'presence_geo_verdict',
     ];
 
     protected $casts = [
@@ -60,6 +63,10 @@ class TripTrackingSession extends Model
         'presence_code_expires_at' => 'datetime',
         'presence_code_attempts' => 'integer',
         'presence_confirmed_at' => 'datetime',
+        'presence_confirmed_lat' => 'float',
+        'presence_confirmed_lng' => 'float',
+        'presence_confirmed_accuracy_m' => 'float',
+        'presence_confirmed_distance_m' => 'integer',
     ];
 
     /**

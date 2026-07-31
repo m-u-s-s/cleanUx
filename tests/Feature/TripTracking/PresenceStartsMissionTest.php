@@ -121,14 +121,44 @@ class PresenceStartsMissionTest extends TestCase
         $this->assertSame(MissionStatus::ARRIVED, $mission->fresh()->status);
     }
 
+    /**
+     * La mission part de la position VÉRIFIÉE, pas du dernier relevé reçu.
+     *
+     * `scenario()` place volontairement `last_lat`/`last_lng` sur des valeurs légèrement
+     * différentes du scan : c'est la seule façon de distinguer les deux sources. Seule celle du
+     * scan a été confrontée au lieu de l'intervention.
+     */
+    public function test_the_mission_starts_from_the_verified_position(): void
+    {
+        Notification::fake();
+        [$client, $provider, $booking, $session, $mission] = $this->scenario(MissionStatus::ARRIVED);
+
+        $this->confirm($client, $provider, $booking, $session)->assertOk();
+
+        $mission->refresh();
+        $this->assertEqualsWithDelta(self::SCAN_LAT, (float) $mission->start_lat, 0.00001);
+        $this->assertEqualsWithDelta(self::SCAN_LNG, (float) $mission->start_lng, 0.00001);
+    }
+
+    /** Position relevée au moment du scan — celle que le serveur confronte au lieu de l'intervention. */
+    private const SCAN_LAT = 50.8467;
+
+    private const SCAN_LNG = 4.3525;
+
     private function confirm(User $client, User $provider, Booking $booking, TripTrackingSession $session)
     {
         $code = $this->actingAs($client, 'sanctum')
             ->postJson("/api/client/bookings/{$booking->id}/presence-code")
             ->json('data.code');
 
+        // La position accompagne la confirmation, comme le fait l'application : sans elle le
+        // serveur refuse, et ces tests-ci passeraient pour une raison sans rapport avec la mission.
         return $this->actingAs($provider, 'sanctum')
-            ->postJson("/api/provider/tracking/{$session->id}/confirm-presence", ['code' => $code]);
+            ->postJson("/api/provider/tracking/{$session->id}/confirm-presence", [
+                'code' => $code,
+                'lat' => self::SCAN_LAT,
+                'lng' => self::SCAN_LNG,
+            ]);
     }
 
     /**

@@ -2,6 +2,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient, ApiError } from '@/api';
 import { useEffect, useRef, useState } from 'react';
 import * as Location from 'expo-location';
+import type { ScanPosition } from './scanPosition';
 
 interface TrackingSession { id: number; status: string; }
 
@@ -85,6 +86,14 @@ export function useArriveOnSite(bookingId: number | null, missionId: number | nu
 /**
  * Valide le code que le client affiche, ce qui atteste des deux appareils au même endroit.
  *
+ * La position relevée AU MOMENT DU SCAN accompagne le code, et le serveur la confronte au lieu de
+ * l'intervention. Le code seul atteste d'une possession : photographié puis envoyé, ou dicté au
+ * téléphone, il se valide depuis n'importe où pendant ses dix minutes de vie.
+ *
+ * `position` peut être `null` — localisation refusée, relevé impossible. On l'envoie tel quel
+ * plutôt que d'inventer une valeur : c'est au serveur de décider si une confirmation sans position
+ * est recevable, lui seul n'étant pas sur l'appareil de la personne contrôlée.
+ *
  * Le serveur démarre la mission dans la foulée et le dit par `mission_started` — l'appelant en a
  * besoin pour annoncer ce qui s'est réellement passé plutôt que de le supposer : le démarrage est
  * un effet de bord, il peut ne pas avoir lieu sans que la présence en souffre.
@@ -95,10 +104,20 @@ export function useConfirmPresence(sessionId: number | null) {
   return useMutation<
     { id: number; presence_confirmed_at: string | null; mission_started: boolean },
     ApiError,
-    { code: string }
+    { code: string; position: ScanPosition | null }
   >({
-    mutationFn: async ({ code }) => {
-      const body = (await apiClient.post(`/provider/tracking/${sessionId}/confirm-presence`, { code })).data;
+    mutationFn: async ({ code, position }) => {
+      const body = (await apiClient.post(`/provider/tracking/${sessionId}/confirm-presence`, {
+        code,
+        ...(position
+          ? {
+              lat: position.lat,
+              lng: position.lng,
+              accuracy_m: position.accuracy_m,
+              mocked: position.mocked,
+            }
+          : {}),
+      })).data;
 
       return { ...body?.data, mission_started: body?.mission_started === true };
     },
