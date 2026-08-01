@@ -10,6 +10,7 @@ use App\Support\Domain\AsapStatus;
 use App\Support\Domain\BookingStatus;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
 
 /**
@@ -349,11 +350,13 @@ class AsapDispatchService
     }
 
     /**
-     * Compte les prestataires prévenus dans le rayon courant.
+     * Prévient les prestataires du rayon courant, et tient le compteur.
      *
-     * Le nombre est REL : il vient de ceux dont on connaît la position et qui exercent le métier.
-     * Un compteur qui monte tout seul rassurerait deux minutes puis détruirait la confiance au
-     * premier client qui attend pour rien.
+     * Le nombre affiché au client est celui des prestataires RÉELLEMENT prévenus — pas celui des
+     * joignables. La différence n'est pas cosmétique : elle sépare « douze personnes ont votre
+     * demande sur leur écran » de « douze personnes existent quelque part ». Un compteur qui monte
+     * tout seul rassure deux minutes puis détruit la confiance au premier client qui attend pour
+     * rien.
      */
     protected function notifyWithinRadius(AsapDispatchRequest $request): AsapDispatchRequest
     {
@@ -363,17 +366,26 @@ class AsapDispatchService
             return $request;
         }
 
-        $count = $this->lookup->nearby($trade, $request->lat, $request->lng, $request->radius_m)->count();
-
         /*
-         * Le compteur ne redescend jamais : un prestataire prévenu l'a été, même s'il s'éloigne
-         * ensuite. Le voir baisser laisserait croire à un désistement.
-         *
-         * Le transtypage n'est pas décoratif : `max(null, 0)` rend NULL en PHP — les deux valeurs
-         * étant tenues pour égales, `max` renvoie la première. Sur une colonne non nulle, une
-         * recherche sans aucun prestataire faisait donc échouer l'écriture, et seulement celle-là.
+         * L'envoi ne fait pas tomber la recherche. Le service de notification absorbe déjà les
+         * échecs prestataire par prestataire ; ce garde-fou couvre ce qui reste — le module push
+         * indisponible en entier. Le client attendrait alors pour rien, mais il attendrait devant
+         * un écran vivant plutôt qu'une page d'erreur, et l'incident est dans les journaux.
          */
-        $request->update(['notified_count' => max((int) $request->notified_count, $count)]);
+        try {
+            app(AsapProviderNotifier::class)->notify($request);
+        } catch (\Throwable $e) {
+            Log::error('AsapDispatchService: notification des prestataires impossible', [
+                'request_id' => $request->id,
+                'error' => $e->getMessage(),
+            ]);
+        }
+
+        // Le compteur ne redescend jamais : un prestataire prévenu l'a été, même s'il s'éloigne
+        // ensuite. Le voir baisser laisserait croire à un désistement.
+        $request->update([
+            'notified_count' => $request->notifications()->count(),
+        ]);
 
         return $request->fresh();
     }

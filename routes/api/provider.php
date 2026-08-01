@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\EmployeeMissionTrackingController;
 use App\Http\Controllers\Api\PhoneVerificationController;
+use App\Http\Controllers\Api\Provider\AsapOfferController;
 use App\Http\Controllers\Api\Provider\AvailabilityController;
 use App\Http\Controllers\Api\Provider\BadgesController;
 use App\Http\Controllers\Api\Provider\FleetProviderController;
@@ -95,6 +96,11 @@ Route::middleware(['auth:sanctum', 'role:employe', 'provider.approved'])->group(
         Route::post('/presence-v2/busy', [PresenceController::class, 'goBusy']);
         Route::post('/presence-v2/break', [PresenceController::class, 'goBreak']);
         Route::post('/presence-v2/offline', [PresenceController::class, 'goOffline']);
+
+        // Courses immédiates proposées au prestataire — premier arrivé, premier servi.
+        Route::get('/asap-offers', [AsapOfferController::class, 'index']);
+        Route::post('/asap-offers/{asapRequest}/accept', [AsapOfferController::class, 'accept']);
+        Route::post('/asap-offers/{asapRequest}/decline', [AsapOfferController::class, 'decline']);
 
         // Phase Quality v2 — Inspections (provider terrain)
         Route::get('/missions/{mission}/inspections', [QualityInspectionController::class, 'index']);

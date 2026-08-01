@@ -6,6 +6,7 @@ use App\Support\Domain\AsapStatus;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
  * Une recherche de prestataire immédiat.
@@ -65,6 +66,12 @@ class AsapDispatchRequest extends Model
     public function acceptedBy(): BelongsTo
     {
         return $this->belongsTo(User::class, 'accepted_by_user_id');
+    }
+
+    /** @return HasMany<AsapDispatchNotification, $this> */
+    public function notifications(): HasMany
+    {
+        return $this->hasMany(AsapDispatchNotification::class, 'asap_dispatch_request_id');
     }
 
     public function scopeOpen(Builder $q): Builder
