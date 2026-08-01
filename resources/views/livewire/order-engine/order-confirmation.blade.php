@@ -142,6 +142,29 @@
                                 </div>
 
                                 @if ($state['ready'])
+                                    {{--
+                                        Les formules côte à côte, avec ce que chacune coûte
+                                        AUJOURD'HUI. Un acompte découvert après coup fait perdre le
+                                        client, et il a raison.
+                                    --}}
+                                    @php($options = $this->paymentOptions()[$booking->id] ?? [])
+                                    @if (count($options) > 1)
+                                        <ul class="mt-3 space-y-2">
+                                            @foreach ($options as $option)
+                                                <li class="rounded-lg border border-slate-200 bg-white p-3">
+                                                    <p class="text-sm font-medium text-slate-900">{{ $option['label'] }}</p>
+                                                    <p class="mt-0.5 text-sm text-slate-600">{{ $option['detail'] }}</p>
+                                                    <p class="mt-1 text-xs text-slate-500">
+                                                        Aujourd’hui :
+                                                        <span class="tabular-nums">{{ number_format($option['due_now_cents'] / 100, 2, ',', ' ') }} €</span>
+                                                        · bloqué :
+                                                        <span class="tabular-nums">{{ number_format($option['held_cents'] / 100, 2, ',', ' ') }} €</span>
+                                                    </p>
+                                                </li>
+                                            @endforeach
+                                        </ul>
+                                    @endif
+
                                     <a href="{{ route('client.booking.checkout', $booking->id) }}"
                                         class="mt-3 inline-flex min-h-[48px] w-full items-center justify-center rounded-xl bg-slate-900 text-sm font-medium text-white">
                                         Autoriser le paiement

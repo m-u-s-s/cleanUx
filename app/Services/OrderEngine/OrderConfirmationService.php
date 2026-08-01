@@ -10,6 +10,7 @@ use App\Services\Payments\MissionPaymentService;
 use App\Support\Domain\BookingStatus;
 use App\Support\Domain\OrderDraftStatus;
 use App\Support\Domain\OrderMode;
+use App\Support\Domain\PaymentPlan;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
@@ -159,7 +160,7 @@ class OrderConfirmationService
      *
      * @throws ValidationException
      */
-    public function authorizePayment(Booking $booking, string $paymentMethodId): Booking
+    public function authorizePayment(Booking $booking, string $paymentMethodId, string $plan = PaymentPlan::FULL): Booking
     {
         // Déjà autorisée : rejouer créerait une seconde empreinte sur la carte du client.
         if ($booking->payment_status === 'authorized' && $booking->stripe_payment_intent_id) {
@@ -172,9 +173,28 @@ class OrderConfirmationService
             throw ValidationException::withMessages(['payment' => [$readiness['reason']]]);
         }
 
+        /*
+         * Une formule inconnue retombe sur la retenue intégrale plutôt que d'échouer : la valeur
+         * vient du navigateur, et refuser un paiement à cause d'une chaîne inattendue coûterait
+         * une commande là où le défaut est parfaitement acceptable.
+         */
+        if ($plan === PaymentPlan::DEPOSIT) {
+            return app(OrderPaymentPlanner::class)->authorizeWithDeposit($booking, $paymentMethodId);
+        }
+
         app(MissionPaymentService::class)->authorize($booking, $paymentMethodId);
 
-        return $booking->fresh();
+        return $booking->fresh()->refresh();
+    }
+
+    /**
+     * Les formules de règlement ouvertes à cette réservation.
+     *
+     * @return list<array{plan: string, label: string, due_now_cents: int, held_cents: int, detail: string}>
+     */
+    public function paymentOptions(Booking $booking): array
+    {
+        return app(OrderPaymentPlanner::class)->optionsFor($booking);
     }
 
     /** @throws ValidationException */

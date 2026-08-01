@@ -144,4 +144,14 @@ return [
      */
     'asap_free_cancellation_minutes' => (int) env('ORDER_ENGINE_ASAP_FREE_CANCEL_MIN', 3),
     'asap_cancellation_fee_cents' => (int) env('ORDER_ENGINE_ASAP_CANCEL_FEE_CENTS', 500),
+    /*
+     | L'acompte — réservé aux gros montants.
+     |
+     | Bloquer deux mille euros sur une carte pendant une semaine est intenable : la limite du
+     | client est mangée par une somme qu'il n'a pas dépensée. En dessous du seuil, un acompte
+     | n'apporte rien et complique une décision qui doit rester d'un seul mouvement.
+     */
+    'deposit_enabled' => env('ORDER_ENGINE_DEPOSIT_ENABLED', true),
+    'deposit_threshold_cents' => (int) env('ORDER_ENGINE_DEPOSIT_THRESHOLD_CENTS', 50000),
+    'deposit_rate' => (float) env('ORDER_ENGINE_DEPOSIT_RATE', 0.30),
 ];

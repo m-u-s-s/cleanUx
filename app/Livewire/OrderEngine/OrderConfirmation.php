@@ -114,6 +114,24 @@ class OrderConfirmation extends Component
     }
 
     /**
+     * Les formules de règlement, par réservation.
+     *
+     * Présentées côte à côte AVEC ce que chacune coûte aujourd'hui. Un client qui découvre après
+     * coup qu'on lui a prélevé un acompte est un client perdu — et il a raison de l'être.
+     *
+     * @return array<int, list<array<string, mixed>>>
+     */
+    #[Computed]
+    public function paymentOptions(): array
+    {
+        $service = app(OrderConfirmationService::class);
+
+        return $this->bookings()
+            ->mapWithKeys(fn (Booking $booking) => [$booking->id => $service->paymentOptions($booking)])
+            ->all();
+    }
+
+    /**
      * Où en est le paiement de chaque réservation.
      *
      * L'autorisation exige un professionnel assigné ET raccordé à Stripe : avec l'attribution

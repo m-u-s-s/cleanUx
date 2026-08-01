@@ -107,6 +107,8 @@ class AppServiceProvider extends ServiceProvider
         Carbon::setLocale('fr');
         Booking::observe(RendezVousObserver::class);
         Booking::observe(BookingObserver::class);
+        // Garde d'argent : une retenue bancaire désigne un compte prestataire précis.
+        Booking::observe(\App\Observers\BookingPaymentDestinationObserver::class);
 
         // Tips v2 — push provider on tip charged/paid_out
         if (class_exists(BookingTip::class) && class_exists(BookingTipObserver::class)) {

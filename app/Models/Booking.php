@@ -223,6 +223,11 @@ class Booking extends Model
         // Stripe Connect & paiement (Phase Stripe v2)
         'stripe_payment_intent_id',
         'payment_status',
+        // L'acompte est DÉBITÉ, le solde seulement BLOQUÉ : deux natures, donc deux colonnes.
+        'payment_plan',
+        'deposit_payment_intent_id',
+        'deposit_amount_cents',
+        'deposit_captured_at',
         'payment_amount_cents',
         'provider_amount_cents',
         'platform_fee_cents',
