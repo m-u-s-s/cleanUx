@@ -90,6 +90,9 @@
                         @endforeach
                     </div>
                 </section>
+
+                {{-- L'adresse vient APRÈS les questions : elle récompense, elle ne filtre pas. --}}
+                @include('livewire.order-engine.partials.address-availability')
             @endif
         </div>
 

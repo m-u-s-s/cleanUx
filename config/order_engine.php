@@ -61,4 +61,30 @@ return [
     */
     'max_questions_per_step' => (int) env('ORDER_ENGINE_MAX_QUESTIONS_STEP', 7),
     'max_questions_warning' => (int) env('ORDER_ENGINE_MAX_QUESTIONS_WARN', 10),
+
+    /*
+    |---------------------------------------------------------------------------
+    | Preuve de disponibilité
+    |---------------------------------------------------------------------------
+    |
+    | « 14 peintres à moins de 8 km, premier créneau aujourd'hui à 16 h. » La
+    | confiance vient de la disponibilité visible, pas d'un badge décoratif — mais
+    | seulement si le chiffre est vrai. Un compte gonflé se retourne contre la
+    | marque au premier client qui attend.
+    */
+    'availability_radius_m' => (int) env('ORDER_ENGINE_AVAILABILITY_RADIUS_M', 8000),
+
+    // Rayon proposé quand le premier ne donne rien : une impasse doit offrir une suite.
+    'availability_wider_radius_m' => (int) env('ORDER_ENGINE_AVAILABILITY_WIDER_M', 25000),
+
+    /*
+     * Nombre d'agendas consultés pour trouver le premier créneau.
+     *
+     * La disponibilité se calcule prestataire par prestataire, et cet appel se
+     * déclenche à la saisie de l'adresse. Consulter cinquante agendas pour afficher
+     * une phrase rassurante ferait ramer l'écran qu'elle est censée servir.
+     */
+    'availability_sample_size' => (int) env('ORDER_ENGINE_AVAILABILITY_SAMPLE', 5),
+
+    'availability_horizon_days' => (int) env('ORDER_ENGINE_AVAILABILITY_HORIZON_DAYS', 7),
 ];

@@ -5,13 +5,17 @@ namespace App\Livewire\OrderEngine;
 use App\Models\OrderDraft;
 use App\Models\Sector;
 use App\Models\Trade;
+use App\Services\GeolocationV2\GeocodingService;
+use App\Services\OrderEngine\AvailabilitySnapshot;
 use App\Services\OrderEngine\ConditionEvaluator;
 use App\Services\OrderEngine\OrderDraftManager;
 use App\Services\OrderEngine\PriceBreakdown;
 use App\Services\OrderEngine\PricingEngine;
+use App\Services\OrderEngine\ProviderAvailabilityLookup;
 use App\Support\Domain\OrderMode;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
@@ -44,6 +48,21 @@ class OrderJourney extends Component
     public array $answers = [];
 
     public string $mode = OrderMode::SCHEDULED;
+
+    /**
+     * L'adresse vit au niveau de la COMMANDE, pas de la ligne.
+     *
+     * En multi-services, elle n'est demandée qu'une fois : redemander la même adresse à chaque
+     * métier ajouté est le genre de frottement qui fait abandonner un panier déjà rempli.
+     */
+    public string $address = '';
+
+    public ?float $lat = null;
+
+    public ?float $lng = null;
+
+    /** Le géocodage a échoué : on le dit, plutôt que de laisser un champ muet. */
+    public bool $addressUnresolved = false;
 
     public function mount(?string $sector = null, ?string $trade = null): void
     {
@@ -178,6 +197,73 @@ class OrderJourney extends Component
         return collect($quote->lines)->last();
     }
 
+    // ─── Adresse et disponibilité ────────────────────────────────────────────────────────────
+
+    /**
+     * L'adresse débloque la preuve de disponibilité.
+     *
+     * Elle est posée en FIN de parcours, et c'est délibéré : elle récompense le client d'être allé
+     * jusque-là par une information qui le rassure — « 14 peintres à moins de 8 km » — au lieu de
+     * le filtrer à l'entrée.
+     *
+     * Le géocodage échoue en silence : une adresse mal orthographiée ou un service indisponible ne
+     * doivent pas empêcher de commander. On perd la phrase rassurante, pas la commande.
+     */
+    public function updatedAddress(): void
+    {
+        $this->addressUnresolved = false;
+        $this->lat = null;
+        $this->lng = null;
+
+        $address = trim($this->address);
+
+        if (mb_strlen($address) < 6) {
+            $this->refreshDerived();
+
+            return;
+        }
+
+        try {
+            $result = app(GeocodingService::class)->geocode($address, 'BE');
+
+            if ($result) {
+                $this->lat = $result->latitude;
+                $this->lng = $result->longitude;
+            } else {
+                $this->addressUnresolved = true;
+            }
+        } catch (\Throwable $e) {
+            $this->addressUnresolved = true;
+            Log::warning('[order_engine] géocodage indisponible', ['error' => $e->getMessage()]);
+        }
+
+        $this->draft()->update([
+            'address' => $address,
+            'lat' => $this->lat,
+            'lng' => $this->lng,
+        ]);
+
+        $this->refreshDerived();
+    }
+
+    /**
+     * Ce qu'on peut honnêtement promettre. `null` tant que l'adresse n'est pas située.
+     *
+     * On ne promet rien avant de pouvoir le vérifier : une estimation de disponibilité affichée
+     * sans position serait une décoration, et la loi 11 dit exactement le contraire.
+     */
+    #[Computed]
+    public function availability(): ?AvailabilitySnapshot
+    {
+        $trade = $this->trade();
+
+        if (! $trade || $this->lat === null || $this->lng === null) {
+            return null;
+        }
+
+        return app(ProviderAvailabilityLookup::class)->forTrade($trade, $this->lat, $this->lng);
+    }
+
     // ─── Navigation ──────────────────────────────────────────────────────────────────────────
 
     public function selectSector(int $sectorId): void
@@ -285,7 +371,7 @@ class OrderJourney extends Component
     {
         unset(
             $this->trades, $this->trade, $this->questions, $this->visibleQuestions,
-            $this->quote, $this->lastChange, $this->availableModes,
+            $this->quote, $this->lastChange, $this->availableModes, $this->availability,
         );
     }
 
