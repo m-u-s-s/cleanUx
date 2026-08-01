@@ -7,6 +7,7 @@ use App\Models\Sector;
 use App\Models\Trade;
 use App\Services\GeolocationV2\GeocodingService;
 use App\Services\OrderEngine\AvailabilitySnapshot;
+use App\Services\OrderEngine\BundleComposer;
 use App\Services\OrderEngine\ConditionEvaluator;
 use App\Services\OrderEngine\OrderDraftManager;
 use App\Services\OrderEngine\PriceBreakdown;
@@ -20,6 +21,7 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\On;
@@ -66,6 +68,9 @@ class OrderJourney extends Component
 
     /** Le géocodage a échoué : on le dit, plutôt que de laisser un champ muet. */
     public bool $addressUnresolved = false;
+
+    /** Le refus de réordonnancement, AFFICHÉ : corriger en silence tromperait le client. */
+    public string $sequenceError = '';
 
     /** Jour retenu pour l'intervention, au format ISO. */
     public ?string $selectedDate = null;
@@ -396,6 +401,109 @@ class OrderJourney extends Component
             && $this->selectedSlot !== null;
     }
 
+    // ─── Multi-services ──────────────────────────────────────────────────────────────────────
+
+    /**
+     * Le chantier tel qu'il se déroulera : chaque métier, son rang, et quand il peut commencer.
+     *
+     * L'ordre n'est pas cosmétique — le carreleur ne pose pas avant que le plombier ait fini, et
+     * pas immédiatement après non plus : il faut laisser sécher. Le client doit VOIR ce
+     * séquencement, sinon il croit que tout le monde arrive le même matin.
+     */
+    #[Computed]
+    public function timeline(): Collection
+    {
+        if ($this->mode !== OrderMode::BUNDLE) {
+            return collect();
+        }
+
+        return app(BundleComposer::class)->timeline(
+            $this->draft(),
+            $this->selectedDate ? Carbon::parse($this->selectedDate.' '.($this->selectedSlot ?? '08:00')) : null,
+        );
+    }
+
+    /** « Souvent commandé avec » — ce que l'administrateur a associé, moins ce qui est déjà là. */
+    #[Computed]
+    public function bundleSuggestions(): Collection
+    {
+        return $this->mode === OrderMode::BUNDLE
+            ? app(BundleComposer::class)->suggestionsFor($this->draft())
+            : collect();
+    }
+
+    /** Le devis consolidé : un total, le détail dépliable par métier, la remise visible. */
+    #[Computed]
+    public function bundleQuote(): ?array
+    {
+        if ($this->mode !== OrderMode::BUNDLE || $this->draft()->items()->count() === 0) {
+            return null;
+        }
+
+        return app(BundleComposer::class)->consolidatedQuote($this->draft());
+    }
+
+    /** Ajoute un métier au chantier, à sa place dans la séquence. */
+    public function addService(int $tradeId): void
+    {
+        $trade = Trade::find($tradeId);
+
+        if (! $trade || ! $trade->allowsMode(OrderMode::BUNDLE)) {
+            return;
+        }
+
+        app(BundleComposer::class)->addTrade($this->draft(), $trade);
+
+        // On bascule sur le métier ajouté : il faut répondre à SES questions, et le client vient
+        // précisément de dire qu'il le voulait.
+        $this->selectTrade($trade->id);
+    }
+
+    public function removeService(int $itemId): void
+    {
+        $item = $this->draft()->items()->find($itemId);
+
+        if (! $item) {
+            return;
+        }
+
+        app(BundleComposer::class)->removeTrade($this->draft(), $item);
+
+        // Le métier retiré était peut-être celui affiché : on ne laisse pas un questionnaire
+        // orphelin à l'écran.
+        if ($this->tradeId === $item->trade_id) {
+            $this->tradeId = null;
+            $this->answers = [];
+        }
+
+        $this->refreshDerived();
+    }
+
+    /**
+     * Réordonne le chantier — en refusant ce qui le casserait.
+     *
+     * Le client peut passer le nettoyage avant la peinture ; il ne peut pas faire poser le
+     * carrelage avant la plomberie. Le refus est AFFICHÉ : corriger en silence lui ferait croire
+     * que son geste a été pris en compte.
+     *
+     * @param  list<int|string>  $orderedItemIds
+     */
+    public function reorderServices(array $orderedItemIds): void
+    {
+        $this->sequenceError = '';
+
+        try {
+            app(BundleComposer::class)->reorder(
+                $this->draft(),
+                collect($orderedItemIds)->map(fn ($id) => (int) $id)->all(),
+            );
+        } catch (ValidationException $e) {
+            $this->sequenceError = $e->getMessage();
+        }
+
+        $this->refreshDerived();
+    }
+
     // ─── Navigation ──────────────────────────────────────────────────────────────────────────
 
     public function selectSector(int $sectorId): void
@@ -423,6 +531,18 @@ class OrderJourney extends Component
             $this->mode = OrderMode::SCHEDULED;
         }
 
+        /*
+         * En MULTI-SERVICES, choisir un métier le place immédiatement au chantier.
+         *
+         * Ailleurs, une ligne de panier n'apparaît qu'à la première réponse — regarder un métier
+         * n'est pas le commander. Mais ici le client vient d'appuyer sur « ajouter un autre
+         * service » : le métier doit figurer au plan tout de suite, sinon il compose son chantier
+         * et n'y voit rien apparaître tant qu'il n'a pas répondu à une question.
+         */
+        if ($this->mode === OrderMode::BUNDLE) {
+            app(BundleComposer::class)->addTrade($this->draft(), $trade);
+        }
+
         $this->answers = $this->loadAnswers($trade);
 
         // Le professionnel déjà choisi pour ce métier se retrouve : revenir en arrière ne perd pas
@@ -448,11 +568,25 @@ class OrderJourney extends Component
 
     public function setMode(string $mode): void
     {
-        if (in_array($mode, $this->availableModes(), true)) {
-            $this->mode = $mode;
-            $this->draft()->update(['mode' => $mode]);
-            $this->refreshDerived();
+        if (! in_array($mode, $this->availableModes(), true)) {
+            return;
         }
+
+        $this->mode = $mode;
+        $this->draft()->update(['mode' => $mode]);
+
+        /*
+         * Basculer en multi-services POSE au chantier le métier en cours de configuration.
+         *
+         * Le client vient de dire « en fait il m'en faut plusieurs » : celui qu'il regardait est le
+         * premier du chantier. Sans ce geste, il passe en multi-services et trouve un plan vide,
+         * alors qu'il venait de répondre à ses questions.
+         */
+        if ($mode === OrderMode::BUNDLE && $this->trade()) {
+            app(BundleComposer::class)->addTrade($this->draft(), $this->trade());
+        }
+
+        $this->refreshDerived();
     }
 
     // ─── Réponses ────────────────────────────────────────────────────────────────────────────
@@ -511,6 +645,7 @@ class OrderJourney extends Component
             $this->trades, $this->trade, $this->questions, $this->visibleQuestions,
             $this->quote, $this->lastChange, $this->availableModes, $this->availability,
             $this->slots, $this->providerOptions, $this->readyToConfirm, $this->dayOptions,
+            $this->timeline, $this->bundleSuggestions, $this->bundleQuote,
         );
     }
 

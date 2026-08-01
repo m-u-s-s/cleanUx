@@ -99,6 +99,15 @@
                     @include('livewire.order-engine.partials.schedule')
                 @endif
             @endif
+
+            {{--
+                Le chantier multi-métiers vit HORS du bloc « un métier choisi » : il doit rester
+                visible quand le client revient au dock pour en ajouter un autre, sinon il perd de
+                vue ce qu'il a déjà composé.
+            --}}
+            @if ($mode === 'bundle')
+                @include('livewire.order-engine.partials.bundle')
+            @endif
         </div>
 
         {{-- ─── Récapitulatif ───────────────────────────────────────────────────────────── --}}
