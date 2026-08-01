@@ -53,8 +53,13 @@
         {{-- ─── Édition ─────────────────────────────────────────────────────────────────── --}}
         <section class="space-y-3" aria-label="Édition du questionnaire">
 
+            {{--
+                Glisser-déposer pour réordonner. Les flèches restent : elles seules fonctionnent au
+                clavier et avec un lecteur d'écran, et le glisser-déposer n'a jamais su le faire.
+            --}}
+            <div x-data="questionSorter()" x-init="boot()" data-sortable-root>
             @forelse ($this->questions() as $index => $question)
-                <article @class([
+                <article draggable="true" data-question-id="{{ $question->id }}" @class([
                     'rounded-2xl border bg-white p-4',
                     'border-slate-200' => $question->is_active,
                     'border-dashed border-slate-300 opacity-60' => ! $question->is_active,
@@ -104,6 +109,42 @@
                         @endif
                     </div>
 
+                    {{--
+                        Les traductions, repliees : la plupart du temps on edite le francais. Le
+                        badge dit ce qui MANQUE, parce qu'un trou de traduction se decouvre sinon
+                        en production, par un client qui ne comprend pas la question.
+                    --}}
+                    @php($missing = $question->missingLocales())
+                    <details class="mt-3 border-t border-slate-100 pt-3">
+                        <summary class="cursor-pointer text-sm text-slate-600">
+                            Traductions
+                            @if ($missing)
+                                <span class="ml-1 rounded-full bg-amber-50 px-2 py-0.5 text-xs text-amber-800">
+                                    {{ count($missing) }} manquante{{ count($missing) > 1 ? 's' : '' }}
+                                </span>
+                            @else
+                                <span class="ml-1 text-xs text-emerald-700">complètes</span>
+                            @endif
+                        </summary>
+
+                        <div class="mt-3 space-y-3">
+                            @foreach ($this->translationLocales() as $code => $name)
+                                <div>
+                                    <label for="t-{{ $question->id }}-{{ $code }}"
+                                        class="block text-xs font-medium text-slate-500">{{ $name }}</label>
+                                    <input id="t-{{ $question->id }}-{{ $code }}" type="text"
+                                        value="{{ $question->translations->where('field', 'label')->firstWhere('locale', $code)?->value }}"
+                                        placeholder="{{ $question->label }}"
+                                        wire:change="saveTranslation({{ $question->id }}, '{{ $code }}', 'label', $event.target.value)"
+                                        class="mt-1 w-full rounded-lg border-slate-300 text-sm focus:border-slate-900 focus:ring-0">
+                                </div>
+                            @endforeach
+                            <p class="text-xs text-slate-400">
+                                Laisser vide affiche le libellé français : mieux vaut la mauvaise langue qu’un blanc.
+                            </p>
+                        </div>
+                    </details>
+
                     @if ($question->options->isNotEmpty())
                         <ul class="mt-3 space-y-1 border-t border-slate-100 pt-3">
                             @foreach ($question->options as $option)
@@ -132,6 +173,36 @@
                     Aucune question. Commencez par la plus déterminante pour le prix — la surface, le type d’intervention.
                 </p>
             @endforelse
+            </div>
+
+            {{-- ─── Bibliotheque ─────────────────────────────────────────────────────────── --}}
+            @if ($this->libraryQuestions()->isNotEmpty())
+                <details class="rounded-2xl border border-slate-200 bg-white p-4">
+                    <summary class="cursor-pointer text-sm font-medium text-slate-900">
+                        Bibliothèque · {{ $this->libraryQuestions()->count() }} question(s) réutilisable(s)
+                    </summary>
+
+                    <p class="mt-2 text-xs text-slate-500">
+                        Reprendre crée une COPIE dans ce métier. Ajuster le prix ici ne touchera pas
+                        les autres métiers qui l’ont reprise.
+                    </p>
+
+                    <ul class="mt-3 space-y-2">
+                        @foreach ($this->libraryQuestions() as $template)
+                            <li class="flex items-center justify-between gap-3" wire:key="lib-{{ $template->id }}">
+                                <span class="min-w-0">
+                                    <span class="block truncate text-sm text-slate-800">{{ $template->label }}</span>
+                                    <span class="font-mono text-xs text-slate-400">{{ $template->code }}</span>
+                                </span>
+                                <button type="button" wire:click="adoptFromLibrary({{ $template->id }})"
+                                    class="shrink-0 rounded-lg border border-slate-300 px-3 py-1.5 text-sm text-slate-800 hover:bg-slate-50">
+                                    Reprendre
+                                </button>
+                            </li>
+                        @endforeach
+                    </ul>
+                </details>
+            @endif
         </section>
 
         {{-- ─── Aperçu et simulateur ────────────────────────────────────────────────────── --}}
@@ -342,3 +413,58 @@
         </div>
     @endif
 </div>
+
+@push('scripts')
+<script>
+    window.questionSorter = () => ({
+        dragged: null,
+
+        boot() {
+            const root = this.$el;
+
+            root.addEventListener('dragstart', (e) => {
+                this.dragged = e.target.closest('[data-question-id]');
+                if (this.dragged) {
+                    e.dataTransfer.effectAllowed = 'move';
+                    this.dragged.style.opacity = '0.4';
+                }
+            });
+
+            root.addEventListener('dragend', () => {
+                if (this.dragged) {
+                    this.dragged.style.opacity = '';
+                }
+                this.dragged = null;
+            });
+
+            root.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                const over = e.target.closest('[data-question-id]');
+
+                if (! over || ! this.dragged || over === this.dragged) {
+                    return;
+                }
+
+                // Insertion avant ou apres selon le cote survole : sans ce test, deposer sur la
+                // moitie basse d'une carte la placerait quand meme au-dessus.
+                const box = over.getBoundingClientRect();
+                const after = (e.clientY - box.top) > (box.height / 2);
+                over.parentNode.insertBefore(this.dragged, after ? over.nextSibling : over);
+            });
+
+            root.addEventListener('drop', (e) => {
+                e.preventDefault();
+                this.commit();
+            });
+        },
+
+        commit() {
+            const ids = Array.from(this.$el.querySelectorAll('[data-question-id]'))
+                .map((el) => el.dataset.questionId);
+
+            // Le serveur revalide : l'ordre vient du navigateur, il n'est pas cru sur parole.
+            this.$wire.reorder(ids);
+        },
+    });
+</script>
+@endpush

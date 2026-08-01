@@ -6,6 +6,7 @@ use App\Models\OrderDraft;
 use App\Models\OrderDraftAnswer;
 use App\Models\OrderDraftItem;
 use App\Models\Question;
+use App\Models\QuestionOption;
 use App\Models\Trade;
 use App\Models\User;
 use App\Support\Domain\OrderDraftStatus;
@@ -142,7 +143,10 @@ class OrderDraftManager
                     [
                         'question_id' => $question->id,
                         // L'instantané : ce que le client a VU, pas ce que la base dira demain.
-                        'question_label_snapshot' => $question->label,
+                        // Le libellé TEL QUE LE CLIENT L'A VU, donc dans SA langue. Enregistrer
+                        // la version française d'une question lue en néerlandais rendrait le devis
+                        // inopposable : ce n'est pas ce à quoi il a répondu.
+                        'question_label_snapshot' => $question->translate('label'),
                         'answer_value' => is_array($value) ? $value : ['value' => $value],
                         'answer_label_snapshot' => $this->describeAnswer($question, $value, $unknown),
                         'price_impact_cents' => (int) ($impacts[$question->code]['min_cents'] ?? 0),
@@ -217,7 +221,7 @@ class OrderDraftManager
 
             $labels = $question->options
                 ->whereIn('value', $selected->all())
-                ->pluck('label');
+                ->map(fn (QuestionOption $option) => $option->translate('label'));
 
             return $labels->isNotEmpty() ? $labels->implode(', ') : (string) (is_array($value) ? implode(', ', $value) : $value);
         }

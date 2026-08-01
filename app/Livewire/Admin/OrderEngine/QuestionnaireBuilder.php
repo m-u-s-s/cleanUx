@@ -16,6 +16,7 @@ use App\Support\Domain\OrderMode;
 use App\Support\Domain\PriceImpactMode;
 use App\Support\Domain\QuestionType;
 use App\Support\Livewire\Concerns\EnforcesAdminAccess;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -288,6 +289,146 @@ class QuestionnaireBuilder extends Component
         });
 
         $this->refreshDerived();
+    }
+
+    /**
+     * Réordonne d'un geste : la liste complète arrive du navigateur.
+     *
+     * Le serveur ne fait PAS confiance à l'ordre reçu — il ne retient que les identifiants qui
+     * appartiennent réellement à ce métier. Sans ce tri, un identifiant glissé dans la requête
+     * réordonnerait le questionnaire d'un autre métier.
+     *
+     * @param  list<int|string>  $orderedIds
+     */
+    public function reorder(array $orderedIds): void
+    {
+        $own = $this->questions()->keyBy('id');
+
+        $kept = collect($orderedIds)
+            ->map(fn ($id) => (int) $id)
+            ->filter(fn (int $id) => $own->has($id))
+            ->values();
+
+        // Une liste partielle laisserait des questions sans rang défini, donc à une place
+        // arbitraire au prochain affichage : on refuse plutôt que de réordonner à moitié.
+        if ($kept->count() !== $own->count()) {
+            return;
+        }
+
+        DB::transaction(function () use ($kept, $own) {
+            $kept->each(fn (int $id, int $position) => $own[$id]->update(['sort_order' => $position]));
+        });
+
+        $this->refreshDerived();
+    }
+
+    /**
+     * Reprend une question de la bibliothèque dans ce métier.
+     *
+     * Une COPIE, pas un partage. Les questions restent au niveau du métier : un libellé partagé en
+     * direct entre douze métiers ferait qu'un ajustement de prix pour la peinture déplacerait aussi
+     * celui de la plomberie.
+     */
+    public function adoptFromLibrary(int $questionId): void
+    {
+        $template = Question::query()->library()->find($questionId);
+
+        if (! $template) {
+            return;
+        }
+
+        // Le code est la clé stable du métier : s'il est déjà pris, on ne l'écrase pas — ce serait
+        // remplacer une question déjà répondue par des clients en cours de commande.
+        if ($this->trade->questions()->where('code', $template->code)->exists()) {
+            $this->flash = sprintf('Le code « %s » existe déjà dans ce métier.', $template->code);
+
+            return;
+        }
+
+        DB::transaction(function () use ($template) {
+            $copy = $template->replicate(['trade_id', 'step_id', 'sort_order']);
+            $copy->trade_id = $this->trade->id;
+            $copy->sort_order = (int) $this->trade->questions()->max('sort_order') + 1;
+            $copy->save();
+
+            foreach ($template->options as $option) {
+                $optionCopy = $option->replicate(['question_id']);
+                $optionCopy->question_id = $copy->id;
+                $optionCopy->save();
+
+                // Les traductions suivent la copie : sans elles, reprendre une question de la
+                // bibliothèque ferait perdre le néerlandais et l'anglais déjà écrits.
+                $this->copyTranslations($option, $optionCopy);
+            }
+
+            $this->copyTranslations($template, $copy);
+        });
+
+        $this->flash = sprintf('« %s » reprise depuis la bibliothèque.', $template->label);
+        $this->refreshDerived();
+    }
+
+    /**
+     * Écrit — ou retire — un libellé traduit.
+     *
+     * Vider le champ SUPPRIME la traduction : revenir au libellé de base doit être aussi simple
+     * que d'effacer, et ne doit surtout pas produire une question blanche en production.
+     */
+    public function saveTranslation(int $questionId, string $locale, string $field, ?string $value): void
+    {
+        if (! array_key_exists($locale, $this->translationLocales())) {
+            return;
+        }
+
+        // La liste des champs traduisibles est FERMÉE : sans elle, un champ arbitraire venu du
+        // navigateur créerait des lignes que rien ne lit jamais.
+        if (! in_array($field, ['label', 'help_text', 'placeholder'], true)) {
+            return;
+        }
+
+        $question = $this->questions()->firstWhere('id', $questionId);
+        $question?->setTranslation($field, $locale, $value);
+
+        $this->refreshDerived();
+    }
+
+    /**
+     * Les langues à traduire — celles activées, moins celle des libellés de base.
+     *
+     * @return array<string, string>
+     */
+    #[Computed]
+    public function translationLocales(): array
+    {
+        $default = (string) config('i18n.default', 'fr');
+
+        return collect(config('i18n.locales', []))
+            ->filter(fn ($meta) => (bool) ($meta['enabled'] ?? false))
+            ->reject(fn ($meta, $code) => $code === $default)
+            ->map(fn ($meta) => (string) ($meta['native_name'] ?? $meta['name'] ?? ''))
+            ->all();
+    }
+
+    /** Les questions réutilisables que ce métier n'a pas encore reprises. */
+    #[Computed]
+    public function libraryQuestions()
+    {
+        $taken = $this->trade->questions()->pluck('code');
+
+        return Question::query()
+            ->library()
+            ->where('is_active', true)
+            ->whereNotIn('code', $taken)
+            ->orderBy('label')
+            ->get();
+    }
+
+    /** Recopie les libellés traduits d'un objet du catalogue vers sa copie. */
+    protected function copyTranslations(Model $from, Model $to): void
+    {
+        foreach ($from->translations as $translation) {
+            $to->setTranslation($translation->field, $translation->locale, $translation->value);
+        }
     }
 
     /** Désactiver n'est pas archiver : la question quitte le parcours, elle reste sous la main. */

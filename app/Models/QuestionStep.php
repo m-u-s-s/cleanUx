@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\HasCatalogTranslations;
+use App\Services\Audit\Concerns\AuditsEloquentEvents;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -14,6 +16,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  */
 class QuestionStep extends Model
 {
+    use AuditsEloquentEvents, HasCatalogTranslations;
+
     protected $fillable = ['trade_id', 'title', 'subtitle', 'sort_order'];
 
     protected $casts = ['sort_order' => 'integer'];
@@ -28,5 +32,11 @@ class QuestionStep extends Model
     public function questions(): HasMany
     {
         return $this->hasMany(Question::class, 'step_id')->orderBy('sort_order');
+    }
+
+    /* Un changement ici déplace des prix pour de vrais clients : il doit laisser une trace. */
+    protected function auditEventDomain(): string
+    {
+        return 'catalog';
     }
 }

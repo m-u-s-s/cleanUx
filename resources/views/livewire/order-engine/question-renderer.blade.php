@@ -17,16 +17,16 @@
 >
     <legend class="w-full">
         <span class="block text-[17px] font-semibold leading-snug text-slate-900">
-            {{ $question->label }}
+            {{ $question->translate('label') }}
             @if ($question->is_required)
                 <span class="text-slate-400 font-normal" aria-hidden="true">*</span>
                 <span class="sr-only">(obligatoire)</span>
             @endif
         </span>
 
-        @if ($question->help_text)
+        @if ($question->translate('help_text'))
             <span id="{{ $question->code }}-help" class="mt-1 block text-sm leading-relaxed text-slate-500">
-                {{ $question->help_text }}
+                {{ $question->translate('help_text') }}
             </span>
         @endif
     </legend>

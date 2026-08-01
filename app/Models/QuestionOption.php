@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\HasCatalogTranslations;
+use App\Services\Audit\Concerns\AuditsEloquentEvents;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -14,6 +16,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  */
 class QuestionOption extends Model
 {
+    use AuditsEloquentEvents, HasCatalogTranslations;
+
     protected $fillable = [
         'question_id', 'label', 'description', 'icon', 'value',
         'price_modifier_cents', 'price_multiplier', 'duration_modifier_min',
@@ -38,5 +42,11 @@ class QuestionOption extends Model
     public function scopeActive(Builder $q): Builder
     {
         return $q->where('is_active', true);
+    }
+
+    /* Un changement ici déplace des prix pour de vrais clients : il doit laisser une trace. */
+    protected function auditEventDomain(): string
+    {
+        return 'catalog';
     }
 }

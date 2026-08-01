@@ -24,7 +24,7 @@
     >
         <option value="">Choisissez…</option>
         @foreach ($options as $option)
-            <option value="{{ $option->value }}">{{ $option->label }}</option>
+            <option value="{{ $option->value }}">{{ $option->translate('label') }}</option>
         @endforeach
     </select>
 
@@ -46,7 +46,7 @@
                     @if ($multiple) wire:click="toggleOption('{{ $option->value }}')" @else wire:model.live="value" @endif
                     class="sr-only peer"
                 >
-                <span class="peer-focus-visible:underline peer-focus-visible:underline-offset-4">{{ $option->label }}</span>
+                <span class="peer-focus-visible:underline peer-focus-visible:underline-offset-4">{{ $option->translate('label') }}</span>
             </label>
         @endforeach
     </div>
@@ -70,7 +70,7 @@
                     class="mt-0.5 h-5 w-5 shrink-0 border-slate-300 text-slate-900 focus:ring-slate-900"
                 >
                 <span class="min-w-0">
-                    <span class="block text-[15px] font-medium leading-snug text-slate-900">{{ $option->label }}</span>
+                    <span class="block text-[15px] font-medium leading-snug text-slate-900">{{ $option->translate('label') }}</span>
                     @if ($option->description)
                         <span class="mt-0.5 block text-sm leading-snug text-slate-500">{{ $option->description }}</span>
                     @endif

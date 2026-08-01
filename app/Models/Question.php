@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\HasCatalogTranslations;
+use App\Services\Audit\Concerns\AuditsEloquentEvents;
 use App\Support\Domain\QuestionType;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
@@ -22,7 +24,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  */
 class Question extends Model
 {
-    use SoftDeletes;
+    use AuditsEloquentEvents, HasCatalogTranslations, SoftDeletes;
 
     protected $fillable = [
         'trade_id', 'step_id', 'code', 'label', 'help_text', 'placeholder', 'type',
@@ -115,5 +117,32 @@ class Question extends Model
             'min' => $this->validation['min'] ?? null,
             'max' => $this->validation['max'] ?? null,
         ];
+    }
+
+    /**
+     * La bibliothèque : des modèles de questions, jamais rendus tels quels.
+     *
+     * Une question de bibliothèque se COPIE dans un métier ; elle n'apparaît pas dans un parcours.
+     * Les questions restent au niveau du métier — un libellé partagé en direct entre douze métiers
+     * ferait qu'un ajustement de prix pour la peinture déplacerait aussi celui de la plomberie.
+     */
+    public function scopeLibrary(Builder $q): Builder
+    {
+        return $q->whereNull('trade_id');
+    }
+
+    public function isLibraryTemplate(): bool
+    {
+        return $this->trade_id === null;
+    }
+
+    /*
+     * Un changement ici DÉPLACE DES PRIX pour de vrais clients. L'audit n'est pas une formalité :
+     * c'est le seul moyen de répondre à « pourquoi cette prestation coûtait 40 € hier et 60 € ce
+     * matin » autrement qu'en devinant.
+     */
+    protected function auditEventDomain(): string
+    {
+        return 'catalog';
     }
 }
