@@ -44,6 +44,7 @@ use App\Livewire\Admin\Nps\NpsCenter;
 use App\Livewire\Admin\Onboarding\AdminOnboardingDocumentsCenter;
 use App\Livewire\Admin\Onboarding\AdminOnboardingProvidersList;
 use App\Livewire\Admin\OnboardingV2\OnboardingV2Center;
+use App\Livewire\Admin\OrderEngine\CatalogCenter;
 use App\Livewire\Admin\OrderEngine\QuestionnaireBuilder;
 use App\Livewire\Admin\OrganizationSitesManager;
 use App\Livewire\Admin\Payments\StripeHardeningCenter;
@@ -540,6 +541,9 @@ Route::middleware(['role:admin', 'enforce_2fa'])
          * qu'un responsable non technique écrit un questionnaire complet et voit, à droite, ce que
          * le client verra et le prix que ses réponses construisent.
          */
+        Route::get('/catalogue', CatalogCenter::class)
+            ->name('order-engine.catalog');
+
         Route::get('/parcours/{trade}', QuestionnaireBuilder::class)
             ->name('order-engine.builder');
     });

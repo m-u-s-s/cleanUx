@@ -9,14 +9,18 @@ use App\Models\Trade;
 use App\Services\OrderEngine\CatalogArchiver;
 use App\Services\OrderEngine\PriceBreakdown;
 use App\Services\OrderEngine\PricingEngine;
+use App\Services\OrderEngine\QuestionnairePortability;
 use App\Services\OrderEngine\QuestionnaireValidator;
+use App\Services\OrderEngine\TradeFormPublisher;
 use App\Support\Domain\OrderMode;
 use App\Support\Domain\PriceImpactMode;
 use App\Support\Domain\QuestionType;
 use App\Support\Livewire\Concerns\EnforcesAdminAccess;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\On;
@@ -327,6 +331,90 @@ class QuestionnaireBuilder extends Component
         $this->archiveImpact = null;
     }
 
+    // ─── Publication et portabilité ──────────────────────────────────────────────────────────
+
+    /** La version en ligne, celle que les commandes citent. */
+    #[Computed]
+    public function currentRevision()
+    {
+        return app(TradeFormPublisher::class)->currentRevision($this->trade);
+    }
+
+    /**
+     * Le brouillon diffère-t-il de ce qui est en ligne ?
+     *
+     * Comparaison sur le CONTENU : renommer une question puis annuler laisse une trace dans
+     * `updated_at` sans rien changer au parcours, et signaler « en attente » dans ce cas
+     * apprendrait à l'administrateur à ignorer l'avertissement.
+     */
+    #[Computed]
+    public function hasUnpublishedChanges(): bool
+    {
+        return app(TradeFormPublisher::class)->hasUnpublishedChanges($this->trade);
+    }
+
+    /** Met en ligne, en figeant une version. Refusé si un défaut bloquant s'y oppose. */
+    public function publish(): void
+    {
+        try {
+            $revision = app(TradeFormPublisher::class)->publish($this->trade, Auth::user());
+            $this->flash = sprintf('Parcours publié — version %d. Les commandes en cours citeront celle-ci.', $revision->version);
+        } catch (ValidationException $e) {
+            $this->flash = null;
+            $this->addError('publication', collect($e->errors())->flatten()->implode(' '));
+        }
+
+        $this->refreshDerived();
+    }
+
+    /**
+     * Recopie ce questionnaire vers un autre métier.
+     *
+     * « Peinture intérieure » et « Peinture extérieure » partagent l'essentiel de leurs questions ;
+     * les ressaisir produit deux formulations légèrement différentes de la même chose, et un client
+     * qui ne comprend pas pourquoi le même mur coûte deux prix.
+     */
+    public function duplicateTo(int $targetTradeId): void
+    {
+        $target = Trade::find($targetTradeId);
+
+        if (! $target || $target->id === $this->trade->id) {
+            return;
+        }
+
+        $result = app(QuestionnairePortability::class)->duplicate($this->trade, $target);
+
+        $this->flash = sprintf(
+            'Copié vers « %s » : %d question(s) ajoutée(s), %d mise(s) à jour.',
+            $target->name,
+            $result['created'],
+            $result['updated'],
+        );
+    }
+
+    /** Export JSON — pour rejouer un questionnaire d'un environnement à l'autre. */
+    public function export()
+    {
+        $payload = app(QuestionnairePortability::class)->export($this->trade);
+
+        return response()->streamDownload(
+            fn () => print (json_encode($payload, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES)),
+            sprintf('parcours-%s.json', $this->trade->slug),
+            ['Content-Type' => 'application/json'],
+        );
+    }
+
+    /** Les métiers vers lesquels dupliquer. */
+    #[Computed]
+    public function duplicationTargets()
+    {
+        return Trade::query()
+            ->where('id', '!=', $this->trade->id)
+            ->where('is_active', true)
+            ->orderBy('name')
+            ->get(['id', 'name']);
+    }
+
     // ─── Options ─────────────────────────────────────────────────────────────────────────────
 
     public function addOption(int $questionId): void
@@ -404,7 +492,7 @@ class QuestionnaireBuilder extends Component
     /** Les propriétés calculées sont mises en cache par Livewire : il faut les invalider à la main. */
     protected function refreshDerived(): void
     {
-        unset($this->questions, $this->issues, $this->canPublish, $this->quote);
+        unset($this->questions, $this->issues, $this->canPublish, $this->quote, $this->currentRevision, $this->hasUnpublishedChanges);
     }
 
     public function questionTypes(): array

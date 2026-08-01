@@ -93,6 +93,15 @@ class OrderDraftManager
             'trade_id' => $trade->id,
             'sequence' => (int) $draft->items()->max('sequence') + 1,
             'status' => OrderDraftStatus::DRAFT,
+            /*
+             * La révision employée est retenue avec la commande.
+             *
+             * Sans elle, on saurait ce que le client a répondu mais plus jamais ce qu'on lui avait
+             * demandé ni comment son prix avait été calculé : le questionnaire aura changé trois
+             * fois d'ici la contestation. C'est ce qui rend un devis REJOUABLE, pas seulement
+             * lisible.
+             */
+            'trade_form_revision_id' => app(TradeFormPublisher::class)->currentRevision($trade)?->id,
         ]);
     }
 
