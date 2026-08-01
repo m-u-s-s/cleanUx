@@ -114,4 +114,34 @@ return [
 
     // Jours proposés au choix de la date.
     'slot_days_ahead' => (int) env('ORDER_ENGINE_SLOT_DAYS_AHEAD', 14),
+
+    /*
+    |---------------------------------------------------------------------------
+    | Recherche du mode immédiat
+    |---------------------------------------------------------------------------
+    |
+    | Le rayon s'élargit par paliers tant que personne ne répond, et s'arrête à un
+    | maximum. Chercher indéfiniment enverrait un professionnel à quarante
+    | kilomètres pour une intervention d'une heure — le client attendrait un trajet
+    | qu'il n'a pas demandé.
+    */
+    'asap_initial_radius_m' => (int) env('ORDER_ENGINE_ASAP_RADIUS_M', 5000),
+    'asap_radius_step_m' => (int) env('ORDER_ENGINE_ASAP_RADIUS_STEP_M', 5000),
+    'asap_max_radius_m' => (int) env('ORDER_ENGINE_ASAP_MAX_RADIUS_M', 20000),
+
+    /*
+     * Au-delà, on cesse de chercher et on PROPOSE une suite. Laisser quelqu'un
+     * devant un sablier est ce qui transforme une attente en abandon.
+     */
+    'asap_timeout_seconds' => (int) env('ORDER_ENGINE_ASAP_TIMEOUT_S', 180),
+
+    /*
+     * Fenêtre d'annulation gratuite après acceptation, et frais au-delà.
+     *
+     * Les deux sont ANNONCÉS avant que le client clique — des frais découverts
+     * après le clic font perdre un client pour de bon, et le montant récupéré ne
+     * compense jamais.
+     */
+    'asap_free_cancellation_minutes' => (int) env('ORDER_ENGINE_ASAP_FREE_CANCEL_MIN', 3),
+    'asap_cancellation_fee_cents' => (int) env('ORDER_ENGINE_ASAP_CANCEL_FEE_CENTS', 500),
 ];
