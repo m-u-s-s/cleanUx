@@ -370,6 +370,19 @@ class OrderJourney extends Component
         }
 
         $this->selectedProviderId = $providerId;
+
+        /*
+         * Le choix est ÉCRIT sur la ligne, pas seulement gardé à l'écran. Un état qui ne vit que
+         * dans le composant disparaît au rechargement — et le client, lui, croit avoir choisi son
+         * professionnel. C'est aussi ce qui permet à la pré-autorisation de partir dès la
+         * confirmation : sans prestataire enregistré, Stripe n'a pas de destination.
+         */
+        if ($trade = $this->trade()) {
+            app(OrderDraftManager::class)
+                ->itemFor($this->draft(), $trade)
+                ->update(['provider_id' => $providerId]);
+        }
+
         $this->refreshDerived();
     }
 
@@ -411,6 +424,12 @@ class OrderJourney extends Component
         }
 
         $this->answers = $this->loadAnswers($trade);
+
+        // Le professionnel déjà choisi pour ce métier se retrouve : revenir en arrière ne perd pas
+        // plus un choix de prestataire qu'une réponse au questionnaire.
+        $this->selectedProviderId = $this->draft()->items()
+            ->where('trade_id', $trade->id)->value('provider_id');
+
         $this->refreshDerived();
     }
 

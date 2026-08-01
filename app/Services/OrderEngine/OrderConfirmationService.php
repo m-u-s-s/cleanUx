@@ -192,6 +192,13 @@ class OrderConfirmationService
         $booking = Booking::create(array_filter([
             'booking_reference' => $this->uniqueReference(),
             'client_id' => $client->id,
+            /*
+             * Le professionnel choisi par le client suit jusqu'ici. Le statut reste « en attente » :
+             * il lui est PROPOSÉ, il n'a pas encore accepté. Sans ce report, un client qui a
+             * délibérément choisi son prestataire verrait sa commande repartir en attribution
+             * automatique — et le paiement attendrait une assignation déjà faite.
+             */
+            'employe_id' => $item->provider_id,
             'status' => BookingStatus::EN_ATTENTE,
             'address' => $draft->address,
             'destination_lat' => $draft->lat,

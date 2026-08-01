@@ -142,10 +142,12 @@
                         </ul>
                     @endif
 
-                    <button type="button"
-                        class="mt-5 min-h-[48px] w-full rounded-xl bg-slate-900 text-sm font-medium text-white transition hover:bg-slate-800">
+                    {{-- Vers le récapitulatif : toujours accessible, même incomplet — c'est là que
+                         ce qui manque est écrit en toutes lettres, pas ici sous un bouton mort. --}}
+                    <a href="{{ route('order.confirmation') }}" wire:navigate
+                        class="mt-5 inline-flex min-h-[48px] w-full items-center justify-center rounded-xl bg-slate-900 text-sm font-medium text-white transition hover:bg-slate-800">
                         Continuer
-                    </button>
+                    </a>
                 </div>
             </aside>
 
@@ -165,10 +167,10 @@
                         </p>
                     </div>
 
-                    <button type="button"
-                        class="min-h-[48px] shrink-0 rounded-xl bg-slate-900 px-6 text-sm font-medium text-white">
+                    <a href="{{ route('order.confirmation') }}" wire:navigate
+                        class="inline-flex min-h-[48px] shrink-0 items-center rounded-xl bg-slate-900 px-6 text-sm font-medium text-white">
                         Continuer
-                    </button>
+                    </a>
                 </div>
             </div>
         @endif

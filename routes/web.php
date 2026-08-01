@@ -4,6 +4,7 @@ use App\Http\Controllers\Push\PushSubscriptionController;
 use App\Http\Controllers\WebViewEntryController;
 use App\Livewire\Auth\VerifyPhone;
 use App\Livewire\DesignSystem;
+use App\Livewire\OrderEngine\OrderConfirmation;
 use App\Livewire\OrderEngine\OrderJourney;
 use App\Livewire\Provider\MissionOfferPage;
 use App\Livewire\Provider\Onboarding\ProviderOnboardingWizard;
@@ -69,5 +70,15 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
  * identité ici replacerait le formulaire d'inscription devant l'estimation, c'est-à-dire devant la
  * première cause d'abandon. Le panier vit sur un jeton de session jusqu'à la confirmation.
  */
+/*
+ * DÉCLARÉE AVANT le parcours : `/commander/{sector?}` attraperait sinon « recapitulatif » comme un
+ * nom de secteur, et le dernier écran deviendrait injoignable.
+ *
+ * Publique elle aussi : un visiteur non connecté doit voir son récapitulatif COMPLET, prix inclus,
+ * avant de décider de créer un compte. L'identité est demandée DANS l'écran, pas devant.
+ */
+Route::get('/commander/recapitulatif', OrderConfirmation::class)
+    ->name('order.confirmation');
+
 Route::get('/commander/{sector?}/{trade?}', OrderJourney::class)
     ->name('order.journey');
