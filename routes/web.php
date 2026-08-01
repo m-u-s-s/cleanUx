@@ -4,6 +4,7 @@ use App\Http\Controllers\Push\PushSubscriptionController;
 use App\Http\Controllers\WebViewEntryController;
 use App\Livewire\Auth\VerifyPhone;
 use App\Livewire\DesignSystem;
+use App\Livewire\OrderEngine\AsapSearch;
 use App\Livewire\OrderEngine\OrderConfirmation;
 use App\Livewire\OrderEngine\OrderJourney;
 use App\Livewire\Provider\MissionOfferPage;
@@ -79,6 +80,14 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
  */
 Route::get('/commander/recapitulatif', OrderConfirmation::class)
     ->name('order.confirmation');
+
+/*
+ * L'écran d'attente d'une course immédiate. Authentifié : la recherche n'existe qu'après
+ * confirmation, donc après le compte. La propriété est revérifiée dans le composant.
+ */
+Route::get('/commander/recherche/{request}', AsapSearch::class)
+    ->middleware('auth')
+    ->name('order.asap.search');
 
 Route::get('/commander/{sector?}/{trade?}', OrderJourney::class)
     ->name('order.journey');

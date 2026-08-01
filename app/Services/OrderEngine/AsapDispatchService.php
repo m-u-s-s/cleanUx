@@ -3,9 +3,11 @@
 namespace App\Services\OrderEngine;
 
 use App\Models\AsapDispatchRequest;
+use App\Models\Booking;
 use App\Models\OrderDraftItem;
 use App\Models\User;
 use App\Support\Domain\AsapStatus;
+use App\Support\Domain\BookingStatus;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
@@ -160,6 +162,8 @@ class AsapDispatchService
                 'free_cancellation_until' => now()->addMinutes($freeMinutes),
             ]);
 
+            $this->handOverToBooking($locked, $provider);
+
             return $locked->fresh();
         });
     }
@@ -296,6 +300,52 @@ class AsapDispatchService
         ];
 
         return $ways;
+    }
+
+    /**
+     * La reprise : la recherche acceptée devient une intervention réelle.
+     *
+     * Sans ce passage, la course serait « acceptée » dans son propre coin pendant que la
+     * réservation resterait en attente : le prestataire ne la verrait pas dans son application,
+     * n'aurait ni mise en route, ni codes de démarrage et de fin, ni clôture — donc aucun
+     * encaissement. C'est exactement le défaut corrigé côté flux historique.
+     *
+     * Passer la réservation en « confirmé » déclenche l'observateur qui crée la mission : on
+     * réutilise le pont existant plutôt que d'en poser un second à côté.
+     *
+     * UN SEUL CANAL D'ASSIGNATION. Si la réservation porte déjà un autre prestataire, on ne
+     * l'écrase pas — deux personnes partiraient pour la même intervention et une seule serait
+     * payée. Le verrou de `accept()` protège la course ; celui-ci protège la réservation.
+     *
+     * @throws ValidationException si la réservation est déjà partie chez quelqu'un d'autre
+     */
+    protected function handOverToBooking(AsapDispatchRequest $request, User $provider): void
+    {
+        $bookingId = $request->item?->metadata['booking_id'] ?? null;
+
+        // Pas de réservation : la recherche a été ouverte hors confirmation (test, admin). Rien à
+        // reprendre, et ce n'est pas une erreur.
+        if (! $bookingId) {
+            return;
+        }
+
+        $booking = Booking::query()->lockForUpdate()->find($bookingId);
+
+        if (! $booking) {
+            return;
+        }
+
+        if ($booking->employe_id && (int) $booking->employe_id !== (int) $provider->id) {
+            throw ValidationException::withMessages([
+                'dispatch' => ['Cette intervention a déjà été attribuée à un autre professionnel.'],
+            ]);
+        }
+
+        $booking->update([
+            'employe_id' => $provider->id,
+            'status' => BookingStatus::CONFIRME,
+            'matched_at' => now(),
+        ]);
     }
 
     /**

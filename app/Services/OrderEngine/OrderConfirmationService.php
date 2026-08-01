@@ -9,6 +9,7 @@ use App\Models\User;
 use App\Services\Payments\MissionPaymentService;
 use App\Support\Domain\BookingStatus;
 use App\Support\Domain\OrderDraftStatus;
+use App\Support\Domain\OrderMode;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
@@ -33,6 +34,7 @@ class OrderConfirmationService
     public function __construct(
         protected OrderDraftManager $drafts,
         protected BundleComposer $bundles,
+        protected AsapDispatchService $dispatch,
     ) {}
 
     /**
@@ -77,6 +79,17 @@ class OrderConfirmationService
                 'estimate_max_cents' => $quote['order']->maxCents,
                 'total_cents' => $quote['order']->minCents,
             ]);
+
+            /*
+             * En mode immédiat, confirmer OUVRE la recherche — dans la même transaction que la
+             * réservation. Confirmer une course « dès que possible » sans lancer la recherche
+             * laisserait le client devant un écran d'attente que rien n'alimente.
+             */
+            if ($locked->mode === OrderMode::ASAP) {
+                foreach ($quote['items'] as $line) {
+                    $this->dispatch->open($line['item']->fresh(), (float) $locked->lat, (float) $locked->lng);
+                }
+            }
 
             return $locked->fresh();
         });

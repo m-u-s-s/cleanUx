@@ -2,12 +2,14 @@
 
 namespace App\Livewire\OrderEngine;
 
+use App\Models\AsapDispatchRequest;
 use App\Models\Booking;
 use App\Models\OrderDraft;
 use App\Services\OrderEngine\BundleComposer;
 use App\Services\OrderEngine\OrderConfirmationService;
 use App\Services\OrderEngine\OrderDraftManager;
 use App\Support\Domain\OrderDraftStatus;
+use App\Support\Domain\OrderMode;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
@@ -168,6 +170,22 @@ class OrderConfirmation extends Component
 
         $this->confirmedReference = $confirmed->reference;
         unset($this->draft, $this->quote, $this->blockers, $this->bookings, $this->paymentStates);
+
+        /*
+         * En mode immédiat, l'écran d'attente EST la suite : la recherche vient d'être ouverte et
+         * quelqu'un peut accepter dans les secondes qui suivent. Laisser le client sur un
+         * récapitulatif figé lui cacherait précisément ce qu'il attend.
+         */
+        if ($confirmed->mode === OrderMode::ASAP) {
+            $search = AsapDispatchRequest::query()
+                ->where('order_draft_id', $confirmed->id)
+                ->orderBy('id')
+                ->first();
+
+            if ($search) {
+                $this->redirect(route('order.asap.search', $search->id), navigate: true);
+            }
+        }
     }
 
     public function render()
