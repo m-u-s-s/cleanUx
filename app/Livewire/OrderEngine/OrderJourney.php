@@ -12,7 +12,10 @@ use App\Services\OrderEngine\OrderDraftManager;
 use App\Services\OrderEngine\PriceBreakdown;
 use App\Services\OrderEngine\PricingEngine;
 use App\Services\OrderEngine\ProviderAvailabilityLookup;
+use App\Services\OrderEngine\ProviderShortlist;
+use App\Services\OrderEngine\SlotFinder;
 use App\Support\Domain\OrderMode;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
@@ -63,6 +66,21 @@ class OrderJourney extends Component
 
     /** Le géocodage a échoué : on le dit, plutôt que de laisser un champ muet. */
     public bool $addressUnresolved = false;
+
+    /** Jour retenu pour l'intervention, au format ISO. */
+    public ?string $selectedDate = null;
+
+    /** Heure de début du créneau retenu, au format H:i. */
+    public ?string $selectedSlot = null;
+
+    /**
+     * Prestataire choisi, ou `null` pour l'attribution automatique.
+     *
+     * `null` est le DÉFAUT et suffit pour continuer : obliger à trancher entre douze inconnus
+     * transforme un service en corvée de comparaison, sur des critères que le client n'a aucun
+     * moyen d'arbitrer.
+     */
+    public ?int $selectedProviderId = null;
 
     public function mount(?string $sector = null, ?string $trade = null): void
     {
@@ -264,6 +282,107 @@ class OrderJourney extends Component
         return app(ProviderAvailabilityLookup::class)->forTrade($trade, $this->lat, $this->lng);
     }
 
+    // ─── Créneaux et attribution ─────────────────────────────────────────────────────────────
+
+    /**
+     * Les jours proposés au choix.
+     *
+     * @return list<Carbon>
+     */
+    #[Computed]
+    public function dayOptions(): array
+    {
+        $days = (int) config('order_engine.slot_days_ahead', 14);
+
+        return collect(range(0, $days))
+            ->map(fn (int $offset) => Carbon::today()->addDays($offset))
+            ->all();
+    }
+
+    /**
+     * La grille du jour retenu — créneaux disponibles ET indisponibles.
+     *
+     * Les seconds ne sont pas retirés : masqués, ils laisseraient une grille trouée que le client
+     * lirait comme une panne. Grisés avec leur raison, ils informent.
+     */
+    #[Computed]
+    public function slots(): array
+    {
+        $trade = $this->trade();
+
+        if (! $trade || $this->lat === null || $this->lng === null || ! $this->selectedDate) {
+            return [];
+        }
+
+        return app(SlotFinder::class)->forDay(
+            $trade,
+            $this->lat,
+            $this->lng,
+            Carbon::parse($this->selectedDate),
+        );
+    }
+
+    /** Les professionnels proposés, pour qui veut choisir. La liste reste facultative. */
+    #[Computed]
+    public function providerOptions()
+    {
+        $trade = $this->trade();
+
+        if (! $trade || $this->lat === null || $this->lng === null) {
+            return collect();
+        }
+
+        return app(ProviderShortlist::class)->forTrade($trade, $this->lat, $this->lng);
+    }
+
+    public function selectDate(string $date): void
+    {
+        $this->selectedDate = $date;
+        // Changer de jour invalide le créneau : le garder afficherait une heure retenue sur une
+        // journée où elle n'existe peut-être pas.
+        $this->selectedSlot = null;
+        $this->refreshDerived();
+    }
+
+    /** Un créneau indisponible ne se retient pas, même si l'interface a été contournée. */
+    public function selectSlot(string $time): void
+    {
+        $slot = collect($this->slots())->first(
+            fn (array $s) => $s['start']->format('H:i') === $time && $s['available'],
+        );
+
+        if (! $slot) {
+            return;
+        }
+
+        $this->selectedSlot = $time;
+
+        $this->draft()->update(['scheduled_at' => $slot['start']]);
+        $this->refreshDerived();
+    }
+
+    public function selectProvider(?int $providerId): void
+    {
+        // Un prestataire absent de la liste proposée n'est pas retenu : la valeur vient du
+        // navigateur, et le serveur ne lui fait pas confiance.
+        if ($providerId !== null && ! $this->providerOptions()->contains('id', $providerId)) {
+            return;
+        }
+
+        $this->selectedProviderId = $providerId;
+        $this->refreshDerived();
+    }
+
+    /** Tout est-il réuni pour confirmer ? Le prestataire, lui, n'est jamais obligatoire. */
+    #[Computed]
+    public function readyToConfirm(): bool
+    {
+        return $this->trade() !== null
+            && $this->lat !== null
+            && $this->selectedDate !== null
+            && $this->selectedSlot !== null;
+    }
+
     // ─── Navigation ──────────────────────────────────────────────────────────────────────────
 
     public function selectSector(int $sectorId): void
@@ -372,6 +491,7 @@ class OrderJourney extends Component
         unset(
             $this->trades, $this->trade, $this->questions, $this->visibleQuestions,
             $this->quote, $this->lastChange, $this->availableModes, $this->availability,
+            $this->slots, $this->providerOptions, $this->readyToConfirm, $this->dayOptions,
         );
     }
 

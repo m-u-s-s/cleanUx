@@ -93,6 +93,11 @@
 
                 {{-- L'adresse vient APRÈS les questions : elle récompense, elle ne filtre pas. --}}
                 @include('livewire.order-engine.partials.address-availability')
+
+                {{-- Et le calendrier après l'adresse : les créneaux dépendent de qui couvre la zone. --}}
+                @if ($mode === 'scheduled')
+                    @include('livewire.order-engine.partials.schedule')
+                @endif
             @endif
         </div>
 

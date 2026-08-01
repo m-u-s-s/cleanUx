@@ -72,6 +72,33 @@ class ProviderAvailabilityLookup
     }
 
     /**
+     * Les prestataires du métier réellement dans le rayon, avec leur distance.
+     *
+     * Exposé pour que le calcul de créneaux réutilise exactement la même définition de « proche » :
+     * deux définitions divergentes finiraient par afficher un compte de professionnels que les
+     * créneaux ne confirmeraient pas.
+     *
+     * @return Collection<int, array{id: int, distance_m: int}>
+     */
+    public function nearby(Trade $trade, float $lat, float $lng, ?int $radiusM = null): Collection
+    {
+        $radiusM ??= (int) Config::get('order_engine.availability_radius_m', 8000);
+
+        $locatable = $this->providersOf($trade)
+            ->filter(fn ($p) => $p->current_lat !== null && $p->current_lng !== null);
+
+        return $this->within($locatable, $lat, $lng, $radiusM)
+            ->map(fn ($p) => [
+                'id' => (int) $p->id,
+                'distance_m' => (int) round($this->distance->distanceMeters(
+                    $lat, $lng, (float) $p->current_lat, (float) $p->current_lng,
+                )),
+            ])
+            ->sortBy('distance_m')
+            ->values();
+    }
+
+    /**
      * Prestataires actifs qui exercent ce métier.
      *
      * On lit `trade_user` : c'est la déclaration explicite de qui fait quoi. Se rabattre sur les

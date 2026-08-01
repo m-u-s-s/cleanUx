@@ -87,4 +87,31 @@ return [
     'availability_sample_size' => (int) env('ORDER_ENGINE_AVAILABILITY_SAMPLE', 5),
 
     'availability_horizon_days' => (int) env('ORDER_ENGINE_AVAILABILITY_HORIZON_DAYS', 7),
+
+    /*
+    |---------------------------------------------------------------------------
+    | Créneaux du mode planifié
+    |---------------------------------------------------------------------------
+    |
+    | Bornes et pas de la grille horaire. Ils relèvent de l'exploitation, pas du
+    | code : une plateforme qui ouvre à 7 h en été ne devrait pas demander un
+    | déploiement pour le dire.
+    */
+    'slot_day_start_hour' => (int) env('ORDER_ENGINE_SLOT_START_HOUR', 8),
+    'slot_day_end_hour' => (int) env('ORDER_ENGINE_SLOT_END_HOUR', 18),
+    'slot_step_minutes' => (int) env('ORDER_ENGINE_SLOT_STEP_MIN', 60),
+
+    /*
+     * Délai minimal avant une intervention. Un créneau plus proche est grisé avec
+     * SA raison — « trop proche pour être organisé » — distincte de « personne
+     * n'est libre » : confondre les deux ferait croire à un service saturé alors
+     * qu'il est simplement tard.
+     */
+    'slot_lead_time_hours' => (int) env('ORDER_ENGINE_SLOT_LEAD_HOURS', 2),
+
+    // Agendas consultés pour bâtir la grille. Bornés : la page se regarde trois secondes.
+    'slot_provider_sample' => (int) env('ORDER_ENGINE_SLOT_PROVIDER_SAMPLE', 12),
+
+    // Jours proposés au choix de la date.
+    'slot_days_ahead' => (int) env('ORDER_ENGINE_SLOT_DAYS_AHEAD', 14),
 ];
