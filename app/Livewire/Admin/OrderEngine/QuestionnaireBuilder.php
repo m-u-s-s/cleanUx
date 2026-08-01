@@ -86,7 +86,7 @@ class QuestionnaireBuilder extends Component
     public function questions()
     {
         return $this->trade->questions()
-            ->with(['options', 'conditions'])
+            ->with(['options.translations', 'conditions', 'translations'])
             ->orderBy('sort_order')
             ->orderBy('id')
             ->get();

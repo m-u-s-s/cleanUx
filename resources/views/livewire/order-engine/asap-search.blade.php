@@ -6,7 +6,7 @@
     clic. Cacher ce bouton ne retient personne : le client ferme l'onglet.
 --}}
 <div class="pb-32 lg:pb-8" wire:poll.5s="tick">
-    @php($request = $this->request())
+    @php($request = $this->request)
 
     <div class="mx-auto max-w-2xl space-y-5 px-4 py-6">
 
@@ -118,7 +118,7 @@
                     </p>
 
                     <ul class="mt-4 space-y-3">
-                        @foreach ($this->waysForward() as $way)
+                        @foreach ($this->waysForward as $way)
                             <li class="rounded-xl border border-slate-100 bg-slate-50/60 p-4">
                                 <p class="text-sm font-medium text-slate-900">{{ $way['label'] }}</p>
                                 <p class="mt-0.5 text-sm text-slate-600">{{ $way['detail'] }}</p>
@@ -173,14 +173,14 @@
                     <div class="mx-auto max-w-2xl">
                         {{-- Ce que ça coûte, LU avant le clic. C'est la différence entre un client
                              qui décide et un client qui découvre. --}}
-                        <p class="mb-2 text-center text-sm {{ $this->cancellation()['free'] ? 'text-slate-500' : 'text-amber-900' }}">
-                            {{ $this->cancellation()['reason'] }}
+                        <p class="mb-2 text-center text-sm {{ $this->cancellation['free'] ? 'text-slate-500' : 'text-amber-900' }}">
+                            {{ $this->cancellation['reason'] }}
                         </p>
 
                         <button type="button" wire:click="cancel"
-                            wire:confirm="{{ $this->cancellation()['free']
+                            wire:confirm="{{ $this->cancellation['free']
                                 ? 'Annuler cette demande ?'
-                                : 'Annuler maintenant coûte '.number_format($this->cancellation()['fee_cents'] / 100, 2, ',', ' ').' €. Confirmer ?' }}"
+                                : 'Annuler maintenant coûte '.number_format($this->cancellation['fee_cents'] / 100, 2, ',', ' ').' €. Confirmer ?' }}"
                             class="min-h-[48px] w-full rounded-xl border border-slate-300 bg-white text-sm font-medium text-slate-900">
                             Annuler la demande
                         </button>

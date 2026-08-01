@@ -15,9 +15,13 @@
         L’adresse nous sert à trouver les professionnels les plus proches.
     </p>
 
-    <label class="mt-4 block">
+    {{-- Association EXPLICITE plutôt qu'imbrication : un `for`/`id` survit à un remaniement du
+         balisage, alors qu'une étiquette qui enveloppe son champ perd le lien dès qu'on insère un
+         conteneur entre les deux. --}}
+    <label for="adresse-intervention" class="mt-4 block">
         <span class="sr-only">Adresse de l’intervention</span>
         <input
+            id="adresse-intervention"
             type="text"
             wire:model.live.debounce.600ms="address"
             autocomplete="street-address"
@@ -40,8 +44,8 @@
                     avec le professionnel.
                 </p>
 
-            @elseif ($this->availability())
-                @php $snapshot = $this->availability(); @endphp
+            @elseif ($this->availability)
+                @php $snapshot = $this->availability; @endphp
 
                 @if ($snapshot->hasProviders())
                     {{-- Le chiffre est réel : il vient des prestataires du métier dont on connaît la position. --}}

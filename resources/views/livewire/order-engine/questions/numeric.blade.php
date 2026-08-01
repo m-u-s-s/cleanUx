@@ -42,8 +42,12 @@
         </div>
 
         {{-- Un `range` natif : glissable au doigt, pilotable aux flèches, annoncé par le lecteur d'écran. --}}
+        {{-- Le nom est porte par le controle lui-meme : la legende du groupe situe la question,
+             elle ne dit pas ce que ce curseur regle. Sans cela, le lecteur d'ecran annonce
+             « curseur » et rien d'autre. --}}
         <input type="range" wire:model.live.debounce.400ms="value"
             id="{{ $question->code }}"
+            aria-label="{{ $question->translate('label') }}{{ $unit ? ' ('.$unit.')' : '' }}"
             min="{{ $min ?? 0 }}" max="{{ $max ?? 100 }}" step="{{ $step }}"
             class="h-11 w-full cursor-pointer accent-slate-900">
 
@@ -51,6 +55,7 @@
         <label class="flex items-center gap-2 text-sm text-slate-500">
             <span>Valeur exacte</span>
             <input type="number" wire:model.live.debounce.400ms="value" inputmode="decimal"
+                aria-label="{{ $question->translate('label') }} — valeur exacte"
                 min="{{ $min }}" max="{{ $max }}" step="{{ $step }}"
                 class="w-28 rounded-lg border border-slate-300 px-3 py-2 text-right tabular-nums text-slate-900 focus:border-slate-900 focus:outline-none">
         </label>
@@ -72,12 +77,14 @@
             <label class="flex flex-col gap-1">
                 <span class="text-xs text-slate-500">Longueur (m)</span>
                 <input type="number" wire:model="helperLength" inputmode="decimal" step="0.1"
+                    aria-label="Longueur en mètres"
                     class="w-24 rounded-lg border border-slate-300 px-3 py-2 tabular-nums">
             </label>
             <span class="pb-3 text-slate-400" aria-hidden="true">&times;</span>
             <label class="flex flex-col gap-1">
                 <span class="text-xs text-slate-500">Largeur (m)</span>
                 <input type="number" wire:model="helperWidth" inputmode="decimal" step="0.1"
+                    aria-label="Largeur en mètres"
                     class="w-24 rounded-lg border border-slate-300 px-3 py-2 tabular-nums">
             </label>
             <button type="button" wire:click="applySurfaceHelper"

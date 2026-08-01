@@ -58,7 +58,7 @@
             'sm:flex sm:items-end sm:justify-start sm:gap-2' => true,
         ])
     >
-        @foreach ($this->trades() as $trade)
+        @foreach ($this->trades as $trade)
             <li wire:key="trade-{{ $trade->id }}" class="relative">
                 <button
                     type="button"

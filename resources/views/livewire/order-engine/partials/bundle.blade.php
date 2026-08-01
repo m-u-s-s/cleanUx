@@ -20,9 +20,9 @@
     @endif
 
     {{-- ─── La timeline verticale ───────────────────────────────────────────────────────── --}}
-    @if ($this->timeline()->isNotEmpty())
+    @if ($this->timeline->isNotEmpty())
         <ol class="mt-4 space-y-2" x-data="bundleSorter()" x-init="boot()" data-bundle-root>
-            @foreach ($this->timeline() as $step)
+            @foreach ($this->timeline as $step)
                 <li draggable="true" data-item-id="{{ $step['item']->id }}"
                     class="relative rounded-xl border border-slate-200 bg-slate-50/60 p-4 pl-11"
                     wire:key="bundle-{{ $step['item']->id }}">
@@ -78,12 +78,12 @@
     @endif
 
     {{-- ─── Ajouter un service ──────────────────────────────────────────────────────────── --}}
-    @if ($this->bundleSuggestions()->isNotEmpty())
+    @if ($this->bundleSuggestions->isNotEmpty())
         <div class="mt-5 border-t border-slate-100 pt-4">
             <p class="text-sm font-medium text-slate-900">Souvent commandé avec</p>
 
             <div class="mt-3 flex flex-wrap gap-2">
-                @foreach ($this->bundleSuggestions() as $suggestion)
+                @foreach ($this->bundleSuggestions as $suggestion)
                     <button type="button" wire:click="addService({{ $suggestion['trade']->id }})"
                         class="min-h-[44px] rounded-xl border border-slate-300 bg-white px-4 text-sm font-medium text-slate-800 hover:bg-slate-50">
                         + {{ $suggestion['trade']->name }}
@@ -99,9 +99,9 @@
     </button>
 
     {{-- ─── Le devis consolidé, dépliable ───────────────────────────────────────────────── --}}
-    @if ($this->bundleQuote())
+    @if ($this->bundleQuote)
         <div class="mt-5 border-t border-slate-100 pt-4">
-            @foreach ($this->bundleQuote()['items'] as $line)
+            @foreach ($this->bundleQuote['items'] as $line)
                 <details class="mb-2 rounded-xl bg-slate-50/60 p-3">
                     <summary class="flex cursor-pointer items-baseline justify-between gap-3 text-sm text-slate-800">
                         <span class="min-w-0 truncate">{{ $line['trade']?->name }}</span>
@@ -129,7 +129,7 @@
 
             {{-- La remise groupée sur SA propre ligne : une remise que le client ne voit pas ne le
                  décide à rien. --}}
-            @foreach ($this->bundleQuote()['order']->lines as $orderLine)
+            @foreach ($this->bundleQuote['order']->lines as $orderLine)
                 @if (($orderLine['min_cents'] ?? 0) < 0)
                     <div class="flex items-baseline justify-between gap-3 px-3 text-sm text-emerald-700">
                         <span>{{ $orderLine['label'] }}</span>
@@ -141,12 +141,12 @@
             <div class="mt-3 flex items-baseline justify-between border-t border-slate-200 px-3 pt-3">
                 <span class="text-sm font-medium text-slate-900">Total du chantier</span>
                 <span class="text-xl font-semibold tabular-nums text-slate-900">
-                    @if ($this->bundleQuote()['order']->quoteOnly)
+                    @if ($this->bundleQuote['order']->quoteOnly)
                         Sur devis
-                    @elseif ($this->bundleQuote()['order']->isExact())
-                        {{ number_format($this->bundleQuote()['order']->minCents / 100, 0, ',', ' ') }} €
+                    @elseif ($this->bundleQuote['order']->isExact())
+                        {{ number_format($this->bundleQuote['order']->minCents / 100, 0, ',', ' ') }} €
                     @else
-                        {{ number_format($this->bundleQuote()['order']->minCents / 100, 0, ',', ' ') }}–{{ number_format($this->bundleQuote()['order']->maxCents / 100, 0, ',', ' ') }} €
+                        {{ number_format($this->bundleQuote['order']->minCents / 100, 0, ',', ' ') }}–{{ number_format($this->bundleQuote['order']->maxCents / 100, 0, ',', ' ') }} €
                     @endif
                 </span>
             </div>

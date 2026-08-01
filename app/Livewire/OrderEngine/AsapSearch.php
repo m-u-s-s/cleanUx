@@ -38,7 +38,7 @@ class AsapSearch extends Component
     {
         $this->requestId = $request;
 
-        abort_unless($this->request() !== null, 404);
+        abort_unless($this->request !== null, 404);
     }
 
     /**
@@ -63,7 +63,7 @@ class AsapSearch extends Component
     #[Computed(persist: false)]
     public function cancellation(): array
     {
-        $request = $this->request();
+        $request = $this->request;
 
         return $request
             ? app(AsapDispatchService::class)->quoteCancellation($request)
@@ -74,7 +74,7 @@ class AsapSearch extends Component
     #[Computed(persist: false)]
     public function waysForward(): array
     {
-        $request = $this->request();
+        $request = $this->request;
 
         return $request ? app(AsapDispatchService::class)->waysForward($request) : [];
     }
@@ -82,7 +82,7 @@ class AsapSearch extends Component
     #[Computed(persist: false)]
     public function timedOut(): bool
     {
-        $request = $this->request();
+        $request = $this->request;
 
         return $request ? app(AsapDispatchService::class)->hasTimedOut($request) : false;
     }
@@ -95,7 +95,7 @@ class AsapSearch extends Component
      */
     public function tick(): void
     {
-        $request = $this->request();
+        $request = $this->request;
 
         if ($request && app(AsapDispatchService::class)->hasTimedOut($request)) {
             app(AsapDispatchService::class)->expire($request);
@@ -106,7 +106,7 @@ class AsapSearch extends Component
 
     public function expand(): void
     {
-        if ($request = $this->request()) {
+        if ($request = $this->request) {
             app(AsapDispatchService::class)->expand($request);
         }
 
@@ -116,7 +116,7 @@ class AsapSearch extends Component
     /** Relance une recherche expirée, plus large. */
     public function retry(): void
     {
-        $request = $this->request();
+        $request = $this->request;
 
         if ($request && $request->status === AsapStatus::EXPIRED) {
             app(AsapDispatchService::class)->retry($request);
@@ -134,7 +134,7 @@ class AsapSearch extends Component
     public function cancel(): void
     {
         $this->error = '';
-        $request = $this->request();
+        $request = $this->request;
 
         if (! $request) {
             return;

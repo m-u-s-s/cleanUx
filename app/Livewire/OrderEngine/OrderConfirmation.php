@@ -75,7 +75,7 @@ class OrderConfirmation extends Component
     #[Computed]
     public function quote(): ?array
     {
-        $draft = $this->draft();
+        $draft = $this->draft;
 
         return $draft ? app(BundleComposer::class)->consolidatedQuote($draft) : null;
     }
@@ -91,7 +91,7 @@ class OrderConfirmation extends Component
     #[Computed]
     public function blockers(): array
     {
-        $draft = $this->draft();
+        $draft = $this->draft;
 
         return $draft ? app(OrderConfirmationService::class)->blockers($draft) : [];
     }
@@ -100,7 +100,7 @@ class OrderConfirmation extends Component
     #[Computed]
     public function bookings(): Collection
     {
-        $draft = $this->draft();
+        $draft = $this->draft;
 
         if (! $draft || $draft->status !== OrderDraftStatus::CONVERTED) {
             return collect();
@@ -126,7 +126,7 @@ class OrderConfirmation extends Component
     {
         $service = app(OrderConfirmationService::class);
 
-        return $this->bookings()
+        return $this->bookings
             ->mapWithKeys(fn (Booking $booking) => [$booking->id => $service->paymentOptions($booking)])
             ->all();
     }
@@ -145,7 +145,7 @@ class OrderConfirmation extends Component
     {
         $service = app(OrderConfirmationService::class);
 
-        return $this->bookings()
+        return $this->bookings
             ->mapWithKeys(fn (Booking $booking) => [$booking->id => $service->paymentReadiness($booking)])
             ->all();
     }
@@ -169,7 +169,7 @@ class OrderConfirmation extends Component
             return;
         }
 
-        $draft = $this->draft();
+        $draft = $this->draft;
 
         if (! $draft) {
             $this->error = 'Votre panier est vide.';
@@ -187,7 +187,7 @@ class OrderConfirmation extends Component
         }
 
         $this->confirmedReference = $confirmed->reference;
-        unset($this->draft, $this->quote, $this->blockers, $this->bookings, $this->paymentStates);
+        unset($this->draft, $this->quote, $this->blockers, $this->bookings, $this->paymentStates, $this->paymentOptions);
 
         /*
          * En mode immédiat, l'écran d'attente EST la suite : la recherche vient d'être ouverte et

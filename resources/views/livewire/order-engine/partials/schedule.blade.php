@@ -14,7 +14,7 @@
     {{-- ─── Le jour ─────────────────────────────────────────────────────────────────────── --}}
     <div class="mt-4 flex snap-x snap-mandatory gap-2 overflow-x-auto pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
         role="radiogroup" aria-label="Jour de l’intervention">
-        @foreach ($this->dayOptions() as $day)
+        @foreach ($this->dayOptions as $day)
             @php $iso = $day->toDateString(); @endphp
             <button type="button" wire:click="selectDate('{{ $iso }}')"
                 role="radio" aria-checked="{{ $selectedDate === $iso ? 'true' : 'false' }}"
@@ -32,7 +32,7 @@
 
     {{-- ─── Les créneaux ────────────────────────────────────────────────────────────────── --}}
     @if ($selectedDate)
-        @php $slots = $this->slots(); @endphp
+        @php $slots = $this->slots; @endphp
 
         @if (! count($slots))
             <p class="mt-4 rounded-xl bg-slate-50 px-4 py-3 text-sm text-slate-600">
@@ -71,7 +71,7 @@
     @endif
 
     {{-- ─── Le professionnel ────────────────────────────────────────────────────────────── --}}
-    @if ($selectedSlot && $this->providerOptions()->isNotEmpty())
+    @if ($selectedSlot && $this->providerOptions->isNotEmpty())
         <div class="mt-6 border-t border-slate-100 pt-5">
             <h3 class="text-[15px] font-semibold text-slate-900">Qui intervient ?</h3>
 
@@ -92,7 +92,7 @@
                     </span>
                 </button>
 
-                @foreach ($this->providerOptions() as $provider)
+                @foreach ($this->providerOptions as $provider)
                     <button type="button" wire:click="selectProvider({{ $provider['id'] }})"
                         role="radio" aria-checked="{{ $selectedProviderId === $provider['id'] ? 'true' : 'false' }}"
                         @class([

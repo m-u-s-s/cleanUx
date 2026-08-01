@@ -211,7 +211,7 @@ class BundleComposer
         $items = $draft->items()->with('trade')->orderBy('sequence')->get();
 
         $detailed = $items->map(function (OrderDraftItem $item) use ($draft) {
-            $questions = $item->trade->questions()->with(['options', 'conditions'])->get();
+            $questions = $item->trade->questions()->with(['options.translations', 'conditions', 'translations'])->get();
 
             return [
                 'item' => $item,

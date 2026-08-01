@@ -32,7 +32,7 @@ class QuestionnaireValidator
      */
     public function inspect(Trade $trade): array
     {
-        $questions = $trade->questions()->with(['options', 'conditions'])->orderBy('sort_order')->get();
+        $questions = $trade->questions()->with(['options.translations', 'conditions', 'translations'])->orderBy('sort_order')->get();
 
         return array_merge(
             $this->checkLength($trade, $questions),

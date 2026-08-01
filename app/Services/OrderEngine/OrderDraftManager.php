@@ -175,7 +175,7 @@ class OrderDraftManager
 
         $breakdowns = $items->map(fn (OrderDraftItem $item) => $this->pricing->quoteItem(
             $item->trade,
-            $item->trade->questions()->with(['options', 'conditions'])->get(),
+            $item->trade->questions()->with(['options.translations', 'conditions', 'translations'])->get(),
             $this->answersOf($item),
             ['mode' => $draft->mode],
         ))->all();

@@ -45,7 +45,7 @@
         x-on:keydown.home.prevent="$refs.track.scrollTo({ left: 0, behavior: 'smooth' })"
         x-on:keydown.end.prevent="$refs.track.scrollTo({ left: $refs.track.scrollWidth, behavior: 'smooth' })"
     >
-        @foreach ($this->sectors() as $sector)
+        @foreach ($this->sectors as $sector)
             <li class="snap-start shrink-0" wire:key="sector-{{ $sector->id }}">
                 <button
                     type="button"

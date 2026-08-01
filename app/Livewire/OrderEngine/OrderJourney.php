@@ -150,13 +150,13 @@ class OrderJourney extends Component
     #[Computed]
     public function questions()
     {
-        $trade = $this->trade();
+        $trade = $this->trade;
 
         if (! $trade) {
             return collect();
         }
 
-        $query = $trade->questions()->with(['options', 'conditions'])->where('is_active', true);
+        $query = $trade->questions()->with(['options.translations', 'conditions', 'translations'])->where('is_active', true);
 
         if ($this->mode === OrderMode::ASAP) {
             $query->where('is_essential', true);
@@ -170,14 +170,14 @@ class OrderJourney extends Component
     public function visibleQuestions()
     {
         return app(ConditionEvaluator::class)
-            ->visible($this->questions(), $this->answers);
+            ->visible($this->questions, $this->answers);
     }
 
     /** Les modes que ce métier autorise. Un ravalement de façade n'est pas un service immédiat. */
     #[Computed]
     public function availableModes(): array
     {
-        $trade = $this->trade();
+        $trade = $this->trade;
 
         if (! $trade) {
             return [OrderMode::SCHEDULED];
@@ -200,10 +200,10 @@ class OrderJourney extends Component
     #[Computed]
     public function quote(): ?PriceBreakdown
     {
-        $trade = $this->trade();
+        $trade = $this->trade;
 
         return $trade
-            ? app(PricingEngine::class)->quoteItem($trade, $this->questions(), $this->answers, ['mode' => $this->mode])
+            ? app(PricingEngine::class)->quoteItem($trade, $this->questions, $this->answers, ['mode' => $this->mode])
             : null;
     }
 
@@ -211,7 +211,7 @@ class OrderJourney extends Component
     #[Computed]
     public function lastChange(): ?array
     {
-        $quote = $this->quote();
+        $quote = $this->quote;
 
         if (! $quote || ! count($quote->lines)) {
             return null;
@@ -278,7 +278,7 @@ class OrderJourney extends Component
     #[Computed]
     public function availability(): ?AvailabilitySnapshot
     {
-        $trade = $this->trade();
+        $trade = $this->trade;
 
         if (! $trade || $this->lat === null || $this->lng === null) {
             return null;
@@ -313,7 +313,7 @@ class OrderJourney extends Component
     #[Computed]
     public function slots(): array
     {
-        $trade = $this->trade();
+        $trade = $this->trade;
 
         if (! $trade || $this->lat === null || $this->lng === null || ! $this->selectedDate) {
             return [];
@@ -331,7 +331,7 @@ class OrderJourney extends Component
     #[Computed]
     public function providerOptions()
     {
-        $trade = $this->trade();
+        $trade = $this->trade;
 
         if (! $trade || $this->lat === null || $this->lng === null) {
             return collect();
@@ -352,7 +352,7 @@ class OrderJourney extends Component
     /** Un créneau indisponible ne se retient pas, même si l'interface a été contournée. */
     public function selectSlot(string $time): void
     {
-        $slot = collect($this->slots())->first(
+        $slot = collect($this->slots)->first(
             fn (array $s) => $s['start']->format('H:i') === $time && $s['available'],
         );
 
@@ -370,7 +370,7 @@ class OrderJourney extends Component
     {
         // Un prestataire absent de la liste proposée n'est pas retenu : la valeur vient du
         // navigateur, et le serveur ne lui fait pas confiance.
-        if ($providerId !== null && ! $this->providerOptions()->contains('id', $providerId)) {
+        if ($providerId !== null && ! $this->providerOptions->contains('id', $providerId)) {
             return;
         }
 
@@ -382,7 +382,7 @@ class OrderJourney extends Component
          * professionnel. C'est aussi ce qui permet à la pré-autorisation de partir dès la
          * confirmation : sans prestataire enregistré, Stripe n'a pas de destination.
          */
-        if ($trade = $this->trade()) {
+        if ($trade = $this->trade) {
             app(OrderDraftManager::class)
                 ->itemFor($this->draft(), $trade)
                 ->update(['provider_id' => $providerId]);
@@ -395,7 +395,7 @@ class OrderJourney extends Component
     #[Computed]
     public function readyToConfirm(): bool
     {
-        return $this->trade() !== null
+        return $this->trade !== null
             && $this->lat !== null
             && $this->selectedDate !== null
             && $this->selectedSlot !== null;
@@ -568,7 +568,7 @@ class OrderJourney extends Component
 
     public function setMode(string $mode): void
     {
-        if (! in_array($mode, $this->availableModes(), true)) {
+        if (! in_array($mode, $this->availableModes, true)) {
             return;
         }
 
@@ -582,8 +582,8 @@ class OrderJourney extends Component
          * premier du chantier. Sans ce geste, il passe en multi-services et trouve un plan vide,
          * alors qu'il venait de répondre à ses questions.
          */
-        if ($mode === OrderMode::BUNDLE && $this->trade()) {
-            app(BundleComposer::class)->addTrade($this->draft(), $this->trade());
+        if ($mode === OrderMode::BUNDLE && $this->trade) {
+            app(BundleComposer::class)->addTrade($this->draft(), $this->trade);
         }
 
         $this->refreshDerived();
@@ -608,7 +608,7 @@ class OrderJourney extends Component
 
     protected function persist(): void
     {
-        $trade = $this->trade();
+        $trade = $this->trade;
 
         if (! $trade) {
             return;
@@ -618,7 +618,7 @@ class OrderJourney extends Component
         $draft = $this->draft();
         $item = $manager->itemFor($draft, $trade);
 
-        $manager->saveAnswers($item, $this->questions(), $this->answers);
+        $manager->saveAnswers($item, $this->questions, $this->answers);
         $manager->reprice($draft);
     }
 
