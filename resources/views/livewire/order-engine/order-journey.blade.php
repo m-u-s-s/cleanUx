@@ -1,0 +1,168 @@
+{{--
+    Le parcours de commande.
+
+    L'ordre des écrans porte la première loi : le client voit son prix AVANT qu'on lui demande son
+    nom. Rien ici ne réclame d'identité — ni compte, ni téléphone, ni carte.
+
+    Mobile d'abord. Le récapitulatif est une barre BASSE, dans la zone du pouce, et l'action
+    principale y vit. Rien de critique dans le tiers supérieur de l'écran.
+--}}
+<div class="pb-28 lg:pb-8">
+    <div class="mx-auto max-w-6xl space-y-6 px-4 py-6 lg:grid lg:max-w-7xl lg:grid-cols-[1fr_340px] lg:gap-8 lg:space-y-0">
+
+        <div class="space-y-6">
+
+            {{-- ─── Secteurs ────────────────────────────────────────────────────────────── --}}
+            <section aria-labelledby="secteurs-titre">
+                <h1 id="secteurs-titre" class="text-2xl font-semibold leading-tight text-slate-900">
+                    De quoi avez-vous besoin ?
+                </h1>
+                <p class="mt-1 text-sm text-slate-500">Estimation immédiate, sans créer de compte.</p>
+
+                <div class="mt-4">
+                    @include('livewire.order-engine.partials.sector-carousel')
+                </div>
+            </section>
+
+            {{-- ─── Métiers ─────────────────────────────────────────────────────────────── --}}
+            @if ($sectorId && ! $tradeId)
+                <section aria-labelledby="metiers-titre">
+                    <h2 id="metiers-titre" class="text-lg font-semibold text-slate-900">Quel métier ?</h2>
+                    <div class="mt-4">
+                        @include('livewire.order-engine.partials.trade-dock')
+                    </div>
+                </section>
+            @endif
+
+            {{-- ─── Questionnaire ───────────────────────────────────────────────────────── --}}
+            @if ($this->trade())
+                <section aria-labelledby="questions-titre" class="rounded-2xl border border-slate-200 bg-white p-5">
+
+                    <div class="flex items-start justify-between gap-4">
+                        <div>
+                            <h2 id="questions-titre" class="text-lg font-semibold text-slate-900">
+                                {{ $this->trade()->name }}
+                            </h2>
+                            @if ($this->trade()->short_description)
+                                <p class="mt-0.5 text-sm text-slate-500">{{ $this->trade()->short_description }}</p>
+                            @endif
+                        </div>
+
+                        {{-- Revenir en arrière ne perd rien : les réponses vivent dans le panier. --}}
+                        <button type="button" wire:click="backToTrades"
+                            class="shrink-0 text-sm font-medium text-slate-500 underline underline-offset-4 hover:text-slate-900">
+                            Changer
+                        </button>
+                    </div>
+
+                    {{--
+                        Le mode change la nature des questions et la structure du prix : il est donc
+                        choisi tôt et visiblement. Seuls ceux que le métier autorise apparaissent.
+                    --}}
+                    @if (count($this->availableModes()) > 1)
+                        <div class="mt-4 inline-flex rounded-xl bg-slate-100 p-1" role="radiogroup" aria-label="Type de prestation">
+                            @foreach ($this->availableModes() as $available)
+                                <button type="button" wire:click="setMode('{{ $available }}')"
+                                    role="radio" aria-checked="{{ $mode === $available ? 'true' : 'false' }}"
+                                    @class([
+                                        'min-h-[40px] rounded-lg px-4 text-sm font-medium transition',
+                                        'bg-white text-slate-900 shadow-sm' => $mode === $available,
+                                        'text-slate-600' => $mode !== $available,
+                                    ])>
+                                    {{ ['scheduled' => 'Planifié', 'asap' => 'Dès que possible', 'bundle' => 'Plusieurs services'][$available] ?? $available }}
+                                </button>
+                            @endforeach
+                        </div>
+
+                        @if ($mode === 'asap')
+                            <p class="mt-3 rounded-xl bg-amber-50 px-4 py-3 text-sm text-amber-900">
+                                Service immédiat : quelques questions seulement, une majoration d’urgence,
+                                et une estimation plus large. Tout est annoncé avant de confirmer.
+                            </p>
+                        @endif
+                    @endif
+
+                    <div class="mt-2">
+                        @foreach ($this->visibleQuestions() as $question)
+                            @livewire('order-engine.question-renderer',
+                                ['question' => $question, 'value' => $answers[$question->code] ?? null],
+                                key('q-'.$question->id.'-'.$mode))
+                        @endforeach
+                    </div>
+                </section>
+            @endif
+        </div>
+
+        {{-- ─── Récapitulatif ───────────────────────────────────────────────────────────── --}}
+        @if ($this->quote())
+            {{--
+                Carte collante sur grand écran, barre basse sur mobile — jamais une fenêtre modale.
+                Le client doit savoir en permanence où il en est et ce qu'il va payer, sans avoir à
+                ouvrir quoi que ce soit.
+            --}}
+            <aside class="hidden lg:sticky lg:top-6 lg:block lg:self-start" aria-label="Estimation">
+                <div class="rounded-2xl border border-slate-200 bg-white p-5">
+                    <h2 class="text-sm font-semibold uppercase tracking-wide text-slate-500">Votre estimation</h2>
+
+                    @if ($this->quote()->quoteOnly)
+                        <p class="mt-3 text-sm text-slate-600">
+                            Ce métier demande un devis : un professionnel chiffre après avoir vu les lieux.
+                        </p>
+                    @else
+                        <p class="mt-2 text-3xl font-semibold tabular-nums text-slate-900">
+                            @if ($this->quote()->isExact())
+                                {{ number_format($this->quote()->minCents / 100, 0, ',', ' ') }} €
+                            @else
+                                {{ number_format($this->quote()->minCents / 100, 0, ',', ' ') }}
+                                – {{ number_format($this->quote()->maxCents / 100, 0, ',', ' ') }} €
+                            @endif
+                        </p>
+
+                        @if ($this->lastChange())
+                            <p class="mt-1 text-sm text-slate-500">{{ $this->lastChange()['label'] }}</p>
+                        @endif
+
+                        <ul class="mt-4 space-y-1.5 border-t border-slate-100 pt-4 text-sm">
+                            @foreach ($this->quote()->lines as $line)
+                                <li class="flex items-baseline justify-between gap-3">
+                                    <span class="min-w-0 truncate text-slate-600">{{ $line['label'] }}</span>
+                                    <span class="shrink-0 tabular-nums text-slate-900">
+                                        {{ number_format($line['min_cents'] / 100, 0, ',', ' ') }} €
+                                    </span>
+                                </li>
+                            @endforeach
+                        </ul>
+                    @endif
+
+                    <button type="button"
+                        class="mt-5 min-h-[48px] w-full rounded-xl bg-slate-900 text-sm font-medium text-white transition hover:bg-slate-800">
+                        Continuer
+                    </button>
+                </div>
+            </aside>
+
+            {{-- Zone du pouce : sur mobile, l'action principale est EN BAS, jamais en haut. --}}
+            <div class="fixed inset-x-0 bottom-0 z-30 border-t border-slate-200 bg-white/95 px-4 py-3 backdrop-blur lg:hidden">
+                <div class="flex items-center justify-between gap-4">
+                    <div class="min-w-0">
+                        <p class="truncate text-xs text-slate-500">{{ $this->trade()?->name }}</p>
+                        <p class="text-xl font-semibold tabular-nums leading-tight text-slate-900">
+                            @if ($this->quote()->quoteOnly)
+                                Sur devis
+                            @elseif ($this->quote()->isExact())
+                                {{ number_format($this->quote()->minCents / 100, 0, ',', ' ') }} €
+                            @else
+                                {{ number_format($this->quote()->minCents / 100, 0, ',', ' ') }}–{{ number_format($this->quote()->maxCents / 100, 0, ',', ' ') }} €
+                            @endif
+                        </p>
+                    </div>
+
+                    <button type="button"
+                        class="min-h-[48px] shrink-0 rounded-xl bg-slate-900 px-6 text-sm font-medium text-white">
+                        Continuer
+                    </button>
+                </div>
+            </div>
+        @endif
+    </div>
+</div>

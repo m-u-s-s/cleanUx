@@ -2,7 +2,9 @@
 
 use App\Http\Controllers\Push\PushSubscriptionController;
 use App\Http\Controllers\WebViewEntryController;
+use App\Livewire\Auth\VerifyPhone;
 use App\Livewire\DesignSystem;
+use App\Livewire\OrderEngine\OrderJourney;
 use App\Livewire\Provider\MissionOfferPage;
 use App\Livewire\Provider\Onboarding\ProviderOnboardingWizard;
 use Illuminate\Support\Facades\Route;
@@ -46,7 +48,7 @@ Route::get('/push/public-key', [PushSubscriptionController::class, 'publicKey'])
 Route::get('/m/enter', WebViewEntryController::class)->name('webview.enter');
 
 // OTP téléphone — page de vérification (auth seule, hors garde phone.verified pour éviter une boucle)
-Route::middleware('auth')->get('/verify-phone', \App\Livewire\Auth\VerifyPhone::class)->name('phone.verify');
+Route::middleware('auth')->get('/verify-phone', VerifyPhone::class)->name('phone.verify');
 
 Route::middleware(['auth', 'verified', 'active.account', 'phone.verified'])->group(function () {
     Route::get('/provider/missions/{assignment}/offer', MissionOfferPage::class)
@@ -59,3 +61,13 @@ Route::middleware(['auth', 'verified', 'active.account', 'phone.verified'])->gro
 Route::middleware(['auth', 'role:admin'])->group(function () {
     Route::get('/design-system', DesignSystem::class)->name('design-system');
 });
+
+/*
+ * Parcours de commande — public, et volontairement sans authentification.
+ *
+ * Le client compose sa commande et voit son prix AVANT qu'on lui demande un compte : exiger une
+ * identité ici replacerait le formulaire d'inscription devant l'estimation, c'est-à-dire devant la
+ * première cause d'abandon. Le panier vit sur un jeton de session jusqu'à la confirmation.
+ */
+Route::get('/commander/{sector?}/{trade?}', OrderJourney::class)
+    ->name('order.journey');
