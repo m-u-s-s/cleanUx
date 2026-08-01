@@ -2,10 +2,12 @@
 
 namespace App\Models;
 
+use App\Support\Domain\OrderMode;
 use Database\Factories\TradeFactory;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -63,6 +65,18 @@ class Trade extends Model
         // Multi-trade spec columns (migration 2026_05_27_000000)
         'billing_unit',
         'requires_site_visit',
+        // Moteur de commande — le métier devient pilotable depuis le constructeur de parcours.
+        // Colonnes ajoutées, jamais une seconde table de métiers : deux vérités pour la même
+        // chose est exactement ce qui a valu la suppression de `tenancy_v2` sur ce projet.
+        'sector_id',
+        'base_price_cents',
+        'pricing_unit',
+        'estimated_duration_min',
+        'min_duration_min',
+        'allows_scheduled',
+        'allows_asap',
+        'allows_bundle',
+        'published_at',
     ];
 
     protected $casts = [
@@ -84,11 +98,67 @@ class Trade extends Model
         'booking_form_schema' => 'array',
         'provider_form_schema' => 'array',
         'requires_site_visit' => 'boolean',
+        'base_price_cents' => 'integer',
+        'estimated_duration_min' => 'integer',
+        'min_duration_min' => 'integer',
+        'allows_scheduled' => 'boolean',
+        'allows_asap' => 'boolean',
+        'allows_bundle' => 'boolean',
+        'published_at' => 'datetime',
     ];
+
+    /**
+     * Le mode est-il ouvert sur ce métier ?
+     *
+     * Tous les métiers ne se prêtent pas au service immédiat : un ravalement de façade n'est pas
+     * un service Uber. Le défaut de `allows_asap` est donc faux — l'ouvrir est une décision
+     * d'administrateur, jamais un oubli.
+     */
+    public function allowsMode(string $mode): bool
+    {
+        return (bool) $this->getAttribute(OrderMode::tradeFlag($mode));
+    }
 
     // ──────────────────────────────────────────────────────
     // Relations
     // ──────────────────────────────────────────────────────
+
+    /** @return BelongsTo<Sector, $this> */
+    public function sector(): BelongsTo
+    {
+        return $this->belongsTo(Sector::class);
+    }
+
+    /**
+     * Questions du parcours de commande, propres a ce metier.
+     *
+     * Les questions GLOBALES (trade_id nul) ne sont pas ici : elles sont assemblees par le
+     * constructeur de questionnaire, qui decide lesquelles s'appliquent.
+     *
+     * @return HasMany<Question, $this>
+     */
+    public function questions(): HasMany
+    {
+        return $this->hasMany(Question::class)->orderBy('sort_order');
+    }
+
+    /** @return HasMany<QuestionStep, $this> */
+    public function questionSteps(): HasMany
+    {
+        return $this->hasMany(QuestionStep::class)->orderBy('sort_order');
+    }
+
+    /** @return HasMany<TradeFormRevision, $this> */
+    public function formRevisions(): HasMany
+    {
+        return $this->hasMany(TradeFormRevision::class)->orderByDesc('version');
+    }
+
+    /** @return HasMany<TradeBundleSuggestion, $this> */
+    public function bundleSuggestions(): HasMany
+    {
+        return $this->hasMany(TradeBundleSuggestion::class)->orderBy('sort_order');
+    }
 
     /** @return HasMany<ServiceCatalog, $this> */
     public function services(): HasMany

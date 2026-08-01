@@ -44,6 +44,7 @@ use App\Livewire\Admin\Nps\NpsCenter;
 use App\Livewire\Admin\Onboarding\AdminOnboardingDocumentsCenter;
 use App\Livewire\Admin\Onboarding\AdminOnboardingProvidersList;
 use App\Livewire\Admin\OnboardingV2\OnboardingV2Center;
+use App\Livewire\Admin\OrderEngine\QuestionnaireBuilder;
 use App\Livewire\Admin\OrganizationSitesManager;
 use App\Livewire\Admin\Payments\StripeHardeningCenter;
 use App\Livewire\Admin\PlatformReadiness;
@@ -531,4 +532,14 @@ Route::middleware(['role:admin', 'enforce_2fa'])
         Route::get('/onboarding-documents/{document}/file', [OnboardingDocumentController::class, 'show'])
             ->middleware('signed')
             ->name('onboarding.document.file');
+
+        /*
+         * Constructeur de parcours de commande.
+         *
+         * L'écran assemble le rendu client réel, le validateur et le moteur tarifaire : c'est là
+         * qu'un responsable non technique écrit un questionnaire complet et voit, à droite, ce que
+         * le client verra et le prix que ses réponses construisent.
+         */
+        Route::get('/parcours/{trade}', QuestionnaireBuilder::class)
+            ->name('order-engine.builder');
     });
