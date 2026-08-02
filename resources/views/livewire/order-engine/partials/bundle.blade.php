@@ -59,6 +59,28 @@
                         </div>
 
                         <div class="flex shrink-0 items-center gap-1">
+                            {{--
+                                Une date pour CE métier.
+
+                                La séquence calculée reste le défaut — le client n'a pas à
+                                orchestrer ses artisans. Mais quand le plombier ne peut que mardi,
+                                il doit pouvoir le dire sans renoncer au reste. Le champ est vide
+                                tant que la ligne suit la séquence.
+                            --}}
+                            <input type="date"
+                                aria-label="Date pour {{ $step['trade']?->name }}"
+                                value="{{ $step['item']->scheduled_at?->format('Y-m-d') }}"
+                                wire:change="pinItemDate({{ $step['item']->id }}, $event.target.value)"
+                                class="h-9 rounded-lg border-slate-300 px-2 text-xs text-slate-700 focus:border-slate-900 focus:ring-0">
+
+                            @if ($step['item']->scheduled_at)
+                                <button type="button" wire:click="releaseItemDate({{ $step['item']->id }})"
+                                    aria-label="Suivre la séquence pour {{ $step['trade']?->name }}"
+                                    class="flex h-9 items-center rounded-lg px-2 text-xs text-slate-500 hover:bg-slate-200">
+                                    auto
+                                </button>
+                            @endif
+
                             {{-- Les flèches restent : le glisser-déposer ne fonctionne ni au
                                  clavier ni avec un lecteur d'écran. --}}
                             <button type="button" aria-label="Monter" @disabled($loop->first)

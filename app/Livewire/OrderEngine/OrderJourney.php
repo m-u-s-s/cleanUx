@@ -414,6 +414,56 @@ class OrderJourney extends Component
         $this->refreshDerived();
     }
 
+    // ─── Chantier : une date par métier ──────────────────────────────────────────────────────
+
+    /**
+     * Le client fixe la date d'UN métier du chantier.
+     *
+     * La séquence calculée reste le défaut — il n'a pas à orchestrer ses artisans. Mais quand le
+     * plombier ne peut que mardi, il doit pouvoir le dire sans renoncer au reste.
+     *
+     * Le refus est AFFICHÉ, jamais corrigé en silence : une date rectifiée sans le dire ferait
+     * croire au client que la sienne a été prise, et il découvrirait autre chose le jour venu.
+     */
+    public function pinItemDate(int $itemId, string $date): void
+    {
+        $this->sequenceError = '';
+
+        $item = $this->draft()->items()->with('trade')->find($itemId);
+
+        if (! $item || trim($date) === '') {
+            return;
+        }
+
+        try {
+            app(BundleComposer::class)->pinItemDate(
+                $this->draft(),
+                $item,
+                Carbon::parse($date),
+            );
+        } catch (ValidationException $e) {
+            $this->sequenceError = collect($e->errors())->flatten()->implode(' ');
+        } catch (\Throwable $e) {
+            // Une saisie de date illisible ne fait pas tomber l'écran : on le dit et on continue.
+            $this->sequenceError = 'Cette date n’a pas été comprise. Choisissez un jour dans le calendrier.';
+        }
+
+        $this->refreshDerived();
+    }
+
+    /** Retour à la séquence automatique pour ce métier. */
+    public function releaseItemDate(int $itemId): void
+    {
+        $this->sequenceError = '';
+        $item = $this->draft()->items()->find($itemId);
+
+        if ($item) {
+            app(BundleComposer::class)->releaseItemDate($this->draft(), $item);
+        }
+
+        $this->refreshDerived();
+    }
+
     // ─── Photos ──────────────────────────────────────────────────────────────────────────────
 
     /**

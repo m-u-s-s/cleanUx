@@ -136,11 +136,21 @@ class BundleComposer
         return $items->map(function (OrderDraftItem $item) use (&$endsById, &$cursor) {
             $duration = max(30, (int) ($item->duration_min ?: $item->trade?->estimated_duration_min ?: 60));
 
+            /*
+             * UNE DATE ÉPINGLÉE l'emporte sur la séquence.
+             *
+             * La séquence calculée est le bon défaut : le client n'a pas à orchestrer ses artisans.
+             * Mais elle n'est pas toujours la réalité — le plombier passe mardi parce qu'il n'a que
+             * mardi. La date posée à la main devient alors le point de départ de cette ligne, et
+             * les suivantes s'enchaînent derrière.
+             */
             // Une ligne dépendante démarre après la FIN de celle dont elle dépend, plus le délai.
             // Les autres s'enchaînent simplement.
-            $start = $item->depends_on_item_id && isset($endsById[$item->depends_on_item_id])
-                ? $endsById[$item->depends_on_item_id]->copy()->addMinutes((int) $item->sequence_gap_min)
-                : $cursor->copy();
+            $start = match (true) {
+                $item->scheduled_at !== null => $item->scheduled_at->copy(),
+                (bool) $item->depends_on_item_id && isset($endsById[$item->depends_on_item_id]) => $endsById[$item->depends_on_item_id]->copy()->addMinutes((int) $item->sequence_gap_min),
+                default => $cursor->copy(),
+            };
 
             $end = $start->copy()->addMinutes($duration);
 
@@ -156,6 +166,62 @@ class BundleComposer
                 'gap_min' => (int) $item->sequence_gap_min,
             ];
         });
+    }
+
+    /**
+     * Fixe la date d'UN métier du chantier.
+     *
+     * « Soit une date unique pour tout, soit une date par métier » : la séquence calculée reste le
+     * défaut, et celle-ci l'ouvre au cas réel — le plombier ne peut que mardi, le reste suit.
+     *
+     * DEUX REFUS, tous deux annoncés plutôt que corrigés en silence. Une date passée ne se planifie
+     * pas. Et un métier ne se pose pas avant la fin de celui dont il dépend : le carreleur avant le
+     * plombier est un chantier impossible, et corriger discrètement ferait croire au client que sa
+     * date a été prise en compte — il découvrirait autre chose le jour venu.
+     *
+     * @throws ValidationException si la date est passée ou viole une dépendance
+     */
+    public function pinItemDate(OrderDraft $draft, OrderDraftItem $item, Carbon $when): OrderDraftItem
+    {
+        if ($when->isPast()) {
+            throw ValidationException::withMessages([
+                'item_date' => 'Cette date est déjà passée. Choisissez un jour à venir.',
+            ]);
+        }
+
+        $blocker = $item->depends_on_item_id
+            ? $draft->items()->with('trade')->find($item->depends_on_item_id)
+            : null;
+
+        if ($blocker) {
+            $line = $this->timeline($draft)->firstWhere('item.id', $blocker->id);
+            $earliest = $line
+                ? $line['ends_at']->copy()->addMinutes((int) $item->sequence_gap_min)
+                : null;
+
+            if ($earliest && $when->lt($earliest)) {
+                throw ValidationException::withMessages([
+                    'item_date' => sprintf(
+                        '« %s » ne peut pas commencer avant la fin de « %s ». Au plus tôt le %s.',
+                        $item->trade?->name ?? 'Ce métier',
+                        $blocker->trade?->name ?? 'le métier précédent',
+                        $earliest->translatedFormat('l j F à H\hi'),
+                    ),
+                ]);
+            }
+        }
+
+        $item->update(['scheduled_at' => $when]);
+
+        return $item->fresh();
+    }
+
+    /** Retour à la séquence automatique, sans avoir à tout refaire. */
+    public function releaseItemDate(OrderDraft $draft, OrderDraftItem $item): OrderDraftItem
+    {
+        $item->update(['scheduled_at' => null]);
+
+        return $item->fresh();
     }
 
     /**
