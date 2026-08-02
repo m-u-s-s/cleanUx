@@ -26,6 +26,7 @@ import { LanguageScreen } from '@/screens/LanguageScreen';
 import { AppearanceScreen } from '@/screens/AppearanceScreen';
 import { ProviderOnboardingScreen } from '@/screens/onboarding/ProviderOnboardingScreen';
 import { TabNavigator } from './TabNavigator';
+import { AsapOffersScreen } from '@/asap';
 import { colors } from '@/theme';
 import type { RootStackParamList } from './types';
 
@@ -62,6 +63,16 @@ export function RootNavigator() {
         ) : isAuthenticated ? (
           <>
             <Stack.Screen name="MainTabs" component={TabNavigator} />
+            {/*
+              Les courses immédiates. Les points d'API existaient depuis la livraison du moteur
+              de commande sans que rien ne les appelle : un client pouvait demander une
+              intervention dans l'heure, et aucun prestataire ne pouvait l'accepter.
+            */}
+            <Stack.Screen
+              name="AsapOffers"
+              component={AsapOffersScreen}
+              options={{ title: 'Courses immédiates', headerShown: true }}
+            />
             <Stack.Screen
               name="MissionDetail"
               component={MissionDetailScreen}

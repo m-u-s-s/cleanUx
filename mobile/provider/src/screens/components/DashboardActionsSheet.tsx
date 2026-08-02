@@ -11,6 +11,9 @@ import { colors, spacing, typography, radius, shadows } from '@/theme';
 type QuickAction = { label: string; screen: string; params?: object };
 
 const QUICK_ACTIONS: QuickAction[] = [
+  // En tête : une course immédiate se joue en secondes, et c'est la seule action de cette
+  // feuille qui périme si on la lit trop tard.
+  { label: 'Courses immédiates', screen: 'AsapOffers' },
   { label: 'Disponibilités', screen: 'Availability' },
   { label: 'Badges', screen: 'Badges' },
   // L'onglet Revenus vit dans MainTabs : sans le param imbriqué, le tap ne fait rien.

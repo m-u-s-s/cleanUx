@@ -1,0 +1,178 @@
+import React, { useState } from 'react';
+import { View, Text, StyleSheet, ScrollView } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
+import { Screen, Button, Badge, EmptyState, Skeleton } from '@/ui';
+import { colors, spacing, typography, radius } from '@/theme';
+import { useAsapOffers, useAcceptAsapOffer, useDeclineAsapOffer } from './hooks';
+import type { AsapOffer } from './types';
+
+/**
+ * Les courses immédiates proposées à ce prestataire.
+ *
+ * L'autre bout d'une boucle qui n'existait qu'à moitié : les points d'API étaient livrés depuis le
+ * moteur de commande, et l'application ne les appelait nulle part. Un client pouvait demander une
+ * intervention dans l'heure depuis son téléphone, et AUCUN prestataire utilisant l'application ne
+ * pouvait l'accepter.
+ *
+ * Ce que l'écran doit donner tient en quatre choses — le métier, la distance, le montant,
+ * l'attente — et deux boutons. Le prestataire est au volant ou sur un chantier ; tout le reste lui
+ * coûte la course.
+ */
+export function AsapOffersScreen() {
+  const navigation = useNavigation<any>();
+  const { offers, isLoading } = useAsapOffers();
+  const accept = useAcceptAsapOffer();
+  const decline = useDeclineAsapOffer();
+  const [notice, setNotice] = useState<string | null>(null);
+
+  const handleAccept = (offer: AsapOffer) => {
+    setNotice(null);
+    accept.mutate(offer.asap_dispatch_request_id, {
+      /*
+       * On envoie vers la LISTE des missions, pas vers un écran de détail.
+       *
+       * L'acceptation rend un `booking_id` ; `MissionDetail` attend un `missionId`, qui est l'id
+       * d'un modèle Mission — deux identifiants différents. Les confondre ouvrirait le détail
+       * d'une autre intervention, ou de rien du tout : c'est exactement le défaut que signale le
+       * commentaire de l'écran d'offre voisin, et la table `missions` est de surcroît vide en
+       * pratique.
+       *
+       * Le paramètre imbriqué est nécessaire : l'onglet vit dans `MainTabs`, et sans lui le tap
+       * ne ferait rien.
+       */
+      onSuccess: () => {
+        navigation.navigate('MainTabs', { screen: 'Missions' });
+      },
+      /*
+       * 409 = premier arrivé, premier servi. Ce n'est PAS une panne, et le dire en ces termes
+       * évite qu'un prestataire croie l'application cassée et cesse d'ouvrir cet écran.
+       */
+      onError: (error: { status?: number }) => {
+        setNotice(
+          error?.status === 409
+            ? 'Cette course vient d’être prise par un autre professionnel.'
+            : 'Impossible d’accepter cette course pour le moment. Réessayez.',
+        );
+      },
+    });
+  };
+
+  const handleDecline = (offer: AsapOffer) => {
+    setNotice(null);
+    decline.mutate({ requestId: offer.asap_dispatch_request_id }, {
+      onError: () => setNotice('Impossible d’enregistrer votre refus. Réessayez.'),
+    });
+  };
+
+  return (
+    <Screen>
+      <ScrollView contentContainerStyle={styles.body}>
+        <Text style={styles.title}>Courses immédiates</Text>
+        <Text style={styles.subtitle}>
+          Un client attend maintenant. La première réponse emporte la course.
+        </Text>
+
+        {notice ? (
+          <Text style={styles.notice} accessibilityRole="alert">{notice}</Text>
+        ) : null}
+
+        {isLoading && offers.length === 0 ? <Skeleton width="100%" height={120} /> : null}
+
+        {!isLoading && offers.length === 0 ? (
+          <EmptyState
+            icon="flash-outline"
+            title="Aucune course pour l’instant"
+            message="Restez en ligne : les demandes urgentes arrivent ici dès qu’un client en lance une près de vous."
+          />
+        ) : null}
+
+        {offers.map((offer) => (
+          <View key={offer.id} style={styles.card}>
+            <View style={styles.cardHead}>
+              <Text style={styles.trade}>{offer.trade ?? 'Intervention'}</Text>
+              {offer.waiting_seconds != null ? (
+                <Badge label={`attend ${Math.max(0, Math.round(offer.waiting_seconds))} s`} variant="warning" />
+              ) : null}
+            </View>
+
+            <Text style={styles.meta}>
+              {offer.distance_km != null ? `à ${formatKm(offer.distance_km)} km` : 'distance inconnue'}
+            </Text>
+
+            {/* Le montant que le CLIENT a déjà accepté : c'est le chiffre qui engagera le
+                prestataire, pas une estimation refaite de son côté. */}
+            <Text style={styles.amount}>{formatRange(offer)}</Text>
+
+            <View style={styles.actions}>
+              <Button label="Accepter" onPress={() => handleAccept(offer)} />
+              <Button label="Passer" variant="secondary" onPress={() => handleDecline(offer)} />
+            </View>
+          </View>
+        ))}
+      </ScrollView>
+    </Screen>
+  );
+}
+
+/** Virgule décimale : « 2,3 km », pas « 2.3 km ». */
+function formatKm(km: number): string {
+  return km.toFixed(1).replace('.', ',');
+}
+
+function formatRange(offer: AsapOffer): string {
+  const min = offer.estimate_min_cents;
+  const max = offer.estimate_max_cents;
+
+  if (min == null && max == null) {
+    return 'Montant à confirmer';
+  }
+  if (min != null && max != null && min !== max) {
+    return `${euros(min)} – ${euros(max)} €`;
+  }
+
+  return `${euros((min ?? max)!)} €`;
+}
+
+function euros(cents: number): string {
+  return String(Math.round(cents / 100));
+}
+
+const styles = StyleSheet.create({
+  body: { padding: spacing.md, gap: spacing.md },
+  title: {
+    fontSize: typography.fontSize.xl,
+    fontWeight: typography.fontWeight.bold,
+    color: colors.surface[900],
+  },
+  subtitle: { fontSize: typography.fontSize.sm, color: colors.surface[600] },
+  notice: {
+    fontSize: typography.fontSize.sm,
+    color: colors.surface[900],
+    backgroundColor: colors.surface[100],
+    padding: spacing.md,
+    borderRadius: radius.md,
+  },
+  card: {
+    backgroundColor: colors.surface[50],
+    borderRadius: radius.lg,
+    borderWidth: 1,
+    borderColor: colors.surface[200],
+    padding: spacing.md,
+    gap: spacing.xs,
+  },
+  cardHead: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  trade: {
+    fontSize: typography.fontSize.lg,
+    fontWeight: typography.fontWeight.semibold,
+    color: colors.surface[900],
+  },
+  meta: { fontSize: typography.fontSize.sm, color: colors.surface[600] },
+  /* Chasse fixe sur le montant : c'est le chiffre qui décide, il ne doit pas sauter. */
+  amount: {
+    fontSize: typography.fontSize.xl,
+    fontWeight: typography.fontWeight.bold,
+    fontVariant: ['tabular-nums'],
+    color: colors.surface[900],
+  },
+  actions: { flexDirection: 'row', gap: spacing.sm, marginTop: spacing.sm },
+});

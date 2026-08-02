@@ -8,6 +8,8 @@ export type RootStackParamList = {
   // Parcours de vérification : seul écran atteignable tant que le dossier est incomplet.
   ProviderOnboarding: undefined;
   MissionDetail: { missionId: number };
+  /** Les courses immédiates proposées à ce prestataire. */
+  AsapOffers: undefined;
   MissionInbox: undefined;
   MissionField: { missionId: number };
   MissionTracking: { missionId: number; bookingId: number };
