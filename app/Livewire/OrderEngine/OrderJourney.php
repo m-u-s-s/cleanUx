@@ -414,6 +414,62 @@ class OrderJourney extends Component
         $this->refreshDerived();
     }
 
+    // ─── Rattrapage du panier ────────────────────────────────────────────────────────────────
+
+    /**
+     * La clé à confier au navigateur, pour retrouver ce panier si le cookie disparaît.
+     *
+     * Le cookie de session reste la voie normale — il est `httpOnly`, donc hors de portée d'une
+     * XSS. Cette clé-ci est un RATTRAPAGE, et c'est pour cela qu'elle est bornée : hachée en base,
+     * tournante à chaque usage, expirante. Sans ces trois limites, ce serait le jeton de session
+     * recopié en clair dans `localStorage`, à la portée de tout script injecté, et pour toujours.
+     */
+    #[Computed(persist: false)]
+    public function recoveryKey(): ?string
+    {
+        $manager = app(OrderDraftManager::class);
+
+        return $manager->issueRecoveryKey($this->draft());
+    }
+
+    /**
+     * Le navigateur présente une clé : on rouvre le panier qu'elle désigne.
+     *
+     * Appelé uniquement quand la session n'a rien — un cookie effacé, une session expirée. Une clé
+     * inconnue, périmée ou pointant sur une commande déjà passée ne fait RIEN : il n'y a personne
+     * à informer, et le client garde le panier vide qu'il avait.
+     */
+    public function recoverDraft(string $key): void
+    {
+        $manager = app(OrderDraftManager::class);
+        $recovered = $manager->recoverByKey($key);
+
+        if (! $recovered) {
+            return;
+        }
+
+        /*
+         * On adopte le jeton du panier retrouvé plutôt que d'y recopier le nôtre : le reste du
+         * composant travaille par jeton de session, et la reprise redevient ainsi le chemin
+         * ordinaire, sans cas particulier.
+         */
+        $this->sessionToken = $recovered->session_token;
+        session()->put('order_draft_token', $this->sessionToken);
+
+        $this->address = (string) ($recovered->address ?? '');
+        $this->lat = $recovered->lat;
+        $this->lng = $recovered->lng;
+        $this->mode = $recovered->mode;
+
+        $first = $recovered->items()->with('trade')->orderBy('sequence')->first();
+
+        if ($first?->trade) {
+            $this->selectTrade($first->trade_id);
+        }
+
+        $this->refreshDerived();
+    }
+
     // ─── Chantier : une date par métier ──────────────────────────────────────────────────────
 
     /**

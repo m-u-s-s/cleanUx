@@ -46,6 +46,77 @@ class OrderDraftManager
      * Un compte prime toujours sur un jeton de session : quelqu'un qui vient de se connecter doit
      * retrouver ce qu'il avait commencé anonymement sur un autre appareil.
      */
+    /**
+     * Combien de temps une clé de rattrapage reste utilisable.
+     *
+     * Assez long pour couvrir le « je reviens ce week-end », assez court pour qu'une clé oubliée
+     * dans un navigateur ne rouvre pas une adresse de domicile des mois plus tard.
+     */
+    private const RECOVERY_LIFETIME_DAYS = 14;
+
+    /** La dernière clé émise, en clair — elle n'existe qu'ici, jamais en base. */
+    private ?string $lastIssuedKey = null;
+
+    /**
+     * Émet une clé de rattrapage pour ce panier, et rend sa forme en CLAIR.
+     *
+     * Le clair ne quitte jamais cette méthode côté serveur : la base ne reçoit qu'un condensat.
+     * Une fuite de la table ne donne donc aucune clé utilisable.
+     *
+     * Émettre remplace la précédente : deux clés vivantes pour un même panier doubleraient la
+     * surface sans rien apporter.
+     */
+    public function issueRecoveryKey(OrderDraft $draft): string
+    {
+        $key = Str::random(64);
+
+        $draft->update([
+            'recovery_key_hash' => hash('sha256', $key),
+            'recovery_key_expires_at' => now()->addDays(self::RECOVERY_LIFETIME_DAYS),
+        ]);
+
+        return $this->lastIssuedKey = $key;
+    }
+
+    /**
+     * Retrouve un panier depuis une clé, ET FAIT TOURNER LA CLÉ.
+     *
+     * La rotation est ce qui distingue ce rattrapage d'un second jeton de session permanent posé à
+     * la portée de toute XSS : une clé volée ne sert qu'une fois, et son usage invalide celle que
+     * le client détient — l'anomalie finit par se voir.
+     *
+     * Trois refus, tous silencieux parce qu'il n'y a personne à informer : clé inconnue, clé
+     * expirée, commande déjà passée. Rouvrir une commande convertie exposerait indéfiniment
+     * l'adresse qu'elle porte.
+     */
+    public function recoverByKey(?string $key): ?OrderDraft
+    {
+        if (blank($key)) {
+            return null;
+        }
+
+        $draft = OrderDraft::query()
+            ->open()
+            ->where('recovery_key_hash', hash('sha256', $key))
+            ->where('recovery_key_expires_at', '>', now())
+            ->latest('id')
+            ->first();
+
+        if (! $draft) {
+            return null;
+        }
+
+        $this->issueRecoveryKey($draft);
+
+        return $draft->fresh();
+    }
+
+    /** La clé émise lors du dernier appel, à remettre au navigateur. */
+    public function lastIssuedKey(): ?string
+    {
+        return $this->lastIssuedKey;
+    }
+
     public function resumeOrCreate(?string $sessionToken, ?User $client = null, string $mode = OrderMode::SCHEDULED): OrderDraft
     {
         $existing = null;

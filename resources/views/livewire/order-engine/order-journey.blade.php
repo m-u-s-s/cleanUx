@@ -232,6 +232,51 @@
             </div>
         @endif
     </div>
+
+    {{--
+        Le rattrapage du panier, quand le cookie a disparu.
+    
+        Le cookie de session reste la voie normale : il est `httpOnly`, donc hors de portée d'une XSS.
+        Ce qui vit ici est une clé BORNÉE — hachée en base, tournante à chaque usage, expirante — et
+        non le jeton de session recopié en clair.
+    --}}
+    <div
+        data-cx-order-recovery
+        hidden
+        x-data="{
+            cle: 'cx-order-recovery',
+            emise: @js($this->recoveryKey),
+            /*
+             * Deux gestes, un seul echange avec le serveur dans le cas courant.
+             *
+             * Le serveur vient d'emettre une cle : on la RANGE. Il n'en a pas emis et on en a une
+             * en reserve : on la PRESENTE, il rouvre le panier et rend une cle neuve.
+             *
+             * La cle tourne a chaque usage : celle qui dort ici ne sert qu'une fois. C'est ce qui
+             * la distingue d'un second jeton de session laisse a la portee de tout script injecte.
+             */
+            boot() {
+                let gardee = null;
+
+                try {
+                    gardee = window.localStorage.getItem(this.cle);
+                } catch (e) {
+                    // Navigation privee, stockage refuse : le parcours marche sans, on n'insiste pas.
+                    return;
+                }
+
+                if (this.emise) {
+                    try { window.localStorage.setItem(this.cle, this.emise); } catch (e) {}
+                    return;
+                }
+
+                if (gardee) {
+                    $wire.recoverDraft(gardee);
+                }
+            },
+        }"
+        x-init="boot()"
+    ></div>
 </div>
 
 @push('scripts')
@@ -307,3 +352,5 @@
     })();
 </script>
 @endpush
+
+

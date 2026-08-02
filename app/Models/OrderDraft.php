@@ -25,6 +25,8 @@ class OrderDraft extends Model
 {
     protected $fillable = [
         'reference', 'client_id', 'session_token', 'mode', 'status',
+        // Rattrapage quand le cookie de session a disparu : hachée, tournante, expirante.
+        'recovery_key_hash', 'recovery_key_expires_at',
         'address', 'address_details', 'lat', 'lng',
         'scheduled_at', 'asap_requested_at',
         'estimate_min_cents', 'estimate_max_cents', 'total_cents', 'currency',
@@ -38,6 +40,7 @@ class OrderDraft extends Model
         'scheduled_at' => 'datetime',
         'asap_requested_at' => 'datetime',
         'converted_at' => 'datetime',
+        'recovery_key_expires_at' => 'datetime',
         'estimate_min_cents' => 'integer',
         'estimate_max_cents' => 'integer',
         'total_cents' => 'integer',
