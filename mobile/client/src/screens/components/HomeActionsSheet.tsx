@@ -19,64 +19,54 @@ import { colors, spacing, typography, radius, useThemeColors } from '@/theme';
  * n'a pas lieu d'être ici — il y protège une interrogation périodique, absente de ce côté.
  */
 /**
- * Les trois façons de commander un service. C'est la raison d'être de cette feuille : l'accueil
- * n'expose plus qu'un seul bouton, et le choix du mode se fait ici plutôt que d'être deviné au
- * milieu du parcours de réservation.
+ * Les trois façons de commander un service.
+ *
+ * Elles ouvrent toutes LE MÊME parcours — le moteur de commande, servi par la vue embarquée —
+ * avec leur intention dans l'URL. L'ancien assistant natif en cinq étapes ne connaît ni secteur,
+ * ni question propre au métier, ni instantané de réponse : deux parcours écrivant la même table
+ * par des chemins différents produiraient des devis explicables ou non selon la porte empruntée.
+ *
+ * Le paramètre `mode` compte : sans lui, les trois cartes arriveraient sur le même écran planifié
+ * et le choix d'entrée serait décoratif — le client demanderait « immédiat », puis devrait le
+ * redemander. Un métier qui n'accepte pas le mode demandé le dit à l'écran plutôt que de basculer
+ * en silence.
  */
 type BookingMode = {
   key: string;
   title: string;
   hint: string;
-  icon: 'flash-outline' | 'calendar-outline' | 'layers-outline' | 'sparkles-outline';
+  icon: 'flash-outline' | 'calendar-outline' | 'layers-outline';
   navigate: (navigate: (screen: string, params?: object) => void) => void;
 };
 
 const BOOKING_MODES: BookingMode[] = [
   {
-    key: 'catalog',
-    title: 'Commander',
-    hint: 'Tout le catalogue, prix affiché avant de créer un compte',
-    icon: 'sparkles-outline',
-    /*
-     * Le moteur de commande n'existait QUE sur le web.
-     *
-     * Aucun écran natif, aucun point d'API — `routes/api/` n'en parle nulle part — et aucune
-     * entrée dans le registre de parité. Un client sur l'application réservait par catégorie de
-     * service, sans secteur, sans question propre au métier, sans mode immédiat et sans devis
-     * explicable ligne par ligne.
-     *
-     * Il est servi par la vue embarquée, comme le multi-métiers juste en dessous. Les trois modes
-     * qui suivent visent encore l'ancien parcours en cinq étapes : les deux coexistent le temps
-     * que le natif rattrape, plutôt que de retirer un parcours qui fonctionne.
-     */
-    navigate: go => go('EmbeddedModule', { path: '/commander', title: 'Commander' }),
-  },
-  {
     key: 'asap',
     title: 'Intervention immédiate',
     hint: 'Un prestataire disponible maintenant',
     icon: 'flash-outline',
-    // Le mode prépositionne le créneau : demander « immédiat » puis devoir cocher la case ASAP
-    // à l'étape 4 rendrait ce choix décoratif.
-    navigate: go => go('BookingWizard', { mode: 'asap' }),
+    navigate: go => go('EmbeddedModule', {
+      path: '/commander?mode=asap',
+      title: 'Intervention immédiate',
+    }),
   },
   {
     key: 'scheduled',
     title: 'Prendre rendez-vous',
     hint: 'Choisissez votre date et votre heure',
     icon: 'calendar-outline',
-    navigate: go => go('BookingWizard', { mode: 'scheduled' }),
+    navigate: go => go('EmbeddedModule', {
+      path: '/commander?mode=scheduled',
+      title: 'Prendre rendez-vous',
+    }),
   },
   {
     key: 'bundle',
     title: 'Plusieurs services',
     hint: 'Un chantier regroupant plusieurs métiers',
     icon: 'layers-outline',
-    // Le multi-métiers n'existe pas encore en écran natif : il est servi par la page web
-    // cliente, via la vue embarquée déjà employée par le hub des modules. Pointer vers un
-    // écran inexistant aurait produit un bouton mort.
     navigate: go => go('EmbeddedModule', {
-      path: '/dashboard/client/chantiers-groupes',
+      path: '/commander?mode=bundle',
       title: 'Chantier multi-services',
     }),
   },

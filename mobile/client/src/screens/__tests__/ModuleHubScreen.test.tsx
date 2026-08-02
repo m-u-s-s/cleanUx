@@ -9,7 +9,9 @@ const navigate = jest.fn();
 const navigation: any = { navigate };
 
 const MODULES = [
-  { key: 'booking', title: 'Réserver', icon: 'calendar-outline', path: '/client/bookings/new', mobile: 'native' },
+  // `tracking` plutôt que `booking` : ce dernier n'a plus d'écran natif depuis que la réservation
+  // passe par le moteur de commande en vue embarquée.
+  { key: 'tracking', title: 'Suivi', icon: 'navigate-outline', path: '/dashboard/client/rendez-vous', mobile: 'native' },
   { key: 'accounting', title: 'Comptabilité', icon: 'document-text-outline', path: '/admin/accounting', mobile: 'webview' },
 ];
 
@@ -33,11 +35,11 @@ describe('ModuleHubScreen', () => {
 
   it('routes a native module to its native screen, not the WebView', async () => {
     const { getByText } = render(<ModuleHubScreen navigation={navigation} />);
-    await waitFor(() => getByText('Réserver'));
+    await waitFor(() => getByText('Suivi'));
 
-    fireEvent.press(getByText('Réserver'));
+    fireEvent.press(getByText('Suivi'));
 
     expect(navigate).not.toHaveBeenCalledWith('EmbeddedModule', expect.anything());
-    expect(navigate).toHaveBeenCalledWith('BookingWizard', undefined);
+    expect(navigate).toHaveBeenCalledWith('MissionTracking', undefined);
   });
 });

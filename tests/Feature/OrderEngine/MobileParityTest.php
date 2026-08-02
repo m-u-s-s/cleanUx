@@ -32,7 +32,7 @@ class MobileParityTest extends TestCase
 
     public function test_the_order_journey_is_registered_for_mobile(): void
     {
-        $module = collect(config('parity.modules'))->firstWhere('key', 'order-journey');
+        $module = collect(config('parity.modules'))->firstWhere('key', 'booking');
 
         $this->assertNotNull($module, 'Le moteur de commande n’existe pas dans le registre de parité.');
         $this->assertSame('/commander', $module['path']);
@@ -48,10 +48,29 @@ class MobileParityTest extends TestCase
 
         $response->assertOk();
 
+        $keys = collect($response->json('data'))->pluck('key')->all();
+
         $this->assertContains(
-            'order-journey',
-            collect($response->json('data'))->pluck('key')->all(),
+            'booking',
+            $keys,
             'La carte de parité du client ne propose pas le moteur de commande.',
+        );
+
+        /*
+         * UNE SEULE entrée de réservation.
+         *
+         * Deux modules pointant l'un sur l'ancien assistant et l'autre sur le moteur donneraient
+         * deux parcours écrivant la même table par des chemins différents : les devis seraient
+         * explicables ou non selon la porte empruntée.
+         */
+        $this->assertSame(
+            ['/commander'],
+            collect($response->json('data'))
+                ->filter(fn (array $m) => str_contains((string) $m['path'], 'commander')
+                    || str_contains((string) $m['path'], 'prendre-rendez-vous'))
+                ->pluck('path')
+                ->values()
+                ->all(),
         );
     }
 

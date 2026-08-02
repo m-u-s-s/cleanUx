@@ -140,8 +140,34 @@ class OrderJourney extends Component
      */
     public array $photos = [];
 
+    /**
+     * Mode demandé par l'URL, en attente d'un métier.
+     *
+     * L'application mobile n'a plus d'écran de réservation natif : ses trois cartes d'entrée —
+     * immédiat, rendez-vous, multi-services — ouvrent toutes ce parcours. Sans cette intention,
+     * elles arriveraient toutes sur le même écran planifié et le choix d'entrée serait décoratif :
+     * le client demanderait « immédiat », puis devrait le redemander.
+     *
+     * Elle ne s'applique pas tout de suite : les modes disponibles dépendent du métier, et aucun
+     * n'est choisi tant que le client regarde le carrousel.
+     */
+    public ?string $intendedMode = null;
+
+    /** Ce qu'on doit au client quand son intention n'a pas pu être honorée. */
+    public string $modeNotice = '';
+
     public function mount(?string $sector = null, ?string $trade = null): void
     {
+        /*
+         * Une valeur inventée dans l'URL est ignorée, sans rien casser : la barre d'adresse est
+         * une entrée comme une autre, et rien de ce qui en vient n'est cru sur parole.
+         */
+        $requested = (string) request()->query('mode', '');
+
+        if (in_array($requested, OrderMode::all(), true)) {
+            $this->intendedMode = $requested;
+        }
+
         /*
          * Le jeton vit dans la SESSION, pas dans une propriété exposée : une propriété Livewire
          * voyage par le navigateur, et le panier de quelqu'un d'autre ne doit pas s'ouvrir en
@@ -813,10 +839,60 @@ class OrderJourney extends Component
         $this->tradeId = $trade->id;
         $this->sectorId = $trade->sector_id ?? $this->sectorId;
 
+        /*
+         * L'intention arrivée par l'URL s'applique ICI, et pas avant.
+         *
+         * Les modes dépendent du métier — un ravalement de façade n'est pas un service immédiat —
+         * et aucun n'est choisi tant que le client est sur le carrousel. L'intention attend donc la
+         * sélection, puis se consomme : elle ne doit pas se réappliquer à chaque changement de
+         * métier, sinon le client qui bascule volontairement en planifié se ferait ramener en
+         * immédiat au métier suivant.
+         */
+        if ($this->intendedMode !== null) {
+            $wanted = $this->intendedMode;
+            $this->intendedMode = null;
+
+            if ($trade->allowsMode($wanted)) {
+                $this->mode = $wanted;
+            } else {
+                // On le DIT. Basculer en silence laisserait le client croire qu'il a commandé une
+                // intervention dans l'heure.
+                $this->modeNotice = match ($wanted) {
+                    OrderMode::ASAP => sprintf(
+                        '« %s » n’accepte pas les interventions immédiates : ce métier demande une préparation. Choisissez une date ci-dessous.',
+                        $trade->name,
+                    ),
+                    OrderMode::BUNDLE => sprintf(
+                        '« %s » ne se commande pas au sein d’un chantier multi-services. Il reste commandable seul.',
+                        $trade->name,
+                    ),
+                    default => '',
+                };
+            }
+        }
+
         // Le mode retenu peut ne pas exister sur ce métier : on retombe sur le planifié plutôt que
         // de proposer un immédiat que le serveur refuserait plus tard.
         if (! $trade->allowsMode($this->mode)) {
             $this->mode = OrderMode::SCHEDULED;
+        }
+
+        /*
+         * Le mode est ÉCRIT SUR LA COMMANDE, pas seulement porté par l'écran.
+         *
+         * `reprice()` recalcule à partir de `order_drafts.mode` et jamais de la propriété du
+         * composant. Les deux qui divergent, c'est l'écran qui annonce une majoration d'urgence
+         * pendant que le devis enregistré — celui que la confirmation reprend — est calculé au
+         * tarif planifié : le client voit un prix et en paie un autre.
+         *
+         * Le repli ci-dessus produisait exactement cela : passer d'un métier qui accepte
+         * l'immédiat à un métier qui le refuse ramenait l'écran au planifié en laissant la commande
+         * majorée.
+         */
+        $draft = $this->draft();
+
+        if ($draft->mode !== $this->mode) {
+            $draft->update(['mode' => $this->mode]);
         }
 
         /*

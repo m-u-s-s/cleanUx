@@ -25,29 +25,25 @@ return [
         // inherit all 'client' modules. Add explicit 'entreprise' role entries only
         // if/when company-specific modules diverge from individual-client modules.
 
+        /*
+         * La réservation, c'est le MOTEUR DE COMMANDE — et lui seul.
+         *
+         * Cette entrée pointait vers l'assistant natif en cinq étapes figées, qui ne connaît ni
+         * secteur, ni question propre au métier, ni instantané de réponse. Deux parcours écrivant
+         * la même table par des chemins différents produiraient des devis explicables ou non selon
+         * la porte empruntée — et le onzième critère d'acceptation serait vrai une fois sur deux.
+         *
+         * En vue embarquée le temps que le natif rattrape : basculer `mobile` sur 'native' suffira,
+         * sans autre changement de code. La clé reste `booking` : c'est le même module, servi
+         * autrement.
+         */
+        ['key' => 'booking', 'title' => 'Commander', 'icon' => 'sparkles-outline', 'path' => '/commander', 'web' => 'native', 'mobile' => 'webview', 'roles' => ['client'], 'responsive_verified' => true],
+
         // Native today (hot operational paths already built in Expo)
-        ['key' => 'booking', 'title' => 'Réserver', 'icon' => 'calendar-outline', 'path' => '/prendre-rendez-vous', 'web' => 'native', 'mobile' => 'native', 'roles' => ['client'], 'responsive_verified' => true],
         ['key' => 'tracking', 'title' => 'Suivi', 'icon' => 'navigate-outline', 'path' => '/dashboard/client/rendez-vous', 'web' => 'native', 'mobile' => 'native', 'roles' => ['client'], 'responsive_verified' => true],
         ['key' => 'chat', 'title' => 'Messages', 'icon' => 'chatbubble-outline', 'path' => '/dashboard/client/messagerie', 'web' => 'native', 'mobile' => 'native', 'roles' => [], 'responsive_verified' => true],
         ['key' => 'missions', 'title' => 'Missions', 'icon' => 'briefcase-outline', 'path' => '/dashboard/employe/missions', 'web' => 'native', 'mobile' => 'native', 'roles' => ['provider'], 'responsive_verified' => true],
         ['key' => 'earnings', 'title' => 'Revenus', 'icon' => 'cash-outline', 'path' => '/dashboard/employe/revenus', 'web' => 'native', 'mobile' => 'native', 'roles' => ['provider'], 'responsive_verified' => true],
-
-        /*
-         * Le moteur de commande — secteur → métier → questions, prix avant identité.
-         *
-         * Il n'existait QUE sur le web : aucun écran natif, aucun point d'API, et aucune entrée
-         * ici. Un client sur l'application réservait encore par catégorie de service, sans secteur,
-         * sans question propre au métier, sans mode immédiat et sans devis explicable ligne par
-         * ligne — le onzième critère d'acceptation était donc faux sur mobile.
-         *
-         * En vue embarquée, le parcours complet devient joignable tout de suite ; la migration vers
-         * un écran natif se fera en basculant `mobile` sur 'native', sans autre changement de code.
-         *
-         * DISTINCT de `booking`, qui reste l'ancien parcours en cinq étapes figées : les deux
-         * cohabitent le temps que le natif rattrape, et fusionner les deux clés ferait disparaître
-         * un parcours qui fonctionne.
-         */
-        ['key' => 'order-journey', 'title' => 'Commander', 'icon' => 'sparkles-outline', 'path' => '/commander', 'web' => 'native', 'mobile' => 'webview', 'roles' => ['client'], 'responsive_verified' => true],
 
         // Long-tail served via embedded web (migrate to native later)
         ['key' => 'accounting', 'title' => 'Comptabilité', 'icon' => 'document-text-outline', 'path' => '/admin/accounting-v2', 'web' => 'native', 'mobile' => 'webview', 'roles' => ['admin'], 'responsive_verified' => true],

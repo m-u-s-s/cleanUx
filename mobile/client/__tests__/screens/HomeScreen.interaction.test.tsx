@@ -6,7 +6,8 @@
  *  - Tap "Messagerie" (feuille d'actions) -> navigate('ChatList')
  *  - Tap "Fidélité" (feuille d'actions) -> navigate('Loyalty')
  *  - Tap "Réserver un service" ouvre la feuille, qui pose le choix du mode
- *  - Tap "Intervention immédiate" -> navigate('BookingWizard', { mode: 'asap' })
+ *  - Tap "Intervention immédiate" -> navigate('EmbeddedModule', /commander?mode=asap)
+ *    (les trois cartes ouvrent le MÊME parcours ; l'ancien assistant natif n'est plus joignable)
  *  - Tap active booking card -> navigate('BookingDetail', { bookingId })
  */
 import React from 'react';
@@ -156,33 +157,30 @@ describe('HomeScreen interactions', () => {
     expect(mockNavigate).not.toHaveBeenCalled();
   });
 
-  it('le mode immédiat prépositionne le créneau ASAP', () => {
+  /**
+   * Les trois cartes ouvrent toutes le moteur de commande, avec leur intention dans l'URL.
+   *
+   * L'ancien parcours en cinq etapes ne connaissait ni secteur, ni question propre au metier, ni
+   * devis explicable ligne par ligne. Sans le parametre `mode`, les trois cartes arriveraient sur
+   * le meme ecran planifie et le choix d'entree deviendrait decoratif : le client demanderait
+   * « immediat » puis devrait le redemander.
+   */
+  it('le mode immediat ouvre le moteur de commande en urgence', () => {
     render(<HomeScreen />);
     fireEvent.press(screen.getByTestId('booking-mode-asap'));
-    expect(mockNavigate).toHaveBeenCalledWith('BookingWizard', { mode: 'asap' });
-  });
-
-  /**
-   * Le moteur de commande n'existait que sur le web.
-   *
-   * Aucun ecran natif, aucun point d'API, et aucune entree dans le registre de parite : un client
-   * sur l'application reservait par categorie de service, sans secteur, sans question propre au
-   * metier et sans devis explicable ligne par ligne. Il est desormais servi par la vue embarquee,
-   * comme le multi-metiers juste en dessous.
-   */
-  it('le catalogue complet ouvre le moteur de commande embarque', () => {
-    render(<HomeScreen />);
-    fireEvent.press(screen.getByTestId('booking-mode-catalog'));
     expect(mockNavigate).toHaveBeenCalledWith('EmbeddedModule', {
-      path: '/commander',
-      title: 'Commander',
+      path: '/commander?mode=asap',
+      title: 'Intervention immédiate',
     });
   });
 
   it('le mode rendez-vous laisse choisir la date', () => {
     render(<HomeScreen />);
     fireEvent.press(screen.getByTestId('booking-mode-scheduled'));
-    expect(mockNavigate).toHaveBeenCalledWith('BookingWizard', { mode: 'scheduled' });
+    expect(mockNavigate).toHaveBeenCalledWith('EmbeddedModule', {
+      path: '/commander?mode=scheduled',
+      title: 'Prendre rendez-vous',
+    });
   });
 
   /**
@@ -193,7 +191,7 @@ describe('HomeScreen interactions', () => {
     render(<HomeScreen />);
     fireEvent.press(screen.getByTestId('booking-mode-bundle'));
     expect(mockNavigate).toHaveBeenCalledWith('EmbeddedModule', {
-      path: '/dashboard/client/chantiers-groupes',
+      path: '/commander?mode=bundle',
       title: 'Chantier multi-services',
     });
   });
@@ -228,6 +226,32 @@ describe('HomeScreen — first-time user', () => {
     });
 
     fireEvent.press(screen.getByTestId('booking-mode-scheduled'));
-    expect(mockNavigate).toHaveBeenCalledWith('BookingWizard', { mode: 'scheduled' });
+    expect(mockNavigate).toHaveBeenCalledWith('EmbeddedModule', {
+      path: '/commander?mode=scheduled',
+      title: 'Prendre rendez-vous',
+    });
+  });
+});
+
+describe('HomeScreen — un seul parcours', () => {
+  /**
+   * Plus AUCUNE entree ne mene a l'ancien assistant.
+   *
+   * Le laisser joignable depuis une seule carte oubliee produirait deux parcours qui ecrivent la
+   * meme table par des chemins differents : l'un avec secteur, questions et instantanes de
+   * reponses, l'autre sans. Les devis deviendraient explicables ou non selon la porte empruntee.
+   */
+  it('aucune carte n’ouvre l’ancien assistant natif', () => {
+    render(<HomeScreen />);
+
+    ['asap', 'scheduled', 'bundle', 'catalog'].forEach(mode => {
+      const card = screen.queryByTestId(`booking-mode-${mode}`);
+      if (card) {
+        fireEvent.press(card);
+      }
+    });
+
+    expect(mockNavigate).not.toHaveBeenCalledWith('BookingWizard', expect.anything());
+    expect(mockNavigate).not.toHaveBeenCalledWith('BookingWizard');
   });
 });

@@ -92,6 +92,87 @@ class OrderJourneyTest extends TestCase
     }
 
     /**
+     * L'intention de mode voyage dans l'URL.
+     *
+     * L'application mobile n'a plus d'écran de réservation natif : ses trois cartes — immédiat,
+     * rendez-vous, multi-services — ouvrent toutes ce parcours. Sans ce paramètre, elles
+     * arriveraient toutes les trois sur le même écran planifié, et le choix d'entrée deviendrait
+     * décoratif : le client demanderait « immédiat » puis devrait le redemander.
+     *
+     * L'intention n'est pas appliquée tout de suite — les modes dépendent du métier, et aucun
+     * n'est encore choisi. Elle attend la sélection.
+     */
+    public function test_an_intended_mode_survives_until_a_trade_is_chosen(): void
+    {
+        Livewire::withQueryParams(['mode' => 'asap'])
+            ->test(OrderJourney::class)
+            ->assertSet('mode', 'scheduled')
+            ->call('selectTrade', Trade::where('slug', 'plumbing')->firstOrFail()->id)
+            ->assertSet('mode', 'asap');
+    }
+
+    /**
+     * Un métier qui n'accepte pas le mode demandé le DIT.
+     *
+     * Un ravalement de façade n'est pas un service immédiat. Basculer en silence sur « planifié »
+     * laisserait le client croire qu'il a commandé une intervention dans l'heure.
+     */
+    public function test_a_trade_that_refuses_the_intended_mode_says_so(): void
+    {
+        Livewire::withQueryParams(['mode' => 'asap'])
+            ->test(OrderJourney::class)
+            ->call('selectTrade', $this->peinture()->id)
+            ->assertSet('mode', 'scheduled')
+            ->assertSee('n’accepte pas les interventions immédiates');
+    }
+
+    /**
+     * Le mode retenu est ÉCRIT SUR LA COMMANDE, pas seulement à l'écran.
+     *
+     * `reprice()` recalcule à partir de `order_drafts.mode`, jamais de la propriété du composant.
+     * Les deux qui divergent, c'est l'écran qui annonce une majoration d'urgence pendant que le
+     * devis enregistré — celui que la confirmation reprend — est calculé au tarif planifié. Le
+     * client voit un prix, il en paie un autre.
+     */
+    public function test_the_mode_reaches_the_order_not_just_the_screen(): void
+    {
+        $component = Livewire::withQueryParams(['mode' => 'asap'])
+            ->test(OrderJourney::class)
+            ->call('selectTrade', Trade::where('slug', 'plumbing')->firstOrFail()->id);
+
+        $this->assertSame('asap', OrderDraft::latest('id')->first()->mode);
+        $this->assertSame('asap', $component->get('mode'));
+    }
+
+    /**
+     * Et le repli suit la même règle.
+     *
+     * Passer d'un métier qui accepte l'immédiat à un métier qui le refuse ramène l'écran au
+     * planifié — la commande doit suivre, sinon elle reste facturée avec la majoration d'urgence
+     * d'un mode que le client ne voit plus nulle part.
+     */
+    public function test_falling_back_to_scheduled_also_updates_the_order(): void
+    {
+        Livewire::withQueryParams(['mode' => 'asap'])
+            ->test(OrderJourney::class)
+            ->call('selectTrade', Trade::where('slug', 'plumbing')->firstOrFail()->id)
+            ->call('selectTrade', $this->peinture()->id)
+            ->assertSet('mode', 'scheduled');
+
+        $this->assertSame('scheduled', OrderDraft::latest('id')->first()->mode);
+    }
+
+    /** Une valeur inventée dans l'URL est ignorée, sans rien casser. */
+    public function test_a_bogus_mode_in_the_url_is_ignored(): void
+    {
+        Livewire::withQueryParams(['mode' => 'n’importe quoi'])
+            ->test(OrderJourney::class)
+            ->assertOk()
+            ->call('selectTrade', Trade::where('slug', 'plumbing')->firstOrFail()->id)
+            ->assertSet('mode', 'scheduled');
+    }
+
+    /**
      * Le dock appelle bien `selectTrade`.
      *
      * Les tests choisissent un métier par `->call('selectTrade', ...)`, ce qui ne prouve rien du

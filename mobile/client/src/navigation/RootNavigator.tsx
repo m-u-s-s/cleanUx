@@ -4,7 +4,6 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { useAuth } from '@/auth';
 import { LoginScreen } from '@/screens/LoginScreen';
 import { TabNavigator } from './TabNavigator';
-import { BookingNavigator } from './BookingNavigator';
 import { MissionTrackingScreen } from '@/screens/MissionTrackingScreen';
 import { BookingDetailScreen } from '@/screens/BookingDetailScreen';
 import { QRScanScreen } from '@/screens/QRScanScreen';
@@ -57,11 +56,19 @@ export function RootNavigator() {
         {isAuthenticated ? (
           <>
             <Stack.Screen name="MainTabs" component={TabNavigator} />
-            <Stack.Screen
-              name="BookingWizard"
-              component={BookingNavigator}
-              options={{ headerShown: false, presentation: 'modal' }}
-            />
+            {/*
+              L'assistant de réservation en cinq étapes N'EST PLUS MONTÉ.
+              La réservation passe par le moteur de commande, servi en vue embarquée.
+
+              Le laisser déclaré sans qu'aucun écran n'y mène produirait une route orpheline :
+              joignable par un `navigate('BookingWizard')` oublié quelque part, invisible dans les
+              tests, et écrivant `bookings` sans secteur, sans question propre au métier et sans
+              instantané de réponse — donc un devis inexplicable, selon la porte empruntée.
+
+              `BookingNavigator` et ses écrans restent sur le disque : leurs tests les montent
+              directement et continuent de passer. C'est du code mort, à supprimer sciemment
+              plutôt qu'au détour de ce changement.
+            */}
             <Stack.Screen
               name="MissionTracking"
               component={MissionTrackingScreen}

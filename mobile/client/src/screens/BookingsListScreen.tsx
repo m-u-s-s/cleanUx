@@ -57,7 +57,7 @@ export function BookingsListScreen() {
             getItemLayout={getItemLayout}
             contentContainerStyle={styles.list}
             accessibilityLabel="Liste des réservations"
-            ListEmptyComponent={<EmptyState title="Pas encore de réservation" message="Réservez votre premier service pour commencer." icon="calendar-outline" actionLabel="Réserver" onAction={() => navigation.navigate('BookingWizard')} />}
+            ListEmptyComponent={<EmptyState title="Pas encore de réservation" message="Réservez votre premier service pour commencer." icon="calendar-outline" actionLabel="Réserver" onAction={() => navigation.navigate('EmbeddedModule', { path: '/commander', title: 'Commander' })} />}
             refreshControl={
               <RefreshControl
                 refreshing={isRefetching}

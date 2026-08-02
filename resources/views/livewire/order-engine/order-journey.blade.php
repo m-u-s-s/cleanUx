@@ -85,6 +85,17 @@
                         @endif
                     @endif
 
+                    {{--
+                        L'intention d'entrée n'a pas pu être honorée — un ravalement de façade n'est
+                        pas un service immédiat. On le DIT : basculer en silence laisserait le
+                        client croire qu'il a commandé une intervention dans l'heure.
+                    --}}
+                    @if ($modeNotice)
+                        <p class="mt-3 rounded-xl bg-slate-100 px-4 py-3 text-sm text-slate-700" role="status">
+                            {{ $modeNotice }}
+                        </p>
+                    @endif
+
                     <div class="mt-2">
                         @foreach ($this->visibleQuestions as $question)
                             @livewire('order-engine.question-renderer',

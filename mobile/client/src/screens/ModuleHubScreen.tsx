@@ -10,7 +10,9 @@ import { colors, spacing } from '@/theme';
  * back to embedded web.
  */
 const NATIVE_ROUTES: Record<string, { screen: string; params?: object }> = {
-  booking: { screen: 'BookingWizard' },
+  // `booking` a été retiré : la réservation passe désormais par le moteur de commande, servi en
+  // vue embarquée. Laisser la correspondance ici rouvrirait l'ancien assistant natif dès que
+  // quelqu'un rebasculerait le module sur `native` dans le registre.
   tracking: { screen: 'MissionTracking' },
   chat: { screen: 'ChatList' },
   invoices: { screen: 'Invoices' },
