@@ -19,6 +19,23 @@ trait HasLegacyBookingAliases
      * Mapping of legacy French columns → modern English equivalents.
      * Each pair is kept in sync bidirectionally on every save.
      */
+    /*
+     * `surface` et `surface_m2` NE SONT PAS une paire, malgré leurs noms.
+     *
+     * `surface` pointe sur `surface_range`, un LIBELLÉ DE PLAGE choisi par le client
+     * (« 100_150 »). `surface_m2` est un entier : validé `numeric`, casté `integer`, moyenné dans
+     * les exports et comparé par le moteur de prix (« surface_m2 >= 50 »).
+     *
+     * Les recopier l'un dans l'autre écrivait « 100_150 » dans une colonne `int unsigned` :
+     * refusé par MySQL en mode strict — donc toute réservation portant une plage échouait en
+     * production — et, quand ça passait, `(int) '100_150'` valait 100, si bien que le moteur de
+     * prix traitait une fourchette comme une valeur exacte. Convertir une plage en nombre
+     * inventerait une précision que le client n'a jamais donnée : la paire est retirée, pas
+     * corrigée.
+     *
+     * Même classe de défaut que `heure`/`date` ci-dessous, invisible pour la même raison : SQLite
+     * accepte n'importe quoi dans n'importe quelle colonne, MySQL non.
+     */
     protected static array $legacyAliasPairs = [
         ['client_id',               'customer_user_id'],
         ['employe_id',              'assigned_provider_user_id'],
@@ -29,7 +46,6 @@ trait HasLegacyBookingAliases
         ['ville',                   'city'],
         ['code_postal',             'postal_code'],
         ['type_lieu',               'place_type'],
-        ['surface',                 'surface_m2'],
         ['frequence',               'frequency'],
         ['priorite',                'priority'],
         ['commentaire_client',      'customer_comment'],
@@ -59,6 +75,8 @@ trait HasLegacyBookingAliases
      */
     public function syncLegacyAliases(): void
     {
+        $this->fillScheduledAt();
+
         foreach (static::$legacyAliasPairs as [$legacy, $modern]) {
             if (blank($this->{$legacy}) && filled($this->{$modern})) {
                 $this->{$legacy} = $this->normaliseLegacyAliasValue($legacy, $this->{$modern});
@@ -67,6 +85,39 @@ trait HasLegacyBookingAliases
                 $this->{$modern} = $this->normaliseLegacyAliasValue($modern, $this->{$legacy});
             }
         }
+    }
+
+    /**
+     * Reconstitue l'horodatage complet du rendez-vous à partir du jour et de l'heure.
+     *
+     * `scheduled_at` n'était rempli par AUCUN chemin : la colonne existait, absente de
+     * `$fillable`, donc toute écriture était silencieusement ignorée. Le moteur d'annulation la
+     * lit pourtant en premier et retombait sur `date` — de type DATE sur MySQL, donc tronquée au
+     * jour. Les frais d'annulation se calculaient contre MINUIT et non contre l'heure réelle :
+     * un client annulant un rendez-vous de 17 h trente heures à l'avance était facturé au palier
+     * « moins de 24 h ».
+     *
+     * Invisible sur SQLite, qui stocke `date` en texte et y conserve l'heure.
+     */
+    protected function fillScheduledAt(): void
+    {
+        if (filled($this->scheduled_at) || blank($this->date) || blank($this->heure)) {
+            return;
+        }
+
+        // `date` est casté : l'accès rend un Carbon à minuit. `heure` n'a pas de cast et reste
+        // une chaîne « HH:MM:SS ». On repart donc du jour, auquel on applique l'heure.
+        $heure = substr((string) $this->heure, 0, 8);
+
+        if (! preg_match('/^(\d{1,2}):(\d{2})(?::(\d{2}))?$/', $heure, $parties)) {
+            // Heure illisible : on laisse la colonne nulle plutôt que d'inventer un horaire. Le
+            // moteur retombe alors sur son repli, ce qui est moins faux qu'une heure fabriquée.
+            return;
+        }
+
+        $this->scheduled_at = $this->date
+            ->copy()
+            ->setTime((int) $parties[1], (int) $parties[2], (int) ($parties[3] ?? 0));
     }
 
     /**

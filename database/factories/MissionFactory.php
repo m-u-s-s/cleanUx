@@ -56,7 +56,7 @@ class MissionFactory extends Factory
                     return now()->addDay()->setTime(9, 0);
                 }
 
-                return date('Y-m-d H:i:s', strtotime((string) $rdv->date.' '.substr((string) $rdv->heure, 0, 8)));
+                return self::combine($rdv->date, $rdv->heure) ?? now()->addDay()->setTime(9, 0);
             },
 
             'planned_end_at' => function (array $attributes) {
@@ -66,10 +66,15 @@ class MissionFactory extends Factory
                     return now()->addDay()->setTime(11, 0);
                 }
 
-                $start = strtotime((string) $rdv->date.' '.substr((string) $rdv->heure, 0, 8));
+                $debut = self::combine($rdv->date, $rdv->heure);
+
+                if ($debut === null) {
+                    return now()->addDay()->setTime(11, 0);
+                }
+
                 $minutes = (int) ($rdv->duree_estimee ?? $rdv->duree ?? 120);
 
-                return date('Y-m-d H:i:s', strtotime('+'.$minutes.' minutes', $start));
+                return date('Y-m-d H:i:s', strtotime('+'.$minutes.' minutes', strtotime($debut)));
             },
 
             'actual_start_at' => null,
@@ -141,5 +146,35 @@ class MissionFactory extends Factory
         return $this->state(fn () => [
             'mission_type' => 'enterprise',
         ]);
+    }
+
+    /**
+     * Assemble une date et une heure venues de la réservation.
+     *
+     * `date` est casté en Carbon : le convertir en chaîne rend « 2026-08-17 00:00:00 », et le
+     * coller à « 14:30:00 » produisait « 2026-08-17 00:00:00 14:30:00 » — illisible pour
+     * `strtotime`, qui rend `false`. Or `date(..., false)` fabrique 1970-01-01, une valeur hors
+     * des bornes d'une colonne TIMESTAMP MySQL : toutes les missions de test échouaient à
+     * l'insertion, et seulement sur MySQL. SQLite acceptait l'époque sans broncher.
+     *
+     * On ne garde donc que la PARTIE date, exactement comme le service de production.
+     */
+    private static function combine(mixed $date, mixed $heure): ?string
+    {
+        if (! $date || ! $heure) {
+            return null;
+        }
+
+        $partieDate = $date instanceof \DateTimeInterface
+            ? $date->format('Y-m-d')
+            : substr((string) $date, 0, 10);
+
+        $partieHeure = $heure instanceof \DateTimeInterface
+            ? $heure->format('H:i:s')
+            : substr((string) $heure, 0, 8);
+
+        $timestamp = strtotime($partieDate.' '.$partieHeure);
+
+        return $timestamp === false ? null : date('Y-m-d H:i:s', $timestamp);
     }
 }

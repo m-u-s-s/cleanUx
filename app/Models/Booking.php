@@ -145,6 +145,12 @@ class Booking extends Model
         // Planification
         'scheduled_date',
         'scheduled_time',
+        // L'HORODATAGE COMPLET du rendez-vous. La colonne existait et n'était jamais remplie :
+        // absente de `$fillable`, toute écriture était silencieusement ignorée. Le moteur
+        // d'annulation la lit pourtant EN PREMIER, et retombait donc sur `date` — une colonne
+        // MySQL de type DATE, tronquée au jour. Les frais d'annulation se calculaient ainsi
+        // contre minuit au lieu de l'heure réelle du rendez-vous.
+        'scheduled_at',
         'booking_mode',
         'status',
         'priority',
@@ -291,6 +297,7 @@ class Booking extends Model
         // Dates & datetimes
         'scheduled_date' => 'date',
         'scheduled_time' => 'datetime:H:i',
+        'scheduled_at' => 'datetime',
         'date' => 'date',
         'approved_at' => 'datetime',
         'cancelled_at' => 'datetime',
