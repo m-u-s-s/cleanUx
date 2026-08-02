@@ -68,6 +68,11 @@ export interface BookingFavoriteSummary {
   preferred_provider: { id: number; name: string } | null;
 }
 
+// `BookingAction` décrivait les actions du reducer de l'assistant en cinq étapes : il part avec
+// lui, la commande se composant désormais côté serveur dans `order_drafts`.
+//
+// `BookingState` RESTE : il ne servait pas qu'au reducer, il type aussi la charge envoyée par
+// `useCreateBooking`. Le retirer obligerait à redécrire cette forme ailleurs, à l'identique.
 export interface BookingState {
   serviceId: number | null;
   serviceName: string;
@@ -98,13 +103,3 @@ export interface BookingState {
     recurrence?: string;
   };
 }
-
-export type BookingAction =
-  | { type: 'SET_SERVICE'; serviceId: number; serviceName: string; categorySlug: string }
-  | { type: 'SET_DETAILS'; details: BookingState['details'] }
-  | { type: 'SET_COORDINATES'; coordinates: BookingState['coordinates'] }
-  | { type: 'SET_SCHEDULING'; scheduling: BookingState['scheduling'] }
-  | { type: 'SET_PROVIDER_TYPE'; providerTypePreference: ProviderTypePreference }
-  | { type: 'SET_PREFERRED_PROVIDER'; preferredProviderUserId: number | null }
-  | { type: 'SET_PREFERRED_COMPANY'; assignedProviderOrganizationId: number | null }
-  | { type: 'RESET' };

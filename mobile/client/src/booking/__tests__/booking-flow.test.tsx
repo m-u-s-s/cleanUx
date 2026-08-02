@@ -16,8 +16,7 @@ jest.mock('expo-secure-store', () => ({
 
 import { apiClient } from '@/api';
 import { useCreateBooking, useBookings, useBookingDetail, useEligibleCompanies } from '../hooks';
-import { BookingProvider, useBooking } from '../BookingProvider';
-import type { Booking, BookingAction } from '../types';
+import type { Booking } from '../types';
 
 const mock = new MockAdapter(apiClient);
 
@@ -174,62 +173,5 @@ describe('useEligibleCompanies', () => {
     const { result } = renderHook(() => useEligibleCompanies({}), { wrapper: queryWrapper });
     expect(result.current.companies).toEqual([]);
     expect(mock.history['get']!.filter((r) => r.url === '/client/companies')).toHaveLength(0);
-  });
-});
-
-describe('BookingProvider / useBooking context', () => {
-  function ConsumerComponent({ actions }: { actions: BookingAction[] }) {
-    const { state, dispatch } = useBooking();
-    React.useEffect(() => {
-      actions.forEach((a) => dispatch(a));
-    }, []);
-    return (
-      <Text testID="output">
-        {state.serviceId ?? 'null'}|{state.serviceName}|{state.scheduling.date}
-      </Text>
-    );
-  }
-
-  it('provides default empty state', () => {
-    render(
-      <BookingProvider>
-        <ConsumerComponent actions={[]} />
-      </BookingProvider>,
-    );
-    expect(screen.getByTestId('output').props.children.join('')).toBe('null||');
-  });
-
-  it('SET_SERVICE action updates serviceId and serviceName', async () => {
-    render(
-      <BookingProvider>
-        <ConsumerComponent
-          actions={[{ type: 'SET_SERVICE', serviceId: 5, serviceName: 'Peinture', categorySlug: 'peinture' }]}
-        />
-      </BookingProvider>,
-    );
-    await waitFor(() =>
-      expect(screen.getByTestId('output').props.children.join('')).toBe('5|Peinture|'),
-    );
-  });
-
-  it('RESET action restores initial state', async () => {
-    function ResetConsumer() {
-      const { state, dispatch } = useBooking();
-      React.useEffect(() => {
-        dispatch({ type: 'SET_SERVICE', serviceId: 9, serviceName: 'Test', categorySlug: 'test' });
-        dispatch({ type: 'RESET' });
-      }, []);
-      return <Text testID="output">{state.serviceId ?? 'null'}</Text>;
-    }
-
-    render(
-      <BookingProvider>
-        <ResetConsumer />
-      </BookingProvider>,
-    );
-
-    await waitFor(() =>
-      expect(screen.getByTestId('output').props.children).toBe('null'),
-    );
   });
 });

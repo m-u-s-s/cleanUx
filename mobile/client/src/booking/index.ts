@@ -1,4 +1,5 @@
-export { BookingProvider, useBooking } from './BookingProvider';
+// `BookingProvider` / `useBooking` portaient l'état de l'assistant en cinq étapes,
+// supprimé avec lui. Les hooks ci-dessous servent les écrans vivants.
 export {
   useServiceCatalog,
   usePricingServices,
@@ -18,7 +19,6 @@ export type {
   EligibleCompany,
   Booking,
   BookingState,
-  BookingAction,
   ProviderTypePreference,
   BookingFavoriteSummary,
 } from './types';
