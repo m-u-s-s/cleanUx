@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Bundles;
 
+use App\Models\MultiTradeBundle;
 use App\Models\MultiTradeBundleItemQuote;
 use App\Models\ProviderProfile;
 use App\Models\Trade;
@@ -38,7 +39,7 @@ class BundleQuoteDispatchTest extends TestCase
         return $user->fresh();
     }
 
-    private function draftBundle(User $client, Trade $trade): \App\Models\MultiTradeBundle
+    private function draftBundle(User $client, Trade $trade): MultiTradeBundle
     {
         return app(MultiTradeBundleService::class)->createDraft(
             client: $client,

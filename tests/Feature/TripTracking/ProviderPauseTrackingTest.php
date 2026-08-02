@@ -4,6 +4,7 @@ namespace Tests\Feature\TripTracking;
 
 use App\Models\Booking;
 use App\Models\TripTrackingPoint;
+use App\Models\TripTrackingSession;
 use App\Models\User;
 use App\Services\TripTracking\TripTrackingService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -19,7 +20,7 @@ class ProviderPauseTrackingTest extends TestCase
 {
     use RefreshDatabase;
 
-    private function trackingSession(): \App\Models\TripTrackingSession
+    private function trackingSession(): TripTrackingSession
     {
         $provider = User::factory()->employe()->create();
         $booking = Booking::factory()->create();

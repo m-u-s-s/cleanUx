@@ -3,6 +3,7 @@
 namespace App\Services\OrderEngine;
 
 use App\Models\Question;
+use App\Models\QuestionCondition;
 use App\Models\Trade;
 use App\Support\Domain\ConditionAction;
 use App\Support\Domain\QuestionType;
@@ -257,7 +258,7 @@ class QuestionnaireValidator
         ];
     }
 
-    /** @param  Question  $question */
+    /** @param  QuestionCondition  $condition */
     public function describeCondition($condition, ?Question $dependsOn): string
     {
         $operator = match ($condition->operator) {

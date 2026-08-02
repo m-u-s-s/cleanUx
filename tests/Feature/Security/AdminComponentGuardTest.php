@@ -7,6 +7,8 @@ use App\Livewire\AdminFeedbacks;
 use App\Models\User;
 use App\Support\Livewire\Concerns\EnforcesAdminAccess;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\File;
+use Livewire\Component;
 use Livewire\Livewire;
 use Tests\TestCase;
 
@@ -59,7 +61,7 @@ class AdminComponentGuardTest extends TestCase
         $dir = app_path('Livewire/Admin');
         $missing = [];
 
-        foreach (\Illuminate\Support\Facades\File::allFiles($dir) as $file) {
+        foreach (File::allFiles($dir) as $file) {
             if ($file->getExtension() !== 'php') {
                 continue;
             }
@@ -70,7 +72,7 @@ class AdminComponentGuardTest extends TestCase
                 continue;
             }
             $ref = new \ReflectionClass($class);
-            if ($ref->isAbstract() || ! $ref->isSubclassOf(\Livewire\Component::class)) {
+            if ($ref->isAbstract() || ! $ref->isSubclassOf(Component::class)) {
                 continue;
             }
             if (! in_array(EnforcesAdminAccess::class, class_uses_recursive($class), true)) {

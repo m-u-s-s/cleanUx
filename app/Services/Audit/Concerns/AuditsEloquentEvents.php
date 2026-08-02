@@ -23,11 +23,16 @@ trait AuditsEloquentEvents
 {
     public static function bootAuditsEloquentEvents(): void
     {
+        // Le modele recu porte forcement ce trait — c'est lui qui enregistre les ecouteurs. Le
+        // dire explicitement evite que chaque modele adoptant le trait ajoute trois erreurs
+        // d'analyse « methode inconnue » sur du code parfaitement correct.
         static::created(function (Model $model) {
+            /** @var Model&self $model */
             $model->writeAuditEvent('created', null);
         });
 
         static::updated(function (Model $model) {
+            /** @var Model&self $model */
             $changes = $model->getChanges();
             if (empty($changes)) {
                 return;
@@ -36,6 +41,7 @@ trait AuditsEloquentEvents
         });
 
         static::deleted(function (Model $model) {
+            /** @var Model&self $model */
             $model->writeAuditEvent('deleted', null);
         });
     }

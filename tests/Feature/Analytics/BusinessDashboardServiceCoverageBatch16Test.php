@@ -41,7 +41,11 @@ class BusinessDashboardServiceCoverageBatch16Test extends TestCase
 
     public function test_metrics_aggregates_current_month_activity(): void
     {
-        $currentDate = now()->startOfMonth()->addDays(2)->format('Y-m-d');
+        // AUJOURD'HUI, et non le 3 du mois : le service ne compte le chiffre d'affaires que
+        // jusqu'à maintenant. Une donnée posée au 3 est DANS LE FUTUR les 1er et 2, et le test
+        // échouait donc deux jours par mois — assez rare pour passer pour un aléa, assez fréquent
+        // pour laisser la CI rouge sans que personne ne cherche.
+        $currentDate = now()->format('Y-m-d');
 
         Booking::factory()->create([
             'date' => $currentDate,
@@ -95,8 +99,14 @@ class BusinessDashboardServiceCoverageBatch16Test extends TestCase
 
     public function test_metrics_computes_proportional_revenue_growth(): void
     {
-        $currentDate = now()->startOfMonth()->addDays(2)->format('Y-m-d');
-        $previousDate = now()->subMonth()->startOfMonth()->addDays(5)->format('Y-m-d');
+        // AUJOURD'HUI, et non le 3 du mois : le service ne compte le chiffre d'affaires que
+        // jusqu'à maintenant. Une donnée posée au 3 est DANS LE FUTUR les 1er et 2, et le test
+        // échouait donc deux jours par mois — assez rare pour passer pour un aléa, assez fréquent
+        // pour laisser la CI rouge sans que personne ne cherche.
+        $currentDate = now()->format('Y-m-d');
+        // Le mois précédent est entièrement écoulé : n'importe quel jour convient, mais on reste
+        // au début pour rester valide même en fin de mois court.
+        $previousDate = now()->subMonth()->startOfMonth()->format('Y-m-d');
 
         Booking::factory()->create([
             'date' => $previousDate,

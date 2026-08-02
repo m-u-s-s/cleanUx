@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Models\Concerns\HasCatalogTranslations;
+use App\Models\Contracts\TranslatesCatalogLabels;
 use App\Services\Audit\Concerns\AuditsEloquentEvents;
 use App\Support\Domain\QuestionType;
 use Illuminate\Database\Eloquent\Builder;
@@ -22,7 +23,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * matériel). C'est ce qui évite de réécrire quinze fois « Y a-t-il un ascenseur ? » et, surtout,
  * de le réécrire quinze fois différemment.
  */
-class Question extends Model
+class Question extends Model implements TranslatesCatalogLabels
 {
     use AuditsEloquentEvents, HasCatalogTranslations, SoftDeletes;
 

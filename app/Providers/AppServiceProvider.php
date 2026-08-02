@@ -8,6 +8,7 @@ use App\Models\Channel;
 use App\Models\MissionTrackingPoint;
 use App\Models\TripTrackingSession;
 use App\Observers\BookingObserver;
+use App\Observers\BookingPaymentDestinationObserver;
 use App\Observers\BookingTipObserver;
 use App\Observers\MissionTrackingPointObserver;
 use App\Observers\RendezVousObserver;
@@ -108,7 +109,7 @@ class AppServiceProvider extends ServiceProvider
         Booking::observe(RendezVousObserver::class);
         Booking::observe(BookingObserver::class);
         // Garde d'argent : une retenue bancaire désigne un compte prestataire précis.
-        Booking::observe(\App\Observers\BookingPaymentDestinationObserver::class);
+        Booking::observe(BookingPaymentDestinationObserver::class);
 
         // Tips v2 — push provider on tip charged/paid_out
         if (class_exists(BookingTip::class) && class_exists(BookingTipObserver::class)) {

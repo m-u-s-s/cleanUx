@@ -147,7 +147,7 @@ class AsapProviderNotifier
     {
         return sprintf(
             '%s à %s km de vous. Répondez vite : la course part au premier qui accepte.',
-            $request->trade?->name ?? 'Intervention',
+            $request->trade->name,
             number_format($distanceM / 1000, 1, ',', ' '),
         );
     }

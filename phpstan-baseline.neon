@@ -163,12 +163,6 @@ parameters:
 			path: app/Console/Commands/AuditSeedIntegrity.php
 
 		-
-			message: '#^Using nullsafe property access "\?\-\>iso_code" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
-			identifier: nullsafe.neverNull
-			count: 1
-			path: app/Console/Commands/BackfillMissionDestinations.php
-
-		-
 			message: '#^Call to an undefined method Illuminate\\Database\\Connection\:\:getDoctrineSchemaManager\(\)\.$#'
 			identifier: method.notFound
 			count: 1
@@ -391,6 +385,24 @@ parameters:
 			path: app/Console/Commands/SendRendezVousReminders.php
 
 		-
+			message: '#^Call to function is_array\(\) with array\{ok\: bool, detail\: string\} will always evaluate to true\.$#'
+			identifier: function.alreadyNarrowedType
+			count: 2
+			path: app/Console/Commands/SpineHealthReportCommand.php
+
+		-
+			message: '#^Offset ''detail'' on array\{ok\: bool, detail\: string\} on left side of \?\? always exists and is not nullable\.$#'
+			identifier: nullCoalesce.offset
+			count: 1
+			path: app/Console/Commands/SpineHealthReportCommand.php
+
+		-
+			message: '#^Offset ''ok'' on array\{ok\: bool, detail\: string\} on left side of \?\? always exists and is not nullable\.$#'
+			identifier: nullCoalesce.offset
+			count: 1
+			path: app/Console/Commands/SpineHealthReportCommand.php
+
+		-
 			message: '#^Method App\\Console\\Commands\\VerifyBackup\:\:logOutcome\(\) has parameter \$result with no value type specified in iterable type array\.$#'
 			identifier: missingType.iterableValue
 			count: 1
@@ -413,12 +425,6 @@ parameters:
 			identifier: missingType.iterableValue
 			count: 1
 			path: app/Console/Kernel.php
-
-		-
-			message: '#^Match expression does not handle remaining values\: App\\Enums\\ProviderType\:\:COMPANY\|App\\Enums\\ProviderType\:\:INDIVIDUAL$#'
-			identifier: match.unhandled
-			count: 1
-			path: app/Enums/ProviderType.php
 
 		-
 			message: '#^Method App\\Events\\ChatV2\\ChatMessageSentEvent\:\:broadcastWith\(\) return type has no value type specified in iterable type array\.$#'
@@ -733,10 +739,10 @@ parameters:
 			path: app/Http/Controllers/Api/Provider/ProviderMissionLifecycleController.php
 
 		-
-			message: '#^Method App\\Http\\Controllers\\Api\\Provider\\ProviderOnboardingController\:\:downloadDocument\(\) should return Illuminate\\Http\\Response but returns Symfony\\Component\\HttpFoundation\\BinaryFileResponse\.$#'
-			identifier: return.type
+			message: '#^Using nullsafe property access "\?\-\>client" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
 			count: 1
-			path: app/Http/Controllers/Api/Provider/ProviderOnboardingController.php
+			path: app/Http/Controllers/Api/Provider/ProviderMissionLifecycleController.php
 
 		-
 			message: '#^Method App\\Http\\Controllers\\Api\\Provider\\ProviderPayoutsController\:\:abortIfNotProvider\(\) has parameter \$user with no type specified\.$#'
@@ -775,6 +781,12 @@ parameters:
 			path: app/Http/Controllers/Api/Provider/TripTrackingController.php
 
 		-
+			message: '#^Method App\\Http\\Controllers\\Api\\Provider\\TripTrackingController\:\:startMissionOnPresence\(\) has parameter \$provider with no type specified\.$#'
+			identifier: missingType.parameter
+			count: 1
+			path: app/Http/Controllers/Api/Provider/TripTrackingController.php
+
+		-
 			message: '#^Parameter \#1 \$boolean of function abort_unless expects bool, App\\Models\\User\|null given\.$#'
 			identifier: argument.type
 			count: 2
@@ -783,6 +795,30 @@ parameters:
 		-
 			message: '#^Method App\\Http\\Controllers\\Api\\ProviderMissionAssignmentController\:\:serializeAssignment\(\) return type has no value type specified in iterable type array\.$#'
 			identifier: missingType.iterableValue
+			count: 1
+			path: app/Http/Controllers/Api/ProviderMissionAssignmentController.php
+
+		-
+			message: '#^Method App\\Http\\Controllers\\Api\\ProviderMissionAssignmentController\:\:serializeForList\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: app/Http/Controllers/Api/ProviderMissionAssignmentController.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>bookingViaBookingId" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Http/Controllers/Api/ProviderMissionAssignmentController.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>destination_lat" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Http/Controllers/Api/ProviderMissionAssignmentController.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>destination_lng" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
 			count: 1
 			path: app/Http/Controllers/Api/ProviderMissionAssignmentController.php
 
@@ -1255,6 +1291,66 @@ parameters:
 			path: app/Jobs/Marketing/DispatchCampaignStepJob.php
 
 		-
+			message: '#^Call to function method_exists\(\) with Illuminate\\Filesystem\\FilesystemAdapter and ''path'' will always evaluate to true\.$#'
+			identifier: function.alreadyNarrowedType
+			count: 1
+			path: app/Jobs/Messaging/ScanAttachmentForMalware.php
+
+		-
+			message: '#^Method App\\Jobs\\Messaging\\ScanAttachmentForMalware\:\:processResult\(\) has parameter \$result with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: app/Jobs/Messaging/ScanAttachmentForMalware.php
+
+		-
+			message: '#^Result of && is always false\.$#'
+			identifier: booleanAnd.alwaysFalse
+			count: 2
+			path: app/Jobs/Messaging/ScanAttachmentForMalware.php
+
+		-
+			message: '#^Undefined variable\: \$cleanup$#'
+			identifier: variable.undefined
+			count: 1
+			path: app/Jobs/Messaging/ScanAttachmentForMalware.php
+
+		-
+			message: '#^Variable \$cleanup in isset\(\) is never defined\.$#'
+			identifier: isset.variable
+			count: 1
+			path: app/Jobs/Messaging/ScanAttachmentForMalware.php
+
+		-
+			message: '#^Method App\\Jobs\\Missions\\GeocodeMissionDestination\:\:tags\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: app/Jobs/Missions/GeocodeMissionDestination.php
+
+		-
+			message: '#^Result of && is always true\.$#'
+			identifier: booleanAnd.alwaysTrue
+			count: 1
+			path: app/Jobs/Missions/GeocodeMissionDestination.php
+
+		-
+			message: '#^Strict comparison using \!\=\= between string and null will always evaluate to true\.$#'
+			identifier: notIdentical.alwaysTrue
+			count: 2
+			path: app/Jobs/Missions/GeocodeMissionDestination.php
+
+		-
+			message: '#^Unreachable statement \- code above always terminates\.$#'
+			identifier: deadCode.unreachable
+			count: 1
+			path: app/Jobs/Missions/GeocodeMissionDestination.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>iso_code" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Jobs/Missions/GeocodeMissionDestination.php
+
+		-
 			message: '#^Method App\\Jobs\\Payments\\ProcessStripeWebhookJob\:\:backoff\(\) return type has no value type specified in iterable type array\.$#'
 			identifier: missingType.iterableValue
 			count: 1
@@ -1271,6 +1367,12 @@ parameters:
 			identifier: missingType.iterableValue
 			count: 1
 			path: app/Jobs/Sms/ProcessSmsWebhookJob.php
+
+		-
+			message: '#^Parameter \#1 \$profile of method App\\Services\\Onboarding\\ProviderAutoApproval\:\:flagForManualReview\(\) expects App\\Models\\ProviderProfile, App\\Models\\AvailabilitySlot given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Listeners/Kyc/ReevaluateProviderApproval.php
 
 		-
 			message: '#^Property App\\Livewire\\Admin\\AccountingV2\\AccountingCenter\:\:\$paginationTheme has no type specified\.$#'
@@ -1381,7 +1483,7 @@ parameters:
 			path: app/Livewire/Admin/AgendaHebdomadaire.php
 
 		-
-			message: '#^Parameter \#1 \$callback of method Illuminate\\Support\\Collection\<int,App\\Livewire\\Admin\\RendezVous\>\:\:sum\(\) expects \(callable\(App\\Livewire\\Admin\\RendezVous\)\: mixed\)\|string\|null, Closure\(App\\Models\\Booking\)\: int given\.$#'
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Support\\Collection\<int,App\\Livewire\\Admin\\RendezVous\>\:\:sum\(\) expects \(callable\(App\\Livewire\\Admin\\RendezVous\)\: int\)\|string\|null, Closure\(App\\Models\\Booking\)\: int given\.$#'
 			identifier: argument.type
 			count: 1
 			path: app/Livewire/Admin/AgendaHebdomadaire.php
@@ -3427,10 +3529,82 @@ parameters:
 			path: app/Livewire/Admin/OrchestrationTerrainCenter.php
 
 		-
-			message: '#^Method App\\Livewire\\Admin\\OrganizationContractsManager\:\:render\(\) has no return type specified\.$#'
+			message: '#^Method App\\Livewire\\Admin\\OrderEngine\\CatalogCenter\:\:orphanTrades\(\) has no return type specified\.$#'
 			identifier: missingType.return
 			count: 1
-			path: app/Livewire/Admin/OrganizationContractsManager.php
+			path: app/Livewire/Admin/OrderEngine/CatalogCenter.php
+
+		-
+			message: '#^Method App\\Livewire\\Admin\\OrderEngine\\CatalogCenter\:\:render\(\) has no return type specified\.$#'
+			identifier: missingType.return
+			count: 1
+			path: app/Livewire/Admin/OrderEngine/CatalogCenter.php
+
+		-
+			message: '#^Method App\\Livewire\\Admin\\OrderEngine\\CatalogCenter\:\:sectors\(\) has no return type specified\.$#'
+			identifier: missingType.return
+			count: 1
+			path: app/Livewire/Admin/OrderEngine/CatalogCenter.php
+
+		-
+			message: '#^Method App\\Livewire\\Admin\\OrderEngine\\QuestionnaireBuilder\:\:currentRevision\(\) has no return type specified\.$#'
+			identifier: missingType.return
+			count: 1
+			path: app/Livewire/Admin/OrderEngine/QuestionnaireBuilder.php
+
+		-
+			message: '#^Method App\\Livewire\\Admin\\OrderEngine\\QuestionnaireBuilder\:\:duplicationTargets\(\) has no return type specified\.$#'
+			identifier: missingType.return
+			count: 1
+			path: app/Livewire/Admin/OrderEngine/QuestionnaireBuilder.php
+
+		-
+			message: '#^Method App\\Livewire\\Admin\\OrderEngine\\QuestionnaireBuilder\:\:export\(\) has no return type specified\.$#'
+			identifier: missingType.return
+			count: 1
+			path: app/Livewire/Admin/OrderEngine/QuestionnaireBuilder.php
+
+		-
+			message: '#^Method App\\Livewire\\Admin\\OrderEngine\\QuestionnaireBuilder\:\:issues\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: app/Livewire/Admin/OrderEngine/QuestionnaireBuilder.php
+
+		-
+			message: '#^Method App\\Livewire\\Admin\\OrderEngine\\QuestionnaireBuilder\:\:libraryQuestions\(\) has no return type specified\.$#'
+			identifier: missingType.return
+			count: 1
+			path: app/Livewire/Admin/OrderEngine/QuestionnaireBuilder.php
+
+		-
+			message: '#^Method App\\Livewire\\Admin\\OrderEngine\\QuestionnaireBuilder\:\:questionTypes\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: app/Livewire/Admin/OrderEngine/QuestionnaireBuilder.php
+
+		-
+			message: '#^Method App\\Livewire\\Admin\\OrderEngine\\QuestionnaireBuilder\:\:render\(\) has no return type specified\.$#'
+			identifier: missingType.return
+			count: 1
+			path: app/Livewire/Admin/OrderEngine/QuestionnaireBuilder.php
+
+		-
+			message: '#^Property App\\Livewire\\Admin\\OrderEngine\\QuestionnaireBuilder\:\:\$answers type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: app/Livewire/Admin/OrderEngine/QuestionnaireBuilder.php
+
+		-
+			message: '#^Unable to resolve the template type TKey in call to function collect$#'
+			identifier: argument.templateType
+			count: 1
+			path: app/Livewire/Admin/OrderEngine/QuestionnaireBuilder.php
+
+		-
+			message: '#^Unable to resolve the template type TValue in call to function collect$#'
+			identifier: argument.templateType
+			count: 1
+			path: app/Livewire/Admin/OrderEngine/QuestionnaireBuilder.php
 
 		-
 			message: '#^Method App\\Livewire\\Admin\\OrganizationSitesManager\:\:create\(\) has no return type specified\.$#'
@@ -3619,7 +3793,7 @@ parameters:
 			path: app/Livewire/Admin/PlanningAdmin.php
 
 		-
-			message: '#^Parameter \#1 \$callback of method Illuminate\\Support\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:sum\(\) expects \(callable\(Illuminate\\Database\\Eloquent\\Model\)\: mixed\)\|string\|null, Closure\(App\\Models\\Booking\)\: int given\.$#'
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Support\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:sum\(\) expects \(callable\(Illuminate\\Database\\Eloquent\\Model\)\: int\)\|string\|null, Closure\(App\\Models\\Booking\)\: int given\.$#'
 			identifier: argument.type
 			count: 1
 			path: app/Livewire/Admin/PlanningAdmin.php
@@ -3815,6 +3989,30 @@ parameters:
 			identifier: missingType.property
 			count: 1
 			path: app/Livewire/Admin/Promotions/ReferralsCenter.php
+
+		-
+			message: '#^Access to an undefined property App\\Livewire\\Admin\\Providers\\ProviderRegistrationsCenter\:\:\$counts\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Livewire/Admin/Providers/ProviderRegistrationsCenter.php
+
+		-
+			message: '#^Access to an undefined property App\\Livewire\\Admin\\Providers\\ProviderRegistrationsCenter\:\:\$registrations\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Livewire/Admin/Providers/ProviderRegistrationsCenter.php
+
+		-
+			message: '#^Method App\\Livewire\\Admin\\Providers\\ProviderRegistrationsCenter\:\:getRegistrationsProperty\(\) has no return type specified\.$#'
+			identifier: missingType.return
+			count: 1
+			path: app/Livewire/Admin/Providers/ProviderRegistrationsCenter.php
+
+		-
+			message: '#^Property App\\Livewire\\Admin\\Providers\\ProviderRegistrationsCenter\:\:\$paginationTheme has no type specified\.$#'
+			identifier: missingType.property
+			count: 1
+			path: app/Livewire/Admin/Providers/ProviderRegistrationsCenter.php
 
 		-
 			message: '#^Property App\\Livewire\\Admin\\Push\\PushCenter\:\:\$paginationTheme has no type specified\.$#'
@@ -4849,6 +5047,24 @@ parameters:
 			path: app/Livewire/AdminFeedbacks.php
 
 		-
+			message: '#^Method App\\Livewire\\Auth\\VerifyPhone\:\:render\(\) has no return type specified\.$#'
+			identifier: missingType.return
+			count: 1
+			path: app/Livewire/Auth/VerifyPhone.php
+
+		-
+			message: '#^Method App\\Livewire\\Auth\\VerifyPhone\:\:verifyCode\(\) has no return type specified\.$#'
+			identifier: missingType.return
+			count: 1
+			path: app/Livewire/Auth/VerifyPhone.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>phone" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Livewire/Auth/VerifyPhone.php
+
+		-
 			message: '#^Method App\\Livewire\\Chatbot\\AssistantWidget\:\:getOrCreateConversation\(\) has parameter \$user with no type specified\.$#'
 			identifier: missingType.parameter
 			count: 1
@@ -4907,24 +5123,6 @@ parameters:
 			identifier: missingType.iterableValue
 			count: 1
 			path: app/Livewire/Client/BrowseProviders.php
-
-		-
-			message: '#^Call to method availableSitesForUser\(\) on an unknown class App\\Services\\Client\\Calendar\\CalendarDataService\.$#'
-			identifier: class.notFound
-			count: 1
-			path: app/Livewire/Client/Calendar/ClientCalendarFC.php
-
-		-
-			message: '#^Call to method eventsForUser\(\) on an unknown class App\\Services\\Client\\Calendar\\CalendarDataService\.$#'
-			identifier: class.notFound
-			count: 1
-			path: app/Livewire/Client/Calendar/ClientCalendarFC.php
-
-		-
-			message: '#^Class App\\Services\\Client\\Calendar\\CalendarDataService not found\.$#'
-			identifier: class.notFound
-			count: 2
-			path: app/Livewire/Client/Calendar/ClientCalendarFC.php
 
 		-
 			message: '#^Method App\\Livewire\\Client\\Calendar\\ClientCalendarFC\:\:fetchEvents\(\) return type has no value type specified in iterable type array\.$#'
@@ -5995,12 +6193,6 @@ parameters:
 			path: app/Livewire/Client/SavedPaymentMethods.php
 
 		-
-			message: '#^Cannot call method format\(\) on string\.$#'
-			identifier: method.nonObject
-			count: 1
-			path: app/Livewire/Client/Templates/RecurringTemplatesGallery.php
-
-		-
 			message: '#^Access to an undefined property App\\Livewire\\Client\\WalletClient\:\:\$balance\.$#'
 			identifier: property.notFound
 			count: 1
@@ -6155,6 +6347,12 @@ parameters:
 			identifier: missingType.return
 			count: 1
 			path: app/Livewire/ClientCompany/ClientCompanyDashboard.php
+
+		-
+			message: '#^Property App\\Livewire\\ClientCompany\\DisputesCenter\:\:\$paginationTheme has no type specified\.$#'
+			identifier: missingType.property
+			count: 1
+			path: app/Livewire/ClientCompany/DisputesCenter.php
 
 		-
 			message: '#^Method App\\Livewire\\ClientCompany\\MembersAccess\:\:getAvailableRolesProperty\(\) return type has no value type specified in iterable type array\.$#'
@@ -6619,15 +6817,9 @@ parameters:
 			path: app/Livewire/Employe/MesRendezVous.php
 
 		-
-			message: '#^Access to an undefined property App\\Livewire\\Employe\\MesRendezVous\:\:\$selectedRdv\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Livewire/Employe/MesRendezVous.php
-
-		-
 			message: '#^Access to an undefined property App\\Livewire\\Employe\\MesRendezVous\:\:\$selectedRendezVous\.$#'
 			identifier: property.notFound
-			count: 1
+			count: 2
 			path: app/Livewire/Employe/MesRendezVous.php
 
 		-
@@ -6646,12 +6838,6 @@ parameters:
 			message: '#^Access to an undefined property App\\Models\\Booking\|Illuminate\\Database\\Eloquent\\Collection\<int, App\\Models\\Booking\>\:\:\$incident_terrain\.$#'
 			identifier: property.notFound
 			count: 2
-			path: app/Livewire/Employe/MesRendezVous.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\Booking\|Illuminate\\Database\\Eloquent\\Collection\<int, App\\Models\\Booking\>\:\:\$remarque_terrain\.$#'
-			identifier: property.notFound
-			count: 1
 			path: app/Livewire/Employe/MesRendezVous.php
 
 		-
@@ -7351,6 +7537,60 @@ parameters:
 			path: app/Livewire/NotificationsCenter.php
 
 		-
+			message: '#^Method App\\Livewire\\OrderEngine\\AsapSearch\:\:cancellation\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: app/Livewire/OrderEngine/AsapSearch.php
+
+		-
+			message: '#^Method App\\Livewire\\OrderEngine\\AsapSearch\:\:render\(\) has no return type specified\.$#'
+			identifier: missingType.return
+			count: 1
+			path: app/Livewire/OrderEngine/AsapSearch.php
+
+		-
+			message: '#^Method App\\Livewire\\OrderEngine\\AsapSearch\:\:waysForward\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: app/Livewire/OrderEngine/AsapSearch.php
+
+		-
+			message: '#^Method App\\Livewire\\OrderEngine\\OrderConfirmation\:\:bookings\(\) return type with generic class Illuminate\\Support\\Collection does not specify its types\: TKey, TValue$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Livewire/OrderEngine/OrderConfirmation.php
+
+		-
+			message: '#^Method App\\Livewire\\OrderEngine\\OrderConfirmation\:\:goToLogin\(\) has no return type specified\.$#'
+			identifier: missingType.return
+			count: 1
+			path: app/Livewire/OrderEngine/OrderConfirmation.php
+
+		-
+			message: '#^Method App\\Livewire\\OrderEngine\\OrderConfirmation\:\:quote\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: app/Livewire/OrderEngine/OrderConfirmation.php
+
+		-
+			message: '#^Method App\\Livewire\\OrderEngine\\OrderConfirmation\:\:render\(\) has no return type specified\.$#'
+			identifier: missingType.return
+			count: 1
+			path: app/Livewire/OrderEngine/OrderConfirmation.php
+
+		-
+			message: '#^Method App\\Livewire\\OrderEngine\\QuestionRenderer\:\:render\(\) has no return type specified\.$#'
+			identifier: missingType.return
+			count: 1
+			path: app/Livewire/OrderEngine/QuestionRenderer.php
+
+		-
+			message: '#^Property App\\Livewire\\Provider\\BundleQuoteRequests\:\:\$paginationTheme has no type specified\.$#'
+			identifier: missingType.property
+			count: 1
+			path: app/Livewire/Provider/BundleQuoteRequests.php
+
+		-
 			message: '#^Access to an undefined property App\\Livewire\\Provider\\MissionOfferPage\:\:\$assignment\.$#'
 			identifier: property.notFound
 			count: 2
@@ -7481,60 +7721,6 @@ parameters:
 			identifier: nullsafe.neverNull
 			count: 1
 			path: app/Livewire/Provider/ProviderEarningsDashboard.php
-
-		-
-			message: '#^Access to an undefined property App\\Livewire\\Provider\\ProviderPayoutsPage\:\:\$payouts\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Livewire/Provider/ProviderPayoutsPage.php
-
-		-
-			message: '#^Access to an undefined property App\\Livewire\\Provider\\ProviderPayoutsPage\:\:\$summary\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Livewire/Provider/ProviderPayoutsPage.php
-
-		-
-			message: '#^Method App\\Livewire\\Provider\\ProviderPayoutsPage\:\:getPayoutsProperty\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: app/Livewire/Provider/ProviderPayoutsPage.php
-
-		-
-			message: '#^Method App\\Livewire\\Provider\\ProviderPayoutsPage\:\:getSummaryProperty\(\) return type has no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: app/Livewire/Provider/ProviderPayoutsPage.php
-
-		-
-			message: '#^Property App\\Livewire\\Provider\\ProviderPayoutsPage\:\:\$queryString has no type specified\.$#'
-			identifier: missingType.property
-			count: 1
-			path: app/Livewire/Provider/ProviderPayoutsPage.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\AvailabilitySlot\:\:\$is_online\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Livewire/Provider/ProviderPresenceToggle.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\AvailabilitySlot\:\:\$went_online_at\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Livewire/Provider/ProviderPresenceToggle.php
-
-		-
-			message: '#^Method App\\Livewire\\Provider\\ProviderPresenceToggle\:\:goOnline\(\) has parameter \$meta with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: app/Livewire/Provider/ProviderPresenceToggle.php
-
-		-
-			message: '#^Method App\\Livewire\\Provider\\ProviderPresenceToggle\:\:heartbeat\(\) has parameter \$meta with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: app/Livewire/Provider/ProviderPresenceToggle.php
 
 		-
 			message: '#^Property App\\Livewire\\Provider\\ProviderRatingsPage\:\:\$paginationTheme has no type specified\.$#'
@@ -7765,6 +7951,12 @@ parameters:
 			path: app/Livewire/Public/ProviderPublicProfile.php
 
 		-
+			message: '#^Class App\\Models\\AbPricingExperiment uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/AbPricingExperiment.php
+
+		-
 			message: '#^Method App\\Models\\AbPricingExperiment\:\:scopeRunning\(\) has parameter \$q with generic class Illuminate\\Database\\Eloquent\\Builder but does not specify its types\: TModel$#'
 			identifier: missingType.generics
 			count: 1
@@ -7785,6 +7977,12 @@ parameters:
 		-
 			message: '#^Class App\\Models\\AccountingEntry has PHPDoc tag @property for property \$metadata with no value type specified in iterable type array\.$#'
 			identifier: missingType.iterableValue
+			count: 1
+			path: app/Models/AccountingEntry.php
+
+		-
+			message: '#^Class App\\Models\\AccountingEntry uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
+			identifier: missingType.generics
 			count: 1
 			path: app/Models/AccountingEntry.php
 
@@ -7825,6 +8023,12 @@ parameters:
 			path: app/Models/AccountingEntry.php
 
 		-
+			message: '#^Class App\\Models\\AccountingExport uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/AccountingExport.php
+
+		-
 			message: '#^Method App\\Models\\AccountingExport\:\:scopeReady\(\) has parameter \$q with generic class Illuminate\\Database\\Eloquent\\Builder but does not specify its types\: TModel$#'
 			identifier: missingType.generics
 			count: 1
@@ -7837,6 +8041,12 @@ parameters:
 			path: app/Models/AccountingExport.php
 
 		-
+			message: '#^Class App\\Models\\AccountingPeriod uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/AccountingPeriod.php
+
+		-
 			message: '#^Method App\\Models\\AccountingPeriod\:\:scopeOpen\(\) has parameter \$q with generic class Illuminate\\Database\\Eloquent\\Builder but does not specify its types\: TModel$#'
 			identifier: missingType.generics
 			count: 1
@@ -7847,6 +8057,12 @@ parameters:
 			identifier: missingType.generics
 			count: 1
 			path: app/Models/AccountingPeriod.php
+
+		-
+			message: '#^Class App\\Models\\ActivityLog uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/ActivityLog.php
 
 		-
 			message: '#^Method App\\Models\\ActivityLog\:\:scopeCritical\(\) has parameter \$query with generic class Illuminate\\Database\\Eloquent\\Builder but does not specify its types\: TModel$#'
@@ -7885,6 +8101,12 @@ parameters:
 			path: app/Models/ActivityLog.php
 
 		-
+			message: '#^Class App\\Models\\AddressLookup uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/AddressLookup.php
+
+		-
 			message: '#^Method App\\Models\\AddressLookup\:\:scopeFresh\(\) has parameter \$q with generic class Illuminate\\Database\\Eloquent\\Builder but does not specify its types\: TModel$#'
 			identifier: missingType.generics
 			count: 1
@@ -7895,6 +8117,12 @@ parameters:
 			identifier: missingType.generics
 			count: 1
 			path: app/Models/AddressLookup.php
+
+		-
+			message: '#^Class App\\Models\\AnalyticsEvent uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/AnalyticsEvent.php
 
 		-
 			message: '#^Method App\\Models\\AnalyticsEvent\:\:scopeBetween\(\) has parameter \$q with generic class Illuminate\\Database\\Eloquent\\Builder but does not specify its types\: TModel$#'
@@ -7921,10 +8149,22 @@ parameters:
 			path: app/Models/AnalyticsEvent.php
 
 		-
+			message: '#^Class App\\Models\\AnalyticsSession uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/AnalyticsSession.php
+
+		-
 			message: '#^Strict comparison using \!\=\= between Carbon\\Carbon and null will always evaluate to true\.$#'
 			identifier: notIdentical.alwaysTrue
 			count: 1
 			path: app/Models/AnalyticsSession.php
+
+		-
+			message: '#^Class App\\Models\\ApiTokenScope uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/ApiTokenScope.php
 
 		-
 			message: '#^Method App\\Models\\ApiTokenScope\:\:scopeActive\(\) has parameter \$q with generic class Illuminate\\Database\\Eloquent\\Builder but does not specify its types\: TModel$#'
@@ -7951,6 +8191,12 @@ parameters:
 			path: app/Models/ApiTokenScope.php
 
 		-
+			message: '#^Class App\\Models\\ApiTokenUsage uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/ApiTokenUsage.php
+
+		-
 			message: '#^Method App\\Models\\ApiTokenUsage\:\:scopeFailed\(\) has parameter \$q with generic class Illuminate\\Database\\Eloquent\\Builder but does not specify its types\: TModel$#'
 			identifier: missingType.generics
 			count: 1
@@ -7973,6 +8219,30 @@ parameters:
 			identifier: missingType.generics
 			count: 1
 			path: app/Models/ApiTokenUsage.php
+
+		-
+			message: '#^Method App\\Models\\AsapDispatchNotification\:\:scopePending\(\) has parameter \$q with generic class Illuminate\\Database\\Eloquent\\Builder but does not specify its types\: TModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/AsapDispatchNotification.php
+
+		-
+			message: '#^Method App\\Models\\AsapDispatchNotification\:\:scopePending\(\) return type with generic class Illuminate\\Database\\Eloquent\\Builder does not specify its types\: TModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/AsapDispatchNotification.php
+
+		-
+			message: '#^Method App\\Models\\AsapDispatchRequest\:\:scopeOpen\(\) has parameter \$q with generic class Illuminate\\Database\\Eloquent\\Builder but does not specify its types\: TModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/AsapDispatchRequest.php
+
+		-
+			message: '#^Method App\\Models\\AsapDispatchRequest\:\:scopeOpen\(\) return type with generic class Illuminate\\Database\\Eloquent\\Builder does not specify its types\: TModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/AsapDispatchRequest.php
 
 		-
 			message: '#^Method App\\Models\\AssistantAction\:\:markExecuted\(\) has parameter \$resultPayload with no value type specified in iterable type array\.$#'
@@ -8009,6 +8279,12 @@ parameters:
 			identifier: missingType.iterableValue
 			count: 1
 			path: app/Models/AssistantMessage.php
+
+		-
+			message: '#^Class App\\Models\\AuditEvent uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/AuditEvent.php
 
 		-
 			message: '#^Method App\\Models\\AuditEvent\:\:scopeBetween\(\) has parameter \$q with generic class Illuminate\\Database\\Eloquent\\Builder but does not specify its types\: TModel$#'
@@ -8059,6 +8335,12 @@ parameters:
 			path: app/Models/AuditEvent.php
 
 		-
+			message: '#^Class App\\Models\\AuditRedactionRule uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/AuditRedactionRule.php
+
+		-
 			message: '#^Method App\\Models\\AuditRedactionRule\:\:scopeActive\(\) has parameter \$q with generic class Illuminate\\Database\\Eloquent\\Builder but does not specify its types\: TModel$#'
 			identifier: missingType.generics
 			count: 1
@@ -8071,6 +8353,12 @@ parameters:
 			path: app/Models/AuditRedactionRule.php
 
 		-
+			message: '#^Class App\\Models\\AuditRetentionPolicy uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/AuditRetentionPolicy.php
+
+		-
 			message: '#^Method App\\Models\\AuditRetentionPolicy\:\:scopeActive\(\) has parameter \$q with generic class Illuminate\\Database\\Eloquent\\Builder but does not specify its types\: TModel$#'
 			identifier: missingType.generics
 			count: 1
@@ -8081,6 +8369,12 @@ parameters:
 			identifier: missingType.generics
 			count: 1
 			path: app/Models/AuditRetentionPolicy.php
+
+		-
+			message: '#^Class App\\Models\\AvailabilityException uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/AvailabilityException.php
 
 		-
 			message: '#^Method App\\Models\\AvailabilityException\:\:scopeBetween\(\) has parameter \$q with generic class Illuminate\\Database\\Eloquent\\Builder but does not specify its types\: TModel$#'
@@ -8117,6 +8411,12 @@ parameters:
 			identifier: missingType.generics
 			count: 1
 			path: app/Models/AvailabilityException.php
+
+		-
+			message: '#^Class App\\Models\\AvailabilityHold uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/AvailabilityHold.php
 
 		-
 			message: '#^Method App\\Models\\AvailabilityHold\:\:scopeActive\(\) has parameter \$q with generic class Illuminate\\Database\\Eloquent\\Builder but does not specify its types\: TModel$#'
@@ -8159,6 +8459,12 @@ parameters:
 			identifier: nullsafe.neverNull
 			count: 1
 			path: app/Models/AvailabilityHold.php
+
+		-
+			message: '#^Class App\\Models\\AvailabilitySlot uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/AvailabilitySlot.php
 
 		-
 			message: '#^Method App\\Models\\AvailabilitySlot\:\:scopeActive\(\) has parameter \$q with generic class Illuminate\\Database\\Eloquent\\Builder but does not specify its types\: TModel$#'
@@ -8431,6 +8737,12 @@ parameters:
 			path: app/Models/Booking.php
 
 		-
+			message: '#^Property App\\Models\\Booking\:\:\$legacyAliasDateFormats type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: app/Models/Booking.php
+
+		-
 			message: '#^Property App\\Models\\Booking\:\:\$legacyAliasPairs type has no value type specified in iterable type array\.$#'
 			identifier: missingType.iterableValue
 			count: 1
@@ -8461,6 +8773,24 @@ parameters:
 			path: app/Models/Booking.php
 
 		-
+			message: '#^Class App\\Models\\BookingCancellationV2 uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/BookingCancellationV2.php
+
+		-
+			message: '#^Class App\\Models\\BookingFavorite uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/BookingFavorite.php
+
+		-
+			message: '#^Class App\\Models\\BookingInsurance uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/BookingInsurance.php
+
+		-
 			message: '#^Method App\\Models\\BookingInsurance\:\:scopeActive\(\) has parameter \$q with generic class Illuminate\\Database\\Eloquent\\Builder but does not specify its types\: TModel$#'
 			identifier: missingType.generics
 			count: 1
@@ -8473,6 +8803,18 @@ parameters:
 			path: app/Models/BookingInsurance.php
 
 		-
+			message: '#^Class App\\Models\\BookingMatchingDecision uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/BookingMatchingDecision.php
+
+		-
+			message: '#^Class App\\Models\\BookingTip uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/BookingTip.php
+
+		-
 			message: '#^Method App\\Models\\BookingTip\:\:scopeCharged\(\) has parameter \$q with generic class Illuminate\\Database\\Eloquent\\Builder but does not specify its types\: TModel$#'
 			identifier: missingType.generics
 			count: 1
@@ -8483,6 +8825,12 @@ parameters:
 			identifier: missingType.generics
 			count: 1
 			path: app/Models/BookingTip.php
+
+		-
+			message: '#^Class App\\Models\\BroadcastEvent uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/BroadcastEvent.php
 
 		-
 			message: '#^Method App\\Models\\BroadcastEvent\:\:scopeFailed\(\) has parameter \$q with generic class Illuminate\\Database\\Eloquent\\Builder but does not specify its types\: TModel$#'
@@ -8521,6 +8869,12 @@ parameters:
 			path: app/Models/BroadcastEvent.php
 
 		-
+			message: '#^Class App\\Models\\BusinessBeneficialOwner uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/BusinessBeneficialOwner.php
+
+		-
 			message: '#^Method App\\Models\\BusinessBeneficialOwner\:\:scopeFlagged\(\) has parameter \$q with generic class Illuminate\\Database\\Eloquent\\Builder but does not specify its types\: TModel$#'
 			identifier: missingType.generics
 			count: 1
@@ -8533,6 +8887,12 @@ parameters:
 			path: app/Models/BusinessBeneficialOwner.php
 
 		-
+			message: '#^Class App\\Models\\BusinessDocument uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/BusinessDocument.php
+
+		-
 			message: '#^Method App\\Models\\BusinessDocument\:\:scopeApproved\(\) has parameter \$q with generic class Illuminate\\Database\\Eloquent\\Builder but does not specify its types\: TModel$#'
 			identifier: missingType.generics
 			count: 1
@@ -8543,6 +8903,12 @@ parameters:
 			identifier: missingType.generics
 			count: 1
 			path: app/Models/BusinessDocument.php
+
+		-
+			message: '#^Class App\\Models\\BusinessEntity uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/BusinessEntity.php
 
 		-
 			message: '#^Method App\\Models\\BusinessEntity\:\:beneficialOwners\(\) should return Illuminate\\Database\\Eloquent\\Relations\\HasMany\<App\\Models\\User, \$this\(App\\Models\\BusinessEntity\)\> but returns Illuminate\\Database\\Eloquent\\Relations\\HasMany\<App\\Models\\BusinessBeneficialOwner, \$this\(App\\Models\\BusinessEntity\)\>\.$#'
@@ -8593,6 +8959,12 @@ parameters:
 			path: app/Models/BusinessEntity.php
 
 		-
+			message: '#^Class App\\Models\\BusinessSanctionsCheck uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/BusinessSanctionsCheck.php
+
+		-
 			message: '#^Method App\\Models\\BusinessSanctionsCheck\:\:scopeMatches\(\) has parameter \$q with generic class Illuminate\\Database\\Eloquent\\Builder but does not specify its types\: TModel$#'
 			identifier: missingType.generics
 			count: 1
@@ -8605,6 +8977,12 @@ parameters:
 			path: app/Models/BusinessSanctionsCheck.php
 
 		-
+			message: '#^Class App\\Models\\BusinessVerification uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/BusinessVerification.php
+
+		-
 			message: '#^Method App\\Models\\BusinessVerification\:\:scopeFresh\(\) has parameter \$q with generic class Illuminate\\Database\\Eloquent\\Builder but does not specify its types\: TModel$#'
 			identifier: missingType.generics
 			count: 1
@@ -8615,6 +8993,18 @@ parameters:
 			identifier: missingType.generics
 			count: 1
 			path: app/Models/BusinessVerification.php
+
+		-
+			message: '#^Class App\\Models\\CancellationAudit uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/CancellationAudit.php
+
+		-
+			message: '#^Class App\\Models\\CancellationExemptReason uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/CancellationExemptReason.php
 
 		-
 			message: '#^Method App\\Models\\CancellationExemptReason\:\:scopeActive\(\) has parameter \$q with generic class Illuminate\\Database\\Eloquent\\Builder but does not specify its types\: TModel$#'
@@ -8647,8 +9037,20 @@ parameters:
 			path: app/Models/CancellationPolicy.php
 
 		-
+			message: '#^Class App\\Models\\CancellationPolicyTier uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/CancellationPolicyTier.php
+
+		-
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Relations\\Pivot\:\:\$last_read_at\.$#'
 			identifier: property.notFound
+			count: 1
+			path: app/Models/Channel.php
+
+		-
+			message: '#^Class App\\Models\\Channel uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
+			identifier: missingType.generics
 			count: 1
 			path: app/Models/Channel.php
 
@@ -8663,6 +9065,12 @@ parameters:
 			identifier: missingType.parameter
 			count: 1
 			path: app/Models/Channel.php
+
+		-
+			message: '#^Class App\\Models\\ChatMessage uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/ChatMessage.php
 
 		-
 			message: '#^Method App\\Models\\ChatMessage\:\:scopeBlocked\(\) has parameter \$q with generic class Illuminate\\Database\\Eloquent\\Builder but does not specify its types\: TModel$#'
@@ -8701,6 +9109,18 @@ parameters:
 			path: app/Models/ChatMessage.php
 
 		-
+			message: '#^Class App\\Models\\ChatMessageRead uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/ChatMessageRead.php
+
+		-
+			message: '#^Class App\\Models\\ChatParticipant uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/ChatParticipant.php
+
+		-
 			message: '#^Method App\\Models\\ChatParticipant\:\:scopeActive\(\) has parameter \$q with generic class Illuminate\\Database\\Eloquent\\Builder but does not specify its types\: TModel$#'
 			identifier: missingType.generics
 			count: 1
@@ -8711,6 +9131,12 @@ parameters:
 			identifier: missingType.generics
 			count: 1
 			path: app/Models/ChatParticipant.php
+
+		-
+			message: '#^Class App\\Models\\ChatThread uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/ChatThread.php
 
 		-
 			message: '#^Method App\\Models\\ChatThread\:\:scopeActive\(\) has parameter \$q with generic class Illuminate\\Database\\Eloquent\\Builder but does not specify its types\: TModel$#'
@@ -8749,6 +9175,12 @@ parameters:
 			path: app/Models/ChatThread.php
 
 		-
+			message: '#^Class App\\Models\\ClientSignature uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/ClientSignature.php
+
+		-
 			message: '#^Method App\\Models\\ClientSubscription\:\:client\(\) has no return type specified\.$#'
 			identifier: missingType.return
 			count: 1
@@ -8759,6 +9191,12 @@ parameters:
 			identifier: missingType.return
 			count: 1
 			path: app/Models/ClientSubscription.php
+
+		-
+			message: '#^Class App\\Models\\Company uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/Company.php
 
 		-
 			message: '#^Method App\\Models\\Company\:\:clients\(\) has no return type specified\.$#'
@@ -8833,12 +9271,6 @@ parameters:
 			path: app/Models/ComplaintCase.php
 
 		-
-			message: '#^Trait App\\Models\\Concerns\\HasLegacyRoleCompatibility is used zero times and is not analysed\.$#'
-			identifier: trait.unused
-			count: 1
-			path: app/Models/Concerns/HasLegacyRoleCompatibility.php
-
-		-
 			message: '#^Method App\\Models\\ContractDocument\:\:scopePendingSignature\(\) has parameter \$q with generic class Illuminate\\Database\\Eloquent\\Builder but does not specify its types\: TModel$#'
 			identifier: missingType.generics
 			count: 1
@@ -8851,6 +9283,12 @@ parameters:
 			path: app/Models/ContractDocument.php
 
 		-
+			message: '#^Class App\\Models\\ContractSignature uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/ContractSignature.php
+
+		-
 			message: '#^Method App\\Models\\ContractSignature\:\:scopeValid\(\) has parameter \$q with generic class Illuminate\\Database\\Eloquent\\Builder but does not specify its types\: TModel$#'
 			identifier: missingType.generics
 			count: 1
@@ -8861,6 +9299,12 @@ parameters:
 			identifier: missingType.generics
 			count: 1
 			path: app/Models/ContractSignature.php
+
+		-
+			message: '#^Class App\\Models\\ContractSignatureAudit uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/ContractSignatureAudit.php
 
 		-
 			message: '#^Method App\\Models\\ContractTemplate\:\:documents\(\) should return Illuminate\\Database\\Eloquent\\Relations\\HasMany\<App\\Models\\ContractTemplate, \$this\(App\\Models\\ContractTemplate\)\> but returns Illuminate\\Database\\Eloquent\\Relations\\HasMany\<App\\Models\\ContractDocument, \$this\(App\\Models\\ContractTemplate\)\>\.$#'
@@ -8891,6 +9335,12 @@ parameters:
 			identifier: missingType.generics
 			count: 1
 			path: app/Models/ContractTemplate.php
+
+		-
+			message: '#^Type \$this\(App\\Models\\Contracts\\TranslatesCatalogLabels\) in generic type Illuminate\\Database\\Eloquent\\Relations\\MorphMany\<App\\Models\\CatalogTranslation, \$this\(App\\Models\\Contracts\\TranslatesCatalogLabels\)\> in PHPDoc tag @return is not subtype of template type TDeclaringModel of Illuminate\\Database\\Eloquent\\Model of class Illuminate\\Database\\Eloquent\\Relations\\MorphMany\.$#'
+			identifier: generics.notSubtype
+			count: 1
+			path: app/Models/Contracts/TranslatesCatalogLabels.php
 
 		-
 			message: '#^Method App\\Models\\Conversation\:\:messages\(\) has no return type specified\.$#'
@@ -8947,6 +9397,12 @@ parameters:
 			path: app/Models/CountryServiceCatalogRule.php
 
 		-
+			message: '#^Class App\\Models\\Currency uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/Currency.php
+
+		-
 			message: '#^Method App\\Models\\Currency\:\:scopeActive\(\) has parameter \$q with generic class Illuminate\\Database\\Eloquent\\Builder but does not specify its types\: TModel$#'
 			identifier: missingType.generics
 			count: 1
@@ -8957,6 +9413,36 @@ parameters:
 			identifier: missingType.generics
 			count: 1
 			path: app/Models/Currency.php
+
+		-
+			message: '#^Class App\\Models\\CurrencyConversion uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/CurrencyConversion.php
+
+		-
+			message: '#^Class App\\Models\\CustomerClaim uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/CustomerClaim.php
+
+		-
+			message: '#^Class App\\Models\\CustomerCredit uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/CustomerCredit.php
+
+		-
+			message: '#^Class App\\Models\\CustomerProfile uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/CustomerProfile.php
+
+		-
+			message: '#^Class App\\Models\\DeviceToken uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/DeviceToken.php
 
 		-
 			message: '#^Method App\\Models\\DeviceToken\:\:scopeActive\(\) has parameter \$q with generic class Illuminate\\Database\\Eloquent\\Builder but does not specify its types\: TModel$#'
@@ -8989,6 +9475,12 @@ parameters:
 			path: app/Models/Disponibilite.php
 
 		-
+			message: '#^Class App\\Models\\DisputeEvent uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/DisputeEvent.php
+
+		-
 			message: '#^Method App\\Models\\DisputeEvent\:\:scopeVisibleTo\(\) has parameter \$q with generic class Illuminate\\Database\\Eloquent\\Builder but does not specify its types\: TModel$#'
 			identifier: missingType.generics
 			count: 1
@@ -9001,6 +9493,18 @@ parameters:
 			path: app/Models/DisputeEvent.php
 
 		-
+			message: '#^Class App\\Models\\DisputeResolution uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/DisputeResolution.php
+
+		-
+			message: '#^Class App\\Models\\DistanceCalculation uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/DistanceCalculation.php
+
+		-
 			message: '#^Method App\\Models\\DistanceCalculation\:\:scopeFresh\(\) has parameter \$q with generic class Illuminate\\Database\\Eloquent\\Builder but does not specify its types\: TModel$#'
 			identifier: missingType.generics
 			count: 1
@@ -9011,6 +9515,12 @@ parameters:
 			identifier: missingType.generics
 			count: 1
 			path: app/Models/DistanceCalculation.php
+
+		-
+			message: '#^Class App\\Models\\EmailMessage uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/EmailMessage.php
 
 		-
 			message: '#^Method App\\Models\\EmailMessage\:\:scopeFailed\(\) has parameter \$q with generic class Illuminate\\Database\\Eloquent\\Builder but does not specify its types\: TModel$#'
@@ -9037,6 +9547,12 @@ parameters:
 			path: app/Models/EmailMessage.php
 
 		-
+			message: '#^Class App\\Models\\EmailTemplate uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/EmailTemplate.php
+
+		-
 			message: '#^Method App\\Models\\EmailTemplate\:\:scopeActive\(\) has parameter \$q with generic class Illuminate\\Database\\Eloquent\\Builder but does not specify its types\: TModel$#'
 			identifier: missingType.generics
 			count: 1
@@ -9049,6 +9565,18 @@ parameters:
 			path: app/Models/EmailTemplate.php
 
 		-
+			message: '#^Class App\\Models\\EmailWebhookEvent uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/EmailWebhookEvent.php
+
+		-
+			message: '#^Class App\\Models\\EnterpriseBookingApproval uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/EnterpriseBookingApproval.php
+
+		-
 			message: '#^Method App\\Models\\EnterpriseWorkOrder\:\:scopeApprovedForGeneration\(\) has parameter \$query with generic class Illuminate\\Database\\Eloquent\\Builder but does not specify its types\: TModel$#'
 			identifier: missingType.generics
 			count: 1
@@ -9059,6 +9587,12 @@ parameters:
 			identifier: missingType.generics
 			count: 1
 			path: app/Models/EnterpriseWorkOrder.php
+
+		-
+			message: '#^Class App\\Models\\ExchangeRate uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/ExchangeRate.php
 
 		-
 			message: '#^Method App\\Models\\ExchangeRate\:\:scopeFresh\(\) has parameter \$q with generic class Illuminate\\Database\\Eloquent\\Builder but does not specify its types\: TModel$#'
@@ -9083,6 +9617,12 @@ parameters:
 			identifier: missingType.generics
 			count: 1
 			path: app/Models/ExchangeRate.php
+
+		-
+			message: '#^Class App\\Models\\FeatureFlagOverride uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/FeatureFlagOverride.php
 
 		-
 			message: '#^Method App\\Models\\Feedback\:\:scopeForClient\(\) has parameter \$query with generic class Illuminate\\Database\\Eloquent\\Builder but does not specify its types\: TModel$#'
@@ -9133,6 +9673,18 @@ parameters:
 			path: app/Models/FieldTeam.php
 
 		-
+			message: '#^Method App\\Models\\FinanceCreditNote\:\:booking\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/FinanceCreditNote.php
+
+		-
+			message: '#^Method App\\Models\\FinanceCreditNote\:\:client\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/FinanceCreditNote.php
+
+		-
 			message: '#^Class App\\Models\\FinanceInvoice has PHPDoc tag @property for property \$meta with no value type specified in iterable type array\.$#'
 			identifier: missingType.iterableValue
 			count: 1
@@ -9181,6 +9733,12 @@ parameters:
 			path: app/Models/FleetAssignment.php
 
 		-
+			message: '#^Class App\\Models\\FleetAssignment uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/FleetAssignment.php
+
+		-
 			message: '#^Method App\\Models\\FleetAssignment\:\:scopeActive\(\) has parameter \$q with generic class Illuminate\\Database\\Eloquent\\Builder but does not specify its types\: TModel$#'
 			identifier: missingType.generics
 			count: 1
@@ -9191,6 +9749,12 @@ parameters:
 			identifier: missingType.generics
 			count: 1
 			path: app/Models/FleetAssignment.php
+
+		-
+			message: '#^Class App\\Models\\FleetCertification uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/FleetCertification.php
 
 		-
 			message: '#^Method App\\Models\\FleetCertification\:\:scopeActive\(\) has parameter \$q with generic class Illuminate\\Database\\Eloquent\\Builder but does not specify its types\: TModel$#'
@@ -9229,6 +9793,12 @@ parameters:
 			path: app/Models/FleetCertification.php
 
 		-
+			message: '#^Class App\\Models\\FleetEquipment uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/FleetEquipment.php
+
+		-
 			message: '#^Method App\\Models\\FleetEquipment\:\:scopeAvailable\(\) has parameter \$q with generic class Illuminate\\Database\\Eloquent\\Builder but does not specify its types\: TModel$#'
 			identifier: missingType.generics
 			count: 1
@@ -9239,6 +9809,12 @@ parameters:
 			identifier: missingType.generics
 			count: 1
 			path: app/Models/FleetEquipment.php
+
+		-
+			message: '#^Class App\\Models\\FleetMaintenanceLog uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/FleetMaintenanceLog.php
 
 		-
 			message: '#^Method App\\Models\\FleetMaintenanceLog\:\:scopeOverdue\(\) has parameter \$q with generic class Illuminate\\Database\\Eloquent\\Builder but does not specify its types\: TModel$#'
@@ -9265,6 +9841,12 @@ parameters:
 			path: app/Models/FleetVehicle.php
 
 		-
+			message: '#^Class App\\Models\\GdprDataRequest uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/GdprDataRequest.php
+
+		-
 			message: '#^Method App\\Models\\GdprDataRequest\:\:scopeOfType\(\) has parameter \$q with generic class Illuminate\\Database\\Eloquent\\Builder but does not specify its types\: TModel$#'
 			identifier: missingType.generics
 			count: 1
@@ -9289,6 +9871,12 @@ parameters:
 			path: app/Models/GdprDataRequest.php
 
 		-
+			message: '#^Class App\\Models\\GeocodingCacheEntry uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/GeocodingCacheEntry.php
+
+		-
 			message: '#^Method App\\Models\\GeocodingCacheEntry\:\:scopeFresh\(\) has parameter \$q with generic class Illuminate\\Database\\Eloquent\\Builder but does not specify its types\: TModel$#'
 			identifier: missingType.generics
 			count: 1
@@ -9301,6 +9889,36 @@ parameters:
 			path: app/Models/GeocodingCacheEntry.php
 
 		-
+			message: '#^Method App\\Models\\GoogleCalendarWatchChannel\:\:connection\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/GoogleCalendarWatchChannel.php
+
+		-
+			message: '#^Method App\\Models\\GoogleCalendarWatchChannel\:\:user\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/GoogleCalendarWatchChannel.php
+
+		-
+			message: '#^Class App\\Models\\InspectionItem uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/InspectionItem.php
+
+		-
+			message: '#^Class App\\Models\\InspectionPhoto uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/InspectionPhoto.php
+
+		-
+			message: '#^Class App\\Models\\InsuranceClaim uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/InsuranceClaim.php
+
+		-
 			message: '#^Method App\\Models\\InsuranceClaim\:\:scopeOpen\(\) has parameter \$q with generic class Illuminate\\Database\\Eloquent\\Builder but does not specify its types\: TModel$#'
 			identifier: missingType.generics
 			count: 1
@@ -9311,6 +9929,12 @@ parameters:
 			identifier: missingType.generics
 			count: 1
 			path: app/Models/InsuranceClaim.php
+
+		-
+			message: '#^Class App\\Models\\InsurancePlan uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/InsurancePlan.php
 
 		-
 			message: '#^Method App\\Models\\InsurancePlan\:\:scopeActive\(\) has parameter \$q with generic class Illuminate\\Database\\Eloquent\\Builder but does not specify its types\: TModel$#'
@@ -9331,6 +9955,12 @@ parameters:
 			path: app/Models/InsurancePlan.php
 
 		-
+			message: '#^Class App\\Models\\InsuranceWebhookEvent uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/InsuranceWebhookEvent.php
+
+		-
 			message: '#^Method App\\Models\\InsuranceWebhookEvent\:\:scopePending\(\) has parameter \$q with generic class Illuminate\\Database\\Eloquent\\Builder but does not specify its types\: TModel$#'
 			identifier: missingType.generics
 			count: 1
@@ -9341,6 +9971,18 @@ parameters:
 			identifier: missingType.generics
 			count: 1
 			path: app/Models/InsuranceWebhookEvent.php
+
+		-
+			message: '#^Class App\\Models\\KycCheck uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/KycCheck.php
+
+		-
+			message: '#^Class App\\Models\\KycVerification uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/KycVerification.php
 
 		-
 			message: '#^Method App\\Models\\KycVerification\:\:scopeForUser\(\) has parameter \$q with generic class Illuminate\\Database\\Eloquent\\Builder but does not specify its types\: TModel$#'
@@ -9379,6 +10021,12 @@ parameters:
 			path: app/Models/KycVerification.php
 
 		-
+			message: '#^Class App\\Models\\KycWebhookEvent uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/KycWebhookEvent.php
+
+		-
 			message: '#^Method App\\Models\\KycWebhookEvent\:\:scopePending\(\) has parameter \$q with generic class Illuminate\\Database\\Eloquent\\Builder but does not specify its types\: TModel$#'
 			identifier: missingType.generics
 			count: 1
@@ -9391,10 +10039,22 @@ parameters:
 			path: app/Models/KycWebhookEvent.php
 
 		-
+			message: '#^Class App\\Models\\LimiteJournaliere uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/LimiteJournaliere.php
+
+		-
 			message: '#^Method App\\Models\\LimiteJournaliere\:\:user\(\) has no return type specified\.$#'
 			identifier: missingType.return
 			count: 1
 			path: app/Models/LimiteJournaliere.php
+
+		-
+			message: '#^Class App\\Models\\LoyaltyRedemption uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/LoyaltyRedemption.php
 
 		-
 			message: '#^Method App\\Models\\LoyaltyRedemption\:\:scopeActive\(\) has parameter \$q with generic class Illuminate\\Database\\Eloquent\\Builder but does not specify its types\: TModel$#'
@@ -9407,6 +10067,12 @@ parameters:
 			identifier: missingType.generics
 			count: 1
 			path: app/Models/LoyaltyRedemption.php
+
+		-
+			message: '#^Class App\\Models\\LoyaltyReward uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/LoyaltyReward.php
 
 		-
 			message: '#^Method App\\Models\\LoyaltyReward\:\:scopeActive\(\) has parameter \$q with generic class Illuminate\\Database\\Eloquent\\Builder but does not specify its types\: TModel$#'
@@ -9457,6 +10123,12 @@ parameters:
 			path: app/Models/LoyaltyTier.php
 
 		-
+			message: '#^Class App\\Models\\LoyaltyTransaction uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/LoyaltyTransaction.php
+
+		-
 			message: '#^Method App\\Models\\LoyaltyTransaction\:\:scopeWithinPeriod\(\) has parameter \$q with generic class Illuminate\\Database\\Eloquent\\Builder but does not specify its types\: TModel$#'
 			identifier: missingType.generics
 			count: 1
@@ -9475,6 +10147,12 @@ parameters:
 			path: app/Models/MarketLaunchReadiness.php
 
 		-
+			message: '#^Class App\\Models\\MarketingCampaign uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/MarketingCampaign.php
+
+		-
 			message: '#^Method App\\Models\\MarketingCampaign\:\:scopeRunning\(\) has parameter \$q with generic class Illuminate\\Database\\Eloquent\\Builder but does not specify its types\: TModel$#'
 			identifier: missingType.generics
 			count: 1
@@ -9485,6 +10163,12 @@ parameters:
 			identifier: missingType.generics
 			count: 1
 			path: app/Models/MarketingCampaign.php
+
+		-
+			message: '#^Class App\\Models\\MarketingCampaignRecipient uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/MarketingCampaignRecipient.php
 
 		-
 			message: '#^Method App\\Models\\MarketingCampaignRecipient\:\:scopeReadyToSend\(\) has parameter \$q with generic class Illuminate\\Database\\Eloquent\\Builder but does not specify its types\: TModel$#'
@@ -9499,6 +10183,18 @@ parameters:
 			path: app/Models/MarketingCampaignRecipient.php
 
 		-
+			message: '#^Class App\\Models\\MarketingCampaignStep uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/MarketingCampaignStep.php
+
+		-
+			message: '#^Class App\\Models\\MarketingOptOut uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/MarketingOptOut.php
+
+		-
 			message: '#^Method App\\Models\\MarketingOptOut\:\:scopeForUser\(\) has parameter \$q with generic class Illuminate\\Database\\Eloquent\\Builder but does not specify its types\: TModel$#'
 			identifier: missingType.generics
 			count: 1
@@ -9511,6 +10207,12 @@ parameters:
 			path: app/Models/MarketingOptOut.php
 
 		-
+			message: '#^Class App\\Models\\MarketingSegment uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/MarketingSegment.php
+
+		-
 			message: '#^Method App\\Models\\MarketingSegment\:\:scopeActive\(\) has parameter \$q with generic class Illuminate\\Database\\Eloquent\\Builder but does not specify its types\: TModel$#'
 			identifier: missingType.generics
 			count: 1
@@ -9521,6 +10223,18 @@ parameters:
 			identifier: missingType.generics
 			count: 1
 			path: app/Models/MarketingSegment.php
+
+		-
+			message: '#^Class App\\Models\\MarketingSegmentMember uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/MarketingSegmentMember.php
+
+		-
+			message: '#^Class App\\Models\\MaskedCallSession uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/MaskedCallSession.php
 
 		-
 			message: '#^Method App\\Models\\Message\:\:scopeTopLevel\(\) has parameter \$q with generic class Illuminate\\Database\\Eloquent\\Builder but does not specify its types\: TModel$#'
@@ -9655,6 +10369,12 @@ parameters:
 			path: app/Models/MissionBatch.php
 
 		-
+			message: '#^Class App\\Models\\MissionQualityInspection uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/MissionQualityInspection.php
+
+		-
 			message: '#^Method App\\Models\\MissionQualityInspection\:\:items\(\) should return Illuminate\\Database\\Eloquent\\Relations\\HasMany\<App\\Models\\User, \$this\(App\\Models\\MissionQualityInspection\)\> but returns Illuminate\\Database\\Eloquent\\Relations\\HasMany\<App\\Models\\InspectionItem, \$this\(App\\Models\\MissionQualityInspection\)\>\.$#'
 			identifier: return.type
 			count: 1
@@ -9739,6 +10459,84 @@ parameters:
 			path: app/Models/ModerationAction.php
 
 		-
+			message: '#^Class App\\Models\\MultiTradeBundle uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/MultiTradeBundle.php
+
+		-
+			message: '#^Class App\\Models\\MultiTradeBundleItem uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/MultiTradeBundleItem.php
+
+		-
+			message: '#^Method App\\Models\\MultiTradeBundleItem\:\:quotes\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\HasMany does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/MultiTradeBundleItem.php
+
+		-
+			message: '#^Class App\\Models\\MultiTradeBundleItemQuote uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/MultiTradeBundleItemQuote.php
+
+		-
+			message: '#^Method App\\Models\\MultiTradeBundleItemQuote\:\:item\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/MultiTradeBundleItemQuote.php
+
+		-
+			message: '#^Method App\\Models\\MultiTradeBundleItemQuote\:\:provider\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/MultiTradeBundleItemQuote.php
+
+		-
+			message: '#^Method App\\Models\\MultiTradeBundleItemQuote\:\:scopeActive\(\) has parameter \$query with generic class Illuminate\\Database\\Eloquent\\Builder but does not specify its types\: TModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/MultiTradeBundleItemQuote.php
+
+		-
+			message: '#^Method App\\Models\\MultiTradeBundleItemQuote\:\:scopeActive\(\) return type with generic class Illuminate\\Database\\Eloquent\\Builder does not specify its types\: TModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/MultiTradeBundleItemQuote.php
+
+		-
+			message: '#^Method App\\Models\\MultiTradeBundleItemQuote\:\:scopePending\(\) has parameter \$query with generic class Illuminate\\Database\\Eloquent\\Builder but does not specify its types\: TModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/MultiTradeBundleItemQuote.php
+
+		-
+			message: '#^Method App\\Models\\MultiTradeBundleItemQuote\:\:scopePending\(\) return type with generic class Illuminate\\Database\\Eloquent\\Builder does not specify its types\: TModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/MultiTradeBundleItemQuote.php
+
+		-
+			message: '#^Method App\\Models\\MultiTradeBundleItemQuote\:\:scopeSubmitted\(\) has parameter \$query with generic class Illuminate\\Database\\Eloquent\\Builder but does not specify its types\: TModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/MultiTradeBundleItemQuote.php
+
+		-
+			message: '#^Method App\\Models\\MultiTradeBundleItemQuote\:\:scopeSubmitted\(\) return type with generic class Illuminate\\Database\\Eloquent\\Builder does not specify its types\: TModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/MultiTradeBundleItemQuote.php
+
+		-
+			message: '#^Class App\\Models\\NotificationPreference uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/NotificationPreference.php
+
+		-
 			message: '#^Method App\\Models\\NotificationPreference\:\:scopeForUser\(\) has parameter \$q with generic class Illuminate\\Database\\Eloquent\\Builder but does not specify its types\: TModel$#'
 			identifier: missingType.generics
 			count: 1
@@ -9751,6 +10549,12 @@ parameters:
 			path: app/Models/NotificationPreference.php
 
 		-
+			message: '#^Class App\\Models\\NotificationPreferenceAudit uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/NotificationPreferenceAudit.php
+
+		-
 			message: '#^Method App\\Models\\NotificationPreferenceAudit\:\:scopeForUser\(\) has parameter \$q with generic class Illuminate\\Database\\Eloquent\\Builder but does not specify its types\: TModel$#'
 			identifier: missingType.generics
 			count: 1
@@ -9761,6 +10565,18 @@ parameters:
 			identifier: missingType.generics
 			count: 1
 			path: app/Models/NotificationPreferenceAudit.php
+
+		-
+			message: '#^Class App\\Models\\NpsResponse uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/NpsResponse.php
+
+		-
+			message: '#^Class App\\Models\\OnboardingJourney uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/OnboardingJourney.php
 
 		-
 			message: '#^Method App\\Models\\OnboardingJourney\:\:scopeActive\(\) has parameter \$q with generic class Illuminate\\Database\\Eloquent\\Builder but does not specify its types\: TModel$#'
@@ -9787,6 +10603,12 @@ parameters:
 			path: app/Models/OnboardingJourney.php
 
 		-
+			message: '#^Class App\\Models\\OnboardingProgress uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/OnboardingProgress.php
+
+		-
 			message: '#^Method App\\Models\\OnboardingProgress\:\:scopeActive\(\) has parameter \$q with generic class Illuminate\\Database\\Eloquent\\Builder but does not specify its types\: TModel$#'
 			identifier: missingType.generics
 			count: 1
@@ -9799,6 +10621,30 @@ parameters:
 			path: app/Models/OnboardingProgress.php
 
 		-
+			message: '#^Class App\\Models\\OnboardingStep uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/OnboardingStep.php
+
+		-
+			message: '#^Class App\\Models\\OnboardingStepCompletion uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/OnboardingStepCompletion.php
+
+		-
+			message: '#^Method App\\Models\\OrderDraft\:\:scopeOpen\(\) has parameter \$q with generic class Illuminate\\Database\\Eloquent\\Builder but does not specify its types\: TModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/OrderDraft.php
+
+		-
+			message: '#^Method App\\Models\\OrderDraft\:\:scopeOpen\(\) return type with generic class Illuminate\\Database\\Eloquent\\Builder does not specify its types\: TModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/OrderDraft.php
+
+		-
 			message: '#^Method App\\Models\\OrganizationAccount\:\:bookingPolicy\(\) return type has no value type specified in iterable type array\.$#'
 			identifier: missingType.iterableValue
 			count: 1
@@ -9809,6 +10655,12 @@ parameters:
 			identifier: missingType.iterableValue
 			count: 1
 			path: app/Models/OrganizationAccount.php
+
+		-
+			message: '#^Class App\\Models\\OrganizationMember uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/OrganizationMember.php
 
 		-
 			message: '#^Method App\\Models\\OrganizationMember\:\:allPermissions\(\) return type has no value type specified in iterable type array\.$#'
@@ -9901,6 +10753,12 @@ parameters:
 			path: app/Models/Parametre.php
 
 		-
+			message: '#^Class App\\Models\\PhoneVerificationCode uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/PhoneVerificationCode.php
+
+		-
 			message: '#^Method App\\Models\\PhoneVerificationCode\:\:scopeActiveForPurpose\(\) has parameter \$q with generic class Illuminate\\Database\\Eloquent\\Builder but does not specify its types\: TModel$#'
 			identifier: missingType.generics
 			count: 1
@@ -9967,6 +10825,18 @@ parameters:
 			path: app/Models/PostalCode.php
 
 		-
+			message: '#^Class App\\Models\\PriceQuote uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/PriceQuote.php
+
+		-
+			message: '#^Class App\\Models\\PricingRule uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/PricingRule.php
+
+		-
 			message: '#^Method App\\Models\\PricingRule\:\:scopeActive\(\) has parameter \$q with generic class Illuminate\\Database\\Eloquent\\Builder but does not specify its types\: TModel$#'
 			identifier: missingType.generics
 			count: 1
@@ -9977,6 +10847,12 @@ parameters:
 			identifier: missingType.generics
 			count: 1
 			path: app/Models/PricingRule.php
+
+		-
+			message: '#^Class App\\Models\\PricingZoneState uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/PricingZoneState.php
 
 		-
 			message: '#^Method App\\Models\\PromoCampaign\:\:promoCodes\(\) should return Illuminate\\Database\\Eloquent\\Relations\\HasMany\<App\\Models\\User, \$this\(App\\Models\\PromoCampaign\)\> but returns Illuminate\\Database\\Eloquent\\Relations\\HasMany\<App\\Models\\PromoCode, \$this\(App\\Models\\PromoCampaign\)\>\.$#'
@@ -10043,6 +10919,18 @@ parameters:
 			identifier: identical.alwaysFalse
 			count: 1
 			path: app/Models/PromoCode.php
+
+		-
+			message: '#^Class App\\Models\\ProviderBadge uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/ProviderBadge.php
+
+		-
+			message: '#^Class App\\Models\\ProviderBadgeAward uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/ProviderBadgeAward.php
 
 		-
 			message: '#^Method App\\Models\\ProviderOnboardingDocument\:\:scopeApproved\(\) has parameter \$q with generic class Illuminate\\Database\\Eloquent\\Builder but does not specify its types\: TModel$#'
@@ -10147,6 +11035,12 @@ parameters:
 			path: app/Models/ProviderPayout.php
 
 		-
+			message: '#^Class App\\Models\\ProviderPerformanceMetric uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/ProviderPerformanceMetric.php
+
+		-
 			message: '#^Method App\\Models\\ProviderPerformanceMetric\:\:scopeLatestForUser\(\) has parameter \$query with generic class Illuminate\\Database\\Eloquent\\Builder but does not specify its types\: TModel$#'
 			identifier: missingType.generics
 			count: 1
@@ -10157,6 +11051,12 @@ parameters:
 			identifier: missingType.generics
 			count: 1
 			path: app/Models/ProviderPerformanceMetric.php
+
+		-
+			message: '#^Class App\\Models\\ProviderPresence uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/ProviderPresence.php
 
 		-
 			message: '#^Method App\\Models\\ProviderPresence\:\:scopeAvailable\(\) has parameter \$q with generic class Illuminate\\Database\\Eloquent\\Builder but does not specify its types\: TModel$#'
@@ -10231,6 +11131,12 @@ parameters:
 			path: app/Models/ProviderTradeCertification.php
 
 		-
+			message: '#^Class App\\Models\\ProviderWalletTransaction uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/ProviderWalletTransaction.php
+
+		-
 			message: '#^Method App\\Models\\ProviderWalletTransaction\:\:scopeAvailableBalance\(\) has parameter \$query with generic class Illuminate\\Database\\Eloquent\\Builder but does not specify its types\: TModel$#'
 			identifier: missingType.generics
 			count: 1
@@ -10253,6 +11159,12 @@ parameters:
 			identifier: missingType.generics
 			count: 1
 			path: app/Models/ProviderWalletTransaction.php
+
+		-
+			message: '#^Class App\\Models\\PushNotification uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/PushNotification.php
 
 		-
 			message: '#^Method App\\Models\\PushNotification\:\:scopeRecentForToken\(\) has parameter \$q with generic class Illuminate\\Database\\Eloquent\\Builder but does not specify its types\: TModel$#'
@@ -10297,6 +11209,12 @@ parameters:
 			path: app/Models/PushSubscription.php
 
 		-
+			message: '#^Class App\\Models\\QualityChecklist uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/QualityChecklist.php
+
+		-
 			message: '#^Method App\\Models\\QualityChecklist\:\:scopeActive\(\) has parameter \$q with generic class Illuminate\\Database\\Eloquent\\Builder but does not specify its types\: TModel$#'
 			identifier: missingType.generics
 			count: 1
@@ -10325,6 +11243,174 @@ parameters:
 			identifier: identical.alwaysFalse
 			count: 1
 			path: app/Models/QualityChecklist.php
+
+		-
+			message: '#^Class App\\Models\\QualityChecklistItem uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/QualityChecklistItem.php
+
+		-
+			message: '#^Call to function method_exists\(\) with \$this\(App\\Models\\Question\) and ''auditEventDomain'' will always evaluate to true\.$#'
+			identifier: function.alreadyNarrowedType
+			count: 1
+			path: app/Models/Question.php
+
+		-
+			message: '#^Method App\\Models\\Question\:\:scopeActive\(\) has parameter \$q with generic class Illuminate\\Database\\Eloquent\\Builder but does not specify its types\: TModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/Question.php
+
+		-
+			message: '#^Method App\\Models\\Question\:\:scopeActive\(\) return type with generic class Illuminate\\Database\\Eloquent\\Builder does not specify its types\: TModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/Question.php
+
+		-
+			message: '#^Method App\\Models\\Question\:\:scopeEssential\(\) has parameter \$q with generic class Illuminate\\Database\\Eloquent\\Builder but does not specify its types\: TModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/Question.php
+
+		-
+			message: '#^Method App\\Models\\Question\:\:scopeEssential\(\) return type with generic class Illuminate\\Database\\Eloquent\\Builder does not specify its types\: TModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/Question.php
+
+		-
+			message: '#^Method App\\Models\\Question\:\:scopeLibrary\(\) has parameter \$q with generic class Illuminate\\Database\\Eloquent\\Builder but does not specify its types\: TModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/Question.php
+
+		-
+			message: '#^Method App\\Models\\Question\:\:scopeLibrary\(\) return type with generic class Illuminate\\Database\\Eloquent\\Builder does not specify its types\: TModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/Question.php
+
+		-
+			message: '#^Method App\\Models\\Question\:\:scopeOrdered\(\) has parameter \$q with generic class Illuminate\\Database\\Eloquent\\Builder but does not specify its types\: TModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/Question.php
+
+		-
+			message: '#^Method App\\Models\\Question\:\:scopeOrdered\(\) return type with generic class Illuminate\\Database\\Eloquent\\Builder does not specify its types\: TModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/Question.php
+
+		-
+			message: '#^Method App\\Models\\Question\:\:validationBounds\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: app/Models/Question.php
+
+		-
+			message: '#^Method App\\Models\\Question\:\:writeAuditEvent\(\) has parameter \$changes with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: app/Models/Question.php
+
+		-
+			message: '#^Unable to resolve the template type TKey in call to function collect$#'
+			identifier: argument.templateType
+			count: 1
+			path: app/Models/Question.php
+
+		-
+			message: '#^Unable to resolve the template type TValue in call to function collect$#'
+			identifier: argument.templateType
+			count: 1
+			path: app/Models/Question.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>value" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 2
+			path: app/Models/Question.php
+
+		-
+			message: '#^Call to function method_exists\(\) with \$this\(App\\Models\\QuestionOption\) and ''auditEventDomain'' will always evaluate to true\.$#'
+			identifier: function.alreadyNarrowedType
+			count: 1
+			path: app/Models/QuestionOption.php
+
+		-
+			message: '#^Method App\\Models\\QuestionOption\:\:scopeActive\(\) has parameter \$q with generic class Illuminate\\Database\\Eloquent\\Builder but does not specify its types\: TModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/QuestionOption.php
+
+		-
+			message: '#^Method App\\Models\\QuestionOption\:\:scopeActive\(\) return type with generic class Illuminate\\Database\\Eloquent\\Builder does not specify its types\: TModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/QuestionOption.php
+
+		-
+			message: '#^Method App\\Models\\QuestionOption\:\:writeAuditEvent\(\) has parameter \$changes with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: app/Models/QuestionOption.php
+
+		-
+			message: '#^Unable to resolve the template type TKey in call to function collect$#'
+			identifier: argument.templateType
+			count: 1
+			path: app/Models/QuestionOption.php
+
+		-
+			message: '#^Unable to resolve the template type TValue in call to function collect$#'
+			identifier: argument.templateType
+			count: 1
+			path: app/Models/QuestionOption.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>value" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 2
+			path: app/Models/QuestionOption.php
+
+		-
+			message: '#^Call to function method_exists\(\) with \$this\(App\\Models\\QuestionStep\) and ''auditEventDomain'' will always evaluate to true\.$#'
+			identifier: function.alreadyNarrowedType
+			count: 1
+			path: app/Models/QuestionStep.php
+
+		-
+			message: '#^Method App\\Models\\QuestionStep\:\:writeAuditEvent\(\) has parameter \$changes with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: app/Models/QuestionStep.php
+
+		-
+			message: '#^Unable to resolve the template type TKey in call to function collect$#'
+			identifier: argument.templateType
+			count: 1
+			path: app/Models/QuestionStep.php
+
+		-
+			message: '#^Unable to resolve the template type TValue in call to function collect$#'
+			identifier: argument.templateType
+			count: 1
+			path: app/Models/QuestionStep.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>value" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 2
+			path: app/Models/QuestionStep.php
+
+		-
+			message: '#^Class App\\Models\\RecurringBookingSeries uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/RecurringBookingSeries.php
 
 		-
 			message: '#^Method App\\Models\\RecurringTemplate\:\:scopeActive\(\) has parameter \$q with generic class Illuminate\\Database\\Eloquent\\Builder but does not specify its types\: TModel$#'
@@ -10423,6 +11509,12 @@ parameters:
 			path: app/Models/RendezVous.php
 
 		-
+			message: '#^Class App\\Models\\RiskEvaluation uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/RiskEvaluation.php
+
+		-
 			message: '#^Method App\\Models\\RiskEvaluation\:\:scopeBlocked\(\) has parameter \$q with generic class Illuminate\\Database\\Eloquent\\Builder but does not specify its types\: TModel$#'
 			identifier: missingType.generics
 			count: 1
@@ -10445,6 +11537,12 @@ parameters:
 			identifier: missingType.generics
 			count: 1
 			path: app/Models/RiskEvaluation.php
+
+		-
+			message: '#^Class App\\Models\\RiskHold uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/RiskHold.php
 
 		-
 			message: '#^Method App\\Models\\RiskHold\:\:scopeActive\(\) has parameter \$q with generic class Illuminate\\Database\\Eloquent\\Builder but does not specify its types\: TModel$#'
@@ -10471,6 +11569,12 @@ parameters:
 			path: app/Models/RiskHold.php
 
 		-
+			message: '#^Class App\\Models\\RiskRule uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/RiskRule.php
+
+		-
 			message: '#^Method App\\Models\\RiskRule\:\:scopeActive\(\) has parameter \$q with generic class Illuminate\\Database\\Eloquent\\Builder but does not specify its types\: TModel$#'
 			identifier: missingType.generics
 			count: 1
@@ -10493,6 +11597,36 @@ parameters:
 			identifier: missingType.generics
 			count: 1
 			path: app/Models/Sanctum/PersonalAccessTokenV2.php
+
+		-
+			message: '#^Method App\\Models\\Sector\:\:publishedTrades\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\HasMany does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/Sector.php
+
+		-
+			message: '#^Method App\\Models\\Sector\:\:scopeActive\(\) has parameter \$q with generic class Illuminate\\Database\\Eloquent\\Builder but does not specify its types\: TModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/Sector.php
+
+		-
+			message: '#^Method App\\Models\\Sector\:\:scopeActive\(\) return type with generic class Illuminate\\Database\\Eloquent\\Builder does not specify its types\: TModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/Sector.php
+
+		-
+			message: '#^Method App\\Models\\Sector\:\:scopeOrdered\(\) has parameter \$q with generic class Illuminate\\Database\\Eloquent\\Builder but does not specify its types\: TModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/Sector.php
+
+		-
+			message: '#^Method App\\Models\\Sector\:\:scopeOrdered\(\) return type with generic class Illuminate\\Database\\Eloquent\\Builder does not specify its types\: TModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/Sector.php
 
 		-
 			message: '#^Class App\\Models\\ServiceCatalog has PHPDoc tag @property for property \$metadata with no value type specified in iterable type array\.$#'
@@ -10609,6 +11743,12 @@ parameters:
 			path: app/Models/ServiceCatalog.php
 
 		-
+			message: '#^Class App\\Models\\ServiceCatalogV2 uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/ServiceCatalogV2.php
+
+		-
 			message: '#^Method App\\Models\\ServiceCatalogV2\:\:scopeActive\(\) has parameter \$q with generic class Illuminate\\Database\\Eloquent\\Builder but does not specify its types\: TModel$#'
 			identifier: missingType.generics
 			count: 1
@@ -10663,6 +11803,12 @@ parameters:
 			path: app/Models/ServiceZone.php
 
 		-
+			message: '#^Class App\\Models\\SmsMessage uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/SmsMessage.php
+
+		-
 			message: '#^Method App\\Models\\SmsMessage\:\:scopeRecentForPhone\(\) has parameter \$q with generic class Illuminate\\Database\\Eloquent\\Builder but does not specify its types\: TModel$#'
 			identifier: missingType.generics
 			count: 1
@@ -10675,6 +11821,12 @@ parameters:
 			path: app/Models/SmsMessage.php
 
 		-
+			message: '#^Class App\\Models\\SmsWebhookEvent uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/SmsWebhookEvent.php
+
+		-
 			message: '#^Method App\\Models\\SmsWebhookEvent\:\:scopePending\(\) has parameter \$q with generic class Illuminate\\Database\\Eloquent\\Builder but does not specify its types\: TModel$#'
 			identifier: missingType.generics
 			count: 1
@@ -10685,6 +11837,18 @@ parameters:
 			identifier: missingType.generics
 			count: 1
 			path: app/Models/SmsWebhookEvent.php
+
+		-
+			message: '#^Class App\\Models\\StripeReconciliationRun uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/StripeReconciliationRun.php
+
+		-
+			message: '#^Class App\\Models\\StripeWebhookEvent uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/StripeWebhookEvent.php
 
 		-
 			message: '#^Method App\\Models\\StripeWebhookEvent\:\:scopeDueForRetry\(\) has parameter \$query with generic class Illuminate\\Database\\Eloquent\\Builder but does not specify its types\: TModel$#'
@@ -10785,6 +11949,12 @@ parameters:
 		-
 			message: '#^Class App\\Models\\Task has PHPDoc tag @property for property \$metadata with no value type specified in iterable type array\.$#'
 			identifier: missingType.iterableValue
+			count: 1
+			path: app/Models/Task.php
+
+		-
+			message: '#^Class App\\Models\\Task uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
+			identifier: missingType.generics
 			count: 1
 			path: app/Models/Task.php
 
@@ -10915,6 +12085,12 @@ parameters:
 			path: app/Models/TradeZonePricing.php
 
 		-
+			message: '#^Class App\\Models\\TranslationOverride uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/TranslationOverride.php
+
+		-
 			message: '#^Method App\\Models\\TranslationOverride\:\:scopeForLocale\(\) has parameter \$q with generic class Illuminate\\Database\\Eloquent\\Builder but does not specify its types\: TModel$#'
 			identifier: missingType.generics
 			count: 1
@@ -10939,6 +12115,18 @@ parameters:
 			path: app/Models/TranslationOverride.php
 
 		-
+			message: '#^Class App\\Models\\TripTrackingPoint uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/TripTrackingPoint.php
+
+		-
+			message: '#^Class App\\Models\\TripTrackingSession uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/TripTrackingSession.php
+
+		-
 			message: '#^Method App\\Models\\TripTrackingSession\:\:scopeActive\(\) has parameter \$q with generic class Illuminate\\Database\\Eloquent\\Builder but does not specify its types\: TModel$#'
 			identifier: missingType.generics
 			count: 1
@@ -10957,21 +12145,15 @@ parameters:
 			path: app/Models/User.php
 
 		-
-			message: '#^Access to an undefined property App\\Models\\AvailabilitySlot\:\:\$stripe_connect_onboarded_at\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Models/User.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\AvailabilitySlot\:\:\$stripe_connect_status\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Models/User.php
-
-		-
 			message: '#^Access to an undefined property App\\Models\\Booking\:\:\$customer_type\.$#'
 			identifier: property.notFound
 			count: 2
+			path: app/Models/User.php
+
+		-
+			message: '#^Call to an undefined method App\\Models\\AvailabilitySlot\:\:isVerified\(\)\.$#'
+			identifier: method.notFound
+			count: 1
 			path: app/Models/User.php
 
 		-
@@ -11083,6 +12265,24 @@ parameters:
 			path: app/Models/User.php
 
 		-
+			message: '#^Class App\\Models\\UserBlock uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/UserBlock.php
+
+		-
+			message: '#^Class App\\Models\\UserReport uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/UserReport.php
+
+		-
+			message: '#^Class App\\Models\\WebhookDelivery uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/WebhookDelivery.php
+
+		-
 			message: '#^Method App\\Models\\WebhookDelivery\:\:scopeDue\(\) has parameter \$q with generic class Illuminate\\Database\\Eloquent\\Builder but does not specify its types\: TModel$#'
 			identifier: missingType.generics
 			count: 1
@@ -11107,6 +12307,12 @@ parameters:
 			path: app/Models/WebhookDelivery.php
 
 		-
+			message: '#^Class App\\Models\\WebhookEndpoint uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/WebhookEndpoint.php
+
+		-
 			message: '#^Method App\\Models\\WebhookEndpoint\:\:scopeActive\(\) has parameter \$q with generic class Illuminate\\Database\\Eloquent\\Builder but does not specify its types\: TModel$#'
 			identifier: missingType.generics
 			count: 1
@@ -11119,6 +12325,12 @@ parameters:
 			path: app/Models/WebhookEndpoint.php
 
 		-
+			message: '#^Class App\\Models\\WebhookEvent uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/WebhookEvent.php
+
+		-
 			message: '#^Method App\\Models\\WebhookEvent\:\:scopeForCode\(\) has parameter \$q with generic class Illuminate\\Database\\Eloquent\\Builder but does not specify its types\: TModel$#'
 			identifier: missingType.generics
 			count: 1
@@ -11129,6 +12341,12 @@ parameters:
 			identifier: missingType.generics
 			count: 1
 			path: app/Models/WebhookEvent.php
+
+		-
+			message: '#^Class App\\Models\\WebhookSubscription uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/WebhookSubscription.php
 
 		-
 			message: '#^Method App\\Models\\WebhookSubscription\:\:scopeActive\(\) has parameter \$q with generic class Illuminate\\Database\\Eloquent\\Builder but does not specify its types\: TModel$#'
@@ -11213,6 +12431,24 @@ parameters:
 			identifier: missingType.iterableValue
 			count: 1
 			path: app/Notifications/AdminDigestNotification.php
+
+		-
+			message: '#^Method App\\Notifications\\Bundles\\BundleQuoteRequestedNotification\:\:toArray\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: app/Notifications/Bundles/BundleQuoteRequestedNotification.php
+
+		-
+			message: '#^Method App\\Notifications\\Bundles\\BundleQuoteRequestedNotification\:\:via\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: app/Notifications/Bundles/BundleQuoteRequestedNotification.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>code" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Notifications/Bundles/BundleQuoteRequestedNotification.php
 
 		-
 			message: '#^Method App\\Notifications\\Channels\\PushChannel\:\:send\(\) return type has no value type specified in iterable type array\.$#'
@@ -12605,24 +13841,6 @@ parameters:
 			identifier: missingType.parameter
 			count: 1
 			path: app/Policies/ChannelPolicy.php
-
-		-
-			message: '#^Method App\\Policies\\FeedbackPolicy\:\:isAdmin\(\) is unused\.$#'
-			identifier: method.unused
-			count: 1
-			path: app/Policies/FeedbackPolicy.php
-
-		-
-			message: '#^Method App\\Policies\\FeedbackPolicy\:\:ownsFeedback\(\) is unused\.$#'
-			identifier: method.unused
-			count: 1
-			path: app/Policies/FeedbackPolicy.php
-
-		-
-			message: '#^Unreachable statement \- code above always terminates\.$#'
-			identifier: deadCode.unreachable
-			count: 3
-			path: app/Policies/FeedbackPolicy.php
 
 		-
 			message: '#^Call to an undefined method App\\Models\\User\:\:hasPermission\(\)\.$#'
@@ -14137,12 +15355,6 @@ parameters:
 			path: app/Services/Audit/AuditService.php
 
 		-
-			message: '#^Trait App\\Services\\Audit\\Concerns\\AuditsEloquentEvents is used zero times and is not analysed\.$#'
-			identifier: trait.unused
-			count: 1
-			path: app/Services/Audit/Concerns/AuditsEloquentEvents.php
-
-		-
 			message: '#^Method App\\Services\\Availability\\AvailabilityService\:\:buildWindow\(\) return type has no value type specified in iterable type array\.$#'
 			identifier: missingType.iterableValue
 			count: 1
@@ -14271,24 +15483,6 @@ parameters:
 		-
 			message: '#^Method App\\Services\\Booking\\CreateBookingAction\:\:execute\(\) has parameter \$data with no value type specified in iterable type array\.$#'
 			identifier: missingType.iterableValue
-			count: 1
-			path: app/Services/Booking/CreateBookingAction.php
-
-		-
-			message: '#^Result of && is always false\.$#'
-			identifier: booleanAnd.alwaysFalse
-			count: 2
-			path: app/Services/Booking/CreateBookingAction.php
-
-		-
-			message: '#^Undefined variable\: \$mission$#'
-			identifier: variable.undefined
-			count: 1
-			path: app/Services/Booking/CreateBookingAction.php
-
-		-
-			message: '#^Variable \$mission in isset\(\) is never defined\.$#'
-			identifier: isset.variable
 			count: 1
 			path: app/Services/Booking/CreateBookingAction.php
 
@@ -14539,6 +15733,30 @@ parameters:
 			path: app/Services/Bookings/BulkBookingImporter.php
 
 		-
+			message: '#^Access to an undefined property App\\Models\\EmployeeZoneAssignment\:\:\$pivot\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/Bundles/MultiTradeBundleService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$bundle\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/Bundles/MultiTradeBundleService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/Bundles/MultiTradeBundleService.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Relations\\HasMany\:\:active\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Services/Bundles/MultiTradeBundleService.php
+
+		-
 			message: '#^Method App\\Services\\Bundles\\MultiTradeBundleService\:\:createDraft\(\) has parameter \$address with no value type specified in iterable type array\.$#'
 			identifier: missingType.iterableValue
 			count: 1
@@ -14549,6 +15767,42 @@ parameters:
 			identifier: missingType.iterableValue
 			count: 1
 			path: app/Services/Bundles/MultiTradeBundleService.php
+
+		-
+			message: '#^Method App\\Services\\Bundles\\MultiTradeBundleService\:\:eligibleProvidersForItem\(\) return type with generic class Illuminate\\Support\\Collection does not specify its types\: TKey, TValue$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Services/Bundles/MultiTradeBundleService.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>is_primary" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Services/Bundles/MultiTradeBundleService.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>proficiency" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Services/Bundles/MultiTradeBundleService.php
+
+		-
+			message: '#^Offset ''expiry'' on array\{channel_id\: string, resource_id\: string, expiry\: string\} on left side of \?\? always exists and is not nullable\.$#'
+			identifier: nullCoalesce.offset
+			count: 1
+			path: app/Services/Calendar/GoogleCalendarBidirectionalService.php
+
+		-
+			message: '#^Parameter \#1 \$connection of method App\\Services\\Calendar\\Contracts\\GoogleBusyFetcher\:\:fetchBusyEvents\(\) expects App\\Models\\GoogleCalendarConnection, Illuminate\\Database\\Eloquent\\Model given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Services/Calendar/GoogleCalendarBidirectionalService.php
+
+		-
+			message: '#^Parameter \#1 \$provider of method App\\Services\\Calendar\\GoogleCalendarBidirectionalService\:\:importBusyEvents\(\) expects App\\Models\\User, Illuminate\\Database\\Eloquent\\Model given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Services/Calendar/GoogleCalendarBidirectionalService.php
 
 		-
 			message: '#^Method App\\Services\\Cancellation\\CancelBookingService\:\:applyProviderPenalty\(\) has parameter \$penalty with no value type specified in iterable type array\.$#'
@@ -14605,12 +15859,6 @@ parameters:
 			path: app/Services/Cancellation/CancellationFeeCalculator.php
 
 		-
-			message: '#^Method App\\Services\\Cancellation\\CancellationFeeCalculator\:\:bookingAmount\(\) is unused\.$#'
-			identifier: method.unused
-			count: 1
-			path: app/Services/Cancellation/CancellationFeeCalculator.php
-
-		-
 			message: '#^Method App\\Services\\Cancellation\\CancellationFeeCalculator\:\:forClientCancellation\(\) return type has no value type specified in iterable type array\.$#'
 			identifier: missingType.iterableValue
 			count: 1
@@ -14635,16 +15883,16 @@ parameters:
 			path: app/Services/Cancellation/CancellationFeeCalculator.php
 
 		-
-			message: '#^Method App\\Services\\Cancellation\\CancellationFeeCalculator\:\:scheduledAt\(\) is unused\.$#'
-			identifier: method.unused
-			count: 1
-			path: app/Services/Cancellation/CancellationFeeCalculator.php
-
-		-
 			message: '#^Offset 0 on non\-empty\-list\<string\> on left side of \?\? always exists and is not nullable\.$#'
 			identifier: nullCoalesce.offset
 			count: 1
 			path: app/Services/Cancellation/CancellationFeeCalculator.php
+
+		-
+			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
+			identifier: notIdentical.alwaysTrue
+			count: 1
+			path: app/Services/CancellationV2/CancellationEngine.php
 
 		-
 			message: '#^Using nullsafe property access "\?\-\>description" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
@@ -14753,6 +16001,18 @@ parameters:
 			identifier: missingType.parameter
 			count: 1
 			path: app/Services/Client/Calendar/BookingRescheduleService.php
+
+		-
+			message: '#^Method App\\Services\\Client\\Calendar\\CalendarDataService\:\:eventsForUser\(\) should return Illuminate\\Support\\Collection\<int, array\<string, mixed\>\> but returns Illuminate\\Support\\Collection\<int, array\{id\: int, title\: string, start\: string\|null, end\: string\|null, color\: ''\#10b981''\|''\#3b82f6''\|''\#6366f1''\|''\#64748b''\|''\#8b5cf6''\|''\#ef4444''\|''\#f59e0b'', status\: string, site_name\: string\|null, service_name\: string\|null, \.\.\.\}\>\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Services/Client/Calendar/CalendarDataService.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>name" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Services/Client/Calendar/CalendarDataService.php
 
 		-
 			message: '#^Access to constant FILL_SOLID on an unknown class PhpOffice\\PhpSpreadsheet\\Style\\Fill\.$#'
@@ -15199,12 +16459,6 @@ parameters:
 			path: app/Services/Email/ProductEmailTemplates.php
 
 		-
-			message: '#^Method App\\Services\\Email\\ProductMailMessageFactory\:\:make\(\) has parameter \$payload with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: app/Services/Email/ProductMailMessageFactory.php
-
-		-
 			message: '#^Method App\\Services\\EmailV2\\EmailSendResult\:\:__construct\(\) has parameter \$raw with no value type specified in iterable type array\.$#'
 			identifier: missingType.iterableValue
 			count: 1
@@ -15505,13 +16759,7 @@ parameters:
 			path: app/Services/Finance/CustomerCreditApplicationService.php
 
 		-
-			message: '#^Access to an undefined property App\\Models\\FinanceInvoice\:\:\$customer\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Services/Finance/EInvoicing/FacturXBuilder.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\FinanceInvoice\:\:\$issuer\.$#'
+			message: '#^Access to an undefined property App\\Models\\User\:\:\$country\.$#'
 			identifier: property.notFound
 			count: 1
 			path: app/Services/Finance/EInvoicing/FacturXBuilder.php
@@ -16009,6 +17257,12 @@ parameters:
 			path: app/Services/Insurance/InsuranceClaimsService.php
 
 		-
+			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
+			identifier: notIdentical.alwaysTrue
+			count: 1
+			path: app/Services/Insurance/InsurancePricingEngine.php
+
+		-
 			message: '#^Method App\\Services\\Insurance\\InsuranceProviderInterface\:\:mapWebhookEvent\(\) has parameter \$payload with no value type specified in iterable type array\.$#'
 			identifier: missingType.iterableValue
 			count: 1
@@ -16297,36 +17551,6 @@ parameters:
 			path: app/Services/International/CountryMarketResolver.php
 
 		-
-			message: '#^Call to function method_exists\(\) with Illuminate\\Filesystem\\FilesystemAdapter and ''path'' will always evaluate to true\.$#'
-			identifier: function.alreadyNarrowedType
-			count: 1
-			path: app/Services/Jobs/Messaging/ScanAttachmentForMalware.php
-
-		-
-			message: '#^Method App\\Jobs\\Messaging\\ScanAttachmentForMalware\:\:processResult\(\) has parameter \$result with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: app/Services/Jobs/Messaging/ScanAttachmentForMalware.php
-
-		-
-			message: '#^Result of && is always false\.$#'
-			identifier: booleanAnd.alwaysFalse
-			count: 2
-			path: app/Services/Jobs/Messaging/ScanAttachmentForMalware.php
-
-		-
-			message: '#^Undefined variable\: \$cleanup$#'
-			identifier: variable.undefined
-			count: 1
-			path: app/Services/Jobs/Messaging/ScanAttachmentForMalware.php
-
-		-
-			message: '#^Variable \$cleanup in isset\(\) is never defined\.$#'
-			identifier: isset.variable
-			count: 1
-			path: app/Services/Jobs/Messaging/ScanAttachmentForMalware.php
-
-		-
 			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Relations\\HasMany\<App\\Models\\User, App\\Models\\BusinessEntity\>\:\:matches\(\)\.$#'
 			identifier: method.notFound
 			count: 1
@@ -16337,6 +17561,12 @@ parameters:
 			identifier: missingType.iterableValue
 			count: 1
 			path: app/Services/KybV2/BusinessOnboardingService.php
+
+		-
+			message: '#^Method App\\Services\\KybV2\\CompanyLookup\:\:countryFor\(\) never returns null so it can be removed from the return type\.$#'
+			identifier: return.unusedType
+			count: 1
+			path: app/Services/KybV2/CompanyLookup.php
 
 		-
 			message: '#^Property App\\Services\\KybV2\\Providers\\MockBusinessVerificationProvider\:\:\$catalog type has no value type specified in iterable type array\.$#'
@@ -16957,6 +18187,18 @@ parameters:
 			path: app/Services/Missions/MissionFromRendezVousSyncService.php
 
 		-
+			message: '#^Method App\\Services\\Missions\\MissionFromRendezVousSyncService\:\:datePart\(\) has parameter \$date with no type specified\.$#'
+			identifier: missingType.parameter
+			count: 1
+			path: app/Services/Missions/MissionFromRendezVousSyncService.php
+
+		-
+			message: '#^Method App\\Services\\Missions\\MissionFromRendezVousSyncService\:\:timePart\(\) has parameter \$time with no type specified\.$#'
+			identifier: missingType.parameter
+			count: 1
+			path: app/Services/Missions/MissionFromRendezVousSyncService.php
+
+		-
 			message: '#^Using nullsafe property access "\?\-\>iso_code" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
 			identifier: nullsafe.neverNull
 			count: 1
@@ -16984,6 +18226,12 @@ parameters:
 			message: '#^Method App\\Services\\Missions\\MissionLifecycleService\:\:generateStartCode\(\) return type has no value type specified in iterable type array\.$#'
 			identifier: missingType.iterableValue
 			count: 1
+			path: app/Services/Missions/MissionLifecycleService.php
+
+		-
+			message: '#^Strict comparison using \!\=\= between string and null will always evaluate to true\.$#'
+			identifier: notIdentical.alwaysTrue
+			count: 2
 			path: app/Services/Missions/MissionLifecycleService.php
 
 		-
@@ -17257,6 +18505,42 @@ parameters:
 			path: app/Services/Nps/NpsService.php
 
 		-
+			message: '#^Parameter \#1 \$profile of method App\\Services\\Onboarding\\ProviderAutoApproval\:\:approve\(\) expects App\\Models\\ProviderProfile, App\\Models\\AvailabilitySlot\|null given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Services/Onboarding/ProviderAutoApproval.php
+
+		-
+			message: '#^Parameter \#1 \$profile of method App\\Services\\Onboarding\\ProviderAutoApproval\:\:flagForManualReview\(\) expects App\\Models\\ProviderProfile, App\\Models\\AvailabilitySlot\|null given\.$#'
+			identifier: argument.type
+			count: 2
+			path: app/Services/Onboarding/ProviderAutoApproval.php
+
+		-
+			message: '#^Parameter \#1 \$profile of method App\\Services\\Onboarding\\ProviderAutoApproval\:\:isEligible\(\) expects App\\Models\\ProviderProfile\|null, App\\Models\\AvailabilitySlot\|null given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Services/Onboarding/ProviderAutoApproval.php
+
+		-
+			message: '#^Method App\\Services\\Onboarding\\ProviderDocumentRequirements\:\:declaredTrades\(\) should return Illuminate\\Support\\Collection\<int, App\\Models\\Trade\> but returns Illuminate\\Database\\Eloquent\\Collection\<int, App\\Models\\EmployeeZoneAssignment\>\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Services/Onboarding/ProviderDocumentRequirements.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\AvailabilitySlot\:\:\$stripe_connect_status\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/Onboarding/ProviderDossierSummary.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\AvailabilitySlot\:\:\$verification_status\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/Onboarding/ProviderDossierSummary.php
+
+		-
 			message: '#^Method App\\Services\\Onboarding\\ProviderOnboardingService\:\:getProgress\(\) return type has no value type specified in iterable type array\.$#'
 			identifier: missingType.iterableValue
 			count: 1
@@ -17341,6 +18625,12 @@ parameters:
 			path: app/Services/OnboardingV2/Validators/FormStepValidator.php
 
 		-
+			message: '#^Access to an undefined property App\\Models\\AvailabilitySlot\:\:\$stripe_connect_account_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/OnboardingV2/Validators/PayoutsSetupValidator.php
+
+		-
 			message: '#^Method App\\Services\\Ops\\ProductionHealthReport\:\:errorCount\(\) has parameter \$report with no value type specified in iterable type array\.$#'
 			identifier: missingType.iterableValue
 			count: 1
@@ -17383,16 +18673,208 @@ parameters:
 			path: app/Services/Ops/ProductionHealthReport.php
 
 		-
+			message: '#^Method App\\Services\\OrderEngine\\BundleComposer\:\:timeline\(\) should return Illuminate\\Support\\Collection\<int, array\{item\: App\\Models\\OrderDraftItem, trade\: App\\Models\\Trade, starts_at\: Illuminate\\Support\\Carbon, ends_at\: Illuminate\\Support\\Carbon, waits_for\: string\|null, gap_min\: int\}\> but returns Illuminate\\Support\\Collection\<int, array\{item\: App\\Models\\OrderDraftItem, trade\: App\\Models\\Trade\|null, starts_at\: mixed, ends_at\: mixed, waits_for\: string\|null, gap_min\: int\}\>\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Services/OrderEngine/BundleComposer.php
+
+		-
+			message: '#^Parameter \#1 \$array \(list\<int\>\) of array_values is already a list, call has no effect\.$#'
+			identifier: arrayValues.list
+			count: 2
+			path: app/Services/OrderEngine/BundleComposer.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>name" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 3
+			path: app/Services/OrderEngine/BundleComposer.php
+
+		-
+			message: '#^Method App\\Services\\OrderEngine\\CatalogArchiver\:\:optionImpact\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: app/Services/OrderEngine/CatalogArchiver.php
+
+		-
+			message: '#^Method App\\Services\\OrderEngine\\CatalogArchiver\:\:questionImpact\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: app/Services/OrderEngine/CatalogArchiver.php
+
+		-
+			message: '#^Method App\\Services\\OrderEngine\\CatalogArchiver\:\:sectorImpact\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: app/Services/OrderEngine/CatalogArchiver.php
+
+		-
+			message: '#^Method App\\Services\\OrderEngine\\CatalogArchiver\:\:tradeImpact\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: app/Services/OrderEngine/CatalogArchiver.php
+
+		-
+			message: '#^Method App\\Services\\OrderEngine\\PriceBreakdown\:\:quoteOnly\(\) has parameter \$lines with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: app/Services/OrderEngine/PriceBreakdown.php
+
+		-
+			message: '#^Method App\\Services\\OrderEngine\\PriceBreakdown\:\:withLines\(\) has parameter \$lines with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: app/Services/OrderEngine/PriceBreakdown.php
+
+		-
+			message: '#^Method App\\Services\\OrderEngine\\PricingEngine\:\:numericImpact\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: app/Services/OrderEngine/PricingEngine.php
+
+		-
+			message: '#^Method App\\Services\\OrderEngine\\PricingEngine\:\:numericTypes\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: app/Services/OrderEngine/PricingEngine.php
+
+		-
+			message: '#^Method App\\Services\\OrderEngine\\PricingEngine\:\:optionImpact\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: app/Services/OrderEngine/PricingEngine.php
+
+		-
+			message: '#^Method App\\Services\\OrderEngine\\PricingEngine\:\:unknownImpact\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: app/Services/OrderEngine/PricingEngine.php
+
+		-
+			message: '#^Method App\\Services\\OrderEngine\\ProviderAvailabilityLookup\:\:providersOf\(\) should return Illuminate\\Support\\Collection\<int, object\> but returns Illuminate\\Support\\Collection\<int, stdClass\>\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Services/OrderEngine/ProviderAvailabilityLookup.php
+
+		-
+			message: '#^Method App\\Services\\OrderEngine\\ProviderShortlist\:\:forTrade\(\) should return Illuminate\\Support\\Collection\<int, array\{id\: int, name\: string, rating\: float\|null, rating_count\: int, missions_count\: int, distance_m\: int, distance_km\: float\}\> but returns Illuminate\\Support\\Collection\<int, array\{id\: int, name\: mixed, rating\: float\|null, rating_count\: int, missions_count\: int, distance_m\: int, distance_km\: float\}\>\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Services/OrderEngine/ProviderShortlist.php
+
+		-
+			message: '#^Method App\\Services\\OrderEngine\\QuestionInsights\:\:forTrade\(\) should return Illuminate\\Support\\Collection\<int, array\{code\: string, label\: string, sort_order\: int, reached\: int, answered\: int, answer_rate\: float, dropped_here\: int, drop_rate\: float\}\> but returns Illuminate\\Support\\Collection\<int, array\{code\: mixed, label\: mixed, sort_order\: int, reached\: int\<0, max\>, answered\: int, answer_rate\: float, dropped_here\: int, drop_rate\: float\}\>\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Services/OrderEngine/QuestionInsights.php
+
+		-
+			message: '#^Method App\\Services\\OrderEngine\\QuestionInsights\:\:worstOffenders\(\) return type with generic class Illuminate\\Support\\Collection does not specify its types\: TKey, TValue$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Services/OrderEngine/QuestionInsights.php
+
+		-
+			message: '#^Method App\\Services\\OrderEngine\\QuestionnairePortability\:\:duplicate\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: app/Services/OrderEngine/QuestionnairePortability.php
+
+		-
+			message: '#^Method App\\Services\\OrderEngine\\QuestionnaireValidator\:\:checkCircularDependencies\(\) has parameter \$questions with no type specified\.$#'
+			identifier: missingType.parameter
+			count: 1
+			path: app/Services/OrderEngine/QuestionnaireValidator.php
+
+		-
+			message: '#^Method App\\Services\\OrderEngine\\QuestionnaireValidator\:\:checkCircularDependencies\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: app/Services/OrderEngine/QuestionnaireValidator.php
+
+		-
+			message: '#^Method App\\Services\\OrderEngine\\QuestionnaireValidator\:\:checkDanglingConditions\(\) has parameter \$questions with no type specified\.$#'
+			identifier: missingType.parameter
+			count: 1
+			path: app/Services/OrderEngine/QuestionnaireValidator.php
+
+		-
+			message: '#^Method App\\Services\\OrderEngine\\QuestionnaireValidator\:\:checkDanglingConditions\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: app/Services/OrderEngine/QuestionnaireValidator.php
+
+		-
+			message: '#^Method App\\Services\\OrderEngine\\QuestionnaireValidator\:\:checkDefaults\(\) has parameter \$questions with no type specified\.$#'
+			identifier: missingType.parameter
+			count: 1
+			path: app/Services/OrderEngine/QuestionnaireValidator.php
+
+		-
+			message: '#^Method App\\Services\\OrderEngine\\QuestionnaireValidator\:\:checkDefaults\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: app/Services/OrderEngine/QuestionnaireValidator.php
+
+		-
+			message: '#^Method App\\Services\\OrderEngine\\QuestionnaireValidator\:\:checkLength\(\) has parameter \$questions with no type specified\.$#'
+			identifier: missingType.parameter
+			count: 1
+			path: app/Services/OrderEngine/QuestionnaireValidator.php
+
+		-
+			message: '#^Method App\\Services\\OrderEngine\\QuestionnaireValidator\:\:checkLength\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: app/Services/OrderEngine/QuestionnaireValidator.php
+
+		-
+			message: '#^Method App\\Services\\OrderEngine\\QuestionnaireValidator\:\:checkWayOut\(\) has parameter \$questions with no type specified\.$#'
+			identifier: missingType.parameter
+			count: 1
+			path: app/Services/OrderEngine/QuestionnaireValidator.php
+
+		-
+			message: '#^Method App\\Services\\OrderEngine\\QuestionnaireValidator\:\:checkWayOut\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: app/Services/OrderEngine/QuestionnaireValidator.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>label" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Services/OrderEngine/QuestionnaireValidator.php
+
+		-
+			message: '#^Method App\\Services\\OrderEngine\\SlotFinder\:\:firstAvailable\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: app/Services/OrderEngine/SlotFinder.php
+
+		-
+			message: '#^Method App\\Services\\OrderEngine\\SlotFinder\:\:windowsByProvider\(\) should return Illuminate\\Support\\Collection\<int, list\<array\{start\: Illuminate\\Support\\Carbon, end\: Illuminate\\Support\\Carbon\}\>\> but returns Illuminate\\Support\\Collection\<int, array\<int, array\{start\: Illuminate\\Support\\Carbon, end\: Illuminate\\Support\\Carbon\}\>\>\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Services/OrderEngine/SlotFinder.php
+
+		-
+			message: '#^Return type of call to method Illuminate\\Support\\Collection\<int,array\<string, mixed\>\>\:\:all\(\) contains unresolvable type\.$#'
+			identifier: method.unresolvableReturnType
+			count: 2
+			path: app/Services/OrderEngine/TradeFormSchema.php
+
+		-
+			message: '#^Return type of call to method Illuminate\\Support\\Collection\<int,array\<string, mixed\>\>\:\:values\(\) contains unresolvable type\.$#'
+			identifier: method.unresolvableReturnType
+			count: 2
+			path: app/Services/OrderEngine/TradeFormSchema.php
+
+		-
 			message: '#^Expression on left side of \?\? is not nullable\.$#'
 			identifier: nullCoalesce.expr
 			count: 1
 			path: app/Services/Payments/CommissionService.php
-
-		-
-			message: '#^Called ''env'' outside of the config directory which returns null when the config is cached, use ''config''\.$#'
-			identifier: larastan.noEnvCallsOutsideOfConfig
-			count: 1
-			path: app/Services/Payments/MissionPaymentService.php
 
 		-
 			message: '#^Parameter \#1 \$params of static method Stripe\\PaymentIntent\:\:create\(\) expects array\{amount\: int, application_fee_amount\?\: int, automatic_payment_methods\?\: array\{allow_redirects\?\: string, enabled\: bool\}, capture_method\?\: string, confirm\?\: bool, confirmation_method\?\: string, confirmation_token\?\: string, currency\: string, \.\.\.\}\|null, array\{amount\: int, currency\: string, customer\: string\|null, payment_method\: string, confirm\: true, capture_method\: ''manual'', application_fee_amount\: int, transfer_data\: array\{destination\: string\|null\}, \.\.\.\} given\.$#'
@@ -18201,7 +19683,7 @@ parameters:
 		-
 			message: '#^Using nullsafe method call on non\-nullable type Illuminate\\Http\\Request\. Use \-\> instead\.$#'
 			identifier: nullsafe.neverNull
-			count: 1
+			count: 2
 			path: app/Services/Sms/PhoneVerificationService.php
 
 		-
@@ -18359,6 +19841,12 @@ parameters:
 			identifier: argument.templateType
 			count: 1
 			path: app/Services/Tips/TipService.php
+
+		-
+			message: '#^Method App\\Services\\TripTracking\\PresenceCodeService\:\:issueFor\(\) should return array\{code\: string, expires_at\: Illuminate\\Support\\Carbon\} but returns array\{code\: string, expires_at\: Carbon\\Carbon\|null\}\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Services/TripTracking/PresenceCodeService.php
 
 		-
 			message: '#^Method App\\Services\\TripTracking\\TripTrackingService\:\:resolveBookingDestination\(\) return type has no value type specified in iterable type array\.$#'
@@ -18593,6 +20081,18 @@ parameters:
 			identifier: missingType.iterableValue
 			count: 1
 			path: app/Support/Domain/MissionStatus.php
+
+		-
+			message: '#^Method App\\Support\\Domain\\QuestionType\:\:numeric\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: app/Support/Domain/QuestionType.php
+
+		-
+			message: '#^Method App\\Support\\Domain\\QuestionType\:\:optionBased\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: app/Support/Domain/QuestionType.php
 
 		-
 			message: '#^Method App\\Support\\Finance\\ClientFinanceDocumentScope\:\:apply\(\) has parameter \$query with generic class Illuminate\\Database\\Eloquent\\Builder but does not specify its types\: TModel$#'

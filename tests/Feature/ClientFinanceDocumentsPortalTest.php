@@ -7,6 +7,7 @@ use App\Models\FinanceInvoice;
 use App\Models\FinanceQuote;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\URL;
 use Tests\TestCase;
 
 class ClientFinanceDocumentsPortalTest extends TestCase
@@ -91,11 +92,11 @@ class ClientFinanceDocumentsPortalTest extends TestCase
             ->assertDontSee('FAC-CLIENT-999');
 
         $this->actingAs($client)
-            ->get(\Illuminate\Support\Facades\URL::temporarySignedRoute('client.finance.quote.download', now()->addMinutes(30), $myQuote))
+            ->get(URL::temporarySignedRoute('client.finance.quote.download', now()->addMinutes(30), $myQuote))
             ->assertOk();
 
         $this->actingAs($client)
-            ->get(\Illuminate\Support\Facades\URL::temporarySignedRoute('client.finance.invoice.download', now()->addMinutes(30), $myInvoice))
+            ->get(URL::temporarySignedRoute('client.finance.invoice.download', now()->addMinutes(30), $myInvoice))
             ->assertOk();
     }
 
@@ -134,11 +135,11 @@ class ClientFinanceDocumentsPortalTest extends TestCase
 
         // URL signée VALIDE mais client non propriétaire → l'ownership doit bloquer (403).
         $this->actingAs($client)
-            ->get(\Illuminate\Support\Facades\URL::temporarySignedRoute('client.finance.quote.download', now()->addMinutes(30), $otherQuote))
+            ->get(URL::temporarySignedRoute('client.finance.quote.download', now()->addMinutes(30), $otherQuote))
             ->assertForbidden();
 
         $this->actingAs($client)
-            ->get(\Illuminate\Support\Facades\URL::temporarySignedRoute('client.finance.invoice.download', now()->addMinutes(30), $otherInvoice))
+            ->get(URL::temporarySignedRoute('client.finance.invoice.download', now()->addMinutes(30), $otherInvoice))
             ->assertForbidden();
     }
 }

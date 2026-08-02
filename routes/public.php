@@ -6,6 +6,7 @@ use App\Http\Controllers\PricingPageController;
 use App\Http\Controllers\PublicSeoController;
 use App\Http\Controllers\ServicePageController;
 use App\Http\Controllers\StripeWebhookController;
+use App\Http\Controllers\Webhooks\GoogleCalendarWebhookController;
 use App\Http\Controllers\Webhooks\InsuranceWebhookController;
 use App\Http\Controllers\Webhooks\KycWebhookController;
 use App\Http\Controllers\Webhooks\SmsWebhookController;
@@ -179,5 +180,5 @@ Route::post('/webhooks/insurance/{provider}', [InsuranceWebhookController::class
     ->name('webhooks.insurance');
 
 // GCal bidirectionnel — notifications push Google Calendar (headers X-Goog-*).
-Route::post('/webhooks/google-calendar', [\App\Http\Controllers\Webhooks\GoogleCalendarWebhookController::class, 'handle'])
+Route::post('/webhooks/google-calendar', [GoogleCalendarWebhookController::class, 'handle'])
     ->name('webhooks.google-calendar');

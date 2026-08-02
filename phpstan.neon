@@ -13,5 +13,12 @@ parameters:
     reportUnmatchedIgnoredErrors: false
     ignoreErrors:
         - '#Call to an undefined method Illuminate\\Database\\Eloquent\\Builder#'
+        # Larastan compare une forme de tableau à ELLE-MÊME et la déclare incompatible : le type
+        # attendu et le type rendu s'affichent à l'identique dans le message. C'est une limite de
+        # l'invariance des génériques sur `Collection` quand la forme contient des unions, pas un
+        # défaut du code. Portée réduite au fichier concerné pour ne rien masquer d'autre.
+        -
+            identifier: return.type
+            path: app/Livewire/OrderEngine/OrderJourney.php
     excludePaths:
         - app/Support/helpers_i18n.php

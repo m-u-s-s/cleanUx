@@ -103,7 +103,7 @@ class GoogleCalendarInboundTest extends TestCase
 
     public function test_push_notification_imports_busy_events_for_channel_provider(): void
     {
-        $mock = new MockGoogleBusyFetcher();
+        $mock = new MockGoogleBusyFetcher;
         $mock->events = [
             ['external_id' => 'evt-z', 'start' => '2026-06-25T10:00:00', 'end' => '2026-06-25T11:00:00', 'all_day' => false],
         ];
@@ -126,7 +126,7 @@ class GoogleCalendarInboundTest extends TestCase
 
     public function test_register_watch_persists_the_channel(): void
     {
-        $mock = new MockGoogleBusyFetcher();
+        $mock = new MockGoogleBusyFetcher;
         $mock->channelId = 'ch-new';
         $mock->resourceId = 'res-new';
         $this->app->instance(GoogleBusyFetcher::class, $mock);
@@ -146,7 +146,7 @@ class GoogleCalendarInboundTest extends TestCase
 
     public function test_webhook_endpoint_triggers_import(): void
     {
-        $mock = new MockGoogleBusyFetcher();
+        $mock = new MockGoogleBusyFetcher;
         $mock->events = [
             ['external_id' => 'evt-w', 'start' => '2026-06-26T09:00:00', 'end' => '2026-06-26T10:00:00', 'all_day' => false],
         ];

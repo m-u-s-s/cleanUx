@@ -71,4 +71,3 @@ class ClientCompanyEntryPointTest extends TestCase
             ->assertDontSee('Espace entreprise');
     }
 }
-

@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Models\Concerns\HasCatalogTranslations;
+use App\Models\Contracts\TranslatesCatalogLabels;
 use App\Services\Audit\Concerns\AuditsEloquentEvents;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
@@ -14,7 +15,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * `is_default` porte la loi 5 : la reponse la plus frequente est pre-selectionnee, et c'est
  * l'administrateur qui decide laquelle. Le client valide plus qu'il ne remplit.
  */
-class QuestionOption extends Model
+class QuestionOption extends Model implements TranslatesCatalogLabels
 {
     use AuditsEloquentEvents, HasCatalogTranslations;
 

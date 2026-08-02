@@ -3,6 +3,8 @@
 namespace App\Livewire\OrderEngine;
 
 use App\Models\OrderDraft;
+use App\Models\OrderDraftItem;
+use App\Models\Question;
 use App\Models\Sector;
 use App\Models\Trade;
 use App\Services\GeolocationV2\GeocodingService;
@@ -16,6 +18,7 @@ use App\Services\OrderEngine\ProviderAvailabilityLookup;
 use App\Services\OrderEngine\ProviderShortlist;
 use App\Services\OrderEngine\SlotFinder;
 use App\Support\Domain\OrderMode;
+use Illuminate\Contracts\View\View;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
@@ -39,17 +42,46 @@ use Livewire\Component;
  * l'onglet, revenir trois heures plus tard, se connecter au dernier moment — les réponses sont là.
  * C'est pour cela que l'état n'habite pas le composant mais le panier.
  */
+/**
+ * Les valeurs calculées, accessibles en PROPRIÉTÉ.
+ *
+ * `#[Computed]` ne met en cache que l'accès propriété : `$this->trade` mémorise, `$this->trade()`
+ * réexécute le corps à chaque appel. Ces déclarations disent à l'analyse statique ce que Livewire
+ * expose, et rappellent la forme à employer.
+ *
+ * @property-read Collection<int, Sector> $sectors
+ * @property-read Collection<int, Trade> $trades
+ * @property-read Trade|null $trade
+ * @property-read Collection<int, Question> $questions
+ * @property-read Collection<int, Question> $visibleQuestions
+ * @property-read list<string> $availableModes
+ * @property-read PriceBreakdown|null $quote
+ * @property-read array<string, mixed>|null $lastChange
+ * @property-read AvailabilitySnapshot|null $availability
+ * @property-read array<int, Carbon> $dayOptions
+ * @property-read list<array<string, mixed>> $slots
+ * @property-read Collection<int, array{id: int, name: string, rating: float|null, rating_count: int, missions_count: int, distance_m: int, distance_km: float}> $providerOptions
+ * @property-read bool $readyToConfirm
+ * @property-read Collection<int, array<string, mixed>> $timeline
+ * @property-read Collection<int, array<string, mixed>> $bundleSuggestions
+ * @property-read array<string, mixed>|null $bundleQuote
+ */
 #[Layout('layouts.app')]
 class OrderJourney extends Component
 {
-    /** Le jeton qui rattache un visiteur à son panier, sans compte. */
+    /**
+     * Le jeton qui rattache un visiteur à son panier, sans compte. */
     public string $sessionToken = '';
 
     public ?int $sectorId = null;
 
     public ?int $tradeId = null;
 
-    /** Réponses en cours, indexées par code de question. */
+    /**
+     * Réponses en cours, indexées par code de question.
+     *
+     * @var array<string, mixed>
+     */
     public array $answers = [];
 
     public string $mode = OrderMode::SCHEDULED;
@@ -66,16 +98,20 @@ class OrderJourney extends Component
 
     public ?float $lng = null;
 
-    /** Le géocodage a échoué : on le dit, plutôt que de laisser un champ muet. */
+    /**
+     * Le géocodage a échoué : on le dit, plutôt que de laisser un champ muet. */
     public bool $addressUnresolved = false;
 
-    /** Le refus de réordonnancement, AFFICHÉ : corriger en silence tromperait le client. */
+    /**
+     * Le refus de réordonnancement, AFFICHÉ : corriger en silence tromperait le client. */
     public string $sequenceError = '';
 
-    /** Jour retenu pour l'intervention, au format ISO. */
+    /**
+     * Jour retenu pour l'intervention, au format ISO. */
     public ?string $selectedDate = null;
 
-    /** Heure de début du créneau retenu, au format H:i. */
+    /**
+     * Heure de début du créneau retenu, au format H:i. */
     public ?string $selectedSlot = null;
 
     /**
@@ -108,7 +144,8 @@ class OrderJourney extends Component
 
     // ─── Catalogue ───────────────────────────────────────────────────────────────────────────
 
-    /** @return Collection<int, Sector> */
+    /**
+     * @return Collection<int, Sector> */
     #[Computed]
     public function sectors()
     {
@@ -119,9 +156,13 @@ class OrderJourney extends Component
             ->get();
     }
 
-    /** Les métiers du secteur retenu — ceux du dock. */
+    /**
+     * Les métiers du secteur retenu — ceux du dock.
+     *
+     * @return Collection<int, Trade>
+     */
     #[Computed]
-    public function trades()
+    public function trades(): Collection
     {
         if (! $this->sectorId) {
             return collect();
@@ -146,9 +187,11 @@ class OrderJourney extends Component
      * En mode immédiat le questionnaire est volontairement RÉDUIT aux questions essentielles : la
      * vitesse prime sur la précision, et la fourchette annoncée est simplement plus large. Poser
      * huit questions à quelqu'un dont l'eau coule dans le couloir serait absurde.
+     *
+     * @return Collection<int, Question>
      */
     #[Computed]
-    public function questions()
+    public function questions(): Collection
     {
         $trade = $this->trade;
 
@@ -165,15 +208,21 @@ class OrderJourney extends Component
         return $query->orderBy('sort_order')->get();
     }
 
-    /** Celles réellement affichées : une condition non remplie masque sa question. */
+    /** Celles réellement affichées : une condition non remplie masque sa question.
+     *
+     * @return Collection<int, Question>
+     */
     #[Computed]
-    public function visibleQuestions()
+    public function visibleQuestions(): Collection
     {
         return app(ConditionEvaluator::class)
             ->visible($this->questions, $this->answers);
     }
 
-    /** Les modes que ce métier autorise. Un ravalement de façade n'est pas un service immédiat. */
+    /** Les modes que ce métier autorise. Un ravalement de façade n'est pas un service immédiat.
+     *
+     * @return list<string>
+     */
     #[Computed]
     public function availableModes(): array
     {
@@ -207,7 +256,10 @@ class OrderJourney extends Component
             : null;
     }
 
-    /** Ce que la dernière réponse a changé — « +45 € — plafonds inclus ». */
+    /** Ce que la dernière réponse a changé — « +45 € — plafonds inclus ».
+     *
+     * @return array<string, mixed>|null
+     */
     #[Computed]
     public function lastChange(): ?array
     {
@@ -293,6 +345,7 @@ class OrderJourney extends Component
      * Les jours proposés au choix.
      *
      * @return list<Carbon>
+     * @return array<int, Carbon>
      */
     #[Computed]
     public function dayOptions(): array
@@ -309,6 +362,8 @@ class OrderJourney extends Component
      *
      * Les seconds ne sont pas retirés : masqués, ils laisseraient une grille trouée que le client
      * lirait comme une panne. Grisés avec leur raison, ils informent.
+     *
+     * @return list<array<string, mixed>>
      */
     #[Computed]
     public function slots(): array
@@ -327,9 +382,12 @@ class OrderJourney extends Component
         );
     }
 
-    /** Les professionnels proposés, pour qui veut choisir. La liste reste facultative. */
+    /** Les professionnels proposés, pour qui veut choisir. La liste reste facultative.
+     *
+     * @return Collection<int, array{id: int, name: string, rating: float|null, rating_count: int, missions_count: int, distance_m: int, distance_km: float}>
+     */
     #[Computed]
-    public function providerOptions()
+    public function providerOptions(): Collection
     {
         $trade = $this->trade;
 
@@ -409,6 +467,8 @@ class OrderJourney extends Component
      * L'ordre n'est pas cosmétique — le carreleur ne pose pas avant que le plombier ait fini, et
      * pas immédiatement après non plus : il faut laisser sécher. Le client doit VOIR ce
      * séquencement, sinon il croit que tout le monde arrive le même matin.
+     *
+     * @return Collection<int, array{item: OrderDraftItem, trade: Trade, starts_at: Carbon, ends_at: Carbon, waits_for: string|null, gap_min: int}>
      */
     #[Computed]
     public function timeline(): Collection
@@ -423,7 +483,10 @@ class OrderJourney extends Component
         );
     }
 
-    /** « Souvent commandé avec » — ce que l'administrateur a associé, moins ce qui est déjà là. */
+    /** « Souvent commandé avec » — ce que l'administrateur a associé, moins ce qui est déjà là.
+     *
+     * @return Collection<int, array{trade: Trade, gap_min: int, after: string}>
+     */
     #[Computed]
     public function bundleSuggestions(): Collection
     {
@@ -432,7 +495,10 @@ class OrderJourney extends Component
             : collect();
     }
 
-    /** Le devis consolidé : un total, le détail dépliable par métier, la remise visible. */
+    /** Le devis consolidé : un total, le détail dépliable par métier, la remise visible.
+     *
+     * @return array<string, mixed>|null
+     */
     #[Computed]
     public function bundleQuote(): ?array
     {
@@ -649,7 +715,7 @@ class OrderJourney extends Component
         );
     }
 
-    public function render()
+    public function render(): View
     {
         return view('livewire.order-engine.order-journey');
     }

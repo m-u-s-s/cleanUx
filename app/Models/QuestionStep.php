@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Models\Concerns\HasCatalogTranslations;
+use App\Models\Contracts\TranslatesCatalogLabels;
 use App\Services\Audit\Concerns\AuditsEloquentEvents;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -14,7 +15,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * Existe pour la loi 3 : au-dela de sept questions, on scinde en deux etapes avec une progression
  * honnete, plutot que d'empiler quinze champs sur une page.
  */
-class QuestionStep extends Model
+class QuestionStep extends Model implements TranslatesCatalogLabels
 {
     use AuditsEloquentEvents, HasCatalogTranslations;
 

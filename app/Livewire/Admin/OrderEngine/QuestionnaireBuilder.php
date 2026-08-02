@@ -3,6 +3,7 @@
 namespace App\Livewire\Admin\OrderEngine;
 
 use App\Livewire\OrderEngine\QuestionRenderer;
+use App\Models\Contracts\TranslatesCatalogLabels;
 use App\Models\Question;
 use App\Models\QuestionOption;
 use App\Models\Trade;
@@ -423,10 +424,16 @@ class QuestionnaireBuilder extends Component
             ->get();
     }
 
-    /** Recopie les libellés traduits d'un objet du catalogue vers sa copie. */
-    protected function copyTranslations(Model $from, Model $to): void
+    /**
+     * Recopie les libellés traduits d'un objet du catalogue vers sa copie.
+     *
+     * Le type dit ce qui est réellement exigé : un modèle PORTANT le trait de traduction. Accepter
+     * un `Model` quelconque laissait passer, à la compilation comme à l'analyse, un appel qui
+     * planterait à l'exécution sur un modèle sans `setTranslation()`.
+     */
+    protected function copyTranslations(TranslatesCatalogLabels $from, TranslatesCatalogLabels $to): void
     {
-        foreach ($from->translations as $translation) {
+        foreach ($from->translations()->get() as $translation) {
             $to->setTranslation($translation->field, $translation->locale, $translation->value);
         }
     }

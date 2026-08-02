@@ -17,6 +17,7 @@ use App\Livewire\Client\ClientLoyaltyRewards;
 use App\Livewire\Client\ClientSubscriptions;
 use App\Livewire\Client\ClientSubscriptionsV2;
 use App\Livewire\Client\ClientTipBooking;
+use App\Livewire\Client\EditRecurringBooking;
 use App\Livewire\Client\FavoriteEmployesManager;
 use App\Livewire\Client\FinanceDocumentsClient;
 use App\Livewire\Client\GdprDataPage;
@@ -49,7 +50,7 @@ Route::middleware(['role:client'])
         if (class_exists(MesRendezVousClient::class)) {
             Route::get('/rendez-vous', MesRendezVousClient::class)->name('rendezvous.index');
             // Récupération d'orphelin — gestion d'une série récurrente.
-            Route::get('/rendez-vous/{rendezVous}/serie', \App\Livewire\Client\EditRecurringBooking::class)->name('rendezvous.series');
+            Route::get('/rendez-vous/{rendezVous}/serie', EditRecurringBooking::class)->name('rendezvous.series');
         }
 
         if (class_exists(PrendreRendezVous::class)) {

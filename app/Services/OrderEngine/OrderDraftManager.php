@@ -11,6 +11,7 @@ use App\Models\Trade;
 use App\Models\User;
 use App\Support\Domain\OrderDraftStatus;
 use App\Support\Domain\OrderMode;
+use App\Support\HumanReference;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -247,6 +248,6 @@ class OrderDraftManager
             }
         }
 
-        return 'CLX-'.Str::upper(Str::random(9, 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'));
+        return HumanReference::prefixed('CLX-', 9);
     }
 }

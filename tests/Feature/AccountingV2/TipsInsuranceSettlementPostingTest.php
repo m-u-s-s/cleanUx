@@ -6,8 +6,10 @@ use App\Models\AccountingEntry;
 use App\Models\Booking;
 use App\Models\BookingInsurance;
 use App\Models\BookingTip;
+use App\Models\InsurancePlan;
 use App\Models\User;
 use App\Services\AccountingV2\Posting\BookingPostingService;
+use App\Services\Tips\TipService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -59,7 +61,7 @@ class TipsInsuranceSettlementPostingTest extends TestCase
         $booking = Booking::factory()->create();
         $insurance = BookingInsurance::create([
             'booking_id' => $booking->id,
-            'plan_id' => \App\Models\InsurancePlan::factory()->create()->id,
+            'plan_id' => InsurancePlan::factory()->create()->id,
             'user_id' => User::factory()->client()->create()->id,
             'premium_cents' => 900,
             'coverage_amount_cents' => 500000,
@@ -91,7 +93,7 @@ class TipsInsuranceSettlementPostingTest extends TestCase
             'status' => BookingTip::STATUS_PENDING,
         ]);
 
-        app(\App\Services\Tips\TipService::class)->confirmCharge($tip, 'pi_fake');
+        app(TipService::class)->confirmCharge($tip, 'pi_fake');
 
         $this->assertTrue($this->entries('BookingTip', $tip->id)->isNotEmpty(), 'Le pourboire chargé doit être posté au GL.');
     }

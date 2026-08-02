@@ -11,8 +11,8 @@ use App\Support\Domain\BookingStatus;
 use App\Support\Domain\OrderDraftStatus;
 use App\Support\Domain\OrderMode;
 use App\Support\Domain\PaymentPlan;
+use App\Support\HumanReference;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 
 /**
@@ -284,13 +284,13 @@ class OrderConfirmationService
     protected function uniqueReference(): string
     {
         foreach (range(1, 10) as $ignored) {
-            $reference = 'CUX-'.Str::upper(Str::random(6, 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'));
+            $reference = HumanReference::prefixed('CUX-', 6);
 
             if (! Booking::where('booking_reference', $reference)->exists()) {
                 return $reference;
             }
         }
 
-        return 'CUX-'.Str::upper(Str::random(10, 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'));
+        return HumanReference::prefixed('CUX-', 10);
     }
 }

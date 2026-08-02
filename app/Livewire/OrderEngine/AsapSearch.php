@@ -27,6 +27,12 @@ use Livewire\Component;
  * JAMAIS DE CUL-DE-SAC. Quand personne ne répond, l'écran propose d'élargir, de basculer en
  * rendez-vous, ou d'être prévenu — jamais un simple constat d'échec.
  */
+/**
+ * @property-read AsapDispatchRequest|null $request
+ * @property-read array{free: bool, fee_cents: int, reason: string, free_seconds_left: int|null} $cancellation
+ * @property-read list<array{key: string, label: string, detail: string}> $waysForward
+ * @property-read bool $timedOut
+ */
 #[Layout('layouts.app')]
 class AsapSearch extends Component
 {

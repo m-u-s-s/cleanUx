@@ -2,7 +2,6 @@
 
 namespace Tests\Feature\Bundles;
 
-use App\Models\MultiTradeBundle;
 use App\Models\MultiTradeBundleItem;
 use App\Models\Trade;
 use App\Models\User;

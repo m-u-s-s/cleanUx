@@ -28,6 +28,14 @@ use Livewire\Component;
  * Rien n'est perdu en se connectant : le panier est rattaché au compte au retour, parce qu'il vit
  * en base sur un jeton de session et non dans l'écran.
  */
+/**
+ * @property-read OrderDraft|null $draft
+ * @property-read array<string, mixed>|null $quote
+ * @property-read list<string> $blockers
+ * @property-read Collection<int, Booking> $bookings
+ * @property-read array<int, list<array<string, mixed>>> $paymentOptions
+ * @property-read array<int, array{ready: bool, reason: string|null}> $paymentStates
+ */
 #[Layout('layouts.app')]
 class OrderConfirmation extends Component
 {

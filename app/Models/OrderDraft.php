@@ -4,11 +4,11 @@ namespace App\Models;
 
 use App\Support\Domain\OrderDraftStatus;
 use App\Support\Domain\OrderMode;
+use App\Support\HumanReference;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Support\Str;
 
 /**
  * La commande en cours de construction.
@@ -52,7 +52,7 @@ class OrderDraft extends Model
      */
     public static function generateReference(): string
     {
-        return 'CLX-'.Str::upper(Str::random(5, 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'));
+        return HumanReference::prefixed('CLX-', 5);
     }
 
     /** @return HasMany<OrderDraftItem, $this> */
