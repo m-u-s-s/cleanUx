@@ -25,6 +25,7 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -192,11 +193,54 @@ class OrderJourney extends Component
     #[Computed]
     public function sectors()
     {
-        return Sector::query()
+        $sectors = Sector::query()
             ->active()
             ->ordered()
             ->withCount(['trades' => fn ($q) => $q->where('is_active', true)])
             ->get();
+
+        /*
+         * Le signal vivant des cartes.
+         *
+         * « 3 métiers » est un fait de catalogue : le client ne peut ni le vérifier ni s'en
+         * servir. La confiance vient de la disponibilité VISIBLE, pas d'un décompte de rubriques.
+         *
+         * EN UNE REQUÊTE, pas une par carte : c'est le premier écran du produit, celui dont dépend
+         * le LCP, et le nombre de secteurs n'a pas de plafond.
+         */
+        $counts = $this->activeProvidersPerSector();
+
+        return $sectors->each(function (Sector $sector) use ($counts) {
+            $sector->setAttribute('active_providers_count', (int) ($counts[$sector->id] ?? 0));
+        });
+    }
+
+    /**
+     * Combien de professionnels actifs exercent dans chaque secteur.
+     *
+     * La définition est reprise TELLE QUELLE de {@see ProviderAvailabilityLookup} — profil actif,
+     * rôle prestataire ou employé. Deux définitions divergentes afficheraient 42 sur la carte et 0
+     * une fois l'adresse saisie, et c'est le second chiffre que le client retiendrait.
+     *
+     * `distinct` sur l'utilisateur : un professionnel qui exerce deux métiers du même secteur
+     * compte pour un. Le compter deux fois gonflerait la promesse d'autant, et le client s'en
+     * apercevrait au premier créneau introuvable.
+     *
+     * @return Collection<int, int>
+     */
+    protected function activeProvidersPerSector(): Collection
+    {
+        return DB::table('trade_user')
+            ->join('trades', 'trades.id', '=', 'trade_user.trade_id')
+            ->join('users', 'users.id', '=', 'trade_user.user_id')
+            ->join('provider_profiles', 'provider_profiles.user_id', '=', 'users.id')
+            ->whereNotNull('trades.sector_id')
+            ->where('trades.is_active', true)
+            ->where('provider_profiles.status', 'active')
+            ->whereIn('users.role', ['provider', 'employe'])
+            ->groupBy('trades.sector_id')
+            ->selectRaw('trades.sector_id, count(distinct users.id) as total')
+            ->pluck('total', 'sector_id');
     }
 
     /**

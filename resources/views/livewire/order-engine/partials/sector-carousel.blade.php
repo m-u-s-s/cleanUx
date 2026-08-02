@@ -78,7 +78,19 @@
                         'text-white/90' => $sectorId === $sector->id,
                         'text-slate-600' => $sectorId !== $sector->id,
                     ])>
-                        {{ $sector->trades_count }} métier{{ $sector->trades_count > 1 ? 's' : '' }}
+                        @php($pros = (int) ($sector->active_providers_count ?? 0))
+                        @if ($pros > 0)
+                            {{--
+                                Le compte des professionnels, SANS promesse de proximité : aucune
+                                adresse n'est connue à cet écran. « près de chez vous » appartient
+                                au bloc d'adresse, qui le vérifie avant de l'écrire.
+                            --}}
+                            {{ $pros }} professionnel{{ $pros > 1 ? 's' : '' }}
+                        @else
+                            {{-- Jamais « 0 professionnel » : un secteur annoncé vide ne s'ouvre
+                                 pas, alors qu'il porte peut-être un métier commandable demain. --}}
+                            {{ $sector->trades_count }} métier{{ $sector->trades_count > 1 ? 's' : '' }}
+                        @endif
                     </span>
                 </button>
             </li>
