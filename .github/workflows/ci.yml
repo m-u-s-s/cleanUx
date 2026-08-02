@@ -156,6 +156,22 @@ jobs:
       APP_ENV: local
       APP_DEBUG: 'true'
       E2E_BASE_URL: http://127.0.0.1:8000
+      # Le job copie .env.testing, taillé pour PHPUnit : là, chaque test est un processus unique
+      # et une session en mémoire suffit. Ici l'application est servie en HTTP et le navigateur
+      # enchaîne de VRAIES requêtes : avec `array`, la session est jetée à la fin de chacune, le
+      # jeton CSRF posé sur GET /login n'existe plus au POST — 419 — et une connexion réussie ne
+      # survivrait de toute façon pas à la redirection. C'est pour cela que les cinq rôles
+      # échouaient au login.
+      SESSION_DRIVER: file
+      CACHE_STORE: file
+      # L'URL de l'application doit désigner le serveur réellement joint, sinon les redirections
+      # absolues renvoient ailleurs que là où le navigateur se trouve.
+      APP_URL: http://127.0.0.1:8000
+      # Ce job vérifie l'ACCÈS PAR RÔLE, pas le parcours de double authentification. Exigée des
+      # admins par défaut, elle renvoie le compte de vérification vers son profil — et un
+      # navigateur ne peut pas répondre à un défi TOTP. On la désactive donc ici, ce qui rend le
+      # test de l'espace admin réellement significatif au lieu de le voir passer sur un renvoi.
+      ENFORCE_2FA_FOR_ADMINS: 'false'
 
     steps:
       - name: Checkout

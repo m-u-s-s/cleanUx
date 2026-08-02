@@ -16,6 +16,9 @@ test.describe('Auth par rôle', () => {
       const resp = await page.goto('/dashboard', { waitUntil: 'domcontentloaded' });
       expect(resp?.status(), `${role} → /dashboard doit répondre 2xx/3xx`).toBeLessThan(400);
       expect(page.url(), `${role} ne doit pas être renvoyé au login`).not.toContain('/login');
+      // `/dashboard` aiguille vers l'espace du rôle : on vérifie qu'on a bien atterri quelque part
+      // d'authentifié, et non sur une page d'erreur rendue avec un statut 2xx.
+      await expect(page.locator('body')).not.toContainText('Mot de passe oublié');
     });
   }
 });
@@ -32,6 +35,11 @@ test.describe('Accès aux espaces par rôle', () => {
       await loginAs(page, role);
       const resp = await page.goto(path, { waitUntil: 'domcontentloaded' });
       expect(resp?.status(), `${role} → ${path} doit répondre 2xx`).toBeLessThan(400);
+
+      // La DESTINATION compte autant que le statut. Un renvoi ailleurs — vers le profil quand la
+      // double authentification manque, par exemple — se termine lui aussi par un 200 : le test
+      // passait alors sans jamais entrer dans l'espace qu'il prétend couvrir.
+      expect(page.url(), `${role} doit rester sur ${path}, pas être renvoyé ailleurs`).toContain(path);
     });
   }
 });
