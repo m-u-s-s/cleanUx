@@ -68,15 +68,20 @@
                     </div>
                 </div>
 
-                <div class="mt-3 flex flex-wrap gap-3 text-sm">
+                {{--
+                    Zone du pouce : ces liens-boutons faisaient 20 px de haut, ce que le balayage
+                    de QA à 390 px a signalé comme hostile. `min-h-[44px]` les rend atteignables
+                    sans les alourdir — ils restent des liens, avec une cible utilisable.
+                --}}
+                <div class="mt-3 flex flex-wrap items-center gap-3 text-sm">
                     <button type="button" wire:click="editSector({{ $sector->id }})"
-                        class="font-medium text-slate-700 underline underline-offset-4 hover:text-slate-900">Modifier</button>
+                        class="inline-flex min-h-[44px] items-center font-medium text-slate-700 underline underline-offset-4 hover:text-slate-900">Modifier</button>
                     <button type="button" wire:click="toggleSector({{ $sector->id }})"
-                        class="text-slate-500 underline underline-offset-4 hover:text-slate-800">
+                        class="inline-flex min-h-[44px] items-center text-slate-500 underline underline-offset-4 hover:text-slate-800">
                         {{ $sector->is_active ? 'Retirer du carrousel' : 'Remettre en ligne' }}
                     </button>
                     <button type="button" wire:click="confirmArchiveSector({{ $sector->id }})"
-                        class="text-rose-700 underline underline-offset-4 hover:text-rose-900">Archiver</button>
+                        class="inline-flex min-h-[44px] items-center text-rose-700 underline underline-offset-4 hover:text-rose-900">Archiver</button>
                 </div>
 
                 {{-- ─── Métiers du secteur ──────────────────────────────────────────────── --}}
@@ -143,11 +148,11 @@
                                     </div>
 
                                     <a href="{{ route('admin.order-engine.builder', $trade) }}"
-                                        class="font-medium text-slate-700 underline underline-offset-4 hover:text-slate-900">
+                                        class="inline-flex min-h-[44px] items-center font-medium text-slate-700 underline underline-offset-4 hover:text-slate-900">
                                         Parcours
                                     </a>
                                     <button type="button" wire:click="toggleTrade({{ $trade->id }})"
-                                        class="text-slate-500 underline underline-offset-4 hover:text-slate-800">
+                                        class="inline-flex min-h-[44px] items-center text-slate-500 underline underline-offset-4 hover:text-slate-800">
                                         {{ $trade->is_active ? 'Désactiver' : 'Activer' }}
                                     </button>
                                 </div>

@@ -137,20 +137,22 @@
                         @endunless
                     </div>
 
-                    <div class="mt-3 flex flex-wrap gap-3 text-sm">
+                    {{-- Zone du pouce : ces liens-boutons faisaient 20 px de haut, signalés par le
+                         balayage de QA à 390 px comme hostiles au doigt. --}}
+                    <div class="mt-3 flex flex-wrap items-center gap-3 text-sm">
                         <button type="button" wire:click="edit({{ $question->id }})"
-                            class="font-medium text-slate-700 underline underline-offset-4 hover:text-slate-900">Modifier</button>
+                            class="inline-flex min-h-[44px] items-center font-medium text-slate-700 underline underline-offset-4 hover:text-slate-900">Modifier</button>
                         <button type="button" wire:click="toggleActive({{ $question->id }})"
-                            class="text-slate-500 underline underline-offset-4 hover:text-slate-800">
+                            class="inline-flex min-h-[44px] items-center text-slate-500 underline underline-offset-4 hover:text-slate-800">
                             {{ $question->is_active ? 'Retirer du parcours' : 'Remettre en ligne' }}
                         </button>
                         <button type="button" wire:click="confirmArchive({{ $question->id }})"
-                            class="text-rose-700 underline underline-offset-4 hover:text-rose-900">Archiver</button>
+                            class="inline-flex min-h-[44px] items-center text-rose-700 underline underline-offset-4 hover:text-rose-900">Archiver</button>
                         <button type="button" wire:click="startCondition({{ $question->id }})"
-                            class="text-slate-500 underline underline-offset-4 hover:text-slate-800">+ règle d’affichage</button>
+                            class="inline-flex min-h-[44px] items-center text-slate-500 underline underline-offset-4 hover:text-slate-800">+ règle d’affichage</button>
                         @if ($question->isOptionBased())
                             <button type="button" wire:click="addOption({{ $question->id }})"
-                                class="text-slate-500 underline underline-offset-4 hover:text-slate-800">+ réponse</button>
+                                class="inline-flex min-h-[44px] items-center text-slate-500 underline underline-offset-4 hover:text-slate-800">+ réponse</button>
                         @endif
                     </div>
 
@@ -185,7 +187,7 @@
                                         </span>
 
                                         <button type="button" wire:click="removeCondition({{ $condition->id }})"
-                                            class="shrink-0 text-slate-400 underline underline-offset-4 hover:text-rose-700">
+                                            class="shrink-0 inline-flex min-h-[44px] items-center text-slate-400 underline underline-offset-4 hover:text-rose-700">
                                             Retirer
                                         </button>
                                     </li>
@@ -628,7 +630,7 @@
                             @unless ($loop->first)
                                 <button type="button" wire:click="restoreRevision({{ $revision->id }})"
                                     wire:confirm="Remettre la version {{ $revision->version }} en ligne ? Elle repartira sous un nouveau numéro ; les versions intermédiaires restent consultables."
-                                    class="min-h-[36px] rounded-lg px-3 text-sm font-medium text-slate-900 underline-offset-2 hover:underline">
+                                    class="min-h-[44px] rounded-lg px-3 text-sm font-medium text-slate-900 underline-offset-2 hover:underline">
                                     Restaurer
                                 </button>
                             @endunless
@@ -657,7 +659,7 @@
 
                 <input type="file" wire:model="importFile" accept="application/json,.json"
                     aria-label="Fichier JSON d’un parcours exporté"
-                    class="mt-3 block w-full text-sm text-slate-600 file:mr-3 file:min-h-[36px] file:rounded-lg file:border file:border-slate-300 file:bg-white file:px-3 file:text-sm file:font-medium file:text-slate-900">
+                    class="mt-3 block w-full text-sm text-slate-600 file:mr-3 file:min-h-[44px] file:rounded-lg file:border file:border-slate-300 file:bg-white file:px-3 file:text-sm file:font-medium file:text-slate-900">
 
                 @error('importFile')
                     <p class="mt-2 text-sm text-rose-700" role="alert">{{ $message }}</p>
@@ -680,7 +682,7 @@
                         <button type="button" wire:click="duplicateTo({{ $target->id }})"
                             wire:confirm="Recopier ce questionnaire vers « {{ $target->name }} » ? Les questions existantes y seront mises à jour, aucune ne sera supprimée."
                             wire:key="dup-{{ $target->id }}"
-                            class="min-h-[36px] rounded-lg border border-slate-300 px-3 text-sm text-slate-700 hover:bg-slate-50">
+                            class="min-h-[44px] rounded-lg border border-slate-300 px-3 text-sm text-slate-700 hover:bg-slate-50">
                             {{ $target->name }}
                         </button>
                     @endforeach

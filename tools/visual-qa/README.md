@@ -19,6 +19,36 @@ Headless Playwright sweep of every embedded WebView page at 390×844, checking 5
 ```
 VQA_BASE=http://127.0.0.1:8000 npm run qa
 ```
+
+Ne vérifier qu'une page (ou quelques-unes) :
+```
+VQA_BASE=http://127.0.0.1:8000 VQA_ONLY=admin-order-engine npm run qa
+```
+
+### ⚠ Les pages ADMIN exigent de lever la 2FA
+
+`Enforce2FA` détourne tout administrateur sans `two_factor_confirmed_at` vers son profil. Le
+balayage suit la redirection, arrive sur une page pourvue de sa navigation, et échoue au critère
+C5 — **pour les 70 pages admin à la fois**, quelle que soit leur mise en page réelle. Le symptôme
+trompé : `c5_nav_chrome_absent: false` partout, et une URL finale en `/user/profile`.
+
+Lancer donc le serveur avec la contrainte levée — on mesure de la mise en page, pas de
+l'authentification :
+```
+ENFORCE_2FA_FOR_ADMINS=false php artisan serve
+```
+
+Ne PAS confirmer une 2FA sur le compte QA à la place : Fortify exige alors un code OTP à la
+connexion, que le harnais ne sait pas produire, et le balayage se retrouve bloqué sur la page de
+challenge (symptôme : un `<span>Cx</span>` du layout invité dans les coupables C3).
+
+### La liste des pages se régénère
+
+`storage/app/parity_webview.json` dérivait du registre — il lui manquait deux modules. Un balayage
+vert sur une liste périmée ne dit rien de la page qu'on vient d'ajouter :
+```
+php artisan parity:webview-manifest
+```
 Writes `out/report.json` + `out/report.md`.
 
 ## Criteria (per page, 390px viewport)

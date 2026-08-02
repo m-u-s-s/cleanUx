@@ -6,8 +6,19 @@ import { writeReport } from './report.mjs';
 
 const BASE = process.env.VQA_BASE ?? 'http://127.0.0.1:8000';
 
+// Filtre optionnel par clés, séparées par des virgules : vérifier UNE page qu'on vient d'ajouter
+// sans rejouer les 122, et sans que le résultat des autres ne noie le signal qu'on cherche.
+const ONLY = (process.env.VQA_ONLY ?? '').split(',').map((k) => k.trim()).filter(Boolean);
+
 const run = async () => {
-  const mods = loadModules().filter((m) => !m.deferred); // 7 deferred MySQL exclus
+  const mods = loadModules()
+    .filter((m) => !m.deferred) // 7 deferred MySQL exclus
+    .filter((m) => ONLY.length === 0 || ONLY.includes(m.key));
+
+  if (!mods.length) {
+    console.error(`Aucun module à vérifier${ONLY.length ? ` pour ${ONLY.join(', ')}` : ''}.`);
+    process.exit(1);
+  }
   const byCred = {};
   for (const m of mods) (byCred[m.credKey ?? 'public'] ??= []).push(m);
 
