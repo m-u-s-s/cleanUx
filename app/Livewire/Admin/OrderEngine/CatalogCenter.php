@@ -9,6 +9,8 @@ use App\Services\OrderEngine\QuestionInsights;
 use App\Services\OrderEngine\QuestionnaireValidator;
 use App\Services\OrderEngine\TradeFormPublisher;
 use App\Support\Livewire\Concerns\EnforcesAdminAccess;
+use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Livewire\Attributes\Computed;
@@ -265,8 +267,154 @@ class CatalogCenter extends Component
         $this->archiveImpact = null;
     }
 
+    /**
+     * Le lecteur seul lit.
+     *
+     * `EnforcesAdminAccess` s'arrête à « est-ce un administrateur » : un `platform_role` à « admin »
+     * assorti d'un `access_scope` à « readonly » franchit la garde et atteint cet écran, qui écrit
+     * le catalogue et décide de l'ordre du carrousel.
+     */
+    private function refusesWrite(): bool
+    {
+        $user = Auth::user();
+
+        return $user !== null
+            && method_exists($user, 'isReadOnlyAdmin')
+            && $user->isReadOnlyAdmin();
+    }
+
+    /**
+     * L'ordre des secteurs, tel que le navigateur l'a composé.
+     *
+     * C'est l'ordre du CARROUSEL : le premier secteur est celui que tout visiteur voit d'abord.
+     * Il n'est pas cosmétique, et il est revalidé côté serveur — la liste vient du navigateur, elle
+     * n'est pas crue sur parole.
+     *
+     * @param  array<int, int|string>  $orderedIds
+     */
+    public function reorderSectors(array $orderedIds): void
+    {
+        if ($this->refusesWrite()) {
+            return;
+        }
+
+        $own = $this->sectors()->keyBy('id');
+        $kept = $this->keepKnown($orderedIds, $own);
+
+        // Une liste partielle laisserait des secteurs sans rang défini, donc à une place
+        // arbitraire au prochain affichage : on refuse plutôt que de réordonner à moitié.
+        if ($kept === null) {
+            return;
+        }
+
+        DB::transaction(function () use ($kept, $own) {
+            $kept->each(fn (int $id, int $position) => $own[$id]->update(['sort_order' => $position]));
+        });
+
+        $this->refreshDerived();
+    }
+
+    /**
+     * L'ordre des métiers DANS un secteur.
+     *
+     * C'est l'ordre du dock, donc le premier métier proposé une fois le secteur choisi. Il ne se
+     * réglait pas du tout — ni à la souris, ni aux flèches — alors que ce sont les métiers qui se
+     * vendent.
+     *
+     * @param  array<int, int|string>  $orderedIds
+     */
+    public function reorderTrades(int $sectorId, array $orderedIds): void
+    {
+        if ($this->refusesWrite()) {
+            return;
+        }
+
+        $sector = $this->sectors()->firstWhere('id', $sectorId);
+
+        if (! $sector) {
+            return;
+        }
+
+        // Les métiers d'un AUTRE secteur ne se glissent pas ici : une liste forgée réordonnerait
+        // sinon le secteur voisin.
+        $own = $sector->trades->keyBy('id');
+        $kept = $this->keepKnown($orderedIds, $own);
+
+        if ($kept === null) {
+            return;
+        }
+
+        DB::transaction(function () use ($kept, $own) {
+            $kept->each(fn (int $id, int $position) => $own[$id]->update(['sort_order' => $position]));
+        });
+
+        $this->refreshDerived();
+    }
+
+    /**
+     * Les flèches, qui restent.
+     *
+     * Le glisser-déposer ne fonctionne ni au clavier ni avec un lecteur d'écran, et le catalogue
+     * est un écran de travail quotidien.
+     */
+    public function moveTrade(int $tradeId, int $direction): void
+    {
+        if ($this->refusesWrite()) {
+            return;
+        }
+
+        $trade = Trade::find($tradeId);
+        $sector = $trade?->sector_id ? $this->sectors()->firstWhere('id', $trade->sector_id) : null;
+
+        if (! $sector) {
+            return;
+        }
+
+        $ordered = $sector->trades->values();
+        $index = $ordered->search(fn (Trade $t) => $t->id === $tradeId);
+        $target = $index === false ? -1 : $index + $direction;
+
+        if ($index === false || $target < 0 || $target >= $ordered->count()) {
+            return;
+        }
+
+        DB::transaction(function () use ($ordered, $index, $target) {
+            $ordered->each(fn (Trade $t, int $i) => $t->update(['sort_order' => $i]));
+            $ordered[$index]->update(['sort_order' => $target]);
+            $ordered[$target]->update(['sort_order' => $index]);
+        });
+
+        $this->refreshDerived();
+    }
+
+    /**
+     * La liste reçue décrit-elle EXACTEMENT ce qu'on possède ?
+     *
+     * `null` si elle est partielle ou si elle contient un intrus. Les deux cas se soldent par un
+     * refus, jamais par un réordonnancement de la partie reconnue.
+     *
+     * @param  array<int, int|string>  $orderedIds
+     * @param  Collection<int, mixed>  $own
+     * @return Collection<int, int>|null
+     */
+    private function keepKnown(array $orderedIds, $own)
+    {
+        $kept = collect($orderedIds)
+            ->map(fn ($id) => (int) $id)
+            ->filter(fn (int $id) => $own->has($id))
+            ->values();
+
+        return ($kept->count() === $own->count() && $kept->count() === count($orderedIds))
+            ? $kept
+            : null;
+    }
+
     public function moveSector(int $sectorId, int $direction): void
     {
+        if ($this->refusesWrite()) {
+            return;
+        }
+
         $ordered = $this->sectors()->values();
         $index = $ordered->search(fn ($s) => $s->id === $sectorId);
 

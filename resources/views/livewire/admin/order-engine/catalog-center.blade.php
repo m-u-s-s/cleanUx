@@ -26,9 +26,17 @@
     @endif
 
     {{-- ─── Secteurs ────────────────────────────────────────────────────────────────────── --}}
-    <div class="space-y-4">
+    {{--
+        L'ordre du catalogue est celui du CARROUSEL et du DOCK : le premier secteur est ce que
+        voit tout visiteur, le premier métier ce qu'on lui propose. Il se réglait aux flèches sur
+        les secteurs, et pas du tout sur les métiers — alors que ce sont eux qui se vendent.
+
+        Les flèches RESTENT partout : le glisser-déposer ne fonctionne ni au clavier ni avec un
+        lecteur d'écran, et ceci est un écran de travail quotidien.
+    --}}
+    <div class="space-y-4" x-data="catalogSorter('reorderSectors')" x-init="boot()" data-sector-root>
         @forelse ($this->sectors() as $index => $sector)
-            <section @class([
+            <section draggable="true" data-sort-id="{{ $sector->id }}" @class([
                 'rounded-2xl border bg-white p-5',
                 'border-slate-200' => $sector->is_active,
                 'border-dashed border-slate-300 opacity-70' => ! $sector->is_active,
@@ -77,10 +85,14 @@
                         Aucun métier. Un secteur vide n’apparaît pas dans le carrousel.
                     </p>
                 @else
-                    <ul class="mt-4 divide-y divide-slate-100 border-t border-slate-100">
+                    <ul class="mt-4 divide-y divide-slate-100 border-t border-slate-100"
+                        x-data="catalogSorter('reorderTrades', {{ $sector->id }})" x-init="boot()"
+                        data-sector-root>
                         @foreach ($sector->trades as $trade)
                             @php $status = $this->tradeStatuses()[$trade->id] ?? null; @endphp
-                            <li class="flex flex-wrap items-center justify-between gap-3 py-3" wire:key="trade-{{ $trade->id }}">
+                            <li draggable="true" data-sort-id="{{ $trade->id }}"
+                                class="flex flex-wrap items-center justify-between gap-3 py-3"
+                                wire:key="trade-{{ $trade->id }}">
                                 <div class="min-w-0">
                                     <p @class(['truncate text-[15px] font-medium text-slate-900', 'line-through opacity-50' => ! $trade->is_active])>
                                         {{ $trade->name }}
@@ -118,6 +130,18 @@
                                 </div>
 
                                 <div class="flex shrink-0 items-center gap-3 text-sm">
+                                    {{-- Les flèches : seul chemin au clavier et au lecteur d'écran. --}}
+                                    <div class="flex items-center gap-1">
+                                        <button type="button" wire:click="moveTrade({{ $trade->id }}, -1)"
+                                            aria-label="Monter"
+                                            class="flex h-8 w-8 items-center justify-center rounded-lg text-slate-500 hover:bg-slate-100 disabled:opacity-30"
+                                            @disabled($loop->first)>↑</button>
+                                        <button type="button" wire:click="moveTrade({{ $trade->id }}, 1)"
+                                            aria-label="Descendre"
+                                            class="flex h-8 w-8 items-center justify-center rounded-lg text-slate-500 hover:bg-slate-100 disabled:opacity-30"
+                                            @disabled($loop->last)>↓</button>
+                                    </div>
+
                                     <a href="{{ route('admin.order-engine.builder', $trade) }}"
                                         class="font-medium text-slate-700 underline underline-offset-4 hover:text-slate-900">
                                         Parcours
@@ -250,3 +274,93 @@
         </div>
     @endif
 </div>
+
+@push('scripts')
+<script>
+    /**
+     * Reordonnancement a la souris, pour les secteurs comme pour les metiers d'un secteur.
+     *
+     * Un seul composant sert les deux : la difference tient a l'action Livewire appelee et, pour
+     * les metiers, a l'identifiant du secteur passe en premier argument.
+     *
+     * L'ordre part au SERVEUR, qui le revalide : il refuse une liste partielle ou contenant un
+     * intrus plutot que de reordonner a moitie. Ce qui vient du navigateur n'est pas cru sur parole.
+     */
+    window.catalogSorter = (action, sectorId = null) => ({
+        dragged: null,
+
+        boot() {
+            const root = this.$el;
+
+            root.addEventListener('dragstart', (e) => {
+                this.dragged = e.target.closest('[data-sort-id]');
+
+                // Une carte de metier vit DANS une carte de secteur : sans ce test, saisir un
+                // metier ferait aussi glisser son secteur, et les deux listes bougeraient.
+                if (this.dragged && this.dragged.closest('[data-sector-root]') !== root) {
+                    this.dragged = null;
+                    return;
+                }
+
+                if (this.dragged) {
+                    e.stopPropagation();
+                    e.dataTransfer.effectAllowed = 'move';
+                    this.dragged.style.opacity = '0.4';
+                }
+            });
+
+            root.addEventListener('dragend', () => {
+                if (this.dragged) {
+                    this.dragged.style.opacity = '';
+                }
+                this.dragged = null;
+            });
+
+            root.addEventListener('dragover', (e) => {
+                if (! this.dragged) {
+                    return;
+                }
+
+                e.preventDefault();
+                const over = e.target.closest('[data-sort-id]');
+
+                if (! over || over === this.dragged || over.parentNode !== this.dragged.parentNode) {
+                    return;
+                }
+
+                // Insertion avant ou apres selon le cote survole : sans ce test, deposer sur la
+                // moitie basse d'une carte la placerait quand meme au-dessus.
+                const box = over.getBoundingClientRect();
+                const after = (e.clientY - box.top) > (box.height / 2);
+                over.parentNode.insertBefore(this.dragged, after ? over.nextSibling : over);
+            });
+
+            root.addEventListener('drop', (e) => {
+                if (! this.dragged) {
+                    return;
+                }
+
+                e.preventDefault();
+                e.stopPropagation();
+                this.commit();
+            });
+        },
+
+        commit() {
+            const ids = Array.from(this.$el.children)
+                .map((el) => el.dataset.sortId)
+                .filter(Boolean);
+
+            if (! ids.length) {
+                return;
+            }
+
+            if (sectorId === null) {
+                this.$wire.reorderSectors(ids);
+            } else {
+                this.$wire.reorderTrades(sectorId, ids);
+            }
+        },
+    });
+</script>
+@endpush

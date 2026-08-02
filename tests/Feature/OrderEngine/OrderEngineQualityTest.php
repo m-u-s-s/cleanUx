@@ -248,8 +248,11 @@ class OrderEngineQualityTest extends TestCase
     {
         $builder = file_get_contents(resource_path('views/livewire/admin/order-engine/questionnaire-builder.blade.php'));
         $bundle = file_get_contents(resource_path('views/livewire/order-engine/partials/bundle.blade.php'));
+        // Le catalogue s'est ajouté à la liste : il règle l'ordre du carrousel et du dock, et c'est
+        // un écran de travail quotidien — l'exclure du clavier l'excluerait d'un usage réel.
+        $catalog = file_get_contents(resource_path('views/livewire/admin/order-engine/catalog-center.blade.php'));
 
-        foreach ([$builder, $bundle] as $view) {
+        foreach ([$builder, $bundle, $catalog] as $view) {
             $this->assertStringContainsString('draggable="true"', $view);
             $this->assertStringContainsString('aria-label="Monter"', $view);
             $this->assertStringContainsString('aria-label="Descendre"', $view);
