@@ -61,6 +61,20 @@ class ScheduledAtDrivesTheFeeTest extends TestCase
      */
     public function test_the_appointment_hour_decides_the_fee_not_midnight(): void
     {
+        /*
+         * L'HEURE EST FIGÉE, et ce n'est pas du confort.
+         *
+         * `now()->addHours(30)->setTime(21, 0)` ne donne pas un écart de 30 heures : il donne un
+         * écart qui DÉPEND DE L'HEURE QU'IL EST. Exécuté vers 21 h, l'ajout de 30 heures bascule au
+         * surlendemain, `setTime(21:00)` porte l'écart à 48 h, le palier 24–48 h ne s'applique plus
+         * et le test tombe à 0 % au lieu de 25 %.
+         *
+         * Ce test-là était donc VERT le matin et ROUGE le soir, sur une garantie d'argent. Un test
+         * qui rougit un tiers de la journée apprend à être ignoré, puis laisse passer le vrai
+         * défaut qu'il gardait.
+         */
+        $this->travelTo('2026-08-03 10:00:00');
+
         $client = User::factory()->client()->create();
 
         // 30 heures d'ici, à une heure tardive : minuit du même jour est, lui, à moins de 24 h.
@@ -79,6 +93,32 @@ class ScheduledAtDrivesTheFeeTest extends TestCase
         $this->assertEqualsWithDelta(25.0, $quote->feePercent, 0.01);
         $this->assertSame(2500, $quote->feeAmountCents);
         $this->assertSame(7500, $quote->refundAmountCents);
+    }
+
+    /**
+     * La même garantie, une annulation faite EN SOIRÉE.
+     *
+     * C'est l'heure à laquelle le test précédent tombait avant d'être figé. Le palier ne doit pas
+     * dépendre du moment où le client annule, mais de l'écart jusqu'au rendez-vous.
+     */
+    public function test_the_tier_does_not_depend_on_the_hour_of_the_cancellation(): void
+    {
+        $this->travelTo('2026-08-03 21:30:00');
+
+        $client = User::factory()->client()->create();
+        $rendezVous = now()->addHours(30);
+
+        $booking = Booking::create([
+            'client_id' => $client->id,
+            'date' => $rendezVous,
+            'heure' => $rendezVous->format('H:i:s'),
+            'status' => 'confirme',
+            'devis_estime' => 100.0,
+        ]);
+
+        $quote = app(CancellationEngine::class)->quote($booking->id, 'client');
+
+        $this->assertEqualsWithDelta(25.0, $quote->feePercent, 0.01);
     }
 
     /** Un horodatage déjà fourni n'est pas écrasé : l'appelant sait mieux que la reconstitution. */
