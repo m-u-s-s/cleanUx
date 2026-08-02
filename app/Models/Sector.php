@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Services\Audit\Concerns\AuditsEloquentEvents;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -15,7 +16,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  */
 class Sector extends Model
 {
-    use SoftDeletes;
+    use AuditsEloquentEvents, SoftDeletes;
 
     protected $fillable = [
         'slug', 'name', 'tagline', 'icon', 'cover_image_path', 'accent_color',
@@ -48,5 +49,17 @@ class Sector extends Model
     public function scopeOrdered(Builder $q): Builder
     {
         return $q->orderBy('sort_order')->orderBy('name');
+    }
+
+    /*
+     * Même domaine que les questions : « catalog ».
+     *
+     * Les trois niveaux se lisent alors dans un seul flux d'audit. Archiver un secteur retire tout
+     * un pan du carrousel d'un geste ; répondre à « pourquoi Espaces verts a disparu jeudi »
+     * demande de retrouver ce geste-là, pas de deviner.
+     */
+    protected function auditEventDomain(): string
+    {
+        return 'catalog';
     }
 }

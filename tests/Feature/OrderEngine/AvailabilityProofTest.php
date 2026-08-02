@@ -6,6 +6,7 @@ use App\Livewire\OrderEngine\OrderJourney;
 use App\Models\ProviderProfile;
 use App\Models\Trade;
 use App\Models\User;
+use App\Services\GeolocationV2\AddressSuggestion;
 use App\Services\GeolocationV2\GeocodingResult;
 use App\Services\GeolocationV2\GeocodingService;
 use App\Services\OrderEngine\ProviderAvailabilityLookup;
@@ -182,6 +183,114 @@ class AvailabilityProofTest extends TestCase
             ->set('address', 'Une adresse introuvable')
             ->assertSet('addressUnresolved', true)
             ->assertSee('Vous pouvez continuer');
+    }
+
+    /**
+     * Le pays qui oriente le géocodage est une DONNÉE, pas une constante dans le code.
+     *
+     * « BE » était écrit en dur au milieu du composant, sur un produit qui parle six langues et vise
+     * plusieurs marchés. Le premier client français aurait vu son adresse résolue quelque part en
+     * Belgique — ou nulle part — sans que rien ne le signale, puisque l'échec est silencieux par
+     * conception.
+     */
+    public function test_the_geocoding_country_comes_from_configuration(): void
+    {
+        config(['order_engine.geocoding_country' => 'FR']);
+        $seen = null;
+
+        $this->mock(GeocodingService::class, function ($mock) use (&$seen) {
+            $mock->shouldReceive('geocode')->andReturnUsing(function ($address, $country) use (&$seen) {
+                $seen = $country;
+
+                return null;
+            });
+        });
+
+        Livewire::test(OrderJourney::class)
+            ->call('selectTrade', $this->peinture()->id)
+            ->set('address', '12 rue de Rivoli, 75001 Paris');
+
+        $this->assertSame('FR', $seen, 'Le pays du géocodage reste figé dans le code.');
+    }
+
+    // ─── Saisie de l'adresse ─────────────────────────────────────────────────────────────────
+
+    /**
+     * Le champ adresse PROPOSE au lieu de faire deviner.
+     *
+     * C'était un `<input type="text">` nu sur l'écran le plus rentable du produit, alors que la
+     * plateforme sert déjà des suggestions d'adresse ailleurs — l'application mobile s'en sert.
+     * Faire saisir une adresse à la main sur un téléphone, c'est accepter les fautes de frappe, et
+     * une faute de frappe fait échouer le géocodage : plus de preuve de disponibilité, et un
+     * prestataire envoyé à la mauvaise porte.
+     */
+    public function test_the_address_field_suggests_completions(): void
+    {
+        Livewire::test(OrderJourney::class)
+            ->call('selectTrade', $this->peinture()->id)
+            ->set('address', 'Bruxelles')
+            ->assertSee('1000 Bruxelles, Belgique');
+    }
+
+    /**
+     * Choisir une suggestion situe la commande SANS second géocodage.
+     *
+     * La suggestion porte déjà ses coordonnées. Relancer un géocodage sur le libellé qu'on vient de
+     * fournir soi-même, c'est payer un appel de plus pour un résultat qu'on tient déjà — et
+     * s'exposer à ce qu'il échoue là où le premier avait réussi.
+     */
+    public function test_choosing_a_suggestion_locates_the_order_straight_away(): void
+    {
+        $this->mock(GeocodingService::class, function ($mock) {
+            $mock->shouldReceive('autocomplete')->andReturn([
+                new AddressSuggestion(
+                    description: '1000 Bruxelles, Belgique',
+                    latitude: self::LAT,
+                    longitude: self::LNG,
+                ),
+            ]);
+            // Aucun géocodage ne doit être demandé : la suggestion porte déjà sa position.
+            $mock->shouldNotReceive('geocode');
+        });
+
+        Livewire::test(OrderJourney::class)
+            ->call('selectTrade', $this->peinture()->id)
+            ->call('chooseAddressSuggestion', '1000 Bruxelles, Belgique', self::LAT, self::LNG)
+            ->assertSet('address', '1000 Bruxelles, Belgique')
+            ->assertSet('lat', self::LAT);
+    }
+
+    /**
+     * « Utiliser ma position » : le client a déjà l'information dans sa poche.
+     *
+     * Le navigateur donne les coordonnées, le serveur les retourne en adresse lisible. Sur un
+     * téléphone, c'est un geste contre une adresse entière à taper au pouce.
+     */
+    public function test_the_client_can_hand_over_their_position(): void
+    {
+        Livewire::test(OrderJourney::class)
+            ->call('selectTrade', $this->peinture()->id)
+            ->call('useMyPosition', self::LAT, self::LNG)
+            ->assertSet('lat', self::LAT)
+            ->assertSet('lng', self::LNG)
+            // On vérifie l'ÉTAT, pas le balisage : `wire:model` ne rend aucun attribut `value`,
+            // donc chercher l'adresse dans le HTML échouerait alors que tout fonctionne.
+            ->assertSet('address', '1000 Bruxelles, Belgique');
+    }
+
+    /** Une position que le serveur ne sait pas nommer situe quand même la commande. */
+    public function test_an_unnameable_position_still_locates_the_order(): void
+    {
+        $this->mock(GeocodingService::class, function ($mock) {
+            $mock->shouldReceive('reverseGeocode')->andReturn(null);
+            $mock->shouldReceive('autocomplete')->andReturn([]);
+        });
+
+        Livewire::test(OrderJourney::class)
+            ->call('selectTrade', $this->peinture()->id)
+            ->call('useMyPosition', self::LAT, self::LNG)
+            ->assertOk()
+            ->assertSet('lat', self::LAT);
     }
 
     /** Un géocodage en panne ne fait pas tomber la page : c'est un confort, pas une dépendance. */

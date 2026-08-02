@@ -27,6 +27,7 @@ use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\On;
 use Livewire\Component;
+use Livewire\WithFileUploads;
 
 /**
  * Le constructeur de parcours : édition à gauche, aperçu à droite.
@@ -51,8 +52,12 @@ class QuestionnaireBuilder extends Component
      * questions. La garantie doit survivre à un remaniement de routes.
      */
     use EnforcesAdminAccess;
+    use WithFileUploads;
 
     public Trade $trade;
+
+    /** Fichier JSON d'un parcours exporté, en attente d'import. */
+    public $importFile = null;
 
     /** Question en cours d'édition. `0` = création. */
     public ?int $editingId = null;
@@ -194,8 +199,40 @@ class QuestionnaireBuilder extends Component
         return $question !== null && app(CatalogArchiver::class)->impactOf($question)['used_count'] > 0;
     }
 
+    /**
+     * Le lecteur seul lit.
+     *
+     * `EnforcesAdminAccess` s'arrête à « est-ce un administrateur » et le dit lui-même : les
+     * restrictions d'écriture du lecteur seul restent à la charge du composant. Un `platform_role`
+     * à « admin » assorti d'un `access_scope` à « readonly » franchit donc la garde et atteint cet
+     * écran — qui écrit le catalogue, verrouille des codes et fige des contrats de prix.
+     *
+     * Le refus est ANNONCÉ plutôt que silencieux : un bouton qui ne fait rien fait recommencer,
+     * puis appeler le support.
+     */
+    private function refusesWrite(string $errorKey = 'publication'): bool
+    {
+        $user = Auth::user();
+
+        if ($user === null || ! method_exists($user, 'isReadOnlyAdmin') || ! $user->isReadOnlyAdmin()) {
+            return false;
+        }
+
+        $this->flash = null;
+        $this->addError(
+            $errorKey,
+            'Votre accès est en lecture seule. Publier un parcours et modifier le catalogue sont réservés aux administrateurs de plein exercice.',
+        );
+
+        return true;
+    }
+
     public function save(): void
     {
+        if ($this->refusesWrite('form.label')) {
+            return;
+        }
+
         $data = $this->validate([
             'form.label' => ['required', 'string', 'max:190'],
             'form.code' => ['required', 'string', 'max:80', 'regex:/^[a-z0-9_]+$/'],
@@ -271,6 +308,10 @@ class QuestionnaireBuilder extends Component
      */
     public function move(int $questionId, int $direction): void
     {
+        if ($this->refusesWrite()) {
+            return;
+        }
+
         $ordered = $this->questions()->values();
         $index = $ordered->search(fn ($q) => $q->id === $questionId);
 
@@ -303,6 +344,10 @@ class QuestionnaireBuilder extends Component
      */
     public function reorder(array $orderedIds): void
     {
+        if ($this->refusesWrite()) {
+            return;
+        }
+
         $own = $this->questions()->keyBy('id');
 
         $kept = collect($orderedIds)
@@ -332,6 +377,10 @@ class QuestionnaireBuilder extends Component
      */
     public function adoptFromLibrary(int $questionId): void
     {
+        if ($this->refusesWrite()) {
+            return;
+        }
+
         $template = Question::query()->library()->find($questionId);
 
         if (! $template) {
@@ -377,6 +426,10 @@ class QuestionnaireBuilder extends Component
      */
     public function saveTranslation(int $questionId, string $locale, string $field, ?string $value): void
     {
+        if ($this->refusesWrite()) {
+            return;
+        }
+
         if (! array_key_exists($locale, $this->translationLocales())) {
             return;
         }
@@ -441,6 +494,10 @@ class QuestionnaireBuilder extends Component
     /** Désactiver n'est pas archiver : la question quitte le parcours, elle reste sous la main. */
     public function toggleActive(int $questionId): void
     {
+        if ($this->refusesWrite()) {
+            return;
+        }
+
         $question = $this->questions()->firstWhere('id', $questionId);
         $question?->update(['is_active' => ! $question->is_active]);
 
@@ -461,6 +518,10 @@ class QuestionnaireBuilder extends Component
 
     public function archive(): void
     {
+        if ($this->refusesWrite()) {
+            return;
+        }
+
         $question = $this->questions()->firstWhere('id', $this->archivingId);
 
         if ($question) {
@@ -504,6 +565,10 @@ class QuestionnaireBuilder extends Component
     /** Met en ligne, en figeant une version. Refusé si un défaut bloquant s'y oppose. */
     public function publish(): void
     {
+        if ($this->refusesWrite()) {
+            return;
+        }
+
         try {
             $revision = app(TradeFormPublisher::class)->publish($this->trade, Auth::user());
             $this->flash = sprintf('Parcours publié — version %d. Les commandes en cours citeront celle-ci.', $revision->version);
@@ -524,6 +589,10 @@ class QuestionnaireBuilder extends Component
      */
     public function duplicateTo(int $targetTradeId): void
     {
+        if ($this->refusesWrite()) {
+            return;
+        }
+
         $target = Trade::find($targetTradeId);
 
         if (! $target || $target->id === $this->trade->id) {
@@ -538,6 +607,98 @@ class QuestionnaireBuilder extends Component
             $result['created'],
             $result['updated'],
         );
+    }
+
+    /**
+     * Import JSON — l'autre moitié du voyage.
+     *
+     * Le service savait déjà écrire un questionnaire depuis un fichier ; rien ne l'appelait. Sortir
+     * un parcours d'un environnement sans pouvoir le faire entrer dans l'autre ne sert à rien, et
+     * la moitié manquante n'était atteignable qu'avec un tinker ouvert.
+     *
+     * L'import ne SUPPRIME rien : une question absente du fichier reste en place, et une question
+     * archivée n'est pas ressuscitée. Rejouer deux fois le même fichier met à jour au lieu de
+     * dupliquer — c'est ce qui permet de synchroniser deux environnements sans les empiler.
+     */
+    public function import(): void
+    {
+        if ($this->refusesWrite('importFile')) {
+            return;
+        }
+
+        $this->validate(
+            ['importFile' => ['required', 'file', 'max:2048']],
+            ['importFile.required' => 'Choisissez le fichier JSON d’un parcours exporté.'],
+        );
+
+        $payload = json_decode((string) file_get_contents($this->importFile->getRealPath()), true);
+
+        /*
+         * Le refus est EXPLICITE et dit quoi faire. Un import silencieux qui ne crée rien laisse
+         * l'administrateur relancer trois fois avant d'appeler quelqu'un.
+         */
+        if (! is_array($payload) || ! isset($payload['questions']) || ! is_array($payload['questions'])) {
+            $this->addError('importFile', 'Ce fichier n’est pas un parcours exporté : il doit contenir une liste « questions ».');
+
+            return;
+        }
+
+        $result = app(QuestionnairePortability::class)->import($this->trade, $payload);
+
+        $this->importFile = null;
+        unset($this->questions);
+
+        $this->flash = sprintf(
+            'Import terminé : %d question(s) créée(s), %d mise(s) à jour%s.',
+            $result['created'],
+            $result['updated'],
+            $result['skipped'] ? sprintf(', %d ignorée(s)', count($result['skipped'])) : '',
+        );
+    }
+
+    /**
+     * Remet une version publiée en ligne.
+     *
+     * Figer des versions sans pouvoir y revenir ne sert qu'à constater les dégâts : une grille
+     * tarifaire fautive partie en production se répare autrement à la main, question par question,
+     * pendant que les clients commandent au mauvais prix.
+     */
+    public function restoreRevision(int $revisionId): void
+    {
+        if ($this->refusesWrite('publication')) {
+            return;
+        }
+
+        $revision = $this->trade->formRevisions()->find($revisionId);
+
+        if (! $revision) {
+            return;
+        }
+
+        try {
+            $new = app(TradeFormPublisher::class)->restore($revision, Auth::user());
+            $this->flash = sprintf(
+                'Version %d restaurée : elle est repartie en ligne sous le numéro %d. Les versions intermédiaires restent consultables.',
+                $revision->version,
+                $new->version,
+            );
+        } catch (ValidationException $e) {
+            $this->flash = null;
+            $this->addError('publication', collect($e->errors())->flatten()->implode(' '));
+        }
+
+        $this->refreshDerived();
+    }
+
+    /** L'historique des versions, la plus récente d'abord. */
+    #[Computed]
+    public function revisions()
+    {
+        return $this->trade->formRevisions()
+            ->with('publishedBy')
+            ->orderByDesc('version')
+            ->limit(20)
+            ->get();
     }
 
     /** Export JSON — pour rejouer un questionnaire d'un environnement à l'autre. */
@@ -567,6 +728,10 @@ class QuestionnaireBuilder extends Component
 
     public function addOption(int $questionId): void
     {
+        if ($this->refusesWrite()) {
+            return;
+        }
+
         $question = $this->questions()->firstWhere('id', $questionId);
         if (! $question) {
             return;
@@ -588,6 +753,10 @@ class QuestionnaireBuilder extends Component
     /** @param  array<string, mixed>  $values */
     public function updateOption(int $optionId, array $values): void
     {
+        if ($this->refusesWrite()) {
+            return;
+        }
+
         $option = QuestionOption::find($optionId);
         if (! $option) {
             return;

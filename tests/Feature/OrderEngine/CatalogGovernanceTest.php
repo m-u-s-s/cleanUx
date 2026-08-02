@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\OrderEngine;
 
+use App\Models\Booking;
 use App\Models\OrderDraft;
 use App\Models\OrderDraftAnswer;
 use App\Models\OrderDraftItem;
@@ -9,6 +10,7 @@ use App\Models\Question;
 use App\Models\QuestionCondition;
 use App\Models\QuestionOption;
 use App\Models\Sector;
+use App\Models\ServiceCatalog;
 use App\Models\Trade;
 use App\Services\OrderEngine\CatalogArchiver;
 use App\Services\OrderEngine\QuestionnaireValidator;
@@ -18,6 +20,7 @@ use App\Support\Domain\QuestionType;
 use Database\Seeders\OrderEngineCatalogSeeder;
 use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
 use Tests\TestCase;
 
 /**
@@ -383,6 +386,78 @@ class CatalogGovernanceTest extends TestCase
     }
 
     // ─── Fabriques ───────────────────────────────────────────────────────────────────────────
+
+    // ─── Journal d'audit ─────────────────────────────────────────────────────────────────────
+
+    /**
+     * Renommer un métier laisse une trace.
+     *
+     * Les questions étaient auditées, pas les deux niveaux au-dessus. Or c'est le métier qui porte
+     * le prix plancher et les trois interrupteurs de mode : le passer de « planifié seul » à
+     * « immédiat autorisé » change ce que la plateforme accepte de vendre, et un audit qui ne
+     * l'enregistre pas ne répond pas à « qui a ouvert l'ASAP sur le ravalement ».
+     */
+    public function test_renaming_a_trade_leaves_an_audit_trail(): void
+    {
+        $trade = $this->trade();
+
+        $trade->update(['name' => 'Peinture extérieure']);
+
+        /*
+         * `AuditService` range le NOM COURT de la classe (`class_basename`), pas le nom pleinement
+         * qualifié ni l'alias du morph map. Comparer à `Trade::class` ou à `getMorphClass()` ne
+         * trouve rien et fait conclure à tort que l'audit est absent — je m'y suis laissé prendre
+         * en écrivant ce test.
+         */
+        $this->assertTrue(
+            DB::table('audit_events')
+                ->where('event_type', 'catalog.updated')
+                ->where('subject_type', class_basename(Trade::class))
+                ->where('subject_id', $trade->id)
+                ->exists(),
+            'Renommer un métier ne laisse aucune trace : le journal ne couvre que les questions.',
+        );
+    }
+
+    /** Le secteur aussi : c'est la porte d'entrée du carrousel, la masquer se justifie. */
+    public function test_archiving_a_sector_leaves_an_audit_trail(): void
+    {
+        $sector = Sector::create(['slug' => 'sec-'.uniqid(), 'name' => 'Espaces verts']);
+
+        $this->archiver->archive($sector);
+
+        $this->assertTrue(
+            DB::table('audit_events')
+                ->where('subject_type', class_basename(Sector::class))
+                ->where('subject_id', $sector->id)
+                ->exists(),
+            'Archiver un secteur retire tout un pan du catalogue sans laisser de trace.',
+        );
+    }
+
+    // ─── Impact réel de l'archivage ──────────────────────────────────────────────────────────
+
+    /**
+     * L'impact annoncé doit compter les VRAIES réservations, pas seulement les brouillons.
+     *
+     * Le moteur de commande est récent ; les métiers vivent depuis des mois via `bookings`. Ne
+     * compter que `order_draft_items` annonce « utilisé par 0 commande » sur un métier qui en porte
+     * trois cents — et un administrateur qui lit ce zéro archive sans hésiter.
+     */
+    public function test_the_trade_impact_counts_real_bookings_not_only_drafts(): void
+    {
+        $trade = $this->trade();
+        $catalog = ServiceCatalog::factory()->create(['trade_id' => $trade->id]);
+        Booking::factory()->count(3)->create(['service_catalog_id' => $catalog->id]);
+
+        $impact = $this->archiver->impactOf($trade);
+
+        $this->assertSame(
+            3,
+            $impact['used_count'],
+            'Le métier porte trois réservations réelles et l’impact en annonce '.$impact['used_count'].'.',
+        );
+    }
 
     private function trade(): Trade
     {

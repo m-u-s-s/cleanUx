@@ -107,7 +107,22 @@ class CatalogArchiver
 
     protected function tradeImpact(Trade $trade): array
     {
-        $used = DB::table('order_draft_items')->where('trade_id', $trade->id)->count();
+        /*
+         * Deux sources, et il FAUT les deux.
+         *
+         * Le moteur de commande écrit dans `order_draft_items` ; les réservations d'avant — la
+         * grande majorité — sont rattachées au métier par leur service au catalogue. Ne compter que
+         * les brouillons annonce « utilisé par 0 commande » sur un métier qui en porte trois cents,
+         * et cet impact-là ne fait pas hésiter : il autorise.
+         */
+        $used = DB::table('order_draft_items')->where('trade_id', $trade->id)->count()
+            + DB::table('bookings')
+                ->whereIn(
+                    'service_catalog_id',
+                    DB::table('service_catalogs')->where('trade_id', $trade->id)->select('id'),
+                )
+                ->count();
+
         $questions = $trade->questions()->count();
 
         return [

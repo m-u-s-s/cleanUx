@@ -412,6 +412,123 @@
             </div>
         </div>
     @endif
+
+    {{--
+        ─── Mise en ligne, historique et portabilité ────────────────────────────────────────
+
+        Ces quatre gestes existaient dans le composant sans qu'aucun bouton n'y mène : publier,
+        exporter, importer, dupliquer. Un test Livewire qui appelle `publish()` directement ne
+        prouve jamais qu'un bouton l'appelle — il prouve que la méthode marche, ce qui n'est pas la
+        même chose, et c'est exactement ainsi qu'un écran devient inutilisable sans qu'une suite
+        verte ne bronche.
+    --}}
+    <section class="rounded-2xl border border-slate-200 bg-white p-5" aria-labelledby="mise-en-ligne">
+        <h2 id="mise-en-ligne" class="text-lg font-semibold text-slate-900">Mise en ligne</h2>
+
+        @error('publication')
+            <p class="mt-3 rounded-xl bg-rose-50 px-4 py-3 text-sm text-rose-900" role="alert">{{ $message }}</p>
+        @enderror
+
+        <div class="mt-4 flex flex-wrap items-center gap-3">
+            <button type="button" wire:click="publish" @disabled(! $this->canPublish())
+                class="min-h-[44px] rounded-xl bg-slate-900 px-5 text-sm font-medium text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-40">
+                Publier ce parcours
+            </button>
+
+            @if ($this->hasUnpublishedChanges())
+                <span class="text-sm text-amber-800">Des modifications ne sont pas encore en ligne.</span>
+            @elseif ($this->currentRevision())
+                <span class="text-sm text-slate-500">
+                    En ligne : version {{ $this->currentRevision()->version }}.
+                </span>
+            @else
+                <span class="text-sm text-slate-500">Jamais publié.</span>
+            @endif
+        </div>
+
+        {{-- L'historique, et le moyen d'y revenir. Figer des versions sans pouvoir les rejouer ne
+             sert qu'à constater les dégâts. --}}
+        @if ($this->revisions->isNotEmpty())
+            <div class="mt-6 border-t border-slate-100 pt-5">
+                <h3 class="text-sm font-semibold text-slate-900">Historique</h3>
+
+                <ul class="mt-3 space-y-1.5">
+                    @foreach ($this->revisions as $revision)
+                        <li class="flex flex-wrap items-center justify-between gap-3 rounded-xl bg-slate-50 px-4 py-2.5 text-sm"
+                            wire:key="revision-{{ $revision->id }}">
+                            <span class="text-slate-700">
+                                Version {{ $revision->version }}
+                                @if ($revision->published_at)
+                                    · {{ $revision->published_at->translatedFormat('j F Y à H\hi') }}
+                                @endif
+                                @if ($revision->publishedBy)
+                                    · {{ $revision->publishedBy->name }}
+                                @endif
+                            </span>
+
+                            @unless ($loop->first)
+                                <button type="button" wire:click="restoreRevision({{ $revision->id }})"
+                                    wire:confirm="Remettre la version {{ $revision->version }} en ligne ? Elle repartira sous un nouveau numéro ; les versions intermédiaires restent consultables."
+                                    class="min-h-[36px] rounded-lg px-3 text-sm font-medium text-slate-900 underline-offset-2 hover:underline">
+                                    Restaurer
+                                </button>
+                            @endunless
+                        </li>
+                    @endforeach
+                </ul>
+            </div>
+        @endif
+
+        {{-- Portabilité : sortir un parcours d'un environnement ET l'y faire entrer. --}}
+        <div class="mt-6 grid gap-5 border-t border-slate-100 pt-5 sm:grid-cols-2">
+            <div>
+                <h3 class="text-sm font-semibold text-slate-900">Exporter</h3>
+                <p class="mt-1 text-sm text-slate-500">Le questionnaire complet, en JSON.</p>
+                <button type="button" wire:click="export"
+                    class="mt-3 min-h-[44px] rounded-xl border border-slate-300 px-4 text-sm font-medium text-slate-900 hover:bg-slate-50">
+                    Télécharger le JSON
+                </button>
+            </div>
+
+            <div>
+                <h3 class="text-sm font-semibold text-slate-900">Importer</h3>
+                <p class="mt-1 text-sm text-slate-500">
+                    Rien n’est supprimé : un import complète et met à jour, il ne remet pas à zéro.
+                </p>
+
+                <input type="file" wire:model="importFile" accept="application/json,.json"
+                    aria-label="Fichier JSON d’un parcours exporté"
+                    class="mt-3 block w-full text-sm text-slate-600 file:mr-3 file:min-h-[36px] file:rounded-lg file:border file:border-slate-300 file:bg-white file:px-3 file:text-sm file:font-medium file:text-slate-900">
+
+                @error('importFile')
+                    <p class="mt-2 text-sm text-rose-700" role="alert">{{ $message }}</p>
+                @enderror
+
+                <button type="button" wire:click="import" @disabled(! $importFile)
+                    class="mt-3 min-h-[44px] rounded-xl border border-slate-300 px-4 text-sm font-medium text-slate-900 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40">
+                    Importer ce fichier
+                </button>
+            </div>
+        </div>
+
+        {{-- Dupliquer : « Peinture intérieure » et « Peinture extérieure » partagent l'essentiel. --}}
+        @if ($this->duplicationTargets()->isNotEmpty())
+            <div class="mt-6 border-t border-slate-100 pt-5">
+                <h3 class="text-sm font-semibold text-slate-900">Recopier vers un autre métier</h3>
+
+                <div class="mt-3 flex flex-wrap gap-2">
+                    @foreach ($this->duplicationTargets() as $target)
+                        <button type="button" wire:click="duplicateTo({{ $target->id }})"
+                            wire:confirm="Recopier ce questionnaire vers « {{ $target->name }} » ? Les questions existantes y seront mises à jour, aucune ne sera supprimée."
+                            wire:key="dup-{{ $target->id }}"
+                            class="min-h-[36px] rounded-lg border border-slate-300 px-3 text-sm text-slate-700 hover:bg-slate-50">
+                            {{ $target->name }}
+                        </button>
+                    @endforeach
+                </div>
+            </div>
+        @endif
+    </section>
 </div>
 
 @push('scripts')

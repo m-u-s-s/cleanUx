@@ -69,6 +69,30 @@ class TradeFormPublisher
         });
     }
 
+    /**
+     * Remet une version publiée en ligne.
+     *
+     * Restaurer AVANCE l'historique : la version 1 rejouée devient la version 3. Écraser ou
+     * supprimer la version 2 ferait disparaître le contrat de prix sous lequel de vraies commandes
+     * ont été passées — et ces commandes citent son identifiant dans `order_draft_items`. Un
+     * historique dans lequel on peut effacer une ligne n'est plus opposable.
+     *
+     * LIMITE ASSUMÉE : une question créée APRÈS la version restaurée reste en place. `import()`
+     * n'efface rien, par construction, et c'est ce qu'il faut ici : son code est peut-être déjà
+     * cité par des réponses enregistrées, et la supprimer rendrait ces devis-là inexplicables. La
+     * restauration ramène ce que la version décrivait ; elle ne prétend pas remonter le temps.
+     *
+     * @throws ValidationException si l'état restauré porte un défaut bloquant
+     */
+    public function restore(TradeFormRevision $revision, ?User $publisher = null): TradeFormRevision
+    {
+        $trade = $revision->trade ?? Trade::findOrFail($revision->trade_id);
+
+        app(QuestionnairePortability::class)->import($trade, $revision->schema);
+
+        return $this->publish($trade->fresh(), $publisher);
+    }
+
     /** La version en ligne, celle que les commandes doivent citer. */
     public function currentRevision(Trade $trade): ?TradeFormRevision
     {

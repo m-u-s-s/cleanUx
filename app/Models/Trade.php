@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Services\Audit\Concerns\AuditsEloquentEvents;
 use App\Support\Domain\OrderMode;
 use Database\Factories\TradeFactory;
 use Illuminate\Database\Eloquent\Builder;
@@ -27,6 +28,8 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  */
 class Trade extends Model
 {
+    use AuditsEloquentEvents;
+
     /** @use HasFactory<TradeFactory> */
     use HasFactory;
 
@@ -247,5 +250,17 @@ class Trade extends Model
     public function getDefaultIconAttribute(): string
     {
         return $this->icon ?: 'briefcase';
+    }
+
+    /*
+     * Le métier porte le prix plancher et les trois interrupteurs de mode.
+     *
+     * Ouvrir `allows_asap` sur un ravalement de façade engage la plateforme à dépêcher quelqu'un
+     * dans l'heure sur un chantier qui dure trois jours. C'est un geste d'administration ordinaire
+     * à l'écran, et lourd de conséquences : il doit être attribuable.
+     */
+    protected function auditEventDomain(): string
+    {
+        return 'catalog';
     }
 }

@@ -16,6 +16,7 @@ use App\Support\Domain\ConditionOperator;
 use App\Support\Domain\QuestionType;
 use Database\Seeders\OrderEngineCatalogSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Validation\ValidationException;
 use Livewire\Livewire;
 use Tests\TestCase;
@@ -53,6 +54,50 @@ class PublicationAndPortabilityTest extends TestCase
         $this->assertSame(1, $first->version);
         $this->assertSame(2, $second->version);
         $this->assertNotNull($trade->fresh()->published_at);
+    }
+
+    /**
+     * Une révision publiée se REJOUE.
+     *
+     * Figer des versions sans pouvoir y revenir ne sert qu'à constater les dégâts. Une mauvaise
+     * grille tarifaire partie en production se répare aujourd'hui à la main, question par question,
+     * pendant que les clients commandent au mauvais prix.
+     */
+    public function test_a_published_revision_can_be_restored(): void
+    {
+        $trade = $this->peinture();
+        $v1 = app(TradeFormPublisher::class)->publish($trade, $this->admin());
+
+        Question::where('trade_id', $trade->id)->where('code', 'surface_m2')
+            ->update(['label' => 'Combien de mètres carrés ?']);
+        app(TradeFormPublisher::class)->publish($trade->fresh(), $this->admin());
+
+        app(TradeFormPublisher::class)->restore($v1, $this->admin());
+
+        $this->assertSame(
+            'Quelle surface à peindre ?',
+            Question::where('trade_id', $trade->id)->where('code', 'surface_m2')->value('label'),
+            'La restauration n’a pas ramené le libellé de la version 1.',
+        );
+    }
+
+    /**
+     * Restaurer AVANCE l'historique, il ne le réécrit pas.
+     *
+     * Revenir à la version 1 publie une version 3 qui lui ressemble. Supprimer la version 2 ferait
+     * disparaître le contrat de prix sous lequel des commandes ont réellement été passées — et ces
+     * commandes-là citent son identifiant.
+     */
+    public function test_restoring_moves_history_forward_instead_of_erasing_it(): void
+    {
+        $trade = $this->peinture();
+        $v1 = app(TradeFormPublisher::class)->publish($trade, $this->admin());
+        $v2 = app(TradeFormPublisher::class)->publish($trade->fresh(), $this->admin());
+
+        $restored = app(TradeFormPublisher::class)->restore($v1, $this->admin());
+
+        $this->assertSame(3, $restored->version);
+        $this->assertNotNull(TradeFormRevision::find($v2->id), 'La version intermédiaire a été détruite.');
     }
 
     /** La version figée porte tout ce qu'il faut pour rejouer un devis, pas seulement le libellé. */
@@ -270,6 +315,50 @@ class PublicationAndPortabilityTest extends TestCase
     }
 
     // ─── Le constructeur ─────────────────────────────────────────────────────────────────────
+
+    /**
+     * L'import se fait DEPUIS L'ÉCRAN, comme l'export.
+     *
+     * Le service savait déjà importer, mais rien ne l'appelait : l'administrateur pouvait sortir un
+     * questionnaire d'un environnement sans pouvoir le faire entrer dans l'autre. Une moitié de
+     * fonctionnalité, atteignable uniquement par un développeur avec un tinker ouvert.
+     */
+    public function test_a_questionnaire_can_be_imported_from_the_screen(): void
+    {
+        $this->actingAs($this->admin());
+
+        $payload = app(QuestionnairePortability::class)->export($this->peinture());
+        $fresh = Trade::create(['slug' => 'peinture-import', 'code' => 'PNT-I', 'name' => 'Peinture (import)']);
+
+        $file = UploadedFile::fake()->createWithContent(
+            'parcours-peinture.json',
+            json_encode($payload, JSON_UNESCAPED_UNICODE),
+        );
+
+        Livewire::test(QuestionnaireBuilder::class, ['trade' => $fresh])
+            ->set('importFile', $file)
+            ->call('import')
+            ->assertHasNoErrors();
+
+        $this->assertSame(
+            $this->peinture()->questions()->count(),
+            $fresh->fresh()->questions()->count(),
+            'L’import depuis l’écran n’a créé aucune question.',
+        );
+    }
+
+    /** Un fichier qui n'est pas du JSON de parcours est refusé en le DISANT. */
+    public function test_a_malformed_import_is_refused_with_an_explanation(): void
+    {
+        $this->actingAs($this->admin());
+
+        $file = UploadedFile::fake()->createWithContent('notes.json', 'ceci n’est pas du JSON');
+
+        Livewire::test(QuestionnaireBuilder::class, ['trade' => $this->peinture()])
+            ->set('importFile', $file)
+            ->call('import')
+            ->assertHasErrors('importFile');
+    }
 
     public function test_the_builder_publishes_and_announces_the_version(): void
     {

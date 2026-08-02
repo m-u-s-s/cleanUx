@@ -13,6 +13,20 @@ return [
 
     /*
     |---------------------------------------------------------------------------
+    | Pays qui oriente le géocodage de l'adresse
+    |---------------------------------------------------------------------------
+    |
+    | Le géocodeur pondère ses résultats par pays. Ce produit parle six langues et
+    | ne vend pas dans un seul marché : figer le code ici résoudrait une adresse
+    | française quelque part en Belgique, sans rien signaler — l'échec du
+    | géocodage est volontairement muet pour ne jamais bloquer une commande.
+    |
+    | `null` laisse le géocodeur chercher sans biais de pays.
+    */
+    'geocoding_country' => env('ORDER_ENGINE_GEOCODING_COUNTRY', 'BE'),
+
+    /*
+    |---------------------------------------------------------------------------
     | Remise multi-services
     |---------------------------------------------------------------------------
     |

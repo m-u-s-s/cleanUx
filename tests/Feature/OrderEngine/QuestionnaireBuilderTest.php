@@ -53,6 +53,92 @@ class QuestionnaireBuilderTest extends TestCase
             ->assertForbidden();
     }
 
+    /**
+     * Un administrateur en LECTURE SEULE ne publie pas.
+     *
+     * `EnforcesAdminAccess` s'arrête à « est-ce un admin » et le dit lui-même : les restrictions
+     * d'écriture du lecteur seul restent à la charge du composant. Or un `platform_role` à « admin »
+     * avec un `access_scope` à « readonly » franchit la garde et atteint l'écran.
+     *
+     * Publier n'est pas une écriture parmi d'autres : la révision figée devient le contrat de prix
+     * opposable à tous les clients qui commanderont ensuite. C'est le geste le plus lourd de
+     * l'écran, et le seul que la spécification réserve explicitement.
+     */
+    public function test_a_read_only_admin_cannot_publish(): void
+    {
+        $this->actingAs(User::factory()->create([
+            'role' => 'admin', 'platform_role' => 'admin', 'access_scope' => 'readonly',
+        ]));
+
+        $trade = $this->peinture();
+        $before = $trade->formRevisions()->count();
+
+        Livewire::test(QuestionnaireBuilder::class, ['trade' => $trade])
+            ->call('publish')
+            ->assertHasErrors('publication');
+
+        $this->assertSame(
+            $before,
+            $trade->formRevisions()->count(),
+            'Un administrateur en lecture seule a mis un parcours en ligne.',
+        );
+    }
+
+    /** Le lecteur seul n'écrit pas non plus le catalogue : publier n'est que le geste le plus visible. */
+    public function test_a_read_only_admin_cannot_write_a_question(): void
+    {
+        $this->actingAs(User::factory()->create([
+            'role' => 'admin', 'platform_role' => 'admin', 'access_scope' => 'readonly',
+        ]));
+
+        $trade = $this->peinture();
+        $before = $trade->questions()->count();
+
+        Livewire::test(QuestionnaireBuilder::class, ['trade' => $trade])
+            ->call('startNew')
+            ->set('form.label', 'Question glissée par un lecteur')
+            ->set('form.code', 'lecteur_seul')
+            ->call('save');
+
+        $this->assertSame($before, $trade->questions()->count());
+    }
+
+    /** Garde-fou inverse : l'administrateur de plein exercice publie toujours. */
+    public function test_a_full_admin_still_publishes(): void
+    {
+        $trade = $this->peinture();
+        $before = $trade->formRevisions()->count();
+
+        Livewire::test(QuestionnaireBuilder::class, ['trade' => $trade])
+            ->call('publish')
+            ->assertHasNoErrors();
+
+        $this->assertSame($before + 1, $trade->formRevisions()->count());
+    }
+
+    /**
+     * Les actions de l'écran sont ATTEIGNABLES depuis l'écran.
+     *
+     * `Livewire::test(...)->call('publish')` prouve que la méthode fonctionne, jamais qu'un bouton
+     * l'appelle. `publish`, `export`, `import` et `duplicateTo` existaient tous les quatre dans le
+     * composant, testés et verts, sans qu'aucun ne soit câblé dans le gabarit : un constructeur de
+     * parcours dont on ne pouvait rien mettre en ligne.
+     *
+     * Ce test lit le rendu, pas l'API du composant.
+     */
+    public function test_the_screen_wires_its_own_actions(): void
+    {
+        $html = Livewire::test(QuestionnaireBuilder::class, ['trade' => $this->peinture()])->html();
+
+        foreach (['publish', 'export', 'import', 'duplicateTo', 'importFile'] as $action) {
+            $this->assertStringContainsString(
+                $action,
+                $html,
+                sprintf('Aucun élément de l’écran n’appelle « %s » : la méthode existe sans porte d’entrée.', $action),
+            );
+        }
+    }
+
     public function test_it_opens_on_a_seeded_trade(): void
     {
         Livewire::test(QuestionnaireBuilder::class, ['trade' => $this->peinture()])

@@ -7,6 +7,7 @@ use App\Models\OrderDraftItem;
 use App\Models\Question;
 use App\Models\Sector;
 use App\Models\Trade;
+use App\Services\GeolocationV2\AddressSuggestion;
 use App\Services\GeolocationV2\GeocodingService;
 use App\Services\OrderEngine\AvailabilitySnapshot;
 use App\Services\OrderEngine\BundleComposer;
@@ -22,6 +23,7 @@ use Illuminate\Contracts\View\View;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
@@ -299,7 +301,13 @@ class OrderJourney extends Component
         }
 
         try {
-            $result = app(GeocodingService::class)->geocode($address, 'BE');
+            // Le pays qui oriente la recherche est une donnée : ce produit parle six langues et ne
+            // vend pas que dans un seul pays. Un code figé ici résout des adresses françaises en
+            // Belgique — silencieusement, puisque l'échec du géocodage est volontairement muet.
+            $result = app(GeocodingService::class)->geocode(
+                $address,
+                Config::get('order_engine.geocoding_country', 'BE'),
+            );
 
             if ($result) {
                 $this->lat = $result->latitude;
@@ -316,6 +324,116 @@ class OrderJourney extends Component
             'address' => $address,
             'lat' => $this->lat,
             'lng' => $this->lng,
+        ]);
+
+        $this->refreshDerived();
+    }
+
+    /**
+     * Les adresses proposées pendant la frappe.
+     *
+     * Le champ était nu, et faire taper une adresse entière au pouce accepte d'avance les fautes de
+     * frappe. Or une faute de frappe fait échouer le géocodage EN SILENCE — par conception, pour ne
+     * jamais bloquer une commande : on perd la preuve de disponibilité, et le prestataire part à la
+     * mauvaise porte.
+     *
+     * La liste se tait dès que l'adresse est située : proposer autre chose à quelqu'un qui a déjà
+     * choisi ne l'aide plus, ça le fait douter.
+     *
+     * @return list<AddressSuggestion>
+     */
+    #[Computed]
+    public function addressSuggestions(): array
+    {
+        $typed = trim($this->address);
+
+        if (mb_strlen($typed) < 3) {
+            return [];
+        }
+
+        try {
+            $suggestions = app(GeocodingService::class)->autocomplete(
+                $typed,
+                Config::get('order_engine.geocoding_country', 'BE'),
+                5,
+            );
+
+            /*
+             * Une seule proposition, identique à ce qui est écrit : le client a déjà choisi. Lui
+             * reproposer sa propre saisie ne l'aide plus, ça le fait douter d'avoir bien fait.
+             *
+             * Le critère n'est PAS « l'adresse est située » : pendant la frappe, une adresse
+             * partielle se géocode souvent avec succès sur une ville entière, et masquer les
+             * suggestions à ce moment-là retire l'aide juste avant qu'elle ne serve.
+             */
+            return array_values(array_filter(
+                $suggestions,
+                fn (AddressSuggestion $s) => $s->description !== $typed,
+            ));
+        } catch (\Throwable $e) {
+            // Même règle que le géocodage : un service de suggestions en panne fait perdre un
+            // confort, jamais la commande.
+            Log::warning('[order_engine] suggestions d’adresse indisponibles', ['error' => $e->getMessage()]);
+
+            return [];
+        }
+    }
+
+    /**
+     * Le client retient une suggestion : elle porte déjà sa position.
+     *
+     * Relancer un géocodage sur un libellé qu'on vient de fournir soi-même paierait un appel de
+     * plus pour un résultat déjà en main — et s'exposerait à ce qu'il échoue là où le premier avait
+     * réussi.
+     */
+    public function chooseAddressSuggestion(string $description, ?float $lat = null, ?float $lng = null): void
+    {
+        $this->address = $description;
+
+        if ($lat === null || $lng === null) {
+            $this->updatedAddress();
+
+            return;
+        }
+
+        $this->addressUnresolved = false;
+        $this->lat = $lat;
+        $this->lng = $lng;
+
+        $this->draft()->update(['address' => $description, 'lat' => $lat, 'lng' => $lng]);
+        $this->refreshDerived();
+    }
+
+    /**
+     * « Utiliser ma position » — le client a déjà l'information dans sa poche.
+     *
+     * Le navigateur fournit les coordonnées, le serveur les retourne en adresse lisible. Sur un
+     * téléphone, c'est un geste contre une adresse entière tapée au pouce.
+     *
+     * Les coordonnées sont retenues MÊME si le serveur ne sait pas les nommer : ce sont elles qui
+     * débloquent la preuve de disponibilité et le rayon de recherche, le libellé n'est qu'un
+     * confort de lecture.
+     */
+    public function useMyPosition(float $lat, float $lng): void
+    {
+        $this->lat = $lat;
+        $this->lng = $lng;
+        $this->addressUnresolved = false;
+
+        try {
+            $result = app(GeocodingService::class)->reverseGeocode($lat, $lng);
+
+            if ($result) {
+                $this->address = $result->formattedAddress ?? $this->address;
+            }
+        } catch (\Throwable $e) {
+            Log::warning('[order_engine] position non nommable', ['error' => $e->getMessage()]);
+        }
+
+        $this->draft()->update([
+            'address' => trim($this->address) ?: null,
+            'lat' => $lat,
+            'lng' => $lng,
         ]);
 
         $this->refreshDerived();
@@ -712,6 +830,7 @@ class OrderJourney extends Component
             $this->quote, $this->lastChange, $this->availableModes, $this->availability,
             $this->slots, $this->providerOptions, $this->readyToConfirm, $this->dayOptions,
             $this->timeline, $this->bundleSuggestions, $this->bundleQuote,
+            $this->addressSuggestions,
         );
     }
 

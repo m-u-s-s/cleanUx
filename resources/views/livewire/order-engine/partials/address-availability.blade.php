@@ -31,6 +31,59 @@
         >
     </label>
 
+    {{--
+        Les suggestions, et le raccourci « ma position ».
+
+        Le champ nu acceptait d'avance les fautes de frappe, et une faute de frappe fait échouer le
+        géocodage EN SILENCE : plus de preuve de disponibilité, et un professionnel envoyé à la
+        mauvaise porte. La plateforme sert déjà des suggestions d'adresse ailleurs — l'application
+        mobile s'en sert ; c'était l'écran le plus rentable du produit qui s'en passait.
+    --}}
+    @if (count($this->addressSuggestions))
+        <ul class="mt-2 overflow-hidden rounded-xl border border-slate-200" role="listbox"
+            aria-label="Adresses proposées">
+            @foreach ($this->addressSuggestions as $suggestion)
+                <li role="option" aria-selected="false" wire:key="sugg-{{ md5($suggestion->description) }}">
+                    <button type="button"
+                        wire:click="chooseAddressSuggestion(
+                            @js($suggestion->description),
+                            @js($suggestion->latitude),
+                            @js($suggestion->longitude)
+                        )"
+                        class="flex min-h-[44px] w-full items-center px-4 py-2.5 text-left text-sm text-slate-700 hover:bg-slate-50">
+                        {{ $suggestion->description }}
+                    </button>
+                </li>
+            @endforeach
+        </ul>
+    @endif
+
+    {{--
+        La géolocalisation reste côté navigateur : le serveur ne reçoit que deux nombres, et
+        seulement si le client accepte. Le bouton disparaît quand l'API n'existe pas, plutôt que
+        d'offrir une action qui échouerait.
+    --}}
+    <div x-data="{ supported: 'geolocation' in navigator, busy: false, denied: false }" x-cloak>
+        <button type="button" x-show="supported" x-bind:disabled="busy"
+            x-on:click="
+                busy = true; denied = false;
+                navigator.geolocation.getCurrentPosition(
+                    (pos) => { busy = false; $wire.useMyPosition(pos.coords.latitude, pos.coords.longitude) },
+                    () => { busy = false; denied = true },
+                    { enableHighAccuracy: true, timeout: 8000 }
+                )
+            "
+            class="mt-3 inline-flex min-h-[44px] items-center gap-2 rounded-xl border border-slate-300 px-4 text-sm font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-50">
+            <span aria-hidden="true">◎</span>
+            <span x-text="busy ? 'Localisation…' : 'Utiliser ma position'">Utiliser ma position</span>
+        </button>
+
+        {{-- Un refus n'est pas une panne : on dit quoi faire ensuite. --}}
+        <p x-show="denied" x-cloak class="mt-2 text-sm text-slate-600">
+            Nous n’avons pas pu vous localiser. Saisissez l’adresse ci-dessus, cela fonctionne aussi bien.
+        </p>
+    </div>
+
     <div id="adresse-etat" class="mt-3" aria-live="polite">
 
         <p wire:loading wire:target="address" class="text-sm text-slate-500">Recherche des professionnels…</p>
