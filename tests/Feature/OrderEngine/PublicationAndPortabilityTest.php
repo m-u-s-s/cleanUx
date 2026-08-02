@@ -314,6 +314,53 @@ class PublicationAndPortabilityTest extends TestCase
 
     // ─── Fabriques ───────────────────────────────────────────────────────────────────────────
 
+    /**
+     * Deux schémas au contenu identique mais aux clés dans un autre ordre sont LE MÊME schéma.
+     *
+     * MySQL réordonne les clés d'une colonne JSON ; ce qu'on relit n'a pas l'ordre de ce qu'on a
+     * écrit. Comme `!==` sur des tableaux PHP compare aussi l'ordre, la comparaison directe
+     * déclarait le questionnaire modifié à chaque appel — et le constructeur affichait
+     * « modifications non publiées » en permanence, y compris juste après une publication.
+     *
+     * Le test attaque la comparaison directement plutôt que de passer par la base : il tient donc
+     * sur SQLite comme sur MySQL, alors que le défaut n'était visible que sur le second.
+     */
+    public function test_two_schemas_differing_only_in_key_order_are_the_same(): void
+    {
+        $publisher = app(TradeFormPublisher::class);
+
+        $ecrit = [
+            'format_version' => 1,
+            'trade' => ['slug' => 'peinture', 'name' => 'Peinture', 'base_price_cents' => 12000],
+            'questions' => [
+                ['code' => 'surface_m2', 'label' => 'Surface', 'options' => [['value' => 'a', 'label' => 'A']]],
+            ],
+        ];
+
+        // Le même contenu, clés remises dans l'ordre où MySQL les rend.
+        $relu = [
+            'trade' => ['name' => 'Peinture', 'slug' => 'peinture', 'base_price_cents' => 12000],
+            'questions' => [
+                ['label' => 'Surface', 'code' => 'surface_m2', 'options' => [['label' => 'A', 'value' => 'a']]],
+            ],
+            'format_version' => 1,
+        ];
+
+        $this->assertTrue($publisher->sameSchema($ecrit, $relu));
+
+        // Mais un vrai changement de contenu reste détecté.
+        $modifie = $relu;
+        $modifie['questions'][0]['label'] = 'Superficie';
+        $this->assertFalse($publisher->sameSchema($ecrit, $modifie));
+
+        // Et l'ORDRE DES QUESTIONS reste significatif : ce n'est pas une clé, c'est une séquence.
+        $permute = $ecrit;
+        $permute['questions'][] = ['code' => 'etendue', 'label' => 'Étendue'];
+        $inverse = $permute;
+        $inverse['questions'] = array_reverse($inverse['questions']);
+        $this->assertFalse($publisher->sameSchema($permute, $inverse));
+    }
+
     private function peinture(): Trade
     {
         return Trade::where('slug', 'peinture')->firstOrFail();

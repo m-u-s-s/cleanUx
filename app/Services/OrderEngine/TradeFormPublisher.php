@@ -93,6 +93,47 @@ class TradeFormPublisher
             return $trade->questions()->exists();
         }
 
-        return $revision->schema !== $this->schema->serialise($trade);
+        return ! $this->sameSchema($revision->schema, $this->schema->serialise($trade));
+    }
+
+    /**
+     * Deux schémas décrivent-ils le même questionnaire ?
+     *
+     * MYSQL RÉORDONNE LES CLÉS d'une colonne JSON — il les range par longueur puis par ordre
+     * alphabétique. Ce qu'on relit n'a donc pas l'ordre de ce qu'on a écrit, alors que le contenu
+     * est identique. Or `!==` sur des tableaux PHP compare AUSSI l'ordre des clés : la comparaison
+     * directe déclarait le questionnaire modifié à chaque appel.
+     *
+     * Conséquence en production, invisible sur SQLite qui conserve le texte tel quel : le
+     * constructeur affichait « modifications non publiées » en permanence, y compris à la seconde
+     * qui suit une publication. Un avertissement toujours allumé n'avertit plus de rien —
+     * l'administrateur apprend à l'ignorer, puis rate la vraie modification.
+     *
+     * On compare donc sur une forme CANONIQUE, clés triées à tous les niveaux. Le tri ne touche pas
+     * aux listes : leurs clés sont déjà 0, 1, 2… et l'ordre des questions reste significatif.
+     *
+     * @param  array<mixed>  $left
+     * @param  array<mixed>  $right
+     */
+    public function sameSchema(array $left, array $right): bool
+    {
+        return $this->canonicalise($left) === $this->canonicalise($right);
+    }
+
+    /**
+     * @param  array<mixed>  $value
+     * @return array<mixed>
+     */
+    protected function canonicalise(array $value): array
+    {
+        ksort($value);
+
+        foreach ($value as $key => $item) {
+            if (is_array($item)) {
+                $value[$key] = $this->canonicalise($item);
+            }
+        }
+
+        return $value;
     }
 }
