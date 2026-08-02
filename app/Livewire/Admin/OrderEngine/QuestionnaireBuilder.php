@@ -5,6 +5,7 @@ namespace App\Livewire\Admin\OrderEngine;
 use App\Livewire\OrderEngine\QuestionRenderer;
 use App\Models\Contracts\TranslatesCatalogLabels;
 use App\Models\Question;
+use App\Models\QuestionCondition;
 use App\Models\QuestionOption;
 use App\Models\Trade;
 use App\Services\OrderEngine\CatalogArchiver;
@@ -13,6 +14,8 @@ use App\Services\OrderEngine\PricingEngine;
 use App\Services\OrderEngine\QuestionnairePortability;
 use App\Services\OrderEngine\QuestionnaireValidator;
 use App\Services\OrderEngine\TradeFormPublisher;
+use App\Support\Domain\ConditionAction;
+use App\Support\Domain\ConditionOperator;
 use App\Support\Domain\OrderMode;
 use App\Support\Domain\PriceImpactMode;
 use App\Support\Domain\QuestionType;
@@ -52,12 +55,31 @@ class QuestionnaireBuilder extends Component
      * questions. La garantie doit survivre à un remaniement de routes.
      */
     use EnforcesAdminAccess;
+
     use WithFileUploads;
 
     public Trade $trade;
 
     /** Fichier JSON d'un parcours exporté, en attente d'import. */
     public $importFile = null;
+
+    /**
+     * Condition en cours d'écriture : « Afficher X SI Y EST Z ».
+     *
+     * `question_id` à `null` = aucun éditeur ouvert. Le moteur de conditions existait complet et
+     * testé sans aucune interface : un administrateur ne pouvait ni créer, ni supprimer une seule
+     * règle, ce qui rendait faux « ajouter un métier et ses questions sans une ligne de code » dès
+     * le premier exemple de la spécification.
+     *
+     * @var array<string, mixed>
+     */
+    public array $conditionForm = [
+        'question_id' => null,
+        'depends_on_question_id' => null,
+        'operator' => ConditionOperator::EQUALS,
+        'value' => '',
+        'action' => ConditionAction::SHOW,
+    ];
 
     /** Question en cours d'édition. `0` = création. */
     public ?int $editingId = null;
@@ -607,6 +629,200 @@ class QuestionnaireBuilder extends Component
             $result['created'],
             $result['updated'],
         );
+    }
+
+    // ─── Conditions ──────────────────────────────────────────────────────────────────────────
+
+    /** Ouvre l'éditeur pour la question qui SUBIT la condition. */
+    public function startCondition(int $questionId): void
+    {
+        $this->conditionForm = [
+            'question_id' => $questionId,
+            'depends_on_question_id' => null,
+            'operator' => ConditionOperator::EQUALS,
+            'value' => '',
+            'action' => ConditionAction::SHOW,
+        ];
+    }
+
+    public function cancelCondition(): void
+    {
+        $this->conditionForm['question_id'] = null;
+    }
+
+    /**
+     * Enregistre « Afficher X SI Y EST Z ».
+     *
+     * DEUX REFUS À LA SAISIE, et non à la publication.
+     *
+     * Le validateur bloquait déjà les cycles au moment de mettre en ligne. Mais un administrateur
+     * qui a écrit trois règles et découvre à la publication que l'une d'elles est fautive doit
+     * refaire le chemin à l'envers pour trouver laquelle. Refuser au moment du geste dit QUELLE
+     * règle pose problème, pendant qu'il l'a encore sous les yeux.
+     */
+    public function saveCondition(): void
+    {
+        if ($this->refusesWrite('conditionForm.depends_on_question_id')) {
+            return;
+        }
+
+        $data = $this->validate([
+            'conditionForm.question_id' => ['required', 'integer'],
+            'conditionForm.depends_on_question_id' => ['required', 'integer'],
+            'conditionForm.operator' => ['required', 'string'],
+            'conditionForm.action' => ['required', 'string'],
+        ], [
+            'conditionForm.depends_on_question_id.required' => 'Choisissez la question dont dépend l’affichage.',
+        ])['conditionForm'];
+
+        $subject = $this->questions()->firstWhere('id', (int) $data['question_id']);
+        $dependsOn = $this->questions()->firstWhere('id', (int) $data['depends_on_question_id']);
+
+        if (! $subject || ! $dependsOn) {
+            return;
+        }
+
+        if ($subject->id === $dependsOn->id) {
+            $this->addError(
+                'conditionForm.depends_on_question_id',
+                'Une question ne peut pas dépendre d’elle-même : elle ne s’afficherait jamais.',
+            );
+
+            return;
+        }
+
+        if ($this->wouldLoop($subject->id, $dependsOn->id)) {
+            $this->addError(
+                'conditionForm.depends_on_question_id',
+                sprintf(
+                    '« %s » dépend déjà de « %s » : les deux s’attendraient l’une l’autre et aucune ne s’afficherait. Choisissez une autre question.',
+                    $dependsOn->label,
+                    $subject->label,
+                ),
+            );
+
+            return;
+        }
+
+        QuestionCondition::create([
+            'question_id' => $subject->id,
+            'depends_on_question_id' => $dependsOn->id,
+            'operator' => $data['operator'],
+            // La valeur est toujours rangée en LISTE : `in` en attend plusieurs, et les autres
+            // opérateurs s'accommodent d'une liste à un élément. Une forme unique évite d'avoir à
+            // deviner, à la lecture, si l'on tient une valeur ou un tableau.
+            'value' => $this->conditionValues($data['operator'], (string) ($data['value'] ?? '')),
+            'action' => $data['action'],
+        ]);
+
+        $this->conditionForm['question_id'] = null;
+        unset($this->questions);
+        $this->refreshDerived();
+        $this->flash = 'Règle enregistrée.';
+    }
+
+    public function removeCondition(int $conditionId): void
+    {
+        if ($this->refusesWrite('conditionForm.depends_on_question_id')) {
+            return;
+        }
+
+        $ids = $this->questions()->pluck('id');
+
+        // Une condition d'un AUTRE métier ne se supprime pas depuis cet écran.
+        QuestionCondition::query()
+            ->whereIn('question_id', $ids)
+            ->where('id', $conditionId)
+            ->delete();
+
+        unset($this->questions);
+        $this->refreshDerived();
+    }
+
+    /**
+     * @return array<int, string>
+     */
+    protected function conditionValues(string $operator, string $raw): array
+    {
+        if ($operator === ConditionOperator::IS_ANSWERED) {
+            return [];
+        }
+
+        return collect(explode(',', $raw))
+            ->map(fn (string $v) => trim($v))
+            ->filter(fn (string $v) => $v !== '')
+            ->values()
+            ->all();
+    }
+
+    /**
+     * Ajouter cette dépendance créerait-il un cycle ?
+     *
+     * On remonte la chaîne depuis la question DONT on veut dépendre : si elle dépend déjà, de
+     * proche en proche, de celle qu'on est en train de configurer, les deux s'attendraient l'une
+     * l'autre et ni l'une ni l'autre ne s'afficherait jamais. Le défaut ne lève aucune erreur : il
+     * supprime silencieusement une partie du parcours.
+     */
+    protected function wouldLoop(int $subjectId, int $dependsOnId): bool
+    {
+        $edges = QuestionCondition::query()
+            ->whereIn('question_id', $this->questions()->pluck('id'))
+            ->get()
+            ->groupBy('question_id');
+
+        $seen = [];
+        $stack = [$dependsOnId];
+
+        while ($stack !== []) {
+            $current = array_pop($stack);
+
+            if ($current === $subjectId) {
+                return true;
+            }
+
+            if (isset($seen[$current])) {
+                continue;
+            }
+            $seen[$current] = true;
+
+            foreach ($edges[$current] ?? [] as $edge) {
+                $stack[] = (int) $edge->depends_on_question_id;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Les opérateurs, dits comme on les lirait à voix haute.
+     *
+     * « equals » ne se lit pas ; « est égal à » se lit. C'est toute la différence entre un éditeur
+     * qu'un responsable non technique emploie seul et un formulaire qu'il faut lui traduire.
+     *
+     * @return array<string, string>
+     */
+    #[Computed]
+    public function conditionOperators(): array
+    {
+        return [
+            ConditionOperator::EQUALS => 'est égal à',
+            ConditionOperator::NOT_EQUALS => 'est différent de',
+            ConditionOperator::IN => 'fait partie de',
+            ConditionOperator::GT => 'est supérieur à',
+            ConditionOperator::LT => 'est inférieur à',
+            ConditionOperator::IS_ANSWERED => 'a reçu une réponse',
+        ];
+    }
+
+    /** @return array<string, string> */
+    #[Computed]
+    public function conditionActions(): array
+    {
+        return [
+            ConditionAction::SHOW => 'Afficher',
+            ConditionAction::HIDE => 'Masquer',
+            ConditionAction::REQUIRE => 'Rendre obligatoire',
+        ];
     }
 
     /**

@@ -75,6 +75,23 @@ class MobileParityTest extends TestCase
     }
 
     /**
+     * Le CONSTRUCTEUR de parcours est joignable depuis mobile lui aussi.
+     *
+     * Une quarantaine de modules d'administration sont servis en vue embarquée ; le catalogue de
+     * commande n'y était pas. Un administrateur sur téléphone ne pouvait donc pas atteindre l'écran
+     * qui pilote secteurs, métiers, questions et — depuis peu — règles d'affichage : exactement
+     * l'écran dont toute la promesse « sans une ligne de code » dépend.
+     */
+    public function test_the_questionnaire_builder_is_reachable_from_mobile(): void
+    {
+        $module = collect(config('parity.modules'))->firstWhere('key', 'admin-order-engine');
+
+        $this->assertNotNull($module, 'Le constructeur de parcours n’est pas dans le registre.');
+        $this->assertSame('/admin/catalogue', $module['path']);
+        $this->assertContains('admin', $module['roles']);
+    }
+
+    /**
      * Le parcours se rend SANS le chrome du site quand il est embarqué.
      *
      * Une vue embarquée qui garde l'en-tête, la navigation basse et le pied de page du site donne

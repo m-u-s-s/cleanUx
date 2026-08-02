@@ -103,11 +103,127 @@
                         </button>
                         <button type="button" wire:click="confirmArchive({{ $question->id }})"
                             class="text-rose-700 underline underline-offset-4 hover:text-rose-900">Archiver</button>
+                        <button type="button" wire:click="startCondition({{ $question->id }})"
+                            class="text-slate-500 underline underline-offset-4 hover:text-slate-800">+ règle d’affichage</button>
                         @if ($question->isOptionBased())
                             <button type="button" wire:click="addOption({{ $question->id }})"
                                 class="text-slate-500 underline underline-offset-4 hover:text-slate-800">+ réponse</button>
                         @endif
                     </div>
+
+                    {{--
+                        ─── Les règles d'affichage, en toutes lettres ─────────────────────────
+
+                        « Afficher [Modèle de pistolet] SI [Peinture au pistolet ?] EST [oui] ».
+
+                        Le moteur existait complet et testé — évaluation, détection de cycles,
+                        export, refus de publication sur une dépendance circulaire — et n'avait
+                        AUCUNE interface. C'est la promesse centrale du module qui tombait :
+                        « sans une ligne de code » devenait faux dès la première question
+                        conditionnelle, c'est-à-dire dès le premier exemple de la spécification.
+                    --}}
+                    @if ($question->conditions->isNotEmpty() || $conditionForm['question_id'] === $question->id)
+                        <div class="mt-3 border-t border-slate-100 pt-3">
+                            <p class="text-sm font-medium text-slate-900">Règles d’affichage</p>
+
+                            <ul class="mt-2 space-y-1.5">
+                                @foreach ($question->conditions as $condition)
+                                    @php($source = $this->questions()->firstWhere('id', $condition->depends_on_question_id))
+                                    <li class="flex flex-wrap items-center justify-between gap-2 rounded-lg bg-slate-50 px-3 py-2 text-sm"
+                                        wire:key="cond-{{ $condition->id }}">
+                                        <span class="text-slate-700">
+                                            <strong class="font-medium">{{ $this->conditionActions[$condition->action] ?? $condition->action }}</strong>
+                                            cette question si
+                                            « {{ $source?->label ?? 'question supprimée' }} »
+                                            {{ $this->conditionOperators[$condition->operator] ?? $condition->operator }}
+                                            @if (! empty($condition->value))
+                                                « {{ implode(', ', (array) $condition->value) }} »
+                                            @endif
+                                        </span>
+
+                                        <button type="button" wire:click="removeCondition({{ $condition->id }})"
+                                            class="shrink-0 text-slate-400 underline underline-offset-4 hover:text-rose-700">
+                                            Retirer
+                                        </button>
+                                    </li>
+                                @endforeach
+                            </ul>
+
+                            {{-- L'éditeur : quatre listes déroulantes, aucune syntaxe à apprendre. --}}
+                            @if ($conditionForm['question_id'] === $question->id)
+                                <div class="mt-3 grid gap-2 rounded-xl border border-slate-200 p-3 sm:grid-cols-2">
+                                    <label class="text-sm">
+                                        <span class="mb-1 block text-slate-600">Action</span>
+                                        <select wire:model="conditionForm.action"
+                                            class="w-full rounded-lg border-slate-300 text-sm focus:border-slate-900 focus:ring-0">
+                                            @foreach ($this->conditionActions as $value => $label)
+                                                <option value="{{ $value }}">{{ $label }}</option>
+                                            @endforeach
+                                        </select>
+                                    </label>
+
+                                    <label class="text-sm">
+                                        <span class="mb-1 block text-slate-600">Si la question</span>
+                                        <select wire:model.live="conditionForm.depends_on_question_id"
+                                            class="w-full rounded-lg border-slate-300 text-sm focus:border-slate-900 focus:ring-0">
+                                            <option value="">Choisir…</option>
+                                            @foreach ($this->questions() as $candidate)
+                                                @continue($candidate->id === $question->id)
+                                                <option value="{{ $candidate->id }}">{{ $candidate->label }}</option>
+                                            @endforeach
+                                        </select>
+                                    </label>
+
+                                    <label class="text-sm">
+                                        <span class="mb-1 block text-slate-600">Condition</span>
+                                        <select wire:model.live="conditionForm.operator"
+                                            class="w-full rounded-lg border-slate-300 text-sm focus:border-slate-900 focus:ring-0">
+                                            @foreach ($this->conditionOperators as $value => $label)
+                                                <option value="{{ $value }}">{{ $label }}</option>
+                                            @endforeach
+                                        </select>
+                                    </label>
+
+                                    {{-- « a reçu une réponse » ne se compare à rien : le champ disparaît
+                                         plutôt que de rester là, vide et sans effet. --}}
+                                    @if ($conditionForm['operator'] !== 'is_answered')
+                                        <label class="text-sm">
+                                            <span class="mb-1 block text-slate-600">Valeur</span>
+                                            @php($source = $this->questions()->firstWhere('id', (int) $conditionForm['depends_on_question_id']))
+                                            @if ($source && $source->options->isNotEmpty())
+                                                {{-- Les réponses possibles sont connues : on les propose, plutôt
+                                                     que de faire deviner la valeur technique. --}}
+                                                <select wire:model="conditionForm.value"
+                                                    class="w-full rounded-lg border-slate-300 text-sm focus:border-slate-900 focus:ring-0">
+                                                    <option value="">Choisir…</option>
+                                                    @foreach ($source->options as $option)
+                                                        <option value="{{ $option->value }}">{{ $option->label }}</option>
+                                                    @endforeach
+                                                </select>
+                                            @else
+                                                <input type="text" wire:model="conditionForm.value"
+                                                    placeholder="ex. 50 — séparez par des virgules pour plusieurs"
+                                                    class="w-full rounded-lg border-slate-300 text-sm focus:border-slate-900 focus:ring-0">
+                                            @endif
+                                        </label>
+                                    @endif
+
+                                    @error('conditionForm.depends_on_question_id')
+                                        <p class="text-sm text-rose-700 sm:col-span-2" role="alert">{{ $message }}</p>
+                                    @enderror
+
+                                    <div class="flex gap-3 sm:col-span-2">
+                                        <button type="button" wire:click="saveCondition"
+                                            class="min-h-[40px] rounded-lg bg-slate-900 px-4 text-sm font-medium text-white hover:bg-slate-800">
+                                            Enregistrer la règle
+                                        </button>
+                                        <button type="button" wire:click="cancelCondition"
+                                            class="min-h-[40px] px-2 text-sm text-slate-600 hover:underline">Annuler</button>
+                                    </div>
+                                </div>
+                            @endif
+                        </div>
+                    @endif
 
                     {{--
                         Les traductions, repliees : la plupart du temps on edite le francais. Le
