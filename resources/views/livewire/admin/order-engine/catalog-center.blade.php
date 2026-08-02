@@ -105,6 +105,15 @@
                                                 modifications non publiées
                                             </span>
                                         @endif
+
+                                        {{-- Le signal qui rend les statistiques utiles : sans lui,
+                                             il faudrait ouvrir les douze métiers un par un pour
+                                             trouver celui qui perd ses clients. --}}
+                                        @if ($status && ($status['losing'] ?? false))
+                                            <span class="rounded-full bg-rose-50 px-2 py-0.5 text-rose-700">
+                                                une question fait décrocher
+                                            </span>
+                                        @endif
                                     </p>
                                 </div>
 

@@ -82,6 +82,49 @@
                         </div>
                     </div>
 
+                    {{--
+                        Ce que les clients font de cette question.
+
+                        Le service qui calcule ces chiffres était complet et testé, appelé par
+                        RIEN : il n'était atteignable que depuis un tinker. Or c'est un outil de
+                        DURÉE — un parcours ne devient pas trop long d'un coup, il s'allonge d'une
+                        question à la fois, chacune justifiable prise isolément, et la conversion
+                        s'érode sans que personne ne sache où. Ces chiffres ne servent que sous les
+                        yeux de qui ajoute la question suivante.
+                    --}}
+                    @php($stat = $this->insights[$question->code] ?? null)
+                    @if ($stat && $this->hasEnoughOrdersToConclude)
+                        @php($losing = in_array($question->code, $this->losingQuestionCodes, true))
+                        <div @class([
+                            'mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 rounded-lg px-3 py-2 text-xs',
+                            'bg-rose-50 text-rose-900' => $losing,
+                            'bg-slate-50 text-slate-600' => ! $losing,
+                        ])>
+                            <span class="tabular-nums">
+                                {{ round($stat['answer_rate'] * 100) }} % y répondent
+                            </span>
+                            <span class="tabular-nums">
+                                {{ round($stat['drop_rate'] * 100) }} % d’abandon
+                                <span class="text-[11px] opacity-70">({{ $stat['dropped_here'] }} sur {{ $stat['reached'] }})</span>
+                            </span>
+
+                            {{-- Un pourcentage sans verdict se contemple. On nomme le problème et on
+                                 dit quoi en faire. --}}
+                            @if ($losing)
+                                <span class="font-medium">
+                                    Cette question fait décrocher — raccourcissez-la, donnez-lui un défaut, ou retirez-la.
+                                </span>
+                            @endif
+                        </div>
+                    @elseif ($stat)
+                        {{-- Ne rien afficher laisserait croire que tout va bien. On distingue
+                             « aucun problème » de « pas de quoi conclure ». --}}
+                        <p class="mt-3 text-xs text-slate-400">
+                            {{ $stat['reached'] }} commande{{ $stat['reached'] > 1 ? 's' : '' }} sur ce métier :
+                            pas encore assez de commandes pour se prononcer sur l’abandon.
+                        </p>
+                    @endif
+
                     <div class="mt-3 flex flex-wrap items-center gap-2 text-xs">
                         @if ($question->is_required)
                             <span class="rounded-full bg-slate-100 px-2.5 py-1 text-slate-600">Obligatoire</span>

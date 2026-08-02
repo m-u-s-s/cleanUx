@@ -5,6 +5,7 @@ namespace App\Livewire\Admin\OrderEngine;
 use App\Models\Sector;
 use App\Models\Trade;
 use App\Services\OrderEngine\CatalogArchiver;
+use App\Services\OrderEngine\QuestionInsights;
 use App\Services\OrderEngine\QuestionnaireValidator;
 use App\Services\OrderEngine\TradeFormPublisher;
 use App\Support\Livewire\Concerns\EnforcesAdminAccess;
@@ -27,6 +28,9 @@ use Livewire\Component;
 #[Layout('layouts.app')]
 class CatalogCenter extends Component
 {
+    /** Même seuil que `QuestionInsights::worstOffenders()` : en deçà, aucun verdict. */
+    private const MINIMUM_ORDERS_TO_CONCLUDE = 20;
+
     /** Le refus vaut au niveau du composant, pas seulement de la route. */
     use EnforcesAdminAccess;
 
@@ -88,6 +92,15 @@ class CatalogCenter extends Component
     {
         $validator = app(QuestionnaireValidator::class);
         $publisher = app(TradeFormPublisher::class);
+
+        /*
+         * Sorti de la boucle, et lu en PROPRIÉTÉ.
+         *
+         * `#[Computed]` ne met en cache que l'accès propriété : `$this->tradesLosingClients()`
+         * réexécute le corps à chaque appel, donc une fois par métier — soit exactement le coût
+         * qui grandit avec la liste que cette analyse sert à débusquer.
+         */
+        $losing = $this->tradesLosingClients;
         $statuses = [];
 
         foreach ($this->sectors()->flatMap->trades as $trade) {
@@ -99,10 +112,48 @@ class CatalogCenter extends Component
                 'blocking' => $blocking,
                 'pending' => $publisher->hasUnpublishedChanges($trade),
                 'version' => $publisher->currentRevision($trade)?->version,
+                'losing' => in_array($trade->id, $losing, true),
             ];
         }
 
         return $statuses;
+    }
+
+    /**
+     * Les métiers dont une question fait décrocher les clients.
+     *
+     * Sans ce signal, il faudrait ouvrir les douze métiers un par un pour découvrir lequel perd ses
+     * clients — donc personne ne le découvrirait, et les statistiques ne serviraient à rien.
+     *
+     * LE VOLUME EST FILTRÉ D'ABORD, EN UNE REQUÊTE. Appeler l'analyse sur chaque métier du
+     * catalogue reproduirait exactement le défaut qu'elle sert à débusquer : un coût qui grandit
+     * avec le nombre de lignes affichées. On compte donc les commandes par métier d'un seul coup,
+     * et on n'analyse que ceux qui en ont assez pour qu'un verdict veuille dire quelque chose —
+     * en pratique, une poignée.
+     *
+     * @return array<int, int>
+     */
+    #[Computed]
+    public function tradesLosingClients(): array
+    {
+        $volumes = DB::table('order_draft_items')
+            ->selectRaw('trade_id, count(*) as total')
+            ->groupBy('trade_id')
+            ->havingRaw('count(*) >= ?', [self::MINIMUM_ORDERS_TO_CONCLUDE])
+            ->pluck('total', 'trade_id');
+
+        if ($volumes->isEmpty()) {
+            return [];
+        }
+
+        $insights = app(QuestionInsights::class);
+
+        return Trade::query()
+            ->whereIn('id', $volumes->keys())
+            ->get()
+            ->filter(fn (Trade $trade) => $insights->worstOffenders($trade)->isNotEmpty())
+            ->pluck('id')
+            ->all();
     }
 
     // ─── Secteurs ────────────────────────────────────────────────────────────────────────────

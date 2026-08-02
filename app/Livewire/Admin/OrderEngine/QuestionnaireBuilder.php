@@ -11,6 +11,7 @@ use App\Models\Trade;
 use App\Services\OrderEngine\CatalogArchiver;
 use App\Services\OrderEngine\PriceBreakdown;
 use App\Services\OrderEngine\PricingEngine;
+use App\Services\OrderEngine\QuestionInsights;
 use App\Services\OrderEngine\QuestionnairePortability;
 use App\Services\OrderEngine\QuestionnaireValidator;
 use App\Services\OrderEngine\TradeFormPublisher;
@@ -57,6 +58,12 @@ class QuestionnaireBuilder extends Component
     use EnforcesAdminAccess;
 
     use WithFileUploads;
+
+    /**
+     * En deçà, aucun verdict n'est rendu : le service se tait, et l'écran DIT qu'il se tait.
+     * La même valeur que le seuil de `QuestionInsights::worstOffenders()`.
+     */
+    private const MINIMUM_ORDERS_TO_CONCLUDE = 20;
 
     public Trade $trade;
 
@@ -629,6 +636,57 @@ class QuestionnaireBuilder extends Component
             $result['created'],
             $result['updated'],
         );
+    }
+
+    // ─── Ce que les clients font du parcours ─────────────────────────────────────────────────
+
+    /**
+     * L'abandon par question, indexé par code.
+     *
+     * Ces chiffres n'ont de valeur QUE sous les yeux de qui ajoute la question suivante. Un
+     * parcours ne devient pas trop long d'un coup : il s'allonge d'une question à la fois, chacune
+     * justifiable prise isolément, et la conversion s'érode sans que personne ne sache où.
+     *
+     * Calculé UNE fois pour tout l'écran : le service parcourt déjà l'ensemble des lignes de
+     * commande du métier, l'appeler par question multiplierait ce parcours par dix.
+     *
+     * @return Collection<string, array<string, mixed>>
+     */
+    #[Computed]
+    public function insights(): Collection
+    {
+        return app(QuestionInsights::class)->forTrade($this->trade)->keyBy('code');
+    }
+
+    /**
+     * Les codes des questions qui font réellement décrocher.
+     *
+     * Le service tient les deux garde-fous : un seuil de taux ET un volume minimum. Un abandon sur
+     * trois commandes ne dit rien, et l'afficher comme « 33 % » ferait supprimer une question
+     * parfaitement saine.
+     *
+     * @return array<int, string>
+     */
+    #[Computed]
+    public function losingQuestionCodes(): array
+    {
+        return app(QuestionInsights::class)
+            ->worstOffenders($this->trade)
+            ->pluck('code')
+            ->all();
+    }
+
+    /**
+     * Y a-t-il assez de commandes pour se prononcer ?
+     *
+     * Un écran qui se contente de ne rien afficher laisse croire que tout va bien. Il doit
+     * distinguer « aucun problème » de « pas encore de quoi conclure » — sinon l'absence de
+     * signal se lit comme un satisfecit.
+     */
+    #[Computed]
+    public function hasEnoughOrdersToConclude(): bool
+    {
+        return ($this->insights->first()['reached'] ?? 0) >= self::MINIMUM_ORDERS_TO_CONCLUDE;
     }
 
     // ─── Conditions ──────────────────────────────────────────────────────────────────────────
