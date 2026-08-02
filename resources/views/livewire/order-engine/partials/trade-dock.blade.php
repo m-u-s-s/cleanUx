@@ -24,12 +24,19 @@
     x-data="{
         touch: window.matchMedia('(hover: none)').matches,
         reduced: window.matchMedia('(prefers-reduced-motion: reduce)').matches,
-        /** Décroissance par palier de voisinage : 1,55 / 1,3 / 1,12 / 1. */
+        /**
+         * Décroissance par palier de voisinage : 1,55 / 1,3 / 1,12 / 1.
+         *
+         * L'exposant vaut 1,5 et non 2,2 : à 2,2 la courbe s'effondrait trop vite et les voisins
+         * n'atteignaient que 1,23 et 1,05. L'onde était là, mais si plate qu'elle se lisait comme
+         * un simple survol — or c'est justement l'ondulation qui distingue ce dock d'un `:hover`.
+         * À 1,5 on retrouve 1,30 et 1,11, l'interpolation restant continue.
+         */
         scaleFor(distance) {
             const step = 76;
             const t = Math.min(Math.abs(distance) / step, 3);
             if (t >= 3) return 1;
-            return 1 + 0.55 * Math.pow(1 - t / 3, 2.2);
+            return 1 + 0.55 * Math.pow(1 - t / 3, 1.5);
         },
         magnify(clientX) {
             if (this.touch || this.reduced) return;
@@ -63,7 +70,20 @@
                 <button
                     type="button"
                     data-dock-item
-                    wire:click="selectTrade({{ $trade->id }})"
+                    {{--
+                        Transition d'élément partagé : le métier choisi MONTE devenir l'en-tête du
+                        questionnaire au lieu de disparaître pour être remplacé. Le client garde le
+                        fil de ce qu'il a choisi.
+
+                        Le nom n'est porté que par l'élément survolé au moment du clic : deux
+                        éléments partageant le même `view-transition-name` au même instant
+                        annuleraient la transition entière.
+                    --}}
+                    x-on:click="
+                        $el.style.viewTransitionName = 'cx-trade-choisi';
+                        if (! document.startViewTransition || reduced) { $wire.selectTrade({{ $trade->id }}); return }
+                        document.startViewTransition(() => $wire.selectTrade({{ $trade->id }}))
+                    "
                     class="group relative flex min-h-[72px] w-full flex-col items-start justify-end gap-1 rounded-2xl border border-slate-200 bg-white p-3 text-left transition-[border-color,box-shadow] focus-visible:outline-2 focus-visible:outline-offset-2 sm:w-[104px] sm:items-center sm:text-center
                            motion-safe:sm:[transform:scale(var(--cx-scale,1))] motion-safe:sm:[transform-origin:bottom_center]
                            motion-safe:sm:[transition:transform_260ms_cubic-bezier(.22,1.2,.36,1)]

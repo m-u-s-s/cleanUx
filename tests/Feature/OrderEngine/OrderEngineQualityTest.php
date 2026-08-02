@@ -68,6 +68,23 @@ class OrderEngineQualityTest extends TestCase
                 continue;
             }
 
+            /*
+             * Un champ retiré de l'arbre d'accessibilité n'a pas de nom accessible à porter — la
+             * question ne se pose pas. Mais un champ `aria-hidden` ATTEIGNABLE au clavier est un
+             * vrai défaut : le focus s'y pose sans que le lecteur d'écran n'annonce quoi que ce
+             * soit. L'exception est donc conditionnée à `tabindex="-1"`, ce qui rend la règle plus
+             * stricte qu'avant, pas plus permissive.
+             */
+            if ($this->attr($control, 'aria-hidden') === 'true') {
+                $this->assertSame(
+                    '-1',
+                    $this->attr($control, 'tabindex'),
+                    'Champ masqué aux lecteurs d’écran mais atteignable au clavier : '.mb_substr($control, 0, 120),
+                );
+
+                continue;
+            }
+
             $id = $this->attr($control, 'id');
             $hasLabel = $id !== null && str_contains($html, 'for="'.$id.'"');
 

@@ -4,6 +4,7 @@ namespace App\Livewire\OrderEngine;
 
 use App\Models\OrderDraft;
 use App\Models\OrderDraftItem;
+use App\Models\OrderDraftMedia;
 use App\Models\Question;
 use App\Models\Sector;
 use App\Models\Trade;
@@ -25,12 +26,14 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\On;
 use Livewire\Component;
+use Livewire\WithFileUploads;
 
 /**
  * Le parcours de commande : secteur, puis métier, puis questions — sans changer de page.
@@ -71,6 +74,8 @@ use Livewire\Component;
 #[Layout('layouts.app')]
 class OrderJourney extends Component
 {
+    use WithFileUploads;
+
     /**
      * Le jeton qui rattache un visiteur à son panier, sans compte. */
     public string $sessionToken = '';
@@ -124,6 +129,16 @@ class OrderJourney extends Component
      * moyen d'arbitrer.
      */
     public ?int $selectedProviderId = null;
+
+    /**
+     * Photos en attente d'être jointes.
+     *
+     * `WithFileUploads` est ce qui manquait : sans lui, `wire:model` sur un champ fichier ne fait
+     * rien du tout — pas d'erreur, pas de fichier, rien.
+     *
+     * @var array<int, mixed>
+     */
+    public array $photos = [];
 
     public function mount(?string $sector = null, ?string $trade = null): void
     {
@@ -327,6 +342,95 @@ class OrderJourney extends Component
         ]);
 
         $this->refreshDerived();
+    }
+
+    // ─── Photos ──────────────────────────────────────────────────────────────────────────────
+
+    /**
+     * Joint les photos choisies à la ligne de commande du métier courant.
+     *
+     * Le champ existait, `order_draft_media` existait, le modèle et la relation aussi — et rien ne
+     * les reliait. `wire:model` sur un `<input type="file">` sans le trait d'upload ne fait
+     * strictement rien : le client choisissait une photo, lisait « Envoi en cours… », et le fichier
+     * disparaissait. Sans erreur, sans trace, et sans que le prestataire n'en voie la couleur.
+     *
+     * Le refus d'un fichier non conforme est ANNONCÉ. Un refus muet fait recommencer trois fois
+     * avec le même fichier.
+     */
+    public function attachPhotos(): void
+    {
+        if (! $this->trade || $this->photos === []) {
+            return;
+        }
+
+        $this->validate(
+            ['photos.*' => ['image', 'mimes:jpeg,jpg,png,webp,heic', 'max:8192']],
+            [
+                'photos.*.image' => 'Seules les photos sont acceptées ici (JPEG, PNG, WebP).',
+                'photos.*.max' => 'Cette photo dépasse 8 Mo. Reprenez-la en qualité normale.',
+            ],
+        );
+
+        $item = app(OrderDraftManager::class)->itemFor($this->draft(), $this->trade);
+
+        foreach ($this->photos as $photo) {
+            $path = $photo->store('order-drafts/'.$this->draft()->reference, 'public');
+
+            OrderDraftMedia::create([
+                'order_draft_item_id' => $item->id,
+                'uploaded_by_user_id' => Auth::id(),
+                'path' => $path,
+                'size_bytes' => $photo->getSize(),
+                'mime_type' => $photo->getMimeType(),
+            ]);
+        }
+
+        $this->photos = [];
+        unset($this->attachedPhotos);
+    }
+
+    /**
+     * Le client change d'avis.
+     *
+     * Le fichier part avec la ligne : garder l'un sans l'autre laisserait des images orphelines sur
+     * le disque, invisibles et jamais purgées — et il s'agit de photos du domicile de quelqu'un.
+     */
+    public function removePhoto(int $mediaId): void
+    {
+        $media = OrderDraftMedia::query()
+            ->whereHas('item', fn ($q) => $q->where('order_draft_id', $this->draft()->id))
+            ->find($mediaId);
+
+        if (! $media) {
+            return;
+        }
+
+        Storage::disk('public')->delete($media->path);
+        $media->delete();
+
+        unset($this->attachedPhotos);
+    }
+
+    /**
+     * Les photos déjà jointes au métier courant.
+     *
+     * Sans aperçu, on rejoint deux fois la même : le client n'a aucun moyen de savoir ce qui est
+     * déjà parti.
+     *
+     * @return Collection<int, OrderDraftMedia>
+     */
+    #[Computed]
+    public function attachedPhotos(): Collection
+    {
+        $trade = $this->trade;
+
+        if (! $trade) {
+            return collect();
+        }
+
+        $item = $this->draft()->items()->where('trade_id', $trade->id)->first();
+
+        return $item ? $item->media()->orderBy('id')->get() : collect();
     }
 
     /**

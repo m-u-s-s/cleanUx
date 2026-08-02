@@ -91,6 +91,29 @@ class OrderJourneyTest extends TestCase
         $this->assertGreaterThan($base, $component->instance()->quote()->minCents);
     }
 
+    /**
+     * Le dock appelle bien `selectTrade`.
+     *
+     * Les tests choisissent un métier par `->call('selectTrade', ...)`, ce qui ne prouve rien du
+     * bouton. Le clic passe désormais par Alpine — pour envelopper la sélection dans une transition
+     * d'élément partagé — et un `wire:click` supprimé par mégarde laisserait un dock inerte que
+     * toute la suite continuerait de déclarer vert.
+     */
+    public function test_the_dock_actually_calls_select_trade(): void
+    {
+        $sector = $this->peinture()->sector;
+
+        $html = Livewire::test(OrderJourney::class)
+            ->set('sectorId', $sector->id)
+            ->html();
+
+        $this->assertStringContainsString(
+            'selectTrade('.$this->peinture()->id.')',
+            $html,
+            'Aucun élément du dock n’appelle selectTrade : le métier ne peut plus être choisi.',
+        );
+    }
+
     /** Et la variation se dit en mots, pas seulement en chiffres. */
     public function test_the_last_change_is_explained(): void
     {
@@ -99,6 +122,33 @@ class OrderJourneyTest extends TestCase
             ->dispatch('question-answered', code: 'etendue', value: 'murs_plafonds', valid: true);
 
         $this->assertSame('Que faut-il peindre ?', $component->instance()->lastChange()['label']);
+    }
+
+    /**
+     * L'explication de la variation est LUE SUR MOBILE aussi.
+     *
+     * Elle ne vivait que dans la carte collante du grand écran. Sur un produit conçu à 390 px
+     * d'abord, c'était le mauvais sens : le client mobile — le plus nombreux — voyait le montant
+     * bouger sans jamais savoir pourquoi. Le libellé doit donc apparaître DEUX fois dans le rendu :
+     * la carte de droite et la barre du pouce.
+     */
+    public function test_the_price_variation_is_explained_on_the_thumb_bar_too(): void
+    {
+        $html = Livewire::test(OrderJourney::class)
+            ->call('selectTrade', $this->peinture()->id)
+            ->dispatch('question-answered', code: 'etendue', value: 'murs_plafonds', valid: true)
+            ->html();
+
+        /*
+         * Trois occurrences : l'intitulé de la question elle-même, la carte collante du grand
+         * écran, et la barre du pouce. Deux signifient que la barre basse ne le porte pas — c'était
+         * l'état avant ce correctif.
+         */
+        $this->assertSame(
+            3,
+            substr_count($html, 'Que faut-il peindre ?'),
+            'L’explication de la variation manque à la barre basse mobile.',
+        );
     }
 
     /**

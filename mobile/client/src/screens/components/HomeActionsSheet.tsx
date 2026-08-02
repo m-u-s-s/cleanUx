@@ -27,11 +27,30 @@ type BookingMode = {
   key: string;
   title: string;
   hint: string;
-  icon: 'flash-outline' | 'calendar-outline' | 'layers-outline';
+  icon: 'flash-outline' | 'calendar-outline' | 'layers-outline' | 'sparkles-outline';
   navigate: (navigate: (screen: string, params?: object) => void) => void;
 };
 
 const BOOKING_MODES: BookingMode[] = [
+  {
+    key: 'catalog',
+    title: 'Commander',
+    hint: 'Tout le catalogue, prix affiché avant de créer un compte',
+    icon: 'sparkles-outline',
+    /*
+     * Le moteur de commande n'existait QUE sur le web.
+     *
+     * Aucun écran natif, aucun point d'API — `routes/api/` n'en parle nulle part — et aucune
+     * entrée dans le registre de parité. Un client sur l'application réservait par catégorie de
+     * service, sans secteur, sans question propre au métier, sans mode immédiat et sans devis
+     * explicable ligne par ligne.
+     *
+     * Il est servi par la vue embarquée, comme le multi-métiers juste en dessous. Les trois modes
+     * qui suivent visent encore l'ancien parcours en cinq étapes : les deux coexistent le temps
+     * que le natif rattrape, plutôt que de retirer un parcours qui fonctionne.
+     */
+    navigate: go => go('EmbeddedModule', { path: '/commander', title: 'Commander' }),
+  },
   {
     key: 'asap',
     title: 'Intervention immédiate',

@@ -40,7 +40,10 @@
 
                     <div class="flex items-start justify-between gap-4">
                         <div>
-                            <h2 id="questions-titre" class="text-lg font-semibold text-slate-900">
+                            {{-- L'autre extrémité de la transition partagée : c'est ICI que
+                                 l'élément du dock arrive. --}}
+                            <h2 id="questions-titre" class="text-lg font-semibold text-slate-900"
+                                style="view-transition-name: cx-trade-choisi">
                                 {{ $this->trade->name }}
                             </h2>
                             @if ($this->trade->short_description)
@@ -91,6 +94,10 @@
                     </div>
                 </section>
 
+                {{-- La photo est un RACCOURCI, offert avant l'adresse : elle remplace des questions,
+                     elle ne s'ajoute pas à la file. --}}
+                @include('livewire.order-engine.partials.photos')
+
                 {{-- L'adresse vient APRÈS les questions : elle récompense, elle ne filtre pas. --}}
                 @include('livewire.order-engine.partials.address-availability')
 
@@ -135,12 +142,21 @@
                             Ce métier demande un devis : un professionnel chiffre après avoir vu les lieux.
                         </p>
                     @else
+                        {{--
+                            Le montant SE DÉPLACE, il ne saute pas.
+
+                            `tabular-nums` empêchait déjà les chiffres de se décaler latéralement,
+                            mais la valeur elle-même passait d'un coup de 120 à 165 : le client voit
+                            un nombre différent sans percevoir qu'il a changé, ni de combien. Le
+                            compte progressif rend la variation lisible — et c'est cette variation,
+                            pas le montant, qui l'aide à décider.
+                        --}}
                         <p class="mt-2 text-3xl font-semibold tabular-nums text-slate-900">
                             @if ($this->quote->isExact())
-                                {{ number_format($this->quote->minCents / 100, 0, ',', ' ') }} €
+                                <span data-cx-price="{{ $this->quote->minCents }}">{{ number_format($this->quote->minCents / 100, 0, ',', ' ') }}</span> €
                             @else
-                                {{ number_format($this->quote->minCents / 100, 0, ',', ' ') }}
-                                – {{ number_format($this->quote->maxCents / 100, 0, ',', ' ') }} €
+                                <span data-cx-price="{{ $this->quote->minCents }}">{{ number_format($this->quote->minCents / 100, 0, ',', ' ') }}</span>
+                                – <span data-cx-price="{{ $this->quote->maxCents }}">{{ number_format($this->quote->maxCents / 100, 0, ',', ' ') }}</span> €
                             @endif
                         </p>
 
@@ -175,14 +191,24 @@
                 aria-live="polite" aria-atomic="true">
                 <div class="flex items-center justify-between gap-4">
                     <div class="min-w-0">
-                        <p class="truncate text-xs text-slate-500">{{ $this->trade?->name }}</p>
+                        {{--
+                            Le micro-libellé de variation vivait sur le DESKTOP seulement.
+
+                            Sur un produit conçu à 390 px d'abord, c'était le mauvais sens : le
+                            client mobile voyait le montant bouger sans jamais savoir POURQUOI. Il
+                            remplace ici le nom du métier — déjà affiché en titre juste au-dessus —
+                            quand il y a quelque chose à expliquer.
+                        --}}
+                        <p class="truncate text-xs text-slate-500">
+                            {{ $this->lastChange['label'] ?? $this->trade?->name }}
+                        </p>
                         <p class="text-xl font-semibold tabular-nums leading-tight text-slate-900">
                             @if ($this->quote->quoteOnly)
                                 Sur devis
                             @elseif ($this->quote->isExact())
-                                {{ number_format($this->quote->minCents / 100, 0, ',', ' ') }} €
+                                <span data-cx-price="{{ $this->quote->minCents }}">{{ number_format($this->quote->minCents / 100, 0, ',', ' ') }}</span> €
                             @else
-                                {{ number_format($this->quote->minCents / 100, 0, ',', ' ') }}–{{ number_format($this->quote->maxCents / 100, 0, ',', ' ') }} €
+                                <span data-cx-price="{{ $this->quote->minCents }}">{{ number_format($this->quote->minCents / 100, 0, ',', ' ') }}</span>–<span data-cx-price="{{ $this->quote->maxCents }}">{{ number_format($this->quote->maxCents / 100, 0, ',', ' ') }}</span> €
                             @endif
                         </p>
                     </div>
@@ -196,3 +222,77 @@
         @endif
     </div>
 </div>
+
+@push('scripts')
+<script>
+    /**
+     * Le montant se deplace, il ne saute pas.
+     *
+     * Livewire remplace le texte du montant d'un coup : 120 devient 165 sans que rien ne signale
+     * le changement. Le client lit un nombre different sans percevoir qu'il a bouge, ni de
+     * combien — or c'est la VARIATION qui l'aide a decider, pas le montant.
+     *
+     * On observe donc l'attribut `data-cx-price` (des centimes, jamais du texte formate : reparser
+     * « 1 250 » dependrait de la locale) et on compte de l'ancienne valeur vers la nouvelle.
+     *
+     * En mouvement reduit, aucune animation : la valeur finale est ecrite immediatement.
+     */
+    (() => {
+        const REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)');
+        const DUREE = 420;
+
+        const format = (cents) => new Intl.NumberFormat('fr-BE', {
+            maximumFractionDigits: 0,
+        }).format(Math.round(cents / 100));
+
+        const anime = (el, depuis, vers) => {
+            if (REDUCED.matches || depuis === vers) {
+                el.textContent = format(vers);
+                return;
+            }
+
+            const debut = performance.now();
+
+            const pas = (maintenant) => {
+                const t = Math.min((maintenant - debut) / DUREE, 1);
+                // Sortie douce : le chiffre ralentit en arrivant, comme un compteur mecanique.
+                const eased = 1 - Math.pow(1 - t, 3);
+                el.textContent = format(depuis + (vers - depuis) * eased);
+
+                if (t < 1) {
+                    requestAnimationFrame(pas);
+                }
+            };
+
+            requestAnimationFrame(pas);
+        };
+
+        const observe = (el) => {
+            if (el.dataset.cxPriceWatched) {
+                return;
+            }
+            el.dataset.cxPriceWatched = '1';
+            el.dataset.cxPriceShown = el.dataset.cxPrice;
+
+            new MutationObserver(() => {
+                const vers = Number(el.dataset.cxPrice);
+                const depuis = Number(el.dataset.cxPriceShown ?? vers);
+
+                if (Number.isFinite(vers) && Number.isFinite(depuis)) {
+                    el.dataset.cxPriceShown = String(vers);
+                    anime(el, depuis, vers);
+                }
+            }).observe(el, { attributes: true, attributeFilter: ['data-cx-price'] });
+        };
+
+        const scan = () => document.querySelectorAll('[data-cx-price]').forEach(observe);
+
+        document.addEventListener('DOMContentLoaded', scan);
+        document.addEventListener('livewire:navigated', scan);
+        // Livewire remplace des noeuds a chaque reponse : les nouveaux montants doivent etre
+        // observes a leur tour, sinon l'animation ne marche qu'au premier rendu.
+        document.addEventListener('livewire:update', scan);
+        scan();
+    })();
+</script>
+@endpush

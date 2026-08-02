@@ -162,6 +162,23 @@ describe('HomeScreen interactions', () => {
     expect(mockNavigate).toHaveBeenCalledWith('BookingWizard', { mode: 'asap' });
   });
 
+  /**
+   * Le moteur de commande n'existait que sur le web.
+   *
+   * Aucun ecran natif, aucun point d'API, et aucune entree dans le registre de parite : un client
+   * sur l'application reservait par categorie de service, sans secteur, sans question propre au
+   * metier et sans devis explicable ligne par ligne. Il est desormais servi par la vue embarquee,
+   * comme le multi-metiers juste en dessous.
+   */
+  it('le catalogue complet ouvre le moteur de commande embarque', () => {
+    render(<HomeScreen />);
+    fireEvent.press(screen.getByTestId('booking-mode-catalog'));
+    expect(mockNavigate).toHaveBeenCalledWith('EmbeddedModule', {
+      path: '/commander',
+      title: 'Commander',
+    });
+  });
+
   it('le mode rendez-vous laisse choisir la date', () => {
     render(<HomeScreen />);
     fireEvent.press(screen.getByTestId('booking-mode-scheduled'));
