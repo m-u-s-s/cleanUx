@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Support\Mobile\AppAudience;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -34,6 +35,20 @@ class AuthRefreshController extends Controller
     public function __invoke(Request $request): JsonResponse
     {
         $user = $request->user();
+
+        /*
+         * Le renouvellement est une PORTE, au même titre que la connexion et la reprise de session.
+         *
+         * La refuser ici évite qu'un jeton logé dans la mauvaise application se reconduise
+         * indéfiniment : bloquer l'entrée sans bloquer le renouvellement laisserait la session se
+         * prolonger toute seule, sans jamais repasser par `/auth/me`.
+         */
+        $app = AppAudience::declared($request);
+
+        if (! AppAudience::allows($user, $app)) {
+            return response()->json(AppAudience::refusal($user, (string) $app) + ['ok' => false], 403);
+        }
+
         $oldToken = $user->currentAccessToken();
 
         // Mirror the ApiAuthController fallback chain: use the existing token

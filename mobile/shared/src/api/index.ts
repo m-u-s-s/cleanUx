@@ -12,3 +12,5 @@ export interface ApiResponse<T = unknown> {
   message?: string;
   status?: string;
 }
+export { setAppAudience, getAppAudience, APP_AUDIENCE_HEADER } from './appAudience';
+export type { AppAudience } from './appAudience';

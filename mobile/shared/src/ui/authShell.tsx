@@ -74,6 +74,20 @@ export function authErrorMessage(error: unknown, action: 'login' | 'register'): 
     return 'Identifiants incorrects.';
   }
 
+  /*
+   * 403 — le serveur refuse ce compte DANS CETTE APPLICATION, et dit vers laquelle aller.
+   *
+   * Son message passe intact : c'est lui qui évite l'appel au support. Traduit en « Connexion
+   * impossible pour le moment. », il ferait retenter, douter de son mot de passe, puis croire son
+   * compte cassé — alors que la seule chose à faire est d'ouvrir l'autre application.
+   *
+   * Les 401 restent volontairement vagues juste au-dessus : on ne dit pas si l'adresse existe.
+   * Ici il n'y a rien à protéger — le mot de passe était bon.
+   */
+  if (error.status === 403 && error.message.trim() !== '') {
+    return error.message;
+  }
+
   return fallback;
 }
 

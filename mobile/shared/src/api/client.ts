@@ -1,6 +1,7 @@
 import axios from 'axios';
 import { secureStore } from '@/storage/secureStore';
 import { ApiError } from './types';
+import { getAppAudience, APP_AUDIENCE_HEADER } from './appAudience';
 import { env } from '@/config/env';
 
 const BASE_URL = env.apiUrl;
@@ -44,6 +45,20 @@ apiClient.interceptors.request.use(async (config) => {
     config.headers = config.headers ?? {};
     config.headers['Authorization'] = `Bearer ${token}`;
   }
+
+  /*
+   * L'application se déclare sur CHAQUE requête, pas seulement à la connexion.
+   *
+   * Le serveur refuse un compte prestataire dans l'application cliente et l'inverse ; il doit
+   * pouvoir le faire aussi à la reprise de session, sinon un jeton obtenu dans l'autre APK reste
+   * valide indéfiniment — bloquer la porte d'entrée ne sert à rien si la fenêtre reste ouverte.
+   */
+  const audience = getAppAudience();
+  if (audience) {
+    config.headers = config.headers ?? {};
+    config.headers[APP_AUDIENCE_HEADER] = audience;
+  }
+
   return config;
 });
 

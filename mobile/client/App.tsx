@@ -1,3 +1,16 @@
+/*
+ * L'application se DÉCLARE avant tout le reste.
+ *
+ * Le serveur refuse un compte prestataire dans l'application cliente et l'inverse ; il ne
+ * peut le faire que s'il sait à qui il parle. En l'absence de déclaration il laisse passer,
+ * pour ne pas déconnecter le parc déjà installé — un oubli ici serait donc SILENCIEUX.
+ *
+ * Avant les fournisseurs : la reprise de session part dès le montage d'`AuthProvider`, et
+ * elle doit déjà porter l'en-tête.
+ */
+import { setAppAudience } from '@/api';
+setAppAudience('client');
+
 import '@/sentry/init';
 import { setupForegroundNotifications } from '@/push';
 setupForegroundNotifications();

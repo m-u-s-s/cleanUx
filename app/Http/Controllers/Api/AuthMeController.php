@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\CustomerProfile;
+use App\Support\Mobile\AppAudience;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -23,11 +24,38 @@ class AuthMeController extends Controller
     {
         $user = $request->user();
 
+        /*
+         * La reprise de session est le SECOND verrou de la séparation des deux applications.
+         *
+         * Bloquer la connexion ne suffit pas : un jeton obtenu avant ce garde-fou, ou dans l'autre
+         * APK, resterait valide indéfiniment. Le 403 ici fait tomber le `catch` de l'application,
+         * qui efface le jeton — la session se referme d'elle-même.
+         */
+        $app = AppAudience::declared($request);
+
+        if (! AppAudience::allows($user, $app)) {
+            return response()->json(AppAudience::refusal($user, (string) $app) + ['ok' => false], 403);
+        }
+
         // SP2 — expose le flag premium pour piloter la sélection prestataire côté
         // mobile (parité web). Sérialisé par-dessus l'utilisateur sans le muter.
         $payload = $user->toArray();
         $profile = $user->customerProfile;
         $payload['is_premium'] = $profile instanceof CustomerProfile && $profile->isPremium();
+
+        /*
+         * La réponse porte les DEUX formes, et c'est délibéré.
+         *
+         * Le serveur renvoyait les attributs à plat ; l'application mobile lit `data.user`. Elle
+         * recevait donc `undefined` à chaque reprise de session, en concluait qu'il n'y avait
+         * personne, et renvoyait vers l'écran de connexion — un jeton valide en poche, une
+         * reconnexion à chaque lancement. Rien ne le signalait : le test mobile simulait
+         * `{ user: … }`, une forme que le serveur n'a jamais envoyée.
+         *
+         * Retirer la forme à plat casserait les consommateurs qui la lisent déjà — deux tests la
+         * figent. On ajoute donc, on ne remplace pas.
+         */
+        $payload['user'] = $payload;
 
         return response()->json($payload);
     }

@@ -20,6 +20,7 @@ use App\Services\KybV2\BusinessOnboardingService;
 use App\Services\OnboardingV2\OnboardingEngine;
 use App\Services\Promotion\ReferralService;
 use App\Services\Sms\PhoneVerificationService;
+use App\Support\Mobile\AppAudience;
 use App\Support\Validation\BusinessNumber;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\JsonResponse;
@@ -82,6 +83,24 @@ class ApiAuthController extends Controller
             throw ValidationException::withMessages([
                 'email' => 'Identifiants incorrects.',
             ]);
+        }
+
+        /*
+         * Chaque application n'accepte que le public qu'elle sert.
+         *
+         * Le contrôle vient APRÈS la vérification du mot de passe et AVANT l'émission du jeton :
+         * après, pour ne pas révéler à un inconnu qu'une adresse existe et de quel type elle est ;
+         * avant, parce qu'émettre un jeton puis refuser l'écran laisserait une session valide dans
+         * une application qui n'en veut pas.
+         *
+         * La limite de tentatives n'est PAS remise à zéro sur ce chemin : le mot de passe était
+         * bon, mais rien ne doit permettre de sonder les comptes application par application sans
+         * compteur.
+         */
+        $app = AppAudience::declared($request);
+
+        if (! AppAudience::allows($user, $app)) {
+            return response()->json(AppAudience::refusal($user, (string) $app) + ['ok' => false], 403);
         }
 
         // Reset rate limit après login réussi
