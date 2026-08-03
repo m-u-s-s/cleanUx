@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\AccountingV2Controller;
 use App\Http\Controllers\Api\Admin\AdminCatalogController;
+use App\Http\Controllers\Api\Admin\AdminOverviewController;
 use App\Http\Controllers\Api\Admin\AuditController;
 use App\Http\Controllers\Api\Admin\BookingDispatchController;
 use App\Http\Controllers\Api\Admin\DisputeAdminController;
@@ -229,5 +230,6 @@ Route::middleware(['auth:sanctum', 'api_admin'])->group(function () {
      */
     Route::prefix('admin')->middleware('api_scope:admin:read,admin:everything')->group(function () {
         Route::get('/catalog', AdminCatalogController::class);
+        Route::get('/overview', AdminOverviewController::class);
     });
 });

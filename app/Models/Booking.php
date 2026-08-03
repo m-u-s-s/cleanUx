@@ -671,15 +671,35 @@ class Booking extends Model
     // Les variantes en anglais sont acceptées pour rétrocompat avec
     // le code récent (assistant LLM, bookings v3, tests, etc.).
 
+    /**
+     * Les statuts qui valent « en attente », les deux langues confondues.
+     *
+     * Extrait de `isPending()` pour que les REQUÊTES puissent compter la même chose que les
+     * OBJETS. Une liste recopiée dans un `whereIn` divergerait à la première valeur ajoutée ici,
+     * et un compteur d'accueil faux ne se remarque pas : il a l'air d'un chiffre.
+     *
+     * @var list<string>
+     */
+    public const PENDING_STATUSES = [
+        BookingStatus::EN_ATTENTE,
+        'pending',
+        'pending_approval',
+        'pending_assignment',
+        'draft',
+    ];
+
     public function isPending(): bool
     {
-        return in_array($this->status, [
-            BookingStatus::EN_ATTENTE,
-            'pending',
-            'pending_approval',
-            'pending_assignment',
-            'draft',
-        ], true);
+        return in_array($this->status, self::PENDING_STATUSES, true);
+    }
+
+    /**
+     * @param  Builder<self>  $query
+     * @return Builder<self>
+     */
+    public function scopePending($query)
+    {
+        return $query->whereIn('status', self::PENDING_STATUSES);
     }
 
     public function isConfirmed(): bool
