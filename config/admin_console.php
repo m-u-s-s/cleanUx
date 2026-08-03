@@ -1,0 +1,136 @@
+<?php
+
+use Tests\Feature\Admin\AdminConsoleInventoryTest;
+
+/**
+ * Registre de couverture de la console d'administration mobile.
+ *
+ * L'administration web porte 99 routes. Ce fichier dit, pour chacune, comment le mobile la sert :
+ *
+ *   pending    — pas encore couverte. Le module reste VISIBLE dans l'annuaire, marqué « à venir ».
+ *   descriptor — servie par le moteur de console générique (sous-projet B).
+ *   screen     — servie par un écran natif sur-mesure (sous-projet C).
+ *
+ * POURQUOI LES MODULES NON COUVERTS RESTENT VISIBLES. Masquer ce qui n'est pas prêt donnerait une
+ * application qui a l'air complète et un chantier dont personne ne peut mesurer l'avancement.
+ * L'annuaire affiche le compte exact de ce qui reste.
+ *
+ * {@see AdminConsoleInventoryTest} refuse toute divergence entre ce registre
+ * et le routeur : une page ajoutée au web sans entrée ici fait échouer la suite, une entrée dont
+ * la route disparaît aussi. C'est la seule garantie MÉCANIQUE que rien n'est oublié — le reste
+ * serait un jugement, et un jugement ne tient pas sur 99 pages.
+ *
+ * Les sous-routes (détail, export, édition) sont rattachées au module qui les porte plutôt que
+ * déclarées à part : elles ne sont pas des destinations d'annuaire, mais elles doivent être
+ * comptées pour que l'inventaire soit complet.
+ */
+return [
+
+    'groups' => [
+        'pilotage' => 'Pilotage',
+        'operations' => 'Opérations',
+        'personnes' => 'Personnes et comptes',
+        'catalogue' => 'Catalogue et prix',
+        'argent' => 'Argent et conformité',
+        'croissance' => 'Croissance',
+        'plateforme' => 'Plateforme',
+    ],
+
+    'modules' => [
+
+        // ── Pilotage ────────────────────────────────────────────────────────────────────────
+        ['key' => 'dashboard', 'title' => 'Tableau de bord', 'group' => 'pilotage', 'icon' => 'speedometer-outline', 'coverage' => 'pending', 'routes' => ['admin/dashboard']],
+        ['key' => 'home', 'title' => 'Accueil admin', 'group' => 'pilotage', 'icon' => 'home-outline', 'coverage' => 'pending', 'routes' => ['admin/home']],
+        ['key' => 'business', 'title' => 'Tableau de bord business', 'group' => 'pilotage', 'icon' => 'trending-up-outline', 'coverage' => 'pending', 'routes' => ['admin/business-dashboard']],
+        ['key' => 'alerts', 'title' => 'Alertes', 'group' => 'pilotage', 'icon' => 'warning-outline', 'coverage' => 'pending', 'routes' => ['admin/alerts']],
+        ['key' => 'analytics', 'title' => 'Analytics', 'group' => 'pilotage', 'icon' => 'bar-chart-outline', 'coverage' => 'pending', 'routes' => ['admin/analytics']],
+        ['key' => 'analytics-v2', 'title' => 'Analytics V2', 'group' => 'pilotage', 'icon' => 'analytics-outline', 'coverage' => 'pending', 'routes' => ['admin/analytics-v2']],
+        ['key' => 'cancellation-reasons', 'title' => 'Motifs d’annulation', 'group' => 'pilotage', 'icon' => 'close-circle-outline', 'coverage' => 'pending', 'routes' => ['admin/analytics/cancellations']],
+        ['key' => 'readiness', 'title' => 'Préparation plateforme', 'group' => 'pilotage', 'icon' => 'checkmark-done-outline', 'coverage' => 'pending', 'routes' => ['admin/platform-readiness']],
+        ['key' => 'nps', 'title' => 'NPS', 'group' => 'pilotage', 'icon' => 'happy-outline', 'coverage' => 'pending', 'routes' => ['admin/nps']],
+        ['key' => 'feedbacks', 'title' => 'Retours clients', 'group' => 'pilotage', 'icon' => 'chatbox-ellipses-outline', 'coverage' => 'pending', 'routes' => ['admin/feedbacks', 'admin/feedbacks/export', 'admin/feedbacks/export-csv']],
+        ['key' => 'platform-modules', 'title' => 'Modules de la plateforme', 'group' => 'pilotage', 'icon' => 'layers-outline', 'coverage' => 'pending', 'routes' => ['admin/modules']],
+        ['key' => 'tools', 'title' => 'Outils et exports', 'group' => 'pilotage', 'icon' => 'construct-outline', 'coverage' => 'pending', 'routes' => ['admin/outils', 'admin/export/csv', 'admin/export/pdf']],
+
+        // ── Opérations ──────────────────────────────────────────────────────────────────────
+        ['key' => 'missions', 'title' => 'Missions', 'group' => 'operations', 'icon' => 'briefcase-outline', 'coverage' => 'pending', 'routes' => ['admin/missions', 'admin/missions/{mission}', 'admin/missions/export/pdf']],
+        ['key' => 'planning', 'title' => 'Planning', 'group' => 'operations', 'icon' => 'calendar-number-outline', 'coverage' => 'pending', 'routes' => ['admin/planning']],
+        ['key' => 'calendar', 'title' => 'Calendrier', 'group' => 'operations', 'icon' => 'calendar-outline', 'coverage' => 'pending', 'routes' => ['admin/calendar', 'admin/calendar/settings']],
+        ['key' => 'availability', 'title' => 'Disponibilités', 'group' => 'operations', 'icon' => 'time-outline', 'coverage' => 'pending', 'routes' => ['admin/availability']],
+        ['key' => 'presence', 'title' => 'Présence', 'group' => 'operations', 'icon' => 'radio-outline', 'coverage' => 'pending', 'routes' => ['admin/presence']],
+        ['key' => 'trip-tracking', 'title' => 'Suivi de trajet', 'group' => 'operations', 'icon' => 'navigate-outline', 'coverage' => 'pending', 'routes' => ['admin/trip-tracking']],
+        ['key' => 'ia-dispatch', 'title' => 'Dispatch IA', 'group' => 'operations', 'icon' => 'sparkles-outline', 'coverage' => 'pending', 'routes' => ['admin/ia-dispatch']],
+        ['key' => 'matching', 'title' => 'Matching', 'group' => 'operations', 'icon' => 'git-compare-outline', 'coverage' => 'pending', 'routes' => ['admin/matching']],
+        ['key' => 'orchestration', 'title' => 'Orchestration terrain', 'group' => 'operations', 'icon' => 'options-outline', 'coverage' => 'pending', 'routes' => ['admin/orchestration']],
+        ['key' => 'quality', 'title' => 'Qualité', 'group' => 'operations', 'icon' => 'ribbon-outline', 'coverage' => 'pending', 'routes' => ['admin/quality', 'admin/quality/export/incidents.csv', 'admin/quality/export/missions.csv']],
+        ['key' => 'safety', 'title' => 'Sécurité terrain', 'group' => 'operations', 'icon' => 'shield-outline', 'coverage' => 'pending', 'routes' => ['admin/safety']],
+        ['key' => 'realtime', 'title' => 'Temps réel', 'group' => 'operations', 'icon' => 'pulse-outline', 'coverage' => 'pending', 'routes' => ['admin/realtime']],
+        ['key' => 'bookings', 'title' => 'Rendez-vous et récurrences', 'group' => 'operations', 'icon' => 'repeat-outline', 'coverage' => 'pending', 'routes' => ['admin/recurrence/{rendezVous}/serie', 'admin/rendez-vous/{rendezVous}', 'admin/rendez-vous-series/{series}/edit']],
+        ['key' => 'b2b-operations', 'title' => 'Opérations B2B', 'group' => 'operations', 'icon' => 'business-outline', 'coverage' => 'pending', 'routes' => ['admin/b2b/operations']],
+        ['key' => 'automation', 'title' => 'Automatisation', 'group' => 'operations', 'icon' => 'flash-outline', 'coverage' => 'pending', 'routes' => ['admin/automation']],
+
+        // ── Personnes et comptes ────────────────────────────────────────────────────────────
+        ['key' => 'users', 'title' => 'Utilisateurs', 'group' => 'personnes', 'icon' => 'people-outline', 'coverage' => 'pending', 'routes' => ['admin/utilisateurs', 'admin/users']],
+        ['key' => 'companies', 'title' => 'Entreprises', 'group' => 'personnes', 'icon' => 'business-outline', 'coverage' => 'pending', 'routes' => ['admin/entreprises']],
+        ['key' => 'sites', 'title' => 'Sites', 'group' => 'personnes', 'icon' => 'location-outline', 'coverage' => 'pending', 'routes' => ['admin/sites']],
+        ['key' => 'teams', 'title' => 'Équipes et partenaires', 'group' => 'personnes', 'icon' => 'people-circle-outline', 'coverage' => 'pending', 'routes' => ['admin/teams-partners']],
+        ['key' => 'provider-registrations', 'title' => 'Inscriptions prestataires', 'group' => 'personnes', 'icon' => 'person-add-outline', 'coverage' => 'pending', 'routes' => ['admin/inscriptions-prestataires']],
+        ['key' => 'onboarding-providers', 'title' => 'Onboarding prestataires', 'group' => 'personnes', 'icon' => 'footsteps-outline', 'coverage' => 'pending', 'routes' => ['admin/onboarding-providers']],
+        ['key' => 'onboarding-documents', 'title' => 'Documents d’onboarding', 'group' => 'personnes', 'icon' => 'document-attach-outline', 'coverage' => 'pending', 'routes' => ['admin/onboarding-documents', 'admin/onboarding-documents/{document}/file']],
+        ['key' => 'onboarding-v2', 'title' => 'Onboarding V2', 'group' => 'personnes', 'icon' => 'trail-sign-outline', 'coverage' => 'pending', 'routes' => ['admin/onboarding-v2']],
+        ['key' => 'enterprise-approvals', 'title' => 'Approbations entreprises', 'group' => 'personnes', 'icon' => 'checkmark-circle-outline', 'coverage' => 'pending', 'routes' => ['admin/approbations-entreprises']],
+        ['key' => 'kyc', 'title' => 'Vérifications KYC', 'group' => 'personnes', 'icon' => 'finger-print-outline', 'coverage' => 'pending', 'routes' => ['admin/kyc']],
+        ['key' => 'kyb', 'title' => 'Vérifications KYB', 'group' => 'personnes', 'icon' => 'briefcase-outline', 'coverage' => 'pending', 'routes' => ['admin/kyb-v2']],
+        ['key' => 'badges', 'title' => 'Badges', 'group' => 'personnes', 'icon' => 'medal-outline', 'coverage' => 'pending', 'routes' => ['admin/badges']],
+        ['key' => 'premium', 'title' => 'Clients premium', 'group' => 'personnes', 'icon' => 'star-outline', 'coverage' => 'pending', 'routes' => ['admin/premium-clients', 'admin/premium/clients']],
+        ['key' => 'stripe-connect', 'title' => 'Stripe Connect prestataires', 'group' => 'personnes', 'icon' => 'card-outline', 'coverage' => 'pending', 'routes' => ['admin/stripe-connect-providers']],
+
+        // ── Catalogue et prix ───────────────────────────────────────────────────────────────
+        ['key' => 'catalog', 'title' => 'Catalogue de commande', 'group' => 'catalogue', 'icon' => 'sparkles-outline', 'coverage' => 'pending', 'routes' => ['admin/catalogue', 'admin/parcours/{trade}']],
+        ['key' => 'services', 'title' => 'Services', 'group' => 'catalogue', 'icon' => 'list-outline', 'coverage' => 'pending', 'routes' => ['admin/services']],
+        ['key' => 'trades', 'title' => 'Métiers', 'group' => 'catalogue', 'icon' => 'hammer-outline', 'coverage' => 'pending', 'routes' => ['admin/trades', 'admin/trades/{trade}/pricing']],
+        ['key' => 'pricing', 'title' => 'Tarification V2', 'group' => 'catalogue', 'icon' => 'pricetag-outline', 'coverage' => 'pending', 'routes' => ['admin/pricing-v2']],
+        ['key' => 'bundles', 'title' => 'Bundles', 'group' => 'catalogue', 'icon' => 'cube-outline', 'coverage' => 'pending', 'routes' => ['admin/bundles']],
+        ['key' => 'zones', 'title' => 'Zones', 'group' => 'catalogue', 'icon' => 'map-outline', 'coverage' => 'pending', 'routes' => ['admin/zones']],
+        ['key' => 'countries', 'title' => 'Pays', 'group' => 'catalogue', 'icon' => 'flag-outline', 'coverage' => 'pending', 'routes' => ['admin/countries']],
+        ['key' => 'international', 'title' => 'International', 'group' => 'catalogue', 'icon' => 'globe-outline', 'coverage' => 'pending', 'routes' => ['admin/international']],
+
+        // ── Argent et conformité ────────────────────────────────────────────────────────────
+        ['key' => 'finance', 'title' => 'Finance', 'group' => 'argent', 'icon' => 'cash-outline', 'coverage' => 'pending', 'routes' => ['admin/finance']],
+        ['key' => 'accounting', 'title' => 'Comptabilité', 'group' => 'argent', 'icon' => 'calculator-outline', 'coverage' => 'pending', 'routes' => ['admin/accounting-v2']],
+        ['key' => 'b2b-invoices', 'title' => 'Facturation mensuelle B2B', 'group' => 'argent', 'icon' => 'receipt-outline', 'coverage' => 'pending', 'routes' => ['admin/b2b/facturation-mensuelle']],
+        ['key' => 'credits', 'title' => 'Crédits clients', 'group' => 'argent', 'icon' => 'wallet-outline', 'coverage' => 'pending', 'routes' => ['admin/credits-clients']],
+        ['key' => 'tips', 'title' => 'Pourboires', 'group' => 'argent', 'icon' => 'gift-outline', 'coverage' => 'pending', 'routes' => ['admin/tips']],
+        ['key' => 'fx', 'title' => 'Change et devises', 'group' => 'argent', 'icon' => 'swap-horizontal-outline', 'coverage' => 'pending', 'routes' => ['admin/fx']],
+        ['key' => 'stripe', 'title' => 'Stripe', 'group' => 'argent', 'icon' => 'card-outline', 'coverage' => 'pending', 'routes' => ['admin/stripe']],
+        ['key' => 'subscriptions', 'title' => 'Abonnements', 'group' => 'argent', 'icon' => 'refresh-circle-outline', 'coverage' => 'pending', 'routes' => ['admin/subscriptions-v2']],
+        ['key' => 'insurance', 'title' => 'Assurance', 'group' => 'argent', 'icon' => 'umbrella-outline', 'coverage' => 'pending', 'routes' => ['admin/insurance']],
+        ['key' => 'cancellations', 'title' => 'Annulations', 'group' => 'argent', 'icon' => 'close-circle-outline', 'coverage' => 'pending', 'routes' => ['admin/cancellations-v2']],
+        ['key' => 'disputes', 'title' => 'Litiges', 'group' => 'argent', 'icon' => 'alert-circle-outline', 'coverage' => 'pending', 'routes' => ['admin/disputes']],
+        ['key' => 'risk', 'title' => 'Risque et fraude', 'group' => 'argent', 'icon' => 'shield-half-outline', 'coverage' => 'pending', 'routes' => ['admin/risk']],
+        ['key' => 'contracts', 'title' => 'Contrats', 'group' => 'argent', 'icon' => 'document-text-outline', 'coverage' => 'pending', 'routes' => ['admin/contracts-v2']],
+
+        // ── Croissance ──────────────────────────────────────────────────────────────────────
+        ['key' => 'marketing', 'title' => 'Marketing', 'group' => 'croissance', 'icon' => 'megaphone-outline', 'coverage' => 'pending', 'routes' => ['admin/marketing']],
+        ['key' => 'promo-codes', 'title' => 'Codes promo', 'group' => 'croissance', 'icon' => 'ticket-outline', 'coverage' => 'pending', 'routes' => ['admin/promotions/codes']],
+        ['key' => 'promo-campaigns', 'title' => 'Campagnes promo', 'group' => 'croissance', 'icon' => 'rocket-outline', 'coverage' => 'pending', 'routes' => ['admin/promotions/campagnes']],
+        ['key' => 'referrals', 'title' => 'Parrainages', 'group' => 'croissance', 'icon' => 'share-social-outline', 'coverage' => 'pending', 'routes' => ['admin/promotions/parrainages']],
+        ['key' => 'loyalty', 'title' => 'Fidélité', 'group' => 'croissance', 'icon' => 'diamond-outline', 'coverage' => 'pending', 'routes' => ['admin/loyalty', 'admin/loyalty/rewards']],
+        ['key' => 'ratings', 'title' => 'Avis et modération', 'group' => 'croissance', 'icon' => 'star-half-outline', 'coverage' => 'pending', 'routes' => ['admin/avis']],
+        ['key' => 'emails', 'title' => 'Emails produit', 'group' => 'croissance', 'icon' => 'mail-outline', 'coverage' => 'pending', 'routes' => ['admin/emails']],
+        ['key' => 'sms', 'title' => 'SMS et WhatsApp', 'group' => 'croissance', 'icon' => 'chatbubble-outline', 'coverage' => 'pending', 'routes' => ['admin/sms']],
+        ['key' => 'push', 'title' => 'Notifications push', 'group' => 'croissance', 'icon' => 'notifications-outline', 'coverage' => 'pending', 'routes' => ['admin/push']],
+        ['key' => 'notification-preferences', 'title' => 'Préférences de notification', 'group' => 'croissance', 'icon' => 'toggle-outline', 'coverage' => 'pending', 'routes' => ['admin/notification-preferences']],
+
+        // ── Plateforme ──────────────────────────────────────────────────────────────────────
+        ['key' => 'audit', 'title' => 'Audit', 'group' => 'plateforme', 'icon' => 'shield-checkmark-outline', 'coverage' => 'pending', 'routes' => ['admin/audit', 'admin/audit/logs']],
+        ['key' => 'gdpr', 'title' => 'RGPD', 'group' => 'plateforme', 'icon' => 'lock-closed-outline', 'coverage' => 'pending', 'routes' => ['admin/gdpr']],
+        ['key' => 'feature-flags', 'title' => 'Feature flags', 'group' => 'plateforme', 'icon' => 'flag-outline', 'coverage' => 'pending', 'routes' => ['admin/feature-flags']],
+        ['key' => 'api-tokens', 'title' => 'Jetons d’API', 'group' => 'plateforme', 'icon' => 'key-outline', 'coverage' => 'pending', 'routes' => ['admin/api-tokens-v2']],
+        ['key' => 'webhooks', 'title' => 'Webhooks sortants', 'group' => 'plateforme', 'icon' => 'git-network-outline', 'coverage' => 'pending', 'routes' => ['admin/webhooks-v2']],
+        ['key' => 'geolocation', 'title' => 'Géolocalisation', 'group' => 'plateforme', 'icon' => 'locate-outline', 'coverage' => 'pending', 'routes' => ['admin/geolocation-v2']],
+        ['key' => 'translations', 'title' => 'Traductions', 'group' => 'plateforme', 'icon' => 'language-outline', 'coverage' => 'pending', 'routes' => ['admin/translations']],
+        ['key' => 'chat', 'title' => 'Chat et modération', 'group' => 'plateforme', 'icon' => 'chatbubbles-outline', 'coverage' => 'pending', 'routes' => ['admin/chat-v2']],
+        ['key' => 'fleet', 'title' => 'Flotte et équipements', 'group' => 'plateforme', 'icon' => 'car-outline', 'coverage' => 'pending', 'routes' => ['admin/fleet-v2']],
+    ],
+];
