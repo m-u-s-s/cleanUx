@@ -3,9 +3,13 @@ import { Text, Alert, StyleSheet } from 'react-native';
 import { useMutation } from '@tanstack/react-query';
 import { Screen, Button, Divider } from '@/ui';
 import { apiClient } from '@/api';
-import { colors, spacing, typography } from '@/theme';
+import {spacing, typography } from '@/theme';
+import { useThemeColors } from '@/theme/useThemeColors';
+import type { ThemeTokens } from '@/theme/useThemeColors';
 
 export function GDPRScreen() {
+  const styles = stylesFor(useThemeColors());
+
   const exportData = useMutation({
     mutationFn: () => apiClient.post('/client/gdpr/requests', { type: 'export' }),
   });
@@ -59,13 +63,13 @@ export function GDPRScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const stylesFor = (t: ThemeTokens) => StyleSheet.create({
   title: {
     fontSize: typography.fontSize.xl,
     fontWeight: typography.fontWeight.bold,
-    color: colors.surface[900],
+    color: t.text,
     marginTop: spacing.md,
     marginBottom: spacing.sm,
   },
-  info: { fontSize: typography.fontSize.sm, color: colors.surface[500], marginBottom: spacing.lg },
+  info: { fontSize: typography.fontSize.sm, color: t.textSecondary, marginBottom: spacing.lg },
 });

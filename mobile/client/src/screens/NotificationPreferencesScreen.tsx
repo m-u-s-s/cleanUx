@@ -4,6 +4,8 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Screen, Button, Divider } from '@/ui';
 import { apiClient } from '@/api';
 import { colors, spacing, typography } from '@/theme';
+import { useThemeColors } from '@/theme/useThemeColors';
+import type { ThemeTokens } from '@/theme/useThemeColors';
 
 /**
  * Préférences de notification : la matrice canal × catégorie.
@@ -45,6 +47,8 @@ interface PreferencesPayload {
 }
 
 export function NotificationPreferencesScreen() {
+  const styles = stylesFor(useThemeColors());
+
   const queryClient = useQueryClient();
   const [edits, setEdits] = useState<Record<string, boolean>>({});
 
@@ -170,11 +174,11 @@ export function NotificationPreferencesScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const stylesFor = (t: ThemeTokens) => StyleSheet.create({
   title: {
     fontSize: typography.fontSize.xl,
     fontWeight: typography.fontWeight.bold,
-    color: colors.surface[900],
+    color: t.text,
     marginBottom: spacing.lg,
     marginTop: spacing.md,
   },
@@ -183,11 +187,11 @@ const styles = StyleSheet.create({
   catLabel: {
     fontSize: typography.fontSize.base,
     fontWeight: typography.fontWeight.semibold,
-    color: colors.surface[900],
+    color: t.text,
   },
   catDesc: {
     fontSize: typography.fontSize.xs,
-    color: colors.surface[500],
+    color: t.textSecondary,
     marginBottom: spacing.sm,
   },
   channels: { gap: spacing.xs },
@@ -197,5 +201,5 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: spacing.xs,
   },
-  channelLabel: { fontSize: typography.fontSize.sm, color: colors.surface[700] },
+  channelLabel: { fontSize: typography.fontSize.sm, color: t.text },
 });

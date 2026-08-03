@@ -5,6 +5,7 @@ import { useNavigation } from '@react-navigation/native';
 import { BottomSheet, KPICard, Skeleton, Divider, Icon } from '@/ui';
 import { useBookings } from '@/booking';
 import { colors, spacing, typography, radius, useThemeColors } from '@/theme';
+import type { ThemeTokens } from '@/theme/useThemeColors';
 
 /**
  * Actions secondaires de l'accueil client, sur le modèle du tableau de bord prestataire.
@@ -91,6 +92,7 @@ const QUICK_ACTIONS: QuickAction[] = [
 ];
 
 export const HomeActionsSheet = forwardRef<GorhomBottomSheet>((_props, ref) => {
+  const styles = stylesFor(useThemeColors());
   const navigation = useNavigation<any>();
   const themeColors = useThemeColors();
   const { data: bookings, isLoading } = useBookings();
@@ -165,12 +167,12 @@ export const HomeActionsSheet = forwardRef<GorhomBottomSheet>((_props, ref) => {
 
 HomeActionsSheet.displayName = 'HomeActionsSheet';
 
-const styles = StyleSheet.create({
+const stylesFor = (t: ThemeTokens) => StyleSheet.create({
   body: { gap: spacing.md, paddingHorizontal: spacing.md, paddingBottom: spacing.lg },
   sectionTitle: {
     fontSize: typography.fontSize.base,
     fontWeight: typography.fontWeight.semibold,
-    color: colors.surface[700],
+    color: t.text,
   },
   modes: { gap: spacing.sm },
   // La carte entière est la cible tactile, bien au-delà des 44 pt recommandés.
@@ -192,7 +194,7 @@ const styles = StyleSheet.create({
   },
   modeBody: { flex: 1, gap: 2 },
   modeTitle: { fontSize: typography.fontSize.base, fontWeight: typography.fontWeight.semibold },
-  modeHint: { fontSize: typography.fontSize.xs, color: colors.surface[600] },
+  modeHint: { fontSize: typography.fontSize.xs, color: t.textSecondary },
   kpiRow: { flexDirection: 'row', gap: spacing.sm },
   actions: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },
   // Deux par ligne, comme la grille d'origine : la disposition est conservée, seule sa place

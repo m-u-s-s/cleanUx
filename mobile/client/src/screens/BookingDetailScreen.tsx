@@ -7,12 +7,16 @@ import type {
 } from '@react-navigation/native-stack';
 import { Screen, Button, Badge, Divider, DetailRow, EmptyState, ErrorState } from '@/ui';
 import { useBookingDetail } from '@/booking';
-import { colors, spacing, typography, radius, shadows } from '@/theme';
+import {spacing, typography, radius, shadows } from '@/theme';
+import { useThemeColors } from '@/theme/useThemeColors';
+import type { ThemeTokens } from '@/theme/useThemeColors';
 import type { RootStackParamList } from '@/navigation/types';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'BookingDetail'>;
 
 export function BookingDetailScreen({ route }: Props) {
+  const styles = stylesFor(useThemeColors());
+
   const { bookingId } = route.params;
   const { data: booking, isLoading, isError, refetch } = useBookingDetail(bookingId);
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
@@ -152,10 +156,10 @@ export function BookingDetailScreen({ route }: Props) {
   );
 }
 
-const styles = StyleSheet.create({
+const stylesFor = (t: ThemeTokens) => StyleSheet.create({
   loading: {
     fontSize: typography.fontSize.base,
-    color: colors.surface[500],
+    color: t.textSecondary,
     textAlign: 'center',
     marginTop: spacing.xl,
   },
@@ -169,7 +173,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: typography.fontSize.xl,
     fontWeight: typography.fontWeight.bold,
-    color: colors.surface[900],
+    color: t.text,
     flex: 1,
     marginRight: spacing.sm,
   },
@@ -179,7 +183,7 @@ const styles = StyleSheet.create({
     marginBottom: spacing.md,
   },
   card: {
-    backgroundColor: '#fff',
+    backgroundColor: t.card,
     borderRadius: radius.md,
     padding: spacing.md,
     ...shadows.soft,

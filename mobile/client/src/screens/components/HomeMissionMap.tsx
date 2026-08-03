@@ -3,6 +3,8 @@ import { View, Text, StyleSheet } from 'react-native';
 import { OsmMap, loadMapModule, isMapRenderable } from '@/ui';
 import { useTrackingSession, useTrackingTrail, useLiveTracking } from '@/tracking';
 import { colors, spacing, typography, radius } from '@/theme';
+import { useThemeColors } from '@/theme/useThemeColors';
+import type { ThemeTokens } from '@/theme/useThemeColors';
 
 /**
  * Carte de la mission en cours, sur l'accueil client.
@@ -22,6 +24,8 @@ import { colors, spacing, typography, radius } from '@/theme';
  * un fond OpenStreetMap en WebView — qui n'exige aucune clé.
  */
 export function HomeMissionMap({ bookingId }: { bookingId: number }) {
+  const styles = stylesFor(useThemeColors());
+
   const { data: session } = useTrackingSession(bookingId);
   const { data: trail } = useTrackingTrail(bookingId);
   const { position: livePosition } = useLiveTracking(bookingId);
@@ -93,7 +97,7 @@ export function HomeMissionMap({ bookingId }: { bookingId: number }) {
   );
 }
 
-const styles = StyleSheet.create({
+const stylesFor = (t: ThemeTokens) => StyleSheet.create({
   wrap: { height: 180, borderRadius: radius.md, overflow: 'hidden' },
   map: { flex: 1 },
   // Pastille flottante, comme la pastille de présence du tableau de bord prestataire.
@@ -104,9 +108,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.xs,
     borderRadius: radius.pill,
-    backgroundColor: '#ffffff',
+    backgroundColor: t.card,
     borderWidth: 1,
-    borderColor: colors.surface[200],
+    borderColor: t.border,
   },
   etaText: {
     fontSize: typography.fontSize.sm,

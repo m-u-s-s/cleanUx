@@ -4,9 +4,13 @@ import { useStripe } from '@stripe/stripe-react-native';
 import { Screen, Button, Badge, Skeleton, Divider } from '@/ui';
 import { usePaymentMethods, useSetupIntent, useDeletePaymentMethod } from '@/payment';
 import type { PaymentMethod } from '@/payment';
-import { colors, spacing, typography } from '@/theme';
+import {spacing, typography } from '@/theme';
+import { useThemeColors } from '@/theme/useThemeColors';
+import type { ThemeTokens } from '@/theme/useThemeColors';
 
 export function SavedPaymentMethodsScreen() {
+  const styles = stylesFor(useThemeColors());
+
   const { data: methods, isLoading } = usePaymentMethods();
   const setupIntent = useSetupIntent();
   const deleteMethod = useDeletePaymentMethod();
@@ -95,11 +99,11 @@ export function SavedPaymentMethodsScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const stylesFor = (t: ThemeTokens) => StyleSheet.create({
   title: {
     fontSize: typography.fontSize.xl,
     fontWeight: typography.fontWeight.bold,
-    color: colors.surface[900],
+    color: t.text,
     marginBottom: spacing.md,
   },
   skeletons: { gap: spacing.sm, marginBottom: spacing.md },
@@ -118,19 +122,19 @@ const styles = StyleSheet.create({
   cardBrand: {
     fontSize: typography.fontSize.sm,
     fontWeight: typography.fontWeight.semibold,
-    color: colors.surface[800],
+    color: t.text,
   },
   cardLast4: {
     fontSize: typography.fontSize.sm,
-    color: colors.surface[600],
+    color: t.textSecondary,
   },
   cardExp: {
     fontSize: typography.fontSize.xs,
-    color: colors.surface[400],
+    color: t.textMuted,
   },
   empty: {
     fontSize: typography.fontSize.sm,
-    color: colors.surface[400],
+    color: t.textMuted,
     textAlign: 'center',
     marginVertical: spacing.lg,
   },

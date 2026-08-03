@@ -3,12 +3,16 @@ import { View, Text, Alert, StyleSheet } from 'react-native';
 import { Screen, Button } from '@/ui';
 import { apiClient } from '@/api';
 import { colors, spacing, typography } from '@/theme';
+import { useThemeColors } from '@/theme/useThemeColors';
+import type { ThemeTokens } from '@/theme/useThemeColors';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '@/navigation/types';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'NPS'>;
 
 export function NPSScreen({ navigation }: Props) {
+  const styles = stylesFor(useThemeColors());
+
   const [score, setScore] = useState<number | null>(null);
   const [sending, setSending] = useState(false);
 
@@ -54,11 +58,11 @@ export function NPSScreen({ navigation }: Props) {
   );
 }
 
-const styles = StyleSheet.create({
+const stylesFor = (t: ThemeTokens) => StyleSheet.create({
   title: {
     fontSize: typography.fontSize.xl,
     fontWeight: typography.fontWeight.bold,
-    color: colors.surface[900],
+    color: t.text,
     marginTop: spacing.lg,
     marginBottom: spacing.xl,
     textAlign: 'center',
@@ -68,13 +72,13 @@ const styles = StyleSheet.create({
     width: 30,
     height: 30,
     borderRadius: 15,
-    backgroundColor: colors.surface[100],
+    backgroundColor: t.inputBg,
     textAlign: 'center',
     lineHeight: 30,
     fontSize: typography.fontSize.sm,
-    color: colors.surface[600],
+    color: t.textSecondary,
   },
-  scoreActive: { backgroundColor: colors.brand[500], color: '#fff' },
+  scoreActive: { backgroundColor: colors.brand[500], color: t.card },
   labels: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: spacing.xl },
-  labelText: { fontSize: typography.fontSize.xs, color: colors.surface[400] },
+  labelText: { fontSize: typography.fontSize.xs, color: t.textMuted },
 });

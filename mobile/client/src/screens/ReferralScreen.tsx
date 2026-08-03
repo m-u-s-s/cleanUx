@@ -4,6 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import { Screen, Button, KPICard, Skeleton } from '@/ui';
 import { apiClient } from '@/api';
 import { colors, spacing, typography, radius, shadows } from '@/theme';
+import type { ThemeTokens } from '@/theme/useThemeColors';
 import { useThemeColors } from '@/theme/useThemeColors';
 
 // ── Types ──────────────────────────────────────────────────────────────────────
@@ -49,6 +50,8 @@ interface StepProps {
 }
 
 function Step({ number, text }: StepProps) {
+  const styles = stylesFor(useThemeColors());
+
   return (
     <View style={styles.step} accessible accessibilityRole="text">
       <View style={styles.stepNumber}>
@@ -62,6 +65,8 @@ function Step({ number, text }: StepProps) {
 // ── Screen ────────────────────────────────────────────────────────────────────
 
 export function ReferralScreen() {
+  const styles = stylesFor(useThemeColors());
+
   const themeColors = useThemeColors();
   const { data: stats, isLoading: loadingStats } = useReferralStats();
   const { data: shareData, isLoading: loadingShare } = useReferralShareData();
@@ -164,7 +169,7 @@ export function ReferralScreen() {
 
 // ── Styles ────────────────────────────────────────────────────────────────────
 
-const styles = StyleSheet.create({
+const stylesFor = (t: ThemeTokens) => StyleSheet.create({
   header: {
     marginTop: spacing.md,
     marginBottom: spacing.lg,
@@ -173,12 +178,12 @@ const styles = StyleSheet.create({
     fontSize: typography.fontSize['2xl'],
     fontWeight: typography.fontWeight.bold,
     fontFamily: typography.fontFamily.display,
-    color: colors.surface[900],
+    color: t.text,
     marginBottom: spacing.xs,
   },
   subtitle: {
     fontSize: typography.fontSize.sm,
-    color: colors.surface[500],
+    color: t.textSecondary,
     fontFamily: typography.fontFamily.body,
     lineHeight: typography.fontSize.sm * typography.lineHeight.normal,
   },
@@ -228,12 +233,12 @@ const styles = StyleSheet.create({
     fontSize: typography.fontSize.base,
     fontWeight: typography.fontWeight.semibold,
     fontFamily: typography.fontFamily.bodySemiBold,
-    color: colors.surface[900],
+    color: t.text,
     marginBottom: spacing.xs,
   },
   tierNext: {
     fontSize: typography.fontSize.sm,
-    color: colors.surface[500],
+    color: t.textSecondary,
     fontFamily: typography.fontFamily.body,
   },
   howItWorks: {
@@ -244,7 +249,7 @@ const styles = StyleSheet.create({
     fontSize: typography.fontSize.lg,
     fontWeight: typography.fontWeight.semibold,
     fontFamily: typography.fontFamily.bodySemiBold,
-    color: colors.surface[800],
+    color: t.text,
     marginBottom: spacing.md,
   },
   step: {
@@ -266,12 +271,12 @@ const styles = StyleSheet.create({
     fontSize: typography.fontSize.sm,
     fontWeight: typography.fontWeight.bold,
     fontFamily: typography.fontFamily.bodyBold,
-    color: '#ffffff',
+    color: t.card,
   },
   stepText: {
     flex: 1,
     fontSize: typography.fontSize.sm,
-    color: colors.surface[700],
+    color: t.text,
     fontFamily: typography.fontFamily.body,
     lineHeight: typography.fontSize.sm * typography.lineHeight.relaxed,
     paddingTop: 4,

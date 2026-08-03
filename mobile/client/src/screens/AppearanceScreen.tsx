@@ -3,6 +3,8 @@ import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { Screen, Badge } from '@/ui';
 import { useColorScheme } from '@/theme/useColorScheme';
 import { colors, spacing, typography, radius } from '@/theme';
+import { useThemeColors } from '@/theme/useThemeColors';
+import type { ThemeTokens } from '@/theme/useThemeColors';
 
 const OPTIONS = [
   { mode: 'system' as const, label: 'Automatique', description: 'Suit le réglage du système' },
@@ -11,6 +13,8 @@ const OPTIONS = [
 ];
 
 export function AppearanceScreen() {
+  const styles = stylesFor(useThemeColors());
+
   const { mode, setMode } = useColorScheme();
 
   return (
@@ -33,11 +37,11 @@ export function AppearanceScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const stylesFor = (t: ThemeTokens) => StyleSheet.create({
   title: {
     fontSize: typography.fontSize.xl,
     fontWeight: typography.fontWeight.bold,
-    color: colors.surface[900],
+    color: t.text,
     marginBottom: spacing.lg,
     marginTop: spacing.md,
   },
@@ -54,7 +58,7 @@ const styles = StyleSheet.create({
   label: {
     fontSize: typography.fontSize.base,
     fontWeight: typography.fontWeight.medium,
-    color: colors.surface[900],
+    color: t.text,
   },
-  desc: { fontSize: typography.fontSize.xs, color: colors.surface[500], marginTop: 2 },
+  desc: { fontSize: typography.fontSize.xs, color: t.textSecondary, marginTop: 2 },
 });

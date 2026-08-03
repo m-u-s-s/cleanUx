@@ -13,6 +13,8 @@ import {
 import { useRegister, useAuth, isValidBusinessNumber } from '@/auth';
 import { ApiError } from '@/api';
 import { colors, radius, spacing, typography } from '@/theme';
+import { useThemeColors } from '@/theme/useThemeColors';
+import type { ThemeTokens } from '@/theme/useThemeColors';
 import type { RootStackParamList } from '@/navigation/types';
 
 /**
@@ -54,6 +56,8 @@ function passwordStrength(value: string): { score: 0 | 1 | 2 | 3; label: string;
 }
 
 export function ClientRegisterWizard() {
+  const styles = stylesFor(useThemeColors());
+
   const [stepIndex, setStepIndex] = useState(0);
   const [clientKind, setClientKind] = useState<'individual' | 'company' | null>(null);
   const [companyName, setCompanyName] = useState('');
@@ -396,6 +400,8 @@ function Question({
   hint?: string;
   children: React.ReactNode;
 }) {
+  const styles = stylesFor(useThemeColors());
+
   return (
     <View style={styles.question}>
       {/* `header` plutôt que `text` : le lecteur d'écran annonce la question comme le titre de
@@ -407,7 +413,7 @@ function Question({
   );
 }
 
-const styles = StyleSheet.create({
+const stylesFor = (t: ThemeTokens) => StyleSheet.create({
   wrapper: { gap: spacing.md },
   progressRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
   // 44 pt : cible tactile minimale, d'autant que le bouton est en coin d'écran.
@@ -428,7 +434,7 @@ const styles = StyleSheet.create({
     flex: 1,
     height: 4,
     borderRadius: radius.pill,
-    backgroundColor: colors.surface[200],
+    backgroundColor: t.border,
     overflow: 'hidden',
   },
   strengthFill: { height: 4, borderRadius: radius.pill },

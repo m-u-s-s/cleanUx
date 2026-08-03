@@ -3,12 +3,16 @@ import { View, Text, Alert, StyleSheet } from 'react-native';
 import { Screen, Button, TextInput } from '@/ui';
 import { useSubmitRating } from '@/ratings';
 import { colors, spacing, typography } from '@/theme';
+import { useThemeColors } from '@/theme/useThemeColors';
+import type { ThemeTokens } from '@/theme/useThemeColors';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '@/navigation/types';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Rating'>;
 
 function StarRow({ label, value, onChange }: { label: string; value: number; onChange: (v: number) => void }) {
+  const styles = stylesFor(useThemeColors());
+
   return (
     <View style={styles.starRow}>
       <Text style={styles.starLabel}>{label}</Text>
@@ -22,6 +26,8 @@ function StarRow({ label, value, onChange }: { label: string; value: number; onC
 }
 
 export function RatingScreen({ route, navigation }: Props) {
+  const styles = stylesFor(useThemeColors());
+
   const { bookingId } = route.params;
   const submit = useSubmitRating();
   const [overall, setOverall] = useState(0);
@@ -65,11 +71,11 @@ export function RatingScreen({ route, navigation }: Props) {
   );
 }
 
-const styles = StyleSheet.create({
+const stylesFor = (t: ThemeTokens) => StyleSheet.create({
   title: {
     fontSize: typography.fontSize['2xl'],
     fontWeight: typography.fontWeight.bold,
-    color: colors.surface[900],
+    color: t.text,
     marginTop: spacing.md,
     marginBottom: spacing.lg,
   },
@@ -79,8 +85,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: spacing.sm,
   },
-  starLabel: { fontSize: typography.fontSize.sm, color: colors.surface[700] },
+  starLabel: { fontSize: typography.fontSize.sm, color: t.text },
   stars: { flexDirection: 'row', gap: 4 },
-  star: { fontSize: 28, color: colors.surface[300] },
+  star: { fontSize: 28, color: t.border },
   starActive: { color: colors.accent.amber },
 });

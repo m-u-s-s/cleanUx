@@ -5,10 +5,14 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Screen, Avatar, Badge, Skeleton, EmptyState, AnimatedListItem } from '@/ui';
 import { useChatThreads } from '@/chat';
 import type { ChatThread } from '@/chat/types';
-import { colors, spacing, typography } from '@/theme';
+import {spacing, typography } from '@/theme';
+import { useThemeColors } from '@/theme/useThemeColors';
+import type { ThemeTokens } from '@/theme/useThemeColors';
 import type { RootStackParamList } from '@/navigation/types';
 
 export function ChatListScreen() {
+  const styles = stylesFor(useThemeColors());
+
   const { data: threads, isLoading, refetch, isRefetching } = useChatThreads();
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
 
@@ -58,11 +62,11 @@ export function ChatListScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const stylesFor = (t: ThemeTokens) => StyleSheet.create({
   title: {
     fontSize: typography.fontSize.xl,
     fontWeight: typography.fontWeight.bold,
-    color: colors.surface[900],
+    color: t.text,
     marginBottom: spacing.md,
   },
   skeletons: { gap: spacing.sm },
@@ -72,22 +76,22 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.sm,
     gap: spacing.sm,
     borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: colors.surface[200],
+    borderBottomColor: t.border,
   },
   rowContent: { flex: 1 },
   rowName: {
     fontSize: typography.fontSize.sm,
     fontWeight: typography.fontWeight.medium,
-    color: colors.surface[900],
+    color: t.text,
   },
   rowPreview: {
     fontSize: typography.fontSize.xs,
-    color: colors.surface[500],
+    color: t.textSecondary,
     marginTop: 2,
   },
   empty: {
     fontSize: typography.fontSize.sm,
-    color: colors.surface[400],
+    color: t.textMuted,
     textAlign: 'center',
     marginTop: spacing.xl,
   },

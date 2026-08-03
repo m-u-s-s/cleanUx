@@ -4,6 +4,8 @@ import { Screen, Badge, Skeleton, OsmMap, loadMapModule, isMapRenderable } from 
 import { useTrackingSession, useTrackingTrail, useLiveTracking } from '@/tracking';
 import { PresenceCodeCard } from '@/screens/components/PresenceCodeCard';
 import { colors, spacing, typography, radius, shadows } from '@/theme';
+import { useThemeColors } from '@/theme/useThemeColors';
+import type { ThemeTokens } from '@/theme/useThemeColors';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '@/navigation/types';
 
@@ -22,6 +24,8 @@ const STATUS_LABELS: Record<string, string> = {
 };
 
 export function MissionTrackingScreen({ route }: Props) {
+  const styles = stylesFor(useThemeColors());
+
   const { bookingId } = route.params;
   const { data: session, isLoading } = useTrackingSession(bookingId);
   const { data: trail } = useTrackingTrail(bookingId);
@@ -177,7 +181,7 @@ export function MissionTrackingScreen({ route }: Props) {
 
 const { height } = Dimensions.get('window');
 
-const styles = StyleSheet.create({
+const stylesFor = (t: ThemeTokens) => StyleSheet.create({
   container: { flex: 1 },
   map: { flex: 1, minHeight: height * 0.6 },
   // Même ancrage que la carte d'information qu'elle remplace : le code doit être sous le pouce.
@@ -207,12 +211,12 @@ const styles = StyleSheet.create({
   },
   etaLabel: {
     fontSize: typography.fontSize.xs,
-    color: colors.surface[500],
+    color: t.textSecondary,
   },
   etaValue: {
     fontSize: typography.fontSize.xl,
     fontWeight: typography.fontWeight.bold,
-    color: colors.surface[900],
+    color: t.text,
     marginTop: 2,
   },
 });

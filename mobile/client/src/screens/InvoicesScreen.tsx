@@ -15,6 +15,8 @@ import {
   type InvoicesSummaryResponse,
 } from '@/finance/useInvoices';
 import { colors, spacing, typography, radius } from '@/theme';
+import { useThemeColors } from '@/theme/useThemeColors';
+import type { ThemeTokens } from '@/theme/useThemeColors';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -109,6 +111,8 @@ interface InvoicesScreenProps {
 }
 
 export function InvoicesScreen({ navigation }: InvoicesScreenProps) {
+  const styles = stylesFor(useThemeColors());
+
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [status, setStatus] = useState<StatusFilter>('all');
   const [sort, setSort] = useState<SortOption>('recent');
@@ -362,6 +366,8 @@ interface SummaryBlockProps {
 }
 
 function SummaryBlock({ summary: { summary, payment_health } }: SummaryBlockProps) {
+  const styles = stylesFor(useThemeColors());
+
   const tone = HEALTH_TONE_MAP[payment_health.tone] ?? 'neutral';
   const healthBg = HEALTH_BG[tone];
   const healthText = HEALTH_TEXT[tone];
@@ -426,6 +432,8 @@ interface LatestEventsPanelProps {
 }
 
 function LatestEventsPanel({ events }: LatestEventsPanelProps) {
+  const styles = stylesFor(useThemeColors());
+
   return (
     <View style={styles.eventsPanel}>
       <Text style={styles.eventsPanelTitle}>Derniers paiements</Text>
@@ -452,6 +460,7 @@ interface InvoiceRowProps {
 }
 
 const InvoiceRow = React.memo(function InvoiceRow({ invoice, onPress }: InvoiceRowProps) {
+  const styles = stylesFor(useThemeColors());
   const variant = STATUS_VARIANT[invoice.effective_status] ?? 'neutral';
 
   const formattedAmount =
@@ -506,11 +515,11 @@ const InvoiceRow = React.memo(function InvoiceRow({ invoice, onPress }: InvoiceR
 
 // ─── Styles ────────────────────────────────────────────────────────────────────
 
-const styles = StyleSheet.create({
+const stylesFor = (t: ThemeTokens) => StyleSheet.create({
   title: {
     fontSize: typography.fontSize.xl,
     fontWeight: typography.fontWeight.bold,
-    color: colors.surface[900],
+    color: t.text,
     marginBottom: spacing.sm,
   },
 
@@ -524,25 +533,25 @@ const styles = StyleSheet.create({
     marginBottom: spacing.sm,
   },
   outstandingRow: {
-    backgroundColor: colors.surface[100],
+    backgroundColor: t.inputBg,
     borderRadius: radius.md,
     padding: spacing.md,
     marginBottom: spacing.sm,
   },
   outstandingLabel: {
     fontSize: typography.fontSize.xs,
-    color: colors.surface[500],
+    color: t.textSecondary,
     marginBottom: 2,
   },
   outstandingValue: {
     fontSize: typography.fontSize['2xl'],
     fontWeight: typography.fontWeight.bold,
-    color: colors.surface[900],
+    color: t.text,
     fontVariant: ['tabular-nums'],
   },
   nextDueText: {
     fontSize: typography.fontSize.xs,
-    color: colors.surface[500],
+    color: t.textSecondary,
     marginTop: 4,
   },
 
@@ -563,17 +572,17 @@ const styles = StyleSheet.create({
 
   // Latest events panel
   eventsPanel: {
-    backgroundColor: colors.surface[50],
+    backgroundColor: t.bg,
     borderRadius: radius.md,
     padding: spacing.md,
     marginBottom: spacing.md,
     borderWidth: 1,
-    borderColor: colors.surface[200],
+    borderColor: t.border,
   },
   eventsPanelTitle: {
     fontSize: typography.fontSize.sm,
     fontWeight: typography.fontWeight.semibold,
-    color: colors.surface[700],
+    color: t.text,
     marginBottom: spacing.sm,
   },
   eventRow: {
@@ -585,17 +594,17 @@ const styles = StyleSheet.create({
   eventRef: {
     flex: 1,
     fontSize: typography.fontSize.sm,
-    color: colors.surface[800],
+    color: t.text,
     fontWeight: typography.fontWeight.medium,
   },
   eventAmount: {
     fontSize: typography.fontSize.sm,
-    color: colors.surface[700],
+    color: t.text,
     fontVariant: ['tabular-nums'],
   },
   eventDate: {
     fontSize: typography.fontSize.xs,
-    color: colors.surface[400],
+    color: t.textMuted,
   },
 
   // Search row
@@ -614,9 +623,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.sm,
     paddingVertical: 5,
     borderRadius: radius.pill,
-    backgroundColor: colors.surface[100],
+    backgroundColor: t.inputBg,
     borderWidth: 1,
-    borderColor: colors.surface[200],
+    borderColor: t.border,
   },
   sortChipActive: {
     backgroundColor: colors.brand[100],
@@ -624,7 +633,7 @@ const styles = StyleSheet.create({
   },
   sortLabel: {
     fontSize: typography.fontSize.xs,
-    color: colors.surface[600],
+    color: t.textSecondary,
   },
   sortLabelActive: {
     color: colors.brand[700],
@@ -643,9 +652,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.sm,
     paddingVertical: 6,
     borderRadius: radius.pill,
-    backgroundColor: colors.surface[100],
+    backgroundColor: t.inputBg,
     borderWidth: 1,
-    borderColor: colors.surface[200],
+    borderColor: t.border,
     marginRight: spacing.xs,
   },
   filterChipActive: {
@@ -654,7 +663,7 @@ const styles = StyleSheet.create({
   },
   filterLabel: {
     fontSize: typography.fontSize.sm,
-    color: colors.surface[600],
+    color: t.textSecondary,
   },
   filterLabelActive: {
     color: colors.brand[700],
@@ -673,18 +682,18 @@ const styles = StyleSheet.create({
   activeFilterText: {
     flex: 1,
     fontSize: typography.fontSize.xs,
-    color: colors.surface[500],
+    color: t.textSecondary,
   },
   resetBtn: {
     paddingHorizontal: spacing.sm,
     paddingVertical: 4,
     borderRadius: radius.pill,
     borderWidth: 1,
-    borderColor: colors.surface[300],
+    borderColor: t.border,
   },
   resetBtnText: {
     fontSize: typography.fontSize.xs,
-    color: colors.surface[600],
+    color: t.textSecondary,
   },
 
   // List
@@ -693,11 +702,11 @@ const styles = StyleSheet.create({
 
   // Invoice card
   card: {
-    backgroundColor: colors.surface[50],
+    backgroundColor: t.bg,
     borderRadius: radius.md,
     padding: spacing.md,
     borderWidth: 1,
-    borderColor: colors.surface[100],
+    borderColor: t.inputBg,
   },
   cardHeader: {
     flexDirection: 'row',
@@ -707,11 +716,11 @@ const styles = StyleSheet.create({
   invoiceNumber: {
     fontSize: typography.fontSize.base,
     fontWeight: typography.fontWeight.semibold,
-    color: colors.surface[900],
+    color: t.text,
   },
   serviceName: {
     fontSize: typography.fontSize.xs,
-    color: colors.surface[500],
+    color: t.textSecondary,
     marginTop: 2,
     marginBottom: 4,
   },
@@ -723,7 +732,7 @@ const styles = StyleSheet.create({
   },
   amount: {
     fontSize: typography.fontSize.sm,
-    color: colors.surface[700],
+    color: t.text,
     fontWeight: typography.fontWeight.medium,
   },
   balanceDue: {
@@ -732,7 +741,7 @@ const styles = StyleSheet.create({
   },
   dueAt: {
     fontSize: typography.fontSize.xs,
-    color: colors.surface[400],
+    color: t.textMuted,
     marginTop: 2,
   },
 

@@ -4,12 +4,16 @@ import { CameraView, useCameraPermissions } from 'expo-camera';
 import { Button } from '@/ui';
 import { apiClient } from '@/api';
 import { colors, spacing, typography, radius } from '@/theme';
+import { useThemeColors } from '@/theme/useThemeColors';
+import type { ThemeTokens } from '@/theme/useThemeColors';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '@/navigation/types';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'QRScan'>;
 
 export function QRScanScreen({ route, navigation }: Props) {
+  const styles = stylesFor(useThemeColors());
+
   const { bookingId, action } = route.params;
   const [permission, requestPermission] = useCameraPermissions();
   const [scanned, setScanned] = useState(false);
@@ -91,15 +95,15 @@ export function QRScanScreen({ route, navigation }: Props) {
   );
 }
 
-const styles = StyleSheet.create({
+const stylesFor = (t: ThemeTokens) => StyleSheet.create({
   container: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: colors.surface[900],
+    backgroundColor: t.text,
   },
   loadingText: {
-    color: '#fff',
+    color: t.card,
     fontSize: typography.fontSize.base,
   },
   camera: { flex: 1, width: '100%' },
@@ -123,19 +127,19 @@ const styles = StyleSheet.create({
   title: {
     fontSize: typography.fontSize.xl,
     fontWeight: typography.fontWeight.bold,
-    color: '#fff',
+    color: t.card,
     marginBottom: spacing.sm,
   },
   subtitle: {
     fontSize: typography.fontSize.sm,
-    color: colors.surface[300],
+    color: t.border,
     textAlign: 'center',
     marginBottom: spacing.lg,
     paddingHorizontal: spacing.lg,
   },
   instruction: {
     fontSize: typography.fontSize.sm,
-    color: '#fff',
+    color: t.card,
     textAlign: 'center',
     marginBottom: spacing.md,
   },

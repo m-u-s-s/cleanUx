@@ -4,8 +4,12 @@ import * as ImagePicker from 'expo-image-picker';
 import { Screen, Button } from '@/ui';
 import { apiClient } from '@/api';
 import { colors, spacing, typography, radius, shadows } from '@/theme';
+import { useThemeColors } from '@/theme/useThemeColors';
+import type { ThemeTokens } from '@/theme/useThemeColors';
 
 export function AiQuoteScreen() {
+  const styles = stylesFor(useThemeColors());
+
   const [imageUri, setImageUri] = useState<string | null>(null);
   const [result, setResult] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -61,17 +65,17 @@ export function AiQuoteScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const stylesFor = (t: ThemeTokens) => StyleSheet.create({
   title: {
     fontSize: typography.fontSize['2xl'],
     fontWeight: typography.fontWeight.bold,
-    color: colors.surface[900],
+    color: t.text,
     marginTop: spacing.md,
     marginBottom: spacing.xs,
   },
   subtitle: {
     fontSize: typography.fontSize.sm,
-    color: colors.surface[500],
+    color: t.textSecondary,
     marginBottom: spacing.lg,
   },
   preview: { width: '100%', height: 250, borderRadius: radius.md, marginBottom: spacing.md },
@@ -79,12 +83,12 @@ const styles = StyleSheet.create({
     width: '100%',
     height: 250,
     borderRadius: radius.md,
-    backgroundColor: colors.surface[100],
+    backgroundColor: t.inputBg,
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: spacing.md,
   },
-  placeholderText: { color: colors.surface[400] },
+  placeholderText: { color: t.textMuted },
   actions: { gap: spacing.sm, marginBottom: spacing.lg },
   resultCard: {
     backgroundColor: colors.success[50],
@@ -98,5 +102,5 @@ const styles = StyleSheet.create({
     color: colors.success[700],
     marginBottom: spacing.xs,
   },
-  resultText: { fontSize: typography.fontSize.base, color: colors.surface[900] },
+  resultText: { fontSize: typography.fontSize.base, color: t.text },
 });
