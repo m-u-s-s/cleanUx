@@ -34,6 +34,14 @@ export interface ResourceAction {
   destructive: boolean;
   /** Ce que l'action détruit, à afficher avant de la lancer. Toujours présent si `destructive`. */
   confirm: string | null;
+  /**
+   * Les valeurs que l'action exige AVANT de s'exécuter — un motif de refus, typiquement.
+   *
+   * Vide pour la plupart des actions. Quand elle ne l'est pas, le moteur ouvre une feuille de
+   * saisie au lieu d'agir directement : c'est ce qui permet de servir les quatre refus de la
+   * plateforme sans écrire quatre écrans, ni quatre fois la même validation.
+   */
+  fields: ResourceField[];
 }
 
 export type FieldType =

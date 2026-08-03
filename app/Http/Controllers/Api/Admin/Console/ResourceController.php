@@ -201,7 +201,7 @@ class ResourceController extends Controller
         return response()->json(['ok' => true]);
     }
 
-    public function action(string $resource, string $id, string $action): JsonResponse
+    public function action(Request $request, string $resource, string $id, string $action): JsonResponse
     {
         $descripteur = $this->resolve($resource);
 
@@ -229,12 +229,38 @@ class ResourceController extends Controller
         }
 
         /*
+         * Les valeurs exigées par l'action sont validées ICI, avec ses propres règles.
+         *
+         * Une action qui déclare un motif obligatoire et l'accepte vide n'aurait déclaré qu'une
+         * intention : c'est le serveur qui tient la règle, le mobile ne fait que la dessiner.
+         */
+        $saisie = [];
+
+        if ($declaree->fields() !== []) {
+            $rules = [];
+
+            foreach ($declaree->fields() as $field) {
+                $rules[$field->key()] = $field->validationRules();
+            }
+
+            $validator = Validator::make($request->all(), $rules);
+
+            if ($validator->fails()) {
+                return $this->refus('validation_failed', 422, [
+                    'errors' => $validator->errors()->toArray(),
+                ]);
+            }
+
+            $saisie = array_intersect_key($validator->validated(), $rules);
+        }
+
+        /*
          * La confirmation d'une action destructive est une affaire d'INTERFACE. Le serveur
          * annonce `destructive` et le texte à afficher ; le mobile demande confirmation. Exiger
          * ici un jeton de confirmation n'ajouterait aucune sécurité — l'appel vient déjà d'un
          * administrateur authentifié — mais donnerait l'illusion d'un second verrou.
          */
-        $result = ($declaree->handler())($model);
+        $result = ($declaree->handler())($model, $saisie);
 
         return response()->json(['ok' => true, 'result' => $result]);
     }

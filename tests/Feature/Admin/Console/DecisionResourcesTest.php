@@ -4,6 +4,7 @@ namespace Tests\Feature\Admin\Console;
 
 use App\Models\BusinessEntity;
 use App\Models\ComplaintCase;
+use App\Models\EnterpriseBookingApproval;
 use App\Models\KycVerification;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -68,16 +69,48 @@ class DecisionResourcesTest extends TestCase
     }
 
     #[DataProvider('filesDeDecision')]
-    public function test_aucune_file_n_expose_de_refus(string $resource): void
+    public function test_chaque_file_offre_un_refus_qui_exige_un_motif(string $resource): void
     {
         $this->actingAsAdmin();
 
-        $cles = array_column($this->getJson("/api/admin/console/{$resource}")->json('resource.actions'), 'key');
+        $actions = collect($this->getJson("/api/admin/console/{$resource}")->json('resource.actions'));
+        $refus = $actions->first(fn (array $a) => in_array($a['key'], ['reject', 'dismiss'], true));
 
-        // Tous les refus du domaine exigent un motif écrit ; le moteur ne sait pas demander une
-        // valeur avant d'agir. Un refus sans motif n'est ni contestable ni auditable — il relève
-        // d'un écran sur-mesure, pas d'un bouton.
-        $this->assertNotContains('reject', $cles);
+        $this->assertNotNull($refus, "La file « {$resource} » n’offre aucun refus.");
+
+        // Un refus sans explication écrite n'est ni contestable par la personne concernée, ni
+        // auditable ensuite. L'action DÉCLARE le motif qu'elle exige, et le moteur le demande.
+        $motif = collect($refus['fields'])->firstWhere('key', 'reason');
+        $this->assertNotNull($motif, "Le refus de « {$resource} » ne demande aucun motif.");
+        $this->assertTrue($motif['required']);
+        $this->assertTrue($refus['destructive']);
+        $this->assertNotEmpty($refus['confirm']);
+    }
+
+    #[DataProvider('filesDeDecision')]
+    public function test_un_refus_sans_motif_est_rejete_par_le_serveur(string $resource): void
+    {
+        $this->actingAsAdmin();
+
+        $modele = $this->uneLigneDe($resource);
+
+        // « court » fait cinq caractères, la règle en exige dix. Le mobile dessine la feuille ;
+        // c'est le SERVEUR qui tient la règle — sans cette validation, une application modifiée
+        // pourrait refuser sans rien écrire.
+        $this->postJson("/api/admin/console/{$resource}/{$modele}/actions/reject", ['reason' => 'court'])
+            ->assertStatus(422)
+            ->assertJsonStructure(['errors' => ['reason']]);
+    }
+
+    /** Crée une ligne du domaine et rend son identifiant. */
+    private function uneLigneDe(string $resource): int
+    {
+        return match ($resource) {
+            'kyc' => KycVerification::factory()->create()->id,
+            'kyb' => BusinessEntity::factory()->create()->id,
+            'enterprise-approvals' => EnterpriseBookingApproval::factory()->create()->id,
+            'disputes' => ComplaintCase::factory()->create()->id,
+        };
     }
 
     // ── KYC ─────────────────────────────────────────────────────────────────────────────────
@@ -134,6 +167,23 @@ class DecisionResourcesTest extends TestCase
         $this->postJson("/api/admin/console/disputes/{$litige->id}/actions/escalate")->assertOk();
 
         $this->assertSame(ComplaintCase::STATUS_ESCALATED, $litige->fresh()->status);
+    }
+
+    public function test_un_refus_motive_est_delegue_au_service(): void
+    {
+        $this->actingAsAdmin();
+        $verification = KycVerification::factory()->create([
+            'status' => KycVerification::STATUS_IN_REVIEW,
+        ]);
+
+        $this->postJson("/api/admin/console/kyc/{$verification->id}/actions/reject", [
+            'reason' => 'Document illisible : la date de naissance n’apparaît pas.',
+        ])->assertOk();
+
+        $frais = $verification->fresh();
+        $this->assertSame(KycVerification::STATUS_REJECTED, $frais->status);
+        // Le motif est CONSERVÉ : c'est ce qui rend le refus contestable.
+        $this->assertStringContainsString('illisible', (string) $frais->rejection_reason);
     }
 
     public function test_l_escalade_est_annoncee_comme_destructive(): void

@@ -5,6 +5,7 @@ import { Button, DetailRow, Divider, ErrorState, Screen, Skeleton } from '@/ui';
 import { colors, spacing, typography } from '@/theme';
 import { readServerErrors, useResourceAction, useResourceDelete, useResourceDetail, useResourceIndex } from './hooks';
 import { formatCell } from './format';
+import { ActionInputSheet } from './ActionInputSheet';
 import type { ResourceAction, ResourceColumn } from './types';
 
 interface Params {
@@ -33,6 +34,10 @@ export function ResourceDetailScreen({ route }: { route: { params: Params } }) {
   const action = useResourceAction(resource);
   const suppression = useResourceDelete(resource);
   const [erreur, setErreur] = useState<string | null>(null);
+
+  // L'action en attente de saisie, et les erreurs que le serveur a posées sur ses champs.
+  const [saisieEnCours, setSaisieEnCours] = useState<ResourceAction | null>(null);
+  const [erreursSaisie, setErreursSaisie] = useState<Record<string, string>>({});
 
   if (isLoading) {
     return (
@@ -63,6 +68,19 @@ export function ResourceDetailScreen({ route }: { route: { params: Params } }) {
   const modifiable = (descripteur?.form.length ?? 0) > 0;
 
   const lancer = (a: ResourceAction) => {
+    /*
+     * Une action qui EXIGE des valeurs ouvre la feuille de saisie plutôt qu'une alerte : son
+     * texte de confirmation y est affiché au-dessus des champs, donc lu pendant qu'on écrit le
+     * motif — plutôt que validé dans une boîte de dialogue puis oublié.
+     */
+    if (a.fields.length > 0) {
+      setErreur(null);
+      setErreursSaisie({});
+      setSaisieEnCours(a);
+
+      return;
+    }
+
     const executer = () => {
       setErreur(null);
       action.mutate(
@@ -81,6 +99,32 @@ export function ResourceDetailScreen({ route }: { route: { params: Params } }) {
       { text: 'Annuler', style: 'cancel' },
       { text: a.label, style: 'destructive', onPress: executer },
     ]);
+  };
+
+  const envoyerSaisie = (values: Record<string, unknown>) => {
+    if (!saisieEnCours) {
+      return;
+    }
+
+    setErreursSaisie({});
+
+    action.mutate(
+      { id, action: saisieEnCours.key, values },
+      {
+        onSuccess: () => setSaisieEnCours(null),
+        onError: (e) => {
+          const { message, fields } = readServerErrors(e);
+          setErreursSaisie(fields);
+
+          // La feuille RESTE OUVERTE quand le refus vise un champ : la refermer effacerait ce
+          // que l'utilisateur vient d'écrire, et il devrait tout resaisir pour corriger un mot.
+          if (Object.keys(fields).length === 0) {
+            setSaisieEnCours(null);
+            setErreur(message);
+          }
+        },
+      },
+    );
   };
 
   return (
@@ -149,6 +193,15 @@ export function ResourceDetailScreen({ route }: { route: { params: Params } }) {
           ) : null}
         </View>
       </ScrollView>
+
+      <ActionInputSheet
+        action={saisieEnCours}
+        visible={saisieEnCours !== null}
+        submitting={action.isPending}
+        errors={erreursSaisie}
+        onCancel={() => setSaisieEnCours(null)}
+        onSubmit={envoyerSaisie}
+      />
     </Screen>
   );
 }

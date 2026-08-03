@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
+import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import { Button, ErrorState, Screen, Skeleton, TextInput } from '@/ui';
+import { Button, ErrorState, Screen, Skeleton } from '@/ui';
 import { colors, spacing, typography } from '@/theme';
 import { readServerErrors, useResourceDetail, useResourceIndex, useResourceSave } from './hooks';
+import { FieldInput } from './FieldInput';
 import type { ResourceField } from './types';
 
 interface Params {
@@ -122,61 +123,6 @@ export function ResourceFormScreen({ route }: { route: { params: Params } }) {
   );
 }
 
-/**
- * Le seul endroit qui connaît la correspondance type déclaré → composant natif.
- *
- * Les types non encore outillés retombent sur une saisie texte plutôt que de ne rien rendre : un
- * champ absent ferait échouer l'enregistrement sans que rien ne l'explique à l'écran.
- */
-function FieldInput({
-  field,
-  value,
-  error,
-  onChange,
-}: {
-  field: ResourceField;
-  value: unknown;
-  error?: string;
-  onChange: (value: unknown) => void;
-}) {
-  if (field.type === 'bool') {
-    return (
-      <View style={styles.switchRow}>
-        <Text style={styles.switchLabel}>{field.label}</Text>
-        <Switch
-          accessibilityLabel={field.label}
-          value={value === true || value === 1 || value === '1'}
-          onValueChange={onChange}
-        />
-      </View>
-    );
-  }
-
-  const clavier =
-    field.type === 'email'
-      ? 'email-address'
-      : field.type === 'phone'
-        ? 'phone-pad'
-        : field.type === 'number' || field.type === 'money'
-          ? 'decimal-pad'
-          : 'default';
-
-  return (
-    <View style={{ paddingBottom: spacing.sm }}>
-      <TextInput
-        label={field.required ? `${field.label} *` : field.label}
-        accessibilityLabel={field.label}
-        value={value === undefined || value === null ? '' : String(value)}
-        onChangeText={onChange}
-        error={error}
-        keyboardType={clavier}
-        autoCapitalize={field.type === 'email' ? 'none' : 'sentences'}
-        multiline={field.type === 'textarea'}
-      />
-    </View>
-  );
-}
-
 const styles = StyleSheet.create({
   heading: {
     ...typography.preset.headline,
@@ -184,13 +130,6 @@ const styles = StyleSheet.create({
     marginTop: spacing.md,
     marginBottom: spacing.md,
   },
-  switchRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingVertical: spacing.md,
-  },
-  switchLabel: { fontSize: typography.fontSize.base, color: colors.surface[900] },
   erreur: {
     color: colors.danger[500],
     fontSize: typography.fontSize.sm,

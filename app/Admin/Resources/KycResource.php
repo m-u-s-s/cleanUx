@@ -5,6 +5,7 @@ namespace App\Admin\Resources;
 use App\Admin\Console\Action;
 use App\Admin\Console\AdminResource;
 use App\Admin\Console\Column;
+use App\Admin\Console\Field;
 use App\Admin\Console\Filter;
 use App\Models\KycVerification;
 use App\Models\User;
@@ -21,9 +22,9 @@ use Illuminate\Support\Facades\Auth;
  * main donnerait un prestataire vérifié que rien n'a vérifié — et personne ne s'en apercevrait
  * avant un contrôle.
  *
- * LE REFUS N'EST PAS UNE ACTION DE CONSOLE, délibérément : `rejectManually()` exige un motif, et
- * un refus d'identité sans motif écrit n'est ni contestable ni auditable. Le moteur ne sait pas
- * demander une valeur avant d'agir — c'est le signe qu'il faut un écran sur-mesure.
+ * LE REFUS EXIGE UN MOTIF, et l'action le DÉCLARE (`requires()`) : le moteur ouvre alors une
+ * feuille de saisie et valide le motif côté serveur avant d'appeler `rejectManually()`. Un refus
+ * d'identité sans explication écrite n'est ni contestable par la personne, ni auditable ensuite.
  *
  * @implements AdminResource<KycVerification>
  */
@@ -92,6 +93,25 @@ class KycResource implements AdminResource
 
                 return ['ok' => true];
             }),
+
+            Action::make('reject', 'Refuser', function (KycVerification $model, array $saisie) {
+                $admin = Auth::user();
+
+                if (! $admin instanceof User) {
+                    return ['ok' => false];
+                }
+
+                $this->kyc->rejectManually($model, $admin, (string) $saisie['reason']);
+
+                return ['ok' => true];
+            })
+                ->destructive('La vérification sera refusée et la personne en sera informée.')
+                ->requires([
+                    // Le motif est OBLIGATOIRE et long : un refus sans explication écrite n'est
+                    // ni contestable par la personne concernée, ni auditable six mois plus tard.
+                    Field::make('reason', 'Motif du refus', Field::TYPE_TEXTAREA)
+                        ->rules(['required', 'string', 'min:10', 'max:1000']),
+                ]),
 
             Action::make('sync', 'Rafraîchir depuis le fournisseur', function (KycVerification $model) {
                 // Relit l'état chez le fournisseur d'identité plutôt que de deviner : une

@@ -5,11 +5,15 @@ namespace App\Admin\Resources;
 use App\Admin\Console\Action;
 use App\Admin\Console\AdminResource;
 use App\Admin\Console\Column;
+use App\Admin\Console\Field;
 use App\Admin\Console\Filter;
 use App\Models\ComplaintCase;
+use App\Models\User;
+use App\Services\Disputes\DisputeResolutionService;
 use App\Services\Disputes\DisputeService;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Auth;
 
 /**
  * Les litiges à traiter.
@@ -23,15 +27,24 @@ use Illuminate\Database\Eloquent\Model;
  * recalcule le SLA et notifie. Écrire `status = 'escalated'` à la main produirait un litige
  * escaladé dont personne n'est prévenu et dont l'horloge ne tourne pas.
  *
- * LA RÉSOLUTION N'EST PAS UNE ACTION DE CONSOLE, et c'est délibéré : elle exige un type, un
- * montant et une explication. Le moteur ne sait pas demander trois valeurs avant d'agir — c'est
- * précisément le signe qu'il faut un écran sur-mesure (sous-projet C).
+ * LA CLÔTURE SANS SUITE est servie ici : l'action déclare le motif qu'elle exige, et le moteur
+ * le demande avant d'appeler le service. La résolution AVEC indemnisation, elle, reste hors
+ * console — elle exige un type, un montant ET une explication, et le montant d'un dédommagement
+ * ne se saisit pas entre deux portes.
  *
  * @implements AdminResource<ComplaintCase>
  */
 class DisputeResource implements AdminResource
 {
-    public function __construct(private readonly DisputeService $disputes) {}
+    /**
+     * DEUX services, parce que la plateforme les a séparés : `DisputeService` porte le cycle de
+     * vie (escalade, SLA), `DisputeResolutionService` porte les issues (clôture, indemnisation).
+     * Les confondre ici reviendrait à réécrire l'un des deux.
+     */
+    public function __construct(
+        private readonly DisputeService $disputes,
+        private readonly DisputeResolutionService $resolution,
+    ) {}
 
     public function key(): string
     {
@@ -85,6 +98,25 @@ class DisputeResource implements AdminResource
     public function actions(): array
     {
         return [
+            Action::make('reject', 'Clore sans suite', function (ComplaintCase $model, array $saisie) {
+                $admin = Auth::user();
+
+                if (! $admin instanceof User) {
+                    return ['ok' => false];
+                }
+
+                $this->resolution->dismiss($model, $admin, (string) $saisie['reason']);
+
+                return ['ok' => true];
+            })
+                ->destructive('Le litige sera clos sans indemnisation et le client en sera informé.')
+                ->requires([
+                    // Le motif est OBLIGATOIRE et long : un refus sans explication écrite n'est
+                    // ni contestable par la personne concernée, ni auditable six mois plus tard.
+                    Field::make('reason', 'Motif du refus', Field::TYPE_TEXTAREA)
+                        ->rules(['required', 'string', 'min:10', 'max:1000']),
+                ]),
+
             // La fermeture est typée sur le modèle du domaine, pas sur `Model` : le moteur ne lui
             // passe jamais autre chose, et un jour où ce serait le cas, PHP le dirait fort plutôt
             // que de laisser le service travailler sur une entité qui n'est pas la sienne.

@@ -101,9 +101,17 @@ export function useResourceDelete(resource: string) {
 export function useResourceAction(resource: string) {
   const qc = useQueryClient();
 
-  return useMutation<unknown, unknown, { id: string | number; action: string }>({
-    mutationFn: async ({ id, action }) =>
-      (await apiClient.post(`/admin/console/${resource}/${id}/actions/${action}`)).data.result,
+  return useMutation<
+    unknown,
+    unknown,
+    { id: string | number; action: string; values?: Record<string, unknown> }
+  >({
+    // `values` porte ce que l'action a DÉCLARÉ exiger — un motif de refus, typiquement. Le
+    // serveur le valide avec ses propres règles : envoyer un motif vide échoue en 422, avec
+    // l'erreur posée sur le champ.
+    mutationFn: async ({ id, action, values }) =>
+      (await apiClient.post(`/admin/console/${resource}/${id}/actions/${action}`, values ?? {}))
+        .data.result,
     onSuccess: () => qc.invalidateQueries({ queryKey: ['admin', 'console', resource] }),
   });
 }

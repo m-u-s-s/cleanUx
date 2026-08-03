@@ -5,6 +5,7 @@ namespace App\Admin\Resources;
 use App\Admin\Console\Action;
 use App\Admin\Console\AdminResource;
 use App\Admin\Console\Column;
+use App\Admin\Console\Field;
 use App\Admin\Console\Filter;
 use App\Models\EnterpriseBookingApproval;
 use App\Models\User;
@@ -21,8 +22,8 @@ use Illuminate\Support\Facades\Auth;
  * réservation quand les deux sont posées. Écrire `status = 'approved'` d'un coup sauterait la
  * validation manquante — une réservation d'entreprise engagée sans que la finance l'ait vue.
  *
- * LE REFUS RESTE HORS CONSOLE : `reject()` exige un motif, et une commande refusée sans motif
- * écrit laisse le demandeur sans rien à corriger.
+ * LE REFUS EXIGE UN MOTIF, que l'action DÉCLARE : une commande refusée sans explication écrite
+ * laisse le demandeur sans rien à corriger.
  *
  * @implements AdminResource<EnterpriseBookingApproval>
  */
@@ -84,6 +85,25 @@ class EnterpriseApprovalResource implements AdminResource
 
                 return ['ok' => true];
             }),
+
+            Action::make('reject', 'Refuser', function (EnterpriseBookingApproval $model, array $saisie) {
+                $admin = Auth::user();
+
+                if (! $admin instanceof User) {
+                    return ['ok' => false];
+                }
+
+                $this->approvals->reject($model, $admin, (string) $saisie['reason']);
+
+                return ['ok' => true];
+            })
+                ->destructive('La demande sera refusée et le demandeur en sera informé.')
+                ->requires([
+                    // Le motif est OBLIGATOIRE et long : un refus sans explication écrite n'est
+                    // ni contestable par la personne concernée, ni auditable six mois plus tard.
+                    Field::make('reason', 'Motif du refus', Field::TYPE_TEXTAREA)
+                        ->rules(['required', 'string', 'min:10', 'max:1000']),
+                ]),
 
             Action::make('approve-finance', 'Valider (finance)', function (EnterpriseBookingApproval $model) {
                 $admin = Auth::user();

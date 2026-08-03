@@ -5,6 +5,7 @@ namespace App\Admin\Resources;
 use App\Admin\Console\Action;
 use App\Admin\Console\AdminResource;
 use App\Admin\Console\Column;
+use App\Admin\Console\Field;
 use App\Admin\Console\Filter;
 use App\Models\BusinessEntity;
 use App\Models\User;
@@ -21,8 +22,9 @@ use Illuminate\Support\Facades\Auth;
  * `status = 'verified'` écrit à la main donnerait une entreprise approuvée sans criblage, ce qui
  * est exactement ce que la conformité interdit.
  *
- * LE REFUS RESTE HORS CONSOLE : `reject()` exige un motif d'au moins dix caractères, et un refus
- * sans motif écrit n'est ni contestable ni auditable.
+ * LE REFUS EXIGE UN MOTIF d'au moins dix caractères, et l'action le DÉCLARE : le moteur ouvre une
+ * feuille de saisie et valide avant d'appeler `reject()`. Un refus sans motif écrit n'est ni
+ * contestable ni auditable.
  *
  * @implements AdminResource<BusinessEntity>
  */
@@ -91,6 +93,25 @@ class KybResource implements AdminResource
 
                 return ['ok' => true];
             }),
+
+            Action::make('reject', 'Refuser', function (BusinessEntity $model, array $saisie) {
+                $admin = Auth::user();
+
+                if (! $admin instanceof User) {
+                    return ['ok' => false];
+                }
+
+                $this->onboarding->reject($model, (string) $saisie['reason'], $admin);
+
+                return ['ok' => true];
+            })
+                ->destructive('Le dossier sera refusé et l’entreprise en sera informée.')
+                ->requires([
+                    // Le motif est OBLIGATOIRE et long : un refus sans explication écrite n'est
+                    // ni contestable par la personne concernée, ni auditable six mois plus tard.
+                    Field::make('reason', 'Motif du refus', Field::TYPE_TEXTAREA)
+                        ->rules(['required', 'string', 'min:10', 'max:1000']),
+                ]),
 
             Action::make('approve', 'Approuver', function (BusinessEntity $model) {
                 $admin = Auth::user();
