@@ -15,6 +15,7 @@ use App\Http\Middleware\EncryptCookies;
 use App\Http\Middleware\Enforce2FA;
 use App\Http\Middleware\EnforceTokenGrace;
 use App\Http\Middleware\EnsureActiveAccount;
+use App\Http\Middleware\EnsureApiAdmin;
 use App\Http\Middleware\EnsureFieldTeamLead;
 use App\Http\Middleware\EnsureOrganizationType;
 use App\Http\Middleware\EnsurePhoneVerified;
@@ -123,6 +124,7 @@ class Kernel extends HttpKernel
         'field.team.lead' => EnsureFieldTeamLead::class,
         'assistant.ratelimit' => AssistantRateLimit::class,
         'api_scope' => EnforceTokenScope::class,
+        'api_admin' => EnsureApiAdmin::class,
         'api_token_throttle' => ThrottleByToken::class,
         'api_token_audit' => LogTokenUsage::class,
         'turnstile' => VerifyTurnstileCaptcha::class,

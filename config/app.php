@@ -1,5 +1,6 @@
 <?php
 
+use App\Providers\AdminConsoleServiceProvider;
 use App\Providers\ApiTokensV2ServiceProvider;
 use App\Providers\AppServiceProvider;
 use App\Providers\AuthServiceProvider;
@@ -193,6 +194,7 @@ return [
         SubscriptionsV2ServiceProvider::class,
         KybV2ServiceProvider::class,
         EmailV2ServiceProvider::class,
+        AdminConsoleServiceProvider::class,
         AuthServiceProvider::class,
         BroadcastServiceProvider::class,
         EventServiceProvider::class,

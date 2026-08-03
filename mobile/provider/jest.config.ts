@@ -40,6 +40,14 @@ const config: Config = {
     '^@/theme(.*)$': '<rootDir>/../shared/src/theme$1',
     '^@/ui(.*)$': '<rootDir>/../shared/src/ui$1',
     '^@/ErrorBoundary$': '<rootDir>/../shared/src/ErrorBoundary',
+    // L'ordre compte : ces entrées doivent précéder le motif générique `^@/(.*)$`, qui les
+    // capterait sinon et les ferait pointer vers src/ — où elles n'existent pas.
+    '^@/onboarding(.*)$': '<rootDir>/../shared/src/onboarding$1',
+    '^@/trades(.*)$': '<rootDir>/../shared/src/trades$1',
+    '^@/parity(.*)$': '<rootDir>/../shared/src/parity$1',
+    '^@/webview(.*)$': '<rootDir>/../shared/src/webview$1',
+    '^@/finance(.*)$': '<rootDir>/../shared/src/finance$1',
+    '^@cleanux/shared(.*)$': '<rootDir>/../shared/src$1',
     // Provider-only modules
     '^@/(.*)$': '<rootDir>/src/$1',
     // react-native-reanimated v4 requires native worklets — use local stub to avoid WorkletsError

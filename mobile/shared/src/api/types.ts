@@ -11,6 +11,19 @@ export interface User {
   // backend (customerProfile->isPremium()); mobile reads this hint optimistically
   // when present and falls back to the upsell encart otherwise.
   is_premium?: boolean;
+  /**
+   * Administrateur de plateforme. Sert d'AIGUILLAGE D'INTERFACE — quel espace ouvrir au
+   * démarrage — et rien d'autre : l'autorité reste le serveur, qui garde chaque route.
+   * Servi par `/auth/login` comme par `/auth/me`, sans quoi la reprise de session dégraderait
+   * l'administrateur en compte ordinaire.
+   */
+  is_admin?: boolean;
+  /**
+   * Casquette prestataire. Un compte peut porter les DEUX : un administrateur qui intervient
+   * aussi sur le terrain existe, et le forcer à tenir deux comptes lui donnerait deux historiques
+   * et deux facturations. Ce drapeau est ce qui permet de lui proposer de choisir son espace.
+   */
+  is_provider?: boolean;
 }
 
 export class ApiError extends Error {

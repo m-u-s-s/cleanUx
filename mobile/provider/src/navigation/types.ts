@@ -1,4 +1,5 @@
 import type { NavigatorScreenParams } from '@react-navigation/native';
+import type { AdminTabParamList } from '@/admin/types';
 
 export type RootStackParamList = {
   Login: undefined;
@@ -7,6 +8,19 @@ export type RootStackParamList = {
   MainTabs: NavigatorScreenParams<TabParamList> | undefined;
   // Parcours de vérification : seul écran atteignable tant que le dossier est incomplet.
   ProviderOnboarding: undefined;
+  /**
+   * Console d'administration. Rendue dans une pile SÉPARÉE de celle du prestataire : aucun écran
+   * prestataire ne concerne un administrateur, et les y laisser atteignables donnerait des routes
+   * qui répondent 403 à qui les ouvre.
+   */
+  AdminSpace: NavigatorScreenParams<AdminTabParamList> | undefined;
+  AdminResource: { moduleKey: string; title: string };
+  /** Le moteur de console — trois écrans qui servent tous les domaines décrits. */
+  AdminResourceList: { resource: string; title: string };
+  /** Un module servi comme synthèse : des tuiles chiffrées, pas une liste. */
+  AdminReport: { report: string; title: string };
+  AdminResourceDetail: { resource: string; title: string; id: string | number };
+  AdminResourceForm: { resource: string; title: string; id?: string | number };
   MissionDetail: { missionId: number };
   /** Les courses immédiates proposées à ce prestataire. */
   AsapOffers: undefined;

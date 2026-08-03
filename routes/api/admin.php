@@ -1,8 +1,12 @@
 <?php
 
 use App\Http\Controllers\Api\AccountingV2Controller;
+use App\Http\Controllers\Api\Admin\AdminCatalogController;
+use App\Http\Controllers\Api\Admin\AdminOverviewController;
 use App\Http\Controllers\Api\Admin\AuditController;
 use App\Http\Controllers\Api\Admin\BookingDispatchController;
+use App\Http\Controllers\Api\Admin\Console\ReportController;
+use App\Http\Controllers\Api\Admin\Console\ResourceController;
 use App\Http\Controllers\Api\Admin\DisputeAdminController;
 use App\Http\Controllers\Api\Admin\InsuranceAdminController;
 use App\Http\Controllers\Api\Admin\MarketingCampaignController;
@@ -26,7 +30,16 @@ use Illuminate\Support\Facades\Route;
 // Authenticated — Admin endpoints
 // ─────────────────────────────────────────────
 
-Route::middleware('auth:sanctum')->group(function () {
+/*
+ * `api_scope` dit ce qu'un jeton a le droit de faire ; il ne dit pas QUI le porte.
+ *
+ * Le jeton mobile est émis sans liste d'abilities, donc Sanctum y inscrit '*', et le contrôle de
+ * scope laisse passer tout jeton portant '*'. Ce groupe était par conséquent ouvert à n'importe
+ * quel compte authentifié depuis l'application : un client atteignait la comptabilité et les
+ * jetons d'API. La garde de rôle est le verrou qui manquait — le scope reste en place, il filtre
+ * ce qu'un jeton d'intégration a le droit de faire une fois le rôle établi.
+ */
+Route::middleware(['auth:sanctum', 'api_admin'])->group(function () {
 
     // Phase Matching v2 — Simulation admin
     Route::prefix('admin/matching')->middleware('api_scope:admin:read,admin:everything')->group(function () {
@@ -209,5 +222,41 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::prefix('admin/insurance-v2')->middleware('api_scope:admin:write,admin:everything')->group(function () {
         Route::patch('/claims/{claim}/status', [InsuranceAdminController::class, 'updateClaimStatus']);
         Route::get('/claims', [InsuranceAdminController::class, 'claims']);
+    });
+
+    /*
+     * Console d'administration mobile.
+     *
+     * Ces deux points d'entrée ne portent aucune donnée métier : l'un sert le registre de
+     * couverture, l'autre des compteurs. Ils sont gardés en lecture comme le reste du groupe.
+     */
+    Route::prefix('admin')->middleware('api_scope:admin:read,admin:everything')->group(function () {
+        Route::get('/catalog', AdminCatalogController::class);
+        Route::get('/overview', AdminOverviewController::class);
+    });
+
+    /*
+     * Moteur de console — un jeu d'endpoints pour tous les domaines décrits par un descripteur.
+     *
+     * Les écritures sont sous `admin:critical` : ces routes servent indifféremment la création
+     * d'un utilisateur et la suppression d'une ligne comptable, et le descripteur ne peut pas
+     * abaisser le niveau requis. La lecture reste sous `admin:read`.
+     */
+    Route::prefix('admin/console')->group(function () {
+        Route::middleware('api_scope:admin:read,admin:everything')->group(function () {
+            // AVANT la route générique `/{resource}` : sans cela, « reports » serait pris pour
+            // une ressource et rendrait 404 sur un module qui existe.
+            Route::get('/reports/{report}', ReportController::class);
+
+            Route::get('/{resource}', [ResourceController::class, 'index']);
+            Route::get('/{resource}/{id}', [ResourceController::class, 'show']);
+        });
+
+        Route::middleware('api_scope:admin:critical,admin:everything')->group(function () {
+            Route::post('/{resource}', [ResourceController::class, 'store']);
+            Route::patch('/{resource}/{id}', [ResourceController::class, 'update']);
+            Route::delete('/{resource}/{id}', [ResourceController::class, 'destroy']);
+            Route::post('/{resource}/{id}/actions/{action}', [ResourceController::class, 'action']);
+        });
     });
 });
