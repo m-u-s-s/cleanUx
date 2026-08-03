@@ -75,13 +75,13 @@ la feuille et de la réinjecter au point d'usage.
 **Pourquoi en premier :** c'est le seul inconnu du chantier. Le lever coûte quinze minutes ;
 découvrir l'incompatibilité après avoir écrit `LuxeBackground` coûte la tâche entière.
 
-- [ ] **Étape 1 : installer**
+- [x] **Étape 1 : installer**
 
 ```bash
 cd mobile/provider && npx expo install @shopify/react-native-skia
 ```
 
-- [ ] **Étape 2 : écrire le test de fumée**
+- [x] **Étape 2 : écrire le test de fumée**
 
 `mobile/provider/__tests__/theme/skiaDisponible.test.ts` :
 
@@ -99,7 +99,7 @@ it('le module Skia se charge', () => {
 });
 ```
 
-- [ ] **Étape 3 : lancer**
+- [x] **Étape 3 : lancer**
 
 Run : `cd mobile/provider && npx jest __tests__/theme/skiaDisponible.test.ts`
 
@@ -108,7 +108,7 @@ Run : `cd mobile/provider && npx jest __tests__/theme/skiaDisponible.test.ts`
 la tâche 7 écrit le repli en texture. **Noter le choix dans le message de commit** : c'est
 l'information que quelqu'un cherchera dans six mois.
 
-- [ ] **Étape 4 : commit** — `chore(mobile): trancher la disponibilité de Skia sur Expo 56`
+- [x] **Étape 4 : commit** — `chore(mobile): trancher la disponibilité de Skia sur Expo 56`
 
 ---
 
@@ -120,7 +120,7 @@ Test `mobile/provider/__tests__/theme/jetons.test.ts`
 **Interfaces produites :** `useThemeColors()` rend, en plus de l'existant —
 `glass`, `glassStrong`, `glassBorder`, `textOnGlass`, `mutedOnGlass`, `glow`, `isDark`.
 
-- [ ] **Étape 1 : écrire le test qui échoue**
+- [x] **Étape 1 : écrire le test qui échoue**
 
 ```ts
 import { renderHook } from '@testing-library/react-native';
@@ -162,10 +162,10 @@ function useThemeColorsIsDark(): boolean {
 }
 ```
 
-- [ ] **Étape 2 : lancer, constater l'échec** —
+- [x] **Étape 2 : lancer, constater l'échec** —
       `cd mobile/provider && npx jest __tests__/theme/jetons.test.ts`
 
-- [ ] **Étape 3 : étendre le hook**
+- [x] **Étape 3 : étendre le hook**
 
 ```ts
 export function useThemeColors() {
@@ -204,7 +204,7 @@ export function useThemeColors() {
 }
 ```
 
-- [ ] **Étape 4 : relancer, puis commit**
+- [x] **Étape 4 : relancer, puis commit**
 
 ```bash
 git add mobile/shared/src/theme/useThemeColors.ts mobile/provider/__tests__/theme/jetons.test.ts
@@ -220,7 +220,7 @@ tant qu'elle n'est pas vide. La migration est pilotée par lui, pas par une list
 
 **Fichiers :** Créer `mobile/provider/__tests__/theme/noHardcodedColors.test.ts`
 
-- [ ] **Étape 1 : écrire le garde-fou**
+- [x] **Étape 1 : écrire le garde-fou**
 
 ```ts
 /**
@@ -300,13 +300,13 @@ describe('couleurs codées en dur', () => {
 });
 ```
 
-- [ ] **Étape 2 : lancer et CONSERVER la liste**
+- [x] **Étape 2 : lancer et CONSERVER la liste**
 
 Run : `cd mobile/provider && npx jest __tests__/theme/noHardcodedColors.test.ts`
 Attendu : échec, avec la liste complète `fichier:ligne`. **C'est la feuille de route des tâches 3
 à 6.** La copier dans un fichier de travail.
 
-- [ ] **Étape 3 : commit du garde-fou seul** — il est rouge, et c'est voulu : il décrit une dette
+- [x] **Étape 3 : commit du garde-fou seul** — il est rouge, et c'est voulu : il décrit une dette
       qui existe déjà.
 
 ```bash
@@ -330,19 +330,19 @@ est vert.
 
 Pour chaque lot :
 
-- [ ] **Étape 1 : lancer le garde-fou** et prendre les fichiers du lot dans sa liste.
-- [ ] **Étape 2 : migrer fichier par fichier**, en appliquant le patron : la couleur sort de
+- [x] **Étape 1 : lancer le garde-fou** et prendre les fichiers du lot dans sa liste.
+- [x] **Étape 2 : migrer fichier par fichier**, en appliquant le patron : la couleur sort de
       `StyleSheet.create`, le composant appelle `useThemeColors()`, la couleur revient en style en
       ligne au point d'usage.
-- [ ] **Étape 3 : relancer le garde-fou** — la liste doit avoir raccourci d'autant.
-- [ ] **Étape 4 : lancer les suites des deux apps.**
+- [x] **Étape 3 : relancer le garde-fou** — la liste doit avoir raccourci d'autant.
+- [x] **Étape 4 : lancer les suites des deux apps.**
 
 ```bash
 cd mobile/provider && npm run typecheck && npm test
 cd ../client && npm run typecheck && npm test
 ```
 
-- [ ] **Étape 5 : commit du lot** — message nommant le périmètre et le nombre d'occurrences
+- [x] **Étape 5 : commit du lot** — message nommant le périmètre et le nombre d'occurrences
       retirées.
 
 **Cas particulier à traiter dans le lot 4 :** `AppearanceScreen.tsx` écrit `colors.surface[900]`
@@ -360,7 +360,7 @@ Test `mobile/provider/__tests__/theme/LuxeBackground.test.tsx`
 `<LuxeBackground intensity?: number />` — occupe son parent en absolu, ne rend **rien** en mode
 clair.
 
-- [ ] **Étape 1 : écrire les tests qui échouent**
+- [x] **Étape 1 : écrire les tests qui échouent**
 
 ```tsx
 describe('LuxeBackground', () => {
@@ -400,12 +400,12 @@ describe('LuxeBackground', () => {
 });
 ```
 
-- [ ] **Étape 2 : lancer, constater l'échec.**
-- [ ] **Étape 3 : écrire le composant** — dégradé `nightSoft → night`, lueur de marque radiale en
+- [x] **Étape 2 : lancer, constater l'échec.**
+- [x] **Étape 3 : écrire le composant** — dégradé `nightSoft → night`, lueur de marque radiale en
       haut à droite (opacité 0.30), 28 gouttes. Seules les gouttes de rayon > 8 glissent : sur une
       vitre, les petites tiennent par tension superficielle, et les faire toutes descendre donne
       « des cercles qui tombent », pas de l'eau.
-- [ ] **Étape 4 : relancer, typecheck, commit.**
+- [x] **Étape 4 : relancer, typecheck, commit.**
 
 ---
 
@@ -417,12 +417,12 @@ Test `mobile/provider/__tests__/theme/GlassSurface.test.tsx`
 **Interfaces produites :**
 `<GlassSurface strong?: boolean style?: ViewStyle>{children}</GlassSurface>`
 
-- [ ] **Étape 1 : écrire les tests** — en clair, rend une `View` ordinaire avec `theme.card` (pas
+- [x] **Étape 1 : écrire les tests** — en clair, rend une `View` ordinaire avec `theme.card` (pas
       de flou : le mode clair n'est pas touché) ; en sombre, un `BlurView` avec le voile et le
       liseré ; le voile n'est jamais absent, même quand le flou est indisponible.
-- [ ] **Étape 2 : lancer, constater l'échec.**
-- [ ] **Étape 3 : écrire le composant.**
-- [ ] **Étape 4 : relancer, commit.**
+- [x] **Étape 2 : lancer, constater l'échec.**
+- [x] **Étape 3 : écrire le composant.**
+- [x] **Étape 4 : relancer, commit.**
 
 ---
 
@@ -435,12 +435,12 @@ Test `mobile/provider/__tests__/theme/ButtonGlass.test.tsx`
 interface que tout le monde connaît. Un `GlassButton` séparé finirait par diverger sur la taille,
 l'état de chargement ou l'accessibilité.
 
-- [ ] **Étape 1 : écrire les tests** — la variante existe ; en mode clair elle se comporte comme
+- [x] **Étape 1 : écrire les tests** — la variante existe ; en mode clair elle se comporte comme
       `secondary` (le clair n'est pas touché) ; le libellé garde un contraste suffisant sur le
       voile ; `loading` et `disabled` fonctionnent comme sur les autres variantes.
-- [ ] **Étape 2 : lancer, constater l'échec.**
-- [ ] **Étape 3 : ajouter la variante.**
-- [ ] **Étape 4 : relancer, commit.**
+- [x] **Étape 2 : lancer, constater l'échec.**
+- [x] **Étape 3 : ajouter la variante.**
+- [x] **Étape 4 : relancer, commit.**
 
 ---
 
@@ -449,23 +449,28 @@ l'état de chargement ou l'accessibilité.
 **Fichiers :** Modifier `mobile/provider/src/navigation/TabNavigator.tsx`,
 `mobile/provider/src/admin/AdminNavigator.tsx`, `mobile/shared/src/ui/BottomSheet.tsx`
 
-- [ ] **Étape 1 : écrire le test** — en sombre, la barre d'onglets est transparente et pose une
+- [x] **Étape 1 : écrire le test** — en sombre, la barre d'onglets est transparente et pose une
       `GlassSurface` en fond ; en clair, elle garde son fond plein actuel.
-- [ ] **Étape 2 : lancer, constater l'échec.**
-- [ ] **Étape 3 : appliquer** aux deux barres d'onglets et aux feuilles.
-- [ ] **Étape 4 : relancer, commit.**
+- [x] **Étape 2 : lancer, constater l'échec.**
+- [x] **Étape 3 : appliquer** aux deux barres d'onglets et aux feuilles.
+- [x] **Étape 4 : relancer, commit.**
 
 ---
 
 ### Tâche 11 : portail
 
-- [ ] `cd mobile/provider && npm run typecheck && npm test`
-- [ ] `cd mobile/client && npm run typecheck && npm test`
-- [ ] Le garde-fou de la tâche 2 est **vert**.
-- [ ] Vérification à l'œil sur appareil ou simulateur : basculer clair ↔ sombre sur l'accueil,
-      une liste, un formulaire et l'écran Apparence. **Le mode clair doit être identique à
-      avant** — c'est la contrainte la plus facile à casser sans s'en apercevoir.
-- [ ] Commit du portail.
+- [x] `cd mobile/provider && npm run typecheck && npm test`
+- [x] `cd mobile/client && npm run typecheck && npm test`
+- [x] Le garde-fou de la tâche 2 est **vert**.
+- [ ] **RESTE À FAIRE PAR UN HUMAIN** — vérification à l'œil sur appareil ou simulateur :
+      basculer clair ↔ sombre sur l'accueil, une liste, un formulaire et l'écran Apparence.
+      Skia exige un *development build* (`npx expo run:android` ou `run:ios`) : les gouttes ne
+      s'affichent PAS dans Expo Go.
+      L'invariant « le mode clair est identique » est désormais tenu par
+      `provider/__tests__/theme/modeClairIntact.test.ts`, qui compare chaque jeton aux valeurs
+      relevées avant le chantier. Ce que la machine ne peut pas juger reste entier : si les
+      gouttes sont belles, et si la lueur tombe au bon endroit.
+- [x] Commit du portail.
 
 ## Auto-revue du plan
 
