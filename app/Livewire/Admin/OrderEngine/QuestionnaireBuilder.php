@@ -25,6 +25,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use Livewire\Attributes\Computed;
@@ -241,9 +242,14 @@ class QuestionnaireBuilder extends Component
      */
     private function refusesWrite(string $errorKey = 'publication'): bool
     {
-        $user = Auth::user();
-
-        if ($user === null || ! method_exists($user, 'isReadOnlyAdmin') || ! $user->isReadOnlyAdmin()) {
+        /*
+         * La règle vit dans la Policy, pas ici.
+         *
+         * Cette garde la CONSULTE au lieu de la redire : trois copies d'une même règle finissent
+         * par diverger, et c'est alors la plus permissive qui décide sans que personne ne le
+         * remarque. Elle reste en place — défense en profondeur — mais sur une seule source.
+         */
+        if (Gate::allows('publish', Trade::class)) {
             return false;
         }
 

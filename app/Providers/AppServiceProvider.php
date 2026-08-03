@@ -6,6 +6,11 @@ use App\Models\Booking;
 use App\Models\BookingTip;
 use App\Models\Channel;
 use App\Models\MissionTrackingPoint;
+use App\Models\Question;
+use App\Models\QuestionCondition;
+use App\Models\QuestionOption;
+use App\Models\Sector;
+use App\Models\Trade;
 use App\Models\TripTrackingSession;
 use App\Observers\BookingObserver;
 use App\Observers\BookingPaymentDestinationObserver;
@@ -13,6 +18,7 @@ use App\Observers\BookingTipObserver;
 use App\Observers\MissionTrackingPointObserver;
 use App\Observers\RendezVousObserver;
 use App\Observers\TripTrackingSessionObserver;
+use App\Policies\CatalogPolicy;
 use App\Policies\ChannelPolicy;
 use App\Services\Assistant\Llm\AnthropicProvider;
 use App\Services\Assistant\Llm\AnthropicStreamingProvider;
@@ -127,6 +133,23 @@ class AppServiceProvider extends ServiceProvider
         }
 
         Gate::policy(Channel::class, ChannelPolicy::class);
+
+        /*
+         * Le catalogue de commande : UNE règle d'écriture, cinq modèles.
+         *
+         * Elle vivait en trois exemplaires — middleware de route, trait d'écran, garde recopiée
+         * dans deux composants. Trois copies finissent par diverger, et c'est alors la plus
+         * permissive qui décide sans que personne ne le remarque.
+         */
+        foreach ([
+            Sector::class,
+            Trade::class,
+            Question::class,
+            QuestionOption::class,
+            QuestionCondition::class,
+        ] as $catalogModel) {
+            Gate::policy($catalogModel, CatalogPolicy::class);
+        }
 
         // Feature flags — Blade directive: @feature('flag') / @endfeature
         Blade::if('feature', function (string $flag): bool {

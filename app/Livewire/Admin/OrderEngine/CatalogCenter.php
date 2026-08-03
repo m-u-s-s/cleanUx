@@ -10,8 +10,8 @@ use App\Services\OrderEngine\QuestionnaireValidator;
 use App\Services\OrderEngine\TradeFormPublisher;
 use App\Support\Livewire\Concerns\EnforcesAdminAccess;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Str;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
@@ -276,11 +276,8 @@ class CatalogCenter extends Component
      */
     private function refusesWrite(): bool
     {
-        $user = Auth::user();
-
-        return $user !== null
-            && method_exists($user, 'isReadOnlyAdmin')
-            && $user->isReadOnlyAdmin();
+        // La règle vit dans la Policy : on la consulte, on ne la redit pas.
+        return ! Gate::allows('update', Trade::class);
     }
 
     /**

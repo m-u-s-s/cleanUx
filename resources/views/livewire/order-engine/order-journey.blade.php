@@ -132,10 +132,41 @@
 
                     <div class="mt-2">
                         @foreach ($this->visibleQuestions as $question)
-                            @livewire('order-engine.question-renderer',
-                                ['question' => $question, 'value' => $answers[$question->code] ?? null],
-                                key('q-'.$question->id.'-'.$mode))
+                            {{--
+                                Une question conditionnelle apparaissait D'UN COUP, décalant tout
+                                ce qui la suit. Sur un écran où le prix bouge au même instant, ce
+                                saut fait perdre le fil de ce qui vient de se passer.
+
+                                `x-collapse` anime la hauteur, et respecte `prefers-reduced-motion`
+                                de lui-même : l'information reste, le mouvement s'en va.
+                            --}}
+                            <div x-data x-show="true" x-collapse.duration.250ms
+                                wire:key="wrap-{{ $question->id }}-{{ $mode }}">
+                                @livewire('order-engine.question-renderer',
+                                    ['question' => $question, 'value' => $answers[$question->code] ?? null],
+                                    key('q-'.$question->id.'-'.$mode))
+                            </div>
                         @endforeach
+                    </div>
+
+                    {{--
+                        La connexion perdue est DITE, et ce qui est répondu est déjà sauvé.
+
+                        Chaque réponse part au serveur au fil de l'eau : une coupure ne perd rien de
+                        ce qui est passé. Encore faut-il le dire — sinon le client recommence, ou
+                        pire, abandonne en croyant avoir tout perdu.
+                    --}}
+                    <div x-data="{ enligne: true }"
+                        x-init="
+                            enligne = navigator.onLine;
+                            window.addEventListener('online', () => enligne = true);
+                            window.addEventListener('offline', () => enligne = false);
+                        ">
+                        <p x-show="! enligne" x-cloak role="status"
+                            class="mt-4 rounded-xl bg-amber-50 px-4 py-3 text-sm text-amber-900">
+                            Connexion perdue. Vos réponses sont enregistrées : reprenez dès que le
+                            réseau revient, rien ne sera à ressaisir.
+                        </p>
                     </div>
 
                     {{-- La navigation entre étapes. Revenir ne perd rien : les réponses vivent dans

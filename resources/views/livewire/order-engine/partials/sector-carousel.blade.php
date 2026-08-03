@@ -26,6 +26,59 @@
         page(direction) {
             this.track.scrollBy({ left: direction * this.track.clientWidth * 0.8, behavior: 'smooth' });
         },
+
+        /*
+         * Tirer la bande à la souris.
+         *
+         * Le doigt a déjà l'inertie du système et le clavier a ses flèches ; la souris n'avait
+         * que les deux boutons de pagination, sur une bande qui invite visiblement à être tirée.
+         *
+         * On n'intervient QUE pour la souris (`pointerType`) : capter aussi le tactile
+         * réimplémenterait en JavaScript une inertie que le système fait mieux.
+         */
+        dragging: false,
+        startX: 0,
+        startScroll: 0,
+        moved: 0,
+
+        grab(event) {
+            if (event.pointerType !== 'mouse' || event.button !== 0) {
+                return;
+            }
+
+            this.dragging = true;
+            this.moved = 0;
+            this.startX = event.clientX;
+            this.startScroll = this.track.scrollLeft;
+        },
+
+        drag(event) {
+            if (! this.dragging) {
+                return;
+            }
+
+            const delta = event.clientX - this.startX;
+            this.moved = Math.abs(delta);
+            this.track.scrollLeft = this.startScroll - delta;
+        },
+
+        release(event) {
+            if (! this.dragging) {
+                return;
+            }
+
+            this.dragging = false;
+
+            /*
+             * Un vrai glissement ne doit pas VALIDER la carte sous le curseur : sans cette garde,
+             * tirer la bande ouvrirait le secteur où l'on relâche, et le client se retrouverait
+             * dans un questionnaire qu'il n'a pas demandé.
+             */
+            if (this.moved > 5) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
+        },
     }"
     class="relative"
     aria-roledescription="carrousel"
@@ -41,6 +94,11 @@
         x-ref="track"
         class="flex snap-x snap-mandatory gap-3 overflow-x-auto pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
         role="list"
+        x-on:pointerdown="grab($event)"
+        x-on:pointermove="drag($event)"
+        x-on:pointerup.capture="release($event)"
+        x-on:pointerleave="dragging = false"
+        x-bind:class="dragging ? 'cursor-grabbing select-none' : 'lg:cursor-grab'"
         {{-- Home et End sur la piste : au clavier, atteindre le dernier secteur ne doit pas demander douze flèches. --}}
         x-on:keydown.home.prevent="$refs.track.scrollTo({ left: 0, behavior: 'smooth' })"
         x-on:keydown.end.prevent="$refs.track.scrollTo({ left: $refs.track.scrollWidth, behavior: 'smooth' })"
@@ -62,6 +120,32 @@
                     @endif
                     aria-current="{{ $sectorId === $sector->id ? 'true' : 'false' }}"
                 >
+                    {{--
+                        L'image de couverture, PARESSEUSEMENT.
+
+                        `cover_image_path` existait en base sans jamais être affiché. Cet écran est
+                        celui dont dépend le LCP : charger d'emblée une image par secteur
+                        retarderait le premier rendu utile pour des cartes qu'on ne verra
+                        peut-être jamais, le carrousel défilant à l'horizontale.
+
+                        Pas de balise vide quand il n'y a pas d'image : une image cassée est pire
+                        que pas d'image.
+                    --}}
+                    @if ($sector->cover_image_path)
+                        <img src="{{ Storage::disk('public')->url($sector->cover_image_path) }}"
+                            alt=""
+                            aria-hidden="true"
+                            loading="lazy"
+                            decoding="async"
+                            class="mb-1 h-20 w-full rounded-xl object-cover">
+                    @else
+                        {{-- À défaut d'image, l'icône du secteur : la carte ne reste pas muette. --}}
+                        <span data-sector-icon class="mb-1 flex h-9 w-9 items-center justify-center rounded-xl bg-slate-100 text-slate-600"
+                            aria-hidden="true">
+                            <x-ui.icon :name="$sector->icon ?: 'circle'" class="h-5 w-5" />
+                        </span>
+                    @endif
+
                     <span class="text-[15px] font-semibold leading-snug">{{ $sector->name }}</span>
 
                     @if ($sector->tagline)
