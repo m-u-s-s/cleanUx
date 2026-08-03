@@ -7,7 +7,14 @@ const config: Config = {
   // aucune implémentation Jest/Node. App.tsx enveloppe désormais tout dans GestureHandlerRootView
   // — la feuille d'actions de l'accueil l'exige — donc tout test qui monte <App /> en a besoin.
   // C'est le fichier de setup officiel du paquet, déjà employé par l'application prestataire.
-  setupFiles: ['<rootDir>/node_modules/react-native-gesture-handler/jestSetup.js'],
+  setupFiles: [
+    '<rootDir>/node_modules/react-native-gesture-handler/jestSetup.js',
+    // Skia s'installe par des liaisons JSI natives. Sans ce fichier — celui du paquet — tout test
+    // qui monte un écran échoue sur « Native Skia Module failed to correctly install JSI
+    // Bindings », y compris les écrans qui ne dessinent rien : le fond nuit est exporté depuis la
+    // barrique `@/ui`, donc importé par transitivité.
+    '<rootDir>/../node_modules/@shopify/react-native-skia/jestSetup.js',
+  ],
   // react-test-renderer (used by @testing-library/react-native) is deprecated
   // under React 19 and leaves an async operation pending at the end of a run
   // that node cannot attribute: `jest --detectOpenHandles` reports NO leaking
@@ -31,7 +38,7 @@ const config: Config = {
     path.resolve(__dirname, '../shared/src'),
   ],
   transformIgnorePatterns: [
-    'node_modules/(?!((jest-)?react-native|@react-native(-community)?)|expo(nent)?|@expo(nent)?/.*|@expo-google-fonts/.*|react-navigation|@react-navigation/.*|@sentry/react-native|expo-secure-store|expo-constants|expo-status-bar|@gorhom)',
+    'node_modules/(?!((jest-)?react-native|@react-native(-community)?)|expo(nent)?|@expo(nent)?/.*|@expo-google-fonts/.*|react-navigation|@react-navigation/.*|@sentry/react-native|expo-secure-store|expo-constants|expo-status-bar|@gorhom|@shopify/react-native-skia)',
   ],
   // Allow Jest to find node_modules from the client dir when processing shared/ files
   modulePaths: [

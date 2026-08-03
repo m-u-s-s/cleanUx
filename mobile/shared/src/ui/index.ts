@@ -35,5 +35,6 @@ export {
 } from './authShell';
 export { loadMapModule, isMapRenderable } from './mapModule';
 export { OsmMap } from './OsmMap';
+export { LuxeBackground } from './LuxeBackground';
 export type { OsmMarker } from './OsmMap';
 export type { MapModule } from './mapModule';
