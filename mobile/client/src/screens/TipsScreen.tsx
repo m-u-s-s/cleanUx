@@ -3,6 +3,8 @@ import { View, Text, Alert, StyleSheet, ActivityIndicator } from 'react-native';
 import { Screen, Button } from '@/ui';
 import { apiClient } from '@/api';
 import { colors, spacing, typography } from '@/theme';
+import { useThemeColors } from '@/theme/useThemeColors';
+import type { ThemeTokens } from '@/theme/useThemeColors';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '@/navigation/types';
 import { useQuery } from '@tanstack/react-query';
@@ -17,6 +19,8 @@ interface TipSuggestion {
 }
 
 export function TipsScreen({ route, navigation }: Props) {
+  const styles = stylesFor(useThemeColors());
+
   const { bookingId } = route.params;
   const [selected, setSelected] = useState<TipSuggestion | null>(null);
   const [sending, setSending] = useState(false);
@@ -78,17 +82,17 @@ export function TipsScreen({ route, navigation }: Props) {
   );
 }
 
-const styles = StyleSheet.create({
+const stylesFor = (t: ThemeTokens) => StyleSheet.create({
   title: {
     fontSize: typography.fontSize['2xl'],
     fontWeight: typography.fontWeight.bold,
-    color: colors.surface[900],
+    color: t.text,
     marginTop: spacing.md,
     marginBottom: spacing.xs,
   },
   subtitle: {
     fontSize: typography.fontSize.sm,
-    color: colors.surface[500],
+    color: t.textSecondary,
     marginBottom: spacing.lg,
   },
   presets: {
@@ -99,7 +103,7 @@ const styles = StyleSheet.create({
   },
   noSuggestions: {
     fontSize: typography.fontSize.sm,
-    color: colors.surface[500],
+    color: t.textSecondary,
     textAlign: 'center',
     marginVertical: spacing.xl,
   },

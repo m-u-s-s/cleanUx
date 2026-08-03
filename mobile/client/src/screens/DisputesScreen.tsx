@@ -4,6 +4,8 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Screen, Badge, Skeleton, EmptyState, ErrorState, Button, TextInput } from '@/ui';
 import { apiClient } from '@/api';
 import { colors, spacing, typography, radius } from '@/theme';
+import { useThemeColors } from '@/theme/useThemeColors';
+import type { ThemeTokens } from '@/theme/useThemeColors';
 
 const CATEGORIES: { value: string; label: string }[] = [
   { value: 'quality', label: 'Qualité' },
@@ -16,6 +18,8 @@ const CATEGORIES: { value: string; label: string }[] = [
 ];
 
 export function DisputesScreen() {
+  const styles = stylesFor(useThemeColors());
+
   const queryClient = useQueryClient();
   const { data, isLoading, isError, refetch, isRefetching } = useQuery({
     queryKey: ['disputes'],
@@ -108,7 +112,7 @@ export function DisputesScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const stylesFor = (t: ThemeTokens) => StyleSheet.create({
   headerRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -118,10 +122,10 @@ const styles = StyleSheet.create({
   title: {
     fontSize: typography.fontSize.xl,
     fontWeight: typography.fontWeight.bold,
-    color: colors.surface[900],
+    color: t.text,
   },
   form: {
-    backgroundColor: '#fff',
+    backgroundColor: t.card,
     borderRadius: radius.md,
     padding: spacing.md,
     marginBottom: spacing.md,
@@ -130,7 +134,7 @@ const styles = StyleSheet.create({
   formLabel: {
     fontSize: typography.fontSize.sm,
     fontWeight: typography.fontWeight.semibold,
-    color: colors.surface[700],
+    color: t.text,
   },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.xs },
   chip: {
@@ -140,14 +144,14 @@ const styles = StyleSheet.create({
     // `undefined` et les puces s'affichaient à angles droits, sans que rien ne le signale.
     borderRadius: radius.pill,
     borderWidth: 1,
-    borderColor: colors.surface[300],
+    borderColor: t.border,
   },
   chipActive: { backgroundColor: colors.brand[500], borderColor: colors.brand[500] },
-  chipText: { fontSize: typography.fontSize.xs, color: colors.surface[700] },
-  chipTextActive: { color: '#fff', fontWeight: typography.fontWeight.semibold },
+  chipText: { fontSize: typography.fontSize.xs, color: t.text },
+  chipTextActive: { color: t.card, fontWeight: typography.fontWeight.semibold },
   card: {
     padding: spacing.md,
-    backgroundColor: '#fff',
+    backgroundColor: t.card,
     borderRadius: radius.md,
     marginBottom: spacing.sm,
   },
@@ -160,8 +164,8 @@ const styles = StyleSheet.create({
   cardTitle: {
     fontSize: typography.fontSize.sm,
     fontWeight: typography.fontWeight.semibold,
-    color: colors.surface[900],
+    color: t.text,
   },
-  cardDesc: { fontSize: typography.fontSize.xs, color: colors.surface[500], marginTop: spacing.xs },
-  empty: { color: colors.surface[400], textAlign: 'center', marginTop: spacing.xl },
+  cardDesc: { fontSize: typography.fontSize.xs, color: t.textSecondary, marginTop: spacing.xs },
+  empty: { color: t.textMuted, textAlign: 'center', marginTop: spacing.xl },
 });

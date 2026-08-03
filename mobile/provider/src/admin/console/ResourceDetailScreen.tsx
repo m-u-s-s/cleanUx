@@ -3,6 +3,8 @@ import { Alert, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { Button, DetailRow, Divider, ErrorState, Screen, Skeleton } from '@/ui';
 import { colors, spacing, typography } from '@/theme';
+import { useThemeColors } from '@/theme/useThemeColors';
+import type { ThemeTokens } from '@/theme/useThemeColors';
 import { readServerErrors, useResourceAction, useResourceDelete, useResourceDetail, useResourceIndex } from './hooks';
 import { formatCell } from './format';
 import { ActionInputSheet } from './ActionInputSheet';
@@ -23,6 +25,8 @@ interface Params {
  * un « Êtes-vous sûr ? » générique qu'on valide sans lire.
  */
 export function ResourceDetailScreen({ route }: { route: { params: Params } }) {
+  const styles = stylesFor(useThemeColors());
+
   const { resource, title, id } = route.params;
   const navigation = useNavigation<{ navigate: (s: string, p?: object) => void; goBack: () => void }>();
 
@@ -206,10 +210,10 @@ export function ResourceDetailScreen({ route }: { route: { params: Params } }) {
   );
 }
 
-const styles = StyleSheet.create({
+const stylesFor = (t: ThemeTokens) => StyleSheet.create({
   heading: {
     ...typography.preset.headline,
-    color: colors.surface[900],
+    color: t.text,
     marginTop: spacing.md,
     marginBottom: spacing.md,
   },

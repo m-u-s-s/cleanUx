@@ -17,9 +17,17 @@ const config: Config = {
   // aucune implémentation Jest/Node. App.tsx enveloppe désormais tout dans GestureHandlerRootView
   // (Task 9), donc tout test qui monte <App /> en a besoin — c'est le fichier de setup officiel
   // documenté par le package, qui mocke le module natif pour toute la suite.
-  setupFiles: ['<rootDir>/node_modules/react-native-gesture-handler/jestSetup.js'],
+  setupFiles: [
+    '<rootDir>/node_modules/react-native-gesture-handler/jestSetup.js',
+    // Skia s'installe par des liaisons natives JSI, absentes en environnement Jest. Le paquet
+    // fournit son propre fichier de mise en place ; sans lui, tout test qui touche au fond nuit
+    // échoue sur « Native Skia Module failed to correctly install JSI Bindings ».
+    '<rootDir>/../node_modules/@shopify/react-native-skia/jestSetup.js',
+  ],
   transformIgnorePatterns: [
-    'node_modules/(?!((jest-)?react-native|@react-native(-community)?)|expo(nent)?|@expo(nent)?/.*|@expo-google-fonts/.*|react-navigation|@react-navigation/.*|@sentry/react-native|expo-secure-store|expo-constants|expo-status-bar|@gorhom)',
+    // @shopify/react-native-skia est publié en modules ES (`main: lib/module/index.js`) :
+    // sans cette exception, Jest le lit tel quel et échoue sur le premier `import`.
+    'node_modules/(?!((jest-)?react-native|@react-native(-community)?)|expo(nent)?|@expo(nent)?/.*|@expo-google-fonts/.*|react-navigation|@react-navigation/.*|@sentry/react-native|@shopify/react-native-skia|expo-secure-store|expo-constants|expo-status-bar|@gorhom)',
   ],
   // Allow Jest to find node_modules from the provider dir when processing shared/ files
   modulePaths: [

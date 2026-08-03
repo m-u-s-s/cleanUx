@@ -3,6 +3,8 @@ import { FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { Button, EmptyState, ErrorState, Icon, Screen, Skeleton, TextInput } from '@/ui';
 import { colors, radius, spacing, typography } from '@/theme';
+import { useThemeColors } from '@/theme/useThemeColors';
+import type { ThemeTokens } from '@/theme/useThemeColors';
 import { useResourceIndex } from './hooks';
 import { formatCell } from './format';
 import type { FilterValues, ResourceColumn, ResourceRow } from './types';
@@ -24,6 +26,8 @@ interface Params {
  * la première page rendrait des résultats faux sans le dire.
  */
 export function ResourceListScreen({ route }: { route: { params: Params } }) {
+  const styles = stylesFor(useThemeColors());
+
   const { resource, title } = route.params;
   const navigation = useNavigation<{ navigate: (screen: string, params?: object) => void }>();
 
@@ -150,6 +154,8 @@ function Row({
   columns: ResourceColumn[];
   onPress: () => void;
 }) {
+  const styles = stylesFor(useThemeColors());
+
   const [principale, ...secondaires] = columns;
 
   return (
@@ -177,7 +183,7 @@ function Row({
   );
 }
 
-const styles = StyleSheet.create({
+const stylesFor = (t: ThemeTokens) => StyleSheet.create({
   header: {
     paddingTop: spacing.md,
     paddingBottom: spacing.sm,
@@ -189,18 +195,18 @@ const styles = StyleSheet.create({
     gap: spacing.md,
     paddingVertical: spacing.md,
     borderBottomWidth: 1,
-    borderBottomColor: colors.surface[100],
+    borderBottomColor: t.inputBg,
     borderRadius: radius.md,
   },
-  rowPressed: { backgroundColor: colors.surface[100] },
+  rowPressed: { backgroundColor: t.inputBg },
   rowTitle: {
     fontSize: typography.fontSize.base,
-    color: colors.surface[900],
+    color: t.text,
     fontFamily: typography.fontFamily.bodyMedium,
   },
   rowMeta: {
     fontSize: typography.fontSize.xs,
-    color: colors.surface[500],
+    color: t.textSecondary,
     marginTop: 2,
   },
 });

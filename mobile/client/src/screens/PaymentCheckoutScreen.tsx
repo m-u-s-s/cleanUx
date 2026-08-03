@@ -5,12 +5,16 @@ import { Screen, Button, KPICard } from '@/ui';
 import { useBookingDetail } from '@/booking';
 import { usePaymentIntent } from '@/payment';
 import { colors, spacing, typography } from '@/theme';
+import { useThemeColors } from '@/theme/useThemeColors';
+import type { ThemeTokens } from '@/theme/useThemeColors';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '@/navigation/types';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'PaymentCheckout'>;
 
 export function PaymentCheckoutScreen({ route, navigation }: Props) {
+  const styles = stylesFor(useThemeColors());
+
   const { bookingId } = route.params;
   const { data: booking } = useBookingDetail(bookingId);
   const paymentIntent = usePaymentIntent(bookingId);
@@ -91,11 +95,11 @@ export function PaymentCheckoutScreen({ route, navigation }: Props) {
   );
 }
 
-const styles = StyleSheet.create({
+const stylesFor = (t: ThemeTokens) => StyleSheet.create({
   title: {
     fontSize: typography.fontSize['2xl'],
     fontWeight: typography.fontWeight.bold,
-    color: colors.surface[900],
+    color: t.text,
     marginTop: spacing.md,
     marginBottom: spacing.lg,
   },

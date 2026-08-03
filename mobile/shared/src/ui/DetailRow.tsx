@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import { colors, spacing, typography } from '@/theme';
+import { spacing, typography } from '@/theme';
+import { useThemeColors } from '@/theme/useThemeColors';
 
 export type DetailRowProps = {
   label: string;
@@ -9,10 +10,16 @@ export type DetailRowProps = {
 };
 
 /**
- * A label/value row used inside detail cards (booking, invoice, dispute…).
- * Accessible: exposed as a single `text` element reading "label: value".
+ * Une ligne libellé / valeur, dans les fiches de détail (réservation, facture, litige…).
+ *
+ * Accessible : exposée comme un seul élément `text` qui se lit « libellé : valeur ».
+ *
+ * Les couleurs viennent du thème et non de la feuille de style : `StyleSheet.create` est évalué
+ * une fois au chargement du module et ne peut pas savoir s'il fait sombre.
  */
 export function DetailRow({ label, value, testID }: DetailRowProps) {
+  const theme = useThemeColors();
+
   return (
     <View
       style={styles.row}
@@ -21,8 +28,8 @@ export function DetailRow({ label, value, testID }: DetailRowProps) {
       accessibilityLabel={`${label}: ${value}`}
       testID={testID}
     >
-      <Text style={styles.label}>{label}</Text>
-      <Text style={styles.value}>{value}</Text>
+      <Text style={[styles.label, { color: theme.textSecondary }]}>{label}</Text>
+      <Text style={[styles.value, { color: theme.text }]}>{value}</Text>
     </View>
   );
 }
@@ -35,12 +42,10 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: typography.fontSize.sm,
-    color: colors.surface[500],
   },
   value: {
     fontSize: typography.fontSize.sm,
     fontWeight: typography.fontWeight.semibold,
-    color: colors.surface[900],
     flex: 1,
     textAlign: 'right',
     marginLeft: spacing.sm,

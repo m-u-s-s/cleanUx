@@ -5,8 +5,12 @@ import { Screen, Button, Badge } from '@/ui';
 import { useStripeConnectStatus } from '@/earnings';
 import { apiClient } from '@/api';
 import { colors, spacing, typography, radius, shadows } from '@/theme';
+import { useThemeColors } from '@/theme/useThemeColors';
+import type { ThemeTokens } from '@/theme/useThemeColors';
 
 export function StripeOnboardingScreen() {
+  const styles = stylesFor(useThemeColors());
+
   const { data: status, isLoading } = useStripeConnectStatus();
   const onboard = useMutation({
     mutationFn: async () => (await apiClient.post('/provider/stripe-connect/onboard')).data,
@@ -51,22 +55,22 @@ export function StripeOnboardingScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const stylesFor = (t: ThemeTokens) => StyleSheet.create({
   title: {
     fontSize: typography.fontSize.xl,
     fontWeight: typography.fontWeight.bold,
-    color: colors.surface[900],
+    color: t.text,
     marginTop: spacing.md,
     marginBottom: spacing.lg,
   },
   statusCard: {
-    backgroundColor: '#fff',
+    backgroundColor: t.card,
     borderRadius: radius.md,
     padding: spacing.md,
     ...shadows.soft,
     gap: spacing.sm,
   },
-  statusText: { fontSize: typography.fontSize.sm, color: colors.surface[600] },
+  statusText: { fontSize: typography.fontSize.sm, color: t.textSecondary },
   requirementsText: { fontSize: typography.fontSize.xs, color: colors.warning[600] },
-  info: { fontSize: typography.fontSize.sm, color: colors.surface[500], marginBottom: spacing.lg },
+  info: { fontSize: typography.fontSize.sm, color: t.textSecondary, marginBottom: spacing.lg },
 });

@@ -3,7 +3,9 @@ import { RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native
 import { useQuery } from '@tanstack/react-query';
 import { apiClient } from '@/api';
 import { ErrorState, KPICard, Screen, Skeleton } from '@/ui';
-import { colors, spacing, typography } from '@/theme';
+import {spacing, typography } from '@/theme';
+import { useThemeColors } from '@/theme/useThemeColors';
+import type { ThemeTokens } from '@/theme/useThemeColors';
 import { formatCell } from './format';
 
 interface Params {
@@ -49,6 +51,8 @@ function useReport(report: string) {
  * échoué ferait croire à un calme qui n'existe pas, et personne n'irait vérifier.
  */
 export function ReportScreen({ route }: { route: { params: Params } }) {
+  const styles = stylesFor(useThemeColors());
+
   const { report, title } = route.params;
   const { data, isLoading, isError, refetch, isRefetching } = useReport(report);
 
@@ -114,10 +118,10 @@ export function ReportScreen({ route }: { route: { params: Params } }) {
   );
 }
 
-const styles = StyleSheet.create({
+const stylesFor = (t: ThemeTokens) => StyleSheet.create({
   section: {
     ...typography.preset.subhead,
-    color: colors.surface[600],
+    color: t.textSecondary,
     textTransform: 'uppercase',
     marginTop: spacing.md,
     marginBottom: spacing.sm,

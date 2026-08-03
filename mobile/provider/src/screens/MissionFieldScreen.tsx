@@ -5,12 +5,16 @@ import { useMissionDetail, useMissionLifecycle } from '@/missions';
 import { useInspection, useToggleChecklistItem } from '@/inspection';
 import { useGpsWatcher, usePushPosition } from '@/tracking';
 import { colors, spacing, typography, radius, shadows } from '@/theme';
+import { useThemeColors } from '@/theme/useThemeColors';
+import type { ThemeTokens } from '@/theme/useThemeColors';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '@/navigation/types';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'MissionField'>;
 
 export function MissionFieldScreen({ route }: Props) {
+  const styles = stylesFor(useThemeColors());
+
   const { missionId } = route.params;
   const { data: mission } = useMissionDetail(missionId);
   const { data: inspection } = useInspection(missionId);
@@ -90,7 +94,7 @@ export function MissionFieldScreen({ route }: Props) {
   );
 }
 
-const styles = StyleSheet.create({
+const stylesFor = (t: ThemeTokens) => StyleSheet.create({
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -101,10 +105,10 @@ const styles = StyleSheet.create({
   title: {
     fontSize: typography.fontSize.xl,
     fontWeight: typography.fontWeight.bold,
-    color: colors.surface[900],
+    color: t.text,
   },
   clientCard: {
-    backgroundColor: '#fff',
+    backgroundColor: t.card,
     borderRadius: radius.md,
     padding: spacing.md,
     ...shadows.xs,
@@ -113,18 +117,18 @@ const styles = StyleSheet.create({
   clientName: {
     fontSize: typography.fontSize.base,
     fontWeight: typography.fontWeight.semibold,
-    color: colors.surface[900],
+    color: t.text,
   },
   clientAddress: {
     fontSize: typography.fontSize.sm,
-    color: colors.surface[500],
+    color: t.textSecondary,
     marginTop: 2,
   },
   section: { marginBottom: spacing.md },
   sectionTitle: {
     fontSize: typography.fontSize.lg,
     fontWeight: typography.fontWeight.semibold,
-    color: colors.surface[800],
+    color: t.text,
     marginBottom: spacing.sm,
   },
   checkItem: {
@@ -133,11 +137,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: spacing.sm,
     borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: colors.surface[200],
+    borderBottomColor: t.border,
   },
   checkLabel: {
     fontSize: typography.fontSize.sm,
-    color: colors.surface[700],
+    color: t.text,
     flex: 1,
   },
   gpsRow: {
@@ -146,12 +150,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: spacing.md,
     borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: colors.surface[200],
+    borderTopColor: t.border,
   },
   gpsLabel: {
     fontSize: typography.fontSize.sm,
     fontWeight: typography.fontWeight.medium,
-    color: colors.surface[700],
+    color: t.text,
   },
   actions: { marginTop: spacing.lg },
 });

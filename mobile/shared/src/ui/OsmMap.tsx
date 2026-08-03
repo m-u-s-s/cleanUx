@@ -1,6 +1,8 @@
 import React, { useCallback, useMemo } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { colors, spacing, typography } from '../theme';
+import { useThemeColors } from '../theme/useThemeColors';
+import type { ThemeTokens } from '../theme/useThemeColors';
 
 /**
  * Carte OpenStreetMap rendue dans une WebView, via Leaflet.
@@ -115,7 +117,7 @@ function buildHtml(props: {
       // Le trajet d'abord, pour qu'il passe SOUS les marqueurs plutôt que par-dessus.
       if (data.trail && data.trail.length > 1) {
         var line = data.trail.map(function (p) { return [p.latitude, p.longitude]; });
-        L.polyline(line, { color: '#6366f1', weight: 4, opacity: 0.85 }).addTo(map);
+        L.polyline(line, { color: ${JSON.stringify(colors.brand[500])}, weight: 4, opacity: 0.85 }).addTo(map);
         line.forEach(function (pt) { bounds.push(pt); });
       }
 
@@ -138,6 +140,8 @@ function buildHtml(props: {
 }
 
 export function OsmMap({ markers, position, trail, fallbackCenter, onMarkerPress, testID }: OsmMapProps) {
+  const styles = stylesFor(useThemeColors());
+
   const WebView = useMemo(() => loadWebView()?.WebView ?? null, []);
 
   // La position change à chaque tick GPS ; recharger le HTML à chaque fois rechargerait la carte
@@ -188,8 +192,8 @@ export function OsmMap({ markers, position, trail, fallbackCenter, onMarkerPress
   );
 }
 
-const styles = StyleSheet.create({
-  map: { flex: 1, backgroundColor: '#F7F8FB' },
+const stylesFor = (t: ThemeTokens) => StyleSheet.create({
+  map: { flex: 1, backgroundColor: t.bg },
   fallback: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: spacing.lg },
-  fallbackText: { fontSize: typography.fontSize.sm, color: colors.surface[600], textAlign: 'center' },
+  fallbackText: { fontSize: typography.fontSize.sm, color: t.textSecondary, textAlign: 'center' },
 });

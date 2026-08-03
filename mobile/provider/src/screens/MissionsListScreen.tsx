@@ -8,6 +8,7 @@ import { Screen, Badge, Skeleton, EmptyState, AnimatedListItem } from '@/ui';
 import { apiClient } from '@/api';
 import { missionStatusLabel } from '@/missions';
 import { colors, spacing, typography, radius, shadows, useThemeColors } from '@/theme';
+import type { ThemeTokens } from '@/theme/useThemeColors';
 import type { RootStackParamList } from '@/navigation/types';
 
 interface ActiveMission {
@@ -40,6 +41,8 @@ function statusBadgeVariant(status: string): 'success' | 'warning' | 'brand' | '
 }
 
 export function MissionsListScreen() {
+  const styles = stylesFor(useThemeColors());
+
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const { data: missions, isLoading, refetch, isRefetching } = useActiveMissions();
   const themeColors = useThemeColors();
@@ -110,11 +113,11 @@ export function MissionsListScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const stylesFor = (t: ThemeTokens) => StyleSheet.create({
   title: {
     fontSize: typography.fontSize.xl,
     fontWeight: typography.fontWeight.bold,
-    color: colors.surface[900],
+    color: t.text,
     marginBottom: spacing.md,
   },
   listContainer: { flex: 1 },
@@ -134,12 +137,12 @@ const styles = StyleSheet.create({
   service: {
     fontSize: typography.fontSize.base,
     fontWeight: typography.fontWeight.semibold,
-    color: colors.surface[900],
+    color: t.text,
     flex: 1,
     marginRight: spacing.sm,
   },
-  client: { fontSize: typography.fontSize.sm, color: colors.surface[600], marginTop: 2 },
-  address: { fontSize: typography.fontSize.xs, color: colors.surface[500], marginTop: 2 },
+  client: { fontSize: typography.fontSize.sm, color: t.textSecondary, marginTop: 2 },
+  address: { fontSize: typography.fontSize.xs, color: t.textSecondary, marginTop: 2 },
   schedule: {
     fontSize: typography.fontSize.xs,
     color: colors.brand[600],

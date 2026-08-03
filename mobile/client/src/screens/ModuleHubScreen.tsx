@@ -3,6 +3,7 @@ import { ScrollView, Pressable, Text, View } from 'react-native';
 import { fetchParityMap, type ParityModule } from '@/parity';
 import { Icon, Screen } from '@/ui';
 import { colors, spacing } from '@/theme';
+import { useThemeColors } from '@/theme/useThemeColors';
 
 /**
  * Maps a `native` parity module key to its in-app route. As modules are
@@ -19,6 +20,7 @@ const NATIVE_ROUTES: Record<string, { screen: string; params?: object }> = {
 };
 
 export function ModuleHubScreen({ navigation }: { navigation: any }) {
+  const theme = useThemeColors();
   const [modules, setModules] = useState<ParityModule[]>([]);
 
   useEffect(() => {
@@ -45,7 +47,7 @@ export function ModuleHubScreen({ navigation }: { navigation: any }) {
           >
             <Icon name={m.icon as any} size={22} color={colors.brand[500]} />
             <View style={{ marginLeft: spacing.md }}>
-              <Text style={{ fontSize: 16, color: colors.surface[900] }}>{m.title}</Text>
+              <Text style={{ fontSize: 16, color: theme.text }}>{m.title}</Text>
             </View>
           </Pressable>
         ))}

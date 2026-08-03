@@ -3,6 +3,8 @@ import { View, Text, StyleSheet } from 'react-native';
 import { Button } from './Button';
 import { Icon } from './Icon';
 import { colors, spacing, typography } from '@/theme';
+import { useThemeColors } from '@/theme/useThemeColors';
+import type { ThemeTokens } from '@/theme/useThemeColors';
 
 interface ErrorScreenProps {
   title?: string;
@@ -17,6 +19,8 @@ export function ErrorScreen({
   onRetry,
   retryLabel = 'Réessayer',
 }: ErrorScreenProps) {
+  const styles = stylesFor(useThemeColors());
+
   return (
     <View style={styles.container}>
       <Icon name="alert-circle-outline" size={48} color={colors.danger[500]} />
@@ -29,7 +33,7 @@ export function ErrorScreen({
   );
 }
 
-const styles = StyleSheet.create({
+const stylesFor = (t: ThemeTokens) => StyleSheet.create({
   container: {
     flex: 1,
     justifyContent: 'center',
@@ -41,7 +45,7 @@ const styles = StyleSheet.create({
     ...typography.preset.headline,
     fontSize: typography.fontSize.lg,
     fontWeight: typography.fontWeight.semibold,
-    color: colors.surface[900],
+    color: t.text,
     marginBottom: spacing.xs,
     marginTop: spacing.sm,
     textAlign: 'center',
@@ -49,7 +53,7 @@ const styles = StyleSheet.create({
   message: {
     ...typography.preset.bodyReadable,
     fontSize: typography.fontSize.sm,
-    color: colors.surface[500],
+    color: t.textSecondary,
     textAlign: 'center',
     marginBottom: spacing.md,
   },

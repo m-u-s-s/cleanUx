@@ -4,10 +4,14 @@ import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Button, Divider } from '@/ui';
 import { useAuth } from '@/auth';
-import { colors, spacing, typography } from '@/theme';
+import {spacing, typography } from '@/theme';
+import { useThemeColors } from '@/theme/useThemeColors';
+import type { ThemeTokens } from '@/theme/useThemeColors';
 import type { RootStackParamList } from '@/navigation/types';
 
 export function ProfileScreen() {
+  const styles = stylesFor(useThemeColors());
+
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const { logout } = useAuth();
 
@@ -123,18 +127,18 @@ export function ProfileScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const stylesFor = (t: ThemeTokens) => StyleSheet.create({
   container: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: colors.surface[50],
+    backgroundColor: t.page,
     padding: spacing.lg,
   },
   title: {
     fontSize: typography.fontSize.xl,
     fontWeight: typography.fontWeight.semibold,
-    color: colors.surface[900],
+    color: t.text,
     marginBottom: spacing.xl,
   },
   actions: {

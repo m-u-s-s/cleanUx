@@ -4,6 +4,8 @@ import QRCode from 'react-native-qrcode-svg';
 import { Button } from '@/ui';
 import { usePresenceCode, useCompletionCode } from '@/tracking';
 import { colors, spacing, typography, radius, shadows } from '@/theme';
+import { useThemeColors } from '@/theme/useThemeColors';
+import type { ThemeTokens } from '@/theme/useThemeColors';
 
 /**
  * Preuve de présence du prestataire, à montrer sur place.
@@ -43,6 +45,8 @@ export function PresenceCodeCard({
   bookingId: number;
   purpose?: Purpose;
 }) {
+  const styles = stylesFor(useThemeColors());
+
   const presence = usePresenceCode(bookingId);
   const completion = useCompletionCode(bookingId);
   const { mutate, data, isPending, isError } = purpose === 'completion' ? completion : presence;
@@ -107,9 +111,9 @@ export function PresenceCodeCard({
   );
 }
 
-const styles = StyleSheet.create({
+const stylesFor = (t: ThemeTokens) => StyleSheet.create({
   card: {
-    backgroundColor: '#fff',
+    backgroundColor: t.card,
     borderRadius: radius.md,
     padding: spacing.lg,
     alignItems: 'center',
@@ -119,32 +123,32 @@ const styles = StyleSheet.create({
   title: {
     fontSize: typography.fontSize.lg,
     fontWeight: typography.fontWeight.bold,
-    color: colors.surface[900],
+    color: t.text,
   },
   hint: {
     fontSize: typography.fontSize.sm,
-    color: colors.surface[600],
+    color: t.textSecondary,
     textAlign: 'center',
   },
   qrFrame: {
     padding: spacing.md,
-    backgroundColor: '#fff',
+    backgroundColor: t.card,
     borderRadius: radius.md,
     borderWidth: 1,
-    borderColor: colors.surface[200],
+    borderColor: t.border,
   },
   placeholder: {
     height: 212,
     justifyContent: 'center',
     alignItems: 'center',
   },
-  errorText: { fontSize: typography.fontSize.sm, color: colors.surface[500] },
-  codeLabel: { fontSize: typography.fontSize.xs, color: colors.surface[500] },
+  errorText: { fontSize: typography.fontSize.sm, color: t.textSecondary },
+  codeLabel: { fontSize: typography.fontSize.xs, color: t.textSecondary },
   // Chiffres largement espacés : ils sont lus à voix haute autant qu'ils sont regardés.
   code: {
     fontSize: typography.fontSize['2xl'],
     fontWeight: typography.fontWeight.bold,
-    color: colors.surface[900],
+    color: t.text,
     letterSpacing: 6,
     fontVariant: ['tabular-nums'],
   },

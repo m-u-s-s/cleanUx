@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { Modal, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { Button } from '@/ui';
 import { colors, radius, spacing, typography } from '@/theme';
+import { useThemeColors } from '@/theme/useThemeColors';
+import type { ThemeTokens } from '@/theme/useThemeColors';
 import { FieldInput } from './FieldInput';
 import type { ResourceAction } from './types';
 
@@ -36,6 +38,8 @@ export function ActionInputSheet({
   onCancel: () => void;
   onSubmit: (values: Record<string, unknown>) => void;
 }) {
+  const styles = stylesFor(useThemeColors());
+
   const [valeurs, setValeurs] = useState<Record<string, unknown>>({});
 
   if (!action) {
@@ -99,16 +103,16 @@ export function ActionInputSheet({
   );
 }
 
-const styles = StyleSheet.create({
+const stylesFor = (t: ThemeTokens) => StyleSheet.create({
   backdrop: { flex: 1, justifyContent: 'flex-end', backgroundColor: 'rgba(0,0,0,0.5)' },
   sheet: {
-    backgroundColor: colors.surface[50],
+    backgroundColor: t.bg,
     borderTopLeftRadius: radius.lg,
     borderTopRightRadius: radius.lg,
     padding: spacing.lg,
     maxHeight: '85%',
   },
-  title: { ...typography.preset.headline, color: colors.surface[900], marginBottom: spacing.sm },
+  title: { ...typography.preset.headline, color: t.text, marginBottom: spacing.sm },
   confirm: {
     fontSize: typography.fontSize.sm,
     color: colors.danger[500],

@@ -3,6 +3,8 @@ import { Alert, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'rea
 import { Screen, Badge, Skeleton, ErrorState } from '@/ui';
 import { fetchInvoice, invoicePdfUrl, type Invoice } from '@/finance/useInvoices';
 import { colors, spacing, typography, radius } from '@/theme';
+import { useThemeColors } from '@/theme/useThemeColors';
+import type { ThemeTokens } from '@/theme/useThemeColors';
 import { apiClient } from '@/api';
 import { secureStore } from '@/storage/secureStore';
 
@@ -19,6 +21,8 @@ interface Props {
 }
 
 export function InvoiceDetailScreen({ route, navigation }: Props) {
+  const styles = stylesFor(useThemeColors());
+
   const id: number = route.params.id;
   const [invoice, setInvoice] = useState<Invoice | null>(null);
   const [loading, setLoading] = useState(true);
@@ -196,7 +200,7 @@ export function InvoiceDetailScreen({ route, navigation }: Props) {
   );
 }
 
-const styles = StyleSheet.create({
+const stylesFor = (t: ThemeTokens) => StyleSheet.create({
   content: {
     padding: spacing.md,
     gap: spacing.md,
@@ -214,14 +218,14 @@ const styles = StyleSheet.create({
   number: {
     fontSize: typography.fontSize.xl,
     fontWeight: typography.fontWeight.bold,
-    color: colors.surface[900],
+    color: t.text,
   },
   card: {
-    backgroundColor: '#fff',
+    backgroundColor: t.card,
     borderRadius: radius.md,
     padding: spacing.md,
     borderWidth: 1,
-    borderColor: colors.surface[100],
+    borderColor: t.inputBg,
     gap: spacing.xs,
   },
   row: {
@@ -231,16 +235,16 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: typography.fontSize.sm,
-    color: colors.surface[500],
+    color: t.textSecondary,
   },
   value: {
     fontSize: typography.fontSize.sm,
-    color: colors.surface[700],
+    color: t.text,
   },
   amount: {
     fontSize: typography.fontSize.base,
     fontWeight: typography.fontWeight.semibold,
-    color: colors.surface[900],
+    color: t.text,
   },
   balanceDue: {
     color: colors.danger[600],
@@ -251,25 +255,25 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: typography.fontSize.sm,
     fontWeight: typography.fontWeight.semibold,
-    color: colors.surface[700],
+    color: t.text,
     marginBottom: 2,
   },
   listItem: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    backgroundColor: colors.surface[50] ?? '#f9fafb',
+    backgroundColor: t.cardSubtle,
     borderRadius: radius.sm,
     paddingHorizontal: spacing.sm,
     paddingVertical: 6,
   },
   listItemLabel: {
     fontSize: typography.fontSize.sm,
-    color: colors.surface[700],
+    color: t.text,
   },
   listItemMeta: {
     fontSize: typography.fontSize.xs,
-    color: colors.surface[400],
+    color: t.textMuted,
   },
   pdfButton: {
     backgroundColor: colors.brand[600] ?? colors.brand[500] ?? '#4f46e5',
@@ -281,6 +285,6 @@ const styles = StyleSheet.create({
   pdfButtonText: {
     fontSize: typography.fontSize.base,
     fontWeight: typography.fontWeight.semibold,
-    color: '#fff',
+    color: t.card,
   },
 });

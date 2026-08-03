@@ -13,6 +13,8 @@ import Animated, {
   withSequence,
 } from 'react-native-reanimated';
 import { colors, radius, spacing, typography, animation } from '@/theme';
+import { useThemeColors } from '@/theme/useThemeColors';
+import type { ThemeTokens } from '@/theme/useThemeColors';
 
 interface TextInputProps extends Omit<RNInputProps, 'style'> {
   label: string;
@@ -21,6 +23,7 @@ interface TextInputProps extends Omit<RNInputProps, 'style'> {
 
 export const TextInput = forwardRef<RNTextInput, TextInputProps>(
   ({ label, error, value, onFocus, onBlur, ...props }, ref) => {
+    const styles = stylesFor(useThemeColors());
     const [focused, setFocused] = useState(false);
     const hasValue = !!value && value.length > 0;
     const isFloating = focused || hasValue;
@@ -105,16 +108,16 @@ export const TextInput = forwardRef<RNTextInput, TextInputProps>(
   },
 );
 
-const styles = StyleSheet.create({
+const stylesFor = (t: ThemeTokens) => StyleSheet.create({
   container: { gap: 2 },
   inputWrapper: {
     borderWidth: 1,
-    borderColor: colors.surface[300],
+    borderColor: t.border,
     borderRadius: radius.md,
     paddingHorizontal: spacing.sm + 4,
     paddingTop: spacing.lg,
     paddingBottom: spacing.sm,
-    backgroundColor: colors.surface[50],
+    backgroundColor: t.inputBg,
     position: 'relative',
   },
   label: {
@@ -122,14 +125,14 @@ const styles = StyleSheet.create({
     left: spacing.sm + 4,
     top: 0,
     fontSize: typography.fontSize.sm,
-    color: colors.surface[500],
+    color: t.textSecondary,
     backgroundColor: 'transparent',
   },
   labelFocused: { color: colors.brand[500] },
   labelError: { color: colors.danger[500] },
   input: {
     fontSize: typography.fontSize.base,
-    color: colors.surface[900],
+    color: t.text,
     padding: 0,
     minHeight: 24,
   },

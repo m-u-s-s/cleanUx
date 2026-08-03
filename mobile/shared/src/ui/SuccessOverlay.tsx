@@ -10,6 +10,8 @@ import Animated, {
 } from 'react-native-reanimated';
 import { Button } from './Button';
 import { colors, spacing, typography, radius } from '@/theme';
+import { useThemeColors } from '@/theme/useThemeColors';
+import type { ThemeTokens } from '@/theme/useThemeColors';
 import { useReducedMotion } from './a11y';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
@@ -24,6 +26,8 @@ const CONFETTI_COLORS = [
 interface ConfettiPieceProps { index: number }
 
 function ConfettiPiece({ index }: ConfettiPieceProps) {
+  const styles = stylesFor(useThemeColors());
+
   const x = useSharedValue(SCREEN_WIDTH / 2);
   const y = useSharedValue(-20);
   const rotation = useSharedValue(0);
@@ -65,6 +69,8 @@ interface Props {
 }
 
 export function SuccessOverlay({ visible, message, onDismiss }: Props) {
+  const styles = stylesFor(useThemeColors());
+
   const reducedMotion = useReducedMotion();
   const scale = useSharedValue(0);
   const opacity = useSharedValue(0);
@@ -109,7 +115,7 @@ export function SuccessOverlay({ visible, message, onDismiss }: Props) {
   );
 }
 
-const styles = StyleSheet.create({
+const stylesFor = (t: ThemeTokens) => StyleSheet.create({
   overlay: {
     ...StyleSheet.absoluteFill,
     backgroundColor: 'rgba(0,0,0,0.5)',
@@ -118,7 +124,7 @@ const styles = StyleSheet.create({
     zIndex: 100,
   },
   card: {
-    backgroundColor: '#fff',
+    backgroundColor: t.card,
     borderRadius: radius.xl ?? 20,
     padding: spacing.xl,
     alignItems: 'center',
@@ -133,12 +139,12 @@ const styles = StyleSheet.create({
   title: {
     fontSize: typography.fontSize.xl,
     fontWeight: typography.fontWeight.bold,
-    color: colors.surface[900],
+    color: t.text,
     marginBottom: spacing.xs,
   },
   message: {
     fontSize: typography.fontSize.sm,
-    color: colors.surface[500],
+    color: t.textSecondary,
     textAlign: 'center',
     marginBottom: spacing.lg,
   },

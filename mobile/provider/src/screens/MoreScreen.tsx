@@ -7,6 +7,8 @@ import { Ionicons } from '@expo/vector-icons';
 import { Avatar, Badge, Divider, Icon } from '@/ui';
 import { useAuth } from '@/auth';
 import { colors, spacing, typography, radius, shadows } from '@/theme';
+import { useThemeColors } from '@/theme/useThemeColors';
+import type { ThemeTokens } from '@/theme/useThemeColors';
 import type { RootStackParamList } from '@/navigation/types';
 
 interface MenuItem {
@@ -19,6 +21,8 @@ interface MenuItem {
 }
 
 export function MoreScreen() {
+  const styles = stylesFor(useThemeColors());
+
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const { user, logout } = useAuth();
 
@@ -140,14 +144,14 @@ export function MoreScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.surface[50] },
+const stylesFor = (t: ThemeTokens) => StyleSheet.create({
+  container: { flex: 1, backgroundColor: t.page },
   scroll: { padding: spacing.md, paddingBottom: spacing['2xl'] },
   profileSection: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.md,
-    backgroundColor: '#fff',
+    backgroundColor: t.card,
     borderRadius: radius.md,
     padding: spacing.md,
     marginBottom: spacing.md,
@@ -157,21 +161,21 @@ const styles = StyleSheet.create({
   profileName: {
     fontSize: typography.fontSize.lg,
     fontWeight: typography.fontWeight.bold,
-    color: colors.surface[900],
+    color: t.text,
   },
-  profileEmail: { fontSize: typography.fontSize.sm, color: colors.surface[500], marginTop: 2 },
+  profileEmail: { fontSize: typography.fontSize.sm, color: t.textSecondary, marginTop: 2 },
   section: { marginBottom: spacing.md },
   sectionTitle: {
     fontSize: typography.fontSize.xs,
     fontWeight: typography.fontWeight.semibold,
-    color: colors.surface[500],
+    color: t.textSecondary,
     textTransform: 'uppercase',
     letterSpacing: 0.5,
     marginBottom: spacing.xs,
     paddingHorizontal: spacing.xs,
   },
   card: {
-    backgroundColor: '#fff',
+    backgroundColor: t.card,
     borderRadius: radius.md,
     ...shadows.xs,
     overflow: 'hidden',
@@ -186,7 +190,7 @@ const styles = StyleSheet.create({
   menuLabel: {
     flex: 1,
     fontSize: typography.fontSize.base,
-    color: colors.surface[800],
+    color: t.text,
   },
   dangerLabel: { color: colors.danger[600] },
 });

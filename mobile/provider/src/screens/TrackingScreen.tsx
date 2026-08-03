@@ -7,6 +7,8 @@ import { Screen, Button, Badge } from '@/ui';
 import { useMissionDetail } from '@/missions';
 import { useGpsWatcher, useSendPing, useStartTracking, useMarkInMission, haversineMeters, formatDistance } from '@/tracking';
 import { colors, spacing, typography, radius, shadows } from '@/theme';
+import { useThemeColors } from '@/theme/useThemeColors';
+import type { ThemeTokens } from '@/theme/useThemeColors';
 import type { RootStackParamList } from '@/navigation/types';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'MissionTracking'>;
@@ -21,6 +23,8 @@ interface Position {
 const GEOFENCE_METERS = 150;
 
 export function TrackingScreen({ route }: Props) {
+  const styles = stylesFor(useThemeColors());
+
   // Deux identifiants distincts : le détail vient de la mission, la session de suivi de la
   // RÉSERVATION. Le même nombre était passé aux deux, ce qui n'aurait ouvert la bonne session
   // que par hasard.
@@ -171,7 +175,7 @@ export function TrackingScreen({ route }: Props) {
   );
 }
 
-const styles = StyleSheet.create({
+const stylesFor = (t: ThemeTokens) => StyleSheet.create({
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -182,35 +186,35 @@ const styles = StyleSheet.create({
   title: {
     fontSize: typography.fontSize.xl,
     fontWeight: typography.fontWeight.bold,
-    color: colors.surface[900],
+    color: t.text,
   },
   destinationCard: {
-    backgroundColor: '#fff',
+    backgroundColor: t.card,
     borderRadius: radius.md,
     padding: spacing.md,
     ...shadows.xs,
     marginBottom: spacing.md,
   },
-  cardLabel: { fontSize: typography.fontSize.xs, color: colors.surface[400], marginBottom: 2 },
+  cardLabel: { fontSize: typography.fontSize.xs, color: t.textMuted, marginBottom: 2 },
   destinationAddress: {
     fontSize: typography.fontSize.base,
     fontWeight: typography.fontWeight.semibold,
-    color: colors.surface[900],
+    color: t.text,
   },
   missionService: { fontSize: typography.fontSize.sm, color: colors.brand[600], marginTop: 2 },
   mapPlaceholder: {
     height: 200,
-    backgroundColor: colors.surface[100],
+    backgroundColor: t.inputBg,
     borderRadius: radius.md,
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: spacing.md,
     borderWidth: 1,
-    borderColor: colors.surface[200],
+    borderColor: t.border,
   },
   mapPlaceholderText: {
     fontSize: typography.fontSize.xs,
-    color: colors.surface[500],
+    color: t.textSecondary,
     textAlign: 'center',
     paddingHorizontal: spacing.md,
   },
@@ -221,23 +225,23 @@ const styles = StyleSheet.create({
   },
   statCard: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: t.card,
     borderRadius: radius.md,
     padding: spacing.md,
     alignItems: 'center',
     ...shadows.xs,
   },
-  statLabel: { fontSize: typography.fontSize.xs, color: colors.surface[500], marginBottom: 4 },
+  statLabel: { fontSize: typography.fontSize.xs, color: t.textSecondary, marginBottom: 4 },
   statValue: {
     fontSize: typography.fontSize.lg,
     fontWeight: typography.fontWeight.bold,
-    color: colors.surface[900],
+    color: t.text,
     fontVariant: ['tabular-nums'],
   },
   actions: { gap: spacing.sm },
   geofenceHint: {
     fontSize: typography.fontSize.xs,
-    color: colors.surface[400],
+    color: t.textMuted,
     textAlign: 'center',
   },
 });

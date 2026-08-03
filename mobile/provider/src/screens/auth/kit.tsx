@@ -27,6 +27,8 @@ export { CANVAS, authErrorMessage, AnimatedHalo, Wordmark, Stagger, FormError } 
 import { useTrades, type ProviderField } from '@/trades';
 import { ApiError } from '@/api';
 import { colors, radius, shadows, spacing, typography } from '@/theme';
+import { useThemeColors } from '@/theme/useThemeColors';
+import type { ThemeTokens } from '@/theme/useThemeColors';
 
 export function KindChoice({
   value,
@@ -35,6 +37,8 @@ export function KindChoice({
   value: 'independent' | 'company' | null;
   onChange: (kind: 'independent' | 'company') => void;
 }) {
+  const styles = stylesFor(useThemeColors());
+
   // Une teinte par type, pour que les deux cases se distinguent au-delà de la seule bordure.
   // Les couleurs sont choisies sur leur contraste mesuré, pas à l'œil : accent.amber (1,74:1) et
   // accent.amberDeep (2,35:1) échouent au seuil de 3:1 exigé d'un élément d'interface sur fond
@@ -101,6 +105,8 @@ export function TradePicker({
   value: number | null;
   onChange: (id: number) => void;
 }) {
+  const styles = stylesFor(useThemeColors());
+
   const { data: trades, isLoading, isError } = useTrades();
 
   if (isLoading) {
@@ -154,6 +160,8 @@ export function TradeQuestions({
   errors: Record<string, string>;
   onChange: (key: string, value: string | boolean) => void;
 }) {
+  const styles = stylesFor(useThemeColors());
+
   return (
     <>
       {fields.map(field => {
@@ -193,7 +201,7 @@ export function TradeQuestions({
   );
 }
 
-export const styles = StyleSheet.create({
+export const stylesFor = (t: ThemeTokens) => StyleSheet.create({
   container: { flex: 1, backgroundColor: CANVAS },
   flex: { flex: 1 },
   halo: {
@@ -230,11 +238,11 @@ export const styles = StyleSheet.create({
   // tool.muted (#64748b) sur CANVAS (#F7F8FB) : ~4,5:1, au seuil AA pour ce corps de texte.
   subtitle: { fontSize: typography.fontSize.sm, color: colors.mode.tool.muted, marginTop: spacing.sm },
   card: {
-    backgroundColor: '#ffffff',
+    backgroundColor: t.card,
     borderRadius: radius.lg,
     padding: spacing.lg,
     borderWidth: 1,
-    borderColor: colors.surface[200],
+    borderColor: t.border,
     ...shadows.md,
   },
   form: { gap: spacing.md },
@@ -248,9 +256,9 @@ export const styles = StyleSheet.create({
   },
   forgotText: { color: colors.brand[600], fontSize: typography.fontSize.sm, textAlign: 'right' },
   termsRow: { flexDirection: 'row', alignItems: 'flex-start', gap: spacing.sm },
-  checkbox: { width: 20, height: 20, borderRadius: 4, borderWidth: 2, borderColor: colors.surface[400], marginTop: 2, flexShrink: 0 },
+  checkbox: { width: 20, height: 20, borderRadius: 4, borderWidth: 2, borderColor: t.textMuted, marginTop: 2, flexShrink: 0 },
   checkboxChecked: { backgroundColor: colors.brand[500], borderColor: colors.brand[500] },
-  termsText: { flex: 1, fontSize: typography.fontSize.sm, color: colors.surface[700] },
+  termsText: { flex: 1, fontSize: typography.fontSize.sm, color: t.text },
   termsLink: { color: colors.brand[600], textDecorationLine: 'underline' },
   errorText: { fontSize: typography.fontSize.xs, color: colors.danger[600] },
   kindRow: { flexDirection: 'row', gap: spacing.sm },
@@ -261,15 +269,15 @@ export const styles = StyleSheet.create({
     paddingHorizontal: spacing.sm,
     borderRadius: radius.md,
     borderWidth: 1.5,
-    borderColor: colors.surface[200],
-    backgroundColor: '#ffffff',
+    borderColor: t.border,
+    backgroundColor: t.card,
   },
   kindTitle: {
     fontSize: typography.fontSize.base,
     fontWeight: typography.fontWeight.semibold,
     color: colors.mode.tool.ink,
   },
-  kindHint: { fontSize: typography.fontSize.xs, color: colors.surface[600] },
+  kindHint: { fontSize: typography.fontSize.xs, color: t.textSecondary },
   kindPrompt: {
     fontSize: typography.fontSize.sm,
     color: colors.mode.tool.muted,
@@ -288,11 +296,11 @@ export const styles = StyleSheet.create({
     paddingHorizontal: spacing.sm + 2,
     borderRadius: radius.pill,
     borderWidth: 1,
-    borderColor: colors.surface[200],
-    backgroundColor: '#ffffff',
+    borderColor: t.border,
+    backgroundColor: t.card,
   },
-  tradeChipSelected: { borderColor: colors.brand[600], backgroundColor: colors.brand[50] },
-  tradeChipText: { fontSize: typography.fontSize.sm, color: colors.surface[600] },
+  tradeChipSelected: { borderColor: colors.brand[600], backgroundColor: t.tint.brand },
+  tradeChipText: { fontSize: typography.fontSize.sm, color: t.textSecondary },
   tradeChipTextSelected: { color: colors.brand[600], fontWeight: typography.fontWeight.semibold },
   fieldHelp: { fontSize: typography.fontSize.xs, color: colors.mode.tool.muted, marginTop: 2 },
   fieldError: { fontSize: typography.fontSize.xs, color: colors.danger[600] },
@@ -304,7 +312,7 @@ export const styles = StyleSheet.create({
     borderRadius: radius.md,
     borderWidth: 1,
     borderColor: colors.danger[500],
-    backgroundColor: colors.danger[50],
+    backgroundColor: t.tint.danger,
   },
   formErrorBody: { flex: 1, gap: spacing.xs },
   // danger[700] sur danger[50] : contraste largement au-dessus du seuil AA.

@@ -8,6 +8,8 @@ import { useAcceptMission, useDeclineMission } from '@/missions';
 import type { MissionAssignment } from '@/missions';
 import { useCurrentPosition, distanceKmTo } from '@/tracking';
 import { colors, spacing, typography, radius, shadows } from '@/theme';
+import { useThemeColors } from '@/theme/useThemeColors';
+import type { ThemeTokens } from '@/theme/useThemeColors';
 import type { RootStackParamList } from '@/navigation/types';
 
 interface Props {
@@ -18,6 +20,8 @@ interface Props {
 const OFFER_TIMEOUT_SECONDS = 15;
 
 export function AssignmentOfferScreen({ assignment, onDismiss }: Props) {
+  const styles = stylesFor(useThemeColors());
+
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const accept = useAcceptMission();
   const decline = useDeclineMission();
@@ -147,7 +151,7 @@ export function AssignmentOfferScreen({ assignment, onDismiss }: Props) {
   );
 }
 
-const styles = StyleSheet.create({
+const stylesFor = (t: ThemeTokens) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: 'rgba(0,0,0,0.6)',
@@ -156,14 +160,14 @@ const styles = StyleSheet.create({
     paddingBottom: spacing['2xl'],
   },
   card: {
-    backgroundColor: '#fff',
+    backgroundColor: t.card,
     borderRadius: radius.xl,
     padding: spacing.lg,
     ...shadows.lg,
   },
   timerTrack: {
     height: 4,
-    backgroundColor: colors.surface[200],
+    backgroundColor: t.border,
     borderRadius: radius.pill,
     marginBottom: spacing.xs,
     overflow: 'hidden',
@@ -182,11 +186,11 @@ const styles = StyleSheet.create({
   heading: {
     fontSize: typography.fontSize.xl,
     fontWeight: typography.fontWeight.bold,
-    color: colors.surface[900],
+    color: t.text,
     marginBottom: spacing.md,
   },
   details: {
-    backgroundColor: colors.surface[50],
+    backgroundColor: t.cardSubtle,
     borderRadius: radius.md,
     padding: spacing.md,
     marginBottom: spacing.lg,
@@ -203,11 +207,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: spacing.sm,
   },
-  label: { fontSize: typography.fontSize.sm, color: colors.surface[500] },
+  label: { fontSize: typography.fontSize.sm, color: t.textSecondary },
   value: {
     fontSize: typography.fontSize.sm,
     fontWeight: typography.fontWeight.medium,
-    color: colors.surface[900],
+    color: t.text,
     flex: 1,
     textAlign: 'right',
     marginLeft: spacing.sm,

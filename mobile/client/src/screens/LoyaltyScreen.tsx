@@ -3,8 +3,11 @@ import { View, FlatList, Text, StyleSheet, Alert } from 'react-native';
 import { Screen, KPICard, Badge, Button, Skeleton, EmptyState } from '@/ui';
 import { useLoyaltyAccount, useLoyaltyRewards, useRedeemReward } from '@/loyalty';
 import { colors, spacing, typography, radius, shadows, useThemeColors } from '@/theme';
+import type { ThemeTokens } from '@/theme/useThemeColors';
 
 export function LoyaltyScreen() {
+  const styles = stylesFor(useThemeColors());
+
   const { data: account, isLoading: loadingAccount } = useLoyaltyAccount();
   const { data: rewards, isLoading: loadingRewards, refetch: refetchRewards, isRefetching: isRefetchingRewards } = useLoyaltyRewards();
   const redeem = useRedeemReward();
@@ -75,11 +78,11 @@ export function LoyaltyScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const stylesFor = (t: ThemeTokens) => StyleSheet.create({
   title: {
     fontSize: typography.fontSize['2xl'],
     fontWeight: typography.fontWeight.bold,
-    color: colors.surface[900],
+    color: t.text,
     marginTop: spacing.md,
     marginBottom: spacing.md,
   },
@@ -93,7 +96,7 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: typography.fontSize.lg,
     fontWeight: typography.fontWeight.semibold,
-    color: colors.surface[800],
+    color: t.text,
     marginBottom: spacing.sm,
   },
   rewardCard: {
@@ -101,13 +104,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: spacing.sm,
     borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: colors.surface[200],
+    borderBottomColor: t.border,
   },
   rewardInfo: { flex: 1 },
   rewardName: {
     fontSize: typography.fontSize.sm,
     fontWeight: typography.fontWeight.medium,
-    color: colors.surface[900],
+    color: t.text,
   },
   rewardCost: { fontSize: typography.fontSize.xs, color: colors.brand[600] },
 });

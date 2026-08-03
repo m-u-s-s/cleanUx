@@ -3,6 +3,8 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useAuth } from '@/auth';
 import { Divider, Icon, Screen } from '@/ui';
 import { colors, radius, spacing, typography } from '@/theme';
+import { useThemeColors } from '@/theme/useThemeColors';
+import type { ThemeTokens } from '@/theme/useThemeColors';
 import { useSpacePreference } from './useSpacePreference';
 
 /**
@@ -13,6 +15,8 @@ import { useSpacePreference } from './useSpacePreference';
  * matin doit pouvoir retourner sur le terrain le lendemain sans se déconnecter.
  */
 export function AdminProfileScreen() {
+  const styles = stylesFor(useThemeColors());
+
   const { user, logout } = useAuth();
   const { clear } = useSpacePreference();
 
@@ -59,6 +63,8 @@ function Row({
   tone?: 'neutral' | 'danger';
   onPress: () => void;
 }) {
+  const styles = stylesFor(useThemeColors());
+
   const color = tone === 'danger' ? colors.danger[500] : colors.surface[900];
 
   return (
@@ -77,10 +83,10 @@ function Row({
   );
 }
 
-const styles = StyleSheet.create({
+const stylesFor = (t: ThemeTokens) => StyleSheet.create({
   identity: { paddingVertical: spacing.lg },
-  name: { ...typography.preset.headline, color: colors.surface[900] },
-  email: { fontSize: typography.fontSize.sm, color: colors.surface[500], marginTop: spacing.xs },
+  name: { ...typography.preset.headline, color: t.text },
+  email: { fontSize: typography.fontSize.sm, color: t.textSecondary, marginTop: spacing.xs },
   row: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -88,7 +94,7 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.md,
     borderRadius: radius.md,
   },
-  rowPressed: { backgroundColor: colors.surface[100] },
+  rowPressed: { backgroundColor: t.inputBg },
   rowLabel: { fontSize: typography.fontSize.base },
-  rowHint: { fontSize: typography.fontSize.xs, color: colors.surface[500], marginTop: 2 },
+  rowHint: { fontSize: typography.fontSize.xs, color: t.textSecondary, marginTop: 2 },
 });

@@ -9,6 +9,8 @@ import {
   type OnboardingStep,
 } from '@/onboarding';
 import { colors, radius, spacing, typography } from '@/theme';
+import { useThemeColors } from '@/theme/useThemeColors';
+import type { ThemeTokens } from '@/theme/useThemeColors';
 import { ContractStep, DocumentsStep, KycStep, ProfileStep, SkillsStep, type StepProps } from './steps';
 
 /**
@@ -54,13 +56,15 @@ type CardState = 'todo' | 'locked' | 'in_review' | 'needs_fix' | 'done';
  * success[700] 5,26:1. Les nuances immédiatement plus claires — surface[500] à 4,27:1 et
  * success[600] à 3,61:1 — échouent au seuil de 4,5:1 et ne sont donc pas employées ici.
  */
-const STATE_PRESENTATION: Record<CardState, { label: string; color: string; background: string }> = {
-  todo: { label: 'À faire', color: colors.surface[600], background: colors.surface[100] },
-  locked: { label: 'Verrouillé', color: colors.surface[600], background: colors.surface[100] },
+const statePresentation = (t: ThemeTokens): Record<CardState, { label: string; color: string; background: string }> => ({
+  // Les fonds neutres passent aux jetons ; les couleurs de TEXTE restent sémantiques, leurs
+  // ratios de contraste ayant été mesurés et leur sens ne dépendant pas du fond.
+  todo: { label: 'À faire', color: t.textSecondary, background: t.inputBg },
+  locked: { label: 'Verrouillé', color: t.textSecondary, background: t.inputBg },
   in_review: { label: 'En cours de vérification', color: colors.warning[700], background: colors.warning[50] },
   needs_fix: { label: 'À corriger', color: colors.danger[600], background: colors.danger[50] },
   done: { label: 'Vérifié', color: colors.success[700], background: colors.success[50] },
-};
+});
 
 function stepErrorMessage(error: unknown): string {
   if (error instanceof ApiError) {
@@ -77,6 +81,9 @@ function stepErrorMessage(error: unknown): string {
 }
 
 export function ProviderOnboardingScreen({ onFinished }: { onFinished?: () => void }) {
+  const theme = useThemeColors();
+  const styles = stylesFor(theme);
+  const presentations = statePresentation(theme);
   const { data, isLoading, isError, refetch } = useOnboardingProgress();
   const { data: documents } = useOnboardingDocuments();
   const complete = useCompleteStep();
@@ -188,7 +195,7 @@ export function ProviderOnboardingScreen({ onFinished }: { onFinished?: () => vo
       <View style={styles.cardList}>
         {steps.map(step => {
           const state = stateOf(step);
-          const presentation = STATE_PRESENTATION[state];
+          const presentation = presentations[state];
           const look = STEP_PRESENTATION[step.code] ?? { icon: 'ellipse-outline', duration: '' };
           const StepComponent = STEP_COMPONENTS[step.code];
           const open = openStepId === step.id;
@@ -271,23 +278,23 @@ export function ProviderOnboardingScreen({ onFinished }: { onFinished?: () => vo
   );
 }
 
-const styles = StyleSheet.create({
-  container: { padding: spacing.lg, gap: spacing.lg, backgroundColor: '#F7F8FB', flexGrow: 1 },
+const stylesFor = (t: ThemeTokens) => StyleSheet.create({
+  container: { padding: spacing.lg, gap: spacing.lg, backgroundColor: t.page, flexGrow: 1 },
   centered: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: spacing.md, padding: spacing.lg },
   title: {
     fontSize: typography.fontSize['2xl'],
     fontWeight: typography.fontWeight.bold,
     color: colors.mode.tool.ink,
   },
-  subtitle: { fontSize: typography.fontSize.sm, color: colors.surface[600], marginTop: spacing.xs },
-  progressTrack: { height: 6, borderRadius: 999, backgroundColor: colors.surface[200], overflow: 'hidden' },
+  subtitle: { fontSize: typography.fontSize.sm, color: t.textSecondary, marginTop: spacing.xs },
+  progressTrack: { height: 6, borderRadius: 999, backgroundColor: t.border, overflow: 'hidden' },
   progressFill: { height: 6, borderRadius: 999, backgroundColor: colors.brand[500] },
   cardList: { gap: spacing.sm },
   card: {
-    backgroundColor: '#ffffff',
+    backgroundColor: t.card,
     borderRadius: radius.lg,
     borderWidth: 1,
-    borderColor: colors.surface[200],
+    borderColor: t.border,
     overflow: 'hidden',
   },
   // La carte entière est la cible tactile, bien au-delà des 44 pt recommandés.
@@ -301,13 +308,13 @@ const styles = StyleSheet.create({
   },
   cardMetaRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.xs },
   cardState: { fontSize: typography.fontSize.xs, fontWeight: typography.fontWeight.medium },
-  cardDuration: { fontSize: typography.fontSize.xs, color: colors.surface[500] },
-  cardBlocking: { fontSize: typography.fontSize.xs, color: colors.surface[600], marginTop: 2 },
+  cardDuration: { fontSize: typography.fontSize.xs, color: t.textSecondary },
+  cardBlocking: { fontSize: typography.fontSize.xs, color: t.textSecondary, marginTop: 2 },
   cardContent: {
     padding: spacing.lg,
     borderTopWidth: 1,
-    borderTopColor: colors.surface[200],
-    backgroundColor: '#ffffff',
+    borderTopColor: t.border,
+    backgroundColor: t.card,
   },
   doneBadge: { alignItems: 'center' },
   errorTitle: {
@@ -315,5 +322,5 @@ const styles = StyleSheet.create({
     fontWeight: typography.fontWeight.semibold,
     color: colors.mode.tool.ink,
   },
-  errorHint: { fontSize: typography.fontSize.sm, color: colors.surface[600], textAlign: 'center' },
+  errorHint: { fontSize: typography.fontSize.sm, color: t.textSecondary, textAlign: 'center' },
 });

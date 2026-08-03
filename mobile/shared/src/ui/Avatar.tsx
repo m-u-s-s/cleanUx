@@ -1,6 +1,8 @@
 import React from 'react';
 import { View, Text, Image, StyleSheet } from 'react-native';
 import { colors, typography } from '@/theme';
+import { useThemeColors } from '@/theme/useThemeColors';
+import type { ThemeTokens } from '@/theme/useThemeColors';
 
 interface AvatarProps {
   name: string;
@@ -18,6 +20,7 @@ function getInitials(name: string): string {
 }
 
 export function Avatar({ name, imageUri, size = 40, accessibilityLabel }: AvatarProps) {
+  const styles = stylesFor(useThemeColors());
   const circleStyle = { width: size, height: size, borderRadius: size / 2 };
   const a11yLabel = accessibilityLabel ?? name;
 
@@ -43,9 +46,9 @@ export function Avatar({ name, imageUri, size = 40, accessibilityLabel }: Avatar
   );
 }
 
-const styles = StyleSheet.create({
+const stylesFor = (theme: ThemeTokens) => StyleSheet.create({
   fallback: {
-    backgroundColor: colors.brand[100],
+    backgroundColor: theme.tint.brand,
     alignItems: 'center',
     justifyContent: 'center',
   },

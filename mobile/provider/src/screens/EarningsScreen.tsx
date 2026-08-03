@@ -5,6 +5,7 @@ import { useWalletBalance, useWalletTransactions, useStripeConnectStatus } from 
 import { ApiError } from '@/api';
 import { useNavigation } from '@react-navigation/native';
 import { colors, spacing, typography, radius, shadows, useThemeColors } from '@/theme';
+import type { ThemeTokens } from '@/theme/useThemeColors';
 
 /**
  * The wallet endpoints abort 403 when the account has no provider_profiles row (an `employe`
@@ -19,6 +20,8 @@ function walletErrorMessage(error: unknown): string {
 }
 
 export function EarningsScreen() {
+  const styles = stylesFor(useThemeColors());
+
   const balanceQuery = useWalletBalance();
   const txQuery = useWalletTransactions();
   const { data: stripe } = useStripeConnectStatus();
@@ -104,15 +107,15 @@ export function EarningsScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const stylesFor = (t: ThemeTokens) => StyleSheet.create({
   title: {
     fontSize: typography.fontSize.xl,
     fontWeight: typography.fontWeight.bold,
-    color: colors.surface[900],
+    color: t.text,
     marginBottom: spacing.md,
   },
   onboardBanner: {
-    backgroundColor: colors.warning[50],
+    backgroundColor: t.tint.warning,
     borderRadius: radius.md,
     padding: spacing.md,
     flexDirection: 'row',
@@ -130,7 +133,7 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: typography.fontSize.lg,
     fontWeight: typography.fontWeight.semibold,
-    color: colors.surface[800],
+    color: t.text,
     marginBottom: spacing.sm,
   },
   txRow: {
@@ -139,10 +142,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: spacing.sm,
   },
-  txDesc: { fontSize: typography.fontSize.sm, color: colors.surface[900] },
-  txDate: { fontSize: typography.fontSize.xs, color: colors.surface[400], marginTop: 2 },
+  txDesc: { fontSize: typography.fontSize.sm, color: t.text },
+  txDate: { fontSize: typography.fontSize.xs, color: t.textMuted, marginTop: 2 },
   txAmount: { fontSize: typography.fontSize.sm, fontWeight: typography.fontWeight.semibold },
   positive: { color: colors.success[600] },
   negative: { color: colors.danger[600] },
-  empty: { color: colors.surface[400], textAlign: 'center', marginTop: spacing.lg },
+  empty: { color: t.textMuted, textAlign: 'center', marginTop: spacing.lg },
 });

@@ -5,12 +5,16 @@ import { useChatMessages, useSendMessage, useMarkThreadRead, useLiveChat } from 
 import { useAuth } from '@/auth';
 import type { ChatMessage } from '@/chat/types';
 import { colors, spacing, typography, radius } from '@/theme';
+import { useThemeColors } from '@/theme/useThemeColors';
+import type { ThemeTokens } from '@/theme/useThemeColors';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '@/navigation/types';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Chat'>;
 
 export function ChatScreen({ route }: Props) {
+  const styles = stylesFor(useThemeColors());
+
   const { threadId } = route.params;
   const { user } = useAuth();
   const { data: messages, refetch } = useChatMessages(threadId);
@@ -78,8 +82,8 @@ export function ChatScreen({ route }: Props) {
   );
 }
 
-const styles = StyleSheet.create({
-  flex: { flex: 1, backgroundColor: colors.surface[50] },
+const stylesFor = (t: ThemeTokens) => StyleSheet.create({
+  flex: { flex: 1, backgroundColor: t.page },
   list: { paddingHorizontal: spacing.md, paddingVertical: spacing.sm },
   bubble: {
     maxWidth: '80%',
@@ -88,24 +92,24 @@ const styles = StyleSheet.create({
     marginBottom: spacing.xs,
   },
   bubbleMe: { alignSelf: 'flex-end', backgroundColor: colors.brand[500] },
-  bubbleOther: { alignSelf: 'flex-start', backgroundColor: colors.surface[200] },
+  bubbleOther: { alignSelf: 'flex-start', backgroundColor: t.border },
   senderName: {
     fontSize: typography.fontSize.xs,
     fontWeight: typography.fontWeight.semibold,
-    color: colors.surface[600],
+    color: t.textSecondary,
     marginBottom: 2,
   },
-  messageText: { fontSize: typography.fontSize.sm, color: colors.surface[900] },
-  messageTextMe: { color: '#ffffff' },
-  time: { fontSize: 10, color: colors.surface[400], marginTop: 2, alignSelf: 'flex-end' },
+  messageText: { fontSize: typography.fontSize.sm, color: t.text },
+  messageTextMe: { color: t.card },
+  time: { fontSize: 10, color: t.textMuted, marginTop: 2, alignSelf: 'flex-end' },
   inputRow: {
     flexDirection: 'row',
     alignItems: 'flex-end',
     padding: spacing.sm,
     gap: spacing.xs,
     borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: colors.surface[200],
-    backgroundColor: '#fff',
+    borderTopColor: t.border,
+    backgroundColor: t.card,
   },
   input: { flex: 1 },
 });

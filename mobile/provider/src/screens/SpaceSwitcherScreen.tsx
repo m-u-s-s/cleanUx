@@ -2,6 +2,8 @@ import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { Icon, Screen } from '@/ui';
 import { colors, radius, spacing, typography } from '@/theme';
+import { useThemeColors } from '@/theme/useThemeColors';
+import type { ThemeTokens } from '@/theme/useThemeColors';
 import type { ChosenSpace } from '@/admin/space';
 
 /**
@@ -12,6 +14,8 @@ import type { ChosenSpace } from '@/admin/space';
  * demande — une fois : le choix est retenu, et se change depuis le profil.
  */
 export function SpaceSwitcherScreen({ onChoose }: { onChoose: (space: ChosenSpace) => void }) {
+  const styles = stylesFor(useThemeColors());
+
   return (
     <Screen>
       <View testID="space-switcher" style={styles.container}>
@@ -49,6 +53,8 @@ function Choice({
   hint: string;
   onPress: () => void;
 }) {
+  const styles = stylesFor(useThemeColors());
+
   return (
     <Pressable
       onPress={onPress}
@@ -66,12 +72,12 @@ function Choice({
   );
 }
 
-const styles = StyleSheet.create({
+const stylesFor = (t: ThemeTokens) => StyleSheet.create({
   container: { flex: 1, justifyContent: 'center', gap: spacing.md },
-  title: { ...typography.preset.headline, color: colors.surface[900], textAlign: 'center' },
+  title: { ...typography.preset.headline, color: t.text, textAlign: 'center' },
   subtitle: {
     fontSize: typography.fontSize.sm,
-    color: colors.surface[500],
+    color: t.textSecondary,
     textAlign: 'center',
     marginBottom: spacing.lg,
     lineHeight: 20,
@@ -83,10 +89,10 @@ const styles = StyleSheet.create({
     padding: spacing.lg,
     borderRadius: radius.lg,
     borderWidth: 1,
-    borderColor: colors.surface[200],
-    backgroundColor: colors.surface[50],
+    borderColor: t.border,
+    backgroundColor: t.cardSubtle,
   },
-  choicePressed: { backgroundColor: colors.surface[100] },
-  choiceLabel: { ...typography.preset.subhead, color: colors.surface[900] },
-  choiceHint: { fontSize: typography.fontSize.xs, color: colors.surface[500], marginTop: 2 },
+  choicePressed: { backgroundColor: t.inputBg },
+  choiceLabel: { ...typography.preset.subhead, color: t.text },
+  choiceHint: { fontSize: typography.fontSize.xs, color: t.textSecondary, marginTop: 2 },
 });

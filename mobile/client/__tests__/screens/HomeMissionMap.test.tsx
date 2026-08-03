@@ -86,7 +86,10 @@ jest.mock('@/theme', () => ({
   typography: { fontSize: { xs: 12, sm: 14, base: 16, lg: 18, '2xl': 24 }, fontWeight: { semibold: '600', bold: '700' } },
   radius: { md: 14, pill: 999 },
   shadows: { soft: {}, xs: {} },
-  useThemeColors: () => ({ text: '#000', textMuted: '#666', textSecondary: '#444', card: '#fff' }),
+  // Le thème réel plutôt qu'un objet partiel écrit à la main : il n'a aucun effet de bord,
+  // et un stub partiel périme à chaque jeton ajouté — c'est ce qui a cassé ces tests quand
+  // les teintes sont apparues.
+  useThemeColors: jest.requireActual('@/theme/useThemeColors').useThemeColors,
 }));
 
 import { HomeScreen } from '@/screens/HomeScreen';

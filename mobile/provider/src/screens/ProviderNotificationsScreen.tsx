@@ -4,10 +4,14 @@ import { Screen, Button, Skeleton, EmptyState, AnimatedListItem, a11y } from '@/
 import { useNotifications, useMarkAllRead } from '@/notifications';
 import type { AppNotification } from '@/notifications';
 import { colors, spacing, typography } from '@/theme';
+import { useThemeColors } from '@/theme/useThemeColors';
+import type { ThemeTokens } from '@/theme/useThemeColors';
 
 const NOTIF_ITEM_HEIGHT = 70;
 
 export function ProviderNotificationsScreen() {
+  const styles = stylesFor(useThemeColors());
+
   const { data: notifs, isLoading, refetch, isRefetching } = useNotifications();
   const markAll = useMarkAllRead();
   const unreadCount = notifs?.filter(n => !n.read_at).length ?? 0;
@@ -79,7 +83,7 @@ export function ProviderNotificationsScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const stylesFor = (t: ThemeTokens) => StyleSheet.create({
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -89,33 +93,33 @@ const styles = StyleSheet.create({
   title: {
     fontSize: typography.fontSize.xl,
     fontWeight: typography.fontWeight.bold,
-    color: colors.surface[900],
+    color: t.text,
   },
   skeletons: { gap: spacing.sm },
   notif: {
     paddingVertical: spacing.sm,
     borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: colors.surface[200],
+    borderBottomColor: t.border,
   },
-  unread: { backgroundColor: colors.brand[50] },
+  unread: { backgroundColor: t.tint.brand },
   notifTitle: {
     fontSize: typography.fontSize.sm,
     fontWeight: typography.fontWeight.semibold,
-    color: colors.surface[900],
+    color: t.text,
   },
   notifBody: {
     fontSize: typography.fontSize.xs,
-    color: colors.surface[600],
+    color: t.textSecondary,
     marginTop: 2,
   },
   notifTime: {
     fontSize: 10,
-    color: colors.surface[500],
+    color: t.textSecondary,
     marginTop: 4,
   },
   empty: {
     fontSize: typography.fontSize.sm,
-    color: colors.surface[500],
+    color: t.textSecondary,
     textAlign: 'center',
     marginTop: spacing.xl,
   },

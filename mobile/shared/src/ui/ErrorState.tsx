@@ -2,6 +2,8 @@ import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { Button } from './Button';
 import { colors, spacing, typography } from '@/theme';
+import { useThemeColors } from '@/theme/useThemeColors';
+import type { ThemeTokens } from '@/theme/useThemeColors';
 
 interface ErrorStateProps {
   message?: string;
@@ -18,6 +20,8 @@ export function ErrorState({
   onRetry,
   compact = false,
 }: ErrorStateProps) {
+  const styles = stylesFor(useThemeColors());
+
   return (
     <View style={[styles.container, compact && styles.compactContainer]}>
       <Text style={styles.title}>Oups !</Text>
@@ -27,9 +31,9 @@ export function ErrorState({
   );
 }
 
-const styles = StyleSheet.create({
+const stylesFor = (t: ThemeTokens) => StyleSheet.create({
   container: { flex: 1, justifyContent: 'center', alignItems: 'center', paddingHorizontal: spacing.xl, paddingVertical: spacing['3xl'] },
   compactContainer: { flex: 0, paddingHorizontal: spacing.md, paddingVertical: spacing.lg },
   title: { fontSize: typography.fontSize.lg, fontWeight: typography.fontWeight.semibold, color: colors.danger[500], marginBottom: spacing.xs },
-  message: { fontSize: typography.fontSize.sm, color: colors.surface[500], textAlign: 'center', marginBottom: spacing.md },
+  message: { fontSize: typography.fontSize.sm, color: t.textSecondary, textAlign: 'center', marginBottom: spacing.md },
 });

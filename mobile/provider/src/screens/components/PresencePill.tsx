@@ -2,7 +2,9 @@ import React from 'react';
 import { Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { PulseDot } from '@/ui';
 import { usePresence, PRESENCE_LABELS, PRESENCE_VARIANTS } from '@/presence';
-import { colors, spacing, typography, radius, shadows } from '@/theme';
+import {spacing, typography, radius, shadows } from '@/theme';
+import { useThemeColors } from '@/theme/useThemeColors';
+import type { ThemeTokens } from '@/theme/useThemeColors';
 
 /**
  * Affichage seul : la pilule n'écrit jamais le statut, le seul chemin d'écriture reste
@@ -15,6 +17,8 @@ import { colors, spacing, typography, radius, shadows } from '@/theme';
  * de cache React Query `PRESENCE_QUERY_KEY` (cf. src/presence/hooks.ts).
  */
 export function PresencePill({ onPress }: { onPress: () => void }) {
+  const styles = stylesFor(useThemeColors());
+
   const { status } = usePresence();
 
   return (
@@ -31,17 +35,17 @@ export function PresencePill({ onPress }: { onPress: () => void }) {
   );
 }
 
-const styles = StyleSheet.create({
+const stylesFor = (t: ThemeTokens) => StyleSheet.create({
   pill: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.sm,
     alignSelf: 'center',
-    backgroundColor: '#fff',
+    backgroundColor: t.card,
     borderRadius: radius.pill,
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.sm,
     ...shadows.xs,
   },
-  label: { fontSize: typography.fontSize.sm, fontWeight: typography.fontWeight.semibold, color: colors.surface[900] },
+  label: { fontSize: typography.fontSize.sm, fontWeight: typography.fontWeight.semibold, color: t.text },
 });

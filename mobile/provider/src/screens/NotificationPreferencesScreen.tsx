@@ -3,6 +3,8 @@ import { View, Text, Switch, StyleSheet, Alert } from 'react-native';
 import { Screen, Button, Divider } from '@/ui';
 import { apiClient } from '@/api';
 import { colors, spacing, typography } from '@/theme';
+import { useThemeColors } from '@/theme/useThemeColors';
+import type { ThemeTokens } from '@/theme/useThemeColors';
 
 const CATEGORIES = [
   { key: 'transactional', label: 'Missions & réservations', description: 'Nouvelles missions, confirmations, statuts' },
@@ -19,6 +21,8 @@ const CHANNELS = [
 ];
 
 export function NotificationPreferencesScreen() {
+  const styles = stylesFor(useThemeColors());
+
   const [prefs, setPrefs] = useState<Record<string, Record<string, boolean>>>(() => {
     const initial: Record<string, Record<string, boolean>> = {};
     CATEGORIES.forEach(c => {
@@ -80,11 +84,11 @@ export function NotificationPreferencesScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const stylesFor = (t: ThemeTokens) => StyleSheet.create({
   title: {
     fontSize: typography.fontSize.xl,
     fontWeight: typography.fontWeight.bold,
-    color: colors.surface[900],
+    color: t.text,
     marginBottom: spacing.lg,
     marginTop: spacing.md,
   },
@@ -92,11 +96,11 @@ const styles = StyleSheet.create({
   catLabel: {
     fontSize: typography.fontSize.base,
     fontWeight: typography.fontWeight.semibold,
-    color: colors.surface[900],
+    color: t.text,
   },
   catDesc: {
     fontSize: typography.fontSize.xs,
-    color: colors.surface[500],
+    color: t.textSecondary,
     marginBottom: spacing.sm,
   },
   channels: { gap: spacing.xs },
@@ -106,5 +110,5 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: spacing.xs,
   },
-  channelLabel: { fontSize: typography.fontSize.sm, color: colors.surface[700] },
+  channelLabel: { fontSize: typography.fontSize.sm, color: t.text },
 });

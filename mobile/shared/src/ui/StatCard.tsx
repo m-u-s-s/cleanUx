@@ -1,6 +1,8 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { colors, radius, spacing, typography, shadows } from '@/theme';
+import { useThemeColors } from '@/theme/useThemeColors';
+import type { ThemeTokens } from '@/theme/useThemeColors';
 
 type Tone = 'neutral' | 'success' | 'warning' | 'danger';
 
@@ -21,6 +23,8 @@ const toneColors: Record<Tone, string> = {
 const trendArrows: Record<string, string> = { up: '↑', down: '↓', flat: '→' };
 
 export function StatCard({ title, value, trend, tone = 'neutral' }: StatCardProps) {
+  const styles = stylesFor(useThemeColors());
+
   return (
     <View
       style={styles.container}
@@ -37,12 +41,12 @@ export function StatCard({ title, value, trend, tone = 'neutral' }: StatCardProp
   );
 }
 
-const styles = StyleSheet.create({
+const stylesFor = (t: ThemeTokens) => StyleSheet.create({
   container: {
-    backgroundColor: '#ffffff', borderRadius: radius.md, padding: spacing.md,
+    backgroundColor: t.card, borderRadius: radius.md, padding: spacing.md,
     ...shadows.soft,
   },
-  title: { fontSize: typography.fontSize.xs, color: colors.surface[500], marginBottom: spacing.xs },
+  title: { fontSize: typography.fontSize.xs, color: t.textSecondary, marginBottom: spacing.xs },
   row: { flexDirection: 'row', alignItems: 'baseline' },
   value: { fontSize: typography.fontSize['2xl'], fontWeight: typography.fontWeight.bold, fontVariant: ['tabular-nums'] },
   trend: { fontSize: typography.fontSize.sm, marginLeft: spacing.xs, fontWeight: typography.fontWeight.medium },

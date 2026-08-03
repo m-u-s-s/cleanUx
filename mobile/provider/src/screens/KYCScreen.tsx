@@ -3,9 +3,13 @@ import { View, Text, StyleSheet } from 'react-native';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { Screen, Button, Badge } from '@/ui';
 import { apiClient } from '@/api';
-import { colors, spacing, typography, radius, shadows } from '@/theme';
+import {spacing, typography, radius, shadows } from '@/theme';
+import { useThemeColors } from '@/theme/useThemeColors';
+import type { ThemeTokens } from '@/theme/useThemeColors';
 
 export function KYCScreen() {
+  const styles = stylesFor(useThemeColors());
+
   const { data: status } = useQuery({
     queryKey: ['kyc'],
     queryFn: async () => (await apiClient.get('/provider/kyc/status')).data,
@@ -40,16 +44,16 @@ export function KYCScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const stylesFor = (t: ThemeTokens) => StyleSheet.create({
   title: {
     fontSize: typography.fontSize.xl,
     fontWeight: typography.fontWeight.bold,
-    color: colors.surface[900],
+    color: t.text,
     marginTop: spacing.md,
     marginBottom: spacing.lg,
   },
   card: {
-    backgroundColor: '#fff',
+    backgroundColor: t.card,
     borderRadius: radius.md,
     padding: spacing.lg,
     ...shadows.soft,
@@ -57,6 +61,6 @@ const styles = StyleSheet.create({
   },
   info: {
     fontSize: typography.fontSize.sm,
-    color: colors.surface[500],
+    color: t.textSecondary,
   },
 });

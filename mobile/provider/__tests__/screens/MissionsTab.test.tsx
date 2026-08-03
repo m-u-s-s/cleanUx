@@ -57,7 +57,10 @@ jest.mock('@/theme', () => ({
   typography: { fontSize: { xs: 12, sm: 14, base: 16, xl: 20 }, fontWeight: { bold: '700', semibold: '600', medium: '500' } },
   radius: { md: 14 },
   shadows: { xs: {}, soft: {} },
-  useThemeColors: () => ({ card: '#fff' }),
+  // Le thème réel plutôt qu'un objet partiel écrit à la main : il n'a aucun effet de bord,
+  // et un stub partiel périme à chaque jeton ajouté — c'est ce qui a cassé ces tests quand
+  // les teintes sont apparues.
+  useThemeColors: jest.requireActual('@/theme/useThemeColors').useThemeColors,
 }));
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';

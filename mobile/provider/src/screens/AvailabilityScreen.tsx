@@ -3,12 +3,16 @@ import { View, FlatList, Text, Alert, StyleSheet } from 'react-native';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Screen, Button, Badge, Divider, EmptyState } from '@/ui';
 import { apiClient } from '@/api';
-import { colors, spacing, typography, radius, shadows } from '@/theme';
+import {spacing, typography, radius, shadows } from '@/theme';
+import { useThemeColors } from '@/theme/useThemeColors';
+import type { ThemeTokens } from '@/theme/useThemeColors';
 
 interface Slot { id: number; day_of_week: number; start_time: string; end_time: string; }
 const DAYS = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'];
 
 export function AvailabilityScreen() {
+  const styles = stylesFor(useThemeColors());
+
   const { data: slots, isLoading, refetch, isRefetching } = useQuery<Slot[]>({
     queryKey: ['availability'],
     queryFn: async () => (await apiClient.get('/provider/availability')).data.data ?? [],
@@ -60,11 +64,11 @@ export function AvailabilityScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const stylesFor = (t: ThemeTokens) => StyleSheet.create({
   title: {
     fontSize: typography.fontSize.xl,
     fontWeight: typography.fontWeight.bold,
-    color: colors.surface[900],
+    color: t.text,
     marginBottom: spacing.md,
   },
   slot: {
@@ -73,15 +77,15 @@ const styles = StyleSheet.create({
     gap: spacing.sm,
     paddingVertical: spacing.sm,
     borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: colors.surface[200],
+    borderBottomColor: t.border,
   },
   slotTime: {
     flex: 1,
     fontSize: typography.fontSize.sm,
-    color: colors.surface[700],
+    color: t.text,
   },
   empty: {
-    color: colors.surface[400],
+    color: t.textMuted,
     textAlign: 'center',
     marginTop: spacing.xl,
   },

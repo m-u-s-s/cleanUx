@@ -17,6 +17,8 @@ import {
 import { useTradeProviderFields } from '@/trades';
 import { ApiError } from '@/api';
 import { colors, radius, spacing, typography } from '@/theme';
+import { useThemeColors } from '@/theme/useThemeColors';
+import type { ThemeTokens } from '@/theme/useThemeColors';
 import type { RootStackParamList } from '@/navigation/types';
 import {
   authErrorMessage,
@@ -24,7 +26,7 @@ import {
   KindChoice,
   TradePicker,
   TradeQuestions,
-  styles as kit,
+  stylesFor as kitStylesFor,
 } from './kit';
 import { clearDraft, emptyDraft, loadDraft, saveDraft, type RegisterDraft } from './draft';
 
@@ -85,6 +87,9 @@ function passwordStrength(value: string): { score: 0 | 1 | 2 | 3; label: string;
 }
 
 export function RegisterWizard() {
+  const kit = kitStylesFor(useThemeColors());
+  const styles = stylesFor(useThemeColors());
+
   const [draft, setDraft] = useState<RegisterDraft>(emptyDraft);
   const [restored, setRestored] = useState(false);
   const [stepIndex, setStepIndex] = useState(0);
@@ -658,6 +663,8 @@ function Question({
   hint?: string;
   children: React.ReactNode;
 }) {
+  const styles = stylesFor(useThemeColors());
+
   return (
     <View style={styles.question}>
       {/* `header` plutôt que `text` : le lecteur d'écran annonce alors la question comme le
@@ -669,7 +676,7 @@ function Question({
   );
 }
 
-const styles = StyleSheet.create({
+const stylesFor = (t: ThemeTokens) => StyleSheet.create({
   wrapper: { gap: spacing.md },
   progressRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
   // 44 pt : taille de cible minimale recommandée, sous laquelle le bouton devient difficile à
@@ -697,7 +704,7 @@ const styles = StyleSheet.create({
     flex: 1,
     height: 4,
     borderRadius: radius.pill,
-    backgroundColor: colors.surface[200],
+    backgroundColor: t.border,
     overflow: 'hidden',
   },
   strengthFill: { height: 4, borderRadius: radius.pill },
@@ -707,14 +714,14 @@ const styles = StyleSheet.create({
     borderRadius: radius.md,
     borderWidth: 1,
     borderColor: colors.success[600],
-    backgroundColor: colors.success[50],
+    backgroundColor: t.tint.success,
   },
   suggestionName: {
     fontSize: typography.fontSize.base,
     fontWeight: typography.fontWeight.semibold,
     color: colors.mode.tool.ink,
   },
-  suggestionAddress: { fontSize: typography.fontSize.sm, color: colors.surface[700] },
+  suggestionAddress: { fontSize: typography.fontSize.sm, color: t.text },
   // success[700] sur success[50] : 5,26:1, au-dessus du seuil AA pour ce corps de texte.
   suggestionSource: { fontSize: typography.fontSize.xs, color: colors.success[700] },
   lookupMiss: { fontSize: typography.fontSize.sm, color: colors.mode.tool.muted },

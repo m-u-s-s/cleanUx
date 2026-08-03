@@ -7,10 +7,13 @@ import { useMissionInbox, useAcceptMission, useDeclineMission } from '@/missions
 import type { MissionAssignment } from '@/missions';
 import { useCurrentPosition, distanceKmTo } from '@/tracking';
 import { colors, spacing, typography, radius, shadows, useThemeColors } from '@/theme';
+import type { ThemeTokens } from '@/theme/useThemeColors';
 
 const MISSION_CARD_HEIGHT = 120;
 
 export function MissionInboxScreen() {
+  const styles = stylesFor(useThemeColors());
+
   const { data: assignments, isLoading, refetch, isRefetching } = useMissionInbox();
   const accept = useAcceptMission();
   const decline = useDeclineMission();
@@ -108,11 +111,11 @@ export function MissionInboxScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const stylesFor = (t: ThemeTokens) => StyleSheet.create({
   title: {
     fontSize: typography.fontSize.xl,
     fontWeight: typography.fontWeight.bold,
-    color: colors.surface[900],
+    color: t.text,
     marginBottom: spacing.md,
   },
   card: {
@@ -124,16 +127,16 @@ const styles = StyleSheet.create({
   service: {
     fontSize: typography.fontSize.base,
     fontWeight: typography.fontWeight.semibold,
-    color: colors.surface[900],
+    color: t.text,
   },
   client: {
     fontSize: typography.fontSize.sm,
-    color: colors.surface[600],
+    color: t.textSecondary,
     marginTop: 2,
   },
   address: {
     fontSize: typography.fontSize.xs,
-    color: colors.surface[500],
+    color: t.textSecondary,
     marginTop: 2,
   },
   schedule: {
@@ -147,7 +150,7 @@ const styles = StyleSheet.create({
     marginTop: spacing.sm,
   },
   empty: {
-    color: colors.surface[500],
+    color: t.textSecondary,
     textAlign: 'center',
     marginTop: spacing.xl,
   },
