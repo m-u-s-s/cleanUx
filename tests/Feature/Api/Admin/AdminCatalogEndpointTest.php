@@ -78,7 +78,7 @@ class AdminCatalogEndpointTest extends TestCase
             $this->assertNotEmpty($module['key']);
             $this->assertNotEmpty($module['title']);
             $this->assertNotEmpty($module['icon']);
-            $this->assertContains($module['coverage'], ['pending', 'descriptor', 'screen']);
+            $this->assertContains($module['coverage'], ['pending', 'descriptor', 'report', 'screen']);
             $this->assertNotEmpty($module['route']);
         }
     }

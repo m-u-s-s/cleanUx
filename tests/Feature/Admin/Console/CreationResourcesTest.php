@@ -185,13 +185,20 @@ class CreationResourcesTest extends TestCase
 
     // ── cohérence avec l'annuaire ───────────────────────────────────────────────────────────
 
-    public function test_l_annuaire_annonce_dix_modules_disponibles(): void
+    public function test_l_annuaire_compte_exactement_ce_qui_est_couvert(): void
     {
         $this->actingAsAdmin();
 
         $counts = $this->getJson('/api/admin/catalog')->assertOk()->json('counts');
 
-        $this->assertSame(10, $counts['covered']);
-        $this->assertSame($counts['total'] - 10, $counts['pending']);
+        // Le compteur se dérive du registre plutôt que d'un nombre écrit en dur : figer « 10 »
+        // ici obligeait à toucher ce test à chaque lot livré, et un test qu'on modifie à chaque
+        // fois finit par être modifié sans être lu.
+        $attendus = collect(config('admin_console.modules'))
+            ->reject(fn (array $m) => $m['coverage'] === 'pending')
+            ->count();
+
+        $this->assertSame($attendus, $counts['covered']);
+        $this->assertSame($counts['total'] - $attendus, $counts['pending']);
     }
 }
