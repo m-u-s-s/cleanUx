@@ -91,6 +91,20 @@ describe('AdminDirectoryScreen', () => {
     expect(await screen.findByText('À venir')).toBeTruthy();
   });
 
+  it('ouvre un module couvert dans le moteur de console', async () => {
+    apiMock.onGet('/admin/catalog').reply(200, CATALOG);
+
+    renderScreen();
+
+    fireEvent.press(await screen.findByText('Utilisateurs'));
+
+    // La clé de module EST la clé de ressource : le registre serveur refuse qu'elles divergent.
+    expect(mockNavigate).toHaveBeenCalledWith('AdminResourceList', {
+      resource: 'users',
+      title: 'Utilisateurs',
+    });
+  });
+
   it('ne navigue pas vers un module non couvert', async () => {
     apiMock.onGet('/admin/catalog').reply(200, CATALOG);
 

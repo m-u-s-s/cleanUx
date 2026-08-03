@@ -15,6 +15,10 @@ export type RootStackParamList = {
    */
   AdminSpace: NavigatorScreenParams<AdminTabParamList> | undefined;
   AdminResource: { moduleKey: string; title: string };
+  /** Le moteur de console — trois écrans qui servent tous les domaines décrits. */
+  AdminResourceList: { resource: string; title: string };
+  AdminResourceDetail: { resource: string; title: string; id: string | number };
+  AdminResourceForm: { resource: string; title: string; id?: string | number };
   MissionDetail: { missionId: number };
   /** Les courses immédiates proposées à ce prestataire. */
   AsapOffers: undefined;

@@ -37,6 +37,25 @@ class ResourceController extends Controller
 
     public function __construct(private readonly ResourceRegistry $registry) {}
 
+    /**
+     * Un refus, sous les DEUX conventions de la plateforme.
+     *
+     * Le serveur écrit historiquement `error` (voir `EnforceTokenScope`), mais l'intercepteur du
+     * client mobile lit `error_code` — il retombe sur `'unknown_error'` sinon. Les deux
+     * conventions coexistent ; ne servir que l'une rendait chaque refus opaque à l'application,
+     * qui affichait « une erreur est survenue » là où le serveur avait dit précisément quoi.
+     *
+     * @param  array<string, mixed>  $extra
+     */
+    private function refus(string $code, int $status, array $extra = []): JsonResponse
+    {
+        return response()->json([
+            'ok' => false,
+            'error' => $code,
+            'error_code' => $code,
+        ] + $extra, $status);
+    }
+
     public function index(Request $request, string $resource): JsonResponse
     {
         $descripteur = $this->resolve($resource);
@@ -48,17 +67,13 @@ class ResourceController extends Controller
         $sort = (string) $request->query('sort', $descripteur->defaultSort());
 
         if (! in_array($sort, $descripteur->sorts(), true)) {
-            return response()->json([
-                'ok' => false,
-                'error' => 'invalid_sort',
-                'allowed' => $descripteur->sorts(),
-            ], 422);
+            return $this->refus('invalid_sort', 422, ['allowed' => $descripteur->sorts()]);
         }
 
         $direction = strtolower((string) $request->query('direction', 'desc'));
 
         if (! in_array($direction, ['asc', 'desc'], true)) {
-            return response()->json(['ok' => false, 'error' => 'invalid_direction'], 422);
+            return $this->refus('invalid_direction', 422);
         }
 
         $query = $descripteur->query();
@@ -106,7 +121,7 @@ class ResourceController extends Controller
         $model = $descripteur->query()->find($id);
 
         if (! $model instanceof Model) {
-            return response()->json(['ok' => false, 'error' => 'not_found'], 404);
+            return $this->refus('not_found', 404);
         }
 
         return response()->json(['ok' => true, 'row' => $descripteur->toDetail($model)]);
@@ -121,7 +136,7 @@ class ResourceController extends Controller
         }
 
         if ($descripteur->formFields() === []) {
-            return response()->json(['ok' => false, 'error' => 'read_only_resource'], 405);
+            return $this->refus('read_only_resource', 405);
         }
 
         $data = $this->validated($request, $descripteur);
@@ -145,13 +160,13 @@ class ResourceController extends Controller
         }
 
         if ($descripteur->formFields() === []) {
-            return response()->json(['ok' => false, 'error' => 'read_only_resource'], 405);
+            return $this->refus('read_only_resource', 405);
         }
 
         $model = $descripteur->query()->find($id);
 
         if (! $model instanceof Model) {
-            return response()->json(['ok' => false, 'error' => 'not_found'], 404);
+            return $this->refus('not_found', 404);
         }
 
         // Édition partielle : seules les règles des champs REÇUS s'appliquent. Valider tout le
@@ -178,7 +193,7 @@ class ResourceController extends Controller
         $model = $descripteur->query()->find($id);
 
         if (! $model instanceof Model) {
-            return response()->json(['ok' => false, 'error' => 'not_found'], 404);
+            return $this->refus('not_found', 404);
         }
 
         $model->delete();
@@ -204,13 +219,13 @@ class ResourceController extends Controller
         }
 
         if (! $declaree instanceof Action) {
-            return response()->json(['ok' => false, 'error' => 'unknown_action'], 404);
+            return $this->refus('unknown_action', 404);
         }
 
         $model = $descripteur->query()->find($id);
 
         if (! $model instanceof Model) {
-            return response()->json(['ok' => false, 'error' => 'not_found'], 404);
+            return $this->refus('not_found', 404);
         }
 
         /*
@@ -233,7 +248,7 @@ class ResourceController extends Controller
 
     private function unknownResource(): JsonResponse
     {
-        return response()->json(['ok' => false, 'error' => 'unknown_resource'], 404);
+        return $this->refus('unknown_resource', 404);
     }
 
     /** @return array<string, mixed> */
@@ -271,11 +286,7 @@ class ResourceController extends Controller
         $validator = Validator::make($request->all(), $rules);
 
         if ($validator->fails()) {
-            return response()->json([
-                'ok' => false,
-                'error' => 'validation_failed',
-                'errors' => $validator->errors()->toArray(),
-            ], 422);
+            return $this->refus('validation_failed', 422, ['errors' => $validator->errors()->toArray()]);
         }
 
         // `only()` sur les clés déclarées : la validation ne suffit pas à filtrer, un champ non

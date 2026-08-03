@@ -35,12 +35,28 @@ class EnsureApiAdmin
         // `instanceof` plutôt qu'un simple test de nullité : un authentifiable d'un autre garde
         // n'a pas de notion d'administrateur, et le traiter comme non authentifié vaut mieux que
         // de lui poser une question à laquelle il ne peut pas répondre.
+        /*
+         * Les DEUX conventions de code d'erreur de la plateforme.
+         *
+         * Le serveur écrit historiquement `error` ; l'intercepteur du client mobile lit
+         * `error_code` et retombe sur `'unknown_error'` sinon. Ne servir que l'une rendait ce
+         * refus opaque à l'application, qui affichait « une erreur est survenue » là où le
+         * serveur avait dit précisément que le compte n'est pas administrateur.
+         */
         if (! $user instanceof User) {
-            return response()->json(['ok' => false, 'error' => 'unauthenticated'], 401);
+            return response()->json([
+                'ok' => false,
+                'error' => 'unauthenticated',
+                'error_code' => 'unauthenticated',
+            ], 401);
         }
 
         if (! $user->isAdmin()) {
-            return response()->json(['ok' => false, 'error' => 'forbidden_not_admin'], 403);
+            return response()->json([
+                'ok' => false,
+                'error' => 'forbidden_not_admin',
+                'error_code' => 'forbidden_not_admin',
+            ], 403);
         }
 
         return $next($request);

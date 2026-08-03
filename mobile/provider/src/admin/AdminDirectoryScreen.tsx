@@ -92,7 +92,9 @@ export function AdminDirectoryScreen() {
         renderItem={({ item }) => (
           <ModuleRow
             module={item}
-            onOpen={() => navigation.navigate('AdminResource', { moduleKey: item.key, title: item.title })}
+            // Un module couvert s'ouvre dans le moteur de console. La clé de module EST la clé de
+            // ressource : le registre serveur refuse que les deux divergent.
+            onOpen={() => navigation.navigate('AdminResourceList', { resource: item.key, title: item.title })}
           />
         )}
         ListEmptyComponent={<Text style={styles.empty}>Aucun module ne correspond.</Text>}

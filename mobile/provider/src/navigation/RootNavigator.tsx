@@ -29,6 +29,9 @@ import { ProviderOnboardingScreen } from '@/screens/onboarding/ProviderOnboardin
 import { SpaceSwitcherScreen } from '@/screens/SpaceSwitcherScreen';
 import { AdminNavigator } from '@/admin/AdminNavigator';
 import { AdminResourceScreen } from '@/admin/AdminResourceScreen';
+import { ResourceListScreen } from '@/admin/console/ResourceListScreen';
+import { ResourceDetailScreen } from '@/admin/console/ResourceDetailScreen';
+import { ResourceFormScreen } from '@/admin/console/ResourceFormScreen';
 import { resolveSpace } from '@/admin/space';
 import { useSpacePreference } from '@/admin/useSpacePreference';
 import { TabNavigator } from './TabNavigator';
@@ -96,6 +99,30 @@ export function RootNavigator() {
       <View testID="root-navigator" style={{ flex: 1 }}>
         <Stack.Navigator screenOptions={{ headerShown: false }}>
           <Stack.Screen name="AdminSpace" component={AdminNavigator} />
+          {/*
+            Le moteur de console : trois écrans pour tous les domaines. `AdminResource` reste
+            monté en dernier recours — il n'est atteignable que si un module est déclaré couvert
+            sans que le moteur sache le servir, et il le dit alors plutôt que de faire tomber
+            l'application sur une route inconnue.
+          */}
+          <Stack.Screen
+            name="AdminResourceList"
+            component={ResourceListScreen}
+            options={({ route }) => ({
+              headerShown: true,
+              title: (route.params as { title?: string } | undefined)?.title ?? 'Module',
+            })}
+          />
+          <Stack.Screen
+            name="AdminResourceDetail"
+            component={ResourceDetailScreen}
+            options={{ headerShown: true, title: 'Détail' }}
+          />
+          <Stack.Screen
+            name="AdminResourceForm"
+            component={ResourceFormScreen}
+            options={{ headerShown: true, title: 'Formulaire' }}
+          />
           <Stack.Screen
             name="AdminResource"
             component={AdminResourceScreen}
