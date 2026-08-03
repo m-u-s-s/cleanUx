@@ -94,7 +94,7 @@ class AdminConsoleInventoryTest extends TestCase
             $this->assertContains($module['group'] ?? null, $groups, "Groupe inconnu pour {$key}.");
             $this->assertNotEmpty($module['icon'] ?? null, "Module {$key} sans icône.");
             $this->assertNotEmpty($module['routes'] ?? [], "Module {$key} sans route.");
-            $this->assertContains($module['coverage'] ?? null, ['pending', 'descriptor', 'screen'],
+            $this->assertContains($module['coverage'] ?? null, ['pending', 'descriptor', 'report', 'screen'],
                 "État de couverture invalide pour {$key}.");
         }
     }

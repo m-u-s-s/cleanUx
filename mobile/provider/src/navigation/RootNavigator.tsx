@@ -32,6 +32,7 @@ import { AdminResourceScreen } from '@/admin/AdminResourceScreen';
 import { ResourceListScreen } from '@/admin/console/ResourceListScreen';
 import { ResourceDetailScreen } from '@/admin/console/ResourceDetailScreen';
 import { ResourceFormScreen } from '@/admin/console/ResourceFormScreen';
+import { ReportScreen } from '@/admin/console/ReportScreen';
 import { resolveSpace } from '@/admin/space';
 import { useSpacePreference } from '@/admin/useSpacePreference';
 import { TabNavigator } from './TabNavigator';
@@ -111,6 +112,14 @@ export function RootNavigator() {
             options={({ route }) => ({
               headerShown: true,
               title: (route.params as { title?: string } | undefined)?.title ?? 'Module',
+            })}
+          />
+          <Stack.Screen
+            name="AdminReport"
+            component={ReportScreen}
+            options={({ route }) => ({
+              headerShown: true,
+              title: (route.params as { title?: string } | undefined)?.title ?? 'Synthèse',
             })}
           />
           <Stack.Screen

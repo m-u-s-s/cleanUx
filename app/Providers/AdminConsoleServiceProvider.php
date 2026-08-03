@@ -2,7 +2,18 @@
 
 namespace App\Providers;
 
+use App\Admin\Console\ReportRegistry;
 use App\Admin\Console\ResourceRegistry;
+use App\Admin\Reports\AlertsReport;
+use App\Admin\Reports\AnalyticsReport;
+use App\Admin\Reports\AutomationReport;
+use App\Admin\Reports\BusinessReport;
+use App\Admin\Reports\DashboardReport;
+use App\Admin\Reports\FinanceReport;
+use App\Admin\Reports\HomeReport;
+use App\Admin\Reports\ReadinessReport;
+use App\Admin\Reports\SubscriptionsReport;
+use App\Admin\Reports\ToolsReport;
 use App\Admin\Resources\AccountingEntryResource;
 use App\Admin\Resources\AddressLookupResource;
 use App\Admin\Resources\AnalyticsEventResource;
@@ -207,6 +218,30 @@ class AdminConsoleServiceProvider extends ServiceProvider
             $registry->register('catalog', SectorResource::class);
 
             return $registry;
+        });
+
+        /*
+         * Les rapports — les modules qui ne sont pas des listes.
+         *
+         * Dix pages d'administration n'ont aucune table derrière elles : ce sont des synthèses.
+         * Les forcer dans le moteur de liste aurait demandé d'inventer une entité inexistante,
+         * et l'écran aurait montré une liste vide en prétendant couvrir le domaine.
+         */
+        $this->app->singleton(ReportRegistry::class, function ($app) {
+            $reports = new ReportRegistry($app);
+
+            $reports->register('dashboard', DashboardReport::class);
+            $reports->register('home', HomeReport::class);
+            $reports->register('business', BusinessReport::class);
+            $reports->register('alerts', AlertsReport::class);
+            $reports->register('analytics', AnalyticsReport::class);
+            $reports->register('readiness', ReadinessReport::class);
+            $reports->register('tools', ToolsReport::class);
+            $reports->register('automation', AutomationReport::class);
+            $reports->register('finance', FinanceReport::class);
+            $reports->register('subscriptions', SubscriptionsReport::class);
+
+            return $reports;
         });
     }
 }

@@ -21,7 +21,7 @@ export interface AdminModule {
    * `pending` — page d'administration pas encore servie nativement. Elle reste VISIBLE et
    * marquée : la masquer donnerait une application qui a l'air complète.
    */
-  coverage: 'pending' | 'descriptor' | 'screen';
+  coverage: 'pending' | 'descriptor' | 'report' | 'screen';
   route: string;
 }
 

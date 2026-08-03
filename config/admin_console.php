@@ -6,8 +6,11 @@
  * L'administration web porte 99 routes. Ce fichier dit, pour chacune, comment le mobile la sert :
  *
  *   pending    — pas encore couverte. Le module reste VISIBLE dans l'annuaire, marqué « à venir ».
- *   descriptor — servie par le moteur de console générique (sous-projet B).
- *   screen     — servie par un écran natif sur-mesure (sous-projet C).
+ *   descriptor — servie par le moteur de console générique : liste, détail, actions.
+ *   report     — servie comme SYNTHÈSE : des tuiles chiffrées, pas une liste. Certains modules
+ *                n'ont aucune table derrière eux, et les forcer en liste aurait montré un écran
+ *                vide en prétendant les couvrir.
+ *   screen     — servie par un écran natif sur-mesure.
  *
  * POURQUOI LES MODULES NON COUVERTS RESTENT VISIBLES. Masquer ce qui n'est pas prêt donnerait une
  * application qui a l'air complète et un chantier dont personne ne peut mesurer l'avancement.
@@ -40,18 +43,18 @@ return [
     'modules' => [
 
         // ── Pilotage ────────────────────────────────────────────────────────────────────────
-        ['key' => 'dashboard', 'title' => 'Tableau de bord', 'group' => 'pilotage', 'icon' => 'speedometer-outline', 'coverage' => 'pending', 'routes' => ['admin/dashboard']],
-        ['key' => 'home', 'title' => 'Accueil admin', 'group' => 'pilotage', 'icon' => 'home-outline', 'coverage' => 'pending', 'routes' => ['admin/home']],
-        ['key' => 'business', 'title' => 'Tableau de bord business', 'group' => 'pilotage', 'icon' => 'trending-up-outline', 'coverage' => 'pending', 'routes' => ['admin/business-dashboard']],
-        ['key' => 'alerts', 'title' => 'Alertes', 'group' => 'pilotage', 'icon' => 'warning-outline', 'coverage' => 'pending', 'routes' => ['admin/alerts']],
-        ['key' => 'analytics', 'title' => 'Analytics', 'group' => 'pilotage', 'icon' => 'bar-chart-outline', 'coverage' => 'pending', 'routes' => ['admin/analytics']],
+        ['key' => 'dashboard', 'title' => 'Tableau de bord', 'group' => 'pilotage', 'icon' => 'speedometer-outline', 'coverage' => 'report', 'routes' => ['admin/dashboard']],
+        ['key' => 'home', 'title' => 'Accueil admin', 'group' => 'pilotage', 'icon' => 'home-outline', 'coverage' => 'report', 'routes' => ['admin/home']],
+        ['key' => 'business', 'title' => 'Tableau de bord business', 'group' => 'pilotage', 'icon' => 'trending-up-outline', 'coverage' => 'report', 'routes' => ['admin/business-dashboard']],
+        ['key' => 'alerts', 'title' => 'Alertes', 'group' => 'pilotage', 'icon' => 'warning-outline', 'coverage' => 'report', 'routes' => ['admin/alerts']],
+        ['key' => 'analytics', 'title' => 'Analytics', 'group' => 'pilotage', 'icon' => 'bar-chart-outline', 'coverage' => 'report', 'routes' => ['admin/analytics']],
         ['key' => 'analytics-v2', 'title' => 'Analytics V2', 'group' => 'pilotage', 'icon' => 'analytics-outline', 'coverage' => 'descriptor', 'routes' => ['admin/analytics-v2']],
         ['key' => 'cancellation-reasons', 'title' => 'Motifs d’annulation', 'group' => 'pilotage', 'icon' => 'close-circle-outline', 'coverage' => 'descriptor', 'routes' => ['admin/analytics/cancellations']],
-        ['key' => 'readiness', 'title' => 'Préparation plateforme', 'group' => 'pilotage', 'icon' => 'checkmark-done-outline', 'coverage' => 'pending', 'routes' => ['admin/platform-readiness']],
+        ['key' => 'readiness', 'title' => 'Préparation plateforme', 'group' => 'pilotage', 'icon' => 'checkmark-done-outline', 'coverage' => 'report', 'routes' => ['admin/platform-readiness']],
         ['key' => 'nps', 'title' => 'NPS', 'group' => 'pilotage', 'icon' => 'happy-outline', 'coverage' => 'descriptor', 'routes' => ['admin/nps']],
         ['key' => 'feedbacks', 'title' => 'Retours clients', 'group' => 'pilotage', 'icon' => 'chatbox-ellipses-outline', 'coverage' => 'descriptor', 'routes' => ['admin/feedbacks', 'admin/feedbacks/export', 'admin/feedbacks/export-csv']],
         ['key' => 'platform-modules', 'title' => 'Modules de la plateforme', 'group' => 'pilotage', 'icon' => 'layers-outline', 'coverage' => 'descriptor', 'routes' => ['admin/modules']],
-        ['key' => 'tools', 'title' => 'Outils et exports', 'group' => 'pilotage', 'icon' => 'construct-outline', 'coverage' => 'pending', 'routes' => ['admin/outils', 'admin/export/csv', 'admin/export/pdf']],
+        ['key' => 'tools', 'title' => 'Outils et exports', 'group' => 'pilotage', 'icon' => 'construct-outline', 'coverage' => 'report', 'routes' => ['admin/outils', 'admin/export/csv', 'admin/export/pdf']],
 
         // ── Opérations ──────────────────────────────────────────────────────────────────────
         ['key' => 'missions', 'title' => 'Missions', 'group' => 'operations', 'icon' => 'briefcase-outline', 'coverage' => 'descriptor', 'routes' => ['admin/missions', 'admin/missions/{mission}', 'admin/missions/export/pdf']],
@@ -68,7 +71,7 @@ return [
         ['key' => 'realtime', 'title' => 'Temps réel', 'group' => 'operations', 'icon' => 'pulse-outline', 'coverage' => 'descriptor', 'routes' => ['admin/realtime']],
         ['key' => 'bookings', 'title' => 'Rendez-vous et récurrences', 'group' => 'operations', 'icon' => 'repeat-outline', 'coverage' => 'descriptor', 'routes' => ['admin/recurrence/{rendezVous}/serie', 'admin/rendez-vous/{rendezVous}', 'admin/rendez-vous-series/{series}/edit']],
         ['key' => 'b2b-operations', 'title' => 'Opérations B2B', 'group' => 'operations', 'icon' => 'business-outline', 'coverage' => 'descriptor', 'routes' => ['admin/b2b/operations']],
-        ['key' => 'automation', 'title' => 'Automatisation', 'group' => 'operations', 'icon' => 'flash-outline', 'coverage' => 'pending', 'routes' => ['admin/automation']],
+        ['key' => 'automation', 'title' => 'Automatisation', 'group' => 'operations', 'icon' => 'flash-outline', 'coverage' => 'report', 'routes' => ['admin/automation']],
 
         // ── Personnes et comptes ────────────────────────────────────────────────────────────
         ['key' => 'users', 'title' => 'Utilisateurs', 'group' => 'personnes', 'icon' => 'people-outline', 'coverage' => 'descriptor', 'routes' => ['admin/utilisateurs', 'admin/users']],
@@ -97,14 +100,14 @@ return [
         ['key' => 'international', 'title' => 'International', 'group' => 'catalogue', 'icon' => 'globe-outline', 'coverage' => 'descriptor', 'routes' => ['admin/international']],
 
         // ── Argent et conformité ────────────────────────────────────────────────────────────
-        ['key' => 'finance', 'title' => 'Finance', 'group' => 'argent', 'icon' => 'cash-outline', 'coverage' => 'pending', 'routes' => ['admin/finance']],
+        ['key' => 'finance', 'title' => 'Finance', 'group' => 'argent', 'icon' => 'cash-outline', 'coverage' => 'report', 'routes' => ['admin/finance']],
         ['key' => 'accounting', 'title' => 'Comptabilité', 'group' => 'argent', 'icon' => 'calculator-outline', 'coverage' => 'descriptor', 'routes' => ['admin/accounting-v2']],
         ['key' => 'b2b-invoices', 'title' => 'Facturation mensuelle B2B', 'group' => 'argent', 'icon' => 'receipt-outline', 'coverage' => 'descriptor', 'routes' => ['admin/b2b/facturation-mensuelle']],
         ['key' => 'credits', 'title' => 'Crédits clients', 'group' => 'argent', 'icon' => 'wallet-outline', 'coverage' => 'descriptor', 'routes' => ['admin/credits-clients']],
         ['key' => 'tips', 'title' => 'Pourboires', 'group' => 'argent', 'icon' => 'gift-outline', 'coverage' => 'descriptor', 'routes' => ['admin/tips']],
         ['key' => 'fx', 'title' => 'Change et devises', 'group' => 'argent', 'icon' => 'swap-horizontal-outline', 'coverage' => 'descriptor', 'routes' => ['admin/fx']],
         ['key' => 'stripe', 'title' => 'Stripe', 'group' => 'argent', 'icon' => 'card-outline', 'coverage' => 'descriptor', 'routes' => ['admin/stripe']],
-        ['key' => 'subscriptions', 'title' => 'Abonnements', 'group' => 'argent', 'icon' => 'refresh-circle-outline', 'coverage' => 'pending', 'routes' => ['admin/subscriptions-v2']],
+        ['key' => 'subscriptions', 'title' => 'Abonnements', 'group' => 'argent', 'icon' => 'refresh-circle-outline', 'coverage' => 'report', 'routes' => ['admin/subscriptions-v2']],
         ['key' => 'insurance', 'title' => 'Assurance', 'group' => 'argent', 'icon' => 'umbrella-outline', 'coverage' => 'descriptor', 'routes' => ['admin/insurance']],
         ['key' => 'cancellations', 'title' => 'Annulations', 'group' => 'argent', 'icon' => 'close-circle-outline', 'coverage' => 'descriptor', 'routes' => ['admin/cancellations-v2']],
         ['key' => 'disputes', 'title' => 'Litiges', 'group' => 'argent', 'icon' => 'alert-circle-outline', 'coverage' => 'descriptor', 'routes' => ['admin/disputes']],

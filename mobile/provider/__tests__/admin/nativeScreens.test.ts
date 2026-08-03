@@ -46,7 +46,7 @@ describe('écrans natifs de la console admin', () => {
     const registre = lireRegistre();
 
     expect(registre.length).toBeGreaterThan(50);
-    expect(registre.every((m) => ['pending', 'descriptor', 'screen'].includes(m.coverage))).toBe(true);
+    expect(registre.every((m) => ['pending', 'descriptor', 'report', 'screen'].includes(m.coverage))).toBe(true);
   });
 
   it('tout module déclaré « screen » a un écran natif', () => {

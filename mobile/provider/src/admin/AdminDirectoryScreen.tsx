@@ -82,6 +82,14 @@ export function AdminDirectoryScreen() {
       return;
     }
 
+    // Une SYNTHÈSE n'est pas une liste : l'ouvrir sur le moteur de liste montrerait un écran vide
+    // en prétendant couvrir le domaine.
+    if (module.coverage === 'report') {
+      navigation.navigate('AdminReport', { report: module.key, title: module.title });
+
+      return;
+    }
+
     navigation.navigate('AdminResourceList', { resource: module.key, title: module.title });
   };
 

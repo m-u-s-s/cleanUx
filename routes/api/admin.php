@@ -5,6 +5,7 @@ use App\Http\Controllers\Api\Admin\AdminCatalogController;
 use App\Http\Controllers\Api\Admin\AdminOverviewController;
 use App\Http\Controllers\Api\Admin\AuditController;
 use App\Http\Controllers\Api\Admin\BookingDispatchController;
+use App\Http\Controllers\Api\Admin\Console\ReportController;
 use App\Http\Controllers\Api\Admin\Console\ResourceController;
 use App\Http\Controllers\Api\Admin\DisputeAdminController;
 use App\Http\Controllers\Api\Admin\InsuranceAdminController;
@@ -243,6 +244,10 @@ Route::middleware(['auth:sanctum', 'api_admin'])->group(function () {
      */
     Route::prefix('admin/console')->group(function () {
         Route::middleware('api_scope:admin:read,admin:everything')->group(function () {
+            // AVANT la route générique `/{resource}` : sans cela, « reports » serait pris pour
+            // une ressource et rendrait 404 sur un module qui existe.
+            Route::get('/reports/{report}', ReportController::class);
+
             Route::get('/{resource}', [ResourceController::class, 'index']);
             Route::get('/{resource}/{id}', [ResourceController::class, 'show']);
         });

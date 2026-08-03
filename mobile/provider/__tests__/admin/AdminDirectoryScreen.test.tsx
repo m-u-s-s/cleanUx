@@ -126,6 +126,28 @@ describe('AdminDirectoryScreen', () => {
     delete NATIVE_ADMIN_SCREENS.users;
   });
 
+  it('ouvre une synthèse sur l’écran de rapport, pas sur le moteur de liste', async () => {
+    // Ouvrir une synthèse sur le moteur de liste montrerait un écran vide en prétendant couvrir
+    // le domaine — le mensonge que le registre de couverture sert à empêcher.
+    apiMock.onGet('/admin/catalog').reply(200, {
+      ...CATALOG,
+      groups: [{
+        key: 'pilotage',
+        title: 'Pilotage',
+        modules: [{ key: 'home', title: 'Accueil admin', icon: 'home-outline', coverage: 'report', route: 'admin/home' }],
+      }],
+    });
+
+    renderScreen();
+
+    fireEvent.press(await screen.findByText('Accueil admin'));
+
+    expect(mockNavigate).toHaveBeenCalledWith('AdminReport', {
+      report: 'home',
+      title: 'Accueil admin',
+    });
+  });
+
   it('ne navigue pas vers un module non couvert', async () => {
     apiMock.onGet('/admin/catalog').reply(200, CATALOG);
 
