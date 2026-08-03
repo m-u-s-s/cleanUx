@@ -5,6 +5,7 @@ import { MissionsScreen } from '@/screens/MissionsScreen';
 import { EarningsScreen } from '@/screens/EarningsScreen';
 import { ProfileScreen } from '@/screens/ProfileScreen';
 import { Icon } from '@/ui';
+import { apparenceDeBarre } from '@/ui/glassBars';
 import { usePresenceHeartbeat } from '@/presence';
 import { colors } from '@/theme';
 import { useThemeColors } from '@/theme/useThemeColors';
@@ -25,11 +26,8 @@ export function TabNavigator() {
       screenOptions={{
         headerShown: false,
         tabBarActiveTintColor: colors.brand[500],
-        tabBarInactiveTintColor: colors.surface[400],
-        tabBarStyle: {
-          backgroundColor: theme.bg,
-          borderTopColor: theme.border,
-        },
+        tabBarInactiveTintColor: theme.textMuted,
+        ...apparenceDeBarre(theme),
       }}
     >
       <Tab.Screen

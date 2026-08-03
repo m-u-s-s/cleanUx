@@ -56,7 +56,7 @@ export class ErrorBoundary extends Component<Props, State> {
 }
 
 const stylesFor = (t: ThemeTokens) => StyleSheet.create({
-  container: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: spacing.xl, backgroundColor: t.bg },
+  container: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: spacing.xl, backgroundColor: t.page },
   title: { fontSize: typography.fontSize['2xl'], fontWeight: typography.fontWeight.bold, color: t.text, marginBottom: spacing.sm },
   message: { fontSize: typography.fontSize.base, color: t.textSecondary, marginBottom: spacing.lg, textAlign: 'center' },
   // La couleur d'erreur est SÉMANTIQUE : son sens ne dépend pas du fond, et la thématiser la

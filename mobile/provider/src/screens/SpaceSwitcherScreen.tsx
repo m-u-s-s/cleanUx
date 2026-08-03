@@ -90,7 +90,7 @@ const stylesFor = (t: ThemeTokens) => StyleSheet.create({
     borderRadius: radius.lg,
     borderWidth: 1,
     borderColor: t.border,
-    backgroundColor: t.bg,
+    backgroundColor: t.cardSubtle,
   },
   choicePressed: { backgroundColor: t.inputBg },
   choiceLabel: { ...typography.preset.subhead, color: t.text },

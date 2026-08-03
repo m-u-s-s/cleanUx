@@ -145,7 +145,7 @@ export function MoreScreen() {
 }
 
 const stylesFor = (t: ThemeTokens) => StyleSheet.create({
-  container: { flex: 1, backgroundColor: t.bg },
+  container: { flex: 1, backgroundColor: t.page },
   scroll: { padding: spacing.md, paddingBottom: spacing['2xl'] },
   profileSection: {
     flexDirection: 'row',

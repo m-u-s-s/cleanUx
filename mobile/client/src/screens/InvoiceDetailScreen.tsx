@@ -262,7 +262,7 @@ const stylesFor = (t: ThemeTokens) => StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    backgroundColor: t.bg,
+    backgroundColor: t.cardSubtle,
     borderRadius: radius.sm,
     paddingHorizontal: spacing.sm,
     paddingVertical: 6,

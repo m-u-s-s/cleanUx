@@ -83,7 +83,7 @@ export function ChatScreen({ route }: Props) {
 }
 
 const stylesFor = (t: ThemeTokens) => StyleSheet.create({
-  flex: { flex: 1, backgroundColor: t.bg },
+  flex: { flex: 1, backgroundColor: t.page },
   list: { paddingHorizontal: spacing.md, paddingVertical: spacing.sm },
   bubble: {
     maxWidth: '80%',

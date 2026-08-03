@@ -124,7 +124,7 @@ export function EmbeddedModuleScreen({
     return (
       <View
         testID="embedded-loading"
-        style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: theme.bg }}
+        style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: theme.page }}
       >
         <ActivityIndicator size="large" color={colors.brand[500]} />
       </View>

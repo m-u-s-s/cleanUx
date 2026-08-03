@@ -279,7 +279,7 @@ export function ProviderOnboardingScreen({ onFinished }: { onFinished?: () => vo
 }
 
 const stylesFor = (t: ThemeTokens) => StyleSheet.create({
-  container: { padding: spacing.lg, gap: spacing.lg, backgroundColor: t.bg, flexGrow: 1 },
+  container: { padding: spacing.lg, gap: spacing.lg, backgroundColor: t.page, flexGrow: 1 },
   centered: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: spacing.md, padding: spacing.lg },
   title: {
     fontSize: typography.fontSize['2xl'],

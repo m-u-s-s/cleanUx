@@ -30,7 +30,30 @@ export function useThemeColors() {
 
     // ── Surfaces et texte ───────────────────────────────────────────────────────────────────
     bg: isDark ? nuit.night : colors.surface[50],
+
+    /**
+     * Le fond d'un conteneur PLEINE PAGE — et rien d'autre.
+     *
+     * En sombre il vaut `transparent` : la toile nuit est montée UNE FOIS à la racine par
+     * `NightShell`, et tout écran qui repeint son fond la masque. La régression est particulièrement
+     * sournoise parce que la couleur masquante est presque la même : sur une capture, on ne voit
+     * rien ; sur l'appareil, les gouttes ont disparu.
+     *
+     * En clair il vaut `bg`, à l'identique de ce qui existait.
+     */
+    page: isDark ? 'transparent' : colors.surface[50],
+
     card: isDark ? nuit.panel : '#ffffff',
+
+    /**
+     * La carte DISCRÈTE — celle qui, en clair, se confond presque avec la page.
+     *
+     * Beaucoup de cartes portaient `colors.surface[50]`, soit la couleur de la page elle-même. La
+     * migration les a traduites en `bg`, ce qui reste juste en clair mais donne en sombre une carte
+     * exactement de la couleur du fond : un rectangle invisible. Ce jeton garde le clair identique
+     * et relève le sombre au panneau.
+     */
+    cardSubtle: isDark ? nuit.panel : colors.surface[50],
     cardElevated: isDark ? nuit.nightSoft : '#ffffff',
     text: isDark ? nuit.text : colors.surface[900],
     textSecondary: isDark ? nuit.muted : colors.surface[600],

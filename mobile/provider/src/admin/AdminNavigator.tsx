@@ -2,6 +2,7 @@ import React from 'react';
 import { View } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Icon } from '@/ui';
+import { apparenceDeBarre } from '@/ui/glassBars';
 import { colors } from '@/theme';
 import { useThemeColors } from '@/theme/useThemeColors';
 import { AdminHomeScreen } from './AdminHomeScreen';
@@ -30,11 +31,8 @@ export function AdminNavigator() {
         screenOptions={{
           headerShown: false,
           tabBarActiveTintColor: colors.brand[500],
-          tabBarInactiveTintColor: colors.surface[400],
-          tabBarStyle: {
-            backgroundColor: theme.bg,
-            borderTopColor: theme.border,
-          },
+          tabBarInactiveTintColor: theme.textMuted,
+          ...apparenceDeBarre(theme),
         }}
       >
         <Tab.Screen

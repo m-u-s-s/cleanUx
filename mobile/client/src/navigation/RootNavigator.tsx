@@ -46,7 +46,7 @@ export function RootNavigator() {
 
   if (isLoading) {
     return (
-      <View testID="root-navigator" style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: theme.bg }}>
+      <View testID="root-navigator" style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: theme.page }}>
         <ActivityIndicator size="large" color={colors.brand[500]} />
       </View>
     );

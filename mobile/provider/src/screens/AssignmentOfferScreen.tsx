@@ -190,7 +190,7 @@ const stylesFor = (t: ThemeTokens) => StyleSheet.create({
     marginBottom: spacing.md,
   },
   details: {
-    backgroundColor: t.bg,
+    backgroundColor: t.cardSubtle,
     borderRadius: radius.md,
     padding: spacing.md,
     marginBottom: spacing.lg,

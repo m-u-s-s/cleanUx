@@ -170,7 +170,7 @@ const stylesFor = (t: ThemeTokens) => StyleSheet.create({
   sectionHeader: {
     ...typography.preset.subhead,
     color: t.textSecondary,
-    backgroundColor: t.bg,
+    backgroundColor: t.cardSubtle,
     paddingVertical: spacing.xs,
     textTransform: 'uppercase',
   },

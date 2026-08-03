@@ -132,7 +132,7 @@ const stylesFor = (t: ThemeTokens) => StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: t.bg,
+    backgroundColor: t.page,
     padding: spacing.lg,
   },
   title: {

@@ -11,7 +11,14 @@ interface ScreenProps extends ViewProps {
 }
 
 export function Screen({ scroll, edges = ['top', 'left', 'right'], children, style, ...props }: ScreenProps) {
-  const { bg } = useThemeColors();
+  const { bg, isDark } = useThemeColors();
+
+  /*
+   * En sombre, l'écran ne peint pas son fond : il laisse voir la toile nuit montée une fois à la
+   * racine par `NightShell`. Peindre `bg` ici la masquerait entièrement — un aplat presque de la
+   * même couleur, donc une régression invisible sur une capture d'écran et pourtant totale.
+   */
+  const fond = isDark ? 'transparent' : bg;
 
   const content = scroll ? (
     <ScrollView
@@ -29,7 +36,9 @@ export function Screen({ scroll, edges = ['top', 'left', 'right'], children, sty
   );
 
   return (
-    <SafeAreaView style={[styles.safe, { backgroundColor: bg }]} edges={edges}>
+    // `testID` fixe : c'est la couche qui décide si la toile nuit se voit, et remonter à elle par
+    // la chaîne des parents dans un test se casse au premier changement de structure.
+    <SafeAreaView testID="screen-safe" style={[styles.safe, { backgroundColor: fond }]} edges={edges}>
       {content}
     </SafeAreaView>
   );

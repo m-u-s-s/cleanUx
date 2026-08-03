@@ -117,7 +117,7 @@ const stylesFor = (t: ThemeTokens) => StyleSheet.create({
     paddingHorizontal: spacing.sm + 4,
     paddingTop: spacing.lg,
     paddingBottom: spacing.sm,
-    backgroundColor: t.bg,
+    backgroundColor: t.inputBg,
     position: 'relative',
   },
   label: {

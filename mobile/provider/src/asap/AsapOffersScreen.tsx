@@ -157,7 +157,7 @@ const stylesFor = (t: ThemeTokens) => StyleSheet.create({
     borderRadius: radius.md,
   },
   card: {
-    backgroundColor: t.bg,
+    backgroundColor: t.cardSubtle,
     borderRadius: radius.lg,
     borderWidth: 1,
     borderColor: t.border,

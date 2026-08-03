@@ -7,6 +7,7 @@ import { ProfileScreen } from '@/screens/ProfileScreen';
 import { Icon } from '@/ui';
 import { colors } from '@/theme';
 import { useThemeColors } from '@/theme/useThemeColors';
+import { apparenceDeBarre } from '@/ui/glassBars';
 import { useNotifications } from '@/notifications';
 import type { TabParamList } from './types';
 
@@ -32,8 +33,8 @@ export function TabNavigator() {
       screenOptions={{
         headerShown: false,
         tabBarActiveTintColor: colors.brand[500],
-        tabBarInactiveTintColor: colors.surface[400],
-        tabBarStyle: { backgroundColor: theme.bg, borderTopColor: theme.border },
+        tabBarInactiveTintColor: theme.textMuted,
+        ...apparenceDeBarre(theme),
       }}
     >
       <Tab.Screen

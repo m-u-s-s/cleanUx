@@ -5,6 +5,7 @@ import type { BottomSheetDefaultBackdropProps } from '@gorhom/bottom-sheet/lib/t
 import {radius, spacing } from '@/theme';
 import { useThemeColors } from '@/theme/useThemeColors';
 import type { ThemeTokens } from '@/theme/useThemeColors';
+import { fondDeFeuille } from './glassBars';
 
 interface BottomSheetProps {
   snapPoints: (string | number)[];
@@ -45,7 +46,11 @@ export const BottomSheet = forwardRef<GorhomBottomSheet, BottomSheetProps>(
 BottomSheet.displayName = 'BottomSheet';
 
 const stylesFor = (t: ThemeTokens) => StyleSheet.create({
-  background: { backgroundColor: t.bg, borderTopLeftRadius: radius.xl, borderTopRightRadius: radius.xl },
+  background: {
+    ...fondDeFeuille(t),
+    borderTopLeftRadius: radius.xl,
+    borderTopRightRadius: radius.xl,
+  },
   indicator: { backgroundColor: t.border, width: 40 },
   content: { paddingHorizontal: spacing.md, paddingBottom: spacing.xl },
 });

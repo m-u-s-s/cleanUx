@@ -572,7 +572,7 @@ const stylesFor = (t: ThemeTokens) => StyleSheet.create({
 
   // Latest events panel
   eventsPanel: {
-    backgroundColor: t.bg,
+    backgroundColor: t.cardSubtle,
     borderRadius: radius.md,
     padding: spacing.md,
     marginBottom: spacing.md,
@@ -702,7 +702,7 @@ const stylesFor = (t: ThemeTokens) => StyleSheet.create({
 
   // Invoice card
   card: {
-    backgroundColor: t.bg,
+    backgroundColor: t.cardSubtle,
     borderRadius: radius.md,
     padding: spacing.md,
     borderWidth: 1,

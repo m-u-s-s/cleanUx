@@ -78,7 +78,7 @@ export function ProfileScreen() {
 const stylesFor = (t: ThemeTokens) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: t.bg,
+    backgroundColor: t.page,
   },
   content: {
     padding: spacing.md,
