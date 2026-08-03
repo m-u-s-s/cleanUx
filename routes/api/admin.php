@@ -26,7 +26,16 @@ use Illuminate\Support\Facades\Route;
 // Authenticated — Admin endpoints
 // ─────────────────────────────────────────────
 
-Route::middleware('auth:sanctum')->group(function () {
+/*
+ * `api_scope` dit ce qu'un jeton a le droit de faire ; il ne dit pas QUI le porte.
+ *
+ * Le jeton mobile est émis sans liste d'abilities, donc Sanctum y inscrit '*', et le contrôle de
+ * scope laisse passer tout jeton portant '*'. Ce groupe était par conséquent ouvert à n'importe
+ * quel compte authentifié depuis l'application : un client atteignait la comptabilité et les
+ * jetons d'API. La garde de rôle est le verrou qui manquait — le scope reste en place, il filtre
+ * ce qu'un jeton d'intégration a le droit de faire une fois le rôle établi.
+ */
+Route::middleware(['auth:sanctum', 'api_admin'])->group(function () {
 
     // Phase Matching v2 — Simulation admin
     Route::prefix('admin/matching')->middleware('api_scope:admin:read,admin:everything')->group(function () {
