@@ -25,6 +25,12 @@ import { NotificationPreferencesScreen } from '@/screens/NotificationPreferences
 import { LanguageScreen } from '@/screens/LanguageScreen';
 import { AppearanceScreen } from '@/screens/AppearanceScreen';
 import { ProviderOnboardingScreen } from '@/screens/onboarding/ProviderOnboardingScreen';
+// Espace d'administration — l'application prestataire sert deux publics depuis le lot A.
+import { SpaceSwitcherScreen } from '@/screens/SpaceSwitcherScreen';
+import { AdminNavigator } from '@/admin/AdminNavigator';
+import { AdminResourceScreen } from '@/admin/AdminResourceScreen';
+import { resolveSpace } from '@/admin/space';
+import { useSpacePreference } from '@/admin/useSpacePreference';
 import { TabNavigator } from './TabNavigator';
 import { AsapOffersScreen } from '@/asap';
 import { colors } from '@/theme';
@@ -33,7 +39,7 @@ import type { RootStackParamList } from './types';
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
 export function RootNavigator() {
-  const { isAuthenticated, isLoading } = useAuth();
+  const { user, isAuthenticated, isLoading } = useAuth();
 
   // Le parcours de vérification garde l'entrée de l'application. Sans lui, un compte tout juste
   // créé atterrissait sur le tableau de bord où chaque appel échouait en 403, sans explication.
@@ -41,7 +47,25 @@ export function RootNavigator() {
   const { data: onboarding, isLoading: onboardingLoading, isError: onboardingError } =
     useOnboardingProgress(isAuthenticated);
 
-  if (isLoading) {
+  // L'espace retenu d'un compte à double casquette. Tant qu'il se lit, on n'ouvre rien : ouvrir
+  // l'espace par défaut le temps d'une lecture asynchrone ferait clignoter un écran qui n'est pas
+  // le sien.
+  const { space: chosenSpace, isLoading: spaceLoading, choose } = useSpacePreference();
+
+  // L'état du dossier, réduit à ce que l'aiguillage doit en savoir. `undefined` = inconnu, et
+  // l'inconnu laisse passer.
+  const onboardingComplete =
+    onboardingLoading || onboardingError ? undefined : isJourneyComplete(onboarding);
+
+  const space = resolveSpace({
+    isLoading: isLoading || spaceLoading,
+    isAuthenticated,
+    user,
+    onboardingComplete,
+    chosenSpace,
+  });
+
+  if (space === 'loading') {
     return (
       <View
         testID="root-navigator"
@@ -52,10 +76,51 @@ export function RootNavigator() {
     );
   }
 
+  /*
+   * L'espace d'administration court-circuite la pile prestataire entière.
+   *
+   * Il est rendu HORS du `Stack.Navigator` ci-dessous parce qu'aucun de ses écrans ne concerne un
+   * administrateur : les y laisser atteignables donnerait des routes qui répondent 403 à qui les
+   * ouvre. Le choix d'espace passe par le même chemin, pour la même raison.
+   */
+  if (space === 'switcher') {
+    return (
+      <View testID="root-navigator" style={{ flex: 1 }}>
+        <SpaceSwitcherScreen onChoose={(next) => void choose(next)} />
+      </View>
+    );
+  }
+
+  if (space === 'admin') {
+    return (
+      <View testID="root-navigator" style={{ flex: 1 }}>
+        <Stack.Navigator screenOptions={{ headerShown: false }}>
+          <Stack.Screen name="AdminSpace" component={AdminNavigator} />
+          <Stack.Screen
+            name="AdminResource"
+            component={AdminResourceScreen}
+            options={({ route }) => ({
+              headerShown: true,
+              title: (route.params as { title?: string } | undefined)?.title ?? 'Module',
+            })}
+          />
+          <Stack.Screen
+            name="Legal"
+            component={LegalScreen}
+            options={({ route }) => ({
+              title: route.params.type === 'terms' ? 'CGU' : 'Confidentialité',
+              headerShown: true,
+            })}
+          />
+        </Stack.Navigator>
+      </View>
+    );
+  }
+
   return (
     <View testID="root-navigator" style={{ flex: 1 }}>
       <Stack.Navigator screenOptions={{ headerShown: false }}>
-        {isAuthenticated && !onboardingLoading && !onboardingError && !isJourneyComplete(onboarding) ? (
+        {space === 'providerOnboarding' ? (
           // Dossier incomplet : rien d'autre n'est atteignable. Une ERREUR de chargement laisse
           // en revanche passer — mieux vaut un dashboard partiellement bloqué par le serveur
           // qu'un utilisateur enfermé hors de son app parce qu'une requête a échoué.

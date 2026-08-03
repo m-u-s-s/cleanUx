@@ -57,6 +57,15 @@ class AuthMeController extends Controller
         $payload['is_admin'] = method_exists($user, 'isAdmin') && $user->isAdmin();
 
         /*
+         * La casquette prestataire, pour la même raison — et pour une de plus.
+         *
+         * Un compte peut porter les DEUX : un administrateur qui intervient aussi sur le terrain
+         * existe. Sans ce drapeau à la reprise de session, l'application ne pouvait plus lui
+         * proposer de choisir son espace et l'enfermait du côté administration, sans retour.
+         */
+        $payload['is_provider'] = method_exists($user, 'isProvider') && $user->isProvider();
+
+        /*
          * La réponse porte les DEUX formes, et c'est délibéré.
          *
          * Le serveur renvoyait les attributs à plat ; l'application mobile lit `data.user`. Elle

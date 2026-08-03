@@ -18,6 +18,12 @@ export interface User {
    * l'administrateur en compte ordinaire.
    */
   is_admin?: boolean;
+  /**
+   * Casquette prestataire. Un compte peut porter les DEUX : un administrateur qui intervient
+   * aussi sur le terrain existe, et le forcer à tenir deux comptes lui donnerait deux historiques
+   * et deux facturations. Ce drapeau est ce qui permet de lui proposer de choisir son espace.
+   */
+  is_provider?: boolean;
 }
 
 export class ApiError extends Error {

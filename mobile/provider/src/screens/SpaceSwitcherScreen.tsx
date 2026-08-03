@@ -1,0 +1,92 @@
+import React from 'react';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Icon, Screen } from '@/ui';
+import { colors, radius, spacing, typography } from '@/theme';
+import type { ChosenSpace } from '@/admin/space';
+
+/**
+ * Le choix d'espace d'un compte qui porte les deux casquettes.
+ *
+ * Un administrateur qui intervient aussi sur le terrain existe, et le forcer à tenir deux comptes
+ * lui donnerait deux historiques et deux facturations. Plutôt que de deviner à sa place, on lui
+ * demande — une fois : le choix est retenu, et se change depuis le profil.
+ */
+export function SpaceSwitcherScreen({ onChoose }: { onChoose: (space: ChosenSpace) => void }) {
+  return (
+    <Screen>
+      <View testID="space-switcher" style={styles.container}>
+        <Text style={styles.title}>Où souhaitez-vous travailler ?</Text>
+        <Text style={styles.subtitle}>
+          Votre compte donne accès aux deux espaces. Vous pourrez en changer à tout moment depuis
+          votre profil.
+        </Text>
+
+        <Choice
+          icon="speedometer-outline"
+          label="Administration"
+          hint="Piloter la plateforme"
+          onPress={() => onChoose('admin')}
+        />
+        <Choice
+          icon="briefcase-outline"
+          label="Terrain"
+          hint="Mes missions et mes revenus"
+          onPress={() => onChoose('provider')}
+        />
+      </View>
+    </Screen>
+  );
+}
+
+function Choice({
+  icon,
+  label,
+  hint,
+  onPress,
+}: {
+  icon: string;
+  label: string;
+  hint: string;
+  onPress: () => void;
+}) {
+  return (
+    <Pressable
+      onPress={onPress}
+      accessibilityRole="button"
+      accessibilityLabel={label}
+      style={({ pressed }) => [styles.choice, pressed && styles.choicePressed]}
+    >
+      <Icon name={icon as never} size={26} color={colors.brand[500]} />
+      <View style={{ flex: 1 }}>
+        <Text style={styles.choiceLabel}>{label}</Text>
+        <Text style={styles.choiceHint}>{hint}</Text>
+      </View>
+      <Icon name="chevron-forward" size={18} color={colors.surface[400]} />
+    </Pressable>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: { flex: 1, justifyContent: 'center', gap: spacing.md },
+  title: { ...typography.preset.headline, color: colors.surface[900], textAlign: 'center' },
+  subtitle: {
+    fontSize: typography.fontSize.sm,
+    color: colors.surface[500],
+    textAlign: 'center',
+    marginBottom: spacing.lg,
+    lineHeight: 20,
+  },
+  choice: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.md,
+    padding: spacing.lg,
+    borderRadius: radius.lg,
+    borderWidth: 1,
+    borderColor: colors.surface[200],
+    backgroundColor: colors.surface[50],
+  },
+  choicePressed: { backgroundColor: colors.surface[100] },
+  choiceLabel: { ...typography.preset.subhead, color: colors.surface[900] },
+  choiceHint: { fontSize: typography.fontSize.xs, color: colors.surface[500], marginTop: 2 },
+});

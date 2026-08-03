@@ -40,6 +40,18 @@ class AuthMeAdminFlagTest extends TestCase
             ->assertJsonPath('user.is_admin', false);
     }
 
+    public function test_me_expose_aussi_la_casquette_prestataire(): void
+    {
+        // Sans ce drapeau à la reprise, un compte à double casquette ne pouvait plus choisir son
+        // espace : l'application l'enfermait du côté administration, sans retour.
+        Sanctum::actingAs(User::factory()->admin()->create(), ['*']);
+
+        $this->getJson('/api/auth/me')
+            ->assertOk()
+            ->assertJsonPath('is_provider', false)
+            ->assertJsonPath('user.is_provider', false);
+    }
+
     public function test_la_connexion_et_la_reprise_s_accordent(): void
     {
         $admin = User::factory()->admin()->create(['password' => 'password']);

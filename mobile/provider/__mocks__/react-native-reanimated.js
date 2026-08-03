@@ -48,6 +48,10 @@ const FadeIn = _makeEntryExit();
 const FadeOut = _makeEntryExit();
 const FadeInUp = _makeEntryExit();
 const FadeOutDown = _makeEntryExit();
+// Utilisées par LoginScreen et les listes animées. Leur absence faisait tomber tout test qui
+// rendait ces écrans — ce qui n'était jamais arrivé, faute de test montant l'arbre complet.
+const FadeInDown = _makeEntryExit();
+const FadeInRight = _makeEntryExit();
 const SlideInRight = _makeEntryExit();
 const SlideOutLeft = _makeEntryExit();
 const ZoomIn = _makeEntryExit();
@@ -129,6 +133,8 @@ module.exports = {
   FadeOut,
   FadeInUp,
   FadeOutDown,
+  FadeInDown,
+  FadeInRight,
   SlideInRight,
   SlideOutLeft,
   ZoomIn,
