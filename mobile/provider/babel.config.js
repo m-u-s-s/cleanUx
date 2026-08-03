@@ -22,6 +22,12 @@ module.exports = function (api) {
             '@/trades': '../shared/src/trades',
             '@/ui': '../shared/src/ui',
             '@/ErrorBoundary': '../shared/src/ErrorBoundary',
+            // Déclarés dans tsconfig.json mais absents ici : le typage passait, l'import
+            // échouait à l'exécution. La console d'administration en dépend.
+            '@/parity': '../shared/src/parity',
+            '@/webview': '../shared/src/webview',
+            '@/finance': '../shared/src/finance',
+            '@cleanux/shared': '../shared/src',
             // Provider-only modules — resolve to local src/
             '@': './src',
           },
