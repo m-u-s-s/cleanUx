@@ -79,6 +79,8 @@ class AdminResourceContractTest extends TestCase
             'label' => 'Suspendre',
             'destructive' => true,
             'confirm' => 'Ce compte ne pourra plus se connecter.',
+            // Vide : cette action n'exige aucune saisie préalable.
+            'fields' => [],
         ], $action->toArray());
     }
 
@@ -89,6 +91,7 @@ class AdminResourceContractTest extends TestCase
             'label' => 'Rafraîchir',
             'destructive' => false,
             'confirm' => null,
+            'fields' => [],
         ], Action::make('refresh', 'Rafraîchir', fn () => null)->toArray());
     }
 
@@ -99,6 +102,26 @@ class AdminResourceContractTest extends TestCase
         $this->expectException(\InvalidArgumentException::class);
 
         Action::make('delete', 'Supprimer', fn () => null)->destructive('');
+    }
+
+    public function test_une_action_publie_les_champs_qu_elle_exige(): void
+    {
+        $action = Action::make('reject', 'Refuser', fn () => null)
+            ->destructive('Le dossier sera refusé.')
+            ->requires([
+                Field::make('reason', 'Motif', Field::TYPE_TEXTAREA)->rules(['required', 'min:10']),
+            ]);
+
+        $forme = $action->toArray();
+
+        // Le mobile doit pouvoir dessiner la feuille de saisie sans rien connaître du domaine :
+        // il reçoit le type et le caractère obligatoire, jamais les règles — les publier
+        // donnerait l'illusion qu'il peut valider seul.
+        $this->assertSame([
+            ['key' => 'reason', 'label' => 'Motif', 'type' => 'textarea', 'required' => true, 'options' => []],
+        ], $forme['fields']);
+
+        $this->assertSame(['required', 'min:10'], $action->fields()[0]->validationRules());
     }
 
     public function test_l_action_expose_son_execution_sans_la_serialiser(): void

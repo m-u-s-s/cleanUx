@@ -59,7 +59,10 @@ class ResourceEndpointsTest extends TestCase
         $actions = $this->getJson('/api/admin/console/fake-users')->json('resource.actions');
 
         foreach ($actions as $action) {
-            $this->assertSame(['key', 'label', 'destructive', 'confirm'], array_keys($action));
+            // `fields` décrit ce que l'action EXIGE avant de s'exécuter — des champs à dessiner,
+            // jamais du comportement. La fermeture, elle, ne traverse jamais le JSON.
+            $this->assertSame(['key', 'label', 'destructive', 'confirm', 'fields'], array_keys($action));
+            $this->assertIsArray($action['fields']);
         }
     }
 

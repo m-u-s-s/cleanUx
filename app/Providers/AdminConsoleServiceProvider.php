@@ -10,9 +10,12 @@ use App\Admin\Resources\ApiTokenUsageResource;
 use App\Admin\Resources\AuditEventResource;
 use App\Admin\Resources\AvailabilitySlotResource;
 use App\Admin\Resources\BadgeResource;
+use App\Admin\Resources\BookingResource;
 use App\Admin\Resources\BroadcastEventResource;
 use App\Admin\Resources\BundleResource;
+use App\Admin\Resources\CalendarResource;
 use App\Admin\Resources\CancellationPolicyResource;
+use App\Admin\Resources\CancellationReasonResource;
 use App\Admin\Resources\ChatThreadResource;
 use App\Admin\Resources\CompanyResource;
 use App\Admin\Resources\ContractDocumentResource;
@@ -20,6 +23,7 @@ use App\Admin\Resources\ContractRateCardResource;
 use App\Admin\Resources\CountryResource;
 use App\Admin\Resources\CountrySettingResource;
 use App\Admin\Resources\CustomerCreditResource;
+use App\Admin\Resources\DispatchResource;
 use App\Admin\Resources\DisputeResource;
 use App\Admin\Resources\EmailLogResource;
 use App\Admin\Resources\EnterpriseApprovalResource;
@@ -36,24 +40,31 @@ use App\Admin\Resources\KycResource;
 use App\Admin\Resources\LoyaltyAccountResource;
 use App\Admin\Resources\MarketingCampaignResource;
 use App\Admin\Resources\MatchingDecisionResource;
+use App\Admin\Resources\MissionBatchResource;
 use App\Admin\Resources\MissionResource;
 use App\Admin\Resources\NotificationPreferenceResource;
 use App\Admin\Resources\NpsResource;
 use App\Admin\Resources\OnboardingDocumentResource;
 use App\Admin\Resources\OnboardingProgressResource;
+use App\Admin\Resources\PlanningResource;
 use App\Admin\Resources\PlatformModuleResource;
+use App\Admin\Resources\PremiumClientResource;
 use App\Admin\Resources\PresenceResource;
 use App\Admin\Resources\PriceQuoteResource;
 use App\Admin\Resources\PromoCampaignResource;
 use App\Admin\Resources\PromoCodeResource;
+use App\Admin\Resources\ProviderOnboardingResource;
+use App\Admin\Resources\ProviderRegistrationResource;
 use App\Admin\Resources\PushNotificationResource;
 use App\Admin\Resources\QualityInspectionResource;
 use App\Admin\Resources\RatingReportResource;
 use App\Admin\Resources\ReferralResource;
 use App\Admin\Resources\RiskEvaluationResource;
+use App\Admin\Resources\SectorResource;
 use App\Admin\Resources\ServiceCatalogResource;
 use App\Admin\Resources\SiteResource;
 use App\Admin\Resources\SmsMessageResource;
+use App\Admin\Resources\StripeConnectResource;
 use App\Admin\Resources\StripeWebhookEventResource;
 use App\Admin\Resources\TipResource;
 use App\Admin\Resources\TradeResource;
@@ -176,6 +187,24 @@ class AdminConsoleServiceProvider extends ServiceProvider
             $registry->register('b2b-operations', ContractRateCardResource::class);
             $registry->register('missions', MissionResource::class);
             $registry->register('pricing', PriceQuoteResource::class);
+
+            /*
+             * Lot 7 — les lectures opérationnelles. Plusieurs partagent une table en répondant à
+             * des questions différentes (les rendez-vous, le planning, le calendrier, le dispatch
+             * lisent tous `bookings`) : ce sont des VUES distinctes, pas des doublons. Une seule
+             * liste obligerait à re-filtrer à chaque fois pour retrouver la sienne.
+             */
+            $registry->register('bookings', BookingResource::class);
+            $registry->register('planning', PlanningResource::class);
+            $registry->register('calendar', CalendarResource::class);
+            $registry->register('ia-dispatch', DispatchResource::class);
+            $registry->register('cancellation-reasons', CancellationReasonResource::class);
+            $registry->register('provider-registrations', ProviderRegistrationResource::class);
+            $registry->register('onboarding-providers', ProviderOnboardingResource::class);
+            $registry->register('stripe-connect', StripeConnectResource::class);
+            $registry->register('premium', PremiumClientResource::class);
+            $registry->register('orchestration', MissionBatchResource::class);
+            $registry->register('catalog', SectorResource::class);
 
             return $registry;
         });
