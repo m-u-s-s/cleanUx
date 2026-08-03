@@ -3,6 +3,7 @@
 namespace App\Http\Middleware;
 
 use App\Http\Middleware\ApiTokensV2\EnforceTokenScope;
+use App\Models\User;
 use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -31,11 +32,14 @@ class EnsureApiAdmin
     {
         $user = $request->user();
 
-        if (! $user) {
+        // `instanceof` plutôt qu'un simple test de nullité : un authentifiable d'un autre garde
+        // n'a pas de notion d'administrateur, et le traiter comme non authentifié vaut mieux que
+        // de lui poser une question à laquelle il ne peut pas répondre.
+        if (! $user instanceof User) {
             return response()->json(['ok' => false, 'error' => 'unauthenticated'], 401);
         }
 
-        if (! (method_exists($user, 'isAdmin') && $user->isAdmin())) {
+        if (! $user->isAdmin()) {
             return response()->json(['ok' => false, 'error' => 'forbidden_not_admin'], 403);
         }
 
