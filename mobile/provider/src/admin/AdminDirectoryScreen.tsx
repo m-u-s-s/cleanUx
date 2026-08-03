@@ -4,6 +4,7 @@ import { useNavigation } from '@react-navigation/native';
 import { Badge, ErrorState, Icon, Screen, Skeleton, TextInput } from '@/ui';
 import { colors, radius, spacing, typography } from '@/theme';
 import { useAdminCatalog } from './hooks';
+import { NATIVE_ADMIN_SCREENS } from './nativeScreens';
 import type { AdminModule } from './types';
 
 /**
@@ -66,6 +67,24 @@ export function AdminDirectoryScreen() {
 
   const counts = data?.counts ?? { total: 0, covered: 0, pending: 0 };
 
+  /**
+   * Ouvre un module : écran sur-mesure s'il en a un, moteur de console sinon.
+   *
+   * La clé de module EST la clé de ressource — le registre serveur refuse que les deux divergent,
+   * et `nativeScreens.test.ts` refuse qu'un module annoncé sur-mesure n'ait pas son écran.
+   */
+  const ouvrir = (module: AdminModule) => {
+    const surMesure = NATIVE_ADMIN_SCREENS[module.key];
+
+    if (surMesure) {
+      navigation.navigate(surMesure.screen, { title: module.title });
+
+      return;
+    }
+
+    navigation.navigate('AdminResourceList', { resource: module.key, title: module.title });
+  };
+
   return (
     <Screen>
       <View style={styles.header}>
@@ -92,9 +111,7 @@ export function AdminDirectoryScreen() {
         renderItem={({ item }) => (
           <ModuleRow
             module={item}
-            // Un module couvert s'ouvre dans le moteur de console. La clé de module EST la clé de
-            // ressource : le registre serveur refuse que les deux divergent.
-            onOpen={() => navigation.navigate('AdminResourceList', { resource: item.key, title: item.title })}
+            onOpen={() => ouvrir(item)}
           />
         )}
         ListEmptyComponent={<Text style={styles.empty}>Aucun module ne correspond.</Text>}

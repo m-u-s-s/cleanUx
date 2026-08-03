@@ -20,8 +20,13 @@ jest.mock('@react-navigation/native', () => ({
   useNavigation: () => ({ navigate: mockNavigate }),
 }));
 
+// La table des écrans sur-mesure est mockée VIDE par défaut : les tests du moteur décrivent le
+// cas nominal, et un seul test la remplit pour éprouver l'aiguillage.
+jest.mock('@/admin/nativeScreens', () => ({ NATIVE_ADMIN_SCREENS: {} }));
+
 import { apiClient } from '@/api';
 import { AdminDirectoryScreen } from '@/admin/AdminDirectoryScreen';
+import { NATIVE_ADMIN_SCREENS } from '@/admin/nativeScreens';
 
 const apiMock = new MockAdapter(apiClient);
 
@@ -103,6 +108,22 @@ describe('AdminDirectoryScreen', () => {
       resource: 'users',
       title: 'Utilisateurs',
     });
+  });
+
+  it('ouvre un module sur-mesure sur SON écran, pas sur le moteur', async () => {
+    // Sans cet aiguillage, la table `NATIVE_ADMIN_SCREENS` pourrait exister sans jamais être
+    // consultée : les modules sur-mesure s'ouvriraient sur la liste générique, et le garde-fou
+    // de joignabilité resterait vert puisqu'il ne vérifie que la DÉCLARATION, pas l'usage.
+    NATIVE_ADMIN_SCREENS.users = { screen: 'AdminUsers' };
+    apiMock.onGet('/admin/catalog').reply(200, CATALOG);
+
+    renderScreen();
+
+    fireEvent.press(await screen.findByText('Utilisateurs'));
+
+    expect(mockNavigate).toHaveBeenCalledWith('AdminUsers', { title: 'Utilisateurs' });
+
+    delete NATIVE_ADMIN_SCREENS.users;
   });
 
   it('ne navigue pas vers un module non couvert', async () => {
