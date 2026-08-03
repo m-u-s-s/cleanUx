@@ -19,9 +19,15 @@ use Illuminate\Database\Eloquent\Model;
  * dans le moteur : deux chemins vers la même table produiraient des décisions différentes selon la
  * porte empruntée.
  *
+ * LE CONTRAT EST GÉNÉRIQUE SUR SON MODÈLE. Un descripteur sert UN domaine, donc un seul type
+ * d'entité : le déclarer (`@implements AdminResource<User>`) permet à l'analyse statique de
+ * vérifier que `toRow()` lit des colonnes qui existent vraiment, au lieu de faire confiance.
+ *
  * LA SÉCURITÉ N'EST PAS DANS LE DESCRIPTEUR. Le groupe `/api/admin/*` est gardé par `api_admin` ;
  * `query()` sert à cadrer le domaine (relations chargées, exclusions métier), pas à tenir une
  * frontière d'autorisation.
+ *
+ * @template TModel of Model
  */
 interface AdminResource
 {
@@ -31,7 +37,7 @@ interface AdminResource
     /**
      * La requête de base du domaine, relations d'affichage déjà chargées.
      *
-     * @return Builder<covariant Model>
+     * @return Builder<TModel>
      */
     public function query(): Builder;
 
@@ -80,14 +86,15 @@ interface AdminResource
      * Le descripteur seul sait quelle colonne ou quelle jointure porte un filtre donné. Un filtre
      * inconnu doit être IGNORÉ, jamais deviné.
      *
-     * @param  Builder<covariant Model>  $query
-     * @return Builder<covariant Model>
+     * @param  Builder<TModel>  $query
+     * @return Builder<TModel>
      */
     public function applyFilter(Builder $query, string $key, mixed $value): Builder;
 
     /**
      * Une ligne telle que la liste l'affiche. Les clés correspondent à `columns()`.
      *
+     * @param  TModel  $model
      * @return array<string, mixed>
      */
     public function toRow(Model $model): array;
@@ -95,6 +102,7 @@ interface AdminResource
     /**
      * Le détail d'une ligne. Peut porter plus que `toRow()`.
      *
+     * @param  TModel  $model
      * @return array<string, mixed>
      */
     public function toDetail(Model $model): array;

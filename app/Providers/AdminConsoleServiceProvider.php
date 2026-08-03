@@ -3,6 +3,9 @@
 namespace App\Providers;
 
 use App\Admin\Console\ResourceRegistry;
+use App\Admin\Resources\CompanyResource;
+use App\Admin\Resources\SiteResource;
+use App\Admin\Resources\UserResource;
 use Illuminate\Support\ServiceProvider;
 
 /**
@@ -24,7 +27,11 @@ class AdminConsoleServiceProvider extends ServiceProvider
 
             // Un appel par domaine servi. La clé doit exister dans `config/admin_console.php` ET
             // y porter `coverage => 'descriptor'` : ResourceRegistryTest refuse les deux écarts.
-            // (Renseigné lot par lot — sous-projet B, tâches 5 à 7.)
+
+            // Lot 1 — le CRUD complet : liste, formulaire, édition, suppression.
+            $registry->register('users', UserResource::class);
+            $registry->register('companies', CompanyResource::class);
+            $registry->register('sites', SiteResource::class);
 
             return $registry;
         });

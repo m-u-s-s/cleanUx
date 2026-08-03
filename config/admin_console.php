@@ -71,9 +71,9 @@ return [
         ['key' => 'automation', 'title' => 'Automatisation', 'group' => 'operations', 'icon' => 'flash-outline', 'coverage' => 'pending', 'routes' => ['admin/automation']],
 
         // ── Personnes et comptes ────────────────────────────────────────────────────────────
-        ['key' => 'users', 'title' => 'Utilisateurs', 'group' => 'personnes', 'icon' => 'people-outline', 'coverage' => 'pending', 'routes' => ['admin/utilisateurs', 'admin/users']],
-        ['key' => 'companies', 'title' => 'Entreprises', 'group' => 'personnes', 'icon' => 'business-outline', 'coverage' => 'pending', 'routes' => ['admin/entreprises']],
-        ['key' => 'sites', 'title' => 'Sites', 'group' => 'personnes', 'icon' => 'location-outline', 'coverage' => 'pending', 'routes' => ['admin/sites']],
+        ['key' => 'users', 'title' => 'Utilisateurs', 'group' => 'personnes', 'icon' => 'people-outline', 'coverage' => 'descriptor', 'routes' => ['admin/utilisateurs', 'admin/users']],
+        ['key' => 'companies', 'title' => 'Entreprises', 'group' => 'personnes', 'icon' => 'business-outline', 'coverage' => 'descriptor', 'routes' => ['admin/entreprises']],
+        ['key' => 'sites', 'title' => 'Sites', 'group' => 'personnes', 'icon' => 'location-outline', 'coverage' => 'descriptor', 'routes' => ['admin/sites']],
         ['key' => 'teams', 'title' => 'Équipes et partenaires', 'group' => 'personnes', 'icon' => 'people-circle-outline', 'coverage' => 'pending', 'routes' => ['admin/teams-partners']],
         ['key' => 'provider-registrations', 'title' => 'Inscriptions prestataires', 'group' => 'personnes', 'icon' => 'person-add-outline', 'coverage' => 'pending', 'routes' => ['admin/inscriptions-prestataires']],
         ['key' => 'onboarding-providers', 'title' => 'Onboarding prestataires', 'group' => 'personnes', 'icon' => 'footsteps-outline', 'coverage' => 'pending', 'routes' => ['admin/onboarding-providers']],

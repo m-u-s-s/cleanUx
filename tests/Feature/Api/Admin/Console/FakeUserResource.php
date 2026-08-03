@@ -17,6 +17,8 @@ use Illuminate\Database\Eloquent\Model;
  * Il sert à éprouver le MOTEUR, pas un domaine : il porte volontairement une colonne de chaque
  * forme, un filtre de chaque type, une action ordinaire et une destructive, et un formulaire.
  * Éprouver le moteur sur un vrai descripteur mêlerait ses défauts à ceux du domaine.
+ *
+ * @implements AdminResource<User>
  */
 class FakeUserResource implements AdminResource
 {
@@ -28,6 +30,7 @@ class FakeUserResource implements AdminResource
         return 'fake-users';
     }
 
+    /** @return Builder<User> */
     public function query(): Builder
     {
         return User::query();
@@ -92,6 +95,10 @@ class FakeUserResource implements AdminResource
         ];
     }
 
+    /**
+     * @param  Builder<User>  $query
+     * @return Builder<User>
+     */
     public function applyFilter(Builder $query, string $key, mixed $value): Builder
     {
         return match ($key) {
@@ -102,6 +109,7 @@ class FakeUserResource implements AdminResource
         };
     }
 
+    /** @param  User  $model */
     public function toRow(Model $model): array
     {
         return [
@@ -113,6 +121,7 @@ class FakeUserResource implements AdminResource
         ];
     }
 
+    /** @param  User  $model */
     public function toDetail(Model $model): array
     {
         return $this->toRow($model) + ['role' => $model->role];

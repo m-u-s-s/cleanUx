@@ -3,6 +3,7 @@
 namespace App\Admin\Console;
 
 use Illuminate\Contracts\Container\Container;
+use Illuminate\Database\Eloquent\Model;
 
 /**
  * Le registre des descripteurs de console.
@@ -18,15 +19,15 @@ use Illuminate\Contracts\Container\Container;
  */
 class ResourceRegistry
 {
-    /** @var array<string, class-string<AdminResource>> */
+    /** @var array<string, class-string<AdminResource<Model>>> */
     private array $bindings = [];
 
-    /** @var array<string, AdminResource> */
+    /** @var array<string, AdminResource<Model>> */
     private array $resolved = [];
 
     public function __construct(private readonly Container $container) {}
 
-    /** @param class-string<AdminResource> $class */
+    /** @param  class-string<AdminResource<Model>>  $class */
     public function register(string $key, string $class): void
     {
         $this->bindings[$key] = $class;
@@ -37,6 +38,7 @@ class ResourceRegistry
         return isset($this->bindings[$key]);
     }
 
+    /** @return AdminResource<Model>|null */
     public function for(string $key): ?AdminResource
     {
         if (! isset($this->bindings[$key])) {

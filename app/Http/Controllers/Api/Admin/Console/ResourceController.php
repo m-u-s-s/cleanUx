@@ -241,6 +241,7 @@ class ResourceController extends Controller
 
     // ── Interne ─────────────────────────────────────────────────────────────────────────────
 
+    /** @return AdminResource<Model>|null */
     private function resolve(string $resource): ?AdminResource
     {
         return $this->registry->for($resource);
@@ -251,7 +252,10 @@ class ResourceController extends Controller
         return $this->refus('unknown_resource', 404);
     }
 
-    /** @return array<string, mixed> */
+    /**
+     * @param  AdminResource<Model>  $descripteur
+     * @return array<string, mixed>
+     */
     private function describe(AdminResource $descripteur): array
     {
         return [
@@ -269,6 +273,7 @@ class ResourceController extends Controller
     /**
      * Valide la requête contre les règles du descripteur et ne rend QUE les champs déclarés.
      *
+     * @param  AdminResource<Model>  $descripteur
      * @return array<string, mixed>|JsonResponse
      */
     private function validated(Request $request, AdminResource $descripteur, bool $partial = false): array|JsonResponse
