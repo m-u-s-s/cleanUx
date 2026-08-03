@@ -11,6 +11,13 @@ export interface User {
   // backend (customerProfile->isPremium()); mobile reads this hint optimistically
   // when present and falls back to the upsell encart otherwise.
   is_premium?: boolean;
+  /**
+   * Administrateur de plateforme. Sert d'AIGUILLAGE D'INTERFACE — quel espace ouvrir au
+   * démarrage — et rien d'autre : l'autorité reste le serveur, qui garde chaque route.
+   * Servi par `/auth/login` comme par `/auth/me`, sans quoi la reprise de session dégraderait
+   * l'administrateur en compte ordinaire.
+   */
+  is_admin?: boolean;
 }
 
 export class ApiError extends Error {

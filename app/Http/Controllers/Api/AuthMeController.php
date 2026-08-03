@@ -44,6 +44,19 @@ class AuthMeController extends Controller
         $payload['is_premium'] = $profile instanceof CustomerProfile && $profile->isPremium();
 
         /*
+         * La reprise de session doit dire la même chose que la connexion.
+         *
+         * `login` sérialise explicitement `is_admin` ; ici la réponse était bâtie sur
+         * `$user->toArray()`, qui ne porte que des colonnes. L'administrateur redevenait donc un
+         * compte ordinaire à chaque redémarrage de l'application mobile — avec un jeton pourtant
+         * valide — et l'aiguillage d'espace l'envoyait là où rien ne lui répond.
+         *
+         * Ce drapeau est un AIGUILLAGE D'INTERFACE, pas une frontière de privilèges : celle-ci
+         * reste tenue par les gardes de rôle sur chaque route.
+         */
+        $payload['is_admin'] = method_exists($user, 'isAdmin') && $user->isAdmin();
+
+        /*
          * La réponse porte les DEUX formes, et c'est délibéré.
          *
          * Le serveur renvoyait les attributs à plat ; l'application mobile lit `data.user`. Elle
