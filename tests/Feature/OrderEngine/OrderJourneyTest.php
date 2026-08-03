@@ -282,7 +282,10 @@ class OrderJourneyTest extends TestCase
     {
         $component = Livewire::test(OrderJourney::class)->call('selectTrade', $this->peinture()->id);
 
-        $codes = fn () => $component->instance()->visibleQuestions()->pluck('code')->all();
+        // `allVisibleQuestions` et non `visibleQuestions` : la seconde ne rend que l'étape
+        // COURANTE depuis que le questionnaire se découpe, et « application » comme
+        // « type_pistolet » vivent sur la seconde étape du métier seedé.
+        $codes = fn () => $component->instance()->allVisibleQuestions->pluck('code')->all();
 
         $component->dispatch('question-answered', code: 'application', value: 'rouleau', valid: true);
         $this->assertNotContains('type_pistolet', $codes());

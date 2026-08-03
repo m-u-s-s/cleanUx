@@ -96,6 +96,40 @@
                         </p>
                     @endif
 
+                    {{--
+                        L'indicateur de progression, et il est HONNÊTE.
+
+                        Il compte les étapes réellement visibles à cet instant, pas celles qui
+                        existent en base : une étape dont toutes les questions sont masquées par une
+                        condition n'existe plus pour ce client. Annoncer « étape 2 sur 3 » puis
+                        sauter la troisième serait un compte que le client prendrait en défaut.
+
+                        Rien ne s'affiche quand il n'y a qu'une étape : un questionnaire court n'a
+                        pas besoin de cérémonie.
+                    --}}
+                    @if ($this->stepCount() > 1)
+                        <div class="mt-4" aria-live="polite">
+                            <div class="flex items-baseline justify-between gap-3">
+                                <p class="text-sm font-medium text-slate-900">
+                                    {{ $this->currentStepTitle() ?? 'Étape '.($stepIndex + 1) }}
+                                </p>
+                                <p class="text-xs tabular-nums text-slate-500">
+                                    Étape {{ $stepIndex + 1 }} sur {{ $this->stepCount() }}
+                                </p>
+                            </div>
+
+                            <div class="mt-2 h-1 overflow-hidden rounded-full bg-slate-100"
+                                role="progressbar"
+                                aria-valuemin="1"
+                                aria-valuemax="{{ $this->stepCount() }}"
+                                aria-valuenow="{{ $stepIndex + 1 }}"
+                                aria-label="Progression du questionnaire">
+                                <div class="h-full rounded-full bg-slate-900 transition-[width] duration-300"
+                                    style="width: {{ round((($stepIndex + 1) / $this->stepCount()) * 100) }}%"></div>
+                            </div>
+                        </div>
+                    @endif
+
                     <div class="mt-2">
                         @foreach ($this->visibleQuestions as $question)
                             @livewire('order-engine.question-renderer',
@@ -103,6 +137,26 @@
                                 key('q-'.$question->id.'-'.$mode))
                         @endforeach
                     </div>
+
+                    {{-- La navigation entre étapes. Revenir ne perd rien : les réponses vivent dans
+                         le panier, pas à l'écran. --}}
+                    @if ($this->stepCount() > 1)
+                        <div class="mt-4 flex items-center gap-3">
+                            @if ($stepIndex > 0)
+                                <button type="button" wire:click="previousStep"
+                                    class="inline-flex min-h-[44px] items-center rounded-xl px-4 text-sm font-medium text-slate-600 hover:bg-slate-50">
+                                    Retour
+                                </button>
+                            @endif
+
+                            @if ($stepIndex < $this->stepCount() - 1)
+                                <button type="button" wire:click="nextStep"
+                                    class="inline-flex min-h-[44px] flex-1 items-center justify-center rounded-xl bg-slate-900 px-5 text-sm font-medium text-white transition hover:bg-slate-800">
+                                    Continuer
+                                </button>
+                            @endif
+                        </div>
+                    @endif
                 </section>
 
                 {{-- La photo est un RACCOURCI, offert avant l'adresse : elle remplace des questions,

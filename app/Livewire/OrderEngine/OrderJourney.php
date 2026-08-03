@@ -157,6 +157,14 @@ class OrderJourney extends Component
     /** Ce qu'on doit au client quand son intention n'a pas pu être honorée. */
     public string $modeNotice = '';
 
+    /**
+     * L'étape du questionnaire en cours d'affichage.
+     *
+     * Remise à zéro à chaque changement de métier : garder le rang d'un questionnaire précédent
+     * ouvrirait le suivant au milieu, sur des questions auxquelles le client n'a jamais accédé.
+     */
+    public int $stepIndex = 0;
+
     public function mount(?string $sector = null, ?string $trade = null): void
     {
         /*
@@ -286,7 +294,7 @@ class OrderJourney extends Component
             return collect();
         }
 
-        $query = $trade->questions()->with(['options.translations', 'conditions', 'translations'])->where('is_active', true);
+        $query = $trade->questions()->with(['options.translations', 'conditions', 'translations', 'step'])->where('is_active', true);
 
         if ($this->mode === OrderMode::ASAP) {
             $query->where('is_essential', true);
@@ -302,8 +310,107 @@ class OrderJourney extends Component
     #[Computed]
     public function visibleQuestions(): Collection
     {
-        return app(ConditionEvaluator::class)
-            ->visible($this->questions, $this->answers);
+        $steps = $this->steps;
+
+        if ($steps->isEmpty()) {
+            return collect();
+        }
+
+        // L'index peut désigner une étape qui vient de disparaître : une réponse a masqué les
+        // questions qui la composaient. On retombe sur la dernière plutôt que sur du vide.
+        return $steps[min($this->stepIndex, $steps->count() - 1)];
+    }
+
+    /**
+     * TOUTES les questions visibles, étapes confondues.
+     *
+     * À distinguer de {@see visibleQuestions()}, qui ne rend que l'étape courante — c'est elle que
+     * l'écran affiche. Celle-ci sert à raisonner sur le questionnaire entier : le prix se calcule
+     * sur l'ensemble, pas sur ce que le client a sous les yeux à cet instant.
+     *
+     * @return Collection<int, Question>
+     */
+    #[Computed]
+    public function allVisibleQuestions(): Collection
+    {
+        return app(ConditionEvaluator::class)->visible($this->questions, $this->answers);
+    }
+
+    /**
+     * Le questionnaire découpé en étapes RÉELLEMENT visibles.
+     *
+     * Deux règles, dans cet ordre.
+     *
+     * 1. Les étapes écrites par l'administrateur priment. C'est lui qui sait où couper : « vos
+     *    locaux », puis « la prestation ».
+     *
+     * 2. À défaut, on découpe TOUT SEUL au-delà du seuil. Le validateur avertit déjà celui qui
+     *    dépasse sept questions, mais ce n'est qu'une alerte : faire reposer la règle sur sa
+     *    discipline reviendrait à ne pas l'avoir. Un métier de douze questions afficherait douze
+     *    champs empilés — l'anti-pattern que le parcours est censé éviter.
+     *
+     * Les étapes vides ne comptent pas et ne se traversent pas : une étape dont toutes les
+     * questions sont masquées par une condition n'existe plus pour ce client. Annoncer « étape 2
+     * sur 3 » puis sauter la troisième serait un compte malhonnête.
+     *
+     * @return Collection<int, Collection<int, Question>>
+     */
+    #[Computed]
+    public function steps(): Collection
+    {
+        $visible = $this->allVisibleQuestions;
+
+        if ($visible->isEmpty()) {
+            return collect();
+        }
+
+        $declared = $visible->groupBy('step_id');
+
+        // L'administrateur a-t-il vraiment découpé ? Une seule étape déclarée — ou aucune — ne
+        // compte pas comme un découpage : on reprend la main.
+        $hasRealSteps = $declared->keys()->filter(fn ($id) => $id !== null && $id !== '')->count() > 0
+            && $declared->count() > 1;
+
+        if ($hasRealSteps) {
+            return $declared
+                ->sortBy(fn (Collection $group) => $group->first()->step?->sort_order ?? -1)
+                ->values()
+                ->map(fn (Collection $group) => $group->values());
+        }
+
+        $perStep = max(1, (int) Config::get('order_engine.max_questions_per_step', 7));
+
+        return $visible->values()->chunk($perStep)->values();
+    }
+
+    /** Combien d'étapes le client va réellement traverser. */
+    public function stepCount(): int
+    {
+        return max(1, $this->steps->count());
+    }
+
+    /** Le titre écrit par l'administrateur pour l'étape courante, s'il y en a un. */
+    public function currentStepTitle(): ?string
+    {
+        return $this->visibleQuestions()->first()?->step?->title;
+    }
+
+    public function nextStep(): void
+    {
+        if ($this->stepIndex < $this->stepCount() - 1) {
+            $this->stepIndex++;
+        }
+    }
+
+    public function previousStep(): void
+    {
+        /*
+         * Revenir ne perd rien : les réponses vivent dans le panier, en base, pas dans l'écran.
+         * C'est toute la raison pour laquelle l'état n'habite pas le composant.
+         */
+        if ($this->stepIndex > 0) {
+            $this->stepIndex--;
+        }
     }
 
     /** Les modes que ce métier autorise. Un ravalement de façade n'est pas un service immédiat.
@@ -1059,6 +1166,10 @@ class OrderJourney extends Component
 
         $this->answers = $this->loadAnswers($trade);
 
+        // Un questionnaire s'ouvre à son début : garder le rang du précédent poserait le client
+        // au milieu de questions auxquelles il n'a jamais accédé.
+        $this->stepIndex = 0;
+
         // Le professionnel déjà choisi pour ce métier se retrouve : revenir en arrière ne perd pas
         // plus un choix de prestataire qu'une réponse au questionnaire.
         $this->selectedProviderId = $this->draft()->items()
@@ -1157,7 +1268,7 @@ class OrderJourney extends Component
     {
         unset(
             $this->trades, $this->trade, $this->questions, $this->visibleQuestions,
-            $this->quote, $this->lastChange, $this->availableModes, $this->availability,
+            $this->quote, $this->lastChange, $this->availableModes, $this->availability, $this->steps, $this->allVisibleQuestions,
             $this->slots, $this->providerOptions, $this->readyToConfirm, $this->dayOptions,
             $this->timeline, $this->bundleSuggestions, $this->bundleQuote,
             $this->addressSuggestions,
