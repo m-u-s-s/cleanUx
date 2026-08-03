@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\AccountingV2Controller;
+use App\Http\Controllers\Api\Admin\AdminCatalogController;
 use App\Http\Controllers\Api\Admin\AuditController;
 use App\Http\Controllers\Api\Admin\BookingDispatchController;
 use App\Http\Controllers\Api\Admin\DisputeAdminController;
@@ -218,5 +219,15 @@ Route::middleware(['auth:sanctum', 'api_admin'])->group(function () {
     Route::prefix('admin/insurance-v2')->middleware('api_scope:admin:write,admin:everything')->group(function () {
         Route::patch('/claims/{claim}/status', [InsuranceAdminController::class, 'updateClaimStatus']);
         Route::get('/claims', [InsuranceAdminController::class, 'claims']);
+    });
+
+    /*
+     * Console d'administration mobile.
+     *
+     * Ces deux points d'entrée ne portent aucune donnée métier : l'un sert le registre de
+     * couverture, l'autre des compteurs. Ils sont gardés en lecture comme le reste du groupe.
+     */
+    Route::prefix('admin')->middleware('api_scope:admin:read,admin:everything')->group(function () {
+        Route::get('/catalog', AdminCatalogController::class);
     });
 });
