@@ -36,5 +36,6 @@ export {
 export { loadMapModule, isMapRenderable } from './mapModule';
 export { OsmMap } from './OsmMap';
 export { LuxeBackground } from './LuxeBackground';
+export { GlassSurface } from './GlassSurface';
 export type { OsmMarker } from './OsmMap';
 export type { MapModule } from './mapModule';
