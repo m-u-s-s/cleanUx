@@ -3,27 +3,41 @@
 namespace App\Providers;
 
 use App\Admin\Console\ResourceRegistry;
+use App\Admin\Resources\AddressLookupResource;
 use App\Admin\Resources\AnalyticsEventResource;
+use App\Admin\Resources\ApiTokenUsageResource;
 use App\Admin\Resources\AuditEventResource;
 use App\Admin\Resources\BadgeResource;
 use App\Admin\Resources\BroadcastEventResource;
+use App\Admin\Resources\ChatThreadResource;
 use App\Admin\Resources\CompanyResource;
+use App\Admin\Resources\ContractDocumentResource;
 use App\Admin\Resources\CountryResource;
 use App\Admin\Resources\DisputeResource;
 use App\Admin\Resources\EmailLogResource;
 use App\Admin\Resources\EnterpriseApprovalResource;
 use App\Admin\Resources\FeatureFlagResource;
 use App\Admin\Resources\FeedbackResource;
+use App\Admin\Resources\GdprRequestResource;
 use App\Admin\Resources\KybResource;
 use App\Admin\Resources\KycResource;
+use App\Admin\Resources\LoyaltyAccountResource;
+use App\Admin\Resources\MarketingCampaignResource;
+use App\Admin\Resources\NotificationPreferenceResource;
 use App\Admin\Resources\NpsResource;
+use App\Admin\Resources\PromoCampaignResource;
 use App\Admin\Resources\PromoCodeResource;
+use App\Admin\Resources\PushNotificationResource;
+use App\Admin\Resources\RatingReportResource;
+use App\Admin\Resources\ReferralResource;
+use App\Admin\Resources\RiskEvaluationResource;
 use App\Admin\Resources\SiteResource;
 use App\Admin\Resources\SmsMessageResource;
 use App\Admin\Resources\TipResource;
 use App\Admin\Resources\TradeResource;
 use App\Admin\Resources\TranslationResource;
 use App\Admin\Resources\UserResource;
+use App\Admin\Resources\WebhookEndpointResource;
 use App\Admin\Resources\ZoneResource;
 use Illuminate\Support\ServiceProvider;
 
@@ -87,6 +101,26 @@ class AdminConsoleServiceProvider extends ServiceProvider
             $registry->register('zones', ZoneResource::class);
             $registry->register('countries', CountryResource::class);
             $registry->register('trades', TradeResource::class);
+
+            /*
+             * Lot 5 — journaux, files et registres. Aucun n'expose d'action : chacun dit dans son
+             * en-tête pourquoi la décision qui lui correspond vit ailleurs, dans le module qui en
+             * porte les effets de bord.
+             */
+            $registry->register('risk', RiskEvaluationResource::class);
+            $registry->register('contracts', ContractDocumentResource::class);
+            $registry->register('marketing', MarketingCampaignResource::class);
+            $registry->register('promo-campaigns', PromoCampaignResource::class);
+            $registry->register('referrals', ReferralResource::class);
+            $registry->register('loyalty', LoyaltyAccountResource::class);
+            $registry->register('ratings', RatingReportResource::class);
+            $registry->register('push', PushNotificationResource::class);
+            $registry->register('notification-preferences', NotificationPreferenceResource::class);
+            $registry->register('gdpr', GdprRequestResource::class);
+            $registry->register('api-tokens', ApiTokenUsageResource::class);
+            $registry->register('webhooks', WebhookEndpointResource::class);
+            $registry->register('geolocation', AddressLookupResource::class);
+            $registry->register('chat', ChatThreadResource::class);
 
             return $registry;
         });
