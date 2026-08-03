@@ -186,7 +186,7 @@ const stylesFor = (t: ThemeTokens) => StyleSheet.create({
     marginBottom: spacing.md,
   },
   stripeBanner: {
-    backgroundColor: colors.warning[50],
+    backgroundColor: t.tint.warning,
     borderRadius: radius.md,
     padding: spacing.md,
     flexDirection: 'row',

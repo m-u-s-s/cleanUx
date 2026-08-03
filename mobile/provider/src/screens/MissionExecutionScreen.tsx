@@ -220,7 +220,7 @@ const stylesFor = (t: ThemeTokens) => StyleSheet.create({
     marginRight: spacing.sm,
   },
   timerCard: {
-    backgroundColor: colors.brand[50],
+    backgroundColor: t.tint.brand,
     borderRadius: radius.md,
     padding: spacing.md,
     alignItems: 'center',

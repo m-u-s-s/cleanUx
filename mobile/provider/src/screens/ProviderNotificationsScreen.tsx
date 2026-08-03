@@ -101,7 +101,7 @@ const stylesFor = (t: ThemeTokens) => StyleSheet.create({
     borderBottomWidth: StyleSheet.hairlineWidth,
     borderBottomColor: t.border,
   },
-  unread: { backgroundColor: colors.brand[50] },
+  unread: { backgroundColor: t.tint.brand },
   notifTitle: {
     fontSize: typography.fontSize.sm,
     fontWeight: typography.fontWeight.semibold,

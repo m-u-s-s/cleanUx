@@ -84,7 +84,10 @@ jest.mock('@/theme', () => ({
   },
   radius: { md: 12 },
   shadows: { xs: {} },
-  useThemeColors: () => ({ background: '#fff', text: '#000', card: '#fff' }),
+  // Le thème réel plutôt qu'un objet partiel écrit à la main : il n'a aucun effet de bord,
+  // et un stub partiel périme à chaque jeton ajouté — c'est ce qui a cassé ces tests quand
+  // les teintes sont apparues.
+  useThemeColors: jest.requireActual('@/theme/useThemeColors').useThemeColors,
 }));
 
 // ── Imports ───────────────────────────────────────────────────────────────────

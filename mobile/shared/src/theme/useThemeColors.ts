@@ -55,6 +55,24 @@ export function useThemeColors() {
 
     /** La lueur de marque du fond nuit. Absente en clair : elle n'y aurait aucun sens. */
     glow: isDark ? 'rgba(99, 102, 241, 0.30)' : 'transparent',
+
+    /*
+     * LES TEINTES — des voiles sémantiques, à poser en FOND.
+     *
+     * Elles remplacent les extrémités claires des rampes (`colors.brand[50]` et consorts), qui
+     * sont des neutres déguisés : un indigo quasi-blanc porte la marque sur fond clair, et rend
+     * le texte invisible sur fond sombre. Un voile, lui, prend la couleur de ce qu'il recouvre et
+     * fonctionne des deux côtés.
+     *
+     * L'opacité est plus forte en sombre : sur un fond nuit, un voile trop discret ne se
+     * distingue plus du fond.
+     */
+    tint: {
+      brand: isDark ? 'rgba(99, 102, 241, 0.22)' : 'rgba(99, 102, 241, 0.10)',
+      success: isDark ? 'rgba(16, 185, 129, 0.20)' : 'rgba(16, 185, 129, 0.10)',
+      warning: isDark ? 'rgba(245, 158, 11, 0.20)' : 'rgba(245, 158, 11, 0.12)',
+      danger: isDark ? 'rgba(239, 68, 68, 0.20)' : 'rgba(239, 68, 68, 0.10)',
+    },
   };
 }
 

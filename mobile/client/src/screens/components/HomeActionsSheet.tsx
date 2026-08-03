@@ -190,7 +190,7 @@ const stylesFor = (t: ThemeTokens) => StyleSheet.create({
     borderRadius: radius.md,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: colors.brand[50],
+    backgroundColor: t.tint.brand,
   },
   modeBody: { flex: 1, gap: 2 },
   modeTitle: { fontSize: typography.fontSize.base, fontWeight: typography.fontWeight.semibold },

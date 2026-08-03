@@ -6,6 +6,7 @@ import { BookingsListScreen } from '@/screens/BookingsListScreen';
 import { ProfileScreen } from '@/screens/ProfileScreen';
 import { Icon } from '@/ui';
 import { colors } from '@/theme';
+import { useThemeColors } from '@/theme/useThemeColors';
 import { useNotifications } from '@/notifications';
 import type { TabParamList } from './types';
 
@@ -23,6 +24,7 @@ function useUnreadCount(): number | undefined {
 }
 
 export function TabNavigator() {
+  const theme = useThemeColors();
   const unreadCount = useUnreadCount();
 
   return (
@@ -31,7 +33,7 @@ export function TabNavigator() {
         headerShown: false,
         tabBarActiveTintColor: colors.brand[500],
         tabBarInactiveTintColor: colors.surface[400],
-        tabBarStyle: { backgroundColor: colors.surface[50], borderTopColor: colors.surface[200] },
+        tabBarStyle: { backgroundColor: theme.bg, borderTopColor: theme.border },
       }}
     >
       <Tab.Screen

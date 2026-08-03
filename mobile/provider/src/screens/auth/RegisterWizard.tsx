@@ -714,7 +714,7 @@ const stylesFor = (t: ThemeTokens) => StyleSheet.create({
     borderRadius: radius.md,
     borderWidth: 1,
     borderColor: colors.success[600],
-    backgroundColor: colors.success[50],
+    backgroundColor: t.tint.success,
   },
   suggestionName: {
     fontSize: typography.fontSize.base,

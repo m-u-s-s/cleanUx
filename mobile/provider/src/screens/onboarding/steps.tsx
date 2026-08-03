@@ -707,7 +707,7 @@ const stylesFor = (t: ThemeTokens) => StyleSheet.create({
   notice: {
     padding: spacing.md,
     borderRadius: radius.md,
-    backgroundColor: colors.brand[50],
+    backgroundColor: t.tint.brand,
     borderWidth: 1,
     borderColor: colors.brand[500],
   },
@@ -720,7 +720,7 @@ const stylesFor = (t: ThemeTokens) => StyleSheet.create({
     borderRadius: radius.md,
     borderWidth: 1,
     borderColor: colors.danger[500],
-    backgroundColor: colors.danger[50],
+    backgroundColor: t.tint.danger,
   },
   errorText: { flex: 1, fontSize: typography.fontSize.sm, color: colors.danger[700] },
   pickRow: { gap: spacing.sm },
@@ -762,7 +762,7 @@ const stylesFor = (t: ThemeTokens) => StyleSheet.create({
     borderColor: t.border,
     backgroundColor: t.card,
   },
-  tradeChipSelected: { borderColor: colors.brand[600], backgroundColor: colors.brand[50] },
+  tradeChipSelected: { borderColor: colors.brand[600], backgroundColor: t.tint.brand },
   tradeChipText: { fontSize: typography.fontSize.sm, color: t.textSecondary },
   tradeChipTextSelected: { color: colors.brand[600], fontWeight: typography.fontWeight.semibold },
 });

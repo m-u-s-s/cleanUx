@@ -3,6 +3,7 @@ import { View } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Icon } from '@/ui';
 import { colors } from '@/theme';
+import { useThemeColors } from '@/theme/useThemeColors';
 import { AdminHomeScreen } from './AdminHomeScreen';
 import { AdminDirectoryScreen } from './AdminDirectoryScreen';
 import { AdminProfileScreen } from './AdminProfileScreen';
@@ -22,6 +23,7 @@ const Tab = createBottomTabNavigator<AdminTabParamList>();
  * entrées sur un téléphone se lit moins bien qu'une liste groupée et cherchable.
  */
 export function AdminNavigator() {
+  const theme = useThemeColors();
   return (
     <View testID="admin-navigator" style={{ flex: 1 }}>
       <Tab.Navigator
@@ -30,8 +32,8 @@ export function AdminNavigator() {
           tabBarActiveTintColor: colors.brand[500],
           tabBarInactiveTintColor: colors.surface[400],
           tabBarStyle: {
-            backgroundColor: colors.surface[50],
-            borderTopColor: colors.surface[200],
+            backgroundColor: theme.bg,
+            borderTopColor: theme.border,
           },
         }}
       >

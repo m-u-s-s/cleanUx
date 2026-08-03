@@ -35,16 +35,18 @@ import { InvoiceDetailScreen } from '@/screens/InvoiceDetailScreen';
 // Embedded web modules
 import { EmbeddedModuleRoute } from '@/screens/EmbeddedModuleRoute';
 import { colors } from '@/theme';
+import { useThemeColors } from '@/theme/useThemeColors';
 import type { RootStackParamList } from './types';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
 export function RootNavigator() {
+  const theme = useThemeColors();
   const { isAuthenticated, isLoading } = useAuth();
 
   if (isLoading) {
     return (
-      <View testID="root-navigator" style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: colors.surface[50] }}>
+      <View testID="root-navigator" style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: theme.bg }}>
         <ActivityIndicator size="large" color={colors.brand[500]} />
       </View>
     );

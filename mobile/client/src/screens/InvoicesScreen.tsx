@@ -628,7 +628,7 @@ const stylesFor = (t: ThemeTokens) => StyleSheet.create({
     borderColor: t.border,
   },
   sortChipActive: {
-    backgroundColor: colors.brand[100],
+    backgroundColor: t.tint.brand,
     borderColor: colors.brand[300],
   },
   sortLabel: {
@@ -658,7 +658,7 @@ const stylesFor = (t: ThemeTokens) => StyleSheet.create({
     marginRight: spacing.xs,
   },
   filterChipActive: {
-    backgroundColor: colors.brand[100],
+    backgroundColor: t.tint.brand,
     borderColor: colors.brand[300],
   },
   filterLabel: {
@@ -748,7 +748,7 @@ const stylesFor = (t: ThemeTokens) => StyleSheet.create({
   // Overdue warning
   overdueWarning: {
     marginTop: spacing.xs,
-    backgroundColor: colors.danger[50],
+    backgroundColor: t.tint.danger,
     borderRadius: radius.sm,
     padding: spacing.xs,
   },

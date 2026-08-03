@@ -91,7 +91,7 @@ const stylesFor = (t: ThemeTokens) => StyleSheet.create({
   placeholderText: { color: t.textMuted },
   actions: { gap: spacing.sm, marginBottom: spacing.lg },
   resultCard: {
-    backgroundColor: colors.success[50],
+    backgroundColor: t.tint.success,
     borderRadius: radius.md,
     padding: spacing.md,
     ...shadows.soft,

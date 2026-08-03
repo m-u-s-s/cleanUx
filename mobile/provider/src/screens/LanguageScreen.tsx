@@ -75,7 +75,7 @@ const stylesFor = (t: ThemeTokens) => StyleSheet.create({
     borderRadius: radius.md,
     marginBottom: spacing.xs,
   },
-  rowActive: { backgroundColor: colors.brand[50] },
+  rowActive: { backgroundColor: t.tint.brand },
   flag: { fontSize: 28 },
   label: { flex: 1, fontSize: typography.fontSize.base, color: t.text },
 });

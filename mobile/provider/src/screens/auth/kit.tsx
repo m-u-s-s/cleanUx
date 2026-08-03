@@ -299,7 +299,7 @@ export const stylesFor = (t: ThemeTokens) => StyleSheet.create({
     borderColor: t.border,
     backgroundColor: t.card,
   },
-  tradeChipSelected: { borderColor: colors.brand[600], backgroundColor: colors.brand[50] },
+  tradeChipSelected: { borderColor: colors.brand[600], backgroundColor: t.tint.brand },
   tradeChipText: { fontSize: typography.fontSize.sm, color: t.textSecondary },
   tradeChipTextSelected: { color: colors.brand[600], fontWeight: typography.fontWeight.semibold },
   fieldHelp: { fontSize: typography.fontSize.xs, color: colors.mode.tool.muted, marginTop: 2 },
@@ -312,7 +312,7 @@ export const stylesFor = (t: ThemeTokens) => StyleSheet.create({
     borderRadius: radius.md,
     borderWidth: 1,
     borderColor: colors.danger[500],
-    backgroundColor: colors.danger[50],
+    backgroundColor: t.tint.danger,
   },
   formErrorBody: { flex: 1, gap: spacing.xs },
   // danger[700] sur danger[50] : contraste largement au-dessus du seuil AA.

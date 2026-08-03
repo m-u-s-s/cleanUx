@@ -38,11 +38,13 @@ import { useSpacePreference } from '@/admin/useSpacePreference';
 import { TabNavigator } from './TabNavigator';
 import { AsapOffersScreen } from '@/asap';
 import { colors } from '@/theme';
+import { useThemeColors } from '@/theme/useThemeColors';
 import type { RootStackParamList } from './types';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
 export function RootNavigator() {
+  const theme = useThemeColors();
   const { user, isAuthenticated, isLoading } = useAuth();
 
   // Le parcours de vérification garde l'entrée de l'application. Sans lui, un compte tout juste
@@ -73,7 +75,7 @@ export function RootNavigator() {
     return (
       <View
         testID="root-navigator"
-        style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: colors.surface[50] }}
+        style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: theme.bg }}
       >
         <ActivityIndicator size="large" color={colors.brand[500]} />
       </View>

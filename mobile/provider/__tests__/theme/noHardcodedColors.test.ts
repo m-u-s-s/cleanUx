@@ -26,6 +26,8 @@ const EXCEPTIONS: Record<string, string> = {
   'shared/src/theme/colors.ts': 'la palette elle-même',
   'shared/src/theme/useThemeColors.ts': 'la fabrique de jetons',
   'shared/src/ui/authShell.tsx': 'écran d’accueil à identité visuelle propre, délibérément hors thème',
+  'provider/src/screens/PresenceScanScreen.tsx':
+    'fond de viseur caméra : le noir n’est pas une couleur d’interface mais l’absence d’image',
 };
 
 /**
