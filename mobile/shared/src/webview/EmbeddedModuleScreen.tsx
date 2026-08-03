@@ -5,6 +5,7 @@ import { fetchWebViewUrl } from './useWebViewTicket';
 import { parseBridgeMessage, INJECTED_BRIDGE_JS } from './bridge';
 import { ErrorState } from '@/ui';
 import { colors } from '@/theme';
+import { useThemeColors } from '@/theme/useThemeColors';
 
 export interface EmbeddedModuleScreenProps {
   /** Internal web path to render (e.g. '/admin/audit'). */
@@ -35,6 +36,7 @@ export function EmbeddedModuleScreen({
   onOpenNative,
   onRequestBack,
 }: EmbeddedModuleScreenProps) {
+  const theme = useThemeColors();
   const [url, setUrl] = useState<string | null>(null);
   const [status, setStatus] = useState<Status>('loading');
 
@@ -122,7 +124,7 @@ export function EmbeddedModuleScreen({
     return (
       <View
         testID="embedded-loading"
-        style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: colors.surface[50] }}
+        style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: theme.bg }}
       >
         <ActivityIndicator size="large" color={colors.brand[500]} />
       </View>

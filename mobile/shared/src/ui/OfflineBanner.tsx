@@ -6,7 +6,9 @@ import Animated, {
   useAnimatedStyle,
   withTiming,
 } from 'react-native-reanimated';
-import { colors, spacing, typography } from '@/theme';
+import {spacing, typography } from '@/theme';
+import { useThemeColors } from '@/theme/useThemeColors';
+import type { ThemeTokens } from '@/theme/useThemeColors';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -18,6 +20,8 @@ interface OfflineBannerProps {
 // ── Component ─────────────────────────────────────────────────────────────────
 
 export function OfflineBanner({ forceOffline }: OfflineBannerProps) {
+  const styles = stylesFor(useThemeColors());
+
   const [isOffline, setIsOffline] = React.useState(false);
   const translateY = useSharedValue(-60);
 
@@ -54,7 +58,7 @@ export function OfflineBanner({ forceOffline }: OfflineBannerProps) {
 
 // ── Styles ────────────────────────────────────────────────────────────────────
 
-const styles = StyleSheet.create({
+const stylesFor = (t: ThemeTokens) => StyleSheet.create({
   wrapper: {
     position: 'absolute',
     top: 0,
@@ -63,13 +67,13 @@ const styles = StyleSheet.create({
     zIndex: 999,
   },
   banner: {
-    backgroundColor: colors.surface[800],
+    backgroundColor: t.text,
     paddingVertical: spacing.sm,
     paddingHorizontal: spacing.md,
     alignItems: 'center',
   },
   text: {
-    color: '#ffffff',
+    color: t.card,
     fontSize: typography.fontSize.sm,
     fontFamily: typography.fontFamily.bodyMedium,
     fontWeight: typography.fontWeight.medium,

@@ -2,7 +2,9 @@ import React, { forwardRef, useCallback } from 'react';
 import { StyleSheet } from 'react-native';
 import GorhomBottomSheet, { BottomSheetBackdrop, BottomSheetView } from '@gorhom/bottom-sheet';
 import type { BottomSheetDefaultBackdropProps } from '@gorhom/bottom-sheet/lib/typescript/components/bottomSheetBackdrop/types';
-import { colors, radius, spacing } from '@/theme';
+import {radius, spacing } from '@/theme';
+import { useThemeColors } from '@/theme/useThemeColors';
+import type { ThemeTokens } from '@/theme/useThemeColors';
 
 interface BottomSheetProps {
   snapPoints: (string | number)[];
@@ -12,6 +14,8 @@ interface BottomSheetProps {
 
 export const BottomSheet = forwardRef<GorhomBottomSheet, BottomSheetProps>(
   ({ snapPoints, children, onClose }, ref) => {
+    const styles = stylesFor(useThemeColors());
+
     const renderBackdrop = useCallback(
       (props: BottomSheetDefaultBackdropProps) => (
         <BottomSheetBackdrop {...props} disappearsOnIndex={-1} appearsOnIndex={0} opacity={0.5} />
@@ -40,8 +44,8 @@ export const BottomSheet = forwardRef<GorhomBottomSheet, BottomSheetProps>(
 
 BottomSheet.displayName = 'BottomSheet';
 
-const styles = StyleSheet.create({
-  background: { backgroundColor: colors.surface[50], borderTopLeftRadius: radius.xl, borderTopRightRadius: radius.xl },
-  indicator: { backgroundColor: colors.surface[300], width: 40 },
+const stylesFor = (t: ThemeTokens) => StyleSheet.create({
+  background: { backgroundColor: t.bg, borderTopLeftRadius: radius.xl, borderTopRightRadius: radius.xl },
+  indicator: { backgroundColor: t.border, width: 40 },
   content: { paddingHorizontal: spacing.md, paddingBottom: spacing.xl },
 });

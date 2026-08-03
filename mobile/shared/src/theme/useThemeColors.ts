@@ -57,3 +57,12 @@ export function useThemeColors() {
     glow: isDark ? 'rgba(99, 102, 241, 0.30)' : 'transparent',
   };
 }
+
+/**
+ * Le jeu de jetons rendu par `useThemeColors()`.
+ *
+ * Exporté pour que les feuilles de style puissent devenir des FABRIQUES qui le prennent en
+ * paramètre — `StyleSheet.create` étant évalué au chargement du module, c'est la seule façon
+ * d'avoir des couleurs de thème dans une feuille sans les sortir une par une vers le JSX.
+ */
+export type ThemeTokens = ReturnType<typeof useThemeColors>;

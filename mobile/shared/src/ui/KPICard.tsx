@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { colors, radius, spacing, typography, shadows, useThemeColors } from '@/theme';
+import type { ThemeTokens } from '@/theme/useThemeColors';
 import { Skeleton } from './Skeleton';
 
 interface KPICardProps {
@@ -12,6 +13,8 @@ interface KPICardProps {
 }
 
 export function KPICard({ title, value, hint, tone = 'neutral', loading }: KPICardProps) {
+  const styles = stylesFor(useThemeColors());
+
   const themeColors = useThemeColors();
 
   if (loading) {
@@ -44,14 +47,14 @@ export function KPICard({ title, value, hint, tone = 'neutral', loading }: KPICa
   );
 }
 
-const styles = StyleSheet.create({
+const stylesFor = (t: ThemeTokens) => StyleSheet.create({
   container: {
-    backgroundColor: '#ffffff', borderRadius: radius.lg, padding: spacing.md + 4,
+    backgroundColor: t.card, borderRadius: radius.lg, padding: spacing.md + 4,
     ...shadows.sm, flex: 1,
   },
   title: {
     ...typography.preset.subhead,
-    color: colors.surface[500],
+    color: t.textSecondary,
     marginBottom: spacing.xs,
     fontFamily: typography.fontFamily.bodyMedium,
   },
@@ -62,5 +65,5 @@ const styles = StyleSheet.create({
     fontFamily: typography.fontFamily.display,
     fontVariant: ['tabular-nums'],
   },
-  hint: { fontSize: typography.fontSize.xs, color: colors.surface[500], marginTop: spacing.xs },
+  hint: { fontSize: typography.fontSize.xs, color: t.textSecondary, marginTop: spacing.xs },
 });
