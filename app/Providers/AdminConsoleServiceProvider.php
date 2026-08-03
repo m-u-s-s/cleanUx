@@ -3,16 +3,28 @@
 namespace App\Providers;
 
 use App\Admin\Console\ResourceRegistry;
+use App\Admin\Resources\AnalyticsEventResource;
+use App\Admin\Resources\AuditEventResource;
 use App\Admin\Resources\BadgeResource;
+use App\Admin\Resources\BroadcastEventResource;
 use App\Admin\Resources\CompanyResource;
+use App\Admin\Resources\CountryResource;
 use App\Admin\Resources\DisputeResource;
+use App\Admin\Resources\EmailLogResource;
 use App\Admin\Resources\EnterpriseApprovalResource;
 use App\Admin\Resources\FeatureFlagResource;
+use App\Admin\Resources\FeedbackResource;
 use App\Admin\Resources\KybResource;
 use App\Admin\Resources\KycResource;
+use App\Admin\Resources\NpsResource;
 use App\Admin\Resources\PromoCodeResource;
 use App\Admin\Resources\SiteResource;
+use App\Admin\Resources\SmsMessageResource;
+use App\Admin\Resources\TipResource;
+use App\Admin\Resources\TradeResource;
+use App\Admin\Resources\TranslationResource;
 use App\Admin\Resources\UserResource;
+use App\Admin\Resources\ZoneResource;
 use Illuminate\Support\ServiceProvider;
 
 /**
@@ -54,6 +66,27 @@ class AdminConsoleServiceProvider extends ServiceProvider
             $registry->register('promo-codes', PromoCodeResource::class);
             $registry->register('badges', BadgeResource::class);
             $registry->register('feature-flags', FeatureFlagResource::class);
+
+            /*
+             * Lot 4 — les domaines adossés à un modèle unique, décrits par `EloquentResource`.
+             *
+             * Chacun déclare ses colonnes, sa recherche et ses filtres ; le squelette est
+             * mutualisé. `EloquentResourceSchemaTest` confronte chaque colonne déclarée au schéma
+             * réel : une colonne mal nommée afficherait « — » sur toute la colonne sans que rien
+             * ne le signale.
+             */
+            $registry->register('nps', NpsResource::class);
+            $registry->register('feedbacks', FeedbackResource::class);
+            $registry->register('analytics-v2', AnalyticsEventResource::class);
+            $registry->register('realtime', BroadcastEventResource::class);
+            $registry->register('audit', AuditEventResource::class);
+            $registry->register('translations', TranslationResource::class);
+            $registry->register('emails', EmailLogResource::class);
+            $registry->register('sms', SmsMessageResource::class);
+            $registry->register('tips', TipResource::class);
+            $registry->register('zones', ZoneResource::class);
+            $registry->register('countries', CountryResource::class);
+            $registry->register('trades', TradeResource::class);
 
             return $registry;
         });
