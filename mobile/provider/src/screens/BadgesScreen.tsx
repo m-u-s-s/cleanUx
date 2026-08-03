@@ -4,6 +4,8 @@ import { useQuery } from '@tanstack/react-query';
 import { Screen, Badge, Skeleton, EmptyState } from '@/ui';
 import { apiClient } from '@/api';
 import { colors, spacing, typography, radius, shadows } from '@/theme';
+import { useThemeColors } from '@/theme/useThemeColors';
+import type { ThemeTokens } from '@/theme/useThemeColors';
 
 interface ProviderBadge {
   id: number;
@@ -14,6 +16,8 @@ interface ProviderBadge {
 }
 
 export function BadgesScreen() {
+  const styles = stylesFor(useThemeColors());
+
   const { data: badges, isLoading, refetch, isRefetching } = useQuery<ProviderBadge[]>({
     queryKey: ['badges'],
     queryFn: async () => (await apiClient.get('/provider/badges')).data.data ?? [],
@@ -52,17 +56,17 @@ export function BadgesScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const stylesFor = (t: ThemeTokens) => StyleSheet.create({
   title: {
     fontSize: typography.fontSize.xl,
     fontWeight: typography.fontWeight.bold,
-    color: colors.surface[900],
+    color: t.text,
     marginBottom: spacing.md,
   },
   row: { gap: spacing.sm, marginBottom: spacing.sm },
   card: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: t.card,
     borderRadius: radius.md,
     padding: spacing.md,
     ...shadows.xs,
@@ -72,12 +76,12 @@ const styles = StyleSheet.create({
   badgeName: {
     fontSize: typography.fontSize.sm,
     fontWeight: typography.fontWeight.semibold,
-    color: colors.surface[900],
+    color: t.text,
     marginBottom: spacing.xs,
   },
   badgeDesc: {
     fontSize: typography.fontSize.xs,
-    color: colors.surface[500],
+    color: t.textSecondary,
     textAlign: 'center',
     marginTop: spacing.xs,
   },
@@ -87,7 +91,7 @@ const styles = StyleSheet.create({
     marginTop: spacing.xs,
   },
   empty: {
-    color: colors.surface[400],
+    color: t.textMuted,
     textAlign: 'center',
     marginTop: spacing.xl,
   },

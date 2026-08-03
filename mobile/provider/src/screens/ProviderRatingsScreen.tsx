@@ -4,6 +4,8 @@ import { useQuery } from '@tanstack/react-query';
 import { Screen, Skeleton, Avatar, EmptyState } from '@/ui';
 import { apiClient } from '@/api';
 import { colors, spacing, typography, radius } from '@/theme';
+import { useThemeColors } from '@/theme/useThemeColors';
+import type { ThemeTokens } from '@/theme/useThemeColors';
 
 interface Rating {
   id: number;
@@ -14,6 +16,8 @@ interface Rating {
 }
 
 export function ProviderRatingsScreen() {
+  const styles = stylesFor(useThemeColors());
+
   const { data, isLoading, refetch, isRefetching } = useQuery<Rating[]>({
     queryKey: ['provider', 'ratings'],
     queryFn: async () => (await apiClient.get('/provider/ratings/me')).data.data ?? [],
@@ -57,15 +61,15 @@ export function ProviderRatingsScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const stylesFor = (t: ThemeTokens) => StyleSheet.create({
   title: {
     fontSize: typography.fontSize.xl,
     fontWeight: typography.fontWeight.bold,
-    color: colors.surface[900],
+    color: t.text,
     marginBottom: spacing.md,
   },
   card: {
-    backgroundColor: '#fff',
+    backgroundColor: t.card,
     borderRadius: radius.md,
     padding: spacing.md,
     marginBottom: spacing.sm,
@@ -79,11 +83,11 @@ const styles = StyleSheet.create({
   clientName: {
     fontSize: typography.fontSize.sm,
     fontWeight: typography.fontWeight.medium,
-    color: colors.surface[900],
+    color: t.text,
   },
   date: {
     fontSize: typography.fontSize.xs,
-    color: colors.surface[400],
+    color: t.textMuted,
   },
   stars: {
     fontSize: typography.fontSize.lg,
@@ -91,11 +95,11 @@ const styles = StyleSheet.create({
   },
   comment: {
     fontSize: typography.fontSize.sm,
-    color: colors.surface[600],
+    color: t.textSecondary,
     marginTop: spacing.sm,
   },
   empty: {
-    color: colors.surface[400],
+    color: t.textMuted,
     textAlign: 'center',
     marginTop: spacing.xl,
   },

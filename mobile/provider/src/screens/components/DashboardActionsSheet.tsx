@@ -7,6 +7,8 @@ import { PresenceToggle } from '@/screens/components/PresenceToggle';
 import { useMissionInbox } from '@/missions';
 import { useWalletBalance } from '@/earnings';
 import { colors, spacing, typography, radius, shadows } from '@/theme';
+import { useThemeColors } from '@/theme/useThemeColors';
+import type { ThemeTokens } from '@/theme/useThemeColors';
 
 type QuickAction = { label: string; screen: string; params?: object };
 
@@ -22,6 +24,7 @@ const QUICK_ACTIONS: QuickAction[] = [
 ];
 
 export const DashboardActionsSheet = forwardRef<GorhomBottomSheet>((_props, ref) => {
+  const styles = stylesFor(useThemeColors());
   const navigation = useNavigation<any>();
 
   // Le sheet est monté en permanence (Task 10 le pilote par ref pour pouvoir l'ouvrir depuis un
@@ -135,16 +138,16 @@ export const DashboardActionsSheet = forwardRef<GorhomBottomSheet>((_props, ref)
 
 DashboardActionsSheet.displayName = 'DashboardActionsSheet';
 
-const styles = StyleSheet.create({
+const stylesFor = (t: ThemeTokens) => StyleSheet.create({
   sectionTitle: {
     fontSize: typography.fontSize.lg,
     fontWeight: typography.fontWeight.semibold,
-    color: colors.surface[800],
+    color: t.text,
     marginTop: spacing.md,
     marginBottom: spacing.sm,
   },
   kpiRow: { flexDirection: 'row', gap: spacing.sm, marginVertical: spacing.md },
   quickActions: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm, marginBottom: spacing.md },
-  quickCard: { width: '48%', backgroundColor: '#fff', borderRadius: radius.md, padding: spacing.md, ...shadows.xs, alignItems: 'center' },
+  quickCard: { width: '48%', backgroundColor: t.card, borderRadius: radius.md, padding: spacing.md, ...shadows.xs, alignItems: 'center' },
   quickLabel: { fontSize: typography.fontSize.sm, fontWeight: typography.fontWeight.medium, color: colors.brand[600] },
 });

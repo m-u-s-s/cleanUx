@@ -3,6 +3,8 @@ import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { Button, ErrorState, Screen, Skeleton } from '@/ui';
 import { colors, spacing, typography } from '@/theme';
+import { useThemeColors } from '@/theme/useThemeColors';
+import type { ThemeTokens } from '@/theme/useThemeColors';
 import { readServerErrors, useResourceDetail, useResourceIndex, useResourceSave } from './hooks';
 import { FieldInput } from './FieldInput';
 import type { ResourceField } from './types';
@@ -23,6 +25,8 @@ interface Params {
  * pas les règles — une règle d'unicité ne se rejoue pas ici.
  */
 export function ResourceFormScreen({ route }: { route: { params: Params } }) {
+  const styles = stylesFor(useThemeColors());
+
   const { resource, title, id } = route.params;
   const navigation = useNavigation<{ goBack: () => void }>();
 
@@ -123,10 +127,10 @@ export function ResourceFormScreen({ route }: { route: { params: Params } }) {
   );
 }
 
-const styles = StyleSheet.create({
+const stylesFor = (t: ThemeTokens) => StyleSheet.create({
   heading: {
     ...typography.preset.headline,
-    color: colors.surface[900],
+    color: t.text,
     marginTop: spacing.md,
     marginBottom: spacing.md,
   },

@@ -28,8 +28,18 @@ const EXCEPTIONS: Record<string, string> = {
   'shared/src/ui/authShell.tsx': 'écran d’accueil à identité visuelle propre, délibérément hors thème',
 };
 
-/** Familles sémantiques : leur sens ne dépend pas du fond. */
+/**
+ * Familles sémantiques : leur sens ne dépend pas du fond.
+ *
+ * SAUF les extrémités CLAIRES des rampes (50, 100) posées en FOND. `colors.brand[50]` est un
+ * indigo quasi-blanc : il porte la marque sur fond clair, et rend le texte invisible sur fond
+ * sombre. C'est un neutre déguisé en couleur sémantique — trouvé sur l'écran Apparence, où il
+ * surlignait le mode sélectionné.
+ */
 const SEMANTIQUE = /colors\.(success|warning|danger|brand|accent)\b/;
+
+const NEUTRE_DEGUISE =
+  /(backgroundColor|borderColor)\s*:\s*colors\.(success|warning|danger|brand|accent)\[(50|100)\]/;
 
 /** Une couleur neutre ou un hexadécimal figé sur une propriété de couleur. */
 const INTERDIT =
@@ -82,6 +92,11 @@ describe('couleurs codées en dur', () => {
       fs.readFileSync(chemin, 'utf8')
         .split('\n')
         .forEach((ligne, i) => {
+          if (NEUTRE_DEGUISE.test(ligne)) {
+            fautifs.push(`${relatif}:${i + 1}`);
+
+            return;
+          }
           if (SEMANTIQUE.test(ligne)) {
             return;
           }

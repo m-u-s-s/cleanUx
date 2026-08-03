@@ -5,12 +5,15 @@ import { useNavigation } from '@react-navigation/native';
 import { Screen, Button, Badge, Divider, TextInput } from '@/ui';
 import { useMissionDetail, useMissionLifecycle, missionStatusLabel } from '@/missions';
 import { useArriveOnSite } from '@/tracking';
-import { colors, spacing, typography, radius, shadows, useThemeColors } from '@/theme';
+import {spacing, typography, radius, shadows, useThemeColors } from '@/theme';
+import type { ThemeTokens } from '@/theme/useThemeColors';
 import type { RootStackParamList } from '@/navigation/types';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'MissionDetail'>;
 
 export function MissionDetailScreen({ route }: Props) {
+  const styles = stylesFor(useThemeColors());
+
   const { missionId } = route.params;
   const { data: mission, isLoading } = useMissionDetail(missionId);
   const lifecycle = useMissionLifecycle(missionId);
@@ -184,6 +187,8 @@ export function MissionDetailScreen({ route }: Props) {
 }
 
 function DetailRow({ label, value }: { label: string; value: string }) {
+  const styles = stylesFor(useThemeColors());
+
   return (
     <View style={styles.row}>
       <Text style={styles.rowLabel}>{label}</Text>
@@ -192,9 +197,9 @@ function DetailRow({ label, value }: { label: string; value: string }) {
   );
 }
 
-const styles = StyleSheet.create({
+const stylesFor = (t: ThemeTokens) => StyleSheet.create({
   loading: {
-    color: colors.surface[500],
+    color: t.textSecondary,
     textAlign: 'center',
     marginTop: spacing.xl,
   },
@@ -208,7 +213,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: typography.fontSize.xl,
     fontWeight: typography.fontWeight.bold,
-    color: colors.surface[900],
+    color: t.text,
   },
   card: {
     borderRadius: radius.md,
@@ -223,12 +228,12 @@ const styles = StyleSheet.create({
   },
   rowLabel: {
     fontSize: typography.fontSize.sm,
-    color: colors.surface[500],
+    color: t.textSecondary,
   },
   rowValue: {
     fontSize: typography.fontSize.sm,
     fontWeight: typography.fontWeight.medium,
-    color: colors.surface[900],
+    color: t.text,
     flex: 1,
     textAlign: 'right',
     marginLeft: spacing.sm,

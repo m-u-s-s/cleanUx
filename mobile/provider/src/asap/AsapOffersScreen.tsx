@@ -2,7 +2,9 @@ import React, { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { Screen, Button, Badge, EmptyState, Skeleton } from '@/ui';
-import { colors, spacing, typography, radius } from '@/theme';
+import {spacing, typography, radius } from '@/theme';
+import { useThemeColors } from '@/theme/useThemeColors';
+import type { ThemeTokens } from '@/theme/useThemeColors';
 import { useAsapOffers, useAcceptAsapOffer, useDeclineAsapOffer } from './hooks';
 import type { AsapOffer } from './types';
 
@@ -19,6 +21,8 @@ import type { AsapOffer } from './types';
  * coûte la course.
  */
 export function AsapOffersScreen() {
+  const styles = stylesFor(useThemeColors());
+
   const navigation = useNavigation<any>();
   const { offers, isLoading } = useAsapOffers();
   const accept = useAcceptAsapOffer();
@@ -137,26 +141,26 @@ function euros(cents: number): string {
   return String(Math.round(cents / 100));
 }
 
-const styles = StyleSheet.create({
+const stylesFor = (t: ThemeTokens) => StyleSheet.create({
   body: { padding: spacing.md, gap: spacing.md },
   title: {
     fontSize: typography.fontSize.xl,
     fontWeight: typography.fontWeight.bold,
-    color: colors.surface[900],
+    color: t.text,
   },
-  subtitle: { fontSize: typography.fontSize.sm, color: colors.surface[600] },
+  subtitle: { fontSize: typography.fontSize.sm, color: t.textSecondary },
   notice: {
     fontSize: typography.fontSize.sm,
-    color: colors.surface[900],
-    backgroundColor: colors.surface[100],
+    color: t.text,
+    backgroundColor: t.inputBg,
     padding: spacing.md,
     borderRadius: radius.md,
   },
   card: {
-    backgroundColor: colors.surface[50],
+    backgroundColor: t.bg,
     borderRadius: radius.lg,
     borderWidth: 1,
-    borderColor: colors.surface[200],
+    borderColor: t.border,
     padding: spacing.md,
     gap: spacing.xs,
   },
@@ -164,15 +168,15 @@ const styles = StyleSheet.create({
   trade: {
     fontSize: typography.fontSize.lg,
     fontWeight: typography.fontWeight.semibold,
-    color: colors.surface[900],
+    color: t.text,
   },
-  meta: { fontSize: typography.fontSize.sm, color: colors.surface[600] },
+  meta: { fontSize: typography.fontSize.sm, color: t.textSecondary },
   /* Chasse fixe sur le montant : c'est le chiffre qui décide, il ne doit pas sauter. */
   amount: {
     fontSize: typography.fontSize.xl,
     fontWeight: typography.fontWeight.bold,
     fontVariant: ['tabular-nums'],
-    color: colors.surface[900],
+    color: t.text,
   },
   actions: { flexDirection: 'row', gap: spacing.sm, marginTop: spacing.sm },
 });

@@ -5,7 +5,9 @@ import { useNavigation } from '@react-navigation/native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { Screen, Button, TextInput } from '@/ui';
 import { useConfirmPresence, useCompleteByQr, readScanPosition } from '@/tracking';
-import { colors, spacing, typography, radius } from '@/theme';
+import {spacing, typography, radius } from '@/theme';
+import { useThemeColors } from '@/theme/useThemeColors';
+import type { ThemeTokens } from '@/theme/useThemeColors';
 import type { RootStackParamList } from '@/navigation/types';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'PresenceScan'>;
@@ -25,6 +27,8 @@ type Props = NativeStackScreenProps<RootStackParamList, 'PresenceScan'>;
  * la confronte au lieu de l'intervention — dicté ou scanné, le code ne vaut que sur place.
  */
 export function PresenceScanScreen({ route }: Props) {
+  const styles = stylesFor(useThemeColors());
+
   const params = route.params;
   // Les deux bouts de la visite partagent cet écran : même caméra, même repli manuel, mêmes
   // messages d'erreur. Seul change ce qui est validé — une session de suivi à l'arrivée, une
@@ -224,28 +228,28 @@ export function PresenceScanScreen({ route }: Props) {
   );
 }
 
-const styles = StyleSheet.create({
+const stylesFor = (t: ThemeTokens) => StyleSheet.create({
   container: { flex: 1, backgroundColor: '#000' },
   camera: { flex: 1 },
-  manual: { padding: spacing.md, gap: spacing.sm, backgroundColor: '#fff' },
+  manual: { padding: spacing.md, gap: spacing.sm, backgroundColor: t.card },
   centered: { flex: 1, justifyContent: 'center', gap: spacing.md, padding: spacing.lg },
   title: {
     fontSize: typography.fontSize.xl,
     fontWeight: typography.fontWeight.bold,
-    color: colors.surface[900],
+    color: t.text,
   },
-  hint: { fontSize: typography.fontSize.sm, color: colors.surface[600] },
+  hint: { fontSize: typography.fontSize.sm, color: t.textSecondary },
   overlay: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: spacing.lg },
   frame: {
     width: 240,
     height: 240,
     borderWidth: 3,
-    borderColor: '#fff',
+    borderColor: t.card,
     borderRadius: radius.md,
     backgroundColor: 'transparent',
   },
   instruction: {
-    color: '#fff',
+    color: t.card,
     fontSize: typography.fontSize.base,
     fontWeight: typography.fontWeight.semibold,
     textAlign: 'center',

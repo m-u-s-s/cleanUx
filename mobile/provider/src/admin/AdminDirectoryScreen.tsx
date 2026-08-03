@@ -3,6 +3,8 @@ import { Pressable, SectionList, StyleSheet, Text, View } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { Badge, ErrorState, Icon, Screen, Skeleton, TextInput } from '@/ui';
 import { colors, radius, spacing, typography } from '@/theme';
+import { useThemeColors } from '@/theme/useThemeColors';
+import type { ThemeTokens } from '@/theme/useThemeColors';
 import { useAdminCatalog } from './hooks';
 import { NATIVE_ADMIN_SCREENS } from './nativeScreens';
 import type { AdminModule } from './types';
@@ -19,6 +21,8 @@ import type { AdminModule } from './types';
  * OUVRIR UN ÉCRAN VIDE SERAIT PIRE QUE L'ANNONCER : un module marqué ne réagit pas au toucher.
  */
 export function AdminDirectoryScreen() {
+  const styles = stylesFor(useThemeColors());
+
   const navigation = useNavigation<{ navigate: (screen: string, params?: object) => void }>();
   const { data, isLoading, isError, refetch } = useAdminCatalog();
   const [query, setQuery] = useState('');
@@ -129,6 +133,8 @@ export function AdminDirectoryScreen() {
 }
 
 function ModuleRow({ module, onOpen }: { module: AdminModule; onOpen: () => void }) {
+  const styles = stylesFor(useThemeColors());
+
   const disponible = module.coverage !== 'pending';
 
   return (
@@ -154,17 +160,17 @@ function ModuleRow({ module, onOpen }: { module: AdminModule; onOpen: () => void
   );
 }
 
-const styles = StyleSheet.create({
+const stylesFor = (t: ThemeTokens) => StyleSheet.create({
   header: { paddingTop: spacing.md, paddingBottom: spacing.sm },
   progress: {
     ...typography.preset.subhead,
-    color: colors.surface[500],
+    color: t.textSecondary,
     marginBottom: spacing.sm,
   },
   sectionHeader: {
     ...typography.preset.subhead,
-    color: colors.surface[600],
-    backgroundColor: colors.surface[50],
+    color: t.textSecondary,
+    backgroundColor: t.bg,
     paddingVertical: spacing.xs,
     textTransform: 'uppercase',
   },
@@ -175,12 +181,12 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.md,
     borderRadius: radius.md,
   },
-  rowPressed: { backgroundColor: colors.surface[100] },
-  rowTitle: { flex: 1, fontSize: typography.fontSize.base, color: colors.surface[900] },
-  rowTitleMuted: { color: colors.surface[500] },
+  rowPressed: { backgroundColor: t.inputBg },
+  rowTitle: { flex: 1, fontSize: typography.fontSize.base, color: t.text },
+  rowTitleMuted: { color: t.textSecondary },
   empty: {
     paddingVertical: spacing.xl,
     textAlign: 'center',
-    color: colors.surface[500],
+    color: t.textSecondary,
   },
 });

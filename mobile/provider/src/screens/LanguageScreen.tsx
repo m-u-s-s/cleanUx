@@ -4,6 +4,8 @@ import { Screen, Button, Badge } from '@/ui';
 import { apiClient } from '@/api';
 import { useAuth } from '@/auth';
 import { colors, spacing, typography, radius } from '@/theme';
+import { useThemeColors } from '@/theme/useThemeColors';
+import type { ThemeTokens } from '@/theme/useThemeColors';
 
 const LANGUAGES = [
   { code: 'fr', label: 'Français', flag: '🇫🇷' },
@@ -12,6 +14,8 @@ const LANGUAGES = [
 ];
 
 export function LanguageScreen({ navigation }: any) {
+  const styles = stylesFor(useThemeColors());
+
   const { user, setUser } = useAuth();
   const [selected, setSelected] = useState((user as any)?.locale ?? 'fr');
   const [saving, setSaving] = useState(false);
@@ -54,11 +58,11 @@ export function LanguageScreen({ navigation }: any) {
   );
 }
 
-const styles = StyleSheet.create({
+const stylesFor = (t: ThemeTokens) => StyleSheet.create({
   title: {
     fontSize: typography.fontSize.xl,
     fontWeight: typography.fontWeight.bold,
-    color: colors.surface[900],
+    color: t.text,
     marginBottom: spacing.lg,
     marginTop: spacing.md,
   },
@@ -73,5 +77,5 @@ const styles = StyleSheet.create({
   },
   rowActive: { backgroundColor: colors.brand[50] },
   flag: { fontSize: 28 },
-  label: { flex: 1, fontSize: typography.fontSize.base, color: colors.surface[900] },
+  label: { flex: 1, fontSize: typography.fontSize.base, color: t.text },
 });

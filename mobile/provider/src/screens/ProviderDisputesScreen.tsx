@@ -3,7 +3,9 @@ import { FlatList, View, Text, StyleSheet } from 'react-native';
 import { useQuery } from '@tanstack/react-query';
 import { Screen, Badge, Skeleton, EmptyState, ErrorState } from '@/ui';
 import { apiClient } from '@/api';
-import { colors, spacing, typography, radius } from '@/theme';
+import {spacing, typography, radius } from '@/theme';
+import { useThemeColors } from '@/theme/useThemeColors';
+import type { ThemeTokens } from '@/theme/useThemeColors';
 
 interface Dispute {
   id: number;
@@ -13,6 +15,8 @@ interface Dispute {
 }
 
 export function ProviderDisputesScreen() {
+  const styles = stylesFor(useThemeColors());
+
   const { data, isLoading, isError, refetch, isRefetching } = useQuery<Dispute[]>({
     queryKey: ['provider', 'disputes'],
     queryFn: async () => (await apiClient.get('/provider/disputes')).data.data ?? [],
@@ -47,11 +51,11 @@ export function ProviderDisputesScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const stylesFor = (t: ThemeTokens) => StyleSheet.create({
   title: {
     fontSize: typography.fontSize.xl,
     fontWeight: typography.fontWeight.bold,
-    color: colors.surface[900],
+    color: t.text,
     marginBottom: spacing.md,
   },
   card: {
@@ -59,17 +63,17 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     padding: spacing.md,
-    backgroundColor: '#fff',
+    backgroundColor: t.card,
     borderRadius: radius.md,
     marginBottom: spacing.sm,
   },
   cardTitle: {
     fontSize: typography.fontSize.sm,
     fontWeight: typography.fontWeight.semibold,
-    color: colors.surface[900],
+    color: t.text,
   },
   empty: {
-    color: colors.surface[400],
+    color: t.textMuted,
     textAlign: 'center',
     marginTop: spacing.xl,
   },

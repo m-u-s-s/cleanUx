@@ -2,6 +2,8 @@ import React, { useState, useRef } from 'react';
 import { View, Text, FlatList, Dimensions, StyleSheet } from 'react-native';
 import { Button } from '@/ui';
 import { colors, spacing, typography, radius } from '@/theme';
+import { useThemeColors } from '@/theme/useThemeColors';
+import type { ThemeTokens } from '@/theme/useThemeColors';
 
 const { width } = Dimensions.get('window');
 
@@ -30,6 +32,8 @@ interface Props {
 }
 
 export function WalkthroughScreen({ onComplete }: Props) {
+  const styles = stylesFor(useThemeColors());
+
   const [currentIndex, setCurrentIndex] = useState(0);
   const flatListRef = useRef<FlatList>(null);
 
@@ -92,7 +96,7 @@ export function WalkthroughScreen({ onComplete }: Props) {
   );
 }
 
-const styles = StyleSheet.create({
+const stylesFor = (t: ThemeTokens) => StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.mode.showcase.night },
   slide: {
     flex: 1,
@@ -125,7 +129,7 @@ const styles = StyleSheet.create({
     gap: spacing.sm,
     marginBottom: spacing.md,
   },
-  dot: { width: 8, height: 8, borderRadius: 4, backgroundColor: colors.surface[600] },
+  dot: { width: 8, height: 8, borderRadius: 4, backgroundColor: t.textSecondary },
   dotActive: { backgroundColor: colors.accent.amber, width: 24 },
 });
 

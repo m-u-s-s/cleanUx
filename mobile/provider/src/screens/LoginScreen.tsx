@@ -22,11 +22,13 @@ import { Button, TextInput, Divider, Icon, useReducedMotion } from '@/ui';
 import { useLogin, useAuth } from '@/auth';
 import { ApiError } from '@/api';
 import { colors } from '@/theme';
+import { useThemeColors } from '@/theme/useThemeColors';
 import type { RootStackParamList } from '@/navigation/types';
-import { AnimatedHalo, Wordmark, Stagger, FormError, authErrorMessage, styles } from './auth/kit';
+import { AnimatedHalo, Wordmark, Stagger, FormError, authErrorMessage, stylesFor } from './auth/kit';
 import { RegisterWizard } from './auth/RegisterWizard';
 
 export function LoginScreen() {
+  const styles = stylesFor(useThemeColors());
   const [mode, setMode] = useState<'login' | 'register'>('login');
   const reducedMotion = useReducedMotion();
 
@@ -89,6 +91,7 @@ export function LoginScreen() {
 }
 
 function LoginForm() {
+  const styles = stylesFor(useThemeColors());
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);

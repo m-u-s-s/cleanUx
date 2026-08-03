@@ -7,6 +7,8 @@ import { Button, Divider, Badge } from '@/ui';
 import { useAuth } from '@/auth';
 import { apiClient } from '@/api';
 import { colors, spacing, typography, radius, shadows } from '@/theme';
+import { useThemeColors } from '@/theme/useThemeColors';
+import type { ThemeTokens } from '@/theme/useThemeColors';
 import type { RootStackParamList } from '@/navigation/types';
 
 const LANGUAGES = [
@@ -18,6 +20,8 @@ const LANGUAGES = [
 const APP_VERSION = '1.0.0';
 
 export function SettingsScreen() {
+  const styles = stylesFor(useThemeColors());
+
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const { user, setUser, logout } = useAuth();
 
@@ -189,27 +193,27 @@ export function SettingsScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.surface[50] },
+const stylesFor = (t: ThemeTokens) => StyleSheet.create({
+  container: { flex: 1, backgroundColor: t.bg },
   scroll: { padding: spacing.md, paddingBottom: spacing['2xl'] },
   pageTitle: {
     fontSize: typography.fontSize['2xl'],
     fontWeight: typography.fontWeight.bold,
-    color: colors.surface[900],
+    color: t.text,
     marginBottom: spacing.lg,
   },
   section: { marginBottom: spacing.md },
   sectionTitle: {
     fontSize: typography.fontSize.xs,
     fontWeight: typography.fontWeight.semibold,
-    color: colors.surface[500],
+    color: t.textSecondary,
     textTransform: 'uppercase',
     letterSpacing: 0.5,
     marginBottom: spacing.xs,
     paddingHorizontal: spacing.xs,
   },
   card: {
-    backgroundColor: '#fff',
+    backgroundColor: t.card,
     borderRadius: radius.md,
     ...shadows.xs,
     overflow: 'hidden',
@@ -226,9 +230,9 @@ const styles = StyleSheet.create({
   rowLabel: {
     flex: 1,
     fontSize: typography.fontSize.base,
-    color: colors.surface[800],
+    color: t.text,
   },
-  rowHint: { fontSize: typography.fontSize.xs, color: colors.surface[400], marginTop: 2 },
-  rowValue: { fontSize: typography.fontSize.sm, color: colors.surface[500] },
-  rowChevron: { fontSize: 18, color: colors.surface[400] },
+  rowHint: { fontSize: typography.fontSize.xs, color: t.textMuted, marginTop: 2 },
+  rowValue: { fontSize: typography.fontSize.sm, color: t.textSecondary },
+  rowChevron: { fontSize: 18, color: t.textMuted },
 });

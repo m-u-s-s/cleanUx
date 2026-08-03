@@ -1,7 +1,9 @@
 import React from 'react';
 import { RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { ErrorState, KPICard, Screen, Skeleton } from '@/ui';
-import { colors, spacing, typography } from '@/theme';
+import {spacing, typography } from '@/theme';
+import { useThemeColors } from '@/theme/useThemeColors';
+import type { ThemeTokens } from '@/theme/useThemeColors';
 import { useAdminOverview } from './hooks';
 import type { AdminKpi } from './types';
 
@@ -16,6 +18,8 @@ import type { AdminKpi } from './types';
  * que la requête a échoué ferait croire à un calme qui n'existe pas, et personne n'irait vérifier.
  */
 export function AdminHomeScreen() {
+  const styles = stylesFor(useThemeColors());
+
   const { data, isLoading, isError, refetch, isRefetching } = useAdminOverview();
 
   if (isLoading) {
@@ -94,10 +98,10 @@ function toneFor(kpi: AdminKpi): 'neutral' | 'warning' | 'danger' {
   return files.includes(kpi.key) && kpi.value > 0 ? 'warning' : 'neutral';
 }
 
-const styles = StyleSheet.create({
+const stylesFor = (t: ThemeTokens) => StyleSheet.create({
   heading: {
     ...typography.preset.headline,
-    color: colors.surface[900],
+    color: t.text,
     marginTop: spacing.md,
     marginBottom: spacing.md,
   },

@@ -6,9 +6,13 @@ import { useAuth } from '@/auth';
 import { ProviderMap } from '@/screens/components/ProviderMap';
 import { PresencePill } from '@/screens/components/PresencePill';
 import { DashboardActionsSheet } from '@/screens/components/DashboardActionsSheet';
-import { colors, spacing, typography } from '@/theme';
+import {spacing, typography } from '@/theme';
+import { useThemeColors } from '@/theme/useThemeColors';
+import type { ThemeTokens } from '@/theme/useThemeColors';
 
 export function DashboardScreen() {
+  const styles = stylesFor(useThemeColors());
+
   const { user } = useAuth();
   const sheetRef = useRef<GorhomBottomSheet>(null);
 
@@ -38,11 +42,11 @@ export function DashboardScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const stylesFor = (t: ThemeTokens) => StyleSheet.create({
   hero: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginVertical: spacing.md },
   heroLeft: { flex: 1 },
-  greeting: { fontSize: typography.fontSize['2xl'], fontWeight: typography.fontWeight.bold, color: colors.surface[900] },
-  role: { fontSize: typography.fontSize.sm, color: colors.surface[500], marginTop: 2 },
+  greeting: { fontSize: typography.fontSize['2xl'], fontWeight: typography.fontWeight.bold, color: t.text },
+  role: { fontSize: typography.fontSize.sm, color: t.textSecondary, marginTop: 2 },
   mapWrap: { flex: 1, borderRadius: 12, overflow: 'hidden' },
   floating: { position: 'absolute', left: spacing.md, right: spacing.md, bottom: spacing.lg, gap: spacing.sm },
 });

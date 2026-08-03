@@ -6,6 +6,8 @@ import { useMissionInbox } from '@/missions';
 import { useGpsWatcher, distanceKmTo, formatDistance } from '@/tracking';
 import { loadMapModule, isMapRenderable, OsmMap } from '@/maps';
 import { colors, spacing, typography, radius } from '@/theme';
+import { useThemeColors } from '@/theme/useThemeColors';
+import type { ThemeTokens } from '@/theme/useThemeColors';
 
 /** Repli d'échelle pays centré sur Bruxelles, marché principal du projet. */
 export const FALLBACK_REGION = {
@@ -18,6 +20,8 @@ export const FALLBACK_REGION = {
 type Position = { latitude: number; longitude: number };
 
 export function ProviderMap() {
+  const styles = stylesFor(useThemeColors());
+
   const navigation = useNavigation<any>();
   const maps = useMemo(() => loadMapModule(), []);
   // Le module peut charger sans que la carte soit affichable : sur Android, Google Maps LÈVE
@@ -218,31 +222,31 @@ export function ProviderMap() {
   );
 }
 
-const styles = StyleSheet.create({
+const stylesFor = (t: ThemeTokens) => StyleSheet.create({
   container: { flex: 1 },
   map: { flex: 1 },
   overlay: { position: 'absolute', top: spacing.sm, left: spacing.sm, right: spacing.sm, gap: spacing.xs },
   notice: {
     alignSelf: 'flex-start',
-    backgroundColor: '#fff',
+    backgroundColor: t.card,
     borderRadius: radius.sm,
     paddingHorizontal: spacing.sm,
     paddingVertical: spacing.xs,
     fontSize: typography.fontSize.xs,
-    color: colors.surface[700],
+    color: t.text,
     overflow: 'hidden',
   },
   errorRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
   callout: { minWidth: 160, padding: spacing.xs },
-  calloutService: { fontSize: typography.fontSize.sm, fontWeight: typography.fontWeight.semibold, color: colors.surface[900] },
-  calloutClient: { fontSize: typography.fontSize.xs, color: colors.surface[600], marginTop: 2 },
+  calloutService: { fontSize: typography.fontSize.sm, fontWeight: typography.fontWeight.semibold, color: t.text },
+  calloutClient: { fontSize: typography.fontSize.xs, color: t.textSecondary, marginTop: 2 },
   calloutDistance: { fontSize: typography.fontSize.xs, color: colors.brand[600], marginTop: 2 },
   fallback: {
     flex: 1,
-    backgroundColor: colors.surface[100],
+    backgroundColor: t.inputBg,
     alignItems: 'center',
     justifyContent: 'center',
     padding: spacing.md,
   },
-  fallbackText: { fontSize: typography.fontSize.xs, color: colors.surface[500], textAlign: 'center' },
+  fallbackText: { fontSize: typography.fontSize.xs, color: t.textSecondary, textAlign: 'center' },
 });

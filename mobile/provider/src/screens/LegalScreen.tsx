@@ -1,7 +1,9 @@
 import React from 'react';
 import { Text, StyleSheet } from 'react-native';
 import { Screen } from '@/ui';
-import { colors, spacing, typography } from '@/theme';
+import {spacing, typography } from '@/theme';
+import { useThemeColors } from '@/theme/useThemeColors';
+import type { ThemeTokens } from '@/theme/useThemeColors';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '@/navigation/types';
 
@@ -71,6 +73,8 @@ dpo@cleanux.com`,
 };
 
 export function LegalScreen({ route }: Props) {
+  const styles = stylesFor(useThemeColors());
+
   const { type } = route.params;
   const content = CONTENT[type];
 
@@ -82,17 +86,17 @@ export function LegalScreen({ route }: Props) {
   );
 }
 
-const styles = StyleSheet.create({
+const stylesFor = (t: ThemeTokens) => StyleSheet.create({
   title: {
     fontSize: typography.fontSize.xl,
     fontWeight: typography.fontWeight.bold,
-    color: colors.surface[900],
+    color: t.text,
     marginTop: spacing.md,
     marginBottom: spacing.lg,
   },
   body: {
     fontSize: typography.fontSize.sm,
-    color: colors.surface[600],
+    color: t.textSecondary,
     lineHeight: 22,
   },
 });

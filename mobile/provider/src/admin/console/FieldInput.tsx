@@ -1,7 +1,9 @@
 import React from 'react';
 import { StyleSheet, Switch, Text, View } from 'react-native';
 import { TextInput } from '@/ui';
-import { colors, spacing, typography } from '@/theme';
+import {spacing, typography } from '@/theme';
+import { useThemeColors } from '@/theme/useThemeColors';
+import type { ThemeTokens } from '@/theme/useThemeColors';
 import type { ResourceField } from './types';
 
 /**
@@ -25,6 +27,8 @@ export function FieldInput({
   error?: string;
   onChange: (value: unknown) => void;
 }) {
+  const styles = stylesFor(useThemeColors());
+
   if (field.type === 'bool') {
     return (
       <View style={styles.switchRow}>
@@ -63,12 +67,12 @@ export function FieldInput({
   );
 }
 
-const styles = StyleSheet.create({
+const stylesFor = (t: ThemeTokens) => StyleSheet.create({
   switchRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingVertical: spacing.md,
   },
-  switchLabel: { fontSize: typography.fontSize.base, color: colors.surface[900] },
+  switchLabel: { fontSize: typography.fontSize.base, color: t.text },
 });

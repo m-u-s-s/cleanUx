@@ -4,8 +4,12 @@ import { PulseDot, Badge } from '@/ui';
 import { usePresence, PRESENCE_LABELS, PRESENCE_VARIANTS } from '@/presence';
 import type { PresenceStatus } from '@/presence/types';
 import { colors, spacing, typography, radius } from '@/theme';
+import { useThemeColors } from '@/theme/useThemeColors';
+import type { ThemeTokens } from '@/theme/useThemeColors';
 
 export function PresenceToggle() {
+  const styles = stylesFor(useThemeColors());
+
   const { status, error, isPending, setPresenceStatus } = usePresence();
   const statuses: PresenceStatus[] = ['online', 'busy', 'on_break', 'offline'];
 
@@ -41,9 +45,9 @@ export function PresenceToggle() {
   );
 }
 
-const styles = StyleSheet.create({
+const stylesFor = (t: ThemeTokens) => StyleSheet.create({
   container: {
-    backgroundColor: '#fff',
+    backgroundColor: t.card,
     borderRadius: radius.md,
     padding: spacing.md,
   },
@@ -56,7 +60,7 @@ const styles = StyleSheet.create({
   label: {
     fontSize: typography.fontSize.base,
     fontWeight: typography.fontWeight.semibold,
-    color: colors.surface[900],
+    color: t.text,
   },
   buttons: {
     flexDirection: 'row',
@@ -66,7 +70,7 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingVertical: spacing.sm,
     borderRadius: radius.sm,
-    backgroundColor: colors.surface[100],
+    backgroundColor: t.inputBg,
     alignItems: 'center',
   },
   btnActive: {
@@ -74,10 +78,10 @@ const styles = StyleSheet.create({
   },
   btnText: {
     fontSize: typography.fontSize.xs,
-    color: colors.surface[600],
+    color: t.textSecondary,
   },
   btnTextActive: {
-    color: '#fff',
+    color: t.card,
     fontWeight: typography.fontWeight.semibold,
   },
   error: {

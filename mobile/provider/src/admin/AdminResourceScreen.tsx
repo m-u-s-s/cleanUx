@@ -1,7 +1,9 @@
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { Screen } from '@/ui';
-import { colors, spacing, typography } from '@/theme';
+import {spacing, typography } from '@/theme';
+import { useThemeColors } from '@/theme/useThemeColors';
+import type { ThemeTokens } from '@/theme/useThemeColors';
 
 /**
  * Filet de sécurité du lot A.
@@ -12,6 +14,8 @@ import { colors, spacing, typography } from '@/theme';
  * vérité plutôt que de faire tomber l'application sur une route inconnue.
  */
 export function AdminResourceScreen({ route }: { route: { params?: { title?: string } } }) {
+  const styles = stylesFor(useThemeColors());
+
   const title = route.params?.title ?? 'Ce module';
 
   return (
@@ -27,17 +31,17 @@ export function AdminResourceScreen({ route }: { route: { params?: { title?: str
   );
 }
 
-const styles = StyleSheet.create({
+const stylesFor = (t: ThemeTokens) => StyleSheet.create({
   container: { flex: 1, justifyContent: 'center', paddingHorizontal: spacing.lg },
   title: {
     ...typography.preset.headline,
-    color: colors.surface[900],
+    color: t.text,
     marginBottom: spacing.sm,
     textAlign: 'center',
   },
   body: {
     fontSize: typography.fontSize.sm,
-    color: colors.surface[500],
+    color: t.textSecondary,
     textAlign: 'center',
     lineHeight: 20,
   },

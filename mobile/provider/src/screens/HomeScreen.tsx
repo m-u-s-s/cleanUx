@@ -9,9 +9,13 @@ import { useMissionInbox } from '@/missions';
 import { useWalletBalance } from '@/earnings';
 import { useCurrentPosition, distanceKmTo } from '@/tracking';
 import { colors, spacing, typography, radius, shadows } from '@/theme';
+import { useThemeColors } from '@/theme/useThemeColors';
+import type { ThemeTokens } from '@/theme/useThemeColors';
 import type { RootStackParamList } from '@/navigation/types';
 
 export function HomeScreen() {
+  const styles = stylesFor(useThemeColors());
+
   const { user } = useAuth();
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const { data: assignments, isLoading: loadingMissions } = useMissionInbox();
@@ -138,7 +142,7 @@ export function HomeScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const stylesFor = (t: ThemeTokens) => StyleSheet.create({
   hero: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -150,9 +154,9 @@ const styles = StyleSheet.create({
   greeting: {
     fontSize: typography.fontSize['2xl'],
     fontWeight: typography.fontWeight.bold,
-    color: colors.surface[900],
+    color: t.text,
   },
-  role: { fontSize: typography.fontSize.sm, color: colors.surface[500], marginTop: 2 },
+  role: { fontSize: typography.fontSize.sm, color: t.textSecondary, marginTop: 2 },
   kpiRow: {
     flexDirection: 'row',
     gap: spacing.sm,
@@ -162,12 +166,12 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: typography.fontSize.lg,
     fontWeight: typography.fontWeight.semibold,
-    color: colors.surface[800],
+    color: t.text,
     marginTop: spacing.lg,
     marginBottom: spacing.sm,
   },
   missionCard: {
-    backgroundColor: '#fff',
+    backgroundColor: t.card,
     borderRadius: radius.md,
     padding: spacing.md,
     ...shadows.xs,
@@ -176,9 +180,9 @@ const styles = StyleSheet.create({
   missionService: {
     fontSize: typography.fontSize.base,
     fontWeight: typography.fontWeight.semibold,
-    color: colors.surface[900],
+    color: t.text,
   },
-  missionClient: { fontSize: typography.fontSize.sm, color: colors.surface[600], marginTop: 2 },
+  missionClient: { fontSize: typography.fontSize.sm, color: t.textSecondary, marginTop: 2 },
   missionMeta: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -189,7 +193,7 @@ const styles = StyleSheet.create({
   quickActions: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },
   quickCard: {
     width: '48%',
-    backgroundColor: '#fff',
+    backgroundColor: t.card,
     borderRadius: radius.md,
     padding: spacing.md,
     ...shadows.xs,

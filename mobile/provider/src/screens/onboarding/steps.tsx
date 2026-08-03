@@ -20,6 +20,8 @@ import {
 import { useAuth } from '@/auth';
 import { pickDocument, pickImage, rejectionReason, type PickedFile } from './documentPicker';
 import { colors, radius, spacing, typography } from '@/theme';
+import { useThemeColors } from '@/theme/useThemeColors';
+import type { ThemeTokens } from '@/theme/useThemeColors';
 
 /**
  * Les cinq étapes du parcours de vérification prestataire.
@@ -41,6 +43,8 @@ export interface StepProps {
 export const CONTRACT_VERSION = '1.0';
 
 function StepShell({ title, hint, children }: { title: string; hint?: string; children: React.ReactNode }) {
+  const styles = stylesFor(useThemeColors());
+
   return (
     <View style={styles.shell}>
       <Text style={styles.stepTitle}>{title}</Text>
@@ -51,6 +55,8 @@ function StepShell({ title, hint, children }: { title: string; hint?: string; ch
 }
 
 function StepError({ error }: { error: string | null }) {
+  const styles = stylesFor(useThemeColors());
+
   if (!error) return null;
 
   return (
@@ -66,6 +72,8 @@ function StepError({ error }: { error: string | null }) {
  * l'inscription ne remplit pas.
  */
 export function ProfileStep({ onDone, submitting, error }: StepProps) {
+  const styles = stylesFor(useThemeColors());
+
   const [phone, setPhone] = useState('');
   const [localError, setLocalError] = useState<string | null>(null);
 
@@ -135,6 +143,8 @@ function contractPlainText(html: string): string {
  * bascule alors lui aussi sur la version, plutôt que de rendre l'étape infranchissable.
  */
 export function ContractStep({ onDone, submitting, error }: StepProps) {
+  const styles = stylesFor(useThemeColors());
+
   const [accepted, setAccepted] = useState(false);
   const [localError, setLocalError] = useState<string | null>(null);
   const render = useRenderContract();
@@ -229,6 +239,8 @@ Je m'engage à ne sous-traiter aucune mission sans accord préalable, et à resp
  * parcours, puis on interroge l'état jusqu'à ce qu'il soit tranché.
  */
 export function KycStep({ onDone, submitting, error }: StepProps) {
+  const styles = stylesFor(useThemeColors());
+
   const { data: status, refetch } = useKycStatus();
   const [localError, setLocalError] = useState<string | null>(null);
 
@@ -384,6 +396,8 @@ export function KycStep({ onDone, submitting, error }: StepProps) {
  * permet de corriger un dossier sans attendre un email.
  */
 export function DocumentsStep({ onDone, submitting, error }: StepProps) {
+  const styles = stylesFor(useThemeColors());
+
   const { data, isLoading, refetch } = useOnboardingDocuments();
   const [pending, setPending] = useState<Record<string, PickedFile>>({});
   const [localError, setLocalError] = useState<string | null>(null);
@@ -558,6 +572,8 @@ export function DocumentsStep({ onDone, submitting, error }: StepProps) {
  * par le validateur.
  */
 export function SkillsStep({ onDone, submitting, error }: StepProps) {
+  const styles = stylesFor(useThemeColors());
+
   const { data: trades } = useTrades();
   const { data: zones } = useServiceZones();
   const [selected, setSelected] = useState<string[]>([]);
@@ -660,31 +676,31 @@ export function SkillsStep({ onDone, submitting, error }: StepProps) {
   );
 }
 
-const styles = StyleSheet.create({
+const stylesFor = (t: ThemeTokens) => StyleSheet.create({
   shell: { gap: spacing.md },
   stepTitle: {
     fontSize: typography.fontSize.xl,
     fontWeight: typography.fontWeight.bold,
     color: colors.mode.tool.ink,
   },
-  stepHint: { fontSize: typography.fontSize.sm, color: colors.surface[600], marginTop: -spacing.xs },
+  stepHint: { fontSize: typography.fontSize.sm, color: t.textSecondary, marginTop: -spacing.xs },
   contractBox: {
     maxHeight: 240,
     padding: spacing.md,
     borderRadius: radius.md,
     borderWidth: 1,
-    borderColor: colors.surface[200],
-    backgroundColor: '#ffffff',
+    borderColor: t.border,
+    backgroundColor: t.card,
   },
-  contractText: { fontSize: typography.fontSize.sm, lineHeight: 22, color: colors.surface[700] },
+  contractText: { fontSize: typography.fontSize.sm, lineHeight: 22, color: t.text },
   acceptRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
-  acceptText: { flex: 1, fontSize: typography.fontSize.sm, color: colors.surface[700] },
+  acceptText: { flex: 1, fontSize: typography.fontSize.sm, color: t.text },
   checkbox: {
     width: 22,
     height: 22,
     borderRadius: 4,
     borderWidth: 2,
-    borderColor: colors.surface[400],
+    borderColor: t.textMuted,
     flexShrink: 0,
   },
   checkboxChecked: { backgroundColor: colors.brand[500], borderColor: colors.brand[500] },
@@ -712,7 +728,7 @@ const styles = StyleSheet.create({
     gap: spacing.xs,
     paddingVertical: spacing.md,
     borderBottomWidth: 1,
-    borderBottomColor: colors.surface[200],
+    borderBottomColor: t.border,
   },
   documentHead: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
   documentLabel: {
@@ -721,8 +737,8 @@ const styles = StyleSheet.create({
     fontWeight: typography.fontWeight.semibold,
     color: colors.mode.tool.ink,
   },
-  documentHelp: { fontSize: typography.fontSize.xs, color: colors.surface[600] },
-  documentStatus: { fontSize: typography.fontSize.xs, color: colors.surface[600] },
+  documentHelp: { fontSize: typography.fontSize.xs, color: t.textSecondary },
+  documentStatus: { fontSize: typography.fontSize.xs, color: t.textSecondary },
   // danger[700] sur fond blanc : le motif de refus est ce qu'il faut lire en premier.
   documentRejected: { fontSize: typography.fontSize.sm, color: colors.danger[700] },
   filePicked: {
@@ -733,9 +749,9 @@ const styles = StyleSheet.create({
     borderRadius: radius.md,
     borderWidth: 1,
     borderColor: colors.success[600],
-    backgroundColor: '#ffffff',
+    backgroundColor: t.card,
   },
-  fileName: { flex: 1, fontSize: typography.fontSize.sm, color: colors.surface[700] },
+  fileName: { flex: 1, fontSize: typography.fontSize.sm, color: t.text },
   fileRemove: { fontSize: typography.fontSize.sm, color: colors.danger[600], fontWeight: typography.fontWeight.semibold },
   tradeGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.xs },
   tradeChip: {
@@ -743,10 +759,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.sm + 2,
     borderRadius: radius.pill,
     borderWidth: 1,
-    borderColor: colors.surface[200],
-    backgroundColor: '#ffffff',
+    borderColor: t.border,
+    backgroundColor: t.card,
   },
   tradeChipSelected: { borderColor: colors.brand[600], backgroundColor: colors.brand[50] },
-  tradeChipText: { fontSize: typography.fontSize.sm, color: colors.surface[600] },
+  tradeChipText: { fontSize: typography.fontSize.sm, color: t.textSecondary },
   tradeChipTextSelected: { color: colors.brand[600], fontWeight: typography.fontWeight.semibold },
 });

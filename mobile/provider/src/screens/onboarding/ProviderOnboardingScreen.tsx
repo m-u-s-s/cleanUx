@@ -9,6 +9,8 @@ import {
   type OnboardingStep,
 } from '@/onboarding';
 import { colors, radius, spacing, typography } from '@/theme';
+import { useThemeColors } from '@/theme/useThemeColors';
+import type { ThemeTokens } from '@/theme/useThemeColors';
 import { ContractStep, DocumentsStep, KycStep, ProfileStep, SkillsStep, type StepProps } from './steps';
 
 /**
@@ -77,6 +79,7 @@ function stepErrorMessage(error: unknown): string {
 }
 
 export function ProviderOnboardingScreen({ onFinished }: { onFinished?: () => void }) {
+  const styles = stylesFor(useThemeColors());
   const { data, isLoading, isError, refetch } = useOnboardingProgress();
   const { data: documents } = useOnboardingDocuments();
   const complete = useCompleteStep();
@@ -271,7 +274,7 @@ export function ProviderOnboardingScreen({ onFinished }: { onFinished?: () => vo
   );
 }
 
-const styles = StyleSheet.create({
+const stylesFor = (t: ThemeTokens) => StyleSheet.create({
   container: { padding: spacing.lg, gap: spacing.lg, backgroundColor: '#F7F8FB', flexGrow: 1 },
   centered: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: spacing.md, padding: spacing.lg },
   title: {
@@ -279,15 +282,15 @@ const styles = StyleSheet.create({
     fontWeight: typography.fontWeight.bold,
     color: colors.mode.tool.ink,
   },
-  subtitle: { fontSize: typography.fontSize.sm, color: colors.surface[600], marginTop: spacing.xs },
-  progressTrack: { height: 6, borderRadius: 999, backgroundColor: colors.surface[200], overflow: 'hidden' },
+  subtitle: { fontSize: typography.fontSize.sm, color: t.textSecondary, marginTop: spacing.xs },
+  progressTrack: { height: 6, borderRadius: 999, backgroundColor: t.border, overflow: 'hidden' },
   progressFill: { height: 6, borderRadius: 999, backgroundColor: colors.brand[500] },
   cardList: { gap: spacing.sm },
   card: {
-    backgroundColor: '#ffffff',
+    backgroundColor: t.card,
     borderRadius: radius.lg,
     borderWidth: 1,
-    borderColor: colors.surface[200],
+    borderColor: t.border,
     overflow: 'hidden',
   },
   // La carte entière est la cible tactile, bien au-delà des 44 pt recommandés.
@@ -301,13 +304,13 @@ const styles = StyleSheet.create({
   },
   cardMetaRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.xs },
   cardState: { fontSize: typography.fontSize.xs, fontWeight: typography.fontWeight.medium },
-  cardDuration: { fontSize: typography.fontSize.xs, color: colors.surface[500] },
-  cardBlocking: { fontSize: typography.fontSize.xs, color: colors.surface[600], marginTop: 2 },
+  cardDuration: { fontSize: typography.fontSize.xs, color: t.textSecondary },
+  cardBlocking: { fontSize: typography.fontSize.xs, color: t.textSecondary, marginTop: 2 },
   cardContent: {
     padding: spacing.lg,
     borderTopWidth: 1,
-    borderTopColor: colors.surface[200],
-    backgroundColor: '#ffffff',
+    borderTopColor: t.border,
+    backgroundColor: t.card,
   },
   doneBadge: { alignItems: 'center' },
   errorTitle: {
@@ -315,5 +318,5 @@ const styles = StyleSheet.create({
     fontWeight: typography.fontWeight.semibold,
     color: colors.mode.tool.ink,
   },
-  errorHint: { fontSize: typography.fontSize.sm, color: colors.surface[600], textAlign: 'center' },
+  errorHint: { fontSize: typography.fontSize.sm, color: t.textSecondary, textAlign: 'center' },
 });

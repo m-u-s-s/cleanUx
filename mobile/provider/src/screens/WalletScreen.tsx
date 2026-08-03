@@ -5,9 +5,12 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Screen, KPICard, Badge, Button, Skeleton, Divider, EmptyState } from '@/ui';
 import { useWalletBalance, useWalletTransactions, useWithdraw, useStripeConnectStatus } from '@/earnings';
 import { colors, spacing, typography, radius, shadows, useThemeColors } from '@/theme';
+import type { ThemeTokens } from '@/theme/useThemeColors';
 import type { RootStackParamList } from '@/navigation/types';
 
 export function WalletScreen() {
+  const styles = stylesFor(useThemeColors());
+
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const themeColors = useThemeColors();
   const { data: balance, isLoading: loadingBalance } = useWalletBalance();
@@ -175,11 +178,11 @@ export function WalletScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const stylesFor = (t: ThemeTokens) => StyleSheet.create({
   title: {
     fontSize: typography.fontSize.xl,
     fontWeight: typography.fontWeight.bold,
-    color: colors.surface[900],
+    color: t.text,
     marginBottom: spacing.md,
   },
   stripeBanner: {
@@ -207,18 +210,18 @@ const styles = StyleSheet.create({
   withdrawTitle: {
     fontSize: typography.fontSize.sm,
     fontWeight: typography.fontWeight.medium,
-    color: colors.surface[700],
+    color: t.text,
     marginBottom: spacing.sm,
   },
   withdrawInput: {
     borderWidth: 1,
-    borderColor: colors.surface[300],
+    borderColor: t.border,
     borderRadius: radius.md,
     padding: spacing.md,
     fontSize: typography.fontSize.xl,
     fontWeight: typography.fontWeight.bold,
-    color: colors.surface[900],
-    backgroundColor: '#fff',
+    color: t.text,
+    backgroundColor: t.card,
     marginBottom: spacing.sm,
     fontVariant: ['tabular-nums'],
   },
@@ -226,7 +229,7 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: typography.fontSize.lg,
     fontWeight: typography.fontWeight.semibold,
-    color: colors.surface[800],
+    color: t.text,
     marginBottom: spacing.sm,
   },
   txRow: {
@@ -236,8 +239,8 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.sm,
   },
   txLeft: { flex: 1, marginRight: spacing.sm },
-  txDesc: { fontSize: typography.fontSize.sm, color: colors.surface[900] },
-  txDate: { fontSize: typography.fontSize.xs, color: colors.surface[400], marginTop: 2 },
+  txDesc: { fontSize: typography.fontSize.sm, color: t.text },
+  txDate: { fontSize: typography.fontSize.xs, color: t.textMuted, marginTop: 2 },
   txAmount: {
     fontSize: typography.fontSize.sm,
     fontWeight: typography.fontWeight.semibold,
