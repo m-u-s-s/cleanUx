@@ -82,7 +82,7 @@ return [
         ['key' => 'enterprise-approvals', 'title' => 'Approbations entreprises', 'group' => 'personnes', 'icon' => 'checkmark-circle-outline', 'coverage' => 'descriptor', 'routes' => ['admin/approbations-entreprises']],
         ['key' => 'kyc', 'title' => 'Vérifications KYC', 'group' => 'personnes', 'icon' => 'finger-print-outline', 'coverage' => 'descriptor', 'routes' => ['admin/kyc']],
         ['key' => 'kyb', 'title' => 'Vérifications KYB', 'group' => 'personnes', 'icon' => 'briefcase-outline', 'coverage' => 'descriptor', 'routes' => ['admin/kyb-v2']],
-        ['key' => 'badges', 'title' => 'Badges', 'group' => 'personnes', 'icon' => 'medal-outline', 'coverage' => 'pending', 'routes' => ['admin/badges']],
+        ['key' => 'badges', 'title' => 'Badges', 'group' => 'personnes', 'icon' => 'medal-outline', 'coverage' => 'descriptor', 'routes' => ['admin/badges']],
         ['key' => 'premium', 'title' => 'Clients premium', 'group' => 'personnes', 'icon' => 'star-outline', 'coverage' => 'pending', 'routes' => ['admin/premium-clients', 'admin/premium/clients']],
         ['key' => 'stripe-connect', 'title' => 'Stripe Connect prestataires', 'group' => 'personnes', 'icon' => 'card-outline', 'coverage' => 'pending', 'routes' => ['admin/stripe-connect-providers']],
 
@@ -113,7 +113,7 @@ return [
 
         // ── Croissance ──────────────────────────────────────────────────────────────────────
         ['key' => 'marketing', 'title' => 'Marketing', 'group' => 'croissance', 'icon' => 'megaphone-outline', 'coverage' => 'pending', 'routes' => ['admin/marketing']],
-        ['key' => 'promo-codes', 'title' => 'Codes promo', 'group' => 'croissance', 'icon' => 'ticket-outline', 'coverage' => 'pending', 'routes' => ['admin/promotions/codes']],
+        ['key' => 'promo-codes', 'title' => 'Codes promo', 'group' => 'croissance', 'icon' => 'ticket-outline', 'coverage' => 'descriptor', 'routes' => ['admin/promotions/codes']],
         ['key' => 'promo-campaigns', 'title' => 'Campagnes promo', 'group' => 'croissance', 'icon' => 'rocket-outline', 'coverage' => 'pending', 'routes' => ['admin/promotions/campagnes']],
         ['key' => 'referrals', 'title' => 'Parrainages', 'group' => 'croissance', 'icon' => 'share-social-outline', 'coverage' => 'pending', 'routes' => ['admin/promotions/parrainages']],
         ['key' => 'loyalty', 'title' => 'Fidélité', 'group' => 'croissance', 'icon' => 'diamond-outline', 'coverage' => 'pending', 'routes' => ['admin/loyalty', 'admin/loyalty/rewards']],
@@ -126,7 +126,7 @@ return [
         // ── Plateforme ──────────────────────────────────────────────────────────────────────
         ['key' => 'audit', 'title' => 'Audit', 'group' => 'plateforme', 'icon' => 'shield-checkmark-outline', 'coverage' => 'pending', 'routes' => ['admin/audit', 'admin/audit/logs']],
         ['key' => 'gdpr', 'title' => 'RGPD', 'group' => 'plateforme', 'icon' => 'lock-closed-outline', 'coverage' => 'pending', 'routes' => ['admin/gdpr']],
-        ['key' => 'feature-flags', 'title' => 'Feature flags', 'group' => 'plateforme', 'icon' => 'flag-outline', 'coverage' => 'pending', 'routes' => ['admin/feature-flags']],
+        ['key' => 'feature-flags', 'title' => 'Feature flags', 'group' => 'plateforme', 'icon' => 'flag-outline', 'coverage' => 'descriptor', 'routes' => ['admin/feature-flags']],
         ['key' => 'api-tokens', 'title' => 'Jetons d’API', 'group' => 'plateforme', 'icon' => 'key-outline', 'coverage' => 'pending', 'routes' => ['admin/api-tokens-v2']],
         ['key' => 'webhooks', 'title' => 'Webhooks sortants', 'group' => 'plateforme', 'icon' => 'git-network-outline', 'coverage' => 'pending', 'routes' => ['admin/webhooks-v2']],
         ['key' => 'geolocation', 'title' => 'Géolocalisation', 'group' => 'plateforme', 'icon' => 'locate-outline', 'coverage' => 'pending', 'routes' => ['admin/geolocation-v2']],

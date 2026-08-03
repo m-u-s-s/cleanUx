@@ -3,11 +3,14 @@
 namespace App\Providers;
 
 use App\Admin\Console\ResourceRegistry;
+use App\Admin\Resources\BadgeResource;
 use App\Admin\Resources\CompanyResource;
 use App\Admin\Resources\DisputeResource;
 use App\Admin\Resources\EnterpriseApprovalResource;
+use App\Admin\Resources\FeatureFlagResource;
 use App\Admin\Resources\KybResource;
 use App\Admin\Resources\KycResource;
+use App\Admin\Resources\PromoCodeResource;
 use App\Admin\Resources\SiteResource;
 use App\Admin\Resources\UserResource;
 use Illuminate\Support\ServiceProvider;
@@ -44,6 +47,13 @@ class AdminConsoleServiceProvider extends ServiceProvider
             $registry->register('kyb', KybResource::class);
             $registry->register('enterprise-approvals', EnterpriseApprovalResource::class);
             $registry->register('disputes', DisputeResource::class);
+
+            // Lot 3 — création simple et bascules. Aucun de ces trois domaines ne SUPPRIME : on
+            // suspend, on désactive. Les rachats, attributions et historiques déjà posés pointent
+            // sur ces lignes, et les effacer laisserait des références sans explication.
+            $registry->register('promo-codes', PromoCodeResource::class);
+            $registry->register('badges', BadgeResource::class);
+            $registry->register('feature-flags', FeatureFlagResource::class);
 
             return $registry;
         });
