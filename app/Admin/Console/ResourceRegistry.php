@@ -19,15 +19,15 @@ use Illuminate\Database\Eloquent\Model;
  */
 class ResourceRegistry
 {
-    /** @var array<string, class-string<AdminResource<Model>>> */
+    /** @var array<string, class-string<AdminResource<covariant Model>>> */
     private array $bindings = [];
 
-    /** @var array<string, AdminResource<Model>> */
+    /** @var array<string, AdminResource<covariant Model>> */
     private array $resolved = [];
 
     public function __construct(private readonly Container $container) {}
 
-    /** @param  class-string<AdminResource<Model>>  $class */
+    /** @param  class-string<AdminResource<covariant Model>>  $class */
     public function register(string $key, string $class): void
     {
         $this->bindings[$key] = $class;
@@ -38,7 +38,21 @@ class ResourceRegistry
         return isset($this->bindings[$key]);
     }
 
-    /** @return AdminResource<Model>|null */
+    /**
+     * POURQUOI CE RETOUR EST DÉCLARÉ SUR `Model` ET NON SUR LE MODÈLE RÉEL.
+     *
+     * `AdminResource` est invariant : son paramètre de type apparaît en entrée (`toRow(TModel)`)
+     * comme en sortie (`query(): Builder<TModel>`). Un registre qui mélange
+     * `AdminResource<User>` et `AdminResource<ComplaintCase>` n'est donc pas typable strictement
+     * — l'enregistrement accepte la variance, la lecture la reperd.
+     *
+     * CE QUI REND L'ÉLARGISSEMENT SÛR, ET CE N'EST PAS une convention : l'appelant ne fabrique
+     * jamais le modèle qu'il passe. Il le tire de `$descripteur->query()`, donc de la requête du
+     * descripteur lui-même. Un descripteur ne peut recevoir que ses propres entités, par
+     * construction — le système de types ne sait pas exprimer ce lien, le code le garantit.
+     *
+     * @return AdminResource<Model>|null
+     */
     public function for(string $key): ?AdminResource
     {
         if (! isset($this->bindings[$key])) {
@@ -46,7 +60,10 @@ class ResourceRegistry
         }
 
         // Mémorisé par clé : une liste d'annuaire résout la même ressource pour chaque ligne.
-        return $this->resolved[$key] ??= $this->container->make($this->bindings[$key]);
+        /** @var AdminResource<Model> $resource */
+        $resource = $this->resolved[$key] ??= $this->container->make($this->bindings[$key]);
+
+        return $resource;
     }
 
     /** @return list<string> */

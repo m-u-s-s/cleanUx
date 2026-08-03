@@ -4,6 +4,10 @@ namespace App\Providers;
 
 use App\Admin\Console\ResourceRegistry;
 use App\Admin\Resources\CompanyResource;
+use App\Admin\Resources\DisputeResource;
+use App\Admin\Resources\EnterpriseApprovalResource;
+use App\Admin\Resources\KybResource;
+use App\Admin\Resources\KycResource;
 use App\Admin\Resources\SiteResource;
 use App\Admin\Resources\UserResource;
 use Illuminate\Support\ServiceProvider;
@@ -32,6 +36,14 @@ class AdminConsoleServiceProvider extends ServiceProvider
             $registry->register('users', UserResource::class);
             $registry->register('companies', CompanyResource::class);
             $registry->register('sites', SiteResource::class);
+
+            // Lot 2 — les files de DÉCISION : pas de formulaire, des actions déléguées aux
+            // services qui portent la règle. Aucun refus ici : tous exigent un motif écrit, et le
+            // moteur ne sait pas demander une valeur avant d'agir (sous-projet C).
+            $registry->register('kyc', KycResource::class);
+            $registry->register('kyb', KybResource::class);
+            $registry->register('enterprise-approvals', EnterpriseApprovalResource::class);
+            $registry->register('disputes', DisputeResource::class);
 
             return $registry;
         });

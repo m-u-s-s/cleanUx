@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Api\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Booking;
-use App\Models\CustomerClaim;
+use App\Models\ComplaintCase;
 use App\Models\KycVerification;
 use App\Models\Mission;
 use App\Models\ProviderProfile;
@@ -47,10 +47,22 @@ class AdminOverviewController extends Controller
                 $this->kpi('missions_active', 'Missions en cours', 'briefcase-outline',
                     fn () => Mission::whereIn('status', MissionStatus::trackable())->count()),
 
-                // Le complément plutôt que la liste : un statut de litige ajouté demain doit
-                // apparaître comme ouvert, pas disparaître silencieusement du compteur.
+                /*
+                 * DEUX MODÈLES DE LITIGE COEXISTENT, et ce compteur doit désigner le bon.
+                 *
+                 * `ComplaintCase` (complaint_cases) est celui de la page admin « Litiges » et du
+                 * `DisputeResolutionService` ; `CustomerClaim` (customer_claims) est un modèle
+                 * parallèle. Compter le second afficherait un chiffre qui ne correspond à rien de
+                 * ce qu'un administrateur peut ouvrir depuis cet écran.
+                 *
+                 * Le complément plutôt que la liste : un statut ajouté demain doit apparaître
+                 * comme ouvert, pas disparaître silencieusement du compteur.
+                 */
                 $this->kpi('claims_open', 'Litiges ouverts', 'alert-circle-outline',
-                    fn () => CustomerClaim::whereNotIn('status', ['resolved', 'closed'])->count()),
+                    fn () => ComplaintCase::whereNotIn('status', [
+                        ComplaintCase::STATUS_RESOLVED,
+                        ComplaintCase::STATUS_CLOSED,
+                    ])->count()),
 
                 $this->kpi('kyc_pending', 'KYC à traiter', 'finger-print-outline',
                     fn () => KycVerification::pending()->count()),
