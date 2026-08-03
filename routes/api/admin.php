@@ -5,6 +5,7 @@ use App\Http\Controllers\Api\Admin\AdminCatalogController;
 use App\Http\Controllers\Api\Admin\AdminOverviewController;
 use App\Http\Controllers\Api\Admin\AuditController;
 use App\Http\Controllers\Api\Admin\BookingDispatchController;
+use App\Http\Controllers\Api\Admin\Console\ResourceController;
 use App\Http\Controllers\Api\Admin\DisputeAdminController;
 use App\Http\Controllers\Api\Admin\InsuranceAdminController;
 use App\Http\Controllers\Api\Admin\MarketingCampaignController;
@@ -231,5 +232,26 @@ Route::middleware(['auth:sanctum', 'api_admin'])->group(function () {
     Route::prefix('admin')->middleware('api_scope:admin:read,admin:everything')->group(function () {
         Route::get('/catalog', AdminCatalogController::class);
         Route::get('/overview', AdminOverviewController::class);
+    });
+
+    /*
+     * Moteur de console — un jeu d'endpoints pour tous les domaines décrits par un descripteur.
+     *
+     * Les écritures sont sous `admin:critical` : ces routes servent indifféremment la création
+     * d'un utilisateur et la suppression d'une ligne comptable, et le descripteur ne peut pas
+     * abaisser le niveau requis. La lecture reste sous `admin:read`.
+     */
+    Route::prefix('admin/console')->group(function () {
+        Route::middleware('api_scope:admin:read,admin:everything')->group(function () {
+            Route::get('/{resource}', [ResourceController::class, 'index']);
+            Route::get('/{resource}/{id}', [ResourceController::class, 'show']);
+        });
+
+        Route::middleware('api_scope:admin:critical,admin:everything')->group(function () {
+            Route::post('/{resource}', [ResourceController::class, 'store']);
+            Route::patch('/{resource}/{id}', [ResourceController::class, 'update']);
+            Route::delete('/{resource}/{id}', [ResourceController::class, 'destroy']);
+            Route::post('/{resource}/{id}/actions/{action}', [ResourceController::class, 'action']);
+        });
     });
 });

@@ -65,6 +65,11 @@ interface AdminResource
      * Les champs de création et d'édition. Une liste vide signifie « lecture seule » — c'est le
      * cas de la plupart des files de décision, qui s'administrent par actions.
      *
+     * LE FORMULAIRE DOIT COUVRIR TOUTES LES COLONNES NON NULLES du modèle. Le moteur n'écrit QUE
+     * les champs déclarés — c'est ce qui empêche une création de poser `platform_role` et de se
+     * promouvoir — donc une colonne obligatoire absente d'ici fait échouer l'insertion en base.
+     * Un domaine dont la création exige des valeurs calculées relève d'un écran sur-mesure.
+     *
      * @return list<Field>
      */
     public function formFields(): array;
