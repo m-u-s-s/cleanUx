@@ -7,11 +7,21 @@
 --}}
 <div class="space-y-6">
 
+    {{-- ─── Fil d'Ariane ────────────────────────────────────────────────────────────────── --}}
+    <nav class="flex flex-wrap items-center gap-2 text-sm text-slate-500">
+        <a href="{{ route('admin.order-engine.catalog') }}" class="hover:text-slate-900">Catalogue</a>
+        <span aria-hidden="true">›</span>
+        <a href="{{ route('admin.order-engine.zones', $country) }}" class="hover:text-slate-900">{{ $country->name }}</a>
+        <span aria-hidden="true">›</span>
+        <span class="font-medium text-slate-900">{{ $zone->name }}</span>
+    </nav>
+
     <header class="flex flex-wrap items-start justify-between gap-4">
         <div>
-            <h1 class="text-2xl font-semibold text-slate-900">Catalogue</h1>
+            <h1 class="text-2xl font-semibold text-slate-900">Catalogue — {{ $zone->name }}</h1>
             <p class="mt-1 text-sm text-slate-500">
                 Secteurs, métiers et parcours de commande. L’ordre ci-dessous est celui du carrousel client.
+                L’ouverture de chaque métier se règle <strong>pour cette zone</strong>.
             </p>
         </div>
 
@@ -24,6 +34,24 @@
     @if ($flash)
         <p class="rounded-xl bg-emerald-50 px-4 py-3 text-sm text-emerald-900">{{ $flash }}</p>
     @endif
+
+    {{--
+        CE BANDEAU DIT LA VÉRITÉ, et il disparaîtra quand elle changera.
+
+        Le moteur de commande ne lit pas encore `trade_zone_pricing`, et le brouillon ne détermine
+        pas la zone d'une adresse. L'ouverture réglée ci-dessous est donc enregistrée sans effet
+        client. Sans cette phrase, on livre un écran exact et tout le monde croit la fonctionnalité
+        acquise — c'est le mode d'échec le plus probable de ce chantier, et il est silencieux.
+
+        Un test l'exige (`CatalogZoneScopeTest`) : le retirer avant d'avoir fait le branchement
+        fait échouer la suite.
+    --}}
+    <div class="rounded-xl border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+        <strong>Réglage préparatoire.</strong>
+        L’ouverture d’un métier dans cette zone est bien enregistrée, mais elle
+        <strong>n’a pas encore d’effet sur ce que voit un client</strong> : le parcours de commande
+        ne détermine pas encore la zone d’une adresse. Ce branchement est prévu et suivi séparément.
+    </div>
 
     {{-- ─── Secteurs ────────────────────────────────────────────────────────────────────── --}}
     {{--
@@ -131,7 +159,28 @@
                                                 une question fait décrocher
                                             </span>
                                         @endif
+
+                                        {{--
+                                            L'état PROPRE À CETTE ZONE, distinct de l'état du
+                                            métier lui-même. Un métier peut être publié et prêt
+                                            partout, et fermé ici.
+                                        --}}
+                                        @if ($this->metiersActifsDansLaZone[$trade->id] ?? false)
+                                            <span class="rounded-full bg-emerald-50 px-2 py-0.5 text-emerald-700">
+                                                ouvert à {{ $zone->name }}
+                                            </span>
+                                        @else
+                                            <span class="rounded-full bg-slate-100 px-2 py-0.5 text-slate-500">
+                                                fermé à {{ $zone->name }}
+                                            </span>
+                                        @endif
                                     </p>
+
+                                    <button type="button"
+                                        wire:click="basculerMetierDansLaZone({{ $trade->id }})"
+                                        class="mt-2 min-h-[36px] rounded-lg border border-slate-300 px-3 text-xs text-slate-700 transition hover:bg-slate-50">
+                                        {{ ($this->metiersActifsDansLaZone[$trade->id] ?? false) ? 'Fermer dans cette zone' : 'Ouvrir dans cette zone' }}
+                                    </button>
                                 </div>
 
                                 <div class="flex shrink-0 items-center gap-3 text-sm">

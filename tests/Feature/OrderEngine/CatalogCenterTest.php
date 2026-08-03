@@ -3,10 +3,12 @@
 namespace Tests\Feature\OrderEngine;
 
 use App\Livewire\Admin\OrderEngine\CatalogCenter;
+use App\Models\Country;
 use App\Models\OrderDraft;
 use App\Models\OrderDraftAnswer;
 use App\Models\OrderDraftItem;
 use App\Models\Sector;
+use App\Models\ServiceZone;
 use App\Models\Trade;
 use App\Models\User;
 use App\Services\OrderEngine\QuestionInsights;
@@ -27,6 +29,31 @@ use Tests\TestCase;
  */
 class CatalogCenterTest extends TestCase
 {
+    /**
+     * Le contexte géographique exigé par l'écran, créé à la demande.
+     *
+     * Ces tests ne portent pas sur la géographie : ils ont seulement besoin d'un couple pays/zone
+     * cohérent pour monter le composant. La fabrique est paresseuse pour ne pas alourdir les tests
+     * qui ne montent pas l'écran.
+     *
+     * @return array{country: Country, zone: ServiceZone}
+     */
+    private function contexteCatalogue(): array
+    {
+        if ($this->contexteCatalogue === null) {
+            $pays = Country::factory()->create();
+            $this->contexteCatalogue = [
+                'country' => $pays,
+                'zone' => ServiceZone::factory()->create(['country_id' => $pays->id]),
+            ];
+        }
+
+        return $this->contexteCatalogue;
+    }
+
+    /** @var array{country: Country, zone: ServiceZone}|null */
+    private ?array $contexteCatalogue = null;
+
     use RefreshDatabase;
 
     protected function setUp(): void
@@ -38,7 +65,7 @@ class CatalogCenterTest extends TestCase
 
     public function test_it_lists_the_sectors_and_their_trades(): void
     {
-        Livewire::test(CatalogCenter::class)
+        Livewire::test(CatalogCenter::class, $this->contexteCatalogue())
             ->assertOk()
             ->assertSee('Bâtiment & rénovation')
             ->assertSee('Peinture')
@@ -50,7 +77,7 @@ class CatalogCenterTest extends TestCase
     {
         $this->actingAs(User::factory()->client()->create());
 
-        Livewire::test(CatalogCenter::class)->assertForbidden();
+        Livewire::test(CatalogCenter::class, $this->contexteCatalogue())->assertForbidden();
     }
 
     /** Ce qui bloque la publication se voit depuis la liste, sans ouvrir le parcours. */
@@ -60,7 +87,7 @@ class CatalogCenterTest extends TestCase
             ->questions()->where('code', 'etendue')->firstOrFail()
             ->options()->update(['is_default' => true]);
 
-        Livewire::test(CatalogCenter::class)->assertSee('publication bloquée');
+        Livewire::test(CatalogCenter::class, $this->contexteCatalogue())->assertSee('publication bloquée');
     }
 
     /** Un parcours modifié après publication est signalé comme tel. */
@@ -70,7 +97,7 @@ class CatalogCenterTest extends TestCase
         app(TradeFormPublisher::class)->publish($trade, User::factory()->create(['role' => 'admin']));
         $trade->questions()->first()->update(['label' => 'Un libellé tout neuf']);
 
-        Livewire::test(CatalogCenter::class)->assertSee('modifications non publiées');
+        Livewire::test(CatalogCenter::class, $this->contexteCatalogue())->assertSee('modifications non publiées');
     }
 
     /**
@@ -85,7 +112,7 @@ class CatalogCenterTest extends TestCase
             'slug' => 'orphelin', 'code' => 'ORPH', 'name' => 'Métier orphelin', 'is_active' => true,
         ]);
 
-        $component = Livewire::test(CatalogCenter::class);
+        $component = Livewire::test(CatalogCenter::class, $this->contexteCatalogue());
 
         $this->assertTrue($component->instance()->orphanTrades()->contains('id', $orphan->id));
         $component->assertSee('rattaché(s) à aucun secteur');
@@ -99,7 +126,7 @@ class CatalogCenterTest extends TestCase
         ]);
         $sector = Sector::where('slug', 'nettoyage')->firstOrFail();
 
-        Livewire::test(CatalogCenter::class)->call('attachTrade', $orphan->id, $sector->id);
+        Livewire::test(CatalogCenter::class, $this->contexteCatalogue())->call('attachTrade', $orphan->id, $sector->id);
 
         $this->assertSame($sector->id, $orphan->fresh()->sector_id);
     }
@@ -107,7 +134,7 @@ class CatalogCenterTest extends TestCase
     /** Une couleur mal saisie casserait le carrousel en silence : elle est validée. */
     public function test_a_malformed_accent_colour_is_refused(): void
     {
-        Livewire::test(CatalogCenter::class)
+        Livewire::test(CatalogCenter::class, $this->contexteCatalogue())
             ->call('startNewSector')
             ->set('sectorForm.name', 'Test')
             ->set('sectorForm.accent_color', 'bleu')
@@ -117,7 +144,7 @@ class CatalogCenterTest extends TestCase
 
     public function test_the_name_suggests_a_slug(): void
     {
-        Livewire::test(CatalogCenter::class)
+        Livewire::test(CatalogCenter::class, $this->contexteCatalogue())
             ->call('startNewSector')
             ->set('sectorForm.name', 'Espaces Verts & Jardins')
             ->assertSet('sectorForm.slug', 'espaces-verts-jardins');
@@ -129,7 +156,7 @@ class CatalogCenterTest extends TestCase
         $sector = Sector::where('slug', 'nettoyage')->firstOrFail();
         $tradeIds = $sector->trades()->pluck('id');
 
-        $component = Livewire::test(CatalogCenter::class)->call('confirmArchiveSector', $sector->id);
+        $component = Livewire::test(CatalogCenter::class, $this->contexteCatalogue())->call('confirmArchiveSector', $sector->id);
 
         $this->assertSame(3, $component->instance()->archiveImpact['children_count']);
         $this->assertNotNull(Sector::find($sector->id), 'Le secteur a été archivé avant confirmation.');
