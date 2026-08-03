@@ -262,7 +262,7 @@ const stylesFor = (t: ThemeTokens) => StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    backgroundColor: t.bg ?? '#f9fafb',
+    backgroundColor: t.bg,
     borderRadius: radius.sm,
     paddingHorizontal: spacing.sm,
     paddingVertical: 6,

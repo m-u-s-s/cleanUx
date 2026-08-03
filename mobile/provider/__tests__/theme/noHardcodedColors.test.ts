@@ -43,9 +43,19 @@ const SEMANTIQUE = /colors\.(success|warning|danger|brand|accent)\b/;
 const NEUTRE_DEGUISE =
   /(backgroundColor|borderColor)\s*:\s*colors\.(success|warning|danger|brand|accent)\[(50|100)\]/;
 
-/** Une couleur neutre ou un hexadécimal figé sur une propriété de couleur. */
+/**
+ * Une couleur neutre ou un hexadécimal figé sur une propriété de couleur.
+ *
+ * `[^;]*?` N'EST PAS UNE COMMODITÉ. La première version n'examinait que ce qui suit immédiatement
+ * les deux-points, et laissait donc passer toute couleur placée dans une expression :
+ *
+ *     color: isDisabled ? colors.surface[400] : v.text
+ *
+ * C'est exactement ainsi que le bouton partagé — la surface la plus vue des deux applications —
+ * avait échappé à la migration, avec un état désactivé gris clair posé sur le fond nuit.
+ */
 const INTERDIT =
-  /(color|backgroundColor|borderColor|borderTopColor|borderBottomColor|borderLeftColor|borderRightColor|tintColor|shadowColor)\s*:\s*(colors\.surface\[|'#|"#|`#)/;
+  /(color|backgroundColor|borderColor|borderTopColor|borderBottomColor|borderLeftColor|borderRightColor|tintColor|shadowColor)\s*:\s*[^;]*?(colors\.surface\[|'#|"#|`#)/;
 
 function fichiersDe(dossier: string): string[] {
   if (!fs.existsSync(dossier)) {
