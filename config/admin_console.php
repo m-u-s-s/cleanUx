@@ -1,7 +1,5 @@
 <?php
 
-use Tests\Feature\Admin\AdminConsoleInventoryTest;
-
 /**
  * Registre de couverture de la console d'administration mobile.
  *
@@ -15,10 +13,13 @@ use Tests\Feature\Admin\AdminConsoleInventoryTest;
  * application qui a l'air complète et un chantier dont personne ne peut mesurer l'avancement.
  * L'annuaire affiche le compte exact de ce qui reste.
  *
- * {@see AdminConsoleInventoryTest} refuse toute divergence entre ce registre
- * et le routeur : une page ajoutée au web sans entrée ici fait échouer la suite, une entrée dont
- * la route disparaît aussi. C'est la seule garantie MÉCANIQUE que rien n'est oublié — le reste
- * serait un jugement, et un jugement ne tient pas sur 99 pages.
+ * Le test d'inventaire (tests/Feature/Admin/AdminConsoleInventoryTest.php) refuse toute divergence
+ * entre ce registre et le routeur : une page ajoutée au web sans entrée ici fait échouer la suite,
+ * une entrée dont la route disparaît aussi. C'est la seule garantie MÉCANIQUE que rien n'est
+ * oublié — le reste serait un jugement, et un jugement ne tient pas sur 99 pages.
+ *
+ * La référence est donnée en CHEMIN et non en nom de classe : un nom de classe ferait importer le
+ * namespace de tests dans un fichier de configuration chargé en production.
  *
  * Les sous-routes (détail, export, édition) sont rattachées au module qui les porte plutôt que
  * déclarées à part : elles ne sont pas des destinations d'annuaire, mais elles doivent être
