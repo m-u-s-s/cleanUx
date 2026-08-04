@@ -4,6 +4,7 @@ namespace App\Admin\Resources;
 
 use App\Admin\Console\Column;
 use App\Admin\Console\EloquentResource;
+use App\Admin\Console\Field;
 use App\Models\TranslationOverride;
 
 /**
@@ -66,6 +67,19 @@ class TranslationResource extends EloquentResource
         return [
             'namespace' => 'Espace de noms',
             'updated_at' => 'Modifiée le',
+        ];
+    }
+
+    public function formFields(): array
+    {
+        return [
+            /*
+             * La clé, le groupe et la locale IDENTIFIENT la surcharge : les modifier ne
+             * corrigerait pas une traduction, cela en créerait une autre et laisserait la
+             * première en place. Seule la VALEUR se modifie ici.
+             */
+            Field::make('value', 'Traduction', Field::TYPE_TEXTAREA)
+                ->rules(['required', 'string', 'max:5000']),
         ];
     }
 }

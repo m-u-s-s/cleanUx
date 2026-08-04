@@ -4,6 +4,7 @@ namespace App\Admin\Resources;
 
 use App\Admin\Console\Column;
 use App\Admin\Console\EloquentResource;
+use App\Admin\Console\Field;
 use App\Models\CancellationPolicy;
 
 /**
@@ -65,6 +66,16 @@ class CancellationPolicyResource extends EloquentResource
             'description' => 'Description',
             'valid_from' => 'Valide à partir du',
             'valid_until' => 'Valide jusqu’au',
+        ];
+    }
+
+    public function formFields(): array
+    {
+        return [
+            Field::make('name', 'Nom de la politique')->rules(['required', 'string', 'max:255']),
+            Field::make('code', 'Code')->rules(['required', 'string', 'max:60']),
+            Field::make('description', 'Description', Field::TYPE_TEXTAREA)
+                ->rules(['nullable', 'string', 'max:2000']),
         ];
     }
 }
