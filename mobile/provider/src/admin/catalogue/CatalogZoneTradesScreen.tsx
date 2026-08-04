@@ -6,6 +6,7 @@ import { colors, spacing, typography } from '@/theme';
 import { useThemeColors } from '@/theme/useThemeColors';
 import type { ThemeTokens } from '@/theme/useThemeColors';
 import { messageDErreur } from './erreur';
+import { useResourceAction } from '../console/hooks';
 import { useToggleTradeInZone, useZoneTrades } from './hooks';
 import { LigneActions } from './LigneActions';
 import type { ZoneTrade } from './types';
@@ -30,6 +31,7 @@ export function CatalogZoneTradesScreen() {
   const { zoneId } = route.params;
   const { data, isLoading, isError, error, refetch } = useZoneTrades(zoneId);
   const bascule = useToggleTradeInZone(zoneId);
+  const agir = useResourceAction('trades');
 
   /*
    * Groupés par SECTEUR, comme le carrousel client. Une liste à plat empêcherait de vérifier ce
@@ -115,6 +117,14 @@ export function CatalogZoneTradesScreen() {
                 id: item.id,
               })
             }
+            onMonter={() => {
+              agir.mutate({ id: item.id, action: 'move-up' });
+              void refetch();
+            }}
+            onDescendre={() => {
+              agir.mutate({ id: item.id, action: 'move-down' });
+              void refetch();
+            }}
           />
         )}
         ListEmptyComponent={
@@ -129,10 +139,14 @@ function TradeRow({
   metier,
   onToggle,
   onEdit,
+  onMonter,
+  onDescendre,
 }: {
   metier: ZoneTrade;
   onToggle: () => void;
   onEdit: () => void;
+  onMonter: () => void;
+  onDescendre: () => void;
 }) {
   const styles = stylesFor(useThemeColors());
 
@@ -154,6 +168,13 @@ function TradeRow({
         sujet={metier.name}
         actions={[
           { cle: 'edit', libelle: 'Modifier le métier', executer: onEdit },
+          /*
+            L'ordre des métiers est celui du DOCK client : le premier est ce qu'on propose
+            d'abord. Monter et descendre plutôt qu'un glisser-déposer, qui se confond avec le
+            défilement de la liste sur un téléphone et n'existe pas au clavier.
+          */
+          { cle: 'up', libelle: 'Monter dans le secteur', executer: onMonter },
+          { cle: 'down', libelle: 'Descendre dans le secteur', executer: onDescendre },
         ]}
       />
 

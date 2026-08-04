@@ -8,6 +8,7 @@ use App\Admin\Console\EloquentResource;
 use App\Admin\Console\Field;
 use App\Models\Sector;
 use App\Models\Trade;
+use App\Services\Catalog\CatalogOrdering;
 
 /**
  * Les métiers de la plateforme.
@@ -101,6 +102,48 @@ class TradeResource extends EloquentResource
     public function actions(): array
     {
         return [
+
+            Action::make('move-up', 'Monter dans le secteur', function (Trade $metier) {
+                app(CatalogOrdering::class)->deplacer(
+                    Trade::query()->where('sector_id', $metier->sector_id),
+                    $metier->id,
+                    -1,
+                );
+
+                return ['ok' => true];
+            }),
+
+            Action::make('move-down', 'Descendre dans le secteur', function (Trade $metier) {
+                app(CatalogOrdering::class)->deplacer(
+                    Trade::query()->where('sector_id', $metier->sector_id),
+                    $metier->id,
+                    1,
+                );
+
+                return ['ok' => true];
+            }),
+
+            /*
+             * Rattacher est ce qui fait ENTRER un métier dans le parcours client : sans secteur, il
+             * n'apparaît nulle part et rien ne le signale. Il arrive en FIN de secteur — un métier
+             * qu'on vient de rattacher n'a pas à passer devant ceux qui se vendent déjà.
+             */
+            Action::make('attach-sector', 'Rattacher à un secteur', function (Trade $metier, array $valeurs) {
+                $secteur = Sector::findOrFail((int) $valeurs['sector_id']);
+
+                $metier->forceFill([
+                    'sector_id' => $secteur->id,
+                    'sort_order' => (int) $secteur->trades()->max('sort_order') + 1,
+                ])->save();
+
+                return ['sector_id' => $secteur->id];
+            })->requires([
+                Field::select('sector_id', 'Secteur', Sector::query()
+                    ->orderBy('sort_order')
+                    ->get()
+                    ->map(fn (Sector $s) => ['value' => (string) $s->id, 'label' => (string) $s->name])
+                    ->all())->rules(['required', 'integer', 'exists:sectors,id']),
+            ]),
             Action::make('toggle-active', 'Activer / désactiver', function (Trade $metier) {
                 $metier->forceFill(['is_active' => ! $metier->is_active])->save();
 
