@@ -6,8 +6,9 @@ import { colors, spacing, typography } from '@/theme';
 import { useThemeColors } from '@/theme/useThemeColors';
 import type { ThemeTokens } from '@/theme/useThemeColors';
 import { messageDErreur } from './erreur';
-import { useResourceIndex } from '../console/hooks';
+import { useResourceAction, useResourceDelete, useResourceIndex } from '../console/hooks';
 import type { ResourceRow } from '../console/types';
+import { LigneActions } from './LigneActions';
 
 /**
  * Premier niveau du catalogue : les pays.
@@ -26,6 +27,10 @@ export function CatalogCountriesScreen() {
   const navigation = useNavigation<{ navigate: (screen: string, params?: object) => void }>();
 
   const { data, isLoading, isError, error, refetch } = useResourceIndex('countries', { sort: 'name' });
+
+  const supprimer = useResourceDelete('countries');
+  const agir = useResourceAction('countries');
+
 
   const pays = data?.pages.flatMap((page) => page.rows) ?? [];
 
@@ -51,9 +56,23 @@ export function CatalogCountriesScreen() {
 
   return (
     <Screen>
-      <Text style={styles.intro}>
-        Chaque pays contient ses zones, et chaque zone son propre catalogue de métiers.
-      </Text>
+      <View style={styles.entete}>
+        <Text style={styles.intro}>
+          Chaque pays contient ses zones, et chaque zone son propre catalogue de métiers.
+        </Text>
+
+        <Pressable
+          onPress={() =>
+            navigation.navigate('AdminResourceForm', { resource: 'countries', title: 'Nouveau pays' })
+          }
+          accessibilityRole="button"
+          accessibilityLabel="Ajouter un pays"
+          style={({ pressed }) => [styles.ajouter, pressed && styles.ajouterPresse]}
+        >
+          <Icon name="add" size={18} color={colors.surface[50]} />
+          <Text style={styles.ajouterTexte}>Ajouter</Text>
+        </Pressable>
+      </View>
 
       <FlatList
         data={pays}
@@ -68,6 +87,15 @@ export function CatalogCountriesScreen() {
                 title: String(item.name ?? 'Zones'),
               })
             }
+            onEdit={() =>
+              navigation.navigate('AdminResourceForm', {
+                resource: 'countries',
+                title: String(item.name ?? 'Pays'),
+                id: item.id,
+              })
+            }
+            onToggle={() => agir.mutate({ id: item.id, action: 'toggle-active' })}
+            onDelete={() => supprimer.mutate(item.id)}
           />
         )}
         ListEmptyComponent={
@@ -81,7 +109,19 @@ export function CatalogCountriesScreen() {
   );
 }
 
-function CountryRow({ row, onOpen }: { row: ResourceRow; onOpen: () => void }) {
+function CountryRow({
+  row,
+  onOpen,
+  onEdit,
+  onToggle,
+  onDelete,
+}: {
+  row: ResourceRow;
+  onOpen: () => void;
+  onEdit: () => void;
+  onToggle: () => void;
+  onDelete: () => void;
+}) {
   const styles = stylesFor(useThemeColors());
 
   const actif = row.is_active === true || row.is_active === 1 || row.is_active === '1';
@@ -105,6 +145,16 @@ function CountryRow({ row, onOpen }: { row: ResourceRow; onOpen: () => void }) {
         leur réglage propre ait changé, ce qui se cherche longtemps si l'écran ne le dit pas.
       */}
       <Badge label={actif ? 'Actif' : 'Inactif'} variant={actif ? 'success' : 'neutral'} />
+
+      <LigneActions
+        sujet={String(row.name ?? 'ce pays')}
+        actions={[
+          { cle: 'edit', libelle: 'Modifier', executer: onEdit },
+          { cle: 'toggle', libelle: actif ? 'Désactiver' : 'Activer', executer: onToggle },
+          { cle: 'delete', libelle: 'Supprimer', destructive: true, executer: onDelete },
+        ]}
+      />
+
       <Icon name="chevron-forward" size={18} color={colors.surface[400]} />
     </Pressable>
   );
@@ -112,6 +162,24 @@ function CountryRow({ row, onOpen }: { row: ResourceRow; onOpen: () => void }) {
 
 const stylesFor = (t: ThemeTokens) => StyleSheet.create({
   chargement: { gap: spacing.sm, paddingTop: spacing.md },
+  entete: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: spacing.sm,
+  },
+  ajouter: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.xs,
+    minHeight: 44,
+    paddingHorizontal: spacing.md,
+    borderRadius: 12,
+    backgroundColor: colors.brand[500],
+  },
+  ajouterPresse: { opacity: 0.85 },
+  ajouterTexte: { fontSize: typography.fontSize.sm, color: t.textOnBrand, fontWeight: '600' },
+
   intro: {
     ...typography.preset.subhead,
     color: t.textSecondary,

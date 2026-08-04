@@ -6,8 +6,9 @@ import { colors, spacing, typography } from '@/theme';
 import { useThemeColors } from '@/theme/useThemeColors';
 import type { ThemeTokens } from '@/theme/useThemeColors';
 import { messageDErreur } from './erreur';
-import { useResourceIndex } from '../console/hooks';
+import { useResourceAction, useResourceDelete, useResourceIndex } from '../console/hooks';
 import type { ResourceRow } from '../console/types';
+import { LigneActions } from './LigneActions';
 
 /**
  * Deuxième niveau : les zones d'un pays.
@@ -27,6 +28,9 @@ export function CatalogZonesScreen() {
     filters: { country_id: String(countryId) },
     sort: 'name',
   });
+
+  const supprimer = useResourceDelete('zones');
+  const agir = useResourceAction('zones');
 
   const zones = data?.pages.flatMap((page) => page.rows) ?? [];
 
@@ -51,9 +55,29 @@ export function CatalogZonesScreen() {
 
   return (
     <Screen>
-      <Text style={styles.intro}>
-        Ouvrez une zone pour voir et régler les métiers qu’elle propose.
-      </Text>
+      <View style={styles.entete}>
+        <Text style={styles.intro}>
+          Ouvrez une zone pour voir et régler les métiers qu’elle propose.
+        </Text>
+
+        <Pressable
+          onPress={() =>
+            navigation.navigate('AdminResourceForm', {
+              resource: 'zones',
+              title: 'Nouvelle zone',
+              // Le pays vient du CONTEXTE : le redemander exposerait à créer la zone dans le
+              // mauvais marché, erreur qu'on ne voit qu'en cherchant une zone disparue.
+              prefill: { country_id: countryId },
+            })
+          }
+          accessibilityRole="button"
+          accessibilityLabel="Ajouter une zone"
+          style={({ pressed }) => [styles.ajouter, pressed && styles.ajouterPresse]}
+        >
+          <Icon name="add" size={18} color={colors.surface[50]} />
+          <Text style={styles.ajouterTexte}>Ajouter</Text>
+        </Pressable>
+      </View>
 
       <FlatList
         data={zones}
@@ -68,6 +92,15 @@ export function CatalogZonesScreen() {
                 title: String(item.name ?? 'Catalogue'),
               })
             }
+            onEdit={() =>
+              navigation.navigate('AdminResourceForm', {
+                resource: 'zones',
+                title: String(item.name ?? 'Zone'),
+                id: item.id,
+              })
+            }
+            onToggle={() => agir.mutate({ id: item.id, action: 'toggle-bookable' })}
+            onDelete={() => supprimer.mutate(item.id)}
           />
         )}
         ListEmptyComponent={
@@ -81,7 +114,19 @@ export function CatalogZonesScreen() {
   );
 }
 
-function ZoneRow({ row, onOpen }: { row: ResourceRow; onOpen: () => void }) {
+function ZoneRow({
+  row,
+  onOpen,
+  onEdit,
+  onToggle,
+  onDelete,
+}: {
+  row: ResourceRow;
+  onOpen: () => void;
+  onEdit: () => void;
+  onToggle: () => void;
+  onDelete: () => void;
+}) {
   const styles = stylesFor(useThemeColors());
 
   const reservable = row.is_bookable === true || row.is_bookable === 1 || row.is_bookable === '1';
@@ -104,6 +149,19 @@ function ZoneRow({ row, onOpen }: { row: ResourceRow; onOpen: () => void }) {
         label={reservable ? 'Réservable' : 'Fermée'}
         variant={reservable ? 'success' : 'neutral'}
       />
+      <LigneActions
+        sujet={String(row.name ?? 'cette zone')}
+        actions={[
+          { cle: 'edit', libelle: 'Modifier', executer: onEdit },
+          {
+            cle: 'toggle',
+            libelle: reservable ? 'Fermer aux réservations' : 'Ouvrir aux réservations',
+            executer: onToggle,
+          },
+          { cle: 'delete', libelle: 'Supprimer', destructive: true, executer: onDelete },
+        ]}
+      />
+
       <Icon name="chevron-forward" size={18} color={colors.surface[400]} />
     </Pressable>
   );
@@ -111,6 +169,24 @@ function ZoneRow({ row, onOpen }: { row: ResourceRow; onOpen: () => void }) {
 
 const stylesFor = (t: ThemeTokens) => StyleSheet.create({
   chargement: { gap: spacing.sm, paddingTop: spacing.md },
+  entete: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: spacing.sm,
+  },
+  ajouter: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.xs,
+    minHeight: 44,
+    paddingHorizontal: spacing.md,
+    borderRadius: 12,
+    backgroundColor: colors.brand[500],
+  },
+  ajouterPresse: { opacity: 0.85 },
+  ajouterTexte: { fontSize: typography.fontSize.sm, color: t.textOnBrand, fontWeight: '600' },
+
   intro: {
     ...typography.preset.subhead,
     color: t.textSecondary,

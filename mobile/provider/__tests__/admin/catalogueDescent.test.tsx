@@ -55,20 +55,39 @@ describe('catalogue mobile — joignabilité', () => {
     expect(lire('src/admin/types.ts')).toContain('AdminCatalog: undefined;');
   });
 
-  it('chaque écran navigue vers une route qui existe', () => {
+  it('chaque route appelée par un écran du catalogue est montée', () => {
+    /*
+     * PAR ÉNUMÉRATION, et non par liste écrite à la main.
+     *
+     * La première version nommait deux routes et les vérifiait ; elle a laissé passer un
+     * `navigate('AdminTradeJourney')` ajouté ensuite vers un écran qui n'existait pas encore.
+     * `tsc` ne le voit pas — l'objet de navigation est typé au plus large — et la casse ne se
+     * produit qu'AU TOUCHER, sur un écran blanc.
+     */
     const racine = lire('src/navigation/RootNavigator.tsx');
+    const navigateur = lire('src/admin/AdminNavigator.tsx');
 
-    const cibles = [
-      ['src/admin/catalogue/CatalogCountriesScreen.tsx', 'AdminCatalogZones'],
-      ['src/admin/catalogue/CatalogZonesScreen.tsx', 'AdminCatalogTrades'],
-    ] as const;
+    const ecrans = [
+      'src/admin/catalogue/CatalogCountriesScreen.tsx',
+      'src/admin/catalogue/CatalogZonesScreen.tsx',
+      'src/admin/catalogue/CatalogZoneTradesScreen.tsx',
+    ];
 
-    for (const [fichier, route] of cibles) {
-      // L'écran appelle la route…
-      expect(lire(fichier)).toContain(`navigate('${route}'`);
-      // …et la pile la monte. Les deux moitiés, sinon le test ne prouve rien.
-      expect(racine).toContain(`name="${route}"`);
+    const orphelines: string[] = [];
+
+    for (const fichier of ecrans) {
+      const appels = [...lire(fichier).matchAll(/navigate\(\s*'([A-Za-z]+)'/g)].map((m) => m[1]);
+
+      for (const route of appels) {
+        const montee = racine.includes(`name="${route}"`) || navigateur.includes(`name="${route}"`);
+
+        if (!montee) {
+          orphelines.push(`${fichier} → ${route}`);
+        }
+      }
     }
+
+    expect(orphelines).toEqual([]);
   });
 });
 
@@ -89,16 +108,28 @@ describe('catalogue mobile — ce que les écrans promettent', () => {
     expect(ecran).toContain("filters: { country_id:");
   });
 
-  it('l’écran des pays ne propose ni création ni suppression', () => {
+  it('l’écran des pays permet d’ajouter, modifier et supprimer', () => {
     const ecran = lire('src/admin/catalogue/CatalogCountriesScreen.tsx');
 
     /*
-     * Décision assumée : ouvrir ou fermer un marché engage la facturation et la conformité, et se
-     * fait sur le web où l'écran montre ses conséquences. Un bouton « Supprimer » sur un téléphone,
-     * à côté du pouce, serait un accident qui attend son heure.
+     * CE TEST DISAIT L'INVERSE, et sa prémisse était bonne à l'époque : ouvrir un marché engage la
+     * facturation, et un bouton « Supprimer » à côté du pouce est un accident qui attend son heure.
+     *
+     * La parité mobile a été demandée explicitement. Le risque n'a pas disparu — il est traité
+     * autrement : les actions vivent derrière un menu plutôt qu'alignées sous le pouce, et toute
+     * action destructive passe par une confirmation.
      */
-    expect(ecran).not.toContain('Supprimer');
-    expect(ecran).not.toContain('Ajouter un pays');
+    expect(ecran).toContain('Ajouter un pays');
+    expect(ecran).toContain("libelle: 'Supprimer', destructive: true");
+  });
+
+  it('toute action destructive passe par une confirmation', () => {
+    const menu = lire('src/admin/catalogue/LigneActions.tsx');
+
+    // Sur mobile il n'y a ni annulation ni Ctrl+Z, et l'écran est petit : ce qu'on efface par
+    // erreur, on ne le voit même pas disparaître.
+    expect(menu).toContain('Alert.alert');
+    expect(menu).toContain("style: 'destructive'");
   });
 });
 

@@ -23,7 +23,13 @@ export type RootStackParamList = {
   AdminCatalogZones: { countryId: number; title?: string };
   AdminCatalogTrades: { zoneId: number; title?: string };
   AdminResourceDetail: { resource: string; title: string; id: string | number };
-  AdminResourceForm: { resource: string; title: string; id?: string | number };
+  AdminResourceForm: {
+    resource: string;
+    title: string;
+    id?: string | number;
+    // Valeurs imposées par le contexte : le pays d'où l'on crée une zone.
+    prefill?: Record<string, unknown>;
+  };
   MissionDetail: { missionId: number };
   /** Les courses immédiates proposées à ce prestataire. */
   AsapOffers: undefined;

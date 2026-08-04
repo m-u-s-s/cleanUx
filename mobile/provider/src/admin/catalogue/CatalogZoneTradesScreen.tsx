@@ -1,12 +1,13 @@
 import React, { useMemo } from 'react';
-import { SectionList, StyleSheet, Switch, Text, View } from 'react-native';
-import { useRoute } from '@react-navigation/native';
-import { EmptyState, ErrorState, Screen, Skeleton } from '@/ui';
+import { Pressable, SectionList, StyleSheet, Switch, Text, View } from 'react-native';
+import { useNavigation, useRoute } from '@react-navigation/native';
+import { EmptyState, ErrorState, Icon, Screen, Skeleton } from '@/ui';
 import { colors, spacing, typography } from '@/theme';
 import { useThemeColors } from '@/theme/useThemeColors';
 import type { ThemeTokens } from '@/theme/useThemeColors';
 import { messageDErreur } from './erreur';
 import { useToggleTradeInZone, useZoneTrades } from './hooks';
+import { LigneActions } from './LigneActions';
 import type { ZoneTrade } from './types';
 
 /**
@@ -24,6 +25,7 @@ import type { ZoneTrade } from './types';
 export function CatalogZoneTradesScreen() {
   const styles = stylesFor(useThemeColors());
   const route = useRoute<{ key: string; name: string; params: { zoneId: number; title?: string } }>();
+  const navigation = useNavigation<{ navigate: (screen: string, params?: object) => void }>();
 
   const { zoneId } = route.params;
   const { data, isLoading, isError, error, refetch } = useZoneTrades(zoneId);
@@ -76,9 +78,23 @@ export function CatalogZoneTradesScreen() {
         </Text>
       </View>
 
-      <Text style={styles.compte}>
-        {ouverts} métier(s) ouvert(s) sur {data?.trades.length ?? 0}
-      </Text>
+      <View style={styles.entete}>
+        <Text style={styles.compte}>
+          {ouverts} métier(s) ouvert(s) sur {data?.trades.length ?? 0}
+        </Text>
+
+        <Pressable
+          onPress={() =>
+            navigation.navigate('AdminResourceForm', { resource: 'trades', title: 'Nouveau métier' })
+          }
+          accessibilityRole="button"
+          accessibilityLabel="Ajouter un métier"
+          style={({ pressed }) => [styles.ajouter, pressed && styles.ajouterPresse]}
+        >
+          <Icon name="add" size={18} color={colors.surface[50]} />
+          <Text style={styles.ajouterTexte}>Ajouter</Text>
+        </Pressable>
+      </View>
 
       <SectionList
         sections={sections}
@@ -89,7 +105,17 @@ export function CatalogZoneTradesScreen() {
           <Text style={styles.sectionHeader}>{section.title}</Text>
         )}
         renderItem={({ item }) => (
-          <TradeRow metier={item} onToggle={() => bascule.mutate(item.id)} />
+          <TradeRow
+            metier={item}
+            onToggle={() => bascule.mutate(item.id)}
+            onEdit={() =>
+              navigation.navigate('AdminResourceForm', {
+                resource: 'trades',
+                title: item.name,
+                id: item.id,
+              })
+            }
+          />
         )}
         ListEmptyComponent={
           <EmptyState title="Aucun métier" message="Le catalogue de la plateforme est vide." />
@@ -99,7 +125,15 @@ export function CatalogZoneTradesScreen() {
   );
 }
 
-function TradeRow({ metier, onToggle }: { metier: ZoneTrade; onToggle: () => void }) {
+function TradeRow({
+  metier,
+  onToggle,
+  onEdit,
+}: {
+  metier: ZoneTrade;
+  onToggle: () => void;
+  onEdit: () => void;
+}) {
   const styles = stylesFor(useThemeColors());
 
   return (
@@ -115,6 +149,13 @@ function TradeRow({ metier, onToggle }: { metier: ZoneTrade; onToggle: () => voi
           {metier.has_zone_price ? ' · tarif de la zone' : ' · tarif du métier'}
         </Text>
       </View>
+
+      <LigneActions
+        sujet={metier.name}
+        actions={[
+          { cle: 'edit', libelle: 'Modifier le métier', executer: onEdit },
+        ]}
+      />
 
       <Switch
         value={metier.is_open}
@@ -136,11 +177,28 @@ const stylesFor = (t: ThemeTokens) => StyleSheet.create({
   },
   bandeauTexte: { fontSize: typography.fontSize.xs, color: t.text },
   bandeauFort: { fontWeight: '700' },
+  entete: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: spacing.sm,
+  },
   compte: {
     ...typography.preset.subhead,
     color: t.textSecondary,
     paddingVertical: spacing.sm,
   },
+  ajouter: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.xs,
+    minHeight: 44,
+    paddingHorizontal: spacing.md,
+    borderRadius: 12,
+    backgroundColor: colors.brand[500],
+  },
+  ajouterPresse: { opacity: 0.85 },
+  ajouterTexte: { fontSize: typography.fontSize.sm, color: t.textOnBrand, fontWeight: '600' },
   sectionHeader: {
     ...typography.preset.subhead,
     color: t.textSecondary,
