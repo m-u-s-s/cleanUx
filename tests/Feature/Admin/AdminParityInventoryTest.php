@@ -66,7 +66,11 @@ class AdminParityInventoryTest extends TestCase
                 continue;
             }
 
-            $porte = count($descripteur->formFields()) + count($descripteur->actions());
+            // Les actions GLOBALES comptent autant : rafraîchir tous les taux est le geste principal
+            // de sa page, et l'omettre ici ferait passer un module porté pour manquant.
+            $porte = count($descripteur->formFields())
+                + count($descripteur->actions())
+                + count($descripteur->globalActions());
 
             if ($porte === 0) {
                 $manquants[] = sprintf(

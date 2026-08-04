@@ -270,6 +270,62 @@ class ResourceController extends Controller
         return response()->json(['ok' => true]);
     }
 
+    /**
+     * Une action qui ne porte sur aucune ligne.
+     *
+     * Le handler reçoit les valeurs saisies, jamais un modèle : c'est ce qui distingue « clôturer
+     * le mois » de « valider cette inspection ». Le reste — refus du lecteur seul, validation des
+     * champs déclarés — est identique, et le rester est ce qui garantit qu'on ne découvrira pas un
+     * jour que l'une des deux portes valide moins que l'autre.
+     */
+    public function globalAction(Request $request, string $resource, string $action): JsonResponse
+    {
+        if ($refus = $this->refuseLecteurSeul()) {
+            return $refus;
+        }
+
+        $descripteur = $this->resolve($resource);
+
+        if (! $descripteur instanceof AdminResource) {
+            return $this->unknownResource();
+        }
+
+        $declaree = null;
+
+        foreach ($descripteur->globalActions() as $candidate) {
+            if ($candidate->key() === $action) {
+                $declaree = $candidate;
+                break;
+            }
+        }
+
+        if (! $declaree instanceof Action) {
+            return $this->refus('unknown_action', 404);
+        }
+
+        $saisie = [];
+
+        if ($declaree->fields() !== []) {
+            $rules = [];
+
+            foreach ($declaree->fields() as $field) {
+                $rules[$field->key()] = $field->validationRules();
+            }
+
+            $validator = Validator::make($request->all(), $rules);
+
+            if ($validator->fails()) {
+                return $this->refus('validation_failed', 422, ['errors' => $validator->errors()->toArray()]);
+            }
+
+            $saisie = array_intersect_key($validator->validated(), $rules);
+        }
+
+        $result = ($declaree->handler())($saisie);
+
+        return response()->json(['ok' => true, 'result' => $result]);
+    }
+
     public function action(Request $request, string $resource, string $id, string $action): JsonResponse
     {
         if ($refus = $this->refuseLecteurSeul()) {
@@ -361,6 +417,8 @@ class ResourceController extends Controller
             'key' => $descripteur->key(),
             'columns' => array_map(fn ($c) => $c->toArray(), $descripteur->columns()),
             'filters' => array_map(fn ($f) => $f->toArray(), $descripteur->filters()),
+            // Ce que le mobile ne voit pas ici, il ne peut pas le dessiner.
+            'global_actions' => array_map(fn ($a) => $a->toArray(), $descripteur->globalActions()),
             'sorts' => $descripteur->sorts(),
             'default_sort' => $descripteur->defaultSort(),
             // `toArray()` d'une action ne porte PAS sa closure : le mobile reçoit une clé.

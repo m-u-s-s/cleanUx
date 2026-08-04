@@ -43,7 +43,7 @@ class ConsoleActionsSmokeTest extends TestCase
 
             $vues = [];
 
-            foreach ($descripteur->actions() as $action) {
+            foreach ([...$descripteur->actions(), ...$descripteur->globalActions()] as $action) {
                 $spec = $action->toArray();
 
                 if (($spec['key'] ?? '') === '') {
@@ -82,7 +82,7 @@ class ConsoleActionsSmokeTest extends TestCase
         foreach (app(ResourceRegistry::class)->keys() as $cle) {
             $descripteur = app(ResourceRegistry::class)->for($cle);
 
-            foreach ($descripteur?->actions() ?? [] as $action) {
+            foreach ([...($descripteur?->actions() ?? []), ...($descripteur?->globalActions() ?? [])] as $action) {
                 foreach ($action->fields() as $champ) {
                     // Un champ sans règle accepte n'importe quoi : c'est le serveur qui valide,
                     // le mobile ne connaît que le type et le caractère obligatoire.
@@ -103,7 +103,8 @@ class ConsoleActionsSmokeTest extends TestCase
         $actions = 0;
 
         foreach (app(ResourceRegistry::class)->keys() as $cle) {
-            $actions += count(app(ResourceRegistry::class)->for($cle)?->actions() ?? []);
+            $d = app(ResourceRegistry::class)->for($cle);
+            $actions += count($d?->actions() ?? []) + count($d?->globalActions() ?? []);
         }
 
         $this->assertGreaterThan(20, $actions, 'Le balayage ne voit plus d’actions : il a cessé de balayer.');

@@ -293,6 +293,9 @@ Route::middleware(['auth:sanctum', 'api_admin'])->group(function () {
             Route::post('/{resource}', [ResourceController::class, 'store']);
             Route::patch('/{resource}/{id}', [ResourceController::class, 'update']);
             Route::delete('/{resource}/{id}', [ResourceController::class, 'destroy']);
+            // AVANT la route par ligne : sans cela, « actions » serait pris pour un
+            // identifiant et l'action globale rendrait 404 sur une ligne introuvable.
+            Route::post('/{resource}/actions/{action}', [ResourceController::class, 'globalAction']);
             Route::post('/{resource}/{id}/actions/{action}', [ResourceController::class, 'action']);
         });
     });

@@ -2,9 +2,11 @@
 
 namespace App\Admin\Resources;
 
+use App\Admin\Console\Action;
 use App\Admin\Console\Column;
 use App\Admin\Console\EloquentResource;
 use App\Models\ExchangeRate;
+use App\Services\Fx\FxService;
 
 /**
  * Les taux de change appliqués.
@@ -52,6 +54,21 @@ class ExchangeRateResource extends EloquentResource
         return [
             'valid_from' => 'Valide à partir du',
             'valid_until' => 'Valide jusqu’au',
+        ];
+    }
+
+    public function globalActions(): array
+    {
+        return [
+            /*
+             * Rafraîchir TOUS les taux. Le service rend le nombre de taux insérés, et on le rend à
+             * l'écran : « rafraîchi » sans chiffre ne dit pas si le fournisseur a répondu.
+             */
+            Action::make('refresh-all', 'Rafraîchir les taux', function (array $valeurs) {
+                $inseres = app(FxService::class)->refreshAll();
+
+                return ['inserted' => $inseres];
+            }),
         ];
     }
 }
