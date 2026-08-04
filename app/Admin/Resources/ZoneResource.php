@@ -4,6 +4,7 @@ namespace App\Admin\Resources;
 
 use App\Admin\Console\Column;
 use App\Admin\Console\EloquentResource;
+use App\Models\Country;
 use App\Models\ServiceZone;
 
 /**
@@ -54,6 +55,20 @@ class ZoneResource extends EloquentResource
                 ['value' => 'active', 'label' => 'Active'],
                 ['value' => 'inactive', 'label' => 'Inactive'],
             ]],
+
+            /*
+             * Le cloisonnement par pays, servi au mobile.
+             *
+             * Il DOIT vivre ici plutôt que côté client : un filtre appliqué à l'affichage laisse
+             * passer les actions, et l'écran des zones belges montrerait Paris dès qu'un second
+             * marché ouvrirait. Les options sont calculées, faute de quoi il faudrait rééditer ce
+             * fichier à chaque pays ajouté.
+             */
+            'country_id' => ['Pays', 'country_id', Country::query()
+                ->orderBy('name')
+                ->get()
+                ->map(fn (Country $pays) => ['value' => (string) $pays->id, 'label' => (string) $pays->name])
+                ->all()],
         ];
     }
 
