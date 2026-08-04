@@ -5,6 +5,7 @@ import { Badge, EmptyState, ErrorState, Icon, Screen, Skeleton } from '@/ui';
 import { colors, spacing, typography } from '@/theme';
 import { useThemeColors } from '@/theme/useThemeColors';
 import type { ThemeTokens } from '@/theme/useThemeColors';
+import { messageDErreur } from './erreur';
 import { useResourceIndex } from '../console/hooks';
 import type { ResourceRow } from '../console/types';
 
@@ -22,7 +23,7 @@ export function CatalogZonesScreen() {
 
   const { countryId } = route.params;
 
-  const { data, isLoading, isError, refetch } = useResourceIndex('zones', {
+  const { data, isLoading, isError, error, refetch } = useResourceIndex('zones', {
     filters: { country_id: String(countryId) },
     sort: 'name',
   });
@@ -43,7 +44,7 @@ export function CatalogZonesScreen() {
   if (isError) {
     return (
       <Screen>
-        <ErrorState message="Impossible de charger les zones." onRetry={() => refetch()} />
+        <ErrorState message={messageDErreur(error, 'Impossible de charger les zones.')} onRetry={() => refetch()} />
       </Screen>
     );
   }

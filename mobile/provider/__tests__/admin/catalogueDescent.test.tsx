@@ -101,3 +101,36 @@ describe('catalogue mobile — ce que les écrans promettent', () => {
     expect(ecran).not.toContain('Ajouter un pays');
   });
 });
+
+describe('catalogue mobile — les erreurs disent ce qui s’est passé', () => {
+  const { messageDErreur } = require('@/admin/catalogue/erreur');
+  const { ApiError } = require('@/api');
+
+  it('traduit un code que l’on sait expliquer', () => {
+    /*
+     * LE CAS EXACT QUI A COÛTÉ UN ALLER-RETOUR. L'écran affichait « Impossible de charger les
+     * pays » alors que le serveur répondait `invalid_sort` avec la liste des tris permis.
+     */
+    expect(messageDErreur(new ApiError(422, 'invalid_sort', 'x'), 'Défaut.')).toContain('Tri non pris en charge');
+  });
+
+  it('montre le code brut quand il n’a pas de traduction', () => {
+    // Un code inconnu vaut mieux qu'une phrase rassurante : il se cherche, elle non.
+    expect(messageDErreur(new ApiError(500, 'boom_inattendu', 'x'), 'Défaut.')).toContain('boom_inattendu');
+  });
+
+  it('retombe sur le message par défaut hors ApiError', () => {
+    expect(messageDErreur(new Error('réseau'), 'Défaut.')).toBe('Défaut.');
+    expect(messageDErreur(null, 'Défaut.')).toBe('Défaut.');
+  });
+
+  it('les trois écrans emploient le traducteur', () => {
+    for (const ecran of [
+      'src/admin/catalogue/CatalogCountriesScreen.tsx',
+      'src/admin/catalogue/CatalogZonesScreen.tsx',
+      'src/admin/catalogue/CatalogZoneTradesScreen.tsx',
+    ]) {
+      expect(lire(ecran)).toContain('messageDErreur(error');
+    }
+  });
+});

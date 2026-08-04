@@ -176,6 +176,36 @@ class MobileCatalogDescentTest extends TestCase
         $this->assertDatabaseCount('trade_zone_pricing', 0);
     }
 
+    public function test_les_pays_se_trient_par_nom(): void
+    {
+        /*
+         * LE BUG QUE CE TEST FIXE. `sorts()` est une liste BLANCHE, et elle valait `['id']` seule.
+         * L'écran mobile demandait `sort=name`, l'API répondait 422, et l'application affichait
+         * « Impossible de charger les pays » — un message d'erreur générique pour un tri refusé.
+         *
+         * Un pays trié par identifiant, c'est l'ordre de création : illisible dès qu'il y en a
+         * cinq. Le tri par nom devait donc être PERMIS, pas retiré de l'écran.
+         */
+        $reponse = $this->getJson('/api/admin/console/countries?sort=name&direction=asc')->assertOk();
+
+        $noms = collect($reponse->json('rows'))->pluck('name')->all();
+        $attendu = $noms;
+        sort($attendu);
+
+        $this->assertSame($attendu, $noms);
+    }
+
+    public function test_les_zones_se_trient_par_nom(): void
+    {
+        $this->getJson('/api/admin/console/zones?sort=name&direction=asc')->assertOk();
+    }
+
+    public function test_un_tri_inconnu_reste_refuse(): void
+    {
+        // La liste blanche garde son rôle : on l'a élargie, pas supprimée.
+        $this->getJson('/api/admin/console/countries?sort=mot_de_passe')->assertStatus(422);
+    }
+
     public function test_un_non_admin_est_refuse(): void
     {
         Sanctum::actingAs(User::factory()->create(['role' => 'client']), ['*']);

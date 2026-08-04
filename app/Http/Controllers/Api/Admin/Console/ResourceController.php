@@ -95,9 +95,22 @@ class ResourceController extends Controller
             self::MAX_PER_PAGE,
         );
 
-        // `orderBy` explicite puis `cursorPaginate` : le curseur se construit sur la colonne de
-        // tri, donc un tri instable produirait des pages qui se chevauchent.
-        $page = $query->orderBy($sort, $direction)->cursorPaginate($perPage);
+        /*
+         * `orderBy` explicite puis `cursorPaginate` : le curseur se construit sur la colonne de
+         * tri, donc un tri instable produirait des pages qui se chevauchent.
+         *
+         * D'où le DÉPARTAGE par identifiant dès qu'on trie sur autre chose. Deux zones nommées
+         * « Centre » dans deux pays, deux clients homonymes : sans lui, la pagination répéterait
+         * une ligne et en sauterait une autre — un défaut qui ne se voit qu'à partir de la
+         * deuxième page, donc jamais pendant un test à la main.
+         */
+        $query = $query->orderBy($sort, $direction);
+
+        if ($sort !== 'id') {
+            $query = $query->orderBy('id', $direction);
+        }
+
+        $page = $query->cursorPaginate($perPage);
 
         return response()->json([
             'ok' => true,

@@ -5,6 +5,7 @@ import { EmptyState, ErrorState, Screen, Skeleton } from '@/ui';
 import { colors, spacing, typography } from '@/theme';
 import { useThemeColors } from '@/theme/useThemeColors';
 import type { ThemeTokens } from '@/theme/useThemeColors';
+import { messageDErreur } from './erreur';
 import { useToggleTradeInZone, useZoneTrades } from './hooks';
 import type { ZoneTrade } from './types';
 
@@ -25,7 +26,7 @@ export function CatalogZoneTradesScreen() {
   const route = useRoute<{ key: string; name: string; params: { zoneId: number; title?: string } }>();
 
   const { zoneId } = route.params;
-  const { data, isLoading, isError, refetch } = useZoneTrades(zoneId);
+  const { data, isLoading, isError, error, refetch } = useZoneTrades(zoneId);
   const bascule = useToggleTradeInZone(zoneId);
 
   /*
@@ -58,7 +59,7 @@ export function CatalogZoneTradesScreen() {
   if (isError) {
     return (
       <Screen>
-        <ErrorState message="Impossible de charger le catalogue." onRetry={() => refetch()} />
+        <ErrorState message={messageDErreur(error, 'Impossible de charger le catalogue.')} onRetry={() => refetch()} />
       </Screen>
     );
   }

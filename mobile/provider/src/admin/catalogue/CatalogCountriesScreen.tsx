@@ -5,6 +5,7 @@ import { Badge, EmptyState, ErrorState, Icon, Screen, Skeleton } from '@/ui';
 import { colors, spacing, typography } from '@/theme';
 import { useThemeColors } from '@/theme/useThemeColors';
 import type { ThemeTokens } from '@/theme/useThemeColors';
+import { messageDErreur } from './erreur';
 import { useResourceIndex } from '../console/hooks';
 import type { ResourceRow } from '../console/types';
 
@@ -24,7 +25,7 @@ export function CatalogCountriesScreen() {
   const styles = stylesFor(useThemeColors());
   const navigation = useNavigation<{ navigate: (screen: string, params?: object) => void }>();
 
-  const { data, isLoading, isError, refetch } = useResourceIndex('countries', { sort: 'name' });
+  const { data, isLoading, isError, error, refetch } = useResourceIndex('countries', { sort: 'name' });
 
   const pays = data?.pages.flatMap((page) => page.rows) ?? [];
 
@@ -43,7 +44,7 @@ export function CatalogCountriesScreen() {
   if (isError) {
     return (
       <Screen>
-        <ErrorState message="Impossible de charger les pays." onRetry={() => refetch()} />
+        <ErrorState message={messageDErreur(error, 'Impossible de charger les pays.')} onRetry={() => refetch()} />
       </Screen>
     );
   }
