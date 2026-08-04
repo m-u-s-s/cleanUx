@@ -2,9 +2,11 @@
 
 namespace App\Admin\Resources;
 
+use App\Admin\Console\Action;
 use App\Admin\Console\Column;
 use App\Admin\Console\EloquentResource;
 use App\Models\MultiTradeBundle;
+use App\Services\Bundles\MultiTradeBundleService;
 
 /**
  * Les regroupements multi-métiers.
@@ -67,6 +69,23 @@ class BundleResource extends EloquentResource
             'bundle_discount_percent' => 'Remise (%)',
             'preferred_start_date' => 'Début souhaité',
             'accepted_at' => 'Accepté le',
+        ];
+    }
+
+    public function actions(): array
+    {
+        return [
+            /*
+             * Annuler un chantier groupé passe par le service : il propage l'annulation aux
+             * prestations qui le composent, rembourse ce qui doit l'être et notifie. Écrire le
+             * statut à la main laisserait les prestations enfants actives — un chantier annulé dont
+             * les intervenants se présentent quand même.
+             */
+            Action::make('force-cancel', 'Annuler le chantier', function (MultiTradeBundle $bundle) {
+                app(MultiTradeBundleService::class)->cancel($bundle, 'admin_force_cancel');
+
+                return ['ok' => true];
+            })->destructive('Le chantier groupé et toutes ses prestations seront annulés.'),
         ];
     }
 }

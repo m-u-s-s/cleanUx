@@ -4,6 +4,7 @@ namespace App\Admin\Resources;
 
 use App\Admin\Console\Column;
 use App\Admin\Console\EloquentResource;
+use App\Admin\Console\Field;
 use App\Models\CountryOperationalSetting;
 
 /**
@@ -54,6 +55,26 @@ class CountrySettingResource extends EloquentResource
             'timezone' => 'Fuseau',
             'default_distance_unit' => 'Unité de distance',
             'partner_network_enabled' => 'Réseau partenaire',
+        ];
+    }
+
+    public function formFields(): array
+    {
+        return [
+            Field::select('readiness_stage', 'Étape d’ouverture', [
+                ['value' => 'draft', 'label' => 'Brouillon'],
+                ['value' => 'catalog_only', 'label' => 'Catalogue seul'],
+                ['value' => 'booking_enabled', 'label' => 'Réservations ouvertes'],
+                ['value' => 'mission_enabled', 'label' => 'Missions ouvertes'],
+                ['value' => 'billing_enabled', 'label' => 'Facturation ouverte'],
+                ['value' => 'ready_for_launch', 'label' => 'Prêt au lancement'],
+            ])->rules(['required', 'in:draft,catalog_only,booking_enabled,mission_enabled,billing_enabled,ready_for_launch']),
+            Field::make('currency_symbol', 'Symbole monétaire')->rules(['required', 'string', 'max:10']),
+            Field::make('date_format', 'Format de date')->rules(['required', 'string', 'max:30']),
+            Field::make('time_format', 'Format d’heure')->rules(['required', 'string', 'max:30']),
+            Field::make('address_format', 'Format d’adresse')->rules(['required', 'string', 'max:100']),
+            Field::make('default_tax_rate', 'Taux de TVA par défaut', Field::TYPE_NUMBER)
+                ->rules(['nullable', 'numeric', 'min:0', 'max:100']),
         ];
     }
 }
