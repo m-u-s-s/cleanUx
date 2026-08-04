@@ -2,9 +2,11 @@
 
 namespace App\Admin\Resources;
 
+use App\Admin\Console\Action;
 use App\Admin\Console\Column;
 use App\Admin\Console\EloquentResource;
 use App\Models\AddressLookup;
+use App\Services\GeolocationV2\GeocodingService;
 
 /**
  * Le cache des recherches d’adresse.
@@ -52,6 +54,22 @@ class AddressLookupResource extends EloquentResource
     {
         return [
             'expires_at' => 'Expire le',
+        ];
+    }
+
+    public function globalActions(): array
+    {
+        return [
+            /*
+             * Purger le cache expiré. Global par nature : il ne vise aucune adresse en
+             * particulier. Le nombre de lignes purgées est rendu — « purgé » sans chiffre ne dit
+             * pas si le cache était plein ou déjà vide.
+             */
+            Action::make('purge-cache', 'Purger le cache expiré', function (array $valeurs) {
+                $purge = app(GeocodingService::class)->purgeExpired();
+
+                return ['purged' => array_sum($purge)];
+            }),
         ];
     }
 }

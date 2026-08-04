@@ -2,9 +2,12 @@
 
 namespace App\Admin\Resources;
 
+use App\Admin\Console\Action;
 use App\Admin\Console\Column;
 use App\Admin\Console\EloquentResource;
+use App\Admin\Console\Field;
 use App\Models\ServiceCatalog;
+use App\Support\ActivityLogger;
 
 /**
  * Le catalogue des prestations.
@@ -64,6 +67,29 @@ class ServiceCatalogResource extends EloquentResource
             'vat_rate' => 'TVA',
             'requires_quote' => 'Sur devis',
             'requires_site_visit' => 'Visite préalable',
+        ];
+    }
+
+    public function formFields(): array
+    {
+        return [
+            Field::make('code', 'Code')->rules(['required', 'string', 'max:50']),
+            Field::make('name', 'Nom')->rules(['required', 'string', 'max:255']),
+            Field::make('slug', 'Identifiant')->rules(['required', 'string', 'max:255']),
+            Field::make('description', 'Description', Field::TYPE_TEXTAREA)->rules(['nullable', 'string', 'max:5000']),
+            Field::make('service_type', 'Type')->rules(['required', 'string', 'max:50']),
+        ];
+    }
+
+    public function actions(): array
+    {
+        return [
+            Action::make('toggle-active', 'Activer / désactiver', function (ServiceCatalog $service) {
+                $service->forceFill(['is_active' => ! $service->is_active])->save();
+                ActivityLogger::log('service.toggled', $service, ['is_active' => $service->is_active]);
+
+                return ['is_active' => (bool) $service->fresh()->is_active];
+            }),
         ];
     }
 }

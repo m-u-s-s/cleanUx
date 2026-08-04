@@ -2,9 +2,12 @@
 
 namespace App\Admin\Resources;
 
+use App\Admin\Console\Action;
 use App\Admin\Console\Column;
 use App\Admin\Console\EloquentResource;
+use App\Admin\Console\Field;
 use App\Models\MissionQualityInspection;
+use App\Services\Quality\QualityInspectionService;
 
 /**
  * Les inspections qualité des missions.
@@ -68,6 +71,32 @@ class QualityInspectionResource extends EloquentResource
         return [
             'validated_at' => 'Validée le',
             'disputed_at' => 'Contestée le',
+        ];
+    }
+
+    public function actions(): array
+    {
+        return [
+            Action::make('validate', 'Valider l’inspection', function (MissionQualityInspection $inspection) {
+                app(QualityInspectionService::class)->validateByAdmin($inspection, request()->user());
+
+                return ['ok' => true];
+            }),
+
+            Action::make('reject', 'Rejeter l’inspection', function (MissionQualityInspection $inspection, array $valeurs) {
+                // Le motif est OBLIGATOIRE : un rejet sans raison est incontestable par le
+                // prestataire, donc injuste, et il reviendra en litige.
+                app(QualityInspectionService::class)->reject(
+                    $inspection,
+                    request()->user(),
+                    (string) $valeurs['reason'],
+                );
+
+                return ['ok' => true];
+            })->requires([
+                Field::make('reason', 'Motif du rejet', Field::TYPE_TEXTAREA)
+                    ->rules(['required', 'string', 'min:5', 'max:1000']),
+            ]),
         ];
     }
 }

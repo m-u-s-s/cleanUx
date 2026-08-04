@@ -2,9 +2,11 @@
 
 namespace App\Admin\Resources;
 
+use App\Admin\Console\Action;
 use App\Admin\Console\Column;
 use App\Admin\Console\EloquentResource;
 use App\Models\ChatThread;
+use App\Services\ChatV2\ChatService;
 
 /**
  * Les fils de discussion et leur modération.
@@ -63,6 +65,17 @@ class ChatThreadResource extends EloquentResource
         return [
             'context_type' => 'Contexte',
             'is_archived' => 'Archivé',
+        ];
+    }
+
+    public function actions(): array
+    {
+        return [
+            Action::make('archive', 'Archiver la conversation', function (ChatThread $thread) {
+                app(ChatService::class)->archiveThread($thread);
+
+                return ['ok' => true];
+            })->destructive('La conversation sera archivée.'),
         ];
     }
 }

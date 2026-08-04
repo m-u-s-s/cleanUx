@@ -2,9 +2,11 @@
 
 namespace App\Admin\Resources;
 
+use App\Admin\Console\Action;
 use App\Admin\Console\Column;
 use App\Admin\Console\EloquentResource;
 use App\Models\BookingTip;
+use App\Services\Tips\TipService;
 
 /**
  * Les pourboires laisses aux prestataires.
@@ -67,6 +69,35 @@ class TipResource extends EloquentResource
             'currency' => 'Devise',
             'charged_at' => 'Prélevé le',
             'paid_out_at' => 'Reversé le',
+        ];
+    }
+
+    public function actions(): array
+    {
+        return [
+            /*
+             * Les trois gestes de rattrapage d'un pourboire. Ils passent TOUS par le service : un
+             * pourboire tient un ledger, et écrire son statut à la main laisserait les écritures
+             * comptables en désaccord avec lui — un écart qu'on ne découvre qu'à la
+             * réconciliation.
+             */
+            Action::make('confirm', 'Marquer chargé', function (BookingTip $tip) {
+                app(TipService::class)->confirmCharge($tip, 'manual_admin_'.$tip->id);
+
+                return ['ok' => true];
+            }),
+
+            Action::make('mark-paid-out', 'Marquer reversé', function (BookingTip $tip) {
+                app(TipService::class)->markPaidOut($tip, 'manual_payout_'.$tip->id);
+
+                return ['ok' => true];
+            }),
+
+            Action::make('mark-failed', 'Marquer en échec', function (BookingTip $tip) {
+                app(TipService::class)->markFailed($tip, 'admin_manual_fail');
+
+                return ['ok' => true];
+            })->destructive('Le pourboire sera marqué en échec.'),
         ];
     }
 }

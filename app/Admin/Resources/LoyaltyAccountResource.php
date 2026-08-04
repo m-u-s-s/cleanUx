@@ -2,9 +2,12 @@
 
 namespace App\Admin\Resources;
 
+use App\Admin\Console\Action;
 use App\Admin\Console\Column;
 use App\Admin\Console\EloquentResource;
+use App\Admin\Console\Field;
 use App\Models\LoyaltyAccount;
+use App\Services\Loyalty\LoyaltyService;
 
 /**
  * Les comptes de fidélité.
@@ -53,6 +56,35 @@ class LoyaltyAccountResource extends EloquentResource
         return [
             'tier_evaluated_at' => 'Palier évalué le',
             'points_period_started_at' => 'Période depuis',
+        ];
+    }
+
+    public function actions(): array
+    {
+        return [
+            /*
+             * Ajuster des points À LA MAIN. Le motif est obligatoire et long d'au moins cinq
+             * caractères, comme sur le web : le ledger de fidélité est immuable, chaque écriture y
+             * reste, et une ligne sans raison devient incompréhensible six mois plus tard.
+             *
+             * Zéro est refusé : un ajustement nul n'est pas une intention, c'est un formulaire
+             * envoyé par erreur.
+             */
+            Action::make('adjust', 'Ajuster les points', function (LoyaltyAccount $compte, array $valeurs) {
+                app(LoyaltyService::class)->adminAdjust(
+                    $compte->user,
+                    (int) $valeurs['points'],
+                    request()->user(),
+                    (string) $valeurs['reason'],
+                );
+
+                return ['ok' => true];
+            })->requires([
+                Field::make('points', 'Points (négatif pour retirer)', Field::TYPE_NUMBER)
+                    ->rules(['required', 'integer', 'min:-100000', 'max:100000', 'not_in:0']),
+                Field::make('reason', 'Motif', Field::TYPE_TEXTAREA)
+                    ->rules(['required', 'string', 'min:5', 'max:500']),
+            ]),
         ];
     }
 }

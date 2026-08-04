@@ -2,9 +2,11 @@
 
 namespace App\Admin\Resources;
 
+use App\Admin\Console\Action;
 use App\Admin\Console\Column;
 use App\Admin\Console\EloquentResource;
 use App\Models\AuditEvent;
+use App\Services\Audit\AuditService;
 
 /**
  * Le journal d’audit.
@@ -65,6 +67,24 @@ class AuditEventResource extends EloquentResource
             'subject_label' => 'Sujet',
             'route_name' => 'Route',
             'is_pinned' => 'Épinglé',
+        ];
+    }
+
+    public function actions(): array
+    {
+        return [
+            /*
+             * Épingler un évènement le SOUSTRAIT à la purge de rétention. C'est le geste qu'on
+             * fait quand une trace devient une pièce : un litige, un contrôle. Le perdre au
+             * prochain nettoyage serait irréparable, et c'est pourquoi il vit ici.
+             */
+            Action::make('toggle-pin', 'Épingler / désépingler', function (AuditEvent $event) {
+                $event->is_pinned
+                    ? app(AuditService::class)->unpin($event)
+                    : app(AuditService::class)->pin($event);
+
+                return ['is_pinned' => (bool) $event->fresh()->is_pinned];
+            }),
         ];
     }
 }

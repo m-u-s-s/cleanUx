@@ -2,9 +2,13 @@
 
 namespace App\Admin\Resources;
 
+use App\Admin\Console\Action;
 use App\Admin\Console\Column;
 use App\Admin\Console\EloquentResource;
+use App\Admin\Console\Field;
+use App\Models\Booking;
 use App\Models\BookingMatchingDecision;
+use App\Services\Booking\SmartDispatchService;
 
 /**
  * Les décisions de matching et leur explication.
@@ -53,6 +57,30 @@ class MatchingDecisionResource extends EloquentResource
         return [
             'algorithm_version' => 'Version de l’algorithme',
             'runner_up_score' => 'Second score',
+        ];
+    }
+
+    public function globalActions(): array
+    {
+        return [
+            /*
+             * SIMULER n'écrit rien : le geste explique pourquoi tel prestataire a été retenu, ou
+             * pourquoi aucun ne l'a été. C'est une action plutôt qu'une colonne parce qu'elle
+             * demande un paramètre — la mission à expliquer — et qu'aucune liste ne peut le
+             * deviner.
+             */
+            Action::make('simulate', 'Simuler le matching', function (array $valeurs) {
+                $rdv = Booking::find((int) $valeurs['booking_id']);
+
+                if (! $rdv) {
+                    return ['ok' => false, 'message' => 'Mission introuvable.'];
+                }
+
+                return ['ok' => true, 'scores' => app(SmartDispatchService::class)->explainScores($rdv)];
+            })->requires([
+                Field::make('booking_id', 'Identifiant de la mission', Field::TYPE_NUMBER)
+                    ->rules(['required', 'integer', 'min:1']),
+            ]),
         ];
     }
 }

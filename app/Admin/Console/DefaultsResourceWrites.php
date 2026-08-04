@@ -29,6 +29,16 @@ trait DefaultsResourceWrites
     }
 
     /**
+     * Aucune action globale par défaut.
+     *
+     * @return list<Action>
+     */
+    public function globalActions(): array
+    {
+        return [];
+    }
+
+    /**
      * Rien ne s'oppose à la suppression.
      *
      * Le défaut permissif est assumé : la plupart des lignes de la console sont des

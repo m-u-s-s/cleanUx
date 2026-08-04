@@ -2,9 +2,11 @@
 
 namespace App\Admin\Resources;
 
+use App\Admin\Console\Action;
 use App\Admin\Console\Column;
 use App\Admin\Console\EloquentResource;
 use App\Models\StripeWebhookEvent;
+use App\Support\ActivityLogger;
 
 /**
  * Les événements Stripe reçus et leur traitement.
@@ -65,6 +67,45 @@ class StripeWebhookEventResource extends EloquentResource
             'last_error' => 'Dernière erreur',
             'next_retry_at' => 'Prochaine tentative',
             'stripe_event_id' => 'Identifiant Stripe',
+        ];
+    }
+
+    public function actions(): array
+    {
+        return [
+            /*
+             * Le REFUS est repris du web : un évènement qui n'est ni retentable ni en lettre morte
+             * a déjà été traité. Le relancer rejouerait un paiement ou un remboursement — la seule
+                 * catégorie d'erreur de ce chantier qui coûte de l'argent réel.
+             */
+            Action::make('retry', 'Relancer le traitement', function (StripeWebhookEvent $event) {
+                $relancable = $event->canRetry()
+                    || $event->status === StripeWebhookEvent::STATUS_DEAD_LETTER;
+
+                if (! $relancable) {
+                    return ['ok' => false, 'message' => 'Cet évènement a déjà été traité.'];
+                }
+
+                $event->forceFill([
+                    'status' => StripeWebhookEvent::STATUS_RECEIVED,
+                    'next_retry_at' => null,
+                ])->save();
+
+                return ['ok' => true];
+            }),
+
+            Action::make('mark-ignored', 'Marquer ignoré', function (StripeWebhookEvent $event) {
+                $event->forceFill([
+                    'status' => StripeWebhookEvent::STATUS_IGNORED,
+                    'processed_at' => now(),
+                ])->save();
+
+                ActivityLogger::log('stripe.webhook_event_manual_ignored', $event, [
+                    'admin_user_id' => request()->user()?->id,
+                ]);
+
+                return ['ok' => true];
+            })->destructive('L’évènement ne sera plus traité.'),
         ];
     }
 }

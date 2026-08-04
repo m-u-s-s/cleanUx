@@ -2,9 +2,11 @@
 
 namespace App\Admin\Resources;
 
+use App\Admin\Console\Action;
 use App\Admin\Console\Column;
 use App\Admin\Console\EloquentResource;
 use App\Models\PromoCampaign;
+use App\Support\ActivityLogger;
 
 /**
  * Les campagnes promotionnelles et leur enveloppe.
@@ -65,6 +67,25 @@ class PromoCampaignResource extends EloquentResource
             'starts_at' => 'Débute le',
             'ends_at' => 'Se termine le',
             'target_audience' => 'Audience',
+        ];
+    }
+
+    public function actions(): array
+    {
+        return [
+            Action::make('pause', 'Mettre en pause', function (PromoCampaign $campagne) {
+                $campagne->forceFill(['status' => PromoCampaign::STATUS_PAUSED])->save();
+                ActivityLogger::log('promo_campaign.paused', $campagne, ['admin_user_id' => request()->user()?->id]);
+
+                return ['status' => 'paused'];
+            }),
+
+            Action::make('activate', 'Activer', function (PromoCampaign $campagne) {
+                $campagne->forceFill(['status' => PromoCampaign::STATUS_ACTIVE])->save();
+                ActivityLogger::log('promo_campaign.activated', $campagne, ['admin_user_id' => request()->user()?->id]);
+
+                return ['status' => 'active'];
+            }),
         ];
     }
 }

@@ -2,8 +2,10 @@
 
 namespace App\Admin\Resources;
 
+use App\Admin\Console\Action;
 use App\Admin\Console\Column;
 use App\Admin\Console\EloquentResource;
+use App\Admin\Console\Field;
 use App\Models\InsuranceClaim;
 
 /**
@@ -68,6 +70,30 @@ class InsuranceClaimResource extends EloquentResource
             'decision_reason' => 'Motif de décision',
             'incident_date' => 'Date du sinistre',
             'paid_at' => 'Indemnisé le',
+        ];
+    }
+
+    public function actions(): array
+    {
+        return [
+            /*
+             * Le statut d'un sinistre suit une LISTE FERMÉE, celle du web. Laisser saisir un statut
+             * libre produirait des sinistres dans un état que ni les relances ni les statistiques
+             * ne savent lire — invisibles jusqu'à ce que l'assuré rappelle.
+             */
+            Action::make('set-status', 'Changer le statut', function (InsuranceClaim $claim, array $valeurs) {
+                $claim->forceFill(['status' => (string) $valeurs['status']])->save();
+
+                return ['status' => $claim->fresh()->status];
+            })->requires([
+                Field::select('status', 'Nouveau statut', [
+                    ['value' => InsuranceClaim::STATUS_UNDER_REVIEW, 'label' => 'En examen'],
+                    ['value' => InsuranceClaim::STATUS_INFO_REQUESTED, 'label' => 'Complément demandé'],
+                    ['value' => InsuranceClaim::STATUS_ACCEPTED, 'label' => 'Accepté'],
+                    ['value' => InsuranceClaim::STATUS_REJECTED, 'label' => 'Refusé'],
+                    ['value' => InsuranceClaim::STATUS_PAID, 'label' => 'Indemnisé'],
+                ])->rules(['required', 'string', 'max:40']),
+            ]),
         ];
     }
 }

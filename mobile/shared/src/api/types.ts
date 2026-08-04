@@ -32,6 +32,15 @@ export class ApiError extends Error {
     public errorCode: string,
     message: string,
     public errors?: Record<string, string[]>,
+    /**
+     * Le CORPS du refus, tel quel.
+     *
+     * Le moteur d'administration répond parfois plus que `error` et `errors` : un refus de
+     * suppression liste ses RAISONS — « 3 zones rattachées », « 12 missions en cours ». Sans ce
+     * champ, l'intercepteur les jetait ici, et l'écran affichait « une erreur est survenue » alors
+     * que le serveur venait d'expliquer précisément quoi faire.
+     */
+    public payload?: Record<string, unknown>,
   ) {
     super(message);
     this.name = 'ApiError';

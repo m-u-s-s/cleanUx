@@ -2,6 +2,7 @@
 
 namespace App\Admin\Resources;
 
+use App\Admin\Console\Action;
 use App\Admin\Console\Column;
 use App\Admin\Console\EloquentResource;
 use App\Models\RatingReport;
@@ -63,6 +64,26 @@ class RatingReportResource extends EloquentResource
     {
         return [
             'admin_note' => 'Note interne',
+        ];
+    }
+
+    public function actions(): array
+    {
+        return [
+            /*
+             * Rejeter un signalement, c'est décider que l'avis RESTE. Le geste est symétrique de
+             * celui du masquage, et le web le sépare pour cette raison : refuser un signalement
+             * n'est pas la même décision que juger l'avis lui-même.
+             */
+            Action::make('dismiss', 'Rejeter le signalement', function (RatingReport $report) {
+                $report->forceFill([
+                    'status' => RatingReport::STATUS_DISMISSED,
+                    'reviewed_by_user_id' => request()->user()?->id,
+                    'reviewed_at' => now(),
+                ])->save();
+
+                return ['ok' => true];
+            }),
         ];
     }
 }

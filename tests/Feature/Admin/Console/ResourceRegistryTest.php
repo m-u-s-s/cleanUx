@@ -33,7 +33,19 @@ class ResourceRegistryTest extends TestCase
 
     public function test_tout_descripteur_enregistre_correspond_a_un_module_connu(): void
     {
-        $connus = array_column(config('admin_console.modules'), 'key');
+        /*
+         * Les clés d'annuaire ET les ressources SECONDAIRES qu'un module déclare.
+         *
+         * Certaines pages web sont des tableaux de bord multi-modèles : « Opérations B2B » gère
+         * contrats, ordres de travail et grilles tarifaires. Le moteur sert un modèle par
+         * descripteur ; le module les rassemble. Sans cette union, un descripteur légitime
+         * passerait pour orphelin — et la seule façon de faire taire le test aurait été de ne pas
+         * l'écrire.
+         */
+        $connus = array_merge(
+            array_column(config('admin_console.modules'), 'key'),
+            collect(config('admin_console.modules'))->flatMap(fn ($m) => $m['resources'] ?? [])->all(),
+        );
 
         // Une LISTE de violations plutôt qu'une assertion par tour de boucle : sur un registre
         // encore vide, une boucle assertive ne produirait aucune assertion et PHPUnit marquerait
@@ -50,9 +62,16 @@ class ResourceRegistryTest extends TestCase
 
         // L'inverse du premier test : un descripteur écrit mais laissé « à venir » dans le
         // registre reste invisible dans l'annuaire. Du travail livré que personne ne voit.
+        $secondaires = collect(config('admin_console.modules'))
+            ->flatMap(fn ($m) => $m['resources'] ?? [])
+            ->all();
+
         $tus = array_values(array_filter(
             app(ResourceRegistry::class)->keys(),
-            fn (string $key) => $couverture[$key] !== 'descriptor',
+            // Une ressource secondaire n'a pas d'entrée propre dans l'annuaire : c'est son module
+            // qui l'annonce, et c'est la couverture de CELUI-CI qui compte.
+            fn (string $key) => ! in_array($key, $secondaires, true)
+                && ($couverture[$key] ?? null) !== 'descriptor',
         ));
 
         $this->assertSame([], $tus,

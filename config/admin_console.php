@@ -70,7 +70,7 @@ return [
         ['key' => 'safety', 'title' => 'Sécurité terrain', 'group' => 'operations', 'icon' => 'shield-outline', 'coverage' => 'descriptor', 'routes' => ['admin/safety']],
         ['key' => 'realtime', 'title' => 'Temps réel', 'group' => 'operations', 'icon' => 'pulse-outline', 'coverage' => 'descriptor', 'routes' => ['admin/realtime']],
         ['key' => 'bookings', 'title' => 'Rendez-vous et récurrences', 'group' => 'operations', 'icon' => 'repeat-outline', 'coverage' => 'descriptor', 'routes' => ['admin/recurrence/{rendezVous}/serie', 'admin/rendez-vous/{rendezVous}', 'admin/rendez-vous-series/{series}/edit']],
-        ['key' => 'b2b-operations', 'title' => 'Opérations B2B', 'group' => 'operations', 'icon' => 'business-outline', 'coverage' => 'descriptor', 'routes' => ['admin/b2b/operations']],
+        ['key' => 'b2b-operations', 'title' => 'Opérations B2B', 'group' => 'operations', 'icon' => 'business-outline', 'coverage' => 'descriptor', 'routes' => ['admin/b2b/operations'], 'resources' => ['b2b-contracts', 'b2b-work-orders']],
         ['key' => 'automation', 'title' => 'Automatisation', 'group' => 'operations', 'icon' => 'flash-outline', 'coverage' => 'report', 'routes' => ['admin/automation']],
 
         // ── Personnes et comptes ────────────────────────────────────────────────────────────
@@ -114,8 +114,8 @@ return [
         ['key' => 'insurance', 'title' => 'Assurance', 'group' => 'argent', 'icon' => 'umbrella-outline', 'coverage' => 'descriptor', 'routes' => ['admin/insurance']],
         ['key' => 'cancellations', 'title' => 'Annulations', 'group' => 'argent', 'icon' => 'close-circle-outline', 'coverage' => 'descriptor', 'routes' => ['admin/cancellations-v2']],
         ['key' => 'disputes', 'title' => 'Litiges', 'group' => 'argent', 'icon' => 'alert-circle-outline', 'coverage' => 'descriptor', 'routes' => ['admin/disputes']],
-        ['key' => 'risk', 'title' => 'Risque et fraude', 'group' => 'argent', 'icon' => 'shield-half-outline', 'coverage' => 'descriptor', 'routes' => ['admin/risk']],
-        ['key' => 'contracts', 'title' => 'Contrats', 'group' => 'argent', 'icon' => 'document-text-outline', 'coverage' => 'descriptor', 'routes' => ['admin/contracts-v2']],
+        ['key' => 'risk', 'title' => 'Risque et fraude', 'group' => 'argent', 'icon' => 'shield-half-outline', 'coverage' => 'descriptor', 'routes' => ['admin/risk'], 'resources' => ['risk-holds']],
+        ['key' => 'contracts', 'title' => 'Contrats', 'group' => 'argent', 'icon' => 'document-text-outline', 'coverage' => 'descriptor', 'routes' => ['admin/contracts-v2'], 'resources' => ['contract-signatures']],
 
         // ── Croissance ──────────────────────────────────────────────────────────────────────
         ['key' => 'marketing', 'title' => 'Marketing', 'group' => 'croissance', 'icon' => 'megaphone-outline', 'coverage' => 'descriptor', 'routes' => ['admin/marketing']],
@@ -133,7 +133,7 @@ return [
         ['key' => 'audit', 'title' => 'Audit', 'group' => 'plateforme', 'icon' => 'shield-checkmark-outline', 'coverage' => 'descriptor', 'routes' => ['admin/audit', 'admin/audit/logs']],
         ['key' => 'gdpr', 'title' => 'RGPD', 'group' => 'plateforme', 'icon' => 'lock-closed-outline', 'coverage' => 'descriptor', 'routes' => ['admin/gdpr']],
         ['key' => 'feature-flags', 'title' => 'Feature flags', 'group' => 'plateforme', 'icon' => 'flag-outline', 'coverage' => 'descriptor', 'routes' => ['admin/feature-flags']],
-        ['key' => 'api-tokens', 'title' => 'Jetons d’API', 'group' => 'plateforme', 'icon' => 'key-outline', 'coverage' => 'descriptor', 'routes' => ['admin/api-tokens-v2']],
+        ['key' => 'api-tokens', 'title' => 'Jetons d’API', 'group' => 'plateforme', 'icon' => 'key-outline', 'coverage' => 'descriptor', 'routes' => ['admin/api-tokens-v2'], 'resources' => ['api-tokens-list']],
         ['key' => 'webhooks', 'title' => 'Webhooks sortants', 'group' => 'plateforme', 'icon' => 'git-network-outline', 'coverage' => 'descriptor', 'routes' => ['admin/webhooks-v2']],
         ['key' => 'geolocation', 'title' => 'Géolocalisation', 'group' => 'plateforme', 'icon' => 'locate-outline', 'coverage' => 'descriptor', 'routes' => ['admin/geolocation-v2']],
         ['key' => 'translations', 'title' => 'Traductions', 'group' => 'plateforme', 'icon' => 'language-outline', 'coverage' => 'descriptor', 'routes' => ['admin/translations']],

@@ -94,6 +94,20 @@ export function AdminDirectoryScreen() {
       return;
     }
 
+    /*
+     * Un module MULTI-RESSOURCES passe par un écran de choix ; les autres s'ouvrent directement.
+     * Imposer le choix à tout le monde ajouterait un toucher à chaque ouverture, au bénéfice de
+     * cinq modules et au détriment des soixante-dix autres.
+     */
+    if ((module.resources ?? []).length > 0) {
+      navigation.navigate('AdminResourcePicker', {
+        title: module.title,
+        resources: [module.key, ...(module.resources ?? [])],
+      });
+
+      return;
+    }
+
     navigation.navigate('AdminResourceList', { resource: module.key, title: module.title });
   };
 

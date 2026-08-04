@@ -1,13 +1,16 @@
 import React, { useMemo, useState } from 'react';
-import { FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
+import { FlatList, Pressable, StyleSheet, Switch, Text, View } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import { Alert } from 'react-native';
 import { Button, EmptyState, ErrorState, Icon, Screen, Skeleton, TextInput } from '@/ui';
 import { colors, radius, spacing, typography } from '@/theme';
 import { useThemeColors } from '@/theme/useThemeColors';
 import type { ThemeTokens } from '@/theme/useThemeColors';
-import { useResourceIndex } from './hooks';
+import { ActionInputSheet } from './ActionInputSheet';
+import { OptionPicker } from './OptionPicker';
+import { readServerErrors, useResourceGlobalAction, useResourceIndex } from './hooks';
 import { formatCell } from './format';
-import type { FilterValues, ResourceColumn, ResourceRow } from './types';
+import type { FilterValues, ResourceAction, ResourceColumn, ResourceRow } from './types';
 
 interface Params {
   resource: string;
@@ -33,8 +36,29 @@ export function ResourceListScreen({ route }: { route: { params: Params } }) {
 
   const [filters, setFilters] = useState<FilterValues>({});
 
+  /*
+   * Les actions GLOBALES portent sur le module, pas sur une ligne : purger un cache, relancer une
+   * file, simuler un matching. Les poser dans le menu d'une ligne aurait laissé croire qu'elles
+   * s'appliquent à celle qu'on vient de toucher.
+   */
+  const [saisieEnCours, setSaisieEnCours] = useState<ResourceAction | null>(null);
+  const [erreursSaisie, setErreursSaisie] = useState<Record<string, string>>({});
+  const actionGlobale = useResourceGlobalAction(resource);
+
+  /*
+   * Cent vingt-huit colonnes triables sont déclarées à travers la console, quarante et un modules
+   * en offrant plus d'une. Le hook savait les envoyer depuis le début ; l'écran ne les lui passait
+   * jamais. Sur une liste paginée, ne pas pouvoir trier oblige à faire défiler pour trouver ce
+   * qu'un tri montrerait en tête.
+   *
+   * `undefined` au départ, pas le tri par défaut du descripteur : le serveur l'applique déjà, et
+   * le répéter ici en ferait une seconde source à garder d'accord avec la première.
+   */
+  const [tri, setTri] = useState<string | undefined>(undefined);
+  const [sens, setSens] = useState<'asc' | 'desc' | undefined>(undefined);
+
   const { data, isLoading, isError, refetch, fetchNextPage, hasNextPage, isFetchingNextPage } =
-    useResourceIndex(resource, { filters });
+    useResourceIndex(resource, { filters, sort: tri, direction: sens });
 
   const descripteur = data?.pages[0]?.resource;
   const rows = useMemo(
@@ -42,8 +66,8 @@ export function ResourceListScreen({ route }: { route: { params: Params } }) {
     [data],
   );
 
-  // Le filtre de recherche est le seul remonté en tête : c'est celui qu'on utilise sans réfléchir.
-  // Les autres vivront dans une feuille de filtres (lot suivant).
+  // La recherche vient en premier : c'est le filtre qu'on utilise sans réfléchir. Les listes et
+  // les booléens la suivent, dans l'ordre où le descripteur les déclare — le même que sur le web.
   const recherche = descripteur?.filters.find((f) => f.type === 'search');
 
   if (isLoading) {
@@ -74,6 +98,50 @@ export function ResourceListScreen({ route }: { route: { params: Params } }) {
   }
 
   const creable = (descripteur?.form.length ?? 0) > 0;
+  const globales = descripteur?.global_actions ?? [];
+
+  /** Lancer un geste global, une fois sa saisie éventuelle recueillie. */
+  const lancer = (action: ResourceAction, values?: Record<string, unknown>) => {
+    actionGlobale.mutate(
+      { action: action.key, values },
+      {
+        onSuccess: () => {
+          setSaisieEnCours(null);
+          setErreursSaisie({});
+        },
+        onError: (e) => {
+          const lu = readServerErrors(e);
+          setErreursSaisie(lu.fields);
+
+          // Sans saisie ouverte, l'erreur n'a aucun endroit où s'afficher : on la dit.
+          if (Object.keys(lu.fields).length === 0) {
+            Alert.alert(action.label, lu.message);
+          }
+        },
+      },
+    );
+  };
+
+  /** Un geste destructif s'annonce AVANT de partir : le serveur, lui, ne demandera rien. */
+  const demarrer = (action: ResourceAction) => {
+    if (action.fields.length > 0) {
+      setErreursSaisie({});
+      setSaisieEnCours(action);
+
+      return;
+    }
+
+    if (action.confirm) {
+      Alert.alert(action.label, action.confirm, [
+        { text: 'Annuler', style: 'cancel' },
+        { text: 'Confirmer', style: 'destructive', onPress: () => lancer(action) },
+      ]);
+
+      return;
+    }
+
+    lancer(action);
+  };
 
   return (
     <Screen>
@@ -87,6 +155,108 @@ export function ResourceListScreen({ route }: { route: { params: Params } }) {
             autoCorrect={false}
           />
         ) : null}
+
+        {/*
+          * Les filtres AUTRES que la recherche : soixante listes et dix booléens à travers la
+          * console, déclarés par les descripteurs et jusqu'ici rendus par le web seul. Sur un
+          * domaine paginé de plusieurs milliers de lignes, « statut = litige ouvert » est la
+          * différence entre un écran utilisable et un écran décoratif.
+          */}
+        {(descripteur?.filters ?? [])
+          .filter((f) => f.type === 'select' && f.options.length > 0)
+          .map((f) => (
+            <OptionPicker
+              key={f.key}
+              label={f.label}
+              options={f.options}
+              value={filters[f.key] === undefined ? null : String(filters[f.key])}
+              onChange={(v) =>
+                setFilters((courants) => {
+                  const suivants = { ...courants };
+
+                  // Retirer la clé plutôt que d'envoyer une chaîne vide : le serveur traiterait
+                  // « status= » comme un filtre posé sur une valeur qui n'existe pas.
+                  if (v === null) {
+                    delete suivants[f.key];
+                  } else {
+                    suivants[f.key] = v;
+                  }
+
+                  return suivants;
+                })
+              }
+              effacable
+            />
+          ))}
+
+        {(descripteur?.filters ?? [])
+          .filter((f) => f.type === 'bool')
+          .map((f) => (
+            <View key={f.key} style={styles.bascule}>
+              <Text style={styles.basculeLabel}>{f.label}</Text>
+              <Switch
+                accessibilityLabel={f.label}
+                value={filters[f.key] === true}
+                onValueChange={(actif) =>
+                  setFilters((courants) => {
+                    const suivants = { ...courants };
+
+                    if (actif) {
+                      suivants[f.key] = true;
+                    } else {
+                      delete suivants[f.key];
+                    }
+
+                    return suivants;
+                  })
+                }
+              />
+            </View>
+          ))}
+
+        {/*
+          * Le tri n'est proposé que s'il y a un choix à faire. Une seule colonne triable et un
+          * sélecteur laisserait croire à une liberté qui n'existe pas.
+          */}
+        {(descripteur?.sorts.length ?? 0) > 1 ? (
+          <View style={styles.rangeeTri}>
+            <View style={styles.triChoix}>
+              <OptionPicker
+                label="Trier par"
+                options={(descripteur?.sorts ?? []).map((cle) => ({
+                  value: cle,
+                  label: libelleDeTri(cle, descripteur?.columns ?? []),
+                }))}
+                value={tri ?? descripteur?.default_sort ?? null}
+                onChange={(v) => setTri(v ?? undefined)}
+              />
+            </View>
+
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Inverser le sens du tri"
+              onPress={() => setSens((courant) => (courant === 'asc' ? 'desc' : 'asc'))}
+              style={styles.sens}
+            >
+              <Icon
+                name={sens === 'asc' ? 'arrow-up' : 'arrow-down'}
+                size={18}
+                color={colors.surface[400]}
+              />
+            </Pressable>
+          </View>
+        ) : null}
+
+        {globales.map((action) => (
+          <Button
+            key={action.key}
+            label={action.label}
+            variant="secondary"
+            size="sm"
+            disabled={actionGlobale.isPending}
+            onPress={() => demarrer(action)}
+          />
+        ))}
 
         {creable ? (
           <Button
@@ -135,6 +305,16 @@ export function ResourceListScreen({ route }: { route: { params: Params } }) {
           ) : null
         }
       />
+
+      <ActionInputSheet
+        action={saisieEnCours}
+        visible={saisieEnCours !== null}
+        submitting={actionGlobale.isPending}
+        errors={erreursSaisie}
+        onCancel={() => setSaisieEnCours(null)}
+        onSubmit={(values) => saisieEnCours && lancer(saisieEnCours, values)}
+      />
+
     </Screen>
   );
 }
@@ -183,7 +363,43 @@ function Row({
   );
 }
 
+/**
+ * Le nom lisible d'une colonne de tri.
+ *
+ * Le serveur envoie des CLÉS (`sorts: ['id', 'created_at']`), pas des libellés. Quand la clé
+ * correspond à une colonne affichée, on reprend son libellé — c'est le même mot que celui que
+ * l'administrateur lit dans la liste. Sinon on humanise la clé, faute de mieux : une table de
+ * traductions ici divergerait du serveur au premier renommage.
+ */
+function libelleDeTri(cle: string, colonnes: ResourceColumn[]): string {
+  const colonne = colonnes.find((c) => c.key === cle);
+
+  if (colonne) {
+    return colonne.label;
+  }
+
+  const mots = cle.replace(/_/g, ' ');
+
+  return mots.charAt(0).toUpperCase() + mots.slice(1);
+}
+
 const stylesFor = (t: ThemeTokens) => StyleSheet.create({
+  rangeeTri: { flexDirection: 'row', alignItems: 'flex-start' },
+  triChoix: { flex: 1 },
+  sens: {
+    width: 48,
+    minHeight: 56,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginLeft: spacing.xs,
+  },
+  bascule: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingBottom: spacing.sm,
+  },
+  basculeLabel: { ...typography.preset.bodyReadable, color: t.text },
   header: {
     paddingTop: spacing.md,
     paddingBottom: spacing.sm,

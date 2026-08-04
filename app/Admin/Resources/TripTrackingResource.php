@@ -2,9 +2,11 @@
 
 namespace App\Admin\Resources;
 
+use App\Admin\Console\Action;
 use App\Admin\Console\Column;
 use App\Admin\Console\EloquentResource;
 use App\Models\TripTrackingSession;
+use App\Services\TripTracking\TripTrackingService;
 
 /**
  * Les sessions de suivi de trajet.
@@ -67,6 +69,19 @@ class TripTrackingResource extends EloquentResource
             'presence_confirmed_at' => 'Présence confirmée le',
             'arrived_at' => 'Arrivé le',
             'ended_at' => 'Terminée le',
+        ];
+    }
+
+    public function actions(): array
+    {
+        return [
+            Action::make('cancel-session', 'Annuler la session', function (TripTrackingSession $session) {
+                // Le motif est celui du web, mot pour mot : il sert à distinguer une annulation
+                // administrative d'un abandon du prestataire dans les statistiques.
+                app(TripTrackingService::class)->cancelSession($session, 'admin_manual');
+
+                return ['ok' => true];
+            })->destructive('La session de suivi sera annulée.'),
         ];
     }
 }

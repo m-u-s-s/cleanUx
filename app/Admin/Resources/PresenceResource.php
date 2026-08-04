@@ -2,9 +2,12 @@
 
 namespace App\Admin\Resources;
 
+use App\Admin\Console\Action;
 use App\Admin\Console\Column;
 use App\Admin\Console\EloquentResource;
 use App\Models\ProviderPresence;
+use App\Models\User;
+use App\Services\Presence\ProviderPresenceService;
 
 /**
  * La présence des prestataires sur le terrain.
@@ -65,6 +68,27 @@ class PresenceResource extends EloquentResource
         return [
             'last_online_at' => 'Dernière connexion',
             'online_minutes_week' => 'Minutes cette semaine',
+        ];
+    }
+
+    public function actions(): array
+    {
+        return [
+            /*
+             * Passer un prestataire hors ligne à la main. Le service tranche — il touche au profil
+             * ET au journal de présence, ce qu'une écriture directe sur la ligne oublierait.
+             */
+            Action::make('force-offline', 'Passer hors ligne', function (ProviderPresence $presence) {
+                $user = User::find($presence->provider_user_id);
+
+                if (! $user) {
+                    return ['ok' => false, 'message' => 'Prestataire introuvable.'];
+                }
+
+                app(ProviderPresenceService::class)->goOffline($user);
+
+                return ['ok' => true];
+            }),
         ];
     }
 }

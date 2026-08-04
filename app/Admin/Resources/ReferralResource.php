@@ -2,9 +2,12 @@
 
 namespace App\Admin\Resources;
 
+use App\Admin\Console\Action;
 use App\Admin\Console\Column;
 use App\Admin\Console\EloquentResource;
 use App\Models\Referral;
+use App\Models\ReferralReward;
+use App\Support\ActivityLogger;
 
 /**
  * Les parrainages et leurs récompenses.
@@ -67,6 +70,32 @@ class ReferralResource extends EloquentResource
             'qualified_at' => 'Qualifié le',
             'rewarded_at' => 'Récompensé le',
             'expires_at' => 'Expire le',
+        ];
+    }
+
+    public function actions(): array
+    {
+        return [
+            /*
+             * Marquer un parrainage frauduleux RÉVOQUE aussi ses récompenses. Les séparer
+             * laisserait des points acquis sur une fraude reconnue — et le filleul les dépenserait
+             * avant qu'on s'en aperçoive.
+             */
+            Action::make('flag-fraud', 'Marquer frauduleux', function (Referral $referral) {
+                $referral->forceFill(['status' => Referral::STATUS_FRAUD])->save();
+
+                $referral->rewards()->update([
+                    'status' => ReferralReward::STATUS_REVOKED,
+                    'revoked_at' => now(),
+                    'revoked_reason' => 'Marqué frauduleux par admin',
+                ]);
+
+                ActivityLogger::log('referral.flagged_fraud', $referral, [
+                    'admin_user_id' => request()->user()?->id,
+                ]);
+
+                return ['ok' => true];
+            })->destructive('Le parrainage et ses récompenses seront révoqués.'),
         ];
     }
 }

@@ -2,6 +2,7 @@
 
 namespace App\Admin\Resources;
 
+use App\Admin\Console\Action;
 use App\Admin\Console\Column;
 use App\Admin\Console\EloquentResource;
 use App\Models\User;
@@ -63,6 +64,49 @@ class PremiumClientResource extends EloquentResource
         return [
             'email' => 'Email',
             'trial_ends_at' => 'Fin d’essai',
+        ];
+    }
+
+    public function actions(): array
+    {
+        return [
+            /*
+             * Les quatre gestes du web, à l'identique. Ce sont de simples écritures d'état — aucun
+             * service ne les porte côté web non plus, et en inventer un ici créerait une règle qui
+             * n'existe nulle part ailleurs.
+             */
+            Action::make('set-premium', 'Passer en Premium', function (User $client) {
+                $client->forceFill([
+                    'plan_type' => 'premium',
+                    'plan_status' => 'active',
+                    'premium_started_at' => now(),
+                    'premium_renewal_at' => now()->addMonth(),
+                ])->save();
+
+                return ['plan_type' => 'premium'];
+            }),
+
+            Action::make('set-standard', 'Repasser en Standard', function (User $client) {
+                $client->forceFill(['plan_type' => 'standard', 'plan_status' => 'inactive'])->save();
+
+                return ['plan_type' => 'standard'];
+            })->destructive('Le client repassera en offre Standard.'),
+
+            Action::make('suspend-plan', 'Suspendre le plan', function (User $client) {
+                $client->forceFill(['plan_status' => 'past_due'])->save();
+
+                return ['plan_status' => 'past_due'];
+            }),
+
+            Action::make('reactivate-plan', 'Réactiver le plan', function (User $client) {
+                $client->forceFill([
+                    'plan_type' => 'premium',
+                    'plan_status' => 'active',
+                    'premium_renewal_at' => now()->addMonth(),
+                ])->save();
+
+                return ['plan_status' => 'active'];
+            }),
         ];
     }
 }

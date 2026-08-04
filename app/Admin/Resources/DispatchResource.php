@@ -2,9 +2,11 @@
 
 namespace App\Admin\Resources;
 
+use App\Admin\Console\Action;
 use App\Admin\Console\Column;
 use App\Admin\Console\EloquentResource;
 use App\Models\Booking;
+use App\Services\Booking\SmartDispatchService;
 
 /**
  * Les réservations en attente d’affectation.
@@ -70,6 +72,29 @@ class DispatchResource extends EloquentResource
             'asap_deadline_at' => 'Échéance immédiate',
             'matched_at' => 'Affectée le',
             'provider_type_preference' => 'Préférence prestataire',
+        ];
+    }
+
+    public function actions(): array
+    {
+        return [
+            /*
+             * Affecter le meilleur prestataire disponible. Le service pèse distance, charge,
+             * compétences et disponibilité — le refaire ici produirait un second classement, et
+             * deux affectations différentes selon l'écran d'où l'on part.
+             *
+             * Quand il ne trouve personne, on le DIT : « affecté » sur une mission sans
+             * intervenant se découvrirait le jour de la prestation.
+             */
+            Action::make('assign-best', 'Affecter le meilleur prestataire', function (Booking $rdv) {
+                $employe = app(SmartDispatchService::class)->assignBestEmployee($rdv);
+
+                if (! $employe) {
+                    return ['ok' => false, 'message' => 'Aucun prestataire disponible pour cette mission.'];
+                }
+
+                return ['ok' => true, 'assigned_to' => $employe->id];
+            }),
         ];
     }
 }

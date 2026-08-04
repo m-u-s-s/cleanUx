@@ -2,9 +2,11 @@
 
 namespace App\Admin\Resources;
 
+use App\Admin\Console\Action;
 use App\Admin\Console\Column;
 use App\Admin\Console\EloquentResource;
 use App\Models\SmsMessage;
+use App\Services\Notifications\SmsService;
 
 /**
  * Le journal des SMS et messages WhatsApp.
@@ -65,6 +67,41 @@ class SmsMessageResource extends EloquentResource
             'provider' => 'Fournisseur',
             'failed_reason' => 'Motif d’échec',
             'delivered_at' => 'Délivré le',
+        ];
+    }
+
+    public function actions(): array
+    {
+        return [
+            /*
+             * Le refus est repris du web MOT POUR MOT : seuls les SMS en échec, non délivrés ou
+             * limités se retentent. Relancer un SMS déjà parti le enverrait deux fois, et le
+             * destinataire n'a aucun moyen de savoir lequel compte.
+             */
+            Action::make('retry', 'Réessayer l’envoi', function (SmsMessage $message) {
+                $retentable = [
+                    SmsMessage::STATUS_FAILED,
+                    SmsMessage::STATUS_UNDELIVERED,
+                    SmsMessage::STATUS_RATE_LIMITED,
+                ];
+
+                if (! in_array($message->status, $retentable, true)) {
+                    return ['ok' => false, 'message' => 'Seuls les SMS en échec peuvent être retentés.'];
+                }
+
+                /*
+                 * On renvoie le MÊME corps, pas un gabarit reconstruit : le message est déjà
+                 * rédigé et traduit, et le régénérer risquerait d'envoyer autre chose que ce que
+                 * le destinataire attendait.
+                 */
+                app(SmsService::class)->dispatch(
+                    toPhone: (string) $message->to_phone,
+                    body: (string) $message->body,
+                    category: (string) $message->category,
+                );
+
+                return ['ok' => true];
+            }),
         ];
     }
 }

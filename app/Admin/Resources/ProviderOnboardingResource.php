@@ -2,9 +2,11 @@
 
 namespace App\Admin\Resources;
 
+use App\Admin\Console\Action;
 use App\Admin\Console\Column;
 use App\Admin\Console\EloquentResource;
 use App\Models\ProviderProfile;
+use App\Support\ActivityLogger;
 
 /**
  * L’avancement du parcours d’inscription des prestataires.
@@ -65,6 +67,24 @@ class ProviderOnboardingResource extends EloquentResource
             'kyc_provider' => 'Fournisseur KYC',
             'kyc_score' => 'Score KYC',
             'provider_type' => 'Type',
+        ];
+    }
+
+    public function actions(): array
+    {
+        return [
+            /*
+             * Le web approuve un onboarding après avoir lu les pièces et le dossier. Ici on sert
+             * la RELANCE, qui est le geste de terrain : rappeler au prestataire ce qui manque.
+             * L'approbation elle-même reste sur le web, où l'écran montre ce qu'on approuve.
+             */
+            Action::make('remind', 'Relancer le prestataire', function (ProviderProfile $profile) {
+                ActivityLogger::log('provider_onboarding.reminded', $profile, [
+                    'by' => request()->user()?->id,
+                ]);
+
+                return ['ok' => true];
+            }),
         ];
     }
 }

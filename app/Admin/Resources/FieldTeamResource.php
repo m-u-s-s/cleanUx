@@ -2,8 +2,10 @@
 
 namespace App\Admin\Resources;
 
+use App\Admin\Console\Action;
 use App\Admin\Console\Column;
 use App\Admin\Console\EloquentResource;
+use App\Admin\Console\Field;
 use App\Models\FieldTeam;
 
 /**
@@ -61,6 +63,32 @@ class FieldTeamResource extends EloquentResource
     {
         return [
             'notes' => 'Notes',
+        ];
+    }
+
+    public function formFields(): array
+    {
+        return [
+            Field::make('name', 'Nom de l’équipe')->rules(['required', 'string', 'max:255']),
+            Field::select('status', 'Statut', [
+                ['value' => 'active', 'label' => 'Active'],
+                ['value' => 'inactive', 'label' => 'Inactive'],
+            ])->rules(['nullable', 'in:active,inactive']),
+        ];
+    }
+
+    public function actions(): array
+    {
+        return [
+            Action::make('toggle-active', 'Activer / désactiver', function (FieldTeam $equipe) {
+                // La table porte un `status`, pas un booléen : basculer un `is_active` inexistant
+                // aurait produit une action silencieusement inerte.
+                $equipe->forceFill([
+                    'status' => $equipe->status === 'active' ? 'inactive' : 'active',
+                ])->save();
+
+                return ['status' => $equipe->fresh()->status];
+            }),
         ];
     }
 }

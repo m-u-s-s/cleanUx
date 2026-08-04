@@ -2,9 +2,12 @@
 
 namespace App\Admin\Resources;
 
+use App\Admin\Console\Action;
 use App\Admin\Console\Column;
 use App\Admin\Console\EloquentResource;
+use App\Admin\Console\Field;
 use App\Models\AccountingEntry;
+use App\Services\AccountingV2\PeriodCloser;
 
 /**
  * Le grand livre comptable.
@@ -67,6 +70,30 @@ class AccountingEntryResource extends EloquentResource
             'reference' => 'Référence',
             'vat_amount_cents' => 'TVA (cents)',
             'currency' => 'Devise',
+        ];
+    }
+
+    public function globalActions(): array
+    {
+        return [
+            /*
+             * Clôturer un mois. Global par nature, et IRRÉVERSIBLE : une période close refuse
+             * toute écriture postérieure, ce qui est précisément son rôle. On demande donc l'année
+             * et le mois plutôt que de supposer « le mois dernier » — se tromper d'un mois
+             * verrouillerait des écritures qu'on avait encore à passer.
+             */
+            Action::make('close-period', 'Clôturer une période', function (array $valeurs) {
+                app(PeriodCloser::class)->close(
+                    (int) $valeurs['year'],
+                    (int) $valeurs['month'],
+                    request()->user(),
+                );
+
+                return ['ok' => true];
+            })->requires([
+                Field::make('year', 'Année', Field::TYPE_NUMBER)->rules(['required', 'integer', 'min:2020', 'max:2100']),
+                Field::make('month', 'Mois', Field::TYPE_NUMBER)->rules(['required', 'integer', 'min:1', 'max:12']),
+            ])->destructive('La période sera close : plus aucune écriture ne pourra y être passée.'),
         ];
     }
 }

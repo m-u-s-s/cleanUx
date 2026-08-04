@@ -68,6 +68,20 @@ interface AdminResource
     public function actions(): array;
 
     /**
+     * Les actions qui ne portent sur AUCUNE ligne.
+     *
+     * Rafraîchir tous les taux de change, clôturer un mois comptable, purger un cache, balayer les
+     * certifications qui expirent : ces gestes ne visent rien en particulier. Les poser sur une
+     * ligne arbitraire serait un mensonge d'interface — « purger le cache » offert sur la troisième
+     * adresse de la liste — et les omettre laisserait des modules entiers sans leur geste principal.
+     *
+     * Leur signature diffère : elles reçoivent les valeurs saisies, jamais un modèle.
+     *
+     * @return list<Action>
+     */
+    public function globalActions(): array;
+
+    /**
      * Enrichit les données validées juste avant une CRÉATION.
      *
      * Certaines colonnes obligatoires ne se demandent pas : le `slug` d'une zone se déduit de son

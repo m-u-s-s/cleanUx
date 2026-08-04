@@ -18,6 +18,7 @@ use App\Admin\Resources\AccountingEntryResource;
 use App\Admin\Resources\AddressLookupResource;
 use App\Admin\Resources\AnalyticsEventResource;
 use App\Admin\Resources\ApiTokenUsageResource;
+use App\Admin\Resources\ApiTokenV2Resource;
 use App\Admin\Resources\AuditEventResource;
 use App\Admin\Resources\AvailabilitySlotResource;
 use App\Admin\Resources\BadgeResource;
@@ -31,6 +32,7 @@ use App\Admin\Resources\ChatThreadResource;
 use App\Admin\Resources\CompanyResource;
 use App\Admin\Resources\ContractDocumentResource;
 use App\Admin\Resources\ContractRateCardResource;
+use App\Admin\Resources\ContractSignatureResource;
 use App\Admin\Resources\CountryResource;
 use App\Admin\Resources\CountrySettingResource;
 use App\Admin\Resources\CustomerCreditResource;
@@ -38,6 +40,7 @@ use App\Admin\Resources\DispatchResource;
 use App\Admin\Resources\DisputeResource;
 use App\Admin\Resources\EmailLogResource;
 use App\Admin\Resources\EnterpriseApprovalResource;
+use App\Admin\Resources\EnterpriseWorkOrderResource;
 use App\Admin\Resources\ExchangeRateResource;
 use App\Admin\Resources\FeatureFlagResource;
 use App\Admin\Resources\FeedbackResource;
@@ -57,6 +60,7 @@ use App\Admin\Resources\NotificationPreferenceResource;
 use App\Admin\Resources\NpsResource;
 use App\Admin\Resources\OnboardingDocumentResource;
 use App\Admin\Resources\OnboardingProgressResource;
+use App\Admin\Resources\OrganizationContractResource;
 use App\Admin\Resources\PlanningResource;
 use App\Admin\Resources\PlatformModuleResource;
 use App\Admin\Resources\PremiumClientResource;
@@ -71,6 +75,7 @@ use App\Admin\Resources\QualityInspectionResource;
 use App\Admin\Resources\RatingReportResource;
 use App\Admin\Resources\ReferralResource;
 use App\Admin\Resources\RiskEvaluationResource;
+use App\Admin\Resources\RiskHoldResource;
 use App\Admin\Resources\SectorResource;
 use App\Admin\Resources\ServiceCatalogResource;
 use App\Admin\Resources\SiteResource;
@@ -108,6 +113,20 @@ class AdminConsoleServiceProvider extends ServiceProvider
             // y porter `coverage => 'descriptor'` : ResourceRegistryTest refuse les deux écarts.
 
             // Lot 1 — le CRUD complet : liste, formulaire, édition, suppression.
+            /*
+             * Les modèles servis par une page web MULTI-MODÈLES.
+             *
+             * « Opérations B2B » gère contrats, ordres de travail et grilles tarifaires ; le risque
+             * montre des évaluations ET des blocages ; les contrats, des documents ET des
+             * signatures. Le moteur sert un modèle par descripteur : sans ces clés, les gestes les
+             * plus fréquents de ces pages n'avaient nulle part où vivre.
+             */
+            $registry->register('api-tokens-list', ApiTokenV2Resource::class);
+            $registry->register('risk-holds', RiskHoldResource::class);
+            $registry->register('contract-signatures', ContractSignatureResource::class);
+            $registry->register('b2b-contracts', OrganizationContractResource::class);
+            $registry->register('b2b-work-orders', EnterpriseWorkOrderResource::class);
+
             $registry->register('users', UserResource::class);
             $registry->register('companies', CompanyResource::class);
             $registry->register('sites', SiteResource::class);
