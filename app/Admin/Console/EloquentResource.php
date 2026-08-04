@@ -28,6 +28,10 @@ use Illuminate\Database\Eloquent\Model;
  */
 abstract class EloquentResource implements AdminResource
 {
+    // Les réponses neutres aux deux questions posées avant écriture, partagées avec les dix
+    // descripteurs qui implémentent le contrat sans passer par cette base.
+    use DefaultsResourceWrites;
+
     /**
      * La classe du modèle servi.
      *
@@ -139,6 +143,21 @@ abstract class EloquentResource implements AdminResource
 
         if (array_key_exists('created_at', $this->columnSpec())) {
             $tris[] = 'created_at';
+        }
+
+        /*
+         * `name` quand la colonne existe.
+         *
+         * Sans lui, toute liste s'ordonne par identifiant — c'est-à-dire par ordre de création,
+         * illisible dès la cinquième ligne. Le refus n'était pas silencieux pour autant : l'API
+         * rendait 422, et l'écran mobile affichait « impossible de charger », un message d'erreur
+         * générique pour ce qui n'était qu'un tri non déclaré.
+         *
+         * Le curseur reste stable parce que le contrôleur ajoute l'identifiant en départage : un
+         * tri sur une colonne non unique produirait sinon des pages qui se chevauchent.
+         */
+        if (array_key_exists('name', $this->columnSpec())) {
+            $tris[] = 'name';
         }
 
         return $tris;

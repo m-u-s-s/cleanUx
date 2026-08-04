@@ -4,6 +4,7 @@ import type { NavigatorScreenParams } from '@react-navigation/native';
 export type AdminTabParamList = {
   AdminHome: undefined;
   AdminDirectory: undefined;
+  AdminCatalog: undefined;
   AdminProfile: undefined;
 };
 

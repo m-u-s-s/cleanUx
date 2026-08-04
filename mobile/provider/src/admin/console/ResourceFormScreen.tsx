@@ -14,6 +14,14 @@ interface Params {
   title: string;
   /** Absent = création. */
   id?: string | number;
+  /**
+   * Valeurs imposées par le CONTEXTE d'où l'on vient.
+   *
+   * On crée une zone depuis l'écran d'un pays : ce pays n'est pas un choix à refaire. Le laisser
+   * vide obligerait à le resélectionner, avec le risque de créer la zone dans le mauvais marché —
+   * une erreur qui ne se voit qu'en cherchant une zone disparue.
+   */
+  prefill?: Record<string, unknown>;
 }
 
 /**
@@ -27,7 +35,7 @@ interface Params {
 export function ResourceFormScreen({ route }: { route: { params: Params } }) {
   const styles = stylesFor(useThemeColors());
 
-  const { resource, title, id } = route.params;
+  const { resource, title, id, prefill } = route.params;
   const navigation = useNavigation<{ goBack: () => void }>();
 
   const { data: liste, isLoading: chargementDescripteur, isError } = useResourceIndex(resource);
@@ -51,6 +59,15 @@ export function ResourceFormScreen({ route }: { route: { params: Params } }) {
       setValeurs(existant as Record<string, unknown>);
     }
   }, [id, existant]);
+
+  // En création, le contexte s'applique une fois — pas à chaque rendu, sinon il écraserait ce que
+  // l'utilisateur vient de saisir dans le même champ.
+  useEffect(() => {
+    if (!id && prefill) {
+      setValeurs((courant) => ({ ...prefill, ...courant }));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [id]);
 
   if (chargementDescripteur || (id && chargementLigne)) {
     return (

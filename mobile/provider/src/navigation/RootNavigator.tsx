@@ -28,6 +28,9 @@ import { ProviderOnboardingScreen } from '@/screens/onboarding/ProviderOnboardin
 // Espace d'administration — l'application prestataire sert deux publics depuis le lot A.
 import { SpaceSwitcherScreen } from '@/screens/SpaceSwitcherScreen';
 import { AdminNavigator } from '@/admin/AdminNavigator';
+import { CatalogZonesScreen } from '@/admin/catalogue/CatalogZonesScreen';
+import { CatalogZoneTradesScreen } from '@/admin/catalogue/CatalogZoneTradesScreen';
+import { JourneyBuilderScreen } from '@/admin/catalogue/JourneyBuilderScreen';
 import { AdminResourceScreen } from '@/admin/AdminResourceScreen';
 import { ResourceListScreen } from '@/admin/console/ResourceListScreen';
 import { ResourceDetailScreen } from '@/admin/console/ResourceDetailScreen';
@@ -114,6 +117,35 @@ export function RootNavigator() {
             options={({ route }) => ({
               headerShown: true,
               title: (route.params as { title?: string } | undefined)?.title ?? 'Module',
+            })}
+          />
+          {/*
+            La descente géographique du catalogue. Les deux niveaux profonds vivent sur la pile
+            RACINE et non dans les onglets : ils se poussent par-dessus, avec un retour, comme
+            partout ailleurs dans la console. Les monter dans l'onglet ferait disparaître la barre.
+          */}
+          <Stack.Screen
+            name="AdminCatalogZones"
+            component={CatalogZonesScreen}
+            options={({ route }) => ({
+              headerShown: true,
+              title: (route.params as { title?: string } | undefined)?.title ?? 'Zones',
+            })}
+          />
+          <Stack.Screen
+            name="AdminTradeJourney"
+            component={JourneyBuilderScreen}
+            options={({ route }) => ({
+              headerShown: true,
+              title: (route.params as { title?: string } | undefined)?.title ?? 'Parcours',
+            })}
+          />
+          <Stack.Screen
+            name="AdminCatalogTrades"
+            component={CatalogZoneTradesScreen}
+            options={({ route }) => ({
+              headerShown: true,
+              title: (route.params as { title?: string } | undefined)?.title ?? 'Catalogue',
             })}
           />
           <Stack.Screen

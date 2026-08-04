@@ -5,6 +5,7 @@ namespace App\Admin\Resources;
 use App\Admin\Console\Action;
 use App\Admin\Console\AdminResource;
 use App\Admin\Console\Column;
+use App\Admin\Console\DefaultsResourceWrites;
 use App\Admin\Console\Field;
 use App\Admin\Console\Filter;
 use App\Models\User;
@@ -29,6 +30,8 @@ use Illuminate\Database\Eloquent\Model;
  */
 class UserResource implements AdminResource
 {
+    use DefaultsResourceWrites;
+
     public function key(): string
     {
         return 'users';

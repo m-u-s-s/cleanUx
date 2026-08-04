@@ -19,8 +19,19 @@ export type RootStackParamList = {
   AdminResourceList: { resource: string; title: string };
   /** Un module servi comme synthèse : des tuiles chiffrées, pas une liste. */
   AdminReport: { report: string; title: string };
+  // La descente géographique du catalogue : zones d'un pays, puis métiers d'une zone.
+  AdminCatalogZones: { countryId: number; title?: string };
+  AdminCatalogTrades: { zoneId: number; title?: string };
+  // Le constructeur de parcours d'un métier : questions, réponses et leurs suppléments.
+  AdminTradeJourney: { tradeId: number; title?: string };
   AdminResourceDetail: { resource: string; title: string; id: string | number };
-  AdminResourceForm: { resource: string; title: string; id?: string | number };
+  AdminResourceForm: {
+    resource: string;
+    title: string;
+    id?: string | number;
+    // Valeurs imposées par le contexte : le pays d'où l'on crée une zone.
+    prefill?: Record<string, unknown>;
+  };
   MissionDetail: { missionId: number };
   /** Les courses immédiates proposées à ce prestataire. */
   AsapOffers: undefined;

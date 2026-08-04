@@ -6,6 +6,7 @@ use App\Admin\Console\Action;
 use App\Admin\Console\AdminResource;
 use App\Admin\Console\ResourceRegistry;
 use App\Http\Controllers\Controller;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -56,6 +57,28 @@ class ResourceController extends Controller
         ] + $extra, $status);
     }
 
+    /**
+     * Un compte en LECTURE SEULE n'écrit rien, par aucune des quatre portes.
+     *
+     * `api_admin` s'arrête à « est-ce un administrateur », et le scope du jeton dit ce que le jeton
+     * a le droit de demander — ni l'un ni l'autre ne regarde si le COMPTE est en lecture seule. Un
+     * administrateur destiné à consulter pouvait donc créer, modifier et supprimer par l'API ce que
+     * l'écran web lui refusait : la règle dépendait de la porte empruntée.
+     *
+     * Le trou existait depuis toujours sans être atteignable, aucun descripteur ne déclarant de
+     * formulaire. Les rendre éditables le rendait exploitable.
+     */
+    private function refuseLecteurSeul(): ?JsonResponse
+    {
+        $user = request()->user();
+
+        if ($user instanceof User && $user->isReadOnlyAdmin()) {
+            return $this->refus('forbidden_readonly', 403);
+        }
+
+        return null;
+    }
+
     public function index(Request $request, string $resource): JsonResponse
     {
         $descripteur = $this->resolve($resource);
@@ -95,9 +118,22 @@ class ResourceController extends Controller
             self::MAX_PER_PAGE,
         );
 
-        // `orderBy` explicite puis `cursorPaginate` : le curseur se construit sur la colonne de
-        // tri, donc un tri instable produirait des pages qui se chevauchent.
-        $page = $query->orderBy($sort, $direction)->cursorPaginate($perPage);
+        /*
+         * `orderBy` explicite puis `cursorPaginate` : le curseur se construit sur la colonne de
+         * tri, donc un tri instable produirait des pages qui se chevauchent.
+         *
+         * D'où le DÉPARTAGE par identifiant dès qu'on trie sur autre chose. Deux zones nommées
+         * « Centre » dans deux pays, deux clients homonymes : sans lui, la pagination répéterait
+         * une ligne et en sauterait une autre — un défaut qui ne se voit qu'à partir de la
+         * deuxième page, donc jamais pendant un test à la main.
+         */
+        $query = $query->orderBy($sort, $direction);
+
+        if ($sort !== 'id') {
+            $query = $query->orderBy('id', $direction);
+        }
+
+        $page = $query->cursorPaginate($perPage);
 
         return response()->json([
             'ok' => true,
@@ -129,6 +165,10 @@ class ResourceController extends Controller
 
     public function store(Request $request, string $resource): JsonResponse
     {
+        if ($refus = $this->refuseLecteurSeul()) {
+            return $refus;
+        }
+
         $descripteur = $this->resolve($resource);
 
         if (! $descripteur instanceof AdminResource) {
@@ -146,13 +186,20 @@ class ResourceController extends Controller
         }
 
         $model = $descripteur->query()->getModel()->newInstance();
-        $model->forceFill($data)->save();
+
+        // Le descripteur complète ce que le formulaire n'a pas à demander : un slug déduit, un
+        // état initial décidé par la plateforme.
+        $model->forceFill($descripteur->prepareForCreate($data))->save();
 
         return response()->json(['ok' => true, 'row' => $descripteur->toDetail($model)], 201);
     }
 
     public function update(Request $request, string $resource, string $id): JsonResponse
     {
+        if ($refus = $this->refuseLecteurSeul()) {
+            return $refus;
+        }
+
         $descripteur = $this->resolve($resource);
 
         if (! $descripteur instanceof AdminResource) {
@@ -184,6 +231,10 @@ class ResourceController extends Controller
 
     public function destroy(string $resource, string $id): JsonResponse
     {
+        if ($refus = $this->refuseLecteurSeul()) {
+            return $refus;
+        }
+
         $descripteur = $this->resolve($resource);
 
         if (! $descripteur instanceof AdminResource) {
@@ -196,6 +247,24 @@ class ResourceController extends Controller
             return $this->refus('not_found', 404);
         }
 
+        /*
+         * On DEMANDE au descripteur avant de détruire.
+         *
+         * Le moteur supprimait sans rien consulter : un pays effacé aurait emporté ses zones, et
+         * avec elles l'historique de facturation. 409 plutôt que 403 : ce n'est pas une question
+         * de droit mais d'état — la même requête réussira quand ce qui bloque aura disparu.
+         */
+        $raisons = $descripteur->reasonsToRefuseDelete($model);
+
+        if ($raisons !== []) {
+            return response()->json([
+                'ok' => false,
+                'error' => 'delete_refused',
+                'error_code' => 'delete_refused',
+                'reasons' => $raisons,
+            ], 409);
+        }
+
         $model->delete();
 
         return response()->json(['ok' => true]);
@@ -203,6 +272,10 @@ class ResourceController extends Controller
 
     public function action(Request $request, string $resource, string $id, string $action): JsonResponse
     {
+        if ($refus = $this->refuseLecteurSeul()) {
+            return $refus;
+        }
+
         $descripteur = $this->resolve($resource);
 
         if (! $descripteur instanceof AdminResource) {

@@ -9,10 +9,12 @@ use App\Http\Controllers\Api\Admin\Console\ReportController;
 use App\Http\Controllers\Api\Admin\Console\ResourceController;
 use App\Http\Controllers\Api\Admin\DisputeAdminController;
 use App\Http\Controllers\Api\Admin\InsuranceAdminController;
+use App\Http\Controllers\Api\Admin\JourneyBuilderController;
 use App\Http\Controllers\Api\Admin\MarketingCampaignController;
 use App\Http\Controllers\Api\Admin\MarketingSegmentController;
 use App\Http\Controllers\Api\Admin\MatchingSimulationController;
 use App\Http\Controllers\Api\Admin\RiskController;
+use App\Http\Controllers\Api\Admin\ZoneCatalogController;
 use App\Http\Controllers\Api\ApiTokensV2Controller;
 use App\Http\Controllers\Api\CancellationV2Controller;
 use App\Http\Controllers\Api\ChatV2Controller;
@@ -242,6 +244,41 @@ Route::middleware(['auth:sanctum', 'api_admin'])->group(function () {
      * d'un utilisateur et la suppression d'une ligne comptable, et le descripteur ne peut pas
      * abaisser le niveau requis. La lecture reste sous `admin:read`.
      */
+    /*
+     * La descente géographique du catalogue, pour l'application mobile.
+     *
+     * Hors du moteur de console : l'état servi ici — « ce métier est-il ouvert dans cette zone » —
+     * est le COUPLE (métier, zone), et un métier sans ligne est fermé plutôt qu'absent. Une liste
+     * générique de `trade_zone_pricing` tairait tous les métiers pas encore réglés, c'est-à-dire
+     * exactement ceux qu'on vient ouvrir.
+     */
+    Route::prefix('admin/catalogue')->group(function () {
+        Route::middleware('api_scope:admin:read,admin:everything')->group(function () {
+            Route::get('/zones/{zone}/trades', [ZoneCatalogController::class, 'trades']);
+            Route::get('/trades/{trade}/journey', [JourneyBuilderController::class, 'show']);
+        });
+
+        Route::middleware('api_scope:admin:critical,admin:everything')->group(function () {
+            Route::post('/zones/{zone}/trades/{trade}/toggle', [ZoneCatalogController::class, 'toggle']);
+
+            /*
+             * Le constructeur de parcours. Il ne réimplémente aucune règle : la validation vient de
+             * QuestionnaireValidator, la publication de TradeFormPublisher, l'ordre de
+             * CatalogOrdering — les mêmes services que le web.
+             */
+            Route::post('/trades/{trade}/questions', [JourneyBuilderController::class, 'storeQuestion']);
+            Route::patch('/questions/{question}', [JourneyBuilderController::class, 'updateQuestion']);
+            Route::post('/questions/{question}/move', [JourneyBuilderController::class, 'moveQuestion']);
+            Route::delete('/questions/{question}', [JourneyBuilderController::class, 'destroyQuestion']);
+
+            Route::post('/questions/{question}/options', [JourneyBuilderController::class, 'storeOption']);
+            Route::patch('/options/{option}', [JourneyBuilderController::class, 'updateOption']);
+            Route::delete('/options/{option}', [JourneyBuilderController::class, 'destroyOption']);
+
+            Route::post('/trades/{trade}/publish', [JourneyBuilderController::class, 'publish']);
+        });
+    });
+
     Route::prefix('admin/console')->group(function () {
         Route::middleware('api_scope:admin:read,admin:everything')->group(function () {
             // AVANT la route générique `/{resource}` : sans cela, « reports » serait pris pour

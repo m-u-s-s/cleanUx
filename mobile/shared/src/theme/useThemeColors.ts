@@ -76,6 +76,16 @@ export function useThemeColors() {
     textOnGlass: isDark ? nuit.text : colors.surface[900],
     mutedOnGlass: isDark ? nuit.muted : colors.surface[600],
 
+    /**
+     * Le texte posé SUR la couleur de marque — un bouton plein, un badge.
+     *
+     * IDENTIQUE DANS LES DEUX THÈMES, et c'est voulu : l'indigo de marque ne change pas d'un mode à
+     * l'autre, donc ce qui se pose dessus ne change pas non plus. Le jeton existe pour qu'on cesse
+     * d'écrire `'#ffffff'` à la main — trois écrans venaient de le faire, et le garde-fou les a
+     * signalés avant qu'ils atteignent le mode sombre.
+     */
+    textOnBrand: '#ffffff',
+
     /** La lueur de marque du fond nuit. Absente en clair : elle n'y aurait aucun sens. */
     glow: isDark ? 'rgba(99, 102, 241, 0.30)' : 'transparent',
 

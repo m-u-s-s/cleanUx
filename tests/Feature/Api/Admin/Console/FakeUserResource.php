@@ -5,6 +5,7 @@ namespace Tests\Feature\Api\Admin\Console;
 use App\Admin\Console\Action;
 use App\Admin\Console\AdminResource;
 use App\Admin\Console\Column;
+use App\Admin\Console\DefaultsResourceWrites;
 use App\Admin\Console\Field;
 use App\Admin\Console\Filter;
 use App\Models\User;
@@ -22,6 +23,9 @@ use Illuminate\Database\Eloquent\Model;
  */
 class FakeUserResource implements AdminResource
 {
+    // Les réponses neutres aux deux questions posées avant écriture.
+    use DefaultsResourceWrites;
+
     /** Trace des actions exécutées, pour que les tests vérifient la délégation. */
     public static array $executed = [];
 

@@ -5,6 +5,7 @@ namespace App\Admin\Resources;
 use App\Admin\Console\Action;
 use App\Admin\Console\AdminResource;
 use App\Admin\Console\Column;
+use App\Admin\Console\DefaultsResourceWrites;
 use App\Admin\Console\Field;
 use App\Admin\Console\Filter;
 use App\Models\EnterpriseBookingApproval;
@@ -29,6 +30,8 @@ use Illuminate\Support\Facades\Auth;
  */
 class EnterpriseApprovalResource implements AdminResource
 {
+    use DefaultsResourceWrites;
+
     public function __construct(private readonly EnterpriseBookingApprovalService $approvals) {}
 
     public function key(): string

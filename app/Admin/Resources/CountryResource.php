@@ -2,9 +2,13 @@
 
 namespace App\Admin\Resources;
 
+use App\Admin\Console\Action;
 use App\Admin\Console\Column;
 use App\Admin\Console\EloquentResource;
+use App\Admin\Console\Field;
 use App\Models\Country;
+use App\Services\Catalog\GeoGuard;
+use Illuminate\Database\Eloquent\Model;
 
 /**
  * Les pays ouverts à l’exploitation.
@@ -65,5 +69,46 @@ class CountryResource extends EloquentResource
             'phone_code' => 'Indicatif',
             'timezone' => 'Fuseau',
         ];
+    }
+
+    /**
+     * Les champs d'un pays.
+     *
+     * `booking_enabled` et `market_stage` restent hors du formulaire : ils engagent l'ouverture
+     * commerciale d'un marché, qui se décide sur le web où l'écran en montre les conséquences.
+     */
+    public function formFields(): array
+    {
+        return [
+            Field::make('iso_code', 'Code ISO (2 lettres)')->rules(['required', 'string', 'size:2']),
+            Field::make('name', 'Nom')->rules(['required', 'string', 'max:120']),
+            Field::make('currency_code', 'Devise')->rules(['required', 'string', 'size:3']),
+            Field::make('default_locale', 'Langue par défaut')->rules(['nullable', 'string', 'max:10']),
+            Field::make('timezone', 'Fuseau horaire')->rules(['nullable', 'string', 'max:64']),
+            Field::make('phone_code', 'Indicatif téléphonique')->rules(['nullable', 'string', 'max:8']),
+        ];
+    }
+
+    public function actions(): array
+    {
+        return [
+            /*
+             * Basculer l'activation ne touche QUE le pays.
+             *
+             * Propager l'extinction aux zones ferait perdre celles qui étaient déjà fermées pour
+             * leur propre raison : la réactivation les rallumerait toutes. La joignabilité se lit
+             * — voir `GeoGuard::zoneEstJoignable()` — elle ne s'écrit pas.
+             */
+            Action::make('toggle-active', 'Activer / désactiver', function (Country $pays) {
+                $pays->forceFill(['is_active' => ! $pays->is_active])->save();
+
+                return ['is_active' => (bool) $pays->fresh()->is_active];
+            }),
+        ];
+    }
+
+    public function reasonsToRefuseDelete(Model $model): array
+    {
+        return app(GeoGuard::class)->raisonsDeNePasSupprimerPays($model);
     }
 }

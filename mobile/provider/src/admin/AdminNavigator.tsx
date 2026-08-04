@@ -8,6 +8,7 @@ import { useThemeColors } from '@/theme/useThemeColors';
 import { AdminHomeScreen } from './AdminHomeScreen';
 import { AdminDirectoryScreen } from './AdminDirectoryScreen';
 import { AdminProfileScreen } from './AdminProfileScreen';
+import { CatalogCountriesScreen } from './catalogue/CatalogCountriesScreen';
 import type { AdminTabParamList } from './types';
 
 const Tab = createBottomTabNavigator<AdminTabParamList>();
@@ -20,8 +21,10 @@ const Tab = createBottomTabNavigator<AdminTabParamList>();
  * son téléphone le ferait apparaître disponible dans le dispatch, et fausserait les états de
  * présence sur lesquels s'appuie l'affectation des missions.
  *
- * Trois onglets seulement. La profondeur est dans l'annuaire, pas dans la barre : une barre à sept
- * entrées sur un téléphone se lit moins bien qu'une liste groupée et cherchable.
+ * QUATRE onglets. La profondeur reste dans l'annuaire — une barre à sept entrées sur un téléphone
+ * se lit moins bien qu'une liste groupée et cherchable — mais le catalogue y gagne sa place :
+ * c'est le seul domaine qu'on vient ouvrir ou fermer en déplacement, et le chercher dans une
+ * liste de quatre-vingts modules à chaque fois n'a aucun sens.
  */
 export function AdminNavigator() {
   const theme = useThemeColors();
@@ -51,6 +54,15 @@ export function AdminNavigator() {
             title: 'Modules',
             tabBarLabel: 'Modules',
             tabBarIcon: ({ color, size }) => <Icon name="grid-outline" size={size} color={color} />,
+          }}
+        />
+        <Tab.Screen
+          name="AdminCatalog"
+          component={CatalogCountriesScreen}
+          options={{
+            title: 'Catalogue',
+            tabBarLabel: 'Catalogue',
+            tabBarIcon: ({ color, size }) => <Icon name="sparkles-outline" size={size} color={color} />,
           }}
         />
         <Tab.Screen
