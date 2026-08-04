@@ -2,9 +2,11 @@
 
 namespace App\Admin\Resources;
 
+use App\Admin\Console\Action;
 use App\Admin\Console\Column;
 use App\Admin\Console\EloquentResource;
 use App\Models\FleetEquipment;
+use App\Services\FleetV2\CertificationExpiryScanner;
 
 /**
  * Le matériel de la flotte.
@@ -67,6 +69,22 @@ class FleetEquipmentResource extends EloquentResource
             'model' => 'Modèle',
             'current_location' => 'Emplacement',
             'warranty_expires_at' => 'Garantie jusqu’au',
+        ];
+    }
+
+    public function globalActions(): array
+    {
+        return [
+            /*
+             * Balayer les certifications qui expirent. C'est ce balayage qui BLOQUE l'affectation
+             * d'un prestataire dont la certification est périmée : le lancer à la main est le
+             * geste qu'on veut après avoir corrigé une date.
+             */
+            Action::make('scan-expiring', 'Balayer les certifications', function (array $valeurs) {
+                $comptes = app(CertificationExpiryScanner::class)->scanAndUpdate();
+
+                return ['updated' => array_sum($comptes)];
+            }),
         ];
     }
 }
