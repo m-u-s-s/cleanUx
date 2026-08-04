@@ -2,9 +2,12 @@
 
 namespace App\Admin\Resources;
 
+use App\Admin\Console\Action;
 use App\Admin\Console\Column;
 use App\Admin\Console\EloquentResource;
+use App\Admin\Console\Field;
 use App\Models\UserReport;
+use App\Services\Safety\UserSafetyService;
 
 /**
  * Les signalements entre utilisateurs.
@@ -64,6 +67,33 @@ class UserReportResource extends EloquentResource
         return [
             'admin_notes' => 'Notes internes',
             'reviewed_at' => 'Traité le',
+        ];
+    }
+
+    public function actions(): array
+    {
+        return [
+            /*
+             * Clore un signalement. La RÉSOLUTION est demandée : un signalement clos sans dire
+             * comment ne se relit pas, et c'est précisément ce qu'on rouvre six mois plus tard.
+             */
+            Action::make('resolve', 'Clore le signalement', function (UserReport $report, array $valeurs) {
+                app(UserSafetyService::class)->resolveReport(
+                    $report,
+                    request()->user(),
+                    (string) $valeurs['resolution'],
+                    $valeurs['notes'] ?? null,
+                );
+
+                return ['ok' => true];
+            })->requires([
+                Field::select('resolution', 'Résolution', [
+                    ['value' => 'resolved', 'label' => 'Résolu'],
+                    ['value' => 'dismissed', 'label' => 'Sans suite'],
+                    ['value' => 'escalated', 'label' => 'Escaladé'],
+                ])->rules(['required', 'in:resolved,dismissed,escalated']),
+                Field::make('notes', 'Notes', Field::TYPE_TEXTAREA)->rules(['nullable', 'string', 'max:2000']),
+            ]),
         ];
     }
 }
