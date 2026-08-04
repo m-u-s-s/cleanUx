@@ -50,9 +50,12 @@ jobs:
         with:
           node-version: '22'
           cache: 'npm'
-          cache-dependency-path: mobile/client/package-lock.json
+          cache-dependency-path: mobile/package-lock.json
 
       - name: Install dependencies
+        # Depuis la racine des espaces de travail : `shared` est du code source, pas un paquet
+        # publié, et installer depuis le sous-dossier posait un arbre incomplet.
+        working-directory: mobile
         run: npm ci
 
       - name: Setup EAS
@@ -62,7 +65,8 @@ jobs:
           token: ${{ secrets.EXPO_TOKEN }}
 
       - name: Run tests before build
-        run: npm test -- --ci
+        working-directory: mobile
+        run: npm test --workspace client -- --ci
 
       - name: Build
         run: |
@@ -85,9 +89,12 @@ jobs:
         with:
           node-version: '22'
           cache: 'npm'
-          cache-dependency-path: mobile/provider/package-lock.json
+          cache-dependency-path: mobile/package-lock.json
 
       - name: Install dependencies
+        # Depuis la racine des espaces de travail : `shared` est du code source, pas un paquet
+        # publié, et installer depuis le sous-dossier posait un arbre incomplet.
+        working-directory: mobile
         run: npm ci
 
       - name: Setup EAS
@@ -97,7 +104,8 @@ jobs:
           token: ${{ secrets.EXPO_TOKEN }}
 
       - name: Run tests before build
-        run: npm test -- --ci
+        working-directory: mobile
+        run: npm test --workspace provider -- --ci
 
       - name: Build
         run: |

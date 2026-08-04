@@ -12,13 +12,23 @@ on:
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
+# `mobile/` est une RACINE D'ESPACES DE TRAVAIL npm : `shared`, `client` et `provider` partagent un
+# seul arbre de dépendances et un seul verrou, `mobile/package-lock.json`.
+#
+# Ces deux tâches installaient depuis `mobile/client/package-lock.json` et
+# `mobile/provider/package-lock.json` — des VESTIGES d'avant la conversion en espaces de travail,
+# restés en place et périmés depuis. `npm ci` y trouvait un arbre incomplet : le typecheck du client
+# échouait sur quatre fichiers de `shared` important une dépendance pourtant déclarée.
+#
+# Le poste de travail ne voyait rien : `node_modules` y était installé depuis la racine, donc
+# complet. Seule une installation propre révélait le décalage — et c'est exactement ce que CI fait.
 jobs:
   client:
     name: Client — Lint + Typecheck + Tests
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: mobile/client
+        working-directory: mobile
 
     steps:
       - uses: actions/checkout@v4
@@ -27,23 +37,25 @@ jobs:
         with:
           node-version: '22'
           cache: 'npm'
-          cache-dependency-path: mobile/client/package-lock.json
+          cache-dependency-path: mobile/package-lock.json
 
+      # Installe l'arbre ENTIER : `shared` est du code source, pas un paquet publié, et le client
+      # ne compile pas sans lui.
       - name: Install dependencies
         run: npm ci
 
       - name: TypeScript check
-        run: npm run typecheck
+        run: npm run typecheck --workspace client
 
       - name: Run tests
-        run: npm test -- --ci --coverage --reporters=default
+        run: npm test --workspace client -- --ci --coverage --reporters=default
 
   provider:
     name: Provider — Lint + Typecheck + Tests
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: mobile/provider
+        working-directory: mobile
 
     steps:
       - uses: actions/checkout@v4
@@ -52,13 +64,13 @@ jobs:
         with:
           node-version: '22'
           cache: 'npm'
-          cache-dependency-path: mobile/provider/package-lock.json
+          cache-dependency-path: mobile/package-lock.json
 
       - name: Install dependencies
         run: npm ci
 
       - name: TypeScript check
-        run: npm run typecheck
+        run: npm run typecheck --workspace provider
 
       - name: Run tests
-        run: npm test -- --ci --coverage --reporters=default
+        run: npm test --workspace provider -- --ci --coverage --reporters=default

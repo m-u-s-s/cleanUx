@@ -36,9 +36,12 @@ jobs:
         with:
           node-version: '22'
           cache: 'npm'
-          cache-dependency-path: mobile/${{ github.event.inputs.app }}/package-lock.json
+          cache-dependency-path: mobile/package-lock.json
 
       - name: Install dependencies
+        # `mobile/` est la racine des espaces de travail npm : `shared` est du code source, et
+        # l'application ne se construit pas sans lui. Les verrous par application n'existent plus.
+        working-directory: mobile
         run: npm ci
 
       - name: Setup EAS
