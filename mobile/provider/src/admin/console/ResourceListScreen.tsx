@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
+import { FlatList, Pressable, StyleSheet, Switch, Text, View } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { Alert } from 'react-native';
 import { Button, EmptyState, ErrorState, Icon, Screen, Skeleton, TextInput } from '@/ui';
@@ -7,6 +7,7 @@ import { colors, radius, spacing, typography } from '@/theme';
 import { useThemeColors } from '@/theme/useThemeColors';
 import type { ThemeTokens } from '@/theme/useThemeColors';
 import { ActionInputSheet } from './ActionInputSheet';
+import { OptionPicker } from './OptionPicker';
 import { readServerErrors, useResourceGlobalAction, useResourceIndex } from './hooks';
 import { formatCell } from './format';
 import type { FilterValues, ResourceAction, ResourceColumn, ResourceRow } from './types';
@@ -53,8 +54,8 @@ export function ResourceListScreen({ route }: { route: { params: Params } }) {
     [data],
   );
 
-  // Le filtre de recherche est le seul remonté en tête : c'est celui qu'on utilise sans réfléchir.
-  // Les autres vivront dans une feuille de filtres (lot suivant).
+  // La recherche vient en premier : c'est le filtre qu'on utilise sans réfléchir. Les listes et
+  // les booléens la suivent, dans l'ordre où le descripteur les déclare — le même que sur le web.
   const recherche = descripteur?.filters.find((f) => f.type === 'search');
 
   if (isLoading) {
@@ -142,6 +143,64 @@ export function ResourceListScreen({ route }: { route: { params: Params } }) {
             autoCorrect={false}
           />
         ) : null}
+
+        {/*
+          * Les filtres AUTRES que la recherche : soixante listes et dix booléens à travers la
+          * console, déclarés par les descripteurs et jusqu'ici rendus par le web seul. Sur un
+          * domaine paginé de plusieurs milliers de lignes, « statut = litige ouvert » est la
+          * différence entre un écran utilisable et un écran décoratif.
+          */}
+        {(descripteur?.filters ?? [])
+          .filter((f) => f.type === 'select' && f.options.length > 0)
+          .map((f) => (
+            <OptionPicker
+              key={f.key}
+              label={f.label}
+              options={f.options}
+              value={filters[f.key] === undefined ? null : String(filters[f.key])}
+              onChange={(v) =>
+                setFilters((courants) => {
+                  const suivants = { ...courants };
+
+                  // Retirer la clé plutôt que d'envoyer une chaîne vide : le serveur traiterait
+                  // « status= » comme un filtre posé sur une valeur qui n'existe pas.
+                  if (v === null) {
+                    delete suivants[f.key];
+                  } else {
+                    suivants[f.key] = v;
+                  }
+
+                  return suivants;
+                })
+              }
+              effacable
+            />
+          ))}
+
+        {(descripteur?.filters ?? [])
+          .filter((f) => f.type === 'bool')
+          .map((f) => (
+            <View key={f.key} style={styles.bascule}>
+              <Text style={styles.basculeLabel}>{f.label}</Text>
+              <Switch
+                accessibilityLabel={f.label}
+                value={filters[f.key] === true}
+                onValueChange={(actif) =>
+                  setFilters((courants) => {
+                    const suivants = { ...courants };
+
+                    if (actif) {
+                      suivants[f.key] = true;
+                    } else {
+                      delete suivants[f.key];
+                    }
+
+                    return suivants;
+                  })
+                }
+              />
+            </View>
+          ))}
 
         {globales.map((action) => (
           <Button
@@ -260,6 +319,13 @@ function Row({
 }
 
 const stylesFor = (t: ThemeTokens) => StyleSheet.create({
+  bascule: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingBottom: spacing.sm,
+  },
+  basculeLabel: { ...typography.preset.bodyReadable, color: t.text },
   header: {
     paddingTop: spacing.md,
     paddingBottom: spacing.sm,

@@ -108,7 +108,13 @@ describe('actions globales — le geste part', () => {
      * envoie. Le second est rendu après ; viser le premier rouvrirait la feuille sans rien envoyer.
      */
     const boutons = screen.getAllByText('Simuler le matching');
-    fireEvent.press(boutons[boutons.length - 1]);
+    const envoi = boutons.at(-1);
+
+    if (! envoi) {
+      throw new Error('La feuille de saisie ne rend pas son bouton d’envoi.');
+    }
+
+    fireEvent.press(envoi);
 
     await waitFor(() => {
       const envoi = apiMock.history.post.find((r) => r.url?.includes('/actions/simulate'));

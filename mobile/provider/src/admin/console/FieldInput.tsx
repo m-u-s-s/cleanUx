@@ -4,6 +4,7 @@ import { TextInput } from '@/ui';
 import {spacing, typography } from '@/theme';
 import { useThemeColors } from '@/theme/useThemeColors';
 import type { ThemeTokens } from '@/theme/useThemeColors';
+import { OptionPicker } from './OptionPicker';
 import type { ResourceField } from './types';
 
 /**
@@ -28,6 +29,26 @@ export function FieldInput({
   onChange: (value: unknown) => void;
 }) {
   const styles = stylesFor(useThemeColors());
+
+  /*
+   * Un champ à choix rendait une saisie TEXTE LIBRE, options ignorées. Le serveur valide avec
+   * `in:bronze,silver,gold` : l'administrateur qui tape « Or » recevait un 422 pour une liste
+   * qu'on ne lui avait jamais montrée.
+   */
+  if (field.type === 'select' && field.options.length > 0) {
+    return (
+      <OptionPicker
+        label={field.required ? `${field.label} *` : field.label}
+        accessibilityLabel={field.label}
+        options={field.options}
+        value={value === undefined || value === null ? null : String(value)}
+        onChange={onChange}
+        // Un champ obligatoire n'offre pas de retour au vide : le serveur le refuserait.
+        effacable={!field.required}
+        libelleVide="Choisir…"
+      />
+    );
+  }
 
   if (field.type === 'bool') {
     return (
