@@ -110,6 +110,15 @@
                     </button>
                     <button type="button" wire:click="confirmArchiveSector({{ $sector->id }})"
                         class="inline-flex min-h-[44px] items-center text-rose-700 underline underline-offset-4 hover:text-rose-900">Archiver</button>
+
+                    {{--
+                        Le bouton vit DANS le secteur : cliquer ici dit déjà où le métier va, il
+                        n'y a donc aucun secteur à choisir ensuite dans le formulaire.
+                    --}}
+                    <button type="button" wire:click="ouvrirCreationMetier({{ $sector->id }})"
+                        class="inline-flex min-h-[44px] items-center rounded-xl bg-slate-900 px-4 text-sm font-medium text-white transition hover:bg-slate-800">
+                        Ajouter un métier
+                    </button>
                 </div>
 
                 {{-- ─── Métiers du secteur ──────────────────────────────────────────────── --}}
@@ -324,6 +333,52 @@
                     class="min-h-[44px] rounded-xl px-5 text-sm font-medium text-rose-900 hover:underline">
                     Annuler
                 </button>
+            </div>
+        </div>
+    @endif
+    {{-- ─── Création d'un métier ────────────────────────────────────────────────────────── --}}
+    {{--
+        Le formulaire est le MÊME que sur /admin/trades : même partial, mêmes champs, mêmes règles.
+        Deux copies auraient divergé au premier champ ajouté, et l'écran oublié aurait continué
+        d'enregistrer des métiers incomplets sans lever d'erreur.
+    --}}
+    @if ($creationMetierOuverte)
+        <div class="fixed inset-0 z-40 flex items-center justify-center bg-black/50 p-4"
+            wire:click.self="fermerCreationMetier">
+            <div class="relative max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-lg bg-white shadow-2xl">
+                <div class="flex items-start justify-between gap-4 border-b border-gray-200 px-6 py-4">
+                    <div>
+                        <h2 class="text-lg font-semibold text-gray-900">Nouveau métier</h2>
+                        {{--
+                            La phrase la plus importante de cet écran. On crée depuis une zone, et
+                            rien ne dirait autrement que le métier est un objet GLOBAL : seule son
+                            ouverture est locale. Sans cela, on croirait créer « le ramonage de
+                            Bruxelles » et on le recréerait pour chaque ville.
+                        --}}
+                        <p class="mt-1 text-sm text-gray-500">
+                            Ce métier <strong>existera dans tous les pays et toutes les zones</strong>.
+                            Il ne sera <strong>ouvert</strong> que dans {{ $zone->name }} ; les autres zones
+                            resteront libres de l’ouvrir ou non.
+                        </p>
+                    </div>
+                    <button type="button" wire:click="fermerCreationMetier"
+                        class="text-gray-400 hover:text-gray-600" aria-label="Fermer">✕</button>
+                </div>
+
+                <form wire:submit.prevent="enregistrerMetier" class="space-y-4 px-6 py-5">
+                    @include('livewire.admin.partials.trade-form-fields')
+
+                    <div class="flex justify-end gap-2 border-t border-gray-200 pt-4">
+                        <button type="button" wire:click="fermerCreationMetier"
+                            class="rounded-md border border-gray-300 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                            Annuler
+                        </button>
+                        <button type="submit"
+                            class="rounded-md bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow hover:bg-blue-700">
+                            Créer le métier
+                        </button>
+                    </div>
+                </form>
             </div>
         </div>
     @endif

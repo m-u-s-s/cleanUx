@@ -11,6 +11,7 @@ use App\Services\OrderEngine\CatalogArchiver;
 use App\Services\OrderEngine\QuestionInsights;
 use App\Services\OrderEngine\QuestionnaireValidator;
 use App\Services\OrderEngine\TradeFormPublisher;
+use App\Support\Livewire\Concerns\Admin\ManagesTradeForm;
 use App\Support\Livewire\Concerns\EnforcesAdminAccess;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -44,7 +45,20 @@ class CatalogCenter extends Component
     /** Le refus vaut au niveau du composant, pas seulement de la route. */
     use EnforcesAdminAccess;
 
+    /*
+     * Le formulaire complet d'un métier — vingt et un champs — partagé avec `/admin/trades`.
+     *
+     * Le trait fournit les propriétés, les règles et la persistance ; l'enchaînement propre à cet
+     * écran (rattacher au secteur, ouvrir dans la zone) reste ci-dessous.
+     */
+    use ManagesTradeForm;
+
     public ?int $editingSectorId = null;
+
+    /** Le secteur qui recevra le métier en cours de création. */
+    public ?int $secteurCible = null;
+
+    public bool $creationMetierOuverte = false;
 
     /** @var array<string, mixed> */
     public array $sectorForm = [];
@@ -122,6 +136,67 @@ class CatalogCenter extends Component
         $ligne->save();
 
         unset($this->metiersActifsDansLaZone);
+    }
+
+    /**
+     * Ouvre le formulaire de création, pour un secteur donné.
+     *
+     * Le secteur vient du bouton et non d'un champ : on clique « Ajouter un métier » DANS un
+     * secteur, il n'y a donc rien à choisir de nouveau.
+     */
+    public function ouvrirCreationMetier(int $sectorId): void
+    {
+        $this->secteurCible = Sector::query()->findOrFail($sectorId)->id;
+        $this->resetTradeForm();
+        $this->creationMetierOuverte = true;
+    }
+
+    public function fermerCreationMetier(): void
+    {
+        $this->creationMetierOuverte = false;
+        $this->secteurCible = null;
+        $this->resetTradeForm();
+    }
+
+    /**
+     * Enregistre le métier, le rattache au secteur, et l'ouvre dans CETTE zone.
+     *
+     * LES TROIS GESTES SONT UN SEUL. C'est le détour qu'on supprime : il fallait créer le métier
+     * sur un autre écran, revenir ici le rattacher — il arrivait orphelin — puis l'ouvrir. Trois
+     * écrans pour ce que l'on venait manifestement faire.
+     *
+     * LE MÉTIER EST GLOBAL, SON OUVERTURE EST LOCALE. Il existera dans tous les pays et toutes les
+     * zones ; seule la ligne `trade_zone_pricing` créée ici le rend disponible à Bruxelles. La
+     * distinction est écrite dans le formulaire, faute de quoi on croirait créer un métier « pour
+     * Bruxelles ».
+     */
+    public function enregistrerMetier(): void
+    {
+        $trade = $this->persistTradeForm();
+
+        // `null` signifie « refusé » : les erreurs sont posées, et le formulaire doit rester
+        // ouvert avec les vingt champs que l'administrateur venait de remplir.
+        if ($trade === null) {
+            return;
+        }
+
+        if ($this->secteurCible !== null) {
+            $trade->update(['sector_id' => $this->secteurCible]);
+        }
+
+        TradeZonePricing::query()->updateOrCreate(
+            ['trade_id' => $trade->id, 'service_zone_id' => $this->zone->id],
+            [
+                'base_rate_cents' => (int) ($trade->base_price_cents ?? 0),
+                'surge_multiplier' => '1.00',
+                'is_active' => true,
+            ],
+        );
+
+        $this->flash = "Métier « {$trade->name} » créé et ouvert dans {$this->zone->name}.";
+        $this->fermerCreationMetier();
+
+        unset($this->sectors, $this->orphanTrades, $this->tradeStatuses, $this->metiersActifsDansLaZone);
     }
 
     /**
