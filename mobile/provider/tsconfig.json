@@ -42,34 +42,49 @@
       "@cleanux/shared": ["../shared/src"],
       "@cleanux/shared/*": ["../shared/src/*"],
       "@/*": ["src/*"],
-      "axios": ["node_modules/axios"],
-      "axios/*": ["node_modules/axios/*"],
-      "@react-native-community/netinfo": ["node_modules/@react-native-community/netinfo"],
-      "@react-native-community/netinfo/*": ["node_modules/@react-native-community/netinfo/*"],
-      "@tanstack/react-query": ["node_modules/@tanstack/react-query"],
-      "@tanstack/react-query/*": ["node_modules/@tanstack/react-query/*"],
-      "react-native-reanimated": ["node_modules/react-native-reanimated"],
-      "react-native-reanimated/*": ["node_modules/react-native-reanimated/*"],
-      "expo-secure-store": ["node_modules/expo-secure-store"],
-      "expo-secure-store/*": ["node_modules/expo-secure-store/*"],
-      "@sentry/react-native": ["node_modules/@sentry/react-native"],
-      "@sentry/react-native/*": ["node_modules/@sentry/react-native/*"],
-      "expo-local-authentication": ["node_modules/expo-local-authentication"],
-      "expo-local-authentication/*": ["node_modules/expo-local-authentication/*"],
-      "expo-store-review": ["node_modules/expo-store-review"],
-      "expo-store-review/*": ["node_modules/expo-store-review/*"],
-      "@expo/vector-icons": ["node_modules/@expo/vector-icons"],
-      "@expo/vector-icons/*": ["node_modules/@expo/vector-icons/*"],
-      "@gorhom/bottom-sheet": ["node_modules/@gorhom/bottom-sheet"],
-      "@gorhom/bottom-sheet/*": ["node_modules/@gorhom/bottom-sheet/*"],
-      "react-native-safe-area-context": ["node_modules/react-native-safe-area-context"],
-      "react-native-safe-area-context/*": ["node_modules/react-native-safe-area-context/*"],
-      "@react-navigation/native": ["node_modules/@react-navigation/native"],
-      "@react-navigation/native/*": ["node_modules/@react-navigation/native/*"],
-      "expo-notifications": ["node_modules/expo-notifications"],
-      "expo-notifications/*": ["node_modules/expo-notifications/*"],
-      "pusher-js": ["node_modules/pusher-js/index.d.ts"],
-      "pusher-js/*": ["node_modules/pusher-js/*"]
+      // Épingles de paquets tiers. CHAQUE entrée liste deux chemins, et ce n'est pas cosmétique :
+      // dans un espace de travail npm, c'est npm qui décide si un paquet vit dans
+      // `provider/node_modules` ou à la racine `mobile/node_modules`, et il en a déplacé sept en
+      // passant au SDK 57. Une cible unique devenue fausse est INVISIBLE pour tsc — il retombe sur
+      // la résolution Node et reste vert — mais `jest-expo` traduit ces `paths` en
+      // `moduleNameMapper` (src/preset/withTypescriptMapping.js), où une cible unique manquante est
+      // fatale : 46 suites sur 66 sont tombées ainsi côté client. Avec deux chemins, jest-expo
+      // produit un tableau et Jest essaie le second. En ajoutant une épingle, donner les deux.
+      "axios": ["node_modules/axios", "../node_modules/axios"],
+      "axios/*": ["node_modules/axios/*", "../node_modules/axios/*"],
+      "@react-native-community/netinfo": ["node_modules/@react-native-community/netinfo", "../node_modules/@react-native-community/netinfo"],
+      "@react-native-community/netinfo/*": ["node_modules/@react-native-community/netinfo/*", "../node_modules/@react-native-community/netinfo/*"],
+      "@tanstack/react-query": ["node_modules/@tanstack/react-query", "../node_modules/@tanstack/react-query"],
+      "@tanstack/react-query/*": ["node_modules/@tanstack/react-query/*", "../node_modules/@tanstack/react-query/*"],
+      "react-native-reanimated": ["node_modules/react-native-reanimated", "../node_modules/react-native-reanimated"],
+      "react-native-reanimated/*": ["node_modules/react-native-reanimated/*", "../node_modules/react-native-reanimated/*"],
+      "expo-secure-store": ["node_modules/expo-secure-store", "../node_modules/expo-secure-store"],
+      "expo-secure-store/*": ["node_modules/expo-secure-store/*", "../node_modules/expo-secure-store/*"],
+      "@sentry/react-native": ["node_modules/@sentry/react-native", "../node_modules/@sentry/react-native"],
+      "@sentry/react-native/*": ["node_modules/@sentry/react-native/*", "../node_modules/@sentry/react-native/*"],
+      "expo-local-authentication": ["node_modules/expo-local-authentication", "../node_modules/expo-local-authentication"],
+      "expo-local-authentication/*": ["node_modules/expo-local-authentication/*", "../node_modules/expo-local-authentication/*"],
+      "expo-store-review": ["node_modules/expo-store-review", "../node_modules/expo-store-review"],
+      "expo-store-review/*": ["node_modules/expo-store-review/*", "../node_modules/expo-store-review/*"],
+      "@expo/vector-icons": ["node_modules/@expo/vector-icons", "../node_modules/@expo/vector-icons"],
+      "@expo/vector-icons/*": ["node_modules/@expo/vector-icons/*", "../node_modules/@expo/vector-icons/*"],
+      "@gorhom/bottom-sheet": ["node_modules/@gorhom/bottom-sheet", "../node_modules/@gorhom/bottom-sheet"],
+      "@gorhom/bottom-sheet/*": ["node_modules/@gorhom/bottom-sheet/*", "../node_modules/@gorhom/bottom-sheet/*"],
+      "react-native-safe-area-context": ["node_modules/react-native-safe-area-context", "../node_modules/react-native-safe-area-context"],
+      "react-native-safe-area-context/*": ["node_modules/react-native-safe-area-context/*", "../node_modules/react-native-safe-area-context/*"],
+      "@react-navigation/native": ["node_modules/@react-navigation/native", "../node_modules/@react-navigation/native"],
+      "@react-navigation/native/*": ["node_modules/@react-navigation/native/*", "../node_modules/@react-navigation/native/*"],
+      "expo-notifications": ["node_modules/expo-notifications", "../node_modules/expo-notifications"],
+      "expo-notifications/*": ["node_modules/expo-notifications/*", "../node_modules/expo-notifications/*"],
+      "pusher-js": ["node_modules/pusher-js/index.d.ts", "../node_modules/pusher-js/index.d.ts"],
+      "pusher-js/*": ["node_modules/pusher-js/*", "../node_modules/pusher-js/*"],
+      // `jest.config.ts` fait `import type { Config } from 'jest'`. Sans cette entrée, TypeScript
+      // trouve `node_modules/@types/jest` (imbriqué, car déclaré ici) AVANT de remonter jusqu'à
+      // `jest` lui-même (hoisté à la racine des espaces de travail depuis le SDK 57) — et
+      // @types/jest ne déclare que des globales : « File ... is not a module » (TS2306).
+      // On ne peut pas retirer @types/jest : `types` ci-dessous l'exige pour describe/it/expect.
+      // Les deux chemins sont listés pour rester juste quel que soit le côté où npm hoiste.
+      "jest": ["node_modules/jest", "../node_modules/jest"]
     },
     "types": ["jest", "node"]
   },
