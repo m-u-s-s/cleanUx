@@ -307,26 +307,81 @@
                     </details>
 
                     @if ($question->options->isNotEmpty())
-                        <ul class="mt-3 space-y-1 border-t border-slate-100 pt-3">
+                        {{--
+                            Les options sont ÉDITABLES ici, et c'est le seul endroit qui permette un
+                            supplément conditionnel : « Voulez-vous l'installation ? Oui / Non », où
+                            seul « Oui » ajoute 150 €. Le montant vit sur l'option, pas sur la
+                            question — le mode `add` de la question s'appliquerait aussi à « Non ».
+
+                            `wire:change` plutôt qu'un formulaire à valider : on règle une grille,
+                            et exiger un clic sur « Enregistrer » par option ferait perdre des
+                            saisies à tout coup.
+                        --}}
+                        <ul class="mt-3 space-y-2 border-t border-slate-100 pt-3">
                             @foreach ($question->options as $option)
-                                <li class="flex items-center justify-between gap-3 text-sm" wire:key="o-{{ $option->id }}">
-                                    <span @class(['text-slate-700', 'line-through opacity-50' => ! $option->is_active])>
-                                        {{ $option->label }}
-                                        @if ($option->is_default)
-                                            <span class="ml-1 text-xs text-emerald-700">(défaut)</span>
-                                        @endif
-                                    </span>
-                                    <span class="shrink-0 tabular-nums text-slate-500">
-                                        @if ($option->price_modifier_cents)
-                                            {{ $option->price_modifier_cents > 0 ? '+' : '' }}{{ number_format($option->price_modifier_cents / 100, 2, ',', ' ') }} €
-                                        @endif
-                                        @if ($option->price_multiplier)
-                                            ×{{ $option->price_multiplier }}
-                                        @endif
-                                    </span>
+                                <li class="flex flex-wrap items-center gap-2 text-sm" wire:key="o-{{ $option->id }}">
+                                    <input type="text"
+                                        value="{{ $option->label }}"
+                                        aria-label="Libellé de la réponse"
+                                        wire:change="updateOption({{ $option->id }}, { label: $event.target.value })"
+                                        @class([
+                                            'min-w-[10rem] flex-1 rounded-lg border-slate-300 text-sm focus:border-slate-900 focus:ring-0',
+                                            'line-through opacity-50' => ! $option->is_active,
+                                        ])>
+
+                                    <label class="flex items-center gap-1 text-xs text-slate-500">
+                                        <span class="whitespace-nowrap">Supplément €</span>
+                                        <input type="text" inputmode="decimal"
+                                            value="{{ $option->price_modifier_cents ? number_format($option->price_modifier_cents / 100, 2, ',', '') : '' }}"
+                                            placeholder="0"
+                                            aria-label="Supplément en euros"
+                                            wire:change="updateOption({{ $option->id }}, { price_modifier_euros: $event.target.value })"
+                                            class="w-24 rounded-lg border-slate-300 text-right text-sm tabular-nums focus:border-slate-900 focus:ring-0">
+                                    </label>
+
+                                    <label class="flex items-center gap-1 text-xs text-slate-500">
+                                        <span>×</span>
+                                        <input type="text" inputmode="decimal"
+                                            value="{{ $option->price_multiplier }}"
+                                            placeholder="1,00"
+                                            aria-label="Multiplicateur de prix"
+                                            wire:change="updateOption({{ $option->id }}, { price_multiplier: $event.target.value })"
+                                            class="w-20 rounded-lg border-slate-300 text-right text-sm tabular-nums focus:border-slate-900 focus:ring-0">
+                                    </label>
+
+                                    <label class="flex items-center gap-1 text-xs text-slate-500">
+                                        <span class="whitespace-nowrap">Durée min</span>
+                                        <input type="number" step="5"
+                                            value="{{ $option->duration_modifier_min }}"
+                                            placeholder="0"
+                                            aria-label="Minutes ajoutées à la durée"
+                                            wire:change="updateOption({{ $option->id }}, { duration_modifier_min: $event.target.value })"
+                                            class="w-20 rounded-lg border-slate-300 text-right text-sm tabular-nums focus:border-slate-900 focus:ring-0">
+                                    </label>
+
+                                    <label class="flex items-center gap-1 text-xs text-slate-600">
+                                        <input type="radio"
+                                            name="defaut-{{ $question->id }}"
+                                            @checked($option->is_default)
+                                            aria-label="Réponse proposée par défaut"
+                                            wire:change="updateOption({{ $option->id }}, { is_default: true })"
+                                            class="text-emerald-600">
+                                        <span>défaut</span>
+                                    </label>
+
+                                    <button type="button"
+                                        wire:click="archiveOption({{ $option->id }})"
+                                        class="rounded-lg px-2 py-1 text-xs text-rose-700 hover:bg-rose-50">
+                                        Retirer
+                                    </button>
                                 </li>
                             @endforeach
                         </ul>
+
+                        <p class="mt-2 text-xs text-slate-400">
+                            Le supplément d’une réponse ne s’ajoute que si le client la choisit.
+                            Un montant négatif retire du prix.
+                        </p>
                     @endif
                 </article>
             @empty

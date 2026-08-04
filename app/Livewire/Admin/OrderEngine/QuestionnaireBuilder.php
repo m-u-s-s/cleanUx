@@ -1030,7 +1030,22 @@ class QuestionnaireBuilder extends Component
         $this->refreshDerived();
     }
 
-    /** @param  array<string, mixed>  $values */
+    /**
+     * Modifie une option de réponse — libellé, supplément, multiplicateur, durée, défaut.
+     *
+     * C'EST LE SEUL CHEMIN POUR UN SUPPLÉMENT CONDITIONNEL. « Voulez-vous l'installation ?
+     * Oui / Non », où seul « Oui » ajoute 150 € : le montant vit sur l'OPTION, pas sur la question.
+     * Le mode `add` posé sur la question ajouterait son montant dès qu'elle est répondue — donc
+     * aussi quand le client répond « Non ».
+     *
+     * LA LISTE BLANCHE N'EST PAS DÉCORATIVE. Cette méthode recevait un tableau libre venu du
+     * navigateur et le passait tel quel à `update()`. `question_id` étant `fillable`, un appel
+     * forgé déplaçait l'option vers une question d'un autre métier : la commande la citerait sans
+     * qu'elle apparaisse dans son parcours. Rien ne l'exploitait tant qu'aucune vue n'appelait la
+     * méthode ; la câbler rendait le trou atteignable.
+     *
+     * @param  array<string, mixed>  $values
+     */
     public function updateOption(int $optionId, array $values): void
     {
         if ($this->refusesWrite()) {
@@ -1038,18 +1053,90 @@ class QuestionnaireBuilder extends Component
         }
 
         $option = QuestionOption::find($optionId);
+
         if (! $option) {
+            return;
+        }
+
+        $changements = [];
+
+        if (array_key_exists('label', $values)) {
+            $libelle = trim((string) $values['label']);
+
+            // Un libellé vide rendrait l'option invisible côté client sans rien signaler ici.
+            if ($libelle !== '') {
+                $changements['label'] = mb_substr($libelle, 0, 180);
+            }
+        }
+
+        if (array_key_exists('price_modifier_euros', $values)) {
+            $changements['price_modifier_cents'] = $this->centimesDepuisEuros($values['price_modifier_euros']);
+        }
+
+        if (array_key_exists('price_multiplier', $values)) {
+            $brut = $this->nombreDepuis($values['price_multiplier']);
+
+            /*
+             * Le multiplicateur est borné à [0,1 ; 10].
+             *
+             * Un facteur 999 n'est pas une intention, c'est une faute de frappe — et il produirait
+             * un devis à six chiffres qu'aucun garde-fou en aval n'attraperait. Hors bornes, on
+             * ignore la saisie plutôt que d'écrire une valeur qu'on aurait « corrigée » en silence.
+             */
+            if ($brut !== null && $brut >= 0.1 && $brut <= 10) {
+                $changements['price_multiplier'] = $brut;
+            } elseif ($brut === null) {
+                $changements['price_multiplier'] = null;
+            }
+        }
+
+        if (array_key_exists('duration_modifier_min', $values)) {
+            $minutes = $this->nombreDepuis($values['duration_modifier_min']);
+            $changements['duration_modifier_min'] = $minutes === null ? 0 : (int) max(-1440, min(1440, $minutes));
+        }
+
+        if (array_key_exists('is_active', $values)) {
+            $changements['is_active'] = (bool) $values['is_active'];
+        }
+
+        if (array_key_exists('is_default', $values)) {
+            $changements['is_default'] = (bool) $values['is_default'];
+        }
+
+        if ($changements === []) {
             return;
         }
 
         // Un seul défaut par question : poser celui-ci retire l'autre, plutôt que de laisser le
         // validateur refuser la publication pour une raison que l'administrateur ne verrait pas.
-        if (! empty($values['is_default'])) {
+        if (! empty($changements['is_default'])) {
             QuestionOption::where('question_id', $option->question_id)->update(['is_default' => false]);
         }
 
-        $option->update($values);
+        $option->update($changements);
         $this->refreshDerived();
+    }
+
+    /**
+     * Des euros saisis à la main vers des centimes en base.
+     *
+     * LA VIRGULE EST ACCEPTÉE : c'est la façon française d'écrire un prix, et la refuser serait
+     * hostile. Sans cette conversion, « 150 » deviendrait 150 centimes — un supplément de 1,50 €
+     * que personne ne remarque avant la première facture.
+     */
+    private function centimesDepuisEuros(mixed $saisie): int
+    {
+        $euros = $this->nombreDepuis($saisie);
+
+        return $euros === null ? 0 : (int) round($euros * 100);
+    }
+
+    /** Rend `null` sur une saisie vide, pour distinguer « zéro » de « rien ». */
+    private function nombreDepuis(mixed $saisie): ?float
+    {
+        $texte = trim(str_replace([' ', ','], ['', '.'], (string) $saisie));
+
+        return $texte === '' || ! is_numeric($texte) ? null : (float) $texte;
     }
 
     public function archiveOption(int $optionId): void
