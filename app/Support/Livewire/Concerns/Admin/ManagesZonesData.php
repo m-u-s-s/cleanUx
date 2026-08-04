@@ -9,6 +9,8 @@ use App\Models\Region;
 use App\Models\ServiceCatalog;
 use App\Models\ServiceZone;
 use App\Models\User;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Collection;
 
 trait ManagesZonesData
 {
@@ -25,7 +27,11 @@ trait ManagesZonesData
             ]);
     }
 
-    protected function applyZoneFilters($query)
+    /**
+     * @param  Builder<ServiceZone>  $query
+     * @return Builder<ServiceZone>
+     */
+    protected function applyZoneFilters(Builder $query): Builder
     {
         return $query
             ->when($this->search, function ($query) {
@@ -91,7 +97,7 @@ trait ManagesZonesData
         $this->resetPage();
     }
 
-    public function updatedSelectedZoneId($value): void
+    public function updatedSelectedZoneId(mixed $value): void
     {
         if ($value) {
             $this->selectZone((int) $value);
@@ -171,12 +177,14 @@ trait ManagesZonesData
         $this->bootstrapAssignmentEdits($zone);
     }
 
-    public function getRegionsProperty()
+    /** @return Collection<int, Region> */
+    public function getRegionsProperty(): Collection
     {
         return Region::query()->orderBy('name')->get();
     }
 
-    public function getProvincesProperty()
+    /** @return Collection<int, Province> */
+    public function getProvincesProperty(): Collection
     {
         return Province::query()
             ->when($this->regionFilter, fn ($query) => $query->where('region_id', $this->regionFilter))
@@ -184,7 +192,8 @@ trait ManagesZonesData
             ->get();
     }
 
-    public function getAvailableEmployeesProperty()
+    /** @return Collection<int, User> */
+    public function getAvailableEmployeesProperty(): Collection
     {
         return User::query()
             ->where('role', User::ROLE_EMPLOYE)
@@ -193,7 +202,8 @@ trait ManagesZonesData
             ->get();
     }
 
-    public function getSourceZonesProperty()
+    /** @return Collection<int, ServiceZone> */
+    public function getSourceZonesProperty(): Collection
     {
         return ServiceZone::query()
             ->when($this->selectedZoneId, fn ($query) => $query->where('id', '!=', $this->selectedZoneId))
@@ -221,7 +231,8 @@ trait ManagesZonesData
             ->find($this->selectedZoneId);
     }
 
-    public function getZoneHistoryProperty()
+    /** @return Collection<int, ActivityLog> */
+    public function getZoneHistoryProperty(): Collection
     {
         if (! $this->selectedZoneId) {
             return collect();
@@ -236,6 +247,7 @@ trait ManagesZonesData
             ->get();
     }
 
+    /** @return array{total: int, active: int, paused: int, bookable: int, visible: int} */
     public function getZoneStatsProperty(): array
     {
         return [

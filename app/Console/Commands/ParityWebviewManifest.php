@@ -23,7 +23,10 @@ class ParityWebviewManifest extends Command
 
     public function handle(): int
     {
-        $modules = collect(config('parity.modules', []))
+        /** @var array<int, array<string, mixed>> $declares */
+        $declares = (array) config('parity.modules', []);
+
+        $modules = collect($declares)
             ->filter(fn (array $m) => ($m['mobile'] ?? null) === 'webview')
             ->map(fn (array $m) => [
                 'key' => $m['key'],

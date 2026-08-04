@@ -8,6 +8,7 @@ use App\Models\Question;
 use App\Models\QuestionCondition;
 use App\Models\QuestionOption;
 use App\Models\Trade;
+use App\Models\TradeFormRevision;
 use App\Services\OrderEngine\CatalogArchiver;
 use App\Services\OrderEngine\PriceBreakdown;
 use App\Services\OrderEngine\PricingEngine;
@@ -45,6 +46,8 @@ use Livewire\WithFileUploads;
  * multiplicateurs et de coefficients par unité ne se vérifie pas de tête : répondre au
  * questionnaire et voir le prix se construire ligne par ligne est le seul moyen fiable de la
  * valider avant de la mettre en ligne.
+ *
+ * @property-read Collection<string, array<string, mixed>> $insights
  */
 #[Layout('layouts.app')]
 class QuestionnaireBuilder extends Component
@@ -68,8 +71,14 @@ class QuestionnaireBuilder extends Component
 
     public Trade $trade;
 
-    /** Fichier JSON d'un parcours exporté, en attente d'import. */
-    public $importFile = null;
+    /**
+     * Fichier JSON d'un parcours exporté, en attente d'import.
+     *
+     * `mixed` et non un type de fichier : Livewire y pose un `TemporaryUploadedFile` pendant
+     * le téléversement, et la valeur brute du formulaire avant. Le déclarer plus étroit
+     * ferait échouer l'hydratation sur une valeur parfaitement normale.
+     */
+    public mixed $importFile = null;
 
     /**
      * Condition en cours d'écriture : « Afficher X SI Y EST Z ».
@@ -661,7 +670,19 @@ class QuestionnaireBuilder extends Component
     #[Computed]
     public function insights(): Collection
     {
-        return app(QuestionInsights::class)->forTrade($this->trade)->keyBy('code');
+        /**
+         * `keyBy()` ne peut pas prouver que la clé est une chaîne : il lit une colonne à
+         * l'exécution, et l'analyse en déduit `int|string`. Ici `code` est un code de question,
+         * toujours textuel — l'annotation le dit, et c'est le contrat sur lequel la vue s'appuie
+         * pour retrouver une question par son code.
+         *
+         * Le bloc doit s'ouvrir par `/**` : dans un commentaire ordinaire, `@var` est du texte.
+         *
+         * @var Collection<string, array<string, mixed>> $parCode
+         */
+        $parCode = app(QuestionInsights::class)->forTrade($this->trade)->keyBy('code');
+
+        return $parCode;
     }
 
     /**
@@ -970,9 +991,13 @@ class QuestionnaireBuilder extends Component
         $this->refreshDerived();
     }
 
-    /** L'historique des versions, la plus récente d'abord. */
+    /**
+     * L'historique des versions, la plus récente d'abord.
+     *
+     * @return Collection<int, TradeFormRevision>
+     */
     #[Computed]
-    public function revisions()
+    public function revisions(): Collection
     {
         return $this->trade->formRevisions()
             ->with('publishedBy')

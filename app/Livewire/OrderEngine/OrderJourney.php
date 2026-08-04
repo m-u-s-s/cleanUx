@@ -71,6 +71,8 @@ use Livewire\WithFileUploads;
  * @property-read Collection<int, array<string, mixed>> $timeline
  * @property-read Collection<int, array<string, mixed>> $bundleSuggestions
  * @property-read array<string, mixed>|null $bundleQuote
+ * @property-read Collection<int, Question> $allVisibleQuestions
+ * @property-read Collection<int, Collection<int, Question>> $steps
  */
 #[Layout('layouts.app')]
 class OrderJourney extends Component
@@ -366,13 +368,30 @@ class OrderJourney extends Component
 
         $declared = $visible->groupBy('step_id');
 
-        // L'administrateur a-t-il vraiment découpé ? Une seule étape déclarée — ou aucune — ne
-        // compte pas comme un découpage : on reprend la main.
-        $hasRealSteps = $declared->keys()->filter(fn ($id) => $id !== null && $id !== '')->count() > 0
+        /*
+         * L'administrateur a-t-il vraiment découpé ? Une seule étape déclarée — ou aucune — ne
+         * compte pas comme un découpage : on reprend la main.
+         *
+         * La chaîne vide, et non `null` : une clé de collection ne peut PAS être nulle en PHP, et
+         * `groupBy` range les questions sans étape sous `''`. Le test sur `null` ne pouvait donc
+         * jamais être faux — il laissait croire qu'on couvrait un cas qui n'existe pas.
+         */
+        $hasRealSteps = $declared->keys()->filter(fn ($id) => $id !== '')->count() > 0
             && $declared->count() > 1;
 
         if ($hasRealSteps) {
             return $declared
+                /*
+                 * LE `?->` EST NÉCESSAIRE, malgré ce qu'en dit l'analyse statique.
+                 *
+                 * `questions.step_id` est nullable et posé en `nullOnDelete` : une question sans
+                 * découpage n'a pas d'étape, et c'est même le cas le plus courant. Larastan
+                 * suppose toute relation `BelongsTo` non nulle et réclame de retirer le `?->` —
+                 * ce qui ferait tomber l'écran sur la première question sans étape. Le schéma
+                 * tranche, pas l'inférence.
+                 *
+                 * @phpstan-ignore nullsafe.neverNull
+                 */
                 ->sortBy(fn (Collection $group) => $group->first()->step?->sort_order ?? -1)
                 ->values()
                 ->map(fn (Collection $group) => $group->values());

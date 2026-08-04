@@ -65,7 +65,7 @@ class AppAudience
             return true;
         }
 
-        if (method_exists($user, 'isPlatformAdmin') && $user->isPlatformAdmin()) {
+        if ($user->isPlatformAdmin()) {
             return true;
         }
 

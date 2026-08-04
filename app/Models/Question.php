@@ -22,6 +22,8 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * `trade_id` nul = question globale, réutilisable entre métiers (étage, accès, fourniture du
  * matériel). C'est ce qui évite de réécrire quinze fois « Y a-t-il un ascenseur ? » et, surtout,
  * de le réécrire quinze fois différemment.
+ *
+ * @property-read QuestionStep|null $step
  */
 class Question extends Model implements TranslatesCatalogLabels
 {
@@ -52,7 +54,19 @@ class Question extends Model implements TranslatesCatalogLabels
         return $this->belongsTo(Trade::class);
     }
 
-    /** @return BelongsTo<QuestionStep, $this> */
+    /**
+     * L'étape à laquelle la question appartient — ou AUCUNE.
+     *
+     * `questions.step_id` est nullable et posé en `nullOnDelete` : une question sans découpage
+     * n'a pas d'étape, et supprimer une étape détache ses questions au lieu de les effacer. Le
+     * cas non découpé est même le plus courant.
+     *
+     * L'annotation `@property-read` le dit à l'analyse statique, qui suppose sinon toute relation
+     * `BelongsTo` non nulle. Elle réclamait de retirer les `?->` du parcours — ce qui aurait fait
+     * tomber l'écran sur la première question sans étape.
+     *
+     * @return BelongsTo<QuestionStep, $this>
+     */
     public function step(): BelongsTo
     {
         return $this->belongsTo(QuestionStep::class, 'step_id');
