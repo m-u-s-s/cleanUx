@@ -22,6 +22,13 @@ export interface AdminModule {
    * `pending` — page d'administration pas encore servie nativement. Elle reste VISIBLE et
    * marquée : la masquer donnerait une application qui a l'air complète.
    */
+  /**
+   * Les ressources SECONDAIRES du module.
+   *
+   * Une page web multi-modèles donne plusieurs descripteurs pour une seule entrée d'annuaire.
+   * Sans ce champ, le mobile ouvrirait la principale et les autres resteraient inatteignables.
+   */
+  resources?: string[];
   coverage: 'pending' | 'descriptor' | 'report' | 'screen';
   route: string;
 }

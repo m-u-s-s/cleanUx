@@ -41,6 +41,16 @@ class AdminCatalogController extends Controller
                         // rattachées au module côté registre pour que l'inventaire soit complet,
                         // mais elles ne sont pas des destinations d'annuaire.
                         'route' => $module['routes'][0],
+                        /*
+                         * Les ressources SECONDAIRES du module.
+                         *
+                         * Une page web multi-modèles — « Opérations B2B » et ses contrats, ordres
+                         * de travail et grilles — donne plusieurs descripteurs pour une seule
+                         * entrée d'annuaire. Sans cette liste, le mobile ouvrirait la ressource
+                         * principale et les autres resteraient écrites, correctes et
+                         * inatteignables.
+                         */
+                        'resources' => array_values((array) ($module['resources'] ?? [])),
                     ],
                     array_filter($modules, fn (array $module) => $module['group'] === $key),
                 )),

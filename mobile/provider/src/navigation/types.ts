@@ -25,6 +25,8 @@ export type RootStackParamList = {
   // Le constructeur de parcours d'un métier : questions, réponses et leurs suppléments.
   AdminTradeJourney: { tradeId: number; title?: string };
   AdminResourceDetail: { resource: string; title: string; id: string | number };
+  // Le choix entre les ressources d'un module multi-modèles.
+  AdminResourcePicker: { title: string; resources: string[] };
   AdminResourceForm: {
     resource: string;
     title: string;

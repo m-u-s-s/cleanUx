@@ -31,6 +31,7 @@ import { AdminNavigator } from '@/admin/AdminNavigator';
 import { CatalogZonesScreen } from '@/admin/catalogue/CatalogZonesScreen';
 import { CatalogZoneTradesScreen } from '@/admin/catalogue/CatalogZoneTradesScreen';
 import { JourneyBuilderScreen } from '@/admin/catalogue/JourneyBuilderScreen';
+import { ResourcePickerScreen } from '@/admin/console/ResourcePickerScreen';
 import { AdminResourceScreen } from '@/admin/AdminResourceScreen';
 import { ResourceListScreen } from '@/admin/console/ResourceListScreen';
 import { ResourceDetailScreen } from '@/admin/console/ResourceDetailScreen';
@@ -146,6 +147,14 @@ export function RootNavigator() {
             options={({ route }) => ({
               headerShown: true,
               title: (route.params as { title?: string } | undefined)?.title ?? 'Catalogue',
+            })}
+          />
+          <Stack.Screen
+            name="AdminResourcePicker"
+            component={ResourcePickerScreen}
+            options={({ route }) => ({
+              headerShown: true,
+              title: (route.params as { title?: string } | undefined)?.title ?? 'Module',
             })}
           />
           <Stack.Screen
