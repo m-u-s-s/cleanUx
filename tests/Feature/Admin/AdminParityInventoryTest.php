@@ -72,6 +72,22 @@ class AdminParityInventoryTest extends TestCase
                 + count($descripteur->actions())
                 + count($descripteur->globalActions());
 
+            /*
+             * Les ressources SECONDAIRES comptent pour leur module.
+             *
+             * Certaines pages web sont des tableaux de bord multi-modèles : « Opérations B2B » gère
+             * contrats, ordres de travail ET grilles tarifaires. Le moteur sert un modèle par
+             * descripteur ; le module les rassemble. Ne compter que le principal ferait passer pour
+             * manquant un module dont tous les gestes sont portés — ailleurs.
+             */
+            foreach ((array) ($module['resources'] ?? []) as $secondaire) {
+                $autre = $registre->for($secondaire);
+
+                $this->assertNotNull($autre, "Ressource secondaire {$secondaire} déclarée mais absente du registre.");
+
+                $porte += count($autre->formFields()) + count($autre->actions()) + count($autre->globalActions());
+            }
+
             if ($porte === 0) {
                 $manquants[] = sprintf(
                     '%s : %d geste(s) sur le web, aucun porté',

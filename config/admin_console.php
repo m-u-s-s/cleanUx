@@ -70,7 +70,7 @@ return [
         ['key' => 'safety', 'title' => 'Sécurité terrain', 'group' => 'operations', 'icon' => 'shield-outline', 'coverage' => 'descriptor', 'routes' => ['admin/safety']],
         ['key' => 'realtime', 'title' => 'Temps réel', 'group' => 'operations', 'icon' => 'pulse-outline', 'coverage' => 'descriptor', 'routes' => ['admin/realtime']],
         ['key' => 'bookings', 'title' => 'Rendez-vous et récurrences', 'group' => 'operations', 'icon' => 'repeat-outline', 'coverage' => 'descriptor', 'routes' => ['admin/recurrence/{rendezVous}/serie', 'admin/rendez-vous/{rendezVous}', 'admin/rendez-vous-series/{series}/edit']],
-        ['key' => 'b2b-operations', 'title' => 'Opérations B2B', 'group' => 'operations', 'icon' => 'business-outline', 'coverage' => 'descriptor', 'routes' => ['admin/b2b/operations']],
+        ['key' => 'b2b-operations', 'title' => 'Opérations B2B', 'group' => 'operations', 'icon' => 'business-outline', 'coverage' => 'descriptor', 'routes' => ['admin/b2b/operations'], 'resources' => ['b2b-contracts', 'b2b-work-orders']],
         ['key' => 'automation', 'title' => 'Automatisation', 'group' => 'operations', 'icon' => 'flash-outline', 'coverage' => 'report', 'routes' => ['admin/automation']],
 
         // ── Personnes et comptes ────────────────────────────────────────────────────────────
@@ -114,8 +114,8 @@ return [
         ['key' => 'insurance', 'title' => 'Assurance', 'group' => 'argent', 'icon' => 'umbrella-outline', 'coverage' => 'descriptor', 'routes' => ['admin/insurance']],
         ['key' => 'cancellations', 'title' => 'Annulations', 'group' => 'argent', 'icon' => 'close-circle-outline', 'coverage' => 'descriptor', 'routes' => ['admin/cancellations-v2']],
         ['key' => 'disputes', 'title' => 'Litiges', 'group' => 'argent', 'icon' => 'alert-circle-outline', 'coverage' => 'descriptor', 'routes' => ['admin/disputes']],
-        ['key' => 'risk', 'title' => 'Risque et fraude', 'group' => 'argent', 'icon' => 'shield-half-outline', 'coverage' => 'descriptor', 'routes' => ['admin/risk']],
-        ['key' => 'contracts', 'title' => 'Contrats', 'group' => 'argent', 'icon' => 'document-text-outline', 'coverage' => 'descriptor', 'routes' => ['admin/contracts-v2']],
+        ['key' => 'risk', 'title' => 'Risque et fraude', 'group' => 'argent', 'icon' => 'shield-half-outline', 'coverage' => 'descriptor', 'routes' => ['admin/risk'], 'resources' => ['risk-holds']],
+        ['key' => 'contracts', 'title' => 'Contrats', 'group' => 'argent', 'icon' => 'document-text-outline', 'coverage' => 'descriptor', 'routes' => ['admin/contracts-v2'], 'resources' => ['contract-signatures']],
 
         // ── Croissance ──────────────────────────────────────────────────────────────────────
         ['key' => 'marketing', 'title' => 'Marketing', 'group' => 'croissance', 'icon' => 'megaphone-outline', 'coverage' => 'descriptor', 'routes' => ['admin/marketing']],
