@@ -50,7 +50,7 @@ class AdminCatalogController extends Controller
                          * principale et les autres resteraient écrites, correctes et
                          * inatteignables.
                          */
-                        'resources' => array_values((array) ($module['resources'] ?? [])),
+                        'resources' => $this->ressourcesSecondairesDe($module),
                     ],
                     array_filter($modules, fn (array $module) => $module['group'] === $key),
                 )),
@@ -68,5 +68,20 @@ class AdminCatalogController extends Controller
                 'pending' => count($modules) - $covered,
             ],
         ]);
+    }
+
+    /**
+     * Les ressources secondaires déclarées par un module.
+     *
+     * Passer par une méthode plutôt que de lire la clé sur place : l'analyse statique déduit la
+     * forme du tableau depuis `config/admin_console.php`, où la plupart des modules n'ont pas cette
+     * clé — elle la croit donc absente partout et refuse l'accès.
+     *
+     * @param  array<string, mixed>  $module
+     * @return list<string>
+     */
+    private function ressourcesSecondairesDe(array $module): array
+    {
+        return array_values(array_map('strval', (array) ($module['resources'] ?? [])));
     }
 }
