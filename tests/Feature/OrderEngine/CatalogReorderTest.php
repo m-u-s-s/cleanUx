@@ -3,7 +3,9 @@
 namespace Tests\Feature\OrderEngine;
 
 use App\Livewire\Admin\OrderEngine\CatalogCenter;
+use App\Models\Country;
 use App\Models\Sector;
+use App\Models\ServiceZone;
 use App\Models\Trade;
 use App\Models\User;
 use Database\Seeders\OrderEngineCatalogSeeder;
@@ -23,6 +25,31 @@ use Tests\TestCase;
  */
 class CatalogReorderTest extends TestCase
 {
+    /**
+     * Le contexte géographique exigé par l'écran, créé à la demande.
+     *
+     * Ces tests ne portent pas sur la géographie : ils ont seulement besoin d'un couple pays/zone
+     * cohérent pour monter le composant. La fabrique est paresseuse pour ne pas alourdir les tests
+     * qui ne montent pas l'écran.
+     *
+     * @return array{country: Country, zone: ServiceZone}
+     */
+    private function contexteCatalogue(): array
+    {
+        if ($this->contexteCatalogue === null) {
+            $pays = Country::factory()->create();
+            $this->contexteCatalogue = [
+                'country' => $pays,
+                'zone' => ServiceZone::factory()->create(['country_id' => $pays->id]),
+            ];
+        }
+
+        return $this->contexteCatalogue;
+    }
+
+    /** @var array{country: Country, zone: ServiceZone}|null */
+    private ?array $contexteCatalogue = null;
+
     use RefreshDatabase;
 
     protected function setUp(): void
@@ -37,7 +64,7 @@ class CatalogReorderTest extends TestCase
         $ids = Sector::ordered()->pluck('id')->all();
         $shuffled = array_reverse($ids);
 
-        Livewire::test(CatalogCenter::class)->call('reorderSectors', $shuffled);
+        Livewire::test(CatalogCenter::class, $this->contexteCatalogue())->call('reorderSectors', $shuffled);
 
         $this->assertSame($shuffled, Sector::ordered()->pluck('id')->all());
     }
@@ -51,7 +78,7 @@ class CatalogReorderTest extends TestCase
 
         $shuffled = array_reverse($ids);
 
-        Livewire::test(CatalogCenter::class)->call('reorderTrades', $sector->id, $shuffled);
+        Livewire::test(CatalogCenter::class, $this->contexteCatalogue())->call('reorderTrades', $sector->id, $shuffled);
 
         $this->assertSame(
             $shuffled,
@@ -65,7 +92,7 @@ class CatalogReorderTest extends TestCase
         $sector = $this->batiment();
         $ids = $sector->trades()->orderBy('sort_order')->pluck('id')->all();
 
-        Livewire::test(CatalogCenter::class)->call('moveTrade', $ids[0], 1);
+        Livewire::test(CatalogCenter::class, $this->contexteCatalogue())->call('moveTrade', $ids[0], 1);
 
         $after = $sector->trades()->orderBy('sort_order')->pluck('id')->all();
 
@@ -85,7 +112,7 @@ class CatalogReorderTest extends TestCase
         $sector = $this->batiment();
         $before = $sector->trades()->orderBy('sort_order')->pluck('id')->all();
 
-        Livewire::test(CatalogCenter::class)->call('reorderTrades', $sector->id, [$before[0]]);
+        Livewire::test(CatalogCenter::class, $this->contexteCatalogue())->call('reorderTrades', $sector->id, [$before[0]]);
 
         $this->assertSame($before, $sector->trades()->orderBy('sort_order')->pluck('id')->all());
     }
@@ -102,7 +129,7 @@ class CatalogReorderTest extends TestCase
         $intruder = Trade::whereNotNull('sector_id')->where('sector_id', '!=', $sector->id)->firstOrFail();
         $before = $sector->trades()->orderBy('sort_order')->pluck('id')->all();
 
-        Livewire::test(CatalogCenter::class)
+        Livewire::test(CatalogCenter::class, $this->contexteCatalogue())
             ->call('reorderTrades', $sector->id, array_merge($before, [$intruder->id]));
 
         $this->assertSame($before, $sector->trades()->orderBy('sort_order')->pluck('id')->all());
@@ -118,7 +145,7 @@ class CatalogReorderTest extends TestCase
 
         $before = Sector::ordered()->pluck('id')->all();
 
-        Livewire::test(CatalogCenter::class)->call('reorderSectors', array_reverse($before));
+        Livewire::test(CatalogCenter::class, $this->contexteCatalogue())->call('reorderSectors', array_reverse($before));
 
         $this->assertSame($before, Sector::ordered()->pluck('id')->all());
     }
@@ -131,7 +158,7 @@ class CatalogReorderTest extends TestCase
      */
     public function test_the_screen_offers_both_ways(): void
     {
-        $html = Livewire::test(CatalogCenter::class)->html();
+        $html = Livewire::test(CatalogCenter::class, $this->contexteCatalogue())->html();
 
         $this->assertStringContainsString('draggable="true"', $html);
         $this->assertStringContainsString('reorderSectors', $html);

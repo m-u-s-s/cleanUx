@@ -2,8 +2,11 @@
 
 namespace App\Livewire\Admin\OrderEngine;
 
+use App\Models\Country;
 use App\Models\Sector;
+use App\Models\ServiceZone;
 use App\Models\Trade;
+use App\Models\TradeZonePricing;
 use App\Services\OrderEngine\CatalogArchiver;
 use App\Services\OrderEngine\QuestionInsights;
 use App\Services\OrderEngine\QuestionnaireValidator;
@@ -26,6 +29,11 @@ use Livewire\Component;
  * L'écran ne se contente pas de lister. Il montre, pour chaque métier, ce qui empêche sa
  * publication et ce qui attend d'être mis en ligne : un catalogue où l'on doit ouvrir dix écrans
  * pour savoir lequel est prêt ne sera pas tenu à jour.
+ *
+ * IL EST DÉSORMAIS CELUI D'UNE ZONE. Les secteurs et les métiers restent communs — ce sont les
+ * mêmes objets partout — mais leur OUVERTURE se règle zone par zone. C'est ce qui permet à un
+ * métier de coûter plus cher là où la demande est forte : l'activation et le prix sont la même
+ * ligne, `trade_zone_pricing`, donc il n'y a pas deux réglages à garder cohérents.
  */
 #[Layout('layouts.app')]
 class CatalogCenter extends Component
@@ -51,9 +59,84 @@ class CatalogCenter extends Component
     /** Les métiers sans secteur n'apparaissent pas dans le carrousel : on ne les cache pas pour autant. */
     public bool $showOrphanTrades = false;
 
-    public function mount(): void
+    public Country $country;
+
+    public ServiceZone $zone;
+
+    public function mount(Country $country, ServiceZone $zone): void
     {
+        /*
+         * L'URL porte les deux identifiants, et rien n'empêche d'en écrire un couple incohérent à
+         * la main. Le refus est explicite plutôt que d'afficher le catalogue d'un marché voisin
+         * sous le nom d'un autre — une confusion qui se propagerait ensuite aux prix qu'on y règle.
+         *
+         * Le pays sert aussi au fil d'Ariane : sans lui, `/admin/catalogue/12` ne dirait pas si 12
+         * désigne un pays ou une zone.
+         */
+        abort_unless($zone->country_id === $country->id, 404);
+
+        $this->country = $country;
+        $this->zone = $zone;
         $this->resetSectorForm();
+    }
+
+    /**
+     * Ouvrir ou fermer un métier DANS CETTE ZONE.
+     *
+     * L'activation et le prix sont la même ligne. On ne supprime JAMAIS la ligne en éteignant :
+     * rallumer doit retrouver le tarif saisi plutôt que de repartir de zéro, car ce tarif a pu
+     * demander une négociation qu'on ne veut pas refaire.
+     */
+    public function basculerMetierDansLaZone(int $tradeId): void
+    {
+        /*
+         * AUCUN GARDE FIN ICI, et c'est délibéré : les quatre autres mutations de cet écran —
+         * enregistrer un secteur, l'archiver, réordonner secteurs et métiers — n'en ont aucun non
+         * plus. Seul `EnforcesAdminAccess` les protège.
+         *
+         * En ajouter un ici seulement donnerait une fausse impression de protection tout en
+         * laissant les voisines ouvertes, et quelqu'un finirait par « corriger » l'incohérence dans
+         * le mauvais sens. Le manque est à traiter pour l'écran entier, pas pour une méthode.
+         */
+        $ligne = TradeZonePricing::query()->firstOrNew([
+            'trade_id' => $tradeId,
+            'service_zone_id' => $this->zone->id,
+        ]);
+
+        if (! $ligne->exists) {
+            /*
+             * Première ouverture : on part du prix du métier.
+             *
+             * Ouvrir un métier dans une zone ne doit pas le mettre à zéro euro en attendant qu'on
+             * saisisse une grille. Les champs deviendront éditables au lot suivant.
+             */
+            $ligne->base_rate_cents = (int) (Trade::findOrFail($tradeId)->base_price_cents ?? 0);
+            // La colonne est un décimal : la remplir avec un float PHP la ferait arrondir au
+            // hasard de la conversion. On écrit la chaîne que la base attend.
+            $ligne->surge_multiplier = '1.00';
+            $ligne->is_active = true;
+        } else {
+            $ligne->is_active = ! $ligne->is_active;
+        }
+
+        $ligne->save();
+
+        unset($this->metiersActifsDansLaZone);
+    }
+
+    /**
+     * Quels métiers sont ouverts dans cette zone.
+     *
+     * @return array<int, bool> identifiant du métier → actif
+     */
+    #[Computed]
+    public function metiersActifsDansLaZone(): array
+    {
+        return TradeZonePricing::query()
+            ->where('service_zone_id', $this->zone->id)
+            ->pluck('is_active', 'trade_id')
+            ->map(fn ($actif) => (bool) $actif)
+            ->all();
     }
 
     // ─── Lecture ─────────────────────────────────────────────────────────────────────────────

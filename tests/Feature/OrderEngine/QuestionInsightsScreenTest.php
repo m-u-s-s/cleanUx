@@ -4,9 +4,11 @@ namespace Tests\Feature\OrderEngine;
 
 use App\Livewire\Admin\OrderEngine\CatalogCenter;
 use App\Livewire\Admin\OrderEngine\QuestionnaireBuilder;
+use App\Models\Country;
 use App\Models\OrderDraft;
 use App\Models\OrderDraftAnswer;
 use App\Models\OrderDraftItem;
+use App\Models\ServiceZone;
 use App\Models\Trade;
 use App\Models\User;
 use App\Support\Domain\OrderDraftStatus;
@@ -32,6 +34,31 @@ use Tests\TestCase;
  */
 class QuestionInsightsScreenTest extends TestCase
 {
+    /**
+     * Le contexte géographique exigé par l'écran, créé à la demande.
+     *
+     * Ces tests ne portent pas sur la géographie : ils ont seulement besoin d'un couple pays/zone
+     * cohérent pour monter le composant. La fabrique est paresseuse pour ne pas alourdir les tests
+     * qui ne montent pas l'écran.
+     *
+     * @return array{country: Country, zone: ServiceZone}
+     */
+    private function contexteCatalogue(): array
+    {
+        if ($this->contexteCatalogue === null) {
+            $pays = Country::factory()->create();
+            $this->contexteCatalogue = [
+                'country' => $pays,
+                'zone' => ServiceZone::factory()->create(['country_id' => $pays->id]),
+            ];
+        }
+
+        return $this->contexteCatalogue;
+    }
+
+    /** @var array{country: Country, zone: ServiceZone}|null */
+    private ?array $contexteCatalogue = null;
+
     use RefreshDatabase;
 
     protected function setUp(): void
@@ -95,7 +122,7 @@ class QuestionInsightsScreenTest extends TestCase
         $trade = $this->peinture();
         $this->losingClients($trade, 25);
 
-        Livewire::test(CatalogCenter::class)
+        Livewire::test(CatalogCenter::class, $this->contexteCatalogue())
             ->assertSee('fait décrocher');
     }
 

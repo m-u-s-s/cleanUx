@@ -90,7 +90,10 @@ return [
         ['key' => 'stripe-connect', 'title' => 'Stripe Connect prestataires', 'group' => 'personnes', 'icon' => 'card-outline', 'coverage' => 'descriptor', 'routes' => ['admin/stripe-connect-providers']],
 
         // ── Catalogue et prix ───────────────────────────────────────────────────────────────
-        ['key' => 'catalog', 'title' => 'Catalogue de commande', 'group' => 'catalogue', 'icon' => 'sparkles-outline', 'coverage' => 'descriptor', 'routes' => ['admin/catalogue', 'admin/parcours/{trade}']],
+        // Le catalogue est une descente à trois niveaux : pays → zones → secteurs et métiers.
+        // Les trois routes appartiennent au même module — c'est un seul parcours, pas trois écrans
+        // que l'on atteindrait séparément.
+        ['key' => 'catalog', 'title' => 'Catalogue de commande', 'group' => 'catalogue', 'icon' => 'sparkles-outline', 'coverage' => 'descriptor', 'routes' => ['admin/catalogue', 'admin/catalogue/{country}', 'admin/catalogue/{country}/{zone}', 'admin/parcours/{trade}']],
         ['key' => 'services', 'title' => 'Services', 'group' => 'catalogue', 'icon' => 'list-outline', 'coverage' => 'descriptor', 'routes' => ['admin/services']],
         ['key' => 'trades', 'title' => 'Métiers', 'group' => 'catalogue', 'icon' => 'hammer-outline', 'coverage' => 'descriptor', 'routes' => ['admin/trades', 'admin/trades/{trade}/pricing']],
         ['key' => 'pricing', 'title' => 'Tarification V2', 'group' => 'catalogue', 'icon' => 'pricetag-outline', 'coverage' => 'descriptor', 'routes' => ['admin/pricing-v2']],

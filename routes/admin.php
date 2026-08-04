@@ -45,7 +45,9 @@ use App\Livewire\Admin\Onboarding\AdminOnboardingDocumentsCenter;
 use App\Livewire\Admin\Onboarding\AdminOnboardingProvidersList;
 use App\Livewire\Admin\OnboardingV2\OnboardingV2Center;
 use App\Livewire\Admin\OrderEngine\CatalogCenter;
+use App\Livewire\Admin\OrderEngine\CountryCenter;
 use App\Livewire\Admin\OrderEngine\QuestionnaireBuilder;
+use App\Livewire\Admin\OrderEngine\ZoneCenter;
 use App\Livewire\Admin\OrganizationSitesManager;
 use App\Livewire\Admin\Payments\StripeHardeningCenter;
 use App\Livewire\Admin\PlatformReadiness;
@@ -541,8 +543,21 @@ Route::middleware(['role:admin', 'enforce_2fa'])
          * qu'un responsable non technique écrit un questionnaire complet et voit, à droite, ce que
          * le client verra et le prix que ses réponses construisent.
          */
-        Route::get('/catalogue', CatalogCenter::class)
+        /*
+         * La descente : Pays → Zones → Secteurs & métiers.
+         *
+         * L'ancien écran n'est pas remplacé, il DESCEND d'un cran. Les liens existants vers
+         * `/admin/catalogue` arrivent désormais sur la liste des pays — c'est voulu : un métier
+         * s'active par zone, il n'y a donc plus de catalogue « en général » à afficher.
+         */
+        Route::get('/catalogue', CountryCenter::class)
             ->name('order-engine.catalog');
+
+        Route::get('/catalogue/{country}', ZoneCenter::class)
+            ->name('order-engine.zones');
+
+        Route::get('/catalogue/{country}/{zone}', CatalogCenter::class)
+            ->name('order-engine.catalog.zone');
 
         Route::get('/parcours/{trade}', QuestionnaireBuilder::class)
             ->name('order-engine.builder');
