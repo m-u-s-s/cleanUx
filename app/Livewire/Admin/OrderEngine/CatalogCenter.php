@@ -103,15 +103,12 @@ class CatalogCenter extends Component
      */
     public function basculerMetierDansLaZone(int $tradeId): void
     {
-        /*
-         * AUCUN GARDE FIN ICI, et c'est délibéré : les quatre autres mutations de cet écran —
-         * enregistrer un secteur, l'archiver, réordonner secteurs et métiers — n'en ont aucun non
-         * plus. Seul `EnforcesAdminAccess` les protège.
-         *
-         * En ajouter un ici seulement donnerait une fausse impression de protection tout en
-         * laissant les voisines ouvertes, et quelqu'un finirait par « corriger » l'incohérence dans
-         * le mauvais sens. Le manque est à traiter pour l'écran entier, pas pour une méthode.
-         */
+        // Ouvrir un métier dans une zone décidera de son prix et de sa disponibilité : c'est une
+        // écriture, même si la ligne créée est modeste.
+        if ($this->refusesWrite()) {
+            return;
+        }
+
         $ligne = TradeZonePricing::query()->firstOrNew([
             'trade_id' => $tradeId,
             'service_zone_id' => $this->zone->id,
@@ -172,6 +169,12 @@ class CatalogCenter extends Component
      */
     public function enregistrerMetier(): void
     {
+        // Le lecteur seul lit. `EnforcesAdminAccess` s'arrête à « est-ce un administrateur » : un
+        // compte en lecture seule le franchit et atteindrait cette écriture.
+        if ($this->refusesWrite()) {
+            return;
+        }
+
         $trade = $this->persistTradeForm();
 
         // `null` signifie « refusé » : les erreurs sont posées, et le formulaire doit rester
@@ -344,6 +347,12 @@ class CatalogCenter extends Component
 
     public function saveSector(): void
     {
+        // Le lecteur seul lit. `EnforcesAdminAccess` s'arrête à « est-ce un administrateur » : un
+        // compte en lecture seule le franchit et atteindrait cette écriture.
+        if ($this->refusesWrite()) {
+            return;
+        }
+
         $data = $this->validate([
             'sectorForm.name' => ['required', 'string', 'max:120'],
             'sectorForm.slug' => ['required', 'string', 'max:120', 'regex:/^[a-z0-9-]+$/'],
@@ -388,6 +397,12 @@ class CatalogCenter extends Component
     /** Désactiver retire du carrousel ; archiver range. Deux gestes distincts, à dessein. */
     public function toggleSector(int $sectorId): void
     {
+        // Le lecteur seul lit. `EnforcesAdminAccess` s'arrête à « est-ce un administrateur » : un
+        // compte en lecture seule le franchit et atteindrait cette écriture.
+        if ($this->refusesWrite()) {
+            return;
+        }
+
         $sector = Sector::find($sectorId);
         $sector?->update(['is_active' => ! $sector->is_active]);
 
@@ -408,6 +423,12 @@ class CatalogCenter extends Component
 
     public function archiveSector(): void
     {
+        // Le lecteur seul lit. `EnforcesAdminAccess` s'arrête à « est-ce un administrateur » : un
+        // compte en lecture seule le franchit et atteindrait cette écriture.
+        if ($this->refusesWrite()) {
+            return;
+        }
+
         $sector = Sector::find($this->archivingSectorId);
 
         if ($sector) {
@@ -597,6 +618,12 @@ class CatalogCenter extends Component
     /** Rattacher un métier orphelin à un secteur : c'est ce qui le fait entrer dans le parcours. */
     public function attachTrade(int $tradeId, int $sectorId): void
     {
+        // Le lecteur seul lit. `EnforcesAdminAccess` s'arrête à « est-ce un administrateur » : un
+        // compte en lecture seule le franchit et atteindrait cette écriture.
+        if ($this->refusesWrite()) {
+            return;
+        }
+
         $trade = Trade::find($tradeId);
         $sector = Sector::find($sectorId);
 
@@ -615,6 +642,12 @@ class CatalogCenter extends Component
 
     public function toggleTrade(int $tradeId): void
     {
+        // Le lecteur seul lit. `EnforcesAdminAccess` s'arrête à « est-ce un administrateur » : un
+        // compte en lecture seule le franchit et atteindrait cette écriture.
+        if ($this->refusesWrite()) {
+            return;
+        }
+
         $trade = Trade::find($tradeId);
         $trade?->update(['is_active' => ! $trade->is_active]);
 
