@@ -183,3 +183,65 @@ describe('filtres de liste', () => {
     });
   });
 });
+
+describe('tri', () => {
+  /*
+   * Cent vingt-huit colonnes triables sont déclarées à travers la console, et quarante et un
+   * modules en offrent plus d'une. Le hook savait déjà les envoyer ; l'écran ne les lui passait
+   * jamais. Sur une liste paginée, ne pas pouvoir trier oblige à faire défiler pour trouver ce
+   * qu'un tri montrerait en tête.
+   */
+  const TRIABLE = {
+    ...DESCRIPTEUR,
+    sorts: ['id', 'created_at', 'status'],
+    default_sort: 'created_at',
+  };
+
+  beforeEach(() => {
+    apiMock.reset();
+    apiMock.onGet(/\/admin\/console\/disputes/).reply(200, { ...PAGE, resource: TRIABLE });
+  });
+
+  it('choisir une colonne de tri l’envoie au serveur', async () => {
+    afficher();
+
+    fireEvent.press(await screen.findByLabelText('Trier par'));
+
+    /*
+     * « Status » et non « status » : le serveur envoie des CLÉS de tri, pas des libellés. Quand la
+     * clé correspond à une colonne affichée on reprend son libellé ; sinon on humanise, faute de
+     * mieux. Ici `status` n'est pas une colonne de ce descripteur.
+     */
+    fireEvent.press(screen.getByText('Status'));
+
+    await waitFor(() => {
+      const requete = apiMock.history.get.at(-1) ?? { params: undefined };
+
+      expect(requete.params).toMatchObject({ sort: 'status' });
+    });
+  });
+
+  it('le sens du tri peut être inversé', async () => {
+    afficher();
+
+    fireEvent.press(await screen.findByLabelText('Inverser le sens du tri'));
+
+    await waitFor(() => {
+      const requete = apiMock.history.get.at(-1) ?? { params: undefined };
+
+      expect(requete.params).toMatchObject({ direction: 'asc' });
+    });
+  });
+
+  it('un module à tri unique n’affiche pas de sélecteur', async () => {
+    apiMock.reset();
+    apiMock.onGet(/\/admin\/console\/disputes/).reply(200, PAGE);
+
+    afficher();
+
+    await screen.findByTestId('resource-list');
+
+    // Un seul tri possible : proposer de choisir laisserait croire à une liberté qui n'existe pas.
+    expect(screen.queryByLabelText('Trier par')).toBeNull();
+  });
+});

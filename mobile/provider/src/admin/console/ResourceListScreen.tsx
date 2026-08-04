@@ -45,8 +45,20 @@ export function ResourceListScreen({ route }: { route: { params: Params } }) {
   const [erreursSaisie, setErreursSaisie] = useState<Record<string, string>>({});
   const actionGlobale = useResourceGlobalAction(resource);
 
+  /*
+   * Cent vingt-huit colonnes triables sont déclarées à travers la console, quarante et un modules
+   * en offrant plus d'une. Le hook savait les envoyer depuis le début ; l'écran ne les lui passait
+   * jamais. Sur une liste paginée, ne pas pouvoir trier oblige à faire défiler pour trouver ce
+   * qu'un tri montrerait en tête.
+   *
+   * `undefined` au départ, pas le tri par défaut du descripteur : le serveur l'applique déjà, et
+   * le répéter ici en ferait une seconde source à garder d'accord avec la première.
+   */
+  const [tri, setTri] = useState<string | undefined>(undefined);
+  const [sens, setSens] = useState<'asc' | 'desc' | undefined>(undefined);
+
   const { data, isLoading, isError, refetch, fetchNextPage, hasNextPage, isFetchingNextPage } =
-    useResourceIndex(resource, { filters });
+    useResourceIndex(resource, { filters, sort: tri, direction: sens });
 
   const descripteur = data?.pages[0]?.resource;
   const rows = useMemo(
@@ -202,6 +214,39 @@ export function ResourceListScreen({ route }: { route: { params: Params } }) {
             </View>
           ))}
 
+        {/*
+          * Le tri n'est proposé que s'il y a un choix à faire. Une seule colonne triable et un
+          * sélecteur laisserait croire à une liberté qui n'existe pas.
+          */}
+        {(descripteur?.sorts.length ?? 0) > 1 ? (
+          <View style={styles.rangeeTri}>
+            <View style={styles.triChoix}>
+              <OptionPicker
+                label="Trier par"
+                options={(descripteur?.sorts ?? []).map((cle) => ({
+                  value: cle,
+                  label: libelleDeTri(cle, descripteur?.columns ?? []),
+                }))}
+                value={tri ?? descripteur?.default_sort ?? null}
+                onChange={(v) => setTri(v ?? undefined)}
+              />
+            </View>
+
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Inverser le sens du tri"
+              onPress={() => setSens((courant) => (courant === 'asc' ? 'desc' : 'asc'))}
+              style={styles.sens}
+            >
+              <Icon
+                name={sens === 'asc' ? 'arrow-up' : 'arrow-down'}
+                size={18}
+                color={colors.surface[400]}
+              />
+            </Pressable>
+          </View>
+        ) : null}
+
         {globales.map((action) => (
           <Button
             key={action.key}
@@ -318,7 +363,36 @@ function Row({
   );
 }
 
+/**
+ * Le nom lisible d'une colonne de tri.
+ *
+ * Le serveur envoie des CLÉS (`sorts: ['id', 'created_at']`), pas des libellés. Quand la clé
+ * correspond à une colonne affichée, on reprend son libellé — c'est le même mot que celui que
+ * l'administrateur lit dans la liste. Sinon on humanise la clé, faute de mieux : une table de
+ * traductions ici divergerait du serveur au premier renommage.
+ */
+function libelleDeTri(cle: string, colonnes: ResourceColumn[]): string {
+  const colonne = colonnes.find((c) => c.key === cle);
+
+  if (colonne) {
+    return colonne.label;
+  }
+
+  const mots = cle.replace(/_/g, ' ');
+
+  return mots.charAt(0).toUpperCase() + mots.slice(1);
+}
+
 const stylesFor = (t: ThemeTokens) => StyleSheet.create({
+  rangeeTri: { flexDirection: 'row', alignItems: 'flex-start' },
+  triChoix: { flex: 1 },
+  sens: {
+    width: 48,
+    minHeight: 56,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginLeft: spacing.xs,
+  },
   bascule: {
     flexDirection: 'row',
     alignItems: 'center',
