@@ -2,6 +2,7 @@
 
 namespace App\Admin\Resources;
 
+use App\Admin\Console\Action;
 use App\Admin\Console\Column;
 use App\Admin\Console\EloquentResource;
 use App\Models\PushNotification;
@@ -64,6 +65,25 @@ class PushNotificationResource extends EloquentResource
             'provider' => 'Fournisseur',
             'failed_reason' => 'Motif d’échec',
             'sent_at' => 'Envoyée le',
+        ];
+    }
+
+    public function actions(): array
+    {
+        return [
+            Action::make('retry', 'Réessayer l’envoi', function (PushNotification $notif) {
+                // Même refus que sur le web : renvoyer une notification déjà partie la ferait
+                // sonner deux fois, et rien n'indiquerait au destinataire laquelle compte.
+                $retentable = [PushNotification::STATUS_FAILED, PushNotification::STATUS_RATE_LIMITED];
+
+                if (! in_array($notif->status, $retentable, true)) {
+                    return ['ok' => false, 'message' => 'Seules les notifications en échec peuvent être retentées.'];
+                }
+
+                $notif->forceFill(['status' => PushNotification::STATUS_QUEUED, 'failed_reason' => null])->save();
+
+                return ['ok' => true];
+            }),
         ];
     }
 }

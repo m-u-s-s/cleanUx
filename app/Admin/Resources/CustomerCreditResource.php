@@ -2,9 +2,12 @@
 
 namespace App\Admin\Resources;
 
+use App\Admin\Console\Action;
 use App\Admin\Console\Column;
 use App\Admin\Console\EloquentResource;
+use App\Admin\Console\Field;
 use App\Models\CustomerCredit;
+use App\Support\ActivityLogger;
 
 /**
  * Les avoirs et crédits clients.
@@ -67,6 +70,37 @@ class CustomerCreditResource extends EloquentResource
         return [
             'reason' => 'Motif',
             'notes' => 'Notes',
+        ];
+    }
+
+    public function actions(): array
+    {
+        return [
+            /*
+             * Le REFUS est repris du web : seul un crédit actif s'annule. Annuler un crédit déjà
+             * consommé remettrait son solde à zéro sans rien rendre au client — une perte qu'il
+             * découvrirait à sa prochaine réservation.
+             */
+            Action::make('cancel', 'Annuler le crédit', function (CustomerCredit $credit, array $valeurs) {
+                if ($credit->status !== 'active') {
+                    return ['ok' => false, 'message' => 'Seul un crédit actif peut être annulé.'];
+                }
+
+                $credit->forceFill([
+                    'status' => 'cancelled',
+                    'remaining_amount' => 0,
+                    'notes' => (string) ($valeurs['reason'] ?? ''),
+                ])->save();
+
+                ActivityLogger::log('customer_credit.cancelled', $credit, [
+                    'admin_user_id' => request()->user()?->id,
+                ]);
+
+                return ['ok' => true];
+            })->requires([
+                Field::make('reason', 'Motif de l’annulation', Field::TYPE_TEXTAREA)
+                    ->rules(['required', 'string', 'min:5', 'max:500']),
+            ])->destructive('Le crédit sera annulé et son solde perdu.'),
         ];
     }
 }
