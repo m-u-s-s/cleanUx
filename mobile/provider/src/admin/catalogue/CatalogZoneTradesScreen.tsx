@@ -117,6 +117,9 @@ export function CatalogZoneTradesScreen() {
                 id: item.id,
               })
             }
+            onParcours={() =>
+              navigation.navigate('AdminTradeJourney', { tradeId: item.id, title: item.name })
+            }
             onMonter={() => {
               agir.mutate({ id: item.id, action: 'move-up' });
               void refetch();
@@ -139,12 +142,14 @@ function TradeRow({
   metier,
   onToggle,
   onEdit,
+  onParcours,
   onMonter,
   onDescendre,
 }: {
   metier: ZoneTrade;
   onToggle: () => void;
   onEdit: () => void;
+  onParcours: () => void;
   onMonter: () => void;
   onDescendre: () => void;
 }) {
@@ -168,6 +173,8 @@ function TradeRow({
         sujet={metier.name}
         actions={[
           { cle: 'edit', libelle: 'Modifier le métier', executer: onEdit },
+          // Ce que le métier DEMANDE au client, et ce que chaque réponse ajoute au prix.
+          { cle: 'parcours', libelle: 'Parcours de questions', executer: onParcours },
           /*
             L'ordre des métiers est celui du DOCK client : le premier est ce qu'on propose
             d'abord. Monter et descendre plutôt qu'un glisser-déposer, qui se confond avec le

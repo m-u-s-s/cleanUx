@@ -9,6 +9,7 @@ use App\Http\Controllers\Api\Admin\Console\ReportController;
 use App\Http\Controllers\Api\Admin\Console\ResourceController;
 use App\Http\Controllers\Api\Admin\DisputeAdminController;
 use App\Http\Controllers\Api\Admin\InsuranceAdminController;
+use App\Http\Controllers\Api\Admin\JourneyBuilderController;
 use App\Http\Controllers\Api\Admin\MarketingCampaignController;
 use App\Http\Controllers\Api\Admin\MarketingSegmentController;
 use App\Http\Controllers\Api\Admin\MatchingSimulationController;
@@ -254,10 +255,27 @@ Route::middleware(['auth:sanctum', 'api_admin'])->group(function () {
     Route::prefix('admin/catalogue')->group(function () {
         Route::middleware('api_scope:admin:read,admin:everything')->group(function () {
             Route::get('/zones/{zone}/trades', [ZoneCatalogController::class, 'trades']);
+            Route::get('/trades/{trade}/journey', [JourneyBuilderController::class, 'show']);
         });
 
         Route::middleware('api_scope:admin:critical,admin:everything')->group(function () {
             Route::post('/zones/{zone}/trades/{trade}/toggle', [ZoneCatalogController::class, 'toggle']);
+
+            /*
+             * Le constructeur de parcours. Il ne réimplémente aucune règle : la validation vient de
+             * QuestionnaireValidator, la publication de TradeFormPublisher, l'ordre de
+             * CatalogOrdering — les mêmes services que le web.
+             */
+            Route::post('/trades/{trade}/questions', [JourneyBuilderController::class, 'storeQuestion']);
+            Route::patch('/questions/{question}', [JourneyBuilderController::class, 'updateQuestion']);
+            Route::post('/questions/{question}/move', [JourneyBuilderController::class, 'moveQuestion']);
+            Route::delete('/questions/{question}', [JourneyBuilderController::class, 'destroyQuestion']);
+
+            Route::post('/questions/{question}/options', [JourneyBuilderController::class, 'storeOption']);
+            Route::patch('/options/{option}', [JourneyBuilderController::class, 'updateOption']);
+            Route::delete('/options/{option}', [JourneyBuilderController::class, 'destroyOption']);
+
+            Route::post('/trades/{trade}/publish', [JourneyBuilderController::class, 'publish']);
         });
     });
 

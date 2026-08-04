@@ -22,6 +22,8 @@ export type RootStackParamList = {
   // La descente géographique du catalogue : zones d'un pays, puis métiers d'une zone.
   AdminCatalogZones: { countryId: number; title?: string };
   AdminCatalogTrades: { zoneId: number; title?: string };
+  // Le constructeur de parcours d'un métier : questions, réponses et leurs suppléments.
+  AdminTradeJourney: { tradeId: number; title?: string };
   AdminResourceDetail: { resource: string; title: string; id: string | number };
   AdminResourceForm: {
     resource: string;

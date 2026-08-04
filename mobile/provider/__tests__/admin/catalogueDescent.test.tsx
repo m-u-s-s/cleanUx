@@ -165,3 +165,36 @@ describe('catalogue mobile — les erreurs disent ce qui s’est passé', () => 
     }
   });
 });
+
+describe('constructeur de parcours — mobile', () => {
+  it('l’écran est monté et atteignable depuis les métiers', () => {
+    /*
+     * Les deux moitiés. Le lot précédent avait ajouté l'appel AVANT que l'écran existe : `tsc` ne
+     * l'avait pas vu, et la casse ne se serait produite qu'au toucher, sur un écran blanc.
+     */
+    expect(lire('src/navigation/RootNavigator.tsx')).toContain('name="AdminTradeJourney"');
+    expect(lire('src/admin/catalogue/CatalogZoneTradesScreen.tsx')).toContain("navigate('AdminTradeJourney'");
+    expect(lire('src/navigation/types.ts')).toContain('AdminTradeJourney:');
+  });
+
+  it('le supplément d’une réponse est éditable, et l’écran dit sa règle', () => {
+    const ecran = lireAplati('src/admin/catalogue/JourneyBuilderScreen.tsx');
+
+    // La raison d'être de cet écran : un supplément qui ne s'applique que si le client choisit
+    // cette réponse. Posé sur la question, il s'appliquerait aussi à « Non ».
+    expect(ecran).toContain('price_modifier_euros');
+    expect(ecran).toContain('ne s’ajoute que si le client la choisit');
+  });
+
+  it('le verdict de publication est affiché', () => {
+    const ecran = lire('src/admin/catalogue/JourneyBuilderScreen.tsx');
+
+    // Régler un parcours sans savoir s'il partira, c'est découvrir le refus après coup.
+    expect(ecran).toContain('can_publish');
+    expect(ecran).toContain('n’est pas encore publiable');
+  });
+
+  it('le bouton Publier est désactivé tant que le parcours ne l’est pas', () => {
+    expect(lire('src/admin/catalogue/JourneyBuilderScreen.tsx')).toContain('disabled={!publiable}');
+  });
+});
