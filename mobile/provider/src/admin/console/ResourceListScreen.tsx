@@ -1,13 +1,15 @@
 import React, { useMemo, useState } from 'react';
 import { FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import { Alert } from 'react-native';
 import { Button, EmptyState, ErrorState, Icon, Screen, Skeleton, TextInput } from '@/ui';
 import { colors, radius, spacing, typography } from '@/theme';
 import { useThemeColors } from '@/theme/useThemeColors';
 import type { ThemeTokens } from '@/theme/useThemeColors';
-import { useResourceIndex } from './hooks';
+import { ActionInputSheet } from './ActionInputSheet';
+import { readServerErrors, useResourceGlobalAction, useResourceIndex } from './hooks';
 import { formatCell } from './format';
-import type { FilterValues, ResourceColumn, ResourceRow } from './types';
+import type { FilterValues, ResourceAction, ResourceColumn, ResourceRow } from './types';
 
 interface Params {
   resource: string;
@@ -32,6 +34,15 @@ export function ResourceListScreen({ route }: { route: { params: Params } }) {
   const navigation = useNavigation<{ navigate: (screen: string, params?: object) => void }>();
 
   const [filters, setFilters] = useState<FilterValues>({});
+
+  /*
+   * Les actions GLOBALES portent sur le module, pas sur une ligne : purger un cache, relancer une
+   * file, simuler un matching. Les poser dans le menu d'une ligne aurait laissé croire qu'elles
+   * s'appliquent à celle qu'on vient de toucher.
+   */
+  const [saisieEnCours, setSaisieEnCours] = useState<ResourceAction | null>(null);
+  const [erreursSaisie, setErreursSaisie] = useState<Record<string, string>>({});
+  const actionGlobale = useResourceGlobalAction(resource);
 
   const { data, isLoading, isError, refetch, fetchNextPage, hasNextPage, isFetchingNextPage } =
     useResourceIndex(resource, { filters });
@@ -74,6 +85,50 @@ export function ResourceListScreen({ route }: { route: { params: Params } }) {
   }
 
   const creable = (descripteur?.form.length ?? 0) > 0;
+  const globales = descripteur?.global_actions ?? [];
+
+  /** Lancer un geste global, une fois sa saisie éventuelle recueillie. */
+  const lancer = (action: ResourceAction, values?: Record<string, unknown>) => {
+    actionGlobale.mutate(
+      { action: action.key, values },
+      {
+        onSuccess: () => {
+          setSaisieEnCours(null);
+          setErreursSaisie({});
+        },
+        onError: (e) => {
+          const lu = readServerErrors(e);
+          setErreursSaisie(lu.fields);
+
+          // Sans saisie ouverte, l'erreur n'a aucun endroit où s'afficher : on la dit.
+          if (Object.keys(lu.fields).length === 0) {
+            Alert.alert(action.label, lu.message);
+          }
+        },
+      },
+    );
+  };
+
+  /** Un geste destructif s'annonce AVANT de partir : le serveur, lui, ne demandera rien. */
+  const demarrer = (action: ResourceAction) => {
+    if (action.fields.length > 0) {
+      setErreursSaisie({});
+      setSaisieEnCours(action);
+
+      return;
+    }
+
+    if (action.confirm) {
+      Alert.alert(action.label, action.confirm, [
+        { text: 'Annuler', style: 'cancel' },
+        { text: 'Confirmer', style: 'destructive', onPress: () => lancer(action) },
+      ]);
+
+      return;
+    }
+
+    lancer(action);
+  };
 
   return (
     <Screen>
@@ -87,6 +142,17 @@ export function ResourceListScreen({ route }: { route: { params: Params } }) {
             autoCorrect={false}
           />
         ) : null}
+
+        {globales.map((action) => (
+          <Button
+            key={action.key}
+            label={action.label}
+            variant="secondary"
+            size="sm"
+            disabled={actionGlobale.isPending}
+            onPress={() => demarrer(action)}
+          />
+        ))}
 
         {creable ? (
           <Button
@@ -135,6 +201,16 @@ export function ResourceListScreen({ route }: { route: { params: Params } }) {
           ) : null
         }
       />
+
+      <ActionInputSheet
+        action={saisieEnCours}
+        visible={saisieEnCours !== null}
+        submitting={actionGlobale.isPending}
+        errors={erreursSaisie}
+        onCancel={() => setSaisieEnCours(null)}
+        onSubmit={(values) => saisieEnCours && lancer(saisieEnCours, values)}
+      />
+
     </Screen>
   );
 }

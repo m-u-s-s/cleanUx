@@ -116,6 +116,6 @@ apiClient.interceptors.response.use(
       }
     }
 
-    throw new ApiError(status, errorCode, message, errors);
+    throw new ApiError(status, errorCode, message, errors, responseData as Record<string, unknown> | undefined);
   },
 );

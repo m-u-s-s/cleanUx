@@ -117,6 +117,24 @@ export function useResourceAction(resource: string) {
 }
 
 /**
+ * Une action GLOBALE : elle ne porte sur aucune ligne.
+ *
+ * La route est `/actions/{action}` — sans identifiant. Réutiliser le hook par ligne aurait
+ * demandé d'inventer un identifiant, et le geste aurait visé une ligne au hasard.
+ */
+export function useResourceGlobalAction(resource: string) {
+  const qc = useQueryClient();
+
+  return useMutation<unknown, unknown, { action: string; values?: Record<string, unknown> }>({
+    mutationFn: async ({ action, values }) =>
+      (await apiClient.post(`/admin/console/${resource}/actions/${action}`, values ?? {})).data
+        .result,
+    // Le geste porte sur le module : la liste entière peut avoir changé, pas une seule ligne.
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['admin', 'console', resource] }),
+  });
+}
+
+/**
  * Le message d'erreur d'une réponse serveur, et les erreurs par champ.
  *
  * Le moteur rend `{ok:false, error, errors}`. Sans cette lecture, un formulaire refusé
@@ -136,6 +154,7 @@ export function readServerErrors(error: unknown): {
    */
   const normalisee = error as {
     errorCode?: string;
+    payload?: Record<string, unknown>;
     errors?: Record<string, string[]>;
     response?: { data?: Record<string, unknown> };
   };
@@ -165,6 +184,8 @@ export function readServerErrors(error: unknown): {
     forbidden_not_admin: 'Votre compte n’a pas les droits d’administration.',
     invalid_sort: 'Ce tri n’est pas autorisé sur ce module.',
     invalid_direction: 'Ce sens de tri n’est pas valide.',
+    forbidden_readonly: 'Votre compte est en lecture seule : la consultation reste ouverte.',
+    delete_refused: 'Cet élément ne peut pas être supprimé.',
   };
 
   const code =
@@ -172,5 +193,29 @@ export function readServerErrors(error: unknown): {
     (typeof brute.error_code === 'string' ? brute.error_code : undefined) ??
     (typeof brute.error === 'string' ? brute.error : '');
 
-  return { message: known[code] ?? 'Une erreur est survenue.', fields };
+  /*
+   * LE SERVEUR EXPLIQUE, ON LE RÉPÈTE. Un refus de suppression arrive avec ses raisons — « 3 zones
+   * rattachées », « 12 missions en cours ». Les remplacer par un message générique perd la seule
+   * information qui permette d'agir, et renvoie l'administrateur au poste de travail pour
+   * apprendre ce que le serveur vient de dire.
+   */
+  const base = known[code] ?? 'Une erreur est survenue.';
+  const raisons = raisonsDuRefus(normalisee?.payload ?? brute);
+
+  if (raisons.length === 0) {
+    return { message: base, fields };
+  }
+
+  return { message: [base, '', ...raisons.map((r) => `• ${r}`)].join('\n'), fields };
+}
+
+/** Les raisons listées par le serveur, s'il en a donné. */
+function raisonsDuRefus(corps: Record<string, unknown> | undefined): string[] {
+  const brutes = corps?.reasons;
+
+  if (! Array.isArray(brutes)) {
+    return [];
+  }
+
+  return brutes.filter((r): r is string => typeof r === 'string' && r.trim() !== '');
 }

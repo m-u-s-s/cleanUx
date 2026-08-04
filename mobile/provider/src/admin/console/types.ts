@@ -70,6 +70,14 @@ export interface ResourceDescriptor {
   sorts: string[];
   default_sort: string;
   actions: ResourceAction[];
+  /**
+   * Les actions qui ne portent sur AUCUNE ligne.
+   *
+   * Purger un cache, relancer une file, simuler un matching : le geste concerne le module entier.
+   * Elles vivent donc à côté de la liste et non dans le menu d'une ligne, où elles auraient laissé
+   * croire qu'elles s'appliquent à celle qu'on vient de toucher.
+   */
+  global_actions?: ResourceAction[];
   form: ResourceField[];
 }
 
