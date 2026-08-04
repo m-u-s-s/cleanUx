@@ -2,9 +2,11 @@
 
 namespace App\Admin\Resources;
 
+use App\Admin\Console\Action;
 use App\Admin\Console\Column;
 use App\Admin\Console\EloquentResource;
 use App\Models\MarketingCampaign;
+use App\Services\Marketing\CampaignEngine;
 
 /**
  * Les campagnes marketing.
@@ -68,6 +70,34 @@ class MarketingCampaignResource extends EloquentResource
             'opt_in_required' => 'Opt-in requis',
             'started_at' => 'Démarrée le',
             'ended_at' => 'Terminée le',
+        ];
+    }
+
+    public function actions(): array
+    {
+        return [
+            /*
+             * Planifier une campagne CONSTITUE sa liste de destinataires. C'est le geste coûteux —
+             * il fige qui recevra quoi — et le moteur rend leur nombre : « planifiée » sans chiffre
+             * ne dit pas si le segment était vide, ce qui est la panne la plus fréquente.
+             */
+            Action::make('schedule', 'Planifier la campagne', function (MarketingCampaign $campagne) {
+                $destinataires = app(CampaignEngine::class)->schedule($campagne);
+
+                return ['recipients' => $destinataires];
+            }),
+
+            Action::make('pause', 'Mettre en pause', function (MarketingCampaign $campagne) {
+                app(CampaignEngine::class)->pause($campagne);
+
+                return ['ok' => true];
+            }),
+
+            Action::make('cancel', 'Annuler la campagne', function (MarketingCampaign $campagne) {
+                app(CampaignEngine::class)->cancel($campagne);
+
+                return ['ok' => true];
+            })->destructive('La campagne sera annulée et ses envois restants abandonnés.'),
         ];
     }
 }
