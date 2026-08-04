@@ -18,6 +18,7 @@ use App\Admin\Resources\AccountingEntryResource;
 use App\Admin\Resources\AddressLookupResource;
 use App\Admin\Resources\AnalyticsEventResource;
 use App\Admin\Resources\ApiTokenUsageResource;
+use App\Admin\Resources\ApiTokenV2Resource;
 use App\Admin\Resources\AuditEventResource;
 use App\Admin\Resources\AvailabilitySlotResource;
 use App\Admin\Resources\BadgeResource;
@@ -120,6 +121,7 @@ class AdminConsoleServiceProvider extends ServiceProvider
              * signatures. Le moteur sert un modèle par descripteur : sans ces clés, les gestes les
              * plus fréquents de ces pages n'avaient nulle part où vivre.
              */
+            $registry->register('api-tokens-list', ApiTokenV2Resource::class);
             $registry->register('risk-holds', RiskHoldResource::class);
             $registry->register('contract-signatures', ContractSignatureResource::class);
             $registry->register('b2b-contracts', OrganizationContractResource::class);

@@ -41,6 +41,23 @@ class AdminParityInventoryTest extends TestCase
      */
     private const SEUIL_MINIMAL = 1;
 
+    /**
+     * Les modules que l'heuristique compte comme actifs alors qu'ils ne le sont pas.
+     *
+     * CHAQUE ENTRÉE PORTE SA RAISON, et la raison est vérifiable : c'est ce qui distingue une
+     * exception d'un contournement. Une liste sans motifs se remplirait à chaque module gênant, et
+     * la mesure finirait par ne plus rien mesurer.
+     */
+    private const HORS_MESURE = [
+        'emails' => 'Ses deux « gestes » sont une PRÉVISUALISATION de gabarit et un accesseur de '
+            .'liste. Aucun n’écrit : l’heuristique les compte parce qu’ils appellent un service, '
+            .'ce qu’elle ne peut pas distinguer d’une écriture.',
+
+        'missions' => 'Sa page web agit sur des RÉSERVATIONS, pas sur des missions — la table '
+            .'`missions` est vide et le dispatch vit dans le module ia-dispatch, où il est porté. '
+            .'Y ajouter une action porterait sur un modèle que personne n’alimente.',
+    ];
+
     public function test_l_inventaire_de_parite_ne_recule_pas(): void
     {
         $registre = app(ResourceRegistry::class);
@@ -54,7 +71,7 @@ class AdminParityInventoryTest extends TestCase
 
             $gestesWeb = $this->gestesDuComposantWeb((string) ($module['routes'][0] ?? ''));
 
-            if ($gestesWeb < self::SEUIL_MINIMAL) {
+            if ($gestesWeb < self::SEUIL_MINIMAL || isset(self::HORS_MESURE[$module['key']])) {
                 continue;
             }
 
@@ -98,6 +115,13 @@ class AdminParityInventoryTest extends TestCase
         }
 
         $this->assertSame([], $manquants, "Modules web actifs sans aucune prise côté mobile :\n".implode("\n", $manquants));
+    }
+
+    public function test_chaque_exception_porte_une_raison_ecrite(): void
+    {
+        foreach (self::HORS_MESURE as $cle => $raison) {
+            $this->assertGreaterThan(80, strlen($raison), "L’exception {$cle} n’explique pas assez.");
+        }
     }
 
     public function test_la_mesure_trouve_bien_des_gestes(): void

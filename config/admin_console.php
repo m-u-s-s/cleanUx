@@ -133,7 +133,7 @@ return [
         ['key' => 'audit', 'title' => 'Audit', 'group' => 'plateforme', 'icon' => 'shield-checkmark-outline', 'coverage' => 'descriptor', 'routes' => ['admin/audit', 'admin/audit/logs']],
         ['key' => 'gdpr', 'title' => 'RGPD', 'group' => 'plateforme', 'icon' => 'lock-closed-outline', 'coverage' => 'descriptor', 'routes' => ['admin/gdpr']],
         ['key' => 'feature-flags', 'title' => 'Feature flags', 'group' => 'plateforme', 'icon' => 'flag-outline', 'coverage' => 'descriptor', 'routes' => ['admin/feature-flags']],
-        ['key' => 'api-tokens', 'title' => 'Jetons d’API', 'group' => 'plateforme', 'icon' => 'key-outline', 'coverage' => 'descriptor', 'routes' => ['admin/api-tokens-v2']],
+        ['key' => 'api-tokens', 'title' => 'Jetons d’API', 'group' => 'plateforme', 'icon' => 'key-outline', 'coverage' => 'descriptor', 'routes' => ['admin/api-tokens-v2'], 'resources' => ['api-tokens-list']],
         ['key' => 'webhooks', 'title' => 'Webhooks sortants', 'group' => 'plateforme', 'icon' => 'git-network-outline', 'coverage' => 'descriptor', 'routes' => ['admin/webhooks-v2']],
         ['key' => 'geolocation', 'title' => 'Géolocalisation', 'group' => 'plateforme', 'icon' => 'locate-outline', 'coverage' => 'descriptor', 'routes' => ['admin/geolocation-v2']],
         ['key' => 'translations', 'title' => 'Traductions', 'group' => 'plateforme', 'icon' => 'language-outline', 'coverage' => 'descriptor', 'routes' => ['admin/translations']],

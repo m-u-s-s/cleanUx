@@ -78,6 +78,11 @@ class TranslationResource extends EloquentResource
              * corrigerait pas une traduction, cela en créerait une autre et laisserait la
              * première en place. Seule la VALEUR se modifie ici.
              */
+            // La locale et la clé sont obligatoires en base : sans elles la création échoue en
+            // 500. Les modifier sur une surcharge EXISTANTE en crée une seconde plutôt que de
+            // corriger la première — c'est le prix d'un formulaire unique pour créer et éditer.
+            Field::make('locale', 'Langue')->rules(['required', 'string', 'max:8']),
+            Field::make('key', 'Clé')->rules(['required', 'string', 'max:255']),
             Field::make('value', 'Traduction', Field::TYPE_TEXTAREA)
                 ->rules(['required', 'string', 'max:5000']),
         ];

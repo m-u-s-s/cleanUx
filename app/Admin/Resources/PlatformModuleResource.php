@@ -62,9 +62,13 @@ class PlatformModuleResource extends EloquentResource
     public function formFields(): array
     {
         return [
+            // La clé technique identifie le module dans tout le code : elle est obligatoire à
+            // la création, et le garde-fou des descripteurs l'a signalé avant la première
+            // tentative — un formulaire incomplet rend 500, pas un message lisible.
+            Field::make('key', 'Clé technique')->rules(['required', 'string', 'max:255']),
             Field::make('name', 'Nom')->rules(['required', 'string', 'max:255']),
             Field::make('description', 'Description', Field::TYPE_TEXTAREA)->rules(['nullable', 'string', 'max:2000']),
-            Field::make('category_value', 'Catégorie')->rules(['required', 'string', 'max:100']),
+            Field::make('category', 'Catégorie')->rules(['required', 'string', 'max:100']),
             Field::select('rollout_strategy', 'Déploiement', [
                 ['value' => 'global', 'label' => 'Global'],
                 ['value' => 'role', 'label' => 'Par rôle'],
