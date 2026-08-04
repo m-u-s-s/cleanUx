@@ -18,7 +18,10 @@ jobs:
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
-          php-version: '8.3'
+          # 8.4 comme la CI, et comme le runtime : `composer.lock` contient des paquets
+          # Symfony 8.1.x qui exigent php >= 8.4.1. Sur 8.3, `composer install` refusait
+          # d'installer douze paquets — le déploiement échouait avant même l'étape SSH.
+          php-version: '8.4'
           extensions: mbstring, dom, fileinfo, pdo_sqlite, sqlite3
 
       - name: Setup Node
