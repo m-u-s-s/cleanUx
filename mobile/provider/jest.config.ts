@@ -17,12 +17,18 @@ const config: Config = {
   // aucune implémentation Jest/Node. App.tsx enveloppe désormais tout dans GestureHandlerRootView
   // (Task 9), donc tout test qui monte <App /> en a besoin — c'est le fichier de setup officiel
   // documenté par le package, qui mocke le module natif pour toute la suite.
+  // Ces deux chemins passent par `require.resolve` et non par un `<rootDir>/node_modules/...` écrit
+  // à la main : dans un espace de travail npm, c'est npm qui décide si un paquet atterrit dans
+  // `provider/node_modules` ou à la racine `mobile/node_modules`, et il change d'avis d'une montée
+  // de version à l'autre. Les deux entrées ci-dessous pariaient chacune sur un côté différent — la
+  // montée en SDK 57 a déplacé gesture-handler et cassé la suite. `require.resolve` suit la
+  // résolution Node et reste juste des deux côtés.
   setupFiles: [
-    '<rootDir>/node_modules/react-native-gesture-handler/jestSetup.js',
+    require.resolve('react-native-gesture-handler/jestSetup.js'),
     // Skia s'installe par des liaisons natives JSI, absentes en environnement Jest. Le paquet
     // fournit son propre fichier de mise en place ; sans lui, tout test qui touche au fond nuit
     // échoue sur « Native Skia Module failed to correctly install JSI Bindings ».
-    '<rootDir>/../node_modules/@shopify/react-native-skia/jestSetup.js',
+    require.resolve('@shopify/react-native-skia/jestSetup.js'),
   ],
   transformIgnorePatterns: [
     // @shopify/react-native-skia est publié en modules ES (`main: lib/module/index.js`) :

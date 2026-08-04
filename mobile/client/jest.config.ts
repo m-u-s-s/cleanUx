@@ -7,13 +7,19 @@ const config: Config = {
   // aucune implémentation Jest/Node. App.tsx enveloppe désormais tout dans GestureHandlerRootView
   // — la feuille d'actions de l'accueil l'exige — donc tout test qui monte <App /> en a besoin.
   // C'est le fichier de setup officiel du paquet, déjà employé par l'application prestataire.
+  // Ces deux chemins passent par `require.resolve` et non par un `<rootDir>/node_modules/...` écrit
+  // à la main : dans un espace de travail npm, c'est npm qui décide si un paquet atterrit dans
+  // `client/node_modules` ou à la racine `mobile/node_modules`, et il change d'avis d'une montée de
+  // version à l'autre. Les deux entrées ci-dessous pariaient chacune sur un côté différent — la
+  // montée en SDK 57 a déplacé gesture-handler et cassé la suite. `require.resolve` suit la
+  // résolution Node et reste juste des deux côtés.
   setupFiles: [
-    '<rootDir>/node_modules/react-native-gesture-handler/jestSetup.js',
+    require.resolve('react-native-gesture-handler/jestSetup.js'),
     // Skia s'installe par des liaisons JSI natives. Sans ce fichier — celui du paquet — tout test
     // qui monte un écran échoue sur « Native Skia Module failed to correctly install JSI
     // Bindings », y compris les écrans qui ne dessinent rien : le fond nuit est exporté depuis la
     // barrique `@/ui`, donc importé par transitivité.
-    '<rootDir>/../node_modules/@shopify/react-native-skia/jestSetup.js',
+    require.resolve('@shopify/react-native-skia/jestSetup.js'),
   ],
   // react-test-renderer (used by @testing-library/react-native) is deprecated
   // under React 19 and leaves an async operation pending at the end of a run

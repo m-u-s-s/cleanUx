@@ -16,6 +16,7 @@
     "ios:provider": "npm run ios --workspace provider"
   },
   "devDependencies": {
-    "typescript": "~6.0.3"
+    "typescript": "~6.0.3",
+    "ts-node": "^10.9.2"
   }
 }
