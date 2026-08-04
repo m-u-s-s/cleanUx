@@ -35,6 +35,8 @@ use Livewire\Component;
  * mêmes objets partout — mais leur OUVERTURE se règle zone par zone. C'est ce qui permet à un
  * métier de coûter plus cher là où la demande est forte : l'activation et le prix sont la même
  * ligne, `trade_zone_pricing`, donc il n'y a pas deux réglages à garder cohérents.
+ *
+ * @property-read array<int, int> $tradesLosingClients
  */
 #[Layout('layouts.app')]
 class CatalogCenter extends Component

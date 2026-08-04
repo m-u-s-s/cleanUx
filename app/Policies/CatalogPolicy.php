@@ -40,8 +40,7 @@ class CatalogPolicy
      */
     public function update(User $user): bool
     {
-        return $user->isAdmin()
-            && ! (method_exists($user, 'isReadOnlyAdmin') && $user->isReadOnlyAdmin());
+        return $user->isAdmin() && ! $user->isReadOnlyAdmin();
     }
 
     /** Archiver retire du catalogue sans rien détruire : même exigence qu'une écriture. */

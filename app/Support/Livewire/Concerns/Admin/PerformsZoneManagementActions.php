@@ -69,6 +69,7 @@ trait PerformsZoneManagementActions
         $this->selectZone($zone->id);
     }
 
+    /** @param  array<string, mixed>  $payload */
     protected function persistServiceRule(ServiceZone $zone, int $serviceCatalogId, array $payload): ZoneServiceRule
     {
         return ZoneServiceRule::updateOrCreate(

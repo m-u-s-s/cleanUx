@@ -46,9 +46,17 @@ trait AuditsEloquentEvents
         });
     }
 
+    /** @param  array<string, mixed>|null  $changes */
     public function writeAuditEvent(string $action, ?array $changes): void
     {
         try {
+            /*
+             * Le garde reste indispensable : ce trait sert des dizaines de modèles et seuls
+             * quelques-uns définissent ces méthodes. L'analyse ne le juge inutile que dans
+             * le contexte des deux qui les implémentent — le retirer casserait tous les autres.
+             *
+             * @phpstan-ignore function.alreadyNarrowedType
+             */
             $domain = method_exists($this, 'auditEventDomain')
                 ? $this->auditEventDomain()
                 : strtolower(class_basename(static::class));
