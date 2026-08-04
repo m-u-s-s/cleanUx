@@ -5,6 +5,7 @@ namespace App\Admin\Resources;
 use App\Admin\Console\Action;
 use App\Admin\Console\AdminResource;
 use App\Admin\Console\Column;
+use App\Admin\Console\DefaultsResourceWrites;
 use App\Admin\Console\Field;
 use App\Admin\Console\Filter;
 use App\Models\BusinessEntity;
@@ -30,6 +31,8 @@ use Illuminate\Support\Facades\Auth;
  */
 class KybResource implements AdminResource
 {
+    use DefaultsResourceWrites;
+
     public function __construct(private readonly BusinessOnboardingService $onboarding) {}
 
     public function key(): string

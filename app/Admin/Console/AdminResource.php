@@ -68,6 +68,36 @@ interface AdminResource
     public function actions(): array;
 
     /**
+     * Enrichit les données validées juste avant une CRÉATION.
+     *
+     * Certaines colonnes obligatoires ne se demandent pas : le `slug` d'une zone se déduit de son
+     * nom, et son état initial est une décision de la plateforme — une zone naît fermée, faute de
+     * quoi la créer la rendrait commandable avant qu'on ait réglé son catalogue.
+     *
+     * Les mettre dans le formulaire les rendrait modifiables par le client de l'API ; les laisser
+     * de côté ferait échouer l'insertion sur une colonne non nulle.
+     *
+     * @param  array<string, mixed>  $data
+     * @return array<string, mixed>
+     */
+    public function prepareForCreate(array $data): array;
+
+    /**
+     * Ce qui empêche de supprimer cette ligne. Tableau vide = suppression permise.
+     *
+     * LE MOTEUR SUPPRIMAIT SANS RIEN DEMANDER. Un pays effacé aurait emporté ses zones, et avec
+     * elles l'historique de facturation qui s'y rattache — un dégât qu'aucune sauvegarde ne répare
+     * proprement, puisque les identifiants auraient changé.
+     *
+     * ON REND DES RAISONS ET NON UN BOOLÉEN : « ça ne se supprime pas » sans dire pourquoi oblige à
+     * ouvrir la base pour comprendre, ce que personne ne fera depuis un téléphone.
+     *
+     * @param  TModel  $model
+     * @return list<string>
+     */
+    public function reasonsToRefuseDelete(Model $model): array;
+
+    /**
      * Les champs de création et d'édition. Une liste vide signifie « lecture seule » — c'est le
      * cas de la plupart des files de décision, qui s'administrent par actions.
      *

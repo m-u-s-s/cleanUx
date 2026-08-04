@@ -5,6 +5,7 @@ namespace App\Admin\Resources;
 use App\Admin\Console\Action;
 use App\Admin\Console\AdminResource;
 use App\Admin\Console\Column;
+use App\Admin\Console\DefaultsResourceWrites;
 use App\Admin\Console\Field;
 use App\Admin\Console\Filter;
 use App\Models\FeatureFlagOverride;
@@ -31,6 +32,8 @@ use Illuminate\Support\Facades\Auth;
  */
 class FeatureFlagResource implements AdminResource
 {
+    use DefaultsResourceWrites;
+
     public function key(): string
     {
         return 'feature-flags';

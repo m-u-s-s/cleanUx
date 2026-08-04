@@ -28,6 +28,10 @@ use Illuminate\Database\Eloquent\Model;
  */
 abstract class EloquentResource implements AdminResource
 {
+    // Les réponses neutres aux deux questions posées avant écriture, partagées avec les dix
+    // descripteurs qui implémentent le contrat sans passer par cette base.
+    use DefaultsResourceWrites;
+
     /**
      * La classe du modèle servi.
      *
