@@ -19,6 +19,9 @@ export type RootStackParamList = {
   AdminResourceList: { resource: string; title: string };
   /** Un module servi comme synthèse : des tuiles chiffrées, pas une liste. */
   AdminReport: { report: string; title: string };
+  // La descente géographique du catalogue : zones d'un pays, puis métiers d'une zone.
+  AdminCatalogZones: { countryId: number; title?: string };
+  AdminCatalogTrades: { zoneId: number; title?: string };
   AdminResourceDetail: { resource: string; title: string; id: string | number };
   AdminResourceForm: { resource: string; title: string; id?: string | number };
   MissionDetail: { missionId: number };
