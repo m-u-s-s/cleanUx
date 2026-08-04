@@ -2,9 +2,12 @@
 
 namespace App\Admin\Resources;
 
+use App\Admin\Console\Action;
 use App\Admin\Console\Column;
 use App\Admin\Console\EloquentResource;
+use App\Admin\Console\Field;
 use App\Models\ProviderOnboardingDocument;
+use App\Services\Onboarding\ProviderOnboardingService;
 
 /**
  * Les pièces déposées par les prestataires pendant leur inscription.
@@ -65,6 +68,36 @@ class OnboardingDocumentResource extends EloquentResource
             'rejection_reason' => 'Motif de refus',
             'reviewed_at' => 'Revu le',
             'mime_type' => 'Type de fichier',
+        ];
+    }
+
+    public function actions(): array
+    {
+        return [
+            Action::make('approve', 'Approuver le document', function (ProviderOnboardingDocument $document) {
+                app(ProviderOnboardingService::class)->reviewDocument($document, request()->user(), true);
+
+                return ['ok' => true];
+            }),
+
+            /*
+             * LE MOTIF EST OBLIGATOIRE, et long d'au moins cinq caractères comme sur le web. Un
+             * document refusé sans raison laisse le prestataire deviner ce qu'il doit refaire — il
+             * renvoie le même, et le dossier tourne en rond.
+             */
+            Action::make('reject', 'Refuser le document', function (ProviderOnboardingDocument $document, array $valeurs) {
+                app(ProviderOnboardingService::class)->reviewDocument(
+                    $document,
+                    request()->user(),
+                    false,
+                    (string) $valeurs['reason'],
+                );
+
+                return ['ok' => true];
+            })->requires([
+                Field::make('reason', 'Motif du refus', Field::TYPE_TEXTAREA)
+                    ->rules(['required', 'string', 'min:5', 'max:500']),
+            ]),
         ];
     }
 }
