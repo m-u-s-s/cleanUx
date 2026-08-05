@@ -16,15 +16,21 @@ use Tests\TestCase;
  * poussées, ce flux n'avait pas tourné une seule fois. Réparer la CI l'a révélé — un bug caché
  * derrière un autre bug.
  *
- * CE QUE CE TEST NE PEUT PAS FAIRE. Il ne connaît pas la version installée sur le serveur : les
- * unités Supervisor/systemd ne sont versionnées qu'en `.example`, et le provisionnement est manuel.
- * Il garantit que les flux sont d'accord ENTRE EUX et avec ce que le verrou exige — ce qui aurait
- * suffi à attraper la panne.
+ * CE QUE CE TEST NE PEUT PAS FAIRE. Il ne connaît pas la version installée sur le serveur : le
+ * provisionnement est manuel. Il garantit que les flux sont d'accord ENTRE EUX et avec ce que le
+ * verrou exige — ce qui aurait suffi à attraper la panne.
+ *
+ * MONTÉE EN 8.5 (2026-08-05). La référence passe de 8.4 à 8.5, le serveur ayant été mis à niveau.
+ * Les unités Supervisor/systemd, laissées à `php8.3` en dur lors du passage en 8.4, suivent cette
+ * fois : elles ne sont versionnées qu'en `.example` et échappent donc à ce test, mais leur laisser
+ * une troisième version n'aidait personne. Le plancher de `composer.json` monte à `^8.5` par la
+ * même occasion — c'est un plancher, pas une version d'exécution, et il interdit désormais de
+ * retomber sur 8.4 sans nouveau commit.
  */
 class PhpVersionIsSingleSourcedTest extends TestCase
 {
     /** La version de référence, celle sur laquelle tourne le serveur. */
-    private const REFERENCE = '8.4';
+    private const REFERENCE = '8.5';
 
     /** @return list<string> */
     private function fichiersDeFlux(): array
