@@ -58,14 +58,9 @@
     "scripts": {
         "post-autoload-dump": [
             "Illuminate\\Foundation\\ComposerScripts::postAutoloadDump",
-            "@php scripts/patch_php85_deprecations.php",
             "@php artisan package:discover --ansi"
         ],
-        "post-install-cmd": [
-            "@php scripts/patch_php85_deprecations.php"
-        ],
         "post-update-cmd": [
-            "@php scripts/patch_php85_deprecations.php",
             "@php artisan vendor:publish --tag=laravel-assets --ansi --force"
         ],
         "post-root-package-install": [
