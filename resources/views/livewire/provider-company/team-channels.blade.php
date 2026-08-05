@@ -129,8 +129,58 @@
                     </div>
                     @endif
                 </div>
+
+                {{-- Porte d'entrée du panneau « Membres » : sans elle, ajouter quelqu'un resterait
+                     une capacité sans accès, donc une capacité inexistante. --}}
+                <button type="button"
+                    wire:click="toggleMembersPanel"
+                    class="rounded-lg border border-slate-600 px-3 py-1.5 text-xs font-semibold text-slate-200 hover:bg-slate-700"
+                    aria-expanded="{{ $showMembersPanel ? 'true' : 'false' }}">
+                    Membres
+                </button>
             </div>
         </div>
+
+        {{-- Panneau de gestion des membres du canal --}}
+        @if ($showMembersPanel)
+        <div class="border-b border-slate-700 bg-slate-800/60 px-4 py-3">
+            <div class="grid gap-4 md:grid-cols-2">
+                <div>
+                    <p class="mb-2 text-xs font-bold uppercase tracking-wide text-slate-400">Dans ce canal</p>
+                    <ul class="space-y-1">
+                        @foreach ($activeChannel->members as $member)
+                        <li class="flex items-center justify-between gap-2 rounded-lg bg-slate-900/50 px-3 py-1.5">
+                            <span class="truncate text-sm text-slate-200">{{ $member->name }}</span>
+                            @can('kickMember', [$activeChannel, $member])
+                            <button type="button"
+                                wire:click="removeChannelMember({{ $activeChannel->id }}, {{ $member->id }})"
+                                class="shrink-0 text-xs font-semibold text-slate-400 hover:text-white">
+                                Retirer
+                            </button>
+                            @endcan
+                        </li>
+                        @endforeach
+                    </ul>
+                </div>
+
+                <div>
+                    <p class="mb-2 text-xs font-bold uppercase tracking-wide text-slate-400">Ajouter un coéquipier</p>
+                    @forelse ($coequipiersAjoutables as $coequipier)
+                    <div class="mb-1 flex items-center justify-between gap-2 rounded-lg bg-slate-900/50 px-3 py-1.5">
+                        <span class="truncate text-sm text-slate-200">{{ $coequipier->name }}</span>
+                        <button type="button"
+                            wire:click="addChannelMember({{ $activeChannel->id }}, {{ $coequipier->id }})"
+                            class="shrink-0 text-xs font-semibold text-blue-400 hover:text-blue-300">
+                            Ajouter
+                        </button>
+                    </div>
+                    @empty
+                    <p class="text-sm text-slate-500">Toute l'équipe est déjà dans ce canal.</p>
+                    @endforelse
+                </div>
+            </div>
+        </div>
+        @endif
 
         {{-- Messages --}}
         <div
@@ -386,6 +436,11 @@
             <label class="flex items-center gap-2 cursor-pointer">
                 <input type="checkbox" wire:model="isPrivate" class="rounded">
                 <span class="text-sm text-slate-300">🔒 Canal privé (sur invitation)</span>
+            </label>
+
+            <label class="mt-2 flex cursor-pointer items-center gap-2">
+                <input type="checkbox" wire:model="inviteWholeTeam" class="rounded">
+                <span class="text-sm text-slate-300">👥 Ajouter toute l'équipe au canal</span>
             </label>
         </div>
 

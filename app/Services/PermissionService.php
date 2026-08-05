@@ -342,11 +342,19 @@ class PermissionService
         return $this->roleDe($actor)->canManage($this->roleDe($target));
     }
 
-    /** Le rôle d'un membre, que le modèle le rende en enum ou en chaîne. */
+    /**
+     * Le rôle d'un membre.
+     *
+     * `OrganizationMember::$role` est CASTÉ en enum par le modèle : l'accès rend toujours un
+     * `OrganizationRole`, jamais une chaîne. J'avais prévu les deux formes ; PHPStan a montré que
+     * la seconde branche était inatteignable.
+     *
+     * Le bug d'origine n'était donc pas que le rôle pouvait être une chaîne, mais que le code
+     * COMPARAIT cet enum à une chaîne littérale — l'inverse. Garder une conversion défensive ici
+     * n'aurait rien protégé et aurait entretenu la confusion.
+     */
     private function roleDe(OrganizationMember $membre): OrganizationRole
     {
-        return $membre->role instanceof OrganizationRole
-            ? $membre->role
-            : OrganizationRole::from($membre->role);
+        return $membre->role;
     }
 }

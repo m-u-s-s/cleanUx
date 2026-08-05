@@ -77,6 +77,31 @@ class AuthMeController extends Controller
          * Retirer la forme à plat casserait les consommateurs qui la lisent déjà — deux tests la
          * figent. On ajoute donc, on ne remplace pas.
          */
+        /*
+         * LA CASQUETTE SOCIÉTÉ, POUR LA MÊME RAISON QUE `is_admin`.
+         *
+         * `ApiAuthController::serializeUser()` expose déjà `is_entreprise` et
+         * `organization_account_id` à la CONNEXION. Ici la réponse était bâtie sur
+         * `$user->toArray()`, qui ne porte que des colonnes : un compte société redevenait un
+         * particulier à chaque reprise de session, jeton valide en poche.
+         *
+         * `organization_type` s'y ajoute parce que le drapeau booléen ne suffit pas : une société
+         * CLIENTE et une société PRESTATAIRE ouvrent deux espaces différents, et l'application ne
+         * peut pas les distinguer sans lui. Il vaut `null` pour un particulier — l'absence
+         * d'organisation est une information, pas un cas par défaut.
+         */
+        $payload['is_entreprise'] = method_exists($user, 'isEntreprise') && $user->isEntreprise();
+        $payload['organization_account_id'] = $user->organization_account_id
+            ?? $user->current_organization_id
+            ?? null;
+
+        /*
+         * `organization_accounts.type` n'est PAS casté en enum sur le modèle : c'est une chaîne.
+         * J'avais écrit une normalisation `instanceof` par prudence — PHPStan a montré qu'elle ne
+         * s'exécutait jamais. Une garde morte donne l'illusion d'une protection ; on la retire.
+         */
+        $payload['organization_type'] = $user->currentOrganization?->type;
+
         $payload['user'] = $payload;
 
         return response()->json($payload);

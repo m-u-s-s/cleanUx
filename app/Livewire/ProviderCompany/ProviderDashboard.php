@@ -82,7 +82,15 @@ class ProviderDashboard extends Component
     {
         return Mission::where('provider_organization_id', Auth::user()->current_organization_id)
             ->whereDate('planned_start_at', today())
-            ->with(['assignedWorker:id,name,profile_photo_path'])
+            /*
+             * `assignedWorker` N'EXISTE PAS sur Mission (corrigé le 2026-08-05) : le modèle
+             * expose `leadProvider()` — le travailleur assigné, via `lead_provider_user_id` — et
+             * `assignments()`. Le charger levait `RelationNotFoundException` à chaque rendu
+             * comportant une mission du jour : page blanche pour toute société en activité.
+             *
+             * Un seul nom pour une seule chose : on lit désormais `leadProvider`.
+             */
+            ->with(['leadProvider:id,name,profile_photo_path'])
             ->orderBy('planned_start_at')
             ->limit(10)
             ->get();

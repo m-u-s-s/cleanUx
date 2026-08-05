@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\OrganizationInvitationController;
 use App\Http\Controllers\Push\PushSubscriptionController;
 use App\Http\Controllers\WebViewEntryController;
 use App\Livewire\Auth\VerifyPhone;
@@ -91,3 +92,15 @@ Route::get('/commander/recherche/{request}', AsapSearch::class)
 
 Route::get('/commander/{sector?}/{trade?}', OrderJourney::class)
     ->name('order.journey');
+
+/*
+ * ACCEPTATION D'UNE INVITATION À REJOINDRE UNE SOCIÉTÉ.
+ *
+ * Volontairement sous le seul middleware `auth` : la recrue qui clique sur le lien reçu par email
+ * n'a pas encore vérifié son téléphone ni terminé son onboarding. L'enfermer derrière
+ * `verified` + `phone.verified` la renverrait vers un parcours sans rapport et lui ferait perdre
+ * son invitation. Le jeton est nominatif et vérifié dans le contrôleur.
+ */
+Route::get('/invitations/{token}', [OrganizationInvitationController::class, 'accept'])
+    ->middleware('auth')
+    ->name('organization.invitations.accept');

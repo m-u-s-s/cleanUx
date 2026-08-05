@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Database\Factories\MessageFactory;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -19,6 +20,13 @@ use Illuminate\Support\Facades\DB;
  *   - Threads via parent_id + replies()
  *   - Mentions, attachments, reactions (relations)
  *   - Scope whereSearch() multi-drivers (MySQL FULLTEXT / PG tsvector / SQLite LIKE)
+ *
+ * Les deux relations ci-dessous reposent sur des clés étrangères NULLABLES (`user_id` en
+ * `nullOnDelete`, `parent_id` sur un message supprimable) : elles rendent `null` en pratique, ce
+ * que le type générique `BelongsTo<User>` ne dit pas.
+ *
+ * @property-read User|null $sender
+ * @property-read Message|null $parent
  */
 class Message extends Model
 {
@@ -77,7 +85,15 @@ class Message extends Model
         return $this->belongsTo(Channel::class);
     }
 
-    /** @return BelongsTo<User, $this> */
+    /**
+     * L'expéditeur peut être nul.
+     *
+     * `messages.user_id` est nullable et déclaré `nullOnDelete()` : supprimer un compte laisse ses
+     * messages en place, sans expéditeur. Tout affichage doit donc prévoir ce cas — d'où le repli
+     * « Utilisateur supprimé » côté composant.
+     *
+     * @return BelongsTo<User, $this>
+     */
     public function sender(): BelongsTo
     {
         return $this->belongsTo(User::class, 'user_id');
@@ -112,6 +128,30 @@ class Message extends Model
     public function attachments(): HasMany
     {
         return $this->hasMany(MessageAttachment::class);
+    }
+
+    /**
+     * UNE COLONNE ET UNE RELATION PORTAIENT LE MÊME NOM — LA COLONNE GAGNAIT (corrigé le 2026-08-05).
+     *
+     * La table `messages` porte une colonne JSON `attachments` (héritée, jamais écrite : aucune
+     * ligne du dépôt n'y insère quoi que ce soit) EN PLUS de la relation `attachments()`
+     * ci-dessus. Or Eloquent résout `$message->attachments` en consultant d'abord les colonnes :
+     * l'eager-load `->with('attachments')` chargeait bien la relation, puis l'accès rendait la
+     * colonne — c'est-à-dire `null`.
+     *
+     * Conséquence : `TeamChannels::loadMessages()` faisait « Call to a member function map() on
+     * null » dès qu'un seul message existait. Afficher une conversation était impossible.
+     *
+     * Cet accesseur rend la priorité à la relation, pour TOUS les appelants et sans migration
+     * destructive sur une colonne qui pourrait encore contenir des données en production.
+     * `getRelationValue()` renvoie la relation déjà chargée si elle l'est, sinon l'exécute — il
+     * ne repasse pas par cet accesseur, donc pas de récursion.
+     *
+     * @return Collection<int, MessageAttachment>
+     */
+    public function getAttachmentsAttribute(): Collection
+    {
+        return $this->getRelationValue('attachments');
     }
 
     /**

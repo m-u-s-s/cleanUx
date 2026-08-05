@@ -146,6 +146,61 @@ class TeamPermissionGuardsTest extends TestCase
     }
 
     #[Test]
+    public function la_modale_ne_montre_pas_un_membre_d_une_autre_organisation(): void
+    {
+        // Fermer l'ÉCRITURE ne suffit pas : `getEditingMemberProperty()` chargeait le membre sans
+        // scoping, donc la modale affichait nom, courriel et photo d'un inconnu. Une fuite en
+        // lecture reste une fuite.
+        [, $patron] = $this->makeCompanyUser(OrganizationRole::OWNER->value);
+
+        $autreOrg = OrganizationAccount::factory()->create();
+        $etranger = $this->makeMember($autreOrg, OrganizationRole::WORKER->value);
+
+        // Assertion sur le NOM, pas sur le courriel : la modale rend `user->name` (ligne 229 de
+        // la vue) et jamais l'adresse. Une première version de ce test assertait sur le courriel
+        // et passait donc pour une mauvaise raison — verte sans rien vérifier.
+        $nom = $etranger->user->name;
+
+        Livewire::actingAs($patron)
+            ->test(TeamManagement::class)
+            ->call('openPermissions', $etranger->id)
+            ->assertDontSee($nom);
+    }
+
+    #[Test]
+    public function le_dernier_proprietaire_ne_peut_pas_etre_declasse(): void
+    {
+        // Une société sans propriétaire actif n'a plus personne pour inviter, facturer ou céder
+        // ses droits : l'enfermement serait définitif.
+        [$org, $patron, $membrePatron] = $this->makeCompanyUser(OrganizationRole::OWNER->value);
+
+        Livewire::actingAs($patron)
+            ->test(TeamManagement::class)
+            ->call('changeRole', $membrePatron->id, OrganizationRole::WORKER->value);
+
+        $this->assertSame(
+            OrganizationRole::OWNER->value,
+            $membrePatron->fresh()->role->value,
+            'Le dernier propriétaire actif a été déclassé : organisation sans gouvernance.',
+        );
+    }
+
+    #[Test]
+    public function un_second_proprietaire_peut_etre_declasse(): void
+    {
+        // La protection porte sur le DERNIER, pas sur le rôle : tant qu'un autre owner actif
+        // existe, la gouvernance est assurée.
+        [$org, $patron] = $this->makeCompanyUser(OrganizationRole::OWNER->value);
+        $second = $this->makeMember($org, OrganizationRole::OWNER->value);
+
+        Livewire::actingAs($patron)
+            ->test(TeamManagement::class)
+            ->call('changeRole', $second->id, OrganizationRole::WORKER->value);
+
+        $this->assertSame(OrganizationRole::WORKER->value, $second->fresh()->role->value);
+    }
+
+    #[Test]
     public function le_proprietaire_garde_la_main_sur_son_equipe(): void
     {
         // Le chemin nominal doit rester ouvert : durcir ne veut pas dire bloquer.

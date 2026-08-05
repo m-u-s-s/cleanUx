@@ -114,12 +114,34 @@ class DispatchCenter extends Component
         // Créer l'assignment (colonnes réelles de mission_assignments :
         // user_id, role_on_mission, assignment_status, assigned_at —
         // pas de provider_user_id ni assigned_by ; cf. MissionAssignmentStatusService).
+        /*
+         * RÉASSIGNER, C'EST AUSSI DÉSASSIGNER (corrigé le 2026-08-05).
+         *
+         * On ne créait que le nouvel assignment : la mission finissait avec DEUX lignes actives,
+         * et `lead_provider_user_id` continuait de désigner le travailleur remplacé. En cascade,
+         * le tableau de bord affichait l'ancien (il lit `leadProvider`), l'autorisation Reverb
+         * `mission.{id}` lui restait ouverte, et le suivi de trajet le visait encore.
+         *
+         * On libère donc les leads actifs des AUTRES personnes avant d'installer le nouveau.
+         * `reassigned` — et non `cancelled` — parce que l'historique doit distinguer un
+         * remplacement d'un abandon.
+         */
+        MissionAssignment::query()
+            ->where('mission_id', $mission->id)
+            ->where('user_id', '!=', $worker->user_id)
+            ->where('assignment_status', 'assigned')
+            ->update(['assignment_status' => 'reassigned']);
+
         MissionAssignment::updateOrCreate(
             ['mission_id' => $mission->id, 'user_id' => $worker->user_id],
             ['role_on_mission' => 'lead', 'assignment_status' => 'assigned', 'assigned_at' => now()]
         );
 
-        $mission->update(['status' => 'assigned']);
+        // Le lead est la source de vérité lue partout ailleurs : il suit l'assignment.
+        $mission->update([
+            'status' => 'assigned',
+            'lead_provider_user_id' => $worker->user_id,
+        ]);
 
         // Broadcast du changement de statut
         broadcast(new MissionStatusUpdated($mission));

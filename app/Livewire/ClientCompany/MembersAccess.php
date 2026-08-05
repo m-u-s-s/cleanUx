@@ -3,12 +3,17 @@
 namespace App\Livewire\ClientCompany;
 
 use App\Enums\OrganizationRole;
+use App\Mail\OrganizationInvitationMail;
+use App\Models\OrganizationInvitation;
 use App\Models\OrganizationMember;
 use App\Models\User;
+use App\Services\Organizations\OrganizationMembershipService;
 use App\Services\PermissionService;
 use App\Support\Livewire\Concerns\EnforcesActiveOrgMembership;
+use App\Support\Livewire\Concerns\GuardsOrganizationMembers;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Livewire\Component;
 
@@ -20,6 +25,7 @@ use Livewire\Component;
 class MembersAccess extends Component
 {
     use EnforcesActiveOrgMembership;
+    use GuardsOrganizationMembers;
 
     // ──────────────────────────────────────────────────────
     // State
@@ -54,7 +60,16 @@ class MembersAccess extends Component
 
         return OrganizationMember::where('organization_account_id', $orgId)
             ->with('user:id,name,email,profile_photo_path')
-            ->orderByRaw("FIELD(status, 'active', 'invited', 'suspended', 'left')")
+            // `FIELD()` est propre à MySQL : sous SQLite (la suite de tests) il fait échouer la
+            // requête. `CASE` donne le même ordre sur les deux moteurs. Voir TeamManagement.
+            ->orderByRaw(
+                'CASE status '
+                ."WHEN 'active' THEN 0 "
+                ."WHEN 'invited' THEN 1 "
+                ."WHEN 'suspended' THEN 2 "
+                ."WHEN 'left' THEN 3 "
+                .'ELSE 99 END'
+            )
             ->get();
     }
 
@@ -112,19 +127,46 @@ class MembersAccess extends Component
             }
 
             // Ajouter directement si l'utilisateur existe
-            OrganizationMember::create([
-                'organization_account_id' => $orgId,
-                'user_id' => $existingUser->id,
-                'role' => $this->inviteRole,
-                'status' => 'active',
-                'invited_by' => $user->id,
-                'invited_at' => now(),
-                'joined_at' => now(),
-            ]);
+            app(OrganizationMembershipService::class)->rattacher(
+                $user->currentOrganization,
+                $existingUser,
+                $this->inviteRole,
+                $user->id,
+            );
         } else {
-            // Créer une invitation en attente (email à envoyer)
-            // TODO: Envoyer l'email d'invitation avec lien
-            // Mail::to($this->inviteEmail)->send(new OrganizationInvitation(...));
+            /*
+             * MÊME TROU QUE CÔTÉ PRESTATAIRE (corrigé le 2026-08-05).
+             *
+             * Cette branche n'était qu'un commentaire : inviter une adresse sans compte ne créait
+             * rien et n'envoyait rien, tandis que le formulaire se vidait comme si l'invitation
+             * était partie. On réutilise l'infrastructure d'invitation construite pour les
+             * sociétés prestataires — le mécanisme est identique, seul le rôle diffère.
+             */
+            $invitation = OrganizationInvitation::updateOrCreate(
+                [
+                    'organization_account_id' => $orgId,
+                    'email' => $this->inviteEmail,
+                    'status' => 'pending',
+                ],
+                [
+                    'role' => $this->inviteRole,
+                    'invited_by' => $user->id,
+                    'token' => OrganizationInvitation::genererJeton(),
+                    'expires_at' => now()->addDays(14),
+                ],
+            );
+
+            try {
+                Mail::to($this->inviteEmail)->send(new OrganizationInvitationMail(
+                    $invitation,
+                    route('organization.invitations.accept', $invitation->token),
+                ));
+            } catch (\Throwable $e) {
+                Log::warning('Envoi de l\'invitation impossible', [
+                    'invitation_id' => $invitation->id,
+                    'error' => $e->getMessage(),
+                ]);
+            }
         }
 
         $this->inviteEmail = '';
@@ -141,12 +183,24 @@ class MembersAccess extends Component
     {
         $actor = Auth::user();
         $orgId = $actor->current_organization_id;
-        $member = OrganizationMember::where('organization_account_id', $orgId)->findOrFail($memberId);
 
-        abort_unless(
-            app(PermissionService::class)->can($actor, 'members.edit_role', $actor->currentOrganization),
-            403
-        );
+        /*
+         * LA GARDE PORTAIT SUR LE RÔLE VISÉ, JAMAIS SUR LA CIBLE (corrigé le 2026-08-05).
+         *
+         * Le contrôle ci-dessous vérifiait qu'on n'attribue pas un rang supérieur au sien — ce qui
+         * empêche bien l'escalade. Mais rien ne vérifiait qu'on a autorité sur la PERSONNE
+         * modifiée : rétrograder le propriétaire en `viewer` passait sans obstacle, le rang visé
+         * étant bas. `memberSousGarde()` ajoute cette vérification hiérarchique.
+         *
+         * À noter, contrairement à son équivalent prestataire : cet écran était déjà correctement
+         * limité à l'organisation active et déjà gardé par une permission. Seules la hiérarchie et
+         * la protection du dernier propriétaire manquaient.
+         */
+        $member = $this->memberSousGarde($memberId, 'members.edit_role');
+
+        if (! $member) {
+            return;
+        }
 
         $actorMember = $actor->membershipIn();
 
@@ -154,6 +208,17 @@ class MembersAccess extends Component
         $newRoleEnum = OrganizationRole::from($newRole);
         if ($actorMember && $newRoleEnum->rank() >= $actorMember->role->rank() && ! $actor->isPlatformAdmin()) {
             $this->addError('role', 'Vous ne pouvez pas attribuer un rôle supérieur ou égal au vôtre.');
+
+            return;
+        }
+
+        /*
+         * Une organisation sans propriétaire n'a plus personne pour gérer ses membres, ses accès
+         * ni sa facturation — et aucun écran ne permet d'en renommer un. On refuse donc de
+         * rétrograder le dernier.
+         */
+        if ($newRoleEnum !== OrganizationRole::OWNER && $this->estLeDernierProprietaire($member)) {
+            $this->addError('role', 'Impossible de rétrograder le dernier propriétaire de l\'organisation.');
 
             return;
         }
@@ -223,15 +288,14 @@ class MembersAccess extends Component
             return;
         }
 
-        $actor = Auth::user();
-
-        abort_unless(
-            app(PermissionService::class)->can($actor, 'members.edit_role', $actor->currentOrganization),
-            403
-        );
-
-        $member = OrganizationMember::where('organization_account_id', $actor->current_organization_id)
-            ->find($this->editingMemberId);
+        /*
+         * ACCORDER UNE PERMISSION N'EST PAS CHANGER UN RÔLE (corrigé le 2026-08-05).
+         *
+         * Ce point d'entrée était gardé par `members.edit_role`, la clé du changement de rôle.
+         * Or il permet d'accorder n'importe quelle permission unitaire, y compris à soi-même :
+         * il mérite sa propre clé, plus restrictive, et le contrôle hiérarchique sur la cible.
+         */
+        $member = $this->memberSousGarde($this->editingMemberId, 'members.manage_permissions', silencieuxSiIntrouvable: true);
 
         if (! $member) {
             return;

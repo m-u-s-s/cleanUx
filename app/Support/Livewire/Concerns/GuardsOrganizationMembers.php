@@ -2,6 +2,7 @@
 
 namespace App\Support\Livewire\Concerns;
 
+use App\Enums\OrganizationRole;
 use App\Models\OrganizationMember;
 use App\Models\User;
 use App\Services\PermissionService;
@@ -21,9 +22,15 @@ use Illuminate\Support\Facades\Auth;
  *   3. HIÉRARCHIE — `PermissionService::canManageMember()` existait déjà et n'était appelée
  *      nulle part : on pouvait agir sur un membre de rang égal ou supérieur.
  *
- * D'où une seule porte d'entrée : `memberSousGarde()`. Elle rend `null` — jamais une exception —
- * pour que les composants Livewire restent silencieux face à un identifiant forgé plutôt que de
- * révéler par un 403 qu'il existe ailleurs.
+ * D'où une seule porte d'entrée : `memberSousGarde()`.
+ *
+ * ELLE ÉCHOUE BRUYAMMENT, par `abort()` et `findOrFail()`. J'avais d'abord choisi un retour `null`
+ * silencieux ; trois tests préexistants de `MembersAccess` ont montré que la convention de ce
+ * dépôt est l'inverse — un refus se signale par un 403, un identifiant introuvable par une
+ * `ModelNotFoundException`. Cette convention est la bonne : une action refusée en silence est
+ * indiscernable d'une action réussie, aussi bien pour l'utilisateur que pour le journal. Et la
+ * requête étant déjà limitée à l'organisation active, un 404 ne révèle rien sur ce qui existe
+ * ailleurs.
  *
  * LA PROTECTION DU DERNIER PROPRIÉTAIRE est à part : elle ne dépend pas de l'acteur mais de
  * l'état de l'organisation. Une société sans propriétaire actif n'a plus personne pour inviter,
@@ -33,48 +40,64 @@ trait GuardsOrganizationMembers
 {
     /**
      * Le membre visé, s'il appartient à l'organisation active de l'acteur ET que celui-ci a le
-     * droit d'agir sur lui. `null` dans tous les autres cas.
+     * droit d'agir sur lui.
+     *
+     * Un refus de droit lève TOUJOURS un 403 : c'est une décision, elle doit se voir.
+     *
+     * L'identifiant introuvable, lui, admet deux traitements — et les deux existaient déjà dans le
+     * dépôt, méthode par méthode. `changeRole()` faisait `findOrFail()` (exception), tandis que les
+     * bascules de permission utilisaient `find()` puis un retour discret, parce qu'elles sont
+     * pilotées par un état d'interface qui peut légitimement être périmé. D'où ce drapeau, qui
+     * préserve chaque contrat au lieu d'en imposer un seul.
+     *
+     * @param  bool  $silencieuxSiIntrouvable  rendre `null` au lieu de lever, quand la cible
+     *                                         n'existe pas dans l'organisation active
      */
-    protected function memberSousGarde(?int $memberId, string $permission): ?OrganizationMember
-    {
+    protected function memberSousGarde(
+        ?int $memberId,
+        string $permission,
+        bool $silencieuxSiIntrouvable = false,
+    ): ?OrganizationMember {
         if ($memberId === null) {
             return null;
         }
 
         $acteur = Auth::user();
 
-        if (! $acteur instanceof User || $acteur->current_organization_id === null) {
-            return null;
-        }
+        abort_unless(
+            $acteur instanceof User && $acteur->current_organization_id !== null,
+            403
+        );
 
         // Le scoping fait partie de la REQUÊTE, pas d'une vérification après coup : un membre
         // d'une autre organisation n'est jamais chargé, donc jamais divulgué.
-        $cible = OrganizationMember::query()
+        $requete = OrganizationMember::query()
             ->where('id', $memberId)
-            ->where('organization_account_id', $acteur->current_organization_id)
-            ->first();
+            ->where('organization_account_id', $acteur->current_organization_id);
 
-        if (! $cible instanceof OrganizationMember) {
+        $cible = $silencieuxSiIntrouvable ? $requete->first() : $requete->firstOrFail();
+
+        if ($cible === null) {
             return null;
         }
 
         $permissions = app(PermissionService::class);
 
-        if (! $permissions->can($acteur, $permission, $acteur->currentOrganization)) {
-            return null;
-        }
+        abort_unless(
+            $permissions->can($acteur, $permission, $acteur->currentOrganization),
+            403
+        );
 
         $membreActeur = $this->membreDeLActeur($acteur);
 
-        if (! $membreActeur instanceof OrganizationMember) {
-            return null;
-        }
+        abort_unless($membreActeur instanceof OrganizationMember, 403);
 
         // Agir sur soi-même reste permis pour les actions qui le supportent (le composant décide) ;
         // c'est la hiérarchie ENTRE personnes distinctes que cette garde protège.
-        if ($membreActeur->id !== $cible->id && ! $permissions->canManageMember($membreActeur, $cible)) {
-            return null;
-        }
+        abort_if(
+            $membreActeur->id !== $cible->id && ! $permissions->canManageMember($membreActeur, $cible),
+            403
+        );
 
         return $cible;
     }
@@ -96,7 +119,16 @@ trait GuardsOrganizationMembers
      */
     protected function estLeDernierProprietaire(OrganizationMember $membre): bool
     {
-        if ($membre->role !== 'owner' || $membre->status !== 'active') {
+        /*
+         * `$membre->role` est CASTÉ EN ENUM par le modèle : le comparer à la chaîne `'owner'` est
+         * toujours faux, et la garde ne s'armerait jamais. C'est précisément le défaut qui rendait
+         * `PermissionService::canManageMember()` inopérante — je l'ai reproduit ici en l'écrivant,
+         * et le test du dernier propriétaire l'a attrapé.
+         *
+         * J'avais alors ajouté une normalisation acceptant les deux formes ; PHPStan a montré
+         * qu'elle était morte. On compare donc directement enum à enum, ce que le cast garantit.
+         */
+        if ($membre->role !== OrganizationRole::OWNER || $membre->status !== 'active') {
             return false;
         }
 
