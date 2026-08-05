@@ -17,7 +17,9 @@ class AdminRouteAccessTest extends TestCase
         '/admin/utilisateurs',
         '/admin/feedbacks',
         '/admin/outils',
-        '/admin/premium-clients',
+        // `/admin/premium-clients` a été retiré le 2026-08-05 : c'était une seconde URI vers le
+        // MÊME composant. L'adresse retenue est celle-ci ; le doublon répond désormais 404.
+        '/admin/premium/clients',
     ];
 
     public function test_admin_can_access_admin_pages(): void
