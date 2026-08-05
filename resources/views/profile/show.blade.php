@@ -10,6 +10,20 @@
         </div>
     </x-slot>
 
+    {{--
+        `Enforce2FA` renvoie ici tout administrateur sans double authentification confirmée, en
+        posant un `session('warning')` qui explique pourquoi. Ce message n'était rendu NULLE PART
+        dans le layout — l'administrateur subissait donc une redirection muette : tout lien
+        cliqué le ramenait sur cette page, sans un mot d'explication. C'est cette page qui doit
+        l'afficher, puisque c'est ici que la redirection dépose.
+    --}}
+    @if (session('warning'))
+    <div role="alert"
+        class="mb-4 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+        <span aria-hidden="true">⚠️</span> {{ session('warning') }}
+    </div>
+    @endif
+
     <div class="space-y-4">
         <x-push-toggle />
         {{-- ... autres préférences ... --}}

@@ -221,6 +221,15 @@
                     <ul class="mt-4 space-y-2 text-sm">
                         <li><a href="{{ route('booking.create') }}">Réserver</a></li>
                         @if(Route::has('premium.offer'))<li><a href="{{ route('premium.offer') }}">Premium</a></li>@endif
+                        {{-- Ajoutés le 2026-08-05 : ces deux pages publiques n'étaient citées
+                             nulle part sur le site. Le blog n'avait aucune porte d'entrée, et la
+                             liste des services n'était atteignable que depuis l'accueil. --}}
+                        @if (Route::has('services.index'))
+                            <li><a href="{{ route('services.index') }}">Nos services</a></li>
+                        @endif
+                        @if (Route::has('blog.index'))
+                            <li><a href="{{ route('blog.index') }}">Blog</a></li>
+                        @endif
                         <li><a href="{{ route('home') }}#b2b">Entreprises</a></li>
                         <li><a href="{{ route('login') }}">Connexion</a></li>
                     </ul>

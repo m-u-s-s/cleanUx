@@ -40,6 +40,34 @@
                     </a>
                 </span>
             @endif
+            {{--
+                DEUX ENTRÉES AJOUTÉES LE 2026-08-05, parce qu'elles n'existaient nulle part.
+                Un parcours d'accessibilité a montré que cette page ne citait que quatre routes
+                — booking.create, login, register, providers.browse.public — et ne menait donc
+                NI au moteur de commande (`order.journey` : secteur → métier → questions), NI aux
+                pages services publiques. Les deux ensembles ne se citaient qu'entre eux : des
+                boucles fermées, sans porte d'entrée depuis le site.
+
+                Le bouton principal reste `booking.create` : le remplacer par le moteur de commande
+                est une décision produit, pas une correction d'accessibilité. Ces liens ouvrent
+                l'accès sans arbitrer entre les deux parcours.
+            --}}
+            @if (Route::has('order.journey'))
+                <span class="cx-magnetic" data-cx-magnetic="0.22">
+                    <a href="{{ route('order.journey') }}" class="cx-lux-btn-ghost">
+                        <x-ui.icon name="bolt" class="w-5 h-5" />
+                        Commander en quelques questions
+                    </a>
+                </span>
+            @endif
+            @if (Route::has('services.index'))
+                <span class="cx-magnetic" data-cx-magnetic="0.22">
+                    <a href="{{ route('services.index') }}" class="cx-lux-btn-ghost">
+                        <x-ui.icon name="cube" class="w-5 h-5" />
+                        Tous nos services
+                    </a>
+                </span>
+            @endif
         </x-slot:actions>
 
         <x-slot:trust>

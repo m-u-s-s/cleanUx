@@ -135,7 +135,16 @@
                                 <div class="flex items-start gap-3 cursor-pointer"
                                      wire:click="selectProvider({{ $u->id }})">
                             @else
-                                <a href="{{ url('/providers/'.$u->id) }}" class="flex items-start gap-3">
+                                {{--
+                                    `route()` PLUTÔT QU'UNE URL ÉCRITE EN DUR (2026-08-05).
+
+                                    Ce lien existait déjà, sous la forme `url('/providers/'.$u->id)`.
+                                    Il fonctionne — mais il fige le chemin : le jour où la route
+                                    change d'URI, il mène à un 404 sans que rien ne le signale, et
+                                    aucun outil ne peut rattacher ce lien à sa route. Un audit
+                                    d'accessibilité l'a d'ailleurs compté comme page orpheline.
+                                --}}
+                                <a href="{{ route('providers.show', $u) }}" class="flex items-start gap-3">
                             @endif
                                 @if($photoPath)
                                     <img src="{{ \Illuminate\Support\Facades\Storage::url($photoPath) }}"

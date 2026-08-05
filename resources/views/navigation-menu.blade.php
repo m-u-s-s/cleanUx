@@ -107,6 +107,9 @@
     $adminGroups = [
     'Pilotage' => [
     ['label' => 'Dashboard', 'route' => 'admin.dashboard', 'active' => 'admin.dashboard', 'icon' => '📊'],
+    // `admin.home` sert `AdminHomeDashboard`, un composant DISTINCT de celui d'`admin.dashboard`.
+    // Il n'était lié nulle part : page réelle, sans porte. Ajoutée le 2026-08-05.
+    ['label' => 'Vue d’ensemble', 'route' => 'admin.home', 'active' => 'admin.home', 'icon' => '🗂️'],
     ['label' => 'Planning', 'route' => 'admin.planning', 'active' => 'admin.planning*', 'icon' => '📅'],
     ['label' => 'Missions', 'route' => 'admin.missions', 'active' => 'admin.missions*', 'icon' => '📋'],
     ['label' => 'Alertes', 'route' => 'admin.alerts', 'active' => 'admin.alerts', 'icon' => '🚨'],
@@ -114,6 +117,12 @@
     ['label' => 'Finance', 'route' => 'admin.finance', 'active' => 'admin.finance*', 'icon' => '💶'],
     ],
     'Opérations' => [
+    // Ajoutés le 2026-08-05 : le catalogue géographique (Pays → Zones → Métiers) et le suivi
+    // d'onboarding des prestataires existaient sans aucune entrée de menu. Leurs vues ne se
+    // citaient qu'entre elles — des sections entières atteignables seulement en tapant l'URL.
+    ['label' => 'Catalogue géographique', 'route' => 'admin.order-engine.catalog', 'active' => 'admin.order-engine.*', 'icon' => '🗺️'],
+    ['label' => 'Onboarding prestataires', 'route' => 'admin.onboarding.providers', 'active' => 'admin.onboarding.providers', 'icon' => '🚀'],
+    ['label' => 'Documents onboarding', 'route' => 'admin.onboarding.documents', 'active' => 'admin.onboarding.documents', 'icon' => '📎'],
     ['label' => 'Équipes & partenaires', 'route' => 'admin.teams.partners', 'active' => 'admin.teams.partners', 'icon' => '👥'],
     ['label' => 'Orchestration', 'route' => 'admin.orchestration', 'active' => 'admin.orchestration', 'icon' => '🧭'],
     ['label' => 'Automation', 'route' => 'admin.automation', 'active' => 'admin.automation', 'icon' => '⚙️'],
@@ -205,12 +214,21 @@
 
     $groups = collect();
 
-    if ($user?->isClient()) {
+    /*
+     * L'ORDRE COMPTE, et il doit rester celui de `routes/authenticated.php`.
+     * Ces rôles ne s'excluent pas : promouvoir un client en administrateur ne lui retire pas son
+     * profil client, donc `isClient()` ET `isAdmin()` peuvent être vrais en même temps. Tant que
+     * `isClient()` était testé en premier, `isAdmin()` — en `elseif` — n'était jamais atteint : le
+     * compte gardait le menu client, sans le moindre lien vers l'administration, et le changement
+     * de rôle semblait sans effet. `/dashboard` l'envoyait pourtant bien vers `admin.dashboard`,
+     * qui teste `isAdmin()` d'abord : deux priorités contradictoires dans la même application.
+     */
+    if ($user?->isAdmin()) {
+    $groups = $filterLinks($adminGroups);
+    } elseif ($user?->isClient()) {
     $groups = $filterLinks($clientGroups);
     } elseif ($user?->isEmploye()) {
     $groups = $filterLinks($employeGroups);
-    } elseif ($user?->isAdmin()) {
-    $groups = $filterLinks($adminGroups);
     }
 
     $roleLinks = $groups
