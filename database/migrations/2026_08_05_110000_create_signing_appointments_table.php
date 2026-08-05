@@ -54,8 +54,22 @@ return new class extends Migration
 
             $table->timestamps();
 
-            // On liste toujours « les rendez-vous à venir de cette organisation ».
-            $table->index(['organization_account_id', 'status', 'scheduled_at']);
+            /*
+             * NOM D'INDEX EXPLICITE, ET COURT (corrigé le 2026-08-05).
+             *
+             * Laravel aurait nommé cet index
+             * `signing_appointments_organization_account_id_status_scheduled_at_index`, soit 70
+             * caractères — au-delà de la limite MySQL de 64. SQLite n'a pas cette contrainte : la
+             * migration passait donc en local et sur toute la suite de tests, puis échouait à
+             * l'étape « Migrate (MySQL) » de la CI.
+             *
+             * C'est exactement la classe de défauts que le moteur de test masque ici. Le nom est
+             * désormais choisi, pas subi.
+             */
+            $table->index(
+                ['organization_account_id', 'status', 'scheduled_at'],
+                'signing_appts_org_status_date_idx'
+            );
         });
     }
 
