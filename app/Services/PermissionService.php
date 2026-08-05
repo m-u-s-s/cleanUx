@@ -34,6 +34,7 @@ use Illuminate\Support\Facades\Cache;
  *   members.edit_role       Changer le rôle d'un membre
  *   members.suspend         Suspendre un membre
  *   members.remove          Retirer un membre de l'organisation
+ *   members.manage_permissions  Accorder ou retirer des permissions à un membre (propriétaire)
  *
  * FINANCE
  *   finance.view            Voir les factures et paiements
@@ -89,6 +90,10 @@ class PermissionService
             'members.edit_role',
             'members.suspend',
             'members.remove',
+            // Distribuer des permissions n'est PAS inviter. Cette clé est volontairement réservée
+            // au propriétaire : `TeamManagement` ne gardait ses écrans que par `members.invite`,
+            // si bien qu'un gestionnaire pouvait s'attribuer n'importe quel droit.
+            'members.manage_permissions',
             'finance.view',
             'finance.download',
             'finance.manage',
@@ -320,14 +325,28 @@ class PermissionService
 
     /**
      * L'utilisateur peut-il gérer un autre membre selon la hiérarchie ?
+     *
+     * ELLE NE POUVAIT PAS FONCTIONNER (corrigé le 2026-08-05). Elle appelait
+     * `OrganizationRole::from($actor->role)` alors que `OrganizationMember::$role` est DÉJÀ casté
+     * en enum par le modèle — tout appel levait donc `TypeError: must be of type string|int,
+     * OrganizationRole given`. C'est probablement pourquoi elle n'était appelée nulle part :
+     * elle avait été écrite, jamais exercée, et la hiérarchie n'était appliquée par personne.
+     *
+     * `$role` est désormais accepté sous ses deux formes — l'enum du modèle comme la chaîne d'un
+     * appelant qui lirait la colonne brute.
      */
     public function canManageMember(
         OrganizationMember $actor,
         OrganizationMember $target
     ): bool {
-        $actorRole = OrganizationRole::from($actor->role);
-        $targetRole = OrganizationRole::from($target->role);
+        return $this->roleDe($actor)->canManage($this->roleDe($target));
+    }
 
-        return $actorRole->canManage($targetRole);
+    /** Le rôle d'un membre, que le modèle le rende en enum ou en chaîne. */
+    private function roleDe(OrganizationMember $membre): OrganizationRole
+    {
+        return $membre->role instanceof OrganizationRole
+            ? $membre->role
+            : OrganizationRole::from($membre->role);
     }
 }

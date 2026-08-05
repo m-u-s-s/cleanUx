@@ -7,6 +7,7 @@ use App\Models\OrganizationMember;
 use App\Models\User;
 use App\Services\PermissionService;
 use App\Support\Livewire\Concerns\EnforcesActiveOrgMembership;
+use App\Support\Livewire\Concerns\GuardsOrganizationMembers;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
@@ -20,6 +21,7 @@ use Livewire\WithPagination;
 class TeamManagement extends Component
 {
     use EnforcesActiveOrgMembership;
+    use GuardsOrganizationMembers;
     use WithPagination;
 
     // ──────────────────────────────────────────────────────
@@ -213,15 +215,26 @@ class TeamManagement extends Component
         $this->showPermissions = true;
     }
 
+    /**
+     * Accorder ou retirer une permission à un membre.
+     *
+     * L'identifiant vient du client : il est résolu par `memberSousGarde()`, qui le scope sur
+     * l'organisation active, exige `members.manage_permissions` — réservée au propriétaire, car
+     * distribuer des droits n'est pas inviter — et applique la hiérarchie. Un identifiant
+     * étranger, un acteur sans le droit ou une cible de rang supérieur rendent simplement `null`,
+     * sans rien divulguer.
+     */
     public function togglePermission(string $perm, bool $value): void
     {
-        $member = OrganizationMember::find($this->editingMemberId);
+        $member = $this->memberSousGarde($this->editingMemberId, 'members.manage_permissions');
 
-        if (! $member) {
+        if (! $member instanceof OrganizationMember) {
             return;
         }
 
         $value ? $member->grantPermission($perm) : $member->revokePermission($perm);
+
+        app(PermissionService::class)->invalidateCache($member->user_id, $member->organization_account_id);
     }
 
     // ──────────────────────────────────────────────────────
