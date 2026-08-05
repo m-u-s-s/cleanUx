@@ -129,6 +129,9 @@ class Booking extends Model
         'organization_site_id',
         'organization_account_id',
         'organization_contract_id',
+        // Demande mère d'un groupement multi-sites. Sans être assignable en masse, la colonne
+        // était rejetée en silence par create() : les filles naissaient orphelines.
+        'parent_booking_id',
 
         // Service / zone
         'service_catalog_id',
@@ -474,6 +477,29 @@ class Booking extends Model
     public function organizationSite(): BelongsTo
     {
         return $this->belongsTo(OrganizationSite::class, 'organization_site_id');
+    }
+
+    /**
+     * DEMANDE MÈRE / RÉSERVATIONS FILLES — UN LIEN QUI EXISTAIT SANS ÊTRE LISIBLE.
+     *
+     * `bookings.parent_booking_id` figure dans la migration initiale (FK nullable, `nullOnDelete`)
+     * mais aucune relation ne l'exposait, aucun code ne l'écrivait, et la colonne ne comptait zéro
+     * ligne. Elle sert désormais aux demandes couvrant plusieurs sites : une mère porte l'intention
+     * commune, chaque site reçoit sa fille.
+     *
+     * À ne pas confondre avec `recurring_series_id`, qui gouverne la répétition dans le temps.
+     *
+     * @return BelongsTo<self, $this>
+     */
+    public function parentBooking(): BelongsTo
+    {
+        return $this->belongsTo(self::class, 'parent_booking_id');
+    }
+
+    /** @return HasMany<self, $this> */
+    public function childBookings(): HasMany
+    {
+        return $this->hasMany(self::class, 'parent_booking_id');
     }
 
     // ──────────────────────────────────────────────────────

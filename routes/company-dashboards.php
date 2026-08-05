@@ -8,6 +8,8 @@ use App\Livewire\ClientCompany\ClientCompanyDashboard;
 use App\Livewire\ClientCompany\ClientContractsCenter;
 use App\Livewire\ClientCompany\DisputesCenter;
 use App\Livewire\ClientCompany\MembersAccess;
+use App\Livewire\ClientCompany\MultiSiteRequest;
+use App\Livewire\ClientCompany\SigningAppointments;
 use App\Livewire\ClientCompany\SiteManager;
 use App\Livewire\ClientCompany\SiteMissionPhotos;
 use App\Livewire\ProviderCompany\DispatchCenter;
@@ -31,8 +33,10 @@ Route::middleware(['auth', 'verified', 'active.account', 'org.type:client'])
         Route::get('/locaux', SiteManager::class)->name('sites');
         Route::get('/reservations', BookingHub::class)->name('bookings.index');
         Route::get('/reservations/nouveau', BookingHub::class)->name('bookings.create');
+        Route::get('/reservations/multi-locaux', MultiSiteRequest::class)->name('bookings.multi-site');
         Route::get('/membres', MembersAccess::class)->name('members');
         Route::get('/contrats', ClientContractsCenter::class)->name('contracts');
+        Route::get('/contrats/signatures-sur-place', SigningAppointments::class)->name('contracts.signing-appointments');
         Route::get('/facturation', BillingCenter::class)->name('billing');
 
         if (class_exists(ClientAnalyticsDashboard::class)) {
