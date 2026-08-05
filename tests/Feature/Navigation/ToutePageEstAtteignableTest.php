@@ -2,8 +2,8 @@
 
 namespace Tests\Feature\Navigation;
 
-use Illuminate\Support\Facades\Route;
 use Illuminate\Routing\Route as RouteObjet;
+use Illuminate\Support\Facades\Route;
 use Tests\TestCase;
 
 /**
@@ -179,7 +179,7 @@ class ToutePageEstAtteignableTest extends TestCase
         $this->assertSame(
             self::LACUNES_CONNUES,
             $reliees,
-            "Des lacunes connues ont été reliées : retirez-les de LACUNES_CONNUES, sinon la liste ".
+            'Des lacunes connues ont été reliées : retirez-les de LACUNES_CONNUES, sinon la liste '.
             'protège des pages qui n’en ont plus besoin et masque les vraies régressions.',
         );
     }
