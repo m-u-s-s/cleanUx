@@ -28,7 +28,7 @@
             @elseif (in_array($assignment->assignment_status, ['declined', 'expired', 'cancelled']))
                 <p class="mt-1 text-xs text-slate-500">Elle a été proposée à un autre prestataire.</p>
             @endif
-            <a href="/dashboard" class="mt-4 inline-block rounded-lg bg-slate-100 px-4 py-2 text-xs font-medium text-slate-700 hover:bg-slate-200">
+            <a href="{{ route('dashboard') }}" class="mt-4 inline-block rounded-lg bg-slate-100 px-4 py-2 text-xs font-medium text-slate-700 hover:bg-slate-200">
                 Retour au tableau de bord
             </a>
         </div>

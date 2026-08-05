@@ -19,6 +19,25 @@
         </span>
     </div>
 
+    {{--
+        LA CARTE DE SUIVI PLEIN ÉCRAN N'AVAIT AUCUN LIEN (ajouté le 2026-08-05).
+
+        Cette tuile affiche l'avancement en ligne ; `client.booking.tracking.map` est la carte en
+        direct, sur toute la page — utile en déplacement, quand on suit l'arrivée du prestataire.
+        Elle existait sans qu'aucun écran n'y mène.
+
+        `$rdv` est un Booking (MesRendezVousClient interroge `Booking::`), donc son `id` EST le
+        `bookingId` attendu — vérifié plutôt que supposé, le nom de la variable dit le contraire.
+    --}}
+    @if(Route::has('client.booking.tracking.map') && in_array($rdv->status, ['confirme', 'en_route', 'sur_place'], true))
+    <div class="mb-3">
+        <a href="{{ route('client.booking.tracking.map', $rdv->id) }}"
+           class="inline-flex items-center gap-2 rounded-xl border border-indigo-200 bg-indigo-50 px-3 py-2 text-sm font-semibold text-indigo-700 hover:bg-indigo-100">
+            🗺️ Suivre sur la carte
+        </a>
+    </div>
+    @endif
+
     @if($rdv->mission)
     <livewire:client.mission-tracking :mission="$rdv->mission" :key="'mission-tracking-'.$rdv->mission->id" />
     @else

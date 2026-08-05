@@ -183,6 +183,40 @@
                 </button>
                 @endif
 
+                {{--
+                    LA VUE TERRAIN N'AVAIT AUCUN LIEN (ajouté le 2026-08-05).
+
+                    Le bouton ci-dessus déplie les détails DANS la page ; `employe.missions.show`
+                    est une page distincte, plein écran, pensée pour le travail sur place. Elle
+                    existait sans qu'aucun écran n'y mène : seule une URL tapée à la main y donnait
+                    accès. Les deux ne font pas doublon — l'un survole, l'autre est l'outil de
+                    terrain — d'où un lien à côté, et non à la place.
+                --}}
+                @if($rdv->mission && Route::has('employe.missions.show'))
+                <a href="{{ route('employe.missions.show', $rdv->mission) }}"
+                   class="rounded-xl border border-indigo-200 bg-indigo-50 px-4 py-2 text-sm font-semibold text-indigo-700 hover:bg-indigo-100">
+                    🛠️ Vue terrain
+                </a>
+                @endif
+
+                {{--
+                    ÉVALUER LE CLIENT — page sans lien jusqu'au 2026-08-05.
+
+                    L'évaluation est réciproque : le client note le prestataire depuis son
+                    historique, et `employe.rate.client` permet l'inverse. Elle existait sans
+                    qu'aucun écran n'y mène, donc la moitié du dispositif ne servait à rien.
+
+                    Proposée seulement une fois la mission terminée — évaluer avant n'aurait pas de
+                    sens — et avec `$rdv->id` comme `bookingId` : ces listes manipulent des Booking
+                    malgré leur nom.
+                --}}
+                @if($rdv->status === 'termine' && Route::has('employe.rate.client'))
+                <a href="{{ route('employe.rate.client', $rdv->id) }}"
+                   class="rounded-xl border border-amber-200 bg-amber-50 px-4 py-2 text-sm font-semibold text-amber-700 hover:bg-amber-100">
+                    ⭐ Évaluer le client
+                </a>
+                @endif
+
                 @if(Route::has('employe.incident'))
                 <a href="{{ route('employe.incident') }}" class="rounded-xl border border-red-200 bg-red-50 px-4 py-2 text-sm font-semibold text-red-700 hover:bg-red-100">
                     🚨 Incident

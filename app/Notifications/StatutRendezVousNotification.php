@@ -44,7 +44,7 @@ class StatutRendezVousNotification extends Notification implements ShouldQueue
             $mail->line('L’intervention est terminée. Merci pour votre confiance.');
         }
 
-        return $mail->action('Voir mon espace client', url('/dashboard/client'));
+        return $mail->action('Voir mon espace client', route('client.dashboard'));
     }
 
     public function toArray($notifiable)
@@ -66,7 +66,7 @@ class StatutRendezVousNotification extends Notification implements ShouldQueue
             'ville' => $this->rdv->ville,
             'location_display' => $this->rdv->location_display,
             'zone_name' => $this->rdv->serviceZone?->name,
-            'action_url' => url('/dashboard/client'),
+            'action_url' => route('client.dashboard'),
         ]);
     }
 }

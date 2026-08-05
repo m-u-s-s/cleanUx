@@ -35,14 +35,14 @@ class LoyaltyTierChangedNotification extends Notification
                 ->line('Vous venez de passer au niveau '.$this->newTier->name.'.')
                 ->line('Vos avantages :')
                 ->lines(array_map(fn ($b) => '• '.$b, $this->newTier->benefits ?? []))
-                ->action('Voir mon programme', url('/dashboard/client/fidelite'));
+                ->action('Voir mon programme', route('client.loyalty'));
         }
 
         return (new MailMessage)
             ->subject('CleanUx · Mise à jour de votre niveau fidélité')
             ->line('Votre niveau passe à '.$this->newTier->name.'.')
             ->line('Continuez à profiter de nos services pour remonter !')
-            ->action('Voir mon programme', url('/dashboard/client/fidelite'));
+            ->action('Voir mon programme', route('client.loyalty'));
     }
 
     public function toArray($notifiable): array

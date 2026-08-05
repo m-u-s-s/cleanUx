@@ -37,7 +37,7 @@ class RatingReceivedNotification extends Notification
             $mail->line('Commentaire : "'.$this->feedback->effectiveComment().'"');
         }
 
-        return $mail->action('Voir mes avis', url('/dashboard'));
+        return $mail->action('Voir mes avis', route('dashboard'));
     }
 
     public function toArray($notifiable): array

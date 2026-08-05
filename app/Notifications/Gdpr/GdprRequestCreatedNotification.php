@@ -46,7 +46,7 @@ class GdprRequestCreatedNotification extends Notification
                 $mail->line('Votre demande RGPD '.$ref.' a bien été enregistrée.');
         }
 
-        return $mail->action('Voir mes demandes', url('/dashboard/client/donnees'));
+        return $mail->action('Voir mes demandes', route('client.gdpr.data'));
     }
 
     public function toArray($notifiable): array

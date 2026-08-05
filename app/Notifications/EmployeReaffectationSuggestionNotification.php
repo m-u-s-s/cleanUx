@@ -40,7 +40,7 @@ class EmployeReaffectationSuggestionNotification extends Notification
             ->line('Mission #'.$this->rdv->id)
             ->line('Employé surchargé : '.$this->employeSurcharge)
             ->line('Employé suggéré : '.$this->employeSuggere)
-            ->action('Voir le dashboard admin', url('/admin/dashboard'));
+            ->action('Voir le dashboard admin', route('admin.dashboard'));
     }
 
     public function toArray($notifiable): array
@@ -54,7 +54,7 @@ class EmployeReaffectationSuggestionNotification extends Notification
             'employe_surcharge' => $this->employeSurcharge,
             'employe_suggere' => $this->employeSuggere,
             'zone_name' => $this->rdv->serviceZone?->name,
-            'action_url' => url('/admin/dashboard'),
+            'action_url' => route('admin.dashboard'),
         ]);
     }
 }

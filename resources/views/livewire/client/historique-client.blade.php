@@ -7,6 +7,22 @@
             class="inline-flex items-center px-4 py-2 rounded-lg bg-blue-600 text-white text-sm font-medium hover:bg-blue-700">
             ➕ Reprendre le dernier type de prestation
         </a>
+        {{--
+            L'EXPORT EXCEL N'AVAIT AUCUN BOUTON (ajouté le 2026-08-05).
+
+            `client.exports.bookings.xlsx` produit le tableur des réservations du client. La route
+            existait, le contrôleur aussi — mais aucune page ne l'offrait : ni l'historique, ni la
+            finance, ni nulle part ailleurs dans le dépôt. Seule une URL tapée à la main y donnait
+            accès. L'historique est sa page parente naturelle : c'est là qu'on consulte ce qu'on
+            exporte.
+        --}}
+        @if (Route::has('client.exports.bookings.xlsx'))
+            <a
+                href="{{ route('client.exports.bookings.xlsx') }}"
+                class="inline-flex items-center px-4 py-2 rounded-lg border border-slate-300 text-sm font-medium text-slate-700 hover:bg-slate-50 dark:border-slate-600 dark:text-slate-200 dark:hover:bg-slate-800">
+                📊 Exporter en Excel
+            </a>
+        @endif
     </x-slot>
 
     <div class="bg-white rounded-2xl shadow border p-4 dark:bg-slate-900 dark:border-slate-700" aria-live="polite">
@@ -111,6 +127,42 @@
                 </div>
                 @endif
             </div>
+            @else
+            {{--
+                ON POUVAIT VOIR UN AVIS, JAMAIS EN LAISSER UN (ajouté le 2026-08-05).
+
+                Ce bloc n'affichait le feedback QUE s'il existait déjà. La page qui permet de le
+                déposer — `client.feedback.create` — n'était liée nulle part : le client terminait
+                sa mission et n'avait aucun moyen de donner son avis, sinon en devinant l'URL.
+                D'où ce bouton, dans la branche « pas encore de feedback ».
+            --}}
+            @if(Route::has('client.feedback.create'))
+            <div class="flex flex-wrap items-center gap-3 rounded-xl border border-amber-200 bg-amber-50 p-3">
+                <span class="text-sm text-amber-900">Votre avis nous aide à améliorer le service.</span>
+                <a href="{{ route('client.feedback.create', $rdv) }}"
+                   class="rounded-xl bg-amber-600 px-3 py-2 text-sm font-semibold text-white hover:bg-amber-700">
+                    ⭐ Laisser un avis
+                </a>
+                {{--
+                    LE POURBOIRE, AJOUTÉ APRÈS AVOIR CORRIGÉ MA PROPRE ERREUR (2026-08-05).
+
+                    Je l'avais d'abord écarté en croyant qu'il fallait passer par `$rdv->booking`,
+                    une relation qui n'existe pas sur `RendezVous`. En réalité `HistoriqueClient`
+                    interroge `Booking::` directement : la variable s'appelle `$rdv` mais contient
+                    un Booking. Son `id` EST donc le `bookingId` attendu — comme le confirme
+                    `ClientFeedbackForm::mount(Booking $rendezVous)`, dont le paramètre porte lui
+                    aussi un nom trompeur.
+
+                    Le nom d'une variable n'est pas une preuve de son type.
+                --}}
+                @if(Route::has('client.tip.booking'))
+                <a href="{{ route('client.tip.booking', $rdv->id) }}"
+                   class="rounded-xl border border-amber-300 px-3 py-2 text-sm font-semibold text-amber-800 hover:bg-amber-100">
+                    💛 Laisser un pourboire
+                </a>
+                @endif
+            </div>
+            @endif
             @endif
 
             <div class="flex flex-wrap gap-3 text-sm">

@@ -37,7 +37,7 @@ class FinanceReminderNotification extends Notification
             ->line('Montant total : '.number_format((float) $this->invoice->total_amount, 2, ',', ' ').' €')
             ->line('Solde restant dû : '.number_format((float) $this->invoice->balance_due, 2, ',', ' ').' €')
             ->line('Échéance : '.optional($this->invoice->due_at)->format('d/m/Y'))
-            ->action('Ouvrir mon espace client', url('/dashboard/client'));
+            ->action('Ouvrir mon espace client', route('client.dashboard'));
     }
 
     public function toArray(object $notifiable): array
@@ -52,7 +52,7 @@ class FinanceReminderNotification extends Notification
             'reminder_type' => $this->reminderType,
             'balance_due' => (float) $this->invoice->balance_due,
             'due_at' => optional($this->invoice->due_at)->toDateString(),
-            'action_url' => url('/dashboard/client'),
+            'action_url' => route('client.dashboard'),
         ]);
     }
 }

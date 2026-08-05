@@ -47,12 +47,25 @@ class NpsSurveyNotification extends Notification
         ];
     }
 
+    /**
+     * LE LIEN ÉTAIT MORT DANS LES DEUX BRANCHES (corrigé le 2026-08-05).
+     *
+     * `nps.survey` n'existe pas — la route s'appelle `client.nps.survey`. L'exception était donc
+     * levée à chaque envoi, attrapée, et le repli renvoyait vers `/nps`, que RIEN ne sert non plus.
+     * Chaque destinataire d'une enquête NPS recevait un lien vers un 404, sans que rien ne le
+     * signale : le try/catch transformait une erreur bruyante en lien mort silencieux.
+     *
+     * Le repli est conservé — une notification ne doit pas échouer parce qu'une route bouge — mais
+     * il pointe désormais vers une adresse qui existe.
+     */
     private function surveyUrl(): string
     {
+        $parametres = ['survey' => 'post_booking', 'bookingId' => $this->booking->id];
+
         try {
-            return route('nps.survey', ['survey' => 'post_booking', 'bookingId' => $this->booking->id]);
+            return route('client.nps.survey', $parametres);
         } catch (\Throwable) {
-            return url('/nps?survey=post_booking&bookingId='.$this->booking->id);
+            return url('/dashboard/client/nps?'.http_build_query($parametres));
         }
     }
 }

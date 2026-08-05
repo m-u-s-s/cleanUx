@@ -414,7 +414,7 @@
                     <p class="text-sm text-slate-600 mt-2">
                         Ton inscription est validée. Tu peux maintenant passer en ligne et recevoir des missions.
                     </p>
-                    <a href="/dashboard"
+                    <a href="{{ route('dashboard') }}"
                        class="inline-block mt-5 rounded-2xl bg-sky-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-sky-700">
                         Accéder au dashboard
                     </a>

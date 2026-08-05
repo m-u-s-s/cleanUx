@@ -49,7 +49,14 @@ class MissionOfferNotification extends Notification
             ->greeting('Bonjour,')
             ->line("Une nouvelle mission vous est proposée : {$reference}.")
             ->line('Réponse attendue dans 15 secondes.')
-            ->action('Voir la mission', url("/provider/missions/{$this->assignment->id}/offer"))
+            /*
+             * `route()` PLUTÔT QU'UNE URL ÉCRITE EN DUR (2026-08-05).
+             *
+             * C'est LE lien par lequel un prestataire accepte une mission. Écrit en dur, il figeait
+             * l'URI : le jour où la route change, plus personne n'accepte, et rien ne le signale —
+             * ni erreur, ni journal, seulement des missions qui restent sans réponse.
+             */
+            ->action('Voir la mission', route('provider.missions.offer', $this->assignment))
             ->line('Si vous ne répondez pas à temps, la mission sera proposée à un autre prestataire.');
     }
 
@@ -82,7 +89,9 @@ class MissionOfferNotification extends Notification
         return [
             'title' => '🚨 Nouvelle mission',
             'body' => $body,
-            'url' => "/provider/missions/{$this->assignment->id}/offer",
+            // Chemin RELATIF, comme l'attend le client push — mais dérivé de la route, plus figé
+            // en dur : le troisième argument de `route()` demande une URL relative.
+            'url' => route('provider.missions.offer', $this->assignment, false),
             'tag' => 'mission-offer-'.$this->assignment->id,
             'requireInteraction' => true,
             'data' => [

@@ -155,9 +155,12 @@ Route::middleware(['role:admin', 'enforce_2fa'])
         Route::get('/utilisateurs', $utilisateursAdmin)
             ->name('utilisateurs.manage');
 
-        Route::get('/users', function () {
-            return redirect()->route('admin.utilisateurs.manage');
-        })->name('utilisateurs');
+        /*
+         * `/admin/users` (nom `admin.utilisateurs`) a été retiré le 2026-08-05 : c'était une
+         * simple redirection vers `admin.utilisateurs.manage`, doublon d'un chemin qui n'a
+         * qu'une raison d'être. Les anciens liens vers `/admin/users` répondent donc 404 ;
+         * l'unique page reste `/admin/utilisateurs`.
+         */
 
         if (class_exists(AdminAlertsCenter::class)) {
             Route::get('/alerts', AdminAlertsCenter::class)->name('alerts');

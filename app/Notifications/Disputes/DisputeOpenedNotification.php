@@ -30,7 +30,7 @@ class DisputeOpenedNotification extends Notification
             ->line('Catégorie : '.$this->case->category)
             ->line('Priorité : '.$this->case->priority)
             ->line('Notre équipe vous répond sous '.($this->case->sla_policy ?? '24h').'.')
-            ->action('Voir ma réclamation', url('/dashboard/client/litiges'));
+            ->action('Voir ma réclamation', route('client.claims'));
     }
 
     public function toArray($notifiable): array

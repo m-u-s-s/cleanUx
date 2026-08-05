@@ -79,7 +79,7 @@ return [
         ['key' => 'admin-home', 'title' => 'Accueil admin', 'icon' => 'apps-outline', 'path' => '/admin/home', 'web' => 'native', 'mobile' => 'webview', 'roles' => ['admin'], 'responsive_verified' => true],
         ['key' => 'admin-missions', 'title' => 'Missions', 'icon' => 'apps-outline', 'path' => '/admin/missions', 'web' => 'native', 'mobile' => 'webview', 'roles' => ['admin'], 'responsive_verified' => true],
         ['key' => 'admin-utilisateurs', 'title' => 'Utilisateurs', 'icon' => 'apps-outline', 'path' => '/admin/utilisateurs', 'web' => 'native', 'mobile' => 'webview', 'roles' => ['admin'], 'responsive_verified' => true],
-        ['key' => 'admin-users', 'title' => 'Users', 'icon' => 'apps-outline', 'path' => '/admin/users', 'web' => 'native', 'mobile' => 'webview', 'roles' => ['admin'], 'responsive_verified' => false],
+        ['key' => 'admin-users', 'title' => 'Users', 'icon' => 'apps-outline', 'path' => '/admin/utilisateurs', 'web' => 'native', 'mobile' => 'webview', 'roles' => ['admin'], 'responsive_verified' => false],
         ['key' => 'admin-alerts', 'title' => 'Alertes', 'icon' => 'apps-outline', 'path' => '/admin/alerts', 'web' => 'native', 'mobile' => 'webview', 'roles' => ['admin'], 'responsive_verified' => true],
         ['key' => 'admin-analytics', 'title' => 'Analytics', 'icon' => 'apps-outline', 'path' => '/admin/analytics', 'web' => 'native', 'mobile' => 'webview', 'roles' => ['admin'], 'responsive_verified' => true],
         ['key' => 'admin-credits-clients', 'title' => 'Crédits clients', 'icon' => 'apps-outline', 'path' => '/admin/credits-clients', 'web' => 'native', 'mobile' => 'webview', 'roles' => ['admin'], 'responsive_verified' => true],
@@ -177,7 +177,7 @@ return [
         ['key' => 'admin-modules', 'title' => 'Modules', 'icon' => 'apps-outline', 'path' => '/admin/modules', 'web' => 'native', 'mobile' => 'webview', 'roles' => ['admin'], 'responsive_verified' => true],
         ['key' => 'admin-countries', 'title' => 'Pays', 'icon' => 'apps-outline', 'path' => '/admin/countries', 'web' => 'native', 'mobile' => 'webview', 'roles' => ['admin'], 'responsive_verified' => true],
         ['key' => 'admin-emails', 'title' => 'Emails', 'icon' => 'apps-outline', 'path' => '/admin/emails', 'web' => 'native', 'mobile' => 'webview', 'roles' => ['admin'], 'responsive_verified' => true],
-        ['key' => 'admin-premium-clients', 'title' => 'Clients premium', 'icon' => 'apps-outline', 'path' => '/admin/premium-clients', 'web' => 'native', 'mobile' => 'webview', 'roles' => ['admin'], 'responsive_verified' => true],
+        ['key' => 'admin-premium-clients', 'title' => 'Clients premium', 'icon' => 'apps-outline', 'path' => '/admin/premium/clients', 'web' => 'native', 'mobile' => 'webview', 'roles' => ['admin'], 'responsive_verified' => true],
 
         // ── B2B / entreprise (company dashboards)
         ['key' => 'dashboard-entreprise-client', 'title' => 'Espace entreprise', 'icon' => 'apps-outline', 'path' => '/dashboard/entreprise-client', 'web' => 'native', 'mobile' => 'webview', 'roles' => ['entreprise'], 'responsive_verified' => true],

@@ -7,6 +7,7 @@ use App\Models\ServiceCatalog;
 use App\Models\User;
 use App\Services\Assistant\Tools\Contracts\AssistantTool;
 use App\Services\PermissionService;
+use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Str;
 
 /**
@@ -186,15 +187,21 @@ class CreateBookingTool implements AssistantTool
      */
     protected function resolveBookingViewUrl(Booking $booking): string
     {
-        try {
-            // Future-proof : si tu ajoutes la route détail un jour
-            return route('client.rendezvous.show', $booking->id, false);
-        } catch (\Throwable $e) {
-            try {
-                return route('client.rendezvous.index', [], false);
-            } catch (\Throwable $e2) {
-                return '#';
-            }
+        /*
+         * `Route::has()` PLUTÔT QU'UNE EXCEPTION RATTRAPÉE (2026-08-05).
+         *
+         * La version précédente visait une route de détail « future-proof, si tu ajoutes la route
+         * un jour ». Cette route n'existant pas, l'appel levait à CHAQUE passage pour être aussitôt
+         * rattrapé : une exception par réservation créée, en guise de branchement.
+         *
+         * Elle n'est plus nommée du tout. Nommer une route inexistante, même sous un garde, laisse
+         * une cible que rien ne vérifie et que les outils d'analyse ne peuvent pas distinguer d'une
+         * faute de frappe. Le jour où la page de détail existera, l'ajouter ici en tête.
+         */
+        if (Route::has('client.rendezvous.index')) {
+            return route('client.rendezvous.index', [], false);
         }
+
+        return '#';
     }
 }

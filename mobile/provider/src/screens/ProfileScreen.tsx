@@ -9,12 +9,27 @@ import {typography, spacing, radius, shadows } from '@/theme';
 import { useThemeColors } from '@/theme/useThemeColors';
 import type { ThemeTokens } from '@/theme/useThemeColors';
 import type { RootStackParamList } from '@/navigation/types';
+import { useSpacePreference } from '@/admin/useSpacePreference';
 
 export function ProfileScreen() {
   const styles = stylesFor(useThemeColors());
 
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
-  const { logout } = useAuth();
+  const { user, logout } = useAuth();
+  const { clear } = useSpacePreference();
+
+  /*
+   * LA PORTE DE SORTIE VERS LA CONSOLE D'ADMINISTRATION.
+   *
+   * `useSpacePreference` écrit que « le choix reste réversible depuis le profil : le retenir sans
+   * porte de sortie enfermerait dans l'autre sens ». L'intention était juste, l'implémentation ne
+   * l'était qu'à moitié : `clear()` n'existait que dans `AdminProfileScreen`. Un compte à double
+   * casquette qui choisissait « prestataire » une fois ne pouvait PLUS JAMAIS revenir à la console
+   * — ni ses quatre onglets, ni ses écrans, hors réinstallation. Ce bouton referme la boucle.
+   *
+   * Même condition que côté admin : proposé aux seuls comptes qui ont réellement les deux rôles.
+   */
+  const doubleCasquette = user?.is_admin === true && user?.is_provider === true;
 
   const actions: Array<{ label: string; screen: keyof RootStackParamList }> = [
     { label: 'Disponibilités', screen: 'Availability' },
@@ -57,6 +72,17 @@ export function ProfileScreen() {
             variant="ghost"
             fullWidth
           />
+          {doubleCasquette ? (
+            <>
+              <Divider />
+              <Button
+                label="Changer d’espace"
+                onPress={() => void clear()}
+                variant="secondary"
+                fullWidth
+              />
+            </>
+          ) : null}
           <Divider />
           <Button
             label="Se déconnecter"

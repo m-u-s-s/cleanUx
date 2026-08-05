@@ -304,13 +304,12 @@ Route::middleware(['auth', 'verified', 'active.account'])->group(function () use
                 })->name('export.csv');
             }
 
-            if (! Route::has('admin.premium.clients.legacy')) {
-                Route::get('/premium-clients', $livewireOrFallback([
-                    PremiumClients::class,
-                    PremiumClientsManager::class,
-                    AdminPremiumClients::class,
-                ], 'Clients premium'))->name('premium.clients.legacy');
-            }
+            /*
+             * `/admin/premium-clients` (nom `admin.premium.clients.legacy`) a été retiré le
+             * 2026-08-05 : il servait le MÊME composant que `admin.premium.clients`
+             * (`/admin/premium/clients`) sous une ancienne URI. Un composant, une adresse ;
+             * les anciens liens vers `/admin/premium-clients` répondent désormais 404.
+             */
         });
 
     /*

@@ -74,7 +74,7 @@ return [
         ['key' => 'automation', 'title' => 'Automatisation', 'group' => 'operations', 'icon' => 'flash-outline', 'coverage' => 'report', 'routes' => ['admin/automation']],
 
         // ── Personnes et comptes ────────────────────────────────────────────────────────────
-        ['key' => 'users', 'title' => 'Utilisateurs', 'group' => 'personnes', 'icon' => 'people-outline', 'coverage' => 'descriptor', 'routes' => ['admin/utilisateurs', 'admin/users']],
+        ['key' => 'users', 'title' => 'Utilisateurs', 'group' => 'personnes', 'icon' => 'people-outline', 'coverage' => 'descriptor', 'routes' => ['admin/utilisateurs']],
         ['key' => 'companies', 'title' => 'Entreprises', 'group' => 'personnes', 'icon' => 'business-outline', 'coverage' => 'descriptor', 'routes' => ['admin/entreprises']],
         ['key' => 'sites', 'title' => 'Sites', 'group' => 'personnes', 'icon' => 'location-outline', 'coverage' => 'descriptor', 'routes' => ['admin/sites']],
         ['key' => 'teams', 'title' => 'Équipes et partenaires', 'group' => 'personnes', 'icon' => 'people-circle-outline', 'coverage' => 'descriptor', 'routes' => ['admin/teams-partners']],
@@ -86,7 +86,7 @@ return [
         ['key' => 'kyc', 'title' => 'Vérifications KYC', 'group' => 'personnes', 'icon' => 'finger-print-outline', 'coverage' => 'descriptor', 'routes' => ['admin/kyc']],
         ['key' => 'kyb', 'title' => 'Vérifications KYB', 'group' => 'personnes', 'icon' => 'briefcase-outline', 'coverage' => 'descriptor', 'routes' => ['admin/kyb-v2']],
         ['key' => 'badges', 'title' => 'Badges', 'group' => 'personnes', 'icon' => 'medal-outline', 'coverage' => 'descriptor', 'routes' => ['admin/badges']],
-        ['key' => 'premium', 'title' => 'Clients premium', 'group' => 'personnes', 'icon' => 'star-outline', 'coverage' => 'descriptor', 'routes' => ['admin/premium-clients', 'admin/premium/clients']],
+        ['key' => 'premium', 'title' => 'Clients premium', 'group' => 'personnes', 'icon' => 'star-outline', 'coverage' => 'descriptor', 'routes' => ['admin/premium/clients']],
         ['key' => 'stripe-connect', 'title' => 'Stripe Connect prestataires', 'group' => 'personnes', 'icon' => 'card-outline', 'coverage' => 'descriptor', 'routes' => ['admin/stripe-connect-providers']],
 
         // ── Catalogue et prix ───────────────────────────────────────────────────────────────

@@ -35,7 +35,7 @@ class MissionReplanifieeNotification extends Notification implements ShouldQueue
             ->line('Nouveau créneau : '.$this->rdv->date.' à '.$this->rdv->heure)
             ->line('Employé assigné : '.($this->rdv->employe->name ?? '—'))
             ->line('Lieu : '.$this->rdv->location_display)
-            ->action('Voir mon espace client', url('/dashboard/client'));
+            ->action('Voir mon espace client', route('client.dashboard'));
     }
 
     public function toArray($notifiable): array
@@ -56,7 +56,7 @@ class MissionReplanifieeNotification extends Notification implements ShouldQueue
             'status' => $this->rdv->status,
             'zone_name' => $this->rdv->serviceZone?->name,
             'location_display' => $this->rdv->location_display,
-            'action_url' => url('/dashboard/client'),
+            'action_url' => route('client.dashboard'),
         ]);
     }
 }

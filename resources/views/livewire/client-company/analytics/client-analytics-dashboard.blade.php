@@ -48,17 +48,34 @@
                 </button>
             @endif
 
-            {{-- Exports --}}
-            @if (Route::has('analytics.export.kpis'))
-                <a href="{{ route('analytics.export.kpis', ['preset' => $preset, 'from' => $customFrom, 'to' => $customTo]) }}"
+            {{--
+                Exports — noms corrigés le 2026-08-05.
+
+                Ces trois liens visaient `analytics.export.*`, un préfixe qui N'EXISTE PAS : les
+                routes s'appellent `client.analytics.export.*`. Comme chaque lien est gardé par
+                `Route::has()`, la faute ne produisait aucune erreur — les boutons ne s'affichaient
+                simplement JAMAIS. Les exports fonctionnaient, personne ne pouvait les déclencher.
+
+                C'est le risque de ce garde : il protège d'une route absente en production, et il
+                masque aussi bien une faute de frappe. Quand un bouton attendu manque à l'écran
+                sans rien casser, c'est la première chose à vérifier.
+            --}}
+            @if (Route::has('client.analytics.export.kpis'))
+                <a href="{{ route('client.analytics.export.kpis', ['preset' => $preset, 'from' => $customFrom, 'to' => $customTo]) }}"
                    class="inline-flex min-h-[44px] items-center gap-1 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50">
                     📊 KPIs CSV
                 </a>
             @endif
-            @if (Route::has('analytics.export.bookings'))
-                <a href="{{ route('analytics.export.bookings', ['preset' => $preset, 'from' => $customFrom, 'to' => $customTo]) }}"
+            @if (Route::has('client.analytics.export.bookings'))
+                <a href="{{ route('client.analytics.export.bookings', ['preset' => $preset, 'from' => $customFrom, 'to' => $customTo]) }}"
                    class="inline-flex min-h-[44px] items-center gap-1 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50">
                     📋 Détail CSV
+                </a>
+            @endif
+            @if (Route::has('client.analytics.export.monthly_revenue'))
+                <a href="{{ route('client.analytics.export.monthly_revenue', ['preset' => $preset, 'from' => $customFrom, 'to' => $customTo]) }}"
+                   class="inline-flex min-h-[44px] items-center gap-1 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50">
+                    💶 Revenus mensuels CSV
                 </a>
             @endif
         </div>
