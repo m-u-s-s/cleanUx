@@ -33,7 +33,7 @@ class BundleQuoteRequestedNotification extends Notification
             ->greeting('Bonjour,')
             ->line("Un client recherche un prestataire pour : {$this->item->label}.")
             ->line('Proposez votre prix avant la fin du délai pour être sélectionné.')
-            ->action('Voir la demande', url('/dashboard/employe/devis-chantiers'))
+            ->action('Voir la demande', route('employe.bundle-quotes'))
             ->line('Référence chantier : '.($bundle?->code ?? '—'));
     }
 

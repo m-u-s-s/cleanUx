@@ -33,7 +33,7 @@ class RappelRendezVousNotification extends Notification implements ShouldQueue
             ->line("Petit rappel : votre {$this->rdv->service_display_name} est prévu dans {$this->timing}.")
             ->line('Date : '.$this->rdv->date.' à '.$this->rdv->heure)
             ->line('Adresse : '.$this->rdv->location_display)
-            ->action('Voir mon espace client', url('/dashboard/client'));
+            ->action('Voir mon espace client', route('client.dashboard'));
     }
 
     public function toArray($notifiable): array
@@ -51,7 +51,7 @@ class RappelRendezVousNotification extends Notification implements ShouldQueue
             'service_label' => $this->rdv->service_display_name,
             'zone_name' => $this->rdv->serviceZone?->name,
             'location_display' => $this->rdv->location_display,
-            'action_url' => url('/dashboard/client'),
+            'action_url' => route('client.dashboard'),
         ]);
     }
 }

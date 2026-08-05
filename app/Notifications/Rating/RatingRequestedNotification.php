@@ -31,7 +31,7 @@ class RatingRequestedNotification extends Notification
                 ? 'Votre prestation est terminée. Aidez la communauté en notant votre prestataire.'
                 : 'La mission est terminée. Notez votre expérience client.')
             ->line('Référence : '.$this->booking->booking_reference)
-            ->action('Laisser un avis', url('/dashboard'))
+            ->action('Laisser un avis', route('dashboard'))
             ->line('Vous avez 14 jours pour laisser votre avis.');
     }
 

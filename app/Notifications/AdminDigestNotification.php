@@ -34,7 +34,7 @@ class AdminDigestNotification extends Notification
         }
 
         return $mail
-            ->action('Ouvrir le dashboard admin', $this->actionUrl ?: url('/admin/dashboard'))
+            ->action('Ouvrir le dashboard admin', $this->actionUrl ?: route('admin.dashboard'))
             ->line('Cette synthèse est générée automatiquement.');
     }
 
@@ -46,7 +46,7 @@ class AdminDigestNotification extends Notification
             'title' => $this->title,
             'message' => 'Synthèse automatique des alertes métier disponible.',
             'items' => $this->items,
-            'action_url' => $this->actionUrl ?: url('/admin/dashboard'),
+            'action_url' => $this->actionUrl ?: route('admin.dashboard'),
         ]);
     }
 }

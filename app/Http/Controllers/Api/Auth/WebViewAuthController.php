@@ -38,7 +38,7 @@ class WebViewAuthController extends Controller
 
         return response()->json([
             'ok' => true,
-            'url' => url('/m/enter').'?ticket='.$ticket,
+            'url' => route('webview.enter').'?ticket='.$ticket,
         ]);
     }
 

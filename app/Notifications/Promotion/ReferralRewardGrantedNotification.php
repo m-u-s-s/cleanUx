@@ -34,7 +34,7 @@ class ReferralRewardGrantedNotification extends Notification
             ->greeting('Bonne nouvelle !')
             ->line($title.' : '.$amount.' '.$currency.'.')
             ->line('Le crédit sera automatiquement déduit de votre prochaine réservation.')
-            ->action('Réserver maintenant', url('/dashboard'));
+            ->action('Réserver maintenant', route('dashboard'));
     }
 
     public function toArray($notifiable): array
@@ -55,7 +55,7 @@ class ReferralRewardGrantedNotification extends Notification
             'currency' => $this->reward->currency,
             'role' => $this->reward->role,
             'reward_type' => $this->reward->reward_type,
-            'action_url' => url('/dashboard'),
+            'action_url' => route('dashboard'),
         ]);
     }
 }

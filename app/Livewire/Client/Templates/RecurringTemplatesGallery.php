@@ -98,16 +98,19 @@ class RecurringTemplatesGallery extends Component
                 ]
             );
 
-            $this->flash(
-                "Récurrence \"{$template->name}\" créée. Tu peux la consulter dans Mes récurrences.",
-                'success'
-            );
+            /*
+             * LE MESSAGE NE PROMET PLUS UNE PAGE QUI N'EXISTE PAS.
+             *
+             * Il annonçait « Tu peux la consulter dans Mes récurrences » et le code redirigeait
+             * vers `client.recurring.index` — une route qui n'existe nulle part. Gardée par
+             * `Route::has()`, l'erreur ne cassait rien : la redirection était simplement sautée,
+             * et l'utilisateur restait sur place en cherchant une page introuvable. Seule
+             * `client.recurring.templates` existe, et c'est précisément l'écran d'où l'on vient.
+             *
+             * Le jour où une liste des récurrences existera, remettre la redirection ici.
+             */
+            $this->flash("Récurrence \"{$template->name}\" créée.", 'success');
             $this->closeApplyModal();
-
-            // Redirige vers la liste des récurrences
-            if (Route::has('client.recurring.index')) {
-                $this->redirect(route('client.recurring.index'), navigate: true);
-            }
         } catch (\DomainException $e) {
             $this->flash($e->getMessage(), 'error');
         } catch (\Throwable $e) {

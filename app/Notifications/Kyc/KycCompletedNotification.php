@@ -33,7 +33,7 @@ class KycCompletedNotification extends Notification
             $mail->greeting('Bienvenue !')
                 ->line('Votre vérification d\'identité (KYC) a été validée avec succès.')
                 ->line('Vous pouvez maintenant accepter des missions.')
-                ->action('Accéder à mon dashboard', url('/dashboard/employe'));
+                ->action('Accéder à mon dashboard', route('employe.dashboard'));
         } else {
             $mail->greeting('Bonjour,')
                 ->line('Votre vérification d\'identité nécessite un complément ou n\'a pas pu être validée.');
@@ -42,7 +42,7 @@ class KycCompletedNotification extends Notification
                 $mail->line('Raison : '.$this->verification->rejection_reason);
             }
 
-            $mail->action('Compléter ma vérification', url('/dashboard/employe'));
+            $mail->action('Compléter ma vérification', route('employe.dashboard'));
         }
 
         return $mail;

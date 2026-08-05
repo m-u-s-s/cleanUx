@@ -35,7 +35,7 @@ class NouveauRendezVousNotification extends Notification
             ->line('Parking : '.($this->rdv->acces_parking ? 'Oui' : 'Non'))
             ->line('Matériel fourni : '.($this->rdv->materiel_fournit ? 'Oui' : 'Non'))
             ->line('Photos de référence : '.(! empty($this->rdv->photos_reference) ? 'Oui' : 'Non'))
-            ->action('Voir mes rendez-vous', url('/dashboard/employe'))
+            ->action('Voir mes rendez-vous', route('employe.dashboard'))
             ->line('Merci de confirmer ou refuser cette intervention rapidement.');
 
         if ($this->rdv->priorite === 'urgente') {
@@ -65,7 +65,7 @@ class NouveauRendezVousNotification extends Notification
             'status' => $this->rdv->status,
             'has_photos' => ! empty($this->rdv->photos_reference),
             'zone_name' => $this->rdv->serviceZone?->name,
-            'action_url' => url('/dashboard/employe'),
+            'action_url' => route('employe.dashboard'),
         ]);
     }
 }

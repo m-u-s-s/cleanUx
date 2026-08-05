@@ -33,7 +33,7 @@ class FeedbackAjouteNotification extends Notification
             'feedback_id' => $this->feedback->id,
             'rdv_id' => $this->feedback->rendezVous->id ?? null,
             'created_at' => now()->toDateTimeString(),
-            'action_url' => url('/admin/feedbacks'),
+            'action_url' => route('admin.feedbacks'),
         ]);
     }
 }

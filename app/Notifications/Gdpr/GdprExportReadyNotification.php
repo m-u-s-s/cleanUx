@@ -27,7 +27,7 @@ class GdprExportReadyNotification extends Notification
             ->greeting('Bonne nouvelle !')
             ->line('Votre export RGPD '.$this->request->reference.' est disponible au téléchargement.')
             ->line('Disponible jusqu\'au '.optional($this->request->expires_at)->format('d/m/Y'))
-            ->action('Télécharger mes données', url('/dashboard/client/donnees'));
+            ->action('Télécharger mes données', route('client.gdpr.data'));
     }
 
     public function toArray($notifiable): array

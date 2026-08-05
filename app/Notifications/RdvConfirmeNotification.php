@@ -25,7 +25,7 @@ class RdvConfirmeNotification extends Notification
             ->subject('CleanUx · Rendez-vous confirmé')
             ->line('Votre rendez-vous a bien été confirmé.')
             ->line('Date : '.$this->rdv->date.' à '.$this->rdv->heure)
-            ->action('Voir mon dashboard', url('/dashboard/client'))
+            ->action('Voir mon dashboard', route('client.dashboard'))
             ->line('Merci pour votre confiance.');
     }
 
@@ -39,7 +39,7 @@ class RdvConfirmeNotification extends Notification
             'rdv_id' => $this->rdv->id,
             'status' => 'confirme',
             'zone_name' => $this->rdv->serviceZone?->name,
-            'action_url' => url('/dashboard/client'),
+            'action_url' => route('client.dashboard'),
         ]);
     }
 }

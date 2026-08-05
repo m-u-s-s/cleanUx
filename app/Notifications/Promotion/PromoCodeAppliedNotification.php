@@ -30,7 +30,7 @@ class PromoCodeAppliedNotification extends Notification
             ->subject('CleanUx · Code promo appliqué')
             ->line('Votre code promo '.$code.' a été appliqué.')
             ->line('Réduction : '.$discount.' '.$currency)
-            ->action('Voir mes réservations', url('/dashboard'));
+            ->action('Voir mes réservations', route('dashboard'));
     }
 
     public function toArray($notifiable): array

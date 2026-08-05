@@ -26,7 +26,7 @@ class DisputeUpdatedNotification extends Notification
             ->subject('CleanUx · Mise à jour de votre réclamation '.$this->case->reference)
             ->line('Votre réclamation a évolué.')
             ->line('Statut : '.$this->case->status)
-            ->action('Voir le détail', url('/dashboard/client/litiges'));
+            ->action('Voir le détail', route('client.claims'));
     }
 
     public function toArray($notifiable): array

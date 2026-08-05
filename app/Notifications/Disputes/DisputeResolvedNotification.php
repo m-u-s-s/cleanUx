@@ -44,7 +44,7 @@ class DisputeResolvedNotification extends Notification
             }
         }
 
-        return $mail->action('Voir le détail', url('/dashboard/client/litiges'));
+        return $mail->action('Voir le détail', route('client.claims'));
     }
 
     public function toArray($notifiable): array
