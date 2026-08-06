@@ -43,7 +43,11 @@
                         <div class="h-3 w-3 flex-shrink-0 rounded-full {{ $sc['dot'] }}"></div>
                         <div class="min-w-0">
                             <p class="text-sm font-bold text-white">
-                                {{ $mission->scheduled_at?->format('H:i') ?? '–' }}
+                                {{-- `scheduled_at` n'existe pas sur `missions` : l'heure s'affichait « – »
+                                     pour TOUTE mission. Le créneau se lit sur `planned_start_at`, la
+                                     colonne sur laquelle ce même écran filtre et trie déjà. Le défaut
+                                     est resté invisible tant que le tableau n'avait aucune mission. --}}
+                                {{ $mission->planned_start_at?->format('H:i') ?? '–' }}
                                 <span class="ml-2 text-[10px] font-medium text-slate-400 uppercase">
                                     {{ $sc['label'] }}
                                 </span>

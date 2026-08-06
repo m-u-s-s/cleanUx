@@ -156,6 +156,20 @@ jobs:
       - name: Migrate (MySQL)
         run: php artisan migrate --force
 
+      # LES SEEDERS, SUR LE MOTEUR RÉEL — ET DEUX FOIS.
+      #
+      # `SeedersFonctionnentTest` couvre déjà cela, mais sur SQLite : l'angle mort connu de ce
+      # dépôt. Trois familles de défauts ne se voient QUE sur MySQL — clé étrangère réellement
+      # appliquée, mode strict qui refuse une valeur tronquée, limite de 64 caractères sur les
+      # identifiants. Un seeder peut donc être vert dans la suite et casser une base de production.
+      #
+      # Le second passage est ce qui vérifie l'idempotence : sans lui, un `insert()` non gardé
+      # passerait, puisqu'une base vierge ne peut pas montrer de doublon.
+      - name: Seeders load twice on real MySQL (idempotent, FK enforced)
+        run: |
+          php artisan db:seed --force
+          php artisan db:seed --force
+
       - name: Money / GDPR / spine suites with FK enforcement
         run: |
           php artisan test \
