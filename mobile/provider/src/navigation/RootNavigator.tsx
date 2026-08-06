@@ -21,6 +21,11 @@ import { ProviderNotificationsScreen } from '@/screens/ProviderNotificationsScre
 import { ForgotPasswordScreen } from '@/screens/ForgotPasswordScreen';
 import { LegalScreen } from '@/screens/LegalScreen';
 import { EmbeddedModuleRoute } from '@/screens/EmbeddedModuleRoute';
+import { CompanyMembersScreen } from '@/screens/company/CompanyMembersScreen';
+import { CompanyFieldTeamsScreen } from '@/screens/company/CompanyFieldTeamsScreen';
+import { CompanyTasksScreen } from '@/screens/company/CompanyTasksScreen';
+import { CompanyDispatchScreen } from '@/screens/company/CompanyDispatchScreen';
+import { CompanyChannelsScreen } from '@/screens/company/CompanyChannelsScreen';
 // Polish — UX screens
 import { NotificationPreferencesScreen } from '@/screens/NotificationPreferencesScreen';
 import { LanguageScreen } from '@/screens/LanguageScreen';
@@ -296,6 +301,32 @@ export function RootNavigator() {
               name="EmbeddedModule"
               component={EmbeddedModuleRoute}
               options={{ headerShown: true }}
+            />
+            {/* Espace société — écrans natifs, servis par l'API /provider/company/*. */}
+            <Stack.Screen
+              name="CompanyMembers"
+              component={CompanyMembersScreen}
+              options={{ headerShown: true, title: 'Équipe' }}
+            />
+            <Stack.Screen
+              name="CompanyFieldTeams"
+              component={CompanyFieldTeamsScreen}
+              options={{ headerShown: true, title: 'Équipes terrain' }}
+            />
+            <Stack.Screen
+              name="CompanyTasks"
+              component={CompanyTasksScreen}
+              options={{ headerShown: true, title: 'Tâches' }}
+            />
+            <Stack.Screen
+              name="CompanyDispatch"
+              component={CompanyDispatchScreen}
+              options={{ headerShown: true, title: 'Répartition' }}
+            />
+            <Stack.Screen
+              name="CompanyChannels"
+              component={CompanyChannelsScreen}
+              options={{ headerShown: true, title: 'Canaux' }}
             />
             <Stack.Screen
               name="Legal"

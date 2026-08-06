@@ -4,9 +4,9 @@ namespace App\Livewire\ProviderCompany;
 
 use App\Events\MissionStatusUpdated;
 use App\Models\Mission;
-use App\Models\MissionAssignment;
 use App\Models\OrganizationContract;
 use App\Models\OrganizationMember;
+use App\Services\Missions\MissionAssignmentService;
 use App\Services\PermissionService;
 use App\Support\Livewire\Concerns\EnforcesActiveOrgMembership;
 use Illuminate\Database\Eloquent\Collection;
@@ -126,22 +126,14 @@ class DispatchCenter extends Component
          * `reassigned` — et non `cancelled` — parce que l'historique doit distinguer un
          * remplacement d'un abandon.
          */
-        MissionAssignment::query()
-            ->where('mission_id', $mission->id)
-            ->where('user_id', '!=', $worker->user_id)
-            ->where('assignment_status', 'assigned')
-            ->update(['assignment_status' => 'reassigned']);
-
-        MissionAssignment::updateOrCreate(
-            ['mission_id' => $mission->id, 'user_id' => $worker->user_id],
-            ['role_on_mission' => 'lead', 'assignment_status' => 'assigned', 'assigned_at' => now()]
-        );
-
-        // Le lead est la source de vérité lue partout ailleurs : il suit l'assignment.
-        $mission->update([
-            'status' => 'assigned',
-            'lead_provider_user_id' => $worker->user_id,
-        ]);
+        /*
+         * LA RÈGLE D'ASSIGNATION VIT DÉSORMAIS DANS UN SERVICE PARTAGÉ (2026-08-06).
+         *
+         * L'API mobile en a besoin à son tour. La recopier aurait créé deux versions d'une règle
+         * délicate — libérer les leads actifs des autres, puis synchroniser
+         * `lead_provider_user_id` — vouées à diverger au premier ajustement.
+         */
+        app(MissionAssignmentService::class)->assigner($mission, $worker);
 
         // Broadcast du changement de statut
         broadcast(new MissionStatusUpdated($mission));

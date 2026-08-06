@@ -284,8 +284,27 @@ class TeamChannels extends Component
             return;
         }
 
-        $channel = Channel::find($this->activeChannelId);
-        if (! $channel) {
+        /*
+         * FERMER LA LECTURE NE FERMAIT PAS L'ÉCRITURE (corrigé le 2026-08-06).
+         *
+         * La phase 0 a gardé `openChannel()` et le rendu. Ce chemin-ci résolvait encore le canal
+         * par `Channel::find()` — sans organisation, sans politique — et `MessageService::send()`
+         * n'autorise rien de son côté. `$activeChannelId` étant une propriété PUBLIQUE Livewire,
+         * il suffisait de l'écrire depuis le navigateur pour publier dans le canal privé d'une
+         * société concurrente, sans jamais l'ouvrir.
+         *
+         * `ChannelPolicy::postMessage()` encodait déjà la règle exacte — être membre, canal ni
+         * verrouillé ni archivé — et n'était appelée nulle part.
+         *
+         * NOTE : `lockChannel()` et `archiveChannel()` résolvent le canal de la même façon, mais
+         * passent par `ModerationService`, qui refuse un utilisateur non autorisé. Elles ne
+         * présentent donc pas ce défaut — vérifié avant de conclure.
+         */
+        $channel = Channel::query()
+            ->where('organization_account_id', $this->org->id)
+            ->find($this->activeChannelId);
+
+        if (! $channel || ! Auth::user()->can('postMessage', $channel)) {
             return;
         }
 
