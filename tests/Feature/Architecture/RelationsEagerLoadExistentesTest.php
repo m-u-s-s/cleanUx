@@ -37,13 +37,10 @@ class RelationsEagerLoadExistentesTest extends TestCase
      * sous-systèmes sans rapport avec le lot en cours. Ils sont RÉELS — chacun lève une
      * `RelationNotFoundException` à l'exécution — et vérifiés un par un :
      *
-     *   - `MissionTaskSegment` n'expose que `assignedUser` (BelongsTo, singulier). Ni
-     *     `assignments` ni `memberStatuses` n'existent. Le panneau
-     *     `teamlead/member-status-panel.blade.php` lit pourtant `$selectedSegment->assignments` :
-     *     ce n'est donc pas un eager-load mort, c'est la fonctionnalité entière qui est à
-     *     reconstruire — la relation manque, pas seulement son chargement.
      *   - `FleetVehicle` n'expose que `currentProvider`, `assignments` et `maintenanceLogs`.
-     *     `certifications` n'existe pas ; rien ne la lit, celle-ci est un eager-load mort.
+     *     `certifications` n'existe pas ; rien ne la lit, c'est un eager-load mort. Le retirer
+     *     demande de savoir si la flotte devait porter des certifications ou si l'appel visait le
+     *     prestataire — question de conception, pas de lecture.
      *
      * On les inscrit ici plutôt que de les corriger à la volée : les réparer suppose de concevoir
      * les relations absentes, ce qui déborde du sujet. La liste les rend visibles et empêche la
@@ -52,8 +49,9 @@ class RelationsEagerLoadExistentesTest extends TestCase
      * @var list<string>
      */
     private const LACUNES_CONNUES = [
-        "MissionTaskSegment::with('assignments.user')",
-        "MissionTaskSegment::with('memberStatuses')",
+        // `MissionTaskSegment::with('assignments.user')` et `with('memberStatuses')` ont été
+        // RÉSOLUS le 2026-08-06 : les deux relations manquaient sur le segment alors que leurs
+        // tables, leurs modèles et le côté direct existaient déjà. Retirés de cette liste.
         "FleetAssignment::with('vehicle.certifications')",
     ];
 
