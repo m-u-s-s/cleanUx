@@ -22,7 +22,15 @@ jobs:
         with:
           php-version: '8.5'
           extensions: mbstring, dom, fileinfo, pdo_sqlite, sqlite3
-          coverage: xdebug
+          # XDEBUG N'EST CHARGÉ QUE LÀ OÙ LA COUVERTURE EST MESURÉE (2026-08-06).
+          #
+          # Il ne sert QU'À cela, mais une fois chargé il ralentit TOUTE exécution PHP — d'un
+          # facteur ~3 sur cette suite. C'est lui, et non la mesure elle-même, qui faisait passer
+          # ce job de ~20 min à 53-70 min.
+          #
+          # `push` ne se déclenche que sur main/master (voir `on:` en tête de fichier) : la
+          # couverture reste donc entière sur la branche d'intégration, et disparaît des PR.
+          coverage: ${{ github.event_name == 'push' && 'xdebug' || 'none' }}
           ini-values: memory_limit=-1
 
       - name: Setup Node
@@ -62,12 +70,29 @@ jobs:
       - name: Build web assets
         run: npm run build
 
-      # ---- Test suite + coverage gate (single run) ----
+      # ---- Suite de tests ----
+      #
+      # DEUX RÉGIMES, POUR UNE SEULE RAISON : le coût.
+      #
+      # Sur une PULL REQUEST, la suite tourne NUE : mêmes tests, même verdict fonctionnel, sans
+      # Xdebug ni mesure de couverture. C'est ce qui répond à la question « ce changement
+      # casse-t-il quelque chose ? », et cela prend environ trois fois moins de temps.
+      #
+      # Sur MAIN, la couverture est mesurée et le seuil de 80% appliqué. Le portail reste donc
+      # entier là où il protège réellement — à l'entrée de la branche d'intégration.
+      #
+      # Ce que l'on accepte en échange : une PR qui ferait chuter la couverture sous 80% ne sera
+      # signalée qu'après fusion, sur main. C'est un décalage assumé, pas une suppression.
+      - name: Run tests (pull request — sans couverture)
+        if: github.event_name == 'pull_request'
+        run: php artisan test
+
       - name: Run tests with coverage (fail below 80%)
+        if: github.event_name == 'push'
         run: php artisan test --coverage --min=80 --coverage-clover=coverage.xml
 
       - name: Upload coverage report
-        if: always()
+        if: ${{ always() && github.event_name == 'push' }}
         uses: actions/upload-artifact@v4
         with:
           name: coverage-report
