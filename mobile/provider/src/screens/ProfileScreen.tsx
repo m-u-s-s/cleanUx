@@ -53,16 +53,19 @@ export function ProfileScreen() {
   ];
 
   /**
-   * Les écrans de l'espace société, servis en WebView le temps que leur équivalent natif existe.
-   * Les chemins suivent les routes web `provider-company.*`.
+   * L'espace société, entièrement NATIF.
+   *
+   * Ces cinq écrans consomment l'API `/provider/company/*`, créée avec eux : son absence était la
+   * vraie raison de l'embarquement WebView, pas un choix d'interface.
    */
-  const MODULES_SOCIETE = [
-    { label: 'Répartition', path: '/dashboard/entreprise-prestataire/dispatch' },
-    { label: 'Équipes terrain', path: '/dashboard/entreprise-prestataire/equipes-terrain' },
-    { label: 'Membres', path: '/dashboard/entreprise-prestataire/equipe' },
-    { label: 'Canaux', path: '/dashboard/entreprise-prestataire/canaux' },
-    { label: 'Tâches', path: '/dashboard/entreprise-prestataire/taches' },
+  const ECRANS_SOCIETE_NATIFS = [
+    { label: 'Répartition', screen: 'CompanyDispatch' as const },
+    { label: 'Équipe', screen: 'CompanyMembers' as const },
+    { label: 'Équipes terrain', screen: 'CompanyFieldTeams' as const },
+    { label: 'Tâches', screen: 'CompanyTasks' as const },
+    { label: 'Canaux', screen: 'CompanyChannels' as const },
   ];
+
 
   return (
     <SafeAreaView style={styles.container} testID="profile-screen">
@@ -80,22 +83,21 @@ export function ProfileScreen() {
             </View>
           ))}
           {/*
-            ESPACE SOCIÉTÉ — servi par l'hôte WebView partagé.
+            ESPACE SOCIÉTÉ — écrans natifs.
 
-            Ces écrans existaient sur le web sans aucune porte d'entrée mobile. On ne les affiche
-            qu'aux membres d'une société prestataire : les proposer à un indépendant donnerait des
-            liens qui répondent 403 à qui les ouvre.
+            On ne les affiche qu'aux membres d'une société prestataire : les proposer à un
+            indépendant donnerait des liens qui répondent 403 à qui les ouvre.
           */}
           {estMembreSocietePrestataire && (
             <>
               <Divider />
-              {MODULES_SOCIETE.map(({ label, path }) => (
-                <View key={path} style={styles.buttonWrapper}>
+              {ECRANS_SOCIETE_NATIFS.map(({ label, screen }) => (
+                <View key={screen} style={styles.buttonWrapper}>
                   <Button
                     label={label}
                     variant="secondary"
                     fullWidth
-                    onPress={() => navigation.navigate('EmbeddedModule', { path, title: label })}
+                    onPress={() => navigation.navigate(screen)}
                   />
                 </View>
               ))}

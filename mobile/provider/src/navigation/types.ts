@@ -62,6 +62,20 @@ export type RootStackParamList = {
    * par écran, sans bloquer l'accès en attendant.
    */
   EmbeddedModule: { path: string; title: string };
+  /*
+   * Espace société, en NATIF. Ces trois écrans étaient servis par `EmbeddedModule` faute d'API :
+   * `routes/api/provider.php` couvrait le prestataire individuel et rien de la société. L'API
+   * `/provider/company/*` créée avec eux lève cet obstacle.
+   *
+   * Les CINQ écrans de l'espace société sont désormais natifs. `EmbeddedModule` reste monté : il
+   * sert d'issue pour tout module web qu'on voudrait embarquer sans écrire d'API, et son hôte est
+   * partagé avec l'application cliente.
+   */
+  CompanyMembers: undefined;
+  CompanyFieldTeams: undefined;
+  CompanyTasks: undefined;
+  CompanyDispatch: undefined;
+  CompanyChannels: undefined;
   ForgotPassword: undefined;
   Legal: { type: 'terms' | 'privacy' };
   // Polish — UX screens

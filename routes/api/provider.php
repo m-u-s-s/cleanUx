@@ -5,6 +5,7 @@ use App\Http\Controllers\Api\PhoneVerificationController;
 use App\Http\Controllers\Api\Provider\AsapOfferController;
 use App\Http\Controllers\Api\Provider\AvailabilityController;
 use App\Http\Controllers\Api\Provider\BadgesController;
+use App\Http\Controllers\Api\Provider\CompanyController as ProviderCompanyController;
 use App\Http\Controllers\Api\Provider\FleetProviderController;
 use App\Http\Controllers\Api\Provider\KycController;
 use App\Http\Controllers\Api\Provider\MissionLiveTrackingController;
@@ -217,4 +218,39 @@ Route::middleware(['auth:sanctum', 'token.grace'])->prefix('provider')->group(fu
 Route::middleware(['auth', 'role:admin'])->group(function () {
     Route::get('/admin/onboarding-documents/{document}/file', [ProviderOnboardingController::class, 'downloadDocument'])
         ->name('admin.onboarding.document.file');
+});
+
+/*
+|--------------------------------------------------------------------------
+| API — Espace société prestataire
+|--------------------------------------------------------------------------
+|
+| GROUPE SÉPARÉ, ET DÉLIBÉRÉMENT. Le groupe principal ci-dessus impose `role:employe` et
+| `provider.approved` : deux conditions qu'un dirigeant de société ne remplit pas
+| nécessairement — il gère ses équipes sans intervenir lui-même sur le terrain. Les y
+| soumettre lui fermerait l'accès à sa propre société.
+|
+| La garde est donc portée par le contrôleur : organisation active obligatoire, puis une
+| permission par écriture. Voir `CompanyController`.
+*/
+Route::middleware('auth:sanctum')->prefix('provider/company')->group(function () {
+    Route::get('/members', [ProviderCompanyController::class, 'members']);
+
+    Route::get('/field-teams', [ProviderCompanyController::class, 'fieldTeams']);
+    Route::post('/field-teams', [ProviderCompanyController::class, 'createFieldTeam']);
+    Route::patch('/field-teams/{team}/archive', [ProviderCompanyController::class, 'archiveFieldTeam']);
+
+    Route::get('/tasks', [ProviderCompanyController::class, 'tasks']);
+    Route::post('/tasks', [ProviderCompanyController::class, 'createTask']);
+    Route::patch('/tasks/{task}', [ProviderCompanyController::class, 'updateTask']);
+
+    // Répartition — l'assignation partage `MissionAssignmentService` avec l'écran web.
+    Route::get('/missions', [ProviderCompanyController::class, 'missions']);
+    Route::post('/missions/{mission}/assign', [ProviderCompanyController::class, 'assignMission']);
+
+    // Canaux — lecture ET écriture passent par ChannelPolicy, que le web n'appelait pas côté
+    // écriture avant le 2026-08-06.
+    Route::get('/channels', [ProviderCompanyController::class, 'channels']);
+    Route::get('/channels/{channel}/messages', [ProviderCompanyController::class, 'channelMessages']);
+    Route::post('/channels/{channel}/messages', [ProviderCompanyController::class, 'postChannelMessage']);
 });
