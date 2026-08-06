@@ -6,6 +6,7 @@ use Database\Factories\MissionTaskSegmentFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Carbon;
 
 /**
@@ -89,5 +90,34 @@ class MissionTaskSegment extends Model
     public function assignedUser(): BelongsTo
     {
         return $this->belongsTo(User::class, 'assigned_user_id');
+    }
+
+    /**
+     * LES DEUX RELATIONS QUE LE PANNEAU CHEF D'ÉQUIPE RÉCLAMAIT SANS QU'ELLES EXISTENT
+     * (ajoutées le 2026-08-06).
+     *
+     * `TeamLeadOperationsCenter` chargeait `with(['assignments.user', 'memberStatuses'])` et
+     * `member-status-panel.blade.php` parcourt `$selectedSegment->assignments`. Ni l'une ni l'autre
+     * n'était déclarée ici : l'eager-load levait une `RelationNotFoundException` et l'écran entier
+     * tombait dès qu'un segment existait.
+     *
+     * TOUT LE RESTE ÉTAIT DÉJÀ LÀ, vérifié avant d'écrire : les tables
+     * `mission_task_segment_assignments` et `mission_member_statuses`, leurs modèles avec `user()`,
+     * `segment()` et `segmentAssignment()`, ainsi que l'action du composant et son service. Seul le
+     * côté INVERSE manquait — `assignedUser` (au singulier, via `assigned_user_id`) désigne autre
+     * chose : le responsable du segment, pas l'équipe affectée.
+     *
+     * @return HasMany<MissionTaskSegmentAssignment, $this>
+     */
+    public function assignments(): HasMany
+    {
+        return $this->hasMany(MissionTaskSegmentAssignment::class, 'mission_task_segment_id')
+            ->orderBy('sequence_order');
+    }
+
+    /** @return HasMany<MissionMemberStatus, $this> */
+    public function memberStatuses(): HasMany
+    {
+        return $this->hasMany(MissionMemberStatus::class, 'mission_task_segment_id');
     }
 }

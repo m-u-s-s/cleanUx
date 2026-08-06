@@ -311,4 +311,23 @@ class Mission extends Model
     {
         return $this->belongsTo(MissionTaskSegment::class, 'mission_task_segment_id');
     }
+
+    /**
+     * LES SEGMENTS DE CETTE MISSION (ajoutée le 2026-08-06).
+     *
+     * `TeamLeadOperationsService::updateMemberStatus()` appelle `$mission->taskSegments()` pour
+     * recalculer l'avancement global. Seul `taskSegment()` existait — un `BelongsTo` SINGULIER,
+     * via `missions.mission_task_segment_id`, qui désigne le segment dont une mission est issue.
+     * Ce n'est pas la même chose : ici on veut les segments RATTACHÉS à la mission, côté inverse de
+     * `MissionTaskSegment::mission()`.
+     *
+     * Le pluriel manquant faisait échouer toute mise à jour de statut membre par un
+     * `BadMethodCallException` — le panneau chef d'équipe était inutilisable de bout en bout.
+     *
+     * @return HasMany<MissionTaskSegment, $this>
+     */
+    public function taskSegments(): HasMany
+    {
+        return $this->hasMany(MissionTaskSegment::class, 'mission_id');
+    }
 }
