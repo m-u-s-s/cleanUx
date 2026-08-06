@@ -2,7 +2,9 @@
 
 namespace App\Models;
 
+use Database\Factories\AsapDispatchNotificationFactory;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -16,6 +18,9 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  */
 class AsapDispatchNotification extends Model
 {
+    /** @use HasFactory<AsapDispatchNotificationFactory> */
+    use HasFactory;
+
     protected $fillable = [
         'asap_dispatch_request_id', 'user_id', 'distance_m', 'radius_m',
         'notified_at', 'seen_at', 'declined_at', 'decline_reason', 'delivery_error',

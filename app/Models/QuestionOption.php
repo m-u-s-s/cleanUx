@@ -5,7 +5,9 @@ namespace App\Models;
 use App\Models\Concerns\HasCatalogTranslations;
 use App\Models\Contracts\TranslatesCatalogLabels;
 use App\Services\Audit\Concerns\AuditsEloquentEvents;
+use Database\Factories\QuestionOptionFactory;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -18,6 +20,9 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class QuestionOption extends Model implements TranslatesCatalogLabels
 {
     use AuditsEloquentEvents, HasCatalogTranslations;
+
+    /** @use HasFactory<QuestionOptionFactory> */
+    use HasFactory;
 
     protected $fillable = [
         'question_id', 'label', 'description', 'icon', 'value',

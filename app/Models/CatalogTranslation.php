@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use Database\Factories\CatalogTranslationFactory;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 
@@ -14,6 +16,9 @@ use Illuminate\Database\Eloquent\Relations\MorphTo;
  */
 class CatalogTranslation extends Model
 {
+    /** @use HasFactory<CatalogTranslationFactory> */
+    use HasFactory;
+
     protected $fillable = ['translatable_type', 'translatable_id', 'locale', 'field', 'value'];
 
     /** @return MorphTo<Model, $this> */

@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use Database\Factories\OrderDraftMediaFactory;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -13,6 +15,9 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  */
 class OrderDraftMedia extends Model
 {
+    /** @use HasFactory<OrderDraftMediaFactory> */
+    use HasFactory;
+
     protected $table = 'order_draft_media';
 
     protected $fillable = [

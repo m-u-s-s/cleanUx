@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use Database\Factories\TradeFormRevisionFactory;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -13,6 +15,9 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  */
 class TradeFormRevision extends Model
 {
+    /** @use HasFactory<TradeFormRevisionFactory> */
+    use HasFactory;
+
     protected $fillable = ['trade_id', 'version', 'schema', 'published_by_user_id', 'published_at'];
 
     protected $casts = [

@@ -6,7 +6,9 @@ use App\Models\Concerns\HasCatalogTranslations;
 use App\Models\Contracts\TranslatesCatalogLabels;
 use App\Services\Audit\Concerns\AuditsEloquentEvents;
 use App\Support\Domain\QuestionType;
+use Database\Factories\QuestionFactory;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -28,6 +30,9 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class Question extends Model implements TranslatesCatalogLabels
 {
     use AuditsEloquentEvents, HasCatalogTranslations, SoftDeletes;
+
+    /** @use HasFactory<QuestionFactory> */
+    use HasFactory;
 
     protected $fillable = [
         'trade_id', 'step_id', 'code', 'label', 'help_text', 'placeholder', 'type',

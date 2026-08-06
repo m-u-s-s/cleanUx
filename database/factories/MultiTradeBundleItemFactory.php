@@ -20,7 +20,9 @@ class MultiTradeBundleItemFactory extends Factory
             'description' => fake()->sentence(),
             'duration_minutes' => fake()->numberBetween(60, 480),
             'estimated_price_cents' => fake()->numberBetween(5000, 50000),
-            'quoted_price_cents' => null,
+            // `default(0)` sur une colonne NOT NULL : « pas encore devise » vaut zero, pas null.
+            // Troisieme occurrence du meme motif dans ce lot (voir MultiTradeBundleFactory).
+            'quoted_price_cents' => 0,
             'sequence_order' => fake()->numberBetween(1, 10),
             'depends_on_item_ids' => null,
             'assigned_provider_user_id' => null,

@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use Database\Factories\OrganizationInvitationFactory;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Str;
@@ -14,6 +16,9 @@ use Illuminate\Support\Str;
  */
 class OrganizationInvitation extends Model
 {
+    /** @use HasFactory<OrganizationInvitationFactory> */
+    use HasFactory;
+
     protected $fillable = [
         'organization_account_id',
         'email',

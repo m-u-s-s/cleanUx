@@ -3,7 +3,9 @@
 namespace App\Models;
 
 use App\Services\Audit\Concerns\AuditsEloquentEvents;
+use Database\Factories\SectorFactory;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -17,6 +19,9 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class Sector extends Model
 {
     use AuditsEloquentEvents, SoftDeletes;
+
+    /** @use HasFactory<SectorFactory> */
+    use HasFactory;
 
     protected $fillable = [
         'slug', 'name', 'tagline', 'icon', 'cover_image_path', 'accent_color',

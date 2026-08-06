@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use Database\Factories\OrderDraftAnswerFactory;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -20,6 +22,9 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  */
 class OrderDraftAnswer extends Model
 {
+    /** @use HasFactory<OrderDraftAnswerFactory> */
+    use HasFactory;
+
     protected $fillable = [
         'order_draft_item_id', 'question_id', 'question_code', 'question_label_snapshot',
         'answer_value', 'answer_label_snapshot', 'price_impact_cents', 'duration_impact_min',
