@@ -116,10 +116,10 @@
                                 {{ $mission->booking?->organizationSite?->fullAddress() ?? $mission->address ?? '—' }}
                             </p>
                         </div>
-                        @if ($mission->assignedWorker)
-                            <img src="{{ $mission->assignedWorker->profile_photo_url }}"
-                                 alt="{{ $mission->assignedWorker->name }}"
-                                 title="{{ $mission->assignedWorker->name }}"
+                        @if ($mission->leadProvider)
+                            <img src="{{ $mission->leadProvider->profile_photo_url }}"
+                                 alt="{{ $mission->leadProvider->name }}"
+                                 title="{{ $mission->leadProvider->name }}"
                                  class="h-7 w-7 flex-shrink-0 rounded-full border border-slate-600 object-cover">
                         @else
                             <div class="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full border border-dashed border-slate-600 text-xs text-slate-500"

@@ -98,6 +98,18 @@ class TaskBoard extends Component
         $user = Auth::user();
         $orgId = $user->current_organization_id;
 
+        /*
+         * LES ACTIONS N'ÉTAIENT GARDÉES QU'AU MONTAGE (corrigé le 2026-08-05).
+         *
+         * `mount()` vérifie une permission de lecture, puis cette méthode n'en vérifiait plus
+         * aucune : un `viewer` — rôle en lecture seule — créait des tâches. La clé `tasks.create`
+         * existait dans la matrice de permissions sans qu'aucun appelant ne la consulte.
+         */
+        abort_unless(
+            app(PermissionService::class)->can($user, 'tasks.create', $user->currentOrganization),
+            403
+        );
+
         $task = Task::create([
             'organization_account_id' => $orgId,
             'created_by' => $user->id,
@@ -108,12 +120,32 @@ class TaskBoard extends Component
             'due_date' => $this->dueDate ?: null,
         ]);
 
-        // Assigner les membres
+        /*
+         * LES IDENTIFIANTS D'ASSIGNATION VIENNENT DU NAVIGATEUR (corrigé le 2026-08-05).
+         *
+         * `$assigneeIds` était attaché tel quel : on pouvait assigner une tâche à un utilisateur
+         * d'une AUTRE société. On ne retient donc que les membres actifs de l'organisation, et on
+         * exige `tasks.assign` — clé, elle aussi, déclarée mais jamais consultée.
+         */
         if (! empty($this->assigneeIds)) {
-            $task->assignees()->attach($this->assigneeIds, [
-                'assigned_by' => $user->id,
-                'assigned_at' => now(),
-            ]);
+            abort_unless(
+                app(PermissionService::class)->can($user, 'tasks.assign', $user->currentOrganization),
+                403
+            );
+
+            $membresLegitimes = OrganizationMember::query()
+                ->where('organization_account_id', $orgId)
+                ->where('status', 'active')
+                ->whereIn('user_id', $this->assigneeIds)
+                ->pluck('user_id')
+                ->all();
+
+            if ($membresLegitimes !== []) {
+                $task->assignees()->attach($membresLegitimes, [
+                    'assigned_by' => $user->id,
+                    'assigned_at' => now(),
+                ]);
+            }
         }
 
         $this->resetForm();
@@ -122,11 +154,23 @@ class TaskBoard extends Component
 
     public function updateStatus(int $taskId, string $newStatus): void
     {
-        $task = Task::forOrg(Auth::user()->current_organization_id)->find($taskId);
+        $user = Auth::user();
+        $task = Task::forOrg($user->current_organization_id)->find($taskId);
 
         if (! $task) {
             return;
         }
+
+        /*
+         * Déplacer une tâche est une écriture : un rôle en lecture seule ne doit pas pouvoir
+         * marquer terminé le travail des autres. `tasks.create` gouverne la participation au
+         * tableau ; le créateur de la tâche garde la main sur la sienne.
+         */
+        abort_unless(
+            $task->created_by === $user->id
+                || app(PermissionService::class)->can($user, 'tasks.create', $user->currentOrganization),
+            403
+        );
 
         // La table tasks n'a pas de colonne done-timestamp (completed_at/done_at/...) :
         // le passage du status à "done" est la source de vérité. updated_at suffit.

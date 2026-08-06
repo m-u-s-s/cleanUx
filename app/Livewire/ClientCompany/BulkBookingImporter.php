@@ -3,6 +3,7 @@
 namespace App\Livewire\ClientCompany;
 
 use App\Services\Bookings\BulkBookingImporter as BulkImporterService;
+use App\Services\PermissionService;
 use App\Support\Livewire\Concerns\EnforcesActiveOrgMembership;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Auth;
@@ -24,8 +25,23 @@ class BulkBookingImporter extends Component
 
     public bool $importing = false;
 
+    /**
+     * IMPORTER EN MASSE EST UNE CRÉATION DE RÉSERVATIONS (corrigé le 2026-08-05).
+     *
+     * Ce composant n'avait aucune garde : ni au montage, ni sur l'action. `EnforcesActiveOrgMembership`
+     * n'établit que l'appartenance à une organisation, pas le droit de commander en son nom.
+     * N'importe quel membre — y compris un rôle de simple consultation — pouvait donc créer des
+     * dizaines de réservations engageantes d'un seul fichier.
+     */
     public function import(): void
     {
+        $acteur = Auth::user();
+
+        abort_unless(
+            app(PermissionService::class)->can($acteur, 'bookings.create', $acteur->currentOrganization),
+            403
+        );
+
         $this->validate([
             'csvFile' => ['required', 'file', 'mimes:csv,txt', 'max:2048'],
             'separator' => ['required', 'in:,,;'],

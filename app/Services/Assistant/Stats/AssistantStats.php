@@ -137,12 +137,23 @@ class AssistantStats
     private function teamName(User $user): ?string
     {
         try {
+            /*
+             * LA RELATION S'APPELLE `fieldTeam`, PAS `team` (corrigé le 2026-08-05).
+             *
+             * `FieldTeamMember` n'expose que `fieldTeam()` et `user()`. Charger `team` levait donc
+             * une `RelationNotFoundException` à chaque exécution, et la lecture qui suivait
+             * (`$member?->team?->name`) aurait de toute façon toujours rendu `null` : l'opérateur
+             * de sécurité masquait le nom vide au lieu de le signaler.
+             *
+             * Trouvé par `RelationsEagerLoadExistentesTest`, en lisant le code — pas en exécutant
+             * ce chemin, que rien ne couvrait.
+             */
             $member = FieldTeamMember::query()
-                ->with('team')
+                ->with('fieldTeam')
                 ->where('user_id', $user->id)
                 ->first();
 
-            return $member?->team?->name;
+            return $member?->fieldTeam?->name;
         } catch (\Throwable $e) {
             return null;
         }

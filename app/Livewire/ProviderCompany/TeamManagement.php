@@ -3,12 +3,18 @@
 namespace App\Livewire\ProviderCompany;
 
 use App\Enums\OrganizationRole;
+use App\Mail\OrganizationInvitationMail;
+use App\Models\OrganizationInvitation;
 use App\Models\OrganizationMember;
 use App\Models\User;
+use App\Services\Organizations\OrganizationMembershipService;
 use App\Services\PermissionService;
 use App\Support\Livewire\Concerns\EnforcesActiveOrgMembership;
+use App\Support\Livewire\Concerns\GuardsOrganizationMembers;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 use Livewire\Component;
 use Livewire\WithPagination;
 
@@ -20,6 +26,7 @@ use Livewire\WithPagination;
 class TeamManagement extends Component
 {
     use EnforcesActiveOrgMembership;
+    use GuardsOrganizationMembers;
     use WithPagination;
 
     // ──────────────────────────────────────────────────────
@@ -73,7 +80,28 @@ class TeamManagement extends Component
             )
             )
             ->with(['user:id,name,email,profile_photo_path', 'invitedBy:id,name'])
-            ->orderByRaw("FIELD(role, 'owner','operations_manager','dispatcher','team_lead','quality_manager','finance','worker','viewer')")
+            /*
+             * TRI PORTABLE PLUTÔT QUE `FIELD()` (corrigé le 2026-08-05).
+             *
+             * `FIELD()` n'existe qu'en MySQL. La suite tournant sur SQLite, toute vérification
+             * affichant ne serait-ce qu'un membre actif échouait sur « no such function: FIELD ».
+             * La requête centrale de cet écran était donc intestable — le terrain exact sur lequel
+             * les défauts corrigés dans ce lot ont pu survivre.
+             *
+             * `CASE` produit le même ordre sur les deux moteurs.
+             */
+            ->orderByRaw(
+                'CASE role '
+                ."WHEN 'owner' THEN 0 "
+                ."WHEN 'operations_manager' THEN 1 "
+                ."WHEN 'dispatcher' THEN 2 "
+                ."WHEN 'team_lead' THEN 3 "
+                ."WHEN 'quality_manager' THEN 4 "
+                ."WHEN 'finance' THEN 5 "
+                ."WHEN 'worker' THEN 6 "
+                ."WHEN 'viewer' THEN 7 "
+                .'ELSE 99 END'
+            )
             ->get();
     }
 
@@ -82,11 +110,23 @@ class TeamManagement extends Component
         return OrganizationRole::forProviderCompany();
     }
 
+    /**
+     * Le membre affiché dans la modale de permissions.
+     *
+     * Scopé sur l'organisation active : sans cela, un identifiant étranger faisait afficher le
+     * nom et la photo d'un membre d'une AUTRE société. Fermer l'écriture ne suffisait pas — une
+     * fuite en lecture reste une fuite.
+     */
     public function getEditingMemberProperty(): ?OrganizationMember
     {
-        return $this->editingMemberId
-            ? OrganizationMember::with('user:id,name,email,profile_photo_path')->find($this->editingMemberId)
-            : null;
+        if ($this->editingMemberId === null) {
+            return null;
+        }
+
+        return OrganizationMember::query()
+            ->where('organization_account_id', Auth::user()?->current_organization_id)
+            ->with('user:id,name,email,profile_photo_path')
+            ->find($this->editingMemberId);
     }
 
     // ──────────────────────────────────────────────────────
@@ -131,17 +171,54 @@ class TeamManagement extends Component
                 return;
             }
 
-            OrganizationMember::create([
-                'organization_account_id' => $orgId,
-                'user_id' => $targetUser->id,
-                'role' => $this->inviteRole,
-                'status' => 'active',
-                'invited_by' => $actor->id,
-                'invited_at' => now(),
-                'joined_at' => now(),
-            ]);
+            /*
+             * LE MEMBRE ET SON PROFIL PRESTATAIRE VONT ENSEMBLE (corrigé le 2026-08-05).
+             *
+             * On créait ici un `OrganizationMember` seul. `ProviderDashboard::mount()` exigeant
+             * `isProviderCompanyWorker()`, l'employé rejoignait la société puis se heurtait à un
+             * 403 sur son écran principal. Le service rend les deux écritures indissociables.
+             */
+            app(OrganizationMembershipService::class)->rattacher(
+                $actor->currentOrganization,
+                $targetUser,
+                $this->inviteRole,
+                $actor->id,
+            );
         } else {
-            // TODO: Envoyer un email d'invitation et créer un token
+            /*
+             * INVITER QUELQU'UN QUI N'A PAS ENCORE DE COMPTE (corrigé le 2026-08-05).
+             *
+             * Cette branche était un `// TODO` vide : aucun jeton, aucun email, aucune trace. Le
+             * formulaire se réinitialisait ensuite comme dans le cas nominal, si bien que le
+             * responsable croyait avoir invité quelqu'un qui n'avait jamais rien reçu.
+             */
+            $invitation = OrganizationInvitation::updateOrCreate(
+                [
+                    'organization_account_id' => $orgId,
+                    'email' => $this->inviteEmail,
+                    'status' => 'pending',
+                ],
+                [
+                    'role' => $this->inviteRole,
+                    'invited_by' => $actor->id,
+                    'token' => OrganizationInvitation::genererJeton(),
+                    'expires_at' => now()->addDays(14),
+                ],
+            );
+
+            // Soft-fail : un incident d'envoi ne doit pas annuler l'invitation déjà enregistrée,
+            // que l'on peut renvoyer. On trace pour ne pas perdre l'information.
+            try {
+                Mail::to($this->inviteEmail)->send(new OrganizationInvitationMail(
+                    $invitation,
+                    route('organization.invitations.accept', $invitation->token),
+                ));
+            } catch (\Throwable $e) {
+                Log::warning('Envoi de l\'invitation impossible', [
+                    'invitation_id' => $invitation->id,
+                    'error' => $e->getMessage(),
+                ]);
+            }
         }
 
         $this->reset(['inviteEmail', 'inviteRole', 'inviteNote', 'showInvite']);
@@ -164,6 +241,18 @@ class TeamManagement extends Component
         $newEnum = OrganizationRole::from($newRole);
 
         if ($actorMember && $newEnum->rank() >= $actorMember->role->rank() && ! $actor->isPlatformAdmin()) {
+            return;
+        }
+
+        /*
+         * LE DERNIER PROPRIÉTAIRE NE SE DÉCLASSE PAS.
+         *
+         * Une société sans propriétaire actif n'a plus personne pour inviter, facturer ou céder
+         * ses droits : l'enfermement serait définitif, et irréparable sans intervention en base.
+         * La garde porte sur le DERNIER, pas sur le rôle — tant qu'un autre owner actif existe,
+         * le déclassement reste permis.
+         */
+        if ($newEnum !== OrganizationRole::OWNER && $this->estLeDernierProprietaire($member)) {
             return;
         }
 
@@ -213,15 +302,26 @@ class TeamManagement extends Component
         $this->showPermissions = true;
     }
 
+    /**
+     * Accorder ou retirer une permission à un membre.
+     *
+     * L'identifiant vient du client : il est résolu par `memberSousGarde()`, qui le scope sur
+     * l'organisation active, exige `members.manage_permissions` — réservée au propriétaire, car
+     * distribuer des droits n'est pas inviter — et applique la hiérarchie. Un identifiant
+     * étranger, un acteur sans le droit ou une cible de rang supérieur rendent simplement `null`,
+     * sans rien divulguer.
+     */
     public function togglePermission(string $perm, bool $value): void
     {
-        $member = OrganizationMember::find($this->editingMemberId);
+        $member = $this->memberSousGarde($this->editingMemberId, 'members.manage_permissions', silencieuxSiIntrouvable: true);
 
-        if (! $member) {
+        if (! $member instanceof OrganizationMember) {
             return;
         }
 
         $value ? $member->grantPermission($perm) : $member->revokePermission($perm);
+
+        app(PermissionService::class)->invalidateCache($member->user_id, $member->organization_account_id);
     }
 
     // ──────────────────────────────────────────────────────

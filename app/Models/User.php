@@ -36,6 +36,11 @@ use Laravel\Sanctum\HasApiTokens;
  * @property ?string $current_lat
  * @property ?string $current_lng
  * @property-read DatabaseNotificationCollection<int, DatabaseNotification> $unreadNotifications
+ *
+ * `profile_photo_url` vient du trait `HasProfilePhoto` de Jetstream, sous forme d'accesseur :
+ * l'attribut existe bien à l'exécution — les vues s'en servent déjà — mais n'étant ni une colonne
+ * ni une méthode, l'analyse statique ne le voit pas.
+ * @property-read string $profile_photo_url
  */
 class User extends Authenticatable implements HasLocalePreference, MustVerifyEmail
 {
