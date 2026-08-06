@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\Client\BookingFavoriteController;
 use App\Http\Controllers\Api\Client\BookingPaymentController;
 use App\Http\Controllers\Api\Client\ClientBookingController;
 use App\Http\Controllers\Api\Client\ClientProfileController;
+use App\Http\Controllers\Api\Client\CompanyController as ClientCompanyController;
 use App\Http\Controllers\Api\Client\CompanyDirectoryController;
 use App\Http\Controllers\Api\Client\DeviceTokenController;
 use App\Http\Controllers\Api\Client\DisputeController;
@@ -229,3 +230,25 @@ Route::middleware('auth:sanctum')->prefix('client')->group(function () {
 // GET /api/parity-map  (no /client prefix — intentional)
 // ─────────────────────────────────────────────
 Route::middleware('auth:sanctum')->get('/parity-map', ParityMapController::class)->name('api.parity-map');
+
+/*
+|--------------------------------------------------------------------------
+| API — Espace société cliente
+|--------------------------------------------------------------------------
+|
+| GROUPE SÉPARÉ, sous `auth:sanctum` seul. Comme côté prestataire, la garde est portée par le
+| contrôleur : organisation active obligatoire, puis une permission par écriture. Voir
+| `Api\Client\CompanyController`.
+|
+| Les services métier de la phase 1 sont réutilisés tels quels (MultiSiteRequestService,
+| SigningAppointmentService) : le web et le mobile doivent appliquer les mêmes règles.
+*/
+Route::middleware('auth:sanctum')->prefix('client/company')->group(function () {
+    Route::get('/sites', [ClientCompanyController::class, 'sites']);
+    Route::get('/members', [ClientCompanyController::class, 'members']);
+
+    Route::post('/multi-site-request', [ClientCompanyController::class, 'multiSiteRequest']);
+
+    Route::get('/signing-appointments', [ClientCompanyController::class, 'signingAppointments']);
+    Route::post('/signing-appointments', [ClientCompanyController::class, 'createSigningAppointment']);
+});

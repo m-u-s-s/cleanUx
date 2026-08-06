@@ -34,6 +34,9 @@ import { InvoicesScreen } from '@/screens/InvoicesScreen';
 import { InvoiceDetailScreen } from '@/screens/InvoiceDetailScreen';
 // Embedded web modules
 import { EmbeddedModuleRoute } from '@/screens/EmbeddedModuleRoute';
+import { CompanySitesScreen } from '@/screens/company/CompanySitesScreen';
+import { CompanySigningAppointmentsScreen } from '@/screens/company/CompanySigningAppointmentsScreen';
+import { CompanyMultiSiteRequestScreen } from '@/screens/company/CompanyMultiSiteRequestScreen';
 import { colors } from '@/theme';
 import { useThemeColors } from '@/theme/useThemeColors';
 import type { RootStackParamList } from './types';
@@ -190,6 +193,22 @@ export function RootNavigator() {
               name="EmbeddedModule"
               component={EmbeddedModuleRoute}
               options={{ headerShown: true }}
+            />
+            {/* Espace société cliente — natif, servi par l'API /client/company/*. */}
+            <Stack.Screen
+              name="CompanySites"
+              component={CompanySitesScreen}
+              options={{ headerShown: true, title: 'Mes locaux' }}
+            />
+            <Stack.Screen
+              name="CompanyMultiSiteRequest"
+              component={CompanyMultiSiteRequestScreen}
+              options={{ headerShown: true, title: 'Demande multi-locaux' }}
+            />
+            <Stack.Screen
+              name="CompanySigningAppointments"
+              component={CompanySigningAppointmentsScreen}
+              options={{ headerShown: true, title: 'Signatures sur place' }}
             />
           </>
         ) : (
