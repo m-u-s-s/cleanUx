@@ -20,6 +20,7 @@ import { ProviderChatScreen } from '@/screens/ProviderChatScreen';
 import { ProviderNotificationsScreen } from '@/screens/ProviderNotificationsScreen';
 import { ForgotPasswordScreen } from '@/screens/ForgotPasswordScreen';
 import { LegalScreen } from '@/screens/LegalScreen';
+import { EmbeddedModuleRoute } from '@/screens/EmbeddedModuleRoute';
 // Polish — UX screens
 import { NotificationPreferencesScreen } from '@/screens/NotificationPreferencesScreen';
 import { LanguageScreen } from '@/screens/LanguageScreen';
@@ -286,6 +287,15 @@ export function RootNavigator() {
               name="ProviderNotifications"
               component={ProviderNotificationsScreen}
               options={{ headerShown: true, title: 'Notifications' }}
+            />
+            {/*
+              L'espace société, servi par l'hôte WebView partagé. Le titre natif est posé par
+              l'écran lui-même (useLayoutEffect) à partir du module demandé.
+            */}
+            <Stack.Screen
+              name="EmbeddedModule"
+              component={EmbeddedModuleRoute}
+              options={{ headerShown: true }}
             />
             <Stack.Screen
               name="Legal"

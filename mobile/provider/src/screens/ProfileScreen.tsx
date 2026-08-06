@@ -31,6 +31,14 @@ export function ProfileScreen() {
    */
   const doubleCasquette = user?.is_admin === true && user?.is_provider === true;
 
+  /*
+   * `is_entreprise` et `organization_type` sont exposés par `/api/auth/me` depuis la phase 0 :
+   * avant cela, la reprise de session redonnait un particulier et l'aiguillage était faux dès le
+   * second lancement de l'application.
+   */
+  const estMembreSocietePrestataire =
+    user?.is_entreprise === true && user?.organization_type === 'provider_company';
+
   const actions: Array<{ label: string; screen: keyof RootStackParamList }> = [
     { label: 'Disponibilités', screen: 'Availability' },
     { label: 'Badges', screen: 'Badges' },
@@ -42,6 +50,18 @@ export function ProfileScreen() {
     { label: 'Préférences notifications', screen: 'NotificationPreferences' },
     { label: 'Langue', screen: 'Language' },
     { label: 'Apparence', screen: 'Appearance' },
+  ];
+
+  /**
+   * Les écrans de l'espace société, servis en WebView le temps que leur équivalent natif existe.
+   * Les chemins suivent les routes web `provider-company.*`.
+   */
+  const MODULES_SOCIETE = [
+    { label: 'Répartition', path: '/dashboard/entreprise-prestataire/dispatch' },
+    { label: 'Équipes terrain', path: '/dashboard/entreprise-prestataire/equipes-terrain' },
+    { label: 'Membres', path: '/dashboard/entreprise-prestataire/equipe' },
+    { label: 'Canaux', path: '/dashboard/entreprise-prestataire/canaux' },
+    { label: 'Tâches', path: '/dashboard/entreprise-prestataire/taches' },
   ];
 
   return (
@@ -59,6 +79,28 @@ export function ProfileScreen() {
               />
             </View>
           ))}
+          {/*
+            ESPACE SOCIÉTÉ — servi par l'hôte WebView partagé.
+
+            Ces écrans existaient sur le web sans aucune porte d'entrée mobile. On ne les affiche
+            qu'aux membres d'une société prestataire : les proposer à un indépendant donnerait des
+            liens qui répondent 403 à qui les ouvre.
+          */}
+          {estMembreSocietePrestataire && (
+            <>
+              <Divider />
+              {MODULES_SOCIETE.map(({ label, path }) => (
+                <View key={path} style={styles.buttonWrapper}>
+                  <Button
+                    label={label}
+                    variant="secondary"
+                    fullWidth
+                    onPress={() => navigation.navigate('EmbeddedModule', { path, title: label })}
+                  />
+                </View>
+              ))}
+            </>
+          )}
           <Divider />
           <Button
             label="Conditions d'utilisation"

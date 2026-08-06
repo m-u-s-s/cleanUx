@@ -54,6 +54,14 @@ export type RootStackParamList = {
   ProviderChatList: undefined;
   ProviderChat: { threadId: number; title: string };
   ProviderNotifications: undefined;
+  /**
+   * Un module web servi dans l'hôte WebView partagé.
+   *
+   * Porte d'entrée de l'espace société sur mobile : répartition, équipes terrain, canaux et
+   * membres restaient jusqu'ici réservés au navigateur. La migration vers du natif se fera écran
+   * par écran, sans bloquer l'accès en attendant.
+   */
+  EmbeddedModule: { path: string; title: string };
   ForgotPassword: undefined;
   Legal: { type: 'terms' | 'privacy' };
   // Polish — UX screens

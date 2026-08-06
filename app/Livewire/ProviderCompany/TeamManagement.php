@@ -278,15 +278,39 @@ class TeamManagement extends Component
     private function setStatus(int $memberId, string $status, string $perm): void
     {
         $actor = Auth::user();
-        $member = $this->getOrgMember($memberId);
 
-        abort_unless(
-            app(PermissionService::class)->can($actor, $perm, $actor->currentOrganization),
-            403
-        );
+        /*
+         * DEUX GARDES MANQUAIENT ICI (ajoutées le 2026-08-06).
+         *
+         * Vérification faite, cette méthode possédait DÉJÀ le scoping sur l'organisation
+         * (`getOrgMember()`), le contrôle de permission et le refus de l'auto-action. Il lui
+         * manquait exactement ce que son équivalent client possédait :
+         *
+         *   1. HIÉRARCHIE — rien ne vérifiait l'autorité sur la PERSONNE visée. Un responsable
+         *      d'exploitation à qui l'on accordait `members.suspend` pouvait suspendre le
+         *      propriétaire de la société. `memberSousGarde()` ferme ce passage.
+         *   2. DERNIER PROPRIÉTAIRE — plus bas.
+         *
+         * C'est la symétrie inverse de la phase 0, où c'était le client qui manquait ce que le
+         * prestataire avait : aucun des deux écrans n'est « la bonne version » de l'autre.
+         */
+        $member = $this->memberSousGarde($memberId, $perm);
+
+        if (! $member) {
+            return;
+        }
 
         if ($member->user_id === $actor->id) {
             return; // Ne pas se toucher soi-même
+        }
+
+        /*
+         * Suspendre ou retirer le dernier propriétaire actif laisse la société sans personne pour
+         * gérer ses accès, sa facturation ou ses employés — et aucun écran ne permet d'en nommer
+         * un nouveau depuis l'extérieur. L'enfermement serait définitif.
+         */
+        if ($status !== 'active' && $this->estLeDernierProprietaire($member)) {
+            return;
         }
 
         $member->update(['status' => $status]);

@@ -24,6 +24,18 @@ export interface User {
    * et deux facturations. Ce drapeau est ce qui permet de lui proposer de choisir son espace.
    */
   is_provider?: boolean;
+  /**
+   * Casquette SOCIÉTÉ. `/api/auth/me` expose ces deux champs, mais le type ne les déclarait pas :
+   * l'application ne pouvait donc pas distinguer un indépendant d'un membre de société, ni une
+   * société cliente d'une société prestataire — deux espaces différents.
+   *
+   * Le serveur les rendait déjà à la connexion ; la reprise de session les a rejoints en même
+   * temps que la correction de `me` (phase 0), sans quoi l'aiguillage aurait été juste au premier
+   * lancement et faux à tous les suivants.
+   */
+  is_entreprise?: boolean;
+  organization_type?: 'client_company' | 'provider_company' | 'provider_solo' | 'hybrid' | null;
+  organization_account_id?: number | null;
 }
 
 export class ApiError extends Error {

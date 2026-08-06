@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Enums\OrganizationRole;
 use App\Models\OrganizationAccount;
 use App\Models\OrganizationMember;
+use App\Models\OrganizationRolePermission;
 use App\Models\User;
 use Illuminate\Support\Facades\Cache;
 
@@ -267,8 +268,47 @@ class PermissionService
             return (bool) $customPermissions[$permission];
         }
 
-        // 2. Permissions par défaut du rôle
         $role = $member->role instanceof \BackedEnum ? $member->role->value : $member->role;
+
+        /*
+         * 2. MATRICE PROPRE À L'ORGANISATION (ajouté le 2026-08-06).
+         *
+         * `ROLE_PERMISSIONS` ci-dessous est une constante privée : la correspondance rôle →
+         * permissions était figée dans le code. Un propriétaire pouvait accorder un droit à une
+         * personne précise (étage 1), mais pas décider que « chez nous, les chefs d'équipe
+         * assignent les missions » — cela réclamait un déploiement.
+         *
+         * `granted` est un booléen explicite, non une simple présence : une société peut donc
+         * aussi RETIRER un droit accordé par défaut. Sans réglage, aucune ligne n'existe et la
+         * résolution retombe intégralement sur l'étage 3 — le comportement reste identique.
+         */
+        /*
+         * Pas d'organisation, pas de réglage d'organisation : on n'interroge la base que lorsque
+         * la question a un sens. Sans cette condition, `memberCan()` exigeait une base de données
+         * même pour un membre construit en mémoire — ce que font les tests unitaires de ce
+         * service, et ce qui les a fait échouer alors que mes exécutions ciblées sur
+         * `tests/Feature/ProviderCompany` étaient vertes.
+         */
+        /*
+         * On lit l'ATTRIBUT BRUT plutôt que la propriété typée : le modèle la déclare non
+         * nullable, ce qui vaut pour une instance hydratée depuis la base, mais pas pour un
+         * `new OrganizationMember` construit en mémoire — où elle est simplement absente.
+         */
+        $orgIdDuMembre = (int) $member->getAttribute('organization_account_id');
+
+        if ($orgIdDuMembre > 0) {
+            $reglageSociete = OrganizationRolePermission::query()
+                ->where('organization_account_id', $orgIdDuMembre)
+                ->where('role', $role)
+                ->where('permission', $permission)
+                ->first();
+
+            if ($reglageSociete !== null) {
+                return $reglageSociete->granted;
+            }
+        }
+
+        // 3. Permissions par défaut du rôle
         $rolePermissions = self::ROLE_PERMISSIONS[$role] ?? [];
 
         return in_array($permission, $rolePermissions, true);
@@ -314,6 +354,21 @@ class PermissionService
     /**
      * Invalider le cache des permissions d'un utilisateur sur une organisation.
      */
+    /**
+     * Purge le cache de TOUS les membres d'une organisation.
+     *
+     * Modifier la matrice de la société change les droits de plusieurs personnes d'un coup :
+     * purger le seul acteur laisserait les autres sur l'ancienne réponse pendant une minute — un
+     * délai invisible et incompréhensible côté utilisateur.
+     */
+    public function invalidateOrganizationCache(int $orgId): void
+    {
+        OrganizationMember::query()
+            ->where('organization_account_id', $orgId)
+            ->pluck('user_id')
+            ->each(fn ($userId) => $this->invalidateCache((int) $userId, $orgId));
+    }
+
     public function invalidateCache(int $userId, int $orgId): void
     {
         $allPerms = $this->allPermissionKeys();

@@ -13,6 +13,7 @@ use App\Livewire\ClientCompany\SigningAppointments;
 use App\Livewire\ClientCompany\SiteManager;
 use App\Livewire\ClientCompany\SiteMissionPhotos;
 use App\Livewire\ProviderCompany\DispatchCenter;
+use App\Livewire\ProviderCompany\FieldTeams;
 use App\Livewire\ProviderCompany\ProviderDashboard;
 use App\Livewire\ProviderCompany\TaskBoard;
 use App\Livewire\ProviderCompany\TeamChannels;
@@ -72,4 +73,5 @@ Route::middleware(['auth', 'verified', 'active.account', 'org.type:provider'])
         Route::get('/taches', TaskBoard::class)->name('tasks');
         Route::get('/dispatch', DispatchCenter::class)->name('dispatch');
         Route::get('/equipe', TeamManagement::class)->name('team');
+        Route::get('/equipes-terrain', FieldTeams::class)->name('field-teams');
     });
