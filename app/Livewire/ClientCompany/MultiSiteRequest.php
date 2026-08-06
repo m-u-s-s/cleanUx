@@ -1,0 +1,112 @@
+<?php
+
+namespace App\Livewire\ClientCompany;
+
+use App\Models\OrganizationSite;
+use App\Models\Trade;
+use App\Services\Bookings\MultiSiteRequestService;
+use App\Services\PermissionService;
+use App\Support\Livewire\Concerns\EnforcesActiveOrgMembership;
+use Illuminate\Contracts\View\View;
+use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Auth;
+use Livewire\Component;
+
+/**
+ * Demander une même prestation pour plusieurs locaux d'un coup.
+ *
+ * Jusqu'ici une société gérant dix sites répétait dix fois la même demande, sans rien pour les
+ * relier ensuite. Le regroupement s'appuie sur `bookings.parent_booking_id`, un lien déjà présent
+ * dans le schéma mais resté inutilisé (voir `MultiSiteRequestService`).
+ */
+class MultiSiteRequest extends Component
+{
+    use EnforcesActiveOrgMembership;
+
+    /** @var list<int> */
+    public array $siteIds = [];
+
+    public ?int $tradeId = null;
+
+    public string $date = '';
+
+    public string $heure = '09:00';
+
+    public int $dureeEstimee = 120;
+
+    public string $commentaire = '';
+
+    public ?int $demandeCreee = null;
+
+    public function mount(): void
+    {
+        abort_unless(Auth::user()?->isClientCompany(), 403);
+
+        $this->date = now()->addWeek()->toDateString();
+    }
+
+    public function creer(): void
+    {
+        $acteur = Auth::user();
+
+        // Une demande multi-sites engage la société sur plusieurs interventions : c'est une
+        // création de réservations, pas une consultation.
+        abort_unless(
+            app(PermissionService::class)->can($acteur, 'bookings.create', $acteur->currentOrganization),
+            403
+        );
+
+        $this->validate([
+            'siteIds' => ['required', 'array', 'min:1'],
+            'tradeId' => ['required', 'integer'],
+            'date' => ['required', 'date'],
+            'heure' => ['required'],
+            'dureeEstimee' => ['required', 'integer', 'min:15'],
+        ]);
+
+        $trade = Trade::find($this->tradeId);
+
+        if (! $trade) {
+            $this->addError('tradeId', 'Métier introuvable.');
+
+            return;
+        }
+
+        $demande = app(MultiSiteRequestService::class)->creer(
+            $acteur,
+            $acteur->currentOrganization,
+            $trade,
+            array_map('intval', $this->siteIds),
+            Carbon::parse($this->date.' '.$this->heure),
+            [
+                'duree_estimee' => $this->dureeEstimee,
+                'commentaire_client' => $this->commentaire,
+            ],
+        );
+
+        if (! $demande) {
+            // Le service filtre les sites sur l'organisation : n'en retenir aucun signifie que la
+            // sélection ne contenait rien de recevable.
+            $this->addError('siteIds', 'Aucun local valide dans la sélection.');
+
+            return;
+        }
+
+        $this->demandeCreee = $demande->id;
+        $this->reset(['siteIds', 'commentaire']);
+    }
+
+    public function render(): View
+    {
+        $orgId = Auth::user()->current_organization_id;
+
+        return view('livewire.client-company.multi-site-request', [
+            'sites' => OrganizationSite::query()
+                ->where('organization_account_id', $orgId)
+                ->where('is_active', true)
+                ->orderBy('name')
+                ->get(['id', 'name', 'site_code', 'city']),
+            'trades' => Trade::query()->orderBy('name')->get(['id', 'name']),
+        ])->layout('layouts.client-company');
+    }
+}
