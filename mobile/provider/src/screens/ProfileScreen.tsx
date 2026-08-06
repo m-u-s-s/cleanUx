@@ -32,12 +32,18 @@ export function ProfileScreen() {
   const doubleCasquette = user?.is_admin === true && user?.is_provider === true;
 
   /*
-   * `is_entreprise` et `organization_type` sont exposés par `/api/auth/me` depuis la phase 0 :
-   * avant cela, la reprise de session redonnait un particulier et l'aiguillage était faux dès le
-   * second lancement de l'application.
+   * `is_entreprise` NE VEUT PAS DIRE « appartient à une société » (corrigé le 2026-08-06).
+   *
+   * Côté serveur, `User::isEntreprise()` retourne `isClientCompany()` : le drapeau désigne une
+   * société CLIENTE. Ma condition d'origine exigeait `is_entreprise === true` ET
+   * `organization_type === 'provider_company'` — soit être une société cliente et prestataire à la
+   * fois. Mutuellement exclusif : la section n'a JAMAIS pu s'afficher, pour personne.
+   *
+   * Le critère juste est celui qu'applique la garde web `EnsureOrganizationType` : avoir une
+   * organisation courante, et qu'elle soit de type prestataire. `organization_type` n'est renseigné
+   * QUE depuis `currentOrganization`, donc il porte déjà les deux informations.
    */
-  const estMembreSocietePrestataire =
-    user?.is_entreprise === true && user?.organization_type === 'provider_company';
+  const estMembreSocietePrestataire = user?.organization_type === 'provider_company';
 
   const actions: Array<{ label: string; screen: keyof RootStackParamList }> = [
     { label: 'Disponibilités', screen: 'Availability' },
