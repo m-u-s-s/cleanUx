@@ -41,6 +41,15 @@ const config: Config = {
   ],
   moduleDirectories: ['node_modules', '<rootDir>/node_modules'],
   moduleNameMapper: {
+    /*
+     * `react-native-webview` exige un module natif (`RNCWebViewModule`) absent sous Jest : sans ce
+     * stub, TOUTE suite chargeant le navigateur racine échoue au démarrage — pas un test rouge,
+     * une suite qui ne se charge pas. C'est ce qui est arrivé en branchant l'hôte WebView sur
+     * l'application prestataire : deux suites ont cessé de tourner sans qu'aucun test n'échoue.
+     *
+     * L'application cliente avait déjà ce stub ; on reprend le même plutôt qu'une variante.
+     */
+    '^react-native-webview$': '<rootDir>/__mocks__/react-native-webview.tsx',
     // Shared modules — map @/ prefixed shared paths to shared/src
     '^@/api(.*)$': '<rootDir>/../shared/src/api$1',
     '^@/auth(.*)$': '<rootDir>/../shared/src/auth$1',

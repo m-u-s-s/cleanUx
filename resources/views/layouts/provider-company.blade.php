@@ -33,6 +33,7 @@
                 ['route' => 'provider-company.tasks', 'label' => 'Tâches', 'icon' => '✅'],
                 ['route' => 'provider-company.dispatch', 'label' => 'Dispatch', 'icon' => '🗺️'],
                 ['route' => 'provider-company.team', 'label' => 'Équipe', 'icon' => '👥'],
+                ['route' => 'provider-company.field-teams', 'label' => 'Équipes terrain', 'icon' => '🚚'],
                 ] as $link)
                 <a href="{{ route($link['route']) }}"
                     class="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm transition

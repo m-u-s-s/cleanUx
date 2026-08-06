@@ -6,9 +6,15 @@ import type { RootStackParamList } from '@/navigation/types';
 type Props = NativeStackScreenProps<RootStackParamList, 'EmbeddedModule'>;
 
 /**
- * Connects the shared WebView host to React Navigation: titles the native
- * header, routes openNative handoffs, and maps the bridge's back request to
- * navigation.goBack().
+ * L'ESPACE SOCIÉTÉ, SERVI PAR L'HÔTE WEBVIEW PARTAGÉ.
+ *
+ * L'application cliente exposait déjà cette route ; la prestataire, non — alors que `@/webview`
+ * est bien aliasé dans ses TROIS tables (tsconfig, Babel, Jest, vérifiées une à une : elles
+ * décrivent les mêmes chemins sans jamais se contrôler mutuellement).
+ *
+ * Conséquence : répartition, équipes terrain, canaux et gestion des membres n'étaient atteignables
+ * que depuis un navigateur. Les embarquer ici les rend disponibles tout de suite, et laisse la
+ * migration vers du natif se faire écran par écran — c'est l'intérêt de l'approche hybride.
  */
 export function EmbeddedModuleRoute({ route, navigation }: Props) {
   const { path, title } = route.params;
@@ -25,7 +31,8 @@ export function EmbeddedModuleRoute({ route, navigation }: Props) {
       deviceId={deviceId}
       onRequestBack={() => navigation.goBack()}
       onOpenNative={(target) => {
-        // Until a path->native map exists (sub-project 3), re-embed the target.
+        // Tant qu'aucune correspondance chemin → écran natif n'existe, on ré-embarque la cible
+        // plutôt que de laisser le lien sans effet.
         navigation.push('EmbeddedModule', { path: target, title });
       }}
     />
