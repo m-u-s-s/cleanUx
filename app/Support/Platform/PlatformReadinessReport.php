@@ -3,14 +3,18 @@
 namespace App\Support\Platform;
 
 use App\Models\Booking;
+use App\Models\Channel;
 use App\Models\Country;
 use App\Models\EmployeeZoneAssignment;
 use App\Models\Feedback;
+use App\Models\FieldTeam;
+use App\Models\Mission;
 use App\Models\OrganizationAccount;
 use App\Models\OrganizationSite;
 use App\Models\PostalCode;
 use App\Models\ServiceCatalog;
 use App\Models\ServiceZone;
+use App\Models\Task;
 use App\Models\User;
 use App\Models\ZoneServiceRule;
 use Illuminate\Support\Facades\DB;
@@ -180,6 +184,22 @@ class PlatformReadinessReport
             'employee_zone_assignments_total' => EmployeeZoneAssignment::query()->where('is_active', true)->count(),
             'rendezvous_total' => Booking::query()->count(),
             'feedbacks_total' => Feedback::query()->count(),
+            /*
+             * LES ESPACES SOCIÉTÉ, AJOUTÉS LE 2026-08-06.
+             *
+             * Ce rapport recensait les utilisateurs, les zones et les rendez-vous, mais rien de ce
+             * que lisent les cinq écrans de l'espace société. Résultat : après un `db:seed` neuf,
+             * `seed_ready` valait vrai alors que Répartition, Équipes terrain, Tâches et Canaux
+             * s'ouvraient tous sur du vide. Un rapport de préparation qui ne regarde pas un écran ne
+             * dit rien sur cet écran — et son silence se lit comme une approbation.
+             *
+             * Ces quatre compteurs alimentent d'un coup le test de readiness, l'écran d'admin
+             * `PlatformReadiness` et la commande `go-live:readiness`.
+             */
+            'field_teams_total' => FieldTeam::query()->count(),
+            'tasks_total' => Task::query()->count(),
+            'channels_total' => Channel::query()->count(),
+            'missions_total' => Mission::query()->count(),
         ];
 
         $errorCount = $checks->where('severity', 'error')->sum('count');
