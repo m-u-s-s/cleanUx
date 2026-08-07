@@ -11,6 +11,17 @@
     : 0;
 
     /*
+     * L'APERÇU DE LA CLOCHE — cinq messages au plus.
+     *
+     * Une seule requête bornée s'ajoute au comptage déjà présent, et seulement s'il y a quelque
+     * chose à montrer : sans notification non lue, aucune requête supplémentaire n'est faite. Le
+     * panneau est un aperçu, pas la page : `notifications.index` reste la seule à tout montrer.
+     */
+    $apercuNotifications = $unreadCount > 0
+    ? $user->unreadNotifications()->latest()->take(5)->get()
+    : collect();
+
+    /*
      * LES LIENS VIENNENT DU REGISTRE, PLUS DE CETTE VUE.
      *
      * Trois tableaux vivaient ici — 126 liens en 22 groupes — déversés dans un menu déroulant
@@ -133,23 +144,71 @@
                 </a>
                 @endif
 
-                @if($user?->isClient() && Route::has('client.calendar.interactive'))
-                <a href="{{ route('client.calendar.interactive') }}">📅 Calendrier interactif</a>
-                @endif
-                @if($user?->isClient() && Route::has('client.recurring.templates'))
-                <a href="{{ route('client.recurring.templates') }}">⭐ Templates 1-clic</a>
-                @endif
-                @if(Route::has('notifications.index'))
-                <a href="{{ route('notifications.index') }}"
-                    class="relative inline-flex items-center rounded-xl bg-slate-100 px-3 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700 dark:hover:text-white">
-                    🔔 Notifications
+                {{-- « Calendrier interactif » et « Templates 1-clic » vivaient ici en liens nus,
+                     sans style, hors du registre. Ils ont désormais leur case dans la page
+                     Modules, catégorie Rendez-vous. --}}
 
-                    @if($unreadCount > 0)
-                    <span class="ms-2 inline-flex min-w-[1.5rem] justify-center rounded-full bg-red-500 px-2 py-0.5 text-xs font-black text-white">
-                        {{ $unreadCount }}
-                    </span>
-                    @endif
-                </a>
+                @if(Route::has('notifications.index'))
+                {{--
+                    LA CLOCHE SEULE, ET SON APERÇU AU SURVOL.
+
+                    Le bouton portait « 🔔 Notifications » en toutes lettres : il fallait quitter sa
+                    page pour savoir ce qu'il y avait dedans. Le panneau est rendu côté serveur et
+                    révélé au survol — rien à charger au moment où la souris arrive.
+
+                    `@mouseleave` est posé sur le CONTENEUR et non sur la cloche : sur le bouton
+                    seul, le panneau se fermerait dès que la souris descendrait vers lui, et
+                    deviendrait impossible à lire.
+                --}}
+                <div class="relative" x-data="{ ouvert: false }" @mouseenter="ouvert = true" @mouseleave="ouvert = false">
+                    <a href="{{ route('notifications.index') }}"
+                        data-cloche-compteur="{{ $unreadCount }}"
+                        aria-label="Notifications{{ $unreadCount > 0 ? ' ('.$unreadCount.' non '.($unreadCount > 1 ? 'lues' : 'lue').')' : '' }}"
+                        class="relative inline-flex items-center rounded-xl bg-slate-100 p-2 text-slate-700 transition hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700 dark:hover:text-white">
+                        <x-ui.icon name="bell" class="h-5 w-5" />
+
+                        @if($unreadCount > 0)
+                        <span class="absolute -end-1 -top-1 inline-flex min-w-[1.25rem] justify-center rounded-full bg-red-500 px-1.5 py-0.5 text-[10px] font-black leading-none text-white">
+                            {{ $unreadCount }}
+                        </span>
+                        @endif
+                    </a>
+
+                    <div x-show="ouvert"
+                        x-transition.opacity.duration.150ms
+                        x-cloak
+                        class="absolute end-0 z-50 mt-2 w-80 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-lg dark:border-slate-700 dark:bg-slate-800">
+                        <div class="border-b border-slate-100 px-4 py-2.5 text-xs font-bold uppercase tracking-wider text-slate-400 dark:border-slate-700 dark:text-slate-500">
+                            Notifications
+                        </div>
+
+                        <div class="max-h-80 divide-y divide-slate-100 overflow-y-auto dark:divide-slate-700">
+                            @forelse($apercuNotifications as $notification)
+                            @php
+                            $donnees = $notification->data ?? [];
+                            $message = $donnees['message'] ?? __('ui.notifications.item_fallback');
+                            @endphp
+                            <a href="{{ route('notifications.index') }}" class="block px-4 py-3 transition hover:bg-slate-50 dark:hover:bg-slate-700/50">
+                                <p class="text-sm text-slate-800 dark:text-slate-100">{{ $message }}</p>
+                                <p class="mt-0.5 text-xs text-slate-400 dark:text-slate-500">
+                                    {{ $notification->created_at?->diffForHumans() }}
+                                </p>
+                            </a>
+                            @empty
+                            <p class="px-4 py-6 text-center text-sm text-slate-400 dark:text-slate-500">
+                                Aucune notification
+                            </p>
+                            @endforelse
+                        </div>
+
+                        @if($unreadCount > count($apercuNotifications))
+                        <a href="{{ route('notifications.index') }}"
+                            class="block border-t border-slate-100 px-4 py-2.5 text-center text-xs font-semibold text-blue-600 transition hover:bg-slate-50 dark:border-slate-700 dark:text-blue-400 dark:hover:bg-slate-700/50">
+                            Voir les {{ $unreadCount }} notifications
+                        </a>
+                        @endif
+                    </div>
+                </div>
                 @endif
 
                 <div class="relative ms-2">
