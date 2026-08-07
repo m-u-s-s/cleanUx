@@ -84,8 +84,6 @@ export type RootStackParamList = {
    * battement de présence ne doit PAS y être monté.
    */
   ProviderCompanySpace: undefined;
-  /** L'issue vers le profil depuis l'espace société — sans elle, le gérant y serait enfermé. */
-  Profile: undefined;
   ForgotPassword: undefined;
   Legal: { type: 'terms' | 'privacy' };
   // Polish — UX screens
@@ -114,4 +112,5 @@ export type ProviderCompanyTabParamList = {
   CompanyFieldTeamsTab: undefined;
   CompanyTasksTab: undefined;
   CompanyChannelsTab: undefined;
+  CompanyProfileTab: undefined;
 };

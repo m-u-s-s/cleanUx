@@ -46,7 +46,6 @@ import { resolveClientSpace } from '@/company/space';
 import { useClientSpacePreference } from '@/company/useClientSpacePreference';
 import { ClientCompanyNavigator } from '@/company/ClientCompanyNavigator';
 import { ClientSpaceSwitcherScreen } from '@/screens/company/ClientSpaceSwitcherScreen';
-import { ProfileScreen } from '@/screens/ProfileScreen';
 import { colors } from '@/theme';
 import { useThemeColors } from '@/theme/useThemeColors';
 import type { RootStackParamList } from './types';
@@ -121,15 +120,17 @@ export function RootNavigator() {
             options={{ headerShown: true, title: 'Facture' }}
           />
           {/*
-            L'issue vers l'espace personnel. Sans elle, choisir « entreprise » une fois enfermerait
-            hors de ses propres réservations — le défaut que `clear()` a déjà corrigé deux fois
-            dans ce dépôt.
+            L'ISSUE VERS L'ESPACE PERSONNEL EST UN ONGLET, PAS UNE ROUTE DÉCLARÉE ICI.
+
+            Elle a d'abord été écrite ainsi — `<Stack.Screen name="Profile" ...>` — avec le
+            commentaire qui convenait sur l'enfermement. Elle n'a jamais fonctionné : aucun
+            `navigate('Profile')` n'existait dans cette application et la barre d'onglets n'en
+            parlait pas, si bien que la route restait montée et joignable par personne.
+
+            Elle aurait de toute façon mal fini si on l'avait atteinte : `ProfileScreen` ouvre le
+            parrainage, la fidélité, les moyens de paiement — aucune de ces routes n'est montée sur
+            cette pile. Voir `CompanyProfileScreen`, qui porte la sortie depuis la barre.
           */}
-          <Stack.Screen
-            name="Profile"
-            component={ProfileScreen}
-            options={{ headerShown: true, title: 'Profil' }}
-          />
           <Stack.Screen
             name="Legal"
             component={LegalScreen}

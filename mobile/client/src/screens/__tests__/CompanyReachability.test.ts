@@ -64,8 +64,22 @@ describe('Joignabilité de l’espace société cliente', () => {
     expect(profil).toContain('clear()');
   });
 
-  it('le profil est monté DANS la pile société, sinon le retour serait injoignable', () => {
-    expect(lire('navigation/RootNavigator.tsx')).toMatch(/name="Profile"/);
+  it('la sortie de l’espace société est un ONGLET, pas une route déclarée', () => {
+    /*
+     * CETTE ASSERTION A DÉJÀ MENTI, ET C'EST POURQUOI ELLE EST ÉCRITE AINSI.
+     *
+     * Elle disait : « le profil est monté DANS la pile société » et vérifiait `name="Profile"` dans
+     * `RootNavigator.tsx`. La route était bien déclarée — et injoignable : aucun
+     * `navigate('Profile')` n'existait dans cette application, aucun lien profond n'y menait, et la
+     * barre d'onglets n'en parlait pas. Un membre de société entré ici ne pouvait plus ni revenir
+     * chez lui ni se déconnecter, avec un test vert pour l'affirmer.
+     *
+     * Déclarer n'est pas rendre joignable. La PREUVE vit désormais dans
+     * `__tests__/company/SortieDeLEspaceSociete.test.tsx`, qui presse la barre pour de vrai ; ce
+     * qui suit n'en garde que la structure.
+     */
+    expect(lire('company/ClientCompanyNavigator.tsx')).toMatch(/name="CompanyProfileTab"/);
+    expect(lire('company/ClientCompanyNavigator.tsx')).toContain('CompanyProfileScreen');
   });
 
   it('conditionne cette porte au SEUL drapeau qui désigne une société cliente', () => {

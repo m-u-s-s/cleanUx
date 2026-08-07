@@ -36,7 +36,6 @@ import { ProviderOnboardingScreen } from '@/screens/onboarding/ProviderOnboardin
 import { SpaceSwitcherScreen } from '@/screens/SpaceSwitcherScreen';
 // Espace société — le troisième public : celui qui pilote une société prestataire.
 import { ProviderCompanyNavigator } from '@/company/ProviderCompanyNavigator';
-import { ProfileScreen } from '@/screens/ProfileScreen';
 import { AdminNavigator } from '@/admin/AdminNavigator';
 import { CatalogZonesScreen } from '@/admin/catalogue/CatalogZonesScreen';
 import { CatalogZoneTradesScreen } from '@/admin/catalogue/CatalogZoneTradesScreen';
@@ -160,15 +159,18 @@ export function RootNavigator() {
             options={{ headerShown: true, title: 'Notifications' }}
           />
           {/*
-            L'issue vers l'espace terrain et les réglages. Sans elle, un gérant qui intervient aussi
-            sur le terrain serait enfermé côté bureau — le défaut exact que `clear()` a corrigé pour
-            la console d'administration.
+            L'ISSUE VERS L'ESPACE TERRAIN EST UN ONGLET, PAS UNE ROUTE DÉCLARÉE ICI.
+
+            Elle a d'abord été écrite ainsi — `<Stack.Screen name="Profile" ...>` — avec le
+            commentaire qui convenait sur l'enfermement. Elle n'a jamais fonctionné : aucun
+            `navigate('Profile')` n'existait dans cette application et la barre à cinq onglets n'en
+            parlait pas, si bien que la route restait montée et joignable par personne.
+
+            Elle aurait de toute façon mal fini si on l'avait atteinte : `ProfileScreen` ouvre les
+            disponibilités, les badges, le KYC — aucune de ces routes n'est montée sur cette pile.
+            Voir `CompanyProfileScreen`, qui porte la sortie depuis la barre, et qui écrit
+            « terrain » plutôt que d'effacer le choix.
           */}
-          <Stack.Screen
-            name="Profile"
-            component={ProfileScreen}
-            options={{ headerShown: true, title: 'Profil' }}
-          />
           <Stack.Screen
             name="NotificationPreferences"
             component={NotificationPreferencesScreen}
