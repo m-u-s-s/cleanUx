@@ -10,7 +10,7 @@
             <div class="text-center mb-8">
                 <a href="{{ route('home') }}" class="inline-flex items-center gap-2 text-slate-700 hover:text-brand-600 transition">
                     <span class="grid h-10 w-10 place-items-center rounded-xl bg-brand-600 text-white font-bold text-lg shadow-soft-sm">
-                        CU
+                        Br
                     </span>
                     <span class="text-lg font-bold">{{ config('app.name', 'Brio') }}</span>
                 </a>

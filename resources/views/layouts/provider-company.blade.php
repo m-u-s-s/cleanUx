@@ -27,14 +27,9 @@
                 Brio <span class="text-amber-400">Pro</span>
             </a>
             <div class="hidden sm:flex items-center gap-1">
-                @foreach ([
-                ['route' => 'provider-company.dashboard', 'label' => 'Dashboard', 'icon' => '🏗️'],
-                ['route' => 'provider-company.channels', 'label' => 'Canaux', 'icon' => '💬'],
-                ['route' => 'provider-company.tasks', 'label' => 'Tâches', 'icon' => '✅'],
-                ['route' => 'provider-company.dispatch', 'label' => 'Dispatch', 'icon' => '🗺️'],
-                ['route' => 'provider-company.team', 'label' => 'Équipe', 'icon' => '👥'],
-                ['route' => 'provider-company.field-teams', 'label' => 'Équipes terrain', 'icon' => '🚚'],
-                ] as $link)
+                {{-- Les six liens vivaient en dur ici. Ils viennent désormais de
+                     `config/modules.php`, comme ceux de la navbar et de la page Modules. --}}
+                @foreach (\App\Support\Navigation\ModuleCatalogue::principaux('provider-company') as $link)
                 <a href="{{ route($link['route']) }}"
                     class="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm transition
                            {{ request()->routeIs($link['route'])
@@ -44,6 +39,19 @@
                     <span>{{ $link['label'] }}</span>
                 </a>
                 @endforeach
+
+                {{-- La porte vers tout le reste — ce bandeau est la seule surface permanente de
+                     l'espace société prestataire. --}}
+                @if (\Illuminate\Support\Facades\Route::has('provider-company.modules'))
+                    <a href="{{ route('provider-company.modules') }}"
+                        class="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm transition
+                               {{ request()->routeIs('provider-company.modules')
+                                   ? 'bg-slate-700 text-white font-medium'
+                                   : 'text-slate-400 hover:bg-slate-800 hover:text-slate-200' }}">
+                        <span class="text-sm">🧩</span>
+                        <span>Modules</span>
+                    </a>
+                @endif
             </div>
         </div>
         <div class="flex items-center gap-3">

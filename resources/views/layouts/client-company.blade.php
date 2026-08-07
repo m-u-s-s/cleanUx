@@ -25,22 +25,15 @@
         <div class="flex items-center gap-3">
             <a href="{{ route('client-company.dashboard') }}"
                 class="text-lg font-black text-slate-900">
-                Clean<span class="text-purple-600">Ux</span>
+                {{-- La marque était coupée par une balise : « Clean<span>Ux</span> ». Le
+                     renommage global ne pouvait pas la voir. --}}
+                Br<span class="text-purple-600">io</span>
             </a>
             <div class="hidden sm:flex items-center gap-1">
-                @foreach (collect([
-                ['route' => 'client-company.dashboard', 'label' => 'Accueil', 'icon' => '🏠'],
-                ['route' => 'client-company.sites', 'label' => 'Mes locaux', 'icon' => '📍'],
-                ['route' => 'client-company.bookings.index','label' => 'Réservations', 'icon' => '📅'],
-                ['route' => 'client-company.bookings.multi-site','label' => 'Multi-locaux', 'icon' => '🏢'],
-                ['route' => 'client-company.bookings.bulk-import','label' => 'Import bulk', 'icon' => '📤'],
-                ['route' => 'client-company.members', 'label' => 'Membres', 'icon' => '👥'],
-                ['route' => 'client-company.contracts', 'label' => 'Contrats', 'icon' => '📄'],
-                ['route' => 'client-company.contracts.signing-appointments','label' => 'Signatures', 'icon' => '✍️'],
-                ['route' => 'client-company.billing', 'label' => 'Facturation', 'icon' => '🧾'],
-                ['route' => 'client-company.disputes', 'label' => 'Litiges', 'icon' => '⚠️'],
-                ['route' => 'client-company.analytics', 'label' => 'Analytics', 'icon' => '📊'],
-                ])->filter(fn ($link) => \Illuminate\Support\Facades\Route::has($link['route'])) as $link)
+                {{-- Les onze liens vivaient en dur ici. Ils viennent désormais de
+                     `config/modules.php`, comme ceux de la navbar et de la page Modules :
+                     `ModuleCatalogue` retire déjà les routes absentes. --}}
+                @foreach (\App\Support\Navigation\ModuleCatalogue::principaux('client-company') as $link)
                 <a href="{{ route($link['route']) }}"
                     class="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm transition
                            {{ request()->routeIs($link['route'])
@@ -50,6 +43,19 @@
                     <span>{{ $link['label'] }}</span>
                 </a>
                 @endforeach
+
+                {{-- La porte vers tout le reste : ce bandeau est la seule surface permanente de
+                     l'espace société, et sept de ses modules n'y figurent pas. --}}
+                @if (\Illuminate\Support\Facades\Route::has('client-company.modules'))
+                    <a href="{{ route('client-company.modules') }}"
+                        class="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm transition
+                               {{ request()->routeIs('client-company.modules')
+                                   ? 'bg-purple-50 text-purple-700 font-semibold'
+                                   : 'text-slate-500 hover:bg-slate-100 hover:text-slate-700' }}">
+                        <span>🧩</span>
+                        <span>Modules</span>
+                    </a>
+                @endif
             </div>
         </div>
         <div class="flex items-center gap-3">
