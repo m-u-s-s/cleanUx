@@ -7,13 +7,13 @@
     $status = $rdv?->status ?? 'en_attente';
 @endphp
 
-<div class="cu-feedback-shell cu-fade-up">
+<div class="brio-feedback-shell brio-fade-up">
     <div class="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
         <div>
             <div class="flex flex-wrap items-center gap-2">
                 <span class="text-sm font-semibold text-slate-900">{{ $feedback->client->name ?? 'Client' }}</span>
                 @if($rdv?->employe)
-                    <span class="cu-chip !py-1">🧑‍💼 {{ $rdv->employe->name }}</span>
+                    <span class="brio-chip !py-1">🧑‍💼 {{ $rdv->employe->name }}</span>
                 @endif
                 <x-badge :status="$status" />
             </div>
@@ -40,7 +40,7 @@
     </div>
 
     @if($feedback->reponse_admin)
-        <div class="cu-feedback-response">
+        <div class="brio-feedback-response">
             <p class="text-xs font-semibold uppercase tracking-[0.18em] text-sky-700">Réponse admin</p>
             <p class="mt-2 leading-6">{{ $feedback->reponse_admin }}</p>
         </div>
@@ -48,7 +48,7 @@
 
     @if(Route::has('admin.rendezvous.show') && $rdv)
         <div class="mt-4 flex justify-end">
-            <a href="{{ route('admin.rendezvous.show', $rdv->id) }}" class="cu-inline-action">
+            <a href="{{ route('admin.rendezvous.show', $rdv->id) }}" class="brio-inline-action">
                 🔎 Voir le rendez-vous lié
             </a>
         </div>

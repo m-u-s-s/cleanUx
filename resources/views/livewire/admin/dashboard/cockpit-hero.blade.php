@@ -10,21 +10,21 @@
 
         <div class="flex flex-wrap gap-2">
             @if(Route::has('admin.planning'))
-                <a href="{{ route('admin.planning') }}" class="cu-btn-primary inline-flex items-center gap-2">
+                <a href="{{ route('admin.planning') }}" class="brio-btn-primary inline-flex items-center gap-2">
                     <x-ui.icon name="calendar" class="w-4 h-4" />
                     <span>Planning</span>
                 </a>
             @endif
 
             @if(Route::has('admin.missions'))
-                <a href="{{ route('admin.missions') }}" class="cu-btn-secondary inline-flex items-center gap-2">
+                <a href="{{ route('admin.missions') }}" class="brio-btn-secondary inline-flex items-center gap-2">
                     <x-ui.icon name="briefcase" class="w-4 h-4" />
                     <span>Missions</span>
                 </a>
             @endif
 
             @if(Route::has('admin.finance'))
-                <a href="{{ route('admin.finance') }}" class="cu-btn-secondary inline-flex items-center gap-2">
+                <a href="{{ route('admin.finance') }}" class="brio-btn-secondary inline-flex items-center gap-2">
                     <x-ui.icon name="currency-euro" class="w-4 h-4" />
                     <span>Finance</span>
                 </a>

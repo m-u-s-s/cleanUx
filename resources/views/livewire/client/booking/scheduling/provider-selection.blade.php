@@ -1,8 +1,8 @@
 {{-- SP2 Task 6 — Sélection du type de prestataire (3 paliers) — refonte visuelle design-system (logique Livewire inchangée) --}}
-<div class="cu-card space-y-5">
+<div class="brio-card space-y-5">
     <div>
-        <h3 class="cu-section-title text-base md:text-lg">Type de prestataire</h3>
-        <p class="cu-section-subtitle">Choisissez qui interviendra. « Peu importe » laisse notre système trouver le meilleur prestataire disponible.</p>
+        <h3 class="brio-section-title text-base md:text-lg">Type de prestataire</h3>
+        <p class="brio-section-subtitle">Choisissez qui interviendra. « Peu importe » laisse notre système trouver le meilleur prestataire disponible.</p>
     </div>
 
     {{-- Palier 1 — sélecteur de TYPE --}}
@@ -77,12 +77,12 @@
             <button
                 type="button"
                 wire:click="toggleProviderPicker"
-                class="cu-btn-secondary min-h-[44px] w-full sm:w-auto">
+                class="brio-btn-secondary min-h-[44px] w-full sm:w-auto">
                 <span>{{ $showProviderPicker ? '✕ Masquer la recherche' : '🔍 Choisir un prestataire' }}</span>
             </button>
 
             @if ($showProviderPicker)
-                <div class="cu-card-muted p-3 sm:p-4">
+                <div class="brio-card-muted p-3 sm:p-4">
                     @if ($providerTypePreference === 'company')
                         <p class="mb-3 text-xs text-slate-500">Choisissez une société prestataire.</p>
                         <livewire:client.browse-companies
@@ -118,11 +118,11 @@
 @endphp
 
 @foreach ($cuAlternativeBlocks as $block)
-    <div class="cu-card space-y-4 border-amber-200 bg-amber-50/70">
+    <div class="brio-card space-y-4 border-amber-200 bg-amber-50/70">
         <div class="flex items-start gap-3">
             <span class="mt-0.5 text-lg leading-none">🕒</span>
             <div>
-                <h3 class="cu-section-title text-base text-amber-900">Créneaux alternatifs</h3>
+                <h3 class="brio-section-title text-base text-amber-900">Créneaux alternatifs</h3>
                 <p class="mt-1 text-sm leading-6 text-amber-800">{{ $block['message'] }}</p>
             </div>
         </div>
@@ -143,7 +143,7 @@
         <button
             type="button"
             wire:click="bookAnyAvailableProvider"
-            class="cu-btn-primary min-h-[44px] w-full sm:w-auto">
+            class="brio-btn-primary min-h-[44px] w-full sm:w-auto">
             Je suis pressé — n’importe quel prestataire disponible
         </button>
     </div>

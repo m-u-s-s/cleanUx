@@ -8,14 +8,14 @@
         eyebrow="Pilotage premium"
     >
         <x-slot:actions>
-            <span class="cu-inline-stat">{{ $kpis['count'] }} mission(s)</span>
-            <span class="cu-inline-stat">€ {{ number_format($kpis['turnover'], 2, ',', ' ') }} HTVA</span>
-            <button wire:click="exportAnalyticsCsv" class="cu-btn-primary">Exporter CSV</button>
+            <span class="brio-inline-stat">{{ $kpis['count'] }} mission(s)</span>
+            <span class="brio-inline-stat">€ {{ number_format($kpis['turnover'], 2, ',', ' ') }} HTVA</span>
+            <button wire:click="exportAnalyticsCsv" class="brio-btn-primary">Exporter CSV</button>
         </x-slot:actions>
     </x-page-shell>
 
     <x-filter-panel title="Filtres analytics" subtitle="Affinez les résultats par période, marché, zone, service ou employé.">
-        <div class="cu-filter-grid-wide">
+        <div class="brio-filter-grid-wide">
             <input wire:model.live.debounce.300ms="search" type="text" placeholder="Recherche" class="xl:col-span-2">
             <input wire:model.live="dateFrom" type="date">
             <input wire:model.live="dateTo" type="date">
@@ -73,7 +73,7 @@
 
         <div class="grid gap-4 xl:grid-cols-2">
             <x-table-shell title="KPIs par zone" subtitle="Top 10 zones par volume, CA et marge.">
-                <table class="min-w-full cu-table">
+                <table class="min-w-full brio-table">
                     <thead>
                         <tr>
                             <th>Zone</th>
@@ -106,7 +106,7 @@
             <x-app-card title="Tendance mensuelle" subtitle="CA et marge par mois.">
                 <div class="space-y-3">
                     @forelse($monthTrend as $row)
-                        <div class="cu-list-item">
+                        <div class="brio-list-item">
                             <div class="flex items-center justify-between gap-3">
                                 <div class="font-medium text-slate-800">{{ $row['month'] }}</div>
                                 <div class="text-xs text-slate-500">{{ $row['count'] }} missions</div>
@@ -133,7 +133,7 @@
             <x-app-card title="Par service" subtitle="Top 10 des services les plus actifs.">
                 <div class="space-y-3 text-sm">
                     @forelse($serviceAnalytics as $row)
-                        <div class="cu-list-item">
+                        <div class="brio-list-item">
                             <div class="font-medium text-slate-800">{{ $row['name'] }}</div>
                             <div class="mt-1 text-slate-500">{{ $row['count'] }} missions · {{ $row['completed'] }} terminées</div>
                             <div class="mt-2 flex items-center justify-between"><span class="text-slate-500">CA</span><span class="font-semibold text-slate-800">€ {{ number_format($row['turnover'], 2, ',', ' ') }}</span></div>
@@ -148,7 +148,7 @@
             <x-app-card title="Par employé" subtitle="Volume, ponctualité et satisfaction.">
                 <div class="space-y-3 text-sm">
                     @forelse($employeeAnalytics as $row)
-                        <div class="cu-list-item">
+                        <div class="brio-list-item">
                             <div class="font-medium text-slate-800">{{ $row['name'] }}</div>
                             <div class="mt-1 text-slate-500">{{ $row['count'] }} missions · {{ $row['completed'] }} terminées</div>
                             <div class="mt-2 flex items-center justify-between"><span class="text-slate-500">Marge</span><span class="font-semibold text-slate-800">€ {{ number_format($row['margin'], 2, ',', ' ') }}</span></div>
@@ -164,7 +164,7 @@
             <x-app-card title="Par client" subtitle="Top clients par volume et revenu.">
                 <div class="space-y-3 text-sm">
                     @forelse($clientAnalytics as $row)
-                        <div class="cu-list-item">
+                        <div class="brio-list-item">
                             <div class="font-medium text-slate-800">{{ $row['name'] }}</div>
                             <div class="mt-1 text-slate-500">{{ $row['count'] }} missions</div>
                             <div class="mt-2 flex items-center justify-between"><span class="text-slate-500">CA</span><span class="font-semibold text-slate-800">€ {{ number_format($row['turnover'], 2, ',', ' ') }}</span></div>
@@ -180,7 +180,7 @@
         </div>
 
         <x-table-shell title="Détail des missions" subtitle="Vue opérationnelle détaillée avec coût et marge estimée.">
-            <table class="min-w-full cu-table">
+            <table class="min-w-full brio-table">
                 <thead>
                     <tr>
                         <th>Réf.</th>

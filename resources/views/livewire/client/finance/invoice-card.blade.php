@@ -40,7 +40,7 @@
                 {{ $invoice->formatDocumentMoney($invoice->total_amount) }}
             </p>
 
-            <a href="{{ \Illuminate\Support\Facades\URL::temporarySignedRoute('client.finance.invoice.download', now()->addMinutes(config('finance.download_url_ttl_minutes', 30)), $invoice) }}" class="cu-btn-secondary">
+            <a href="{{ \Illuminate\Support\Facades\URL::temporarySignedRoute('client.finance.invoice.download', now()->addMinutes(config('finance.download_url_ttl_minutes', 30)), $invoice) }}" class="brio-btn-secondary">
                 📥 Télécharger
             </a>
         </div>

@@ -69,7 +69,7 @@ that **one FAIL = one real mobile concern**:
   dimensions (`height < 24px && width < 80px`) **or** a tiny icon button (`width < 28px`). A wide-but-short
   control (admin tab strip 374×35, secondary text-toggle ~90×24) stays a PASS — horizontal touch-slop makes
   it reachable. Selectors restricted to real controls (`button`, `[role=button]`, submit/button inputs,
-  `a.btn`, `.ui-btn`, `.cu-btn-*`), never inline text links. (`C2_MIN_HEIGHT=24`, `C2_NARROW=80`.)
+  `a.btn`, `.ui-btn`, `.brio-btn-*`), never inline text links. (`C2_MIN_HEIGHT=24`, `C2_NARROW=80`.)
 - **C4 + inScrollable** — an element is exempt when it (or any ancestor) has `overflow-x: auto|scroll`,
   **including itself** (a `<table overflow-x-auto>`) and **table internals** (`thead/tbody/tr/td/th`) whose
   root `<table>` lives inside a horizontally-scrollable wrapper (the Tailwind `overflow-x-auto > table`

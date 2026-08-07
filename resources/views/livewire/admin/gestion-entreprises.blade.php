@@ -1,7 +1,7 @@
 <div class="space-y-8">
     <x-page-shell eyebrow="Entreprise" title="Comptes entreprise" subtitle="Gère les comptes corporate, les sites, les contacts et les règles contractuelles de base.">
         <x-slot name="actions">
-            <button wire:click="resetAccountForm" class="cu-btn-primary">Nouveau compte</button>
+            <button wire:click="resetAccountForm" class="brio-btn-primary">Nouveau compte</button>
         </x-slot>
     </x-page-shell>
 

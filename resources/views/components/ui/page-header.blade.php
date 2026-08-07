@@ -4,10 +4,10 @@
     'subtitle' => null,
 ])
 
-<section {{ $attributes->merge(['class' => 'cu-page-header']) }}>
+<section {{ $attributes->merge(['class' => 'brio-page-header']) }}>
     <div class="min-w-0">
         @if($eyebrow)
-            <span class="cu-eyebrow">{{ $eyebrow }}</span>
+            <span class="brio-eyebrow">{{ $eyebrow }}</span>
         @endif
 
         <h1 class="mt-3 text-2xl font-black tracking-tight text-slate-950 md:text-4xl">

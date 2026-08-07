@@ -36,7 +36,7 @@
                     @endif
 
                     <a href="#comparatif"
-                        class="cu-btn-secondary inline-flex items-center justify-center gap-2">
+                        class="brio-btn-secondary inline-flex items-center justify-center gap-2">
                         <span>Comparer les offres</span>
                         <x-ui.icon name="arrow-down" class="w-4 h-4" />
                     </a>

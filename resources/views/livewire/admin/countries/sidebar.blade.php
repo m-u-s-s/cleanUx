@@ -33,7 +33,7 @@
                                         {{ $country->is_active ? 'Actif' : 'Inactif' }}
                                     </span>
                                     <div>
-                                        <button type="button" wire:click.stop="toggleCountryStatus({{ $country->id }})" class="cu-btn-secondary text-xs">
+                                        <button type="button" wire:click.stop="toggleCountryStatus({{ $country->id }})" class="brio-btn-secondary text-xs">
                                             {{ $country->is_active ? 'Désactiver' : 'Activer' }}
                                         </button>
                                     </div>

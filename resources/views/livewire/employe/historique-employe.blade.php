@@ -19,11 +19,11 @@
     <x-app-card padding="p-5 md:p-6" :title="__('Filtres & recherche')" :subtitle="__('Retrouvez rapidement une mission terminée par client, service ou lieu.')">
         <div class="grid grid-cols-1 gap-4 md:grid-cols-[minmax(0,1fr)_auto]">
             <div>
-                <label class="cu-field-label">{{ __('Recherche') }}</label>
+                <label class="brio-field-label">{{ __('Recherche') }}</label>
                 <input type="text" wire:model.live="search" placeholder="{{ __('Client, service, ville...') }}">
             </div>
             <div class="flex items-end">
-                <button wire:click="$set('tri', '{{ $tri === 'asc' ? 'desc' : 'asc' }}')" class="cu-btn-secondary">
+                <button wire:click="$set('tri', '{{ $tri === 'asc' ? 'desc' : 'asc' }}')" class="brio-btn-secondary">
                     {{ __('Trier : :order', ['order' => $tri === 'asc' ? __('Croissant') : __('Décroissant')]) }}
                 </button>
             </div>
@@ -33,7 +33,7 @@
     <div class="space-y-4">
         @forelse($historique as $rdv)
             <x-app-card padding="p-5">
-                <div class="cu-toolbar gap-4">
+                <div class="brio-toolbar gap-4">
                     <div>
                         <p class="text-lg font-semibold text-slate-900">{{ $rdv->service_display_name }}</p>
                         <p class="mt-1 text-sm text-slate-500">{{ $rdv->date }} à {{ $rdv->heure }}</p>
@@ -46,7 +46,7 @@
                     </div>
                 </div>
 
-                <div class="mt-5 cu-meta-grid text-sm text-slate-700">
+                <div class="mt-5 brio-meta-grid text-sm text-slate-700">
                     <div class="space-y-2">
                         <p><span class="font-medium text-slate-900">{{ __('Adresse :') }}</span> {{ $rdv->location_display ?: (($rdv->adresse ?? '—') . ', ' . ($rdv->ville ?? '—')) }}</p>
                         <p><span class="font-medium text-slate-900">{{ __('Durée estimée :') }}</span> {{ $rdv->duree_estimee ? $rdv->duree_estimee . ' min' : '—' }}</p>

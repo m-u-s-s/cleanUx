@@ -7,35 +7,35 @@
 
     <x-slot name="actions">
         @if(Route::has('client.rendezvous.create'))
-            <a href="{{ route('client.rendezvous.create') }}" class="cu-btn-primary inline-flex items-center gap-2">
+            <a href="{{ route('client.rendezvous.create') }}" class="brio-btn-primary inline-flex items-center gap-2">
                 <x-ui.icon name="plus" class="w-4 h-4" />
                 <span>{{ __('Nouveau rendez-vous') }}</span>
             </a>
         @endif
 
         @if(Route::has('client.rendezvous.index'))
-            <a href="{{ route('client.rendezvous.index') }}" class="cu-btn-secondary inline-flex items-center gap-2">
+            <a href="{{ route('client.rendezvous.index') }}" class="brio-btn-secondary inline-flex items-center gap-2">
                 <x-ui.icon name="calendar" class="w-4 h-4" />
                 <span>{{ __('Mes rendez-vous') }}</span>
             </a>
         @endif
 
         @if(Route::has('client.finance'))
-            <a href="{{ route('client.finance') }}" class="cu-btn-secondary inline-flex items-center gap-2">
+            <a href="{{ route('client.finance') }}" class="brio-btn-secondary inline-flex items-center gap-2">
                 <x-ui.icon name="credit-card" class="w-4 h-4" />
                 <span>{{ __('Finance') }}</span>
             </a>
         @endif
 
         @if(Route::has('client.subscriptions'))
-            <a href="{{ route('client.subscriptions') }}" class="cu-btn-secondary inline-flex items-center gap-2">
+            <a href="{{ route('client.subscriptions') }}" class="brio-btn-secondary inline-flex items-center gap-2">
                 <x-ui.icon name="refresh" class="w-4 h-4" />
                 <span>{{ __('Abonnements') }}</span>
             </a>
         @endif
 
         @if(Route::has('client.analytics.dashboard'))
-            <a href="{{ route('client.analytics.dashboard') }}" class="cu-btn-secondary inline-flex items-center gap-2">
+            <a href="{{ route('client.analytics.dashboard') }}" class="brio-btn-secondary inline-flex items-center gap-2">
                 <x-ui.icon name="chart-bar" class="w-4 h-4" />
                 <span>{{ __('Analytics') }}</span>
             </a>

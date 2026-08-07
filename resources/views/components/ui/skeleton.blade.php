@@ -4,4 +4,4 @@
     'rounded' => 'rounded-xl',
 ])
 
-<div {{ $attributes->merge(['class' => trim('cu-skeleton '.$height.' '.$width.' '.$rounded)]) }}></div>
+<div {{ $attributes->merge(['class' => trim('brio-skeleton '.$height.' '.$width.' '.$rounded)]) }}></div>

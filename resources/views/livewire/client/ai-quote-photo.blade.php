@@ -168,12 +168,12 @@
             </div>
 
             <div class="grid grid-cols-2 gap-2">
-                <button wire:click="reset_" class="cu-btn-secondary inline-flex items-center justify-center gap-2">
+                <button wire:click="reset_" class="brio-btn-secondary inline-flex items-center justify-center gap-2">
                     <x-ui.icon name="refresh" class="w-4 h-4" />
                     Refaire
                 </button>
                 <a href="{{ Route::has('client.rendezvous.create') ? route('client.rendezvous.create') : '/dashboard/client/rendez-vous/nouveau' }}"
-                   class="cu-btn-primary inline-flex items-center justify-center gap-2">
+                   class="brio-btn-primary inline-flex items-center justify-center gap-2">
                     <span>Réserver</span>
                     <x-ui.icon name="arrow-right" class="w-4 h-4" />
                 </a>

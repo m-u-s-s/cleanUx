@@ -28,7 +28,7 @@
 
         <x-slot:actions>
             <span class="cx-magnetic" data-cx-magnetic="0.3">
-                <x-ui.button href="{{ route('booking.create') }}" variant="amber" size="xl" icon="arrow-right" iconPosition="right" class="cu-glow-amber cx-cta-primary">
+                <x-ui.button href="{{ route('booking.create') }}" variant="amber" size="xl" icon="arrow-right" iconPosition="right" class="brio-glow-amber cx-cta-primary">
                     Réserver une mission
                 </x-ui.button>
             </span>
@@ -143,7 +143,7 @@
 
             <div class="mx-auto mt-16 grid max-w-5xl grid-cols-1 gap-6 md:grid-cols-3">
                 {{-- Feature 1: spans 2 columns, larger, amber border-left accent --}}
-                <div class="md:col-span-2 cu-glass cx-lift cx-tilt rounded-2xl p-8 border-l-4 border-accent-amber" data-cx-reveal data-cx-tilt="5">
+                <div class="md:col-span-2 brio-glass cx-lift cx-tilt rounded-2xl p-8 border-l-4 border-accent-amber" data-cx-reveal data-cx-tilt="5">
                     <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-brand-50 text-brand-600 ring-1 ring-brand-200">
                         <x-ui.icon name="camera" class="w-6 h-6" />
                     </div>
@@ -154,7 +154,7 @@
                 </div>
 
                 {{-- Feature 2: single column --}}
-                <div class="cu-glass cx-lift cx-tilt rounded-2xl p-6" data-cx-reveal data-cx-delay="100" data-cx-tilt="6">
+                <div class="brio-glass cx-lift cx-tilt rounded-2xl p-6" data-cx-reveal data-cx-delay="100" data-cx-tilt="6">
                     <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600 ring-1 ring-emerald-200">
                         <x-ui.icon name="badge-check" class="w-6 h-6" />
                     </div>
@@ -165,7 +165,7 @@
                 </div>
 
                 {{-- Feature 3: full width, horizontal layout --}}
-                <div class="md:col-span-3 cu-glass cx-lift rounded-2xl p-6 flex flex-col md:flex-row md:items-center gap-6" data-cx-reveal data-cx-delay="200">
+                <div class="md:col-span-3 brio-glass cx-lift rounded-2xl p-6 flex flex-col md:flex-row md:items-center gap-6" data-cx-reveal data-cx-delay="200">
                     <div class="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-purple-50 text-purple-600 ring-1 ring-purple-200">
                         <x-ui.icon name="map-pin" class="w-7 h-7" />
                     </div>
@@ -362,7 +362,7 @@
             </div>
             <div class="mx-auto mt-16 grid max-w-5xl grid-cols-1 gap-6 md:grid-cols-3">
                 {{-- B2B card 1: full-width top, horizontal layout --}}
-                <div class="md:col-span-3 cu-glass cx-lift rounded-2xl p-8 border-l-4 border-accent-amber flex flex-col md:flex-row md:items-center gap-6" data-cx-reveal data-cx-delay="0">
+                <div class="md:col-span-3 brio-glass cx-lift rounded-2xl p-8 border-l-4 border-accent-amber flex flex-col md:flex-row md:items-center gap-6" data-cx-reveal data-cx-delay="0">
                     <div class="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-brand-50 text-brand-600 ring-1 ring-brand-200">
                         <x-ui.icon name="building-office" class="w-7 h-7" />
                     </div>
@@ -372,13 +372,13 @@
                     </div>
                 </div>
                 {{-- B2B card 2: spans 2 columns --}}
-                <div class="md:col-span-2 cu-glass cx-lift cx-tilt rounded-2xl p-6" data-cx-reveal data-cx-delay="100" data-cx-tilt="5">
+                <div class="md:col-span-2 brio-glass cx-lift cx-tilt rounded-2xl p-6" data-cx-reveal data-cx-delay="100" data-cx-tilt="5">
                     <x-ui.icon name="receipt" class="w-6 h-6 text-brand-600" />
                     <h3 class="mt-4 font-semibold text-slate-900">Facturation Peppol</h3>
                     <p class="mt-2 text-sm text-slate-600">Factur-X XML CII embedded, conformité réglementation 09/2026 FR. Export FEC DGFiP/Sage/QuickBooks.</p>
                 </div>
                 {{-- B2B card 3: single column --}}
-                <div class="cu-glass cx-lift cx-tilt rounded-2xl p-6" data-cx-reveal data-cx-delay="200" data-cx-tilt="6">
+                <div class="brio-glass cx-lift cx-tilt rounded-2xl p-6" data-cx-reveal data-cx-delay="200" data-cx-tilt="6">
                     <x-ui.icon name="key" class="w-6 h-6 text-brand-600" />
                     <h3 class="mt-4 font-semibold text-slate-900">API + Webhooks HMAC</h3>
                     <p class="mt-2 text-sm text-slate-600">18 scopes, rotation tokens, webhooks signés HMAC SHA256 retry exponentiel.</p>
@@ -426,7 +426,7 @@
             </h2>
             <div class="grid grid-cols-1 md:grid-cols-5 gap-6">
                 {{-- Featured testimonial: spans 3 columns --}}
-                <div class="md:col-span-3 cu-glass cx-lift rounded-2xl p-8" data-cx-reveal>
+                <div class="md:col-span-3 brio-glass cx-lift rounded-2xl p-8" data-cx-reveal>
                     <div class="flex items-center gap-4 mb-6">
                         <div class="w-14 h-14 rounded-full bg-brand-100 flex items-center justify-center text-brand-700 font-bold text-xl">M</div>
                         <div>
@@ -441,7 +441,7 @@
                 </div>
                 {{-- Side column: 2 smaller testimonials stacked --}}
                 <div class="md:col-span-2 flex flex-col gap-6">
-                    <div class="cu-glass cx-lift rounded-2xl p-6 flex-1" data-cx-reveal data-cx-delay="100">
+                    <div class="brio-glass cx-lift rounded-2xl p-6 flex-1" data-cx-reveal data-cx-delay="100">
                         <div class="flex items-center gap-3 mb-4">
                             <div class="w-10 h-10 rounded-full bg-emerald-50 flex items-center justify-center text-emerald-700 font-bold">A</div>
                             <div>
@@ -452,7 +452,7 @@
                         <p class="text-sm text-slate-600">"Grâce à Brio, j'ai triplé mes missions mensuelles. L'app terrain est intuitive et les paiements arrivent vite."</p>
                         <p class="text-accent-amber mt-3 text-sm">★★★★★</p>
                     </div>
-                    <div class="cu-glass cx-lift rounded-2xl p-6 flex-1" data-cx-reveal data-cx-delay="200">
+                    <div class="brio-glass cx-lift rounded-2xl p-6 flex-1" data-cx-reveal data-cx-delay="200">
                         <div class="flex items-center gap-3 mb-4">
                             <div class="w-10 h-10 rounded-full bg-brand-50 flex items-center justify-center text-brand-600 font-bold">S</div>
                             <div>
@@ -483,7 +483,7 @@
                     ['Dans quels pays est disponible Brio ?', 'Belgique, France, Pays-Bas, Allemagne, Espagne, Italie, Portugal, Luxembourg et Autriche. Nous étendons notre couverture régulièrement.'],
                     ['Puis-je annuler une réservation ?', 'Oui, avec des conditions selon le délai. Annulation gratuite > 24h avant. Des frais peuvent s\'appliquer dans les 24h précédant la mission.'],
                 ] as [$question, $answer])
-                    <details class="cu-glass cx-lift rounded-xl p-5 group cursor-pointer" data-cx-reveal>
+                    <details class="brio-glass cx-lift rounded-xl p-5 group cursor-pointer" data-cx-reveal>
                         <summary class="font-semibold text-slate-900 list-none flex justify-between items-center">
                             {{ $question }}
                             <span class="text-brand-500 group-open:rotate-45 transition-transform">+</span>

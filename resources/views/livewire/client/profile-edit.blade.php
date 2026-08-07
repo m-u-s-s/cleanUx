@@ -30,7 +30,7 @@
                 @error('phone') <p class="ui-error-msg">{{ $message }}</p> @enderror
             </div>
 
-            <button wire:click="updateProfile" class="cu-btn-primary inline-flex items-center gap-2">
+            <button wire:click="updateProfile" class="brio-btn-primary inline-flex items-center gap-2">
                 <x-ui.icon name="check" class="w-4 h-4" />
                 <span>Enregistrer</span>
             </button>
@@ -61,7 +61,7 @@
                 <input wire:model="password_confirmation" type="password" class="ui-input" autocomplete="new-password">
             </div>
 
-            <button wire:click="updatePassword" class="cu-btn-primary inline-flex items-center gap-2">
+            <button wire:click="updatePassword" class="brio-btn-primary inline-flex items-center gap-2">
                 <x-ui.icon name="key" class="w-4 h-4" />
                 <span>Changer le mot de passe</span>
             </button>

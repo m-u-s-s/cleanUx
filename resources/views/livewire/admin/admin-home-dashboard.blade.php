@@ -4,60 +4,60 @@
     @endpush
 @endonce
 
-<div class="cu-page space-y-6" wire:poll.30s>
+<div class="brio-page space-y-6" wire:poll.30s>
 
-    <div class="cu-page-header">
+    <div class="brio-page-header">
         <div>
-            <p class="cu-eyebrow">Tableau de bord</p>
-            <h2 class="cu-section-title mt-2">Vue d'ensemble</h2>
-            <p class="cu-section-subtitle">Actualisation automatique toutes les 30 secondes.</p>
+            <p class="brio-eyebrow">Tableau de bord</p>
+            <h2 class="brio-section-title mt-2">Vue d'ensemble</h2>
+            <p class="brio-section-subtitle">Actualisation automatique toutes les 30 secondes.</p>
         </div>
     </div>
 
     {{-- KPI row --}}
     <div class="grid grid-cols-2 gap-4 sm:grid-cols-3 xl:grid-cols-6">
-        <div class="cu-kpi">
-            <p class="cu-kpi-label">Réservations aujourd'hui</p>
-            <p class="cu-kpi-value">{{ $bookingsToday }}</p>
+        <div class="brio-kpi">
+            <p class="brio-kpi-label">Réservations aujourd'hui</p>
+            <p class="brio-kpi-value">{{ $bookingsToday }}</p>
         </div>
 
-        <div class="cu-kpi">
-            <p class="cu-kpi-label">Missions actives</p>
-            <p class="cu-kpi-value">{{ $activeMissions }}</p>
+        <div class="brio-kpi">
+            <p class="brio-kpi-label">Missions actives</p>
+            <p class="brio-kpi-value">{{ $activeMissions }}</p>
         </div>
 
-        <div class="cu-kpi">
-            <p class="cu-kpi-label">Prestataires en ligne</p>
-            <p class="cu-kpi-value">{{ $providersOnline }}</p>
+        <div class="brio-kpi">
+            <p class="brio-kpi-label">Prestataires en ligne</p>
+            <p class="brio-kpi-value">{{ $providersOnline }}</p>
         </div>
 
-        <div class="cu-kpi">
-            <p class="cu-kpi-label">CA aujourd'hui (EUR)</p>
-            <p class="cu-kpi-value">{{ number_format($revenueToday, 2, ',', ' ') }}</p>
+        <div class="brio-kpi">
+            <p class="brio-kpi-label">CA aujourd'hui (EUR)</p>
+            <p class="brio-kpi-value">{{ number_format($revenueToday, 2, ',', ' ') }}</p>
         </div>
 
-        <div class="cu-kpi">
-            <p class="cu-kpi-label">Versements en attente</p>
-            <p class="cu-kpi-value {{ $pendingPayouts > 0 ? 'text-amber-600 dark:text-amber-400' : '' }}">{{ $pendingPayouts }}</p>
+        <div class="brio-kpi">
+            <p class="brio-kpi-label">Versements en attente</p>
+            <p class="brio-kpi-value {{ $pendingPayouts > 0 ? 'text-amber-600 dark:text-amber-400' : '' }}">{{ $pendingPayouts }}</p>
         </div>
 
-        <div class="cu-kpi">
-            <p class="cu-kpi-label">Webhooks échoués (24h)</p>
-            <p class="cu-kpi-value {{ $webhookFailures24h > 0 ? 'text-red-600 dark:text-red-400' : '' }}">{{ $webhookFailures24h }}</p>
+        <div class="brio-kpi">
+            <p class="brio-kpi-label">Webhooks échoués (24h)</p>
+            <p class="brio-kpi-value {{ $webhookFailures24h > 0 ? 'text-red-600 dark:text-red-400' : '' }}">{{ $webhookFailures24h }}</p>
         </div>
     </div>
 
     {{-- Tendance 7 jours --}}
-    <div class="cu-card" wire:ignore>
-        <h3 class="cu-section-title mb-4">Tendance 7 jours — Réservations</h3>
+    <div class="brio-card" wire:ignore>
+        <h3 class="brio-section-title mb-4">Tendance 7 jours — Réservations</h3>
         <div id="bookings-trend-chart"></div>
     </div>
 
     <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
 
         {{-- Recent disputes --}}
-        <div class="cu-card">
-            <h3 class="cu-section-title mb-4">Litiges en cours</h3>
+        <div class="brio-card">
+            <h3 class="brio-section-title mb-4">Litiges en cours</h3>
 
             @forelse($recentDisputes as $dispute)
             <div class="flex items-center justify-between border-b border-slate-100 py-3 last:border-0 dark:border-slate-700">
@@ -78,11 +78,11 @@
         </div>
 
         {{-- Recent bookings --}}
-        <div class="cu-card">
-            <h3 class="cu-section-title mb-4">Dernières réservations</h3>
+        <div class="brio-card">
+            <h3 class="brio-section-title mb-4">Dernières réservations</h3>
 
             <div class="overflow-x-auto">
-                <table class="cu-table w-full">
+                <table class="brio-table w-full">
                     <thead>
                         <tr>
                             <th>Ref</th>

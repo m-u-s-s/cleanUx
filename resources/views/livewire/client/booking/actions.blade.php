@@ -2,7 +2,7 @@
     <div>
         @if($step > 1 && $step < 5)
             <button type="button" wire:click="previousStep"
-                    class="cu-btn-secondary inline-flex items-center gap-2">
+                    class="brio-btn-secondary inline-flex items-center gap-2">
                 <x-ui.icon name="arrow-left" class="w-4 h-4" />
                 <span>Retour</span>
             </button>
@@ -12,7 +12,7 @@
     <div class="flex items-center gap-2">
         @if($step < 4)
             <button type="button" wire:click="nextStep"
-                    class="cu-btn-primary inline-flex items-center gap-2">
+                    class="brio-btn-primary inline-flex items-center gap-2">
                 <span>Continuer</span>
                 <x-ui.icon name="arrow-right" class="w-4 h-4" />
             </button>
@@ -20,7 +20,7 @@
 
         @if($step === 4)
             <button type="button" wire:click="nextStep"
-                    class="cu-btn-primary inline-flex items-center gap-2">
+                    class="brio-btn-primary inline-flex items-center gap-2">
                 <span>Voir le résumé</span>
                 <x-ui.icon name="arrow-right" class="w-4 h-4" />
             </button>
@@ -37,7 +37,7 @@
                     </button>
                     <button type="button" wire:click="redirectToAuthentication('login')"
                             wire:loading.attr="disabled" wire:target="redirectToAuthentication"
-                            class="cu-btn-secondary inline-flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
+                            class="brio-btn-secondary inline-flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
                         <span>J'ai déjà un compte</span>
                     </button>
                 </div>

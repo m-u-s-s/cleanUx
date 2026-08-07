@@ -21,7 +21,7 @@
                 </a>
             </div>
 
-            <div class="cu-glass rounded-2xl border border-slate-200/80 shadow-soft p-6 sm:p-10">
+            <div class="brio-glass rounded-2xl border border-slate-200/80 shadow-soft p-6 sm:p-10">
                 <div class="text-center mb-6">
                     <h1 class="text-2xl font-bold tracking-tight text-slate-900">Créer votre compte</h1>
                     <p class="mt-2 text-sm text-slate-500">Choisissez d'abord votre profil — le formulaire s'adapte</p>

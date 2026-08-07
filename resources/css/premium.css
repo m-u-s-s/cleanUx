@@ -4,14 +4,14 @@
    ========================================================================= */
 
 /* Cursor pointer on interactive cards */
-.cu-card[onclick],
-.cu-card[wire\:click],
-.cu-card a,
+.brio-card[onclick],
+.brio-card[wire\:click],
+.brio-card a,
 [data-cx-reveal] a,
 details summary { cursor: pointer; }
 
 /* Glassmorphism */
-.cu-glass {
+.brio-glass {
     background: rgba(255, 255, 255, 0.7);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
@@ -26,31 +26,31 @@ details summary { cursor: pointer; }
 }
 
 /* Gradient utilities */
-.cu-gradient-brand {
+.brio-gradient-brand {
     background: linear-gradient(135deg, var(--cx-amber) 0%, #ff8a3d 50%, #6366f1 100%);
 }
-.cu-gradient-subtle {
+.brio-gradient-subtle {
     background: linear-gradient(180deg, rgba(99, 102, 241, 0.03) 0%, rgba(255, 182, 72, 0.05) 100%);
 }
 
 /* Glow effects */
-.cu-glow-amber {
+.brio-glow-amber {
     box-shadow: 0 0 20px rgba(255, 182, 72, 0.3), 0 0 40px rgba(255, 182, 72, 0.1);
     transition: box-shadow var(--cx-dur) var(--cx-ease), transform var(--cx-dur) var(--cx-ease);
 }
-.cu-glow-amber:hover {
+.brio-glow-amber:hover {
     box-shadow: 0 0 24px rgba(255, 182, 72, 0.4), 0 0 48px rgba(255, 182, 72, 0.15);
     transform: translateY(-1px);
 }
-.cu-glow-amber:active {
+.brio-glow-amber:active {
     transform: translateY(0);
     box-shadow: 0 0 12px rgba(255, 182, 72, 0.3);
 }
-.cu-glow-brand {
+.brio-glow-brand {
     box-shadow: 0 0 20px rgba(99, 102, 241, 0.2), 0 0 40px rgba(99, 102, 241, 0.08);
     transition: box-shadow var(--cx-dur) var(--cx-ease), transform var(--cx-dur) var(--cx-ease);
 }
-.cu-glow-brand:hover {
+.brio-glow-brand:hover {
     box-shadow: 0 0 24px rgba(99, 102, 241, 0.3), 0 0 48px rgba(99, 102, 241, 0.1);
     transform: translateY(-1px);
 }
@@ -70,13 +70,13 @@ input[type="password"]:focus {
 }
 
 /* Dashboard card hover lift */
-.cu-card,
-.cu-kpi {
+.brio-card,
+.brio-kpi {
     transition: transform var(--cx-dur) var(--cx-ease),
                 box-shadow var(--cx-dur) var(--cx-ease);
 }
-.cu-card:hover,
-.cu-kpi:hover {
+.brio-card:hover,
+.brio-kpi:hover {
     transform: translateY(-2px);
     box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08), 0 16px 48px rgba(15, 23, 42, 0.04);
 }

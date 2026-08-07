@@ -72,18 +72,18 @@
 
                 <div class="mt-6 flex flex-wrap gap-2">
                     @if(Route::has('client.rendezvous.index'))
-                        <a href="{{ route('client.rendezvous.index') }}" class="cu-btn-primary inline-flex items-center gap-2">
+                        <a href="{{ route('client.rendezvous.index') }}" class="brio-btn-primary inline-flex items-center gap-2">
                             <x-ui.icon name="arrow-right" class="w-4 h-4" />
                             <span>{{ __('Voir le détail') }}</span>
                         </a>
                     @endif
 
                     @if(!in_array($prochainRendezVous->status, ['en_route', 'sur_place', 'termine', 'refuse']))
-                        <button type="button" wire:click="modifier({{ $prochainRendezVous->id }})" class="cu-btn-secondary">
+                        <button type="button" wire:click="modifier({{ $prochainRendezVous->id }})" class="brio-btn-secondary">
                             {{ __('Modifier') }}
                         </button>
 
-                        <button type="button" wire:click="annuler({{ $prochainRendezVous->id }})" class="cu-btn-danger">
+                        <button type="button" wire:click="annuler({{ $prochainRendezVous->id }})" class="brio-btn-danger">
                             {{ __('Annuler') }}
                         </button>
                     @endif
@@ -108,8 +108,8 @@
                         </div>
 
                         <div class="mt-4 flex flex-wrap gap-2">
-                            <button type="submit" class="cu-btn-primary">{{ __('Enregistrer') }}</button>
-                            <button type="button" wire:click="fermerEdition" class="cu-btn-secondary">{{ __('Fermer') }}</button>
+                            <button type="submit" class="brio-btn-primary">{{ __('Enregistrer') }}</button>
+                            <button type="button" wire:click="fermerEdition" class="brio-btn-secondary">{{ __('Fermer') }}</button>
                         </div>
                     </form>
                 @endif
@@ -119,7 +119,7 @@
                     :message="__('Planifiez une nouvelle prestation en quelques clics.')"
                     icon="📅">
                     @if(Route::has('client.rendezvous.create'))
-                        <a href="{{ route('client.rendezvous.create') }}" class="cu-btn-primary inline-flex items-center gap-2">
+                        <a href="{{ route('client.rendezvous.create') }}" class="brio-btn-primary inline-flex items-center gap-2">
                             <x-ui.icon name="plus" class="w-4 h-4" />
                             <span>{{ __('Réserver maintenant') }}</span>
                         </a>
@@ -158,7 +158,7 @@
                     </dl>
 
                     @if(Route::has('client.rendezvous.create'))
-                        <a href="{{ route('client.rendezvous.create', ['prefill' => 'last']) }}" class="cu-btn-primary mt-4 inline-flex items-center gap-2">
+                        <a href="{{ route('client.rendezvous.create', ['prefill' => 'last']) }}" class="brio-btn-primary mt-4 inline-flex items-center gap-2">
                             <x-ui.icon name="refresh" class="w-4 h-4" />
                             <span>{{ __('Reprendre') }}</span>
                         </a>
@@ -184,7 +184,7 @@
 
                             @if(Route::has('client.rendezvous.create'))
                                 <a href="{{ route('client.rendezvous.create', ['adresse' => $adresse->adresse, 'ville' => $adresse->ville, 'code_postal' => $adresse->code_postal]) }}"
-                                    class="cu-btn-secondary !py-1.5 !text-xs shrink-0">
+                                    class="brio-btn-secondary !py-1.5 !text-xs shrink-0">
                                     {{ __('Utiliser') }}
                                 </a>
                             @endif
@@ -375,7 +375,7 @@
             </div>
 
             @if(Route::has('client.finance'))
-                <a href="{{ route('client.finance') }}" class="cu-btn-primary mt-4 inline-flex w-full items-center justify-center gap-2">
+                <a href="{{ route('client.finance') }}" class="brio-btn-primary mt-4 inline-flex w-full items-center justify-center gap-2">
                     <x-ui.icon name="document" class="w-4 h-4" />
                     {{ __('Voir mes documents') }}
                 </a>

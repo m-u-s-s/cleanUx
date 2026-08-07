@@ -18,7 +18,7 @@
 }
 
 /* WCAG AA minimum contrast enforcement */
-.cu-text-muted { color: #64748b; /* 5.4:1 on white */ }
+.brio-text-muted { color: #64748b; /* 5.4:1 on white */ }
 .cx-text-muted { color: #93a4c6; /* 4.8:1 on #070b14 */ }
 
 /* Skip-to-content (keyboard a11y) */

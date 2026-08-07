@@ -15,8 +15,8 @@ manuelle et inachevée. Ce projet fait deux choses : (1) une **refonte premium**
 et (2) la construction d'un **harness de visual QA automatisé** (Playwright headless) qui balaye les ~115
 pages embarquées contre 5 critères mobiles, produit un rapport, et sert de gate répétable.
 
-Référence de design = le système EXISTANT (pas d'invention) : web `cu-*` (tool-mode clair :
-`cu-hero`/`cu-card`/`cu-kpi`) + `ui-*` (card/button/badge/input/empty-state/table-shell) + tokens
+Référence de design = le système EXISTANT (pas d'invention) : web `brio-*` (tool-mode clair :
+`brio-hero`/`brio-card`/`brio-kpi`) + `ui-*` (card/button/badge/input/empty-state/table-shell) + tokens
 (`resources/css/tokens.css`) ; mobile `mobile/shared/src/theme` + `mobile/shared/src/ui` (23 composants) ;
 et le pattern de filtres de `BrowseProviders` à répliquer pour `BrowseCompanies`.
 
@@ -26,7 +26,7 @@ et le pattern de filtres de `BrowseProviders` à répliquer pour `BrowseCompanie
    valide ensuite les pages refondues), puis Lot 1 (refonte premium).
 2. **Profondeur = refonte premium** (au-delà de l'alignement : heroes, drill-down, micro-interactions),
    ancrée sur le design system existant.
-3. **Direction par contexte** : client + admin en **clair premium `cu-*`** ; prestataire en **slate
+3. **Direction par contexte** : client + admin en **clair premium `brio-*`** ; prestataire en **slate
    sombre** cohérent avec le `DispatchCenter` existant.
 4. **Visual QA automatisée** (Playwright headless), pas manuelle. Les 7 pages « deferred » (qui exigent
    MySQL, 500 sous SQLite) restent hors périmètre headless.
@@ -38,9 +38,9 @@ et le pattern de filtres de `BrowseProviders` à répliquer pour `BrowseCompanie
 **Design system web** — `tailwind.config.js` (brand indigo `#6366f1`/`#4f46e5`, surface slate, sémantiques
 emerald/amber/red, accents amber/cyan/violet ; shadows `soft-*` ; fonts Figtree/Space Grotesk) ;
 `resources/css/tokens.css` (radius 10→28px, ease premium) ; `resources/css/tool-mode.css`
-(`cu-hero`/`cu-card`/`cu-kpi`/`cu-page-header`/`cu-btn-*`/`cu-empty`/`cu-table`) ; composants Blade
+(`brio-hero`/`brio-card`/`brio-kpi`/`brio-page-header`/`brio-btn-*`/`brio-empty`/`brio-table`) ; composants Blade
 `resources/views/components/ui/*` (`card`, `button`, `badge`, `page-header`, `empty-state`, `table-shell`)
-+ `stat-card`. Deux modes : `cu-*` (clair, dashboards) / `cx-*` (sombre, vitrine).
++ `stat-card`. Deux modes : `brio-*` (clair, dashboards) / `cx-*` (sombre, vitrine).
 
 **Niveau de finition des surfaces (échelle BRUT → MIN-POLI → POLI → TRÈS-POLI)** :
 - `resources/views/livewire/client/browse-companies.blade.php` — **BRUT** (cards simples, **aucun filtre**).
@@ -119,30 +119,30 @@ le middleware `EmbedMode`.
 
 Chaque surface est une unité indépendante.
 
-**Client — clair premium `cu-*`**
+**Client — clair premium `brio-*`**
 
 - **`BrowseCompanies`** (`app/Livewire/Client/BrowseCompanies.php` + vue) : ajoute les props filtres
   (`#[Url]` `query`, `minRating`, `sort` ∈ `rating|providers|name` — **pas** de prix : une société n'a pas
   de prix unitaire ; **pas** de postal : la zone vient déjà du contexte booking), hook `updating()`,
   `resetFilters()`. La requête filtre/trie la collection de `EligibleCompaniesResolver` (ou un repository
-  dédié) sur nom/note. Vue : sidebar filtres (style `BrowseProviders`) + grille de `cu-card` société
+  dédié) sur nom/note. Vue : sidebar filtres (style `BrowseProviders`) + grille de `brio-card` société
   (avatar, nom, note ★ + count, badge `providers_count`, tags métiers si dispo) + `.ui-empty`. Le mode
   sélection (embed) conserve le CTA « Choisir cette société » et l'event `companySelected`.
 - **`provider-selection`** (vue picker 3 paliers) : convertit le sélecteur de type + les blocs « créneaux
-  alternatifs » (provider ET company) en composants design-system (`cu-card`/`ui-badge` + chips de créneau
+  alternatifs » (provider ET company) en composants design-system (`brio-card`/`ui-badge` + chips de créneau
   cliquables réutilisant l'action de sélection existante). Pas de changement de logique Livewire.
-- **`ClientContractsCenter`** (`app/Livewire/ClientCompany/ClientContractsCenter.php` + vue) : `cu-page-header`/
-  `cu-hero`, cartes contrat en `cu-card` avec métriques `cu-kpi` (remise/grille/SLA), et un **drill-down** :
+- **`ClientContractsCenter`** (`app/Livewire/ClientCompany/ClientContractsCenter.php` + vue) : `brio-page-header`/
+  `brio-hero`, cartes contrat en `brio-card` avec métriques `brio-kpi` (remise/grille/SLA), et un **drill-down** :
   sélection d'un contrat → panneau détail (liste Work Orders, statut SLA agrégé, table de la grille
   tarifaire). Reste **lecture seule** (aucune mutation ; isolation org inchangée).
 
-**Admin — clair premium `cu-*`**
+**Admin — clair premium `brio-*`**
 
 - **`ContractForm` + grille** (vue + ajustements `B2BOperationsCenter` si besoin) : inputs → `<x-ui.input>`/
-  `.ui-input` + `.ui-label` + `.ui-error-msg` (états focus/erreur), layout form premium en `cu-card`,
+  `.ui-input` + `.ui-label` + `.ui-error-msg` (états focus/erreur), layout form premium en `brio-card`,
   éditeur de grille tarifaire en `<x-ui.table-shell>` avec ligne d'ajout inline + retour visuel de
   validation. Aucune nouvelle logique métier.
-- **`SLABreaches`** (vue) : 3 tuiles `cu-kpi` (pending / breached / escalated, comptes) au-dessus de la
+- **`SLABreaches`** (vue) : 3 tuiles `brio-kpi` (pending / breached / escalated, comptes) au-dessus de la
   table existante, chips de statut harmonisés, IDs mission/contrat rendus comme liens si une route détail
   existe (sinon laissés en texte, documenté).
 
@@ -183,14 +183,14 @@ Chaque surface est une unité indépendante.
 2. **Rapport initial** généré sur les pages couvertes ; les FAIL listés.
 3. **Corrections** : tous les FAIL du périmètre headless corrigés à la source ; re-run **vert** ; 7 deferred
    listés comme reste-à-faire (non bloquant).
-4. **BrowseCompanies** : filtres (recherche/note/tri) + grille premium `cu-card` + empty-state ; tests
+4. **BrowseCompanies** : filtres (recherche/note/tri) + grille premium `brio-card` + empty-state ; tests
    Livewire (filtre/tri appliqués, event sélection intact).
 5. **provider-selection** : sélecteur + créneaux alternatifs en composants design-system (provider+company).
-6. **ClientContractsCenter** : refonte `cu-*` + drill-down contrat (WO + SLA + grille), lecture seule,
+6. **ClientContractsCenter** : refonte `brio-*` + drill-down contrat (WO + SLA + grille), lecture seule,
    isolation org inchangée ; test (drill-down rend, isolation tenue).
 7. **ContractForm + grille** : `.ui-input`/`.ui-label`/`.ui-error` + table grille + validation visuelle ;
    test (ajout rate card via le form reste vert).
-8. **SLABreaches** : tuiles `cu-kpi` récap + table harmonisée.
+8. **SLABreaches** : tuiles `brio-kpi` récap + table harmonisée.
 9. **DispatchCenter** bloc partenaire : section sombre premium ; test isolation/réassignation toujours vert.
 10. **Mobile** : `DetailRow` extrait + utilisé ; états empty/error sur `BookingDetailScreen` ; cards
     `BookingStepProvider` unifiées ; badge contrat affiné ; tsc + jest verts.
@@ -214,6 +214,6 @@ design system existant.
 - **Pipeline CI** du harness (on livre le script runnable, pas l'intégration CI/CD).
 - Backend/logique de matching, contrats, SLA (déjà livrés et audités SP1-SP4).
 
-**Dépendances :** design system existant (`cu-*`/`ui-*`/tokens, mobile theme/ui), `BrowseProviders` (pattern
+**Dépendances :** design system existant (`brio-*`/`ui-*`/tokens, mobile theme/ui), `BrowseProviders` (pattern
 filtres), middleware `EmbedMode`, comptes QA seedés, `EligibleCompaniesResolver` (données société),
 `OrganizationContract`/`ContractRateCard`/`ContractSlaEvent` (données portails). S'appuie sur SP1-SP4 mergés.

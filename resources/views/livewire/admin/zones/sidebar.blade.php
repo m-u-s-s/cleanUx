@@ -50,7 +50,7 @@
                 </div>
 
                 <div class="flex justify-end">
-                    <button type="button" wire:click="resetFilters" class="cu-btn-secondary">
+                    <button type="button" wire:click="resetFilters" class="brio-btn-secondary">
                         Réinitialiser les filtres
                     </button>
                 </div>

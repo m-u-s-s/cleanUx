@@ -12,7 +12,7 @@
         <x-app-card title="Commandes de seed utiles" subtitle="Référentiel, démo et vérification rapide.">
             <div class="space-y-3">
                 @foreach($seedCommands as $command)
-                    <code class="cu-code-block">{{ $command }}</code>
+                    <code class="brio-code-block">{{ $command }}</code>
                 @endforeach
             </div>
         </x-app-card>
@@ -20,13 +20,13 @@
         <x-app-card title="Commandes de vérification" subtitle="Checks utiles pour garder la plateforme saine.">
             <div class="space-y-3">
                 @foreach($usefulCommands as $command)
-                    <code class="cu-code-block">{{ $command }}</code>
+                    <code class="brio-code-block">{{ $command }}</code>
                 @endforeach
             </div>
         </x-app-card>
     </div>
 
-    <div class="cu-note">
+    <div class="brio-note">
         <h4 class="text-sm font-bold uppercase tracking-wide">Note</h4>
         <p class="mt-2">
             Cette section est volontairement informative. Elle ne lance pas directement de commandes système depuis l’interface,

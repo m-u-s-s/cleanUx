@@ -14,7 +14,7 @@
         icon="🟢"
         class="mt-4">
         @if(Route::has('employe.missions'))
-            <a href="{{ route('employe.missions') }}" class="cu-btn-primary inline-flex items-center gap-2">
+            <a href="{{ route('employe.missions') }}" class="brio-btn-primary inline-flex items-center gap-2">
                 <x-ui.icon name="arrow-right" class="w-4 h-4" />
                 <span>{{ __('Voir toutes les missions') }}</span>
             </a>

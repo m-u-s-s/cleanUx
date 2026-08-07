@@ -57,23 +57,23 @@
 ::view-transition-new(page) { animation: vt-fade-in var(--cx-dur-fast) var(--cx-ease); }
 
 /* Universal interactive hover lift */
-a, button, [role="button"], .cu-btn, [wire\:click] {
+a, button, [role="button"], .brio-btn, [wire\:click] {
     transition: transform var(--cx-dur-fast) var(--cx-ease),
                 opacity var(--cx-dur-fast) var(--cx-ease);
 }
 a:hover:not([disabled]),
 button:not(:disabled):hover,
-.cu-btn:hover { transform: translateY(-1px); }
+.brio-btn:hover { transform: translateY(-1px); }
 a:active:not([disabled]),
 button:active,
-.cu-btn:active { transform: translateY(0); }
+.brio-btn:active { transform: translateY(0); }
 
 /* Table row hover */
-.cu-table tbody tr { transition: background-color var(--cx-dur-fast); }
-.cu-table tbody tr:hover { background-color: rgba(99, 102, 241, 0.03); }
+.brio-table tbody tr { transition: background-color var(--cx-dur-fast); }
+.brio-table tbody tr:hover { background-color: rgba(99, 102, 241, 0.03); }
 
 /* Badge pulse for "new" items */
-.cu-badge-new { animation: softPulse 1.8s ease-in-out infinite; }
+.brio-badge-new { animation: softPulse 1.8s ease-in-out infinite; }
 @keyframes softPulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.65; } }
 
 /* Stat pop animation */

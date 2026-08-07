@@ -1,8 +1,8 @@
-        <section class="cu-card">
+        <section class="brio-card">
             <div class="mb-6 flex flex-wrap items-start justify-between gap-3">
                 <div>
-                    <h2 class="cu-section-title">Contrat entreprise</h2>
-                    <p class="cu-section-subtitle">Définit le cadre commercial, SLA, PO, équipe et partenaire par défaut.</p>
+                    <h2 class="brio-section-title">Contrat entreprise</h2>
+                    <p class="brio-section-subtitle">Définit le cadre commercial, SLA, PO, équipe et partenaire par défaut.</p>
                 </div>
             </div>
 
@@ -137,7 +137,7 @@
             </div>
 
             <div class="mt-6 flex justify-end">
-                <button wire:click="saveContract" type="button" class="cu-btn-primary min-h-[44px]">
+                <button wire:click="saveContract" type="button" class="brio-btn-primary min-h-[44px]">
                     Enregistrer le contrat
                 </button>
             </div>
@@ -145,12 +145,12 @@
             @if($contractId)
                 <div class="mt-8 border-t border-slate-200 pt-6">
                     <div class="mb-4">
-                        <h3 class="cu-section-title text-base md:text-lg">Grille tarifaire négociée</h3>
-                        <p class="cu-section-subtitle">Prix unitaire négocié par service (en centimes, prioritaire sur la remise %).</p>
+                        <h3 class="brio-section-title text-base md:text-lg">Grille tarifaire négociée</h3>
+                        <p class="brio-section-subtitle">Prix unitaire négocié par service (en centimes, prioritaire sur la remise %).</p>
                     </div>
 
                     <x-ui.table-shell>
-                        <table class="cu-table w-full text-sm">
+                        <table class="brio-table w-full text-sm">
                             <thead>
                                 <tr class="border-b border-slate-200 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
                                     <th class="px-4 py-3">Service</th>
@@ -199,7 +199,7 @@
                                             <button
                                                 type="button"
                                                 wire:click="addRateCard($wire.contractId, parseInt($wire.rateCardForm.service_catalog_id), parseInt($wire.rateCardForm.unit_price_cents))"
-                                                class="cu-btn-primary min-h-[44px] whitespace-nowrap">
+                                                class="brio-btn-primary min-h-[44px] whitespace-nowrap">
                                                 Ajouter / mettre à jour
                                             </button>
                                         </div>

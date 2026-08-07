@@ -80,7 +80,7 @@
             <div class="mx-auto grid max-w-5xl grid-cols-1 gap-6 sm:grid-cols-3">
 
                 {{-- FREE --}}
-                <div class="cu-glass rounded-2xl p-8 flex flex-col" data-cx-reveal>
+                <div class="brio-glass rounded-2xl p-8 flex flex-col" data-cx-reveal>
                     <div>
                         <p class="text-xs font-semibold uppercase tracking-wider text-slate-500">Gratuit</p>
                         <div class="mt-3 flex items-end gap-1">
@@ -132,7 +132,7 @@
                 </div>
 
                 {{-- PRO (highlighted) --}}
-                <div class="relative cu-glass rounded-2xl p-8 flex flex-col ring-2 ring-accent-amber" data-cx-reveal data-cx-delay="100">
+                <div class="relative brio-glass rounded-2xl p-8 flex flex-col ring-2 ring-accent-amber" data-cx-reveal data-cx-delay="100">
                     <div class="absolute -top-3 left-1/2 -translate-x-1/2">
                         <span class="inline-flex items-center gap-1 rounded-full bg-accent-amber px-3 py-1 text-xs font-bold text-white shadow-md">
                             <x-ui.icon name="star" class="w-3 h-3" />
@@ -184,14 +184,14 @@
 
                     <div class="mt-8">
                         <a href="{{ route('register') }}"
-                           class="block w-full rounded-xl bg-accent-amber px-4 py-3 text-center text-sm font-bold text-white shadow-md hover:opacity-90 transition cu-glow-amber cursor-pointer">
+                           class="block w-full rounded-xl bg-accent-amber px-4 py-3 text-center text-sm font-bold text-white shadow-md hover:opacity-90 transition brio-glow-amber cursor-pointer">
                             Essai gratuit 14 jours
                         </a>
                     </div>
                 </div>
 
                 {{-- BUSINESS --}}
-                <div class="cu-glass rounded-2xl p-8 flex flex-col" data-cx-reveal data-cx-delay="200">
+                <div class="brio-glass rounded-2xl p-8 flex flex-col" data-cx-reveal data-cx-delay="200">
                     <div>
                         <p class="text-xs font-semibold uppercase tracking-wider text-brand-600">Business</p>
                         <div class="mt-3 flex items-end gap-1">
@@ -361,7 +361,7 @@
                         'a' => 'En choisissant l\'abonnement annuel, vous beneficiez de l\'equivalent de 2 mois offerts par rapport a la facturation mensuelle. La facture est emise en debut d\'annee.',
                     ],
                 ] as $faq)
-                    <details class="cu-glass rounded-xl p-5 group cursor-pointer" data-cx-reveal>
+                    <details class="brio-glass rounded-xl p-5 group cursor-pointer" data-cx-reveal>
                         <summary class="font-semibold text-slate-900 list-none flex justify-between items-center gap-4">
                             <span>{{ $faq['q'] }}</span>
                             <span class="text-brand-500 flex-shrink-0 group-open:rotate-45 transition-transform">+</span>

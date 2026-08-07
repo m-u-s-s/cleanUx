@@ -57,10 +57,10 @@
                             </label>
 
                             <div class="flex flex-wrap gap-2">
-                                <button type="button" wire:click="toggleCountryStatus({{ $selectedCountry->id }})" class="cu-btn-secondary">
+                                <button type="button" wire:click="toggleCountryStatus({{ $selectedCountry->id }})" class="brio-btn-secondary">
                                     {{ $selectedCountry->is_active ? 'Désactiver le pays' : 'Activer le pays' }}
                                 </button>
-                                <button type="button" wire:click="saveCountry" class="cu-btn-primary">
+                                <button type="button" wire:click="saveCountry" class="brio-btn-primary">
                                     Enregistrer
                                 </button>
                             </div>
@@ -89,7 +89,7 @@
                     </div>
                 </x-app-card>
             @else
-                <div class="cu-card p-8 text-center text-slate-500">
+                <div class="brio-card p-8 text-center text-slate-500">
                     Sélectionne un pays dans la colonne de gauche pour afficher ses paramètres.
                 </div>
             @endif

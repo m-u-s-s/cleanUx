@@ -20,11 +20,11 @@
     };
 @endphp
 
-<div {{ $attributes->merge(['class' => 'cu-kpi cu-glass cu-gradient-subtle']) }}>
+<div {{ $attributes->merge(['class' => 'brio-kpi brio-glass brio-gradient-subtle']) }}>
     <div class="flex items-start justify-between gap-3">
         <div>
-            <p class="cu-kpi-label">{{ $title }}</p>
-            <p class="cu-kpi-value">{{ $value }}</p>
+            <p class="brio-kpi-label">{{ $title }}</p>
+            <p class="brio-kpi-value">{{ $value }}</p>
         </div>
 
         @if($heroicon)
@@ -39,6 +39,6 @@
     </div>
 
     @if($hint)
-        <p class="cu-kpi-hint">{{ $hint }}</p>
+        <p class="brio-kpi-hint">{{ $hint }}</p>
     @endif
 </div>

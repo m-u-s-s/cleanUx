@@ -18,7 +18,7 @@
             {{-- Sidebar filtres : masquée en mode picker condensé sur mobile,
                  visible en colonne hors picker. --}}
             <aside class="{{ $selectionMode ? '' : 'lg:col-span-1' }} space-y-4">
-                <div class="cu-card space-y-3 p-4">
+                <div class="brio-card space-y-3 p-4">
                     <h2 class="text-sm font-bold uppercase text-slate-500">Filtres</h2>
 
                     <div>
@@ -65,7 +65,7 @@
 
                 <div class="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
                     @forelse($companies as $org)
-                        <div class="cu-card flex flex-col p-4">
+                        <div class="brio-card flex flex-col p-4">
                             <div class="flex items-start gap-3 {{ $selectionMode ? 'cursor-pointer' : '' }}"
                                  @if($selectionMode) wire:click="selectCompany({{ $org->id }})" @endif>
                                 <div class="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-indigo-100 text-lg font-bold text-indigo-700">
@@ -96,7 +96,7 @@
                             @if($selectionMode)
                                 <button type="button"
                                         wire:click="selectCompany({{ $org->id }})"
-                                        class="cu-btn-primary mt-4 w-full justify-center text-sm">
+                                        class="brio-btn-primary mt-4 w-full justify-center text-sm">
                                     Choisir cette société
                                 </button>
                             @endif

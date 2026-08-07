@@ -13,9 +13,9 @@
         eyebrow="Pilotage plateforme"
     >
         <x-slot:actions>
-            <span class="cu-inline-stat">{{ $modules->count() }} module(s) visibles</span>
+            <span class="brio-inline-stat">{{ $modules->count() }} module(s) visibles</span>
             @if($editingModuleId)
-                <span class="cu-inline-stat">Configuration ouverte</span>
+                <span class="brio-inline-stat">Configuration ouverte</span>
             @endif
         </x-slot:actions>
     </x-page-shell>
@@ -38,7 +38,7 @@
     <div class="grid grid-cols-1 gap-6 xl:grid-cols-3">
         <x-filter-panel class="xl:col-span-1" title="Recherche et filtres" subtitle="Affiche rapidement les modules pertinents.">
             <div class="space-y-4">
-                <div class="cu-filter-grid">
+                <div class="brio-filter-grid">
                     <div>
                         <label class="text-sm text-slate-600">Rechercher</label>
                         <input type="text" wire:model.live.debounce.300ms="search" class="mt-1" placeholder="Nom, clé, description...">
@@ -105,7 +105,7 @@
                             <h3 class="text-xl font-semibold text-slate-900">{{ $name }}</h3>
                             <p class="text-sm text-slate-500">Configuration détaillée du module sélectionné.</p>
                         </div>
-                        <button type="button" wire:click="toggleEnabled({{ $editingModuleId }})" class="cu-btn-secondary">{{ $is_enabled ? 'Désactiver' : 'Activer' }}</button>
+                        <button type="button" wire:click="toggleEnabled({{ $editingModuleId }})" class="brio-btn-secondary">{{ $is_enabled ? 'Désactiver' : 'Activer' }}</button>
                     </div>
 
                     <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
@@ -226,8 +226,8 @@
                     </div>
 
                     <div class="flex flex-wrap gap-3">
-                        <button type="button" wire:click="save" class="cu-btn-primary">Enregistrer les règles</button>
-                        <button type="button" wire:click="editModule({{ $editingModuleId }})" class="cu-btn-secondary">Réinitialiser</button>
+                        <button type="button" wire:click="save" class="brio-btn-primary">Enregistrer les règles</button>
+                        <button type="button" wire:click="editModule({{ $editingModuleId }})" class="brio-btn-secondary">Réinitialiser</button>
                     </div>
                 </div>
             @else

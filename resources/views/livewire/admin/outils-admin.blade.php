@@ -4,7 +4,7 @@
         subtitle="Centre d’orchestration pour les exports, imports, statistiques, emails produit, logs et outils de test."
         eyebrow="Backoffice premium">
         <x-slot:actions>
-            <span class="cu-inline-stat">Pilotage centralisé</span>
+            <span class="brio-inline-stat">Pilotage centralisé</span>
         </x-slot:actions>
     </x-page-shell>
 

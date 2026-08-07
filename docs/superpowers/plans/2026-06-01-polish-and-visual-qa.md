@@ -4,9 +4,9 @@
 
 **Goal:** Livrer (Lot 2) un harness de visual-QA automatisé Playwright qui balaye les ~115 pages embarquées contre 5 critères mobiles + corrige les FAIL, puis (Lot 1) une refonte premium des surfaces SP2/SP3/SP4 ancrée sur le design system existant.
 
-**Architecture :** Lot 2 d'abord — un package Node isolé `tools/visual-qa/` (Playwright headless) qui lit l'inventaire de modules existant (`storage/app/parity_webview.json`), se logge par rôle (comptes QA `QaPhase2!`), charge chaque `<path>?embed=1` à 390×844 et évalue 5 critères ; produit un rapport ; puis on corrige les FAIL à la source. Lot 1 ensuite — refonte visuelle par contexte (client/admin clair `cu-*`, prestataire slate sombre) en réutilisant `cu-*`/`ui-*`/mobile `theme`+`ui`, sans changer la logique métier.
+**Architecture :** Lot 2 d'abord — un package Node isolé `tools/visual-qa/` (Playwright headless) qui lit l'inventaire de modules existant (`storage/app/parity_webview.json`), se logge par rôle (comptes QA `QaPhase2!`), charge chaque `<path>?embed=1` à 390×844 et évalue 5 critères ; produit un rapport ; puis on corrige les FAIL à la source. Lot 1 ensuite — refonte visuelle par contexte (client/admin clair `brio-*`, prestataire slate sombre) en réutilisant `brio-*`/`ui-*`/mobile `theme`+`ui`, sans changer la logique métier.
 
-**Tech Stack :** Playwright (`@playwright/test`) + Chromium ; Laravel 10 + Livewire 3 + Tailwind (`cu-*`/`ui-*`) ; Expo/RN (`mobile/shared/src/theme` + `ui`). PHPUnit, PHPStan full, Pint.
+**Tech Stack :** Playwright (`@playwright/test`) + Chromium ; Laravel 10 + Livewire 3 + Tailwind (`brio-*`/`ui-*`) ; Expo/RN (`mobile/shared/src/theme` + `ui`). PHPUnit, PHPStan full, Pint.
 
 **Faits terrain vérifiés (à NE PAS re-supposer) :**
 - Inventaire des modules : `storage/app/parity_webview.json` (array de `{ key, path, roles }`). Source unique consommée par `scripts/embed_sweep.php` — la RÉUTILISER.
@@ -15,7 +15,7 @@
 - Embed mode : `app/Http/Middleware/EmbedMode.php` — `?embed=1` masque la nav ; le marqueur `[data-chrome="primary-nav"]` est ABSENT du DOM en embed.
 - Flag de vérif : `config/parity.php` contient `responsive_verified` par module (géré par `app/Console/Commands/ParityScaffoldRegistry.php`).
 - Composants Blade réels sous `resources/views/components/ui/` : `card`, `button`, `badge`, `page-header`, `empty-state`, `table-shell`, `field`, `stat`, `section-heading`, `toast`, `skeleton`, `icon`. **PAS de `input.blade.php`** → pour les inputs, utiliser `<x-ui.field>` (lire son API) + la classe CSS `.ui-input`/`.ui-label`/`.ui-error-msg`.
-- CSS design system : `resources/css/tokens.css`, `resources/css/tool-mode.css` (`cu-hero`/`cu-card`/`cu-kpi`/`cu-page-header`/`cu-btn-*`/`cu-empty`/`cu-table`/`cu-status-dot-*`), `resources/css/app.css` (classes `.ui-*`).
+- CSS design system : `resources/css/tokens.css`, `resources/css/tool-mode.css` (`brio-hero`/`brio-card`/`brio-kpi`/`brio-page-header`/`brio-btn-*`/`brio-empty`/`brio-table`/`brio-status-dot-*`), `resources/css/app.css` (classes `.ui-*`).
 - Pattern filtres : `app/Livewire/Client/BrowseProviders.php` (props `#[Url]` `query` debounce 400ms / `minRating` [null,3,4,4.5] / `sort` ; `updating($name)`→`resetPage()` ; `resetFilters()` ; `selectionMode` + `selectProvider()`→`dispatch('providerSelected')`) + `resources/views/livewire/client/browse-providers.blade.php` (sidebar `lg:col-span-1` + résultats `lg:col-span-3`).
 - `app/Livewire/Client/BrowseCompanies.php` : a déjà `selectionMode`, `selectCompany()`→`dispatch('companySelected')`, `getCompaniesProperty()` (via `EligibleCompaniesResolver::forContext` ou fallback `OrganizationAccount` PROVIDER_COMPANY) + props contexte `serviceZoneId`/`tradeId`. Sérialisation société : `{id,name,rating_avg,rating_count,providers_count}` (cf. `CompanyDirectoryController`).
 - `app/Livewire/ClientCompany/ClientContractsCenter.php` : computed `getContractsProperty()` (contrats de l'org du membre, eager `providerOrganization`/`rateCards`/`workOrders` + `withCount` SLA breached) ; layout `->layout('layouts.client-company')`.
@@ -247,7 +247,7 @@ const EVAL = (tol) => {
   // C2 — tap targets : seulement les CONTRÔLES primaires (boutons, liens-boutons),
   // pas les liens texte inline (sinon faux positifs massifs).
   const controls = [...document.querySelectorAll(
-    'button, [role="button"], input[type="submit"], input[type="button"], a.btn, .ui-btn, .cu-btn-primary, .cu-btn-secondary, .cu-btn-danger'
+    'button, [role="button"], input[type="submit"], input[type="button"], a.btn, .ui-btn, .brio-btn-primary, .brio-btn-secondary, .brio-btn-danger'
   )].filter(visible);
   const smallTargets = controls
     .filter((el) => { const r = el.getBoundingClientRect(); return r.width < 44 || r.height < 44; })
@@ -581,9 +581,9 @@ return $base
 
 (Adapte selon que `getCompaniesProperty` retourne une `Collection` Eloquent ou un tableau sérialisé — garde le type cohérent avec la vue.)
 
-- [ ] **Step 4: Refonte de la vue (grille `cu-card` + sidebar filtres)**
+- [ ] **Step 4: Refonte de la vue (grille `brio-card` + sidebar filtres)**
 
-Réécris `browse-companies.blade.php` en réutilisant le pattern de `browse-providers.blade.php` : une sidebar de filtres (`recherche` debounce 400ms, boutons note `[Tous,3★+,4★+,4.5★+]`, select tri) + une grille de `cu-card` société (avatar initiale, nom, note ★ + count, badge `providers_count`, CTA « Choisir cette société » conditionné par `$selectionMode`) + `<x-ui.empty-state>` quand vide. En mode embed (picker), la sidebar peut être condensée. Garde l'event `companySelected`.
+Réécris `browse-companies.blade.php` en réutilisant le pattern de `browse-providers.blade.php` : une sidebar de filtres (`recherche` debounce 400ms, boutons note `[Tous,3★+,4★+,4.5★+]`, select tri) + une grille de `brio-card` société (avatar initiale, nom, note ★ + count, badge `providers_count`, CTA « Choisir cette société » conditionné par `$selectionMode`) + `<x-ui.empty-state>` quand vide. En mode embed (picker), la sidebar peut être condensée. Garde l'event `companySelected`.
 
 - [ ] **Step 5: PASS + rendu**
 
@@ -597,7 +597,7 @@ Vert (les tests SP3 existants `BrowseCompaniesSelectionTest` restent verts). La 
 ```bash
 vendor/bin/pint app/Livewire/Client/BrowseCompanies.php tests/Feature/Relations/BrowseCompaniesFilterTest.php
 git add app/Livewire/Client/BrowseCompanies.php resources/views/livewire/client/browse-companies.blade.php tests/Feature/Relations/BrowseCompaniesFilterTest.php
-git commit -m "feat(polish): BrowseCompanies — search/rating/sort filters + premium cu-card grid"
+git commit -m "feat(polish): BrowseCompanies — search/rating/sort filters + premium brio-card grid"
 ```
 
 ---
@@ -607,11 +607,11 @@ git commit -m "feat(polish): BrowseCompanies — search/rating/sort filters + pr
 **Files:**
 - Modify: `resources/views/livewire/client/booking/scheduling/provider-selection.blade.php`
 
-- [ ] **Step 1: LIRE** la vue actuelle (3 paliers + blocs amber `preferredProviderAlternativeSlots` / `preferredCompanyAlternativeSlots`) + une page `cu-*` de référence + le composant `<x-ui.badge>`.
+- [ ] **Step 1: LIRE** la vue actuelle (3 paliers + blocs amber `preferredProviderAlternativeSlots` / `preferredCompanyAlternativeSlots`) + une page `brio-*` de référence + le composant `<x-ui.badge>`.
 
 - [ ] **Step 2: Refondre visuellement (sans toucher la logique Livewire)**
 
-Convertis le sélecteur de type (3 boutons) en cards `cu-card`/boutons cohérents ; les deux blocs « créneaux alternatifs » (provider ET company) en un composant visuel design-system commun : un encart `cu-card` avec un titre, le message, et des **chips de créneau** cliquables réutilisant l'action existante (le `wire:click="$set('rdvDate', ...); $set('rdvHeure', ...)"` déjà en place — NE change PAS le mécanisme). Aucune propriété/méthode Livewire nouvelle.
+Convertis le sélecteur de type (3 boutons) en cards `brio-card`/boutons cohérents ; les deux blocs « créneaux alternatifs » (provider ET company) en un composant visuel design-system commun : un encart `brio-card` avec un titre, le message, et des **chips de créneau** cliquables réutilisant l'action existante (le `wire:click="$set('rdvDate', ...); $set('rdvHeure', ...)"` déjà en place — NE change PAS le mécanisme). Aucune propriété/méthode Livewire nouvelle.
 
 - [ ] **Step 3: Rendu + non-régression**
 
@@ -630,14 +630,14 @@ git commit -m "feat(polish): booking provider picker + alternative-slot chips al
 
 ---
 
-### Task 7: `ClientContractsCenter` — refonte `cu-*` + drill-down lecture
+### Task 7: `ClientContractsCenter` — refonte `brio-*` + drill-down lecture
 
 **Files:**
 - Modify: `app/Livewire/ClientCompany/ClientContractsCenter.php`
 - Modify: `resources/views/livewire/client-company/client-contracts-center.blade.php`
 - Test: `tests/Feature/Relations/ClientContractsDrilldownTest.php`
 
-- [ ] **Step 1: LIRE** le composant + la vue actuels + `cu-hero`/`cu-card`/`cu-kpi` (dans `tool-mode.css`) + le test SP4 `ClientContractsCenterTest` (montage org/membre).
+- [ ] **Step 1: LIRE** le composant + la vue actuels + `brio-hero`/`brio-card`/`brio-kpi` (dans `tool-mode.css`) + le test SP4 `ClientContractsCenterTest` (montage org/membre).
 
 - [ ] **Step 2: Test du drill-down + isolation (échoue)**
 
@@ -730,9 +730,9 @@ public function getSelectedContractProperty(): ?\App\Models\OrganizationContract
 }
 ```
 
-- [ ] **Step 4: Refondre la vue (`cu-*` + panneau détail)**
+- [ ] **Step 4: Refondre la vue (`brio-*` + panneau détail)**
 
-`cu-page-header`/`cu-hero` en tête ; liste de contrats en `cu-card` avec métriques `cu-kpi` (remise/grille/SLA), chaque carte `wire:click="viewContract({{ $contract->id }})"` ; quand `$this->selectedContract` est posé, un panneau détail (work orders en liste, statut SLA agrégé, table de la grille tarifaire via `<x-ui.table-shell>`) + bouton fermer. Read-only (aucune mutation).
+`brio-page-header`/`brio-hero` en tête ; liste de contrats en `brio-card` avec métriques `brio-kpi` (remise/grille/SLA), chaque carte `wire:click="viewContract({{ $contract->id }})"` ; quand `$this->selectedContract` est posé, un panneau détail (work orders en liste, statut SLA agrégé, table de la grille tarifaire via `<x-ui.table-shell>`) + bouton fermer. Read-only (aucune mutation).
 
 - [ ] **Step 5: PASS + non-régression**
 
@@ -746,7 +746,7 @@ Vert (isolation SP4 toujours prouvée).
 ```bash
 vendor/bin/pint app/Livewire/ClientCompany/ClientContractsCenter.php tests/Feature/Relations/ClientContractsDrilldownTest.php
 git add app/Livewire/ClientCompany/ClientContractsCenter.php resources/views/livewire/client-company/client-contracts-center.blade.php tests/Feature/Relations/ClientContractsDrilldownTest.php
-git commit -m "feat(polish): client contracts portal — premium cu-* layout + org-safe read-only drill-down"
+git commit -m "feat(polish): client contracts portal — premium brio-* layout + org-safe read-only drill-down"
 ```
 
 ---
@@ -757,11 +757,11 @@ git commit -m "feat(polish): client contracts portal — premium cu-* layout + o
 - Modify: `resources/views/livewire/admin/b2b/operations/contract-form.blade.php`
 - Test: (réutilise `tests/Feature/Relations/B2BOperationsContractTest.php` existant)
 
-- [ ] **Step 1: LIRE** la vue actuelle + `resources/views/components/ui/field.blade.php` (API : props label/error/name/hint ?) + `table-shell.blade.php` + une form admin `cu-*` soignée de référence.
+- [ ] **Step 1: LIRE** la vue actuelle + `resources/views/components/ui/field.blade.php` (API : props label/error/name/hint ?) + `table-shell.blade.php` + une form admin `brio-*` soignée de référence.
 
 - [ ] **Step 2: Refondre la vue**
 
-Remplace les `input|select` bruts par `<x-ui.field>` (ou la classe `.ui-input`+`.ui-label`+`.ui-error-msg` si `<x-ui.field>` ne couvre pas selects) avec affichage des erreurs Livewire (`@error('contractForm.xxx')`). Layout en `cu-card`. Éditeur de grille tarifaire (`rateCardForm` + `addRateCard`) en `<x-ui.table-shell>` : table des `rateCards` existantes + ligne d'ajout inline (select service + input prix + bouton). Garde EXACTEMENT les `wire:model`/`wire:click` existants (notamment `saveContract`, `addRateCard`, `approveWorkOrder`).
+Remplace les `input|select` bruts par `<x-ui.field>` (ou la classe `.ui-input`+`.ui-label`+`.ui-error-msg` si `<x-ui.field>` ne couvre pas selects) avec affichage des erreurs Livewire (`@error('contractForm.xxx')`). Layout en `brio-card`. Éditeur de grille tarifaire (`rateCardForm` + `addRateCard`) en `<x-ui.table-shell>` : table des `rateCards` existantes + ligne d'ajout inline (select service + input prix + bouton). Garde EXACTEMENT les `wire:model`/`wire:click` existants (notamment `saveContract`, `addRateCard`, `approveWorkOrder`).
 
 - [ ] **Step 3: Non-régression**
 
@@ -780,17 +780,17 @@ git commit -m "feat(polish): admin B2B contract form — ui.field inputs + table
 
 ---
 
-### Task 9: `SLABreaches` — tuiles `cu-kpi` récap
+### Task 9: `SLABreaches` — tuiles `brio-kpi` récap
 
 **Files:**
 - Modify: `resources/views/livewire/admin/b2b/operations/sla-breaches.blade.php`
 - Modify: `app/Livewire/Admin/B2BOperationsCenter.php` (si un compteur récap est nécessaire)
 
-- [ ] **Step 1: LIRE** la vue actuelle + le computed `getSlaBreachesProperty` (B2BOperationsCenter) + `cu-kpi` dans `tool-mode.css`.
+- [ ] **Step 1: LIRE** la vue actuelle + le computed `getSlaBreachesProperty` (B2BOperationsCenter) + `brio-kpi` dans `tool-mode.css`.
 
 - [ ] **Step 2: Ajouter 3 tuiles récap**
 
-Au-dessus de la table existante, 3 `cu-kpi` (pending / breached / escalated). Si les comptes ne sont pas déjà exposés, ajoute un computed léger dans `B2BOperationsCenter` :
+Au-dessus de la table existante, 3 `brio-kpi` (pending / breached / escalated). Si les comptes ne sont pas déjà exposés, ajoute un computed léger dans `B2BOperationsCenter` :
 
 ```php
 /** @return array{pending:int, breached:int, escalated:int} */
@@ -812,7 +812,7 @@ Harmonise les chips de statut. Les IDs mission/contrat restent en texte (pas de 
 php artisan test --filter='B2BOperationsContract'
 vendor/bin/pint resources/views/livewire/admin/b2b/operations/sla-breaches.blade.php app/Livewire/Admin/B2BOperationsCenter.php
 git add resources/views/livewire/admin/b2b/operations/sla-breaches.blade.php app/Livewire/Admin/B2BOperationsCenter.php
-git commit -m "feat(polish): admin SLA dashboard — cu-kpi summary tiles + harmonized status chips"
+git commit -m "feat(polish): admin SLA dashboard — brio-kpi summary tiles + harmonized status chips"
 ```
 
 ---
@@ -826,7 +826,7 @@ git commit -m "feat(polish): admin SLA dashboard — cu-kpi summary tiles + harm
 
 - [ ] **Step 2: Refondre le bloc partenaire en slate premium**
 
-Aligne la section « Mes contrats partenaires » au style sombre de la page : cards `rounded-2xl border bg-slate-800` avec nom client, `cu-status-dot`/dot de statut, remise/grille, compteur d'obligations SLA entrantes (réutilise `$this->partnerContracts` + missions filtrées par `organization_contract_id`). Ne touche PAS `getMissionsProperty`/`startAssign`/`confirmAssign`.
+Aligne la section « Mes contrats partenaires » au style sombre de la page : cards `rounded-2xl border bg-slate-800` avec nom client, `brio-status-dot`/dot de statut, remise/grille, compteur d'obligations SLA entrantes (réutilise `$this->partnerContracts` + missions filtrées par `organization_contract_id`). Ne touche PAS `getMissionsProperty`/`startAssign`/`confirmAssign`.
 
 - [ ] **Step 3: Non-régression (réassignation) + commit**
 

@@ -34,15 +34,15 @@
                 <p class="text-sm font-semibold text-slate-700">Type de document</p>
 
                 <div class="mt-2 flex flex-wrap gap-2">
-                    <button wire:click="setDocumentType('all')" class="cu-chip {{ $documentType === 'all' ? '!border-slate-900 !bg-slate-900 !text-white' : '' }}">
+                    <button wire:click="setDocumentType('all')" class="brio-chip {{ $documentType === 'all' ? '!border-slate-900 !bg-slate-900 !text-white' : '' }}">
                         Tous
                     </button>
 
-                    <button wire:click="setDocumentType('quotes')" class="cu-chip {{ $documentType === 'quotes' ? '!border-slate-900 !bg-slate-900 !text-white' : '' }}">
+                    <button wire:click="setDocumentType('quotes')" class="brio-chip {{ $documentType === 'quotes' ? '!border-slate-900 !bg-slate-900 !text-white' : '' }}">
                         Devis
                     </button>
 
-                    <button wire:click="setDocumentType('invoices')" class="cu-chip {{ $documentType === 'invoices' ? '!border-slate-900 !bg-slate-900 !text-white' : '' }}">
+                    <button wire:click="setDocumentType('invoices')" class="brio-chip {{ $documentType === 'invoices' ? '!border-slate-900 !bg-slate-900 !text-white' : '' }}">
                         Factures
                     </button>
                 </div>
@@ -53,7 +53,7 @@
 
                 <div class="mt-2 flex flex-wrap gap-2">
                     @foreach($statusOptions as $value => $label)
-                        <button wire:click="setStatus('{{ $value }}')" class="cu-chip {{ $status === $value ? '!border-slate-900 !bg-slate-900 !text-white' : '' }}">
+                        <button wire:click="setStatus('{{ $value }}')" class="brio-chip {{ $status === $value ? '!border-slate-900 !bg-slate-900 !text-white' : '' }}">
                             {{ $label }}
                         </button>
                     @endforeach
@@ -67,7 +67,7 @@
                 <p class="mt-1 text-sm font-bold text-slate-800">{{ $activeFilterLabel }}</p>
             </div>
 
-            <button wire:click="resetFilters" class="cu-btn-secondary">
+            <button wire:click="resetFilters" class="brio-btn-secondary">
                 Réinitialiser
             </button>
         </div>
@@ -111,7 +111,7 @@
             </ul>
 
             @if(! $subscriptionSummary['is_premium'])
-                <a href="{{ route('premium.offer') }}" class="cu-btn-primary mt-4 !bg-amber-500 hover:!bg-amber-600">
+                <a href="{{ route('premium.offer') }}" class="brio-btn-primary mt-4 !bg-amber-500 hover:!bg-amber-600">
                     Découvrir Premium
                 </a>
             @endif

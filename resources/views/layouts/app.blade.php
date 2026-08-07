@@ -70,7 +70,7 @@
         @endif
 
         <main id="main-content" class="px-3 py-5 sm:px-5 lg:px-8 lg:py-6">
-            <div class="cu-page animate-fade-in">
+            <div class="brio-page animate-fade-in">
                 {{ $slot }}
             </div>
         </main>

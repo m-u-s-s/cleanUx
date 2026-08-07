@@ -23,7 +23,7 @@
             </div>
 
             <div class="flex items-center gap-3">
-                <button wire:click="export" class="cu-btn-primary w-full md:w-auto">Exporter maintenant</button>
+                <button wire:click="export" class="brio-btn-primary w-full md:w-auto">Exporter maintenant</button>
             </div>
         </div>
     </x-filter-panel>

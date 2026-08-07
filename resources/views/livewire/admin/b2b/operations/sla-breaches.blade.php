@@ -7,19 +7,19 @@
                 <span class="rounded-full bg-rose-100 px-3 py-1 text-xs font-semibold text-rose-700">{{ $slaBreaches->count() }}</span>
             </div>
 
-            {{-- Récap SLA : compteurs globaux par statut (cu-kpi). Mobile-safe : 1 colonne < sm, 3 colonnes >= sm. --}}
+            {{-- Récap SLA : compteurs globaux par statut (brio-kpi). Mobile-safe : 1 colonne < sm, 3 colonnes >= sm. --}}
             <div class="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
-                <div class="cu-kpi">
-                    <p class="cu-kpi-label">En attente</p>
-                    <p class="cu-kpi-value">{{ $this->slaCounts['pending'] }}</p>
+                <div class="brio-kpi">
+                    <p class="brio-kpi-label">En attente</p>
+                    <p class="brio-kpi-value">{{ $this->slaCounts['pending'] }}</p>
                 </div>
-                <div class="cu-kpi">
-                    <p class="cu-kpi-label">En dépassement</p>
-                    <p class="cu-kpi-value text-amber-600">{{ $this->slaCounts['breached'] }}</p>
+                <div class="brio-kpi">
+                    <p class="brio-kpi-label">En dépassement</p>
+                    <p class="brio-kpi-value text-amber-600">{{ $this->slaCounts['breached'] }}</p>
                 </div>
-                <div class="cu-kpi">
-                    <p class="cu-kpi-label">Escaladés</p>
-                    <p class="cu-kpi-value text-rose-600">{{ $this->slaCounts['escalated'] }}</p>
+                <div class="brio-kpi">
+                    <p class="brio-kpi-label">Escaladés</p>
+                    <p class="brio-kpi-value text-rose-600">{{ $this->slaCounts['escalated'] }}</p>
                 </div>
             </div>
 

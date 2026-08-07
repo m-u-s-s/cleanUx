@@ -41,7 +41,7 @@
     aria-atomic="true"
 >
     <div
-        class="min-w-[300px] max-w-sm overflow-hidden rounded-[22px] border px-4 py-3 text-sm font-medium shadow-[0_22px_55px_rgba(15,23,42,0.18)] backdrop-blur cu-scale-in"
+        class="min-w-[300px] max-w-sm overflow-hidden rounded-[22px] border px-4 py-3 text-sm font-medium shadow-[0_22px_55px_rgba(15,23,42,0.18)] backdrop-blur brio-scale-in"
         :class="{
             'bg-emerald-50/95 text-emerald-900 border-emerald-200': type === 'success',
             'bg-red-50/95 text-red-900 border-red-200': type === 'error' || type === 'danger',

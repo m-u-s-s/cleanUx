@@ -16,15 +16,15 @@
         eyebrow="Sécurité & audit"
     >
         <x-slot:actions>
-            <span class="cu-inline-stat">{{ $logs->total() }} log(s)</span>
+            <span class="brio-inline-stat">{{ $logs->total() }} log(s)</span>
             @if($criticalOnly)
-                <span class="cu-inline-stat">Mode critique</span>
+                <span class="brio-inline-stat">Mode critique</span>
             @endif
         </x-slot:actions>
     </x-page-shell>
 
     <x-filter-panel title="Filtres d’audit" subtitle="Isole rapidement un acteur, une action ou une sévérité.">
-        <div class="cu-filter-grid">
+        <div class="brio-filter-grid">
             <div>
                 <label class="mb-2 block text-sm font-semibold text-slate-700">Recherche</label>
                 <input wire:model.live.debounce.400ms="search" type="text" placeholder="Action, route, requête, cible…">
@@ -86,7 +86,7 @@
 
     <div wire:loading.remove>
         <x-table-shell title="Journal d’activité" subtitle="Historique détaillé des événements, acteurs et métadonnées.">
-            <table class="min-w-full cu-table">
+            <table class="min-w-full brio-table">
                 <thead>
                     <tr>
                         <th>Date</th>

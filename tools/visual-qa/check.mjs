@@ -84,7 +84,7 @@ const EVAL = (tol) => {
   const C2_MIN_HEIGHT = 24; // sous 24px = trop fin
   const C2_NARROW = 80; // étroitesse co-requise pour qu'une faible hauteur compte
   const controls = [...document.querySelectorAll(
-    'button, [role="button"], input[type="submit"], input[type="button"], a.btn, .ui-btn, .cu-btn-primary, .cu-btn-secondary, .cu-btn-danger'
+    'button, [role="button"], input[type="submit"], input[type="button"], a.btn, .ui-btn, .brio-btn-primary, .brio-btn-secondary, .brio-btn-danger'
   )].filter(visible);
   const smallTargets = controls
     .filter((el) => {

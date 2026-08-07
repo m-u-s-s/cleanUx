@@ -81,7 +81,7 @@
                            class="w-full text-xs mt-1.5 file:rounded-lg file:border-0 file:bg-brand-50 file:text-brand-700 file:px-3 file:py-1.5 file:font-semibold file:hover:bg-brand-100 file:transition file:mr-2" />
                 </div>
 
-                <button wire:click="openClaim" class="cu-btn-primary w-full inline-flex items-center justify-center gap-2">
+                <button wire:click="openClaim" class="brio-btn-primary w-full inline-flex items-center justify-center gap-2">
                     <x-ui.icon name="envelope" class="w-4 h-4" />
                     Envoyer la réclamation
                 </button>
@@ -209,7 +209,7 @@
                                           class="ui-input"
                                           placeholder="Votre réponse…"></textarea>
                                 @error('replyBody') <p class="ui-error-msg">{{ $message }}</p> @enderror
-                                <button wire:click="postReply" class="cu-btn-primary inline-flex items-center gap-2">
+                                <button wire:click="postReply" class="brio-btn-primary inline-flex items-center gap-2">
                                     <x-ui.icon name="envelope" class="w-4 h-4" />
                                     Envoyer la réponse
                                 </button>

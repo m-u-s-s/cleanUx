@@ -70,7 +70,7 @@
                     </div>
 
                     <div class="mt-4 flex justify-end">
-                        <button type="button" wire:click="saveOperationalSetting" class="cu-btn-primary">Enregistrer les réglages opérationnels</button>
+                        <button type="button" wire:click="saveOperationalSetting" class="brio-btn-primary">Enregistrer les réglages opérationnels</button>
                     </div>
                 </x-app-card>
 
@@ -86,7 +86,7 @@
                         <label class="inline-flex items-center gap-2 text-sm text-slate-700 md:col-span-2"><input type="checkbox" wire:model.defer="prices_include_tax" class="rounded border-gray-300 text-blue-600 shadow-sm"> Prix saisis TTC</label>
                     </div>
                     <div class="mt-4 flex justify-end">
-                        <button type="button" wire:click="saveBillingProfile" class="cu-btn-primary">Enregistrer le profil de facturation</button>
+                        <button type="button" wire:click="saveBillingProfile" class="brio-btn-primary">Enregistrer le profil de facturation</button>
                     </div>
                 </x-app-card>
 
@@ -105,7 +105,7 @@
                         <textarea wire:model.defer="readiness_notes" rows="4" class="w-full rounded-lg border-gray-300 shadow-sm"></textarea>
                     </div>
                     <div class="mt-4 flex justify-end">
-                        <button type="button" wire:click="saveReadiness" class="cu-btn-primary">Enregistrer la readiness</button>
+                        <button type="button" wire:click="saveReadiness" class="brio-btn-primary">Enregistrer la readiness</button>
                     </div>
                 </x-app-card>
 
@@ -133,10 +133,10 @@
                         <label class="inline-flex items-center gap-2 text-sm text-slate-700 md:col-span-2"><input type="checkbox" wire:model.defer="service_requires_manual_validation" class="rounded border-gray-300 text-blue-600 shadow-sm"> Validation manuelle obligatoire</label>
                     </div>
                     <div class="mt-4 flex justify-end">
-                        <button type="button" wire:click="saveServiceRule" class="cu-btn-primary">Enregistrer la règle service</button>
+                        <button type="button" wire:click="saveServiceRule" class="brio-btn-primary">Enregistrer la règle service</button>
                     </div>
                 </x-app-card>
             @else
-                <div class="cu-card p-8 text-center text-slate-500">Sélectionne un pays pour configurer son exploitation internationale.</div>
+                <div class="brio-card p-8 text-center text-slate-500">Sélectionne un pays pour configurer son exploitation internationale.</div>
             @endif
         </div>

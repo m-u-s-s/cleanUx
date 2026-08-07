@@ -15,7 +15,7 @@
                     {{ __('ui.notifications.unread_count', ['count' => $unreadCount]) }}
                 </span>
                 @if($unreadCount > 0)
-                    <button wire:click="markAllAsRead" class="cu-btn-primary inline-flex items-center gap-2 !py-2 !text-xs">
+                    <button wire:click="markAllAsRead" class="brio-btn-primary inline-flex items-center gap-2 !py-2 !text-xs">
                         <x-ui.icon name="check" class="w-3.5 h-3.5" />
                         <span>{{ __('ui.notifications.mark_all_read') }}</span>
                     </button>

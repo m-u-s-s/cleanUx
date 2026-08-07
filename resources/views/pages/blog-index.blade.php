@@ -8,7 +8,7 @@
             <h1 class="text-4xl font-display font-bold text-white mb-4">Blog Brio</h1>
             <p class="text-lg mb-12" style="color:var(--cx-muted)">Conseils, actualités et guides pour vos services à domicile.</p>
 
-            <div class="cu-card p-8 text-center">
+            <div class="brio-card p-8 text-center">
                 <x-empty-state
                     title="Articles à venir"
                     message="Notre blog sera bientôt disponible avec des guides pratiques, des conseils d'entretien et les dernières actualités Brio."

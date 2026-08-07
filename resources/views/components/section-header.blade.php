@@ -5,11 +5,11 @@
     'actionHref' => null,
 ])
 
-<div class="cu-toolbar gap-3">
+<div class="brio-toolbar gap-3">
     <div>
-        <h3 class="cu-section-title">{{ $title }}</h3>
+        <h3 class="brio-section-title">{{ $title }}</h3>
         @if($subtitle)
-            <p class="cu-section-subtitle">{{ $subtitle }}</p>
+            <p class="brio-section-subtitle">{{ $subtitle }}</p>
         @endif
     </div>
 

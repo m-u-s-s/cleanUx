@@ -2,7 +2,7 @@
     <x-app-card padding="p-6" :title="__('Paiements récents')" :subtitle="__('Dernières opérations enregistrées.')">
         <div class="space-y-3">
             @forelse($latestPaymentEvents as $payment)
-                <div class="cu-list-item flex items-center justify-between gap-3">
+                <div class="brio-list-item flex items-center justify-between gap-3">
                     <div>
                         <p class="font-semibold text-slate-800">
                             {{ $payment->payment_reference ?: 'Paiement' }}
@@ -55,20 +55,20 @@
 
     <x-app-card padding="p-6" :title="__('Actions rapides')" :subtitle="__('Accès utiles depuis votre espace finance.')">
         <div class="grid grid-cols-1 gap-3">
-            <a href="{{ route('client.rendezvous.create') }}" class="cu-btn-primary">
+            <a href="{{ route('client.rendezvous.create') }}" class="brio-btn-primary">
                 ➕ Nouveau rendez-vous
             </a>
 
-            <a href="{{ route('client.rendezvous.index') }}" class="cu-btn-secondary">
+            <a href="{{ route('client.rendezvous.index') }}" class="brio-btn-secondary">
                 📅 Voir mes rendez-vous
             </a>
 
-            <a href="{{ route('client.dashboard') }}" class="cu-btn-secondary">
+            <a href="{{ route('client.dashboard') }}" class="brio-btn-secondary">
                 ← Retour espace client
             </a>
 
             @if(! $subscriptionSummary['is_premium'])
-                <a href="{{ route('premium.offer') }}" class="cu-btn-primary !bg-amber-500 hover:!bg-amber-600">
+                <a href="{{ route('premium.offer') }}" class="brio-btn-primary !bg-amber-500 hover:!bg-amber-600">
                     ★ Passer Premium
                 </a>
             @endif

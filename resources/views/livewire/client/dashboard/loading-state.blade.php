@@ -4,7 +4,7 @@
     {{-- KPI row --}}
     <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
         @for($i = 0; $i < 4; $i++)
-        <div class="cu-card animate-pulse">
+        <div class="brio-card animate-pulse">
             <div class="flex items-center gap-3">
                 <div class="h-11 w-11 rounded-xl bg-surface-200"></div>
                 <div class="flex-1 space-y-2">
@@ -21,7 +21,7 @@
 
         {{-- Left column --}}
         <div class="space-y-6 xl:col-span-2">
-            <div class="cu-card animate-pulse p-6">
+            <div class="brio-card animate-pulse p-6">
                 <div class="mb-4 flex items-center gap-3">
                     <div class="h-5 w-36 rounded bg-surface-200"></div>
                     <div class="h-4 w-20 rounded bg-surface-200"></div>
@@ -46,7 +46,7 @@
             </div>
 
             {{-- Intervention list skeleton --}}
-            <div class="cu-card animate-pulse p-6 space-y-3">
+            <div class="brio-card animate-pulse p-6 space-y-3">
                 <div class="h-5 w-40 rounded bg-surface-200 mb-4"></div>
                 @for($k = 0; $k < 3; $k++)
                 <div class="rounded-xl border border-surface-100 p-4 space-y-2">
@@ -59,14 +59,14 @@
 
         {{-- Right column --}}
         <div class="space-y-6">
-            <div class="cu-card animate-pulse p-6 space-y-3">
+            <div class="brio-card animate-pulse p-6 space-y-3">
                 <div class="h-4 w-28 rounded bg-surface-200"></div>
                 @for($l = 0; $l < 3; $l++)
                 <div class="h-10 rounded-lg bg-surface-200"></div>
                 @endfor
             </div>
 
-            <div class="cu-card animate-pulse p-6 space-y-3">
+            <div class="brio-card animate-pulse p-6 space-y-3">
                 <div class="h-4 w-24 rounded bg-surface-200"></div>
                 <div class="grid grid-cols-2 gap-2.5">
                     @for($m = 0; $m < 4; $m++)

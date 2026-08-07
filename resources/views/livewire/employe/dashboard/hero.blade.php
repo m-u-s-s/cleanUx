@@ -12,21 +12,21 @@
 
             <div class="mt-5 flex flex-wrap gap-2">
                 @if(Route::has('employe.missions'))
-                    <a href="{{ route('employe.missions') }}" class="cu-btn-primary inline-flex items-center gap-2">
+                    <a href="{{ route('employe.missions') }}" class="brio-btn-primary inline-flex items-center gap-2">
                         <x-ui.icon name="briefcase" class="w-4 h-4" />
                         <span>Toutes mes missions</span>
                     </a>
                 @endif
 
                 @if(Route::has('employe.planning'))
-                    <a href="{{ route('employe.planning') }}" class="cu-btn-secondary inline-flex items-center gap-2">
+                    <a href="{{ route('employe.planning') }}" class="brio-btn-secondary inline-flex items-center gap-2">
                         <x-ui.icon name="calendar" class="w-4 h-4" />
                         <span>Mon planning</span>
                     </a>
                 @endif
 
                 @if(Route::has('employe.historique'))
-                    <a href="{{ route('employe.historique') }}" class="cu-btn-secondary inline-flex items-center gap-2">
+                    <a href="{{ route('employe.historique') }}" class="brio-btn-secondary inline-flex items-center gap-2">
                         <x-ui.icon name="history" class="w-4 h-4" />
                         <span>Historique</span>
                     </a>

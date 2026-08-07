@@ -1,8 +1,8 @@
 <div>
-    <div class="cu-hero">
-        <div class="relative cu-toolbar gap-4">
+    <div class="brio-hero">
+        <div class="relative brio-toolbar gap-4">
             <div class="max-w-3xl">
-                <span class="cu-eyebrow">Pilotage opérationnel</span>
+                <span class="brio-eyebrow">Pilotage opérationnel</span>
                 <h2 class="mt-3 text-2xl font-black tracking-tight text-slate-900 md:text-3xl">
                     Centre missions
                 </h2>

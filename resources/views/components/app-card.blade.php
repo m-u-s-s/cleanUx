@@ -5,14 +5,14 @@
     'muted' => false,
 ])
 
-<div {{ $attributes->merge(['class' => ($muted ? 'cu-card-muted ' : 'cu-card ') . $padding]) }}>
+<div {{ $attributes->merge(['class' => ($muted ? 'brio-card-muted ' : 'brio-card ') . $padding]) }}>
     @if($title || $subtitle)
         <div class="mb-4">
             @if($title)
-                <h3 class="cu-section-title">{{ $title }}</h3>
+                <h3 class="brio-section-title">{{ $title }}</h3>
             @endif
             @if($subtitle)
-                <p class="cu-section-subtitle">{{ $subtitle }}</p>
+                <p class="brio-section-subtitle">{{ $subtitle }}</p>
             @endif
         </div>
     @endif

@@ -17,8 +17,8 @@
 @endphp
 
 @if($href)
-    <a href="{{ $href }}" {{ $attributes->merge(['class' => 'cu-action-card '.$toneClasses]) }}>
-        <span class="cu-action-card-icon">{{ $icon }}</span>
+    <a href="{{ $href }}" {{ $attributes->merge(['class' => 'brio-action-card '.$toneClasses]) }}>
+        <span class="brio-action-card-icon">{{ $icon }}</span>
         <span class="min-w-0">
             <span class="block font-black text-slate-900">{{ $title }}</span>
             @if($description)
@@ -27,8 +27,8 @@
         </span>
     </a>
 @else
-    <div {{ $attributes->merge(['class' => 'cu-action-card '.$toneClasses]) }}>
-        <span class="cu-action-card-icon">{{ $icon }}</span>
+    <div {{ $attributes->merge(['class' => 'brio-action-card '.$toneClasses]) }}>
+        <span class="brio-action-card-icon">{{ $icon }}</span>
         <span class="min-w-0">
             <span class="block font-black text-slate-900">{{ $title }}</span>
             @if($description)

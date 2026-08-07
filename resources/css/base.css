@@ -10,7 +10,7 @@
             radial-gradient(circle at top right, rgba(250, 204, 21, 0.08), transparent 20%),
             linear-gradient(180deg, #f8fbff 0%, #f6f8fc 42%, #f8fafc 100%);
         font-family: var(--cx-body);
-        color: var(--cu-ink);
+        color: var(--brio-ink);
     }
 
     body.cx-shell {
@@ -21,7 +21,7 @@
         overflow-x: hidden;
     }
 
-    h1, h2, h3, h4 { color: var(--cu-ink); }
+    h1, h2, h3, h4 { color: var(--brio-ink); }
     body.cx-shell h1, body.cx-shell h2, body.cx-shell h3, body.cx-shell h4 { color: var(--cx-text); }
 
     /* Dark mode (Tailwind class strategy) */

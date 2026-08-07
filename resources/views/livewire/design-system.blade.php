@@ -1,13 +1,13 @@
-<div class="cu-page space-y-10 pb-20">
+<div class="brio-page space-y-10 pb-20">
 
     {{-- ═══════════════════════════════════════════════════════
          HEADER
          ═══════════════════════════════════════════════════════ --}}
-    <div class="cu-page-header">
+    <div class="brio-page-header">
         <div>
-            <p class="cu-eyebrow">Design System</p>
-            <h1 class="cu-section-title mt-2 text-3xl">Brio Component Library</h1>
-            <p class="cu-section-subtitle">Composants réutilisables, tokens de design, et patterns UI.</p>
+            <p class="brio-eyebrow">Design System</p>
+            <h1 class="brio-section-title mt-2 text-3xl">Brio Component Library</h1>
+            <p class="brio-section-subtitle">Composants réutilisables, tokens de design, et patterns UI.</p>
         </div>
     </div>
 
@@ -50,7 +50,7 @@
             </div>
             <div>
                 <p class="text-xs font-bold uppercase tracking-wide text-slate-400 mb-1">Mono — JetBrains Mono</p>
-                <code class="cu-code-block text-sm">const booking = await api.post('/bookings', { service_id: 42 });</code>
+                <code class="brio-code-block text-sm">const booking = await api.post('/bookings', { service_id: 42 });</code>
             </div>
         </div>
     </x-ui.card>
@@ -96,7 +96,7 @@
                 </div>
             </div>
             {{-- Code --}}
-            <div class="cu-note">
+            <div class="brio-note">
                 <code class="text-xs">&lt;x-ui.button variant="primary" size="md" icon="plus"&gt;Label&lt;/x-ui.button&gt;</code>
             </div>
         </div>
@@ -113,7 +113,7 @@
             <x-ui.badge tone="amber" label="Amber" />
             <x-ui.badge tone="red" label="Red" />
         </div>
-        <div class="cu-note mt-4">
+        <div class="brio-note mt-4">
             <code class="text-xs">&lt;x-ui.badge tone="green" label="Active" /&gt;</code>
         </div>
     </x-ui.card>
@@ -139,7 +139,7 @@
                 <p class="text-sm text-slate-600">Card with action buttons.</p>
             </x-ui.card>
         </div>
-        <div class="cu-note mt-4">
+        <div class="brio-note mt-4">
             <code class="text-xs">&lt;x-ui.card title="Title" subtitle="Sub" tone="amber"&gt;Content&lt;/x-ui.card&gt;</code>
         </div>
     </x-ui.card>
@@ -154,7 +154,7 @@
             <x-ui.stat title="Litiges" value="3" heroicon="exclamation-triangle" tone="amber" />
             <x-ui.stat title="Annulations" value="7" heroicon="x-mark" tone="red" />
         </div>
-        <div class="cu-note mt-4">
+        <div class="brio-note mt-4">
             <code class="text-xs">&lt;x-ui.stat title="Label" value="42" heroicon="star" tone="emerald" trend="+5%" /&gt;</code>
         </div>
     </x-ui.card>
@@ -173,7 +173,7 @@
                 </div>
             @endforeach
         </div>
-        <div class="cu-note mt-4">
+        <div class="brio-note mt-4">
             <code class="text-xs">&lt;x-ui.icon name="star" class="w-5 h-5" /&gt;</code>
         </div>
     </x-ui.card>
@@ -220,8 +220,8 @@
                 <p class="ui-empty-title">Aucune réservation</p>
                 <p class="ui-empty-desc">Vos réservations apparaîtront ici.</p>
             </div>
-            <div class="cu-empty">
-                <div class="cu-empty-icon">
+            <div class="brio-empty">
+                <div class="brio-empty-icon">
                     <x-ui.icon name="chat-bubble" class="w-6 h-6" />
                 </div>
                 <p class="mt-3 text-sm font-semibold text-slate-700">Pas de messages</p>
@@ -233,17 +233,17 @@
     {{-- ═══════════════════════════════════════════════════════
          10 — SKELETON LOADERS
          ═══════════════════════════════════════════════════════ --}}
-    <x-ui.card title="Skeleton Loaders" subtitle="ui-skeleton / cu-skeleton shimmer patterns">
+    <x-ui.card title="Skeleton Loaders" subtitle="ui-skeleton / brio-skeleton shimmer patterns">
         <div class="mt-4 space-y-3">
             <div class="ui-skeleton h-6 w-48 rounded"></div>
             <div class="ui-skeleton h-4 w-full rounded"></div>
             <div class="ui-skeleton h-4 w-3/4 rounded"></div>
             <div class="flex gap-3 mt-4">
-                <div class="cu-skeleton h-20 w-20 rounded-2xl"></div>
+                <div class="brio-skeleton h-20 w-20 rounded-2xl"></div>
                 <div class="flex-1 space-y-2">
-                    <div class="cu-skeleton h-4 w-32 rounded"></div>
-                    <div class="cu-skeleton h-3 w-full rounded"></div>
-                    <div class="cu-skeleton h-3 w-2/3 rounded"></div>
+                    <div class="brio-skeleton h-4 w-32 rounded"></div>
+                    <div class="brio-skeleton h-3 w-full rounded"></div>
+                    <div class="brio-skeleton h-3 w-2/3 rounded"></div>
                 </div>
             </div>
         </div>
@@ -297,11 +297,11 @@
     {{-- ═══════════════════════════════════════════════════════
          14 — GLASSMORPHISM
          ═══════════════════════════════════════════════════════ --}}
-    <x-ui.card title="Glassmorphism" subtitle="cu-glass (light) and cx-glass (dark)">
+    <x-ui.card title="Glassmorphism" subtitle="brio-glass (light) and cx-glass (dark)">
         <div class="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
             <div class="relative h-32 rounded-2xl overflow-hidden" style="background: linear-gradient(135deg, #6366f1, #ffb648);">
-                <div class="absolute inset-4 cu-glass rounded-xl flex items-center justify-center">
-                    <span class="text-sm font-bold text-slate-900">cu-glass</span>
+                <div class="absolute inset-4 brio-glass rounded-xl flex items-center justify-center">
+                    <span class="text-sm font-bold text-slate-900">brio-glass</span>
                 </div>
             </div>
             <div class="relative h-32 rounded-2xl overflow-hidden" style="background: linear-gradient(135deg, #070b14, #1e293b);">
@@ -335,8 +335,8 @@
                         ['--cx-dur-slow', '420ms', 'Reveal animations, card lifts'],
                         ['--cx-ease', 'cubic-bezier(.16,1,.3,1)', 'Snappy premium easing'],
                         ['--cx-radius-md', '14px', 'Default component radius'],
-                        ['--cu-ink', '#0f172a', 'Tool mode text color'],
-                        ['--cu-muted', '#64748b', 'Tool mode muted text (WCAG AA 5.4:1)'],
+                        ['--brio-ink', '#0f172a', 'Tool mode text color'],
+                        ['--brio-muted', '#64748b', 'Tool mode muted text (WCAG AA 5.4:1)'],
                     ] as [$token, $value, $usage])
                         <tr>
                             <td class="font-mono text-xs text-brand-600">{{ $token }}</td>

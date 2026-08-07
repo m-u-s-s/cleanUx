@@ -17,7 +17,7 @@
 ### Blade / Livewire
 - One Livewire component = one responsibility (SRP).
 - Components must not exceed ~150 lines of PHP. Extract `Concerns/` traits.
-- Views use existing design tokens (`cu-btn-primary`, `cu-chip`, etc.) — do not inline custom Tailwind unless adding to the design system.
+- Views use existing design tokens (`brio-btn-primary`, `brio-chip`, etc.) — do not inline custom Tailwind unless adding to the design system.
 
 ---
 

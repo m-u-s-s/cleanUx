@@ -98,7 +98,7 @@
 
                     <div class="flex gap-2 justify-end">
                         @if ($b->status === 'draft')
-                            <button wire:click="startQuoting({{ $b->id }})" class="cu-btn-primary !py-1.5 !text-xs inline-flex items-center gap-1.5">
+                            <button wire:click="startQuoting({{ $b->id }})" class="brio-btn-primary !py-1.5 !text-xs inline-flex items-center gap-1.5">
                                 <x-ui.icon name="document" class="w-3.5 h-3.5" />
                                 Demander des devis
                             </button>
@@ -127,7 +127,7 @@
                     </div>
                     <p class="text-slate-700 font-semibold">Aucun chantier groupé</p>
                     <p class="mt-1 text-sm text-slate-500">Créez votre premier bundle multi-métiers.</p>
-                    <button wire:click="setTab('create')" class="cu-btn-primary mt-4 inline-flex items-center gap-2">
+                    <button wire:click="setTab('create')" class="brio-btn-primary mt-4 inline-flex items-center gap-2">
                         <x-ui.icon name="plus" class="w-4 h-4" />
                         Créer mon premier bundle
                     </button>
@@ -231,7 +231,7 @@
                 @error('items') <p class="ui-error-msg">{{ $message }}</p> @enderror
             </div>
 
-            <button wire:click="createBundle" class="cu-btn-primary w-full inline-flex items-center justify-center gap-2">
+            <button wire:click="createBundle" class="brio-btn-primary w-full inline-flex items-center justify-center gap-2">
                 <x-ui.icon name="check" class="w-4 h-4" />
                 Créer le chantier
             </button>

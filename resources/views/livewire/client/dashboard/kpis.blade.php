@@ -12,7 +12,7 @@
         icon="✨"
         class="mt-4">
         @if(Route::has('client.rendezvous.create'))
-            <a href="{{ route('client.rendezvous.create') }}" class="cu-btn-primary inline-flex items-center gap-2">
+            <a href="{{ route('client.rendezvous.create') }}" class="brio-btn-primary inline-flex items-center gap-2">
                 <x-ui.icon name="plus" class="w-4 h-4" />
                 <span>{{ __('Réserver maintenant') }}</span>
             </a>

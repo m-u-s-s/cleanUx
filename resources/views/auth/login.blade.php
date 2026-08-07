@@ -17,7 +17,7 @@
             </div>
 
             {{-- Card formulaire --}}
-            <div class="cu-glass rounded-2xl border border-slate-200/80 shadow-soft p-8">
+            <div class="brio-glass rounded-2xl border border-slate-200/80 shadow-soft p-8">
                 <div class="text-center mb-8">
                     <h1 class="text-2xl font-bold tracking-tight text-slate-900">Bon retour parmi nous</h1>
                     <p class="mt-2 text-sm text-slate-500">Connectez-vous à votre espace</p>

@@ -25,14 +25,14 @@
     --cx-dur:          280ms;
     --cx-dur-slow:     420ms;
 
-    --cu-ink:          #0f172a;
-    --cu-muted:        #64748b;
-    --cu-border:       rgba(148, 163, 184, 0.18);
-    --cu-card:         rgba(255, 255, 255, 0.9);
-    --cu-card-strong:  rgba(255, 255, 255, 0.96);
-    --cu-shadow:       0 14px 40px rgba(15, 23, 42, 0.08);
-    --cu-shadow-soft:  0 8px 24px rgba(15, 23, 42, 0.05);
-    --cu-ring:         0 0 0 4px rgba(59, 130, 246, 0.12);
+    --brio-ink:          #0f172a;
+    --brio-muted:        #64748b;
+    --brio-border:       rgba(148, 163, 184, 0.18);
+    --brio-card:         rgba(255, 255, 255, 0.9);
+    --brio-card-strong:  rgba(255, 255, 255, 0.96);
+    --brio-shadow:       0 14px 40px rgba(15, 23, 42, 0.08);
+    --brio-shadow-soft:  0 8px 24px rgba(15, 23, 42, 0.05);
+    --brio-ring:         0 0 0 4px rgba(59, 130, 246, 0.12);
 
     --cx-night:        #070b14;
     --cx-night-soft:   #0c1322;
