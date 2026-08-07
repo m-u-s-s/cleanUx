@@ -4,6 +4,7 @@ import { CompanyOverviewScreen } from '@/screens/company/CompanyOverviewScreen';
 import { CompanySitesScreen } from '@/screens/company/CompanySitesScreen';
 import { CompanyBookingsScreen } from '@/screens/company/CompanyBookingsScreen';
 import { CompanyBillingScreen } from '@/screens/company/CompanyBillingScreen';
+import { CompanyProfileScreen } from '@/screens/company/CompanyProfileScreen';
 import { Icon } from '@/ui';
 import { apparenceDeBarre } from '@/ui/glassBars';
 import { colors } from '@/theme';
@@ -69,6 +70,21 @@ export function ClientCompanyNavigator() {
           title: 'Facturation',
           tabBarLabel: 'Facturation',
           tabBarIcon: ({ color, size }) => <Icon name="receipt-outline" size={size} color={color} />,
+        }}
+      />
+      {/*
+        LE PROFIL EST UN ONGLET, PARCE QUE LA BARRE EST LA SEULE SURFACE PERMANENTE DE CET ESPACE.
+        Sans lui, quelqu'un entré ici ne pouvait ni revenir à son espace personnel ni se
+        déconnecter : `RootNavigator` déclarait bien une route `Profile`, mais aucun
+        `navigate('Profile')` n'existait dans l'application. Déclarer n'est pas rendre joignable.
+      */}
+      <Tab.Screen
+        name="CompanyProfileTab"
+        component={CompanyProfileScreen}
+        options={{
+          title: 'Mon compte',
+          tabBarLabel: 'Profil',
+          tabBarIcon: ({ color, size }) => <Icon name="person-outline" size={size} color={color} />,
         }}
       />
     </Tab.Navigator>

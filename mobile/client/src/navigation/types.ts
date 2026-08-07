@@ -56,14 +56,6 @@ export type RootStackParamList = {
    * enfoui dans le profil. Rendu HORS de la pile personnelle : voir `RootNavigator`.
    */
   ClientCompanySpace: undefined;
-  /**
-   * L'issue vers l'espace personnel depuis l'espace société.
-   *
-   * Le profil est un ONGLET de la pile personnelle ; il est aussi monté sur la pile société, où
-   * il n'y a pas d'onglets pour l'accueillir. Sans lui, choisir « entreprise » une fois
-   * enfermerait hors de ses propres réservations.
-   */
-  Profile: undefined;
 };
 
 
@@ -86,4 +78,5 @@ export type ClientCompanyTabParamList = {
   CompanySitesTab: undefined;
   CompanyBookingsTab: undefined;
   CompanyBillingTab: undefined;
+  CompanyProfileTab: undefined;
 };

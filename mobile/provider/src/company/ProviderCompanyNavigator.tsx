@@ -5,6 +5,7 @@ import { CompanyDispatchScreen } from '@/screens/company/CompanyDispatchScreen';
 import { CompanyFieldTeamsScreen } from '@/screens/company/CompanyFieldTeamsScreen';
 import { CompanyTasksScreen } from '@/screens/company/CompanyTasksScreen';
 import { CompanyChannelsScreen } from '@/screens/company/CompanyChannelsScreen';
+import { CompanyProfileScreen } from '@/screens/company/CompanyProfileScreen';
 import { Icon } from '@/ui';
 import { apparenceDeBarre } from '@/ui/glassBars';
 import { colors } from '@/theme';
@@ -93,6 +94,22 @@ export function ProviderCompanyNavigator() {
           title: 'Canaux',
           tabBarLabel: 'Canaux',
           tabBarIcon: ({ color, size }) => <Icon name="chatbubbles-outline" size={size} color={color} />,
+        }}
+      />
+      {/*
+        LE PROFIL EST UN ONGLET, PARCE QUE LA BARRE EST LA SEULE SURFACE PERMANENTE DE CET ESPACE.
+        Sans lui, un gérant entré ici ne pouvait plus se déconnecter ni redescendre sur le terrain :
+        `RootNavigator` déclarait bien une route `Profile`, mais aucun `navigate('Profile')`
+        n'existait dans l'application. Déclarer n'est pas rendre joignable. Même rôle que l'onglet
+        « Profil » de la console d'administration.
+      */}
+      <Tab.Screen
+        name="CompanyProfileTab"
+        component={CompanyProfileScreen}
+        options={{
+          title: 'Mon compte',
+          tabBarLabel: 'Profil',
+          tabBarIcon: ({ color, size }) => <Icon name="person-outline" size={size} color={color} />,
         }}
       />
     </Tab.Navigator>

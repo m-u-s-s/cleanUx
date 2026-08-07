@@ -69,8 +69,21 @@ describe('Joignabilité de l’espace société prestataire', () => {
   });
 
   it('l’espace n’enferme pas non plus dans l’autre sens', () => {
-    // Le profil est monté DANS la pile société : c'est de là que part `clear()`.
-    expect(lire('navigation/RootNavigator.tsx')).toMatch(/name="Profile"/);
+    /*
+     * CETTE ASSERTION A DÉJÀ MENTI, ET C'EST POURQUOI ELLE EST ÉCRITE AINSI.
+     *
+     * Elle disait : « le profil est monté DANS la pile société : c'est de là que part `clear()` »,
+     * et vérifiait `name="Profile"` dans `RootNavigator.tsx`. La route était bien déclarée — et
+     * injoignable : aucun `navigate('Profile')` n'existait dans cette application, aucun lien
+     * profond n'y menait, et la barre à cinq onglets n'en parlait pas. Un gérant entré dans son
+     * espace ne pouvait plus se déconnecter, avec un test vert pour affirmer le contraire.
+     *
+     * Déclarer n'est pas rendre joignable. La PREUVE vit désormais dans
+     * `SortieDeLEspaceSociete.test.tsx`, qui presse la barre pour de vrai ; ce qui suit n'en garde
+     * que la structure.
+     */
+    expect(lire('company/ProviderCompanyNavigator.tsx')).toMatch(/name="CompanyProfileTab"/);
+    expect(lire('company/ProviderCompanyNavigator.tsx')).toContain('CompanyProfileScreen');
   });
 
   it('les sites desservis sont atteignables depuis les DEUX espaces', () => {
