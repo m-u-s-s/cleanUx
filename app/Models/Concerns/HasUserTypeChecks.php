@@ -6,6 +6,7 @@ use App\Enums\AssistantContextRole;
 use App\Enums\CustomerType;
 use App\Enums\OrganizationType;
 use App\Enums\ProviderType;
+use App\Enums\Role;
 use App\Http\Middleware\CheckRole;
 use App\Models\OrganizationAccount;
 
@@ -210,12 +211,77 @@ trait HasUserTypeChecks
     public function matchesRole(string $role): bool
     {
         return match ($role) {
-            'admin', 'super_admin' => $this->isAdmin(),
+            'admin' => $this->isAdmin(),
+            'super_admin' => $this->roleCanonique() === Role::SUPER_ADMIN,
             'client' => $this->isClient(),
             'employe', 'employee', 'provider' => $this->isEmploye(),
             'entreprise', 'company' => $this->isEntreprise(),
             'provider_company', 'entreprise_prestataire' => $this->isProviderCompanyWorker(),
+
+            /*
+             * LES SIX RÔLES CANONIQUES.
+             *
+             * Ils se comparent au rôle RÉSOLU, pas à un signal isolé : `client_individuelle` doit
+             * être faux pour un administrateur qui garde un profil client, ce qu'un simple
+             * `isClientPersonal()` ne saurait pas dire.
+             */
+            Role::SUPER_ADMIN->value.'_canonique' => $this->roleCanonique() === Role::SUPER_ADMIN,
+            'client_individuelle' => $this->roleCanonique() === Role::CLIENT_INDIVIDUELLE,
+            'client_societe' => $this->roleCanonique() === Role::CLIENT_SOCIETE,
+            'provider_individuelle' => $this->roleCanonique() === Role::PROVIDER_INDIVIDUELLE,
+            'provider_societe' => $this->roleCanonique() === Role::PROVIDER_SOCIETE,
+
             default => ($this->platform_role ?? null) === $role,
         };
+    }
+
+    /**
+     * LE RÔLE DU COMPTE, TRANCHÉ UNE FOIS.
+     *
+     * L'ordre des tests EST la règle, et chaque marche est là pour un défaut déjà vu :
+     *
+     * 1. `super_admin` avant `admin` — sinon le premier n'existerait jamais, `isAdmin()` étant vrai
+     *    pour les deux.
+     * 2. L'administration avant tout le reste — promouvoir un client en administrateur ne lui
+     *    retire pas son profil client, et tester le client d'abord rendait la promotion invisible.
+     * 3. La SOCIÉTÉ avant l'individuel, des deux côtés — un membre de société coche aussi les
+     *    signaux du particulier, jamais l'inverse. Tester l'individuel d'abord enfermerait tout le
+     *    monde dans l'espace perso.
+     * 4. Le client avant le prestataire, à défaut de mieux : un compte qui serait les deux relève
+     *    d'un choix d'espace, pas d'une résolution automatique — voir les sélecteurs des deux
+     *    applications mobiles.
+     */
+    public function roleCanonique(): Role
+    {
+        if (($this->platform_role ?? null) === 'super_admin') {
+            return Role::SUPER_ADMIN;
+        }
+
+        if ($this->isAdmin()) {
+            return Role::ADMIN;
+        }
+
+        if ($this->isClientCompany()) {
+            return Role::CLIENT_SOCIETE;
+        }
+
+        if ($this->isProviderCompanyWorker()) {
+            return Role::PROVIDER_SOCIETE;
+        }
+
+        if ($this->isClientPersonal()) {
+            return Role::CLIENT_INDIVIDUELLE;
+        }
+
+        if ($this->isEmploye()) {
+            return Role::PROVIDER_INDIVIDUELLE;
+        }
+
+        /*
+         * Le repli n'est pas un aveu d'échec : un compte tout juste créé n'a encore ni profil
+         * client ni profil prestataire. `client_individuelle` est ce qu'il est dans les faits —
+         * c'est aussi le défaut de la colonne `role` en base.
+         */
+        return Role::CLIENT_INDIVIDUELLE;
     }
 }
