@@ -43,14 +43,21 @@ export function ProfileScreen() {
    * organisation courante, et qu'elle soit de type prestataire. `organization_type` n'est renseigné
    * QUE depuis `currentOrganization`, donc il porte déjà les deux informations.
    *
-   * VERSION RETENUE À LA FUSION : celle de `main`. La branche proposait d'y ajouter `hybrid`, au
-   * motif que `CompanyController::organisationActive()` sert ce type sans regarder lequel. C'est
-   * exact, mais `main` s'aligne sur `EnsureOrganizationType`, qui est la règle déjà appliquée côté
-   * web — et deux surfaces qui gardent la même chose par deux règles différentes finissent
-   * toujours par diverger. Si les organisations hybrides doivent ouvrir cet espace, c'est
-   * `EnsureOrganizationType` qu'il faut changer, et les deux suivront.
+   * `HYBRID` EST INCLUS PARCE QUE LA GARDE WEB L'INCLUT DÉJÀ.
+   *
+   * `EnsureOrganizationType` avec `provider` appelle `OrganizationType::isProvider()`, qui rend
+   * vrai pour `PROVIDER_COMPANY`, `PROVIDER_SOLO` et `HYBRID`. S'arrêter à `provider_company` ici
+   * rendait donc le mobile PLUS ÉTROIT que la surface dont il prétend suivre la règle : une
+   * organisation hybride ouvre l'espace société sur le web et se le voyait refuser dans
+   * l'application.
+   *
+   * `provider_solo` reste volontairement dehors : la garde web l'admet, mais un indépendant à
+   * structure légale n'a ni équipe à répartir ni canaux d'équipe — lui proposer ces écrans
+   * remplirait son profil de surfaces vides. C'est une divergence ASSUMÉE, pas un oubli ; si elle
+   * doit disparaître, c'est en décidant ce qu'un solo voit, pas en recopiant la garde.
    */
-  const estMembreSocietePrestataire = user?.organization_type === 'provider_company';
+  const estMembreSocietePrestataire =
+    user?.organization_type === 'provider_company' || user?.organization_type === 'hybrid';
 
   /*
    * Le pilotage de société OUVRE UN TROISIÈME ESPACE, donc une troisième façon de s'enfermer.
