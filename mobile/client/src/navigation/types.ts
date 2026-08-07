@@ -34,6 +34,14 @@ export type RootStackParamList = {
   InvoiceDetail: { id: number };
   // Embedded web modules
   EmbeddedModule: { path: string; title: string };
+  /*
+   * Espace SOCIÉTÉ CLIENTE, en natif. Il n'existait que sur le web : `routes/api/client.php`
+   * n'exposait que l'annuaire des sociétés prestataires et les réservations. L'API
+   * `/client/company/*` a été créée avec ces écrans.
+   */
+  CompanySites: undefined;
+  CompanySigningAppointments: undefined;
+  CompanyMultiSiteRequest: undefined;
 };
 
 
