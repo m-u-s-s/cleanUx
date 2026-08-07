@@ -513,6 +513,13 @@ class ApiAuthController extends Controller
             'email' => $user->email,
             'phone' => $user->phone ?? null,
             'platform_role' => $user->platform_role ?? null,
+            /*
+             * Le rôle canonique, identique à celui que `/auth/me` annonce à la reprise de session.
+             * La divergence entre ces deux réponses est ce qui a produit, un par un, les drapeaux
+             * ci-dessous — chacun ajouté après qu'un compte eut perdu sa casquette au redémarrage.
+             */
+            'role' => $user->roleCanonique()->value,
+            'is_super_admin' => $user->roleCanonique() === \App\Enums\Role::SUPER_ADMIN,
             'locale' => $user->locale ?? 'fr',
             'is_provider' => method_exists($user, 'isProvider') && $user->isProvider(),
             'is_admin' => method_exists($user, 'isPlatformAdmin') && $user->isPlatformAdmin(),

@@ -13,6 +13,8 @@ export type RootStackParamList = {
    * prestataire ne concerne un administrateur, et les y laisser atteignables donnerait des routes
    * qui répondent 403 à qui les ouvre.
    */
+  /** L'espace du sixième rôle. Il n'a qu'un écran : la structure des rôles, et les portes. */
+  SuperAdminSpace: undefined;
   AdminSpace: NavigatorScreenParams<AdminTabParamList> | undefined;
   AdminResource: { moduleKey: string; title: string };
   /** Le moteur de console — trois écrans qui servent tous les domaines décrits. */

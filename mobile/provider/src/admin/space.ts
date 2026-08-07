@@ -18,18 +18,33 @@
 export type Space =
   | 'loading'
   | 'login'
+  | 'superAdmin'
   | 'admin'
   | 'provider'
   | 'providerOnboarding'
   | 'switcher';
 
-/** L'espace qu'un compte à double casquette a choisi, quand il en a choisi un. */
-export type ChosenSpace = 'admin' | 'provider';
+/** L'espace qu'un compte à plusieurs casquettes a choisi, quand il en a choisi un. */
+export type ChosenSpace = 'superAdmin' | 'admin' | 'provider';
 
 export interface SpaceInput {
   isLoading: boolean;
   isAuthenticated: boolean;
-  user: { is_admin?: boolean; is_provider?: boolean } | null;
+  user: {
+    is_admin?: boolean;
+    is_provider?: boolean;
+    /**
+     * Le SIXIÈME rôle, tranché par le serveur (`roleCanonique()`).
+     *
+     * Surtout pas déduit de `is_admin`, qui est vrai pour un administrateur ordinaire comme pour
+     * un super administrateur : aiguiller dessus donnerait le même espace aux deux, et les
+     * distinguer n'aurait servi à rien.
+     *
+     * Absent des jetons du parc déjà installé — sans drapeau, le compte est traité en
+     * administrateur, ce qu'il était hier.
+     */
+    is_super_admin?: boolean;
+  } | null;
   /**
    * `true` dossier complet, `false` incomplet, `undefined` inconnu (chargement ou erreur).
    * L'inconnu LAISSE PASSER : mieux vaut un tableau de bord partiellement bloqué par le serveur
@@ -52,6 +67,22 @@ export function resolveSpace(input: SpaceInput): Space {
 
   const isAdmin = user.is_admin === true;
   const isProvider = user.is_provider === true;
+  const isSuperAdmin = user.is_super_admin === true;
+
+  /*
+   * LE SUPER ADMINISTRATEUR OUVRE SON ESPACE, ET IL SE TESTE EN PREMIER.
+   *
+   * `is_admin` est vrai pour lui aussi : placé plus bas, ce test ne serait jamais atteint et le
+   * sixième rôle recevrait la console, exactement comme le cinquième.
+   *
+   * On ne lui impose PAS le sélecteur au démarrage. Le choix reste possible — les cartes de
+   * `SpaceSwitcherScreen` mènent à la console et au terrain — mais lui faire trancher chaque matin
+   * ferait payer un écran de choix à quelqu'un qui fait le même geste tous les jours. C'est le
+   * raisonnement qui a déjà décidé de RETENIR le choix d'espace.
+   */
+  if (isSuperAdmin && chosenSpace !== 'admin' && chosenSpace !== 'provider') {
+    return 'superAdmin';
+  }
 
   if (isAdmin && isProvider && !chosenSpace) {
     return 'switcher';

@@ -34,6 +34,7 @@ import { ProviderOnboardingScreen } from '@/screens/onboarding/ProviderOnboardin
 // Espace d'administration — l'application prestataire sert deux publics depuis le lot A.
 import { SpaceSwitcherScreen } from '@/screens/SpaceSwitcherScreen';
 import { AdminNavigator } from '@/admin/AdminNavigator';
+import { SuperAdminHomeScreen } from '@/admin/SuperAdminHomeScreen';
 import { CatalogZonesScreen } from '@/admin/catalogue/CatalogZonesScreen';
 import { CatalogZoneTradesScreen } from '@/admin/catalogue/CatalogZoneTradesScreen';
 import { JourneyBuilderScreen } from '@/admin/catalogue/JourneyBuilderScreen';
@@ -103,6 +104,41 @@ export function RootNavigator() {
     return (
       <View testID="root-navigator" style={{ flex: 1 }}>
         <SpaceSwitcherScreen onChoose={(next) => void choose(next)} />
+      </View>
+    );
+  }
+
+  /*
+   * L'ESPACE DU SUPER ADMINISTRATEUR, rendu hors des deux autres piles.
+   *
+   * Même raison que pour l'administration : aucun écran de la pile terrain ne le concerne. Et une
+   * de plus — il ne peut pas vivre DANS la console, puisque c'est précisément ce dont il doit se
+   * distinguer. `is_admin` étant vrai pour lui, le monter là reviendrait à ne rien distinguer.
+   *
+   * Les réglages restent montés sur cette pile : l'écran y navigue, et une route absente ne lève
+   * rien — elle ne fait simplement rien, ce qui rend ce genre de lien mort très discret.
+   */
+  if (space === 'superAdmin') {
+    return (
+      <View testID="root-navigator" style={{ flex: 1 }}>
+        <Stack.Navigator screenOptions={{ headerShown: false }}>
+          <Stack.Screen name="SuperAdminSpace" component={SuperAdminHomeScreen} />
+          <Stack.Screen
+            name="Appearance"
+            component={AppearanceScreen}
+            options={{ title: 'Apparence', headerShown: true }}
+          />
+          <Stack.Screen
+            name="Language"
+            component={LanguageScreen}
+            options={{ title: 'Langue', headerShown: true }}
+          />
+          <Stack.Screen
+            name="NotificationPreferences"
+            component={NotificationPreferencesScreen}
+            options={{ title: 'Préférences notifications', headerShown: true }}
+          />
+        </Stack.Navigator>
       </View>
     );
   }

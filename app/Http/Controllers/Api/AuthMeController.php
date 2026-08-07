@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Enums\Role;
 use App\Http\Controllers\Controller;
 use App\Models\CustomerProfile;
 use App\Support\Mobile\AppAudience;
@@ -101,6 +102,25 @@ class AuthMeController extends Controller
          * s'exécutait jamais. Une garde morte donne l'illusion d'une protection ; on la retire.
          */
         $payload['organization_type'] = $user->currentOrganization?->type;
+
+        /*
+         * LE RÔLE CANONIQUE — ce qui subsume tous les drapeaux ci-dessus.
+         *
+         * Chacun d'eux a été ajouté APRÈS avoir manqué : `is_admin`, puis `is_provider`, puis
+         * `is_entreprise`, puis `organization_type`. L'application devait ensuite les recombiner
+         * elle-même, avec sa propre idée de l'ordre — c'est ainsi qu'une conjonction impossible a
+         * rendu cinq écrans société inatteignables pendant toute une livraison.
+         *
+         * `role` ÉCRASE ICI LA COLONNE HÉRITÉE du même nom, que `toArray()` sérialisait. Cette
+         * colonne dit `client` / `employe` / `entreprise` / `admin` — précisément la nomenclature
+         * remplacée. Elle n'est lue nulle part dans les applications mobiles (`role: string` est
+         * déclaré dans leurs types et jamais consommé), et le web lit le modèle, pas cette
+         * réponse.
+         *
+         * Les drapeaux restent : les retirer casserait les applications déjà installées.
+         */
+        $payload['role'] = $user->roleCanonique()->value;
+        $payload['is_super_admin'] = $user->roleCanonique() === Role::SUPER_ADMIN;
 
         $payload['user'] = $payload;
 
