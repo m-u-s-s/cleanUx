@@ -56,20 +56,37 @@ describe('ProfileScreen — porte vers l’espace société', () => {
     }
   });
 
-  it('ne les ouvre PAS à une organisation hybride — la règle est celle du web', () => {
+  it('les ouvre à une organisation hybride, comme la garde web le fait déjà', () => {
     /*
-     * DÉCISION PRISE À LA FUSION AVEC `main`, ET ELLE VA CONTRE MA PREMIÈRE VERSION.
+     * VÉRIFIÉ PLUTÔT QUE SUPPOSÉ, ET LA VÉRIFICATION A RENVERSÉ L'ARGUMENT.
      *
-     * Cette branche incluait `hybrid`, au motif que `CompanyController::organisationActive()` sert
-     * ce type sans regarder lequel. C'est exact, mais `main` s'aligne sur `EnsureOrganizationType`,
-     * la garde déjà appliquée côté web, qui ne retient que `provider_company`.
+     * On a d'abord retenu `provider_company` seul, au motif de s'aligner sur
+     * `EnsureOrganizationType`. Mais cette garde, appelée avec `provider`, délègue à
+     * `OrganizationType::isProvider()` — qui rend vrai pour `PROVIDER_COMPANY`, `PROVIDER_SOLO` ET
+     * `HYBRID`.
      *
-     * Deux surfaces qui gardent la même chose par deux règles différentes finissent toujours par
-     * diverger, et c'est la plus permissive qui décide en silence. Si les organisations hybrides
-     * doivent ouvrir cet espace, c'est `EnsureOrganizationType` qu'il faut changer — les deux
-     * suivront alors ensemble, et ce test avec elles.
+     * La condition mobile était donc PLUS ÉTROITE que la surface dont elle prétendait suivre la
+     * règle : une organisation hybride ouvre l'espace société sur le web et se le voyait refuser
+     * dans l'application. Inclure `hybrid` rapproche les deux au lieu de les éloigner.
      */
     mockAuth.user = { is_provider: true, is_entreprise: true, organization_type: 'hybrid' };
+
+    render(<ProfileScreen />);
+
+    for (const libelle of LIBELLES) {
+      expect(screen.getByText(libelle)).toBeTruthy();
+    }
+  });
+
+  it('ne les ouvre pas à un indépendant à structure légale — divergence assumée', () => {
+    /*
+     * `EnsureOrganizationType` admet `provider_solo` ; ici non, et c'est un CHOIX.
+     *
+     * Un indépendant à structure légale n'a ni équipe à répartir, ni équipes terrain, ni canaux
+     * d'équipe : lui proposer ces six écrans remplirait son profil de surfaces vides. La
+     * divergence est notée dans le composant pour qu'on ne la prenne pas pour un oubli.
+     */
+    mockAuth.user = { is_provider: true, is_entreprise: false, organization_type: 'provider_solo' };
 
     render(<ProfileScreen />);
 
