@@ -13,7 +13,17 @@ import type { ChosenSpace } from '@/admin/space';
  * lui donnerait deux historiques et deux facturations. Plutôt que de deviner à sa place, on lui
  * demande — une fois : le choix est retenu, et se change depuis le profil.
  */
-export function SpaceSwitcherScreen({ onChoose }: { onChoose: (space: ChosenSpace) => void }) {
+export function SpaceSwitcherScreen({
+  onChoose,
+  /**
+   * Le pilotage de société n'est proposé qu'à qui l'a. Une troisième carte offerte à tous mènerait
+   * à un espace dont chaque écran répond 403 — le sélecteur promettrait ce que le serveur refuse.
+   */
+  peutPiloterLaSociete = false,
+}: {
+  onChoose: (space: ChosenSpace) => void;
+  peutPiloterLaSociete?: boolean;
+}) {
   const styles = stylesFor(useThemeColors());
 
   return (
@@ -21,7 +31,7 @@ export function SpaceSwitcherScreen({ onChoose }: { onChoose: (space: ChosenSpac
       <View testID="space-switcher" style={styles.container}>
         <Text style={styles.title}>Où souhaitez-vous travailler ?</Text>
         <Text style={styles.subtitle}>
-          Votre compte donne accès aux deux espaces. Vous pourrez en changer à tout moment depuis
+          Votre compte donne accès à plusieurs espaces. Vous pourrez en changer à tout moment depuis
           votre profil.
         </Text>
 
@@ -31,6 +41,14 @@ export function SpaceSwitcherScreen({ onChoose }: { onChoose: (space: ChosenSpac
           hint="Piloter la plateforme"
           onPress={() => onChoose('admin')}
         />
+        {peutPiloterLaSociete ? (
+          <Choice
+            icon="business-outline"
+            label="Ma société"
+            hint="Répartir les missions et gérer mes équipes"
+            onPress={() => onChoose('providerCompany')}
+          />
+        ) : null}
         <Choice
           icon="briefcase-outline"
           label="Terrain"

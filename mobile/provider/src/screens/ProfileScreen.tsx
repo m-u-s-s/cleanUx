@@ -42,8 +42,29 @@ export function ProfileScreen() {
    * Le critère juste est celui qu'applique la garde web `EnsureOrganizationType` : avoir une
    * organisation courante, et qu'elle soit de type prestataire. `organization_type` n'est renseigné
    * QUE depuis `currentOrganization`, donc il porte déjà les deux informations.
+   *
+   * VERSION RETENUE À LA FUSION : celle de `main`. La branche proposait d'y ajouter `hybrid`, au
+   * motif que `CompanyController::organisationActive()` sert ce type sans regarder lequel. C'est
+   * exact, mais `main` s'aligne sur `EnsureOrganizationType`, qui est la règle déjà appliquée côté
+   * web — et deux surfaces qui gardent la même chose par deux règles différentes finissent
+   * toujours par diverger. Si les organisations hybrides doivent ouvrir cet espace, c'est
+   * `EnsureOrganizationType` qu'il faut changer, et les deux suivront.
    */
   const estMembreSocietePrestataire = user?.organization_type === 'provider_company';
+
+  /*
+   * Le pilotage de société OUVRE UN TROISIÈME ESPACE, donc une troisième façon de s'enfermer.
+   *
+   * Un gérant qui choisit « terrain » au sélecteur — parce qu'il nettoie lui-même ce matin-là —
+   * n'avait plus aucun chemin de retour vers l'espace société : le bouton plus bas ne s'affichait
+   * qu'aux comptes administrateur ET prestataire. C'est le défaut que `clear()` avait justement
+   * corrigé pour la console d'administration, et qu'un troisième espace rejouait aussitôt.
+   *
+   * `main` n'a pas d'équivalent — ce troisième espace n'existe que sur cette branche — donc rien
+   * ici n'entre en concurrence avec sa version.
+   */
+  const peutPiloterLaSociete = user?.can_manage_company === true;
+  const plusieursEspaces = doubleCasquette || peutPiloterLaSociete;
 
   const actions: Array<{ label: string; screen: keyof RootStackParamList }> = [
     { label: 'Disponibilités', screen: 'Availability' },
@@ -68,6 +89,7 @@ export function ProfileScreen() {
     { label: 'Répartition', screen: 'CompanyDispatch' as const },
     { label: 'Équipe', screen: 'CompanyMembers' as const },
     { label: 'Équipes terrain', screen: 'CompanyFieldTeams' as const },
+    { label: 'Sites desservis', screen: 'CompanySites' as const },
     { label: 'Tâches', screen: 'CompanyTasks' as const },
     { label: 'Canaux', screen: 'CompanyChannels' as const },
   ];
@@ -122,7 +144,7 @@ export function ProfileScreen() {
             variant="ghost"
             fullWidth
           />
-          {doubleCasquette ? (
+          {plusieursEspaces ? (
             <>
               <Divider />
               <Button

@@ -13,12 +13,42 @@ export function ProfileScreen() {
   const styles = stylesFor(useThemeColors());
 
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
-  const { logout } = useAuth();
+  const { user, logout } = useAuth();
+
+  /*
+   * LA PORTE VERS L'ESPACE SOCIÉTÉ CLIENTE.
+   *
+   * `is_entreprise` est LE drapeau qui convient ici, et c'est le seul : il est servi par
+   * `User::isEntreprise()`, qui délègue à `isClientCompany()` — vrai pour une société cliente
+   * (`client_company`) comme pour une organisation hybride, faux pour un particulier.
+   *
+   * On ne le combine PAS avec `organization_type`. C'est exactement l'erreur qui a rendu les cinq
+   * écrans société de l'application prestataire inatteignables depuis leur livraison : la
+   * conjonction `is_entreprise === true && organization_type === 'provider_company'` n'était
+   * satisfiable par aucun compte, puisque le drapeau désigne précisément l'autre côté.
+   */
+  const appartientAUneSocieteCliente = user?.is_entreprise === true;
 
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Profile</Text>
       <View style={styles.actions}>
+        {/*
+          ESPACE ENTREPRISE — en tête, parce qu'un responsable multi-sites ouvre son profil POUR
+          cela. Les six modules `entreprise-client` étaient déclarés dans `config/parity.php`
+          depuis longtemps sans qu'aucun soit joignable dans l'application.
+        */}
+        {appartientAUneSocieteCliente ? (
+          <>
+            <Button
+              label="Espace entreprise"
+              onPress={() => navigation.navigate('CompanyOverview')}
+              variant="primary"
+              fullWidth
+            />
+            <Divider />
+          </>
+        ) : null}
         <Button
           label="Modifier le profil"
           onPress={() => navigation.navigate('ProfileEdit')}

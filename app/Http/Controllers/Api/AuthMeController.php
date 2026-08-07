@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\CustomerProfile;
+use App\Models\OrganizationAccount;
+use App\Services\PermissionService;
 use App\Support\Mobile\AppAudience;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -91,16 +93,48 @@ class AuthMeController extends Controller
          * d'organisation est une information, pas un cas par défaut.
          */
         $payload['is_entreprise'] = method_exists($user, 'isEntreprise') && $user->isEntreprise();
-        $payload['organization_account_id'] = $user->organization_account_id
-            ?? $user->current_organization_id
-            ?? null;
+
+        /*
+         * L'ORGANISATION SE RÉSOUT PAR `organizationContextId()`, PAS PAR `currentOrganization`.
+         *
+         * `organization_type` était lu sur la relation `currentOrganization`, donc sur la seule
+         * colonne `current_organization_id` — que les seeders ne renseignaient pas. Sur une base
+         * fraîchement semée, le contact société portait `org_account_id=1` et
+         * `current_org_id=NULL` : le type revenait `null`, et l'aiguillage société mobile ne
+         * s'ouvrait pour personne.
+         *
+         * `organizationContextId()` existait déjà pour exactement cela — repli en quatre niveaux,
+         * utilisé par `ClientContractsCenter`. Le seeder a été corrigé aussi, mais les bases
+         * existantes gardent l'ancienne forme : le serveur ne doit pas en dépendre.
+         */
+        $organisationId = $user->organizationContextId();
+        $organisation = $organisationId !== null
+            ? OrganizationAccount::query()->find($organisationId)
+            : null;
+
+        $payload['organization_account_id'] = $organisationId;
 
         /*
          * `organization_accounts.type` n'est PAS casté en enum sur le modèle : c'est une chaîne.
          * J'avais écrit une normalisation `instanceof` par prudence — PHPStan a montré qu'elle ne
          * s'exécutait jamais. Une garde morte donne l'illusion d'une protection ; on la retire.
          */
-        $payload['organization_type'] = $user->currentOrganization?->type;
+        $payload['organization_type'] = $organisation?->type;
+
+        /*
+         * LE DROIT D'OUVRIR L'ESPACE SOCIÉTÉ, TRANCHÉ PAR LE SERVEUR.
+         *
+         * `organization_type === 'provider_company'` est vrai du PATRON COMME DE L'EMPLOYÉ : tous
+         * sont membres de la même organisation. Aiguiller sur ce seul champ enverrait un nettoyeur
+         * dans un espace de pilotage et lui retirerait ses missions.
+         *
+         * `missions.view_all` sépare exactement les deux populations, et c'est déjà la matrice qui
+         * le dit : propriétaire, directeur d'opérations, dispatcheur, chef d'équipe et responsable
+         * qualité l'ont ; le nettoyeur et le lecteur ne l'ont pas. Recopier une liste de rôles dans
+         * l'application mobile l'aurait fait diverger de `PermissionService` au premier ajustement.
+         */
+        $payload['can_manage_company'] = $organisation !== null
+            && app(PermissionService::class)->can($user, 'missions.view_all', $organisation);
 
         $payload['user'] = $payload;
 

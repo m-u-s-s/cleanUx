@@ -26,6 +26,7 @@ import { CompanyFieldTeamsScreen } from '@/screens/company/CompanyFieldTeamsScre
 import { CompanyTasksScreen } from '@/screens/company/CompanyTasksScreen';
 import { CompanyDispatchScreen } from '@/screens/company/CompanyDispatchScreen';
 import { CompanyChannelsScreen } from '@/screens/company/CompanyChannelsScreen';
+import { CompanySitesScreen } from '@/screens/company/CompanySitesScreen';
 // Polish — UX screens
 import { NotificationPreferencesScreen } from '@/screens/NotificationPreferencesScreen';
 import { LanguageScreen } from '@/screens/LanguageScreen';
@@ -33,6 +34,9 @@ import { AppearanceScreen } from '@/screens/AppearanceScreen';
 import { ProviderOnboardingScreen } from '@/screens/onboarding/ProviderOnboardingScreen';
 // Espace d'administration — l'application prestataire sert deux publics depuis le lot A.
 import { SpaceSwitcherScreen } from '@/screens/SpaceSwitcherScreen';
+// Espace société — le troisième public : celui qui pilote une société prestataire.
+import { ProviderCompanyNavigator } from '@/company/ProviderCompanyNavigator';
+import { ProfileScreen } from '@/screens/ProfileScreen';
 import { AdminNavigator } from '@/admin/AdminNavigator';
 import { CatalogZonesScreen } from '@/admin/catalogue/CatalogZonesScreen';
 import { CatalogZoneTradesScreen } from '@/admin/catalogue/CatalogZoneTradesScreen';
@@ -102,7 +106,98 @@ export function RootNavigator() {
   if (space === 'switcher') {
     return (
       <View testID="root-navigator" style={{ flex: 1 }}>
-        <SpaceSwitcherScreen onChoose={(next) => void choose(next)} />
+        <SpaceSwitcherScreen
+          onChoose={(next) => void choose(next)}
+          peutPiloterLaSociete={user?.can_manage_company === true}
+        />
+      </View>
+    );
+  }
+
+  /*
+   * L'ESPACE SOCIÉTÉ PRESTATAIRE, rendu HORS de la pile terrain — pour la même raison que
+   * l'administration, et une de plus.
+   *
+   * La raison commune : aucun écran de la pile terrain ne concerne un gérant, et les y laisser
+   * atteignables donnerait des routes qui répondent 403 à qui les ouvre.
+   *
+   * La raison propre : `TabNavigator` est l'unique point de montage de `usePresenceHeartbeat()`.
+   * Rendre l'espace société à l'intérieur ferait battre le cœur de présence d'un gérant assis à son
+   * bureau — il apparaîtrait DISPONIBLE dans le dispatch de sa propre société, et le moteur
+   * d'affectation lui proposerait des missions qu'il ne fera pas.
+   *
+   * `CompanyMembers` et les écrans de réglages restent sur cette pile : ils se poussent par-dessus
+   * les onglets, avec un retour, comme partout ailleurs.
+   */
+  if (space === 'providerCompany') {
+    return (
+      <View testID="root-navigator" style={{ flex: 1 }}>
+        <Stack.Navigator screenOptions={{ headerShown: false }}>
+          <Stack.Screen name="ProviderCompanySpace" component={ProviderCompanyNavigator} />
+          <Stack.Screen
+            name="CompanyMembers"
+            component={CompanyMembersScreen}
+            options={{ headerShown: true, title: 'Équipe' }}
+          />
+          <Stack.Screen
+            name="CompanySites"
+            component={CompanySitesScreen}
+            options={{ headerShown: true, title: 'Sites desservis' }}
+          />
+          <Stack.Screen
+            name="CompanyDispatch"
+            component={CompanyDispatchScreen}
+            options={{ headerShown: true, title: 'Répartition' }}
+          />
+          <Stack.Screen
+            name="ProviderChat"
+            component={ProviderChatScreen}
+            options={({ route }) => ({ headerShown: true, title: (route.params as any).title ?? 'Chat' })}
+          />
+          <Stack.Screen
+            name="ProviderNotifications"
+            component={ProviderNotificationsScreen}
+            options={{ headerShown: true, title: 'Notifications' }}
+          />
+          {/*
+            L'issue vers l'espace terrain et les réglages. Sans elle, un gérant qui intervient aussi
+            sur le terrain serait enfermé côté bureau — le défaut exact que `clear()` a corrigé pour
+            la console d'administration.
+          */}
+          <Stack.Screen
+            name="Profile"
+            component={ProfileScreen}
+            options={{ headerShown: true, title: 'Profil' }}
+          />
+          <Stack.Screen
+            name="NotificationPreferences"
+            component={NotificationPreferencesScreen}
+            options={{ title: 'Préférences notifications', headerShown: true }}
+          />
+          <Stack.Screen
+            name="Language"
+            component={LanguageScreen}
+            options={{ title: 'Langue', headerShown: true }}
+          />
+          <Stack.Screen
+            name="Appearance"
+            component={AppearanceScreen}
+            options={{ title: 'Apparence', headerShown: true }}
+          />
+          <Stack.Screen
+            name="EmbeddedModule"
+            component={EmbeddedModuleRoute}
+            options={{ headerShown: true }}
+          />
+          <Stack.Screen
+            name="Legal"
+            component={LegalScreen}
+            options={({ route }) => ({
+              title: route.params.type === 'terms' ? 'CGU' : 'Confidentialité',
+              headerShown: true,
+            })}
+          />
+        </Stack.Navigator>
       </View>
     );
   }
@@ -327,6 +422,11 @@ export function RootNavigator() {
               name="CompanyChannels"
               component={CompanyChannelsScreen}
               options={{ headerShown: true, title: 'Canaux' }}
+            />
+            <Stack.Screen
+              name="CompanySites"
+              component={CompanySitesScreen}
+              options={{ headerShown: true, title: 'Sites desservis' }}
             />
             <Stack.Screen
               name="Legal"

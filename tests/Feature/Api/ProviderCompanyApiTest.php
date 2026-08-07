@@ -4,8 +4,10 @@ namespace Tests\Feature\Api;
 
 use App\Enums\OrganizationRole;
 use App\Models\FieldTeam;
+use App\Models\Mission;
 use App\Models\OrganizationAccount;
 use App\Models\OrganizationMember;
+use App\Models\OrganizationSite;
 use App\Models\Task;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -51,6 +53,138 @@ class ProviderCompanyApiTest extends TestCase
         ]);
 
         return [$org, $user];
+    }
+
+    #[Test]
+    public function le_compte_tel_que_db_seed_le_produit_atteint_bien_son_espace(): void
+    {
+        /*
+         * LA FORME EXACTE QUE LES SEEDERS ÉCRIVENT, ET ELLE NE PASSAIT PAS.
+         *
+         * `organisationActive()` lisait `currentOrganization`, donc la seule colonne
+         * `current_organization_id`. Aucun seeder de démonstration ne la renseigne : le rattachement
+         * se fait par `organization_account_id`. Les cinq écrans société répondaient donc 403 à tout
+         * compte semé, quelle que soit la porte d'entrée.
+         *
+         * Les tests de ce fichier ne le voyaient pas : `societeAvec()` renseigne LES DEUX colonnes,
+         * une forme que la production ne produit pas toujours.
+         */
+        $org = OrganizationAccount::factory()->providerCompany()->create();
+
+        $user = User::factory()->create([
+            'organization_account_id' => $org->id,
+            'current_organization_id' => null,
+        ]);
+
+        OrganizationMember::create([
+            'organization_account_id' => $org->id,
+            'user_id' => $user->id,
+            'role' => OrganizationRole::OWNER->value,
+            'status' => 'active',
+            'invited_at' => now(),
+            'joined_at' => now(),
+        ]);
+
+        Sanctum::actingAs($user, ['*']);
+
+        $this->getJson('/api/provider/company/members')->assertOk();
+        $this->getJson('/api/provider/company/field-teams')->assertOk();
+        $this->getJson('/api/provider/company/tasks')->assertOk();
+    }
+
+    #[Test]
+    public function un_contexte_d_organisation_sans_adhesion_active_ne_donne_rien(): void
+    {
+        // L'ancienne garde servait l'organisation inscrite dans la colonne sans jamais consulter
+        // `organization_members`. Elle ne vérifiait donc aucune appartenance.
+        $etrangere = OrganizationAccount::factory()->providerCompany()->create();
+
+        $intrus = User::factory()->create([
+            'organization_account_id' => $etrangere->id,
+            'current_organization_id' => $etrangere->id,
+        ]);
+
+        Sanctum::actingAs($intrus, ['*']);
+
+        $this->getJson('/api/provider/company/members')->assertForbidden();
+    }
+
+    #[Test]
+    public function l_accueil_societe_resume_la_journee(): void
+    {
+        /*
+         * L'écran d'accueil natif de l'espace société. Il lisait jusqu'ici les mêmes points que le
+         * reste, ce qui obligeait l'application à faire quatre appels pour afficher cinq chiffres.
+         */
+        [$org, $patron] = $this->societeAvec(OrganizationRole::OWNER);
+
+        Mission::factory()->count(2)->create([
+            'provider_organization_id' => $org->id,
+            'planned_start_at' => now()->addHours(3),
+        ]);
+
+        Sanctum::actingAs($patron, ['*']);
+
+        $this->getJson('/api/provider/company/overview')
+            ->assertOk()
+            ->assertJsonPath('data.organization.id', $org->id)
+            ->assertJsonPath('data.kpis.missions_today', 2)
+            ->assertJsonPath('data.kpis.members_active', 1);
+    }
+
+    #[Test]
+    public function l_accueil_ne_compte_pas_les_missions_d_une_autre_societe(): void
+    {
+        [, $patron] = $this->societeAvec(OrganizationRole::OWNER);
+
+        $concurrente = OrganizationAccount::factory()->providerCompany()->create();
+        Mission::factory()->count(4)->create([
+            'provider_organization_id' => $concurrente->id,
+            'planned_start_at' => now()->addHours(3),
+        ]);
+
+        Sanctum::actingAs($patron, ['*']);
+
+        $this->getJson('/api/provider/company/overview')
+            ->assertOk()
+            ->assertJsonPath('data.kpis.missions_today', 0);
+    }
+
+    #[Test]
+    public function les_sites_desservis_sont_servis_en_natif(): void
+    {
+        [$org, $patron] = $this->societeAvec(OrganizationRole::OWNER);
+
+        $site = OrganizationSite::factory()->create(['name' => 'Tour Madou']);
+        Mission::factory()->create([
+            'provider_organization_id' => $org->id,
+            'organization_site_id' => $site->id,
+        ]);
+
+        Sanctum::actingAs($patron, ['*']);
+
+        $this->getJson('/api/provider/company/sites')
+            ->assertOk()
+            ->assertJsonPath('data.0.name', 'Tour Madou');
+    }
+
+    #[Test]
+    public function le_site_d_une_concurrente_n_est_jamais_servi(): void
+    {
+        [, $patron] = $this->societeAvec(OrganizationRole::OWNER);
+
+        $concurrente = OrganizationAccount::factory()->providerCompany()->create();
+        $site = OrganizationSite::factory()->create(['name' => 'Chantier Confidentiel']);
+        Mission::factory()->create([
+            'provider_organization_id' => $concurrente->id,
+            'organization_site_id' => $site->id,
+        ]);
+
+        Sanctum::actingAs($patron, ['*']);
+
+        $this->getJson('/api/provider/company/sites')
+            ->assertOk()
+            ->assertJsonMissing(['name' => 'Chantier Confidentiel']);
     }
 
     #[Test]

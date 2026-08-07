@@ -90,6 +90,43 @@ class SeedersFonctionnentTest extends TestCase
         );
     }
 
+    #[Test]
+    public function tout_membre_seme_porte_son_organisation(): void
+    {
+        /*
+         * LE SEED REMPLISSAIT LES ESPACES SOCIÉTÉ SANS QUE PERSONNE NE PUISSE LES OUVRIR.
+         *
+         * `EspacesSocieteDemoSeeder` crée équipes terrain, tâches, canaux et missions pour que les
+         * cinq écrans société aient enfin quelque chose à montrer. Mais aucun seeder ne posait
+         * l'organisation SUR L'UTILISATEUR : après un `db:seed`, les trois membres de la société
+         * prestataire n'avaient ni `organization_account_id` ni `current_organization_id`, et le
+         * contact de la société cliente n'avait que le premier.
+         *
+         * Or `User::organizationContextId()` lit des colonnes de `users`, pas la table d'adhésion.
+         * Les onze écrans société répondaient donc 403 à tout compte semé — un jeu de données
+         * complet, et personne pour le lire.
+         *
+         * Cette garde LIT la base après le seed plutôt que d'exercer une route : c'est la donnée
+         * qui manquait, pas le code qui la consomme.
+         */
+        $this->seed(DatabaseSeeder::class);
+
+        $orphelins = DB::table('organization_members as m')
+            ->join('users as u', 'u.id', '=', 'm.user_id')
+            ->where('m.status', 'active')
+            ->whereNull('u.organization_account_id')
+            ->whereNull('u.current_organization_id')
+            ->pluck('u.email')
+            ->all();
+
+        $this->assertSame(
+            [],
+            $orphelins,
+            'Ces membres appartiennent à une organisation sans la porter : leur espace société '
+                ."répondra 403.\n  ".implode("\n  ", $orphelins)
+        );
+    }
+
     /** @return array<string, int> */
     private function comptages(): array
     {
