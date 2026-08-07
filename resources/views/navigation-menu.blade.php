@@ -32,6 +32,9 @@
      * `config/modules.php` les remplace, et `CatalogueDesModulesTest` échoue désormais si une page
      * de tableau de bord n'y a pas sa case.
      */
+    // Le rôle canonique, tranché une fois dans `Role` — plus une cascade de `is*()` par surface.
+    $roleCanonique = $user?->roleCanonique();
+
     $contexte = match (true) {
         /*
          * L'ORDRE COMPTE, et il reste celui de `routes/authenticated.php`. Ces rôles ne s'excluent
@@ -158,6 +161,22 @@
                     La condition est celle du registre, pas une copie : `belongsToClientCompany()`.
                     Un particulier ne doit pas voir une porte qui répondra 403.
                 --}}
+                {{--
+                    LA PORTE DU SUPER ADMINISTRATEUR.
+
+                    Son tableau de bord regarde la PLATEFORME — la population par rôle, les leviers
+                    qui engagent tout le monde — là où la console pilote l'exploitation. Sans ce
+                    lien, la page ne serait atteignable qu'en tapant son URL, et le sixième rôle
+                    n'aurait de réalité que dans une énumération.
+                --}}
+                @if($roleCanonique === \App\Enums\Role::SUPER_ADMIN && Route::has('super-admin.dashboard'))
+                <a href="{{ route('super-admin.dashboard') }}"
+                    class="inline-flex items-center gap-1.5 rounded-xl border border-amber-300 bg-amber-50 px-3 py-2 text-sm font-semibold text-amber-800 transition hover:bg-amber-100 dark:border-amber-500/40 dark:bg-amber-500/10 dark:text-amber-300 dark:hover:bg-amber-500/20">
+                    <x-ui.icon name="shield-check" class="h-4 w-4" />
+                    <span class="hidden lg:inline">Super admin</span>
+                </a>
+                @endif
+
                 @php $porteSociete = \App\Support\Navigation\ModuleCatalogue::porteVersLEspaceSociete(); @endphp
                 @if($porteSociete)
                 <a href="{{ route($porteSociete['route']) }}"

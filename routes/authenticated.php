@@ -16,19 +16,25 @@ Route::get('/dashboard', function (Request $request) {
         abort(403);
     }
 
-    if ($user->isAdmin()) {
-        return redirect()->route('admin.dashboard');
-    }
+    /*
+     * CHACUN CHEZ LUI, ET LA TABLE DE CORRESPONDANCE VIT DANS `Role`.
+     *
+     * Cet aiguillage testait trois cas — administrateur, client, prestataire — puis refusait le
+     * reste par un 403. Deux conséquences, corrigées ici :
+     *
+     *   - `isClient()` est vrai pour un membre de société cliente (il délègue à
+     *     `isClientCompany()`), qui atterrissait donc dans l'espace PERSONNEL ; son espace société
+     *     n'était atteignable qu'en tapant l'URL. Même chose côté prestataire.
+     *   - un super administrateur passait par `isAdmin()`, comme un administrateur ordinaire.
+     *
+     * Le 403 final disparaît : un compte tout juste créé, sans profil d'aucune sorte, cochait
+     * zéro cas et se retrouvait enfermé dehors. `roleCanonique()` rend toujours un rôle.
+     */
+    $route = $user->roleCanonique()->routeDuTableauDeBord();
 
-    if ($user->isClient()) {
-        return redirect()->route('client.dashboard');
-    }
-
-    if ($user->isEmploye()) {
-        return redirect()->route('employe.dashboard');
-    }
-
-    abort(403);
+    // Une route absente vaut mieux signalée qu'en 500 : on retombe sur l'espace personnel, qui
+    // existe toujours.
+    return redirect()->route(Route::has($route) ? $route : 'client.dashboard');
 })->name('dashboard');
 
 Route::middleware(['auth', 'signed'])->group(function () {

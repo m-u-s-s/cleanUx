@@ -576,3 +576,28 @@ Route::middleware(['role:admin', 'enforce_2fa'])
         Route::get('/parcours/{trade}', QuestionnaireBuilder::class)
             ->name('order-engine.builder');
     });
+
+/*
+|--------------------------------------------------------------------------
+| Routes — Super administration
+|--------------------------------------------------------------------------
+|
+| Le sixième rôle, et le seul qui n'avait pas de destination : un super
+| administrateur atterrissait sur la console, où rien ne distinguait son
+| pouvoir de celui d'un administrateur ordinaire.
+|
+| LA GARDE EST `role:super_admin`, ET ELLE INTERROGE LE RÔLE RÉSOLU.
+| `isAdmin()` est vrai pour les deux ; une garde écrite dessus laisserait
+| entrer l'administrateur ordinaire, et le rôle ne serait qu'un libellé.
+| `matchesRole('super_admin')` compare à `roleCanonique()`.
+|
+| Le préfixe est `super-admin` et non `admin/...` : la console porte déjà
+| son propre inventaire de couverture mobile, et une page qui n'en relève
+| pas n'a pas à s'y déclarer.
+*/
+Route::middleware(['role:super_admin', 'enforce_2fa'])
+    ->prefix('super-admin')
+    ->name('super-admin.')
+    ->group(function () {
+        Route::get('/dashboard', App\Livewire\SuperAdmin\SuperAdminDashboard::class)->name('dashboard');
+    });
