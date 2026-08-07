@@ -319,13 +319,44 @@ class ApiAuthController extends Controller
 
             $organizationId = $organization->id;
 
+            /*
+             * LE COMPTE DOIT PORTER SON ORGANISATION, PAS SEULEMENT Y APPARTENIR.
+             *
+             * L'adhésion ci-dessus vit dans `organization_members` ; les composants Livewire de
+             * l'espace société, eux, lisent `users.current_organization_id` EN DIRECT. Sans ces
+             * deux colonnes, le fondateur créait sa société puis n'accédait à aucun de ses écrans.
+             *
+             * Le parcours CLIENT société les posait déjà (`createClientIdentity`, quelques lignes
+             * plus haut) : c'était une asymétrie entre deux méthodes voisines du même fichier, et
+             * elle a produit au moins quatre comptes muets en base de développement.
+             *
+             * `forceFill` pour la même raison qu'en face : ces colonnes ne sont pas assignables en
+             * masse, précisément parce qu'elles décident de ce qu'on voit.
+             */
+            $user->forceFill([
+                'organization_account_id' => $organizationId,
+                'current_organization_id' => $organizationId,
+            ])->save();
+
             $this->openBusinessVerification($user, $data);
         }
 
         $profile = ProviderProfile::create([
             'user_id' => $user->id,
             'organization_account_id' => $organizationId,
-            'provider_type' => $asCompany ? ProviderType::COMPANY : ProviderType::INDEPENDENT,
+            /*
+             * `COMPANY_WORKER` ET NON `COMPANY`, ET CE N'EST PAS UN DÉTAIL DE NOMMAGE.
+             *
+             * `ProviderType::COMPANY` n'était lu par personne : une seule écriture, ici, et aucune
+             * lecture dans tout `app/`. Pendant ce temps, deux vérifications décident de l'accès et
+             * testent l'autre valeur — `isProviderCompanyWorker()`, qui garde le tableau de bord
+             * société, et `isEmploye()`, dont dépendent les routes `role:employe`.
+             *
+             * Le fondateur était donc refusé sur son propre espace, alors que les employés qu'il
+             * inviterait ensuite recevraient `company_worker` de `OrganizationMembershipService` :
+             * le patron était le seul membre de sa société à porter un type que rien ne reconnaît.
+             */
+            'provider_type' => $asCompany ? ProviderType::COMPANY_WORKER : ProviderType::INDEPENDENT,
             'status' => 'pending',
             'verification_status' => 'unverified',
         ]);

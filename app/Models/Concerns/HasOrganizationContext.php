@@ -83,13 +83,49 @@ trait HasOrganizationContext
         return $type?->isClient() ?? false;
     }
 
+    /**
+     * L'organisation dans laquelle cet utilisateur agit.
+     *
+     * LES QUATRE PREMIERS NIVEAUX SONT DES POINTEURS. Ils vivent sur `users` et sur `metadata`, et
+     * rien ne garantit qu'ils soient écrits : relevé sur la base de développement, le compte
+     * `provider@soc.com` était propriétaire ACTIF d'une société prestataire avec
+     * `organization_account_id` ET `current_organization_id` à NULL. Quatre comptes dans ce cas, et
+     * aucun n'était issu d'un seeder — le parcours d'inscription les produit.
+     *
+     * L'APPARTENANCE, ELLE, EST LA VÉRITÉ. Elle vit dans `organization_members`, et c'est déjà ce
+     * que vérifient les gardes. D'où ce cinquième niveau : une adhésion ACTIVE et UNIQUE désigne
+     * l'organisation sans le moindre doute, et s'y fier est plus sûr que de croire un pointeur que
+     * personne ne maintient.
+     *
+     * ON S'ARRÊTE À L'UNIQUE. Avec plusieurs adhésions actives et aucun choix enregistré, on rend
+     * `null` : prendre la première par ordre d'identifiant placerait quelqu'un dans la mauvaise
+     * entreprise, où il verrait des missions, des membres et une facturation qui ne sont pas les
+     * siens. Un 403 se remarque et se corrige ; une confusion silencieuse entre deux sociétés, non.
+     */
     public function organizationContextId(): ?int
     {
-        return $this->organization_account_id
+        $pointeur = $this->organization_account_id
             ?? $this->current_organization_id
             ?? data_get($this->metadata, 'organization_account_id')
-            ?? data_get($this->metadata, 'entreprise_context.organization_account_id')
-            ?? null;
+            ?? data_get($this->metadata, 'entreprise_context.organization_account_id');
+
+        if ($pointeur !== null) {
+            return (int) $pointeur;
+        }
+
+        // Sans identifiant, pas d'adhésion à chercher — et pas de requête pour un modèle construit
+        // en mémoire, ce que font les tests unitaires du service de permissions.
+        if (! $this->exists) {
+            return null;
+        }
+
+        $adhesions = OrganizationMember::query()
+            ->where('user_id', $this->getKey())
+            ->where('status', 'active')
+            ->limit(2)
+            ->pluck('organization_account_id');
+
+        return $adhesions->count() === 1 ? (int) $adhesions->first() : null;
     }
 
     /** @return HasMany<OrganizationSite, $this> */

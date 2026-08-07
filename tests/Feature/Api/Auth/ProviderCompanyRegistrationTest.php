@@ -48,9 +48,28 @@ class ProviderCompanyRegistrationTest extends TestCase
         $this->assertSame('active', $member->status);
 
         $profile = ProviderProfile::where('user_id', $user->id)->firstOrFail();
-        $this->assertSame('company', $profile->provider_type->value);
+        /*
+         * `company_worker`, ET NON `company` COMME CETTE LIGNE L'AFFIRMAIT (corrigé le 2026-08-07).
+         *
+         * Cette assertion figeait ce que le code ÉCRIVAIT, pas ce dont il a besoin.
+         * `ProviderType::COMPANY` n'était lu nulle part dans `app/` — une seule écriture, à
+         * l'inscription, et aucune lecture. Les deux vérifications qui décident réellement de
+         * l'accès testent l'autre valeur : `isProviderCompanyWorker()`, garde du tableau de bord
+         * société, et `isEmploye()`, dont dépendent les routes `role:employe`.
+         *
+         * Le fondateur d'une société était donc refusé sur l'espace de sa propre société, tandis
+         * que chaque employé qu'il invitait recevait `company_worker` de
+         * `OrganizationMembershipService`. Le patron était le seul membre du mauvais type, et ce
+         * test vert le garantissait.
+         */
+        $this->assertSame('company_worker', $profile->provider_type->value);
         $this->assertSame($org->id, $profile->organization_account_id);
         $this->assertNotNull($profile->self_registered_at);
+
+        // Le compte PORTE son organisation, il ne fait pas qu'y appartenir : les composants
+        // Livewire de l'espace société lisent `current_organization_id` en direct.
+        $this->assertSame($org->id, $user->fresh()->organization_account_id);
+        $this->assertSame($org->id, $user->fresh()->current_organization_id);
     }
 
     public function test_registering_as_an_independent_creates_no_organization(): void
