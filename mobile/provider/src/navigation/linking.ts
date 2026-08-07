@@ -13,6 +13,22 @@ export const linking: LinkingOptions<RootStackParamList> = {
           Profile: 'profile',
         },
       },
+      /*
+       * L'espace société. Les onglets portent leurs propres chemins pour qu'une notification de
+       * mission à répartir ouvre la RÉPARTITION, et pas l'accueil de l'espace — un lien profond qui
+       * atterrit toujours au même endroit ne vaut pas mieux que pas de lien.
+       */
+      ProviderCompanySpace: {
+        screens: {
+          CompanyOverviewTab: 'societe',
+          CompanyDispatchTab: 'societe/repartition',
+          CompanyFieldTeamsTab: 'societe/equipes',
+          CompanyTasksTab: 'societe/taches',
+          CompanyChannelsTab: 'societe/canaux',
+        },
+      },
+      CompanyMembers: 'societe/membres',
+      CompanySites: 'societe/sites',
       Login: 'login',
       ForgotPassword: 'forgot-password',
       MissionDetail: 'mission/:missionId',

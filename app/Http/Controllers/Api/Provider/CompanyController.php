@@ -8,11 +8,15 @@ use App\Models\FieldTeam;
 use App\Models\Message;
 use App\Models\Mission;
 use App\Models\OrganizationAccount;
+use App\Models\OrganizationContract;
 use App\Models\OrganizationMember;
+use App\Models\OrganizationSite;
+use App\Models\ProviderSiteAssignment;
 use App\Models\Task;
 use App\Services\Messaging\MessageService;
 use App\Services\Missions\MissionAssignmentService;
 use App\Services\PermissionService;
+use App\Support\Organizations\ResolvesActiveOrganization;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -35,6 +39,125 @@ use Illuminate\Support\Str;
  */
 class CompanyController extends Controller
 {
+    /*
+     * La résolution de l'organisation vit dans un trait PARTAGÉ avec le contrôleur société cliente.
+     *
+     * Elle lisait ici `$user->currentOrganization`, donc la seule colonne `current_organization_id`
+     * — que `db:seed` ne renseigne jamais. Les cinq écrans société répondaient 403 à tout compte
+     * de démonstration, y compris après qu'on a rouvert leur porte d'entrée dans le profil.
+     */
+    use ResolvesActiveOrganization;
+
+    // ──────────────────────────────────────────────────────
+    // Accueil
+    // ──────────────────────────────────────────────────────
+
+    /**
+     * Le résumé de la journée, en UN appel.
+     *
+     * L'écran d'accueil natif reconstituait ces chiffres à partir des autres points — quatre
+     * requêtes pour cinq nombres, et autant d'occasions de dériver de ce que l'écran web affiche.
+     *
+     * `missions_today` compte les missions PLANIFIÉES aujourd'hui, pas celles créées aujourd'hui :
+     * c'est la charge du jour que regarde un gérant en ouvrant son application, pas son carnet de
+     * commandes.
+     */
+    public function overview(): JsonResponse
+    {
+        $org = $this->organisationActive();
+
+        $missions = fn () => Mission::query()->where('provider_organization_id', $org->id);
+
+        return response()->json([
+            'data' => [
+                'organization' => ['id' => $org->id, 'name' => $org->name],
+                'kpis' => [
+                    'missions_today' => $missions()->whereDate('planned_start_at', today())->count(),
+                    'missions_active' => $missions()->whereIn('status', ['dispatched', 'in_progress'])->count(),
+                    // « En retard » se mesure sur le PLANIFIÉ contre l'heure courante, pas sur un
+                    // statut : une mission qu'on a oublié de démarrer est en retard sans qu'aucune
+                    // colonne ne le dise.
+                    'missions_delayed' => $missions()
+                        ->where('status', '!=', 'completed')
+                        ->where('planned_start_at', '<', now())
+                        ->count(),
+                    'missions_unassigned' => $missions()
+                        ->whereNull('lead_provider_user_id')
+                        ->whereDate('planned_start_at', today())
+                        ->count(),
+                    'members_active' => OrganizationMember::query()
+                        ->where('organization_account_id', $org->id)
+                        ->where('status', 'active')
+                        ->count(),
+                    'open_tasks' => Task::query()
+                        ->where('organization_account_id', $org->id)
+                        ->whereNotIn('status', ['done', 'cancelled'])
+                        ->count(),
+                ],
+            ],
+        ]);
+    }
+
+    // ──────────────────────────────────────────────────────
+    // Sites desservis
+    // ──────────────────────────────────────────────────────
+
+    /**
+     * Les sites clients que la société dessert, et le référent qu'elle y place.
+     *
+     * Mêmes deux sources que l'écran web `SiteOperations` — missions et contrats-cadres — parce que
+     * les sites se DÉDUISENT : un prestataire ne possède pas les locaux de ses clients.
+     *
+     * Les référents sont scopés sur notre organisation : deux prestataires peuvent desservir le
+     * même immeuble, et la composition de l'équipe adverse ne nous regarde pas.
+     */
+    public function sites(): JsonResponse
+    {
+        $org = $this->organisationActive();
+
+        $parMissions = Mission::query()
+            ->where('provider_organization_id', $org->id)
+            ->whereNotNull('organization_site_id')
+            ->distinct()
+            ->pluck('organization_site_id');
+
+        $orgsSousContrat = OrganizationContract::query()
+            ->where('provider_organization_id', $org->id)
+            ->distinct()
+            ->pluck('organization_account_id');
+
+        $parContrats = OrganizationSite::query()
+            ->whereIn('organization_account_id', $orgsSousContrat)
+            ->pluck('id');
+
+        $sites = OrganizationSite::query()
+            ->whereIn('id', $parMissions->merge($parContrats)->unique())
+            ->with([
+                'providerAssignments' => fn ($q) => $q
+                    ->where('provider_organization_id', $org->id)
+                    ->with('user:id,name'),
+            ])
+            ->orderBy('name')
+            ->get()
+            ->map(fn (OrganizationSite $s) => [
+                'id' => $s->id,
+                'name' => $s->name,
+                'city' => $s->city,
+                'postal_code' => $s->postal_code,
+                'address' => $s->address,
+                'referents' => $s->providerAssignments
+                    ->map(fn (ProviderSiteAssignment $a) => [
+                        'id' => $a->id,
+                        'name' => $a->user?->name,
+                        'role' => $a->role,
+                    ])
+                    ->values()
+                    ->all(),
+            ]);
+
+        return response()->json(['data' => $sites]);
+    }
+
     // ──────────────────────────────────────────────────────
     // Membres
     // ──────────────────────────────────────────────────────
@@ -362,15 +485,6 @@ class CompanyController extends Controller
      * Un compte sans organisation n'a rien à faire sur cette API : 403 explicite plutôt qu'une
      * requête vide qui laisserait croire à une société sans membres.
      */
-    private function organisationActive(): OrganizationAccount
-    {
-        $organisation = Auth::user()?->currentOrganization;
-
-        abort_if($organisation === null, 403);
-
-        return $organisation;
-    }
-
     private function exige(string $permission, OrganizationAccount $organisation): void
     {
         abort_unless(

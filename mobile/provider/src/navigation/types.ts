@@ -78,6 +78,16 @@ export type RootStackParamList = {
   CompanyTasks: undefined;
   CompanyDispatch: undefined;
   CompanyChannels: undefined;
+  /** Les sites clients desservis, en lecture — la désignation d'un référent se pose au bureau. */
+  CompanySites: undefined;
+  /**
+   * L'espace société complet, en onglets — la maison d'un gérant, pas une liste de boutons dans le
+   * profil. Rendu hors de la pile terrain : voir `RootNavigator`, qui explique pourquoi le
+   * battement de présence ne doit PAS y être monté.
+   */
+  ProviderCompanySpace: undefined;
+  /** L'issue vers le profil depuis l'espace société — sans elle, le gérant y serait enfermé. */
+  Profile: undefined;
   ForgotPassword: undefined;
   Legal: { type: 'terms' | 'privacy' };
   // Polish — UX screens
@@ -91,4 +101,19 @@ export type TabParamList = {
   Missions: undefined;
   Earnings: undefined;
   Profile: undefined;
+};
+
+/**
+ * Les onglets de l'ESPACE SOCIÉTÉ, distincts de ceux du terrain.
+ *
+ * Les noms portent le suffixe `Tab` pour ne pas entrer en collision avec les routes de même nom sur
+ * la pile racine : `CompanyDispatch` y reste déclaré, atteignable depuis le profil par un gérant
+ * qui travaille dans l'espace terrain.
+ */
+export type ProviderCompanyTabParamList = {
+  CompanyOverviewTab: undefined;
+  CompanyDispatchTab: undefined;
+  CompanyFieldTeamsTab: undefined;
+  CompanyTasksTab: undefined;
+  CompanyChannelsTab: undefined;
 };

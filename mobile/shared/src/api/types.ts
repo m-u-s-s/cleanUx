@@ -36,6 +36,22 @@ export interface User {
   is_entreprise?: boolean;
   organization_type?: 'client_company' | 'provider_company' | 'provider_solo' | 'hybrid' | null;
   organization_account_id?: number | null;
+  /**
+   * LE DROIT D'OUVRIR L'ESPACE SOCIÉTÉ PRESTATAIRE — et pas seulement d'y appartenir.
+   *
+   * `organization_type` vaut `provider_company` pour le PATRON COMME POUR LE NETTOYEUR : tous sont
+   * membres de la même organisation. Aiguiller sur ce seul champ enverrait un employé dans un
+   * espace de pilotage où ni ses missions, ni ses revenus, ni sa présence n'existent.
+   *
+   * Le serveur tranche via `missions.view_all` dans `PermissionService` — propriétaire, directeur
+   * d'opérations, dispatcheur, chef d'équipe et responsable qualité l'ont ; le nettoyeur et le
+   * lecteur ne l'ont pas. Recopier cette liste de rôles ici l'aurait fait diverger de la matrice au
+   * premier ajustement, et une divergence d'aiguillage se voit six mois plus tard.
+   *
+   * Comme les autres drapeaux de ce bloc : AIGUILLAGE D'INTERFACE, pas frontière de privilèges —
+   * celle-ci reste tenue par les gardes de chaque route.
+   */
+  can_manage_company?: boolean;
 }
 
 export class ApiError extends Error {

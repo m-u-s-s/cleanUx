@@ -28,7 +28,10 @@ export function useSpacePreference() {
     (async () => {
       try {
         const stored = await AsyncStorage.getItem(STORAGE_KEY);
-        if (!cancelled && (stored === 'admin' || stored === 'provider')) {
+        // La liste est explicite plutôt qu'un transtypage : une valeur inconnue — clé écrite par
+        // une version future, stockage corrompu — doit reposer la question, pas ouvrir un espace
+        // qui n'existe pas dans cette version de l'application.
+        if (!cancelled && (stored === 'admin' || stored === 'provider' || stored === 'providerCompany')) {
           setSpace(stored);
         }
       } catch {

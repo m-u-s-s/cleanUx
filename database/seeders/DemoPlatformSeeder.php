@@ -307,6 +307,41 @@ class DemoPlatformSeeder extends Seeder
             'joined_at' => now(),
             'permissions' => [],
         ]);
+
+        /*
+         * L'ADHÉSION NE SUFFISAIT PAS : IL FAUT AUSSI QUE L'UTILISATEUR PORTE SON ORGANISATION.
+         *
+         * Une ligne dans `organization_members` ne dit rien à `User::organizationContextId()`, qui
+         * lit des colonnes de `users`. Après un `db:seed`, aucun membre de la société PRESTATAIRE
+         * ne portait ni `organization_account_id` ni `current_organization_id` — et le contact de la
+         * société cliente ne portait que la première :
+         *
+         *     facilities@atlasfacilities.test | org_account_id=1 | current_org_id=NULL
+         *
+         * Les onze écrans société — cinq prestataire, six client — répondaient donc 403 à tout
+         * compte de démonstration. Le seeder des espaces société pouvait bien remplir équipes,
+         * tâches, canaux et missions : personne ne pouvait les lire.
+         *
+         * Les DEUX colonnes sont posées parce que deux familles de code les lisent séparément :
+         * les composants Livewire interrogent `current_organization_id` en direct, tandis que
+         * `isClientCompany()` passe par `organization_account_id`. N'en renseigner qu'une laisse
+         * l'autre moitié de l'application dans le noir.
+         *
+         * On n'écrase jamais un choix existant : un compte à plusieurs organisations a une
+         * organisation ACTIVE qui lui appartient, et la réécrire à chaque `db:seed` le baladerait
+         * d'un espace à l'autre.
+         */
+        $colonnes = array_filter([
+            'organization_account_id' => Schema::hasColumn('users', 'organization_account_id'),
+            'current_organization_id' => Schema::hasColumn('users', 'current_organization_id'),
+        ]);
+
+        foreach (array_keys($colonnes) as $colonne) {
+            DB::table('users')
+                ->where('id', $userId)
+                ->whereNull($colonne)
+                ->update([$colonne => $organizationId]);
+        }
     }
 
     protected function seedSite(?int $organizationId, string $name, array $payload): ?object

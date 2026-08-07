@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\Client\BookingFavoriteController;
 use App\Http\Controllers\Api\Client\BookingPaymentController;
 use App\Http\Controllers\Api\Client\ClientBookingController;
 use App\Http\Controllers\Api\Client\ClientProfileController;
+use App\Http\Controllers\Api\Client\CompanyController as ClientCompanyController;
 use App\Http\Controllers\Api\Client\CompanyDirectoryController;
 use App\Http\Controllers\Api\Client\DeviceTokenController;
 use App\Http\Controllers\Api\Client\DisputeController;
@@ -222,6 +223,31 @@ Route::middleware('auth:sanctum')->prefix('client')->group(function () {
 
         return response()->json(['data' => $services]);
     });
+});
+
+/*
+|--------------------------------------------------------------------------
+| Espace société CLIENTE
+|--------------------------------------------------------------------------
+|
+| Pendant exact du groupe `provider/company`, et gardé de la même façon : pas de middleware
+| `role:` ni `org.type:` sur le groupe, mais une garde portée par le contrôleur.
+|
+| La raison est la même qu'en face, et elle est concrète : un rôle FINANCE ou REQUESTER n'est pas
+| « client particulier », et les soumettre au filtre de rôle qui garde le reste de `/client/*`
+| fermerait à un comptable l'accès à la facturation de sa propre société. La garde utile n'est pas
+| le rôle plateforme mais l'organisation active, puis la permission — voir `Client\CompanyController`.
+*/
+Route::middleware('auth:sanctum')->prefix('client/company')->group(function () {
+    Route::get('/overview', [ClientCompanyController::class, 'overview']);
+
+    Route::get('/sites', [ClientCompanyController::class, 'sites']);
+    Route::post('/sites', [ClientCompanyController::class, 'createSite']);
+
+    Route::get('/bookings', [ClientCompanyController::class, 'bookings']);
+    Route::get('/members', [ClientCompanyController::class, 'members']);
+    Route::get('/contracts', [ClientCompanyController::class, 'contracts']);
+    Route::get('/billing', [ClientCompanyController::class, 'billing']);
 });
 
 // ─────────────────────────────────────────────

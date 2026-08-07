@@ -34,6 +34,13 @@ import { InvoicesScreen } from '@/screens/InvoicesScreen';
 import { InvoiceDetailScreen } from '@/screens/InvoiceDetailScreen';
 // Embedded web modules
 import { EmbeddedModuleRoute } from '@/screens/EmbeddedModuleRoute';
+// Espace société cliente — écrans natifs, servis par l'API /client/company/*.
+import { CompanyOverviewScreen } from '@/screens/company/CompanyOverviewScreen';
+import { CompanySitesScreen } from '@/screens/company/CompanySitesScreen';
+import { CompanyBookingsScreen } from '@/screens/company/CompanyBookingsScreen';
+import { CompanyMembersScreen } from '@/screens/company/CompanyMembersScreen';
+import { CompanyContractsScreen } from '@/screens/company/CompanyContractsScreen';
+import { CompanyBillingScreen } from '@/screens/company/CompanyBillingScreen';
 import { colors } from '@/theme';
 import { useThemeColors } from '@/theme/useThemeColors';
 import type { RootStackParamList } from './types';
@@ -190,6 +197,42 @@ export function RootNavigator() {
               name="EmbeddedModule"
               component={EmbeddedModuleRoute}
               options={{ headerShown: true }}
+            />
+            {/*
+              Espace société cliente — écrans natifs. Six modules `entreprise-client` étaient
+              déclarés dans `config/parity.php` sans qu'aucun soit joignable depuis l'application.
+              La porte d'entrée vit dans le profil, conditionnée à l'appartenance à une société
+              cliente : voir `ProfileScreen`.
+            */}
+            <Stack.Screen
+              name="CompanyOverview"
+              component={CompanyOverviewScreen}
+              options={{ headerShown: true, title: 'Espace entreprise' }}
+            />
+            <Stack.Screen
+              name="CompanySites"
+              component={CompanySitesScreen}
+              options={{ headerShown: true, title: 'Mes locaux' }}
+            />
+            <Stack.Screen
+              name="CompanyBookings"
+              component={CompanyBookingsScreen}
+              options={{ headerShown: true, title: 'Réservations société' }}
+            />
+            <Stack.Screen
+              name="CompanyMembers"
+              component={CompanyMembersScreen}
+              options={{ headerShown: true, title: 'Membres' }}
+            />
+            <Stack.Screen
+              name="CompanyContracts"
+              component={CompanyContractsScreen}
+              options={{ headerShown: true, title: 'Contrats' }}
+            />
+            <Stack.Screen
+              name="CompanyBilling"
+              component={CompanyBillingScreen}
+              options={{ headerShown: true, title: 'Facturation' }}
             />
           </>
         ) : (

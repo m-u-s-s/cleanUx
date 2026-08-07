@@ -21,11 +21,12 @@ export type Space =
   | 'superAdmin'
   | 'admin'
   | 'provider'
+  | 'providerCompany'
   | 'providerOnboarding'
   | 'switcher';
 
 /** L'espace qu'un compte à plusieurs casquettes a choisi, quand il en a choisi un. */
-export type ChosenSpace = 'superAdmin' | 'admin' | 'provider';
+export type ChosenSpace = 'superAdmin' | 'admin' | 'provider' | 'providerCompany';
 
 export interface SpaceInput {
   isLoading: boolean;
@@ -44,6 +45,14 @@ export interface SpaceInput {
      * administrateur, ce qu'il était hier.
      */
     is_super_admin?: boolean;
+    /**
+     * Le droit de PILOTER une société prestataire, tranché par le serveur (`missions.view_all`).
+     *
+     * Surtout pas `organization_type === 'provider_company'` : ce champ vaut la même chose pour le
+     * patron et pour le nettoyeur, tous deux membres de la même organisation. Aiguiller dessus
+     * enverrait un employé dans un espace de pilotage sans missions, sans revenus, sans présence.
+     */
+    can_manage_company?: boolean;
   } | null;
   /**
    * `true` dossier complet, `false` incomplet, `undefined` inconnu (chargement ou erreur).
@@ -68,6 +77,7 @@ export function resolveSpace(input: SpaceInput): Space {
   const isAdmin = user.is_admin === true;
   const isProvider = user.is_provider === true;
   const isSuperAdmin = user.is_super_admin === true;
+  const pilotSociete = user.can_manage_company === true;
 
   /*
    * LE SUPER ADMINISTRATEUR OUVRE SON ESPACE, ET IL SE TESTE EN PREMIER.
@@ -76,20 +86,47 @@ export function resolveSpace(input: SpaceInput): Space {
    * sixième rôle recevrait la console, exactement comme le cinquième.
    *
    * On ne lui impose PAS le sélecteur au démarrage. Le choix reste possible — les cartes de
-   * `SpaceSwitcherScreen` mènent à la console et au terrain — mais lui faire trancher chaque matin
-   * ferait payer un écran de choix à quelqu'un qui fait le même geste tous les jours. C'est le
-   * raisonnement qui a déjà décidé de RETENIR le choix d'espace.
+   * `SpaceSwitcherScreen` mènent à la console, au terrain et à la société — mais lui faire trancher
+   * chaque matin ferait payer un écran de choix à quelqu'un qui fait le même geste tous les jours.
+   * C'est le raisonnement qui a déjà décidé de RETENIR le choix d'espace.
+   *
+   * Les trois autres espaces sont exclus un par un plutôt que testés par `!chosenSpace` : un super
+   * administrateur qui a choisi « société » doit y rester, et une liste ouverte laisserait passer
+   * toute valeur future sans qu'on s'en aperçoive.
    */
-  if (isSuperAdmin && chosenSpace !== 'admin' && chosenSpace !== 'provider') {
+  if (
+    isSuperAdmin &&
+    chosenSpace !== 'admin' &&
+    chosenSpace !== 'provider' &&
+    chosenSpace !== 'providerCompany'
+  ) {
     return 'superAdmin';
   }
 
-  if (isAdmin && isProvider && !chosenSpace) {
+  if (isAdmin && (isProvider || pilotSociete) && !chosenSpace) {
     return 'switcher';
   }
 
-  if (isAdmin && chosenSpace !== 'provider') {
+  if (isAdmin && chosenSpace !== 'provider' && chosenSpace !== 'providerCompany') {
     return 'admin';
+  }
+
+  /*
+   * L'ESPACE SOCIÉTÉ SE TESTE ICI, ET L'EMPLACEMENT EST LE PROPOS.
+   *
+   * APRÈS l'administration : un compte qui est les deux garde son choix, et le sélecteur reste le
+   * seul juge.
+   *
+   * AVANT `providerOnboarding` : un gérant n'a pas de dossier de TERRAIN à compléter — pas de
+   * pièce d'identité à scanner pour répartir les missions de ses équipes. L'y soumettre
+   * l'enfermerait hors de sa propre société, exactement comme le parcours prestataire enfermait
+   * l'administrateur avant l'extraction de cette fonction.
+   *
+   * Un gérant qui a explicitement choisi « terrain » retombe plus bas : dans une petite société, le
+   * patron nettoie souvent lui-même, et le retenir ici lui retirerait ses missions.
+   */
+  if (pilotSociete && chosenSpace !== 'provider') {
+    return 'providerCompany';
   }
 
   // Le parc déjà installé porte des jetons émis avant que `/auth/me` ne serve les casquettes :

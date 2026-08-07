@@ -234,6 +234,12 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
 | permission par écriture. Voir `CompanyController`.
 */
 Route::middleware('auth:sanctum')->prefix('provider/company')->group(function () {
+    // L'accueil de l'espace société : cinq chiffres en un appel, plutôt que quatre requêtes.
+    Route::get('/overview', [ProviderCompanyController::class, 'overview']);
+
+    // Les sites clients desservis, avec le référent que la société y place.
+    Route::get('/sites', [ProviderCompanyController::class, 'sites']);
+
     Route::get('/members', [ProviderCompanyController::class, 'members']);
 
     Route::get('/field-teams', [ProviderCompanyController::class, 'fieldTeams']);
