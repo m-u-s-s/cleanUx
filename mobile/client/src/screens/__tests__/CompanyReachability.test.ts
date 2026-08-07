@@ -9,7 +9,7 @@ import path from 'path';
  *
  *   1. `TrackingScreen` et `MissionsListScreen` — complets, testés, montés dans aucun navigateur.
  *   2. Les six modules `entreprise-client` — déclarés dans `config/parity.php`, servis par aucune
- *      surface : `ModuleHubScreen`, seule porte générique vers eux, n'est monté nulle part.
+ *      surface : `ModuleHubScreen`, seule porte générique vers eux, n'était monté nulle part (supprimé depuis).
  *   3. Les cinq écrans société de l'application PRESTATAIRE — montés, testés, mais derrière une
  *      condition insatisfiable (`is_entreprise === true && organization_type ===
  *      'provider_company'`, deux termes qui s'excluent). Livrés, verts, joignables par personne.

@@ -16,7 +16,8 @@ import { apiClient } from '@/api';
  * `config/parity.php` déclarait six modules `entreprise-client` en `mobile => 'webview'` — Accueil,
  * Locaux, Réservations, Membres, Facturation, Contrats. L'application n'en servait AUCUN : ni écran
  * natif, ni lien WebView, et `ModuleHubScreen`, seule porte générique vers ces modules, monté dans
- * aucun navigateur. Six modules déclarés, zéro joignable.
+ * aucun navigateur. Six modules déclarés, zéro joignable. Ce hub a été supprimé une fois ces écrans
+ * natifs livrés : le garder aurait laissé une seconde route WebView vers les mêmes modules.
  *
  * Ces tests figent ce que chaque écran demande au serveur et ce qu'il rend visible : un écran natif
  * qui interroge la mauvaise route est un écran vide, sans erreur.

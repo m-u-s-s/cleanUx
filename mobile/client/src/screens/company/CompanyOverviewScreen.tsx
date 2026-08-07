@@ -28,7 +28,9 @@ interface Accueil {
  *
  * `config/parity.php` déclarait ce module — et les cinq autres — depuis longtemps, en `webview`.
  * L'application cliente n'en montrait aucun : ni écran, ni lien, et `ModuleHubScreen`, seule porte
- * générique vers les modules web, n'était monté dans aucun navigateur.
+ * générique vers les modules web, n'était monté dans aucun navigateur. Ce hub a été supprimé une
+ * fois ces écrans natifs en place : le garder aurait laissé une seconde route vers les mêmes
+ * modules, servie en WebView, que rien ne tenait à jour.
  *
  * Cet écran est aussi la table des matières des cinq autres : c'est par lui qu'ils sont atteints.
  * Un écran de plus sans chemin qui y mène aurait reproduit le défaut qu'on corrige.

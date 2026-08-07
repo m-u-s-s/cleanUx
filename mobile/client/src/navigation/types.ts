@@ -40,7 +40,7 @@ export type RootStackParamList = {
    * `config/parity.php` déclarait ces six modules en `mobile => 'webview'`, mais l'application ne
    * les servait sous aucune forme : ni écran, ni lien, et `ModuleHubScreen` — seule porte générique
    * vers les modules web — monté dans aucun navigateur. Ils sont désormais natifs et servis par
-   * `/api/client/company/*`, créée avec eux.
+   * `/api/client/company/*`, créée avec eux. Ce hub a été supprimé depuis, devenu sans objet.
    *
    * `CompanyOverview` est la table des matières des cinq autres : déclarer une route sans qu'un
    * chemin y mène est le défaut même qu'on corrige ici.
