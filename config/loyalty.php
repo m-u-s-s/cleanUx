@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Configuration du programme de fidélité CleanUx.
+ * Configuration du programme de fidélité Brio.
  *
  * Les tiers sont seedés en DB via LoyaltyTierSeeder, mais cette config sert
  * de source de vérité pour les EARNING RULES et défauts.

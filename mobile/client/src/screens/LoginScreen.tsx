@@ -38,7 +38,7 @@ import { ClientRegisterWizard } from '@/screens/auth/ClientRegisterWizard';
 /**
  * Porte d'entrée de l'application cliente.
  *
- * Elle affichait « CleanUx » en texte ambre sur fond nuit, alors que le kit d'interface partagé —
+ * Elle affichait « Brio » en texte ambre sur fond nuit, alors que le kit d'interface partagé —
  * champs, boutons, séparateurs — est entièrement conçu pour une surface claire : chaque composant
  * luttait contre sa propre palette. L'application prestataire avait été refondue ; celle-ci était
  * restée en arrière, donnant deux identités à un même produit.

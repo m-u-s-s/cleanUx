@@ -1,5 +1,5 @@
 /* ============================================================================
-   CleanUx — Cinematic Text Reveal : cœur framework-agnostique.
+   Brio — Cinematic Text Reveal : cœur framework-agnostique.
    ----------------------------------------------------------------------------
    Moteur partagé entre le hook React (resources/js/hooks/useTextReveal.js) et
    les intégrations vanilla (ex. le hero de la home dans luxury-hero.js).

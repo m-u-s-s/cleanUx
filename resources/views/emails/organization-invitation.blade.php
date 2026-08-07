@@ -2,7 +2,7 @@
 # Vous êtes invité à rejoindre {{ $societe }}
 
 {{ $invitation->inviter?->name ?? 'Un responsable' }} vous invite à rejoindre l'équipe
-**{{ $societe }}** sur CleanUx.
+**{{ $societe }}** sur Brio.
 
 @component('mail::button', ['url' => $acceptUrl])
 Accepter l'invitation

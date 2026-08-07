@@ -6,7 +6,7 @@
 
 ## Contexte
 
-CleanUx avait une config Capacitor (livrée sprint 0-9, 2026-05-20) + un Client Mobile POC V2 Vue 3 islands hybride Livewire (livré 2026-05-23, feature flag `client-mobile-v2`). On souhaite à présent shipper une app mobile native sur les stores avec une UX fluide pour le client (booking, tracking, paiement) et plus tard pour le provider (terrain).
+Brio avait une config Capacitor (livrée sprint 0-9, 2026-05-20) + un Client Mobile POC V2 Vue 3 islands hybride Livewire (livré 2026-05-23, feature flag `client-mobile-v2`). On souhaite à présent shipper une app mobile native sur les stores avec une UX fluide pour le client (booking, tracking, paiement) et plus tard pour le provider (terrain).
 
 ## Décision
 

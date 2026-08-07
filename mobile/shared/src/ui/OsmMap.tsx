@@ -183,7 +183,7 @@ export function OsmMap({ markers, position, trail, fallbackCenter, onMarkerPress
     <WebView
       testID={testID}
       style={styles.map}
-      source={{ html, baseUrl: 'https://cleanux.local' }}
+      source={{ html, baseUrl: 'https://brio.local' }}
       originWhitelist={['*']}
       javaScriptEnabled
       domStorageEnabled

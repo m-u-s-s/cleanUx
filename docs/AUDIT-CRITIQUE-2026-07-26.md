@@ -1,4 +1,4 @@
-# Audit critique CleanUx / brio — 26 juillet 2026
+# Audit critique Brio / brio — 26 juillet 2026
 
 > Audit adverse (« cherche tout ce qui est cassé, incohérent ou inutile »), conduit sur
 > l'arbre de travail à `bcb28771` + 2 fichiers modifiés non commités.

@@ -50,7 +50,7 @@ function makeWrapper() {
   };
 }
 
-const SHARE_DATA = { code: 'CLEANUX-TEST42', message: 'Rejoingnez CleanUx avec mon code CLEANUX-TEST42 !' };
+const SHARE_DATA = { code: 'BRIO-TEST42', message: 'Rejoingnez Brio avec mon code BRIO-TEST42 !' };
 const STATS_DATA = {
   total_referrals: 3,
   total_earned: 30,
@@ -93,7 +93,7 @@ describe('ReferralScreen', () => {
     render(<ReferralScreen />, { wrapper: makeWrapper() });
 
     await waitFor(() => {
-      expect(screen.getByTestId('referral-code').props.children).toBe('CLEANUX-TEST42');
+      expect(screen.getByTestId('referral-code').props.children).toBe('BRIO-TEST42');
     });
   });
 
@@ -129,7 +129,7 @@ describe('ReferralScreen', () => {
 
     fireEvent.press(screen.getByText('Copier'));
 
-    expect(clipboardSpy).toHaveBeenCalledWith('CLEANUX-TEST42');
+    expect(clipboardSpy).toHaveBeenCalledWith('BRIO-TEST42');
   });
 
   it('displays total_referrals KPI card', async () => {

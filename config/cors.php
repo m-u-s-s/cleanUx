@@ -7,7 +7,7 @@ return [
     | Cross-Origin Resource Sharing (CORS) Configuration
     |--------------------------------------------------------------------------
     | En prod : restreindre allowed_origins au domaine prod + capacitor schemes.
-    | env('CORS_ALLOWED_ORIGINS') = liste CSV "https://app.cleanux.com,capacitor://localhost"
+    | env('CORS_ALLOWED_ORIGINS') = liste CSV "https://app.brio.com,capacitor://localhost"
     */
 
     'paths' => ['api/*', 'sanctum/csrf-cookie', 'broadcasting/auth'],
@@ -36,9 +36,9 @@ return [
     'supports_credentials' => env('CORS_SUPPORTS_CREDENTIALS', true),
 
     'finance' => [
-        'default_employee_hourly_cost' => env('CLEANUX_EMPLOYEE_HOURLY_COST', 18),
-        'default_travel_cost' => env('CLEANUX_TRAVEL_COST', 8),
-        'default_material_cost_rate' => env('CLEANUX_MATERIAL_COST_RATE', 0.08),
+        'default_employee_hourly_cost' => env('BRIO_EMPLOYEE_HOURLY_COST', 18),
+        'default_travel_cost' => env('BRIO_TRAVEL_COST', 8),
+        'default_material_cost_rate' => env('BRIO_MATERIAL_COST_RATE', 0.08),
     ],
 
 ];

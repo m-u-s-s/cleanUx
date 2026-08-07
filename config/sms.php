@@ -67,5 +67,5 @@ return [
     | Default sender
     |--------------------------------------------------------------------------
     */
-    'default_sender' => env('SMS_DEFAULT_SENDER', 'CleanUx'),
+    'default_sender' => env('SMS_DEFAULT_SENDER', 'Brio'),
 ];

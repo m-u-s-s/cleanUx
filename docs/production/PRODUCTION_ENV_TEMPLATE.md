@@ -1,4 +1,4 @@
-# CleanUx — Production Environment Variables
+# Brio — Production Environment Variables
 
 Copy to `.env` on your production server and fill in all values marked `CHANGE_ME`.
 Never commit the actual `.env` to version control.
@@ -6,10 +6,10 @@ Never commit the actual `.env` to version control.
 ## App
 
 ```env
-APP_NAME=CleanUx
+APP_NAME=Brio
 APP_ENV=production
 APP_DEBUG=false
-APP_URL=https://app.cleanux.com
+APP_URL=https://app.brio.com
 APP_KEY=                          # php artisan key:generate
 APP_TIMEZONE=Europe/Brussels
 LOG_CHANNEL=stack
@@ -22,8 +22,8 @@ LOG_LEVEL=warning
 DB_CONNECTION=mysql
 DB_HOST=127.0.0.1
 DB_PORT=3306
-DB_DATABASE=cleanux
-DB_USERNAME=cleanux
+DB_DATABASE=brio
+DB_USERNAME=brio
 DB_PASSWORD=CHANGE_ME
 ```
 
@@ -48,8 +48,8 @@ MAIL_PORT=587
 MAIL_USERNAME=CHANGE_ME
 MAIL_PASSWORD=CHANGE_ME
 MAIL_ENCRYPTION=tls
-MAIL_FROM_ADDRESS=noreply@cleanux.com
-MAIL_FROM_NAME=CleanUx
+MAIL_FROM_ADDRESS=noreply@brio.com
+MAIL_FROM_NAME=Brio
 ```
 
 ## Stripe
@@ -60,7 +60,7 @@ STRIPE_SECRET=sk_live_CHANGE_ME
 CASHIER_CURRENCY=eur
 CASHIER_CURRENCY_LOCALE=fr_BE
 STRIPE_CONNECT_WEBHOOK_SECRET=whsec_CHANGE_ME
-CLEANUX_PLATFORM_FEE_PERCENT=15
+BRIO_PLATFORM_FEE_PERCENT=15
 STRIPE_CONNECT_ENABLED=true
 ```
 
@@ -68,10 +68,10 @@ STRIPE_CONNECT_ENABLED=true
 
 ```env
 BROADCAST_CONNECTION=reverb
-REVERB_APP_ID=cleanux
+REVERB_APP_ID=brio
 REVERB_APP_KEY=CHANGE_ME
 REVERB_APP_SECRET=CHANGE_ME
-REVERB_HOST=realtime.cleanux.com
+REVERB_HOST=realtime.brio.com
 REVERB_PORT=443
 REVERB_SCHEME=https
 VITE_REVERB_APP_KEY="${REVERB_APP_KEY}"
@@ -123,7 +123,7 @@ PUSH_DRIVER=fcm
 ```env
 GOOGLE_CLIENT_ID=CHANGE_ME
 GOOGLE_CLIENT_SECRET=CHANGE_ME
-GOOGLE_REDIRECT_URI=https://app.cleanux.com/auth/google/callback
+GOOGLE_REDIRECT_URI=https://app.brio.com/auth/google/callback
 ```
 
 ## Matching / Dispatch
@@ -136,7 +136,7 @@ MATCHING_SHADOW_MODE=false
 ## CORS
 
 ```env
-CORS_ALLOWED_ORIGINS=https://app.cleanux.com,https://provider.cleanux.com
+CORS_ALLOWED_ORIGINS=https://app.brio.com,https://provider.brio.com
 ```
 
 ## Filesystem
@@ -146,13 +146,13 @@ FILESYSTEM_DISK=s3
 AWS_ACCESS_KEY_ID=CHANGE_ME
 AWS_SECRET_ACCESS_KEY=CHANGE_ME
 AWS_DEFAULT_REGION=eu-west-1
-AWS_BUCKET=cleanux-production
-AWS_URL=https://cdn.cleanux.com
+AWS_BUCKET=brio-production
+AWS_URL=https://cdn.brio.com
 ```
 
 ## Misc
 
 ```env
-SANCTUM_STATEFUL_DOMAINS=app.cleanux.com,provider.cleanux.com
-SESSION_DOMAIN=.cleanux.com
+SANCTUM_STATEFUL_DOMAINS=app.brio.com,provider.brio.com
+SESSION_DOMAIN=.brio.com
 ```

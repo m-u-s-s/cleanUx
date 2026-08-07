@@ -1,4 +1,4 @@
-# Deployment steps — CleanUx
+# Deployment steps — Brio
 
 ## Étapes de déploiement
 

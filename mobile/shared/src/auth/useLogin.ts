@@ -11,7 +11,7 @@ export function useLogin() {
     mutationFn: async (input) => {
       const res = await apiClient.post('/auth/login', {
         email: input.email, password: input.password,
-        device_name: input.deviceName ?? 'cleanux-mobile',
+        device_name: input.deviceName ?? 'brio-mobile',
       });
       await secureStore.setToken(res.data.token);
       return { token: res.data.token, user: res.data.user };

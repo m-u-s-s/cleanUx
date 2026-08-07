@@ -23,7 +23,7 @@ class DisputeUpdatedNotification extends Notification
     public function toMail($notifiable): MailMessage
     {
         return (new MailMessage)
-            ->subject('CleanUx · Mise à jour de votre réclamation '.$this->case->reference)
+            ->subject('Brio · Mise à jour de votre réclamation '.$this->case->reference)
             ->line('Votre réclamation a évolué.')
             ->line('Statut : '.$this->case->status)
             ->action('Voir le détail', route('client.claims'));

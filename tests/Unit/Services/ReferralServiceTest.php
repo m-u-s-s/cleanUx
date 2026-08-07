@@ -59,7 +59,7 @@ class ReferralServiceTest extends TestCase
     public function test_get_share_data_embeds_code_in_share_message(): void
     {
         config([
-            'referral.sharing.message_template_fr' => 'Rejoins CleanUx avec mon code {code} !',
+            'referral.sharing.message_template_fr' => 'Rejoins Brio avec mon code {code} !',
             'referral.landing_url_template' => '/register?ref={code}',
         ]);
 

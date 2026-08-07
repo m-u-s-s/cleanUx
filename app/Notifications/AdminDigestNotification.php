@@ -26,7 +26,7 @@ class AdminDigestNotification extends Notification
     public function toMail($notifiable): MailMessage
     {
         $mail = (new MailMessage)
-            ->subject('CleanUx · '.$this->title)
+            ->subject('Brio · '.$this->title)
             ->line('Voici les points nécessitant votre attention.');
 
         foreach ($this->items as $item) {

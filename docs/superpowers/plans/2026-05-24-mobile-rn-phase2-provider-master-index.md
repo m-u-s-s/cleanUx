@@ -1,4 +1,4 @@
-# CleanUx Mobile React Native — Phase 2 Provider : Plan Maître
+# Brio Mobile React Native — Phase 2 Provider : Plan Maître
 
 > **For agentic workers:** Index document. Pour chaque sprint, dispatchez les tasks via `superpowers:subagent-driven-development`.
 

@@ -62,7 +62,7 @@ Le README annonce « 2116 tests verts / 6007 assertions » mais on mesure ~660 f
 
 | Affirmation | Réalité | Preuve |
 |---|---|---|
-| Nom « CleanUx » | Package `brio/marketplace` | `composer.json:2` |
+| Nom « Brio » | Package `brio/marketplace` | `composer.json:2` |
 | « Laravel 11.53 » | **Laravel 12.62** | `composer.lock` |
 | `php ^8.2` | Patcher `php85` exécuté à chaque install | `composer.json:61,65,68` |
 

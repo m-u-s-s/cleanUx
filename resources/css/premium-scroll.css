@@ -1,5 +1,5 @@
 /* ============================================================================
-   CleanUx — Premium Scroll Engine (styles)
+   Brio — Premium Scroll Engine (styles)
    Accompagne resources/js/premium-scroll.js. Chargé globalement mais sans effet
    tant qu'une page n'opte pas via les data-attributes (les gardes ci-dessous
    ne s'arment que sous html.has-premium-scroll, posée par le JS au démarrage).

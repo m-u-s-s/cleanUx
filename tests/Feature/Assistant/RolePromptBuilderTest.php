@@ -46,12 +46,12 @@ class RolePromptBuilderTest extends TestCase
         $this->assertNotEmpty($prompt);
     }
 
-    public function test_prompt_contains_cleanux_brand(): void
+    public function test_prompt_contains_brio_brand(): void
     {
         $user = User::factory()->create();
         $prompt = app(RolePromptBuilder::class)->buildSystemPrompt($user);
 
-        $this->assertStringContainsStringIgnoringCase('CleanUx', $prompt);
+        $this->assertStringContainsStringIgnoringCase('Brio', $prompt);
     }
 
     public function test_admin_prompt_differs_from_client_prompt(): void

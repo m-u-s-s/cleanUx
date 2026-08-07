@@ -1,4 +1,4 @@
-# Contributing to CleanUx
+# Contributing to Brio
 
 ## Code conventions
 

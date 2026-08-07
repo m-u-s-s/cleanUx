@@ -92,10 +92,10 @@ beforeEach(() => {
 afterEach(() => jest.restoreAllMocks());
 
 describe('Scan de présence côté prestataire', () => {
-  it('envoie le code lu dans un QR CleanUx, avec la position du moment', async () => {
+  it('envoie le code lu dans un QR Brio, avec la position du moment', async () => {
     render(<PresenceScanScreen route={route} navigation={{} as any} />);
 
-    act(() => cameraState.onScan?.({ data: JSON.stringify({ t: 'cleanux.presence', v: 1, s: 42, c: '482951' }) }));
+    act(() => cameraState.onScan?.({ data: JSON.stringify({ t: 'brio.presence', v: 1, s: 42, c: '482951' }) }));
 
     await waitFor(() =>
       expect(mockConfirm).toHaveBeenCalledWith({ code: '482951', position: ON_SITE }, expect.anything()),
@@ -129,7 +129,7 @@ describe('Scan de présence côté prestataire', () => {
     );
 
     render(<PresenceScanScreen route={route} navigation={{} as any} />);
-    act(() => cameraState.onScan?.({ data: JSON.stringify({ t: 'cleanux.presence', v: 1, s: 42, c: '482951' }) }));
+    act(() => cameraState.onScan?.({ data: JSON.stringify({ t: 'brio.presence', v: 1, s: 42, c: '482951' }) }));
 
     await waitFor(() =>
       expect(Alert.alert).toHaveBeenCalledWith('Code refusé', 'Ce code a expiré.'),
@@ -141,7 +141,7 @@ describe('Scan de présence côté prestataire', () => {
     mockConfirm.mockImplementation((_vars, opts) => opts.onSuccess({ id: 42, mission_started: true }));
 
     render(<PresenceScanScreen route={route} navigation={{} as any} />);
-    act(() => cameraState.onScan?.({ data: JSON.stringify({ t: 'cleanux.presence', v: 1, s: 42, c: '482951' }) }));
+    act(() => cameraState.onScan?.({ data: JSON.stringify({ t: 'brio.presence', v: 1, s: 42, c: '482951' }) }));
 
     await waitFor(() =>
       expect(Alert.alert).toHaveBeenCalledWith(
@@ -156,7 +156,7 @@ describe('Scan de présence côté prestataire', () => {
     mockConfirm.mockImplementation((_vars, opts) => opts.onSuccess({ id: 42, mission_started: false }));
 
     render(<PresenceScanScreen route={route} navigation={{} as any} />);
-    act(() => cameraState.onScan?.({ data: JSON.stringify({ t: 'cleanux.presence', v: 1, s: 42, c: '482951' }) }));
+    act(() => cameraState.onScan?.({ data: JSON.stringify({ t: 'brio.presence', v: 1, s: 42, c: '482951' }) }));
 
     await waitFor(() =>
       expect(Alert.alert).toHaveBeenCalledWith(
@@ -172,7 +172,7 @@ describe('Scan de présence côté prestataire', () => {
     (Alert.alert as jest.Mock).mockImplementation((_t, _m, buttons?: any[]) => buttons?.[0]?.onPress?.());
 
     render(<PresenceScanScreen route={route} navigation={{} as any} />);
-    act(() => cameraState.onScan?.({ data: JSON.stringify({ t: 'cleanux.presence', v: 1, s: 42, c: '482951' }) }));
+    act(() => cameraState.onScan?.({ data: JSON.stringify({ t: 'brio.presence', v: 1, s: 42, c: '482951' }) }));
 
     await waitFor(() => expect(mockGoBack).toHaveBeenCalled());
   });
@@ -223,7 +223,7 @@ describe('Scan de présence côté prestataire', () => {
     const endRoute = { params: { purpose: 'completion', missionId: 4 } } as any;
     render(<PresenceScanScreen route={endRoute} navigation={{} as any} />);
 
-    act(() => cameraState.onScan?.({ data: JSON.stringify({ t: 'cleanux.completion', v: 1, s: 4, c: '731204' }) }));
+    act(() => cameraState.onScan?.({ data: JSON.stringify({ t: 'brio.completion', v: 1, s: 4, c: '731204' }) }));
 
     await waitFor(() =>
       expect(mockComplete).toHaveBeenCalledWith({ code: '731204', position: ON_SITE }, expect.anything()),
@@ -235,7 +235,7 @@ describe('Scan de présence côté prestataire', () => {
     const endRoute = { params: { purpose: 'completion', missionId: 4 } } as any;
     render(<PresenceScanScreen route={endRoute} navigation={{} as any} />);
 
-    act(() => cameraState.onScan?.({ data: JSON.stringify({ t: 'cleanux.presence', v: 1, s: 42, c: '482951' }) }));
+    act(() => cameraState.onScan?.({ data: JSON.stringify({ t: 'brio.presence', v: 1, s: 42, c: '482951' }) }));
 
     expect(mockComplete).not.toHaveBeenCalled();
   });
@@ -243,7 +243,7 @@ describe('Scan de présence côté prestataire', () => {
   it('refuse un code de fin au moment de confirmer la présence', () => {
     render(<PresenceScanScreen route={route} navigation={{} as any} />);
 
-    act(() => cameraState.onScan?.({ data: JSON.stringify({ t: 'cleanux.completion', v: 1, s: 4, c: '731204' }) }));
+    act(() => cameraState.onScan?.({ data: JSON.stringify({ t: 'brio.completion', v: 1, s: 4, c: '731204' }) }));
 
     expect(mockConfirm).not.toHaveBeenCalled();
   });
@@ -258,7 +258,7 @@ describe('Scan de présence côté prestataire', () => {
     mockReadScanPosition.mockReturnValue(new Promise((resolve) => { release = resolve; }));
 
     render(<PresenceScanScreen route={route} navigation={{} as any} />);
-    act(() => cameraState.onScan?.({ data: JSON.stringify({ t: 'cleanux.presence', v: 1, s: 42, c: '482951' }) }));
+    act(() => cameraState.onScan?.({ data: JSON.stringify({ t: 'brio.presence', v: 1, s: 42, c: '482951' }) }));
 
     expect(mockConfirm).not.toHaveBeenCalled();
 
@@ -276,7 +276,7 @@ describe('Scan de présence côté prestataire', () => {
     mockReadScanPosition.mockResolvedValue(null);
 
     render(<PresenceScanScreen route={route} navigation={{} as any} />);
-    act(() => cameraState.onScan?.({ data: JSON.stringify({ t: 'cleanux.presence', v: 1, s: 42, c: '482951' }) }));
+    act(() => cameraState.onScan?.({ data: JSON.stringify({ t: 'brio.presence', v: 1, s: 42, c: '482951' }) }));
 
     await waitFor(() =>
       expect(mockConfirm).toHaveBeenCalledWith({ code: '482951', position: null }, expect.anything()),
@@ -296,7 +296,7 @@ describe('Scan de présence côté prestataire', () => {
     );
 
     render(<PresenceScanScreen route={route} navigation={{} as any} />);
-    act(() => cameraState.onScan?.({ data: JSON.stringify({ t: 'cleanux.presence', v: 1, s: 42, c: '482951' }) }));
+    act(() => cameraState.onScan?.({ data: JSON.stringify({ t: 'brio.presence', v: 1, s: 42, c: '482951' }) }));
 
     await waitFor(() =>
       expect(Alert.alert).toHaveBeenCalledWith(
@@ -315,7 +315,7 @@ describe('Scan de présence côté prestataire', () => {
     const endRoute = { params: { purpose: 'completion', missionId: 4 } } as any;
     render(<PresenceScanScreen route={endRoute} navigation={{} as any} />);
 
-    act(() => cameraState.onScan?.({ data: JSON.stringify({ t: 'cleanux.completion', v: 1, s: 4, c: '731204' }) }));
+    act(() => cameraState.onScan?.({ data: JSON.stringify({ t: 'brio.completion', v: 1, s: 4, c: '731204' }) }));
 
     await waitFor(() =>
       expect(mockComplete).toHaveBeenCalledWith({ code: '731204', position: ON_SITE }, expect.anything()),

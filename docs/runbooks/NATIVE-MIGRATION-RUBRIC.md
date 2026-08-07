@@ -1,4 +1,4 @@
-# Native-Worthiness Rubric — CleanUx Progressive Native Migration
+# Native-Worthiness Rubric — Brio Progressive Native Migration
 
 **Status:** Living reference — revisit scored modules with real usage data post-launch.  
 **Source of truth for module registry:** `config/parity.php`  

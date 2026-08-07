@@ -18,7 +18,7 @@ return [
     | Quand un user est "erasé", on ne supprime PAS son row (préserve les FKs
     | comptables/audit) — on anonymise les champs PII.
     */
-    'anonymized_email_template' => env('GDPR_ANONYMIZED_EMAIL', 'deleted_{id}@anonymized.cleanux'),
+    'anonymized_email_template' => env('GDPR_ANONYMIZED_EMAIL', 'deleted_{id}@anonymized.brio'),
     'anonymized_name' => env('GDPR_ANONYMIZED_NAME', 'Utilisateur supprimé'),
     'anonymized_phone' => null,
 

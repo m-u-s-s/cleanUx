@@ -10,7 +10,7 @@
             <p><strong>{{ config('app.name') }}</strong></p>
             <p>Société : (à compléter — SRL/SAS/SARL, numéro BCE/SIREN)</p>
             <p>Siège social : (à compléter)</p>
-            <p>Email : <code>contact@cleanux.com</code></p>
+            <p>Email : <code>contact@brio.com</code></p>
         </section>
 
         <section>

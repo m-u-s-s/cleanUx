@@ -61,7 +61,7 @@ class StripeBillingProvider implements BillingProviderContract
                 'customer' => $stripeCustomerId,
                 'off_session' => true,
                 'confirm' => true,
-                'description' => 'CleanUx subscription cycle #'.$cycle->cycle_number,
+                'description' => 'Brio subscription cycle #'.$cycle->cycle_number,
                 'metadata' => [
                     'subscription_id' => $sub->id,
                     'cycle_id' => $cycle->id,

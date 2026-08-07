@@ -1,4 +1,4 @@
-# Dossier tests CleanUx
+# Dossier tests Brio
 
 Ce dossier couvre maintenant non seulement le ZIP d’origine, mais aussi les **stabilisations blocs 1 à 8**.
 

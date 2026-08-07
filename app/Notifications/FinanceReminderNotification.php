@@ -26,9 +26,9 @@ class FinanceReminderNotification extends Notification
     public function toMail(object $notifiable): MailMessage
     {
         $subject = match ($this->reminderType) {
-            'overdue' => 'CleanUx · Rappel de facture en retard',
-            'final' => 'CleanUx · Dernier rappel avant relance',
-            default => 'CleanUx · Rappel de facture',
+            'overdue' => 'Brio · Rappel de facture en retard',
+            'final' => 'Brio · Dernier rappel avant relance',
+            default => 'Brio · Rappel de facture',
         };
 
         return (new MailMessage)

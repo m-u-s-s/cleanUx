@@ -1,9 +1,9 @@
 @push('scripts')
 <script>
-let cleanUxAutocompleteInitialized = false;
+let brioAutocompleteInitialized = false;
 
-function initCleanUxAddressAutocomplete() {
-    if (cleanUxAutocompleteInitialized) return;
+function initBrioAddressAutocomplete() {
+    if (brioAutocompleteInitialized) return;
 
     const input = document.getElementById('booking-address-autocomplete');
 
@@ -11,7 +11,7 @@ function initCleanUxAddressAutocomplete() {
         return;
     }
 
-    cleanUxAutocompleteInitialized = true;
+    brioAutocompleteInitialized = true;
 
     const autocomplete = new google.maps.places.Autocomplete(input, {
         fields: ['place_id', 'formatted_address', 'geometry', 'address_components'],
@@ -56,12 +56,12 @@ function initCleanUxAddressAutocomplete() {
     });
 }
 
-document.addEventListener('livewire:navigated', initCleanUxAddressAutocomplete);
-document.addEventListener('DOMContentLoaded', initCleanUxAddressAutocomplete);
+document.addEventListener('livewire:navigated', initBrioAddressAutocomplete);
+document.addEventListener('DOMContentLoaded', initBrioAddressAutocomplete);
 </script>
 
 <script
-    src="https://maps.googleapis.com/maps/api/js?key={{ config('services.google_maps.key') }}&libraries=places&callback=initCleanUxAddressAutocomplete"
+    src="https://maps.googleapis.com/maps/api/js?key={{ config('services.google_maps.key') }}&libraries=places&callback=initBrioAddressAutocomplete"
     async
     defer>
 </script>

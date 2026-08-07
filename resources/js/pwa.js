@@ -70,7 +70,7 @@
     });
 
     // API globale pour déclencher l'installation
-    window.cleanuxPwa = {
+    window.brioPwa = {
         canInstall: () => deferredPrompt !== null,
         promptInstall: async () => {
             if (!deferredPrompt) return false;

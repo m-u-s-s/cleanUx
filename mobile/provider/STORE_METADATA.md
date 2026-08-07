@@ -1,9 +1,9 @@
-# CleanUx Provider — Store Metadata
+# Brio Provider — Store Metadata
 
 ## App Store (iOS)
 
 ### App Name
-CleanUx Provider — Espace prestataire
+Brio Provider — Espace prestataire
 
 ### Subtitle
 Gérez vos missions terrain
@@ -11,7 +11,7 @@ Gérez vos missions terrain
 ### Description
 
 **French:**
-CleanUx Provider est l'application terrain pour les prestataires de la marketplace CleanUx. Recevez des missions, gérez votre planning et suivez vos revenus en temps réel.
+Brio Provider est l'application terrain pour les prestataires de la marketplace Brio. Recevez des missions, gérez votre planning et suivez vos revenus en temps réel.
 
 📱 RECEVEZ DES MISSIONS
 Les demandes clients arrivent directement dans votre boîte de réception. Consultez les détails (service, adresse, date, distance) et acceptez ou déclinez en un tap.
@@ -40,7 +40,7 @@ Complétez la vérification d'identité directement depuis l'application pour ê
 Disponible en français, néerlandais et anglais.
 
 **English:**
-CleanUx Provider is the field app for service providers on the CleanUx marketplace. Receive missions, manage your schedule, and track your earnings in real time.
+Brio Provider is the field app for service providers on the Brio marketplace. Receive missions, manage your schedule, and track your earnings in real time.
 
 📱 RECEIVE MISSIONS
 Client requests arrive in your inbox. Review details (service, address, date, distance) and accept or decline with one tap.
@@ -70,14 +70,14 @@ Secondary: Productivity
 4+
 
 ### Privacy Policy URL
-https://provider.cleanux.com/privacy
+https://provider.brio.com/privacy
 
 ---
 
 ## Google Play Store
 
 ### Short Description
-Recevez des missions, suivez vos revenus. L'app terrain CleanUx pour prestataires.
+Recevez des missions, suivez vos revenus. L'app terrain Brio pour prestataires.
 
 ### Full Description
 [Same as App Store French description above]

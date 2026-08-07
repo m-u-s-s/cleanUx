@@ -21,14 +21,14 @@ class DemoPlatformSeeder extends Seeder
             return;
         }
 
-        $admin = $this->seedUser('admin@cleanux.test', 'Admin CleanUx', 'admin', '+3225550000', 'admin');
+        $admin = $this->seedUser('admin@brio.test', 'Admin Brio', 'admin', '+3225550000', 'admin');
         $companyContact = $this->seedUser('facilities@atlasfacilities.test', 'Atlas Facilities Manager', 'user', '+32471111222', 'entreprise');
-        $premiumClient = $this->seedUser('premium.client@cleanux.test', 'Client Premium Bruxelles', 'user', '+32470000111', 'client');
-        $standardClient = $this->seedUser('client.standard@cleanux.test', 'Client Standard Gand', 'user', '+32470000999', 'client');
+        $premiumClient = $this->seedUser('premium.client@brio.test', 'Client Premium Bruxelles', 'user', '+32470000111', 'client');
+        $standardClient = $this->seedUser('client.standard@brio.test', 'Client Standard Gand', 'user', '+32470000999', 'client');
 
-        $brusselsProvider = $this->seedUser('bruxelles.team@cleanux.test', 'Prestataire Bruxelles', 'user', '+32461111111', 'employe');
-        $gandProvider = $this->seedUser('gand.team@cleanux.test', 'Prestataire Gand', 'user', '+32462222222', 'employe');
-        $anversProvider = $this->seedUser('anvers.team@cleanux.test', 'Prestataire Anvers', 'user', '+32463333333', 'employe');
+        $brusselsProvider = $this->seedUser('bruxelles.team@brio.test', 'Prestataire Bruxelles', 'user', '+32461111111', 'employe');
+        $gandProvider = $this->seedUser('gand.team@brio.test', 'Prestataire Gand', 'user', '+32462222222', 'employe');
+        $anversProvider = $this->seedUser('anvers.team@brio.test', 'Prestataire Anvers', 'user', '+32463333333', 'employe');
 
         $this->seedCustomerProfile($premiumClient?->id, 'personal', 'premium', 'active', [
             'default_city' => 'Ixelles',
@@ -61,10 +61,10 @@ class DemoPlatformSeeder extends Seeder
             'billing_address' => 'Rue de l\'Industrie 12',
         ]);
 
-        $providerOrg = $this->seedOrganization('CleanUx Partner Brussels', 'provider_company', [
-            'legal_name' => 'CleanUx Partner Brussels SRL',
+        $providerOrg = $this->seedOrganization('Brio Partner Brussels', 'provider_company', [
+            'legal_name' => 'Brio Partner Brussels SRL',
             'tva_number' => 'BE0987654321',
-            'email' => 'team@cleanuxpartner.test',
+            'email' => 'team@briopartner.test',
             'phone' => '+3225550199',
             'billing_city' => 'Bruxelles',
             'billing_postal_code' => '1000',

@@ -9,7 +9,7 @@ return [
     |--------------------------------------------------------------------------
     */
     'session' => [
-        'cookie_name' => env('ANALYTICS_SESSION_COOKIE', 'cleanux_aid'),
+        'cookie_name' => env('ANALYTICS_SESSION_COOKIE', 'brio_aid'),
         'inactivity_minutes' => (int) env('ANALYTICS_SESSION_INACTIVITY_MIN', 30),
     ],
 
@@ -77,7 +77,7 @@ return [
     |--------------------------------------------------------------------------
     | Active analytics provider (server-side forwarding)
     |--------------------------------------------------------------------------
-    | internal : CleanUx ledger only (analytics_events table)
+    | internal : Brio ledger only (analytics_events table)
     | posthog  : forward to PostHog EU cloud in addition to internal ledger
     | mixpanel : forward to Mixpanel in addition to internal ledger
     */

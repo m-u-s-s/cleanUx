@@ -3,7 +3,7 @@ $ErrorActionPreference = 'Stop'
 
 $repoRoot = [System.IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..'))
 $outputDir = [System.IO.Path]::GetFullPath((Join-Path $repoRoot 'docs\presentations'))
-$outputPath = [System.IO.Path]::GetFullPath((Join-Path $outputDir 'CleanUx_Dossier_budget_API_deploiement_Associes_2026-06-01.docx'))
+$outputPath = [System.IO.Path]::GetFullPath((Join-Path $outputDir 'Brio_Dossier_budget_API_deploiement_Associes_2026-06-01.docx'))
 
 if (-not $outputPath.StartsWith($repoRoot, [System.StringComparison]::OrdinalIgnoreCase)) {
     throw "Le chemin de sortie doit rester dans le workspace."
@@ -176,7 +176,7 @@ function Add-Callout {
 $script:body = New-Object System.Text.StringBuilder
 
 # Cover
-Add-Paragraph -Text 'CLEANUX' -Style 'CoverBrand' -Align 'center' -Bold $true -Color '1F4E79' -Size 42 -SpaceAfter 60
+Add-Paragraph -Text 'BRIO' -Style 'CoverBrand' -Align 'center' -Bold $true -Color '1F4E79' -Size 42 -SpaceAfter 60
 Add-Paragraph -Text 'DOSSIER BUDGÉTAIRE' -Style 'CoverTitle' -Align 'center' -Bold $true -Color '17365D' -Size 48 -SpaceAfter 40
 Add-Paragraph -Text 'API, infrastructure et déploiement App Store / Play Store' -Style 'CoverSubtitle' -Align 'center' -Color '365F91' -Size 28 -SpaceAfter 180
 Add-Paragraph -Text 'Scénario prudent : activation étendue des services prévus dans le projet' -Style 'CoverSubtitle' -Align 'center' -Italic $true -Color '4F6475' -Size 24 -SpaceAfter 260
@@ -188,7 +188,7 @@ Add-PageBreak
 
 # Executive summary
 Add-Paragraph -Text '1. Synthèse exécutive' -Style 'Heading1'
-Add-Paragraph -Text 'CleanUx est une marketplace multi-métiers qui organise la relation entre clients particuliers, clients entreprises, prestataires indépendants et sociétés prestataires. Le projet prévoit deux applications mobiles React Native Expo, une interface web Laravel et un ensemble d''intégrations pour le paiement, la communication, la conformité, la géolocalisation et l''exploitation.'
+Add-Paragraph -Text 'Brio est une marketplace multi-métiers qui organise la relation entre clients particuliers, clients entreprises, prestataires indépendants et sociétés prestataires. Le projet prévoit deux applications mobiles React Native Expo, une interface web Laravel et un ensemble d''intégrations pour le paiement, la communication, la conformité, la géolocalisation et l''exploitation.'
 Add-Paragraph -Text 'Le scénario étudié ici est volontairement conservateur : il couvre l''ouverture et l''activation de tous les services visibles dans le dépôt, y compris plusieurs alternatives qui ne seraient normalement jamais payées simultanément.'
 Add-Callout -Title 'Recommandation de trésorerie' -Text 'Prévoir une enveloppe de lancement de 4 300 € et une enveloppe mensuelle prudente de 3 100 €. Pour couvrir le premier trimestre sans tension, la réserve recommandée est arrondie à 14 000 €, hors salaires, marketing, développement, fiscalité et sinistres d''assurance.' -Fill 'E2F0D9'
 
@@ -207,7 +207,7 @@ Add-Bullet -Text 'Conserver la marge de sécurité de 25 % jusqu''à trois mois 
 
 # Method
 Add-Paragraph -Text '2. Méthode de chiffrage' -Style 'Heading1'
-Add-Paragraph -Text 'Le dépôt CleanUx contient des services actifs, des fallbacks et des alternatives techniques. Afin de répondre à l''hypothèse « tout activer sans exception », le budget inclut les offres payantes minimales utiles lorsqu''un prix public existe, puis ajoute des provisions explicites lorsque les fournisseurs fonctionnent sur devis.'
+Add-Paragraph -Text 'Le dépôt Brio contient des services actifs, des fallbacks et des alternatives techniques. Afin de répondre à l''hypothèse « tout activer sans exception », le budget inclut les offres payantes minimales utiles lorsqu''un prix public existe, puis ajoute des provisions explicites lorsque les fournisseurs fonctionnent sur devis.'
 Add-Table -Headers @('Hypothèse', 'Valeur retenue', 'Pourquoi') -Widths @(2800, 2000, 4200) -Rows @(
     @('Marge de sécurité', '25 %', 'Absorber variation de change, TVA éventuelle, dépassement de quota et frais oubliés'),
     @('Paiements Stripe', '10 000 € de GMV / mois', 'Simulation de démarrage avec environ 200 paiements'),
@@ -258,13 +258,13 @@ Add-Table -Headers @('Poste', 'Provision initiale', 'Commentaire') -Widths @(320
     @('Marge de sécurité', '850 €', '25 %'),
     @('ENVELOPPE DE LANCEMENT RECOMMANDÉE', '4 300 €', 'Arrondi de pilotage')
 )
-Add-Paragraph -Text 'Les frais Apple et Google couvrent la publication des deux applications mobiles CleanUx, client et prestataire, tant qu''elles sont publiées sous les mêmes comptes développeur.'
+Add-Paragraph -Text 'Les frais Apple et Google couvrent la publication des deux applications mobiles Brio, client et prestataire, tant qu''elles sont publiées sous les mêmes comptes développeur.'
 
 Add-PageBreak
 
 # API inventory
 Add-Paragraph -Text '5. Inventaire complet des API principales' -Style 'Heading1'
-Add-Table -Headers @('Service', 'Usage CleanUx', 'Clé', 'Facturation', 'Budget retenu') -Widths @(1600, 2700, 900, 2300, 1500) -Rows @(
+Add-Table -Headers @('Service', 'Usage Brio', 'Clé', 'Facturation', 'Budget retenu') -Widths @(1600, 2700, 900, 2300, 1500) -Rows @(
     @('Stripe + Connect', 'Paiements et reversements prestataires', 'Oui', 'Pas de frais d''ouverture ; commissions par transaction', '300 € / mois'),
     @('Twilio', 'SMS OTP et notifications', 'Oui', 'Numéro mensuel + consommation SMS', '140 € / mois'),
     @('Mailgun', 'Emails transactionnels', 'Oui', 'Quota ou abonnement selon volume', '15 € / mois'),
@@ -367,7 +367,7 @@ foreach ($source in $sources) {
 }
 
 Add-Paragraph -Text '10. Conclusion' -Style 'Heading1'
-Add-Paragraph -Text 'CleanUx peut être déployé avec un budget de départ limité si les intégrations sont sélectionnées avec discipline. Le présent dossier retient volontairement une enveloppe plus large afin de sécuriser la décision des associés et d''éviter une sous-capitalisation technique au moment de la publication.'
+Add-Paragraph -Text 'Brio peut être déployé avec un budget de départ limité si les intégrations sont sélectionnées avec discipline. Le présent dossier retient volontairement une enveloppe plus large afin de sécuriser la décision des associés et d''éviter une sous-capitalisation technique au moment de la publication.'
 Add-Callout -Title 'Montants à valider' -Text 'Autorisation recommandée : 4 300 € pour la mise en route, puis plafond opérationnel de 3 100 € par mois pendant les trois premiers mois. Réserve trimestrielle totale : 14 000 €.' -Fill 'FFF2CC'
 
 $stylesXml = @'
@@ -439,7 +439,7 @@ $footerXml = @'
 <w:ftr xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
   <w:p>
     <w:pPr><w:jc w:val="center"/></w:pPr>
-    <w:r><w:rPr><w:color w:val="7F8C8D"/><w:sz w:val="16"/></w:rPr><w:t>CleanUx — Dossier budgétaire associés — Page </w:t></w:r>
+    <w:r><w:rPr><w:color w:val="7F8C8D"/><w:sz w:val="16"/></w:rPr><w:t>Brio — Dossier budgétaire associés — Page </w:t></w:r>
     <w:fldSimple w:instr="PAGE"><w:r><w:rPr><w:color w:val="7F8C8D"/><w:sz w:val="16"/></w:rPr><w:t>1</w:t></w:r></w:fldSimple>
   </w:p>
 </w:ftr>
@@ -483,10 +483,10 @@ $coreXml = @"
                    xmlns:dcterms="http://purl.org/dc/terms/"
                    xmlns:dcmitype="http://purl.org/dc/dcmitype/"
                    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-  <dc:title>CleanUx — Dossier budgétaire API et déploiement</dc:title>
+  <dc:title>Brio — Dossier budgétaire API et déploiement</dc:title>
   <dc:subject>Budget prévisionnel présenté aux associés</dc:subject>
-  <dc:creator>CleanUx</dc:creator>
-  <cp:keywords>CleanUx, budget, API, infrastructure, App Store, Play Store</cp:keywords>
+  <dc:creator>Brio</dc:creator>
+  <cp:keywords>Brio, budget, API, infrastructure, App Store, Play Store</cp:keywords>
   <dc:description>Budget prudent des API, contrats, infrastructures et frais de déploiement mobile.</dc:description>
   <dcterms:created xsi:type="dcterms:W3CDTF">$timestamp</dcterms:created>
   <dcterms:modified xsi:type="dcterms:W3CDTF">$timestamp</dcterms:modified>
@@ -497,8 +497,8 @@ $appXml = @'
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <Properties xmlns="http://schemas.openxmlformats.org/officeDocument/2006/extended-properties"
             xmlns:vt="http://schemas.openxmlformats.org/officeDocument/2006/docPropsVTypes">
-  <Application>CleanUx Budget Generator</Application>
-  <Company>CleanUx</Company>
+  <Application>Brio Budget Generator</Application>
+  <Company>Brio</Company>
   <AppVersion>1.0</AppVersion>
 </Properties>
 '@

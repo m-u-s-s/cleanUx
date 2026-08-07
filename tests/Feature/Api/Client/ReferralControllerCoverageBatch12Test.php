@@ -86,7 +86,7 @@ class ReferralControllerCoverageBatch12Test extends TestCase
 
         $json = $this->postJson('/api/client/referrals/invite', [
             'email' => 'friend@example.test',
-            'message' => 'Join me on CleanUx!',
+            'message' => 'Join me on Brio!',
         ])
             ->assertStatus(201)
             ->assertJsonStructure(['referral_id', 'invite_url', 'expires_at'])

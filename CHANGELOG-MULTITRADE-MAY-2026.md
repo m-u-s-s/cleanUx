@@ -1,8 +1,8 @@
-# CleanUx — Multi-trade integration mai 2026 (Patch 2)
+# Brio — Multi-trade integration mai 2026 (Patch 2)
 
 Ce patch fait suite au patch "7 bombes techniques". Il **branche concrètement** le modèle Trade dans le pipeline produit, qui n'était jusqu'à présent qu'une table CRUD-able orpheline.
 
-Note préalable : ce patch part du principe que le **patch 1** (cleanux-fixes-may-2026) a déjà été appliqué — notamment l'ajout de `TradeSeeder` dans `ReferencePlatformSeeder`. Si non appliqué, ce patch 2 reste fonctionnel mais les seeders de base ne tourneront pas dans le bon ordre.
+Note préalable : ce patch part du principe que le **patch 1** (brio-fixes-may-2026) a déjà été appliqué — notamment l'ajout de `TradeSeeder` dans `ReferencePlatformSeeder`. Si non appliqué, ce patch 2 reste fonctionnel mais les seeders de base ne tourneront pas dans le bon ordre.
 
 ---
 
@@ -88,8 +88,8 @@ Inscrit dans la chaîne `ReferencePlatformSeeder` après le backfill, pour que l
 ## Comment appliquer
 
 ```bash
-# Depuis la racine de CleanUx, après avoir appliqué le patch 1 :
-cp -r /chemin/vers/cleanux-multitrade-may-2026/* .
+# Depuis la racine de Brio, après avoir appliqué le patch 1 :
+cp -r /chemin/vers/brio-multitrade-may-2026/* .
 ```
 
 Puis :

@@ -5,8 +5,8 @@ export const QA_PASSWORD = 'QaPhase2!';
 
 /** Emails seedés par rôle (cf. tools/visual-qa/modules.mjs CREDENTIALS). */
 export const CREDENTIALS = {
-  admin: 'admin@cleanux.test',
-  provider_company: 'qa-provider-company@cleanux.test',
+  admin: 'admin@brio.test',
+  provider_company: 'qa-provider-company@brio.test',
   entreprise: 'dominique.monnier@example.org',
   provider: 'bsanchez@example.org',
   client: 'lemoine.gabrielle@example.net',

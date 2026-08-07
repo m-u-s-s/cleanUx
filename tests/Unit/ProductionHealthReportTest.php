@@ -17,7 +17,7 @@ class ProductionHealthReportTest extends TestCase
         Config::set('app.env', 'production');
         Config::set('app.debug', false);
         Config::set('app.key', 'base64:test-key');
-        Config::set('app.url', 'http://cleanux.test');
+        Config::set('app.url', 'http://brio.test');
         Config::set('queue.default', 'database');
         Config::set('cache.default', 'file');
         Config::set('session.driver', 'database');
@@ -70,7 +70,7 @@ class ProductionHealthReportTest extends TestCase
     public function test_report_flags_stale_heartbeat_as_error(): void
     {
         Config::set('operations.monitoring.heartbeat_enabled', true);
-        Cache::forget(config('operations.monitoring.heartbeat_cache_key', 'cleanux:ops:heartbeat'));
+        Cache::forget(config('operations.monitoring.heartbeat_cache_key', 'brio:ops:heartbeat'));
 
         /** @var ProductionHealthReport $healthReport */
         $healthReport = app(ProductionHealthReport::class);

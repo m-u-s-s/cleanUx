@@ -9,15 +9,15 @@
     "preview": {
       "distribution": "internal",
       "env": {
-        "EXPO_PUBLIC_API_URL": "https://staging.cleanux.com/api",
-        "EXPO_PUBLIC_WEB_URL": "https://staging.cleanux.com"
+        "EXPO_PUBLIC_API_URL": "https://staging.brio.com/api",
+        "EXPO_PUBLIC_WEB_URL": "https://staging.brio.com"
       }
     },
     "production": {
       "autoIncrement": true,
       "env": {
-        "EXPO_PUBLIC_API_URL": "https://app.cleanux.com/api",
-        "EXPO_PUBLIC_WEB_URL": "https://app.cleanux.com"
+        "EXPO_PUBLIC_API_URL": "https://app.brio.com/api",
+        "EXPO_PUBLIC_WEB_URL": "https://app.brio.com"
       }
     }
   }

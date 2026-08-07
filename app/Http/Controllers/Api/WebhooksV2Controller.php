@@ -121,7 +121,7 @@ class WebhooksV2Controller extends Controller
         $event = $this->dispatcher->emit(
             eventCode: 'test.ping',
             payload: [
-                'message' => 'CleanUx webhook test ping',
+                'message' => 'Brio webhook test ping',
                 'endpoint_code' => $endpoint->code,
                 'fired_at' => now()->toIso8601String(),
             ],

@@ -67,7 +67,7 @@
                     <label class="text-sm font-semibold text-slate-700">Message (optionnel)</label>
                     <textarea wire:model="inviteMessage" rows="3"
                               class="mt-1 w-full rounded-xl border-gray-300 text-sm"
-                              placeholder="J'ai testé CleanUx, je te recommande !"></textarea>
+                              placeholder="J'ai testé Brio, je te recommande !"></textarea>
                 </div>
                 <button wire:click="sendInvitation"
                         class="w-full rounded-xl bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-indigo-700">

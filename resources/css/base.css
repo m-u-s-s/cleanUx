@@ -1,5 +1,5 @@
 /* ============================================================================
-   CleanUx — Base layer (html/body defaults, headings)
+   Brio — Base layer (html/body defaults, headings)
    ========================================================================= */
 @layer base {
     html { scroll-behavior: smooth; }

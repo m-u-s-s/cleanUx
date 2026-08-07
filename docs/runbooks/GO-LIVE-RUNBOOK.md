@@ -1,4 +1,4 @@
-# CleanUx — GO-LIVE RUNBOOK (Phase 2: Operate-Together Drills)
+# Brio — GO-LIVE RUNBOOK (Phase 2: Operate-Together Drills)
 
 **Version:** 1.0.0 — Phase-1 complete, Phase-2 pending  
 **Branch:** `feat/launch-hardening`  
@@ -8,7 +8,7 @@
 
 ## Purpose — The Launch Gate
 
-This document is the **two-phase launch gate** for CleanUx production go-live.
+This document is the **two-phase launch gate** for Brio production go-live.
 
 - **Phase 1 (CI gate):** All E2E Spine tests + Ops tests pass green in CI, all PHPStan/Pint checks pass, all known money-path bugs are fixed with regression tests. Phase 1 is **complete** as of this commit.
 - **Phase 2 (Live drills gate):** All six drills (D1–D6) below are executed against real staging with Stripe test-mode and pass their stated criteria. Phase 2 is **pending operator execution**.
@@ -49,9 +49,9 @@ Before starting any drill, confirm all of the following are available.
 
 - [ ] **Staging SSH** — ability to run `php artisan` commands on the staging host.
 - [ ] **Stripe test-mode dashboard** — `https://dashboard.stripe.com/test/` — view PaymentIntents, Transfers, and Connect accounts.
-- [ ] **Sentry project** — `CleanUx` project, configured to receive from staging (`SENTRY_DSN` set on staging).
+- [ ] **Sentry project** — `Brio` project, configured to receive from staging (`SENTRY_DSN` set on staging).
 - [ ] **Backup snapshot** — a recent dump of the staging database, accessible to the restore-drill command.
-- [ ] **Scratch database connection** — a second database on the staging host (e.g., `cleanux_drill`), defined in `config/database.php` as connection name `drill` and `.env` `DB_DRILL_*` vars.
+- [ ] **Scratch database connection** — a second database on the staging host (e.g., `brio_drill`), defined in `config/database.php` as connection name `drill` and `.env` `DB_DRILL_*` vars.
 
 ---
 

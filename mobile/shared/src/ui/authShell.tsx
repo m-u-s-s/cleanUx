@@ -3,7 +3,7 @@
  *
  * L'application prestataire avait reçu une refonte — fond clair, wordmark « brio », halo animé,
  * entrées en scène décalées, bandeau d'erreur avec relance — que l'application cliente ignorait :
- * elle affichait encore « CleanUx » en texte brut sur fond neutre. Deux portes d'entrée pour un
+ * elle affichait encore « Brio » en texte brut sur fond neutre. Deux portes d'entrée pour un
  * même produit, avec deux identités.
  *
  * Ces briques vivaient dans le dossier de l'application prestataire. Les remonter ici évite d'en

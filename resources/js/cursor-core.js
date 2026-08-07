@@ -1,5 +1,5 @@
 /* ============================================================================
-   CleanUx — Premium Cursor : cœur framework-agnostique.
+   Brio — Premium Cursor : cœur framework-agnostique.
    ----------------------------------------------------------------------------
    Curseur custom premium piloté par UN seul requestAnimationFrame partagé :
      · follower deux couches  — un point (rapide) + un anneau (traîne, lerp)

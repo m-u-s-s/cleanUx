@@ -156,7 +156,7 @@ return [
     ],
 
     'assistant' => [
-        'title' => 'CleanUx Assistent',
+        'title' => 'Brio Assistent',
         'subtitle' => 'Altijd beschikbaar',
         'streaming_active' => 'Streaming actief',
         'placeholder' => 'Stel uw vraag...',

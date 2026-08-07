@@ -62,7 +62,7 @@ return [
      *
      *   if (app()->bound('sentry')) {
      *       \Sentry\configureScope(function (\Sentry\State\Scope $scope) {
-     *           $scope->setTag('app.module', 'cleanux-v2');
+     *           $scope->setTag('app.module', 'brio-v2');
      *       });
      *   }
      */

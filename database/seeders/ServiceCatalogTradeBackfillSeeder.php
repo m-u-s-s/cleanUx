@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\DB;
  * Phase 1 — Backfill trade_id pour les ServiceCatalog existants.
  *
  * Tous les services pré-existants (avant Phase 1) sont rattachés au Trade "Nettoyage"
- * puisque la plateforme historique CleanUx ne couvrait que ce métier.
+ * puisque la plateforme historique Brio ne couvrait que ce métier.
  *
  * À exécuter APRÈS TradeSeeder.
  *

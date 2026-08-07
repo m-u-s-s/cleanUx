@@ -1,4 +1,4 @@
-appId: com.cleanux.client
+appId: com.brio.client
 ---
 - launchApp
 - tapOn: "Bookings"

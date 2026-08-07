@@ -1,4 +1,4 @@
-# CleanUx Mobile RN — Sprint 0 : API Mobile-Readiness
+# Brio Mobile RN — Sprint 0 : API Mobile-Readiness
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
@@ -961,7 +961,7 @@ class SocketConfigTest extends TestCase
     {
         config([
             'broadcasting.connections.reverb.key' => 'pk_test_123',
-            'broadcasting.connections.reverb.options.host' => 'realtime.cleanux.test',
+            'broadcasting.connections.reverb.options.host' => 'realtime.brio.test',
             'broadcasting.connections.reverb.options.port' => 443,
             'broadcasting.connections.reverb.options.scheme' => 'https',
         ]);
@@ -974,7 +974,7 @@ class SocketConfigTest extends TestCase
         $r->assertOk()->assertJson([
             'driver' => 'reverb',
             'key' => 'pk_test_123',
-            'host' => 'realtime.cleanux.test',
+            'host' => 'realtime.brio.test',
             'port' => 443,
             'scheme' => 'https',
             'auth_endpoint' => '/api/broadcasting/auth',
@@ -1102,7 +1102,7 @@ L'app RN appelle d'abord `GET /api/realtime/socket-config` (Bearer Sanctum) pour
 {
   "driver": "reverb",
   "key": "pk_xxx",
-  "host": "realtime.cleanux.com",
+  "host": "realtime.brio.com",
   "port": 443,
   "scheme": "https",
   "auth_endpoint": "/api/broadcasting/auth"
@@ -1241,7 +1241,7 @@ Documentation pour des approches techniques qu'on a abandonnées. Conservé pour
 
 ## Contexte
 
-CleanUx avait une config Capacitor (livrée sprint 0-9, 2026-05-20) + un Client Mobile POC V2 Vue 3 islands hybride Livewire (livré 2026-05-23). On souhaite à présent shipper une app mobile native sur les stores avec une UX fluide pour le client (booking, tracking, paiement) et plus tard pour le provider (terrain).
+Brio avait une config Capacitor (livrée sprint 0-9, 2026-05-20) + un Client Mobile POC V2 Vue 3 islands hybride Livewire (livré 2026-05-23). On souhaite à présent shipper une app mobile native sur les stores avec une UX fluide pour le client (booking, tracking, paiement) et plus tard pour le provider (terrain).
 
 ## Décision
 
@@ -1345,7 +1345,7 @@ SERVER_PID=$!
 # Login
 TOKEN=$(curl -sX POST http://127.0.0.1:8000/api/auth/login \
   -H "Content-Type: application/json" \
-  -d '{"email":"test@cleanux.dev","password":"password"}' | jq -r '.token')
+  -d '{"email":"test@brio.dev","password":"password"}' | jq -r '.token')
 
 # Refresh
 NEW_TOKEN=$(curl -sX POST http://127.0.0.1:8000/api/auth/refresh \

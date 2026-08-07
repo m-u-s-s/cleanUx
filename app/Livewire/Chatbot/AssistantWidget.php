@@ -371,7 +371,7 @@ class AssistantWidget extends Component
             'client_company' => "Bonjour {$name} 👋 Demande une intervention pour un de tes locaux, vois les missions actives, ou explique-moi une facture.",
             'provider_independent' => "Bonjour {$name} 👋 Tes missions, paiements Stripe, incidents — je suis là pour ça.",
             'provider_company' => "Bonjour {$name} 👋 Missions du jour, canaux d'équipe, signalement d'incident — comment je peux aider ?",
-            'admin' => "Bonjour {$name} — assistant admin CleanUx prêt.",
+            'admin' => "Bonjour {$name} — assistant admin Brio prêt.",
             default => "Bonjour {$name} ! Comment puis-je vous aider ?",
         };
     }

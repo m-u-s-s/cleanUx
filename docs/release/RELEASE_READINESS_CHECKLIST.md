@@ -1,4 +1,4 @@
-# CleanUx — Release Readiness Checklist
+# Brio — Release Readiness Checklist
 
 ## 1. Vérification Git
 

@@ -1,4 +1,4 @@
-# CleanUx — Stores submission runbook (Apple App Store + Google Play)
+# Brio — Stores submission runbook (Apple App Store + Google Play)
 
 Procédure complète pour builder et soumettre les apps natives iOS + Android via **Expo / EAS**
 (EAS Build + EAS Submit), sans Xcode/Android Studio.
@@ -7,8 +7,8 @@ Procédure complète pour builder et soumettre les apps natives iOS + Android vi
 >
 > | App | Dossier | Slug EAS | Bundle id iOS / package Android |
 > |-----|---------|----------|----------------------------------|
-> | **CleanUx** (client) | `mobile/client` | `cleanux-client` | `com.cleanux.client` |
-> | **CleanUx Pro** (prestataire) | `mobile/provider` | `cleanux-provider` | `com.cleanux.provider` |
+> | **Brio** (client) | `mobile/client` | `brio-client` | `com.brio.client` |
+> | **Brio Pro** (prestataire) | `mobile/provider` | `brio-provider` | `com.brio.provider` |
 >
 > Toutes les commandes `eas …` se lancent **depuis le dossier de l'app** (`cd mobile/client` ou
 > `cd mobile/provider`). Répète chaque étape pour les deux apps.
@@ -53,7 +53,7 @@ eas submit --platform android --profile production
 ### Comptes & accès
 - Apple Developer Program : **99 $/an** ([signup](https://developer.apple.com/programs/enroll/))
 - App Store Connect : créer une équipe ; récupérer le **Team ID** (→ `eas.json` `appleTeamId`)
-- Créer les **deux** apps dans App Store Connect (CleanUx + CleanUx Pro) → récupérer chaque
+- Créer les **deux** apps dans App Store Connect (Brio + Brio Pro) → récupérer chaque
   **ASC App ID** (→ `eas.json` `ascAppId`)
 - DUNS Number requis pour une société
 - Recommandé : créer une **App Store Connect API Key** (Users & Access → Integrations) pour que
@@ -61,12 +61,12 @@ eas submit --platform android --profile production
 
 ### Configuration (app.json, pas Xcode)
 Tout ce qui était dans Xcode se déclare dans `mobile/<app>/app.json` :
-- `expo.ios.bundleIdentifier` : `com.cleanux.client` / `com.cleanux.provider`
+- `expo.ios.bundleIdentifier` : `com.brio.client` / `com.brio.provider`
 - Capabilities via `app.json` :
   - Push : `expo-notifications` (plugin) + entitlement APNs géré par `eas credentials`
   - Background : `expo.ios.infoPlist.UIBackgroundModes` = `["location", "fetch", "remote-notification"]`
     (le suivi GPS de mission utilise `expo-location` background + `expo-task-manager`)
-  - Associated Domains (deep links) : `expo.ios.associatedDomains` = `["applinks:app.cleanux.com"]`
+  - Associated Domains (deep links) : `expo.ios.associatedDomains` = `["applinks:app.brio.com"]`
 
 ### Assets à fournir (par app)
 - App Icon : 1024×1024 PNG (sans alpha) — déclaré dans `app.json` (`expo.icon`)
@@ -77,13 +77,13 @@ Tout ce qui était dans Xcode se déclare dans `mobile/<app>/app.json` :
   - iPad Pro 12.9" : 2048×2732 (si app universal)
 
 ### Métadonnées App Store Connect
-- Nom : **CleanUx** (client) / **CleanUx Pro** (prestataire)
+- Nom : **Brio** (client) / **Brio Pro** (prestataire)
 - Sous-titre (30 chars max) : "Services pro à la demande" / "Vos missions, votre planning"
 - Description (4000 chars max) : préparer le rédactionnel marketing
 - Keywords (100 chars max) : `nettoyage,services,prestataire,marketplace,peinture,babysitting`
-- URL support : https://cleanux.com/aide
-- URL marketing : https://cleanux.com
-- Privacy policy URL : https://cleanux.com/privacy-policy
+- URL support : https://brio.com/aide
+- URL marketing : https://brio.com
+- Privacy policy URL : https://brio.com/privacy-policy
 - Catégorie principale : Services / Productivity
 - Age rating : 4+ (sauf si chat ouvert)
 
@@ -106,7 +106,7 @@ TestFlight est dispo automatiquement pour le beta interne.
 
 ### Comptes & accès
 - Google Play Developer Console : **25 $ one-shot** ([signup](https://play.google.com/console/signup))
-- Créer les **deux** apps (packages `com.cleanux.client` / `com.cleanux.provider`)
+- Créer les **deux** apps (packages `com.brio.client` / `com.brio.provider`)
 - Créer un **service account** (Google Cloud → IAM) avec accès Play Console → télécharger la clé JSON
   → la référencer dans `eas.json` `submit.production.android.serviceAccountKeyPath`
 
@@ -144,7 +144,7 @@ côté app on récupère le **device token natif** (`expo-notifications` → `ge
 3. L'entitlement push de l'app est posé par `expo-notifications` + `eas credentials`
 
 ### FCM (Android)
-1. Firebase Console → ajouter une app Android par package (`com.cleanux.client`, `com.cleanux.provider`)
+1. Firebase Console → ajouter une app Android par package (`com.brio.client`, `com.brio.provider`)
 2. Télécharger `google-services.json` → le référencer dans `app.json`
    (`expo.android.googleServicesFile = "./google-services.json"`)
 3. Côté serveur : `FCM_CREDENTIALS_PATH` + `FCM_PROJECT_ID` dans `.env`
@@ -153,15 +153,15 @@ côté app on récupère le **device token natif** (`expo-notifications` → `ge
 
 ### iOS Universal Links
 1. Apple Developer → App ID → activer **Associated Domains**
-2. `app.json` : `expo.ios.associatedDomains = ["applinks:app.cleanux.com"]`
-3. Server-side (Laravel) : servir `https://app.cleanux.com/.well-known/apple-app-site-association` :
+2. `app.json` : `expo.ios.associatedDomains = ["applinks:app.brio.com"]`
+3. Server-side (Laravel) : servir `https://app.brio.com/.well-known/apple-app-site-association` :
    ```json
    {
      "applinks": {
        "apps": [],
        "details": [
-         { "appID": "TEAMID.com.cleanux.client", "paths": ["*"] },
-         { "appID": "TEAMID.com.cleanux.provider", "paths": ["*"] }
+         { "appID": "TEAMID.com.brio.client", "paths": ["*"] },
+         { "appID": "TEAMID.com.brio.provider", "paths": ["*"] }
        ]
      }
    }
@@ -169,8 +169,8 @@ côté app on récupère le **device token natif** (`expo-notifications` → `ge
 
 ### Android App Links
 1. `app.json` : `expo.android.intentFilters` avec `autoVerify: true`, scheme `https`,
-   host `app.cleanux.com`
-2. Server-side : servir `https://app.cleanux.com/.well-known/assetlinks.json` (un objet par package +
+   host `app.brio.com`
+2. Server-side : servir `https://app.brio.com/.well-known/assetlinks.json` (un objet par package +
    l'empreinte SHA-256 du certificat de signature, récupérable via `eas credentials`)
 
 ## 5. Monitoring crash mobile

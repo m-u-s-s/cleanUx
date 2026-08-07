@@ -116,7 +116,7 @@ export default function App() {
     // l'avait pas, faute d'écran gestuel — la feuille d'actions de l'accueil en introduit un.
     <GestureHandlerRootView style={{ flex: 1 }}>
       <ErrorBoundary>
-        <StripeProvider publishableKey={env.stripePublishableKey} merchantIdentifier="merchant.com.cleanux.client">
+        <StripeProvider publishableKey={env.stripePublishableKey} merchantIdentifier="merchant.com.brio.client">
           <QueryClientProvider client={queryClient}>
             <AuthProvider>
               <RealtimeProvider>

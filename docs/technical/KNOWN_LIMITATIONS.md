@@ -1,10 +1,10 @@
-# Known limitations — CleanUx
+# Known limitations — Brio
 
 ## API tokens
 
 Certains tests Jetstream peuvent être skipped si le support API n'est pas activé.
 
-Ce n'est pas bloquant si CleanUx n'utilise pas les API tokens en production.
+Ce n'est pas bloquant si Brio n'utilise pas les API tokens en production.
 
 ## Warning Collision / PHP
 

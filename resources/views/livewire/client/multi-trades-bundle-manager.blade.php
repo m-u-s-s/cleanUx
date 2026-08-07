@@ -142,7 +142,7 @@
                 <x-ui.icon name="information-circle" class="w-4 h-4 mt-0.5 text-brand-600 flex-shrink-0" />
                 <p class="text-sm text-slate-700">
                     <strong class="text-brand-700">Exemple</strong> : rénovation salle de bain = plombier + carreleur + peintre + électricien.
-                    Sélectionnez chaque métier, décrivez la tâche, et CleanUx orchestre les missions dans le bon ordre.
+                    Sélectionnez chaque métier, décrivez la tâche, et Brio orchestre les missions dans le bon ordre.
                 </p>
             </div>
 

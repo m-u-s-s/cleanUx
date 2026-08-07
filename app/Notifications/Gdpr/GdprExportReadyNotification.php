@@ -23,7 +23,7 @@ class GdprExportReadyNotification extends Notification
     public function toMail($notifiable): MailMessage
     {
         return (new MailMessage)
-            ->subject('CleanUx · Votre export de données est prêt')
+            ->subject('Brio · Votre export de données est prêt')
             ->greeting('Bonne nouvelle !')
             ->line('Votre export RGPD '.$this->request->reference.' est disponible au téléchargement.')
             ->line('Disponible jusqu\'au '.optional($this->request->expires_at)->format('d/m/Y'))

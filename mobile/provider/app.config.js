@@ -15,7 +15,7 @@
  *
  * Pour l'activer :
  *   1. créer une clé « Maps SDK for Android » sur console.cloud.google.com ;
- *   2. la restreindre au package com.cleanux.provider et à l'empreinte SHA-1 de signature ;
+ *   2. la restreindre au package com.brio.provider et à l'empreinte SHA-1 de signature ;
  *   3. l'exposer en EXPO_PUBLIC_GOOGLE_MAPS_API_KEY (localement, et comme secret EAS pour les
  *      builds : `eas secret:create --name EXPO_PUBLIC_GOOGLE_MAPS_API_KEY --value <clé>`) ;
  *   4. RECONSTRUIRE — c'est de la configuration native, un rechargement JS ne suffit pas.

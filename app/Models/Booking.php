@@ -21,7 +21,7 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Schema;
 
 /**
- * Booking — entité canonique des réservations CleanUx.
+ * Booking — entité canonique des réservations Brio.
  *
  * Ce modèle remplace l'ancien doublon `Bookings.php` (qui n'était utilisé nulle part).
  * Les traits HasRecurringSeries / HasBookingDisplayAccessors / ResetsNotificationTracking

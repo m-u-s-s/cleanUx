@@ -45,16 +45,16 @@ class WebhookDeliveryRunner
         $timestamp = time();
         $signature = $this->signer->sign($body, $endpoint->secret, $timestamp);
         $idempotencyKey = $event->event_id.':'.$endpoint->id;
-        $sigHeaderName = (string) config('webhooks_v2.signature_header', 'X-CleanUx-Signature');
+        $sigHeaderName = (string) config('webhooks_v2.signature_header', 'X-Brio-Signature');
 
         $headers = array_merge(
             [
                 'Content-Type' => 'application/json',
-                'User-Agent' => 'CleanUx-Webhooks/1.0',
-                'X-CleanUx-Event' => $event->event_code,
-                'X-CleanUx-Event-Id' => $event->event_id,
-                'X-CleanUx-Idempotency-Key' => $idempotencyKey,
-                'X-CleanUx-Delivery-Attempt' => (string) ($delivery->attempt + 1),
+                'User-Agent' => 'Brio-Webhooks/1.0',
+                'X-Brio-Event' => $event->event_code,
+                'X-Brio-Event-Id' => $event->event_id,
+                'X-Brio-Idempotency-Key' => $idempotencyKey,
+                'X-Brio-Delivery-Attempt' => (string) ($delivery->attempt + 1),
                 $sigHeaderName => $signature,
             ],
             (array) ($endpoint->headers ?? [])

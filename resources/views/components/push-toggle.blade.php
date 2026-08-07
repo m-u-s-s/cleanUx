@@ -88,15 +88,15 @@
             messageType: null,
 
             async init() {
-                if (typeof window.cleanuxPush === 'undefined') {
+                if (typeof window.brioPush === 'undefined') {
                     this.status = 'unsupported';
                     return;
                 }
 
-                this.status = window.cleanuxPush.getStatus();
+                this.status = window.brioPush.getStatus();
 
                 if (this.status === 'granted') {
-                    this.subscribed = await window.cleanuxPush.hasActiveSubscription();
+                    this.subscribed = await window.brioPush.hasActiveSubscription();
                 }
             },
 
@@ -104,13 +104,13 @@
                 this.loading = true;
                 this.message = null;
                 try {
-                    await window.cleanuxPush.subscribe();
+                    await window.brioPush.subscribe();
                     this.status = 'granted';
                     this.subscribed = true;
                     this.flash('✅ Notifications activées', 'success');
                 } catch (err) {
                     console.error('[Push] enable failed', err);
-                    this.status = window.cleanuxPush.getStatus();
+                    this.status = window.brioPush.getStatus();
                     this.flash('❌ ' + (err.message || 'Échec activation'), 'error');
                 } finally {
                     this.loading = false;
@@ -121,7 +121,7 @@
                 this.loading = true;
                 this.message = null;
                 try {
-                    await window.cleanuxPush.unsubscribe();
+                    await window.brioPush.unsubscribe();
                     this.subscribed = false;
                     this.flash('Notifications désactivées', 'success');
                 } catch (err) {
@@ -136,7 +136,7 @@
                 this.loading = true;
                 this.message = null;
                 try {
-                    await window.cleanuxPush.testNotification();
+                    await window.brioPush.testNotification();
                     this.flash('📨 Test envoyé. Tu devrais recevoir une notif sous 1-2s.', 'success');
                 } catch (err) {
                     this.flash('❌ Échec envoi test', 'error');

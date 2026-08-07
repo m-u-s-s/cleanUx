@@ -229,7 +229,7 @@ class BookingPostingService
     }
 
     /**
-     * Audit MEDIUM — prime d'assurance : CleanUx revend une police tierce (Mock/
+     * Audit MEDIUM — prime d'assurance : Brio revend une police tierce (Mock/
      * Hiscox/Wakam). La prime encaissée est due à l'assureur = dette fournisseur.
      *
      *   512100 Banque Stripe   Débit  prime

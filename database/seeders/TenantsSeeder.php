@@ -9,16 +9,16 @@ class TenantsSeeder extends Seeder
 {
     public function run(): void
     {
-        // Tenant principal CleanUx (la marketplace native)
+        // Tenant principal Brio (la marketplace native)
         Tenant::query()->updateOrCreate(
             ['code' => 'main'],
             [
-                'name' => 'CleanUx Main',
+                'name' => 'Brio Main',
                 'slug' => 'main',
                 'plan_code' => 'enterprise',
                 'status' => Tenant::STATUS_ACTIVE,
-                'primary_domain' => 'cleanux.com',
-                'contact_email' => 'support@cleanux.com',
+                'primary_domain' => 'brio.com',
+                'contact_email' => 'support@brio.com',
                 'default_locale' => 'fr',
                 'default_currency' => 'EUR',
                 'default_country_code' => 'BE',
@@ -36,7 +36,7 @@ class TenantsSeeder extends Seeder
                 'slug' => 'acme-demo',
                 'plan_code' => 'growth',
                 'status' => Tenant::STATUS_TRIAL,
-                'primary_domain' => 'acme-demo.cleanux.com',
+                'primary_domain' => 'acme-demo.brio.com',
                 'contact_email' => 'demo@acme.example.com',
                 'default_locale' => 'fr',
                 'default_currency' => 'EUR',

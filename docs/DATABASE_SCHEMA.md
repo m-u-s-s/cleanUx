@@ -138,7 +138,7 @@
 | `2026_05_11_230500_fix_booking_contact_columns` | Missing contact columns |
 | `2026_05_11_231500_fix_portal_legacy_columns_round2` | Round 2 portal fix |
 | `2026_05_11_232500_fix_portal_dashboard_remaining_compat` | Dashboard compat |
-| `2026_05_13_194311_fix_cleanux_test_schema_compatibility_final` | Final test compat |
+| `2026_05_13_194311_fix_brio_test_schema_compatibility_final` | Final test compat |
 | `2026_05_13_211602_fix_enterprise_feedback_recurring_schema_compat` | Enterprise feedback |
 | `2026_05_13_214504_fix_structural_blockers_round2` | Structural blockers |
 | `2026_05_13_221046_create_country_billing_profiles_compat_table` | Billing profiles compat |

@@ -63,7 +63,7 @@ $fallbackPage = function (string $title, ?string $message = null) {
             <body class="min-h-screen bg-slate-50 text-slate-900">
                 <main class="mx-auto max-w-4xl px-6 py-12">
                     <div class="rounded-3xl border border-slate-200 bg-white p-8 shadow-sm">
-                        <p class="text-sm font-black uppercase tracking-[0.2em] text-blue-600">CleanUx</p>
+                        <p class="text-sm font-black uppercase tracking-[0.2em] text-blue-600">Brio</p>
                         <h1 class="mt-3 text-3xl font-black">'.e($title).'</h1>
                         <p class="mt-4 text-slate-600">'.e($message ?: 'Cette page est maintenant routée. Il reste à connecter le vrai composant ou la vraie logique métier.').'</p>
                         <a href="'.e(route('dashboard')).'" class="mt-6 inline-flex rounded-2xl bg-blue-600 px-5 py-3 text-sm font-bold text-white hover:bg-blue-700">
@@ -235,12 +235,12 @@ Route::middleware(['auth', 'verified', 'active.account'])->group(function () use
                 Route::get('/export/pdf', function () {
                     if (class_exists(Pdf::class)) {
                         $html = '
-                            <h1>Export global CleanUx</h1>
+                            <h1>Export global Brio</h1>
                             <p>Export PDF temporaire. À remplacer par la logique ExportTools.</p>
                         ';
 
                         return Pdf::loadHTML($html)
-                            ->download('cleanux-export-global.pdf');
+                            ->download('brio-export-global.pdf');
                     }
 
                     return response('Export PDF global à implémenter.', 200);

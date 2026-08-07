@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-PROJECT_DIR="${PROJECT_DIR:-/var/www/cleanux}"
+PROJECT_DIR="${PROJECT_DIR:-/var/www/brio}"
 BACKUP_DIR="${BACKUP_DIR:-$PROJECT_DIR/storage/app/backups/database}"
 TIMESTAMP="$(date +%F-%H%M%S)"
 
@@ -21,9 +21,9 @@ mysqldump \
   --single-transaction \
   --quick \
   --lock-tables=false \
-  "$DB_DATABASE" | gzip > "$BACKUP_DIR/cleanux-db-$TIMESTAMP.sql.gz"
+  "$DB_DATABASE" | gzip > "$BACKUP_DIR/brio-db-$TIMESTAMP.sql.gz"
 
-echo "Backup DB créé: $BACKUP_DIR/cleanux-db-$TIMESTAMP.sql.gz"
+echo "Backup DB créé: $BACKUP_DIR/brio-db-$TIMESTAMP.sql.gz"
 
 # Rotation: keep last N daily backups
 RETENTION_DAYS=${BACKUP_RETENTION_DAYS:-30}

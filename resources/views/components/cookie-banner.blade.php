@@ -86,14 +86,14 @@
 
         persist(data) {
             try {
-                localStorage.setItem('cleanux_cookie_consent_v1', JSON.stringify(data));
-                document.cookie = `cleanux_consent=${data.analytics?1:0}${data.marketing?1:0}; max-age=31536000; path=/; SameSite=Lax`;
+                localStorage.setItem('brio_cookie_consent_v1', JSON.stringify(data));
+                document.cookie = `brio_consent=${data.analytics?1:0}${data.marketing?1:0}; max-age=31536000; path=/; SameSite=Lax`;
             } catch (e) {}
         },
 
         read() {
             try {
-                const raw = localStorage.getItem('cleanux_cookie_consent_v1');
+                const raw = localStorage.getItem('brio_cookie_consent_v1');
                 return raw ? JSON.parse(raw) : null;
             } catch (e) {
                 return null;

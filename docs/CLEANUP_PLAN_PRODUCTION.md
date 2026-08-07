@@ -1,4 +1,4 @@
-# CleanUx — Cleanup plan avant production
+# Brio — Cleanup plan avant production
 
 Plan d'action **destructif** identifié par l'audit de scan code. À exécuter manuellement avec backup DB préalable. **NE PAS lancer en autonome.**
 
@@ -9,10 +9,10 @@ Plan d'action **destructif** identifié par l'audit de scan code. À exécuter m
 git status
 
 # Si OK, supprime
-rm -rf cleanux-fixes-may-2026/
-rm -rf cleanux-multitrade-may-2026/
-rm -rf cleanux-phase11/ cleanux-phase12/ cleanux-phase13/
-rm -f cleanux-phase11.zip cleanux-phase12.zip cleanux-phase13.zip
+rm -rf brio-fixes-may-2026/
+rm -rf brio-multitrade-may-2026/
+rm -rf brio-phase11/ brio-phase12/ brio-phase13/
+rm -f brio-phase11.zip brio-phase12.zip brio-phase13.zip
 rm -f before_restore_2026-05-04_18-10.sql
 rm -f .env.bak
 rm -f regression-*.log

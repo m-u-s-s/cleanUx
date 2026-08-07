@@ -134,7 +134,7 @@ class AnalyticsService
         ?string $anonymousId = null,
     ): ?AnalyticsSession {
         $sessionId = $explicitSessionId
-            ?: ($request?->cookie(Config::get('analytics.session.cookie_name', 'cleanux_aid')))
+            ?: ($request?->cookie(Config::get('analytics.session.cookie_name', 'brio_aid')))
             ?: null;
 
         if (! $sessionId) {

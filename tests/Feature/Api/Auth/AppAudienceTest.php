@@ -29,7 +29,7 @@ class AppAudienceTest extends TestCase
 {
     use RefreshDatabase;
 
-    private const APP_HEADER = 'X-CleanUx-App';
+    private const APP_HEADER = 'X-Brio-App';
 
     // ─── Refus ───────────────────────────────────────────────────────────────────────────────
 

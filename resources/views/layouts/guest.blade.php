@@ -7,14 +7,14 @@
     <meta name="theme-color" content="#070b14">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="CleanUx">
+    <meta name="apple-mobile-web-app-title" content="Brio">
     <link rel="apple-touch-icon" href="/icons/icon-192.png">
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
     {{-- SEO — title + description (page-overridable via $seoTitle / $seoDescription) --}}
-    <title>{{ $seoTitle ?? config('app.name', 'CleanUx') . ' — Services pros à la demande | Nettoyage, Peinture, Babysitting' }}</title>
+    <title>{{ $seoTitle ?? config('app.name', 'Brio') . ' — Services pros à la demande | Nettoyage, Peinture, Babysitting' }}</title>
     <meta name="description" content="{{ $seoDescription ?? 'Réservez un professionnel vérifié en 2 minutes. 30+ métiers disponibles en Belgique. Paiement sécurisé, assurance incluse, suivi en temps réel.' }}">
     <meta name="keywords" content="{{ $seoKeywords ?? 'services à domicile, nettoyage, peinture, babysitting, Belgique, réservation en ligne, prestataire vérifié' }}">
     <meta name="robots" content="index,follow">
@@ -27,11 +27,11 @@
 
     {{-- Open Graph --}}
     <meta property="og:type" content="website">
-    <meta property="og:site_name" content="{{ config('app.name', 'CleanUx') }}">
-    <meta property="og:title" content="{{ $seoTitle ?? config('app.name', 'CleanUx') . ' — Services pros à la demande' }}">
+    <meta property="og:site_name" content="{{ config('app.name', 'Brio') }}">
+    <meta property="og:title" content="{{ $seoTitle ?? config('app.name', 'Brio') . ' — Services pros à la demande' }}">
     <meta property="og:description" content="{{ $seoDescription ?? 'Réservez un professionnel vérifié en 2 minutes. 30+ métiers en Belgique.' }}">
     <meta property="og:url" content="{{ url()->current() }}">
-    <meta property="og:image" content="{{ asset('images/og-cleanux.svg') }}">
+    <meta property="og:image" content="{{ asset('images/og-brio.svg') }}">
     <meta property="og:image:width" content="1200">
     <meta property="og:image:height" content="630">
     <meta property="og:locale" content="fr_BE">
@@ -39,16 +39,16 @@
 
     {{-- Twitter Card --}}
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="{{ $seoTitle ?? config('app.name', 'CleanUx') . ' — Services pros à la demande' }}">
+    <meta name="twitter:title" content="{{ $seoTitle ?? config('app.name', 'Brio') . ' — Services pros à la demande' }}">
     <meta name="twitter:description" content="{{ $seoDescription ?? 'Réservez un professionnel vérifié en 2 minutes.' }}">
-    <meta name="twitter:image" content="{{ asset('images/og-cleanux.svg') }}">
+    <meta name="twitter:image" content="{{ asset('images/og-brio.svg') }}">
 
     {{-- JSON-LD Structured Data --}}
     <script type="application/ld+json">
     {
         "@@context": "https://schema.org",
         "@@type": "WebApplication",
-        "name": "{{ config('app.name', 'CleanUx') }}",
+        "name": "{{ config('app.name', 'Brio') }}",
         "url": "{{ config('app.url') }}",
         "description": "Marketplace multi-services pour réservation de professionnels vérifiés en Belgique",
         "applicationCategory": "BusinessApplication",
@@ -68,7 +68,7 @@
     </script>
 
     {{-- Preload above-the-fold OG image for LCP --}}
-    <link rel="preload" as="image" href="/images/og-cleanux.svg">
+    <link rel="preload" as="image" href="/images/og-brio.svg">
 
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=figtree:400,500,600,700,800,900|space-grotesk:400,500,600,700&display=swap" rel="stylesheet" />
@@ -130,7 +130,7 @@
                 <span class="cx-logo-mark">Cx</span>
                 <span class="leading-tight">
                     <span class="block text-lg font-extrabold tracking-tight" style="font-family:var(--cx-display);color:var(--cx-text)">
-                        {{ config('app.name', 'CleanUx') }}
+                        {{ config('app.name', 'Brio') }}
                     </span>
                     <span class="hidden text-[11px] uppercase tracking-[0.28em] sm:block" style="color:var(--cx-muted)">
                         Services à domicile
@@ -201,7 +201,7 @@
                 <div>
                     <div class="flex items-center gap-3">
                         <span class="cx-logo-mark" style="height:36px;width:36px;font-size:14px">Cx</span>
-                        <span class="text-lg font-extrabold" style="font-family:var(--cx-display)">{{ config('app.name', 'CleanUx') }}</span>
+                        <span class="text-lg font-extrabold" style="font-family:var(--cx-display)">{{ config('app.name', 'Brio') }}</span>
                     </div>
                     <p class="mt-4 max-w-xs text-sm" style="color:var(--cx-muted)">
                         La plateforme de services à domicile : du devis à la preuve d'exécution, en toute confiance.
@@ -264,7 +264,7 @@
             </div>
             <div class="mt-12 flex flex-col items-start justify-between gap-3 border-t pt-6 sm:flex-row sm:items-center"
                  style="border-color:var(--cx-line)">
-                <p class="text-xs" style="color:var(--cx-muted)">© {{ date('Y') }} {{ config('app.name', 'CleanUx') }}. Tous droits réservés.</p>
+                <p class="text-xs" style="color:var(--cx-muted)">© {{ date('Y') }} {{ config('app.name', 'Brio') }}. Tous droits réservés.</p>
                 <p class="text-xs" style="color:var(--cx-muted)">Conçu pour la Belgique &amp; l'Europe.</p>
             </div>
         </div>

@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import type { ChosenSpace } from './space';
 
-const STORAGE_KEY = 'cleanux_provider_space';
+const STORAGE_KEY = 'brio_provider_space';
 
 /**
  * L'espace choisi par un compte à double casquette, retenu d'un lancement à l'autre.

@@ -1,8 +1,8 @@
-# API Versioning — CleanUx
+# API Versioning — Brio
 
 ## Current state
 
-CleanUx exposes two API generations:
+Brio exposes two API generations:
 
 | Generation | URL prefix | Status |
 |-----------|-----------|--------|
@@ -39,12 +39,12 @@ Adding new optional fields, new endpoints, or new enum values is **backward-comp
    ```
    Deprecation: true
    Sunset: Sat, 01 Nov 2026 00:00:00 GMT
-   Link: <https://docs.cleanux.com/api/migration>; rel="deprecation"
+   Link: <https://docs.brio.com/api/migration>; rel="deprecation"
    ```
 3. A **minimum 6-month notice** is given before removal.
 4. After sunset, the endpoint returns `410 Gone` with a machine-readable body:
    ```json
-   {"error": "endpoint_sunset", "message": "This endpoint was removed on 2026-11-01. See https://docs.cleanux.com/api/migration"}
+   {"error": "endpoint_sunset", "message": "This endpoint was removed on 2026-11-01. See https://docs.brio.com/api/migration"}
    ```
 
 ### Breaking change workflow

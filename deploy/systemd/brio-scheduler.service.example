@@ -1,10 +1,10 @@
 [Unit]
-Description=CleanUx Scheduler Runner
+Description=Brio Scheduler Runner
 After=network.target
 
 [Service]
 Type=oneshot
 User=www-data
 Group=www-data
-WorkingDirectory=/var/www/cleanux
+WorkingDirectory=/var/www/brio
 ExecStart=/usr/bin/php8.5 artisan schedule:run

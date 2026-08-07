@@ -39,8 +39,8 @@
       "@/trades": ["../shared/src/trades"],
       "@/finance": ["../shared/src/finance"],
       "@/finance/*": ["../shared/src/finance/*"],
-      "@cleanux/shared": ["../shared/src"],
-      "@cleanux/shared/*": ["../shared/src/*"],
+      "@brio/shared": ["../shared/src"],
+      "@brio/shared/*": ["../shared/src/*"],
       "@/*": ["src/*"],
       // Épingles de paquets tiers. CHAQUE entrée liste deux chemins, et ce n'est pas cosmétique :
       // dans un espace de travail npm, c'est npm qui décide si un paquet vit dans

@@ -19,7 +19,7 @@ describe('fetchParityMap', () => {
 
     expect(apiClient.get).toHaveBeenCalledWith('/parity-map');
     expect(result).toEqual(MODULES);
-    expect(AsyncStorage.setItem).toHaveBeenCalledWith('cleanux_parity_map', JSON.stringify(MODULES));
+    expect(AsyncStorage.setItem).toHaveBeenCalledWith('brio_parity_map', JSON.stringify(MODULES));
   });
 
   it('falls back to cache when the network fails', async () => {

@@ -1,5 +1,5 @@
 /* ============================================================================
-   CleanUx — Premium Cursor : entrée globale (voie vanilla).
+   Brio — Premium Cursor : entrée globale (voie vanilla).
    Chargée sur toutes les pages guest. Crée le curseur custom (singleton attaché
    au <body>) si l'appareil a un pointeur fin et n'est pas en reduced-motion ;
    sinon noop total (curseur natif conservé, coût ~0).

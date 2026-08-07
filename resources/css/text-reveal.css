@@ -1,5 +1,5 @@
 /* ============================================================================
-   CleanUx — Cinematic Text Reveal (styles)
+   Brio — Cinematic Text Reveal (styles)
    Accompagne resources/js/hooks/useTextReveal.js. Les styles de masque ne
    s'activent qu'une fois le découpage posé par le JS (.ctr-split) -> aucun effet
    tant que le hook n'a pas tourné. Tout en transform/opacity/clip-path : pas de

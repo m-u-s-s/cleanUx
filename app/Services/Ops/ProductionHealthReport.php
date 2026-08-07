@@ -221,7 +221,7 @@ class ProductionHealthReport
      */
     protected function heartbeatSnapshot(): array
     {
-        $cacheKey = (string) config('operations.monitoring.heartbeat_cache_key', 'cleanux:ops:heartbeat');
+        $cacheKey = (string) config('operations.monitoring.heartbeat_cache_key', 'brio:ops:heartbeat');
         $cached = $this->cache->get($cacheKey);
 
         if (is_array($cached) && ! empty($cached['at'])) {

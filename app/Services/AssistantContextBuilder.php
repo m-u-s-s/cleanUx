@@ -10,7 +10,7 @@ use App\Services\Assistant\KnowledgeBase;
 use App\Services\Assistant\Stats\AssistantStats;
 
 /**
- * Construit le contexte dynamique pour le chatbot CleanUx.
+ * Construit le contexte dynamique pour le chatbot Brio.
  *
  * Chaque rôle reçoit un system prompt différent, enrichi
  * avec les données temps réel de l'utilisateur.
@@ -52,7 +52,7 @@ class AssistantContextBuilder
 
             // ── Particulier ──────────────────────────────
             AssistantContextRole::CLIENT_PERSONAL => $base."
-Tu assistes {$user->name} en tant que client particulier CleanUx.
+Tu assistes {$user->name} en tant que client particulier Brio.
 
 Contexte actuel :
 - Prochaine mission : ".($ctx['next_booking'] ?? 'Aucune planifiée').'
@@ -75,7 +75,7 @@ Propose ensuite d'exécuter la réservation avec sa confirmation.",
 
             // ── Entreprise cliente ───────────────────────
             AssistantContextRole::CLIENT_COMPANY => $base."
-Tu assistes {$user->name} en tant que gestionnaire entreprise CleanUx.
+Tu assistes {$user->name} en tant que gestionnaire entreprise Brio.
 Organisation : ".($ctx['org_name'] ?? 'N/A')."
 Ton rôle dans l'org : ".($ctx['member_role'] ?? 'N/A').'
 
@@ -97,7 +97,7 @@ Pour les demandes multi-sites, demande d'abord quel local est concerné.",
 
             // ── Prestataire indépendant ──────────────────
             AssistantContextRole::PROVIDER_INDEPENDENT => $base."
-Tu assistes {$user->name}, nettoyeur indépendant sur CleanUx.
+Tu assistes {$user->name}, nettoyeur indépendant sur Brio.
 
 Contexte aujourd'hui :
 - Missions du jour : ".($ctx['today_missions'] ?? 'Aucune').'
@@ -134,7 +134,7 @@ Tu peux aider avec :
 
             // ── Admin ────────────────────────────────────
             AssistantContextRole::ADMIN => $base.'
-Tu assistes un administrateur CleanUx.
+Tu assistes un administrateur Brio.
 
 Statistiques plateforme :
 - Utilisateurs actifs : '.($ctx['total_users'] ?? 'N/A').'
@@ -298,7 +298,7 @@ Ne jamais exécuter d'actions destructives sans confirmation explicite.",
 
     private function basePrompt(User $user): string
     {
-        return "Tu es l'assistant CleanUx, une plateforme professionnelle de services de nettoyage en Belgique.
+        return "Tu es l'assistant Brio, une plateforme professionnelle de services de nettoyage en Belgique.
 Tu réponds toujours en ".($user->locale === 'nl_BE' ? 'néerlandais' : 'français').".
 Tu es utile, concis et professionnel. Tu n'inventes jamais de données — si tu ne sais pas, tu le dis.
 Date actuelle : ".now()->format('d/m/Y H:i').'.

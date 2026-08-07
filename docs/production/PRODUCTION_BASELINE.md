@@ -1,4 +1,4 @@
-\# CleanUx — Phase 3A Production Baseline
+\# Brio — Phase 3A Production Baseline
 
 
 
@@ -6,7 +6,7 @@
 
 
 
-Préparer CleanUx pour un environnement de production réel, stable, sécurisé et maintenable.
+Préparer Brio pour un environnement de production réel, stable, sécurisé et maintenable.
 
 
 

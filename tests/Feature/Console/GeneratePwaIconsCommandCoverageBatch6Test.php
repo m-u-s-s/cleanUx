@@ -34,7 +34,7 @@ class GeneratePwaIconsCommandCoverageBatch6Test extends TestCase
         $this->artisan('pwa:icons', [
             '--source' => 'nonexistent-logo.png',
             '--bg' => '#10b981',
-            '--label' => 'CLEANUX',
+            '--label' => 'BRIO',
             '--force' => true,
         ])
             ->expectsOutputToContain('ImageMagick introuvable')

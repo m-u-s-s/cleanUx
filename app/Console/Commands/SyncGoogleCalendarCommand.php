@@ -11,7 +11,7 @@ class SyncGoogleCalendarCommand extends Command
 {
     protected $signature = 'google-calendar:sync {--user_id=} {--future-days=30} {--force}';
 
-    protected $description = 'Synchronise les rendez-vous CleanUx vers Google Calendar pour les connexions actives.';
+    protected $description = 'Synchronise les rendez-vous Brio vers Google Calendar pour les connexions actives.';
 
     public function handle(GoogleCalendarSyncService $syncService): int
     {

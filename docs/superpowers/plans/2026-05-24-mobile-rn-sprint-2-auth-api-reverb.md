@@ -1,4 +1,4 @@
-# CleanUx Mobile RN — Sprint 2 : Auth + API Client + Reverb WS
+# Brio Mobile RN — Sprint 2 : Auth + API Client + Reverb WS
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
@@ -376,7 +376,7 @@ export function useLogin() {
       const res = await apiClient.post('/auth/login', {
         email: input.email,
         password: input.password,
-        device_name: input.deviceName ?? 'cleanux-mobile',
+        device_name: input.deviceName ?? 'brio-mobile',
       });
       await secureStore.setToken(res.data.token);
       return { token: res.data.token, user: res.data.user };
@@ -405,7 +405,7 @@ export function useRegister() {
         name: input.name, email: input.email, password: input.password,
         password_confirmation: input.passwordConfirmation,
         phone: input.phone, locale: input.locale, accept_terms: input.acceptTerms,
-        device_name: input.deviceName ?? 'cleanux-mobile',
+        device_name: input.deviceName ?? 'brio-mobile',
       });
       await secureStore.setToken(res.data.token);
       return { token: res.data.token, user: res.data.user };

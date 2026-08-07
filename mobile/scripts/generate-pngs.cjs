@@ -1,5 +1,5 @@
 /**
- * CleanUx branded icon generator
+ * Brio branded icon generator
  * Requires @napi-rs/canvas (installed in repo root node_modules)
  *
  * Client app  : amber  #ffb648 CU monogram on #070b14 night background

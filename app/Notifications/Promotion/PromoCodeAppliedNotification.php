@@ -27,7 +27,7 @@ class PromoCodeAppliedNotification extends Notification
         $code = $this->redemption->promoCode?->code ?? '';
 
         return (new MailMessage)
-            ->subject('CleanUx · Code promo appliqué')
+            ->subject('Brio · Code promo appliqué')
             ->line('Votre code promo '.$code.' a été appliqué.')
             ->line('Réduction : '.$discount.' '.$currency)
             ->action('Voir mes réservations', route('dashboard'));

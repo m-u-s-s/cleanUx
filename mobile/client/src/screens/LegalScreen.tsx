@@ -15,13 +15,13 @@ const CONTENT = {
     body: `Dernière mise à jour : Mai 2026
 
 1. OBJET
-Les présentes CGU régissent l'utilisation de l'application CleanUx, marketplace de services à domicile multi-métiers.
+Les présentes CGU régissent l'utilisation de l'application Brio, marketplace de services à domicile multi-métiers.
 
 2. INSCRIPTION
 L'utilisateur doit être majeur et fournir des informations exactes lors de l'inscription.
 
 3. SERVICES
-CleanUx met en relation des clients avec des prestataires de services. CleanUx n'est pas prestataire des services proposés.
+Brio met en relation des clients avec des prestataires de services. Brio n'est pas prestataire des services proposés.
 
 4. PAIEMENT
 Les paiements sont traités via Stripe. Le montant est pré-autorisé à la réservation et capturé à la fin de la mission.
@@ -30,13 +30,13 @@ Les paiements sont traités via Stripe. Le montant est pré-autorisé à la rés
 Les conditions d'annulation varient selon le délai. Consultez la politique d'annulation dans l'application.
 
 6. RESPONSABILITÉ
-CleanUx agit en tant qu'intermédiaire. La responsabilité des prestations incombe aux prestataires.
+Brio agit en tant qu'intermédiaire. La responsabilité des prestations incombe aux prestataires.
 
 7. DONNÉES PERSONNELLES
 Voir notre Politique de Confidentialité.
 
 8. CONTACT
-support@cleanux.com`,
+support@brio.com`,
   },
   privacy: {
     title: 'Politique de Confidentialité',
@@ -62,13 +62,13 @@ Exécution du contrat (Art. 6.1.b RGPD) et consentement pour la géolocalisation
 Données conservées pendant la durée de la relation + 3 ans.
 
 5. VOS DROITS (RGPD)
-Accès, rectification, suppression, portabilité, opposition. Exercez-les depuis l'onglet Profil > RGPD ou à dpo@cleanux.com.
+Accès, rectification, suppression, portabilité, opposition. Exercez-les depuis l'onglet Profil > RGPD ou à dpo@brio.com.
 
 6. SOUS-TRAITANTS
 Stripe (paiements), Sentry (crash reporting), Expo (notifications push).
 
 7. CONTACT DPO
-dpo@cleanux.com`,
+dpo@brio.com`,
   },
 };
 

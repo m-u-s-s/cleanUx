@@ -12,7 +12,7 @@
         "description": "{{ $seoDescription }}",
         "provider": {
             "@type": "Organization",
-            "name": "CleanUx",
+            "name": "Brio",
             "url": "{{ config('app.url') }}"
         },
         "areaServed": {
@@ -202,7 +202,7 @@
 
                         <details class="group py-5">
                             <summary class="flex cursor-pointer items-center justify-between font-medium" style="color:var(--cx-text)">
-                                Comment reserver un {{ strtolower($trade->name) }} sur CleanUx ?
+                                Comment reserver un {{ strtolower($trade->name) }} sur Brio ?
                                 <svg class="h-5 w-5 flex-shrink-0 transition-transform group-open:rotate-180" style="color:var(--cx-muted)" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
                                 </svg>
@@ -240,7 +240,7 @@
                                 </svg>
                             </summary>
                             <p class="mt-3 text-sm leading-relaxed" style="color:var(--cx-muted)">
-                                Oui, tous les prestataires {{ strtolower($trade->name) }} sur CleanUx sont verifies KYC
+                                Oui, tous les prestataires {{ strtolower($trade->name) }} sur Brio sont verifies KYC
                                 et disposent d'une assurance professionnelle valide.
                                 En cas de probleme, notre SAV intervient sous 24h.
                             </p>
@@ -285,7 +285,7 @@
                         "mainEntity": [
                             {
                                 "@type": "Question",
-                                "name": "Comment reserver un {{ strtolower($trade->name) }} sur CleanUx ?",
+                                "name": "Comment reserver un {{ strtolower($trade->name) }} sur Brio ?",
                                 "acceptedAnswer": {
                                     "@type": "Answer",
                                     "text": "Remplissez le formulaire de reservation en 2 minutes. Un prestataire verifie vous est assigne automatiquement."

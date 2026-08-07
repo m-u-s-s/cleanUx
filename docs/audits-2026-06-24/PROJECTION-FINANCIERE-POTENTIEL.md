@@ -1,6 +1,6 @@
 ## 1. Résumé exécutif
 
-Cette projection estime le **potentiel de revenus** de la plateforme CleanUx / brio, à partir du **modèle économique réellement codé** (commission sur transactions via Stripe Connect, abonnements Premium, assurance, pourboires, FX) et d'hypothèses de volume standards pour une marketplace de services en Belgique / France.
+Cette projection estime le **potentiel de revenus** de la plateforme Brio / brio, à partir du **modèle économique réellement codé** (commission sur transactions via Stripe Connect, abonnements Premium, assurance, pourboires, FX) et d'hypothèses de volume standards pour une marketplace de services en Belgique / France.
 
 **Message central :** le revenu d'une marketplace est **proportionnel au volume de réservations**. Il n'existe donc pas un chiffre unique, mais une fourchette pilotée par trois leviers — le **volume** (réservations/mois), le **panier moyen** (€/prestation) et le **taux de commission** (15-20 %).
 
@@ -18,7 +18,7 @@ Cette projection estime le **potentiel de revenus** de la plateforme CleanUx / b
 
 | Source | Statut dans le code | Réglage actuel | Potentiel |
 |---|---|---|---|
-| **Commission sur transactions** | ✅ `CommissionService` + Stripe Connect | 15 % (`config/cleanux.php`) à 20 % (`.env`), min. 2 € | **Cœur du revenu** |
+| **Commission sur transactions** | ✅ `CommissionService` + Stripe Connect | 15 % (`config/brio.php`) à 20 % (`.env`), min. 2 € | **Cœur du revenu** |
 | **Abonnements Premium** | ✅ Cashier + `STRIPE_PREMIUM_PRICE_ID` | À activer | Revenu récurrent, marge ~pure |
 | **Assurance** | ✅ module Insurance | Pass-through (marge 0) | Marge à définir |
 | **Pourboires** | ✅ `TipService` | 0 % prélevé | Levier dormant |

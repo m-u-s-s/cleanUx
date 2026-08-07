@@ -1,5 +1,5 @@
 /* ============================================================================
-   CleanUx — Démo des hooks de révélation de texte cinématique.
+   Brio — Démo des hooks de révélation de texte cinématique.
    Îlot React monté dans #text-reveal-demo (page vitrine dev /premium-scroll).
    Montre useTextReveal / RevealText avec différentes granularités et triggers.
    ========================================================================= */
@@ -40,7 +40,7 @@ function Demo() {
 
             {/* Voie React du moteur d'image reveal (même cœur que la voie vanilla) */}
             <RevealImage
-                src="/images/og-cleanux.svg"
+                src="/images/og-brio.svg"
                 alt="Démo RevealImage (React)"
                 effects={['clip', 'blur', 'fade']}
                 parallax={0.15}

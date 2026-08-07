@@ -73,7 +73,7 @@ class MissionLifecycleService
 
         app(SmsService::class)->send(
             $mission->rendezVous?->client?->phone ?? $mission->rendezVous?->telephone_client,
-            'CleanUx : votre employé est en route. Vous pouvez suivre sa position depuis votre espace client.'
+            'Brio : votre employé est en route. Vous pouvez suivre sa position depuis votre espace client.'
         );
 
         app(MissionHistoryService::class)->log(
@@ -109,13 +109,13 @@ class MissionLifecycleService
         session()->put('mission_start_code_'.$mission->id, $generated['code']);
         app(SmsService::class)->send(
             $mission->rendezVous?->client?->phone ?? $mission->rendezVous?->telephone_client,
-            'CleanUx : votre employé est arrivé. Code de début : '.$generated['code']
+            'Brio : votre employé est arrivé. Code de début : '.$generated['code']
         );
 
         $generatedEnd = $this->verificationCodeService->createVerificationCode($mission, 'end');
         app(SmsService::class)->send(
             $mission->rendezVous?->client?->phone ?? $mission->rendezVous?->telephone_client,
-            'CleanUx : code de fin de mission : '.$generatedEnd['code'].'. Communiquez-le au prestataire en fin de service.'
+            'Brio : code de fin de mission : '.$generatedEnd['code'].'. Communiquez-le au prestataire en fin de service.'
         );
 
         $mission = $mission->fresh(['assignments', 'verificationCodes', 'rendezVous.client', 'leadEmployee']);
@@ -407,7 +407,7 @@ class MissionLifecycleService
         }
         app(SmsService::class)->send(
             $mission->rendezVous?->client?->phone ?? $mission->rendezVous?->telephone_client,
-            'CleanUx : votre mission est terminée. Merci de laisser votre avis depuis votre espace client.'
+            'Brio : votre mission est terminée. Merci de laisser votre avis depuis votre espace client.'
         );
 
         $mission = $this->missionQualityService->refreshMissionQuality($mission->fresh());

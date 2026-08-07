@@ -145,7 +145,7 @@ class ProductEmailTemplatesCoverageBatch10Test extends TestCase
         $payload = ProductEmailTemplates::payload('totally_unknown_key');
 
         $this->assertSame('generic', $payload['template_key']);
-        $this->assertSame('Notification CleanUx', $payload['subject']);
+        $this->assertSame('Notification Brio', $payload['subject']);
         $this->assertSame('info', $payload['tone']);
         $this->assertSame([], $payload['details']);
     }

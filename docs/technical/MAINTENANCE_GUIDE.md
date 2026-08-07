@@ -1,4 +1,4 @@
-# Maintenance guide — CleanUx
+# Maintenance guide — Brio
 
 ## Commandes utiles
 

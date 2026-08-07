@@ -174,7 +174,7 @@ return [
 
     // Chatbot
     'assistant' => [
-        'title' => 'Assistant CleanUx',
+        'title' => 'Assistant Brio',
         'subtitle' => 'Toujours disponible',
         'streaming_active' => 'Streaming actif',
         'placeholder' => 'Posez votre question...',

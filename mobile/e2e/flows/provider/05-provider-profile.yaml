@@ -1,4 +1,4 @@
-appId: com.cleanux.provider
+appId: com.brio.provider
 ---
 - launchApp
 - tapOn: "Profile"

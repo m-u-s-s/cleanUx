@@ -50,7 +50,7 @@
         })
         .listen('.UserPresenceChanged', (payload) => {
             // Self-update : n'affiche rien, met juste à jour l'UI si un widget de statut est visible
-            window.dispatchEvent(new CustomEvent('cleanux:presence-self-changed', { detail: payload }));
+            window.dispatchEvent(new CustomEvent('brio:presence-self-changed', { detail: payload }));
         });
 
     // ──────────────────────────────────────────────────────
@@ -60,34 +60,34 @@
         window.Echo.join(`presence-org.${orgId}`)
             .here((users) => {
                 // Liste initiale des utilisateurs en ligne
-                window.dispatchEvent(new CustomEvent('cleanux:presence-roster', {
+                window.dispatchEvent(new CustomEvent('brio:presence-roster', {
                     detail: { users },
                 }));
             })
             .joining((user) => {
-                window.dispatchEvent(new CustomEvent('cleanux:presence-joined', {
+                window.dispatchEvent(new CustomEvent('brio:presence-joined', {
                     detail: { user },
                 }));
             })
             .leaving((user) => {
-                window.dispatchEvent(new CustomEvent('cleanux:presence-left', {
+                window.dispatchEvent(new CustomEvent('brio:presence-left', {
                     detail: { user },
                 }));
             })
             .listen('.UserPresenceChanged', (payload) => {
-                window.dispatchEvent(new CustomEvent('cleanux:presence-status-changed', {
+                window.dispatchEvent(new CustomEvent('brio:presence-status-changed', {
                     detail: payload,
                 }));
             })
             .listen('.TaskAssigned', (payload) => {
                 // Refresh du board partagé
-                window.dispatchEvent(new CustomEvent('cleanux:task-assigned', { detail: payload }));
+                window.dispatchEvent(new CustomEvent('brio:task-assigned', { detail: payload }));
             })
             .listen('.TaskStatusChanged', (payload) => {
-                window.dispatchEvent(new CustomEvent('cleanux:task-status-changed', { detail: payload }));
+                window.dispatchEvent(new CustomEvent('brio:task-status-changed', { detail: payload }));
             })
             .error((err) => {
-                console.warn('[CleanUx presence] auth error on org channel:', err);
+                console.warn('[Brio presence] auth error on org channel:', err);
             });
     }
 
@@ -142,8 +142,8 @@
     function showToast({ title, body, type = 'info', action = null }) {
         // Si le projet a déjà un système toast (ex: window.dispatchEvent toast),
         // l'utiliser. Sinon fallback notification navigateur.
-        if (typeof window.cleanuxToast === 'function') {
-            window.cleanuxToast({ title, body, type, action });
+        if (typeof window.brioToast === 'function') {
+            window.brioToast({ title, body, type, action });
             return;
         }
 

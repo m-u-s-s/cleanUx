@@ -1,4 +1,4 @@
-# CleanUx — checklist de déploiement production
+# Brio — checklist de déploiement production
 
 ## 1. Préparation du code
 - [ ] archive source sans `.env`
@@ -28,7 +28,7 @@
 - [ ] `OPS_HEARTBEAT_MAX_AGE_SECONDS=900`
 - [ ] `OPS_MONITORING_NOTIFY_EMAIL=...`
 - [ ] `OPS_BACKUP_ENABLED=true`
-- [ ] `CLEANUX_SEED_DEFAULT_PROFILE=production`
+- [ ] `BRIO_SEED_DEFAULT_PROFILE=production`
 
 ## 4. Installation serveur
 ```bash
@@ -58,7 +58,7 @@ Cron :
 Ou timer systemd : voir `deploy/systemd/`.
 
 ## 7. Worker queue
-Voir `deploy/supervisor/cleanux-worker.conf.example` ou `deploy/systemd/cleanux-queue.service.example`.
+Voir `deploy/supervisor/brio-worker.conf.example` ou `deploy/systemd/brio-queue.service.example`.
 
 ## 8. Vérifications après déploiement
 ```bash

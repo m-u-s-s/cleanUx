@@ -148,7 +148,7 @@ class PlatformReadinessReport
             $this->makeCheck(
                 key: 'missing_demo_admin',
                 label: 'Admin démo principal absent',
-                count: $profile === 'demo' && ! User::query()->where('email', 'admin@cleanux.test')->exists() ? 1 : 0,
+                count: $profile === 'demo' && ! User::query()->where('email', 'admin@brio.test')->exists() ? 1 : 0,
                 severity: 'warning'
             ),
             $this->makeCheck(
@@ -206,8 +206,8 @@ class PlatformReadinessReport
 
     protected function resolveProfile(): string
     {
-        $explicitProfile = config('cleanux.seed.profile');
-        $defaultProfile = config('cleanux.seed.default_profile', app()->environment('production') ? 'production' : 'demo');
+        $explicitProfile = config('brio.seed.profile');
+        $defaultProfile = config('brio.seed.default_profile', app()->environment('production') ? 'production' : 'demo');
 
         return strtolower((string) ($explicitProfile ?: $defaultProfile));
     }
@@ -216,7 +216,7 @@ class PlatformReadinessReport
     {
         $count = 0;
 
-        $count += User::query()->where('email', 'like', '%@cleanux.test')->count();
+        $count += User::query()->where('email', 'like', '%@brio.test')->count();
         $count += OrganizationAccount::query()->where('email', 'like', '%@atlasfacilities.test')->count();
         $count += OrganizationSite::query()->where('email', 'like', '%@atlasfacilities.test')->count();
         $count += Booking::query()->count();

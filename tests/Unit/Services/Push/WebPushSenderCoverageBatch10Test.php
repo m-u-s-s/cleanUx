@@ -118,14 +118,14 @@ class WebPushSenderCoverageBatch10Test extends TestCase
         config([
             'services.webpush.public_key' => 'pub-key-123',
             'services.webpush.private_key' => 'priv-key-456',
-            'services.webpush.subject' => 'mailto:hello@cleanux.test',
+            'services.webpush.subject' => 'mailto:hello@brio.test',
         ]);
 
         $method = new ReflectionMethod(WebPushSender::class, 'vapidConfig');
         $method->setAccessible(true);
 
         $this->assertSame([
-            'subject' => 'mailto:hello@cleanux.test',
+            'subject' => 'mailto:hello@brio.test',
             'publicKey' => 'pub-key-123',
             'privateKey' => 'priv-key-456',
         ], $method->invoke($this->sender));
@@ -144,6 +144,6 @@ class WebPushSenderCoverageBatch10Test extends TestCase
         $result = $method->invoke($this->sender);
 
         // Falls back to the config-file default subject.
-        $this->assertSame('mailto:contact@cleanux.local', $result['subject']);
+        $this->assertSame('mailto:contact@brio.local', $result['subject']);
     }
 }

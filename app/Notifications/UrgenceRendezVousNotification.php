@@ -24,7 +24,7 @@ class UrgenceRendezVousNotification extends Notification implements ShouldQueue
     public function toMail($notifiable): MailMessage
     {
         return (new MailMessage)
-            ->subject('CleanUx · Intervention urgente en attente')
+            ->subject('Brio · Intervention urgente en attente')
             ->line('Une demande urgente est toujours en attente de traitement.')
             ->line('Client : '.($this->rdv->client->name ?? '—'))
             ->line('Service : '.$this->rdv->service_display_name)

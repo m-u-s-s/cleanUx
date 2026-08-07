@@ -31,7 +31,7 @@ describe('déclaration de l’application', () => {
 
     await apiClient.get('/ping');
 
-    expect(mock.history['get']![0]!.headers?.['X-CleanUx-App']).toBeUndefined();
+    expect(mock.history['get']![0]!.headers?.['X-Brio-App']).toBeUndefined();
   });
 
   it('envoie l’en-tête une fois l’application déclarée', async () => {
@@ -40,7 +40,7 @@ describe('déclaration de l’application', () => {
 
     await apiClient.get('/auth/me');
 
-    expect(mock.history['get']![0]!.headers?.['X-CleanUx-App']).toBe('provider');
+    expect(mock.history['get']![0]!.headers?.['X-Brio-App']).toBe('provider');
   });
 
   it('accompagne aussi la connexion', async () => {
@@ -49,7 +49,7 @@ describe('déclaration de l’application', () => {
 
     await apiClient.post('/auth/login', {});
 
-    expect(mock.history['post']![0]!.headers?.['X-CleanUx-App']).toBe('client');
+    expect(mock.history['post']![0]!.headers?.['X-Brio-App']).toBe('client');
   });
 
   it('retient la dernière déclaration', () => {

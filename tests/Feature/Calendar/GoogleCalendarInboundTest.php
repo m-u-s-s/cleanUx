@@ -15,7 +15,7 @@ use Tests\TestCase;
 
 /**
  * GCal bidirectionnel — sens entrant : un créneau bloqué dans Google Calendar
- * devient une exception d'indisponibilité côté CleanUx, et entre en conflit
+ * devient une exception d'indisponibilité côté Brio, et entre en conflit
  * avec une réservation chevauchante.
  */
 class GoogleCalendarInboundTest extends TestCase

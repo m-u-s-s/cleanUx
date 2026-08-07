@@ -29,7 +29,7 @@ class RappelRendezVousNotification extends Notification implements ShouldQueue
     public function toMail($notifiable): MailMessage
     {
         return (new MailMessage)
-            ->subject('CleanUx · Rappel de votre intervention')
+            ->subject('Brio · Rappel de votre intervention')
             ->line("Petit rappel : votre {$this->rdv->service_display_name} est prévu dans {$this->timing}.")
             ->line('Date : '.$this->rdv->date.' à '.$this->rdv->heure)
             ->line('Adresse : '.$this->rdv->location_display)

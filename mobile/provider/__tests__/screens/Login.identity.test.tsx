@@ -2,7 +2,7 @@
  * Identité de marque et accessibilité du mouvement sur l'écran de connexion prestataire.
  *
  * Deux garanties distinctes :
- *  - le wordmark affiche « brio » (et plus « CleanUx ») ;
+ *  - le wordmark affiche « brio » (et plus « Brio ») ;
  *  - l'animation reste décorative : quand le système demande moins de mouvement, la page garde
  *    tout son contenu et ses actions. Une identité animée qui escamote le formulaire en mode
  *    « réduire les animations » serait un défaut d'accessibilité, pas un effet de style.
@@ -120,7 +120,7 @@ describe("LoginScreen — identité et mouvement", () => {
     renderScreen();
 
     expect(screen.getByText('brio')).toBeTruthy();
-    expect(screen.queryByText('CleanUx')).toBeNull();
+    expect(screen.queryByText('Brio')).toBeNull();
   });
 
   it('pose le halo décoratif derrière le contenu', () => {

@@ -17,7 +17,7 @@ LYON-PART-DIEU,jardinage,2026-06-02 10:00,240,150,Tonte + désherbage,REF-003</p
             </div>
             <ul class="text-xs text-slate-500 mt-3 space-y-1">
                 <li>• <code>site_code</code> : code de votre site (doit exister dans votre org)</li>
-                <li>• <code>trade_code</code> : code du métier CleanUx</li>
+                <li>• <code>trade_code</code> : code du métier Brio</li>
                 <li>• <code>scheduled_at</code> : date+heure ISO 8601 (futur uniquement)</li>
                 <li>• <code>external_ref</code> : votre référence interne (idempotency, optionnel)</li>
             </ul>

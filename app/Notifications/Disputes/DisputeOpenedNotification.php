@@ -23,7 +23,7 @@ class DisputeOpenedNotification extends Notification
     public function toMail($notifiable): MailMessage
     {
         return (new MailMessage)
-            ->subject('CleanUx · Votre réclamation '.$this->case->reference.' a été enregistrée')
+            ->subject('Brio · Votre réclamation '.$this->case->reference.' a été enregistrée')
             ->greeting('Bonjour,')
             ->line('Votre réclamation a bien été enregistrée.')
             ->line('Référence : '.$this->case->reference)

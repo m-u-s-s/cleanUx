@@ -24,9 +24,9 @@ class MissionProfitabilityService
             ? max(0, $mission->actual_start_at->diffInMinutes($mission->actual_end_at))
             : null;
 
-        $hourlyEmployeeCost = (float) config('cleanux.finance.default_employee_hourly_cost', 18);
-        $travelCost = (float) config('cleanux.finance.default_travel_cost', 8);
-        $materialCostRate = (float) config('cleanux.finance.default_material_cost_rate', 0.08);
+        $hourlyEmployeeCost = (float) config('brio.finance.default_employee_hourly_cost', 18);
+        $travelCost = (float) config('brio.finance.default_travel_cost', 8);
+        $materialCostRate = (float) config('brio.finance.default_material_cost_rate', 0.08);
 
         $workMinutes = $realMinutes ?? $plannedMinutes;
         $employeeCost = round(($workMinutes / 60) * $hourlyEmployeeCost, 2);

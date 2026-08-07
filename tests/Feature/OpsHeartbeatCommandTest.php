@@ -16,7 +16,7 @@ class OpsHeartbeatCommandTest extends TestCase
         Config::set('operations.monitoring.heartbeat_enabled', true);
         Config::set('operations.monitoring.heartbeat_disk', 'local');
         Config::set('operations.monitoring.heartbeat_path', 'ops/heartbeat.json');
-        Config::set('operations.monitoring.heartbeat_cache_key', 'cleanux:test:heartbeat');
+        Config::set('operations.monitoring.heartbeat_cache_key', 'brio:test:heartbeat');
 
         $this->artisan('app:ops-heartbeat')->assertExitCode(0);
 
@@ -24,6 +24,6 @@ class OpsHeartbeatCommandTest extends TestCase
         $disk = Storage::disk('local');
 
         $disk->assertExists('ops/heartbeat.json');
-        $this->assertNotNull(Cache::get('cleanux:test:heartbeat'));
+        $this->assertNotNull(Cache::get('brio:test:heartbeat'));
     }
 }

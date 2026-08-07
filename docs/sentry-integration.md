@@ -11,7 +11,7 @@ php artisan sentry:publish --dsn="https://...@sentry.io/..."
 
 Cette commande crée `config/sentry.php` et ajoute `SENTRY_LARAVEL_DSN` au `.env.example`.
 
-## Configuration recommandée pour CleanUx
+## Configuration recommandée pour Brio
 
 ```env
 SENTRY_LARAVEL_DSN=https://...@sentry.io/...
@@ -30,7 +30,7 @@ Dans `app/Providers/AppServiceProvider.php::boot()` :
 ```php
 if (app()->bound('sentry')) {
     \Sentry\configureScope(function (\Sentry\State\Scope $scope) {
-        $scope->setTag('app.module', 'cleanux-v2');
+        $scope->setTag('app.module', 'brio-v2');
         if ($tenant = app(\App\Services\TenancyV2\TenantContext::class)->current()) {
             $scope->setTag('tenant.code', $tenant->code);
             $scope->setTag('tenant.plan', $tenant->plan_code);

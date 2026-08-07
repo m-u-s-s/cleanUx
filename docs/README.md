@@ -1,4 +1,4 @@
-# CleanUx
+# Brio
 
 Plateforme Laravel/Livewire de gestion opérationnelle pour services terrain : réservation, couverture par zones, multi-rôles, multi-sites entreprise, finance, rappels, qualité et pilotage admin.
 
@@ -108,9 +108,9 @@ php artisan app:seed-platform reference --fresh
 php artisan app:seed-platform production --fresh --force
 ```
 
-Le profil actif est piloté par `config/cleanux.php` et les variables :
-- `CLEANUX_SEED_PROFILE`
-- `CLEANUX_SEED_DEFAULT_PROFILE`
+Le profil actif est piloté par `config/brio.php` et les variables :
+- `BRIO_SEED_PROFILE`
+- `BRIO_SEED_DEFAULT_PROFILE`
 
 ## Commandes utiles
 

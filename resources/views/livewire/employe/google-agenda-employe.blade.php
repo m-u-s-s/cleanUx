@@ -2,7 +2,7 @@
     <div class="flex items-center justify-between gap-3">
         <div>
             <h2 class="text-2xl font-bold text-slate-900">Mon Google Agenda</h2>
-            <p class="text-sm text-slate-500">Connecte ton agenda pour recevoir automatiquement tes missions CleanUx.</p>
+            <p class="text-sm text-slate-500">Connecte ton agenda pour recevoir automatiquement tes missions Brio.</p>
         </div>
     </div>
 

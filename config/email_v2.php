@@ -31,11 +31,11 @@ return [
     ],
 
     'from_default' => [
-        'email' => env('MAIL_FROM_ADDRESS', 'noreply@cleanux.com'),
-        'name' => env('MAIL_FROM_NAME', 'CleanUx'),
+        'email' => env('MAIL_FROM_ADDRESS', 'noreply@brio.com'),
+        'name' => env('MAIL_FROM_NAME', 'Brio'),
     ],
 
-    'reply_to_default' => env('EMAIL_V2_REPLY_TO', 'support@cleanux.com'),
+    'reply_to_default' => env('EMAIL_V2_REPLY_TO', 'support@brio.com'),
 
     'allowed_categories' => ['transactional', 'marketing', 'notification', 'system'],
 

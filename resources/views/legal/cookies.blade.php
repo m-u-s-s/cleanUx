@@ -18,10 +18,10 @@
                     <tr><th class="p-2 text-left">Type</th><th class="p-2 text-left">Nom</th><th class="p-2 text-left">Durée</th><th class="p-2 text-left">Finalité</th><th class="p-2 text-left">Consentement</th></tr>
                 </thead>
                 <tbody>
-                    <tr class="border-t"><td class="p-2">Essentiel</td><td class="p-2">cleanux_session</td><td class="p-2">2h</td><td class="p-2">Authentification</td><td class="p-2">Non requis</td></tr>
+                    <tr class="border-t"><td class="p-2">Essentiel</td><td class="p-2">brio_session</td><td class="p-2">2h</td><td class="p-2">Authentification</td><td class="p-2">Non requis</td></tr>
                     <tr class="border-t"><td class="p-2">Essentiel</td><td class="p-2">XSRF-TOKEN</td><td class="p-2">2h</td><td class="p-2">Protection CSRF</td><td class="p-2">Non requis</td></tr>
-                    <tr class="border-t"><td class="p-2">Préférence</td><td class="p-2">cleanux_locale</td><td class="p-2">1 an</td><td class="p-2">Langue choisie</td><td class="p-2">Non requis</td></tr>
-                    <tr class="border-t"><td class="p-2">Analytics</td><td class="p-2">cleanux_anonymous</td><td class="p-2">13 mois</td><td class="p-2">Statistiques anonymes</td><td class="p-2">Requis</td></tr>
+                    <tr class="border-t"><td class="p-2">Préférence</td><td class="p-2">brio_locale</td><td class="p-2">1 an</td><td class="p-2">Langue choisie</td><td class="p-2">Non requis</td></tr>
+                    <tr class="border-t"><td class="p-2">Analytics</td><td class="p-2">brio_anonymous</td><td class="p-2">13 mois</td><td class="p-2">Statistiques anonymes</td><td class="p-2">Requis</td></tr>
                     <tr class="border-t"><td class="p-2">Marketing</td><td class="p-2">_gid, _ga, etc.</td><td class="p-2">selon outil</td><td class="p-2">Mesure de performance, retargeting</td><td class="p-2">Requis</td></tr>
                 </tbody>
             </table>

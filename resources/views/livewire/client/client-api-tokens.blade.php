@@ -3,7 +3,7 @@
         <div>
             <p class="text-sm font-bold uppercase text-indigo-600">API Tokens</p>
             <h1 class="text-2xl font-black text-slate-900">Mes tokens d'API</h1>
-            <p class="text-sm text-slate-500">Gérez les credentials pour intégrer CleanUx à vos systèmes (Webhooks, lecture bookings, etc.).</p>
+            <p class="text-sm text-slate-500">Gérez les credentials pour intégrer Brio à vos systèmes (Webhooks, lecture bookings, etc.).</p>
         </div>
 
         @if($justCreatedToken)

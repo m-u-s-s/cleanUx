@@ -9,7 +9,7 @@ export interface QueuedAction {
   createdAt: number;
 }
 
-const QUEUE_KEY = 'cleanux_offline_queue';
+const QUEUE_KEY = 'brio_offline_queue';
 
 /** Sends one queued action; resolves true on success. */
 export type ActionSender = (action: QueuedAction) => Promise<boolean>;

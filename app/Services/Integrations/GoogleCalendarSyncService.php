@@ -168,7 +168,7 @@ class GoogleCalendarSyncService
 
     private function buildGoogleEventPayload(Booking $rendezVous, Carbon $start, Carbon $end): array
     {
-        $serviceName = $rendezVous->service_display_name ?: 'Mission CleanUx';
+        $serviceName = $rendezVous->service_display_name ?: 'Mission Brio';
         $zoneName = $rendezVous->serviceZone?->name ?: 'Zone non définie';
         $siteName = $rendezVous->organizationSite?->name;
         $location = $rendezVous->location_display;
@@ -188,7 +188,7 @@ class GoogleCalendarSyncService
         ]);
 
         return [
-            'summary' => 'CleanUx · '.$serviceName.' · '.$zoneName,
+            'summary' => 'Brio · '.$serviceName.' · '.$zoneName,
             'description' => implode("\n", $descriptionLines),
             'location' => $location,
             'start' => [
@@ -201,15 +201,15 @@ class GoogleCalendarSyncService
             ],
             'extendedProperties' => [
                 'private' => [
-                    'cleanux_rendez_vous_id' => (string) $rendezVous->id,
-                    'cleanux_booking_reference' => (string) ($rendezVous->booking_reference ?: ''),
-                    'cleanux_service_zone_id' => (string) ($rendezVous->service_zone_id ?: ''),
-                    'cleanux_service_catalog_id' => (string) ($rendezVous->service_catalog_id ?: ''),
-                    'cleanux_service_identifier' => (string) $rendezVous->service_identifier_display,
+                    'brio_rendez_vous_id' => (string) $rendezVous->id,
+                    'brio_booking_reference' => (string) ($rendezVous->booking_reference ?: ''),
+                    'brio_service_zone_id' => (string) ($rendezVous->service_zone_id ?: ''),
+                    'brio_service_catalog_id' => (string) ($rendezVous->service_catalog_id ?: ''),
+                    'brio_service_identifier' => (string) $rendezVous->service_identifier_display,
                 ],
             ],
             'source' => [
-                'title' => 'CleanUx',
+                'title' => 'Brio',
                 'url' => rtrim(config('app.url'), '/').'/dashboard',
             ],
         ];

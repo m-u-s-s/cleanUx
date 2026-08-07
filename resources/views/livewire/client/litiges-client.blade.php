@@ -162,7 +162,7 @@
                                 @php
                                     $eventConfig = match($event->author_role) {
                                         'system'   => ['slate',   'cog',         'Système'],
-                                        'admin'    => ['brand',   'shield-check', 'Support CleanUx'],
+                                        'admin'    => ['brand',   'shield-check', 'Support Brio'],
                                         'client'   => ['emerald', 'user',         'Vous'],
                                         'provider' => ['amber',   'wrench',       'Prestataire'],
                                         default    => ['slate',   'user',         'Inconnu'],

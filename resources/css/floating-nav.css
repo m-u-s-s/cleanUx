@@ -1,5 +1,5 @@
 /* ============================================================================
-   CleanUx — Floating Nav (styles)
+   Brio — Floating Nav (styles)
    Accompagne resources/js/floating-nav-core.js. Surcouche le header existant
    (.cx-header est en @layer components -> ces règles NON-layered le surclassent
    sans !important). États armés par le JS : .fn-armed / .is-solid / .is-hidden /

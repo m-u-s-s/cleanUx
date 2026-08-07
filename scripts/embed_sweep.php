@@ -11,8 +11,8 @@
 $base = getenv('SWEEP_BASE') ?: 'http://127.0.0.1:8000';
 $PW = 'QaPhase2!';
 $creds = [
-    'admin' => ['admin@cleanux.test', $PW],
-    'provider_company' => ['qa-provider-company@cleanux.test', $PW],
+    'admin' => ['admin@brio.test', $PW],
+    'provider_company' => ['qa-provider-company@brio.test', $PW],
     'entreprise' => ['dominique.monnier@example.org', $PW],
     'provider' => ['bsanchez@example.org', $PW],
     'client' => ['lemoine.gabrielle@example.net', $PW],

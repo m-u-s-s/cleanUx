@@ -1,4 +1,4 @@
-\# CleanUx — Phase 3D Backup Strategy
+\# Brio — Phase 3D Backup Strategy
 
 
 
@@ -6,7 +6,7 @@
 
 
 
-Mettre en place une stratégie de sauvegarde pour protéger les données CleanUx en production.
+Mettre en place une stratégie de sauvegarde pour protéger les données Brio en production.
 
 
 
@@ -170,5 +170,5 @@ Commande Linux production :
 
 ```bash
 
-mysqldump -u cleanux\_user -p cleanux\_production > backup\_cleanux\_$(date +%F).sql
+mysqldump -u brio\_user -p brio\_production > backup\_brio\_$(date +%F).sql
 

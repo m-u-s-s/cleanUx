@@ -1,5 +1,5 @@
 /* ============================================================================
-   CleanUx — Image Reveal (styles)
+   Brio — Image Reveal (styles)
    Accompagne resources/js/image-reveal-core.js. Les états masqués ne s'arment
    que sous .ir-armed (posée par le JS) -> sans JS, l'image est pleinement
    visible (SEO/LCP). Effets ciblés via [data-ir-effect~="..."].

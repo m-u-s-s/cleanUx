@@ -11,8 +11,8 @@ export const QA_PASSWORD = 'QaPhase2!';
 
 // Même mapping que scripts/embed_sweep.php ($creds).
 export const CREDENTIALS = {
-  admin: 'admin@cleanux.test',
-  provider_company: 'qa-provider-company@cleanux.test',
+  admin: 'admin@brio.test',
+  provider_company: 'qa-provider-company@brio.test',
   entreprise: 'dominique.monnier@example.org',
   provider: 'bsanchez@example.org',
   client: 'lemoine.gabrielle@example.net',

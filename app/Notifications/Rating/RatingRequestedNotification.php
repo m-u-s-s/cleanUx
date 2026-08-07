@@ -26,7 +26,7 @@ class RatingRequestedNotification extends Notification
         $isClient = $this->direction === Feedback::DIRECTION_CLIENT_TO_PROVIDER;
 
         return (new MailMessage)
-            ->subject('CleanUx · Notez votre dernière prestation')
+            ->subject('Brio · Notez votre dernière prestation')
             ->line($isClient
                 ? 'Votre prestation est terminée. Aidez la communauté en notant votre prestataire.'
                 : 'La mission est terminée. Notez votre expérience client.')

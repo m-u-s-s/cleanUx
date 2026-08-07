@@ -26,7 +26,7 @@ class GdprRequestCreatedNotification extends Notification
         $ref = $this->request->reference;
 
         $mail = (new MailMessage)
-            ->subject("CleanUx · Demande RGPD {$ref} enregistrée")
+            ->subject("Brio · Demande RGPD {$ref} enregistrée")
             ->greeting('Bonjour,');
 
         switch ($type) {

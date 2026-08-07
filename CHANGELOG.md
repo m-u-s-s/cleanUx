@@ -1,6 +1,6 @@
 # Changelog
 
-All notable changes to CleanUx are documented here.
+All notable changes to Brio are documented here.
 
 ## [Unreleased]
 

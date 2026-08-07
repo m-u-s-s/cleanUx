@@ -72,7 +72,7 @@ class DataErasureServiceTest extends TestCase
         $user->refresh();
         $this->assertNotNull($user->anonymized_at);
         $this->assertSame('Utilisateur supprimé', $user->name);
-        $this->assertStringContainsString('@anonymized.cleanux', $user->email);
+        $this->assertStringContainsString('@anonymized.brio', $user->email);
         $this->assertNull($user->phone);
         $this->assertFalse((bool) $user->is_active);
 

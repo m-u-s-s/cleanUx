@@ -1,4 +1,4 @@
-# CleanUx — nettoyage final
+# Brio — nettoyage final
 
 ## À vérifier
 - composants Livewire non utilisés
@@ -27,7 +27,7 @@ php artisan app:cleanup-report
 3. fusionner les vieux dashboards admin doublons
 4. centraliser les constantes de statuts
 5. créer des enums pour rôles, statuts, priorités
-6. déplacer la config métier dans `config/cleanux.php`
+6. déplacer la config métier dans `config/brio.php`
 7. garder une séparation claire entre références structurées et snapshots
 8. continuer le refactor des très gros composants Livewire
 

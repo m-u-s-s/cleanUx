@@ -1,9 +1,9 @@
-# CleanUx Client — Store Metadata
+# Brio Client — Store Metadata
 
 ## App Store (iOS)
 
 ### App Name
-CleanUx — Services à domicile
+Brio — Services à domicile
 
 ### Subtitle (30 chars max)
 Ménage, peinture, babysitting
@@ -11,7 +11,7 @@ Ménage, peinture, babysitting
 ### Description (4000 chars max)
 
 **French:**
-CleanUx est la marketplace de services à domicile qui connecte particuliers et professionnels. Réservez un prestataire qualifié en quelques clics pour le nettoyage, la peinture, le babysitting, la toiture et plus de 20 métiers.
+Brio est la marketplace de services à domicile qui connecte particuliers et professionnels. Réservez un prestataire qualifié en quelques clics pour le nettoyage, la peinture, le babysitting, la toiture et plus de 20 métiers.
 
 🏠 RÉSERVEZ EN 5 ÉTAPES
 Choisissez un service, précisez vos besoins (surface, fréquence), entrez votre adresse, sélectionnez une date et confirmez. C'est aussi simple que commander un Uber.
@@ -43,7 +43,7 @@ Exportez ou supprimez vos données personnelles en un clic depuis l'application.
 Disponible en français, néerlandais et anglais. Service client joignable via le chat in-app.
 
 **English:**
-CleanUx is the home services marketplace that connects homeowners with qualified professionals. Book a vetted provider in a few taps for cleaning, painting, babysitting, roofing, and 20+ trades.
+Brio is the home services marketplace that connects homeowners with qualified professionals. Book a vetted provider in a few taps for cleaning, painting, babysitting, roofing, and 20+ trades.
 
 🏠 BOOK IN 5 STEPS
 Choose a service, specify your needs, enter your address, pick a date, and confirm. As easy as ordering an Uber.
@@ -76,10 +76,10 @@ Secondary: Utilities
 4+ (no objectionable content)
 
 ### Privacy Policy URL
-https://app.cleanux.com/privacy
+https://app.brio.com/privacy
 
 ### Support URL
-https://app.cleanux.com/support
+https://app.brio.com/support
 
 ---
 
@@ -98,7 +98,7 @@ House & Home
 Everyone
 
 ### Contact Email
-support@cleanux.com
+support@brio.com
 
 ### Tags
 Home Services, Cleaning, Booking, Marketplace, On-demand
@@ -108,7 +108,7 @@ Home Services, Cleaning, Booking, Marketplace, On-demand
 ## Screenshots Required
 
 ### Phone (6.7" iPhone / Android)
-1. **Login** — branded dark screen with "CleanUx" + login form
+1. **Login** — branded dark screen with "Brio" + login form
 2. **Home Dashboard** — "Bonjour" hero + KPIs + "Réserver un service" CTA
 3. **Booking Step 1** — service selection grid
 4. **Live Tracking** — map with provider marker + ETA card
@@ -119,4 +119,4 @@ Home Services, Cleaning, Booking, Marketplace, On-demand
 Same 6 screens, landscape or portrait.
 
 ### Feature Graphic (Google Play, 1024×500)
-Night background (#070b14) + amber "CleanUx" text + tagline "Services à domicile, simplifiés"
+Night background (#070b14) + amber "Brio" text + tagline "Services à domicile, simplifiés"

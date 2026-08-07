@@ -11,14 +11,14 @@ php artisan vendor:publish --provider="Spatie\Backup\BackupServiceProvider"
 
 Cette commande crée `config/backup.php`.
 
-## Configuration recommandée pour CleanUx
+## Configuration recommandée pour Brio
 
 ### Sources à backuper
 
 ```php
 // config/backup.php
 'backup' => [
-    'name' => env('APP_NAME', 'cleanux-v2'),
+    'name' => env('APP_NAME', 'brio-v2'),
     'source' => [
         'files' => [
             'include' => [
@@ -45,7 +45,7 @@ Cette commande crée `config/backup.php`.
 
 ```php
 'destination' => [
-    'filename_prefix' => 'cleanux-prod-',
+    'filename_prefix' => 'brio-prod-',
     'disks' => [
         'local_backup',   // disque local primaire
         's3_backup',      // S3 offsite (recommandé)
@@ -63,7 +63,7 @@ Ajouter dans `config/filesystems.php` :
     ],
     's3_backup' => [
         'driver' => 's3',
-        'bucket' => env('AWS_BACKUP_BUCKET', 'cleanux-backups'),
+        'bucket' => env('AWS_BACKUP_BUCKET', 'brio-backups'),
         // ... credentials AWS
     ],
 ],
@@ -97,16 +97,16 @@ Ajouter dans `config/filesystems.php` :
         Spatie\Backup\Notifications\Notifications\HealthyBackupWasFoundNotification::class => [],
         Spatie\Backup\Notifications\Notifications\CleanupWasSuccessfulNotification::class => [],
     ],
-    'mail' => ['to' => env('BACKUP_NOTIFY_EMAIL', 'ops@cleanux.com')],
+    'mail' => ['to' => env('BACKUP_NOTIFY_EMAIL', 'ops@brio.com')],
     'slack' => [
         'webhook_url' => env('BACKUP_SLACK_WEBHOOK'),
-        'channel' => '#cleanux-ops-backup',
+        'channel' => '#brio-ops-backup',
     ],
 ],
 
 'monitor_backups' => [
     [
-        'name' => env('APP_NAME', 'cleanux-v2'),
+        'name' => env('APP_NAME', 'brio-v2'),
         'disks' => ['local_backup', 's3_backup'],
         'health_checks' => [
             \Spatie\Backup\Tasks\Monitor\HealthChecks\MaximumAgeInDays::class => 1,
@@ -126,7 +126,7 @@ $schedule->command('backup:run')->dailyAt('02:00')->withoutOverlapping();
 $schedule->command('backup:monitor')->dailyAt('07:00');
 ```
 
-Convention CleanUx :
+Convention Brio :
 - 01:00 cleanup ancien (libère espace avant le nouveau backup)
 - 02:00 run backup complet
 - 07:00 monitor health + envoie alert si dernier backup > 24h
@@ -160,19 +160,19 @@ Workflow manuel :
 
 ```bash
 # 1. Télécharger le backup depuis S3
-aws s3 cp s3://cleanux-backups/cleanux-prod-2026-05-20-02-00-00.zip /tmp/
+aws s3 cp s3://brio-backups/brio-prod-2026-05-20-02-00-00.zip /tmp/
 
 # 2. Décompresser
-unzip /tmp/cleanux-prod-2026-05-20-02-00-00.zip -d /tmp/restore/
+unzip /tmp/brio-prod-2026-05-20-02-00-00.zip -d /tmp/restore/
 
 # 3. Restaurer DB
-gunzip -c /tmp/restore/db-dumps/mysql.sql.gz | mysql -u root -p cleanux_prod
+gunzip -c /tmp/restore/db-dumps/mysql.sql.gz | mysql -u root -p brio_prod
 
 # 4. Restaurer files
-rsync -av /tmp/restore/files/ /var/www/cleanux/storage/
+rsync -av /tmp/restore/files/ /var/www/brio/storage/
 
 # 5. Cache + permissions
-cd /var/www/cleanux
+cd /var/www/brio
 php artisan config:clear
 php artisan cache:clear
 chown -R www-data:www-data storage/
@@ -198,7 +198,7 @@ Capturer les failures Spatie via :
 },
 ```
 
-## Estimation taille backup CleanUx prod (à confirmer)
+## Estimation taille backup Brio prod (à confirmer)
 
 - DB dump compressé : 200 MB - 2 GB selon volume
 - Documents (storage/app) : 1-50 GB selon usage Fleet/Contracts/KYB

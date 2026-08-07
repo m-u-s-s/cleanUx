@@ -1,12 +1,12 @@
 [Unit]
-Description=CleanUx Queue Worker
+Description=Brio Queue Worker
 After=network.target
 
 [Service]
 Type=simple
 User=www-data
 Group=www-data
-WorkingDirectory=/var/www/cleanux
+WorkingDirectory=/var/www/brio
 ExecStart=/usr/bin/php8.5 artisan queue:work database --queue=stripe-webhooks,kyc-webhooks,sms-webhooks,insurance-webhooks,webhooks,default,antivirus --sleep=3 --tries=3 --timeout=120 --max-time=3600 --backoff=10,30,90
 Restart=always
 RestartSec=5

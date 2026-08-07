@@ -1,6 +1,6 @@
 ## 1. Résumé exécutif
 
-CleanUx est une marketplace de services à la demande (style Uber/Bolt pour le nettoyage, la peinture, la garde d'enfants…), avec un backend Laravel et **deux applications mobiles** (client et prestataire).
+Brio est une marketplace de services à la demande (style Uber/Bolt pour le nettoyage, la peinture, la garde d'enfants…), avec un backend Laravel et **deux applications mobiles** (client et prestataire).
 
 **Le verdict a fondamentalement changé depuis le 8 juin.** À l'époque, le **cœur du produit était cassé** : le scan QR mobile (preuve de présence + déclenchement du paiement) tapait des routes inexistantes, un risque de double-paiement aux prestataires tournait chaque nuit, et le droit à l'oubli ne s'exécutait jamais. **Aujourd'hui, ces 5-6 blocages critiques sont corrigés** avec des implémentations sérieuses. Le parcours métier fonctionne de bout en bout.
 

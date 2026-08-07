@@ -145,4 +145,4 @@ Add these secrets in `Settings > Secrets and variables > Actions`:
 | `DEPLOY_HOST`   | Production server hostname or IP                      |
 | `DEPLOY_USER`   | SSH username (e.g. `forge`)                           |
 | `DEPLOY_KEY`    | Private SSH key (RSA or Ed25519, no passphrase)       |
-| `DEPLOY_PATH`   | Absolute path to the app on the server (e.g. `/home/forge/cleanux.com`) |
+| `DEPLOY_PATH`   | Absolute path to the app on the server (e.g. `/home/forge/brio.com`) |

@@ -14,9 +14,9 @@ config.resolver.nodeModulesPaths = [
   path.resolve(__dirname, '../../node_modules'),
 ];
 
-// Map @cleanux/shared to the shared package source
+// Map @brio/shared to the shared package source
 config.resolver.extraNodeModules = {
-  '@cleanux/shared': sharedPath,
+  '@brio/shared': sharedPath,
 };
 
 module.exports = config;

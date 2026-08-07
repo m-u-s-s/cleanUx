@@ -16,7 +16,7 @@ use Illuminate\Support\Facades\Log;
  *   1. Client upload photo (multipart) + trade choisi
  *   2. PhotoQuoteEstimator envoie à Claude Vision avec system prompt par trade
  *   3. Claude renvoie JSON : { surface_m2, état, durée_estimée_min, prix_min_cents, prix_max_cents, confiance }
- *   4. CleanUx affiche le quote + permet booking direct avec prix locked
+ *   4. Brio affiche le quote + permet booking direct avec prix locked
  *
  * Soft-fail : si pas de clé API ou pas de SDK, retourne null avec raison logged.
  */
@@ -98,7 +98,7 @@ class PhotoQuoteEstimator
     protected function systemPromptForTrade(string $tradeName): string
     {
         return <<<PROMPT
-Tu es un expert estimateur en {$tradeName} pour la marketplace CleanUx (Belgique/France).
+Tu es un expert estimateur en {$tradeName} pour la marketplace Brio (Belgique/France).
 Tu reçois une photo. Analyse-la et fournis un devis estimé.
 
 Tarifs de référence (en €) :

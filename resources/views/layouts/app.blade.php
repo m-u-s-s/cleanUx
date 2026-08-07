@@ -14,13 +14,13 @@
     <meta name="theme-color" content="#2563eb">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
-    <meta name="apple-mobile-web-app-title" content="CleanUx">
+    <meta name="apple-mobile-web-app-title" content="Brio">
     <link rel="apple-touch-icon" href="/icons/icon-192.png">
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    <title>{{ config('app.name', 'CleanUx') }}</title>
+    <title>{{ config('app.name', 'Brio') }}</title>
 
     {{-- Typo via bunny.net (GDPR-friendly, pas de tracking Google) --}}
     <link rel="preconnect" href="https://fonts.bunny.net" crossorigin>

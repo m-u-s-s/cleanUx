@@ -38,7 +38,7 @@ class CaptureUtm
             }
 
             // Et en cookie pour 90j (cross-session) — HttpOnly false (lecture JS analytics OK)
-            cookie()->queue(cookie('cleanux_utm', json_encode($utm), 60 * 24 * 90, '/', null, false, false));
+            cookie()->queue(cookie('brio_utm', json_encode($utm), 60 * 24 * 90, '/', null, false, false));
 
             // Track analytics event si module présent (soft-fail)
             $this->trackAttributionEvent($request, $utm);

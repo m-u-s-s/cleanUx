@@ -80,7 +80,7 @@ class ProductEmailTemplates
                 'subject' => 'Rendez-vous confirmé',
                 'eyebrow' => 'Confirmation',
                 'title' => 'Votre intervention est confirmée',
-                'intro' => 'Bonne nouvelle : votre prestation a bien été validée dans CleanUx.',
+                'intro' => 'Bonne nouvelle : votre prestation a bien été validée dans Brio.',
                 'details' => [
                     ['label' => 'Service', 'value' => 'Nettoyage standard'],
                     ['label' => 'Date', 'value' => Carbon::parse($rdv->date)->format('d/m/Y').' à '.substr($rdv->heure, 0, 5)],
@@ -125,7 +125,7 @@ class ProductEmailTemplates
             ],
             'finance_reminder' => [
                 'template_key' => $key,
-                'subject' => 'Rappel de facture CleanUx',
+                'subject' => 'Rappel de facture Brio',
                 'eyebrow' => 'Finance',
                 'title' => 'Un solde reste à régler',
                 'intro' => 'Nous vous envoyons un rappel concernant une facture encore ouverte.',
@@ -173,8 +173,8 @@ class ProductEmailTemplates
             ],
             default => [
                 'template_key' => 'generic',
-                'subject' => 'Notification CleanUx',
-                'eyebrow' => 'CleanUx',
+                'subject' => 'Notification Brio',
+                'eyebrow' => 'Brio',
                 'title' => 'Notification',
                 'intro' => 'Un message vient d’être généré depuis la plateforme.',
                 'details' => [],

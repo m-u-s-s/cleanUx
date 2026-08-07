@@ -19,7 +19,7 @@
             <div class="flex items-center gap-2">
                 <div class="flex h-8 w-8 items-center justify-center rounded-full bg-white/20 text-lg">🤖</div>
                 <div>
-                    <p class="text-sm font-bold text-white">Assistant CleanUx</p>
+                    <p class="text-sm font-bold text-white">Assistant Brio</p>
                     <p class="text-xs text-blue-100">
                         @if ($useStreaming)
                             <span class="inline-flex items-center gap-1">

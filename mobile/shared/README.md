@@ -43,7 +43,7 @@ works with Expo managed workflow.
 
 **Migration path to a proper workspace** (when team size justifies it):
 
-1. Create `mobile/shared/` as an npm workspace package (`package.json` with `name: "@cleanux/mobile-shared"`).
+1. Create `mobile/shared/` as an npm workspace package (`package.json` with `name: "@brio/mobile-shared"`).
 2. Add `workspaces: ["shared", "client", "provider"]` to a root `mobile/package.json`.
 3. Update `metro.config.js` in each app to add `watchFolders: [path.resolve(__dirname, '../shared')]`.
 4. Replace the sync script with a `workspace:*` dependency in each app.

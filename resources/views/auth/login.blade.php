@@ -12,7 +12,7 @@
                     <span class="grid h-10 w-10 place-items-center rounded-xl bg-brand-600 text-white font-bold text-lg shadow-soft-sm">
                         CU
                     </span>
-                    <span class="text-lg font-bold">{{ config('app.name', 'CleanUx') }}</span>
+                    <span class="text-lg font-bold">{{ config('app.name', 'Brio') }}</span>
                 </a>
             </div>
 

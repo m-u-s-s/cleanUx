@@ -1,6 +1,6 @@
 @push('scripts')
 <script>
-    const OFFLINE_QUEUE_KEY = 'cleanux_offline_actions';
+    const OFFLINE_QUEUE_KEY = 'brio_offline_actions';
 
     function getOfflineQueue() {
         return JSON.parse(localStorage.getItem(OFFLINE_QUEUE_KEY) || '[]');

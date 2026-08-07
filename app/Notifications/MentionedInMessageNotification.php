@@ -51,7 +51,7 @@ class MentionedInMessageNotification extends Notification
         $sender = $this->message->sender;
 
         return (new MailMessage)
-            ->subject('Vous avez été mentionné dans CleanUx')
+            ->subject('Vous avez été mentionné dans Brio')
             ->greeting("Bonjour {$notifiable->name},")
             ->line(($sender->name ?? 'Quelqu’un').' vous a mentionné dans #'.($this->message->channel?->name ?? 'un canal').' :')
             ->line('"'.str($this->message->content)->limit(200).'"')

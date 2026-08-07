@@ -23,7 +23,7 @@ class SocketConfigTest extends TestCase
         config([
             'broadcasting.default' => 'reverb',
             'broadcasting.connections.reverb.key' => 'pk_test_123',
-            'broadcasting.connections.reverb.options.host' => 'realtime.cleanux.test',
+            'broadcasting.connections.reverb.options.host' => 'realtime.brio.test',
             'broadcasting.connections.reverb.options.port' => 443,
             'broadcasting.connections.reverb.options.scheme' => 'https',
         ]);
@@ -35,7 +35,7 @@ class SocketConfigTest extends TestCase
         $r->assertOk()->assertJson([
             'driver' => 'reverb',
             'key' => 'pk_test_123',
-            'host' => 'realtime.cleanux.test',
+            'host' => 'realtime.brio.test',
             'port' => 443,
             'scheme' => 'https',
             'auth_endpoint' => '/api/broadcasting/auth',
@@ -53,7 +53,7 @@ class SocketConfigTest extends TestCase
             'broadcasting.default' => 'reverb',
             'broadcasting.connections.reverb.secret' => 'sk_super_secret',
             'broadcasting.connections.reverb.key' => 'pk_test_456',
-            'broadcasting.connections.reverb.options.host' => 'realtime.cleanux.test',
+            'broadcasting.connections.reverb.options.host' => 'realtime.brio.test',
         ]);
 
         Sanctum::actingAs(User::factory()->create());

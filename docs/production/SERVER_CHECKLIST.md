@@ -1,4 +1,4 @@
-\# CleanUx — Server Checklist
+\# Brio — Server Checklist
 
 
 
@@ -58,5 +58,5 @@ Ajouter dans le cron serveur :
 
 ```bash
 
-\* \* \* \* \* cd /path/to/CleanUx \&\& /usr/bin/php8.5 artisan schedule:run >> /dev/null 2>\&1
+\* \* \* \* \* cd /path/to/Brio \&\& /usr/bin/php8.5 artisan schedule:run >> /dev/null 2>\&1
 

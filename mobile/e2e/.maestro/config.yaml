@@ -1,2 +1,2 @@
-# Maestro E2E test configuration for CleanUx mobile apps
+# Maestro E2E test configuration for Brio mobile apps
 # Run with: maestro test mobile/e2e/flows/client/ or mobile/e2e/flows/provider/

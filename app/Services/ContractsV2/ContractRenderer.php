@@ -42,8 +42,8 @@ class ContractRenderer
             'email' => $user?->email ?? '',
             'date' => now()->format('Y-m-d'),
             'version' => $version,
-            'app_name' => (string) Config::get('app.name', 'CleanUx'),
-            'support_email' => (string) Config::get('mail.from.address', 'support@cleanux.test'),
+            'app_name' => (string) Config::get('app.name', 'Brio'),
+            'support_email' => (string) Config::get('mail.from.address', 'support@brio.test'),
         ];
 
         $allowed = (array) Config::get('contracts_v2.allowed_variables', []);

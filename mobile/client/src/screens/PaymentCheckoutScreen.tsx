@@ -33,7 +33,7 @@ export function PaymentCheckoutScreen({ route, navigation }: Props) {
       const { client_secret } = await paymentIntent.mutateAsync();
       const { error: sheetError } = await initPaymentSheet({
         paymentIntentClientSecret: client_secret,
-        merchantDisplayName: 'CleanUx',
+        merchantDisplayName: 'Brio',
         style: 'automatic',
         defaultBillingDetails: { email: '' },
       });

@@ -70,7 +70,7 @@ Aucune WebView. Le rendu est intégralement React Native.
 - Un compte portant les deux casquettes (admin **et** prestataire) choisit son espace et peut en
   changer sans se déconnecter.
 - **Câblage de résolution à corriger** : `mobile/provider/babel.config.js` ne déclare ni
-  `@/parity`, ni `@/webview`, ni `@/finance`, ni `@cleanux/shared` — alors que `tsconfig.json`
+  `@/parity`, ni `@/webview`, ni `@/finance`, ni `@brio/shared` — alors que `tsconfig.json`
   les déclare. Le typage passe, l'exécution échoue. Les alias manquants dont l'espace admin a
   besoin sont ajoutés au résolveur Babel.
 

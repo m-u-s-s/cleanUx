@@ -2,7 +2,7 @@
 
 ## Résumé
 
-La phase 2 a consolidé CleanUx autour de modules plus propres, mieux découpés et mieux testés.
+La phase 2 a consolidé Brio autour de modules plus propres, mieux découpés et mieux testés.
 
 ## Modules consolidés
 

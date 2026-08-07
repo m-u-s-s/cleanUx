@@ -110,7 +110,7 @@ describe('useLogin', () => {
     act(() => { resolve!([200, { token: 't', user: MOCK_USER }]); });
   });
 
-  it('sends device_name defaulting to cleanux-mobile', async () => {
+  it('sends device_name defaulting to brio-mobile', async () => {
     mock.onPost('/auth/login').replyOnce(200, { token: 't', user: MOCK_USER });
 
     const { result } = renderHook(() => useLogin(), { wrapper });
@@ -122,6 +122,6 @@ describe('useLogin', () => {
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
 
     const body = JSON.parse(mock.history['post']![0]!.data as string) as Record<string, unknown>;
-    expect(body['device_name']).toBe('cleanux-mobile');
+    expect(body['device_name']).toBe('brio-mobile');
   });
 });

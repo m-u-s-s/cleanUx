@@ -1,5 +1,5 @@
 /* ============================================================================
-   CleanUx — Motion System (keyframes, reveal-on-scroll, transitions)
+   Brio — Motion System (keyframes, reveal-on-scroll, transitions)
    ========================================================================= */
 
 @keyframes fade-in {
@@ -91,7 +91,7 @@ button:active,
 }
 
 /* ============================================================================
-   CleanUx — Premium hero & section animations (added 14/06/2026)
+   Brio — Premium hero & section animations (added 14/06/2026)
    GPU-only (transform/opacity/filter). All gated by prefers-reduced-motion
    via the global guard in a11y.css + the explicit kill-list below.
    ========================================================================= */
@@ -190,7 +190,7 @@ button:active,
 }
 
 /* ============================================================================
-   CleanUx — Premium interactions (added 26/06/2026)
+   Brio — Premium interactions (added 26/06/2026)
    Headline mask reveal · magnetic CTAs · hero pointer-parallax · 3D card tilt.
    All GPU-only (transform/opacity). JS engines live in app.js and self-disable
    on prefers-reduced-motion + coarse/touch pointers; the CSS below is the

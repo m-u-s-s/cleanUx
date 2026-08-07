@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Configuration i18n CleanUx — locales supportées data-driven.
+ * Configuration i18n Brio — locales supportées data-driven.
  *
  * Ajouter une langue = ajouter une entrée ici + créer lang/<code>/ (au minimum
  * un fichier app.php + un fichier ui.php même vides, et lang/<code>.json).

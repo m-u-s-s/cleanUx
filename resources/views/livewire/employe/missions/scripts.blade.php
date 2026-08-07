@@ -17,14 +17,14 @@
             }
         }
 
-        let cleanUxTrackingInterval = null;
+        let brioTrackingInterval = null;
 
         function startSendingPosition(sessionId) {
-            if (cleanUxTrackingInterval) {
-                clearInterval(cleanUxTrackingInterval);
+            if (brioTrackingInterval) {
+                clearInterval(brioTrackingInterval);
             }
 
-            cleanUxTrackingInterval = setInterval(() => {
+            brioTrackingInterval = setInterval(() => {
                 if (!navigator.geolocation) {
                     return;
                 }

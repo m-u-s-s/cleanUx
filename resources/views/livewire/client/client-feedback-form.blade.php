@@ -91,7 +91,7 @@
                     <span>
                         <span class="font-semibold">Publier mon avis publiquement</span>
                         <span class="block text-xs text-slate-500 mt-1">
-                            Décochez pour garder cet avis privé (visible uniquement par CleanUx et le prestataire).
+                            Décochez pour garder cet avis privé (visible uniquement par Brio et le prestataire).
                         </span>
                     </span>
                 </label>

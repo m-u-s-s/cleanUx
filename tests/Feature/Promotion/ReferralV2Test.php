@@ -88,7 +88,7 @@ class ReferralV2Test extends TestCase
             ]);
 
         $this->assertStringContainsString(
-            'CleanUx',
+            'Brio',
             $response->json('data.share_message'),
         );
     }

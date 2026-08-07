@@ -182,7 +182,7 @@ class ZoneAwareStructuredReservationTest extends TestCase
             ->set('postal_code_input', '9999')
             ->set('telephone_client', '0470000000')
             ->set('priorite', 'normale')
-            ->set('site_contact_name', 'Reception CleanUx')
+            ->set('site_contact_name', 'Reception Brio')
             ->set('rdvDate', $bookingDate)
             ->set('rdvHeure', '10:00')
             ->call('validerRdv')

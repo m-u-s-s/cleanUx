@@ -1,5 +1,5 @@
 /* ============================================================================
-   CleanUx — Premium Scroll Engine
+   Brio — Premium Scroll Engine
    Lenis (smooth scroll) + GSAP ScrollTrigger (scroll-driven behaviors).
    ----------------------------------------------------------------------------
    GLOBAL OPT-IN : ce bundle est chargé sur TOUTES les pages guest mais reste

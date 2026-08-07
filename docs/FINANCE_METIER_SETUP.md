@@ -1,6 +1,6 @@
 # Bloc finance métier
 
-Ce patch ajoute une couche métier finance conservative autour de CleanUx :
+Ce patch ajoute une couche métier finance conservative autour de Brio :
 
 - devis structurés (`finance_quotes`)
 - factures structurées (`finance_invoices`)

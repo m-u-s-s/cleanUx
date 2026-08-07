@@ -1,6 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const STORAGE_KEY = 'cleanux_completed_bookings';
+const STORAGE_KEY = 'brio_completed_bookings';
 const THRESHOLD = 3;
 
 /**

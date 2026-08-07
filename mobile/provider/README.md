@@ -1,6 +1,6 @@
-# CleanUx Provider — React Native (Expo)
+# Brio Provider — React Native (Expo)
 
-Provider/employee field app for the CleanUx multi-service marketplace.
+Provider/employee field app for the Brio multi-service marketplace.
 
 ## Quick start
 

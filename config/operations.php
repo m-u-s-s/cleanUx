@@ -5,7 +5,7 @@ return [
         'heartbeat_enabled' => filter_var(env('OPS_HEARTBEAT_ENABLED', true), FILTER_VALIDATE_BOOL),
         'heartbeat_disk' => env('OPS_HEARTBEAT_DISK', 'local'),
         'heartbeat_path' => env('OPS_HEARTBEAT_PATH', 'ops/heartbeat.json'),
-        'heartbeat_cache_key' => env('OPS_HEARTBEAT_CACHE_KEY', 'cleanux:ops:heartbeat'),
+        'heartbeat_cache_key' => env('OPS_HEARTBEAT_CACHE_KEY', 'brio:ops:heartbeat'),
         'heartbeat_max_age_seconds' => (int) env('OPS_HEARTBEAT_MAX_AGE_SECONDS', 900),
         'notify_email' => env('OPS_MONITORING_NOTIFY_EMAIL'),
         'failed_jobs_warning_threshold' => (int) env('OPS_FAILED_JOBS_WARNING_THRESHOLD', 1),

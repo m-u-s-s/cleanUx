@@ -1,4 +1,4 @@
-# CleanUx Mobile RN — Sprint 1 : Monorepo + Expo Bootstrap
+# Brio Mobile RN — Sprint 1 : Monorepo + Expo Bootstrap
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
@@ -147,7 +147,7 @@ Expected: 0 errors (the default `App.tsx` from Expo is valid strict TS).
 ### Step 1.6 — Commit
 
 ```bash
-cd /path/to/CleanUx
+cd /path/to/Brio
 git add mobile/client/
 git commit -m "feat(mobile): init Expo TypeScript project in mobile/client/
 
@@ -851,7 +851,7 @@ export function LoginScreen() {
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Login</Text>
-      <Text style={styles.subtitle}>CleanUx</Text>
+      <Text style={styles.subtitle}>Brio</Text>
     </View>
   );
 }
@@ -933,7 +933,7 @@ import type { LinkingOptions } from '@react-navigation/native';
 import type { RootStackParamList } from './types';
 
 export const linking: LinkingOptions<RootStackParamList> = {
-  prefixes: ['cleanux://', 'https://app.cleanux.com'],
+  prefixes: ['brio://', 'https://app.brio.com'],
   config: {
     screens: {
       MainTabs: {
@@ -1007,7 +1007,7 @@ git commit -m "feat(mobile): React Navigation skeleton (stack + tabs + 5 screens
 
 RootNavigator (native-stack): MainTabs | Login (modal).
 TabNavigator (bottom-tabs): Home, Bookings, Notifications, Profile.
-Deep linking config for cleanux:// and https://app.cleanux.com.
+Deep linking config for brio:// and https://app.brio.com.
 All screens use theme tokens (colors, typography). Smoke render test.
 
 Co-Authored-By: Claude Opus 4.7 (1M context) <noreply@anthropic.com>"
@@ -1029,8 +1029,8 @@ Co-Authored-By: Claude Opus 4.7 (1M context) <noreply@anthropic.com>"
 ```json
 {
   "expo": {
-    "name": "CleanUx",
-    "slug": "cleanux-client",
+    "name": "Brio",
+    "slug": "brio-client",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -1042,11 +1042,11 @@ Co-Authored-By: Claude Opus 4.7 (1M context) <noreply@anthropic.com>"
     },
     "ios": {
       "supportsTablet": false,
-      "bundleIdentifier": "com.cleanux.client",
+      "bundleIdentifier": "com.brio.client",
       "infoPlist": {
-        "NSCameraUsageDescription": "CleanUx uses the camera to scan QR codes for mission start/end.",
-        "NSLocationWhenInUseUsageDescription": "CleanUx uses your location to show nearby providers and track missions.",
-        "NSPhotoLibraryUsageDescription": "CleanUx uses photos for AI quote estimation and chat attachments."
+        "NSCameraUsageDescription": "Brio uses the camera to scan QR codes for mission start/end.",
+        "NSLocationWhenInUseUsageDescription": "Brio uses your location to show nearby providers and track missions.",
+        "NSPhotoLibraryUsageDescription": "Brio uses photos for AI quote estimation and chat attachments."
       }
     },
     "android": {
@@ -1054,7 +1054,7 @@ Co-Authored-By: Claude Opus 4.7 (1M context) <noreply@anthropic.com>"
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#070b14"
       },
-      "package": "com.cleanux.client",
+      "package": "com.brio.client",
       "permissions": [
         "CAMERA",
         "ACCESS_FINE_LOCATION",
@@ -1062,7 +1062,7 @@ Co-Authored-By: Claude Opus 4.7 (1M context) <noreply@anthropic.com>"
         "READ_EXTERNAL_STORAGE"
       ]
     },
-    "scheme": "cleanux",
+    "scheme": "brio",
     "plugins": [
       "expo-secure-store",
       "@sentry/react-native/expo"
@@ -1101,14 +1101,14 @@ Note: `PLACEHOLDER_EAS_PROJECT_ID` should be replaced after running `eas init` (
       "distribution": "internal",
       "env": {
         "APP_ENV": "staging",
-        "API_URL": "https://staging.cleanux.com/api"
+        "API_URL": "https://staging.brio.com/api"
       }
     },
     "production": {
       "autoIncrement": true,
       "env": {
         "APP_ENV": "production",
-        "API_URL": "https://app.cleanux.com/api"
+        "API_URL": "https://app.brio.com/api"
       }
     }
   },
@@ -1167,7 +1167,7 @@ git commit -m "feat(mobile): EAS Build profiles + app.json + Sentry init
 
 3 build profiles (development/preview/production) with per-env API_URL.
 iOS permissions (camera, location, photos) + Android equivalent.
-Deep link scheme 'cleanux://'. Sentry gated on DSN env var, disabled in dev.
+Deep link scheme 'brio://'. Sentry gated on DSN env var, disabled in dev.
 Submit config scaffolded with placeholders for Apple/Google credentials.
 
 Co-Authored-By: Claude Opus 4.7 (1M context) <noreply@anthropic.com>"
@@ -1222,7 +1222,7 @@ Expected: Metro starts, no compilation errors.
 ### Step 7.5 — Verify Laravel tests unaffected
 
 ```bash
-cd /path/to/CleanUx && php artisan test --filter="AuthRefreshTest|ExceptionHandlerJsonTest|StripeConnectTest|SocketConfigTest" 2>&1 | tail -5
+cd /path/to/Brio && php artisan test --filter="AuthRefreshTest|ExceptionHandlerJsonTest|StripeConnectTest|SocketConfigTest" 2>&1 | tail -5
 ```
 
 Expected: Sprint 0's 24 tests still PASS (Sprint 1 shouldn't touch Laravel, but paranoid check).

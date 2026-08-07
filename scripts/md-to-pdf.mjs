@@ -157,7 +157,7 @@ await page.pdf({
   displayHeaderFooter: true,
   headerTemplate: '<span></span>',
   footerTemplate:
-    '<div style="font-size:8px;color:#94a3b8;width:100%;text-align:center;">CleanUx — Audit plateforme 2026-06-08 — page <span class="pageNumber"></span>/<span class="totalPages"></span></div>',
+    '<div style="font-size:8px;color:#94a3b8;width:100%;text-align:center;">Brio — Audit plateforme 2026-06-08 — page <span class="pageNumber"></span>/<span class="totalPages"></span></div>',
   margin: { top: '18mm', bottom: '16mm', left: '15mm', right: '15mm' },
 });
 await browser.close();

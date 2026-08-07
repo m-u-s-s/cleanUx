@@ -68,13 +68,13 @@ class ReferralController extends Controller
         try {
             Mail::raw(
                 "Bonjour,\n\n".
-                $user->name." vous invite à essayer CleanUx.\n\n".
+                $user->name." vous invite à essayer Brio.\n\n".
                 ($data['message'] ?? '')."\n\n".
                 'Inscrivez-vous via ce lien : '.$url."\n".
                 'Ou utilisez le code : '.$code,
                 function ($message) use ($data, $user) {
                     $message->to($data['email'])
-                        ->subject('CleanUx · '.$user->name.' vous invite');
+                        ->subject('Brio · '.$user->name.' vous invite');
                 }
             );
         } catch (\Throwable $e) {

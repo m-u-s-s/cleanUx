@@ -30,7 +30,7 @@ class LoyaltyTierChangedNotification extends Notification
     {
         if ($this->isUpgrade) {
             return (new MailMessage)
-                ->subject('CleanUx · Vous passez au niveau '.$this->newTier->name.' '.$this->newTier->icon)
+                ->subject('Brio · Vous passez au niveau '.$this->newTier->name.' '.$this->newTier->icon)
                 ->greeting('Félicitations !')
                 ->line('Vous venez de passer au niveau '.$this->newTier->name.'.')
                 ->line('Vos avantages :')
@@ -39,7 +39,7 @@ class LoyaltyTierChangedNotification extends Notification
         }
 
         return (new MailMessage)
-            ->subject('CleanUx · Mise à jour de votre niveau fidélité')
+            ->subject('Brio · Mise à jour de votre niveau fidélité')
             ->line('Votre niveau passe à '.$this->newTier->name.'.')
             ->line('Continuez à profiter de nos services pour remonter !')
             ->action('Voir mon programme', route('client.loyalty'));

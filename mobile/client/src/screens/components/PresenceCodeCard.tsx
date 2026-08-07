@@ -28,13 +28,13 @@ const WORDING: Record<Purpose, { title: string; hint: string; tag: string }> = {
   presence: {
     title: 'Confirmez la présence',
     hint: "Montrez ce code à votre prestataire. Il le scanne pour attester qu'il est bien chez vous.",
-    tag: 'cleanux.presence',
+    tag: 'brio.presence',
   },
   // La clôture encaisse le paiement pré-autorisé : le client doit comprendre ce qu'il valide.
   completion: {
     title: 'Validez la fin de la prestation',
     hint: 'Montrez ce code une fois le travail terminé. Il clôture la mission et déclenche le paiement.',
-    tag: 'cleanux.completion',
+    tag: 'brio.completion',
   },
 };
 

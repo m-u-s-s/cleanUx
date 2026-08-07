@@ -1,5 +1,5 @@
 /* ============================================================================
-   CleanUx — Image Reveal : cœur framework-agnostique.
+   Brio — Image Reveal : cœur framework-agnostique.
    ----------------------------------------------------------------------------
    Révélation d'images au scroll via IntersectionObserver. Effets composables
    (CSS transitions, déclenchées par la classe .is-revealed) :

@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "brio Pro",
-    "slug": "cleanux-provider",
+    "slug": "brio-provider",
     "version": "1.0.0",
     "orientation": "portrait",
     "updates": {
@@ -22,7 +22,7 @@
     },
     "ios": {
       "supportsTablet": false,
-      "bundleIdentifier": "com.cleanux.provider",
+      "bundleIdentifier": "com.brio.provider",
       "infoPlist": {
         "NSCameraUsageDescription": "brio Provider uses the camera to scan and display QR codes.",
         "NSLocationWhenInUseUsageDescription": "brio Provider uses your location to navigate to clients and share your ETA.",
@@ -37,7 +37,7 @@
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#070b14"
       },
-      "package": "com.cleanux.provider",
+      "package": "com.brio.provider",
       "permissions": [
         "android.permission.CAMERA",
         "android.permission.ACCESS_FINE_LOCATION",
@@ -48,7 +48,7 @@
         "android.permission.RECORD_AUDIO"
       ]
     },
-    "scheme": "cleanux-provider",
+    "scheme": "brio-provider",
     "plugins": [
       "expo-secure-store",
       "expo-notifications",

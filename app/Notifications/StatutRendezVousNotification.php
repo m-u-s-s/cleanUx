@@ -27,7 +27,7 @@ class StatutRendezVousNotification extends Notification implements ShouldQueue
         $statusText = BookingStatus::mailLabel((string) $this->rdv->status);
 
         $mail = (new MailMessage)
-            ->subject('CleanUx · Mise à jour de votre demande')
+            ->subject('Brio · Mise à jour de votre demande')
             ->line("Votre demande de {$this->rdv->service_display_name} a été {$statusText}.")
             ->line('Date : '.$this->rdv->date.' à '.$this->rdv->heure)
             ->line('Lieu : '.$this->rdv->location_display);

@@ -15,7 +15,7 @@ class PrepareFreshSeed extends Command
     {
         $report = $reporter->build();
 
-        $this->components->info('Checklist post-seed CleanUx');
+        $this->components->info('Checklist post-seed Brio');
         $this->newLine();
 
         $this->components->twoColumnDetail('Profil seed', $report['profile']);

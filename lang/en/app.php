@@ -156,7 +156,7 @@ return [
     ],
 
     'assistant' => [
-        'title' => 'CleanUx Assistant',
+        'title' => 'Brio Assistant',
         'subtitle' => 'Always available',
         'streaming_active' => 'Streaming active',
         'placeholder' => 'Ask your question...',

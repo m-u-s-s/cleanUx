@@ -10,7 +10,7 @@
 
 **Faits terrain vérifiés (à NE PAS re-supposer) :**
 - Inventaire des modules : `storage/app/parity_webview.json` (array de `{ key, path, roles }`). Source unique consommée par `scripts/embed_sweep.php` — la RÉUTILISER.
-- Comptes QA (mot de passe commun `QaPhase2!`) : `admin`→`admin@cleanux.test` ; `provider_company`→`qa-provider-company@cleanux.test` ; `entreprise`→`dominique.monnier@example.org` ; `provider`→`bsanchez@example.org` ; `client`→`lemoine.gabrielle@example.net`. Mapping rôle→compte = `credKeyForRoles()` dans `embed_sweep.php` (priorité admin > provider_company > entreprise > provider > client ; `roles=[]` → public, pas de login).
+- Comptes QA (mot de passe commun `QaPhase2!`) : `admin`→`admin@brio.test` ; `provider_company`→`qa-provider-company@brio.test` ; `entreprise`→`dominique.monnier@example.org` ; `provider`→`bsanchez@example.org` ; `client`→`lemoine.gabrielle@example.net`. Mapping rôle→compte = `credKeyForRoles()` dans `embed_sweep.php` (priorité admin > provider_company > entreprise > provider > client ; `roles=[]` → public, pas de login).
 - Login Fortify : `GET /login` rend un form avec `name="_token"` (CSRF) ; `POST /login` avec `_token,email,password` → 302 vers dashboard si OK, retour `/login` si échec. **En Playwright, on remplit le form et on submit** (le navigateur gère le cookie CSRF) — pas besoin d'extraire le token à la main.
 - Embed mode : `app/Http/Middleware/EmbedMode.php` — `?embed=1` masque la nav ; le marqueur `[data-chrome="primary-nav"]` est ABSENT du DOM en embed.
 - Flag de vérif : `config/parity.php` contient `responsive_verified` par module (géré par `app/Console/Commands/ParityScaffoldRegistry.php`).
@@ -41,7 +41,7 @@
 
 ```json
 {
-  "name": "cleanux-visual-qa",
+  "name": "brio-visual-qa",
   "private": true,
   "type": "module",
   "version": "1.0.0",
@@ -87,8 +87,8 @@ export const QA_PASSWORD = 'QaPhase2!';
 
 // Même mapping que scripts/embed_sweep.php ($creds).
 export const CREDENTIALS = {
-  admin: 'admin@cleanux.test',
-  provider_company: 'qa-provider-company@cleanux.test',
+  admin: 'admin@brio.test',
+  provider_company: 'qa-provider-company@brio.test',
   entreprise: 'dominique.monnier@example.org',
   provider: 'bsanchez@example.org',
   client: 'lemoine.gabrielle@example.net',
@@ -410,7 +410,7 @@ run();
 
 - [ ] **Step 3: Lancer le serveur + premier run**
 
-Dans un terminal séparé : `php artisan serve` (DB de dev seedée avec les comptes QA). Vérifie d'abord que les comptes existent : `php artisan tinker --execute="echo \App\Models\User::where('email','admin@cleanux.test')->exists() ? 'OK' : 'MISSING';"`. **Si MISSING**, identifie/lance le seeder QA (cherche un seeder qui crée ces comptes — grep `admin@cleanux.test` dans `database/seeders/`) et documente la commande. Puis :
+Dans un terminal séparé : `php artisan serve` (DB de dev seedée avec les comptes QA). Vérifie d'abord que les comptes existent : `php artisan tinker --execute="echo \App\Models\User::where('email','admin@brio.test')->exists() ? 'OK' : 'MISSING';"`. **Si MISSING**, identifie/lance le seeder QA (cherche un seeder qui crée ces comptes — grep `admin@brio.test` dans `database/seeders/`) et documente la commande. Puis :
 
 ```bash
 cd tools/visual-qa && VQA_BASE=http://127.0.0.1:8000 npm run qa

@@ -178,13 +178,13 @@ class AvailabilityController extends Controller
         $lines = [
             'BEGIN:VCALENDAR',
             'VERSION:2.0',
-            'PRODID:-//CleanUx//Availability//EN',
+            'PRODID:-//Brio//Availability//EN',
             'CALSCALE:GREGORIAN',
             'METHOD:PUBLISH',
         ];
 
         foreach ($windows as $i => $w) {
-            $uid = sprintf('avail-%d-%s@cleanux', $user->id, $w['start']->format('YmdHis'));
+            $uid = sprintf('avail-%d-%s@brio', $user->id, $w['start']->format('YmdHis'));
             $lines[] = 'BEGIN:VEVENT';
             $lines[] = 'UID:'.$uid;
             $lines[] = 'DTSTAMP:'.CarbonImmutable::now()->format('Ymd\THis\Z');
@@ -199,7 +199,7 @@ class AvailabilityController extends Controller
 
         return response(implode("\r\n", $lines)."\r\n", 200, [
             'Content-Type' => 'text/calendar; charset=utf-8',
-            'Content-Disposition' => 'attachment; filename="cleanux-availability-'.$user->id.'.ics"',
+            'Content-Disposition' => 'attachment; filename="brio-availability-'.$user->id.'.ics"',
         ]);
     }
 }

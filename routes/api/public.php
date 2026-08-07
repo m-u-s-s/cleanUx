@@ -87,8 +87,8 @@ Route::get('/support/faq', function () {
         ['q' => 'Comment annuler une réservation ?',        'a' => "Allez dans Mes réservations, sélectionnez la réservation et appuyez sur Annuler. Des frais peuvent s'appliquer selon le délai."],
         ['q' => 'Comment contacter mon prestataire ?',      'a' => 'Ouvrez le détail de votre réservation et utilisez la messagerie intégrée.'],
         ['q' => 'Comment ajouter un moyen de paiement ?',   'a' => 'Allez dans Profil > Mes moyens de paiement > Ajouter une carte.'],
-        ['q' => 'Comment devenir prestataire ?',            'a' => "Téléchargez l'app CleanUx Provider, inscrivez-vous et complétez la vérification KYC."],
-        ['q' => 'Mes données sont-elles protégées ?',       'a' => 'Oui, CleanUx est conforme au RGPD. Vous pouvez exporter ou supprimer vos données depuis Profil > RGPD.'],
+        ['q' => 'Comment devenir prestataire ?',            'a' => "Téléchargez l'app Brio Provider, inscrivez-vous et complétez la vérification KYC."],
+        ['q' => 'Mes données sont-elles protégées ?',       'a' => 'Oui, Brio est conforme au RGPD. Vous pouvez exporter ou supprimer vos données depuis Profil > RGPD.'],
         ['q' => 'Comment fonctionne le programme fidélité ?', 'a' => 'Cumulez des points à chaque réservation. Montez de niveau (Bronze → Platinum) et échangez vos points contre des réductions.'],
     ]]);
 })->name('api.support.faq');

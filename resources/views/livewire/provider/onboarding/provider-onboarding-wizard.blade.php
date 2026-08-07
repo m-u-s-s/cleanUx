@@ -3,7 +3,7 @@
     {{-- Header --}}
     <div>
         <p class="text-sm font-medium text-slate-500">Inscription prestataire</p>
-        <h1 class="text-2xl md:text-3xl font-bold text-slate-900">Bienvenue sur CleanUx</h1>
+        <h1 class="text-2xl md:text-3xl font-bold text-slate-900">Bienvenue sur Brio</h1>
         <p class="text-sm text-slate-500 mt-1">
             Complète les étapes ci-dessous pour pouvoir recevoir des missions.
         </p>
@@ -128,7 +128,7 @@
             <div>
                 <h2 class="text-lg font-bold text-slate-900">Pièce d'identité</h2>
                 <p class="text-sm text-slate-500 mt-1">
-                    Document obligatoire pour vérification. Visible uniquement par les admins CleanUx.
+                    Document obligatoire pour vérification. Visible uniquement par les admins Brio.
                 </p>
             </div>
 
@@ -410,7 +410,7 @@
                     <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-emerald-100 mb-4">
                         <span class="text-3xl">🎉</span>
                     </div>
-                    <h2 class="text-xl font-bold text-slate-900">Bienvenue dans CleanUx !</h2>
+                    <h2 class="text-xl font-bold text-slate-900">Bienvenue dans Brio !</h2>
                     <p class="text-sm text-slate-600 mt-2">
                         Ton inscription est validée. Tu peux maintenant passer en ligne et recevoir des missions.
                     </p>

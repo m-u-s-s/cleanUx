@@ -1,4 +1,4 @@
-\# CleanUx — Phase 3B Security / Environment Checklist
+\# Brio — Phase 3B Security / Environment Checklist
 
 
 
@@ -6,7 +6,7 @@
 
 
 
-Préparer CleanUx pour un environnement production sécurisé.
+Préparer Brio pour un environnement production sécurisé.
 
 
 

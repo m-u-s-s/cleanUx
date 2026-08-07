@@ -18,7 +18,7 @@ class PublicSeoController extends Controller
 {
     public function sitemap(): Response
     {
-        $baseUrl = rtrim(config('app.url', 'https://cleanux.com'), '/');
+        $baseUrl = rtrim(config('app.url', 'https://brio.com'), '/');
         $now = now()->toIso8601String();
 
         $urls = [
@@ -82,7 +82,7 @@ class PublicSeoController extends Controller
 
     public function robots(): Response
     {
-        $baseUrl = rtrim(config('app.url', 'https://cleanux.com'), '/');
+        $baseUrl = rtrim(config('app.url', 'https://brio.com'), '/');
         $body = "User-agent: *\n";
         $body .= "Allow: /\n";
         $body .= "Disallow: /admin/\n";

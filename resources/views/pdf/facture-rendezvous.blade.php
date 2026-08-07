@@ -15,7 +15,7 @@
 </head>
 <body>
     <h1>Facture {{ $invoiceNumber }}</h1>
-    <div class="muted">CleanUx · émise le {{ now()->format('d/m/Y H:i') }}</div>
+    <div class="muted">Brio · émise le {{ now()->format('d/m/Y H:i') }}</div>
 
     <div class="box">
         <strong>Facturé à</strong><br>

@@ -6,14 +6,14 @@
     {
         "@context": "https://schema.org",
         "@type": "ItemList",
-        "name": "Tarifs CleanUx",
+        "name": "Tarifs Brio",
         "itemListElement": [
             {
                 "@type": "ListItem",
                 "position": 1,
                 "item": {
                     "@type": "Product",
-                    "name": "CleanUx Gratuit",
+                    "name": "Brio Gratuit",
                     "description": "Jusqu'à 5 réservations par mois, accès à la marketplace.",
                     "offers": {
                         "@type": "Offer",
@@ -28,7 +28,7 @@
                 "position": 2,
                 "item": {
                     "@type": "Product",
-                    "name": "CleanUx Pro",
+                    "name": "Brio Pro",
                     "description": "Réservations illimitées, choix prestataire, dispatch prioritaire.",
                     "offers": {
                         "@type": "Offer",
@@ -43,7 +43,7 @@
                 "position": 3,
                 "item": {
                     "@type": "Product",
-                    "name": "CleanUx Business",
+                    "name": "Brio Business",
                     "description": "Multi-sites, assurance incluse, account manager dédié.",
                     "offers": {
                         "@type": "Offer",
@@ -235,7 +235,7 @@
                     </ul>
 
                     <div class="mt-8">
-                        <a href="mailto:business@cleanux.be"
+                        <a href="mailto:business@brio.be"
                            class="block w-full rounded-xl border border-brand-200 bg-brand-50 px-4 py-3 text-center text-sm font-semibold text-brand-700 hover:bg-brand-100 transition cursor-pointer">
                             Contacter l'equipe
                         </a>

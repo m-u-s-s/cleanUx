@@ -24,4 +24,4 @@ export function getAppAudience(): AppAudience | null {
   return current;
 }
 
-export const APP_AUDIENCE_HEADER = 'X-CleanUx-App';
+export const APP_AUDIENCE_HEADER = 'X-Brio-App';

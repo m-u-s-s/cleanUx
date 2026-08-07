@@ -1,4 +1,4 @@
-# CleanUx — Go Live Notes
+# Brio — Go Live Notes
 
 ## Préproduction recommandée
 

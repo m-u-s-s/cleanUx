@@ -1,5 +1,5 @@
 /**
- * Phase 8 — Service Worker CleanUx PWA.
+ * Phase 8 — Service Worker Brio PWA.
  *
  * Responsabilités :
  *   1. Cache des assets statiques (CSS, JS, fonts, icons) → mode offline
@@ -13,7 +13,7 @@
  *   - Bump CACHE_VERSION après une grosse MAJ pour forcer un re-cache
  */
 
-const CACHE_VERSION = 'cleanux-v1';
+const CACHE_VERSION = 'brio-v1';
 const STATIC_CACHE = `${CACHE_VERSION}-static`;
 const RUNTIME_CACHE = `${CACHE_VERSION}-runtime`;
 
@@ -139,12 +139,12 @@ self.addEventListener('push', (event) => {
         payload = event.data.json();
     } catch (e) {
         payload = {
-            title: 'CleanUx',
+            title: 'Brio',
             body: event.data.text(),
         };
     }
 
-    const title = payload.title || 'CleanUx';
+    const title = payload.title || 'Brio';
     const options = {
         body: payload.body || '',
         icon: payload.icon || '/icons/icon-192.png',

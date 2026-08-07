@@ -2,7 +2,7 @@
 
 ## Objectif
 
-Cette phase prépare la livraison finale de CleanUx après les refactors de la phase 2.
+Cette phase prépare la livraison finale de Brio après les refactors de la phase 2.
 
 Elle documente :
 - les modules stabilisés ;

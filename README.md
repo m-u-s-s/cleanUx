@@ -1,4 +1,4 @@
-# CleanUx
+# Brio
 
 **Multi-trade marketplace** style Uber/Bolt — nettoyage, peinture, babysitting, toiturier, et 30+ métiers. Construit avec **Laravel 11**, **Livewire 3**, **Sanctum 4**, **Reverb**.
 
@@ -78,8 +78,8 @@ npm run build
 php artisan config:cache && php artisan route:cache && php artisan view:cache
 
 # 5. Workers (Supervisor + Systemd configs dans deploy/)
-sudo systemctl restart cleanux-queue
-sudo systemctl restart cleanux-scheduler
+sudo systemctl restart brio-queue
+sudo systemctl restart brio-scheduler
 ```
 
 ## Variables d'environnement

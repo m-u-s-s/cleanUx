@@ -26,7 +26,7 @@ use Stripe\Stripe;
  *
  * NB : Stripe gère automatiquement le transfer vers le compte Connect via
  * `transfer_data.destination` posé par MissionPaymentService::authorize().
- * Notre ProviderPayout est une trace comptable côté CleanUx, pas un transfer
+ * Notre ProviderPayout est une trace comptable côté Brio, pas un transfer
  * actif.
  */
 class StripeConnectPaymentService
@@ -97,7 +97,7 @@ class StripeConnectPaymentService
                 'payment_captured_at' => now(),
             ]);
 
-            // Créer l'entrée ProviderPayout (entrée comptable côté CleanUx)
+            // Créer l'entrée ProviderPayout (entrée comptable côté Brio)
             $payout = $this->createProviderPayout($mission, $booking);
 
             Log::info('StripeConnectPaymentService: capture + payout entry OK', [

@@ -1,4 +1,4 @@
-# CleanUx Mobile RN — Sprint 4-5 : Booking Flow + Browse Providers
+# Brio Mobile RN — Sprint 4-5 : Booking Flow + Browse Providers
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development or superpowers:executing-plans.
 

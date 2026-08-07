@@ -9,7 +9,7 @@
 
 ## Contexte & objectif
 
-CleanUx est une marketplace Uber-like **multi-métiers** (nettoyage, peinture, babysitting, toiturier…)
+Brio est une marketplace Uber-like **multi-métiers** (nettoyage, peinture, babysitting, toiturier…)
 où un **client** (particulier ou société multi-sites) engage un **prestataire** (indépendant ou
 société multi-employés). Quatre relations doivent fonctionner : **C2I** (particulier→indépendant),
 **C2B** (particulier→société), **B2I** (société→indépendant), **B2B** (société→société).

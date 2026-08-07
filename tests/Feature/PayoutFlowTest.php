@@ -32,7 +32,7 @@ class PayoutFlowTest extends TestCase
         $result = $service->calculateForBooking($booking);
 
         $this->assertEquals(10000, $result['total_cents']);
-        // Unified platform rate 20% (CLEANUX_PLATFORM_FEE_PERCENT, aligned on prod — audit B1).
+        // Unified platform rate 20% (BRIO_PLATFORM_FEE_PERCENT, aligned on prod — audit B1).
         $this->assertEquals(2000, $result['platform_fee_cents']);
         $this->assertEquals(8000, $result['provider_payout_cents']);
         $this->assertEquals(0.20, $result['commission_rate']);

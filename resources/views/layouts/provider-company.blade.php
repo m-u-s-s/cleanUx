@@ -7,12 +7,12 @@
     <meta name="theme-color" content="#2563eb">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
-    <meta name="apple-mobile-web-app-title" content="CleanUx">
+    <meta name="apple-mobile-web-app-title" content="Brio">
     <link rel="apple-touch-icon" href="/icons/icon-192.png">
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>{{ Auth::user()->currentOrganization?->name ?? 'CleanUx' }} — Espace prestataire</title>
+    <title>{{ Auth::user()->currentOrganization?->name ?? 'Brio' }} — Espace prestataire</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @livewireStyles
 </head>
@@ -24,7 +24,7 @@
     <nav data-chrome="primary-nav" aria-label="Navigation principale" class="sticky top-0 z-40 flex h-14 items-center justify-between border-b border-slate-700 bg-slate-900/95 px-4 backdrop-blur">
         <div class="flex items-center gap-3">
             <a href="{{ route('provider-company.dashboard') }}" class="text-lg font-black text-white">
-                CleanUx <span class="text-amber-400">Pro</span>
+                Brio <span class="text-amber-400">Pro</span>
             </a>
             <div class="hidden sm:flex items-center gap-1">
                 @foreach ([

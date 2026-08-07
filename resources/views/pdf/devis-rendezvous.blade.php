@@ -15,7 +15,7 @@
 </head>
 <body>
     <h1>Devis {{ $quoteNumber }}</h1>
-    <div class="muted">CleanUx · généré le {{ now()->format('d/m/Y H:i') }}</div>
+    <div class="muted">Brio · généré le {{ now()->format('d/m/Y H:i') }}</div>
 
     <div class="box">
         <strong>Client</strong><br>

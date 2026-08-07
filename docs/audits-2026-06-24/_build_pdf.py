@@ -57,7 +57,7 @@ TEMPLATE = """<!DOCTYPE html>
   <h1>{title}</h1>
   <div class="persona">{persona}</div>
   <table class="meta">
-    <tr><td class="k">Projet</td><td>CleanUx / brio — marketplace multi-métiers (Laravel 12 + apps mobiles Expo)</td></tr>
+    <tr><td class="k">Projet</td><td>Brio / brio — marketplace multi-métiers (Laravel 12 + apps mobiles Expo)</td></tr>
     <tr><td class="k">Destinataire</td><td>{persona}</td></tr>
     <tr><td class="k">Date d'audit</td><td>24 juin 2026</td></tr>
     <tr><td class="k">Référence</td><td>Réactualisation de l'audit plateforme du 8 juin 2026</td></tr>

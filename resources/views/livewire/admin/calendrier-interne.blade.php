@@ -133,7 +133,7 @@
             document.addEventListener('livewire:navigated', initInternalCalendar);
             document.addEventListener('livewire:load', initInternalCalendar);
 
-            let cleanuxInternalCalendar = null;
+            let brioInternalCalendar = null;
 
             function initInternalCalendar() {
                 const el = document.getElementById('admin-internal-calendar');
@@ -142,11 +142,11 @@
                 const events = @js($calendarEvents);
                 const initialView = @js($viewMode);
 
-                if (cleanuxInternalCalendar) {
-                    cleanuxInternalCalendar.destroy();
+                if (brioInternalCalendar) {
+                    brioInternalCalendar.destroy();
                 }
 
-                cleanuxInternalCalendar = new FullCalendar.Calendar(el, {
+                brioInternalCalendar = new FullCalendar.Calendar(el, {
                     initialView: initialView || 'dayGridMonth',
                     height: 650,
                     locale: 'fr',
@@ -171,7 +171,7 @@
                     }
                 });
 
-                cleanuxInternalCalendar.render();
+                brioInternalCalendar.render();
             }
         </script>
     @endpush

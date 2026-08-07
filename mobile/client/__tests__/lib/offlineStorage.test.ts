@@ -1,7 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { offlineCache } from '../../src/lib/offlineStorage';
 
-const CACHE_PREFIX = 'cleanux_cache_';
+const CACHE_PREFIX = 'brio_cache_';
 
 beforeEach(async () => {
   jest.clearAllMocks();

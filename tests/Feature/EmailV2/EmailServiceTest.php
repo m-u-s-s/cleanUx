@@ -22,7 +22,7 @@ class EmailServiceTest extends TestCase
         Config::set('email_v2.enabled', true);
         Config::set('email_v2.provider', 'mock');
         Config::set('email_v2.allowed_categories', ['transactional', 'marketing', 'notification', 'system']);
-        Config::set('email_v2.from_default', ['email' => 'noreply@test.com', 'name' => 'CleanUx Test']);
+        Config::set('email_v2.from_default', ['email' => 'noreply@test.com', 'name' => 'Brio Test']);
         Config::set('email_v2.rate_limit_per_recipient_per_hour', 0);
         Config::set('email_v2.rate_limit_per_recipient_per_day', 0);
         Config::set('email_v2.check_opt_outs', false);

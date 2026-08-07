@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ $title ?? 'Notification CleanUx' }}</title>
+    <title>{{ $title ?? 'Notification Brio' }}</title>
 </head>
 <body style="margin:0;padding:0;background:#f8fafc;font-family:Arial,Helvetica,sans-serif;color:#0f172a;">
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f8fafc;padding:24px 0;">
@@ -14,7 +14,7 @@
                         <td style="padding:0;overflow:hidden;">
                             <div style="height:3px;background:linear-gradient(90deg,#ffb648,#ff8a3d);"></div>
                             <div style="padding:24px 28px;background:linear-gradient(135deg,#0f172a,#1e293b);color:#fff;">
-                                <div style="font-size:12px;letter-spacing:0.12em;text-transform:uppercase;color:#ffb648;font-weight:700;">{{ $eyebrow ?? 'CleanUx' }}</div>
+                                <div style="font-size:12px;letter-spacing:0.12em;text-transform:uppercase;color:#ffb648;font-weight:700;">{{ $eyebrow ?? 'Brio' }}</div>
                                 <div style="margin-top:8px;font-size:28px;line-height:1.2;font-weight:800;">{{ $title ?? 'Notification' }}</div>
                             </div>
                         </td>
@@ -55,7 +55,7 @@
                     </tr>
                     <tr>
                         <td style="padding:18px 28px;background:#f8fafc;border-top:1px solid #e2e8f0;font-size:12px;line-height:1.6;color:#64748b;">
-                            {{ $footer ?? 'CleanUx — plateforme de gestion des interventions.' }}
+                            {{ $footer ?? 'Brio — plateforme de gestion des interventions.' }}
                         </td>
                     </tr>
                 </table>

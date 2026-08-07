@@ -1,4 +1,4 @@
-# CleanUx E2E Tests (Maestro)
+# Brio E2E Tests (Maestro)
 
 ## Prerequisites
 
@@ -32,16 +32,16 @@ maestro test mobile/e2e/flows/client/02-booking-flow.yaml
 ## Test data requirements
 
 Tests expect:
-- A test user `test@cleanux.dev` / `password123` (client role)
-- A test user `provider@cleanux.dev` / `password123` (provider role)
+- A test user `test@brio.dev` / `password123` (client role)
+- A test user `provider@brio.dev` / `password123` (provider role)
 - At least one service in the catalog (e.g. "Nettoyage")
 - Laravel backend running at the URL configured in `.env`
 
 Create test users via:
 ```bash
 php artisan tinker
-> User::factory()->create(['email' => 'test@cleanux.dev', 'password' => bcrypt('password123'), 'role' => 'client']);
-> User::factory()->create(['email' => 'provider@cleanux.dev', 'password' => bcrypt('password123'), 'role' => 'provider']);
+> User::factory()->create(['email' => 'test@brio.dev', 'password' => bcrypt('password123'), 'role' => 'client']);
+> User::factory()->create(['email' => 'provider@brio.dev', 'password' => bcrypt('password123'), 'role' => 'provider']);
 ```
 
 ## Flow naming convention

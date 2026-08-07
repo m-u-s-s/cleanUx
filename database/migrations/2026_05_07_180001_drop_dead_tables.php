@@ -20,7 +20,7 @@ use Illuminate\Support\Facades\Schema;
  * Si tu veux récupérer leur structure, voir les migrations originales :
  *   - 2026_05_04_000007_create_mission_tables.php
  *   - 2026_05_04_000010_create_assistant_and_audit_tables.php
- *   - 2026_05_04_000011_create_cleanux_v2_feature_extensions.php
+ *   - 2026_05_04_000011_create_brio_v2_feature_extensions.php
  */
 return new class extends Migration
 {

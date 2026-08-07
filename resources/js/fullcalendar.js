@@ -2,7 +2,7 @@
  * Phase 6.1 — Wrapper Alpine pour FullCalendar v6 avec bridge Livewire.
  *
  * Architecture :
- *   1. cleanuxFC() exposé en global Alpine
+ *   1. brioFC() exposé en global Alpine
  *   2. init($wire) appelé dans x-init de la blade
  *   3. Crée une instance Calendar avec callbacks :
  *      - events : fetch via $wire.fetchEvents()
@@ -24,7 +24,7 @@ import interactionPlugin from '@fullcalendar/interaction';
 import frLocale from '@fullcalendar/core/locales/fr';
 import nlLocale from '@fullcalendar/core/locales/nl';
 
-window.cleanuxFC = function() {
+window.brioFC = function() {
     return {
         calendar: null,
         wire: null,
@@ -32,7 +32,7 @@ window.cleanuxFC = function() {
 
         init(livewireComponent) {
             this.wire = livewireComponent;
-            const el = document.getElementById('cleanux-fullcalendar');
+            const el = document.getElementById('brio-fullcalendar');
             if (!el) return;
 
             // Détecter la locale courante (Phase 9)

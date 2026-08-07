@@ -1,4 +1,4 @@
-# CleanUx Architecture — C4 Diagrams
+# Brio Architecture — C4 Diagrams
 
 ## Level 1 — System Context
 
@@ -56,7 +56,7 @@
 
 ```
 +----------------------------------------------------------+
-|                     CleanUx System                       |
+|                     Brio System                       |
 |                                                          |
 |  +------------------+      +-------------------------+  |
 |  |  Web Application |      |  REST / JSON API        |  |

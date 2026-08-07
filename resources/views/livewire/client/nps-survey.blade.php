@@ -3,7 +3,7 @@
         <div class="rounded-2xl bg-emerald-50 border border-emerald-200 p-8 text-center">
             <p class="text-5xl mb-3">✓</p>
             <h1 class="text-2xl font-black text-slate-900">Merci pour votre avis !</h1>
-            <p class="text-sm text-slate-600 mt-2">Votre retour aide CleanUx à s'améliorer.</p>
+            <p class="text-sm text-slate-600 mt-2">Votre retour aide Brio à s'améliorer.</p>
             <a href="{{ route('client.dashboard') }}" class="mt-4 inline-block rounded-lg bg-indigo-600 text-white px-4 py-2 text-sm font-semibold hover:bg-indigo-500">
                 Retour au tableau de bord
             </a>
@@ -14,7 +14,7 @@
                 <p class="text-4xl mb-3">⭐</p>
                 <h1 class="text-2xl font-black text-slate-900">Votre avis compte</h1>
                 <p class="text-sm text-slate-500 mt-2">
-                    Sur une échelle de 0 à 10, à quel point recommanderiez-vous CleanUx à un proche ?
+                    Sur une échelle de 0 à 10, à quel point recommanderiez-vous Brio à un proche ?
                 </p>
             </div>
 

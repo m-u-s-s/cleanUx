@@ -206,7 +206,7 @@ git commit -m "fix(api): garder /api/admin/* par le rôle, pas seulement par le 
 - Test : `mobile/provider/__tests__/config/aliases.test.ts`
 
 **Interfaces :**
-- Produit : `@/parity`, `@/webview`, `@/finance` et `@cleanux/shared` résolvables à l'exécution.
+- Produit : `@/parity`, `@/webview`, `@/finance` et `@brio/shared` résolvables à l'exécution.
 
 - [ ] **Étape 1 : écrire le test qui échoue**
 
@@ -251,7 +251,7 @@ Ajouter dans l'objet `alias`, avant la ligne `'@': './src',` :
             '@/parity': '../shared/src/parity',
             '@/webview': '../shared/src/webview',
             '@/finance': '../shared/src/finance',
-            '@cleanux/shared': '../shared/src',
+            '@brio/shared': '../shared/src',
 ```
 
 - [ ] **Étape 4 : compléter `jest.config.ts`**
@@ -263,7 +263,7 @@ générique capturerait sinon) :
     '^@/parity(.*)$': '<rootDir>/../shared/src/parity$1',
     '^@/webview(.*)$': '<rootDir>/../shared/src/webview$1',
     '^@/finance(.*)$': '<rootDir>/../shared/src/finance$1',
-    '^@cleanux/shared(.*)$': '<rootDir>/../shared/src$1',
+    '^@brio/shared(.*)$': '<rootDir>/../shared/src$1',
 ```
 
 - [ ] **Étape 5 : relancer**

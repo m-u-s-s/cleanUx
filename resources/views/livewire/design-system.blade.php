@@ -6,7 +6,7 @@
     <div class="cu-page-header">
         <div>
             <p class="cu-eyebrow">Design System</p>
-            <h1 class="cu-section-title mt-2 text-3xl">CleanUx Component Library</h1>
+            <h1 class="cu-section-title mt-2 text-3xl">Brio Component Library</h1>
             <p class="cu-section-subtitle">Composants réutilisables, tokens de design, et patterns UI.</p>
         </div>
     </div>

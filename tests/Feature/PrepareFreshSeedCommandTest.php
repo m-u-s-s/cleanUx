@@ -15,7 +15,7 @@ class PrepareFreshSeedCommandTest extends TestCase
         $this->seed(DatabaseSeeder::class);
 
         $this->artisan('app:prepare-fresh-seed --strict')
-            ->expectsOutputToContain('Checklist post-seed CleanUx')
+            ->expectsOutputToContain('Checklist post-seed Brio')
             ->assertExitCode(0);
     }
 }

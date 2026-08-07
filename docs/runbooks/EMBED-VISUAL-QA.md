@@ -45,7 +45,7 @@ the 5 checks, then flip `responsive_verified`.
 
 ## What this runbook is
 
-CleanUx delivers mobile parity via two strategies:
+Brio delivers mobile parity via two strategies:
 
 - **Native screens** — six modules rebuilt as React Native / Expo screens (booking, tracking, chat,
   missions, earnings, invoices). Not part of this runbook.

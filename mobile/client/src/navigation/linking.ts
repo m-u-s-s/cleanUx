@@ -2,7 +2,7 @@ import type { LinkingOptions } from '@react-navigation/native';
 import type { RootStackParamList } from './types';
 
 export const linking: LinkingOptions<RootStackParamList> = {
-  prefixes: ['cleanux://', 'https://app.cleanux.com'],
+  prefixes: ['brio://', 'https://app.brio.com'],
   config: {
     screens: {
       MainTabs: {

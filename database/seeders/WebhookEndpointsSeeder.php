@@ -23,7 +23,7 @@ class WebhookEndpointsSeeder extends Seeder
             'code' => WebhookEndpoint::generateCode(),
             'name' => 'Demo B2B endpoint (suspended)',
             'description' => 'Example endpoint — désactiver suspension et configurer URL pour activer.',
-            'url' => 'https://example.com/cleanux/webhooks',
+            'url' => 'https://example.com/brio/webhooks',
             'secret' => WebhookEndpoint::generateSecret(),
             'is_active' => true,
             'is_suspended' => true,

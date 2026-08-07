@@ -1,5 +1,5 @@
 /* ============================================================================
-   CleanUx — Floating Nav : cœur framework-agnostique.
+   Brio — Floating Nav : cœur framework-agnostique.
    ----------------------------------------------------------------------------
    Améliore un <header data-floating-nav> en barre flottante premium :
      · état transparent (en haut) -> solide + blur backdrop (scrollé)  [.is-solid]

@@ -62,10 +62,10 @@ class GoogleCalendarSyncServicePayloadTest extends TestCase
             Carbon::parse('2026-04-15 11:30:00', 'Europe/Brussels')
         );
 
-        $this->assertSame('CleanUx · Nettoyage Vitres Premium · Bruxelles Centre', $payload['summary']);
+        $this->assertSame('Brio · Nettoyage Vitres Premium · Bruxelles Centre', $payload['summary']);
         $this->assertSame('Rue du Test 10, 1000, Bruxelles', $payload['location']);
         $this->assertStringContainsString('Service : Nettoyage Vitres Premium', $payload['description']);
-        $this->assertSame((string) $service->id, $payload['extendedProperties']['private']['cleanux_service_catalog_id']);
-        $this->assertSame('vitres-premium', $payload['extendedProperties']['private']['cleanux_service_identifier']);
+        $this->assertSame((string) $service->id, $payload['extendedProperties']['private']['brio_service_catalog_id']);
+        $this->assertSame('vitres-premium', $payload['extendedProperties']['private']['brio_service_identifier']);
     }
 }

@@ -101,7 +101,7 @@ describe('Code de présence côté client', () => {
 
     // Le scanner du prestataire refuse une charge dont le type n'est pas le sien : l'étiquette
     // fait donc partie du contrat, au même titre que le code.
-    expect(screen.getByLabelText(JSON.stringify({ t: 'cleanux.presence', v: 1, s: 1, c: '482951' }))).toBeTruthy();
+    expect(screen.getByLabelText(JSON.stringify({ t: 'brio.presence', v: 1, s: 1, c: '482951' }))).toBeTruthy();
   });
 
   /** Caméra sale, écran fêlé, lumière rasante : les chiffres doivent rester dictables. */
@@ -149,7 +149,7 @@ describe('Code de présence côté client', () => {
 
     expect(mockCompletionMutate).toHaveBeenCalledTimes(1);
     expect(mockMutate).not.toHaveBeenCalled();
-    expect(screen.getByLabelText(JSON.stringify({ t: 'cleanux.completion', v: 1, s: 4, c: '731204' }))).toBeTruthy();
+    expect(screen.getByLabelText(JSON.stringify({ t: 'brio.completion', v: 1, s: 4, c: '731204' }))).toBeTruthy();
   });
 
   /** La clôture encaisse : le client doit lire ce qu'il valide, pas un texte d'arrivée. */

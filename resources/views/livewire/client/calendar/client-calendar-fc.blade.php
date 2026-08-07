@@ -51,9 +51,9 @@
     {{-- ─────── Container FullCalendar ─────── --}}
     <div class="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
         <div
-            id="cleanux-fullcalendar"
+            id="brio-fullcalendar"
             wire:ignore
-            x-data="cleanuxFC()"
+            x-data="brioFC()"
             x-init="init($wire)"
             class="min-h-[600px]"
         ></div>

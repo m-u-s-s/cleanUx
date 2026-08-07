@@ -1,5 +1,5 @@
 /* ============================================================================
-   CleanUx — Premium Cursor (styles)
+   Brio — Premium Cursor (styles)
    Accompagne resources/js/cursor-core.js. Le DOM (.pcursor) est injecté par le
    JS ; sans JS -> aucun élément, curseur natif inchangé (progressive enhancement).
    Le curseur natif n'est masqué que sous .cursor-armed (posée par le JS après le

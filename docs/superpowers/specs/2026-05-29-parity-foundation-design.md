@@ -8,7 +8,7 @@
 
 ## Context & goal
 
-**The driving goal** is to launch CleanUx to real users (both web B2B and mobile B2C
+**The driving goal** is to launch Brio to real users (both web B2B and mobile B2C
 audiences) with a single product principle: **total channel parity** — every module,
 for every role, usable on both mobile and web, so the user picks whichever surface they
 prefer. The long-term intent is that the entire surface becomes native on mobile

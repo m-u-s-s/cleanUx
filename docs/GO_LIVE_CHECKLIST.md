@@ -1,4 +1,4 @@
-# CleanUx — go-live checklist
+# Brio — go-live checklist
 
 ## Avant le cutover
 ```bash

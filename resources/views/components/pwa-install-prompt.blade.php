@@ -25,7 +25,7 @@
         <div class="flex items-start gap-3">
             <div class="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-blue-100 text-2xl">📱</div>
             <div class="flex-1 min-w-0">
-                <h3 class="text-sm font-bold text-slate-900">Installer CleanUx</h3>
+                <h3 class="text-sm font-bold text-slate-900">Installer Brio</h3>
                 <p class="mt-0.5 text-xs text-slate-600">
                     Accès rapide depuis ton écran d'accueil, mode hors-ligne, notifications push.
                 </p>
@@ -82,10 +82,10 @@
         return {
             showPrompt: false,
             mode: null,
-            dismissedKey: 'cleanux_pwa_dismissed_v1',
+            dismissedKey: 'brio_pwa_dismissed_v1',
 
             init() {
-                if (window.cleanuxPwa?.isStandalone()) return;
+                if (window.brioPwa?.isStandalone()) return;
 
                 const dismissed = localStorage.getItem(this.dismissedKey);
                 if (dismissed) {
@@ -93,7 +93,7 @@
                     if (Date.now() - dismissedAt < 30 * 24 * 60 * 60 * 1000) return;
                 }
 
-                if (window.cleanuxPwa?.isIOS()) {
+                if (window.brioPwa?.isIOS()) {
                     setTimeout(() => {
                         this.mode = 'ios';
                         this.showPrompt = true;
@@ -106,15 +106,15 @@
                     this.showPrompt = true;
                 });
 
-                if (window.cleanuxPwa?.canInstall()) {
+                if (window.brioPwa?.canInstall()) {
                     this.mode = 'native';
                     this.showPrompt = true;
                 }
             },
 
             async install() {
-                if (window.cleanuxPwa?.canInstall()) {
-                    const accepted = await window.cleanuxPwa.promptInstall();
+                if (window.brioPwa?.canInstall()) {
+                    const accepted = await window.brioPwa.promptInstall();
                     this.showPrompt = false;
                     if (!accepted) {
                         this.dismiss();

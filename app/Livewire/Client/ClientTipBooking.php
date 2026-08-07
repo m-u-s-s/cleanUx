@@ -88,9 +88,9 @@ class ClientTipBooking extends Component
                         'metadata' => [
                             'tip_id' => $tip->id,
                             'booking_id' => $tip->booking_id,
-                            'cleanux_kind' => 'tip',
+                            'brio_kind' => 'tip',
                         ],
-                        'description' => "CleanUx tip booking #{$tip->booking_id}",
+                        'description' => "Brio tip booking #{$tip->booking_id}",
                     ], [
                         'idempotency_key' => 'tip_'.$tip->id,
                     ]);

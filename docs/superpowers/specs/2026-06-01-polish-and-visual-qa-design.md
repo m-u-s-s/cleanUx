@@ -70,7 +70,7 @@ Badge, Screen, TextInput, Avatar, Skeleton, EmptyState, Divider, ProgressBar, St
 **Infra embed / QA** — middleware `app/Http/Middleware/EmbedMode.php` (`?embed=1` ou header `X-Embedded:1`
 → partage `$embedded`, masque `[data-chrome="primary-nav"]`) ; `app/Http/Controllers/WebViewEntryController.php`
 (ticket → session → redirect `?embed=1`) ; `scripts/embed_sweep.php` (balayage HTTP, login par rôle, 5
-comptes `*@cleanux.test`/exemple en `QaPhase2!`) ; runbook `docs/runbooks/EMBED-VISUAL-QA.md` (118 modules,
+comptes `*@brio.test`/exemple en `QaPhase2!`) ; runbook `docs/runbooks/EMBED-VISUAL-QA.md` (118 modules,
 115 rendent 200 sans chrome, 5 critères visuels, 7 deferred MySQL). **Aucun Playwright/Puppeteer installé.**
 
 ---

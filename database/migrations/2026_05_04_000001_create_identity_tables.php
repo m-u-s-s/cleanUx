@@ -42,7 +42,7 @@ return new class extends Migration
             $table->string('locale', 8)->default('fr');
             $table->string('timezone')->default('Europe/Brussels');
 
-            // Rôle global CleanUx uniquement : user, admin, super_admin.
+            // Rôle global Brio uniquement : user, admin, super_admin.
             $table->string('platform_role')->default('user');
 
             // invited, active, suspended, disabled.

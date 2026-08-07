@@ -24,7 +24,7 @@ class DemandeFeedbackNotification extends Notification implements ShouldQueue
     public function toMail($notifiable): MailMessage
     {
         return (new MailMessage)
-            ->subject('CleanUx · Comment s’est passée votre intervention ?')
+            ->subject('Brio · Comment s’est passée votre intervention ?')
             ->line("Votre {$this->rdv->service_display_name} a bien eu lieu ?")
             ->line('Votre avis nous aide à améliorer la qualité de nos prestations.')
             ->action('Laisser un feedback', url('/feedback/ajouter/'.$this->rdv->id))

@@ -1,4 +1,4 @@
-# Rollback plan — CleanUx
+# Rollback plan — Brio
 
 ## Objectif
 

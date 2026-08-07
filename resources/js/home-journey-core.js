@@ -1,5 +1,5 @@
 /* ============================================================================
-   CleanUx — Home « Parcours d'une mission » : monde 3D cinématique
+   Brio — Home « Parcours d'une mission » : monde 3D cinématique
    GSAP ScrollTrigger (mouvement de caméra au scroll) + Three.js (monde unique
    à 9 stations : globe pointillé, téléphone 3D avec votre UI à l'écran, et
    plans photo « billboards » pour les vrais humains/objets que vous fournissez).

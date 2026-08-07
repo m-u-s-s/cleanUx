@@ -1,4 +1,4 @@
-# CleanUx — Technical Architecture Overview
+# Brio — Technical Architecture Overview
 
 ## Stack principale
 

@@ -8,7 +8,7 @@ use Illuminate\Http\Request;
 /**
  * Quelle application mobile parle, et a-t-elle le droit de servir ce compte ?
  *
- * Les deux APK — `com.cleanux.client` et `com.cleanux.provider` — partagent le même point de
+ * Les deux APK — `com.brio.client` et `com.brio.provider` — partagent le même point de
  * connexion et les mêmes jetons Sanctum. Un prestataire pouvait donc se connecter à l'application
  * cliente : il obtenait un jeton parfaitement valide, puis chaque écran appelait des routes que son
  * rôle refuse. Une application qui s'ouvre et ne fonctionne nulle part, sans qu'aucun message
@@ -22,7 +22,7 @@ use Illuminate\Http\Request;
  */
 class AppAudience
 {
-    public const HEADER = 'X-CleanUx-App';
+    public const HEADER = 'X-Brio-App';
 
     public const CLIENT = 'client';
 

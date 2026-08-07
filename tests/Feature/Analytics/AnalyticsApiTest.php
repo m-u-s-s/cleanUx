@@ -74,7 +74,7 @@ class AnalyticsApiTest extends TestCase
     public function test_page_endpoint_forces_page_viewed(): void
     {
         $response = $this->postJson('/api/analytics/page', [
-            'url' => 'https://cleanux.test/home',
+            'url' => 'https://brio.test/home',
             'properties' => ['section' => 'hero'],
         ]);
 

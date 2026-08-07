@@ -14,7 +14,7 @@ $files = [
     'resources/views/livewire/admin/mission-quality-center.blade.php',
 ];
 
-fwrite(STDOUT, "CleanUx orphan Livewire cleanup\n");
+fwrite(STDOUT, "Brio orphan Livewire cleanup\n");
 fwrite(STDOUT, $apply ? "Mode: APPLY\n\n" : "Mode: DRY RUN\nAjoute --apply pour supprimer réellement les fichiers.\n\n");
 
 $deleted = 0;

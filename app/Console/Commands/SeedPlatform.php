@@ -12,12 +12,12 @@ class SeedPlatform extends Command
         {--fresh : Exécute migrate:fresh --seed avec le profil choisi}
         {--force : Force l\'exécution en environnement protégé}';
 
-    protected $description = 'Exécute le seed CleanUx avec un profil explicite et cohérent (demo, reference, production).';
+    protected $description = 'Exécute le seed Brio avec un profil explicite et cohérent (demo, reference, production).';
 
     public function handle(): int
     {
         $profile = strtolower((string) $this->argument('profile'));
-        $allowedProfiles = config('cleanux.seed.allowed_profiles', ['demo', 'reference', 'production']);
+        $allowedProfiles = config('brio.seed.allowed_profiles', ['demo', 'reference', 'production']);
 
         if (! in_array($profile, $allowedProfiles, true)) {
             $this->components->error('Profil invalide. Valeurs autorisées : '.implode(', ', $allowedProfiles).'.');
@@ -25,9 +25,9 @@ class SeedPlatform extends Command
             return self::FAILURE;
         }
 
-        config()->set('cleanux.seed.profile', $profile);
+        config()->set('brio.seed.profile', $profile);
 
-        $this->components->info("Lancement du seed CleanUx avec le profil [$profile].");
+        $this->components->info("Lancement du seed Brio avec le profil [$profile].");
 
         if ($this->option('fresh')) {
             $exitCode = $this->call('migrate:fresh', [

@@ -22,7 +22,7 @@ class RdvConfirmeNotification extends Notification
     public function toMail(object $notifiable): MailMessage
     {
         return (new MailMessage)
-            ->subject('CleanUx · Rendez-vous confirmé')
+            ->subject('Brio · Rendez-vous confirmé')
             ->line('Votre rendez-vous a bien été confirmé.')
             ->line('Date : '.$this->rdv->date.' à '.$this->rdv->heure)
             ->action('Voir mon dashboard', route('client.dashboard'))

@@ -70,7 +70,7 @@ class BookingCheckout extends Component
                 'usage' => 'on_session',
                 'metadata' => [
                     'booking_id' => $booking->id,
-                    'cleanux_action' => 'booking_checkout',
+                    'brio_action' => 'booking_checkout',
                 ],
             ]);
             $this->clientSecret = $intent->client_secret;

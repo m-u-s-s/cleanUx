@@ -1,5 +1,5 @@
 /* ============================================================================
-   CleanUx — R3F particle field (procedural, GPU-driven)
+   Brio — R3F particle field (procedural, GPU-driven)
    ----------------------------------------------------------------------------
    A single THREE.Points cloud animated entirely in the vertex shader, so the
    CPU cost stays flat regardless of particle count (easily 60 FPS):
@@ -8,7 +8,7 @@
      • depth effect        → z-spread + size attenuation + depth-based fade
      • subtle camera motion→ camera eased toward pointer + slow sine (useFrame)
    Procedural only: the round glow is computed from gl_PointCoord — no textures,
-   no external assets. Brand colours come from the CleanUx tokens.
+   no external assets. Brand colours come from the Brio tokens.
    ========================================================================= */
 
 import { useEffect, useMemo, useRef } from 'react';
@@ -29,7 +29,7 @@ const SPREAD_X = 15;
 const SPREAD_Y = 9;
 const SPREAD_Z = 9;            // depth range (±) around the origin
 
-// Palette par défaut (home CleanUx) ; surchargée par la prop `colors` (ex. hero
+// Palette par défaut (home Brio) ; surchargée par la prop `colors` (ex. hero
 // luxe « or champagne »). a = teinte proche, b = highlight, c = profondeur.
 const DEFAULT_COLORS = { a: '#ffb648', b: '#4fe3d6', c: '#8b7bff' };
 

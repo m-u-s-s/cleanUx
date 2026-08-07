@@ -5,4 +5,4 @@ Disallow: /admin
 Disallow: /api/
 Disallow: /webhooks/
 Disallow: /stripe/
-Sitemap: https://cleanux.be/sitemap.xml
+Sitemap: https://brio.be/sitemap.xml

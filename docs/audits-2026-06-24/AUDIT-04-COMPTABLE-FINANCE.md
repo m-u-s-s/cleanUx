@@ -90,7 +90,7 @@ Logiciel **propriétaire** (aucune redevance à un tiers pour le code). Dépenda
 
 | Paramètre | Valeur dans le code | Valeur dans `.env.example` | Enjeu |
 |---|---|---|---|
-| Taux de commission | 15 % (`config/cleanux.php`) | 20 % | **5 pts de revenu** d'écart |
+| Taux de commission | 15 % (`config/brio.php`) | 20 % | **5 pts de revenu** d'écart |
 | Pays par défaut | BE (compta/KYB) | FR (FEC, taxes) | Taux de TVA & obligations |
 | Plafond coût IA/jour | 1 $ | 10 $ | Budget IA |
 | Auto-approbation KYC | activée | désactivée | Risque conformité |

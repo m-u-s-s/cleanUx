@@ -1,4 +1,4 @@
-window.cleanUxMissionTracking = function (missionId, callbacks = {}) {
+window.brioMissionTracking = function (missionId, callbacks = {}) {
     if (!window.Echo) {
         console.error('Laravel Echo/Reverb non initialisé.');
         return null;

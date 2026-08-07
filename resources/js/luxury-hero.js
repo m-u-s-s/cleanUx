@@ -1,5 +1,5 @@
 /* ============================================================================
-   CleanUx — Luxury Hero interactions (dark cinematic)
+   Brio — Luxury Hero interactions (dark cinematic)
    ----------------------------------------------------------------------------
    GSAP entrance timeline + Motion (Framer Motion) scroll-driven effects.
    The WebGL background is a separate React Three Fiber island, see

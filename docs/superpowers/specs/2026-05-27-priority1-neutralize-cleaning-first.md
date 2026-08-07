@@ -2,7 +2,7 @@
 
 **Date**: 2026-05-27
 **Scope**: DB schema, seeders, labels UI, admin CRUD, User model cleanup
-**Goal**: Transformer CleanUx d'une plateforme de nettoyage en marketplace multi-métiers générique
+**Goal**: Transformer Brio d'une plateforme de nettoyage en marketplace multi-métiers générique
 
 ---
 

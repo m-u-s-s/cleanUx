@@ -216,7 +216,7 @@
     });
 
     // Expose pour debug manuel
-    window.cleanuxAssistantStream = {
+    window.brioAssistantStream = {
         start: startStream,
         abort: abortStream,
     };

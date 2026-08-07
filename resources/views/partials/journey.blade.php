@@ -1,12 +1,12 @@
 {{-- ============================================================
-     CleanUx — "Le parcours d'une mission" (scrollytelling)
+     Brio — "Le parcours d'une mission" (scrollytelling)
      7 scènes SVG animées pilotées par le scroll (voir journey.css + app.js).
      Fallback accessible : <ol class="cx-journey__steps"> visible sans JS /
      en prefers-reduced-motion.
      ============================================================ --}}
 {{-- data-cx-journey-gsap : neutralise l'IIFE journey de app.js au profit de
      la version cinématique (GSAP + globe 3D) de resources/js/home-journey.js. --}}
-<section class="cx-journey" data-cx-journey data-cx-journey-gsap aria-label="Le parcours d'une mission CleanUx, étape par étape">
+<section class="cx-journey" data-cx-journey data-cx-journey-gsap aria-label="Le parcours d'une mission Brio, étape par étape">
 
     {{-- Stepper statique (no-JS / reduced-motion) --}}
     <div class="mx-auto max-w-2xl px-6 pt-20 text-center">

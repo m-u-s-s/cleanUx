@@ -9,7 +9,7 @@ export interface ParityModule {
   mobile: 'native' | 'webview';
 }
 
-const CACHE_KEY = 'cleanux_parity_map';
+const CACHE_KEY = 'brio_parity_map';
 
 /**
  * Fetches the per-user parity map (which modules exist and how each is

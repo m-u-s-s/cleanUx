@@ -1,5 +1,5 @@
 /* ============================================================================
-   CleanUx — Home « Parcours d'une mission » : LOADER léger (lazy).
+   Brio — Home « Parcours d'une mission » : LOADER léger (lazy).
    ----------------------------------------------------------------------------
    La section 3D cinématique (globe Three.js + GSAP ScrollTrigger) est SOUS la
    ligne de flottaison. On ne charge donc PAS three.js/gsap au chargement de la

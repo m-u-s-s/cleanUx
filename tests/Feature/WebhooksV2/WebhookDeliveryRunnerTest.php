@@ -25,7 +25,7 @@ class WebhookDeliveryRunnerTest extends TestCase
         Config::set('webhooks_v2.auto_suspend_after_failures', 5);
         Config::set('webhooks_v2.signature_algo', 'sha256');
         Config::set('webhooks_v2.signature_version', 'v1');
-        Config::set('webhooks_v2.signature_header', 'X-CleanUx-Signature');
+        Config::set('webhooks_v2.signature_header', 'X-Brio-Signature');
     }
 
     private function makePair(array $epOverrides = [], array $eventOverrides = []): array
@@ -77,9 +77,9 @@ class WebhookDeliveryRunnerTest extends TestCase
 
         Http::assertSent(function ($req) use ($ep, $event) {
             return $req->url() === $ep->url
-                && $req->hasHeader('X-CleanUx-Event', $event->event_code)
-                && $req->hasHeader('X-CleanUx-Event-Id', $event->event_id)
-                && $req->hasHeader('X-CleanUx-Signature');
+                && $req->hasHeader('X-Brio-Event', $event->event_code)
+                && $req->hasHeader('X-Brio-Event-Id', $event->event_id)
+                && $req->hasHeader('X-Brio-Signature');
         });
     }
 
@@ -157,7 +157,7 @@ class WebhookDeliveryRunnerTest extends TestCase
 
         $captured = null;
         Http::assertSent(function ($req) use (&$captured) {
-            $captured = ['body' => $req->body(), 'sig' => $req->header('X-CleanUx-Signature')[0] ?? null];
+            $captured = ['body' => $req->body(), 'sig' => $req->header('X-Brio-Signature')[0] ?? null];
 
             return true;
         });

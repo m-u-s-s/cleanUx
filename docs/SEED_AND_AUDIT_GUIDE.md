@@ -45,14 +45,14 @@ php artisan app:seed-platform production --fresh --force
 
 ## 4. Variables de configuration
 
-Dans `config/cleanux.php` :
-- `cleanux.seed.profile`
-- `cleanux.seed.default_profile`
-- `cleanux.seed.allowed_profiles`
+Dans `config/brio.php` :
+- `brio.seed.profile`
+- `brio.seed.default_profile`
+- `brio.seed.allowed_profiles`
 
 Variables associées :
-- `CLEANUX_SEED_PROFILE`
-- `CLEANUX_SEED_DEFAULT_PROFILE`
+- `BRIO_SEED_PROFILE`
+- `BRIO_SEED_DEFAULT_PROFILE`
 
 ## 5. Vérification seed
 

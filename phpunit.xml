@@ -48,7 +48,7 @@
         <env name="ENFORCE_2FA_FOR_ADMINS" value="false"/>
         <!-- Aligné sur le .env prod (20%) : le flow money unifié (CommissionService)
              utilise ce taux, sinon le défaut config (15%) diverge des tests money. -->
-        <env name="CLEANUX_PLATFORM_FEE_PERCENT" value="20"/>
+        <env name="BRIO_PLATFORM_FEE_PERCENT" value="20"/>
         <env name="SESSION_DRIVER" value="array"/>
         <env name="TELESCOPE_ENABLED" value="false"/>
     </php>

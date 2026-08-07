@@ -122,7 +122,7 @@ export function PresenceScanScreen({ route }: Props) {
       // Chaque bout de la visite a son étiquette. Un code de présence envoyé au point d'entrée
       // de clôture serait refusé par le serveur, mais consommerait un essai au passage — et
       // laisserait le prestataire devant un « code invalide » incompréhensible.
-      const expected = isCompletion ? 'cleanux.completion' : 'cleanux.presence';
+      const expected = isCompletion ? 'brio.completion' : 'brio.presence';
 
       let code: string | null = null;
       try {

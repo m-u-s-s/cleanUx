@@ -3,7 +3,7 @@
         <div>
             <div class="inline-flex items-center gap-2 rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600">
                 <span class="h-2 w-2 rounded-full bg-emerald-500"></span>
-                Centre de pilotage CleanUx
+                Centre de pilotage Brio
             </div>
 
             <h1 class="mt-4 text-2xl font-bold tracking-tight text-slate-950 md:text-3xl">

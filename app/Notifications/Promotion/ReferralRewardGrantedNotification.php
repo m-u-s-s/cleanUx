@@ -30,7 +30,7 @@ class ReferralRewardGrantedNotification extends Notification
             : 'Votre bonus de bienvenue est crédité';
 
         return (new MailMessage)
-            ->subject('CleanUx · '.$title)
+            ->subject('Brio · '.$title)
             ->greeting('Bonne nouvelle !')
             ->line($title.' : '.$amount.' '.$currency.'.')
             ->line('Le crédit sera automatiquement déduit de votre prochaine réservation.')

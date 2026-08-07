@@ -127,7 +127,7 @@ class WebPushSender
     {
         $public = config('services.webpush.public_key');
         $private = config('services.webpush.private_key');
-        $subject = config('services.webpush.subject', 'mailto:contact@cleanux.local');
+        $subject = config('services.webpush.subject', 'mailto:contact@brio.local');
 
         if (empty($public) || empty($private)) {
             return null;
@@ -143,7 +143,7 @@ class WebPushSender
     protected function normalizePayload(array $payload): array
     {
         return array_merge([
-            'title' => 'CleanUx',
+            'title' => 'Brio',
             'body' => '',
             'icon' => '/icons/icon-192.png',
             'badge' => '/icons/badge-72.png',

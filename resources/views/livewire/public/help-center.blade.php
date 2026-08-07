@@ -52,7 +52,7 @@
     <div class="mt-12 rounded-2xl bg-indigo-50 p-6 text-center">
         <h2 class="font-bold text-slate-900">Vous ne trouvez pas votre réponse ?</h2>
         <p class="text-sm text-slate-600 mt-1">Notre équipe vous répond sous 24h.</p>
-        <a href="mailto:support@cleanux.com" class="inline-block mt-3 rounded-lg bg-indigo-600 text-white px-4 py-2 text-sm font-semibold hover:bg-indigo-500">
+        <a href="mailto:support@brio.com" class="inline-block mt-3 rounded-lg bg-indigo-600 text-white px-4 py-2 text-sm font-semibold hover:bg-indigo-500">
             Contacter le support
         </a>
     </div>

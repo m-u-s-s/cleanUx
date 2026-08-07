@@ -50,7 +50,7 @@ class GdprController extends Controller
      * The export is generated synchronously. The response includes a signed download URL
      * valid for 7 days. A second request while one is already processing returns the existing request.
      *
-     * @response 201 {"request_id": 1, "reference": "GDPR-ABCDEFGHIJ", "status": "fulfilled", "download_url": "https://cleanux.be/api/gdpr/export/download/1?signature=xxx&expires=...", "expires_at": "2026-06-08T10:01:30+00:00"}
+     * @response 201 {"request_id": 1, "reference": "GDPR-ABCDEFGHIJ", "status": "fulfilled", "download_url": "https://brio.be/api/gdpr/export/download/1?signature=xxx&expires=...", "expires_at": "2026-06-08T10:01:30+00:00"}
      * @response 200 scenario="Export already in progress" {"ok": true, "request_id": 1, "reference": "GDPR-ABCDEFGHIJ", "status": "processing", "note": "Un export est déjà en cours."}
      * @response 500 {"ok": false, "error": "Export generation failed."}
      */

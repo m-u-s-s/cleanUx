@@ -8,7 +8,7 @@
     <div class="prose prose-slate max-w-none space-y-6">
         <section>
             <h2 class="text-xl font-bold">1. Objet</h2>
-            <p>CleanUx est une marketplace multi-métiers (nettoyage, peinture, babysitting, toiturier, etc.) mettant en relation des clients particuliers ou professionnels avec des prestataires indépendants ou en société, opérée par <strong>{{ config('app.name') }}</strong>.</p>
+            <p>Brio est une marketplace multi-métiers (nettoyage, peinture, babysitting, toiturier, etc.) mettant en relation des clients particuliers ou professionnels avec des prestataires indépendants ou en société, opérée par <strong>{{ config('app.name') }}</strong>.</p>
         </section>
 
         <section>
@@ -49,7 +49,7 @@
 
         <section>
             <h2 class="text-xl font-bold">8. Responsabilité de la plateforme</h2>
-            <p>CleanUx est éditeur d'une marketplace de mise en relation. Non employeur des prestataires. Assurance RC complémentaire optionnelle disponible.</p>
+            <p>Brio est éditeur d'une marketplace de mise en relation. Non employeur des prestataires. Assurance RC complémentaire optionnelle disponible.</p>
         </section>
 
         <section>

@@ -1901,7 +1901,7 @@ describe('ClientHomeIsland', () => {
   it('dispatches window event on quick action', async () => {
     const dispatched: CustomEvent[] = [];
     const handler = (e: Event) => dispatched.push(e as CustomEvent);
-    window.addEventListener('cleanux:client-action', handler);
+    window.addEventListener('brio:client-action', handler);
 
     const wrapper = mount(ClientHomeIsland, { props });
     await wrapper.findAll('[data-test="quick-action"]')[0].trigger('click');
@@ -1909,7 +1909,7 @@ describe('ClientHomeIsland', () => {
     expect(dispatched).toHaveLength(1);
     expect(dispatched[0].detail.id).toBe('urgent');
 
-    window.removeEventListener('cleanux:client-action', handler);
+    window.removeEventListener('brio:client-action', handler);
   });
 });
 ```
@@ -1977,7 +1977,7 @@ const navItems = [
 
 const dispatchClientAction = (id: string, payload: Record<string, unknown> = {}) => {
   window.dispatchEvent(
-    new CustomEvent('cleanux:client-action', {
+    new CustomEvent('brio:client-action', {
       detail: { id, ...payload },
     })
   );
@@ -2812,7 +2812,7 @@ describe('MissionLiveIsland', () => {
   it('dispatches scan event on QR cta', async () => {
     const dispatched: CustomEvent[] = [];
     const handler = (e: Event) => dispatched.push(e as CustomEvent);
-    window.addEventListener('cleanux:mission-scan', handler);
+    window.addEventListener('brio:mission-scan', handler);
 
     const wrapper = mount(MissionLiveIsland, { props: baseProps });
     await wrapper.findComponent({ name: 'QrScanCta' }).find('button').trigger('click');
@@ -2820,7 +2820,7 @@ describe('MissionLiveIsland', () => {
     expect(dispatched).toHaveLength(1);
     expect(dispatched[0].detail.missionId).toBe(42);
 
-    window.removeEventListener('cleanux:mission-scan', handler);
+    window.removeEventListener('brio:mission-scan', handler);
   });
 });
 ```
@@ -2896,7 +2896,7 @@ onBeforeUnmount(() => {
 
 const onScan = () => {
   window.dispatchEvent(
-    new CustomEvent('cleanux:mission-scan', {
+    new CustomEvent('brio:mission-scan', {
       detail: { missionId: props.missionId, step: currentStep.value },
     })
   );
@@ -2904,7 +2904,7 @@ const onScan = () => {
 
 const onCall = () => {
   window.dispatchEvent(
-    new CustomEvent('cleanux:mission-call', {
+    new CustomEvent('brio:mission-call', {
       detail: { missionId: props.missionId },
     })
   );
@@ -3220,7 +3220,7 @@ test.describe('Client Mobile POC', () => {
   test.beforeEach(async ({ page }) => {
     // assumes a beta test user logs in via session — adjust to your auth flow
     await page.goto('/login');
-    await page.fill('input[name="email"]', process.env.E2E_USER_EMAIL || 'beta@cleanux.test');
+    await page.fill('input[name="email"]', process.env.E2E_USER_EMAIL || 'beta@brio.test');
     await page.fill('input[name="password"]', process.env.E2E_USER_PASSWORD || 'password');
     await page.click('button[type="submit"]');
     await page.waitForURL(/dashboard/);
@@ -3237,7 +3237,7 @@ test.describe('Client Mobile POC', () => {
     await page.goto('/dashboard/client');
     await page.evaluate(() => {
       (window as any).__lastEvent = null;
-      window.addEventListener('cleanux:client-action', (e: any) => {
+      window.addEventListener('brio:client-action', (e: any) => {
         (window as any).__lastEvent = e.detail;
       });
     });
@@ -3258,7 +3258,7 @@ test.describe('Client Mobile POC', () => {
     // log in as a non-beta user
     await context.clearCookies();
     await page.goto('/login');
-    await page.fill('input[name="email"]', process.env.E2E_LEGACY_USER_EMAIL || 'legacy@cleanux.test');
+    await page.fill('input[name="email"]', process.env.E2E_LEGACY_USER_EMAIL || 'legacy@brio.test');
     await page.fill('input[name="password"]', process.env.E2E_LEGACY_USER_PASSWORD || 'password');
     await page.click('button[type="submit"]');
     await page.goto('/dashboard/client');
@@ -3272,8 +3272,8 @@ test.describe('Client Mobile POC', () => {
 Run:
 ```bash
 php artisan tinker --execute="
-\$beta = \App\Models\User::firstOrCreate(['email' => 'beta@cleanux.test'], ['name' => 'Beta', 'password' => bcrypt('password'), 'role' => 'client']);
-\$legacy = \App\Models\User::firstOrCreate(['email' => 'legacy@cleanux.test'], ['name' => 'Legacy', 'password' => bcrypt('password'), 'role' => 'client']);
+\$beta = \App\Models\User::firstOrCreate(['email' => 'beta@brio.test'], ['name' => 'Beta', 'password' => bcrypt('password'), 'role' => 'client']);
+\$legacy = \App\Models\User::firstOrCreate(['email' => 'legacy@brio.test'], ['name' => 'Legacy', 'password' => bcrypt('password'), 'role' => 'client']);
 \Laravel\Pennant\Feature::for(\$beta)->activate('client-mobile-v2');
 "
 ```
@@ -3422,7 +3422,7 @@ EOF
 Create `docs/design-system/README.md`:
 
 ```markdown
-# CleanUx Design System — POC Adaptive
+# Brio Design System — POC Adaptive
 
 **Statut**: POC client mobile livré 2026-06-05 (V1 home clair + V3 mission live sombre).
 
@@ -3527,15 +3527,15 @@ Tous les composants sont dans `resources/js/components/`.
 Les composants ne font pas d'API call directement. Ils dispatchent des `window.CustomEvent` que Livewire intercepte via Alpine ou des listeners JS :
 
 ```js
-window.addEventListener('cleanux:client-action', (e) => {
+window.addEventListener('brio:client-action', (e) => {
     Livewire.dispatch('client-action', { id: e.detail.id, payload: e.detail });
 });
 ```
 
 Conventions d'événements :
-- `cleanux:client-action` — actions home (quick actions, navigation)
-- `cleanux:mission-scan` — déclenche scan QR
-- `cleanux:mission-call` — déclenche appel provider
+- `brio:client-action` — actions home (quick actions, navigation)
+- `brio:mission-scan` — déclenche scan QR
+- `brio:mission-call` — déclenche appel provider
 ```
 
 - [ ] **Step 4: Commit**
@@ -3581,15 +3581,15 @@ const forward = (sourceEvent: string, livewireEvent: string) => {
     if (window.Livewire) {
       window.Livewire.dispatch(livewireEvent, detail);
     } else {
-      console.warn(`[cleanux] Livewire not yet ready for ${livewireEvent}`, detail);
+      console.warn(`[brio] Livewire not yet ready for ${livewireEvent}`, detail);
     }
   });
 };
 
 export function installLivewireBridge() {
-  forward('cleanux:client-action', 'client-action');
-  forward('cleanux:mission-scan', 'mission-scan-requested');
-  forward('cleanux:mission-call', 'mission-call-requested');
+  forward('brio:client-action', 'client-action');
+  forward('brio:mission-scan', 'mission-scan-requested');
+  forward('brio:mission-call', 'mission-call-requested');
 }
 ```
 
@@ -3741,6 +3741,6 @@ EOF
 
 **Placeholder scan :** Le plan référence du code adapté à la base existante (relations User, routes). Des notes "Adapt as needed" sont présentes là où l'existant peut différer — ce n'est pas un placeholder bloquant mais une instruction explicite de vérification.
 
-**Type consistency :** `getV2Props()` méthode utilisée Tasks 16 et 21. Event names `cleanux:*` cohérents Tasks 15, 20, 25. Composable `useAdaptiveTheme` signature `Theme = 'light' | 'dark'` cohérente Tasks 11, 15, 20.
+**Type consistency :** `getV2Props()` méthode utilisée Tasks 16 et 21. Event names `brio:*` cohérents Tasks 15, 20, 25. Composable `useAdaptiveTheme` signature `Theme = 'light' | 'dark'` cohérente Tasks 11, 15, 20.
 
 Plan validé — pas d'incohérences détectées.

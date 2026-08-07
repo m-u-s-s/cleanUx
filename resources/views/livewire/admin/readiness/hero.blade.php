@@ -11,7 +11,7 @@
             </h1>
 
             <p class="mt-2 max-w-3xl text-sm leading-6 text-slate-600">
-                Cette zone sert à vérifier la stabilité de CleanUx avant mise en ligne :
+                Cette zone sert à vérifier la stabilité de Brio avant mise en ligne :
                 sécurité, configuration, modules actifs, logs, alertes, rôles et données sensibles.
             </p>
         </div>

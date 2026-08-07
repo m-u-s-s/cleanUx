@@ -29,7 +29,7 @@ class MissionReplanifieeNotification extends Notification implements ShouldQueue
     public function toMail($notifiable): MailMessage
     {
         return (new MailMessage)
-            ->subject('CleanUx · Votre intervention a été replanifiée')
+            ->subject('Brio · Votre intervention a été replanifiée')
             ->line("Votre demande de {$this->rdv->service_display_name} a été replanifiée par notre équipe.")
             ->line('Ancien créneau : '.$this->ancienneDate.' à '.$this->ancienneHeure)
             ->line('Nouveau créneau : '.$this->rdv->date.' à '.$this->rdv->heure)

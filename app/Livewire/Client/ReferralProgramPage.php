@@ -45,13 +45,13 @@ class ReferralProgramPage extends Component
         try {
             Mail::raw(
                 "Bonjour,\n\n".
-                Auth::user()->name." vous invite à essayer CleanUx.\n\n".
+                Auth::user()->name." vous invite à essayer Brio.\n\n".
                 ($this->inviteMessage ? $this->inviteMessage."\n\n" : '').
                 "Utilisez ce lien pour vous inscrire et obtenir un crédit de bienvenue :\n".$url."\n\n".
                 'Ou votre code de parrainage : '.$code,
                 function ($message) use ($data) {
                     $message->to($data['inviteEmail'])
-                        ->subject('CleanUx · '.Auth::user()->name.' vous invite');
+                        ->subject('Brio · '.Auth::user()->name.' vous invite');
                 }
             );
 

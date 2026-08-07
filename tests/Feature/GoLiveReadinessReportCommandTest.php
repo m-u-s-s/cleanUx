@@ -16,7 +16,7 @@ class GoLiveReadinessReportCommandTest extends TestCase
         Config::set('app.env', 'production');
         Config::set('app.debug', false);
         Config::set('app.key', 'base64:test-key');
-        Config::set('app.url', 'https://cleanux.test');
+        Config::set('app.url', 'https://brio.test');
         Config::set('queue.default', 'database');
         Config::set('cache.default', 'file');
         Config::set('session.driver', 'database');
@@ -41,7 +41,7 @@ class GoLiveReadinessReportCommandTest extends TestCase
 
         Config::set('operations.monitoring.heartbeat_enabled', true);
         Cache::put(
-            config('operations.monitoring.heartbeat_cache_key', 'cleanux:ops:heartbeat'),
+            config('operations.monitoring.heartbeat_cache_key', 'brio:ops:heartbeat'),
             ['at' => now()->toISOString()],
             3600
         );

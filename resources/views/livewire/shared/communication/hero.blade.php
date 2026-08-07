@@ -3,7 +3,7 @@
         <div>
             <div class="inline-flex items-center gap-2 rounded-full bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-700">
                 <span class="h-2 w-2 rounded-full bg-blue-500"></span>
-                Communication CleanUx
+                Communication Brio
             </div>
 
             <h1 class="mt-4 text-2xl font-bold tracking-tight text-slate-950 md:text-3xl">

@@ -32,8 +32,8 @@ passer en bloquant une fois stable.
 
 | Rôle | Email |
 |------|-------|
-| admin | admin@cleanux.test |
+| admin | admin@brio.test |
 | client | lemoine.gabrielle@example.net |
 | provider | bsanchez@example.org |
 | entreprise (cliente) | dominique.monnier@example.org |
-| provider_company | qa-provider-company@cleanux.test |
+| provider_company | qa-provider-company@brio.test |

@@ -117,7 +117,7 @@ class LoyaltyRedemptionService
             $service->send([
                 'to' => $user->email,
                 'to_name' => $user->name,
-                'subject' => "🎁 Votre code de récompense CleanUx : {$redemption->voucher_code}",
+                'subject' => "🎁 Votre code de récompense Brio : {$redemption->voucher_code}",
                 'body_html' => "
                     <h1>Bonjour {$user->name},</h1>
                     <p>Merci d'avoir échangé vos points fidélité pour <strong>{$reward->name}</strong>.</p>

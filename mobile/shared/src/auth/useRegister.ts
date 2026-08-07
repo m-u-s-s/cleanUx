@@ -64,7 +64,7 @@ export function useRegister() {
         vat_number: input.vatNumber,
         trade_id: input.tradeId,
         trade_answers: input.tradeAnswers,
-        device_name: input.deviceName ?? 'cleanux-mobile',
+        device_name: input.deviceName ?? 'brio-mobile',
       }, input.captchaToken ? { headers: { 'X-Turnstile-Token': input.captchaToken } } : undefined);
       await secureStore.setToken(res.data.token);
       return { token: res.data.token, user: res.data.user };

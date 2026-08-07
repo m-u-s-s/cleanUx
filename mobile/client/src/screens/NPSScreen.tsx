@@ -31,7 +31,7 @@ export function NPSScreen({ navigation }: Props) {
 
   return (
     <Screen>
-      <Text style={styles.title}>Recommanderiez-vous CleanUx ?</Text>
+      <Text style={styles.title}>Recommanderiez-vous Brio ?</Text>
       <View style={styles.scores}>
         {[...Array(11)].map((_, i) => (
           <Text

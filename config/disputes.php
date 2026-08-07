@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Configuration du workflow Disputes / SAV (CleanUx).
+ * Configuration du workflow Disputes / SAV (Brio).
  *
  * `sla_hours` : délai cible de première réponse selon priority × severity.
  * `escalation_hours` : à partir de combien d'heures sans résolution on escalade

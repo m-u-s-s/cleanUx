@@ -1,5 +1,5 @@
 /* ============================================================================
-   CleanUx — Floating Nav : entrée globale (voie vanilla).
+   Brio — Floating Nav : entrée globale (voie vanilla).
    Chargée sur toutes les pages guest. Arme chaque <header data-floating-nav>
    (état transparent/solide + blur, hide/reveal au scroll, menu mobile a11y).
    Inerte tant qu'aucun [data-floating-nav] n'existe.

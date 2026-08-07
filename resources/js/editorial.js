@@ -1,5 +1,5 @@
 /* ============================================================================
-   CleanUx — Editorial study : entrée JS (page dev /editorial).
+   Brio — Editorial study : entrée JS (page dev /editorial).
    ----------------------------------------------------------------------------
    Câble le MOUVEMENT de la page éditoriale, en réutilisant les moteurs partagés :
      • titres cinématiques : revealText() (cœur text-reveal partagé) sur les

@@ -9,7 +9,7 @@
         <section>
             <h2 class="text-xl font-bold">1. Responsable du traitement</h2>
             <p><strong>{{ config('app.name') }}</strong> est responsable du traitement des données personnelles collectées sur la plateforme.</p>
-            <p>Contact DPO : <code>dpo@cleanux.com</code> (à configurer).</p>
+            <p>Contact DPO : <code>dpo@brio.com</code> (à configurer).</p>
         </section>
 
         <section>

@@ -6,7 +6,7 @@
 
 **Architecture:** The parity registry (`config/parity.php`) is the seam: a module is `webview` until its native screen + `NATIVE_ROUTES` entry + flag flip exist, then it routes native (rollback = flip the flag back). The client finance ownership scope (complex enterprise/multi-site logic) is **extracted once** into a shared unit reused by both the existing Livewire component and the new API, so the two can never drift into a cross-tenant leak.
 
-**Tech Stack:** Laravel 10 (Sanctum, Eloquent, DomPDF), PHPUnit; Expo/React Native (TypeScript), `@cleanux/shared` (`apiClient`), `expo-sharing`/`expo-file-system` for native PDF, Jest.
+**Tech Stack:** Laravel 10 (Sanctum, Eloquent, DomPDF), PHPUnit; Expo/React Native (TypeScript), `@brio/shared` (`apiClient`), `expo-sharing`/`expo-file-system` for native PDF, Jest.
 
 **Spec:** `docs/superpowers/specs/2026-05-30-progressive-native-migration-design.md`
 **Branch:** `feat/native-migration` (off `feat/parity-foundation`). The parity foundation (`config/parity.php`, `ModuleHubScreen`, `EmbeddedModuleScreen`, `fetchParityMap`, `@/webview`, `@/parity`, jest config) is present on this base.

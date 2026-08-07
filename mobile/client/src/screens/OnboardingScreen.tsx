@@ -9,7 +9,7 @@ const { width } = Dimensions.get('window');
 
 const SLIDES = [
   {
-    title: 'Bienvenue sur CleanUx',
+    title: 'Bienvenue sur Brio',
     subtitle: 'Trouvez le prestataire idéal pour tous vos besoins : nettoyage, peinture, babysitting et plus encore.',
     emoji: '👋',
   },

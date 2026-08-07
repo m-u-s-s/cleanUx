@@ -35,9 +35,9 @@ class ProductEmailsCenter extends Component
     public function generatePreview(bool $log = true): void
     {
         $payload = ProductEmailTemplates::payload($this->templateKey);
-        $this->subject = (string) ($payload['subject'] ?? 'Notification CleanUx');
+        $this->subject = (string) ($payload['subject'] ?? 'Notification Brio');
         $this->previewHtml = view('emails.product.generic', [
-            'eyebrow' => $payload['eyebrow'] ?? 'CleanUx',
+            'eyebrow' => $payload['eyebrow'] ?? 'Brio',
             'title' => $payload['title'] ?? $this->subject,
             'intro' => $payload['intro'] ?? null,
             'details' => $payload['details'] ?? [],
@@ -46,7 +46,7 @@ class ProductEmailsCenter extends Component
             'actionUrl' => $payload['action_url'] ?? null,
             'outro' => $payload['outro'] ?? null,
             'tone' => $payload['tone'] ?? 'info',
-            'footer' => $payload['footer'] ?? 'CleanUx — plateforme de gestion des interventions.',
+            'footer' => $payload['footer'] ?? 'Brio — plateforme de gestion des interventions.',
         ])->render();
 
         if ($log) {

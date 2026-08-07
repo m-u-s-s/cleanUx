@@ -60,7 +60,7 @@ class FacturXBuilder
   <rsm:SupplyChainTradeTransaction>
     <ram:ApplicableHeaderTradeAgreement>
       <ram:SellerTradeParty>
-        <ram:Name>{$this->esc(config('app.name', 'CleanUx'))}</ram:Name>
+        <ram:Name>{$this->esc(config('app.name', 'Brio'))}</ram:Name>
         <ram:SpecifiedLegalOrganization>
           <ram:ID schemeID="0002">{$this->esc(config('accounting_v2.fec_siren', '000000000'))}</ram:ID>
         </ram:SpecifiedLegalOrganization>

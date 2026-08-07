@@ -26,7 +26,7 @@ class PaymentFailedNotification extends Notification
     public function toMail(object $notifiable): MailMessage
     {
         return (new MailMessage)
-            ->subject('CleanUx · Echec du paiement pour votre reservation #'.$this->booking->booking_reference)
+            ->subject('Brio · Echec du paiement pour votre reservation #'.$this->booking->booking_reference)
             ->greeting('Bonjour,')
             ->line('Le paiement de votre reservation n\'a pas pu etre traite.')
             ->when($this->failureMessage, fn ($mail) => $mail->line('Motif : '.$this->failureMessage))

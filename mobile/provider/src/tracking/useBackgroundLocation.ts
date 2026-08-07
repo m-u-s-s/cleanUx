@@ -2,7 +2,7 @@ import * as Location from 'expo-location';
 import * as TaskManager from 'expo-task-manager';
 import { apiClient } from '@/api';
 
-const TASK_NAME = 'CLEANUX_BG_LOCATION';
+const TASK_NAME = 'BRIO_BG_LOCATION';
 
 let taskDefined = false;
 

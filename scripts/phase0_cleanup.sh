@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 #
-# CleanUx — Phase 0 Cleanup Script
+# Brio — Phase 0 Cleanup Script
 #
-# Lance ce script depuis la racine de ton projet CleanUx :
+# Lance ce script depuis la racine de ton projet Brio :
 #   bash scripts/phase0_cleanup.sh
 #
 # Il va :
@@ -22,7 +22,7 @@ PROJECT_ROOT="${PROJECT_ROOT:-$(pwd)}"
 BACKUP_DIR="$PROJECT_ROOT/.phase0_backup_$(date +%Y%m%d_%H%M%S)"
 
 echo "=================================================================="
-echo "CleanUx — Phase 0 Cleanup"
+echo "Brio — Phase 0 Cleanup"
 echo "=================================================================="
 echo "Project root : $PROJECT_ROOT"
 echo "Backup dir   : $BACKUP_DIR"
@@ -220,7 +220,7 @@ echo ""
 echo "📦 Backup conservé : $BACKUP_DIR"
 echo ""
 echo "Étapes suivantes :"
-echo "  1. cp /chemin/vers/cleanux-phase0/app/Models/Booking.php app/Models/Booking.php"
+echo "  1. cp /chemin/vers/brio-phase0/app/Models/Booking.php app/Models/Booking.php"
 echo "     (NE PAS oublier — le nouveau Booking inclut les traits/casts/booted de Bookings)"
 echo "  2. composer update"
 echo "  3. composer dump-autoload"

@@ -21,7 +21,7 @@ Example response (production):
 {
   "driver": "reverb",
   "key": "pk_xxx",
-  "host": "realtime.cleanux.com",
+  "host": "realtime.brio.com",
   "port": 443,
   "scheme": "https",
   "auth_endpoint": "/api/broadcasting/auth"
@@ -63,7 +63,7 @@ requires a session cookie. Mobile clients must always call `/api/broadcasting/au
 ```typescript
 import Pusher from 'pusher-js/react-native';
 
-const API_BASE = 'https://api.cleanux.com'; // your env var
+const API_BASE = 'https://api.brio.com'; // your env var
 
 async function buildPusherClient(bearerToken: string): Promise<Pusher> {
   const res = await fetch(`${API_BASE}/api/realtime/socket-config`, {

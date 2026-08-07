@@ -24,7 +24,7 @@ class NouveauRendezVousNotification extends Notification
         $priorite = ucfirst($this->rdv->priorite ?? 'normale');
 
         $mail = (new MailMessage)
-            ->subject($this->rdv->priorite === 'urgente' ? 'CleanUx · Demande urgente de nettoyage' : 'CleanUx · Nouvelle demande de nettoyage')
+            ->subject($this->rdv->priorite === 'urgente' ? 'Brio · Demande urgente de nettoyage' : 'Brio · Nouvelle demande de nettoyage')
             ->line('Une nouvelle demande d’intervention a été envoyée.')
             ->line('Client : '.($this->rdv->client->name ?? '—'))
             ->line('Service : '.$this->rdv->service_display_name)

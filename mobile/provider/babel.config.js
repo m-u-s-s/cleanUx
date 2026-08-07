@@ -27,7 +27,7 @@ module.exports = function (api) {
             '@/parity': '../shared/src/parity',
             '@/webview': '../shared/src/webview',
             '@/finance': '../shared/src/finance',
-            '@cleanux/shared': '../shared/src',
+            '@brio/shared': '../shared/src',
             // Provider-only modules — resolve to local src/
             '@': './src',
           },

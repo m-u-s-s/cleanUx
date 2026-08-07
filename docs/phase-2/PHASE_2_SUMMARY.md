@@ -1,8 +1,8 @@
-# CleanUx — Phase 2 Summary
+# Brio — Phase 2 Summary
 
 ## Objectif global
 
-La phase 2 consolide CleanUx avec une plateforme plus modulaire, plus lisible et plus prête pour une mise en production progressive.
+La phase 2 consolide Brio avec une plateforme plus modulaire, plus lisible et plus prête pour une mise en production progressive.
 
 ## Phases réalisées
 

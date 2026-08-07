@@ -1,6 +1,6 @@
 #!/bin/bash
 # ============================================================
-#  CleanUx — fix-migrations.sh
+#  Brio — fix-migrations.sh
 #  Archiver toutes les migrations conflictuelles avec les
 #  nouvelles migrations 2026_05_04_*
 #
@@ -15,7 +15,7 @@ ARCHIVE_DIR="database/migrations/archive"
 
 echo ""
 echo "╔══════════════════════════════════════════════════════╗"
-echo "║  CleanUx — Nettoyage des migrations conflictuelles   ║"
+echo "║  Brio — Nettoyage des migrations conflictuelles   ║"
 echo "╚══════════════════════════════════════════════════════╝"
 echo ""
 

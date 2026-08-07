@@ -14,7 +14,7 @@
 
    Usage React :
      <StatsSection
-        eyebrow="CleanUx en chiffres" title="La confiance, en données"
+        eyebrow="Brio en chiffres" title="La confiance, en données"
         stats={[{ value: 12500, suffix: '+', label: 'Missions', progress: 92 }]} />
 
    Usage Blade/Livewire (auto-mount) : voir resources/js/stats-section.jsx

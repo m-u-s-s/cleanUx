@@ -70,8 +70,8 @@ class MissionPaymentServiceTest extends TestCase
     {
         config([
             'cashier.secret' => 'sk_test_fake',
-            'cleanux.platform_fee_percent' => 20,
-            'cleanux.use_negotiated_commission' => true,
+            'brio.platform_fee_percent' => 20,
+            'brio.use_negotiated_commission' => true,
         ]);
 
         $client = User::factory()->client()->create(['stripe_id' => 'cus_fake']);

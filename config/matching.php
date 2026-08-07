@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Configuration du moteur de matching v2 (CleanUx).
+ * Configuration du moteur de matching v2 (Brio).
  *
  * Les poids définissent l'importance relative de chaque dimension dans le score
  * final (0–100). La somme des poids doit faire 100 pour rester lisible.

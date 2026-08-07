@@ -283,7 +283,7 @@ class TripTrackingService
 
     protected function resolveBookingDestination(Booking $booking): array
     {
-        // Schéma CleanUx: bookings.destination_lat/destination_lng
+        // Schéma Brio: bookings.destination_lat/destination_lng
         $lat = $booking->getAttribute('destination_lat')
             ?? data_get($booking, 'address_components.lat')
             ?? data_get($booking, 'matching_snapshot.lat');

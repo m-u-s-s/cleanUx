@@ -29,7 +29,7 @@ class NpsSurveyNotification extends Notification
         $surveyUrl = $this->surveyUrl();
 
         return (new MailMessage)
-            ->subject('Comment s\'etait votre experience avec CleanUx ?')
+            ->subject('Comment s\'etait votre experience avec Brio ?')
             ->greeting('Bonjour '.$notifiable->name.',')
             ->line('Votre mission du '.$this->booking->scheduled_date.' est terminee. Votre avis nous aide a ameliorer notre service.')
             ->action('Donner mon avis (30 secondes)', $surveyUrl)

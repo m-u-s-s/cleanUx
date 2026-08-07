@@ -18,7 +18,7 @@ use Illuminate\Validation\ValidationException;
  * Service orchestrant les bundles multi-trades (rénovation, déménagement, etc.).
  *
  * Cas d'usage : client demande "rénovation salle de bain"
- *   → CleanUx propose 4 items (plomberie + carrelage + peinture + électricité)
+ *   → Brio propose 4 items (plomberie + carrelage + peinture + électricité)
  *   → Chaque item est quoted par provider du trade correspondant
  *   → Bundle accepté → 4 missions Booking créées en cascade (depends_on)
  *   → Facture consolidée + discount groupage (-10%)

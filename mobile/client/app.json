@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "CleanUx",
-    "slug": "cleanux-client",
+    "name": "Brio",
+    "slug": "brio-client",
     "version": "1.0.0",
     "orientation": "portrait",
     "updates": {
@@ -16,11 +16,11 @@
     "userInterfaceStyle": "automatic",
     "ios": {
       "supportsTablet": false,
-      "bundleIdentifier": "com.cleanux.client",
+      "bundleIdentifier": "com.brio.client",
       "infoPlist": {
-        "NSCameraUsageDescription": "CleanUx uses the camera to scan QR codes for mission start/end.",
-        "NSLocationWhenInUseUsageDescription": "CleanUx uses your location to show nearby providers and track missions.",
-        "NSPhotoLibraryUsageDescription": "CleanUx uses photos for AI quote estimation and chat attachments."
+        "NSCameraUsageDescription": "Brio uses the camera to scan QR codes for mission start/end.",
+        "NSLocationWhenInUseUsageDescription": "Brio uses your location to show nearby providers and track missions.",
+        "NSPhotoLibraryUsageDescription": "Brio uses photos for AI quote estimation and chat attachments."
       }
     },
     "android": {
@@ -28,7 +28,7 @@
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#070b14"
       },
-      "package": "com.cleanux.client",
+      "package": "com.brio.client",
       "permissions": [
         "android.permission.CAMERA",
         "android.permission.ACCESS_FINE_LOCATION",
@@ -39,13 +39,13 @@
     "web": {
       "favicon": "./assets/favicon.png"
     },
-    "scheme": "cleanux",
+    "scheme": "brio",
     "plugins": [
       "expo-secure-store",
       [
         "@stripe/stripe-react-native",
         {
-          "merchantIdentifier": "merchant.com.cleanux.client"
+          "merchantIdentifier": "merchant.com.brio.client"
         }
       ],
       "expo-notifications",

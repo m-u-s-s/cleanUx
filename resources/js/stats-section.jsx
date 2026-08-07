@@ -1,5 +1,5 @@
 /* ============================================================================
-   CleanUx — Stats Section : auto-mount des îlots React (voie Blade/Livewire).
+   Brio — Stats Section : auto-mount des îlots React (voie Blade/Livewire).
    ----------------------------------------------------------------------------
    Scanne le DOM pour [data-stats-section] et y monte <StatsSection> (Framer
    Motion). La config se passe en JSON inline :

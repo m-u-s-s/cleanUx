@@ -265,7 +265,7 @@ class InsuranceClaimsService
 
             // SMS best-effort
             if ($claimant->phone) {
-                app(SmsService::class)->send($claimant->phone, "CleanUx: {$msg}");
+                app(SmsService::class)->send($claimant->phone, "Brio: {$msg}");
             }
         } catch (\Throwable $e) {
             \Illuminate\Support\Facades\Log::warning("Insurance claim notification failed: {$e->getMessage()}", [

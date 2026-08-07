@@ -10,7 +10,7 @@ use App\Models\User;
 use Illuminate\Support\Facades\Cache;
 
 /**
- * Service central d'autorisation CleanUx.
+ * Service central d'autorisation Brio.
  *
  * Toute vérification de permission passe ici — jamais directement
  * sur les colonnes du modèle User ou OrganizationMember.

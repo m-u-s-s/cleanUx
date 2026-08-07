@@ -1,8 +1,8 @@
-# Audit fonctionnel plateforme CleanUx - 2026-06-08
+# Audit fonctionnel plateforme Brio - 2026-06-08
 
 ## Synthese executive
 
-CleanUx est une plateforme marketplace multi-metiers tres avancee: Laravel 11, Livewire 3, Sanctum, Reverb, Stripe Connect, et une application mobile Expo/React Native. Le produit couvre deja le cycle complet d'une marketplace de services: acquisition client, reservation, estimation, dispatch, execution terrain, tracking, qualite, paiement, litiges, fidelisation, B2B, finance, conformite et administration.
+Brio est une plateforme marketplace multi-metiers tres avancee: Laravel 11, Livewire 3, Sanctum, Reverb, Stripe Connect, et une application mobile Expo/React Native. Le produit couvre deja le cycle complet d'une marketplace de services: acquisition client, reservation, estimation, dispatch, execution terrain, tracking, qualite, paiement, litiges, fidelisation, B2B, finance, conformite et administration.
 
 Note globale actuelle: **7.7 / 10**.
 
@@ -57,7 +57,7 @@ Important: l'ancien audit technique `docs/AUDIT-PLATEFORME-2026-06-08.md` signal
 | B2B operations | 8.0 | Organisations, sites, work orders, facturation mensuelle. Gros avantage competitif. |
 | Entreprises clientes | 7.8 | Roles, sites, approvals. Bien pense pour comptes multi-sites. |
 | Entreprises prestataires | 7.6 | Organisation, workers, team lead, dispatcher. Bon mais permissions fines a auditer. |
-| Fleet v2 | 7.2 | Vehicules/equipements/maintenance/certifications. Utile si CleanUx gere vraiment la flotte. |
+| Fleet v2 | 7.2 | Vehicules/equipements/maintenance/certifications. Utile si Brio gere vraiment la flotte. |
 | Insurance v2 | 7.5 | Plans, achat, claims. Bon module confiance, sensible aux conditions assureur. |
 | Loyalty | 7.4 | Points, tiers, transactions. Bien pour retention client. |
 | Loyalty rewards | 7.2 | Marketplace recompenses. Utile mais non prioritaire avant stabilite core. |
@@ -205,7 +205,7 @@ Mon conseil produit: definir 3 parcours "or" et les rendre parfaits avant d'eten
 
 ## Verdict
 
-CleanUx est une plateforme tres prometteuse, deja tres avancee techniquement et fonctionnellement. Elle est mieux pensee que beaucoup de marketplaces classiques parce qu'elle integre les vraies contraintes terrain: disponibilite, dispatch, qualite, litiges, preuve, paiement, B2B et conformite.
+Brio est une plateforme tres prometteuse, deja tres avancee techniquement et fonctionnellement. Elle est mieux pensee que beaucoup de marketplaces classiques parce qu'elle integre les vraies contraintes terrain: disponibilite, dispatch, qualite, litiges, preuve, paiement, B2B et conformite.
 
 Elle peut encore etre mieux pensee sur un axe: **la simplicite operationnelle**. Le moteur est puissant; maintenant il faut polir les parcours dominants, fermer les vieux chemins, prouver les workflows critiques par tests E2E et rendre l'admin capable de voir rapidement "ce qui bloque maintenant".
 

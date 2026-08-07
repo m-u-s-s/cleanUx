@@ -114,7 +114,7 @@ class DataErasureService
 
     public function anonymizeUser(User $user): void
     {
-        $anonEmail = str_replace('{id}', (string) $user->id, (string) config('gdpr.anonymized_email_template', 'deleted_{id}@anonymized.cleanux'));
+        $anonEmail = str_replace('{id}', (string) $user->id, (string) config('gdpr.anonymized_email_template', 'deleted_{id}@anonymized.brio'));
         $anonName = (string) config('gdpr.anonymized_name', 'Utilisateur supprimé');
 
         $user->forceFill([

@@ -2,7 +2,7 @@
     <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
             <p class="ui-page-eyebrow">Cockpit administrateur</p>
-            <h1 class="ui-page-title">Pilotage global CleanUx</h1>
+            <h1 class="ui-page-title">Pilotage global Brio</h1>
             <p class="ui-page-subtitle">
                 Rendez-vous, missions, zones, alertes, qualité, finance et activité terrain.
             </p>

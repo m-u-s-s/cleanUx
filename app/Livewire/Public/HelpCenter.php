@@ -21,8 +21,8 @@ class HelpCenter extends Component
                 'label' => 'Général',
                 'items' => [
                     [
-                        'q' => "Qu'est-ce que CleanUx ?",
-                        'a' => 'CleanUx est une marketplace multi-métiers (nettoyage, peinture, babysitting, toiturier, etc.) qui met en relation des clients avec des prestataires vérifiés.',
+                        'q' => "Qu'est-ce que Brio ?",
+                        'a' => 'Brio est une marketplace multi-métiers (nettoyage, peinture, babysitting, toiturier, etc.) qui met en relation des clients avec des prestataires vérifiés.',
                     ],
                     [
                         'q' => 'Comment créer un compte ?',

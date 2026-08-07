@@ -14,28 +14,28 @@ services:
       - DB_HOST=mysql
       - REDIS_HOST=redis
     networks:
-      - cleanux
+      - brio
 
   mysql:
     image: mysql:8.0
     ports:
       - "3306:3306"
     environment:
-      MYSQL_DATABASE: cleanux
+      MYSQL_DATABASE: brio
       MYSQL_ROOT_PASSWORD: secret
-      MYSQL_USER: cleanux
+      MYSQL_USER: brio
       MYSQL_PASSWORD: secret
     volumes:
       - mysql_data:/var/lib/mysql
     networks:
-      - cleanux
+      - brio
 
   redis:
     image: redis:7-alpine
     ports:
       - "6379:6379"
     networks:
-      - cleanux
+      - brio
 
   reverb:
     build:
@@ -53,11 +53,11 @@ services:
       - DB_HOST=mysql
       - REDIS_HOST=redis
     networks:
-      - cleanux
+      - brio
 
 volumes:
   mysql_data:
 
 networks:
-  cleanux:
+  brio:
     driver: bridge

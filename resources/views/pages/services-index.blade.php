@@ -1,5 +1,5 @@
 <x-guest-layout
-    :seoTitle="'Tous nos services a domicile — CleanUx Belgique'"
+    :seoTitle="'Tous nos services a domicile — Brio Belgique'"
     :seoDescription="'Decouvrez 30+ metiers de services a domicile : nettoyage, peinture, plomberie, jardinage, babysitting et plus. Providers verifies, paiement securise, suivi en temps reel.'"
 >
 
@@ -124,8 +124,8 @@
     {
         "@context": "https://schema.org",
         "@type": "ItemList",
-        "name": "Services CleanUx",
-        "description": "Tous les services a domicile disponibles sur CleanUx en Belgique",
+        "name": "Services Brio",
+        "description": "Tous les services a domicile disponibles sur Brio en Belgique",
         "url": "{{ route('services.index') }}",
         "itemListElement": [
             @foreach($trades as $idx => $trade)

@@ -21,7 +21,7 @@ class HealthCheckController extends Controller
     {
         return response()->json([
             'status' => 'ok',
-            'service' => 'cleanux',
+            'service' => 'brio',
             'version' => config('app.version', '1.0.0'),
             'env' => app()->environment(),
             'ts' => now()->toIso8601String(),

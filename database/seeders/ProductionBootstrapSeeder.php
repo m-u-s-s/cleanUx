@@ -28,7 +28,7 @@ class ProductionBootstrapSeeder extends Seeder
 {
     public function run(): void
     {
-        $this->command?->info('🚀 Bootstrap production CleanUx — démarrage...');
+        $this->command?->info('🚀 Bootstrap production Brio — démarrage...');
 
         // ─── 1. Données de référence plateforme (rôles/statuts/etc.) ───
         $this->safeCall(ReferencePlatformSeeder::class);
@@ -65,7 +65,7 @@ class ProductionBootstrapSeeder extends Seeder
         $this->safeCall(RecurringTemplateSystemSeeder::class);
         $this->safeCall(PlatformModuleSeeder::class);
 
-        $this->command?->info('✅ Bootstrap production CleanUx terminé.');
+        $this->command?->info('✅ Bootstrap production Brio terminé.');
         $this->command?->line('   Lance ensuite : php artisan ops:check-providers --strict');
     }
 

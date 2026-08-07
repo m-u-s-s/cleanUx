@@ -118,26 +118,26 @@
 
                 <div class="psd-img-grid">
                     <div class="psd-img">
-                        <figure class="psd-img__frame" data-image-reveal data-ir-effect="clip fade"><img src="/images/og-cleanux.svg" alt="Démonstration clip-path"></figure>
+                        <figure class="psd-img__frame" data-image-reveal data-ir-effect="clip fade"><img src="/images/og-brio.svg" alt="Démonstration clip-path"></figure>
                         <p class="psd-img__cap"><code>clip</code></p>
                     </div>
                     <div class="psd-img">
-                        <figure class="psd-img__frame" data-image-reveal data-ir-effect="mask fade"><img src="/images/og-cleanux.svg" alt="Démonstration masque"></figure>
+                        <figure class="psd-img__frame" data-image-reveal data-ir-effect="mask fade"><img src="/images/og-brio.svg" alt="Démonstration masque"></figure>
                         <p class="psd-img__cap"><code>mask</code></p>
                     </div>
                     <div class="psd-img">
-                        <figure class="psd-img__frame" data-image-reveal data-ir-effect="blur fade"><img src="/images/og-cleanux.svg" alt="Démonstration blur"></figure>
+                        <figure class="psd-img__frame" data-image-reveal data-ir-effect="blur fade"><img src="/images/og-brio.svg" alt="Démonstration blur"></figure>
                         <p class="psd-img__cap"><code>blur</code> → net</p>
                     </div>
                     <div class="psd-img">
-                        <figure class="psd-img__frame" data-image-reveal data-ir-effect="scale fade"><img src="/images/og-cleanux.svg" alt="Démonstration scale"></figure>
+                        <figure class="psd-img__frame" data-image-reveal data-ir-effect="scale fade"><img src="/images/og-brio.svg" alt="Démonstration scale"></figure>
                         <p class="psd-img__cap"><code>scale</code></p>
                     </div>
                 </div>
 
                 {{-- Combo + parallaxe (le cadre flotte au scroll, gaté par la visibilité) --}}
                 <div class="psd-img psd-img--wide">
-                    <figure class="psd-img__frame" data-image-reveal data-ir-effect="clip blur fade" data-ir-parallax="0.25"><img src="/images/og-cleanux.svg" alt="Démonstration clip + blur + parallaxe"></figure>
+                    <figure class="psd-img__frame" data-image-reveal data-ir-effect="clip blur fade" data-ir-parallax="0.25"><img src="/images/og-brio.svg" alt="Démonstration clip + blur + parallaxe"></figure>
                     <p class="psd-img__cap"><code>clip + blur + parallax</code></p>
                 </div>
 
@@ -165,9 +165,9 @@
 
                 {{-- Aperçu image au survol --}}
                 <ul class="psd-cursor-list">
-                    <li><a href="#" data-cursor-image="/images/og-cleanux.svg">Nettoyage premium <span>→</span></a></li>
-                    <li><a href="#" data-cursor-image="/images/og-cleanux.svg">Peinture &amp; finitions <span>→</span></a></li>
-                    <li><a href="#" data-cursor-image="/images/og-cleanux.svg">Jardinage &amp; extérieurs <span>→</span></a></li>
+                    <li><a href="#" data-cursor-image="/images/og-brio.svg">Nettoyage premium <span>→</span></a></li>
+                    <li><a href="#" data-cursor-image="/images/og-brio.svg">Peinture &amp; finitions <span>→</span></a></li>
+                    <li><a href="#" data-cursor-image="/images/og-brio.svg">Jardinage &amp; extérieurs <span>→</span></a></li>
                 </ul>
 
                 <p class="psd-tag"><code>&lt;button data-magnetic data-magnetic-strength="0.4"&gt;</code> · <code>data-cursor-text="Voir"</code> · <code>data-cursor-image="/x.jpg"</code> · React : <code>&lt;MagneticButton/&gt;</code></p>
@@ -185,7 +185,7 @@
                 <div data-stats-section>
                     <script type="application/json">
                     {
-                        "eyebrow": "CleanUx en chiffres",
+                        "eyebrow": "Brio en chiffres",
                         "title": "La confiance, en données",
                         "stats": [
                             { "value": 12500, "suffix": "+", "label": "Missions réalisées", "progress": 92, "icon": "🧹" },

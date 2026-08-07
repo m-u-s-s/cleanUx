@@ -1,5 +1,5 @@
 /* ============================================================================
-   CleanUx — Image Reveal : entrée globale (voie vanilla).
+   Brio — Image Reveal : entrée globale (voie vanilla).
    Chargée sur toutes les pages guest mais inerte tant qu'aucun élément
    [data-image-reveal] n'existe. Scanne le DOM et arme la révélation au scroll
    (IntersectionObserver). Re-scanne après navigation Livewire.

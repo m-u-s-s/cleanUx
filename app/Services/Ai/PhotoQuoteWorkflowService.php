@@ -60,7 +60,7 @@ class PhotoQuoteWorkflowService
             return ['success' => false, 'error' => 'estimator_unavailable'];
         }
 
-        $confidenceThreshold = (int) config('cleanux.photo_quote_confidence_threshold', 60);
+        $confidenceThreshold = (int) config('brio.photo_quote_confidence_threshold', 60);
         $result['booking_ready'] = ($result['confiance'] ?? 0) >= $confidenceThreshold;
 
         // TODO: persist to photo_quotes table for audit + retraining

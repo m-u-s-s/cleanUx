@@ -1,5 +1,5 @@
 /**
- * k6 Load Test: CleanUx Booking Flow
+ * k6 Load Test: Brio Booking Flow
  *
  * Tests the full authenticated booking lifecycle:
  *   1. Login via API (get Sanctum token)
@@ -12,7 +12,7 @@
  *   k6 run tests/load/booking-flow.js
  *
  * Override base URL and credentials:
- *   BASE_URL=https://staging.cleanux.be \
+ *   BASE_URL=https://staging.brio.be \
  *   TEST_EMAIL=loadtest@example.com \
  *   TEST_PASSWORD=secret123 \
  *   k6 run tests/load/booking-flow.js
@@ -46,7 +46,7 @@ export const options = {
 
 const BASE_URL    = __ENV.BASE_URL    || 'http://localhost:8000';
 const API_URL     = `${BASE_URL}/api`;
-const TEST_EMAIL  = __ENV.TEST_EMAIL  || 'loadtest-client@cleanux.test';
+const TEST_EMAIL  = __ENV.TEST_EMAIL  || 'loadtest-client@brio.test';
 const TEST_PASSWORD = __ENV.TEST_PASSWORD || 'password';
 
 // ─────────────────────────── Helpers ───────────────────────────────────────

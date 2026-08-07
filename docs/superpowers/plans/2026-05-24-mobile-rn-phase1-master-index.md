@@ -1,8 +1,8 @@
-# CleanUx Mobile React Native — Phase 1 Client : Plan Maître (Index)
+# Brio Mobile React Native — Phase 1 Client : Plan Maître (Index)
 
 > **For agentic workers:** Ce document est un **index**, pas un plan exécutable. Pour chaque sprint, ouvre le plan détaillé correspondant et exécute-le via `superpowers:subagent-driven-development`.
 
-**Goal Phase 1:** Livrer une app React Native/Expo `mobile/client` qui couvre l'intégralité du parcours client CleanUx (booking → mission → paiement → suivi → fidélité → support) avec parité fonctionnelle de l'app web actuelle.
+**Goal Phase 1:** Livrer une app React Native/Expo `mobile/client` qui couvre l'intégralité du parcours client Brio (booking → mission → paiement → suivi → fidélité → support) avec parité fonctionnelle de l'app web actuelle.
 
 **Architecture Phase 1:** Monorepo `/mobile/client` à la racine du projet Laravel (workspace npm/pnpm). Expo SDK + EAS Build/Submit. React Navigation v7. TanStack Query pour cache API. Reverb client mobile pour WebSocket. expo-secure-store pour token Sanctum. Stripe React Native pour paiement. expo-camera pour QR. react-native-maps ou MapLibre pour tracking live. Theming porté 1:1 depuis `tailwind.config.js` + `resources/css/app.css`.
 
@@ -67,7 +67,7 @@ Chaque sprint produit un livrable testable seul. Les plans détaillés (un fichi
 
 ## Sprint 2 — Auth + API client + Reverb (preview)
 
-**Livrable :** Login/Register/Logout/Refresh fonctionnels via API CleanUx, token stocké securément, intercepteurs axios (auth header, refresh-on-401, error-mapping), TanStack Query configuré, Reverb client connecté + auth via Bearer pour channels privés, OTP phone verification.
+**Livrable :** Login/Register/Logout/Refresh fonctionnels via API Brio, token stocké securément, intercepteurs axios (auth header, refresh-on-401, error-mapping), TanStack Query configuré, Reverb client connecté + auth via Bearer pour channels privés, OTP phone verification.
 
 **Préalables :** Sprint 0 + Sprint 1.
 

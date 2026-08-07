@@ -21,7 +21,7 @@ export function SavedPaymentMethodsScreen() {
       const { client_secret } = await setupIntent.mutateAsync();
       const { error: initError } = await initPaymentSheet({
         setupIntentClientSecret: client_secret,
-        merchantDisplayName: 'CleanUx',
+        merchantDisplayName: 'Brio',
         style: 'automatic',
       });
       if (initError) {

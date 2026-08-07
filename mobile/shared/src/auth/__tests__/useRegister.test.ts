@@ -106,6 +106,6 @@ describe('useRegister', () => {
 
     const body = JSON.parse(mock.history['post']![0]!.data as string) as Record<string, unknown>;
     expect(body['accept_terms']).toBe(true);
-    expect(body['device_name']).toBe('cleanux-mobile');
+    expect(body['device_name']).toBe('brio-mobile');
   });
 });

@@ -26,8 +26,8 @@ class KycCompletedNotification extends Notification
 
         $mail = (new MailMessage)
             ->subject($approved
-                ? 'CleanUx · Votre vérification d\'identité est validée'
-                : 'CleanUx · Votre vérification d\'identité nécessite une action');
+                ? 'Brio · Votre vérification d\'identité est validée'
+                : 'Brio · Votre vérification d\'identité nécessite une action');
 
         if ($approved) {
             $mail->greeting('Bienvenue !')

@@ -5,12 +5,12 @@
  *   import './push-notifications';
  *
  * API publique :
- *   window.cleanuxPush.requestPermission()       → demande permission OS
- *   window.cleanuxPush.subscribe()               → souscrit + envoie au serveur
- *   window.cleanuxPush.unsubscribe()             → désinscrit
- *   window.cleanuxPush.getStatus()               → 'granted' | 'denied' | 'default' | 'unsupported'
- *   window.cleanuxPush.testNotification()        → notif test
- *   window.cleanuxPush.hasActiveSubscription()   → boolean
+ *   window.brioPush.requestPermission()       → demande permission OS
+ *   window.brioPush.subscribe()               → souscrit + envoie au serveur
+ *   window.brioPush.unsubscribe()             → désinscrit
+ *   window.brioPush.getStatus()               → 'granted' | 'denied' | 'default' | 'unsupported'
+ *   window.brioPush.testNotification()        → notif test
+ *   window.brioPush.hasActiveSubscription()   → boolean
  */
 
 (function () {
@@ -83,7 +83,7 @@
     // API publique
     // ────────────────────────────────────────
 
-    const cleanuxPush = {
+    const brioPush = {
         isSupported() {
             return 'serviceWorker' in navigator
                 && 'PushManager' in window
@@ -198,5 +198,5 @@
         },
     };
 
-    window.cleanuxPush = cleanuxPush;
+    window.brioPush = brioPush;
 })();

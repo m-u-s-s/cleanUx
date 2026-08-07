@@ -7,7 +7,7 @@
             <div class="max-w-3xl">
                 <div class="flex flex-wrap items-center gap-2">
                     <span class="rounded-full bg-white/15 px-3 py-1 text-xs font-black uppercase tracking-[0.18em] text-blue-50 ring-1 ring-white/15">
-                        Pilotage CleanUx
+                        Pilotage Brio
                     </span>
 
                     <span class="rounded-full bg-emerald-400/20 px-3 py-1 text-xs font-bold text-emerald-100 ring-1 ring-emerald-300/20">

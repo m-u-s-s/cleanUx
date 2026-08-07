@@ -77,6 +77,6 @@ return [
     */
     'stripe' => [
         'capture_method' => env('SUBSCRIPTIONS_STRIPE_CAPTURE_METHOD', 'automatic'),
-        'statement_descriptor' => env('SUBSCRIPTIONS_STRIPE_DESCRIPTOR', 'CleanUx Sub'),
+        'statement_descriptor' => env('SUBSCRIPTIONS_STRIPE_DESCRIPTOR', 'Brio Sub'),
     ],
 ];

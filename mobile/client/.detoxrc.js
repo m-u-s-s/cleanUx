@@ -6,8 +6,8 @@ module.exports = {
   apps: {
     'ios.debug': {
       type: 'ios.app',
-      binaryPath: 'ios/build/Build/Products/Debug-iphonesimulator/CleanUxClient.app',
-      build: 'xcodebuild -workspace ios/CleanUxClient.xcworkspace -scheme CleanUxClient -configuration Debug -sdk iphonesimulator -derivedDataPath ios/build',
+      binaryPath: 'ios/build/Build/Products/Debug-iphonesimulator/BrioClient.app',
+      build: 'xcodebuild -workspace ios/BrioClient.xcworkspace -scheme BrioClient -configuration Debug -sdk iphonesimulator -derivedDataPath ios/build',
     },
     'android.debug': {
       type: 'android.apk',

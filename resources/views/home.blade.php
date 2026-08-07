@@ -1,6 +1,6 @@
 <x-guest-layout>
     {{-- ============================================================
-         CleanUx — Landing page (refonte Stripe/Linear-light, 21/05/2026)
+         Brio — Landing page (refonte Stripe/Linear-light, 21/05/2026)
          Direction : sérieux SaaS multi-métiers B2B + B2C.
          Clean, dense info, trust signals.
          ============================================================ --}}
@@ -449,7 +449,7 @@
                                 <p class="text-xs text-slate-500">Paris • Prestataire</p>
                             </div>
                         </div>
-                        <p class="text-sm text-slate-600">"Grâce à CleanUx, j'ai triplé mes missions mensuelles. L'app terrain est intuitive et les paiements arrivent vite."</p>
+                        <p class="text-sm text-slate-600">"Grâce à Brio, j'ai triplé mes missions mensuelles. L'app terrain est intuitive et les paiements arrivent vite."</p>
                         <p class="text-accent-amber mt-3 text-sm">★★★★★</p>
                     </div>
                     <div class="cu-glass cx-lift rounded-2xl p-6 flex-1" data-cx-reveal data-cx-delay="200">
@@ -476,11 +476,11 @@
             </h2>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 @foreach([
-                    ['Comment fonctionne CleanUx ?', 'Choisissez un service, précisez vos besoins, et un prestataire vérifié vous est attribué automatiquement. Suivez la mission en temps réel et payez en toute sécurité.'],
+                    ['Comment fonctionne Brio ?', 'Choisissez un service, précisez vos besoins, et un prestataire vérifié vous est attribué automatiquement. Suivez la mission en temps réel et payez en toute sécurité.'],
                     ['Combien ça coûte ?', 'Le prix dépend du service et de la durée estimée. Vous recevez un devis avant de confirmer — pas de surprise. Vous pouvez même obtenir un devis instantané par photo grâce à notre IA.'],
                     ['Les prestataires sont-ils vérifiés ?', "Oui. Chaque prestataire passe une vérification d'identité (KYC), fournit ses certifications professionnelles et est noté après chaque mission."],
-                    ['Comment devenir prestataire ?', "Téléchargez l'app CleanUx Provider, inscrivez-vous, complétez la vérification et commencez à recevoir des missions. Paiements directs sur votre compte via Stripe."],
-                    ['Dans quels pays est disponible CleanUx ?', 'Belgique, France, Pays-Bas, Allemagne, Espagne, Italie, Portugal, Luxembourg et Autriche. Nous étendons notre couverture régulièrement.'],
+                    ['Comment devenir prestataire ?', "Téléchargez l'app Brio Provider, inscrivez-vous, complétez la vérification et commencez à recevoir des missions. Paiements directs sur votre compte via Stripe."],
+                    ['Dans quels pays est disponible Brio ?', 'Belgique, France, Pays-Bas, Allemagne, Espagne, Italie, Portugal, Luxembourg et Autriche. Nous étendons notre couverture régulièrement.'],
                     ['Puis-je annuler une réservation ?', 'Oui, avec des conditions selon le délai. Annulation gratuite > 24h avant. Des frais peuvent s\'appliquer dans les 24h précédant la mission.'],
                 ] as [$question, $answer])
                     <details class="cu-glass cx-lift rounded-xl p-5 group cursor-pointer" data-cx-reveal>

@@ -13,10 +13,10 @@ class PlatformReadinessProfileTest extends TestCase
 
     public function test_report_flags_demo_artifacts_when_non_demo_profile_is_selected(): void
     {
-        config()->set('cleanux.seed.profile', 'production');
+        config()->set('brio.seed.profile', 'production');
 
         User::factory()->admin()->create([
-            'email' => 'admin@cleanux.test',
+            'email' => 'admin@brio.test',
         ]);
 
         /** @var PlatformReadinessReport $readinessReport */

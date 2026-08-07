@@ -14,11 +14,11 @@ use Illuminate\Support\Facades\DB;
 /**
  * Synchro Google Calendar BIDIRECTIONNELLE.
  *
- * Sens sortant (existant) : GoogleCalendarSyncService pousse les RDV CleanUx →
+ * Sens sortant (existant) : GoogleCalendarSyncService pousse les RDV Brio →
  * Google Calendar (cron google-calendar:sync).
  *
  * Sens entrant (ce service) : un créneau bloqué dans Google Calendar devient une
- * exception d'indisponibilité côté CleanUx.
+ * exception d'indisponibilité côté Brio.
  *   - registerWatch()          : ouvre un canal push Google (table google_calendar_watch_channels).
  *   - webhook POST /webhooks/google-calendar → handlePushNotification()
  *   - handlePushNotification() : récupère les créneaux occupés (GoogleBusyFetcher)
@@ -99,7 +99,7 @@ class GoogleCalendarBidirectionalService
 
     /**
      * Sens entrant — mappe les événements « busy » Google d'un prestataire vers des
-     * exceptions d'indisponibilité CleanUx. Remplacement complet des exceptions
+     * exceptions d'indisponibilité Brio. Remplacement complet des exceptions
      * issues de Google (source=google) ; les exceptions manuelles sont préservées.
      *
      * Événement attendu : ['external_id', 'start', 'end', 'all_day'(bool), 'summary'?].

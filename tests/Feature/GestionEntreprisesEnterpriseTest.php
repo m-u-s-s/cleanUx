@@ -25,8 +25,8 @@ class GestionEntreprisesEnterpriseTest extends TestCase
         $this->actingAs($admin);
 
         Livewire::test(GestionEntreprises::class)
-            ->set('name', 'CleanUx Corporate')
-            ->set('legal_name', 'CleanUx Corporate SA')
+            ->set('name', 'Brio Corporate')
+            ->set('legal_name', 'Brio Corporate SA')
             ->set('account_type', 'entreprise')
             ->set('account_status', 'active')
             ->set('postal_code', $primaryContext['postalCode']->code)
@@ -43,7 +43,7 @@ class GestionEntreprisesEnterpriseTest extends TestCase
             ->call('saveAccount')
             ->assertHasNoErrors();
 
-        $account = OrganizationAccount::where('name', 'CleanUx Corporate')->firstOrFail();
+        $account = OrganizationAccount::where('name', 'Brio Corporate')->firstOrFail();
 
         $this->assertSame('active', data_get($account->metadata, 'contract_status'));
         $this->assertSame('hybrid', data_get($account->metadata, 'approval_mode'));

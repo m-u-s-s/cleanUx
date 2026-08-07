@@ -1,4 +1,4 @@
-\# CleanUx — Restore Runbook
+\# Brio — Restore Runbook
 
 
 
@@ -6,7 +6,7 @@
 
 
 
-Ce document explique comment restaurer CleanUx après un incident.
+Ce document explique comment restaurer Brio après un incident.
 
 
 
@@ -52,7 +52,7 @@ Avant toute restauration :
 
 
 
-\## 1. Mettre CleanUx en maintenance
+\## 1. Mettre Brio en maintenance
 
 
 

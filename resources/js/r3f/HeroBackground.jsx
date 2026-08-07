@@ -1,5 +1,5 @@
 /* ============================================================================
-   CleanUx — R3F hero background (Canvas wrapper, performance-tuned)
+   Brio — R3F hero background (Canvas wrapper, performance-tuned)
    ----------------------------------------------------------------------------
    Performance:
      • dpr clamped to [1, 1.75] (avoids 3x retina overdraw).

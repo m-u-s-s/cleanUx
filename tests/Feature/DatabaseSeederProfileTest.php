@@ -13,7 +13,7 @@ class DatabaseSeederProfileTest extends TestCase
 
     public function test_database_seeder_can_run_reference_profile_without_demo_data(): void
     {
-        config()->set('cleanux.seed.profile', 'reference');
+        config()->set('brio.seed.profile', 'reference');
 
         $this->seed(DatabaseSeeder::class);
 
@@ -25,11 +25,11 @@ class DatabaseSeederProfileTest extends TestCase
 
     public function test_database_seeder_can_run_demo_profile_with_demo_data(): void
     {
-        config()->set('cleanux.seed.profile', 'demo');
+        config()->set('brio.seed.profile', 'demo');
 
         $this->seed(DatabaseSeeder::class);
 
-        $this->assertDatabaseHas('users', ['email' => 'admin@cleanux.test']);
+        $this->assertDatabaseHas('users', ['email' => 'admin@brio.test']);
         $this->assertDatabaseCount('rendez_vous', 4);
     }
 }

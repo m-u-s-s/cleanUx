@@ -34,7 +34,7 @@ final class ServicePageController extends Controller
             : ServiceZone::where('is_bookable', true)->orderBy('name')->get();
 
         $cityLabel = $city ? ucfirst(str_replace('-', ' ', $city)) : null;
-        $seoTitle = $trade->name.($cityLabel ? ' a '.$cityLabel : '').' — CleanUx';
+        $seoTitle = $trade->name.($cityLabel ? ' a '.$cityLabel : '').' — Brio';
         $seoDescription = 'Reservez un '.strtolower($trade->name).' verifie'
             .($cityLabel ? ' a '.$cityLabel : ' en Belgique')
             .'. Paiement securise, suivi en temps reel. Devis gratuit en 2 minutes.';

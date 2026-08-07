@@ -1,6 +1,6 @@
-# CleanUx Client — React Native (Expo)
+# Brio Client — React Native (Expo)
 
-Mobile client app for the CleanUx multi-service marketplace.
+Mobile client app for the Brio multi-service marketplace.
 
 ## Quick start
 

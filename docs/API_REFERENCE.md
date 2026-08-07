@@ -1,6 +1,6 @@
-# CleanUx API Reference
+# Brio API Reference
 
-Base URL: `https://app.cleanux.com/api`
+Base URL: `https://app.brio.com/api`
 
 ## Authentication
 All endpoints require `Authorization: Bearer <token>` unless marked PUBLIC.

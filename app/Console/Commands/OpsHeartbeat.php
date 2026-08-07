@@ -30,7 +30,7 @@ class OpsHeartbeat extends Command
 
         $disk = (string) config('operations.monitoring.heartbeat_disk', 'local');
         $path = (string) config('operations.monitoring.heartbeat_path', 'ops/heartbeat.json');
-        $cacheKey = (string) config('operations.monitoring.heartbeat_cache_key', 'cleanux:ops:heartbeat');
+        $cacheKey = (string) config('operations.monitoring.heartbeat_cache_key', 'brio:ops:heartbeat');
 
         Storage::disk($disk)->put($path, json_encode($payload, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
         Cache::put($cacheKey, $payload, now()->addMinutes(15));

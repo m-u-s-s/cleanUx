@@ -1,8 +1,8 @@
-# Architecture générale CleanUx
+# Architecture générale Brio
 
 ## 1. Vision
 
-CleanUx est un **OS opérationnel pour entreprise de nettoyage**. L’application pilote :
+Brio est un **OS opérationnel pour entreprise de nettoyage**. L’application pilote :
 - la demande,
 - la réservation,
 - la planification,

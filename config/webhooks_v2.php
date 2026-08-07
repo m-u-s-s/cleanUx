@@ -25,10 +25,10 @@ return [
     |--------------------------------------------------------------------------
     | Signature
     |--------------------------------------------------------------------------
-    | algo : sha256 (HMAC). header sent : "X-CleanUx-Signature".
+    | algo : sha256 (HMAC). header sent : "X-Brio-Signature".
     | Format : t=<timestamp>,v1=<hex_hmac>
     */
-    'signature_header' => env('WEBHOOKS_SIGNATURE_HEADER', 'X-CleanUx-Signature'),
+    'signature_header' => env('WEBHOOKS_SIGNATURE_HEADER', 'X-Brio-Signature'),
     'signature_version' => 'v1',
     'signature_algo' => 'sha256',
     'signature_tolerance_seconds' => (int) env('WEBHOOKS_SIG_TOLERANCE', 300),

@@ -26,8 +26,8 @@ use Illuminate\Support\Facades\Hash;
  * machine without manual steps.
  *
  * The 5 roles (cf. tools/visual-qa/modules.mjs CREDENTIALS):
- *   - admin@cleanux.test               → platform admin (platform_role=admin)
- *   - qa-provider-company@cleanux.test → OWNER of a PROVIDER_COMPANY org
+ *   - admin@brio.test               → platform admin (platform_role=admin)
+ *   - qa-provider-company@brio.test → OWNER of a PROVIDER_COMPANY org
  *                                        (current_organization_id set → dispatch/equipe/canaux)
  *   - dominique.monnier@example.org    → OWNER of a CLIENT_COMPANY org
  *                                        (current_organization_id set → contrats/membres/facturation)
@@ -83,7 +83,7 @@ class QaAccountsSeeder extends Seeder
         // which 403'd the permission-gated admin modules (modules/services/teams-
         // partners). We codify the FULL-scope state the admin sweep actually needs.
         $this->seedUser(
-            email: 'admin@cleanux.test',
+            email: 'admin@brio.test',
             name: 'QA Admin',
             platformRole: 'admin',
             role: 'admin',
@@ -93,7 +93,7 @@ class QaAccountsSeeder extends Seeder
 
         // ── 2. Provider company OWNER ─────────────────────────────
         $providerCompanyUser = $this->seedUser(
-            email: 'qa-provider-company@cleanux.test',
+            email: 'qa-provider-company@brio.test',
             name: 'QA Provider Company',
             platformRole: 'provider_company',
             role: 'employe',

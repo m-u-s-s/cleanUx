@@ -5,7 +5,7 @@ namespace App\Services\Assistant;
 use Illuminate\Support\Collection;
 
 /**
- * Static knowledge base for the CleanUx chatbot assistant.
+ * Static knowledge base for the Brio chatbot assistant.
  *
  * Articles cover the most common client questions.
  * The search() method is intentionally simple (substring match) so it never
@@ -72,7 +72,7 @@ class KnowledgeBase
             ],
             [
                 'title' => 'Litige',
-                'content' => 'En cas de probleme, ouvrez un litige dans les 48h. Un mediateur CleanUx intervient sous 24h. Resolution possible: remboursement, credit, nouvelle mission.',
+                'content' => 'En cas de probleme, ouvrez un litige dans les 48h. Un mediateur Brio intervient sous 24h. Resolution possible: remboursement, credit, nouvelle mission.',
                 'tags' => ['litige', 'probleme', 'sav', 'plainte', 'mediateur'],
             ],
             [
@@ -92,7 +92,7 @@ class KnowledgeBase
             ],
             [
                 'title' => 'Metiers disponibles',
-                'content' => "CleanUx couvre 12 metiers: nettoyage, peinture, batiment, plomberie, electricite, jardinage, demenagement, garde d'enfants, toiture, levage, renovation, securite.",
+                'content' => "Brio couvre 12 metiers: nettoyage, peinture, batiment, plomberie, electricite, jardinage, demenagement, garde d'enfants, toiture, levage, renovation, securite.",
                 'tags' => ['metier', 'service', 'nettoyage', 'peinture', 'plomberie', 'electricite', 'jardinage'],
             ],
             [
@@ -102,7 +102,7 @@ class KnowledgeBase
             ],
             [
                 'title' => 'Zones',
-                'content' => "CleanUx est disponible en Belgique (Bruxelles, Wallonie, Flandre), en France et s'etend progressivement.",
+                'content' => "Brio est disponible en Belgique (Bruxelles, Wallonie, Flandre), en France et s'etend progressivement.",
                 'tags' => ['zone', 'belgique', 'france', 'bruxelles', 'region', 'ville'],
             ],
         ];

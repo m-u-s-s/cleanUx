@@ -26,7 +26,7 @@ class DisputeResolvedNotification extends Notification
             ?? $this->case->resolutions()->latest()->first();
 
         $mail = (new MailMessage)
-            ->subject('CleanUx · Votre réclamation '.$this->case->reference.' est résolue')
+            ->subject('Brio · Votre réclamation '.$this->case->reference.' est résolue')
             ->greeting('Bonne nouvelle !')
             ->line('Votre réclamation a été résolue.');
 

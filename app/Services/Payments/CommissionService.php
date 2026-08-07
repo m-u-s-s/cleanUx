@@ -10,12 +10,12 @@ class CommissionService
 
     private function platformRate(): float
     {
-        return ((int) config('cleanux.platform_fee_percent', 15)) / 100;
+        return ((int) config('brio.platform_fee_percent', 15)) / 100;
     }
 
     private function useNegotiatedCommission(): bool
     {
-        return (bool) config('cleanux.use_negotiated_commission', false);
+        return (bool) config('brio.use_negotiated_commission', false);
     }
 
     /**
@@ -23,7 +23,7 @@ class CommissionService
      *
      * Décision produit 2026-06-11 : commission = TAUX UNIQUE au lancement.
      * Le taux négocié par prestataire (ProviderProfile.commission_rate) n'est appliqué
-     * que si cleanux.use_negotiated_commission est activé (off par défaut). Cela garantit
+     * que si brio.use_negotiated_commission est activé (off par défaut). Cela garantit
      * que ce calcul reste aligné sur le montant réellement prélevé par Stripe
      * (MissionPaymentService::authorize() consomme ce même calcul).
      *

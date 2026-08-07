@@ -1,9 +1,9 @@
-appId: com.cleanux.client
+appId: com.brio.client
 ---
 - launchApp
 - assertVisible: "Login"
 - tapOn: "Email"
-- inputText: "test@cleanux.dev"
+- inputText: "test@brio.dev"
 - tapOn: "Password"
 - inputText: "password123"
 - tapOn: "Se connecter"

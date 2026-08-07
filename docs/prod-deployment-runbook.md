@@ -1,4 +1,4 @@
-# CleanUx — Runbook de mise en production v2
+# Brio — Runbook de mise en production v2
 
 Date : 2026-05-20. Version cible : 35 modules v2 livrés.
 
@@ -153,8 +153,8 @@ php artisan tenancy:backfill --tenant=main --tables=users
 
 ### Healthchecks
 ```bash
-curl -fsS https://cleanux.example/api/health
-curl -fsS https://cleanux.example/api/ping
+curl -fsS https://brio.example/api/health
+curl -fsS https://brio.example/api/ping
 ```
 
 ### Smoke tests admin
@@ -180,7 +180,7 @@ Doit lister entre autres :
 ### Webhooks B2B fonctionnels
 ```bash
 # Créer une booking via API → vérifier webhook delivery sur ton endpoint test
-curl -X POST https://cleanux.example/api/v2/bookings -H "Authorization: Bearer ..." -d '...'
+curl -X POST https://brio.example/api/v2/bookings -H "Authorization: Bearer ..." -d '...'
 # Puis :
 php artisan tinker
 >>> \App\Models\WebhookDelivery::latest()->take(5)->get(['id', 'event_id', 'status', 'attempt'])
@@ -293,7 +293,7 @@ git push origin main
 
 ## 10. Contacts & ressources
 
-- Architecture détaillée : `C:\Users\mmdar\.claude\projects\c--Users-mmdar-Desktop-code-work-CleanUx\memory\MEMORY.md`
+- Architecture détaillée : `C:\Users\mmdar\.claude\projects\c--Users-mmdar-Desktop-code-work-Brio\memory\MEMORY.md`
 - Module-by-module : `memory/{module}_v2_module.md`
 - Tests : `tests/Feature/{Module}V2/` (1380 tests, 0 failure)
 - Code : `app/Services/{Module}V2/`, `app/Http/Controllers/Api/{Module}V2Controller.php`, `app/Livewire/Admin/{Module}V2/`

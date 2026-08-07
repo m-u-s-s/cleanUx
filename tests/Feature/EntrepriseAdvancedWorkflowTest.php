@@ -24,9 +24,9 @@ class EntrepriseAdvancedWorkflowTest extends TestCase
 
         Livewire::actingAs($admin)
             ->test(GestionEntreprises::class)
-            ->set('name', 'CleanUx Corporate')
-            ->set('legal_name', 'CleanUx Corporate SA')
-            ->set('slug', 'cleanux-corporate')
+            ->set('name', 'Brio Corporate')
+            ->set('legal_name', 'Brio Corporate SA')
+            ->set('slug', 'brio-corporate')
             ->set('account_type', 'entreprise')
             ->set('account_status', 'active')
             ->set('approval_mode', 'manual')

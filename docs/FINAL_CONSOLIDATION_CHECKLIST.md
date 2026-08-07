@@ -1,4 +1,4 @@
-# CleanUx — checklist de consolidation finale
+# Brio — checklist de consolidation finale
 
 Cette checklist sert à verrouiller la plateforme après les blocs de correction et de refactor.
 

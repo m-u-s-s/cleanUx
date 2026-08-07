@@ -1,4 +1,4 @@
-# CleanUx — Correctifs techniques mai 2026
+# Brio — Correctifs techniques mai 2026
 
 Ce patch corrige **7 bombes techniques** identifiées lors d'un audit ciblé, plus 1 bug critique découvert pendant l'application des fixes (relation `$mission->booking` cassée).
 
@@ -121,14 +121,14 @@ Les tests couvrent :
 Les fichiers modifiés sont fournis dans `files/` avec la structure complète du projet. Copie-les par-dessus ton repo :
 
 ```bash
-# depuis la racine de CleanUx
-cp -r /chemin/vers/cleanux-fixes/files/* .
+# depuis la racine de Brio
+cp -r /chemin/vers/brio-fixes/files/* .
 ```
 
 ### Option 2 — Si tu as Git
 Tu peux comparer chaque fichier avec ta version :
 ```bash
-diff -u /chemin/cleanux-fixes/files/app/Models/Mission.php app/Models/Mission.php
+diff -u /chemin/brio-fixes/files/app/Models/Mission.php app/Models/Mission.php
 ```
 
 ### Étapes post-application

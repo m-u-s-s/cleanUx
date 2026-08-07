@@ -21,7 +21,7 @@ class ListServicesCatalogTool implements AssistantTool
 
     public function description(): string
     {
-        return 'Liste les services proposés par CleanUx (filtrable par métier/trade). '
+        return 'Liste les services proposés par Brio (filtrable par métier/trade). '
             ."Utile pour répondre aux questions sur l'offre, ou avant create_booking pour identifier "
             .'le bon service_catalog_id.';
     }

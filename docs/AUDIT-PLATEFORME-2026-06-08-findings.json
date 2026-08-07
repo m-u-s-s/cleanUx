@@ -1,6 +1,6 @@
 {
   "generatedAt": "2026-06-08",
-  "summary": "Audit complet multi-agents de la plateforme CleanUx (sécurité, argent, données, RGPD, mobile, archi, perf, fiabilité) avec vérification adversariale",
+  "summary": "Audit complet multi-agents de la plateforme Brio (sécurité, argent, données, RGPD, mobile, archi, perf, fiabilité) avec vérification adversariale",
   "stats": {
     "dimensions": 10,
     "findingsRetained": 50,
@@ -183,7 +183,7 @@
       "title": "Double déduction de la commission dans le ledger wallet (provider sous-crédité)",
       "severity": "medium",
       "file": "app/Services/Payments/ProviderWalletService.php:58-125 (recordEarning)",
-      "description": "recordEarning() crédite TYPE_EARNING avec provider_amount_cents (montant NET, déjà = total - commission, posé par authorize()), PUIS débite TYPE_PLATFORM_FEE avec platform_fee_cents. Le solde résultant = net - fee = (total - fee) - fee = total - 2x commission. Le prestataire reçoit pourtant net (total - fee) sur son compte Connect via la destination charge; son wallet interne CleanUx est donc systématiquement sous-évalué du montant de la commission. Le bug est figé dans le test: booking provider=8500c/fee=1500c -> earning crédité 85.00, puis débit 15.00, balance asserté à 70.00 alors que le net réel est 85.00.",
+      "description": "recordEarning() crédite TYPE_EARNING avec provider_amount_cents (montant NET, déjà = total - commission, posé par authorize()), PUIS débite TYPE_PLATFORM_FEE avec platform_fee_cents. Le solde résultant = net - fee = (total - fee) - fee = total - 2x commission. Le prestataire reçoit pourtant net (total - fee) sur son compte Connect via la destination charge; son wallet interne Brio est donc systématiquement sous-évalué du montant de la commission. Le bug est figé dans le test: booking provider=8500c/fee=1500c -> earning crédité 85.00, puis débit 15.00, balance asserté à 70.00 alors que le net réel est 85.00.",
       "evidence": "recordEarning: $providerAmount = provider_amount_cents/100; // NET\n ... credit amount=$providerAmount; if($platformFee>0){ create([... DIRECTION_DEBIT, amount=>$platformFee, TYPE_PLATFORM_FEE]) }\nTest ProviderWalletServiceTest:66-67: $this->assertEqualsWithDelta(70.0, $balance['available'], 0.01); // devrait être 85.0",
       "recommendation": "Choisir une seule convention: soit créditer le BRUT (payment_amount_cents) en EARNING puis débiter la commission (net cohérent), soit créditer le NET (provider_amount_cents) SANS débit de commission séparé. La double écriture actuelle (crédit net + débit fee) est incohérente. Corriger aussi le test.",
       "verified": true,

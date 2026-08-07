@@ -3,7 +3,7 @@
 //   node mobile/scripts/generate-pngs.cjs
 //
 // This requires @napi-rs/canvas (installed in repo root node_modules).
-// Run from the CleanUx repo root.
+// Run from the Brio repo root.
 //
 // Generated assets (all PNG):
 //   assets/icon.png                     1024x1024  app store / home screen

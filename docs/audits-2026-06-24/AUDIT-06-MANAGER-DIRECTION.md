@@ -1,6 +1,6 @@
 ## 1. Résumé exécutif
 
-CleanUx est une marketplace de services multi-métiers (backend Laravel 12 + deux apps mobiles Expo), d'une **ambition fonctionnelle considérable** (~80 domaines de services, 50+ modules annoncés), développée à un **rythme intense sur ~2 mois**.
+Brio est une marketplace de services multi-métiers (backend Laravel 12 + deux apps mobiles Expo), d'une **ambition fonctionnelle considérable** (~80 domaines de services, 50+ modules annoncés), développée à un **rythme intense sur ~2 mois**.
 
 Le projet est **techniquement crédible et a réagi sérieusement à l'audit du 8 juin** : les risques critiques (double-paiement, droit à l'oubli, faille d'accès) sont corrigés et **tracés**. Mais du point de vue **pilotage**, deux risques dominent et ne sont pas techniques :
 
@@ -25,7 +25,7 @@ L'historique git montre **un seul contributeur** (~600 commits), aucune revue pa
 | « Laravel 11.53 » | **Laravel 12.62** installé |
 | « 2116 tests verts » | ~660 fichiers / chiffres incohérents entre documents |
 | « 50+ modules production-ready » | Audit interne : readiness **7/10**, go-live conditionné à des tests E2E non faits |
-| Nom « CleanUx » | Package nommé **`brio/marketplace`** |
+| Nom « Brio » | Package nommé **`brio/marketplace`** |
 
 - **Impact :** un décideur (investisseur, client B2B, partenaire) qui lit le README conclut que le produit est livrable immédiatement — ce que les audits internes contredisent. Les incohérences (version, double nom de marque) trahissent un **manque de rigueur dans la communication d'état** et exposent à une perte de crédibilité, voire à un risque juridique si « production-ready » figure dans une offre.
 - **Recommandation :** **bannir « production-ready »** tant que les critères de go-live ne sont pas remplis ; aligner README/CHANGELOG/checklists sur des chiffres vérifiés ; trancher le nom de marque.

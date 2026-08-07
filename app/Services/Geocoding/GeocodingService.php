@@ -42,7 +42,7 @@ class GeocodingService
         $response = Http::timeout(12)
             ->acceptJson()
             ->withHeaders([
-                'User-Agent' => config('app.name', 'CleanUx').'/1.0 geocoding',
+                'User-Agent' => config('app.name', 'Brio').'/1.0 geocoding',
             ])
             ->get('https://nominatim.openstreetmap.org/search', [
                 'q' => $query,

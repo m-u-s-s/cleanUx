@@ -26,8 +26,8 @@ class RatingReceivedNotification extends Notification
               .str_repeat('☆', max(0, 5 - (int) $this->feedback->effectiveRating()));
 
         $subject = $this->feedback->isClientToProvider()
-            ? 'CleanUx · Vous avez reçu un nouvel avis'
-            : 'CleanUx · Un prestataire vous a noté';
+            ? 'Brio · Vous avez reçu un nouvel avis'
+            : 'Brio · Un prestataire vous a noté';
 
         $mail = (new MailMessage)
             ->subject($subject)

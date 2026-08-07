@@ -35,7 +35,7 @@ class EmployeReaffectationSuggestionNotification extends Notification
     public function toMail($notifiable): MailMessage
     {
         return (new MailMessage)
-            ->subject('CleanUx · Suggestion automatique de réaffectation')
+            ->subject('Brio · Suggestion automatique de réaffectation')
             ->line('Une mission pourrait être réaffectée pour équilibrer la charge.')
             ->line('Mission #'.$this->rdv->id)
             ->line('Employé surchargé : '.$this->employeSurcharge)

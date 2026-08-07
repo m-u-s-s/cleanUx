@@ -11,7 +11,7 @@ use function Knuckles\Scribe\Config\removeStrategies;
 
 return [
     // The HTML <title> for the generated documentation.
-    'title' => 'CleanUx API',
+    'title' => 'Brio API',
 
     // A short description of your API. Will be included in the docs webpage, Postman collection and OpenAPI spec.
     'description' => 'Multi-service marketplace API (cleaning, painting, babysitting, roofing and more). Authenticated via Laravel Sanctum Bearer tokens.',

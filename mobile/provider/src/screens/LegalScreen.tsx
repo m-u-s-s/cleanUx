@@ -36,7 +36,7 @@ brio agit en tant qu'intermédiaire. La responsabilité des prestations incombe 
 Voir notre Politique de Confidentialité.
 
 8. CONTACT
-support@cleanux.com`,
+support@brio.com`,
   },
   privacy: {
     title: 'Politique de Confidentialité',
@@ -62,13 +62,13 @@ Exécution du contrat (Art. 6.1.b RGPD) et consentement pour la géolocalisation
 Données conservées pendant la durée de la relation + 3 ans.
 
 5. VOS DROITS (RGPD)
-Accès, rectification, suppression, portabilité, opposition. Exercez-les depuis l'onglet Profil > RGPD ou à dpo@cleanux.com.
+Accès, rectification, suppression, portabilité, opposition. Exercez-les depuis l'onglet Profil > RGPD ou à dpo@brio.com.
 
 6. SOUS-TRAITANTS
 Stripe (paiements), Sentry (crash reporting), Expo (notifications push).
 
 7. CONTACT DPO
-dpo@cleanux.com`,
+dpo@brio.com`,
   },
 };
 

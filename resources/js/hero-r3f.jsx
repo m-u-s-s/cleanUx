@@ -1,5 +1,5 @@
 /* ============================================================================
-   CleanUx — Home luxury hero : React Three Fiber background mount
+   Brio — Home luxury hero : React Three Fiber background mount
    ----------------------------------------------------------------------------
    Monte le fond de particules R3F dans [data-lux-r3f] (hero de la home).
    PERF (chemin critique préservé) :
@@ -64,7 +64,7 @@ function mount() {
         ]);
         if (el.dataset.mounted !== '1') return; // démonté pendant le chargement
         // Palette des particules surchargeable par page : data-lux-colors="#a,#b,#c"
-        // (+ data-lux-fog facultatif). Absent → défauts (home CleanUx inchangé).
+        // (+ data-lux-fog facultatif). Absent → défauts (home Brio inchangé).
         let colors;
         const raw = el.dataset.luxColors;
         if (raw) {

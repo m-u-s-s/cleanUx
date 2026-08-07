@@ -146,8 +146,8 @@ Route::get('/robots.txt', [PublicSeoController::class, 'robots'])->name('seo.rob
 // Blog — content marketing foundation (no auth required, crawlable)
 Route::get('/blog', function () {
     return view('pages.blog-index', [
-        'seoTitle' => 'Blog — CleanUx | Conseils, actualités, guides',
-        'seoDescription' => 'Découvrez nos articles sur les services à domicile, conseils nettoyage, guides travaux, et actualités CleanUx.',
+        'seoTitle' => 'Blog — Brio | Conseils, actualités, guides',
+        'seoDescription' => 'Découvrez nos articles sur les services à domicile, conseils nettoyage, guides travaux, et actualités Brio.',
     ]);
 })->name('blog.index');
 

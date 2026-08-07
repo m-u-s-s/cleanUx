@@ -1,11 +1,11 @@
 import './bootstrap';
 import './echo-listeners';
-import './cleanux-mission-tracking';
+import './brio-mission-tracking';
 import './assistant-streaming';
 import './push-notifications';
 import './pwa';
 
-// FullCalendar (resources/js/fullcalendar.js → window.cleanuxFC) and ApexCharts
+// FullCalendar (resources/js/fullcalendar.js → window.brioFC) and ApexCharts
 // (resources/js/apexcharts.js → window.ApexCharts) are NO LONGER bundled globally.
 // They were ~heavy and loaded on every page. They are now dedicated Vite entries
 // loaded only on the pages that use them, via @push('scripts') @vite([...]).

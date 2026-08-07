@@ -10,7 +10,7 @@ if (! is_dir($outputDir)) {
     mkdir($outputDir, 0777, true);
 }
 
-echo "🔍 Audit profond CleanUx...\n";
+echo "🔍 Audit profond Brio...\n";
 
 function normalizePathForAudit(string $path): string
 {

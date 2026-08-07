@@ -10,7 +10,7 @@
 
 ## 1. Objectif
 
-Prouver la viabilité d'un **design system adaptive multi-mode** (mode clair planifié ↔ mode sombre urgent) sur le client mobile CleanUx, en mode pilote sur 2 écrans critiques avant d'étendre au reste de l'OS.
+Prouver la viabilité d'un **design system adaptive multi-mode** (mode clair planifié ↔ mode sombre urgent) sur le client mobile Brio, en mode pilote sur 2 écrans critiques avant d'étendre au reste de l'OS.
 
 **Critère de succès**: à la fin de 2 semaines, on a livré 2 écrans (Home + Mission Live), 8-10 composants atomiques réutilisables, des design tokens, et l'adaptive switch fonctionnel. Le rendu sur device Capacitor (iOS/Android) est fluide et "Linear/Apple premium". Si OK → on étend au reste du client mobile (sprint suivant).
 

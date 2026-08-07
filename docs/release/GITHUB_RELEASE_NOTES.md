@@ -1,4 +1,4 @@
-\# CleanUx — Phase 2 Final Release
+\# Brio — Phase 2 Final Release
 
 
 
@@ -6,7 +6,7 @@
 
 
 
-CleanUx Phase 2 — Final release candidate
+Brio Phase 2 — Final release candidate
 
 
 
@@ -32,7 +32,7 @@ CleanUx Phase 2 — Final release candidate
 
 
 
-Cette phase a consolidé et refactorisé les principales zones fonctionnelles de CleanUx :
+Cette phase a consolidé et refactorisé les principales zones fonctionnelles de Brio :
 
 
 

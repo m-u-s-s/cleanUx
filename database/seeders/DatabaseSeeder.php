@@ -24,9 +24,9 @@ class DatabaseSeeder extends Seeder
 
     protected function resolveProfile(): string
     {
-        $explicitProfile = config('cleanux.seed.profile');
-        $defaultProfile = config('cleanux.seed.default_profile', app()->environment('production') ? 'production' : 'demo');
-        $allowedProfiles = config('cleanux.seed.allowed_profiles', ['demo', 'reference', 'production']);
+        $explicitProfile = config('brio.seed.profile');
+        $defaultProfile = config('brio.seed.default_profile', app()->environment('production') ? 'production' : 'demo');
+        $allowedProfiles = config('brio.seed.allowed_profiles', ['demo', 'reference', 'production']);
 
         $profile = strtolower((string) ($explicitProfile ?: $defaultProfile));
 

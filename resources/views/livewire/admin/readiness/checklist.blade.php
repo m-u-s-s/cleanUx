@@ -3,7 +3,7 @@
         <div>
             <h2 class="text-lg font-bold text-slate-950">Checklist avant production</h2>
             <p class="mt-1 text-sm text-slate-500">
-                Les points essentiels à contrôler avant de publier CleanUx.
+                Les points essentiels à contrôler avant de publier Brio.
             </p>
         </div>
 

@@ -74,7 +74,7 @@ return [
             'url' => env('DB_SCRATCH_URL'),
             'host' => env('DB_SCRATCH_HOST', env('DB_HOST', '127.0.0.1')),
             'port' => env('DB_SCRATCH_PORT', env('DB_PORT', '3306')),
-            'database' => env('DB_SCRATCH_DATABASE', 'cleanux_restore_drill'),
+            'database' => env('DB_SCRATCH_DATABASE', 'brio_restore_drill'),
             'username' => env('DB_SCRATCH_USERNAME', env('DB_USERNAME', 'forge')),
             'password' => env('DB_SCRATCH_PASSWORD', env('DB_PASSWORD', '')),
             'unix_socket' => env('DB_SCRATCH_SOCKET', ''),

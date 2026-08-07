@@ -1,4 +1,4 @@
-# CleanUx Mobile RN — Sprint 3 : Design System Library
+# Brio Mobile RN — Sprint 3 : Design System Library
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task.
 

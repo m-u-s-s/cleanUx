@@ -69,7 +69,7 @@ class PhoneVerificationService
             'ip_address' => request()?->ip(),
         ]);
 
-        $appName = (string) Config::get('app.name', 'CleanUx');
+        $appName = (string) Config::get('app.name', 'Brio');
         $body = sprintf('%s : votre code est %s. Valide %d min.',
             $appName,
             $code,
@@ -183,7 +183,7 @@ class PhoneVerificationService
             'ip_address' => request()?->ip(),
         ]);
 
-        $appName = (string) Config::get('app.name', 'CleanUx');
+        $appName = (string) Config::get('app.name', 'Brio');
         $this->smsService->dispatch(
             toPhone: $phone,
             body: sprintf('%s : votre code est %s. Valide %d min.',

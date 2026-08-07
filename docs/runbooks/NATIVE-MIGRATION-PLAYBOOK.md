@@ -1,4 +1,4 @@
-# Native-Migration Playbook — CleanUx Progressive Native Migration
+# Native-Migration Playbook — Brio Progressive Native Migration
 
 **Status:** Living reference — update with lessons learned after each completed migration.  
 **Source of truth for module routing:** `config/parity.php`  

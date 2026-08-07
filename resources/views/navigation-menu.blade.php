@@ -276,7 +276,7 @@
                         <span class="inline-flex h-9 w-9 items-center justify-center rounded-2xl bg-blue-600 text-sm font-black text-white shadow-sm dark:bg-blue-500">
                             CU
                         </span>
-                        <span>{{ config('app.name', 'CleanUx') }}</span>
+                        <span>{{ config('app.name', 'Brio') }}</span>
                     </a>
                 </div>
 

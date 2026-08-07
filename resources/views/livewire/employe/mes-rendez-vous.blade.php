@@ -356,7 +356,7 @@
             </div>
             @endif
 
-            <div x-data="cleanuxSignaturePad($wire)" class="space-y-2">
+            <div x-data="brioSignaturePad($wire)" class="space-y-2">
                 <div class="flex items-center justify-between">
                     <label class="block text-sm font-medium text-gray-700">Signature client (optionnelle)</label>
                     <button type="button" @click="clear()" class="text-sm text-slate-500 hover:text-slate-700">Effacer</button>
@@ -380,7 +380,7 @@
 
     @once
     <script>
-        window.cleanuxSignaturePad = function($wire) {
+        window.brioSignaturePad = function($wire) {
             return {
                 canvas: null,
                 ctx: null,

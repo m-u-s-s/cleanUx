@@ -27,15 +27,15 @@ export function parseBridgeMessage(raw: string): BridgeMessage | null {
 }
 
 /**
- * Injected into every embedded page. Exposes window.CleanUxBridge for pages
+ * Injected into every embedded page. Exposes window.BrioBridge for pages
  * that want to hand off to native, and announces readiness. Trailing `true;`
  * is required by react-native-webview's injectedJavaScript contract.
  */
 export const INJECTED_BRIDGE_JS = `
 (function(){
-  if (window.CleanUxBridge) { return; }
+  if (window.BrioBridge) { return; }
   var post = function(msg){ if(window.ReactNativeWebView){ window.ReactNativeWebView.postMessage(JSON.stringify(msg)); } };
-  window.CleanUxBridge = {
+  window.BrioBridge = {
     post: post,
     back: function(){ post({type:'requestBack'}); },
     openNative: function(route){ post({type:'openNative', route: route}); }

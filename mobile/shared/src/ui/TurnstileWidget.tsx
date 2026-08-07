@@ -132,7 +132,7 @@ export function TurnstileWidget({ onToken, onSkipped, testID }: TurnstileWidgetP
   return (
     <View style={styles.container} testID={testID}>
       <WebView
-        source={{ html, baseUrl: 'https://cleanux.local' }}
+        source={{ html, baseUrl: 'https://brio.local' }}
         style={styles.webview}
         scrollEnabled={false}
         javaScriptEnabled

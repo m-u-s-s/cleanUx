@@ -2,11 +2,11 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Make every CleanUx module reachable on mobile (native where it exists, embedded-web otherwise) after a single native login, with the web becoming a full mobile-capable PWA — without rebuilding ~150 screens.
+**Goal:** Make every Brio module reachable on mobile (native where it exists, embedded-web otherwise) after a single native login, with the web becoming a full mobile-capable PWA — without rebuilding ~150 screens.
 
 **Architecture:** A Sanctum→web-session auth bridge issues short-lived single-use handoff tickets; a `react-native-webview` host renders any existing web page (chrome-stripped via an embed flag) inside the Expo apps; a config-driven parity registry maps each module to its mobile delivery mode and drives navigation, so a future native migration is a one-line flag flip.
 
-**Tech Stack:** Laravel 10 (Sanctum, Blade/Livewire, Cache), PHPUnit; React Native / Expo (TypeScript), `@cleanux/shared` workspace, axios `apiClient`, Jest + `@testing-library/react-native`, `react-native-webview`.
+**Tech Stack:** Laravel 10 (Sanctum, Blade/Livewire, Cache), PHPUnit; React Native / Expo (TypeScript), `@brio/shared` workspace, axios `apiClient`, Jest + `@testing-library/react-native`, `react-native-webview`.
 
 **Spec:** `docs/superpowers/specs/2026-05-29-parity-foundation-design.md`
 **Branch:** `feat/parity-foundation` (already created)
@@ -896,8 +896,8 @@ Read the current `public/manifest.webmanifest`, then ensure it contains at minim
 
 ```json
 {
-  "name": "CleanUx",
-  "short_name": "CleanUx",
+  "name": "Brio",
+  "short_name": "Brio",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",
@@ -1093,15 +1093,15 @@ export function parseBridgeMessage(raw: string): BridgeMessage | null {
 }
 
 /**
- * Injected into every embedded page. Exposes window.CleanUxBridge for pages
+ * Injected into every embedded page. Exposes window.BrioBridge for pages
  * that want to hand off to native, and announces readiness. Trailing `true;`
  * is required by react-native-webview's injectedJavaScript contract.
  */
 export const INJECTED_BRIDGE_JS = `
 (function(){
-  if (window.CleanUxBridge) { return; }
+  if (window.BrioBridge) { return; }
   var post = function(msg){ if(window.ReactNativeWebView){ window.ReactNativeWebView.postMessage(JSON.stringify(msg)); } };
-  window.CleanUxBridge = {
+  window.BrioBridge = {
     post: post,
     back: function(){ post({type:'requestBack'}); },
     openNative: function(route){ post({type:'openNative', route: route}); }
@@ -1375,7 +1375,7 @@ export function EmbeddedModuleScreen({
 }
 ```
 
-Note: `ErrorState` and `colors` are already exported from `@cleanux/shared` (`src/index.ts`) and importable via `@/ui` / `@/theme` (confirmed in the shared index). `ErrorState` accepts `title`, `message`, `onRetry` — verify the prop names against `mobile/shared/src/ui/ErrorState` and adjust if different.
+Note: `ErrorState` and `colors` are already exported from `@brio/shared` (`src/index.ts`) and importable via `@/ui` / `@/theme` (confirmed in the shared index). `ErrorState` accepts `title`, `message`, `onRetry` — verify the prop names against `mobile/shared/src/ui/ErrorState` and adjust if different.
 
 - [ ] **Step 4: Run test to verify it passes**
 
@@ -1421,7 +1421,7 @@ describe('fetchParityMap', () => {
 
     expect(apiClient.get).toHaveBeenCalledWith('/parity-map');
     expect(result).toEqual(MODULES);
-    expect(AsyncStorage.setItem).toHaveBeenCalledWith('cleanux_parity_map', JSON.stringify(MODULES));
+    expect(AsyncStorage.setItem).toHaveBeenCalledWith('brio_parity_map', JSON.stringify(MODULES));
   });
 
   it('falls back to cache when the network fails', async () => {
@@ -1462,7 +1462,7 @@ export interface ParityModule {
   mobile: 'native' | 'webview';
 }
 
-const CACHE_KEY = 'cleanux_parity_map';
+const CACHE_KEY = 'brio_parity_map';
 
 /**
  * Fetches the per-user parity map (which modules exist and how each is
@@ -1769,7 +1769,7 @@ export function ModuleHubScreen({ navigation }: { navigation: any }) {
 }
 ```
 
-Note: `Icon`, `Screen` are exported from `@cleanux/shared` (confirmed). `ChatList` is the existing chat-list route name — verify the exact name in `RootNavigator.tsx`/`types.ts` and adjust `NATIVE_ROUTES.chat` if different.
+Note: `Icon`, `Screen` are exported from `@brio/shared` (confirmed). `ChatList` is the existing chat-list route name — verify the exact name in `RootNavigator.tsx`/`types.ts` and adjust `NATIVE_ROUTES.chat` if different.
 
 - [ ] **Step 4: Run test to verify it passes**
 
@@ -1888,6 +1888,6 @@ git commit -m "chore(parity): pint formatting on parity foundation files"
 ## Self-review notes (already applied)
 
 - **Spec coverage:** all six units (ticket service, ticket endpoint, /m/enter, embed mode, parity registry+endpoint, EmbeddedModuleScreen, webBridge) + responsiveness/PWA + native-nav wiring + DoD flag-flip each map to a task. The full responsiveness sweep across 217 components is explicitly iterative (tracked via `responsive_verified` in `config/parity.php`), not a code task here — stated in Task 5.
-- **Type/name consistency:** `fetchWebViewUrl`, `fetchParityMap`, `parseBridgeMessage`, `INJECTED_BRIDGE_JS`, `EmbeddedModuleScreen`, `ParityModule`, route name `EmbeddedModule`, cache key `cleanux_parity_map`, ticket prefix `webview_ticket:`, embed param `embed=1`, marker `data-chrome="primary-nav"` are used consistently across backend, shared, and client tasks.
+- **Type/name consistency:** `fetchWebViewUrl`, `fetchParityMap`, `parseBridgeMessage`, `INJECTED_BRIDGE_JS`, `EmbeddedModuleScreen`, `ParityModule`, route name `EmbeddedModule`, cache key `brio_parity_map`, ticket prefix `webview_ticket:`, embed param `embed=1`, marker `data-chrome="primary-nav"` are used consistently across backend, shared, and client tasks.
 - **Adapt-on-contact flags** (called out inline, not placeholders): `ErrorState` prop names, the `ChatList` native route name, and `expo-application` availability — each has a concrete fallback specified.
 ```
