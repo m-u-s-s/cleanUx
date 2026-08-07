@@ -168,11 +168,25 @@
                     @forelse ($coequipiersAjoutables as $coequipier)
                     <div class="mb-1 flex items-center justify-between gap-2 rounded-lg bg-slate-900/50 px-3 py-1.5">
                         <span class="truncate text-sm text-slate-200">{{ $coequipier->name }}</span>
-                        <button type="button"
-                            wire:click="addChannelMember({{ $activeChannel->id }}, {{ $coequipier->id }})"
-                            class="shrink-0 text-xs font-semibold text-blue-400 hover:text-blue-300">
-                            Ajouter
-                        </button>
+                        <div class="flex shrink-0 items-center gap-3">
+                            {{--
+                                LA CONVERSATION À DEUX. Le type `private` existait depuis le début
+                                et rien ne permettait d'en ouvrir une : pour dire un mot à quelqu'un
+                                il fallait créer un canal nommé, ce que personne ne fait. Les équipes
+                                passaient par WhatsApp — hors de l'outil et hors de toute trace.
+                            --}}
+                            <button type="button"
+                                wire:click="ouvrirConversationDirecte({{ $coequipier->id }})"
+                                title="Conversation privée"
+                                class="text-xs font-semibold text-slate-400 hover:text-slate-200">
+                                Message
+                            </button>
+                            <button type="button"
+                                wire:click="addChannelMember({{ $activeChannel->id }}, {{ $coequipier->id }})"
+                                class="text-xs font-semibold text-blue-400 hover:text-blue-300">
+                                Ajouter
+                            </button>
+                        </div>
                     </div>
                     @empty
                     <p class="text-sm text-slate-500">Toute l'équipe est déjà dans ce canal.</p>

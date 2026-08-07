@@ -12,6 +12,67 @@
         </button>
     </div>
 
+    {{--
+        ── Onglets ──
+        `$activeTab` déclarait `members | invitations | performance` depuis l'origine et la vue n'en
+        rendait qu'un : une invitation partait dans le vide, sans qu'aucun écran ne dise à qui ni si
+        elle avait expiré. « Performance » reste hors périmètre — le déclarer sans rien derrière
+        serait recréer le même défaut d'un cran plus loin.
+    --}}
+    <div class="mb-4 flex gap-2 border-b border-slate-700">
+        <button wire:click="$set('activeTab', 'members')"
+            class="px-3 py-2 text-sm font-semibold transition
+                {{ $activeTab === 'members' ? 'border-b-2 border-blue-500 text-white' : 'text-slate-400 hover:text-slate-200' }}">
+            Membres
+        </button>
+        <button wire:click="$set('activeTab', 'invitations')"
+            class="px-3 py-2 text-sm font-semibold transition
+                {{ $activeTab === 'invitations' ? 'border-b-2 border-blue-500 text-white' : 'text-slate-400 hover:text-slate-200' }}">
+            Invitations
+            @if ($invitationsEnAttente->isNotEmpty())
+                <span class="ml-1 rounded-full bg-blue-600 px-2 py-0.5 text-[10px] text-white">
+                    {{ $invitationsEnAttente->count() }}
+                </span>
+            @endif
+        </button>
+    </div>
+
+    @if ($activeTab === 'invitations')
+        <div class="space-y-2">
+            @forelse ($invitationsEnAttente as $invitation)
+                <div class="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-slate-700 bg-slate-800/60 p-3"
+                    wire:key="invit-{{ $invitation->id }}">
+                    <div class="min-w-0">
+                        <p class="truncate text-sm font-semibold text-white">{{ $invitation->email }}</p>
+                        <p class="text-xs text-slate-400">
+                            {{ $invitation->role }}
+                            @if ($invitation->inviter)
+                                · invité par {{ $invitation->inviter->name }}
+                            @endif
+                            @if ($invitation->expires_at)
+                                ·
+                                {{-- Une invitation expirée se lit comme une invitation en attente
+                                     tant qu'on ne le dit pas : le patron attend une réponse qui ne
+                                     peut plus venir. --}}
+                                <span class="{{ $invitation->expires_at->isPast() ? 'text-amber-400' : '' }}">
+                                    {{ $invitation->expires_at->isPast() ? 'expirée' : 'expire ' . $invitation->expires_at->diffForHumans() }}
+                                </span>
+                            @endif
+                        </p>
+                    </div>
+                    <button wire:click="revoquerInvitation({{ $invitation->id }})"
+                        class="shrink-0 rounded-lg border border-slate-600 px-3 py-1.5 text-xs font-semibold text-slate-300 hover:bg-slate-700">
+                        Révoquer
+                    </button>
+                </div>
+            @empty
+                <div class="rounded-xl border border-dashed border-slate-700 p-8 text-center">
+                    <p class="text-sm text-slate-400">Aucune invitation en attente.</p>
+                </div>
+            @endforelse
+        </div>
+    @else
+
     {{-- ── Filtres ── --}}
     <div class="mb-4 flex flex-wrap items-center gap-3">
         <div class="relative">
@@ -163,6 +224,7 @@
         </table>
         </div>
     </div>
+    @endif {{-- fin de l'aiguillage d'onglet ouvert plus haut --}}
 </div>
 
 {{-- ── Modal Invitation ── --}}
@@ -274,7 +336,24 @@
                     @endforeach
                 </div>
             </div>
-            <div class="border-t border-slate-700 p-4">
+            <div class="border-t border-slate-700 p-4 space-y-2">
+                {{--
+                    REMETTRE « COMME LES AUTRES ».
+
+                    Décocher une case n'efface pas la dérogation : cela en écrit une seconde, à
+                    `false`. Comme l'étage nominatif prime sur la matrice de la société, ce membre
+                    cessait de suivre son rôle sans que rien ne l'indique — le patron modifiait la
+                    matrice et ne comprenait pas pourquoi cette personne ne bougeait pas.
+
+                    Proposé seulement s'il y a quelque chose à effacer : un bouton qui ne fait rien
+                    apprend à ignorer les boutons.
+                --}}
+                @if (! empty($editingMember->permissions))
+                    <button wire:click="resetPermissions"
+                        class="w-full rounded-xl border border-slate-600 px-4 py-2 text-sm font-semibold text-slate-300 hover:bg-slate-700">
+                        Rétablir les droits du rôle
+                    </button>
+                @endif
                 <button wire:click="$set('showPermissions', false)"
                     class="w-full rounded-xl bg-blue-600 px-4 py-2 text-sm font-bold text-white hover:bg-blue-700">
                     Fermer

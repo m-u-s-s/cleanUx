@@ -4,6 +4,9 @@ namespace App\Livewire\ProviderCompany;
 
 use App\Enums\OrganizationRole;
 use App\Mail\OrganizationInvitationMail;
+use App\Models\Channel;
+use App\Models\Mission;
+use App\Models\MissionAssignment;
 use App\Models\OrganizationInvitation;
 use App\Models\OrganizationMember;
 use App\Models\User;
@@ -13,6 +16,7 @@ use App\Support\Livewire\Concerns\EnforcesActiveOrgMembership;
 use App\Support\Livewire\Concerns\GuardsOrganizationMembers;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Livewire\Component;
@@ -22,6 +26,7 @@ use Livewire\WithPagination;
  * @property-read Collection<int, OrganizationMember> $members
  * @property-read array<string, mixed> $availableRoles
  * @property-read ?OrganizationMember $editingMember
+ * @property-read Collection<int, OrganizationInvitation> $invitationsEnAttente
  */
 class TeamManagement extends Component
 {
@@ -44,7 +49,13 @@ class TeamManagement extends Component
 
     public string $filterStatus = 'active';
 
-    public string $activeTab = 'members'; // members | invitations | performance
+    /**
+     * @var string members | invitations
+     *
+     * `performance` figurait ici sans que rien ne le rende ; il a été retiré plutôt que déclaré une
+     * fois de plus — un nom qui ne désigne rien est ce que ce dépôt corrige toute la journée.
+     */
+    public string $activeTab = 'members';
 
     // Formulaire invitation
     public string $inviteEmail = '';
@@ -230,6 +241,22 @@ class TeamManagement extends Component
     public function changeRole(int $memberId, string $newRole): void
     {
         $actor = Auth::user();
+
+        /*
+         * LA GARDE EST BIDIRECTIONNELLE, ET ELLE NE L'ÉTAIT QU'À MOITIÉ.
+         *
+         * Cette méthode chargeait sa cible par `getOrgMember()` — scoping sur l'organisation, et
+         * rien de plus — puis ne comparait que le rang du NOUVEAU rôle à celui de l'acteur. Le rang
+         * ACTUEL de la personne visée n'entrait jamais dans l'équation.
+         *
+         * Conséquence : un responsable d'exploitation à qui l'on accordait `members.edit_role`
+         * pouvait déclasser un PROPRIÉTAIRE en nettoyeur. Le rôle visé étant de rang inférieur au
+         * sien, la condition passait sans broncher, et la garde « dernier propriétaire » ne
+         * couvrait pas le cas où la société en compte deux.
+         *
+         * `memberSousGarde()` faisait déjà exactement ce contrôle — `canManageMember()`, le rang de
+         * l'acteur contre celui de la CIBLE — et cette méthode ne l'appelait pas. Elle l'appelle.
+         */
         $member = $this->getOrgMember($memberId);
 
         abort_unless(
@@ -240,6 +267,26 @@ class TeamManagement extends Component
         $actorMember = $actor->membershipIn();
         $newEnum = OrganizationRole::from($newRole);
 
+        /*
+         * PREMIER VERSANT — LE RANG ACTUEL DE LA CIBLE, qui n'était pas regardé.
+         *
+         * Un responsable d'exploitation à qui l'on accordait `members.edit_role` pouvait déclasser
+         * un PROPRIÉTAIRE en nettoyeur : seul le rang du NOUVEAU rôle était comparé, et il est
+         * évidemment inférieur au sien. La garde « dernier propriétaire » ne couvrait pas le cas
+         * d'une société qui en compte deux.
+         *
+         * La comparaison est `<`, PAS `<=`, et c'est délibéré. `canManageMember()` exige un rang
+         * STRICTEMENT supérieur ; l'employer ici aurait interdit à un propriétaire de déclasser son
+         * co-propriétaire — un comportement que ce dépôt autorise sciemment, testé et commenté :
+         * « la protection porte sur le DERNIER, pas sur le rôle ». Fermer l'escalade ne doit pas
+         * emporter une décision déjà prise pour de bonnes raisons.
+         */
+        if ($actorMember && $actorMember->role->rank() < $member->role->rank() && ! $actor->isPlatformAdmin()) {
+            return;
+        }
+
+        // Second versant : on ne promeut personne au-dessus de soi. Sans lui, distribuer un rôle
+        // deviendrait un moyen de se donner un supérieur complaisant.
         if ($actorMember && $newEnum->rank() >= $actorMember->role->rank() && ! $actor->isPlatformAdmin()) {
             return;
         }
@@ -315,6 +362,79 @@ class TeamManagement extends Component
 
         $member->update(['status' => $status]);
         app(PermissionService::class)->invalidateCache($member->user_id, $actor->current_organization_id);
+
+        /*
+         * UN DÉPART NE SE CONTENTE PAS DE CHANGER UN STATUT.
+         *
+         * `remove()` posait `left` et s'arrêtait là. Les missions de la semaine suivante restaient
+         * assignées à quelqu'un qui ne viendra pas : le répartiteur les voyait « couvertes », et le
+         * client découvrait l'absence le jour même. La personne restait aussi dans les canaux
+         * d'équipe — et l'autorisation Reverb, qui vérifie l'appartenance au canal, lui donnait
+         * accès aux échanges de son ancien employeur en temps réel.
+         *
+         * On ne défait QUE l'à-venir. Le passé dit qui a réalisé quoi : le réécrire fausserait la
+         * facturation, les évaluations client et toute réclamation ultérieure.
+         */
+        if ($status === 'left') {
+            $this->libererLAvenir($member->user_id, (int) $actor->current_organization_id);
+        }
+    }
+
+    // ──────────────────────────────────────────────────────
+    // Invitations en attente
+    // ──────────────────────────────────────────────────────
+
+    /**
+     * Les invitations que la société a envoyées et qui n'ont pas encore abouti.
+     *
+     * `$activeTab` déclare `members | invitations | performance` depuis l'origine, et la vue n'en
+     * rendait qu'un : une invitation partait dans le vide, sans qu'aucun écran ne dise à qui, ni si
+     * elle avait expiré. Le seul recours était de réinviter, ce qui n'apprenait rien de plus.
+     *
+     * @return Collection<int, OrganizationInvitation>
+     */
+    public function getInvitationsEnAttenteProperty(): Collection
+    {
+        $orgId = Auth::user()?->current_organization_id;
+
+        if (! $orgId) {
+            return OrganizationInvitation::query()->whereRaw('1 = 0')->get();
+        }
+
+        return OrganizationInvitation::query()
+            ->where('organization_account_id', $orgId)
+            ->where('status', 'pending')
+            ->with('inviter:id,name')
+            ->orderByDesc('id')
+            ->get();
+    }
+
+    /**
+     * Révoquer une invitation — une erreur de frappe, un recrutement annulé.
+     *
+     * Le statut change, LA LIGNE SURVIT : le jeton doit rester connu pour être refusé si quelqu'un
+     * ouvre le lien après coup. Supprimer la ligne rendrait le jeton inconnu, et un jeton inconnu
+     * ne se distingue pas d'un jeton jamais émis — le lien redeviendrait une porte ouverte selon la
+     * façon dont l'écran d'acceptation traite l'introuvable.
+     */
+    public function revoquerInvitation(int $invitationId): void
+    {
+        $user = Auth::user();
+        $orgId = $user?->current_organization_id;
+
+        abort_if($orgId === null, 403);
+
+        abort_unless(
+            app(PermissionService::class)->can($user, 'members.invite', $user->currentOrganization),
+            403
+        );
+
+        // Scoping DANS la requête : une invitation d'une autre société n'est jamais chargée.
+        OrganizationInvitation::query()
+            ->where('organization_account_id', $orgId)
+            ->where('status', 'pending')
+            ->whereKey($invitationId)
+            ->update(['status' => 'revoked']);
     }
 
     // ──────────────────────────────────────────────────────
@@ -348,6 +468,77 @@ class TeamManagement extends Component
         app(PermissionService::class)->invalidateCache($member->user_id, $member->organization_account_id);
     }
 
+    /**
+     * REMETTRE UN MEMBRE « COMME LES AUTRES ».
+     *
+     * Le seul geste disponible était d'inverser le booléen — ce qui n'efface rien : cela écrit une
+     * SECONDE dérogation, l'inverse de la première. Or l'étage 1 de la résolution est prioritaire
+     * sur la matrice de la société : un membre « remis à zéro » de cette façon gardait une ligne
+     * figée, et cessait de suivre les réglages de son rôle. Le patron modifiait la matrice, et rien
+     * ne bougeait pour cette personne, sans que l'écran ne l'explique.
+     *
+     * On vide donc réellement, plutôt que de superposer. Même garde que `togglePermission()` :
+     * l'identifiant vient du client, `memberSousGarde()` le scope sur l'organisation active, exige
+     * `members.manage_permissions` et applique la hiérarchie.
+     */
+    public function resetPermissions(): void
+    {
+        $member = $this->memberSousGarde($this->editingMemberId, 'members.manage_permissions', silencieuxSiIntrouvable: true);
+
+        if (! $member instanceof OrganizationMember) {
+            return;
+        }
+
+        $member->update(['permissions' => []]);
+
+        app(PermissionService::class)->invalidateCache($member->user_id, $member->organization_account_id);
+    }
+
+    /**
+     * Défaire ce qui n'a pas encore eu lieu, et rien d'autre.
+     *
+     * Les missions PASSÉES gardent leur intervenant : c'est l'historique de la société, et la
+     * facturation comme les réclamations s'y appuient. Seules celles à venir retournent au dispatch.
+     *
+     * Les MESSAGES restent, eux aussi. Retirer quelqu'un d'un canal ne doit pas trouer la
+     * conversation des autres — un fil dont la moitié disparaît devient illisible pour ceux qui
+     * restent.
+     */
+    private function libererLAvenir(int $userId, int $orgId): void
+    {
+        $missionsAVenir = Mission::query()
+            ->where('provider_organization_id', $orgId)
+            ->where('planned_start_at', '>', now())
+            ->pluck('id');
+
+        if ($missionsAVenir->isNotEmpty()) {
+            MissionAssignment::query()
+                ->whereIn('mission_id', $missionsAVenir)
+                ->where('user_id', $userId)
+                ->where('assignment_status', 'assigned')
+                ->update(['assignment_status' => 'released']);
+
+            // `lead_provider_user_id` est lu par le tableau de bord, l'autorisation Reverb
+            // `mission.{id}` et le suivi de trajet : le laisser en place ferait viser les trois
+            // sur quelqu'un qui ne viendra pas.
+            Mission::query()
+                ->whereIn('id', $missionsAVenir)
+                ->where('lead_provider_user_id', $userId)
+                ->update(['lead_provider_user_id' => null, 'status' => 'pending']);
+        }
+
+        $canaux = Channel::query()
+            ->where('organization_account_id', $orgId)
+            ->pluck('id');
+
+        if ($canaux->isNotEmpty()) {
+            DB::table('channel_members')
+                ->whereIn('channel_id', $canaux)
+                ->where('user_id', $userId)
+                ->delete();
+        }
+    }
+
     // ──────────────────────────────────────────────────────
     // Helper
     // ──────────────────────────────────────────────────────
@@ -367,6 +558,7 @@ class TeamManagement extends Component
             'availableRoles' => $this->availableRoles,
             'editingMember' => $this->editingMember,
             'allPermissions' => $permService->allPermissionKeys(),
+            'invitationsEnAttente' => $this->invitationsEnAttente,
         ])->layout('layouts.provider-company');
     }
 }

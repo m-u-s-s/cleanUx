@@ -551,6 +551,89 @@ class TeamChannels extends Component
         $this->openChannel($channel->id);
     }
 
+    /**
+     * OUVRIR — OU RETROUVER — LA CONVERSATION À DEUX AVEC UN COLLÈGUE.
+     *
+     * Le type `private` existait depuis le début, et rien ne permettait d'en ouvrir une : pour dire
+     * un mot à quelqu'un il fallait créer un canal nommé, ce que personne ne fait. Les équipes
+     * passaient donc par WhatsApp — hors de l'outil, hors de toute trace, et hors de la modération.
+     *
+     * ON CHERCHE AVANT DE CRÉER, et c'est le cœur de la méthode. Sans cela, chaque clic ajouterait
+     * un canal : la messagerie se remplirait de conversations vides entre les deux mêmes personnes,
+     * et l'historique se disperserait entre elles — pire que pas de messagerie du tout.
+     *
+     * La recherche porte sur la COMPOSITION, pas sur un nom : « exactement ces deux-là, et personne
+     * d'autre ». C'est ce qui fait qu'Ana retrouve la conversation ouverte par son patron plutôt
+     * que d'en créer une seconde en croyant lui répondre.
+     */
+    public function ouvrirConversationDirecte(int $userId): void
+    {
+        $user = Auth::user();
+
+        if ($userId === $user->id) {
+            return;
+        }
+
+        // L'identifiant vient du client : l'autre personne doit être un membre actif de MA société.
+        $collegue = OrganizationMember::query()
+            ->where('organization_account_id', $this->org->id)
+            ->where('user_id', $userId)
+            ->where('status', 'active')
+            ->first();
+
+        if ($collegue === null) {
+            return;
+        }
+
+        /*
+         * Le comptage final se fait EN PHP, et non par un `having` sur `withCount`.
+         *
+         * SQLite refuse « HAVING clause on a non-aggregate query » là où MySQL l'accepte : la suite
+         * de tests tourne sur SQLite, la production sur MySQL, et écrire la requête qui plaît aux
+         * deux coûterait plus cher en subtilité qu'un filtre sur une poignée de canaux privés
+         * partagés par deux personnes précises.
+         */
+        $existant = Channel::forOrg($this->org->id)
+            ->where('type', 'private')
+            ->whereHas('members', fn ($q) => $q->where('user_id', $user->id))
+            ->whereHas('members', fn ($q) => $q->where('user_id', $userId))
+            ->withCount('members')
+            ->get()
+            // « Exactement ces deux-là » : un canal privé à trois n'est pas cette conversation.
+            ->firstWhere('members_count', 2);
+
+        if ($existant !== null) {
+            $this->loadChannels();
+            $this->openChannel($existant->id);
+
+            return;
+        }
+
+        $autre = $collegue->user;
+
+        $canal = Channel::create([
+            'organization_account_id' => $this->org->id,
+            // Le nom sert l'affichage, pas l'identité : c'est la composition qui identifie la
+            // conversation. Deux personnes homonymes ne se retrouveraient pas dans le même canal.
+            //
+            // Pas de repli `?? 'Conversation'` : le modèle déclare la relation non nullable, et
+            // PHPStan a montré que la garde ne s'exécutait jamais. Une garde morte donne
+            // l'illusion d'une protection.
+            'name' => $autre->name,
+            'type' => 'private',
+            'is_private' => true,
+            'created_by' => $user->id,
+        ]);
+
+        $canal->members()->attach([
+            $user->id => ['role' => 'owner'],
+            $userId => ['role' => 'member'],
+        ]);
+
+        $this->loadChannels();
+        $this->openChannel($canal->id);
+    }
+
     // ──────────────────────────────────────────────────────
     // Membres d'un canal
     // ──────────────────────────────────────────────────────
