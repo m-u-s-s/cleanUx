@@ -6,40 +6,59 @@ use Illuminate\Support\Facades\Route;
 use Tests\TestCase;
 
 /**
- * P1 — navigation accessibility. Locks in the nav links for pages that were reachable only by
- * typing the URL (no menu/button anywhere). Each previously-orphaned page must (a) be a real
- * registered route and (b) be referenced in the relevant nav so users can actually reach it.
+ * P1 — accessibilité de la navigation. Fige les entrées de menu de pages qui n'étaient
+ * atteignables qu'en tapant leur URL. Chaque page autrefois orpheline doit (a) être une route
+ * réellement enregistrée et (b) être référencée par la navigation, pour qu'on puisse y arriver.
+ *
+ * CE TEST LISAIT LES FICHIERS BLADE. Il vérifiait qu'un nom de route apparaissait dans
+ * `navigation-menu.blade.php` ou dans un layout société — ce qui était juste tant que les liens y
+ * vivaient. Ils vivent désormais dans `config/modules.php`, seul registre, servi à la fois à la
+ * navbar allégée et à la page Modules. L'assertion suit le registre : elle exige toujours une
+ * porte, simplement là où les portes sont désormais déclarées.
  */
 class NavigationAccessibilityP1Test extends TestCase
 {
-    private function navContains(string $bladeRelPath, string $needle): void
+    /** Une route est « dans la navigation » si le catalogue lui donne une case. */
+    private function assertDansLeCatalogue(string $nomDeRoute, string $contexte): void
     {
-        $contents = file_get_contents(resource_path($bladeRelPath));
-        $this->assertNotFalse($contents, "missing nav file: $bladeRelPath");
-        $this->assertStringContainsString($needle, $contents, "$needle must be linked in $bladeRelPath");
+        $this->assertTrue(Route::has($nomDeRoute), "$nomDeRoute doit être une route enregistrée");
+
+        $cases = collect(config('modules.catalogue'))
+            ->where('context', $contexte)
+            ->pluck('route')
+            ->all();
+
+        $this->assertContains(
+            $nomDeRoute,
+            $cases,
+            "$nomDeRoute doit avoir une case dans le contexte $contexte de config/modules.php"
+        );
     }
 
     public function test_client_company_nav_links_to_contracts(): void
     {
-        $this->assertTrue(Route::has('client-company.contracts'));
-        $this->navContains('views/layouts/client-company.blade.php', "'client-company.contracts'");
+        $this->assertDansLeCatalogue('client-company.contracts', 'client-company');
     }
 
     public function test_admin_nav_links_to_feature_flags_manager(): void
     {
-        $this->assertTrue(Route::has('admin.feature-flags.manager'));
-        $this->navContains('views/navigation-menu.blade.php', "'admin.feature-flags.manager'");
+        $this->assertDansLeCatalogue('admin.feature-flags.manager', 'admin');
     }
 
     /**
-     * Guard: the previously-validated in-app nav coverage must not regress — these core pages
-     * stay referenced in the primary nav menu.
+     * Garde : la couverture de navigation déjà validée ne doit pas régresser — ces pages
+     * centrales restent joignables depuis le répertoire des modules.
      */
     public function test_core_admin_pages_remain_in_nav(): void
     {
-        $nav = file_get_contents(resource_path('views/navigation-menu.blade.php'));
-        foreach (['admin.utilisateurs.manage', 'admin.modules', 'admin.orchestration', 'admin.automation', 'admin.b2b.operations'] as $name) {
-            $this->assertStringContainsString("'$name'", $nav, "$name must remain in the admin nav");
+        foreach ([
+            'admin.utilisateurs.manage',
+            'admin.modules',
+            'admin.orchestration',
+            'admin.automation',
+            'admin.b2b.operations',
+        ] as $nomDeRoute) {
+            $this->assertDansLeCatalogue($nomDeRoute, 'admin');
         }
     }
 }

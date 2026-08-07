@@ -234,5 +234,16 @@ return [
          * de bord du rôle. Lui donner une case renverrait l'utilisateur là où il est déjà.
          */
         'dashboard' => 'Redirection vers le tableau de bord du rôle, pas une page',
+
+        /*
+         * Les cinq répertoires eux-mêmes. Leur donner une case les ferait se lister — la page
+         * renverrait vers la page. C'est le garde-fou qui les a signalés à leur création, ce qui
+         * est précisément son travail.
+         */
+        'client.modules' => 'Le répertoire lui-même',
+        'employe.modules' => 'Le répertoire lui-même',
+        'admin.modules.directory' => 'Le répertoire lui-même',
+        'client-company.modules' => 'Le répertoire lui-même',
+        'provider-company.modules' => 'Le répertoire lui-même',
     ],
 ];

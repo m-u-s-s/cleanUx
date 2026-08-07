@@ -30,6 +30,11 @@ Route::middleware(['role:employe'])
 
         Route::get('/', EmployeDashboard::class)->name('dashboard');
 
+        // Le répertoire des modules — voir `config/modules.php`. La garde reste `role:employe`.
+        Route::get('/modules', \App\Livewire\Shared\ModulesDirectory::class)
+            ->defaults('contexte', 'employe')
+            ->name('modules');
+
         if (class_exists(ProviderRatingsPage::class)) {
             Route::get('/avis', ProviderRatingsPage::class)->name('ratings');
         }

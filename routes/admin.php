@@ -89,6 +89,17 @@ Route::middleware(['role:admin', 'enforce_2fa'])
         Route::get('/dashboard', AdminDashboard::class)->name('dashboard');
         Route::get('/home', AdminHomeDashboard::class)->name('home');
 
+        /*
+         * Le répertoire des modules — voir `config/modules.php`.
+         *
+         * `admin.modules` est DÉJÀ PRIS par `PlatformModulesCenter`, la page qui gère les modules
+         * de la plateforme (activation, dépendances). D'où `modules.directory` : deux objets
+         * différents qui parlent tous deux de « modules ».
+         */
+        Route::get('/modules-directory', \App\Livewire\Shared\ModulesDirectory::class)
+            ->defaults('contexte', 'admin')
+            ->name('modules.directory');
+
         // Récupération d'orphelins — pages admin auparavant non routées.
         Route::get('/zones', GestionZones::class)->name('zones');
         Route::get('/entreprises', GestionEntreprises::class)->name('entreprises');

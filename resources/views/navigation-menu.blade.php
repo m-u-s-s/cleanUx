@@ -10,257 +10,47 @@
     ? min($user->unreadNotifications()->count(), 99)
     : 0;
 
-    $filterLinks = function (array $groups) {
-    return collect($groups)
-    ->map(function ($links, $group) {
-    return [
-    'group' => $group,
-    'links' => collect($links)
-    ->filter(fn ($link) => Route::has($link['route']))
-    ->values(),
-    ];
-    })
-    ->filter(fn ($group) => $group['links']->isNotEmpty())
-    ->values();
+    /*
+     * LES LIENS VIENNENT DU REGISTRE, PLUS DE CETTE VUE.
+     *
+     * Trois tableaux vivaient ici — 126 liens en 22 groupes — déversés dans un menu déroulant
+     * « Toutes les pages » que personne ne pouvait lire. Deux autres registres du même genre
+     * vivaient dans les layouts société : quatre listes à tenir à jour, et un module ajouté
+     * n'apparaissait dans aucune tant qu'on n'y pensait pas.
+     *
+     * `config/modules.php` les remplace, et `CatalogueDesModulesTest` échoue désormais si une page
+     * de tableau de bord n'y a pas sa case.
+     */
+    $contexte = match (true) {
+        /*
+         * L'ORDRE COMPTE, et il reste celui de `routes/authenticated.php`. Ces rôles ne s'excluent
+         * pas : promouvoir un client en administrateur ne lui retire pas son profil client, donc
+         * `isClient()` ET `isAdmin()` peuvent être vrais en même temps. Tant que `isClient()` était
+         * testé en premier, `isAdmin()` n'était jamais atteint : le compte gardait le menu client,
+         * sans le moindre lien vers l'administration.
+         */
+        $user?->isAdmin() => 'admin',
+        $user?->isClient() => 'client',
+        $user?->isEmploye() => 'employe',
+        default => null,
     };
 
-    $clientGroups = [
-    'Essentiel' => [
-    ['label' => 'Accueil', 'route' => 'client.dashboard', 'active' => 'client.dashboard', 'icon' => '🏠'],
-    ['label' => 'Nouveau RDV', 'route' => 'client.rendezvous.create', 'active' => 'client.rendezvous.create', 'icon' => '➕'],
-    ['label' => 'Mes rendez-vous', 'route' => 'client.rendezvous.index', 'active' => 'client.rendezvous.*', 'icon' => '📅'],
-    ['label' => 'Historique', 'route' => 'client.historique', 'active' => 'client.historique', 'icon' => '🕘'],
-    ],
-    'Marketplace' => [
-    ['label' => 'Trouver un prestataire', 'route' => 'client.providers.browse', 'active' => 'client.providers.browse', 'icon' => '🔍'],
-    ['label' => 'Devis IA depuis photo', 'route' => 'client.ai.quote.photo', 'active' => 'client.ai.quote.photo', 'icon' => '🤖'],
-    ['label' => 'Chantiers groupés', 'route' => 'client.bundles.manage', 'active' => 'client.bundles.*', 'icon' => '🏗️'],
-    ],
-    'Engagement' => [
-    ['label' => 'Programme fidélité', 'route' => 'client.loyalty', 'active' => 'client.loyalty', 'icon' => '🎖️'],
-    ['label' => 'Récompenses', 'route' => 'client.loyalty.rewards', 'active' => 'client.loyalty.rewards', 'icon' => '🎁'],
-    ['label' => 'Parrainage', 'route' => 'client.referrals', 'active' => 'client.referrals', 'icon' => '🤝'],
-    ['label' => 'Mon avis (NPS)', 'route' => 'client.nps.survey', 'active' => 'client.nps.survey', 'icon' => '⭐'],
-    ],
-    'Finance & paiement' => [
-    ['label' => 'Finance', 'route' => 'client.finance', 'active' => 'client.finance*', 'icon' => '💳'],
-    ['label' => 'Portefeuille', 'route' => 'client.wallet', 'active' => 'client.wallet', 'icon' => '👛'],
-    ['label' => 'Cartes bancaires', 'route' => 'client.payment.methods', 'active' => 'client.payment.methods', 'icon' => '💳'],
-    ['label' => 'Abonnements', 'route' => 'client.subscriptions', 'active' => 'client.subscriptions*', 'icon' => '🔁'],
-    ['label' => 'Abonnements v2', 'route' => 'client.subscriptions-v2', 'active' => 'client.subscriptions-v2', 'icon' => '🔄'],
-    ],
-    'Communication & SAV' => [
-    ['label' => 'Messagerie', 'route' => 'client.chat.inbox', 'active' => 'client.chat.inbox', 'icon' => '💬'],
-    ['label' => 'Litiges', 'route' => 'client.claims', 'active' => 'client.claims*', 'icon' => '⚠️'],
-    ['label' => 'Prestataires favoris', 'route' => 'client.favorite-employes', 'active' => 'client.favorite-employes', 'icon' => '❤️'],
-    ],
-    'Compte client' => [
-    ['label' => 'Profil client', 'route' => 'client.profile', 'active' => 'client.profile', 'icon' => '👤'],
-    ['label' => 'Éditer mon profil', 'route' => 'client.profile.edit', 'active' => 'client.profile.edit', 'icon' => '✏️'],
-    ['label' => 'Mes données RGPD', 'route' => 'client.gdpr.data', 'active' => 'client.gdpr.data', 'icon' => '🔐'],
-    ['label' => 'API tokens', 'route' => 'client.api-tokens', 'active' => 'client.api-tokens', 'icon' => '🔑'],
-    ],
-    'Pro (compte entreprise)' => array_values(array_filter([
-    ['label' => 'Vérification entreprise (KYB)', 'route' => 'client.kyb.onboarding', 'active' => 'client.kyb.onboarding', 'icon' => '🏢'],
-    ['label' => 'Contrats', 'route' => 'client.contracts', 'active' => 'client.contracts', 'icon' => '📜'],
-    // Pont vers l'espace société multi-sites — seulement si l'utilisateur appartient
-    // à une entreprise cliente (sinon le lien mènerait à un 403 org.type).
-    ($user?->belongsToClientCompany() && Route::has('client-company.dashboard'))
-    ? ['label' => 'Espace entreprise', 'route' => 'client-company.dashboard', 'active' => 'client-company.*', 'icon' => '🏢']
-    : null,
-    ])),
-    ];
+    $primaryLinks = $contexte
+    ? \App\Support\Navigation\ModuleCatalogue::principaux($contexte)
+    : collect();
 
-    $employeGroups = [
-    'Mon travail' => [
-    ['label' => 'Ma journée', 'route' => 'employe.dashboard', 'active' => 'employe.dashboard', 'icon' => '🏠'],
-    ['label' => 'Mes missions', 'route' => 'employe.missions', 'active' => 'employe.missions*', 'icon' => '📋'],
-    ['label' => 'Devis chantiers', 'route' => 'employe.bundle-quotes', 'active' => 'employe.bundle-quotes', 'icon' => '🏗️'],
-    ['label' => 'Planning', 'route' => 'employe.planning', 'active' => 'employe.planning', 'icon' => '📅'],
-    ['label' => 'Disponibilités', 'route' => 'employe.disponibilites', 'active' => 'employe.disponibilites', 'icon' => '🕒'],
-    ['label' => 'Historique', 'route' => 'employe.historique', 'active' => 'employe.historique', 'icon' => '🕘'],
-    ['label' => 'Google Agenda', 'route' => 'employe.google.calendar', 'active' => 'employe.google.calendar', 'icon' => '🗓️'],
-    ],
-    'Mes revenus' => [
-    ['label' => 'Tableau de bord revenus', 'route' => 'employe.earnings', 'active' => 'employe.earnings', 'icon' => '💰'],
-    ['label' => 'Mon portefeuille', 'route' => 'employe.wallet', 'active' => 'employe.wallet', 'icon' => '👛'],
-    ['label' => 'Stripe Connect', 'route' => 'employe.stripe-connect.start', 'active' => 'employe.stripe-connect.*', 'icon' => '💳'],
-    ],
-    'Mes performances' => [
-    ['label' => 'Mes badges', 'route' => 'employe.badges', 'active' => 'employe.badges', 'icon' => '🏆'],
-    ['label' => 'Mes avis', 'route' => 'employe.ratings', 'active' => 'employe.ratings', 'icon' => '⭐'],
-    ['label' => 'Feedbacks reçus', 'route' => 'employe.feedbacks', 'active' => 'employe.feedbacks', 'icon' => '💬'],
-    ],
-    'Vérifications & support' => [
-    ['label' => 'KYC / Identité', 'route' => 'employe.kyc', 'active' => 'employe.kyc', 'icon' => '🛡️'],
-    ['label' => 'Mes litiges', 'route' => 'employe.disputes', 'active' => 'employe.disputes', 'icon' => '⚠️'],
-    ['label' => 'Validation multiple', 'route' => 'employe.validation.multiple', 'active' => 'employe.validation.multiple', 'icon' => '✅'],
-    ],
-    'Qualité & équipe' => [
-    ['label' => 'Incident', 'route' => 'employe.incident', 'active' => 'employe.incident', 'icon' => '⚠️'],
-    ['label' => 'Équipe terrain', 'route' => 'employe.team', 'active' => 'employe.team', 'icon' => '👥'],
-    ['label' => 'Coordination', 'route' => 'employe.coordination', 'active' => 'employe.coordination', 'icon' => '🧭'],
-    ['label' => 'Chef d’équipe', 'route' => 'employe.teamlead.operations', 'active' => 'employe.teamlead.operations', 'icon' => '🧑‍💼'],
-    ],
-    ];
+    $modulesRoute = match ($contexte) {
+        'admin' => 'admin.modules.directory',
+        'client' => 'client.modules',
+        'employe' => 'employe.modules',
+        default => null,
+    };
 
-    $adminGroups = [
-    'Pilotage' => [
-    ['label' => 'Dashboard', 'route' => 'admin.dashboard', 'active' => 'admin.dashboard', 'icon' => '📊'],
-    // `admin.home` sert `AdminHomeDashboard`, un composant DISTINCT de celui d'`admin.dashboard`.
-    // Il n'était lié nulle part : page réelle, sans porte. Ajoutée le 2026-08-05.
-    ['label' => 'Vue d’ensemble', 'route' => 'admin.home', 'active' => 'admin.home', 'icon' => '🗂️'],
-    ['label' => 'Planning', 'route' => 'admin.planning', 'active' => 'admin.planning*', 'icon' => '📅'],
-    ['label' => 'Missions', 'route' => 'admin.missions', 'active' => 'admin.missions*', 'icon' => '📋'],
-    ['label' => 'Alertes', 'route' => 'admin.alerts', 'active' => 'admin.alerts', 'icon' => '🚨'],
-    ['label' => 'Analytics', 'route' => 'admin.analytics', 'active' => 'admin.analytics', 'icon' => '📈'],
-    ['label' => 'Finance', 'route' => 'admin.finance', 'active' => 'admin.finance*', 'icon' => '💶'],
-    ],
-    'Opérations' => [
-    // Ajoutés le 2026-08-05 : le catalogue géographique (Pays → Zones → Métiers) et le suivi
-    // d'onboarding des prestataires existaient sans aucune entrée de menu. Leurs vues ne se
-    // citaient qu'entre elles — des sections entières atteignables seulement en tapant l'URL.
-    ['label' => 'Catalogue géographique', 'route' => 'admin.order-engine.catalog', 'active' => 'admin.order-engine.*', 'icon' => '🗺️'],
-    ['label' => 'Onboarding prestataires', 'route' => 'admin.onboarding.providers', 'active' => 'admin.onboarding.providers', 'icon' => '🚀'],
-    ['label' => 'Documents onboarding', 'route' => 'admin.onboarding.documents', 'active' => 'admin.onboarding.documents', 'icon' => '📎'],
-    ['label' => 'Équipes & partenaires', 'route' => 'admin.teams.partners', 'active' => 'admin.teams.partners', 'icon' => '👥'],
-    ['label' => 'Orchestration', 'route' => 'admin.orchestration', 'active' => 'admin.orchestration', 'icon' => '🧭'],
-    ['label' => 'Automation', 'route' => 'admin.automation', 'active' => 'admin.automation', 'icon' => '⚙️'],
-    ['label' => 'B2B opérations', 'route' => 'admin.b2b.operations', 'active' => 'admin.b2b.operations', 'icon' => '🏢'],
-    ['label' => 'International', 'route' => 'admin.international', 'active' => 'admin.international', 'icon' => '🌍'],
-    ['label' => 'Pays', 'route' => 'admin.countries', 'active' => 'admin.countries', 'icon' => '🗺️'],
-    ['label' => 'Sites', 'route' => 'admin.sites', 'active' => 'admin.sites', 'icon' => '📍'],
-    ],
-    'Gestion' => [
-    ['label' => 'Utilisateurs', 'route' => 'admin.utilisateurs.manage', 'active' => 'admin.utilisateurs*', 'icon' => '👤'],
-    ['label' => 'Services', 'route' => 'admin.services', 'active' => 'admin.services', 'icon' => '🧽'],
-    ['label' => 'Zones', 'route' => 'admin.zones', 'active' => 'admin.zones', 'icon' => '🗺️'],
-    ['label' => 'Entreprises', 'route' => 'admin.entreprises', 'active' => 'admin.entreprises', 'icon' => '🏢'],
-    ['label' => 'Modules', 'route' => 'admin.modules', 'active' => 'admin.modules', 'icon' => '🧩'],
-    ['label' => 'Feature flags', 'route' => 'admin.feature-flags.manager', 'active' => 'admin.feature-flags*', 'icon' => '🚩'],
-    ['label' => 'Feedbacks', 'route' => 'admin.feedbacks', 'active' => 'admin.feedbacks*', 'icon' => '💬'],
-    ['label' => 'Outils admin', 'route' => 'admin.outils', 'active' => 'admin.outils', 'icon' => '🛠️'],
-    ['label' => 'Clients premium', 'route' => 'admin.premium.clients', 'active' => 'admin.premium.clients', 'icon' => '⭐'],
-    ['label' => 'Crédits clients', 'route' => 'admin.customer.credits', 'active' => 'admin.customer.credits', 'icon' => '💰'],
-    ],
-    'Business avancé' => [
-    ['label' => 'IA Dispatch', 'route' => 'admin.ai.dispatch', 'active' => 'admin.ai.dispatch', 'icon' => '🤖'],
-    ['label' => 'Business', 'route' => 'admin.business.dashboard', 'active' => 'admin.business.dashboard', 'icon' => '🏢'],
-    ['label' => 'Readiness', 'route' => 'admin.platform.readiness', 'active' => 'admin.platform.readiness', 'icon' => '✅'],
-    ['label' => 'Factures B2B', 'route' => 'admin.b2b.monthly-invoices', 'active' => 'admin.b2b.monthly-invoices', 'icon' => '🧾'],
-    ['label' => 'Approbations', 'route' => 'admin.enterprise.approvals', 'active' => 'admin.enterprise.approvals', 'icon' => '📑'],
-    ['label' => 'Stripe prestataires', 'route' => 'admin.stripe-connect.providers', 'active' => 'admin.stripe-connect.providers', 'icon' => '💳'],
-    ['label' => 'Emails produit', 'route' => 'admin.emails', 'active' => 'admin.emails', 'icon' => '✉️'],
-    ],
-    'Qualité & confiance' => [
-    ['label' => 'Modération avis', 'route' => 'admin.ratings.moderation', 'active' => 'admin.ratings.moderation', 'icon' => '⭐'],
-    ['label' => 'Inspections qualité', 'route' => 'admin.quality.center', 'active' => 'admin.quality.center', 'icon' => '✔️'],
-    ['label' => 'Litiges & SAV', 'route' => 'admin.disputes.center', 'active' => 'admin.disputes.center', 'icon' => '🛟'],
-    ['label' => 'Signalements & blocks', 'route' => 'admin.safety.center', 'active' => 'admin.safety.center', 'icon' => '🚫'],
-    ['label' => 'KYC providers', 'route' => 'admin.kyc.center', 'active' => 'admin.kyc.center', 'icon' => '🪪'],
-    ['label' => 'Provider badges', 'route' => 'admin.badges.center', 'active' => 'admin.badges.center', 'icon' => '🏅'],
-    ['label' => 'Trades catalogue', 'route' => 'admin.trades', 'active' => 'admin.trades', 'icon' => '🛠️'],
-    ],
-    'Croissance & marketing' => [
-    ['label' => 'Marketing automation', 'route' => 'admin.marketing.center', 'active' => 'admin.marketing.center', 'icon' => '📣'],
-    ['label' => 'Codes promo', 'route' => 'admin.promotions.codes', 'active' => 'admin.promotions.codes', 'icon' => '🎟️'],
-    ['label' => 'Campagnes promo', 'route' => 'admin.promotions.campaigns', 'active' => 'admin.promotions.campaigns', 'icon' => '📢'],
-    ['label' => 'Parrainage', 'route' => 'admin.promotions.referrals', 'active' => 'admin.promotions.referrals', 'icon' => '🤝'],
-    ['label' => 'NPS scoring', 'route' => 'admin.nps.center', 'active' => 'admin.nps.center', 'icon' => '📊'],
-    ['label' => 'Programme fidélité', 'route' => 'admin.loyalty.center', 'active' => 'admin.loyalty.center', 'icon' => '🎖️'],
-    ['label' => 'Récompenses loyalty', 'route' => 'admin.loyalty.rewards.center', 'active' => 'admin.loyalty.rewards.center', 'icon' => '🎁'],
-    ['label' => 'Raisons annulation', 'route' => 'admin.analytics.cancellations', 'active' => 'admin.analytics.cancellations', 'icon' => '❌'],
-    ],
-    'Plateforme & risk' => [
-    ['label' => 'Risk scoring', 'route' => 'admin.risk.center', 'active' => 'admin.risk.center', 'icon' => '🚨'],
-    ['label' => 'Audit v2', 'route' => 'admin.audit.center', 'active' => 'admin.audit.center', 'icon' => '🔍'],
-    ['label' => 'GDPR / RGPD', 'route' => 'admin.gdpr.center', 'active' => 'admin.gdpr.center', 'icon' => '🔐'],
-    ['label' => 'Notifications prefs', 'route' => 'admin.notification-preferences.center', 'active' => 'admin.notification-preferences.center', 'icon' => '🔔'],
-    ['label' => 'SMS / WhatsApp', 'route' => 'admin.sms.center', 'active' => 'admin.sms.center', 'icon' => '💬'],
-    ['label' => 'Push notifications', 'route' => 'admin.push.center', 'active' => 'admin.push.center', 'icon' => '📱'],
-    ['label' => 'Realtime / Reverb', 'route' => 'admin.realtime.center', 'active' => 'admin.realtime.center', 'icon' => '⚡'],
-    ['label' => 'Webhooks B2B', 'route' => 'admin.webhooks-v2.center', 'active' => 'admin.webhooks-v2.center', 'icon' => '🔗'],
-    ['label' => 'API Tokens v2', 'route' => 'admin.api-tokens-v2.center', 'active' => 'admin.api-tokens-v2.center', 'icon' => '🔑'],
-    ['label' => 'Géolocalisation', 'route' => 'admin.geolocation-v2.center', 'active' => 'admin.geolocation-v2.center', 'icon' => '🗺️'],
-    ['label' => 'Traductions i18n', 'route' => 'admin.translations.center', 'active' => 'admin.translations.center', 'icon' => '🌐'],
-    ['label' => 'FX (devises)', 'route' => 'admin.fx.center', 'active' => 'admin.fx.center', 'icon' => '💱'],
-    ],
-    'Finance avancée' => [
-    ['label' => 'Stripe hardening', 'route' => 'admin.stripe.hardening', 'active' => 'admin.stripe.hardening', 'icon' => '💳'],
-    ['label' => 'Comptabilité (FEC/Sage)', 'route' => 'admin.accounting-v2.center', 'active' => 'admin.accounting-v2.center', 'icon' => '📒'],
-    ['label' => 'Abonnements v2', 'route' => 'admin.subscriptions-v2.center', 'active' => 'admin.subscriptions-v2.center', 'icon' => '🔁'],
-    ['label' => 'Pourboires (Tips)', 'route' => 'admin.tips.center', 'active' => 'admin.tips.center', 'icon' => '💰'],
-    ['label' => 'Annulations v2', 'route' => 'admin.cancellations-v2.center', 'active' => 'admin.cancellations-v2.center', 'icon' => '🚫'],
-    ['label' => 'Assurance', 'route' => 'admin.insurance.center', 'active' => 'admin.insurance.center', 'icon' => '🛡️'],
-    ],
-    'Opérations terrain' => [
-    ['label' => 'Trip Tracking GPS', 'route' => 'admin.trip-tracking.center', 'active' => 'admin.trip-tracking.center', 'icon' => '📍'],
-    ['label' => 'Presence providers', 'route' => 'admin.presence.center', 'active' => 'admin.presence.center', 'icon' => '🟢'],
-    ['label' => 'Disponibilités', 'route' => 'admin.availability.center', 'active' => 'admin.availability.center', 'icon' => '📆'],
-    ['label' => 'Fleet véhicules', 'route' => 'admin.fleet-v2.center', 'active' => 'admin.fleet-v2.center', 'icon' => '🚐'],
-    ['label' => 'Bundles chantiers', 'route' => 'admin.bundles.center', 'active' => 'admin.bundles.center', 'icon' => '🏗️'],
-    ['label' => 'Matching insights', 'route' => 'admin.matching.insights', 'active' => 'admin.matching.insights', 'icon' => '🎯'],
-    ['label' => 'Pricing v2 (DSL)', 'route' => 'admin.pricing-v2.center', 'active' => 'admin.pricing-v2.center', 'icon' => '💵'],
-    ['label' => 'Inscriptions prestataires', 'route' => 'admin.providers.registrations', 'active' => 'admin.providers.registrations', 'icon' => '🙋'],
-    ['label' => 'Onboarding v2', 'route' => 'admin.onboarding-v2.center', 'active' => 'admin.onboarding-v2.center', 'icon' => '🚪'],
-    ['label' => 'Contrats v2', 'route' => 'admin.contracts-v2.center', 'active' => 'admin.contracts-v2.center', 'icon' => '📜'],
-    ['label' => 'Analytics v2', 'route' => 'admin.analytics.center', 'active' => 'admin.analytics.center', 'icon' => '📊'],
-    ],
-    'B2B & multi-tenant' => [
-    ['label' => 'KYB entreprises', 'route' => 'admin.kyb-v2.center', 'active' => 'admin.kyb-v2.center', 'icon' => '🏢'],
-    ['label' => 'Chat & messagerie', 'route' => 'admin.chat-v2.center', 'active' => 'admin.chat-v2.center', 'icon' => '💬'],
-    ],
-    ];
 
-    $groups = collect();
-
-    /*
-     * L'ORDRE COMPTE, et il doit rester celui de `routes/authenticated.php`.
-     * Ces rôles ne s'excluent pas : promouvoir un client en administrateur ne lui retire pas son
-     * profil client, donc `isClient()` ET `isAdmin()` peuvent être vrais en même temps. Tant que
-     * `isClient()` était testé en premier, `isAdmin()` — en `elseif` — n'était jamais atteint : le
-     * compte gardait le menu client, sans le moindre lien vers l'administration, et le changement
-     * de rôle semblait sans effet. `/dashboard` l'envoyait pourtant bien vers `admin.dashboard`,
-     * qui teste `isAdmin()` d'abord : deux priorités contradictoires dans la même application.
-     */
-    if ($user?->isAdmin()) {
-    $groups = $filterLinks($adminGroups);
-    } elseif ($user?->isClient()) {
-    $groups = $filterLinks($clientGroups);
-    } elseif ($user?->isEmploye()) {
-    $groups = $filterLinks($employeGroups);
-    }
-
-    $roleLinks = $groups
-    ->flatMap(fn ($group) => $group['links'])
-    ->values();
-
-    $primaryLinks = $roleLinks->take(5);
-
-    // Mapping emoji → Heroicons (pour migration progressive sans toucher les 60+ entrées des $groups).
-    // Si emoji non mappé, fallback sur l'emoji affiché (compat-back).
-    $iconMap = [
-        '🏠' => 'home', '➕' => 'plus', '📅' => 'calendar', '🕘' => 'clock', '🗓️' => 'calendar',
-        '💳' => 'credit-card', '👛' => 'wallet', '💰' => 'banknotes', '💶' => 'currency-euro', '💵' => 'currency-euro', '🪙' => 'currency-euro', '💱' => 'currency-euro', '🧾' => 'receipt',
-        '🔍' => 'magnifying-glass', '🎯' => 'sparkles',
-        '🤖' => 'sparkles', '✨' => 'sparkles', '🌟' => 'star', '⭐' => 'star', '🏆' => 'sparkles', '🏅' => 'badge-check', '🎖️' => 'badge-check', '🎁' => 'gift',
-        '🏗️' => 'wrench', '🛠️' => 'wrench', '🧽' => 'sparkles', '🔧' => 'wrench',
-        '🤝' => 'users', '👥' => 'users', '👤' => 'user', '🧑‍💼' => 'user-circle',
-        '❤️' => 'heart', '💬' => 'chat-bubble', '📞' => 'phone', '📱' => 'phone', '📣' => 'speakerphone', '📢' => 'speakerphone', '✉️' => 'envelope',
-        '🔐' => 'lock-closed', '🔑' => 'key', '🪪' => 'identification', '🛡️' => 'shield-check', '🛟' => 'shield-check', '🚫' => 'x-mark',
-        '🏢' => 'building-office', '🏛️' => 'building-office',
-        '📜' => 'document', '📒' => 'document', '📑' => 'document', '✏️' => 'document',
-        '📋' => 'briefcase', '📂' => 'briefcase',
-        '📊' => 'chart-bar', '📈' => 'chart-bar', '🔄' => 'arrow-trending-up', '🔁' => 'arrow-trending-up',
-        '🚨' => 'exclamation-triangle', '⚠️' => 'exclamation-triangle', '🚪' => 'logout', '✅' => 'check', '✔️' => 'check',
-        '🌍' => 'globe', '🌐' => 'globe', '🗺️' => 'map-pin', '📍' => 'map-pin', '🟢' => 'check',
-        '🧩' => 'puzzle', '🔗' => 'puzzle', '🧭' => 'cube', '🚐' => 'truck', '🚗' => 'truck',
-        '⚡' => 'bolt', '🔥' => 'fire', '🚀' => 'rocket', '📆' => 'calendar', '🕒' => 'clock',
-        '📤' => 'arrow-up', '⚙️' => 'cog-6-tooth',
-    ];
-
-    $renderIcon = function (string $icon) use ($iconMap) {
-        $name = $iconMap[$icon] ?? null;
+    // La table emoji → Heroicon vivait ici. Elle est partagée depuis `ModuleIcons` : la page
+    // Modules et les deux layouts société la consomment aussi, et trois copies auraient divergé.
+    $renderIcon = function (string $icon) {
+        $name = \App\Support\Navigation\ModuleIcons::heroicon($icon);
         if ($name) {
             return view('components.ui.icon', ['name' => $name, 'class' => 'w-4 h-4 shrink-0'])->render();
         }
@@ -273,8 +63,10 @@
             <div class="flex min-w-0">
                 <div class="flex shrink-0 items-center">
                     <a href="{{ $homeHref }}" class="flex items-center gap-2 text-xl font-black tracking-tight text-blue-700 dark:text-blue-400">
+                        {{-- « CU » = CleanUx. Le renommage global ne pouvait pas le voir : ce ne
+                             sont pas les lettres « cleanux ». --}}
                         <span class="inline-flex h-9 w-9 items-center justify-center rounded-2xl bg-blue-600 text-sm font-black text-white shadow-sm dark:bg-blue-500">
-                            CU
+                            Br
                         </span>
                         <span>{{ config('app.name', 'Brio') }}</span>
                     </a>
@@ -283,45 +75,19 @@
                 <div class="hidden sm:-my-px sm:ms-8 sm:flex sm:items-center sm:gap-6">
                     @auth
                     @foreach($primaryLinks as $link)
-                    <x-nav-link :href="route($link['route'])" :active="request()->routeIs($link['active'])">
+                    <x-nav-link :href="route($link['route'])" :active="request()->routeIs($link['route']) || request()->routeIs($link['route'].'.*')">
                         <span class="me-1 inline-flex items-center">{!! $renderIcon($link['icon']) !!}</span>
                         {{ $link['label'] }}
                     </x-nav-link>
                     @endforeach
 
-                    @if($groups->isNotEmpty())
-                    <div class="relative">
-                        <x-dropdown align="left" width="60">
-                            <x-slot name="trigger">
-                                <button type="button"
-                                    class="inline-flex items-center border-b-2 border-transparent px-1 pt-1 text-sm font-semibold leading-5 text-slate-500 transition hover:border-blue-300 hover:text-blue-700 focus:border-blue-400 focus:text-blue-700 focus:outline-none dark:text-slate-300 dark:hover:border-blue-500 dark:hover:text-blue-400 dark:focus:text-blue-400">
-                                    Toutes les pages
-                                    <svg class="ms-1 h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
-                                        <path fill-rule="evenodd"
-                                            d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
-                                            clip-rule="evenodd" />
-                                    </svg>
-                                </button>
-                            </x-slot>
-
-                            <x-slot name="content">
-                                <div class="max-h-[70vh] overflow-y-auto py-2">
-                                    @foreach($groups as $group)
-                                    <div class="px-4 pb-1 pt-3 text-[11px] font-black uppercase tracking-[0.18em] text-slate-400 dark:text-slate-500">
-                                        {{ $group['group'] }}
-                                    </div>
-
-                                    @foreach($group['links'] as $link)
-                                    <x-dropdown-link :href="route($link['route'])">
-                                        <span class="me-2 inline-flex items-center">{!! $renderIcon($link['icon']) !!}</span>
-                                        {{ $link['label'] }}
-                                    </x-dropdown-link>
-                                    @endforeach
-                                    @endforeach
-                                </div>
-                            </x-slot>
-                        </x-dropdown>
-                    </div>
+                    {{-- La porte vers tout le reste. Sans elle, les modules non-principaux
+                         deviendraient injoignables d'un seul coup. --}}
+                    @if($modulesRoute && Route::has($modulesRoute))
+                    <x-nav-link :href="route($modulesRoute)" :active="request()->routeIs($modulesRoute)">
+                        <span class="me-1 inline-flex items-center">{!! $renderIcon('🧩') !!}</span>
+                        Modules
+                    </x-nav-link>
                     @endif
                     @else
                     @if(Route::has('booking.create'))
@@ -483,18 +249,19 @@
     <div :class="{ 'block': open, 'hidden': !open }" class="hidden border-t border-slate-100 bg-white sm:hidden dark:border-slate-700 dark:bg-slate-900">
         <div class="space-y-1 pb-3 pt-2">
             @auth
-            @foreach($groups as $group)
-            <div class="px-4 pb-1 pt-4 text-[11px] font-black uppercase tracking-[0.18em] text-slate-400 dark:text-slate-500">
-                {{ $group['group'] }}
-            </div>
-
-            @foreach($group['links'] as $link)
-            <x-responsive-nav-link :href="route($link['route'])" :active="request()->routeIs($link['active'])">
+            @foreach($primaryLinks as $link)
+            <x-responsive-nav-link :href="route($link['route'])" :active="request()->routeIs($link['route']) || request()->routeIs($link['route'].'.*')">
                 <span class="me-2 inline-flex items-center">{!! $renderIcon($link['icon']) !!}</span>
                 {{ $link['label'] }}
             </x-responsive-nav-link>
             @endforeach
-            @endforeach
+
+            @if($modulesRoute && Route::has($modulesRoute))
+            <x-responsive-nav-link :href="route($modulesRoute)" :active="request()->routeIs($modulesRoute)">
+                <span class="me-2 inline-flex items-center">{!! $renderIcon('🧩') !!}</span>
+                Modules
+            </x-responsive-nav-link>
+            @endif
 
             @if(Route::has('notifications.index'))
             <x-responsive-nav-link :href="route('notifications.index')" :active="request()->routeIs('notifications.index')">

@@ -31,6 +31,13 @@ Route::middleware(['auth', 'verified', 'active.account', 'org.type:client'])
     ->group(function () {
 
         Route::get('/', ClientCompanyDashboard::class)->name('dashboard');
+
+        // Le répertoire des modules — voir `config/modules.php`. La garde d'organisation
+        // (`org.type:client`) reste celle du groupe.
+        Route::get('/modules', \App\Livewire\Shared\ModulesDirectory::class)
+            ->defaults('contexte', 'client-company')
+            ->name('modules');
+
         Route::get('/locaux', SiteManager::class)->name('sites');
         Route::get('/reservations', BookingHub::class)->name('bookings.index');
         Route::get('/reservations/nouveau', BookingHub::class)->name('bookings.create');
@@ -69,6 +76,13 @@ Route::middleware(['auth', 'verified', 'active.account', 'org.type:provider'])
     ->group(function () {
 
         Route::get('/', ProviderDashboard::class)->name('dashboard');
+
+        // Le répertoire des modules — voir `config/modules.php`. La garde d'organisation
+        // (`org.type:provider`) reste celle du groupe.
+        Route::get('/modules', \App\Livewire\Shared\ModulesDirectory::class)
+            ->defaults('contexte', 'provider-company')
+            ->name('modules');
+
         Route::get('/canaux', TeamChannels::class)->name('channels');
         Route::get('/taches', TaskBoard::class)->name('tasks');
         Route::get('/dispatch', DispatchCenter::class)->name('dispatch');

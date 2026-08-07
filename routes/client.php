@@ -47,6 +47,12 @@ Route::middleware(['role:client'])
 
         Route::get('/', ClientDashboard::class)->name('dashboard');
 
+        // Le répertoire des modules — voir `config/modules.php`. Le contexte vient de la route,
+        // jamais de la requête : la garde reste `role:client`, ci-dessus.
+        Route::get('/modules', \App\Livewire\Shared\ModulesDirectory::class)
+            ->defaults('contexte', 'client')
+            ->name('modules');
+
         if (class_exists(MesRendezVousClient::class)) {
             Route::get('/rendez-vous', MesRendezVousClient::class)->name('rendezvous.index');
             // Récupération d'orphelin — gestion d'une série récurrente.

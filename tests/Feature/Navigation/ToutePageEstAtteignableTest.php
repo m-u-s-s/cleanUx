@@ -363,7 +363,22 @@ class ToutePageEstAtteignableTest extends TestCase
     /** @return list<string> */
     private function fichiersDesCoquilles(): array
     {
-        $fichiers = [resource_path('views/navigation-menu.blade.php'), resource_path('views/home.blade.php')];
+        $fichiers = [
+            resource_path('views/navigation-menu.blade.php'),
+            resource_path('views/home.blade.php'),
+            /*
+             * LA NAVIGATION A DÉMÉNAGÉ, LA MESURE SUIT.
+             *
+             * Les liens vivaient dans trois tableaux inline de `navigation-menu.blade.php` et dans
+             * les deux layouts société. Ils vivent désormais dans `config/modules.php`, servi à la
+             * page Modules et à la navbar.
+             *
+             * Sans cette ligne, ce test ne trouvait plus que 43 racines au lieu de 143 et
+             * déclarait injoignable la moitié de l'application — un faux positif massif dû à
+             * l'instrument, pas au code.
+             */
+            config_path('modules.php'),
+        ];
 
         foreach ([resource_path('views/layouts'), resource_path('views/partials')] as $dossier) {
             if (is_dir($dossier)) {
