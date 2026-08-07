@@ -41,6 +41,12 @@ import { CompanyBookingsScreen } from '@/screens/company/CompanyBookingsScreen';
 import { CompanyMembersScreen } from '@/screens/company/CompanyMembersScreen';
 import { CompanyContractsScreen } from '@/screens/company/CompanyContractsScreen';
 import { CompanyBillingScreen } from '@/screens/company/CompanyBillingScreen';
+// L'espace société cliente : aiguillage, préférence retenue, sélecteur et navigateur dédié.
+import { resolveClientSpace } from '@/company/space';
+import { useClientSpacePreference } from '@/company/useClientSpacePreference';
+import { ClientCompanyNavigator } from '@/company/ClientCompanyNavigator';
+import { ClientSpaceSwitcherScreen } from '@/screens/company/ClientSpaceSwitcherScreen';
+import { ProfileScreen } from '@/screens/ProfileScreen';
 import { colors } from '@/theme';
 import { useThemeColors } from '@/theme/useThemeColors';
 import type { RootStackParamList } from './types';
@@ -49,12 +55,90 @@ const Stack = createNativeStackNavigator<RootStackParamList>();
 
 export function RootNavigator() {
   const theme = useThemeColors();
-  const { isAuthenticated, isLoading } = useAuth();
+  const { user, isAuthenticated, isLoading } = useAuth();
 
-  if (isLoading) {
+  // L'espace retenu d'un compte à double vie. Tant qu'il se lit, on n'ouvre rien : ouvrir l'espace
+  // par défaut le temps d'une lecture asynchrone ferait clignoter un écran qui n'est pas le sien.
+  const { space: chosenSpace, isLoading: spaceLoading, choose } = useClientSpacePreference();
+
+  const space = resolveClientSpace({
+    isLoading: isLoading || spaceLoading,
+    isAuthenticated,
+    user,
+    chosenSpace,
+  });
+
+  if (space === 'loading') {
     return (
       <View testID="root-navigator" style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: theme.page }}>
         <ActivityIndicator size="large" color={colors.brand[500]} />
+      </View>
+    );
+  }
+
+  if (space === 'switcher') {
+    return (
+      <View testID="root-navigator" style={{ flex: 1 }}>
+        <ClientSpaceSwitcherScreen onChoose={(next) => void choose(next)} />
+      </View>
+    );
+  }
+
+  /*
+   * L'ESPACE SOCIÉTÉ CLIENTE, rendu HORS de la pile personnelle.
+   *
+   * Aucun écran de la pile perso ne concerne un responsable de sites au travail — parrainage,
+   * fidélité, pourboires, NPS. Les y laisser atteignables donnerait un espace « société » qui
+   * ressemble au compte personnel avec quatre écrans de plus.
+   *
+   * Les écrans PARTAGÉS restent montés ici : le détail d'une réservation et celui d'une facture
+   * sont les mêmes objets, et en écrire une seconde version pour la société dupliquerait le suivi,
+   * les photos, le litige et le PDF signé.
+   */
+  if (space === 'clientCompany') {
+    return (
+      <View testID="root-navigator" style={{ flex: 1 }}>
+        <Stack.Navigator screenOptions={{ headerShown: false }}>
+          <Stack.Screen name="ClientCompanySpace" component={ClientCompanyNavigator} />
+          <Stack.Screen
+            name="CompanyMembers"
+            component={CompanyMembersScreen}
+            options={{ headerShown: true, title: 'Membres' }}
+          />
+          <Stack.Screen
+            name="CompanyContracts"
+            component={CompanyContractsScreen}
+            options={{ headerShown: true, title: 'Contrats' }}
+          />
+          <Stack.Screen
+            name="BookingDetail"
+            component={BookingDetailScreen}
+            options={{ headerShown: true, title: 'Détail réservation' }}
+          />
+          <Stack.Screen
+            name="InvoiceDetail"
+            component={InvoiceDetailScreen}
+            options={{ headerShown: true, title: 'Facture' }}
+          />
+          {/*
+            L'issue vers l'espace personnel. Sans elle, choisir « entreprise » une fois enfermerait
+            hors de ses propres réservations — le défaut que `clear()` a déjà corrigé deux fois
+            dans ce dépôt.
+          */}
+          <Stack.Screen
+            name="Profile"
+            component={ProfileScreen}
+            options={{ headerShown: true, title: 'Profil' }}
+          />
+          <Stack.Screen
+            name="Legal"
+            component={LegalScreen}
+            options={({ route }) => ({
+              title: route.params.type === 'terms' ? 'CGU' : 'Confidentialité',
+              headerShown: true,
+            })}
+          />
+        </Stack.Navigator>
       </View>
     );
   }

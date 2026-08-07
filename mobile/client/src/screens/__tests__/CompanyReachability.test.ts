@@ -43,11 +43,29 @@ describe('Joignabilité de l’espace société cliente', () => {
     expect(source).toMatch(new RegExp(`name="${ecran}"`));
   });
 
-  it('a une porte d’entrée depuis le profil, et pas seulement une route', () => {
+  it('est un ESPACE au démarrage, pas un écran poussé sur la pile personnelle', () => {
+    const racine = lire('navigation/RootNavigator.tsx');
+
+    expect(racine).toMatch(/space === 'clientCompany'/);
+    expect(racine).toContain('ClientCompanyNavigator');
+    expect(racine).toContain('resolveClientSpace');
+  });
+
+  it('laisse au membre de société un chemin de RETOUR vers son espace perso', () => {
     const profil = lire('screens/ProfileScreen.tsx');
 
-    expect(profil).toContain('CompanyOverview');
-    expect(profil).toContain('Espace entreprise');
+    /*
+     * Sans cela, choisir « entreprise » une fois enfermerait hors de ses propres réservations —
+     * l'organisation étant un rattachement du compte et non un compte distinct, la même personne
+     * commande aussi pour elle-même. C'est le défaut que `clear()` a déjà corrigé deux fois dans
+     * ce dépôt.
+     */
+    expect(profil).toContain('useClientSpacePreference');
+    expect(profil).toContain('clear()');
+  });
+
+  it('le profil est monté DANS la pile société, sinon le retour serait injoignable', () => {
+    expect(lire('navigation/RootNavigator.tsx')).toMatch(/name="Profile"/);
   });
 
   it('conditionne cette porte au SEUL drapeau qui désigne une société cliente', () => {

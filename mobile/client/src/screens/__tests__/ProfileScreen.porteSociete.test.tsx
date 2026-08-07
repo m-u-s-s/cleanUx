@@ -11,18 +11,36 @@ import { render, screen, fireEvent } from '@testing-library/react-native';
  */
 const mockNavigate = jest.fn();
 const mockAuth = { user: null as unknown, logout: jest.fn() };
+const mockClearSpace = jest.fn();
 
 jest.mock('@/auth', () => ({ useAuth: () => mockAuth }));
+jest.mock('@/company/useClientSpacePreference', () => ({
+  useClientSpacePreference: () => ({
+    clear: mockClearSpace,
+    space: 'clientCompany',
+    isLoading: false,
+    choose: jest.fn(),
+  }),
+}));
 jest.mock('@react-navigation/native', () => ({
   useNavigation: () => ({ navigate: mockNavigate }),
 }));
 
 import { ProfileScreen } from '../ProfileScreen';
 
-const LIBELLE = 'Espace entreprise';
+/*
+ * LE LIBELLÉ A CHANGÉ AVEC LA NATURE DE LA PORTE.
+ *
+ * L'espace société était une destination parmi d'autres — « Espace entreprise » poussait un écran
+ * sur la pile personnelle. C'est devenu un ESPACE : sa propre pile, ses propres onglets, choisi au
+ * démarrage et retenu. Le geste n'est donc plus « aller à » mais « changer d'espace », et le
+ * bouton doit dire ce qu'il fait.
+ */
+const LIBELLE = 'Changer d’espace';
 
 beforeEach(() => {
   mockNavigate.mockClear();
+  mockClearSpace.mockClear();
 });
 
 describe('ProfileScreen — porte vers l’espace société', () => {
@@ -42,13 +60,15 @@ describe('ProfileScreen — porte vers l’espace société', () => {
     expect(screen.getByText(LIBELLE)).toBeTruthy();
   });
 
-  it('ouvre réellement l’accueil société — un libellé seul ne mène nulle part', () => {
+  it('efface réellement le choix d’espace — un libellé seul ne fait rien', () => {
     mockAuth.user = { is_entreprise: true, organization_type: 'client_company' };
 
     render(<ProfileScreen />);
     fireEvent.press(screen.getByText(LIBELLE));
 
-    expect(mockNavigate).toHaveBeenCalledWith('CompanyOverview');
+    // `clear()` repose la question au prochain rendu ; sans cet appel, le bouton serait décoratif
+    // et le membre de société resterait enfermé du côté où il se trouve.
+    expect(mockClearSpace).toHaveBeenCalledTimes(1);
   });
 
   it('ne l’impose pas à un particulier', () => {
