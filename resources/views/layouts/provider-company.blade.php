@@ -27,8 +27,9 @@
                 Brio <span class="text-amber-400">Pro</span>
             </a>
             <div class="hidden sm:flex items-center gap-1">
-                {{-- Les six liens vivaient en dur ici. Ils viennent désormais de
-                     `config/modules.php`, comme ceux de la navbar et de la page Modules. --}}
+                {{-- Les liens vivaient en dur ici. Ils viennent désormais de `config/modules.php`,
+                     comme ceux de la navbar et de la page Modules — « Sites desservis » compris,
+                     ajouté au registre plutôt qu'à cette liste. --}}
                 @foreach (\App\Support\Navigation\ModuleCatalogue::principaux('provider-company') as $link)
                 <a href="{{ route($link['route']) }}"
                     class="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm transition

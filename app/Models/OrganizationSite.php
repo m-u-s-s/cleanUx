@@ -87,6 +87,21 @@ class OrganizationSite extends Model
         return $this->hasMany(Booking::class, 'organization_site_id');
     }
 
+    /**
+     * Les référents désignés SUR ce site par des sociétés prestataires.
+     *
+     * Attention au sens : ces lignes n'appartiennent pas à l'organisation qui possède le site, mais
+     * aux prestataires qui y interviennent — et plusieurs peuvent y intervenir en même temps. Toute
+     * lecture doit donc être scopée sur `provider_organization_id`, faute de quoi un prestataire
+     * verrait l'équipe d'un concurrent dans le même immeuble.
+     *
+     * @return HasMany<ProviderSiteAssignment, $this>
+     */
+    public function providerAssignments(): HasMany
+    {
+        return $this->hasMany(ProviderSiteAssignment::class, 'organization_site_id');
+    }
+
     /** @return BelongsTo<ServiceZone, $this> */
     public function serviceZone(): BelongsTo
     {

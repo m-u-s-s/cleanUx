@@ -96,7 +96,20 @@
                                          class="h-8 w-8 flex-shrink-0 rounded-full object-cover border border-slate-600">
                                     <div class="min-w-0">
                                         <p class="truncate text-xs font-semibold text-white">{{ $worker->user?->name }}</p>
-                                        <p class="text-[10px] text-slate-400">{{ $worker->role->label() }}</p>
+                                        <p class="text-[10px] text-slate-400">
+                                            {{ $worker->role->label() }}
+                                            {{--
+                                                INDICATIF, JAMAIS BLOQUANT. Le bouton de confirmation
+                                                reste actif : un répartiteur qui connaît son équipe
+                                                passe outre pour de bonnes raisons — un échange entre
+                                                collègues, une heure sup consentie. Le désactiver
+                                                obligerait à prévoir un moyen de forcer, qui
+                                                deviendrait le geste ordinaire.
+                                            --}}
+                                            @if (($disponibilites[$worker->user_id] ?? true) === false)
+                                                · <span class="text-amber-400">déjà pris</span>
+                                            @endif
+                                        </p>
                                     </div>
                                 </label>
                             @endforeach
@@ -109,9 +122,22 @@
                             <button wire:click="confirmAssign"
                                 :disabled="{{ is_null($assigneeId) ? 'true' : 'false' }}"
                                 class="flex-1 rounded-xl bg-amber-600 py-2 text-xs font-bold text-white hover:bg-amber-700 disabled:opacity-50">
-                                ✓ Confirmer l'assignation
+                                ✓ Confirmer comme responsable
                             </button>
                         </div>
+
+                        {{--
+                            LE RENFORT : une seconde personne SANS déloger le responsable.
+                            `mission_assignments.role_on_mission` distingue `lead` de `helper`
+                            depuis toujours ; rien ne s'en servait, et un grand nettoyage à deux —
+                            le cas ordinaire d'une société — n'était pas représentable.
+                        --}}
+                        @if ($assigneeId)
+                            <button wire:click="ajouterRenfort({{ $mission->id }}, {{ $assigneeId }})"
+                                class="mt-2 w-full rounded-xl border border-slate-600 py-2 text-xs text-slate-300 hover:bg-slate-800">
+                                + Ajouter en renfort (sans changer le responsable)
+                            </button>
+                        @endif
                     </div>
                 @endif
             </div>

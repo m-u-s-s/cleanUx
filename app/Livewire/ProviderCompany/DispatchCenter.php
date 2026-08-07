@@ -4,8 +4,11 @@ namespace App\Livewire\ProviderCompany;
 
 use App\Events\MissionStatusUpdated;
 use App\Models\Mission;
+use App\Models\MissionAssignment;
 use App\Models\OrganizationContract;
 use App\Models\OrganizationMember;
+use App\Models\ProviderSiteAssignment;
+use App\Services\Availability\AvailabilityService;
 use App\Services\Missions\MissionAssignmentService;
 use App\Services\PermissionService;
 use App\Support\Livewire\Concerns\EnforcesActiveOrgMembership;
@@ -18,6 +21,7 @@ use Livewire\Component;
  * @property-read Collection<int, Mission> $missions
  * @property-read Collection<int, OrganizationMember> $availableWorkers
  * @property-read Collection<int, OrganizationContract> $partnerContracts
+ * @property-read array<int, bool> $disponibilites
  */
 class DispatchCenter extends Component
 {
@@ -91,10 +95,50 @@ class DispatchCenter extends Component
             ->get();
     }
 
+    /**
+     * Ouvrir l'assignation — en proposant le référent du site, quand il y en a un.
+     *
+     * C'est la raison d'être du référent : une société qui dessert vingt immeubles y place des
+     * habitués, et cette connaissance ne servait à rien tant que le répartiteur repartait d'une
+     * liste alphabétique à chaque mission. La désignation devient utile ici, ou nulle part.
+     *
+     * SUGGESTION, PAS DÉCISION : le champ reste modifiable, et l'assignation passe par les mêmes
+     * gardes qu'avant. Un référent absent ou déjà pris se remplace d'un geste.
+     *
+     * Sans référent, on laisse `null` plutôt que de proposer un premier venu — une suggestion au
+     * hasard se fait accepter par habitude, ce qui est pire que pas de suggestion du tout.
+     */
     public function startAssign(int $missionId): void
     {
         $this->assigningId = $missionId;
         $this->assigneeId = null;
+
+        $orgId = Auth::user()?->organizationContextId();
+
+        if (! $orgId) {
+            return;
+        }
+
+        // Le site est relu DEPUIS la mission, elle-même scopée sur notre organisation : un
+        // identifiant reçu ne désigne jamais seul une ressource.
+        $siteId = Mission::query()
+            ->where('provider_organization_id', $orgId)
+            ->whereKey($missionId)
+            ->value('organization_site_id');
+
+        if (! $siteId) {
+            return;
+        }
+
+        /*
+         * Scopé sur NOTRE organisation : deux prestataires peuvent desservir le même immeuble, et
+         * suggérer l'employé d'un concurrent serait à la fois absurde et une fuite.
+         */
+        $this->assigneeId = ProviderSiteAssignment::query()
+            ->where('provider_organization_id', $orgId)
+            ->where('organization_site_id', $siteId)
+            ->where('role', ProviderSiteAssignment::ROLE_LEAD)
+            ->value('user_id');
     }
 
     public function confirmAssign(): void
@@ -104,6 +148,25 @@ class DispatchCenter extends Component
         }
 
         $user = Auth::user();
+
+        /*
+         * LA PERMISSION SE VÉRIFIE AU MOMENT D'AGIR, PAS À L'OUVERTURE DE L'ÉCRAN.
+         *
+         * `mount()` exige `missions.dispatch` — le droit de CONSULTER le tableau. Rien ne gardait
+         * plus rien ensuite, et Livewire ne rejoue pas `mount()` entre deux actions : la
+         * vérification avait lieu une fois, puis l'assignation restait ouverte pour toute la durée
+         * de vie du composant.
+         *
+         * `missions.assign` est la clé qui manquait à l'appel — déclarée dans la matrice depuis le
+         * début, consultée par personne. La distinction porte un vrai choix de gestion : une
+         * société peut vouloir que ses dispatcheurs VOIENT le plan de charge sans redistribuer le
+         * travail, et `organization_role_permissions` le lui permet désormais pour de bon.
+         */
+        abort_unless(
+            app(PermissionService::class)->can($user, 'missions.assign', $user->currentOrganization),
+            403
+        );
+
         $mission = Mission::where('provider_organization_id', $user->current_organization_id)
             ->findOrFail($this->assigningId);
 
@@ -142,6 +205,153 @@ class DispatchCenter extends Component
         $this->assigneeId = null;
     }
 
+    /**
+     * Ajouter un renfort sur une mission.
+     *
+     * Même permission et mêmes gardes que l'assignation : les deux redistribuent du travail, et
+     * seule la place occupée diffère. Les deux identifiants viennent du client et ne sont crus ni
+     * l'un ni l'autre.
+     */
+    public function ajouterRenfort(int $missionId, int $userId): void
+    {
+        [$mission, $membre] = $this->missionEtMembreSousGarde($missionId, $userId);
+
+        if ($mission === null || $membre === null) {
+            return;
+        }
+
+        app(MissionAssignmentService::class)->ajouterRenfort($mission, $membre);
+
+        broadcast(new MissionStatusUpdated($mission));
+    }
+
+    public function retirerRenfort(int $missionId, int $userId): void
+    {
+        [$mission, $membre] = $this->missionEtMembreSousGarde($missionId, $userId);
+
+        if ($mission === null || $membre === null) {
+            return;
+        }
+
+        app(MissionAssignmentService::class)->retirerRenfort($mission, $userId);
+
+        broadcast(new MissionStatusUpdated($mission));
+    }
+
+    /**
+     * La mission et le membre, ou deux `null`.
+     *
+     * Rend `null` plutôt que d'échouer bruyamment : la différence entre « introuvable » et
+     * « refusé » dirait déjà si la mission existe et si cette personne appartient à une autre
+     * société.
+     *
+     * @return array{0: Mission|null, 1: OrganizationMember|null}
+     */
+    private function missionEtMembreSousGarde(int $missionId, int $userId): array
+    {
+        $user = Auth::user();
+        $orgId = $user?->organizationContextId();
+
+        if (! $orgId) {
+            return [null, null];
+        }
+
+        abort_unless(
+            app(PermissionService::class)->can($user, 'missions.assign', $orgId),
+            403
+        );
+
+        $mission = Mission::query()
+            ->where('provider_organization_id', $orgId)
+            ->find($missionId);
+
+        $membre = OrganizationMember::query()
+            ->where('organization_account_id', $orgId)
+            ->where('user_id', $userId)
+            ->where('status', 'active')
+            ->first();
+
+        return [$mission, $membre];
+    }
+
+    /**
+     * Qui est déjà pris sur le créneau de la mission qu'on s'apprête à confier.
+     *
+     * INDICATIF, JAMAIS BLOQUANT. Un répartiteur qui connaît son équipe passe outre pour de bonnes
+     * raisons — un échange entre collègues, une heure supplémentaire consentie, un client qui a
+     * décalé sans prévenir. L'outil l'informe ; il ne décide pas à sa place, sans quoi il faudrait
+     * lui donner un moyen de forcer, et ce moyen deviendrait le geste ordinaire.
+     *
+     * POURQUOI PAS `AvailabilityService::isAvailable()`, QUE LE CAHIER DES CHARGES DÉSIGNAIT.
+     * Mesuré : il rend `false` pour un employé sans créneaux déclarés, et coûte ~200 ms par
+     * personne. Or les créneaux sont un concept de prestataire INDÉPENDANT — celui qui publie ses
+     * disponibilités sur la place de marché. Un salarié de société ne s'en déclare aucun : c'est
+     * son patron qui le planifie. L'indicateur aurait donc affiché « indisponible » sur toute
+     * l'équipe, en permanence, et fait attendre l'écran plusieurs secondes pour cela.
+     *
+     * La question qu'un répartiteur pose réellement est « cette personne est-elle déjà prise à
+     * cette heure-là », et la réponse vit dans SES PROPRES missions. Une seule requête pour toute
+     * l'équipe, pas une par personne.
+     *
+     * @return array<int, bool> user_id => libre
+     */
+    public function getDisponibilitesProperty(): array
+    {
+        if (! $this->assigningId) {
+            return [];
+        }
+
+        $mission = $this->missions->firstWhere('id', $this->assigningId);
+        $debut = $mission?->planned_start_at;
+
+        if ($mission === null || $debut === null) {
+            return [];
+        }
+
+        // Sans fin prévue, deux heures : la question est « déjà pris à ce moment-là », pas
+        // « combien de temps exactement ».
+        $fin = $mission->planned_end_at ?? $debut->copy()->addHours(2);
+
+        $identifiants = $this->availableWorkers
+            ->pluck('user_id')
+            ->filter()
+            ->map(fn ($id) => (int) $id)
+            ->all();
+
+        if ($identifiants === []) {
+            return [];
+        }
+
+        /*
+         * Chevauchement classique : (début_autre < fin_demandée) ET (fin_autre > début_demandée).
+         * La mission courante est exclue — se réassigner à soi-même n'est pas un conflit.
+         */
+        $occupes = MissionAssignment::query()
+            ->whereIn('mission_assignments.user_id', $identifiants)
+            ->where('mission_assignments.assignment_status', 'assigned')
+            ->where('mission_assignments.mission_id', '!=', $mission->id)
+            ->join('missions', 'missions.id', '=', 'mission_assignments.mission_id')
+            ->whereNotNull('missions.planned_start_at')
+            ->where('missions.planned_start_at', '<', $fin)
+            ->where(fn ($q) => $q
+                ->where('missions.planned_end_at', '>', $debut)
+                // Une mission sans fin déclarée occupe la même fenêtre par défaut que ci-dessus.
+                ->orWhereNull('missions.planned_end_at')
+            )
+            ->distinct()
+            ->pluck('mission_assignments.user_id')
+            ->map(fn ($id) => (int) $id)
+            ->all();
+
+        $verdicts = [];
+
+        foreach ($identifiants as $id) {
+            $verdicts[$id] = ! in_array($id, $occupes, true);
+        }
+
+        return $verdicts;
+    }
+
     public function cancelAssign(): void
     {
         $this->assigningId = 0;
@@ -160,6 +370,7 @@ class DispatchCenter extends Component
             'missions' => $this->missions,
             'availableWorkers' => $this->availableWorkers,
             'partnerContracts' => $this->partnerContracts,
+            'disponibilites' => $this->disponibilites,
         ])->layout('layouts.provider-company');
     }
 }
