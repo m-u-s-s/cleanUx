@@ -1,10 +1,13 @@
 import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useAuth } from '@/auth';
 import { Divider, Icon, Screen } from '@/ui';
 import { colors, radius, spacing, typography } from '@/theme';
 import { useThemeColors } from '@/theme/useThemeColors';
 import type { ThemeTokens } from '@/theme/useThemeColors';
+import type { RootStackParamList } from '@/navigation/types';
 import { useSpacePreference } from '@/admin/useSpacePreference';
 
 /**
@@ -30,6 +33,7 @@ export function CompanyProfileScreen() {
   const theme = useThemeColors();
   const styles = stylesFor(theme);
 
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const { user, logout } = useAuth();
   const { choose, clear } = useSpacePreference();
 
@@ -68,6 +72,35 @@ export function CompanyProfileScreen() {
           onPress={() => void clear()}
         />
       ) : null}
+
+      <Divider />
+
+      {/*
+        LES RÉGLAGES DU GÉRANT.
+
+        Ces trois routes sont montées sur la pile société depuis sa création — le commentaire de
+        `RootNavigator` annonçait « l'issue vers l'espace terrain ET LES RÉGLAGES » — mais leur seul
+        appelant était `SettingsScreen`, qui vit dans l'espace terrain. Trois écrans montés,
+        joignables par personne d'ici. Un `navigate()` vers une route absente de la pile n'échoue
+        pas bruyamment : il ne fait rien, ce qui rend ce genre de lien mort très discret.
+      */}
+      <Row
+        icon="notifications-outline"
+        label="Préférences notifications"
+        onPress={() => navigation.navigate('NotificationPreferences')}
+      />
+      <Row
+        icon="language-outline"
+        label="Langue"
+        onPress={() => navigation.navigate('Language')}
+      />
+      <Row
+        icon="color-palette-outline"
+        label="Apparence"
+        onPress={() => navigation.navigate('Appearance')}
+      />
+
+      <Divider />
 
       <Row
         icon="log-out-outline"

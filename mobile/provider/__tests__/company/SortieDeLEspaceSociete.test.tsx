@@ -85,6 +85,31 @@ jest.mock('@/screens/company/CompanySitesScreen', () => {
   return { CompanySitesScreen: () => <View testID="ecran-sites"><Text>Sites desservis</Text></View> };
 });
 
+/*
+ * Les trois écrans de réglages. Ils sont montés sur la pile société DEPUIS SA CRÉATION, et rien
+ * n'y menait : leur seul appelant est `SettingsScreen`, qui appartient à l'autre espace. Ils sont
+ * bouchés ici parce qu'on mesure le CHEMIN, pas leur contenu.
+ */
+jest.mock('@/screens/NotificationPreferencesScreen', () => {
+  const { Text, View } = require('react-native');
+
+  return {
+    NotificationPreferencesScreen: () => (
+      <View testID="ecran-preferences-notifications"><Text>Préférences</Text></View>
+    ),
+  };
+});
+jest.mock('@/screens/LanguageScreen', () => {
+  const { Text, View } = require('react-native');
+
+  return { LanguageScreen: () => <View testID="ecran-langue"><Text>Choix de langue</Text></View> };
+});
+jest.mock('@/screens/AppearanceScreen', () => {
+  const { Text, View } = require('react-native');
+
+  return { AppearanceScreen: () => <View testID="ecran-apparence"><Text>Choix d’apparence</Text></View> };
+});
+
 import { RootNavigator } from '@/navigation/RootNavigator';
 import { resolveSpace } from '@/admin/space';
 
@@ -175,6 +200,29 @@ describe('Espace société prestataire — la sortie', () => {
     expect(screen.queryByText('Aller à l’espace terrain')).toBeNull();
     // La déconnexion, elle, reste due à tout le monde.
     expect(screen.getByText('Se déconnecter')).toBeTruthy();
+  });
+
+  /*
+   * LES RÉGLAGES DU GÉRANT.
+   *
+   * `NotificationPreferences`, `Language` et `Appearance` étaient montées sur la pile société dès
+   * sa création — le commentaire de `RootNavigator` annonçait même « l'issue vers l'espace terrain
+   * ET LES RÉGLAGES ». Leur seul appelant est `SettingsScreen`, qui vit dans l'espace terrain :
+   * trois routes montées, joignables par personne depuis l'espace société.
+   *
+   * On presse jusqu'à l'écran d'arrivée : un `navigate()` vers une route absente de cette pile
+   * n'échoue pas bruyamment, il ne fait RIEN — c'est ce qui rend ces liens morts si discrets.
+   */
+  it.each([
+    ['Préférences notifications', 'ecran-preferences-notifications'],
+    ['Langue', 'ecran-langue'],
+    ['Apparence', 'ecran-apparence'],
+  ])('ouvre « %s » depuis le profil société', async (libelle, testID) => {
+    await ouvrirLEspaceSocietePuisLeProfil();
+
+    fireEvent.press(screen.getByText(libelle));
+
+    expect(await screen.findByTestId(testID)).toBeTruthy();
   });
 
   it('EFFACER LE CHOIX NE LIBÈRE PAS un gérant non-administrateur', () => {
