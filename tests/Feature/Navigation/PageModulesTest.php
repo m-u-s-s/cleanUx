@@ -33,6 +33,20 @@ class PageModulesTest extends TestCase
         $reponse->assertDontSee('Feature flags');
     }
 
+    public function test_ne_propose_pas_l_espace_entreprise_a_un_client_particulier(): void
+    {
+        /*
+         * L'ancienne navbar conditionnait cette porte à `belongsToClientCompany()`. Une case sans
+         * condition la montre à tout le monde : un particulier cliquerait vers un 403, et une
+         * liste de modules qui ment sur ce qu'on peut ouvrir vaut moins que pas de liste.
+         */
+        $client = User::factory()->client()->create();
+
+        $reponse = $this->actingAs($client)->get(route('client.modules'));
+
+        $reponse->assertDontSee('Espace entreprise');
+    }
+
     public function test_un_client_ne_peut_pas_ouvrir_la_page_modules_admin(): void
     {
         $client = User::factory()->client()->create();

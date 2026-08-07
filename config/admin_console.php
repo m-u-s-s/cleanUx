@@ -53,7 +53,15 @@ return [
         ['key' => 'readiness', 'title' => 'Préparation plateforme', 'group' => 'pilotage', 'icon' => 'checkmark-done-outline', 'coverage' => 'report', 'routes' => ['admin/platform-readiness']],
         ['key' => 'nps', 'title' => 'NPS', 'group' => 'pilotage', 'icon' => 'happy-outline', 'coverage' => 'descriptor', 'routes' => ['admin/nps']],
         ['key' => 'feedbacks', 'title' => 'Retours clients', 'group' => 'pilotage', 'icon' => 'chatbox-ellipses-outline', 'coverage' => 'descriptor', 'routes' => ['admin/feedbacks', 'admin/feedbacks/export', 'admin/feedbacks/export-csv']],
-        ['key' => 'platform-modules', 'title' => 'Modules de la plateforme', 'group' => 'pilotage', 'icon' => 'layers-outline', 'coverage' => 'descriptor', 'routes' => ['admin/modules']],
+        /*
+         * `admin/modules-directory` est le RÉPERTOIRE des modules du web — la page qui range les
+         * 83 modules admin en cases par fonction. Il est rattaché ici plutôt que déclaré à part,
+         * pour la raison donnée en tête de fichier : ce n'est pas une destination d'annuaire, mais
+         * il doit être compté pour que l'inventaire soit complet. On n'ouvre pas l'annuaire depuis
+         * l'annuaire — côté mobile, c'est l'onglet `AdminDirectory` qui tient ce rôle, et il n'est
+         * pas un module.
+         */
+        ['key' => 'platform-modules', 'title' => 'Modules de la plateforme', 'group' => 'pilotage', 'icon' => 'layers-outline', 'coverage' => 'descriptor', 'routes' => ['admin/modules', 'admin/modules-directory']],
         ['key' => 'tools', 'title' => 'Outils et exports', 'group' => 'pilotage', 'icon' => 'construct-outline', 'coverage' => 'report', 'routes' => ['admin/outils', 'admin/export/csv', 'admin/export/pdf']],
 
         // ── Opérations ──────────────────────────────────────────────────────────────────────

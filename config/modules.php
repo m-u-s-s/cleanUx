@@ -47,7 +47,14 @@ return [
         ['key' => 'client:client.subscriptions', 'label' => 'Abonnements', 'icon' => '🔁', 'route' => 'client.subscriptions', 'context' => 'client', 'category' => 'finance', 'primary' => false],
         ['key' => 'client:client.subscriptions-v2', 'label' => 'Abonnements v2', 'icon' => '🔄', 'route' => 'client.subscriptions-v2', 'context' => 'client', 'category' => 'finance', 'primary' => false],
         ['key' => 'client:client.wallet', 'label' => 'Portefeuille', 'icon' => '👛', 'route' => 'client.wallet', 'context' => 'client', 'category' => 'finance', 'primary' => false],
-        ['key' => 'client:client-company.dashboard', 'label' => 'Espace entreprise', 'icon' => '🏢', 'route' => 'client-company.dashboard', 'context' => 'client', 'category' => 'comptes', 'primary' => false],
+        /*
+         * LA PORTE VERS L'ESPACE SOCIÉTÉ, ET SA CONDITION.
+         *
+         * `visible_si` appelle la méthode du modèle User : sans elle, la case s'afficherait à tout
+         * client, et un particulier cliquerait vers un 403 gardé par `org.type`. L'ancienne navbar
+         * portait cette condition en dur — le registre la porte désormais.
+         */
+        ['key' => 'client:client-company.dashboard', 'label' => 'Espace entreprise', 'icon' => '🏢', 'route' => 'client-company.dashboard', 'context' => 'client', 'category' => 'comptes', 'primary' => false, 'visible_si' => 'belongsToClientCompany'],
         ['key' => 'client:client.profile', 'label' => 'Profil client', 'icon' => '👤', 'route' => 'client.profile', 'context' => 'client', 'category' => 'comptes', 'primary' => false],
         ['key' => 'client:client.profile.edit', 'label' => 'Éditer mon profil', 'icon' => '✏️', 'route' => 'client.profile.edit', 'context' => 'client', 'category' => 'comptes', 'primary' => false],
         ['key' => 'client:client.ai.quote.photo', 'label' => 'Devis IA depuis photo', 'icon' => '🤖', 'route' => 'client.ai.quote.photo', 'context' => 'client', 'category' => 'prestataires', 'primary' => false],

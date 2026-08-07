@@ -148,6 +148,25 @@
                      sans style, hors du registre. Ils ont désormais leur case dans la page
                      Modules, catégorie Rendez-vous. --}}
 
+                {{--
+                    LA PASSERELLE VERS L'ESPACE SOCIÉTÉ RESTE DANS LA BARRE.
+
+                    Ce n'est pas un module parmi d'autres : c'est un CHANGEMENT D'ESPACE, et
+                    l'enfouir d'un cran a déjà coûté cher ici. Le layout société porte d'ailleurs
+                    le lien symétrique — « Revenir à mon espace personnel ».
+
+                    La condition est celle du registre, pas une copie : `belongsToClientCompany()`.
+                    Un particulier ne doit pas voir une porte qui répondra 403.
+                --}}
+                @php $porteSociete = \App\Support\Navigation\ModuleCatalogue::porteVersLEspaceSociete(); @endphp
+                @if($porteSociete)
+                <a href="{{ route($porteSociete['route']) }}"
+                    class="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 px-3 py-2 text-sm font-semibold text-slate-600 transition hover:bg-slate-50 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800">
+                    <span>{{ $porteSociete['icon'] }}</span>
+                    <span class="hidden lg:inline">{{ $porteSociete['label'] }}</span>
+                </a>
+                @endif
+
                 @if(Route::has('notifications.index'))
                 {{--
                     LA CLOCHE SEULE, ET SON APERÇU AU SURVOL.
