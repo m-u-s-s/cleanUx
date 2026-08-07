@@ -1,72 +1,38 @@
-import { useCallback, useEffect, useState } from 'react';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { creerPreferenceDEspace } from '@/storage/preferenceDEspace';
 import type { ChosenSpace } from './space';
 
+/**
+ * Clé PROPRE à l'application prestataire.
+ *
+ * L'application cliente retient la sienne sous `brio_client_space`. Partager une clé entre deux
+ * APK installés côte à côte ferait qu'un choix fait ici déciderait aussi de l'espace ouvert
+ * là-bas — deux réglages différents portant le même nom.
+ */
 const STORAGE_KEY = 'brio_provider_space';
 
 /**
- * L'espace choisi par un compte à double casquette, retenu d'un lancement à l'autre.
+ * L'espace choisi par un compte à plusieurs casquettes, retenu d'un lancement à l'autre.
  *
  * POURQUOI RETENIR. Redemander à chaque démarrage ferait payer un écran de choix à quelqu'un qui
- * fait le même geste tous les matins. Le choix reste réversible depuis le profil : le retenir
- * sans porte de sortie enfermerait dans l'autre sens.
+ * fait le même geste tous les matins. Le choix reste réversible depuis le profil : le retenir sans
+ * porte de sortie enfermerait dans l'autre sens.
  *
- * POURQUOI PAS LE STOCKAGE SÉCURISÉ. Ce n'est pas un secret, c'est une préférence d'affichage.
- * L'autorité reste le serveur : un jeton prestataire ne devient pas administrateur parce qu'une
- * clé locale dit « admin ».
- *
- * `isLoading` existe pour que l'aiguillage n'ouvre pas l'espace par défaut le temps d'une lecture
- * asynchrone — la double casquette verrait sinon un écran clignoter avant le sien.
+ * L'ÉTAT VIT DANS LE MODULE, PAS DANS LE HOOK, et c'est la correction du 2026-08-07 : écrit avec
+ * `useState`, ce hook donnait à `RootNavigator` et aux trois écrans de profil des états
+ * indépendants, si bien que « Changer d'espace » et « Aller à l'espace terrain » ne faisaient rien
+ * à l'écran. Voir `creerPreferenceDEspace`, qui porte le raisonnement complet, et
+ * `preferenceDEspacePartagee.test.tsx`, qui garde le comportement.
  */
-export function useSpacePreference() {
-  const [space, setSpace] = useState<ChosenSpace | undefined>(undefined);
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    let cancelled = false;
-
-    (async () => {
-      try {
-        const stored = await AsyncStorage.getItem(STORAGE_KEY);
-        // La liste est explicite plutôt qu'un transtypage : une valeur inconnue — clé écrite par
-        // une version future, stockage corrompu — doit reposer la question, pas ouvrir un espace
-        // qui n'existe pas dans cette version de l'application.
-        if (!cancelled && (stored === 'admin' || stored === 'provider' || stored === 'providerCompany')) {
-          setSpace(stored);
-        }
-      } catch {
-        // Un stockage illisible n'a pas à empêcher d'entrer : on repose la question, c'est tout.
-      } finally {
-        if (!cancelled) {
-          setIsLoading(false);
-        }
-      }
-    })();
-
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
-  const choose = useCallback(async (next: ChosenSpace) => {
-    setSpace(next);
-    try {
-      await AsyncStorage.setItem(STORAGE_KEY, next);
-    } catch {
-      // L'écriture peut échouer sans conséquence : le choix vaut pour cette session.
-    }
-  }, []);
-
-  const clear = useCallback(async () => {
-    setSpace(undefined);
-    try {
-      await AsyncStorage.removeItem(STORAGE_KEY);
-    } catch {
-      // Idem — l'état local a déjà repris la main.
-    }
-  }, []);
-
-  return { space, isLoading, choose, clear };
-}
+/*
+ * `superAdmin` figure dans la liste, sans quoi un choix écrit serait relu comme inconnu au
+ * lancement suivant et reposerait la question — la liste est explicite précisément pour qu'une
+ * valeur non prévue par cette version n'ouvre pas un espace qui n'existe pas.
+ */
+export const useSpacePreference = creerPreferenceDEspace<ChosenSpace>(STORAGE_KEY, [
+  'superAdmin',
+  'admin',
+  'provider',
+  'providerCompany',
+]);
 
 export const SPACE_STORAGE_KEY = STORAGE_KEY;
