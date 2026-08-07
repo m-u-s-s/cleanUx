@@ -51,6 +51,19 @@ export type RootStackParamList = {
   CompanyMembers: undefined;
   CompanyContracts: undefined;
   CompanyBilling: undefined;
+  /**
+   * L'espace société complet, en onglets — la maison d'un responsable de sites, pas un bouton
+   * enfoui dans le profil. Rendu HORS de la pile personnelle : voir `RootNavigator`.
+   */
+  ClientCompanySpace: undefined;
+  /**
+   * L'issue vers l'espace personnel depuis l'espace société.
+   *
+   * Le profil est un ONGLET de la pile personnelle ; il est aussi monté sur la pile société, où
+   * il n'y a pas d'onglets pour l'accueillir. Sans lui, choisir « entreprise » une fois
+   * enfermerait hors de ses propres réservations.
+   */
+  Profile: undefined;
 };
 
 
@@ -59,4 +72,18 @@ export type TabParamList = {
   Explore: undefined;
   Bookings: undefined;
   Profile: undefined;
+};
+
+/**
+ * Les onglets de l'ESPACE SOCIÉTÉ, distincts de ceux du compte personnel.
+ *
+ * Suffixe `Tab` pour ne pas entrer en collision avec les routes de même nom sur la pile racine :
+ * `CompanySites` y reste déclarée, atteignable depuis le profil par un membre de société qui
+ * travaille dans son espace perso.
+ */
+export type ClientCompanyTabParamList = {
+  CompanyOverviewTab: undefined;
+  CompanySitesTab: undefined;
+  CompanyBookingsTab: undefined;
+  CompanyBillingTab: undefined;
 };

@@ -8,12 +8,14 @@ import {spacing, typography } from '@/theme';
 import { useThemeColors } from '@/theme/useThemeColors';
 import type { ThemeTokens } from '@/theme/useThemeColors';
 import type { RootStackParamList } from '@/navigation/types';
+import { useClientSpacePreference } from '@/company/useClientSpacePreference';
 
 export function ProfileScreen() {
   const styles = stylesFor(useThemeColors());
 
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const { user, logout } = useAuth();
+  const { clear } = useClientSpacePreference();
 
   /*
    * LA PORTE VERS L'ESPACE SOCIÉTÉ CLIENTE.
@@ -40,9 +42,18 @@ export function ProfileScreen() {
         */}
         {appartientAUneSocieteCliente ? (
           <>
+            {/*
+              CHANGER D'ESPACE, ET NON « ALLER À ».
+
+              L'espace société est désormais un espace à part entière — sa propre pile, ses propres
+              onglets — choisi au démarrage et retenu. Ce bouton efface le choix pour reposer la
+              question ; sans lui, un membre de société enfermé d'un côté n'aurait aucun retour.
+              C'est le défaut que `clear()` a déjà corrigé deux fois dans ce dépôt : une fois pour
+              la console d'administration, une fois pour l'espace société prestataire.
+            */}
             <Button
-              label="Espace entreprise"
-              onPress={() => navigation.navigate('CompanyOverview')}
+              label="Changer d’espace"
+              onPress={() => void clear()}
               variant="primary"
               fullWidth
             />
