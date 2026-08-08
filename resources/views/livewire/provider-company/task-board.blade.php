@@ -1,10 +1,10 @@
-<div class="min-h-screen bg-slate-50 p-6">
+<div>
 
     {{-- ── Header ── --}}
     <div class="mb-6 flex flex-wrap items-center justify-between gap-3">
         <div>
             <h1 class="text-2xl font-black text-slate-900">📋 Tâches d'équipe</h1>
-            <p class="text-sm text-slate-500">Gérez et assignez les tâches de votre organisation</p>
+            <p class="text-sm text-slate-400">Gérez et assignez les tâches de votre organisation</p>
         </div>
 
         <div class="flex items-center gap-3">
@@ -71,7 +71,7 @@
                                             'urgent' => 'bg-red-100 text-red-700',
                                             'high'   => 'bg-orange-100 text-orange-700',
                                             'medium' => 'bg-blue-100 text-blue-700',
-                                            default  => 'bg-slate-100 text-slate-500',
+                                            default  => 'bg-slate-100 text-slate-400',
                                         };
                                     @endphp
                                     <span class="rounded-full px-2 py-0.5 text-[10px] font-bold uppercase {{ $prioBadge }}">
@@ -87,7 +87,7 @@
                             <p class="text-sm font-semibold text-slate-900 leading-snug">{{ $task->title }}</p>
 
                             @if ($task->description)
-                                <p class="mt-1 text-xs text-slate-500 line-clamp-2">{{ $task->description }}</p>
+                                <p class="mt-1 text-xs text-slate-400 line-clamp-2">{{ $task->description }}</p>
                             @endif
 
                             {{-- Assignés --}}
@@ -101,13 +101,13 @@
                                                  class="h-6 w-6 rounded-full border-2 border-white object-cover">
                                         @endforeach
                                         @if ($task->assignees->count() > 4)
-                                            <div class="flex h-6 w-6 items-center justify-center rounded-full border-2 border-white bg-slate-100 text-[9px] font-bold text-slate-500">
+                                            <div class="flex h-6 w-6 items-center justify-center rounded-full border-2 border-white bg-slate-100 text-[9px] font-bold text-slate-400">
                                                 +{{ $task->assignees->count() - 4 }}
                                             </div>
                                         @endif
                                     </div>
                                     @if ($task->due_date)
-                                        <span class="ml-auto text-[10px] text-slate-400">
+                                        <span class="ml-auto text-[10px] text-slate-500">
                                             📅 {{ $task->due_date->format('d/m') }}
                                         </span>
                                     @endif
@@ -118,7 +118,7 @@
                             <div class="mt-3 flex items-center gap-1 border-t border-slate-100 pt-2 opacity-0 transition group-hover:opacity-100">
                                 @if ($col['key'] !== 'todo')
                                     <button wire:click="updateStatus({{ $task->id }}, 'todo')"
-                                        class="rounded-lg px-2 py-1 text-[10px] font-medium text-slate-500 hover:bg-slate-100">
+                                        class="rounded-lg px-2 py-1 text-[10px] font-medium text-slate-400 hover:bg-slate-100">
                                         ← À faire
                                     </button>
                                 @endif
@@ -136,13 +136,13 @@
                                 @endif
                                 <button wire:click="deleteTask({{ $task->id }})"
                                     wire:confirm="Supprimer cette tâche ?"
-                                    class="ml-auto rounded-lg px-2 py-1 text-[10px] text-red-400 hover:bg-red-50">
+                                    class="ml-auto rounded-lg px-2 py-1 text-[10px] text-red-600 hover:bg-red-50">
                                     🗑️
                                 </button>
                             </div>
                         </div>
                     @empty
-                        <div class="flex flex-col items-center justify-center rounded-2xl border-2 border-dashed border-slate-200 p-8 text-center text-slate-400">
+                        <div class="flex flex-col items-center justify-center rounded-2xl border-2 border-dashed border-slate-200 p-8 text-center text-slate-500">
                             <p class="text-2xl mb-1">{{ $col['icon'] }}</p>
                             <p class="text-xs">Aucune tâche</p>
                         </div>

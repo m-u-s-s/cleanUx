@@ -17,17 +17,22 @@
     @livewireStyles
 </head>
 
-<body class="bg-slate-50 text-slate-900 antialiased">
+{{--
+    Meme fond que `layouts/app.blade.php` : le `bg-slate-50/30` est semi-transparent et laisse
+    passer le degrade defini dans `resources/css/base.css`. Un `bg-slate-50` opaque le masquait,
+    et donnait un gris plat que la console d'administration n'a pas.
+--}}
+<body class="font-sans antialiased text-slate-800 bg-slate-50/30 selection:bg-brand-100 selection:text-brand-900">
 
     {{-- ── Topbar ── --}}
     @unless($embedded ?? false)
-    <nav data-chrome="primary-nav" aria-label="Navigation principale" class="sticky top-0 z-40 flex h-14 items-center justify-between border-b border-slate-200 bg-white/95 px-4 shadow-sm backdrop-blur">
+    <nav data-chrome="primary-nav" aria-label="Navigation principale" class="sticky top-0 z-40 flex h-14 items-center justify-between border-b border-slate-100 bg-white/95 px-4 backdrop-blur">
         <div class="flex items-center gap-3">
             <a href="{{ route('client-company.dashboard') }}"
                 class="text-lg font-black text-slate-900">
                 {{-- La marque était coupée par une balise : « Clean<span>Ux</span> ». Le
                      renommage global ne pouvait pas la voir. --}}
-                Br<span class="text-purple-600">io</span>
+                Br<span class="text-sky-600">io</span>
             </a>
             <div class="hidden sm:flex items-center gap-1">
                 {{-- Les onze liens vivaient en dur ici. Ils viennent désormais de
@@ -37,7 +42,7 @@
                 <a href="{{ route($link['route']) }}"
                     class="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm transition
                            {{ request()->routeIs($link['route'])
-                               ? 'bg-purple-50 text-purple-700 font-semibold'
+                               ? 'bg-slate-100 text-slate-900 font-semibold'
                                : 'text-slate-500 hover:bg-slate-100 hover:text-slate-700' }}">
                     <span>{{ $link['icon'] }}</span>
                     <span>{{ $link['label'] }}</span>
@@ -50,7 +55,7 @@
                     <a href="{{ route('client-company.modules') }}"
                         class="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm transition
                                {{ request()->routeIs('client-company.modules')
-                                   ? 'bg-purple-50 text-purple-700 font-semibold'
+                                   ? 'bg-slate-100 text-slate-900 font-semibold'
                                    : 'text-slate-500 hover:bg-slate-100 hover:text-slate-700' }}">
                         <span>🧩</span>
                         <span>Modules</span>
@@ -60,7 +65,7 @@
         </div>
         <div class="flex items-center gap-3">
             <a href="{{ route('client-company.bookings.create') }}"
-                class="hidden sm:flex items-center gap-1.5 rounded-xl bg-purple-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-purple-700">
+                class="hidden sm:flex items-center gap-1.5 rounded-xl bg-sky-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-sky-700">
                 ⚡ Demande rapide
             </a>
 
@@ -81,16 +86,22 @@
                     class="h-7 w-7 rounded-full object-cover border border-slate-200">
                 <div class="hidden sm:block text-right">
                     <p class="text-xs font-semibold text-slate-800">{{ str(Auth::user()->name)->before(' ') }}</p>
-                    <p class="text-[10px] text-purple-600">{{ Auth::user()->membershipIn()?->roleLabel() }}</p>
+                    <p class="text-[10px] text-sky-600">{{ Auth::user()->membershipIn()?->roleLabel() }}</p>
                 </div>
             </a>
         </div>
     </nav>
     @endunless
 
-    {{-- ── Contenu ── --}}
-    <main>
-        {{ $slot }}
+    {{--
+        Le contenu est enveloppe dans `brio-page`, comme celui de `layouts/app.blade.php` : meme
+        largeur maximale, meme rythme vertical. Les ecrans portaient chacun leur propre
+        `min-h-screen … p-6`, d'ou des marges qui ne tombaient pas au meme endroit que sur l'admin.
+    --}}
+    <main class="px-3 py-5 sm:px-6 lg:px-8">
+        <div class="brio-page animate-fade-in">
+            {{ $slot }}
+        </div>
     </main>
 
     @livewireScripts

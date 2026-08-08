@@ -1,4 +1,4 @@
-<div class="min-h-screen bg-slate-50 p-6">
+<div>
 
     {{-- Header --}}
     <div class="mb-6 flex flex-wrap items-center justify-between gap-4">
@@ -7,7 +7,7 @@
             <p class="text-sm text-slate-500">Gérez les accès et rôles de votre équipe</p>
         </div>
         <button wire:click="$set('showInvite', true)"
-            class="flex items-center gap-2 rounded-xl bg-purple-600 px-4 py-2 text-sm font-semibold text-white hover:bg-purple-700">
+            class="flex items-center gap-2 rounded-xl bg-sky-600 px-4 py-2 text-sm font-semibold text-white hover:bg-sky-700">
             + Inviter un membre
         </button>
     </div>
@@ -39,7 +39,7 @@
                         <td class="px-5 py-4 hidden sm:table-cell">
                             @if ($member->user_id !== Auth::id() && $member->role !== \App\Enums\OrganizationRole::OWNER)
                                 <select wire:change="changeRole({{ $member->id }}, $event.target.value)"
-                                    class="rounded-lg border border-slate-200 bg-white px-2 py-1 text-xs text-slate-700 outline-none focus:border-purple-500">
+                                    class="rounded-lg border border-slate-200 bg-white px-2 py-1 text-xs text-slate-700 outline-none focus:border-sky-500">
                                     @foreach ($availableRoles as $role)
                                         <option value="{{ $role->value }}"
                                             {{ $member->role->value === $role->value ? 'selected' : '' }}>
@@ -48,7 +48,7 @@
                                     @endforeach
                                 </select>
                             @else
-                                <span class="rounded-full bg-purple-100 px-2.5 py-1 text-xs font-semibold text-purple-700">
+                                <span class="rounded-full bg-sky-100 px-2.5 py-1 text-xs font-semibold text-sky-700">
                                     {{ $member->role->label() }}
                                 </span>
                             @endif
@@ -105,7 +105,7 @@
                 <div>
                     <label class="block text-sm font-bold text-slate-700 mb-1">Email *</label>
                     <input wire:model="inviteEmail" type="email" placeholder="jean@entreprise.com"
-                        class="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-100">
+                        class="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-100">
                     @error('inviteEmail') <p class="mt-1 text-xs text-red-500">{{ $message }}</p> @enderror
                 </div>
                 <div>
@@ -114,7 +114,7 @@
                         @foreach ($availableRoles as $role)
                             <label class="cursor-pointer rounded-xl border px-3 py-2 text-sm transition
                                 {{ $inviteRole === $role->value
-                                    ? 'border-purple-500 bg-purple-50 text-purple-700 font-semibold'
+                                    ? 'border-sky-500 bg-sky-50 text-sky-700 font-semibold'
                                     : 'border-slate-200 hover:border-slate-300 text-slate-600' }}">
                                 <input type="radio" wire:model="inviteRole" value="{{ $role->value }}" class="sr-only">
                                 {{ $role->label() }}
@@ -129,7 +129,7 @@
                     Annuler
                 </button>
                 <button wire:click="invite"
-                    class="flex-1 rounded-xl bg-purple-600 px-4 py-2 text-sm font-bold text-white hover:bg-purple-700">
+                    class="flex-1 rounded-xl bg-sky-600 px-4 py-2 text-sm font-bold text-white hover:bg-sky-700">
                     Inviter
                 </button>
             </div>

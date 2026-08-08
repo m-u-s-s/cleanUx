@@ -1,20 +1,26 @@
-<div class="min-h-screen bg-slate-900 text-slate-100 p-6">
+<div>
 
-    {{-- ── Header ── --}}
-    <div class="mb-6 flex flex-wrap items-center justify-between gap-3">
+    {{--
+        L'EN-TÊTE REPREND CELUI DE LA CONSOLE D'ADMINISTRATION.
+
+        `ui-page-eyebrow` / `ui-page-title` / `ui-page-subtitle` sont les classes qu'emploie
+        `livewire/admin/dashboard/cockpit-hero.blade.php`. Les recopier en Tailwind brut — un
+        `text-2xl font-black` ici, un autre là — était précisément ce qui faisait dériver les deux
+        espaces : une taille de titre changée d'un côté ne suivait pas de l'autre.
+    --}}
+    <div class="ui-page-header">
         <div>
-            <p class="text-xs font-bold uppercase tracking-widest text-slate-400">Tableau de bord</p>
-            <h1 class="text-2xl font-black text-white">
-                {{ Auth::user()->currentOrganization?->name }}
-            </h1>
+            <p class="ui-page-eyebrow">Tableau de bord</p>
+            <h1 class="ui-page-title">{{ Auth::user()->currentOrganization?->name }}</h1>
+            <p class="ui-page-subtitle">Missions du jour, équipe et alertes de votre société.</p>
         </div>
         <div class="flex items-center gap-2">
             @foreach (['today' => "Aujourd'hui", 'week' => 'Semaine', 'month' => 'Mois'] as $val => $label)
                 <button wire:click="$set('period', '{{ $val }}')"
                     class="rounded-xl px-3 py-1.5 text-xs font-semibold transition
                         {{ $period === $val
-                            ? 'bg-blue-600 text-white'
-                            : 'bg-slate-800 text-slate-400 hover:bg-slate-700 hover:text-white' }}">
+                            ? 'bg-sky-600 text-white'
+                            : 'border border-slate-200 bg-white text-slate-600 hover:bg-slate-50' }}">
                     {{ $label }}
                 </button>
             @endforeach
@@ -27,8 +33,8 @@
             @foreach ($alerts as $alert)
                 <div class="flex items-center gap-3 rounded-xl px-4 py-3
                     {{ $alert['level'] === 'red'
-                        ? 'bg-red-900/40 border border-red-500/40 text-red-300'
-                        : 'bg-amber-900/40 border border-amber-500/40 text-amber-300' }}">
+                        ? 'bg-red-50 border border-red-200 text-red-700'
+                        : 'bg-amber-50 border border-amber-200 text-amber-700' }}">
                     <span class="text-lg">{{ $alert['icon'] }}</span>
                     <span class="text-sm font-medium">{{ $alert['message'] }}</span>
                     {{-- Route nulle : l'alerte concerne l'appelant, la page qui la traite non. --}}
@@ -63,15 +69,15 @@
         @endphp
 
         @foreach ($kpiCards as $card)
-            <div class="rounded-2xl border border-slate-700 bg-slate-800 p-4">
+            <div class="rounded-2xl border border-slate-200 bg-white p-4">
                 <div class="flex items-center justify-between mb-2">
                     <span class="text-xl">{{ $card['icon'] }}</span>
                     @if ($card['value'] > 0 && $card['label'] === 'En retard')
                         <span class="h-2 w-2 rounded-full bg-red-500 animate-pulse"></span>
                     @endif
                 </div>
-                <p class="text-2xl font-black text-white">{{ $card['value'] }}</p>
-                <p class="text-xs text-slate-400 mt-0.5">{{ $card['label'] }}</p>
+                <p class="text-2xl font-black text-slate-900">{{ $card['value'] }}</p>
+                <p class="text-xs text-slate-500 mt-0.5">{{ $card['label'] }}</p>
             </div>
         @endforeach
     </div>
@@ -82,11 +88,11 @@
         {{-- Missions du jour --}}
         <div class="lg:col-span-2">
             <div class="mb-3 flex items-center justify-between">
-                <h2 class="text-sm font-bold uppercase tracking-wide text-slate-400">
+                <h2 class="text-sm font-bold uppercase tracking-wide text-slate-500">
                     📋 Missions du jour ({{ $missionsDay->count() }})
                 </h2>
                 <a href="{{ route('provider-company.dispatch') }}"
-                   class="text-xs text-blue-400 hover:text-blue-300">
+                   class="text-xs text-blue-600 hover:text-blue-800">
                     Voir tout →
                 </a>
             </div>
@@ -95,11 +101,11 @@
                 @forelse ($missionsDay as $mission)
                     @php
                         $statusColors = [
-                            'scheduled'   => 'bg-slate-700 text-slate-300',
-                            'dispatched'  => 'bg-blue-900/60 text-blue-300',
-                            'in_progress' => 'bg-green-900/60 text-green-300',
-                            'completed'   => 'bg-emerald-900/40 text-emerald-400',
-                            'cancelled'   => 'bg-red-900/40 text-red-400',
+                            'scheduled'   => 'bg-slate-100 text-slate-600',
+                            'dispatched'  => 'bg-blue-50 text-blue-700',
+                            'in_progress' => 'bg-emerald-50 text-emerald-700',
+                            'completed'   => 'bg-emerald-50 text-emerald-600',
+                            'cancelled'   => 'bg-red-50 text-red-600',
                         ];
                         $statusLabels = [
                             'scheduled'   => 'Planifiée',
@@ -108,20 +114,20 @@
                             'completed'   => '✅ Terminée',
                             'cancelled'   => '❌ Annulée',
                         ];
-                        $color = $statusColors[$mission->status] ?? 'bg-slate-700 text-slate-300';
+                        $color = $statusColors[$mission->status] ?? 'bg-slate-100 text-slate-600';
                         $label = $statusLabels[$mission->status] ?? $mission->status;
                     @endphp
-                    <div class="flex items-center gap-3 rounded-xl border border-slate-700 bg-slate-800/60 px-4 py-3">
+                    <div class="flex items-center gap-3 rounded-xl border border-slate-200 bg-white px-4 py-3">
                         <div class="text-center min-w-[44px]">
-                            <p class="text-sm font-black text-white">
+                            <p class="text-sm font-black text-slate-900">
                                 {{ \Carbon\Carbon::parse($mission->scheduled_at)->format('H:i') }}
                             </p>
                         </div>
                         <div class="min-w-0 flex-1">
-                            <p class="truncate text-sm font-semibold text-white">
+                            <p class="truncate text-sm font-semibold text-slate-900">
                                 {{ $mission->reference ?? 'Mission #' . $mission->id }}
                             </p>
-                            <p class="text-xs text-slate-400 truncate">
+                            <p class="text-xs text-slate-500 truncate">
                                 {{ $mission->booking?->organizationSite?->fullAddress() ?? $mission->address ?? '—' }}
                             </p>
                         </div>
@@ -129,9 +135,9 @@
                             <img src="{{ $mission->leadProvider->profile_photo_url }}"
                                  alt="{{ $mission->leadProvider->name }}"
                                  title="{{ $mission->leadProvider->name }}"
-                                 class="h-7 w-7 flex-shrink-0 rounded-full border border-slate-600 object-cover">
+                                 class="h-7 w-7 flex-shrink-0 rounded-full border border-slate-300 object-cover">
                         @else
-                            <div class="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full border border-dashed border-slate-600 text-xs text-slate-500"
+                            <div class="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full border border-dashed border-slate-300 text-xs text-slate-400"
                                  title="Non assigné">?</div>
                         @endif
                         <span class="flex-shrink-0 rounded-full px-2 py-0.5 text-[10px] font-bold {{ $color }}">
@@ -139,7 +145,7 @@
                         </span>
                     </div>
                 @empty
-                    <div class="flex flex-col items-center justify-center rounded-xl border border-dashed border-slate-700 py-10 text-center text-slate-500">
+                    <div class="flex flex-col items-center justify-center rounded-xl border border-dashed border-slate-200 py-10 text-center text-slate-400">
                         <p class="text-3xl mb-2">📋</p>
                         <p class="text-sm">Aucune mission planifiée aujourd'hui</p>
                     </div>
@@ -156,11 +162,11 @@
             --}}
             @if ($peutVoirLEquipe)
             <div class="mb-3 flex items-center justify-between">
-                <h2 class="text-sm font-bold uppercase tracking-wide text-slate-400">
+                <h2 class="text-sm font-bold uppercase tracking-wide text-slate-500">
                     👥 Équipe ({{ $teamStatus->count() }})
                 </h2>
                 <a href="{{ route('provider-company.team') }}"
-                   class="text-xs text-blue-400 hover:text-blue-300">
+                   class="text-xs text-blue-600 hover:text-blue-800">
                     Gérer →
                 </a>
             </div>
@@ -169,23 +175,23 @@
                 @foreach ($teamStatus as $member)
                     @php
                         $dot = match ($member['status']) {
-                            'in_mission' => 'bg-green-500',
+                            'in_mission' => 'bg-emerald-500',
                             'available'  => 'bg-emerald-400',
                             default      => 'bg-slate-600',
                         };
                     @endphp
-                    <div class="flex items-center gap-3 rounded-xl border border-slate-700 bg-slate-800/60 px-3 py-2.5">
+                    <div class="flex items-center gap-3 rounded-xl border border-slate-200 bg-white px-3 py-2.5">
                         <div class="relative flex-shrink-0">
                             <img src="{{ $member['avatar'] }}"
                                  alt="{{ $member['name'] }}"
                                  class="h-8 w-8 rounded-full object-cover">
-                            <span class="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border-2 border-slate-800 {{ $dot }}"></span>
+                            <span class="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border-2 border-slate-100 {{ $dot }}"></span>
                         </div>
                         <div class="min-w-0 flex-1">
-                            <p class="truncate text-sm font-semibold text-white">{{ $member['name'] }}</p>
-                            <p class="text-[10px] text-slate-400">{{ $member['role'] }}</p>
+                            <p class="truncate text-sm font-semibold text-slate-900">{{ $member['name'] }}</p>
+                            <p class="text-[10px] text-slate-500">{{ $member['role'] }}</p>
                         </div>
-                        <span class="text-[10px] text-slate-400">
+                        <span class="text-[10px] text-slate-500">
                             {{ $member['status'] === 'in_mission' ? '🔄' : ($member['status'] === 'available' ? '✓' : '–') }}
                         </span>
                     </div>
@@ -196,14 +202,14 @@
             {{-- Liens rapides --}}
             <div class="mt-4 grid grid-cols-2 gap-2">
                 <a href="{{ route('provider-company.channels') }}"
-                   class="flex flex-col items-center gap-1 rounded-xl border border-slate-700 bg-slate-800/60 p-3 text-center transition hover:border-blue-500/50 hover:bg-slate-800">
+                   class="flex flex-col items-center gap-1 rounded-xl border border-slate-200 bg-white p-3 text-center transition hover:border-blue-500/50 hover:bg-slate-50">
                     <span class="text-xl">💬</span>
-                    <span class="text-[10px] font-semibold text-slate-300">Canaux</span>
+                    <span class="text-[10px] font-semibold text-slate-600">Canaux</span>
                 </a>
                 <a href="{{ route('provider-company.tasks') }}"
-                   class="flex flex-col items-center gap-1 rounded-xl border border-slate-700 bg-slate-800/60 p-3 text-center transition hover:border-blue-500/50 hover:bg-slate-800">
+                   class="flex flex-col items-center gap-1 rounded-xl border border-slate-200 bg-white p-3 text-center transition hover:border-blue-500/50 hover:bg-slate-50">
                     <span class="text-xl">📌</span>
-                    <span class="text-[10px] font-semibold text-slate-300">Tâches</span>
+                    <span class="text-[10px] font-semibold text-slate-600">Tâches</span>
                 </a>
                 {{--
                     Canaux et Tâches restent ouverts à tous — ce sont les deux écrans que le lot 1
@@ -213,16 +219,16 @@
                 --}}
                 @if ($peutRepartir)
                 <a href="{{ route('provider-company.dispatch') }}"
-                   class="flex flex-col items-center gap-1 rounded-xl border border-slate-700 bg-slate-800/60 p-3 text-center transition hover:border-blue-500/50 hover:bg-slate-800">
+                   class="flex flex-col items-center gap-1 rounded-xl border border-slate-200 bg-white p-3 text-center transition hover:border-blue-500/50 hover:bg-slate-50">
                     <span class="text-xl">🗺️</span>
-                    <span class="text-[10px] font-semibold text-slate-300">Dispatch</span>
+                    <span class="text-[10px] font-semibold text-slate-600">Dispatch</span>
                 </a>
                 @endif
                 @if ($peutVoirLEquipe)
                 <a href="{{ route('provider-company.team') }}"
-                   class="flex flex-col items-center gap-1 rounded-xl border border-slate-700 bg-slate-800/60 p-3 text-center transition hover:border-blue-500/50 hover:bg-slate-800">
+                   class="flex flex-col items-center gap-1 rounded-xl border border-slate-200 bg-white p-3 text-center transition hover:border-blue-500/50 hover:bg-slate-50">
                     <span class="text-xl">👥</span>
-                    <span class="text-[10px] font-semibold text-slate-300">Équipe</span>
+                    <span class="text-[10px] font-semibold text-slate-600">Équipe</span>
                 </a>
                 @endif
             </div>

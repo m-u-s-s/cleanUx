@@ -1,4 +1,4 @@
-<div class="min-h-screen bg-slate-50 p-6">
+<div>
 
     <div class="mb-6 flex flex-wrap items-center justify-between gap-4">
         <div>
@@ -30,7 +30,7 @@
     <div class="mb-4 flex flex-wrap gap-3">
         <input wire:model.live.debounce.300ms="search" type="text"
             placeholder="Rechercher une facture…"
-            class="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm shadow-sm w-48 outline-none focus:border-purple-500">
+            class="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm shadow-sm w-48 outline-none focus:border-sky-500">
 
         <select wire:model.live="filterStatus"
             class="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm shadow-sm">
@@ -97,7 +97,7 @@
                         </td>
                         <td class="px-5 py-4 text-center">
                             <button wire:click="downloadInvoice({{ $invoice->id }})"
-                                class="rounded-lg px-3 py-1.5 text-xs font-medium text-purple-600 border border-purple-200 hover:bg-purple-50 transition">
+                                class="rounded-lg px-3 py-1.5 text-xs font-medium text-sky-600 border border-sky-200 hover:bg-sky-50 transition">
                                 📥 PDF
                             </button>
                         </td>

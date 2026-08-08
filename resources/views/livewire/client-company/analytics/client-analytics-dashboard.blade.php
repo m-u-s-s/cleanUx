@@ -114,11 +114,11 @@
                 </div>
             @endif
             @if ($alerts['open_incidents'] > 0)
-                <div class="flex items-center gap-2 rounded-lg border border-purple-200 bg-purple-50 p-3">
+                <div class="flex items-center gap-2 rounded-lg border border-sky-200 bg-sky-50 p-3">
                     <span class="text-xl">🚨</span>
                     <div>
-                        <p class="text-xs font-semibold text-purple-900">{{ $alerts['open_incidents'] }} incidents ouverts</p>
-                        <p class="text-[10px] text-purple-700">À traiter par notre équipe</p>
+                        <p class="text-xs font-semibold text-sky-900">{{ $alerts['open_incidents'] }} incidents ouverts</p>
+                        <p class="text-[10px] text-sky-700">À traiter par notre équipe</p>
                     </div>
                 </div>
             @endif

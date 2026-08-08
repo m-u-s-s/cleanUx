@@ -1,4 +1,4 @@
-<div class="min-h-screen bg-slate-50 p-6">
+<div>
 
     {{-- Header --}}
     <div class="mb-6 flex flex-wrap items-center justify-between gap-4">
@@ -7,7 +7,7 @@
             <p class="text-sm text-slate-500">Gerez toutes vos demandes de service</p>
         </div>
         <button wire:click="$set('view', 'create')"
-            class="flex items-center gap-2 rounded-xl bg-purple-600 px-4 py-2 text-sm font-semibold text-white hover:bg-purple-700">
+            class="flex items-center gap-2 rounded-xl bg-sky-600 px-4 py-2 text-sm font-semibold text-white hover:bg-sky-700">
             + Nouvelle demande
         </button>
     </div>
@@ -48,7 +48,7 @@
                 <p class="text-lg font-bold text-slate-700">Aucune reservation</p>
                 <p class="mt-1 text-sm text-slate-400">Creez votre premiere demande de service</p>
                 <button wire:click="$set('view', 'create')"
-                    class="mt-4 rounded-xl bg-purple-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-purple-700">
+                    class="mt-4 rounded-xl bg-sky-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-sky-700">
                     Nouvelle demande
                 </button>
             </div>
@@ -98,7 +98,7 @@
                         @endif
                         @if ($booking->status === 'pending_approval' && $needsApproval)
                             <button wire:click="approveBooking({{ $booking->id }})"
-                                class="inline-flex min-h-[44px] items-center rounded-lg bg-amber-600 px-3 py-1 text-[10px] font-bold text-white hover:bg-amber-700">
+                                class="inline-flex min-h-[44px] items-center rounded-lg bg-sky-600 px-3 py-1 text-[10px] font-bold text-white hover:bg-sky-700">
                                 Approuver
                             </button>
                         @endif
@@ -120,15 +120,15 @@
             @foreach ([1 => 'Local', 2 => 'Metier', 3 => 'Planification', 4 => 'Confirmation'] as $n => $label)
                 <div class="flex items-center gap-2">
                     <div class="flex h-7 w-7 items-center justify-center rounded-full text-xs font-bold
-                        {{ $step >= $n ? 'bg-purple-600 text-white' : 'bg-slate-200 text-slate-500' }}">
+                        {{ $step >= $n ? 'bg-sky-600 text-white' : 'bg-slate-200 text-slate-500' }}">
                         {{ $n }}
                     </div>
-                    <span class="hidden text-xs font-medium sm:block {{ $step >= $n ? 'text-purple-700' : 'text-slate-400' }}">
+                    <span class="hidden text-xs font-medium sm:block {{ $step >= $n ? 'text-sky-700' : 'text-slate-400' }}">
                         {{ $label }}
                     </span>
                 </div>
                 @if ($n < 4)
-                    <div class="h-px flex-1 {{ $step > $n ? 'bg-purple-300' : 'bg-slate-200' }}"></div>
+                    <div class="h-px flex-1 {{ $step > $n ? 'bg-sky-300' : 'bg-slate-200' }}"></div>
                 @endif
             @endforeach
         </div>
@@ -163,7 +163,7 @@
                                 <button wire:click="selectSite({{ $site->id }})"
                                     class="cursor-pointer rounded-xl border p-3 text-left transition
                                         {{ $selectedSiteId == $site->id
-                                            ? 'border-purple-500 bg-purple-50 ring-2 ring-purple-100'
+                                            ? 'border-sky-500 bg-sky-50 ring-2 ring-sky-100'
                                             : 'border-slate-200 hover:border-slate-300' }}">
                                     <p class="text-sm font-semibold text-slate-900">{{ $site->name }}</p>
                                     <p class="text-xs text-slate-500">{{ $site->city }}
@@ -194,8 +194,8 @@
                                 <button wire:click="selectTrade({{ $trade->id }})"
                                     class="flex flex-col items-center gap-2 rounded-xl border p-4 text-center transition cursor-pointer
                                         {{ $selectedTradeId == $trade->id
-                                            ? 'border-purple-500 bg-purple-50 ring-2 ring-purple-100'
-                                            : 'border-slate-200 bg-white hover:border-purple-300 hover:bg-purple-50/40' }}">
+                                            ? 'border-sky-500 bg-sky-50 ring-2 ring-sky-100'
+                                            : 'border-slate-200 bg-white hover:border-sky-300 hover:bg-sky-50/40' }}">
                                     @if ($trade->icon)
                                         <span class="text-2xl">{{ $trade->icon }}</span>
                                     @endif
@@ -217,20 +217,20 @@
                             <label class="block text-sm font-bold text-slate-700 mb-1">Date *</label>
                             <input wire:model.live="scheduledDate" type="date"
                                 min="{{ now()->format('Y-m-d') }}"
-                                class="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-100">
+                                class="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-100">
                             @error('scheduledDate') <p class="mt-1 text-xs text-red-500">{{ $message }}</p> @enderror
                         </div>
 
                         <div>
                             <label class="block text-sm font-bold text-slate-700 mb-1">Heure *</label>
                             <input wire:model.live="scheduledTime" type="time"
-                                class="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-100">
+                                class="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-100">
                         </div>
 
                         <div>
                             <label class="block text-sm font-bold text-slate-700 mb-1">Duree estimee</label>
                             <select wire:model="estimatedHours"
-                                class="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-purple-500">
+                                class="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-sky-500">
                                 <option value="">Non precisee</option>
                                 <option value="1">1 heure</option>
                                 <option value="2">2 heures</option>
@@ -243,7 +243,7 @@
                         <div>
                             <label class="block text-xs font-bold text-slate-600 mb-1">N° bon de commande</label>
                             <input wire:model="purchaseOrderRef" type="text" placeholder="PO-2026-001"
-                                class="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-purple-500">
+                                class="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-sky-500">
                         </div>
                     </div>
 
@@ -260,7 +260,7 @@
                         <label class="block text-sm font-bold text-slate-700 mb-1">Notes / Instructions</label>
                         <textarea wire:model="notes" rows="3"
                             placeholder="Instructions d'acces, code d'entree, contact sur place..."
-                            class="w-full resize-none rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-100"></textarea>
+                            class="w-full resize-none rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-100"></textarea>
                     </div>
 
                     {{-- Prestataire preferé --}}
@@ -268,7 +268,7 @@
                         <div>
                             <label class="block text-sm font-bold text-slate-700 mb-1">Prestataire prefere (optionnel)</label>
                             <select wire:model="selectedProviderId"
-                                class="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-purple-500">
+                                class="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-sky-500">
                                 <option value="">Attribution automatique</option>
                                 @foreach ($providers as $provider)
                                     <option value="{{ $provider->user_id }}">{{ $provider->user->name }}</option>
@@ -334,14 +334,14 @@
 
                 @if ($step < 4)
                     <button wire:click="nextStep"
-                        class="flex-1 rounded-xl bg-purple-600 px-4 py-2.5 text-sm font-bold text-white hover:bg-purple-700 disabled:opacity-50"
+                        class="flex-1 rounded-xl bg-sky-600 px-4 py-2.5 text-sm font-bold text-white hover:bg-sky-700 disabled:opacity-50"
                         @if (($step === 1 && ! $selectedSiteId) || ($step === 2 && ! $selectedTradeId)) disabled @endif>
                         Suivant
                     </button>
                 @else
                     <button wire:click="submitBooking"
                         wire:loading.attr="disabled"
-                        class="flex-1 rounded-xl bg-purple-600 px-4 py-2.5 text-sm font-bold text-white hover:bg-purple-700 disabled:opacity-50">
+                        class="flex-1 rounded-xl bg-sky-600 px-4 py-2.5 text-sm font-bold text-white hover:bg-sky-700 disabled:opacity-50">
                         <span wire:loading.remove wire:target="submitBooking">Envoyer la demande</span>
                         <span wire:loading wire:target="submitBooking">Envoi en cours...</span>
                     </button>

@@ -1,19 +1,23 @@
-<div class="min-h-screen bg-slate-50 p-6">
+<div>
 
-    {{-- ── Header ── --}}
-    <div class="mb-6 flex flex-wrap items-center justify-between gap-3">
+    {{--
+        MÊME EN-TÊTE QUE LA CONSOLE D'ADMINISTRATION — voir
+        `livewire/admin/dashboard/cockpit-hero.blade.php`. Les classes `ui-page-*` portent la
+        taille, la graisse et l'espacement en UN endroit ; les recopier en Tailwind brut faisait
+        dériver chaque espace de son côté.
+    --}}
+    <div class="ui-page-header">
         <div>
-            <p class="text-xs font-bold uppercase tracking-widest text-slate-400">Tableau de bord</p>
-            <h1 class="text-2xl font-black text-slate-900">
-                🏢 {{ Auth::user()->currentOrganization?->name }}
-            </h1>
+            <p class="ui-page-eyebrow">Tableau de bord</p>
+            <h1 class="ui-page-title">🏢 {{ Auth::user()->currentOrganization?->name }}</h1>
+            <p class="ui-page-subtitle">Réservations, locaux, membres et dépenses de votre organisation.</p>
         </div>
         <div class="flex items-center gap-2">
             @foreach (['month' => 'Ce mois', 'week' => 'Cette semaine', 'year' => 'Cette année'] as $val => $label)
                 <button wire:click="$set('period', '{{ $val }}')"
                     class="rounded-xl px-3 py-1.5 text-xs font-semibold transition border
                         {{ $period === $val
-                            ? 'bg-purple-600 text-white border-purple-600'
+                            ? 'bg-sky-600 text-white border-sky-600'
                             : 'border-slate-200 bg-white text-slate-500 hover:border-slate-300' }}">
                     {{ $label }}
                 </button>
@@ -36,11 +40,11 @@
                         <span class="text-xs text-amber-700">
                             📍 {{ $approval->organizationSite?->name ?? 'Site inconnu' }}
                         </span>
-                        <span class="text-[10px] text-amber-500">
+                        <span class="text-[10px] text-amber-700">
                             par {{ $approval->clientUser?->name }}
                         </span>
                         <a href="{{ route('client-company.bookings.index') }}"
-                           class="rounded-lg bg-amber-600 px-2 py-0.5 text-[10px] font-bold text-white hover:bg-amber-700">
+                           class="rounded-lg bg-sky-600 px-2 py-0.5 text-[10px] font-bold text-white hover:bg-sky-700">
                             Voir →
                         </a>
                     </div>
@@ -53,7 +57,7 @@
     <div class="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
         @php
             $cards = [
-                ['value' => $kpis['sites_count'],      'label' => 'Locaux',            'icon' => '🏠', 'route' => 'client-company.sites',    'color' => 'purple'],
+                ['value' => $kpis['sites_count'],      'label' => 'Locaux',            'icon' => '🏠', 'route' => 'client-company.sites',    'color' => 'sky'],
                 ['value' => $kpis['bookings_active'],   'label' => 'Missions actives',  'icon' => '🔄', 'route' => 'client-company.bookings.index', 'color' => 'blue'],
                 ['value' => $kpis['bookings_period'],   'label' => 'Réservations mois', 'icon' => '📋', 'route' => 'client-company.bookings.index', 'color' => 'indigo'],
                 ['value' => $kpis['pending_approval'],  'label' => 'À approuver',       'icon' => '⏳', 'route' => 'client-company.bookings.index', 'color' => 'amber'],
@@ -64,10 +68,10 @@
 
         @foreach ($cards as $card)
             <a href="{{ route($card['route']) }}"
-               class="group rounded-2xl border border-slate-200 bg-white p-4 shadow-sm transition hover:shadow-md hover:border-purple-200">
+               class="group rounded-2xl border border-slate-200 bg-white p-4 shadow-sm transition hover:shadow-md hover:border-sky-200">
                 <p class="text-lg mb-1">{{ $card['icon'] }}</p>
                 <p class="text-xl font-black text-slate-900">{{ $card['value'] }}</p>
-                <p class="text-xs text-slate-500 mt-0.5 group-hover:text-purple-600 transition">{{ $card['label'] }}</p>
+                <p class="text-xs text-slate-500 mt-0.5 group-hover:text-sky-600 transition">{{ $card['label'] }}</p>
             </a>
         @endforeach
     </div>
@@ -81,11 +85,11 @@
                 <h2 class="text-sm font-bold uppercase tracking-wide text-slate-500">📋 Réservations récentes</h2>
                 <div class="flex items-center gap-2">
                     <a href="{{ route('client-company.bookings.create') }}"
-                       class="rounded-xl bg-purple-600 px-3 py-1 text-xs font-bold text-white hover:bg-purple-700">
+                       class="rounded-xl bg-sky-600 px-3 py-1 text-xs font-bold text-white hover:bg-sky-700">
                         + Nouvelle réservation
                     </a>
                     <a href="{{ route('client-company.bookings.index') }}"
-                       class="text-xs text-purple-600 hover:text-purple-700">
+                       class="text-xs text-sky-600 hover:text-sky-700">
                         Tout voir →
                     </a>
                 </div>
@@ -133,7 +137,7 @@
                         <p class="text-3xl mb-2">📋</p>
                         <p class="text-sm text-slate-400">Aucune réservation pour le moment</p>
                         <a href="{{ route('client-company.bookings.create') }}"
-                           class="mt-3 rounded-xl bg-purple-600 px-4 py-2 text-xs font-bold text-white hover:bg-purple-700">
+                           class="mt-3 rounded-xl bg-sky-600 px-4 py-2 text-xs font-bold text-white hover:bg-sky-700">
                             Créer ma première réservation →
                         </a>
                     </div>
@@ -149,16 +153,16 @@
                 <div class="mb-3 flex items-center justify-between">
                     <h2 class="text-sm font-bold uppercase tracking-wide text-slate-500">🏠 Mes locaux</h2>
                     <a href="{{ route('client-company.sites') }}"
-                       class="text-xs text-purple-600 hover:text-purple-700">
+                       class="text-xs text-sky-600 hover:text-sky-700">
                         Gérer →
                     </a>
                 </div>
 
                 @if ($sitesOverview->isEmpty())
                     <a href="{{ route('client-company.sites') }}"
-                       class="flex flex-col items-center justify-center rounded-2xl border-2 border-dashed border-purple-200 bg-purple-50 py-8 text-center transition hover:bg-purple-100">
+                       class="flex flex-col items-center justify-center rounded-2xl border-2 border-dashed border-sky-200 bg-sky-50 py-8 text-center transition hover:bg-sky-100">
                         <p class="text-2xl mb-1">🏠</p>
-                        <p class="text-xs font-semibold text-purple-700">Enregistrer un local</p>
+                        <p class="text-xs font-semibold text-sky-700">Enregistrer un local</p>
                     </a>
                 @else
                     <div class="space-y-2">
@@ -175,7 +179,7 @@
                                         </span>
                                     @endif
                                     <a href="{{ route('client-company.bookings.create', ['site' => $site->id]) }}"
-                                       class="rounded-lg bg-purple-100 px-2 py-1 text-[10px] font-bold text-purple-700 hover:bg-purple-200">
+                                       class="rounded-lg bg-sky-100 px-2 py-1 text-[10px] font-bold text-sky-700 hover:bg-sky-200">
                                         ⚡
                                     </a>
                                 </div>
@@ -197,12 +201,12 @@
                             <div class="rounded-xl border border-slate-200 bg-white px-3 py-2 shadow-sm">
                                 <div class="mb-1 flex items-center justify-between">
                                     <span class="truncate text-xs font-semibold text-slate-800">{{ $row['trade'] }}</span>
-                                    <span class="ml-2 flex-shrink-0 rounded-full bg-purple-100 px-2 py-0.5 text-[10px] font-bold text-purple-700">
+                                    <span class="ml-2 flex-shrink-0 rounded-full bg-sky-100 px-2 py-0.5 text-[10px] font-bold text-sky-700">
                                         {{ $row['count'] }}
                                     </span>
                                 </div>
                                 <div class="h-1.5 w-full overflow-hidden rounded-full bg-slate-100">
-                                    <div class="h-full rounded-full bg-purple-500"
+                                    <div class="h-full rounded-full bg-sky-500"
                                          style="width: {{ $maxCount > 0 ? round($row['count'] / $maxCount * 100) : 0 }}%">
                                     </div>
                                 </div>
@@ -217,7 +221,7 @@
                 <h2 class="mb-3 text-sm font-bold uppercase tracking-wide text-slate-500">⚡ Accès rapides</h2>
                 <div class="grid grid-cols-2 gap-2">
                     @foreach ([
-                        ['route' => 'client-company.bookings.create', 'icon' => '+ RDV', 'label' => 'Réserver',     'color' => 'bg-purple-600 text-white'],
+                        ['route' => 'client-company.bookings.create', 'icon' => '+ RDV', 'label' => 'Réserver',     'color' => 'bg-sky-600 text-white'],
                         ['route' => 'client-company.sites',           'icon' => '🏠',     'label' => 'Mes locaux',   'color' => 'bg-white border border-slate-200 text-slate-700'],
                         ['route' => 'client-company.members',         'icon' => '👥',     'label' => 'Membres',      'color' => 'bg-white border border-slate-200 text-slate-700'],
                         ['route' => 'client-company.billing',         'icon' => '🧾',     'label' => 'Facturation',  'color' => 'bg-white border border-slate-200 text-slate-700'],

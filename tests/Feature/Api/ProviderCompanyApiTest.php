@@ -120,7 +120,7 @@ class ProviderCompanyApiTest extends TestCase
 
         Mission::factory()->count(2)->create([
             'provider_organization_id' => $org->id,
-            'planned_start_at' => now()->addHours(3),
+            'planned_start_at' => today()->setTime(12, 0),
         ]);
 
         Sanctum::actingAs($patron, ['*']);
@@ -140,7 +140,7 @@ class ProviderCompanyApiTest extends TestCase
         $concurrente = OrganizationAccount::factory()->providerCompany()->create();
         Mission::factory()->count(4)->create([
             'provider_organization_id' => $concurrente->id,
-            'planned_start_at' => now()->addHours(3),
+            'planned_start_at' => today()->setTime(12, 0),
         ]);
 
         Sanctum::actingAs($patron, ['*']);

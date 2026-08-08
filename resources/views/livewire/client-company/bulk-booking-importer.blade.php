@@ -3,19 +3,19 @@
     <div class="mb-6">
         <p class="text-sm font-bold uppercase text-indigo-600">B2B Enterprise</p>
         <h1 class="text-2xl font-black text-slate-900">Import bulk de réservations</h1>
-        <p class="text-sm text-slate-500">Upload un fichier CSV pour créer plusieurs bookings d'un coup.</p>
+        <p class="text-sm text-slate-400">Upload un fichier CSV pour créer plusieurs bookings d'un coup.</p>
     </div>
 
     @if (! $report)
         <div class="rounded-2xl bg-white border shadow-sm p-6 mb-4">
             <h2 class="text-sm font-bold text-slate-900 mb-3">📋 Format CSV attendu</h2>
-            <div class="rounded-lg bg-slate-900 text-emerald-300 p-3 font-mono text-xs overflow-x-auto">
+            <div class="rounded-lg bg-white text-emerald-700 p-3 font-mono text-xs overflow-x-auto">
                 <pre>site_code,trade_code,scheduled_at,duration_minutes,budget_max_eur,notes,external_ref
 PARIS-RIVOLI,nettoyage_bureaux,2026-06-01 09:00,180,80,Nettoyage hebdo,REF-001
 PARIS-LAFAYETTE,nettoyage_bureaux,2026-06-01 14:00,120,60,,REF-002
 LYON-PART-DIEU,jardinage,2026-06-02 10:00,240,150,Tonte + désherbage,REF-003</pre>
             </div>
-            <ul class="text-xs text-slate-500 mt-3 space-y-1">
+            <ul class="text-xs text-slate-400 mt-3 space-y-1">
                 <li>• <code>site_code</code> : code de votre site (doit exister dans votre org)</li>
                 <li>• <code>trade_code</code> : code du métier Brio</li>
                 <li>• <code>scheduled_at</code> : date+heure ISO 8601 (futur uniquement)</li>
@@ -29,7 +29,7 @@ LYON-PART-DIEU,jardinage,2026-06-02 10:00,240,150,Tonte + désherbage,REF-003</p
                     <label class="text-xs font-bold text-slate-600">Fichier CSV *</label>
                     <input wire:model="csvFile" type="file" accept=".csv,.txt" class="w-full text-sm mt-1 file:rounded-lg file:border-0 file:bg-indigo-50 file:text-indigo-700 file:px-3 file:py-2 file:font-semibold">
                     @error('csvFile') <p class="text-rose-500 text-xs">{{ $message }}</p> @enderror
-                    <p class="text-xs text-slate-400 mt-1">Max 2 MB · header obligatoire sur la 1ère ligne</p>
+                    <p class="text-xs text-slate-500 mt-1">Max 2 MB · header obligatoire sur la 1ère ligne</p>
                 </div>
                 <div>
                     <label class="text-xs font-bold text-slate-600">Séparateur</label>
@@ -48,7 +48,7 @@ LYON-PART-DIEU,jardinage,2026-06-02 10:00,240,150,Tonte + désherbage,REF-003</p
                     <span wire:loading.remove wire:target="import">Importer le fichier</span>
                     <span wire:loading wire:target="import">🔄 Import en cours...</span>
                 </button>
-                <p class="text-xs text-slate-400 text-center">Les erreurs par ligne sont reportées sans bloquer les lignes valides.</p>
+                <p class="text-xs text-slate-500 text-center">Les erreurs par ligne sont reportées sans bloquer les lignes valides.</p>
             </div>
         </div>
     @else
@@ -80,7 +80,7 @@ LYON-PART-DIEU,jardinage,2026-06-02 10:00,240,150,Tonte + désherbage,REF-003</p
 
             @if (!empty($report['errors']))
                 <div class="mb-4">
-                    <h3 class="text-xs uppercase font-bold text-slate-500 mb-2">Détails erreurs</h3>
+                    <h3 class="text-xs uppercase font-bold text-slate-400 mb-2">Détails erreurs</h3>
                     <div class="rounded-lg bg-slate-50 border max-h-64 overflow-y-auto">
                         <table class="w-full text-xs">
                             <thead class="bg-slate-100">
@@ -89,7 +89,7 @@ LYON-PART-DIEU,jardinage,2026-06-02 10:00,240,150,Tonte + désherbage,REF-003</p
                             <tbody>
                                 @foreach ($report['errors'] as $err)
                                     <tr class="border-t">
-                                        <td class="px-2 py-1 font-mono text-slate-500">{{ $err['row'] }}</td>
+                                        <td class="px-2 py-1 font-mono text-slate-400">{{ $err['row'] }}</td>
                                         <td class="px-2 py-1 text-rose-600">{{ $err['error'] }}</td>
                                     </tr>
                                 @endforeach

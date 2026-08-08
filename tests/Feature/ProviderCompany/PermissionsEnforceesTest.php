@@ -91,7 +91,7 @@ class PermissionsEnforceesTest extends TestCase
 
         Mission::factory()->count(3)->create([
             'provider_organization_id' => $org->id,
-            'planned_start_at' => now()->addHours(2),
+            'planned_start_at' => today()->setTime(12, 0),
         ]);
 
         Livewire::actingAs($nettoyeur)
@@ -110,7 +110,7 @@ class PermissionsEnforceesTest extends TestCase
 
         Mission::factory()->count(3)->create([
             'provider_organization_id' => $org->id,
-            'planned_start_at' => now()->addHours(2),
+            'planned_start_at' => today()->setTime(12, 0),
         ]);
 
         Livewire::actingAs($dispatcheur)
@@ -134,7 +134,7 @@ class PermissionsEnforceesTest extends TestCase
 
         Mission::factory()->create([
             'provider_organization_id' => $org->id,
-            'planned_start_at' => now()->addHours(2),
+            'planned_start_at' => today()->setTime(12, 0),
         ]);
 
         Livewire::actingAs($nettoyeur)
@@ -178,7 +178,7 @@ class PermissionsEnforceesTest extends TestCase
 
         $mission = Mission::factory()->create([
             'provider_organization_id' => $org->id,
-            'planned_start_at' => now()->addHours(2),
+            'planned_start_at' => today()->setTime(12, 0),
         ]);
 
         Livewire::actingAs($dispatcheur)
@@ -213,7 +213,7 @@ class PermissionsEnforceesTest extends TestCase
 
         $mission = Mission::factory()->create([
             'provider_organization_id' => $org->id,
-            'planned_start_at' => now()->addHours(2),
+            'planned_start_at' => today()->setTime(12, 0),
         ]);
 
         Livewire::actingAs($patron)

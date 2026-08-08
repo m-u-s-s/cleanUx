@@ -1,4 +1,4 @@
-<div class="min-h-screen bg-slate-50 p-6">
+<div>
 
     {{-- ── Header ── --}}
     <div class="mb-6 flex flex-wrap items-center justify-between gap-4">
@@ -15,7 +15,7 @@
                 <span class="absolute left-3 top-2.5 text-slate-400">🔍</span>
             </div>
             <button wire:click="openCreate"
-                class="flex items-center gap-2 rounded-xl bg-purple-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-purple-700">
+                class="flex items-center gap-2 rounded-xl bg-sky-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-sky-700">
                 + Ajouter un local
             </button>
         </div>
@@ -32,7 +32,7 @@
             <p class="text-xs text-slate-500 mt-0.5">Locaux enregistrés</p>
         </div>
         <div class="rounded-2xl bg-white border border-slate-200 p-4 shadow-sm">
-            <p class="text-2xl font-black text-purple-600">{{ $withActive }}</p>
+            <p class="text-2xl font-black text-sky-600">{{ $withActive }}</p>
             <p class="text-xs text-slate-500 mt-0.5">Avec mission active</p>
         </div>
         <div class="rounded-2xl bg-white border border-slate-200 p-4 shadow-sm">
@@ -55,7 +55,7 @@
             <p class="text-5xl mb-4">🏢</p>
             <p class="text-lg font-bold text-slate-700">Aucun local enregistré</p>
             <p class="mt-1 text-sm text-slate-400 max-w-xs">Ajoutez vos bureaux, entrepôts ou commerces pour réserver un service en 2 clics.</p>
-            <button wire:click="openCreate" class="mt-4 rounded-xl bg-purple-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-purple-700">
+            <button wire:click="openCreate" class="mt-4 rounded-xl bg-sky-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-sky-700">
                 + Ajouter mon premier local
             </button>
         </div>
@@ -119,7 +119,7 @@
                     {{-- Actions --}}
                     <div class="mt-4 flex items-center gap-2 border-t border-slate-100 pt-3">
                         <a href="{{ route('client-company.bookings.create', ['site' => $site->id]) }}"
-                           class="flex-1 rounded-xl bg-purple-600 py-1.5 text-center text-xs font-semibold text-white hover:bg-purple-700">
+                           class="flex-1 rounded-xl bg-sky-600 py-1.5 text-center text-xs font-semibold text-white hover:bg-sky-700">
                             ⚡ Réserver
                         </a>
                         <button wire:click="openEdit({{ $site->id }})"
@@ -163,39 +163,39 @@
                     <div class="sm:col-span-2">
                         <label class="block text-sm font-bold text-slate-700 mb-1">Nom du local *</label>
                         <input wire:model="name" type="text" placeholder="Siège social, Entrepôt Nord…"
-                            class="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-100">
+                            class="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-100">
                         @error('name') <p class="mt-1 text-xs text-red-500">{{ $message }}</p> @enderror
                     </div>
 
                     <div class="sm:col-span-2">
                         <label class="block text-sm font-bold text-slate-700 mb-1">Adresse *</label>
                         <input wire:model="address" type="text" placeholder="Rue de la Loi 16"
-                            class="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-100">
+                            class="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-100">
                         @error('address') <p class="mt-1 text-xs text-red-500">{{ $message }}</p> @enderror
                     </div>
 
                     <div>
                         <label class="block text-sm font-bold text-slate-700 mb-1">Code postal *</label>
                         <input wire:model="postalCode" type="text" placeholder="1000"
-                            class="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-100">
+                            class="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-100">
                     </div>
 
                     <div>
                         <label class="block text-sm font-bold text-slate-700 mb-1">Ville *</label>
                         <input wire:model="city" type="text" placeholder="Bruxelles"
-                            class="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-100">
+                            class="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-100">
                     </div>
 
                     <div>
                         <label class="block text-sm font-bold text-slate-700 mb-1">Surface (m²)</label>
                         <input wire:model="surfaceM2" type="number" placeholder="250"
-                            class="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-100">
+                            class="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-100">
                     </div>
 
                     <div>
                         <label class="block text-sm font-bold text-slate-700 mb-1">Nombre d'étages</label>
                         <input wire:model="floorCount" type="number" placeholder="2"
-                            class="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-100">
+                            class="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-100">
                     </div>
                 </div>
 
@@ -204,7 +204,7 @@
                     <div>
                         <label class="block text-sm font-bold text-slate-700 mb-1">Fréquence de service</label>
                         <select wire:model="cleaningFrequency"
-                            class="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-purple-500">
+                            class="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-sky-500">
                             <option value="one_time">Ponctuel</option>
                             <option value="weekly">Hebdomadaire</option>
                             <option value="biweekly">Bi-mensuel</option>
@@ -214,7 +214,7 @@
                     <div>
                         <label class="block text-sm font-bold text-slate-700 mb-1">Créneau préféré</label>
                         <input wire:model="preferredTimeSlot" type="text" placeholder="Lun-Ven 8h-10h"
-                            class="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-100">
+                            class="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-100">
                     </div>
                 </div>
 
@@ -223,11 +223,11 @@
                     <p class="text-sm font-bold text-slate-700">👤 Contact sur site</p>
                     <div class="grid grid-cols-1 gap-3 sm:grid-cols-3">
                         <input wire:model="contactName" type="text" placeholder="Nom"
-                            class="rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-purple-500 bg-white">
+                            class="rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-sky-500 bg-white">
                         <input wire:model="contactPhone" type="text" placeholder="Téléphone"
-                            class="rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-purple-500 bg-white">
+                            class="rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-sky-500 bg-white">
                         <input wire:model="contactEmail" type="email" placeholder="Email"
-                            class="rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-purple-500 bg-white">
+                            class="rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-sky-500 bg-white">
                     </div>
                 </div>
 
@@ -260,7 +260,7 @@
                     <label class="block text-sm font-bold text-slate-700 mb-1">🔑 Instructions d'accès</label>
                     <textarea wire:model="accessInstructions" rows="2"
                         placeholder="Code d'entrée, parking disponible, sonnette…"
-                        class="w-full resize-none rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-100"></textarea>
+                        class="w-full resize-none rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-100"></textarea>
                 </div>
 
                 {{-- Notes --}}
@@ -268,7 +268,7 @@
                     <label class="block text-sm font-bold text-slate-700 mb-1">📝 Notes internes</label>
                     <textarea wire:model="notes" rows="2"
                         placeholder="Informations visibles uniquement par votre équipe"
-                        class="w-full resize-none rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-100"></textarea>
+                        class="w-full resize-none rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-100"></textarea>
                 </div>
             </div>
 
@@ -279,7 +279,7 @@
                     Annuler
                 </button>
                 <button wire:click="saveSite"
-                    class="flex-1 rounded-xl bg-purple-600 px-4 py-2.5 text-sm font-bold text-white hover:bg-purple-700">
+                    class="flex-1 rounded-xl bg-sky-600 px-4 py-2.5 text-sm font-bold text-white hover:bg-sky-700">
                     {{ $editingId ? 'Enregistrer les modifications' : 'Créer le local' }}
                 </button>
             </div>
