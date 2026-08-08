@@ -89,9 +89,15 @@ enum Role: string
         return $this === self::PROVIDER_SOCIETE;
     }
 
-    /** @return list<OrganizationRole> */
+    /**
+     * La liste vient de `OrganizationRole::forProviderCompany()`, pas de `cases()` : deux listes
+     * des mêmes sous-rôles finiraient par diverger, et c'est celle-là que les écrans d'invitation
+     * proposent réellement.
+     *
+     * @return list<OrganizationRole>
+     */
     public function sousRoles(): array
     {
-        return $this->porteDesSousRoles() ? OrganizationRole::cases() : [];
+        return $this->porteDesSousRoles() ? OrganizationRole::forProviderCompany() : [];
     }
 }
