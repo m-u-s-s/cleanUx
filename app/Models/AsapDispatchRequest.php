@@ -3,7 +3,9 @@
 namespace App\Models;
 
 use App\Support\Domain\AsapStatus;
+use Database\Factories\AsapDispatchRequestFactory;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -16,6 +18,9 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  */
 class AsapDispatchRequest extends Model
 {
+    /** @use HasFactory<AsapDispatchRequestFactory> */
+    use HasFactory;
+
     protected $fillable = [
         'order_draft_id', 'order_draft_item_id', 'trade_id', 'status',
         'lat', 'lng', 'radius_m', 'notified_count', 'expansion_count',

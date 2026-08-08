@@ -5,6 +5,8 @@ namespace App\Models;
 use App\Models\Concerns\HasCatalogTranslations;
 use App\Models\Contracts\TranslatesCatalogLabels;
 use App\Services\Audit\Concerns\AuditsEloquentEvents;
+use Database\Factories\QuestionStepFactory;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -18,6 +20,9 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class QuestionStep extends Model implements TranslatesCatalogLabels
 {
     use AuditsEloquentEvents, HasCatalogTranslations;
+
+    /** @use HasFactory<QuestionStepFactory> */
+    use HasFactory;
 
     protected $fillable = ['trade_id', 'title', 'subtitle', 'sort_order'];
 

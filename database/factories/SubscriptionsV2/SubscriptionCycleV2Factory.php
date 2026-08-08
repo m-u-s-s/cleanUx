@@ -1,6 +1,6 @@
 <?php
 
-namespace Database\Factories;
+namespace Database\Factories\SubscriptionsV2;
 
 use App\Models\SubscriptionsV2\SubscriptionCycleV2;
 use App\Models\SubscriptionsV2\SubscriptionV2;

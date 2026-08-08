@@ -5,7 +5,9 @@ namespace App\Models;
 use App\Support\Domain\OrderDraftStatus;
 use App\Support\Domain\OrderMode;
 use App\Support\HumanReference;
+use Database\Factories\OrderDraftFactory;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -23,6 +25,9 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  */
 class OrderDraft extends Model
 {
+    /** @use HasFactory<OrderDraftFactory> */
+    use HasFactory;
+
     protected $fillable = [
         'reference', 'client_id', 'session_token', 'mode', 'status',
         // Rattrapage quand le cookie de session a disparu : hachée, tournante, expirante.

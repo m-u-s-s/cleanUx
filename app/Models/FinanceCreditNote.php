@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use Database\Factories\FinanceCreditNoteFactory;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -11,6 +13,9 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  */
 class FinanceCreditNote extends Model
 {
+    /** @use HasFactory<FinanceCreditNoteFactory> */
+    use HasFactory;
+
     protected $fillable = [
         'credit_note_number',
         'booking_id',

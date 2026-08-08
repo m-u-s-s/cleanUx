@@ -2,13 +2,19 @@
 
 namespace App\Models\SubscriptionsV2;
 
+use Database\Factories\SubscriptionsV2\SubscriptionInvoiceV2Factory;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Str;
 
 class SubscriptionInvoiceV2 extends Model
 {
+    // Sans ce trait, la factory du modele est inatteignable : Model::factory() ne resout rien.
+    /** @use HasFactory<SubscriptionInvoiceV2Factory> */
+    use HasFactory;
+
     public const STATUS_DRAFT = 'draft';
 
     public const STATUS_OPEN = 'open';

@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use Database\Factories\SigningAppointmentFactory;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -12,6 +14,9 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  */
 class SigningAppointment extends Model
 {
+    /** @use HasFactory<SigningAppointmentFactory> */
+    use HasFactory;
+
     public const STATUT_PLANIFIE = 'scheduled';
 
     public const STATUT_SIGNE = 'completed';

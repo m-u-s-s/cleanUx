@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use Database\Factories\QuestionConditionFactory;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -13,6 +15,9 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  */
 class QuestionCondition extends Model
 {
+    /** @use HasFactory<QuestionConditionFactory> */
+    use HasFactory;
+
     protected $fillable = [
         'question_id', 'depends_on_question_id', 'operator', 'value', 'action',
     ];

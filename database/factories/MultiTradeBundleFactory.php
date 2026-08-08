@@ -19,8 +19,20 @@ class MultiTradeBundleFactory extends Factory
             'client_user_id' => fn () => User::factory()->create()->id,
             'status' => MultiTradeBundle::STATUS_DRAFT,
             'total_estimated_cents' => fake()->numberBetween(5000, 100000),
-            'total_quoted_cents' => null,
-            'total_final_cents' => null,
+            /*
+             * ZÉRO, PAS `null` (corrigé le 2026-08-06).
+             *
+             * `total_quoted_cents` est `unsignedInteger()->default(0)` : la colonne est NOT NULL et
+             * représente « pas encore devisé » par zéro. La factory forçait explicitement `null`,
+             * écrasant ce défaut et violant la contrainte.
+             *
+             * Le défaut ne se voyait pas en testant cette factory seule — `make()` n'insère pas le
+             * bundle. Il n'apparaissait qu'à travers `MultiTradeBundleItemFactory`, qui appelle
+             * `MultiTradeBundle::factory()->create()`.
+             */
+            'total_quoted_cents' => 0,
+            // Même cas que `total_quoted_cents` ci-dessus : `default(0)`, colonne NOT NULL.
+            'total_final_cents' => 0,
             'currency' => 'EUR',
             'bundle_discount_percent' => 0,
             'bundle_discount_cents' => 0,

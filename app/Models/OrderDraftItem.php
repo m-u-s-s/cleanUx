@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use Database\Factories\OrderDraftItemFactory;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -18,6 +20,9 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  */
 class OrderDraftItem extends Model
 {
+    /** @use HasFactory<OrderDraftItemFactory> */
+    use HasFactory;
+
     protected $fillable = [
         'order_draft_id', 'trade_id', 'trade_form_revision_id', 'provider_id',
         'sequence', 'depends_on_item_id', 'sequence_gap_min',

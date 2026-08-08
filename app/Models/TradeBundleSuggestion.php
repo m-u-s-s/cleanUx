@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use Database\Factories\TradeBundleSuggestionFactory;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -14,6 +16,9 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  */
 class TradeBundleSuggestion extends Model
 {
+    /** @use HasFactory<TradeBundleSuggestionFactory> */
+    use HasFactory;
+
     protected $fillable = [
         'trade_id', 'suggested_trade_id', 'default_sequence_gap_min', 'sort_order', 'is_active',
     ];

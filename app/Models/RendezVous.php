@@ -2,11 +2,16 @@
 
 namespace App\Models;
 
+use Database\Factories\RendezVousFactory;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class RendezVous extends Booking
 {
+    /** @use HasFactory<RendezVousFactory> */
+    use HasFactory;
+
     protected $table = 'rendez_vous';
 
     // Reset the inherited Booking allowlist so the restrictive $guarded blocklist below is the

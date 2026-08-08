@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use Database\Factories\OrganizationRolePermissionFactory;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -12,6 +14,9 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  */
 class OrganizationRolePermission extends Model
 {
+    /** @use HasFactory<OrganizationRolePermissionFactory> */
+    use HasFactory;
+
     protected $fillable = [
         'organization_account_id',
         'role',

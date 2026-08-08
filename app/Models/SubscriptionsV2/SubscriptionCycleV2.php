@@ -2,12 +2,18 @@
 
 namespace App\Models\SubscriptionsV2;
 
+use Database\Factories\SubscriptionsV2\SubscriptionCycleV2Factory;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class SubscriptionCycleV2 extends Model
 {
+    // Sans ce trait, la factory du modele est inatteignable : Model::factory() ne resout rien.
+    /** @use HasFactory<SubscriptionCycleV2Factory> */
+    use HasFactory;
+
     public const STATUS_PENDING = 'pending';
 
     public const STATUS_INVOICED = 'invoiced';
