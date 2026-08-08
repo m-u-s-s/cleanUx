@@ -64,6 +64,8 @@ export type RootStackParamList = {
    * par écran, sans bloquer l'accès en attendant.
    */
   EmbeddedModule: { path: string; title: string };
+  /** Le répertoire des modules du rôle — catalogue servi par `/api/modules`. */
+  Modules: undefined;
   /*
    * Espace société, en NATIF. Ces trois écrans étaient servis par `EmbeddedModule` faute d'API :
    * `routes/api/provider.php` couvrait le prestataire individuel et rien de la société. L'API

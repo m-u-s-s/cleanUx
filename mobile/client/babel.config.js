@@ -19,6 +19,7 @@ module.exports = function (api) {
             '@/storage': '../shared/src/storage',
             '@/theme': '../shared/src/theme',
             '@/ui': '../shared/src/ui',
+            '@/modules': '../shared/src/modules',
             '@/parity': '../shared/src/parity',
             '@/webview': '../shared/src/webview',
             '@/finance': '../shared/src/finance',

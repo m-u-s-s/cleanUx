@@ -84,6 +84,14 @@ export function CompanyProfileScreen() {
         joignables par personne d'ici. Un `navigate()` vers une route absente de la pile n'échoue
         pas bruyamment : il ne fait rien, ce qui rend ce genre de lien mort très discret.
       */}
+      {/* Le répertoire complet des modules de l'espace société, servi par le serveur. */}
+      <Row
+        icon="grid-outline"
+        label="Modules"
+        hint="Tout ce que cet espace sait faire"
+        onPress={() => navigation.navigate('Modules')}
+      />
+
       <Row
         icon="notifications-outline"
         label="Préférences notifications"

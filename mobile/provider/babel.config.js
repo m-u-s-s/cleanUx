@@ -24,6 +24,7 @@ module.exports = function (api) {
             '@/ErrorBoundary': '../shared/src/ErrorBoundary',
             // Déclarés dans tsconfig.json mais absents ici : le typage passait, l'import
             // échouait à l'exécution. La console d'administration en dépend.
+            '@/modules': '../shared/src/modules',
             '@/parity': '../shared/src/parity',
             '@/webview': '../shared/src/webview',
             '@/finance': '../shared/src/finance',

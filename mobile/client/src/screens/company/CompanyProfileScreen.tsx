@@ -1,6 +1,9 @@
 import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useAuth } from '@/auth';
+import type { RootStackParamList } from '@/navigation/types';
 import { Divider, Icon, Screen } from '@/ui';
 import { colors, radius, spacing, typography } from '@/theme';
 import { useThemeColors } from '@/theme/useThemeColors';
@@ -26,6 +29,7 @@ export function CompanyProfileScreen() {
   const theme = useThemeColors();
   const styles = stylesFor(theme);
 
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const { user, logout } = useAuth();
   const { clear } = useClientSpacePreference();
 
@@ -49,6 +53,14 @@ export function CompanyProfileScreen() {
         label="Changer d’espace"
         hint="Revenir à mon espace personnel"
         onPress={() => void clear()}
+      />
+
+      {/* Le répertoire complet de l'espace société, servi par le serveur. */}
+      <Row
+        icon="grid-outline"
+        label="Modules"
+        hint="Tout ce que cet espace sait faire"
+        onPress={() => navigation.navigate('Modules')}
       />
 
       <Row

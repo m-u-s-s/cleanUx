@@ -33,6 +33,8 @@
       "@/ErrorBoundary": ["../shared/src/ErrorBoundary"],
       "@/webview": ["../shared/src/webview"],
       "@/webview/*": ["../shared/src/webview/*"],
+      "@/modules": ["../shared/src/modules"],
+      "@/modules/*": ["../shared/src/modules/*"],
       "@/parity": ["../shared/src/parity"],
       "@/parity/*": ["../shared/src/parity/*"],
       "@/onboarding": ["../shared/src/onboarding"],

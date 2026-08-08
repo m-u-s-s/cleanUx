@@ -60,6 +60,17 @@ export function ProfileScreen() {
             <Divider />
           </>
         ) : null}
+        {/*
+          LE RÉPERTOIRE, EN TÊTE. L'application exposait une poignée d'écrans et laissait le
+          reste — 37 modules pour un client — inatteignable depuis le téléphone. Le catalogue vient
+          du serveur, qui déduit le contexte du jeton : rien à conditionner ici.
+        */}
+        <Button
+          label="Modules"
+          onPress={() => navigation.navigate('Modules')}
+          variant="secondary"
+          fullWidth
+        />
         <Button
           label="Modifier le profil"
           onPress={() => navigation.navigate('ProfileEdit')}

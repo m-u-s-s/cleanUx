@@ -32,6 +32,8 @@
       "@/ui/*": ["../shared/src/ui/*"],
       "@/webview": ["../shared/src/webview"],
       "@/webview/*": ["../shared/src/webview/*"],
+      "@/modules": ["../shared/src/modules"],
+      "@/modules/*": ["../shared/src/modules/*"],
       "@/parity": ["../shared/src/parity"],
       "@/parity/*": ["../shared/src/parity/*"],
       "@/finance": ["../shared/src/finance"],

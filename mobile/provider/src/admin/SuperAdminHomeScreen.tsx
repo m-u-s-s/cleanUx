@@ -124,6 +124,14 @@ export function SuperAdminHomeScreen() {
           />
         ) : null}
 
+        {/* Le répertoire complet — 90 modules pour ce rôle, servis par le serveur. */}
+        <Ligne
+          icone="grid-outline"
+          label="Modules"
+          indice="Tout ce que cet espace sait faire"
+          onPress={() => navigation.navigate('Modules')}
+        />
+
         <Ligne
           icone="settings-outline"
           label="Réglages"

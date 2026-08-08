@@ -46,6 +46,7 @@ import { resolveClientSpace } from '@/company/space';
 import { useClientSpacePreference } from '@/company/useClientSpacePreference';
 import { ClientCompanyNavigator } from '@/company/ClientCompanyNavigator';
 import { ClientSpaceSwitcherScreen } from '@/screens/company/ClientSpaceSwitcherScreen';
+import { ModulesRoute } from '@/screens/ModulesRoute';
 import { colors } from '@/theme';
 import { useThemeColors } from '@/theme/useThemeColors';
 import type { RootStackParamList } from './types';
@@ -100,6 +101,11 @@ export function RootNavigator() {
         <Stack.Navigator screenOptions={{ headerShown: false }}>
           <Stack.Screen name="ClientCompanySpace" component={ClientCompanyNavigator} />
           <Stack.Screen
+            name="Modules"
+            component={ModulesRoute}
+            options={{ headerShown: true, title: 'Modules' }}
+          />
+          <Stack.Screen
             name="CompanyMembers"
             component={CompanyMembersScreen}
             options={{ headerShown: true, title: 'Membres' }}
@@ -150,6 +156,11 @@ export function RootNavigator() {
         {isAuthenticated ? (
           <>
             <Stack.Screen name="MainTabs" component={TabNavigator} />
+            <Stack.Screen
+              name="Modules"
+              component={ModulesRoute}
+              options={{ headerShown: true, title: 'Modules' }}
+            />
             {/*
               L'assistant de réservation en cinq étapes N'EST PLUS MONTÉ.
               La réservation passe par le moteur de commande, servi en vue embarquée.

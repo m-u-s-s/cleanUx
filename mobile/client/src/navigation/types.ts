@@ -34,6 +34,8 @@ export type RootStackParamList = {
   InvoiceDetail: { id: number };
   // Embedded web modules
   EmbeddedModule: { path: string; title: string };
+  /** Le répertoire des modules du rôle — catalogue servi par `/api/modules`. */
+  Modules: undefined;
   /*
    * L'ESPACE SOCIÉTÉ CLIENTE, EN NATIF.
    *

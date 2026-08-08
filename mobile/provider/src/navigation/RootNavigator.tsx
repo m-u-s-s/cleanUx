@@ -38,6 +38,7 @@ import { SpaceSwitcherScreen } from '@/screens/SpaceSwitcherScreen';
 import { ProviderCompanyNavigator } from '@/company/ProviderCompanyNavigator';
 import { AdminNavigator } from '@/admin/AdminNavigator';
 import { SuperAdminHomeScreen } from '@/admin/SuperAdminHomeScreen';
+import { ModulesRoute } from '@/screens/ModulesRoute';
 import { CatalogZonesScreen } from '@/admin/catalogue/CatalogZonesScreen';
 import { CatalogZoneTradesScreen } from '@/admin/catalogue/CatalogZoneTradesScreen';
 import { JourneyBuilderScreen } from '@/admin/catalogue/JourneyBuilderScreen';
@@ -135,6 +136,11 @@ export function RootNavigator() {
         <Stack.Navigator screenOptions={{ headerShown: false }}>
           <Stack.Screen name="ProviderCompanySpace" component={ProviderCompanyNavigator} />
           <Stack.Screen
+            name="Modules"
+            component={ModulesRoute}
+            options={{ headerShown: true, title: 'Modules' }}
+          />
+          <Stack.Screen
             name="CompanyMembers"
             component={CompanyMembersScreen}
             options={{ headerShown: true, title: 'Équipe' }}
@@ -221,6 +227,11 @@ export function RootNavigator() {
         <Stack.Navigator screenOptions={{ headerShown: false }}>
           <Stack.Screen name="SuperAdminSpace" component={SuperAdminHomeScreen} />
           <Stack.Screen
+            name="Modules"
+            component={ModulesRoute}
+            options={{ headerShown: true, title: 'Modules' }}
+          />
+          <Stack.Screen
             name="Appearance"
             component={AppearanceScreen}
             options={{ title: 'Apparence', headerShown: true }}
@@ -245,6 +256,11 @@ export function RootNavigator() {
       <View testID="root-navigator" style={{ flex: 1 }}>
         <Stack.Navigator screenOptions={{ headerShown: false }}>
           <Stack.Screen name="AdminSpace" component={AdminNavigator} />
+          <Stack.Screen
+            name="Modules"
+            component={ModulesRoute}
+            options={{ headerShown: true, title: 'Modules' }}
+          />
           {/*
             Le moteur de console : trois écrans pour tous les domaines. `AdminResource` reste
             monté en dernier recours — il n'est atteignable que si un module est déclaré couvert
@@ -346,6 +362,11 @@ export function RootNavigator() {
         ) : isAuthenticated ? (
           <>
             <Stack.Screen name="MainTabs" component={TabNavigator} />
+            <Stack.Screen
+              name="Modules"
+              component={ModulesRoute}
+              options={{ headerShown: true, title: 'Modules' }}
+            />
             {/*
               Les courses immédiates. Les points d'API existaient depuis la livraison du moteur
               de commande sans que rien ne les appelle : un client pouvait demander une

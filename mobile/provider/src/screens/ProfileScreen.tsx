@@ -74,6 +74,12 @@ export function ProfileScreen() {
   const plusieursEspaces = doubleCasquette || peutPiloterLaSociete;
 
   const actions: Array<{ label: string; screen: keyof RootStackParamList }> = [
+    /*
+     * LE RÉPERTOIRE, EN TÊTE. L'application exposait une poignée d'écrans et laissait le reste —
+     * 29 modules pour un prestataire — inatteignable depuis le téléphone. Le catalogue vient du
+     * serveur, qui déduit le contexte du jeton : cette entrée n'a donc pas à être conditionnée.
+     */
+    { label: 'Modules', screen: 'Modules' },
     { label: 'Disponibilités', screen: 'Availability' },
     { label: 'Badges', screen: 'Badges' },
     { label: 'Vérification KYC', screen: 'KYC' },

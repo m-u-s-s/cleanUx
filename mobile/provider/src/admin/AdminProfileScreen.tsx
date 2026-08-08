@@ -1,6 +1,9 @@
 import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useAuth } from '@/auth';
+import type { RootStackParamList } from '@/navigation/types';
 import { Divider, Icon, Screen } from '@/ui';
 import { colors, radius, spacing, typography } from '@/theme';
 import { useThemeColors } from '@/theme/useThemeColors';
@@ -17,6 +20,7 @@ import { useSpacePreference } from './useSpacePreference';
 export function AdminProfileScreen() {
   const styles = stylesFor(useThemeColors());
 
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const { user, logout } = useAuth();
   const { clear } = useSpacePreference();
 
@@ -39,6 +43,17 @@ export function AdminProfileScreen() {
           onPress={() => void clear()}
         />
       ) : null}
+
+      {/*
+        LE RÉPERTOIRE DES MODULES. La console couvre 90 modules ; son annuaire natif n'en montre
+        que ce qui a un descripteur. Cette entrée ouvre le catalogue complet, servi par le serveur.
+      */}
+      <Row
+        icon="grid-outline"
+        label="Modules"
+        hint="Tout ce que cet espace sait faire"
+        onPress={() => navigation.navigate('Modules')}
+      />
 
       <Row
         icon="log-out-outline"

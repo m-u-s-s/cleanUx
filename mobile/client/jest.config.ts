@@ -66,6 +66,7 @@ const config: Config = {
     '^@/ui(.*)$': '<rootDir>/../shared/src/ui$1',
     '^@/ErrorBoundary$': '<rootDir>/../shared/src/ErrorBoundary',
     '^@/webview(.*)$': '<rootDir>/../shared/src/webview$1',
+    '^@/modules(.*)$': '<rootDir>/../shared/src/modules$1',
     '^@/parity(.*)$': '<rootDir>/../shared/src/parity$1',
     '^@/finance(.*)$': '<rootDir>/../shared/src/finance$1',
     // Client-only modules
