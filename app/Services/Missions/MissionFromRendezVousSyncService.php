@@ -7,6 +7,7 @@ use App\Models\Mission;
 use App\Services\Contracts\ContractSlaService;
 use App\Services\Dispatch\MissionDispatchService;
 use App\Services\Geocoding\GeocodingService;
+use App\Services\Organizations\ProviderOrganisationResolver;
 use App\Support\Domain\MissionStatus;
 use Illuminate\Support\Facades\DB;
 
@@ -16,7 +17,28 @@ class MissionFromRendezVousSyncService
         protected MissionAssignmentStatusService $assignmentStatusService,
         protected MissionChecklistService $missionChecklistService,
         protected GeocodingService $geocodingService,
+        protected ProviderOrganisationResolver $providerOrganisationResolver,
     ) {}
+
+    /**
+     * LA SOCIÉTÉ QUI EXÉCUTE — la décision du booking d'abord, la déduction ensuite.
+     *
+     * `assigned_provider_organization_id` est une DÉCISION : posée par un dispatch ou par un
+     * contrat-cadre. Le profil du salarié n'est qu'une déduction — elle ne doit donc pas l'écraser.
+     *
+     * `null` reste une réponse valable : la mission d'un indépendant n'appartient à aucune société,
+     * et lui en inventer une la ferait apparaître dans le dispatch d'un tiers.
+     */
+    protected function societeExecutante(Booking $rendezVous): ?int
+    {
+        $decidee = $rendezVous->assigned_provider_organization_id;
+
+        if ($decidee !== null) {
+            return (int) $decidee;
+        }
+
+        return $this->providerOrganisationResolver->pourUtilisateur($rendezVous->employe_id);
+    }
 
     public function createFromRendezVous(Booking $rendezVous): Mission
     {
@@ -29,6 +51,9 @@ class MissionFromRendezVousSyncService
                     'service_catalog_id' => $rendezVous->service_catalog_id,
                     'service_zone_id' => $rendezVous->service_zone_id,
                     'lead_employee_id' => $rendezVous->employe_id,
+                    // Sans elle, `DispatchCenter` filtre sur NULL et l'espace société reste vide
+                    // alors que les missions existent bien.
+                    'provider_organization_id' => $this->societeExecutante($rendezVous),
                     'organization_contract_id' => $rendezVous->organization_contract_id,
                     'status' => MissionStatus::initialFor((bool) $rendezVous->employe_id),
                     'mission_type' => $rendezVous->organization_account_id ? 'enterprise' : 'standard',
@@ -91,6 +116,7 @@ class MissionFromRendezVousSyncService
                     'service_catalog_id' => $rendezVous->service_catalog_id,
                     'service_zone_id' => $rendezVous->service_zone_id,
                     'lead_employee_id' => $rendezVous->employe_id,
+                    'provider_organization_id' => $this->societeExecutante($rendezVous),
                     'organization_contract_id' => $rendezVous->organization_contract_id,
                     'status' => MissionStatus::initialFor((bool) $rendezVous->employe_id),
                     'mission_type' => $rendezVous->organization_account_id ? 'enterprise' : 'standard',

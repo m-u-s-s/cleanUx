@@ -53,14 +53,27 @@ class OrganizationMembershipService
             );
 
             if ($this->fournitDuService($organisation)) {
-                ProviderProfile::firstOrCreate(
-                    ['user_id' => $utilisateur->id],
-                    [
-                        'organization_account_id' => $organisation->id,
-                        'provider_type' => ProviderType::COMPANY_WORKER->value,
-                        'status' => 'active',
-                    ],
-                );
+                /*
+                 * `updateOrCreate` ET NON `firstOrCreate`.
+                 *
+                 * `firstOrCreate` ne touche PAS un profil existant : un prestataire indépendant qui
+                 * rejoint une société gardait `provider_type = independent` et
+                 * `organization_account_id = null`. Il devenait membre de l'organisation sans que
+                 * rien ne le rattache côté prestataire — donc 403 sur tout l'espace société, et ses
+                 * missions restaient hors du dispatch, `ProviderOrganisationResolver` lisant
+                 * précisément cette colonne.
+                 *
+                 * Le statut n'est PAS écrasé : un dossier en cours de vérification ne doit pas
+                 * passer `active` du simple fait d'un rattachement.
+                 */
+                $profil = ProviderProfile::firstOrNew(['user_id' => $utilisateur->id]);
+
+                $profil->organization_account_id = $organisation->id;
+                // Le modèle caste cette colonne en énumération : lui passer la chaîne
+                // fonctionnerait à l'exécution mais ment sur le type.
+                $profil->provider_type = ProviderType::COMPANY_WORKER;
+                $profil->status = $profil->exists ? $profil->status : 'active';
+                $profil->save();
             }
 
             /*
