@@ -19,6 +19,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Validation\Rule;
 use Livewire\Component;
 use Livewire\WithPagination;
 
@@ -152,9 +153,15 @@ class TeamManagement extends Component
             403
         );
 
+        /*
+         * `Rule::in` ET NON un simple `required`.
+         *
+         * Un role inconnu traversait la validation puis atteignait `OrganizationRole::from()`,
+         * qui leve un `ValueError` : 500 au lieu de 422, sur une saisie utilisateur.
+         */
         $this->validate([
             'inviteEmail' => ['required', 'email'],
-            'inviteRole' => ['required'],
+            'inviteRole' => ['required', Rule::in(array_map(fn ($role) => $role->value, $this->availableRoles))],
         ]);
 
         $orgId = $actor->current_organization_id;

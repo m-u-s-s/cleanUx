@@ -75,6 +75,7 @@ class PermissionService
     // Matrice des permissions par rôle
     // ──────────────────────────────────────────────────────
 
+    /** La matrice par défaut — troisième et dernier étage de résolution. */
     private const ROLE_PERMISSIONS = [
 
         OrganizationRole::OWNER->value => [
@@ -166,6 +167,9 @@ class PermissionService
             'missions.dispatch',
             'missions.view_all',
             'missions.quality',
+            // `sites.view_all` etait DECLAREE par `SiteOperations` et accordee a personne :
+            // l'ecran existait, sa garde ne pouvait etre satisfaite. Ajout purement additif.
+            'sites.view_all',
             'team.create',
             'team.manage',
             'team.view',
@@ -184,6 +188,7 @@ class PermissionService
             'missions.assign',
             'missions.dispatch',
             'missions.view_all',
+            'sites.view_all',
             'team.view',
             'channels.create',
             'tasks.create',
@@ -193,6 +198,12 @@ class PermissionService
 
         OrganizationRole::TEAM_LEAD->value => [
             'missions.view_all',
+            /*
+             * Le chef d'equipe reassigne — c'est l'exigence 5. La PORTEE (son equipe seulement)
+             * n'est pas exprimable dans une matrice de cles : elle est bornee par le helper
+             * « peut reassigner » du lot 3. Cette cle ouvre la capacite, pas le perimetre.
+             */
+            'missions.assign',
             'team.view',
             'channels.create',
             'tasks.create',
@@ -309,9 +320,26 @@ class PermissionService
         }
 
         // 3. Permissions par défaut du rôle
-        $rolePermissions = self::ROLE_PERMISSIONS[$role] ?? [];
+        $rolePermissions = self::permissionsParDefaut($role);
 
         return in_array($permission, $rolePermissions, true);
+    }
+
+    /**
+     * Les permissions par défaut d'un rôle, ou aucune si le rôle est inconnu.
+     *
+     * L'ACCÈS EST EXTRAIT ICI, ET C'EST DÉLIBÉRÉ. Sur la constante, PHPStan infère la forme
+     * littérale du tableau, conclut que toute clé existe et signale le repli `?? []` comme mort —
+     * alors qu'il protège d'une valeur de rôle lue en base qui ne serait plus dans l'énumération.
+     * Le message imprimait de surcroît la matrice entière, si bien que la moindre permission
+     * ajoutée invalidait l'entrée de baseline correspondante. Ici `$role` est un `string`
+     * ordinaire : le repli redevient ce qu'il est, une garde.
+     *
+     * @return list<string>
+     */
+    private static function permissionsParDefaut(string $role): array
+    {
+        return self::ROLE_PERMISSIONS[$role] ?? [];
     }
 
     /**
@@ -323,7 +351,7 @@ class PermissionService
     {
         $allPerms = $this->allPermissionKeys();
         $role = $member->role instanceof \BackedEnum ? $member->role->value : $member->role;
-        $rolePerms = self::ROLE_PERMISSIONS[$role] ?? [];
+        $rolePerms = self::permissionsParDefaut($role);
         $customPerms = $member->permissions ?? [];
 
         $result = [];

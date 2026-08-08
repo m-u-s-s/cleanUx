@@ -17,6 +17,7 @@ use App\Http\Middleware\EnforceTokenGrace;
 use App\Http\Middleware\EnsureActiveAccount;
 use App\Http\Middleware\EnsureApiAdmin;
 use App\Http\Middleware\EnsureFieldTeamLead;
+use App\Http\Middleware\CheckOrganizationPermission;
 use App\Http\Middleware\EnsureOrganizationType;
 use App\Http\Middleware\EnsurePhoneVerified;
 use App\Http\Middleware\EnsureProviderIsApproved;
@@ -121,6 +122,12 @@ class Kernel extends HttpKernel
         'provider.approved' => EnsureProviderIsApproved::class,
         'active.account' => EnsureActiveAccount::class,
         'org.type' => EnsureOrganizationType::class,
+        /*
+         * Le middleware existait depuis longtemps SANS être enregistré : toute route qui l'aurait
+         * invoqué aurait planté sur un alias inconnu. Personne ne s'en apercevait, faute
+         * d'appelant — une garde écrite, jamais branchée.
+         */
+        'org.permission' => CheckOrganizationPermission::class,
         'field.team.lead' => EnsureFieldTeamLead::class,
         'assistant.ratelimit' => AssistantRateLimit::class,
         'api_scope' => EnforceTokenScope::class,

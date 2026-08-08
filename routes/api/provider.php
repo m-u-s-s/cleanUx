@@ -234,15 +234,30 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
 | permission par écriture. Voir `CompanyController`.
 */
 Route::middleware('auth:sanctum')->prefix('provider/company')->group(function () {
+    /*
+     * LES LECTURES SONT GARDÉES PAR MIDDLEWARE, LES ÉCRITURES DANS LE CONTRÔLEUR.
+     *
+     * Deux étages, et le partage n'est pas arbitraire : un middleware sur un groupe de routes est
+     * UNIFORME — on ne peut pas oublier d'en mettre un — là où une écriture a besoin d'une garde
+     * fine, qui connaît la cible (rang du membre visé, appartenance de la mission) et reste
+     * testable action par action.
+     *
+     * Ces quatre lectures n'avaient AUCUNE garde : un `worker` lisait l'effectif, les sites
+     * desservis et les indicateurs de pilotage de sa société.
+     */
     // L'accueil de l'espace société : cinq chiffres en un appel, plutôt que quatre requêtes.
-    Route::get('/overview', [ProviderCompanyController::class, 'overview']);
+    Route::get('/overview', [ProviderCompanyController::class, 'overview'])
+        ->middleware('org.permission:missions.view_all');
 
     // Les sites clients desservis, avec le référent que la société y place.
-    Route::get('/sites', [ProviderCompanyController::class, 'sites']);
+    Route::get('/sites', [ProviderCompanyController::class, 'sites'])
+        ->middleware('org.permission:sites.view_all');
 
-    Route::get('/members', [ProviderCompanyController::class, 'members']);
+    Route::get('/members', [ProviderCompanyController::class, 'members'])
+        ->middleware('org.permission:team.view');
 
-    Route::get('/field-teams', [ProviderCompanyController::class, 'fieldTeams']);
+    Route::get('/field-teams', [ProviderCompanyController::class, 'fieldTeams'])
+        ->middleware('org.permission:team.view');
     Route::post('/field-teams', [ProviderCompanyController::class, 'createFieldTeam']);
     Route::patch('/field-teams/{team}/archive', [ProviderCompanyController::class, 'archiveFieldTeam']);
 

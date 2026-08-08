@@ -4,6 +4,7 @@ use App\Models\Channel;
 use App\Models\FieldTeam;
 use App\Models\Mission;
 use App\Models\OrganizationAccount;
+use App\Models\OrganizationMember;
 use App\Models\User;
 use Illuminate\Support\Facades\Broadcast;
 
@@ -113,14 +114,32 @@ Broadcast::channel('presence-org.{orgId}', function (User $user, int $orgId) {
         return null;
     }
 
-    if ((int) $user->organization_account_id !== (int) $orgId) {
+    /*
+     * L'APPARTENANCE SE LIT SUR L'ADHESION, PAS SUR `users.organization_account_id`.
+     *
+     * Cette colonne porte l'organisation CLIENTE d'un compte. La societe d'un SALARIE vit sur
+     * `provider_profiles.organization_account_id` : un worker n'entrait donc jamais dans le canal
+     * de presence de sa propre societe, et le dispatch ne le voyait pas en ligne.
+     *
+     * L'adhesion active fait autorite — c'est elle qui porte le role —, le profil prestataire sert
+     * de repli pour les comptes rattaches sans ligne d'adhesion.
+     */
+    $adhesion = OrganizationMember::query()
+        ->where('organization_account_id', $orgId)
+        ->where('user_id', $user->id)
+        ->where('status', 'active')
+        ->first();
+
+    $rattacheParSonProfil = (int) ($user->providerProfile?->organization_account_id ?? 0) === (int) $orgId;
+
+    if (! $adhesion && ! $rattacheParSonProfil && (int) $user->organization_account_id !== (int) $orgId) {
         return null;
     }
 
     return [
         'id' => $user->id,
         'name' => $user->name,
-        'role' => $user->organization_role ?? 'member',
+        'role' => $adhesion?->role?->value ?? $user->organization_role ?? 'member',
         'avatar_url' => method_exists($user, 'getAvatarUrl') ? $user->getAvatarUrl() : null,
     ];
 });
