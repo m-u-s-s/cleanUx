@@ -176,4 +176,63 @@ class RbacServeurTest extends TestCase
 
         $this->assertFalse($owner->can('view', $this->missionDeLOrg($autreOrg)));
     }
+
+    // ──────────────────────────────────────────────────────
+    // Web : la navbar ne promet plus ce qu'elle ne peut pas ouvrir
+    // ──────────────────────────────────────────────────────
+
+    /** @return list<string> */
+    private function routesDuMenuSociete(): array
+    {
+        return \App\Support\Navigation\ModuleCatalogue::pourContexte('provider-company')
+            ->flatMap(fn (array $groupe) => array_column($groupe['modules'], 'route'))
+            ->all();
+    }
+
+    public function test_la_navbar_du_worker_n_a_plus_de_lien_mort(): void
+    {
+        /*
+         * Une case qui mène à un 403 est pire qu'une case absente. Depuis que les lectures sont
+         * gardées, la navbar d'un worker affichait quatre liens qui répondent 403.
+         */
+        $this->actingAs($this->membre(OrganizationRole::WORKER));
+
+        $routes = $this->routesDuMenuSociete();
+
+        foreach ([
+            'provider-company.dispatch',
+            'provider-company.team',
+            'provider-company.field-teams',
+            'provider-company.sites',
+        ] as $interdite) {
+            $this->assertNotContains($interdite, $routes, $interdite.' ne doit pas figurer au menu d’un worker');
+        }
+    }
+
+    public function test_la_navbar_de_l_owner_garde_tout(): void
+    {
+        $this->actingAs($this->membre(OrganizationRole::OWNER));
+
+        $routes = $this->routesDuMenuSociete();
+
+        foreach (['provider-company.dispatch', 'provider-company.team', 'provider-company.sites'] as $attendue) {
+            $this->assertContains($attendue, $routes, $attendue);
+        }
+    }
+
+    public function test_le_worker_est_refuse_sur_l_ecran_des_sites(): void
+    {
+        // `sites.view_all` était DÉCLARÉE par `SiteOperations` et jamais consultée : tout membre
+        // actif voyait les sites clients desservis, leurs référents et leurs contrats-cadres.
+        $this->actingAs($this->membre(OrganizationRole::WORKER))
+            ->get(route('provider-company.sites'))
+            ->assertForbidden();
+    }
+
+    public function test_l_owner_ouvre_l_ecran_des_sites(): void
+    {
+        $this->actingAs($this->membre(OrganizationRole::OWNER))
+            ->get(route('provider-company.sites'))
+            ->assertOk();
+    }
 }

@@ -256,13 +256,13 @@ return [
          */
         ['key' => 'provider-company:provider.onboarding', 'label' => 'Dossier de la société', 'icon' => '🚀', 'route' => 'provider.onboarding', 'context' => 'provider-company', 'category' => 'conformite', 'primary' => false],
         ['key' => 'provider-company:presence.me', 'label' => 'Ma présence', 'icon' => '🟢', 'route' => 'presence.me', 'context' => 'provider-company', 'category' => 'missions', 'primary' => false],
-        ['key' => 'provider-company:provider-company.dispatch', 'label' => 'Dispatch', 'icon' => '🗺️', 'route' => 'provider-company.dispatch', 'context' => 'provider-company', 'category' => 'missions', 'primary' => true],
+        ['key' => 'provider-company:provider-company.dispatch', 'label' => 'Dispatch', 'icon' => '🗺️', 'route' => 'provider-company.dispatch', 'context' => 'provider-company', 'permission' => 'missions.dispatch', 'category' => 'missions', 'primary' => true],
         ['key' => 'provider-company:provider-company.tasks', 'label' => 'Tâches', 'icon' => '✅', 'route' => 'provider-company.tasks', 'context' => 'provider-company', 'category' => 'missions', 'primary' => true],
-        ['key' => 'provider-company:provider-company.field-teams', 'label' => 'Équipes terrain', 'icon' => '🚚', 'route' => 'provider-company.field-teams', 'context' => 'provider-company', 'category' => 'prestataires', 'primary' => false],
+        ['key' => 'provider-company:provider-company.field-teams', 'label' => 'Équipes terrain', 'icon' => '🚚', 'route' => 'provider-company.field-teams', 'context' => 'provider-company', 'permission' => 'team.view', 'category' => 'prestataires', 'primary' => false],
         // Les sites clients desservis, et le référent que la société y place — servi par
         // `SiteOperations`, et par l'API que l'écran natif « Sites desservis » consomme.
-        ['key' => 'provider-company:provider-company.sites', 'label' => 'Sites desservis', 'icon' => '📍', 'route' => 'provider-company.sites', 'context' => 'provider-company', 'category' => 'comptes', 'primary' => false],
-        ['key' => 'provider-company:provider-company.team', 'label' => 'Équipe', 'icon' => '👥', 'route' => 'provider-company.team', 'context' => 'provider-company', 'category' => 'prestataires', 'primary' => true],
+        ['key' => 'provider-company:provider-company.sites', 'label' => 'Sites desservis', 'icon' => '📍', 'route' => 'provider-company.sites', 'context' => 'provider-company', 'permission' => 'sites.view_all', 'category' => 'comptes', 'primary' => false],
+        ['key' => 'provider-company:provider-company.team', 'label' => 'Équipe', 'icon' => '👥', 'route' => 'provider-company.team', 'context' => 'provider-company', 'permission' => 'team.view', 'category' => 'prestataires', 'primary' => true],
         ['key' => 'provider-company:provider-company.channels', 'label' => 'Canaux', 'icon' => '💬', 'route' => 'provider-company.channels', 'context' => 'provider-company', 'category' => 'communication', 'primary' => true],
         ['key' => 'provider-company:provider-company.dashboard', 'label' => 'Dashboard', 'icon' => '🏗️', 'route' => 'provider-company.dashboard', 'context' => 'provider-company', 'category' => 'donnees', 'primary' => true],
     ],

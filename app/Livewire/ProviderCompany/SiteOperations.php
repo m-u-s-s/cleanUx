@@ -3,6 +3,7 @@
 namespace App\Livewire\ProviderCompany;
 
 use App\Models\Mission;
+use App\Models\OrganizationAccount;
 use App\Models\OrganizationContract;
 use App\Models\OrganizationMember;
 use App\Models\OrganizationSite;
@@ -35,6 +36,37 @@ class SiteOperations extends Component
     use EnforcesActiveOrgMembership;
 
     public string $recherche = '';
+
+    /**
+     * LA GARDE DE LECTURE QUI MANQUAIT.
+     *
+     * `sites.view_all` etait DECLAREE par cet ecran — le commentaire de la matrice la mentionne —
+     * mais jamais CONSULTEE : n'importe quel membre actif de la societe voyait les sites clients
+     * desservis, leurs referents et leurs contrats-cadres. Un `worker` compris.
+     *
+     * `mount()` ne suffirait pas seul : Livewire ne le rejoue pas entre deux requetes. Il garde
+     * l'ENTREE ; chaque action publique revoit sa propre permission, comme dans `TeamManagement`.
+     */
+    public function mount(): void
+    {
+        $this->exigeLaPermissionDeLecture();
+    }
+
+    private function exigeLaPermissionDeLecture(): void
+    {
+        $utilisateur = Auth::user();
+        $organisationId = $utilisateur?->organizationContextId();
+
+        abort_unless($utilisateur !== null && $organisationId !== null, 403);
+
+        $organisation = OrganizationAccount::find($organisationId);
+
+        abort_unless(
+            $organisation !== null
+                && app(PermissionService::class)->can($utilisateur, 'sites.view_all', $organisation),
+            403
+        );
+    }
 
     /**
      * Les sites où cette société a une raison d'être.

@@ -3,6 +3,8 @@
 namespace App\Support\Navigation;
 
 use Illuminate\Support\Collection;
+use App\Models\OrganizationAccount;
+use App\Services\PermissionService;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
@@ -12,7 +14,7 @@ use Illuminate\Support\Facades\Route;
  * Toute la navigation du web passe par ici : la page Modules, la navbar et les deux layouts
  * société. C'est ce qui remplace les quatre registres inline qui vivaient chacun dans sa vue.
  *
- * @phpstan-type Module array{key: string, label: string, icon: string, route: string, context: string, category: string, primary: bool, visible_si?: string}
+ * @phpstan-type Module array{key: string, label: string, icon: string, route: string, context: string, category: string, primary: bool, visible_si?: string, permission?: string}
  * Le groupe porte `non-empty-array` et non `array` : `pourContexte()` retire les catégories vides,
  * donc un groupe rendu a forcément au moins une case. `Collection` n'étant pas covariante en
  * PHPStan, le type déclaré doit être exactement celui qui sort.
@@ -93,7 +95,51 @@ class ModuleCatalogue
             ->filter(fn (array $module): bool => $module['context'] === $contexte || $module['context'] === '*')
             ->filter(fn (array $module): bool => Route::has($module['route']))
             ->filter(fn (array $module): bool => self::autoriseeParSaCondition($module))
+            ->filter(fn (array $module): bool => self::autoriseeParSaPermission($module))
             ->values();
+    }
+
+    /**
+     * UNE CASE QUI MÈNE À UN 403 EST PIRE QU'UNE CASE ABSENTE.
+     *
+     * Les entrées de l'espace société ne portaient aucune clé de permission : la navbar d'un
+     * `worker` affichait Dispatch, Équipe, Équipes terrain et Sites desservis — quatre liens qui
+     * répondent 403 depuis que le lot 1 a posé les gardes. Un menu qui promet ce qu'il ne peut pas
+     * ouvrir est une régression d'usage, même quand la sécurité, elle, est correcte.
+     *
+     * La permission est évaluée contre l'organisation ACTIVE du compte, celle-là même que le
+     * middleware `org.permission` interroge — deux lectures de la même règle qui divergeraient
+     * rendraient le menu menteur dans un sens ou dans l'autre.
+     *
+     * @param  Module  $module
+     */
+    private static function autoriseeParSaPermission(array $module): bool
+    {
+        $permission = $module['permission'] ?? null;
+
+        if ($permission === null) {
+            return true;
+        }
+
+        $utilisateur = Auth::user();
+
+        if ($utilisateur === null) {
+            return false;
+        }
+
+        // Pas de garde `method_exists` : `Auth::user()` est typé `User`, qui porte le trait
+        // `HasOrganizationContext`. Une garde que le type rend toujours vraie donne l'illusion
+        // d'une protection.
+        $organisationId = $utilisateur->organizationContextId();
+
+        if ($organisationId === null) {
+            return false;
+        }
+
+        $organisation = OrganizationAccount::find($organisationId);
+
+        return $organisation !== null
+            && app(PermissionService::class)->can($utilisateur, $permission, $organisation);
     }
 
     /**
