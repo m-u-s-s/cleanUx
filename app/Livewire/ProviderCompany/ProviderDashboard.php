@@ -8,10 +8,12 @@ use App\Models\Mission;
 use App\Models\OrganizationMember;
 use App\Models\Task;
 use App\Services\PermissionService;
+use App\Services\Tasks\TaskVisibilityService;
 use App\Support\Livewire\Concerns\EnforcesActiveOrgMembership;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
+use Livewire\Attributes\Locked;
 use Livewire\Component;
 
 /**
@@ -43,8 +45,33 @@ class ProviderDashboard extends Component
      *
      * Propriété PUBLIQUE et non calculée : la vue en a besoin pour ne pas annoncer « 0 mission
      * aujourd'hui » à qui n'a simplement pas le droit de compter.
+     *
+     * `#[Locked]` N'EST PAS UNE PRÉCAUTION DE STYLE. Une propriété publique Livewire fait
+     * l'aller-retour avec le navigateur, et le client peut demander sa mise à jour — un
+     * `$set('peutToutVoir', true)` suffisait à retourner la garde depuis la console, sur la
+     * propriété même qui décide si l'on voit les missions de toute la société. L'attribut fait
+     * refuser l'écriture côté serveur ; le reste de la classe peut alors s'y fier.
      */
+    #[Locked]
     public bool $peutToutVoir = false;
+
+    /**
+     * L'effectif et le trombinoscope relèvent de `team.view`, pas de `missions.view_all`.
+     *
+     * Ce sont deux questions distinctes : combien de missions tournent aujourd'hui, et qui travaille
+     * ici. La seconde a déjà sa clé — c'est celle qui garde l'écran Équipe et la case du menu. La
+     * faire dépendre de la première aurait ouvert le trombinoscope au responsable qualité, qui
+     * suit des rapports, pas des personnes.
+     */
+    #[Locked]
+    public bool $peutVoirLEquipe = false;
+
+    /**
+     * Pour les raccourcis du bas de page : un lien vers un écran qu'on ne peut pas ouvrir est un
+     * 403 déguisé en invitation. La navbar a déjà été assainie, ces quatre cases y échappaient.
+     */
+    #[Locked]
+    public bool $peutRepartir = false;
 
     public function mount(): void
     {
@@ -52,8 +79,12 @@ class ProviderDashboard extends Component
 
         abort_unless($user->isProviderCompanyWorker(), 403);
 
-        $this->peutToutVoir = app(PermissionService::class)
-            ->can($user, 'missions.view_all', $user->currentOrganization);
+        $permissions = app(PermissionService::class);
+        $organisation = $user->currentOrganization;
+
+        $this->peutToutVoir = $permissions->can($user, 'missions.view_all', $organisation);
+        $this->peutVoirLEquipe = $permissions->can($user, 'team.view', $organisation);
+        $this->peutRepartir = $permissions->can($user, 'missions.dispatch', $organisation);
     }
 
     /**
@@ -92,7 +123,14 @@ class ProviderDashboard extends Component
             'missions_active' => $base()->whereIn('status', ['dispatched', 'in_progress'])->count(),
             'missions_done' => $base()->where('status', 'completed')->whereBetween('actual_end_at', [$from, $to])->count(),
             'missions_delayed' => $base()->where('status', '!=', 'completed')->where('planned_start_at', '<', now())->count(),
-            'members_active' => OrganizationMember::where('organization_account_id', $orgId)->where('status', 'active')->count(),
+            /*
+             * `null` PLUTÔT QUE `0` : la vue retire la carte au lieu d'afficher un chiffre faux.
+             * Un « 0 membre actif » sur l'écran d'un nettoyeur ne serait pas une discrétion, ce
+             * serait un mensonge — et il travaille précisément avec les collègues qu'on nie.
+             */
+            'members_active' => $this->peutVoirLEquipe
+                ? OrganizationMember::where('organization_account_id', $orgId)->where('status', 'active')->count()
+                : null,
             /*
              * CE COMPTEUR VALAIT `0` EN DUR, avec pour seul commentaire « calculé via Channel si
              * Reverb actif ». Un zéro se lit comme un fait : le gérant en concluait que personne ne
@@ -112,7 +150,16 @@ class ProviderDashboard extends Component
                 ->where('user_id', '!=', $user->id)
                 ->whereDoesntHave('readBy', fn ($r) => $r->where('user_id', $user->id))
                 ->count(),
-            'pending_tasks' => Task::forOrg($orgId)->todo()->count(),
+            /*
+             * LE COMPTEUR SUIT LE TABLEAU. `Task::forOrg()` comptait toutes les tâches de la
+             * société, y compris pour qui n'en voit aucune depuis que `TaskVisibilityService`
+             * borne le tableau : le chiffre annonçait un travail introuvable une fois la page
+             * ouverte. Même règle, même service — ici ce sont MES tâches à faire.
+             */
+            'pending_tasks' => app(TaskVisibilityService::class)
+                ->requetePour($user, $orgId)
+                ->todo()
+                ->count(),
         ];
     }
 
@@ -136,10 +183,24 @@ class ProviderDashboard extends Component
             ->where('planned_start_at', '<', now()->subMinutes(30))
             ->count();
 
+        /*
+         * L'ALERTE RESTE, SON LIEN PEUT DISPARAÎTRE. Un chef d'équipe a `missions.view_all` sans
+         * `missions.dispatch` : il doit savoir que trois missions sont en retard, et le « Voir → »
+         * l'envoyait sur un écran qui lui répond 403. On lui dit la nouvelle sans lui promettre la
+         * page.
+         */
         if ($delayed > 0) {
             $alerts[] = ['level' => 'red', 'icon' => '🚨',
                 'message' => "{$delayed} mission(s) en retard de +30 min",
-                'route' => 'provider-company.dispatch'];
+                'route' => $this->peutRepartir ? 'provider-company.dispatch' : null];
+        }
+
+        /*
+         * La situation Stripe de collègues nommés est une information d'ÉQUIPE : elle suit
+         * `team.view`, comme le trombinoscope, et non le droit de compter les missions.
+         */
+        if (! $this->peutVoirLEquipe) {
+            return $alerts;
         }
 
         $noStripe = OrganizationMember::where('organization_account_id', $orgId)
@@ -174,8 +235,22 @@ class ProviderDashboard extends Component
             ->get();
     }
 
+    /**
+     * QUI TRAVAILLE ICI, ET DANS QUEL ÉTAT — un trombinoscope, pas un indicateur.
+     *
+     * Il n'avait aucune garde : noms, photos et sous-rôles de toute la société s'affichaient sur le
+     * tableau de bord d'un nettoyeur. Le sous-rôle en particulier dit qui commande qui, ce qu'un
+     * exécutant n'a pas à lire dans un panneau latéral.
+     *
+     * Le filtre est dans la REQUÊTE : sans `team.view`, aucun membre n'est chargé — plutôt que
+     * chargés puis masqués par la vue, où le prochain rendu les aurait ramenés.
+     */
     public function getTeamStatusProperty()
     {
+        if (! $this->peutVoirLEquipe) {
+            return collect();
+        }
+
         return OrganizationMember::where('organization_account_id', Auth::user()->current_organization_id)
             ->where('status', 'active')
             ->with(['user:id,name,profile_photo_path', 'user.providerProfile'])

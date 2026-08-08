@@ -40,6 +40,36 @@ class MissionFromRendezVousSyncService
         return $this->providerOrganisationResolver->pourUtilisateur($rendezVous->employe_id);
     }
 
+    /**
+     * L'ÉQUIPE DÉJÀ DÉCIDÉE SUR LE RENDEZ-VOUS, REPORTÉE SUR LA MISSION.
+     *
+     * `bookings.provider_team_id` et `missions.provider_team_id` existent des deux côtés, et le
+     * report ne se faisait pas : la mission naissait sans équipe alors que la décision était prise.
+     *
+     * ON NE DÉDUIT RIEN ICI. Aucun repli par le profil du salarié, aucune équipe « par défaut » :
+     * ce champ ne fait que transporter une décision existante. `provider_teams` est par ailleurs
+     * gelée — le lot 3 fait de `field_teams` la notion canonique via une colonne distincte. Ce
+     * report n'ajoute donc aucun LECTEUR à la table gelée, il cesse seulement de perdre une donnée.
+     *
+     * L'EXISTENCE EST VÉRIFIÉE, et pas par excès de prudence : `missions.provider_team_id` porte une
+     * clé étrangère sur `provider_teams`. Un identifiant périmé sur un vieux rendez-vous ferait
+     * échouer la création de mission en MySQL — au milieu du parcours de réservation, et sans que la
+     * suite le voie, SQLite n'appliquant pas toujours les clés étrangères. Voir
+     * [[test-suite-sqlite-blindness]].
+     */
+    protected function equipeExecutante(Booking $rendezVous): ?int
+    {
+        $equipeId = $rendezVous->provider_team_id;
+
+        if ($equipeId === null) {
+            return null;
+        }
+
+        $existe = DB::table('provider_teams')->where('id', $equipeId)->exists();
+
+        return $existe ? (int) $equipeId : null;
+    }
+
     public function createFromRendezVous(Booking $rendezVous): Mission
     {
         return DB::transaction(function () use ($rendezVous) {
@@ -54,6 +84,7 @@ class MissionFromRendezVousSyncService
                     // Sans elle, `DispatchCenter` filtre sur NULL et l'espace société reste vide
                     // alors que les missions existent bien.
                     'provider_organization_id' => $this->societeExecutante($rendezVous),
+                    'provider_team_id' => $this->equipeExecutante($rendezVous),
                     'organization_contract_id' => $rendezVous->organization_contract_id,
                     'status' => MissionStatus::initialFor((bool) $rendezVous->employe_id),
                     'mission_type' => $rendezVous->organization_account_id ? 'enterprise' : 'standard',
@@ -117,6 +148,7 @@ class MissionFromRendezVousSyncService
                     'service_zone_id' => $rendezVous->service_zone_id,
                     'lead_employee_id' => $rendezVous->employe_id,
                     'provider_organization_id' => $this->societeExecutante($rendezVous),
+                    'provider_team_id' => $this->equipeExecutante($rendezVous),
                     'organization_contract_id' => $rendezVous->organization_contract_id,
                     'status' => MissionStatus::initialFor((bool) $rendezVous->employe_id),
                     'mission_type' => $rendezVous->organization_account_id ? 'enterprise' : 'standard',

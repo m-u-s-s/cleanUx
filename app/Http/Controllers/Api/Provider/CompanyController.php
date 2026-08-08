@@ -16,6 +16,7 @@ use App\Models\Task;
 use App\Services\Messaging\MessageService;
 use App\Services\Missions\MissionAssignmentService;
 use App\Services\PermissionService;
+use App\Services\Tasks\TaskVisibilityService;
 use App\Support\Organizations\ResolvesActiveOrganization;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -253,12 +254,20 @@ class CompanyController extends Controller
     // Tâches
     // ──────────────────────────────────────────────────────
 
+    /**
+     * Le tableau des tâches, borné à ce que l'appelant a le droit de voir.
+     *
+     * PAS DE MIDDLEWARE ICI, ET C'EST VOLONTAIRE. Les quatre lectures de pilotage se refusent en
+     * bloc à qui n'a pas la clé ; les tâches, non — un nettoyeur a de vraies tâches à consulter.
+     * La garde n'est donc pas à l'entrée mais dans la requête, et la règle est celle de l'écran web,
+     * au même endroit : voir `TaskVisibilityService`.
+     */
     public function tasks(): JsonResponse
     {
         $org = $this->organisationActive();
 
-        $taches = Task::query()
-            ->where('organization_account_id', $org->id)
+        $taches = app(TaskVisibilityService::class)
+            ->requetePour(Auth::user(), $org->id)
             ->orderByDesc('id')
             ->get()
             ->map(fn (Task $t) => [
@@ -313,6 +322,20 @@ class CompanyController extends Controller
             $tache->created_by === Auth::id()
                 || app(PermissionService::class)->can(Auth::user(), 'tasks.create', $org),
             403
+        );
+
+        /*
+         * PUIS : cette tâche figure-t-elle sur SON tableau ? `tasks.create` est accordée jusqu'au
+         * nettoyeur, si bien qu'elle laissait déplacer la tâche d'un collègue qu'on n'a pas le droit
+         * de lire, en devinant un identifiant. Deux questions, deux réponses — le refus d'écrire
+         * reste un 403, l'absence du tableau un 404 qui n'apprend rien.
+         */
+        abort_unless(
+            app(TaskVisibilityService::class)
+                ->requetePour(Auth::user(), $org->id)
+                ->whereKey($taskId)
+                ->exists(),
+            404
         );
 
         $donnees = $request->validate([

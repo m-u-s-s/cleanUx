@@ -31,10 +31,13 @@
                         : 'bg-amber-900/40 border border-amber-500/40 text-amber-300' }}">
                     <span class="text-lg">{{ $alert['icon'] }}</span>
                     <span class="text-sm font-medium">{{ $alert['message'] }}</span>
-                    <a href="{{ route($alert['route']) }}"
-                       class="ml-auto text-xs underline opacity-70 hover:opacity-100">
-                        Voir →
-                    </a>
+                    {{-- Route nulle : l'alerte concerne l'appelant, la page qui la traite non. --}}
+                    @if ($alert['route'])
+                        <a href="{{ route($alert['route']) }}"
+                           class="ml-auto text-xs underline opacity-70 hover:opacity-100">
+                            Voir →
+                        </a>
+                    @endif
                 </div>
             @endforeach
         </div>
@@ -51,6 +54,12 @@
                 ['value' => $kpis['members_active'],   'label' => 'Membres actifs',       'icon' => '👥', 'color' => 'purple'],
                 ['value' => $kpis['pending_tasks'],    'label' => 'Tâches ouvertes',      'icon' => '📌', 'color' => 'orange'],
             ];
+
+            /*
+             * Une carte sans valeur est RETIRÉE, pas affichée à zéro. « Membres actifs » vaut null
+             * pour qui n'a pas `team.view` : un zéro se lirait comme un fait, et il est faux.
+             */
+            $kpiCards = array_values(array_filter($kpiCards, fn ($c) => $c['value'] !== null));
         @endphp
 
         @foreach ($kpiCards as $card)
@@ -140,6 +149,12 @@
 
         {{-- Statut équipe --}}
         <div>
+            {{--
+                Le trombinoscope et son lien « Gérer » relèvent de `team.view` : sans elle, le
+                composant ne charge aucun membre et l'écran Équipe répond 403. Afficher un bloc vide
+                surmonté d'un lien interdit serait deux promesses non tenues au lieu d'une.
+            --}}
+            @if ($peutVoirLEquipe)
             <div class="mb-3 flex items-center justify-between">
                 <h2 class="text-sm font-bold uppercase tracking-wide text-slate-400">
                     👥 Équipe ({{ $teamStatus->count() }})
@@ -176,6 +191,7 @@
                     </div>
                 @endforeach
             </div>
+            @endif
 
             {{-- Liens rapides --}}
             <div class="mt-4 grid grid-cols-2 gap-2">
@@ -189,16 +205,26 @@
                     <span class="text-xl">📌</span>
                     <span class="text-[10px] font-semibold text-slate-300">Tâches</span>
                 </a>
+                {{--
+                    Canaux et Tâches restent ouverts à tous — ce sont les deux écrans que le lot 1
+                    laisse à un exécutant. Dispatch et Équipe portent la même clé que leur case de
+                    navbar : `ModuleCatalogue` les retire déjà du menu d'un worker, ces deux
+                    raccourcis étaient la dernière porte à mener nulle part.
+                --}}
+                @if ($peutRepartir)
                 <a href="{{ route('provider-company.dispatch') }}"
                    class="flex flex-col items-center gap-1 rounded-xl border border-slate-700 bg-slate-800/60 p-3 text-center transition hover:border-blue-500/50 hover:bg-slate-800">
                     <span class="text-xl">🗺️</span>
                     <span class="text-[10px] font-semibold text-slate-300">Dispatch</span>
                 </a>
+                @endif
+                @if ($peutVoirLEquipe)
                 <a href="{{ route('provider-company.team') }}"
                    class="flex flex-col items-center gap-1 rounded-xl border border-slate-700 bg-slate-800/60 p-3 text-center transition hover:border-blue-500/50 hover:bg-slate-800">
                     <span class="text-xl">👥</span>
                     <span class="text-[10px] font-semibold text-slate-300">Équipe</span>
                 </a>
+                @endif
             </div>
         </div>
     </div>

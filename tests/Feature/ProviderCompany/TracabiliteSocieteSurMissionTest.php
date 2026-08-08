@@ -142,6 +142,57 @@ class TracabiliteSocieteSurMissionTest extends TestCase
         $this->assertSame(1, Mission::where('rendez_vous_id', $booking->id)->count());
     }
 
+    public function test_l_equipe_decidee_sur_le_rendez_vous_arrive_sur_la_mission(): void
+    {
+        /*
+         * `bookings.provider_team_id` et `missions.provider_team_id` existent des deux côtés, et le
+         * report ne se faisait pas : la décision était prise, la mission naissait sans équipe.
+         */
+        $org = $this->societePrestataire();
+        $salarie = $this->salarie($org);
+
+        $equipeId = \Illuminate\Support\Facades\DB::table('provider_teams')->insertGetId([
+            'organization_account_id' => $org->id,
+            'name' => 'Équipe Nord',
+            'status' => 'active',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $booking = Booking::factory()->create([
+            'employe_id' => $salarie->id,
+            'provider_team_id' => $equipeId,
+            'status' => BookingStatus::CONFIRME,
+        ]);
+
+        $mission = Mission::where('rendez_vous_id', $booking->id)->first();
+
+        $this->assertSame($equipeId, $mission?->provider_team_id);
+    }
+
+    public function test_une_equipe_disparue_ne_fait_pas_echouer_la_creation_de_mission(): void
+    {
+        /*
+         * `missions.provider_team_id` porte une CLÉ ÉTRANGÈRE sur `provider_teams`. Reporter
+         * aveuglément un identifiant périmé — un vieux rendez-vous dont l'équipe a été supprimée —
+         * ferait échouer la création de la mission en MySQL, au milieu du parcours de réservation.
+         * On reporte une décision, on ne ressuscite pas une équipe.
+         */
+        $org = $this->societePrestataire();
+        $salarie = $this->salarie($org);
+
+        $booking = Booking::factory()->create([
+            'employe_id' => $salarie->id,
+            'provider_team_id' => 999999,
+            'status' => BookingStatus::CONFIRME,
+        ]);
+
+        $mission = Mission::where('rendez_vous_id', $booking->id)->first();
+
+        $this->assertNotNull($mission, 'La mission doit exister malgré une équipe introuvable.');
+        $this->assertNull($mission->provider_team_id);
+    }
+
     public function test_un_independant_qui_rejoint_une_societe_y_est_vraiment_rattache(): void
     {
         /*
