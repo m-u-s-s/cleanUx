@@ -52,6 +52,27 @@ export interface User {
    * celle-ci reste tenue par les gardes de chaque route.
    */
   can_manage_company?: boolean;
+  /**
+   * LE SOUS-RÔLE DANS LA SOCIÉTÉ — informatif, jamais décisionnel.
+   *
+   * Il sert à AFFICHER « Chef d'équipe » sous un nom. Dès qu'un écran conditionne quoi que ce
+   * soit, c'est `organization_permissions` qu'il doit lire : une société peut régler sa propre
+   * matrice rôle → permissions, et un écran qui aiguillerait sur le rôle ignorerait ce réglage.
+   */
+  organization_role?: string | null;
+  /**
+   * LES CLÉS ACCORDÉES, TELLES QUE LE SERVEUR LES RÉSOUT.
+   *
+   * Onze sous-rôles ne tiennent pas dans un booléen : `can_manage_company` ne distinguait pas un
+   * dispatcheur d'un responsable qualité, et l'espace terrain montrait ses six boutons société dès
+   * que `organization_type` valait `provider_company` — vrai du nettoyeur comme du patron.
+   *
+   * ON NE RECOPIE PAS LA MATRICE ICI. Le serveur envoie la liste résolue (défaut du code, réglage
+   * de la société, dérogation nominative) ; l'application applique un DÉFAUT-REFUS via `can()`.
+   * Une clé absente vaut refusée — c'est exactement ce qui arrive à une version d'application plus
+   * ancienne qu'une clé nouvelle, et le refus est alors le bon comportement.
+   */
+  organization_permissions?: string[];
 }
 
 export class ApiError extends Error {

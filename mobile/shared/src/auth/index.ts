@@ -12,3 +12,4 @@ export {
 export { isValidBusinessNumber, normaliseBusinessNumber } from './businessNumber';
 export { useMe } from './useMe';
 export { authenticateWithBiometrics } from './useBiometricAuth';
+export { can, canAny, organizationRole } from './permissions';

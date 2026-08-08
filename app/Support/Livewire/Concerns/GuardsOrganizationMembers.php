@@ -2,9 +2,9 @@
 
 namespace App\Support\Livewire\Concerns;
 
-use App\Enums\OrganizationRole;
 use App\Models\OrganizationMember;
 use App\Models\User;
+use App\Services\Organizations\OrganizationMemberAdministration;
 use App\Services\PermissionService;
 use Illuminate\Support\Facades\Auth;
 
@@ -120,23 +120,14 @@ trait GuardsOrganizationMembers
     protected function estLeDernierProprietaire(OrganizationMember $membre): bool
     {
         /*
-         * `$membre->role` est CASTÉ EN ENUM par le modèle : le comparer à la chaîne `'owner'` est
-         * toujours faux, et la garde ne s'armerait jamais. C'est précisément le défaut qui rendait
-         * `PermissionService::canManageMember()` inopérante — je l'ai reproduit ici en l'écrivant,
-         * et le test du dernier propriétaire l'a attrapé.
+         * LA RÈGLE A DÉMÉNAGÉ, ELLE N'A PAS ÉTÉ RECOPIÉE.
          *
-         * J'avais alors ajouté une normalisation acceptant les deux formes ; PHPStan a montré
-         * qu'elle était morte. On compare donc directement enum à enum, ce que le cast garantit.
+         * `OrganizationMemberAdministration` la porte désormais, parce que l'API mobile applique les
+         * mêmes protections et qu'une seconde définition aurait dérivé — c'est exactement ce que ce
+         * trait a été écrit pour empêcher entre l'écran client et l'écran prestataire.
+         *
+         * Ce trait reste la porte des composants Livewire, dont `MembersAccess` côté client.
          */
-        if ($membre->role !== OrganizationRole::OWNER || $membre->status !== 'active') {
-            return false;
-        }
-
-        return OrganizationMember::query()
-            ->where('organization_account_id', $membre->organization_account_id)
-            ->where('role', 'owner')
-            ->where('status', 'active')
-            ->where('id', '!=', $membre->id)
-            ->doesntExist();
+        return app(OrganizationMemberAdministration::class)->estLeDernierProprietaire($membre);
     }
 }

@@ -26,6 +26,7 @@ import { CompanyFieldTeamsScreen } from '@/screens/company/CompanyFieldTeamsScre
 import { CompanyTasksScreen } from '@/screens/company/CompanyTasksScreen';
 import { CompanyDispatchScreen } from '@/screens/company/CompanyDispatchScreen';
 import { CompanyChannelsScreen } from '@/screens/company/CompanyChannelsScreen';
+import { CompanyRolePermissionsScreen } from '@/screens/company/CompanyRolePermissionsScreen';
 import { CompanySitesScreen } from '@/screens/company/CompanySitesScreen';
 // Polish — UX screens
 import { NotificationPreferencesScreen } from '@/screens/NotificationPreferencesScreen';
@@ -149,6 +150,11 @@ export function RootNavigator() {
             name="CompanySites"
             component={CompanySitesScreen}
             options={{ headerShown: true, title: 'Sites desservis' }}
+          />
+          <Stack.Screen
+            name="CompanyRolePermissions"
+            component={CompanyRolePermissionsScreen}
+            options={{ headerShown: true, title: 'Rôles et permissions' }}
           />
           <Stack.Screen
             name="CompanyDispatch"
@@ -486,6 +492,11 @@ export function RootNavigator() {
               name="CompanySites"
               component={CompanySitesScreen}
               options={{ headerShown: true, title: 'Sites desservis' }}
+            />
+            <Stack.Screen
+              name="CompanyRolePermissions"
+              component={CompanyRolePermissionsScreen}
+              options={{ headerShown: true, title: 'Rôles et permissions' }}
             />
             <Stack.Screen
               name="Legal"

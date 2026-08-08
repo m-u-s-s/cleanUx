@@ -25,7 +25,21 @@ const mockAuth = { user: null as unknown, isAuthenticated: false, isLoading: fal
 const mockOnboarding = { data: undefined as unknown, isLoading: false, isError: false };
 const mockPreference = { space: undefined as unknown, isLoading: false, choose: jest.fn(), clear: jest.fn() };
 
-jest.mock('@/auth', () => ({ useAuth: () => mockAuth }));
+/*
+ * `can` REND LA VRAIE FONCTION, pas un bouchon.
+ *
+ * Les écrans société conditionnent désormais leurs boutons et leurs onglets par les clés que
+ * le serveur déclare dans `/auth/me`. `can` est une fonction PURE sur l'objet utilisateur : la
+ * bouchonner reviendrait à tester le bouchon, et masquerait le défaut-refus — le comportement
+ * qui protège une application plus ancienne qu'une clé nouvelle.
+ *
+ * Le mock d'un baril doit rendre TOUT ce que le module sous test en importe : sans cette ligne,
+ * `can` vaut `undefined` et le rendu casse sur un `TypeError` sans rapport apparent.
+ */
+jest.mock('@/auth', () => ({
+  useAuth: () => mockAuth,
+  can: jest.requireActual('../../../shared/src/auth/permissions').can,
+}));
 jest.mock('@/onboarding', () => ({
   useOnboardingProgress: () => mockOnboarding,
   isJourneyComplete: (d: unknown) => (d as { complete?: boolean } | undefined)?.complete === true,

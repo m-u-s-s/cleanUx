@@ -23,7 +23,21 @@ const mockOnboarding = { data: undefined as unknown, isLoading: false, isError: 
 /** Compté à chaque montage : c'est la preuve que l'espace société ne le déclenche pas. */
 const mockBattementsDePresence = jest.fn();
 
-jest.mock('@/auth', () => ({ useAuth: () => mockAuth }));
+/*
+ * `can` REND LA VRAIE FONCTION, pas un bouchon.
+ *
+ * Les écrans société conditionnent désormais leurs boutons et leurs onglets par les clés que
+ * le serveur déclare dans `/auth/me`. `can` est une fonction PURE sur l'objet utilisateur : la
+ * bouchonner reviendrait à tester le bouchon, et masquerait le défaut-refus — le comportement
+ * qui protège une application plus ancienne qu'une clé nouvelle.
+ *
+ * Le mock d'un baril doit rendre TOUT ce que le module sous test en importe : sans cette ligne,
+ * `can` vaut `undefined` et le rendu casse sur un `TypeError` sans rapport apparent.
+ */
+jest.mock('@/auth', () => ({
+  useAuth: () => mockAuth,
+  can: jest.requireActual('../../../shared/src/auth/permissions').can,
+}));
 jest.mock('@/onboarding', () => ({
   useOnboardingProgress: () => mockOnboarding,
   isJourneyComplete: (d: unknown) => (d as { complete?: boolean } | undefined)?.complete === true,
@@ -106,7 +120,21 @@ function renderRoot() {
   );
 }
 
-const gerant = { id: 7, name: 'Patronne', is_admin: false, is_provider: true, can_manage_company: true };
+/*
+ * LE GÉRANT PORTE SES CLÉS, depuis le lot 2.
+ *
+ * `can_manage_company` ouvre l'ESPACE ; il ne dit pas quels onglets. Un responsable qualité l'a
+ * sans avoir `missions.dispatch` ni `team.view`, et les six onglets s'affichaient pourtant à
+ * tous ceux qui entraient ici — dont deux mènent à des API qui répondent 403.
+ */
+const gerant = {
+  id: 7,
+  name: 'Patronne',
+  is_admin: false,
+  is_provider: true,
+  can_manage_company: true,
+  organization_permissions: ['missions.view_all', 'missions.dispatch', 'team.view'],
+};
 const nettoyeur = { id: 8, name: 'Nettoyeur', is_admin: false, is_provider: true, can_manage_company: false };
 
 describe('RootNavigator — espace société prestataire', () => {

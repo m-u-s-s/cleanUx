@@ -4,19 +4,19 @@ namespace App\Livewire\ProviderCompany;
 
 use App\Enums\OrganizationRole;
 use App\Mail\OrganizationInvitationMail;
-use App\Models\Channel;
-use App\Models\Mission;
-use App\Models\MissionAssignment;
 use App\Models\OrganizationInvitation;
 use App\Models\OrganizationMember;
 use App\Models\User;
+use App\Services\Organizations\MotifDeRefus;
+use App\Services\Organizations\OrganizationMemberAdministration;
 use App\Services\Organizations\OrganizationMembershipService;
+use App\Services\Organizations\ResultatAdministration;
 use App\Services\PermissionService;
 use App\Support\Livewire\Concerns\EnforcesActiveOrgMembership;
 use App\Support\Livewire\Concerns\GuardsOrganizationMembers;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Validation\Rule;
@@ -264,54 +264,29 @@ class TeamManagement extends Component
          * `memberSousGarde()` faisait déjà exactement ce contrôle — `canManageMember()`, le rang de
          * l'acteur contre celui de la CIBLE — et cette méthode ne l'appelait pas. Elle l'appelle.
          */
-        $member = $this->getOrgMember($memberId);
-
-        abort_unless(
-            app(PermissionService::class)->can($actor, 'members.edit_role', $actor->currentOrganization),
-            403
+        /*
+         * LES RÈGLES SONT PARTIES DANS `OrganizationMemberAdministration`, pas les réponses.
+         *
+         * L'application mobile doit proposer le même geste — « l'owner change les sous-rôles de ses
+         * employés quand il veut », depuis le téléphone aussi. Les réécrire côté API aurait produit
+         * deux jeux de garde-fous, et l'histoire de cet écran dit à quoi ressemble une divergence :
+         * l'écran client et l'écran prestataire, partis du même besoin, avaient chacun une
+         * protection que l'autre n'avait pas.
+         *
+         * CE QUI RESTE ICI EST LE CONTRAT DE SURFACE, et il est conservé au caractère près : une
+         * cible étrangère lève toujours une 404 (`getOrgMember()` faisait `findOrFail`), une
+         * permission manquante toujours un 403, et une escalade de hiérarchie est toujours refusée
+         * EN SILENCE — un bouton qui n'aurait pas dû être là ne mérite pas une page d'erreur.
+         */
+        $resultat = app(OrganizationMemberAdministration::class)->changerLeRole(
+            $actor,
+            (int) $actor->current_organization_id,
+            $memberId,
+            $newRole,
         );
 
-        $actorMember = $actor->membershipIn();
-        $newEnum = OrganizationRole::from($newRole);
-
-        /*
-         * PREMIER VERSANT — LE RANG ACTUEL DE LA CIBLE, qui n'était pas regardé.
-         *
-         * Un responsable d'exploitation à qui l'on accordait `members.edit_role` pouvait déclasser
-         * un PROPRIÉTAIRE en nettoyeur : seul le rang du NOUVEAU rôle était comparé, et il est
-         * évidemment inférieur au sien. La garde « dernier propriétaire » ne couvrait pas le cas
-         * d'une société qui en compte deux.
-         *
-         * La comparaison est `<`, PAS `<=`, et c'est délibéré. `canManageMember()` exige un rang
-         * STRICTEMENT supérieur ; l'employer ici aurait interdit à un propriétaire de déclasser son
-         * co-propriétaire — un comportement que ce dépôt autorise sciemment, testé et commenté :
-         * « la protection porte sur le DERNIER, pas sur le rôle ». Fermer l'escalade ne doit pas
-         * emporter une décision déjà prise pour de bonnes raisons.
-         */
-        if ($actorMember && $actorMember->role->rank() < $member->role->rank() && ! $actor->isPlatformAdmin()) {
-            return;
-        }
-
-        // Second versant : on ne promeut personne au-dessus de soi. Sans lui, distribuer un rôle
-        // deviendrait un moyen de se donner un supérieur complaisant.
-        if ($actorMember && $newEnum->rank() >= $actorMember->role->rank() && ! $actor->isPlatformAdmin()) {
-            return;
-        }
-
-        /*
-         * LE DERNIER PROPRIÉTAIRE NE SE DÉCLASSE PAS.
-         *
-         * Une société sans propriétaire actif n'a plus personne pour inviter, facturer ou céder
-         * ses droits : l'enfermement serait définitif, et irréparable sans intervention en base.
-         * La garde porte sur le DERNIER, pas sur le rôle — tant qu'un autre owner actif existe,
-         * le déclassement reste permis.
-         */
-        if ($newEnum !== OrganizationRole::OWNER && $this->estLeDernierProprietaire($member)) {
-            return;
-        }
-
-        $member->update(['role' => $newRole]);
-        app(PermissionService::class)->invalidateCache($member->user_id, $actor->current_organization_id);
+        $this->refuserSiIntrouvable($resultat, $memberId);
+        abort_if($resultat->estRefuse(MotifDeRefus::PERMISSION), 403);
     }
 
     public function suspend(int $memberId): void
@@ -334,56 +309,38 @@ class TeamManagement extends Component
         $actor = Auth::user();
 
         /*
-         * DEUX GARDES MANQUAIENT ICI (ajoutées le 2026-08-06).
-         *
-         * Vérification faite, cette méthode possédait DÉJÀ le scoping sur l'organisation
-         * (`getOrgMember()`), le contrôle de permission et le refus de l'auto-action. Il lui
-         * manquait exactement ce que son équivalent client possédait :
-         *
-         *   1. HIÉRARCHIE — rien ne vérifiait l'autorité sur la PERSONNE visée. Un responsable
-         *      d'exploitation à qui l'on accordait `members.suspend` pouvait suspendre le
-         *      propriétaire de la société. `memberSousGarde()` ferme ce passage.
-         *   2. DERNIER PROPRIÉTAIRE — plus bas.
-         *
-         * C'est la symétrie inverse de la phase 0, où c'était le client qui manquait ce que le
-         * prestataire avait : aucun des deux écrans n'est « la bonne version » de l'autre.
+         * MÊME EXTRACTION, MÊME CONTRAT DE SURFACE. `memberSousGarde()` levait 404 sur une cible
+         * étrangère et 403 sur la permission comme sur la hiérarchie ; l'auto-action et le dernier
+         * propriétaire se refusaient en silence. Les six règles vivent désormais dans le service,
+         * partagées avec l'API mobile — y compris la libération des missions à venir, qu'un second
+         * appelant aurait oubliée, et dont l'oubli ne se serait vu qu'une semaine plus tard sur le
+         * terrain.
          */
-        $member = $this->memberSousGarde($memberId, $perm);
+        $resultat = app(OrganizationMemberAdministration::class)->changerLeStatut(
+            $actor,
+            (int) $actor->current_organization_id,
+            $memberId,
+            $status,
+            $perm,
+        );
 
-        if (! $member) {
-            return;
-        }
+        $this->refuserSiIntrouvable($resultat, $memberId);
+        abort_if($resultat->estRefuse(MotifDeRefus::PERMISSION), 403);
+        abort_if($resultat->estRefuse(MotifDeRefus::HIERARCHIE), 403);
+    }
 
-        if ($member->user_id === $actor->id) {
-            return; // Ne pas se toucher soi-même
-        }
-
-        /*
-         * Suspendre ou retirer le dernier propriétaire actif laisse la société sans personne pour
-         * gérer ses accès, sa facturation ou ses employés — et aucun écran ne permet d'en nommer
-         * un nouveau depuis l'extérieur. L'enfermement serait définitif.
-         */
-        if ($status !== 'active' && $this->estLeDernierProprietaire($member)) {
-            return;
-        }
-
-        $member->update(['status' => $status]);
-        app(PermissionService::class)->invalidateCache($member->user_id, $actor->current_organization_id);
-
-        /*
-         * UN DÉPART NE SE CONTENTE PAS DE CHANGER UN STATUT.
-         *
-         * `remove()` posait `left` et s'arrêtait là. Les missions de la semaine suivante restaient
-         * assignées à quelqu'un qui ne viendra pas : le répartiteur les voyait « couvertes », et le
-         * client découvrait l'absence le jour même. La personne restait aussi dans les canaux
-         * d'équipe — et l'autorisation Reverb, qui vérifie l'appartenance au canal, lui donnait
-         * accès aux échanges de son ancien employeur en temps réel.
-         *
-         * On ne défait QUE l'à-venir. Le passé dit qui a réalisé quoi : le réécrire fausserait la
-         * facturation, les évaluations client et toute réclamation ultérieure.
-         */
-        if ($status === 'left') {
-            $this->libererLAvenir($member->user_id, (int) $actor->current_organization_id);
+    /**
+     * L'identifiant étranger lève une `ModelNotFoundException`, PAS un 404 HTTP.
+     *
+     * Les deux méthodes chargeaient leur cible par `findOrFail()` / `firstOrFail()`, et le contrat
+     * qui en découle est figé par les tests de cet écran. Le service, lui, ne connaît pas HTTP : il
+     * rend un motif, et c'est ici qu'on choisit la forme du refus — c'est précisément ce qui permet
+     * à l'API mobile de répondre 404 sur le même motif sans changer le comportement du web.
+     */
+    private function refuserSiIntrouvable(ResultatAdministration $resultat, int $memberId): void
+    {
+        if ($resultat->estRefuse(MotifDeRefus::INTROUVABLE)) {
+            throw (new ModelNotFoundException)->setModel(OrganizationMember::class, [$memberId]);
         }
     }
 
@@ -499,61 +456,6 @@ class TeamManagement extends Component
         $member->update(['permissions' => []]);
 
         app(PermissionService::class)->invalidateCache($member->user_id, $member->organization_account_id);
-    }
-
-    /**
-     * Défaire ce qui n'a pas encore eu lieu, et rien d'autre.
-     *
-     * Les missions PASSÉES gardent leur intervenant : c'est l'historique de la société, et la
-     * facturation comme les réclamations s'y appuient. Seules celles à venir retournent au dispatch.
-     *
-     * Les MESSAGES restent, eux aussi. Retirer quelqu'un d'un canal ne doit pas trouer la
-     * conversation des autres — un fil dont la moitié disparaît devient illisible pour ceux qui
-     * restent.
-     */
-    private function libererLAvenir(int $userId, int $orgId): void
-    {
-        $missionsAVenir = Mission::query()
-            ->where('provider_organization_id', $orgId)
-            ->where('planned_start_at', '>', now())
-            ->pluck('id');
-
-        if ($missionsAVenir->isNotEmpty()) {
-            MissionAssignment::query()
-                ->whereIn('mission_id', $missionsAVenir)
-                ->where('user_id', $userId)
-                ->where('assignment_status', 'assigned')
-                ->update(['assignment_status' => 'released']);
-
-            // `lead_provider_user_id` est lu par le tableau de bord, l'autorisation Reverb
-            // `mission.{id}` et le suivi de trajet : le laisser en place ferait viser les trois
-            // sur quelqu'un qui ne viendra pas.
-            Mission::query()
-                ->whereIn('id', $missionsAVenir)
-                ->where('lead_provider_user_id', $userId)
-                ->update(['lead_provider_user_id' => null, 'status' => 'pending']);
-        }
-
-        $canaux = Channel::query()
-            ->where('organization_account_id', $orgId)
-            ->pluck('id');
-
-        if ($canaux->isNotEmpty()) {
-            DB::table('channel_members')
-                ->whereIn('channel_id', $canaux)
-                ->where('user_id', $userId)
-                ->delete();
-        }
-    }
-
-    // ──────────────────────────────────────────────────────
-    // Helper
-    // ──────────────────────────────────────────────────────
-    private function getOrgMember(int $memberId): OrganizationMember
-    {
-        return OrganizationMember::where(
-            'organization_account_id', Auth::user()->current_organization_id
-        )->findOrFail($memberId);
     }
 
     public function render()

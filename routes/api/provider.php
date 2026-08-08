@@ -256,6 +256,25 @@ Route::middleware('auth:sanctum')->prefix('provider/company')->group(function ()
     Route::get('/members', [ProviderCompanyController::class, 'members'])
         ->middleware('org.permission:team.view');
 
+    /*
+     * L'ADMINISTRATION DES MEMBRES DEPUIS LE TÉLÉPHONE.
+     *
+     * `CompanyMembersScreen` était en lecture seule : changer un sous-rôle supposait un poste de
+     * travail. Ces écritures ne portent PAS de middleware de permission — chacune a sa propre clé
+     * (`members.edit_role`, `members.suspend`, `members.remove`) et surtout des règles qui
+     * dépendent de la CIBLE : rang du membre visé, dernier propriétaire, auto-action. Un middleware
+     * ne connaît pas la cible ; `OrganizationMemberAdministration` si, et il est partagé avec
+     * l'écran web.
+     */
+    Route::patch('/members/{member}/role', [ProviderCompanyController::class, 'updateMemberRole']);
+    Route::post('/members/{member}/suspend', [ProviderCompanyController::class, 'suspendMember']);
+    Route::post('/members/{member}/reactivate', [ProviderCompanyController::class, 'reactivateMember']);
+    Route::delete('/members/{member}', [ProviderCompanyController::class, 'removeMember']);
+
+    // La matrice rôle → permissions PROPRE à la société — pendant natif de l'écran web.
+    Route::get('/role-permissions', [ProviderCompanyController::class, 'rolePermissions']);
+    Route::put('/role-permissions', [ProviderCompanyController::class, 'updateRolePermission']);
+
     Route::get('/field-teams', [ProviderCompanyController::class, 'fieldTeams'])
         ->middleware('org.permission:team.view');
     Route::post('/field-teams', [ProviderCompanyController::class, 'createFieldTeam']);

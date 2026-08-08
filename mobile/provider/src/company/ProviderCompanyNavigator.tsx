@@ -7,6 +7,7 @@ import { CompanyTasksScreen } from '@/screens/company/CompanyTasksScreen';
 import { CompanyChannelsScreen } from '@/screens/company/CompanyChannelsScreen';
 import { CompanyProfileScreen } from '@/screens/company/CompanyProfileScreen';
 import { Icon } from '@/ui';
+import { useAuth, can } from '@/auth';
 import { apparenceDeBarre } from '@/ui/glassBars';
 import { colors } from '@/theme';
 import { useThemeColors } from '@/theme/useThemeColors';
@@ -15,7 +16,7 @@ import type { ProviderCompanyTabParamList } from '@/navigation/types';
 const Tab = createBottomTabNavigator<ProviderCompanyTabParamList>();
 
 /**
- * L'ESPACE SOCIÉTÉ PRESTATAIRE — quatre onglets, et le métier d'un gérant.
+ * L'ESPACE SOCIÉTÉ PRESTATAIRE — le métier d'un gérant, borné par ce que le serveur lui accorde.
  *
  * POURQUOI UN NAVIGATEUR À PART. Ces écrans pendaient d'une liste de boutons dans l'onglet Profil.
  * Un gérant ouvre son application POUR répartir les missions du jour : c'est son écran d'accueil,
@@ -32,9 +33,19 @@ const Tab = createBottomTabNavigator<ProviderCompanyTabParamList>();
  * disponible pour intervenir : le battement le ferait apparaître en ligne dans le dispatch de sa
  * propre société, et le moteur d'affectation le proposerait pour des missions qu'il ne fera pas.
  * Même raison que dans `AdminNavigator`.
+ *
+ * LES ONGLETS SUIVENT LES CLÉS DU SERVEUR. `can_manage_company` ouvre cet espace, mais il ne dit
+ * pas TOUT : un responsable qualité l'a sans avoir `missions.dispatch` ni `team.view`. Les six
+ * onglets s'affichaient à tous ceux qui entraient ici, dont deux mènent à des API qui répondent 403
+ * depuis le lot 1. Accueil, Tâches et Profil restent inconditionnels — l'accueil est l'écran de
+ * cet espace, les tâches sont bornées dans la requête, et le profil est la seule porte de sortie.
  */
 export function ProviderCompanyNavigator() {
   const theme = useThemeColors();
+  const { user } = useAuth();
+
+  const peutRepartir = can(user, 'missions.dispatch');
+  const peutVoirLesEquipes = can(user, 'team.view');
 
   return (
     <Tab.Navigator
@@ -60,24 +71,28 @@ export function ProviderCompanyNavigator() {
           tabBarIcon: ({ color, size }) => <Icon name="business-outline" size={size} color={color} />,
         }}
       />
-      <Tab.Screen
-        name="CompanyDispatchTab"
-        component={CompanyDispatchScreen}
-        options={{
-          title: 'Répartition',
-          tabBarLabel: 'Répartition',
-          tabBarIcon: ({ color, size }) => <Icon name="git-branch-outline" size={size} color={color} />,
-        }}
-      />
-      <Tab.Screen
-        name="CompanyFieldTeamsTab"
-        component={CompanyFieldTeamsScreen}
-        options={{
-          title: 'Équipes terrain',
-          tabBarLabel: 'Équipes',
-          tabBarIcon: ({ color, size }) => <Icon name="people-outline" size={size} color={color} />,
-        }}
-      />
+      {peutRepartir && (
+        <Tab.Screen
+          name="CompanyDispatchTab"
+          component={CompanyDispatchScreen}
+          options={{
+            title: 'Répartition',
+            tabBarLabel: 'Répartition',
+            tabBarIcon: ({ color, size }) => <Icon name="git-branch-outline" size={size} color={color} />,
+          }}
+        />
+      )}
+      {peutVoirLesEquipes && (
+        <Tab.Screen
+          name="CompanyFieldTeamsTab"
+          component={CompanyFieldTeamsScreen}
+          options={{
+            title: 'Équipes terrain',
+            tabBarLabel: 'Équipes',
+            tabBarIcon: ({ color, size }) => <Icon name="people-outline" size={size} color={color} />,
+          }}
+        />
+      )}
       <Tab.Screen
         name="CompanyTasksTab"
         component={CompanyTasksScreen}

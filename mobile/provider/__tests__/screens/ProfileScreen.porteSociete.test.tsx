@@ -26,7 +26,21 @@ import { render, screen, fireEvent } from '@testing-library/react-native';
 const mockNavigate = jest.fn();
 const mockAuth = { user: null as unknown, logout: jest.fn() };
 
-jest.mock('@/auth', () => ({ useAuth: () => mockAuth }));
+/*
+ * `can` REND LA VRAIE FONCTION, pas un bouchon.
+ *
+ * Les écrans société conditionnent désormais leurs boutons et leurs onglets par les clés que
+ * le serveur déclare dans `/auth/me`. `can` est une fonction PURE sur l'objet utilisateur : la
+ * bouchonner reviendrait à tester le bouchon, et masquerait le défaut-refus — le comportement
+ * qui protège une application plus ancienne qu'une clé nouvelle.
+ *
+ * Le mock d'un baril doit rendre TOUT ce que le module sous test en importe : sans cette ligne,
+ * `can` vaut `undefined` et le rendu casse sur un `TypeError` sans rapport apparent.
+ */
+jest.mock('@/auth', () => ({
+  useAuth: () => mockAuth,
+  can: jest.requireActual('../../../shared/src/auth/permissions').can,
+}));
 jest.mock('@/admin/useSpacePreference', () => ({
   useSpacePreference: () => ({ clear: jest.fn(), space: 'provider', isLoading: false, choose: jest.fn() }),
 }));
@@ -39,6 +53,25 @@ import { ProfileScreen } from '@/screens/ProfileScreen';
 /** Les cinq écrans, par le libellé que l'utilisateur lit réellement. */
 const LIBELLES = ['Répartition', 'Équipe', 'Équipes terrain', 'Tâches', 'Canaux'];
 
+/**
+ * LES CLÉS D'UN GÉRANT — la SECONDE condition, ajoutée au lot 2.
+ *
+ * Le type de l'organisation ouvre la section ; la permission décide de chaque bouton. Ces tests
+ * portaient jusqu'ici des comptes SANS clé, et affirmaient qu'ils voyaient les cinq écrans : ils
+ * figeaient donc le défaut de l'exigence 8 — un nettoyeur, membre de la même organisation, voyait
+ * les mêmes boutons, dont quatre répondent 403 depuis le lot 1.
+ *
+ * Le sens de ce fichier ne change pas : il vérifie que la PORTE existe et mène quelque part. Il
+ * fallait seulement que le compte d'essai ait les droits d'un gérant, ce qu'il n'avait pas.
+ */
+const CLES_DU_GERANT = [
+  'missions.dispatch',
+  'team.view',
+  'sites.view_all',
+  'tasks.create',
+  'channels.create',
+];
+
 beforeEach(() => {
   mockNavigate.mockClear();
 });
@@ -47,7 +80,12 @@ describe('ProfileScreen — porte vers l’espace société', () => {
   it('ouvre les cinq écrans à un membre de société prestataire', () => {
     // Exactement ce que `/api/auth/me` renvoie pour ce compte : le booléen société CLIENTE est
     // faux, et c'est normal — il ne dit rien d'une société prestataire.
-    mockAuth.user = { is_provider: true, is_entreprise: false, organization_type: 'provider_company' };
+    mockAuth.user = {
+      is_provider: true,
+      is_entreprise: false,
+      organization_type: 'provider_company',
+      organization_permissions: CLES_DU_GERANT,
+    };
 
     render(<ProfileScreen />);
 
@@ -69,7 +107,12 @@ describe('ProfileScreen — porte vers l’espace société', () => {
      * règle : une organisation hybride ouvre l'espace société sur le web et se le voyait refuser
      * dans l'application. Inclure `hybrid` rapproche les deux au lieu de les éloigner.
      */
-    mockAuth.user = { is_provider: true, is_entreprise: true, organization_type: 'hybrid' };
+    mockAuth.user = {
+      is_provider: true,
+      is_entreprise: true,
+      organization_type: 'hybrid',
+      organization_permissions: CLES_DU_GERANT,
+    };
 
     render(<ProfileScreen />);
 
@@ -96,7 +139,12 @@ describe('ProfileScreen — porte vers l’espace société', () => {
   });
 
   it('navigue vers l’écran demandé, et pas seulement en affiche le nom', () => {
-    mockAuth.user = { is_provider: true, is_entreprise: false, organization_type: 'provider_company' };
+    mockAuth.user = {
+      is_provider: true,
+      is_entreprise: false,
+      organization_type: 'provider_company',
+      organization_permissions: CLES_DU_GERANT,
+    };
 
     render(<ProfileScreen />);
     fireEvent.press(screen.getByText('Répartition'));

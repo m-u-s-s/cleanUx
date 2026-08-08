@@ -83,6 +83,13 @@ export type RootStackParamList = {
   /** Les sites clients desservis, en lecture — la désignation d'un référent se pose au bureau. */
   CompanySites: undefined;
   /**
+   * La matrice rôle → permissions PROPRE à la société.
+   *
+   * « Chez nous, les chefs d'équipe assignent les missions. » Ce réglage n'existait sur aucune
+   * surface : la table était lue par le serveur et écrite par personne.
+   */
+  CompanyRolePermissions: undefined;
+  /**
    * L'espace société complet, en onglets — la maison d'un gérant, pas une liste de boutons dans le
    * profil. Rendu hors de la pile terrain : voir `RootNavigator`, qui explique pourquoi le
    * battement de présence ne doit PAS y être monté.

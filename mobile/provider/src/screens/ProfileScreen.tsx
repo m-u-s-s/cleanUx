@@ -4,7 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Button, Divider } from '@/ui';
-import { useAuth } from '@/auth';
+import { useAuth, can } from '@/auth';
 import {typography, spacing, radius, shadows } from '@/theme';
 import { useThemeColors } from '@/theme/useThemeColors';
 import type { ThemeTokens } from '@/theme/useThemeColors';
@@ -95,17 +95,37 @@ export function ProfileScreen() {
   /**
    * L'espace société, entièrement NATIF.
    *
-   * Ces cinq écrans consomment l'API `/provider/company/*`, créée avec eux : son absence était la
-   * vraie raison de l'embarquement WebView, pas un choix d'interface.
+   * Ces écrans consomment l'API `/provider/company/*`, créée avec eux : son absence était la vraie
+   * raison de l'embarquement WebView, pas un choix d'interface.
+   *
+   * CHAQUE ENTRÉE PORTE LA CLÉ QUE SON API EXIGE. Appartenir à une société prestataire ne suffit
+   * pas : `organization_type` vaut `provider_company` pour le nettoyeur comme pour le patron, si
+   * bien que les six boutons s'affichaient à tout le monde — et quatre d'entre eux répondent 403
+   * depuis que le lot 1 a posé les gardes. Les clés sont EXACTEMENT celles de `routes/api/provider.php`
+   * et de `config/modules.php` : trois lectures de la même règle qui divergeraient rendraient le
+   * menu menteur dans un sens ou dans l'autre.
+   *
+   * `permission: null` = ouvert à tout membre. Les tâches sont bornées dans la requête (chacun voit
+   * les siennes) et les canaux par l'appartenance au canal : ce sont les deux écrans qu'un exécutant
+   * ouvre légitimement.
    */
-  const ECRANS_SOCIETE_NATIFS = [
-    { label: 'Répartition', screen: 'CompanyDispatch' as const },
-    { label: 'Équipe', screen: 'CompanyMembers' as const },
-    { label: 'Équipes terrain', screen: 'CompanyFieldTeams' as const },
-    { label: 'Sites desservis', screen: 'CompanySites' as const },
-    { label: 'Tâches', screen: 'CompanyTasks' as const },
-    { label: 'Canaux', screen: 'CompanyChannels' as const },
+  const ECRANS_SOCIETE_NATIFS: Array<{
+    label: string;
+    screen: keyof RootStackParamList;
+    permission: string | null;
+  }> = [
+    { label: 'Répartition', screen: 'CompanyDispatch', permission: 'missions.dispatch' },
+    { label: 'Équipe', screen: 'CompanyMembers', permission: 'team.view' },
+    { label: 'Équipes terrain', screen: 'CompanyFieldTeams', permission: 'team.view' },
+    { label: 'Sites desservis', screen: 'CompanySites', permission: 'sites.view_all' },
+    { label: 'Rôles et permissions', screen: 'CompanyRolePermissions', permission: 'members.manage_permissions' },
+    { label: 'Tâches', screen: 'CompanyTasks', permission: null },
+    { label: 'Canaux', screen: 'CompanyChannels', permission: null },
   ];
+
+  const ecransSocieteAutorises = ECRANS_SOCIETE_NATIFS.filter(
+    ({ permission }) => permission === null || can(user, permission),
+  );
 
 
   return (
@@ -126,19 +146,21 @@ export function ProfileScreen() {
           {/*
             ESPACE SOCIÉTÉ — écrans natifs.
 
-            On ne les affiche qu'aux membres d'une société prestataire : les proposer à un
-            indépendant donnerait des liens qui répondent 403 à qui les ouvre.
+            Deux conditions, et il en manquait une. Appartenir à une société prestataire ouvre la
+            section ; c'est la PERMISSION de chaque entrée qui décide de son bouton. Sans elle, un
+            nettoyeur voyait Répartition, Équipe, Équipes terrain et Sites desservis — quatre liens
+            qui répondent 403 depuis le lot 1. Un bouton qui échoue est pire qu'un bouton absent.
           */}
-          {estMembreSocietePrestataire && (
+          {estMembreSocietePrestataire && ecransSocieteAutorises.length > 0 && (
             <>
               <Divider />
-              {ECRANS_SOCIETE_NATIFS.map(({ label, screen }) => (
+              {ecransSocieteAutorises.map(({ label, screen }) => (
                 <View key={screen} style={styles.buttonWrapper}>
                   <Button
                     label={label}
                     variant="secondary"
                     fullWidth
-                    onPress={() => navigation.navigate(screen)}
+                    onPress={() => navigation.navigate(screen as any)}
                   />
                 </View>
               ))}

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api\Provider;
 
+use App\Enums\OrganizationRole;
 use App\Http\Controllers\Controller;
 use App\Models\Channel;
 use App\Models\FieldTeam;
@@ -10,11 +11,14 @@ use App\Models\Mission;
 use App\Models\OrganizationAccount;
 use App\Models\OrganizationContract;
 use App\Models\OrganizationMember;
+use App\Models\OrganizationRolePermission;
 use App\Models\OrganizationSite;
 use App\Models\ProviderSiteAssignment;
 use App\Models\Task;
 use App\Services\Messaging\MessageService;
 use App\Services\Missions\MissionAssignmentService;
+use App\Services\Organizations\OrganizationMemberAdministration;
+use App\Services\Organizations\ResultatAdministration;
 use App\Services\PermissionService;
 use App\Services\Tasks\TaskVisibilityService;
 use App\Support\Organizations\ResolvesActiveOrganization;
@@ -22,6 +26,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 
 /**
  * L'API DE L'ESPACE SOCIÉTÉ PRESTATAIRE.
@@ -185,6 +190,212 @@ class CompanyController extends Controller
             ]);
 
         return response()->json(['data' => $membres]);
+    }
+
+    // ──────────────────────────────────────────────────────
+    // Administration des membres
+    // ──────────────────────────────────────────────────────
+
+    /**
+     * Changer le sous-rôle d'un membre depuis le téléphone.
+     *
+     * « L'owner change les sous-rôles de ses employés quand il veut », y compris en déplacement :
+     * `CompanyMembersScreen` était en LECTURE SEULE, et l'écran web supposait un poste de travail.
+     *
+     * Les six règles — isolation, permission, hiérarchie, plafond de promotion, dernier
+     * propriétaire, auto-action — viennent de `OrganizationMemberAdministration`, partagé avec
+     * l'écran web. Les réécrire ici aurait produit deux jeux de garde-fous, et ce dépôt sait ce que
+     * cela donne : l'écran client et l'écran prestataire avaient chacun une protection que l'autre
+     * n'avait pas.
+     */
+    public function updateMemberRole(Request $request, int $memberId): JsonResponse
+    {
+        $org = $this->organisationActive();
+
+        $donnees = $request->validate([
+            'role' => [
+                'required',
+                'string',
+                // Un rôle inconnu atteindrait `OrganizationRole::from()`, qui lève un `ValueError` :
+                // 500 sur une saisie utilisateur. Même correction que sur l'invitation au lot 1.
+                Rule::in(array_map(
+                    fn (OrganizationRole $r) => $r->value,
+                    OrganizationRole::forProviderCompany(),
+                )),
+            ],
+        ]);
+
+        $resultat = app(OrganizationMemberAdministration::class)
+            ->changerLeRole(Auth::user(), $org->id, $memberId, $donnees['role']);
+
+        return $this->reponseAdministration($resultat, fn (OrganizationMember $m) => [
+            'id' => $m->id,
+            'user_id' => $m->user_id,
+            'role' => $m->role->value,
+            'status' => $m->status,
+        ]);
+    }
+
+    public function suspendMember(int $memberId): JsonResponse
+    {
+        return $this->transitionDeStatut($memberId, 'suspended', 'members.suspend');
+    }
+
+    public function reactivateMember(int $memberId): JsonResponse
+    {
+        return $this->transitionDeStatut($memberId, 'active', 'members.suspend');
+    }
+
+    /**
+     * Retirer un membre.
+     *
+     * Ce n'est PAS qu'un changement de statut : le service libère aussi les missions à venir et les
+     * canaux d'équipe. Un endpoint qui se contenterait d'écrire `left` laisserait le répartiteur
+     * croire ses missions couvertes, et l'ancien salarié dans les canaux Reverb de la société.
+     */
+    public function removeMember(int $memberId): JsonResponse
+    {
+        return $this->transitionDeStatut($memberId, 'left', 'members.remove');
+    }
+
+    private function transitionDeStatut(int $memberId, string $statut, string $permission): JsonResponse
+    {
+        $org = $this->organisationActive();
+
+        $resultat = app(OrganizationMemberAdministration::class)
+            ->changerLeStatut(Auth::user(), $org->id, $memberId, $statut, $permission);
+
+        return $this->reponseAdministration($resultat, fn (OrganizationMember $m) => [
+            'id' => $m->id,
+            'user_id' => $m->user_id,
+            'status' => $m->status,
+        ]);
+    }
+
+    /**
+     * Traduire une décision du service en réponse HTTP.
+     *
+     * LE MOTIF PORTE SON PROPRE CODE. Un refus d'autorisation (403) et une règle de gestion (422)
+     * ne se confondent pas : le dernier propriétaire ne se retire pas, mais celui qui essaie AVAIT
+     * le droit — répondre 403 l'enverrait chercher une permission qu'il possède déjà.
+     *
+     * @param  callable(OrganizationMember): array<string, mixed>  $serialiser
+     */
+    private function reponseAdministration(ResultatAdministration $resultat, callable $serialiser): JsonResponse
+    {
+        if (! $resultat->applique) {
+            $motif = $resultat->motif;
+
+            return response()->json([
+                'ok' => false,
+                'reason' => $motif?->value,
+                'message' => $motif?->message(),
+            ], $motif?->codeHttp() ?? 403);
+        }
+
+        /** @var OrganizationMember $membre */
+        $membre = $resultat->membre;
+
+        return response()->json(['data' => $serialiser($membre)]);
+    }
+
+    // ──────────────────────────────────────────────────────
+    // Matrice rôle → permissions de la société
+    // ──────────────────────────────────────────────────────
+
+    /**
+     * L'état EFFECTIF de la matrice : réglage de la société s'il existe, défaut du code sinon.
+     *
+     * Le téléphone ne reconstitue rien — il n'a pas la matrice par défaut et ne doit pas l'avoir.
+     */
+    public function rolePermissions(): JsonResponse
+    {
+        $org = $this->organisationActive();
+        $this->exige('members.manage_permissions', $org);
+
+        $permissions = app(PermissionService::class);
+
+        $reglages = OrganizationRolePermission::query()
+            ->where('organization_account_id', $org->id)
+            ->get()
+            ->groupBy('role');
+
+        $matrice = [];
+
+        foreach (OrganizationRole::forProviderCompany() as $role) {
+            if ($role === OrganizationRole::OWNER) {
+                continue; // Hors matrice : il porte la clé qui ouvre cet écran.
+            }
+
+            $parRole = $reglages->get($role->value, collect())->pluck('granted', 'permission');
+
+            foreach ($permissions->allPermissionKeys() as $cle) {
+                $matrice[$role->value][$cle] = $parRole->has($cle)
+                    ? (bool) $parRole->get($cle)
+                    : $permissions->roleAccordeParDefaut($role->value, $cle);
+            }
+        }
+
+        return response()->json(['data' => [
+            'permissions' => $permissions->allPermissionKeys(),
+            'roles' => array_values(array_map(
+                fn (OrganizationRole $r) => ['value' => $r->value, 'label' => $r->label()],
+                array_filter(
+                    OrganizationRole::forProviderCompany(),
+                    fn (OrganizationRole $r) => $r !== OrganizationRole::OWNER,
+                ),
+            )),
+            'matrix' => $matrice,
+        ]]);
+    }
+
+    /**
+     * Régler une case de la matrice.
+     *
+     * `granted` est un booléen EXPLICITE : sans lui la matrice ne saurait qu'élargir, et une société
+     * ne pourrait jamais retirer un droit que le code accorde par défaut.
+     */
+    public function updateRolePermission(Request $request): JsonResponse
+    {
+        $org = $this->organisationActive();
+        $this->exige('members.manage_permissions', $org);
+
+        $donnees = $request->validate([
+            'role' => [
+                'required',
+                'string',
+                // Le propriétaire est exclu : lui retirer `members.manage_permissions` fermerait
+                // cet écran à tout le monde, sans recours autre qu'une écriture en base.
+                Rule::in(array_values(array_map(
+                    fn (OrganizationRole $r) => $r->value,
+                    array_filter(
+                        OrganizationRole::forProviderCompany(),
+                        fn (OrganizationRole $r) => $r !== OrganizationRole::OWNER,
+                    ),
+                ))),
+            ],
+            'permission' => ['required', 'string', Rule::in(app(PermissionService::class)->allPermissionKeys())],
+            'granted' => ['required', 'boolean'],
+        ]);
+
+        OrganizationRolePermission::updateOrCreate(
+            [
+                'organization_account_id' => $org->id,
+                'role' => $donnees['role'],
+                'permission' => $donnees['permission'],
+            ],
+            ['granted' => $donnees['granted']],
+        );
+
+        // Purger toute l'organisation : ce réglage change les droits de plusieurs personnes d'un
+        // coup, et les autres resteraient une minute sur l'ancienne réponse.
+        app(PermissionService::class)->invalidateOrganizationCache($org->id);
+
+        return response()->json(['data' => [
+            'role' => $donnees['role'],
+            'permission' => $donnees['permission'],
+            'granted' => $donnees['granted'],
+        ]]);
     }
 
     // ──────────────────────────────────────────────────────
