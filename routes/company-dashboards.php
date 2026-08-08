@@ -15,6 +15,7 @@ use App\Livewire\ClientCompany\SiteMissionPhotos;
 use App\Livewire\ProviderCompany\DispatchCenter;
 use App\Livewire\ProviderCompany\FieldTeams;
 use App\Livewire\ProviderCompany\ProviderDashboard;
+use App\Livewire\ProviderCompany\RolePermissionsMatrix;
 use App\Livewire\ProviderCompany\SiteOperations;
 use App\Livewire\ProviderCompany\TaskBoard;
 use App\Livewire\ProviderCompany\TeamChannels;
@@ -88,6 +89,12 @@ Route::middleware(['auth', 'verified', 'active.account', 'org.type:provider'])
         Route::get('/taches', TaskBoard::class)->name('tasks');
         Route::get('/dispatch', DispatchCenter::class)->name('dispatch');
         Route::get('/equipe', TeamManagement::class)->name('team');
+        /*
+         * « Chez nous, les chefs d'équipe assignent les missions. » `organization_role_permissions`
+         * était lue par `PermissionService` et écrite par personne : la règle de maison réclamait un
+         * déploiement. Cet écran est son premier écrivain.
+         */
+        Route::get('/roles-permissions', RolePermissionsMatrix::class)->name('role-permissions');
         Route::get('/equipes-terrain', FieldTeams::class)->name('field-teams');
         // Les sites clients desservis, et le référent que la société y place.
         Route::get('/sites', SiteOperations::class)->name('sites');

@@ -263,6 +263,9 @@ return [
         // `SiteOperations`, et par l'API que l'écran natif « Sites desservis » consomme.
         ['key' => 'provider-company:provider-company.sites', 'label' => 'Sites desservis', 'icon' => '📍', 'route' => 'provider-company.sites', 'context' => 'provider-company', 'permission' => 'sites.view_all', 'category' => 'comptes', 'primary' => false],
         ['key' => 'provider-company:provider-company.team', 'label' => 'Équipe', 'icon' => '👥', 'route' => 'provider-company.team', 'context' => 'provider-company', 'permission' => 'team.view', 'category' => 'prestataires', 'primary' => true],
+        // La matrice rôle → permissions PROPRE à la société. `members.manage_permissions` est
+        // réservée au propriétaire par défaut : distribuer des droits n'est pas inviter.
+        ['key' => 'provider-company:provider-company.role-permissions', 'label' => 'Rôles et permissions', 'icon' => '🔑', 'route' => 'provider-company.role-permissions', 'context' => 'provider-company', 'permission' => 'members.manage_permissions', 'category' => 'comptes', 'primary' => false],
         ['key' => 'provider-company:provider-company.channels', 'label' => 'Canaux', 'icon' => '💬', 'route' => 'provider-company.channels', 'context' => 'provider-company', 'category' => 'communication', 'primary' => true],
         ['key' => 'provider-company:provider-company.dashboard', 'label' => 'Dashboard', 'icon' => '🏗️', 'route' => 'provider-company.dashboard', 'context' => 'provider-company', 'category' => 'donnees', 'primary' => true],
     ],

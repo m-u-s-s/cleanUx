@@ -5,9 +5,8 @@ namespace App\Http\Controllers\Api;
 use App\Enums\Role;
 use App\Http\Controllers\Controller;
 use App\Models\CustomerProfile;
-use App\Models\OrganizationAccount;
-use App\Services\PermissionService;
 use App\Support\Mobile\AppAudience;
+use App\Support\Organizations\ContratDeRoleMobile;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -108,34 +107,20 @@ class AuthMeController extends Controller
          * utilisé par `ClientContractsCenter`. Le seeder a été corrigé aussi, mais les bases
          * existantes gardent l'ancienne forme : le serveur ne doit pas en dépendre.
          */
-        $organisationId = $user->organizationContextId();
-        $organisation = $organisationId !== null
-            ? OrganizationAccount::query()->find($organisationId)
-            : null;
-
-        $payload['organization_account_id'] = $organisationId;
-
         /*
-         * `organization_accounts.type` n'est PAS casté en enum sur le modèle : c'est une chaîne.
-         * J'avais écrit une normalisation `instanceof` par prudence — PHPStan a montré qu'elle ne
-         * s'exécutait jamais. Une garde morte donne l'illusion d'une protection ; on la retire.
-         */
-        $payload['organization_type'] = $organisation?->type;
-
-        /*
-         * LE DROIT D'OUVRIR L'ESPACE SOCIÉTÉ, TRANCHÉ PAR LE SERVEUR.
+         * LE CONTRAT D'ORGANISATION VIT DANS UNE SEULE CLASSE, LUE PAR LES DEUX RÉPONSES.
          *
-         * `organization_type === 'provider_company'` est vrai du PATRON COMME DE L'EMPLOYÉ : tous
-         * sont membres de la même organisation. Aiguiller sur ce seul champ enverrait un nettoyeur
-         * dans un espace de pilotage et lui retirerait ses missions.
+         * Ces champs étaient calculés ici, et la connexion (`ApiAuthController::serializeUser()`)
+         * en calculait sa propre version — sans `can_manage_company` ni `organization_type`, et
+         * avec une autre résolution d'organisation. Un compte ouvrait donc l'espace société après
+         * un redémarrage de l'application, mais pas après une connexion.
          *
-         * `missions.view_all` sépare exactement les deux populations, et c'est déjà la matrice qui
-         * le dit : propriétaire, directeur d'opérations, dispatcheur, chef d'équipe et responsable
-         * qualité l'ont ; le nettoyeur et le lecteur ne l'ont pas. Recopier une liste de rôles dans
-         * l'application mobile l'aurait fait diverger de `PermissionService` au premier ajustement.
+         * `organization_role` et `organization_permissions` s'y ajoutent : le sous-rôle n'était PAS
+         * exposé, et l'application ne pouvait distinguer un nettoyeur d'un dispatcheur que par
+         * `can_manage_company` — un seul booléen pour onze rôles. Ajout ADDITIF : aucun champ
+         * existant ne change de sens, les applications installées continuent de lire les leurs.
          */
-        $payload['can_manage_company'] = $organisation !== null
-            && app(PermissionService::class)->can($user, 'missions.view_all', $organisation);
+        $payload = array_merge($payload, app(ContratDeRoleMobile::class)->pour($user));
 
         /*
          * LE RÔLE CANONIQUE — ce qui subsume tous les drapeaux ci-dessus.

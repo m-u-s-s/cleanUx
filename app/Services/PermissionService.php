@@ -343,28 +343,93 @@ class PermissionService
     }
 
     /**
-     * Retourner toutes les permissions d'un membre (rôle + overrides).
+     * Retourner toutes les permissions d'un membre (rôle + matrice société + dérogations).
+     *
+     * ELLE SAUTAIT L'ÉTAGE DU MILIEU. `memberCan()` résout en trois temps — dérogation nominative,
+     * matrice propre à la société, matrice par défaut du code — quand cette méthode n'en connaissait
+     * que le premier et le dernier. Les deux répondaient donc différemment à la même question dès
+     * qu'une société réglait sa matrice, et c'est la vue qui s'en servait : la fenêtre des
+     * permissions de `TeamManagement` affichait l'état par défaut du rôle, pas l'état effectif.
+     *
+     * L'écart n'avait encore blessé personne faute d'écran pour ÉCRIRE la matrice ; c'est
+     * précisément ce que ce lot ajoute, et le contrat de rôle mobile lit cette méthode.
+     *
+     * UNE SEULE REQUÊTE pour toute la matrice, pas une par clé : la réponse part vers le téléphone
+     * à chaque reprise de session.
      *
      * @return array<string, bool>
      */
     public function allPermissionsFor(OrganizationMember $member): array
     {
-        $allPerms = $this->allPermissionKeys();
         $role = $member->role instanceof \BackedEnum ? $member->role->value : $member->role;
         $rolePerms = self::permissionsParDefaut($role);
         $customPerms = $member->permissions ?? [];
 
+        $orgId = (int) $member->getAttribute('organization_account_id');
+
+        /*
+         * Même précaution que dans `memberCan()` : un membre construit en mémoire — ce que font les
+         * tests unitaires de ce service — n'a pas d'organisation, donc pas de matrice à interroger.
+         *
+         * @var array<string, bool> $matriceSociete
+         */
+        $matriceSociete = $orgId > 0
+            ? OrganizationRolePermission::query()
+                ->where('organization_account_id', $orgId)
+                ->where('role', $role)
+                ->pluck('granted', 'permission')
+                ->map(fn ($accorde) => (bool) $accorde)
+                ->all()
+            : [];
+
         $result = [];
 
-        foreach ($allPerms as $perm) {
+        foreach ($this->allPermissionKeys() as $perm) {
             if (array_key_exists($perm, $customPerms)) {
                 $result[$perm] = (bool) $customPerms[$perm];
-            } else {
-                $result[$perm] = in_array($perm, $rolePerms, true);
+
+                continue;
             }
+
+            if (array_key_exists($perm, $matriceSociete)) {
+                $result[$perm] = $matriceSociete[$perm];
+
+                continue;
+            }
+
+            $result[$perm] = in_array($perm, $rolePerms, true);
         }
 
         return $result;
+    }
+
+    /**
+     * Ce rôle a-t-il cette permission SANS aucun réglage de société ni dérogation ?
+     *
+     * L'écran de matrice en a besoin pour afficher l'état d'une case que la société n'a jamais
+     * réglée : n'afficher que les réglages explicites montrerait un tableau vide au premier usage,
+     * et laisserait croire que personne n'a de droits.
+     *
+     * C'est la SEULE lecture publique du troisième étage. Ailleurs, c'est `can()` ou `memberCan()`
+     * qu'il faut appeler — eux seuls consultent les trois.
+     */
+    public function roleAccordeParDefaut(string $role, string $permission): bool
+    {
+        return in_array($permission, self::permissionsParDefaut($role), true);
+    }
+
+    /**
+     * Les clés ACCORDÉES à un membre — ce que le mobile reçoit.
+     *
+     * Le téléphone n'a pas besoin de la liste des refus : il applique une règle de défaut-refus,
+     * et une clé absente vaut refusée. Envoyer les deux moitiés inviterait à traiter l'absence
+     * comme un cas indécis.
+     *
+     * @return list<string>
+     */
+    public function grantedKeysFor(OrganizationMember $member): array
+    {
+        return array_keys(array_filter($this->allPermissionsFor($member)));
     }
 
     /**

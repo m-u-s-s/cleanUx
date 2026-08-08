@@ -21,6 +21,7 @@ use App\Services\OnboardingV2\OnboardingEngine;
 use App\Services\Promotion\ReferralService;
 use App\Services\Sms\PhoneVerificationService;
 use App\Support\Mobile\AppAudience;
+use App\Support\Organizations\ContratDeRoleMobile;
 use App\Support\Validation\BusinessNumber;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\JsonResponse;
@@ -523,7 +524,7 @@ class ApiAuthController extends Controller
      */
     protected function serializeUser(User $user): array
     {
-        return [
+        return array_merge([
             'id' => $user->id,
             'name' => $user->name,
             'email' => $user->email,
@@ -541,7 +542,22 @@ class ApiAuthController extends Controller
             'is_admin' => method_exists($user, 'isPlatformAdmin') && $user->isPlatformAdmin(),
             'is_client' => method_exists($user, 'isClient') && $user->isClient(),
             'is_entreprise' => method_exists($user, 'isEntreprise') && $user->isEntreprise(),
-            'organization_account_id' => $user->organization_account_id ?? $user->current_organization_id ?? null,
-        ];
+        ],
+            /*
+             * LA PARITÉ N'EST PLUS UNE INTENTION, C'EST LE MÊME CODE.
+             *
+             * Cette méthode calculait sa propre version du contexte d'organisation : un
+             * `organization_account_id` résolu en deux niveaux là où `/auth/me` en a quatre, et NI
+             * `organization_type` NI `can_manage_company`. Un dirigeant de société prestataire se
+             * connectait donc sans que rien n'indique à l'application quel espace ouvrir — puis
+             * l'obtenait au redémarrage suivant, ce qui rendait le défaut intermittent et sa cause
+             * invisible.
+             *
+             * `organization_account_id` change de source au passage : `organizationContextId()`
+             * plutôt que `organization_account_id ?? current_organization_id`. C'est un ÉLARGISSEMENT
+             * — les deux colonnes lues auparavant restent les deux premiers replis de la méthode.
+             */
+            app(ContratDeRoleMobile::class)->pour($user)
+        );
     }
 }
