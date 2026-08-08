@@ -53,6 +53,7 @@ describe('ProfileScreen — porte de l’espace société', () => {
         'team.view',
         'sites.view_all',
         'members.manage_permissions',
+        'agencies.view',
       ],
     };
 
@@ -62,6 +63,13 @@ describe('ProfileScreen — porte de l’espace société', () => {
     getByText('Équipes terrain');
     getByText('Sites desservis');
     getByText('Rôles et permissions');
+    /*
+     * « Implantations » est la porte du seul écran d'AGENCES, et il n'a pas d'autre chemin : la
+     * liste des écrans société navigue par une variable, si bien qu'aucun `navigate('CompanyAgencies')`
+     * littéral n'existe dans la source. Sans cette assertion, l'écran pouvait être livré complet et
+     * joignable par personne — la classe de défaut qui a déjà coûté cinq écrans à ce dépôt.
+     */
+    getByText('Implantations');
     getByText('Canaux');
   });
 
@@ -91,6 +99,7 @@ describe('ProfileScreen — porte de l’espace société', () => {
     expect(queryByText('Équipes terrain')).toBeNull();
     expect(queryByText('Sites desservis')).toBeNull();
     expect(queryByText('Rôles et permissions')).toBeNull();
+    expect(queryByText('Implantations')).toBeNull();
   });
 
   it('applique le défaut-refus quand le serveur ne déclare aucune clé', () => {
