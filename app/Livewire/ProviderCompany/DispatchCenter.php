@@ -3,15 +3,16 @@
 namespace App\Livewire\ProviderCompany;
 
 use App\Events\MissionStatusUpdated;
+use App\Jobs\Missions\AutoAssignerMissionsJob;
 use App\Models\FieldTeam;
 use App\Models\Mission;
-use App\Models\MissionAssignment;
+use App\Models\OrganizationAccount;
 use App\Models\OrganizationContract;
 use App\Models\OrganizationMember;
 use App\Models\ProviderSiteAssignment;
-use App\Services\Availability\AvailabilityService;
 use App\Services\Missions\MissionAssignmentService;
 use App\Services\Missions\ReassignmentPolicy;
+use App\Services\Missions\WorkerAvailabilityService;
 use App\Services\PermissionService;
 use App\Support\Livewire\Concerns\EnforcesActiveOrgMembership;
 use Illuminate\Database\Eloquent\Collection;
@@ -24,6 +25,7 @@ use Livewire\Component;
  * @property-read Collection<int, OrganizationMember> $availableWorkers
  * @property-read Collection<int, OrganizationContract> $partnerContracts
  * @property-read array<int, bool> $disponibilites
+ * @property-read bool $modeContinuActif
  */
 class DispatchCenter extends Component
 {
@@ -361,48 +363,89 @@ class DispatchCenter extends Component
             return [];
         }
 
-        // Sans fin prévue, deux heures : la question est « déjà pris à ce moment-là », pas
-        // « combien de temps exactement ».
-        $fin = $mission->planned_end_at ?? $debut->copy()->addHours(2);
-
-        $identifiants = $this->availableWorkers
-            ->pluck('user_id')
-            ->filter()
-            ->map(fn ($id) => (int) $id)
-            ->all();
-
-        if ($identifiants === []) {
-            return [];
-        }
-
         /*
-         * Chevauchement classique : (début_autre < fin_demandée) ET (fin_autre > début_demandée).
-         * La mission courante est exclue — se réassigner à soi-même n'est pas un conflit.
+         * LA REQUÊTE A ÉTÉ EXTRAITE, PAS RECOPIÉE.
+         *
+         * Le moteur d'auto-assignation et l'API mobile posent la même question ; deux
+         * implémentations de « libre » auraient divergé, et la divergence se serait vue du côté
+         * le plus permissif — quelqu'un envoyé à deux endroits à la même heure.
          */
-        $occupes = MissionAssignment::query()
-            ->whereIn('mission_assignments.user_id', $identifiants)
-            ->where('mission_assignments.assignment_status', 'assigned')
-            ->where('mission_assignments.mission_id', '!=', $mission->id)
-            ->join('missions', 'missions.id', '=', 'mission_assignments.mission_id')
-            ->whereNotNull('missions.planned_start_at')
-            ->where('missions.planned_start_at', '<', $fin)
-            ->where(fn ($q) => $q
-                ->where('missions.planned_end_at', '>', $debut)
-                // Une mission sans fin déclarée occupe la même fenêtre par défaut que ci-dessus.
-                ->orWhereNull('missions.planned_end_at')
-            )
-            ->distinct()
-            ->pluck('mission_assignments.user_id')
-            ->map(fn ($id) => (int) $id)
-            ->all();
+        return app(WorkerAvailabilityService::class)->libresPour(
+            organisationId: (int) Auth::user()->current_organization_id,
+            debut: $debut,
+            fin: $mission->planned_end_at,
+            userIds: $this->availableWorkers
+                ->pluck('user_id')
+                ->filter()
+                ->map(fn ($id) => (int) $id)
+                ->values()
+                ->all(),
+            // Se réassigner à soi-même n'est pas un conflit.
+            exclureMissionId: $mission->id,
+        );
+    }
 
-        $verdicts = [];
+    /**
+     * « Assigner tout ce qui n'a personne ».
+     *
+     * EN FILE, PAS ICI. Deux cents missions, c'est deux cents décisions et autant de notifications :
+     * les traiter pendant que le navigateur attend donnerait un écran figé puis un timeout, avec le
+     * travail à moitié fait et rien pour dire où il s'est arrêté. Le job est `ShouldBeUnique` par
+     * société — un double-clic ne lance pas deux passages sur le même arriéré.
+     */
+    public function autoAssignerTout(): void
+    {
+        $user = Auth::user();
+        $orgId = $user?->organizationContextId();
 
-        foreach ($identifiants as $id) {
-            $verdicts[$id] = ! in_array($id, $occupes, true);
+        if (! $orgId) {
+            return;
         }
 
-        return $verdicts;
+        abort_unless(
+            app(PermissionService::class)->can($user, 'missions.dispatch', $orgId),
+            403
+        );
+
+        AutoAssignerMissionsJob::dispatch((int) $orgId, $user->id);
+    }
+
+    /**
+     * Le MODE CONTINU : toute nouvelle mission de la société est auto-assignée.
+     *
+     * Réglage de société, pas préférence d'écran : il agit sur des missions créées quand personne
+     * n'est devant l'application. C'est aussi pourquoi il est faux par défaut — aucune société ne
+     * doit se mettre à distribuer son travail toute seule du fait d'un déploiement.
+     */
+    public function basculerLeModeContinu(): void
+    {
+        $user = Auth::user();
+        $orgId = $user?->organizationContextId();
+
+        if (! $orgId) {
+            return;
+        }
+
+        abort_unless(
+            app(PermissionService::class)->can($user, 'missions.dispatch', $orgId),
+            403
+        );
+
+        $organisation = OrganizationAccount::find($orgId);
+
+        if ($organisation === null) {
+            return;
+        }
+
+        $organisation->update(['auto_assign_enabled' => ! $organisation->auto_assign_enabled]);
+    }
+
+    public function getModeContinuActifProperty(): bool
+    {
+        $orgId = Auth::user()?->organizationContextId();
+
+        return $orgId !== null
+            && (bool) OrganizationAccount::query()->whereKey($orgId)->value('auto_assign_enabled');
     }
 
     public function cancelAssign(): void

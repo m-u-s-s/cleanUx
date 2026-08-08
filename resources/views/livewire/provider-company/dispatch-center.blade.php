@@ -21,6 +21,33 @@
         </div>
     </div>
 
+    {{--
+        L'AUTO-ASSIGNATION — deux gestes distincts, et il faut les distinguer.
+
+        Le BOUTON traite l'arriéré une fois, maintenant, et part en file : deux cents missions, ce
+        sont deux cents décisions et autant de notifications. Le MODE CONTINU est un réglage de
+        SOCIÉTÉ — il agit sur des missions créées quand personne n'est devant l'écran. Les confondre
+        en un seul interrupteur laisserait croire qu'appuyer suffit, ou qu'activer traite le passé.
+    --}}
+    <div class="mb-6 flex flex-wrap items-center gap-4 rounded-2xl border border-slate-700 bg-slate-800/60 px-4 py-3">
+        <button type="button" wire:click="autoAssignerTout" wire:loading.attr="disabled"
+            class="rounded-xl bg-amber-500 px-4 py-2 text-sm font-bold text-slate-900 hover:bg-amber-400 disabled:opacity-50">
+            ⚡ Assigner les missions sans personne
+        </button>
+
+        <label class="flex cursor-pointer items-center gap-2 text-sm text-slate-300">
+            <input type="checkbox" wire:click="basculerLeModeContinu"
+                @checked($this->modeContinuActif)
+                class="h-4 w-4 rounded border-slate-600 bg-slate-900 text-amber-500">
+            Assigner automatiquement chaque nouvelle mission
+        </label>
+
+        <p class="text-xs text-slate-500">
+            Le choix se fonde sur la disponibilité réelle, le référent du site, la charge du jour et
+            la rotation. Chaque décision est tracée.
+        </p>
+    </div>
+
     {{-- Missions --}}
     <div class="space-y-3">
         @forelse ($missions as $mission)

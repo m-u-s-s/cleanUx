@@ -90,6 +90,13 @@ export type RootStackParamList = {
    */
   CompanyRolePermissions: undefined;
   /**
+   * Le détail d'une mission de société : qui est libre, assigner, renforts.
+   *
+   * Ce qui existait tenait dans un `Alert.alert` limité à dix noms, sans indicateur de
+   * disponibilité — le répartiteur choisissait à l'aveugle depuis son téléphone.
+   */
+  CompanyMissionDetail: { missionId: number };
+  /**
    * L'espace société complet, en onglets — la maison d'un gérant, pas une liste de boutons dans le
    * profil. Rendu hors de la pile terrain : voir `RootNavigator`, qui explique pourquoi le
    * battement de présence ne doit PAS y être monté.

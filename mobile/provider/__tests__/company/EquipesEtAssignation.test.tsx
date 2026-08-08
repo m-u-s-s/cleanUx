@@ -42,6 +42,18 @@ jest.mock('@/api', () => ({
   },
 }));
 
+/*
+ * L'écran de répartition NAVIGUE désormais vers le détail de la mission.
+ *
+ * L'`Alert.alert` à dix boutons qu'il ouvrait ne montrait aucune disponibilité, et plafonnait
+ * la liste : au-delà de dix personnes, les suivantes n'étaient pas proposables. Le détail les
+ * porte, avec qui est libre — d'où ce besoin de navigation, absent jusqu'ici.
+ */
+jest.mock('@react-navigation/native', () => ({
+  useNavigation: () => ({ navigate: jest.fn() }),
+  useRoute: () => ({ params: {} }),
+}));
+
 import { CompanyFieldTeamsScreen } from '@/screens/company/CompanyFieldTeamsScreen';
 import { CompanyDispatchScreen } from '@/screens/company/CompanyDispatchScreen';
 

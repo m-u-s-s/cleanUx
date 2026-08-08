@@ -3,13 +3,16 @@
 namespace App\Services\Missions;
 
 use App\Models\Booking;
+use App\Models\InternalAssignmentDecision;
 use App\Models\Mission;
+use App\Models\OrganizationAccount;
 use App\Services\Contracts\ContractSlaService;
 use App\Services\Dispatch\MissionDispatchService;
 use App\Services\Geocoding\GeocodingService;
 use App\Services\Organizations\ProviderOrganisationResolver;
 use App\Support\Domain\MissionStatus;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class MissionFromRendezVousSyncService
 {
@@ -112,6 +115,8 @@ class MissionFromRendezVousSyncService
                 app(ContractSlaService::class)->armForMission($mission);
             }
 
+            $this->tenterLAutoAssignation($mission);
+
             return $mission->fresh(['assignments', 'rendezVous']);
         });
     }
@@ -170,8 +175,53 @@ class MissionFromRendezVousSyncService
                 app(ContractSlaService::class)->armForMission($mission);
             }
 
+            $this->tenterLAutoAssignation($mission);
+
             return $mission->fresh(['assignments', 'rendezVous']);
         });
+    }
+
+    /**
+     * LE MODE CONTINU — « toute nouvelle mission de la société est auto-assignée ».
+     *
+     * Le bouton du gérant traite l'arriéré ; ceci traite le flux. Sans lui, une société qui a activé
+     * l'auto-assignation devrait quand même appuyer sur un bouton chaque matin, ce qui n'est pas
+     * « automatique ».
+     *
+     * TROIS CONDITIONS, ET CHACUNE COMPTE : une société identifiée (une mission d'indépendant ne
+     * regarde personne), le réglage activé (faux par défaut — aucune société ne se met à distribuer
+     * son travail du fait d'un déploiement), et personne d'assigné (un rendez-vous confirmé avec un
+     * salarié nommé porte déjà sa décision, la réécrire l'annulerait).
+     *
+     * SOFT-FAIL. Ce hook vit sur le chemin de la RÉSERVATION : une panne du moteur ne doit pas
+     * empêcher un client de réserver. La mission naît sans personne, ce que le dispatch montre —
+     * plutôt qu'une erreur au visage du client pour un problème d'organisation interne.
+     */
+    protected function tenterLAutoAssignation(Mission $mission): void
+    {
+        if ($mission->provider_organization_id === null || $mission->lead_provider_user_id !== null) {
+            return;
+        }
+
+        try {
+            $actif = (bool) OrganizationAccount::query()
+                ->whereKey($mission->provider_organization_id)
+                ->value('auto_assign_enabled');
+
+            if (! $actif) {
+                return;
+            }
+
+            app(InternalDispatchRunner::class)->traiter(
+                $mission,
+                InternalAssignmentDecision::MODE_AUTO_MODE,
+            );
+        } catch (\Throwable $e) {
+            Log::warning('Auto-assignation impossible sur une mission naissante', [
+                'mission_id' => $mission->id,
+                'raison' => $e->getMessage(),
+            ]);
+        }
     }
 
     protected function combineDateAndTime($date, $time): ?string

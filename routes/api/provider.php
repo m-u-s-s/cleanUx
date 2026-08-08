@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\Client\DeviceTokenController;
 use App\Http\Controllers\Api\EmployeeMissionTrackingController;
 use App\Http\Controllers\Api\PhoneVerificationController;
 use App\Http\Controllers\Api\Provider\AsapOfferController;
@@ -214,6 +215,27 @@ Route::middleware(['auth:sanctum', 'token.grace'])->prefix('provider')->group(fu
     Route::get('/payouts/summary', [ProviderPayoutsController::class, 'summary']);
 });
 
+/*
+|--------------------------------------------------------------------------
+| Appareils du prestataire — alias honnêtes vers le contrôleur existant
+|--------------------------------------------------------------------------
+|
+| L'enregistrement des jetons FCM/APNs ne vivait que sous `/api/client/devices/*`. Le nommage est
+| trompeur : le contrôleur ne fait rien de spécifique au client, il attache un appareil à
+| L'UTILISATEUR AUTHENTIFIÉ, quel qu'il soit. Une application prestataire devait donc appeler une
+| route « client » pour recevoir ses notifications — ou ne pas les recevoir du tout, ce qui rendrait
+| muettes toutes les alertes d'assignation ajoutées au lot 4.
+|
+| DES ALIAS, PAS UNE COPIE : même contrôleur, mêmes gardes, zéro logique dupliquée. Les routes
+| `client` restent en place — les applications installées les utilisent.
+*/
+Route::middleware(['auth:sanctum'])->prefix('provider')->group(function () {
+    Route::get('/devices', [DeviceTokenController::class, 'index']);
+    Route::post('/devices/register', [DeviceTokenController::class, 'register']);
+    Route::post('/devices/unregister', [DeviceTokenController::class, 'unregister']);
+    Route::patch('/devices/{deviceToken}/preferences', [DeviceTokenController::class, 'updatePreferences']);
+});
+
 // Admin — Onboarding document file download (web session auth + role:admin)
 Route::middleware(['auth', 'role:admin'])->group(function () {
     Route::get('/admin/onboarding-documents/{document}/file', [ProviderOnboardingController::class, 'downloadDocument'])
@@ -294,11 +316,32 @@ Route::middleware('auth:sanctum')->prefix('provider/company')->group(function ()
     Route::post('/tasks', [ProviderCompanyController::class, 'createTask']);
     Route::patch('/tasks/{task}', [ProviderCompanyController::class, 'updateTask']);
 
+    /*
+     * QUI EST LIBRE SUR CE CRÉNEAU — indicatif pour l'écran, éliminatoire pour le moteur.
+     *
+     * INTERDIT DE PASSER PAR `AvailabilityService` : les créneaux publiés sont un concept
+     * d'INDÉPENDANT, il rend `false` pour tout salarié et coûte ~200 ms par personne. Voir
+     * `WorkerAvailabilityService`.
+     */
+    Route::get('/availability', [ProviderCompanyController::class, 'availability'])
+        ->middleware('org.permission:missions.assign');
+
+    /*
+     * L'AUTO-ASSIGNATION. Le bouton met un job en file — deux cents missions, c'est deux cents
+     * décisions et autant de notifications : les traiter dans la requête donnerait un écran figé
+     * puis un timeout, le travail à moitié fait et rien pour dire où il s'est arrêté.
+     */
+    Route::post('/missions/auto-assign', [ProviderCompanyController::class, 'autoAssign']);
+    Route::get('/auto-assign/settings', [ProviderCompanyController::class, 'autoAssignSettings']);
+    Route::put('/auto-assign/settings', [ProviderCompanyController::class, 'updateAutoAssignSettings']);
+
     // Répartition — l'assignation partage `MissionAssignmentService` avec l'écran web.
     Route::get('/missions', [ProviderCompanyController::class, 'missions']);
     Route::post('/missions/{mission}/assign', [ProviderCompanyController::class, 'assignMission']);
     // Confier la mission à une ÉQUIPE entière — le cas ordinaire d'une société.
     Route::post('/missions/{mission}/assign-team', [ProviderCompanyController::class, 'assignMissionToTeam']);
+    // Renforts — un grand nettoyage à deux est le cas ordinaire d'une société.
+    Route::post('/missions/{mission}/helpers', [ProviderCompanyController::class, 'missionHelpers']);
 
     // Canaux — lecture ET écriture passent par ChannelPolicy, que le web n'appelait pas côté
     // écriture avant le 2026-08-06.

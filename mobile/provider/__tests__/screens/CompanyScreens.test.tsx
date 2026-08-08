@@ -2,6 +2,17 @@ import React from 'react';
 import { render, waitFor, fireEvent } from '@testing-library/react-native';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
+/*
+ * L'écran de répartition NAVIGUE désormais vers le détail de la mission.
+ *
+ * L'`Alert.alert` à dix boutons qu'il ouvrait ne montrait aucune disponibilité, et plafonnait la
+ * liste : au-delà de dix personnes, les suivantes n'étaient pas proposables.
+ */
+jest.mock('@react-navigation/native', () => ({
+  useNavigation: () => ({ navigate: jest.fn() }),
+  useRoute: () => ({ params: {} }),
+}));
+
 import { CompanyMembersScreen } from '@/screens/company/CompanyMembersScreen';
 import { CompanyFieldTeamsScreen } from '@/screens/company/CompanyFieldTeamsScreen';
 import { CompanyTasksScreen } from '@/screens/company/CompanyTasksScreen';

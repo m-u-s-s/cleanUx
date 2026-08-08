@@ -39,9 +39,13 @@ class OrganizationAccount extends Model
         'notes',
         'rating_avg',
         'rating_count',
+        // Le MODE CONTINU de l'auto-assignation. Faux par défaut : aucune société ne doit se
+        // mettre à distribuer son travail toute seule du fait d'un déploiement.
+        'auto_assign_enabled',
     ];
 
     protected $casts = [
+        'auto_assign_enabled' => 'boolean',
         'is_multisite' => 'boolean',
         'is_key_account' => 'boolean',
         'metadata' => 'array',

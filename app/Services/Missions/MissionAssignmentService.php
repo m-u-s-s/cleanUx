@@ -7,6 +7,7 @@ use App\Models\FieldTeamMember;
 use App\Models\Mission;
 use App\Models\MissionAssignment;
 use App\Models\OrganizationMember;
+use App\Services\Organizations\OrganizationNotifier;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -36,6 +37,9 @@ class MissionAssignmentService
         ?int $parUtilisateurId = null,
         ?string $motif = null,
     ): void {
+        // Qui perd la mission — relevé AVANT la libération, sinon il n'y a plus rien à lire.
+        $sortants = $this->responsablesActifsAutresQue($mission, (int) $travailleur->user_id);
+
         DB::transaction(function () use ($mission, $travailleur, $parUtilisateurId, $motif) {
             /*
              * On libère les RESPONSABLES actifs des autres personnes avant d'installer le nouveau.
@@ -86,6 +90,67 @@ class MissionAssignmentService
                 'lead_provider_user_id' => $travailleur->user_id,
             ]);
         });
+
+        /*
+         * PERSONNE N'ÉTAIT PRÉVENU — ni l'entrant, ni le sortant.
+         *
+         * Quelqu'un se voyait retirer la mission de demain sans le savoir, et l'apprenait en
+         * arrivant sur place — ou n'y allait pas. Le remplaçant, lui, la découvrait en ouvrant
+         * l'application, s'il l'ouvrait.
+         *
+         * APRÈS la transaction, jamais dedans : une notification est un effet EXTERNE, et l'envoyer
+         * avant le commit annoncerait un changement qu'un rollback annulerait.
+         */
+        $this->prevenirDeLAssignation($mission, (int) $travailleur->user_id, $sortants, $motif);
+    }
+
+    /**
+     * Les responsables actifs autres que celui qu'on installe — ceux que l'assignation va libérer.
+     *
+     * @return list<int>
+     */
+    private function responsablesActifsAutresQue(Mission $mission, int $entrantId): array
+    {
+        return MissionAssignment::query()
+            ->where('mission_id', $mission->id)
+            ->where('user_id', '!=', $entrantId)
+            ->where('assignment_status', 'assigned')
+            ->where(fn ($q) => $q->where('role_on_mission', '!=', 'helper')->orWhereNull('role_on_mission'))
+            ->pluck('user_id')
+            ->map(fn ($id) => (int) $id)
+            ->values()
+            ->all();
+    }
+
+    /**
+     * @param  list<int>  $sortants
+     */
+    private function prevenirDeLAssignation(Mission $mission, int $entrantId, array $sortants, ?string $motif): void
+    {
+        $notifier = app(OrganizationNotifier::class);
+        $quand = $mission->planned_start_at?->format('d/m à H:i') ?? 'à une date à préciser';
+
+        $notifier->notifierUtilisateur(
+            userId: $entrantId,
+            titre: 'Nouvelle mission',
+            corps: "Une mission vous est confiée le {$quand}.",
+            donnees: ['type' => 'mission_assigned', 'mission_id' => $mission->id],
+            // Idempotence par (mission, personne, geste) : deux enregistrements de la même décision
+            // ne doivent pas faire vibrer deux fois le même téléphone.
+            cleIdempotence: "mission:{$mission->id}:assign:{$entrantId}",
+        );
+
+        foreach ($sortants as $sortantId) {
+            $notifier->notifierUtilisateur(
+                userId: $sortantId,
+                titre: 'Mission retirée',
+                corps: $motif !== null
+                    ? "La mission du {$quand} a été confiée à quelqu'un d'autre : {$motif}"
+                    : "La mission du {$quand} a été confiée à quelqu'un d'autre.",
+                donnees: ['type' => 'mission_released', 'mission_id' => $mission->id],
+                cleIdempotence: "mission:{$mission->id}:release:{$sortantId}",
+            );
+        }
     }
 
     /**
@@ -111,10 +176,34 @@ class MissionAssignmentService
             return;
         }
 
+        $dejaPresent = MissionAssignment::query()
+            ->where('mission_id', $mission->id)
+            ->where('user_id', $renfort->user_id)
+            ->where('assignment_status', 'assigned')
+            ->exists();
+
         MissionAssignment::updateOrCreate(
             ['mission_id' => $mission->id, 'user_id' => $renfort->user_id],
             ['role_on_mission' => 'helper', 'assignment_status' => 'assigned', 'assigned_at' => now()]
         );
+
+        /*
+         * UNE NOTIFICATION PAR PERSONNE, MÊME SUR UNE ASSIGNATION D'ÉQUIPE.
+         *
+         * `assignerEquipe()` appelle cette méthode pour chaque membre. Sans la vérification
+         * ci-dessus, rebasculer une équipe sur elle-même — geste courant quand on corrige un
+         * horaire — ferait vibrer tous les téléphones pour une nouvelle qui n'en est pas une.
+         */
+        if (! $dejaPresent) {
+            app(OrganizationNotifier::class)->notifierUtilisateur(
+                userId: (int) $renfort->user_id,
+                titre: 'Renfort sur une mission',
+                corps: 'Vous intervenez en renfort le '
+                    .($mission->planned_start_at?->format('d/m à H:i') ?? 'à une date à préciser').'.',
+                donnees: ['type' => 'mission_helper_added', 'mission_id' => $mission->id],
+                cleIdempotence: "mission:{$mission->id}:helper:{$renfort->user_id}",
+            );
+        }
     }
 
     /**

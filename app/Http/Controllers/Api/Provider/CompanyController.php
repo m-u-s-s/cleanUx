@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\Provider;
 
 use App\Enums\OrganizationRole;
 use App\Http\Controllers\Controller;
+use App\Jobs\Missions\AutoAssignerMissionsJob;
 use App\Models\Channel;
 use App\Models\FieldTeam;
 use App\Models\FieldTeamMember;
@@ -16,9 +17,11 @@ use App\Models\OrganizationRolePermission;
 use App\Models\OrganizationSite;
 use App\Models\ProviderSiteAssignment;
 use App\Models\Task;
+use App\Models\User;
 use App\Services\Messaging\MessageService;
 use App\Services\Missions\MissionAssignmentService;
 use App\Services\Missions\ReassignmentPolicy;
+use App\Services\Missions\WorkerAvailabilityService;
 use App\Services\Organizations\OrganizationMemberAdministration;
 use App\Services\Organizations\ResultatAdministration;
 use App\Services\PermissionService;
@@ -686,6 +689,158 @@ class CompanyController extends Controller
             'id' => $mission->id,
             'field_team_id' => $mission->field_team_id,
             'lead_user_id' => $mission->lead_provider_user_id,
+        ]]);
+    }
+
+    /**
+     * Ajouter ou retirer un RENFORT.
+     *
+     * Un grand nettoyage à deux est le cas ordinaire d'une société, et il n'était pas représentable
+     * depuis le mobile : l'API ne savait qu'assigner une personne en remplaçant la précédente.
+     *
+     * Même garde que la réassignation — c'est la même redistribution de travail, seule la place
+     * occupée diffère.
+     */
+    public function missionHelpers(Request $request, int $missionId): JsonResponse
+    {
+        $org = $this->organisationActive();
+
+        $donnees = $request->validate([
+            'user_id' => ['required', 'integer'],
+            'remove' => ['nullable', 'boolean'],
+        ]);
+
+        $mission = Mission::query()
+            ->where('provider_organization_id', $org->id)
+            ->findOrFail($missionId);
+
+        abort_unless(
+            app(ReassignmentPolicy::class)->peutReassigner(Auth::user(), $mission),
+            403
+        );
+
+        $service = app(MissionAssignmentService::class);
+
+        if ($donnees['remove'] ?? false) {
+            $service->retirerRenfort($mission, (int) $donnees['user_id'], Auth::id());
+
+            return response()->json(['data' => ['ok' => true, 'removed' => true]]);
+        }
+
+        // Membre ACTIF de cette société : sans quoi on affecterait l'employé d'une autre entreprise.
+        $renfort = OrganizationMember::query()
+            ->where('organization_account_id', $org->id)
+            ->where('user_id', $donnees['user_id'])
+            ->where('status', 'active')
+            ->firstOrFail();
+
+        $service->ajouterRenfort($mission, $renfort);
+
+        return response()->json(['data' => ['ok' => true, 'user_id' => $renfort->user_id]], 201);
+    }
+
+    // ──────────────────────────────────────────────────────
+    // Disponibilité et auto-assignation
+    // ──────────────────────────────────────────────────────
+
+    /**
+     * Qui est libre sur le créneau d'une mission.
+     *
+     * L'écran mobile remplaçait un `Alert.alert` limité à dix noms, SANS indicateur de
+     * disponibilité : le répartiteur choisissait à l'aveugle depuis son téléphone, là où l'écran web
+     * le renseignait déjà.
+     */
+    public function availability(Request $request): JsonResponse
+    {
+        $org = $this->organisationActive();
+
+        $donnees = $request->validate([
+            'mission_id' => ['required', 'integer'],
+        ]);
+
+        $mission = Mission::query()
+            ->where('provider_organization_id', $org->id)
+            ->findOrFail($donnees['mission_id']);
+
+        $debut = $mission->planned_start_at;
+
+        // Sans horaire, la question n'a pas de sens : on ne prétend pas que tout le monde est libre.
+        if ($debut === null) {
+            return response()->json(['data' => ['mission_id' => $mission->id, 'workers' => []]]);
+        }
+
+        $verdicts = app(WorkerAvailabilityService::class)->libresPour(
+            organisationId: $org->id,
+            debut: $debut,
+            fin: $mission->planned_end_at,
+            exclureMissionId: $mission->id,
+        );
+
+        $noms = User::query()->whereIn('id', array_keys($verdicts))->pluck('name', 'id');
+
+        $travailleurs = [];
+
+        foreach ($verdicts as $userId => $libre) {
+            $travailleurs[] = [
+                'user_id' => $userId,
+                'name' => $noms[$userId] ?? null,
+                'is_free' => $libre,
+            ];
+        }
+
+        return response()->json(['data' => [
+            'mission_id' => $mission->id,
+            'planned_start_at' => $debut->toIso8601String(),
+            'workers' => $travailleurs,
+        ]]);
+    }
+
+    /**
+     * « Assigner tout ce qui n'a personne » — mis en FILE, pas exécuté ici.
+     *
+     * Deux cents missions, c'est deux cents décisions et autant de notifications : les traiter
+     * pendant que le téléphone attend donnerait un écran figé puis un timeout, avec le travail à
+     * moitié fait et rien pour dire où il s'est arrêté.
+     */
+    public function autoAssign(): JsonResponse
+    {
+        $org = $this->organisationActive();
+        $this->exige('missions.dispatch', $org);
+
+        AutoAssignerMissionsJob::dispatch($org->id, Auth::id());
+
+        return response()->json(['data' => ['ok' => true, 'queued' => true]], 202);
+    }
+
+    public function autoAssignSettings(): JsonResponse
+    {
+        $org = $this->organisationActive();
+        $this->exige('missions.dispatch', $org);
+
+        return response()->json(['data' => [
+            'auto_assign_enabled' => (bool) $org->auto_assign_enabled,
+        ]]);
+    }
+
+    /**
+     * Le MODE CONTINU — toute nouvelle mission de la société est auto-assignée.
+     *
+     * Réglage de SOCIÉTÉ, pas préférence d'écran : il agit sur des missions créées quand personne
+     * n'est devant l'application. C'est aussi pourquoi il est faux par défaut.
+     */
+    public function updateAutoAssignSettings(Request $request): JsonResponse
+    {
+        $org = $this->organisationActive();
+        $this->exige('missions.dispatch', $org);
+
+        $donnees = $request->validate([
+            'auto_assign_enabled' => ['required', 'boolean'],
+        ]);
+
+        $org->update(['auto_assign_enabled' => $donnees['auto_assign_enabled']]);
+
+        return response()->json(['data' => [
+            'auto_assign_enabled' => (bool) $org->fresh()->auto_assign_enabled,
         ]]);
     }
 
