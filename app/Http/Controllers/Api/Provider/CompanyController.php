@@ -16,11 +16,14 @@ use App\Models\OrganizationMember;
 use App\Models\OrganizationRolePermission;
 use App\Models\OrganizationSite;
 use App\Models\ProviderSiteAssignment;
+use App\Models\ProviderAgency;
+use App\Models\ProviderSiteTeam;
 use App\Models\Task;
 use App\Models\User;
 use App\Services\Messaging\MessageService;
 use App\Services\Missions\MissionAssignmentService;
 use App\Services\Missions\ReassignmentPolicy;
+use App\Services\Client\Calendar\BookingRescheduleService;
 use App\Services\Missions\WorkerAvailabilityService;
 use App\Services\Organizations\OrganizationMemberAdministration;
 use App\Services\Organizations\ResultatAdministration;
@@ -32,6 +35,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
+use Illuminate\Support\Carbon;
 
 /**
  * L'API DE L'ESPACE SOCIÉTÉ PRESTATAIRE.
@@ -167,6 +171,251 @@ class CompanyController extends Controller
             ]);
 
         return response()->json(['data' => $sites]);
+    }
+
+    /**
+     * Nommer un référent sur un site desservi.
+     *
+     * `provider_site_assignments` existait depuis le 2026-08-07 avec ZÉRO ligne et AUCUN écrivain :
+     * la table était prête, la connaissance qu'elle devait porter — qui connaît le code de la porte,
+     * l'ascenseur en panne — n'avait aucun moyen d'y entrer.
+     */
+    public function assignSiteReferent(Request $request, int $siteId): JsonResponse
+    {
+        $org = $this->organisationActive();
+        $this->exige('sites.assign_members', $org);
+
+        $donnees = $request->validate([
+            'user_id' => ['required', 'integer'],
+            'role' => ['nullable', Rule::in([ProviderSiteAssignment::ROLE_LEAD, ProviderSiteAssignment::ROLE_BACKUP])],
+        ]);
+
+        abort_unless($this->desservonsNousCeSite($org->id, $siteId), 404);
+
+        // Membre ACTIF de cette société : sans quoi on nommerait l'employé d'un concurrent.
+        $membre = OrganizationMember::query()
+            ->where('organization_account_id', $org->id)
+            ->where('user_id', $donnees['user_id'])
+            ->where('status', 'active')
+            ->firstOrFail();
+
+        $ligne = ProviderSiteAssignment::updateOrCreate(
+            [
+                'provider_organization_id' => $org->id,
+                'organization_site_id' => $siteId,
+                'user_id' => $membre->user_id,
+            ],
+            ['role' => $donnees['role'] ?? ProviderSiteAssignment::ROLE_LEAD],
+        );
+
+        return response()->json(['data' => ['id' => $ligne->id, 'role' => $ligne->role]], 201);
+    }
+
+    public function removeSiteReferent(int $siteId, int $userId): JsonResponse
+    {
+        $org = $this->organisationActive();
+        $this->exige('sites.assign_members', $org);
+
+        // Scoping DANS la requête : l'affectation d'un concurrent sur le même immeuble n'est jamais
+        // touchée, ni même chargée.
+        ProviderSiteAssignment::query()
+            ->where('provider_organization_id', $org->id)
+            ->where('organization_site_id', $siteId)
+            ->where('user_id', $userId)
+            ->delete();
+
+        return response()->json(['data' => ['ok' => true]]);
+    }
+
+    /**
+     * L'ÉQUIPE HABITUELLE D'UN SITE.
+     *
+     * Nommer des PERSONNES ne suffit pas sur un grand immeuble : c'est une équipe entière qui y va,
+     * et la désigner personne par personne recommence à chaque changement d'effectif.
+     */
+    public function setSiteDefaultTeam(Request $request, int $siteId): JsonResponse
+    {
+        $org = $this->organisationActive();
+        $this->exige('sites.assign_members', $org);
+
+        $donnees = $request->validate([
+            'field_team_id' => ['nullable', 'integer'],
+        ]);
+
+        abort_unless($this->desservonsNousCeSite($org->id, $siteId), 404);
+
+        // `null` retire l'équipe par défaut : un site peut cesser d'en avoir une.
+        if (($donnees['field_team_id'] ?? null) === null) {
+            ProviderSiteTeam::query()
+                ->where('provider_organization_id', $org->id)
+                ->where('organization_site_id', $siteId)
+                ->delete();
+
+            return response()->json(['data' => ['field_team_id' => null]]);
+        }
+
+        $equipe = FieldTeam::query()
+            ->where('organization_account_id', $org->id)
+            ->findOrFail($donnees['field_team_id']);
+
+        ProviderSiteTeam::updateOrCreate(
+            ['provider_organization_id' => $org->id, 'organization_site_id' => $siteId],
+            ['field_team_id' => $equipe->id],
+        );
+
+        return response()->json(['data' => ['field_team_id' => $equipe->id]]);
+    }
+
+    /**
+     * Desservons-nous ce site ?
+     *
+     * Même déduction que la liste des sites — missions et contrats-cadres. Un prestataire ne possède
+     * pas les locaux de ses clients : il ne peut donc y nommer quelqu'un que s'il y intervient
+     * réellement.
+     */
+    private function desservonsNousCeSite(int $organisationId, int $siteId): bool
+    {
+        $parMission = Mission::query()
+            ->where('provider_organization_id', $organisationId)
+            ->where('organization_site_id', $siteId)
+            ->exists();
+
+        if ($parMission) {
+            return true;
+        }
+
+        $orgsSousContrat = OrganizationContract::query()
+            ->where('provider_organization_id', $organisationId)
+            ->distinct()
+            ->pluck('organization_account_id');
+
+        return OrganizationSite::query()
+            ->whereKey($siteId)
+            ->whereIn('organization_account_id', $orgsSousContrat)
+            ->exists();
+    }
+
+    // ──────────────────────────────────────────────────────
+    // Agences — les implantations de la SOCIÉTÉ
+    // ──────────────────────────────────────────────────────
+
+    /**
+     * Les implantations de la société.
+     *
+     * À NE PAS CONFONDRE AVEC `organization_sites`, qui désigne les locaux du CLIENT. Les deux se
+     * ressemblent sur le papier — une adresse, une ville — et n'ont rien à voir : une société
+     * multi-villes n'avait aucun moyen de déclarer son dépôt de Bruxelles.
+     */
+    public function agencies(): JsonResponse
+    {
+        $org = $this->organisationActive();
+        $this->exige('agencies.view', $org);
+
+        $agences = ProviderAgency::query()
+            ->where('provider_organization_id', $org->id)
+            ->orderBy('name')
+            ->get()
+            ->map(fn (ProviderAgency $a) => [
+                'id' => $a->id,
+                'name' => $a->name,
+                'city' => $a->city,
+                'address' => $a->address,
+                'status' => $a->status,
+                'service_zone_id' => $a->service_zone_id,
+            ]);
+
+        return response()->json(['data' => $agences]);
+    }
+
+    public function createAgency(Request $request): JsonResponse
+    {
+        $org = $this->organisationActive();
+        $this->exige('agencies.manage', $org);
+
+        $donnees = $request->validate([
+            'name' => ['required', 'string', 'max:120'],
+            'address' => ['nullable', 'string', 'max:255'],
+            'city' => ['nullable', 'string', 'max:120'],
+            'postal_code' => ['nullable', 'string', 'max:20'],
+            'service_zone_id' => ['nullable', 'integer'],
+        ]);
+
+        $agence = ProviderAgency::create([
+            'provider_organization_id' => $org->id,
+            'name' => $donnees['name'],
+            // Unique PAR SOCIÉTÉ : deux prestataires peuvent appeler leur implantation « nord ».
+            'slug' => Str::slug($donnees['name']).'-'.Str::lower(Str::random(5)),
+            'address' => $donnees['address'] ?? null,
+            'city' => $donnees['city'] ?? null,
+            'postal_code' => $donnees['postal_code'] ?? null,
+            'service_zone_id' => $donnees['service_zone_id'] ?? null,
+            'status' => 'active',
+        ]);
+
+        return response()->json(['data' => ['id' => $agence->id, 'name' => $agence->name]], 201);
+    }
+
+    public function updateAgency(Request $request, int $agencyId): JsonResponse
+    {
+        $org = $this->organisationActive();
+        $this->exige('agencies.manage', $org);
+
+        $agence = ProviderAgency::query()
+            ->where('provider_organization_id', $org->id)
+            ->findOrFail($agencyId);
+
+        $donnees = $request->validate([
+            'name' => ['nullable', 'string', 'max:120'],
+            'address' => ['nullable', 'string', 'max:255'],
+            'city' => ['nullable', 'string', 'max:120'],
+            'postal_code' => ['nullable', 'string', 'max:20'],
+            'service_zone_id' => ['nullable', 'integer'],
+            'status' => ['nullable', Rule::in(['active', 'archived'])],
+        ]);
+
+        $agence->update(array_filter($donnees, fn ($v) => $v !== null));
+
+        return response()->json(['data' => ['id' => $agence->id, 'status' => $agence->fresh()->status]]);
+    }
+
+    /**
+     * Rattacher une équipe ou un membre à une agence.
+     *
+     * `null` détache — une société peut réorganiser, et un rattachement qu'on ne pourrait pas défaire
+     * obligerait à recréer l'équipe.
+     */
+    public function attachToAgency(Request $request, int $agencyId): JsonResponse
+    {
+        $org = $this->organisationActive();
+        $this->exige('agencies.manage', $org);
+
+        $donnees = $request->validate([
+            'field_team_id' => ['nullable', 'integer'],
+            'member_id' => ['nullable', 'integer'],
+            'detach' => ['nullable', 'boolean'],
+        ]);
+
+        $agence = ProviderAgency::query()
+            ->where('provider_organization_id', $org->id)
+            ->findOrFail($agencyId);
+
+        $valeur = ($donnees['detach'] ?? false) ? null : $agence->id;
+
+        if (($donnees['field_team_id'] ?? null) !== null) {
+            FieldTeam::query()
+                ->where('organization_account_id', $org->id)
+                ->whereKey($donnees['field_team_id'])
+                ->update(['provider_agency_id' => $valeur]);
+        }
+
+        if (($donnees['member_id'] ?? null) !== null) {
+            OrganizationMember::query()
+                ->where('organization_account_id', $org->id)
+                ->whereKey($donnees['member_id'])
+                ->update(['provider_agency_id' => $valeur]);
+        }
+
+        return response()->json(['data' => ['ok' => true, 'provider_agency_id' => $valeur]]);
     }
 
     // ──────────────────────────────────────────────────────
@@ -737,6 +986,65 @@ class CompanyController extends Controller
         $service->ajouterRenfort($mission, $renfort);
 
         return response()->json(['data' => ['ok' => true, 'user_id' => $renfort->user_id]], 201);
+    }
+
+    /**
+     * DÉPLACER UNE INTERVENTION — date, heure et LIEU.
+     *
+     * `BookingRescheduleService` était strictement client/admin, et aucun endpoint ne l'exposait au
+     * prestataire : une société qui devait décaler d'une heure appelait le client pour qu'il le
+     * fasse lui-même. Le LIEU, lui, ne bougeait jamais — la notion n'existait dans aucun chemin.
+     *
+     * L'application est immédiate et le client notifié systématiquement ; sous la fenêtre de gel
+     * (24 h), seuls le propriétaire et le directeur d'opérations décident, avec motif obligatoire.
+     */
+    public function rescheduleMission(Request $request, int $missionId): JsonResponse
+    {
+        $org = $this->organisationActive();
+        $this->exige('missions.reschedule', $org);
+
+        $donnees = $request->validate([
+            'date' => ['required', 'date'],
+            'heure' => ['nullable', 'string', 'max:8'],
+            'organization_site_id' => ['nullable', 'integer'],
+            'adresse' => ['nullable', 'string', 'max:255'],
+            'motif' => ['nullable', 'string', 'max:500'],
+        ]);
+
+        $mission = Mission::query()
+            ->where('provider_organization_id', $org->id)
+            ->findOrFail($missionId);
+
+        $rendezVous = $mission->rendezVous;
+
+        abort_if($rendezVous === null, 422, 'Cette mission n’a pas de rendez-vous à déplacer.');
+
+        try {
+            app(BookingRescheduleService::class)->reprogrammerParPrestataire(
+                rendezVous: $rendezVous,
+                acteur: Auth::user(),
+                nouvelleDate: Carbon::parse($donnees['date']),
+                nouvelleHeure: $donnees['heure'] ?? null,
+                nouveauSiteId: $donnees['organization_site_id'] ?? null,
+                nouvelleAdresse: $donnees['adresse'] ?? null,
+                motif: $donnees['motif'] ?? null,
+            );
+        } catch (\DomainException $e) {
+            /*
+             * 422 ET NON 403. La fenêtre de gel et le site illégitime ne sont pas des refus
+             * d'autorisation : l'acteur AVAIT le droit de déplacer, c'est cette demande-là qui ne
+             * passe pas. Répondre 403 l'enverrait chercher une permission qu'il possède déjà.
+             */
+            return response()->json(['ok' => false, 'message' => $e->getMessage()], 422);
+        }
+
+        $mission->refresh();
+
+        return response()->json(['data' => [
+            'id' => $mission->id,
+            'planned_start_at' => $mission->planned_start_at?->toIso8601String(),
+            'organization_site_id' => $mission->organization_site_id,
+        ]]);
     }
 
     // ──────────────────────────────────────────────────────

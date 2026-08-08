@@ -224,3 +224,41 @@ describe('CompanyMissionDetailScreen — choisir en sachant qui est libre', () =
     expect(screen.queryByText('+ renfort')).toBeNull();
   });
 });
+
+describe('CompanyMissionDetailScreen — déplacer l’intervention', () => {
+  it('envoie la nouvelle date, l’heure et le motif', async () => {
+    /*
+     * Le service de reprogrammation était strictement CLIENT/ADMIN : une société qui devait décaler
+     * d'une heure appelait le client pour qu'il le fasse lui-même.
+     */
+    mockAuth.user = { organization_permissions: ['missions.reschedule'] };
+
+    monter(<CompanyMissionDetailScreen />);
+
+    fireEvent.press(await screen.findByTestId('ouvrir-deplacement'));
+
+    fireEvent.changeText(screen.getByTestId('champ-date'), '2026-08-20');
+    fireEvent.changeText(screen.getByTestId('champ-heure'), '14:00');
+    fireEvent.changeText(screen.getByTestId('champ-motif'), 'Tournée réorganisée');
+
+    fireEvent.press(screen.getByText('Déplacer'));
+
+    await waitFor(() =>
+      expect(mockPost).toHaveBeenCalledWith('/provider/company/missions/12/reschedule', {
+        date: '2026-08-20',
+        heure: '14:00',
+        motif: 'Tournée réorganisée',
+      }),
+    );
+  });
+
+  it('ne propose pas de déplacer à qui n’a pas la clé', async () => {
+    mockAuth.user = { organization_permissions: ['missions.assign'] };
+
+    monter(<CompanyMissionDetailScreen />);
+
+    await screen.findByText(/Résidence Les Tilleuls/);
+
+    expect(screen.queryByTestId('ouvrir-deplacement')).toBeNull();
+  });
+});

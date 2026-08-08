@@ -78,6 +78,8 @@ class InternalAutoAssignmentEngine
         $charges = $this->disponibilites->chargeDuJour($libres, $debut);
         $dernieres = $this->disponibilites->dernieresMissions($libres, $debut);
         $duMetier = $this->duMetierDeLaMission($mission, $libres);
+        $agenceDeLaMission = $this->agenceDeLaMission($mission);
+        $agenceDesMembres = $this->agencesDesMembres((int) $organisationId, $libres);
 
         $candidats = [];
 
@@ -104,8 +106,13 @@ class InternalAutoAssignmentEngine
                 $detail['metier'] = (int) $poids['metier'];
             }
 
-            // Déclarée et inactive jusqu'au lot 6 : voir `config/internal_dispatch.php`.
-            if ((int) $poids['agence'] !== 0) {
+            /*
+             * L'AGENCE — activée au lot 6. Le point va à qui est rattaché à la MÊME implantation
+             * que la mission ; une société sans agence déclarée ne voit rien changer, `null` ne
+             * correspondant à rien.
+             */
+            if ($agenceDeLaMission !== null
+                && ($agenceDesMembres[$userId] ?? null) === $agenceDeLaMission) {
                 $detail['agence'] = (int) $poids['agence'];
             }
 
@@ -133,6 +140,48 @@ class InternalAutoAssignmentEngine
             'chosen_score' => $candidats[0]['score'],
             'candidates' => $candidats,
         ];
+    }
+
+    /**
+     * De quelle implantation relève cette mission.
+     *
+     * La colonne posée sur la mission d'abord — une décision explicite —, puis l'agence de l'équipe
+     * qui l'exécute. Sans ni l'une ni l'autre, `null` : on ne devine pas une implantation depuis une
+     * adresse, ce serait une géographie inventée.
+     */
+    private function agenceDeLaMission(Mission $mission): ?int
+    {
+        if ($mission->provider_agency_id !== null) {
+            return (int) $mission->provider_agency_id;
+        }
+
+        if ($mission->field_team_id === null) {
+            return null;
+        }
+
+        $agence = DB::table('field_teams')
+            ->where('id', $mission->field_team_id)
+            ->value('provider_agency_id');
+
+        return $agence !== null ? (int) $agence : null;
+    }
+
+    /**
+     * @param  list<int>  $userIds
+     * @return array<int, ?int> user_id => agence
+     */
+    private function agencesDesMembres(int $organisationId, array $userIds): array
+    {
+        if ($userIds === []) {
+            return [];
+        }
+
+        return DB::table('organization_members')
+            ->where('organization_account_id', $organisationId)
+            ->whereIn('user_id', $userIds)
+            ->pluck('provider_agency_id', 'user_id')
+            ->map(fn ($id) => $id !== null ? (int) $id : null)
+            ->all();
     }
 
     /**

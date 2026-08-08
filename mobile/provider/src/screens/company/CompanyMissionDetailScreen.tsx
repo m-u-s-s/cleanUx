@@ -1,5 +1,5 @@
-import React from 'react';
-import { View, Text, ScrollView, StyleSheet, Pressable, Alert } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, ScrollView, StyleSheet, Pressable, Alert, TextInput } from 'react-native';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useRoute } from '@react-navigation/native';
 import type { RouteProp } from '@react-navigation/native';
@@ -7,7 +7,7 @@ import { Screen, Button, Badge, Divider, EmptyState } from '@/ui';
 import { apiClient } from '@/api';
 import { useAuth, can } from '@/auth';
 import { useLiveMissionUpdates } from '@/missions';
-import { spacing, typography } from '@/theme';
+import { spacing, typography, radius } from '@/theme';
 import { useThemeColors } from '@/theme/useThemeColors';
 import type { ThemeTokens } from '@/theme/useThemeColors';
 import type { RootStackParamList } from '@/navigation/types';
@@ -87,6 +87,41 @@ export function CompanyMissionDetailScreen() {
       ),
   });
 
+  /*
+   * DÉPLACER — date, heure et LIEU.
+   *
+   * Une société qui devait décaler d'une heure appelait le client pour qu'il le fasse lui-même : le
+   * service de reprogrammation était strictement client/admin. Sous 24 h de l'échéance, le serveur
+   * exige un motif et un rôle élevé — on ne réimplémente pas cette règle ici, on affiche ce qu'il
+   * répond.
+   */
+  const peutDeplacer = can(user, 'missions.reschedule');
+  const [formulaireOuvert, setFormulaireOuvert] = useState(false);
+  const [nouvelleDate, setNouvelleDate] = useState('');
+  const [nouvelleHeure, setNouvelleHeure] = useState('');
+  const [motif, setMotif] = useState('');
+
+  const deplacer = useMutation({
+    mutationFn: async () =>
+      apiClient.post(`/provider/company/missions/${missionId}/reschedule`, {
+        date: nouvelleDate,
+        heure: nouvelleHeure || null,
+        motif: motif || null,
+      }),
+    onSuccess: () => {
+      setFormulaireOuvert(false);
+      setMotif('');
+      qc.invalidateQueries({ queryKey: ['company', 'missions'] });
+    },
+    // Le serveur distingue le refus d'autorisation de la fenêtre de gel, et rend un message
+    // lisible : le réécrire ici produirait deux formulations de la même règle.
+    onError: (erreur: any) =>
+      Alert.alert(
+        'Déplacement refusé',
+        erreur?.data?.message ?? "L'intervention n'a pas pu être déplacée.",
+      ),
+  });
+
   const renfort = useMutation({
     mutationFn: async (params: { userId: number; retirer: boolean }) =>
       apiClient.post(`/provider/company/missions/${missionId}/helpers`, {
@@ -140,6 +175,60 @@ export function CompanyMissionDetailScreen() {
           <Text style={styles.info}>
             Vous consultez cette mission. Sa répartition relève d'un autre rôle.
           </Text>
+        )}
+
+        {peutDeplacer && (
+          <>
+            <Divider />
+            <Pressable
+              accessibilityRole="button"
+              testID="ouvrir-deplacement"
+              onPress={() => setFormulaireOuvert(!formulaireOuvert)}
+            >
+              <Text style={styles.section}>
+                {formulaireOuvert ? '− Déplacer l’intervention' : '+ Déplacer l’intervention'}
+              </Text>
+            </Pressable>
+
+            {formulaireOuvert && (
+              <View testID="formulaire-deplacement">
+                <TextInput
+                  value={nouvelleDate}
+                  onChangeText={setNouvelleDate}
+                  placeholder="Nouvelle date (AAAA-MM-JJ)"
+                  placeholderTextColor={styles.placeholder.color}
+                  style={styles.champ}
+                  testID="champ-date"
+                />
+                <TextInput
+                  value={nouvelleHeure}
+                  onChangeText={setNouvelleHeure}
+                  placeholder="Nouvelle heure (HH:MM)"
+                  placeholderTextColor={styles.placeholder.color}
+                  style={styles.champ}
+                  testID="champ-heure"
+                />
+                <TextInput
+                  value={motif}
+                  onChangeText={setMotif}
+                  placeholder="Motif (obligatoire à moins de 24 h)"
+                  placeholderTextColor={styles.placeholder.color}
+                  style={styles.champ}
+                  testID="champ-motif"
+                />
+                <Button
+                  label="Déplacer"
+                  size="sm"
+                  fullWidth
+                  disabled={nouvelleDate.trim() === '' || deplacer.isPending}
+                  onPress={() => deplacer.mutate()}
+                />
+                <Text style={styles.info}>
+                  Le client et le collaborateur assigné sont prévenus immédiatement.
+                </Text>
+              </View>
+            )}
+          </>
         )}
 
         {peutRepartir && (
@@ -221,6 +310,19 @@ const stylesFor = (t: ThemeTokens) =>
       fontSize: typography.fontSize.sm,
       color: t.textMuted,
       marginTop: spacing.sm,
+    },
+    champ: {
+      borderWidth: StyleSheet.hairlineWidth,
+      borderColor: t.border,
+      borderRadius: radius.md,
+      paddingHorizontal: spacing.sm,
+      paddingVertical: spacing.xs,
+      color: t.text,
+      backgroundColor: t.card,
+      marginBottom: spacing.xs,
+    },
+    placeholder: {
+      color: t.textMuted,
     },
     lignePersonne: {
       flexDirection: 'row',

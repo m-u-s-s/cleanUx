@@ -28,6 +28,7 @@ import { CompanyDispatchScreen } from '@/screens/company/CompanyDispatchScreen';
 import { CompanyChannelsScreen } from '@/screens/company/CompanyChannelsScreen';
 import { CompanyRolePermissionsScreen } from '@/screens/company/CompanyRolePermissionsScreen';
 import { CompanyMissionDetailScreen } from '@/screens/company/CompanyMissionDetailScreen';
+import { CompanyAgenciesScreen } from '@/screens/company/CompanyAgenciesScreen';
 import { CompanySitesScreen } from '@/screens/company/CompanySitesScreen';
 // Polish — UX screens
 import { NotificationPreferencesScreen } from '@/screens/NotificationPreferencesScreen';
@@ -161,6 +162,11 @@ export function RootNavigator() {
             name="CompanyMissionDetail"
             component={CompanyMissionDetailScreen}
             options={{ headerShown: true, title: 'Mission' }}
+          />
+          <Stack.Screen
+            name="CompanyAgencies"
+            component={CompanyAgenciesScreen}
+            options={{ headerShown: true, title: 'Implantations' }}
           />
           <Stack.Screen
             name="CompanyDispatch"
@@ -508,6 +514,11 @@ export function RootNavigator() {
               name="CompanyMissionDetail"
               component={CompanyMissionDetailScreen}
               options={{ headerShown: true, title: 'Mission' }}
+            />
+            <Stack.Screen
+              name="CompanyAgencies"
+              component={CompanyAgenciesScreen}
+              options={{ headerShown: true, title: 'Implantations' }}
             />
             <Stack.Screen
               name="Legal"

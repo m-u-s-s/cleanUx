@@ -23,6 +23,10 @@ use Illuminate\Support\Facades\Cache;
  *   bookings.approve        Approuver les demandes en attente
  *   bookings.cancel         Annuler une réservation
  *
+ * AGENCES (implantations de la société PRESTATAIRE — à ne pas confondre avec les locaux du client)
+ *   agencies.view           Voir les implantations de la société
+ *   agencies.manage         Créer, modifier, rattacher
+ *
  * SITES
  *   sites.create            Créer un nouveau local
  *   sites.edit              Modifier un local existant
@@ -47,6 +51,7 @@ use Illuminate\Support\Facades\Cache;
  *   missions.dispatch       Dispatcher plusieurs missions en masse
  *   missions.view_all       Voir toutes les missions de l'org
  *   missions.quality        Accéder aux rapports qualité
+ *   missions.reschedule     Déplacer une intervention (date, heure, lieu)
  *
  * TEAM (côté prestataire)
  *   team.create             Créer une équipe
@@ -88,6 +93,8 @@ class PermissionService
             'sites.delete',
             'sites.view_all',
             'sites.assign_members',
+            'agencies.view',
+            'agencies.manage',
             'members.invite',
             'members.edit_role',
             'members.suspend',
@@ -103,6 +110,7 @@ class PermissionService
             'missions.dispatch',
             'missions.view_all',
             'missions.quality',
+            'missions.reschedule',
             'team.create',
             'team.manage',
             'team.view',
@@ -120,6 +128,7 @@ class PermissionService
             'bookings.view_all',
             'bookings.approve',
             'bookings.cancel',
+            'missions.reschedule',
             'sites.create',
             'sites.edit',
             'sites.view_all',
@@ -167,9 +176,12 @@ class PermissionService
             'missions.dispatch',
             'missions.view_all',
             'missions.quality',
+            'missions.reschedule',
             // `sites.view_all` etait DECLAREE par `SiteOperations` et accordee a personne :
             // l'ecran existait, sa garde ne pouvait etre satisfaite. Ajout purement additif.
             'sites.view_all',
+            'agencies.view',
+            'agencies.manage',
             'team.create',
             'team.manage',
             'team.view',
@@ -188,7 +200,13 @@ class PermissionService
             'missions.assign',
             'missions.dispatch',
             'missions.view_all',
+            // Décaler d'une heure fait partie du métier de répartiteur : c'est lui qui voit
+            // l'embouteillage arriver. La fenêtre de gel borne ce droit à 24 h de l'échéance.
+            'missions.reschedule',
             'sites.view_all',
+            // Lecture seule : le répartiteur FILTRE par implantation, il ne redessine pas
+            // l'organigramme de la société.
+            'agencies.view',
             'team.view',
             'channels.create',
             'tasks.create',

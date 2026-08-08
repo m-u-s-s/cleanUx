@@ -10,14 +10,18 @@ use App\Models\OrganizationAccount;
 use App\Models\OrganizationContract;
 use App\Models\OrganizationMember;
 use App\Models\ProviderSiteAssignment;
+use App\Models\ProviderSiteTeam;
 use App\Services\Missions\MissionAssignmentService;
+use App\Services\Client\Calendar\BookingRescheduleService;
 use App\Services\Missions\ReassignmentPolicy;
 use App\Services\Missions\WorkerAvailabilityService;
 use App\Services\PermissionService;
 use App\Support\Livewire\Concerns\EnforcesActiveOrgMembership;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Carbon;
 use Livewire\Attributes\On;
+use Livewire\Attributes\Locked;
 use Livewire\Component;
 
 /**
@@ -143,7 +147,29 @@ class DispatchCenter extends Component
             ->where('organization_site_id', $siteId)
             ->where('role', ProviderSiteAssignment::ROLE_LEAD)
             ->value('user_id');
+
+        /*
+         * L'ÉQUIPE HABITUELLE DU SITE, pré-proposée elle aussi.
+         *
+         * Nommer des PERSONNES ne suffit pas sur un grand immeuble : c'est une équipe entière qui y
+         * va. La proposer évite de la rechercher dans une liste à chaque mission — et comme le
+         * référent, ce n'est qu'une SUGGESTION : le champ reste modifiable et l'assignation passe
+         * par les mêmes gardes.
+         */
+        $this->equipeSuggereeId = ProviderSiteTeam::query()
+            ->where('provider_organization_id', $orgId)
+            ->where('organization_site_id', $siteId)
+            ->value('field_team_id');
     }
+
+    /**
+     * L'équipe que le site désigne habituellement — suggestion, jamais décision.
+     *
+     * `#[Locked]` : une propriété publique Livewire est modifiable depuis le navigateur, et
+     * `assignerLEquipe()` revérifie de toute façon l'appartenance de l'équipe à la société.
+     */
+    #[Locked]
+    public ?int $equipeSuggereeId = null;
 
     public function confirmAssign(): void
     {
@@ -446,6 +472,107 @@ class DispatchCenter extends Component
 
         return $orgId !== null
             && (bool) OrganizationAccount::query()->whereKey($orgId)->value('auto_assign_enabled');
+    }
+
+    /**
+     * LE DÉPLACEMENT — date, heure et LIEU.
+     *
+     * `BookingRescheduleService` était strictement client/admin : une société qui devait décaler
+     * d'une heure appelait le client pour qu'il le fasse lui-même. Le lieu, lui, ne bougeait jamais.
+     *
+     * `#[Locked]` sur l'identifiant : une propriété publique Livewire est modifiable depuis le
+     * navigateur, et celle-ci désigne la mission qu'on s'apprête à déplacer.
+     */
+    #[Locked]
+    public int $reprogrammeId = 0;
+
+    public string $nouvelleDate = '';
+
+    public string $nouvelleHeure = '';
+
+    public string $motifReprogrammation = '';
+
+    public function ouvrirLaReprogrammation(int $missionId): void
+    {
+        $orgId = Auth::user()?->organizationContextId();
+
+        // Scopé dans la requête : un identifiant forgé ne doit pas ouvrir la mission d'un tiers.
+        $mission = $orgId === null ? null : Mission::query()
+            ->where('provider_organization_id', $orgId)
+            ->find($missionId);
+
+        if ($mission === null) {
+            return;
+        }
+
+        $this->reprogrammeId = $mission->id;
+        $this->nouvelleDate = $mission->planned_start_at?->format('Y-m-d') ?? '';
+        $this->nouvelleHeure = $mission->planned_start_at?->format('H:i') ?? '';
+        $this->motifReprogrammation = '';
+    }
+
+    public function fermerLaReprogrammation(): void
+    {
+        $this->reprogrammeId = 0;
+        $this->motifReprogrammation = '';
+    }
+
+    public function reprogrammer(): void
+    {
+        if (! $this->reprogrammeId) {
+            return;
+        }
+
+        $user = Auth::user();
+        $orgId = $user?->organizationContextId();
+
+        if (! $orgId) {
+            return;
+        }
+
+        abort_unless(
+            app(PermissionService::class)->can($user, 'missions.reschedule', $orgId),
+            403
+        );
+
+        $this->validate([
+            'nouvelleDate' => ['required', 'date'],
+            'nouvelleHeure' => ['nullable', 'string', 'max:8'],
+            'motifReprogrammation' => ['nullable', 'string', 'max:500'],
+        ]);
+
+        $mission = Mission::query()
+            ->where('provider_organization_id', $orgId)
+            ->find($this->reprogrammeId);
+
+        $rendezVous = $mission?->rendezVous;
+
+        if ($rendezVous === null) {
+            $this->addError('nouvelleDate', "Cette mission n'a pas de rendez-vous à déplacer.");
+
+            return;
+        }
+
+        try {
+            app(BookingRescheduleService::class)->reprogrammerParPrestataire(
+                rendezVous: $rendezVous,
+                acteur: $user,
+                nouvelleDate: Carbon::parse($this->nouvelleDate),
+                nouvelleHeure: $this->nouvelleHeure !== '' ? $this->nouvelleHeure : null,
+                motif: $this->motifReprogrammation !== '' ? $this->motifReprogrammation : null,
+            );
+        } catch (\DomainException $e) {
+            /*
+             * La fenêtre de gel et le lieu illégitime ne sont pas des refus d'AUTORISATION : la
+             * personne avait le droit de déplacer, c'est cette demande-là qui ne passe pas. Un 403
+             * l'enverrait chercher une permission qu'elle possède déjà.
+             */
+            $this->addError('nouvelleDate', $e->getMessage());
+
+            return;
+        }
+
+        $this->fermerLaReprogrammation();
     }
 
     public function cancelAssign(): void

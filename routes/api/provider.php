@@ -275,6 +275,24 @@ Route::middleware('auth:sanctum')->prefix('provider/company')->group(function ()
     Route::get('/sites', [ProviderCompanyController::class, 'sites'])
         ->middleware('org.permission:sites.view_all');
 
+    /*
+     * LES RÉFÉRENTS. `provider_site_assignments` existait depuis le 2026-08-07 avec ZÉRO ligne et
+     * AUCUN écrivain : la table était prête, la connaissance qu'elle devait porter n'avait aucun
+     * moyen d'y entrer.
+     */
+    Route::post('/sites/{site}/referents', [ProviderCompanyController::class, 'assignSiteReferent']);
+    Route::delete('/sites/{site}/referents/{user}', [ProviderCompanyController::class, 'removeSiteReferent']);
+    Route::put('/sites/{site}/default-team', [ProviderCompanyController::class, 'setSiteDefaultTeam']);
+
+    /*
+     * LES AGENCES — implantations de la SOCIÉTÉ, à ne pas confondre avec les locaux du CLIENT.
+     * Une société multi-villes n'avait aucun moyen de déclarer son dépôt de Bruxelles.
+     */
+    Route::get('/agencies', [ProviderCompanyController::class, 'agencies']);
+    Route::post('/agencies', [ProviderCompanyController::class, 'createAgency']);
+    Route::patch('/agencies/{agency}', [ProviderCompanyController::class, 'updateAgency']);
+    Route::post('/agencies/{agency}/attach', [ProviderCompanyController::class, 'attachToAgency']);
+
     Route::get('/members', [ProviderCompanyController::class, 'members'])
         ->middleware('org.permission:team.view');
 
@@ -342,6 +360,11 @@ Route::middleware('auth:sanctum')->prefix('provider/company')->group(function ()
     Route::post('/missions/{mission}/assign-team', [ProviderCompanyController::class, 'assignMissionToTeam']);
     // Renforts — un grand nettoyage à deux est le cas ordinaire d'une société.
     Route::post('/missions/{mission}/helpers', [ProviderCompanyController::class, 'missionHelpers']);
+    /*
+     * DÉPLACER — date, heure et LIEU. `BookingRescheduleService` était strictement client/admin :
+     * une société qui devait décaler d'une heure appelait le client pour qu'il le fasse lui-même.
+     */
+    Route::post('/missions/{mission}/reschedule', [ProviderCompanyController::class, 'rescheduleMission']);
 
     // Canaux — lecture ET écriture passent par ChannelPolicy, que le web n'appelait pas côté
     // écriture avant le 2026-08-06.

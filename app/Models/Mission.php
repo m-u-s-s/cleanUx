@@ -41,6 +41,7 @@ class Mission extends Model
         'provider_organization_id',
         'provider_team_id',
         'field_team_id',
+        'provider_agency_id',
         'organization_site_id',
         'service_catalog_id',
         'service_zone_id',

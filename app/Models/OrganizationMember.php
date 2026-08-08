@@ -16,6 +16,7 @@ class OrganizationMember extends Model
 
     protected $fillable = [
         'organization_account_id',
+        'provider_agency_id',
         'user_id',
         'role',
         'permissions',

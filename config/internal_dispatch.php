@@ -56,12 +56,16 @@ return [
         'metier' => 15,
 
         /*
-         * L'agence de rattachement. Déclarée ici et VOLONTAIREMENT INACTIVE : l'entité `agences`
-         * naît au lot 6. La laisser à 0 jusque-là évite qu'un score dépende d'une colonne qui
-         * n'existe pas, tout en gardant la dimension visible pour qui lit ce fichier.
+         * L'AGENCE DE RATTACHEMENT — activée au lot 6, quand l'entité a existé.
+         *
+         * Elle départage sans dominer : une société multi-villes préfère envoyer quelqu'un du dépôt
+         * le plus proche, mais un référent du site (+40) reste plus précieux qu'une proximité
+         * d'organigramme. Le poids modeste dit exactement cela.
+         *
+         * Une société sans agence déclarée ne voit rien changer : le rattachement vaut `null`
+         * partout, aucun candidat ne prend le point, et le classement est celui d'avant.
          */
-        'agence' => 0,
-        'agence_apres_lot_6' => 10,
+        'agence' => 10,
     ],
 
     /*

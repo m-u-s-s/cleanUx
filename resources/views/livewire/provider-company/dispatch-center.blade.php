@@ -108,6 +108,12 @@
                                 class="rounded-xl border border-amber-600 px-3 py-1.5 text-xs font-semibold text-amber-400 hover:bg-amber-900/20 transition">
                                 {{ ($mission->assignments ?? collect())->isEmpty() ? '+ Assigner' : '↻ Réassigner' }}
                             </button>
+
+                            {{-- Déplacer : date, heure et lieu. Voir le modal en bas de page. --}}
+                            <button wire:click="ouvrirLaReprogrammation({{ $mission->id }})"
+                                class="rounded-xl border border-slate-600 px-3 py-1.5 text-xs font-semibold text-slate-300 hover:bg-slate-700 transition">
+                                🕒 Déplacer
+                            </button>
                         @endif
                     </div>
                 </div>
@@ -266,4 +272,53 @@
             @endforelse
         </div>
     </div>
+
+    {{--
+        DÉPLACER — date, heure et LIEU.
+
+        `BookingRescheduleService` était strictement client/admin : une société qui devait décaler
+        d'une heure appelait le client pour qu'il le fasse lui-même. Sous 24 h de l'échéance, seuls
+        le propriétaire et le directeur d'opérations décident, avec motif obligatoire — le client le
+        lira dans sa notification, et c'est ce qui rend l'application immédiate acceptable.
+    --}}
+    @if ($reprogrammeId)
+    <div class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/70 p-4">
+        <div class="w-full max-w-md rounded-2xl border border-slate-700 bg-slate-900 p-5">
+            <h2 class="mb-1 text-lg font-black text-white">Déplacer l'intervention</h2>
+            <p class="mb-4 text-xs text-slate-400">
+                Le client et le collaborateur assigné sont prévenus immédiatement.
+            </p>
+
+            <label class="mb-1 block text-xs font-semibold text-slate-300">Nouvelle date</label>
+            <input type="date" wire:model="nouvelleDate"
+                class="mb-3 w-full rounded-xl border border-slate-600 bg-slate-800 px-3 py-2 text-sm text-white">
+
+            <label class="mb-1 block text-xs font-semibold text-slate-300">Nouvelle heure</label>
+            <input type="time" wire:model="nouvelleHeure"
+                class="mb-3 w-full rounded-xl border border-slate-600 bg-slate-800 px-3 py-2 text-sm text-white">
+
+            <label class="mb-1 block text-xs font-semibold text-slate-300">
+                Motif <span class="font-normal text-slate-500">(obligatoire à moins de 24 h)</span>
+            </label>
+            <input type="text" wire:model="motifReprogrammation" maxlength="500"
+                class="mb-3 w-full rounded-xl border border-slate-600 bg-slate-800 px-3 py-2 text-sm text-white">
+
+            @error('nouvelleDate')
+            <p class="mb-3 text-xs text-red-400">{{ $message }}</p>
+            @enderror
+
+            <div class="flex justify-end gap-2">
+                <button type="button" wire:click="fermerLaReprogrammation"
+                    class="rounded-xl border border-slate-600 px-4 py-2 text-sm text-slate-300 hover:bg-slate-800">
+                    Annuler
+                </button>
+                <button type="button" wire:click="reprogrammer"
+                    class="rounded-xl bg-amber-500 px-4 py-2 text-sm font-bold text-slate-900 hover:bg-amber-400">
+                    Déplacer
+                </button>
+            </div>
+        </div>
+    </div>
+    @endif
+
 </div>

@@ -18,6 +18,7 @@ class FieldTeam extends Model
         'country_id',
         'service_zone_id',
         'organization_account_id',
+        'provider_agency_id',
         'service_partner_id',
         'team_lead_user_id',
         'name',
