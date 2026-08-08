@@ -102,6 +102,13 @@ export type RootStackParamList = {
    */
   CompanyAgencies: undefined;
   /**
+   * Une conversation d'equipe — temps reel, participants, note vocale.
+   *
+   * `CompanyChannelsScreen` melait la liste et le fil dans un seul ecran, SANS temps reel : il
+   * fallait tirer pour rafraichir, ce qui d'une messagerie fait un formulaire.
+   */
+  ChannelConversation: { channelId: number };
+  /**
    * L'espace société complet, en onglets — la maison d'un gérant, pas une liste de boutons dans le
    * profil. Rendu hors de la pile terrain : voir `RootNavigator`, qui explique pourquoi le
    * battement de présence ne doit PAS y être monté.

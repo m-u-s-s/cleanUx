@@ -1,0 +1,322 @@
+import React, { useState } from 'react';
+import { View, FlatList, Text, TextInput, StyleSheet, Pressable, Alert } from 'react-native';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useRoute } from '@react-navigation/native';
+import type { RouteProp } from '@react-navigation/native';
+import { Screen, Button, Divider, EmptyState } from '@/ui';
+import { apiClient } from '@/api';
+import { useAuth } from '@/auth';
+import { useChannel } from '@/realtime';
+import { spacing, typography, radius } from '@/theme';
+import { useThemeColors } from '@/theme/useThemeColors';
+import type { ThemeTokens } from '@/theme/useThemeColors';
+import type { RootStackParamList } from '@/navigation/types';
+import { enregistrerNoteVocale } from '@/company/voiceRecorder';
+
+interface MessageCanal {
+  id: number;
+  content: string;
+  sender: string;
+  sender_id: number | null;
+  is_system: boolean;
+  sent_at: string | null;
+}
+
+interface Participant {
+  user_id: number;
+  name: string | null;
+  role: string;
+}
+
+/**
+ * UNE CONVERSATION D'ÉQUIPE — temps réel, participants, note vocale.
+ *
+ * `CompanyChannelsScreen` mêlait la liste et le fil dans un seul écran, SANS temps réel : il fallait
+ * tirer pour rafraîchir, ce qui d'une messagerie fait un formulaire. Le canal `channel.{id}` est
+ * pourtant autorisé et fonctionnel côté serveur depuis longtemps — c'est l'application qui ne s'y
+ * abonnait pas.
+ *
+ * LES PARTICIPANTS SE GÈRENT EN DEUX GESTES, comme l'exige le lot : ouvrir le panneau, appuyer sur
+ * un nom. Un ajout qui demanderait de sortir de la conversation ne serait pas fait.
+ *
+ * LA NOTE VOCALE N'EST PAS UN CONFORT. Sur un chantier on ne tape pas — mains prises, gants,
+ * téléphone au fond d'une poche —, et une messagerie qui n'accepte que du texte se fait remplacer
+ * par WhatsApp, hors de l'outil et hors de toute trace.
+ */
+export function ChannelConversationScreen() {
+  const styles = stylesFor(useThemeColors());
+  const { user } = useAuth();
+  const qc = useQueryClient();
+
+  const route = useRoute<RouteProp<RootStackParamList, 'ChannelConversation'>>();
+  const canalId = route.params?.channelId ?? null;
+
+  const [saisie, setSaisie] = useState('');
+  const [participantsOuverts, setParticipantsOuverts] = useState(false);
+  const [enregistrement, setEnregistrement] = useState(false);
+
+  const cleMessages = ['company', 'channel-messages', canalId];
+
+  const { data: messages, refetch, isRefetching } = useQuery<MessageCanal[]>({
+    queryKey: cleMessages,
+    queryFn: async () =>
+      (await apiClient.get(`/provider/company/channels/${canalId}/messages`)).data.data ?? [],
+    enabled: canalId !== null,
+  });
+
+  const { data: participants } = useQuery<Participant[]>({
+    queryKey: ['company', 'channel-members', canalId],
+    queryFn: async () =>
+      (await apiClient.get(`/provider/company/channels/${canalId}/members`)).data.data ?? [],
+    enabled: canalId !== null && participantsOuverts,
+  });
+
+  const { data: collegues } = useQuery<Array<{ user_id: number; name: string | null; status: string }>>({
+    queryKey: ['company', 'members'],
+    queryFn: async () => (await apiClient.get('/provider/company/members')).data.data ?? [],
+    enabled: canalId !== null && participantsOuverts,
+  });
+
+  /*
+   * LE TEMPS RÉEL, ENFIN BRANCHÉ. `channel.{id}` est autorisé côté serveur depuis longtemps ;
+   * l'application ne s'y abonnait pas, et une messagerie qu'il faut tirer pour rafraîchir est un
+   * formulaire.
+   */
+  useChannel(canalId !== null ? `channel.${canalId}` : null, {
+    'message.sent': () => qc.invalidateQueries({ queryKey: cleMessages }),
+    MessageSent: () => qc.invalidateQueries({ queryKey: cleMessages }),
+  });
+
+  const envoyer = useMutation({
+    mutationFn: async (contenu: string) =>
+      apiClient.post(`/provider/company/channels/${canalId}/messages`, { content: contenu }),
+    onSuccess: () => {
+      setSaisie('');
+      qc.invalidateQueries({ queryKey: cleMessages });
+      // Lire ce qu'on vient d'écrire : sans cela le badge de non-lus resterait allumé sur son
+      // propre fil.
+      apiClient.post(`/provider/company/channels/${canalId}/read`).catch(() => undefined);
+    },
+    onError: (erreur: any) =>
+      Alert.alert('Envoi refusé', erreur?.data?.message ?? "Le message n'a pas pu être envoyé."),
+  });
+
+  const gererParticipant = useMutation({
+    mutationFn: async (params: { userId: number; retirer: boolean }) =>
+      params.retirer
+        ? apiClient.delete(`/provider/company/channels/${canalId}/members/${params.userId}`)
+        : apiClient.post(`/provider/company/channels/${canalId}/members`, {
+            user_id: params.userId,
+          }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['company', 'channel-members', canalId] }),
+    onError: (erreur: any) =>
+      Alert.alert('Action refusée', erreur?.data?.message ?? 'Vous ne gérez pas ce canal.'),
+  });
+
+  const envoyerLaNote = useMutation({
+    mutationFn: async () => {
+      const note = await enregistrerNoteVocale();
+
+      if (note === null) {
+        return null;
+      }
+
+      const corps = new FormData();
+      corps.append('audio', note.fichier as unknown as Blob);
+      corps.append('duration', String(note.dureeSecondes));
+
+      return apiClient.post(`/provider/company/channels/${canalId}/voice`, corps);
+    },
+    onSettled: () => setEnregistrement(false),
+    onSuccess: () => qc.invalidateQueries({ queryKey: cleMessages }),
+    onError: (erreur: any) =>
+      Alert.alert(
+        'Note vocale impossible',
+        erreur?.data?.message ?? "L'enregistrement n'a pas pu être envoyé.",
+      ),
+  });
+
+  if (canalId === null) {
+    return (
+      <Screen>
+        <EmptyState title="Conversation introuvable" message="Ce canal n'existe plus." />
+      </Screen>
+    );
+  }
+
+  return (
+    <Screen>
+      <Pressable
+        accessibilityRole="button"
+        testID="ouvrir-participants"
+        onPress={() => setParticipantsOuverts(!participantsOuverts)}
+      >
+        <Text style={styles.lienParticipants}>
+          {participantsOuverts ? '− Participants' : '+ Participants'}
+        </Text>
+      </Pressable>
+
+      {participantsOuverts && (
+        <View style={styles.participants} testID="panneau-participants">
+          {(participants ?? []).map((participant) => (
+            <View key={participant.user_id} style={styles.ligneParticipant}>
+              <Text style={styles.nomParticipant} numberOfLines={1}>
+                {participant.name ?? '—'}
+                {participant.role !== 'member' ? ` · ${participant.role}` : ''}
+              </Text>
+              <Button
+                label="Retirer"
+                size="sm"
+                variant="ghost"
+                onPress={() => gererParticipant.mutate({ userId: participant.user_id, retirer: true })}
+              />
+            </View>
+          ))}
+
+          <Divider />
+
+          {(collegues ?? [])
+            .filter((c) => c.status === 'active')
+            .filter((c) => !(participants ?? []).some((p) => p.user_id === c.user_id))
+            .map((collegue) => (
+              <View key={collegue.user_id} style={styles.ligneParticipant}>
+                <Text style={styles.nomParticipant} numberOfLines={1}>
+                  {collegue.name ?? '—'}
+                </Text>
+                <Button
+                  label="Ajouter"
+                  size="sm"
+                  variant="secondary"
+                  onPress={() =>
+                    gererParticipant.mutate({ userId: collegue.user_id, retirer: false })
+                  }
+                />
+              </View>
+            ))}
+        </View>
+      )}
+
+      <FlatList
+        data={messages ?? []}
+        keyExtractor={(m) => String(m.id)}
+        onRefresh={refetch}
+        refreshing={isRefetching}
+        renderItem={({ item }) => (
+          <View
+            style={[styles.message, item.sender_id === user?.id ? styles.moi : styles.autre]}
+            testID={`message-${item.id}`}
+          >
+            {!item.is_system && <Text style={styles.expediteur}>{item.sender}</Text>}
+            <Text style={item.is_system ? styles.systeme : styles.contenu}>{item.content}</Text>
+          </View>
+        )}
+        ListEmptyComponent={
+          <EmptyState title="Aucun message" message="Ouvrez la conversation en écrivant un mot." />
+        }
+      />
+
+      <View style={styles.barre}>
+        <TextInput
+          value={saisie}
+          onChangeText={setSaisie}
+          placeholder="Votre message"
+          placeholderTextColor={styles.placeholder.color}
+          style={styles.champ}
+          testID="champ-message"
+        />
+        <Button
+          label="Envoyer"
+          size="sm"
+          disabled={saisie.trim().length === 0 || envoyer.isPending}
+          onPress={() => envoyer.mutate(saisie.trim())}
+        />
+        <Pressable
+          accessibilityRole="button"
+          testID="bouton-micro"
+          onPress={() => {
+            setEnregistrement(true);
+            envoyerLaNote.mutate();
+          }}
+        >
+          <Text style={styles.micro}>{enregistrement ? '⏺' : '🎙️'}</Text>
+        </Pressable>
+      </View>
+    </Screen>
+  );
+}
+
+const stylesFor = (t: ThemeTokens) =>
+  StyleSheet.create({
+    lienParticipants: {
+      fontSize: typography.fontSize.sm,
+      color: t.textSecondary,
+      paddingVertical: spacing.xs,
+    },
+    participants: {
+      paddingLeft: spacing.sm,
+      borderLeftWidth: 2,
+      borderLeftColor: t.border,
+      marginBottom: spacing.sm,
+    },
+    ligneParticipant: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      gap: spacing.sm,
+      paddingVertical: spacing.xs,
+    },
+    nomParticipant: {
+      flex: 1,
+      fontSize: typography.fontSize.sm,
+      color: t.text,
+    },
+    message: {
+      marginBottom: spacing.xs,
+      padding: spacing.sm,
+      borderRadius: radius.md,
+      maxWidth: '85%',
+    },
+    moi: {
+      alignSelf: 'flex-end',
+      backgroundColor: t.tint.brand,
+    },
+    autre: {
+      alignSelf: 'flex-start',
+      backgroundColor: t.cardSubtle,
+    },
+    expediteur: {
+      fontSize: typography.fontSize.xs,
+      color: t.textMuted,
+      marginBottom: 2,
+    },
+    contenu: {
+      fontSize: typography.fontSize.sm,
+      color: t.text,
+    },
+    systeme: {
+      fontSize: typography.fontSize.xs,
+      color: t.textMuted,
+      fontStyle: 'italic',
+    },
+    barre: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: spacing.xs,
+      paddingTop: spacing.sm,
+    },
+    champ: {
+      flex: 1,
+      borderWidth: StyleSheet.hairlineWidth,
+      borderColor: t.border,
+      borderRadius: radius.md,
+      paddingHorizontal: spacing.sm,
+      paddingVertical: spacing.xs,
+      color: t.text,
+      backgroundColor: t.card,
+    },
+    placeholder: { color: t.textMuted },
+    micro: {
+      fontSize: typography.fontSize.lg,
+      paddingHorizontal: spacing.xs,
+    },
+  });

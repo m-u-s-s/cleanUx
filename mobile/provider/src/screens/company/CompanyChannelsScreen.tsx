@@ -1,11 +1,15 @@
-import React from 'react';
-import { View, FlatList, Text, TextInput, Alert, StyleSheet } from 'react-native';
+import React, { useState } from 'react';
+import { View, FlatList, Text, TextInput, Alert, StyleSheet, Pressable } from 'react-native';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useNavigation } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Screen, Button, Badge, EmptyState } from '@/ui';
 import { apiClient } from '@/api';
+import { useAuth, can } from '@/auth';
 import { spacing, typography, radius } from '@/theme';
 import { useThemeColors } from '@/theme/useThemeColors';
 import type { ThemeTokens } from '@/theme/useThemeColors';
+import type { RootStackParamList } from '@/navigation/types';
 
 interface Canal {
   id: number;
@@ -14,132 +18,114 @@ interface Canal {
   is_private: boolean;
 }
 
-interface MessageCanal {
-  id: number;
-  content: string;
-  sender: string;
-  sender_id: number | null;
-  is_system: boolean;
-  sent_at: string | null;
-}
-
 /**
- * La messagerie d'équipe, en natif.
+ * LA LISTE DES CONVERSATIONS — et où il se passe quelque chose.
  *
- * Lecture ET écriture passent par `ChannelPolicy` côté serveur. C'est en écrivant cette API qu'a
- * été découvert le défaut corrigé le même jour : l'écran web ne consultait aucune politique à
- * l'envoi, si bien qu'on pouvait publier dans le canal privé d'une autre société.
+ * Cet écran mêlait la liste et le fil : on ne pouvait ni ouvrir une conversation, ni savoir laquelle
+ * avait du nouveau. `channel_members.last_read_at` existait depuis l'origine et n'était écrit par
+ * PERSONNE, si bien que les non-lus ne pouvaient pas exister.
+ *
+ * LE FIL VIT DANS SON PROPRE ÉCRAN (`ChannelConversationScreen`), avec le temps réel, les
+ * participants et le micro. Une liste et une conversation n'ont ni le même cycle de vie ni les mêmes
+ * abonnements ; les garder ensemble obligeait à recharger l'un pour rafraîchir l'autre.
  */
 export function CompanyChannelsScreen() {
   const styles = stylesFor(useThemeColors());
   const qc = useQueryClient();
+  const { user } = useAuth();
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
 
-  const [canalActif, setCanalActif] = React.useState<number | null>(null);
-  const [saisie, setSaisie] = React.useState('');
+  const [nouveauNom, setNouveauNom] = useState('');
 
-  const { data: canaux } = useQuery<Canal[]>({
+  const peutCreer = can(user, 'channels.create');
+
+  const { data: canaux, refetch, isRefetching } = useQuery<Canal[]>({
     queryKey: ['company', 'channels'],
     queryFn: async () => (await apiClient.get('/provider/company/channels')).data.data ?? [],
   });
 
-  // Le premier canal disponible s'ouvre seul : un écran vide sans explication ferait croire à
-  // une messagerie en panne.
-  React.useEffect(() => {
-    const premier = canaux?.[0];
-
-    if (canalActif === null && premier) {
-      setCanalActif(premier.id);
-    }
-  }, [canaux, canalActif]);
-
-  const { data: messages, refetch, isRefetching } = useQuery<MessageCanal[]>({
-    queryKey: ['company', 'channel-messages', canalActif],
+  const { data: nonLus } = useQuery<Record<number, number>>({
+    queryKey: ['company', 'channels', 'unread'],
     queryFn: async () =>
-      (await apiClient.get(`/provider/company/channels/${canalActif}/messages`)).data.data ?? [],
-    enabled: canalActif !== null,
+      (await apiClient.get('/provider/company/channels/unread-counts')).data.data ?? {},
   });
 
-  const envoyer = useMutation({
-    mutationFn: async (content: string) => {
-      await apiClient.post(`/provider/company/channels/${canalActif}/messages`, { content });
-    },
+  const creer = useMutation({
+    mutationFn: async () =>
+      apiClient.post('/provider/company/channels', {
+        name: nouveauNom.trim(),
+        // Un canal d'équipe naît vide de son équipe sans cela, et il faut ajouter chaque collègue
+        // un par un — geste que personne ne fait.
+        invite_whole_team: true,
+      }),
     onSuccess: () => {
-      setSaisie('');
-      qc.invalidateQueries({ queryKey: ['company', 'channel-messages', canalActif] });
+      setNouveauNom('');
+      qc.invalidateQueries({ queryKey: ['company', 'channels'] });
     },
-    onError: () =>
-      Alert.alert('Envoi refusé', "Ce canal est verrouillé, archivé, ou vous n'en êtes pas membre."),
+    onError: (erreur: any) =>
+      Alert.alert(
+        'Création refusée',
+        erreur?.data?.message ?? "Votre rôle ne permet pas d'ouvrir un canal.",
+      ),
   });
 
   return (
     <Screen>
-      <Text style={styles.title}>Canaux</Text>
+      <Text style={styles.title}>Conversations</Text>
 
-      {/* Sélecteur de canal */}
-      <FlatList
-        data={canaux ?? []}
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        keyExtractor={(c) => String(c.id)}
-        style={styles.selecteur}
-        renderItem={({ item }) => (
-          <View style={styles.pastille}>
-            <Button
-              label={`${item.is_private ? '🔒 ' : '# '}${item.name}`}
-              size="sm"
-              variant={item.id === canalActif ? 'primary' : 'ghost'}
-              onPress={() => setCanalActif(item.id)}
-            />
-          </View>
-        )}
-        ListEmptyComponent={
-          <Text style={styles.detail}>Aucun canal — demandez à être ajouté à une conversation.</Text>
-        }
-      />
-
-      <FlatList
-        data={messages ?? []}
-        keyExtractor={(m) => String(m.id)}
-        onRefresh={refetch}
-        refreshing={isRefetching}
-        style={styles.fil}
-        renderItem={({ item }) => (
-          <View style={styles.message} testID={`message-${item.id}`}>
-            {item.is_system ? (
-              <Badge label={item.content} variant="neutral" />
-            ) : (
-              <>
-                <Text style={styles.expediteur}>{item.sender}</Text>
-                <Text style={styles.contenu}>{item.content}</Text>
-              </>
-            )}
-          </View>
-        )}
-        ListEmptyComponent={
-          canalActif !== null ? (
-            <EmptyState title="Aucun message" message="Lancez la conversation." />
-          ) : null
-        }
-      />
-
-      {canalActif !== null && (
+      {peutCreer && (
         <View style={styles.formulaire}>
           <TextInput
-            value={saisie}
-            onChangeText={setSaisie}
-            placeholder="Votre message"
+            value={nouveauNom}
+            onChangeText={setNouveauNom}
+            placeholder="Nom de la conversation"
             placeholderTextColor={styles.placeholder.color}
             style={styles.champ}
-            testID="champ-message"
+            testID="champ-nom-canal"
           />
           <Button
-            label="Envoyer"
+            label="Créer"
             size="sm"
-            onPress={() => saisie.trim() && envoyer.mutate(saisie.trim())}
-            disabled={envoyer.isPending || saisie.trim().length === 0}
+            disabled={nouveauNom.trim().length === 0 || creer.isPending}
+            onPress={() => creer.mutate()}
           />
         </View>
       )}
+
+      <FlatList
+        data={canaux ?? []}
+        keyExtractor={(c) => String(c.id)}
+        onRefresh={refetch}
+        refreshing={isRefetching}
+        renderItem={({ item }) => {
+          const compte = nonLus?.[item.id] ?? 0;
+
+          return (
+            <Pressable
+              style={styles.ligne}
+              testID={`canal-${item.id}`}
+              accessibilityRole="button"
+              onPress={() => navigation.navigate('ChannelConversation', { channelId: item.id })}
+            >
+              <View style={styles.identite}>
+                <Text style={styles.nom} numberOfLines={1}>
+                  {item.is_private ? '🔒 ' : '# '}
+                  {item.name}
+                </Text>
+              </View>
+
+              {/* Le badge dit où il se passe quelque chose — la raison d'être des non-lus. */}
+              {compte > 0 && <Badge label={String(compte)} variant="brand" />}
+            </Pressable>
+          );
+        }}
+        ListEmptyComponent={
+          <EmptyState
+            title="Aucune conversation"
+            message="Ouvrez-en une pour coordonner vos interventions sans passer par WhatsApp."
+          />
+        }
+      />
     </Screen>
   );
 }
@@ -150,41 +136,13 @@ const stylesFor = (t: ThemeTokens) =>
       fontSize: typography.fontSize.xl,
       fontWeight: typography.fontWeight.bold,
       color: t.text,
-      marginBottom: spacing.sm,
-    },
-    selecteur: {
-      flexGrow: 0,
-      marginBottom: spacing.sm,
-    },
-    pastille: {
-      marginRight: spacing.xs,
-    },
-    fil: {
-      flex: 1,
-    },
-    message: {
-      paddingVertical: spacing.xs,
-      borderBottomWidth: StyleSheet.hairlineWidth,
-      borderBottomColor: t.border,
-    },
-    expediteur: {
-      fontSize: typography.fontSize.sm,
-      fontWeight: typography.fontWeight.semibold,
-      color: t.text,
-    },
-    contenu: {
-      fontSize: typography.fontSize.base,
-      color: t.text,
-    },
-    detail: {
-      fontSize: typography.fontSize.sm,
-      color: t.textMuted,
+      marginBottom: spacing.md,
     },
     formulaire: {
       flexDirection: 'row',
       alignItems: 'center',
       gap: spacing.sm,
-      marginTop: spacing.sm,
+      marginBottom: spacing.md,
     },
     champ: {
       flex: 1,
@@ -196,7 +154,18 @@ const stylesFor = (t: ThemeTokens) =>
       color: t.text,
       backgroundColor: t.card,
     },
-    placeholder: {
-      color: t.textMuted,
+    placeholder: { color: t.textMuted },
+    ligne: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: spacing.sm,
+      paddingVertical: spacing.sm,
+      borderBottomWidth: StyleSheet.hairlineWidth,
+      borderBottomColor: t.border,
+    },
+    identite: { flex: 1, minWidth: 0 },
+    nom: {
+      fontSize: typography.fontSize.base,
+      color: t.text,
     },
   });

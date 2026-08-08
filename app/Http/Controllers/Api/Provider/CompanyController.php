@@ -20,6 +20,7 @@ use App\Models\ProviderAgency;
 use App\Models\ProviderSiteTeam;
 use App\Models\Task;
 use App\Models\User;
+use App\Services\Messaging\ChannelManagementService;
 use App\Services\Messaging\MessageService;
 use App\Services\Missions\MissionAssignmentService;
 use App\Services\Missions\ReassignmentPolicy;
@@ -1289,13 +1290,171 @@ class CompanyController extends Controller
         return response()->json(['data' => $canaux]);
     }
 
-    public function channelMessages(int $channelId): JsonResponse
+    /**
+     * Créer un canal depuis le mobile.
+     *
+     * Toute la gestion vivait dans `TeamChannels.php`, l'écran web : l'API ne savait que lister,
+     * lire et poster. Une équipe sur le terrain pouvait donc RÉPONDRE, jamais ouvrir un fil.
+     */
+    public function createChannel(Request $request): JsonResponse
+    {
+        $org = $this->organisationActive();
+        $this->exige('channels.create', $org);
+
+        $donnees = $request->validate([
+            'name' => ['required', 'string', 'max:50'],
+            'type' => ['nullable', Rule::in(['team', 'mission', 'support', 'private', 'announcement'])],
+            'is_private' => ['nullable', 'boolean'],
+            'invite_whole_team' => ['nullable', 'boolean'],
+        ]);
+
+        $canal = app(ChannelManagementService::class)->creer(
+            acteur: Auth::user(),
+            organisationId: $org->id,
+            nom: $donnees['name'],
+            type: $donnees['type'] ?? 'team',
+            prive: (bool) ($donnees['is_private'] ?? false),
+            avecTouteLEquipe: (bool) ($donnees['invite_whole_team'] ?? false),
+        );
+
+        return response()->json(['data' => ['id' => $canal->id, 'name' => $canal->name]], 201);
+    }
+
+    /**
+     * Ouvrir — ou retrouver — la conversation à deux avec un collègue.
+     *
+     * ON CHERCHE AVANT DE CRÉER : sans cela, chaque appui ajouterait un canal, et l'historique se
+     * disperserait entre des fils vides reliant les deux mêmes personnes.
+     */
+    public function openDirectChannel(Request $request): JsonResponse
+    {
+        $org = $this->organisationActive();
+
+        $donnees = $request->validate([
+            'user_id' => ['required', 'integer'],
+        ]);
+
+        $canal = app(ChannelManagementService::class)
+            ->ouvrirConversationDirecte(Auth::user(), $org->id, (int) $donnees['user_id']);
+
+        abort_if($canal === null, 404, 'Ce collègue est introuvable dans votre société.');
+
+        return response()->json(['data' => ['id' => $canal->id, 'name' => $canal->name]]);
+    }
+
+    public function channelMembers(int $channelId): JsonResponse
+    {
+        $canal = $this->canalSousGarde($channelId, 'view');
+
+        $membres = $canal->members()
+            ->get(['users.id', 'users.name'])
+            ->map(fn (User $u) => [
+                'user_id' => $u->id,
+                'name' => $u->name,
+                'role' => $u->pivot->role ?? 'member',
+            ]);
+
+        return response()->json(['data' => $membres]);
+    }
+
+    /**
+     * Ajouter un participant — « en deux gestes », comme le demande l'exigence 4.
+     *
+     * La garde est celle du CANAL (`ChannelPolicy`), pas une clé d'organisation : c'est le
+     * propriétaire ou un modérateur du fil qui décide qui y entre, et cette règle existait déjà.
+     */
+    public function addChannelMember(Request $request, int $channelId): JsonResponse
+    {
+        $canal = $this->canalSousGarde($channelId, 'manageMembers');
+
+        $donnees = $request->validate([
+            'user_id' => ['required', 'integer'],
+        ]);
+
+        $ajoute = app(ChannelManagementService::class)
+            ->ajouterMembre($canal, (int) $donnees['user_id']);
+
+        // On ne dit pas laquelle des deux conditions a manqué : la différence renseignerait sur
+        // l'effectif d'une autre société.
+        abort_unless($ajoute, 404, 'Cette personne n’est pas un membre actif de votre société.');
+
+        return response()->json(['data' => ['ok' => true]], 201);
+    }
+
+    /**
+     * Retirer un participant.
+     *
+     * RETIRER COUPE AUSSI LE TEMPS RÉEL : l'autorisation Reverb `channel.{id}` vérifie
+     * l'appartenance à chaque abonnement.
+     */
+    public function removeChannelMember(int $channelId, int $userId): JsonResponse
+    {
+        $canal = $this->canalSousGarde($channelId, 'view');
+
+        $cible = User::findOrFail($userId);
+
+        // `kickMember` protège déjà le propriétaire du canal : on la consulte plutôt que de
+        // réimplémenter cette règle.
+        abort_unless(Auth::user()->can('kickMember', [$canal, $cible]), 403);
+
+        app(ChannelManagementService::class)->retirerMembre($canal, $userId);
+
+        return response()->json(['data' => ['ok' => true]]);
+    }
+
+    /** Quitter un canal soi-même — sans demander la permission à personne. */
+    public function leaveChannel(int $channelId): JsonResponse
+    {
+        $canal = $this->canalSousGarde($channelId, 'view');
+
+        app(ChannelManagementService::class)->retirerMembre($canal, (int) Auth::id());
+
+        return response()->json(['data' => ['ok' => true]]);
+    }
+
+    public function markChannelRead(int $channelId): JsonResponse
+    {
+        $canal = $this->canalSousGarde($channelId, 'view');
+
+        app(ChannelManagementService::class)->marquerCommeLu($canal, (int) Auth::id());
+
+        return response()->json(['data' => ['ok' => true]]);
+    }
+
+    /**
+     * Les non-lus par canal.
+     *
+     * `channel_members.last_read_at` existait depuis l'origine et n'était écrit par personne : les
+     * non-lus ne pouvaient donc pas exister, et la liste ne disait jamais où il se passait quelque
+     * chose.
+     */
+    public function channelsUnreadCounts(): JsonResponse
+    {
+        $org = $this->organisationActive();
+
+        return response()->json([
+            'data' => app(ChannelManagementService::class)->nonLusPour($org->id, (int) Auth::id()),
+        ]);
+    }
+
+    public function channelMessages(Request $request, int $channelId): JsonResponse
     {
         $canal = $this->canalSousGarde($channelId, 'view');
 
         $messages = Message::query()
             ->where('channel_id', $canal->id)
             ->topLevel()
+            /*
+             * PAGINATION PAR CURSEUR, pas par page.
+             *
+             * Un fil vivant reçoit des messages pendant qu'on le remonte : une pagination par
+             * décalage rejouerait ou sauterait des lignes à chaque nouveau message. `before_id`
+             * désigne un point fixe dans l'historique.
+             */
+            ->when(
+                $request->query('before_id'),
+                fn ($q, $avant) => $q->where('id', '<', (int) $avant)
+            )
             ->with('sender:id,name')
             ->latest()
             ->limit(50)
@@ -1332,6 +1491,64 @@ class CompanyController extends Controller
         );
 
         return response()->json(['data' => ['ok' => true]], 201);
+    }
+
+    /**
+     * ENVOYER UNE NOTE VOCALE.
+     *
+     * Sur un chantier, on ne tape pas : on a les mains prises, des gants, et le téléphone au fond
+     * d'une poche. Une messagerie d'équipe terrain qui n'accepte que du texte se fait remplacer par
+     * WhatsApp — hors de l'outil, hors de toute trace, et hors de la modération.
+     *
+     * LE FICHIER PASSE PAR LE MÊME CHEMIN QUE LES AUTRES PIÈCES JOINTES : même disque, même
+     * plafond, même scan antivirus. Réécrire un stockage pour l'audio aurait créé une seconde porte,
+     * qu'on aurait fini par oublier de garder.
+     */
+    public function sendVoiceNote(Request $request, int $channelId): JsonResponse
+    {
+        $canal = $this->canalSousGarde($channelId, 'postMessage');
+
+        $donnees = $request->validate([
+            /*
+             * Types AUDIO uniquement, et liste blanche : `mimetypes` regarde le contenu réel, pas
+             * l'extension. Un exécutable renommé `.m4a` ne passe pas.
+             */
+            'audio' => [
+                'required',
+                'file',
+                'mimetypes:audio/mp4,audio/aac,audio/m4a,audio/x-m4a,audio/mpeg,audio/webm',
+                'max:5120',
+            ],
+            'duration' => ['nullable', 'integer', 'min:1', 'max:600'],
+        ]);
+
+        $chemin = $request->file('audio')->store(
+            'channels/'.$canal->id.'/voice',
+            config('messaging.attachments.disk', 'public'),
+        );
+
+        /*
+         * `MessageService::send()` porte mentions, notifications et diffusion en une transaction.
+         * Le contenu textuel est un LIBELLÉ, pas une transcription : les clients qui ne savent pas
+         * lire le type `voice` affichent au moins quelque chose d'intelligible.
+         */
+        $message = app(MessageService::class)->send(
+            channel: $canal,
+            sender: Auth::user(),
+            content: '🎙️ Note vocale',
+            type: 'voice',
+            metadata: [
+                'path' => $chemin,
+                'duration' => $donnees['duration'] ?? null,
+                'disk' => config('messaging.attachments.disk', 'public'),
+            ],
+        );
+
+        return response()->json(['data' => [
+            'id' => $message->id,
+            'type' => $message->type,
+            'duration' => $donnees['duration'] ?? null,
+        ]], 201);
     }
 
     /**

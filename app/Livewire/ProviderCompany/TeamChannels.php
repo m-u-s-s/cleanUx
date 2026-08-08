@@ -10,6 +10,7 @@ use App\Models\OrganizationAccount;
 use App\Models\OrganizationMember;
 use App\Models\User;
 use App\Services\Messaging\MarkdownRenderer;
+use App\Services\Messaging\ChannelManagementService;
 use App\Services\Messaging\MessageService;
 use App\Services\Messaging\ModerationService;
 use App\Services\Messaging\ReactionService;
@@ -508,42 +509,21 @@ class TeamChannels extends Component
             403
         );
 
-        $channel = Channel::create([
-            'organization_account_id' => $this->org->id,
-            'name' => $this->newChannelName,
-            'type' => $this->newChannelType,
-            'is_private' => $this->isPrivate,
-            'created_by' => $user->id,
-        ]);
-
-        // Ajouter le créateur comme membre owner
-        $channel->members()->attach($user->id, ['role' => 'owner']);
-
         /*
-         * OPTION « EMBARQUER TOUTE L'ÉQUIPE » (ajoutée le 2026-08-05).
+         * LA CRÉATION EST PARTIE DANS `ChannelManagementService`.
          *
-         * Sans elle, un canal d'équipe naissait vide de son équipe et il fallait ajouter chaque
-         * collègue un par un — geste qu'aucun écran ne proposait (voir addChannelMember).
+         * L'API mobile doit ouvrir des fils elle aussi — une équipe sur le terrain pouvait
+         * RÉPONDRE, jamais ouvrir. Deux implémentations de « qui entre dans un canal » auraient
+         * divergé, et la divergence se serait vue du côté le plus permissif.
          */
-        if ($this->inviteWholeTeam) {
-            $coequipiers = OrganizationMember::query()
-                ->where('organization_account_id', $this->org->id)
-                ->where('status', 'active')
-                ->where('user_id', '!=', $user->id)
-                ->pluck('user_id');
-
-            foreach ($coequipiers as $coequipierId) {
-                $channel->members()->syncWithoutDetaching([$coequipierId => ['role' => 'member']]);
-            }
-        }
-
-        // Message système de création
-        Message::create([
-            'channel_id' => $channel->id,
-            'user_id' => $user->id,
-            'content' => "Canal **#{$channel->name}** créé par {$user->name}.",
-            'type' => Message::TYPE_SYSTEM,
-        ]);
+        $channel = app(ChannelManagementService::class)->creer(
+            acteur: $user,
+            organisationId: (int) $this->org->id,
+            nom: $this->newChannelName,
+            type: $this->newChannelType,
+            prive: $this->isPrivate,
+            avecTouteLEquipe: $this->inviteWholeTeam,
+        );
 
         $this->newChannelName = '';
         $this->showNewChannel = false;
@@ -568,67 +548,15 @@ class TeamChannels extends Component
      */
     public function ouvrirConversationDirecte(int $userId): void
     {
-        $user = Auth::user();
+        $canal = app(ChannelManagementService::class)->ouvrirConversationDirecte(
+            acteur: Auth::user(),
+            organisationId: (int) $this->org->id,
+            autreUserId: $userId,
+        );
 
-        if ($userId === $user->id) {
+        if ($canal === null) {
             return;
         }
-
-        // L'identifiant vient du client : l'autre personne doit être un membre actif de MA société.
-        $collegue = OrganizationMember::query()
-            ->where('organization_account_id', $this->org->id)
-            ->where('user_id', $userId)
-            ->where('status', 'active')
-            ->first();
-
-        if ($collegue === null) {
-            return;
-        }
-
-        /*
-         * Le comptage final se fait EN PHP, et non par un `having` sur `withCount`.
-         *
-         * SQLite refuse « HAVING clause on a non-aggregate query » là où MySQL l'accepte : la suite
-         * de tests tourne sur SQLite, la production sur MySQL, et écrire la requête qui plaît aux
-         * deux coûterait plus cher en subtilité qu'un filtre sur une poignée de canaux privés
-         * partagés par deux personnes précises.
-         */
-        $existant = Channel::forOrg($this->org->id)
-            ->where('type', 'private')
-            ->whereHas('members', fn ($q) => $q->where('user_id', $user->id))
-            ->whereHas('members', fn ($q) => $q->where('user_id', $userId))
-            ->withCount('members')
-            ->get()
-            // « Exactement ces deux-là » : un canal privé à trois n'est pas cette conversation.
-            ->firstWhere('members_count', 2);
-
-        if ($existant !== null) {
-            $this->loadChannels();
-            $this->openChannel($existant->id);
-
-            return;
-        }
-
-        $autre = $collegue->user;
-
-        $canal = Channel::create([
-            'organization_account_id' => $this->org->id,
-            // Le nom sert l'affichage, pas l'identité : c'est la composition qui identifie la
-            // conversation. Deux personnes homonymes ne se retrouveraient pas dans le même canal.
-            //
-            // Pas de repli `?? 'Conversation'` : le modèle déclare la relation non nullable, et
-            // PHPStan a montré que la garde ne s'exécutait jamais. Une garde morte donne
-            // l'illusion d'une protection.
-            'name' => $autre->name,
-            'type' => 'private',
-            'is_private' => true,
-            'created_by' => $user->id,
-        ]);
-
-        $canal->members()->attach([
-            $user->id => ['role' => 'owner'],
-            $userId => ['role' => 'member'],
-        ]);
 
         $this->loadChannels();
         $this->openChannel($canal->id);
@@ -670,20 +598,10 @@ class TeamChannels extends Component
 
         /*
          * … et la personne ajoutée doit être une collègue. Sans ce filtre, ouvrir l'ajout de
-         * membres ouvrirait les canaux d'une société aux utilisateurs de toutes les autres.
+         * membres ouvrirait les canaux d'une société aux utilisateurs de toutes les autres. La
+         * règle vit dans le service, partagée avec l'API mobile.
          */
-        $estCoequipier = OrganizationMember::query()
-            ->where('organization_account_id', $this->org->id)
-            ->where('user_id', $userId)
-            ->where('status', 'active')
-            ->exists();
-
-        if (! $estCoequipier) {
-            return;
-        }
-
-        // syncWithoutDetaching : ajouter deux fois la même personne ne doit pas dupliquer la ligne.
-        $canal->members()->syncWithoutDetaching([$userId => ['role' => 'member']]);
+        app(ChannelManagementService::class)->ajouterMembre($canal, $userId);
 
         $this->dispatch('channel-members-updated');
     }
@@ -708,7 +626,7 @@ class TeamChannels extends Component
 
         abort_unless($acteur->can('kickMember', [$canal, $cible]), 403);
 
-        $canal->members()->detach($userId);
+        app(ChannelManagementService::class)->retirerMembre($canal, $userId);
 
         $this->dispatch('channel-members-updated');
     }

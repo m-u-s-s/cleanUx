@@ -369,6 +369,23 @@ Route::middleware('auth:sanctum')->prefix('provider/company')->group(function ()
     // Canaux — lecture ET écriture passent par ChannelPolicy, que le web n'appelait pas côté
     // écriture avant le 2026-08-06.
     Route::get('/channels', [ProviderCompanyController::class, 'channels']);
+    Route::get('/channels/unread-counts', [ProviderCompanyController::class, 'channelsUnreadCounts']);
+
+    /*
+     * TOUTE LA GESTION VIVAIT DANS L'ÉCRAN WEB. L'API ne savait que lister, lire et poster : une
+     * équipe sur le terrain pouvait RÉPONDRE, jamais ouvrir un fil ni y ajouter quelqu'un.
+     */
+    Route::post('/channels', [ProviderCompanyController::class, 'createChannel']);
+    Route::post('/channels/direct', [ProviderCompanyController::class, 'openDirectChannel']);
+    Route::get('/channels/{channel}/members', [ProviderCompanyController::class, 'channelMembers']);
+    Route::post('/channels/{channel}/members', [ProviderCompanyController::class, 'addChannelMember']);
+    Route::delete('/channels/{channel}/members/{user}', [ProviderCompanyController::class, 'removeChannelMember']);
+    Route::post('/channels/{channel}/leave', [ProviderCompanyController::class, 'leaveChannel']);
+    Route::post('/channels/{channel}/read', [ProviderCompanyController::class, 'markChannelRead']);
+
     Route::get('/channels/{channel}/messages', [ProviderCompanyController::class, 'channelMessages']);
     Route::post('/channels/{channel}/messages', [ProviderCompanyController::class, 'postChannelMessage']);
+
+    // Sur un chantier on ne tape pas : mains prises, gants, téléphone au fond d'une poche.
+    Route::post('/channels/{channel}/voice', [ProviderCompanyController::class, 'sendVoiceNote']);
 });

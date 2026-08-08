@@ -23,6 +23,22 @@ return [
     | qui appelle ClamAV ou un service tiers.
     */
 
+    /*
+    |--------------------------------------------------------------------------
+    | Modération des canaux internes
+    |--------------------------------------------------------------------------
+    | `ModerationService` (ChatV2) n'examinait que le fil client↔prestataire. Les canaux internes
+    | n'avaient AUCUNE modération : une équipe pouvait y coller le numéro de carte d'un client sans
+    | que rien ne le voie — alors que ces canaux existent précisément pour éviter que les échanges
+    | partent sur WhatsApp, hors de toute trace.
+    |
+    | Les messages SYSTÈME en sont toujours exclus : ce sont des textes que le produit écrit
+    | lui-même, et les caviarder troue des annonces techniques.
+    */
+    'moderation' => [
+        'channels' => (bool) env('MESSAGING_MODERATION_CHANNELS', true),
+    ],
+
     'av' => [
         'required' => (bool) env('MESSAGING_AV_REQUIRED', false),
         'engine' => env('MESSAGING_AV_ENGINE', 'clamav'),

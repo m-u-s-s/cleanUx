@@ -103,6 +103,28 @@ class ChannelPolicy
         return $this->isAtLeast($user, $channel, self::ROLE_OWNER);
     }
 
+    /**
+     * INVITER QUELQU'UN DANS LE CANAL : modérateur ou propriétaire du FIL.
+     *
+     * La symétrie avec `kickMember` manquait : la politique savait dire qui peut retirer, jamais qui
+     * peut ajouter — si bien que l'ajout de membres, quand il a été écrit côté web, s'est appuyé sur
+     * `channels.manage`, une clé d'ORGANISATION. Les deux ne disent pas la même chose : un
+     * gestionnaire de la société n'est pas forcément dans le fil, et le propriétaire d'une
+     * conversation à deux n'a aucune clé d'organisation.
+     *
+     * C'est le rôle DANS LE CANAL qui décide qui y entre. La cible reste bornée aux collègues
+     * actifs — cette règle-là vit dans `ChannelManagementService`, parce qu'elle regarde
+     * l'organisation et non le fil.
+     */
+    public function manageMembers(User $user, Channel $channel): bool
+    {
+        if ($this->isPlatformAdmin($user)) {
+            return true;
+        }
+
+        return $this->isAtLeast($user, $channel, self::ROLE_MODERATOR);
+    }
+
     /** Kicker un membre : modérateur+ (sauf l'owner). */
     public function kickMember(User $user, Channel $channel, User $target): bool
     {

@@ -176,7 +176,15 @@ describe('CompanyDispatchScreen', () => {
 });
 
 describe('CompanyChannelsScreen', () => {
-  it('ouvre le premier canal et y envoie un message', async () => {
+  it('liste les conversations et signale celles qui ont du nouveau', async () => {
+    /*
+     * L'ÉCRAN A ÉTÉ COUPÉ EN DEUX, et ce test suivait l'ancienne forme.
+     *
+     * Il mêlait la liste et le fil : on ne pouvait ni ouvrir une conversation depuis la liste, ni
+     * savoir laquelle avait du nouveau — `channel_members.last_read_at` existait depuis l'origine
+     * et n'était écrit par personne. Le fil vit désormais dans `ChannelConversationScreen`, avec le
+     * temps réel et le micro ; ici on liste, on signale, et on ouvre.
+     */
     mockGet.mockImplementation((url: string) => {
       if (url === '/provider/company/channels') {
         return Promise.resolve({
@@ -184,32 +192,20 @@ describe('CompanyChannelsScreen', () => {
         });
       }
 
-      if (url === '/provider/company/channels/4/messages') {
-        return Promise.resolve({
-          data: {
-            data: [
-              { id: 1, content: 'Bonjour', sender: 'Camille', sender_id: 2, is_system: false, sent_at: null },
-            ],
-          },
-        });
+      if (url === '/provider/company/channels/unread-counts') {
+        return Promise.resolve({ data: { data: { 4: 3 } } });
       }
 
       return Promise.resolve({ data: { data: [] } });
     });
-    mockPost.mockResolvedValue({ data: {} });
 
     const { getByText, getByTestId } = afficher(<CompanyChannelsScreen />);
 
-    // Le premier canal s'ouvre seul : un écran vide sans explication ferait croire à une panne.
-    await waitFor(() => getByText('Bonjour'));
+    await waitFor(() => getByText('# general'));
 
-    fireEvent.changeText(getByTestId('champ-message'), 'Bien reçu');
-    fireEvent.press(getByText('Envoyer'));
+    // Le badge dit OÙ il se passe quelque chose : c'est la raison d'être des non-lus.
+    getByText('3');
 
-    await waitFor(() =>
-      expect(mockPost).toHaveBeenCalledWith('/provider/company/channels/4/messages', {
-        content: 'Bien reçu',
-      }),
-    );
+    fireEvent.press(getByTestId('canal-4'));
   });
 });
