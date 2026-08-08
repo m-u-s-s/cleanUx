@@ -220,3 +220,55 @@ describe('ChannelConversationScreen', () => {
     );
   });
 });
+
+describe('ChannelConversationScreen — appels', () => {
+  it('ouvre un appel et bascule sur l’écran dédié', async () => {
+    /*
+     * GREENFIELD TOTAL avant ce lot : `VideoCallService` était un squelette qui levait sur chaque
+     * méthode. La note vocale couvre la consigne qu'on laisse ; un appel couvre la question qui
+     * n'attend pas.
+     */
+    mockPost.mockResolvedValue({ data: { data: { call_id: 77, type: 'audio' } } });
+
+    monter();
+
+    fireEvent.press(await screen.findByTestId('bouton-appeler'));
+
+    await waitFor(() =>
+      expect(mockPost).toHaveBeenCalledWith('/provider/company/channels/4/calls', {
+        type: 'audio',
+      }),
+    );
+  });
+
+  it('affiche la bannière d’un appel entrant, et pas du sien', async () => {
+    monter();
+    await screen.findByText('Bonjour');
+
+    const gestionnaires = mockUseChannel.mock.calls.at(-1)?.[1] as Record<string, (d: unknown) => void>;
+
+    // Son propre appel : l'appelant est déjà sur l'écran d'appel, la bannière serait absurde.
+    gestionnaires.CallStarted?.({ call_id: 77, type: 'audio', initiator_user_id: 1 });
+    expect(screen.queryByTestId('banniere-appel')).toBeNull();
+
+    gestionnaires.CallStarted?.({ call_id: 78, type: 'audio', initiator_user_id: 9 });
+    expect(await screen.findByTestId('banniere-appel')).toBeTruthy();
+  });
+
+  it('refuser un appel le termine côté serveur', async () => {
+    /*
+     * Sinon il continuerait de sonner jusqu'au délai, et la bannière reviendrait au prochain rendu.
+     */
+    monter();
+    await screen.findByText('Bonjour');
+
+    const gestionnaires = mockUseChannel.mock.calls.at(-1)?.[1] as Record<string, (d: unknown) => void>;
+    gestionnaires.CallStarted?.({ call_id: 78, type: 'audio', initiator_user_id: 9 });
+
+    fireEvent.press(await screen.findByText('Refuser'));
+
+    await waitFor(() =>
+      expect(mockPost).toHaveBeenCalledWith('/provider/company/calls/78/end'),
+    );
+  });
+});

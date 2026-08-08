@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { View, FlatList, Text, TextInput, StyleSheet, Pressable, Alert } from 'react-native';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useRoute } from '@react-navigation/native';
+import { useRoute, useNavigation } from '@react-navigation/native';
 import type { RouteProp } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Screen, Button, Divider, EmptyState } from '@/ui';
 import { apiClient } from '@/api';
 import { useAuth } from '@/auth';
@@ -48,6 +49,7 @@ export function ChannelConversationScreen() {
   const { user } = useAuth();
   const qc = useQueryClient();
 
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const route = useRoute<RouteProp<RootStackParamList, 'ChannelConversation'>>();
   const canalId = route.params?.channelId ?? null;
 
@@ -85,6 +87,39 @@ export function ChannelConversationScreen() {
   useChannel(canalId !== null ? `channel.${canalId}` : null, {
     'message.sent': () => qc.invalidateQueries({ queryKey: cleMessages }),
     MessageSent: () => qc.invalidateQueries({ queryKey: cleMessages }),
+    // On ne se montre pas sa propre bannière : l'appelant est déjà sur l'écran d'appel.
+    CallStarted: (donnees: any) => {
+      if (donnees?.initiator_user_id !== user?.id) {
+        setAppelEntrant({ call_id: donnees.call_id, type: donnees.type });
+      }
+    },
+  });
+
+  /*
+   * L'APPEL ENTRANT ARRIVE PAR LE MÊME CANAL QUE LES MESSAGES.
+   *
+   * `channel.{id}` est déjà autorisé et vérifie l'appartenance au fil — exactement la population qui
+   * doit voir la bannière. Ouvrir un canal de diffusion dédié aux appels aurait demandé une seconde
+   * règle d'autorisation, vouée à diverger de la première.
+   *
+   * La charge utile ne porte PAS de jeton : chacun demande le sien, et le demander EST l'acte de
+   * décrocher côté serveur.
+   */
+  const [appelEntrant, setAppelEntrant] = useState<{ call_id: number; type: string } | null>(null);
+
+  const appeler = useMutation({
+    mutationFn: async (type: 'audio' | 'video') =>
+      apiClient.post(`/provider/company/channels/${canalId}/calls`, { type }),
+    onSuccess: (reponse: any) =>
+      navigation.navigate('Call', {
+        callId: reponse.data.data.call_id,
+        video: reponse.data.data.type === 'video',
+      }),
+    onError: (erreur: any) =>
+      Alert.alert(
+        'Appel impossible',
+        erreur?.data?.message ?? "Les appels ne sont pas disponibles sur cette instance.",
+      ),
   });
 
   const envoyer = useMutation({
@@ -146,6 +181,45 @@ export function ChannelConversationScreen() {
 
   return (
     <Screen>
+      {appelEntrant !== null && (
+        <View style={styles.banniere} testID="banniere-appel">
+          <Text style={styles.texteBanniere}>Appel entrant</Text>
+          <Button
+            label="Répondre"
+            size="sm"
+            onPress={() => {
+              const entrant = appelEntrant;
+              setAppelEntrant(null);
+              navigation.navigate('Call', {
+                callId: entrant.call_id,
+                video: entrant.type === 'video',
+              });
+            }}
+          />
+          <Button
+            label="Refuser"
+            size="sm"
+            variant="ghost"
+            onPress={() => {
+              // Refuser TERMINE l'appel côté serveur : sinon il continuerait de sonner jusqu'au
+              // délai, et la bannière reviendrait au prochain rendu.
+              apiClient.post(`/provider/company/calls/${appelEntrant.call_id}/end`).catch(() => undefined);
+              setAppelEntrant(null);
+            }}
+          />
+        </View>
+      )}
+
+      <View style={styles.entete}>
+        <Pressable
+          accessibilityRole="button"
+          testID="bouton-appeler"
+          onPress={() => appeler.mutate('audio')}
+        >
+          <Text style={styles.lienAppel}>📞 Appeler</Text>
+        </Pressable>
+      </View>
+
       <Pressable
         accessibilityRole="button"
         testID="ouvrir-participants"
@@ -247,6 +321,31 @@ export function ChannelConversationScreen() {
 
 const stylesFor = (t: ThemeTokens) =>
   StyleSheet.create({
+    banniere: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      gap: spacing.xs,
+      padding: spacing.sm,
+      borderRadius: radius.md,
+      backgroundColor: t.tint.brand,
+      marginBottom: spacing.sm,
+    },
+    texteBanniere: {
+      flex: 1,
+      fontSize: typography.fontSize.sm,
+      fontWeight: typography.fontWeight.semibold,
+      color: t.text,
+    },
+    entete: {
+      flexDirection: 'row',
+      justifyContent: 'flex-end',
+    },
+    lienAppel: {
+      fontSize: typography.fontSize.sm,
+      color: t.textSecondary,
+      paddingVertical: spacing.xs,
+    },
     lienParticipants: {
       fontSize: typography.fontSize.sm,
       color: t.textSecondary,

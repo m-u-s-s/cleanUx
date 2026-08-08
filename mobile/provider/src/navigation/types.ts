@@ -109,6 +109,12 @@ export type RootStackParamList = {
    */
   ChannelConversation: { channelId: number };
   /**
+   * Un appel en cours. Le JETON se demande, il ne se recoit pas : la banniere diffusee sur
+   * `channel.{id}` ne porte que l'identifiant, sinon tous les membres pourraient entrer dans la
+   * salle sans avoir decroche.
+   */
+  Call: { callId: number; video?: boolean };
+  /**
    * L'espace société complet, en onglets — la maison d'un gérant, pas une liste de boutons dans le
    * profil. Rendu hors de la pile terrain : voir `RootNavigator`, qui explique pourquoi le
    * battement de présence ne doit PAS y être monté.

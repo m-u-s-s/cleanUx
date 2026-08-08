@@ -388,4 +388,16 @@ Route::middleware('auth:sanctum')->prefix('provider/company')->group(function ()
 
     // Sur un chantier on ne tape pas : mains prises, gants, téléphone au fond d'une poche.
     Route::post('/channels/{channel}/voice', [ProviderCompanyController::class, 'sendVoiceNote']);
+
+    /*
+     * APPELS AUDIO / VIDEO. La note vocale couvre la consigne qu'on laisse ; un appel couvre la
+     * question qui n'attend pas — « je suis devant la porte, quel est le code ? ».
+     *
+     * Le jeton n'est JAMAIS diffuse : la banniere part sur `channel.{id}` avec l'identifiant de
+     * l'appel, et chacun demande ensuite le sien.
+     */
+    Route::post('/channels/{channel}/calls', [ProviderCompanyController::class, 'startCall']);
+    Route::get('/calls/{call}', [ProviderCompanyController::class, 'showCall']);
+    Route::post('/calls/{call}/token', [ProviderCompanyController::class, 'callToken']);
+    Route::post('/calls/{call}/end', [ProviderCompanyController::class, 'endCall']);
 });

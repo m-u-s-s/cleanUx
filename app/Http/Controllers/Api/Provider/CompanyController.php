@@ -5,7 +5,10 @@ namespace App\Http\Controllers\Api\Provider;
 use App\Enums\OrganizationRole;
 use App\Http\Controllers\Controller;
 use App\Jobs\Missions\AutoAssignerMissionsJob;
+use App\Events\CallStarted;
+use App\Jobs\Calls\CloreLAppelNonRepondu;
 use App\Models\Channel;
+use App\Models\Call;
 use App\Models\FieldTeam;
 use App\Models\FieldTeamMember;
 use App\Models\Message;
@@ -21,12 +24,14 @@ use App\Models\ProviderSiteTeam;
 use App\Models\Task;
 use App\Models\User;
 use App\Services\Messaging\ChannelManagementService;
+use App\Services\Calls\CallService;
 use App\Services\Messaging\MessageService;
 use App\Services\Missions\MissionAssignmentService;
 use App\Services\Missions\ReassignmentPolicy;
 use App\Services\Client\Calendar\BookingRescheduleService;
 use App\Services\Missions\WorkerAvailabilityService;
 use App\Services\Organizations\OrganizationMemberAdministration;
+use App\Services\Organizations\OrganizationNotifier;
 use App\Services\Organizations\ResultatAdministration;
 use App\Services\PermissionService;
 use App\Services\Tasks\TaskVisibilityService;
@@ -1549,6 +1554,153 @@ class CompanyController extends Controller
             'type' => $message->type,
             'duration' => $donnees['duration'] ?? null,
         ]], 201);
+    }
+
+    // ──────────────────────────────────────────────────────
+    // Appels audio / vidéo
+    // ──────────────────────────────────────────────────────
+
+    /**
+     * OUVRIR UN APPEL DANS UN CANAL.
+     *
+     * La note vocale du lot 7 couvre la consigne qu'on laisse ; un appel couvre la question qui
+     * n'attend pas — « je suis devant la porte, quel est le code ? ». Rien ne portait cela :
+     * `VideoCallService` était un squelette qui levait sur chaque méthode.
+     *
+     * LE JETON N'EST PAS DIFFUSÉ. La bannière part sur `channel.{id}` avec l'identifiant de
+     * l'appel ; chacun demande ENSUITE le sien. Diffuser un jeton donnerait à tous les membres le
+     * droit d'entrer dans la salle sans avoir décroché.
+     */
+    public function startCall(Request $request, int $channelId): JsonResponse
+    {
+        $canal = $this->canalSousGarde($channelId, 'postMessage');
+
+        $donnees = $request->validate([
+            'type' => ['nullable', Rule::in(['audio', 'video'])],
+        ]);
+
+        $service = app(CallService::class);
+
+        /*
+         * SANS CLÉ, ON NE PROPOSE RIEN — et on le dit. Un jeton signé avec un secret vide serait
+         * rejeté par le serveur LiveKit : mieux vaut un refus explicite qu'un appel qui échoue à la
+         * connexion, sans que personne comprenne pourquoi.
+         */
+        abort_unless($service->estConfigure(), 503, 'Les appels ne sont pas configurés sur cette instance.');
+
+        $appel = $service->ouvrir($canal, Auth::user(), $donnees['type'] ?? 'audio');
+
+        broadcast(new CallStarted($appel));
+
+        /*
+         * Le PUSH double la diffusion, et ce n'est pas redondant : un collègue dont l'application
+         * est fermée ne reçoit rien de Reverb. C'est précisément le cas d'usage — on appelle
+         * quelqu'un qui n'est pas devant son écran.
+         */
+        $this->prevenirLesAutresMembres($canal, $appel);
+
+        // Le délai de sonnerie produit l'état MANQUÉ : sans lui, un appel que personne ne décroche
+        // sonnerait pour toujours.
+        CloreLAppelNonRepondu::dispatch($appel->id)
+            ->delay(now()->addSeconds((int) config('livekit.ring_timeout_seconds', 45)));
+
+        return response()->json(['data' => [
+            'call_id' => $appel->id,
+            'room_name' => $appel->room_name,
+            'url' => config('livekit.url'),
+            'token' => $service->jetonPour($appel, Auth::user()),
+            'type' => $appel->type,
+        ]], 201);
+    }
+
+    /** Le jeton de CETTE personne pour CET appel — chacun demande le sien. */
+    public function callToken(int $callId): JsonResponse
+    {
+        $appel = $this->appelSousGarde($callId);
+
+        abort_if(
+            in_array($appel->status, [Call::STATUS_ENDED, Call::STATUS_MISSED], true),
+            410,
+            'Cet appel est terminé.',
+        );
+
+        $service = app(CallService::class);
+
+        // Demander son jeton, c'est décrocher : c'est ce qui arrête la sonnerie côté appelant.
+        if ((int) $appel->initiator_user_id !== (int) Auth::id()) {
+            $service->repondre($appel);
+        }
+
+        return response()->json(['data' => [
+            'call_id' => $appel->id,
+            'room_name' => $appel->room_name,
+            'url' => config('livekit.url'),
+            'token' => $service->jetonPour($appel, Auth::user()),
+        ]]);
+    }
+
+    public function endCall(int $callId): JsonResponse
+    {
+        $appel = $this->appelSousGarde($callId);
+
+        app(CallService::class)->terminer($appel);
+
+        return response()->json(['data' => ['status' => $appel->fresh()->status]]);
+    }
+
+    public function showCall(int $callId): JsonResponse
+    {
+        $appel = $this->appelSousGarde($callId);
+
+        return response()->json(['data' => [
+            'id' => $appel->id,
+            'channel_id' => $appel->channel_id,
+            'type' => $appel->type,
+            'status' => $appel->status,
+            'initiator_user_id' => $appel->initiator_user_id,
+            'started_at' => $appel->started_at?->toIso8601String(),
+            'ended_at' => $appel->ended_at?->toIso8601String(),
+        ]]);
+    }
+
+    /**
+     * Un appel dont on est membre du canal.
+     *
+     * Le scoping passe par le CANAL : `canalSousGarde()` vérifie à la fois l'organisation et
+     * l'appartenance au fil. Un appel d'une autre société n'est donc jamais chargé.
+     */
+    private function appelSousGarde(int $callId): Call
+    {
+        $appel = Call::query()->findOrFail($callId);
+
+        $this->canalSousGarde((int) $appel->channel_id, 'view');
+
+        return $appel;
+    }
+
+    private function prevenirLesAutresMembres(Channel $canal, Call $appel): void
+    {
+        $notifier = app(OrganizationNotifier::class);
+        // `Auth::user()` est typé `User` sur une route authentifiée : un repli ici serait mort.
+        $appelant = Auth::user()->name;
+
+        foreach ($canal->members()->pluck('users.id') as $membreId) {
+            if ((int) $membreId === (int) Auth::id()) {
+                continue;
+            }
+
+            $notifier->notifierUtilisateur(
+                userId: (int) $membreId,
+                titre: 'Appel entrant',
+                corps: "{$appelant} vous appelle.",
+                donnees: [
+                    'type' => 'call_started',
+                    'call_id' => $appel->id,
+                    'channel_id' => $canal->id,
+                ],
+                cleIdempotence: "call:{$appel->id}:u{$membreId}",
+            );
+        }
     }
 
     /**
