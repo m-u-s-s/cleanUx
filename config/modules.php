@@ -36,6 +36,25 @@ return [
     ],
 
     'catalogue' => [
+        /*
+         * ---- TRANSVERSAUX (contexte `*`) ----
+         *
+         * Ces pages ne vivent sous AUCUN tableau de bord : `user/profile`, `notifications`,
+         * `aide`, `legal/*`. Le catalogue ayant été bâti à partir des registres de navigation, qui
+         * ne couvraient que `admin/*` et `dashboard/*`, elles n'appartenaient à aucun rôle — les
+         * cinq espaces étaient sans profil ni notifications dans leur page Modules.
+         *
+         * Elles sont déclarées UNE fois. Les recopier dans les cinq contextes serait cinq
+         * occasions d'en oublier une.
+         */
+        ['key' => '*:profile.show', 'label' => 'Mon compte', 'icon' => '👤', 'route' => 'profile.show', 'context' => '*', 'category' => 'comptes', 'primary' => false],
+        ['key' => '*:notifications.index', 'label' => 'Notifications', 'icon' => '🔔', 'route' => 'notifications.index', 'context' => '*', 'category' => 'communication', 'primary' => false],
+        ['key' => '*:help.center', 'label' => 'Aide', 'icon' => '❓', 'route' => 'help.center', 'context' => '*', 'category' => 'plateforme', 'primary' => false],
+        ['key' => '*:terms.show', 'label' => 'Conditions générales', 'icon' => '📜', 'route' => 'terms.show', 'context' => '*', 'category' => 'plateforme', 'primary' => false],
+        ['key' => '*:policy.show', 'label' => 'Confidentialité', 'icon' => '🔐', 'route' => 'policy.show', 'context' => '*', 'category' => 'plateforme', 'primary' => false],
+        ['key' => '*:legal.mentions', 'label' => 'Mentions légales', 'icon' => '📑', 'route' => 'legal.mentions', 'context' => '*', 'category' => 'plateforme', 'primary' => false],
+        ['key' => '*:legal.cookies', 'label' => 'Cookies', 'icon' => '🍪', 'route' => 'legal.cookies', 'context' => '*', 'category' => 'plateforme', 'primary' => false],
+
         // ---- client ----
         ['key' => 'client:client.dashboard', 'label' => 'Accueil', 'icon' => '🏠', 'route' => 'client.dashboard', 'context' => 'client', 'category' => 'rendez-vous', 'primary' => true],
         ['key' => 'client:client.historique', 'label' => 'Historique', 'icon' => '🕘', 'route' => 'client.historique', 'context' => 'client', 'category' => 'rendez-vous', 'primary' => true],
@@ -80,7 +99,22 @@ return [
         ['key' => 'client:client.recurring.templates', 'label' => 'Templates 1-clic', 'icon' => '⭐', 'route' => 'client.recurring.templates', 'context' => 'client', 'category' => 'rendez-vous', 'primary' => false],
         ['key' => 'client:client.analytics.dashboard', 'label' => 'Mes statistiques', 'icon' => '📊', 'route' => 'client.analytics.dashboard', 'context' => 'client', 'category' => 'donnees', 'primary' => false],
 
+        /*
+         * Propres aux CLIENTS, particuliers comme sociétés : commander une intervention, chercher
+         * un prestataire, souscrire. Ces pages sont publiques d'accès mais ne figuraient dans
+         * aucun contexte — un client ne trouvait donc pas « Commander » dans sa page Modules.
+         */
+        ['key' => 'client:booking.create', 'label' => 'Prendre rendez-vous', 'icon' => '➕', 'route' => 'booking.create', 'context' => 'client', 'category' => 'rendez-vous', 'primary' => false],
+        ['key' => 'client:premium.offer', 'label' => 'Offre Premium', 'icon' => '⭐', 'route' => 'premium.offer', 'context' => 'client', 'category' => 'finance', 'primary' => false],
+
         // ---- employe ----
+        /*
+         * Propres aux PRESTATAIRES, indépendants comme salariés de société : l'état de leur
+         * dossier de vérification, et leur présence terrain. Deux pages qui décident de ce qu'ils
+         * peuvent faire, et qu'aucun menu ne citait.
+         */
+        ['key' => 'employe:provider.onboarding', 'label' => 'Mon dossier', 'icon' => '🚀', 'route' => 'provider.onboarding', 'context' => 'employe', 'category' => 'conformite', 'primary' => false],
+        ['key' => 'employe:presence.me', 'label' => 'Ma présence', 'icon' => '🟢', 'route' => 'presence.me', 'context' => 'employe', 'category' => 'missions', 'primary' => false],
         ['key' => 'employe:employe.disponibilites', 'label' => 'Disponibilités', 'icon' => '🕒', 'route' => 'employe.disponibilites', 'context' => 'employe', 'category' => 'rendez-vous', 'primary' => true],
         ['key' => 'employe:employe.google.calendar', 'label' => 'Google Agenda', 'icon' => '🗓️', 'route' => 'employe.google.calendar', 'context' => 'employe', 'category' => 'rendez-vous', 'primary' => false],
         ['key' => 'employe:employe.planning', 'label' => 'Planning', 'icon' => '📅', 'route' => 'employe.planning', 'context' => 'employe', 'category' => 'rendez-vous', 'primary' => true],
@@ -193,6 +227,14 @@ return [
         ['key' => 'admin:admin.webhooks-v2.center', 'label' => 'Webhooks B2B', 'icon' => '🔗', 'route' => 'admin.webhooks-v2.center', 'context' => 'admin', 'category' => 'plateforme', 'primary' => false],
 
         // ---- client-company ----
+        /*
+         * Une société cliente commande comme un particulier — la page est la même. Sa vérification
+         * d'entreprise et ses données personnelles aussi : ces routes sont gardées `role:client`,
+         * et `isClient()` est vrai pour elle (il délègue à `isClientCompany()`).
+         */
+        ['key' => 'client-company:booking.create', 'label' => 'Prendre rendez-vous', 'icon' => '➕', 'route' => 'booking.create', 'context' => 'client-company', 'category' => 'rendez-vous', 'primary' => false],
+        ['key' => 'client-company:client.kyb.onboarding', 'label' => 'Vérification entreprise (KYB)', 'icon' => '🏢', 'route' => 'client.kyb.onboarding', 'context' => 'client-company', 'category' => 'conformite', 'primary' => false],
+        ['key' => 'client-company:client.gdpr.data', 'label' => 'Mes données RGPD', 'icon' => '🔐', 'route' => 'client.gdpr.data', 'context' => 'client-company', 'category' => 'conformite', 'primary' => false],
         ['key' => 'client-company:client-company.bookings.bulk-import', 'label' => 'Import bulk', 'icon' => '📤', 'route' => 'client-company.bookings.bulk-import', 'context' => 'client-company', 'category' => 'rendez-vous', 'primary' => false],
         ['key' => 'client-company:client-company.bookings.index', 'label' => 'Réservations', 'icon' => '📅', 'route' => 'client-company.bookings.index', 'context' => 'client-company', 'category' => 'rendez-vous', 'primary' => true],
         // Le bouton d'appel du layout, hors de sa liste de liens — servi par `BookingHub`.
@@ -208,6 +250,12 @@ return [
         ['key' => 'client-company:client-company.dashboard', 'label' => 'Accueil', 'icon' => '🏠', 'route' => 'client-company.dashboard', 'context' => 'client-company', 'category' => 'donnees', 'primary' => true],
 
         // ---- provider-company ----
+        /*
+         * Un gérant reste un prestataire vérifié : son dossier et sa présence le concernent au
+         * même titre que l'indépendant. L'espace société n'en montrait aucun.
+         */
+        ['key' => 'provider-company:provider.onboarding', 'label' => 'Dossier de la société', 'icon' => '🚀', 'route' => 'provider.onboarding', 'context' => 'provider-company', 'category' => 'conformite', 'primary' => false],
+        ['key' => 'provider-company:presence.me', 'label' => 'Ma présence', 'icon' => '🟢', 'route' => 'presence.me', 'context' => 'provider-company', 'category' => 'missions', 'primary' => false],
         ['key' => 'provider-company:provider-company.dispatch', 'label' => 'Dispatch', 'icon' => '🗺️', 'route' => 'provider-company.dispatch', 'context' => 'provider-company', 'category' => 'missions', 'primary' => true],
         ['key' => 'provider-company:provider-company.tasks', 'label' => 'Tâches', 'icon' => '✅', 'route' => 'provider-company.tasks', 'context' => 'provider-company', 'category' => 'missions', 'primary' => true],
         ['key' => 'provider-company:provider-company.field-teams', 'label' => 'Équipes terrain', 'icon' => '🚚', 'route' => 'provider-company.field-teams', 'context' => 'provider-company', 'category' => 'prestataires', 'primary' => false],

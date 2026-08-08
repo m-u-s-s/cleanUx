@@ -18,7 +18,9 @@ class ModuleCatalogueTest extends TestCase
             $this->assertArrayHasKey('label', $groupe);
             $this->assertNotEmpty($groupe['modules'], 'Une catégorie vide ne doit pas être rendue');
             foreach ($groupe['modules'] as $module) {
-                $this->assertSame('client', $module['context']);
+                // `*` = module transversal, servi à tous les contextes : profil, notifications,
+                // aide, textes légaux. Il appartient donc légitimement à celui-ci.
+                $this->assertContains($module['context'], ['client', '*'], $module['key']);
             }
         }
     }

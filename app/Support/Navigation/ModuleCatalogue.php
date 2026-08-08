@@ -81,7 +81,16 @@ class ModuleCatalogue
         $catalogue = config('modules.catalogue');
 
         return collect($catalogue)
-            ->where('context', $contexte)
+            /*
+             * `*` DÉSIGNE LES MODULES TRANSVERSAUX — profil, notifications, aide, textes légaux.
+             *
+             * Ces pages ne vivent sous aucun tableau de bord (`user/profile`, `notifications`,
+             * `aide`, `legal/*`), si bien qu'elles n'appartenaient à aucun contexte : les cinq
+             * espaces étaient sans profil ni notifications dans leur page Modules. Les recopier
+             * cinq fois serait cinq occasions d'en oublier un — c'est précisément ce que le
+             * registre unique a supprimé.
+             */
+            ->filter(fn (array $module): bool => $module['context'] === $contexte || $module['context'] === '*')
             ->filter(fn (array $module): bool => Route::has($module['route']))
             ->filter(fn (array $module): bool => self::autoriseeParSaCondition($module))
             ->values();

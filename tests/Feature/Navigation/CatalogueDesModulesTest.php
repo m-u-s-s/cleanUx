@@ -62,7 +62,13 @@ class CatalogueDesModulesTest extends TestCase
 
     public function test_chaque_case_declare_un_contexte_et_une_categorie_connus(): void
     {
-        $contextes = ['client', 'employe', 'admin', 'client-company', 'provider-company'];
+        /*
+         * `*` est un contexte à part entière : celui des modules TRANSVERSAUX — profil,
+         * notifications, aide, textes légaux. Ces pages ne vivent sous aucun tableau de bord et
+         * appartiennent aux cinq espaces à la fois ; les recopier cinq fois serait cinq occasions
+         * d'en oublier une.
+         */
+        $contextes = ['*', 'client', 'employe', 'admin', 'client-company', 'provider-company'];
         $categories = array_keys(config('modules.categories'));
 
         foreach (config('modules.catalogue') as $module) {

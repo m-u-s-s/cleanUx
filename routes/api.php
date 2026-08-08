@@ -29,6 +29,13 @@ require __DIR__.'/api/realtime.php';
 
 Route::middleware('auth:sanctum')->group(function () {
 
+    /*
+     * Le catalogue des modules du rôle. Le contexte se déduit du jeton, il n'est pas un paramètre :
+     * voir `ModulesController`.
+     */
+    Route::get('/modules', [App\Http\Controllers\Api\ModulesController::class, 'index'])
+        ->name('api.modules.index');
+
     // Profile
     Route::get('/profile', [ProfileController::class, 'show']);
     Route::patch('/profile', [ProfileController::class, 'update']);
