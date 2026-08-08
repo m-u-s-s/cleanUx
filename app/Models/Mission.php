@@ -40,6 +40,7 @@ class Mission extends Model
         'organization_account_id',
         'provider_organization_id',
         'provider_team_id',
+        'field_team_id',
         'organization_site_id',
         'service_catalog_id',
         'service_zone_id',
@@ -163,6 +164,23 @@ class Mission extends Model
     public function organizationContract(): BelongsTo
     {
         return $this->belongsTo(OrganizationContract::class, 'organization_contract_id');
+    }
+
+    /**
+     * L'ÉQUIPE TERRAIN QUI EXÉCUTE — la notion canonique depuis le lot 3.
+     *
+     * `provider_team_id` pointe sur `provider_teams`, table GELÉE : aucun modèle Eloquent, aucun
+     * écran, alimentée par les seuls seeders. Une équipe créée par une société dans son propre
+     * espace vit dans `field_teams` et ne pouvait donc recevoir aucune mission.
+     *
+     * Les deux colonnes cohabitent : repointer une clé étrangère existante aurait cassé les lignes
+     * qui la référencent. C'est celle-ci qu'on lit désormais.
+     *
+     * @return BelongsTo<FieldTeam, $this>
+     */
+    public function fieldTeam(): BelongsTo
+    {
+        return $this->belongsTo(FieldTeam::class);
     }
 
     /**

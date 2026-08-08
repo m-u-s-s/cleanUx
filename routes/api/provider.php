@@ -280,6 +280,16 @@ Route::middleware('auth:sanctum')->prefix('provider/company')->group(function ()
     Route::post('/field-teams', [ProviderCompanyController::class, 'createFieldTeam']);
     Route::patch('/field-teams/{team}/archive', [ProviderCompanyController::class, 'archiveFieldTeam']);
 
+    /*
+     * LA COMPOSITION D'UNE ÉQUIPE, GÉRÉE PAR LA SOCIÉTÉ.
+     *
+     * `field_team_members` n'était manipulable que depuis l'administration de la plateforme : une
+     * société qui créait son équipe sur son propre écran ne pouvait pas la peupler.
+     */
+    Route::get('/field-teams/{team}/members', [ProviderCompanyController::class, 'fieldTeamMembers']);
+    Route::post('/field-teams/{team}/members', [ProviderCompanyController::class, 'addFieldTeamMember']);
+    Route::delete('/field-teams/{team}/members/{user}', [ProviderCompanyController::class, 'removeFieldTeamMember']);
+
     Route::get('/tasks', [ProviderCompanyController::class, 'tasks']);
     Route::post('/tasks', [ProviderCompanyController::class, 'createTask']);
     Route::patch('/tasks/{task}', [ProviderCompanyController::class, 'updateTask']);
@@ -287,6 +297,8 @@ Route::middleware('auth:sanctum')->prefix('provider/company')->group(function ()
     // Répartition — l'assignation partage `MissionAssignmentService` avec l'écran web.
     Route::get('/missions', [ProviderCompanyController::class, 'missions']);
     Route::post('/missions/{mission}/assign', [ProviderCompanyController::class, 'assignMission']);
+    // Confier la mission à une ÉQUIPE entière — le cas ordinaire d'une société.
+    Route::post('/missions/{mission}/assign-team', [ProviderCompanyController::class, 'assignMissionToTeam']);
 
     // Canaux — lecture ET écriture passent par ChannelPolicy, que le web n'appelait pas côté
     // écriture avant le 2026-08-06.

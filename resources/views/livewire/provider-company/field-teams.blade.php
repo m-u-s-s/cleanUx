@@ -74,13 +74,70 @@
             </p>
         </div>
 
-        @if ($equipe->status !== 'archived')
-        <button type="button" wire:click="archiver({{ $equipe->id }})"
-            class="shrink-0 rounded-lg border border-slate-600 px-3 py-1.5 text-xs font-semibold text-slate-300 hover:bg-slate-700">
-            Archiver
-        </button>
+        <div class="flex shrink-0 items-center gap-2">
+            {{--
+                LA COMPOSITION, ATTEIGNABLE.
+
+                `field_team_members` n'était manipulable que depuis l'administration de la
+                plateforme : une société qui créait son équipe ici ne pouvait pas la peupler, et une
+                équipe VIDE ne peut recevoir aucune mission. L'écran n'affichait que des coquilles.
+            --}}
+            <button type="button" wire:click="ouvrirLaComposition({{ $equipe->id }})"
+                class="rounded-lg border border-slate-600 px-3 py-1.5 text-xs font-semibold text-slate-300 hover:bg-slate-700">
+                {{ $equipeOuverteId === $equipe->id ? 'Fermer' : 'Composition' }}
+                ({{ $equipe->activeMembers->count() }})
+            </button>
+
+            @if ($equipe->status !== 'archived')
+            <button type="button" wire:click="archiver({{ $equipe->id }})"
+                class="rounded-lg border border-slate-600 px-3 py-1.5 text-xs font-semibold text-slate-300 hover:bg-slate-700">
+                Archiver
+            </button>
+            @endif
+        </div>
+    </div>
+
+    @if ($equipeOuverteId === $equipe->id)
+    <div class="mb-3 ml-4 border-l-2 border-slate-700 pl-4">
+        <p class="mb-2 text-xs font-bold uppercase tracking-wide text-slate-400">Membres</p>
+
+        @forelse ($equipe->activeMembers as $membre)
+        <div class="flex items-center justify-between gap-3 py-1">
+            <span class="truncate text-sm text-slate-200">
+                {{ $membre->user?->name ?? 'Utilisateur supprimé' }}
+                @if ((int) $equipe->team_lead_user_id === (int) $membre->user_id)
+                <span class="text-xs text-slate-500">— responsable</span>
+                @endif
+            </span>
+            <button type="button" wire:click="retirerMembre({{ $equipe->id }}, {{ $membre->user_id }})"
+                class="shrink-0 text-xs text-slate-400 underline hover:text-slate-200">
+                Retirer
+            </button>
+        </div>
+        @empty
+        <p class="text-xs text-slate-500">
+            Aucun membre — une équipe vide ne peut recevoir aucune mission.
+        </p>
+        @endforelse
+
+        @php
+            $dejaMembres = $equipe->activeMembers->pluck('user_id')->all();
+            $recrutables = $collegues->reject(fn ($c) => in_array($c->user_id, $dejaMembres, true));
+        @endphp
+
+        @if ($recrutables->isNotEmpty())
+        <p class="mb-1 mt-3 text-xs font-bold uppercase tracking-wide text-slate-400">Ajouter un collègue</p>
+        <div class="flex flex-wrap gap-2">
+            @foreach ($recrutables as $collegue)
+            <button type="button" wire:click="ajouterMembre({{ $equipe->id }}, {{ $collegue->user_id }})"
+                class="rounded-lg border border-slate-600 px-2.5 py-1 text-xs text-slate-300 hover:bg-slate-700">
+                + {{ $collegue->user?->name ?? '—' }}
+            </button>
+            @endforeach
+        </div>
         @endif
     </div>
+    @endif
     @empty
     <p class="text-sm text-slate-400">Aucune équipe pour le moment.</p>
     @endforelse

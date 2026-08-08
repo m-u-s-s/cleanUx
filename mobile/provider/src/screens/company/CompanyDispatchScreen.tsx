@@ -23,6 +23,12 @@ interface Membre {
   status: string;
 }
 
+interface EquipeTerrain {
+  id: number;
+  name: string;
+  status: string;
+}
+
 /**
  * La répartition des missions, en natif.
  *
@@ -51,6 +57,56 @@ export function CompanyDispatchScreen() {
     onSuccess: () => qc.invalidateQueries({ queryKey: ['company', 'missions'] }),
     onError: () => Alert.alert('Assignation refusée', 'Votre rôle ne permet pas de répartir les missions.'),
   });
+
+  /*
+   * ON N'ENVOIE PAS UNE PERSONNE DANS UN IMMEUBLE DE DIX ÉTAGES.
+   *
+   * Le geste ordinaire d'une société est de confier la mission à une ÉQUIPE ; il n'existait sur
+   * aucune surface. Composer une équipe demandait d'assigner un responsable puis N renforts, un par
+   * un, sans que rien n'enregistre QUELLE équipe intervenait.
+   */
+  const { data: equipes } = useQuery<EquipeTerrain[]>({
+    queryKey: ['company', 'field-teams'],
+    queryFn: async () => (await apiClient.get('/provider/company/field-teams')).data.data ?? [],
+  });
+
+  const assignerLEquipe = useMutation({
+    mutationFn: async ({ missionId, teamId }: { missionId: number; teamId: number }) => {
+      await apiClient.post(`/provider/company/missions/${missionId}/assign-team`, {
+        field_team_id: teamId,
+      });
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['company', 'missions'] }),
+    // Le serveur distingue le refus d'autorisation de l'équipe vide, et rend un message lisible :
+    // le réécrire ici produirait deux formulations de la même règle.
+    onError: (erreur: any) =>
+      Alert.alert(
+        'Assignation refusée',
+        erreur?.data?.message ?? 'Votre rôle ne permet pas de répartir les missions.',
+      ),
+  });
+
+  function proposerLEquipe(mission: MissionARepartir) {
+    const actives = (equipes ?? []).filter((e) => e.status !== 'archived');
+
+    if (actives.length === 0) {
+      Alert.alert('Aucune équipe', "Créez d'abord une équipe terrain, puis composez-la.");
+
+      return;
+    }
+
+    Alert.alert(
+      'Confier à une équipe',
+      mission.site ?? `Mission #${mission.id}`,
+      [
+        ...actives.slice(0, 10).map((e) => ({
+          text: e.name,
+          onPress: () => assignerLEquipe.mutate({ missionId: mission.id, teamId: e.id }),
+        })),
+        { text: 'Annuler', style: 'cancel' as const },
+      ],
+    );
+  }
 
   /** Un choix parmi les membres actifs — l'API refuse de toute façon un employé d'une autre société. */
   function proposerAssignation(mission: MissionARepartir) {
@@ -104,12 +160,20 @@ export function CompanyDispatchScreen() {
               <Badge label={item.lead ?? 'Non assignée'} variant={item.lead ? 'brand' : 'neutral'} />
             </View>
 
-            <Button
-              label={item.lead ? 'Réassigner' : 'Assigner'}
-              size="sm"
-              variant="secondary"
-              onPress={() => proposerAssignation(item)}
-            />
+            <View style={styles.actions}>
+              <Button
+                label={item.lead ? 'Réassigner' : 'Assigner'}
+                size="sm"
+                variant="secondary"
+                onPress={() => proposerAssignation(item)}
+              />
+              <Button
+                label="Équipe"
+                size="sm"
+                variant="ghost"
+                onPress={() => proposerLEquipe(item)}
+              />
+            </View>
           </View>
         )}
         ListEmptyComponent={
@@ -135,6 +199,10 @@ const stylesFor = (t: ThemeTokens) =>
       paddingVertical: spacing.sm,
       borderBottomWidth: StyleSheet.hairlineWidth,
       borderBottomColor: t.border,
+    },
+    actions: {
+      alignItems: 'flex-end',
+      gap: spacing.xs,
     },
     identite: {
       flex: 1,

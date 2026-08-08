@@ -1,8 +1,9 @@
 import React from 'react';
-import { View, FlatList, Text, TextInput, Alert, StyleSheet } from 'react-native';
+import { View, FlatList, Text, TextInput, Alert, StyleSheet, Pressable } from 'react-native';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Screen, Button, Badge, EmptyState } from '@/ui';
 import { apiClient } from '@/api';
+import { useAuth, can } from '@/auth';
 import { spacing, typography, radius } from '@/theme';
 import { useThemeColors } from '@/theme/useThemeColors';
 import type { ThemeTokens } from '@/theme/useThemeColors';
@@ -16,6 +17,22 @@ interface EquipeTerrain {
   max_concurrent_missions: number | null;
 }
 
+interface MembreDEquipe {
+  id: number;
+  user_id: number;
+  name: string | null;
+  email: string | null;
+  is_team_lead: boolean;
+}
+
+interface MembreDeLaSociete {
+  id: number;
+  user_id: number;
+  name: string | null;
+  role: string;
+  status: string;
+}
+
 /**
  * Les agences de la société, en natif.
  *
@@ -26,6 +43,7 @@ interface EquipeTerrain {
 export function CompanyFieldTeamsScreen() {
   const styles = stylesFor(useThemeColors());
   const qc = useQueryClient();
+  const { user } = useAuth();
 
   const [nom, setNom] = React.useState('');
 
@@ -52,6 +70,49 @@ export function CompanyFieldTeamsScreen() {
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ['company', 'field-teams'] }),
     onError: () => Alert.alert('Archivage refusé', 'Votre rôle ne permet pas cette action.'),
+  });
+
+  /*
+   * LA COMPOSITION SE DÉPLIE SOUS L'ÉQUIPE.
+   *
+   * Une équipe VIDE ne peut recevoir aucune mission, et `field_team_members` n'était manipulable
+   * que depuis l'administration de la plateforme : une société qui créait son équipe ici ne pouvait
+   * pas la peupler, et devait appeler un administrateur. L'écran affichait donc des coquilles.
+   */
+  const [equipeOuverte, setEquipeOuverte] = React.useState<number | null>(null);
+
+  const peutComposer = can(user, 'team.manage');
+
+  const { data: composition } = useQuery<{ members: MembreDEquipe[] }>({
+    queryKey: ['company', 'field-teams', equipeOuverte, 'members'],
+    queryFn: async () =>
+      (await apiClient.get(`/provider/company/field-teams/${equipeOuverte}/members`)).data.data,
+    enabled: equipeOuverte !== null,
+  });
+
+  // Le vivier dans lequel on recrute : les membres de la société, chargés seulement quand on
+  // s'apprête à composer.
+  const { data: collegues } = useQuery<MembreDeLaSociete[]>({
+    queryKey: ['company', 'members'],
+    queryFn: async () => (await apiClient.get('/provider/company/members')).data.data ?? [],
+    enabled: equipeOuverte !== null && peutComposer,
+  });
+
+  const composer = useMutation({
+    mutationFn: async (params: { teamId: number; userId: number; retirer: boolean }) =>
+      params.retirer
+        ? apiClient.delete(`/provider/company/field-teams/${params.teamId}/members/${params.userId}`)
+        : apiClient.post(`/provider/company/field-teams/${params.teamId}/members`, {
+            user_id: params.userId,
+          }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['company', 'field-teams'] });
+    },
+    onError: (erreur: any) =>
+      Alert.alert(
+        'Action refusée',
+        erreur?.data?.message ?? 'Votre rôle ne permet pas de composer les équipes.',
+      ),
   });
 
   return (
@@ -81,26 +142,94 @@ export function CompanyFieldTeamsScreen() {
         onRefresh={refetch}
         refreshing={isRefetching}
         renderItem={({ item }) => (
-          <View style={styles.ligne} testID={`equipe-${item.id}`}>
-            <View style={styles.identite}>
-              <Text style={styles.nom} numberOfLines={1}>
-                {item.name}
-              </Text>
-              <Text style={styles.detail} numberOfLines={1}>
-                {item.zone ?? 'Aucune zone'} · {item.lead ?? 'Sans responsable'}
-                {item.max_concurrent_missions ? ` · ${item.max_concurrent_missions} en parallèle` : ''}
-              </Text>
-            </View>
+          <View>
+            <Pressable
+              style={styles.ligne}
+              testID={`equipe-${item.id}`}
+              accessibilityRole="button"
+              onPress={() => setEquipeOuverte(equipeOuverte === item.id ? null : item.id)}
+            >
+              <View style={styles.identite}>
+                <Text style={styles.nom} numberOfLines={1}>
+                  {item.name}
+                </Text>
+                <Text style={styles.detail} numberOfLines={1}>
+                  {item.zone ?? 'Aucune zone'} · {item.lead ?? 'Sans responsable'}
+                  {item.max_concurrent_missions ? ` · ${item.max_concurrent_missions} en parallèle` : ''}
+                </Text>
+              </View>
 
-            {item.status === 'archived' ? (
-              <Badge label="Archivée" variant="neutral" />
-            ) : (
-              <Button
-                label="Archiver"
-                size="sm"
-                variant="ghost"
-                onPress={() => archiver.mutate(item.id)}
-              />
+              {item.status === 'archived' ? (
+                <Badge label="Archivée" variant="neutral" />
+              ) : (
+                <Button
+                  label="Archiver"
+                  size="sm"
+                  variant="ghost"
+                  onPress={() => archiver.mutate(item.id)}
+                />
+              )}
+            </Pressable>
+
+            {equipeOuverte === item.id && (
+              <View style={styles.composition} testID={`composition-${item.id}`}>
+                <Text style={styles.section}>Composition</Text>
+
+                {(composition?.members ?? []).length === 0 && (
+                  <Text style={styles.detail}>
+                    Aucun membre — une équipe vide ne peut recevoir aucune mission.
+                  </Text>
+                )}
+
+                {(composition?.members ?? []).map((membre) => (
+                  <View key={membre.id} style={styles.ligneMembre}>
+                    <Text style={styles.nomMembre} numberOfLines={1}>
+                      {membre.name ?? 'Utilisateur supprimé'}
+                      {membre.is_team_lead ? ' · responsable' : ''}
+                    </Text>
+                    {peutComposer && (
+                      <Button
+                        label="Retirer"
+                        size="sm"
+                        variant="ghost"
+                        onPress={() =>
+                          composer.mutate({ teamId: item.id, userId: membre.user_id, retirer: true })
+                        }
+                      />
+                    )}
+                  </View>
+                ))}
+
+                {peutComposer && (
+                  <>
+                    <Text style={styles.section}>Ajouter un collègue</Text>
+                    {(collegues ?? [])
+                      .filter((c) => c.status === 'active')
+                      .filter(
+                        (c) => !(composition?.members ?? []).some((m) => m.user_id === c.user_id),
+                      )
+                      .map((collegue) => (
+                        <View key={collegue.id} style={styles.ligneMembre}>
+                          <Text style={styles.nomMembre} numberOfLines={1}>
+                            {collegue.name ?? '—'}
+                          </Text>
+                          <Button
+                            label="Ajouter"
+                            size="sm"
+                            variant="secondary"
+                            onPress={() =>
+                              composer.mutate({
+                                teamId: item.id,
+                                userId: collegue.user_id,
+                                retirer: false,
+                              })
+                            }
+                          />
+                        </View>
+                      ))}
+                  </>
+                )}
+              </View>
             )}
           </View>
         )}
@@ -157,6 +286,31 @@ const stylesFor = (t: ThemeTokens) =>
     nom: {
       fontSize: typography.fontSize.base,
       fontWeight: typography.fontWeight.semibold,
+      color: t.text,
+    },
+    composition: {
+      paddingLeft: spacing.sm,
+      paddingBottom: spacing.sm,
+      borderLeftWidth: 2,
+      borderLeftColor: t.border,
+    },
+    section: {
+      fontSize: typography.fontSize.sm,
+      fontWeight: typography.fontWeight.semibold,
+      color: t.text,
+      marginTop: spacing.sm,
+      marginBottom: spacing.xs,
+    },
+    ligneMembre: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      gap: spacing.sm,
+      paddingVertical: spacing.xs,
+    },
+    nomMembre: {
+      flex: 1,
+      fontSize: typography.fontSize.sm,
       color: t.text,
     },
     detail: {

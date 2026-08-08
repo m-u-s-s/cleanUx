@@ -3,6 +3,7 @@
 namespace App\Livewire\ProviderCompany;
 
 use App\Events\MissionStatusUpdated;
+use App\Models\FieldTeam;
 use App\Models\Mission;
 use App\Models\MissionAssignment;
 use App\Models\OrganizationContract;
@@ -10,6 +11,7 @@ use App\Models\OrganizationMember;
 use App\Models\ProviderSiteAssignment;
 use App\Services\Availability\AvailabilityService;
 use App\Services\Missions\MissionAssignmentService;
+use App\Services\Missions\ReassignmentPolicy;
 use App\Services\PermissionService;
 use App\Support\Livewire\Concerns\EnforcesActiveOrgMembership;
 use Illuminate\Database\Eloquent\Collection;
@@ -162,13 +164,21 @@ class DispatchCenter extends Component
          * société peut vouloir que ses dispatcheurs VOIENT le plan de charge sans redistribuer le
          * travail, et `organization_role_permissions` le lui permet désormais pour de bon.
          */
-        abort_unless(
-            app(PermissionService::class)->can($user, 'missions.assign', $user->currentOrganization),
-            403
-        );
-
         $mission = Mission::where('provider_organization_id', $user->current_organization_id)
             ->findOrFail($this->assigningId);
+
+        /*
+         * LA GARDE PORTE SUR LA MISSION, PLUS SEULEMENT SUR LA CLÉ.
+         *
+         * `missions.assign` ouvre la CAPACITÉ ; elle ne dit rien du PÉRIMÈTRE. L'exigence 5 borne le
+         * chef d'équipe à SON équipe — ce qu'une matrice de clés ne peut pas exprimer, et ce que le
+         * lot 1 avait laissé ouvert en accordant la clé à `team_lead` sans frontière.
+         * `ReassignmentPolicy` est la même règle des deux côtés, web et API.
+         */
+        abort_unless(
+            app(ReassignmentPolicy::class)->peutReassigner($user, $mission),
+            403
+        );
 
         $worker = OrganizationMember::where('organization_account_id', $user->current_organization_id)
             ->where('user_id', $this->assigneeId)
@@ -196,13 +206,56 @@ class DispatchCenter extends Component
          * délicate — libérer les leads actifs des autres, puis synchroniser
          * `lead_provider_user_id` — vouées à diverger au premier ajustement.
          */
-        app(MissionAssignmentService::class)->assigner($mission, $worker);
+        app(MissionAssignmentService::class)->assigner($mission, $worker, $user->id);
 
         // Broadcast du changement de statut
         broadcast(new MissionStatusUpdated($mission));
 
         $this->assigningId = 0;
         $this->assigneeId = null;
+    }
+
+    /**
+     * Confier la mission à une ÉQUIPE entière.
+     *
+     * C'est le geste ordinaire d'une société : on n'envoie pas une personne dans un immeuble de dix
+     * étages. Il n'existait sur aucune surface — composer une équipe demandait un responsable puis
+     * N renforts, un par un, sans que rien n'enregistre QUELLE équipe.
+     */
+    public function assignerLEquipe(int $missionId, int $fieldTeamId): void
+    {
+        $user = Auth::user();
+        $orgId = $user?->organizationContextId();
+
+        if (! $orgId) {
+            return;
+        }
+
+        $mission = Mission::query()
+            ->where('provider_organization_id', $orgId)
+            ->find($missionId);
+
+        if ($mission === null) {
+            return;
+        }
+
+        abort_unless(
+            app(ReassignmentPolicy::class)->peutReassigner($user, $mission),
+            403
+        );
+
+        // Scopé dans la requête : l'équipe d'une autre société n'est jamais chargée.
+        $equipe = FieldTeam::query()
+            ->where('organization_account_id', $orgId)
+            ->find($fieldTeamId);
+
+        if ($equipe === null) {
+            return;
+        }
+
+        if (app(MissionAssignmentService::class)->assignerEquipe($mission, $equipe, $user->id)) {
+            broadcast(new MissionStatusUpdated($mission->fresh()));
+        }
     }
 
     /**

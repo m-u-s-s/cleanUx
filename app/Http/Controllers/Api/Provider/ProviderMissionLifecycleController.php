@@ -73,6 +73,28 @@ class ProviderMissionLifecycleController extends Controller
                     ->orWhereHas('assignments', function ($q2) use ($user) {
                         $q2->where('user_id', $user->id)
                             ->where('assignment_status', 'accepted');
+                    })
+                    /*
+                     * LE RENFORT D'UNE MISSION DE SOCIÉTÉ NE VOYAIT RIEN.
+                     *
+                     * Cette liste n'admettait que le responsable et les assignments `accepted`.
+                     * Or `accepted` est l'état du parcours MARKETPLACE — un indépendant à qui l'on
+                     * propose une mission et qui répond oui. Un salarié, lui, n'accepte rien : son
+                     * employeur décide, et l'assignation naît `assigned`. Les deux membres d'une
+                     * équipe envoyée sur un chantier ne trouvaient donc leur mission nulle part.
+                     *
+                     * `assigned` SEUL NE SUFFIT PAS COMME CRITÈRE : c'est aussi l'état d'une OFFRE
+                     * en attente de réponse (`MissionDispatchService`). L'ouvrir sans condition
+                     * laisserait un indépendant démarrer une mission qu'on lui a seulement proposée.
+                     * C'est l'appartenance de la MISSION à une société prestataire qui départage :
+                     * là, l'assignation est une décision, pas une proposition.
+                     */
+                    ->orWhere(function ($q3) use ($user) {
+                        $q3->whereNotNull('provider_organization_id')
+                            ->whereHas('assignments', function ($q4) use ($user) {
+                                $q4->where('user_id', $user->id)
+                                    ->where('assignment_status', 'assigned');
+                            });
                     });
             })
             ->whereIn('status', ['assigned', 'en_route', 'arrived', 'started', 'paused'])
@@ -358,8 +380,22 @@ class ProviderMissionLifecycleController extends Controller
             ->whereIn('assignment_status', ['accepted', 'en_route', 'arrived'])
             ->exists();
 
+        /*
+         * Le RENFORT d'une mission de société — même règle que la liste `active()`.
+         *
+         * Sans cela, un membre d'équipe pouvait voir sa mission dans la liste et se voir refuser
+         * son ouverture : il n'a rien « accepté », son employeur a décidé pour lui. La condition
+         * sur `provider_organization_id` est ce qui distingue une DÉCISION d'une OFFRE en attente
+         * de réponse, les deux portant `assigned`.
+         */
+        $isSalarieAssigne = $mission->provider_organization_id !== null
+            && $mission->assignments()
+                ->where('user_id', $userId)
+                ->where('assignment_status', 'assigned')
+                ->exists();
+
         abort_if(
-            ! $isLead && ! $isAssigned,
+            ! $isLead && ! $isAssigned && ! $isSalarieAssigne,
             403,
             "Vous n'êtes pas assigné à cette mission."
         );

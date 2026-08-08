@@ -6,6 +6,7 @@ use App\Enums\OrganizationRole;
 use App\Http\Controllers\Controller;
 use App\Models\Channel;
 use App\Models\FieldTeam;
+use App\Models\FieldTeamMember;
 use App\Models\Message;
 use App\Models\Mission;
 use App\Models\OrganizationAccount;
@@ -17,6 +18,7 @@ use App\Models\ProviderSiteAssignment;
 use App\Models\Task;
 use App\Services\Messaging\MessageService;
 use App\Services\Missions\MissionAssignmentService;
+use App\Services\Missions\ReassignmentPolicy;
 use App\Services\Organizations\OrganizationMemberAdministration;
 use App\Services\Organizations\ResultatAdministration;
 use App\Services\PermissionService;
@@ -588,18 +590,31 @@ class CompanyController extends Controller
         return response()->json(['data' => $missions]);
     }
 
+    /**
+     * Assigner ou RÉASSIGNER une mission à une personne.
+     *
+     * LA GARDE N'EST PLUS `missions.dispatch` SEULE. Un chef d'équipe doit pouvoir échanger deux de
+     * ses membres sans porter la clé qui ouvre le dispatch de toute la société — c'est l'exigence 5,
+     * et sa PORTÉE (« son équipe seulement ») n'est pas exprimable dans une matrice de clés. Voir
+     * `ReassignmentPolicy`, consommée à l'identique par le web.
+     */
     public function assignMission(Request $request, int $missionId): JsonResponse
     {
         $org = $this->organisationActive();
-        $this->exige('missions.dispatch', $org);
 
         $donnees = $request->validate([
             'user_id' => ['required', 'integer'],
+            'motif' => ['nullable', 'string', 'max:255'],
         ]);
 
         $mission = Mission::query()
             ->where('provider_organization_id', $org->id)
             ->findOrFail($missionId);
+
+        abort_unless(
+            app(ReassignmentPolicy::class)->peutReassigner(Auth::user(), $mission),
+            403
+        );
 
         // L'identifiant du travailleur vient du client : il doit désigner un membre ACTIF de cette
         // société, faute de quoi on assignerait une mission à l'employé d'une autre entreprise.
@@ -611,12 +626,179 @@ class CompanyController extends Controller
 
         // Règle partagée avec l'écran web : libère les autres leads actifs puis synchronise
         // `lead_provider_user_id`. Voir `MissionAssignmentService`.
-        app(MissionAssignmentService::class)->assigner($mission, $travailleur);
+        app(MissionAssignmentService::class)->assigner(
+            $mission,
+            $travailleur,
+            Auth::id(),
+            $donnees['motif'] ?? null,
+        );
 
         return response()->json(['data' => [
             'id' => $mission->id,
             'lead_user_id' => $travailleur->user_id,
         ]]);
+    }
+
+    /**
+     * Confier la mission à une ÉQUIPE entière.
+     *
+     * On n'envoie pas une personne dans un immeuble de dix étages, on y envoie l'équipe Nord. Le
+     * geste n'existait sur aucune surface : composer une équipe demandait un responsable puis N
+     * renforts, un par un, sans jamais dire QUELLE équipe.
+     */
+    public function assignMissionToTeam(Request $request, int $missionId): JsonResponse
+    {
+        $org = $this->organisationActive();
+
+        $donnees = $request->validate([
+            'field_team_id' => ['required', 'integer'],
+            'motif' => ['nullable', 'string', 'max:255'],
+        ]);
+
+        $mission = Mission::query()
+            ->where('provider_organization_id', $org->id)
+            ->findOrFail($missionId);
+
+        abort_unless(
+            app(ReassignmentPolicy::class)->peutReassigner(Auth::user(), $mission),
+            403
+        );
+
+        // Scoping DANS la requête : l'équipe d'une autre société n'est jamais chargée.
+        $equipe = FieldTeam::query()
+            ->where('organization_account_id', $org->id)
+            ->findOrFail($donnees['field_team_id']);
+
+        $applique = app(MissionAssignmentService::class)->assignerEquipe(
+            $mission,
+            $equipe,
+            Auth::id(),
+            $donnees['motif'] ?? null,
+        );
+
+        // Une équipe sans membre actif ne peut rien exécuter : 422, parce que l'acteur avait le
+        // droit — c'est l'état de l'équipe qui s'y oppose.
+        abort_unless($applique, 422, "Cette équipe n'a aucun membre actif dans la société.");
+
+        $mission->refresh();
+
+        return response()->json(['data' => [
+            'id' => $mission->id,
+            'field_team_id' => $mission->field_team_id,
+            'lead_user_id' => $mission->lead_provider_user_id,
+        ]]);
+    }
+
+    // ──────────────────────────────────────────────────────
+    // Composition des équipes terrain
+    // ──────────────────────────────────────────────────────
+
+    /**
+     * Les membres d'une équipe — la composition, gérée PAR la société.
+     *
+     * `field_team_members` n'était manipulable que depuis l'administration de la plateforme : une
+     * société qui créait son équipe sur son propre écran ne pouvait pas la peupler, et devait
+     * appeler un administrateur pour y mettre quelqu'un.
+     */
+    public function fieldTeamMembers(int $teamId): JsonResponse
+    {
+        $org = $this->organisationActive();
+        $this->exige('team.view', $org);
+
+        $equipe = FieldTeam::query()
+            ->where('organization_account_id', $org->id)
+            ->findOrFail($teamId);
+
+        $membres = FieldTeamMember::query()
+            ->where('field_team_id', $equipe->id)
+            ->where('is_active', true)
+            ->whereNull('left_at')
+            ->with('user:id,name,email')
+            ->get()
+            ->map(fn (FieldTeamMember $m) => [
+                'id' => $m->id,
+                'user_id' => $m->user_id,
+                'name' => $m->user?->name,
+                'email' => $m->user?->email,
+                'is_team_lead' => (int) $equipe->team_lead_user_id === (int) $m->user_id,
+            ]);
+
+        return response()->json(['data' => [
+            'team' => ['id' => $equipe->id, 'name' => $equipe->name, 'status' => $equipe->status],
+            'members' => $membres,
+        ]]);
+    }
+
+    public function addFieldTeamMember(Request $request, int $teamId): JsonResponse
+    {
+        $org = $this->organisationActive();
+        $this->exige('team.manage', $org);
+
+        $donnees = $request->validate([
+            'user_id' => ['required', 'integer'],
+        ]);
+
+        $equipe = FieldTeam::query()
+            ->where('organization_account_id', $org->id)
+            ->findOrFail($teamId);
+
+        // La cible doit être un membre ACTIF de la société : sans cette garde, une équipe pourrait
+        // enrôler l'employé d'une entreprise concurrente.
+        $membreDeLaSociete = OrganizationMember::query()
+            ->where('organization_account_id', $org->id)
+            ->where('user_id', $donnees['user_id'])
+            ->where('status', 'active')
+            ->firstOrFail();
+
+        /*
+         * `updateOrCreate` sur (équipe, personne) : le geste est REJOUABLE. Quelqu'un qui avait
+         * quitté l'équipe la réintègre par le même bouton, sans ligne en double — et `left_at` est
+         * remis à null, sans quoi il resterait invisible des lectures.
+         */
+        $ligne = FieldTeamMember::updateOrCreate(
+            ['field_team_id' => $equipe->id, 'user_id' => $membreDeLaSociete->user_id],
+            ['is_active' => true, 'left_at' => null, 'joined_at' => now()],
+        );
+
+        return response()->json(['data' => [
+            'id' => $ligne->id,
+            'user_id' => $ligne->user_id,
+        ]], 201);
+    }
+
+    /**
+     * Retirer quelqu'un d'une équipe.
+     *
+     * La ligne SURVIT — `is_active` à faux et `left_at` daté. L'historique d'une équipe doit pouvoir
+     * dire qui en a fait partie : les missions passées portent son nom, et une réclamation se règle
+     * sur ce genre de détail.
+     */
+    public function removeFieldTeamMember(int $teamId, int $userId): JsonResponse
+    {
+        $org = $this->organisationActive();
+        $this->exige('team.manage', $org);
+
+        $equipe = FieldTeam::query()
+            ->where('organization_account_id', $org->id)
+            ->findOrFail($teamId);
+
+        FieldTeamMember::query()
+            ->where('field_team_id', $equipe->id)
+            ->where('user_id', $userId)
+            ->update(['is_active' => false, 'left_at' => now()]);
+
+        /*
+         * LE MENEUR QUI PART CESSE DE MENER.
+         *
+         * Laisser `team_lead_user_id` désigner un partant donnerait la mission au premier membre
+         * actif à l'assignation suivante — sans que rien n'explique pourquoi — et
+         * `ReassignmentPolicy` continuerait de lui accorder la main sur les missions de l'équipe.
+         */
+        if ((int) $equipe->team_lead_user_id === $userId) {
+            $equipe->update(['team_lead_user_id' => null]);
+        }
+
+        return response()->json(['data' => ['ok' => true]]);
     }
 
     // ──────────────────────────────────────────────────────

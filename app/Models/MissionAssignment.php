@@ -29,6 +29,11 @@ class MissionAssignment extends Model
         'response_seconds',
         'decline_reason',
         'escalated_from_assignment_id',
+        // QUI a libéré cette ligne, et pourquoi. La table savait dire qu'un assignment
+        // avait été `reassigned`, jamais par qui : l'intervenant retiré de la mission de
+        // demain découvrait le changement sans interlocuteur.
+        'reassigned_by',
+        'reassignment_reason',
     ];
 
     protected $casts = [
