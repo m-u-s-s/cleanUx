@@ -48,7 +48,20 @@ class ProviderCompanyRegistrationTest extends TestCase
         $this->assertSame('active', $member->status);
 
         $profile = ProviderProfile::where('user_id', $user->id)->firstOrFail();
-        $this->assertSame('company', $profile->provider_type->value);
+        /*
+         * `company_worker`, ET NON `company` — corrigé le 2026-08-08.
+         *
+         * Cette assertion figeait la valeur que l'API posait, et cette valeur n'était lue par
+         * PERSONNE : `isProviderCompanyWorker()` ne reconnaît que `company_worker`, et
+         * `isEmploye()` en dépend. Le fondateur inscrit depuis le mobile ne résolvait donc ni en
+         * société ni en prestataire, et retombait sur le repli `client_individuelle` — patron de
+         * société traité en particulier, sans ses missions, alors que son organisation existait et
+         * qu'il y portait `owner` (les deux assertions ci-dessus le montrent).
+         *
+         * L'inscription WEB posait déjà `company_worker` pour le même choix. Le test disait donc
+         * vrai sur ce que le code faisait, et faux sur ce qu'il devait faire.
+         */
+        $this->assertSame('company_worker', $profile->provider_type->value);
         $this->assertSame($org->id, $profile->organization_account_id);
         $this->assertNotNull($profile->self_registered_at);
     }

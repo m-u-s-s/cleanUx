@@ -325,7 +325,23 @@ class ApiAuthController extends Controller
         $profile = ProviderProfile::create([
             'user_id' => $user->id,
             'organization_account_id' => $organizationId,
-            'provider_type' => $asCompany ? ProviderType::COMPANY : ProviderType::INDEPENDENT,
+            /*
+             * `COMPANY_WORKER`, ET SURTOUT PAS `COMPANY`.
+             *
+             * Le fondateur d'une société prestataire EST un membre de cette société : c'est ce que
+             * `isProviderCompanyWorker()` teste, et c'est ce que pose l'inscription web
+             * (`CreateNewUser::createProviderCompany`). Cette ligne posait `COMPANY`, qu'aucune
+             * lecture ne reconnaît.
+             *
+             * Conséquence mesurée : un patron inscrit depuis le mobile ne résolvait NI en société
+             * NI en prestataire — `isEmploye()` étant faux pour lui — et retombait sur le repli
+             * `client_individuelle`. Il atterrissait dans l'espace client, sans ses missions, sans
+             * sa société, avec une organisation pourtant créée et un rôle `owner` en base.
+             *
+             * Deux parcours écrivaient la même identité par des chemins différents, et une seule
+             * des deux écritures était reconnue en lecture.
+             */
+            'provider_type' => $asCompany ? ProviderType::COMPANY_WORKER : ProviderType::INDEPENDENT,
             'status' => 'pending',
             'verification_status' => 'unverified',
         ]);

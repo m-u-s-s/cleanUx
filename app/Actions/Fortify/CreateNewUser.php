@@ -79,7 +79,15 @@ class CreateNewUser implements CreatesNewUsers
                 'account_type' => $accountType,
 
                 'role' => $input['role'] ?? (in_array($accountType, ['provider_independent', 'provider_company'], true) ? 'employe' : 'client'),
-                'platform_role' => $input['platform_role'] ?? 'client',
+                /*
+                 * `platform_role` n'a que TROIS valeurs déclarées — `user`, `admin`,
+                 * `super_admin` (voir `HasAdminCapabilities`). Cette ligne posait `client`, une
+                 * quatrième qu'aucune constante ne reconnaît : inerte, puisque `isAdmin()` ne la
+                 * lit pas, mais une valeur hors nomenclature finit toujours par être testée par
+                 * quelqu'un. L'inscription mobile posait déjà `User::PLATFORM_USER` ; les deux
+                 * parcours disent désormais la même chose.
+                 */
+                'platform_role' => $input['platform_role'] ?? User::PLATFORM_USER,
 
                 'locale' => app()->getLocale() === 'nl' ? 'nl_BE' : 'fr_BE',
                 'timezone' => 'Europe/Brussels',

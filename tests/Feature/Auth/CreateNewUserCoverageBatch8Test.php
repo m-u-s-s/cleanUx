@@ -34,7 +34,18 @@ class CreateNewUserCoverageBatch8Test extends TestCase
 
         $this->assertSame('client_personal', $user->account_type);
         $this->assertSame('client', $user->role);
-        $this->assertSame('client', $user->platform_role);
+        /*
+         * `user`, ET NON `client` — corrigé le 2026-08-08.
+         *
+         * `platform_role` n'a que trois valeurs déclarées : `user`, `admin`, `super_admin` (voir
+         * `HasAdminCapabilities`). L'inscription web posait `client`, une quatrième qu'aucune
+         * constante ne reconnaît et qu'`isAdmin()` ne lit pas. L'inscription mobile posait déjà
+         * `User::PLATFORM_USER` : les deux parcours disent enfin la même chose.
+         *
+         * La colonne héritée `role` garde `client`, elle : c'est SA nomenclature, testée à la
+         * ligne au-dessus.
+         */
+        $this->assertSame('user', $user->platform_role);
         $this->assertSame('active', $user->status);
         $this->assertTrue((bool) $user->is_active);
 
