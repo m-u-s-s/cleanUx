@@ -6,6 +6,7 @@ use App\Models\Booking;
 use App\Models\User;
 use App\Services\Booking\EmployeeAvailabilityService;
 use App\Services\Matching\MatchingV2Service;
+use App\Services\Presence\ProviderPresenceService;
 use App\Services\Safety\UserSafetyService;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -112,19 +113,28 @@ class AiDispatchService
             ? app(UserSafetyService::class)->blockedUserIdsFor((int) $rdv->client_id)
             : [];
 
+        $enLigne = ($rdv->booking_mode ?? null) === 'asap'
+            ? app(ProviderPresenceService::class)->availableProviderIds()
+            : [];
+
         $candidates = $this->availability
             ->sortedEligibleEmployeesForZone((int) $rdv->service_zone_id, $providerType, $organizationId)
-            ->filter(function (User $employee) use ($rdv, $blockedIds) {
+            ->filter(function (User $employee) use ($rdv, $blockedIds, $enLigne) {
 
                 if (in_array((int) $employee->id, $blockedIds, true)) {
                     return false;
                 }
 
-                if ($rdv->booking_mode === 'asap') {
-                    $profile = $employee->providerProfile;
-                    if (! $profile || ! $profile->is_online) {
-                        return false;
-                    }
+                /*
+                 * EN LIGNE SELON PRESENCE V2, pas selon le miroir binaire.
+                 *
+                 * `provider_profiles.is_online` reste vrai quand l'application est morte depuis
+                 * vingt minutes : c'est un drapeau qu'on pose, pas un signe de vie. Presence v2
+                 * exige un etat `online` ET un battement recent, et c'est la seule facon de ne pas
+                 * envoyer une course a un telephone eteint.
+                 */
+                if ($rdv->booking_mode === 'asap' && ! in_array((int) $employee->id, $enLigne, true)) {
+                    return false;
                 }
 
                 return true;
@@ -159,28 +169,32 @@ class AiDispatchService
             return $candidates;
         }
 
-        $tradeId = $rdv->serviceCatalog?->trade_id;
+        $tradeId = $rdv->resolveTradeId();
+
+        /*
+         * SANS METIER CONNU, ON NE REND PERSONNE.
+         *
+         * L'ancienne version rendait la liste NON filtree — et le faisait deux fois : quand le
+         * booking n'avait pas de metier, et quand le filtre vidait la liste « pour ne pas bloquer
+         * le dispatch ». C'est exactement la porte par laquelle un peintre recoit du babysitting.
+         *
+         * Une mission non pourvue est un incident qu'on voit et qu'on traite ; une mission pourvue
+         * par le mauvais metier est un client qui ne revient pas, et un prestataire qui perd son
+         * deplacement.
+         */
         if (! $tradeId) {
-            return $candidates;
+            Log::warning('AiDispatch: reservation sans metier resolvable, aucun candidat rendu.', [
+                'booking_id' => $rdv->id,
+            ]);
+
+            return collect();
         }
 
         $candidates->loadMissing('trades:id');
 
-        $filtered = $candidates->filter(
+        return $candidates->filter(
             fn (User $employee) => $employee->trades->contains('id', $tradeId)
         );
-
-        if ($filtered->isEmpty()) {
-            Log::warning('AiDispatch: aucun prestataire tagué pour le métier requis, fallback ouvert.', [
-                'booking_id' => $rdv->id,
-                'required_trade_id' => $tradeId,
-                'open_candidates' => $candidates->count(),
-            ]);
-
-            return $candidates;
-        }
-
-        return $filtered;
     }
 
     public function score(User $employee, Booking $rdv): int

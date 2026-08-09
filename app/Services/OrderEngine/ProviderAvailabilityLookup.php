@@ -109,16 +109,28 @@ class ProviderAvailabilityLookup
      */
     protected function providersOf(Trade $trade): Collection
     {
+        /*
+         * LA POSITION VIENT DE PRESENCE V2, avec repli sur le profil.
+         *
+         * `provider_profiles.current_lat/lng` est ecrit au fil de l'eau et n'expire jamais : un
+         * prestataire parti en vacances y reste a l'adresse de sa derniere mission. La table
+         * `provider_presence` porte la position ACCOMPAGNEE de son battement, ce qui permet de
+         * distinguer « il est la » de « il y etait ». Le repli sur le profil garde un compte pour
+         * les prestataires qui n'ont pas encore ouvert l'application v2 — mieux vaut une
+         * approximation qu'un ecran qui annonce zero professionnel dans une ville qui en compte
+         * trente.
+         */
         return DB::table('trade_user')
             ->join('users', 'users.id', '=', 'trade_user.user_id')
             ->join('provider_profiles', 'provider_profiles.user_id', '=', 'users.id')
+            ->leftJoin('provider_presence', 'provider_presence.provider_user_id', '=', 'users.id')
             ->where('trade_user.trade_id', $trade->id)
             ->where('provider_profiles.status', 'active')
             ->whereIn('users.role', [User::ROLE_PROVIDER, User::ROLE_EMPLOYE])
             ->select([
                 'users.id',
-                'provider_profiles.current_lat',
-                'provider_profiles.current_lng',
+                DB::raw('COALESCE(provider_presence.current_lat, provider_profiles.current_lat) as current_lat'),
+                DB::raw('COALESCE(provider_presence.current_lng, provider_profiles.current_lng) as current_lng'),
             ])
             ->get();
     }

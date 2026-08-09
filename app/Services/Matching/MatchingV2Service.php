@@ -6,6 +6,7 @@ use App\Models\Booking;
 use App\Models\BookingMatchingDecision;
 use App\Models\User;
 use App\Services\Booking\EmployeeAvailabilityService;
+use App\Services\Presence\ProviderPresenceService;
 use App\Support\ActivityLogger;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Config;
@@ -79,18 +80,25 @@ class MatchingV2Service
 
     protected function eligibleCandidates(Booking $booking): Collection
     {
+        /*
+         * EN LIGNE SELON PRESENCE V2, pas selon le miroir binaire.
+         *
+         * `provider_profiles.is_online` reste vrai quand l'application est morte depuis vingt
+         * minutes : c'est un drapeau qu'on pose, pas un signe de vie.
+         */
+        $enLigne = ($booking->booking_mode ?? null) === 'asap'
+            ? app(ProviderPresenceService::class)->availableProviderIds()
+            : [];
+
         $candidates = $this->availability
             ->sortedEligibleEmployeesForZone(
                 (int) $booking->service_zone_id,
                 $booking->provider_type_preference ?: 'any',
                 $booking->assigned_provider_organization_id,
             )
-            ->filter(function (User $employee) use ($booking) {
-                if ($booking->booking_mode === 'asap') {
-                    $profile = $employee->providerProfile;
-                    if (! $profile || ! $profile->is_online) {
-                        return false;
-                    }
+            ->filter(function (User $employee) use ($booking, $enLigne) {
+                if (($booking->booking_mode ?? null) === 'asap' && ! in_array((int) $employee->id, $enLigne, true)) {
+                    return false;
                 }
 
                 return true;
@@ -105,28 +113,28 @@ class MatchingV2Service
             return $candidates;
         }
 
-        $tradeId = $booking->serviceCatalog?->trade_id;
+        $tradeId = $booking->resolveTradeId();
+
+        /*
+         * SANS METIER CONNU, ON NE REND PERSONNE — et le filtre n'a plus de repli.
+         *
+         * Il rendait la liste NON filtree quand elle se vidait, « pour ne pas bloquer le
+         * dispatch ». Une mission non pourvue est un incident visible ; une mission pourvue par le
+         * mauvais metier est un client perdu et un prestataire qui perd son deplacement.
+         */
         if (! $tradeId) {
-            return $candidates;
+            Log::warning('MatchingV2: reservation sans metier resolvable, aucun candidat rendu.', [
+                'booking_id' => $booking->id,
+            ]);
+
+            return collect();
         }
 
         $candidates->loadMissing('trades:id');
 
-        $filtered = $candidates->filter(
+        return $candidates->filter(
             fn (User $employee) => $employee->trades->contains('id', $tradeId)
         );
-
-        if ($filtered->isEmpty()) {
-            Log::warning('MatchingV2: aucun prestataire tagué pour le métier requis, fallback ouvert.', [
-                'booking_id' => $booking->id,
-                'required_trade_id' => $tradeId,
-                'open_candidates' => $candidates->count(),
-            ]);
-
-            return $candidates;
-        }
-
-        return $filtered;
     }
 
     protected function recordDecision(Booking $booking, Collection $ranked): void

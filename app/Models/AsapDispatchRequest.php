@@ -18,7 +18,12 @@ class AsapDispatchRequest extends Model
 {
     protected $fillable = [
         'order_draft_id', 'order_draft_item_id', 'trade_id', 'status',
+        // Ce que la recherche pilote : la reservation a pourvoir et le dossier d'execution
+        // auquel les offres individuelles se rattachent.
+        'booking_id', 'mission_id',
         'lat', 'lng', 'radius_m', 'notified_count', 'expansion_count',
+        // Le rang de la vague, l'echeance globale, et le passage en derniere vague.
+        'wave', 'deadline_at', 'broadcast_at',
         'accepted_by_user_id',
         'searching_at', 'accepted_at', 'en_route_at', 'arrived_at',
         'in_progress_at', 'completed_at', 'cancelled_at',
@@ -32,6 +37,9 @@ class AsapDispatchRequest extends Model
         'radius_m' => 'integer',
         'notified_count' => 'integer',
         'expansion_count' => 'integer',
+        'wave' => 'integer',
+        'deadline_at' => 'datetime',
+        'broadcast_at' => 'datetime',
         'cancellation_fee_cents' => 'integer',
         'searching_at' => 'datetime',
         'accepted_at' => 'datetime',
@@ -60,6 +68,26 @@ class AsapDispatchRequest extends Model
     public function trade(): BelongsTo
     {
         return $this->belongsTo(Trade::class);
+    }
+
+    /**
+     * LA RESERVATION QU'ON CHERCHE A POURVOIR.
+     *
+     * La recherche vivait dans son coin : elle prevenait des prestataires sans que personne ne
+     * puisse repondre, pendant que la chaine d'offres avec compte a rebours tournait ailleurs, sur
+     * un autre objet, sans rayon ni vague. Ces deux relations sont ce qui les reunit.
+     *
+     * @return BelongsTo<Booking, $this>
+     */
+    public function booking(): BelongsTo
+    {
+        return $this->belongsTo(Booking::class);
+    }
+
+    /** @return BelongsTo<Mission, $this> */
+    public function mission(): BelongsTo
+    {
+        return $this->belongsTo(Mission::class);
     }
 
     /** @return BelongsTo<User, $this> */

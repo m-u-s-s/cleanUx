@@ -572,7 +572,7 @@ class Booking extends Model
     {
         $id = $this->resolveTradeId();
 
-        return $id ? Trade::find($id) : null;
+        return $id ? Trade::query()->whereKey($id)->first() : null;
     }
 
     /** @return BelongsTo<ServiceZone, $this> */

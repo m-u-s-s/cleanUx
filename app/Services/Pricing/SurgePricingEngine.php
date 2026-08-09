@@ -7,6 +7,7 @@ use App\Models\PricingZoneState;
 use App\Models\ProviderProfile;
 use App\Models\ServiceZone;
 use App\Models\Trade;
+use App\Services\Presence\ProviderPresenceService;
 use App\Models\TradeZonePricing;
 use Carbon\Carbon;
 use Illuminate\Support\Carbon as IlluminateCarbon;
@@ -263,20 +264,27 @@ class SurgePricingEngine
     {
         $config = config('surge.supply');
 
-        // Pour MVP : compte les providers online ayant cette zone comme primaire
-        // ou backup. Pour version géo plus précise, calculer via haversine.
-        $count = ProviderProfile::query()
-            ->where('is_online', true)
+        /*
+         * QUI EST REELLEMENT EN LIGNE — Presence v2, pas le miroir binaire.
+         *
+         * `provider_profiles.is_online` reste vrai quand l'application est morte depuis vingt
+         * minutes. Compter dessus faisait croire l'offre abondante alors que personne ne repondait,
+         * donc PAS de majoration au moment ou la rarete etait maximale : le surge se declenchait a
+         * contretemps.
+         */
+        $enLigne = app(ProviderPresenceService::class)->availableProviderIds();
+
+        $count = $enLigne === [] ? 0 : ProviderProfile::query()
+            ->whereIn('user_id', $enLigne)
             ->whereHas('user.zoneAssignments', function ($q) use ($zone) {
                 $q->where('service_zone_id', $zone->id);
             })
             ->count();
 
-        // Fallback si la relation zoneAssignments n'existe pas (selon ton schema)
+        // Repli quand aucune affectation de zone n'est declaree : on compte tout le monde plutot
+        // que de conclure a une penurie qui n'existe pas.
         if ($count === 0) {
-            $count = ProviderProfile::query()
-                ->where('is_online', true)
-                ->count();
+            $count = count($enLigne);
         }
 
         $threshold = (int) ($config['threshold'] ?? 3);

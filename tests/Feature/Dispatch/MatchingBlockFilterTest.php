@@ -6,6 +6,7 @@ use App\Enums\ProviderType;
 use App\Models\Booking;
 use App\Models\ProviderProfile;
 use App\Models\ServiceZone;
+use App\Models\Trade;
 use App\Models\User;
 use App\Models\UserBlock;
 use App\Services\Dispatch\AiDispatchService;
@@ -24,11 +25,27 @@ class MatchingBlockFilterTest extends TestCase
 
     private User $client;
 
+    private Trade $trade;
+
     protected function setUp(): void
     {
         parent::setUp();
         $this->zone = ServiceZone::factory()->create();
         $this->client = User::factory()->client()->create();
+
+        /*
+         * LE MÉTIER EST DÉSORMAIS OBLIGATOIRE. Le filtre métier n'a plus de repli : une
+         * réservation sans métier résolvable ne rend AUCUN candidat, au lieu de les rendre tous.
+         * C'est l'invariant « jamais un peintre en babysitting », et ce test doit donc poser un
+         * métier des deux côtés, comme la vraie vie.
+         */
+        $this->trade = Trade::create([
+            'slug' => 'nettoyage-block-test',
+            'code' => 'CLEAN-BT',
+            'name' => 'Nettoyage',
+            'is_active' => true,
+            'sort_order' => 1,
+        ]);
     }
 
     private function eligibleEmployee(): User
@@ -43,6 +60,8 @@ class MatchingBlockFilterTest extends TestCase
             'verification_status' => 'verified',
         ]);
 
+        $employee->trades()->syncWithoutDetaching([$this->trade->id]);
+
         return $employee;
     }
 
@@ -55,6 +74,7 @@ class MatchingBlockFilterTest extends TestCase
             'heure' => '10:00',
             'duree_estimee' => 90,
             'status' => 'en_attente',
+            'trade_id' => $this->trade->id,
         ])->fresh(['client', 'serviceZone']);
     }
 
