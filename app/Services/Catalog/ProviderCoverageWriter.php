@@ -5,7 +5,6 @@ namespace App\Services\Catalog;
 use App\Models\EmployeeZoneAssignment;
 use App\Models\ServiceZone;
 use App\Models\Trade;
-use App\Models\TradeZonePricing;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
 
@@ -38,6 +37,23 @@ class ProviderCoverageWriter
         $zones = $this->zonesValides($zoneIds);
 
         DB::transaction(function () use ($provider, $metiers, $zones, $primaryTradeId) {
+            /*
+             * UNE LISTE VIDE NE VIDE RIEN.
+             *
+             * `sync([])` effacerait la déclaration existante — et ce chemin est appelé par
+             * l'inscription, où les métiers arrivent parfois par un autre champ. Effacer en
+             * silence ce que l'utilisateur vient de déclarer est le pire des comportements : il n'a
+             * aucune erreur, et découvre des semaines plus tard qu'il ne reçoit rien.
+             *
+             * Retirer réellement un métier passe donc par une liste NON vide qui ne le contient
+             * plus — ce que fait l'écran de profil, où décocher laisse toujours au moins une case.
+             */
+            if ($metiers === []) {
+                $this->syncZones($provider, $zones);
+
+                return;
+            }
+
             /*
              * `sync` et non `syncWithoutDetaching` : retirer un métier de son profil doit
              * réellement le retirer du dispatch. Sans cela, un prestataire qui décoche « toiture »
@@ -134,12 +150,18 @@ class ProviderCoverageWriter
             return [];
         }
 
+        /*
+         * ON N'EXIGE PAS QUE LE MÉTIER SOIT DÉJÀ VENDU QUELQUE PART.
+         *
+         * La liste PROPOSÉE à l'inscription, elle, s'y limite (`RegistrationOptionsService`) : on
+         * ne met pas en avant un métier qu'aucune zone ne peut servir. Mais REFUSER une déclaration
+         * pour cette raison effacerait le métier d'un prestataire dès qu'un administrateur ferme
+         * temporairement une zone — et il cesserait de recevoir des missions sans que rien ne le
+         * lui dise. Un métier non vendu ne produit simplement aucune offre, ce qui est déjà le cas.
+         */
         return Trade::query()
             ->whereIn('id', $ids)
             ->where('is_active', true)
-            // Un métier vendu NULLE PART n'est pas déclarable : ce serait promettre au prestataire
-            // des missions qu'aucune zone ne peut produire.
-            ->whereIn('id', TradeZonePricing::query()->where('is_active', true)->select('trade_id'))
             ->pluck('id')
             ->map(fn ($id) => (int) $id)
             ->values()

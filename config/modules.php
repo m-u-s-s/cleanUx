@@ -133,6 +133,10 @@ return [
         ['key' => 'employe:employe.kyc', 'label' => 'KYC / Identité', 'icon' => '🛡️', 'route' => 'employe.kyc', 'context' => 'employe', 'category' => 'conformite', 'primary' => false],
         ['key' => 'employe:employe.validation.multiple', 'label' => 'Validation multiple', 'icon' => '✅', 'route' => 'employe.validation.multiple', 'context' => 'employe', 'category' => 'conformite', 'primary' => false],
         ['key' => 'employe:employe.badges', 'label' => 'Mes badges', 'icon' => '🏆', 'route' => 'employe.badges', 'context' => 'employe', 'category' => 'croissance', 'primary' => false],
+        // « Ce que je fais, et où » : les deux tables que lit la requête candidate du dispatch.
+        // Cocher une case change les offres reçues dans la seconde — c'est la page la plus
+        // structurante de l'espace prestataire, elle est donc primaire.
+        ['key' => 'employe:employe.trades-zones', 'label' => 'Métiers et zones', 'icon' => '🧭', 'route' => 'employe.trades-zones', 'context' => 'employe', 'category' => 'missions', 'primary' => false],
         ['key' => 'employe:employe.feedbacks', 'label' => 'Feedbacks reçus', 'icon' => '💬', 'route' => 'employe.feedbacks', 'context' => 'employe', 'category' => 'croissance', 'primary' => false],
         ['key' => 'employe:employe.ratings', 'label' => 'Mes avis', 'icon' => '⭐', 'route' => 'employe.ratings', 'context' => 'employe', 'category' => 'croissance', 'primary' => false],
 
@@ -197,6 +201,16 @@ return [
         ['key' => 'admin:admin.promotions.codes', 'label' => 'Codes promo', 'icon' => '🎟️', 'route' => 'admin.promotions.codes', 'context' => 'admin', 'category' => 'croissance', 'primary' => false],
         ['key' => 'admin:admin.promotions.referrals', 'label' => 'Parrainage', 'icon' => '🤝', 'route' => 'admin.promotions.referrals', 'context' => 'admin', 'category' => 'croissance', 'primary' => false],
         ['key' => 'admin:admin.ai.dispatch', 'label' => 'IA Dispatch', 'icon' => '🤖', 'route' => 'admin.ai.dispatch', 'context' => 'admin', 'category' => 'donnees', 'primary' => false],
+        /*
+         * Le centre de répartition : l'histoire complète d'une recherche — qui a été sollicité,
+         * quand, à quelle distance, refus ou silence. Sans lui, les quatre causes d'un échec de
+         * dispatch se ressemblent et l'exploitation conclut « pas assez de prestataires ».
+         *
+         * `primary => false` : la barre d'accès rapide n'en porte que cinq, et les cinq places sont
+         * déjà prises par des pages qu'un administrateur ouvre chaque jour. Une sixième les
+         * remplacerait toutes par un menu déroulant.
+         */
+        ['key' => 'admin:admin.dispatch.center', 'label' => 'Répartition', 'icon' => '📡', 'route' => 'admin.dispatch.center', 'context' => 'admin', 'category' => 'donnees', 'primary' => false],
         ['key' => 'admin:admin.alerts', 'label' => 'Alertes', 'icon' => '🚨', 'route' => 'admin.alerts', 'context' => 'admin', 'category' => 'donnees', 'primary' => true],
         ['key' => 'admin:admin.analytics', 'label' => 'Analytics', 'icon' => '📈', 'route' => 'admin.analytics', 'context' => 'admin', 'category' => 'donnees', 'primary' => false],
         ['key' => 'admin:admin.analytics.cancellations', 'label' => 'Raisons annulation', 'icon' => '❌', 'route' => 'admin.analytics.cancellations', 'context' => 'admin', 'category' => 'donnees', 'primary' => false],

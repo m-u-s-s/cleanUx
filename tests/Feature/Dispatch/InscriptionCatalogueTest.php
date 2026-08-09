@@ -203,26 +203,67 @@ class InscriptionCatalogueTest extends TestCase
         ]);
     }
 
+    /**
+     * UN MÉTIER ARCHIVÉ EST ÉCARTÉ ; un métier simplement pas encore vendu ne l'est PAS.
+     *
+     * La liste PROPOSÉE à l'inscription se limite aux métiers vendus quelque part — on ne met pas
+     * en avant un service qu'aucune zone ne peut servir. Mais REFUSER une déclaration pour cette
+     * raison effacerait le métier d'un prestataire dès qu'un administrateur ferme temporairement
+     * une zone, et il cesserait de recevoir des missions sans que rien ne le lui dise.
+     */
     #[Test]
-    public function un_metier_ferme_partout_est_ecarte_a_l_ecriture(): void
+    public function un_metier_archive_est_ecarte_a_l_ecriture(): void
     {
         $prestataire = $this->prestataire();
 
-        $fantome = Trade::create([
+        $archive = Trade::create([
             'sector_id' => $this->peinture->sector_id,
-            'slug' => 'fantome-insc', 'code' => 'FAN-I', 'name' => 'Fantôme',
-            'is_active' => true, 'sort_order' => 9,
+            'slug' => 'archive-insc', 'code' => 'ARC-I', 'name' => 'Archivé',
+            'is_active' => false, 'sort_order' => 9,
+        ]);
+
+        $pasEncoreVendu = Trade::create([
+            'sector_id' => $this->peinture->sector_id,
+            'slug' => 'a-venir-insc', 'code' => 'AVN-I', 'name' => 'À venir',
+            'is_active' => true, 'sort_order' => 10,
         ]);
 
         // L'identifiant vient du navigateur : rien de ce qui arrive n'est cru sur parole.
         $ecrit = app(ProviderCoverageWriter::class)->sync(
             $prestataire,
-            [$this->peinture->id, $fantome->id],
+            [$this->peinture->id, $archive->id, $pasEncoreVendu->id],
             [$this->liege->id],
         );
 
         $this->assertContains($this->peinture->id, $ecrit['trades']);
-        $this->assertNotContains($fantome->id, $ecrit['trades']);
+        $this->assertNotContains($archive->id, $ecrit['trades'], 'Un métier archivé n’existe plus.');
+        $this->assertContains(
+            $pasEncoreVendu->id,
+            $ecrit['trades'],
+            'Un métier pas encore vendu se déclare : il ne produira simplement aucune offre.',
+        );
+    }
+
+    /**
+     * UNE LISTE VIDE NE VIDE RIEN.
+     *
+     * `sync([])` effacerait la déclaration existante. Ce chemin est appelé par l'inscription, où
+     * les métiers arrivent parfois par un autre champ : effacer en silence ce que l'utilisateur
+     * vient de déclarer est le pire des comportements — aucune erreur, et il découvre des semaines
+     * plus tard qu'il ne reçoit rien.
+     */
+    #[Test]
+    public function une_liste_vide_n_efface_pas_la_declaration(): void
+    {
+        $prestataire = $this->prestataire();
+        $ecrivain = app(ProviderCoverageWriter::class);
+
+        $ecrivain->sync($prestataire, [$this->peinture->id], [$this->liege->id]);
+        $ecrivain->sync($prestataire->fresh(), [], [$this->liege->id]);
+
+        $this->assertTrue(
+            $prestataire->fresh()->trades()->where('trades.id', $this->peinture->id)->exists(),
+        );
     }
 
     // ─── L'écran ─────────────────────────────────────────────────────────────────────────────

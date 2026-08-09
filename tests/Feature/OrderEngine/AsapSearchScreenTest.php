@@ -186,7 +186,13 @@ class AsapSearchScreenTest extends TestCase
             ->call('tick');
 
         $this->assertSame(AsapStatus::EXPIRED, $request->fresh()->status);
-        $component->assertSee('Relancer plus large')->assertSee('Prendre rendez-vous');
+
+        // LES TROIS SORTIES, ET AUCUNE N'EST UN CONSTAT. Chacune est un GESTE : la recherche
+        // repart, la demande devient un rendez-vous sans repayer, ou elle s'annule sans frais.
+        $component
+            ->assertSee('Chercher encore')
+            ->assertSee('Prendre rendez-vous')
+            ->assertSee('Annuler sans frais');
     }
 
     /** Élargir se voit : le rayon monte, et le client le lit. */
