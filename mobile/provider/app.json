@@ -15,11 +15,6 @@
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
-    "splash": {
-      "image": "./assets/splash-icon.png",
-      "resizeMode": "contain",
-      "backgroundColor": "#070b14"
-    },
     "ios": {
       "supportsTablet": false,
       "bundleIdentifier": "com.brio.provider",
@@ -64,6 +59,19 @@
         "expo-location",
         {
           "locationAlwaysAndWhenInUsePermission": "brio Provider needs background location to share your position with clients during missions."
+        }
+      ],
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/splash-icon.png",
+          "resizeMode": "contain",
+          "backgroundColor": "#eeeae0",
+          "imageWidth": 200,
+          "dark": {
+            "image": "./assets/splash-icon-dark.png",
+            "backgroundColor": "#191c20"
+          }
         }
       ]
     ],
