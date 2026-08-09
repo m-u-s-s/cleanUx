@@ -46,6 +46,14 @@ class AiDispatchTest extends TestCase
             ],
         );
 
+        // LE MÉTIER EST OBLIGATOIRE : le filtre n'a plus de repli, et une réservation sans métier
+        // résolvable ne rend AUCUN candidat plutôt que de les rendre tous.
+        $trade = \App\Models\Trade::create([
+            'slug' => 'ai-dispatch-rank', 'code' => 'AIDR', 'name' => 'Nettoyage',
+            'is_active' => true, 'sort_order' => 1,
+        ]);
+        $employee->trades()->syncWithoutDetaching([$trade->id]);
+
         $client = User::factory()->create([
             'role' => 'client',
             'is_active' => true,
@@ -54,6 +62,7 @@ class AiDispatchTest extends TestCase
         $rdv = Booking::factory()->create([
             'client_id' => $client->id,
             'service_zone_id' => $zone->id,
+            'trade_id' => $trade->id,
             'date' => now()->addDay()->toDateString(),
             'heure' => '10:00',
             'duree_estimee' => 90,

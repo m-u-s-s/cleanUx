@@ -59,6 +59,18 @@ class RegisterRequest extends FormRequest
             // travailler : le prestataire ne recevrait jamais la moindre mission.
             'trade_id' => ['nullable', 'integer', 'exists:trades,id'],
             'trade_answers' => ['nullable', 'array'],
+            /*
+             * MÉTIERS ET ZONES — les deux tables que lit la requête candidate du dispatch.
+             *
+             * `trade_id` seul ne dit QUE ce que le prestataire fait, jamais où : le dispatch devait
+             * alors deviner son périmètre à partir de sa position du jour. Ces deux listes viennent
+             * du catalogue (`GET /api/catalog/registration-options`) et sont revalidées à
+             * l'écriture — l'application peut envoyer n'importe quoi.
+             */
+            'trade_ids' => ['nullable', 'array'],
+            'trade_ids.*' => ['integer'],
+            'zone_ids' => ['nullable', 'array'],
+            'zone_ids.*' => ['integer'],
         ], TradeFormSchema::rulesFor($this->declaredTradeSchema()));
     }
 

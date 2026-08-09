@@ -117,25 +117,54 @@
                         Aucun professionnel ne s’est libéré. Voici ce que vous pouvez faire :
                     </p>
 
-                    <ul class="mt-4 space-y-3">
-                        @foreach ($this->waysForward as $way)
-                            <li class="rounded-xl border border-slate-100 bg-slate-50/60 p-4">
-                                <p class="text-sm font-medium text-slate-900">{{ $way['label'] }}</p>
-                                <p class="mt-0.5 text-sm text-slate-600">{{ $way['detail'] }}</p>
+                    {{--
+                        LES TROIS SORTIES, ET AUCUNE N'EST UN CONSTAT.
 
-                                @if ($way['key'] === 'expand')
-                                    <button type="button" wire:click="retry"
-                                        class="mt-3 min-h-[44px] w-full rounded-xl bg-slate-900 text-sm font-medium text-white">
-                                        Relancer plus large
-                                    </button>
-                                @elseif ($way['key'] === 'schedule')
-                                    <a href="{{ route('order.journey') }}" wire:navigate
-                                        class="mt-3 inline-flex min-h-[44px] w-full items-center justify-center rounded-xl border border-slate-300 bg-white text-sm font-medium text-slate-900">
-                                        Prendre rendez-vous
-                                    </a>
-                                @endif
-                            </li>
-                        @endforeach
+                        Le client a déjà décidé, déjà donné son adresse. Lui rendre « aucun
+                        professionnel disponible » sans action est un bug produit. Chacune des trois
+                        est donc un GESTE, pas une explication.
+                    --}}
+                    <ul class="mt-4 space-y-3">
+                        <li class="rounded-xl border border-slate-100 bg-slate-50/60 p-4">
+                            <p class="text-sm font-medium text-slate-900">Continuer à attendre</p>
+                            <p class="mt-0.5 text-sm text-slate-600">
+                                Nous élargissons la recherche et rappelons les professionnels qui
+                                viennent de se libérer.
+                            </p>
+                            <button type="button" wire:click="retry"
+                                class="mt-3 min-h-[44px] w-full rounded-xl bg-slate-900 text-sm font-medium text-white">
+                                Chercher encore
+                            </button>
+                        </li>
+
+                        <li class="rounded-xl border border-slate-100 bg-slate-50/60 p-4">
+                            <p class="text-sm font-medium text-slate-900">Convertir en rendez-vous</p>
+                            <p class="mt-0.5 text-sm text-slate-600">
+                                Le même service, à une heure que vous choisissez —
+                                <strong>sans re-saisir votre commande ni payer à nouveau</strong>.
+                            </p>
+                            <div class="mt-3 flex flex-col gap-2 sm:flex-row">
+                                <input type="datetime-local" wire:model="scheduledAt"
+                                    class="min-h-[44px] flex-1 rounded-xl border-slate-300 text-sm">
+                                <button type="button" wire:click="convertToScheduled"
+                                    class="min-h-[44px] rounded-xl border border-slate-300 bg-white px-4 text-sm font-medium text-slate-900">
+                                    Prendre rendez-vous
+                                </button>
+                            </div>
+                        </li>
+
+                        <li class="rounded-xl border border-slate-100 bg-slate-50/60 p-4">
+                            <p class="text-sm font-medium text-slate-900">Annuler la demande</p>
+                            <p class="mt-0.5 text-sm text-slate-600">
+                                Aucun montant n’a été prélevé : le paiement n’est engagé qu’à partir
+                                du moment où un professionnel accepte.
+                            </p>
+                            <button type="button" wire:click="abandon"
+                                wire:confirm="Annuler définitivement cette demande ?"
+                                class="mt-3 min-h-[44px] w-full rounded-xl border border-rose-300 text-sm font-medium text-rose-700">
+                                Annuler sans frais
+                            </button>
+                        </li>
                     </ul>
                 </div>
             @endif

@@ -202,6 +202,7 @@ class MobileBookingSelectionApiTest extends TestCase
             'booking_mode' => 'scheduled',
             'status' => 'en_attente',
             'provider_type_preference' => 'independent',
+            'trade_id' => $this->matchingTrade()->id,
         ]);
 
         $ranked = app(AiDispatchService::class)->rankEmployees($booking->fresh());
@@ -237,6 +238,18 @@ class MobileBookingSelectionApiTest extends TestCase
             'heure_fin' => '18:00:00',
         ]);
 
+        // LE MÉTIER EST OBLIGATOIRE : le filtre n'a plus de repli, et une réservation sans métier
+        // résolvable ne rend AUCUN candidat plutôt que de les rendre tous.
+        $user->trades()->syncWithoutDetaching([$this->matchingTrade()->id]);
+
         return $user;
+    }
+
+    private function matchingTrade(): \App\Models\Trade
+    {
+        return \App\Models\Trade::firstOrCreate(
+            ['slug' => 'mobile-selection-trade'],
+            ['code' => 'MST', 'name' => 'Nettoyage', 'is_active' => true, 'sort_order' => 1],
+        );
     }
 }

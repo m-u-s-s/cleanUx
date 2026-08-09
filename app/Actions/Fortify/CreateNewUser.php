@@ -10,6 +10,7 @@ use App\Models\CustomerProfile;
 use App\Models\OrganizationAccount;
 use App\Models\OrganizationMember;
 use App\Models\ProviderProfile;
+use App\Services\Catalog\ProviderCoverageWriter;
 use App\Models\User;
 use App\Services\Promotion\ReferralService;
 use Illuminate\Support\Facades\DB;
@@ -50,6 +51,22 @@ class CreateNewUser implements CreatesNewUsers
                 'string',
                 'max:255',
             ],
+
+            /*
+             * MÉTIERS ET ZONES — les deux tables que lit la requête candidate du dispatch.
+             *
+             * Le formulaire proposait des métiers sans filtre de zone, et AUCUNE zone : un
+             * prestataire déclarait « peinture » sans dire où, et le dispatch devait deviner son
+             * périmètre à partir de sa position du jour.
+             *
+             * `nullable` : l'inscription cliente n'en envoie pas, et l'assistant d'onboarding peut
+             * les compléter plus tard. Ce qui arrive est validé contre le catalogue à l'écriture —
+             * rien de ce qui vient du navigateur n'est cru sur parole.
+             */
+            'trade_ids' => ['nullable', 'array'],
+            'trade_ids.*' => ['integer'],
+            'zone_ids' => ['nullable', 'array'],
+            'zone_ids.*' => ['integer'],
 
             'terms' => Jetstream::hasTermsAndPrivacyPolicyFeature()
                 ? ['accepted', 'required']
@@ -233,12 +250,26 @@ class CreateNewUser implements CreatesNewUsers
     /**
      * @param  array<string, mixed>  $input
      */
+    /**
+     * La couverture déclarée à l'inscription : métiers ET zones.
+     *
+     * `ProviderCoverageWriter` est le seul endroit qui écrit ces deux tables — l'inscription web,
+     * l'inscription mobile et l'écran de profil l'appellent toutes. Trois écritures séparées
+     * finiraient par diverger, et une écriture manquante quelque part se traduit par un
+     * prestataire qui ne reçoit jamais rien, sans erreur nulle part.
+     *
+     * @param  array<string, mixed>  $input
+     */
     private function attachTrades(User $user, array $input): void
     {
-        $tradeIds = array_filter((array) ($input['trade_ids'] ?? []));
-        if ($tradeIds !== []) {
-            $user->trades()->syncWithoutDetaching($tradeIds);
+        $tradeIds = array_values(array_filter(array_map('intval', (array) ($input['trade_ids'] ?? []))));
+        $zoneIds = array_values(array_filter(array_map('intval', (array) ($input['zone_ids'] ?? []))));
+
+        if ($tradeIds === [] && $zoneIds === []) {
+            return;
         }
+
+        app(ProviderCoverageWriter::class)->sync($user, $tradeIds, $zoneIds);
     }
 
     // ──────────────────────────────────────────────────────

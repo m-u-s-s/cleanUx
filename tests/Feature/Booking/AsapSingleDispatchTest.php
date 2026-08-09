@@ -79,15 +79,28 @@ class AsapSingleDispatchTest extends TestCase
     }
 
     /**
-     * Le chemin web testait `isset($mission)` sur une variable jamais assignée : la garde valait
-     * donc toujours faux et l'offre ASAP ne partait jamais, alors que la confirmation directe est
-     * bien désactivée pour l'ASAP. Une réservation ASAP créée depuis le web n'était donc proposée
-     * à personne.
+     * LE CHEMIN WEB ENTRE PAR LA PORTE UNIQUE : `DispatchEngine::dispatchBooking()`.
+     *
+     * Il testait auparavant `isset($mission)` sur une variable jamais assignée : la garde valait
+     * toujours faux et l'offre ASAP ne partait jamais. Il portait ensuite DEUX chemins — l'offre
+     * immédiate d'un côté, la confirmation directe du planifié de l'autre, chacun avec sa propre
+     * liste de candidats. Le moteur tient les deux modes ; c'est lui qu'on observe ici.
      */
     public function test_an_asap_web_booking_is_dispatched(): void
     {
         $dispatched = [];
         $this->mockDispatch($dispatched);
+
+        $recues = [];
+        $this->mock(\App\Services\Dispatch\DispatchEngine::class, function (MockInterface $mock) use (&$recues) {
+            $mock->shouldReceive('dispatchBooking')
+                ->andReturnUsing(function ($booking) use (&$recues) {
+                    $recues[] = $booking->id;
+
+                    return null;
+                });
+            $mock->shouldIgnoreMissing();
+        });
 
         $context = $this->createCoverageContext();
         $client = User::factory()->create(['role' => User::ROLE_CLIENT, 'is_active' => true]);
@@ -130,7 +143,7 @@ class AsapSingleDispatchTest extends TestCase
             ],
         );
 
-        $this->assertCount(1, $dispatched, 'Une réservation ASAP web doit partir en offre.');
+        $this->assertCount(1, $recues, 'Une réservation ASAP web doit entrer dans le moteur, une fois.');
     }
 
     /**

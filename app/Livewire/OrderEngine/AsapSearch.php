@@ -3,8 +3,10 @@
 namespace App\Livewire\OrderEngine;
 
 use App\Models\AsapDispatchRequest;
+use App\Services\Dispatch\SearchOutcomeService;
 use App\Services\OrderEngine\AsapDispatchService;
 use App\Support\Domain\AsapStatus;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
 use Livewire\Attributes\Computed;
@@ -40,11 +42,24 @@ class AsapSearch extends Component
 
     public string $error = '';
 
+    /**
+     * Le créneau choisi pour la conversion en rendez-vous.
+     *
+     * Propriété publique, donc modifiable par le navigateur — et c'est sans danger : le service
+     * refuse toute date passée, et la réservation visée est celle de la recherche, elle-même
+     * vérifiée contre son propriétaire à chaque lecture.
+     */
+    public string $scheduledAt = '';
+
     public function mount(int $request): void
     {
         $this->requestId = $request;
 
         abort_unless($this->request !== null, 404);
+
+        // Un défaut raisonnable : demain, même heure. Un champ vide ferait cliquer pour découvrir
+        // une erreur de saisie.
+        $this->scheduledAt = now()->addDay()->format('Y-m-d\TH:i');
     }
 
     /**
@@ -133,14 +148,76 @@ class AsapSearch extends Component
         unset($this->request, $this->cancellation, $this->waysForward, $this->timedOut);
     }
 
-    /** Relance une recherche expirée, plus large. */
+    /**
+     * « CONTINUER À ATTENDRE » — la recherche repart, plus large.
+     *
+     * Les exclusions ne sont PAS remises à zéro : réoffrir la course à qui vient de la refuser
+     * ferait vibrer son téléphone pour rien. En revanche, ceux qui n'avaient jamais été joints —
+     * hors ligne il y a trois minutes, en ligne maintenant — entrent naturellement.
+     */
     public function retry(): void
     {
         $request = $this->request;
 
         if ($request && $request->status === AsapStatus::EXPIRED) {
-            app(AsapDispatchService::class)->retry($request);
+            app(SearchOutcomeService::class)->keepWaiting($request);
         }
+
+        unset($this->request, $this->cancellation, $this->waysForward, $this->timedOut);
+    }
+
+    /**
+     * « CONVERTIR EN RENDEZ-VOUS » — la même commande, à une heure choisie.
+     *
+     * SANS RE-SAISIR NI REPAYER. La réservation existe déjà, avec son devis figé, ses réponses au
+     * questionnaire et son adresse : renvoyer le client dans le parcours de commande lui ferait
+     * tout recommencer, et c'est exactement le moment où l'on abandonne.
+     */
+    public function convertToScheduled(): void
+    {
+        $this->error = '';
+        $request = $this->request;
+
+        if (! $request) {
+            return;
+        }
+
+        try {
+            $creneau = Carbon::parse($this->scheduledAt);
+        } catch (\Throwable) {
+            $this->error = 'Choisissez une date et une heure valides.';
+
+            return;
+        }
+
+        try {
+            app(SearchOutcomeService::class)->convertToScheduled($request, $creneau);
+        } catch (ValidationException $e) {
+            $this->error = $e->getMessage();
+
+            return;
+        }
+
+        unset($this->request, $this->cancellation, $this->waysForward, $this->timedOut);
+    }
+
+    /**
+     * « ANNULER » — proprement, et sans argent capturé.
+     *
+     * Distinct de `cancel()` : celui-là applique les frais annoncés d'une course ACCEPTÉE. Ici,
+     * personne ne s'est déplacé — facturer une recherche infructueuse serait faire payer notre
+     * propre incapacité à trouver quelqu'un.
+     */
+    public function abandon(): void
+    {
+        $this->error = '';
+        $request = $this->request;
+
+        if (! $request) {
+            return;
+        }
+
+        app(SearchOutcomeService::class)->cancelAndRelease($request, 'Aucun professionnel trouvé');
 
         unset($this->request, $this->cancellation, $this->waysForward, $this->timedOut);
     }

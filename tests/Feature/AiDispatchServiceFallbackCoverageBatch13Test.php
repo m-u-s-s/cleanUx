@@ -17,6 +17,20 @@ class AiDispatchServiceFallbackCoverageBatch13Test extends TestCase
 {
     use RefreshDatabase;
 
+    /**
+     * Le métier commun aux fixtures — obligatoire depuis que le filtre n'a plus de repli.
+     *
+     * Une réservation sans métier résolvable ne rend AUCUN candidat, au lieu de les rendre tous :
+     * c'est l'invariant « jamais un peintre en babysitting », et il vit dans le SQL.
+     */
+    protected function trade(): \App\Models\Trade
+    {
+        return \App\Models\Trade::firstOrCreate(
+            ['slug' => 'ai-dispatch-fixture-trade'],
+            ['code' => 'AIDF', 'name' => 'Nettoyage', 'is_active' => true, 'sort_order' => 1],
+        );
+    }
+
     protected function makeEmployee(?int $zoneId = null, bool $online = true): User
     {
         $user = User::factory()->employe()->create([
@@ -34,6 +48,15 @@ class AiDispatchServiceFallbackCoverageBatch13Test extends TestCase
             ],
         );
 
+        // EN LIGNE AU SENS DE PRESENCE V2 : le miroir binaire reste vrai quand l'application est
+        // morte depuis vingt minutes, il ne décide donc plus rien.
+        \App\Models\ProviderPresence::updateOrCreate(
+            ['provider_user_id' => $user->id],
+            ['status' => $online ? 'online' : 'offline', 'heartbeat_at' => now()],
+        );
+
+        $user->trades()->syncWithoutDetaching([$this->trade()->id]);
+
         return $user;
     }
 
@@ -50,6 +73,7 @@ class AiDispatchServiceFallbackCoverageBatch13Test extends TestCase
         return Booking::factory()->create(array_merge([
             'client_id' => $client->id,
             'service_zone_id' => $zone->id,
+            'trade_id' => $this->trade()->id,
             'date' => now()->addDay()->toDateString(),
             'heure' => '10:00',
             'duree_estimee' => 90,

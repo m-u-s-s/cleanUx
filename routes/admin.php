@@ -452,6 +452,15 @@ Route::middleware(['role:admin', 'enforce_2fa'])
 
         if (class_exists(AiDispatchCenter::class)) {
             Route::get('/ia-dispatch', AiDispatchCenter::class)->name('ai.dispatch');
+
+            /*
+             * LE CENTRE DE RÉPARTITION — l'histoire d'une recherche, pas un compteur.
+             *
+             * Quand une course n'aboutit pas, la seule question qui compte est « pourquoi », et
+             * elle a quatre réponses qui se ressemblent tant qu'on ne voit pas la chaîne d'offres :
+             * personne trouvé, personne en ligne, refus, silence.
+             */
+            Route::get('/repartition', \App\Livewire\Admin\DispatchCenter::class)->name('dispatch.center');
         }
 
         if (class_exists(BusinessDashboard::class)) {

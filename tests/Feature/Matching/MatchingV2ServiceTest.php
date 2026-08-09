@@ -6,6 +6,7 @@ use App\Models\Booking;
 use App\Models\BookingMatchingDecision;
 use App\Models\ProviderProfile;
 use App\Models\ServiceZone;
+use App\Models\Trade;
 use App\Models\User;
 use App\Services\Matching\MatchingV2Service;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -22,16 +23,29 @@ class MatchingV2ServiceTest extends TestCase
 
     protected MatchingV2Service $service;
 
+    protected Trade $trade;
+
     protected function setUp(): void
     {
         parent::setUp();
 
         $this->zone = ServiceZone::factory()->create();
 
+        /*
+         * LE MÉTIER EST OBLIGATOIRE depuis que le filtre n'a plus de repli : une réservation sans
+         * métier résolvable ne rend AUCUN candidat, au lieu de les rendre tous. Les fixtures
+         * doivent donc poser un métier des deux côtés, comme la vraie vie.
+         */
+        $this->trade = Trade::create([
+            'slug' => 'matching-v2-trade', 'code' => 'MV2', 'name' => 'Nettoyage',
+            'is_active' => true, 'sort_order' => 1,
+        ]);
+
         $client = User::factory()->client()->create();
         $this->booking = Booking::create([
             'client_id' => $client->id,
             'service_zone_id' => $this->zone->id,
+            'trade_id' => $this->trade->id,
             'date' => now()->addDay(),
             'heure' => '10:00',
             'status' => 'en_attente',
@@ -114,6 +128,8 @@ class MatchingV2ServiceTest extends TestCase
             'assignment_type' => 'primary',
             'is_active' => true,
         ]);
+
+        $user->trades()->syncWithoutDetaching([$this->trade->id]);
 
         return $user;
     }

@@ -210,7 +210,7 @@ class DispatchEngine
 
         $maxRadius = (int) Config::get('dispatch.waves.max_radius_m', 20000);
         $step = (int) Config::get('dispatch.waves.step_m', 5000);
-        $tried = $mission->assignments()->pluck('user_id')->map(fn ($id) => (int) $id)->all();
+        $tried = $this->alreadyAsked($mission);
 
         $candidates = collect();
 
@@ -275,7 +275,7 @@ class DispatchEngine
             return null;
         }
 
-        $tried = $mission->assignments()->pluck('user_id')->map(fn ($id) => (int) $id)->all();
+        $tried = $this->alreadyAsked($mission);
         $depth = count($tried);
 
         if ($depth >= (int) Config::get('dispatch.max_escalation_depth', 5)) {
@@ -418,15 +418,24 @@ class DispatchEngine
         $assignment = DB::transaction(function () use ($mission, $provider, $ttlSeconds) {
             $now = now();
 
-            return MissionAssignment::create([
-                'mission_id' => $mission->id,
-                'user_id' => $provider->id,
-                'role_on_mission' => 'lead',
-                'assignment_status' => 'assigned',
-                'assigned_at' => $now,
-                'notification_sent_at' => $now,
-                'expires_at' => $now->copy()->addSeconds($ttlSeconds),
-            ]);
+            /*
+             * `updateOrCreate` et non `create` : `mission_assignments` porte un index unique
+             * (mission, prestataire). Une relance après refus, ou une assignation d'office sur
+             * quelqu'un déjà sollicité, ferait échouer l'insertion — et la recherche entière
+             * tomberait sur une contrainte plutôt que de proposer la course.
+             */
+            return MissionAssignment::updateOrCreate(
+                ['mission_id' => $mission->id, 'user_id' => $provider->id],
+                [
+                    'role_on_mission' => 'lead',
+                    'assignment_status' => 'assigned',
+                    'assigned_at' => $now,
+                    'notification_sent_at' => $now,
+                    'expires_at' => $now->copy()->addSeconds($ttlSeconds),
+                    'declined_at' => null,
+                    'decline_reason' => null,
+                ],
+            );
         });
 
         try {
@@ -505,6 +514,25 @@ class DispatchEngine
         );
     }
 
+    /**
+     * QUI A DÉJÀ ÉTÉ SOLLICITÉ — et « annulée » ne compte pas.
+     *
+     * Une offre `cancelled` est une offre que NOUS avons retirée : parce qu'un autre a accepté,
+     * parce que le client a converti sa demande. Le prestataire ne s'est pas prononcé. La compter
+     * comme un refus l'écarterait d'une question qu'on ne lui a jamais posée — typiquement « peux-tu
+     * venir jeudi » après un « peux-tu venir tout de suite » retiré au bout de cinq minutes.
+     *
+     * @return list<int>
+     */
+    protected function alreadyAsked(Mission $mission): array
+    {
+        return $mission->assignments()
+            ->whereIn('assignment_status', ['assigned', 'declined', 'expired', 'accepted'])
+            ->pluck('user_id')
+            ->map(fn ($id) => (int) $id)
+            ->all();
+    }
+
     /** L'offre encore vivante sur cette mission, s'il y en a une. */
     public function currentOffer(?int $missionId): ?MissionAssignment
     {
@@ -579,14 +607,15 @@ class DispatchEngine
             return null;
         }
 
-        $assignment = MissionAssignment::create([
-            'mission_id' => $mission->id,
-            'user_id' => $best->user->id,
-            'role_on_mission' => 'lead',
-            'assignment_status' => 'accepted',
-            'assigned_at' => now(),
-            'accepted_at' => now(),
-        ]);
+        $assignment = MissionAssignment::updateOrCreate(
+            ['mission_id' => $mission->id, 'user_id' => $best->user->id],
+            [
+                'role_on_mission' => 'lead',
+                'assignment_status' => 'accepted',
+                'assigned_at' => now(),
+                'accepted_at' => now(),
+            ],
+        );
 
         $mission->update([
             'status' => 'assigned',

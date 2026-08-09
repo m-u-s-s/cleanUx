@@ -11,14 +11,42 @@ use Tests\TestCase;
  */
 class DispatchTimeoutConfigTest extends TestCase
 {
-    public function test_default_timeout_is_15_seconds(): void
+    /**
+     * VINGT SECONDES, et c'est un choix produit.
+     *
+     * C'est la fenêtre des plateformes VTC : assez pour lire le métier, la distance et la
+     * rémunération ; trop court pour aller consulter son agenda. Le défaut était de quinze
+     * secondes — le client attendait donc moins longtemps par prestataire interrogé, mais les
+     * refus par manque de temps de lecture faisaient parcourir la chaîne plus loin.
+     */
+    public function test_default_timeout_is_20_seconds(): void
     {
-        $this->assertSame(15, config('dispatch.default_timeout'));
+        $this->assertSame(20, config('dispatch.default_timeout'));
     }
 
-    public function test_nettoyage_uses_15_second_timeout(): void
+    public function test_nettoyage_uses_20_second_timeout(): void
     {
-        $this->assertSame(15, config('dispatch.timeout_per_trade.nettoyage'));
+        $this->assertSame(20, config('dispatch.timeout_per_trade.nettoyage'));
+    }
+
+    /**
+     * Les vagues, l'échéance globale et la fraîcheur de position sont EN CONFIG.
+     *
+     * Aucun nombre magique en dur : changer le TTL doit changer le compte à rebours réel, sans
+     * déploiement de code.
+     */
+    public function test_les_reglages_du_moteur_sont_tous_en_config(): void
+    {
+        $this->assertGreaterThan(0, config('dispatch.waves.initial_radius_m'));
+        $this->assertGreaterThan(0, config('dispatch.waves.step_m'));
+        $this->assertGreaterThanOrEqual(
+            config('dispatch.waves.initial_radius_m'),
+            config('dispatch.waves.max_radius_m'),
+        );
+        $this->assertGreaterThan(0, config('dispatch.search_deadline_seconds'));
+        $this->assertGreaterThan(0, config('dispatch.position_freshness_minutes'));
+        $this->assertGreaterThan(0, config('dispatch.broadcast_max_candidates'));
+        $this->assertGreaterThan(0, config('dispatch.scheduled_offer_timeout_seconds'));
     }
 
     public function test_toiturier_uses_30_second_timeout(): void

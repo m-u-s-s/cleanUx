@@ -30,6 +30,15 @@ Route::middleware(['role:employe'])
 
         Route::get('/', EmployeDashboard::class)->name('dashboard');
 
+        /*
+         * « CE QUE JE FAIS, ET OÙ » — l'écran qui décide de ce qu'un prestataire reçoit.
+         *
+         * Il n'existait pas : le métier se déclarait une fois à l'inscription et ne se modifiait
+         * plus, les zones ne se déclaraient nulle part. Un prestataire qui déménageait devait
+         * écrire au support et attendre qu'un administrateur touche la base.
+         */
+        Route::get('/metiers-zones', \App\Livewire\Provider\TradesAndZones::class)->name('trades-zones');
+
         // Le répertoire des modules — voir `config/modules.php`. La garde reste `role:employe`.
         Route::get('/modules', \App\Livewire\Shared\ModulesDirectory::class)
             ->defaults('contexte', 'employe')

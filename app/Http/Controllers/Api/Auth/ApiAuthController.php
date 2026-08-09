@@ -16,6 +16,7 @@ use App\Models\OrganizationMember;
 use App\Models\ProviderProfile;
 use App\Models\Trade;
 use App\Models\User;
+use App\Services\Catalog\ProviderCoverageWriter;
 use App\Services\KybV2\BusinessOnboardingService;
 use App\Services\OnboardingV2\OnboardingEngine;
 use App\Services\Promotion\ReferralService;
@@ -352,7 +353,41 @@ class ApiAuthController extends Controller
         $profile->forceFill(['self_registered_at' => now()])->save();
 
         $this->attachDeclaredTrade($user, $data);
+        $this->attachDeclaredCoverage($user, $data);
         $this->openVerificationJourney($user);
+    }
+
+    /**
+     * La couverture déclarée : métiers ET zones.
+     *
+     * `trade_id` seul ne dit QUE ce que le prestataire fait, jamais où — et le dispatch devait
+     * alors deviner son périmètre à partir de sa position du jour. `ProviderCoverageWriter` écrit
+     * les deux tables que lit la requête candidate, et valide chaque identifiant contre le
+     * catalogue : ce qui arrive vient de l'application, donc n'est cru sur parole nulle part.
+     *
+     * @param  array<string, mixed>  $data
+     */
+    private function attachDeclaredCoverage(User $user, array $data): void
+    {
+        $metiers = array_values(array_filter(array_map('intval', (array) ($data['trade_ids'] ?? []))));
+        $zones = array_values(array_filter(array_map('intval', (array) ($data['zone_ids'] ?? []))));
+
+        // Le métier principal déclaré à l'étape précédente reste dans la liste : les deux champs
+        // coexistent le temps que toutes les versions installées envoient `trade_ids`.
+        if (! empty($data['trade_id'])) {
+            $metiers[] = (int) $data['trade_id'];
+        }
+
+        if ($metiers === [] && $zones === []) {
+            return;
+        }
+
+        app(ProviderCoverageWriter::class)->sync(
+            $user,
+            array_values(array_unique($metiers)),
+            $zones,
+            ! empty($data['trade_id']) ? (int) $data['trade_id'] : null,
+        );
     }
 
     /**

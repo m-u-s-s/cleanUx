@@ -4,6 +4,7 @@ use App\Http\Controllers\Api\Client\DeviceTokenController;
 use App\Http\Controllers\Api\EmployeeMissionTrackingController;
 use App\Http\Controllers\Api\PhoneVerificationController;
 use App\Http\Controllers\Api\Provider\AsapOfferController;
+use App\Http\Controllers\Api\Provider\ProviderCoverageController;
 use App\Http\Controllers\Api\Provider\ProviderOfferController;
 use App\Http\Controllers\Api\Provider\AvailabilityController;
 use App\Http\Controllers\Api\Provider\BadgesController;
@@ -64,6 +65,15 @@ Route::middleware(['auth:sanctum', 'role:employe', 'provider.approved'])->group(
      * Ce point d'entree est la SOURCE DE VERITE que l'application interroge a intervalle court.
      */
     Route::get('provider/offers/current', [ProviderOfferController::class, 'current']);
+
+    /*
+     * « CE QUE JE FAIS, ET OÙ » — la commande de ce qu'un prestataire reçoit.
+     *
+     * Ces deux tables sont exactement celles que lit la requête candidate du dispatch : décocher un
+     * métier arrête ses offres, cocher une zone les ouvre, sans déploiement.
+     */
+    Route::get('provider/coverage', [ProviderCoverageController::class, 'show']);
+    Route::put('provider/coverage', [ProviderCoverageController::class, 'update']);
 
     // Phase 11 — Mission accept/decline
     Route::prefix('provider/assignments')->group(function () {

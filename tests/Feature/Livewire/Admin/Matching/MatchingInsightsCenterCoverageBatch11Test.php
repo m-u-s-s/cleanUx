@@ -29,6 +29,18 @@ class MatchingInsightsCenterCoverageBatch11Test extends TestCase
         $this->zone = ServiceZone::factory()->create();
     }
 
+    /**
+     * Le métier commun aux fixtures — obligatoire depuis que le filtre n'a plus de repli : une
+     * réservation sans métier résolvable ne rend AUCUN candidat, au lieu de les rendre tous.
+     */
+    private function trade(): \App\Models\Trade
+    {
+        return \App\Models\Trade::firstOrCreate(
+            ['slug' => 'matching-insights-trade'],
+            ['code' => 'MIT', 'name' => 'Nettoyage', 'is_active' => true, 'sort_order' => 1],
+        );
+    }
+
     private function makeBooking(): Booking
     {
         $client = User::factory()->client()->create();
@@ -36,6 +48,7 @@ class MatchingInsightsCenterCoverageBatch11Test extends TestCase
         return Booking::create([
             'client_id' => $client->id,
             'service_zone_id' => $this->zone->id,
+            'trade_id' => $this->trade()->id,
             'date' => now()->addDay(),
             'heure' => '10:00',
             'status' => 'en_attente',
@@ -66,6 +79,8 @@ class MatchingInsightsCenterCoverageBatch11Test extends TestCase
             'assignment_type' => 'primary',
             'is_active' => true,
         ]);
+
+        $user->trades()->syncWithoutDetaching([$this->trade()->id]);
 
         return $user;
     }

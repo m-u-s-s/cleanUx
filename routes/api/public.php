@@ -7,6 +7,7 @@ use App\Http\Controllers\Api\PricingV2Controller;
 use App\Http\Controllers\Api\Public\FxController;
 use App\Http\Controllers\Api\Public\ProviderProfileController;
 use App\Http\Controllers\Api\Public\SearchController;
+use App\Http\Controllers\Api\Catalog\RegistrationOptionsController;
 use App\Models\Trade;
 use App\Services\Country\CountryConfigService;
 use Illuminate\Support\Facades\Cache;
@@ -143,6 +144,18 @@ Route::middleware(['signed', 'auth:sanctum'])
     ->get('/client/gdpr/requests/{gdprRequest}/download',
         [GdprController::class, 'downloadExport'])
     ->name('api.gdpr.download');
+
+/*
+ * LES MÉTIERS ET LES ZONES OFFERTS À L'INSCRIPTION — une seule API, web et mobile.
+ *
+ * Le formulaire web et l'onboarding natif construisaient deux listes différentes : l'un lisait
+ * `trades` sans filtre, l'autre ne proposait aucune zone. Un métier ouvert par l'administration
+ * apparaissait d'un côté et pas de l'autre, et personne ne savait lequel disait vrai.
+ *
+ * PUBLIQUE À DESSEIN : appelée AVANT que le compte existe, donc avant tout jeton.
+ */
+Route::get('/catalog/registration-options', RegistrationOptionsController::class)
+    ->name('api.catalog.registration-options');
 
 // Multi-trade marketplace — public trades listing (no auth required)
 // GET /api/trades — returns all active trades ordered by sort_order

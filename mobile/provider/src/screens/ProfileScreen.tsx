@@ -81,6 +81,8 @@ export function ProfileScreen() {
      */
     { label: 'Modules', screen: 'Modules' },
     { label: 'Disponibilités', screen: 'Availability' },
+    // Sans porte d'entrée, l'écran serait orphelin — le mode d'échec documenté de ce dépôt.
+    { label: 'Métiers et zones', screen: 'TradesZones' },
     { label: 'Badges', screen: 'Badges' },
     { label: 'Vérification KYC', screen: 'KYC' },
     { label: 'Litiges', screen: 'ProviderDisputes' },

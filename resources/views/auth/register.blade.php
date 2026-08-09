@@ -134,6 +134,97 @@
                             </div>
                         </div>
 
+                        {{--
+                            MÉTIERS ET ZONES — les deux listes qui décident de ce qu'un prestataire
+                            recevra.
+
+                            Elles viennent du CATALOGUE administrateur, par la même API que
+                            l'onboarding natif : deux listes construites séparément finiraient par
+                            proposer des métiers différents selon l'appareil, et personne ne saurait
+                            laquelle dit vrai. Un métier ouvert dans une nouvelle zone apparaît ici
+                            sans déploiement.
+
+                            Sans métier ET sans zone, la requête candidate du dispatch ne peut
+                            proposer aucune mission : c'est écrit à l'écran plutôt que découvert
+                            après trois semaines de silence.
+                        --}}
+                        <div x-show="type === 'provider_independent' || type === 'provider_company'" x-cloak
+                             x-data="{
+                                secteurs: [],
+                                zones: [],
+                                chargement: true,
+                                async init() {
+                                    try {
+                                        const reponse = await fetch('/api/catalog/registration-options?country={{ config('order_engine.geocoding_country', 'BE') }}', {
+                                            headers: { 'Accept': 'application/json' },
+                                        });
+                                        const charge = await reponse.json();
+                                        this.secteurs = charge?.data?.sectors ?? [];
+                                        this.zones = charge?.data?.zones ?? [];
+                                    } catch (e) {
+                                        // Le catalogue indisponible ne doit pas bloquer l'inscription :
+                                        // le prestataire complétera ses métiers depuis son profil.
+                                        this.secteurs = [];
+                                        this.zones = [];
+                                    }
+                                    this.chargement = false;
+                                },
+                             }">
+                            <div class="rounded-xl border border-slate-200 bg-slate-50/50 p-4 space-y-4">
+                                <div>
+                                    <label class="ui-label">Vos métiers</label>
+                                    <p class="text-xs text-slate-500">
+                                        Vous ne recevrez que des missions de ces métiers. Vous pourrez
+                                        les modifier à tout moment depuis votre profil.
+                                    </p>
+
+                                    <template x-if="chargement">
+                                        <p class="mt-2 text-xs text-slate-400">Chargement du catalogue…</p>
+                                    </template>
+
+                                    <template x-if="!chargement && secteurs.length === 0">
+                                        <p class="mt-2 text-xs text-slate-500">
+                                            Le catalogue n’est pas joignable pour l’instant : vous
+                                            choisirez vos métiers depuis votre profil après
+                                            l’inscription.
+                                        </p>
+                                    </template>
+
+                                    <template x-for="secteur in secteurs" :key="secteur.id">
+                                        <div class="mt-3">
+                                            <p class="text-xs font-semibold uppercase tracking-wide text-slate-500"
+                                               x-text="secteur.name"></p>
+                                            <div class="mt-1 grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                                <template x-for="metier in secteur.trades" :key="metier.id">
+                                                    <label class="flex items-center gap-2 rounded-lg border border-slate-200 bg-white p-2">
+                                                        <input type="checkbox" name="trade_ids[]" :value="metier.id"
+                                                               class="rounded border-slate-300 text-brand-600">
+                                                        <span class="text-sm text-slate-800" x-text="metier.name"></span>
+                                                    </label>
+                                                </template>
+                                            </div>
+                                        </div>
+                                    </template>
+                                </div>
+
+                                <div x-show="zones.length > 0">
+                                    <label class="ui-label">Vos zones d’intervention</label>
+                                    <p class="text-xs text-slate-500">
+                                        Vous ne recevrez que des missions situées dans ces zones.
+                                    </p>
+                                    <div class="mt-2 grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                        <template x-for="zone in zones" :key="zone.id">
+                                            <label class="flex items-center gap-2 rounded-lg border border-slate-200 bg-white p-2">
+                                                <input type="checkbox" name="zone_ids[]" :value="zone.id"
+                                                       class="rounded border-slate-300 text-brand-600">
+                                                <span class="text-sm text-slate-800" x-text="zone.name"></span>
+                                            </label>
+                                        </template>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
                         {{-- Note prestataire indépendant --}}
                         <div x-show="type === 'provider_independent'" x-cloak>
                             <div class="rounded-xl border border-amber-200 bg-amber-50/30 p-4 text-xs text-amber-700 inline-flex items-start gap-2">

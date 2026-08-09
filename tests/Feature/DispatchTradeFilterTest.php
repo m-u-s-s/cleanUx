@@ -84,7 +84,16 @@ class DispatchTradeFilterTest extends TestCase
             'Le peintre ne doit PAS être proposé pour une mission serrurier.');
     }
 
-    public function test_fallback_returns_all_when_no_employee_has_required_trade(): void
+    /**
+     * LE REPLI OUVERT EST SUPPRIMÉ, et c'est le cœur de l'invariant.
+     *
+     * Le filtre rendait la liste NON filtrée quand elle se vidait, « pour ne pas bloquer le
+     * dispatch ». C'est exactement la porte par laquelle un peintre pouvait recevoir du
+     * babysitting. Une mission non pourvue est un incident qu'on voit et qu'on traite ; une mission
+     * pourvue par le mauvais métier est un client qui ne revient pas, et un prestataire qui perd
+     * son déplacement.
+     */
+    public function test_aucun_candidat_quand_personne_n_exerce_le_metier(): void
     {
         $zone = ServiceZone::factory()->create();
         $serrurerie = $this->makeTrade('serrurerie');
@@ -113,12 +122,19 @@ class DispatchTradeFilterTest extends TestCase
             $rdv->fresh(['client', 'serviceZone', 'serviceCatalog'])
         );
 
-        // Fallback ouvert : l'employé est tout de même proposé
-        $this->assertNotEmpty($ranking);
-        $this->assertSame($employee->id, $ranking->first()['employee']->id);
+        // PERSONNE. Pas « tout le monde », pas « au hasard ».
+        $this->assertTrue($ranking->isEmpty());
+        $this->assertNotContains($employee->id, $ranking->pluck('employee.id')->all());
     }
 
-    public function test_no_filtering_when_service_has_no_trade(): void
+    /**
+     * SANS MÉTIER RÉSOLVABLE, ON NE REND PERSONNE.
+     *
+     * L'ancienne règle disait « pas de métier requis, donc tout le monde est éligible ». Elle
+     * paraissait prudente et produisait l'inverse : une réservation dont le métier n'avait pas été
+     * enregistré partait chez n'importe qui.
+     */
+    public function test_aucun_candidat_quand_la_reservation_n_a_pas_de_metier(): void
     {
         $zone = ServiceZone::factory()->create();
         $peinture = $this->makeTrade('peinture');
@@ -149,13 +165,22 @@ class DispatchTradeFilterTest extends TestCase
             $rdv->fresh(['client', 'serviceZone', 'serviceCatalog'])
         );
 
-        $ids = $ranking->pluck('employee.id')->all();
-        $this->assertContains($painter->id, $ids);
-        $this->assertContains($generic->id, $ids,
-            'Sans trade requis, tous les candidats restent éligibles.');
+        $this->assertTrue(
+            $ranking->isEmpty(),
+            'Sans métier résolvable, le dispatch ne cherche personne plutôt que n’importe qui.',
+        );
+        $this->assertNotContains($painter->id, $ranking->pluck('employee.id')->all());
+        $this->assertNotContains($generic->id, $ranking->pluck('employee.id')->all());
     }
 
-    public function test_booking_trade_relation_resolves_via_service_catalog(): void
+    /**
+     * LE MÉTIER SE LIT SUR SA COLONNE, avec le catalogue en REPLI.
+     *
+     * `bookings.trade_id` est écrit par le moteur de commande, qui sait quel métier a été choisi.
+     * Les réservations antérieures à la colonne n'en ont pas : elles restent lisibles par le
+     * service au catalogue, et c'est ce que garantit `resolveTradeId()`.
+     */
+    public function test_le_metier_se_resout_par_la_colonne_puis_par_le_catalogue(): void
     {
         $trade = $this->makeTrade('peinture');
         $service = ServiceCatalog::factory()->create([
@@ -163,12 +188,22 @@ class DispatchTradeFilterTest extends TestCase
             'is_active' => true,
         ]);
 
-        $rdv = Booking::factory()->create([
+        // Archive : pas de colonne, un service au catalogue.
+        $archive = Booking::factory()->create([
+            'trade_id' => null,
             'service_catalog_id' => $service->id,
         ]);
 
-        $resolved = $rdv->fresh()->trade;
-        $this->assertNotNull($resolved);
-        $this->assertSame($trade->id, $resolved->id);
+        $this->assertSame($trade->id, $archive->fresh()->resolveTradeId());
+
+        // Moteur de commande : la colonne, et elle prime.
+        $autre = $this->makeTrade('serrurerie');
+        $moderne = Booking::factory()->create([
+            'trade_id' => $autre->id,
+            'service_catalog_id' => $service->id,
+        ]);
+
+        $this->assertSame($autre->id, $moderne->fresh()->resolveTradeId());
+        $this->assertSame($autre->id, $moderne->fresh()->trade->id);
     }
 }

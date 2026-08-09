@@ -5,7 +5,9 @@ namespace Tests\Feature;
 use App\Enums\ProviderType;
 use App\Models\Booking;
 use App\Models\ProviderProfile;
+use App\Models\ProviderPresence;
 use App\Models\ServiceZone;
+use App\Models\Trade;
 use App\Models\User;
 use App\Services\Dispatch\AiDispatchService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -15,6 +17,25 @@ class AiDispatchServiceScoringTest extends TestCase
 {
     use RefreshDatabase;
 
+    /**
+     * Le métier commun à toutes les fixtures.
+     *
+     * Il est OBLIGATOIRE depuis que le filtre métier n'a plus de repli : une réservation sans
+     * métier résolvable ne rend AUCUN candidat, au lieu de les rendre tous.
+     */
+    protected function trade(): Trade
+    {
+        return Trade::firstOrCreate(
+            ['slug' => 'ai-dispatch-trade'],
+            ['code' => 'AID', 'name' => 'Nettoyage', 'is_active' => true, 'sort_order' => 1],
+        );
+    }
+
+    /**
+     * @param  bool  $online  EN LIGNE AU SENS DE PRESENCE V2 — état `online` ET battement frais.
+     *                        Le miroir `provider_profiles.is_online` reste vrai quand l'application
+     *                        est morte depuis vingt minutes : il ne décide plus rien.
+     */
     protected function makeEmployee(?int $zoneId = null, bool $online = true): User
     {
         $user = User::factory()->employe()->create([
@@ -32,6 +53,16 @@ class AiDispatchServiceScoringTest extends TestCase
             ],
         );
 
+        ProviderPresence::updateOrCreate(
+            ['provider_user_id' => $user->id],
+            [
+                'status' => $online ? 'online' : 'offline',
+                'heartbeat_at' => now(),
+            ],
+        );
+
+        $user->trades()->syncWithoutDetaching([$this->trade()->id]);
+
         return $user;
     }
 
@@ -45,6 +76,7 @@ class AiDispatchServiceScoringTest extends TestCase
         return Booking::factory()->create(array_merge([
             'client_id' => $client->id,
             'service_zone_id' => $zone->id,
+            'trade_id' => $this->trade()->id,
             'date' => now()->addDay()->toDateString(),
             'heure' => '10:00',
             'duree_estimee' => 90,

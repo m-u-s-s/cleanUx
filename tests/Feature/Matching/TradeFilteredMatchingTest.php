@@ -119,34 +119,44 @@ class TradeFilteredMatchingTest extends TestCase
     }
 
     // ──────────────────────────────────────────────────────────────────
-    // Test 3 — fallback is used when no provider has the required trade
+    // Test 3 — le repli ouvert est supprimé : personne, plutôt que n'importe qui
     // ──────────────────────────────────────────────────────────────────
 
-    public function test_fallback_pool_is_returned_when_no_provider_has_required_trade(): void
+    /**
+     * LE FILTRE MÉTIER N'A PLUS DE REPLI.
+     *
+     * Il rendait la liste NON filtrée quand elle se vidait — c'est la porte par laquelle un peintre
+     * pouvait recevoir du babysitting. Une mission non pourvue est un incident visible ; une mission
+     * pourvue par le mauvais métier est un client perdu et un déplacement inutile.
+     */
+    public function test_aucun_candidat_quand_personne_n_exerce_le_metier_requis(): void
     {
-        // Create a provider in the zone but attach them to a DIFFERENT trade
         $otherTrade = Trade::factory()->create(['billing_unit' => 'fixed', 'is_active' => true]);
         $provider = $this->createProvider(rating: 4.0, ratingCount: 5);
         $provider->trades()->attach($otherTrade->id, ['is_primary' => true, 'proficiency' => 'advanced']);
 
-        // Booking requires the main trade (which no one has)
         $booking = $this->createBookingForTrade($this->trade);
 
         $ranked = $this->service->rankCandidates($booking);
 
-        // Fallback: the zone provider should be included despite trade mismatch
-        $this->assertGreaterThan(0, $ranked->count(), 'Fallback should return the only available provider in zone');
-        $this->assertTrue($ranked->pluck('employee.id')->contains($provider->id));
+        $this->assertTrue($ranked->isEmpty(), 'Le métier vit dans la requête : aucun repli ne le rouvre.');
+        $this->assertFalse($ranked->pluck('employee.id')->contains($provider->id));
     }
 
     // ──────────────────────────────────────────────────────────────────
-    // Test 4 — booking without a service_catalog (no trade_id) uses all zone providers
+    // Test 4 — une réservation sans métier ne rend personne
     // ──────────────────────────────────────────────────────────────────
 
-    public function test_booking_without_service_catalog_includes_all_zone_providers(): void
+    /**
+     * SANS MÉTIER RÉSOLVABLE, ON NE REND PERSONNE.
+     *
+     * L'ancienne règle — « pas de métier requis, donc tout le monde » — paraissait prudente et
+     * produisait l'inverse : une réservation dont le métier n'avait pas été enregistré partait chez
+     * n'importe qui.
+     */
+    public function test_une_reservation_sans_metier_ne_rend_personne(): void
     {
         $provider = $this->createProvider(rating: 4.5, ratingCount: 20);
-        // Provider has no trade attached
 
         $booking = Booking::create([
             'client_id' => User::factory()->client()->create()->id,
@@ -156,12 +166,13 @@ class TradeFilteredMatchingTest extends TestCase
             'status' => 'en_attente',
             'devis_estime' => 80,
             'booking_mode' => 'scheduled',
-            // No service_catalog_id — no trade filter
+            // Ni service au catalogue, ni `trade_id` : le métier est introuvable.
         ]);
 
         $ranked = $this->service->rankCandidates($booking);
 
-        $this->assertTrue($ranked->pluck('employee.id')->contains($provider->id));
+        $this->assertTrue($ranked->isEmpty());
+        $this->assertFalse($ranked->pluck('employee.id')->contains($provider->id));
     }
 
     // ──────────────────────────────────────────────────────────────────

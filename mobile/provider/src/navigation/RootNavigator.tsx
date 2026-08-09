@@ -11,6 +11,7 @@ import { PresenceScanScreen } from '@/screens/PresenceScanScreen';
 import { TrackingScreen } from '@/screens/TrackingScreen';
 import { StripeOnboardingScreen } from '@/screens/StripeOnboardingScreen';
 import { AvailabilityScreen } from '@/screens/AvailabilityScreen';
+import { TradesZonesScreen } from '@/screens/TradesZonesScreen';
 import { BadgesScreen } from '@/screens/BadgesScreen';
 import { KYCScreen } from '@/screens/KYCScreen';
 import { ProviderDisputesScreen } from '@/screens/ProviderDisputesScreen';
@@ -441,6 +442,18 @@ export function RootNavigator() {
               name="Availability"
               component={AvailabilityScreen}
               options={{ headerShown: true, title: 'Disponibilités' }}
+            />
+            {/*
+              « CE QUE JE FAIS, ET OÙ ».
+
+              L'écran décide de ce que le prestataire reçoit : ses métiers et ses zones sont les
+              deux tables que lit la requête candidate du dispatch. Il n'existait pas — le métier se
+              déclarait une fois à l'inscription et ne se modifiait plus, les zones nulle part.
+            */}
+            <Stack.Screen
+              name="TradesZones"
+              component={TradesZonesScreen}
+              options={{ headerShown: true, title: 'Métiers et zones' }}
             />
             <Stack.Screen
               name="Badges"

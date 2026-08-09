@@ -168,12 +168,29 @@ class MobileCatalogDescentTest extends TestCase
 
         $metier = Trade::query()->firstOrFail();
 
+        $avant = TradeZonePricing::query()
+            ->where('trade_id', $metier->id)
+            ->where('service_zone_id', $this->bruxelles->id)
+            ->value('is_active');
+
         $this->postJson("/api/admin/catalogue/zones/{$this->bruxelles->id}/trades/{$metier->id}/toggle")
             ->assertForbidden();
 
-        // La règle qui protège le web doit protéger l'API : c'est la même décision, et un compte
-        // en lecture seule passe la garde « est-ce un administrateur ».
-        $this->assertDatabaseCount('trade_zone_pricing', 0);
+        /*
+         * La règle qui protège le web doit protéger l'API : c'est la même décision, et un compte
+         * en lecture seule passe la garde « est-ce un administrateur ».
+         *
+         * On vérifie l'ÉTAT INCHANGÉ plutôt qu'une table vide : le catalogue est désormais semé
+         * avec sa grille complète (métier × zone), sans quoi aucun métier ne serait vendu nulle
+         * part. Compter les lignes ne dirait plus rien du refus.
+         */
+        $this->assertSame(
+            $avant,
+            TradeZonePricing::query()
+                ->where('trade_id', $metier->id)
+                ->where('service_zone_id', $this->bruxelles->id)
+                ->value('is_active'),
+        );
     }
 
     public function test_les_pays_se_trient_par_nom(): void

@@ -50,6 +50,8 @@ export type RootStackParamList = {
   StripeOnboarding: undefined;
   KYC: undefined;
   Availability: undefined;
+  /** « Ce que je fais, et où » : les deux tables que lit la requête candidate du dispatch. */
+  TradesZones: undefined;
   Badges: undefined;
   ProviderDisputes: undefined;
   ProviderRatings: undefined;

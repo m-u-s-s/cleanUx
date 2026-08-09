@@ -24,6 +24,20 @@ class AiDispatchCenterCoverageBatch17Test extends TestCase
         $this->admin = User::factory()->admin()->create();
     }
 
+    /**
+     * Le métier commun aux fixtures.
+     *
+     * Il est OBLIGATOIRE depuis que le filtre métier n'a plus de repli : une réservation sans
+     * métier résolvable ne rend AUCUN candidat, au lieu de les rendre tous.
+     */
+    private function trade(): \App\Models\Trade
+    {
+        return \App\Models\Trade::firstOrCreate(
+            ['slug' => 'ai-center-trade'],
+            ['code' => 'AIC', 'name' => 'Nettoyage', 'is_active' => true, 'sort_order' => 1],
+        );
+    }
+
     private function eligibleProviderForZone(int $zoneId): User
     {
         $provider = User::factory()->employe()->create([
@@ -38,6 +52,8 @@ class AiDispatchCenterCoverageBatch17Test extends TestCase
             'provider_type' => 'independent',
             'is_online' => true,
         ]);
+
+        $provider->trades()->syncWithoutDetaching([$this->trade()->id]);
 
         return $provider;
     }
@@ -79,7 +95,7 @@ class AiDispatchCenterCoverageBatch17Test extends TestCase
 
     public function test_preview_populates_ranking_and_id(): void
     {
-        $booking = Booking::factory()->enAttente()->create();
+        $booking = Booking::factory()->enAttente()->create(['trade_id' => $this->trade()->id]);
         $this->eligibleProviderForZone((int) $booking->service_zone_id);
 
         $component = Livewire::actingAs($this->admin)
@@ -127,7 +143,10 @@ class AiDispatchCenterCoverageBatch17Test extends TestCase
     {
         config(['matching.enabled' => false]);
 
-        $booking = Booking::factory()->enAttente()->create(['employe_id' => null]);
+        $booking = Booking::factory()->enAttente()->create([
+            'employe_id' => null,
+            'trade_id' => $this->trade()->id,
+        ]);
         $provider = $this->eligibleProviderForZone((int) $booking->service_zone_id);
 
         Livewire::actingAs($this->admin)
