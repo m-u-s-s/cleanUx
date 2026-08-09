@@ -35,7 +35,7 @@
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#070b14"
+        "backgroundColor": "#191c20"
       },
       "package": "com.brio.provider",
       "permissions": [
