@@ -2,10 +2,12 @@
 
 namespace Tests\Feature\Dispatch;
 
+use App\Livewire\Client\PrendreRendezVous;
 use App\Livewire\OrderEngine\OrderJourney;
 use App\Models\User;
 use Database\Seeders\OrderEngineCatalogSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Livewire\Livewire;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
@@ -56,7 +58,7 @@ class FormulaireDeReservationUniqueTest extends TestCase
         // Le composant supprimé ne doit pas revenir par une route oubliée : sa seule existence
         // rouvrirait une deuxième entrée de création de réservation.
         $this->assertFalse(
-            class_exists(\App\Livewire\Client\PrendreRendezVous::class),
+            class_exists(PrendreRendezVous::class),
             "L'ancien formulaire de réservation doit rester supprimé : deux formulaires = deux entrées de dispatch.",
         );
     }
@@ -66,7 +68,7 @@ class FormulaireDeReservationUniqueTest extends TestCase
     {
         $client = User::factory()->create(['role' => User::ROLE_CLIENT]);
 
-        $composant = \Livewire\Livewire::actingAs($client)->test(OrderJourney::class);
+        $composant = Livewire::actingAs($client)->test(OrderJourney::class);
 
         // Le panier existe et porte l'identité : l'étape « qui êtes-vous » n'a plus rien à
         // demander à un client déjà connecté.

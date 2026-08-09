@@ -11,6 +11,8 @@ use App\Models\OrderDraftItem;
 use App\Models\User;
 use App\Notifications\Dispatch\MissionOfferNotification;
 use App\Services\Missions\MissionLifecycleService;
+use App\Services\Organizations\OrganizationNotifier;
+use App\Services\Presence\ProviderPresenceService;
 use App\Support\Domain\AsapStatus;
 use App\Support\Domain\BookingStatus;
 use Illuminate\Support\Collection;
@@ -109,6 +111,8 @@ class DispatchEngine
             return null;
         }
 
+        $this->previenirLaSocieteChoisie($booking);
+
         $search = AsapDispatchRequest::create([
             'booking_id' => $booking->id,
             'mission_id' => $mission->id,
@@ -165,6 +169,25 @@ class DispatchEngine
 
         if ($search) {
             return $this->offerNext($search);
+        }
+
+        /*
+         * UNE RÉSERVATION IMMÉDIATE SANS RECHERCHE OUVERTE EN OUVRE UNE — elle ne bascule pas sur
+         * le planifié.
+         *
+         * Le cas se produit dès qu'une mission entre par un autre chemin que la confirmation de
+         * commande : `CreateBookingFromApiAction` (l'API cliente mobile) appelle directement
+         * l'escalade sans passer par `dispatchBooking()`. Sans cette garde, la course partait avec
+         * les règles du RENDEZ-VOUS — zones déclarées au lieu de la position GPS, trente minutes au
+         * lieu de vingt secondes, aucune vague. Le client attendait devant sa porte pendant qu'on
+         * interrogeait des prestataires hors ligne à l'autre bout de la zone.
+         */
+        $booking = $mission->bookingViaBookingId ?? $mission->rendezVous ?? $mission->booking;
+
+        if ($booking && ($booking->booking_mode ?? null) === 'asap') {
+            $ouverte = $this->openImmediate($booking);
+
+            return $ouverte ? $this->currentOffer($ouverte->mission_id) : null;
         }
 
         return $this->offerScheduled($mission);
@@ -316,6 +339,33 @@ class DispatchEngine
     {
         $missionId = (int) $accepted->mission_id;
 
+        /*
+         * LE PRESTATAIRE DEVIENT OCCUPÉ DÈS L'ACCEPTATION, pas au démarrage de l'intervention.
+         *
+         * C'est le patron VTC : occupé pendant la course, disponible à la fin. Sans cela, celui qui
+         * vient d'accepter reste `online` et redevient candidat à la seconde suivante — il pouvait
+         * donc recevoir une deuxième course immédiate alors qu'il est déjà en route pour la
+         * première, et l'une des deux clientes attendait pour rien.
+         *
+         * `PresenceAutoTransitioner` ne basculait qu'aux transitions `en_route`/`sur_place`, c'est-
+         * à-dire plusieurs minutes trop tard. Il le remet `online` à la clôture, ce qui reste vrai.
+         *
+         * SOFT-FAIL : une panne du module de présence ne doit pas faire échouer une acceptation
+         * déjà écrite — le prestataire serait débité d'une course qu'il croit avoir prise.
+         */
+        try {
+            $prestataire = $accepted->user;
+
+            if ($prestataire) {
+                app(ProviderPresenceService::class)->goBusy($prestataire);
+            }
+        } catch (\Throwable $e) {
+            Log::warning('DispatchEngine: bascule en occupé impossible', [
+                'assignment_id' => $accepted->id,
+                'error' => $e->getMessage(),
+            ]);
+        }
+
         MissionAssignment::query()
             ->where('mission_id', $missionId)
             ->where('id', '!=', $accepted->id)
@@ -349,6 +399,59 @@ class DispatchEngine
     public function withdraw(MissionAssignment $assignment, string $reason = 'taken'): void
     {
         $this->transmitter->withdraw($assignment, $reason);
+    }
+
+    /**
+     * LE CLIENT A CHOISI UNE SOCIÉTÉ : ses répartiteurs sont prévenus.
+     *
+     * Les candidats sont déjà restreints à ses salariés — c'est ce qui garantit que la course ne
+     * part pas ailleurs. Mais sans ce message, la société apprenait la demande par le salarié qui
+     * l'avait acceptée, ou pas du tout si personne ne répondait : celui qui pilote l'équipe ne
+     * voyait rien passer et ne pouvait pas réagir avant l'échéance.
+     *
+     * Le message part aux porteurs de `missions.dispatch`, c'est-à-dire à ceux qui peuvent
+     * effectivement agir. Prévenir toute la société ferait sonner des téléphones qui n'ont rien à
+     * décider — et l'on n'écoute plus des notifications qu'on ne peut pas suivre d'un geste.
+     *
+     * L'assignation interne, elle, reste au chantier société : si la société a activé son mode
+     * continu, `MissionFromRendezVousSyncService` l'a déjà tentée à la naissance de la mission, et
+     * la chaîne d'offres s'arrête d'elle-même dès qu'un chef est désigné.
+     *
+     * SOFT-FAIL : une notification qui échoue ne doit pas empêcher la recherche de démarrer.
+     */
+    protected function previenirLaSocieteChoisie(Booking $booking): void
+    {
+        $societeId = $booking->assigned_provider_organization_id;
+
+        if (! $societeId) {
+            return;
+        }
+
+        $metier = $booking->resolveTrade();
+
+        try {
+            app(OrganizationNotifier::class)->notifierPorteursDe(
+                organisationId: (int) $societeId,
+                permission: 'missions.dispatch',
+                titre: 'Nouvelle demande immédiate',
+                corps: sprintf(
+                    '%s — %s. Un de vos collaborateurs doit accepter avant l’échéance.',
+                    $metier === null ? 'Intervention' : (string) $metier->name,
+                    trim(($booking->postal_code ?? '').' '.($booking->city ?? '')) ?: 'adresse à confirmer',
+                ),
+                donnees: [
+                    'type' => 'company_immediate_request',
+                    'booking_id' => (int) $booking->id,
+                ],
+                cleIdempotence: 'company_immediate:'.$booking->id,
+            );
+        } catch (\Throwable $e) {
+            Log::warning('DispatchEngine: société non prévenue de la demande immédiate', [
+                'booking_id' => $booking->id,
+                'organisation' => $societeId,
+                'error' => $e->getMessage(),
+            ]);
+        }
     }
 
     /** Personne n'a répondu : la recherche s'arrête, le client choisit sa suite (lot 6). */

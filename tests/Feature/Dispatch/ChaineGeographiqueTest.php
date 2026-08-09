@@ -3,6 +3,7 @@
 namespace Tests\Feature\Dispatch;
 
 use App\Livewire\OrderEngine\OrderJourney;
+use App\Models\Booking;
 use App\Models\OrderDraft;
 use App\Models\PostalCode;
 use App\Models\ServiceZone;
@@ -10,6 +11,7 @@ use App\Models\Trade;
 use App\Models\TradeZonePricing;
 use App\Models\User;
 use App\Services\OrderEngine\OrderConfirmationService;
+use App\Services\OrderEngine\PricingEngine;
 use App\Services\OrderEngine\ZonePricingResolver;
 use App\Support\Domain\OrderMode;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -103,7 +105,7 @@ class ChaineGeographiqueTest extends TestCase
         $this->assertSame(9000, $contexte['zone_base_cents']);
         $this->assertSame(1.2, $contexte['zone_multiplier']);
 
-        $devis = app(\App\Services\OrderEngine\PricingEngine::class)->quoteItem(
+        $devis = app(PricingEngine::class)->quoteItem(
             $this->metier,
             collect(),
             [],
@@ -218,7 +220,7 @@ class ChaineGeographiqueTest extends TestCase
 
         app(OrderConfirmationService::class)->confirm($panier->fresh(), $client);
 
-        $reservation = \App\Models\Booking::query()->where('client_id', $client->id)->firstOrFail();
+        $reservation = Booking::query()->where('client_id', $client->id)->firstOrFail();
 
         // LES TROIS COLONNES QUI MANQUAIENT AU DISPATCH. Sans elles, la requête candidate ne peut
         // imposer ni le métier ni la zone : c'est la porte par laquelle un peintre reçoit du

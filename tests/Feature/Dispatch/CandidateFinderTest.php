@@ -16,6 +16,7 @@ use App\Services\Dispatch\CandidateFinder;
 use App\Services\Dispatch\DispatchCandidate;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use PHPUnit\Framework\Attributes\Test;
+use Tests\Feature\Dispatch\Concerns\OuvreLeCatalogue;
 use Tests\TestCase;
 
 /**
@@ -34,6 +35,7 @@ use Tests\TestCase;
  */
 class CandidateFinderTest extends TestCase
 {
+    use OuvreLeCatalogue;
     use RefreshDatabase;
 
     private const LAT = 50.8467;
@@ -65,6 +67,9 @@ class CandidateFinderTest extends TestCase
             'slug' => 'babysitting-cf', 'code' => 'BABY-CF', 'name' => 'Babysitting',
             'is_active' => true, 'sort_order' => 2,
         ]);
+
+        $this->ouvrirAuCatalogue($this->peinture, $this->zone);
+        $this->ouvrirAuCatalogue($this->babysitting, $this->zone);
     }
 
     // ─── Fabriques ───────────────────────────────────────────────────────────────────────────

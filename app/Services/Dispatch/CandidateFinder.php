@@ -6,6 +6,7 @@ use App\Enums\ProviderType;
 use App\Models\Booking;
 use App\Models\User;
 use App\Services\Matching\MatchingScoreEngine;
+use App\Services\OrderEngine\ZonePricingResolver;
 use App\Services\Safety\UserSafetyService;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
@@ -42,6 +43,7 @@ class CandidateFinder
 {
     public function __construct(
         protected MatchingScoreEngine $scoreEngine,
+        protected ZonePricingResolver $catalogue,
     ) {}
 
     /**
@@ -208,6 +210,24 @@ class CandidateFinder
             : [];
 
         $excluded = array_values(array_unique(array_map('intval', array_merge($excludeUserIds, $blocked))));
+
+        /*
+         * LE COUPLE (MÉTIER, ZONE) DOIT ÊTRE OUVERT AU CATALOGUE.
+         *
+         * Fermer « peinture-Liège » bloque déjà les NOUVELLES commandes à la confirmation. Mais une
+         * recherche déjà ouverte, ou une réservation entrée par un autre chemin, continuait de
+         * proposer la course : l'administration croyait avoir fermé un service et des prestataires
+         * continuaient d'y être envoyés.
+         *
+         * La zone de la réservation est celle qui compte, pas celles du prestataire : c'est là que
+         * l'intervention a lieu. Sans zone connue, on ne filtre pas ici — la confirmation s'en
+         * charge en amont, et refuser tout le monde ici priverait les réservations d'archive de
+         * tout candidat.
+         */
+        if ($booking->service_zone_id
+            && ! $this->catalogue->isOpen($tradeId, (int) $booking->service_zone_id)) {
+            return null;
+        }
 
         $query = User::query()
             ->select('users.*')

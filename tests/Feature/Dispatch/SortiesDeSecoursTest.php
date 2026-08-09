@@ -11,11 +11,14 @@ use App\Models\ServiceZone;
 use App\Models\Trade;
 use App\Models\User;
 use App\Services\Dispatch\DispatchEngine;
+use App\Services\Dispatch\MissionDispatchService;
 use App\Services\Dispatch\SearchOutcomeService;
 use App\Support\Domain\AsapStatus;
 use App\Support\Domain\BookingStatus;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Validation\ValidationException;
 use PHPUnit\Framework\Attributes\Test;
+use Tests\Feature\Dispatch\Concerns\OuvreLeCatalogue;
 use Tests\TestCase;
 
 /**
@@ -32,6 +35,7 @@ use Tests\TestCase;
  */
 class SortiesDeSecoursTest extends TestCase
 {
+    use OuvreLeCatalogue;
     use RefreshDatabase;
 
     private const LAT = 50.8467;
@@ -56,6 +60,8 @@ class SortiesDeSecoursTest extends TestCase
             'slug' => 'plomberie-secours', 'code' => 'PLB-SC', 'name' => 'Plomberie',
             'is_active' => true, 'sort_order' => 1, 'allows_asap' => true,
         ]);
+
+        $this->ouvrirAuCatalogue($this->trade, $this->zone);
     }
 
     private function prestataire(): User
@@ -137,7 +143,7 @@ class SortiesDeSecoursTest extends TestCase
         $recherche = app(DispatchEngine::class)->openImmediate($this->reservation());
 
         $offre = MissionAssignment::query()->where('mission_id', $recherche->mission_id)->firstOrFail();
-        app(\App\Services\Dispatch\MissionDispatchService::class)->decline($offre, 'Non merci');
+        app(MissionDispatchService::class)->decline($offre, 'Non merci');
 
         $relancee = $this->sorties()->keepWaiting($recherche->fresh());
 
@@ -215,7 +221,7 @@ class SortiesDeSecoursTest extends TestCase
         $this->prestataire();
         $recherche = app(DispatchEngine::class)->openImmediate($this->reservation());
 
-        $this->expectException(\Illuminate\Validation\ValidationException::class);
+        $this->expectException(ValidationException::class);
         $this->sorties()->convertToScheduled($recherche->fresh(), now()->subHour());
     }
 

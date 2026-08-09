@@ -11,6 +11,7 @@ use App\Models\ProviderPresence;
 use App\Models\ProviderProfile;
 use App\Models\ServiceZone;
 use App\Models\Trade;
+use App\Models\TradeZonePricing;
 use App\Models\User;
 use App\Services\Dispatch\DispatchEngine;
 use App\Services\Dispatch\MissionDispatchService;
@@ -18,6 +19,7 @@ use App\Support\Domain\AsapStatus;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Config;
 use PHPUnit\Framework\Attributes\Test;
+use Tests\Feature\Dispatch\Concerns\OuvreLeCatalogue;
 use Tests\TestCase;
 
 /**
@@ -34,6 +36,7 @@ use Tests\TestCase;
  */
 class MoteurDeRepartitionTest extends TestCase
 {
+    use OuvreLeCatalogue;
     use RefreshDatabase;
 
     private const LAT = 50.8467;
@@ -65,6 +68,9 @@ class MoteurDeRepartitionTest extends TestCase
             'slug' => 'peinture-moteur', 'code' => 'PNT-M', 'name' => 'Peinture',
             'is_active' => true, 'sort_order' => 2,
         ]);
+
+        $this->ouvrirAuCatalogue($this->plomberie, $this->zone);
+        $this->ouvrirAuCatalogue($this->peinture, $this->zone);
 
         Config::set('dispatch.waves.initial_radius_m', 5000);
         Config::set('dispatch.waves.step_m', 5000);
@@ -414,6 +420,114 @@ class MoteurDeRepartitionTest extends TestCase
 
         $this->assertSame($premiere->id, $seconde->id);
         $this->assertSame(1, AsapDispatchRequest::query()->where('booking_id', $booking->id)->count());
+    }
+
+    // ─── Le mode ne se perd jamais en route ──────────────────────────────────────────────────
+
+    /**
+     * UNE RÉSERVATION IMMÉDIATE ENTRÉE PAR UN AUTRE CHEMIN RESTE IMMÉDIATE.
+     *
+     * `CreateBookingFromApiAction` — l'API cliente mobile — appelle directement l'escalade sans
+     * passer par `dispatchBooking()`. Sans garde, la course partait avec les règles du RENDEZ-VOUS :
+     * zones déclarées au lieu de la position GPS, trente minutes au lieu de vingt secondes, aucune
+     * vague. Le client attendait devant sa porte pendant qu'on interrogeait des prestataires hors
+     * ligne à l'autre bout de la zone.
+     */
+    #[Test]
+    public function une_reservation_immediate_sans_recherche_ouverte_en_ouvre_une(): void
+    {
+        $prestataire = $this->prestataire($this->plomberie, 50.8480, 4.3540);
+
+        $booking = $this->reservationImmediate();
+        $mission = $this->moteur()->ensureMission($booking);
+
+        // Aucune recherche n'existe : c'est le point de départ du défaut.
+        $this->assertSame(0, AsapDispatchRequest::query()->where('mission_id', $mission->id)->count());
+
+        $this->moteur()->next($mission);
+
+        $recherche = AsapDispatchRequest::query()->where('mission_id', $mission->id)->firstOrFail();
+        $this->assertSame(AsapStatus::SEARCHING, $recherche->status);
+
+        $offre = MissionAssignment::query()->where('mission_id', $mission->id)->firstOrFail();
+        $this->assertSame($prestataire->id, (int) $offre->user_id);
+        $this->assertSame(
+            20,
+            (int) round($offre->assigned_at->diffInSeconds($offre->expires_at, true)),
+            'Vingt secondes : les règles de l’immédiat, pas celles du rendez-vous.',
+        );
+    }
+
+    // ─── Occupé dès l'acceptation ────────────────────────────────────────────────────────────
+
+    /**
+     * LE PRESTATAIRE DEVIENT OCCUPÉ DÈS L'ACCEPTATION, pas au démarrage de l'intervention.
+     *
+     * Sans cela, celui qui vient d'accepter reste `online` et redevient candidat à la seconde
+     * suivante : il pouvait recevoir une deuxième course alors qu'il est déjà en route pour la
+     * première, et l'une des deux clientes attendait pour rien.
+     */
+    #[Test]
+    public function accepter_rend_le_prestataire_occupe(): void
+    {
+        $prestataire = $this->prestataire($this->plomberie, 50.8480, 4.3540);
+
+        $search = $this->moteur()->openImmediate($this->reservationImmediate());
+        $offre = MissionAssignment::query()->where('mission_id', $search->mission_id)->firstOrFail();
+
+        $this->assertSame('online', ProviderPresence::query()
+            ->where('provider_user_id', $prestataire->id)->value('status'));
+
+        app(MissionDispatchService::class)->accept($offre);
+
+        $this->assertSame('busy', ProviderPresence::query()
+            ->where('provider_user_id', $prestataire->id)->value('status'));
+    }
+
+    #[Test]
+    public function un_prestataire_occupe_ne_recoit_plus_de_course(): void
+    {
+        $prestataire = $this->prestataire($this->plomberie, 50.8480, 4.3540);
+
+        $premier = $this->moteur()->openImmediate($this->reservationImmediate());
+        app(MissionDispatchService::class)->accept(
+            MissionAssignment::query()->where('mission_id', $premier->mission_id)->firstOrFail(),
+        );
+
+        // Une deuxième demande arrive : le seul prestataire du métier est déjà en course.
+        $second = $this->moteur()->openImmediate($this->reservationImmediate());
+
+        $this->assertSame(AsapStatus::EXPIRED, $second->status);
+        $this->assertSame(0, MissionAssignment::query()->where('mission_id', $second->mission_id)->count());
+        $this->assertNotSame($prestataire->id, 0);
+    }
+
+    // ─── Le catalogue ferme réellement ───────────────────────────────────────────────────────
+
+    /**
+     * FERMER UN COUPLE (MÉTIER, ZONE) ARRÊTE LES OFFRES, y compris sur une recherche déjà ouverte.
+     *
+     * La confirmation bloque déjà les NOUVELLES commandes. Mais une recherche en cours continuait
+     * de proposer la course : l'administration croyait avoir fermé un service et des prestataires
+     * continuaient d'y être envoyés.
+     */
+    #[Test]
+    public function fermer_le_metier_dans_la_zone_arrete_les_offres(): void
+    {
+        $this->prestataire($this->plomberie, 50.8480, 4.3540);
+
+        $ouverte = $this->moteur()->openImmediate($this->reservationImmediate());
+        $this->assertSame(1, MissionAssignment::query()->where('mission_id', $ouverte->mission_id)->count());
+
+        TradeZonePricing::query()
+            ->where('trade_id', $this->plomberie->id)
+            ->where('service_zone_id', $this->zone->id)
+            ->update(['is_active' => false]);
+
+        $fermee = $this->moteur()->openImmediate($this->reservationImmediate());
+
+        $this->assertSame(AsapStatus::EXPIRED, $fermee->status);
+        $this->assertSame(0, MissionAssignment::query()->where('mission_id', $fermee->mission_id)->count());
     }
 
     // ─── Le planifié ─────────────────────────────────────────────────────────────────────────

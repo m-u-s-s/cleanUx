@@ -15,6 +15,7 @@ use App\Services\Dispatch\DispatchEngine;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
 use PHPUnit\Framework\Attributes\Test;
+use Tests\Feature\Dispatch\Concerns\OuvreLeCatalogue;
 use Tests\TestCase;
 
 /**
@@ -30,6 +31,7 @@ use Tests\TestCase;
  */
 class SurfacesPrestataireTest extends TestCase
 {
+    use OuvreLeCatalogue;
     use RefreshDatabase;
 
     private const LAT = 50.8467;
@@ -54,6 +56,8 @@ class SurfacesPrestataireTest extends TestCase
             'slug' => 'plomberie-surfaces', 'code' => 'PLB-S', 'name' => 'Plomberie',
             'is_active' => true, 'sort_order' => 1, 'allows_asap' => true,
         ]);
+
+        $this->ouvrirAuCatalogue($this->trade, $this->zone);
     }
 
     private function prestataire(): User

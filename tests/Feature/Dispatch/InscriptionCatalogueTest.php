@@ -5,6 +5,7 @@ namespace Tests\Feature\Dispatch;
 use App\Enums\ProviderType;
 use App\Livewire\Provider\TradesAndZones;
 use App\Models\ProviderProfile;
+use App\Models\Sector;
 use App\Models\ServiceZone;
 use App\Models\Trade;
 use App\Models\TradeZonePricing;
@@ -53,7 +54,7 @@ class InscriptionCatalogueTest extends TestCase
             'priority' => 10, 'coverage_type' => 'city_cluster',
         ]);
 
-        $secteur = \App\Models\Sector::create([
+        $secteur = Sector::create([
             'name' => 'Bâtiment', 'slug' => 'batiment-insc', 'is_active' => true, 'sort_order' => 1,
         ]);
 

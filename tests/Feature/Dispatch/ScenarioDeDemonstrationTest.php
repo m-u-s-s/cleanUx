@@ -3,12 +3,14 @@
 namespace Tests\Feature\Dispatch;
 
 use App\Models\AsapDispatchRequest;
+use App\Models\Booking;
 use App\Models\MissionAssignment;
 use App\Models\ProviderPresence;
 use App\Models\Trade;
 use App\Models\TradeZonePricing;
 use App\Models\User;
 use App\Services\Dispatch\DispatchEngine;
+use App\Services\Dispatch\MissionDispatchService;
 use Database\Seeders\DispatchDemoSeeder;
 use Database\Seeders\OrderEngineCatalogSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -71,7 +73,7 @@ class ScenarioDeDemonstrationTest extends TestCase
 
         $metier = Trade::findOrFail($ligne->trade_id);
 
-        $booking = \App\Models\Booking::factory()->create([
+        $booking = Booking::factory()->create([
             'client_id' => User::factory()->client()->create()->id,
             'employe_id' => null,
             'assigned_employee_id' => null,
@@ -93,7 +95,7 @@ class ScenarioDeDemonstrationTest extends TestCase
         $premiere = MissionAssignment::query()->where('mission_id', $search->mission_id)->firstOrFail();
         $this->assertSame('demo.proche@brio.test', $premiere->user->email, 'La proximité prime.');
 
-        app(\App\Services\Dispatch\MissionDispatchService::class)->decline($premiere, 'Démonstration');
+        app(MissionDispatchService::class)->decline($premiere, 'Démonstration');
 
         $seconde = MissionAssignment::query()
             ->where('mission_id', $search->mission_id)
@@ -102,7 +104,7 @@ class ScenarioDeDemonstrationTest extends TestCase
 
         $this->assertSame('demo.moyen@brio.test', $seconde->user->email, 'Puis le suivant, par distance.');
 
-        app(\App\Services\Dispatch\MissionDispatchService::class)->accept($seconde);
+        app(MissionDispatchService::class)->accept($seconde);
 
         $this->assertSame('accepted', $seconde->fresh()->assignment_status);
         $this->assertSame('accepted', AsapDispatchRequest::findOrFail($search->id)->status);

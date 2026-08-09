@@ -18,6 +18,7 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Validation\ValidationException;
 use PHPUnit\Framework\Attributes\Test;
+use Tests\Feature\Dispatch\Concerns\OuvreLeCatalogue;
 use Tests\TestCase;
 
 /**
@@ -35,6 +36,7 @@ use Tests\TestCase;
  */
 class RechercheCoteClientTest extends TestCase
 {
+    use OuvreLeCatalogue;
     use RefreshDatabase;
 
     private const LAT = 50.8467;
@@ -59,6 +61,8 @@ class RechercheCoteClientTest extends TestCase
             'slug' => 'plomberie-client', 'code' => 'PLB-C', 'name' => 'Plomberie',
             'is_active' => true, 'sort_order' => 1, 'allows_asap' => true,
         ]);
+
+        $this->ouvrirAuCatalogue($this->trade, $this->zone);
 
         Config::set('dispatch.waves.initial_radius_m', 5000);
         Config::set('dispatch.waves.step_m', 5000);
