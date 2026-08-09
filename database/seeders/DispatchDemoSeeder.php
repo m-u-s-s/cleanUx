@@ -124,7 +124,7 @@ class DispatchDemoSeeder extends Seeder
             ['email' => $donnees['email']],
             [
                 'name' => $donnees['name'],
-                'password' => Hash::make('password'),
+                'password' => Hash::make((string) config('brio.seed.password')),
                 'role' => User::ROLE_EMPLOYE,
                 'is_active' => true,
                 'primary_service_zone_id' => $zone->id,

@@ -222,7 +222,7 @@ class DemoPlatformSeeder extends Seeder
     {
         return $this->updateOrInsertTable('users', ['email' => $email], [
             'name' => $name,
-            'password' => Hash::make('password'),
+            'password' => Hash::make((string) config('brio.seed.password')),
             'phone' => $phone,
             'role' => $role ?? ($platformRole === 'admin' ? 'admin' : 'client'),
             'platform_role' => $platformRole,

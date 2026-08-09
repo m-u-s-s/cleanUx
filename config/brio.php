@@ -24,6 +24,20 @@ return [
     ],
 
     'seed' => [
+        /*
+         * LE MOT DE PASSE DE TOUS LES COMPTES SEMÉS — un seul, pour pouvoir se connecter partout
+         * pendant une vérification manuelle.
+         *
+         * Chaque seeder posait le sien : « password » ici, « demo2026! » là, « QaPhase2! » ailleurs.
+         * Vérifier un parcours à travers les rôles demandait donc de retrouver dans quel fichier
+         * l'compte avait été créé — et le premier réflexe, en cas de doute, était de réinitialiser
+         * la base.
+         *
+         * ENV-SURCHARGEABLE, ET C'EST LE POINT. Le défaut sert un poste de travail ; un hébergement
+         * de démonstration accessible depuis l'extérieur pose `BRIO_SEED_PASSWORD` et n'a rien
+         * d'autre à changer. Sans ce levier, la valeur de confort serait aussi la valeur déployée.
+         */
+        'password' => env('BRIO_SEED_PASSWORD', '12345678'),
         'profile' => env('BRIO_SEED_PROFILE'),
         'default_profile' => env('BRIO_SEED_DEFAULT_PROFILE', env('APP_ENV') === 'production' ? 'production' : 'demo'),
         'allowed_profiles' => ['demo', 'reference', 'production'],

@@ -4,7 +4,8 @@ import { defineConfig, devices } from '@playwright/test';
  * Audit MEDIUM — E2E par rôle. Smoke flows authentifiés (client, prestataire,
  * admin, entreprise cliente, entreprise prestataire) contre une app servie.
  *
- * Comptes seedés par QaAccountsSeeder (mot de passe partagé `QaPhase2!`).
+ * Comptes seedés par QaAccountsSeeder (mot de passe commun : `config/brio.php`,
+ * clé `seed.password` — `12345678` par défaut, `BRIO_SEED_PASSWORD` pour le surcharger).
  * Base URL via E2E_BASE_URL (défaut http://127.0.0.1:8000). En CI, l'app est
  * servie par `php artisan serve` (cf. .github/workflows/ci.yml job `e2e`).
  */

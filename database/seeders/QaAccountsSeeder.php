@@ -19,7 +19,8 @@ use Illuminate\Support\Facades\Hash;
  * used by the visual-QA harness (`tools/visual-qa/`) and the embed render sweep
  * (`scripts/embed_sweep.php`).
  *
- * These accounts log in per role (password `QaPhase2!`) so the harness can sweep
+ * These accounts log in per role (shared password — see `config/brio.php`, `seed.password`)
+ * so the harness can sweep
  * every embedded page by role and assert role-scoped pages render 200 (not 403).
  * They were originally provisioned by hand on the dev MySQL DB; this seeder
  * versions that EXACT known-working state so it can be reproduced on CI / a fresh
@@ -55,7 +56,11 @@ use Illuminate\Support\Facades\Hash;
 class QaAccountsSeeder extends Seeder
 {
     /** Shared QA password for all harness accounts. */
-    private const QA_PASSWORD = 'QaPhase2!';
+    /** Le mot de passe commun à tous les comptes semés — voir `config/brio.php`. */
+    private static function motDePasse(): string
+    {
+        return (string) config('brio.seed.password');
+    }
 
     public function run(): void
     {
@@ -199,7 +204,7 @@ class QaAccountsSeeder extends Seeder
             ['email' => $email],
             [
                 'name' => $name,
-                'password' => Hash::make(self::QA_PASSWORD),
+                'password' => Hash::make(self::motDePasse()),
                 'platform_role' => $platformRole,
                 'role' => $role,
                 'account_type' => 'client_personal',

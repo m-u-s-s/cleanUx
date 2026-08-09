@@ -9,7 +9,8 @@
  * the SQLite embed-render test never exercised). Read-only against the app.
  */
 $base = getenv('SWEEP_BASE') ?: 'http://127.0.0.1:8000';
-$PW = 'QaPhase2!';
+// Le mot de passe commun des comptes semés — `config/brio.php`, clé `seed.password`.
+$PW = getenv('BRIO_SEED_PASSWORD') ?: '12345678';
 $creds = [
     'admin' => ['admin@brio.test', $PW],
     'provider_company' => ['qa-provider-company@brio.test', $PW],

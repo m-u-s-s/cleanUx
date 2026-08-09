@@ -1,7 +1,13 @@
 import { Page, expect, type Cookie } from '@playwright/test';
 
-/** Mot de passe partagé des comptes QA (cf. database/seeders/QaAccountsSeeder.php). */
-export const QA_PASSWORD = 'QaPhase2!';
+/**
+ * Mot de passe partagé des comptes semés (cf. `config/brio.php`, clé `seed.password`).
+ *
+ * Le même levier des deux côtés : le défaut sert un poste de travail, `BRIO_SEED_PASSWORD` couvre
+ * un hébergement de démonstration. Deux valeurs codées séparément finiraient par diverger, et le
+ * harnais échouerait à la connexion en accusant l'application.
+ */
+export const QA_PASSWORD = process.env.BRIO_SEED_PASSWORD ?? '12345678';
 
 /** Emails seedés par rôle (cf. tools/visual-qa/modules.mjs CREDENTIALS). */
 export const CREDENTIALS = {

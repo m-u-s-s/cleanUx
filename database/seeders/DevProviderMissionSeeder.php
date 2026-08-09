@@ -30,7 +30,12 @@ class DevProviderMissionSeeder extends Seeder
             return;
         }
 
-        $client = User::where('role', 'client')->first() ?? User::factory()->create(['name' => 'Client Démo']);
+        $client = User::where('role', 'client')->first() ?? User::factory()->create([
+            'name' => 'Client Démo',
+            // Explicite : la fabrique sert d'abord les TESTS, dont beaucoup se connectent avec sa
+            // valeur par défaut. Un compte semé, lui, doit porter le mot de passe commun.
+            'password' => (string) config('brio.seed.password'),
+        ]);
         $serviceCatalog = ServiceCatalog::first();
 
         // withoutEvents : un Booking `confirme` déclenche RendezVousObserver, qui synchronise

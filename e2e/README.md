@@ -8,7 +8,7 @@ entreprise cliente, entreprise prestataire) se connecte et atteint son espace.
 L'app doit être **servie** avec une base contenant les comptes QA.
 
 ```bash
-# 1. Base + comptes QA (password QaPhase2!)
+# 1. Base + comptes QA (mot de passe commun : config/brio.php → seed.password, 12345678 par défaut)
 php artisan migrate --seed --force            # ou: db:seed --class="Database\\Seeders\\QaAccountsSeeder"
 
 # 2. Servir l'app

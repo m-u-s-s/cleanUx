@@ -12,7 +12,7 @@ class ProductionDemoSeeder extends Seeder
     {
         // Demo client
         $client = User::firstOrCreate(['email' => 'demo@brio.com'], [
-            'name' => 'Marie Demo', 'password' => Hash::make('demo2026!'),
+            'name' => 'Marie Demo', 'password' => Hash::make((string) config('brio.seed.password')),
             'role' => 'client', 'is_active' => true, 'locale' => 'fr',
         ]);
 
@@ -20,14 +20,14 @@ class ProductionDemoSeeder extends Seeder
         $trades = ['Nettoyage', 'Peinture', 'Babysitting', 'Jardinage', 'Plomberie'];
         foreach ($trades as $i => $trade) {
             User::firstOrCreate(['email' => "provider{$i}@brio.com"], [
-                'name' => "Provider {$trade}", 'password' => Hash::make('demo2026!'),
+                'name' => "Provider {$trade}", 'password' => Hash::make((string) config('brio.seed.password')),
                 'role' => 'provider', 'is_active' => true, 'locale' => 'fr',
             ]);
         }
 
         // Demo admin
         User::firstOrCreate(['email' => 'admin@brio.com'], [
-            'name' => 'Admin Brio', 'password' => Hash::make('admin2026!'),
+            'name' => 'Admin Brio', 'password' => Hash::make((string) config('brio.seed.password')),
             'role' => 'admin', 'is_active' => true, 'is_super_admin' => true, 'locale' => 'fr',
         ]);
 

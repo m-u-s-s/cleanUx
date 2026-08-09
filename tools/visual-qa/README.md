@@ -3,7 +3,8 @@
 Headless Playwright sweep of every embedded WebView page at 390×844, checking 5 mobile criteria.
 
 ## Prerequisites
-- **Seed the 5 QA accounts** (idempotent, password `QaPhase2!`) — required for the per-role logins:
+- **Seed the 5 QA accounts** (idempotent ; mot de passe commun défini par `config/brio.php` →
+  `seed.password`, `12345678` par défaut) — required for the per-role logins:
   ```
   php artisan db:seed --class=QaAccountsSeeder
   ```
