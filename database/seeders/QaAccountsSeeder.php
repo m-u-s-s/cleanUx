@@ -10,7 +10,9 @@ use App\Models\CustomerProfile;
 use App\Models\OrganizationAccount;
 use App\Models\OrganizationMember;
 use App\Models\ProviderProfile;
+use App\Models\Trade;
 use App\Models\User;
+use Database\Seeders\Concerns\BoucleLeDossierPrestataire;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 
@@ -55,6 +57,8 @@ use Illuminate\Support\Facades\Hash;
  */
 class QaAccountsSeeder extends Seeder
 {
+    use BoucleLeDossierPrestataire;
+
     /** Shared QA password for all harness accounts. */
     /** Le mot de passe commun à tous les comptes semés — voir `config/brio.php`. */
     private static function motDePasse(): string
@@ -106,6 +110,8 @@ class QaAccountsSeeder extends Seeder
             organizationAccountId: $providerOrg->id,
         );
         $this->seedMembership($providerOrg, $providerCompanyUser, OrganizationRole::OWNER);
+        $this->declareUnMetier($providerCompanyUser);
+        $this->boucleLeDossier($providerCompanyUser);
         $this->seedProviderProfile(
             $providerCompanyUser,
             ProviderType::COMPANY_WORKER,
@@ -141,6 +147,11 @@ class QaAccountsSeeder extends Seeder
             ProviderType::INDEPENDENT,
             organizationAccountId: null,
         );
+
+        // Le harnais visuel parcourt l'espace prestataire : un dossier d'inscription non bouclé
+        // l'arrêterait sur le mur du KYC, et chaque module de cet espace serait relevé en échec.
+        $this->declareUnMetier($providerUser);
+        $this->boucleLeDossier($providerUser);
 
         // ── 5. Personal client ────────────────────────────────────
         $clientUser = $this->seedUser(
@@ -187,6 +198,19 @@ class QaAccountsSeeder extends Seeder
     }
 
     /**
+     * Un métier déclaré — sans quoi l'étape « Déclarer vos métiers » refuse, et le dispatch ne
+     * rendrait ce compte candidat à rien.
+     */
+    private function declareUnMetier(User $utilisateur): void
+    {
+        $metier = Trade::query()->where('slug', 'nettoyage')->where('is_active', true)->first();
+
+        if ($metier) {
+            $utilisateur->trades()->syncWithoutDetaching([$metier->id => ['is_primary' => true]]);
+        }
+    }
+
+    /**
      * Create or update a QA user, keyed on email. Password is always reset to the
      * shared QA password so the harness keeps working after a re-run.
      */
@@ -200,10 +224,16 @@ class QaAccountsSeeder extends Seeder
         bool $isSuperAdmin = false,
         string $accessScope = 'own',
     ): User {
+        // Le numéro est DÉRIVÉ de l'adresse, donc stable d'un semis à l'autre : `ProfileComplete`
+        // exige un téléphone, et un compte QA sans numéro bloque son parcours dès la première
+        // étape — le harnais relèverait alors tout l'espace prestataire en échec.
+        $telephone = '+3247'.substr((string) sprintf('%07d', crc32($email) % 10000000), 0, 7);
+
         return User::updateOrCreate(
             ['email' => $email],
             [
                 'name' => $name,
+                'phone' => $telephone,
                 'password' => Hash::make(self::motDePasse()),
                 'platform_role' => $platformRole,
                 'role' => $role,

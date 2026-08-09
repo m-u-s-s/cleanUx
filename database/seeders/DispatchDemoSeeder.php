@@ -10,6 +10,7 @@ use App\Models\ServiceZone;
 use App\Models\Trade;
 use App\Models\TradeZonePricing;
 use App\Models\User;
+use Database\Seeders\Concerns\BoucleLeDossierPrestataire;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 
@@ -37,6 +38,8 @@ use Illuminate\Support\Facades\Hash;
  */
 class DispatchDemoSeeder extends Seeder
 {
+    use BoucleLeDossierPrestataire;
+
     /** Grand-Place de Bruxelles — l'adresse de démonstration. */
     private const LAT = 50.8467;
 
@@ -61,9 +64,9 @@ class DispatchDemoSeeder extends Seeder
         }
 
         $prestataires = [
-            ['email' => 'demo.proche@brio.test', 'name' => 'Démo — le plus proche', 'lat' => 50.8497, 'lng' => 4.3560],
-            ['email' => 'demo.moyen@brio.test', 'name' => 'Démo — à 1 km', 'lat' => 50.8560, 'lng' => 4.3600],
-            ['email' => 'demo.loin@brio.test', 'name' => 'Démo — à 3 km', 'lat' => 50.8730, 'lng' => 4.3700],
+            ['email' => 'demo.proche@brio.test', 'name' => 'Démo — le plus proche', 'phone' => '+32470000101', 'lat' => 50.8497, 'lng' => 4.3560],
+            ['email' => 'demo.moyen@brio.test', 'name' => 'Démo — à 1 km', 'phone' => '+32470000102', 'lat' => 50.8560, 'lng' => 4.3600],
+            ['email' => 'demo.loin@brio.test', 'name' => 'Démo — à 3 km', 'phone' => '+32470000103', 'lat' => 50.8730, 'lng' => 4.3700],
         ];
 
         foreach ($prestataires as $donnees) {
@@ -117,7 +120,7 @@ class DispatchDemoSeeder extends Seeder
         return Trade::find($ligne->trade_id);
     }
 
-    /** @param  array{email: string, name: string, lat: float, lng: float}  $donnees */
+    /** @param  array{email: string, name: string, phone: string, lat: float, lng: float}  $donnees */
     private function prestataireEnLigne(array $donnees, Trade $metier, ServiceZone $zone): void
     {
         $utilisateur = User::query()->updateOrCreate(
@@ -127,6 +130,9 @@ class DispatchDemoSeeder extends Seeder
                 'password' => Hash::make((string) config('brio.seed.password')),
                 'role' => User::ROLE_EMPLOYE,
                 'is_active' => true,
+                // `ProfileCompleteValidator` exige nom, email ET téléphone : sans numéro, la
+                // toute première étape du dossier refuse, et rien à l'écran ne dit laquelle.
+                'phone' => $donnees['phone'],
                 'primary_service_zone_id' => $zone->id,
                 'email_verified_at' => now(),
             ],
@@ -168,5 +174,7 @@ class DispatchDemoSeeder extends Seeder
             ['user_id' => $utilisateur->id, 'service_zone_id' => $zone->id],
             ['assignment_type' => 'primary', 'is_active' => true, 'status' => 'active', 'coverage_priority' => 100],
         );
+
+        $this->boucleLeDossier($utilisateur);
     }
 }

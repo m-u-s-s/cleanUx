@@ -2,6 +2,11 @@
 
 namespace Database\Seeders;
 
+use App\Models\EmployeeZoneAssignment;
+use App\Models\ServiceZone;
+use App\Models\Trade;
+use App\Models\User;
+use Database\Seeders\Concerns\BoucleLeDossierPrestataire;
 use Database\Seeders\Concerns\SeedsOnlyExistingColumns;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
@@ -11,6 +16,7 @@ use Illuminate\Support\Str;
 
 class DemoPlatformSeeder extends Seeder
 {
+    use BoucleLeDossierPrestataire;
     use SeedsOnlyExistingColumns;
 
     public function run(): void
@@ -46,8 +52,21 @@ class DemoPlatformSeeder extends Seeder
             'default_phone' => '+32471111222',
         ]);
 
+        $villes = ['bruxelles.team@brio.test' => 'Zone Bruxelles', 'gand.team@brio.test' => 'Zone Gand', 'anvers.team@brio.test' => 'Zone Anvers'];
+
         foreach ([$brusselsProvider, $gandProvider, $anversProvider] as $provider) {
             $this->seedProviderProfile($provider?->id);
+            $this->seedProviderCoverage($provider?->id, $villes[$provider?->email] ?? null);
+
+            /*
+             * LE DOSSIER D'INSCRIPTION, PAS SEULEMENT LE PROFIL. `verification_status = verified`
+             * satisfait le dispatch et RIEN D'AUTRE : sans vérification KYC ni parcours bouclé, ce
+             * prestataire reçoit bien les offres mais se heurte à « Vérification KYC non
+             * approuvée » dès qu'il ouvre son espace.
+             */
+            if ($utilisateur = User::find($provider?->id)) {
+                $this->boucleLeDossier($utilisateur);
+            }
         }
 
         $clientOrg = $this->seedOrganization('Atlas Facilities Belgium', 'client_company', [
@@ -249,6 +268,50 @@ class DemoPlatformSeeder extends Seeder
             'preferences' => ['seeded' => true],
             ...$extra,
         ]);
+    }
+
+    /**
+     * CE QUE LIT VRAIMENT LE DISPATCH — le pivot `trade_user` et `employee_zone_assignments`.
+     *
+     * `provider_profiles.skills` porte du texte libre (« nettoyage », « vitres », « bureaux ») qu'AUCUNE
+     * requête candidate ne consulte : ces trois prestataires étaient donc vérifiés, actifs, et
+     * candidats à rien. C'est la même erreur que le KYC, un cran plus bas — deux colonnes qui
+     * semblent dire la même chose, une seule qui décide.
+     */
+    protected function seedProviderCoverage(?int $userId, ?string $nomDeZone): void
+    {
+        if (! $userId || ! Schema::hasTable('trade_user')) {
+            return;
+        }
+
+        $utilisateur = User::find($userId);
+
+        if (! $utilisateur) {
+            return;
+        }
+
+        $metiers = Trade::query()
+            ->whereIn('slug', ['nettoyage', 'vitrerie'])
+            ->where('is_active', true)
+            ->pluck('id')
+            ->all();
+
+        foreach ($metiers as $rang => $metierId) {
+            $utilisateur->trades()->syncWithoutDetaching([$metierId => ['is_primary' => $rang === 0]]);
+        }
+
+        $zone = $nomDeZone ? ServiceZone::query()->where('name', $nomDeZone)->first() : null;
+
+        if (! $zone || ! Schema::hasTable('employee_zone_assignments')) {
+            return;
+        }
+
+        $utilisateur->forceFill(['primary_service_zone_id' => $zone->id])->save();
+
+        EmployeeZoneAssignment::query()->updateOrCreate(
+            ['user_id' => $utilisateur->id, 'service_zone_id' => $zone->id],
+            ['assignment_type' => 'primary', 'is_active' => true, 'status' => 'active', 'coverage_priority' => 100],
+        );
     }
 
     protected function seedProviderProfile(?int $userId): void
