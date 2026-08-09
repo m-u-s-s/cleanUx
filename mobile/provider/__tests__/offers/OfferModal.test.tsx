@@ -9,7 +9,8 @@
  *  - une offre reçue fait APPARAÎTRE la modale par-dessus l'espace terrain ;
  *  - « Accepter » appelle l'API puis navigue vers la mission ;
  *  - « Refuser » appelle l'API et ferme ;
- *  - une offre déjà expirée côté SERVEUR ne s'affiche pas — le compte à rebours ne ment pas.
+ *  - une offre déjà expirée côté SERVEUR ne s'affiche pas — le compte à rebours ne ment pas ;
+ *  - le décompte est un ANNEAU dont l'arc suit le temps restant, et il SONNE en arrivant.
  */
 import React from 'react';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react-native';
@@ -43,6 +44,17 @@ jest.mock('@react-native-community/netinfo', () => ({
 const mockNavigate = jest.fn();
 jest.mock('@react-navigation/native', () => ({
   useNavigation: () => ({ navigate: mockNavigate }),
+}));
+
+/*
+ * LE SON EST UN EFFET DE BORD OBSERVABLE, donc il se teste. `expo-audio` ouvre une ressource
+ * native absente sous Jest ; on ne bouchonne pas pour faire passer, on bouchonne pour POUVOIR
+ * VÉRIFIER qu'il est bien joué — une modale silencieuse expire sans que personne ne l'ait vue, et
+ * rien d'autre dans la suite ne pourrait le dire.
+ */
+const mockPlay = jest.fn();
+jest.mock('expo-audio', () => ({
+  createAudioPlayer: () => ({ play: mockPlay, remove: jest.fn(), seekTo: jest.fn() }),
 }));
 
 import { apiClient } from '@/api';
@@ -94,6 +106,7 @@ describe('OfferModal', () => {
   beforeEach(() => {
     mock.reset();
     mockNavigate.mockClear();
+    mockPlay.mockClear();
   });
 
   it('affiche le métier, la distance et la rémunération', () => {
@@ -109,6 +122,36 @@ describe('OfferModal', () => {
     monter(offre({ expires_at: new Date(Date.now() + 10_000).toISOString() }));
 
     expect(screen.getByTestId('offer-countdown')).toHaveTextContent('10 s pour répondre');
+  });
+
+  /**
+   * L'ANNEAU, PAS UNE BARRE. Le prestataire regarde cet écran une demi-seconde, souvent en
+   * conduisant : une forme qui se vide se lit sans être lue. L'arc doit SUIVRE le temps restant —
+   * un anneau figé serait un décor, et c'est exactement ce qu'une régression produirait sans que
+   * rien d'autre ne le signale.
+   */
+  it('dessine un anneau dont l’arc suit le temps restant', () => {
+    const { unmount } = monter(offre({ expires_at: new Date(Date.now() + 15_000).toISOString() }));
+
+    expect(screen.getByTestId('offer-countdown-ring')).toBeTruthy();
+    const auxTroisQuarts = screen.getByTestId('offer-countdown-arc').props.strokeDashoffset;
+    unmount();
+
+    monter(offre({ expires_at: new Date(Date.now() + 5_000).toISOString() }));
+    const presqueVide = screen.getByTestId('offer-countdown-arc').props.strokeDashoffset;
+
+    // `strokeDashoffset` est la portion VIDE de l'anneau : elle grandit à mesure que le temps
+    // s'écoule. Deux instants intermédiaires, jamais zéro — react-native-svg normalise un décalage
+    // nul en `null`, et le test comparerait alors une valeur absente.
+    expect(presqueVide).toBeGreaterThan(auxTroisQuarts);
+  });
+
+  it('sonne à l’arrivée de l’offre', () => {
+    monter(offre());
+
+    // Au premier plan, l'offre arrive par le canal temps réel ou par sondage : aucune notification
+    // système ne sonne pour elle, et la vibration seule ne s'entend pas dans une sacoche.
+    expect(mockPlay).toHaveBeenCalled();
   });
 
   it('presser Accepter appelle l’endpoint et navigue vers la mission', async () => {

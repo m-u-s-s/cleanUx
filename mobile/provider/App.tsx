@@ -11,7 +11,7 @@
 import { setAppAudience } from '@/api';
 setAppAudience('provider');
 
-import { setupForegroundNotifications, useNotificationRouting } from '@/push';
+import { setupForegroundNotifications, useNotificationRouting, useRegisterPushToken } from '@/push';
 setupForegroundNotifications();
 import React, { useState, useEffect } from 'react';
 import { View } from 'react-native';
@@ -58,6 +58,16 @@ function NavigationEffects(): null {
 }
 
 function AppInner() {
+  /*
+   * SANS CET APPEL, AUCUNE OFFRE NE FAIT VIBRER LE TÉLÉPHONE.
+   *
+   * Le serveur n'envoie une notification qu'aux appareils enregistrés. L'application cliente
+   * montait ce hook depuis le début ; l'application prestataire, non — celle qui en a le plus
+   * besoin, puisque c'est elle qui reçoit les courses à vingt secondes d'échéance. Le relevé de
+   * poste ne pouvait pas le dire : le canal de repli par sondage cachait le trou en développement,
+   * et sur un téléphone verrouillé il n'y a pas de sondage.
+   */
+  useRegisterPushToken();
   useOfflineSync();
   const themeNavigation = useThemeDeNavigation();
   const [showWalkthrough, setShowWalkthrough] = useState<boolean | null>(null);

@@ -46,6 +46,13 @@ interface RegisterInput {
    */
   tradeId?: number;
   tradeAnswers?: Record<string, string | boolean>;
+  /**
+   * OÙ le prestataire intervient. `tradeId` seul dit ce qu'il fait, jamais où — et le dispatch
+   * planifié, qui travaille sur les zones DÉCLARÉES et non sur la position du jour, ne trouvait
+   * alors ce prestataire dans aucune zone. Il terminait son inscription et ne recevait jamais un
+   * seul rendez-vous.
+   */
+  zoneIds?: number[];
 }
 interface RegisterResult { token: string; user: User; }
 
@@ -64,6 +71,7 @@ export function useRegister() {
         vat_number: input.vatNumber,
         trade_id: input.tradeId,
         trade_answers: input.tradeAnswers,
+        zone_ids: input.zoneIds,
         device_name: input.deviceName ?? 'brio-mobile',
       }, input.captchaToken ? { headers: { 'X-Turnstile-Token': input.captchaToken } } : undefined);
       await secureStore.setToken(res.data.token);

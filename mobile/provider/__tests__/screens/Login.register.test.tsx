@@ -138,6 +138,7 @@ import { LoginScreen } from '@/screens/LoginScreen';
 
 const apiMock = new MockAdapter(apiClient);
 const TRADE_ID = 3;
+const ZONE_ID = 4;
 const PHONE_NATIONAL = '0470123456';
 const PHONE_E164 = '+32470123456';
 
@@ -199,6 +200,19 @@ async function chooseTrade() {
   fireEvent.press(screen.getByLabelText('Continuer'));
 }
 
+/**
+ * OÙ le prestataire intervient — l'étape qui manquait.
+ *
+ * L'inscription native ne demandait que le métier : `employee_zone_assignments` restait vide, et
+ * le dispatch planifié, qui travaille sur les zones DÉCLARÉES, ne trouvait ce prestataire dans
+ * aucune zone. Il passait la vérification et ne recevait jamais un seul rendez-vous.
+ */
+async function chooseZone() {
+  await waitFor(() => screen.getByTestId(`register-zone-${ZONE_ID}`));
+  fireEvent.press(screen.getByTestId(`register-zone-${ZONE_ID}`));
+  fireEvent.press(screen.getByLabelText('Continuer'));
+}
+
 async function acceptAndSubmit() {
   await waitFor(() => screen.getByTestId('register-accept-terms'));
   fireEvent.press(screen.getByTestId('register-accept-terms'));
@@ -211,6 +225,7 @@ async function completeIndependentJourney() {
   await fillIdentity();
   await chooseKind('independent');
   await chooseTrade();
+  await chooseZone();
   await acceptAndSubmit();
 }
 
@@ -224,9 +239,34 @@ beforeEach(() => {
     ok: true,
     phone_verification_token: 'jeton-telephone-test',
   });
-  // Référentiel métiers : endpoints PUBLICS, appelés avant que le compte n'existe. Un métier sans
-  // question réglementaire, pour garder ces tests sur leur sujet.
-  apiMock.onGet('/trades').reply(200, { data: [{ id: TRADE_ID, name: 'Jardinage', slug: 'jardinage' }] });
+  /*
+   * LE CATALOGUE, pas la table `trades`. L'écran lit `/catalog/registration-options`, qui ne rend
+   * que les métiers réellement VENDUS quelque part : la liste brute des métiers actifs laissait
+   * s'inscrire sur un métier que personne ne peut commander. Un métier sans question réglementaire
+   * suffit ici, pour garder ces tests sur leur sujet.
+   */
+  apiMock.onGet(new RegExp('/catalog/registration-options')).reply(200, {
+    ok: true,
+    data: {
+      sectors: [
+        {
+          id: 1,
+          name: 'Extérieur',
+          slug: 'exterieur',
+          trades: [
+            {
+              id: TRADE_ID,
+              name: 'Jardinage',
+              slug: 'jardinage',
+              zone_ids: [ZONE_ID],
+              allows_asap: true,
+            },
+          ],
+        },
+      ],
+      zones: [{ id: ZONE_ID, name: 'Bruxelles', slug: 'bruxelles', code: 'BXL' }],
+    },
+  });
   apiMock.onGet(`/trades/${TRADE_ID}/provider-fields`).reply(200, { fields: [] });
   apiMock.onPost('/auth/register').reply(201, {
     token: 'tok_123',
@@ -346,12 +386,64 @@ describe("Inscription depuis l'app prestataire", () => {
     expect(screen.queryByLabelText('Raison sociale')).toBeNull();
 
     await chooseTrade();
+    await chooseZone();
     await acceptAndSubmit();
 
     await waitFor(() => expect(registerCalls()).toHaveLength(1));
     const body = JSON.parse(registerCalls()[0]!.data);
     expect(body.provider_kind).toBe('independent');
     expect(body.company_name).toBeUndefined();
+  });
+
+  /**
+   * LE MÊME CATALOGUE QUE LE WEB — pressé, pas lu dans le source.
+   *
+   * L'écran interrogeait `GET /api/trades`, c'est-à-dire la table telle quelle : tous les métiers
+   * actifs, y compris ceux qu'aucune zone n'ouvre. Le formulaire web, lui, lisait déjà
+   * `registration-options`. Deux listes construites séparément : un métier ouvert par
+   * l'administration apparaissait d'un côté et pas de l'autre, et personne ne savait lequel disait
+   * vrai. Ce test échoue si l'écran revient à l'ancienne source, parce que la seule route bouchonnée
+   * est celle du catalogue.
+   */
+  it('propose les métiers du catalogue, pas la table des métiers', async () => {
+    renderScreen();
+    await openRegisterAndVerifyPhone();
+    await fillIdentity();
+    await chooseKind('independent');
+
+    await waitFor(() => screen.getByTestId(`register-trade-${TRADE_ID}`));
+    expect(screen.getByText('Jardinage')).toBeTruthy();
+  });
+
+  /**
+   * SANS ZONE, AUCUNE MISSION — et c'est le dispatch planifié qui le prouve : il travaille sur les
+   * zones DÉCLARÉES (`employee_zone_assignments`), pas sur la position du jour. Un inscrit natif
+   * n'en avait aucune : il passait la vérification et n'était candidat nulle part.
+   */
+  it('transmet les zones déclarées au serveur', async () => {
+    renderScreen();
+    await completeIndependentJourney();
+
+    await waitFor(() => expect(registerCalls()).toHaveLength(1));
+    const body = JSON.parse(registerCalls()[0]!.data);
+    expect(body.zone_ids).toEqual([ZONE_ID]);
+  });
+
+  it("refuse de continuer tant qu'aucune zone n'est cochée", async () => {
+    renderScreen();
+    await openRegisterAndVerifyPhone();
+    await fillIdentity();
+    await chooseKind('independent');
+    await chooseTrade();
+
+    // On arrive sur les zones et on pousse « Continuer » sans rien cocher.
+    await waitFor(() => screen.getByTestId(`register-zone-${ZONE_ID}`));
+    fireEvent.press(screen.getByLabelText('Continuer'));
+
+    await waitFor(() => expect(screen.getByTestId('register-step-error')).toBeTruthy());
+    // Toujours sur l'étape zones : le parcours n'a pas avancé.
+    expect(screen.getByTestId(`register-zone-${ZONE_ID}`)).toBeTruthy();
+    expect(registerCalls()).toHaveLength(0);
   });
 
   it("transmet la raison sociale et le numéro d'entreprise quand on choisit société", async () => {
@@ -366,6 +458,7 @@ describe("Inscription depuis l'app prestataire", () => {
     fireEvent.press(screen.getByLabelText('Continuer'));
 
     await chooseTrade();
+    await chooseZone();
     await acceptAndSubmit();
 
     await waitFor(() => expect(registerCalls()).toHaveLength(1));
@@ -423,6 +516,7 @@ describe("Inscription depuis l'app prestataire", () => {
     await fillIdentity();
     await chooseKind('independent');
     await chooseTrade();
+    await chooseZone();
 
     await waitFor(() => screen.getByLabelText("Années d'expérience *"));
     fireEvent.changeText(screen.getByLabelText("Années d'expérience *"), '7');
@@ -457,6 +551,7 @@ describe("Inscription depuis l'app prestataire", () => {
     await fillIdentity();
     await chooseKind('independent');
     await chooseTrade();
+    await chooseZone();
 
     await waitFor(() => screen.getByTestId('register-accept-terms'));
     fireEvent.press(screen.getByLabelText('Créer mon compte'));

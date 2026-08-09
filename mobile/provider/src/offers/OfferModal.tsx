@@ -8,6 +8,8 @@ import { useThemeColors } from '@/theme/useThemeColors';
 import type { ThemeTokens } from '@/theme/useThemeColors';
 import type { RootStackParamList } from '@/navigation/types';
 import { useAcceptOffer, useDeclineOffer, useServerCountdown } from './hooks';
+import { jouerCarillonDOffre } from './sound';
+import { AnneauDeDecompte } from './CountdownRing';
 import type { MissionOffer } from './types';
 
 interface Props {
@@ -41,14 +43,23 @@ export function OfferModal({ offer, onDismiss }: Props) {
   const secondsLeft = useServerCountdown(offer.expires_at);
   const closedRef = useRef(false);
 
-  // La vibration remplace le regard : le téléphone est dans une poche, sur un tableau de bord, ou
-  // à côté d'une perceuse. Une modale silencieuse expire sans que personne ne l'ait vue.
+  /*
+   * SON ET VIBRATION, ENSEMBLE — le téléphone est dans une poche, sur un tableau de bord, ou à côté
+   * d'une perceuse. Chacun couvre l'angle mort de l'autre : le vibreur ne s'entend pas dans une
+   * sacoche, le son ne se sent pas en mode silencieux.
+   *
+   * Quand l'offre arrive par NOTIFICATION, le système a déjà sonné. Mais au premier plan elle
+   * arrive par le canal temps réel ou par sondage, sans notification et donc sans aucun son : c'est
+   * le cas où le prestataire a l'application ouverte, et le plus susceptible d'accepter.
+   */
   useEffect(() => {
     try {
       Vibration.vibrate([0, 400, 200, 400]);
     } catch {
       // Un appareil sans vibreur ne doit pas empêcher l'offre de s'afficher.
     }
+
+    jouerCarillonDOffre();
   }, [offer.assignment_id]);
 
   useEffect(() => {
@@ -92,12 +103,12 @@ export function OfferModal({ offer, onDismiss }: Props) {
     >
       <View style={styles.backdrop}>
         <View style={styles.card}>
-          <View style={styles.timerTrack}>
-            <View style={[styles.timerBar, { width: `${ratio * 100}%` }]} testID="offer-timer-bar" />
+          <View style={styles.timerRow}>
+            <AnneauDeDecompte ratio={ratio} secondes={secondsLeft} />
+            <Text style={styles.timerText} testID="offer-countdown">
+              {secondsLeft} s pour répondre
+            </Text>
           </View>
-          <Text style={styles.timerText} testID="offer-countdown">
-            {secondsLeft} s pour répondre
-          </Text>
 
           <Text style={styles.heading}>Nouvelle mission</Text>
           <Text style={styles.trade} testID="offer-trade">
@@ -178,19 +189,16 @@ const stylesFor = (t: ThemeTokens) =>
       borderColor: t.border,
       padding: spacing.lg,
     },
-    timerTrack: {
-      height: 6,
-      backgroundColor: t.border,
-      borderRadius: radius.pill,
-      overflow: 'hidden',
-      marginBottom: spacing.xs,
+    timerRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: spacing.sm,
+      marginBottom: spacing.md,
     },
-    timerBar: { height: '100%', backgroundColor: colors.warning[500], borderRadius: radius.pill },
     timerText: {
       fontSize: typography.fontSize.xs,
       color: t.textSecondary,
-      textAlign: 'right',
-      marginBottom: spacing.md,
+      flex: 1,
     },
     heading: {
       fontSize: typography.fontSize.sm,

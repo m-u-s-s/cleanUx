@@ -20,6 +20,7 @@ module.exports = function (api) {
             '@/theme': '../shared/src/theme',
             '@/onboarding': '../shared/src/onboarding',
             '@/trades': '../shared/src/trades',
+            '@/catalog': '../shared/src/catalog',
             '@/ui': '../shared/src/ui',
             '@/ErrorBoundary': '../shared/src/ErrorBoundary',
             // Déclarés dans tsconfig.json mais absents ici : le typage passait, l'import

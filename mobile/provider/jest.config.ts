@@ -67,6 +67,7 @@ const config: Config = {
     // capterait sinon et les ferait pointer vers src/ — où elles n'existent pas.
     '^@/onboarding(.*)$': '<rootDir>/../shared/src/onboarding$1',
     '^@/trades(.*)$': '<rootDir>/../shared/src/trades$1',
+    '^@/catalog(.*)$': '<rootDir>/../shared/src/catalog$1',
     '^@/modules(.*)$': '<rootDir>/../shared/src/modules$1',
     '^@/parity(.*)$': '<rootDir>/../shared/src/parity$1',
     '^@/webview(.*)$': '<rootDir>/../shared/src/webview$1',

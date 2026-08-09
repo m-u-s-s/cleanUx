@@ -25,6 +25,7 @@ export interface RegisterDraft {
   companyName: string;
   vatNumber: string;
   tradeId: number | null;
+  zoneIds: number[];
   tradeAnswers: Record<string, string | boolean>;
   acceptTerms: boolean;
 }
@@ -39,6 +40,7 @@ export const emptyDraft: RegisterDraft = {
   companyName: '',
   vatNumber: '',
   tradeId: null,
+  zoneIds: [],
   tradeAnswers: {},
   acceptTerms: false,
 };

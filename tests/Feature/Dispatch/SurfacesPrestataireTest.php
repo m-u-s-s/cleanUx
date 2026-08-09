@@ -134,6 +134,45 @@ class SurfacesPrestataireTest extends TestCase
         $this->assertNotNull($charge['ttl_seconds']);
     }
 
+    /**
+     * L'OFFRE VIVANTE EST AUSSI DANS LA BOÎTE DE RÉCEPTION.
+     *
+     * La modale est le canal principal, mais elle peut ne jamais s'afficher : application fermée à
+     * l'arrivée, notification refusée, temps réel injoignable. Sans cette redondance, l'offre
+     * n'existe alors NULLE PART pour le prestataire, et le seul témoin de son existence est le
+     * compteur de silences côté exploitation.
+     *
+     * La liste est la SOURCE DE VÉRITÉ par sondage : elle ne montre que ce qui est encore ouvert,
+     * donc une offre expirée en disparaît d'elle-même sans qu'aucun écran n'ait à la retirer.
+     */
+    #[Test]
+    public function l_offre_immediate_apparait_dans_la_boite_de_reception(): void
+    {
+        $prestataire = $this->prestataire();
+        $offre = $this->offrePour($prestataire);
+
+        $reponse = $this->actingAs($prestataire, 'sanctum')
+            ->getJson('/api/provider/assignments/inbox')
+            ->assertOk();
+
+        $this->assertSame([$offre->id], array_column($reponse->json('data'), 'id'));
+    }
+
+    #[Test]
+    public function une_offre_expiree_disparait_de_la_boite_de_reception(): void
+    {
+        $prestataire = $this->prestataire();
+        $offre = $this->offrePour($prestataire);
+
+        // Le serveur a escaladé : la modale s'est fermée seule, la liste doit suivre.
+        $offre->forceFill(['expires_at' => now()->subSecond()])->save();
+
+        $this->actingAs($prestataire, 'sanctum')
+            ->getJson('/api/provider/assignments/inbox')
+            ->assertOk()
+            ->assertJsonCount(0, 'data');
+    }
+
     #[Test]
     public function l_adresse_exacte_n_est_pas_livree_avant_l_acceptation(): void
     {

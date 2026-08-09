@@ -24,7 +24,8 @@ import { TextInput, Icon, useReducedMotion } from '@/ui';
 import { CANVAS } from '@/ui/authShell';
 
 export { CANVAS, authErrorMessage, AnimatedHalo, Wordmark, Stagger, FormError } from '@/ui/authShell';
-import { useTrades, type ProviderField } from '@/trades';
+import { type ProviderField } from '@/trades';
+import { useRegistrationOptions, zonesPourMetier, flattenTrades } from '@/catalog';
 import { ApiError } from '@/api';
 import { colors, radius, shadows, spacing, typography } from '@/theme';
 import { useThemeColors } from '@/theme/useThemeColors';
@@ -95,8 +96,14 @@ export function KindChoice({
 }
 
 /**
- * Choix du métier exercé. Le référentiel vient du serveur (GET /api/trades, public) plutôt que
- * d'une liste figée dans l'app : ajouter un métier ne doit pas demander de publier une version.
+ * Choix du métier exercé — parmi ceux que la plateforme VEND RÉELLEMENT.
+ *
+ * La liste venait de `GET /api/trades`, c'est-à-dire de la table `trades` telle quelle : tous les
+ * métiers actifs, y compris ceux qu'aucune zone n'ouvre. Un carreleur pouvait donc s'inscrire sur
+ * un métier que personne ne peut commander, attendre des missions qui ne viendraient jamais, et
+ * conclure que la plateforme est vide. Le formulaire web, lui, lisait déjà
+ * `/api/catalog/registration-options` : les deux écrans proposaient des listes différentes et rien
+ * ne disait laquelle faisait foi.
  */
 export function TradePicker({
   value,
@@ -107,13 +114,14 @@ export function TradePicker({
 }) {
   const styles = stylesFor(useThemeColors());
 
-  const { data: trades, isLoading, isError } = useTrades();
+  const { data: options, isLoading, isError } = useRegistrationOptions();
+  const trades = flattenTrades(options);
 
   if (isLoading) {
     return <Text style={styles.kindPrompt}>Chargement des métiers…</Text>;
   }
 
-  if (isError || !trades?.length) {
+  if (isError || trades.length === 0) {
     return <Text style={styles.fieldError}>Impossible de charger la liste des métiers.</Text>;
   }
 
@@ -134,6 +142,68 @@ export function TradePicker({
           >
             <Text style={[styles.tradeChipText, selected && styles.tradeChipTextSelected]}>
               {trade.name}
+            </Text>
+          </TouchableOpacity>
+        );
+      })}
+    </View>
+  );
+}
+
+/**
+ * OÙ LE PRESTATAIRE INTERVIENT — la moitié de la couverture qui manquait.
+ *
+ * L'inscription native ne demandait QUE le métier. `trade_user` était donc rempli et
+ * `employee_zone_assignments` restait vide : pour le dispatch planifié, qui travaille sur les zones
+ * DÉCLARÉES et non sur la position du jour, ce prestataire n'existait dans aucune zone. Il
+ * terminait son inscription, passait la vérification, et ne recevait jamais un seul rendez-vous —
+ * sans qu'aucun écran ne puisse lui dire pourquoi.
+ *
+ * LES ZONES SONT RESTREINTES AU MÉTIER CHOISI. Proposer une zone où ce métier n'est pas vendu
+ * enregistrerait une couverture qui ne peut rien produire, et le prestataire l'aurait pourtant vue
+ * cochée à l'écran.
+ */
+export function ZonePicker({
+  tradeId,
+  value,
+  onChange,
+}: {
+  tradeId: number | null;
+  value: number[];
+  onChange: (ids: number[]) => void;
+}) {
+  const styles = stylesFor(useThemeColors());
+
+  const { data: options, isLoading, isError } = useRegistrationOptions();
+  const zones = zonesPourMetier(options, tradeId);
+
+  if (isLoading) {
+    return <Text style={styles.kindPrompt}>Chargement des zones…</Text>;
+  }
+
+  if (isError || zones.length === 0) {
+    return <Text style={styles.fieldError}>Impossible de charger la liste des zones.</Text>;
+  }
+
+  return (
+    <View style={styles.tradeGrid} accessibilityRole="radiogroup">
+      {zones.map(zone => {
+        const selected = value.includes(zone.id);
+
+        return (
+          <TouchableOpacity
+            key={zone.id}
+            style={[styles.tradeChip, selected && styles.tradeChipSelected]}
+            onPress={() =>
+              onChange(selected ? value.filter(id => id !== zone.id) : [...value, zone.id])
+            }
+            accessibilityRole="checkbox"
+            accessibilityState={{ checked: selected }}
+            accessibilityLabel={zone.name}
+            testID={`register-zone-${zone.id}`}
+          >
+            <Text style={[styles.tradeChipText, selected && styles.tradeChipTextSelected]}>
+              {zone.name}
             </Text>
           </TouchableOpacity>
         );

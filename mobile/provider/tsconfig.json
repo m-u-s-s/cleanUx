@@ -39,6 +39,7 @@
       "@/parity/*": ["../shared/src/parity/*"],
       "@/onboarding": ["../shared/src/onboarding"],
       "@/trades": ["../shared/src/trades"],
+      "@/catalog": ["../shared/src/catalog"],
       "@/finance": ["../shared/src/finance"],
       "@/finance/*": ["../shared/src/finance/*"],
       "@brio/shared": ["../shared/src"],

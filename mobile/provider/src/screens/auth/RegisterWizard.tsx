@@ -25,6 +25,7 @@ import {
   FormError,
   KindChoice,
   TradePicker,
+  ZonePicker,
   TradeQuestions,
   stylesFor as kitStylesFor,
 } from './kit';
@@ -57,6 +58,7 @@ type StepId =
   | 'kind'
   | 'company'
   | 'trade'
+  | 'zones'
   | 'tradeQuestions'
   | 'terms';
 
@@ -144,6 +146,8 @@ export function RegisterWizard() {
 
     if (draft.providerKind === 'company') list.push('company');
     list.push('trade');
+    // Les zones ne sont demandées qu'une fois le métier choisi : la liste proposée en dépend.
+    if (draft.tradeId) list.push('zones');
     if (draft.tradeId && (tradeFields?.length ?? 0) > 0) list.push('tradeQuestions');
     list.push('terms');
 
@@ -198,6 +202,10 @@ export function RegisterWizard() {
         return null;
       case 'trade':
         return draft.tradeId ? null : 'Choisissez votre métier.';
+      case 'zones':
+        return draft.zoneIds.length > 0
+          ? null
+          : 'Choisissez au moins une zone : sans zone, aucune mission ne peut vous être proposée.';
       case 'tradeQuestions': {
         const missing = (tradeFields ?? []).find(field => {
           if (!field.required || field.type === 'boolean') return false;
@@ -301,6 +309,7 @@ export function RegisterWizard() {
         vatNumber:
           draft.providerKind === 'company' && draft.vatNumber ? draft.vatNumber : undefined,
         tradeId: draft.tradeId ?? undefined,
+        zoneIds: draft.zoneIds.length ? draft.zoneIds : undefined,
         tradeAnswers: Object.keys(draft.tradeAnswers).length ? draft.tradeAnswers : undefined,
         captchaToken,
       });
@@ -604,7 +613,29 @@ export function RegisterWizard() {
             title="Quel métier exercez-vous ?"
             hint="Sans métier déclaré, aucune mission ne peut vous être proposée."
           >
-            <TradePicker value={draft.tradeId} onChange={id => patch({ tradeId: id })} />
+            <TradePicker
+              value={draft.tradeId}
+              onChange={id =>
+                // Changer de métier peut invalider les zones déjà cochées : elles ne sont pas
+                // forcément ouvertes pour le nouveau métier, et les garder ferait enregistrer une
+                // couverture que le dispatch ignorerait.
+                patch({ tradeId: id, zoneIds: id === draft.tradeId ? draft.zoneIds : [] })
+              }
+            />
+          </Question>
+        );
+
+      case 'zones':
+        return (
+          <Question
+            title="Où intervenez-vous ?"
+            hint="Vous ne recevrez que des missions situées dans les zones cochées."
+          >
+            <ZonePicker
+              tradeId={draft.tradeId}
+              value={draft.zoneIds}
+              onChange={ids => patch({ zoneIds: ids })}
+            />
           </Question>
         );
 
