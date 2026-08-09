@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\AnalyticsController;
 use App\Http\Controllers\Api\ApiNotificationController;
+use App\Http\Controllers\Api\ModulesController;
 use App\Http\Controllers\Api\ProfileController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -33,7 +34,7 @@ Route::middleware('auth:sanctum')->group(function () {
      * Le catalogue des modules du rôle. Le contexte se déduit du jeton, il n'est pas un paramètre :
      * voir `ModulesController`.
      */
-    Route::get('/modules', [App\Http\Controllers\Api\ModulesController::class, 'index'])
+    Route::get('/modules', [ModulesController::class, 'index'])
         ->name('api.modules.index');
 
     // Profile

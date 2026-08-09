@@ -12,6 +12,7 @@ use App\Livewire\ClientCompany\MultiSiteRequest;
 use App\Livewire\ClientCompany\SigningAppointments;
 use App\Livewire\ClientCompany\SiteManager;
 use App\Livewire\ClientCompany\SiteMissionPhotos;
+use App\Livewire\ProviderCompany\Agencies;
 use App\Livewire\ProviderCompany\DispatchCenter;
 use App\Livewire\ProviderCompany\FieldTeams;
 use App\Livewire\ProviderCompany\ProviderDashboard;
@@ -20,6 +21,7 @@ use App\Livewire\ProviderCompany\SiteOperations;
 use App\Livewire\ProviderCompany\TaskBoard;
 use App\Livewire\ProviderCompany\TeamChannels;
 use App\Livewire\ProviderCompany\TeamManagement;
+use App\Livewire\Shared\ModulesDirectory;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -36,7 +38,7 @@ Route::middleware(['auth', 'verified', 'active.account', 'org.type:client'])
 
         // Le répertoire des modules — voir `config/modules.php`. La garde d'organisation
         // (`org.type:client`) reste celle du groupe.
-        Route::get('/modules', \App\Livewire\Shared\ModulesDirectory::class)
+        Route::get('/modules', ModulesDirectory::class)
             ->defaults('contexte', 'client-company')
             ->name('modules');
 
@@ -81,7 +83,7 @@ Route::middleware(['auth', 'verified', 'active.account', 'org.type:provider'])
 
         // Le répertoire des modules — voir `config/modules.php`. La garde d'organisation
         // (`org.type:provider`) reste celle du groupe.
-        Route::get('/modules', \App\Livewire\Shared\ModulesDirectory::class)
+        Route::get('/modules', ModulesDirectory::class)
             ->defaults('contexte', 'provider-company')
             ->name('modules');
 
@@ -96,6 +98,12 @@ Route::middleware(['auth', 'verified', 'active.account', 'org.type:provider'])
          */
         Route::get('/roles-permissions', RolePermissionsMatrix::class)->name('role-permissions');
         Route::get('/equipes-terrain', FieldTeams::class)->name('field-teams');
+        /*
+         * Les IMPLANTATIONS de la société — ses dépôts, ses antennes. L'API et l'écran natif
+         * existaient depuis le lot société ; le web, non. Une société qui pilote depuis un
+         * ordinateur ne pouvait pas déclarer d'où partent ses équipes.
+         */
+        Route::get('/implantations', Agencies::class)->name('agencies');
         // Les sites clients desservis, et le référent que la société y place.
         Route::get('/sites', SiteOperations::class)->name('sites');
     });

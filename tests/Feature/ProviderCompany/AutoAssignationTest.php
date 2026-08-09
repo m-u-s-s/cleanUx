@@ -16,6 +16,8 @@ use App\Models\User;
 use App\Services\Missions\InternalAutoAssignmentEngine;
 use App\Services\Missions\InternalDispatchRunner;
 use App\Services\Missions\WorkerAvailabilityService;
+use App\Services\Organizations\OrganizationNotifier;
+use Illuminate\Contracts\Queue\ShouldBeUnique;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Queue;
 use Tests\TestCase;
@@ -383,7 +385,7 @@ class AutoAssignationTest extends TestCase
 
         (new AutoAssignerMissionsJob($this->org->id))->handle(
             app(InternalDispatchRunner::class),
-            app(\App\Services\Organizations\OrganizationNotifier::class),
+            app(OrganizationNotifier::class),
         );
 
         $this->assertNotNull($aVenir->fresh()->lead_provider_user_id);
@@ -398,7 +400,7 @@ class AutoAssignationTest extends TestCase
         // concurrents choisiraient les mêmes personnes pour les mêmes missions.
         $job = new AutoAssignerMissionsJob($this->org->id);
 
-        $this->assertInstanceOf(\Illuminate\Contracts\Queue\ShouldBeUnique::class, $job);
+        $this->assertInstanceOf(ShouldBeUnique::class, $job);
         $this->assertSame((string) $this->org->id, $job->uniqueId());
     }
 

@@ -18,6 +18,20 @@
                 <option value="completed">Complétée</option>
                 <option value="cancelled">Annulée</option>
             </select>
+            {{--
+                Le filtre d'implantation n'apparaît QUE si la société en a déclaré. La très grande
+                majorité n'a qu'un point de départ : leur montrer un sélecteur à une seule valeur
+                laisserait croire qu'il manque un réglage.
+            --}}
+            @if ($agences->isNotEmpty())
+            <select wire:model.live="filterAgencyId" data-test="dispatch-agency-filter"
+                class="rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-700 outline-none focus:border-sky-500">
+                <option value="">Toutes les implantations</option>
+                @foreach ($agences as $agence)
+                <option value="{{ $agence->id }}">{{ $agence->name }}</option>
+                @endforeach
+            </select>
+            @endif
         </div>
     </div>
 

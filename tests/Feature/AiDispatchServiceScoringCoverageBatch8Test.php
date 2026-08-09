@@ -5,8 +5,10 @@ namespace Tests\Feature;
 use App\Enums\ProviderType;
 use App\Models\Booking;
 use App\Models\EmployeeZoneAssignment;
+use App\Models\ProviderPresence;
 use App\Models\ProviderProfile;
 use App\Models\ServiceZone;
+use App\Models\Trade;
 use App\Models\User;
 use App\Services\Dispatch\AiDispatchService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -24,9 +26,9 @@ class AiDispatchServiceScoringCoverageBatch8Test extends TestCase
      * Une réservation sans métier résolvable ne rend AUCUN candidat, au lieu de les rendre tous :
      * c'est l'invariant « jamais un peintre en babysitting », et il vit dans le SQL.
      */
-    protected function trade(): \App\Models\Trade
+    protected function trade(): Trade
     {
-        return \App\Models\Trade::firstOrCreate(
+        return Trade::firstOrCreate(
             ['slug' => 'ai-dispatch-fixture-trade'],
             ['code' => 'AIDF', 'name' => 'Nettoyage', 'is_active' => true, 'sort_order' => 1],
         );
@@ -51,7 +53,7 @@ class AiDispatchServiceScoringCoverageBatch8Test extends TestCase
 
         // EN LIGNE AU SENS DE PRESENCE V2 : le miroir binaire reste vrai quand l'application est
         // morte depuis vingt minutes, il ne décide donc plus rien.
-        \App\Models\ProviderPresence::updateOrCreate(
+        ProviderPresence::updateOrCreate(
             ['provider_user_id' => $user->id],
             ['status' => $online ? 'online' : 'offline', 'heartbeat_at' => now()],
         );

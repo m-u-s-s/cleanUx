@@ -3,12 +3,12 @@
 namespace App\Http\Controllers\Api\Provider;
 
 use App\Enums\OrganizationRole;
-use App\Http\Controllers\Controller;
-use App\Jobs\Missions\AutoAssignerMissionsJob;
 use App\Events\CallStarted;
+use App\Http\Controllers\Controller;
 use App\Jobs\Calls\CloreLAppelNonRepondu;
-use App\Models\Channel;
+use App\Jobs\Missions\AutoAssignerMissionsJob;
 use App\Models\Call;
+use App\Models\Channel;
 use App\Models\FieldTeam;
 use App\Models\FieldTeamMember;
 use App\Models\Message;
@@ -18,17 +18,17 @@ use App\Models\OrganizationContract;
 use App\Models\OrganizationMember;
 use App\Models\OrganizationRolePermission;
 use App\Models\OrganizationSite;
-use App\Models\ProviderSiteAssignment;
 use App\Models\ProviderAgency;
+use App\Models\ProviderSiteAssignment;
 use App\Models\ProviderSiteTeam;
 use App\Models\Task;
 use App\Models\User;
-use App\Services\Messaging\ChannelManagementService;
 use App\Services\Calls\CallService;
+use App\Services\Client\Calendar\BookingRescheduleService;
+use App\Services\Messaging\ChannelManagementService;
 use App\Services\Messaging\MessageService;
 use App\Services\Missions\MissionAssignmentService;
 use App\Services\Missions\ReassignmentPolicy;
-use App\Services\Client\Calendar\BookingRescheduleService;
 use App\Services\Missions\WorkerAvailabilityService;
 use App\Services\Organizations\OrganizationMemberAdministration;
 use App\Services\Organizations\OrganizationNotifier;
@@ -38,10 +38,10 @@ use App\Services\Tasks\TaskVisibilityService;
 use App\Support\Organizations\ResolvesActiveOrganization;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
-use Illuminate\Support\Carbon;
 
 /**
  * L'API DE L'ESPACE SOCIÉTÉ PRESTATAIRE.

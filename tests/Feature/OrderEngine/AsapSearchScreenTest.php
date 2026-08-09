@@ -2,16 +2,19 @@
 
 namespace Tests\Feature\OrderEngine;
 
+use App\Enums\ProviderType;
 use App\Livewire\OrderEngine\AsapSearch;
 use App\Livewire\OrderEngine\OrderConfirmation;
 use App\Models\AsapDispatchRequest;
 use App\Models\Booking;
 use App\Models\Mission;
+use App\Models\MissionAssignment;
 use App\Models\OrderDraft;
+use App\Models\ProviderPresence;
 use App\Models\ProviderProfile;
 use App\Models\Trade;
 use App\Models\User;
-use App\Services\OrderEngine\AsapDispatchService;
+use App\Services\Dispatch\MissionDispatchService;
 use App\Services\OrderEngine\OrderConfirmationService;
 use App\Services\OrderEngine\OrderDraftManager;
 use App\Support\Domain\AsapStatus;
@@ -22,7 +25,6 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Validation\ValidationException;
 use Livewire\Livewire;
 use Tests\TestCase;
 
@@ -273,13 +275,13 @@ class AsapSearchScreenTest extends TestCase
         // La mission est déjà partie : l'offre n'est plus acceptable, et le refus est EXPLICITE.
         $this->accepterParLOffre($request, $provider);
 
-        $offre = \App\Models\MissionAssignment::query()
+        $offre = MissionAssignment::query()
             ->where('mission_id', $request->mission_id)
             ->where('user_id', $provider->id)
             ->firstOrFail();
 
         $this->expectException(\DomainException::class);
-        app(\App\Services\Dispatch\MissionDispatchService::class)->accept($offre->fresh());
+        app(MissionDispatchService::class)->accept($offre->fresh());
     }
 
     /** Le second à cliquer est refusé proprement, pas silencieusement écrasé. */
@@ -293,13 +295,13 @@ class AsapSearchScreenTest extends TestCase
 
         $this->accepterParLOffre($request, $premier);
 
-        $offreSeconde = \App\Models\MissionAssignment::query()
+        $offreSeconde = MissionAssignment::query()
             ->where('mission_id', $request->mission_id)
             ->where('user_id', $second->id)
             ->firstOrFail();
 
         $this->expectException(\DomainException::class);
-        app(\App\Services\Dispatch\MissionDispatchService::class)->accept($offreSeconde->fresh());
+        app(MissionDispatchService::class)->accept($offreSeconde->fresh());
     }
 
     // ─── Fabriques ───────────────────────────────────────────────────────────────────────────
@@ -325,14 +327,14 @@ class AsapSearchScreenTest extends TestCase
 
         ProviderProfile::create([
             'user_id' => $provider->id,
-            'provider_type' => \App\Enums\ProviderType::INDEPENDENT->value,
+            'provider_type' => ProviderType::INDEPENDENT->value,
             'status' => 'active',
             'verification_status' => 'verified',
             'current_lat' => $lat,
             'current_lng' => $lng,
         ]);
 
-        \App\Models\ProviderPresence::create([
+        ProviderPresence::create([
             'provider_user_id' => $provider->id,
             'status' => 'online',
             'current_lat' => $lat,
@@ -358,13 +360,13 @@ class AsapSearchScreenTest extends TestCase
      */
     private function accepterParLOffre(AsapDispatchRequest $request, User $provider): void
     {
-        $offre = \App\Models\MissionAssignment::query()
+        $offre = MissionAssignment::query()
             ->where('mission_id', $request->mission_id)
             ->where('user_id', $provider->id)
             ->where('assignment_status', 'assigned')
             ->firstOrFail();
 
-        app(\App\Services\Dispatch\MissionDispatchService::class)->accept($offre);
+        app(MissionDispatchService::class)->accept($offre);
     }
 
     /** @return array{0: OrderDraft, 1: User} */
@@ -415,12 +417,12 @@ class AsapSearchScreenTest extends TestCase
      */
     private function accepterLaCourse(AsapDispatchRequest $request): AsapDispatchRequest
     {
-        $offre = \App\Models\MissionAssignment::query()
+        $offre = MissionAssignment::query()
             ->where('mission_id', $request->mission_id)
             ->where('assignment_status', 'assigned')
             ->firstOrFail();
 
-        app(\App\Services\Dispatch\MissionDispatchService::class)->accept($offre);
+        app(MissionDispatchService::class)->accept($offre);
 
         return $request->fresh();
     }

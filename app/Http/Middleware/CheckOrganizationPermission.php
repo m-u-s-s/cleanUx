@@ -4,6 +4,7 @@ namespace App\Http\Middleware;
 
 use App\Models\OrganizationAccount;
 use App\Models\OrganizationMember;
+use App\Models\User;
 use App\Services\PermissionService;
 use Closure;
 use Illuminate\Http\Request;
@@ -94,7 +95,7 @@ class CheckOrganizationPermission
         return $this->adhesionActive($user, $organisation) ? $organisation : null;
     }
 
-    private function adhesionActive(\App\Models\User $user, ?OrganizationAccount $organisation): bool
+    private function adhesionActive(User $user, ?OrganizationAccount $organisation): bool
     {
         if ($organisation === null) {
             return false;

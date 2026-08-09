@@ -1,15 +1,20 @@
 /**
  * ENREGISTRER UNE NOTE VOCALE — et le faire de façon à ce que l'application démarre quand même.
  *
- * `expo-av` embarque du natif. L'importer en tête de module le charge au DÉMARRAGE, ce qui suffit à
- * faire échouer l'application dans Expo Go — le dépôt a déjà payé ce piège avec
- * `expo-notifications`, dont l'import lève au chargement. L'import est donc DYNAMIQUE et fait au
- * moment où l'on appuie sur le micro.
+ * `expo-audio` embarque du natif. Le charger en tête de module le charge au DÉMARRAGE, ce qui suffit
+ * à faire échouer l'application dans Expo Go — le dépôt a déjà payé ce piège avec
+ * `expo-notifications`, dont l'import lève au chargement. Le module est donc chargé au moment où
+ * l'on appuie sur le micro, dans un `try`.
  *
- * ET LE MODULE PEUT ÊTRE ABSENT. Un dev-client qui n'a pas été reconstruit après l'ajout de la
- * dépendance n'a pas le natif : on rend `null` plutôt que de lever, et l'appelant le dit à
- * l'utilisateur. Un écran de messagerie qui plante sur le bouton micro serait pire que pas de
- * notes vocales.
+ * POURQUOI `expo-audio` ET NON `expo-av`. Le chemin visait `expo-av`, qui n'a jamais été installé :
+ * le bouton micro rendait donc `null` sur tous les appareils, silencieusement, depuis le lot 8. Et
+ * il ne pouvait pas l'être — `expo-av` est retiré à partir du SDK 54, `expo-audio` est son
+ * successeur. Une dépendance déclarée aurait échoué à l'installation ; c'est le chemin lui-même qui
+ * était périmé, pas l'installation qui manquait.
+ *
+ * `require` ET NON `await import` : Jest refuse l'import dynamique sans `--experimental-vm-modules`,
+ * si bien qu'un `catch` silencieux avalait tout et rendait ce chemin INVÉRIFIABLE — vert pour la
+ * pire des raisons.
  */
 
 export interface NoteVocale {
@@ -18,82 +23,86 @@ export interface NoteVocale {
   dureeSecondes: number;
 }
 
+/** La durée maximale d'une note. Au-delà, c'est un appel — et le lot 8 l'a rendu possible. */
+const DUREE_MAX_MS = 30_000;
+
 /**
- * Enregistre jusqu'à l'appui suivant, puis rend le fichier.
+ * Enregistre une note, puis rend le fichier.
  *
  * @returns `null` si la permission est refusée ou si le module natif n'est pas disponible
  */
 export async function enregistrerNoteVocale(): Promise<NoteVocale | null> {
-  const av = await chargerExpoAv();
+  const audio = chargerExpoAudio();
 
-  if (av === null) {
+  if (audio === null) {
     return null;
   }
 
+  let enregistreur: any = null;
+
   try {
-    const permission = await av.Audio.requestPermissionsAsync();
+    const permission = await audio.requestRecordingPermissionsAsync();
 
     // Refuser le micro est une réponse légitime : on ne réessaie pas, et on ne bloque rien.
     if (!permission.granted) {
       return null;
     }
 
-    await av.Audio.setAudioModeAsync({ allowsRecordingIOS: true, playsInSilentModeIOS: true });
+    await audio.setAudioModeAsync({ allowsRecording: true, playsInSilentMode: true });
 
-    const { recording } = await av.Audio.Recording.createAsync(
-      av.Audio.RecordingOptionsPresets.HIGH_QUALITY,
-    );
+    enregistreur = new audio.AudioRecorder(audio.RecordingPresets.HIGH_QUALITY);
+
+    // `prepareToRecordAsync` alloue le fichier de sortie. Sans lui, `record()` démarre sur un
+    // enregistreur sans destination et `uri` reste nul à l'arrêt.
+    await enregistreur.prepareToRecordAsync();
+    enregistreur.record();
 
     /*
      * DURÉE FIXE PLUTÔT QU'UN APPUI-RELÂCHE.
      *
      * Un « maintenir pour parler » suppose de garder le doigt sur l'écran — précisément ce qu'on ne
-     * peut pas faire avec des gants sur un chantier. Trente secondes couvrent une consigne ; au-delà,
-     * c'est un appel, et le lot 8 le rendra possible.
+     * peut pas faire avec des gants sur un chantier.
      */
-    await attendre(30_000);
+    await attendre(DUREE_MAX_MS);
 
-    await recording.stopAndUnloadAsync();
+    await enregistreur.stop();
 
-    const uri = recording.getURI();
+    const uri: string | null = enregistreur.uri ?? null;
 
     if (uri === null) {
       return null;
     }
 
-    const statut = await recording.getStatusAsync();
+    const secondes = Number(enregistreur.currentTime ?? 0);
 
     return {
       fichier: { uri, name: 'note.m4a', type: 'audio/m4a' },
-      dureeSecondes: Math.max(1, Math.round((statut.durationMillis ?? 0) / 1000)),
+      dureeSecondes: Math.max(1, Math.round(secondes > 0 ? secondes : DUREE_MAX_MS / 1000)),
     };
   } catch {
-    // Micro occupé par un appel, stockage plein, permission révoquée en cours de route : aucune de
-    // ces situations ne justifie de faire tomber l'écran.
+    /*
+     * Micro occupé par un appel, stockage plein, permission révoquée en cours de route : aucune de
+     * ces situations ne justifie de faire tomber l'écran. On tente quand même de rendre la
+     * ressource native — un enregistreur laissé ouvert garde le micro pour toute l'application, et
+     * le suivant échouerait sans qu'on comprenne pourquoi.
+     */
+    try {
+      await enregistreur?.stop();
+    } catch {
+      // Déjà arrêté, ou jamais démarré.
+    }
+
     return null;
   }
 }
 
-/**
- * L'import est dynamique, protégé, ET NON TYPÉ STATIQUEMENT — les trois pour la même raison.
- *
- * `expo-av` N'EST PAS ENCORE UNE DÉPENDANCE de ce workspace : l'ajouter suppose un `npm install`
- * dans le monorepo puis une RECONSTRUCTION DU DEV-CLIENT, qu'aucun test ni aucun typecheck ne peut
- * valider ici. Une importation statique ferait échouer `tsc` sur toute la base pour un module qui
- * n'existe pas encore, et un `expo start` sur un client non reconstruit échouerait en accusant
- * `expo-modules-core` — piège déjà rencontré sur ce dépôt.
- *
- * Le chemin est donc prêt et inerte : le bouton micro rend `null`, l'écran le dit, et rien ne casse.
- * Le jour où la dépendance est ajoutée et le dev-client reconstruit, ce fichier fonctionne sans
- * modification.
- */
-async function chargerExpoAv(): Promise<any | null> {
+function chargerExpoAudio(): any | null {
   try {
-    // Le nom est calculé pour que le résolveur de modules ne l'exige pas à la compilation.
-    const nomDuModule = 'expo-av';
-
-    return await import(/* @vite-ignore */ nomDuModule);
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    return require('expo-audio');
   } catch {
+    // Dev-client non reconstruit après l'ajout de la dépendance : le natif manque. On rend `null`
+    // plutôt que de lever, et l'appelant le dit à l'utilisateur.
     return null;
   }
 }

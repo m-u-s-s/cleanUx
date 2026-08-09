@@ -5,6 +5,7 @@ namespace Tests\Feature\ProviderCompany;
 use App\Enums\OrganizationRole;
 use App\Enums\OrganizationType;
 use App\Enums\ProviderType;
+use App\Livewire\ProviderCompany\FieldTeams;
 use App\Models\FieldTeam;
 use App\Models\FieldTeamMember;
 use App\Models\Mission;
@@ -15,6 +16,7 @@ use App\Models\User;
 use App\Services\Missions\MissionAssignmentService;
 use App\Services\Missions\ReassignmentPolicy;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Livewire\Livewire;
 use Tests\TestCase;
 
 /**
@@ -627,8 +629,8 @@ class AssignationEquipeTest extends TestCase
         $recrue = $this->membre(OrganizationRole::WORKER);
         $equipe = $this->equipe([]);
 
-        \Livewire\Livewire::actingAs($owner)
-            ->test(\App\Livewire\ProviderCompany\FieldTeams::class)
+        Livewire::actingAs($owner)
+            ->test(FieldTeams::class)
             ->assertSee('Composition')
             ->call('ouvrirLaComposition', $equipe->id)
             ->assertSee('une équipe vide ne peut recevoir aucune mission', false)
@@ -650,8 +652,8 @@ class AssignationEquipeTest extends TestCase
         $recrue = $this->membre(OrganizationRole::WORKER);
         $equipe = $this->equipe([]);
 
-        \Livewire\Livewire::actingAs($chef)
-            ->test(\App\Livewire\ProviderCompany\FieldTeams::class)
+        Livewire::actingAs($chef)
+            ->test(FieldTeams::class)
             ->call('ajouterMembre', $equipe->id, $recrue->id)
             ->assertForbidden();
 

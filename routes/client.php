@@ -36,8 +36,9 @@ use App\Livewire\Client\Templates\RecurringTemplatesGallery;
 use App\Livewire\Client\WalletClient;
 use App\Livewire\ClientCompany\Analytics\ClientAnalyticsDashboard;
 use App\Livewire\ClientDashboard;
-use App\Livewire\OrderEngine\OrderJourney;
 use App\Livewire\Conversations\ConversationPage;
+use App\Livewire\OrderEngine\OrderJourney;
+use App\Livewire\Shared\ModulesDirectory;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware(['role:client'])
@@ -49,7 +50,7 @@ Route::middleware(['role:client'])
 
         // Le répertoire des modules — voir `config/modules.php`. Le contexte vient de la route,
         // jamais de la requête : la garde reste `role:client`, ci-dessus.
-        Route::get('/modules', \App\Livewire\Shared\ModulesDirectory::class)
+        Route::get('/modules', ModulesDirectory::class)
             ->defaults('contexte', 'client')
             ->name('modules');
 

@@ -10,6 +10,7 @@ use App\Models\Trade;
 use App\Models\User;
 use Database\Seeders\OrderEngineCatalogSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Schema;
 use Livewire\Livewire;
 use Tests\TestCase;
 
@@ -217,6 +218,6 @@ class CatalogTradeCreationTest extends TestCase
             ->call('enregistrerMetier');
 
         // `trade_zone_settings` a été SUPPRIMÉE : le doublon condamné n'existe plus en base.
-        $this->assertFalse(\Illuminate\Support\Facades\Schema::hasTable('trade_zone_settings'));
+        $this->assertFalse(Schema::hasTable('trade_zone_settings'));
     }
 }

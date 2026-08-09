@@ -10,6 +10,7 @@ use App\Models\Disponibilite;
 use App\Models\OrganizationAccount;
 use App\Models\ProviderProfile;
 use App\Models\ServiceCatalog;
+use App\Models\Trade;
 use App\Models\User;
 use App\Services\Dispatch\AiDispatchService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -245,9 +246,9 @@ class MobileBookingSelectionApiTest extends TestCase
         return $user;
     }
 
-    private function matchingTrade(): \App\Models\Trade
+    private function matchingTrade(): Trade
     {
-        return \App\Models\Trade::firstOrCreate(
+        return Trade::firstOrCreate(
             ['slug' => 'mobile-selection-trade'],
             ['code' => 'MST', 'name' => 'Nettoyage', 'is_active' => true, 'sort_order' => 1],
         );

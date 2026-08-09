@@ -9,6 +9,7 @@ use App\Models\OrganizationAccount;
 use App\Models\OrganizationMember;
 use App\Models\OrganizationRolePermission;
 use App\Models\User;
+use App\Services\PermissionService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -190,7 +191,7 @@ class ContratDeRoleMobileTest extends TestCase
             ->assertOk()
             ->json('user.organization_permissions');
 
-        $service = app(\App\Services\PermissionService::class);
+        $service = app(PermissionService::class);
 
         foreach ($service->allPermissionKeys() as $cle) {
             $this->assertSame(

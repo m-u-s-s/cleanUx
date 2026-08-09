@@ -50,9 +50,11 @@ jest.mock('@react-navigation/native', () => ({
 }));
 
 /*
- * Le module natif d'enregistrement n'existe pas encore dans ce workspace — c'est le sujet du
- * commentaire de `voiceRecorder.ts`. On le bouchonne pour vérifier que le bouton micro APPELLE
- * l'enregistreur puis poste, sans dépendre d'un dev-client reconstruit.
+ * L'enregistreur est bouchonné ICI parce que ce fichier teste l'ÉCRAN : que le bouton micro appelle
+ * l'enregistrement puis poste. Son contenu — permission, mode audio, relâche du micro en cas de
+ * panne — est vérifié à part, dans `voiceRecorder.test.ts` ; le bouchonner des deux côtés aurait
+ * laissé le module lui-même sans aucun test, ce qui est exactement ce qui a permis à un chemin
+ * pointant vers une dépendance jamais installée de survivre au lot 8.
  */
 const mockEnregistrer = jest.fn();
 

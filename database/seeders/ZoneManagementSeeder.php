@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use Database\Seeders\Concerns\SeedsOnlyExistingColumns;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
 class ZoneManagementSeeder extends Seeder
@@ -138,7 +139,7 @@ class ZoneManagementSeeder extends Seeder
      * différentes obtenaient la même zone — donc le même prix, et le même bassin de prestataires.
      * C'est le maillon coupé de la chaîne géographique.
      *
-     * @param  \Illuminate\Support\Collection<int, object>  $allPostalCodes
+     * @param  Collection<int, object>  $allPostalCodes
      * @param  list<string>  $codes
      */
     protected function attachPostalCodes(int $zoneId, $allPostalCodes, array $codes): void

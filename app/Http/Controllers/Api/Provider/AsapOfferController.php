@@ -10,7 +10,6 @@ use App\Services\Dispatch\MissionDispatchService;
 use App\Support\Domain\AsapStatus;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Validation\ValidationException;
 
 /**
  * Les courses immédiates proposées à un prestataire.

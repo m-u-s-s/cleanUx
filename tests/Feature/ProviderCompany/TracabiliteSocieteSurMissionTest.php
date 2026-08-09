@@ -2,15 +2,18 @@
 
 namespace Tests\Feature\ProviderCompany;
 
+use App\Enums\OrganizationRole;
 use App\Enums\OrganizationType;
 use App\Enums\ProviderType;
 use App\Models\Booking;
 use App\Models\Mission;
 use App\Models\OrganizationAccount;
 use App\Models\User;
+use App\Services\Organizations\OrganizationMembershipService;
 use App\Services\Organizations\ProviderOrganisationResolver;
 use App\Support\Domain\BookingStatus;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
 use Tests\TestCase;
 
 /**
@@ -151,7 +154,7 @@ class TracabiliteSocieteSurMissionTest extends TestCase
         $org = $this->societePrestataire();
         $salarie = $this->salarie($org);
 
-        $equipeId = \Illuminate\Support\Facades\DB::table('provider_teams')->insertGetId([
+        $equipeId = DB::table('provider_teams')->insertGetId([
             'organization_account_id' => $org->id,
             'name' => 'Équipe Nord',
             'status' => 'active',
@@ -208,10 +211,10 @@ class TracabiliteSocieteSurMissionTest extends TestCase
             'status' => 'active',
         ]);
 
-        app(\App\Services\Organizations\OrganizationMembershipService::class)->rattacher(
+        app(OrganizationMembershipService::class)->rattacher(
             $org,
             $independant->fresh(),
-            \App\Enums\OrganizationRole::WORKER->value,
+            OrganizationRole::WORKER->value,
         );
 
         $profil = $independant->fresh()->providerProfile;
@@ -233,10 +236,10 @@ class TracabiliteSocieteSurMissionTest extends TestCase
             'status' => 'pending',
         ]);
 
-        app(\App\Services\Organizations\OrganizationMembershipService::class)->rattacher(
+        app(OrganizationMembershipService::class)->rattacher(
             $org,
             $utilisateur->fresh(),
-            \App\Enums\OrganizationRole::WORKER->value,
+            OrganizationRole::WORKER->value,
         );
 
         $this->assertSame('pending', $utilisateur->fresh()->providerProfile?->status);

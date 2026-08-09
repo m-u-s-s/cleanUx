@@ -1,13 +1,13 @@
 <?php
 
 use App\Http\Controllers\Api\AnalyticsController;
+use App\Http\Controllers\Api\Catalog\RegistrationOptionsController;
 use App\Http\Controllers\Api\Client\GdprController;
 use App\Http\Controllers\Api\LocaleListController;
 use App\Http\Controllers\Api\PricingV2Controller;
 use App\Http\Controllers\Api\Public\FxController;
 use App\Http\Controllers\Api\Public\ProviderProfileController;
 use App\Http\Controllers\Api\Public\SearchController;
-use App\Http\Controllers\Api\Catalog\RegistrationOptionsController;
 use App\Models\Trade;
 use App\Services\Country\CountryConfigService;
 use Illuminate\Support\Facades\Cache;

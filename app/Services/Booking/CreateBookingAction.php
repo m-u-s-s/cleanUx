@@ -12,7 +12,6 @@ use App\Models\ServiceCatalog;
 use App\Models\ServiceZone;
 use App\Models\User;
 use App\Models\ZoneServiceRule;
-use App\Notifications\NouveauRendezVousNotification;
 use App\Services\Contracts\ContractBookingHook;
 use App\Services\Contracts\ContractPricingResolver;
 use App\Services\Dispatch\DispatchEngine;

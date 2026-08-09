@@ -4,8 +4,8 @@ namespace Tests\Feature;
 
 use App\Enums\ProviderType;
 use App\Models\Booking;
-use App\Models\ProviderProfile;
 use App\Models\ProviderPresence;
+use App\Models\ProviderProfile;
 use App\Models\ServiceZone;
 use App\Models\Trade;
 use App\Models\User;

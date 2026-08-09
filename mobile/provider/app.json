@@ -55,6 +55,12 @@
       "expo-image-picker",
       "expo-camera",
       [
+        "expo-audio",
+        {
+          "microphonePermission": "brio Provider a besoin du micro pour vos notes vocales et vos appels d'équipe."
+        }
+      ],
+      [
         "expo-location",
         {
           "locationAlwaysAndWhenInUsePermission": "brio Provider needs background location to share your position with clients during missions."

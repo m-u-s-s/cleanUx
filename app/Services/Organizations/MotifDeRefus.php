@@ -50,7 +50,7 @@ enum MotifDeRefus: string
             self::INTROUVABLE => 'Ce membre est introuvable dans votre société.',
             self::PERMISSION => "Vous n'avez pas le droit d'effectuer cette action.",
             self::HIERARCHIE => "Vous ne pouvez pas agir sur un membre d'un rang supérieur ou égal au vôtre.",
-            self::PROMOTION_TROP_HAUTE => "Vous ne pouvez pas attribuer un rôle égal ou supérieur au vôtre.",
+            self::PROMOTION_TROP_HAUTE => 'Vous ne pouvez pas attribuer un rôle égal ou supérieur au vôtre.',
             self::DERNIER_PROPRIETAIRE => 'La société doit conserver au moins un propriétaire actif.',
             self::SOI_MEME => 'Vous ne pouvez pas appliquer cette action à votre propre compte.',
             self::ROLE_INCONNU => "Ce rôle n'existe pas.",

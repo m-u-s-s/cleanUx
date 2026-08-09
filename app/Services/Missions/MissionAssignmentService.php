@@ -247,7 +247,6 @@ class MissionAssignmentService
      * toutes les équipes qui y sont passées, et le répartiteur la croirait sur-dotée.
      *
      * @param  Mission  $mission  déjà résolu et scopé sur l'organisation par l'appelant
-     *
      * @return bool `false` si rien n'a pu être fait — équipe d'une autre société, ou sans personne
      */
     public function assignerEquipe(

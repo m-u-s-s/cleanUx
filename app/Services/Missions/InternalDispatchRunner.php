@@ -6,6 +6,7 @@ use App\Models\InternalAssignmentDecision;
 use App\Models\Mission;
 use App\Models\OrganizationMember;
 use App\Services\Organizations\OrganizationNotifier;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -100,7 +101,7 @@ class InternalDispatchRunner
      * À VENIR SEULEMENT. Assigner rétroactivement une mission d'hier ne sert personne et fausserait
      * la charge du jour de celui qu'on désignerait.
      *
-     * @return \Illuminate\Support\Collection<int, Mission>
+     * @return Collection<int, Mission>
      */
     public function arriere(int $organisationId)
     {

@@ -7,6 +7,7 @@ use App\Models\Mission;
 use App\Models\ServiceCatalog;
 use App\Models\User;
 use App\Services\Booking\CreateBookingAction;
+use App\Services\Dispatch\DispatchEngine;
 use App\Services\Dispatch\MissionDispatchService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Mockery\MockInterface;
@@ -92,7 +93,7 @@ class AsapSingleDispatchTest extends TestCase
         $this->mockDispatch($dispatched);
 
         $recues = [];
-        $this->mock(\App\Services\Dispatch\DispatchEngine::class, function (MockInterface $mock) use (&$recues) {
+        $this->mock(DispatchEngine::class, function (MockInterface $mock) use (&$recues) {
             $mock->shouldReceive('dispatchBooking')
                 ->andReturnUsing(function ($booking) use (&$recues) {
                     $recues[] = $booking->id;

@@ -2,10 +2,12 @@
 
 namespace App\Services\OrderEngine;
 
+use App\Models\OrderDraft;
 use App\Models\ServiceZone;
 use App\Models\Trade;
 use App\Models\TradeZonePricing;
 use App\Services\Booking\ZoneCoverageService;
+use App\Services\GeolocationV2\GeocodingService;
 use Illuminate\Support\Facades\Log;
 
 /**
@@ -118,7 +120,7 @@ class ZonePricingResolver
      * Le laisser passer sans zone donnerait au dispatch une réservation qu'il ne sait pas servir ;
      * le refuser sans avoir essayé de résoudre perdrait une commande servable.
      */
-    public function ensureZoneFor(\App\Models\OrderDraft $draft): ?ServiceZone
+    public function ensureZoneFor(OrderDraft $draft): ?ServiceZone
     {
         if ($draft->service_zone_id) {
             return ServiceZone::find($draft->service_zone_id);
@@ -145,10 +147,10 @@ class ZonePricingResolver
      * Le code postal trouvé est retenu sur le panier — il servira à la réservation, puis à la
      * facture. Le perdre obligerait à re-géocoder à chaque étape suivante.
      */
-    public function resolveZoneFromPosition(float $lat, float $lng, ?\App\Models\OrderDraft $draft = null): ?ServiceZone
+    public function resolveZoneFromPosition(float $lat, float $lng, ?OrderDraft $draft = null): ?ServiceZone
     {
         try {
-            $result = app(\App\Services\GeolocationV2\GeocodingService::class)->reverseGeocode($lat, $lng);
+            $result = app(GeocodingService::class)->reverseGeocode($lat, $lng);
         } catch (\Throwable $e) {
             Log::warning('[order_engine] position non nommable pour la zone', ['error' => $e->getMessage()]);
 

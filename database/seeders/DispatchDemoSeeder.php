@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Enums\ProviderType;
+use App\Models\EmployeeZoneAssignment;
 use App\Models\ProviderPresence;
 use App\Models\ProviderProfile;
 use App\Models\ServiceZone;
@@ -163,7 +164,7 @@ class DispatchDemoSeeder extends Seeder
 
         $utilisateur->trades()->syncWithoutDetaching([$metier->id => ['is_primary' => true]]);
 
-        \App\Models\EmployeeZoneAssignment::query()->updateOrCreate(
+        EmployeeZoneAssignment::query()->updateOrCreate(
             ['user_id' => $utilisateur->id, 'service_zone_id' => $zone->id],
             ['assignment_type' => 'primary', 'is_active' => true, 'status' => 'active', 'coverage_priority' => 100],
         );

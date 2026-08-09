@@ -6,6 +6,7 @@ use App\Enums\CustomerType;
 use App\Enums\OrganizationRole;
 use App\Enums\OrganizationType;
 use App\Enums\ProviderType;
+use App\Enums\Role;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\Auth\LoginRequest;
 use App\Http\Requests\Api\Auth\RegisterRequest;
@@ -571,7 +572,7 @@ class ApiAuthController extends Controller
              * ci-dessous — chacun ajouté après qu'un compte eut perdu sa casquette au redémarrage.
              */
             'role' => $user->roleCanonique()->value,
-            'is_super_admin' => $user->roleCanonique() === \App\Enums\Role::SUPER_ADMIN,
+            'is_super_admin' => $user->roleCanonique() === Role::SUPER_ADMIN,
             'locale' => $user->locale ?? 'fr',
             'is_provider' => method_exists($user, 'isProvider') && $user->isProvider(),
             'is_admin' => method_exists($user, 'isPlatformAdmin') && $user->isPlatformAdmin(),

@@ -5,10 +5,13 @@ namespace Tests\Feature\ProviderCompany;
 use App\Enums\OrganizationRole;
 use App\Enums\OrganizationType;
 use App\Enums\ProviderType;
+use App\Http\Middleware\CheckOrganizationPermission;
 use App\Models\Mission;
 use App\Models\OrganizationAccount;
 use App\Models\OrganizationMember;
 use App\Models\User;
+use App\Support\Navigation\ModuleCatalogue;
+use Illuminate\Contracts\Http\Kernel;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -77,10 +80,10 @@ class RbacServeurTest extends TestCase
     {
         // Le middleware était écrit mais absent du Kernel : toute route qui l'invoquait plantait
         // sur un alias inconnu, et personne ne s'en apercevait faute d'appelant.
-        $alias = app(\Illuminate\Contracts\Http\Kernel::class)->getRouteMiddleware();
+        $alias = app(Kernel::class)->getRouteMiddleware();
 
         $this->assertArrayHasKey('org.permission', $alias);
-        $this->assertSame(\App\Http\Middleware\CheckOrganizationPermission::class, $alias['org.permission']);
+        $this->assertSame(CheckOrganizationPermission::class, $alias['org.permission']);
     }
 
     // ──────────────────────────────────────────────────────
@@ -184,7 +187,7 @@ class RbacServeurTest extends TestCase
     /** @return list<string> */
     private function routesDuMenuSociete(): array
     {
-        return \App\Support\Navigation\ModuleCatalogue::pourContexte('provider-company')
+        return ModuleCatalogue::pourContexte('provider-company')
             ->flatMap(fn (array $groupe) => array_column($groupe['modules'], 'route'))
             ->all();
     }

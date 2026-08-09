@@ -20,6 +20,7 @@ use App\Livewire\Admin\CancellationV2\CancellationsCenter;
 use App\Livewire\Admin\ChatV2\ChatCenter;
 use App\Livewire\Admin\ContractsV2\ContractsCenter;
 use App\Livewire\Admin\CustomerCreditsManager;
+use App\Livewire\Admin\DispatchCenter;
 use App\Livewire\Admin\Disputes\DisputesCenter;
 use App\Livewire\Admin\EditRecurringBooking;
 use App\Livewire\Admin\EnterpriseApprovalsCenter;
@@ -73,6 +74,8 @@ use App\Livewire\Admin\TripTracking\TripTrackingCenter;
 use App\Livewire\Admin\UtilisateursAdmin;
 use App\Livewire\Admin\WebhooksV2\WebhooksCenter;
 use App\Livewire\AdminDashboard;
+use App\Livewire\Shared\ModulesDirectory;
+use App\Livewire\SuperAdmin\SuperAdminDashboard;
 use App\Models\Booking;
 use App\Models\Feedback;
 use App\Models\User;
@@ -96,7 +99,7 @@ Route::middleware(['role:admin', 'enforce_2fa'])
          * de la plateforme (activation, dépendances). D'où `modules.directory` : deux objets
          * différents qui parlent tous deux de « modules ».
          */
-        Route::get('/modules-directory', \App\Livewire\Shared\ModulesDirectory::class)
+        Route::get('/modules-directory', ModulesDirectory::class)
             ->defaults('contexte', 'admin')
             ->name('modules.directory');
 
@@ -460,7 +463,7 @@ Route::middleware(['role:admin', 'enforce_2fa'])
              * elle a quatre réponses qui se ressemblent tant qu'on ne voit pas la chaîne d'offres :
              * personne trouvé, personne en ligne, refus, silence.
              */
-            Route::get('/repartition', \App\Livewire\Admin\DispatchCenter::class)->name('dispatch.center');
+            Route::get('/repartition', DispatchCenter::class)->name('dispatch.center');
         }
 
         if (class_exists(BusinessDashboard::class)) {
@@ -608,5 +611,5 @@ Route::middleware(['role:super_admin', 'enforce_2fa'])
     ->prefix('super-admin')
     ->name('super-admin.')
     ->group(function () {
-        Route::get('/dashboard', App\Livewire\SuperAdmin\SuperAdminDashboard::class)->name('dashboard');
+        Route::get('/dashboard', SuperAdminDashboard::class)->name('dashboard');
     });

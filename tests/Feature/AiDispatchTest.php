@@ -6,6 +6,7 @@ use App\Enums\ProviderType;
 use App\Models\Booking;
 use App\Models\ProviderProfile;
 use App\Models\ServiceZone;
+use App\Models\Trade;
 use App\Models\User;
 use App\Services\Dispatch\AiDispatchService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -48,7 +49,7 @@ class AiDispatchTest extends TestCase
 
         // LE MÉTIER EST OBLIGATOIRE : le filtre n'a plus de repli, et une réservation sans métier
         // résolvable ne rend AUCUN candidat plutôt que de les rendre tous.
-        $trade = \App\Models\Trade::create([
+        $trade = Trade::create([
             'slug' => 'ai-dispatch-rank', 'code' => 'AIDR', 'name' => 'Nettoyage',
             'is_active' => true, 'sort_order' => 1,
         ]);

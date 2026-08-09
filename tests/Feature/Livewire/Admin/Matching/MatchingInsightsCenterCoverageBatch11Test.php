@@ -6,6 +6,7 @@ use App\Livewire\Admin\Matching\MatchingInsightsCenter;
 use App\Models\Booking;
 use App\Models\ProviderProfile;
 use App\Models\ServiceZone;
+use App\Models\Trade;
 use App\Models\User;
 use Database\Factories\BookingMatchingDecisionFactory;
 use Database\Factories\ProviderPerformanceMetricFactory;
@@ -33,9 +34,9 @@ class MatchingInsightsCenterCoverageBatch11Test extends TestCase
      * Le métier commun aux fixtures — obligatoire depuis que le filtre n'a plus de repli : une
      * réservation sans métier résolvable ne rend AUCUN candidat, au lieu de les rendre tous.
      */
-    private function trade(): \App\Models\Trade
+    private function trade(): Trade
     {
-        return \App\Models\Trade::firstOrCreate(
+        return Trade::firstOrCreate(
             ['slug' => 'matching-insights-trade'],
             ['code' => 'MIT', 'name' => 'Nettoyage', 'is_active' => true, 'sort_order' => 1],
         );

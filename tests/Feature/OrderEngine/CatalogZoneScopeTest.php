@@ -10,6 +10,7 @@ use App\Models\TradeZonePricing;
 use App\Models\User;
 use Database\Seeders\OrderEngineCatalogSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Schema;
 use Livewire\Livewire;
 use Tests\TestCase;
 
@@ -154,7 +155,7 @@ class CatalogZoneScopeTest extends TestCase
          * savait expliquer — l'administration réglait l'une, le parcours client lisait l'autre.
          * Ce test est ce qui interdit son retour ; un `drop` seul n'empêche personne de la recréer.
          */
-        $this->assertFalse(\Illuminate\Support\Facades\Schema::hasTable('trade_zone_settings'));
+        $this->assertFalse(Schema::hasTable('trade_zone_settings'));
     }
 
     public function test_l_ecran_annonce_que_le_reglage_atteint_le_client(): void

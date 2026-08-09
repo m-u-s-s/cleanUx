@@ -9,19 +9,20 @@ use App\Models\Mission;
 use App\Models\OrganizationAccount;
 use App\Models\OrganizationContract;
 use App\Models\OrganizationMember;
+use App\Models\ProviderAgency;
 use App\Models\ProviderSiteAssignment;
 use App\Models\ProviderSiteTeam;
-use App\Services\Missions\MissionAssignmentService;
 use App\Services\Client\Calendar\BookingRescheduleService;
+use App\Services\Missions\MissionAssignmentService;
 use App\Services\Missions\ReassignmentPolicy;
 use App\Services\Missions\WorkerAvailabilityService;
 use App\Services\PermissionService;
 use App\Support\Livewire\Concerns\EnforcesActiveOrgMembership;
 use Illuminate\Database\Eloquent\Collection;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Carbon;
-use Livewire\Attributes\On;
+use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Locked;
+use Livewire\Attributes\On;
 use Livewire\Component;
 
 /**
@@ -38,6 +39,21 @@ class DispatchCenter extends Component
     public string $filterDate = '';
 
     public string $filterStatus = '';
+
+    /**
+     * L'IMPLANTATION QU'ON PILOTE — le dépôt de Bruxelles, l'antenne d'Anvers.
+     *
+     * Une société multi-villes voyait TOUTES ses missions dans une seule liste : le répartiteur
+     * d'Anvers faisait défiler les interventions bruxelloises pour trouver les siennes, et finissait
+     * par assigner quelqu'un qui part de l'autre bout de la région. Le filtre est vide par défaut —
+     * la plupart des sociétés n'ont qu'une implantation, et pour elles rien ne change.
+     *
+     * Ce n'est PAS une garde d'autorisation, seulement une commodité de lecture : les missions
+     * restent scopées sur l'organisation active, filtre ou pas. Une propriété publique Livewire est
+     * retournable depuis le navigateur par `$set` ; s'en servir comme d'un mur donnerait un mur en
+     * papier.
+     */
+    public ?int $filterAgencyId = null;
 
     public int $assigningId = 0;
 
@@ -63,6 +79,15 @@ class DispatchCenter extends Component
             )
             ->when($this->filterStatus, fn ($q) => $q->where('status', $this->filterStatus)
             )
+            /*
+             * Une mission relève d'une implantation SOIT directement, SOIT par l'équipe qui la porte.
+             * Ne regarder que `missions.provider_agency_id` masquerait toutes celles qu'un
+             * répartiteur a confiées à une équipe rattachée — c'est-à-dire le cas normal.
+             */
+            ->when($this->agenceFiltree(), fn ($q, $agenceId) => $q->where(
+                fn ($sous) => $sous->where('provider_agency_id', $agenceId)
+                    ->orWhereHas('fieldTeam', fn ($e) => $e->where('provider_agency_id', $agenceId))
+            ))
             ->with([
                 'assignments.provider:id,name,profile_photo_path',
                 'bookingSite:id,name,address,city,lat,lng',
@@ -78,8 +103,33 @@ class DispatchCenter extends Component
         return OrganizationMember::where('organization_account_id', $orgId)
             ->whereIn('role', ['worker', 'team_lead'])
             ->where('status', 'active')
+            // Filtrer les missions sans filtrer les personnes proposées laisserait suggérer un
+            // collègue d'Anvers pour une intervention bruxelloise — l'inverse du but recherché.
+            ->when($this->agenceFiltree(), fn ($q, $agenceId) => $q->where('provider_agency_id', $agenceId))
             ->with('user:id,name,profile_photo_path')
             ->get();
+    }
+
+    /**
+     * L'implantation retenue, si elle appartient bien à cette société.
+     *
+     * L'identifiant vient du navigateur : le valider ici plutôt qu'à l'affectation évite qu'un
+     * identifiant forgé rende une liste vide sans que rien ne l'explique.
+     */
+    private function agenceFiltree(): ?int
+    {
+        if ($this->filterAgencyId === null) {
+            return null;
+        }
+
+        $orgId = Auth::user()?->current_organization_id;
+
+        return ProviderAgency::query()
+            ->where('provider_organization_id', $orgId)
+            ->whereKey($this->filterAgencyId)
+            ->exists()
+            ? $this->filterAgencyId
+            : null;
     }
 
     /**
@@ -594,6 +644,12 @@ class DispatchCenter extends Component
             'availableWorkers' => $this->availableWorkers,
             'partnerContracts' => $this->partnerContracts,
             'disponibilites' => $this->disponibilites,
+            // Vide pour une société mono-implantation : la vue n'affiche alors pas le filtre.
+            'agences' => ProviderAgency::query()
+                ->where('provider_organization_id', Auth::user()?->current_organization_id)
+                ->where('status', 'active')
+                ->orderBy('name')
+                ->get(['id', 'name']),
         ])->layout('layouts.provider-company');
     }
 }

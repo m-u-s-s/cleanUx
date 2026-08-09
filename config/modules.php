@@ -273,6 +273,12 @@ return [
         ['key' => 'provider-company:provider-company.dispatch', 'label' => 'Dispatch', 'icon' => '🗺️', 'route' => 'provider-company.dispatch', 'context' => 'provider-company', 'permission' => 'missions.dispatch', 'category' => 'missions', 'primary' => true],
         ['key' => 'provider-company:provider-company.tasks', 'label' => 'Tâches', 'icon' => '✅', 'route' => 'provider-company.tasks', 'context' => 'provider-company', 'category' => 'missions', 'primary' => true],
         ['key' => 'provider-company:provider-company.field-teams', 'label' => 'Équipes terrain', 'icon' => '🚚', 'route' => 'provider-company.field-teams', 'context' => 'provider-company', 'permission' => 'team.view', 'category' => 'prestataires', 'primary' => false],
+        /*
+         * Les IMPLANTATIONS de la société — à ne pas confondre avec « Sites desservis », qui sont
+         * les locaux du CLIENT. Deux entrées voisines dans le répertoire, deux notions opposées :
+         * les libellés le disent, faute de quoi un gérant déclare son dépôt chez son client.
+         */
+        ['key' => 'provider-company:provider-company.agencies', 'label' => 'Nos implantations', 'icon' => '🏢', 'route' => 'provider-company.agencies', 'context' => 'provider-company', 'permission' => 'agencies.view', 'category' => 'prestataires', 'primary' => false],
         // Les sites clients desservis, et le référent que la société y place — servi par
         // `SiteOperations`, et par l'API que l'écran natif « Sites desservis » consomme.
         ['key' => 'provider-company:provider-company.sites', 'label' => 'Sites desservis', 'icon' => '📍', 'route' => 'provider-company.sites', 'context' => 'provider-company', 'permission' => 'sites.view_all', 'category' => 'comptes', 'primary' => false],

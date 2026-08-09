@@ -11,6 +11,7 @@ use App\Models\OrganizationMember;
 use App\Models\OrganizationRolePermission;
 use App\Models\User;
 use App\Services\PermissionService;
+use App\Support\Navigation\ModuleCatalogue;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
 use Tests\TestCase;
@@ -91,7 +92,7 @@ class MatriceRolesPermissionsTest extends TestCase
     public function test_la_case_du_menu_ne_s_affiche_que_pour_le_proprietaire(): void
     {
         $routes = function (): array {
-            return \App\Support\Navigation\ModuleCatalogue::pourContexte('provider-company')
+            return ModuleCatalogue::pourContexte('provider-company')
                 ->flatMap(fn (array $groupe) => array_column($groupe['modules'], 'route'))
                 ->all();
         };

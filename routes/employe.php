@@ -21,6 +21,8 @@ use App\Livewire\Provider\ProviderEarningsDashboard;
 use App\Livewire\Provider\ProviderKycPage;
 use App\Livewire\Provider\ProviderRatingsPage;
 use App\Livewire\Provider\ProviderWalletPage;
+use App\Livewire\Provider\TradesAndZones;
+use App\Livewire\Shared\ModulesDirectory;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware(['role:employe'])
@@ -37,10 +39,10 @@ Route::middleware(['role:employe'])
          * plus, les zones ne se déclaraient nulle part. Un prestataire qui déménageait devait
          * écrire au support et attendre qu'un administrateur touche la base.
          */
-        Route::get('/metiers-zones', \App\Livewire\Provider\TradesAndZones::class)->name('trades-zones');
+        Route::get('/metiers-zones', TradesAndZones::class)->name('trades-zones');
 
         // Le répertoire des modules — voir `config/modules.php`. La garde reste `role:employe`.
-        Route::get('/modules', \App\Livewire\Shared\ModulesDirectory::class)
+        Route::get('/modules', ModulesDirectory::class)
             ->defaults('contexte', 'employe')
             ->name('modules');
 

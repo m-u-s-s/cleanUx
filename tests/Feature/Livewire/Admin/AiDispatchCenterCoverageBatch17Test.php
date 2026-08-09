@@ -5,6 +5,7 @@ namespace Tests\Feature\Livewire\Admin;
 use App\Livewire\Admin\AiDispatchCenter;
 use App\Models\Booking;
 use App\Models\ProviderProfile;
+use App\Models\Trade;
 use App\Models\User;
 use App\Support\Domain\BookingStatus;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -30,9 +31,9 @@ class AiDispatchCenterCoverageBatch17Test extends TestCase
      * Il est OBLIGATOIRE depuis que le filtre métier n'a plus de repli : une réservation sans
      * métier résolvable ne rend AUCUN candidat, au lieu de les rendre tous.
      */
-    private function trade(): \App\Models\Trade
+    private function trade(): Trade
     {
-        return \App\Models\Trade::firstOrCreate(
+        return Trade::firstOrCreate(
             ['slug' => 'ai-center-trade'],
             ['code' => 'AIC', 'name' => 'Nettoyage', 'is_active' => true, 'sort_order' => 1],
         );

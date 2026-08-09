@@ -2,9 +2,9 @@
 
 namespace App\Support\Navigation;
 
-use Illuminate\Support\Collection;
 use App\Models\OrganizationAccount;
 use App\Services\PermissionService;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
@@ -18,7 +18,6 @@ use Illuminate\Support\Facades\Route;
  * Le groupe porte `non-empty-array` et non `array` : `pourContexte()` retire les catégories vides,
  * donc un groupe rendu a forcément au moins une case. `Collection` n'étant pas covariante en
  * PHPStan, le type déclaré doit être exactement celui qui sort.
- *
  * @phpstan-type GroupeDeModules array{category: string, label: string, modules: non-empty-array<int, Module>}
  */
 class ModuleCatalogue
