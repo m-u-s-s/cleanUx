@@ -236,6 +236,16 @@ class SortiesDeSecoursTest extends TestCase
         $this->assertSame(AsapStatus::CANCELLED, $recherche->fresh()->status);
         $this->assertSame(BookingStatus::ANNULE, $booking->fresh()->status);
 
+        /*
+         * DEUX COLONNES DU MÊME NOM, DEUX TYPES — et SQLite ne le dit pas.
+         *
+         * `bookings.cancelled_by` est un `bigint unsigned` (QUI annule) ; celle de
+         * `asap_dispatch_requests` est une chaîne (QUEL RÔLE). Écrire « client » dans la première
+         * passe en test et échoue en MySQL strict, au moment précis où un client annule.
+         */
+        $this->assertSame((int) $booking->client_id, (int) $booking->fresh()->cancelled_by);
+        $this->assertSame('client', $recherche->fresh()->cancelled_by);
+
         $this->assertSame(
             0,
             MissionAssignment::query()

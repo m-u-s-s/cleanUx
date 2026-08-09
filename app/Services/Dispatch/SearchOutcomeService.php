@@ -135,7 +135,16 @@ class SearchOutcomeService
                 $booking->update([
                     'status' => BookingStatus::ANNULE,
                     'cancelled_at' => now(),
-                    'cancelled_by' => 'client',
+                    /*
+                     * DEUX COLONNES DU MÊME NOM, DEUX TYPES.
+                     *
+                     * `bookings.cancelled_by` est un `bigint unsigned` — l'IDENTIFIANT de qui
+                     * annule ; `asap_dispatch_requests.cancelled_by` est une chaîne — le RÔLE.
+                     * Écrire « client » dans la première passe sous SQLite, qui accepte tout, et
+                     * échoue en MySQL strict au moment précis où un client annule.
+                     * Voir [[test-suite-sqlite-blindness]].
+                     */
+                    'cancelled_by' => $booking->client_id,
                     'cancellation_reason' => $reason ?? 'Aucun professionnel trouvé',
                 ]);
 
