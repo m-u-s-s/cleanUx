@@ -58,7 +58,7 @@ class CreateBookingAction
             ? (float) Arr::get($data, 'devis_estime')
             : null;
 
-        // Le hook a-t-il DÉJÀ négocié le tarif en amont (chemin web PrendreRendezVous) ?
+        // Le hook a-t-il DÉJÀ négocié le tarif en amont (chemin contrat-cadre) ?
         // Si oui, $data['devis_estime'] est déjà final : on ne le re-remise PAS ici.
         $contractPriceAlreadyApplied = Arr::get($data, 'contract_price_label') !== null;
 

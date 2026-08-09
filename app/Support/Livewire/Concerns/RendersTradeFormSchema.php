@@ -11,7 +11,7 @@ use App\Support\TradeFormSchema;
  *
  * Convention d'utilisation côté composant :
  *
- *   class PrendreRendezVous extends Component {
+ *   class BookingHub extends Component {
  *     use RendersTradeFormSchema;
  *
  *     public function selectService(int $serviceId): void {

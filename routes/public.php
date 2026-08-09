@@ -13,7 +13,6 @@ use App\Http\Controllers\Webhooks\SmsWebhookController;
 use App\Http\Controllers\Webhooks\StripeConnectWebhookController;
 use App\Livewire\Client\BrowseProviders;
 use App\Livewire\Client\PremiumOfferPage;
-use App\Livewire\Client\PrendreRendezVous;
 use App\Livewire\Public\HelpCenter;
 use App\Livewire\Public\ProviderPublicProfile;
 use App\Models\Country;
@@ -102,7 +101,18 @@ Route::middleware(['auth', 'verified', 'active.account'])->group(function () {
         ->name('premium.cancel');
 });
 
-Route::get('/prendre-rendez-vous', PrendreRendezVous::class)->name('booking.create');
+/*
+ * UN SEUL FORMULAIRE DE RÉSERVATION — et c'est celui de `/commander`.
+ *
+ * Cette adresse servait l'ANCIEN formulaire (`PrendreRendezVous`), qui créait des réservations par
+ * un chemin parallèle à celui du moteur de commande. Deux formulaires, c'est deux façons de fixer
+ * un prix, deux façons de résoudre une zone, et surtout DEUX ENTRÉES DE DISPATCH — dont une que
+ * les règles du moteur de répartition ne traversaient jamais.
+ *
+ * Le nom de route est CONSERVÉ : `route('booking.create')` est écrit dans les vues, les emails et
+ * les notifications. Le renommer transformerait une unification en centaine de liens morts.
+ */
+Route::redirect('/prendre-rendez-vous', '/commander')->name('booking.create');
 
 if (class_exists(ProviderPublicProfile::class)) {
     Route::get('/providers/{provider}', ProviderPublicProfile::class)

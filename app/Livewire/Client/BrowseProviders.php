@@ -49,7 +49,7 @@ class BrowseProviders extends Component
     /**
      * SP2 Task 6 — quand embarqué dans le picker premium du formulaire de
      * réservation, chaque carte expose un bouton « Choisir » qui émet l'event
-     * `providerSelected` (capté par PrendreRendezVous) au lieu de naviguer.
+     * `providerSelected` (capté par le parcours de commande) au lieu de naviguer.
      */
     public bool $selectionMode = false;
 
@@ -60,7 +60,7 @@ class BrowseProviders extends Component
 
     /**
      * SP2 Task 6 — sélection d'un prestataire en mode embarqué : émet l'event
-     * que le composant parent (PrendreRendezVous) écoute. No-op hors selection
+     * que le composant parent écoute. No-op hors selection
      * mode (frontière de sécurité = ProviderSelectionResolver côté backend).
      */
     public function selectProvider(int $providerId): void

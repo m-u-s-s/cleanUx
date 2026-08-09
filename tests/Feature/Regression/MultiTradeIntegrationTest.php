@@ -6,11 +6,9 @@ use App\Livewire\Admin\CatalogueServices;
 use App\Models\ServiceCatalog;
 use App\Models\Trade;
 use App\Models\User;
-use App\Support\Livewire\Concerns\InteractsWithBookingFormState;
 use Database\Seeders\MultiTradeDemoServicesSeeder;
 use Database\Seeders\TradeSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Livewire\Component;
 use Livewire\Livewire;
 use Tests\TestCase;
 
@@ -128,68 +126,6 @@ class MultiTradeIntegrationTest extends TestCase
             ->set('tradeFilter', $cleaning->id)
             ->assertSee('Nettoyage X')
             ->assertDontSee('Peinture Y');
-    }
-
-    // ──────────────────────────────────────────────────────
-    // Booking flow — services groupés par trade
-    // ──────────────────────────────────────────────────────
-
-    /**
-     * Vérifie que `servicesGroupedByTrade` retourne bien la structure
-     * attendue par le <optgroup> de la vue field-service.blade.php.
-     *
-     * On instancie un objet anonyme qui utilise le trait pour pouvoir
-     * tester sans monter tout le composant Livewire.
-     */
-    public function test_services_grouped_by_trade_returns_proper_structure(): void
-    {
-        $this->seed(TradeSeeder::class);
-        $cleaning = Trade::where('slug', 'nettoyage')->firstOrFail();
-        $painting = Trade::where('slug', 'peinture')->firstOrFail();
-
-        ServiceCatalog::create([
-            'code' => 'A', 'name' => 'Nettoyage A', 'slug' => 'nettoyage-a',
-            'service_type' => 'standard', 'is_active' => true,
-            'default_duration_minutes' => 60, 'base_price' => 0,
-            'trade_id' => $cleaning->id, 'sort_order' => 1,
-        ]);
-        ServiceCatalog::create([
-            'code' => 'B', 'name' => 'Peinture B', 'slug' => 'peinture-b',
-            'service_type' => 'standard', 'is_active' => true,
-            'default_duration_minutes' => 60, 'base_price' => 0,
-            'trade_id' => $painting->id, 'sort_order' => 1,
-        ]);
-        ServiceCatalog::create([
-            'code' => 'C', 'name' => 'Service orphelin', 'slug' => 'service-orphelin',
-            'service_type' => 'standard', 'is_active' => true,
-            'default_duration_minutes' => 60, 'base_price' => 0,
-            'trade_id' => null, 'sort_order' => 99,
-        ]);
-
-        // Instancier le composant Livewire de booking pour exercer le trait
-        // qui définit getServicesGroupedByTradeProperty.
-        $component = new class extends Component
-        {
-            use InteractsWithBookingFormState;
-
-            public function render()
-            {
-                return '';
-            }
-        };
-
-        $grouped = $component->servicesGroupedByTrade;
-
-        $this->assertIsArray($grouped);
-        $this->assertArrayHasKey('Nettoyage', $grouped);
-        $this->assertArrayHasKey('Peinture', $grouped);
-        $this->assertArrayHasKey('Autres', $grouped,
-            "Les services sans trade doivent être groupés sous 'Autres' "
-            .'pour ne pas être perdus pendant la transition multi-métiers.'
-        );
-        $this->assertSame('Nettoyage A', $grouped['Nettoyage']['A'] ?? null);
-        $this->assertSame('Peinture B', $grouped['Peinture']['B'] ?? null);
-        $this->assertSame('Service orphelin', $grouped['Autres']['C'] ?? null);
     }
 
     // ──────────────────────────────────────────────────────

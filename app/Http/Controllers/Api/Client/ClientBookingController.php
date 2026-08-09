@@ -37,7 +37,7 @@ use RuntimeException;
  * depuis les IDs/codes du client.
  *
  * NB : la création complète full-featured passe par le composant Livewire
- * PrendreRendezVous existant. L'API mobile fait une création "simplifiée"
+ * parcours de commande. L'API mobile fait une création "simplifiée"
  * suffisante pour les cas d'usage mobile (booking minimal viable).
  */
 /**

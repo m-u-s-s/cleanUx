@@ -41,7 +41,7 @@ class ContractBookingHook
         $data = $this->policy->enforceForBookingData($data, $contract);
         $data = $this->routing->applyToBookingData($data, $contract);
 
-        // Idempotence : le hook est appelé en couches (PrendreRendezVous → puis
+        // Idempotence : le hook est appelé en couches (écran appelant → puis
         // CreateBookingAction). Routing/policy sont déjà idempotents ; on protège
         // le pricing pour ne PAS re-remiser un devis déjà négocié (double remise).
         if (Arr::get($data, 'contract_price_label') !== null) {

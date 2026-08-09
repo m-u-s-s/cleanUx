@@ -15,7 +15,7 @@ use Livewire\Component;
  *
  * Embarqué dans le picker premium du formulaire de réservation : chaque carte
  * société expose un bouton « Choisir » qui émet l'event `companySelected`
- * (capté par PrendreRendezVous) au lieu de naviguer.
+ * (capté par le parcours de commande) au lieu de naviguer.
  *
  * La frontière de sécurité reste le ProviderSelectionResolver côté backend
  * (gate premium + validation d'éligibilité zone/métier).
@@ -67,7 +67,7 @@ class BrowseCompanies extends Component
 
     /**
      * SP3 Task 8 — sélection d'une société en mode embarqué : émet l'event que
-     * le composant parent (PrendreRendezVous) écoute. No-op hors selection mode.
+     * le composant parent écoute. No-op hors selection mode.
      */
     public function selectCompany(int $organizationId): void
     {

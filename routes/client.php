@@ -28,7 +28,6 @@ use App\Livewire\Client\MesRendezVousClient;
 use App\Livewire\Client\MissionLiveTracking;
 use App\Livewire\Client\MultiTradesBundleManager;
 use App\Livewire\Client\NpsSurvey;
-use App\Livewire\Client\PrendreRendezVous;
 use App\Livewire\Client\ProfilClient;
 use App\Livewire\Client\ProfileEdit;
 use App\Livewire\Client\ReferralProgramPage;
@@ -37,6 +36,7 @@ use App\Livewire\Client\Templates\RecurringTemplatesGallery;
 use App\Livewire\Client\WalletClient;
 use App\Livewire\ClientCompany\Analytics\ClientAnalyticsDashboard;
 use App\Livewire\ClientDashboard;
+use App\Livewire\OrderEngine\OrderJourney;
 use App\Livewire\Conversations\ConversationPage;
 use Illuminate\Support\Facades\Route;
 
@@ -59,9 +59,20 @@ Route::middleware(['role:client'])
             Route::get('/rendez-vous/{rendezVous}/serie', EditRecurringBooking::class)->name('rendezvous.series');
         }
 
-        if (class_exists(PrendreRendezVous::class)) {
-            Route::get('/rendez-vous/nouveau', PrendreRendezVous::class)->name('rendezvous.create');
-        }
+        /*
+         * LE MÊME PARCOURS QUE `/commander`, monté ici.
+         *
+         * Un client connecté réservait par un formulaire, un visiteur par un autre : deux
+         * questionnaires, deux calculs de prix, deux entrées de création de réservation — et donc
+         * deux façons d'entrer dans le dispatch, dont une qui ignorait la zone et le métier.
+         *
+         * MONTÉ EN PLACE plutôt que redirigé : le tableau de bord garde sa navigation, son fil
+         * d'Ariane et son adresse. Le composant sait déjà rattacher le panier au compte connecté
+         * (`OrderDraftManager::resumeOrCreate` reçoit l'utilisateur), si bien que l'étape identité
+         * est déjà satisfaite — le parcours PUBLIC reste prix-avant-identité, le parcours connecté
+         * n'a simplement plus rien à demander.
+         */
+        Route::get('/rendez-vous/nouveau', OrderJourney::class)->name('rendezvous.create');
 
         if (class_exists(BrowseProviders::class)) {
             Route::get('/prestataires', BrowseProviders::class)->name('providers.browse');
