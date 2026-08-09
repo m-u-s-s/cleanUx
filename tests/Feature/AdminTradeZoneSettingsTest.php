@@ -4,7 +4,7 @@ namespace Tests\Feature;
 
 use App\Livewire\Admin\GestionZones;
 use App\Models\Trade;
-use App\Models\TradeZoneSetting;
+use App\Models\TradeZonePricing;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
@@ -52,6 +52,14 @@ class AdminTradeZoneSettingsTest extends TestCase
             });
     }
 
+    /**
+     * L'ABSENCE DE LIGNE VAUT DESORMAIS « FERME », et le premier basculement OUVRE.
+     *
+     * C'est l'inverse de l'ancienne regle (« absent = actif par defaut »), et le changement est
+     * delibere : un metier cree apres l'ouverture d'un marche ne doit pas s'y vendre du seul fait
+     * que personne n'a encore rien decide. Le seeder pose la grille complete pour que l'etat
+     * initial d'une plateforme reste « tout est ouvert ».
+     */
     public function test_admin_can_toggle_a_trade_in_a_zone(): void
     {
         $context = $this->createCoverageContext();
@@ -59,11 +67,19 @@ class AdminTradeZoneSettingsTest extends TestCase
 
         $this->actingAs($this->createAdmin());
 
-        Livewire::test(GestionZones::class)
+        $composant = Livewire::test(GestionZones::class)
             ->call('selectZone', $context['zone']->id)
             ->call('toggleTradeActive', $trade->id);
 
-        $this->assertDatabaseHas('trade_zone_settings', [
+        $this->assertDatabaseHas('trade_zone_pricing', [
+            'trade_id' => $trade->id,
+            'service_zone_id' => $context['zone']->id,
+            'is_active' => true,
+        ]);
+
+        $composant->call('toggleTradeActive', $trade->id);
+
+        $this->assertDatabaseHas('trade_zone_pricing', [
             'trade_id' => $trade->id,
             'service_zone_id' => $context['zone']->id,
             'is_active' => false,
@@ -84,14 +100,16 @@ class AdminTradeZoneSettingsTest extends TestCase
             ->set("tradeSettings.{$trade->id}.notes", 'Surcharge centre-ville')
             ->call('saveTradeSetting', $trade->id);
 
-        $setting = TradeZoneSetting::where('trade_id', $trade->id)
+        $setting = TradeZonePricing::where('trade_id', $trade->id)
             ->where('service_zone_id', $context['zone']->id)
             ->first();
 
         $this->assertNotNull($setting);
         $this->assertTrue($setting->is_active);
-        $this->assertSame('1.35', (string) $setting->price_multiplier);
-        $this->assertSame('Surcharge centre-ville', $setting->notes);
+        // La colonne survivante s'appelle `surge_multiplier` : activation et prix sont la meme
+        // ligne, il n'y a plus de `price_multiplier` sur une table separee.
+        $this->assertSame('1.35', (string) $setting->surge_multiplier);
+        $this->assertSame('Surcharge centre-ville', $setting->metadata['notes'] ?? null);
     }
 
     public function test_admin_can_save_all_trade_settings_in_one_call(): void
@@ -108,12 +126,12 @@ class AdminTradeZoneSettingsTest extends TestCase
             ->set("tradeSettings.{$tradeB->id}.is_active", false)
             ->call('saveAllTradeSettings');
 
-        $this->assertDatabaseHas('trade_zone_settings', [
+        $this->assertDatabaseHas('trade_zone_pricing', [
             'trade_id' => $tradeA->id,
             'service_zone_id' => $context['zone']->id,
-            'price_multiplier' => 1.10,
+            'surge_multiplier' => 1.10,
         ]);
-        $this->assertDatabaseHas('trade_zone_settings', [
+        $this->assertDatabaseHas('trade_zone_pricing', [
             'trade_id' => $tradeB->id,
             'service_zone_id' => $context['zone']->id,
             'is_active' => false,
@@ -133,7 +151,7 @@ class AdminTradeZoneSettingsTest extends TestCase
             ->call('saveTradeSetting', $trade->id)
             ->assertHasErrors(["tradeSettings.$trade->id.price_multiplier"]);
 
-        $this->assertDatabaseMissing('trade_zone_settings', [
+        $this->assertDatabaseMissing('trade_zone_pricing', [
             'trade_id' => $trade->id,
             'service_zone_id' => $context['zone']->id,
         ]);
@@ -150,7 +168,7 @@ class AdminTradeZoneSettingsTest extends TestCase
         // EnforcesAdminAccess blocks a non-admin at mount/boot (before any action).
         Livewire::test(GestionZones::class)->assertForbidden();
 
-        $this->assertDatabaseMissing('trade_zone_settings', [
+        $this->assertDatabaseMissing('trade_zone_pricing', [
             'trade_id' => $trade->id,
             'service_zone_id' => $context['zone']->id,
         ]);

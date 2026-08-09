@@ -159,17 +159,28 @@ class ServiceZone extends Model
         return $this->hasMany(Booking::class);
     }
 
-    /** @return HasMany<TradeZoneSetting, $this> */
+    /**
+     * Les lignes (metier, zone) de cette zone : activation ET prix, sur la meme ligne.
+     *
+     * @return HasMany<TradeZonePricing, $this>
+     */
     public function tradeSettings(): HasMany
     {
-        return $this->hasMany(TradeZoneSetting::class);
+        return $this->hasMany(TradeZonePricing::class);
     }
 
-    /** @return BelongsToMany<Trade, $this> */
+    /**
+     * Les metiers vendus dans cette zone.
+     *
+     * Le pivot est `trade_zone_pricing` et plus `trade_zone_settings` : deux tables decrivaient le
+     * meme fait, l'administration reglait l'une et le parcours client lisait l'autre.
+     *
+     * @return BelongsToMany<Trade, $this>
+     */
     public function trades(): BelongsToMany
     {
-        return $this->belongsToMany(Trade::class, 'trade_zone_settings')
-            ->withPivot(['is_active', 'price_multiplier', 'notes'])
+        return $this->belongsToMany(Trade::class, 'trade_zone_pricing')
+            ->withPivot(['is_active', 'surge_multiplier', 'base_rate_cents', 'asap_enabled'])
             ->withTimestamps();
     }
 }

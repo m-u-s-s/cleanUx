@@ -57,6 +57,23 @@ return new class extends Migration
                 $table->decimal('lat', 10, 7)->nullable();
                 $table->decimal('lng', 10, 7)->nullable();
 
+                /*
+                 * LA GÉOGRAPHIE, RÉSOLUE PENDANT LE PARCOURS — pas après.
+                 *
+                 * Le panier portait une adresse et des coordonnées, mais ni code postal ni zone.
+                 * Le prix par zone existait en base et n'atteignait donc jamais le calcul
+                 * (`PricingEngine` recevait un `zone_multiplier` que personne ne fournissait, et
+                 * il valait 1,0 partout), et le dispatch héritait d'une réservation sans zone :
+                 * il fallait la redeviner au moment d'envoyer quelqu'un.
+                 *
+                 * Résolus ICI, ils sont connus AVANT la confirmation — ce qui permet de refuser
+                 * une commande hors couverture au lieu de la confirmer puis de ne trouver
+                 * personne.
+                 */
+                $table->string('postal_code', 12)->nullable();
+                $table->foreignId('service_zone_id')->nullable()
+                    ->constrained('service_zones')->nullOnDelete();
+
                 $table->timestamp('scheduled_at')->nullable();
                 $table->timestamp('asap_requested_at')->nullable();
 
@@ -84,6 +101,7 @@ return new class extends Migration
 
                 $table->index(['status', 'mode']);
                 $table->index(['client_id', 'status']);
+                $table->index('service_zone_id');
             });
         }
 

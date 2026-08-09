@@ -52,6 +52,16 @@ class ZoneCatalogController extends Controller
                     // montrer ce que paiera le client, pas un zéro qui n'a jamais été décidé.
                     'base_rate_cents' => (int) ($ligne !== null ? $ligne->base_rate_cents : ($metier->base_price_cents ?? 0)),
                     'has_zone_price' => $ligne !== null,
+                    /*
+                     * L'IMMÉDIAT, ZONE PAR ZONE — la même donnée que l'écran web.
+                     *
+                     * `allows_asap` dit qu'un dépannage est possible pour ce métier ; `asap_enabled`
+                     * dit qu'on l'a ouvert ICI. La console mobile a besoin des deux pour savoir
+                     * quand griser le bouton plutôt que de laisser ouvrir l'immédiat sur un
+                     * ravalement de façade.
+                     */
+                    'allows_asap' => (bool) $metier->allows_asap,
+                    'asap_enabled' => $ligne !== null && (bool) $ligne->asap_enabled,
                 ];
             });
 
@@ -104,6 +114,59 @@ class ZoneCatalogController extends Controller
                 'id' => $trade->id,
                 'is_open' => (bool) $ligne->is_active,
                 'base_rate_cents' => (int) $ligne->base_rate_cents,
+                'asap_enabled' => (bool) $ligne->asap_enabled,
+            ],
+        ]);
+    }
+
+    /**
+     * Ouvre ou ferme l'INTERVENTION IMMÉDIATE pour ce métier dans cette zone.
+     *
+     * Mêmes règles que l'écran web : la décision est locale, et elle exige que le métier soit
+     * ouvert ici. Un métier fermé dans la zone n'y est pas vendu du tout — lui ouvrir l'immédiat
+     * promettrait un dépannage pour un service absent du parcours client.
+     */
+    public function toggleAsap(ServiceZone $zone, Trade $trade): JsonResponse
+    {
+        if (! Gate::allows('update', Trade::class)) {
+            return response()->json([
+                'ok' => false,
+                'error' => 'forbidden_readonly',
+                'error_code' => 'forbidden_readonly',
+            ], 403);
+        }
+
+        $ligne = TradeZonePricing::query()
+            ->where('trade_id', $trade->id)
+            ->where('service_zone_id', $zone->id)
+            ->first();
+
+        if (! $ligne || ! $ligne->is_active) {
+            return response()->json([
+                'ok' => false,
+                'error' => 'trade_closed_in_zone',
+                'error_code' => 'trade_closed_in_zone',
+                'message' => 'Ouvrez d’abord ce métier dans la zone.',
+            ], 422);
+        }
+
+        if (! $trade->allows_asap) {
+            return response()->json([
+                'ok' => false,
+                'error' => 'trade_forbids_asap',
+                'error_code' => 'trade_forbids_asap',
+                'message' => 'Ce métier n’autorise pas l’intervention immédiate.',
+            ], 422);
+        }
+
+        $ligne->update(['asap_enabled' => ! $ligne->asap_enabled]);
+
+        return response()->json([
+            'ok' => true,
+            'data' => [
+                'id' => $trade->id,
+                'is_open' => (bool) $ligne->is_active,
+                'asap_enabled' => (bool) $ligne->asap_enabled,
             ],
         ]);
     }

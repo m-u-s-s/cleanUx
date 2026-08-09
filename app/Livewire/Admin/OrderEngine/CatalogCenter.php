@@ -134,7 +134,56 @@ class CatalogCenter extends Component
 
         $ligne->save();
 
-        unset($this->metiersActifsDansLaZone);
+        unset($this->metiersActifsDansLaZone, $this->metiersEnImmediatDansLaZone);
+    }
+
+    /**
+     * Ouvrir ou fermer l'INTERVENTION IMMÉDIATE pour ce métier DANS CETTE ZONE.
+     *
+     * La décision est locale et c'est tout son intérêt : un plombier de garde à Bruxelles
+     * n'implique pas un plombier de garde à Bastogne. Promettre l'immédiat là où personne n'est
+     * jamais en ligne fait attendre le client devant sa porte pour rien, puis lui propose une
+     * conversion en rendez-vous qu'il aurait choisie d'emblée si on la lui avait offerte.
+     *
+     * ELLE EXIGE QUE LE MÉTIER SOIT OUVERT. Un métier fermé dans la zone n'y est pas vendu du tout :
+     * lui ouvrir l'immédiat produirait une ligne qui promet un dépannage pour un service absent du
+     * parcours.
+     */
+    public function basculerImmediatDansLaZone(int $tradeId): void
+    {
+        if ($this->refusesWrite()) {
+            return;
+        }
+
+        $ligne = TradeZonePricing::query()
+            ->where('trade_id', $tradeId)
+            ->where('service_zone_id', $this->zone->id)
+            ->first();
+
+        if (! $ligne || ! $ligne->is_active) {
+            $this->flash = 'Ouvrez d’abord ce métier dans la zone : l’immédiat n’a pas de sens sur un service qu’on n’y vend pas.';
+
+            return;
+        }
+
+        $ligne->update(['asap_enabled' => ! $ligne->asap_enabled]);
+
+        unset($this->metiersEnImmediatDansLaZone);
+    }
+
+    /**
+     * Quels métiers acceptent l'immédiat dans cette zone.
+     *
+     * @return array<int, bool> identifiant du métier → immédiat ouvert
+     */
+    #[Computed]
+    public function metiersEnImmediatDansLaZone(): array
+    {
+        return TradeZonePricing::query()
+            ->where('service_zone_id', $this->zone->id)
+            ->pluck('asap_enabled', 'trade_id')
+            ->map(fn ($actif) => (bool) $actif)
+            ->all();
     }
 
     /**

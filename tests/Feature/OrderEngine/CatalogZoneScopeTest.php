@@ -149,27 +149,28 @@ class CatalogZoneScopeTest extends TestCase
             ->call('basculerMetierDansLaZone', $metier->id);
 
         /*
-         * `trade_zone_settings` porte elle aussi un `is_active` et un multiplicateur pour le même
-         * couple. Y écrire recréerait deux sources de vérité, et un prix que personne ne saurait
-         * expliquer. Ce test est ce qui interdit son retour — un `drop` seul n'empêche personne de
-         * la recréer.
+         * `trade_zone_settings` portait elle aussi un `is_active` et un multiplicateur pour le même
+         * couple. Elle est SUPPRIMÉE : deux sources de vérité donnaient un prix que personne ne
+         * savait expliquer — l'administration réglait l'une, le parcours client lisait l'autre.
+         * Ce test est ce qui interdit son retour ; un `drop` seul n'empêche personne de la recréer.
          */
-        $this->assertDatabaseCount('trade_zone_settings', 0);
+        $this->assertFalse(\Illuminate\Support\Facades\Schema::hasTable('trade_zone_settings'));
     }
 
-    public function test_il_avertit_que_l_activation_n_est_pas_encore_branchee(): void
+    public function test_l_ecran_annonce_que_le_reglage_atteint_le_client(): void
     {
         /*
-         * LE MODE D'ÉCHEC LE PLUS PROBABLE DE TOUT LE CHANTIER : livrer un bel écran d'activation
-         * par zone et croire la fonctionnalité acquise. Elle ne l'est pas — le moteur ne lit pas
-         * encore `trade_zone_pricing`, et le brouillon de commande ne détermine pas la zone d'une
-         * adresse.
+         * L'AVERTISSEMENT INVERSE. L'écran disait « ce réglage n'a pas encore d'effet client » tant
+         * que le moteur ne lisait pas `trade_zone_pricing` et que le brouillon ne résolvait pas la
+         * zone d'une adresse. Les deux branchements sont faits : laisser la phrase ferait croire
+         * l'inverse de la réalité, et un administrateur n'oserait plus fermer un métier.
          *
-         * Un avertissement dans un document ne sera pas lu. Dans l'écran, si — d'où ce test, qui
-         * est la seule chose qui empêche quelqu'un de retirer le bandeau sans avoir fait le reste.
+         * Le test suit le même rôle qu'avant, dans l'autre sens : il empêche qu'on rétrograde
+         * l'écran sans rétrograder le moteur.
          */
         Livewire::test(CatalogCenter::class, $this->contexte())
-            ->assertSee('n’a pas encore d’effet sur ce que voit un client', false);
+            ->assertSee('Ce que vous réglez ici est ce que voit le client', false)
+            ->assertDontSee('n’a pas encore d’effet sur ce que voit un client', false);
     }
 
     public function test_la_premiere_ouverture_part_du_prix_du_metier(): void

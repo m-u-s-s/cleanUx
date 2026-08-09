@@ -30,9 +30,28 @@ return new class extends Migration
         Schema::create('asap_dispatch_requests', function (Blueprint $table) {
             $table->id();
 
-            $table->foreignId('order_draft_id')->constrained('order_drafts')->cascadeOnDelete();
-            $table->foreignId('order_draft_item_id')->constrained('order_draft_items')->cascadeOnDelete();
+            /*
+             * NULLABLES depuis que la recherche appartient à la RÉSERVATION et non au panier.
+             *
+             * Une recherche peut naître d'un rendez-vous converti, d'une relance administrative ou
+             * d'une réservation créée par l'API : aucun de ces chemins n'a de ligne de panier, et
+             * exiger une clé qui n'existe pas obligerait à en fabriquer une factice.
+             */
+            $table->foreignId('order_draft_id')->nullable()->constrained('order_drafts')->cascadeOnDelete();
+            $table->foreignId('order_draft_item_id')->nullable()->constrained('order_draft_items')->cascadeOnDelete();
             $table->foreignId('trade_id')->constrained('trades')->cascadeOnDelete();
+
+            /*
+             * CE QUE LA RECHERCHE PILOTE.
+             *
+             * `booking_id` est la réservation qu'on cherche à pourvoir ; `mission_id` le dossier
+             * d'exécution auquel les offres individuelles (`mission_assignments`) se rattachent.
+             * Sans ces deux colonnes, la recherche vivait dans son coin : elle prévenait des
+             * prestataires sans que personne ne puisse répondre, et la chaîne d'offres avec compte
+             * à rebours tournait ailleurs, sur un autre objet, sans rayon ni vague.
+             */
+            $table->foreignId('booking_id')->nullable()->constrained('bookings')->cascadeOnDelete();
+            $table->foreignId('mission_id')->nullable()->constrained('missions')->cascadeOnDelete();
 
             // searching | accepted | en_route | arrived | in_progress | completed | cancelled | expired
             $table->string('status', 20)->default('searching');
@@ -48,6 +67,26 @@ return new class extends Migration
             $table->unsignedInteger('radius_m');
             $table->unsignedInteger('notified_count')->default(0);
             $table->unsignedInteger('expansion_count')->default(0);
+
+            /*
+             * LE RANG DE LA VAGUE ET L'ÉCHÉANCE GLOBALE — ce qui manquait pour raconter l'histoire.
+             *
+             * `wave` numérote les paliers de rayon : l'administration doit pouvoir dire « au
+             * troisième élargissement, encore personne » plutôt que de déduire un déroulé d'un
+             * compteur d'expansions.
+             *
+             * `deadline_at` est l'échéance de RECHERCHE, et elle remplace l'ambiguïté de
+             * `bookings.asap_deadline_at` (une fenêtre de deux heures qui ressemblait à de
+             * l'instantané sans en être). Au-delà, on cesse de chercher et on PROPOSE une suite —
+             * un écran d'attente qui finit sur un constat est un bug produit.
+             *
+             * `broadcast_at` marque le passage en dernière vague : c'est le seul moment où
+             * plusieurs modales s'ouvrent ensemble, et il ne doit arriver qu'une fois par
+             * recherche.
+             */
+            $table->unsignedInteger('wave')->default(1);
+            $table->timestamp('deadline_at')->nullable();
+            $table->timestamp('broadcast_at')->nullable();
 
             $table->foreignId('accepted_by_user_id')->nullable()->constrained('users')->nullOnDelete();
 
@@ -71,6 +110,10 @@ return new class extends Migration
 
             $table->index(['status', 'searching_at']);
             $table->index('order_draft_id');
+            // Le moteur retrouve la recherche par sa réservation à chaque offre, chaque refus et
+            // chaque expiration : sans index, c'est un balayage complet par événement.
+            $table->index('booking_id');
+            $table->index('mission_id');
         });
     }
 

@@ -2,13 +2,16 @@
 
 namespace Database\Seeders;
 
+use App\Models\Country;
 use App\Models\Question;
 use App\Models\QuestionCondition;
 use App\Models\QuestionOption;
 use App\Models\QuestionStep;
 use App\Models\Sector;
+use App\Models\ServiceZone;
 use App\Models\Trade;
 use App\Models\TradeBundleSuggestion;
+use App\Models\TradeZonePricing;
 use App\Support\Domain\ConditionAction;
 use App\Support\Domain\ConditionOperator;
 use App\Support\Domain\PriceImpactMode;
@@ -52,6 +55,65 @@ class OrderEngineCatalogSeeder extends Seeder
         }
 
         $this->seedBundleSuggestions();
+        $this->ensureSellableSomewhere();
+    }
+
+    /**
+     * UN CATALOGUE DOIT ÊTRE VENDU QUELQUE PART.
+     *
+     * `trade_zone_pricing` porte l'activation ET le prix : sans une seule ligne, tout ce catalogue
+     * existe et n'est proposé nulle part — le parcours refuse la confirmation, pour une raison
+     * correcte et parfaitement incompréhensible sur une base neuve.
+     *
+     * La zone créée ici est un FILET, pas une politique commerciale : elle n'apparaît que si la
+     * plateforme n'en déclare aucune. Dès qu'une géographie réelle est semée
+     * (`ZoneManagementSeeder`), c'est elle qui sert, et `TradeZonePricingSeeder` pose la grille
+     * complète.
+     */
+    private function ensureSellableSomewhere(): void
+    {
+        $zone = ServiceZone::query()
+            ->whereIn('status', ['active', 'paused'])
+            ->orderByRaw("CASE WHEN coverage_type = 'national' THEN 0 ELSE 1 END")
+            ->orderBy('priority')
+            ->first();
+
+        if (! $zone) {
+            $zone = ServiceZone::create([
+                'name' => 'Couverture par défaut',
+                'slug' => 'couverture-par-defaut',
+                'code' => 'DEFAULT',
+                'coverage_type' => 'national',
+                'status' => 'active',
+                'is_bookable' => true,
+                'is_visible' => true,
+                'priority' => 999,
+                'country_id' => Country::query()->value('id'),
+            ]);
+        }
+
+        foreach (Trade::query()->where('is_active', true)->get() as $trade) {
+            $existante = TradeZonePricing::query()
+                ->where('trade_id', $trade->id)
+                ->where('service_zone_id', $zone->id)
+                ->first();
+
+            if ($existante) {
+                continue;
+            }
+
+            TradeZonePricing::create([
+                'trade_id' => $trade->id,
+                'service_zone_id' => $zone->id,
+                'base_rate_cents' => (int) ($trade->base_price_cents ?? 0),
+                'surge_multiplier' => '1.00',
+                'is_active' => true,
+                // L'immédiat suit le métier : semer un dépannage sur un ravalement de façade
+                // engagerait la plateforme à dépêcher quelqu'un dans l'heure pour trois jours de
+                // chantier.
+                'asap_enabled' => (bool) $trade->allows_asap,
+            ]);
+        }
     }
 
     private function seedTrade(Sector $sector, array $data, int $index): void

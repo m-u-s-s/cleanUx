@@ -135,6 +135,9 @@ class Booking extends Model
 
         // Service / zone
         'service_catalog_id',
+        // Le métier, en clair. Le dispatch en fait un invariant : sans lui, il ne cherche personne
+        // plutôt que de chercher n'importe qui.
+        'trade_id',
         'service_zone_id',
         'postal_code_id',
 
@@ -513,12 +516,28 @@ class Booking extends Model
     }
 
     /**
-     * Métier requis pour cette réservation, résolu via le ServiceCatalog.
-     * Null si le service n'est rattaché à aucun trade (back-compat phase de transition).
+     * LE MÉTIER DE CETTE RÉSERVATION — colonne propre, plus une déduction.
      *
-     * @return HasOneThrough<ServiceZone, $this>
+     * `bookings.trade_id` est écrit par le moteur de commande, qui SAIT quel métier a été choisi.
+     * Auparavant le métier ne se lisait qu'en traversant `service_catalog_id` → `trade_id` : une
+     * chaîne qui casse dès qu'une réservation n'a pas de service au catalogue, ce qui est le cas de
+     * toutes celles du parcours de commande. Le dispatch retombait alors sur « pas de métier connu,
+     * on ne filtre pas » — la porte par laquelle un peintre pouvait recevoir du babysitting.
+     *
+     * @return BelongsTo<Trade, $this>
      */
-    public function trade(): HasOneThrough
+    public function trade(): BelongsTo
+    {
+        return $this->belongsTo(Trade::class);
+    }
+
+    /**
+     * Le métier déduit du service au catalogue — le REPLI, pour les réservations antérieures à la
+     * colonne. Conservé exprès : les archives n'ont pas de `trade_id` et doivent rester lisibles.
+     *
+     * @return HasOneThrough<Trade, ServiceCatalog, $this>
+     */
+    public function tradeViaCatalog(): HasOneThrough
     {
         return $this->hasOneThrough(
             Trade::class,
@@ -528,6 +547,32 @@ class Booking extends Model
             'service_catalog_id',  // FK locale (bookings)
             'trade_id'             // FK intermédiaire (service_catalogs → trades)
         );
+    }
+
+    /**
+     * Le métier de cette réservation, colonne d'abord, catalogue ensuite.
+     *
+     * Un seul endroit décide de cet ordre. Le dupliquer dans chaque appelant ferait qu'un chemin
+     * lirait la colonne et l'autre le catalogue — et deux chemins trouveraient deux métiers
+     * différents pour la même réservation.
+     */
+    public function resolveTradeId(): ?int
+    {
+        if ($this->trade_id) {
+            return (int) $this->trade_id;
+        }
+
+        $viaCatalog = $this->serviceCatalog?->trade_id;
+
+        return $viaCatalog ? (int) $viaCatalog : null;
+    }
+
+    /** Le métier résolu, quel que soit le chemin. */
+    public function resolveTrade(): ?Trade
+    {
+        $id = $this->resolveTradeId();
+
+        return $id ? Trade::find($id) : null;
     }
 
     /** @return BelongsTo<ServiceZone, $this> */

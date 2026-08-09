@@ -171,16 +171,21 @@ class Trade extends Model
             ->orderBy('name');
     }
 
-    /** @return HasMany<TradeZoneSetting, $this> */
+    /** @return HasMany<ServiceCatalog, $this> */
     public function activeServices(): HasMany
     {
         return $this->services()->where('is_active', true);
     }
 
-    /** @return HasMany<TradeZoneSetting, $this> */
+    /**
+     * Alias historique de `zonePricing()` : les deux nommaient deux tables, ils nomment desormais
+     * la meme ligne (metier, zone).
+     *
+     * @return HasMany<TradeZonePricing, $this>
+     */
     public function zoneSettings(): HasMany
     {
-        return $this->hasMany(TradeZoneSetting::class);
+        return $this->hasMany(TradeZonePricing::class);
     }
 
     /** @return HasMany<TradeZonePricing, $this> */
@@ -198,8 +203,8 @@ class Trade extends Model
     /** @return BelongsToMany<ServiceZone, $this> */
     public function zones(): BelongsToMany
     {
-        return $this->belongsToMany(ServiceZone::class, 'trade_zone_settings')
-            ->withPivot(['is_active', 'price_multiplier', 'notes'])
+        return $this->belongsToMany(ServiceZone::class, 'trade_zone_pricing')
+            ->withPivot(['is_active', 'surge_multiplier', 'base_rate_cents', 'asap_enabled'])
             ->withTimestamps();
     }
 

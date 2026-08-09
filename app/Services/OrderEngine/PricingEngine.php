@@ -51,7 +51,7 @@ class PricingEngine
      *
      * @param  Collection<int, Question>  $questions  chargées avec `options` et `conditions`
      * @param  array<string, mixed>  $answers  indexées par code de question
-     * @param  array{mode?: string, zone_multiplier?: float}  $context
+     * @param  array{mode?: string, zone_multiplier?: float, zone_base_cents?: int|null, zone_min_cents?: int|null, zone_max_cents?: int|null}  $context
      */
     public function quoteItem(Trade $trade, Collection $questions, array $answers, array $context = []): PriceBreakdown
     {
@@ -67,7 +67,16 @@ class PricingEngine
         // montant à rien de visible, et le contesterait à raison.
         $visible = $this->conditions->visible($questions, $answers);
 
-        $base = (int) ($trade->base_price_cents ?? 0);
+        /*
+         * LE TARIF DE LA ZONE REMPLACE CELUI DU MÉTIER.
+         *
+         * C'est le sens même de « l'activation et le prix sont la même ligne » : quand
+         * `trade_zone_pricing` fixe un tarif pour ce couple (métier, zone), c'est LUI qui engage.
+         * Le tarif du métier n'est plus qu'un défaut, celui qu'on hérite là où aucune grille
+         * locale n'a été décidée.
+         */
+        $base = $context['zone_base_cents'] ?? null;
+        $base = $base !== null ? (int) $base : (int) ($trade->base_price_cents ?? 0);
         $sumMin = $base;
         $sumMax = $base;
         $multMin = 1.0;
@@ -119,6 +128,26 @@ class PricingEngine
         // pouvoir produire ça.
         if ($min > $max) {
             [$min, $max] = [$max, $min];
+        }
+
+        /*
+         * PLANCHER ET PLAFOND DE LA ZONE, appliqués APRÈS l'arrondi.
+         *
+         * Ce sont des engagements commerciaux — « on ne se déplace pas sous 45 € à Bruxelles » —
+         * pas des composantes du calcul. Les faire entrer plus tôt les laisserait multiplier par
+         * la majoration du mode immédiat, et le plancher annoncé ne serait pas celui appliqué.
+         */
+        $floor = $context['zone_min_cents'] ?? null;
+        $ceiling = $context['zone_max_cents'] ?? null;
+
+        if ($floor !== null) {
+            $min = max($min, (int) $floor);
+            $max = max($max, (int) $floor);
+        }
+
+        if ($ceiling !== null) {
+            $min = min($min, (int) $ceiling);
+            $max = min($max, (int) $ceiling);
         }
 
         return new PriceBreakdown($min, $max, max(0, $duration), $lines);

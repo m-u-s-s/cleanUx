@@ -36,21 +36,20 @@
     @endif
 
     {{--
-        CE BANDEAU DIT LA VÉRITÉ, et il disparaîtra quand elle changera.
+        LE BANDEAU D'AVERTISSEMENT A DISPARU PARCE QUE LA VÉRITÉ A CHANGÉ.
 
-        Le moteur de commande ne lit pas encore `trade_zone_pricing`, et le brouillon ne détermine
-        pas la zone d'une adresse. L'ouverture réglée ci-dessous est donc enregistrée sans effet
-        client. Sans cette phrase, on livre un écran exact et tout le monde croit la fonctionnalité
-        acquise — c'est le mode d'échec le plus probable de ce chantier, et il est silencieux.
+        Il disait que l'ouverture réglée ici n'avait aucun effet client : le parcours de commande ne
+        déterminait pas la zone d'une adresse et ne lisait pas `trade_zone_pricing`. Les deux
+        branchements sont faits — la zone est résolue depuis le code postal pendant le parcours, et
+        c'est cette ligne-ci qui fixe le prix ET la disponibilité du mode immédiat.
 
-        Un test l'exige (`CatalogZoneScopeTest`) : le retirer avant d'avoir fait le branchement
-        fait échouer la suite.
+        Ce qui remplace l'avertissement est ci-dessous : chaque métier affiche son état RÉEL dans
+        cette zone, ouverture et immédiat compris.
     --}}
-    <div class="rounded-xl border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-900">
-        <strong>Réglage préparatoire.</strong>
-        L’ouverture d’un métier dans cette zone est bien enregistrée, mais elle
-        <strong>n’a pas encore d’effet sur ce que voit un client</strong> : le parcours de commande
-        ne détermine pas encore la zone d’une adresse. Ce branchement est prévu et suivi séparément.
+    <div class="rounded-xl border border-emerald-300 bg-emerald-50 px-4 py-3 text-sm text-emerald-900">
+        <strong>Ce que vous réglez ici est ce que voit le client.</strong>
+        L’ouverture d’un métier dans cette zone décide de sa présence au parcours de commande et de
+        son prix ; l’<strong>intervention immédiate</strong> se règle métier par métier, ici même.
     </div>
 
     {{-- ─── Secteurs ────────────────────────────────────────────────────────────────────── --}}
@@ -183,13 +182,36 @@
                                                 fermé à {{ $zone->name }}
                                             </span>
                                         @endif
+
+                                        {{--
+                                            L'IMMÉDIAT, décidé zone par zone. Le drapeau global du
+                                            métier dit qu'un dépannage EST possible ; cette ligne-ci
+                                            dit qu'on l'a ouvert ICI. Promettre l'immédiat là où
+                                            personne n'est jamais en ligne fait attendre le client
+                                            devant sa porte.
+                                        --}}
+                                        @if ($this->metiersEnImmediatDansLaZone[$trade->id] ?? false)
+                                            <span class="rounded-full bg-amber-50 px-2 py-0.5 text-amber-700">
+                                                intervention immédiate
+                                            </span>
+                                        @endif
                                     </p>
 
-                                    <button type="button"
-                                        wire:click="basculerMetierDansLaZone({{ $trade->id }})"
-                                        class="mt-2 min-h-[36px] rounded-lg border border-slate-300 px-3 text-xs text-slate-700 transition hover:bg-slate-50">
-                                        {{ ($this->metiersActifsDansLaZone[$trade->id] ?? false) ? 'Fermer dans cette zone' : 'Ouvrir dans cette zone' }}
-                                    </button>
+                                    <div class="mt-2 flex flex-wrap gap-2">
+                                        <button type="button"
+                                            wire:click="basculerMetierDansLaZone({{ $trade->id }})"
+                                            class="min-h-[36px] rounded-lg border border-slate-300 px-3 text-xs text-slate-700 transition hover:bg-slate-50">
+                                            {{ ($this->metiersActifsDansLaZone[$trade->id] ?? false) ? 'Fermer dans cette zone' : 'Ouvrir dans cette zone' }}
+                                        </button>
+
+                                        @if (($this->metiersActifsDansLaZone[$trade->id] ?? false) && $trade->allows_asap)
+                                            <button type="button"
+                                                wire:click="basculerImmediatDansLaZone({{ $trade->id }})"
+                                                class="min-h-[36px] rounded-lg border border-amber-300 px-3 text-xs text-amber-700 transition hover:bg-amber-50">
+                                                {{ ($this->metiersEnImmediatDansLaZone[$trade->id] ?? false) ? 'Retirer l’immédiat ici' : 'Ouvrir l’immédiat ici' }}
+                                            </button>
+                                        @endif
+                                    </div>
                                 </div>
 
                                 <div class="flex shrink-0 items-center gap-3 text-sm">

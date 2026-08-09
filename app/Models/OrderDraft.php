@@ -28,6 +28,9 @@ class OrderDraft extends Model
         // Rattrapage quand le cookie de session a disparu : hachée, tournante, expirante.
         'recovery_key_hash', 'recovery_key_expires_at',
         'address', 'address_details', 'lat', 'lng',
+        // La géographie résolue PENDANT le parcours : c'est elle qui donne au prix sa grille de
+        // zone, et au dispatch un point de départ au lieu d'une adresse à redeviner.
+        'postal_code', 'service_zone_id',
         'scheduled_at', 'asap_requested_at',
         'estimate_min_cents', 'estimate_max_cents', 'total_cents', 'currency',
         'client_notes', 'source',

@@ -50,7 +50,17 @@ class OrderConfirmationService
             return $draft;
         }
 
-        $this->assertConfirmable($draft);
+        /*
+         * DERNIÈRE CHANCE DE RÉSOUDRE LA ZONE — avant de refuser.
+         *
+         * Un panier peut arriver ici sans zone : recomposé depuis une clé de rattrapage, créé par
+         * l'API, converti depuis un rendez-vous. Refuser sans avoir essayé perdrait une commande
+         * parfaitement servable ; passer sans zone donnerait au dispatch une réservation qu'il ne
+         * sait pas servir. On essaie, PUIS on refuse si vraiment rien ne couvre cette adresse.
+         */
+        app(ZonePricingResolver::class)->ensureZoneFor($draft);
+
+        $this->assertConfirmable($draft->fresh());
 
         return DB::transaction(function () use ($draft, $client) {
             /** @var OrderDraft $locked */
@@ -114,6 +124,44 @@ class OrderConfirmationService
 
         if (blank($draft->address)) {
             $blockers[] = 'L’adresse de l’intervention est nécessaire pour envoyer un professionnel.';
+        }
+
+        /*
+         * PAS DE ZONE, PAS DE COMMANDE — et on le dit AVANT le clic.
+         *
+         * Une réservation sans zone est une réservation que le dispatch ne peut pas servir : il ne
+         * saurait ni quel tarif appliquer, ni quels prestataires interroger. Elle serait confirmée,
+         * payée, puis abandonnée faute de candidat — et c'est le client qui découvrirait le
+         * problème, plusieurs minutes après avoir décidé.
+         */
+        if ($draft->items()->count() > 0 && ! $draft->service_zone_id) {
+            $blockers[] = filled($draft->address)
+                ? 'Nous n’intervenons pas encore à cette adresse. Essayez une autre adresse, ou laissez-nous vos coordonnées pour être prévenu de l’ouverture.'
+                : 'La zone d’intervention n’a pas pu être déterminée à partir de votre adresse.';
+        }
+
+        /*
+         * Le métier doit être OUVERT dans cette zone. Le catalogue décide zone par zone : un métier
+         * actif ailleurs mais fermé ici ne doit pas franchir la confirmation, sans quoi la
+         * recherche partirait pour un service qu'on ne vend pas à cette adresse.
+         */
+        $zoneId = $draft->service_zone_id ? (int) $draft->service_zone_id : null;
+
+        if ($zoneId) {
+            $resolver = app(ZonePricingResolver::class);
+
+            foreach ($draft->items()->with('trade')->get() as $item) {
+                if (! $item->trade) {
+                    continue;
+                }
+
+                if (! $resolver->isOpen((int) $item->trade_id, $zoneId)) {
+                    $blockers[] = sprintf(
+                        'Le service « %s » n’est pas encore disponible dans cette zone.',
+                        $item->trade->name,
+                    );
+                }
+            }
         }
 
         return $blockers;
@@ -236,6 +284,19 @@ class OrderConfirmationService
             'address' => $draft->address,
             'destination_lat' => $draft->lat,
             'destination_lng' => $draft->lng,
+            /*
+             * LA GÉOGRAPHIE ET LE MÉTIER SUIVENT LA RÉSERVATION.
+             *
+             * C'est le maillon qui manquait : la réservation naissait sans zone ni métier, et le
+             * dispatch devait les redeviner — ou renoncer à filtrer. Avec ces trois colonnes, la
+             * requête candidate peut imposer « ce métier, cette zone » dans le SQL lui-même.
+             */
+            'trade_id' => $item->trade_id,
+            'service_zone_id' => $draft->service_zone_id,
+            'postal_code' => $draft->postal_code,
+            // Le mode voyage aussi : c'est lui qui décide entre la chaîne d'offres immédiate et
+            // l'offre planifiée à long délai. Sans lui, tout devenait « planifié ».
+            'booking_mode' => $draft->mode === OrderMode::ASAP ? 'asap' : 'scheduled',
             'scheduled_at' => $scheduledAt,
             'scheduled_date' => $scheduledAt?->toDateString(),
             'scheduled_time' => $scheduledAt?->format('H:i:s'),

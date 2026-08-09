@@ -19,6 +19,7 @@ use App\Services\OrderEngine\PricingEngine;
 use App\Services\OrderEngine\ProviderAvailabilityLookup;
 use App\Services\OrderEngine\ProviderShortlist;
 use App\Services\OrderEngine\SlotFinder;
+use App\Services\OrderEngine\ZonePricingResolver;
 use App\Support\Domain\OrderMode;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Carbon;
@@ -113,6 +114,18 @@ class OrderJourney extends Component
     public bool $addressUnresolved = false;
 
     /**
+     * La géographie résolue depuis l'adresse — code postal, puis ZONE.
+     *
+     * Elles ne sont pas décoratives : la zone décide du prix (`trade_zone_pricing`) ET de la
+     * disponibilité du mode immédiat. Elles voyagent par le navigateur comme toute propriété
+     * Livewire, et c'est sans danger : rien n'est cru sur parole côté serveur — la zone est
+     * RE-RÉSOLUE à la confirmation à partir du code postal enregistré sur le panier.
+     */
+    public ?string $postalCode = null;
+
+    public ?int $serviceZoneId = null;
+
+    /**
      * Le refus de réordonnancement, AFFICHÉ : corriger en silence tromperait le client. */
     public string $sequenceError = '';
 
@@ -186,6 +199,18 @@ class OrderJourney extends Component
          */
         $this->sessionToken = session()->get('order_draft_token') ?: Str::random(48);
         session()->put('order_draft_token', $this->sessionToken);
+
+        /*
+         * Le panier retrouvé porte peut-être déjà sa géographie : la relire évite de repartir sans
+         * zone — donc sans grille de prix locale et sans savoir si l'immédiat est ouvert ici —
+         * alors que le client avait déjà saisi son adresse hier.
+         */
+        $draft = $this->draft();
+        $this->address = (string) ($draft->address ?? '');
+        $this->lat = $draft->lat !== null ? (float) $draft->lat : null;
+        $this->lng = $draft->lng !== null ? (float) $draft->lng : null;
+        $this->postalCode = $draft->postal_code;
+        $this->serviceZoneId = $draft->service_zone_id !== null ? (int) $draft->service_zone_id : null;
 
         if ($sector) {
             $this->sectorId = Sector::where('slug', $sector)->value('id');
@@ -445,8 +470,33 @@ class OrderJourney extends Component
             return [OrderMode::SCHEDULED];
         }
 
+        $resolver = app(ZonePricingResolver::class);
+
         return collect(OrderMode::all())
-            ->filter(fn (string $mode) => $trade->allowsMode($mode))
+            ->filter(function (string $mode) use ($trade, $resolver) {
+                if (! $trade->allowsMode($mode)) {
+                    return false;
+                }
+
+                /*
+                 * DEUX VERROUS POUR L'IMMÉDIAT, et ils ne disent pas la même chose.
+                 *
+                 * `trades.allows_asap` dit qu'un métier PEUT se faire dans l'heure — un ravalement
+                 * de façade ne le peut nulle part. La ligne `(métier, zone)` dit qu'on l'a ouvert
+                 * ICI. Le second est la décision d'exploitation : promettre un dépannage dans une
+                 * zone où personne n'est jamais en ligne fait attendre le client pour rien.
+                 *
+                 * Tant qu'aucune adresse n'est saisie, la zone est inconnue : on propose le mode,
+                 * et `updatedAddress()` retombera sur le rendez-vous si la zone le refuse. Le
+                 * cacher d'entrée priverait de l'information ceux qui n'ont pas encore tapé leur
+                 * rue — c'est-à-dire tout le monde au moment du choix.
+                 */
+                if ($mode === OrderMode::ASAP && $this->serviceZoneId !== null) {
+                    return $resolver->allowsImmediate($trade, $this->serviceZoneId);
+                }
+
+                return true;
+            })
             ->values()
             ->all();
     }
@@ -464,9 +514,16 @@ class OrderJourney extends Component
     {
         $trade = $this->trade;
 
-        return $trade
-            ? app(PricingEngine::class)->quoteItem($trade, $this->questions, $this->answers, ['mode' => $this->mode])
-            : null;
+        if (! $trade) {
+            return null;
+        }
+
+        // Le prix de la ZONE, quand elle est connue. Sans ce contexte, la grille locale existait en
+        // base et n'atteignait jamais le calcul : le client de Bruxelles payait le tarif de base.
+        $context = ['mode' => $this->mode]
+            + app(ZonePricingResolver::class)->pricingContext((int) $trade->id, $this->serviceZoneId);
+
+        return app(PricingEngine::class)->quoteItem($trade, $this->questions, $this->answers, $context);
     }
 
     /** Ce que la dernière réponse a changé — « +45 € — plafonds inclus ».
@@ -502,6 +559,8 @@ class OrderJourney extends Component
         $this->addressUnresolved = false;
         $this->lat = null;
         $this->lng = null;
+        $this->postalCode = null;
+        $this->serviceZoneId = null;
 
         $address = trim($this->address);
 
@@ -510,6 +569,8 @@ class OrderJourney extends Component
 
             return;
         }
+
+        $locality = null;
 
         try {
             // Le pays qui oriente la recherche est une donnée : ce produit parle six langues et ne
@@ -523,6 +584,8 @@ class OrderJourney extends Component
             if ($result) {
                 $this->lat = $result->latitude;
                 $this->lng = $result->longitude;
+                $this->postalCode = $result->postalCode;
+                $locality = $result->locality;
             } else {
                 $this->addressUnresolved = true;
             }
@@ -531,11 +594,40 @@ class OrderJourney extends Component
             Log::warning('[order_engine] géocodage indisponible', ['error' => $e->getMessage()]);
         }
 
+        /*
+         * LA ZONE EST RÉSOLUE ICI, pendant le parcours — pas au moment d'envoyer quelqu'un.
+         *
+         * C'est ce qui permet à la suite de l'écran de dire la vérité : le prix affiché est celui
+         * de la grille locale, et le mode « intervention immédiate » n'apparaît que si le
+         * catalogue l'a ouvert POUR CETTE ZONE. Résolue plus tard, la zone n'aurait plus rien à
+         * corriger — le client aurait déjà vu un prix et choisi un mode.
+         *
+         * Le code postal saisi à la main prime sur celui du géocodeur quand il existe : c'est la
+         * donnée que le client a écrite, et elle vaut mieux qu'une inférence.
+         */
+        $this->serviceZoneId = app(ZonePricingResolver::class)
+            ->resolveZone($this->postalCode, $locality)?->id;
+
         $this->draft()->update([
             'address' => $address,
             'lat' => $this->lat,
             'lng' => $this->lng,
+            'postal_code' => $this->postalCode,
+            'service_zone_id' => $this->serviceZoneId,
         ]);
+
+        /*
+         * Le mode retenu peut ne plus être disponible ici : « intervention immédiate » choisie
+         * avant l'adresse, sur une zone qui ne l'ouvre pas. On retombe sur le rendez-vous plutôt
+         * que de laisser une commande impossible aller jusqu'à la confirmation.
+         */
+        unset($this->availableModes);
+
+        if (! in_array($this->mode, $this->availableModes, true)) {
+            $this->mode = OrderMode::SCHEDULED;
+            $this->draft()->update(['mode' => $this->mode]);
+            $this->modeNotice = 'L’intervention immédiate n’est pas proposée à cette adresse : nous passons en prise de rendez-vous.';
+        }
 
         $this->refreshDerived();
     }
@@ -807,6 +899,11 @@ class OrderJourney extends Component
         $this->lng = $lng;
 
         $this->draft()->update(['address' => $description, 'lat' => $lat, 'lng' => $lng]);
+
+        // La suggestion porte sa position mais pas forcément son code postal : on redemande la
+        // géographie au serveur plutôt que de laisser le panier sans zone — auquel cas le prix
+        // retomberait sur le tarif national et le mode immédiat s'afficherait partout.
+        $this->resolveGeographyFromCoordinates($lat, $lng);
         $this->refreshDerived();
     }
 
@@ -842,7 +939,49 @@ class OrderJourney extends Component
             'lng' => $lng,
         ]);
 
+        $this->resolveGeographyFromCoordinates($lat, $lng);
         $this->refreshDerived();
+    }
+
+    /**
+     * Le code postal et la zone, depuis une position.
+     *
+     * Écrit UNE FOIS et appelé par les trois chemins d'adresse (frappe, suggestion, « ma
+     * position ») : trois résolutions séparées finiraient par diverger, et le prix dépendrait de
+     * la façon dont le client a saisi son adresse.
+     *
+     * L'échec est muet, comme le géocodage : une zone introuvable ne doit pas bloquer la saisie.
+     * Elle bloquera la CONFIRMATION, avec un message — c'est le bon moment pour le dire, parce que
+     * c'est le moment où ça devient une décision.
+     */
+    protected function resolveGeographyFromCoordinates(float $lat, float $lng): void
+    {
+        try {
+            $result = app(GeocodingService::class)->reverseGeocode($lat, $lng);
+
+            if ($result?->postalCode) {
+                $this->postalCode = $result->postalCode;
+                $this->serviceZoneId = app(ZonePricingResolver::class)
+                    ->resolveZone($result->postalCode, $result->locality)?->id;
+            }
+        } catch (\Throwable $e) {
+            Log::warning('[order_engine] géographie non résolue depuis la position', [
+                'error' => $e->getMessage(),
+            ]);
+        }
+
+        $this->draft()->update([
+            'postal_code' => $this->postalCode,
+            'service_zone_id' => $this->serviceZoneId,
+        ]);
+
+        unset($this->availableModes);
+
+        if (! in_array($this->mode, $this->availableModes, true)) {
+            $this->mode = OrderMode::SCHEDULED;
+            $this->draft()->update(['mode' => $this->mode]);
+            $this->modeNotice = 'L’intervention immédiate n’est pas proposée à cette adresse : nous passons en prise de rendez-vous.';
+        }
     }
 
     /**

@@ -276,7 +276,10 @@ class BundleComposer
     {
         $items = $draft->items()->with('trade')->orderBy('sequence')->get();
 
-        $detailed = $items->map(function (OrderDraftItem $item) use ($draft) {
+        $resolver = app(ZonePricingResolver::class);
+        $zoneId = $draft->service_zone_id ? (int) $draft->service_zone_id : null;
+
+        $detailed = $items->map(function (OrderDraftItem $item) use ($draft, $resolver, $zoneId) {
             $questions = $item->trade->questions()->with(['options.translations', 'conditions', 'translations'])->get();
 
             return [
@@ -286,7 +289,10 @@ class BundleComposer
                     $item->trade,
                     $questions,
                     $this->drafts->answersOf($item->load('answers')),
-                    ['mode' => $draft->mode],
+                    // LA MÊME GRILLE QU'À L'ÉCRAN. C'est ce devis-ci qui est FIGÉ à la
+                    // confirmation : le calculer sans la zone donnerait au client un prix affiché
+                    // et un prix facturé différents.
+                    ['mode' => $draft->mode] + $resolver->pricingContext((int) $item->trade_id, $zoneId),
                 ),
             ];
         });

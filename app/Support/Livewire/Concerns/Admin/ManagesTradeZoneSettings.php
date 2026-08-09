@@ -4,19 +4,33 @@ namespace App\Support\Livewire\Concerns\Admin;
 
 use App\Models\ServiceZone;
 use App\Models\Trade;
-use App\Models\TradeZoneSetting;
+use App\Models\TradeZonePricing;
 use App\Support\ActivityLogger;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Gate;
 
 /**
- * Pilote l'activation/désactivation et la tarification d'un métier (Trade)
- * dans une zone (ServiceZone). Absence de ligne en base = trade implicitement
- * actif avec multiplicateur 1.00 (back-compat).
+ * L'activation et la tarification d'un métier DANS UNE ZONE — sur la ligne qui fait foi.
  *
- * Doit être branché dans un composant Livewire qui expose $selectedZoneId.
- * Le composant doit appeler $this->loadTradeSettingsForZone($zoneId) après
- * chaque selectZone() (cf. trait alias dans GestionZones).
+ * CE TRAIT ÉCRIT DÉSORMAIS DANS `trade_zone_pricing`, et plus dans `trade_zone_settings`.
+ *
+ * Trois tables décrivaient le même fait — « ce métier est-il vendu ici, et à quel prix » — et
+ * aucune ne parlait au parcours de commande : `trade_zone_settings` servait cet écran-ci,
+ * `trade_zone_pricing` servait le catalogue du moteur de commande, et `zone_service_rules` servait
+ * l'ancien formulaire. Un administrateur pouvait fermer un métier ici et le voir rester ouvert
+ * dans le parcours client, ce qui n'est pas un défaut d'affichage mais une commande qu'on encaisse
+ * pour un service qu'on ne rend pas.
+ *
+ * L'ACTIVATION ET LE PRIX SONT LA MÊME LIGNE. Éteindre ne supprime jamais la ligne : rallumer doit
+ * retrouver le tarif saisi, qui a pu demander une négociation qu'on ne veut pas refaire.
+ *
+ * L'ABSENCE DE LIGNE VAUT « FERMÉ ». C'est l'inverse de l'ancienne règle (« absent = actif par
+ * défaut »), et le changement est délibéré : un métier créé après l'ouverture d'un marché ne doit
+ * pas s'y vendre du seul fait que personne n'a encore rien décidé. Le seeder pose la grille
+ * complète pour que l'état initial reste « tout est ouvert ».
+ *
+ * Doit être branché dans un composant Livewire qui expose $selectedZoneId, et qui appelle
+ * $this->loadTradeSettingsForZone($zoneId) après chaque selectZone().
  */
 trait ManagesTradeZoneSettings
 {
@@ -30,7 +44,7 @@ trait ManagesTradeZoneSettings
             return;
         }
 
-        $existing = TradeZoneSetting::query()
+        $existing = TradeZonePricing::query()
             ->where('service_zone_id', $zoneId)
             ->get()
             ->keyBy('trade_id');
@@ -41,7 +55,7 @@ trait ManagesTradeZoneSettings
             ->orderBy('name')
             ->get()
             ->mapWithKeys(function (Trade $trade) use ($existing) {
-                $setting = $existing->get($trade->id);
+                $ligne = $existing->get($trade->id);
 
                 return [
                     $trade->id => [
@@ -49,11 +63,15 @@ trait ManagesTradeZoneSettings
                         'trade_slug' => (string) $trade->slug,
                         'trade_color' => (string) ($trade->color ?: '#64748b'),
                         'trade_icon' => (string) ($trade->icon ?: 'briefcase'),
-                        'is_active' => $setting === null ? true : (bool) $setting->is_active,
-                        'price_multiplier' => $setting?->price_multiplier !== null
-                            ? (string) $setting->price_multiplier
+                        'is_active' => $ligne !== null && (bool) $ligne->is_active,
+                        'price_multiplier' => $ligne?->surge_multiplier !== null
+                            ? (string) $ligne->surge_multiplier
                             : '1.00',
-                        'notes' => (string) ($setting?->notes ?? ''),
+                        // L'immédiat se décide ici aussi : c'est la même ligne, et le séparer
+                        // reproduirait exactement le doublon qu'on vient de supprimer.
+                        'asap_enabled' => $ligne !== null && (bool) $ligne->asap_enabled,
+                        'allows_asap' => (bool) $trade->allows_asap,
+                        'notes' => (string) (($ligne?->metadata['notes'] ?? null) ?? ''),
                     ],
                 ];
             })
@@ -66,20 +84,39 @@ trait ManagesTradeZoneSettings
         Gate::authorize('perform-critical-admin-actions');
     }
 
-    protected function persistTradeSetting(ServiceZone $zone, int $tradeId, array $payload): TradeZoneSetting
+    protected function persistTradeSetting(ServiceZone $zone, int $tradeId, array $payload): TradeZonePricing
     {
-        return TradeZoneSetting::updateOrCreate(
-            ['trade_id' => $tradeId, 'service_zone_id' => $zone->id],
-            [
-                'is_active' => (bool) ($payload['is_active'] ?? true),
-                'price_multiplier' => filled($payload['price_multiplier'] ?? null)
-                    ? (float) $payload['price_multiplier']
-                    : 1.00,
-                'notes' => filled($payload['notes'] ?? null) ? $payload['notes'] : null,
-                'updated_by' => auth()->id(),
-                'created_by' => auth()->id(),
-            ]
-        );
+        $ligne = TradeZonePricing::query()->firstOrNew([
+            'trade_id' => $tradeId,
+            'service_zone_id' => $zone->id,
+        ]);
+
+        if (! $ligne->exists) {
+            // Première ouverture : on part du tarif du métier. Une ligne à zéro euro ferait
+            // travailler la plateforme gratuitement jusqu'à ce que quelqu'un s'en aperçoive.
+            $ligne->base_rate_cents = (int) (Trade::query()->whereKey($tradeId)->value('base_price_cents') ?? 0);
+        }
+
+        $ligne->is_active = (bool) ($payload['is_active'] ?? true);
+
+        // La colonne est un décimal : y écrire un float PHP la ferait arrondir au hasard de la
+        // conversion. On écrit la chaîne que la base attend.
+        $ligne->surge_multiplier = filled($payload['price_multiplier'] ?? null)
+            ? number_format((float) $payload['price_multiplier'], 2, '.', '')
+            : '1.00';
+
+        if (array_key_exists('asap_enabled', $payload)) {
+            $ligne->asap_enabled = (bool) $payload['asap_enabled'];
+        }
+
+        $ligne->metadata = array_merge($ligne->metadata ?? [], [
+            'notes' => filled($payload['notes'] ?? null) ? $payload['notes'] : null,
+            'updated_by' => auth()->id(),
+        ]);
+
+        $ligne->save();
+
+        return $ligne;
     }
 
     public function saveTradeSetting(int $tradeId): void
@@ -97,12 +134,12 @@ trait ManagesTradeZoneSettings
         Trade::findOrFail($tradeId); // valide que le trade existe
 
         $payload = $this->tradeSettings[$tradeId] ?? [];
-        $setting = $this->persistTradeSetting($zone, $tradeId, $payload);
+        $ligne = $this->persistTradeSetting($zone, $tradeId, $payload);
 
         ActivityLogger::log('zone_trade_setting.updated', $zone, [
             'trade_id' => $tradeId,
-            'setting_id' => $setting->id,
-            'payload' => Arr::only($payload, ['is_active', 'price_multiplier', 'notes']),
+            'setting_id' => $ligne->id,
+            'payload' => Arr::only($payload, ['is_active', 'price_multiplier', 'notes', 'asap_enabled']),
         ]);
 
         session()->flash('success', 'Métier mis à jour pour cette zone.');
@@ -140,18 +177,24 @@ trait ManagesTradeZoneSettings
 
         $zone = ServiceZone::findOrFail($this->selectedZoneId);
         $current = $this->tradeSettings[$tradeId] ?? [];
+
+        $ouvertAujourdhui = TradeZonePricing::query()
+            ->where('trade_id', $tradeId)
+            ->where('service_zone_id', $zone->id)
+            ->value('is_active');
+
         $payload = array_merge($current, [
-            'is_active' => ! (bool) ($current['is_active'] ?? true),
+            'is_active' => ! (bool) $ouvertAujourdhui,
         ]);
 
-        $setting = $this->persistTradeSetting($zone, $tradeId, $payload);
+        $ligne = $this->persistTradeSetting($zone, $tradeId, $payload);
 
         ActivityLogger::log('zone_trade_setting.toggled', $zone, [
             'trade_id' => $tradeId,
-            'is_active' => $setting->fresh()->is_active,
+            'is_active' => $ligne->fresh()->is_active,
         ]);
 
-        session()->flash('success', $setting->fresh()->is_active
+        session()->flash('success', $ligne->fresh()->is_active
             ? 'Métier activé dans cette zone.'
             : 'Métier désactivé dans cette zone.');
         $this->selectZone($zone->id);

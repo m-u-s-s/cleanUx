@@ -22,6 +22,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property int|null $min_price_cents
  * @property int|null $max_price_cents
  * @property bool $is_active
+ * @property bool $asap_enabled
  * @property array|null $metadata
  */
 class TradeZonePricing extends Model
@@ -39,6 +40,7 @@ class TradeZonePricing extends Model
         'min_price_cents',
         'max_price_cents',
         'is_active',
+        'asap_enabled',
         'metadata',
     ];
 
@@ -48,6 +50,7 @@ class TradeZonePricing extends Model
         'min_price_cents' => 'integer',
         'max_price_cents' => 'integer',
         'is_active' => 'boolean',
+        'asap_enabled' => 'boolean',
         'metadata' => 'array',
     ];
 

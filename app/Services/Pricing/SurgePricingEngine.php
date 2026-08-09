@@ -7,7 +7,7 @@ use App\Models\PricingZoneState;
 use App\Models\ProviderProfile;
 use App\Models\ServiceZone;
 use App\Models\Trade;
-use App\Models\TradeZoneSetting;
+use App\Models\TradeZonePricing;
 use Carbon\Carbon;
 use Illuminate\Support\Carbon as IlluminateCarbon;
 use Illuminate\Support\Facades\DB;
@@ -88,15 +88,21 @@ class SurgePricingEngine
             $source = 'live';
         }
 
-        // 1.bis Multiplicateur trade-zone (Phase 15 — config admin par métier × zone)
+        /*
+         * 1.bis Multiplicateur metier x zone — lu sur `trade_zone_pricing`.
+         *
+         * C'etait `trade_zone_settings`, une seconde table decrivant le meme fait. Deux grilles
+         * pour un seul prix : l'administrateur en reglait une, le parcours de commande lisait
+         * l'autre, et le montant facture ne correspondait a aucun des deux ecrans.
+         */
         if ($zone && ! empty($context['trade_id'])) {
-            $tradeSetting = TradeZoneSetting::query()
+            $ligneZone = TradeZonePricing::query()
                 ->where('trade_id', (int) $context['trade_id'])
                 ->where('service_zone_id', $zone->id)
                 ->first();
 
-            if ($tradeSetting) {
-                $tradeMultiplier = (float) $tradeSetting->price_multiplier;
+            if ($ligneZone) {
+                $tradeMultiplier = (float) $ligneZone->surge_multiplier;
                 if ($tradeMultiplier > 0 && abs($tradeMultiplier - 1.0) > 0.0001) {
                     $factors['trade_zone'] = $tradeMultiplier;
                     $multiplier *= $tradeMultiplier;

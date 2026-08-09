@@ -58,6 +58,10 @@ class ZoneManagementSeeder extends Seeder
         );
 
         if ($nationalZone) {
+            // La couverture nationale reçoit TOUS les codes postaux : c'est le dernier recours de
+            // `ZoneCoverageService`, et un recours sans code postal ne rattrape rien.
+            $this->attachPostalCodes((int) $nationalZone->id, $postalCodes, $postalCodes->pluck('code')->all());
+
             $this->syncRulesForZone((int) $nationalZone->id, $services, [
                 'price_multiplier' => 1.00,
                 'minimum_notice_hours' => 24,
@@ -112,6 +116,8 @@ class ZoneManagementSeeder extends Seeder
                 DB::table('postal_codes')->whereIn('code', $zonePostalCodes->all())->update(['service_zone_id' => $zone->id]);
             }
 
+            $this->attachPostalCodes((int) $zone->id, $postalCodes, $zonePostalCodes->all());
+
             $this->syncRulesForZone((int) $zone->id, $services, [
                 'price_multiplier' => $zoneData['multiplier'],
                 'minimum_notice_hours' => $zoneData['notice'],
@@ -121,6 +127,58 @@ class ZoneManagementSeeder extends Seeder
         }
 
         $this->command?->info('✅ Zones de service initialisées selon les migrations disponibles.');
+    }
+
+    /**
+     * LE PIVOT QUI FAISAIT DÉFAUT — `service_zone_postal_code`, et ses zéro lignes.
+     *
+     * `ZoneCoverageService::resolveServiceZoneWithSource()` cherche la zone par ce pivot AVANT tout
+     * repli. La table existait, personne ne la remplissait : la résolution tombait donc
+     * systématiquement sur le repli provincial puis national, et deux adresses de villes
+     * différentes obtenaient la même zone — donc le même prix, et le même bassin de prestataires.
+     * C'est le maillon coupé de la chaîne géographique.
+     *
+     * @param  \Illuminate\Support\Collection<int, object>  $allPostalCodes
+     * @param  list<string>  $codes
+     */
+    protected function attachPostalCodes(int $zoneId, $allPostalCodes, array $codes): void
+    {
+        if (! $this->hasTable('service_zone_postal_code') || $codes === []) {
+            return;
+        }
+
+        $ids = $allPostalCodes
+            ->filter(fn ($postalCode) => in_array($postalCode->code, $codes, true))
+            ->pluck('id');
+
+        $aPrimaire = $this->hasColumn('service_zone_postal_code', 'is_primary');
+
+        foreach ($ids as $postalCodeId) {
+            $existe = DB::table('service_zone_postal_code')
+                ->where('service_zone_id', $zoneId)
+                ->where('postal_code_id', $postalCodeId)
+                ->exists();
+
+            if ($existe) {
+                continue;
+            }
+
+            $ligne = [
+                'service_zone_id' => $zoneId,
+                'postal_code_id' => $postalCodeId,
+            ];
+
+            if ($aPrimaire) {
+                $ligne['is_primary'] = true;
+            }
+
+            if ($this->hasColumn('service_zone_postal_code', 'created_at')) {
+                $ligne['created_at'] = now();
+                $ligne['updated_at'] = now();
+            }
+
+            DB::table('service_zone_postal_code')->insert($ligne);
+        }
     }
 
     protected function syncRulesForZone(int $zoneId, $services, array $overrides = []): void

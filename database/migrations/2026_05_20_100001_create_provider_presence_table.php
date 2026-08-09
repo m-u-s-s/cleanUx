@@ -37,6 +37,16 @@ return new class extends Migration
 
             $table->unique('provider_user_id');
             $table->index(['status', 'heartbeat_at']);
+
+            /*
+             * L'INDEX QUI REND LA BOÎTE ENGLOBANTE UTILE.
+             *
+             * Le dispatch immédiat cherche « en ligne, battement frais, dans ce rectangle » à
+             * chaque vague de chaque recherche. Sans index sur la position, la pré-sélection
+             * balaie toute la table avant que la haversine ne tranche — le calcul exact qu'on
+             * voulait justement épargner.
+             */
+            $table->index(['status', 'current_lat', 'current_lng'], 'provider_presence_geo_idx');
         });
     }
 

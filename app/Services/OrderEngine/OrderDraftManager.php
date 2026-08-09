@@ -191,9 +191,15 @@ class OrderDraftManager
     public function saveAnswers(OrderDraftItem $item, Collection $questions, array $answers): OrderDraftItem
     {
         $visible = $this->conditions->visible($questions, $answers);
+        // La grille de la zone entre AUSSI ici : les impacts écrits ligne par ligne servent à
+        // expliquer le devis, et un devis expliqué avec un tarif national alors qu'on facture le
+        // tarif bruxellois est indéfendable devant un litige.
         $quote = $this->pricing->quoteItem($item->trade, $questions, $answers, [
             'mode' => $item->draft->mode,
-        ]);
+        ] + app(ZonePricingResolver::class)->pricingContext(
+            (int) $item->trade_id,
+            $item->draft->service_zone_id ? (int) $item->draft->service_zone_id : null,
+        ));
 
         // Le montant de chaque ligne, indexé par code : c'est ce qui rend le devis explicable.
         $impacts = collect($quote->lines)->keyBy('code');
@@ -245,11 +251,14 @@ class OrderDraftManager
     {
         $items = $draft->items()->with('trade')->get();
 
+        $resolver = app(ZonePricingResolver::class);
+        $zoneId = $draft->service_zone_id ? (int) $draft->service_zone_id : null;
+
         $breakdowns = $items->map(fn (OrderDraftItem $item) => $this->pricing->quoteItem(
             $item->trade,
             $item->trade->questions()->with(['options.translations', 'conditions', 'translations'])->get(),
             $this->answersOf($item),
-            ['mode' => $draft->mode],
+            ['mode' => $draft->mode] + $resolver->pricingContext((int) $item->trade_id, $zoneId),
         ))->all();
 
         $order = $this->pricing->quoteOrder($breakdowns, $draft->mode);

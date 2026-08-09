@@ -260,6 +260,8 @@ Route::middleware(['auth:sanctum', 'api_admin'])->group(function () {
 
         Route::middleware('api_scope:admin:critical,admin:everything')->group(function () {
             Route::post('/zones/{zone}/trades/{trade}/toggle', [ZoneCatalogController::class, 'toggle']);
+            // L'immédiat se décide zone par zone, comme le prix — et sur la même ligne.
+            Route::post('/zones/{zone}/trades/{trade}/toggle-asap', [ZoneCatalogController::class, 'toggleAsap']);
 
             /*
              * Le constructeur de parcours. Il ne réimplémente aucune règle : la validation vient de

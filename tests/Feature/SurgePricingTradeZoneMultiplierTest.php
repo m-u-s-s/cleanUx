@@ -3,7 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\Trade;
-use App\Models\TradeZoneSetting;
+use App\Models\TradeZonePricing;
 use App\Services\Pricing\SurgePricingEngine;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Support\CreatesZoneAwareFixtures;
@@ -22,11 +22,12 @@ class SurgePricingTradeZoneMultiplierTest extends TestCase
             'is_active' => true, 'sort_order' => 10,
         ]);
 
-        TradeZoneSetting::create([
+        TradeZonePricing::create([
             'trade_id' => $trade->id,
             'service_zone_id' => $context['zone']->id,
             'is_active' => true,
-            'price_multiplier' => 1.50,
+            'base_rate_cents' => 0,
+            'surge_multiplier' => '1.50',
         ]);
 
         /** @var SurgePricingEngine $engine */

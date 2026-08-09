@@ -216,7 +216,7 @@ class CatalogTradeCreationTest extends TestCase
             ->set('code', 'RAMONAGE')
             ->call('enregistrerMetier');
 
-        // `trade_zone_settings` reste le doublon condamné, y compris sur ce nouveau chemin.
-        $this->assertDatabaseCount('trade_zone_settings', 0);
+        // `trade_zone_settings` a été SUPPRIMÉE : le doublon condamné n'existe plus en base.
+        $this->assertFalse(\Illuminate\Support\Facades\Schema::hasTable('trade_zone_settings'));
     }
 }
