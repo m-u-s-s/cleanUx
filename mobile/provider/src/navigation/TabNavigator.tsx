@@ -7,6 +7,7 @@ import { ProfileScreen } from '@/screens/ProfileScreen';
 import { Icon } from '@/ui';
 import { apparenceDeBarre } from '@/ui/glassBars';
 import { usePresenceHeartbeat } from '@/presence';
+import { OfferHost } from '@/offers';
 import { colors } from '@/theme';
 import { useThemeColors } from '@/theme/useThemeColors';
 import type { TabParamList } from './types';
@@ -22,6 +23,7 @@ export function TabNavigator() {
   usePresenceHeartbeat();
 
   return (
+    <>
     <Tab.Navigator
       screenOptions={{
         headerShown: false,
@@ -51,5 +53,19 @@ export function TabNavigator() {
         options={{ tabBarIcon: ({ color, size }) => <Icon name="person-outline" size={size} color={color} /> }}
       />
     </Tab.Navigator>
+    {/*
+      LA MODALE D'OFFRE, MONTEE ICI ET NULLE PART AILLEURS.
+
+      Meme raison que le battement de presence juste au-dessus : cette pile est montee UNE FOIS par
+      session terrain et n'est jamais demontee. La modale s'ouvre donc quel que soit l'onglet
+      affiche — tableau de bord, missions, gains — au lieu de dependre d'un ecran que le prestataire
+      aurait pu quitter. Une offre qui n'apparait que sur le tableau de bord est une offre qu'on
+      rate en consultant ses gains.
+
+      Elle ne vit PAS a la racine de l'application : un gerant de societe ou un administrateur ne
+      doit pas voir de modale d'offre, et leurs piles n'incluent pas celle-ci.
+    */}
+    <OfferHost />
+    </>
   );
 }

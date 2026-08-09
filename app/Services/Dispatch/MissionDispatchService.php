@@ -2,37 +2,39 @@
 
 namespace App\Services\Dispatch;
 
-use App\Jobs\Dispatch\EscalateMissionAssignmentJob;
 use App\Models\Mission;
 use App\Models\MissionAssignment;
 use App\Models\ProviderProfile;
 use App\Models\User;
-use App\Notifications\Dispatch\MissionOfferNotification;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
 /**
- * Phase 11 — Orchestrateur du dispatch d'une mission vers un prestataire.
+ * LE CYCLE DE VIE D'UNE OFFRE : accepter, refuser, expirer.
  *
- * Inspiré du dispatch Uber :
- *   1. createOffer(Mission, User) crée un MissionAssignment "pending"
- *   2. Notification push envoyée au prestataire (15s pour répondre)
- *   3. Job de timeout planifié à T+15s
- *   4. Si accept → mission devient "assigned" + autres assignments cancellés
- *   5. Si decline → on escalade au suivant via AiDispatchService
- *   6. Si timeout (job qui s'exécute) → idem decline
+ * CE QUI A CHANGÉ. Cette classe décidait aussi « à qui maintenant », avec sa propre liste de
+ * candidats, pendant que la recherche par rayons en utilisait une autre. Deux annuaires, deux
+ * ordres, et une même course qui pouvait sortir par les deux chemins. Le choix du destinataire
+ * appartient désormais à `DispatchEngine`, qui porte les vagues, l'échéance globale et la dernière
+ * vague en broadcast.
  *
- * Cette classe ne sait PAS qui choisir comme prestataire — elle s'appuie sur
- * AiDispatchService::rankEmployees() pour la liste classée par score.
+ * CE QUI RESTE ICI est le cycle de vie d'UNE offre, et notamment le verrou pessimiste de
+ * l'acceptation : deux prestataires peuvent accepter à la même seconde après la dernière vague, et
+ * un seul doit gagner. Sans ce verrou, deux personnes partent pour la même intervention et une
+ * seule est payée.
+ *
+ * La classe reste le point d'entrée des contrôleurs et des écrans : la déplacer aurait cassé
+ * l'application mobile, l'écran web et le forçage administrateur pour un gain de nommage.
  */
 class MissionDispatchService
 {
-    public const RESPONSE_TIMEOUT_SECONDS = 15;
-
-    /** Liste des candidats déjà tentés pour cette mission (anti-boucle). */
-    public function __construct(
-        protected AiDispatchService $aiDispatch,
-    ) {}
+    /**
+     * Le défaut historique, gardé pour les appelants qui le référencent.
+     *
+     * La valeur qui fait foi est `config('dispatch.default_timeout')` : vingt secondes, et
+     * surchargeable par métier.
+     */
+    public const RESPONSE_TIMEOUT_SECONDS = 20;
 
     /**
      * Resolve the timeout in seconds for a given trade, falling back to the
@@ -40,12 +42,9 @@ class MissionDispatchService
      */
     public function resolveTimeoutForMission(Mission $mission): int
     {
-        $slug = optional($mission->booking?->trade)->slug ?? '';
+        $booking = $mission->bookingViaBookingId ?? $mission->rendezVous ?? $mission->booking;
 
-        return (int) config(
-            "dispatch.timeout_per_trade.{$slug}",
-            config('dispatch.default_timeout', self::RESPONSE_TIMEOUT_SECONDS)
-        );
+        return app(DispatchEngine::class)->immediateTimeout($booking);
     }
 
     /**
@@ -60,103 +59,59 @@ class MissionDispatchService
         Mission $mission,
         ?int $previousAssignmentId = null,
     ): ?MissionAssignment {
-        // Récupère la liste classée des candidats via le service existant
-        $booking = $mission->booking;
-        if (! $booking) {
-            Log::warning('MissionDispatchService: mission sans booking', [
-                'mission_id' => $mission->id,
-            ]);
-
-            return null;
-        }
-
-        $ranked = $this->aiDispatch->rankEmployees($booking);
-        if ($ranked->isEmpty()) {
-            Log::info('MissionDispatchService: aucun candidat trouvé', [
-                'mission_id' => $mission->id,
-            ]);
-
-            return null;
-        }
-
-        // Exclure les prestataires déjà tentés pour cette mission
-        $alreadyTried = $mission->assignments()
-            ->pluck('user_id')
-            ->all();
-
-        $candidate = $ranked
-            ->reject(fn ($entry) => in_array($entry['employee']->id, $alreadyTried, true))
-            ->first();
-
-        if (! $candidate) {
-            Log::info('MissionDispatchService: tous les candidats déjà tentés', [
-                'mission_id' => $mission->id,
-                'tried_user_ids' => $alreadyTried,
-            ]);
-
-            return null;
-        }
-
-        return $this->createOffer($mission, $candidate['employee'], $previousAssignmentId);
+        /*
+         * DÉLÉGATION AU MOTEUR — cette méthode ne décide plus « à qui maintenant ».
+         *
+         * Elle le décidait avec sa propre liste (`AiDispatchService::rankEmployees()`), pendant que
+         * la recherche par rayons en utilisait une autre. Deux annuaires, deux ordres, et une même
+         * course qui pouvait sortir par les deux chemins. Le moteur porte les vagues, l'échéance
+         * globale et la dernière vague en broadcast ; les laisser ici en dupliquerait la moitié.
+         *
+         * La signature est CONSERVÉE : les commandes planifiées, le forçage administrateur et le
+         * job d'escalade l'appellent toujours.
+         */
+        return app(DispatchEngine::class)->next($mission);
     }
 
     /**
-     * Crée une offre (MissionAssignment "assigned" en attente d'accept) pour un
-     * prestataire précis. Notifie le prestataire et planifie l'escalation.
+     * Crée une offre pour un prestataire PRÉCIS — forçage administrateur, prestataire préféré.
+     *
+     * UNE SEULE FABRIQUE D'OFFRES. La création vit dans `DispatchEngine` : c'est elle qui écrit la
+     * ligne, qui la transmet sur les trois canaux et qui arme le compte à rebours serveur. Deux
+     * fabriques donnaient deux offres différentes selon le chemin — l'une notifiée en temps réel,
+     * l'autre non, et un prestataire qui ne voyait jamais la modale quand un administrateur la lui
+     * envoyait.
+     *
+     * @throws \DomainException si la vérification d'identité du prestataire n'est pas validée
      */
     public function createOffer(
         Mission $mission,
         User $provider,
         ?int $previousAssignmentId = null,
     ): MissionAssignment {
-        // KYC = blocage strict : aucune offre/assignation à un prestataire non vérifié.
-        // Chokepoint universel — couvre le force-assign admin et le prestataire préféré,
-        // au-delà du pool de candidats qui filtre déjà les non-vérifiés.
+        // KYC = blocage strict, et il est LEVÉ ici plutôt que rendu `null` : ce chemin est celui
+        // d'un humain qui désigne quelqu'un, et il doit savoir pourquoi son geste est refusé.
         if (! $provider->hasClearedKyc()) {
             throw new \DomainException(
                 "Ce prestataire ne peut pas recevoir de mission : sa vérification d'identité (KYC) n'est pas validée."
             );
         }
 
-        return DB::transaction(function () use ($mission, $provider, $previousAssignmentId) {
-            $now = now();
-            $timeout = $this->resolveTimeoutForMission($mission);
-            $expiresAt = $now->copy()->addSeconds($timeout);
+        $assignment = app(DispatchEngine::class)->createOffer(
+            $mission,
+            $provider,
+            $this->resolveTimeoutForMission($mission),
+        );
 
-            $assignment = MissionAssignment::create([
-                'mission_id' => $mission->id,
-                'user_id' => $provider->id,
-                'role_on_mission' => 'lead',
-                'assignment_status' => 'assigned',
-                'assigned_at' => $now,
-                'notification_sent_at' => $now,
-                'expires_at' => $expiresAt,
-                'escalated_from_assignment_id' => $previousAssignmentId,
-            ]);
+        if (! $assignment) {
+            throw new \DomainException('Cette offre n’a pas pu être créée.');
+        }
 
-            // Notification push (canal database + mail + webpush via Phase 8)
-            try {
-                $provider->notify(new MissionOfferNotification($mission, $assignment));
-            } catch (\Throwable $e) {
-                Log::warning('Échec notification dispatch', [
-                    'assignment_id' => $assignment->id,
-                    'error' => $e->getMessage(),
-                ]);
-            }
+        if ($previousAssignmentId !== null) {
+            $assignment->update(['escalated_from_assignment_id' => $previousAssignmentId]);
+        }
 
-            // Schedule the escalation job
-            EscalateMissionAssignmentJob::dispatch($assignment->id)
-                ->delay($expiresAt);
-
-            Log::info('MissionDispatchService: offre créée', [
-                'assignment_id' => $assignment->id,
-                'mission_id' => $mission->id,
-                'provider_id' => $provider->id,
-                'expires_at' => $expiresAt->toIso8601String(),
-            ]);
-
-            return $assignment;
-        });
+        return $assignment->fresh();
     }
 
     /**
@@ -259,6 +214,15 @@ class MissionDispatchService
                 'response_seconds' => $responseSeconds,
             ]);
 
+            /*
+             * LES AUTRES MODALES SE FERMENT, ET LA RECHERCHE AUSSI.
+             *
+             * Après la dernière vague, plusieurs prestataires ont la même course à l'écran. Sans ce
+             * geste, leur compte à rebours continue sur une course déjà partie : ils appuient sur
+             * « Accepter », reçoivent une erreur, et apprennent à ne plus croire les offres.
+             */
+            app(DispatchEngine::class)->onAccepted($assignment);
+
             return $assignment->fresh();
         });
     }
@@ -290,6 +254,10 @@ class MissionDispatchService
                 'reason' => $reason,
                 'response_seconds' => $responseSeconds,
             ]);
+
+            // La modale se ferme chez celui qui vient de refuser : sur mobile, la socket est ce qui
+            // la fait disparaître, et sans ce message elle resterait jusqu'à l'expiration.
+            app(DispatchEngine::class)->withdraw($assignment, 'declined');
 
             // Escalade au suivant immédiatement
             return $this->dispatchToNextProvider($assignment->mission, $assignment->id);
@@ -324,6 +292,9 @@ class MissionDispatchService
             Log::info('MissionDispatchService: assignment expiré', [
                 'assignment_id' => $assignment->id,
             ]);
+
+            // Le serveur a tranché : la modale doit se fermer, même si le téléphone comptait encore.
+            app(DispatchEngine::class)->withdraw($assignment, 'expired');
 
             return $this->dispatchToNextProvider($assignment->mission, $assignment->id);
         });

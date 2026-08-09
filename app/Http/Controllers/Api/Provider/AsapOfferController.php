@@ -5,7 +5,8 @@ namespace App\Http\Controllers\Api\Provider;
 use App\Http\Controllers\Controller;
 use App\Models\AsapDispatchNotification;
 use App\Models\AsapDispatchRequest;
-use App\Services\OrderEngine\AsapDispatchService;
+use App\Models\MissionAssignment;
+use App\Services\Dispatch\MissionDispatchService;
 use App\Support\Domain\AsapStatus;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -42,17 +43,35 @@ class AsapOfferController extends Controller
     /**
      * Le prestataire prend la course.
      *
-     * Le verrou vit dans le service : deux prestataires peuvent appuyer à la même seconde, et le
-     * second doit être refusé proprement plutôt que d'écraser le premier.
+     * UNE SEULE VOIE D'ACCEPTATION. Elle passait par la recherche elle-meme, en parallele de la
+     * chaine d'offres a compte a rebours : deux facons d'accepter la meme course, dont une qui
+     * n'ecrivait aucun `MissionAssignment` et laissait donc l'offre de l'autre encore vivante.
+     * Ici, on retrouve l'offre nominative de ce prestataire et on l'accepte — le verrou pessimiste
+     * de `MissionDispatchService::accept()` tranche les acceptations simultanees.
      */
     public function accept(Request $request, AsapDispatchRequest $asapRequest): JsonResponse
     {
         $offer = $this->offerFor($request, $asapRequest);
 
+        $assignment = MissionAssignment::query()
+            ->where('mission_id', $asapRequest->mission_id)
+            ->where('user_id', $request->user()->id)
+            ->where('assignment_status', 'assigned')
+            ->orderByDesc('id')
+            ->first();
+
+        if (! $assignment) {
+            // Aucune offre nominative vivante : la course est partie, ou elle ne lui a jamais ete
+            // proposee autrement que par la liste. 409 et non 422 — ce n'est pas une saisie
+            // invalide.
+            return response()->json([
+                'message' => 'Cette course vient d’être prise par un autre professionnel.',
+            ], 409);
+        }
+
         try {
-            $accepted = app(AsapDispatchService::class)->accept($asapRequest, $request->user());
-        } catch (ValidationException $e) {
-            // 409 et non 422 : ce n'est pas une saisie invalide, c'est une course déjà prise.
+            app(MissionDispatchService::class)->accept($assignment);
+        } catch (\DomainException $e) {
             return response()->json([
                 'message' => 'Cette course vient d’être prise par un autre professionnel.',
             ], 409);
@@ -62,9 +81,9 @@ class AsapOfferController extends Controller
 
         return response()->json([
             'data' => [
-                'asap_dispatch_request_id' => $accepted->id,
-                'status' => $accepted->status,
-                'booking_id' => $accepted->item?->metadata['booking_id'] ?? null,
+                'asap_dispatch_request_id' => $asapRequest->id,
+                'status' => $asapRequest->fresh()->status,
+                'booking_id' => $asapRequest->booking_id,
             ],
         ]);
     }

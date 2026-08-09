@@ -205,6 +205,7 @@ class OrderConfirmation extends Component
         if ($confirmed->mode === OrderMode::ASAP) {
             $search = AsapDispatchRequest::query()
                 ->where('order_draft_id', $confirmed->id)
+                ->orWhere('booking_id', $confirmed->converted_booking_id)
                 ->orderBy('id')
                 ->first();
 

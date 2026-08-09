@@ -91,6 +91,23 @@
     @endauth
     @endunless
 
+    {{--
+        LA MODALE D'OFFRE DU PRESTATAIRE — montée sur le gabarit, pas sur un écran.
+
+        Une offre vit vingt secondes. Si elle n'apparaissait que sur le tableau de bord, un
+        prestataire en train de consulter ses gains ou son agenda la raterait — et le serveur
+        l'escaladerait sans qu'il l'ait jamais vue. Le mobile fait le même choix en montant sa
+        modale sur la pile d'onglets et non sur un écran.
+
+        Le composant ne rend RIEN quand il n'y a pas d'offre : son sondage est court et sa requête
+        tient en une ligne indexée.
+    --}}
+    @auth
+        @if (auth()->user()->isEmploye())
+            @livewire('provider.offer-watcher')
+        @endif
+    @endauth
+
     @stack('modals')
     @livewireScripts
 

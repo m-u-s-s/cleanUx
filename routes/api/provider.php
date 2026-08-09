@@ -4,6 +4,7 @@ use App\Http\Controllers\Api\Client\DeviceTokenController;
 use App\Http\Controllers\Api\EmployeeMissionTrackingController;
 use App\Http\Controllers\Api\PhoneVerificationController;
 use App\Http\Controllers\Api\Provider\AsapOfferController;
+use App\Http\Controllers\Api\Provider\ProviderOfferController;
 use App\Http\Controllers\Api\Provider\AvailabilityController;
 use App\Http\Controllers\Api\Provider\BadgesController;
 use App\Http\Controllers\Api\Provider\CompanyController as ProviderCompanyController;
@@ -54,6 +55,15 @@ Route::middleware(['auth:sanctum', 'role:employe', 'provider.approved'])->group(
         Route::post('/heartbeat', [ProviderPresenceController::class, 'heartbeat']);
         Route::get('/me', [ProviderPresenceController::class, 'me']);
     });
+
+    /*
+     * L'OFFRE EN COURS — le repli qui fait tenir tout le reste.
+     *
+     * Le temps reel ouvre la modale, le push reveille l'application, mais ni l'un ni l'autre n'est
+     * garanti : la socket tombe dans un ascenseur, le push se perd chez le fabricant du telephone.
+     * Ce point d'entree est la SOURCE DE VERITE que l'application interroge a intervalle court.
+     */
+    Route::get('provider/offers/current', [ProviderOfferController::class, 'current']);
 
     // Phase 11 — Mission accept/decline
     Route::prefix('provider/assignments')->group(function () {

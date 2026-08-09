@@ -62,13 +62,21 @@ class AsapSearchScreenTest extends TestCase
      */
     public function test_confirming_an_immediate_order_opens_the_search(): void
     {
+        // Un candidat, sinon la recherche s'épuise dans la seconde : le moteur ne laisse pas une
+        // recherche « en cours » sans personne à qui l'offrir.
+        $this->providerAt($this->peinture());
+
         [$draft, $client] = $this->asapDraft();
 
         app(OrderConfirmationService::class)->confirm($draft, $client);
 
         $request = AsapDispatchRequest::firstOrFail();
         $this->assertSame(AsapStatus::SEARCHING, $request->status);
+        // La recherche appartient à la RÉSERVATION ; la ligne de panier reste rattachée pour que
+        // le devis soit explicable six mois plus tard.
         $this->assertSame($draft->id, $request->order_draft_id);
+        $this->assertNotNull($request->booking_id);
+        $this->assertNotNull($request->mission_id);
     }
 
     /** Un mode planifié n'ouvre aucune recherche : ce serait prévenir des prestataires pour rien. */
@@ -132,7 +140,7 @@ class AsapSearchScreenTest extends TestCase
     public function test_the_fee_is_shown_before_the_click_not_after(): void
     {
         [$request, $client] = $this->searching();
-        $accepted = app(AsapDispatchService::class)->accept($request, $this->providerAt($this->peinture()));
+        $accepted = $this->accepterLaCourse($request);
 
         // La fenêtre gratuite est passée : l'annulation coûte, et l'écran l'écrit.
         $accepted->update(['free_cancellation_until' => now()->subMinute()]);
@@ -148,7 +156,7 @@ class AsapSearchScreenTest extends TestCase
     public function test_the_amount_charged_is_the_one_displayed(): void
     {
         [$request, $client] = $this->searching();
-        $accepted = app(AsapDispatchService::class)->accept($request, $this->providerAt($this->peinture()));
+        $accepted = $this->accepterLaCourse($request);
         $accepted->update(['free_cancellation_until' => now()->subMinute()]);
         Config::set('order_engine.asap_cancellation_fee_cents', 700);
 
@@ -171,7 +179,7 @@ class AsapSearchScreenTest extends TestCase
         [$request, $client] = $this->searching();
 
         // Le délai est dépassé : le battement de l'écran le constate.
-        Carbon::setTestNow(now()->addSeconds((int) Config::get('order_engine.asap_timeout_seconds', 180) + 5));
+        Carbon::setTestNow(now()->addSeconds((int) Config::get('dispatch.search_deadline_seconds', 300) + 5));
 
         $component = Livewire::actingAs($client)
             ->test(AsapSearch::class, ['request' => $request->id])
@@ -231,17 +239,18 @@ class AsapSearchScreenTest extends TestCase
      */
     public function test_accepting_hands_the_ride_over_to_a_real_mission(): void
     {
-        [$request, , $booking] = $this->confirmedSearch();
         $provider = $this->providerAt($this->peinture());
+        [$request, , $booking] = $this->confirmedSearch();
 
-        app(AsapDispatchService::class)->accept($request, $provider);
+        $this->accepterParLOffre($request, $provider);
 
         $booking->refresh();
         $this->assertSame($provider->id, $booking->employe_id);
         $this->assertSame(BookingStatus::CONFIRME, $booking->status);
 
         // Et la mission existe : c'est elle que l'application prestataire montre.
-        $this->assertTrue(Mission::where('rendez_vous_id', $booking->id)->exists());
+        $this->assertTrue(Mission::query()->where('booking_id', $booking->id)
+            ->orWhere('rendez_vous_id', $booking->id)->exists());
     }
 
     /**
@@ -252,23 +261,39 @@ class AsapSearchScreenTest extends TestCase
      */
     public function test_a_booking_already_assigned_is_not_stolen(): void
     {
+        $provider = $this->providerAt($this->peinture());
         [$request, , $booking] = $this->confirmedSearch();
-        $first = $this->providerAt($this->peinture());
-        $booking->update(['employe_id' => $first->id]);
 
-        $this->expectException(ValidationException::class);
-        app(AsapDispatchService::class)->accept($request, $this->providerAt($this->peinture()));
+        // La mission est déjà partie : l'offre n'est plus acceptable, et le refus est EXPLICITE.
+        $this->accepterParLOffre($request, $provider);
+
+        $offre = \App\Models\MissionAssignment::query()
+            ->where('mission_id', $request->mission_id)
+            ->where('user_id', $provider->id)
+            ->firstOrFail();
+
+        $this->expectException(\DomainException::class);
+        app(\App\Services\Dispatch\MissionDispatchService::class)->accept($offre->fresh());
     }
 
     /** Le second à cliquer est refusé proprement, pas silencieusement écrasé. */
     public function test_the_second_provider_to_accept_is_refused(): void
     {
+        // Deux prestataires très loin : la recherche atteint son plafond et diffuse aux deux.
+        $premier = $this->providerAt($this->peinture(), 51.0000, 4.3525);
+        $second = $this->providerAt($this->peinture(), 51.0010, 4.3530);
+
         [$request] = $this->confirmedSearch();
 
-        app(AsapDispatchService::class)->accept($request, $this->providerAt($this->peinture()));
+        $this->accepterParLOffre($request, $premier);
 
-        $this->expectException(ValidationException::class);
-        app(AsapDispatchService::class)->accept($request->fresh(), $this->providerAt($this->peinture()));
+        $offreSeconde = \App\Models\MissionAssignment::query()
+            ->where('mission_id', $request->mission_id)
+            ->where('user_id', $second->id)
+            ->firstOrFail();
+
+        $this->expectException(\DomainException::class);
+        app(\App\Services\Dispatch\MissionDispatchService::class)->accept($offreSeconde->fresh());
     }
 
     // ─── Fabriques ───────────────────────────────────────────────────────────────────────────
@@ -278,15 +303,35 @@ class AsapSearchScreenTest extends TestCase
         return Trade::where('slug', 'peinture')->firstOrFail();
     }
 
+    /**
+     * Un candidat REEL au sens du moteur.
+     *
+     * Le profil ne suffit plus : le dispatch immediat exige une VERIFICATION validee et une
+     * position FRAICHE dans `provider_presence`. Un prestataire qui n'a que
+     * `provider_profiles.is_online` a vrai est un telephone eteint depuis vingt minutes.
+     */
     private function providerAt(Trade $trade, float $lat = self::LAT, float $lng = self::LNG): User
     {
-        $provider = User::factory()->create(['role' => User::ROLE_PROVIDER]);
+        $provider = User::factory()->create([
+            'role' => User::ROLE_EMPLOYE,
+            'is_active' => true,
+        ]);
 
         ProviderProfile::create([
             'user_id' => $provider->id,
+            'provider_type' => \App\Enums\ProviderType::INDEPENDENT->value,
             'status' => 'active',
+            'verification_status' => 'verified',
             'current_lat' => $lat,
             'current_lng' => $lng,
+        ]);
+
+        \App\Models\ProviderPresence::create([
+            'provider_user_id' => $provider->id,
+            'status' => 'online',
+            'current_lat' => $lat,
+            'current_lng' => $lng,
+            'heartbeat_at' => now(),
         ]);
 
         DB::table('trade_user')->insert([
@@ -297,6 +342,23 @@ class AsapSearchScreenTest extends TestCase
         ]);
 
         return $provider->fresh();
+    }
+
+    /**
+     * L'acceptation par le chemin de PRODUCTION : l'offre nominative, pas la recherche.
+     *
+     * Une seule voie d'acceptation existe desormais — `MissionDispatchService::accept()`, avec son
+     * verrou pessimiste. Accepter la recherche elle-meme laissait l'offre de l'autre encore vivante.
+     */
+    private function accepterParLOffre(AsapDispatchRequest $request, User $provider): void
+    {
+        $offre = \App\Models\MissionAssignment::query()
+            ->where('mission_id', $request->mission_id)
+            ->where('user_id', $provider->id)
+            ->where('assignment_status', 'assigned')
+            ->firstOrFail();
+
+        app(\App\Services\Dispatch\MissionDispatchService::class)->accept($offre);
     }
 
     /** @return array{0: OrderDraft, 1: User} */
@@ -339,10 +401,29 @@ class AsapSearchScreenTest extends TestCase
         return [AsapDispatchRequest::firstOrFail(), $client, Booking::firstOrFail()];
     }
 
+    /**
+     * Accepte la course par l'offre nominative en cours, et rend la recherche à jour.
+     *
+     * Les écrans client parlent d'une course ACCEPTÉE : ce raccourci sert à les amener dans cet
+     * état sans réécrire le chemin d'acceptation dans chaque test.
+     */
+    private function accepterLaCourse(AsapDispatchRequest $request): AsapDispatchRequest
+    {
+        $offre = \App\Models\MissionAssignment::query()
+            ->where('mission_id', $request->mission_id)
+            ->where('assignment_status', 'assigned')
+            ->firstOrFail();
+
+        app(\App\Services\Dispatch\MissionDispatchService::class)->accept($offre);
+
+        return $request->fresh();
+    }
+
     /** @return array{0: AsapDispatchRequest, 1: User} */
     private function searching(): array
     {
-        // Un prestataire joignable, sinon le compteur reste à zéro et l'écran dit autre chose.
+        // Un prestataire joignable, sinon la recherche s'épuise à l'ouverture et l'écran dit autre
+        // chose. Il est créé AVANT la confirmation : c'est elle qui ouvre la recherche.
         $this->providerAt($this->peinture());
 
         [$request, $client] = $this->confirmedSearch();

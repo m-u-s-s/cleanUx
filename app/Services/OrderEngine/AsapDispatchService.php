@@ -3,18 +3,23 @@
 namespace App\Services\OrderEngine;
 
 use App\Models\AsapDispatchRequest;
-use App\Models\Booking;
-use App\Models\OrderDraftItem;
-use App\Models\User;
+use App\Services\Dispatch\DispatchEngine;
 use App\Support\Domain\AsapStatus;
-use App\Support\Domain\BookingStatus;
 use Illuminate\Support\Facades\Config;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
 
 /**
- * La recherche d'un prestataire immédiat : ouvrir, élargir, accepter, annuler.
+ * LE CÔTÉ CLIENT d'une recherche immédiate : élargir, expirer, annoncer le coût, annuler.
+ *
+ * CE QUI A QUITTÉ CE FICHIER. Il ouvrait la recherche ET prévenait les prestataires du rayon,
+ * pendant qu'une chaîne d'offres à compte à rebours tournait ailleurs, sur un autre objet. Deux
+ * moitiés du même patron VTC, aucune complète, et une même course qui pouvait sortir par les deux.
+ * L'ouverture, la sélection des candidats et la transmission des offres appartiennent désormais à
+ * `App\Services\Dispatch\DispatchEngine` — une seule porte, pour les deux modes.
+ *
+ * CE QUI RESTE ICI est ce que le CLIENT voit et décide pendant qu'il attend : le rayon qui
+ * s'élargit, le coût d'annulation annoncé AVANT le clic, les suites proposées quand personne ne
+ * répond, et les états par lesquels sa demande passe.
  *
  * Trois règles gouvernent tout ce fichier.
  *
@@ -33,50 +38,16 @@ use Illuminate\Validation\ValidationException;
  */
 class AsapDispatchService
 {
-    public function __construct(
-        protected ProviderAvailabilityLookup $lookup,
-    ) {}
-
     /**
-     * Ouvre la recherche.
+     * Élargit le rayon d'un palier, et relance la recherche depuis le moteur.
      *
-     * Idempotent : rafraîchir l'écran ou revenir dessus ne lance pas une seconde recherche pour la
-     * même ligne de commande — ce qui préviendrait deux fois les mêmes prestataires et pourrait
-     * produire deux acceptations.
-     */
-    public function open(OrderDraftItem $item, float $lat, float $lng): AsapDispatchRequest
-    {
-        $existing = AsapDispatchRequest::query()
-            ->where('order_draft_item_id', $item->id)
-            ->open()
-            ->first();
-
-        if ($existing) {
-            return $existing;
-        }
-
-        $radius = (int) Config::get('order_engine.asap_initial_radius_m', 5000);
-
-        $request = AsapDispatchRequest::create([
-            'order_draft_id' => $item->order_draft_id,
-            'order_draft_item_id' => $item->id,
-            'trade_id' => $item->trade_id,
-            'status' => AsapStatus::SEARCHING,
-            'lat' => $lat,
-            'lng' => $lng,
-            'radius_m' => $radius,
-            'searching_at' => now(),
-        ]);
-
-        return $this->notifyWithinRadius($request);
-    }
-
-    /**
-     * Élargit le rayon d'un palier.
+     * Borné : au-delà, on ne cherche plus, on l'annonce. Continuer d'élargir indéfiniment enverrait
+     * un prestataire à quarante kilomètres pour une intervention d'une heure, et le client
+     * attendrait une heure de trajet qu'il n'a pas demandée.
      *
-     * Borné : au-delà, on ne cherche plus, on l'annonce. Continuer d'élargir indéfiniment
-     * enverrait un prestataire à quarante kilomètres pour une intervention d'une heure, et le
-     * client attendrait une heure de trajet qu'il n'a pas demandée.
+     * LA SÉLECTION DES CANDIDATS APPARTIENT AU MOTEUR. Cette méthode ne fait que pousser la borne
+     * et lui rendre la main : dupliquer ici la recherche de candidats ferait diverger le rayon
+     * affiché au client de celui réellement interrogé.
      */
     public function expand(AsapDispatchRequest $request): AsapDispatchRequest
     {
@@ -84,8 +55,8 @@ class AsapDispatchService
             return $request;
         }
 
-        $step = (int) Config::get('order_engine.asap_radius_step_m', 5000);
-        $max = (int) Config::get('order_engine.asap_max_radius_m', 20000);
+        $step = (int) Config::get('dispatch.waves.step_m', Config::get('order_engine.asap_radius_step_m', 5000));
+        $max = (int) Config::get('dispatch.waves.max_radius_m', Config::get('order_engine.asap_max_radius_m', 20000));
 
         if ($request->radius_m >= $max) {
             return $request;
@@ -93,10 +64,13 @@ class AsapDispatchService
 
         $request->update([
             'radius_m' => min($request->radius_m + $step, $max),
+            'wave' => (int) $request->wave + 1,
             'expansion_count' => $request->expansion_count + 1,
         ]);
 
-        return $this->notifyWithinRadius($request->fresh());
+        app(DispatchEngine::class)->offerNext($request->fresh());
+
+        return $request->fresh();
     }
 
     /**
@@ -111,7 +85,19 @@ class AsapDispatchService
             return false;
         }
 
-        return $request->elapsedSeconds() >= (int) Config::get('order_engine.asap_timeout_seconds', 180);
+        /*
+         * L'ÉCHÉANCE EST ÉCRITE SUR LA RECHERCHE, pas recalculée à la lecture.
+         *
+         * Le moteur la pose à l'ouverture (`config('dispatch.search_deadline_seconds')`). La
+         * recalculer ici la ferait bouger avec la configuration entre deux rafraîchissements de
+         * l'écran — le client verrait son sablier reculer. Le repli couvre les recherches
+         * antérieures à la colonne.
+         */
+        if ($request->deadline_at !== null) {
+            return $request->deadline_at->isPast();
+        }
+
+        return $request->elapsedSeconds() >= (int) Config::get('dispatch.search_deadline_seconds', 300);
     }
 
     /** Personne n'a répondu : on ferme la recherche, on n'abandonne pas le client. */
@@ -120,53 +106,19 @@ class AsapDispatchService
         return $this->transition($request, AsapStatus::EXPIRED);
     }
 
-    /** Relance une recherche expirée, avec un rayon élargi. */
+    /**
+     * Relance une recherche expirée, avec un rayon élargi — « continuer à attendre ».
+     *
+     * Les exclusions ne sont PAS remises à zéro : réoffrir la course à qui vient de la refuser
+     * ferait vibrer son téléphone pour rien. En revanche ceux qui n'avaient jamais été joints —
+     * hors ligne il y a trois minutes, en ligne maintenant — entrent naturellement, puisque la
+     * liste de candidats est recalculée à chaque offre.
+     */
     public function retry(AsapDispatchRequest $request): AsapDispatchRequest
     {
         $request = $this->transition($request, AsapStatus::SEARCHING);
-        $request->update(['searching_at' => now()]);
 
-        return $this->expand($request->fresh());
-    }
-
-    /**
-     * Un prestataire prend la course.
-     *
-     * Verrou pessimiste : deux prestataires peuvent accepter à la même seconde, et le second doit
-     * être refusé proprement plutôt que d'écraser le premier. Sans ce verrou, deux personnes
-     * partiraient pour la même intervention et une seule serait payée.
-     *
-     * @throws ValidationException si la course a déjà été prise
-     */
-    public function accept(AsapDispatchRequest $request, User $provider): AsapDispatchRequest
-    {
-        return DB::transaction(function () use ($request, $provider) {
-            $locked = AsapDispatchRequest::query()->lockForUpdate()->findOrFail($request->id);
-
-            if ($locked->status !== AsapStatus::SEARCHING) {
-                throw ValidationException::withMessages([
-                    'dispatch' => ['Cette demande n’est plus disponible.'],
-                ]);
-            }
-
-            $freeMinutes = (int) Config::get('order_engine.asap_free_cancellation_minutes', 3);
-
-            $locked->update([
-                'status' => AsapStatus::ACCEPTED,
-                'accepted_by_user_id' => $provider->id,
-                'accepted_at' => now(),
-                /*
-                 * La fenêtre est FIGÉE ici, pas recalculée à la lecture. Celle qu'on annonce au
-                 * client est ainsi celle qui s'applique, même si la configuration change
-                 * entre-temps.
-                 */
-                'free_cancellation_until' => now()->addMinutes($freeMinutes),
-            ]);
-
-            $this->handOverToBooking($locked, $provider);
-
-            return $locked->fresh();
-        });
+        return app(DispatchEngine::class)->relaunch($request->fresh());
     }
 
     /**
@@ -301,92 +253,5 @@ class AsapDispatchService
         ];
 
         return $ways;
-    }
-
-    /**
-     * La reprise : la recherche acceptée devient une intervention réelle.
-     *
-     * Sans ce passage, la course serait « acceptée » dans son propre coin pendant que la
-     * réservation resterait en attente : le prestataire ne la verrait pas dans son application,
-     * n'aurait ni mise en route, ni codes de démarrage et de fin, ni clôture — donc aucun
-     * encaissement. C'est exactement le défaut corrigé côté flux historique.
-     *
-     * Passer la réservation en « confirmé » déclenche l'observateur qui crée la mission : on
-     * réutilise le pont existant plutôt que d'en poser un second à côté.
-     *
-     * UN SEUL CANAL D'ASSIGNATION. Si la réservation porte déjà un autre prestataire, on ne
-     * l'écrase pas — deux personnes partiraient pour la même intervention et une seule serait
-     * payée. Le verrou de `accept()` protège la course ; celui-ci protège la réservation.
-     *
-     * @throws ValidationException si la réservation est déjà partie chez quelqu'un d'autre
-     */
-    protected function handOverToBooking(AsapDispatchRequest $request, User $provider): void
-    {
-        $bookingId = $request->item?->metadata['booking_id'] ?? null;
-
-        // Pas de réservation : la recherche a été ouverte hors confirmation (test, admin). Rien à
-        // reprendre, et ce n'est pas une erreur.
-        if (! $bookingId) {
-            return;
-        }
-
-        $booking = Booking::query()->lockForUpdate()->find($bookingId);
-
-        if (! $booking) {
-            return;
-        }
-
-        if ($booking->employe_id && (int) $booking->employe_id !== (int) $provider->id) {
-            throw ValidationException::withMessages([
-                'dispatch' => ['Cette intervention a déjà été attribuée à un autre professionnel.'],
-            ]);
-        }
-
-        $booking->update([
-            'employe_id' => $provider->id,
-            'status' => BookingStatus::CONFIRME,
-            'matched_at' => now(),
-        ]);
-    }
-
-    /**
-     * Prévient les prestataires du rayon courant, et tient le compteur.
-     *
-     * Le nombre affiché au client est celui des prestataires RÉELLEMENT prévenus — pas celui des
-     * joignables. La différence n'est pas cosmétique : elle sépare « douze personnes ont votre
-     * demande sur leur écran » de « douze personnes existent quelque part ». Un compteur qui monte
-     * tout seul rassure deux minutes puis détruit la confiance au premier client qui attend pour
-     * rien.
-     */
-    protected function notifyWithinRadius(AsapDispatchRequest $request): AsapDispatchRequest
-    {
-        $trade = $request->trade;
-
-        if (! $trade || $request->lat === null || $request->lng === null) {
-            return $request;
-        }
-
-        /*
-         * L'envoi ne fait pas tomber la recherche. Le service de notification absorbe déjà les
-         * échecs prestataire par prestataire ; ce garde-fou couvre ce qui reste — le module push
-         * indisponible en entier. Le client attendrait alors pour rien, mais il attendrait devant
-         * un écran vivant plutôt qu'une page d'erreur, et l'incident est dans les journaux.
-         */
-        try {
-            app(AsapProviderNotifier::class)->notify($request);
-        } catch (\Throwable $e) {
-            Log::error('AsapDispatchService: notification des prestataires impossible', [
-                'request_id' => $request->id,
-                'error' => $e->getMessage(),
-            ]);
-        }
-
-        // Le compteur ne redescend jamais : un prestataire prévenu l'a été, même s'il s'éloigne
-        // ensuite. Le voir baisser laisserait croire à un désistement.
-        $request->update([
-            'notified_count' => $request->notifications()->count(),
-        ]);
-
-        return $request->fresh();
     }
 }

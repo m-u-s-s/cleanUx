@@ -56,13 +56,27 @@ class AsapSearch extends Component
     #[Computed(persist: false)]
     public function request(): ?AsapDispatchRequest
     {
-        $request = AsapDispatchRequest::query()->with(['trade', 'draft', 'acceptedBy'])->find($this->requestId);
+        $request = AsapDispatchRequest::query()
+            ->with(['trade', 'draft', 'booking', 'acceptedBy'])
+            ->find($this->requestId);
 
-        if (! $request || ! Auth::check() || (int) $request->draft?->client_id !== (int) Auth::id()) {
+        if (! $request || ! Auth::check()) {
             return null;
         }
 
-        return $request;
+        /*
+         * LA PROPRIÉTÉ SE LIT SUR LA RÉSERVATION, avec le panier en repli.
+         *
+         * La recherche appartient désormais à une réservation : elle peut naître d'un rendez-vous
+         * converti ou d'une relance, qui n'ont pas de panier. Ne vérifier que le panier rendait ces
+         * recherches-là inaccessibles à leur propre client — un 404 sur son propre écran d'attente.
+         */
+        $reservation = $request->booking;
+        $proprietaire = $reservation !== null
+            ? $reservation->client_id
+            : $request->draft?->client_id;
+
+        return (int) $proprietaire === (int) Auth::id() ? $request : null;
     }
 
     /** Ce que l'annulation coûte MAINTENANT — affiché, avant tout clic. */

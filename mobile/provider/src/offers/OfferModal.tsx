@@ -144,7 +144,6 @@ export function OfferModal({ offer, onDismiss }: Props) {
                 fullWidth
                 size="lg"
                 loading={accept.isPending}
-                testID="offer-accept"
               />
             </View>
             <View style={styles.actionBtn}>
@@ -154,7 +153,6 @@ export function OfferModal({ offer, onDismiss }: Props) {
                 variant="ghost"
                 fullWidth
                 size="lg"
-                testID="offer-decline"
               />
             </View>
           </View>

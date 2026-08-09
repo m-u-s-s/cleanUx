@@ -7,7 +7,6 @@ use App\Models\InternalAssignmentDecision;
 use App\Models\Mission;
 use App\Models\OrganizationAccount;
 use App\Services\Contracts\ContractSlaService;
-use App\Services\Dispatch\MissionDispatchService;
 use App\Services\Geocoding\GeocodingService;
 use App\Services\Organizations\ProviderOrganisationResolver;
 use App\Support\Domain\MissionStatus;
@@ -106,10 +105,18 @@ class MissionFromRendezVousSyncService
                 $this->assignmentStatusService->syncLeadAssignment($mission, $rendezVous->employe_id);
             }
 
-            if ($mission->status === 'planned' && ! $mission->assignments()->exists()) {
-                app(MissionDispatchService::class)
-                    ->dispatchToNextProvider($mission);
-            }
+            /*
+             * LA MISSION NE SE DISPATCHE PLUS ELLE-MEME.
+             *
+             * Elle appelait ici `dispatchToNextProvider()` a sa naissance. C'etait la SECONDE
+             * porte amont : le moteur de commande ouvrait sa recherche par rayons d'un cote, la
+             * mission lancait sa chaine d'offres de l'autre, et la meme course sortait par les
+             * deux — deux prestataires se deplacaient pour une seule intervention.
+             *
+             * Le dispatch a desormais UNE porte : `DispatchEngine::dispatchBooking()`, appelee a
+             * la confirmation. La mission n'est plus qu'un dossier d'execution, ce qu'elle a
+             * toujours ete.
+             */
 
             if ($mission->organization_contract_id) {
                 app(ContractSlaService::class)->armForMission($mission);

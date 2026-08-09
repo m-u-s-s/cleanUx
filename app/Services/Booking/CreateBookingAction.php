@@ -15,7 +15,7 @@ use App\Models\ZoneServiceRule;
 use App\Notifications\NouveauRendezVousNotification;
 use App\Services\Contracts\ContractBookingHook;
 use App\Services\Contracts\ContractPricingResolver;
-use App\Services\Dispatch\MissionDispatchService;
+use App\Services\Dispatch\DispatchEngine;
 use App\Services\Enterprise\ContractPolicyService;
 use App\Services\Enterprise\EnterpriseBookingApprovalService;
 use App\Services\Finance\CustomerCreditApplicationService;
@@ -299,20 +299,21 @@ class CreateBookingAction
             $policy->applyDiscount($rendezVous, $org);
         }
 
-        // $mission n'était JAMAIS assignée dans cette méthode : `isset($mission)` valait donc
-        // toujours faux et l'offre ASAP du chemin web ne partait jamais. Le commentaire plus bas
-        // annonce pourtant que l'ASAP « passe désormais par l'offre/escalade temps réel » — la
-        // confirmation directe étant, elle, bien désactivée pour l'ASAP. Résultat : une
-        // réservation ASAP créée depuis le web n'était proposée à personne.
-        //
-        // resolveMission() plutôt que la relation mission() : celle-ci ne lit que booking_id,
-        // alors que le chemin web crée sa mission via rendez_vous_id (RendezVousObserver).
+        /*
+         * UNE SEULE PORTE AMONT — `DispatchEngine`.
+         *
+         * Ce bloc contenait DEUX chemins : l'offre ASAP d'un cote, la confirmation directe du
+         * planifie de l'autre (`SmartDispatchService::assignBestEmployee()`), chacun avec sa propre
+         * liste de candidats. Le moteur tient les deux modes : chaine d'offres a compte a rebours
+         * pour l'immediat, offre a delai long puis assignation d'office en repli pour le planifie.
+         *
+         * `resolveMission()` plutot que la relation `mission()` : celle-ci ne lit que `booking_id`,
+         * alors que ce chemin cree sa mission via `rendez_vous_id` (RendezVousObserver).
+         */
         $mission = $rendezVous->resolveMission();
 
-        if (($rendezVous->booking_mode ?? null) === 'asap' && $mission) {
-            app(MissionDispatchService::class)
-                ->dispatchToNextProvider($mission);
-        }
+        app(DispatchEngine::class)->dispatchBooking($rendezVous->fresh());
+
         if ($client->isEntreprise() || $client->hasOrganizationContext() || Arr::get($data, 'entreprise_approval_required', false)) {
             app(EnterpriseBookingApprovalService::class)
                 ->createForBooking(
@@ -322,43 +323,12 @@ class CreateBookingAction
                 );
         }
 
-        // Lien conversation ↔ mission, quel que soit le mode de réservation.
-        // Même raison qu'au-dessus : la relation mission() ne lit que booking_id, colonne que ce
-        // chemin ne renseigne pas — la conversation n'était donc jamais rattachée à sa mission.
+        // Lien conversation <-> mission, quel que soit le mode de reservation. La relation
+        // `mission()` ne lit que `booking_id`, colonne que ce chemin ne renseigne pas.
+        $mission = $mission ?? $rendezVous->resolveMission();
+
         if ($mission?->id) {
             $conversation->update(['mission_id' => $mission->id]);
-        }
-
-        // Confirmation directe : UNIQUEMENT pour le planifié. L'ASAP passe désormais
-        // par l'offre/escalade temps réel (dispatchToNextProvider ci-dessus) et est
-        // confirmé à l'acceptation du prestataire (MissionDispatchService::accept) —
-        // plus de double-dispatch (offre + confirmation directe en parallèle).
-        if (($rendezVous->booking_mode ?? null) !== 'asap') {
-            $dispatchService = app(SmartDispatchService::class);
-
-            $freshRdv = $rendezVous->fresh(['client', 'serviceZone']);
-
-            $bestEmployee = $dispatchService->assignBestEmployee($freshRdv);
-
-            if ($bestEmployee) {
-                $rendezVous->update([
-                    'employe_id' => $bestEmployee->id,
-                    'matched_at' => now(),
-                    'matching_snapshot' => array_merge(
-                        (array) ($rendezVous->matching_snapshot ?? []),
-                        [
-                            'selected_employee_id' => $bestEmployee->id,
-                            'selected_employee_name' => $bestEmployee->name,
-                            'confirmed_instantly' => false,
-                            'matched_at' => now()->toISOString(),
-                        ]
-                    ),
-                ]);
-
-                $rendezVous->refresh()->load(['client', 'employe', 'serviceZone']);
-
-                $bestEmployee->notify(new NouveauRendezVousNotification($rendezVous));
-            }
         }
 
         ActivityLogger::log('booking.created', $rendezVous, [

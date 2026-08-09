@@ -6,6 +6,7 @@ use App\Models\Booking;
 use App\Models\OrderDraft;
 use App\Models\OrderDraftItem;
 use App\Models\User;
+use App\Services\Dispatch\DispatchEngine;
 use App\Services\Payments\MissionPaymentService;
 use App\Support\Domain\BookingStatus;
 use App\Support\Domain\OrderDraftStatus;
@@ -35,7 +36,7 @@ class OrderConfirmationService
     public function __construct(
         protected OrderDraftManager $drafts,
         protected BundleComposer $bundles,
-        protected AsapDispatchService $dispatch,
+        protected DispatchEngine $dispatch,
     ) {}
 
     /**
@@ -76,14 +77,17 @@ class OrderConfirmationService
             $bookings = [];
 
             foreach ($quote['items'] as $line) {
-                $bookings[] = $this->createBooking($locked, $client, $line['item'], $line['quote']);
+                $bookings[] = [
+                    'booking' => $this->createBooking($locked, $client, $line['item'], $line['quote']),
+                    'item' => $line['item'],
+                ];
             }
 
             $locked->update([
                 'client_id' => $client->id,
                 'status' => OrderDraftStatus::CONVERTED,
                 'converted_at' => now(),
-                'converted_booking_id' => $bookings[0]->id ?? null,
+                'converted_booking_id' => $bookings[0]['booking']->id ?? null,
                 // Le devis est FIGÉ : c'est le prix accepté qui engage, pas celui qu'un
                 // recalcul donnerait demain.
                 'estimate_min_cents' => $quote['order']->minCents,
@@ -92,14 +96,19 @@ class OrderConfirmationService
             ]);
 
             /*
-             * En mode immédiat, confirmer OUVRE la recherche — dans la même transaction que la
-             * réservation. Confirmer une course « dès que possible » sans lancer la recherche
-             * laisserait le client devant un écran d'attente que rien n'alimente.
+             * LA PORTE AMONT UNIQUE DU DISPATCH.
+             *
+             * Confirmer entre dans le moteur de répartition — immédiat ou planifié, c'est lui qui
+             * décide. Deux entrées existaient : la recherche par rayons ouverte ici, et la chaîne
+             * d'offres ouverte ailleurs à la création de la mission. Une même course pouvait sortir
+             * par les deux, et deux prestataires se déplaçaient.
+             *
+             * DANS LA MÊME TRANSACTION que la réservation : confirmer une course « dès que
+             * possible » sans lancer la recherche laisserait le client devant un écran d'attente
+             * que rien n'alimente.
              */
-            if ($locked->mode === OrderMode::ASAP) {
-                foreach ($quote['items'] as $line) {
-                    $this->dispatch->open($line['item']->fresh(), (float) $locked->lat, (float) $locked->lng);
-                }
+            foreach ($bookings as $ligne) {
+                $this->dispatch->dispatchBooking($ligne['booking']->fresh(), $ligne['item']);
             }
 
             return $locked->fresh();

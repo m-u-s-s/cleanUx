@@ -7,6 +7,7 @@ use App\Models\AsapDispatchRequest;
 use App\Models\Booking;
 use App\Models\Mission;
 use App\Models\MissionAssignment;
+use App\Models\OrderDraftItem;
 use App\Models\User;
 use App\Notifications\Dispatch\MissionOfferNotification;
 use App\Services\Missions\MissionLifecycleService;
@@ -63,10 +64,10 @@ class DispatchEngine
      * confirmation rejouée ne lance pas deux recherches, ce qui doublerait les offres et pourrait
      * produire deux acceptations pour une seule intervention.
      */
-    public function dispatchBooking(Booking $booking): ?MissionAssignment
+    public function dispatchBooking(Booking $booking, ?OrderDraftItem $item = null): ?MissionAssignment
     {
         if (($booking->booking_mode ?? null) === 'asap') {
-            $search = $this->openImmediate($booking);
+            $search = $this->openImmediate($booking, $item);
 
             return $search
                 ? $this->currentOffer($search->mission_id)
@@ -76,8 +77,15 @@ class DispatchEngine
         return $this->openScheduled($booking);
     }
 
-    /** Ouvre — ou retrouve — la recherche d'une intervention immédiate. */
-    public function openImmediate(Booking $booking): ?AsapDispatchRequest
+    /**
+     * Ouvre — ou retrouve — la recherche d'une intervention immédiate.
+     *
+     * La ligne de panier est RATTACHÉE quand elle existe : elle porte les réponses au questionnaire
+     * et sert à expliquer le devis six mois plus tard. Elle n'est pas obligatoire — une recherche
+     * peut naître d'un rendez-vous converti ou d'une relance administrative, qui n'ont pas de
+     * panier.
+     */
+    public function openImmediate(Booking $booking, ?OrderDraftItem $item = null): ?AsapDispatchRequest
     {
         $existing = AsapDispatchRequest::query()
             ->where('booking_id', $booking->id)
@@ -104,6 +112,8 @@ class DispatchEngine
         $search = AsapDispatchRequest::create([
             'booking_id' => $booking->id,
             'mission_id' => $mission->id,
+            'order_draft_id' => $item?->order_draft_id,
+            'order_draft_item_id' => $item?->id,
             'trade_id' => $tradeId,
             'status' => AsapStatus::SEARCHING,
             'lat' => $booking->destination_lat,
@@ -327,6 +337,18 @@ class DispatchEngine
                     ),
                 ]);
             });
+    }
+
+    /**
+     * L'offre n'est plus à prendre : la modale se ferme d'elle-même.
+     *
+     * Exposé pour que le refus et l'expiration ferment l'écran sans dépendre du sondage. Sur
+     * mobile, la socket est ce qui fait disparaître la modale ; sans ce message, elle resterait
+     * jusqu'à ce que le compte à rebours atteigne zéro — sur une offre déjà passée au suivant.
+     */
+    public function withdraw(MissionAssignment $assignment, string $reason = 'taken'): void
+    {
+        $this->transmitter->withdraw($assignment, $reason);
     }
 
     /** Personne n'a répondu : la recherche s'arrête, le client choisit sa suite (lot 6). */
