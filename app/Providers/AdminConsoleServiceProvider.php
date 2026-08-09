@@ -9,6 +9,7 @@ use App\Admin\Reports\AnalyticsReport;
 use App\Admin\Reports\AutomationReport;
 use App\Admin\Reports\BusinessReport;
 use App\Admin\Reports\DashboardReport;
+use App\Admin\Reports\DispatchCenterReport;
 use App\Admin\Reports\FinanceReport;
 use App\Admin\Reports\HomeReport;
 use App\Admin\Reports\ReadinessReport;
@@ -259,6 +260,9 @@ class AdminConsoleServiceProvider extends ServiceProvider
             $reports->register('automation', AutomationReport::class);
             $reports->register('finance', FinanceReport::class);
             $reports->register('subscriptions', SubscriptionsReport::class);
+            // La répartition : ce n'est pas une liste de lignes d'une table. « Combien de clients
+            // ont attendu pour rien » se lit en croisant les recherches et les offres.
+            $reports->register('dispatch-center', DispatchCenterReport::class);
 
             return $reports;
         });
