@@ -50,31 +50,19 @@ use Illuminate\Support\Facades\Route;
 */
 
 $fallbackPage = function (string $title, ?string $message = null) {
-    return function () use ($title, $message) {
-        return response(
-            '<!DOCTYPE html>
-            <html lang="fr">
-            <head>
-                <meta charset="UTF-8">
-                <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                <title>'.e($title).'</title>
-                <script src="https://cdn.tailwindcss.com"></script>
-            </head>
-            <body class="min-h-screen bg-slate-50 text-slate-900">
-                <main class="mx-auto max-w-4xl px-6 py-12">
-                    <div class="rounded-3xl border border-slate-200 bg-white p-8 shadow-sm">
-                        <p class="text-sm font-black uppercase tracking-[0.2em] text-blue-600">Brio</p>
-                        <h1 class="mt-3 text-3xl font-black">'.e($title).'</h1>
-                        <p class="mt-4 text-slate-600">'.e($message ?: 'Cette page est maintenant routée. Il reste à connecter le vrai composant ou la vraie logique métier.').'</p>
-                        <a href="'.e(route('dashboard')).'" class="mt-6 inline-flex rounded-2xl bg-blue-600 px-5 py-3 text-sm font-bold text-white hover:bg-blue-700">
-                            Retour dashboard
-                        </a>
-                    </div>
-                </main>
-            </body>
-            </html>'
-        );
-    };
+    /*
+     * LE REPLI PASSE PAR LE GABARIT, comme toutes les autres pages.
+     *
+     * Il rendait un document HTML complet écrit à la main ici même — avec son propre `<head>` et
+     * Tailwind chargé depuis un CDN. Il échappait donc à la barre de navigation, au thème sombre,
+     * à la marque, et à la règle du dépôt qui veut que les assets soient servis par Vite. Un
+     * balayage de marque page par page l'a trouvé : c'était le seul écran authentifié à ne porter
+     * aucune identité.
+     */
+    return fn () => response()->view('admin.module-a-connecter', [
+        'titre' => $title,
+        'message' => $message,
+    ]);
 };
 
 $livewireOrFallback = function (array $classes, string $title) use ($fallbackPage) {

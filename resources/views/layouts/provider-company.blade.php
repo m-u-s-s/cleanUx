@@ -32,11 +32,9 @@
 <head>
     {{-- Phase 8 — PWA --}}
     <link rel="manifest" href="/manifest.webmanifest">
-    <meta name="theme-color" content="#2563eb">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
-    <meta name="apple-mobile-web-app-title" content="Brio">
-    <link rel="apple-touch-icon" href="/icons/icon-192.png">
+    <x-brand.head space="provider" />
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
@@ -57,7 +55,9 @@
     <nav data-chrome="primary-nav" aria-label="Navigation principale"
         class="sticky top-0 z-40 flex h-14 items-center justify-between border-b border-slate-100 bg-white/95 px-4 backdrop-blur dark:border-slate-700 dark:bg-slate-900/95">
         <div class="flex items-center gap-3">
-            <a href="{{ route('provider-company.dashboard') }}" class="text-lg font-black text-slate-900 dark:text-white">
+            <a href="{{ route('provider-company.dashboard') }}"
+                class="flex items-center gap-2 text-lg font-black text-slate-900 dark:text-white">
+                <x-brand.logo space="provider" :size="32" />
                 {{-- L'accent suit `brio-btn-primary` (sky), pas l'ambre qui n'appartenait qu'ici. --}}
                 Brio <span class="text-sky-600 dark:text-sky-400">Pro</span>
             </a>

@@ -4,11 +4,9 @@
 <head>
     {{-- Phase 8 — PWA --}}
     <link rel="manifest" href="/manifest.webmanifest">
-    <meta name="theme-color" content="#070b14">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="Brio">
-    <link rel="apple-touch-icon" href="/icons/icon-192.png">
+    <x-brand.head space="client" />
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <meta name="csrf-token" content="{{ csrf_token() }}">
@@ -127,7 +125,8 @@
     <header class="cx-header" id="cxHeader" data-floating-nav data-fn-solid-at="24" data-fn-hide-after="140">
         <div class="cxnav__bar mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
             <a href="{{ route('home') }}" class="flex items-center gap-3">
-                <span class="cx-logo-mark">Cx</span>
+                {{-- Le site public est noir en permanence : la variante sombre, forcée. --}}
+                <x-brand.logo space="client" variant="dark" :size="40" />
                 <span class="leading-tight">
                     <span class="block text-lg font-extrabold tracking-tight" style="font-family:var(--cx-display);color:var(--cx-text)">
                         {{ config('app.name', 'Brio') }}
@@ -200,7 +199,7 @@
             <div class="grid gap-10 md:grid-cols-4">
                 <div>
                     <div class="flex items-center gap-3">
-                        <span class="cx-logo-mark" style="height:36px;width:36px;font-size:14px">Cx</span>
+                        <x-brand.logo space="client" variant="dark" :size="36" />
                         <span class="text-lg font-extrabold" style="font-family:var(--cx-display)">{{ config('app.name', 'Brio') }}</span>
                     </div>
                     <p class="mt-4 max-w-xs text-sm" style="color:var(--cx-muted)">

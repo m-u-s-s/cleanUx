@@ -16,6 +16,10 @@
          ============================================================ --}}
     <x-hero.luxury scroll-target="#decouvrir" scroll-label="Découvrir">
         <x-slot:eyebrow>
+            {{-- LA MARQUE EN TÊTE DE L'ACCUEIL. Elle n'était présente que dans la barre de
+                 navigation, qui se rétracte au défilement : la première chose qu'un visiteur voyait
+                 en arrivant était un titre sans signature. --}}
+            <x-brand.logo space="client" variant="dark" :size="72" class="mb-5" />
             <x-hero.eyebrow>Marketplace multi-métiers • B2C &amp; B2B</x-hero.eyebrow>
         </x-slot:eyebrow>
 

@@ -77,11 +77,10 @@
             <div class="flex min-w-0">
                 <div class="flex shrink-0 items-center">
                     <a href="{{ $homeHref }}" class="flex items-center gap-2 text-xl font-black tracking-tight text-blue-700 dark:text-blue-400">
-                        {{-- « CU » = CleanUx. Le renommage global ne pouvait pas le voir : ce ne
-                             sont pas les lettres « cleanux ». --}}
-                        <span class="inline-flex h-9 w-9 items-center justify-center rounded-2xl bg-blue-600 text-sm font-black text-white shadow-sm dark:bg-blue-500">
-                            Br
-                        </span>
+                        {{-- La marque de l'espace où l'on se trouve : « Client » pour un client,
+                             « Provider » pour un prestataire. La pastille « Br » qui vivait ici ne
+                             distinguait rien et n'était la marque de personne. --}}
+                        <x-brand.logo :size="36" />
                         <span>{{ config('app.name', 'Brio') }}</span>
                     </a>
                 </div>

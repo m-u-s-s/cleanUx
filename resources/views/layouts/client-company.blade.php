@@ -4,11 +4,9 @@
 <head>
     {{-- Phase 8 — PWA --}}
     <link rel="manifest" href="/manifest.webmanifest">
-    <meta name="theme-color" content="#2563eb">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
-    <meta name="apple-mobile-web-app-title" content="Brio">
-    <link rel="apple-touch-icon" href="/icons/icon-192.png">
+    <x-brand.head space="client" />
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
@@ -29,7 +27,8 @@
     <nav data-chrome="primary-nav" aria-label="Navigation principale" class="sticky top-0 z-40 flex h-14 items-center justify-between border-b border-slate-100 bg-white/95 px-4 backdrop-blur">
         <div class="flex items-center gap-3">
             <a href="{{ route('client-company.dashboard') }}"
-                class="text-lg font-black text-slate-900">
+                class="flex items-center gap-2 text-lg font-black text-slate-900">
+                <x-brand.logo space="client" :size="32" />
                 {{-- La marque était coupée par une balise : « Clean<span>Ux</span> ». Le
                      renommage global ne pouvait pas la voir. --}}
                 Br<span class="text-sky-600">io</span>

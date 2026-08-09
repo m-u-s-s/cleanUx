@@ -2,12 +2,14 @@
 
 namespace Tests\Feature\Seeding;
 
+use App\Models\KycVerification;
 use App\Models\OnboardingProgress;
 use App\Models\ProviderPresence;
 use App\Models\User;
 use Database\Seeders\DispatchDemoSeeder;
 use Database\Seeders\ReferencePlatformSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Collection;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
@@ -37,7 +39,7 @@ class DossierPrestataireSemeTest extends TestCase
         $this->seed(DispatchDemoSeeder::class);
     }
 
-    /** @return \Illuminate\Support\Collection<int, User> */
+    /** @return Collection<int, User> */
     private function prestatairesDeDemonstration()
     {
         return User::query()
@@ -52,7 +54,7 @@ class DossierPrestataireSemeTest extends TestCase
     }
 
     #[Test]
-    public function leur_identite_est_verifiee_des_DEUX_cotes(): void
+    public function leur_identite_est_verifiee_des_deu_x_cotes(): void
     {
         foreach ($this->prestatairesDeDemonstration() as $prestataire) {
             // Côté dispatch : le drapeau du profil.
@@ -114,7 +116,7 @@ class DossierPrestataireSemeTest extends TestCase
         foreach ($this->prestatairesDeDemonstration() as $prestataire) {
             $this->assertSame(
                 1,
-                \App\Models\KycVerification::query()->where('user_id', $prestataire->id)->count(),
+                KycVerification::query()->where('user_id', $prestataire->id)->count(),
                 "{$prestataire->email} : une vérification d’identité en double à chaque semis.",
             );
         }

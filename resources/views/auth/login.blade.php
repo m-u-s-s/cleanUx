@@ -4,21 +4,26 @@
          Backend Fortify préservé : POST route('login') + @csrf
          ============================================================ --}}
 
-    <main class="min-h-screen flex items-center justify-center bg-slate-50/40 px-4 py-12">
+    {{-- L'en-tête du site est FIXE et haut de 65 px : avec `py-12` (48 px), la marque de la
+         page passait dessous et n'était visible sur aucun écran. Les autres pages
+         d'authentification de la vitrine utilisent déjà `pt-24`. --}}
+    <main class="min-h-screen flex items-center justify-center bg-slate-50/40 px-4 pt-24 pb-12">
         <div class="w-full max-w-md">
-            {{-- Logo + retour --}}
-            <div class="text-center mb-8">
-                <a href="{{ route('home') }}" class="inline-flex items-center gap-2 text-slate-700 hover:text-brand-600 transition">
-                    <span class="grid h-10 w-10 place-items-center rounded-xl bg-brand-600 text-white font-bold text-lg shadow-soft-sm">
-                        Br
-                    </span>
-                    <span class="text-lg font-bold">{{ config('app.name', 'Brio') }}</span>
-                </a>
-            </div>
-
             {{-- Card formulaire --}}
             <div class="brio-glass rounded-2xl border border-slate-200/80 shadow-soft p-8">
                 <div class="text-center mb-8">
+                    {{--
+                        LA MARQUE EST DANS LA CARTE, PAS AU-DESSUS.
+
+                        Elle flottait sur la coquille, qui est noire : la variante sombre s'y
+                        confondait avec le fond et la variante claire aurait contredit le thème.
+                        Sur la carte — blanche à 70 % — la variante claire se lit, et la règle est
+                        respectée : l'icône suit la SURFACE qui la porte. C'est aussi le seul écran
+                        qu'un visiteur voit avant de confier ses identifiants.
+                    --}}
+                    <a href="{{ route('home') }}" class="mb-5 inline-flex" aria-label="{{ config('app.name', 'Brio') }} — accueil">
+                        <x-brand.logo space="client" variant="light" :size="56" />
+                    </a>
                     <h1 class="text-2xl font-bold tracking-tight text-slate-900">Bon retour parmi nous</h1>
                     <p class="mt-2 text-sm text-slate-500">Connectez-vous à votre espace</p>
                 </div>
