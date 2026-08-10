@@ -5,7 +5,7 @@ import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Screen, Button, Badge } from '@/ui';
 import { useMissionDetail } from '@/missions';
-import { useGpsWatcher, useSendPing, useStartTracking, useMarkInMission, haversineMeters, formatDistance } from '@/tracking';
+import { useGpsWatcher, useStartTracking, useMarkInMission, haversineMeters, formatDistance } from '@/tracking';
 import { colors, spacing, typography, radius, shadows } from '@/theme';
 import { useThemeColors } from '@/theme/useThemeColors';
 import type { ThemeTokens } from '@/theme/useThemeColors';
@@ -34,7 +34,6 @@ export function TrackingScreen({ route }: Props) {
 
   const startTracking = useStartTracking(bookingId);
   const [sessionId, setSessionId] = useState<number | null>(null);
-  const sendPing = useSendPing(sessionId);
   const markInMission = useMarkInMission(sessionId);
   const [currentPos, setCurrentPos] = useState<Position | null>(null);
   const [distanceMeters, setDistanceMeters] = useState<number | null>(null);
@@ -64,22 +63,25 @@ export function TrackingScreen({ route }: Props) {
     [mission],
   );
 
+  /*
+   * CET ÉCRAN REGARDE, IL N'ÉMET PLUS.
+   *
+   * Il était le SEUL endroit de l'application où les relevés partaient — derrière un bouton
+   * « Suivi GPS » que le prestataire devait penser à presser et garder ouvert, en conduisant. Le
+   * relevé vit désormais dans `TripTrackingHost`, monté avec les onglets : il suit la mission, pas
+   * l'écran affiché.
+   *
+   * L'observateur reste ici pour la distance et l'estimation montrées AU PRESTATAIRE. Il n'envoie
+   * plus : deux émetteurs sur la même session doubleraient les points sans rien apprendre de plus.
+   */
   useGpsWatcher(
     true,
     useCallback(
       (pos) => {
         setCurrentPos(pos);
         updateDistance(pos);
-        if (sessionId !== null) {
-          sendPing.mutate({
-            latitude: pos.latitude,
-            longitude: pos.longitude,
-            speed: pos.speed ?? undefined,
-            heading: pos.heading ?? undefined,
-          });
-        }
       },
-      [sessionId, sendPing, updateDistance],
+      [updateDistance],
     ),
   );
 

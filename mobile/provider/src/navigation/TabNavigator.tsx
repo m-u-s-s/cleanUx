@@ -8,6 +8,7 @@ import { Icon } from '@/ui';
 import { apparenceDeBarre } from '@/ui/glassBars';
 import { usePresenceHeartbeat } from '@/presence';
 import { OfferHost } from '@/offers';
+import { TripTrackingHost } from '@/tracking';
 import { colors } from '@/theme';
 import { useThemeColors } from '@/theme/useThemeColors';
 import type { TabParamList } from './types';
@@ -66,6 +67,17 @@ export function TabNavigator() {
       doit pas voir de modale d'offre, et leurs piles n'incluent pas celle-ci.
     */}
     <OfferHost />
+    {/*
+      LE SUIVI EN DIRECT, POUR LA MEME RAISON QUE LES DEUX AU-DESSUS.
+
+      Il vivait dans un ecran que le prestataire devait ouvrir et garder ouvert — en conduisant.
+      Le parcours normal etant « En route » puis « Je suis arrive », la session de suivi naissait
+      sans une seule position, et le client ne voyait jamais approcher son prestataire.
+
+      Ici, le releve suit la MISSION et non l'ecran affiche. Il s'arrete de lui-meme des qu'aucune
+      mission n'est en route.
+    */}
+    <TripTrackingHost />
     </>
   );
 }

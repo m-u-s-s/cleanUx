@@ -1,3 +1,4 @@
+export { TripTrackingHost } from './TripTrackingHost';
 export {
   useStartTracking,
   useSendPing,

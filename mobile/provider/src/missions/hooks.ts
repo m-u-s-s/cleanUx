@@ -76,8 +76,19 @@ export function useMissionLifecycle(missionId: number) {
         : undefined;
       await apiClient.post(`/provider/missions/${missionId}/${action}`, body);
     },
-    onSuccess: () =>
-      qc.invalidateQueries({ queryKey: ['provider', 'mission', missionId] }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['provider', 'mission', missionId] });
+
+      /*
+       * LA LISTE DES MISSIONS ACTIVES AUSSI, et c'est elle qui déclenche le suivi en direct.
+       *
+       * `TripTrackingHost` s'appuie dessus pour savoir qu'une mission est passée `en_route` et
+       * ouvrir la session GPS. Sans cette invalidation, il l'apprendrait au prochain sondage —
+       * jusqu'à trente secondes pendant lesquelles le client ne voit rien bouger, précisément au
+       * moment où il vient de recevoir « votre prestataire est en route ».
+       */
+      qc.invalidateQueries({ queryKey: ['provider', 'missions', 'active'] });
+    },
   });
 }
 
