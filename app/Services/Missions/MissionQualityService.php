@@ -157,7 +157,7 @@ class MissionQualityService
 
     public function generateOrRefreshReport(Mission $mission, ?User $generatedBy = null): MissionReport
     {
-        $mission->loadMissing(['rendezVous', 'checklists.items', 'media', 'incidents', 'qualityReviews']);
+        $mission->loadMissing(['booking', 'checklists.items', 'media', 'incidents', 'qualityReviews']);
 
         $checklist = $mission->checklists->first();
         $beforeCount = $mission->media->where('media_type', 'before_photo')->count();
@@ -182,7 +182,7 @@ class MissionQualityService
                 'quality_score' => $mission->quality_score,
                 'report_payload' => [
                     'mission_id' => $mission->id,
-                    'booking_reference' => $mission->rendezVous?->booking_reference,
+                    'booking_reference' => $mission->booking?->booking_reference,
                     'status' => $mission->status,
                     'quality_status' => $mission->quality_status,
                     'quality_score' => $mission->quality_score,

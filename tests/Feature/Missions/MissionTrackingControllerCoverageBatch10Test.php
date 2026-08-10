@@ -209,7 +209,7 @@ class MissionTrackingControllerCoverageBatch10Test extends TestCase
 
         $booking = Booking::factory()->create(['client_id' => $client->id]);
         $mission = Mission::factory()->enRoute()->create([
-            'rendez_vous_id' => $booking->id,
+            'booking_id' => $booking->id,
             'lead_employee_id' => $employe->id,
             'organization_account_id' => null,
             'destination_lat' => 50.9000,

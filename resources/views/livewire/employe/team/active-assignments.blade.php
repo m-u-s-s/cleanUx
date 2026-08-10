@@ -15,8 +15,10 @@
                     <span class="rounded-full bg-blue-100 px-3 py-1 text-xs font-semibold text-blue-700">{{ strtoupper($assignment->assignment_status) }}</span>
                 </div>
                 <div class="mt-3 text-sm text-slate-600 space-y-1">
-                    <p>Client : {{ $assignment->mission->rendezVous->client->name ?? '—' }}</p>
-                    <p>Site : {{ $assignment->mission->organizationSite->name ?? $assignment->mission->rendezVous->location_display }}</p>
+                    <p>Client : {{ $assignment->mission->booking?->client?->name ?? '—' }}</p>
+                    {{-- Une mission sans réservation rattachée existe, et cette ligne faisait tomber la page
+                         entière en erreur 500 au lieu de laisser un tiret à sa place. --}}
+                    <p>Site : {{ $assignment->mission->organizationSite?->name ?? $assignment->mission->booking?->location_display ?? '—' }}</p>
                     <p>Planifié : {{ optional($assignment->mission->planned_start_at)->format('d/m/Y H:i') ?? '—' }}</p>
                 </div>
             </div>

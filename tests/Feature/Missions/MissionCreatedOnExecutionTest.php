@@ -32,7 +32,7 @@ class MissionCreatedOnExecutionTest extends TestCase
 
         $booking->update(['status' => BookingStatus::EN_ROUTE]);
 
-        $this->assertDatabaseHas('missions', ['rendez_vous_id' => $booking->id]);
+        $this->assertDatabaseHas('missions', ['booking_id' => $booking->id]);
     }
 
     public function test_a_booking_going_straight_to_sur_place_gets_its_mission(): void
@@ -41,7 +41,7 @@ class MissionCreatedOnExecutionTest extends TestCase
 
         $booking->update(['status' => BookingStatus::SUR_PLACE]);
 
-        $this->assertDatabaseHas('missions', ['rendez_vous_id' => $booking->id]);
+        $this->assertDatabaseHas('missions', ['booking_id' => $booking->id]);
     }
 
     /**
@@ -53,7 +53,7 @@ class MissionCreatedOnExecutionTest extends TestCase
         $booking = $this->booking();
         $booking->update(['status' => BookingStatus::CONFIRME]);
 
-        $mission = Mission::query()->where('rendez_vous_id', $booking->id)->firstOrFail();
+        $mission = Mission::query()->where('booking_id', $booking->id)->firstOrFail();
         $startedAt = now()->subHour();
         $mission->forceFill([
             'status' => MissionStatus::STARTED,
@@ -75,7 +75,7 @@ class MissionCreatedOnExecutionTest extends TestCase
         $booking->update(['status' => BookingStatus::EN_ROUTE]);
         $booking->update(['status' => BookingStatus::SUR_PLACE]);
 
-        $this->assertSame(1, Mission::query()->where('rendez_vous_id', $booking->id)->count());
+        $this->assertSame(1, Mission::query()->where('booking_id', $booking->id)->count());
     }
 
     /** Rien à exécuter tant que la réservation attend : le comportement d'origine est conservé. */

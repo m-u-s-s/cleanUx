@@ -60,9 +60,18 @@ class AdminAnalyticsService
 
         $totalMargin = 0.0;
 
-        if (Schema::hasColumn('rendez_vous', 'margin')) {
+        /*
+         * LA GARDE INTERROGEAIT UNE TABLE ET LA SOMME EN LISAIT UNE AUTRE : on demandait à
+         * `rendez_vous` si la colonne existait, puis on additionnait sur `bookings`. Les deux tables
+         * n'ont jamais eu la même forme — la seconde en compte 143 colonnes contre 34 — si bien que
+         * la marge totale du tableau de bord pouvait rester à zéro sans que rien ne le signale.
+         *
+         * Aujourd'hui aucune des deux ne porte la colonne, et cette marge vaut donc zéro : c'est un
+         * manque à combler, pas un calcul. Au moins la garde porte désormais sur la table lue.
+         */
+        if (Schema::hasColumn('bookings', 'margin')) {
             $totalMargin = (float) Booking::query()->sum('margin');
-        } elseif (Schema::hasColumn('rendez_vous', 'marge')) {
+        } elseif (Schema::hasColumn('bookings', 'marge')) {
             $totalMargin = (float) Booking::query()->sum('marge');
         }
 

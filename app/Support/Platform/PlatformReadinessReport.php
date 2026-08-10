@@ -146,7 +146,10 @@ class PlatformReadinessReport
             $this->makeCheck(
                 key: 'duplicate_booking_references',
                 label: 'Références booking dupliquées',
-                count: $this->countDuplicateGroups('rendez_vous', 'booking_reference', true),
+                // La table interrogée était le miroir `rendez_vous`, pas `bookings`. Deux réservations
+                // partageant une référence passaient donc inaperçues dès que la recopie avait échoué
+                // — et cette recopie échouait en silence, par construction.
+                count: $this->countDuplicateGroups('bookings', 'booking_reference', true),
                 severity: 'error'
             ),
             $this->makeCheck(

@@ -186,7 +186,7 @@ class MissionTrackingService
 
     public function livePayload(Mission $mission): array
     {
-        $mission->loadMissing(['rendezVous', 'leadEmployee', 'activeTrackingSession']);
+        $mission->loadMissing(['booking', 'leadEmployee', 'activeTrackingSession']);
 
         $session = $mission->activeTrackingSession;
 
@@ -205,11 +205,11 @@ class MissionTrackingService
 
         $destinationLat = $mission->destination_lat !== null
             ? (float) $mission->destination_lat
-            : ($mission->rendezVous?->destination_lat !== null ? (float) $mission->rendezVous->destination_lat : null);
+            : ($mission->booking?->destination_lat !== null ? (float) $mission->booking->destination_lat : null);
 
         $destinationLng = $mission->destination_lng !== null
             ? (float) $mission->destination_lng
-            : ($mission->rendezVous?->destination_lng !== null ? (float) $mission->rendezVous->destination_lng : null);
+            : ($mission->booking?->destination_lng !== null ? (float) $mission->booking->destination_lng : null);
         $distanceMeters = null;
         $etaMinutes = null;
 

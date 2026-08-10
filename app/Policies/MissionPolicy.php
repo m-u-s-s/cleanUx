@@ -43,7 +43,7 @@ class MissionPolicy
         }
 
         if ($user->isClient()) {
-            return $mission->rendezVous?->client_id === $user->id;
+            return $mission->booking?->client_id === $user->id;
         }
 
         return false;

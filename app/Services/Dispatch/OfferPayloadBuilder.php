@@ -137,7 +137,7 @@ class OfferPayloadBuilder
             return null;
         }
 
-        return $mission->bookingViaBookingId ?? $mission->rendezVous ?? $mission->booking;
+        return $mission->booking;
     }
 
     protected function tradeName(?Booking $booking): ?string

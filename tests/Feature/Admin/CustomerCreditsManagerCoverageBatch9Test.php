@@ -92,7 +92,7 @@ class CustomerCreditsManagerCoverageBatch9Test extends TestCase
         $admin = $this->makeAdmin();
         $client = $this->makeClient();
 
-        $rendezVousId = DB::table('rendez_vous')->insertGetId([
+        $rendezVousId = DB::table('bookings')->insertGetId([
             'client_id' => $client->id,
             'status' => 'pending',
             'created_at' => now(),

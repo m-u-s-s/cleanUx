@@ -46,6 +46,19 @@ class ClientQrFlowTest extends TestCase
             'is_consumed' => false,
         ]);
 
+        /*
+         * LES TÂCHES OBLIGATOIRES SONT COCHÉES D'ABORD, comme le ferait le prestataire.
+         *
+         * La mission vient désormais de la synchronisation automatique — depuis la fusion des deux
+         * colonnes, le test réutilise celle-là au lieu d'en fabriquer une seconde — et cette
+         * mission-là porte la checklist de son métier. Une clôture sans les tâches est refusée, et
+         * c'est exactement ce qu'on veut : le refus est la règle métier, pas un défaut.
+         */
+        $mission->loadMissing('checklists.items');
+        foreach ($mission->checklists->flatMap->items as $item) {
+            $item->update(['status' => 'done']);
+        }
+
         $this->actingAs($client, 'sanctum')
             ->postJson("/api/client/bookings/{$mission->booking_id}/qr-end", ['qr_code' => '654321'])
             ->assertOk()
@@ -106,19 +119,22 @@ class ClientQrFlowTest extends TestCase
             'booking_mode' => 'scheduled',
         ]);
 
-        $mission = Mission::create([
-            'booking_id' => $booking->id,
-            'rendez_vous_id' => $booking->id,
+        // L'observateur a déjà créé la mission de cette réservation confirmée : depuis la fusion
+        // des deux colonnes, en créer une seconde ferait un doublon que les points d'entrée
+        // résoudraient dans le mauvais sens.
+        $mission = Mission::updateOrCreate(['booking_id' => $booking->id], [
             'lead_provider_user_id' => $provider->id,
             'status' => $status,
             'actual_start_at' => $status === 'started' ? now()->subHour() : null,
             'planned_start_at' => now()->subHour(),
         ]);
 
-        MissionAssignment::factory()->accepted()->create([
-            'mission_id' => $mission->id,
-            'user_id' => $provider->id,
-        ]);
+        // Même raison : la synchronisation a déjà posé l'assignation du chef, et le couple
+        // (mission, personne) est unique en base.
+        MissionAssignment::updateOrCreate(
+            ['mission_id' => $mission->id, 'user_id' => $provider->id],
+            ['assignment_status' => 'accepted', 'status' => 'accepted', 'assigned_at' => now(), 'accepted_at' => now()],
+        );
 
         return [$client, $provider, $mission];
     }

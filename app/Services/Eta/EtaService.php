@@ -69,7 +69,7 @@ class EtaService
             ?? $tracking?->start_lng;
 
         $booking = $mission->booking
-            ?? $mission->rendezVous
+            ?? $mission->booking
             ?? null;
 
         $destinationLat = $mission->destination_lat

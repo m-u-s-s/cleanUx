@@ -110,8 +110,15 @@ class ClientBookingControllerCoverageBatch15Test extends TestCase
         $owner = User::factory()->client()->create();
         $booking = $this->buildBooking($owner, ['status' => 'confirme']);
 
-        $mission = Mission::create([
-            'booking_id' => $booking->id,
+        /*
+         * LA MISSION EXISTE DÉJÀ. L'observateur en crée une pour chaque réservation, et la seule
+         * clé de `missions` est désormais `booking_id` — en fabriquer une seconde donnait deux
+         * missions au même dossier, dont une que l'API ne renverrait jamais. Le test comparait
+         * alors la réponse à la mission qu'il venait d'écrire, pas à celle que le client voit.
+         */
+        $mission = Mission::query()->where('booking_id', $booking->id)->firstOrFail();
+
+        $mission->update([
             'status' => 'assigned',
             'planned_start_at' => now()->addHour(),
         ]);
@@ -136,8 +143,9 @@ class ClientBookingControllerCoverageBatch15Test extends TestCase
             'destination_lng' => 4.352,
         ]);
 
-        $mission = Mission::create([
-            'booking_id' => $booking->id,
+        $mission = Mission::query()->where('booking_id', $booking->id)->firstOrFail();
+
+        $mission->update([
             'lead_provider_user_id' => $provider->id,
             'status' => 'en_route',
             'planned_start_at' => now()->addHour(),

@@ -60,7 +60,7 @@ class SignalerIncident extends Component
     public function save(): void
     {
         $data = $this->validate([
-            'rendezVousId' => ['nullable', 'exists:rendez_vous,id'],
+            'rendezVousId' => ['nullable', 'exists:bookings,id'],
             'type' => ['required', 'string'],
             'priority' => ['required', 'string'],
             'title' => ['required', 'string', 'max:255'],

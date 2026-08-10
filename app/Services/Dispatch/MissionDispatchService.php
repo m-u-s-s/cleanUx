@@ -42,7 +42,7 @@ class MissionDispatchService
      */
     public function resolveTimeoutForMission(Mission $mission): int
     {
-        $booking = $mission->bookingViaBookingId ?? $mission->rendezVous ?? $mission->booking;
+        $booking = $mission->booking;
 
         return app(DispatchEngine::class)->immediateTimeout($booking);
     }

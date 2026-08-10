@@ -1021,7 +1021,7 @@ class CompanyController extends Controller
             ->where('provider_organization_id', $org->id)
             ->findOrFail($missionId);
 
-        $rendezVous = $mission->rendezVous;
+        $rendezVous = $mission->booking;
 
         abort_if($rendezVous === null, 422, 'Cette mission n’a pas de rendez-vous à déplacer.');
 

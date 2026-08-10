@@ -37,8 +37,11 @@ class PlatformReadinessService
 
     protected function checkTables(): bool
     {
+        // `bookings` remplace `rendez_vous` : la seconde était une copie de la première, et gager
+        // l'état de service de la plateforme sur la présence d'un miroir revenait à exiger le reflet
+        // plutôt que l'objet.
         return Schema::hasTable('users')
-            && Schema::hasTable('rendez_vous')
+            && Schema::hasTable('bookings')
             && Schema::hasTable('missions')
             && Schema::hasTable('finance_invoices');
     }

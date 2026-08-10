@@ -60,8 +60,8 @@ trait CreatesMissionPortalFixtures
         $mission = $rendezVous->mission()->first();
 
         if (! $mission) {
-            $mission = Mission::factory()->for($rendezVous, 'rendezVous')->create([
-                'rendez_vous_id' => $rendezVous->id,
+            $mission = Mission::factory()->create([
+                'booking_id' => $rendezVous->id,
             ]);
         }
 

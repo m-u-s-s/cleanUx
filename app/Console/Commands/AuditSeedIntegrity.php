@@ -20,7 +20,7 @@ class AuditSeedIntegrity extends Command
     {
         $rows = [
             ['emails utilisateurs dupliqués', $this->countDuplicateRows('users', 'email')],
-            ['booking_reference dupliqués', $this->countDuplicateRows('rendez_vous', 'booking_reference', true)],
+            ['booking_reference dupliqués', $this->countDuplicateRows('bookings', 'booking_reference', true)],
             ['slugs comptes entreprise dupliqués', $this->countDuplicateRows('organization_accounts', 'slug', true)],
             ['TVA comptes entreprise dupliqués', $this->countDuplicateRows('organization_accounts', 'tva_number', true)],
             ['slugs zones dupliqués', $this->countDuplicateRows('service_zones', 'slug')],

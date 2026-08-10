@@ -14,7 +14,7 @@ class MissionAdminController extends Controller
         abort_unless(auth()->user()?->isAdmin(), 403);
 
         $mission->load([
-            'rendezVous.client',
+            'booking.client',
             'organizationAccount',
             'organizationSite',
             'serviceCatalog',

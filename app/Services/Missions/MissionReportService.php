@@ -10,7 +10,7 @@ class MissionReportService
     public function generate(Mission $mission): string
     {
         $mission->load([
-            'rendezVous.client',
+            'booking.client',
             'leadEmployee',
             'media',
             'checklists.items',

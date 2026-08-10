@@ -190,8 +190,14 @@ class PresenceStartsMissionTest extends TestCase
             return [$client, $provider, $booking, $session];
         }
 
-        $mission = Mission::query()->create([
-            'booking_id' => $booking->id,
+        /*
+         * UNE RÉSERVATION, UNE MISSION — l'observateur en a déjà créé une.
+         *
+         * Les deux colonnes de `missions` étant fusionnées, le chemin automatique et celui du test
+         * désignent enfin la même ligne. Créer ici en aveugle fabriquerait un doublon, et le code
+         * qui cherche « la mission de cette réservation » trouverait la mauvaise.
+         */
+        $mission = Mission::query()->updateOrCreate(['booking_id' => $booking->id], [
             'status' => $missionStatus,
             'lead_provider_user_id' => $provider->id,
             'lead_employee_id' => $provider->id,

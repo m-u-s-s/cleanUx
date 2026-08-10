@@ -182,7 +182,7 @@ class DispatchEngine
          * lieu de vingt secondes, aucune vague. Le client attendait devant sa porte pendant qu'on
          * interrogeait des prestataires hors ligne à l'autre bout de la zone.
          */
-        $booking = $mission->bookingViaBookingId ?? $mission->rendezVous ?? $mission->booking;
+        $booking = $mission->booking;
 
         if ($booking && ($booking->booking_mode ?? null) === 'asap') {
             $ouverte = $this->openImmediate($booking);
@@ -288,7 +288,7 @@ class DispatchEngine
     /** La suite d'une chaîne planifiée : le meilleur candidat non encore tenté. */
     public function offerScheduled(Mission $mission): ?MissionAssignment
     {
-        $booking = $mission->bookingViaBookingId ?? $mission->rendezVous ?? $mission->booking;
+        $booking = $mission->booking;
 
         if (! $booking || $mission->lead_provider_user_id || $mission->status !== 'planned') {
             return null;

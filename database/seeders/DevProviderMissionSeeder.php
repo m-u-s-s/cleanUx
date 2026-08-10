@@ -38,12 +38,12 @@ class DevProviderMissionSeeder extends Seeder
         ]);
         $serviceCatalog = ServiceCatalog::first();
 
-        // withoutEvents : un Booking `confirme` déclenche RendezVousObserver, qui synchronise
-        // une mission legacy via `rendez_vous_id` (MissionFromRendezVousSyncService). Ce chemin
-        // legacy calcule planned_start_at depuis les alias FR `date`/`heure` et plante en base
-        // MySQL réelle (mode strict, datetime invalide) — un bug préexistant, hors périmètre de
-        // ce seeder. On désactive les events le temps de cette création pour ne produire que LA
-        // mission voulue ci-dessous (rattachée via `booking_id`, géolocalisée).
+        // withoutEvents : un Booking `confirme` déclenche RendezVousObserver, qui synchronise la
+        // mission de la réservation (MissionFromRendezVousSyncService). Ce chemin calcule
+        // planned_start_at depuis les alias FR `date`/`heure` et plante en base MySQL réelle
+        // (mode strict, datetime invalide) — un bug préexistant, hors périmètre de ce seeder. On
+        // désactive les events le temps de cette création pour ne produire que LA mission voulue
+        // ci-dessous, géolocalisée.
         $booking = Booking::withoutEvents(fn () => Booking::create([
             'booking_reference' => 'CUX-'.strtoupper(Str::random(6)),
             'customer_user_id' => $client->id,

@@ -15,9 +15,9 @@ use Illuminate\Support\Str;
 use Tests\TestCase;
 
 /**
- * Les deux chemins de création rattachés à `booking_id` (CreateBookingFromApiAction et
- * ProcessRecurringBookings) ne renseignaient aucune destination, contrairement au chemin
- * `rendez_vous_id`. Sans elle, la carte du prestataire n'a aucun marqueur à afficher.
+ * Deux chemins de création (CreateBookingFromApiAction et ProcessRecurringBookings) ne
+ * renseignaient aucune destination, contrairement à la synchronisation depuis une réservation, qui
+ * géocode l'adresse. Sans elle, la carte du prestataire n'a aucun marqueur à afficher.
  *
  * Le géocodeur est injecté à la main plutôt que stubbé via Http::fake() : la classe de base
  * Tests\TestCase enregistre déjà un stub `nominatim.openstreetmap.org/*` renvoyant Bruxelles, et
@@ -59,7 +59,7 @@ class GeocodeMissionDestinationTest extends TestCase
     public function test_it_resolves_bookings_attached_through_the_legacy_rendez_vous_column(): void
     {
         $booking = $this->makeBooking();
-        $mission = Mission::create(['rendez_vous_id' => $booking->id, 'status' => 'planned']);
+        $mission = Mission::create(['booking_id' => $booking->id, 'status' => 'planned']);
 
         (new GeocodeMissionDestination($mission->id))
             ->handle($this->geocoderReturning(['lat' => 51.2194, 'lng' => 4.4025]));
@@ -178,9 +178,9 @@ class GeocodeMissionDestinationTest extends TestCase
     }
 
     /**
-     * withoutEvents : un booking `confirme` réveille RendezVousObserver, qui crée SA propre
-     * mission via `rendez_vous_id` et géocode l'adresse. Elle brouillerait les assertions d'un
-     * test qui porte sur une seule mission. Même précaution que DevProviderMissionSeeder.
+     * withoutEvents : un booking `confirme` réveille RendezVousObserver, qui crée la mission de
+     * la réservation et géocode son adresse. Elle brouillerait les assertions d'un test qui porte
+     * sur une seule mission. Même précaution que DevProviderMissionSeeder.
      */
     protected function makeBooking(array $overrides = []): Booking
     {

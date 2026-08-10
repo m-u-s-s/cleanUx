@@ -8,17 +8,17 @@ class MissionProfitabilityService
 {
     public function calculate(Mission $mission): array
     {
-        $mission->loadMissing(['rendezVous', 'leadEmployee']);
+        $mission->loadMissing(['booking', 'leadEmployee']);
 
         $price = (float) (
-            $mission->rendezVous?->devis_estime
-            ?? data_get($mission->rendezVous?->pricing_snapshot, 'devis_estime')
+            $mission->booking?->devis_estime
+            ?? data_get($mission->booking?->pricing_snapshot, 'devis_estime')
             ?? 0
         );
 
         $plannedMinutes = $mission->planned_start_at && $mission->planned_end_at
             ? max(0, $mission->planned_start_at->diffInMinutes($mission->planned_end_at))
-            : (int) ($mission->rendezVous?->duree_estimee ?? $mission->rendezVous?->duree ?? 90);
+            : (int) ($mission->booking?->duree_estimee ?? $mission->booking?->duree ?? 90);
 
         $realMinutes = $mission->actual_start_at && $mission->actual_end_at
             ? max(0, $mission->actual_start_at->diffInMinutes($mission->actual_end_at))

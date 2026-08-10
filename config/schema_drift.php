@@ -5,7 +5,6 @@ use App\Models\Company;
 use App\Models\MissionVerificationCode;
 use App\Models\QualityAudit;
 use App\Models\RecurringBookingSeries;
-use App\Models\RendezVous;
 use App\Models\SubscriptionPlan;
 
 return [
@@ -72,16 +71,6 @@ return [
     | Models excluded from the audit entirely (database views, unmanaged tables).
     */
     'ignore_models' => [
-
-        // RendezVous extends Booking with $guarded = [] but points at the legacy
-        // `rendez_vous` compat table, which is INTENTIONALLY a small subset of the
-        // `bookings` schema. It inherits Booking's full $fillable/$casts, none of
-        // which it needs on its own table: Booking::mirrorIntoLegacyRendezVousTable()
-        // explicitly filters its payload to only the columns that exist on
-        // `rendez_vous`. Mirroring all ~90 Booking columns onto the legacy table
-        // would duplicate `bookings` and defeat the compat-mirror design, so the
-        // model is excluded wholesale rather than fixed column-by-column.
-        RendezVous::class,
 
         // Company is an orphan/legacy model: no application code, seeder or test
         // creates or queries it (the only references are the word "company" in

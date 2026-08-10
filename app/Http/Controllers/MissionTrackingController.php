@@ -108,7 +108,7 @@ class MissionTrackingController extends Controller
         $user = Auth::user();
 
         $isOwner =
-            $mission->rendezVous?->client_id === $user?->id
+            $mission->booking?->client_id === $user?->id
             || (
                 $mission->organization_account_id
                 && $user?->organization_account_id

@@ -10,7 +10,7 @@ class MissionReportPdfService
     public function download(Mission $mission)
     {
         $mission->load([
-            'rendezVous.client',
+            'booking.client',
             'leadEmployee',
             'checklists.items',
             'media',

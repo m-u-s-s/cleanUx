@@ -39,7 +39,7 @@ class MissionActions extends Component
 
     public function mount(Mission $mission): void
     {
-        $this->mission = $mission->load(['assignments', 'verificationCodes', 'rendezVous']);
+        $this->mission = $mission->load(['assignments', 'verificationCodes', 'booking']);
     }
 
     public function setEnRoute(): void
@@ -109,7 +109,7 @@ class MissionActions extends Component
 
             session()->put('mission_end_code_'.$this->mission->id, $generated['code']);
 
-            $this->mission = $this->mission->fresh(['assignments', 'verificationCodes', 'rendezVous']);
+            $this->mission = $this->mission->fresh(['assignments', 'verificationCodes', 'booking']);
 
             $this->successMessage = 'Code de fin généré.';
         } catch (\Throwable $e) {

@@ -19,7 +19,7 @@ class MissionAftercareSummary extends Component
         abort_unless($user instanceof User, 403);
 
         $isOwner =
-            $mission->rendezVous?->client_id === $user->id
+            $mission->booking?->client_id === $user->id
             || (
                 $mission->organization_account_id
                 && $user->organization_account_id
@@ -29,7 +29,7 @@ class MissionAftercareSummary extends Component
         abort_unless($isOwner, 403);
 
         $this->mission = $mission->load([
-            'rendezVous',
+            'booking',
             'leadEmployee',
             'media.uploadedBy',
             'checklists.items.completedBy',
@@ -41,7 +41,7 @@ class MissionAftercareSummary extends Component
     public function render(): View
     {
         $this->mission->load([
-            'rendezVous',
+            'booking',
             'leadEmployee',
             'media.uploadedBy',
             'checklists.items.completedBy',

@@ -37,7 +37,7 @@ class MesRendezVousComponentTest extends TestCase
     private function bookingWithMission(User $employe, array $attributes = []): Booking
     {
         $booking = Booking::factory()->create(array_merge(['employe_id' => $employe->id], $attributes));
-        Mission::factory()->create(['rendez_vous_id' => $booking->id]);
+        Mission::factory()->create(['booking_id' => $booking->id]);
 
         return $booking;
     }

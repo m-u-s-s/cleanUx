@@ -21,7 +21,7 @@ class CheckMissingTables extends Command
         // Tables attendues (ajoutez ici celles utilisées dans vos relations ou migrations)
         $requiredTables = [
             'users',
-            'rendez_vous',
+            'bookings',
             'disponibilites',
             'feedback',
             'limites_journalieres',

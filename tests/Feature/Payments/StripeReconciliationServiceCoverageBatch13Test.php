@@ -112,14 +112,14 @@ class StripeReconciliationServiceCoverageBatch13Test extends TestCase
         $provider = User::factory()->employe()->create();
         $missingPayoutBooking = $this->bookingWith('pi_missing_payout', 'captured');
         Mission::factory()->create([
-            'rendez_vous_id' => $missingPayoutBooking->id,
+            'booking_id' => $missingPayoutBooking->id,
             'lead_provider_user_id' => $provider->id,
         ]);
 
         // 4. Captured booking + mission + matching ProviderPayout → clean
         $okBooking = $this->bookingWith('pi_with_payout', 'captured');
         Mission::factory()->create([
-            'rendez_vous_id' => $okBooking->id,
+            'booking_id' => $okBooking->id,
             'lead_provider_user_id' => $provider->id,
         ]);
         ProviderPayout::factory()->create([

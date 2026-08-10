@@ -85,7 +85,7 @@ class AssistantStats
             $query->where('organization_account_id', $orgId);
         } else {
             // Cas user lambda : missions où il est customer
-            $query->whereHas('rendezVous', fn ($q) => $q->where('customer_user_id', $user->id));
+            $query->whereHas('booking', fn ($q) => $q->where('customer_user_id', $user->id));
         }
 
         return $query->count();

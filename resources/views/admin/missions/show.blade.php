@@ -7,7 +7,7 @@
                         Mission #{{ $mission->id }}
                     </h1>
                     <p class="mt-1 text-sm text-slate-500">
-                        Référence : {{ $mission->rendezVous?->booking_reference ?? '—' }}
+                        Référence : {{ $mission->booking?->booking_reference ?? '—' }}
                     </p>
                 </div>
 
@@ -20,7 +20,7 @@
             <div class="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
                 <div class="rounded-xl border border-slate-200 p-4">
                     <div class="text-sm text-slate-500">Client</div>
-                    <div class="mt-1 font-medium text-slate-900">{{ $mission->rendezVous?->client?->name ?? '—' }}</div>
+                    <div class="mt-1 font-medium text-slate-900">{{ $mission->booking?->client?->name ?? '—' }}</div>
                 </div>
 
                 <div class="rounded-xl border border-slate-200 p-4">

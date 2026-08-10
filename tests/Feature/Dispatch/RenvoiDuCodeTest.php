@@ -70,7 +70,7 @@ class RenvoiDuCodeTest extends TestCase
         ]);
 
         $mission = Mission::factory()->create([
-            'rendez_vous_id' => $booking->id,
+            'booking_id' => $booking->id,
             'lead_provider_user_id' => $prestataire->id,
             'status' => 'arrived',
         ]);

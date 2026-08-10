@@ -36,7 +36,6 @@ class Mission extends Model
 
     protected $fillable = [
         'booking_id',
-        'rendez_vous_id',
         'organization_account_id',
         'provider_organization_id',
         'provider_team_id',
@@ -114,43 +113,24 @@ class Mission extends Model
         'sla_resolution_due_at' => 'datetime',
     ];
 
-    /** @return BelongsTo<Booking, $this> */
-    public function rendezVous(): BelongsTo
-    {
-        return $this->belongsTo(Booking::class, 'rendez_vous_id');
-    }
-
     /**
-     * Alias de rendezVous() — la nomenclature historique stocke la FK
-     * dans `rendez_vous_id`, mais le code Phase 11+ utilise `$mission->booking`
-     * (cohérent avec la table `bookings`). Cette relation pointe sur la
-     * même colonne pour éviter de toucher à la migration.
+     * LA RÉSERVATION DE CETTE MISSION — une clé, une relation, une réponse.
      *
-     * IMPORTANT : sans cette relation, `$mission->booking` retournait `null`
-     * et toute la chaîne dispatch / ETA / paiement était silencieusement cassée.
+     * Il y en avait TROIS. `missions` portait deux colonnes vers la même table `bookings` selon le
+     * chemin de création, et `booking()` choisissait la sienne À L'EXÉCUTION — ce que le chargement
+     * anticipé de Laravel ne sait pas faire : il résout la relation sur une instance vierge, où
+     * l'attribut est vide, et retombait donc toujours du même côté. D'où une deuxième relation pour
+     * contourner, puis une troisième, et des appelants qui combinaient les deux à la main.
+     *
+     * Un appelant sur trois se trompait : la modale d'offre s'ouvrait sur des tirets, le dispatch
+     * cherchait des réservations qu'il ne trouvait pas.
+     *
+     * La colonne survivante est `booking_id`, et le schéma l'avait déjà tranché : elle porte une
+     * contrainte de clé étrangère vers `bookings`, `rendez_vous_id` n'en a jamais eu.
+     *
+     * @return BelongsTo<Booking, $this>
      */
-    /** @return BelongsTo<Booking, $this> */
     public function booking(): BelongsTo
-    {
-        $fk = $this->booking_id ? 'booking_id' : 'rendez_vous_id';
-
-        return $this->belongsTo(Booking::class, $fk);
-    }
-
-    /**
-     * Contrepartie eager-load-safe de booking() pour la colonne booking_id.
-     *
-     * booking() choisit sa FK depuis $this->booking_id, ce que Laravel ne peut pas faire en
-     * eager load : il résout la relation sur une instance vierge, où l'attribut est toujours
-     * vide, et retombe donc systématiquement sur rendez_vous_id. rendezVous() (ci-dessus) couvre
-     * déjà la colonne rendez_vous_id avec une FK fixe, donc déjà eager-load-safe — il ne
-     * manquait que l'équivalent pour booking_id. L'appelant charge les deux relations et
-     * combine (`bookingViaBookingId ?? rendezVous`) selon le chemin de création qui a peuplé la
-     * mission (CreateBookingFromApiAction écrit booking_id, MissionFromRendezVousSyncService
-     * écrit rendez_vous_id), sans toucher au comportement de booking().
-     */
-    /** @return BelongsTo<Booking, $this> */
-    public function bookingViaBookingId(): BelongsTo
     {
         return $this->belongsTo(Booking::class, 'booking_id');
     }

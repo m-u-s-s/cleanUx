@@ -17,16 +17,21 @@ use Tests\TestCase;
 /**
  * Une réservation ASAP ne doit produire QU'UNE mission, et cette mission doit partir en offre.
  *
- * Deux colonnes de `missions` portent un bookings.id — `booking_id` et `rendez_vous_id` — et deux
+ * `missions` portait DEUX colonnes vers `bookings` — `booking_id` et `rendez_vous_id` — et deux
  * chemins écrivaient chacun la sienne sans voir l'autre :
  *
- *  - RendezVousObserver, sur toute réservation enregistrée en `confirme`, crée une mission via
- *    rendez_vous_id (MissionFromRendezVousSyncService) ;
- *  - CreateBookingFromApiAction::maybeDispatchAsap créait la SIENNE via booking_id, puis
+ *  - RendezVousObserver, sur toute réservation enregistrée en `confirme`, créait une mission via
+ *    `rendez_vous_id` (MissionFromRendezVousSyncService) ;
+ *  - CreateBookingFromApiAction::maybeDispatchAsap créait la SIENNE via `booking_id`, puis
  *    dispatchait celle-là.
  *
  * L'ASAP passant par `confirme`, les deux se déclenchaient : deux missions pour une réservation,
  * dont une seule dispatchée. Risque de double assignation et comptage faussé.
+ *
+ * LES DEUX COLONNES SONT DEPUIS FUSIONNÉES en une seule, `booking_id`, qui porte une contrainte de
+ * clé étrangère là où l'autre n'en a jamais eu. Ce test garde sa raison d'être : il vérifie qu'une
+ * réservation ASAP ne produit qu'une mission, ce que l'unicité de la colonne rend structurel plutôt
+ * que fortuit.
  */
 class AsapSingleDispatchTest extends TestCase
 {
@@ -41,7 +46,7 @@ class AsapSingleDispatchTest extends TestCase
 
         $this->assertSame(
             1,
-            Mission::where('booking_id', $booking->id)->orWhere('rendez_vous_id', $booking->id)->count(),
+            Mission::where('booking_id', $booking->id)->count(),
             'Une réservation ASAP ne doit produire qu’une seule mission.'
         );
     }
@@ -74,7 +79,7 @@ class AsapSingleDispatchTest extends TestCase
 
         $this->assertLessThanOrEqual(
             1,
-            Mission::where('booking_id', $booking->id)->orWhere('rendez_vous_id', $booking->id)->count()
+            Mission::where('booking_id', $booking->id)->count()
         );
         $this->assertCount(0, $dispatched);
     }

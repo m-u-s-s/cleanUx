@@ -23,7 +23,7 @@ class EmployeEnRouteNotification extends Notification
         return (new MailMessage)
             ->subject('Votre employé est en route')
             ->greeting('Bonjour,')
-            ->line('Votre employé est en route pour la mission '.$this->mission->rendezVous?->booking_reference.'.')
+            ->line('Votre employé est en route pour la mission '.$this->mission->booking?->booking_reference.'.')
             ->line('Vous pouvez suivre son arrivée depuis votre espace client.')
             ->action('Voir le suivi', url('/client/dashboard'))
             ->line('Merci de votre confiance.');
@@ -34,10 +34,10 @@ class EmployeEnRouteNotification extends Notification
         return [
             'type' => 'employee_en_route',
             'mission_id' => $this->mission->id,
-            'rendez_vous_id' => $this->mission->rendez_vous_id,
-            'booking_reference' => $this->mission->rendezVous?->booking_reference,
-            'service_identifier' => $this->mission->rendezVous?->service_identifier_display,
-            'service_label' => $this->mission->rendezVous?->service_display_name,
+            'rendez_vous_id' => $this->mission->booking_id,
+            'booking_reference' => $this->mission->booking?->booking_reference,
+            'service_identifier' => $this->mission->booking?->service_identifier_display,
+            'service_label' => $this->mission->booking?->service_display_name,
             'employee_name' => $this->mission->leadEmployee?->name,
             'status' => $this->mission->status,
         ];

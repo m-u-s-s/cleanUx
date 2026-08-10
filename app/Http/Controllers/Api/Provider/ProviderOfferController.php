@@ -40,12 +40,12 @@ class ProviderOfferController extends Controller
             })
             ->with([
                 'mission',
-                'mission.bookingViaBookingId.serviceCatalog',
-                'mission.bookingViaBookingId.trade',
-                'mission.bookingViaBookingId.customer',
-                'mission.rendezVous.serviceCatalog',
-                'mission.rendezVous.trade',
-                'mission.rendezVous.customer',
+                'mission.booking.serviceCatalog',
+                'mission.booking.trade',
+                'mission.booking.customer',
+                'mission.booking.serviceCatalog',
+                'mission.booking.trade',
+                'mission.booking.customer',
             ])
             ->orderBy('expires_at')
             ->first();

@@ -8,7 +8,7 @@ class MissionProfitService
 {
     public function calculate(Mission $mission): Mission
     {
-        $rdv = $mission->rendezVous;
+        $rdv = $mission->booking;
 
         $clientPrice = (float) ($rdv->devis_estime ?? 0);
 

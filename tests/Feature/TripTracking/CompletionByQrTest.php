@@ -185,7 +185,6 @@ class CompletionByQrTest extends TestCase
 
         $mission = Mission::query()->create([
             'booking_id' => $booking->id,
-            'rendez_vous_id' => $booking->id,
             'status' => $missionStatus,
             'lead_provider_user_id' => $provider->id,
             'lead_employee_id' => $provider->id,

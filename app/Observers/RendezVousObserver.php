@@ -30,7 +30,7 @@ class RendezVousObserver
         // réécrit le statut de la mission avec sa valeur initiale (`assigned` ou `planned`) :
         // l'appeler pendant l'exécution ramènerait une mission démarrée à son point de départ,
         // effaçant sa progression à chaque sauvegarde de la réservation.
-        if (Mission::query()->where('rendez_vous_id', $rendezVous->id)->exists()) {
+        if (Mission::query()->where('booking_id', $rendezVous->id)->exists()) {
             return;
         }
 

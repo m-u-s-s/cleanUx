@@ -65,14 +65,14 @@ class MissionLifecycleService
             'accepted_at' => now(),
         ]);
 
-        $mission = $mission->fresh(['assignments', 'rendezVous.client', 'leadEmployee']);
+        $mission = $mission->fresh(['assignments', 'booking.client', 'leadEmployee']);
 
-        if ($mission->rendezVous?->client) {
-            $mission->rendezVous->client->notify(new EmployeEnRouteNotification($mission));
+        if ($mission->booking?->client) {
+            $mission->booking->client->notify(new EmployeEnRouteNotification($mission));
         }
 
         app(SmsService::class)->send(
-            $mission->rendezVous?->client?->phone ?? $mission->rendezVous?->telephone_client,
+            $mission->booking?->client?->phone ?? $mission->booking?->telephone_client,
             'Brio : votre employé est en route. Vous pouvez suivre sa position depuis votre espace client.'
         );
 
@@ -108,20 +108,20 @@ class MissionLifecycleService
         $generated = $this->verificationCodeService->createVerificationCode($mission, 'start');
         session()->put('mission_start_code_'.$mission->id, $generated['code']);
         app(SmsService::class)->send(
-            $mission->rendezVous?->client?->phone ?? $mission->rendezVous?->telephone_client,
+            $mission->booking?->client?->phone ?? $mission->booking?->telephone_client,
             'Brio : votre employé est arrivé. Code de début : '.$generated['code']
         );
 
         $generatedEnd = $this->verificationCodeService->createVerificationCode($mission, 'end');
         app(SmsService::class)->send(
-            $mission->rendezVous?->client?->phone ?? $mission->rendezVous?->telephone_client,
+            $mission->booking?->client?->phone ?? $mission->booking?->telephone_client,
             'Brio : code de fin de mission : '.$generatedEnd['code'].'. Communiquez-le au prestataire en fin de service.'
         );
 
-        $mission = $mission->fresh(['assignments', 'verificationCodes', 'rendezVous.client', 'leadEmployee']);
+        $mission = $mission->fresh(['assignments', 'verificationCodes', 'booking.client', 'leadEmployee']);
 
-        if ($mission->rendezVous?->client) {
-            $mission->rendezVous->client->notify(
+        if ($mission->booking?->client) {
+            $mission->booking->client->notify(
                 new EmployeArriveNotification($mission, $generated['code'])
             );
         }
@@ -163,8 +163,8 @@ class MissionLifecycleService
             'accepted_at' => now(),
         ]);
 
-        if ($mission->rendezVous?->client) {
-            $mission->rendezVous->client->notify(new MissionStartedNotification($mission));
+        if ($mission->booking?->client) {
+            $mission->booking->client->notify(new MissionStartedNotification($mission));
         }
 
         app(MissionHistoryService::class)->log(
@@ -277,8 +277,8 @@ class MissionLifecycleService
             'accepted_at' => now(),
         ]);
 
-        if ($mission->rendezVous?->client) {
-            $mission->rendezVous->client->notify(new MissionStartedNotification($mission));
+        if ($mission->booking?->client) {
+            $mission->booking->client->notify(new MissionStartedNotification($mission));
         }
 
         app(MissionHistoryService::class)->log(
@@ -331,18 +331,18 @@ class MissionLifecycleService
             'completed_at' => now(),
         ]);
 
-        $mission = $mission->fresh(['assignments', 'verificationCodes', 'rendezVous.client', 'leadEmployee']);
-        if ($mission->rendezVous) {
+        $mission = $mission->fresh(['assignments', 'verificationCodes', 'booking.client', 'leadEmployee']);
+        if ($mission->booking) {
             app(MissionPaymentService::class)
-                ->capture($mission->rendezVous);
+                ->capture($mission->booking);
         }
 
         // Wire payout ledger: calculate commission + create ProviderPayout record after capture
-        $mission = $mission->fresh(['assignments', 'rendezVous', 'leadProvider']);
-        if ($mission->rendezVous && $mission->rendezVous->payment_status === 'captured') {
+        $mission = $mission->fresh(['assignments', 'booking', 'leadProvider']);
+        if ($mission->booking && $mission->booking->payment_status === 'captured') {
             try {
                 $commission = app(CommissionService::class)
-                    ->calculateForBooking($mission->rendezVous);
+                    ->calculateForBooking($mission->booking);
 
                 // This branch only runs once the PaymentIntent is captured. Because
                 // MissionPaymentService::authorize() always creates a destination charge
@@ -359,7 +359,7 @@ class MissionLifecycleService
                 } elseif (Schema::hasColumn('bookings', 'provider_amount_cents')) {
                     $updates['provider_amount_cents'] = $commission['provider_payout_cents'];
                 }
-                $mission->rendezVous->update($updates);
+                $mission->booking->update($updates);
 
                 $providerId = $mission->lead_provider_user_id
                     ?? $mission->assignments()->where('assignment_status', 'accepted')->value('user_id');
@@ -375,8 +375,8 @@ class MissionLifecycleService
                         'period_end' => now()->toDateString(),
                         'metadata' => [
                             'mission_id' => $mission->id,
-                            'booking_id' => $mission->rendezVous->id,
-                            'stripe_payment_intent_id' => $mission->rendezVous->stripe_payment_intent_id,
+                            'booking_id' => $mission->booking->id,
+                            'stripe_payment_intent_id' => $mission->booking->stripe_payment_intent_id,
                             'commission_rate' => $commission['commission_rate'],
                             'platform_fee_cents' => $commission['platform_fee_cents'],
                             'auto_transferred' => true,
@@ -390,8 +390,8 @@ class MissionLifecycleService
                     // Passing null for $intent causes recordEarning to fall back to
                     // $booking->stripe_payment_intent_id for the idempotency key, which is the
                     // same value the webhook handler will use, ensuring proper deduplication.
-                    if ($mission->rendezVous instanceof Booking) {
-                        app(ProviderWalletService::class)->recordEarning($mission->rendezVous);
+                    if ($mission->booking instanceof Booking) {
+                        app(ProviderWalletService::class)->recordEarning($mission->booking);
                     }
                 }
             } catch (\Throwable $e) {
@@ -402,11 +402,11 @@ class MissionLifecycleService
             }
         }
 
-        if ($mission->rendezVous?->client) {
-            $mission->rendezVous->client->notify(new MissionCompletedNotification($mission));
+        if ($mission->booking?->client) {
+            $mission->booking->client->notify(new MissionCompletedNotification($mission));
         }
         app(SmsService::class)->send(
-            $mission->rendezVous?->client?->phone ?? $mission->rendezVous?->telephone_client,
+            $mission->booking?->client?->phone ?? $mission->booking?->telephone_client,
             'Brio : votre mission est terminée. Merci de laisser votre avis depuis votre espace client.'
         );
 

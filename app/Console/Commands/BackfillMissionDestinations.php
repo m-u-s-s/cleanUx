@@ -30,10 +30,10 @@ class BackfillMissionDestinations extends Command
 
         $query->chunkById(100, function ($missions) use ($geocoding, &$done) {
             foreach ($missions as $mission) {
-                // Réutilise la résolution du job — il gère les DEUX colonnes FK (booking_id et
-                // rendez_vous_id), la reprise des coordonnées déjà fournies par le client, et
-                // l'absence de résultat. Auparavant cette commande ne lisait que la chaîne
-                // rendezVous et sautait donc toutes les missions créées via booking_id.
+                // Réutilise la résolution du job : il gère la reprise des coordonnées déjà
+                // fournies par le client et l'absence de résultat. Auparavant cette commande
+                // n'interrogeait qu'une des deux colonnes vers `bookings` et sautait en silence
+                // toutes les missions créées par l'autre chemin.
                 $outcome = (new GeocodeMissionDestination($mission->id))->handle($geocoding);
 
                 if (in_array($outcome, [GeocodeMissionDestination::OUTCOME_COPIED, GeocodeMissionDestination::OUTCOME_GEOCODED], true)) {

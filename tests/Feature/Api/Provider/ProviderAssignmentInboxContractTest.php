@@ -88,10 +88,10 @@ class ProviderAssignmentInboxContractTest extends TestCase
     }
 
     /**
-     * missions.destination_lat n'est renseignée que par le chemin de création rendez_vous_id.
-     * Les deux chemins booking_id copient la destination du booking — mais les réservations
-     * antérieures au correctif n'ont que celle du booking. L'inbox doit donc retomber dessus,
-     * exactement comme le fait déjà l'écran de détail (ProviderMissionLifecycleController).
+     * `missions.destination_lat` n'est pas toujours renseignée : seule la synchronisation depuis
+     * une réservation géocode l'adresse, et les missions antérieures à ce correctif n'ont que la
+     * destination portée par le dossier. L'inbox doit donc retomber dessus, exactement comme le
+     * fait déjà l'écran de détail (ProviderMissionLifecycleController).
      */
     public function test_inbox_falls_back_to_the_booking_destination_when_the_mission_has_none(): void
     {
@@ -153,7 +153,7 @@ class ProviderAssignmentInboxContractTest extends TestCase
         $client = User::factory()->create(['name' => 'Rene Magritte']);
         $booking = $this->makeBooking($client);
         $mission = Mission::create([
-            'rendez_vous_id' => $booking->id,
+            'booking_id' => $booking->id,
             'status' => 'planned',
             'planned_start_at' => now()->addDay(),
         ]);

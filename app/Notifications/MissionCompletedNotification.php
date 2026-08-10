@@ -36,12 +36,12 @@ class MissionCompletedNotification extends Notification
          * liens dans le corps du message, où elles sont réellement visibles.
          */
         $tableauDeBord = route('client.dashboard');
-        $avis = route('client.feedback.create', $this->mission->rendez_vous_id);
+        $avis = route('client.feedback.create', $this->mission->booking_id);
 
         return (new MailMessage)
             ->subject('Votre mission est terminée')
             ->greeting('Bonjour,')
-            ->line('La mission '.$this->mission->rendezVous?->booking_reference.' est terminée.')
+            ->line('La mission '.$this->mission->booking?->booking_reference.' est terminée.')
             ->line('Vous pouvez maintenant valider la présence ou signaler un problème.')
             // M3 — report is on the private disk; link via a longer-lived signed URL (7 days),
             // still behind auth (login is preserved through the signed-route redirect).
@@ -55,8 +55,8 @@ class MissionCompletedNotification extends Notification
         return [
             'type' => 'mission_completed',
             'mission_id' => $this->mission->id,
-            'rendez_vous_id' => $this->mission->rendez_vous_id,
-            'booking_reference' => $this->mission->rendezVous?->booking_reference,
+            'rendez_vous_id' => $this->mission->booking_id,
+            'booking_reference' => $this->mission->booking?->booking_reference,
             'employee_name' => $this->mission->leadEmployee?->name,
             'status' => $this->mission->status,
         ];

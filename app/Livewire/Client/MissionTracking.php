@@ -27,13 +27,13 @@ class MissionTracking extends Component
         $user = $this->currentUser();
 
         $isOwner =
-            $mission->rendezVous?->client_id === $user?->id
+            $mission->booking?->client_id === $user?->id
             || $mission->organization_account_id === $user?->organization_account_id;
 
         abort_unless($isOwner, 403);
 
         $this->mission = $mission->load([
-            'rendezVous',
+            'booking',
             'leadEmployee',
             'verificationCodes',
             'activeTrackingSession',
@@ -44,7 +44,7 @@ class MissionTracking extends Component
     {
         $this->mission->load([
             'verificationCodes',
-            'rendezVous',
+            'booking',
             'leadEmployee',
             'activeTrackingSession',
         ]);

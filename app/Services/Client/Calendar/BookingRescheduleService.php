@@ -359,7 +359,7 @@ class BookingRescheduleService
         );
 
         $assigne = Mission::query()
-            ->where('rendez_vous_id', $rendezVous->id)
+            ->where('booking_id', $rendezVous->id)
             ->value('lead_provider_user_id');
 
         if ($assigne !== null) {

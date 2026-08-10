@@ -38,7 +38,10 @@ class CustomerCreditsManager extends Component
     {
         $this->validate([
             'client_id' => ['required', 'exists:users,id'],
-            'rendez_vous_id' => ['nullable', 'exists:rendez_vous,id'],
+            // La colonne garde son nom hérité, mais la réservation qu'elle désigne vit dans
+            // `bookings` : la valider contre le miroir faisait refuser une réservation bien réelle
+            // dès que sa recopie avait échoué — ce qui arrivait sans un mot.
+            'rendez_vous_id' => ['nullable', 'exists:bookings,id'],
             'type' => ['required', 'string', 'max:50'],
             'amount' => ['required', 'numeric', 'min:1', 'max:5000'],
             'reason' => ['required', 'string', 'max:255'],

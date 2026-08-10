@@ -82,7 +82,7 @@ class SmartDispatchServiceCoverageBatch18Test extends TestCase
     private function seedEmployeeMissions(User $employee, string $date, int $count): void
     {
         for ($i = 0; $i < $count; $i++) {
-            DB::table('rendez_vous')->insert([
+            DB::table('bookings')->insert([
                 'employe_id' => $employee->id,
                 'date' => $date,
                 'heure' => '08:00',

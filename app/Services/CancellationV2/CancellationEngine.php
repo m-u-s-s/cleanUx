@@ -271,9 +271,11 @@ class CancellationEngine
     }
 
     /**
-     * Whether the booking's assigned provider has already departed / arrived / started — the
-     * trigger for the client en-route cancellation penalty. Schema-defensive (mission links to a
-     * booking via rendez_vous_id and/or booking_id).
+     * Le prestataire est-il déjà parti, arrivé ou en cours ? C'est le déclencheur de la pénalité
+     * d'annulation tardive.
+     *
+     * La mission se rattachait à la réservation par DEUX colonnes selon son chemin de création, et
+     * cette méthode interrogeait le schéma pour savoir lesquelles existaient. Une seule subsiste.
      */
     protected function providerIsEnRoute(int $bookingId): bool
     {
@@ -284,14 +286,7 @@ class CancellationEngine
         $enRouteStatuses = ['en_route', 'arrived', 'started', 'in_mission', 'in_progress', 'sur_place'];
 
         return DB::table('missions')
-            ->where(function ($q) use ($bookingId) {
-                if (Schema::hasColumn('missions', 'rendez_vous_id')) {
-                    $q->orWhere('rendez_vous_id', $bookingId);
-                }
-                if (Schema::hasColumn('missions', 'booking_id')) {
-                    $q->orWhere('booking_id', $bookingId);
-                }
-            })
+            ->where('booking_id', $bookingId)
             ->whereIn('status', $enRouteStatuses)
             ->exists();
     }

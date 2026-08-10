@@ -23,7 +23,7 @@ class MissionStartedNotification extends Notification
         return (new MailMessage)
             ->subject('Votre mission a commencé')
             ->greeting('Bonjour,')
-            ->line('La mission '.$this->mission->rendezVous?->booking_reference.' a commencé.')
+            ->line('La mission '.$this->mission->booking?->booking_reference.' a commencé.')
             ->action('Voir le suivi', url('/client/dashboard'));
     }
 
@@ -32,8 +32,8 @@ class MissionStartedNotification extends Notification
         return [
             'type' => 'mission_started',
             'mission_id' => $this->mission->id,
-            'rendez_vous_id' => $this->mission->rendez_vous_id,
-            'booking_reference' => $this->mission->rendezVous?->booking_reference,
+            'rendez_vous_id' => $this->mission->booking_id,
+            'booking_reference' => $this->mission->booking?->booking_reference,
             'employee_name' => $this->mission->leadEmployee?->name,
             'status' => $this->mission->status,
         ];

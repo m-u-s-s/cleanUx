@@ -59,7 +59,7 @@ class CancellationEngineTest extends TestCase
         $client = User::factory()->client()->create();
         // >48h away → time tier is free, but the provider is already en route.
         $booking = $this->makeBooking($client, now()->addHours(72), 100.0);
-        Mission::create(['rendez_vous_id' => $booking->id, 'status' => 'en_route']);
+        Mission::create(['booking_id' => $booking->id, 'status' => 'en_route']);
 
         $quote = app(CancellationEngine::class)->quote($booking->id, 'client');
 
@@ -74,7 +74,7 @@ class CancellationEngineTest extends TestCase
         $client = User::factory()->client()->create();
         // €200 booking, free time window, provider en route → 5% = €10 penalty.
         $booking = $this->makeBooking($client, now()->addHours(72), 200.0);
-        Mission::create(['rendez_vous_id' => $booking->id, 'status' => 'en_route']);
+        Mission::create(['booking_id' => $booking->id, 'status' => 'en_route']);
 
         $quote = app(CancellationEngine::class)->quote($booking->id, 'client');
 
@@ -87,7 +87,7 @@ class CancellationEngineTest extends TestCase
         config(['cancellation_v2.en_route_penalty_percent' => 5]);
         $client = User::factory()->client()->create();
         $booking = $this->makeBooking($client, now()->addHours(72), 100.0);
-        Mission::create(['rendez_vous_id' => $booking->id, 'status' => 'assigned']);
+        Mission::create(['booking_id' => $booking->id, 'status' => 'assigned']);
 
         $quote = app(CancellationEngine::class)->quote($booking->id, 'client');
 
@@ -100,7 +100,7 @@ class CancellationEngineTest extends TestCase
         config(['cancellation_v2.en_route_penalty_percent' => 5]);
         $client = User::factory()->client()->create();
         $booking = $this->makeBooking($client, now()->addHour(), 100.0);
-        Mission::create(['rendez_vous_id' => $booking->id, 'status' => 'en_route']);
+        Mission::create(['booking_id' => $booking->id, 'status' => 'en_route']);
 
         $quote = app(CancellationEngine::class)->quote($booking->id, 'client', reasonCode: 'medical_emergency');
 

@@ -47,7 +47,6 @@ class LatentBugsP3Test extends TestCase
             'employe_id' => $provider->id,
         ]);
         $mission = Mission::query()->create([
-            'rendez_vous_id' => $booking->id,
             'booking_id' => $booking->id,
             'status' => 'planned',
         ]);

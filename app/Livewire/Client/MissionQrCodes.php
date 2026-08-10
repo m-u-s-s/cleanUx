@@ -19,7 +19,7 @@ class MissionQrCodes extends Component
 
         abort_unless($user instanceof User, 403);
 
-        $isOwner = $mission->rendezVous?->client_id === $user->id
+        $isOwner = $mission->booking?->client_id === $user->id
             || (
                 $mission->organization_account_id
                 && $user->organization_account_id

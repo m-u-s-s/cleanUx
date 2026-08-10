@@ -12,7 +12,7 @@ class MissionFieldPage extends Component
     public function mount(Mission $mission): void
     {
         $this->mission = $mission->load([
-            'rendezVous.client',
+            'booking.client',
             'leadEmployee',
             'checklists.items',
             'media',

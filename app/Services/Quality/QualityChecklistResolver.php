@@ -68,7 +68,7 @@ class QualityChecklistResolver
         $serviceCatalogId = $mission->service_catalog_id ?? null;
         if (! $serviceCatalogId) {
             // Try via booking
-            $bookingId = $mission->rendez_vous_id ?? $mission->booking_id ?? null;
+            $bookingId = $mission->booking_id ?? null;
             if ($bookingId && Schema::hasTable('bookings')) {
                 $booking = DB::table('bookings')->where('id', $bookingId)->first();
                 $serviceCatalogId = $booking->service_catalog_id ?? null;

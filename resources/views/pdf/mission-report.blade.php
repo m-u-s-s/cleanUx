@@ -50,14 +50,14 @@
 
     <div class="section">
         <h1>Rapport mission</h1>
-        <p class="muted">Mission #{{ $mission->id }} — Référence {{ $mission->rendezVous?->booking_reference }}</p>
+        <p class="muted">Mission #{{ $mission->id }} — Référence {{ $mission->booking?->booking_reference }}</p>
     </div>
 
 
     
     <div class="section box">
         <h3>Informations générales</h3>
-        <p><strong>Client :</strong> {{ $mission->rendezVous?->client?->name ?? '—' }}</p>
+        <p><strong>Client :</strong> {{ $mission->booking?->client?->name ?? '—' }}</p>
         <p><strong>Employé principal :</strong> {{ $mission->leadEmployee?->name ?? '—' }}</p>
         <p><strong>Statut :</strong> {{ $mission->status }}</p>
         <p><strong>Début réel :</strong> {{ optional($mission->actual_start_at)->format('d/m/Y H:i') ?? '—' }}</p>

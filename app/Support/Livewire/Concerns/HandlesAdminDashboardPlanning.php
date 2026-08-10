@@ -89,7 +89,7 @@ trait HandlesAdminDashboardPlanning
     public function enregistrerPlanning(): void
     {
         $this->validate([
-            'planningMissionId' => ['required', 'exists:rendez_vous,id'],
+            'planningMissionId' => ['required', 'exists:bookings,id'],
             'planningEmployeId' => ['required', 'exists:users,id'],
             'planningDate' => ['required', 'date'],
             'planningHeure' => ['required'],

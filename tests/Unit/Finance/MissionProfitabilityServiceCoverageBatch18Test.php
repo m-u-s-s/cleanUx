@@ -25,7 +25,7 @@ class MissionProfitabilityServiceCoverageBatch18Test extends TestCase
         $booking = Booking::factory()->create(['devis_estime' => 200]);
 
         $mission = Mission::factory()->create([
-            'rendez_vous_id' => $booking->id,
+            'booking_id' => $booking->id,
             'planned_start_at' => Carbon::parse('2026-01-01 09:00:00'),
             'planned_end_at' => Carbon::parse('2026-01-01 11:00:00'),
             'actual_start_at' => Carbon::parse('2026-01-01 09:00:00'),
@@ -54,7 +54,7 @@ class MissionProfitabilityServiceCoverageBatch18Test extends TestCase
 
         // real minutes = 180 -> employee 54 + travel 8 + material 8 = 70 ; margin 30 -> 30% good
         $mission = Mission::factory()->create([
-            'rendez_vous_id' => $booking->id,
+            'booking_id' => $booking->id,
             'actual_start_at' => Carbon::parse('2026-02-01 08:00:00'),
             'actual_end_at' => Carbon::parse('2026-02-01 11:00:00'),
         ]);
@@ -73,7 +73,7 @@ class MissionProfitabilityServiceCoverageBatch18Test extends TestCase
 
         // real minutes = 210 -> employee 63 + 8 + 8 = 79 ; margin 21 -> 21% warning
         $mission = Mission::factory()->create([
-            'rendez_vous_id' => $booking->id,
+            'booking_id' => $booking->id,
             'actual_start_at' => Carbon::parse('2026-02-01 08:00:00'),
             'actual_end_at' => Carbon::parse('2026-02-01 11:30:00'),
         ]);
@@ -100,7 +100,7 @@ class MissionProfitabilityServiceCoverageBatch18Test extends TestCase
         // No actual times -> real_minutes null -> work falls back to planned minutes,
         // and with planned times nulled it falls back to duree_estimee (75).
         $mission = Mission::factory()->create([
-            'rendez_vous_id' => $booking->id,
+            'booking_id' => $booking->id,
             'planned_start_at' => null,
             'planned_end_at' => null,
             'actual_start_at' => null,
@@ -127,7 +127,7 @@ class MissionProfitabilityServiceCoverageBatch18Test extends TestCase
         $booking->save();
 
         $mission = Mission::factory()->create([
-            'rendez_vous_id' => $booking->id,
+            'booking_id' => $booking->id,
             'planned_start_at' => Carbon::parse('2026-03-01 09:00:00'),
             'planned_end_at' => Carbon::parse('2026-03-01 10:00:00'),
             'actual_start_at' => null,
@@ -153,7 +153,7 @@ class MissionProfitabilityServiceCoverageBatch18Test extends TestCase
         $booking->save();
 
         $mission = Mission::factory()->create([
-            'rendez_vous_id' => $booking->id,
+            'booking_id' => $booking->id,
             'planned_start_at' => null,
             'planned_end_at' => null,
             'actual_start_at' => null,
@@ -175,7 +175,7 @@ class MissionProfitabilityServiceCoverageBatch18Test extends TestCase
         $booking->save();
 
         $mission = Mission::factory()->create([
-            'rendez_vous_id' => $booking->id,
+            'booking_id' => $booking->id,
             'planned_start_at' => null,
             'planned_end_at' => null,
             'actual_start_at' => null,

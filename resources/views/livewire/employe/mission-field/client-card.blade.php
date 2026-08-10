@@ -1,5 +1,5 @@
 @php
-    $rdv = $mission->rendezVous;
+    $rdv = $mission->booking;
     $client = $rdv?->client;
 @endphp
 

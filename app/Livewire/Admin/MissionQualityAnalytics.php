@@ -32,7 +32,6 @@ class MissionQualityAnalytics extends Component
             ->get();
 
         $byCountry = DB::table('missions')
-            ->leftJoin('rendez_vous', 'bookings.id', '=', 'missions.rendez_vous_id')
             ->leftJoin('postal_codes', 'postal_codes.id', '=', 'bookings.postal_code_id')
             ->leftJoin('countries', 'countries.id', '=', 'postal_codes.country_id')
             ->whereNotNull('missions.quality_score')

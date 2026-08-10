@@ -36,7 +36,7 @@ class ProviderMissionLifecycleController extends Controller
 
     /**
      * Colonnes de réservation nécessaires au payload plat. Chargées sur LES DEUX chaînes de
-     * résolution (bookingViaBookingId et rendezVous) — voir serialize().
+     * résolution unique : `booking()`, la seule relation depuis la fusion des deux colonnes.
      */
     private const BOOKING_COLUMNS = 'id,booking_reference,address,city,postal_code,scheduled_date,scheduled_time,service_catalog_id,destination_lat,destination_lng,customer_comment,client_id,customer_user_id';
 
@@ -51,7 +51,7 @@ class ProviderMissionLifecycleController extends Controller
     {
         $loads = [];
 
-        foreach (['bookingViaBookingId', 'rendezVous'] as $relation) {
+        foreach (['booking'] as $relation) {
             $loads[] = $relation.':'.self::BOOKING_COLUMNS;
             $loads[] = $relation.'.serviceCatalog:id,name';
             $loads[] = $relation.'.client:id,name,phone';
@@ -320,7 +320,7 @@ class ProviderMissionLifecycleController extends Controller
          * second et pas le premier ; ne lire que le compte enverrait le code à la mauvaise
          * personne, ou à personne.
          */
-        $rendezVous = $mission->rendezVous;
+        $rendezVous = $mission->booking;
         $telephone = $rendezVous?->client?->phone ?: $rendezVous?->telephone_client;
 
         if (! $telephone) {
@@ -506,12 +506,11 @@ class ProviderMissionLifecycleController extends Controller
      */
     protected function serialize(Mission $mission, bool $detailed = false): array
     {
-        // Résolution identique à celle de l'inbox : booking() choisit sa FK depuis
-        // $this->booking_id, ce que Laravel ne peut pas faire en eager load (il résout la
-        // relation sur une instance vierge, où l'attribut est toujours vide, et retombe donc
-        // toujours sur rendez_vous_id). Les deux colonnes portent un bookings.id selon le
-        // chemin de création, d'où les deux chaînes chargées puis départagées ici.
-        $booking = $mission->bookingViaBookingId ?? $mission->rendezVous;
+        // `missions` n'a plus qu'une clé vers `bookings`. La relation choisissait auparavant sa
+        // colonne à l'exécution, ce que le chargement anticipé de Laravel ne sait pas faire : il
+        // résout la relation sur une instance vierge, où l'attribut est vide, et retombait donc
+        // toujours du même côté. Un prestataire sur deux voyait des tirets à la place du client.
+        $booking = $mission->booking;
         $client = $booking?->client ?? $booking?->customer;
 
         $base = [

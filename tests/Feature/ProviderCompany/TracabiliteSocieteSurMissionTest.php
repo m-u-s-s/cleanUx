@@ -81,7 +81,7 @@ class TracabiliteSocieteSurMissionTest extends TestCase
             'status' => BookingStatus::CONFIRME,
         ]);
 
-        $mission = Mission::where('rendez_vous_id', $booking->id)->first();
+        $mission = Mission::where('booking_id', $booking->id)->first();
 
         $this->assertNotNull($mission, 'Aucune mission créée pour un rendez-vous confirmé.');
         $this->assertSame(
@@ -101,7 +101,7 @@ class TracabiliteSocieteSurMissionTest extends TestCase
             'status' => BookingStatus::CONFIRME,
         ]);
 
-        $mission = Mission::where('rendez_vous_id', $booking->id)->first();
+        $mission = Mission::where('booking_id', $booking->id)->first();
 
         $this->assertNotNull($mission);
         $this->assertNull($mission->provider_organization_id);
@@ -124,7 +124,7 @@ class TracabiliteSocieteSurMissionTest extends TestCase
             'status' => BookingStatus::CONFIRME,
         ]);
 
-        $mission = Mission::where('rendez_vous_id', $booking->id)->first();
+        $mission = Mission::where('booking_id', $booking->id)->first();
 
         $this->assertSame($societeDuBooking->id, $mission?->provider_organization_id);
     }
@@ -142,7 +142,7 @@ class TracabiliteSocieteSurMissionTest extends TestCase
         $booking = Booking::factory()->create(['employe_id' => $salarie->id, 'status' => BookingStatus::CONFIRME]);
         $booking->update(['commentaire_client' => 'Modifié après coup']);
 
-        $this->assertSame(1, Mission::where('rendez_vous_id', $booking->id)->count());
+        $this->assertSame(1, Mission::where('booking_id', $booking->id)->count());
     }
 
     public function test_l_equipe_decidee_sur_le_rendez_vous_arrive_sur_la_mission(): void
@@ -168,7 +168,7 @@ class TracabiliteSocieteSurMissionTest extends TestCase
             'status' => BookingStatus::CONFIRME,
         ]);
 
-        $mission = Mission::where('rendez_vous_id', $booking->id)->first();
+        $mission = Mission::where('booking_id', $booking->id)->first();
 
         $this->assertSame($equipeId, $mission?->provider_team_id);
     }
@@ -190,7 +190,7 @@ class TracabiliteSocieteSurMissionTest extends TestCase
             'status' => BookingStatus::CONFIRME,
         ]);
 
-        $mission = Mission::where('rendez_vous_id', $booking->id)->first();
+        $mission = Mission::where('booking_id', $booking->id)->first();
 
         $this->assertNotNull($mission, 'La mission doit exister malgré une équipe introuvable.');
         $this->assertNull($mission->provider_team_id);

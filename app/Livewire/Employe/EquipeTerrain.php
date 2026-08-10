@@ -47,7 +47,7 @@ class EquipeTerrain extends Component
         }
 
         return MissionTeamAssignment::query()
-            ->with(['fieldTeam', 'mission.rendezVous.client', 'mission.organizationAccount', 'mission.organizationSite'])
+            ->with(['fieldTeam', 'mission.booking.client', 'mission.organizationAccount', 'mission.organizationSite'])
             ->whereIn('field_team_id', $teamIds)
             ->whereIn('assignment_status', ['assigned', 'accepted', 'started'])
             ->latest('assigned_at')

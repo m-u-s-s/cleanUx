@@ -20,7 +20,7 @@ class AdminAlertService
     protected function lateMissions()
     {
         return Mission::query()
-            ->with(['rendezVous.client', 'leadEmployee'])
+            ->with(['booking.client', 'leadEmployee'])
             ->whereNotNull('planned_start_at')
             ->where('planned_start_at', '<', now()->subMinutes(15))
             ->whereNotIn('status', ['started', 'completed', 'cancelled'])
@@ -32,7 +32,7 @@ class AdminAlertService
     protected function notStartedSoon()
     {
         return Mission::query()
-            ->with(['rendezVous.client', 'leadEmployee'])
+            ->with(['booking.client', 'leadEmployee'])
             ->whereBetween('planned_start_at', [now(), now()->addMinutes(30)])
             ->whereIn('status', ['assigned', 'confirme'])
             ->latest()
@@ -43,7 +43,7 @@ class AdminAlertService
     protected function trackingInactive()
     {
         return Mission::query()
-            ->with(['rendezVous.client', 'leadEmployee', 'activeTrackingSession'])
+            ->with(['booking.client', 'leadEmployee', 'activeTrackingSession'])
             ->where('status', 'en_route')
             ->whereDoesntHave('activeTrackingSession')
             ->latest()

@@ -92,13 +92,11 @@ class SpineScenario
         ]);
 
         // ── Mission ──────────────────────────────────────────────────────────
-        // MissionFactory uses `rendez_vous_id` as its default FK. We also set
-        // `booking_id` so Mission::booking() picks the correct FK branch:
-        //   $fk = $this->booking_id ? 'booking_id' : 'rendez_vous_id';
+        // `booking_id` est la seule clé de `missions` vers `bookings` depuis la fusion des deux
+        // colonnes ; il n'y a plus de branche à choisir.
         // lead_provider_user_id is the Phase 11+ column for the independent
         // provider (distinct from legacy lead_employee_id used by orgs).
         $this->mission = Mission::factory()->create([
-            'rendez_vous_id' => $this->booking->id,
             'booking_id' => $this->booking->id,
             'lead_provider_user_id' => $this->provider->id,
         ]);

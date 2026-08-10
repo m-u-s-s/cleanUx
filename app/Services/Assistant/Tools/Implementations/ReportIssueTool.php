@@ -81,7 +81,7 @@ class ReportIssueTool implements AssistantTool
             $hasAccess = true;
         } elseif ((int) $mission->lead_employee_id === (int) $user->id) {
             $hasAccess = true;
-        } elseif ((int) ($mission->rendezVous?->customer_user_id ?? 0) === (int) $user->id) {
+        } elseif ((int) ($mission->booking?->customer_user_id ?? 0) === (int) $user->id) {
             $hasAccess = true;
         } elseif (
             $mission->organization_account_id

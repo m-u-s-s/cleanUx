@@ -49,13 +49,13 @@ class ProviderMissionAssignmentController extends Controller
                     ->orWhere('expires_at', '>', now());
             })
             ->with([
-                'mission:id,booking_id,rendez_vous_id,planned_start_at,status,destination_lat,destination_lng,estimated_duration_minutes',
-                'mission.bookingViaBookingId:id,customer_user_id,booking_reference,address,city,postal_code,service_catalog_id,scheduled_date,scheduled_time,booking_mode,priority,destination_lat,destination_lng',
-                'mission.bookingViaBookingId.serviceCatalog:id,name',
-                'mission.bookingViaBookingId.customer:id,name',
-                'mission.rendezVous:id,customer_user_id,booking_reference,address,city,postal_code,service_catalog_id,scheduled_date,scheduled_time,booking_mode,priority,destination_lat,destination_lng',
-                'mission.rendezVous.serviceCatalog:id,name',
-                'mission.rendezVous.customer:id,name',
+                'mission:id,booking_id,planned_start_at,status,destination_lat,destination_lng,estimated_duration_minutes',
+                'mission.booking:id,customer_user_id,booking_reference,address,city,postal_code,service_catalog_id,scheduled_date,scheduled_time,booking_mode,priority,destination_lat,destination_lng',
+                'mission.booking.serviceCatalog:id,name',
+                'mission.booking.customer:id,name',
+                'mission.booking:id,customer_user_id,booking_reference,address,city,postal_code,service_catalog_id,scheduled_date,scheduled_time,booking_mode,priority,destination_lat,destination_lng',
+                'mission.booking.serviceCatalog:id,name',
+                'mission.booking.customer:id,name',
             ])
             ->orderBy('expires_at')
             ->get();
@@ -148,7 +148,7 @@ class ProviderMissionAssignmentController extends Controller
     protected function serializeForList(MissionAssignment $a): array
     {
         $mission = $a->mission;
-        $booking = $mission?->bookingViaBookingId ?? $mission?->rendezVous;
+        $booking = $mission?->booking;
 
         return [
             'id' => $a->id,

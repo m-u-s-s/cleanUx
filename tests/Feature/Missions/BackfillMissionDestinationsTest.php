@@ -39,7 +39,7 @@ class BackfillMissionDestinationsTest extends TestCase
     public function test_it_still_backfills_missions_attached_through_the_legacy_column(): void
     {
         $booking = $this->makeBooking();
-        $mission = Mission::create(['rendez_vous_id' => $booking->id, 'status' => 'planned']);
+        $mission = Mission::create(['booking_id' => $booking->id, 'status' => 'planned']);
 
         $this->artisan('missions:backfill-destinations')->assertSuccessful();
 

@@ -28,7 +28,7 @@ class AsapBookingMissionScheduleTest extends TestCase
     {
         $booking = $this->makeConfirmedBooking('2026-07-29', '10:00:00');
 
-        $mission = Mission::where('rendez_vous_id', $booking->id)->firstOrFail();
+        $mission = Mission::where('booking_id', $booking->id)->firstOrFail();
 
         $this->assertSame(
             '2026-07-29 10:00:00',
@@ -45,7 +45,7 @@ class AsapBookingMissionScheduleTest extends TestCase
     {
         $booking = $this->makeConfirmedBooking('2026-07-29', '10:00:00');
 
-        $mission = Mission::where('rendez_vous_id', $booking->id)->firstOrFail();
+        $mission = Mission::where('booking_id', $booking->id)->firstOrFail();
 
         $this->assertNotSame('1970-01-01', $mission->planned_start_at?->format('Y-m-d'));
         $this->assertNotSame('1970-01-01', $mission->planned_end_at?->format('Y-m-d'));
@@ -55,7 +55,7 @@ class AsapBookingMissionScheduleTest extends TestCase
     {
         $booking = $this->makeConfirmedBooking('2026-07-29', '10:00:00', 90);
 
-        $mission = Mission::where('rendez_vous_id', $booking->id)->firstOrFail();
+        $mission = Mission::where('booking_id', $booking->id)->firstOrFail();
 
         $this->assertNotNull($mission->planned_end_at);
         $this->assertTrue(

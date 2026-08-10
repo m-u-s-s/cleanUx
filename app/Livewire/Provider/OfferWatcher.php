@@ -63,7 +63,7 @@ class OfferWatcher extends Component
             ->where(function ($q) {
                 $q->whereNull('expires_at')->orWhere('expires_at', '>', now());
             })
-            ->with(['mission', 'mission.bookingViaBookingId.serviceCatalog', 'mission.bookingViaBookingId.trade'])
+            ->with(['mission', 'mission.booking.serviceCatalog', 'mission.booking.trade'])
             ->orderBy('expires_at')
             ->first();
     }

@@ -130,7 +130,6 @@ class ProviderPerformanceCalculatorTest extends TestCase
 
         return Mission::create([
             'booking_id' => $booking->id,
-            'rendez_vous_id' => $booking->id,
             'status' => 'assigned',
         ]);
     }

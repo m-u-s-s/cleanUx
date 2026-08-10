@@ -154,7 +154,7 @@ class AssistantReadActions
         }
 
         $start = $mission->planned_start_at?->format('d/m/Y à H:i') ?? '—';
-        $address = $mission->rendezVous?->address ?? '—';
+        $address = $mission->booking?->address ?? '—';
 
         return implode("\n", [
             'Prochaine mission :',

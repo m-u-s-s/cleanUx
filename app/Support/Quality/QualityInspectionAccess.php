@@ -44,7 +44,6 @@ class QualityInspectionAccess
                     $providers[] = (int) $assignment->user_id;
                 }
             }
-            $bookingIds[] = $mission->rendez_vous_id;
             $bookingIds[] = $mission->booking_id;
         }
         $bookingIds[] = $bookingId;

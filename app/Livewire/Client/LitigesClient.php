@@ -45,7 +45,10 @@ class LitigesClient extends Component
     public function rules(): array
     {
         return [
-            'rendez_vous_id' => ['nullable', 'exists:rendez_vous,id'],
+            // La colonne garde son nom hérité, mais la réservation qu'elle désigne vit dans
+            // `bookings` : la valider contre le miroir faisait refuser une réservation bien réelle
+            // dès que sa recopie avait échoué — ce qui arrivait sans un mot.
+            'rendez_vous_id' => ['nullable', 'exists:bookings,id'],
             'category' => ['required', 'string'],
             'priority' => ['required', 'in:low,normal,high,urgent'],
             'title' => ['required', 'string', 'min:3', 'max:120'],

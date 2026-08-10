@@ -21,9 +21,10 @@ use Tests\TestCase;
  * Résultat : titre vide, « undefined, undefined » en adresse, et TrackingScreen incapable de
  * calculer distance, ETA et géofence d'arrivée faute de latitude/longitude.
  *
- * Le second défaut couvert ici : l'eager load portait sur la relation booking(), qui choisit sa
- * FK depuis $this->booking_id — impossible en eager load, où Laravel résout la relation sur une
- * instance vierge et retombe donc toujours sur rendez_vous_id.
+ * Le second défaut couvert ici : l'eager load portait sur une relation qui choisissait sa clé À
+ * L'EXÉCUTION, depuis un attribut de l'instance. Le chargement anticipé de Laravel résout la
+ * relation sur une instance vierge, où l'attribut est vide : il retombait donc toujours du même
+ * côté. Les deux colonnes sont depuis fusionnées en une seule, et le choix a disparu avec elles.
  */
 class ProviderMissionDetailContractTest extends TestCase
 {
@@ -61,17 +62,17 @@ class ProviderMissionDetailContractTest extends TestCase
     }
 
     /**
-     * Deux chemins de création écrivent chacun une colonne différente vers bookings.id :
-     * CreateBookingFromApiAction / ProcessRecurringBookings écrivent booking_id, tandis que
-     * MissionFromRendezVousSyncService / MissionPaymentService (et le factory par défaut)
-     * écrivent rendez_vous_id. Le détail doit résoudre les deux, pas seulement le second.
+     * Les chemins de création écrivaient chacun une colonne différente vers `bookings.id`, et le
+     * détail n'en résolvait qu'une : les missions nées de l'autre s'ouvraient sur des tirets. Les
+     * deux colonnes n'en font plus qu'une, mais le contrat reste vérifié ici — une mission
+     * synchronisée depuis une réservation doit se lire comme n'importe quelle autre.
      */
     public function test_show_resolves_bookings_created_via_the_legacy_rendez_vous_path(): void
     {
         $provider = $this->makeProvider();
         $client = User::factory()->create(['name' => 'Rene Magritte']);
         $booking = $this->makeBooking($client);
-        $mission = $this->makeMission(['rendez_vous_id' => $booking->id], $provider);
+        $mission = $this->makeMission(['booking_id' => $booking->id], $provider);
 
         $this->actingAs($provider, 'sanctum')
             ->getJson("/api/provider/missions/{$mission->id}")
@@ -176,7 +177,7 @@ class ProviderMissionDetailContractTest extends TestCase
         $provider = $this->makeProvider();
         $client = User::factory()->create(['name' => 'Rene Magritte']);
         $booking = $this->makeBooking($client);
-        $this->makeMission(['rendez_vous_id' => $booking->id], $provider);
+        $this->makeMission(['booking_id' => $booking->id], $provider);
 
         $this->actingAs($provider, 'sanctum')
             ->getJson('/api/provider/missions/active')

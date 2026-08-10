@@ -19,7 +19,7 @@ class DatabaseSeederProfileTest extends TestCase
 
         $this->assertGreaterThan(0, ServiceCatalog::query()->count());
         $this->assertDatabaseCount('users', 0);
-        $this->assertDatabaseCount('rendez_vous', 0);
+        $this->assertDatabaseCount('bookings', 0);
         $this->assertDatabaseCount('feedback', 0);
     }
 
@@ -30,6 +30,6 @@ class DatabaseSeederProfileTest extends TestCase
         $this->seed(DatabaseSeeder::class);
 
         $this->assertDatabaseHas('users', ['email' => 'admin@brio.test']);
-        $this->assertDatabaseCount('rendez_vous', 4);
+        $this->assertDatabaseCount('bookings', 4);
     }
 }

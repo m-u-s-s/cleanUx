@@ -1,5 +1,5 @@
 @php
-    $rdv = $mission->rendezVous;
+    $rdv = $mission->booking;
 @endphp
 
 <div class="fixed inset-x-0 bottom-0 z-40 border-t border-slate-200 bg-white/95 px-4 py-3 shadow-[0_-12px_30px_rgba(15,23,42,0.12)] backdrop-blur lg:hidden">

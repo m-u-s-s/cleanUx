@@ -595,7 +595,7 @@ class DispatchCenter extends Component
             ->where('provider_organization_id', $orgId)
             ->find($this->reprogrammeId);
 
-        $rendezVous = $mission?->rendezVous;
+        $rendezVous = $mission?->booking;
 
         if ($rendezVous === null) {
             $this->addError('nouvelleDate', "Cette mission n'a pas de rendez-vous à déplacer.");

@@ -102,7 +102,7 @@ class PostFixesRegressionTest extends TestCase
         $booking = $this->makeBooking();
 
         $mission = Mission::create([
-            'rendez_vous_id' => $booking->id,
+            'booking_id' => $booking->id,
             'status' => 'planned',
             'lead_provider_user_id' => $user->id,
         ]);
@@ -123,7 +123,7 @@ class PostFixesRegressionTest extends TestCase
     {
         $booking = $this->makeBooking();
         $mission = Mission::create([
-            'rendez_vous_id' => $booking->id,
+            'booking_id' => $booking->id,
             'status' => 'planned',
         ]);
 

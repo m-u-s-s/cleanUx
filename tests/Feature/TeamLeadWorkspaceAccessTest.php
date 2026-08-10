@@ -48,8 +48,10 @@ class TeamLeadWorkspaceAccessTest extends TestCase
             'joined_at' => now(),
         ]);
 
+        // `missions` n'a plus qu'une clé vers `bookings`, et l'observateur a déjà créé la mission
+        // de cette réservation confirmée : on la retrouve au lieu d'en écrire une seconde.
         $mission = Mission::query()->firstOrCreate([
-            'rendez_vous_id' => $rdv->id,
+            'booking_id' => $rdv->id,
         ], [
             'service_zone_id' => $zone->id,
             'lead_employee_id' => $lead->id,

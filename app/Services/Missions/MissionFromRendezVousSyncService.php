@@ -124,7 +124,7 @@ class MissionFromRendezVousSyncService
 
             $this->tenterLAutoAssignation($mission);
 
-            return $mission->fresh(['assignments', 'rendezVous']);
+            return $mission->fresh(['assignments', 'booking']);
         });
     }
 
@@ -151,8 +151,15 @@ class MissionFromRendezVousSyncService
             );
 
             /** @var Mission $mission */
+            /*
+              * LA CLÉ D'UNICITÉ EST `booking_id`, la seule que porte encore `missions`.
+              *
+              * Ce service écrivait `rendez_vous_id` pendant que le moteur de commande écrivait
+              * `booking_id` : deux chemins créaient chacun leur mission pour la même réservation,
+              * sans jamais se voir.
+              */
             $mission = Mission::query()->updateOrCreate(
-                ['rendez_vous_id' => $rendezVous->id],
+                ['booking_id' => $rendezVous->id],
                 [
                     'organization_account_id' => $rendezVous->organization_account_id,
                     'organization_site_id' => $rendezVous->organization_site_id,
@@ -184,7 +191,7 @@ class MissionFromRendezVousSyncService
 
             $this->tenterLAutoAssignation($mission);
 
-            return $mission->fresh(['assignments', 'rendezVous']);
+            return $mission->fresh(['assignments', 'booking']);
         });
     }
 

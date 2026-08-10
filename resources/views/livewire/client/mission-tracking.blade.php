@@ -9,7 +9,7 @@
         </div>
 
         <div class="text-right text-sm text-slate-500">
-            <p>Référence : <span class="font-medium text-slate-800">{{ $mission->rendezVous?->booking_reference ?? '—' }}</span></p>
+            <p>Référence : <span class="font-medium text-slate-800">{{ $mission->booking?->booking_reference ?? '—' }}</span></p>
         </div>
     </div>
 

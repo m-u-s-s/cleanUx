@@ -168,7 +168,7 @@ class EtaServiceCoverageBatch14Test extends TestCase
             'destination_lat' => null,
             'destination_lng' => null,
         ]);
-        $mission = Mission::factory()->create(['rendez_vous_id' => $booking->id]);
+        $mission = Mission::factory()->create(['booking_id' => $booking->id]);
 
         MissionTrackingSession::factory()->create([
             'mission_id' => $mission->id,
@@ -194,7 +194,7 @@ class EtaServiceCoverageBatch14Test extends TestCase
             'destination_lat' => 50.6326,
             'destination_lng' => 5.5797,
         ]);
-        $mission = Mission::factory()->create(['rendez_vous_id' => $booking->id]);
+        $mission = Mission::factory()->create(['booking_id' => $booking->id]);
 
         MissionTrackingSession::factory()->create([
             'mission_id' => $mission->id,
@@ -229,7 +229,7 @@ class EtaServiceCoverageBatch14Test extends TestCase
             'destination_lat' => 50.6326,
             'destination_lng' => 5.5797,
         ]);
-        $mission = Mission::factory()->create(['rendez_vous_id' => $booking->id]);
+        $mission = Mission::factory()->create(['booking_id' => $booking->id]);
 
         MissionTrackingSession::factory()->create([
             'mission_id' => $mission->id,

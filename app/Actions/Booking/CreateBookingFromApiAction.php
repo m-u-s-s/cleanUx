@@ -123,10 +123,10 @@ final class CreateBookingFromApiAction
         }
 
         // Une réservation ASAP naît en `confirme`, ce qui réveille RendezVousObserver : celui-ci a
-        // DÉJÀ créé la mission, via rendez_vous_id. En créer une seconde ici via booking_id
-        // produisait deux missions pour une réservation — dont une seule partait en offre —, avec
-        // risque de double assignation et de comptage faussé. On reprend donc l'existante, et on
-        // ne crée que si aucune n'existe (cas d'un booking enregistré sans événements).
+        // DÉJÀ créé la mission. En créer une seconde ici produisait deux missions pour une même
+        // réservation — dont une seule partait en offre —, avec risque de double assignation et de
+        // comptage faussé. On reprend donc l'existante, et on ne crée que si aucune n'existe (cas
+        // d'un booking enregistré sans événements).
         $mission = $booking->resolveMission();
 
         if (! $mission) {

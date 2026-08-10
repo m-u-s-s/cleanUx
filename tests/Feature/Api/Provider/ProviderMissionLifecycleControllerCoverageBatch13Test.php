@@ -53,7 +53,7 @@ class ProviderMissionLifecycleControllerCoverageBatch13Test extends TestCase
         ]);
 
         $mission = Mission::create([
-            'rendez_vous_id' => $booking->id,
+            'booking_id' => $booking->id,
             'lead_provider_user_id' => $provider->id,
             'status' => $status,
             'planned_start_at' => now()->subHour(),

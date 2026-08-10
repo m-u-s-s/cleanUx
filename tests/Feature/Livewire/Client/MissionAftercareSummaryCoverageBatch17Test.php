@@ -33,7 +33,7 @@ class MissionAftercareSummaryCoverageBatch17Test extends TestCase
     {
         $booking = Booking::factory()->create(['client_id' => $this->client->id]);
         $mission = Mission::factory()->create([
-            'rendez_vous_id' => $booking->id,
+            'booking_id' => $booking->id,
             'lead_employee_id' => User::factory()->employe()->create()->id,
         ]);
 
@@ -89,7 +89,7 @@ class MissionAftercareSummaryCoverageBatch17Test extends TestCase
 
         $booking = Booking::factory()->create();
         $mission = Mission::factory()->create([
-            'rendez_vous_id' => $booking->id,
+            'booking_id' => $booking->id,
             'organization_account_id' => $account->id,
         ]);
 
@@ -104,7 +104,7 @@ class MissionAftercareSummaryCoverageBatch17Test extends TestCase
     {
         $booking = Booking::factory()->create();
         $mission = Mission::factory()->create([
-            'rendez_vous_id' => $booking->id,
+            'booking_id' => $booking->id,
             'organization_account_id' => null,
         ]);
 

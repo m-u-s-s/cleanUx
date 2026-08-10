@@ -62,7 +62,7 @@ class GeocodeMissionDestination implements ShouldQueue
     public function handle(GeocodingService $geocoding): string
     {
         $mission = Mission::query()
-            ->with(['bookingViaBookingId.postalCode.country', 'rendezVous.postalCode.country'])
+            ->with(['booking.postalCode.country'])
             ->find($this->missionId);
 
         if (! $mission) {
@@ -75,9 +75,7 @@ class GeocodeMissionDestination implements ShouldQueue
             return self::OUTCOME_ALREADY_SET;
         }
 
-        // Même résolution que les contrôleurs : les deux colonnes FK portent un bookings.id
-        // selon le chemin de création, et une seule des deux est renseignée.
-        $booking = $mission->bookingViaBookingId ?? $mission->rendezVous;
+        $booking = $mission->booking;
 
         if (! $booking) {
             Log::info('GeocodeMissionDestination: aucune réservation rattachée', ['mission_id' => $mission->id]);

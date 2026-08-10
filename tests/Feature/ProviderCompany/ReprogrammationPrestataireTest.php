@@ -94,7 +94,7 @@ class ReprogrammationPrestataireTest extends TestCase
 
     private function missionDe(Booking $rendezVous): Mission
     {
-        return Mission::where('rendez_vous_id', $rendezVous->id)->firstOrFail();
+        return Mission::where('booking_id', $rendezVous->id)->firstOrFail();
     }
 
     // ──────────────────────────────────────────────────────

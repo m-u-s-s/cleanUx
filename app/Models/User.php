@@ -165,16 +165,29 @@ class User extends Authenticatable implements HasLocalePreference, MustVerifyEma
         return $this->hasMany(AssistantConversation::class);
     }
 
-    /** @return HasMany<RendezVous, $this> */
+    /**
+     * Les réservations de cette personne, comme cliente puis comme prestataire.
+     *
+     * ELLES LISAIENT LE MIROIR, PAS LA SOURCE. `RendezVous` désigne la table `rendez_vous`, une
+     * copie de `bookings` alimentée au fil de l'eau par un trait — au mieux, puisque son écriture
+     * est enveloppée dans un `catch` muet. Un échec de recopie ne laissait aucune trace et la
+     * plateforme continuait de décider dessus : `SmartDispatchService` y comptait les missions du
+     * jour d'un prestataire pour l'affecter, et `GestionUtilisateurs` y filtrait par zone.
+     *
+     * Décider sur une copie dont on ignore si elle est à jour, c'est décider au hasard une fois de
+     * temps en temps — le pire des régimes, parce qu'il est invisible.
+     *
+     * @return HasMany<Booking, $this>
+     */
     public function rendezVousClient(): HasMany
     {
-        return $this->hasMany(RendezVous::class, 'client_id');
+        return $this->hasMany(Booking::class, 'client_id');
     }
 
-    /** @return HasMany<RendezVous, $this> */
+    /** @return HasMany<Booking, $this> */
     public function rendezVousEmploye(): HasMany
     {
-        return $this->hasMany(RendezVous::class, 'employe_id');
+        return $this->hasMany(Booking::class, 'employe_id');
     }
 
     /** @return HasMany<self, $this> */
