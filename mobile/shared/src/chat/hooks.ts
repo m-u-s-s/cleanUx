@@ -2,7 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient, ApiError } from '@/api';
 import { useChannel } from '@/realtime';
 import { useCallback } from 'react';
-import type { ChatThread, ChatMessage } from './types';
+import type { ChatThread, ChatMessage, ChatMessageBroadcast } from './types';
 
 export function useChatThreads() {
   return useQuery<ChatThread[]>({
@@ -42,8 +42,24 @@ export function useMarkThreadRead(threadId: number) {
   });
 }
 
-export function useLiveChat(threadId: number | null, onMessage: (msg: ChatMessage) => void) {
-  useChannel(threadId ? `private-channel.${threadId}` : null, {
-    'ChatMessageSentEvent': (data: unknown) => onMessage((data as any).message ?? data),
+/**
+ * LE CHAT EN DIRECT — deux erreurs le rendaient muet, et une troisième le faisait mentir.
+ *
+ * Le canal écouté était `private-channel.{threadId}`, qui désigne la messagerie interne des sociétés
+ * — un tout autre objet, dont l'identifiant n'a aucun rapport. Et l'événement attendu était
+ * `ChatMessageSentEvent`, le nom de la CLASSE, alors que `broadcastAs()` publie `chat.message`.
+ * Deux fautes indépendantes : corriger l'une seule aurait laissé le chat muet, ce qui explique
+ * qu'aucune des deux n'ait été trouvée.
+ *
+ * Le préfixe `private-` est celui de Pusher, pas de Laravel : `PrivateChannel('chat.thread.4')` se
+ * souscrit sous `private-chat.thread.4`. C'est la convention déjà suivie par le suivi de mission et
+ * par les offres.
+ */
+export function useLiveChat(
+  threadId: number | null,
+  onMessage: (message: ChatMessageBroadcast) => void,
+) {
+  useChannel(threadId ? `private-chat.thread.${threadId}` : null, {
+    'chat.message': (data: unknown) => onMessage(data as ChatMessageBroadcast),
   });
 }

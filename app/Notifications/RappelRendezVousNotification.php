@@ -21,9 +21,35 @@ class RappelRendezVousNotification extends Notification implements ShouldQueue
 
     public function via($notifiable): array
     {
-        $eventKey = $this->timing === '2h' ? 'booking_reminder_2h' : 'booking_reminder_24h';
+        /*
+         * LE SMS EST OFFERT, LA MATRICE DÉCIDE. Le canal `sms` existait, complet, sans une seule
+         * référence dans le code : aucune notification ne le proposait, donc personne n'en recevait
+         * jamais — quelles que soient ses préférences. Un rappel d'intervention est justement ce
+         * qu'on veut lire sans ouvrir sa boîte mail.
+         */
+        return $this->preferredChannels($notifiable, 'booking_reminder', ['mail', 'database', 'sms']);
+    }
 
-        return $this->preferredChannels($notifiable, $eventKey, ['mail', 'database']);
+    /**
+     * Court par nécessité : un SMS se paie au segment de 160 caractères, et le module plafonne les
+     * envois par numéro. Ce qui compte tient en une ligne — quand, et où.
+     */
+    public function toSms(object $notifiable): string
+    {
+        return sprintf(
+            'Brio : votre %s est prevu %s a %s. Adresse : %s',
+            $this->rdv->service_display_name,
+            $this->rdv->date,
+            $this->rdv->heure,
+            $this->rdv->location_display,
+        );
+    }
+
+    public function smsIdempotencyKey(object $notifiable): string
+    {
+        // Deux rappels du même créneau ne doivent pas produire deux SMS : le registre déduplique
+        // sur cette clé.
+        return 'booking:reminder:'.$this->rdv->id.':'.$this->timing;
     }
 
     public function toMail($notifiable): MailMessage

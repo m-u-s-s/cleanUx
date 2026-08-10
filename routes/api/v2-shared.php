@@ -70,6 +70,11 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/threads/{thread}/messages', [ChatV2Controller::class, 'sendMessage'])->middleware('throttle:chat');
         Route::post('/threads/{thread}/read', [ChatV2Controller::class, 'markAsRead']);
         Route::post('/threads/{thread}/archive', [ChatV2Controller::class, 'archiveThread']);
+        // Composition du fil : ajouter quelqu'un de lié, ou l'en retirer. `left_at` existait dans le
+        // schéma sans qu'aucune route ne puisse l'écrire.
+        Route::post('/threads/{thread}/participants', [ChatV2Controller::class, 'addParticipants']);
+        Route::delete('/threads/{thread}/participants/{userId}', [ChatV2Controller::class, 'removeParticipant'])
+            ->whereNumber('userId');
         Route::get('/messages/{message}/attachment', [ChatV2Controller::class, 'downloadAttachment']);
     });
 

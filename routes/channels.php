@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\Channel;
+use App\Models\ChatThread;
 use App\Models\FieldTeam;
 use App\Models\Mission;
 use App\Models\OrganizationAccount;
@@ -183,4 +184,39 @@ Broadcast::channel('providers.presence', function ($user) {
         $user->role === 'dispatcher' ||
         method_exists($user, 'isPlatformAdmin') && $user->isPlatformAdmin()
     );
+});
+
+// ──────────────────────────────────────────────────────
+// ChatV2 — fil de discussion client ↔ prestataire
+// ──────────────────────────────────────────────────────
+/*
+ * SANS CETTE AUTORISATION, LE CHAT CLIENT NE MARCHAIT QUE PAR RECHARGEMENT.
+ *
+ * `ChatMessageSentEvent` diffuse depuis toujours sur `chat.thread.{id}`, mais aucune callback ne
+ * couvrait ce motif : Echo recevait un 403 à chaque souscription, en silence. Les deux
+ * interlocuteurs se parlaient sans jamais se voir écrire — il fallait rafraîchir la page pour
+ * découvrir la réponse. Sur une intervention en cours, cela veut dire un client qui pose une
+ * question depuis son salon et un prestataire devant la porte qui ne la lit jamais.
+ *
+ * LA CONDITION EST LA PARTICIPATION VIVANTE, `left_at` COMPRIS. Un participant retiré du fil garde
+ * sa session Echo ouverte : sans ce filtre, il continuerait de recevoir les messages d'une
+ * conversation dont on vient de l'écarter. C'est exactement le scénario que R2 rend possible en
+ * ouvrant le retrait de participant.
+ */
+Broadcast::channel('chat.thread.{threadId}', function (User $user, int $threadId) {
+    $thread = ChatThread::query()->find($threadId);
+
+    if (! $thread) {
+        return false;
+    }
+
+    // L'admin lit tout : la modération des fils passe par les mêmes écrans.
+    if ($user->isAdmin()) {
+        return true;
+    }
+
+    return $thread->participants()
+        ->where('user_id', $user->id)
+        ->whereNull('left_at')
+        ->exists();
 });

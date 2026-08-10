@@ -5,7 +5,7 @@
 | LiveKit — appels audio et vidéo dans un canal d'équipe
 |--------------------------------------------------------------------------
 |
-| Les appels étaient un GREENFIELD TOTAL : `VideoCallService` est un squelette qui lève sur chaque
+| Les appels étaient un GREENFIELD TOTAL : `VideoCallService` était un squelette qui levait sur chaque
 | méthode, et `MaskedCallService` (Twilio Proxy) est complet mais n'a jamais été câblé — il sert un
 | autre besoin, masquer les numéros entre client et prestataire, et reste intact.
 |

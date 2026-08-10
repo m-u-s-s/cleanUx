@@ -17,9 +17,30 @@ class EmployeArriveNotification extends Notification
         public string $startCode
     ) {}
 
+    use \App\Support\Notifications\InteractsWithUserNotificationPreferences;
+
     public function via($notifiable): array
     {
-        return ['database', 'mail', WebPushChannel::class];
+        // Le client doit ouvrir sa porte : s'il ne consulte ni l'application ni ses courriels à cet
+        // instant, l'intervention s'arrête sur le palier.
+        return $this->preferredChannels(
+            $notifiable,
+            'employe_arrive',
+            ['database', 'mail', 'sms', WebPushChannel::class],
+        );
+    }
+
+    public function toSms(object $notifiable): string
+    {
+        return sprintf(
+            'Brio : votre prestataire est arrive pour l intervention %s.',
+            $this->mission->booking->booking_reference ?? '',
+        );
+    }
+
+    public function smsIdempotencyKey(object $notifiable): string
+    {
+        return 'mission:arrived:'.$this->mission->id;
     }
 
     public function toWebPush($notifiable): array

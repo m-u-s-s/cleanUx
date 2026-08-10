@@ -172,6 +172,75 @@ class CatalogCenter extends Component
     }
 
     /**
+     * RÉGLER LA MAJORATION DE CE MÉTIER DANS CETTE ZONE.
+     *
+     * Le multiplicateur vivait sur `trade_zone_pricing` sans qu'aucun écran ne le règle : le
+     * moteur de surge le lisait, l'administration ne pouvait pas l'écrire. Une valeur qu'on
+     * consulte sans pouvoir la changer est un réglage en lecture seule, c'est-à-dire pas un
+     * réglage.
+     *
+     * IL SE RÈGLE SUR LA MÊME LIGNE que l'ouverture du métier et que l'immédiat, parce que c'est la
+     * même décision commerciale : ce que je vends ici, à quel prix, et en urgence ou non. Les
+     * séparer sur deux écrans a déjà produit deux tables concurrentes.
+     *
+     * LES BORNES SONT DURES. En dessous de 1, la « majoration » deviendrait une remise silencieuse
+     * appliquée à tous ; au-dessus du plafond de configuration, elle dépasserait ce que le moteur
+     * accepte de toute façon — autant refuser la saisie que promettre un réglage sans effet.
+     */
+    public function reglerMajorationDansLaZone(int $tradeId, string $multiplicateur): void
+    {
+        if ($this->refusesWrite()) {
+            return;
+        }
+
+        $valeur = (float) str_replace(',', '.', trim($multiplicateur));
+        $plafond = (float) config('surge.max_multiplier', 3.0);
+
+        if ($valeur < 1.0 || $valeur > $plafond) {
+            $this->flash = sprintf(
+                'La majoration doit rester entre 1,00 et %s : en dessous ce serait une remise, au-dessus le moteur la ramènerait au plafond.',
+                number_format($plafond, 2, ',', ' '),
+            );
+
+            return;
+        }
+
+        $ligne = TradeZonePricing::query()
+            ->where('trade_id', $tradeId)
+            ->where('service_zone_id', $this->zone->id)
+            ->first();
+
+        if (! $ligne || ! $ligne->is_active) {
+            $this->flash = 'Ouvrez d’abord ce métier dans la zone : une majoration sur un service qu’on n’y vend pas ne s’applique à rien.';
+
+            return;
+        }
+
+        // La colonne est décimale : on écrit la chaîne formatée plutôt qu'un flottant, dont la
+        // conversion arrondirait au hasard.
+        $ligne->update(['surge_multiplier' => number_format($valeur, 2, '.', '')]);
+
+        unset($this->majorationsDansLaZone);
+
+        $this->flash = 'Majoration enregistrée.';
+    }
+
+    /**
+     * La majoration en vigueur pour chaque métier de cette zone.
+     *
+     * @return array<int, string> identifiant du métier → multiplicateur
+     */
+    #[Computed]
+    public function majorationsDansLaZone(): array
+    {
+        return TradeZonePricing::query()
+            ->where('service_zone_id', $this->zone->id)
+            ->pluck('surge_multiplier', 'trade_id')
+            ->map(fn ($valeur) => (string) $valeur)
+            ->all();
+    }
+
+    /**
      * Quels métiers acceptent l'immédiat dans cette zone.
      *
      * @return array<int, bool> identifiant du métier → immédiat ouvert

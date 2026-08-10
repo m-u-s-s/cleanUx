@@ -73,10 +73,12 @@
             <tbody class="divide-y divide-slate-100">
                 @forelse ($invoices as $invoice)
                     <tr class="transition hover:bg-slate-50">
-                        <td class="px-5 py-4 text-sm font-semibold text-slate-900">{{ $invoice->reference }}</td>
-                        <td class="px-5 py-4 text-sm text-slate-600 hidden sm:table-cell">{{ $invoice->site?->name }}</td>
+                        {{-- `invoice_number` est le champ réel : `reference` n'a jamais existé sur ce modèle. --}}
+                        <td class="px-5 py-4 text-sm font-semibold text-slate-900">{{ $invoice->invoice_number ?: '#'.$invoice->id }}</td>
+                        {{-- Le site vient de la réservation facturée ; le modèle n'a pas de relation `site` directe. --}}
+                        <td class="px-5 py-4 text-sm text-slate-600 hidden sm:table-cell">{{ $invoice->rendezVous?->organizationSite?->name ?? '—' }}</td>
                         <td class="px-5 py-4 text-sm text-slate-500 hidden md:table-cell">
-                            {{ $invoice->created_at?->format('d/m/Y') }}
+                            {{ $invoice->issued_at?->format('d/m/Y') ?? $invoice->created_at?->format('d/m/Y') }}
                         </td>
                         <td class="px-5 py-4 text-right text-sm font-semibold text-slate-900">
                             {{ number_format($invoice->total_amount ?? 0, 2) }} €

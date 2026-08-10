@@ -22,7 +22,7 @@ use Tests\TestCase;
 /**
  * LOT 8 — APPELER DEPUIS UN CANAL D'ÉQUIPE.
  *
- * GREENFIELD TOTAL : `VideoCallService` était un squelette qui levait sur chaque méthode, et
+ * GREENFIELD TOTAL : `VideoCallService` était un squelette qui levait sur chaque méthode (supprimé depuis), et
  * `MaskedCallService` (Twilio Proxy) — complet mais jamais câblé — répond à un autre besoin, masquer
  * les numéros entre client et prestataire. Il reste intact.
  *

@@ -54,14 +54,19 @@ class EnterpriseRoutingService
         ];
     }
 
+    /**
+     * LA TABLE FAIT FOI, LE JSON SERT DE REPLI.
+     *
+     * Cette méthode ne lisait que `metadata.entreprise_context.allowed_site_ids`, un objet JSON
+     * posé sur l'utilisateur qu'aucun écran ne réglait. La table `organization_member_site_access`,
+     * elle, était modélisée avec sa relation et n'était ni lue ni écrite. Deux mécanismes pour le
+     * même fait, dont un seul branché : voir `MemberSiteAccessService`, qui les fait converger.
+     *
+     * @return array<int, int>
+     */
     public function allowedSiteIdsForUser(User $user): array
     {
-        return collect((array) data_get($user->metadata, 'entreprise_context.allowed_site_ids', []))
-            ->filter(static fn ($id) => filled($id))
-            ->map(static fn ($id) => (int) $id)
-            ->unique()
-            ->values()
-            ->all();
+        return app(MemberSiteAccessService::class)->sitesAutorises($user) ?? [];
     }
 
     public function userCanAccessSite(User $user, OrganizationSite $site): bool

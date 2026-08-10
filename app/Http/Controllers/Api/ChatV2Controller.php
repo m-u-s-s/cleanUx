@@ -7,6 +7,7 @@ use App\Models\ChatMessage;
 use App\Models\ChatParticipant;
 use App\Models\ChatThread;
 use App\Services\ChatV2\AttachmentService;
+use App\Services\ChatV2\ChatRelationshipGuard;
 use App\Services\ChatV2\ChatService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -24,6 +25,7 @@ class ChatV2Controller extends Controller
     public function __construct(
         protected ChatService $chat,
         protected AttachmentService $attachments,
+        protected ChatRelationshipGuard $relations,
     ) {}
 
     public function listMyThreads(Request $request): JsonResponse
@@ -55,6 +57,21 @@ class ChatV2Controller extends Controller
         $hasMe = collect($data['participants'])->contains(fn ($p) => (int) $p['user_id'] === $currentUserId);
         if (! $hasMe) {
             $data['participants'][] = ['user_id' => $currentUserId, 'role' => 'client'];
+        }
+
+        /*
+         * LA RELATION EST VÉRIFIÉE AVANT TOUT. Sans ce garde, un compte quelconque ouvrait un fil
+         * avec n'importe qui — il suffisait d'un identifiant — et s'y déclarait `admin`.
+         */
+        try {
+            $this->relations->assertPeutOuvrirUnFil(
+                auteur: $request->user(),
+                participants: $data['participants'],
+                contextType: $data['context_type'] ?? null,
+                contextId: isset($data['context_id']) ? (int) $data['context_id'] : null,
+            );
+        } catch (ValidationException $e) {
+            return response()->json(['ok' => false, 'errors' => $e->errors()], 422);
         }
 
         try {
@@ -217,6 +234,78 @@ class ChatV2Controller extends Controller
         }
 
         return response()->json(['ok' => true, 'message' => $row]);
+    }
+
+    /**
+     * AJOUTER DES PARTICIPANTS À UN FIL EXISTANT.
+     *
+     * La même règle de relation s'applique qu'à l'ouverture : on n'introduit pas un inconnu dans une
+     * conversation. Et il faut soi-même y être — sinon n'importe qui pourrait se greffer sur le fil
+     * d'autrui en s'y ajoutant.
+     */
+    public function addParticipants(Request $request, ChatThread $thread): JsonResponse
+    {
+        $user = $request->user();
+
+        if (! $user->isAdmin() && ! $this->isParticipant($thread, $user->id)) {
+            return response()->json(['ok' => false, 'error' => 'forbidden'], 403);
+        }
+
+        $data = $request->validate([
+            'participants' => ['required', 'array', 'min:1'],
+            'participants.*.user_id' => ['required', 'integer', 'exists:users,id'],
+            'participants.*.role' => ['required', 'string', 'in:client,provider,admin,observer,system'],
+        ]);
+
+        try {
+            $this->relations->assertPeutOuvrirUnFil(
+                auteur: $user,
+                participants: $data['participants'],
+                contextType: $thread->context_type,
+                contextId: $thread->context_id !== null ? (int) $thread->context_id : null,
+            );
+        } catch (ValidationException $e) {
+            return response()->json(['ok' => false, 'errors' => $e->errors()], 422);
+        }
+
+        $this->chat->syncParticipants($thread, $data['participants']);
+
+        return response()->json(['ok' => true, 'thread' => $thread->fresh('participants')]);
+    }
+
+    /**
+     * RETIRER UN PARTICIPANT — lecture ET temps réel coupés du même geste.
+     *
+     * Chacun peut se retirer soi-même : quitter une conversation est un droit, pas une faveur. Y
+     * retirer QUELQU'UN D'AUTRE demande d'être administrateur du fil ou de la plateforme, parce que
+     * c'est une exclusion.
+     */
+    public function removeParticipant(Request $request, ChatThread $thread, int $userId): JsonResponse
+    {
+        $user = $request->user();
+        $seRetireLuiMeme = (int) $user->id === $userId;
+
+        if (! $seRetireLuiMeme && ! $user->isAdmin() && ! $this->isThreadAdmin($thread, $user->id)) {
+            return response()->json(['ok' => false, 'error' => 'forbidden'], 403);
+        }
+
+        if (! $seRetireLuiMeme && ! $this->isParticipant($thread, $user->id) && ! $user->isAdmin()) {
+            return response()->json(['ok' => false, 'error' => 'forbidden'], 403);
+        }
+
+        $retire = $this->chat->removeParticipant($thread, $userId);
+
+        return response()->json(['ok' => $retire]);
+    }
+
+    protected function isThreadAdmin(ChatThread $thread, int $userId): bool
+    {
+        return ChatParticipant::query()
+            ->where('thread_id', $thread->id)
+            ->where('user_id', $userId)
+            ->whereNull('left_at')
+            ->where('role', ChatParticipant::ROLE_ADMIN)
+            ->exists();
     }
 
     protected function isParticipant(ChatThread $thread, int $userId): bool

@@ -68,9 +68,18 @@ class ChatService
     }
 
     /**
+     * AJOUTER OU RÉINTÉGRER DES PARTICIPANTS.
+     *
+     * Publique désormais : l'API des participants en a besoin, et rien ne justifiait qu'un fil soit
+     * figé à sa composition d'origine — un litige qui s'envenime appelle un modérateur, une mission
+     * réassignée change de prestataire.
+     *
+     * `left_at` est remis à nul : réintégrer quelqu'un qu'on avait retiré doit lui rendre le fil,
+     * pas créer un doublon. C'est la même clé (`thread_id`, `user_id`) qui sert.
+     *
      * @param  array<int, array{user_id:int, role:string}>  $participants
      */
-    protected function syncParticipants(ChatThread $thread, array $participants): void
+    public function syncParticipants(ChatThread $thread, array $participants): void
     {
         foreach ($participants as $p) {
             $userId = (int) ($p['user_id'] ?? 0);
@@ -184,6 +193,40 @@ class ChatService
 
             return $msg;
         });
+    }
+
+    /**
+     * RETIRER QUELQU'UN D'UN FIL — et le retirer VRAIMENT.
+     *
+     * `left_at` existait dans le schéma et dans le scope `forUser()`, mais RIEN ne l'écrivait
+     * jamais : aucune API ne permettait de sortir quelqu'un d'une conversation. Une colonne qu'on
+     * lit sans jamais l'écrire est une intention non tenue — le filtre existait, la porte non.
+     *
+     * Le retrait coupe deux choses à la fois, et il faut les deux : la lecture (les scopes filtrent
+     * sur `left_at`) et le temps réel (l'autorisation du canal `chat.thread.{id}` exige la même
+     * condition). Sans la seconde, une session Echo déjà ouverte continuerait de recevoir les
+     * messages d'un fil dont la personne vient d'être écartée.
+     *
+     * L'opération est idempotente : retirer deux fois ne déplace pas la date de sortie.
+     */
+    public function removeParticipant(ChatThread $thread, int $userId): bool
+    {
+        $participant = ChatParticipant::query()
+            ->where('thread_id', $thread->id)
+            ->where('user_id', $userId)
+            ->whereNull('left_at')
+            ->first();
+
+        if (! $participant) {
+            return false;
+        }
+
+        $participant->forceFill([
+            'left_at' => now(),
+            'can_send' => false,
+        ])->save();
+
+        return true;
     }
 
     public function markAsRead(ChatThread $thread, User $user, ?int $upToMessageId = null): int

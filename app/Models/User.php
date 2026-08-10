@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Support\Notifications\NotificationChannelResolver;
 use App\Models\Concerns\HasAdminCapabilities;
 use App\Models\Concerns\HasBillingFeatures;
 use App\Models\Concerns\HasOrganizationContext;
@@ -163,6 +164,33 @@ class User extends Authenticatable implements HasLocalePreference, MustVerifyEma
     public function assistantConversations(): HasMany
     {
         return $this->hasMany(AssistantConversation::class);
+    }
+
+    /**
+     * CE DESTINATAIRE VEUT-IL DE CE CANAL POUR CET ÉVÉNEMENT ?
+     *
+     * `InteractsWithUserNotificationPreferences::preferredChannels()` cherchait cette méthode
+     * depuis toujours, avec un garde `method_exists()`. Elle n'existait sur AUCUN modèle : le garde
+     * échouait en silence, la fonction rendait ses valeurs par défaut, et la matrice de préférences
+     * — versionnée, auditée, avec son écran de réglage — n'était consultée par aucun envoi.
+     * L'utilisateur qui coupait les rappels continuait de les recevoir, et rien nulle part ne
+     * signalait que son choix était ignoré.
+     *
+     * La traduction entre le vocabulaire de Laravel et celui de la matrice vit dans
+     * `NotificationChannelResolver` : un seul endroit, pour qu'elle ne diverge pas.
+     */
+    public function wantsNotificationChannel(string $eventKey, string $channel): bool
+    {
+        return app(NotificationChannelResolver::class)->accepte($this, $eventKey, $channel);
+    }
+
+    /**
+     * Le numéro vers lequel router un SMS de notification. Le canal `sms` le demande avant de
+     * retomber sur l'attribut `phone`.
+     */
+    public function routeNotificationForSms(): ?string
+    {
+        return $this->phone ?: null;
     }
 
     /**

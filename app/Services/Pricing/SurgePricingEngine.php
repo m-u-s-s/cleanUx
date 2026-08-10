@@ -52,6 +52,32 @@ class SurgePricingEngine
      */
     public function calculate(float $basePrice, ?ServiceZone $zone = null, array $context = []): array
     {
+        /*
+         * LE DRAPEAU EST ENFIN LU. `surge_pricing` existait dans `config/features.php`, à `true`,
+         * et AUCUN code ne l'interrogeait : le seul interrupteur censé couper la majoration sans
+         * déploiement ne coupait rien. Sur un mécanisme qui change ce que les gens paient, c'est le
+         * pire endroit où laisser un interrupteur factice — le jour où une majoration s'emballe, on
+         * croit l'éteindre et elle continue.
+         *
+         * Drapeau baissé, on rend le prix de base tel quel, avec des facteurs neutres : les
+         * appelants lisent `multiplier` et `final_price`, ils doivent trouver une réponse cohérente
+         * plutôt qu'une absence.
+         */
+        if (! feature('surge_pricing')) {
+            return [
+                'base_price' => round($basePrice, 2),
+                'final_price' => round($basePrice, 2),
+                'multiplier' => 1.0,
+                'factors' => [
+                    'demand' => 1.0, 'supply' => 1.0, 'temporal' => 1.0,
+                    'trade_zone' => 1.0, 'asap' => 1.0, 'trade_business' => 1.0,
+                ],
+                'is_visible' => false,
+                'source' => 'disabled',
+                'capped' => false,
+            ];
+        }
+
         $multiplier = 1.0;
         $factors = [
             'demand' => 1.0,

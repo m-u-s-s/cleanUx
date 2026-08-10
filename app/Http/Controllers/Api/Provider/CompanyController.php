@@ -1565,7 +1565,7 @@ class CompanyController extends Controller
      *
      * La note vocale du lot 7 couvre la consigne qu'on laisse ; un appel couvre la question qui
      * n'attend pas — « je suis devant la porte, quel est le code ? ». Rien ne portait cela :
-     * `VideoCallService` était un squelette qui levait sur chaque méthode.
+     * `VideoCallService` était un squelette qui levait sur chaque méthode ; il a été supprimé.
      *
      * LE JETON N'EST PAS DIFFUSÉ. La bannière part sur `channel.{id}` avec l'identifiant de
      * l'appel ; chacun demande ENSUITE le sien. Diffuser un jeton donnerait à tous les membres le

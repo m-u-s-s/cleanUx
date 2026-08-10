@@ -211,6 +211,32 @@
                                                 {{ ($this->metiersEnImmediatDansLaZone[$trade->id] ?? false) ? 'Retirer l’immédiat ici' : 'Ouvrir l’immédiat ici' }}
                                             </button>
                                         @endif
+
+                                        {{--
+                                            LA MAJORATION SE RÈGLE ICI, sur la même ligne que l'ouverture
+                                            et l'immédiat : c'est la même décision commerciale. Le
+                                            multiplicateur existait sur `trade_zone_pricing` et le moteur
+                                            de surge le lisait déjà — aucun écran ne permettait de
+                                            l'écrire.
+                                        --}}
+                                        @if ($this->metiersActifsDansLaZone[$trade->id] ?? false)
+                                            <form wire:submit="reglerMajorationDansLaZone({{ $trade->id }}, $event.target.multiplicateur.value)"
+                                                class="flex items-center gap-1">
+                                                <label for="majoration-{{ $trade->id }}" class="text-xs text-slate-500">
+                                                    Majoration
+                                                </label>
+                                                <input id="majoration-{{ $trade->id }}"
+                                                    name="multiplicateur"
+                                                    type="number" step="0.05" min="1"
+                                                    max="{{ config('surge.max_multiplier', 3.0) }}"
+                                                    value="{{ $this->majorationsDansLaZone[$trade->id] ?? '1.00' }}"
+                                                    class="min-h-[36px] w-20 rounded-lg border border-slate-300 px-2 text-xs text-slate-700" />
+                                                <button type="submit"
+                                                    class="min-h-[36px] rounded-lg border border-slate-300 px-3 text-xs text-slate-700 transition hover:bg-slate-50">
+                                                    Appliquer
+                                                </button>
+                                            </form>
+                                        @endif
                                     </div>
                                 </div>
 

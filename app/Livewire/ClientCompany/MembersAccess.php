@@ -6,7 +6,9 @@ use App\Enums\OrganizationRole;
 use App\Mail\OrganizationInvitationMail;
 use App\Models\OrganizationInvitation;
 use App\Models\OrganizationMember;
+use App\Models\OrganizationSite;
 use App\Models\User;
+use App\Services\Enterprise\MemberSiteAccessService;
 use App\Services\Organizations\OrganizationMembershipService;
 use App\Services\PermissionService;
 use App\Support\Livewire\Concerns\EnforcesActiveOrgMembership;
@@ -15,6 +17,7 @@ use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
+use Livewire\Attributes\Computed;
 use Livewire\Component;
 
 /**
@@ -35,6 +38,13 @@ class MembersAccess extends Component
     public bool $showPermissions = false;
 
     public ?int $editingMemberId = null;
+
+    /**
+     * Les locaux cochés dans le panneau d'accès du membre en cours d'édition.
+     *
+     * @var array<int, int>
+     */
+    public array $sitesAutorises = [];
 
     // Invitation
     public string $inviteEmail = '';
@@ -306,6 +316,75 @@ class MembersAccess extends Component
         } else {
             $member->revokePermission($permission);
         }
+    }
+
+    /**
+     * RESTREINDRE UN MEMBRE À SES LOCAUX — la table dormait, l'écran manquait.
+     *
+     * `organization_member_site_access` existait avec sa relation `authorizedMembers()`, et rien ne
+     * l'écrivait. Conséquence pour l'utilisatrice : un responsable de site voyait TOUS les locaux
+     * de sa société, avec les réservations, les adresses et les factures des autres agences.
+     *
+     * UN TABLEAU VIDE LÈVE LA RESTRICTION, il ne la durcit pas. C'est la lecture qui compte : « je
+     * n'ai coché aucun local » veut dire « pas de restriction », pas « aucun accès ». L'inverse
+     * viderait l'écran du membre au premier enregistrement par mégarde.
+     */
+    public function enregistrerLesSites(int $memberId): void
+    {
+        $member = $this->memberSousGarde($memberId, 'members.manage_permissions', silencieuxSiIntrouvable: true);
+
+        if (! $member) {
+            return;
+        }
+
+        // Les identifiants viennent du navigateur : on ne garde que des locaux de CETTE société,
+        // sinon on restreindrait un membre à l'agence d'une entreprise voisine.
+        $sitesDeLOrganisation = OrganizationSite::query()
+            ->where('organization_account_id', $member->organization_account_id)
+            ->pluck('id')
+            ->all();
+
+        $retenus = array_values(array_intersect(
+            array_map('intval', $this->sitesAutorises),
+            array_map('intval', $sitesDeLOrganisation),
+        ));
+
+        app(MemberSiteAccessService::class)->definirLesSites($member, $retenus);
+
+        $this->dispatch('toast', $retenus === []
+            ? 'Ce membre voit désormais tous les locaux.'
+            : 'Accès enregistré : '.count($retenus).' local(aux).');
+    }
+
+    /**
+     * Ouvrir le panneau d'accès avec les locaux déjà cochés.
+     */
+    public function ouvrirLesSites(int $memberId): void
+    {
+        $member = $this->memberSousGarde($memberId, 'members.manage_permissions', silencieuxSiIntrouvable: true);
+
+        if (! $member) {
+            return;
+        }
+
+        $this->editingMemberId = $memberId;
+        $this->sitesAutorises = $member->user
+            ? (app(MemberSiteAccessService::class)->sitesAutorises($member->user) ?? [])
+            : [];
+    }
+
+    /**
+     * Les locaux de la société, pour cocher.
+     *
+     * @return \Illuminate\Database\Eloquent\Collection<int, OrganizationSite>
+     */
+    #[Computed]
+    public function sitesDeLaSociete(): \Illuminate\Database\Eloquent\Collection
+    {
+        return OrganizationSite::query()
+            ->where('organization_account_id', Auth::user()->organization_account_id)
+            ->orderBy('name')
+            ->get(['id', 'name']);
     }
 
     // ──────────────────────────────────────────────────────

@@ -4,6 +4,10 @@ namespace App\Support\Notifications;
 
 trait InteractsWithUserNotificationPreferences
 {
+    /**
+     * @param  array<int, string>  $defaults
+     * @return array<int, string>
+     */
     protected function preferredChannels(object $notifiable, string $eventKey, array $defaults): array
     {
         $channels = [];
@@ -21,6 +25,10 @@ trait InteractsWithUserNotificationPreferences
         return $channels;
     }
 
+    /**
+     * @param  array<string, mixed>  $payload
+     * @return array<string, mixed>
+     */
     protected function basePayload(array $payload): array
     {
         return array_filter($payload, static fn ($value) => $value !== null && $value !== '');

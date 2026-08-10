@@ -41,11 +41,24 @@ class ChatApiTest extends TestCase
     {
         $user = User::factory()->create();
         $other = User::factory()->create();
+
+        /*
+         * LA RÉSERVATION PARTAGÉE EST DÉSORMAIS INDISPENSABLE, et ce test la posait auparavant sur
+         * un `context_id` fantaisiste (11) qui ne désignait rien. Il vérifiait donc, sans le dire,
+         * qu'un compte pouvait ouvrir un fil avec un parfait inconnu — c'était le trou, pas le
+         * contrat.
+         */
+        $booking = \App\Models\Booking::factory()->create([
+            'client_id' => $user->id,
+            'customer_user_id' => $user->id,
+            'employe_id' => $other->id,
+        ]);
+
         Sanctum::actingAs($user);
 
         $response = $this->postJson('/api/v2/chat/threads', [
             'context_type' => 'booking',
-            'context_id' => 11,
+            'context_id' => $booking->id,
             'participants' => [['user_id' => $other->id, 'role' => 'provider']],
         ]);
 

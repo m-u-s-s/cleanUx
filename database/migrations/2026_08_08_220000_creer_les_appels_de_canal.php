@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\Schema;
  *
  * La note vocale du lot 7 couvre la consigne qu'on laisse ; un appel couvre la question qui
  * n'attend pas — « je suis devant la porte, quel est le code ? ». Rien ne portait cela :
- * `VideoCallService` est un squelette qui lève sur chaque méthode.
+ * `VideoCallService` était un squelette qui levait sur chaque méthode ; il a été supprimé.
  *
  * POURQUOI PERSISTER UN APPEL PLUTÔT QUE DE LAISSER LIVEKIT S'EN CHARGER. Le serveur de médias sait
  * qui est dans une salle À L'INSTANT T ; il ne dit pas qu'un appel a sonné dans le vide à 7 h du

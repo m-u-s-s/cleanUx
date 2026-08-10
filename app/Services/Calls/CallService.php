@@ -10,7 +10,8 @@ use Illuminate\Support\Str;
 /**
  * OUVRIR UNE SALLE LIVEKIT, ET DÉLIVRER LE JETON QUI Y DONNE ACCÈS.
  *
- * REMPLACE `VideoCallService`, un squelette qui levait sur chaque méthode depuis son écriture.
+ * REMPLACE `VideoCallService`, un squelette qui levait sur chaque méthode depuis son écriture et
+ * qui a depuis été supprimé du dépôt.
  * `MaskedCallService` (Twilio Proxy) reste INTACT : il répond à un besoin différent — masquer les
  * numéros entre client et prestataire — et le confondre avec celui-ci donnerait aux deux le pire
  * des deux.

@@ -13,9 +13,26 @@ class EmployeEnRouteNotification extends Notification
 
     public function __construct(public Mission $mission) {}
 
+    use \App\Support\Notifications\InteractsWithUserNotificationPreferences;
+
     public function via(object $notifiable): array
     {
-        return ['database', 'mail'];
+        // « Le prestataire arrive » est l'information la plus périssable du parcours : elle vaut
+        // pendant vingt minutes. Le courriel la livre trop tard pour être utile.
+        return $this->preferredChannels($notifiable, 'employe_en_route', ['database', 'mail', 'sms']);
+    }
+
+    public function toSms(object $notifiable): string
+    {
+        return sprintf(
+            'Brio : votre prestataire est en route pour l intervention %s.',
+            $this->mission->booking->booking_reference ?? '',
+        );
+    }
+
+    public function smsIdempotencyKey(object $notifiable): string
+    {
+        return 'mission:enroute:'.$this->mission->id;
     }
 
     public function toMail(object $notifiable): MailMessage
