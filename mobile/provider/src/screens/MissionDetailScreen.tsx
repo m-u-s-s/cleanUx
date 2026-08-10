@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
-import { View, Text, Alert, StyleSheet } from 'react-native';
+import { View, Text, Alert, StyleSheet, TouchableOpacity } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useNavigation } from '@react-navigation/native';
 import { Screen, Button, Badge, Divider, TextInput } from '@/ui';
-import { useMissionDetail, useMissionLifecycle, missionStatusLabel } from '@/missions';
+import { useMissionDetail, useMissionLifecycle, useResendMissionCode, missionStatusLabel } from '@/missions';
 import { useArriveOnSite } from '@/tracking';
-import {spacing, typography, radius, shadows, useThemeColors } from '@/theme';
+import { colors, spacing, typography, radius, shadows, useThemeColors } from '@/theme';
 import type { ThemeTokens } from '@/theme/useThemeColors';
 import type { RootStackParamList } from '@/navigation/types';
 
@@ -17,6 +17,27 @@ export function MissionDetailScreen({ route }: Props) {
   const { missionId } = route.params;
   const { data: mission, isLoading } = useMissionDetail(missionId);
   const lifecycle = useMissionLifecycle(missionId);
+  const resendCode = useResendMissionCode(missionId);
+
+  /**
+   * Le retour est EXPLICITE, et porte le numéro masqué.
+   *
+   * « Envoyé » sans destinataire laisse le doute sur le bon client, et c'est ce doute qui fait
+   * appuyer trois fois — ce qui épuise le plafond SMS et prive le client des codes SUIVANTS. Un
+   * refus pour attente est dit tel quel : ce n'est pas une panne, c'est un garde-fou.
+   */
+  const handleResend = (type: 'start' | 'end') => {
+    resendCode.mutate(type, {
+      onSuccess: (r) =>
+        Alert.alert(
+          'Code renvoyé',
+          r?.sent_to
+            ? `Un nouveau code vient d’être envoyé au ${r.sent_to}. L’ancien n’est plus valide.`
+            : 'Un nouveau code vient d’être envoyé. L’ancien n’est plus valide.',
+        ),
+      onError: (e: any) => Alert.alert('Impossible', e?.message ?? 'Réessayez dans un instant.'),
+    });
+  };
   const arriveOnSite = useArriveOnSite(mission?.booking_id ?? null, missionId);
   const navigation = useNavigation<any>();
   const themeColors = useThemeColors();
@@ -142,6 +163,25 @@ export function MissionDetailScreen({ route }: Props) {
               maxLength={6}
               placeholder="000000"
             />
+            {/*
+              LE RECOURS QUAND LE SMS N'ARRIVE PAS.
+
+              Réseau du client, numéro mal saisi, message noyé, plafond d'envoi atteint : sans ce
+              lien, l'intervention s'arrêtait là — le prestataire devant la porte, le client sans
+              ses six chiffres, et pour seul recours l'annulation de la mission.
+            */}
+            <TouchableOpacity
+              onPress={() => handleResend('start')}
+              disabled={resendCode.isPending}
+              accessibilityRole="button"
+              accessibilityLabel="Renvoyer le code de début par SMS au client"
+              testID="resend-start-code"
+              style={styles.resendLink}
+            >
+              <Text style={styles.resendText}>
+                {resendCode.isPending ? 'Envoi…' : 'Le client n’a rien reçu ? Renvoyer le SMS'}
+              </Text>
+            </TouchableOpacity>
             {/* `begin`, PAS `start` : `start` appelle setEnRoute côté serveur, et depuis
                 `arrived` cette transition est invalide — l'ancien bouton recevait un 422. */}
             <Button
@@ -179,6 +219,19 @@ export function MissionDetailScreen({ route }: Props) {
               variant="danger"
               fullWidth
             />
+            {/* Le code de FIN voyage par le même SMS, et se perd de la même façon. */}
+            <TouchableOpacity
+              onPress={() => handleResend('end')}
+              disabled={resendCode.isPending}
+              accessibilityRole="button"
+              accessibilityLabel="Renvoyer le code de fin par SMS au client"
+              testID="resend-end-code"
+              style={styles.resendLink}
+            >
+              <Text style={styles.resendText}>
+                {resendCode.isPending ? 'Envoi…' : 'Le client n’a rien reçu ? Renvoyer le SMS'}
+              </Text>
+            </TouchableOpacity>
           </>
         )}
       </View>
@@ -198,6 +251,13 @@ function DetailRow({ label, value }: { label: string; value: string }) {
 }
 
 const stylesFor = (t: ThemeTokens) => StyleSheet.create({
+  resendLink: { alignSelf: 'flex-start', paddingVertical: spacing.xs },
+  resendText: {
+    fontSize: typography.fontSize.sm,
+    fontWeight: typography.fontWeight.semibold,
+    color: colors.brand[600],
+    textDecorationLine: 'underline',
+  },
   loading: {
     color: t.textSecondary,
     textAlign: 'center',

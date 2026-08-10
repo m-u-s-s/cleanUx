@@ -6,8 +6,11 @@ use App\Http\Controllers\Api\Concerns\FormatsBookingSchedule;
 use App\Http\Controllers\Controller;
 use App\Models\Mission;
 use App\Services\Missions\MissionLifecycleService;
+use App\Services\Missions\MissionVerificationCodeService;
+use App\Services\Notifications\SmsService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 
 /**
  * Phase 12 — Lifecycle d'une mission côté prestataire mobile.
@@ -278,6 +281,100 @@ class ProviderMissionLifecycleController extends Controller
      * @response 403 {"message": "Vous n'êtes pas assigné à cette mission."}
      * @response 422 {"ok": false, "message": "Le code de début est requis pour démarrer cette mission."}
      */
+    /**
+     * RENVOYER AU CLIENT LE CODE QU'IL N'A PAS REÇU.
+     *
+     * Un SMS se perd : réseau du client, numéro mal saisi, message noyé, plafond d'envoi atteint.
+     * Sans ce geste, l'intervention s'arrêtait là — le prestataire est devant la porte, le client
+     * n'a pas ses six chiffres, et aucun des deux ne peut rien y faire. Le seul recours était
+     * d'annuler la mission.
+     *
+     * LE CODE PRÉCÉDENT EST INVALIDÉ, et c'est délibéré : `createVerificationCode()` consomme
+     * l'ancien. Deux codes valides pour la même mission feraient hésiter un client qui a reçu les
+     * deux SMS — et le mauvais choix brûle un essai.
+     *
+     * UNE ATTENTE SÉPARE DEUX RENVOIS. Le plafond du module SMS est de cinq messages par heure et
+     * par numéro : trois pressions distraites suffisaient à l'épuiser, après quoi le client ne
+     * recevait plus RIEN — ni ce code-ci, ni celui de fin. C'est exactement ce qui s'est produit
+     * sur la base de démonstration, et le statut `rate_limited` du registre était le seul endroit
+     * où cela se lisait.
+     *
+     * @bodyParam type string Le code à renvoyer : `start` ou `end`. Example: start
+     *
+     * @response 200 {"ok": true, "type": "start", "sent_to": "+3247******99"}
+     * @response 403 {"message": "Vous n'êtes pas assigné à cette mission."}
+     * @response 409 {"ok": false, "message": "Patientez avant de renvoyer un nouveau code."}
+     * @response 422 {"ok": false, "message": "Aucun numéro de téléphone au dossier du client."}
+     */
+    public function resendCode(Request $request, Mission $mission): JsonResponse
+    {
+        $this->authorizeProvider($request, $mission);
+
+        $data = $request->validate([
+            'type' => ['required', 'string', 'in:start,end'],
+        ]);
+
+        /*
+         * DEUX SOURCES, DANS CET ORDRE : le compte du client, puis le numéro saisi sur la
+         * réservation. Une commande passée pour un tiers — un parent, un locataire — porte le
+         * second et pas le premier ; ne lire que le compte enverrait le code à la mauvaise
+         * personne, ou à personne.
+         */
+        $rendezVous = $mission->rendezVous;
+        $telephone = $rendezVous?->client?->phone ?: $rendezVous?->telephone_client;
+
+        if (! $telephone) {
+            return response()->json([
+                'ok' => false,
+                'message' => 'Aucun numéro de téléphone au dossier du client.',
+            ], 422);
+        }
+
+        $cle = 'mission_code_resend:'.$mission->id.':'.$data['type'];
+        $attente = (int) config('trip_tracking.code_resend_cooldown_seconds', 60);
+
+        if (Cache::has($cle)) {
+            return response()->json([
+                'ok' => false,
+                'message' => 'Patientez avant de renvoyer un nouveau code.',
+                'retry_after_seconds' => $attente,
+            ], 409);
+        }
+
+        $genere = app(MissionVerificationCodeService::class)->createVerificationCode($mission, $data['type']);
+
+        app(SmsService::class)->send(
+            $telephone,
+            $data['type'] === 'start'
+                ? 'Brio : votre employé est arrivé. Code de début : '.$genere['code']
+                : 'Brio : code de fin de mission : '.$genere['code'].'. Communiquez-le au prestataire en fin de service.',
+        );
+
+        Cache::put($cle, true, $attente);
+
+        return response()->json([
+            'ok' => true,
+            'type' => $data['type'],
+            // Le numéro est MASQUÉ : il confirme au prestataire qu'on a écrit au bon client sans
+            // lui livrer le téléphone de quelqu'un chez qui il n'ira peut-être jamais.
+            'sent_to' => $this->telephoneMasque((string) $telephone),
+        ]);
+    }
+
+    /** Garde les quatre premiers caractères et les deux derniers : « +3247******99 ». */
+    protected function telephoneMasque(string $telephone): string
+    {
+        $longueur = mb_strlen($telephone);
+
+        if ($longueur <= 6) {
+            return str_repeat('*', $longueur);
+        }
+
+        return mb_substr($telephone, 0, 4)
+            .str_repeat('*', max(1, $longueur - 6))
+            .mb_substr($telephone, -2);
+    }
+
     public function begin(Request $request, Mission $mission): JsonResponse
     {
         $this->authorizeProvider($request, $mission);

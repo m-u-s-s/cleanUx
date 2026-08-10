@@ -4,6 +4,7 @@ export {
   useDeclineMission,
   useMissionDetail,
   useMissionLifecycle,
+  useResendMissionCode,
   useLiveMissionUpdates,
 } from './hooks';
 export type { MissionAssignment, Mission, MissionLifecycleAction } from './types';

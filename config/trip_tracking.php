@@ -1,6 +1,17 @@
 <?php
 
 return [
+
+    /*
+     * Attente minimale entre deux renvois du code d'une même mission.
+     *
+     * Le module SMS plafonne à cinq messages par heure et par numéro : trois pressions distraites
+     * suffisaient à l'épuiser, après quoi le client ne recevait plus RIEN — ni le code de début,
+     * ni celui de fin. Une minute suffit à écarter le double appui sans gêner qui a réellement
+     * besoin d'un second envoi.
+     */
+    'code_resend_cooldown_seconds' => (int) env('MISSION_CODE_RESEND_COOLDOWN', 60),
+
     'enabled' => env('TRIP_TRACKING_ENABLED', true),
 
     // Rayon geofence pour auto-transition enroute → arrived (mètres)

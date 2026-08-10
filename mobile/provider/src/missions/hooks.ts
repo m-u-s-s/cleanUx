@@ -59,6 +59,24 @@ export type MissionLifecyclePayload =
   | MissionLifecycleAction
   | { action: MissionLifecycleAction; code?: string };
 
+/**
+ * RENVOYER AU CLIENT LE CODE QU'IL N'A PAS REÇU.
+ *
+ * Un SMS se perd : réseau du client, numéro mal saisi, message noyé, plafond d'envoi atteint. Sans
+ * ce geste, l'intervention s'arrêtait là — le prestataire devant la porte, le client sans ses six
+ * chiffres, et pour seul recours l'annulation de la mission.
+ *
+ * Le serveur invalide le code précédent et impose une attente entre deux renvois : le plafond du
+ * module SMS est de cinq messages par heure et par numéro, et trois pressions distraites
+ * suffiraient à l'épuiser — après quoi le client ne recevrait plus rien du tout.
+ */
+export function useResendMissionCode(missionId: number) {
+  return useMutation<{ sent_to?: string }, ApiError, 'start' | 'end'>({
+    mutationFn: async (type) =>
+      (await apiClient.post(`/provider/missions/${missionId}/codes/resend`, { type })).data,
+  });
+}
+
 export function useMissionLifecycle(missionId: number) {
   const qc = useQueryClient();
   return useMutation<void, ApiError, MissionLifecyclePayload>({

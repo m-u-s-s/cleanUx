@@ -145,6 +145,51 @@ class SurfacesPrestataireTest extends TestCase
      * La liste est la SOURCE DE VÉRITÉ par sondage : elle ne montre que ce qui est encore ouvert,
      * donc une offre expirée en disparaît d'elle-même sans qu'aucun écran n'ait à la retirer.
      */
+    /**
+     * LA DISTANCE EST LÀ SUR TOUS LES CANAUX, pas seulement en temps réel.
+     *
+     * Le moteur la connaît — c'est elle qui classe les candidats — et la passait au canal temps
+     * réel. Le SONDAGE et la MODALE WEB, eux, construisaient la charge utile sans elle : la même
+     * offre affichait « 1,2 km » ou « — » selon le chemin par lequel elle arrivait. Or le sondage
+     * est le canal de repli, celui qui marche toujours, et la distance est le premier critère d'un
+     * refus : l'afficher vide revient à demander une décision sans son élément principal.
+     */
+    #[Test]
+    public function l_offre_porte_sa_distance_sur_le_canal_de_sondage(): void
+    {
+        $prestataire = $this->prestataire();
+        $this->offrePour($prestataire);
+
+        $charge = $this->actingAs($prestataire, 'sanctum')
+            ->getJson('/api/provider/offers/current')
+            ->assertOk()
+            ->json('data');
+
+        $this->assertNotNull($charge['distance_m'], 'La distance manquait sur le canal de repli.');
+        $this->assertNotNull($charge['distance_km']);
+
+        // La fabrique pose le prestataire à quelques centaines de mètres : on vérifie un ordre de
+        // grandeur plausible, pas seulement « non nul » — une distance fausse serait pire
+        // qu'absente, elle ferait refuser une course qui est à deux rues.
+        $this->assertLessThan(2000, (int) $charge['distance_m']);
+    }
+
+    #[Test]
+    public function le_composant_web_affiche_aussi_la_distance(): void
+    {
+        $prestataire = $this->prestataire();
+        $this->offrePour($prestataire);
+
+        // `offer` est l'assignation ; `payload` est ce que la modale AFFICHE. Lire la première
+        // rendait un modèle Eloquent dont `distance_m` n'est pas une colonne — donc null, sans
+        // erreur : le test aurait échoué en accusant le correctif.
+        $composant = Livewire::actingAs($prestataire)->test(OfferWatcher::class);
+        $charge = $composant->instance()->payload;
+
+        $this->assertNotNull($charge, 'Le composant web ne voit aucune offre.');
+        $this->assertNotNull($charge['distance_m'], 'La distance manquait sur la modale web.');
+    }
+
     #[Test]
     public function l_offre_immediate_apparait_dans_la_boite_de_reception(): void
     {

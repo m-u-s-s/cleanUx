@@ -198,6 +198,9 @@ Route::middleware(['auth:sanctum', 'role:employe', 'provider.approved'])->group(
         // arrived -> started. N'existait que sur les routes web a session, donc hors de portee de
         // l'app mobile : un prestataire arrive sur place ne pouvait pas demarrer sa mission.
         Route::post('/{mission}/begin', [ProviderMissionLifecycleController::class, 'begin']);
+        // Un SMS se perd : sans ce geste, l'intervention s'arrêtait là — le prestataire devant la
+        // porte, le client sans ses six chiffres, et pour seul recours l'annulation.
+        Route::post('/{mission}/codes/resend', [ProviderMissionLifecycleController::class, 'resendCode']);
         Route::post('/{mission}/complete', [ProviderMissionLifecycleController::class, 'complete']);
         // Clôture par le code que le client affiche : un SMS voyage, un écran non.
         Route::post('/{mission}/complete-by-qr', [ProviderMissionLifecycleController::class, 'completeByQr']);

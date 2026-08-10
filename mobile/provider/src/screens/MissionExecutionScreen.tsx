@@ -22,6 +22,7 @@ export function MissionExecutionScreen({ route }: Props) {
   const { data: inspection } = useInspection(missionId);
   const toggleItem = useToggleChecklistItem();
   const lifecycle = useMissionLifecycle(missionId);
+
   const startTracking = useStartTracking(missionId);
   const [sessionId, setSessionId] = useState<number | null>(null);
   const sendPing = useSendPing(sessionId);
@@ -184,6 +185,7 @@ export function MissionExecutionScreen({ route }: Props) {
           autoCapitalize="characters"
           accessibilityLabel="Code de fin de mission"
         />
+
       </View>
 
       {/* Complete button */}

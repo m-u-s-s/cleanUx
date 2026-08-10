@@ -4,8 +4,11 @@ namespace App\Services\Dispatch;
 
 use App\Models\Booking;
 use App\Models\MissionAssignment;
+use App\Models\ProviderPresence;
+use App\Models\ProviderProfile;
 use App\Models\ServiceCatalog;
 use App\Models\User;
+use App\Services\Geo\GeoDistanceService;
 
 /**
  * CE QUE LE PRESTATAIRE LIT DANS SA MODALE — écrit une seule fois.
@@ -20,6 +23,8 @@ use App\Models\User;
  */
 class OfferPayloadBuilder
 {
+    public function __construct(protected GeoDistanceService $distances) {}
+
     /** @return array<string, mixed> */
     public function build(MissionAssignment $assignment, ?int $distanceM = null): array
     {
@@ -27,6 +32,21 @@ class OfferPayloadBuilder
         $booking = $this->bookingOf($assignment);
 
         $expiresAt = $assignment->expires_at;
+
+        $destLat = $this->toFloat($mission?->getAttribute('destination_lat') ?? $booking?->getAttribute('destination_lat'));
+        $destLng = $this->toFloat($mission?->getAttribute('destination_lng') ?? $booking?->getAttribute('destination_lng'));
+
+        /*
+         * LA DISTANCE EST RECALCULÉE QUAND ELLE N'EST PAS FOURNIE.
+         *
+         * Le moteur la connaît — c'est elle qui classe les candidats — et la passe au canal temps
+         * réel. Mais le SONDAGE et la MODALE WEB appelaient `build()` sans elle : la même offre
+         * affichait « 1,2 km » si elle arrivait par le temps réel, et « — » si elle était lue par
+         * sondage. Or le sondage est le canal de repli, celui qui marche toujours — donc celui que
+         * beaucoup de prestataires voient en premier. Et la distance est le premier critère d'un
+         * refus : l'afficher vide revient à demander une décision sans son élément principal.
+         */
+        $distanceM ??= $this->distanceDepuisLePrestataire($assignment, $destLat, $destLng);
 
         return [
             'assignment_id' => (int) $assignment->id,
@@ -49,8 +69,8 @@ class OfferPayloadBuilder
             'payout_cents' => $this->payoutCents($booking),
             'distance_m' => $distanceM,
             'distance_km' => $distanceM !== null ? round($distanceM / 1000, 1) : null,
-            'latitude' => $this->toFloat($mission?->getAttribute('destination_lat') ?? $booking?->getAttribute('destination_lat')),
-            'longitude' => $this->toFloat($mission?->getAttribute('destination_lng') ?? $booking?->getAttribute('destination_lng')),
+            'latitude' => $destLat,
+            'longitude' => $destLng,
             /*
              * L'HORLOGE FAIT AUTORITÉ CÔTÉ SERVEUR. `expires_at` voyage en ISO-8601 et
              * `ttl_seconds` n'est qu'un repli d'affichage : un téléphone dont l'heure est fausse de
@@ -60,6 +80,46 @@ class OfferPayloadBuilder
             'ttl_seconds' => $expiresAt ? max(0, (int) now()->diffInSeconds($expiresAt, false)) : null,
             'sent_at' => now()->toIso8601String(),
         ];
+    }
+
+    /**
+     * La distance entre le prestataire et le lieu de l'intervention, en mètres.
+     *
+     * LA POSITION DE PRÉSENCE FAIT FOI, pas celle du profil : c'est celle que le moteur emploie
+     * pour classer les candidats, et deux sources donneraient deux distances pour la même offre.
+     * Le profil ne sert que de repli, pour les comptes dont la présence n'a jamais été écrite.
+     *
+     * `null` reste possible et ce n'est pas un défaut : une offre planifiée peut naître sans que
+     * personne ne soit en ligne quelque part. Une distance inventée serait pire qu'absente — elle
+     * ferait refuser une course qui est en réalité à deux rues.
+     */
+    protected function distanceDepuisLePrestataire(
+        MissionAssignment $assignment,
+        ?float $destLat,
+        ?float $destLng,
+    ): ?int {
+        if ($destLat === null || $destLng === null) {
+            return null;
+        }
+
+        $presence = ProviderPresence::query()
+            ->where('provider_user_id', $assignment->user_id)
+            ->first();
+
+        $lat = $this->toFloat($presence?->current_lat);
+        $lng = $this->toFloat($presence?->current_lng);
+
+        if ($lat === null || $lng === null) {
+            $profil = ProviderProfile::query()->where('user_id', $assignment->user_id)->first();
+            $lat = $this->toFloat($profil?->current_lat);
+            $lng = $this->toFloat($profil?->current_lng);
+        }
+
+        if ($lat === null || $lng === null) {
+            return null;
+        }
+
+        return (int) round($this->distances->haversineKm($lat, $lng, $destLat, $destLng) * 1000);
     }
 
     /**
