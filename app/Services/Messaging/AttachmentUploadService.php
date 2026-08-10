@@ -43,7 +43,33 @@ class AttachmentUploadService
         'text/csv',
         // Archives (limité)
         'application/zip',
+        /*
+         * AUDIO — les notes vocales passent par CE chemin et pas par un stockage direct.
+         *
+         * Le contrôleur enregistrait le fichier lui-même, en promettant dans son commentaire « même
+         * scan antivirus » : c'était faux, `store()` ne déclenche rien. Une seconde porte
+         * d'entrée de fichiers, sans analyse, sur une messagerie d'équipe — exactement ce qu'on
+         * finit par oublier de garder.
+         *
+         * Les formats sont ceux que produisent réellement les deux surfaces : `m4a`/`aac` par
+         * `expo-audio` sur mobile, `webm` par `MediaRecorder` sur le web.
+         */
+        'audio/mp4',
+        'audio/aac',
+        'audio/m4a',
+        'audio/x-m4a',
+        'audio/mpeg',
+        'audio/webm',
     ];
+
+    /**
+     * Plafond propre à l'audio, bien plus bas que celui des documents.
+     *
+     * Une note de trente secondes pèse quelques centaines de kilo-octets ; accepter vingt-cinq
+     * méga-octets laisserait passer un fichier renommé, et remplirait le disque d'une équipe
+     * bavarde.
+     */
+    public const MAX_AUDIO_SIZE_BYTES = 5 * 1024 * 1024;
 
     public const MAX_SIZE_BYTES = 25 * 1024 * 1024; // 25 MB
 
@@ -96,11 +122,13 @@ class AttachmentUploadService
             throw new \DomainException("Le fichier n'a pas pu être uploadé.");
         }
 
-        if ($file->getSize() > self::MAX_SIZE_BYTES) {
-            throw new \DomainException('Fichier trop volumineux (max '.(self::MAX_SIZE_BYTES / 1024 / 1024).' MB).');
+        $mime = (string) $file->getMimeType();
+        $plafond = str_starts_with($mime, 'audio/') ? self::MAX_AUDIO_SIZE_BYTES : self::MAX_SIZE_BYTES;
+
+        if ($file->getSize() > $plafond) {
+            throw new \DomainException('Fichier trop volumineux (max '.(int) ($plafond / 1024 / 1024).' MB).');
         }
 
-        $mime = (string) $file->getMimeType();
         if (! in_array($mime, self::ALLOWED_MIMES, true)) {
             throw new \DomainException("Type de fichier non autorisé : {$mime}");
         }

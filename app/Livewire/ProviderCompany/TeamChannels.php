@@ -2,6 +2,7 @@
 
 namespace App\Livewire\ProviderCompany;
 
+use App\Services\Messaging\AttachmentUploadService;
 use App\Events\MessageSent;
 use App\Models\Channel;
 use App\Models\Message;
@@ -28,6 +29,16 @@ class TeamChannels extends Component
 {
     use EnforcesActiveOrgMembership;
     use WithFileUploads;
+
+    /**
+     * Le son capté par `MediaRecorder`, déposé par Livewire.
+     *
+     * @var mixed
+     */
+    public $noteVocale = null;
+
+    /** La durée annoncée par le navigateur, en secondes. */
+    public ?int $dureeNoteVocale = null;
 
     // ──────────────────────────────────────────────────────
     // State
@@ -249,6 +260,15 @@ class TeamChannels extends Component
                 'avatar' => $m->sender?->profile_photo_url,
                 'date' => $m->created_at->translatedFormat('d F Y'),
                 'is_system' => $m->type === Message::TYPE_SYSTEM,
+                /*
+                 * LA NOTE VOCALE SE DISTINGUE DU TEXTE — elle ne se distinguait pas.
+                 *
+                 * Le web affichait « 🎙️ Note vocale » comme une phrase ordinaire : on pouvait
+                 * envoyer depuis le terrain et personne ne pouvait écouter depuis un bureau. Le
+                 * fichier était pourtant là, avec son adresse signée, dans les pièces jointes.
+                 */
+                'is_voice' => $m->type === Message::TYPE_VOICE,
+                'duration' => data_get($m->metadata, 'duration'),
                 'reply_to' => $m->parent ? [
                     'sender' => $this->nomExpediteur($m->parent->sender),
                     'content' => Str::limit((string) $m->parent->content, 80),
@@ -325,6 +345,57 @@ class TeamChannels extends Component
         $this->messageInput = '';
         $this->replyingToId = null;
 
+        $this->loadMessages();
+    }
+
+    /**
+     * ENVOYER UNE NOTE VOCALE DEPUIS LE NAVIGATEUR.
+     *
+     * Le terrain pouvait enregistrer depuis son téléphone, le bureau ne pouvait ni enregistrer ni
+     * écouter : la conversation était à sens unique, et une conversation à sens unique se termine
+     * sur WhatsApp — hors de l'outil, hors de toute trace, hors de la modération.
+     *
+     * LE FICHIER PASSE PAR `AttachmentUploadService`, comme celui du mobile : même disque, même
+     * plafond audio, même scan antivirus, même route de téléchargement signée. Écrire un second
+     * chemin de stockage aurait fait deux portes à garder au lieu d'une.
+     *
+     * `MediaRecorder` produit du `webm` sur Chrome et Firefox, du `mp4` sur Safari — les deux
+     * figurent dans la liste blanche, et c'est le TYPE RÉEL du contenu qui est vérifié côté
+     * serveur, pas l'extension annoncée.
+     */
+    public function envoyerNoteVocale(): void
+    {
+        if (! $this->noteVocale || ! $this->activeChannelId) {
+            return;
+        }
+
+        $channel = Channel::query()
+            ->where('organization_account_id', $this->org->id)
+            ->find($this->activeChannelId);
+
+        // Même garde que l'écriture texte : `$activeChannelId` est une propriété publique, donc
+        // pilotable depuis le navigateur.
+        if (! $channel || ! Auth::user()->can('postMessage', $channel)) {
+            return;
+        }
+
+        $message = app(MessageService::class)->send(
+            channel: $channel,
+            sender: Auth::user(),
+            content: '🎙️ Note vocale',
+            type: Message::TYPE_VOICE,
+            metadata: ['duration' => $this->dureeNoteVocale ?: null],
+        );
+
+        try {
+            app(AttachmentUploadService::class)->attach($message, Auth::user(), $this->noteVocale->toUploadedFile());
+        } catch (\DomainException $e) {
+            // Le message existe déjà : le supprimer laisserait un trou dans le fil. On le rend
+            // explicite plutôt que de laisser une note muette.
+            $message->update(['content' => 'Note vocale refusée : '.$e->getMessage()]);
+        }
+
+        $this->reset(['noteVocale', 'dureeNoteVocale']);
         $this->loadMessages();
     }
 

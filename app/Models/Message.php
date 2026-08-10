@@ -41,6 +41,15 @@ class Message extends Model
 
     public const TYPE_FILE = 'file';
 
+    /**
+     * Une note vocale : le son vit dans une pièce jointe, la durée dans les métadonnées.
+     *
+     * Le type était écrit en dur (`'voice'`) au point d'envoi, sans constante : rien ne permettait
+     * de le reconnaître ailleurs, et la sérialisation ne le transmettait pas du tout — on pouvait
+     * envoyer une note que personne ne pouvait écouter.
+     */
+    public const TYPE_VOICE = 'voice';
+
     public const TYPE_TASK = 'task';
 
     public const TYPE_MISSION_UPDATE = 'mission_update';

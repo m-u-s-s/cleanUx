@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import { View, FlatList, Text, TextInput, StyleSheet, Pressable, Alert } from 'react-native';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useRoute, useNavigation } from '@react-navigation/native';
@@ -13,6 +13,7 @@ import { useThemeColors } from '@/theme/useThemeColors';
 import type { ThemeTokens } from '@/theme/useThemeColors';
 import type { RootStackParamList } from '@/navigation/types';
 import { enregistrerNoteVocale } from '@/company/voiceRecorder';
+import { jouerNoteVocale } from '@/company/voicePlayer';
 
 interface MessageCanal {
   id: number;
@@ -21,6 +22,10 @@ interface MessageCanal {
   sender_id: number | null;
   is_system: boolean;
   sent_at: string | null;
+  /** `voice` pour une note vocale ; l'adresse de lecture est signée et expire en quinze minutes. */
+  type?: string;
+  duration?: number | null;
+  audio_url?: string | null;
 }
 
 interface Participant {
@@ -56,6 +61,37 @@ export function ChannelConversationScreen() {
   const [saisie, setSaisie] = useState('');
   const [participantsOuverts, setParticipantsOuverts] = useState(false);
   const [enregistrement, setEnregistrement] = useState(false);
+  const [enLecture, setEnLecture] = useState<number | null>(null);
+
+  /**
+   * ÉCOUTER UNE NOTE — le geste qui manquait de l'autre côté.
+   *
+   * On pouvait enregistrer et envoyer depuis le lot 8 ; personne ne pouvait écouter. Une seule
+   * note à la fois : deux sons superposés ne s'entendent ni l'un ni l'autre, et sur un chantier
+   * c'est déjà assez bruyant.
+   */
+  const ecouter = useCallback(async (message: MessageCanal) => {
+    if (!message.audio_url) {
+      Alert.alert('Indisponible', 'Cette note vocale n’est pas encore prête à l’écoute.');
+      return;
+    }
+
+    setEnLecture(message.id);
+
+    const lecteur = await jouerNoteVocale(message.audio_url);
+
+    if (!lecteur) {
+      setEnLecture(null);
+      Alert.alert('Lecture impossible', 'Le son n’a pas pu être ouvert sur cet appareil.');
+      return;
+    }
+
+    // La durée annoncée par l'expéditeur sert de minuterie : `expo-audio` ne notifie pas la fin de
+    // façon fiable sur tous les appareils, et un bouton qui reste « en lecture » indéfiniment
+    // empêche d'écouter la suivante.
+    const millisecondes = Math.max(1, Number(message.duration ?? 30)) * 1000;
+    setTimeout(() => setEnLecture((actuel) => (actuel === message.id ? null : actuel)), millisecondes);
+  }, []);
 
   const cleMessages = ['company', 'channel-messages', canalId];
 
@@ -281,7 +317,23 @@ export function ChannelConversationScreen() {
             testID={`message-${item.id}`}
           >
             {!item.is_system && <Text style={styles.expediteur}>{item.sender}</Text>}
-            <Text style={item.is_system ? styles.systeme : styles.contenu}>{item.content}</Text>
+
+            {item.type === 'voice' ? (
+              <Pressable
+                onPress={() => ecouter(item)}
+                accessibilityRole="button"
+                accessibilityLabel={`Écouter la note vocale de ${item.sender}`}
+                testID={`note-vocale-${item.id}`}
+                style={styles.noteVocale}
+              >
+                <Text style={styles.contenu}>
+                  {enLecture === item.id ? '⏸  Lecture…' : '▶️  Note vocale'}
+                  {item.duration ? `  ·  ${item.duration}s` : ''}
+                </Text>
+              </Pressable>
+            ) : (
+              <Text style={item.is_system ? styles.systeme : styles.contenu}>{item.content}</Text>
+            )}
           </View>
         )}
         ListEmptyComponent={
@@ -374,6 +426,12 @@ const stylesFor = (t: ThemeTokens) =>
       padding: spacing.sm,
       borderRadius: radius.md,
       maxWidth: '85%',
+    },
+    // La zone d'écoute doit rester pressable au doigt ganté : 44 points, la même hauteur que les
+    // autres cibles tactiles de l'application.
+    noteVocale: {
+      minHeight: 44,
+      justifyContent: 'center',
     },
     moi: {
       alignSelf: 'flex-end',

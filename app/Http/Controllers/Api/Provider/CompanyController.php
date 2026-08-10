@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers\Api\Provider;
 
+use Illuminate\Support\Facades\URL;
+use App\Services\Messaging\AttachmentUploadService;
 use App\Enums\OrganizationRole;
 use App\Events\CallStarted;
 use App\Http\Controllers\Controller;
@@ -1473,9 +1475,44 @@ class CompanyController extends Controller
                 'sender_id' => $m->user_id,
                 'is_system' => $m->type === Message::TYPE_SYSTEM,
                 'sent_at' => $m->created_at?->toIso8601String(),
+                /*
+                 * LE TYPE ET L'ADRESSE DE LECTURE VOYAGENT — ils ne voyageaient pas.
+                 *
+                 * On pouvait ENVOYER une note vocale et personne ne pouvait l'écouter : la réponse
+                 * ne disait ni que le message était vocal, ni où trouver le son. Le fil affichait
+                 * « 🎙️ Note vocale » comme un texte ordinaire, sur mobile comme sur le web.
+                 *
+                 * L'adresse est signée et expire : une pièce jointe de messagerie d'équipe n'a pas
+                 * à être lisible par quiconque devine son identifiant.
+                 */
+                'type' => $m->type,
+                'duration' => data_get($m->metadata, 'duration'),
+                'audio_url' => $m->type === Message::TYPE_VOICE
+                    ? $this->adresseDeLecture($m)
+                    : null,
             ]);
 
         return response()->json(['data' => $messages]);
+    }
+
+    /**
+     * L'adresse signée où écouter la note vocale de ce message, ou `null` s'il n'y en a pas.
+     *
+     * Quinze minutes : le temps d'ouvrir le fil et d'appuyer, pas celui de faire circuler un lien.
+     */
+    protected function adresseDeLecture(Message $message): ?string
+    {
+        $piece = $message->attachments()->latest('id')->first();
+
+        if (! $piece) {
+            return null;
+        }
+
+        return URL::temporarySignedRoute(
+            'messaging.attachments.download',
+            now()->addMinutes(15),
+            ['attachment' => $piece->id],
+        );
     }
 
     public function postChannelMessage(Request $request, int $channelId): JsonResponse
@@ -1527,11 +1564,6 @@ class CompanyController extends Controller
             'duration' => ['nullable', 'integer', 'min:1', 'max:600'],
         ]);
 
-        $chemin = $request->file('audio')->store(
-            'channels/'.$canal->id.'/voice',
-            config('messaging.attachments.disk', 'public'),
-        );
-
         /*
          * `MessageService::send()` porte mentions, notifications et diffusion en une transaction.
          * Le contenu textuel est un LIBELLÉ, pas une transcription : les clients qui ne savent pas
@@ -1541,17 +1573,33 @@ class CompanyController extends Controller
             channel: $canal,
             sender: Auth::user(),
             content: '🎙️ Note vocale',
-            type: 'voice',
-            metadata: [
-                'path' => $chemin,
-                'duration' => $donnees['duration'] ?? null,
-                'disk' => config('messaging.attachments.disk', 'public'),
-            ],
+            type: Message::TYPE_VOICE,
+            metadata: ['duration' => $donnees['duration'] ?? null],
+        );
+
+        /*
+         * LE FICHIER PASSE PAR `AttachmentUploadService`, ET C'EST UNE CORRECTION.
+         *
+         * Le code stockait le fichier lui-même avec `store()` pendant que son commentaire promettait
+         * « même scan antivirus ». C'était faux : `store()` ne déclenche rien. Une seconde porte
+         * d'entrée de fichiers, sans analyse, sur une messagerie d'équipe — et le seul chemin par
+         * lequel on pouvait ensuite RELIRE le fichier n'existait pas non plus, faute de pièce jointe
+         * à désigner.
+         *
+         * En passant par le service, la note vocale hérite de tout : disque configuré, scan
+         * antivirus asynchrone, refus de lecture si infecté, et la route de téléchargement signée qui
+         * vérifie déjà l'appartenance au canal.
+         */
+        $piece = app(AttachmentUploadService::class)->attach(
+            $message,
+            Auth::user(),
+            $request->file('audio'),
         );
 
         return response()->json(['data' => [
             'id' => $message->id,
             'type' => $message->type,
+            'attachment_id' => $piece->id,
             'duration' => $donnees['duration'] ?? null,
         ]], 201);
     }

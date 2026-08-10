@@ -312,12 +312,39 @@
                             </button>
                         </div>
                         @else
+                        @if ($msg['is_voice'])
+                            {{--
+                                LE LECTEUR NATIF DU NAVIGATEUR plutôt qu'un lecteur maison : il gère
+                                déjà la pause, le déplacement dans la piste et les raccourcis
+                                clavier, et il est annoncé correctement par les lecteurs d'écran.
+                                L'adresse est celle de la pièce jointe, signée et expirante.
+                            --}}
+                            @php $sonVocal = collect($msg['attachments'])->first(fn ($a) => str_starts_with((string) $a['mime'], 'audio/')); @endphp
+
+                            @if ($sonVocal && $sonVocal['is_infected'])
+                                <p class="text-sm text-red-700">⚠ Cette note vocale a été identifiée comme dangereuse.</p>
+                            @elseif ($sonVocal && ! $sonVocal['is_ready'])
+                                <p class="text-sm text-amber-700">⏳ Analyse antivirus en cours…</p>
+                            @elseif ($sonVocal)
+                                <div class="flex items-center gap-2">
+                                    <audio controls preload="none" src="{{ $sonVocal['download_url'] }}" class="h-9 max-w-full">
+                                        Votre navigateur ne sait pas lire l’audio.
+                                    </audio>
+                                    @if ($msg['duration'])
+                                    <span class="text-[11px] text-slate-400">{{ $msg['duration'] }} s</span>
+                                    @endif
+                                </div>
+                            @else
+                                <p class="text-sm text-slate-500">🎙️ Note vocale indisponible.</p>
+                            @endif
+                        @else
                         <p class="text-sm leading-relaxed text-slate-700">
                             {{ $msg['content'] }}
                             @if ($msg['is_edited'])
                             <span class="text-[10px] text-slate-400">(modifié)</span>
                             @endif
                         </p>
+                        @endif
                         @endif
 
                         {{-- Réactions --}}
@@ -392,6 +419,75 @@
                     class="flex-1 resize-none bg-transparent text-sm text-slate-900 placeholder-slate-400 outline-none"
                     style="max-height: 120px"
                     x-on:input="$el.style.height = 'auto'; $el.style.height = Math.min($el.scrollHeight, 120) + 'px'"></textarea>
+                {{--
+                    ENREGISTRER UNE NOTE DEPUIS LE NAVIGATEUR.
+
+                    Le terrain enregistrait depuis son téléphone, le bureau ne pouvait ni enregistrer
+                    ni écouter : la conversation était à sens unique, et une conversation à sens
+                    unique se termine sur WhatsApp.
+
+                    `MediaRecorder` est l'API native du navigateur — pas de bibliothèque à charger.
+                    Elle produit du `webm` sur Chrome et Firefox, du `mp4` sur Safari ; les deux sont
+                    dans la liste blanche du serveur, qui vérifie le type RÉEL du contenu.
+
+                    Le micro n'est demandé qu'au premier appui : réclamer la permission au chargement
+                    de la page ferait refuser la moitié des gens par réflexe.
+                --}}
+                <div
+                    x-data="{
+                        enregistre: false,
+                        recorder: null,
+                        morceaux: [],
+                        debut: 0,
+                        async basculer() {
+                            if (this.enregistre) { this.recorder?.stop(); return; }
+
+                            try {
+                                const flux = await navigator.mediaDevices.getUserMedia({ audio: true });
+                                this.morceaux = [];
+                                this.recorder = new MediaRecorder(flux);
+                                this.debut = Date.now();
+
+                                this.recorder.ondataavailable = (e) => this.morceaux.push(e.data);
+
+                                this.recorder.onstop = async () => {
+                                    // Le micro reste ALLUMÉ tant qu'on ne coupe pas les pistes : la
+                                    // pastille rouge du navigateur resterait affichée après l'envoi.
+                                    flux.getTracks().forEach((piste) => piste.stop());
+
+                                    const secondes = Math.max(1, Math.round((Date.now() - this.debut) / 1000));
+                                    const type = this.recorder.mimeType || 'audio/webm';
+                                    const blob = new Blob(this.morceaux, { type });
+                                    const extension = type.includes('mp4') ? 'm4a' : 'webm';
+
+                                    this.enregistre = false;
+                                    @this.set('dureeNoteVocale', secondes);
+                                    await @this.upload('noteVocale', new File([blob], 'note.' + extension, { type }));
+                                    @this.call('envoyerNoteVocale');
+                                };
+
+                                this.recorder.start();
+                                this.enregistre = true;
+
+                                // Trente secondes : au-delà c'est un appel, et les appels existent.
+                                setTimeout(() => { if (this.enregistre) this.recorder?.stop(); }, 30000);
+                            } catch (e) {
+                                this.enregistre = false;
+                                alert('Le micro n’est pas accessible depuis ce navigateur.');
+                            }
+                        },
+                    }"
+                    x-show="typeof MediaRecorder !== 'undefined'">
+                    <button type="button"
+                        x-on:click="basculer()"
+                        x-bind:aria-label="enregistre ? 'Arrêter l’enregistrement' : 'Enregistrer une note vocale'"
+                        x-bind:class="enregistre ? 'bg-red-100 text-red-700' : 'text-slate-500 hover:bg-slate-200'"
+                        class="flex h-9 w-9 items-center justify-center rounded-lg transition"
+                        data-testid="bouton-note-vocale">
+                        <span x-text="enregistre ? '⏹' : '🎙'"></span>
+                    </button>
+                </div>
+
                 <button
                     wire:click="sendMessage"
                     class="flex-shrink-0 rounded-lg bg-blue-600 p-1.5 text-white transition hover:bg-blue-700 disabled:opacity-40"
