@@ -111,6 +111,47 @@ class Trade extends Model
     ];
 
     /**
+     * RESTREINDRE UN CATALOGUE AU MODE DEMANDÉ — « l'immédiat ne contient que l'immédiat ».
+     *
+     * DEUX VERROUS, ET ILS NE DISENT PAS LA MÊME CHOSE. `allows_asap` dit qu'un métier PEUT se
+     * faire dans l'heure — un ravalement de façade ne le peut nulle part. La ligne `(métier, zone)`
+     * de `trade_zone_pricing` dit qu'on l'a ouvert ICI : c'est la décision d'exploitation, et
+     * promettre un dépannage dans une zone où personne n'est jamais en ligne fait attendre le
+     * client pour rien.
+     *
+     * LE SECOND VERROU N'AGIT QU'UNE FOIS L'ADRESSE CONNUE. Avant, la zone est inconnue : filtrer
+     * dessus viderait l'écran pour tout le monde, y compris là où l'immédiat est ouvert.
+     *
+     * SANS MODE DEMANDÉ, RIEN N'EST RETIRÉ — le client qui entre par le catalogue voit tout, et
+     * choisit son mode métier par métier. C'est le parcours historique, et il reste juste.
+     *
+     * La règle vit ICI et non dans l'écran qui l'emploie : le parcours de commande, le carrousel de
+     * secteurs et le décompte par secteur posent la même question, et trois copies auraient fini
+     * par répondre différemment.
+     *
+     * @param  Builder<Trade>  $query
+     */
+    public function scopeServableEnMode(Builder $query, ?string $mode, ?int $zoneId = null): void
+    {
+        if ($mode === null || $mode === OrderMode::SCHEDULED) {
+            return;
+        }
+
+        $query->where(OrderMode::tradeFlag($mode), true);
+
+        if ($mode === OrderMode::ASAP && $zoneId !== null) {
+            $query->whereExists(function ($sous) use ($zoneId) {
+                $sous->selectRaw('1')
+                    ->from('trade_zone_pricing')
+                    ->whereColumn('trade_zone_pricing.trade_id', 'trades.id')
+                    ->where('trade_zone_pricing.service_zone_id', $zoneId)
+                    ->where('trade_zone_pricing.is_active', true)
+                    ->where('trade_zone_pricing.asap_enabled', true);
+            });
+        }
+    }
+
+    /**
      * Le mode est-il ouvert sur ce métier ?
      *
      * Tous les métiers ne se prêtent pas au service immédiat : un ravalement de façade n'est pas

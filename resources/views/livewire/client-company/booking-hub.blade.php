@@ -21,6 +21,65 @@
     {{-- ══ VUE LIST ══ --}}
     @if ($view === 'list')
 
+        {{--
+            LES TROIS FAÇONS DE COMMANDER, pour une entreprise cliente aussi.
+
+            Son formulaire maison ne sert que le RENDEZ-VOUS : ni intervention immédiate, ni
+            chantier multi-services. Une société qui a une fuite dans ses bureaux n'avait donc aucun
+            moyen d'appeler quelqu'un tout de suite, alors qu'un particulier l'avait — la même
+            plateforme, deux promesses différentes selon le type de compte.
+
+            Les trois cartes ouvrent LE parcours de commande, celui du particulier, en indiquant
+            pour quel local : les questionnaires, la tarification et la confirmation sont les mêmes.
+            Recopier trois modes dans le formulaire maison aurait produit une deuxième
+            implémentation à maintenir, et c'est ainsi que deux parcours finissent par ne plus dire
+            le même prix.
+        --}}
+        <div class="mb-6 rounded-2xl border border-slate-200 bg-white p-5" data-test="company-order-modes">
+            <div class="flex flex-wrap items-end justify-between gap-3">
+                <div>
+                    <h2 class="text-sm font-bold text-slate-900">Commander un service</h2>
+                    <p class="text-xs text-slate-500">Pour l’un de vos locaux, dans le mode qui convient.</p>
+                </div>
+
+                @if ($sites->isNotEmpty())
+                    <label class="text-xs font-semibold text-slate-600">
+                        Local
+                        <select wire:model.live="orderSiteId" data-test="company-order-site"
+                            class="ms-2 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-sm text-slate-900">
+                            @foreach ($sites as $site)
+                                <option value="{{ $site->id }}">{{ $site->name }}</option>
+                            @endforeach
+                        </select>
+                    </label>
+                @endif
+            </div>
+
+            @if ($sites->isEmpty())
+                <p class="mt-3 text-sm text-slate-500">
+                    Déclarez d’abord un local dans
+                    <a href="{{ route('client-company.sites') }}" class="font-semibold text-sky-600 hover:underline">Vos
+                        locaux</a> : sans adresse, aucune commande ne peut être située.
+                </p>
+            @else
+                <div class="mt-4 grid gap-3 sm:grid-cols-3">
+                    @foreach ([
+                        ['mode' => 'asap', 'titre' => 'Intervention immédiate', 'detail' => 'Un pro prend la route maintenant', 'icone' => '⚡'],
+                        ['mode' => 'scheduled', 'titre' => 'Prendre rendez-vous', 'detail' => 'Vous choisissez le créneau', 'icone' => '📅'],
+                        ['mode' => 'bundle', 'titre' => 'Plusieurs services', 'detail' => 'Un chantier, un paiement', 'icone' => '🧩'],
+                    ] as $carte)
+                        <a href="{{ route('order.journey', ['mode' => $carte['mode'], 'site' => $orderSiteId]) }}"
+                            data-test="company-mode-{{ $carte['mode'] }}"
+                            class="rounded-xl border border-slate-200 p-4 transition hover:border-sky-300 hover:bg-sky-50/50">
+                            <span class="text-xl" aria-hidden="true">{{ $carte['icone'] }}</span>
+                            <span class="mt-2 block text-sm font-semibold text-slate-900">{{ $carte['titre'] }}</span>
+                            <span class="mt-0.5 block text-xs text-slate-500">{{ $carte['detail'] }}</span>
+                        </a>
+                    @endforeach
+                </div>
+            @endif
+        </div>
+
         {{-- Filtres --}}
         <div class="mb-4 flex flex-wrap gap-3">
             <select wire:model.live="filterSiteId"

@@ -41,6 +41,16 @@ class BookingHub extends Component
 
     public ?int $filterSiteId = null;
 
+    /**
+     * Le local visé par les trois cartes de commande.
+     *
+     * Publique parce que la vue la lie, et sans conséquence de sécurité : `OrderJourney` revérifie
+     * que le local appartient bien à l'organisation active, et la confirmation le revérifie une
+     * seconde fois. Une propriété Livewire est retournable depuis le navigateur ; s'en servir
+     * comme d'un mur donnerait un mur en papier.
+     */
+    public ?int $orderSiteId = null;
+
     public int $step = 1;
 
     // Formulaire de réservation
@@ -81,6 +91,12 @@ class BookingHub extends Component
             $this->view = 'create';
             $this->step = 2;
         }
+
+        // Le local des cartes de commande : le principal s'il existe, le premier sinon. Laisser le
+        // sélecteur vide enverrait le client vers un parcours sans adresse, alors que la société en
+        // a déclaré une.
+        $principal = $this->sites->firstWhere('is_primary', true) ?? $this->sites->first();
+        $this->orderSiteId ??= $principal?->id;
 
         // Vérifier si l'organisation requiert une approbation
         $this->needsApproval = (bool) $user->currentOrganization?->requires_internal_approval;

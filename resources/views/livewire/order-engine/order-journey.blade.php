@@ -12,15 +12,41 @@
 
         <div class="space-y-6">
 
-            {{-- ─── Secteurs ────────────────────────────────────────────────────────────── --}}
-            <section aria-labelledby="secteurs-titre">
-                <h1 id="secteurs-titre" class="text-2xl font-semibold leading-tight text-slate-900">
+            {{-- ─── Intention ───────────────────────────────────────────────────────────── --}}
+            <section aria-labelledby="intention-titre">
+                <h1 id="intention-titre" class="text-2xl font-semibold leading-tight text-slate-900">
                     De quoi avez-vous besoin ?
                 </h1>
                 <p class="mt-1 text-sm text-slate-500">Estimation immédiate, sans créer de compte.</p>
 
                 <div class="mt-4">
-                    @include('livewire.order-engine.partials.sector-carousel')
+                    @include('livewire.order-engine.partials.mode-cards')
+                </div>
+            </section>
+
+            {{-- ─── Secteurs ────────────────────────────────────────────────────────────── --}}
+            <section aria-labelledby="secteurs-titre">
+                <h2 id="secteurs-titre" class="text-lg font-semibold text-slate-900">Quel domaine ?</h2>
+
+                <div class="mt-4">
+                    @if ($this->sectors->isEmpty())
+                        {{--
+                            AUCUN SECTEUR NE SERT CETTE INTENTION. Le cas se produit vraiment : une
+                            zone où l'exploitation n'a ouvert l'immédiat sur aucun métier. Rendre un
+                            carrousel vide laisserait croire à une panne.
+                        --}}
+                        <p class="rounded-2xl border border-dashed border-slate-300 bg-white p-5 text-sm text-slate-500"
+                            data-test="no-sector-for-intent">
+                            Aucun service n’est disponible dans ce mode
+                            @if ($serviceZoneId) à cette adresse @endif.
+                            <button type="button" wire:click="chooseIntent(null)"
+                                class="font-semibold text-blue-600 hover:underline">
+                                Voir tous les services
+                            </button>
+                        </p>
+                    @else
+                        @include('livewire.order-engine.partials.sector-carousel')
+                    @endif
                 </div>
             </section>
 

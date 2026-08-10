@@ -5,6 +5,8 @@ namespace App\Services\OrderEngine;
 use App\Models\Booking;
 use App\Models\OrderDraft;
 use App\Models\OrderDraftItem;
+use App\Models\OrganizationMember;
+use App\Models\OrganizationSite;
 use App\Models\User;
 use App\Services\Dispatch\DispatchEngine;
 use App\Services\Payments\MissionPaymentService;
@@ -113,6 +115,50 @@ class OrderConfirmationService
 
             return $locked->fresh();
         });
+    }
+
+    /**
+     * La société et le local à porter sur la réservation, si le panier en désigne un.
+     *
+     * Rend un tableau VIDE quand rien n'est rattaché, ou quand le rattachement ne tient plus : une
+     * commande personnelle est le cas normal, et `array_filter` sur l'appelant écarterait de toute
+     * façon les valeurs nulles — mais silencieusement, sans qu'on sache si c'était voulu.
+     *
+     * @return array<string, int>
+     */
+    protected function contexteSociete(OrderDraft $draft, User $client): array
+    {
+        $metadonnees = (array) $draft->metadata;
+        $orgId = (int) ($metadonnees['organization_account_id'] ?? 0);
+        $siteId = (int) ($metadonnees['organization_site_id'] ?? 0);
+
+        if ($orgId <= 0) {
+            return [];
+        }
+
+        // L'auteur est-il TOUJOURS membre actif de cette société ?
+        $membre = OrganizationMember::query()
+            ->where('organization_account_id', $orgId)
+            ->where('user_id', $client->id)
+            ->where('status', 'active')
+            ->exists();
+
+        if (! $membre) {
+            return [];
+        }
+
+        $contexte = ['customer_organization_id' => $orgId];
+
+        // Le local doit appartenir à CETTE société : un identifiant venu de la barre d'adresse ne
+        // doit pas rattacher la commande au bureau d'une autre entreprise.
+        if ($siteId > 0 && OrganizationSite::query()
+            ->where('organization_account_id', $orgId)
+            ->whereKey($siteId)
+            ->exists()) {
+            $contexte['organization_site_id'] = $siteId;
+        }
+
+        return $contexte;
     }
 
     /**
@@ -303,6 +349,14 @@ class OrderConfirmationService
             'trade_id' => $item->trade_id,
             'service_zone_id' => $draft->service_zone_id,
             'postal_code' => $draft->postal_code,
+            /*
+             * LE CONTEXTE SOCIÉTÉ, REVÉRIFIÉ ICI ET PAS SEULEMENT À L'ENTRÉE.
+             *
+             * Le panier a pu être ouvert hier, par quelqu'un qui a depuis quitté l'organisation ou
+             * changé d'organisation active. Faire confiance à ce qu'il porte rattacherait la
+             * commande — et sa facture — à une société dont l'auteur n'est plus membre.
+             */
+            ...$this->contexteSociete($draft, $client),
             // Le mode voyage aussi : c'est lui qui décide entre la chaîne d'offres immédiate et
             // l'offre planifiée à long délai. Sans lui, tout devenait « planifié ».
             'booking_mode' => $draft->mode === OrderMode::ASAP ? 'asap' : 'scheduled',

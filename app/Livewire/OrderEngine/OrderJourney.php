@@ -5,6 +5,7 @@ namespace App\Livewire\OrderEngine;
 use App\Models\OrderDraft;
 use App\Models\OrderDraftItem;
 use App\Models\OrderDraftMedia;
+use App\Models\OrganizationSite;
 use App\Models\Question;
 use App\Models\Sector;
 use App\Models\Trade;
@@ -212,6 +213,8 @@ class OrderJourney extends Component
         $this->postalCode = $draft->postal_code;
         $this->serviceZoneId = $draft->service_zone_id !== null ? (int) $draft->service_zone_id : null;
 
+        $this->rattacherAuLocalDeLaSociete();
+
         if ($sector) {
             $this->sectorId = Sector::where('slug', $sector)->value('id');
         }
@@ -219,6 +222,64 @@ class OrderJourney extends Component
         if ($trade) {
             $this->selectTrade((int) Trade::where('slug', $trade)->value('id'));
         }
+    }
+
+    /**
+     * COMMANDER POUR UN LOCAL DE SA SOCIÉTÉ — le même parcours, situé d'avance.
+     *
+     * Une entreprise cliente disposait de son propre formulaire, à quatre étapes, qui ne servait
+     * que le RENDEZ-VOUS : ni intervention immédiate, ni chantier multi-services. Plutôt que d'y
+     * recopier les trois modes — donc trois fois les questionnaires, la tarification et la
+     * confirmation — son espace ouvre CE parcours, en indiquant simplement pour quel local.
+     *
+     * LE LOCAL EST VÉRIFIÉ CONTRE L'ORGANISATION ACTIVE, jamais cru sur parole : l'identifiant vient
+     * de la barre d'adresse, et le local d'une autre société révélerait son adresse et son code
+     * d'accès à qui devine un numéro.
+     *
+     * L'ADRESSE EST REPRISE DU LOCAL. Sans cela, le client d'une société retaperait l'adresse de
+     * son propre bureau — celle-là même que la plateforme connaît, avec sa zone et ses coordonnées.
+     */
+    protected function rattacherAuLocalDeLaSociete(): void
+    {
+        $siteId = (int) request()->query('site', 0);
+        $orgId = Auth::check() ? (int) (Auth::user()->current_organization_id ?? 0) : 0;
+
+        if ($siteId <= 0 || $orgId <= 0) {
+            return;
+        }
+
+        $site = OrganizationSite::query()
+            ->where('organization_account_id', $orgId)
+            ->find($siteId);
+
+        if (! $site) {
+            return;
+        }
+
+        $draft = $this->draft();
+
+        $draft->forceFill([
+            'address' => $site->address ?: $draft->address,
+            'lat' => $site->lat ?? $draft->lat,
+            'lng' => $site->lng ?? $draft->lng,
+            'postal_code' => $site->postal_code ?: $draft->postal_code,
+            'service_zone_id' => $site->service_zone_id ?? $draft->service_zone_id,
+            /*
+             * Le contexte société vit dans `metadata` : `order_drafts` n'a pas de colonne pour lui,
+             * et en ajouter une pour un rattachement qui se revérifie de toute façon à la
+             * confirmation coûterait une migration sans rien garantir de plus.
+             */
+            'metadata' => array_merge((array) $draft->metadata, [
+                'organization_account_id' => $orgId,
+                'organization_site_id' => $site->id,
+            ]),
+        ])->save();
+
+        $this->address = (string) ($draft->address ?? '');
+        $this->lat = $draft->lat !== null ? (float) $draft->lat : null;
+        $this->lng = $draft->lng !== null ? (float) $draft->lng : null;
+        $this->postalCode = $draft->postal_code;
+        $this->serviceZoneId = $draft->service_zone_id !== null ? (int) $draft->service_zone_id : null;
     }
 
     // ─── Catalogue ───────────────────────────────────────────────────────────────────────────
@@ -231,7 +292,18 @@ class OrderJourney extends Component
         $sectors = Sector::query()
             ->active()
             ->ordered()
-            ->withCount(['trades' => fn ($q) => $q->where('is_active', true)])
+            ->withCount(['trades' => fn ($q) => $q->where('is_active', true)
+                ->servableEnMode($this->intendedMode, $this->serviceZoneId)])
+            /*
+             * UN SECTEUR SANS AUCUN MÉTIER SERVABLE N'EST PAS PROPOSÉ.
+             *
+             * En intervention immédiate, la plupart des secteurs n'ont rien à offrir : un
+             * ravalement de façade ne se commande pas dans l'heure. Les afficher quand même ferait
+             * cliquer dans le vide, puis reculer — et la deuxième chose qu'un client apprend de la
+             * plateforme serait qu'elle propose ce qu'elle ne sait pas faire.
+             */
+            ->whereHas('trades', fn ($q) => $q->where('is_active', true)
+                ->servableEnMode($this->intendedMode, $this->serviceZoneId))
             ->get();
 
         /*
@@ -293,6 +365,7 @@ class OrderJourney extends Component
         return Trade::query()
             ->where('sector_id', $this->sectorId)
             ->where('is_active', true)
+            ->servableEnMode($this->intendedMode, $this->serviceZoneId)
             ->orderBy('sort_order')
             ->get();
     }
@@ -1347,6 +1420,45 @@ class OrderJourney extends Component
         $this->tradeId = null;
         $this->answers = [];
         $this->refreshDerived();
+    }
+
+    /**
+     * LE MODE CHOISI À L'ENTRÉE — avant même de savoir de quel métier il s'agit.
+     *
+     * Les trois façons de commander sont des INTENTIONS différentes, pas trois réglages du même
+     * formulaire : « j'ai une fuite maintenant » et « je planifie un grand nettoyage en mai » ne
+     * cherchent pas le même catalogue. L'application mobile posait déjà la question en premier ;
+     * le web arrivait directement sur le catalogue complet, et l'immédiat ne se découvrait qu'après
+     * avoir choisi un métier — parfois pour apprendre qu'il ne le permet pas.
+     *
+     * CHANGER D'INTENTION REPART DU CATALOGUE. Garder le métier en cours donnerait un écran qui
+     * contredit le choix qu'on vient de faire : « intervention immédiate » affichant un ravalement
+     * de façade. Le panier, lui, survit — ses réponses sont dans le brouillon.
+     */
+    public function chooseIntent(?string $mode): void
+    {
+        $this->intendedMode = in_array($mode, OrderMode::all(), true) ? $mode : null;
+        $this->modeNotice = '';
+
+        $this->sectorId = null;
+        $this->tradeId = null;
+        $this->answers = [];
+        $this->stepIndex = 0;
+
+        unset($this->sectors, $this->trades);
+        $this->refreshDerived();
+    }
+
+    /**
+     * Le catalogue est-il restreint à une intention ?
+     *
+     * La vue s'en sert pour dire au client CE QU'IL VOIT — un catalogue filtré sans explication
+     * ressemble à un catalogue vide.
+     */
+    #[Computed]
+    public function intentIsNarrowing(): bool
+    {
+        return $this->intendedMode !== null && $this->intendedMode !== OrderMode::SCHEDULED;
     }
 
     public function setMode(string $mode): void
