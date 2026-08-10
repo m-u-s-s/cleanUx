@@ -49,6 +49,20 @@ jest.mock('@/ui', () => {
   };
 });
 
+/*
+ * LA SESSION DE SUIVI EST BOUCHONNÉE ICI. L'accueil ne se fie plus au STATUT de la réservation
+ * pour savoir si une mission est vivante : `in_progress` n'arrive qu'au démarrage de
+ * l'intervention, et rien ne fait passer la réservation en `en_route` pendant le trajet.
+ */
+// Le préfixe `mock` est obligatoire : Babel hisse les `jest.mock()` au-dessus des
+// déclarations, et seules les variables ainsi nommées ont le droit d'être référencées dans
+// la fabrique.
+const mockSessionsVivantes = new Set<number>();
+
+jest.mock('@/tracking', () => ({
+  useLiveBookingIds: () => mockSessionsVivantes,
+}));
+
 import { HomeScreen } from '../../src/screens/HomeScreen';
 
 describe('HomeScreen', () => {

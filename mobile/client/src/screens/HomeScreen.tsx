@@ -6,6 +6,7 @@ import type GorhomBottomSheet from '@gorhom/bottom-sheet';
 import { Screen, Button, Avatar, Badge, Skeleton, Icon } from '@/ui';
 import { useAuth } from '@/auth';
 import { useBookings } from '@/booking';
+import { useLiveBookingIds } from '@/tracking';
 import { HomeActionsSheet } from '@/screens/components/HomeActionsSheet';
 import { HomeMissionMap } from '@/screens/components/HomeMissionMap';
 import { colors, spacing, typography, radius, shadows, useThemeColors } from '@/theme';
@@ -45,11 +46,24 @@ export function HomeScreen() {
   const isFirstTime = !isLoading && activeBookings.length === 0 && completedCount === 0;
 
   /**
-   * Une mission démarrée est suivie en direct : c'est elle qui devient l'élément focal, comme la
-   * carte l'est pour le prestataire. À défaut, la prochaine réservation prend sa place.
+   * VIVANT SE DÉCIDE SUR LE TERRAIN, PAS SUR LE STATUT.
+   *
+   * `in_progress` n'arrive qu'une fois l'intervention DÉMARRÉE. Pendant tout le trajet du
+   * prestataire — précisément le moment où le client regarde son téléphone — la réservation reste
+   * `confirmed` : l'accueil n'affichait donc ni carte ni suivi, et l'écran qui porte le code de
+   * présence restait injoignable. La session de suivi, elle, naît quand le prestataire prend la
+   * route.
    */
-  const liveBooking = activeBookings.find(b => stateOf(b) === 'in_progress');
+  const liveIds = useLiveBookingIds(activeBookings.map(b => b.id));
+  const isLive = (b: { id: number; state?: string; status: string }) =>
+    stateOf(b) === 'in_progress' || liveIds.has(b.id);
+
+  // La mission vivante devient l'élément focal, comme la carte l'est pour le prestataire. À
+  // défaut, la prochaine réservation prend sa place.
+  const liveBooking = activeBookings.find(isLive);
   const focus = liveBooking ?? activeBookings[0];
+  const focusIsLive = focus ? isLive(focus) : false;
+  const autresBookings = activeBookings.filter(b => b.id !== focus?.id);
 
   return (
     <Screen testID="home-screen">
@@ -78,17 +92,17 @@ export function HomeScreen() {
           <TouchableOpacity
             style={[styles.focusCard, { backgroundColor: themeColors.card }]}
             onPress={() =>
-              liveBooking
+              focusIsLive
                 ? navigation.navigate('MissionTracking', { bookingId: focus.id })
                 : navigation.navigate('BookingDetail', { bookingId: focus.id })
             }
             accessibilityRole="button"
-            accessibilityLabel={`${focus.service_name} — ${liveBooking ? 'suivre en direct' : 'voir le détail'}`}
+            accessibilityLabel={`${focus.service_name} — ${focusIsLive ? 'suivre en direct' : 'voir le détail'}`}
             testID="home-focus-booking"
           >
             <View style={styles.focusHeader}>
               <Text style={[styles.focusService, { color: themeColors.text }]}>{focus.service_name}</Text>
-              <Badge label={focus.status} variant={liveBooking ? 'success' : 'brand'} />
+              <Badge label={focus.status} variant={focusIsLive ? 'success' : 'brand'} />
             </View>
             <Text style={[styles.focusDate, { color: themeColors.textSecondary }]}>
               {focus.scheduled_date} à {focus.scheduled_time}
@@ -97,20 +111,21 @@ export function HomeScreen() {
               {focus.address}, {focus.city}
             </Text>
 
-            {/* La carte n'apparaît que pendant une mission démarrée : c'est le seul moment où
-                il y a quelque chose à situer, et le seul où un client la regarde. */}
-            {liveBooking ? <HomeMissionMap bookingId={liveBooking.id} /> : null}
+            {/* La carte apparaît dès que le prestataire a pris la route : c'est là qu'il y a
+                quelque chose à situer, et c'est là qu'un client la regarde. L'attendre au démarrage
+                de l'intervention la faisait apparaître au moment où elle n'apprend plus rien. */}
+            {focusIsLive ? <HomeMissionMap bookingId={focus.id} /> : null}
 
             {/* Le suivi en direct est la seule chose qui compte pendant une mission : on le dit
                 explicitement plutôt que de compter sur l'utilisateur pour tenter le tap. */}
             <View style={styles.focusCta}>
               <Icon
-                name={liveBooking ? 'navigate-outline' : 'chevron-forward'}
+                name={focusIsLive ? 'navigate-outline' : 'chevron-forward'}
                 size={18}
                 color={colors.brand[600]}
               />
               <Text style={styles.focusCtaText}>
-                {liveBooking ? 'Suivre en direct' : 'Voir le détail'}
+                {focusIsLive ? 'Suivre en direct' : 'Voir le détail'}
               </Text>
             </View>
           </TouchableOpacity>
@@ -123,11 +138,48 @@ export function HomeScreen() {
           </View>
         )}
 
-        {activeBookings.length > 1 ? (
-          <Text style={[styles.moreLabel, { color: themeColors.textMuted }]}>
-            {activeBookings.length - 1} autre{activeBookings.length > 2 ? 's' : ''} réservation
-            {activeBookings.length > 2 ? 's' : ''} en cours
-          </Text>
+        {/*
+            TOUTES LES MISSIONS EN COURS, PAS UN DÉCOMPTE.
+
+            L'accueil n'affichait qu'une carte focale et une ligne « 2 autres réservations en
+            cours » — un chiffre sur lequel on ne peut pas appuyer. Un client qui a deux
+            interventions le même jour ne pouvait atteindre la seconde que par un autre onglet.
+        */}
+        {autresBookings.length > 0 ? (
+          <View style={styles.othersWrap} testID="home-other-bookings">
+            <Text style={[styles.moreLabel, { color: themeColors.textMuted }]}>
+              {autresBookings.length} autre{autresBookings.length > 1 ? 's' : ''} en cours
+            </Text>
+
+            {autresBookings.map(b => (
+              <TouchableOpacity
+                key={b.id}
+                style={[styles.otherCard, { backgroundColor: themeColors.card }]}
+                onPress={() =>
+                  isLive(b)
+                    ? navigation.navigate('MissionTracking', { bookingId: b.id })
+                    : navigation.navigate('BookingDetail', { bookingId: b.id })
+                }
+                accessibilityRole="button"
+                accessibilityLabel={`${b.service_name} — ${isLive(b) ? 'suivre en direct' : 'voir le détail'}`}
+                testID={`home-other-booking-${b.id}`}
+              >
+                <View style={styles.otherText}>
+                  <Text style={[styles.otherService, { color: themeColors.text }]} numberOfLines={1}>
+                    {b.service_name}
+                  </Text>
+                  <Text style={[styles.otherMeta, { color: themeColors.textMuted }]} numberOfLines={1}>
+                    {b.scheduled_date} à {b.scheduled_time} — {b.city}
+                  </Text>
+                </View>
+                <Icon
+                  name={isLive(b) ? 'navigate-outline' : 'chevron-forward'}
+                  size={18}
+                  color={colors.brand[600]}
+                />
+              </TouchableOpacity>
+            ))}
+          </View>
         ) : null}
       </View>
 
@@ -174,6 +226,19 @@ const styles = StyleSheet.create({
     color: colors.brand[600],
   },
   moreLabel: { fontSize: typography.fontSize.xs, textAlign: 'center' },
+  othersWrap: { gap: spacing.xs },
+  otherCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+    borderRadius: radius.md,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+    ...shadows.soft,
+  },
+  otherText: { flex: 1 },
+  otherService: { fontSize: typography.fontSize.sm, fontWeight: typography.fontWeight.semibold },
+  otherMeta: { fontSize: typography.fontSize.xs, marginTop: 2 },
   welcomeCard: {
     borderRadius: radius.md,
     padding: spacing.lg,

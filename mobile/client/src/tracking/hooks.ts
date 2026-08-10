@@ -1,4 +1,4 @@
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { useMutation, useQueries, useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
 import { apiClient } from '@/api';
 import { useChannel } from '@/realtime';
@@ -75,6 +75,53 @@ export function useTrackingSession(bookingId: number | null) {
     enabled: bookingId !== null,
     refetchInterval: 30000,
   });
+}
+
+/**
+ * QUELLES RÉSERVATIONS SONT VIVANTES EN CE MOMENT — au sens du terrain, pas du statut.
+ *
+ * L'accueil décidait qu'une mission était « en cours » d'après le STATUT DE LA RÉSERVATION, qui ne
+ * passe à `in_progress` qu'une fois l'intervention démarrée. Pendant tout le trajet du prestataire —
+ * c'est-à-dire précisément le moment où un client regarde son téléphone — la réservation reste
+ * `confirmed` : pas de carte, pas de suivi, et l'écran qui porte le code de présence restait
+ * injoignable.
+ *
+ * LA SESSION DE SUIVI EST LE BON SIGNAL. Elle naît quand le prestataire prend la route et vit
+ * jusqu'à la clôture ; c'est elle qui sait qu'il y a quelque chose à montrer.
+ *
+ * Le nombre de requêtes est BORNÉ : un client a une poignée de réservations ouvertes, mais rien
+ * n'empêche d'en avoir trente, et trente appels au montage de l'accueil coûteraient plus que ce
+ * qu'ils apprennent.
+ */
+export function useLiveBookingIds(bookingIds: number[], max = 5): Set<number> {
+  const surveilles = bookingIds.slice(0, max);
+
+  const resultats = useQueries({
+    queries: surveilles.map((id) => ({
+      queryKey: ['tracking', 'session', id],
+      queryFn: async () => {
+        const res = await apiClient.get(`/client/bookings/${id}/tracking`);
+        const raw = res.data?.data ?? null;
+
+        return raw ? toSession(raw as ApiTrackingSession) : null;
+      },
+      refetchInterval: 30000,
+    })),
+  });
+
+  const vivantes = new Set<number>();
+
+  resultats.forEach((r, i) => {
+    const statut = (r.data as TrackingSession | null)?.status;
+
+    // `ended` et `cancelled` ne sont plus des trajets : les compter garderait une carte figée
+    // sur l'accueil longtemps après le départ du prestataire.
+    if (statut === 'enroute' || statut === 'arrived' || statut === 'in_mission') {
+      vivantes.add(surveilles[i]!);
+    }
+  });
+
+  return vivantes;
 }
 
 export function useTrackingTrail(bookingId: number | null) {

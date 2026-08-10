@@ -55,6 +55,22 @@ jest.mock('@/booking', () => ({
   }),
 }));
 
+/*
+ * LA SESSION DE SUIVI EST BOUCHONNÉE ICI, et c'est le sujet de ces tests autant que leur décor.
+ *
+ * L'accueil ne se fie plus au STATUT de la réservation pour savoir si une mission est vivante :
+ * `in_progress` n'arrive qu'au démarrage de l'intervention, et rien ne fait passer la réservation
+ * en `en_route` pendant le trajet. C'est la session de suivi qui le sait.
+ */
+// Le préfixe `mock` est obligatoire : Babel hisse les `jest.mock()` au-dessus des
+// déclarations, et seules les variables ainsi nommées ont le droit d'être référencées dans
+// la fabrique.
+const mockSessionsVivantes = new Set<number>();
+
+jest.mock('@/tracking', () => ({
+  useLiveBookingIds: () => mockSessionsVivantes,
+}));
+
 jest.mock('@/screens/components/HomeActionsSheet', () => {
   const { View } = require('react-native');
   const ReactLocal = require('react');
@@ -115,6 +131,26 @@ describe("Carte de l'accueil client", () => {
     render(<HomeScreen />);
 
     await waitFor(() => expect(screen.getByTestId('mission-map-10')).toBeTruthy());
+  });
+
+  /**
+   * LE DÉFAUT RAPPORTÉ PAR L'USAGE, et celui qui comptait vraiment.
+   *
+   * Rien ne fait passer la réservation en `en_route` : elle reste `confirme` pendant tout le trajet
+   * du prestataire. L'accueil n'affichait donc ni carte ni suivi précisément quand le client
+   * regarde son téléphone — et l'écran qui porte le code de présence, joignable seulement depuis
+   * le suivi, restait hors d'atteinte.
+   */
+  it('affiche la carte dès que le prestataire a pris la route', async () => {
+    bookingState.status = 'confirme';
+    bookingState.state = 'confirmed';
+    mockSessionsVivantes.add(10);
+
+    render(<HomeScreen />);
+
+    await waitFor(() => expect(screen.getByTestId('mission-map-10')).toBeTruthy());
+
+    mockSessionsVivantes.delete(10);
   });
 
   /** Rien à situer tant que la mission n'a pas démarré : la carte reste absente. */
