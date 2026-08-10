@@ -190,7 +190,24 @@
 
             {{-- ─── L'identité, au dernier moment ───────────────────────────────────────── --}}
             @unless ($confirmed)
-                <div class="fixed inset-x-0 bottom-0 z-30 border-t border-slate-200 bg-white/95 px-4 py-3 backdrop-blur lg:static lg:border-0 lg:bg-transparent lg:px-0 lg:backdrop-blur-none">
+                {{--
+                    LA BARRE D'ACTION SE POSE AU-DESSUS DE LA BARRE D'ONGLETS, jamais dessous.
+
+                    Les deux sont `fixed bottom-0`, et celle des onglets porte `z-50` contre `z-30`
+                    ici : elle recouvrait donc « Confirmer la commande » sur tout téléphone. Le
+                    client pouvait remplir son panier, saisir son adresse, voir son prix — et ne
+                    jamais pouvoir valider.
+
+                    `bottom-16` correspond à la hauteur de la barre d'onglets (`h-16`). Elle
+                    disparaît à partir de `sm`, où la barre n'existe plus ; et en mode embarqué,
+                    l'application native fournit ses propres onglets, hors de la WebView.
+                --}}
+                <div @class([
+                    'fixed inset-x-0 z-40 border-t border-slate-200 bg-white/95 px-4 py-3 backdrop-blur',
+                    'lg:static lg:border-0 lg:bg-transparent lg:px-0 lg:backdrop-blur-none',
+                    'bottom-0' => ($embedded ?? false),
+                    'bottom-16 sm:bottom-0' => ! ($embedded ?? false),
+                ])>
                     <div class="mx-auto max-w-3xl">
 
                         @if ($this->blockers)
