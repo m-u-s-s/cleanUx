@@ -4,7 +4,15 @@ import { apiClient } from '@/api';
 import { onSessionExpired } from '@/api/client';
 import type { User } from '@/api/types';
 
-interface AuthContextValue {
+/**
+ * Le contrat rendu par `useAuth()`.
+ *
+ * IL EST EXPORTÉ PARCE QUE `declaration: true` : la génération des `.d.ts` doit pouvoir NOMMER le
+ * type de retour de `useAuth()`, et un type interne n'a pas de nom à écrire dans le fichier de
+ * déclaration. C'est l'erreur TS4058, et elle ne se voyait qu'en compilation de projet — pas avec
+ * `--noEmit`, que lancent les deux applications.
+ */
+export interface AuthContextValue {
   user: User | null;
   isAuthenticated: boolean;
   isLoading: boolean;

@@ -100,7 +100,10 @@ class ProcessProviderPayouts extends Command
                             $updates['provider_amount_cents'] = $calc['provider_payout_cents'];
                         }
 
-                        $locked->fill($updates)->save();
+                        // `forceFill()` : les colonnes d'argent sont hors de la liste blanche de
+                        // `Booking`, pour qu'aucun tableau venu d'une requête ne les atteigne. Ici
+                        // c'est la commande de versement qui écrit, et elle le dit.
+                        $locked->forceFill($updates)->save();
 
                         // M5 — credit the wallet through the idempotent service instead of a raw
                         // insert. The previous raw insert mapped non-existent columns
@@ -220,10 +223,10 @@ class ProcessProviderPayouts extends Command
                         ['idempotency_key' => 'payout:booking:'.$booking->id]
                     );
 
-                    $booking->update([
+                    $booking->forceFill([
                         'stripe_transfer_id' => $transfer->id,
                         'payout_status' => 'transferred',
-                    ]);
+                    ])->save();
 
                     $this->line("  Booking #{$booking->id}: transferred {$payoutCents}c -> {$connectId} ({$transfer->id})");
                 } catch (\Throwable $e) {

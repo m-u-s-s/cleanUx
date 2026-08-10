@@ -30,6 +30,11 @@ class CountryOperationalSetting extends Model
         'default_surface_unit',
         'local_rules',
         'metadata',
+
+        // ÉCRITES PAR LE CODE, ÉCARTÉES PAR ELOQUENT. Ces colonnes existent en base et des
+        // appels d'écriture les renseignent, mais leur absence de cette liste les faisait
+        // disparaître SANS ERREUR — Eloquent écarte en silence ce qu'il ne peut pas assigner.
+        'market_stage',
     ];
 
     protected $casts = [

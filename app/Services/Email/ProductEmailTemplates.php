@@ -32,9 +32,17 @@ class ProductEmailTemplates
 
     public static function sampleRendezVous(): Booking
     {
-        $rdv = new Booking([
+        /*
+         * `forceFill()` PARCE QUE L'APERÇU A BESOIN D'UN IDENTIFIANT. Cet objet n'est jamais
+         * enregistré : il sert à composer les modèles d'e-mail dans l'écran d'administration. Mais
+         * l'identifiant est hors de la liste blanche, et il était donc écarté sans un mot — les
+         * liens de l'aperçu pointaient vers une réservation numéro vide.
+         *
+         * `service_type` a disparu d'ici : cette colonne n'existe pas sur `bookings` — elle vit sur
+         * `service_catalogs` — et aucun modèle d'e-mail ne l'affiche.
+         */
+        $rdv = (new Booking)->forceFill([
             'id' => 999,
-            'service_type' => 'nettoyage_standard',
             'date' => Carbon::now()->addDays(3)->toDateString(),
             'heure' => '09:30:00',
             'adresse' => 'Rue de la Station 12',
@@ -59,7 +67,9 @@ class ProductEmailTemplates
 
     public static function sampleInvoice(): FinanceInvoice
     {
-        return new FinanceInvoice([
+        // Même raison que pour la réservation d'exemple : l'identifiant porte les liens de l'aperçu
+        // et il était écarté sans un mot.
+        return (new FinanceInvoice)->forceFill([
             'id' => 555,
             'invoice_number' => 'FAC-DEMO-001',
             'total_amount' => 184.75,

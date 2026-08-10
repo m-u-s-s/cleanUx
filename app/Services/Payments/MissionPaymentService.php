@@ -60,15 +60,16 @@ class MissionPaymentService
             ],
         ]);
 
-        $rendezVous->update([
+        // `stripe_connect_account_id` N'EXISTE PAS sur `bookings` : cette écriture était perdue en
+        // silence depuis toujours. Le compte Connect fait autorité sur `users`, où il est lu.
+        $rendezVous->forceFill([
             'stripe_payment_intent_id' => $intent->id,
-            'stripe_connect_account_id' => $employee->stripe_connect_account_id,
             'payment_amount_cents' => $amount,
             'platform_fee_cents' => $platformFee,
             'provider_amount_cents' => $providerAmount,
             'payment_status' => 'authorized',
             'payment_authorized_at' => now(),
-        ]);
+        ])->save();
 
         return $intent;
     }
@@ -86,19 +87,19 @@ class MissionPaymentService
         $intent = PaymentIntent::retrieve($rendezVous->stripe_payment_intent_id);
         $intent->capture();
 
-        $rendezVous->update([
+        $rendezVous->forceFill([
             'payment_status' => 'captured',
             'payment_captured_at' => now(),
-        ]);
+        ])->save();
 
         return $intent;
     }
 
     public function markFailed(Booking $rendezVous): void
     {
-        $rendezVous->update([
+        $rendezVous->forceFill([
             'payment_status' => 'failed',
             'payment_failed_at' => now(),
-        ]);
+        ])->save();
     }
 }

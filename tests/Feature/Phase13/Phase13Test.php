@@ -178,13 +178,13 @@ class Phase13Test extends TestCase
     {
         $provider = $this->makeProvider();
 
-        ProviderPayout::create([
+        ProviderPayout::forceCreate([
             'provider_user_id' => $provider->id,
             'amount' => 50, 'currency' => 'EUR',
             'status' => ProviderPayout::STATUS_PAID,
             'created_at' => now()->startOfMonth()->addDay(),
         ]);
-        ProviderPayout::create([
+        ProviderPayout::forceCreate([
             'provider_user_id' => $provider->id,
             'amount' => 30, 'currency' => 'EUR',
             'status' => ProviderPayout::STATUS_PENDING,

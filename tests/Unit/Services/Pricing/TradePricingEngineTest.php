@@ -31,8 +31,10 @@ class TradePricingEngineTest extends TestCase
 
     private function makeService(array $attrs = [], ?array $tradeAttrs = null): ServiceCatalog
     {
-        $service = new ServiceCatalog($attrs);
-        $trade = $tradeAttrs !== null ? new Trade($tradeAttrs) : null;
+        // `forceFill` : les montages fixent l'identifiant du métier, hors liste blanche. Sans lui,
+        // le moteur de tarification comparait un `trade_id` à un identifiant vide.
+        $service = (new ServiceCatalog)->forceFill($attrs);
+        $trade = $tradeAttrs !== null ? (new Trade)->forceFill($tradeAttrs) : null;
         $service->setRelation('trade', $trade);
 
         return $service;

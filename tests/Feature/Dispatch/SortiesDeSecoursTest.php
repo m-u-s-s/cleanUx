@@ -279,7 +279,7 @@ class SortiesDeSecoursTest extends TestCase
     public function annuler_libere_une_autorisation_de_paiement(): void
     {
         $booking = $this->reservation();
-        $booking->update(['payment_status' => 'authorized']);
+        $booking->forceFill(['payment_status' => 'authorized'])->save();
 
         $recherche = app(DispatchEngine::class)->openImmediate($booking->fresh());
 

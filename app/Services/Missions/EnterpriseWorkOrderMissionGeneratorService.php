@@ -172,7 +172,8 @@ class EnterpriseWorkOrderMissionGeneratorService
 
         foreach ($segments as $segment) {
             $mission = Mission::query()->create([
-                'rendez_vous_id' => null,
+                // `rendez_vous_id` a disparu avec la fusion des deux clés : `booking_id` fait foi,
+                // et une mission de chantier d'entreprise n'a pas de réservation client.
                 'enterprise_work_order_id' => $batch->enterprise_work_order_id,
                 'mission_batch_id' => $batch->id,
                 'mission_task_segment_id' => $segment->id,

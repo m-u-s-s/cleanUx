@@ -190,9 +190,11 @@ class ProfilClient extends Component
                 ->update(['is_primary' => false]);
         }
 
-        $site = OrganizationSite::updateOrCreate(
-            ['id' => $this->editingSiteId ?: null],
-            [
+        // `findOrNew` plutôt que `updateOrCreate(['id' => …])` : cette dernière assigne
+        // l'identifiant en masse à la création, alors qu'il est hors de la liste blanche.
+        $site = OrganizationSite::findOrNew($this->editingSiteId ?: null);
+
+        $site->fill([
                 'organization_account_id' => $this->organizationAccount->id,
                 'client_user_id' => $this->client->id,
                 'service_zone_id' => $serviceZone?->id,
@@ -209,8 +211,7 @@ class ProfilClient extends Component
                 'access_instructions' => $validated['access_instructions'] ?: null,
                 'is_primary' => $validated['is_primary'],
                 'is_active' => $validated['is_active'],
-            ]
-        );
+        ])->save();
 
         ActivityLogger::log($this->editingSiteId ? 'organization_site_updated' : 'organization_site_created', $site, [
             'organization_account_id' => $this->organizationAccount->id,

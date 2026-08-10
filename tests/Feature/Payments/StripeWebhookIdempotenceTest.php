@@ -42,7 +42,7 @@ class StripeWebhookIdempotenceTest extends TestCase
 
     public function test_dead_letter_after_max_attempts(): void
     {
-        $event = StripeWebhookEvent::create([
+        $event = StripeWebhookEvent::forceCreate([
             'stripe_event_id' => 'evt_fail_456',
             'type' => 'payment_intent.succeeded',
             'status' => StripeWebhookEvent::STATUS_FAILED,
@@ -98,7 +98,7 @@ class StripeWebhookIdempotenceTest extends TestCase
 
     public function test_processor_marks_event_as_processed_when_handled(): void
     {
-        $event = StripeWebhookEvent::create([
+        $event = StripeWebhookEvent::forceCreate([
             'stripe_event_id' => 'evt_processed_xyz',
             'type' => 'account.updated',
             'status' => StripeWebhookEvent::STATUS_RECEIVED,
@@ -118,7 +118,7 @@ class StripeWebhookIdempotenceTest extends TestCase
 
     public function test_processor_is_noop_on_terminal_event(): void
     {
-        $event = StripeWebhookEvent::create([
+        $event = StripeWebhookEvent::forceCreate([
             'stripe_event_id' => 'evt_done',
             'type' => 'account.updated',
             'status' => StripeWebhookEvent::STATUS_PROCESSED,

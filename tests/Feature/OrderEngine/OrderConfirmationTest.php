@@ -230,7 +230,7 @@ class OrderConfirmationTest extends TestCase
         $this->confirmation->confirm($draft, $client);
 
         $booking = Booking::firstOrFail();
-        $booking->update(['payment_status' => 'authorized', 'stripe_payment_intent_id' => 'pi_existant']);
+        $booking->forceFill(['payment_status' => 'authorized', 'stripe_payment_intent_id' => 'pi_existant'])->save();
 
         $result = $this->confirmation->authorizePayment($booking->fresh(), 'pm_test');
 

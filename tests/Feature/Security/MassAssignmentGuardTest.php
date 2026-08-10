@@ -5,8 +5,10 @@ namespace Tests\Feature\Security;
 use App\Models\Booking;
 use App\Models\RecurringBookingSeries;
 use App\Models\User;
+use Illuminate\Database\Eloquent\MassAssignmentException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Schema;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\TestCase;
 
 /**
@@ -45,6 +47,23 @@ class MassAssignmentGuardTest extends TestCase
         '/::create\(\s*\$request->all\(\)/',
         '/::create\(\s*request\(\)->all\(\)/',
         '/->fill\(\s*\$this->all\(\)/',
+
+        /*
+         * `validated()` EST LA FORME LA PLUS DANGEREUSE, parce qu'elle a l'air prudente. Elle ne
+         * rend que les clés passées par les règles de validation — ce qui protège autant que ces
+         * règles sont serrées. Une règle `'status' => 'nullable|string'` posée un jour pour un
+         * besoin d'écran suffit à rouvrir le passage, et personne ne relit la validation en pensant
+         * élévation de privilège. Le tableau doit être écrit à la main.
+         */
+        '/->fill\(\s*\$request->validated\(\)\s*\)/',
+        '/->update\(\s*\$request->validated\(\)\s*\)/',
+        '/::create\(\s*\$request->validated\(\)\s*\)/',
+        '/->fill\(\s*\$this->validated\(\)\s*\)/',
+        '/->update\(\s*\$this->validated\(\)\s*\)/',
+        '/::create\(\s*\$this->validated\(\)\s*\)/',
+        '/->fill\(\s*\$validated\s*\)/',
+        '/->update\(\s*\$validated\s*\)/',
+        '/::create\(\s*\$validated\s*\)/',
     ];
 
     public function test_aucune_requete_entiere_n_atteint_une_assignation_en_masse(): void
@@ -88,39 +107,64 @@ class MassAssignmentGuardTest extends TestCase
     public function test_recurring_series_allows_its_columns_but_not_id(): void
     {
         $series = (new RecurringBookingSeries)->fill([
-            'id' => 999,
             'frequency' => 'weekly',
             'customer_user_id' => 5,
             'status' => 'active',
         ]);
 
-        $this->assertNull($series->id, 'id must not be mass-assignable');
         $this->assertSame('weekly', $series->frequency);
         $this->assertSame(5, $series->customer_user_id);
         $this->assertSame('active', $series->status);
+
+        // L'identifiant est REFUSÉ, et non plus écarté sans bruit : `preventSilentlyDiscardingAttributes`
+        // transforme une perte muette en erreur. La garantie est plus forte qu'un attribut resté nul.
+        $this->expectException(MassAssignmentException::class);
+
+        (new RecurringBookingSeries)->fill(['id' => 999]);
     }
 
-    public function test_les_montants_finaux_restent_hors_de_portee(): void
+    /**
+     * Les colonnes par lesquelles l'argent passe. Chacune décide de ce qui est prélevé, de ce qui
+     * est reversé, ou de l'état d'un paiement — les laisser assignables en masse revenait à parier
+     * que personne n'écrirait jamais `fill($donneesDeRequete)` sur une réservation.
+     *
+     * @return array<int, array{0: string, 1: mixed}>
+     */
+    public static function colonnesDArgent(): array
     {
-        // Ce que `Booking` protège RÉELLEMENT aujourd'hui, et qu'il faut donc empêcher de perdre :
-        // le prix final et l'identifiant sont hors de la liste blanche. Le reste des colonnes
-        // sensibles ne l'est pas — c'est la dette que documente l'en-tête de ce fichier.
-        $booking = (new Booking)->fill([
-            'id' => 999,
-            'final_price' => 9999,
-        ]);
+        return [
+            ['payment_status', 'captured'],
+            ['payout_status', 'transferred'],
+            ['payment_amount_cents', 999900],
+            ['provider_amount_cents', 999900],
+            ['provider_payout_cents', 999900],
+            ['platform_fee_cents', 0],
+            ['final_price', 9999],
+            ['id', 999],
+        ];
+    }
 
-        $this->assertNull($booking->id, "l'identifiant ne doit pas être assignable en masse");
-        $this->assertNull($booking->final_price, 'le prix final ne doit pas être assignable en masse');
+    #[DataProvider('colonnesDArgent')]
+    public function test_les_colonnes_d_argent_sont_hors_de_portee(string $colonne, mixed $valeur): void
+    {
+        // Les treize points d'écriture légitimes emploient `forceFill()`, dans les services de
+        // paiement : l'intention y est écrite en toutes lettres. Partout ailleurs, c'est un refus.
+        $this->expectException(MassAssignmentException::class);
+
+        (new Booking)->fill([$colonne => $valeur]);
     }
 
     public function test_user_tenant_id_is_not_mass_assignable(): void
     {
-        // M7 — dead tenant_id is not mass-assignable (and the column itself is now dropped).
-        $user = (new User)->fill(['name' => 'X', 'tenant_id' => 99]);
+        $user = (new User)->fill(['name' => 'X']);
 
-        $this->assertNull($user->tenant_id);
         $this->assertSame('X', $user->name);
+
+        // M7 — la colonne morte de Tenancy v2 n'est pas assignable, et la tentative est désormais
+        // refusée plutôt qu'ignorée.
+        $this->expectException(MassAssignmentException::class);
+
+        (new User)->fill(['tenant_id' => 99]);
     }
 
     public function test_users_table_has_no_tenant_id_column(): void

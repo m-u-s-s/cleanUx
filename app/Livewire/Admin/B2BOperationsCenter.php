@@ -221,10 +221,12 @@ class B2BOperationsCenter extends Component
             'contractForm.approval_mode' => ['required', 'string', 'max:50'],
         ]);
 
-        $contract = OrganizationContract::updateOrCreate(
-            ['id' => $this->contractId],
-            $this->contractForm
-        );
+        // `findOrNew` PLUTÔT QUE `updateOrCreate(['id' => …])` : cette dernière assigne l'identifiant
+        // en masse à la création. Il est hors de la liste blanche, donc écarté en silence — et la
+        // clé de recherche `id = null` ne désignait de toute façon aucune ligne. `findOrNew(null)`
+        // rend une instance neuve, sans détour.
+        $contract = OrganizationContract::findOrNew($this->contractId);
+        $contract->fill($this->contractForm)->save();
 
         $this->contractId = $contract->id;
         $this->workOrderForm['organization_contract_id'] = $contract->id;
@@ -260,10 +262,10 @@ class B2BOperationsCenter extends Component
             'workOrderLines.*.title' => ['required', 'string', 'max:255'],
         ]);
 
-        $workOrder = EnterpriseWorkOrder::updateOrCreate(
-            ['id' => $this->workOrderId],
-            $this->workOrderForm
-        );
+        // `findOrNew` : `updateOrCreate(['id' => …])` assignait l'identifiant en masse, hors liste
+        // blanche, et la clé de recherche `id = null` ne désignait aucune ligne.
+        $workOrder = EnterpriseWorkOrder::findOrNew($this->workOrderId);
+        $workOrder->fill($this->workOrderForm)->save();
 
         $this->workOrderId = $workOrder->id;
         $workOrder->lines()->delete();

@@ -280,7 +280,7 @@ class PublicationAndPortabilityTest extends TestCase
     public function test_a_dangling_condition_is_not_exported(): void
     {
         $trade = $this->peinture();
-        $orphan = Question::create([
+        $orphan = Question::forceCreate([
             'trade_id' => Trade::where('slug', 'vitrerie')->value('id'),
             'code' => 'ailleurs', 'label' => 'Ailleurs', 'type' => QuestionType::TEXT,
         ]);

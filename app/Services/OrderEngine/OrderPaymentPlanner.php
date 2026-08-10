@@ -191,19 +191,18 @@ class OrderPaymentPlanner
             'metadata' => $this->metadata($booking, $provider->id, 'balance'),
         ]);
 
-        $booking->update([
+        $booking->forceFill([
             'payment_plan' => PaymentPlan::DEPOSIT,
             'deposit_payment_intent_id' => $depositIntent->id,
             'deposit_amount_cents' => $deposit,
             'deposit_captured_at' => now(),
             'stripe_payment_intent_id' => $balanceIntent->id,
-            'stripe_connect_account_id' => $provider->stripe_connect_account_id,
             'payment_amount_cents' => $total,
             'platform_fee_cents' => (int) $commission['platform_fee_cents'],
             'provider_amount_cents' => (int) $commission['provider_payout_cents'],
             'payment_status' => 'authorized',
             'payment_authorized_at' => now(),
-        ]);
+        ])->save();
 
         return $booking->fresh();
     }
@@ -249,12 +248,11 @@ class OrderPaymentPlanner
             ]);
         }
 
-        $booking->update([
+        $booking->forceFill([
             'stripe_payment_intent_id' => null,
-            'stripe_connect_account_id' => null,
             'payment_status' => 'pending',
             'payment_authorized_at' => null,
-        ]);
+        ])->save();
 
         return ['released' => true, 'deposit_to_settle_cents' => $depositToSettle];
     }

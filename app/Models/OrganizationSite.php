@@ -49,6 +49,17 @@ class OrganizationSite extends Model
         'status',
         'notes',
         'metadata',
+
+        // ÉCRITES PAR LE CODE, ÉCARTÉES PAR ELOQUENT. Ces colonnes existent en base et des
+        // appels d'écriture les renseignent, mais leur absence de cette liste les faisait
+        // disparaître SANS ERREUR — Eloquent écarte en silence ce qu'il ne peut pas assigner.
+        'client_user_id',
+        'site_code',
+        'email',
+        'phone',
+        'is_primary',
+        'is_active',
+        'type',
     ];
 
     protected $casts = [

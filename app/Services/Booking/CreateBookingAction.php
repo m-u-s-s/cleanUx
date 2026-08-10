@@ -219,7 +219,8 @@ class CreateBookingAction
             'asap_deadline_at' => Arr::get($data, 'asap_deadline_at'),
             'matched_at' => Arr::get($data, 'matched_at'),
             'matching_snapshot' => Arr::get($data, 'matching_snapshot'),
-            'google_place_id' => Arr::get($data, 'google_place_id'),
+            // `google_place_id` retiré : `bookings` ne porte pas cette colonne, aucun code ne la
+            // lit, et l'écriture était donc jetée sans un mot depuis le premier jour.
             'destination_lat' => Arr::get($data, 'destination_lat'),
             'destination_lng' => Arr::get($data, 'destination_lng'),
             'address_components' => Arr::get($data, 'address_components', []),

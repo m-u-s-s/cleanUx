@@ -270,7 +270,9 @@ trait ManagesServiceOptions
 
         $option->delete();
 
-        ActivityLogger::log('service_option.deleted', new ServiceOption(['id' => null]), $context);
+        // L'option vient d'être supprimée : le journal ne reçoit qu'un porteur de type, sans
+        // identifiant. Le passer par le constructeur revenait à l'assigner en masse.
+        ActivityLogger::log('service_option.deleted', new ServiceOption, $context);
 
         $this->loadOptionsForService($context['service_catalog_id']);
         session()->flash('success', 'Option supprimée.');

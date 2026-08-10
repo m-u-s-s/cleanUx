@@ -77,7 +77,7 @@ class PayoutFlowTest extends TestCase
         } elseif (Schema::hasColumn('bookings', 'provider_amount_cents')) {
             $updates['provider_amount_cents'] = $commission['provider_payout_cents'];
         }
-        $booking->update($updates);
+        $booking->forceFill($updates)->save();
 
         $fresh = $booking->fresh();
         $this->assertEquals('processed', $fresh->payout_status);
@@ -122,7 +122,7 @@ class PayoutFlowTest extends TestCase
         } elseif (Schema::hasColumn('bookings', 'provider_amount_cents')) {
             $updates['provider_amount_cents'] = $commission['provider_payout_cents'];
         }
-        $booking->fill($updates)->save();
+        $booking->forceFill($updates)->save();
 
         $fresh = $booking->fresh();
         $this->assertEquals('processed', $fresh->payout_status);

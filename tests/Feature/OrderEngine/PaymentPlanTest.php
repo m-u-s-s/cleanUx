@@ -138,11 +138,11 @@ class PaymentPlanTest extends TestCase
          * la garde « pas de devis », le seuil serait franchi par ce chiffre-là et le client paierait
          * un acompte sur un total que personne n'a encore chiffré.
          */
-        $booking->update([
+        $booking->forceFill([
             'estimated_price' => null,
             'devis_estime' => null,
             'payment_amount_cents' => 200000,
-        ]);
+        ])->save();
 
         $this->assertFalse(app(OrderPaymentPlanner::class)->depositIsAvailable($booking->fresh()));
         $this->assertCount(1, app(OrderPaymentPlanner::class)->optionsFor($booking->fresh()));
@@ -240,10 +240,10 @@ class PaymentPlanTest extends TestCase
     public function test_a_booking_cannot_change_provider_while_money_is_held(): void
     {
         $booking = $this->bookingWithProvider(900.00);
-        $booking->update([
+        $booking->forceFill([
             'stripe_payment_intent_id' => 'pi_bloque',
             'payment_status' => 'authorized',
-        ]);
+        ])->save();
 
         $this->expectException(ValidationException::class);
         $booking->fresh()->update(['employe_id' => $this->connectedProvider()->id]);
@@ -253,7 +253,7 @@ class PaymentPlanTest extends TestCase
     public function test_releasing_first_makes_reassignment_possible(): void
     {
         $booking = $this->bookingWithProvider(900.00);
-        $booking->update(['stripe_payment_intent_id' => 'pi_bloque', 'payment_status' => 'authorized']);
+        $booking->forceFill(['stripe_payment_intent_id' => 'pi_bloque', 'payment_status' => 'authorized'])->save();
 
         $this->stripe->stub('GET', '/v1/payment_intents/pi_bloque', ['id' => 'pi_bloque', 'object' => 'payment_intent', 'status' => 'requires_capture']);
         $this->stripe->stub('POST', '/v1/payment_intents/pi_bloque/cancel', ['id' => 'pi_bloque', 'object' => 'payment_intent', 'status' => 'canceled']);
@@ -277,7 +277,7 @@ class PaymentPlanTest extends TestCase
     public function test_a_failed_release_does_not_pretend_to_have_worked(): void
     {
         $booking = $this->bookingWithProvider(900.00);
-        $booking->update(['stripe_payment_intent_id' => 'pi_recalcitrant', 'payment_status' => 'authorized']);
+        $booking->forceFill(['stripe_payment_intent_id' => 'pi_recalcitrant', 'payment_status' => 'authorized'])->save();
 
         $this->stripe->stub('GET', '/v1/payment_intents/pi_recalcitrant', ['error' => ['message' => 'indisponible']], 500);
 
@@ -296,12 +296,12 @@ class PaymentPlanTest extends TestCase
     public function test_an_already_captured_deposit_is_flagged_for_settlement(): void
     {
         $booking = $this->bookingWithProvider(900.00);
-        $booking->update([
+        $booking->forceFill([
             'stripe_payment_intent_id' => 'pi_solde',
             'payment_status' => 'authorized',
             'deposit_amount_cents' => 27000,
             'deposit_captured_at' => now(),
-        ]);
+        ])->save();
 
         $this->stripe->stub('GET', '/v1/payment_intents/pi_solde', ['id' => 'pi_solde', 'object' => 'payment_intent', 'status' => 'requires_capture']);
         $this->stripe->stub('POST', '/v1/payment_intents/pi_solde/cancel', ['id' => 'pi_solde', 'object' => 'payment_intent', 'status' => 'canceled']);

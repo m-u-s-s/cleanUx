@@ -82,20 +82,20 @@ class StripeConnectPaymentService
             ]);
 
             // Write 'failed' outside any transaction so it is never rolled back.
-            $booking->update([
+            $booking->forceFill([
                 'payment_status' => 'failed',
                 'payment_failed_at' => now(),
-            ]);
+            ])->save();
             throw new RuntimeException('Capture échouée : '.$e->getMessage(), 0, $e);
         }
 
         // Capture succeeded — wrap only the DB writes (status + payout row) in a
         // transaction so they are atomic with respect to each other.
         return DB::transaction(function () use ($mission, $booking) {
-            $booking->update([
+            $booking->forceFill([
                 'payment_status' => 'captured',
                 'payment_captured_at' => now(),
-            ]);
+            ])->save();
 
             // Créer l'entrée ProviderPayout (entrée comptable côté Brio)
             $payout = $this->createProviderPayout($mission, $booking);
@@ -205,10 +205,10 @@ class StripeConnectPaymentService
 
         $isTotal = $amountCents === null || $amountCents >= ($booking->payment_amount_cents ?? 0);
 
-        $booking->update([
+        $booking->forceFill([
             'payment_status' => $isTotal ? 'refunded' : 'partially_refunded',
             'payment_refunded_at' => now(),
-        ]);
+        ])->save();
 
         // F3 — clawback: debit the provider wallet so they do not keep money
         // that was returned to the client.
@@ -302,11 +302,11 @@ class StripeConnectPaymentService
 
         $newStatus = $statusMap[$intent->status] ?? $booking->payment_status;
 
-        $booking->update([
+        $booking->forceFill([
             'payment_status' => $newStatus,
             'payment_captured_at' => $newStatus === 'captured'
                 ? ($booking->payment_captured_at ?? now())
                 : $booking->payment_captured_at,
-        ]);
+        ])->save();
     }
 }

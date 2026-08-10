@@ -118,10 +118,10 @@ class StripeWebhookHandlers
         $alreadyHandled = $booking->payment_status === ($isTotal ? 'refunded' : 'partially_refunded');
 
         if (! $alreadyHandled) {
-            $booking->update([
+            $booking->forceFill([
                 'payment_status' => $isTotal ? 'refunded' : 'partially_refunded',
                 'payment_refunded_at' => now(),
-            ]);
+            ])->save();
         }
 
         // Clawback strategy: iterate refunds.data so each distinct Stripe Refund
@@ -300,10 +300,10 @@ class StripeWebhookHandlers
         $alreadyFailed = $booking->payment_status === 'failed';
 
         if (! $alreadyFailed) {
-            $booking->update([
+            $booking->forceFill([
                 'payment_status' => 'failed',
                 'payment_failed_at' => now(),
-            ]);
+            ])->save();
 
             // Notify the client (soft-fail: don't let notification errors abort the webhook)
             try {
@@ -358,10 +358,10 @@ class StripeWebhookHandlers
         if ($bookingId) {
             $booking = Booking::query()->find($bookingId);
             if ($booking && empty($booking->stripe_transfer_id)) {
-                $booking->update([
+                $booking->forceFill([
                     'stripe_transfer_id' => $stripeTransferId,
                     'payout_status' => 'transferred',
-                ]);
+                ])->save();
 
                 return ['status' => StripeWebhookEvent::STATUS_PROCESSED, 'details' => [
                     'booking_id' => $booking->id,

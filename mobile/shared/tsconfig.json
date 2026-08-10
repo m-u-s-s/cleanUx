@@ -1,19 +1,39 @@
 {
+  // CE PAQUET NE SE COMPILE PAS SEUL, ET C'EST VOULU.
+  //
+  // `shared` ne déclare AUCUNE dépendance : `@tanstack/react-query`, `@gorhom/bottom-sheet`,
+  // `@react-navigation/native` et les autres vivent dans `client/node_modules` et
+  // `provider/node_modules`. Son code est vérifié DEUX FOIS, une par application, parce que
+  // chacune inclut `../shared/src/**` dans sa propre compilation — donc contre les versions de
+  // paquets qu'elle utilise réellement. C'est plus fort qu'une compilation isolée, pas moins.
+  //
+  // Lancer `tsc -b shared` produit 169 erreurs qui ne veulent rien dire : elles disent seulement
+  // que les dépendances ne sont pas là où ce paquet-ci pourrait les voir. Le contrôle qui fait
+  // foi est `npm run typecheck` dans `client` et dans `provider`.
+  //
+  // Ce fichier ne sert donc qu'à l'éditeur, et il n'émet rien : `declaration`, `outDir` et
+  // `rootDir` écrivaient un `dist/` que personne ne lit — les deux applications résolvent
+  // `@brio/shared` vers `../shared/src`, jamais vers une sortie compilée.
   "compilerOptions": {
+    "noEmit": true,
     "strict": true,
     "jsx": "react-jsx",
     "moduleResolution": "bundler",
     "target": "esnext",
     "module": "esnext",
-    "declaration": true,
-    "declarationMap": true,
-    "outDir": "dist",
-    "rootDir": "src",
-    "baseUrl": ".",
+    // Pas de `baseUrl` : déprécié, retiré en TypeScript 7, et inutile ici — depuis TS 4.1 les
+    // `paths` se résolvent relativement à ce fichier. Les deux applications le conservent parce
+    // que LEURS `paths` épinglent des chemins `node_modules` qui, eux, en dépendent.
     "paths": {
-      "@shared/*": ["src/*"]
+      "@shared/*": ["./src/*"],
+      // `@/x` DÉSIGNE `shared/src/x`, ici comme ailleurs. Les deux applications l'affirment déjà
+      // dans leurs propres tables (`"@/api": ["../shared/src/api"]`, et leur `moduleNameMapper`
+      // Jest en dit autant) ; seul ce fichier-ci ne le disait pas.
+      "@/*": ["./src/*"]
     }
   },
   "include": ["src/**/*.ts", "src/**/*.tsx"],
-  "exclude": ["node_modules", "dist"]
+  // Les tests ne font pas partie de la surface partagée : les applications les excluent déjà de
+  // leur propre compilation de `shared`, et ce paquet n'a pas de lanceur Jest à lui.
+  "exclude": ["node_modules", "dist", "src/**/__tests__/**", "src/**/*.test.ts", "src/**/*.test.tsx"]
 }

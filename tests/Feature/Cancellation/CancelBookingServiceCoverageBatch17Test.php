@@ -166,7 +166,9 @@ class CancelBookingServiceCoverageBatch17Test extends TestCase
     {
         $client = User::factory()->create();
 
-        return Booking::create(array_merge([
+        // `forceCreate` : le montage pose `payment_status`, hors liste blanche pour que rien
+        // venu d'une requête ne l'atteigne. Ici l'intention est celle du test.
+        return Booking::forceCreate(array_merge([
             'booking_reference' => 'CUX-'.strtoupper(Str::random(6)),
             'customer_user_id' => $client->id,
             'client_id' => $client->id,

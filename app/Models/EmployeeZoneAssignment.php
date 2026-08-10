@@ -21,6 +21,12 @@ class EmployeeZoneAssignment extends Model
         'starts_at',
         'ends_at',
         'notes',
+
+        // ÉCRITES PAR LE CODE, ÉCARTÉES PAR ELOQUENT. Ces colonnes existent en base et des
+        // appels d'écriture les renseignent, mais leur absence de cette liste les faisait
+        // disparaître SANS ERREUR — Eloquent écarte en silence ce qu'il ne peut pas assigner.
+        'is_primary',
+        'status',
     ];
 
     protected $casts = [

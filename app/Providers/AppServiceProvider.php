@@ -85,6 +85,20 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        /*
+         * ÉCARTER UN ATTRIBUT EN SILENCE, C'EST PERDRE UNE DONNÉE SANS LE DIRE.
+         *
+         * Par défaut, Eloquent jette sans un mot tout attribut absent de `$fillable`. Ce dépôt en
+         * payait le prix à onze endroits au moins : le contexte de présence des prestataires, le
+         * chemin du rapport de mission, le canal d'origine des réservations, sept colonnes des
+         * sites d'entreprise — tous écrits par du code de production, tous perdus. Aucune erreur,
+         * aucune alerte, aucun test rouge : la ligne s'enregistrait simplement incomplète.
+         *
+         * Le refus n'est PAS activé en production, et c'est délibéré. Là-bas, un appel oublié
+         * lèverait une exception au milieu d'un paiement ou d'une clôture de mission ; ici, il
+         * s'arrête net devant la personne qui peut le corriger.
+         */
+        Model::preventSilentlyDiscardingAttributes(! app()->isProduction());
         Model::preventLazyLoading(! app()->isProduction());
         Model::handleLazyLoadingViolationUsing(function ($model, $relation) {
             $class = get_class($model);

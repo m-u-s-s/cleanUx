@@ -183,9 +183,10 @@ trait ManagesEntrepriseAccounts
 
         $purchaseOrderRequired = (bool) (($validated['purchase_order_required'] ?? false) || ($validated['require_po'] ?? false));
 
-        $account = OrganizationAccount::updateOrCreate(
-            ['id' => $this->accountId],
-            [
+        // `findOrNew` : voir plus haut — l'identifiant n'est pas assignable en masse.
+        $account = OrganizationAccount::findOrNew($this->accountId);
+
+        $account->fill([
                 'name' => $validated['name'],
                 'legal_name' => $validated['legal_name'] ?: null,
                 'slug' => $validated['slug'] ?: $this->makeUniqueSlug($validated['name'], $this->accountId),
@@ -217,8 +218,7 @@ trait ManagesEntrepriseAccounts
                     'payment_terms_days' => $validated['payment_terms_days'] !== '' ? (int) $validated['payment_terms_days'] : null,
                     'contract_status' => $validated['contract_status_value'],
                 ],
-            ]
-        );
+        ])->save();
 
         ActivityLogger::log($this->accountId ? 'organization_account.updated' : 'organization_account.created', $account, [
             'type' => $account->type,

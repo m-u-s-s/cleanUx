@@ -207,7 +207,7 @@ class ProviderWalletServiceTest extends TestCase
 
     protected function makeBooking(float $amount, ?int $providerCents = null, ?int $feeCents = null): Booking
     {
-        return Booking::create([
+        return Booking::forceCreate([
             'client_id' => $this->client->id,
             'employe_id' => $this->provider->id,
             'date' => now()->subDay(),

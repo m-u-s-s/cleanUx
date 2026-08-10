@@ -27,7 +27,9 @@ class CustomerCreditApplicationServiceCoverageBatch16Test extends TestCase
 
     private function seedCredit(User $client, array $overrides = []): CustomerCredit
     {
-        return CustomerCredit::create(array_merge([
+        // `forceCreate` : le montage antidate `created_at`, que la liste blanche ne couvre pas.
+        // L'ordre d'imputation des avoirs dépend de cette date — la perdre rendait le test creux.
+        return CustomerCredit::forceCreate(array_merge([
             'client_id' => $client->id,
             'type' => 'commercial_gesture',
             'amount' => 50.0,

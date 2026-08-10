@@ -234,19 +234,13 @@ class Booking extends Model
 
         // Stripe Connect & paiement (Phase Stripe v2)
         'stripe_payment_intent_id',
-        'payment_status',
         // L'acompte est DÉBITÉ, le solde seulement BLOQUÉ : deux natures, donc deux colonnes.
         'payment_plan',
         'deposit_payment_intent_id',
         'deposit_amount_cents',
         'deposit_captured_at',
-        'payment_amount_cents',
-        'provider_amount_cents',
-        'platform_fee_cents',
 
         // Payout engine (Phase monetisation)
-        'payout_status',
-        'provider_payout_cents',
         'stripe_transfer_id',
 
         // Notifications tracking
@@ -297,6 +291,15 @@ class Booking extends Model
         'is_series_master',
         'series_position',
         'series_status',
+
+        // ÉCRITE PAR LE CODE, ÉCARTÉE PAR ELOQUENT. Trois chemins la renseignent —
+        // `CreateBookingAction`, `BookingHub` et l'import en masse B2B — et son absence de cette
+        // liste la faisait disparaître SANS ERREUR. Résultat : toutes les réservations naissaient
+        // sans canal d'origine, et l'analyse par canal ne pouvait rien dire.
+        'booking_channel',
+
+        // Écrite par le code, écartée par Eloquent faute de figurer ici.
+        'notes',
     ];
 
     protected $casts = [

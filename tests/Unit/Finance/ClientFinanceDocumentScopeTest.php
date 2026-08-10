@@ -37,7 +37,9 @@ class ClientFinanceDocumentScopeTest extends TestCase
         // Build a stub that has no ID (simulates a null guard scenario handled upstream)
         // The static apply() method requires a real User; the null guard lives in the
         // Livewire component. Here we verify the zero-row path via an ID that matches nothing.
-        $ghost = new User(['id' => 0]);
+        // L'identifiant est posé directement : le passer au constructeur l'assignerait en masse,
+        // et la ligne suivante le fixait déjà.
+        $ghost = new User;
         $ghost->id = 0;
 
         $ids = ClientFinanceDocumentScope::apply(FinanceInvoice::query(), $ghost)->pluck('id');

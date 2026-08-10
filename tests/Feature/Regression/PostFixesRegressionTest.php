@@ -286,16 +286,24 @@ class PostFixesRegressionTest extends TestCase
      */
     public function test_ai_dispatch_returns_candidates_for_scheduled_bookings(): void
     {
+        // `service_zones` n'a pas de colonne `is_active` : elle marque son état par `status` et
+        // les horodatages d'activation. La clé précédente était jetée en silence, et la zone
+        // naissait avec le statut par défaut plutôt qu'avec celui que le test croyait poser.
         $zone = ServiceZone::create([
             'name' => 'Test Zone',
             'slug' => 'test-zone-'.uniqid(),
-            'is_active' => true,
+            'status' => 'active',
+            'activated_at' => now(),
         ]);
 
-        $user = $this->makeProvider([
-            'primary_service_zone_id' => $zone->id,
-        ]);
-        $user->update(['primary_service_zone_id' => $zone->id]);
+        // `primary_service_zone_id` vit sur `users`, PAS sur `provider_profiles` : la passer au
+        // profil la faisait disparaître sans un mot. La ligne suivante, elle, l'écrit au bon
+        // endroit — et c'est elle qui portait le test depuis toujours.
+        $user = $this->makeProvider();
+        // `forceFill` comme le fait le code de production : la zone principale est hors de la
+        // liste blanche de `User` À DESSEIN — elle passe par `ProviderCoverageWriter`, pas par une
+        // assignation en masse. Un `update()` l'aurait écartée en silence.
+        $user->forceFill(['primary_service_zone_id' => $zone->id])->save();
 
         $booking = $this->makeBooking([
             'service_zone_id' => $zone->id,
@@ -352,7 +360,8 @@ class PostFixesRegressionTest extends TestCase
     private function makeMission(Booking $booking, array $overrides = []): Mission
     {
         return Mission::create(array_merge([
-            'rendez_vous_id' => $booking->id,
+            // `booking_id` est la seule clé de `missions` vers `bookings` depuis la fusion.
+            'booking_id' => $booking->id,
             'status' => 'planned',
             'planned_start_at' => now()->addDay(),
         ], $overrides));

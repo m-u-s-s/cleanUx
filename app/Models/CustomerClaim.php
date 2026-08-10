@@ -21,6 +21,11 @@ class CustomerClaim extends Model
         'attachments',
         'sla_due_at',
         'resolved_at',
+
+        // ÉCRITES PAR LE CODE, ÉCARTÉES PAR ELOQUENT. Ces colonnes existent en base et des
+        // appels d'écriture les renseignent, mais leur absence de cette liste les faisait
+        // disparaître SANS ERREUR — Eloquent écarte en silence ce qu'il ne peut pas assigner.
+        'customer_user_id',
     ];
 
     protected $casts = [

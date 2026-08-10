@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Admin;
 
+use Illuminate\Support\Arr;
 use App\Models\ActivityLog;
 use App\Models\ServiceCatalog;
 use App\Models\ServiceZone;
@@ -172,10 +173,34 @@ class CatalogueServices extends Component
             'slug' => $duplicateRules['slug'],
         ]);
 
-        $service = ServiceCatalog::updateOrCreate(
-            ['id' => $this->serviceId],
-            $validated
-        );
+        // `findOrNew` PLUTÔT QUE `updateOrCreate(['id' => …])` : cette dernière assigne l'identifiant
+        // en masse à la création. Il est hors de la liste blanche, donc écarté en silence — et la
+        // clé de recherche `id = null` ne désignait de toute façon aucune ligne. `findOrNew(null)`
+        // rend une instance neuve, sans détour.
+        $service = ServiceCatalog::findOrNew($this->serviceId);
+
+        /*
+         * LES COLONNES SONT NOMMÉES ICI, PAS DÉDUITES DES RÈGLES DE VALIDATION. Passer `$validated`
+         * tel quel revient à dire « écris ce que la validation a bien voulu laisser passer » : le
+         * jour où quelqu'un ajoute une règle pour un besoin d'écran, il ouvre une écriture qu'il
+         * n'a pas vue. Et dans un composant Livewire, les propriétés publiques sont pilotables
+         * depuis le navigateur — la validation est la seule barrière, pas une seconde.
+         */
+        $service->fill(Arr::only($validated, [
+            'code',
+            'name',
+            'slug',
+            'description',
+            'service_type',
+            'is_active',
+            'requires_quote',
+            'requires_manual_validation',
+            'is_entreprise',
+            'default_duration_minutes',
+            'base_price',
+            'sort_order',
+            'trade_id',
+        ]))->save();
 
         ActivityLogger::log($this->serviceId ? 'service.updated' : 'service.created', $service, [
             'code' => $service->code,

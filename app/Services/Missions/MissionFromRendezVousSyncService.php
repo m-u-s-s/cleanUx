@@ -75,8 +75,10 @@ class MissionFromRendezVousSyncService
     public function createFromRendezVous(Booking $rendezVous): Mission
     {
         return DB::transaction(function () use ($rendezVous) {
+            // `booking_id` : la seconde clé de `missions` a été supprimée. Ce point d'entrée-ci
+            // avait échappé à la fusion et cherchait encore sur la colonne disparue.
             $mission = Mission::query()->firstOrCreate(
-                ['rendez_vous_id' => $rendezVous->id],
+                ['booking_id' => $rendezVous->id],
                 [
                     'organization_account_id' => $rendezVous->organization_account_id,
                     'organization_site_id' => $rendezVous->organization_site_id,

@@ -195,9 +195,11 @@ class ModulesCompleteTest extends TestCase
 
         $assignment = FleetAssignment::query()->create([
             'code' => 'fa_'.Str::lower(Str::random(8)),
-            'fleet_vehicle_id' => $vehicle->id,
+            // La colonne s'appelle `vehicle_id`, et `subject_type` n'existe pas sur cette table :
+            // le montage attribuait donc une affectation SANS véhicule, et le test de retour de
+            // matériel ne mesurait pas ce qu'il croyait.
+            'vehicle_id' => $vehicle->id,
             'provider_user_id' => $other->id,
-            'subject_type' => 'vehicle',
             'status' => FleetAssignment::STATUS_ACTIVE,
             'assigned_at' => now(),
         ]);
@@ -224,9 +226,11 @@ class ModulesCompleteTest extends TestCase
 
         $assignment = FleetAssignment::query()->create([
             'code' => 'fa_'.Str::lower(Str::random(8)),
-            'fleet_vehicle_id' => $vehicle->id,
+            // La colonne s'appelle `vehicle_id`, et `subject_type` n'existe pas sur cette table :
+            // le montage attribuait donc une affectation SANS véhicule, et le test de retour de
+            // matériel ne mesurait pas ce qu'il croyait.
+            'vehicle_id' => $vehicle->id,
             'provider_user_id' => $provider->id,
-            'subject_type' => 'vehicle',
             'status' => FleetAssignment::STATUS_ACTIVE,
             'assigned_at' => now(),
         ]);

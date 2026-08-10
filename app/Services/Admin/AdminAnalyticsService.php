@@ -58,22 +58,30 @@ class AdminAnalyticsService
 
         $totalRevenue = (float) Booking::query()->sum('devis_estime');
 
-        $totalMargin = 0.0;
-
         /*
-         * LA GARDE INTERROGEAIT UNE TABLE ET LA SOMME EN LISAIT UNE AUTRE : on demandait à
-         * `rendez_vous` si la colonne existait, puis on additionnait sur `bookings`. Les deux tables
-         * n'ont jamais eu la même forme — la seconde en compte 143 colonnes contre 34 — si bien que
-         * la marge totale du tableau de bord pouvait rester à zéro sans que rien ne le signale.
+         * LA MARGE DE LA PLATEFORME, C'EST SA COMMISSION — et elle est enfin lue quelque part.
          *
-         * Aujourd'hui aucune des deux ne porte la colonne, et cette marge vaut donc zéro : c'est un
-         * manque à combler, pas un calcul. Au moins la garde porte désormais sur la table lue.
+         * Cette valeur affichait zéro depuis toujours. Le code cherchait une colonne `margin` ou
+         * `marge` qu'AUCUNE table n'a jamais portée, et interrogeait par-dessus le marché une table
+         * différente de celle qu'il sommait. Deux gardes successives se refermaient donc sur rien,
+         * et la carte « Marge totale » du tableau de bord annonçait 0,00 € avec l'aplomb d'un
+         * calcul. Un chiffre faux affiché sans réserve est pire qu'une case vide : on le lit.
+         *
+         * `platform_fee_cents` est ce que la plateforme retient réellement. Il est écrit à la
+         * complétion par MissionLifecycleService depuis CommissionService, et c'est la même valeur
+         * que reprend l'écriture comptable (BookingPostingService).
+         *
+         * LES DEUX BASES DIFFÈRENT, et il faut le savoir avant de faire un ratio : le chiffre
+         * d'affaires ci-dessus additionne des DEVIS (`devis_estime`), y compris pour des
+         * réservations annulées ou jamais payées, tandis que la marge n'existe que sur les missions
+         * effectivement terminées et encaissées. Rapporter l'une à l'autre ne donne pas un taux de
+         * commission.
          */
-        if (Schema::hasColumn('bookings', 'margin')) {
-            $totalMargin = (float) Booking::query()->sum('margin');
-        } elseif (Schema::hasColumn('bookings', 'marge')) {
-            $totalMargin = (float) Booking::query()->sum('marge');
-        }
+        // Le transtypage n'est pas cosmétique : en PHP, `/` rend un ENTIER quand les deux opérandes
+        // sont entiers et la division exacte. 2000/100 donnait donc `int(20)` et 4325/100
+        // `float(43.25)` — le type de la clé changeait avec le montant, ce qui casse une comparaison
+        // stricte et fait sérialiser tantôt `20`, tantôt `43.25` dans la même réponse.
+        $totalMargin = (float) (((int) Booking::query()->sum('platform_fee_cents')) / 100);
 
         $missionsCount = Booking::query()->count();
 

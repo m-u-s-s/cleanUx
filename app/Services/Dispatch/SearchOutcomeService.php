@@ -163,10 +163,10 @@ class SearchOutcomeService
                         'captured_at' => $booking->payment_captured_at?->toIso8601String(),
                     ]);
                 } elseif ($booking->payment_status === 'authorized') {
-                    $booking->update([
+                    $booking->forceFill([
                         'payment_status' => 'cancelled',
                         'payment_cancelled_at' => now(),
-                    ]);
+                    ])->save();
                 }
             }
 

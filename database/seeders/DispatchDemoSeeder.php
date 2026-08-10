@@ -133,10 +133,15 @@ class DispatchDemoSeeder extends Seeder
                 // `ProfileCompleteValidator` exige nom, email ET téléphone : sans numéro, la
                 // toute première étape du dossier refuse, et rien à l'écran ne dit laquelle.
                 'phone' => $donnees['phone'],
-                'primary_service_zone_id' => $zone->id,
                 'email_verified_at' => now(),
             ],
         );
+
+        // La zone principale est hors de la liste blanche de `User` à dessein : elle passe par
+        // `ProviderCoverageWriter`. Dans le tableau ci-dessus, elle était écartée en silence — et
+        // les prestataires de démonstration naissaient donc SANS zone principale, alors que tout
+        // le filtrage par zone de la console d'administration s'appuie dessus.
+        $utilisateur->forceFill(['primary_service_zone_id' => $zone->id])->save();
 
         /*
          * VÉRIFIÉ, et pas seulement actif. Le KYC est un blocage strict du dispatch : un

@@ -242,7 +242,7 @@ class RefundClawbackTest extends TestCase
 
         // ── Step 2: process charge.refunded webhook with same re_dedup ──
         // Build a realistic charge.refunded payload including refunds.data.
-        $chargeRefundedEvent = StripeWebhookEvent::create([
+        $chargeRefundedEvent = StripeWebhookEvent::forceCreate([
             'stripe_event_id' => 'evt_dedup_charge_refunded',
             'type' => 'charge.refunded',
             'status' => StripeWebhookEvent::STATUS_RECEIVED,
@@ -344,6 +344,8 @@ class RefundClawbackTest extends TestCase
         // Status is now 'partially_refunded' — the service guard would block a
         // second call.  Reset to 'captured' to allow the second partial refund.
         // Use DB::table to bypass any model observers that might interfere.
+        // Constructeur de requête : l'écriture est un UPDATE SQL direct, la liste blanche du
+        // modèle ne s'y applique pas.
         DB::table('bookings')
             ->where('id', $s->booking->id)
             ->update(['payment_status' => 'captured']);

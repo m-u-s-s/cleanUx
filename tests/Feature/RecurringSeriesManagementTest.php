@@ -101,7 +101,7 @@ class RecurringSeriesManagementTest extends TestCase
 
         $seriesId = (string) Str::uuid();
         $records = collect([0, 1, 2])->map(function ($offset) use ($client, $employee, $context, $seriesId, $startDate) {
-            return Booking::create([
+            return Booking::forceCreate([
                 'client_id' => $client->id,
                 'employe_id' => $employee->id,
                 'service_catalog_id' => $context['service']->id,

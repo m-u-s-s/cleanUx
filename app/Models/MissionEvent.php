@@ -20,6 +20,9 @@ class MissionEvent extends Model
         'description',
         'payload',
         'happened_at',
+
+        // Écrite par le code, écartée par Eloquent faute de figurer ici.
+        'user_id',
     ];
 
     protected $casts = [

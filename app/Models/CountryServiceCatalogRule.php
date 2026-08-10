@@ -37,6 +37,9 @@ class CountryServiceCatalogRule extends Model
         'default_partner_id',
         'pricing_multiplier',
         'settings',
+
+        // Écrite par le code, écartée par Eloquent faute de figurer ici.
+        'price_multiplier',
     ];
 
     protected $casts = [

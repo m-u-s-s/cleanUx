@@ -89,6 +89,20 @@ class Mission extends Model
         'organization_contract_id',
         'sla_response_due_at',
         'sla_resolution_due_at',
+
+        // ÉCRITES PAR LE CODE, ÉCARTÉES PAR ELOQUENT. Ces colonnes existent en base et des
+        // appels d'écriture les renseignent, mais leur absence de cette liste les faisait
+        // disparaître SANS ERREUR — Eloquent écarte en silence ce qu'il ne peut pas assigner.
+        // Le rapport de mission est généré à la clôture, puis son chemin était écarté sans un mot :
+        // le fichier existait sur le disque et la mission ne savait plus où.
+        'report_path',
+
+        // LES TROIS LIENS DE L'EXÉCUTION B2B. Le générateur d'ordres de travail les écrivait déjà
+        // alors qu'aucune des trois colonnes n'existait : la traçabilité complète d'un chantier
+        // d'entreprise partait en silence. Les colonnes sont créées, ces clés les atteignent.
+        'enterprise_work_order_id',
+        'mission_batch_id',
+        'mission_task_segment_id',
     ];
 
     protected $casts = [

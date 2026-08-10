@@ -359,7 +359,7 @@ class MissionLifecycleService
                 } elseif (Schema::hasColumn('bookings', 'provider_amount_cents')) {
                     $updates['provider_amount_cents'] = $commission['provider_payout_cents'];
                 }
-                $mission->booking->update($updates);
+                $mission->booking->forceFill($updates)->save();
 
                 $providerId = $mission->lead_provider_user_id
                     ?? $mission->assignments()->where('assignment_status', 'accepted')->value('user_id');

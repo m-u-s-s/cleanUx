@@ -56,6 +56,14 @@ class ProviderProfile extends Model
         'rating_distribution',
         'rating_dimensions',
         'rating_last_at',
+
+        // ÉCRITES PAR LE CODE, ÉCARTÉES PAR ELOQUENT. Ces colonnes existent en base et des
+        // appels d'écriture les renseignent, mais leur absence de cette liste les faisait
+        // disparaître SANS ERREUR — Eloquent écarte en silence ce qu'il ne peut pas assigner.
+        // Écrit par ProviderPresenceService à chaque passage en ligne et à chaque battement de
+        // cœur, et jeté en silence depuis toujours : le contexte de présence (appareil, précision)
+        // n'a jamais atteint la base.
+        'presence_meta',
     ];
 
     protected $casts = [
