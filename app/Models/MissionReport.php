@@ -27,11 +27,25 @@ class MissionReport extends Model
         'quality_score',
         'report_payload',
         'pdf_path',
+        /*
+         * LA TABLE PORTAIT CES TROIS COLONNES SANS QUE LE MODÈLE LES CONNAISSE.
+         *
+         * `metadata`, `disk` et `sent_at` existent depuis la création de la table ; ni la liste
+         * blanche ni les casts ne les mentionnaient. Écrire un motif d'échec dans `metadata`
+         * revenait donc à écrire dans le vide — et relire la valeur rendait une chaîne JSON brute
+         * là où le code attendait un tableau.
+         */
+        'metadata',
+        'disk',
+        'path',
+        'sent_at',
     ];
 
     protected $casts = [
         'generated_at' => 'datetime',
+        'sent_at' => 'datetime',
         'report_payload' => 'array',
+        'metadata' => 'array',
     ];
 
     /** @return BelongsTo<Mission, $this> */

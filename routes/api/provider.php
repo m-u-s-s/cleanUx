@@ -225,6 +225,8 @@ Route::middleware(['auth:sanctum', 'role:employe', 'provider.approved'])->group(
         Route::get('/{mission}/extras', [MissionOnSiteController::class, 'extras']);
         // F5 — la fiche d'accès, ouverte une fois l'arrivée confirmée.
         Route::get('/{mission}/access-sheet', [MissionOnSiteController::class, 'accessSheet']);
+        // F10 — la signature du client, recueillie sur l'écran du prestataire.
+        Route::post('/{mission}/client-signature', [MissionOnSiteController::class, 'storeClientSignature']);
         Route::post('/{mission}/extras', [MissionOnSiteController::class, 'storeExtra']);
         // F8 — joindre le client sans connaître son numéro.
         Route::get('/{mission}/masked-call', [\App\Http\Controllers\Api\MaskedCallController::class, 'pourLaMission']);

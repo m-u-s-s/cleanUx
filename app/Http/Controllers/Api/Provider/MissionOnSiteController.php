@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers\Api\Provider;
 
+use Illuminate\Validation\ValidationException;
+use App\Services\Missions\OnSite\MissionClosureService;
 use App\Services\Missions\OnSite\MissionAccessSheetService;
 use App\Services\Missions\MissionAssignmentStatusService;
 use App\Services\Missions\OnSite\MissionExtraService;
@@ -42,6 +44,7 @@ class MissionOnSiteController extends Controller
         protected MissionExtraService $extraService,
         protected MissionAssignmentStatusService $assignmentStatusService,
         protected MissionAccessSheetService $accessSheetService,
+        protected MissionClosureService $closureService,
     ) {}
 
     /**
@@ -190,6 +193,54 @@ class MissionOnSiteController extends Controller
         }
 
         return response()->json(['data' => $fiche]);
+    }
+
+    /**
+     * RECUEILLIR LA SIGNATURE DU CLIENT SUR L'ÉCRAN DU PRESTATAIRE (F10).
+     *
+     * Elle vaut par ce qui l'accompagne : horodatage, empreinte du contenu signé, attribution à un
+     * compte. Une case cochée ne prouve rien le jour où le client affirme n'avoir jamais validé.
+     *
+     * ELLE EST FACULTATIVE, et l'écran doit le refléter : le client n'est pas toujours là, et faire
+     * dépendre la clôture de sa présence bloquerait toutes les interventions en son absence.
+     */
+    public function storeClientSignature(Request $request, Mission $mission): JsonResponse
+    {
+        try {
+            $this->assignmentStatusService->assertAssignedToMission($mission, $request->user());
+        } catch (RuntimeException $e) {
+            return response()->json(['message' => $e->getMessage()], 403);
+        }
+
+        $data = $request->validate([
+            'signature' => ['required', 'string', 'min:8', 'max:200000'],
+            'signer_name' => ['required', 'string', 'min:2', 'max:120'],
+        ]);
+
+        $client = $mission->booking?->client;
+
+        if (! $client) {
+            return response()->json(['message' => 'Aucun client rattaché à cette mission.'], 422);
+        }
+
+        try {
+            $document = $this->closureService->signerParLeClient(
+                $mission,
+                $client,
+                $data['signature'],
+                $data['signer_name'],
+                $request,
+            );
+        } catch (DomainException $e) {
+            return response()->json(['message' => $e->getMessage()], 422);
+        } catch (ValidationException $e) {
+            return response()->json(['message' => collect($e->errors())->flatten()->first()], 422);
+        }
+
+        return response()->json(['data' => [
+            'signed' => true,
+            'document_code' => $document->code,
+        ]], 201);
     }
 
     public function storeIncident(Request $request, Mission $mission): JsonResponse

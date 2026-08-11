@@ -2,6 +2,7 @@
 
 namespace App\Services\Missions;
 
+use App\Services\Missions\OnSite\MissionClosureService;
 use App\Events\MissionStatusUpdated;
 use App\Models\Booking;
 use App\Models\Mission;
@@ -421,12 +422,25 @@ class MissionLifecycleService
             'La mission a été clôturée avec validation client.'
         );
 
-        $reportPath = app(MissionReportService::class)
-            ->generate($mission);
+        /*
+         * LE RAPPORT EST PRODUIT, ARCHIVÉ ET ENVOYÉ (F9).
+         *
+         * Ce chemin ne faisait que générer un PDF sur un disque privé, que le client ne peut pas
+         * atteindre. Un compte rendu que le destinataire ne reçoit pas est un fichier, pas un
+         * compte rendu — et c'est précisément la pièce qu'on cherche trois semaines plus tard quand
+         * une contestation arrive.
+         *
+         * `MissionClosureService` réunit les deux générateurs qui s'ignoraient — la fiche de
+         * synthèse et le PDF — et prévient le client. Tout y est en soft-fail : une bibliothèque
+         * PDF qui échoue ne doit pas empêcher un prestataire de terminer sa journée.
+         */
+        try {
+            $rapport = app(MissionClosureService::class)->cloturer($mission, $user);
 
-        $mission->update([
-            'report_path' => $reportPath,
-        ]);
+            $mission->update(['report_path' => $rapport->pdf_path]);
+        } catch (\Throwable $e) {
+            report($e);
+        }
 
         return $mission->fresh(['assignments', 'verificationCodes']);
     }
