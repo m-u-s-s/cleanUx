@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api\Client;
 
+use App\Services\Missions\OnSite\MissionCheckInService;
 use DomainException;
 use App\Services\Missions\OnSite\MissionExtraService;
 use App\Models\MissionExtra;
@@ -45,6 +46,7 @@ class MissionOnSiteController extends Controller
         protected MissionIncidentService $incidentService,
         protected MissionTimelineService $timelineService,
         protected MissionExtraService $extraService,
+        protected MissionCheckInService $checkInService,
     ) {}
 
     /**
@@ -187,6 +189,67 @@ class MissionOnSiteController extends Controller
         }
 
         return response()->json(['data' => $this->extraService->presenter($extra)]);
+    }
+
+    /**
+     * DÉCLARER SON ABSENCE (F14).
+     *
+     * La déclaration vient du CLIENT, jamais du prestataire : si celui qui doit prouver sa présence
+     * pouvait décider que la preuve ne s'applique pas, il n'y aurait plus de preuve.
+     */
+    public function declarerAbsence(Request $request, Booking $booking): JsonResponse
+    {
+        $this->assertClientPeutVoirLaReservation($request->user(), $booking);
+
+        $data = $request->validate([
+            'absent' => ['required', 'boolean'],
+            'instructions' => ['nullable', 'string', 'max:2000'],
+            'backup_contact_name' => ['nullable', 'string', 'max:120'],
+            'backup_contact_phone' => ['nullable', 'string', 'max:32'],
+        ]);
+
+        try {
+            $booking = $data['absent']
+                ? $this->checkInService->declarerAbsence(
+                    $booking,
+                    $data['instructions'] ?? null,
+                    $data['backup_contact_name'] ?? null,
+                    $data['backup_contact_phone'] ?? null,
+                )
+                : $this->checkInService->annulerAbsence($booking);
+        } catch (DomainException $e) {
+            return response()->json(['message' => $e->getMessage()], 422);
+        }
+
+        return response()->json(['data' => [
+            'client_absent' => (bool) $booking->client_absent,
+            // Le client doit VOIR quelle preuve s'appliquera : c'est ce qui lui évite d'attendre
+            // un appel pour un code qu'on ne lui demandera pas.
+            'presence_proof' => $booking->client_absent ? 'photo' : 'code',
+        ]]);
+    }
+
+    /**
+     * RÉPONDRE AU PING DE MI-MISSION (F15) — en un geste.
+     */
+    public function repondreAuPing(Request $request, Booking $booking): JsonResponse
+    {
+        $this->assertClientPeutVoirLaReservation($request->user(), $booking);
+
+        $data = $request->validate([
+            'answer' => ['required', 'string', 'in:ok,probleme'],
+        ]);
+
+        try {
+            $booking = $this->checkInService->repondreAuPing($booking, $request->user(), $data['answer']);
+        } catch (DomainException $e) {
+            return response()->json(['message' => $e->getMessage()], 422);
+        }
+
+        return response()->json(['data' => [
+            'answer' => $booking->checkin_ping_answer,
+            'answered_at' => $booking->checkin_ping_answered_at?->toIso8601String(),
+        ]]);
     }
 
     /**

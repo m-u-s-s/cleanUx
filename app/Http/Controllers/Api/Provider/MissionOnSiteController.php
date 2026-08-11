@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api\Provider;
 
+use App\Services\Missions\OnSite\MissionCheckInService;
 use Illuminate\Validation\ValidationException;
 use App\Services\Missions\OnSite\MissionClosureService;
 use App\Services\Missions\OnSite\MissionAccessSheetService;
@@ -45,6 +46,7 @@ class MissionOnSiteController extends Controller
         protected MissionAssignmentStatusService $assignmentStatusService,
         protected MissionAccessSheetService $accessSheetService,
         protected MissionClosureService $closureService,
+        protected MissionCheckInService $checkInService,
     ) {}
 
     /**
@@ -241,6 +243,70 @@ class MissionOnSiteController extends Controller
             'signed' => true,
             'document_code' => $document->code,
         ]], 201);
+    }
+
+    /**
+     * ATTESTER SON ARRIVÉE PAR PHOTO QUAND LE CLIENT EST ABSENT (F14).
+     *
+     * Le code à six chiffres suppose deux personnes face à face. Quand le client travaille et laisse
+     * la clé chez la voisine, cette preuve est impossible — et l'intervention se déroulait jusqu'ici
+     * hors du dispositif.
+     *
+     * La photo porte l'horodatage, la position et son empreinte : c'est ce qui sépare un démarrage
+     * TRACÉ d'un simple bouton « je suis arrivé » que rien ne contredit.
+     */
+    public function storeArrivalProof(Request $request, Mission $mission): JsonResponse
+    {
+        try {
+            $this->assignmentStatusService->assertAssignedToMission($mission, $request->user());
+        } catch (RuntimeException $e) {
+            return response()->json(['message' => $e->getMessage()], 403);
+        }
+
+        $data = $request->validate([
+            'photo' => ['required', 'file', 'max:12288'],
+            'lat' => ['nullable', 'numeric', 'between:-90,90'],
+            'lng' => ['nullable', 'numeric', 'between:-180,180'],
+        ]);
+
+        try {
+            $media = $this->checkInService->preuveDArriveeSansClient(
+                $mission,
+                $request->user(),
+                $request->file('photo'),
+                isset($data['lat']) ? (float) $data['lat'] : null,
+                isset($data['lng']) ? (float) $data['lng'] : null,
+            );
+        } catch (DomainException $e) {
+            return response()->json(['message' => $e->getMessage()], 422);
+        }
+
+        return response()->json(['data' => $this->mediaService->presenter($media)], 201);
+    }
+
+    /**
+     * Quelle preuve de présence s'applique, et ce qu'il faut savoir si le client est absent.
+     *
+     * Le prestataire doit le savoir AVANT de sonner : attendre un code qui ne viendra pas fait
+     * perdre dix minutes devant une porte, puis repartir.
+     */
+    public function presenceMode(Request $request, Mission $mission): JsonResponse
+    {
+        try {
+            $this->assignmentStatusService->assertAssignedToMission($mission, $request->user());
+        } catch (RuntimeException $e) {
+            return response()->json(['message' => $e->getMessage()], 403);
+        }
+
+        $booking = $mission->booking;
+
+        return response()->json(['data' => [
+            'mode' => $this->checkInService->modeDePreuve($mission),
+            'client_absent' => (bool) ($booking->client_absent ?? false),
+            'instructions' => $booking->client_absent_instructions ?? null,
+            'backup_contact_name' => $booking->backup_contact_name ?? null,
+            'backup_contact_phone' => $booking->backup_contact_phone ?? null,
+        ]]);
     }
 
     public function storeIncident(Request $request, Mission $mission): JsonResponse

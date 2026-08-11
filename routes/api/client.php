@@ -124,6 +124,10 @@ Route::middleware('auth:sanctum')->prefix('client')->group(function () {
     Route::get('/bookings/{booking}/onsite/extras', [ClientMissionOnSiteController::class, 'extras']);
     // F8 — joindre le prestataire sans connaître son numéro.
     Route::get('/bookings/{booking}/masked-call', [\App\Http\Controllers\Api\MaskedCallController::class, 'pourLaReservation']);
+    // F14 — déclarer son absence : la preuve de présence bascule sur une photo d'arrivée.
+    Route::post('/bookings/{booking}/onsite/absence', [ClientMissionOnSiteController::class, 'declarerAbsence']);
+    // F15 — répondre au « tout va bien ? » en un geste.
+    Route::post('/bookings/{booking}/onsite/checkin', [ClientMissionOnSiteController::class, 'repondreAuPing']);
     Route::post('/bookings/{booking}/onsite/extras/{extra}/approve', [ClientMissionOnSiteController::class, 'approveExtra']);
     Route::post('/bookings/{booking}/onsite/extras/{extra}/decline', [ClientMissionOnSiteController::class, 'declineExtra']);
 

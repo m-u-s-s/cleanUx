@@ -35,6 +35,13 @@ use Illuminate\Support\Facades\Schema;
  * Accessors declared in HasBookingDisplayAccessors (Larastan does not infer
  * getXAttribute through traits at level 6):
  *
+ * @property bool $client_absent
+ * @property ?string $client_absent_instructions
+ * @property ?string $backup_contact_name
+ * @property ?string $backup_contact_phone
+ * @property ?\Illuminate\Support\Carbon $checkin_ping_sent_at
+ * @property ?string $checkin_ping_answer
+ * @property ?\Illuminate\Support\Carbon $checkin_ping_answered_at
  * @property-read string $service_display_name
  * @property string $total
  * @property ?string $trade_name
@@ -300,6 +307,12 @@ class Booking extends Model
 
         // Écrite par le code, écartée par Eloquent faute de figurer ici.
         'notes',
+
+        // F14 / F15 — déclaration d'absence, contact de secours, et ping de mi-mission.
+        'client_absent',
+        'client_absent_instructions',
+        'backup_contact_name',
+        'backup_contact_phone',
     ];
 
     protected $casts = [
@@ -314,6 +327,11 @@ class Booking extends Model
         'mission_arrived_at' => 'datetime',
         'mission_finished_at' => 'datetime',
         'client_presence_confirmed_at' => 'datetime',
+        // F14 / F15 — le mode « je ne suis pas là » et le ping de mi-mission. Sans ces casts, une
+        // date relue reste une chaîne, et le premier appelant qui la formate lève une erreur.
+        'client_absent' => 'boolean',
+        'checkin_ping_sent_at' => 'datetime',
+        'checkin_ping_answered_at' => 'datetime',
         'asap_requested_at' => 'datetime',
         'asap_deadline_at' => 'datetime',
         'matched_at' => 'datetime',
