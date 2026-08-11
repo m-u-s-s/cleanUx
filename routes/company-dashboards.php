@@ -7,6 +7,7 @@ use App\Livewire\ClientCompany\BulkBookingImporter;
 use App\Livewire\ClientCompany\ClientCompanyDashboard;
 use App\Livewire\ClientCompany\ClientContractsCenter;
 use App\Livewire\ClientCompany\DisputesCenter;
+use App\Livewire\ClientCompany\GovernanceCenter;
 use App\Livewire\ClientCompany\MembersAccess;
 use App\Livewire\ClientCompany\MultiSiteRequest;
 use App\Livewire\ClientCompany\SigningAppointments;
@@ -56,6 +57,17 @@ Route::middleware(['auth', 'verified', 'active.account', 'org.type:client'])
         Route::get('/contrats', ClientContractsCenter::class)->name('contracts');
         Route::get('/contrats/signatures-sur-place', SigningAppointments::class)->name('contracts.signing-appointments');
         Route::get('/facturation', BillingCenter::class)->name('billing');
+
+        /*
+         * LE PILOTAGE — budgets (E7), approbations (E8), niveau de service (E9) et exports
+         * comptables (E11).
+         *
+         * QUATRE MODULES SUR UN ÉCRAN parce qu'ils servent une seule conversation : celle du
+         * responsable qui décide de reconduire un contrat. Il regarde ce qu'il a dépensé, ce
+         * qu'il a autorisé, si le prestataire tient ses engagements, et donne le tout à son
+         * comptable. Quatre écrans l'obligeraient à recomposer tout cela de tête.
+         */
+        Route::get('/pilotage', GovernanceCenter::class)->name('governance');
 
         if (class_exists(ClientAnalyticsDashboard::class)) {
             Route::get('/analytics', ClientAnalyticsDashboard::class)->name('analytics');

@@ -46,6 +46,7 @@ import { CompanyBookingsScreen } from '@/screens/company/CompanyBookingsScreen';
 import { CompanyMembersScreen } from '@/screens/company/CompanyMembersScreen';
 import { CompanyContractsScreen } from '@/screens/company/CompanyContractsScreen';
 import { CompanyBillingScreen } from '@/screens/company/CompanyBillingScreen';
+import { CompanyGovernanceScreen } from '@/screens/company/CompanyGovernanceScreen';
 // L'espace société cliente : aiguillage, préférence retenue, sélecteur et navigateur dédié.
 import { resolveClientSpace } from '@/company/space';
 import { useClientSpacePreference } from '@/company/useClientSpacePreference';
@@ -364,6 +365,11 @@ export function RootNavigator() {
               name="CompanyBilling"
               component={CompanyBillingScreen}
               options={{ headerShown: true, title: 'Facturation' }}
+            />
+            <Stack.Screen
+              name="CompanyGovernance"
+              component={CompanyGovernanceScreen}
+              options={{ headerShown: true, title: 'Pilotage' }}
             />
           </>
         ) : (

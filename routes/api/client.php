@@ -18,6 +18,7 @@ use App\Http\Controllers\Api\Client\LoyaltyRedemptionController;
 use App\Http\Controllers\Api\Client\MarketingPreferencesController;
 use App\Http\Controllers\Api\Client\MissionOnSiteController as ClientMissionOnSiteController;
 use App\Http\Controllers\Api\Client\NotificationPreferenceController;
+use App\Http\Controllers\Api\Client\GovernanceController;
 use App\Http\Controllers\Api\Client\HomeInsightsController;
 use App\Http\Controllers\Api\Client\PlaceController;
 use App\Http\Controllers\Api\Client\ReceivedQuoteController;
@@ -281,6 +282,21 @@ Route::middleware('auth:sanctum')->prefix('client/company')->group(function () {
     Route::get('/members', [ClientCompanyController::class, 'members']);
     Route::get('/contracts', [ClientCompanyController::class, 'contracts']);
     Route::get('/billing', [ClientCompanyController::class, 'billing']);
+
+    /*
+     * LE PILOTAGE (E7, E8, E9).
+     *
+     * L'APPROBATION EST MOBILE AVANT TOUT : une demande qui attend bloque une intervention, et
+     * l'approbateur est rarement à son bureau. Chaque heure d'attente est une heure où le
+     * prestataire n'est pas cherché — et sur une fuite d'eau, ça compte.
+     *
+     * Les exports comptables (E11) restent au web, délibérément : un fichier FEC destiné à un
+     * logiciel de comptabilité n'a rien à faire dans le stockage d'un téléphone.
+     */
+    Route::get('/budgets', [GovernanceController::class, 'budgets']);
+    Route::get('/service-level', [GovernanceController::class, 'serviceLevel']);
+    Route::get('/approvals', [GovernanceController::class, 'approvals']);
+    Route::post('/approvals/{booking}/decision', [GovernanceController::class, 'decideApproval']);
 });
 
 /*

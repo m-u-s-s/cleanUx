@@ -15,6 +15,19 @@ use Illuminate\Database\Eloquent\Builder;
  */
 class ClientFinanceDocumentScope
 {
+    /**
+     * LE TYPE DU MODÈLE TRAVERSE LA PORTÉE.
+     *
+     * Sans ces paramètres de gabarit, un `Builder<FinanceInvoice>` entrait et un `Builder<Model>`
+     * ressortait : tout appelant perdait le type de ses colonnes, et l'analyse statique cessait de
+     * vérifier ce qu'il en lisait. La portée ne change pas de modèle — la signature le dit
+     * désormais.
+     *
+     * @template TModel of \Illuminate\Database\Eloquent\Model
+     *
+     * @param  Builder<TModel>  $query
+     * @return Builder<TModel>
+     */
     public static function apply(Builder $query, User $user, string $relationPath = 'rendezVous'): Builder
     {
         $allowedSiteIds = app(EnterpriseRoutingService::class)->allowedSiteIdsForUser($user);

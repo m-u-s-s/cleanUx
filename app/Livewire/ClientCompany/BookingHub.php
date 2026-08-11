@@ -4,6 +4,10 @@ namespace App\Livewire\ClientCompany;
 
 use App\Models\Booking;
 use App\Models\OrganizationSite;
+use App\Services\Enterprise\MemberSiteAccessService;
+use App\Services\Enterprise\InternalApprovalService;
+use App\Services\Enterprise\SiteBudgetService;
+use DomainException;
 use App\Models\ProviderProfile;
 use App\Models\ServiceCatalog;
 use App\Models\Trade;
@@ -109,7 +113,17 @@ class BookingHub extends Component
     {
         $orgId = Auth::user()->current_organization_id;
 
+        /*
+         * L'ACCÈS PAR SITE (E10) FILTRE CETTE LISTE, et pas seulement le sélecteur.
+         *
+         * Filtrer le seul menu déroulant laisserait la liste complète s'afficher tant qu'aucun
+         * site n'est choisi — c'est-à-dire à l'ouverture de l'écran, le cas le plus fréquent. La
+         * restriction doit vivre dans la REQUÊTE.
+         */
+        $autorises = $this->sitesAutorises();
+
         return Booking::where('customer_organization_id', $orgId)
+            ->when($autorises !== null, fn ($q) => $q->whereIn('organization_site_id', $autorises ?? []))
             ->when($this->filterStatus, fn ($q) => $q->where('status', $this->filterStatus))
             ->when($this->filterSiteId, fn ($q) => $q->where('organization_site_id', $this->filterSiteId))
             ->with([
@@ -124,22 +138,48 @@ class BookingHub extends Component
 
     public function getSitesProperty()
     {
+        $autorises = $this->sitesAutorises();
+
         return OrganizationSite::forOrg(Auth::user()->current_organization_id)
+            // Un local qu'on n'a pas le droit de voir ne doit pas non plus figurer dans le
+            // sélecteur : son NOM et sa VILLE sont déjà des informations.
+            ->when($autorises !== null, fn ($q) => $q->whereIn('id', $autorises ?? []))
             ->active()
             ->orderBy('name')
             ->get();
     }
 
+    public function getSelectedSiteProperty(): ?OrganizationSite
+    {
+        if (! $this->selectedSiteId) {
+            return null;
+        }
+
+        $autorises = $this->sitesAutorises();
+
+        // L'identifiant vient du navigateur : commander POUR un local qu'on n'a pas le droit de
+        // voir contournerait la restriction par la porte de derrière.
+        return OrganizationSite::forOrg(Auth::user()->current_organization_id)
+            ->when($autorises !== null, fn ($q) => $q->whereIn('id', $autorises ?? []))
+            ->find($this->selectedSiteId);
+    }
+
+    /**
+     * Les locaux auxquels l'appelant est restreint, ou `null` s'il ne l'est pas.
+     *
+     * `null` NE VEUT PAS DIRE « aucun accès » : la restriction est une décision positive, et
+     * l'inverse aurait vidé les écrans de toutes les entreprises existantes au déploiement.
+     *
+     * @return array<int, int>|null
+     */
+    protected function sitesAutorises(): ?array
+    {
+        return app(MemberSiteAccessService::class)->sitesAutorises(Auth::user());
+    }
+
     public function getTradesProperty()
     {
         return Trade::active()->ordered()->get(['id', 'name', 'icon', 'color', 'short_description']);
-    }
-
-    public function getSelectedSiteProperty(): ?OrganizationSite
-    {
-        return $this->selectedSiteId
-            ? OrganizationSite::forOrg(Auth::user()->current_organization_id)->find($this->selectedSiteId)
-            : null;
     }
 
     public function getAvailableProvidersProperty()
@@ -372,9 +412,29 @@ class BookingHub extends Component
         $this->step = 1;
         $this->view = 'list';
 
+        /*
+         * PRÉVENIR CEUX QUI PEUVENT TRANCHER (E8), et vérifier les budgets (E7).
+         *
+         * Sans la première, une demande en attente reste invisible tant qu'un responsable n'ouvre
+         * pas l'écran de son propre chef : le demandeur croit avoir commandé, l'approbateur ne sait
+         * pas qu'on l'attend, et la découverte se fait le jour prévu de l'intervention.
+         *
+         * Sans la seconde, le dépassement se découvre à la facture — un mois plus tard, quand plus
+         * rien n'est annulable.
+         */
+        app(InternalApprovalService::class)->annoncerLaDemande($booking->fresh(), $user);
+        app(SiteBudgetService::class)->verifierApresReservation($booking->fresh());
+
         $this->dispatch('booking-created', bookingId: $booking->id);
     }
 
+    /**
+     * Approuver une demande interne (E8).
+     *
+     * DÉLÉGUÉ AU SERVICE, et ce n'est pas de la forme : basculer le statut ici laissait la
+     * réservation en attente d'un prestataire que PERSONNE ne cherchait. Le service, lui, entre
+     * dans le dispatch, trace la décision et prévient le demandeur.
+     */
     public function approveBooking(int $bookingId): void
     {
         $user = Auth::user();
@@ -383,9 +443,15 @@ class BookingHub extends Component
             403
         );
 
-        Booking::where('customer_organization_id', $user->current_organization_id)
-            ->findOrFail($bookingId)
-            ->update(['status' => 'pending']); // → En attente prestataire
+        $booking = Booking::where('customer_organization_id', $user->current_organization_id)
+            ->findOrFail($bookingId);
+
+        try {
+            app(InternalApprovalService::class)->approuver($booking, $user);
+        } catch (DomainException $e) {
+            // « Une demande ne s'approuve pas soi-même » est une règle à LIRE, pas une panne.
+            $this->addError('approval', $e->getMessage());
+        }
     }
 
     public function cancelBooking(int $bookingId): void

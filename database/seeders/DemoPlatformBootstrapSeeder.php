@@ -35,6 +35,17 @@ class DemoPlatformBootstrapSeeder extends Seeder
             CarnetClientDemoSeeder::class,
             LimitesJournaliereSeeder::class,
             StatutRendezVousSeeder::class,
+            /*
+             * LE PILOTAGE D'UNE ENTREPRISE CLIENTE (E7, E8) — APRÈS `StatutRendezVousSeeder`, et
+             * c'est la seule position qui marche : celui-ci réattribue un statut ALÉATOIRE à
+             * chaque réservation, et écrasait donc la demande en attente d'approbation qu'on
+             * venait de poser. Le seeder paraissait fonctionner — il annonçait son succès — et
+             * ne peuplait rien.
+             *
+             * Un budget sans dépenses ne montre aucune alerte, et une file d'approbation vide ne
+             * distingue pas « le circuit fonctionne » de « personne n'a rien demandé ».
+             */
+            PilotageEntrepriseDemoSeeder::class,
             FeedbackSeeder::class,
             /*
              * LE SCÉNARIO DE DÉMONSTRATION DU MOTEUR DE RÉPARTITION.

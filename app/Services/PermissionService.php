@@ -186,6 +186,17 @@ class PermissionService
             'bookings.create',
             'bookings.cancel',
             'sites.edit',
+            /*
+             * `sites.view_all` MANQUAIT, ET `sites.edit` était donc une clé morte : le
+             * responsable de site pouvait modifier un local sur un écran qu'il ne pouvait pas
+             * ouvrir — `SiteManager::mount()` répond 403 sans elle.
+             *
+             * CE QUI REND CET AJOUT SÛR, c'est E10 : la liste est désormais filtrée par
+             * `organization_member_site_access`. Le « all » du nom décrit la CAPACITÉ d'ouvrir la
+             * liste, pas sa portée — qui reste bornée aux locaux qu'on lui a confiés. Avant ce
+             * filtre, la même clé lui aurait montré toutes les agences de la société.
+             */
+            'sites.view_all',
             'tasks.create',
             'tasks.assign',
             'channels.create',

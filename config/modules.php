@@ -280,6 +280,12 @@ return [
         ['key' => 'client-company:client-company.contracts', 'label' => 'Contrats', 'icon' => '📄', 'route' => 'client-company.contracts', 'context' => 'client-company', 'category' => 'documents', 'primary' => false],
         ['key' => 'client-company:client-company.contracts.signing-appointments', 'label' => 'Signatures', 'icon' => '✍️', 'route' => 'client-company.contracts.signing-appointments', 'context' => 'client-company', 'category' => 'documents', 'primary' => false],
         ['key' => 'client-company:client-company.billing', 'label' => 'Facturation', 'icon' => '🧾', 'route' => 'client-company.billing', 'context' => 'client-company', 'category' => 'finance', 'primary' => true],
+        /*
+         * E7 + E8 + E9 + E11 — le pilotage. Le plafond alerte sans bloquer, l'approbation entre
+         * dans le dispatch, le niveau de service répond à « est-ce qu'il tient ses engagements »,
+         * et l'export épargne douze PDF à ressaisir à la main.
+         */
+        ['key' => 'client-company:client-company.governance', 'label' => 'Pilotage', 'icon' => '🎯', 'route' => 'client-company.governance', 'context' => 'client-company', 'permission' => 'finance.view', 'category' => 'donnees', 'primary' => false],
         ['key' => 'client-company:client-company.sites', 'label' => 'Mes locaux', 'icon' => '📍', 'route' => 'client-company.sites', 'context' => 'client-company', 'category' => 'comptes', 'primary' => true],
         ['key' => 'client-company:client-company.members', 'label' => 'Membres', 'icon' => '👥', 'route' => 'client-company.members', 'context' => 'client-company', 'category' => 'prestataires', 'primary' => true],
         ['key' => 'client-company:client-company.disputes', 'label' => 'Litiges', 'icon' => '⚠️', 'route' => 'client-company.disputes', 'context' => 'client-company', 'category' => 'qualite', 'primary' => false],

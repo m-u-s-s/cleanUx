@@ -78,6 +78,14 @@ export type RootStackParamList = {
   CompanyContracts: undefined;
   CompanyBilling: undefined;
   /**
+   * Le pilotage d'une entreprise cliente — budgets, approbations, niveau de service.
+   *
+   * L'APPROBATION EST MOBILE AVANT TOUT : une demande qui attend bloque une intervention, et
+   * l'approbateur est rarement à son bureau. Chaque heure d'attente est une heure où le
+   * prestataire n'est pas cherché.
+   */
+  CompanyGovernance: undefined;
+  /**
    * L'espace société complet, en onglets — la maison d'un responsable de sites, pas un bouton
    * enfoui dans le profil. Rendu HORS de la pile personnelle : voir `RootNavigator`.
    */

@@ -52,6 +52,8 @@ export function CompanyOverviewScreen() {
     { label: 'Membres', screen: 'CompanyMembers' },
     { label: 'Contrats', screen: 'CompanyContracts' },
     { label: 'Facturation', screen: 'CompanyBilling' },
+    // Sans cette entrée, l'écran serait orphelin — le mode d'échec documenté de ce dépôt.
+    { label: 'Pilotage', screen: 'CompanyGovernance' },
   ];
 
   if (isError) {
