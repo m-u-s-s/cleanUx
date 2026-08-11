@@ -4,6 +4,7 @@ namespace App\Services\Missions;
 
 use App\Models\MissionAssignment;
 use App\Models\OrganizationMember;
+use App\Models\Shift;
 use Illuminate\Support\Carbon;
 
 /**
@@ -57,13 +58,88 @@ class WorkerAvailabilityService
 
         $occupes = $this->occupesSur($identifiants, $debut, $fin, $exclureMissionId);
 
+        /*
+         * DISPONIBLE = EN SHIFT **ET** SANS CHEVAUCHEMENT (E19).
+         *
+         * Cette méthode ne savait répondre qu'à la seconde moitié de la question : « cette personne
+         * est-elle déjà prise ». Faute de planning, quelqu'un qui ne travaille pas ce jour-là
+         * passait pour disponible — et l'auto-assignation lui envoyait une course à vingt-trois
+         * heures un dimanche.
+         *
+         * LE PLANNING NE S'IMPOSE QUE S'IL EXISTE. Une société qui n'a pas encore saisi ses shifts
+         * verrait sinon toute son équipe devenir indisponible du jour au lendemain : la migration
+         * créerait la panne qu'elle devait éviter. Tant qu'aucun shift n'est publié pour la journée
+         * concernée, on s'en tient au comportement d'avant.
+         */
+        $planifies = $this->planifiesSur($organisationId, $identifiants, $debut, $fin);
+
         $verdicts = [];
 
         foreach ($identifiants as $id) {
-            $verdicts[$id] = ! in_array($id, $occupes, true);
+            $libre = ! in_array($id, $occupes, true);
+
+            if ($planifies !== null) {
+                $libre = $libre && in_array($id, $planifies, true);
+            }
+
+            $verdicts[$id] = $libre;
         }
 
         return $verdicts;
+    }
+
+    /**
+     * Qui est PLANIFIÉ sur ce créneau, ou `null` si cette société n'a pas de planning ce jour-là.
+     *
+     * Le `null` est significatif et se distingue du tableau vide : « aucun planning saisi » n'est pas
+     * « personne ne travaille ». Confondre les deux rendrait toute une équipe indisponible le jour
+     * où l'on branche cette table.
+     *
+     * Un shift `planned` ne compte pas : un planning en préparation ne doit pas rendre quelqu'un
+     * assignable avant qu'il soit arrêté et communiqué.
+     *
+     * @param  list<int>  $userIds
+     * @return list<int>|null
+     */
+    protected function planifiesSur(int $organisationId, array $userIds, Carbon $debut, Carbon $fin): ?array
+    {
+        /*
+         * LA QUESTION SE POSE À L'ÉCHELLE DE LA JOURNÉE, PAS DU CRÉNEAU.
+         *
+         * Première version de ce garde : on cherchait les shifts chevauchant la fenêtre demandée, et
+         * l'absence de résultat valait « pas de planning ». À vingt-trois heures, aucun shift ne
+         * chevauche — et le garde concluait donc qu'il n'y avait pas de planning, rendant l'équipe
+         * disponible en pleine nuit. Exactement le défaut qu'E19 devait corriger.
+         *
+         * Ce qui distingue les deux cas, c'est l'existence d'un planning POUR CE JOUR-LÀ : s'il y en
+         * a un, il fait autorité, y compris pour dire que personne ne travaille à cette heure.
+         */
+        $journeeDebut = $debut->copy()->startOfDay();
+        $journeeFin = $debut->copy()->endOfDay();
+
+        $planningDuJour = Shift::query()
+            ->where('organization_account_id', $organisationId)
+            ->where('status', Shift::STATUS_PUBLISHED)
+            ->where('starts_at', '<', $journeeFin)
+            ->where('ends_at', '>', $journeeDebut)
+            ->exists();
+
+        if (! $planningDuJour) {
+            return null;
+        }
+
+        return Shift::query()
+            ->where('organization_account_id', $organisationId)
+            ->where('status', Shift::STATUS_PUBLISHED)
+            // Chevauchement de créneaux : le shift commence avant la fin demandée et finit après le
+            // début demandé. Comparer sur une seule borne laisserait passer un shift qui englobe.
+            ->where('starts_at', '<', $fin)
+            ->where('ends_at', '>', $debut)
+            ->pluck('user_id')
+            ->map(fn ($id) => (int) $id)
+            ->intersect($userIds)
+            ->values()
+            ->all();
     }
 
     /**

@@ -2,6 +2,8 @@
 
 namespace App\Services\Missions;
 
+use App\Services\TripTracking\TripTrackingService;
+use App\Services\Workforce\TimesheetService;
 use App\Services\Missions\OnSite\MissionClosureService;
 use App\Events\MissionStatusUpdated;
 use App\Models\Booking;
@@ -438,6 +440,27 @@ class MissionLifecycleService
             $rapport = app(MissionClosureService::class)->cloturer($mission, $user);
 
             $mission->update(['report_path' => $rapport->pdf_path]);
+        } catch (\Throwable $e) {
+            report($e);
+        }
+
+        /*
+         * LE POINTAGE SE REMPLIT TOUT SEUL (E20).
+         *
+         * C'est la leçon de tous les systèmes de pointage : celui qui demande un geste de plus au
+         * moment où l'on range son matériel n'est pas rempli, ou l'est de mémoire trois jours plus
+         * tard — c'est-à-dire faux. La session de suivi sait déjà quand la personne est entrée en
+         * mission, quand elle a fini, et combien de temps elle a été en pause.
+         *
+         * Soft-fail : une feuille d'heures manquante se rattrape, une clôture bloquée laisse le
+         * prestataire sur le trottoir.
+         */
+        try {
+            $session = app(TripTrackingService::class)->activeSessionForBooking((int) $mission->booking_id);
+
+            if ($session) {
+                app(TimesheetService::class)->pointerDepuisLeSuivi($mission, $session);
+            }
         } catch (\Throwable $e) {
             report($e);
         }
