@@ -13,6 +13,8 @@ import { StripeOnboardingScreen } from '@/screens/StripeOnboardingScreen';
 import { AvailabilityScreen } from '@/screens/AvailabilityScreen';
 import { TradesZonesScreen } from '@/screens/TradesZonesScreen';
 import { BadgesScreen } from '@/screens/BadgesScreen';
+import { SafetyScreen } from '@/screens/SafetyScreen';
+import { DailyRouteScreen } from '@/screens/DailyRouteScreen';
 import { KYCScreen } from '@/screens/KYCScreen';
 import { ProviderDisputesScreen } from '@/screens/ProviderDisputesScreen';
 import { ProviderRatingsScreen } from '@/screens/ProviderRatingsScreen';
@@ -206,6 +208,16 @@ export function RootNavigator() {
             name="CompanyQualityFleet"
             component={CompanyQualityFleetScreen}
             options={{ headerShown: true, title: 'Qualité et matériel' }}
+          />
+          <Stack.Screen
+            name="DailyRoute"
+            component={DailyRouteScreen}
+            options={{ headerShown: true, title: 'Ma journée' }}
+          />
+          <Stack.Screen
+            name="Safety"
+            component={SafetyScreen}
+            options={{ headerShown: true, title: 'Sécurité' }}
           />
           <Stack.Screen
             name="ChannelConversation"
@@ -610,6 +622,16 @@ export function RootNavigator() {
               name="CompanyQualityFleet"
               component={CompanyQualityFleetScreen}
               options={{ headerShown: true, title: 'Qualité et matériel' }}
+            />
+            <Stack.Screen
+              name="DailyRoute"
+              component={DailyRouteScreen}
+              options={{ headerShown: true, title: 'Ma journée' }}
+            />
+            <Stack.Screen
+              name="Safety"
+              component={SafetyScreen}
+              options={{ headerShown: true, title: 'Sécurité' }}
             />
             <Stack.Screen
               name="ChannelConversation"

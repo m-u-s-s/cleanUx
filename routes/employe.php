@@ -2,6 +2,8 @@
 
 use App\Http\Controllers\StripeConnectController;
 use App\Livewire\Employe\CoordinationChantier;
+use App\Livewire\Provider\DemandHeatmap;
+use App\Livewire\Provider\SafetyPanel;
 use App\Livewire\Employe\DisponibilitesEmploye;
 use App\Livewire\Employe\EmployeeRateClient;
 use App\Livewire\Employe\EquipeTerrain;
@@ -84,6 +86,29 @@ Route::middleware(['role:employe'])
             Route::get('/revenus', ProviderEarningsDashboard::class)
                 ->name('earnings');
         }
+
+        /*
+         * LE MODE SÉCURITÉ / SOS (E33), CÔTÉ WEB.
+         *
+         * Le terrain est mobile, mais tout le monde n'a pas installé l'application : un
+         * indépendant qui travaille depuis son navigateur, quelqu'un dont le téléphone est
+         * déchargé. Réserver le bouton d'urgence à une surface, c'est le refuser à qui n'y est pas.
+         *
+         * PAS DE `class_exists` ICI, contrairement à ses voisines : une route d'urgence qui
+         * disparaît silencieusement quand une classe manque est exactement ce qu'on ne veut pas.
+         * Si elle casse, on veut le savoir au déploiement.
+         */
+        Route::get('/securite', SafetyPanel::class)->name('safety');
+
+        /*
+         * OÙ ME PLACER, ET À QUELLE HEURE (E12).
+         *
+         * La question que se pose tout indépendant le matin, et à laquelle rien ne répondait : il
+         * se place où il s'est placé hier, et découvre après trois heures d'attente qu'il fallait
+         * être ailleurs. Les recherches de dispatch sont horodatées et géolocalisées depuis le
+         * chantier de répartition — c'est cette donnée qu'on lui rend.
+         */
+        Route::get('/demande', DemandHeatmap::class)->name('heatmap');
 
         if (class_exists(MissionFieldPage::class)) {
             Route::get('/missions/{mission}', MissionFieldPage::class)

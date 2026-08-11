@@ -79,6 +79,14 @@ export function ProfileScreen() {
      * 29 modules pour un prestataire — inatteignable depuis le téléphone. Le catalogue vient du
      * serveur, qui déduit le contexte du jeton : cette entrée n'a donc pas à être conditionnée.
      */
+    /*
+     * LA SÉCURITÉ EN TÊTE, et pour tout le monde. Ce n'est pas un module d'espace société : un
+     * indépendant seul chez un inconnu en a autant besoin qu'un salarié — davantage, même,
+     * puisque personne ne l'attend au dépôt le soir.
+     */
+    { label: 'Sécurité', screen: 'Safety' },
+    // E17 + E34 — elle se consulte le matin, en montant dans la voiture.
+    { label: 'Ma journée', screen: 'DailyRoute' },
     { label: 'Modules', screen: 'Modules' },
     { label: 'Disponibilités', screen: 'Availability' },
     // Sans porte d'entrée, l'écran serait orphelin — le mode d'échec documenté de ce dépôt.

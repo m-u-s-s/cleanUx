@@ -191,4 +191,150 @@
             </a>
         </div>
     </div>
+    {{-- ─── E15 : les statistiques d'offres ────────────────────────────────── --}}
+    {{--
+        TOUT EST DÉJÀ DANS `mission_assignments` et personne ne le lisait. C'est la réponse exacte à
+        « pourquoi est-ce que je reçois moins de courses qu'avant » — une question à laquelle on ne
+        pouvait répondre qu'au ressenti.
+    --}}
+    <div class="mt-6 rounded-2xl border border-slate-200 bg-white p-5" data-test="stats-offres">
+        <h2 class="text-sm font-bold uppercase tracking-wide text-slate-500">Mes offres (30 derniers jours)</h2>
+
+        <div class="mt-4 grid gap-4 sm:grid-cols-4">
+            <div>
+                <p class="text-xs text-slate-400">Reçues</p>
+                <p class="text-xl font-bold tabular-nums text-slate-900">{{ $offres['offers_count'] }}</p>
+            </div>
+            <div>
+                <p class="text-xs text-slate-400">Acceptées</p>
+                <p class="text-xl font-bold tabular-nums text-slate-900">
+                    {{ $offres['acceptance_rate'] !== null ? $offres['acceptance_rate'].' %' : '—' }}
+                </p>
+            </div>
+            <div>
+                <p class="text-xs text-slate-400">Temps de réponse</p>
+                <p class="text-xl font-bold tabular-nums text-slate-900">
+                    {{ $offres['median_response_seconds'] !== null ? $offres['median_response_seconds'].' s' : '—' }}
+                </p>
+                {{-- La MÉDIANE, pas la moyenne : une offre répondue depuis un tunnel décalerait une
+                     moyenne au point de la rendre absurde. --}}
+                <p class="text-xs text-slate-400">médiane</p>
+            </div>
+            <div>
+                <p class="text-xs text-slate-400">Sans réponse</p>
+                <p class="text-xl font-bold tabular-nums text-slate-900">{{ $offres['expired_count'] }}</p>
+                {{-- Une expiration se corrige en répondant plus vite, un refus en changeant ce
+                     qu'on accepte : les mélanger donnerait un conseil faux. --}}
+                <p class="text-xs text-slate-400">expirées</p>
+            </div>
+        </div>
+
+        @if (count($offres['decline_reasons']) > 0)
+        <div class="mt-4 border-t border-slate-100 pt-4">
+            <p class="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-400">Motifs de refus</p>
+            <ul class="space-y-1 text-sm text-slate-600">
+                @foreach ($offres['decline_reasons'] as $motif)
+                <li>{{ $motif['reason'] }} — {{ $motif['count'] }}</li>
+                @endforeach
+            </ul>
+        </div>
+        @endif
+    </div>
+
+    {{-- ─── E14 : le virement instantané ───────────────────────────────────── --}}
+    <div class="mt-6 rounded-2xl border border-slate-200 bg-white p-5" data-test="virement-express">
+        <h2 class="text-sm font-bold uppercase tracking-wide text-slate-500">Virement instantané</h2>
+        <p class="mt-1 text-sm text-slate-500">
+            Le virement ordinaire reste gratuit. Celui-ci arrive tout de suite, contre des frais.
+        </p>
+
+        @if ($refusExpress)
+        <p class="mt-3 rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">
+            {{ $refusExpress }}
+        </p>
+        @endif
+
+        <div class="mt-4 flex flex-wrap items-end gap-3">
+            <label for="montant-express" class="block">
+                <span class="mb-1 block text-sm font-semibold text-slate-900">Montant (€)</span>
+                <input id="montant-express" type="text" wire:model.live="montantExpress" placeholder="50,00"
+                    class="w-40 rounded-lg border-slate-300 bg-white text-sm text-slate-900">
+            </label>
+
+            <button type="button" wire:click="demanderLeVirementExpress"
+                @disabled(! $devisExpress['eligible'])
+                class="rounded-xl bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:opacity-40">
+                Recevoir maintenant
+            </button>
+        </div>
+
+        {{--
+            LES FRAIS S'AFFICHENT AVANT, EN EUROS. « 1,5 % » se lit et ne se comprend pas ;
+            « 2,40 € » se comprend. Le NET est le seul chiffre qui compte pour celui qui reçoit.
+        --}}
+        @if ($devisExpress['amount_cents'] > 0)
+        <p class="mt-3 text-sm {{ $devisExpress['eligible'] ? 'text-slate-700' : 'text-slate-500' }}">
+            @if ($devisExpress['eligible'])
+            Frais : {{ number_format($devisExpress['fee_cents'] / 100, 2, ',', ' ') }} € —
+            vous recevrez <strong>{{ number_format($devisExpress['net_cents'] / 100, 2, ',', ' ') }} €</strong>.
+            @else
+            Minimum {{ number_format($devisExpress['minimum_cents'] / 100, 2, ',', ' ') }} € :
+            en dessous, les frais représenteraient une part trop importante.
+            @endif
+        </p>
+        @endif
+    </div>
+
+    {{-- ─── E18 : l'assistant fiscal ───────────────────────────────────────── --}}
+    <div class="mt-6 rounded-2xl border border-slate-200 bg-white p-5" data-test="assistant-fiscal">
+        <div class="flex flex-wrap items-center justify-between gap-3">
+            <h2 class="text-sm font-bold uppercase tracking-wide text-slate-500">Mes revenus déclarables</h2>
+
+            <label for="annee-fiscale" class="flex items-center gap-2">
+                <span class="text-xs text-slate-500">Année</span>
+                <select id="annee-fiscale" wire:model.live="anneeFiscale"
+                    class="rounded-lg border-slate-300 bg-white text-sm text-slate-900">
+                    @for ($a = (int) now()->year; $a >= (int) now()->year - 4; $a--)
+                    <option value="{{ $a }}">{{ $a }}</option>
+                    @endfor
+                </select>
+            </label>
+        </div>
+
+        <div class="mt-4 grid gap-4 sm:grid-cols-3">
+            <div>
+                <p class="text-xs text-slate-400">Encaissé</p>
+                <p class="text-xl font-bold tabular-nums text-slate-900">
+                    {{ number_format($fiscal['gross_cents'] / 100, 2, ',', ' ') }} €
+                </p>
+            </div>
+            <div>
+                <p class="text-xs text-slate-400">Net de reprises</p>
+                <p class="text-xl font-bold tabular-nums text-slate-900">
+                    {{ number_format($fiscal['net_cents'] / 100, 2, ',', ' ') }} €
+                </p>
+            </div>
+            <div>
+                <p class="text-xs text-slate-400">Charges estimées</p>
+                <p class="text-xl font-bold tabular-nums text-slate-900">
+                    {{ number_format($fiscal['estimated_charges_cents'] / 100, 2, ',', ' ') }} €
+                </p>
+            </div>
+        </div>
+
+        {{--
+            L'ESTIMATION EST UNE ESTIMATION, ET LE MOT COMPTE. Les taux dépendent du statut, du
+            pays, du chiffre d'affaires : annoncer un montant sans le dire ferait provisionner faux,
+            et le mauvais sens se découvre au moment de payer.
+        --}}
+        <p class="mt-3 text-xs text-slate-500">
+            Estimation au taux de {{ $fiscal['charges_rate_percent'] }} %, à vérifier avec votre
+            comptable. La plateforme ne connaît pas votre statut fiscal.
+        </p>
+
+        <button type="button" wire:click="exporterLesRevenus"
+            class="mt-4 rounded-xl border border-slate-300 px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50">
+            Exporter {{ $anneeFiscale }} en CSV
+        </button>
+    </div>
 </div>

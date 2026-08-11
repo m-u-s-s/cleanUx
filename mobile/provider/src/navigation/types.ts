@@ -52,6 +52,20 @@ export type RootStackParamList = {
   Availability: undefined;
   /** « Ce que je fais, et où » : les deux tables que lit la requête candidate du dispatch. */
   TradesZones: undefined;
+  /**
+   * LE MODE SÉCURITÉ / SOS (E33).
+   *
+   * Le seul écran de cette application dont l'indisponibilité se compte en intégrité physique et
+   * non en chiffre d'affaires. Jamais derrière un drapeau, jamais derrière une permission fine.
+   */
+  Safety: undefined;
+  /**
+   * Ma journée, ordonnée et chaînée (E17 + E34).
+   *
+   * Elle se consulte le matin, en montant dans la voiture, et dit si l'enchaînement tient. La
+   * renvoyer au web reviendrait à ne pas la servir.
+   */
+  DailyRoute: undefined;
   Badges: undefined;
   ProviderDisputes: undefined;
   ProviderRatings: undefined;

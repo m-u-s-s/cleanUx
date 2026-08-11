@@ -141,11 +141,31 @@ return [
         ['key' => 'employe:employe.disponibilites', 'label' => 'Disponibilités', 'icon' => '🕒', 'route' => 'employe.disponibilites', 'context' => 'employe', 'category' => 'rendez-vous', 'primary' => true],
         ['key' => 'employe:employe.google.calendar', 'label' => 'Google Agenda', 'icon' => '🗓️', 'route' => 'employe.google.calendar', 'context' => 'employe', 'category' => 'rendez-vous', 'primary' => false],
         ['key' => 'employe:employe.planning', 'label' => 'Planning', 'icon' => '📅', 'route' => 'employe.planning', 'context' => 'employe', 'category' => 'rendez-vous', 'primary' => true],
-        ['key' => 'employe:employe.bundle-quotes', 'label' => 'Devis chantiers', 'icon' => '🏗️', 'route' => 'employe.bundle-quotes', 'context' => 'employe', 'category' => 'missions', 'primary' => true],
+        /*
+         * DÉTRÔNÉ DE LA BARRE ALLÉGÉE au profit de « Sécurité ».
+         *
+         * Elle n'accepte que cinq entrées par contexte, et c'est une règle de conception, pas une
+         * limite technique : au-delà, plus rien ne ressort. Il fallait donc arbitrer.
+         *
+         * « Devis chantiers » est un écran d'enchère qu'on ouvre quand on cherche du travail —
+         * utile, occasionnel, et parfaitement à sa place dans le répertoire. « Sécurité » est le
+         * seul écran de ce registre dont l'indisponibilité se compte en intégrité physique, et il
+         * n'a rien à faire au fond d'un répertoire qu'on ouvre à tête reposée.
+         */
+        ['key' => 'employe:employe.bundle-quotes', 'label' => 'Devis chantiers', 'icon' => '🏗️', 'route' => 'employe.bundle-quotes', 'context' => 'employe', 'category' => 'missions', 'primary' => false],
         ['key' => 'employe:employe.dashboard', 'label' => 'Ma journée', 'icon' => '🏠', 'route' => 'employe.dashboard', 'context' => 'employe', 'category' => 'missions', 'primary' => true],
         ['key' => 'employe:employe.historique', 'label' => 'Historique', 'icon' => '🕘', 'route' => 'employe.historique', 'context' => 'employe', 'category' => 'missions', 'primary' => false],
         ['key' => 'employe:employe.missions', 'label' => 'Mes missions', 'icon' => '📋', 'route' => 'employe.missions', 'context' => 'employe', 'category' => 'missions', 'primary' => true],
         ['key' => 'employe:employe.earnings', 'label' => 'Tableau de bord revenus', 'icon' => '💰', 'route' => 'employe.earnings', 'context' => 'employe', 'category' => 'finance', 'primary' => false],
+        /*
+         * E33 — le mode sécurité. `primary` à VRAI : c'est la seule entrée de tout ce registre
+         * dont l'indisponibilité se compte en intégrité physique, et elle n'a rien à faire au
+         * fond d'un répertoire qu'on ouvre à tête reposée.
+         */
+        ['key' => 'employe:employe.safety', 'label' => 'Sécurité', 'icon' => '🛡️', 'route' => 'employe.safety', 'context' => 'employe', 'category' => 'conformite', 'primary' => true],
+        // E12 — où se placer, et à quelle heure. Les ledgers du dispatch portaient la réponse
+        // depuis le chantier de répartition ; personne ne la lisait.
+        ['key' => 'employe:employe.heatmap', 'label' => 'Où me placer', 'icon' => '🗺️', 'route' => 'employe.heatmap', 'context' => 'employe', 'category' => 'donnees', 'primary' => false],
         ['key' => 'employe:employe.stripe-connect.start', 'label' => 'Stripe Connect', 'icon' => '💳', 'route' => 'employe.stripe-connect.start', 'context' => 'employe', 'category' => 'finance', 'primary' => false],
         ['key' => 'employe:employe.wallet', 'label' => 'Mon portefeuille', 'icon' => '👛', 'route' => 'employe.wallet', 'context' => 'employe', 'category' => 'finance', 'primary' => false],
         ['key' => 'employe:employe.coordination', 'label' => 'Coordination', 'icon' => '🧭', 'route' => 'employe.coordination', 'context' => 'employe', 'category' => 'prestataires', 'primary' => false],

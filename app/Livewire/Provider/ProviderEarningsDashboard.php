@@ -11,6 +11,11 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
+use App\Services\Payments\ExpressPayoutService;
+use App\Services\Provider\OfferStatsService;
+use App\Services\Provider\TaxSummaryService;
+use Illuminate\Validation\ValidationException;
+use Livewire\Attributes\Locked;
 use Livewire\Component;
 
 /**
@@ -32,6 +37,53 @@ class ProviderEarningsDashboard extends Component
         $this->period = $period;
     }
 
+    /** L'année du résumé fiscal (E18). */
+    public int $anneeFiscale = 0;
+
+    /** Le montant du virement instantané demandé (E14), en euros saisis. */
+    public string $montantExpress = '';
+
+    #[Locked]
+    public ?string $refusExpress = null;
+
+    public function mount(): void
+    {
+        // L'année COURANTE par défaut : celle qu'on regarde onze mois sur douze. Janvier fait
+        // exception et se corrige d'un clic.
+        $this->anneeFiscale = (int) Carbon::now()->year;
+    }
+
+    /**
+     * DEMANDER UN VIREMENT INSTANTANÉ (E14).
+     *
+     * Le refus du domaine s'AFFICHE : « le virement instantané demande au moins 20 € » est une
+     * règle à lire, et la remplacer par une erreur générique ferait recommencer la saisie.
+     */
+    public function demanderLeVirementExpress(): void
+    {
+        $cents = (int) round(((float) str_replace(',', '.', $this->montantExpress)) * 100);
+
+        try {
+            app(ExpressPayoutService::class)->demander(Auth::user(), $cents);
+
+            $this->reset(['montantExpress', 'refusExpress']);
+        } catch (ValidationException $e) {
+            $this->refusExpress = collect($e->errors())->flatten()->first();
+        }
+    }
+
+    /** L'export fiscal de l'année — le fichier qu'on donne à son comptable. */
+    public function exporterLesRevenus(): \Symfony\Component\HttpFoundation\StreamedResponse
+    {
+        $export = app(TaxSummaryService::class)->csv(Auth::user(), (int) $this->anneeFiscale);
+
+        return response()->streamDownload(
+            fn () => print($export['content']),
+            $export['filename'],
+            ['Content-Type' => 'text/csv; charset=UTF-8'],
+        );
+    }
+
     public function render(): View
     {
         $user = Auth::user();
@@ -51,6 +103,23 @@ class ProviderEarningsDashboard extends Component
 
         return view('livewire.provider.provider-earnings-dashboard', [
             'period' => $this->period,
+            /*
+             * E15 — LES STATISTIQUES D'OFFRES. Tout est déjà dans `mission_assignments` et personne
+             * ne le lit : c'est la réponse exacte à « pourquoi est-ce que je reçois moins de
+             * courses qu'avant », une question à laquelle on ne pouvait répondre qu'au ressenti.
+             */
+            'offres' => app(OfferStatsService::class)->pour($user),
+            /*
+             * E18 — L'ASSISTANT FISCAL. Le registre est immuable et daté ; il n'existait aucun
+             * moyen d'en sortir un total autrement qu'en additionnant des virements à la main, en
+             * avril, sous pression.
+             */
+            'fiscal' => app(TaxSummaryService::class)->pourLAnnee($user, (int) $this->anneeFiscale),
+            // E14 — le devis du virement instantané, affiché AVANT le bouton : « 1,5 % » se lit et
+            // ne se comprend pas, « 2,40 € » se comprend.
+            'devisExpress' => app(ExpressPayoutService::class)->devis(
+                (int) round(((float) str_replace(',', '.', $this->montantExpress ?: '0')) * 100),
+            ),
             'current' => $current,
             'previous' => $previous,
             'delta' => $delta,

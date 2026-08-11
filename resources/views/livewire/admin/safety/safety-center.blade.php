@@ -10,6 +10,72 @@
             <a href="{{ route('admin.dashboard') }}" class="rounded-xl border px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50">← Dashboard</a>
         </div>
 
+        {{--
+            LES ALERTES D'URGENCE (E33), EN TÊTE.
+
+            Le centre traitait les SIGNALEMENTS — de la modération, arbitrée des jours plus tard.
+            Rien n'existait pour l'urgence : quelqu'un seul chez un inconnu, dont il faut savoir où
+            il est maintenant. Elles passent donc avant tout le reste de cet écran, et les urgences
+            avant les veilles.
+        --}}
+        @if ($alertes->isNotEmpty())
+        <div class="rounded-2xl border border-rose-200 bg-rose-50 p-5" data-test="alertes-securite">
+            <h2 class="text-sm font-bold uppercase tracking-wide text-rose-800">
+                Alertes en cours ({{ $alertes->count() }})
+            </h2>
+
+            <div class="mt-3 space-y-2">
+                @foreach ($alertes as $alerte)
+                <div class="flex flex-wrap items-center justify-between gap-3 rounded-xl bg-white p-4">
+                    <div class="min-w-0">
+                        <p class="text-sm font-bold text-slate-900">
+                            {{ $alerte->user?->name ?? 'Prestataire' }}
+                            @if ($alerte->level === \App\Models\SafetyAlert::LEVEL_EMERGENCY)
+                            <span class="ml-2 rounded-full bg-rose-100 px-2 py-0.5 text-[11px] font-bold text-rose-700">URGENCE</span>
+                            @else
+                            <span class="ml-2 rounded-full bg-amber-100 px-2 py-0.5 text-[11px] font-bold text-amber-800">Veille</span>
+                            @endif
+                        </p>
+                        <p class="text-xs text-slate-600">
+                            {{ $alerte->created_at?->diffForHumans() }}
+                            @if ($alerte->user?->phone) · {{ $alerte->user->phone }} @endif
+                            @if ($alerte->lat && $alerte->lng)
+                            · {{ $alerte->lat }}, {{ $alerte->lng }}
+                            @endif
+                        </p>
+                        @if ($alerte->message)
+                        <p class="mt-1 text-xs text-slate-700">« {{ $alerte->message }} »</p>
+                        @endif
+                    </div>
+
+                    <div class="flex shrink-0 gap-2">
+                        @if ($alerte->acknowledged_at)
+                        <span class="rounded-lg bg-slate-100 px-3 py-1.5 text-xs font-semibold text-slate-600">
+                            Vue à {{ $alerte->acknowledged_at->format('H:i') }}
+                        </span>
+                        @else
+                        {{-- Le geste qui compte le plus : savoir qu'on n'est pas seul. --}}
+                        <button type="button" wire:click="accuserReception({{ $alerte->id }})"
+                            class="rounded-lg bg-rose-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-rose-700">
+                            J'accuse réception
+                        </button>
+                        @endif
+
+                        <button type="button" wire:click="cloreLAlerte({{ $alerte->id }}, false)"
+                            class="rounded-lg border border-slate-300 px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50">
+                            Résolue
+                        </button>
+                        <button type="button" wire:click="cloreLAlerte({{ $alerte->id }}, true)"
+                            class="rounded-lg border border-slate-300 px-3 py-1.5 text-xs font-semibold text-slate-500 hover:bg-slate-50">
+                            Fausse alerte
+                        </button>
+                    </div>
+                </div>
+                @endforeach
+            </div>
+        </div>
+        @endif
+
         <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
             <div class="rounded-2xl border bg-white p-4 shadow-sm">
                 <p class="text-xs uppercase font-bold text-slate-500">En attente</p>

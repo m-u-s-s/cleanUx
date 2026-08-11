@@ -46,6 +46,11 @@ class DemoPlatformBootstrapSeeder extends Seeder
              * distingue pas « le circuit fonctionne » de « personne n'a rien demandé ».
              */
             PilotageEntrepriseDemoSeeder::class,
+            /*
+             * LA PROGRESSION D'UN PRESTATAIRE (E13, E16, E33). Les quêtes ont besoin des missions
+             * pour avoir un compteur à montrer, et l'intérêt d'une quête EST son compteur.
+             */
+            ProgressionPrestataireDemoSeeder::class,
             FeedbackSeeder::class,
             /*
              * LE SCÉNARIO DE DÉMONSTRATION DU MOTEUR DE RÉPARTITION.

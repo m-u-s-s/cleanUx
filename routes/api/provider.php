@@ -14,6 +14,8 @@ use App\Http\Controllers\Api\Provider\KycController;
 use App\Http\Controllers\Api\Provider\MissionLiveTrackingController;
 use App\Http\Controllers\Api\Provider\MissionOnSiteController;
 use App\Http\Controllers\Api\Provider\PresenceController;
+use App\Http\Controllers\Api\Provider\GrowthController;
+use App\Http\Controllers\Api\Provider\SafetyController;
 use App\Http\Controllers\Api\Provider\ProviderCancellationController;
 use App\Http\Controllers\Api\Provider\ProviderCoverageController;
 use App\Http\Controllers\Api\Provider\ProviderDisputeController;
@@ -31,6 +33,57 @@ use App\Http\Controllers\Api\Provider\TripTrackingController;
 use App\Http\Controllers\Api\ProviderMissionAssignmentController;
 use App\Http\Controllers\Api\ProviderPresenceController;
 use Illuminate\Support\Facades\Route;
+
+/*
+|--------------------------------------------------------------------------
+| LE BOUTON D'URGENCE (E33) — hors de toute garde de rôle, et c'est délibéré
+|--------------------------------------------------------------------------
+|
+| Le groupe principal ci-dessous impose `role:employe` ET `provider.approved`. Un bouton
+| d'urgence gardé par ces conditions est un bouton qui peut répondre 403 au pire moment : un
+| compte en cours d'approbation qui fait sa première intervention en est exclu, et c'est
+| précisément quelqu'un qui n'a encore aucun réflexe.
+|
+| LA SEULE CONDITION EST D'ÊTRE AUTHENTIFIÉ. L'alerte est nominative, donc rattachée à quelqu'un
+| de connu — et une alerte de trop coûte une vérification, une alerte manquante coûte autre chose.
+|
+| JAMAIS DERRIÈRE UN DRAPEAU non plus : une fonctionnalité qu'on peut désactiver par configuration
+| est une fonctionnalité dont personne ne peut garantir qu'elle répondra.
+*/
+/*
+|--------------------------------------------------------------------------
+| CE QUI FAIT PROGRESSER UN PRESTATAIRE (E12-E18, E34)
+|--------------------------------------------------------------------------
+|
+| Ce sont exactement les questions qu'on se pose EN TRAVAILLANT, pas assis à un bureau : où me
+| placer ce matin, où j'en suis de mon objectif, est-ce que ma journée tient, est-ce que je peux
+| être payé maintenant. Un prestataire indépendant n'a souvent pas d'ordinateur du tout.
+|
+| HORS DU GROUPE `provider.approved` : un compte en cours d'approbation a besoin de voir la
+| demande de sa zone et le catalogue de formations — c'est même ce qui lui permet de se préparer.
+| Les écritures qui engagent de l'argent (le virement express) restent gardées par la
+| vérification Stripe Connect, dans le service.
+*/
+Route::middleware(['auth:sanctum', 'role:employe'])->prefix('provider/growth')->group(function () {
+    Route::get('/heatmap', [GrowthController::class, 'heatmap']);
+    Route::get('/quests', [GrowthController::class, 'quests']);
+    Route::get('/offer-stats', [GrowthController::class, 'offerStats']);
+    Route::get('/courses', [GrowthController::class, 'courses']);
+    Route::post('/courses/{course}/complete', [GrowthController::class, 'completeCourse']);
+    // La plus critique des sept : elle se consulte le matin, en montant dans la voiture.
+    Route::get('/daily-route', [GrowthController::class, 'dailyRoute']);
+    Route::get('/tax-summary', [GrowthController::class, 'taxSummary']);
+    // Le devis AVANT le bouton : « 1,5 % » se lit et ne se comprend pas, « 2,40 € » se comprend.
+    Route::post('/express-quote', [GrowthController::class, 'expressQuote']);
+    Route::post('/express-payout', [GrowthController::class, 'expressPayout']);
+});
+
+Route::middleware('auth:sanctum')->prefix('provider/safety')->group(function () {
+    Route::get('/current', [SafetyController::class, 'current']);
+    Route::post('/alerts', [SafetyController::class, 'trigger']);
+    Route::post('/alerts/{alert}/ping', [SafetyController::class, 'ping']);
+    Route::post('/alerts/{alert}/close', [SafetyController::class, 'close']);
+});
 
 // ─────────────────────────────────────────────
 // Authenticated — Provider endpoints

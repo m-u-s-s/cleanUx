@@ -65,9 +65,20 @@ class PilotageEntrepriseDemoSeeder extends Seeder
          * Sans elle, la file reste vide — et une file vide ne distingue pas « le circuit
          * fonctionne » de « personne n'a jamais rien demandé ».
          */
+        /*
+         * LE MARQUEUR, ET SURTOUT PAS LE STATUT.
+         *
+         * Chercher une réservation `pending_approval` paraissait suffire — et ne l'était pas :
+         * `StatutRendezVousSeeder` réattribue un statut ALÉATOIRE à chaque réservation avant que ce
+         * seeder ne passe. Au second `db:seed`, la demande posée au premier avait changé de statut,
+         * la recherche ne trouvait rien, et une nouvelle réservation naissait — avec son client, sa
+         * zone et son service, quatre tables qui gonflaient à chaque exécution.
+         *
+         * Un marqueur dans `metadata` survit à la randomisation : c'est ce qu'on cherche.
+         */
         $existante = Booking::query()
             ->where('customer_organization_id', $societe->id)
-            ->where('status', InternalApprovalService::STATUT_EN_ATTENTE)
+            ->where('metadata->demo_approval', true)
             ->exists();
 
         if (! $existante) {
@@ -80,6 +91,7 @@ class PilotageEntrepriseDemoSeeder extends Seeder
             if ($aRequalifier) {
                 $aRequalifier->forceFill([
                     'status' => InternalApprovalService::STATUT_EN_ATTENTE,
+                    'metadata' => array_merge((array) $aRequalifier->metadata, ['demo_approval' => true]),
                 ])->save();
             } else {
                 /*
@@ -112,6 +124,7 @@ class PilotageEntrepriseDemoSeeder extends Seeder
                      */
                     $demande->forceFill([
                         'status' => InternalApprovalService::STATUT_EN_ATTENTE,
+                        'metadata' => array_merge((array) $demande->metadata, ['demo_approval' => true]),
                     ])->save();
                 }
             }

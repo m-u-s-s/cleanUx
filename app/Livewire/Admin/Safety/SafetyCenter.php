@@ -2,8 +2,10 @@
 
 namespace App\Livewire\Admin\Safety;
 
+use App\Models\SafetyAlert;
 use App\Models\UserBlock;
 use App\Models\UserReport;
+use App\Services\Safety\SafetyAlertService;
 use App\Services\Safety\UserSafetyService;
 use App\Support\Livewire\Concerns\EnforcesAdminAccess;
 use Illuminate\Contracts\View\View;
@@ -29,6 +31,44 @@ class SafetyCenter extends Component
     public ?int $selectedReportId = null;
 
     public string $resolutionNotes = '';
+
+    /**
+     * ACCUSER RÉCEPTION D'UNE ALERTE D'URGENCE (E33).
+     *
+     * C'EST LE GESTE QUI COMPTE LE PLUS, et pas la résolution : savoir que quelqu'un a VU l'alerte
+     * est ce que la personne sur place attend en premier. Savoir qu'on est seul est ce qui rend une
+     * situation effrayante.
+     */
+    public function accuserReception(int $alerteId): void
+    {
+        $alerte = SafetyAlert::query()->find($alerteId);
+
+        if ($alerte !== null) {
+            app(SafetyAlertService::class)->accuserReception($alerte, Auth::user());
+        }
+    }
+
+    public function cloreLAlerte(int $alerteId, bool $fausseAlerte = false): void
+    {
+        $alerte = SafetyAlert::query()->find($alerteId);
+
+        if ($alerte === null) {
+            return;
+        }
+
+        try {
+            app(SafetyAlertService::class)->cloturer(
+                $alerte,
+                Auth::user(),
+                $fausseAlerte,
+                $this->resolutionNotes !== '' ? $this->resolutionNotes : null,
+            );
+
+            $this->resolutionNotes = '';
+        } catch (\DomainException $e) {
+            $this->addError('alerte', $e->getMessage());
+        }
+    }
 
     public function setTab(string $tab): void
     {
@@ -103,6 +143,15 @@ class SafetyCenter extends Component
             : null;
 
         return view('livewire.admin.safety.safety-center', [
+            /*
+             * LES ALERTES D'URGENCE (E33), EN TÊTE DE L'ÉCRAN.
+             *
+             * Le centre traitait les SIGNALEMENTS — de la modération, arbitrée des jours plus
+             * tard. Rien n'existait pour l'urgence : quelqu'un seul chez un inconnu, dont il faut
+             * savoir où il est maintenant. Les urgences passent avant les veilles, et les deux
+             * avant tout le reste de cet écran.
+             */
+            'alertes' => app(SafetyAlertService::class)->ouvertes(),
             'reports' => $reports,
             'blocks' => $blocks,
             'stats' => $stats,
