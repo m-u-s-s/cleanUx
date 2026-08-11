@@ -83,6 +83,35 @@ import { MissionFieldScreen } from '@/screens/MissionFieldScreen';
 const apiMock = new MockAdapter(apiClient);
 const MISSION_ID = 42;
 
+/**
+ * La fiche d'accès que le serveur rendra pour ce statut.
+ *
+ * Verrouillée AVANT l'arrivée : c'est la règle que F5 protège — un code d'alarme et l'emplacement
+ * d'une boîte à clés sont les clés du domicile de quelqu'un.
+ */
+function ficheDAccesPour(status: string) {
+  return status === 'arrived' || status === 'started'
+    ? {
+        available: true,
+        address: '5 Rue du Bois',
+        floor: '3e étage',
+        access_instructions: 'Digicode 45A12.',
+        alarm_code_required: true,
+        access_window: null,
+        notes: null,
+      }
+    : {
+        available: false,
+        address: null,
+        floor: null,
+        access_instructions: null,
+        alarm_code_required: false,
+        access_window: null,
+        notes: null,
+        message: 'Les informations d’accès s’affichent une fois votre arrivée confirmée sur place.',
+      };
+}
+
 function rendre(status: string) {
   apiMock.onGet(`/provider/missions/${MISSION_ID}`).reply(200, {
     id: MISSION_ID,
@@ -96,6 +125,11 @@ function rendre(status: string) {
   });
   apiMock.onGet(`/provider/missions/${MISSION_ID}/media`).reply(200, { data: [] });
   apiMock.onGet(`/provider/missions/${MISSION_ID}/incidents`).reply(200, { data: [] });
+  apiMock.onGet(`/provider/missions/${MISSION_ID}/extras`).reply(200, { data: [] });
+  apiMock.onPost(`/provider/missions/${MISSION_ID}/extras`).reply(201, { data: {} });
+  apiMock
+    .onGet(`/provider/missions/${MISSION_ID}/access-sheet`)
+    .reply(200, { data: ficheDAccesPour(status) });
 
   const client = new QueryClient({
     defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
@@ -201,5 +235,40 @@ describe('MissionFieldScreen — le kit sur place', () => {
     expect(parties['description']).toBe('Portail fermé, personne ne répond.');
     // Sans photo : le sélecteur ne doit même pas s'ouvrir.
     expect(mockPickImage).not.toHaveBeenCalled();
+  });
+
+  /*
+   * F5 — LA FICHE D'ACCÈS. Ce dépôt a un historique d'écrans complets que personne ne pouvait
+   * atteindre : on vérifie donc ce qui S'AFFICHE, pas ce qui est monté.
+   */
+  it('garde les codes d’accès fermés tant que l’arrivée n’est pas confirmée', async () => {
+    rendre('assigned');
+
+    expect(await screen.findByTestId('fiche-acces-verrouillee')).toBeTruthy();
+    // Le digicode ne doit apparaître nulle part sur l'écran avant l'arrivée.
+    expect(screen.queryByText(/45A12/)).toBeNull();
+  });
+
+  it('ouvre la fiche une fois l’arrivée confirmée', async () => {
+    rendre('started');
+
+    expect(await screen.findByTestId('fiche-acces-consignes')).toBeTruthy();
+    // L'alarme demande une manœuvre chronométrée : elle doit se lire avant d'ouvrir la porte.
+    expect(screen.getByText('Alarme à désarmer')).toBeTruthy();
+  });
+
+  /* F3 — proposer un supplément constaté sur place. */
+  it('propose un supplément avec le prix converti en centimes', async () => {
+    rendre('started');
+
+    fireEvent.changeText(await screen.findByTestId('extra-label'), 'Nettoyage des vitres');
+    fireEvent.changeText(screen.getByTestId('extra-prix'), '25,50');
+    fireEvent.press(screen.getByText('Proposer au client'));
+
+    await waitFor(() => expect(envois('extras')).toHaveLength(1));
+
+    // Le montant voyage en CENTIMES : un flottant produirait des écarts d'un centime que personne
+    // ne sait expliquer une fois en base.
+    expect(JSON.parse(envois('extras')[0]!.data).price_cents).toBe(2550);
   });
 });

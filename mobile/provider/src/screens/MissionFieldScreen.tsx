@@ -9,6 +9,7 @@ import {
   useCaptureMissionMedia,
   useReportMissionIncident,
   useMissionExtras,
+  useMissionAccessSheet,
   useProposeMissionExtra,
   INCIDENT_TYPES,
 } from '@/missions';
@@ -56,6 +57,7 @@ export function MissionFieldScreen({ route }: Props) {
   const [incidentDescription, setIncidentDescription] = useState('');
 
   const { data: extras } = useMissionExtras(missionId);
+  const { data: ficheDAcces } = useMissionAccessSheet(missionId);
   const proposerUnExtra = useProposeMissionExtra(missionId);
   const [extraLabel, setExtraLabel] = useState('');
   const [extraPrix, setExtraPrix] = useState('');
@@ -180,6 +182,42 @@ export function MissionFieldScreen({ route }: Props) {
             variant="secondary"
           />
         </View>
+      </View>
+
+      <Divider />
+
+      {/* ── FICHE D'ACCÈS (F5) ─────────────────────────────────────────── */}
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>Accéder au lieu</Text>
+
+        {ficheDAcces?.available ? (
+          <>
+            {ficheDAcces.floor ? (
+              <Text style={styles.sectionHint}>Étage : {ficheDAcces.floor}</Text>
+            ) : null}
+            {ficheDAcces.access_instructions ? (
+              <Text style={styles.sectionHint} testID="fiche-acces-consignes">
+                {ficheDAcces.access_instructions}
+              </Text>
+            ) : null}
+            {ficheDAcces.access_window ? (
+              <Text style={styles.sectionHint}>Accès {ficheDAcces.access_window}</Text>
+            ) : null}
+            {/*
+              L'alarme demande une manœuvre chronométrée : le prestataire doit le lire AVANT
+              d'ouvrir la porte, pas en entendant la sirène.
+            */}
+            {ficheDAcces.alarm_code_required ? (
+              <Badge label="Alarme à désarmer" variant="warning" />
+            ) : null}
+          </>
+        ) : (
+          // Le refus est dit, jamais une fiche vide : une fiche vide se lit comme une donnée
+          // manquante et fait appeler le support pour rien.
+          <Text style={styles.sectionHint} testID="fiche-acces-verrouillee">
+            {ficheDAcces?.message ?? 'Confirmez votre arrivée pour afficher les informations d’accès.'}
+          </Text>
+        )}
       </View>
 
       <Divider />

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api\Provider;
 
+use App\Services\Missions\OnSite\MissionAccessSheetService;
 use App\Services\Missions\MissionAssignmentStatusService;
 use App\Services\Missions\OnSite\MissionExtraService;
 use App\Http\Controllers\Controller;
@@ -40,6 +41,7 @@ class MissionOnSiteController extends Controller
         protected MissionTimelineService $timelineService,
         protected MissionExtraService $extraService,
         protected MissionAssignmentStatusService $assignmentStatusService,
+        protected MissionAccessSheetService $accessSheetService,
     ) {}
 
     /**
@@ -166,6 +168,28 @@ class MissionOnSiteController extends Controller
                 ->map(fn ($extra) => $this->extraService->presenter($extra))
                 ->values(),
         ]);
+    }
+
+    /**
+     * LA FICHE D'ACCÈS AU LIEU (F5) — codes, étage, consignes.
+     *
+     * Elle ne s'ouvre qu'une fois l'arrivée confirmée : un code d'alarme ou l'emplacement d'une
+     * boîte à clés sont les clés du domicile de quelqu'un, et les rendre lisibles dès l'assignation
+     * reviendrait à les distribuer à tous ceux qui passent dans la file d'affectation.
+     */
+    public function accessSheet(Request $request, Mission $mission): JsonResponse
+    {
+        try {
+            $fiche = $this->accessSheetService->pour($mission, $request->user());
+        } catch (RuntimeException $e) {
+            return response()->json(['message' => $e->getMessage()], 403);
+        } catch (DomainException $e) {
+            // 200 et non 403 : ce n'est pas un refus d'accès, c'est un « pas encore ». L'écran doit
+            // pouvoir afficher la raison sans traiter la réponse comme une erreur.
+            return response()->json(['data' => $this->accessSheetService->verrouillee($e->getMessage())]);
+        }
+
+        return response()->json(['data' => $fiche]);
     }
 
     public function storeIncident(Request $request, Mission $mission): JsonResponse

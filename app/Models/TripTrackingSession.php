@@ -25,7 +25,7 @@ class TripTrackingSession extends Model
 
     protected $fillable = [
         'code', 'booking_id', 'provider_user_id', 'status',
-        'is_paused', 'paused_at',
+        'is_paused', 'paused_at', 'paused_total_seconds',
         'destination_lat', 'destination_lng', 'geofence_radius_m',
         'start_lat', 'start_lng',
         'points_count', 'total_distance_m', 'current_eta_seconds',
@@ -50,6 +50,7 @@ class TripTrackingSession extends Model
         'last_speed_mps' => 'float',
         'is_paused' => 'boolean',
         'paused_at' => 'datetime',
+        'paused_total_seconds' => 'integer',
         'geofence_radius_m' => 'integer',
         'points_count' => 'integer',
         'total_distance_m' => 'integer',
@@ -114,5 +115,45 @@ class TripTrackingSession extends Model
             self::STATUS_ARRIVED,
             self::STATUS_IN_MISSION,
         ]);
+    }
+
+    /**
+     * LE TEMPS RÉELLEMENT TRAVAILLÉ, pauses déduites (F4).
+     *
+     * C'est cette valeur — pas la durée de présence — que consommeront les feuilles d'heures et le
+     * calcul de rentabilité. Sur une intervention de quatre heures dont une de déjeuner, les
+     * confondre fait payer ou facturer une heure de trop.
+     *
+     * Le compte part de l'entrée en mission, jamais du départ : le trajet n'est pas du travail sur
+     * place. Une session qui n'a pas encore commencé rend zéro plutôt que nul — « rien de
+     * travaillé » est une réponse, pas une absence de réponse.
+     */
+    public function workedSeconds(): int
+    {
+        if (! $this->in_mission_at) {
+            return 0;
+        }
+
+        $fin = $this->ended_at ?? now();
+
+        // `abs()` : une horloge d'appareil en avance rendrait un négatif, et un temps travaillé
+        // négatif se propagerait jusqu'à une fiche de paie.
+        $presence = (int) abs($fin->diffInSeconds($this->in_mission_at));
+
+        // La pause en cours compte : sans elle, consulter la durée pendant une pause l'annoncerait
+        // trop haute, et la valeur bougerait à la reprise sans que rien ne se soit passé.
+        $pauses = (int) $this->paused_total_seconds;
+
+        if ($this->is_paused && $this->paused_at) {
+            $pauses += (int) abs(now()->diffInSeconds($this->paused_at));
+        }
+
+        return max(0, $presence - $pauses);
+    }
+
+    /** La durée travaillée en minutes, arrondie — l'unité des feuilles d'heures. */
+    public function workedMinutes(): int
+    {
+        return (int) round($this->workedSeconds() / 60);
     }
 }

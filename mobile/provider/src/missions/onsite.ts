@@ -68,6 +68,23 @@ export interface MissionExtraItem {
   charged_at: string | null;
 }
 
+/**
+ * La fiche d'accès au lieu — codes, étage, consignes.
+ *
+ * `available` porte la décision : elle ne s'ouvre qu'une fois l'arrivée confirmée, parce qu'un code
+ * d'alarme et l'emplacement d'une boîte à clés sont les clés du domicile de quelqu'un.
+ */
+export interface MissionAccessSheet {
+  available: boolean;
+  address: string | null;
+  floor: string | null;
+  access_instructions: string | null;
+  alarm_code_required: boolean;
+  access_window: string | null;
+  notes: string | null;
+  message?: string | null;
+}
+
 export interface MissionTimelineEntry {
   kind: 'milestone' | 'checklist' | 'incident' | 'media';
   key: string;
@@ -282,5 +299,17 @@ export function useProposeMissionExtra(missionId: number) {
       void qc.invalidateQueries({ queryKey: ['provider', 'mission', missionId, 'extras'] });
       void qc.invalidateQueries({ queryKey: ['provider', 'mission', missionId, 'timeline'] });
     },
+  });
+}
+
+/** La fiche d'accès de cette mission — verrouillée tant que l'arrivée n'est pas confirmée. */
+export function useMissionAccessSheet(missionId: number | null) {
+  return useQuery<MissionAccessSheet>({
+    queryKey: ['provider', 'mission', missionId, 'access-sheet'],
+    queryFn: async () => {
+      const res = await apiClient.get(`/provider/missions/${missionId}/access-sheet`);
+      return res.data.data;
+    },
+    enabled: missionId !== null,
   });
 }

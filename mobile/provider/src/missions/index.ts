@@ -16,6 +16,7 @@ export {
   useCaptureMissionMedia,
   useReportMissionIncident,
   useMissionExtras,
+  useMissionAccessSheet,
   useProposeMissionExtra,
   INCIDENT_TYPES,
 } from './onsite';
@@ -27,4 +28,5 @@ export type {
   MissionTimeline,
   MissionTimelineEntry,
   MissionExtraItem,
+  MissionAccessSheet,
 } from './onsite';

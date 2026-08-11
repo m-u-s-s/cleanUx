@@ -207,11 +207,48 @@ class TripTrackingService
     /**
      * Reprend le partage de position après une pause.
      */
+    /**
+     * REPREND — ET COMPTE LA PAUSE QUI VIENT DE FINIR.
+     *
+     * Cette méthode se contentait de baisser le drapeau. La durée écoulée n'était cumulée nulle
+     * part, et `paused_at` restait en place : il continuait ensuite de se lire comme « en pause
+     * depuis ce matin », alors que le prestataire travaillait.
+     *
+     * Sans ce cumul, LE TEMPS TRAVAILLÉ N'EST PAS CALCULABLE : entre l'entrée en mission et la
+     * clôture il y a le travail et les pauses, et sans le second terme on ne dispose que de la durée
+     * de présence. Sur une intervention de quatre heures dont une de déjeuner, cela fait une heure
+     * facturée ou payée en trop.
+     */
     public function resumeSession(TripTrackingSession $session): TripTrackingSession
     {
-        $session->update(['is_paused' => false]);
+        if (! $session->is_paused) {
+            // Reprendre deux fois n'est pas une erreur — double appui, deux appareils — mais
+            // recompter le serait : la seconde reprise ajouterait une durée déjà comptée.
+            return $session;
+        }
+
+        $session->update([
+            'is_paused' => false,
+            'paused_at' => null,
+            'paused_total_seconds' => $session->paused_total_seconds + $this->secondesDePauseEnCours($session),
+        ]);
 
         return $session->fresh();
+    }
+
+    /**
+     * La durée de la pause en cours, ou zéro si le prestataire n'est pas en pause.
+     *
+     * `abs()` sur l'écart : une horloge d'appareil en avance produirait sinon un négatif qui
+     * viendrait RETRANCHER du temps de pause déjà acquis.
+     */
+    protected function secondesDePauseEnCours(TripTrackingSession $session): int
+    {
+        if (! $session->is_paused || ! $session->paused_at) {
+            return 0;
+        }
+
+        return (int) abs(now()->diffInSeconds($session->paused_at));
     }
 
     public function markInMission(TripTrackingSession $session): TripTrackingSession
@@ -244,9 +281,18 @@ class TripTrackingService
         if ($reason) {
             $meta['end_reason'] = $reason;
         }
+        /*
+         * UNE PAUSE EN COURS À LA CLÔTURE COMPTE QUAND MÊME. Un prestataire qui met en pause puis
+         * clôture sans reprendre — parce qu'il a fini, ou parce que l'application s'est fermée —
+         * verrait sinon cette dernière pause disparaître du décompte, et le temps travaillé
+         * gonfler d'autant.
+         */
         $session->update([
             'status' => TripTrackingSession::STATUS_ENDED,
             'ended_at' => now(),
+            'is_paused' => false,
+            'paused_at' => null,
+            'paused_total_seconds' => $session->paused_total_seconds + $this->secondesDePauseEnCours($session),
             'metadata' => $meta,
         ]);
 
