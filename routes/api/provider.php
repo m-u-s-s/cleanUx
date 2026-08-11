@@ -231,6 +231,9 @@ Route::middleware(['auth:sanctum', 'role:employe', 'provider.approved'])->group(
         Route::get('/{mission}/presence-mode', [MissionOnSiteController::class, 'presenceMode']);
         // F6 — le guide pas-à-pas : une étape à la fois, dans l'ordre du métier.
         Route::get('/{mission}/guided-step', [MissionOnSiteController::class, 'guidedStep']);
+        // F7 — déclarer les consommables utilisés, rattachés à la mission.
+        Route::get('/{mission}/consumables', [MissionOnSiteController::class, 'consumables']);
+        Route::post('/{mission}/consumables', [MissionOnSiteController::class, 'storeConsumable']);
         Route::post('/{mission}/guided-step', [MissionOnSiteController::class, 'completeGuidedStep']);
         Route::post('/{mission}/arrival-proof', [MissionOnSiteController::class, 'storeArrivalProof']);
         Route::post('/{mission}/extras', [MissionOnSiteController::class, 'storeExtra']);

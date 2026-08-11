@@ -121,9 +121,16 @@ class PermissionService
             'tasks.close',
             'analytics.view',
             'analytics.export',
+            // E23 — l'inventaire des consommables. `view` pour savoir ce qui reste, `manage` pour
+            // réceptionner, corriger, et recevoir les alertes de réappro : prévenir quelqu'un qui
+            // ne peut pas commander ferait du bruit sans recours.
+            'inventory.view',
+            'inventory.manage',
         ],
 
         OrganizationRole::MANAGER->value => [
+            'inventory.view',
+            'inventory.manage',
             'bookings.create',
             'bookings.view_all',
             'bookings.approve',
@@ -169,6 +176,9 @@ class PermissionService
         ],
 
         OrganizationRole::OPERATIONS_MANAGER->value => [
+            // E23 — c'est le rôle qui commande réellement les produits.
+            'inventory.view',
+            'inventory.manage',
             'bookings.view_all',
             'bookings.approve',
             'bookings.cancel',
@@ -239,6 +249,15 @@ class PermissionService
         OrganizationRole::WORKER->value => [
             'channels.create',
             'tasks.create',
+            /*
+             * LE TERRAIN VOIT LE STOCK, IL NE LE GÈRE PAS (F7).
+             *
+             * Déclarer ce qu'on a consommé chez un client suppose de savoir ce qu'il y avait —
+             * mais réceptionner une livraison ou corriger un inventaire relève de l'agence. La
+             * consommation elle-même passe par la mission, gardée par l'affectation, et non par
+             * cette clé : un salarié ne prélève que sur l'intervention qu'il exécute.
+             */
+            'inventory.view',
         ],
 
         OrganizationRole::VIEWER->value => [

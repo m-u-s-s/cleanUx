@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api\Provider;
 
+use App\Services\Inventory\InventoryService;
 use App\Services\Missions\OnSite\MissionGuidedChecklistService;
 use App\Services\Missions\OnSite\MissionCheckInService;
 use Illuminate\Validation\ValidationException;
@@ -49,6 +50,7 @@ class MissionOnSiteController extends Controller
         protected MissionClosureService $closureService,
         protected MissionCheckInService $checkInService,
         protected MissionGuidedChecklistService $guidedChecklistService,
+        protected InventoryService $inventoryService,
     ) {}
 
     /**
@@ -359,6 +361,88 @@ class MissionOnSiteController extends Controller
         return response()->json(['data' => [
             'step' => $this->guidedChecklistService->etapeCourante($mission->fresh()),
         ]]);
+    }
+
+    /**
+     * LES CONSOMMABLES DISPONIBLES POUR CETTE MISSION (F7).
+     *
+     * Ceux de la société qui exécute, pas ceux de la plateforme : un prestataire indépendant n'a
+     * pas de magasin, et lui proposer une liste vide vaut mieux que de lui montrer le stock d'une
+     * société à laquelle il n'appartient pas.
+     */
+    public function consumables(Request $request, Mission $mission): JsonResponse
+    {
+        try {
+            $this->assignmentStatusService->assertAssignedToMission($mission, $request->user());
+        } catch (RuntimeException $e) {
+            return response()->json(['message' => $e->getMessage()], 403);
+        }
+
+        $organisationId = (int) ($mission->provider_organization_id ?? 0);
+
+        if ($organisationId <= 0) {
+            return response()->json(['data' => []]);
+        }
+
+        $articles = \App\Models\InventoryItem::query()
+            ->where('organization_account_id', $organisationId)
+            ->where('is_active', true)
+            ->orderBy('name')
+            ->get();
+
+        return response()->json(['data' => $articles->map(fn ($article) => [
+            'id' => $article->id,
+            'name' => $article->name,
+            'unit' => $article->unit,
+            'quantity' => $article->quantity,
+            'is_billable' => (bool) $article->is_billable,
+        ])->values()]);
+    }
+
+    /**
+     * DÉCLARER CE QU'ON A CONSOMMÉ SUR PLACE (F7).
+     *
+     * La saisie se fait ICI, pendant qu'on range son matériel — pas le soir sur un tableur, quand
+     * plus personne ne se souvient de ce qui est parti où. Le mouvement porte la mission : c'est ce
+     * lien qui permet ensuite d'en calculer le coût réel (E22), et de facturer les consommables qui
+     * le sont.
+     */
+    public function storeConsumable(Request $request, Mission $mission): JsonResponse
+    {
+        try {
+            $this->assignmentStatusService->assertAssignedToMission($mission, $request->user());
+        } catch (RuntimeException $e) {
+            return response()->json(['message' => $e->getMessage()], 403);
+        }
+
+        $data = $request->validate([
+            'inventory_item_id' => ['required', 'integer', 'exists:inventory_items,id'],
+            'quantity' => ['required', 'integer', 'min:1', 'max:1000'],
+        ]);
+
+        $article = \App\Models\InventoryItem::query()->findOrFail((int) $data['inventory_item_id']);
+
+        // Le stock appartient à la société qui exécute la mission : sans ce contrôle, un
+        // identifiant deviné ponctionnerait le magasin d'une société concurrente.
+        if ((int) $article->organization_account_id !== (int) ($mission->provider_organization_id ?? 0)) {
+            return response()->json(['message' => 'Cet article n’appartient pas à votre société.'], 403);
+        }
+
+        try {
+            $article = $this->inventoryService->consommer(
+                $article,
+                (int) $data['quantity'],
+                $request->user(),
+                $mission,
+            );
+        } catch (DomainException $e) {
+            return response()->json(['message' => $e->getMessage()], 422);
+        }
+
+        return response()->json(['data' => [
+            'inventory_item_id' => $article->id,
+            'remaining' => $article->quantity,
+        ]], 201);
     }
 
     public function storeIncident(Request $request, Mission $mission): JsonResponse
