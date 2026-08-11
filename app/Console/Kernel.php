@@ -29,6 +29,9 @@ class Kernel extends ConsoleKernel
         $schedule->command('app:send-smart-rdv-notifications')->everyFifteenMinutes();
         $schedule->command('currencies:refresh')->dailyAt('06:00');
         $schedule->command('presence:cleanup')->everyMinute()->withoutOverlapping();
+        // Les numéros proxy se louent : une session jamais fermée coûte tous les mois, et laisse
+        // surtout un prestataire rappeler une cliente des semaines après l'intervention.
+        $schedule->command('masked-calls:scan-expired')->hourly()->withoutOverlapping();
         $schedule->command('presence:scan-stale --threshold=5')->everyTwoMinutes()->withoutOverlapping();
         $schedule->command('surge:recompute')->everyMinute()->withoutOverlapping();
         $schedule->command('gdpr:enforce-retention')->dailyAt('04:00')->withoutOverlapping();

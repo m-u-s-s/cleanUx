@@ -122,6 +122,8 @@ Route::middleware('auth:sanctum')->prefix('client')->group(function () {
     Route::get('/bookings/{booking}/onsite/incidents', [ClientMissionOnSiteController::class, 'incidents']);
     // F12 — répondre en un geste au supplément proposé sur place.
     Route::get('/bookings/{booking}/onsite/extras', [ClientMissionOnSiteController::class, 'extras']);
+    // F8 — joindre le prestataire sans connaître son numéro.
+    Route::get('/bookings/{booking}/masked-call', [\App\Http\Controllers\Api\MaskedCallController::class, 'pourLaReservation']);
     Route::post('/bookings/{booking}/onsite/extras/{extra}/approve', [ClientMissionOnSiteController::class, 'approveExtra']);
     Route::post('/bookings/{booking}/onsite/extras/{extra}/decline', [ClientMissionOnSiteController::class, 'declineExtra']);
 

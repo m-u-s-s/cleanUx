@@ -224,6 +224,8 @@ Route::middleware(['auth:sanctum', 'role:employe', 'provider.approved'])->group(
         // F3 — proposer un supplément constaté sur place.
         Route::get('/{mission}/extras', [MissionOnSiteController::class, 'extras']);
         Route::post('/{mission}/extras', [MissionOnSiteController::class, 'storeExtra']);
+        // F8 — joindre le client sans connaître son numéro.
+        Route::get('/{mission}/masked-call', [\App\Http\Controllers\Api\MaskedCallController::class, 'pourLaMission']);
     });
 
     // Phase 14 — Cancellation provider

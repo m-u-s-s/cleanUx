@@ -2,6 +2,7 @@
 
 namespace App\Services\Dispatch;
 
+use App\Services\Safety\MaskedCallService;
 use App\Models\Mission;
 use App\Models\MissionAssignment;
 use App\Models\ProviderProfile;
@@ -223,8 +224,47 @@ class MissionDispatchService
              */
             app(DispatchEngine::class)->onAccepted($assignment);
 
+            $this->ouvrirLaLigneMasquee($assignment);
+
             return $assignment->fresh();
         });
+    }
+
+    /**
+     * OUVRIR LA LIGNE MASQUÉE ENTRE LE CLIENT ET LE PRESTATAIRE (F8).
+     *
+     * `MaskedCallService` existait, complet, avec sa configuration et son pilote de test — et
+     * n'était appelé de NULLE PART. Résultat : les deux parties échangeaient leurs vrais numéros
+     * dès qu'il fallait se parler, ou ne se parlaient pas. Le premier cas laisse au prestataire le
+     * téléphone personnel d'une cliente chez qui il est allé une fois ; le second fait sonner à la
+     * porte sans réponse.
+     *
+     * L'ACCEPTATION EST LE BON MOMENT : avant, on ne sait pas qui viendra ; après, il est trop tard
+     * pour le prestataire qui cherche l'entrée de l'immeuble.
+     *
+     * SOFT-FAIL ASSUMÉ. Un numéro manquant, une configuration absente, un service indisponible :
+     * rien de cela ne justifie de faire échouer une acceptation de mission. L'acceptation est ce
+     * qui compte pour les deux parties ; la ligne masquée est un confort qu'on réessaiera.
+     */
+    protected function ouvrirLaLigneMasquee(MissionAssignment $assignment): void
+    {
+        try {
+            $mission = $assignment->mission;
+            $booking = $mission?->booking;
+            $client = $booking?->client;
+            $prestataire = $assignment->user;
+
+            if (! $booking || ! $client || ! $prestataire) {
+                return;
+            }
+
+            app(MaskedCallService::class)->openSession($client, $prestataire, $booking);
+        } catch (\Throwable $e) {
+            Log::info('Ligne masquée non ouverte', [
+                'assignment_id' => $assignment->id,
+                'message' => $e->getMessage(),
+            ]);
+        }
     }
 
     /**
