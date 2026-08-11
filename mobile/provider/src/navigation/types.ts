@@ -104,6 +104,21 @@ export type RootStackParamList = {
    */
   CompanyAgencies: undefined;
   /**
+   * Le planning d'équipe et les absences.
+   *
+   * C'est l'écran qu'on regarde DEBOUT : un chef d'équipe consulte le planning du lendemain dans la
+   * camionnette, un exécutant pose son congé le soir. Les deux moments ont en commun de n'avoir
+   * aucun ordinateur à portée.
+   */
+  CompanyPlanning: undefined;
+  /** Les heures pointées et ce qu'elles coûtent — la marge reste réservée à `analytics.view`. */
+  CompanyTimesheets: undefined;
+  /**
+   * Le stock de consommables — l'écran le plus légitimement mobile de tous : on regarde ce qui
+   * reste AVANT de partir, et on déclare ce qu'on a pris APRÈS l'intervention.
+   */
+  CompanyInventory: undefined;
+  /**
    * Une conversation d'equipe — temps reel, participants, note vocale.
    *
    * `CompanyChannelsScreen` melait la liste et le fil dans un seul ecran, SANS temps reel : il

@@ -15,12 +15,15 @@ use App\Livewire\ClientCompany\SiteMissionPhotos;
 use App\Livewire\ProviderCompany\Agencies;
 use App\Livewire\ProviderCompany\DispatchCenter;
 use App\Livewire\ProviderCompany\FieldTeams;
+use App\Livewire\ProviderCompany\InventoryCenter;
 use App\Livewire\ProviderCompany\ProviderDashboard;
 use App\Livewire\ProviderCompany\RolePermissionsMatrix;
 use App\Livewire\ProviderCompany\SiteOperations;
 use App\Livewire\ProviderCompany\TaskBoard;
 use App\Livewire\ProviderCompany\TeamChannels;
 use App\Livewire\ProviderCompany\TeamManagement;
+use App\Livewire\ProviderCompany\TimesheetCenter;
+use App\Livewire\ProviderCompany\WorkforcePlanning;
 use App\Livewire\Shared\ModulesDirectory;
 use Illuminate\Support\Facades\Route;
 
@@ -106,4 +109,18 @@ Route::middleware(['auth', 'verified', 'active.account', 'org.type:provider'])
         Route::get('/implantations', Agencies::class)->name('agencies');
         // Les sites clients desservis, et le référent que la société y place.
         Route::get('/sites', SiteOperations::class)->name('sites');
+
+        /*
+         * QUI TRAVAILLE QUAND (E19) et qui s'absente (E21) — sur le même écran parce que c'est la
+         * même question. Les séparer produirait un planning qui ignore les congés, et des congés qui
+         * ne bloquent rien.
+         */
+        Route::get('/planning', WorkforcePlanning::class)->name('planning');
+
+        // Les heures pointées (E20) et ce qu'elles coûtent (E22) : la marge est le produit moins
+        // les heures et les consommables, on ne peut pas montrer l'une sans l'autre.
+        Route::get('/heures', TimesheetCenter::class)->name('timesheets');
+
+        // Le stock de consommables (E23), alimenté aussi depuis le terrain (F7).
+        Route::get('/consommables', InventoryCenter::class)->name('inventory');
     });

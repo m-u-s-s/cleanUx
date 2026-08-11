@@ -122,6 +122,14 @@ export function ProfileScreen() {
     { label: 'Sites desservis', screen: 'CompanySites', permission: 'sites.view_all' },
     { label: 'Implantations', screen: 'CompanyAgencies', permission: 'agencies.view' },
     { label: 'Rôles et permissions', screen: 'CompanyRolePermissions', permission: 'members.manage_permissions' },
+    { label: 'Planning et absences', screen: 'CompanyPlanning', permission: 'team.view' },
+    { label: 'Heures et rentabilité', screen: 'CompanyTimesheets', permission: 'team.view' },
+    /*
+     * `inventory.view` VA JUSQU'AUX EXÉCUTANTS, et c'est délibéré : savoir ce qui reste avant de
+     * partir n'est pas commander. Aligner cette entrée sur `inventory.manage` fermerait l'écran à
+     * ceux qui en ont le plus besoin — ceux qui sont devant la camionnette.
+     */
+    { label: 'Consommables', screen: 'CompanyInventory', permission: 'inventory.view' },
     { label: 'Tâches', screen: 'CompanyTasks', permission: null },
     { label: 'Canaux', screen: 'CompanyChannels', permission: null },
   ];

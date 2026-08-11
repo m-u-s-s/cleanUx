@@ -25,6 +25,14 @@ interface ButtonProps {
   disabled?: boolean;
   loading?: boolean;
   fullWidth?: boolean;
+  /**
+   * Un identifiant de test, facultatif.
+   *
+   * `accessibilityLabel` porte déjà le libellé, mais deux boutons peuvent porter le MÊME libellé
+   * dans une liste — « Approuver » sur chaque ligne. Un test qui presse par le texte choisit alors
+   * le premier au hasard de l'ordre de rendu, et passe pour de mauvaises raisons.
+   */
+  testID?: string;
 }
 
 interface Habillage {
@@ -89,6 +97,7 @@ export function Button({
   disabled,
   loading,
   fullWidth,
+  testID,
 }: ButtonProps) {
   const reducedMotion = useReducedMotion();
   const theme = useThemeColors();
@@ -138,6 +147,7 @@ export function Button({
         style={containerStyle}
         onPress={onPress}
         disabled={isDisabled}
+        testID={testID}
         accessibilityRole="button"
         accessibilityState={{ disabled: !!isDisabled }}
         accessibilityLabel={label}

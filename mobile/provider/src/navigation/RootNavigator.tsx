@@ -30,6 +30,9 @@ import { CompanyChannelsScreen } from '@/screens/company/CompanyChannelsScreen';
 import { CompanyRolePermissionsScreen } from '@/screens/company/CompanyRolePermissionsScreen';
 import { CompanyMissionDetailScreen } from '@/screens/company/CompanyMissionDetailScreen';
 import { CompanyAgenciesScreen } from '@/screens/company/CompanyAgenciesScreen';
+import { CompanyPlanningScreen } from '@/screens/company/CompanyPlanningScreen';
+import { CompanyTimesheetsScreen } from '@/screens/company/CompanyTimesheetsScreen';
+import { CompanyInventoryScreen } from '@/screens/company/CompanyInventoryScreen';
 import { ChannelConversationScreen } from '@/screens/company/ChannelConversationScreen';
 import { CallScreen } from '@/screens/company/CallScreen';
 import { CompanySitesScreen } from '@/screens/company/CompanySitesScreen';
@@ -170,6 +173,21 @@ export function RootNavigator() {
             name="CompanyAgencies"
             component={CompanyAgenciesScreen}
             options={{ headerShown: true, title: 'Implantations' }}
+          />
+          <Stack.Screen
+            name="CompanyPlanning"
+            component={CompanyPlanningScreen}
+            options={{ headerShown: true, title: 'Planning et absences' }}
+          />
+          <Stack.Screen
+            name="CompanyTimesheets"
+            component={CompanyTimesheetsScreen}
+            options={{ headerShown: true, title: 'Heures et rentabilité' }}
+          />
+          <Stack.Screen
+            name="CompanyInventory"
+            component={CompanyInventoryScreen}
+            options={{ headerShown: true, title: 'Consommables' }}
           />
           <Stack.Screen
             name="ChannelConversation"
@@ -544,6 +562,21 @@ export function RootNavigator() {
               name="CompanyAgencies"
               component={CompanyAgenciesScreen}
               options={{ headerShown: true, title: 'Implantations' }}
+            />
+            <Stack.Screen
+              name="CompanyPlanning"
+              component={CompanyPlanningScreen}
+              options={{ headerShown: true, title: 'Planning et absences' }}
+            />
+            <Stack.Screen
+              name="CompanyTimesheets"
+              component={CompanyTimesheetsScreen}
+              options={{ headerShown: true, title: 'Heures et rentabilité' }}
+            />
+            <Stack.Screen
+              name="CompanyInventory"
+              component={CompanyInventoryScreen}
+              options={{ headerShown: true, title: 'Consommables' }}
             />
             <Stack.Screen
               name="ChannelConversation"

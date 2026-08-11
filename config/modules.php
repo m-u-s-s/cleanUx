@@ -283,6 +283,19 @@ return [
         // `SiteOperations`, et par l'API que l'écran natif « Sites desservis » consomme.
         ['key' => 'provider-company:provider-company.sites', 'label' => 'Sites desservis', 'icon' => '📍', 'route' => 'provider-company.sites', 'context' => 'provider-company', 'permission' => 'sites.view_all', 'category' => 'comptes', 'primary' => false],
         ['key' => 'provider-company:provider-company.team', 'label' => 'Équipe', 'icon' => '👥', 'route' => 'provider-company.team', 'context' => 'provider-company', 'permission' => 'team.view', 'category' => 'prestataires', 'primary' => true],
+        /*
+         * « Qui travaille quand » n'était écrit nulle part : quelqu'un qui ne travaillait pas ce
+         * jour-là passait pour disponible, et l'auto-assignation lui envoyait une course à
+         * vingt-trois heures. Les absences vivent sur le même écran — un planning qui les ignore
+         * envoie la course le premier jour des vacances.
+         */
+        ['key' => 'provider-company:provider-company.planning', 'label' => 'Planning et absences', 'icon' => '🗓️', 'route' => 'provider-company.planning', 'context' => 'provider-company', 'permission' => 'team.view', 'category' => 'rendez-vous', 'primary' => true],
+        // Les heures pointées, et la marge qu'elles laissent. Une société sait ce qu'elle facture,
+        // pas ce que ça lui coûte : les deux termes n'existaient pas avant.
+        ['key' => 'provider-company:provider-company.timesheets', 'label' => 'Heures et rentabilité', 'icon' => '⏱️', 'route' => 'provider-company.timesheets', 'context' => 'provider-company', 'permission' => 'team.view', 'category' => 'finance', 'primary' => false],
+        // Le stock de consommables. `inventory.view` va jusqu'aux exécutants : savoir ce qui reste
+        // avant de partir n'est pas commander.
+        ['key' => 'provider-company:provider-company.inventory', 'label' => 'Consommables', 'icon' => '📦', 'route' => 'provider-company.inventory', 'context' => 'provider-company', 'permission' => 'inventory.view', 'category' => 'missions', 'primary' => false],
         // La matrice rôle → permissions PROPRE à la société. `members.manage_permissions` est
         // réservée au propriétaire par défaut : distribuer des droits n'est pas inviter.
         ['key' => 'provider-company:provider-company.role-permissions', 'label' => 'Rôles et permissions', 'icon' => '🔑', 'route' => 'provider-company.role-permissions', 'context' => 'provider-company', 'permission' => 'members.manage_permissions', 'category' => 'comptes', 'primary' => false],

@@ -4,6 +4,7 @@ namespace App\Services\Missions;
 
 use App\Models\MissionAssignment;
 use App\Models\OrganizationMember;
+use App\Models\LeaveRequest;
 use App\Models\Shift;
 use Illuminate\Support\Carbon;
 
@@ -73,10 +74,22 @@ class WorkerAvailabilityService
          */
         $planifies = $this->planifiesSur($organisationId, $identifiants, $debut, $fin);
 
+        /*
+         * UN CONGÉ APPROUVÉ BLOQUE (E21), et c'est tout l'intérêt de la fonctionnalité.
+         *
+         * Une demande approuvée qui n'empêche pas l'assignation ne sert qu'à faire un tableau : le
+         * prestataire reçoit sa course le premier jour de ses vacances, refuse, et le moteur cherche
+         * quelqu'un d'autre — après avoir perdu vingt secondes et une occasion.
+         *
+         * Contrairement au planning, l'absence de congé ne signifie rien d'ambigu : personne n'est
+         * en congé, donc personne n'est bloqué. Pas de `null` à interpréter ici.
+         */
+        $enConge = $this->enCongeLe($organisationId, $identifiants, $debut);
+
         $verdicts = [];
 
         foreach ($identifiants as $id) {
-            $libre = ! in_array($id, $occupes, true);
+            $libre = ! in_array($id, $occupes, true) && ! in_array($id, $enConge, true);
 
             if ($planifies !== null) {
                 $libre = $libre && in_array($id, $planifies, true);
@@ -138,6 +151,34 @@ class WorkerAvailabilityService
             ->pluck('user_id')
             ->map(fn ($id) => (int) $id)
             ->intersect($userIds)
+            ->values()
+            ->all();
+    }
+
+    /**
+     * Qui est en congé APPROUVÉ ce jour-là.
+     *
+     * Une demande en attente ne bloque pas : tant que personne n'a tranché, le salarié est censé
+     * travailler — et bloquer sur une demande non traitée ferait perdre des créneaux qu'un refus
+     * aurait rendus.
+     *
+     * @param  list<int>  $userIds
+     * @return list<int>
+     */
+    protected function enCongeLe(int $organisationId, array $userIds, Carbon $moment): array
+    {
+        $jour = $moment->copy()->startOfDay()->toDateString();
+
+        return LeaveRequest::query()
+            ->where('organization_account_id', $organisationId)
+            ->where('status', LeaveRequest::STATUS_APPROVED)
+            ->whereIn('user_id', $userIds)
+            // Bornes inclusives : un congé du 3 au 7 couvre le 7. L'exclure ferait travailler
+            // quelqu'un le dernier jour de ses vacances.
+            ->whereDate('starts_on', '<=', $jour)
+            ->whereDate('ends_on', '>=', $jour)
+            ->pluck('user_id')
+            ->map(fn ($id) => (int) $id)
             ->values()
             ->all();
     }

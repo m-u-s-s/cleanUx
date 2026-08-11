@@ -7,6 +7,7 @@ use App\Http\Controllers\Api\Provider\AsapOfferController;
 use App\Http\Controllers\Api\Provider\AvailabilityController;
 use App\Http\Controllers\Api\Provider\BadgesController;
 use App\Http\Controllers\Api\Provider\CompanyController as ProviderCompanyController;
+use App\Http\Controllers\Api\Provider\WorkforceController as ProviderWorkforceController;
 use App\Http\Controllers\Api\Provider\FleetProviderController;
 use App\Http\Controllers\Api\Provider\KycController;
 use App\Http\Controllers\Api\Provider\MissionLiveTrackingController;
@@ -458,4 +459,35 @@ Route::middleware('auth:sanctum')->prefix('provider/company')->group(function ()
     Route::get('/calls/{call}', [ProviderCompanyController::class, 'showCall']);
     Route::post('/calls/{call}/token', [ProviderCompanyController::class, 'callToken']);
     Route::post('/calls/{call}/end', [ProviderCompanyController::class, 'endCall']);
+
+    /*
+     * PLANNING, HEURES, ABSENCES, RENTABILITÉ, CONSOMMABLES — servis par `WorkforceController`.
+     *
+     * CES CINQ MODULES SE CONSULTENT DEBOUT. Un chef d'équipe regarde son planning dans la
+     * camionnette, quelqu'un vérifie ce qui reste en stock AVANT de partir, un exécutant pose son
+     * congé le soir : à chaque fois, le poste de travail est hors de portée. Les servir en WebView
+     * reviendrait à ne pas les servir.
+     */
+    Route::get('/shifts', [ProviderWorkforceController::class, 'shifts']);
+    Route::post('/shifts', [ProviderWorkforceController::class, 'createShift']);
+    // Publier engage : c'est ce geste, et pas la création, qui rend l'équipe assignable.
+    Route::post('/shifts/publish', [ProviderWorkforceController::class, 'publishShifts']);
+    Route::delete('/shifts/{shift}', [ProviderWorkforceController::class, 'cancelShift']);
+
+    Route::get('/leaves', [ProviderWorkforceController::class, 'leaves']);
+    Route::post('/leaves', [ProviderWorkforceController::class, 'requestLeave']);
+    Route::post('/leaves/{leave}/decision', [ProviderWorkforceController::class, 'decideLeave']);
+    Route::delete('/leaves/{leave}', [ProviderWorkforceController::class, 'cancelLeave']);
+
+    Route::get('/timesheets', [ProviderWorkforceController::class, 'timesheets']);
+    Route::post('/timesheets', [ProviderWorkforceController::class, 'recordTime']);
+    Route::post('/timesheets/{entry}/decision', [ProviderWorkforceController::class, 'decideTimeEntry']);
+
+    // La marge n'est pas une donnée d'équipe : réservée à `analytics.view`.
+    Route::get('/profitability', [ProviderWorkforceController::class, 'profitability']);
+
+    Route::get('/inventory', [ProviderWorkforceController::class, 'inventory']);
+    Route::get('/inventory/{item}/movements', [ProviderWorkforceController::class, 'inventoryMovements']);
+    // On ne saisit jamais le compteur, on déclare ce qui a bougé.
+    Route::post('/inventory/{item}/movements', [ProviderWorkforceController::class, 'moveInventory']);
 });
