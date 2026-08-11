@@ -51,6 +51,11 @@ class DemoPlatformBootstrapSeeder extends Seeder
              * pour avoir un compteur à montrer, et l'intérêt d'une quête EST son compteur.
              */
             ProgressionPrestataireDemoSeeder::class,
+            /*
+             * LES SUPPLÉMENTS PROPOSÉS SUR PLACE (F3, F12). Après les missions, dont ils dépendent :
+             * un écran d'extras vide ne distingue pas « rien proposé » de « requête fausse ».
+             */
+            ExtrasDeMissionDemoSeeder::class,
             FeedbackSeeder::class,
             /*
              * LE SCÉNARIO DE DÉMONSTRATION DU MOTEUR DE RÉPARTITION.
