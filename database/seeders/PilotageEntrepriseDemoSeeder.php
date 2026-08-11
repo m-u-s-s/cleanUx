@@ -9,7 +9,6 @@ use App\Models\OrganizationSiteBudget;
 use App\Services\Enterprise\InternalApprovalService;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Carbon;
-use Illuminate\Support\Facades\DB;
 
 /**
  * LE PILOTAGE D'UNE ENTREPRISE CLIENTE, SUR LA BASE DE DÉMONSTRATION (E7, E8).
@@ -64,17 +63,17 @@ class PilotageEntrepriseDemoSeeder extends Seeder
          *
          * Sans elle, la file reste vide — et une file vide ne distingue pas « le circuit
          * fonctionne » de « personne n'a jamais rien demandé ».
-         */
-        /*
-         * LE MARQUEUR, ET SURTOUT PAS LE STATUT.
          *
-         * Chercher une réservation `pending_approval` paraissait suffire — et ne l'était pas :
-         * `StatutRendezVousSeeder` réattribue un statut ALÉATOIRE à chaque réservation avant que ce
-         * seeder ne passe. Au second `db:seed`, la demande posée au premier avait changé de statut,
-         * la recherche ne trouvait rien, et une nouvelle réservation naissait — avec son client, sa
-         * zone et son service, quatre tables qui gonflaient à chaque exécution.
+         * ON REQUALIFIE, ON NE CRÉE JAMAIS. La première version créait une réservation quand
+         * aucune n'était requalifiable — et « requalifiable » dépendait du statut ALÉATOIRE que
+         * `StatutRendezVousSeeder` venait d'assigner. Le nombre de réservations de la base de
+         * démonstration variait donc d'une exécution à l'autre, et `DatabaseSeederProfileTest`,
+         * qui en attend exactement quatre, échouait une fois sur deux. Une base de démonstration
+         * qui n'est pas reproductible ne sert plus de référence à personne.
          *
-         * Un marqueur dans `metadata` survit à la randomisation : c'est ce qu'on cherche.
+         * ET LE STATUT D'ORIGINE N'A RIEN À PRÉSERVER : il vient d'être tiré au sort. Requalifier
+         * une réservation « annulée » n'efface donc aucune décision — c'est le tirage lui-même qui
+         * ne voulait rien dire.
          */
         $existante = Booking::query()
             ->where('customer_organization_id', $societe->id)
@@ -82,52 +81,20 @@ class PilotageEntrepriseDemoSeeder extends Seeder
             ->exists();
 
         if (! $existante) {
+            // La PLUS RÉCENTE, quel que soit son statut : un choix déterministe, qui donne la même
+            // base à chaque exécution.
             $aRequalifier = Booking::query()
                 ->where('customer_organization_id', $societe->id)
-                ->whereNotIn('status', ['annule', 'cancelled', 'completed', 'termine'])
                 ->orderByDesc('id')
                 ->first();
 
-            if ($aRequalifier) {
-                $aRequalifier->forceFill([
-                    'status' => InternalApprovalService::STATUT_EN_ATTENTE,
-                    'metadata' => array_merge((array) $aRequalifier->metadata, ['demo_approval' => true]),
-                ])->save();
-            } else {
-                /*
-                 * AUCUNE RÉSERVATION REQUALIFIABLE — le cas réel sur une base fraîche, où la seule
-                 * réservation de la société est annulée. On en CRÉE une plutôt que de requalifier
-                 * une annulation : ressusciter une annulation pour remplir un écran donnerait une
-                 * base de démonstration qui ment sur ce qui s'est passé.
-                 */
-                $demandeur = DB::table('organization_members')
-                    ->where('organization_account_id', $societe->id)
-                    ->where('status', 'active')
-                    ->orderBy('id')
-                    ->value('user_id');
-
-                if ($demandeur) {
-                    $demande = Booking::factory()->create([
-                        'client_id' => $demandeur,
-                        'customer_user_id' => $demandeur,
-                        'customer_organization_id' => $societe->id,
-                        'organization_site_id' => $local?->id,
-                        'scheduled_at' => Carbon::now()->addDays(4)->setTime(9, 0),
-                        'devis_estime' => 180.0,
-                    ]);
-
-                    /*
-                     * LE STATUT SE POSE APRÈS LA CRÉATION, et pas dans la fabrique : le cycle de vie
-                     * d'une réservation normalise le statut à l'écriture, si bien qu'un
-                     * `pending_approval` passé en attribut ressortait en `pending`. Le seeder
-                     * paraissait fonctionner et ne peuplait rien.
-                     */
-                    $demande->forceFill([
-                        'status' => InternalApprovalService::STATUT_EN_ATTENTE,
-                        'metadata' => array_merge((array) $demande->metadata, ['demo_approval' => true]),
-                    ])->save();
-                }
-            }
+            $aRequalifier?->forceFill([
+                'status' => InternalApprovalService::STATUT_EN_ATTENTE,
+                'organization_site_id' => $aRequalifier->organization_site_id ?? $local?->id,
+                'scheduled_at' => Carbon::now()->addDays(4)->setTime(9, 0),
+                'devis_estime' => 180.0,
+                'metadata' => array_merge((array) $aRequalifier->metadata, ['demo_approval' => true]),
+            ])->save();
         }
 
         $this->command?->info(sprintf(
