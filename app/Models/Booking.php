@@ -35,6 +35,10 @@ use Illuminate\Support\Facades\Schema;
  * Accessors declared in HasBookingDisplayAccessors (Larastan does not infer
  * getXAttribute through traits at level 6):
  *
+ * @property ?string $beneficiary_name
+ * @property ?string $beneficiary_phone
+ * @property ?string $beneficiary_note
+ * @property ?int $client_place_id
  * @property bool $client_absent
  * @property ?string $client_absent_instructions
  * @property ?string $backup_contact_name
@@ -284,6 +288,20 @@ class Booking extends Model
         'created_at',
         'updated_at',
 
+        /*
+         * LE BÉNÉFICIAIRE (E1) — le client paye, quelqu'un d'autre reçoit.
+         *
+         * Il SURVIT à la conversion du panier : un bénéficiaire qui ne franchirait pas la
+         * confirmation ne servirait à personne, et le prestataire arriverait en demandant celui
+         * qui a payé.
+         */
+        'beneficiary_name',
+        'beneficiary_phone',
+        'beneficiary_note',
+        // Le lieu du carnet (E2) : c'est lui qui porte l'étage, le digicode et les préférences
+        // que la fiche d'accès sur place (F5) révèle à l'arrivée.
+        'client_place_id',
+
         // Métadonnées libres
         'metadata',
 
@@ -497,6 +515,19 @@ class Booking extends Model
     public function organizationSite(): BelongsTo
     {
         return $this->belongsTo(OrganizationSite::class, 'organization_site_id');
+    }
+
+    /**
+     * Le lieu du carnet client (E2) — le pendant particulier de `organizationSite`.
+     *
+     * C'est lui qui porte l'étage, le digicode et les préférences que la fiche d'accès sur place
+     * révèle à l'arrivée. Sans cette relation, le carnet ne serait qu'un formulaire d'adresse.
+     *
+     * @return BelongsTo<ClientPlace, $this>
+     */
+    public function clientPlace(): BelongsTo
+    {
+        return $this->belongsTo(ClientPlace::class, 'client_place_id');
     }
 
     /**

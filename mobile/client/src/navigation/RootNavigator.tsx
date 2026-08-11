@@ -16,6 +16,9 @@ import { NotificationsScreen } from '@/screens/NotificationsScreen';
 // Sprint 9
 import { RatingScreen } from '@/screens/RatingScreen';
 import { LoyaltyScreen } from '@/screens/LoyaltyScreen';
+import { PlacesScreen } from '@/screens/PlacesScreen';
+import { BudgetScreen } from '@/screens/BudgetScreen';
+import { ProtectionScreen } from '@/screens/ProtectionScreen';
 import { ReceivedQuotesScreen } from '@/screens/ReceivedQuotesScreen';
 import { ReferralScreen } from '@/screens/ReferralScreen';
 import { AiQuoteScreen } from '@/screens/AiQuoteScreen';
@@ -241,6 +244,21 @@ export function RootNavigator() {
               name="ReceivedQuotes"
               component={ReceivedQuotesScreen}
               options={{ title: 'Devis reçus', headerShown: true }}
+            />
+            <Stack.Screen
+              name="Places"
+              component={PlacesScreen}
+              options={{ title: 'Mes lieux', headerShown: true }}
+            />
+            <Stack.Screen
+              name="Budget"
+              component={BudgetScreen}
+              options={{ title: 'Mon budget', headerShown: true }}
+            />
+            <Stack.Screen
+              name="Protection"
+              component={ProtectionScreen}
+              options={{ title: 'Ma protection', headerShown: true }}
             />
             <Stack.Screen
               name="Referral"

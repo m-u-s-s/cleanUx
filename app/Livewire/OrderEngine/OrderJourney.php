@@ -5,7 +5,10 @@ namespace App\Livewire\OrderEngine;
 use App\Models\OrderDraft;
 use App\Models\OrderDraftItem;
 use App\Models\OrderDraftMedia;
+use App\Models\ClientPlace;
 use App\Models\OrganizationSite;
+use App\Services\Client\ClientPlaceService;
+use App\Services\Ai\OrderIntentInterpreter;
 use App\Models\Question;
 use App\Models\Sector;
 use App\Models\Trade;
@@ -34,6 +37,7 @@ use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
+use Livewire\Attributes\Locked;
 use Livewire\Attributes\On;
 use Livewire\Component;
 use Livewire\WithFileUploads;
@@ -127,6 +131,29 @@ class OrderJourney extends Component
     public ?int $serviceZoneId = null;
 
     /**
+     * LE BÉNÉFICIAIRE (E1) — le client paye, quelqu'un d'autre reçoit.
+     *
+     * Ce cas se bricolait dans le commentaire libre : le prestataire arrivait en demandant
+     * M. Dupont et trouvait sa mère, qui n'attendait personne. Étape FACULTATIVE : l'imposer
+     * ajouterait un obstacle à la commande la plus ordinaire, celle qu'on passe pour soi.
+     */
+    public string $beneficiaryName = '';
+
+    public string $beneficiaryPhone = '';
+
+    public string $beneficiaryNote = '';
+
+    /**
+     * Le lieu du carnet retenu (E2).
+     *
+     * `#[Locked]` : il vient du navigateur, et un identifiant forgé chargerait l'adresse, l'étage
+     * et le code d'alarme du domicile de quelqu'un d'autre. La vérification d'appartenance reste
+     * faite à la sélection ; verrouiller évite qu'on la contourne après coup.
+     */
+    #[Locked]
+    public ?int $clientPlaceId = null;
+
+    /**
      * Le refus de réordonnancement, AFFICHÉ : corriger en silence tromperait le client. */
     public string $sequenceError = '';
 
@@ -213,7 +240,15 @@ class OrderJourney extends Component
         $this->postalCode = $draft->postal_code;
         $this->serviceZoneId = $draft->service_zone_id !== null ? (int) $draft->service_zone_id : null;
 
+        $this->beneficiaryName = (string) ($draft->beneficiary_name ?? '');
+        $this->beneficiaryPhone = (string) ($draft->beneficiary_phone ?? '');
+        $this->beneficiaryNote = (string) ($draft->beneficiary_note ?? '');
+        $this->clientPlaceId = $draft->client_place_id !== null ? (int) $draft->client_place_id : null;
+
         $this->rattacherAuLocalDeLaSociete();
+        // Le carnet ne pré-remplit QUE si rien n'a encore été saisi : écraser une adresse déjà
+        // tapée ferait recommencer le client sans qu'il comprenne pourquoi.
+        $this->preremplirDepuisLeCarnet();
 
         if ($sector) {
             $this->sectorId = Sector::where('slug', $sector)->value('id');
@@ -280,6 +315,159 @@ class OrderJourney extends Component
         $this->lng = $draft->lng !== null ? (float) $draft->lng : null;
         $this->postalCode = $draft->postal_code;
         $this->serviceZoneId = $draft->service_zone_id !== null ? (int) $draft->service_zone_id : null;
+    }
+
+    /**
+     * PRÉ-REMPLIR DEPUIS LE CARNET DE LIEUX (E2).
+     *
+     * SEULEMENT SI RIEN N'A ENCORE ÉTÉ SAISI. Écraser une adresse déjà tapée — ou celle d'un local
+     * de société rattaché juste avant — ferait recommencer le client sans qu'il comprenne
+     * pourquoi. Le carnet aide, il ne décide pas.
+     */
+    protected function preremplirDepuisLeCarnet(): void
+    {
+        if (! Auth::check() || $this->address !== '') {
+            return;
+        }
+
+        $lieu = app(ClientPlaceService::class)->parDefaut(Auth::user());
+
+        if ($lieu === null) {
+            return;
+        }
+
+        $this->appliquerLeLieu($lieu);
+    }
+
+    /**
+     * Choisir un lieu du carnet en cours de parcours.
+     *
+     * L'identifiant vient du navigateur : on ne retient que ce qui appartient bien à l'appelant.
+     * Sans cette garde, un numéro deviné révélerait l'adresse et le code d'accès d'un autre client.
+     */
+    public function choisirLeLieu(int $lieuId): void
+    {
+        if (! Auth::check()) {
+            return;
+        }
+
+        $lieu = app(ClientPlaceService::class)->lieuDuClient(Auth::user(), $lieuId);
+
+        if ($lieu === null) {
+            return;
+        }
+
+        $this->appliquerLeLieu($lieu);
+    }
+
+    /** @return \Illuminate\Support\Collection<int, ClientPlace> */
+    #[Computed]
+    public function savedPlaces(): \Illuminate\Support\Collection
+    {
+        if (! Auth::check()) {
+            return collect();
+        }
+
+        return app(ClientPlaceService::class)->pour(Auth::user());
+    }
+
+    protected function appliquerLeLieu(ClientPlace $lieu): void
+    {
+        $draft = $this->draft();
+
+        $draft->forceFill([
+            'address' => $lieu->address,
+            'lat' => $lieu->lat ?? $draft->lat,
+            'lng' => $lieu->lng ?? $draft->lng,
+            'postal_code' => $lieu->postal_code ?: $draft->postal_code,
+            'service_zone_id' => $lieu->service_zone_id ?? $draft->service_zone_id,
+            'client_place_id' => $lieu->id,
+        ])->save();
+
+        $this->address = $lieu->address;
+        $this->lat = $lieu->lat;
+        $this->lng = $lieu->lng;
+        $this->postalCode = $lieu->postal_code;
+        $this->serviceZoneId = $lieu->service_zone_id;
+        $this->clientPlaceId = $lieu->id;
+
+        // La zone a pu changer : le mode immédiat n'est pas ouvert partout.
+        unset($this->availableModes);
+    }
+
+    /**
+     * RÉSERVER POUR UN PROCHE (E1) — enregistré sur le panier, et reporté à la réservation.
+     *
+     * FACULTATIF, et vidé par une chaîne vide : quelqu'un qui se ravise doit pouvoir retirer le
+     * bénéficiaire, sinon la commande partirait au nom d'une personne qu'il a effacée de l'écran.
+     */
+    public function enregistrerLeBeneficiaire(): void
+    {
+        $this->validate([
+            'beneficiaryName' => ['nullable', 'string', 'max:120'],
+            'beneficiaryPhone' => ['nullable', 'string', 'max:40'],
+            'beneficiaryNote' => ['nullable', 'string', 'max:500'],
+        ]);
+
+        $this->draft()->update([
+            'beneficiary_name' => $this->beneficiaryName !== '' ? $this->beneficiaryName : null,
+            'beneficiary_phone' => $this->beneficiaryPhone !== '' ? $this->beneficiaryPhone : null,
+            'beneficiary_note' => $this->beneficiaryNote !== '' ? $this->beneficiaryNote : null,
+        ]);
+    }
+
+    /**
+     * L'ASSISTANT DE COMMANDE (E5) — décrire son besoin plutôt que de choisir un secteur.
+     *
+     * Le parcours commence par « choisissez un secteur », puis « un métier ». C'est parfait quand
+     * on sait qu'il faut un plafonneur ; ça ne l'est pas quand on écrit « il y a une auréole
+     * marron au plafond de la salle de bain ». Le client abandonne à l'étape zéro, ou choisit le
+     * mauvais métier et découvre l'erreur quand le professionnel arrive.
+     *
+     * L'ASSISTANT PROPOSE, IL NE COMMANDE PAS. Il sélectionne le métier et rend la main : les
+     * questions, l'adresse et la confirmation restent au client. Une IA qui commanderait à sa
+     * place transformerait une erreur d'interprétation en intervention non désirée.
+     */
+    public string $besoinDecrit = '';
+
+    /**
+     * Ce que l'assistant a compris — affiché avec sa confiance, jamais appliqué en silence.
+     *
+     * @var array<string, mixed>|null
+     */
+    #[Locked]
+    public ?array $interpretation = null;
+
+    public function interpreterMonBesoin(): void
+    {
+        if (! feature('ai_order_assistant')) {
+            return;
+        }
+
+        $this->validate(['besoinDecrit' => ['required', 'string', 'max:1000']]);
+
+        $resultat = app(OrderIntentInterpreter::class)->interpreter($this->besoinDecrit);
+
+        $this->interpretation = $resultat;
+
+        /*
+         * ON N'APPLIQUE QUE CE DONT ON EST SÛR. Une confiance basse affiche la proposition sans
+         * sélectionner : embarquer le client sur un métier deviné lui ferait remplir un
+         * questionnaire entier avant de comprendre qu'il n'est pas au bon endroit.
+         */
+        if ($resultat['trade_id'] !== null && $resultat['confidence'] !== 'low') {
+            $this->selectTrade((int) $resultat['trade_id']);
+        }
+    }
+
+    /** Retenir la proposition qu'on n'avait pas appliquée d'office. */
+    public function accepterLaProposition(): void
+    {
+        $tradeId = $this->interpretation['trade_id'] ?? null;
+
+        if ($tradeId !== null) {
+            $this->selectTrade((int) $tradeId);
+        }
     }
 
     // ─── Catalogue ───────────────────────────────────────────────────────────────────────────

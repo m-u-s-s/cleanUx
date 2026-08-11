@@ -8,6 +8,7 @@ use App\Models\TripTrackingPoint;
 use App\Models\TripTrackingSession;
 use App\Services\Missions\MissionLifecycleService;
 use App\Services\TripTracking\PresenceCodeService;
+use App\Services\Client\SharedTrackingService;
 use App\Services\TripTracking\TripTrackingService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -21,6 +22,32 @@ use RuntimeException;
  */
 class TripTrackingController extends Controller
 {
+    /**
+     * PARTAGER LE SUIVI (E3) — le patron « suivez ma course ».
+     *
+     * Quelqu'un commande un ménage pour sa mère et n'est pas sur place : il veut qu'elle sache
+     * quand sonner, et elle n'a pas de compte. C'est depuis le téléphone qu'on partage — le lien
+     * part par SMS dans la foulée, sur le même appareil.
+     *
+     * LA PROPRIÉTÉ EST REVÉRIFIÉE : émettre un lien signé pour la réservation d'un autre
+     * donnerait à qui devine un numéro un accès au suivi d'un inconnu.
+     */
+    public function share(Request $request, Booking $booking): JsonResponse
+    {
+        if ((int) $booking->client_id !== (int) $request->user()->id) {
+            return response()->json(['error' => 'forbidden'], 403);
+        }
+
+        return response()->json([
+            'data' => [
+                'url' => app(SharedTrackingService::class)->lienPour($booking),
+                // Douze heures, et pas davantage : un partage qui survit à l'intervention devient
+                // un traceur, et personne ne pense à le révoquer.
+                'expires_in_hours' => SharedTrackingService::VALIDITE_HEURES,
+            ],
+        ]);
+    }
+
     public function currentForBooking(Request $request, Booking $booking, TripTrackingService $service): JsonResponse
     {
         if ((int) $booking->client_id !== (int) $request->user()->id) {

@@ -46,6 +46,20 @@ class BookingInsurance extends Model
         return $this->belongsTo(InsurancePlan::class, 'plan_id');
     }
 
+    /**
+     * La réservation couverte.
+     *
+     * `booking_id` existait sur la table depuis toujours ; la relation, non. La vitrine
+     * « Ma protection » (E6) doit pouvoir dire QUELLE intervention est couverte : une police sans
+     * son objet est un numéro que personne ne sait rattacher.
+     *
+     * @return BelongsTo<Booking, $this>
+     */
+    public function booking(): BelongsTo
+    {
+        return $this->belongsTo(Booking::class);
+    }
+
     /** @return BelongsTo<User, $this> */
     public function user(): BelongsTo
     {

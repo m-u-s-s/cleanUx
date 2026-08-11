@@ -70,6 +70,21 @@ return [
          * c'est-à-dire hors de toute trace.
          */
         ['key' => 'client:client.quotes', 'label' => 'Devis reçus', 'icon' => '📄', 'route' => 'client.quotes', 'context' => 'client', 'category' => 'finance', 'primary' => false],
+        /*
+         * LE CARNET DE LIEUX (E2). Ce qui compte n'est pas l'adresse mais les CONSIGNES qui
+         * l'accompagnent — l'étage, le digicode, la clé chez la voisine, l'allergie aux produits
+         * chlorés. Elles se redonnaient oralement à chaque nouveau prestataire, ou se perdaient.
+         */
+        ['key' => 'client:client.places', 'label' => 'Mes lieux', 'icon' => '🏠', 'route' => 'client.places', 'context' => 'client', 'category' => 'comptes', 'primary' => false],
+        // E4 — le budget maison. Tout est déjà en base et personne ne le voit : le client reçoit
+        // ses factures une par une, sans jamais voir la tendance.
+        ['key' => 'client:client.budget', 'label' => 'Mon budget', 'icon' => '📈', 'route' => 'client.budget', 'context' => 'client', 'category' => 'finance', 'primary' => false],
+        /*
+         * E6 — « Ma protection ». Assurance, annulation et litiges ont chacun leur écran, et aucun
+         * client ne sait ce qu'il a : il découvre sa couverture au moment du sinistre, ses frais
+         * d'annulation en annulant.
+         */
+        ['key' => 'client:client.protection', 'label' => 'Ma protection', 'icon' => '🛡️', 'route' => 'client.protection', 'context' => 'client', 'category' => 'qualite', 'primary' => false],
         ['key' => 'client:client.payment.methods', 'label' => 'Cartes bancaires', 'icon' => '💳', 'route' => 'client.payment.methods', 'context' => 'client', 'category' => 'finance', 'primary' => false],
         ['key' => 'client:client.subscriptions', 'label' => 'Abonnements', 'icon' => '🔁', 'route' => 'client.subscriptions', 'context' => 'client', 'category' => 'finance', 'primary' => false],
         ['key' => 'client:client.subscriptions-v2', 'label' => 'Abonnements v2', 'icon' => '🔄', 'route' => 'client.subscriptions-v2', 'context' => 'client', 'category' => 'finance', 'primary' => false],

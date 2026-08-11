@@ -24,6 +24,20 @@ export type RootStackParamList = {
    * écran, il devrait ouvrir un ordinateur pour dire oui. C'est exactement le point où une
    * affaire se perd.
    */
+  /**
+   * Le carnet de lieux (E2).
+   *
+   * C'est SUR PLACE qu'on note le digicode qu'on vient de composer, l'étage, la clé chez la
+   * voisine du deuxième. Renvoyer cette saisie à un ordinateur revient à ne jamais la faire.
+   */
+  Places: undefined;
+  /** Le budget entretien (E4) — la question se pose souvent en recevant une facture, sur mobile. */
+  Budget: undefined;
+  /**
+   * « Ma protection » (E6). Elle se consulte au pire moment : quand quelque chose vient de se
+   * casser, et qu'on n'est pas devant un ordinateur.
+   */
+  Protection: undefined;
   ReceivedQuotes: undefined;
   Loyalty: undefined;
   Referral: undefined;

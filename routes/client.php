@@ -14,6 +14,9 @@ use App\Livewire\Client\ClientFeedbackForm;
 use App\Livewire\Client\ClientKybOnboarding;
 use App\Livewire\Client\ClientLiveTrackingMap;
 use App\Livewire\Client\ClientLoyaltyRewards;
+use App\Livewire\Client\HomeBudget;
+use App\Livewire\Client\MyProtection;
+use App\Livewire\Client\PlacesBook;
 use App\Livewire\Client\ReceivedQuotes;
 use App\Livewire\Client\ClientSubscriptions;
 use App\Livewire\Client\ClientSubscriptionsV2;
@@ -172,6 +175,35 @@ Route::middleware(['role:client'])
          */
         if (class_exists(ReceivedQuotes::class)) {
             Route::get('/devis', ReceivedQuotes::class)->name('quotes');
+        }
+
+        /*
+         * LE CARNET DE LIEUX (E2). Un client a plusieurs lieux, et la plateforme n'en connaissait
+         * qu'un : `customer_profiles` porte UNE adresse par défaut. Retaper l'adresse, l'étage et
+         * le code à chaque commande fait se tromper une fois sur cinq — et envoie un
+         * professionnel à la mauvaise porte.
+         */
+        if (class_exists(PlacesBook::class)) {
+            Route::get('/mes-lieux', PlacesBook::class)->name('places');
+        }
+
+        /*
+         * LE BUDGET MAISON (E4). Tout est déjà en base et personne ne le voit : un client reçoit
+         * ses factures une par une, sans moyen de répondre à la seule question qu'il se pose —
+         * « combien est-ce que je dépense, et est-ce que ça augmente ».
+         */
+        if (class_exists(HomeBudget::class)) {
+            Route::get('/budget', HomeBudget::class)->name('budget');
+        }
+
+        /*
+         * « MA PROTECTION » (E6). Insurance, Cancellation v2 et Disputes existent, chacun avec
+         * son écran — et aucun client ne sait ce qu'il a. Il découvre son assurance au moment du
+         * sinistre, ses frais d'annulation en annulant. Une protection qu'on ne peut pas énoncer
+         * AVANT d'en avoir besoin n'en est pas une.
+         */
+        if (class_exists(MyProtection::class)) {
+            Route::get('/ma-protection', MyProtection::class)->name('protection');
         }
 
         if (class_exists(ClientTipBooking::class)) {

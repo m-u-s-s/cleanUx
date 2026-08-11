@@ -58,6 +58,20 @@ class ToutePageEstAtteignableTest extends TestCase
         // `NewConversationMessageNotification` y mène désormais — elle portait déjà le
         // `conversation_id` dans sa charge utile mais renvoyait au tableau de bord.
         'client.conversations.show',
+        /*
+         * `tracking.shared` — LE SUIVI PARTAGÉ (E3), et sa vocation est de N'AVOIR AUCUN MENU.
+         *
+         * C'est un lien SIGNÉ et expirant que le client copie depuis son écran de suivi et envoie
+         * par SMS à la personne qui attend chez elle. Son destinataire n'a pas de compte, n'ouvre
+         * aucun tableau de bord, et n'a rien à trouver dans une navigation : il reçoit un lien, il
+         * clique. Lui donner une entrée de menu supposerait de savoir qui il est — or c'est
+         * précisément ce qu'on ne sait pas, et qu'on n'a pas besoin de savoir.
+         *
+         * La porte qui compte est ailleurs, et elle EST testée : le bouton « Partager le suivi »
+         * de `ClientLiveTrackingMap`, et le point d'API `bookings/{booking}/tracking/share` pour le
+         * mobile. Voir `CarnetBeneficiaireEtProtectionTest`.
+         */
+        'tracking.shared',
     ];
 
     /**

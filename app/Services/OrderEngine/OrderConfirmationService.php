@@ -366,6 +366,19 @@ class OrderConfirmationService
             'date' => $scheduledAt?->toDateString(),
             'heure' => $scheduledAt?->format('H:i:s'),
             'commentaire_client' => $draft->client_notes,
+            /*
+             * LE BÉNÉFICIAIRE ET LE LIEU SUIVENT LA RÉSERVATION (E1, E2).
+             *
+             * Sans ce report, le bénéficiaire s'arrêterait au panier : le prestataire arriverait en
+             * demandant celui qui a payé, et trouverait quelqu'un qui n'attendait personne. Le lieu,
+             * lui, porte l'étage, le digicode et les préférences que la fiche d'accès sur place
+             * révèle à l'arrivée — c'est ce chaînon qui fait d'un carnet d'adresses un carnet de
+             * lieux.
+             */
+            'beneficiary_name' => $draft->beneficiary_name,
+            'beneficiary_phone' => $draft->beneficiary_phone,
+            'beneficiary_note' => $draft->beneficiary_note,
+            'client_place_id' => $draft->client_place_id,
             // Le montant retenu est le PLANCHER de la fourchette : on n'engage jamais le client
             // sur le haut d'une estimation qu'il n'a pas validée. L'écart éventuel se règle à la
             // clôture, sur constat.

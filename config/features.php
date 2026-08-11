@@ -26,6 +26,14 @@ return [
     // Client-facing features
     // ─────────────────────────────────────────
     'ai_photo_quote' => true,   // AI-based photo → quote estimation
+    /*
+     * E5 — décrire son besoin en texte plutôt que de choisir un secteur puis un métier.
+     *
+     * SOUS DRAPEAU, et par défaut ACTIF : le repli est déterministe (recherche par mots-clés sur le
+     * catalogue), donc l'assistant fonctionne sans clé d'API — moins finement, et en le disant.
+     * Le drapeau sert à le couper si l'interprétation dérive, sans déploiement.
+     */
+    'ai_order_assistant' => true,
     'trip_tracking_v2' => true,
     'chat_v2' => true,
     'loyalty_redemption' => true,

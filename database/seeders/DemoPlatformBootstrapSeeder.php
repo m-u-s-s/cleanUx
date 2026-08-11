@@ -27,6 +27,12 @@ class DemoPlatformBootstrapSeeder extends Seeder
              * disponibilité traite comme « la contrainte ne s'applique pas ».
              */
             ExploitationSocieteDemoSeeder::class,
+            /*
+             * LE CARNET DE LIEUX (E2) ET LE BÉNÉFICIAIRE (E1). Après les réservations de démo :
+             * le seeder en rattache une à un lieu, seul moyen de voir la fiche d'accès sur place
+             * révéler quelque chose à l'arrivée.
+             */
+            CarnetClientDemoSeeder::class,
             LimitesJournaliereSeeder::class,
             StatutRendezVousSeeder::class,
             FeedbackSeeder::class,

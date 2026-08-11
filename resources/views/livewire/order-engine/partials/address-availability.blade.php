@@ -15,6 +15,27 @@
         L’adresse nous sert à trouver les professionnels les plus proches.
     </p>
 
+    {{--
+        LE CARNET DE LIEUX (E2), quand il y en a un.
+
+        Il vient AVANT le champ libre, parce que c'est la réponse la plus rapide pour qui revient :
+        retaper l'adresse, l'étage et le code à chaque commande est ce qui fait se tromper une fois
+        sur cinq — et envoie un professionnel à la mauvaise porte.
+    --}}
+    @if ($this->savedPlaces->isNotEmpty())
+    <div class="mt-4 flex flex-wrap gap-2">
+        @foreach ($this->savedPlaces as $lieu)
+        <button
+            type="button"
+            wire:click="choisirLeLieu({{ $lieu->id }})"
+            class="rounded-full border px-3 py-1.5 text-sm font-semibold transition {{ $clientPlaceId === $lieu->id ? 'border-slate-900 bg-slate-900 text-white' : 'border-slate-300 text-slate-700 hover:bg-slate-50' }}"
+        >
+            {{ $lieu->label }}
+        </button>
+        @endforeach
+    </div>
+    @endif
+
     {{-- Association EXPLICITE plutôt qu'imbrication : un `for`/`id` survit à un remaniement du
          balisage, alors qu'une étiquette qui enveloppe son champ perd le lien dès qu'on insère un
          conteneur entre les deux. --}}

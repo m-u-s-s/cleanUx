@@ -100,6 +100,28 @@ export function ProfileScreen() {
           répondre n'a rien envoyé : sans cette porte, l'écran serait orphelin — le mode d'échec
           documenté de ce dépôt.
         */}
+        {/*
+          LE CARNET DE LIEUX (E2). Sans cette porte, l'écran serait orphelin — le mode d'échec
+          documenté de ce dépôt : `tsc` et Jest ne disent rien de la joignabilité d'un écran.
+        */}
+        <Button
+          label="Mes lieux"
+          onPress={() => navigation.navigate('Places')}
+          variant="secondary"
+          fullWidth
+        />
+        <Button
+          label="Mon budget"
+          onPress={() => navigation.navigate('Budget')}
+          variant="secondary"
+          fullWidth
+        />
+        <Button
+          label="Ma protection"
+          onPress={() => navigation.navigate('Protection')}
+          variant="secondary"
+          fullWidth
+        />
         <Button
           label="Devis reçus"
           onPress={() => navigation.navigate('ReceivedQuotes')}

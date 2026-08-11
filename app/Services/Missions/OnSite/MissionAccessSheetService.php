@@ -24,6 +24,10 @@ use DomainException;
  * file d'affectation. Le contrôle de présence sur place existe précisément pour attester que la
  * personne est devant la porte : c'est lui qui ouvre la fiche.
  *
+ * DEUX SOURCES, ET LA PREMIÈRE EST LE CARNET DU CLIENT (E2). `organization_sites` couvre le B2B ;
+ * pour un particulier, l'étage et le digicode vivent désormais sur `client_places`. Sans ce lien,
+ * le carnet ne serait qu'un formulaire d'adresse de plus : c'est ici qu'il sert à quelque chose.
+ *
  * LE REFUS EST EXPLICITE, jamais une fiche vide. « Vous verrez les codes en confirmant votre
  * arrivée » se comprend et se corrige ; une fiche vide se lit comme une donnée manquante, et fait
  * appeler le support pour rien.
@@ -61,19 +65,45 @@ class MissionAccessSheetService
 
         $booking = $mission->booking;
         $site = $booking?->organizationSite;
+        // Le lieu du carnet client (E2) : la source pour un particulier, là où le site
+        // d'organisation sert le B2B.
+        $lieu = $booking?->clientPlace;
 
         return [
             'available' => true,
             // L'adresse est déjà connue avant l'arrivée : la répéter ici évite de faire naviguer
             // entre deux écrans avec les mains prises.
             'address' => $booking?->location_display,
-            'floor' => $site?->floor,
+            'floor' => $site?->floor ?: $lieu?->floor,
             'access_instructions' => $site?->access_instructions
-                ?: ($booking?->commentaire_client ?: $booking?->customer_comment),
+                ?: ($lieu?->access_instructions
+                    ?: ($booking?->commentaire_client ?: $booking?->customer_comment)),
             // Un code d'alarme demande une manœuvre chronométrée : le prestataire doit le savoir
             // AVANT d'ouvrir la porte, pas en entendant la sirène.
-            'alarm_code_required' => (bool) ($site->alarm_code_required ?? false),
-            'access_window' => $this->fenetreDAcces($site),
+            'alarm_code_required' => (bool) ($site->alarm_code_required ?? $lieu->alarm_code_required ?? false),
+            'access_window' => $this->fenetreDAcces($site ?: $lieu),
+            /*
+             * LES PRÉFÉRENCES DU LIEU — produits, allergies, animaux.
+             *
+             * Elles se redonnaient oralement à chaque nouveau prestataire, ou se perdaient. Rendues
+             * MÊME VIDES, avec leurs clés : une fiche dont les champs apparaissent et disparaissent
+             * selon ce qui est rempli fait douter de ce qui manque.
+             */
+            'preferences' => $lieu?->preferencesLisibles() ?? [
+                'products' => null,
+                'allergies' => null,
+                'pets' => null,
+                'notes' => null,
+            ],
+            /*
+             * LE BÉNÉFICIAIRE (E1). Arriver en demandant celui qui a payé quand c'est sa mère qui
+             * ouvre la porte, c'est commencer l'intervention par un malentendu.
+             */
+            'beneficiary' => $booking?->beneficiary_name === null ? null : [
+                'name' => $booking->beneficiary_name,
+                'phone' => $booking->beneficiary_phone,
+                'note' => $booking->beneficiary_note,
+            ],
             'notes' => $booking?->notes,
         ];
     }
@@ -92,6 +122,10 @@ class MissionAccessSheetService
             'access_instructions' => null,
             'alarm_code_required' => false,
             'access_window' => null,
+            // MÊMES CLÉS QUE LA FICHE OUVERTE : un appelant qui doit tester la présence d'une clé
+            // avant de la lire finit par en oublier une.
+            'preferences' => ['products' => null, 'allergies' => null, 'pets' => null, 'notes' => null],
+            'beneficiary' => null,
             'notes' => null,
             'message' => $raison,
         ];

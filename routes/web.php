@@ -104,3 +104,20 @@ Route::get('/commander/{sector?}/{trade?}', OrderJourney::class)
 Route::get('/invitations/{token}', [OrganizationInvitationController::class, 'accept'])
     ->middleware('auth')
     ->name('organization.invitations.accept');
+
+/*
+|--------------------------------------------------------------------------
+| Suivi partagé (E3) — le patron « suivez ma course »
+|--------------------------------------------------------------------------
+|
+| PUBLIQUE, MAIS PAS OUVERTE. `signed` refuse tout ce qui n'a pas été émis par la plateforme et
+| tout ce qui a expiré : un identifiant de réservation dans une URL publique se devine en
+| comptant, un lien signé non.
+|
+| AUCUNE AUTHENTIFICATION, ET C'EST TOUT L'INTÉRÊT. Le destinataire est la personne chez qui
+| l'intervention a lieu — souvent quelqu'un qui n'a pas de compte et n'en veut pas. Lui demander
+| de s'inscrire pour savoir à quelle heure sonner reviendrait à ne pas partager du tout.
+*/
+Route::get('/suivi/{booking}', App\Http\Controllers\SharedTrackingController::class)
+    ->middleware('signed')
+    ->name('tracking.shared');

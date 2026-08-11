@@ -20,6 +20,11 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * Le brouillon se matérialise à la confirmation — une réservation pour un métier seul, un lot
  * multi-métiers pour plusieurs — et n'est jamais purgé : il porte les réponses horodatées qui
  * rendent le devis explicable ligne par ligne, et opposable.
+ *
+ * @property ?string $beneficiary_name
+ * @property ?string $beneficiary_phone
+ * @property ?string $beneficiary_note
+ * @property ?int $client_place_id
  */
 class OrderDraft extends Model
 {
@@ -35,6 +40,15 @@ class OrderDraft extends Model
         'estimate_min_cents', 'estimate_max_cents', 'total_cents', 'currency',
         'client_notes', 'source',
         'converted_booking_id', 'converted_bundle_id', 'converted_at', 'metadata',
+        /*
+         * LE BÉNÉFICIAIRE (E1) — le client paye, quelqu'un d'autre reçoit.
+         *
+         * Ce cas se bricolait dans le commentaire libre : le prestataire arrivait en demandant
+         * M. Dupont et trouvait sa mère, qui n'attendait personne.
+         */
+        'beneficiary_name', 'beneficiary_phone', 'beneficiary_note',
+        // Le lieu du carnet retenu pour cette commande (E2).
+        'client_place_id',
     ];
 
     protected $casts = [

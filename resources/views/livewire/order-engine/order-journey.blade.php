@@ -24,6 +24,17 @@
                 </div>
             </section>
 
+            {{--
+                L'ASSISTANT (E5), AVANT le catalogue — et pas à sa place.
+
+                Il s'adresse à celui qui ne sait pas nommer le métier dont il a besoin. Ceux qui le
+                savent descendent d'une ligne et choisissent leur secteur : remplaçer le catalogue
+                par un champ libre punirait les clients qui savent déjà ce qu'ils veulent.
+            --}}
+            @if (feature('ai_order_assistant'))
+                @include('livewire.order-engine.partials.order-assistant')
+            @endif
+
             {{-- ─── Secteurs ────────────────────────────────────────────────────────────── --}}
             <section aria-labelledby="secteurs-titre">
                 <h2 id="secteurs-titre" class="text-lg font-semibold text-slate-900">Quel domaine ?</h2>
@@ -222,6 +233,9 @@
 
                 {{-- L'adresse vient APRÈS les questions : elle récompense, elle ne filtre pas. --}}
                 @include('livewire.order-engine.partials.address-availability')
+
+                {{-- Et juste après l'adresse, la question qui décide de QUI ouvrira la porte. --}}
+                @include('livewire.order-engine.partials.beneficiary')
 
                 {{-- Et le calendrier après l'adresse : les créneaux dépendent de qui couvre la zone. --}}
                 @if ($mode === 'scheduled')

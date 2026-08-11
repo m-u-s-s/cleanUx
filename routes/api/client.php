@@ -18,6 +18,8 @@ use App\Http\Controllers\Api\Client\LoyaltyRedemptionController;
 use App\Http\Controllers\Api\Client\MarketingPreferencesController;
 use App\Http\Controllers\Api\Client\MissionOnSiteController as ClientMissionOnSiteController;
 use App\Http\Controllers\Api\Client\NotificationPreferenceController;
+use App\Http\Controllers\Api\Client\HomeInsightsController;
+use App\Http\Controllers\Api\Client\PlaceController;
 use App\Http\Controllers\Api\Client\ReceivedQuoteController;
 use App\Http\Controllers\Api\Client\NpsController;
 use App\Http\Controllers\Api\Client\PaymentMethodController;
@@ -105,6 +107,12 @@ Route::middleware('auth:sanctum')->prefix('client')->group(function () {
     // Trip Tracking v2 — vue client (poll position provider en mission)
     Route::get('/bookings/{booking}/tracking', [TripTrackingController::class, 'currentForBooking']);
     Route::get('/bookings/{booking}/tracking/trail', [TripTrackingController::class, 'trail']);
+    /*
+     * PARTAGER LE SUIVI (E3). C'est depuis le téléphone qu'on partage : le lien part par SMS
+     * dans la foulée, sur le même appareil. Signé et expirant — il montre une position en
+     * temps réel, et un partage qui survit à l'intervention devient un traceur.
+     */
+    Route::post('/bookings/{booking}/tracking/share', [TripTrackingController::class, 'share']);
     // Confirmation de présence : le client affiche, le prestataire scanne. POST car chaque
     // appel forge un code neuf et périme le précédent.
     Route::post('/bookings/{booking}/presence-code', [TripTrackingController::class, 'issuePresenceCode']);
@@ -294,6 +302,45 @@ Route::middleware('auth:sanctum')->prefix('client/quotes')->group(function () {
     // Accepter CRÉE le travail : chaque ligne porte un métier et devient une réservation.
     Route::post('/{quote}/accept', [ReceivedQuoteController::class, 'accept']);
     Route::post('/{quote}/decline', [ReceivedQuoteController::class, 'decline']);
+});
+
+/*
+|--------------------------------------------------------------------------
+| API — Carnet de lieux (E2)
+|--------------------------------------------------------------------------
+|
+| C'est SUR PLACE qu'on note ce qu'il faut savoir d'un lieu : le digicode qu'on vient de
+| composer, l'étage, la clé chez la voisine du deuxième. Renvoyer cette saisie à un ordinateur
+| revient à ne jamais la faire.
+|
+| Aucun middleware de rôle : le carnet est gardé par son PROPRIÉTAIRE. Un filtre de rôle
+| fermerait la porte à un contact d'entreprise, qui commande aussi pour lui-même.
+*/
+Route::middleware('auth:sanctum')->prefix('client/places')->group(function () {
+    Route::get('/', [PlaceController::class, 'index']);
+    Route::post('/', [PlaceController::class, 'store']);
+    Route::patch('/{place}', [PlaceController::class, 'update']);
+    Route::post('/{place}/default', [PlaceController::class, 'setDefault']);
+    // Archiver, jamais supprimer : les interventions passées portent ce lieu.
+    Route::delete('/{place}', [PlaceController::class, 'destroy']);
+});
+
+/*
+|--------------------------------------------------------------------------
+| API — Budget (E4), protection (E6) et assistant de commande (E5)
+|--------------------------------------------------------------------------
+|
+| Le budget se consulte quand la question se pose — souvent en recevant une facture, sur son
+| téléphone. La protection se consulte au pire moment : quand quelque chose vient de se casser,
+| et qu'on n'est pas devant un ordinateur. L'assistant est fait pour ceux qui ne veulent pas
+| naviguer dans un catalogue à deux niveaux — la situation par excellence d'un petit écran.
+*/
+Route::middleware('auth:sanctum')->prefix('client')->group(function () {
+    Route::get('/budget', [HomeInsightsController::class, 'budget']);
+    Route::get('/protection', [HomeInsightsController::class, 'protection']);
+    // Sous drapeau : coupé, ce point répond 404 plutôt qu'une interprétation vide que
+    // l'application lirait comme « l'assistant n'a rien compris ».
+    Route::post('/order-intent', [HomeInsightsController::class, 'interpret']);
 });
 
 // ─────────────────────────────────────────────

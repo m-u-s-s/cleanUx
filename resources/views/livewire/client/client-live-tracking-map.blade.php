@@ -13,6 +13,43 @@
             <a href="{{ route('client.dashboard') }}" class="rounded-xl border px-4 py-2 text-sm font-semibold">← Retour</a>
         </div>
 
+        {{--
+            PARTAGER LE SUIVI (E3) — le patron « suivez ma course ».
+
+            Quelqu'un commande un ménage pour sa mère et n'est pas sur place : il veut qu'elle
+            sache quand sonner, et elle n'a pas de compte. Sans ce bouton, il téléphone, puis
+            rappelle vingt minutes plus tard parce que le professionnel est dans un embouteillage.
+        --}}
+        <div class="mb-4 rounded-2xl border border-slate-200 bg-white p-4">
+            @if ($lienPartage)
+                <p class="text-sm font-semibold text-slate-900">Lien de suivi à partager</p>
+                <input
+                    type="text"
+                    readonly
+                    value="{{ $lienPartage }}"
+                    onclick="this.select()"
+                    class="mt-2 w-full rounded-lg border-slate-300 bg-slate-50 px-3 py-2 text-xs text-slate-700"
+                >
+                <p class="mt-2 text-xs text-slate-500">
+                    Valable {{ $validiteHeures }} heures, et limité à la page de suivi : ni montant,
+                    ni adresse exacte, ni vos coordonnées.
+                </p>
+            @else
+                <div class="flex flex-wrap items-center justify-between gap-3">
+                    <p class="text-sm text-slate-600">
+                        Quelqu'un d'autre attend le professionnel sur place ?
+                    </p>
+                    <button
+                        type="button"
+                        wire:click="partager"
+                        class="rounded-xl bg-indigo-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-indigo-700"
+                    >
+                        Partager le suivi
+                    </button>
+                </div>
+            @endif
+        </div>
+
         <div class="rounded-2xl border bg-white shadow-sm overflow-hidden"
              x-data="trackingMapWidget({
                  bookingId: {{ $booking->id }},
