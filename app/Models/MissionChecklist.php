@@ -19,6 +19,9 @@ class MissionChecklist extends Model
         'template_name',
         'status',
         'completion_rate',
+        // La colonne existe depuis la création de la table et ne figurait pas ici : un titre écrit
+        // à la création était écarté en silence, et la checklist s'affichait sans nom.
+        'title',
     ];
 
     /** @return BelongsTo<Mission, $this> */

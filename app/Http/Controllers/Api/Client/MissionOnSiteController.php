@@ -253,6 +253,59 @@ class MissionOnSiteController extends Controller
     }
 
     /**
+     * LA CLÔTURE GUIDÉE (F16) — un seul flux, dans l'ordre où les choses se décident.
+     *
+     * Rapport, puis pourboire, puis avis. Ce n'est pas un ordre arbitraire : on ne remercie pas
+     * avant de savoir ce qui a été fait, et on ne note pas avant d'avoir décidé si on remercie. Les
+     * trois briques existaient chacune de son côté, atteignables depuis trois endroits différents —
+     * si bien que la plupart des clients n'en voyaient aucune.
+     *
+     * CE POINT D'ENTRÉE NE FAIT RIEN, IL DIT CE QUI RESTE À FAIRE. L'écran s'en sert pour n'afficher
+     * que les étapes encore ouvertes : proposer de noter une intervention déjà notée fait douter de
+     * ce qu'on a validé, et redemander un pourboire déjà versé est franchement gênant.
+     */
+    public function closureFlow(Request $request, Booking $booking): JsonResponse
+    {
+        $this->assertClientPeutVoirLaReservation($request->user(), $booking);
+
+        $mission = $this->missionDe($booking);
+
+        if ($mission === null) {
+            return response()->json(['data' => ['available' => false]]);
+        }
+
+        $rapport = \App\Models\MissionReport::query()->where('mission_id', $mission->id)->first();
+
+        $pourboireVerse = \App\Models\BookingTip::query()
+            ->where('booking_id', $booking->id)
+            ->whereNotIn('status', ['failed', 'cancelled'])
+            ->exists();
+
+        $avisDonne = \App\Models\Feedback::query()
+            ->where('booking_id', $booking->id)
+            ->where('client_user_id', $request->user()->id)
+            ->exists();
+
+        return response()->json(['data' => [
+            'available' => true,
+            'mission_id' => $mission->id,
+            // Le rapport d'abord : c'est ce qui permet de juger le reste.
+            'report' => $rapport ? [
+                'number' => $rapport->report_number,
+                'checklist_completion_rate' => $rapport->checklist_completion_rate,
+                'before_photos_count' => $rapport->before_photos_count,
+                'after_photos_count' => $rapport->after_photos_count,
+                'incident_count' => $rapport->incident_count,
+            ] : null,
+            'tip_pending' => ! $pourboireVerse,
+            'review_pending' => ! $avisDonne,
+            // Rien à faire : l'écran doit pouvoir fermer le flux plutôt que d'afficher une page
+            // vide avec un bouton « suivant ».
+            'completed' => $rapport !== null && $pourboireVerse && $avisDonne,
+        ]]);
+    }
+
+    /**
      * @param  Collection<int, MissionMedia>  $medias
      * @return list<array<string, mixed>>
      */

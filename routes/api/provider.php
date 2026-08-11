@@ -229,6 +229,9 @@ Route::middleware(['auth:sanctum', 'role:employe', 'provider.approved'])->group(
         Route::post('/{mission}/client-signature', [MissionOnSiteController::class, 'storeClientSignature']);
         // F14 — quelle preuve s'applique, et la photo d'arrivée quand le client est absent.
         Route::get('/{mission}/presence-mode', [MissionOnSiteController::class, 'presenceMode']);
+        // F6 — le guide pas-à-pas : une étape à la fois, dans l'ordre du métier.
+        Route::get('/{mission}/guided-step', [MissionOnSiteController::class, 'guidedStep']);
+        Route::post('/{mission}/guided-step', [MissionOnSiteController::class, 'completeGuidedStep']);
         Route::post('/{mission}/arrival-proof', [MissionOnSiteController::class, 'storeArrivalProof']);
         Route::post('/{mission}/extras', [MissionOnSiteController::class, 'storeExtra']);
         // F8 — joindre le client sans connaître son numéro.

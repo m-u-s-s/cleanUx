@@ -21,9 +21,17 @@ class MissionChecklistItem extends Model
         'completed_by_user_id',
         'completed_at',
         'notes',
+        // F6 — ce qui fait d'une liste un guide : une séquence, une consigne, et la preuve
+        // attendue pour les étapes qui la méritent.
+        'sort_order',
+        'requires_photo',
+        'mission_media_id',
+        'guidance',
     ];
 
     protected $casts = [
+        'requires_photo' => 'boolean',
+        'sort_order' => 'integer',
         'is_required' => 'boolean',
         'completed_at' => 'datetime',
     ];

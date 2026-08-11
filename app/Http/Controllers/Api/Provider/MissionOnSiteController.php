@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api\Provider;
 
+use App\Services\Missions\OnSite\MissionGuidedChecklistService;
 use App\Services\Missions\OnSite\MissionCheckInService;
 use Illuminate\Validation\ValidationException;
 use App\Services\Missions\OnSite\MissionClosureService;
@@ -47,6 +48,7 @@ class MissionOnSiteController extends Controller
         protected MissionAccessSheetService $accessSheetService,
         protected MissionClosureService $closureService,
         protected MissionCheckInService $checkInService,
+        protected MissionGuidedChecklistService $guidedChecklistService,
     ) {}
 
     /**
@@ -306,6 +308,56 @@ class MissionOnSiteController extends Controller
             'instructions' => $booking->client_absent_instructions ?? null,
             'backup_contact_name' => $booking->backup_contact_name ?? null,
             'backup_contact_phone' => $booking->backup_contact_phone ?? null,
+        ]]);
+    }
+
+    /**
+     * LE GUIDE PAS-À-PAS (F6) — une étape à la fois.
+     *
+     * Afficher les vingt suivantes ramènerait à la liste : ce qu'on veut, c'est qu'une personne les
+     * mains prises sache quoi faire MAINTENANT, sans lire.
+     */
+    public function guidedStep(Request $request, Mission $mission): JsonResponse
+    {
+        try {
+            $this->assignmentStatusService->assertAssignedToMission($mission, $request->user());
+        } catch (RuntimeException $e) {
+            return response()->json(['message' => $e->getMessage()], 403);
+        }
+
+        return response()->json(['data' => [
+            'guided' => $this->guidedChecklistService->estGuidee($mission),
+            'step' => $this->guidedChecklistService->etapeCourante($mission),
+        ]]);
+    }
+
+    /** Valider l'étape en cours — et seulement elle. */
+    public function completeGuidedStep(Request $request, Mission $mission): JsonResponse
+    {
+        $data = $request->validate([
+            'item_id' => ['required', 'integer'],
+            'photo' => ['nullable', 'file', 'max:12288'],
+            'lat' => ['nullable', 'numeric', 'between:-90,90'],
+            'lng' => ['nullable', 'numeric', 'between:-180,180'],
+        ]);
+
+        try {
+            $this->guidedChecklistService->validerEtape(
+                $mission,
+                $request->user(),
+                (int) $data['item_id'],
+                $request->file('photo'),
+                isset($data['lat']) ? (float) $data['lat'] : null,
+                isset($data['lng']) ? (float) $data['lng'] : null,
+            );
+        } catch (RuntimeException $e) {
+            return response()->json(['message' => $e->getMessage()], 403);
+        } catch (DomainException $e) {
+            return response()->json(['message' => $e->getMessage()], 422);
+        }
+
+        return response()->json(['data' => [
+            'step' => $this->guidedChecklistService->etapeCourante($mission->fresh()),
         ]]);
     }
 

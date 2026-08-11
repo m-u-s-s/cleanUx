@@ -128,6 +128,8 @@ Route::middleware('auth:sanctum')->prefix('client')->group(function () {
     Route::post('/bookings/{booking}/onsite/absence', [ClientMissionOnSiteController::class, 'declarerAbsence']);
     // F15 — répondre au « tout va bien ? » en un geste.
     Route::post('/bookings/{booking}/onsite/checkin', [ClientMissionOnSiteController::class, 'repondreAuPing']);
+    // F16 — la clôture guidée : rapport, puis pourboire, puis avis.
+    Route::get('/bookings/{booking}/onsite/closure', [ClientMissionOnSiteController::class, 'closureFlow']);
     Route::post('/bookings/{booking}/onsite/extras/{extra}/approve', [ClientMissionOnSiteController::class, 'approveExtra']);
     Route::post('/bookings/{booking}/onsite/extras/{extra}/decline', [ClientMissionOnSiteController::class, 'declineExtra']);
 
