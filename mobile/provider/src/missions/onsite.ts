@@ -46,6 +46,28 @@ export interface MissionIncidentItem {
   photo: MissionMediaItem | null;
 }
 
+/**
+ * Un supplément proposé sur place, et où en est la réponse du client.
+ *
+ * `awaiting_client` est la seule question que pose l'écran : le prestataire a besoin de savoir s'il
+ * peut commencer le travail, pas de relire l'historique des statuts.
+ */
+export interface MissionExtraItem {
+  id: number;
+  label: string;
+  description: string | null;
+  price_cents: number;
+  price: number;
+  currency: string;
+  status: 'proposed' | 'approved' | 'declined' | 'charged';
+  awaiting_client: boolean;
+  proposed_by: string | null;
+  proposed_at: string | null;
+  approved_at: string | null;
+  declined_at: string | null;
+  charged_at: string | null;
+}
+
 export interface MissionTimelineEntry {
   kind: 'milestone' | 'checklist' | 'incident' | 'media';
   key: string;
@@ -213,6 +235,52 @@ export function useReportMissionIncident(missionId: number) {
       void qc.invalidateQueries({ queryKey: ['provider', 'mission', missionId, 'incidents'] });
       void qc.invalidateQueries({ queryKey: ['provider', 'mission', missionId, 'timeline'] });
       void qc.invalidateQueries({ queryKey: ['provider', 'mission', missionId, 'media'] });
+    },
+  });
+}
+
+/** Les suppléments de cette mission — le prestataire doit savoir ce qui est accepté avant d'agir. */
+export function useMissionExtras(missionId: number | null) {
+  return useQuery<MissionExtraItem[]>({
+    queryKey: ['provider', 'mission', missionId, 'extras'],
+    queryFn: async () => {
+      const res = await apiClient.get(`/provider/missions/${missionId}/extras`);
+      return res.data.data ?? [];
+    },
+    enabled: missionId !== null,
+  });
+}
+
+/**
+ * PROPOSER UN SUPPLÉMENT CONSTATÉ SUR PLACE.
+ *
+ * Sans ce geste, le prestataire n'a que deux mauvaises réponses — le faire gratuitement, ou ne pas
+ * le faire — et une troisième pire que les deux : s'arranger en espèces, ce qui sort l'argent de la
+ * plateforme et le client de toute protection.
+ *
+ * LE PRIX EST EN CENTIMES jusqu'au serveur. Convertir en euros ici ferait voyager un flottant, et
+ * un flottant sur un montant produit des écarts d'un centime que personne ne sait expliquer.
+ */
+export function useProposeMissionExtra(missionId: number) {
+  const qc = useQueryClient();
+
+  return useMutation<
+    MissionExtraItem,
+    ApiError,
+    { label: string; priceCents: number; description?: string }
+  >({
+    mutationFn: async ({ label, priceCents, description }) => {
+      const res = await apiClient.post(`/provider/missions/${missionId}/extras`, {
+        label,
+        price_cents: priceCents,
+        description: description ?? null,
+      });
+
+      return res.data.data;
+    },
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: ['provider', 'mission', missionId, 'extras'] });
+      void qc.invalidateQueries({ queryKey: ['provider', 'mission', missionId, 'timeline'] });
     },
   });
 }

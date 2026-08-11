@@ -221,6 +221,9 @@ Route::middleware(['auth:sanctum', 'role:employe', 'provider.approved'])->group(
         Route::get('/{mission}/incidents', [MissionOnSiteController::class, 'incidents']);
         Route::post('/{mission}/incidents', [MissionOnSiteController::class, 'storeIncident']);
         Route::get('/{mission}/timeline', [MissionOnSiteController::class, 'timeline']);
+        // F3 — proposer un supplément constaté sur place.
+        Route::get('/{mission}/extras', [MissionOnSiteController::class, 'extras']);
+        Route::post('/{mission}/extras', [MissionOnSiteController::class, 'storeExtra']);
     });
 
     // Phase 14 — Cancellation provider

@@ -2,6 +2,9 @@
 
 namespace App\Http\Controllers\Api\Client;
 
+use DomainException;
+use App\Services\Missions\OnSite\MissionExtraService;
+use App\Models\MissionExtra;
 use App\Http\Controllers\Api\Concerns\AuthorizesClientBooking;
 use App\Http\Controllers\Controller;
 use App\Models\Booking;
@@ -41,6 +44,7 @@ class MissionOnSiteController extends Controller
         protected MissionMediaService $mediaService,
         protected MissionIncidentService $incidentService,
         protected MissionTimelineService $timelineService,
+        protected MissionExtraService $extraService,
     ) {}
 
     /**
@@ -113,6 +117,76 @@ class MissionOnSiteController extends Controller
                 ->map(fn (MissionIncident $i) => $this->incidentService->presenter($i))
                 ->values(),
         ]);
+    }
+
+    /**
+     * LES SUPPLÉMENTS PROPOSÉS, ET CELUI QUI ATTEND UNE RÉPONSE (F12).
+     */
+    public function extras(Request $request, Booking $booking): JsonResponse
+    {
+        $this->assertClientPeutVoirLaReservation($request->user(), $booking);
+
+        $mission = $this->missionDe($booking);
+
+        if ($mission === null) {
+            return response()->json(['data' => []]);
+        }
+
+        return response()->json([
+            'data' => $this->extraService
+                ->pourLaMission($mission)
+                ->map(fn (MissionExtra $extra) => $this->extraService->presenter($extra))
+                ->values(),
+        ]);
+    }
+
+    /**
+     * ACCEPTER EN UN GESTE (F12).
+     *
+     * Le prestataire est sur place, à l'instant : une réponse qui arrive après son départ ne sert
+     * plus à rien. Ce point d'entrée est donc volontairement minimal — pas de formulaire, pas de
+     * confirmation en deux temps.
+     *
+     * L'APPARTENANCE EST VÉRIFIÉE DEUX FOIS, et ce n'est pas une redondance : d'abord que cette
+     * réservation est bien celle de la personne, ensuite que ce supplément appartient bien à CETTE
+     * mission. Sans la seconde, un identifiant de supplément deviné ferait accepter — et payer — le
+     * supplément de quelqu'un d'autre.
+     */
+    public function approveExtra(Request $request, Booking $booking, MissionExtra $extra): JsonResponse
+    {
+        return $this->repondreAuSupplement($request, $booking, $extra, accepte: true);
+    }
+
+    /** Refuser. Le refus est une réponse, pas une panne : il se conserve et se relit. */
+    public function declineExtra(Request $request, Booking $booking, MissionExtra $extra): JsonResponse
+    {
+        return $this->repondreAuSupplement($request, $booking, $extra, accepte: false);
+    }
+
+    private function repondreAuSupplement(
+        Request $request,
+        Booking $booking,
+        MissionExtra $extra,
+        bool $accepte,
+    ): JsonResponse {
+        $this->assertClientPeutVoirLaReservation($request->user(), $booking);
+
+        $mission = $this->missionDe($booking);
+
+        // Le supplément doit appartenir à la mission de CETTE réservation.
+        if ($mission === null || (int) $extra->mission_id !== (int) $mission->id) {
+            return response()->json(['message' => 'Supplément introuvable.'], 404);
+        }
+
+        try {
+            $extra = $accepte
+                ? $this->extraService->approve($extra, $request->user())
+                : $this->extraService->decline($extra, $request->user());
+        } catch (DomainException $e) {
+            return response()->json(['message' => $e->getMessage()], 422);
+        }
+
+        return response()->json(['data' => $this->extraService->presenter($extra)]);
     }
 
     /**

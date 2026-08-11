@@ -18,7 +18,15 @@ use Illuminate\Support\Facades\Schema;
 
 trait HasProviderFeatures
 {
-    /** @return HasOne<AvailabilitySlot, $this> */
+    /**
+     * L'ANNOTATION DÉSIGNAIT `AvailabilitySlot`, la relation rend un `ProviderProfile`.
+     *
+     * Un copier-coller depuis la relation voisine, invisible tant que personne n'appelait cette
+     * relation depuis un contexte typé : PHPStan croyait donc lire un créneau de disponibilité et
+     * annonçait `commission_rate` inexistante — sur le calcul de commission, précisément.
+     *
+     * @return HasOne<ProviderProfile, $this>
+     */
     public function providerProfile(): HasOne
     {
         return $this->hasOne(ProviderProfile::class);

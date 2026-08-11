@@ -105,11 +105,13 @@ trait HasUserTypeChecks
     {
         $providerType = $this->providerProfile?->provider_type;
 
-        if ($providerType instanceof ProviderType) {
-            if ($providerType === ProviderType::INDEPENDENT) {
-                return true;
-            }
-        } elseif ($providerType === ProviderType::INDEPENDENT->value) {
+        /*
+         * `provider_type` est CASTÉ en énumération sur le modèle : cette valeur est donc toujours
+         * un `ProviderType` ou nul, jamais une chaîne. La branche qui comparait à `->value` était
+         * morte depuis que le cast existe, et l'analyse statique ne pouvait pas le dire tant que
+         * l'annotation de la relation désignait le mauvais modèle.
+         */
+        if ($providerType === ProviderType::INDEPENDENT) {
             return true;
         }
 
@@ -125,11 +127,9 @@ trait HasUserTypeChecks
     {
         $providerType = $this->providerProfile?->provider_type;
 
-        if ($providerType instanceof ProviderType) {
-            return $providerType === ProviderType::COMPANY_WORKER;
-        }
-
-        return $providerType === ProviderType::COMPANY_WORKER->value;
+        // Même raison : le cast garantit l'énumération. Un profil absent rend nul, donc faux — ce
+        // qui est le comportement voulu, un compte sans profil n'étant pas salarié d'une société.
+        return $providerType === ProviderType::COMPANY_WORKER;
     }
 
     public function getIsEmployeAttribute(): bool

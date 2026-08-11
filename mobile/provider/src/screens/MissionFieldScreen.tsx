@@ -8,9 +8,11 @@ import {
   useMissionIncidents,
   useCaptureMissionMedia,
   useReportMissionIncident,
+  useMissionExtras,
+  useProposeMissionExtra,
   INCIDENT_TYPES,
 } from '@/missions';
-import type { MissionIncidentType, MissionMediaItem } from '@/missions';
+import type { MissionExtraItem, MissionIncidentType, MissionMediaItem } from '@/missions';
 import { useInspection, useToggleChecklistItem } from '@/inspection';
 import { useGpsWatcher, usePushPosition } from '@/tracking';
 import { colors, spacing, typography, radius, shadows } from '@/theme';
@@ -52,6 +54,38 @@ export function MissionFieldScreen({ route }: Props) {
   const [gpsActive, setGpsActive] = useState(true);
   const [incidentType, setIncidentType] = useState<MissionIncidentType | null>(null);
   const [incidentDescription, setIncidentDescription] = useState('');
+
+  const { data: extras } = useMissionExtras(missionId);
+  const proposerUnExtra = useProposeMissionExtra(missionId);
+  const [extraLabel, setExtraLabel] = useState('');
+  const [extraPrix, setExtraPrix] = useState('');
+
+  /**
+   * PROPOSER LE SUPPLÉMENT — la saisie est en euros, l'envoi en centimes.
+   *
+   * Le prestataire tape « 25 » ou « 25,50 » ; convertir ici évite de faire voyager un flottant
+   * jusqu'à la base, où il produirait des écarts d'un centime que personne ne sait expliquer.
+   */
+  const proposerLExtra = useCallback(() => {
+    const euros = Number(extraPrix.replace(',', '.'));
+
+    if (!extraLabel.trim() || !Number.isFinite(euros) || euros <= 0) {
+      Alert.alert('Incomplet', 'Dites ce que vous proposez, et à quel prix.');
+      return;
+    }
+
+    proposerUnExtra.mutate(
+      { label: extraLabel.trim(), priceCents: Math.round(euros * 100) },
+      {
+        onSuccess: () => {
+          setExtraLabel('');
+          setExtraPrix('');
+        },
+        onError: (erreur: { message?: string }) =>
+          Alert.alert('Impossible', erreur.message ?? 'Le supplément n’a pas pu être proposé.'),
+      },
+    );
+  }, [extraLabel, extraPrix, proposerUnExtra]);
 
   const enCours = mission?.status === 'started';
 
@@ -211,6 +245,59 @@ export function MissionFieldScreen({ route }: Props) {
             </Text>
             <Text style={styles.incidentMeta}>
               {incident.notified_at ? 'Client prévenu' : 'Client non joint'}
+            </Text>
+          </View>
+        ))}
+      </View>
+
+      <Divider />
+
+      {/* ── SUPPLÉMENTS PROPOSÉS SUR PLACE (F3) ────────────────────────── */}
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>Proposer un supplément</Text>
+        <Text style={styles.sectionHint}>
+          Le client répond depuis son téléphone. Son devis d’origine ne bouge pas : le supplément
+          est une ligne à part.
+        </Text>
+
+        <TextInput
+          label="Ce que vous proposez"
+          value={extraLabel}
+          onChangeText={setExtraLabel}
+          placeholder="Nettoyage des vitres"
+          testID="extra-label"
+        />
+
+        <TextInput
+          label="Prix en euros"
+          value={extraPrix}
+          onChangeText={setExtraPrix}
+          placeholder="25"
+          keyboardType="decimal-pad"
+          testID="extra-prix"
+        />
+
+        <Button
+          label="Proposer au client"
+          onPress={proposerLExtra}
+          loading={proposerUnExtra.isPending}
+        />
+
+        {(extras ?? []).map((extra: MissionExtraItem) => (
+          <View key={extra.id} style={styles.incidentRow}>
+            <Text style={styles.incidentLabel}>
+              {extra.label} · {extra.price} {extra.currency}
+            </Text>
+            {/*
+              LE PRESTATAIRE A BESOIN DE SAVOIR S'IL PEUT COMMENCER, pas de relire un historique de
+              statuts. Trois états lisibles d'un coup d'œil, gants aux mains.
+            */}
+            <Text style={styles.incidentMeta} testID={`extra-statut-${extra.id}`}>
+              {extra.awaiting_client
+                ? 'En attente de réponse'
+                : extra.status === 'declined'
+                  ? 'Refusé par le client'
+                  : 'Accepté — vous pouvez le faire'}
             </Text>
           </View>
         ))}

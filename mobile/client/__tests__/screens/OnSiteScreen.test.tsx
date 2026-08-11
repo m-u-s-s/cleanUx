@@ -11,7 +11,7 @@
  *    réservation.
  */
 import React from 'react';
-import { render, screen } from '@testing-library/react-native';
+import { fireEvent, render, screen } from '@testing-library/react-native';
 
 jest.mock('expo-secure-store', () => ({
   getItemAsync: jest.fn().mockResolvedValue(null),
@@ -21,16 +21,26 @@ jest.mock('expo-secure-store', () => ({
 
 const canaux: (string | null)[] = [];
 
+/*
+ * PRÉFIXE `mock` OBLIGATOIRE. Babel hisse les appels `jest.mock()` au-dessus des déclarations, et
+ * n'autorise leurs fabriques à référencer qu'une variable dont le nom commence par `mock`. Ce dépôt
+ * a déjà buté trois fois sur cette règle.
+ */
+const mockRepondre = jest.fn();
+
 const etat: {
   fil: unknown;
   photos: unknown;
   imprevus: unknown;
-} = { fil: null, photos: null, imprevus: [] };
+  supplements: unknown;
+} = { fil: null, photos: null, imprevus: [], supplements: [] };
 
 jest.mock('@/booking/onsite', () => ({
   useOnSiteTimeline: () => ({ data: etat.fil, isLoading: false }),
   useOnSiteMedia: () => ({ data: etat.photos }),
   useOnSiteIncidents: () => ({ data: etat.imprevus }),
+  useOnSiteExtras: () => ({ data: etat.supplements }),
+  useRepondreAuSupplement: () => ({ mutate: mockRepondre, isPending: false }),
   useLiveOnSite: (_bookingId: number | null, missionId: number | null) => {
     canaux.push(missionId === null ? null : `private-mission.${missionId}`);
   },
@@ -67,6 +77,8 @@ beforeEach(() => {
   etat.fil = filComplet;
   etat.photos = { before: [], after: [], incident: [] };
   etat.imprevus = [];
+  etat.supplements = [];
+  mockRepondre.mockClear();
 });
 
 describe('OnSiteScreen', () => {
@@ -125,5 +137,69 @@ describe('OnSiteScreen', () => {
 
     expect(screen.getByText('Accès impossible')).toBeTruthy();
     expect(screen.getByText('Portail fermé, personne ne répond.')).toBeTruthy();
+  });
+
+  /*
+   * LES SUPPLÉMENTS (F12) — la seule chose de cet écran qui ATTEND une réponse.
+   *
+   * Ce dépôt a un historique d'écrans complets que personne ne pouvait atteindre, et de boutons
+   * montés qui n'appelaient rien. On PRESSE donc réellement, et on vérifie ce qui part.
+   */
+  const supplement = (id: number, awaiting: boolean) => ({
+    id,
+    label: 'Nettoyage des vitres',
+    description: null,
+    price_cents: 2500,
+    price: 25,
+    currency: 'EUR',
+    status: awaiting ? 'proposed' : 'approved',
+    awaiting_client: awaiting,
+    proposed_by: 'Karim',
+    proposed_at: '2026-08-11T09:20:00+00:00',
+  });
+
+  it('montre le supplément qui attend une réponse, et rassure sur le devis', () => {
+    etat.supplements = [supplement(9, true)];
+
+    render(<OnSiteScreen route={route} navigation={{} as never} />);
+
+    expect(screen.getByText('Nettoyage des vitres')).toBeTruthy();
+    // La phrase qui lève l'inquiétude doit être là : sans elle, on refuse par précaution.
+    expect(screen.getByText(/devis initial ne change pas/)).toBeTruthy();
+  });
+
+  it('accepter envoie bien la réponse', () => {
+    etat.supplements = [supplement(9, true)];
+
+    render(<OnSiteScreen route={route} navigation={{} as never} />);
+
+    fireEvent.press(screen.getByText('Accepter'));
+
+    expect(mockRepondre).toHaveBeenCalledWith(
+      expect.objectContaining({ extraId: 9, accepte: true }),
+      expect.anything(),
+    );
+  });
+
+  it('refuser emprunte le même chemin', () => {
+    etat.supplements = [supplement(9, true)];
+
+    render(<OnSiteScreen route={route} navigation={{} as never} />);
+
+    fireEvent.press(screen.getByText('Refuser'));
+
+    expect(mockRepondre).toHaveBeenCalledWith(
+      expect.objectContaining({ extraId: 9, accepte: false }),
+      expect.anything(),
+    );
+  });
+
+  it('un supplément déjà répondu ne redemande rien', () => {
+    etat.supplements = [supplement(9, false)];
+
+    render(<OnSiteScreen route={route} navigation={{} as never} />);
+
+    // Redemander une réponse déjà donnée ferait douter de ce qu'on a validé.
+    expect(screen.queryByText('Accepter')).toBeNull();
   });
 });

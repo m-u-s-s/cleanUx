@@ -120,6 +120,10 @@ Route::middleware('auth:sanctum')->prefix('client')->group(function () {
     Route::get('/bookings/{booking}/onsite/timeline', [ClientMissionOnSiteController::class, 'timeline']);
     Route::get('/bookings/{booking}/onsite/media', [ClientMissionOnSiteController::class, 'media']);
     Route::get('/bookings/{booking}/onsite/incidents', [ClientMissionOnSiteController::class, 'incidents']);
+    // F12 — répondre en un geste au supplément proposé sur place.
+    Route::get('/bookings/{booking}/onsite/extras', [ClientMissionOnSiteController::class, 'extras']);
+    Route::post('/bookings/{booking}/onsite/extras/{extra}/approve', [ClientMissionOnSiteController::class, 'approveExtra']);
+    Route::post('/bookings/{booking}/onsite/extras/{extra}/decline', [ClientMissionOnSiteController::class, 'declineExtra']);
 
     // Booking favorites — rebook 1-click
     Route::get('/favorites', [BookingFavoriteController::class, 'index']);

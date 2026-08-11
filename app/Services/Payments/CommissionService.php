@@ -37,6 +37,63 @@ class CommissionService
      *   currency: string
      * }
      */
+    /**
+     * LE MÊME PARTAGE, POUR UN MONTANT QUI N'EST PAS CELUI D'UN DEVIS.
+     *
+     * Un supplément proposé sur place n'est pas une réservation : il n'a ni `devis_estime` ni
+     * colonne de paiement. Il doit pourtant supporter EXACTEMENT la même commission, sinon il
+     * échapperait à la retenue de la plateforme et le portefeuille interne du prestataire
+     * divergerait de ce que Stripe lui a réellement transféré — le genre d'écart qu'on ne découvre
+     * qu'au rapprochement comptable, des mois plus tard.
+     *
+     * @param  \App\Models\User|null  $provider  pour son éventuel taux négocié
+     * @return array{
+     *   total_cents: int,
+     *   platform_fee_cents: int,
+     *   provider_payout_cents: int,
+     *   commission_rate: float,
+     *   currency: string
+     * }
+     */
+    public function calculateForAmount(int $totalCents, ?\App\Models\User $provider = null): array
+    {
+        $totalCents = max(0, $totalCents);
+
+        $negotiatedRate = $provider?->providerProfile?->commission_rate;
+
+        $commissionRate = ($this->useNegotiatedCommission() && $negotiatedRate !== null)
+            ? (float) $negotiatedRate
+            : $this->platformRate();
+
+        $platformFeeCents = max(
+            (int) round($totalCents * $commissionRate),
+            self::MINIMUM_COMMISSION
+        );
+
+        // La commission ne dépasse jamais le total : sur un petit supplément, le minimum de 2 €
+        // absorberait sinon plus que le montant, et le prestataire recevrait un solde négatif.
+        $platformFeeCents = min($platformFeeCents, $totalCents);
+
+        return [
+            'total_cents' => $totalCents,
+            'platform_fee_cents' => $platformFeeCents,
+            'provider_payout_cents' => $totalCents - $platformFeeCents,
+            'commission_rate' => $commissionRate,
+            'currency' => 'eur',
+        ];
+    }
+
+    /**
+     * Le partage commission / reversement pour une réservation.
+     *
+     * @return array{
+     *   total_cents: int,
+     *   platform_fee_cents: int,
+     *   provider_payout_cents: int,
+     *   commission_rate: float,
+     *   currency: string
+     * }
+     */
     public function calculateForBooking(Booking $booking): array
     {
         // Support both modern (estimated_price) and legacy (devis_estime) columns

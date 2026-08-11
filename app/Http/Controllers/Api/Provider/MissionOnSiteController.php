@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers\Api\Provider;
 
+use App\Services\Missions\MissionAssignmentStatusService;
+use App\Services\Missions\OnSite\MissionExtraService;
 use App\Http\Controllers\Controller;
 use App\Models\Mission;
 use App\Models\MissionIncident;
@@ -36,6 +38,8 @@ class MissionOnSiteController extends Controller
         protected MissionMediaService $mediaService,
         protected MissionIncidentService $incidentService,
         protected MissionTimelineService $timelineService,
+        protected MissionExtraService $extraService,
+        protected MissionAssignmentStatusService $assignmentStatusService,
     ) {}
 
     /**
@@ -114,6 +118,56 @@ class MissionOnSiteController extends Controller
      *
      * @response 201 {"data": {"id": 2, "type": "preexisting_damage", "label": "Dégât préexistant", "notified_at": "2026-08-11T09:05:00+00:00"}}
      */
+    /**
+     * PROPOSER UN SUPPLÉMENT DEPUIS LE TERRAIN (F3).
+     *
+     * Le prestataire constate sur place ce que le devis ne couvrait pas. Sans ce geste il n'a que
+     * deux mauvaises réponses — le faire gratuitement, ou ne pas le faire — et une troisième pire
+     * que les deux : s'arranger en espèces, ce qui sort l'argent de la plateforme et le client de
+     * toute protection.
+     */
+    public function storeExtra(Request $request, Mission $mission): JsonResponse
+    {
+        $data = $request->validate([
+            'label' => ['required', 'string', 'min:3', 'max:120'],
+            'price_cents' => ['required', 'integer', 'min:1', 'max:'.MissionExtraService::MAX_PRICE_CENTS],
+            'description' => ['nullable', 'string', 'max:2000'],
+            'price_quote_id' => ['nullable', 'integer', 'exists:price_quotes,id'],
+        ]);
+
+        try {
+            $extra = $this->extraService->propose(
+                $mission,
+                $request->user(),
+                $data['label'],
+                (int) $data['price_cents'],
+                $data['description'] ?? null,
+                isset($data['price_quote_id']) ? (int) $data['price_quote_id'] : null,
+            );
+        } catch (RuntimeException $e) {
+            return response()->json(['message' => $e->getMessage()], 403);
+        } catch (DomainException $e) {
+            return response()->json(['message' => $e->getMessage()], 422);
+        }
+
+        return response()->json(['data' => $this->extraService->presenter($extra)], 201);
+    }
+
+    /**
+     * Les suppléments de cette mission, du point de vue du prestataire : il doit savoir ce que le
+     * client a accepté avant de faire le travail.
+     */
+    public function extras(Request $request, Mission $mission): JsonResponse
+    {
+        $this->assignmentStatusService->assertAssignedToMission($mission, $request->user());
+
+        return response()->json([
+            'data' => $this->extraService->pourLaMission($mission)
+                ->map(fn ($extra) => $this->extraService->presenter($extra))
+                ->values(),
+        ]);
+    }
+
     public function storeIncident(Request $request, Mission $mission): JsonResponse
     {
         $data = $request->validate([

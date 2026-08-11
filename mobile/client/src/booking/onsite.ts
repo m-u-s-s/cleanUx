@@ -1,5 +1,5 @@
-import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { apiClient } from '@/api';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { apiClient, ApiError } from '@/api';
 import { useChannel } from '@/realtime';
 
 /**
@@ -97,6 +97,57 @@ export function useOnSiteIncidents(bookingId: number | null) {
  * Les noms d'événements sont ceux que le serveur DIFFUSE (`broadcastAs`), pas les noms de classes
  * PHP. La confusion entre les deux avait déjà rendu la messagerie muette ; elle vivait encore ici.
  */
+/** Un supplément proposé sur place, du point de vue du client qui doit répondre. */
+export interface OnSiteExtra {
+  id: number;
+  label: string;
+  description: string | null;
+  price_cents: number;
+  price: number;
+  currency: string;
+  status: 'proposed' | 'approved' | 'declined' | 'charged';
+  awaiting_client: boolean;
+  proposed_by: string | null;
+  proposed_at: string | null;
+}
+
+export function useOnSiteExtras(bookingId: number | null) {
+  return useQuery<OnSiteExtra[]>({
+    queryKey: ['client', 'booking', bookingId, 'onsite', 'extras'],
+    queryFn: async () => {
+      const res = await apiClient.get(`/client/bookings/${bookingId}/onsite/extras`);
+      return res.data.data ?? [];
+    },
+    enabled: bookingId !== null,
+  });
+}
+
+/**
+ * RÉPONDRE EN UN GESTE.
+ *
+ * Le prestataire est chez le client, à l'instant : une réponse qui arrive après son départ ne sert
+ * plus à rien. Pas de formulaire, pas de confirmation en deux temps — un bouton, une décision.
+ *
+ * Le refus emprunte le MÊME chemin que l'accord : c'est une réponse, pas un abandon, et le
+ * prestataire doit l'apprendre aussi vite que l'accord pour ne pas attendre pour rien.
+ */
+export function useRepondreAuSupplement(bookingId: number) {
+  const qc = useQueryClient();
+
+  return useMutation<OnSiteExtra, ApiError, { extraId: number; accepte: boolean }>({
+    mutationFn: async ({ extraId, accepte }) => {
+      const res = await apiClient.post(
+        `/client/bookings/${bookingId}/onsite/extras/${extraId}/${accepte ? 'approve' : 'decline'}`,
+      );
+
+      return res.data.data;
+    },
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: ['client', 'booking', bookingId, 'onsite'] });
+    },
+  });
+}
+
 export function useLiveOnSite(bookingId: number | null, missionId: number | null) {
   const qc = useQueryClient();
 
@@ -107,6 +158,9 @@ export function useLiveOnSite(bookingId: number | null, missionId: number | null
   useChannel(missionId ? `private-mission.${missionId}` : null, {
     'mission.media': rafraichir,
     'mission.incident': rafraichir,
+    // Un supplément proposé doit APPARAÎTRE : demander une réponse en un tap suppose d'abord que
+    // la personne voie qu'on lui demande quelque chose.
+    'mission.extra': rafraichir,
     MissionStatusUpdated: rafraichir,
   });
 }

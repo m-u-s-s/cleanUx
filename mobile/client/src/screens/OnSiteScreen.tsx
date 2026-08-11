@@ -1,13 +1,15 @@
 import React from 'react';
-import { View, Text, StyleSheet, Image, ScrollView } from 'react-native';
-import { Screen, Badge, Skeleton, EmptyState, ProgressBar, Divider } from '@/ui';
+import { View, Text, StyleSheet, Image, ScrollView, Alert } from 'react-native';
+import { Screen, Badge, Skeleton, EmptyState, ProgressBar, Divider, Button } from '@/ui';
 import {
   useOnSiteTimeline,
   useOnSiteMedia,
   useOnSiteIncidents,
+  useOnSiteExtras,
+  useRepondreAuSupplement,
   useLiveOnSite,
 } from '@/booking/onsite';
-import type { OnSiteMedia, OnSiteTimelineEntry } from '@/booking/onsite';
+import type { OnSiteExtra, OnSiteMedia, OnSiteTimelineEntry } from '@/booking/onsite';
 import { spacing, typography, radius } from '@/theme';
 import { useThemeColors } from '@/theme/useThemeColors';
 import type { ThemeTokens } from '@/theme/useThemeColors';
@@ -35,10 +37,28 @@ export function OnSiteScreen({ route }: Props) {
   const { data: fil, isLoading } = useOnSiteTimeline(bookingId);
   const { data: photos } = useOnSiteMedia(bookingId);
   const { data: imprevus } = useOnSiteIncidents(bookingId);
+  const { data: supplements } = useOnSiteExtras(bookingId);
+  const repondre = useRepondreAuSupplement(bookingId);
 
   // Le canal est indexé sur la MISSION : son identifiant vient du fil, le client n'en dispose pas
   // autrement.
   useLiveOnSite(bookingId, fil?.mission_id ?? null);
+
+  /**
+   * Répondre en un geste — un appui, une décision, pas de confirmation en deux temps.
+   *
+   * L'erreur est DITE : un supplément auquel on a déjà répondu depuis un autre appareil doit
+   * s'expliquer, sinon le bouton semble ne rien faire et la personne appuie trois fois.
+   */
+  const repondreAuSupplement = (extraId: number, accepte: boolean) => {
+    repondre.mutate(
+      { extraId, accepte },
+      {
+        onError: (erreur: { message?: string }) =>
+          Alert.alert('Impossible', erreur.message ?? 'Votre réponse n’a pas pu être enregistrée.'),
+      },
+    );
+  };
 
   if (isLoading) {
     return (
@@ -80,6 +100,43 @@ export function OnSiteScreen({ route }: Props) {
           Fin estimée vers {heure(fil.estimated_end_at)}
         </Text>
       )}
+
+      {/*
+        LES SUPPLÉMENTS EN PREMIER, avant l'avancement et les photos (F12).
+
+        C'est la seule chose de cet écran qui ATTEND quelque chose du client, et elle l'attend
+        maintenant : le prestataire est chez lui, à l'instant. Une réponse qui arrive après son
+        départ ne sert plus à rien — la placer sous les photos reviendrait à la faire manquer.
+      */}
+      {(supplements ?? []).filter((s) => s.awaiting_client).map((supplement: OnSiteExtra) => (
+        <View key={supplement.id} style={styles.supplement} testID={`supplement-${supplement.id}`}>
+          <Text style={styles.supplementTitre}>{supplement.label}</Text>
+          <Text style={styles.supplementPrix}>
+            {supplement.price} {supplement.currency}
+          </Text>
+          {supplement.description ? (
+            <Text style={styles.imprevuTexte}>{supplement.description}</Text>
+          ) : null}
+          {/* La phrase qui lève l'inquiétude vient AVANT les boutons, pas après. */}
+          <Text style={styles.supplementNote}>
+            Votre devis initial ne change pas : c’est une ligne séparée.
+          </Text>
+
+          <View style={styles.supplementActions}>
+            <Button
+              label="Accepter"
+              onPress={() => repondreAuSupplement(supplement.id, true)}
+              loading={repondre.isPending}
+            />
+            <Button
+              label="Refuser"
+              variant="secondary"
+              onPress={() => repondreAuSupplement(supplement.id, false)}
+              loading={repondre.isPending}
+            />
+          </View>
+        </View>
+      ))}
 
       {(imprevus ?? []).length > 0 && (
         <View style={styles.section}>
@@ -212,6 +269,34 @@ const stylesFor = (t: ThemeTokens) => StyleSheet.create({
     borderRadius: radius.md,
     padding: spacing.sm,
     marginBottom: spacing.xs,
+  },
+  // Le fond « brand » et non « warning » : un supplément proposé n'est pas un incident, c'est une
+  // décision à prendre. Le signaler comme un problème ferait refuser par réflexe.
+  supplement: {
+    backgroundColor: t.tint.brand,
+    borderRadius: radius.md,
+    padding: spacing.md,
+    marginBottom: spacing.sm,
+  },
+  supplementTitre: {
+    fontSize: typography.fontSize.sm,
+    fontWeight: typography.fontWeight.semibold,
+    color: t.text,
+  },
+  supplementPrix: {
+    fontSize: typography.fontSize.lg,
+    fontWeight: typography.fontWeight.bold,
+    color: t.text,
+  },
+  supplementNote: {
+    fontSize: typography.fontSize.xs,
+    color: t.textMuted,
+    marginTop: spacing.xs,
+  },
+  supplementActions: {
+    flexDirection: 'row',
+    gap: spacing.sm,
+    marginTop: spacing.sm,
   },
   imprevuTitre: {
     fontSize: typography.fontSize.sm,

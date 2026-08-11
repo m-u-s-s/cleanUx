@@ -57,8 +57,21 @@ class MatchingScorer
 
     private function scoreDistance(Booking $booking, User $provider): float
     {
-        $providerLat = (float) ($provider->providerProfile?->latitude ?? 0);
-        $providerLng = (float) ($provider->providerProfile?->longitude ?? 0);
+        /*
+         * `current_lat` / `current_lng`, PAS `latitude` / `longitude`.
+         *
+         * Ces deux dernières n'existent pas sur `provider_profiles` : la lecture rendait donc
+         * toujours nul, `$providerLat` valait toujours zéro, et le garde juste en dessous rendait
+         * invariablement le score neutre de 0,5. LE FACTEUR DISTANCE DU SCORING N'A JAMAIS VARIÉ —
+         * un prestataire à deux rues et un autre à quarante kilomètres recevaient la même note de
+         * proximité, sur le repli employé quand Matching v2 échoue.
+         *
+         * Le défaut était masqué par une annotation fausse : le trait déclarait cette relation
+         * comme rendant un `AvailabilitySlot`, si bien que l'analyse statique cherchait `latitude`
+         * sur le mauvais modèle et n'y voyait rien d'anormal.
+         */
+        $providerLat = (float) ($provider->providerProfile->current_lat ?? 0);
+        $providerLng = (float) ($provider->providerProfile->current_lng ?? 0);
 
         // Support both modern (destination_lat/lng) and legacy (latitude/longitude) columns
         $bookingLat = (float) ($booking->destination_lat ?? $booking->latitude ?? 0);
