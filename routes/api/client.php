@@ -16,6 +16,7 @@ use App\Http\Controllers\Api\Client\InvoiceApiController;
 use App\Http\Controllers\Api\Client\LoyaltyController;
 use App\Http\Controllers\Api\Client\LoyaltyRedemptionController;
 use App\Http\Controllers\Api\Client\MarketingPreferencesController;
+use App\Http\Controllers\Api\Client\MissionOnSiteController as ClientMissionOnSiteController;
 use App\Http\Controllers\Api\Client\NotificationPreferenceController;
 use App\Http\Controllers\Api\Client\NpsController;
 use App\Http\Controllers\Api\Client\PaymentMethodController;
@@ -108,6 +109,17 @@ Route::middleware('auth:sanctum')->prefix('client')->group(function () {
     Route::post('/bookings/{booking}/presence-code', [TripTrackingController::class, 'issuePresenceCode']);
     // Clôture : même direction que la présence — le client atteste, le prestataire scanne.
     Route::post('/bookings/{booking}/completion-code', [TripTrackingController::class, 'issueCompletionCode']);
+
+    /*
+     * LE SUIVI « SUR PLACE » CÔTÉ CLIENT.
+     *
+     * Le suivi existant s'arrête à la porte : il montre le trajet, puis plus rien. Ces trois
+     * lectures couvrent le temps de l'intervention elle-même — ce qui est fait, ce qui a été
+     * photographié, ce qui a mal tourné.
+     */
+    Route::get('/bookings/{booking}/onsite/timeline', [ClientMissionOnSiteController::class, 'timeline']);
+    Route::get('/bookings/{booking}/onsite/media', [ClientMissionOnSiteController::class, 'media']);
+    Route::get('/bookings/{booking}/onsite/incidents', [ClientMissionOnSiteController::class, 'incidents']);
 
     // Booking favorites — rebook 1-click
     Route::get('/favorites', [BookingFavoriteController::class, 'index']);

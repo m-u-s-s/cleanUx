@@ -54,6 +54,10 @@ class NotificationChannelResolver
         'mission_started' => 'transactional',
         'mission_completed' => 'transactional',
         'presence_code' => 'verification',
+        // Un imprévu chez soi n'est pas une nouvelle du service : c'est la mission qui bouge.
+        'mission_incident' => 'transactional',
+        // Un supplément proposé sur place attend une réponse pour que le travail continue.
+        'mission_extra' => 'transactional',
 
         // Argent
         'invoice_reminder' => 'transactional',

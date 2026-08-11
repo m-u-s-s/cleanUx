@@ -1,7 +1,8 @@
 import React, { useRef, useEffect, useMemo } from 'react';
 import { View, Text, StyleSheet, Dimensions } from 'react-native';
-import { Screen, Badge, Skeleton, OsmMap, loadMapModule, isMapRenderable } from '@/ui';
+import { Screen, Badge, Button, Skeleton, OsmMap, loadMapModule, isMapRenderable } from '@/ui';
 import { useTrackingSession, useTrackingTrail, useLiveTracking } from '@/tracking';
+import { useOnSiteTimeline } from '@/booking/onsite';
 import { PresenceCodeCard } from '@/screens/components/PresenceCodeCard';
 import { colors, spacing, typography, radius, shadows } from '@/theme';
 import { useThemeColors } from '@/theme/useThemeColors';
@@ -23,13 +24,22 @@ const STATUS_LABELS: Record<string, string> = {
   cancelled: 'Annulée',
 };
 
-export function MissionTrackingScreen({ route }: Props) {
+export function MissionTrackingScreen({ route, navigation }: Props) {
   const styles = stylesFor(useThemeColors());
 
   const { bookingId } = route.params;
   const { data: session, isLoading } = useTrackingSession(bookingId);
   const { data: trail } = useTrackingTrail(bookingId);
-  const { position: livePos, eta: liveEta } = useLiveTracking(bookingId);
+  /*
+   * L'IDENTIFIANT DE MISSION, ET NON CELUI DE LA RÉSERVATION.
+   *
+   * Le canal temps réel est indexé sur la mission ; on s'y abonnait avec le numéro de réservation.
+   * Tant que les deux compteurs coïncidaient l'erreur restait invisible — et dès qu'ils divergent,
+   * on écoute l'intervention de quelqu'un d'autre, ce que l'autorisation de canal refuse en
+   * silence. Le fil « sur place » est le seul endroit d'où le client obtient ce numéro.
+   */
+  const { data: filSurPlace } = useOnSiteTimeline(bookingId);
+  const { position: livePos, eta: liveEta } = useLiveTracking(filSurPlace?.mission_id ?? null);
   const mapRef = useRef<any>(null);
 
   /**
@@ -143,38 +153,52 @@ export function MissionTrackingScreen({ route }: Props) {
         </View>
       )}
 
-      {awaitingPresence || awaitingCompletion ? (
-        // L'intervention a démarré : le trajet n'apprend plus rien, le code si.
-        <View style={styles.presenceSlot}>
+      {/*
+        LE BAS DE L'ÉCRAN EST UNE PILE, PAS UN CHOIX.
+
+        Le code de présence REMPLAÇAIT l'encart d'information — ce qui est juste, le trajet
+        n'apprenant plus rien une fois la porte ouverte. Mais poser le lien vers le déroulé DANS
+        l'encart le faisait disparaître exactement pendant l'intervention : le seul moment où ce
+        lien sert. La pile garde les deux, dans l'ordre de ce qu'on cherche à cet instant.
+      */}
+      <View style={styles.basDEcran}>
+        {awaitingPresence || awaitingCompletion ? (
           <PresenceCodeCard
             bookingId={bookingId}
             purpose={awaitingCompletion ? 'completion' : 'presence'}
           />
-        </View>
-      ) : (
-        <View style={styles.infoCard}>
-          <View style={styles.infoRow}>
-            <View>
-              <Text style={styles.etaLabel}>ETA</Text>
-              <Text style={styles.etaValue}>
-                {etaMinutes != null ? `${Math.round(etaMinutes)} min` : '—'}
-              </Text>
+        ) : (
+          <View style={styles.infoCard}>
+            <View style={styles.infoRow}>
+              <View>
+                <Text style={styles.etaLabel}>ETA</Text>
+                <Text style={styles.etaValue}>
+                  {etaMinutes != null ? `${Math.round(etaMinutes)} min` : '—'}
+                </Text>
+              </View>
+              <View>
+                <Text style={styles.etaLabel}>Distance</Text>
+                <Text style={styles.etaValue}>
+                  {distanceKm != null ? `${distanceKm.toFixed(1)} km` : '—'}
+                </Text>
+              </View>
+              {session?.status && (
+                <Badge
+                  label={STATUS_LABELS[session.status] ?? session.status}
+                  variant={session.status === 'in_mission' ? 'success' : 'brand'}
+                />
+              )}
             </View>
-            <View>
-              <Text style={styles.etaLabel}>Distance</Text>
-              <Text style={styles.etaValue}>
-                {distanceKm != null ? `${distanceKm.toFixed(1)} km` : '—'}
-              </Text>
-            </View>
-            {session?.status && (
-              <Badge
-                label={STATUS_LABELS[session.status] ?? session.status}
-                variant={session.status === 'in_mission' ? 'success' : 'brand'}
-              />
-            )}
           </View>
-        </View>
-      )}
+        )}
+        <Button
+          label="Voir le déroulé de l’intervention"
+          onPress={() => navigation.navigate('OnSite', { bookingId })}
+          variant="secondary"
+          size="sm"
+          fullWidth
+        />
+      </View>
     </View>
   );
 }
@@ -184,24 +208,24 @@ const { height } = Dimensions.get('window');
 const stylesFor = (t: ThemeTokens) => StyleSheet.create({
   container: { flex: 1 },
   map: { flex: 1, minHeight: height * 0.6 },
-  // Même ancrage que la carte d'information qu'elle remplace : le code doit être sous le pouce.
-  presenceSlot: {
+  // Le pouce est en bas de l'écran : c'est là que vivent le code à montrer et le lien à suivre.
+  basDEcran: {
     position: 'absolute',
     bottom: 0,
     left: 0,
     right: 0,
     padding: spacing.md,
+    gap: spacing.sm,
   },
+  /*
+   * Plus positionnée elle-même : c'est `basDEcran` qui ancre désormais le bas de l'écran. Une
+   * vue absolue imbriquée dans une autre se recale sur son parent et se serait superposée au lien
+   * qui la suit.
+   */
   infoCard: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
     backgroundColor: 'rgba(255, 255, 255, 0.92)',
-    borderTopLeftRadius: radius.xl,
-    borderTopRightRadius: radius.xl,
+    borderRadius: radius.xl,
     padding: spacing.lg,
-    paddingBottom: spacing.xl + 20,
     ...shadows.lg,
   },
   infoRow: {

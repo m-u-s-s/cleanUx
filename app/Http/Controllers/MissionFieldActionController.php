@@ -8,6 +8,7 @@ use App\Models\MissionEvent;
 use App\Models\MissionMedia;
 use App\Services\Missions\MissionLifecycleService;
 use App\Services\Missions\MissionTrackingService;
+use App\Services\Missions\OnSite\MissionMediaService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -234,21 +235,26 @@ class MissionFieldActionController extends Controller
         }
 
         $isBefore = $mediaType === MissionMedia::TYPE_BEFORE_PHOTO;
-        $directory = $isBefore ? 'missions/photos-avant' : 'missions/photos-apres';
         $caption = $isBefore ? 'Photo avant mission' : 'Photo après mission';
         $stored = 0;
 
         foreach ($request->file($field) as $photo) {
             try {
-                $mission->media()->create([
-                    'uploaded_by_user_id' => Auth::id(),
-                    'media_type' => $mediaType,
-                    'path' => $photo->store($directory, 'private'),
-                    'caption' => $caption,
-                    'taken_at' => now(),
-                    'lat' => $data['lat'] ?? null,
-                    'lng' => $data['lng'] ?? null,
-                ]);
+                /*
+                 * Le service, et non une écriture directe : c'est lui qui calcule l'empreinte du
+                 * fichier, diffuse au client et inscrit le geste dans l'historique de la mission.
+                 * Une photo déposée par ce chemin valait sinon moins qu'une photo déposée depuis le
+                 * téléphone — et c'est celle-là qu'on aurait produite en cas de contestation.
+                 */
+                app(MissionMediaService::class)->capture(
+                    $mission,
+                    Auth::user(),
+                    $photo,
+                    $mediaType,
+                    isset($data['lat']) ? (float) $data['lat'] : null,
+                    isset($data['lng']) ? (float) $data['lng'] : null,
+                    caption: $caption,
+                );
                 $stored++;
             } catch (\Throwable $e) {
                 Log::warning('Photo de mission non enregistrée après une transition réussie.', [

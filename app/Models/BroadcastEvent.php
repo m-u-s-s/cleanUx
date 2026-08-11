@@ -36,6 +36,15 @@ class BroadcastEvent extends Model
 
     public const CATEGORY_NOTIFICATION = 'notification';
 
+    /**
+     * Ce qui se passe CHEZ le client pendant la mission : photos, imprévus, suppléments.
+     *
+     * Distincte de `mission_status` à dessein — un statut change quatre fois dans une mission,
+     * le terrain émet à chaque cliché. Les mélanger rendrait le rejeu d'administration illisible
+     * là où il sert le plus, c'est-à-dire quand un client conteste ce qu'il a vu et quand.
+     */
+    public const CATEGORY_MISSION_ONSITE = 'mission_onsite';
+
     protected $fillable = [
         'channel',
         'event_class',

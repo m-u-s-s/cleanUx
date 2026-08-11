@@ -6,6 +6,8 @@ export type RootStackParamList = {
    * un rendez-vous. Optionnel — sans lui, le parcours se comporte comme avant.
    */
   MissionTracking: { bookingId: number };
+  /** Le déroulé de l'intervention chez soi : avancement, photos avant/après, imprévus. */
+  OnSite: { bookingId: number };
   BookingDetail: { bookingId: number };
   QRScan: { bookingId: number; action: 'start' | 'end' };
   PaymentCheckout: { bookingId: number };

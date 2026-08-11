@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\Client;
 
 use App\Actions\Booking\CreateBookingFromApiAction;
 use App\Exceptions\BookingException;
+use App\Http\Controllers\Api\Concerns\AuthorizesClientBooking;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\Client\IndexBookingRequest;
 use App\Http\Requests\Api\Client\StoreBookingRequest;
@@ -47,6 +48,8 @@ use RuntimeException;
  */
 class ClientBookingController extends Controller
 {
+    use AuthorizesClientBooking;
+
     public function __construct(
         protected MissionLifecycleService $lifecycle,
         protected MissionVerificationCodeService $verificationCodes,
@@ -441,21 +444,14 @@ class ClientBookingController extends Controller
         }
     }
 
+    /**
+     * La règle a déménagé dans {@see AuthorizesClientBooking} — elle était `protected` ici, donc
+     * invisible pour le contrôleur suivant qui en a eu besoin. Ce point d'entrée reste, il n'a
+     * simplement plus sa propre copie de la règle.
+     */
     protected function authorizeAccess(Request $request, Booking $booking): void
     {
-        $user = $request->user();
-        $orgId = $user->organization_account_id ?? $user->current_organization_id ?? null;
-
-        $isOwner = (int) ($booking->customer_user_id ?? 0) === (int) $user->id
-                || (int) ($booking->client_id ?? 0) === (int) $user->id;
-
-        $isOrgMember = $orgId
-                    && $booking->customer_organization_id
-                    && (int) $booking->customer_organization_id === (int) $orgId;
-
-        $isAdmin = method_exists($user, 'isPlatformAdmin') && $user->isPlatformAdmin();
-
-        abort_if(! $isOwner && ! $isOrgMember && ! $isAdmin, 403, 'Accès refusé.');
+        $this->assertClientPeutVoirLaReservation($request->user(), $booking);
     }
 
     /**

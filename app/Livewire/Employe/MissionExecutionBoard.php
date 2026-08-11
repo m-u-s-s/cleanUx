@@ -6,7 +6,10 @@ use App\Models\Mission;
 use App\Models\MissionChecklistItem;
 use App\Models\MissionMedia;
 use App\Services\Missions\MissionChecklistService;
+use App\Services\Missions\OnSite\MissionMediaService;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Livewire\Component;
 use Livewire\WithFileUploads;
 
@@ -67,20 +70,12 @@ class MissionExecutionBoard extends Component
             'beforePhotos.*' => ['image', 'max:8192'],
         ]);
 
-        foreach ($this->beforePhotos as $photo) {
-            $path = $photo->store('missions/'.$this->mission->id.'/before', 'private');
-
-            MissionMedia::query()->create([
-                'mission_id' => $this->mission->id,
-                'uploaded_by_user_id' => Auth::id(),
-                'media_type' => 'before_photo',
-                'path' => $path,
-                'caption' => 'Photo avant',
-                'taken_at' => now(),
-                'lat' => $this->mission->start_lat,
-                'lng' => $this->mission->start_lng,
-            ]);
-        }
+        $this->enregistrer(
+            $this->beforePhotos,
+            MissionMedia::TYPE_BEFORE_PHOTO,
+            $this->mission->start_lat,
+            $this->mission->start_lng,
+        );
 
         $this->beforePhotos = [];
         $this->mission = $this->mission->fresh(['checklists.items', 'media']);
@@ -95,24 +90,61 @@ class MissionExecutionBoard extends Component
             'afterPhotos.*' => ['image', 'max:8192'],
         ]);
 
-        foreach ($this->afterPhotos as $photo) {
-            $path = $photo->store('missions/'.$this->mission->id.'/after', 'private');
-
-            MissionMedia::query()->create([
-                'mission_id' => $this->mission->id,
-                'uploaded_by_user_id' => Auth::id(),
-                'media_type' => 'after_photo',
-                'path' => $path,
-                'caption' => 'Photo après',
-                'taken_at' => now(),
-                'lat' => $this->mission->end_lat,
-                'lng' => $this->mission->end_lng,
-            ]);
-        }
+        $this->enregistrer(
+            $this->afterPhotos,
+            MissionMedia::TYPE_AFTER_PHOTO,
+            $this->mission->end_lat,
+            $this->mission->end_lng,
+        );
 
         $this->afterPhotos = [];
         $this->mission = $this->mission->fresh(['checklists.items', 'media']);
         $this->successMessage = 'Photos après ajoutées.';
+    }
+
+    /**
+     * UN SEUL CHEMIN D'ENREGISTREMENT, partagé avec l'application mobile.
+     *
+     * Ce composant écrivait ses lignes lui-même : pas d'empreinte du fichier, aucune diffusion au
+     * client, rien dans l'historique de la mission. Une photo déposée depuis le navigateur ne
+     * valait donc pas la même chose qu'une photo déposée depuis le téléphone — et c'est celle qui
+     * vaut le moins qu'on aurait produite le jour du litige.
+     *
+     * La position vient de la MISSION et non de l'appareil : un navigateur de bureau n'en a pas
+     * d'utile, et inventer un relevé serait pire que de n'en avoir aucun.
+     *
+     * @param  list<mixed>  $photos
+     * @param  MissionMedia::TYPE_*  $type
+     */
+    private function enregistrer(array $photos, string $type, mixed $lat, mixed $lng): void
+    {
+        $service = app(MissionMediaService::class);
+
+        foreach ($photos as $photo) {
+            if (! $photo instanceof UploadedFile) {
+                continue;
+            }
+
+            try {
+                $service->capture(
+                    $this->mission,
+                    Auth::user(),
+                    $photo,
+                    $type,
+                    $lat !== null ? (float) $lat : null,
+                    $lng !== null ? (float) $lng : null,
+                );
+            } catch (\Throwable $e) {
+                // Une photo refusée ne doit pas emporter les précédentes : le prestataire en
+                // envoie plusieurs d'un coup, et tout rejeter l'obligerait à tout recommencer.
+                Log::warning('[terrain] Photo non enregistrée depuis le web.', [
+                    'mission_id' => $this->mission->id,
+                    'media_type' => $type,
+                    'error' => $e->getMessage(),
+                ]);
+                $this->errorMessage = 'Une photo au moins n’a pas pu être enregistrée.';
+            }
+        }
     }
 
     protected function ensureChecklist(): void

@@ -86,7 +86,32 @@ export interface TrackingSession {
   presence_confirmed_at: string | null;
 }
 
+/**
+ * `distance_km` est FACULTATIVE : l'événement `mission.eta` diffusé par le serveur ne porte que
+ * les minutes et un point. La déclarer obligatoire décrivait une charge qui n'existe pas, et
+ * laissait l'écran afficher « undefined km » dès que l'abonnement se mettait à fonctionner.
+ */
 export interface LiveEta {
   eta_minutes: number;
-  distance_km: number;
+  distance_km?: number;
+}
+
+/** Ce que diffuse `mission.position`, littéralement. */
+export interface ApiLivePosition {
+  mission_id: number;
+  lat: number;
+  lng: number;
+  accuracy_m: number | null;
+  heading: number | null;
+  provider_user_id: number | null;
+  at: string;
+}
+
+/** Ce que diffuse `mission.eta`, littéralement. */
+export interface ApiLiveEta {
+  mission_id: number;
+  eta_minutes: number;
+  latitude: number | null;
+  longitude: number | null;
+  at: string;
 }

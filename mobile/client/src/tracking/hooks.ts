@@ -3,6 +3,8 @@ import { useState } from 'react';
 import { apiClient } from '@/api';
 import { useChannel } from '@/realtime';
 import type {
+  ApiLiveEta,
+  ApiLivePosition,
   ApiTrackingPoint,
   ApiTrackingSession,
   LiveEta,
@@ -171,6 +173,23 @@ export function useCompletionCode(bookingId: number | null) {
   });
 }
 
+/**
+ * La position du prestataire, en direct.
+ *
+ * DEUX ERREURS VIVAIENT ICI, et chacune suffisait à rendre l'abonnement muet :
+ *
+ * 1. LES NOMS D'ÉVÉNEMENTS étaient ceux des classes PHP (`MissionLivePosition`) alors que le
+ *    serveur diffuse sous les noms déclarés par `broadcastAs()` — `mission.position` et
+ *    `mission.eta`. Rien ne se déclenchait jamais. Exactement le défaut corrigé sur la messagerie ;
+ *    il survivait sur le suivi.
+ * 2. L'IDENTIFIANT PASSÉ ÉTAIT CELUI DE LA RÉSERVATION. Le canal est indexé sur la MISSION : tant
+ *    que les deux compteurs coïncidaient, l'erreur restait invisible ; dès qu'ils divergent, on
+ *    s'abonne à l'intervention de quelqu'un d'autre — et l'autorisation de canal la refuse, en
+ *    silence.
+ *
+ * Le paramètre est donc renommé pour dire ce qu'il attend. L'appelant lit le `mission_id` que lui
+ * rend le fil de l'intervention.
+ */
 export function useLiveTracking(missionId: number | null) {
   const [position, setPosition] = useState<LivePosition | null>(null);
   const [eta, setEta] = useState<LiveEta | null>(null);
@@ -178,8 +197,35 @@ export function useLiveTracking(missionId: number | null) {
   useChannel(
     missionId ? `private-mission.${missionId}` : null,
     {
-      'MissionLivePosition': (data: unknown) => setPosition(data as LivePosition),
-      'MissionLiveEta': (data: unknown) => setEta(data as LiveEta),
+      /*
+       * La charge diffusée parle `lat`/`lng`, les cartes parlent `latitude`/`longitude`. Sans cette
+       * traduction, le bon nom d'événement n'aurait fait que remplacer un silence par un marqueur
+       * posé sur `undefined` — c'est le défaut déjà rencontré sur les réponses HTTP du même module.
+       */
+      'mission.position': (data: unknown) => {
+        const brut = data as ApiLivePosition;
+
+        if (brut?.lat === undefined || brut?.lng === undefined) {
+          return;
+        }
+
+        setPosition({
+          latitude: Number(brut.lat),
+          longitude: Number(brut.lng),
+          ...(brut.heading === null || brut.heading === undefined
+            ? {}
+            : { heading: Number(brut.heading) }),
+        });
+      },
+      'mission.eta': (data: unknown) => {
+        const brut = data as ApiLiveEta;
+
+        if (brut?.eta_minutes === undefined) {
+          return;
+        }
+
+        setEta({ eta_minutes: Number(brut.eta_minutes) });
+      },
       'MissionStatusUpdated': () => {},
     },
   );

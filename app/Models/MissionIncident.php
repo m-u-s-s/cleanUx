@@ -12,6 +12,42 @@ class MissionIncident extends Model
     /** @use HasFactory<MissionIncidentFactory> */
     use HasFactory;
 
+    /**
+     * Les imprévus qu'un prestataire rencontre en arrivant, nommés une fois pour toutes.
+     *
+     * Trois catégories, pas trente : au-delà, personne ne choisit et tout finit en « autre ». Elles
+     * se distinguent par ce qu'elles DÉCLENCHENT — un dégât préexistant se photographie et se
+     * signale au client, un accès impossible arrête la mission, un objet manquant la modifie.
+     */
+    public const TYPE_PREEXISTING_DAMAGE = 'preexisting_damage';
+
+    public const TYPE_ACCESS_IMPOSSIBLE = 'access_impossible';
+
+    public const TYPE_MISSING_ITEM = 'missing_item';
+
+    public const TYPE_OTHER = 'other';
+
+    /** @return list<string> */
+    public static function typesTerrain(): array
+    {
+        return [
+            self::TYPE_PREEXISTING_DAMAGE,
+            self::TYPE_ACCESS_IMPOSSIBLE,
+            self::TYPE_MISSING_ITEM,
+            self::TYPE_OTHER,
+        ];
+    }
+
+    public static function libelleType(?string $type): string
+    {
+        return match ($type) {
+            self::TYPE_PREEXISTING_DAMAGE => 'Dégât préexistant',
+            self::TYPE_ACCESS_IMPOSSIBLE => 'Accès impossible',
+            self::TYPE_MISSING_ITEM => 'Objet ou fourniture manquant',
+            default => 'Autre imprévu',
+        };
+    }
+
     protected $fillable = [
         'mission_id',
         'reported_by_user_id',
@@ -26,12 +62,18 @@ class MissionIncident extends Model
         'reported_at',
         'resolved_at',
         'meta',
+        // Ce qui fait d'un signalement autre chose qu'une note : la photo, l'instant où le client
+        // l'a su, et le dossier de litige qu'il a ouvert ensuite.
+        'mission_media_id',
+        'notified_at',
+        'complaint_case_id',
     ];
 
     protected $casts = [
         'client_visible' => 'boolean',
         'reported_at' => 'datetime',
         'resolved_at' => 'datetime',
+        'notified_at' => 'datetime',
         'meta' => 'array',
     ];
 
@@ -51,5 +93,17 @@ class MissionIncident extends Model
     public function resolvedBy(): BelongsTo
     {
         return $this->belongsTo(User::class, 'resolved_by_user_id');
+    }
+
+    /** @return BelongsTo<MissionMedia, $this> */
+    public function media(): BelongsTo
+    {
+        return $this->belongsTo(MissionMedia::class, 'mission_media_id');
+    }
+
+    /** @return BelongsTo<ComplaintCase, $this> */
+    public function complaintCase(): BelongsTo
+    {
+        return $this->belongsTo(ComplaintCase::class, 'complaint_case_id');
     }
 }

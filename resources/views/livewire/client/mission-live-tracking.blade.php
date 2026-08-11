@@ -66,6 +66,74 @@
     <div class="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
         ℹ️ Quand le prestataire arrive, un code de début sera affiché pour lancer officiellement la mission.
     </div>
+
+    {{--
+        CE QUI SE PASSE UNE FOIS LA PORTE OUVERTE.
+
+        Le sondage est à 30 s et non aux 8 s de la carte : une photo ou un imprévu ne surviennent
+        pas dix fois par minute, et rafraîchir ce bloc au rythme d'un point GPS ferait sauter les
+        vignettes sous les yeux du client à chaque cycle.
+    --}}
+    <div wire:poll.30s class="space-y-5 border-t border-slate-200 pt-5">
+        <div class="flex items-center justify-between">
+            <h3 class="text-lg font-semibold text-slate-900">🧭 Déroulé de l’intervention</h3>
+            @if ($this->fil['progress']['total'] > 0)
+                <span class="rounded-full bg-slate-100 px-3 py-1 text-sm font-semibold text-slate-700">
+                    {{ $this->fil['progress']['done'] }} / {{ $this->fil['progress']['total'] }} étapes
+                </span>
+            @endif
+        </div>
+
+        @if ($this->fil['estimated_end_at'])
+            <p class="text-sm text-slate-500">
+                Fin estimée vers
+                {{ \Illuminate\Support\Carbon::parse($this->fil['estimated_end_at'])->format('H:i') }}.
+            </p>
+        @endif
+
+        @forelse ($this->imprevus as $imprevu)
+            <div class="rounded-xl border border-amber-300 bg-amber-50 px-4 py-3">
+                <p class="text-sm font-semibold text-amber-900">⚠️ {{ $imprevu['label'] }}</p>
+                <p class="mt-1 text-sm text-amber-800">{{ $imprevu['description'] }}</p>
+            </div>
+        @empty
+        @endforelse
+
+        @if (count($this->photos['before']) > 0 || count($this->photos['after']) > 0)
+            <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+                @foreach (['before' => 'Avant', 'after' => 'Après'] as $cle => $legende)
+                    @if (count($this->photos[$cle]) > 0)
+                        <div>
+                            <p class="mb-2 text-sm font-semibold text-slate-700">{{ $legende }}</p>
+                            <div class="flex gap-2 overflow-x-auto">
+                                @foreach ($this->photos[$cle] as $photo)
+                                    <img
+                                        src="{{ $photo['url'] }}"
+                                        alt="{{ $photo['label'] }} de votre intervention"
+                                        class="h-24 w-24 flex-none rounded-xl border border-slate-200 object-cover" />
+                                @endforeach
+                            </div>
+                        </div>
+                    @endif
+                @endforeach
+            </div>
+        @endif
+
+        <ol class="space-y-2">
+            @forelse ($this->fil['entries'] as $entree)
+                <li class="flex gap-3 border-b border-slate-100 pb-2 text-sm">
+                    <span class="w-12 flex-none text-slate-400">
+                        {{ $entree['at'] ? \Illuminate\Support\Carbon::parse($entree['at'])->format('H:i') : '—' }}
+                    </span>
+                    <span class="text-slate-800">{{ $entree['label'] }}</span>
+                </li>
+            @empty
+                <li class="text-sm text-slate-500">
+                    L’intervention n’a pas encore commencé — rien à afficher pour l’instant.
+                </li>
+            @endforelse
+        </ol>
+    </div>
 </div>
 
 @once

@@ -1,7 +1,16 @@
-import React, { useState, useCallback } from 'react';
-import { View, Text, FlatList, Switch, StyleSheet } from 'react-native';
-import { Screen, Button, Badge, Divider } from '@/ui';
-import { useMissionDetail, useMissionLifecycle } from '@/missions';
+import React, { useCallback, useState } from 'react';
+import { View, Text, FlatList, Switch, StyleSheet, Alert, Image, ScrollView, TouchableOpacity } from 'react-native';
+import { Screen, Button, Badge, Divider, TextInput, ProgressBar } from '@/ui';
+import {
+  useMissionDetail,
+  useMissionLifecycle,
+  useMissionMedia,
+  useMissionIncidents,
+  useCaptureMissionMedia,
+  useReportMissionIncident,
+  INCIDENT_TYPES,
+} from '@/missions';
+import type { MissionIncidentType, MissionMediaItem } from '@/missions';
 import { useInspection, useToggleChecklistItem } from '@/inspection';
 import { useGpsWatcher, usePushPosition } from '@/tracking';
 import { colors, spacing, typography, radius, shadows } from '@/theme';
@@ -12,19 +21,42 @@ import type { RootStackParamList } from '@/navigation/types';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'MissionField'>;
 
+/**
+ * L'ÉCRAN DU TERRAIN — celui qu'on tient à la main, chez le client, pendant l'intervention.
+ *
+ * Il existait, il était atteignable, et il ne servait à rien : ses deux conditions d'affichage
+ * testaient `in_progress`, un statut qui n'existe dans AUCUN état du serveur (`MissionStatus` dit
+ * `started`). Le partage GPS ne démarrait donc jamais et le bouton de clôture ne s'affichait
+ * jamais — l'écran se réduisait à une checklist. La même erreur avait déjà été corrigée sur
+ * l'écran de détail ; elle survivait ici.
+ *
+ * Trois outils s'y ajoutent, dans l'ordre où on s'en sert : documenter (avant / après), signaler
+ * ce qui cloche, et suivre l'avancement. Ils sont indépendants du cycle de vie à dessein — la
+ * photo utile est celle qu'on prend au moment où on voit la trace, pas celle qu'un formulaire
+ * réclame à la clôture.
+ */
 export function MissionFieldScreen({ route }: Props) {
-  const styles = stylesFor(useThemeColors());
+  const t = useThemeColors();
+  const styles = stylesFor(t);
 
   const { missionId } = route.params;
   const { data: mission } = useMissionDetail(missionId);
   const { data: inspection } = useInspection(missionId);
+  const { data: media } = useMissionMedia(missionId);
+  const { data: incidents } = useMissionIncidents(missionId);
   const toggleItem = useToggleChecklistItem();
   const pushPosition = usePushPosition(missionId);
   const lifecycle = useMissionLifecycle(missionId);
+  const capture = useCaptureMissionMedia(missionId);
+  const reportIncident = useReportMissionIncident(missionId);
   const [gpsActive, setGpsActive] = useState(true);
+  const [incidentType, setIncidentType] = useState<MissionIncidentType | null>(null);
+  const [incidentDescription, setIncidentDescription] = useState('');
+
+  const enCours = mission?.status === 'started';
 
   useGpsWatcher(
-    gpsActive && mission?.status === 'in_progress',
+    gpsActive && enCours,
     useCallback(
       (pos) => {
         pushPosition.mutate({ latitude: pos.latitude, longitude: pos.longitude, speed: pos.speed ?? undefined });
@@ -33,7 +65,49 @@ export function MissionFieldScreen({ route }: Props) {
     ),
   );
 
-  if (!mission) return <Screen><Text>Chargement...</Text></Screen>;
+  const photographier = (type: 'before_photo' | 'after_photo') => {
+    capture.mutate(
+      { type },
+      {
+        // `null` = l'utilisateur a annulé le sélecteur. Ce n'est pas un échec, et afficher une
+        // confirmation là où il vient de renoncer serait incompréhensible.
+        onSuccess: (resultat) =>
+          resultat &&
+          Alert.alert(
+            'Photo enregistrée',
+            'Elle est horodatée, géolocalisée et visible par le client.',
+          ),
+        onError: (e: any) =>
+          Alert.alert('Envoi impossible', e?.message ?? 'Réessayez dans un instant.'),
+      },
+    );
+  };
+
+  const envoyerLImprevu = (avecPhoto: boolean) => {
+    if (!incidentType || incidentDescription.trim().length < 3) {
+      Alert.alert('Incomplet', 'Choisissez une catégorie et décrivez ce que vous constatez.');
+
+      return;
+    }
+
+    reportIncident.mutate(
+      { type: incidentType, description: incidentDescription.trim(), withPhoto: avecPhoto },
+      {
+        onSuccess: () => {
+          setIncidentType(null);
+          setIncidentDescription('');
+          Alert.alert('Signalé', 'Le client vient d’être prévenu.');
+        },
+        onError: (e: any) =>
+          Alert.alert('Signalement impossible', e?.message ?? 'Réessayez dans un instant.'),
+      },
+    );
+  };
+
+  if (!mission) return <Screen><Text style={styles.loading}>Chargement...</Text></Screen>;
+
+  const avant = (media ?? []).filter((m) => m.type === 'before_photo');
+  const apres = (media ?? []).filter((m) => m.type === 'after_photo');
 
   return (
     <Screen scroll>
@@ -46,6 +120,103 @@ export function MissionFieldScreen({ route }: Props) {
         <Text style={styles.clientName}>{mission.client_name}</Text>
         <Text style={styles.clientAddress}>{mission.address}, {mission.city}</Text>
       </View>
+
+      {/* ── ÉTAT DES LIEUX ─────────────────────────────────────────────── */}
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>État des lieux</Text>
+        <Text style={styles.sectionHint}>
+          Chaque photo est horodatée et géolocalisée. C’est elle qui vous protège si le client
+          conteste plus tard.
+        </Text>
+
+        <BandeDePhotos photos={avant} legende="Avant" />
+        <BandeDePhotos photos={apres} legende="Après" />
+
+        <View style={styles.captureRow}>
+          <Button
+            label="Photo avant"
+            onPress={() => photographier('before_photo')}
+            loading={capture.isPending}
+            variant="secondary"
+          />
+          <Button
+            label="Photo après"
+            onPress={() => photographier('after_photo')}
+            loading={capture.isPending}
+            variant="secondary"
+          />
+        </View>
+      </View>
+
+      <Divider />
+
+      {/* ── IMPRÉVUS ───────────────────────────────────────────────────── */}
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>Signaler un imprévu</Text>
+        <Text style={styles.sectionHint}>
+          Le client est prévenu tout de suite, et le dossier de litige est pré-rempli s’il en ouvre
+          un.
+        </Text>
+
+        <View style={styles.chipRow}>
+          {INCIDENT_TYPES.map((categorie) => {
+            const choisi = incidentType === categorie.value;
+
+            return (
+              <TouchableOpacity
+                key={categorie.value}
+                onPress={() => setIncidentType(choisi ? null : categorie.value)}
+                accessibilityRole="button"
+                accessibilityState={{ selected: choisi }}
+                accessibilityLabel={categorie.label}
+                testID={`incident-type-${categorie.value}`}
+                style={[styles.chip, choisi && styles.chipSelected]}
+              >
+                <Text style={[styles.chipLabel, choisi && styles.chipLabelSelected]}>
+                  {categorie.label}
+                </Text>
+              </TouchableOpacity>
+            );
+          })}
+        </View>
+
+        <TextInput
+          label="Ce que vous constatez"
+          value={incidentDescription}
+          onChangeText={setIncidentDescription}
+          placeholder="Trace d’humidité derrière le meuble, présente à mon arrivée."
+          multiline
+          testID="incident-description"
+        />
+
+        <View style={styles.captureRow}>
+          <Button
+            label="Signaler avec photo"
+            onPress={() => envoyerLImprevu(true)}
+            loading={reportIncident.isPending}
+          />
+          <Button
+            label="Sans photo"
+            onPress={() => envoyerLImprevu(false)}
+            loading={reportIncident.isPending}
+            variant="secondary"
+          />
+        </View>
+
+        {(incidents ?? []).map((incident) => (
+          <View key={incident.id} style={styles.incidentRow}>
+            <Text style={styles.incidentLabel}>{incident.label}</Text>
+            <Text style={styles.incidentDescription} numberOfLines={2}>
+              {incident.description}
+            </Text>
+            <Text style={styles.incidentMeta}>
+              {incident.notified_at ? 'Client prévenu' : 'Client non joint'}
+            </Text>
+          </View>
+        ))}
+      </View>
+
+      <Divider />
 
       {inspection && (
         <View style={styles.section}>
@@ -80,7 +251,7 @@ export function MissionFieldScreen({ route }: Props) {
       </View>
 
       <View style={styles.actions}>
-        {mission.status === 'in_progress' && (
+        {enCours && (
           <Button
             label="Terminer la mission"
             onPress={() => lifecycle.mutate('complete')}
@@ -94,7 +265,44 @@ export function MissionFieldScreen({ route }: Props) {
   );
 }
 
+/**
+ * Les vignettes d'un moment de l'intervention.
+ *
+ * Rien n'est affiché tant qu'il n'y a rien : une bande vide avec son titre laisserait croire à un
+ * chargement en cours, alors que le prestataire n'a simplement pas encore photographié.
+ */
+function BandeDePhotos({ photos, legende }: { photos: MissionMediaItem[]; legende: string }) {
+  const styles = stylesFor(useThemeColors());
+
+  if (photos.length === 0) {
+    return null;
+  }
+
+  return (
+    <View style={styles.bande}>
+      <Text style={styles.bandeTitre}>
+        {legende} · {photos.length}
+      </Text>
+      <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+        {photos.map((photo) => (
+          <Image
+            key={photo.id}
+            source={{ uri: photo.url ?? undefined }}
+            style={styles.vignette}
+            accessibilityLabel={`${photo.label} de l’intervention`}
+          />
+        ))}
+      </ScrollView>
+    </View>
+  );
+}
+
 const stylesFor = (t: ThemeTokens) => StyleSheet.create({
+  loading: {
+    color: t.textSecondary,
+    textAlign: 'center',
+    marginTop: spacing.xl,
+  },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -129,7 +337,78 @@ const stylesFor = (t: ThemeTokens) => StyleSheet.create({
     fontSize: typography.fontSize.lg,
     fontWeight: typography.fontWeight.semibold,
     color: t.text,
+    marginBottom: spacing.xs,
+  },
+  sectionHint: {
+    fontSize: typography.fontSize.xs,
+    color: t.textSecondary,
     marginBottom: spacing.sm,
+  },
+  captureRow: {
+    flexDirection: 'row',
+    gap: spacing.sm,
+    marginTop: spacing.sm,
+  },
+  bande: { marginBottom: spacing.sm },
+  bandeTitre: {
+    fontSize: typography.fontSize.xs,
+    fontWeight: typography.fontWeight.semibold,
+    color: t.textSecondary,
+    marginBottom: spacing.xs,
+  },
+  vignette: {
+    width: 84,
+    height: 84,
+    borderRadius: radius.sm,
+    marginRight: spacing.xs,
+    backgroundColor: t.border,
+  },
+  chipRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: spacing.xs,
+    marginBottom: spacing.sm,
+  },
+  chip: {
+    paddingHorizontal: spacing.sm,
+    paddingVertical: spacing.xs,
+    borderRadius: radius.pill,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: t.border,
+    backgroundColor: t.card,
+  },
+  chipSelected: {
+    backgroundColor: colors.brand[500],
+    borderColor: colors.brand[500],
+  },
+  chipLabel: {
+    fontSize: typography.fontSize.xs,
+    color: t.text,
+  },
+  chipLabelSelected: {
+    color: t.textOnBrand,
+    fontWeight: typography.fontWeight.semibold,
+  },
+  incidentRow: {
+    paddingVertical: spacing.sm,
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopColor: t.border,
+  },
+  incidentLabel: {
+    fontSize: typography.fontSize.sm,
+    fontWeight: typography.fontWeight.semibold,
+    color: t.text,
+  },
+  incidentDescription: {
+    fontSize: typography.fontSize.xs,
+    color: t.textSecondary,
+    marginTop: 2,
+  },
+  incidentMeta: {
+    fontSize: typography.fontSize.xs,
+    color: t.textSecondary,
+    marginTop: 2,
+    fontStyle: 'italic',
   },
   checkItem: {
     flexDirection: 'row',

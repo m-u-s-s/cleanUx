@@ -10,6 +10,7 @@ use App\Http\Controllers\Api\Provider\CompanyController as ProviderCompanyContro
 use App\Http\Controllers\Api\Provider\FleetProviderController;
 use App\Http\Controllers\Api\Provider\KycController;
 use App\Http\Controllers\Api\Provider\MissionLiveTrackingController;
+use App\Http\Controllers\Api\Provider\MissionOnSiteController;
 use App\Http\Controllers\Api\Provider\PresenceController;
 use App\Http\Controllers\Api\Provider\ProviderCancellationController;
 use App\Http\Controllers\Api\Provider\ProviderCoverageController;
@@ -204,6 +205,22 @@ Route::middleware(['auth:sanctum', 'role:employe', 'provider.approved'])->group(
         Route::post('/{mission}/complete', [ProviderMissionLifecycleController::class, 'complete']);
         // Clôture par le code que le client affiche : un SMS voyage, un écran non.
         Route::post('/{mission}/complete-by-qr', [ProviderMissionLifecycleController::class, 'completeByQr']);
+    });
+
+    /*
+     * LE KIT « SUR PLACE » — l'état des lieux et les imprévus, indépendants du cycle de vie.
+     *
+     * Les photos existaient déjà, mais attachées au formulaire de démarrage et à celui de clôture :
+     * on ne pouvait documenter que deux instants sur une intervention qui en compte vingt. Ces
+     * points d'entrée s'appellent quand le prestataire VOIT quelque chose, ce qui est la seule
+     * façon d'obtenir une preuve utile.
+     */
+    Route::prefix('provider/missions')->group(function () {
+        Route::get('/{mission}/media', [MissionOnSiteController::class, 'media']);
+        Route::post('/{mission}/media', [MissionOnSiteController::class, 'storeMedia']);
+        Route::get('/{mission}/incidents', [MissionOnSiteController::class, 'incidents']);
+        Route::post('/{mission}/incidents', [MissionOnSiteController::class, 'storeIncident']);
+        Route::get('/{mission}/timeline', [MissionOnSiteController::class, 'timeline']);
     });
 
     // Phase 14 — Cancellation provider

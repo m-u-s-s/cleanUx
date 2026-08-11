@@ -5,6 +5,7 @@ import { useAuth } from '@/auth';
 import { LoginScreen } from '@/screens/LoginScreen';
 import { TabNavigator } from './TabNavigator';
 import { MissionTrackingScreen } from '@/screens/MissionTrackingScreen';
+import { OnSiteScreen } from '@/screens/OnSiteScreen';
 import { BookingDetailScreen } from '@/screens/BookingDetailScreen';
 import { QRScanScreen } from '@/screens/QRScanScreen';
 import { PaymentCheckoutScreen } from '@/screens/PaymentCheckoutScreen';
@@ -178,6 +179,16 @@ export function RootNavigator() {
               name="MissionTracking"
               component={MissionTrackingScreen}
               options={{ title: 'Suivi mission' }}
+            />
+            {/*
+              Le suivi CONTINUE après la sonnette. La carte s'arrête à l'arrivée ; cet écran
+              couvre les deux heures suivantes, celles où le client se demande ce qui se passe
+              chez lui.
+            */}
+            <Stack.Screen
+              name="OnSite"
+              component={OnSiteScreen}
+              options={{ title: 'Intervention en cours' }}
             />
             <Stack.Screen
               name="BookingDetail"

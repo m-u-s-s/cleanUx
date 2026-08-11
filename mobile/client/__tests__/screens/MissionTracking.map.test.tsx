@@ -38,6 +38,15 @@ const TRAIL = [
 
 // La session ne porte PAS de distance — elle est relevée point par point. Un faux qui en
 // inventerait une validerait un champ que le serveur n'envoie pas.
+/*
+ * Le fil « sur place » est faux ici : cet écran l'interroge désormais pour connaître le NUMÉRO DE
+ * MISSION, seul identifiant que le canal temps réel accepte. Le laisser réel ferait partir une
+ * requête au serveur au milieu d'un test de carte.
+ */
+jest.mock('@/booking/onsite', () => ({
+  useOnSiteTimeline: () => ({ data: { mission_id: 4242 }, isLoading: false }),
+}));
+
 jest.mock('@/tracking', () => ({
   useTrackingSession: () => ({
     data: { code: 'TRK-1', status: 'enroute', destination: null, provider: null, eta_minutes: 12, eta_seconds: 720 },
@@ -57,6 +66,7 @@ jest.mock('@/ui', () => {
   return {
     Screen: ({ children }: any) => <View>{children}</View>,
     Badge: ({ label }: any) => <Text>{label}</Text>,
+    Button: ({ label }: any) => <Text>{label}</Text>,
     Skeleton: () => <View />,
     isMapRenderable: () => mapState.renderable,
     // `loadMapModule` rend TOUJOURS le module quand react-native-maps est installé : c'est
@@ -103,7 +113,7 @@ function renderScreen() {
     <QueryClientProvider client={client}>
       <MissionTrackingScreen
         route={{ params: { bookingId: 42 } } as never}
-        navigation={{} as never}
+        navigation={{ navigate: jest.fn() } as never}
       />
     </QueryClientProvider>,
   );
