@@ -69,6 +69,16 @@ use Illuminate\Support\Facades\Cache;
  *   analytics.view          Voir les statistiques de l'organisation
  *   analytics.export        Exporter les données
  *
+ * EXPLOITATION (côté société prestataire — phase 2)
+ *   inventory.view          Voir le stock de consommables
+ *   inventory.manage        Réceptionner, prélever, corriger le stock
+ *   quotes.view             Suivre les devis que la société a émis
+ *   quotes.manage           Chiffrer et envoyer un devis
+ *   recruitment.view        Voir les offres et les candidatures
+ *   recruitment.manage      Publier une offre, trier, décider
+ *   fleet.view              Voir les véhicules, équipements et certifications
+ *   fleet.manage            Déclarer et retirer du matériel
+ *
  * ADMIN PLATEFORME (platform_role = admin / super_admin)
  *   platform.manage_users
  *   platform.manage_orgs
@@ -126,6 +136,20 @@ class PermissionService
             // ne peut pas commander ferait du bruit sans recours.
             'inventory.view',
             'inventory.manage',
+            /*
+             * E24 — les devis que la societe batit elle-meme. `view` pour suivre le pipeline
+             * commercial, `manage` pour chiffrer et envoyer : un devis engage un prix, et un prix
+             * engage la marge de toute l'equipe qui l'executera.
+             */
+            'quotes.view',
+            'quotes.manage',
+            // E25 — le recrutement. Publier une offre et trier des candidatures touche a des
+            // donnees personnelles de gens qui ne sont pas encore de la maison.
+            'recruitment.view',
+            'recruitment.manage',
+            // E27 — la flotte de la societe. Fleet v2 existait, pilote par la seule plateforme.
+            'fleet.view',
+            'fleet.manage',
         ],
 
         OrganizationRole::MANAGER->value => [
@@ -150,6 +174,12 @@ class PermissionService
             'tasks.close',
             'analytics.view',
             'analytics.export',
+            'quotes.view',
+            'quotes.manage',
+            'recruitment.view',
+            'recruitment.manage',
+            'fleet.view',
+            'fleet.manage',
         ],
 
         OrganizationRole::SITE_MANAGER->value => [
@@ -203,6 +233,13 @@ class PermissionService
             'tasks.close',
             'analytics.view',
             'analytics.export',
+            'quotes.view',
+            // C'est le role qui repond aux appels d'offres : lui refuser `manage` ferait remonter
+            // chaque chiffrage au proprietaire, c'est-a-dire nulle part le jour ou il est absent.
+            'quotes.manage',
+            // E27 — il commande les vehicules comme il commande les produits.
+            'fleet.view',
+            'fleet.manage',
         ],
 
         OrganizationRole::DISPATCHER->value => [
@@ -222,6 +259,9 @@ class PermissionService
             'tasks.create',
             'tasks.assign',
             'analytics.view',
+            // Lecture seule : le repartiteur doit savoir quel camion est disponible, il ne decide
+            // pas d'en acheter un.
+            'fleet.view',
         ],
 
         OrganizationRole::TEAM_LEAD->value => [
@@ -241,6 +281,9 @@ class PermissionService
         OrganizationRole::QUALITY_MANAGER->value => [
             'missions.view_all',
             'missions.quality',
+            // E27 — les certifications de ses collegues sont une donnee qualite : c'est lui qui
+            // voit venir l'echeance avant que le moteur ne refuse l'assignation.
+            'fleet.view',
             'analytics.view',
             'analytics.export',
             'channels.create',

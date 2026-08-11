@@ -26,6 +26,8 @@ class FleetEquipment extends Model
     protected $table = 'fleet_equipment';
 
     protected $fillable = [
+        // `null` = a la plateforme. Une societe ne voit QUE ce qu'elle a declare.
+        'organization_account_id',
         'code', 'name', 'equipment_type', 'category',
         'serial_number', 'brand', 'model', 'status',
         'current_provider_id', 'value_cents', 'currency',

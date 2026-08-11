@@ -33,6 +33,9 @@ import { CompanyAgenciesScreen } from '@/screens/company/CompanyAgenciesScreen';
 import { CompanyPlanningScreen } from '@/screens/company/CompanyPlanningScreen';
 import { CompanyTimesheetsScreen } from '@/screens/company/CompanyTimesheetsScreen';
 import { CompanyInventoryScreen } from '@/screens/company/CompanyInventoryScreen';
+import { CompanyQuotesScreen } from '@/screens/company/CompanyQuotesScreen';
+import { CompanyRecruitmentScreen } from '@/screens/company/CompanyRecruitmentScreen';
+import { CompanyQualityFleetScreen } from '@/screens/company/CompanyQualityFleetScreen';
 import { ChannelConversationScreen } from '@/screens/company/ChannelConversationScreen';
 import { CallScreen } from '@/screens/company/CallScreen';
 import { CompanySitesScreen } from '@/screens/company/CompanySitesScreen';
@@ -188,6 +191,21 @@ export function RootNavigator() {
             name="CompanyInventory"
             component={CompanyInventoryScreen}
             options={{ headerShown: true, title: 'Consommables' }}
+          />
+          <Stack.Screen
+            name="CompanyQuotes"
+            component={CompanyQuotesScreen}
+            options={{ headerShown: true, title: 'Devis' }}
+          />
+          <Stack.Screen
+            name="CompanyRecruitment"
+            component={CompanyRecruitmentScreen}
+            options={{ headerShown: true, title: 'Recrutement' }}
+          />
+          <Stack.Screen
+            name="CompanyQualityFleet"
+            component={CompanyQualityFleetScreen}
+            options={{ headerShown: true, title: 'Qualité et matériel' }}
           />
           <Stack.Screen
             name="ChannelConversation"
@@ -577,6 +595,21 @@ export function RootNavigator() {
               name="CompanyInventory"
               component={CompanyInventoryScreen}
               options={{ headerShown: true, title: 'Consommables' }}
+            />
+            <Stack.Screen
+              name="CompanyQuotes"
+              component={CompanyQuotesScreen}
+              options={{ headerShown: true, title: 'Devis' }}
+            />
+            <Stack.Screen
+              name="CompanyRecruitment"
+              component={CompanyRecruitmentScreen}
+              options={{ headerShown: true, title: 'Recrutement' }}
+            />
+            <Stack.Screen
+              name="CompanyQualityFleet"
+              component={CompanyQualityFleetScreen}
+              options={{ headerShown: true, title: 'Qualité et matériel' }}
             />
             <Stack.Screen
               name="ChannelConversation"

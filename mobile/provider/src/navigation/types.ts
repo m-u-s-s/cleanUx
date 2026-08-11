@@ -119,6 +119,16 @@ export type RootStackParamList = {
    */
   CompanyInventory: undefined;
   /**
+   * Les devis de la société — l'écran le plus légitimement mobile du lot : un devis se chiffre
+   * CHEZ LE CLIENT, pendant la visite. Le noter pour le saisir en rentrant, c'est perdre la moitié
+   * des détails et deux jours de délai de réponse.
+   */
+  CompanyQuotes: undefined;
+  /** Les offres et les candidatures — le tri se fait entre deux chantiers. */
+  CompanyRecruitment: undefined;
+  /** Le score qualité interne et la flotte : qui peut travailler demain, et avec quoi. */
+  CompanyQualityFleet: undefined;
+  /**
    * Une conversation d'equipe — temps reel, participants, note vocale.
    *
    * `CompanyChannelsScreen` melait la liste et le fil dans un seul ecran, SANS temps reel : il

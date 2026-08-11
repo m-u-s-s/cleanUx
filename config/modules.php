@@ -62,6 +62,14 @@ return [
         ['key' => 'client:client.rendezvous.index', 'label' => 'Mes rendez-vous', 'icon' => '📅', 'route' => 'client.rendezvous.index', 'context' => 'client', 'category' => 'rendez-vous', 'primary' => true],
         ['key' => 'client:client.contracts', 'label' => 'Contrats', 'icon' => '📜', 'route' => 'client.contracts', 'context' => 'client', 'category' => 'documents', 'primary' => false],
         ['key' => 'client:client.finance', 'label' => 'Finance', 'icon' => '💳', 'route' => 'client.finance', 'context' => 'client', 'category' => 'finance', 'primary' => false],
+        /*
+         * LES DEVIS REÇUS (E24) — la moitié cliente du module.
+         *
+         * Une société qui bâtit un devis et l'envoie à un client qui ne peut pas y répondre n'a rien
+         * envoyé : le client découvre le document par une notification et répond par téléphone,
+         * c'est-à-dire hors de toute trace.
+         */
+        ['key' => 'client:client.quotes', 'label' => 'Devis reçus', 'icon' => '📄', 'route' => 'client.quotes', 'context' => 'client', 'category' => 'finance', 'primary' => false],
         ['key' => 'client:client.payment.methods', 'label' => 'Cartes bancaires', 'icon' => '💳', 'route' => 'client.payment.methods', 'context' => 'client', 'category' => 'finance', 'primary' => false],
         ['key' => 'client:client.subscriptions', 'label' => 'Abonnements', 'icon' => '🔁', 'route' => 'client.subscriptions', 'context' => 'client', 'category' => 'finance', 'primary' => false],
         ['key' => 'client:client.subscriptions-v2', 'label' => 'Abonnements v2', 'icon' => '🔄', 'route' => 'client.subscriptions-v2', 'context' => 'client', 'category' => 'finance', 'primary' => false],
@@ -296,6 +304,19 @@ return [
         // Le stock de consommables. `inventory.view` va jusqu'aux exécutants : savoir ce qui reste
         // avant de partir n'est pas commander.
         ['key' => 'provider-company:provider-company.inventory', 'label' => 'Consommables', 'icon' => '📦', 'route' => 'provider-company.inventory', 'context' => 'provider-company', 'permission' => 'inventory.view', 'category' => 'missions', 'primary' => false],
+        // E24 — le devis que la société bâtit elle-même, au lieu de le faire saisir à la main par
+        // un administrateur de la plateforme.
+        ['key' => 'provider-company:provider-company.quotes', 'label' => 'Devis', 'icon' => '📄', 'route' => 'provider-company.quotes', 'context' => 'provider-company', 'permission' => 'quotes.view', 'category' => 'finance', 'primary' => false],
+        /*
+         * E25 — le recrutement. L'invitation à jeton concluait DÉJÀ le recrutement ; l'offre et le
+         * tri se passaient hors de la plateforme, et le lien entre les deux n'existait dans aucune
+         * donnée : impossible de savoir quelle annonce avait produit quelle recrue.
+         */
+        ['key' => 'provider-company:provider-company.recruitment', 'label' => 'Recrutement', 'icon' => '📢', 'route' => 'provider-company.recruitment', 'context' => 'provider-company', 'permission' => 'recruitment.view', 'category' => 'prestataires', 'primary' => false],
+        // E26 + E27 — le score qualité interne et la flotte : qui peut travailler demain, et avec
+        // quoi. L'écran s'ouvre par `missions.quality` OU par `fleet.view` ; le répertoire annonce
+        // la seconde, la plus large des deux.
+        ['key' => 'provider-company:provider-company.quality-fleet', 'label' => 'Qualité et matériel', 'icon' => '🔧', 'route' => 'provider-company.quality-fleet', 'context' => 'provider-company', 'permission' => 'fleet.view', 'category' => 'qualite', 'primary' => false],
         // La matrice rôle → permissions PROPRE à la société. `members.manage_permissions` est
         // réservée au propriétaire par défaut : distribuer des droits n'est pas inviter.
         ['key' => 'provider-company:provider-company.role-permissions', 'label' => 'Rôles et permissions', 'icon' => '🔑', 'route' => 'provider-company.role-permissions', 'context' => 'provider-company', 'permission' => 'members.manage_permissions', 'category' => 'comptes', 'primary' => false],

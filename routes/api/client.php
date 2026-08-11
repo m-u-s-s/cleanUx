@@ -18,6 +18,7 @@ use App\Http\Controllers\Api\Client\LoyaltyRedemptionController;
 use App\Http\Controllers\Api\Client\MarketingPreferencesController;
 use App\Http\Controllers\Api\Client\MissionOnSiteController as ClientMissionOnSiteController;
 use App\Http\Controllers\Api\Client\NotificationPreferenceController;
+use App\Http\Controllers\Api\Client\ReceivedQuoteController;
 use App\Http\Controllers\Api\Client\NpsController;
 use App\Http\Controllers\Api\Client\PaymentMethodController;
 use App\Http\Controllers\Api\Client\PromoCodeController;
@@ -272,6 +273,27 @@ Route::middleware('auth:sanctum')->prefix('client/company')->group(function () {
     Route::get('/members', [ClientCompanyController::class, 'members']);
     Route::get('/contracts', [ClientCompanyController::class, 'contracts']);
     Route::get('/billing', [ClientCompanyController::class, 'billing']);
+});
+
+/*
+|--------------------------------------------------------------------------
+| API — Devis reçus (E24)
+|--------------------------------------------------------------------------
+|
+| LA MOITIÉ MANQUANTE DU MODULE. Une société qui bâtit un devis et l'envoie à un client qui ne
+| peut pas y répondre n'a rien envoyé : le client découvre le document par une notification
+| poussée sur son téléphone — et devrait ouvrir un ordinateur pour dire oui.
+|
+| Aucun middleware de rôle : le devis est gardé par son DESTINATAIRE, `client_user_id`. Un
+| filtre de rôle fermerait la porte à un contact d'entreprise qui n'est pas « client
+| particulier », alors que c'est lui qui décide.
+*/
+Route::middleware('auth:sanctum')->prefix('client/quotes')->group(function () {
+    Route::get('/', [ReceivedQuoteController::class, 'index']);
+    Route::get('/{quote}', [ReceivedQuoteController::class, 'show']);
+    // Accepter CRÉE le travail : chaque ligne porte un métier et devient une réservation.
+    Route::post('/{quote}/accept', [ReceivedQuoteController::class, 'accept']);
+    Route::post('/{quote}/decline', [ReceivedQuoteController::class, 'decline']);
 });
 
 // ─────────────────────────────────────────────

@@ -130,6 +130,14 @@ export function ProfileScreen() {
      * ceux qui en ont le plus besoin — ceux qui sont devant la camionnette.
      */
     { label: 'Consommables', screen: 'CompanyInventory', permission: 'inventory.view' },
+    { label: 'Devis', screen: 'CompanyQuotes', permission: 'quotes.view' },
+    { label: 'Recrutement', screen: 'CompanyRecruitment', permission: 'recruitment.view' },
+    /*
+     * DEUX PORTES POUR UN ÉCRAN. Il s'ouvre par `missions.quality` OU par `fleet.view` : le
+     * répertoire annonce la seconde, la plus large des deux. Exiger les deux le fermerait à
+     * chacun des deux rôles qu'il sert.
+     */
+    { label: 'Qualité et matériel', screen: 'CompanyQualityFleet', permission: 'fleet.view' },
     { label: 'Tâches', screen: 'CompanyTasks', permission: null },
     { label: 'Canaux', screen: 'CompanyChannels', permission: null },
   ];

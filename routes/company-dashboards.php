@@ -17,6 +17,9 @@ use App\Livewire\ProviderCompany\DispatchCenter;
 use App\Livewire\ProviderCompany\FieldTeams;
 use App\Livewire\ProviderCompany\InventoryCenter;
 use App\Livewire\ProviderCompany\ProviderDashboard;
+use App\Livewire\ProviderCompany\QualityAndFleet;
+use App\Livewire\ProviderCompany\QuoteBuilder;
+use App\Livewire\ProviderCompany\RecruitmentCenter;
 use App\Livewire\ProviderCompany\RolePermissionsMatrix;
 use App\Livewire\ProviderCompany\SiteOperations;
 use App\Livewire\ProviderCompany\TaskBoard;
@@ -123,4 +126,19 @@ Route::middleware(['auth', 'verified', 'active.account', 'org.type:provider'])
 
         // Le stock de consommables (E23), alimenté aussi depuis le terrain (F7).
         Route::get('/consommables', InventoryCenter::class)->name('inventory');
+
+        /*
+         * LE DEVIS QUE LA SOCIÉTÉ BÂTIT ELLE-MÊME (E24). « Je passe voir, je chiffre, je vous
+         * envoie ça » n'existait que dans l'écran d'administration de la PLATEFORME : un opérateur
+         * tapait le prix à la main pour le compte de la société.
+         */
+        Route::get('/devis', QuoteBuilder::class)->name('quotes');
+
+        // Le recrutement (E25). L'invitation à jeton concluait déjà ; l'offre et les candidatures
+        // se passaient hors de la plateforme.
+        Route::get('/recrutement', RecruitmentCenter::class)->name('recruitment');
+
+        // Le score qualité interne (E26) et la flotte de la société (E27) — même question : qui
+        // peut travailler demain, et avec quoi.
+        Route::get('/qualite-materiel', QualityAndFleet::class)->name('quality-fleet');
     });

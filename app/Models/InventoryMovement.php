@@ -65,4 +65,17 @@ class InventoryMovement extends Model
     {
         return $this->belongsTo(Mission::class);
     }
+
+    /**
+     * Qui a déclaré ce mouvement.
+     *
+     * Nullable : un mouvement peut venir d'un traitement automatique. « Système » est une réponse
+     * honnête ; inventer un auteur en serait une fausse.
+     *
+     * @return BelongsTo<User, $this>
+     */
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
+    }
 }

@@ -16,6 +16,7 @@ import { NotificationsScreen } from '@/screens/NotificationsScreen';
 // Sprint 9
 import { RatingScreen } from '@/screens/RatingScreen';
 import { LoyaltyScreen } from '@/screens/LoyaltyScreen';
+import { ReceivedQuotesScreen } from '@/screens/ReceivedQuotesScreen';
 import { ReferralScreen } from '@/screens/ReferralScreen';
 import { AiQuoteScreen } from '@/screens/AiQuoteScreen';
 // Sprint 10
@@ -235,6 +236,11 @@ export function RootNavigator() {
               name="Loyalty"
               component={LoyaltyScreen}
               options={{ title: 'Fidélité', headerShown: true }}
+            />
+            <Stack.Screen
+              name="ReceivedQuotes"
+              component={ReceivedQuotesScreen}
+              options={{ title: 'Devis reçus', headerShown: true }}
             />
             <Stack.Screen
               name="Referral"

@@ -95,6 +95,17 @@ export function ProfileScreen() {
           variant="secondary"
           fullWidth
         />
+        {/*
+          LES DEVIS REÇUS (E24). Une société qui envoie un devis à un client qui ne peut pas y
+          répondre n'a rien envoyé : sans cette porte, l'écran serait orphelin — le mode d'échec
+          documenté de ce dépôt.
+        */}
+        <Button
+          label="Devis reçus"
+          onPress={() => navigation.navigate('ReceivedQuotes')}
+          variant="secondary"
+          fullWidth
+        />
         <Button
           label="Programme fidélité"
           onPress={() => navigation.navigate('Loyalty')}

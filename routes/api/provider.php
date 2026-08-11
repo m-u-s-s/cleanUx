@@ -7,6 +7,7 @@ use App\Http\Controllers\Api\Provider\AsapOfferController;
 use App\Http\Controllers\Api\Provider\AvailabilityController;
 use App\Http\Controllers\Api\Provider\BadgesController;
 use App\Http\Controllers\Api\Provider\CompanyController as ProviderCompanyController;
+use App\Http\Controllers\Api\Provider\CommerceController as ProviderCommerceController;
 use App\Http\Controllers\Api\Provider\WorkforceController as ProviderWorkforceController;
 use App\Http\Controllers\Api\Provider\FleetProviderController;
 use App\Http\Controllers\Api\Provider\KycController;
@@ -490,4 +491,29 @@ Route::middleware('auth:sanctum')->prefix('provider/company')->group(function ()
     Route::get('/inventory/{item}/movements', [ProviderWorkforceController::class, 'inventoryMovements']);
     // On ne saisit jamais le compteur, on déclare ce qui a bougé.
     Route::post('/inventory/{item}/movements', [ProviderWorkforceController::class, 'moveInventory']);
+
+    /*
+     * DEVIS, RECRUTEMENT, SCORE QUALITÉ, FLOTTE — servis par `CommerceController`.
+     *
+     * UN DEVIS SE CHIFFRE CHEZ LE CLIENT, pendant la visite : c'est le seul moment où l'on voit la
+     * surface, l'état, les accès. Le noter pour le saisir en rentrant, c'est perdre la moitié des
+     * détails et deux jours de délai de réponse.
+     */
+    Route::get('/quotes', [ProviderCommerceController::class, 'quotes']);
+    Route::post('/quotes', [ProviderCommerceController::class, 'createQuote']);
+    Route::get('/quotes/{quote}', [ProviderCommerceController::class, 'showQuote']);
+    Route::post('/quotes/{quote}/lines', [ProviderCommerceController::class, 'addQuoteLine']);
+    // Le montant est FIGÉ à l'envoi : un devis envoyé ne se modifie plus.
+    Route::post('/quotes/{quote}/send', [ProviderCommerceController::class, 'sendQuote']);
+
+    Route::get('/job-postings', [ProviderCommerceController::class, 'jobPostings']);
+    Route::get('/job-postings/{posting}/applications', [ProviderCommerceController::class, 'jobApplications']);
+    // Embaucher ÉMET l'invitation : un même geste, pas deux écrans.
+    Route::post('/job-applications/{application}/decision', [ProviderCommerceController::class, 'decideApplication']);
+
+    // Le score ne sort pas de la société : `missions.quality` le dit.
+    Route::get('/quality-scores', [ProviderCommerceController::class, 'qualityScores']);
+
+    Route::get('/fleet', [ProviderCommerceController::class, 'fleet']);
+    Route::post('/fleet/vehicles', [ProviderCommerceController::class, 'declareVehicle']);
 });

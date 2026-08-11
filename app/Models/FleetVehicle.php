@@ -24,6 +24,8 @@ class FleetVehicle extends Model
     public const STATUS_RETIRED = 'retired';
 
     protected $fillable = [
+        // `null` = a la plateforme. Une societe ne voit QUE ce qu'elle a declare.
+        'organization_account_id',
         'code', 'plate', 'brand', 'model', 'year',
         'vehicle_type', 'fuel_type',
         'capacity_kg', 'capacity_volume_m3',

@@ -17,6 +17,14 @@ export type RootStackParamList = {
   Notifications: undefined;
   // Sprint 9
   Rating: { bookingId: number };
+  /**
+   * Les devis reçus d'une société prestataire (E24).
+   *
+   * Le client découvre le document par une notification POUSSÉE SUR SON TÉLÉPHONE : sans cet
+   * écran, il devrait ouvrir un ordinateur pour dire oui. C'est exactement le point où une
+   * affaire se perd.
+   */
+  ReceivedQuotes: undefined;
   Loyalty: undefined;
   Referral: undefined;
   AiQuote: undefined;

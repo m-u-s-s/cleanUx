@@ -71,8 +71,8 @@ class WorkforceController extends Controller
                 'id' => $creneau->id,
                 'user_id' => $creneau->user_id,
                 'user_name' => $creneau->user?->name,
-                'starts_at' => $creneau->starts_at?->toIso8601String(),
-                'ends_at' => $creneau->ends_at?->toIso8601String(),
+                'starts_at' => $creneau->starts_at->toIso8601String(),
+                'ends_at' => $creneau->ends_at->toIso8601String(),
                 'status' => $creneau->status,
                 // Un brouillon ne rend PAS assignable : l'application doit pouvoir le dire, sinon
                 // quelqu'un compte sur un horaire que personne ne lui a communiqué.
@@ -173,8 +173,8 @@ class WorkforceController extends Controller
                 'user_id' => $demande->user_id,
                 'user_name' => $demande->user?->name,
                 'type' => $demande->type,
-                'starts_on' => $demande->starts_on?->toDateString(),
-                'ends_on' => $demande->ends_on?->toDateString(),
+                'starts_on' => $demande->starts_on->toDateString(),
+                'ends_on' => $demande->ends_on->toDateString(),
                 'status' => $demande->status,
                 'reason' => $demande->reason,
                 // Seul `approved` bloque le planning : l'application doit pouvoir le dire.
@@ -287,7 +287,7 @@ class WorkforceController extends Controller
                 'id' => $ligne->id,
                 'user_id' => $ligne->user_id,
                 'user_name' => $ligne->user?->name,
-                'started_at' => $ligne->started_at?->toIso8601String(),
+                'started_at' => $ligne->started_at->toIso8601String(),
                 'worked_minutes' => $ligne->worked_minutes,
                 'notes' => $ligne->notes,
             ])->all(),

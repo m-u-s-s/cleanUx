@@ -17,6 +17,16 @@ class DemoPlatformBootstrapSeeder extends Seeder
              * rien et se contenterait d'un avertissement.
              */
             EspacesSocieteDemoSeeder::class,
+            /*
+             * L'EXPLOITATION DE LA SOCIÉTÉ — planning, heures, congés, stock, devis, recrutement,
+             * flotte. Après `EspacesSocieteDemoSeeder` parce qu'il a besoin de ses membres, et
+             * après `DemoPlatformSeeder` pour le client à qui adresser un devis.
+             *
+             * SANS LUI, « pas de planning » et « la table n'est jamais remplie » se ressemblent —
+             * et l'absence de planning est justement un état MÉTIER significatif, que la
+             * disponibilité traite comme « la contrainte ne s'applique pas ».
+             */
+            ExploitationSocieteDemoSeeder::class,
             LimitesJournaliereSeeder::class,
             StatutRendezVousSeeder::class,
             FeedbackSeeder::class,

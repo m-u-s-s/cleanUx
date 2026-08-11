@@ -14,6 +14,7 @@ use App\Livewire\Client\ClientFeedbackForm;
 use App\Livewire\Client\ClientKybOnboarding;
 use App\Livewire\Client\ClientLiveTrackingMap;
 use App\Livewire\Client\ClientLoyaltyRewards;
+use App\Livewire\Client\ReceivedQuotes;
 use App\Livewire\Client\ClientSubscriptions;
 use App\Livewire\Client\ClientSubscriptionsV2;
 use App\Livewire\Client\ClientTipBooking;
@@ -160,6 +161,17 @@ Route::middleware(['role:client'])
         if (class_exists(ClientLoyaltyRewards::class)) {
             Route::get('/fidelite/recompenses', ClientLoyaltyRewards::class)
                 ->name('loyalty.rewards');
+        }
+
+        /*
+         * LES DEVIS REÇUS (E24) — la moitié manquante du module.
+         *
+         * Une société qui bâtit un devis et l'envoie à un client qui ne peut pas y répondre n'a
+         * rien envoyé : le client découvre le document par une notification et répond par
+         * téléphone, c'est-à-dire hors de toute trace.
+         */
+        if (class_exists(ReceivedQuotes::class)) {
+            Route::get('/devis', ReceivedQuotes::class)->name('quotes');
         }
 
         if (class_exists(ClientTipBooking::class)) {
