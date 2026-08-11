@@ -34,6 +34,18 @@ return [
      * Le drapeau sert à le couper si l'interprétation dérive, sans déploiement.
      */
     'ai_order_assistant' => true,
+
+    /*
+     * E32 — la modération assistée par IA.
+     *
+     * COUPÉE PAR DÉFAUT, contrairement à l'assistant de commande. La différence tient au risque :
+     * une mauvaise interprétation de commande fait choisir le mauvais métier, et se corrige d'un
+     * clic ; un faux positif de modération masque le message de quelqu'un au milieu d'une
+     * intervention. On l'allume quand on est prêt à relire ce qu'elle signale.
+     *
+     * ELLE NE BLOQUE JAMAIS SEULE, drapeau levé ou non : elle PROPOSE, l'administrateur DISPOSE.
+     */
+    'ai_moderation' => false,
     'trip_tracking_v2' => true,
     'chat_v2' => true,
     'loyalty_redemption' => true,

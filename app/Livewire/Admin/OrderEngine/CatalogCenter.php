@@ -19,6 +19,7 @@ use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Str;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
+use App\Services\Admin\SurgeOverviewService;
 use Livewire\Component;
 
 /**
@@ -794,6 +795,14 @@ class CatalogCenter extends Component
 
     public function render()
     {
-        return view('livewire.admin.order-engine.catalog-center');
+        return view('livewire.admin.order-engine.catalog-center', [
+            /*
+             * LA CARTE DES MAJORATIONS (E28). Le multiplicateur se règle zone par zone, métier par
+             * métier : personne ne pouvait voir ce que la plateforme facture en plus, PARTOUT, en
+             * une fois. Une majoration oubliée à 2,5 dans une zone tourne indéfiniment, et se
+             * découvre par une plainte.
+             */
+            'carteDesMajorations' => app(SurgeOverviewService::class)->carte(),
+        ]);
     }
 }

@@ -63,6 +63,7 @@ use App\Livewire\Admin\Quality\QualityCenter;
 use App\Livewire\Admin\Ratings\RatingModerationCenter;
 use App\Livewire\Admin\Realtime\RealtimeCenter;
 use App\Livewire\Admin\Risk\RiskCenter;
+use App\Livewire\Admin\MarketplaceHealthCenter;
 use App\Livewire\Admin\Safety\SafetyCenter;
 use App\Livewire\Admin\Sms\SmsCenter;
 use App\Livewire\Admin\StripeConnectProviders;
@@ -272,6 +273,16 @@ Route::middleware(['role:admin', 'enforce_2fa'])
         }
 
         // UserSafety Admin (block/report moderation)
+        /*
+         * LA SANTÉ DU MARCHÉ (E30), LA PRÉVISION (E29) ET LE RATTRAPAGE (E31).
+         *
+         * TROIS MODULES SUR UN ÉCRAN parce qu'ils forment une seule boucle : on constate qu'une
+         * zone décroche, on projette ce qu'il faudra y servir, et on rattrape un par un les
+         * clients qu'on a déjà perdus. Répartis sur trois écrans, personne ne ferait le lien — et
+         * c'est le lien qui déclenche un recrutement.
+         */
+        Route::get('/marche', MarketplaceHealthCenter::class)->name('marketplace.health');
+
         if (class_exists(SafetyCenter::class)) {
             Route::get('/safety', SafetyCenter::class)->name('safety.center');
         }

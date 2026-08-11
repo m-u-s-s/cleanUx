@@ -9,6 +9,7 @@ use App\Admin\Reports\AnalyticsReport;
 use App\Admin\Reports\AutomationReport;
 use App\Admin\Reports\BusinessReport;
 use App\Admin\Reports\DashboardReport;
+use App\Admin\Reports\MarketplaceHealthReport;
 use App\Admin\Reports\DispatchCenterReport;
 use App\Admin\Reports\FinanceReport;
 use App\Admin\Reports\HomeReport;
@@ -251,6 +252,12 @@ class AdminConsoleServiceProvider extends ServiceProvider
             $reports = new ReportRegistry($app);
 
             $reports->register('dashboard', DashboardReport::class);
+            /*
+             * LA SANTÉ DU MARCHÉ (E29, E30, E28). `coverage => 'report'` dans le registre est une
+             * AFFIRMATION : un module qui l'annonce sans rapport enregistré ouvrirait un écran vide
+             * sur mobile. Le garde-fou l'a rattrapé aussitôt — et il avait raison.
+             */
+            $reports->register('marketplace-health', MarketplaceHealthReport::class);
             $reports->register('home', HomeReport::class);
             $reports->register('business', BusinessReport::class);
             $reports->register('alerts', AlertsReport::class);

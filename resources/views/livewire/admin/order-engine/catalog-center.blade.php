@@ -430,7 +430,91 @@
             </div>
         </div>
     @endif
+    {{--
+        LA CARTE DES MAJORATIONS (E28).
+
+        Le multiplicateur se règle zone par zone, métier par métier : personne ne pouvait voir ce que la
+        plateforme facture en plus, PARTOUT, en une fois. Une majoration oubliée à 2,5 dans une zone
+        tourne indéfiniment et se découvre par une plainte.
+    --}}
+    <div class="mx-auto mt-8 max-w-7xl px-4 sm:px-6 lg:px-8" data-test="carte-majorations">
+        <div class="overflow-hidden rounded-2xl border bg-white shadow-sm">
+            <div class="flex flex-wrap items-center justify-between gap-3 border-b px-5 py-3">
+                <h2 class="text-sm font-bold uppercase tracking-wide text-slate-500">
+                    Majorations en vigueur
+                </h2>
+
+                <div class="flex flex-wrap items-center gap-2 text-xs">
+                    @unless ($carteDesMajorations['surge_enabled'])
+                    {{-- Le drapeau compte autant que les chiffres : coupé, tout ceci ne s'applique
+                         nulle part, et un écran qui ne le dirait pas ferait régler dans le vide. --}}
+                    <span class="rounded-full bg-slate-100 px-2.5 py-1 font-semibold text-slate-600">
+                        Majorations désactivées globalement
+                    </span>
+                    @endunless
+
+                    <span class="rounded-full bg-slate-100 px-2.5 py-1 font-semibold text-slate-600">
+                        Plafond {{ number_format($carteDesMajorations['cap'], 2, ',', ' ') }}
+                    </span>
+
+                    <span class="rounded-full bg-slate-100 px-2.5 py-1 font-semibold text-slate-600">
+                        {{ $carteDesMajorations['surged_count'] }} / {{ $carteDesMajorations['rows_count'] }} majorées
+                    </span>
+
+                    @if ($carteDesMajorations['exceeding_cap_count'] > 0)
+                    <span class="rounded-full bg-rose-100 px-2.5 py-1 font-semibold text-rose-700">
+                        {{ $carteDesMajorations['exceeding_cap_count'] }} au-dessus du plafond
+                    </span>
+                    @endif
+                </div>
+            </div>
+
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm">
+                    <thead>
+                        <tr class="border-b text-left text-xs uppercase tracking-wide text-slate-500">
+                            <th class="px-5 py-2 font-semibold">Métier</th>
+                            <th class="px-5 py-2 font-semibold">Zone</th>
+                            <th class="px-5 py-2 text-right font-semibold tabular-nums">Réglée</th>
+                            <th class="px-5 py-2 text-right font-semibold tabular-nums">Appliquée</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse (array_slice($carteDesMajorations['rows'], 0, 40) as $ligne)
+                        <tr class="border-b last:border-0 {{ $ligne['exceeds_cap'] ? 'bg-rose-50/50' : '' }}">
+                            <td class="px-5 py-3 font-semibold text-slate-900">{{ $ligne['trade_name'] }}</td>
+                            <td class="px-5 py-3 text-slate-600">{{ $ligne['zone_name'] }}</td>
+                            <td class="px-5 py-3 text-right tabular-nums {{ $ligne['multiplier'] > 1 ? 'font-semibold text-slate-900' : 'text-slate-400' }}">
+                                × {{ number_format($ligne['multiplier'], 2, ',', ' ') }}
+                            </td>
+                            <td class="px-5 py-3 text-right tabular-nums text-slate-600">
+                                × {{ number_format($ligne['effective_multiplier'], 2, ',', ' ') }}
+                                @if ($ligne['exceeds_cap'])
+                                {{-- Le dépassement est SIGNALÉ, pas corrigé : sans ce rappel, l'écran
+                                     afficherait 3,50 et le client paierait 3,00. --}}
+                                <span class="ml-1 text-xs font-semibold text-rose-700">ramenée au plafond</span>
+                                @endif
+                            </td>
+                        </tr>
+                        @empty
+                        <tr>
+                            <td colspan="4" class="px-5 py-8 text-center text-sm text-slate-500">
+                                Aucune grille métier × zone n'est encore ouverte.
+                            </td>
+                        </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+
+            <p class="border-t px-5 py-3 text-xs text-slate-500">
+                Les grilles à × 1,00 sont affichées volontairement : ce qu'il faut voir est la
+                proportion de lignes majorées, pas seulement leur liste.
+            </p>
+        </div>
+    </div>
 </div>
+
 
 @push('scripts')
 <script>

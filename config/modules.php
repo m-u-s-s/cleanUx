@@ -231,6 +231,12 @@ return [
         ['key' => 'admin:admin.quality.center', 'label' => 'Inspections qualité', 'icon' => '✔️', 'route' => 'admin.quality.center', 'context' => 'admin', 'category' => 'qualite', 'primary' => false],
         ['key' => 'admin:admin.ratings.moderation', 'label' => 'Modération avis', 'icon' => '⭐', 'route' => 'admin.ratings.moderation', 'context' => 'admin', 'category' => 'qualite', 'primary' => false],
         ['key' => 'admin:admin.safety.center', 'label' => 'Signalements & blocks', 'icon' => '🚫', 'route' => 'admin.safety.center', 'context' => 'admin', 'category' => 'qualite', 'primary' => false],
+        /*
+         * E29 + E30 + E31 — la santé du marché. Le centre de répartition montre les missions en
+         * cours ; il ne dit pas si le marché TIENT. Une zone où une recherche sur trois s'épuise
+         * sans candidat s'apprend aujourd'hui par les plaintes des clients, trois mois trop tard.
+         */
+        ['key' => 'admin:admin.marketplace.health', 'label' => 'Santé du marché', 'icon' => '📉', 'route' => 'admin.marketplace.health', 'context' => 'admin', 'category' => 'donnees', 'primary' => false],
         ['key' => 'admin:admin.audit.center', 'label' => 'Audit v2', 'icon' => '🔍', 'route' => 'admin.audit.center', 'context' => 'admin', 'category' => 'conformite', 'primary' => false],
         ['key' => 'admin:admin.gdpr.center', 'label' => 'GDPR / RGPD', 'icon' => '🔐', 'route' => 'admin.gdpr.center', 'context' => 'admin', 'category' => 'conformite', 'primary' => false],
         ['key' => 'admin:admin.insurance.center', 'label' => 'Assurance', 'icon' => '🛡️', 'route' => 'admin.insurance.center', 'context' => 'admin', 'category' => 'conformite', 'primary' => false],

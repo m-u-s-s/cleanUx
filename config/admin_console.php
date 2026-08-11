@@ -84,6 +84,15 @@ return [
         ['key' => 'orchestration', 'title' => 'Orchestration terrain', 'group' => 'operations', 'icon' => 'options-outline', 'coverage' => 'descriptor', 'routes' => ['admin/orchestration']],
         ['key' => 'quality', 'title' => 'Qualité', 'group' => 'operations', 'icon' => 'ribbon-outline', 'coverage' => 'descriptor', 'routes' => ['admin/quality', 'admin/quality/export/incidents.csv', 'admin/quality/export/missions.csv']],
         ['key' => 'safety', 'title' => 'Sécurité terrain', 'group' => 'operations', 'icon' => 'shield-outline', 'coverage' => 'descriptor', 'routes' => ['admin/safety']],
+        /*
+         * LA SANTÉ DU MARCHÉ (E29, E30, E31).
+         *
+         * `coverage` à `report` : c'est une SYNTHÈSE, pas un CRUD. Les trois gestes de rattrapage
+         * — relancer, contacter, offrir — vivent sur l'écran web, là où on les décide en regardant
+         * le tableau. Les porter au mobile supposerait de répondre à « et alors on relance quoi »
+         * sans le contexte qui précède.
+         */
+        ['key' => 'marketplace-health', 'title' => 'Santé du marché', 'group' => 'pilotage', 'icon' => 'pulse-outline', 'coverage' => 'report', 'routes' => ['admin/marche']],
         ['key' => 'realtime', 'title' => 'Temps réel', 'group' => 'operations', 'icon' => 'pulse-outline', 'coverage' => 'descriptor', 'routes' => ['admin/realtime']],
         ['key' => 'bookings', 'title' => 'Rendez-vous et récurrences', 'group' => 'operations', 'icon' => 'repeat-outline', 'coverage' => 'descriptor', 'routes' => ['admin/recurrence/{rendezVous}/serie', 'admin/rendez-vous/{rendezVous}', 'admin/rendez-vous-series/{series}/edit']],
         ['key' => 'b2b-operations', 'title' => 'Opérations B2B', 'group' => 'operations', 'icon' => 'business-outline', 'coverage' => 'descriptor', 'routes' => ['admin/b2b/operations'], 'resources' => ['b2b-contracts', 'b2b-work-orders']],
