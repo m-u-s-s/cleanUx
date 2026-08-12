@@ -4,7 +4,10 @@ namespace Tests\Feature\Booking;
 
 use App\Actions\Booking\CreateBookingFromApiAction;
 use App\Models\Mission;
+use App\Models\PostalCode;
 use App\Models\ServiceCatalog;
+use App\Models\ServiceZone;
+use App\Models\Trade;
 use App\Models\User;
 use App\Services\Booking\CreateBookingAction;
 use App\Services\Dispatch\DispatchEngine;
@@ -12,6 +15,7 @@ use App\Services\Dispatch\MissionDispatchService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Mockery\MockInterface;
 use Tests\Support\CreatesZoneAwareFixtures;
+use Tests\Feature\Dispatch\Concerns\OuvreLeCatalogue;
 use Tests\TestCase;
 
 /**
@@ -35,6 +39,7 @@ use Tests\TestCase;
  */
 class AsapSingleDispatchTest extends TestCase
 {
+    use OuvreLeCatalogue;
     use CreatesZoneAwareFixtures;
     use RefreshDatabase;
 
@@ -70,10 +75,25 @@ class AsapSingleDispatchTest extends TestCase
      * Une réservation planifiée ne passe pas par l'offre ASAP : elle ne doit ni créer de seconde
      * mission, ni déclencher de dispatch immédiat.
      */
-    public function test_a_scheduled_booking_creates_one_mission_and_is_not_dispatched(): void
+    /**
+     * UNE RÉSERVATION PLANIFIÉE PASSE PAR LE MOTEUR, PAS PAR L'ANCIEN CHEMIN.
+     *
+     * Ce test s'appelait « … is not dispatched » et n'assérait qu'une chose : que
+     * `MissionDispatchService` n'était pas appelé. C'était exact, et c'était le BUG (H7) — une
+     * réservation planifiée créée par l'API n'était confiée à personne. Elle restait en base,
+     * visible du client, invisible de tout prestataire, jusqu'au jour où personne ne venait.
+     *
+     * Le nom affirmait donc le défaut. On mesure maintenant les deux moitiés de la vérité :
+     * l'ancien chemin d'offre immédiate reste inutilisé, ET le moteur reçoit bien la réservation.
+     */
+    public function test_a_scheduled_booking_creates_one_mission_and_goes_through_the_engine(): void
     {
         $dispatched = [];
         $this->mockDispatch($dispatched);
+
+        $moteur = \Mockery::mock(\App\Services\Dispatch\DispatchEngine::class);
+        $moteur->shouldReceive('dispatchBooking')->once()->andReturnNull();
+        $this->app->instance(\App\Services\Dispatch\DispatchEngine::class, $moteur);
 
         $booking = $this->createBooking('scheduled');
 
@@ -81,6 +101,8 @@ class AsapSingleDispatchTest extends TestCase
             1,
             Mission::where('booking_id', $booking->id)->count()
         );
+
+        // L'offre immédiate ne part pas : c'est bien un planifié.
         $this->assertCount(0, $dispatched);
     }
 
@@ -176,7 +198,23 @@ class AsapSingleDispatchTest extends TestCase
     private function createBooking(string $mode)
     {
         $client = User::factory()->create();
-        $catalog = ServiceCatalog::factory()->create();
+
+        /*
+         * OUVRIR LE CATALOGUE — sans quoi ce test ne mesure plus la répartition.
+         *
+         * `trades.allows_asap` vaut FAUX par défaut en base, et une zone sans ligne de
+         * `trade_zone_pricing` vaut « fermé » : la création refuse donc désormais l'immédiat,
+         * comme le fait le chemin web. Cette fixture décrivait un service que la plateforme ne
+         * vend nulle part — elle passait parce que rien ne vérifiait le catalogue à la création.
+         */
+        $zone = ServiceZone::factory()->create(['status' => 'active']);
+        $trade = Trade::factory()->create(['allows_asap' => true]);
+        $this->ouvrirAuCatalogue($trade, $zone);
+
+        $codePostal = PostalCode::factory()->create(['code' => '1000']);
+        $zone->postalCodes()->attach($codePostal->id, ['is_primary' => true]);
+
+        $catalog = ServiceCatalog::factory()->create(['trade_id' => $trade->id]);
 
         return app(CreateBookingFromApiAction::class)->execute($client, [
             'service_catalog_id' => $catalog->id,

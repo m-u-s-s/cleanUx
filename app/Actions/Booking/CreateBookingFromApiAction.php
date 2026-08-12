@@ -5,13 +5,18 @@ namespace App\Actions\Booking;
 use App\Jobs\Missions\GeocodeMissionDestination;
 use App\Models\Booking;
 use App\Models\Mission;
+use App\Models\ServiceCatalog;
 use App\Models\User;
 use App\Services\Contracts\ContractBookingHook;
 use App\Services\Contracts\ContractSlaService;
+use App\Services\Booking\ZoneCoverageService;
+use App\Services\Dispatch\DispatchEngine;
 use App\Services\Dispatch\MissionDispatchService;
 use App\Services\Enterprise\EnterpriseBookingApprovalService;
+use App\Services\OrderEngine\ZonePricingResolver;
 use Carbon\Carbon;
 use Illuminate\Support\Arr;
+use Illuminate\Validation\ValidationException;
 
 /**
  * CreateBookingFromApiAction
@@ -51,8 +56,46 @@ final class CreateBookingFromApiAction
             'contract_price_label' => Arr::get($data, 'contract_price_label'),
         ], fn ($v) => $v !== null && $v !== '');
 
+        /*
+         * ZONE ET MÉTIER, RÉSOLUS ET PERSISTÉS (H8).
+         *
+         * Ces deux colonnes existent sur `bookings`, le chemin web les remplit, et celui-ci ne les
+         * écrivait pas. Ce n'est pas cosmétique : `CandidateFinder` filtre les prestataires par
+         * zone ET par métier. Sans elles, la recherche ne filtre plus rien — elle propose la
+         * mission à des prestataires qui ne couvrent pas l'adresse ou n'exercent pas le métier,
+         * ou n'en trouve aucun selon la branche empruntée. Une réservation créée par l'API ne
+         * pouvait donc pas être répartie correctement.
+         *
+         * On réutilise les services du chemin web plutôt que de refaire la résolution : la
+         * couverture par code postal a ses cas particuliers (implantation choisie, zone nationale
+         * de repli) qu'une seconde implémentation finirait par contredire.
+         */
+        $couverture = app(ZoneCoverageService::class);
+        $codePostal = $couverture->resolvePostalCode($data['postal_code'] ?? null, $data['city'] ?? null);
+        $zone = $couverture->resolveServiceZone($codePostal);
+
+        $catalogue = ServiceCatalog::query()->find($data['service_catalog_id'] ?? null);
+        $metierId = $catalogue?->trade_id;
+
+        /*
+         * L'IMMÉDIAT SE REFUSE ICI, PAS PLUS TARD (H8).
+         *
+         * Un métier peut être ouvert dans une zone sans y autoriser l'intervention immédiate — le
+         * catalogue géographique le dit ligne par ligne. Accepter l'asap quand la zone l'interdit
+         * ouvre une recherche qui ne trouvera jamais personne : le client attend vingt secondes,
+         * voit sa demande échouer, et rien n'explique pourquoi. Mieux vaut le dire tout de suite.
+         */
+        if ($isAsap && $catalogue?->trade && ! app(ZonePricingResolver::class)->allowsImmediate($catalogue->trade, $zone?->id)) {
+            throw ValidationException::withMessages([
+                'booking_mode' => "L'intervention immédiate n'est pas disponible pour ce service à cette adresse.",
+            ]);
+        }
+
         $booking = Booking::create([
             'booking_reference' => $this->generateReference(),
+            // Les deux colonnes dont dépend le filtrage des candidats.
+            'service_zone_id' => $zone?->id,
+            'trade_id' => $metierId,
             'customer_user_id' => $user->id,
             'client_id' => $user->id,
             'customer_organization_id' => $user->organization_account_id ?? $user->current_organization_id ?? null,
@@ -91,9 +134,20 @@ final class CreateBookingFromApiAction
             'metadata' => ! empty($contractMetadata) ? $contractMetadata : null,
         ]);
 
-        if ($isAsap) {
-            $this->maybeDispatchAsap($booking, $now);
-        }
+        /*
+         * LES DEUX MODES PASSENT PAR LE MOTEUR (H7).
+         *
+         * Seul l'ASAP déclenchait quelque chose : une réservation PLANIFIÉE créée par l'API
+         * n'était jamais répartie. Elle restait en base, visible du client, et aucun prestataire
+         * ne la voyait jamais — la panne la plus silencieuse qui soit, puisque tout paraît normal
+         * des deux côtés jusqu'au jour de l'intervention.
+         *
+         * `DispatchEngine::dispatchBooking()` est la porte amont unique du chemin web : il aiguille
+         * lui-même vers l'immédiat ou le planifié selon `booking_mode`. Appeler le moteur plutôt
+         * que de refaire l'aiguillage ici, c'est ce qui garantit que les deux chemins vieillissent
+         * ensemble.
+         */
+        $this->repartir($booking, $now, $isAsap);
 
         // SP4 — si le contrat exige une approbation manuelle (entreprise_approval_required
         // posé par le hook), route vers le workflow d'approbation comme le fait
@@ -111,6 +165,36 @@ final class CreateBookingFromApiAction
         }
 
         return $booking->fresh();
+    }
+
+    /**
+     * Préparer la mission puis confier la réservation au moteur de répartition.
+     *
+     * L'ASAP garde son amorçage particulier — mission planifiée, géocodage différé, SLA de contrat —
+     * parce que ces trois choses doivent exister AVANT la première offre. Le planifié n'en a pas
+     * besoin : le moteur ouvre sa propre recherche.
+     */
+    private function repartir(Booking $booking, Carbon $now, bool $isAsap): void
+    {
+        if ($isAsap) {
+            $this->maybeDispatchAsap($booking, $now);
+
+            return;
+        }
+
+        /*
+         * SOFT-FAIL DÉLIBÉRÉ, comme pour l'ASAP ci-dessus. Une réservation acceptée puis perdue
+         * parce que la répartition a trébuché serait pire que le défaut d'origine : le client a
+         * déjà reçu sa confirmation. On journalise, et les filets planifiés reprennent la main.
+         */
+        try {
+            app(DispatchEngine::class)->dispatchBooking($booking);
+        } catch (\Throwable $e) {
+            \Log::warning('Répartition planifiée échouée (réservation API)', [
+                'booking_id' => $booking->id,
+                'error' => $e->getMessage(),
+            ]);
+        }
     }
 
     /**

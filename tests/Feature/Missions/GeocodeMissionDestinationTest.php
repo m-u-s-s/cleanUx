@@ -6,12 +6,16 @@ use App\Actions\Booking\CreateBookingFromApiAction;
 use App\Jobs\Missions\GeocodeMissionDestination;
 use App\Models\Booking;
 use App\Models\Mission;
+use App\Models\PostalCode;
 use App\Models\ServiceCatalog;
+use App\Models\ServiceZone;
+use App\Models\Trade;
 use App\Models\User;
 use App\Services\Geocoding\GeocodingService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Str;
+use Tests\Feature\Dispatch\Concerns\OuvreLeCatalogue;
 use Tests\TestCase;
 
 /**
@@ -27,6 +31,7 @@ use Tests\TestCase;
  */
 class GeocodeMissionDestinationTest extends TestCase
 {
+    use OuvreLeCatalogue;
     use RefreshDatabase;
 
     public function test_it_copies_the_client_supplied_destination_without_calling_the_geocoder(): void
@@ -130,7 +135,21 @@ class GeocodeMissionDestinationTest extends TestCase
     {
         Queue::fake();
         $user = User::factory()->create();
-        $catalog = ServiceCatalog::factory()->create();
+
+        /*
+         * LE CATALOGUE DOIT ÊTRE OUVERT POUR L'IMMÉDIAT, sinon la création refuse avant même
+         * d'arriver au géocodage. `trades.allows_asap` vaut faux par défaut en base, et une zone
+         * sans ligne de `trade_zone_pricing` vaut « fermé » — cette fixture décrivait un service
+         * que la plateforme ne vend nulle part.
+         */
+        $zone = ServiceZone::factory()->create(['status' => 'active']);
+        $trade = Trade::factory()->create(['allows_asap' => true]);
+        $this->ouvrirAuCatalogue($trade, $zone);
+
+        $codePostal = PostalCode::factory()->create(['code' => '1000']);
+        $zone->postalCodes()->attach($codePostal->id, ['is_primary' => true]);
+
+        $catalog = ServiceCatalog::factory()->create(['trade_id' => $trade->id]);
 
         app(CreateBookingFromApiAction::class)->execute($user, [
             'service_catalog_id' => $catalog->id,
