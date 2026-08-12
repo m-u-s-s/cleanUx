@@ -12,6 +12,7 @@ use App\Services\Insurance\InsurancePurchaseResult;
 use App\Services\Insurance\InsuranceWebhookUpdate;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
+use RuntimeException;
 
 /**
  * Mock provider — pour dev/tests.
@@ -78,6 +79,19 @@ class InsuranceMockProvider implements InsuranceProviderInterface
 
     public function verifyWebhook(string $payload, array $headers): array
     {
+        // B5 — ce provider n'authentifie AUCUNE signature : le joindre en production
+        // revient à accepter la charge utile de n'importe qui.
+        if (app()->isProduction()) {
+            throw new RuntimeException('Le provider assurance « mock » ne vérifie aucun webhook en production.');
+        }
+
+        // Hors production : si la configuration désigne un autre provider, être appelé
+        // signifie que le vrai vérificateur a été contourné.
+        $configure = (string) config('insurance.default_provider', 'mock');
+        if ($configure !== $this->name()) {
+            throw new RuntimeException("Le provider assurance configuré est « {$configure} » : le mock ne vérifie pas ce webhook.");
+        }
+
         $decoded = json_decode($payload, true);
 
         return is_array($decoded) ? $decoded : ['raw' => $payload];

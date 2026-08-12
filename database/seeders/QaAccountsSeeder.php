@@ -229,26 +229,33 @@ class QaAccountsSeeder extends Seeder
         // étape — le harnais relèverait alors tout l'espace prestataire en échec.
         $telephone = '+3247'.substr((string) sprintf('%07d', crc32($email) % 10000000), 0, 7);
 
-        return User::updateOrCreate(
-            ['email' => $email],
-            [
-                'name' => $name,
-                'phone' => $telephone,
-                'password' => Hash::make(self::motDePasse()),
-                'platform_role' => $platformRole,
-                'role' => $role,
-                'account_type' => 'client_personal',
-                'status' => 'active',
-                'is_active' => true,
-                'locale' => 'fr_BE',
-                'timezone' => 'Europe/Brussels',
-                'email_verified_at' => now(),
-                'current_organization_id' => $currentOrganizationId,
-                'organization_account_id' => $organizationAccountId,
-                'is_super_admin' => $isSuperAdmin,
-                'access_scope' => $accessScope,
-            ],
-        );
+        $utilisateur = User::firstOrNew(['email' => $email]);
+
+        /*
+         * `forceFill` ET NON `updateOrCreate` : `platform_role`, `role`, `current_organization_id`
+         * et `organization_account_id` ne sont plus assignables en masse — ce sont les colonnes
+         * qu'une inscription publique ne doit jamais pouvoir se poser elle-même. Un semis les
+         * écrit en connaissance de cause, depuis des valeurs codées ici, jamais depuis une requête.
+         */
+        $utilisateur->forceFill([
+            'name' => $name,
+            'phone' => $telephone,
+            'password' => Hash::make(self::motDePasse()),
+            'platform_role' => $platformRole,
+            'role' => $role,
+            'account_type' => 'client_personal',
+            'status' => 'active',
+            'is_active' => true,
+            'locale' => 'fr_BE',
+            'timezone' => 'Europe/Brussels',
+            'email_verified_at' => now(),
+            'current_organization_id' => $currentOrganizationId,
+            'organization_account_id' => $organizationAccountId,
+            'is_super_admin' => $isSuperAdmin,
+            'access_scope' => $accessScope,
+        ])->save();
+
+        return $utilisateur;
     }
 
     /**

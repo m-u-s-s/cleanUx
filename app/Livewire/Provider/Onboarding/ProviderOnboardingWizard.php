@@ -6,6 +6,7 @@ use App\Models\ProviderOnboardingDocument;
 use App\Models\ServiceZone;
 use App\Services\Onboarding\ProviderOnboardingService;
 use App\Services\Payments\StripeConnectService;
+use App\Support\Validation\ImagesTeleversees;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Layout;
@@ -138,13 +139,23 @@ class ProviderOnboardingWizard extends Component
     // Étape 0 — Profil
     // ──────────────────────────────────────────────
 
+    /**
+     * La photo passe par `ProviderOnboardingService::setProfileBasics()` et finit sur le disque
+     * `public` — le même dossier, servi sur le même domaine, que la photo envoyée depuis le mobile
+     * par `ProviderOnboardingController::setProfile()`.
+     *
+     * D'où la même liste pour les deux, {@see ImagesTeleversees}. Ce point-ci était resté sur la
+     * règle `image` de Laravel pendant que l'API passait à une liste explicite : deux formulaires
+     * qui écrivent au même endroit et n'acceptent pas la même chose, c'est le formulaire le plus
+     * permissif qui définit la surface d'attaque, et le plus strict qui refuse à tort.
+     */
     public function saveStep0(): void
     {
         $this->validate([
             'name' => ['required', 'string', 'max:255'],
             'phone' => ['nullable', 'string', 'max:30'],
             'bio' => ['nullable', 'string', 'max:2000'],
-            'photo' => ['nullable', 'image', 'max:5120'],
+            'photo' => ImagesTeleversees::regles(tailleMaxKo: 5120, obligatoire: false),
         ]);
 
         try {

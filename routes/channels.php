@@ -177,13 +177,48 @@ Broadcast::channel('user.{userId}', function (User $user, int $userId) {
     return (int) $user->id === (int) $userId;
 });
 
-Broadcast::channel('providers.presence', function ($user) {
-    // Seuls les admins / dispatchers peuvent écouter
-    return $user && (
-        $user->role === 'admin' ||
-        $user->role === 'dispatcher' ||
-        method_exists($user, 'isPlatformAdmin') && $user->isPlatformAdmin()
-    );
+// ──────────────────────────────────────────────────────
+// Présence des prestataires — canal PLATEFORME, pas d'organisation
+// ──────────────────────────────────────────────────────
+/*
+ * CE CANAL DIFFUSE LA POSITION SOCIALE DE TOUS LES PRESTATAIRES DE LA PLATEFORME.
+ * `ProviderPresenceChanged` y envoie « untel vient de passer en ligne / hors ligne », pour tout le
+ * monde, sans filtre d'organisation. C'est un canal d'orchestration terrain, réservé à ceux qui
+ * pilotent le dispatch.
+ *
+ * LA GARDE SE LISAIT SUR `users.role`, COLONNE DÉPRÉCIÉE — ET C'ÉTAIT LA MAUVAISE COLONNE.
+ * Deux problèmes se combinaient :
+ *
+ *   1. `role` est déprécié depuis la migration `drop_legacy_role_from_users` : la source de vérité
+ *      du rang plateforme est `platform_role`, lue par `isPlatformAdmin()`. Un vrai administrateur
+ *      créé sans `role` passait donc par la troisième branche, et un compte portant `role=admin`
+ *      sans `platform_role` entrait alors qu'il n'est administrateur de rien.
+ *
+ *   2. `role === 'dispatcher'` ne correspondait à AUCUN compte légitime : `dispatcher` est un rôle
+ *      d'ORGANISATION (`OrganizationRole::DISPATCHER`, table `organization_members`), jamais une
+ *      valeur de `users.role`. Cette branche n'ouvrait la porte qu'à ce qui aurait écrit `dispatcher`
+ *      dans cette colonne — et l'inscription publique le pouvait, `role` étant assignable en masse
+ *      et `CreateNewUser` recevant `$request->all()`. Un simple champ caché à l'inscription
+ *      suffisait à écouter la présence de tous les prestataires.
+ *
+ * LA PERMISSION EXISTE DÉJÀ, ON N'EN INVENTE PAS : `manage-orchestration` (« Orchestration
+ * terrain ») est déclarée dans `HasAdminCapabilities::allowedAdminPermissions()` et garde déjà la
+ * simulation de matching (`MatchingSimulationController::simulate`) et l'écran d'orchestration
+ * terrain. C'est exactement la même fonction métier — savoir qui est disponible pour prendre une
+ * mission. On reprend donc ici l'expression que ce contrôleur utilise déjà, pour que le canal
+ * temps réel et l'écran qu'il alimente s'ouvrent aux mêmes personnes.
+ *
+ * Les deux branches passent par `canAccessAdminModule()`, qui vérifie en une fois le rang
+ * plateforme (`admin`/`super_admin`) ET le compte actif : la permission le raffine, le rang seul
+ * suffit — et un compte désactivé n'écoute plus rien, ce que l'ancienne garde ne regardait pas.
+ *
+ * DÉLIBÉRÉMENT PAS `hasAdminPermission()` : celle-là ne lit que le tableau `permissions`, sans
+ * regarder `platform_role`. Or `permissions` est encore assignable en masse sur `User` ; s'en
+ * servir seul rouvrirait par la fenêtre la porte qu'on vient de fermer.
+ */
+Broadcast::channel('providers.presence', function (User $user) {
+    return $user->canAccessAdminModule('manage-orchestration')
+        || $user->canAccessAdminModule();
 });
 
 // ──────────────────────────────────────────────────────

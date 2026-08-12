@@ -9,6 +9,7 @@ use App\Services\Kyc\KycStartRequest;
 use App\Services\Kyc\KycStartResult;
 use App\Services\Kyc\KycStatusResult;
 use Illuminate\Support\Str;
+use RuntimeException;
 
 /**
  * Provider KYC simulé pour développement et tests.
@@ -87,7 +88,21 @@ class KycMockProvider implements KycProviderInterface
 
     public function verifyWebhook(string $payload, array $headers): array
     {
-        // Mock : pas de signature requise
+        // B5 — ce provider n'authentifie AUCUNE signature : accepter un webhook ici,
+        // c'est accepter la charge utile de n'importe qui. On refuse donc au niveau du
+        // vérificateur lui-même, et pas seulement dans le contrôleur, pour que la
+        // garde tienne même si on l'atteignait par un autre chemin.
+        if (app()->isProduction()) {
+            throw new RuntimeException('Le provider KYC « mock » ne vérifie aucun webhook en production.');
+        }
+
+        // Hors production : si la configuration désigne un autre provider, être appelé
+        // signifie que le vrai vérificateur a été contourné (segment d'URL hostile).
+        $configure = (string) config('kyc.default_provider', 'mock');
+        if ($configure !== $this->name()) {
+            throw new RuntimeException("Le provider KYC configuré est « {$configure} » : le mock ne vérifie pas ce webhook.");
+        }
+
         $decoded = json_decode($payload, true);
 
         return is_array($decoded) ? $decoded : ['raw' => $payload];

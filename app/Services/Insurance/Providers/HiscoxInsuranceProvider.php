@@ -110,18 +110,78 @@ class HiscoxInsuranceProvider implements InsuranceProviderInterface
         );
     }
 
+    /**
+     * Forme alignée sur le vérificateur KYC réel (OnfidoProvider::verifyWebhook) :
+     * secret absent → refus, en-tête absent → refus, signature fausse → refus.
+     *
+     * L'ancien code disait `if ($secret && $signature) { ... }` : sans en-tête de
+     * signature, la condition était fausse et AUCUNE vérification n'avait lieu — il
+     * suffisait donc de ne rien signer pour n'être vérifié par personne. C'est la
+     * porte que la configuration de production emprunte réellement, contrairement
+     * au provider « mock ».
+     *
+     * Nuance sur le secret absent : le refus n'est inconditionnel qu'en production.
+     * Hors production, deux tests hors de ce lot épinglent le comportement permissif
+     * (tests/Unit/Services/Insurance/WakamInsuranceProviderTest::
+     * test_verify_webhook_skips_signature_when_no_secret et ::test_verify_webhook_throws_on_non_json,
+     * plus l'équivalent Hiscox). À supprimer dès qu'un lot pourra les corriger : la
+     * forme Onfido refuse le secret manquant dans tous les environnements.
+     */
     public function verifyWebhook(string $payload, array $headers): array
     {
         $secret = (string) Config::get('insurance.providers.hiscox.webhook_secret', '');
-        $signature = $headers['hiscox-signature'][0] ?? '';
 
-        if ($secret && $signature) {
-            $expected = hash_hmac('sha256', $payload, $secret);
-            if (! hash_equals($expected, $signature)) {
-                throw new \RuntimeException('Invalid Hiscox webhook signature');
+        if ($secret === '') {
+            // Aucun secret = aucune signature vérifiable = webhook non authentifié.
+            if (app()->isProduction()) {
+                throw new \RuntimeException('Hiscox webhook secret missing (insurance.providers.hiscox.webhook_secret).');
             }
+
+            return $this->decodePayload($payload);
         }
 
+        $signature = $this->signatureDepuisEntetes($headers, 'hiscox-signature');
+        if ($signature === null) {
+            throw new \RuntimeException('Missing hiscox-signature header.');
+        }
+
+        $expected = hash_hmac('sha256', $payload, $secret);
+        if (! hash_equals($expected, $signature)) {
+            throw new \RuntimeException('Invalid Hiscox webhook signature');
+        }
+
+        return $this->decodePayload($payload);
+    }
+
+    /**
+     * En-tête de signature, quelle que soit la casse de la clé et que la valeur soit
+     * un tableau (HeaderBag::all()) ou une chaîne (en-têtes déjà aplatis).
+     *
+     * @param  array<string, mixed>  $headers
+     */
+    protected function signatureDepuisEntetes(array $headers, string $nom): ?string
+    {
+        foreach ($headers as $cle => $valeur) {
+            if (strtolower((string) $cle) !== $nom) {
+                continue;
+            }
+
+            $brut = is_array($valeur) ? ($valeur[0] ?? null) : $valeur;
+            if (! is_string($brut)) {
+                return null;
+            }
+
+            $brut = trim($brut);
+
+            return $brut === '' ? null : $brut;
+        }
+
+        return null;
+    }
+
+    /** @return array<string, mixed> */
+    protected function decodePayload(string $payload): array
+    {
         $decoded = json_decode($payload, true);
         if (! is_array($decoded)) {
             throw new \RuntimeException('Hiscox webhook payload not JSON');

@@ -95,23 +95,37 @@ class CreateNewUser implements CreatesNewUsers
 
                 'account_type' => $accountType,
 
-                'role' => $input['role'] ?? (in_array($accountType, ['provider_independent', 'provider_company'], true) ? 'employe' : 'client'),
-                /*
-                 * `platform_role` n'a que TROIS valeurs déclarées — `user`, `admin`,
-                 * `super_admin` (voir `HasAdminCapabilities`). Cette ligne posait `client`, une
-                 * quatrième qu'aucune constante ne reconnaît : inerte, puisque `isAdmin()` ne la
-                 * lit pas, mais une valeur hors nomenclature finit toujours par être testée par
-                 * quelqu'un. L'inscription mobile posait déjà `User::PLATFORM_USER` ; les deux
-                 * parcours disent désormais la même chose.
-                 */
-                'platform_role' => $input['platform_role'] ?? User::PLATFORM_USER,
-
                 'locale' => app()->getLocale() === 'nl' ? 'nl_BE' : 'fr_BE',
                 'timezone' => 'Europe/Brussels',
 
                 'status' => 'active',
                 'is_active' => true,
             ]);
+
+            /*
+             * LE RÔLE SE DÉDUIT, IL NE SE DEMANDE PAS.
+             *
+             * Fortify appelle cette action avec `$request->all()` : `$input` EST le corps de la
+             * requête d'inscription, sans filtre. Les deux lignes qui vivaient ici lisaient
+             * `$input['role']` et `$input['platform_role']` — un champ caché `platform_role=admin`
+             * dans le formulaire public suffisait donc à s'ouvrir la console d'administration, et
+             * `role=admin` à passer les gardes `CheckRole` et la callback de diffusion
+             * `providers.presence`. Rien dans la validation ci-dessus ne mentionne ces clés : elles
+             * n'ont jamais été des champs d'inscription, seulement des colonnes atteignables.
+             *
+             * `platform_role` n'a que TROIS valeurs déclarées — `user`, `admin`, `super_admin`
+             * (voir `HasAdminCapabilities`). Une inscription publique ne peut produire que la
+             * première ; élever un compte reste un geste d'administrateur, fait ailleurs.
+             *
+             * `forceFill` et non `create` : ces colonnes ne sont plus assignables en masse, c'est
+             * précisément ce qui ferme la porte.
+             */
+            $user->forceFill([
+                'role' => in_array($accountType, ['provider_independent', 'provider_company'], true)
+                    ? 'employe'
+                    : 'client',
+                'platform_role' => User::PLATFORM_USER,
+            ])->save();
 
             // ── Créer le profil selon le type ──
             match ($accountType) {
@@ -193,10 +207,13 @@ class CreateNewUser implements CreatesNewUsers
 
         $this->addOwner($user, $org);
 
-        $user->update([
+        // `forceFill` : le rattachement à une organisation n'est pas assignable en masse — c'est
+        // l'organisation dont on lira ensuite les données. Ici l'identifiant vient de
+        // l'organisation qu'on vient de créer, jamais du corps de la requête.
+        $user->forceFill([
             'current_organization_id' => $org->id,
             'organization_account_id' => $org->id,
-        ]);
+        ])->save();
     }
 
     // ──────────────────────────────────────────────────────
@@ -241,10 +258,12 @@ class CreateNewUser implements CreatesNewUsers
 
         $this->addOwner($user, $org);
 
-        $user->update([
+        // Même raison qu'en `createClientCompany` : ces deux colonnes désignent l'organisation
+        // dont le compte lira les données, elles ne sont plus assignables en masse.
+        $user->forceFill([
             'current_organization_id' => $org->id,
             'organization_account_id' => $org->id,
-        ]);
+        ])->save();
     }
 
     /**

@@ -42,7 +42,9 @@ class DomainRelationsTest extends TestCase
         $client = User::factory()->client()->create();
         $context = $this->createEntrepriseContext($client);
 
-        $client->update(['organization_account_id' => $context['account']->id]);
+        // `forceFill` : `organization_account_id` n'est plus assignable en masse — c'est la colonne
+        // qui désigne l'organisation dont on lit les données.
+        $client->forceFill(['organization_account_id' => $context['account']->id])->save();
 
         $this->assertTrue($context['account']->sites->contains($context['site']));
         $this->assertTrue($context['account']->users->contains($client->fresh()));

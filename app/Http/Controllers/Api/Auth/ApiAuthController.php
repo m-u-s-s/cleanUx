@@ -160,9 +160,15 @@ class ApiAuthController extends Controller
             'password' => Hash::make($data['password']),
             'phone' => $verifiedPhone ?? $data['phone'] ?? null,
             'locale' => $data['locale'] ?? 'fr',
+        ]);
+
+        // `role` et `platform_role` ne sont plus assignables en masse : ce sont les colonnes qui
+        // décident de ce que le compte peut atteindre. Elles se posent ici par `forceFill`, à
+        // partir du seul `account_type` validé, jamais d'une clé libre du corps de la requête.
+        $user->forceFill([
             'platform_role' => User::PLATFORM_USER,
             'role' => $asProvider ? 'employe' : 'client',
-        ]);
+        ])->save();
 
         if ($verifiedPhone !== null && Schema::hasColumn('users', 'phone_verified_at')) {
             $user->forceFill(['phone_verified_at' => now()])->save();

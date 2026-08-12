@@ -103,7 +103,11 @@ class ImportCsv extends Component
                     $organizationAccountId = $organization->id;
                 }
 
-                User::create([
+                // `role` et `organization_account_id` ne sont plus assignables en masse (voir la
+                // liste `$fillable` de `User`) : elles se posent par `forceFill`, à partir du rôle
+                // déjà restreint par la validation `in:client,entreprise` et de l'organisation
+                // créée juste au-dessus.
+                (new User)->forceFill([
                     'name' => trim($data['name']),
                     'email' => trim($data['email']),
                     'password' => Hash::make($data['password']),
@@ -112,7 +116,7 @@ class ImportCsv extends Component
                     'organization_account_id' => $organizationAccountId,
                     'is_active' => true,
                     'status' => 'active',
-                ]);
+                ])->save();
 
                 $imported++;
 

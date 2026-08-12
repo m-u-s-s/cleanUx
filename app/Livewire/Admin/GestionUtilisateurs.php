@@ -85,9 +85,12 @@ class GestionUtilisateurs extends Component
 
         Gate::authorize('updateRole', $user);
 
-        $user->update([
+        // `role` n'est plus assignable en masse : c'est une colonne d'élévation, et l'inscription
+        // publique passait `$request->all()` à `CreateNewUser`. Ici l'écriture est intentionnelle
+        // et gardée par `Gate::authorize` juste au-dessus — d'où le `forceFill`.
+        $user->forceFill([
             'role' => $normalizedRole,
-        ]);
+        ])->save();
 
         ActivityLogger::critical('security.user_role_updated', $user, [
             'domain' => 'security',

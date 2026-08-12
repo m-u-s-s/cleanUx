@@ -103,23 +103,33 @@ class KycVerificationService
 
     public function applyWebhookPayload(array $payload): ?KycVerification
     {
+        // M3 / B5 — un événement sans identifiant de ressource ne DÉSIGNE personne.
+        // L'ancien code enveloppait la contrainte dans un `where(function ($q) { if
+        // ($resourceId) { ... } })` : sans identifiant, la fermeture n'ajoutait AUCUNE
+        // condition et le `latest('id')` retombait sur la vérification la plus récente
+        // du provider. Un événement anonyme faisait donc passer en « vérifié » le KYC
+        // de quelqu'un d'autre, sans même connaître son identifiant. On refuse.
+        $resourceId = $this->extractResourceId($payload);
+
+        if ($resourceId === null) {
+            Log::warning('KycVerificationService: événement webhook sans identifiant de ressource — refusé', [
+                'provider' => $this->provider->name(),
+                'cles_payload' => array_keys($payload),
+            ]);
+
+            return null;
+        }
+
         $result = $this->provider->mapWebhookEvent($payload);
         if (! $result) {
             return null;
         }
 
-        $resourceId = $payload['payload']['object']['id']
-            ?? $payload['object']['id']
-            ?? $payload['check_id']
-            ?? null;
-
         $verification = KycVerification::query()
             ->where('provider', $this->provider->name())
             ->where(function ($q) use ($resourceId) {
-                if ($resourceId) {
-                    $q->where('external_check_id', $resourceId)
-                        ->orWhere('external_applicant_id', $resourceId);
-                }
+                $q->where('external_check_id', $resourceId)
+                    ->orWhere('external_applicant_id', $resourceId);
             })
             ->latest('id')
             ->first();
@@ -131,6 +141,32 @@ class KycVerificationService
         $this->applyStatusResult($verification, $result);
 
         return $verification->fresh();
+    }
+
+    /**
+     * Identifiant de la ressource visée par l'événement. Rend null dès que la charge
+     * utile n'en porte pas un exploitable : aucun repli implicite n'est toléré.
+     *
+     * @param  array<string, mixed>  $payload
+     */
+    protected function extractResourceId(array $payload): ?string
+    {
+        $candidat = $payload['payload']['object']['id']
+            ?? $payload['object']['id']
+            ?? $payload['check_id']
+            ?? null;
+
+        if (is_int($candidat)) {
+            $candidat = (string) $candidat;
+        }
+
+        if (! is_string($candidat)) {
+            return null;
+        }
+
+        $candidat = trim($candidat);
+
+        return $candidat === '' ? null : $candidat;
     }
 
     public function approveManually(KycVerification $verification, User $admin, ?string $note = null): KycVerification

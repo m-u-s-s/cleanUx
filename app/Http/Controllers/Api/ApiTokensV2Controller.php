@@ -78,7 +78,7 @@ class ApiTokensV2Controller extends Controller
 
     public function rotateMyToken(Request $request, PersonalAccessTokenV2 $token): JsonResponse
     {
-        if ($token->tokenable_id !== $request->user()->id) {
+        if (! $this->tokenAppartientA($token, $request)) {
             return response()->json(['ok' => false, 'error' => 'forbidden'], 403);
         }
         $new = $this->manager->rotate($token);
@@ -93,12 +93,40 @@ class ApiTokensV2Controller extends Controller
 
     public function revokeMyToken(Request $request, PersonalAccessTokenV2 $token): JsonResponse
     {
-        if ($token->tokenable_id !== $request->user()->id) {
+        if (! $this->tokenAppartientA($token, $request)) {
             return response()->json(['ok' => false, 'error' => 'forbidden'], 403);
         }
         $this->manager->revoke($token);
 
         return response()->json(['ok' => true]);
+    }
+
+    /**
+     * UN IDENTIFIANT NE SUFFIT PAS À DÉSIGNER UN PROPRIÉTAIRE.
+     *
+     * `personal_access_tokens` est une table POLYMORPHE : la ligne dit `tokenable_type` +
+     * `tokenable_id`. Comparer le seul `tokenable_id` à `$user->id` revenait à confondre
+     * « l'utilisateur numéro 7 » avec « l'organisation numéro 7 » ou n'importe quel autre porteur
+     * numéro 7. L'utilisateur 7 pouvait donc faire tourner — ou supprimer — le jeton d'un porteur
+     * qui n'est pas lui, et un jeton rendu par `rotate` est rendu EN CLAIR : c'est une prise de
+     * contrôle, pas une simple nuisance.
+     *
+     * `listMyTokens()` filtrait déjà sur les DEUX colonnes ; `rotate` et `revoke` étaient les deux
+     * seules portes à n'en regarder qu'une.
+     *
+     * La comparaison de type passe par `getMorphClass()` — et non par `User::class` en dur — pour
+     * rester juste si une carte de morphes est déclarée un jour.
+     */
+    protected function tokenAppartientA(PersonalAccessTokenV2 $token, Request $request): bool
+    {
+        $user = $request->user();
+
+        if (! $user) {
+            return false;
+        }
+
+        return (string) $token->tokenable_type === (string) $user->getMorphClass()
+            && (int) $token->tokenable_id === (int) $user->getKey();
     }
 
     public function adminListTokens(Request $request): JsonResponse

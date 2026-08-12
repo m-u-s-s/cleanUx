@@ -98,16 +98,72 @@ class WakamInsuranceProvider implements InsuranceProviderInterface
             : ClaimFilingResult::failed($response->json('error') ?? 'Wakam claim failed', $response->json() ?? []);
     }
 
+    /**
+     * Même forme que Hiscox et que le vérificateur KYC réel (OnfidoProvider) :
+     * secret absent → refus, en-tête absent → refus, signature fausse → refus.
+     *
+     * L'ancien `if ($secret && $signature)` acceptait toute charge utile non signée :
+     * ne pas envoyer d'en-tête suffisait à n'être vérifié par personne.
+     *
+     * Le refus sur secret absent n'est inconditionnel qu'en production : deux tests
+     * hors de ce lot (tests/Unit/Services/Insurance/WakamInsuranceProviderTest)
+     * épinglent le comportement permissif hors production.
+     */
     public function verifyWebhook(string $payload, array $headers): array
     {
         $secret = (string) Config::get('insurance.providers.wakam.webhook_secret', '');
-        $signature = $headers['x-wakam-signature'][0] ?? '';
-        if ($secret && $signature) {
-            $expected = hash_hmac('sha256', $payload, $secret);
-            if (! hash_equals($expected, $signature)) {
-                throw new \RuntimeException('Invalid Wakam webhook signature');
+
+        if ($secret === '') {
+            // Aucun secret = aucune signature vérifiable = webhook non authentifié.
+            if (app()->isProduction()) {
+                throw new \RuntimeException('Wakam webhook secret missing (insurance.providers.wakam.webhook_secret).');
             }
+
+            return $this->decodePayload($payload);
         }
+
+        $signature = $this->signatureDepuisEntetes($headers, 'x-wakam-signature');
+        if ($signature === null) {
+            throw new \RuntimeException('Missing x-wakam-signature header.');
+        }
+
+        $expected = hash_hmac('sha256', $payload, $secret);
+        if (! hash_equals($expected, $signature)) {
+            throw new \RuntimeException('Invalid Wakam webhook signature');
+        }
+
+        return $this->decodePayload($payload);
+    }
+
+    /**
+     * En-tête de signature, quelle que soit la casse de la clé et que la valeur soit
+     * un tableau (HeaderBag::all()) ou une chaîne (en-têtes déjà aplatis).
+     *
+     * @param  array<string, mixed>  $headers
+     */
+    protected function signatureDepuisEntetes(array $headers, string $nom): ?string
+    {
+        foreach ($headers as $cle => $valeur) {
+            if (strtolower((string) $cle) !== $nom) {
+                continue;
+            }
+
+            $brut = is_array($valeur) ? ($valeur[0] ?? null) : $valeur;
+            if (! is_string($brut)) {
+                return null;
+            }
+
+            $brut = trim($brut);
+
+            return $brut === '' ? null : $brut;
+        }
+
+        return null;
+    }
+
+    /** @return array<string, mixed> */
+    protected function decodePayload(string $payload): array
+    {
         $decoded = json_decode($payload, true);
         if (! is_array($decoded)) {
             throw new \RuntimeException('Wakam webhook payload not JSON');

@@ -7,6 +7,7 @@ use App\Models\ProviderOnboardingDocument;
 use App\Models\ServiceZone;
 use App\Services\Onboarding\ProviderDocumentRequirements;
 use App\Services\Onboarding\ProviderOnboardingService;
+use App\Support\Validation\ImagesTeleversees;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
@@ -55,13 +56,24 @@ class ProviderOnboardingController extends Controller
         ]);
     }
 
+    /**
+     * La photo part sur le disque `public` (voir `ProviderOnboardingService::setProfileBasics`),
+     * donc dans un dossier servi tel quel sur le domaine de l'application. Elle est ensuite regardée
+     * par un administrateur qui instruit le dossier : ce que l'on accepte ici s'exécutera dans SA
+     * session. Un SVG est un document XML, il porte volontiers un `<script>`.
+     *
+     * Le wizard web `ProviderOnboardingWizard::saveStep0()` écrit la MÊME photo sur le MÊME disque.
+     * Les deux lisent donc la même liste, {@see ImagesTeleversees} : durcir un seul des deux ne
+     * ferme rien, l'attaquant prend l'autre porte.
+     */
     public function setProfile(Request $request): JsonResponse
     {
         $data = $request->validate([
             'name' => ['nullable', 'string', 'max:255'],
             'phone' => ['nullable', 'string', 'max:30'],
             'bio' => ['nullable', 'string', 'max:2000'],
-            'photo' => ['nullable', 'image', 'max:5120'], // 5 Mo
+            // 5 Mo, facultative : l'étape sert aussi à saisir un nom seul.
+            'photo' => ImagesTeleversees::regles(tailleMaxKo: 5120, obligatoire: false),
         ]);
 
         $profile = $this->onboarding->setProfileBasics(

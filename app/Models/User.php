@@ -67,6 +67,27 @@ class User extends Authenticatable implements HasLocalePreference, MustVerifyEma
      * SECURITY : Tout controller modifiant User DOIT utiliser `$request->validated()`
      * et JAMAIS `$request->all()`. Si un attribut peut être self-elevé (ex: role),
      * le retirer du payload validé via FormRequest.
+     *
+     * QUATRE COLONNES SONT VOLONTAIREMENT ABSENTES DE CETTE LISTE — elles décident QUI TU ES,
+     * pas ce que tu préfères :
+     *
+     *   - `platform_role`      : `admin` / `super_admin` ouvrent toute la console d'administration
+     *                            (`HasAdminCapabilities::canAccessAdminModule()`).
+     *   - `role`               : colonne dépréciée, mais encore lue par `CheckRole`, par les
+     *                            gardes `role:employe` et par des callbacks de diffusion.
+     *   - `organization_account_id`
+     *   - `current_organization_id` : ces deux-là DÉSIGNENT L'ORGANISATION dont on lit les données.
+     *                            Se les assigner soi-même, c'est entrer chez le voisin.
+     *
+     * Le parcours d'inscription passe `$request->all()` à `CreateNewUser` (c'est Fortify qui le
+     * fait, pas nous) : tant que ces clés étaient assignables en masse, un simple champ caché
+     * `platform_role=admin` dans le formulaire d'inscription suffisait. Elles s'écrivent
+     * désormais par `forceFill()` uniquement — un appel explicite, visible en revue, jamais
+     * pilotable depuis le navigateur.
+     *
+     * `Model::preventSilentlyDiscardingAttributes` étant actif hors production, toute tentative
+     * de les repasser en masse LÈVE une `MassAssignmentException` au lieu de les ignorer : la
+     * régression se voit tout de suite au lieu de s'écrire en silence.
      */
     protected $fillable = [
         'name',
@@ -74,8 +95,6 @@ class User extends Authenticatable implements HasLocalePreference, MustVerifyEma
         'password',
 
         'account_type',
-        'role', // deprecated — kept for backward compat with existing tests
-        'platform_role',
 
         'phone',
         'phone_verified_at',
@@ -87,8 +106,6 @@ class User extends Authenticatable implements HasLocalePreference, MustVerifyEma
         'is_active',
 
         'current_team_id',
-        'current_organization_id',
-        'organization_account_id',
         'profile_photo_path',
 
         'metadata',

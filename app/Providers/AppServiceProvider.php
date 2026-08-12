@@ -39,9 +39,28 @@ use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\ServiceProvider;
+use RuntimeException;
 
 class AppServiceProvider extends ServiceProvider
 {
+    public const MESSAGE_FILE_SYNCHRONE = 'QUEUE_CONNECTION=sync est refusé en production : les jobs '
+        .'différés s’exécuteraient immédiatement, ce qui casse les vagues du moteur de répartition '
+        .'(TTL de 20 s ignoré) et fait passer webhooks et courriels dans la requête HTTP. '
+        .'Choisir redis, sqs ou database.';
+
+    /**
+     * LA DÉCISION, ISOLÉE DE SON CONTEXTE — pour qu'elle soit mesurable.
+     *
+     * `runningInConsole()` est figé au démarrage du conteneur : sous PHPUnit il vaut TOUJOURS vrai.
+     * Un test qui prétendrait simuler une requête HTTP passerait donc pour une mauvaise raison.
+     * On sort les deux entrées — l'environnement et le contexte — en paramètres : la règle devient
+     * vérifiable telle qu'elle est écrite, et non telle qu'on aimerait la lire.
+     */
+    public static function laFileSynchroneEstRefusee(string $environnement, string $pilote, bool $enConsole): bool
+    {
+        return $environnement === 'production' && $pilote === 'sync' && ! $enConsole;
+    }
+
     /**
      * Register any application services.
      */
@@ -100,10 +119,13 @@ class AppServiceProvider extends ServiceProvider
          */
         Model::preventSilentlyDiscardingAttributes(! app()->isProduction());
         Model::preventLazyLoading(! app()->isProduction());
+
         Model::handleLazyLoadingViolationUsing(function ($model, $relation) {
             $class = get_class($model);
             logger()->warning("N+1 lazy load: {$class}.{$relation}");
         });
+
+        $this->refuserLaFileSynchroneEnProduction();
 
         Builder::macro('clientFacing', function () {
             /** @var Builder $this */
@@ -175,5 +197,56 @@ class AppServiceProvider extends ServiceProvider
         Blade::directive('mediaUrl', function (string $expr): string {
             return "<?php echo e(\\App\\Support\\Media\\PrivateMedia::url({$expr})); ?>";
         });
+    }
+
+    /**
+     * EN PRODUCTION, UNE FILE « sync » N'EST PAS UNE FILE — C'EST UNE PANNE SILENCIEUSE.
+     *
+     * `config/queue.php` a pour défaut `sync`, et `.env.example` le reprend. Avec ce pilote, un job
+     * mis en file s'exécute IMMÉDIATEMENT, dans le processus appelant. Deux conséquences que rien ne
+     * signale :
+     *
+     *  - `EscalateMissionAssignmentJob` est dispatché avec `->delay($assignment->expires_at)`. En
+     *    `sync`, le délai est IGNORÉ : l'escalade part à l'instant même. Le TTL de 20 secondes et
+     *    les vagues du moteur de répartition n'existent plus — la première offre est écrasée avant
+     *    que le prestataire ait vu sa notification.
+     *  - Chaque webhook Stripe, chaque envoi de courriel, chaque géocodage se fait dans la requête
+     *    HTTP. Une lenteur de Stripe devient une lenteur de la page.
+     *
+     * POURQUOI REFUSER LE BOOT PLUTÔT QUE JOURNALISER. `config:parity-check` garde déjà le
+     * DÉPLOIEMENT (lot 0), mais quelqu'un peut éditer `.env` sur le serveur sans redéployer. Un
+     * avertissement dans les journaux ne serait lu par personne — c'est précisément ainsi que ce
+     * réglage a survécu jusqu'ici. Une application qui refuse de démarrer se remarque en une minute ;
+     * des vagues de répartition cassées se remarquent en un mois, à travers des clients perdus.
+     *
+     * Hors production, on ne dit rien : `sync` est le bon réglage pour développer et pour tester.
+     */
+    private function refuserLaFileSynchroneEnProduction(): void
+    {
+        if (! app()->isProduction()) {
+            return;
+        }
+
+        if (config('queue.default') !== 'sync') {
+            return;
+        }
+
+        /*
+         * ON LAISSE PASSER LA CONSOLE, ET C'EST ESSENTIEL.
+         *
+         * Lever depuis boot() bloque TOUTE commande artisan — y compris `config:clear`, qui est
+         * précisément l'outil avec lequel on répare une configuration fautive. Une garde qui
+         * empêche de réparer ce qu'elle signale enferme l'exploitant dehors : il lui resterait à
+         * éditer .env à la main puis à espérer, sans pouvoir vider le cache.
+         *
+         * Le déploiement reste couvert autrement, et mieux : `config:parity-check` refuse `sync`
+         * AVANT la migration, avec un rapport lisible qui nomme le réglage fautif. Ici on garde le
+         * trafic HTTP et les workers, c'est-à-dire ce qui sert réellement les clients.
+         */
+        if (app()->runningInConsole()) {
+            return;
+        }
+
+        throw new RuntimeException(self::MESSAGE_FILE_SYNCHRONE);
     }
 }

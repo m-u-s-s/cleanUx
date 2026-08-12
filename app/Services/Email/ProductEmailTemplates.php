@@ -23,7 +23,9 @@ class ProductEmailTemplates
 
     public static function sampleRecipient(): User
     {
-        return new User([
+        // `forceFill` : `role` n'est plus assignable en masse, et le constructeur de `User` passe
+        // par `fill()`. Cet objet n'est jamais enregistré — il ne sert qu'à composer l'aperçu.
+        return (new User)->forceFill([
             'name' => 'Client Démo',
             'email' => 'client@example.test',
             'role' => User::ROLE_CLIENT,
@@ -56,7 +58,7 @@ class ProductEmailTemplates
         ]);
 
         $rdv->setRelation('client', self::sampleRecipient());
-        $rdv->setRelation('employe', new User([
+        $rdv->setRelation('employe', (new User)->forceFill([
             'name' => 'Employé Démo',
             'email' => 'employe@example.test',
             'role' => User::ROLE_EMPLOYE,
