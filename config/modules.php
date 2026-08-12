@@ -18,6 +18,23 @@
  *   context   string  client | employe | admin | client-company | provider-company
  *   category  string  clé de `categories` ci-dessous
  *   primary   bool    true = reste dans la navbar allégée (5 par contexte au plus)
+ *   permission string|string[]  facultatif — une liste signifie « l'une OU l'autre »
+ *
+ * LA PERMISSION D'UNE CASE DOIT ÊTRE EXACTEMENT CELLE DE SON ÉCRAN.
+ *
+ * Ce champ n'est pas une politique de sécurité : la sécurité est dans le `mount()` du composant, qui
+ * reste le seul juge. Il ne sert qu'à ne pas mentir sur ce qui s'ouvre — et il a menti dans les deux
+ * sens tant que rien ne le mesurait :
+ *
+ *  - PLUS STRICTE QUE L'ÉCRAN, elle cache un module à qui y a droit. « Planning et absences »
+ *    exigeait `team.view` alors que `WorkforcePlanning` n'exige rien : sept sous-rôles sur onze,
+ *    dont l'exécutant à qui l'écran est destiné, n'avaient aucune porte vers leur propre planning.
+ *  - PLUS LARGE QUE L'ÉCRAN, elle promet une page et rend un refus. Trente-quatre couples
+ *    (sous-rôle, case) menaient à un 403 : voir une case grise vaut mieux que cliquer sur un mur.
+ *
+ * `CoherenceDesTuilesEtDesEcransTest` frappe les routes pour chacun des onze sous-rôles et exige
+ * l'équivalence. Il ne lit pas le code : une première version comparait les textes par expression
+ * régulière et a produit deux faux positifs en dix minutes.
  */
 return [
     'categories' => [
@@ -299,20 +316,24 @@ return [
         ['key' => 'client-company:client.kyb.onboarding', 'label' => 'Vérification entreprise (KYB)', 'icon' => '🏢', 'route' => 'client.kyb.onboarding', 'context' => 'client-company', 'category' => 'conformite', 'primary' => false],
         ['key' => 'client-company:client.gdpr.data', 'label' => 'Mes données RGPD', 'icon' => '🔐', 'route' => 'client.gdpr.data', 'context' => 'client-company', 'category' => 'conformite', 'primary' => false],
         ['key' => 'client-company:client-company.bookings.bulk-import', 'label' => 'Import bulk', 'icon' => '📤', 'route' => 'client-company.bookings.bulk-import', 'context' => 'client-company', 'category' => 'rendez-vous', 'primary' => false],
-        ['key' => 'client-company:client-company.bookings.index', 'label' => 'Réservations', 'icon' => '📅', 'route' => 'client-company.bookings.index', 'context' => 'client-company', 'category' => 'rendez-vous', 'primary' => true],
+        ['key' => 'client-company:client-company.bookings.index', 'label' => 'Réservations', 'icon' => '📅', 'route' => 'client-company.bookings.index', 'context' => 'client-company', 'category' => 'rendez-vous', 'permission' => 'bookings.create', 'primary' => true],
         // Le bouton d'appel du layout, hors de sa liste de liens — servi par `BookingHub`.
-        ['key' => 'client-company:client-company.bookings.create', 'label' => 'Nouvelle réservation', 'icon' => '➕', 'route' => 'client-company.bookings.create', 'context' => 'client-company', 'category' => 'rendez-vous', 'primary' => false],
+        ['key' => 'client-company:client-company.bookings.create', 'label' => 'Nouvelle réservation', 'icon' => '➕', 'route' => 'client-company.bookings.create', 'context' => 'client-company', 'category' => 'rendez-vous', 'permission' => 'bookings.create', 'primary' => false],
         ['key' => 'client-company:client-company.bookings.multi-site', 'label' => 'Multi-locaux', 'icon' => '🏢', 'route' => 'client-company.bookings.multi-site', 'context' => 'client-company', 'category' => 'rendez-vous', 'primary' => false],
         ['key' => 'client-company:client-company.contracts', 'label' => 'Contrats', 'icon' => '📄', 'route' => 'client-company.contracts', 'context' => 'client-company', 'category' => 'documents', 'primary' => false],
         ['key' => 'client-company:client-company.contracts.signing-appointments', 'label' => 'Signatures', 'icon' => '✍️', 'route' => 'client-company.contracts.signing-appointments', 'context' => 'client-company', 'category' => 'documents', 'primary' => false],
-        ['key' => 'client-company:client-company.billing', 'label' => 'Facturation', 'icon' => '🧾', 'route' => 'client-company.billing', 'context' => 'client-company', 'category' => 'finance', 'primary' => true],
+        ['key' => 'client-company:client-company.billing', 'label' => 'Facturation', 'icon' => '🧾', 'route' => 'client-company.billing', 'context' => 'client-company', 'category' => 'finance', 'permission' => 'finance.view', 'primary' => true],
         /*
          * E7 + E8 + E9 + E11 — le pilotage. Le plafond alerte sans bloquer, l'approbation entre
          * dans le dispatch, le niveau de service répond à « est-ce qu'il tient ses engagements »,
          * et l'export épargne douze PDF à ressaisir à la main.
          */
-        ['key' => 'client-company:client-company.governance', 'label' => 'Pilotage', 'icon' => '🎯', 'route' => 'client-company.governance', 'context' => 'client-company', 'permission' => 'finance.view', 'category' => 'donnees', 'primary' => false],
-        ['key' => 'client-company:client-company.sites', 'label' => 'Mes locaux', 'icon' => '📍', 'route' => 'client-company.sites', 'context' => 'client-company', 'category' => 'comptes', 'primary' => true],
+        // L'écran s'ouvre par `finance.view` OU `bookings.approve` : le budget d'un côté, la file
+        // d'approbation de l'autre. La case n'annonçait que la première, si bien que le directeur
+        // opérations — qui approuve mais ne voit pas la finance — n'avait aucune porte vers les
+        // demandes qui l'attendaient.
+        ['key' => 'client-company:client-company.governance', 'label' => 'Pilotage', 'icon' => '🎯', 'route' => 'client-company.governance', 'context' => 'client-company', 'permission' => ['finance.view', 'bookings.approve'], 'category' => 'donnees', 'primary' => false],
+        ['key' => 'client-company:client-company.sites', 'label' => 'Mes locaux', 'icon' => '📍', 'route' => 'client-company.sites', 'context' => 'client-company', 'category' => 'comptes', 'permission' => 'sites.view_all', 'primary' => true],
         ['key' => 'client-company:client-company.members', 'label' => 'Membres', 'icon' => '👥', 'route' => 'client-company.members', 'context' => 'client-company', 'category' => 'prestataires', 'primary' => true],
         ['key' => 'client-company:client-company.disputes', 'label' => 'Litiges', 'icon' => '⚠️', 'route' => 'client-company.disputes', 'context' => 'client-company', 'category' => 'qualite', 'primary' => false],
         ['key' => 'client-company:client-company.analytics', 'label' => 'Analytics', 'icon' => '📊', 'route' => 'client-company.analytics', 'context' => 'client-company', 'category' => 'donnees', 'primary' => false],
@@ -326,7 +347,7 @@ return [
         ['key' => 'provider-company:provider.onboarding', 'label' => 'Dossier de la société', 'icon' => '🚀', 'route' => 'provider.onboarding', 'context' => 'provider-company', 'category' => 'conformite', 'primary' => false],
         ['key' => 'provider-company:presence.me', 'label' => 'Ma présence', 'icon' => '🟢', 'route' => 'presence.me', 'context' => 'provider-company', 'category' => 'missions', 'primary' => false],
         ['key' => 'provider-company:provider-company.dispatch', 'label' => 'Dispatch', 'icon' => '🗺️', 'route' => 'provider-company.dispatch', 'context' => 'provider-company', 'permission' => 'missions.dispatch', 'category' => 'missions', 'primary' => true],
-        ['key' => 'provider-company:provider-company.tasks', 'label' => 'Tâches', 'icon' => '✅', 'route' => 'provider-company.tasks', 'context' => 'provider-company', 'category' => 'missions', 'primary' => true],
+        ['key' => 'provider-company:provider-company.tasks', 'label' => 'Tâches', 'icon' => '✅', 'route' => 'provider-company.tasks', 'context' => 'provider-company', 'category' => 'missions', 'permission' => 'tasks.create', 'primary' => true],
         ['key' => 'provider-company:provider-company.field-teams', 'label' => 'Équipes terrain', 'icon' => '🚚', 'route' => 'provider-company.field-teams', 'context' => 'provider-company', 'permission' => 'team.view', 'category' => 'prestataires', 'primary' => false],
         /*
          * Les IMPLANTATIONS de la société — à ne pas confondre avec « Sites desservis », qui sont
@@ -337,17 +358,44 @@ return [
         // Les sites clients desservis, et le référent que la société y place — servi par
         // `SiteOperations`, et par l'API que l'écran natif « Sites desservis » consomme.
         ['key' => 'provider-company:provider-company.sites', 'label' => 'Sites desservis', 'icon' => '📍', 'route' => 'provider-company.sites', 'context' => 'provider-company', 'permission' => 'sites.view_all', 'category' => 'comptes', 'primary' => false],
-        ['key' => 'provider-company:provider-company.team', 'label' => 'Équipe', 'icon' => '👥', 'route' => 'provider-company.team', 'context' => 'provider-company', 'permission' => 'team.view', 'category' => 'prestataires', 'primary' => true],
+        /*
+         * `members.invite` ET NON `team.view` : c'est ce que `TeamManagement::mount()` exige.
+         *
+         * La case annonçait `team.view`, si bien qu'elle mentait DANS LES DEUX SENS. Le coordinateur
+         * et le chef d'équipe la voyaient et récoltaient un 403 — une case qui promet une page et
+         * rend un refus vaut moins que pas de case. Le gestionnaire, lui, pouvait inviter mais
+         * n'avait aucune porte : l'écran n'était atteignable qu'en tapant l'URL.
+         *
+         * `team.view` reste la bonne clé pour « Équipes terrain », qui est un AUTRE écran : voir les
+         * équipes n'est pas gérer qui entre dans la société.
+         */
+        ['key' => 'provider-company:provider-company.team', 'label' => 'Équipe', 'icon' => '👥', 'route' => 'provider-company.team', 'context' => 'provider-company', 'permission' => 'members.invite', 'category' => 'prestataires', 'primary' => true],
         /*
          * « Qui travaille quand » n'était écrit nulle part : quelqu'un qui ne travaillait pas ce
          * jour-là passait pour disponible, et l'auto-assignation lui envoyait une course à
          * vingt-trois heures. Les absences vivent sur le même écran — un planning qui les ignore
          * envoie la course le premier jour des vacances.
          */
-        ['key' => 'provider-company:provider-company.planning', 'label' => 'Planning et absences', 'icon' => '🗓️', 'route' => 'provider-company.planning', 'context' => 'provider-company', 'permission' => 'team.view', 'category' => 'rendez-vous', 'primary' => true],
+        /*
+         * AUCUNE PERMISSION : L'ÉCRAN EST CELUI DE CHACUN, et il filtre lui-même.
+         *
+         * `WorkforcePlanning` ne garde pas son montage — c'est délibéré, et c'est ce qui permet à un
+         * exécutant de consulter SON planning et de poser SON congé. Sans `team.view`, il ne voit
+         * que ses propres créneaux et que ses propres absences ; celles des collègues sont un fait
+         * médical ou familial, gardé plus sévèrement.
+         *
+         * La case, elle, exigeait `team.view` : SEPT sous-rôles sur onze — dont l'exécutant, à qui
+         * l'écran est d'abord destiné — n'avaient aucune porte vers leur propre planning. La
+         * capacité existait, personne ne pouvait l'atteindre sans taper l'URL. C'est l'écran
+         * orphelin déjà rencontré sur ce dépôt, cette fois par la permission plutôt que par la
+         * navigation.
+         */
+        ['key' => 'provider-company:provider-company.planning', 'label' => 'Planning et absences', 'icon' => '🗓️', 'route' => 'provider-company.planning', 'context' => 'provider-company', 'category' => 'rendez-vous', 'primary' => true],
         // Les heures pointées, et la marge qu'elles laissent. Une société sait ce qu'elle facture,
         // pas ce que ça lui coûte : les deux termes n'existaient pas avant.
-        ['key' => 'provider-company:provider-company.timesheets', 'label' => 'Heures et rentabilité', 'icon' => '⏱️', 'route' => 'provider-company.timesheets', 'context' => 'provider-company', 'permission' => 'team.view', 'category' => 'finance', 'primary' => false],
+        // Sans permission, pour la même raison que le planning : `TimesheetCenter` montre ses
+        // propres heures à qui n'a pas `team.view`, et la marge à qui a `analytics.view`.
+        ['key' => 'provider-company:provider-company.timesheets', 'label' => 'Heures et rentabilité', 'icon' => '⏱️', 'route' => 'provider-company.timesheets', 'context' => 'provider-company', 'category' => 'finance', 'primary' => false],
         // Le stock de consommables. `inventory.view` va jusqu'aux exécutants : savoir ce qui reste
         // avant de partir n'est pas commander.
         ['key' => 'provider-company:provider-company.inventory', 'label' => 'Consommables', 'icon' => '📦', 'route' => 'provider-company.inventory', 'context' => 'provider-company', 'permission' => 'inventory.view', 'category' => 'missions', 'primary' => false],
@@ -361,13 +409,15 @@ return [
          */
         ['key' => 'provider-company:provider-company.recruitment', 'label' => 'Recrutement', 'icon' => '📢', 'route' => 'provider-company.recruitment', 'context' => 'provider-company', 'permission' => 'recruitment.view', 'category' => 'prestataires', 'primary' => false],
         // E26 + E27 — le score qualité interne et la flotte : qui peut travailler demain, et avec
-        // quoi. L'écran s'ouvre par `missions.quality` OU par `fleet.view` ; le répertoire annonce
-        // la seconde, la plus large des deux.
-        ['key' => 'provider-company:provider-company.quality-fleet', 'label' => 'Qualité et matériel', 'icon' => '🔧', 'route' => 'provider-company.quality-fleet', 'context' => 'provider-company', 'permission' => 'fleet.view', 'category' => 'qualite', 'primary' => false],
+        // quoi. L'écran s'ouvre par `missions.quality` OU par `fleet.view` ; la case porte donc les
+        // DEUX clés. N'en annoncer qu'une marchait par coïncidence — tout porteur de
+        // `missions.quality` a aussi `fleet.view` aujourd'hui — et se serait cassé au premier
+        // ajustement de la matrice, sans que rien ne le signale.
+        ['key' => 'provider-company:provider-company.quality-fleet', 'label' => 'Qualité et matériel', 'icon' => '🔧', 'route' => 'provider-company.quality-fleet', 'context' => 'provider-company', 'permission' => ['missions.quality', 'fleet.view'], 'category' => 'qualite', 'primary' => false],
         // La matrice rôle → permissions PROPRE à la société. `members.manage_permissions` est
         // réservée au propriétaire par défaut : distribuer des droits n'est pas inviter.
         ['key' => 'provider-company:provider-company.role-permissions', 'label' => 'Rôles et permissions', 'icon' => '🔑', 'route' => 'provider-company.role-permissions', 'context' => 'provider-company', 'permission' => 'members.manage_permissions', 'category' => 'comptes', 'primary' => false],
-        ['key' => 'provider-company:provider-company.channels', 'label' => 'Canaux', 'icon' => '💬', 'route' => 'provider-company.channels', 'context' => 'provider-company', 'category' => 'communication', 'primary' => true],
+        ['key' => 'provider-company:provider-company.channels', 'label' => 'Canaux', 'icon' => '💬', 'route' => 'provider-company.channels', 'context' => 'provider-company', 'category' => 'communication', 'permission' => 'channels.create', 'primary' => true],
         ['key' => 'provider-company:provider-company.dashboard', 'label' => 'Dashboard', 'icon' => '🏗️', 'route' => 'provider-company.dashboard', 'context' => 'provider-company', 'category' => 'donnees', 'primary' => true],
     ],
 

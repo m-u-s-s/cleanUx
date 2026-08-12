@@ -14,7 +14,7 @@ use Illuminate\Support\Facades\Route;
  * Toute la navigation du web passe par ici : la page Modules, la navbar et les deux layouts
  * société. C'est ce qui remplace les quatre registres inline qui vivaient chacun dans sa vue.
  *
- * @phpstan-type Module array{key: string, label: string, icon: string, route: string, context: string, category: string, primary: bool, visible_si?: string, permission?: string}
+ * @phpstan-type Module array{key: string, label: string, icon: string, route: string, context: string, category: string, primary: bool, visible_si?: string, permission?: string|list<string>}
  * Le groupe porte `non-empty-array` et non `array` : `pourContexte()` retire les catégories vides,
  * donc un groupe rendu a forcément au moins une case. `Collection` n'étant pas covariante en
  * PHPStan, le type déclaré doit être exactement celui qui sort.
@@ -120,6 +120,20 @@ class ModuleCatalogue
             return true;
         }
 
+        /*
+         * UNE LISTE SIGNIFIE « L'UNE OU L'AUTRE », PARCE QUE CERTAINS ÉCRANS ONT DEUX PORTES.
+         *
+         * `QualityAndFleet` s'ouvre par `missions.quality` OU `fleet.view` — le responsable qualité
+         * et le gestionnaire de flotte y entrent chacun par la sienne. `GovernanceCenter` de même,
+         * par `finance.view` OU `bookings.approve`. Tant que le registre ne savait exprimer qu'une
+         * seule clé, sa case était forcément plus stricte que son écran : le directeur opérations
+         * pouvait approuver une demande sans qu'aucune case ne l'y mène.
+         *
+         * On exige donc AU MOINS UNE des clés, jamais toutes : exiger les deux refermerait l'écran
+         * sur les deux métiers qu'il est censé servir.
+         */
+        $exigences = is_array($permission) ? $permission : [$permission];
+
         $utilisateur = Auth::user();
 
         if ($utilisateur === null) {
@@ -137,8 +151,19 @@ class ModuleCatalogue
 
         $organisation = OrganizationAccount::find($organisationId);
 
-        return $organisation !== null
-            && app(PermissionService::class)->can($utilisateur, $permission, $organisation);
+        if ($organisation === null) {
+            return false;
+        }
+
+        $permissions = app(PermissionService::class);
+
+        foreach ($exigences as $exigence) {
+            if ($permissions->can($utilisateur, $exigence, $organisation)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**
