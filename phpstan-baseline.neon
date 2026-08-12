@@ -1087,12 +1087,6 @@ parameters:
 			path: app/Http/Controllers/Webhooks/SmsWebhookController.php
 
 		-
-			message: '#^Called ''env'' outside of the config directory which returns null when the config is cached, use ''config''\.$#'
-			identifier: larastan.noEnvCallsOutsideOfConfig
-			count: 1
-			path: app/Http/Controllers/Webhooks/StripeConnectWebhookController.php
-
-		-
 			message: '#^Call to function is_object\(\) with App\\Models\\Sanctum\\PersonalAccessTokenV2 will always evaluate to true\.$#'
 			identifier: function.alreadyNarrowedType
 			count: 1
@@ -1171,12 +1165,6 @@ parameters:
 			path: app/Http/Middleware/RedirectIfAuthenticated.php
 
 		-
-			message: '#^Called ''env'' outside of the config directory which returns null when the config is cached, use ''config''\.$#'
-			identifier: larastan.noEnvCallsOutsideOfConfig
-			count: 4
-			path: app/Http/Middleware/SecurityHeaders.php
-
-		-
 			message: '#^Instanceof between Symfony\\Component\\HttpFoundation\\Response and Symfony\\Component\\HttpFoundation\\Response will always evaluate to true\.$#'
 			identifier: instanceof.alwaysTrue
 			count: 1
@@ -1187,18 +1175,6 @@ parameters:
 			identifier: missingType.iterableValue
 			count: 1
 			path: app/Http/Middleware/SetLocale.php
-
-		-
-			message: '#^Called ''env'' outside of the config directory which returns null when the config is cached, use ''config''\.$#'
-			identifier: larastan.noEnvCallsOutsideOfConfig
-			count: 1
-			path: app/Http/Middleware/TrustProxies.php
-
-		-
-			message: '#^Called ''env'' outside of the config directory which returns null when the config is cached, use ''config''\.$#'
-			identifier: larastan.noEnvCallsOutsideOfConfig
-			count: 1
-			path: app/Http/Middleware/VerifyTurnstileCaptcha.php
 
 		-
 			message: '#^Method App\\Http\\Requests\\Api\\Auth\\LoginRequest\:\:rules\(\) return type has no value type specified in iterable type array\.$#'
@@ -14341,12 +14317,6 @@ parameters:
 			path: app/Services/Admin/EmployeePerformanceService.php
 
 		-
-			message: '#^Called ''env'' outside of the config directory which returns null when the config is cached, use ''config''\.$#'
-			identifier: larastan.noEnvCallsOutsideOfConfig
-			count: 1
-			path: app/Services/Ai/PhotoQuoteEstimator.php
-
-		-
 			message: '#^Method App\\Services\\Ai\\PhotoQuoteEstimator\:\:estimateFromPhoto\(\) return type has no value type specified in iterable type array\.$#'
 			identifier: missingType.iterableValue
 			count: 1
@@ -16611,12 +16581,6 @@ parameters:
 		-
 			message: '#^Access to an undefined property App\\Models\\MissionTrackingSession\:\:\$current_lng\.$#'
 			identifier: property.notFound
-			count: 1
-			path: app/Services/Eta/EtaService.php
-
-		-
-			message: '#^Called ''env'' outside of the config directory which returns null when the config is cached, use ''config''\.$#'
-			identifier: larastan.noEnvCallsOutsideOfConfig
 			count: 1
 			path: app/Services/Eta/EtaService.php
 
@@ -18919,12 +18883,6 @@ parameters:
 			path: app/Services/Payments/StripeConnectService.php
 
 		-
-			message: '#^Called ''env'' outside of the config directory which returns null when the config is cached, use ''config''\.$#'
-			identifier: larastan.noEnvCallsOutsideOfConfig
-			count: 1
-			path: app/Services/Payments/StripeReconciliationService.php
-
-		-
 			message: '#^Method App\\Services\\Payments\\StripeReconciliationService\:\:mismatch\(\) has parameter \$extra with no value type specified in iterable type array\.$#'
 			identifier: missingType.iterableValue
 			count: 1
@@ -19559,12 +19517,6 @@ parameters:
 			identifier: missingType.iterableValue
 			count: 1
 			path: app/Services/Safety/Data/MaskedCallSessionData.php
-
-		-
-			message: '#^Called ''env'' outside of the config directory which returns null when the config is cached, use ''config''\.$#'
-			identifier: larastan.noEnvCallsOutsideOfConfig
-			count: 6
-			path: app/Services/Safety/MaskedCallService.php
 
 		-
 			message: '#^Method App\\Services\\Safety\\UserSafetyService\:\:report\(\) has parameter \$evidence with no value type specified in iterable type array\.$#'

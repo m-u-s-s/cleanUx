@@ -1,8 +1,20 @@
+# Déclenche brio-scheduler.service chaque minute : c'est l'équivalent systemd de la ligne
+#   * * * * * cd /var/www/brio && php artisan schedule:run >> /dev/null 2>&1
+# Installer l'un OU l'autre, jamais les deux (sinon chaque tâche part en double).
+#
+# AccuracySec=1s : sans lui, systemd regroupe les timers dans une fenêtre d'une minute et peut
+# décaler un run — ce qui suffit à faire sauter les tâches planifiées « à la minute ».
+# Persistent=true : rattrape le run manqué après un reboot.
+#
+#   sudo systemctl enable --now brio-scheduler.timer
+#   systemctl list-timers brio-*        # vérifie NEXT / LAST
+
 [Unit]
 Description=Run Brio scheduler every minute
 
 [Timer]
 OnCalendar=*-*-* *:*:00
+AccuracySec=1s
 Persistent=true
 Unit=brio-scheduler.service
 

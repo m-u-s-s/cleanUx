@@ -1,0 +1,33 @@
+# Sonde : « l'ordonnanceur a-t-il tourné récemment ? »
+#
+# Elle ne fabrique PAS un second battement de cœur : le dépôt en a déjà un.
+#   * app:ops-heartbeat est une tâche PLANIFIÉE (toutes les 5 min, app/Console/Kernel.php). Elle
+#     écrit storage/app/ops/heartbeat.json + la clé de cache brio:ops:heartbeat.
+#   * app:production-health-check relit ce battement (App\Services\Ops\ProductionHealthReport) et
+#     marque « Heartbeat récent » en ERREUR dès qu'il dépasse OPS_HEARTBEAT_MAX_AGE_SECONDS
+#     (config/operations.php, 900 s par défaut = 15 min, soit 3 battements manqués).
+#   * --strict transforme cette erreur en code de sortie 1, donc en unité systemd « failed ».
+#
+# Le raisonnement tient parce que le battement est écrit PAR l'ordonnanceur : si schedule:run ne
+# tourne plus, le fichier vieillit et la sonde vire au rouge en 15 minutes. C'est pour cela que
+# cette sonde doit être déclenchée par son PROPRE timer et surtout PAS par le scheduler — une
+# sonde planifiée par ce qu'elle surveille meurt avec lui, sans rien signaler.
+#
+# Alerte : décommenter OnFailure= et pointer une unité qui prévient (mail, Slack, PagerDuty…).
+#
+#   sudo systemctl enable --now brio-scheduler-heartbeat.timer
+#   systemctl status brio-scheduler-heartbeat.service   # dernier verdict
+#   php artisan app:production-health-check             # tableau détaillé, à la main
+
+[Unit]
+Description=Brio — sonde de fraîcheur du heartbeat (ordonnanceur vivant ?)
+After=network.target
+# OnFailure=brio-alert@%n.service
+
+[Service]
+Type=oneshot
+User=www-data
+Group=www-data
+WorkingDirectory=/var/www/brio
+ExecStart=/usr/bin/php8.5 artisan app:production-health-check --strict
+TimeoutStartSec=120

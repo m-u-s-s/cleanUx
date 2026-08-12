@@ -222,7 +222,19 @@ return [
         'notifiable' => Notifiable::class,
 
         'mail' => [
-            'to' => 'your@example.com',
+            /*
+             * L'ADRESSE VENAIT DU GABARIT DU PAQUET : 'your@example.com', codée en dur.
+             *
+             * Tant que les sauvegardes ne tournaient pas, personne ne l'a vue. Depuis que le
+             * déploiement en fait une porte dure, chaque passage enverrait un rapport de statut —
+             * incluant le message d'exception en cas d'échec, donc des chemins de serveur et des
+             * fragments de configuration — à un domaine d'exemple qui appartient à quelqu'un d'autre.
+             *
+             * Le repli est l'adresse d'expédition de l'application : connue, à nous, et déjà
+             * configurée. Le déploiement passe de toute façon --disable-notifications ; cette
+             * adresse sert aux sauvegardes planifiées.
+             */
+            'to' => env('BACKUP_NOTIFICATION_EMAIL', env('MAIL_FROM_ADDRESS')),
 
             'from' => [
                 'address' => env('MAIL_FROM_ADDRESS', 'hello@example.com'),

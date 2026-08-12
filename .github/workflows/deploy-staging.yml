@@ -46,20 +46,123 @@ jobs:
           host: ${{ secrets.STAGING_HOST }}
           username: ${{ secrets.STAGING_USER }}
           key: ${{ secrets.STAGING_KEY }}
+          # ═══════════════════════════════════════════════════════════════════════════════
+          # ORDRE DES ÉTAPES — À LIRE AVANT DE LE MODIFIER  (défaut B3, corrigé 2026-08-12)
+          #
+          # Ce script est la RÉPÉTITION de celui de production : mêmes étapes, même ordre, même
+          # sévérité. Staging n'existe que pour découvrir ici ce qu'on ne veut pas découvrir en
+          # prod — un `mysqldump` absent, un secret Stripe oublié, une route qui ne compile plus.
+          # L'assouplir « parce que ce n'est que du staging » lui retirerait sa seule utilité.
+          # La seule différence assumée est l'injection des données de démonstration, après la
+          # migration puisqu'elle a besoin du schéma neuf.
+          #
+          # CE QUI S'EST PASSÉ ICI AUSSI. L'ordre était : `migrate --force`, PUIS le seeder de
+          # démonstration, PUIS seulement la reconstruction des caches. Cette dernière échouait,
+          # `set -e` arrêtait le script — après que la base ait été migrée ET réécrite. Le job
+          # était rouge, la base modifiée : impossible de savoir, en lisant le résultat, dans
+          # quel état staging avait été laissé.
+          #
+          # Tout ce qui peut échouer sans toucher aux données passe donc avant la migration.
+          # ═══════════════════════════════════════════════════════════════════════════════
           script: |
             set -e
-            cd ${{ secrets.STAGING_PATH }}
+            # LA GARDE DE CHEMIN SE TESTE, ELLE NE SE DÉDUIT PAS DE `cd`.
+            #
+            # Une version précédente de ce script supposait qu'un chemin vide ferait échouer `cd`
+            # sous `set -e`. C'est FAUX : `cd ""` rend 0 en bash et ne bouge pas. Un secret absent —
+            # ce que GitHub rend par une chaîne vide, sans avertir — aurait donc déroulé tout le
+            # déploiement dans le répertoire personnel du compte SSH : composer, npm, migrations,
+            # pendant qu'un job vert affirme que la production a été mise à jour.
+            CHEMIN_DE_DEPLOIEMENT="${{ secrets.STAGING_PATH }}"
+            if [ -z "$CHEMIN_DE_DEPLOIEMENT" ]; then
+              echo "ABANDON : le secret STAGING_PATH est vide ou absent."
+              exit 1
+            fi
+            cd "$CHEMIN_DE_DEPLOIEMENT"
+
+            # ─── 1. Garde APP_KEY — avant même de récupérer le code ─────────────────────
+            # Sans clé d'application, `config:cache` échoue et rien de ce qui est chiffré
+            # (sessions, cookies, colonnes chiffrées) n'est lisible : inutile d'aller plus loin.
+            # On lit .env directement — il n'est pas versionné, `git pull` ne le touche pas, et
+            # cela ne dépend ni de vendor/ ni d'un cache de configuration éventuellement périmé.
+            #
+            # ON NE LANCE JAMAIS `php artisan key:generate` ICI. Ce script tourne à CHAQUE
+            # déploiement ; une clé regénérée rendrait définitivement indéchiffrable tout ce qui
+            # l'a été avec l'ancienne. La clé se génère UNE fois, à la main, au provisionnement.
+            if [ ! -f .env ]; then
+              echo "ABANDON : APP_KEY invérifiable — aucun fichier .env dans $(pwd)."
+              exit 1
+            fi
+            # \042 = guillemet double, \047 = apostrophe : la valeur peut être citée dans .env.
+            APP_KEY_VALEUR="$(grep -m1 '^APP_KEY=' .env | cut -d= -f2- | tr -d '\r' | tr -d '\042\047')"
+            case "$APP_KEY_VALEUR" in
+              ""|base64:|*CHANGE_ME*)
+                echo "ABANDON : APP_KEY absente, vide ou restée au gabarit dans .env."
+                echo "Elle se génère UNE seule fois, à la main, au provisionnement du serveur."
+                exit 1
+                ;;
+            esac
+
+            # ─── 2. Récupération du code ────────────────────────────────────────────────
             git pull origin develop
+
+            # ─── 3. Dépendances et assets ───────────────────────────────────────────────
+            # Avant tout appel à artisan : une commande artisan lancée sur un vendor/ périmé
+            # échouerait pour une raison sans rapport avec ce qu'on cherche à valider.
             composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist
             npm ci
             npm run build
-            php artisan migrate --force
-            php artisan db:seed --class=DemoDataSeeder --force
+
+            # ─── 4. Purge des caches compilés ───────────────────────────────────────────
+            # Les fichiers de bootstrap/cache/ décrivent le code PRÉCÉDENT. Les purger d'abord
+            # évite qu'une reconstruction partielle laisse du neuf et du vieux côte à côte.
+            # Volontairement PAS `optimize:clear` ni `cache:clear` : ceux-là videraient aussi le
+            # cache applicatif (Redis), ce qui rejetterait tout le trafic sur la base au pire
+            # moment. Ici on ne purge que ce qui est recompilé juste après.
+            php artisan config:clear
+            php artisan route:clear
+            php artisan view:clear
+            php artisan event:clear
+
+            # ─── 5. Reconstruction des caches ───────────────────────────────────────────
+            # C'est l'étape qui échouait après la migration. Elle passe maintenant avant :
+            # si la configuration, une route, une vue ou un écouteur ne compile pas, le
+            # déploiement s'arrête ici — base intacte.
             php artisan config:cache
             php artisan route:cache
             php artisan view:cache
             php artisan event:cache
+
+            # ─── 6. Contrôle de parité de production ────────────────────────────────────
+            # APRÈS `config:cache`, et c'est délibéré : la commande doit valider exactement la
+            # configuration que l'application lira, pas celle que .env laissait supposer.
+            # C'est ici, sur staging, qu'un secret Stripe oublié doit être découvert.
+            php artisan config:parity-check
+
+            # ─── 7. Lien de stockage public ─────────────────────────────────────────────
+            # Idempotent : quand public/storage existe déjà, la commande le signale et rend 0
+            # (vérifié dans StorageLinkCommand::handle, qui ne rend aucun code d'erreur).
+            # Sans cette étape, un serveur reprovisionné sert des 404 sur tous les médias publics.
+            php artisan storage:link
+
+            # ─── 8. Sauvegarde de la base ───────────────────────────────────────────────
+            # Bloquante comme en production, exprès : c'est ici qu'on veut apprendre que
+            # `mysqldump` manque, pas la veille d'une mise en production. Destination : disque
+            # `local` du serveur (config/backup.php), aucun secret d'objet distant requis.
+            php artisan backup:run --only-db --disable-notifications
+
+            # ─── 9. Migration — première opération irréversible du script ───────────────
+            php artisan migrate --force
+
+            # ─── 10. Données de démonstration ───────────────────────────────────────────
+            # Après la migration : le seeder a besoin du schéma neuf. Seule étape propre à
+            # staging — elle écrit en base, elle vient donc après la sauvegarde.
+            php artisan db:seed --class=DemoDataSeeder --force
+
+            # ─── 11. Redémarrage des processus longs ────────────────────────────────────
+            # En dernier : les workers rechargent le code neuf ET la base déjà migrée.
             php artisan queue:restart
+            # Seule tolérance du script : Reverb peut légitimement ne pas tourner sur ce nœud.
             php artisan reverb:restart || true
             echo "Staging deploy completed at $(date)"
 

@@ -349,10 +349,22 @@ Route::middleware(['auth:sanctum'])->prefix('provider')->group(function () {
     Route::patch('/devices/{deviceToken}/preferences', [DeviceTokenController::class, 'updatePreferences']);
 });
 
-// Admin — Onboarding document file download (web session auth + role:admin)
+/*
+ * Admin — téléchargement d'un document d'onboarding (session web + role:admin).
+ *
+ * LE PRÉFIXE `api.` N'EST PAS COSMÉTIQUE : sans lui, cette route portait EXACTEMENT le même nom que
+ * la route web signée de `routes/admin.php`, et deux choses cassaient à la fois.
+ *
+ * 1. `route()` ne rend qu'une URL par nom, et c'est la DERNIÈRE enregistrée qui gagne : celle-ci.
+ *    `AdminOnboardingDocumentsCenter` fabrique donc une URL signée pointant vers /api/..., qui n'a
+ *    pas de session — l'aperçu de document rendait un 401 pour tout administrateur.
+ * 2. `php artisan route:cache` REFUSE de sérialiser deux routes de même nom et s'arrête net. C'était
+ *    le vrai blocage du cache de routes — pas les closures, que Laravel sérialise depuis la 8.
+ *    Autrement dit : aucun déploiement ne pouvait aboutir à cause de ce doublon.
+ */
 Route::middleware(['auth', 'role:admin'])->group(function () {
     Route::get('/admin/onboarding-documents/{document}/file', [ProviderOnboardingController::class, 'downloadDocument'])
-        ->name('admin.onboarding.document.file');
+        ->name('api.admin.onboarding.document.file');
 });
 
 /*

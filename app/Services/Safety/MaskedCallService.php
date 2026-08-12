@@ -118,9 +118,12 @@ class MaskedCallService
     protected function createTwilioProxySession(MaskedCallSession $session, User $client, User $provider): void
     {
         try {
-            $serviceSid = (string) config('masked_calls.twilio_service_sid', env('TWILIO_PROXY_SERVICE_SID', ''));
-            $accountSid = (string) config('sms.providers.twilio.sid', env('TWILIO_SID', ''));
-            $authToken = (string) config('sms.providers.twilio.token', env('TWILIO_TOKEN', ''));
+            // Ces trois clés existent dans config/masked_calls.php et config/sms.php :
+            // les replis env() qui les doublaient étaient morts, et rendaient null
+            // dès que `config:cache` avait tourné.
+            $serviceSid = (string) config('masked_calls.twilio_service_sid');
+            $accountSid = (string) config('sms.providers.twilio.sid');
+            $authToken = (string) config('sms.providers.twilio.token');
 
             if ($serviceSid === '' || $accountSid === '' || $authToken === '') {
                 Log::info('[masked_call] Twilio Proxy not configured, session persisted DB-only', [
@@ -180,9 +183,9 @@ class MaskedCallService
             return;
         }
         try {
-            $serviceSid = (string) config('masked_calls.twilio_service_sid', env('TWILIO_PROXY_SERVICE_SID', ''));
-            $accountSid = (string) config('sms.providers.twilio.sid', env('TWILIO_SID', ''));
-            $authToken = (string) config('sms.providers.twilio.token', env('TWILIO_TOKEN', ''));
+            $serviceSid = (string) config('masked_calls.twilio_service_sid');
+            $accountSid = (string) config('sms.providers.twilio.sid');
+            $authToken = (string) config('sms.providers.twilio.token');
             if ($serviceSid === '' || $accountSid === '' || ! class_exists(Client::class)) {
                 return;
             }

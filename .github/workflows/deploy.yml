@@ -49,19 +49,131 @@ jobs:
           host: ${{ secrets.DEPLOY_HOST }}
           username: ${{ secrets.DEPLOY_USER }}
           key: ${{ secrets.DEPLOY_KEY }}
+          # ═══════════════════════════════════════════════════════════════════════════════
+          # ORDRE DES ÉTAPES — À LIRE AVANT DE LE MODIFIER  (défaut B3, corrigé 2026-08-12)
+          #
+          # CE QUI S'EST PASSÉ. L'ordre était : migration de la base D'ABORD, reconstruction
+          # des caches ENSUITE. La reconstruction échouait à chaque déploiement, et `set -e`
+          # arrêtait le script à ce moment-là, c'est-à-dire APRÈS la migration. Le job était
+          # donc rapporté ROUGE — « le déploiement a échoué » — alors que la base avait déjà
+          # été mutée, migrations destructives comprises, et sans aucune sauvegarde préalable.
+          # Un échec annoncé, des données modifiées quand même : le pire des deux mondes.
+          #
+          # LA RÈGLE QUI EN DÉCOULE. Tout ce qui peut échouer SANS toucher aux données passe
+          # avant la migration. La migration est la première opération irréversible du script :
+          # quand on l'atteint, la clé de chiffrement est vérifiée, les dépendances sont
+          # installées, la configuration, les routes, les vues et les évènements compilent, le
+          # profil de production est validé et une sauvegarde de la base vient d'être prise.
+          #
+          # AUCUNE ÉTAPE N'EST DÉCORATIVE : chacune peut interrompre le déploiement, et c'est
+          # exactement ce qu'on lui demande. Ne pas ajouter de `|| true` pour « débloquer » un
+          # déploiement — la seule exception est documentée au redémarrage de Reverb.
+          # ═══════════════════════════════════════════════════════════════════════════════
           script: |
             set -e
-            cd ${{ secrets.DEPLOY_PATH }}
+            # LA GARDE DE CHEMIN SE TESTE, ELLE NE SE DÉDUIT PAS DE `cd`.
+            #
+            # Une version précédente de ce script supposait qu'un chemin vide ferait échouer `cd`
+            # sous `set -e`. C'est FAUX : `cd ""` rend 0 en bash et ne bouge pas. Un secret absent —
+            # ce que GitHub rend par une chaîne vide, sans avertir — aurait donc déroulé tout le
+            # déploiement dans le répertoire personnel du compte SSH : composer, npm, migrations,
+            # pendant qu'un job vert affirme que la production a été mise à jour.
+            CHEMIN_DE_DEPLOIEMENT="${{ secrets.DEPLOY_PATH }}"
+            if [ -z "$CHEMIN_DE_DEPLOIEMENT" ]; then
+              echo "ABANDON : le secret DEPLOY_PATH est vide ou absent."
+              exit 1
+            fi
+            cd "$CHEMIN_DE_DEPLOIEMENT"
+
+            # ─── 1. Garde APP_KEY — avant même de récupérer le code ─────────────────────
+            # Sans clé d'application, `config:cache` échoue et rien de ce qui est chiffré
+            # (sessions, cookies, colonnes chiffrées) n'est lisible : inutile d'aller plus loin.
+            # On lit .env directement — il n'est pas versionné, `git pull` ne le touche pas, et
+            # cela ne dépend ni de vendor/ ni d'un cache de configuration éventuellement périmé.
+            #
+            # ON NE LANCE JAMAIS `php artisan key:generate` ICI. Ce script tourne à CHAQUE
+            # déploiement ; une clé regénérée rendrait définitivement indéchiffrable tout ce qui
+            # l'a été avec l'ancienne. La clé se génère UNE fois, à la main, au provisionnement.
+            if [ ! -f .env ]; then
+              echo "ABANDON : APP_KEY invérifiable — aucun fichier .env dans $(pwd)."
+              exit 1
+            fi
+            # \042 = guillemet double, \047 = apostrophe : la valeur peut être citée dans .env.
+            APP_KEY_VALEUR="$(grep -m1 '^APP_KEY=' .env | cut -d= -f2- | tr -d '\r' | tr -d '\042\047')"
+            case "$APP_KEY_VALEUR" in
+              ""|base64:|*CHANGE_ME*)
+                echo "ABANDON : APP_KEY absente, vide ou restée au gabarit dans .env."
+                echo "Elle se génère UNE seule fois, à la main, au provisionnement du serveur."
+                exit 1
+                ;;
+            esac
+
+            # ─── 2. Récupération du code ────────────────────────────────────────────────
             git pull origin main
+
+            # ─── 3. Dépendances et assets ───────────────────────────────────────────────
+            # Avant tout appel à artisan : une commande artisan lancée sur un vendor/ périmé
+            # échouerait pour une raison sans rapport avec ce qu'on cherche à valider.
             composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist
             npm ci
             npm run build
-            php artisan migrate --force
+
+            # ─── 4. Purge des caches compilés ───────────────────────────────────────────
+            # Les fichiers de bootstrap/cache/ décrivent le code PRÉCÉDENT. Les purger d'abord
+            # évite qu'une reconstruction partielle laisse du neuf et du vieux côte à côte.
+            # Volontairement PAS `optimize:clear` ni `cache:clear` : ceux-là videraient aussi le
+            # cache applicatif (Redis), ce qui rejetterait tout le trafic sur la base au pire
+            # moment. Ici on ne purge que ce qui est recompilé juste après.
+            php artisan config:clear
+            php artisan route:clear
+            php artisan view:clear
+            php artisan event:clear
+
+            # ─── 5. Reconstruction des caches ───────────────────────────────────────────
+            # C'est l'étape qui échouait après la migration. Elle passe maintenant avant :
+            # si la configuration, une route, une vue ou un écouteur ne compile pas, le
+            # déploiement s'arrête ici — base intacte.
             php artisan config:cache
             php artisan route:cache
             php artisan view:cache
             php artisan event:cache
+
+            # ─── 6. Contrôle de parité de production ────────────────────────────────────
+            # APRÈS `config:cache`, et c'est délibéré : la commande doit valider exactement la
+            # configuration que l'application lira, pas celle que .env laissait supposer.
+            # Refuse queue=sync, cache=file, broadcast=null… et les secrets Stripe manquants.
+            php artisan config:parity-check
+
+            # ─── 7. Lien de stockage public ─────────────────────────────────────────────
+            # Idempotent : quand public/storage existe déjà, la commande le signale et rend 0
+            # (vérifié dans StorageLinkCommand::handle, qui ne rend aucun code d'erreur).
+            # Sans cette étape, un serveur reprovisionné sert des 404 sur tous les médias publics.
+            php artisan storage:link
+
+            # ─── 8. Sauvegarde de la base ───────────────────────────────────────────────
+            # Dernier filet avant la seule étape irréversible. La destination est le disque
+            # `local` du serveur (config/backup.php) : aucun secret d'objet distant n'est requis,
+            # mais `mysqldump` doit être installé. Si la sauvegarde échoue, on NE MIGRE PAS.
+            #
+            # --disable-notifications N'EST PAS UN CONFORT. Les notifications de spatie/laravel-backup
+            # partent par `mail` et n'implémentent PAS ShouldQueue : l'envoi est donc SYNCHRONE, dans
+            # le processus du déploiement. Sans ce drapeau, une panne SMTP — ou simplement un serveur
+            # de mail lent — ferait échouer un déploiement dont la sauvegarde a pourtant réussi.
+            # L'échec reste visible : `set -e` et le code de sortie 1 arrêtent le script.
+            #
+            # LE CHIFFREMENT DU DUMP EST VÉRIFIÉ EN AMONT, à l'étape 5 (config:parity-check), qui
+            # exige BACKUP_ARCHIVE_PASSWORD non vide. Sans elle, cette commande déposerait sur le
+            # serveur applicatif une copie EN CLAIR de toute la base — données personnelles,
+            # empreintes de mots de passe, jetons — conservée plusieurs jours.
+            php artisan backup:run --only-db --disable-notifications
+
+            # ─── 9. Migration — première opération irréversible du script ───────────────
+            php artisan migrate --force
+
+            # ─── 10. Redémarrage des processus longs ────────────────────────────────────
+            # En dernier : les workers rechargent le code neuf ET la base déjà migrée.
             php artisan queue:restart
+            # Seule tolérance du script : Reverb peut légitimement ne pas tourner sur ce nœud.
             php artisan reverb:restart || true
             echo "Deploy completed at $(date)"
 

@@ -8,9 +8,15 @@ use Illuminate\Http\Request;
 class TrustProxies extends Middleware
 {
     /**
-     * The trusted proxies for this application.
-     * env('TRUSTED_PROXIES'): "*" (any proxy), "10.0.0.0/8,172.16.0.0/12" (CIDR list),
-     * or null (default: trust LB but fail without it). Use "*" derrière Cloudflare/ALB.
+     * Proxies de confiance de l'application.
+     *
+     * La valeur vient de config/trustedproxy.php, qui normalise TRUSTED_PROXIES :
+     * "*" (n'importe quel proxy), une liste CIDR, ou null. On passe par la config
+     * et non par env(), qui rend null une fois `config:cache` exécuté.
+     *
+     * Rien de configuré => la propriété RESTE à null. Ce n'est pas un tableau
+     * vide : seul null laisse le framework faire confiance automatiquement aux
+     * plateformes gérées (Laravel Cloud, Forge, Vapor).
      *
      * @var array<int, string>|string|null
      */
@@ -18,11 +24,12 @@ class TrustProxies extends Middleware
 
     public function __construct()
     {
-        $env = env('TRUSTED_PROXIES');
-        if ($env === '*') {
-            $this->proxies = '*';
-        } elseif ($env) {
-            $this->proxies = array_map('trim', explode(',', $env));
+        $configured = config('trustedproxy.proxies');
+
+        if (is_string($configured) && $configured !== '') {
+            $this->proxies = $configured;
+        } elseif (is_array($configured) && $configured !== []) {
+            $this->proxies = array_values(array_map('strval', $configured));
         }
     }
 

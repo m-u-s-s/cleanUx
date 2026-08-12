@@ -1,3 +1,16 @@
+# Équivalent systemd de deploy/supervisor/brio-worker.conf.example — n'installer QUE l'un des deux.
+#
+# Aucun argument positionnel après « queue:work » : cet argument est la CONNEXION, pas la file.
+# L'unité lançait la connexion « database » alors que .env.production.example déclare
+# QUEUE_CONNECTION=redis, donc le worker drainait la table `jobs` pendant que l'application
+# poussait dans Redis : aucun job traité, et aucune escalade du moteur de répartition.
+# Sans argument, artisan lit config('queue.default') ← QUEUE_CONNECTION et suit la production.
+#
+# Le détail de la liste --queue est commenté dans deploy/supervisor/brio-worker.conf.example.
+# Les scans antivirus (longs) sont traités par brio-queue-antivirus.service.example.
+#
+#   sudo systemctl enable --now brio-queue.service
+
 [Unit]
 Description=Brio Queue Worker
 After=network.target
@@ -7,7 +20,7 @@ Type=simple
 User=www-data
 Group=www-data
 WorkingDirectory=/var/www/brio
-ExecStart=/usr/bin/php8.5 artisan queue:work database --queue=stripe-webhooks,kyc-webhooks,sms-webhooks,insurance-webhooks,webhooks,default,antivirus --sleep=3 --tries=3 --timeout=120 --max-time=3600 --backoff=10,30,90
+ExecStart=/usr/bin/php8.5 artisan queue:work --queue=payments,stripe,stripe-webhooks,kyc-webhooks,sms-webhooks,insurance-webhooks,webhooks,default,notifications,analytics,reports --sleep=3 --tries=3 --timeout=120 --max-time=3600 --backoff=10,30,90
 Restart=always
 RestartSec=5
 

@@ -314,6 +314,8 @@ class StripeReconciliationService
 
     protected function stripeApiAvailable(): bool
     {
-        return ! empty(config('cashier.secret')) || ! empty(env('STRIPE_SECRET'));
+        // config/cashier.php lit STRIPE_SECRET : le second test sur env() visait la
+        // même variable et rendait null dès `config:cache`.
+        return ! empty(config('cashier.secret'));
     }
 }

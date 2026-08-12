@@ -32,8 +32,9 @@ class StripeConnectWebhookController extends Controller
 {
     public function handle(Request $request): JsonResponse
     {
-        $secret = config('services.stripe.connect_webhook_secret')
-            ?: env('STRIPE_CONNECT_WEBHOOK_SECRET');
+        // config/services.php lit déjà STRIPE_CONNECT_WEBHOOK_SECRET : le repli env()
+        // qui suivait n'apportait rien et rendait null sous `config:cache`.
+        $secret = config('services.stripe.connect_webhook_secret');
 
         if (empty($secret)) {
             Log::warning('StripeConnectWebhook: STRIPE_CONNECT_WEBHOOK_SECRET non configuré');

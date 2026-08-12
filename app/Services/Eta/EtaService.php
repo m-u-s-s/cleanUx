@@ -126,9 +126,13 @@ class EtaService
      */
     public function computeBetween(float $fromLat, float $fromLng, float $toLat, float $toLng): array
     {
-        $googleKey = config('services.google_maps.api_key') ?: env('GOOGLE_MAPS_API_KEY');
+        // config/services.php définit `google_maps.key`, pas `google_maps.api_key` :
+        // l'ancienne clé rendait TOUJOURS null et seul le repli env() fonctionnait —
+        // repli qui se serait tu dès `config:cache`, laissant l'ETA en Haversine
+        // permanent sans le moindre signal.
+        $googleKey = (string) config('services.google_maps.key');
 
-        if ($googleKey) {
+        if ($googleKey !== '') {
             $google = $this->callDistanceMatrix($fromLat, $fromLng, $toLat, $toLng, $googleKey);
             if ($google) {
                 return $google;

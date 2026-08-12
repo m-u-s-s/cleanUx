@@ -1,26 +1,55 @@
-; Brio queue workers (supervisor config example)
-; Couvre TOUS les channels utilisés par l'app : default + webhooks priorisés.
-; Ordre des queues = priorité (le worker draine left → right en round-robin).
+; Brio queue workers (exemple Supervisor)
+;
+; ── CONNEXION ────────────────────────────────────────────────────────────────────────────────
+; Il n'y a AUCUN argument positionnel après « queue:work », et c'est volontaire : cet argument
+; est la CONNEXION, pas la file. Ce fichier lançait « queue:work database » alors que
+; .env.production.example déclare QUEUE_CONNECTION=redis — les workers vidaient la table `jobs`
+; pendant que l'application poussait dans Redis. Zéro job traité, en silence : ni le TTL de 20 s
+; ni les vagues du moteur de répartition ne se déclenchaient (EscalateMissionAssignmentJob part
+; sur la file « default » avec un ->delay()).
+; Sans argument, artisan lit config('queue.default') ← QUEUE_CONNECTION : le worker suit donc la
+; production sans valeur codée en dur à resynchroniser à la main.
+; tests/Feature/Ops/DeploiementFilesEtOrdonnanceurTest.php relit ce fichier et échoue si une
+; connexion y réapparaît en dur alors qu'elle diffère du profil de production.
+;
+; ── FILES ────────────────────────────────────────────────────────────────────────────────────
+; --queue liste les files par ordre de priorité : le worker les draine de gauche à droite.
+;   * payments, stripe, notifications, analytics, reports
+;       groupes de priorité déclarés par config/queue.php (« Use these env values verbatim in
+;       Supervisor / Forge worker configs »). Aucun dispatch de app/ ne les vise aujourd'hui,
+;       mais les drainer ne coûte rien et évite le trou noir silencieux du jour où l'un d'eux
+;       servira — c'est exactement ce qui était arrivé à « notifications ».
+;   * stripe-webhooks, kyc-webhooks, sms-webhooks, insurance-webhooks, webhooks
+;       les onQueue() explicites de app/Http/Controllers/Webhooks/*, app/Services/WebhooksV2/*
+;       et app/Livewire/Admin/* (« webhooks » = config('webhooks_v2.queue')).
+;   * default
+;       tout ce qui est dispatché sans onQueue(), dont l'escalade du moteur de répartition.
+; « antivirus » est volontairement ABSENT de cette liste : un scan dure plusieurs minutes et se
+; ferait tuer par le --timeout=120 ci-dessous. Il a son propre programme, plus bas.
 ;
 ; Adapter le path PHP / chemin app / user selon ton hosting.
 
 [program:brio-worker]
 process_name=%(program_name)s_%(process_num)02d
-command=/usr/bin/php8.5 /var/www/brio/artisan queue:work database --queue=stripe-webhooks,kyc-webhooks,sms-webhooks,insurance-webhooks,webhooks,default,antivirus --sleep=3 --tries=3 --timeout=120 --max-time=3600 --backoff=10,30,90
+command=/usr/bin/php8.5 /var/www/brio/artisan queue:work --queue=payments,stripe,stripe-webhooks,kyc-webhooks,sms-webhooks,insurance-webhooks,webhooks,default,notifications,analytics,reports --sleep=3 --tries=3 --timeout=120 --max-time=3600 --backoff=10,30,90
 autostart=true
 autorestart=true
+stopasgroup=true
+killasgroup=true
 numprocs=4
 user=www-data
 redirect_stderr=true
 stdout_logfile=/var/log/brio/worker.log
 stopwaitsecs=3600
 
-; Worker dédié antivirus (scan attachments) — séparé car long-running.
+; Worker dédié antivirus (scan des pièces jointes) — séparé car long-running : timeout 600 s.
 [program:brio-worker-av]
 process_name=%(program_name)s_%(process_num)02d
-command=/usr/bin/php8.5 /var/www/brio/artisan queue:work database --queue=antivirus --sleep=5 --tries=2 --timeout=600 --max-time=3600
+command=/usr/bin/php8.5 /var/www/brio/artisan queue:work --queue=antivirus --sleep=5 --tries=2 --timeout=600 --max-time=3600
 autostart=true
 autorestart=true
+stopasgroup=true
+killasgroup=true
 numprocs=1
 user=www-data
 redirect_stderr=true

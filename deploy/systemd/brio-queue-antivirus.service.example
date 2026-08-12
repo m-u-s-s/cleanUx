@@ -1,0 +1,23 @@
+# Worker dédié aux scans antivirus des pièces jointes (app/Services/Messaging/AttachmentUploadService).
+#
+# Séparé du worker généraliste parce qu'un scan dure plusieurs minutes : sur brio-queue.service il
+# serait tué par --timeout=120 puis rejoué en boucle. Même règle de connexion que partout ici :
+# aucun argument positionnel, artisan lit config('queue.default') ← QUEUE_CONNECTION.
+#
+#   sudo systemctl enable --now brio-queue-antivirus.service
+
+[Unit]
+Description=Brio Queue Worker (antivirus)
+After=network.target
+
+[Service]
+Type=simple
+User=www-data
+Group=www-data
+WorkingDirectory=/var/www/brio
+ExecStart=/usr/bin/php8.5 artisan queue:work --queue=antivirus --sleep=5 --tries=2 --timeout=600 --max-time=3600
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

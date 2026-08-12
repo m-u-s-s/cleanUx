@@ -1,0 +1,21 @@
+# Déclenche la sonde brio-scheduler-heartbeat.service toutes les 5 minutes, indépendamment de
+# l'ordonnanceur : c'est tout l'intérêt: si brio-scheduler.timer est arrêté, celui-ci continue et
+# constate que le battement de cœur ne se rafraîchit plus.
+#
+# 5 min de cadence contre 900 s de tolérance (OPS_HEARTBEAT_MAX_AGE_SECONDS) : l'alerte tombe au
+# plus tard ~15 min après l'arrêt de l'ordonnanceur, sans faux positif au moindre run décalé.
+#
+#   sudo systemctl enable --now brio-scheduler-heartbeat.timer
+
+[Unit]
+Description=Verifie toutes les 5 minutes que l'ordonnanceur Brio a battu
+
+[Timer]
+OnBootSec=10min
+OnUnitActiveSec=5min
+AccuracySec=30s
+Persistent=true
+Unit=brio-scheduler-heartbeat.service
+
+[Install]
+WantedBy=timers.target

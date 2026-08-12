@@ -27,7 +27,9 @@ class PhotoQuoteEstimator
      */
     public function estimateFromPhoto(string $base64Image, Trade $trade, ?string $userNote = null): ?array
     {
-        $apiKey = (string) config('services.anthropic.key', env('ANTHROPIC_API_KEY', ''));
+        // `services.anthropic.key` est défini dans config/services.php : le repli env()
+        // était mort, et se serait vidé sous `config:cache`.
+        $apiKey = (string) config('services.anthropic.key');
         if ($apiKey === '') {
             Log::info('[ai_quote] Anthropic API key missing, estimation skipped');
 

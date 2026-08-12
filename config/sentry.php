@@ -33,30 +33,13 @@ return [
 
     /**
      * Filtre `before_send` : ignore les soft-fail breadcrumbs attendus.
+     *
+     * NE JAMAIS remettre une closure ici : var_export() ne sait pas l'écrire, donc
+     * `php artisan config:cache` échoue et plus aucun déploiement n'aboutit. La logique
+     * vit dans App\Sentry\BeforeSend ; ce tableau de deux chaînes est sérialisable ET
+     * appelable (Sentry valide cette option avec le type `callable`).
+     *
+     * @see \App\Sentry\BeforeSend pour le détail de la signature attendue par le SDK.
      */
-    'before_send' => function ($event) {
-        if (! is_object($event) || ! method_exists($event, 'getMessage')) {
-            return $event;
-        }
-        $msg = (string) $event->getMessage();
-        $ignoredPrefixes = [
-            '[business_webhook]',
-            '[chat_auto]',
-            '[critical_audit]',
-            '[accounting_auto_post]',
-            '[fleet_v2]',
-            '[geo_v2]',
-            '[trip_tracking]',
-            '[loyalty_redemption]',
-            '[tips]',
-            '[presence_auto]',
-        ];
-        foreach ($ignoredPrefixes as $prefix) {
-            if (str_starts_with($msg, $prefix)) {
-                return null;
-            }
-        }
-
-        return $event;
-    },
+    'before_send' => [\App\Sentry\BeforeSend::class, 'handle'],
 ];

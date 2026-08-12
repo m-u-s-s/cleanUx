@@ -1,3 +1,22 @@
+# Ordonnanceur Laravel. Déclenché chaque minute par brio-scheduler.timer.example — c'est ce timer
+# (ou une ligne de crontab équivalente) qui doit être installé, jamais ce service seul.
+#
+# Sans lui, les 16 tâches de app/Console/Kernel.php ne tournent jamais. Ce ne sont pas des détails :
+#   app:generate-subscriptions, subscriptions:tick   facturation des abonnements
+#   finance:sync-documents --reminders               relances de factures impayées
+#   payouts:process, stripe:reconcile                virements prestataires et réconciliation
+#   currencies:refresh                               taux de change (tous les prix convertis)
+#   gdpr:enforce-retention, gdpr:execute-erasures    obligations légales de purge
+#   presence:cleanup, presence:scan-stale            « en ligne » dont dépend CandidateFinder
+#   surge:recompute                                  multiplicateurs de tarification
+#   masked-calls:scan-expired                        numéros proxy loués, sinon jamais rendus
+#   app:ops-heartbeat                                battement de cœur (voir la sonde ci-dessous)
+#
+# Type=oneshot : le processus rend la main en quelques secondes, le timer le relance à la minute
+# suivante. Si un run dépasse la minute, systemd ne le double pas (une seule instance par unité).
+#
+#   sudo systemctl enable --now brio-scheduler.timer
+
 [Unit]
 Description=Brio Scheduler Runner
 After=network.target
@@ -8,3 +27,4 @@ User=www-data
 Group=www-data
 WorkingDirectory=/var/www/brio
 ExecStart=/usr/bin/php8.5 artisan schedule:run
+TimeoutStartSec=300

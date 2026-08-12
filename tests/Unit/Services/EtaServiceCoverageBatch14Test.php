@@ -21,8 +21,11 @@ class EtaServiceCoverageBatch14Test extends TestCase
     {
         parent::setUp();
         $this->service = app(EtaService::class);
-        // Ensure no Google key by default → Haversine fallback path.
-        config(['services.google_maps.api_key' => '']);
+        // Pas de clé Google par défaut → chemin de repli Haversine.
+        // La clé lue par EtaService est `services.google_maps.key` (celle que
+        // config/services.php définit réellement) : `services.google_maps.api_key`
+        // n'a jamais existé, et ce test la posait en pure perte.
+        config(['services.google_maps.key' => '']);
     }
 
     // ────────────────────────────────────────────────
@@ -54,7 +57,7 @@ class EtaServiceCoverageBatch14Test extends TestCase
 
     public function test_compute_between_uses_google_when_key_present(): void
     {
-        config(['services.google_maps.api_key' => 'test-key']);
+        config(['services.google_maps.key' => 'test-key']);
 
         Http::fake([
             'maps.googleapis.com/*' => Http::response([
@@ -80,7 +83,7 @@ class EtaServiceCoverageBatch14Test extends TestCase
 
     public function test_compute_between_google_falls_back_on_http_error(): void
     {
-        config(['services.google_maps.api_key' => 'test-key']);
+        config(['services.google_maps.key' => 'test-key']);
 
         Http::fake([
             'maps.googleapis.com/*' => Http::response('boom', 500),
@@ -93,7 +96,7 @@ class EtaServiceCoverageBatch14Test extends TestCase
 
     public function test_compute_between_google_falls_back_on_non_ok_status(): void
     {
-        config(['services.google_maps.api_key' => 'test-key']);
+        config(['services.google_maps.key' => 'test-key']);
 
         Http::fake([
             'maps.googleapis.com/*' => Http::response([
@@ -108,7 +111,7 @@ class EtaServiceCoverageBatch14Test extends TestCase
 
     public function test_compute_between_google_falls_back_on_element_not_ok(): void
     {
-        config(['services.google_maps.api_key' => 'test-key']);
+        config(['services.google_maps.key' => 'test-key']);
 
         Http::fake([
             'maps.googleapis.com/*' => Http::response([
@@ -128,7 +131,7 @@ class EtaServiceCoverageBatch14Test extends TestCase
 
     public function test_compute_between_google_falls_back_when_values_missing(): void
     {
-        config(['services.google_maps.api_key' => 'test-key']);
+        config(['services.google_maps.key' => 'test-key']);
 
         Http::fake([
             'maps.googleapis.com/*' => Http::response([

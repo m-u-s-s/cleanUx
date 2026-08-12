@@ -19,8 +19,9 @@ use Symfony\Component\HttpFoundation\Response;
  *   - body field `cf-turnstile-response` (form POST classic)
  *   - OU header `X-Turnstile-Token`
  *
- * Soft-bypass : si `TURNSTILE_SECRET_KEY` env absente, le middleware passe
- * (mode dev sans clé). En prod, doit toujours être configurée.
+ * Soft-bypass : si `services.turnstile.secret_key` (TURNSTILE_SECRET_KEY) est
+ * absente, le middleware passe (mode dev sans clé). En prod, doit toujours être
+ * configurée.
  *
  * Setup :
  *   1. Crée un site Turnstile sur https://dash.cloudflare.com/?to=/:account/turnstile
@@ -32,7 +33,10 @@ class VerifyTurnstileCaptcha
 {
     public function handle(Request $request, Closure $next): Response
     {
-        $secretKey = (string) config('services.turnstile.secret_key', env('TURNSTILE_SECRET_KEY', ''));
+        // La clé `services.turnstile.secret_key` existe dans config/services.php :
+        // le repli env() qui traînait ici n'était jamais atteint, et aurait de toute
+        // façon rendu null sous `config:cache`.
+        $secretKey = (string) config('services.turnstile.secret_key');
 
         // Soft-bypass en dev/test si pas configuré
         if ($secretKey === '') {
