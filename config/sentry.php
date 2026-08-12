@@ -1,5 +1,7 @@
 <?php
 
+use App\Sentry\BeforeSend;
+
 /**
  * Sentry config — actif quand sentry/sentry-laravel est installé.
  * Si le package n'est pas présent, ce fichier est ignoré silencieusement.
@@ -39,7 +41,7 @@ return [
      * vit dans App\Sentry\BeforeSend ; ce tableau de deux chaînes est sérialisable ET
      * appelable (Sentry valide cette option avec le type `callable`).
      *
-     * @see \App\Sentry\BeforeSend pour le détail de la signature attendue par le SDK.
+     * @see BeforeSend pour le détail de la signature attendue par le SDK.
      */
-    'before_send' => [\App\Sentry\BeforeSend::class, 'handle'],
+    'before_send' => [BeforeSend::class, 'handle'],
 ];

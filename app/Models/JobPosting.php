@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
 
 /**
@@ -18,7 +19,7 @@ use Illuminate\Support\Str;
  * @property string $reference
  * @property string $title
  * @property string $status
- * @property \Illuminate\Support\Carbon|null $published_at
+ * @property Carbon|null $published_at
  */
 class JobPosting extends Model
 {

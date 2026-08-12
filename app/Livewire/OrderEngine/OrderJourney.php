@@ -2,16 +2,16 @@
 
 namespace App\Livewire\OrderEngine;
 
+use App\Models\ClientPlace;
 use App\Models\OrderDraft;
 use App\Models\OrderDraftItem;
 use App\Models\OrderDraftMedia;
-use App\Models\ClientPlace;
 use App\Models\OrganizationSite;
-use App\Services\Client\ClientPlaceService;
-use App\Services\Ai\OrderIntentInterpreter;
 use App\Models\Question;
 use App\Models\Sector;
 use App\Models\Trade;
+use App\Services\Ai\OrderIntentInterpreter;
+use App\Services\Client\ClientPlaceService;
 use App\Services\GeolocationV2\AddressSuggestion;
 use App\Services\GeolocationV2\GeocodingService;
 use App\Services\OrderEngine\AvailabilitySnapshot;
@@ -360,9 +360,9 @@ class OrderJourney extends Component
         $this->appliquerLeLieu($lieu);
     }
 
-    /** @return \Illuminate\Support\Collection<int, ClientPlace> */
+    /** @return Collection<int, ClientPlace> */
     #[Computed]
-    public function savedPlaces(): \Illuminate\Support\Collection
+    public function savedPlaces(): Collection
     {
         if (! Auth::check()) {
             return collect();

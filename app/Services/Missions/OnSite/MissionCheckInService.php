@@ -10,6 +10,7 @@ use App\Models\User;
 use App\Notifications\MissionCheckInPingNotification;
 use App\Services\Missions\MissionHistoryService;
 use DomainException;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Log;
 
 /**
@@ -104,7 +105,7 @@ class MissionCheckInService
     public function preuveDArriveeSansClient(
         Mission $mission,
         User $prestataire,
-        \Illuminate\Http\UploadedFile $photo,
+        UploadedFile $photo,
         ?float $lat = null,
         ?float $lng = null,
     ): MissionMedia {

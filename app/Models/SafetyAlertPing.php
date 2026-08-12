@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Carbon;
 
 /**
  * UNE POSITION RELEVÉE PENDANT UNE ALERTE (E33).
@@ -20,7 +21,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property int $safety_alert_id
  * @property float $lat
  * @property float $lng
- * @property \Illuminate\Support\Carbon $pinged_at
+ * @property Carbon $pinged_at
  */
 class SafetyAlertPing extends Model
 {

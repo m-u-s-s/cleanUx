@@ -7,6 +7,7 @@ use App\Models\ChatParticipant;
 use App\Models\ComplaintCase;
 use App\Models\CustomerClaim;
 use App\Models\User;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Validation\ValidationException;
 
 /**
@@ -138,7 +139,7 @@ class ChatRelationshipGuard
     }
 
     /**
-     * @param  \Illuminate\Contracts\Database\Query\Builder|\Illuminate\Database\Eloquent\Builder<Booking>  $q
+     * @param  \Illuminate\Contracts\Database\Query\Builder|Builder<Booking>  $q
      */
     protected function filtreRoles($q, int $userId): void
     {

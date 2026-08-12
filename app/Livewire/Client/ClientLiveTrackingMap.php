@@ -3,10 +3,10 @@
 namespace App\Livewire\Client;
 
 use App\Models\Booking;
+use App\Services\Client\SharedTrackingService;
 use App\Services\TripTracking\TripTrackingService;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Auth;
-use App\Services\Client\SharedTrackingService;
 use Livewire\Attributes\Locked;
 use Livewire\Attributes\Url;
 use Livewire\Component;

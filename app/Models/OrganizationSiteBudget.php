@@ -21,10 +21,10 @@ use Illuminate\Support\Carbon;
  * @property int $organization_account_id
  * @property int|null $organization_site_id
  * @property string $period
- * @property \Illuminate\Support\Carbon $period_start
+ * @property Carbon $period_start
  * @property int $limit_cents
  * @property int $alert_threshold_percent
- * @property \Illuminate\Support\Carbon|null $alerted_at
+ * @property Carbon|null $alerted_at
  * @property int|null $alerted_at_percent
  */
 class OrganizationSiteBudget extends Model

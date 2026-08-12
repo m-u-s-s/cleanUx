@@ -5,6 +5,7 @@ namespace App\Services\Provider;
 use App\Models\ProviderWalletTransaction;
 use App\Models\User;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Collection;
 
 /**
  * L'ASSISTANT FISCAL D'UN INDÉPENDANT (E18).
@@ -119,10 +120,10 @@ class TaxSummaryService
     }
 
     /**
-     * @param  \Illuminate\Support\Collection<int, ProviderWalletTransaction>  $lignes
+     * @param  Collection<int, ProviderWalletTransaction>  $lignes
      * @return list<array<string, mixed>>
      */
-    protected function parMois(\Illuminate\Support\Collection $lignes, int $annee): array
+    protected function parMois(Collection $lignes, int $annee): array
     {
         $mois = [];
 
@@ -152,10 +153,10 @@ class TaxSummaryService
     }
 
     /**
-     * @param  \Illuminate\Support\Collection<int, ProviderWalletTransaction>  $lignes
+     * @param  Collection<int, ProviderWalletTransaction>  $lignes
      * @param  list<string>  $types
      */
-    protected function sommeDe(\Illuminate\Support\Collection $lignes, array $types): int
+    protected function sommeDe(Collection $lignes, array $types): int
     {
         return (int) round($lignes
             ->filter(fn (ProviderWalletTransaction $ligne) => in_array($ligne->type, $types, true))

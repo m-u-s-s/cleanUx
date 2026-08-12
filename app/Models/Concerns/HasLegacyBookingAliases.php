@@ -2,9 +2,6 @@
 
 namespace App\Models\Concerns;
 
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Schema;
-
 /**
  * HasLegacyBookingAliases
  *

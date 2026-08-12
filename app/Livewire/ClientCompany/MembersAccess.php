@@ -376,10 +376,10 @@ class MembersAccess extends Component
     /**
      * Les locaux de la société, pour cocher.
      *
-     * @return \Illuminate\Database\Eloquent\Collection<int, OrganizationSite>
+     * @return Collection<int, OrganizationSite>
      */
     #[Computed]
-    public function sitesDeLaSociete(): \Illuminate\Database\Eloquent\Collection
+    public function sitesDeLaSociete(): Collection
     {
         return OrganizationSite::query()
             ->where('organization_account_id', Auth::user()->organization_account_id)

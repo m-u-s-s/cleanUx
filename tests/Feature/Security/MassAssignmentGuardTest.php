@@ -98,8 +98,8 @@ class MassAssignmentGuardTest extends TestCase
         $this->assertSame(
             [],
             $coupables,
-            "Une requête entière alimente une assignation en masse. Sur `Booking`, cela ouvre `status`, ".
-            "`client_id`, `employe_id` et `payment_status` au premier champ ajouté au formulaire. ".
+            'Une requête entière alimente une assignation en masse. Sur `Booking`, cela ouvre `status`, '.
+            '`client_id`, `employe_id` et `payment_status` au premier champ ajouté au formulaire. '.
             'Passez un tableau explicite, ou les seules clés validées.',
         );
     }

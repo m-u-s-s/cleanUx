@@ -2,13 +2,13 @@
 
 namespace App\Models;
 
-use App\Support\Notifications\NotificationChannelResolver;
 use App\Models\Concerns\HasAdminCapabilities;
 use App\Models\Concerns\HasBillingFeatures;
 use App\Models\Concerns\HasOrganizationContext;
 use App\Models\Concerns\HasProviderFeatures;
 use App\Models\Concerns\HasUserTypeChecks;
 use App\Services\I18n\LocaleResolver;
+use App\Support\Notifications\NotificationChannelResolver;
 use Database\Factories\UserFactory;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Contracts\Translation\HasLocalePreference;

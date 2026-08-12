@@ -18,10 +18,10 @@ use App\Services\Provider\OfferStatsService;
 use App\Services\Provider\QuestService;
 use App\Services\Provider\TaxSummaryService;
 use App\Services\Safety\SafetyAlertService;
-use DomainException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Notification;
+use Illuminate\Validation\ValidationException;
 use Laravel\Sanctum\Sanctum;
 use Livewire\Livewire;
 use PHPUnit\Framework\Attributes\Test;
@@ -223,7 +223,7 @@ class SecuriteEtProgressionTest extends TestCase
          */
         $this->assertFalse($devis['eligible']);
 
-        $this->expectException(\Illuminate\Validation\ValidationException::class);
+        $this->expectException(ValidationException::class);
 
         app(ExpressPayoutService::class)->demander($this->prestataire(), 1000);
     }

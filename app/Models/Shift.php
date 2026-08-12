@@ -6,6 +6,7 @@ use Database\Factories\ShiftFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Carbon;
 
 /**
  * UN CRÉNEAU DE TRAVAIL PLANIFIÉ PAR L'EMPLOYEUR (E19).
@@ -19,8 +20,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property int|null $provider_agency_id
  * @property int|null $field_team_id
  * @property int $user_id
- * @property \Illuminate\Support\Carbon $starts_at
- * @property \Illuminate\Support\Carbon $ends_at
+ * @property Carbon $starts_at
+ * @property Carbon $ends_at
  * @property string $status
  */
 class Shift extends Model
@@ -68,7 +69,7 @@ class Shift extends Model
      * fin d'un shift n'est pas couverte, sinon deux shifts consécutifs se chevaucheraient d'une
      * seconde et rendraient la personne « doublement disponible ».
      */
-    public function couvre(\Illuminate\Support\Carbon $moment): bool
+    public function couvre(Carbon $moment): bool
     {
         return $this->status === self::STATUS_PUBLISHED
             && $moment->greaterThanOrEqualTo($this->starts_at)

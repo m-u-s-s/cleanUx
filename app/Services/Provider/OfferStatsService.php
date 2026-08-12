@@ -5,6 +5,7 @@ namespace App\Services\Provider;
 use App\Models\MissionAssignment;
 use App\Models\User;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Collection;
 
 /**
  * LES STATISTIQUES D'OFFRES D'UN PRESTATAIRE (E15).
@@ -74,9 +75,9 @@ class OfferStatsService
     }
 
     /**
-     * @param  \Illuminate\Support\Collection<int, MissionAssignment>  $lignes
+     * @param  Collection<int, MissionAssignment>  $lignes
      */
-    protected function medianeDeReponse(\Illuminate\Support\Collection $lignes): ?int
+    protected function medianeDeReponse(Collection $lignes): ?int
     {
         $temps = $lignes
             ->pluck('response_seconds')
@@ -102,10 +103,10 @@ class OfferStatsService
      * C'EST CE QUI SE CORRIGE. « Trop loin » se règle en resserrant sa zone, « déjà pris » en
      * ajustant ses disponibilités : un taux de refus sans ses motifs ne dit pas quoi faire.
      *
-     * @param  \Illuminate\Support\Collection<int, MissionAssignment>  $lignes
+     * @param  Collection<int, MissionAssignment>  $lignes
      * @return list<array<string, mixed>>
      */
-    protected function motifsDeRefus(\Illuminate\Support\Collection $lignes): array
+    protected function motifsDeRefus(Collection $lignes): array
     {
         return $lignes
             ->whereNotNull('declined_at')

@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Carbon;
 
 /**
  * QUELQU'UN A TERMINÉ UNE FORMATION (E16).
@@ -15,8 +16,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property int $id
  * @property int $academy_course_id
  * @property int $user_id
- * @property \Illuminate\Support\Carbon $completed_at
- * @property \Illuminate\Support\Carbon|null $badge_granted_at
+ * @property Carbon $completed_at
+ * @property Carbon|null $badge_granted_at
  */
 class AcademyCompletion extends Model
 {

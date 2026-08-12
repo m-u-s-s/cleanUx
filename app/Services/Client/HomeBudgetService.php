@@ -5,6 +5,7 @@ namespace App\Services\Client;
 use App\Models\Booking;
 use App\Models\User;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Collection;
 
 /**
  * LE BUDGET MAISON D'UN CLIENT (E4).
@@ -90,10 +91,10 @@ class HomeBudgetService
      * Rendu MÊME QUAND UNE SÉRIE EST VIDE : « vous n'avez aucun abonnement » est une réponse utile,
      * un champ absent ne l'est pas — l'écran afficherait un trou que le client lirait comme un bug.
      *
-     * @param  \Illuminate\Support\Collection<int, Booking>  $reservations
+     * @param  Collection<int, Booking>  $reservations
      * @return array<string, mixed>
      */
-    protected function comparatif(\Illuminate\Support\Collection $reservations): array
+    protected function comparatif(Collection $reservations): array
     {
         /*
          * DEUX SIGNAUX POUR LA MÊME NOTION, et il faut les deux. `is_recurrent` marque la
@@ -120,14 +121,14 @@ class HomeBudgetService
         ];
     }
 
-    /** @param  \Illuminate\Support\Collection<int, Booking>  $lignes */
-    protected function totalCents(\Illuminate\Support\Collection $lignes): int
+    /** @param  Collection<int, Booking>  $lignes */
+    protected function totalCents(Collection $lignes): int
     {
         return (int) $lignes->sum(fn (Booking $booking) => (int) round(((float) ($booking->devis_estime ?? 0)) * 100));
     }
 
-    /** @param  \Illuminate\Support\Collection<int, Booking>  $lignes */
-    protected function moyenneCents(\Illuminate\Support\Collection $lignes): int
+    /** @param  Collection<int, Booking>  $lignes */
+    protected function moyenneCents(Collection $lignes): int
     {
         return $lignes->isEmpty() ? 0 : (int) round($this->totalCents($lignes) / $lignes->count());
     }

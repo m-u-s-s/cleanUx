@@ -13,6 +13,7 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Locked;
 use Livewire\Component;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 /**
  * LES HEURES (E20) ET CE QU'ELLES COÛTENT (E22).
@@ -90,7 +91,7 @@ class TimesheetCenter extends Component
     }
 
     /** L'export paie, en CSV — destiné à être relu par un humain avant d'être versé. */
-    public function exporter(): \Symfony\Component\HttpFoundation\StreamedResponse
+    public function exporter(): StreamedResponse
     {
         $acteur = Auth::user();
 
@@ -107,7 +108,7 @@ class TimesheetCenter extends Component
 
         $nom = sprintf('heures-%s-%s.csv', $this->du, $this->au);
 
-        return response()->streamDownload(fn () => print($csv), $nom, [
+        return response()->streamDownload(fn () => print ($csv), $nom, [
             'Content-Type' => 'text/csv; charset=UTF-8',
         ]);
     }

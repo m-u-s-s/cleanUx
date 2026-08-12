@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Carbon;
 
 /**
  * UNE ALERTE DE SÉCURITÉ DÉCLENCHÉE SUR LE TERRAIN (E33).
@@ -25,8 +26,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property string $status
  * @property float|null $lat
  * @property float|null $lng
- * @property \Illuminate\Support\Carbon|null $acknowledged_at
- * @property \Illuminate\Support\Carbon|null $resolved_at
+ * @property Carbon|null $acknowledged_at
+ * @property Carbon|null $resolved_at
  */
 class SafetyAlert extends Model
 {

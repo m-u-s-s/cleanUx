@@ -6,6 +6,7 @@ use App\Models\FinanceInvoice;
 use App\Models\User;
 use App\Support\Finance\ClientFinanceDocumentScope;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Collection;
 
 /**
  * L'EXPORT COMPTABLE EN LIBRE-SERVICE D'UNE ENTREPRISE CLIENTE (E11).
@@ -113,9 +114,9 @@ class ClientAccountingExportService
     /**
      * Les factures de CETTE société, et d'elles seules.
      *
-     * @return \Illuminate\Support\Collection<int, FinanceInvoice>
+     * @return Collection<int, FinanceInvoice>
      */
-    protected function facturesDe(User $acteur, Carbon $debut, Carbon $fin): \Illuminate\Support\Collection
+    protected function facturesDe(User $acteur, Carbon $debut, Carbon $fin): Collection
     {
         return ClientFinanceDocumentScope::apply(FinanceInvoice::query(), $acteur)
             ->whereBetween('issued_at', [$debut->startOfDay(), $fin->endOfDay()])

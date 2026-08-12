@@ -9,6 +9,7 @@ use App\Models\User;
 use App\Services\Missions\MissionAssignmentStatusService;
 use DomainException;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Collection;
 
 /**
  * LE GUIDE PAS-À-PAS DU MÉTIER (F6).
@@ -160,9 +161,9 @@ class MissionGuidedChecklistService
      * `sort_order` d'abord, identifiant ensuite : une checklist partiellement ordonnée garde au
      * moins un ordre stable d'un affichage à l'autre.
      *
-     * @return \Illuminate\Support\Collection<int, MissionChecklistItem>
+     * @return Collection<int, MissionChecklistItem>
      */
-    protected function items(Mission $mission): \Illuminate\Support\Collection
+    protected function items(Mission $mission): Collection
     {
         return MissionChecklistItem::query()
             ->whereIn(

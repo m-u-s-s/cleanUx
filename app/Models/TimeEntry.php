@@ -6,6 +6,7 @@ use Database\Factories\TimeEntryFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Carbon;
 
 /**
  * CE QUI S'EST RÉELLEMENT PASSÉ (E20) — par opposition au shift, qui dit ce qui était prévu.
@@ -18,8 +19,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property int $user_id
  * @property int|null $mission_id
  * @property int|null $shift_id
- * @property \Illuminate\Support\Carbon $started_at
- * @property \Illuminate\Support\Carbon|null $ended_at
+ * @property Carbon $started_at
+ * @property Carbon|null $ended_at
  * @property int $worked_minutes
  * @property int $paused_minutes
  * @property string $source

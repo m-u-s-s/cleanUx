@@ -6,6 +6,7 @@ use App\Models\AsapDispatchRequest;
 use App\Models\Booking;
 use App\Models\ServiceZone;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Collection;
 
 /**
  * OÙ ME PLACER, ET À QUELLE HEURE (E12).
@@ -78,9 +79,9 @@ class DemandHeatmapService
     /**
      * Les recherches immédiates — où la demande arrive MAINTENANT.
      *
-     * @return \Illuminate\Support\Collection<int, array{zone_id: int<0, max>, slot: int, kind: 'immediate'}>
+     * @return Collection<int, array{zone_id: int<0, max>, slot: int, kind: 'immediate'}>
      */
-    protected function recherchesImmediates(Carbon $depuis, Carbon $jusqua, ?int $tradeId): \Illuminate\Support\Collection
+    protected function recherchesImmediates(Carbon $depuis, Carbon $jusqua, ?int $tradeId): Collection
     {
         return AsapDispatchRequest::query()
             ->whereBetween('created_at', [$depuis, $jusqua])
@@ -103,9 +104,9 @@ class DemandHeatmapService
      * L'HEURE RETENUE EST CELLE DE L'INTERVENTION, pas celle de la commande : ce qu'on cherche est
      * quand il faut être là, pas quand le client a réservé depuis son canapé.
      *
-     * @return \Illuminate\Support\Collection<int, array{zone_id: int<0, max>, slot: int, kind: 'scheduled'}>
+     * @return Collection<int, array{zone_id: int<0, max>, slot: int, kind: 'scheduled'}>
      */
-    protected function reservationsPlanifiees(Carbon $depuis, Carbon $jusqua, ?int $tradeId): \Illuminate\Support\Collection
+    protected function reservationsPlanifiees(Carbon $depuis, Carbon $jusqua, ?int $tradeId): Collection
     {
         return Booking::query()
             ->whereNotNull('scheduled_at')

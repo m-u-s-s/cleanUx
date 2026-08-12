@@ -6,7 +6,9 @@ use App\Models\Mission;
 use App\Models\SafetyAlert;
 use App\Models\SafetyAlertPing;
 use App\Models\User;
+use App\Notifications\SafetyAlertRaised;
 use App\Services\Notifications\SmsService;
+use App\Services\Organizations\OrganizationNotifier;
 use DomainException;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
@@ -147,7 +149,7 @@ class SafetyAlertService
         ])->save();
 
         try {
-            app(\App\Services\Organizations\OrganizationNotifier::class)->notifierUtilisateur(
+            app(OrganizationNotifier::class)->notifierUtilisateur(
                 $alerte->user_id,
                 'Votre alerte a été vue',
                 'Un membre de l’équipe sécurité suit votre situation.',
@@ -250,7 +252,7 @@ class SafetyAlertService
             return;
         }
 
-        Notification::send($admins, new \App\Notifications\SafetyAlertRaised($alerte, $utilisateur));
+        Notification::send($admins, new SafetyAlertRaised($alerte, $utilisateur));
     }
 
     /**

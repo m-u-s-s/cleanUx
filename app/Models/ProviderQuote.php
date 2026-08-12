@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
 
 /**
@@ -23,8 +24,8 @@ use Illuminate\Support\Str;
  * @property string $title
  * @property string $status
  * @property int $total_cents
- * @property \Illuminate\Support\Carbon|null $valid_until
- * @property \Illuminate\Support\Carbon|null $sent_at
+ * @property Carbon|null $valid_until
+ * @property Carbon|null $sent_at
  */
 class ProviderQuote extends Model
 {

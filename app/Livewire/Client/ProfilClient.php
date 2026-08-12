@@ -195,22 +195,22 @@ class ProfilClient extends Component
         $site = OrganizationSite::findOrNew($this->editingSiteId ?: null);
 
         $site->fill([
-                'organization_account_id' => $this->organizationAccount->id,
-                'client_user_id' => $this->client->id,
-                'service_zone_id' => $serviceZone?->id,
-                'postal_code_id' => $postalReference?->id,
-                'name' => $validated['site_name'],
-                'site_code' => $validated['site_code'] ?: null,
-                'contact_name' => $validated['contact_name'] ?: null,
-                'email' => $validated['site_email'] ?: null,
-                'phone' => $validated['site_phone'] ?: null,
-                'address_line_1' => $validated['site_address_line_1'],
-                'address_line_2' => $validated['site_address_line_2'] ?: null,
-                'city' => $validated['site_city'],
-                'postal_code' => $validated['site_postal_code'],
-                'access_instructions' => $validated['access_instructions'] ?: null,
-                'is_primary' => $validated['is_primary'],
-                'is_active' => $validated['is_active'],
+            'organization_account_id' => $this->organizationAccount->id,
+            'client_user_id' => $this->client->id,
+            'service_zone_id' => $serviceZone?->id,
+            'postal_code_id' => $postalReference?->id,
+            'name' => $validated['site_name'],
+            'site_code' => $validated['site_code'] ?: null,
+            'contact_name' => $validated['contact_name'] ?: null,
+            'email' => $validated['site_email'] ?: null,
+            'phone' => $validated['site_phone'] ?: null,
+            'address_line_1' => $validated['site_address_line_1'],
+            'address_line_2' => $validated['site_address_line_2'] ?: null,
+            'city' => $validated['site_city'],
+            'postal_code' => $validated['site_postal_code'],
+            'access_instructions' => $validated['access_instructions'] ?: null,
+            'is_primary' => $validated['is_primary'],
+            'is_active' => $validated['is_active'],
         ])->save();
 
         ActivityLogger::log($this->editingSiteId ? 'organization_site_updated' : 'organization_site_created', $site, [

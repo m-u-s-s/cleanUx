@@ -6,6 +6,7 @@ use Database\Factories\MissionExtraFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Carbon;
 
 /**
  * UN SUPPLÉMENT PROPOSÉ SUR PLACE, et la réponse du client.
@@ -24,9 +25,9 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property string $currency
  * @property int|null $price_quote_id
  * @property string $status
- * @property \Illuminate\Support\Carbon|null $approved_at
- * @property \Illuminate\Support\Carbon|null $declined_at
- * @property \Illuminate\Support\Carbon|null $charged_at
+ * @property Carbon|null $approved_at
+ * @property Carbon|null $declined_at
+ * @property Carbon|null $charged_at
  * @property string|null $stripe_payment_intent_id
  * @property array<string, mixed>|null $metadata
  */

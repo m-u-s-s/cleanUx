@@ -2,7 +2,6 @@
 
 namespace App\Livewire\ProviderCompany;
 
-use App\Services\Messaging\AttachmentUploadService;
 use App\Events\MessageSent;
 use App\Models\Channel;
 use App\Models\Message;
@@ -10,6 +9,7 @@ use App\Models\MessageReaction;
 use App\Models\OrganizationAccount;
 use App\Models\OrganizationMember;
 use App\Models\User;
+use App\Services\Messaging\AttachmentUploadService;
 use App\Services\Messaging\ChannelManagementService;
 use App\Services\Messaging\MarkdownRenderer;
 use App\Services\Messaging\MessageService;

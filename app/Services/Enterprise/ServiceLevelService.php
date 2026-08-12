@@ -120,7 +120,7 @@ class ServiceLevelService
     /**
      * @param  Collection<int, Booking>  $groupe
      * @param  array<int, Carbon>  $arrivees
-     * @return array{0: int, 1: int}  [arrivées à l'heure, arrivées mesurées]
+     * @return array{0: int, 1: int} [arrivées à l'heure, arrivées mesurées]
      */
     protected function ponctualite(Collection $groupe, array $arrivees): array
     {

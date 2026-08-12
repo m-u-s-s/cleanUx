@@ -11,6 +11,8 @@ use App\Http\Controllers\Api\Client\CompanyDirectoryController;
 use App\Http\Controllers\Api\Client\DeviceTokenController;
 use App\Http\Controllers\Api\Client\DisputeController;
 use App\Http\Controllers\Api\Client\GdprController;
+use App\Http\Controllers\Api\Client\GovernanceController;
+use App\Http\Controllers\Api\Client\HomeInsightsController;
 use App\Http\Controllers\Api\Client\InsuranceController;
 use App\Http\Controllers\Api\Client\InvoiceApiController;
 use App\Http\Controllers\Api\Client\LoyaltyController;
@@ -18,20 +20,19 @@ use App\Http\Controllers\Api\Client\LoyaltyRedemptionController;
 use App\Http\Controllers\Api\Client\MarketingPreferencesController;
 use App\Http\Controllers\Api\Client\MissionOnSiteController as ClientMissionOnSiteController;
 use App\Http\Controllers\Api\Client\NotificationPreferenceController;
-use App\Http\Controllers\Api\Client\GovernanceController;
-use App\Http\Controllers\Api\Client\HomeInsightsController;
-use App\Http\Controllers\Api\Client\PlaceController;
-use App\Http\Controllers\Api\Client\ReceivedQuoteController;
 use App\Http\Controllers\Api\Client\NpsController;
 use App\Http\Controllers\Api\Client\PaymentMethodController;
+use App\Http\Controllers\Api\Client\PlaceController;
 use App\Http\Controllers\Api\Client\PromoCodeController;
 use App\Http\Controllers\Api\Client\QualityInspectionClientController;
 use App\Http\Controllers\Api\Client\RatingController;
+use App\Http\Controllers\Api\Client\ReceivedQuoteController;
 use App\Http\Controllers\Api\Client\ReferralController;
 use App\Http\Controllers\Api\Client\ReferralV2Controller;
 use App\Http\Controllers\Api\Client\TipController;
 use App\Http\Controllers\Api\Client\TripTrackingController;
 use App\Http\Controllers\Api\Client\UserSafetyController;
+use App\Http\Controllers\Api\MaskedCallController;
 use App\Http\Controllers\Api\ParityMapController;
 use App\Http\Controllers\Api\PhoneVerificationController;
 use App\Models\Trade;
@@ -133,7 +134,7 @@ Route::middleware('auth:sanctum')->prefix('client')->group(function () {
     // F12 — répondre en un geste au supplément proposé sur place.
     Route::get('/bookings/{booking}/onsite/extras', [ClientMissionOnSiteController::class, 'extras']);
     // F8 — joindre le prestataire sans connaître son numéro.
-    Route::get('/bookings/{booking}/masked-call', [\App\Http\Controllers\Api\MaskedCallController::class, 'pourLaReservation']);
+    Route::get('/bookings/{booking}/masked-call', [MaskedCallController::class, 'pourLaReservation']);
     // F14 — déclarer son absence : la preuve de présence bascule sur une photo d'arrivée.
     Route::post('/bookings/{booking}/onsite/absence', [ClientMissionOnSiteController::class, 'declarerAbsence']);
     // F15 — répondre au « tout va bien ? » en un geste.

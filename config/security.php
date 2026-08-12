@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Middleware\SecurityHeaders;
+
 /*
 |--------------------------------------------------------------------------
 | En-têtes de sécurité HTTP
@@ -48,6 +50,6 @@ return [
     | si CE fichier venait à manquer. Une seule chaîne, donc une seule CSP
     | possible — la recopier ici en dur aurait fini par en produire deux.
     */
-    'csp_production_fallback' => App\Http\Middleware\SecurityHeaders::CSP_PRODUCTION_PAR_DEFAUT,
+    'csp_production_fallback' => SecurityHeaders::CSP_PRODUCTION_PAR_DEFAUT,
 
 ];

@@ -2,20 +2,19 @@
 
 use App\Http\Controllers\Api\Client\DeviceTokenController;
 use App\Http\Controllers\Api\EmployeeMissionTrackingController;
+use App\Http\Controllers\Api\MaskedCallController;
 use App\Http\Controllers\Api\PhoneVerificationController;
 use App\Http\Controllers\Api\Provider\AsapOfferController;
 use App\Http\Controllers\Api\Provider\AvailabilityController;
 use App\Http\Controllers\Api\Provider\BadgesController;
-use App\Http\Controllers\Api\Provider\CompanyController as ProviderCompanyController;
 use App\Http\Controllers\Api\Provider\CommerceController as ProviderCommerceController;
-use App\Http\Controllers\Api\Provider\WorkforceController as ProviderWorkforceController;
+use App\Http\Controllers\Api\Provider\CompanyController as ProviderCompanyController;
 use App\Http\Controllers\Api\Provider\FleetProviderController;
+use App\Http\Controllers\Api\Provider\GrowthController;
 use App\Http\Controllers\Api\Provider\KycController;
 use App\Http\Controllers\Api\Provider\MissionLiveTrackingController;
 use App\Http\Controllers\Api\Provider\MissionOnSiteController;
 use App\Http\Controllers\Api\Provider\PresenceController;
-use App\Http\Controllers\Api\Provider\GrowthController;
-use App\Http\Controllers\Api\Provider\SafetyController;
 use App\Http\Controllers\Api\Provider\ProviderCancellationController;
 use App\Http\Controllers\Api\Provider\ProviderCoverageController;
 use App\Http\Controllers\Api\Provider\ProviderDisputeController;
@@ -28,8 +27,10 @@ use App\Http\Controllers\Api\Provider\ProviderProfileController;
 use App\Http\Controllers\Api\Provider\ProviderRatingController;
 use App\Http\Controllers\Api\Provider\ProviderWalletController;
 use App\Http\Controllers\Api\Provider\QualityInspectionController;
+use App\Http\Controllers\Api\Provider\SafetyController;
 use App\Http\Controllers\Api\Provider\StripeConnectController;
 use App\Http\Controllers\Api\Provider\TripTrackingController;
+use App\Http\Controllers\Api\Provider\WorkforceController as ProviderWorkforceController;
 use App\Http\Controllers\Api\ProviderMissionAssignmentController;
 use App\Http\Controllers\Api\ProviderPresenceController;
 use Illuminate\Support\Facades\Route;
@@ -293,7 +294,7 @@ Route::middleware(['auth:sanctum', 'role:employe', 'provider.approved'])->group(
         Route::post('/{mission}/arrival-proof', [MissionOnSiteController::class, 'storeArrivalProof']);
         Route::post('/{mission}/extras', [MissionOnSiteController::class, 'storeExtra']);
         // F8 — joindre le client sans connaître son numéro.
-        Route::get('/{mission}/masked-call', [\App\Http\Controllers\Api\MaskedCallController::class, 'pourLaMission']);
+        Route::get('/{mission}/masked-call', [MaskedCallController::class, 'pourLaMission']);
     });
 
     // Phase 14 — Cancellation provider

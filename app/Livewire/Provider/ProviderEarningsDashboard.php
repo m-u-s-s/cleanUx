@@ -6,17 +6,18 @@ use App\Models\Booking;
 use App\Models\BookingTip;
 use App\Models\ProviderWalletTransaction;
 use App\Models\Trade;
+use App\Services\Payments\ExpressPayoutService;
+use App\Services\Provider\OfferStatsService;
+use App\Services\Provider\TaxSummaryService;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
-use App\Services\Payments\ExpressPayoutService;
-use App\Services\Provider\OfferStatsService;
-use App\Services\Provider\TaxSummaryService;
 use Illuminate\Validation\ValidationException;
 use Livewire\Attributes\Locked;
 use Livewire\Component;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 /**
  * Dashboard provider earnings (revenus jour/semaine/mois + tips + projections).
@@ -73,12 +74,12 @@ class ProviderEarningsDashboard extends Component
     }
 
     /** L'export fiscal de l'année — le fichier qu'on donne à son comptable. */
-    public function exporterLesRevenus(): \Symfony\Component\HttpFoundation\StreamedResponse
+    public function exporterLesRevenus(): StreamedResponse
     {
         $export = app(TaxSummaryService::class)->csv(Auth::user(), (int) $this->anneeFiscale);
 
         return response()->streamDownload(
-            fn () => print($export['content']),
+            fn () => print ($export['content']),
             $export['filename'],
             ['Content-Type' => 'text/csv; charset=UTF-8'],
         );

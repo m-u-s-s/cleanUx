@@ -10,6 +10,7 @@ use App\Models\TradeZonePricing;
 use App\Models\User;
 use App\Services\Pricing\SurgePricingEngine;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Schema;
 use Livewire\Livewire;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
@@ -160,7 +161,7 @@ class MajorationParMetierEtZoneTest extends TestCase
     {
         // `trade_zone_settings` décrivait le même fait que `trade_zone_pricing`. Deux grilles pour
         // un seul prix, c'est un prix facturé qui ne correspond à aucun écran.
-        $this->assertFalse(\Illuminate\Support\Facades\Schema::hasTable('trade_zone_settings'));
-        $this->assertTrue(\Illuminate\Support\Facades\Schema::hasColumn('trade_zone_pricing', 'surge_multiplier'));
+        $this->assertFalse(Schema::hasTable('trade_zone_settings'));
+        $this->assertTrue(Schema::hasColumn('trade_zone_pricing', 'surge_multiplier'));
     }
 }

@@ -3,6 +3,7 @@
 namespace App\Notifications;
 
 use App\Models\Mission;
+use App\Support\Notifications\InteractsWithUserNotificationPreferences;
 use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
@@ -13,7 +14,7 @@ class EmployeEnRouteNotification extends Notification
 
     public function __construct(public Mission $mission) {}
 
-    use \App\Support\Notifications\InteractsWithUserNotificationPreferences;
+    use InteractsWithUserNotificationPreferences;
 
     public function via(object $notifiable): array
     {

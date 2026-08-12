@@ -4,11 +4,12 @@ namespace App\Services\Admin;
 
 use App\Models\AsapDispatchRequest;
 use App\Models\MissionAssignment;
-use App\Models\User;
-use Illuminate\Support\Facades\DB;
 use App\Models\ServiceZone;
+use App\Models\User;
 use App\Support\Domain\AsapStatus;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
 
 /**
  * LA SANTÉ DU MARCHÉ (E30) — offre contre demande, zone par zone.
@@ -119,9 +120,9 @@ class MarketplaceHealthService
     /**
      * Combien de temps met une recherche à trouver quelqu'un.
      *
-     * @param  \Illuminate\Support\Collection<int, AsapDispatchRequest>  $recherches
+     * @param  Collection<int, AsapDispatchRequest>  $recherches
      */
-    protected function medianeDAssignation(\Illuminate\Support\Collection $recherches): ?int
+    protected function medianeDAssignation(Collection $recherches): ?int
     {
         $delais = $recherches
             ->filter(fn (AsapDispatchRequest $r) => $r->accepted_at !== null && $r->created_at !== null)
@@ -186,9 +187,9 @@ class MarketplaceHealthService
     /**
      * Les recherches ÉPUISÉES, pour les rattraper une par une (E31).
      *
-     * @return \Illuminate\Support\Collection<int, AsapDispatchRequest>
+     * @return Collection<int, AsapDispatchRequest>
      */
-    public function recherchesEchouees(?Carbon $depuis = null): \Illuminate\Support\Collection
+    public function recherchesEchouees(?Carbon $depuis = null): Collection
     {
         $depuis ??= Carbon::now()->subDays(7);
 

@@ -7,7 +7,6 @@ use App\Models\ProviderQuest;
 use App\Models\ProviderQuestProgress;
 use App\Models\User;
 use App\Services\Loyalty\LoyaltyService;
-use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 

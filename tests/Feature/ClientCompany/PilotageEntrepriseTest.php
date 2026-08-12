@@ -4,9 +4,9 @@ namespace Tests\Feature\ClientCompany;
 
 use App\Enums\OrganizationRole;
 use App\Enums\OrganizationType;
-use App\Livewire\ClientCompany\GovernanceCenter;
 use App\Livewire\ClientCompany\SiteManager;
 use App\Models\Booking;
+use App\Models\FinanceInvoice;
 use App\Models\OrganizationAccount;
 use App\Models\OrganizationMember;
 use App\Models\OrganizationSite;
@@ -433,7 +433,7 @@ class PilotageEntrepriseTest extends TestCase
             'type' => OrganizationType::CLIENT_COMPANY->value,
         ]);
 
-        \App\Models\FinanceInvoice::factory()->create([
+        FinanceInvoice::factory()->create([
             'organization_account_id' => $autreSociete->id,
             'invoice_number' => 'FACT-CONCURRENT-001',
             'issued_at' => Carbon::now(),

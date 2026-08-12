@@ -4,6 +4,7 @@ namespace App\Services\Ai;
 
 use App\Models\Sector;
 use App\Models\Trade;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
@@ -60,9 +61,9 @@ class OrderIntentInterpreter
     /**
      * Le catalogue RÉEL — c'est lui qui fait autorité.
      *
-     * @return \Illuminate\Support\Collection<int, Trade>
+     * @return Collection<int, Trade>
      */
-    protected function catalogue(): \Illuminate\Support\Collection
+    protected function catalogue(): Collection
     {
         return Trade::query()
             ->where('is_active', true)
@@ -72,10 +73,10 @@ class OrderIntentInterpreter
     }
 
     /**
-     * @param  \Illuminate\Support\Collection<int, Trade>  $catalogue
-     * @return array<string, mixed>|null  `null` quand le modèle n'est pas disponible
+     * @param  Collection<int, Trade>  $catalogue
+     * @return array<string, mixed>|null `null` quand le modèle n'est pas disponible
      */
-    protected function interpreterParLeModele(string $description, \Illuminate\Support\Collection $catalogue): ?array
+    protected function interpreterParLeModele(string $description, Collection $catalogue): ?array
     {
         $cle = (string) config('services.anthropic.key', '');
 
@@ -151,10 +152,10 @@ class OrderIntentInterpreter
      * Volontairement simple et explicable. Il ne prétend pas comprendre : il compte des
      * correspondances, et le dit en rendant une confiance basse.
      *
-     * @param  \Illuminate\Support\Collection<int, Trade>  $catalogue
+     * @param  Collection<int, Trade>  $catalogue
      * @return array<string, mixed>
      */
-    protected function interpreterParMotsCles(string $description, \Illuminate\Support\Collection $catalogue): array
+    protected function interpreterParMotsCles(string $description, Collection $catalogue): array
     {
         $mots = collect(preg_split('/[^\p{L}]+/u', Str::lower(Str::ascii($description))) ?: [])
             // Les mots de moins de quatre lettres n'apportent rien et font correspondre n'importe

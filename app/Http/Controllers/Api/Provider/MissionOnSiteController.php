@@ -2,24 +2,25 @@
 
 namespace App\Http\Controllers\Api\Provider;
 
-use App\Services\Inventory\InventoryService;
-use App\Services\Missions\OnSite\MissionGuidedChecklistService;
-use App\Services\Missions\OnSite\MissionCheckInService;
-use Illuminate\Validation\ValidationException;
-use App\Services\Missions\OnSite\MissionClosureService;
-use App\Services\Missions\OnSite\MissionAccessSheetService;
-use App\Services\Missions\MissionAssignmentStatusService;
-use App\Services\Missions\OnSite\MissionExtraService;
 use App\Http\Controllers\Controller;
+use App\Models\InventoryItem;
 use App\Models\Mission;
 use App\Models\MissionIncident;
 use App\Models\MissionMedia;
+use App\Services\Inventory\InventoryService;
+use App\Services\Missions\MissionAssignmentStatusService;
+use App\Services\Missions\OnSite\MissionAccessSheetService;
+use App\Services\Missions\OnSite\MissionCheckInService;
+use App\Services\Missions\OnSite\MissionClosureService;
+use App\Services\Missions\OnSite\MissionExtraService;
+use App\Services\Missions\OnSite\MissionGuidedChecklistService;
 use App\Services\Missions\OnSite\MissionIncidentService;
 use App\Services\Missions\OnSite\MissionMediaService;
 use App\Services\Missions\OnSite\MissionTimelineService;
 use DomainException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
 use RuntimeException;
 
 /**
@@ -384,7 +385,7 @@ class MissionOnSiteController extends Controller
             return response()->json(['data' => []]);
         }
 
-        $articles = \App\Models\InventoryItem::query()
+        $articles = InventoryItem::query()
             ->where('organization_account_id', $organisationId)
             ->where('is_active', true)
             ->orderBy('name')
@@ -420,7 +421,7 @@ class MissionOnSiteController extends Controller
             'quantity' => ['required', 'integer', 'min:1', 'max:1000'],
         ]);
 
-        $article = \App\Models\InventoryItem::query()->findOrFail((int) $data['inventory_item_id']);
+        $article = InventoryItem::query()->findOrFail((int) $data['inventory_item_id']);
 
         // Le stock appartient à la société qui exécute la mission : sans ce contrôle, un
         // identifiant deviné ponctionnerait le magasin d'une société concurrente.

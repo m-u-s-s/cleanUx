@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\ChatV2;
 
+use App\Models\Booking;
 use App\Models\ChatMessage;
 use App\Models\User;
 use App\Services\ChatV2\ChatService;
@@ -48,7 +49,7 @@ class ChatApiTest extends TestCase
          * qu'un compte pouvait ouvrir un fil avec un parfait inconnu — c'était le trou, pas le
          * contrat.
          */
-        $booking = \App\Models\Booking::factory()->create([
+        $booking = Booking::factory()->create([
             'client_id' => $user->id,
             'customer_user_id' => $user->id,
             'employe_id' => $other->id,

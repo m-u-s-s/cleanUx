@@ -8,6 +8,7 @@ use App\Models\ComplaintCase;
 use App\Models\User;
 use App\Services\CancellationV2\CancellationPolicyResolver;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Collection;
 
 /**
  * « MA PROTECTION » (E6) — la vitrine des recours d'un client.
@@ -85,10 +86,10 @@ class ProtectionOverviewService
     /**
      * Ce que coûterait une annulation MAINTENANT, réservation par réservation.
      *
-     * @param  \Illuminate\Support\Collection<int, Booking>  $aVenir
+     * @param  Collection<int, Booking>  $aVenir
      * @return array<string, mixed>
      */
-    protected function annulations(\Illuminate\Support\Collection $aVenir): array
+    protected function annulations(Collection $aVenir): array
     {
         $resolveur = app(CancellationPolicyResolver::class);
         $lignes = [];

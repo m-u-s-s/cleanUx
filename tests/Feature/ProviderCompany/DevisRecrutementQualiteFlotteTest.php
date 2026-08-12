@@ -15,6 +15,7 @@ use App\Models\FleetVehicle;
 use App\Models\JobApplication;
 use App\Models\JobPosting;
 use App\Models\OrganizationAccount;
+use App\Models\OrganizationInvitation;
 use App\Models\OrganizationMember;
 use App\Models\ProviderQuote;
 use App\Models\Trade;
@@ -363,7 +364,7 @@ class DevisRecrutementQualiteFlotteTest extends TestCase
         $service->embaucher($candidature->fresh(), $patron);
 
         // Un double clic ne doit pas envoyer deux invitations à la même personne.
-        $this->assertSame(1, \App\Models\OrganizationInvitation::query()
+        $this->assertSame(1, OrganizationInvitation::query()
             ->where('email', 'nadia@exemple.test')->count());
     }
 

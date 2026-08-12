@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\OrganizationInvitationController;
 use App\Http\Controllers\Push\PushSubscriptionController;
+use App\Http\Controllers\SharedTrackingController;
 use App\Http\Controllers\WebViewEntryController;
 use App\Livewire\Auth\VerifyPhone;
 use App\Livewire\DesignSystem;
@@ -118,6 +119,6 @@ Route::get('/invitations/{token}', [OrganizationInvitationController::class, 'ac
 | l'intervention a lieu — souvent quelqu'un qui n'a pas de compte et n'en veut pas. Lui demander
 | de s'inscrire pour savoir à quelle heure sonner reviendrait à ne pas partager du tout.
 */
-Route::get('/suivi/{booking}', App\Http\Controllers\SharedTrackingController::class)
+Route::get('/suivi/{booking}', SharedTrackingController::class)
     ->middleware('signed')
     ->name('tracking.shared');

@@ -2,8 +2,6 @@
 
 use App\Http\Controllers\StripeConnectController;
 use App\Livewire\Employe\CoordinationChantier;
-use App\Livewire\Provider\DemandHeatmap;
-use App\Livewire\Provider\SafetyPanel;
 use App\Livewire\Employe\DisponibilitesEmploye;
 use App\Livewire\Employe\EmployeeRateClient;
 use App\Livewire\Employe\EquipeTerrain;
@@ -17,12 +15,14 @@ use App\Livewire\Employe\ValidationMultipleRdv;
 use App\Livewire\EmployeDashboard;
 use App\Livewire\FeedbacksEmploye;
 use App\Livewire\Provider\BundleQuoteRequests;
+use App\Livewire\Provider\DemandHeatmap;
 use App\Livewire\Provider\ProviderBadgesPage;
 use App\Livewire\Provider\ProviderDisputesPage;
 use App\Livewire\Provider\ProviderEarningsDashboard;
 use App\Livewire\Provider\ProviderKycPage;
 use App\Livewire\Provider\ProviderRatingsPage;
 use App\Livewire\Provider\ProviderWalletPage;
+use App\Livewire\Provider\SafetyPanel;
 use App\Livewire\Provider\TradesAndZones;
 use App\Livewire\Shared\ModulesDirectory;
 use Illuminate\Support\Facades\Route;

@@ -2,8 +2,6 @@
 
 namespace App\Http\Controllers\Api\Provider;
 
-use Illuminate\Support\Facades\URL;
-use App\Services\Messaging\AttachmentUploadService;
 use App\Enums\OrganizationRole;
 use App\Events\CallStarted;
 use App\Http\Controllers\Controller;
@@ -27,6 +25,7 @@ use App\Models\Task;
 use App\Models\User;
 use App\Services\Calls\CallService;
 use App\Services\Client\Calendar\BookingRescheduleService;
+use App\Services\Messaging\AttachmentUploadService;
 use App\Services\Messaging\ChannelManagementService;
 use App\Services\Messaging\MessageService;
 use App\Services\Missions\MissionAssignmentService;
@@ -42,6 +41,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 

@@ -14,8 +14,8 @@ use App\Services\Dispatch\DispatchEngine;
 use App\Services\Dispatch\MissionDispatchService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Mockery\MockInterface;
-use Tests\Support\CreatesZoneAwareFixtures;
 use Tests\Feature\Dispatch\Concerns\OuvreLeCatalogue;
+use Tests\Support\CreatesZoneAwareFixtures;
 use Tests\TestCase;
 
 /**
@@ -39,8 +39,8 @@ use Tests\TestCase;
  */
 class AsapSingleDispatchTest extends TestCase
 {
-    use OuvreLeCatalogue;
     use CreatesZoneAwareFixtures;
+    use OuvreLeCatalogue;
     use RefreshDatabase;
 
     public function test_an_asap_api_booking_creates_exactly_one_mission(): void
@@ -91,9 +91,9 @@ class AsapSingleDispatchTest extends TestCase
         $dispatched = [];
         $this->mockDispatch($dispatched);
 
-        $moteur = \Mockery::mock(\App\Services\Dispatch\DispatchEngine::class);
+        $moteur = \Mockery::mock(DispatchEngine::class);
         $moteur->shouldReceive('dispatchBooking')->once()->andReturnNull();
-        $this->app->instance(\App\Services\Dispatch\DispatchEngine::class, $moteur);
+        $this->app->instance(DispatchEngine::class, $moteur);
 
         $booking = $this->createBooking('scheduled');
 

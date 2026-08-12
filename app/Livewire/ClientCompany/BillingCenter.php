@@ -7,8 +7,10 @@ use App\Models\OrganizationSite;
 use App\Services\PermissionService;
 use App\Support\Finance\ClientFinanceDocumentScope;
 use App\Support\Livewire\Concerns\EnforcesActiveOrgMembership;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\URL;
 use Livewire\Component;
@@ -30,7 +32,7 @@ use Livewire\WithPagination;
  * ce qui a produit les fuites inter-organisations corrigées ailleurs dans ce dépôt.
  *
  * @property-read array<string, mixed> $summary
- * @property-read \Illuminate\Contracts\Pagination\LengthAwarePaginator<int, FinanceInvoice> $invoices
+ * @property-read LengthAwarePaginator<int, FinanceInvoice> $invoices
  * @property-read Collection<int, OrganizationSite> $sites
  */
 class BillingCenter extends Component
@@ -65,7 +67,7 @@ class BillingCenter extends Component
         }
     }
 
-    /** @return array{0: \Illuminate\Support\Carbon, 1: \Illuminate\Support\Carbon} */
+    /** @return array{0: Carbon, 1: Carbon} */
     private function periodDates(): array
     {
         return match ($this->filterPeriod) {
@@ -112,8 +114,8 @@ class BillingCenter extends Component
         ];
     }
 
-    /** @return \Illuminate\Contracts\Pagination\LengthAwarePaginator<int, FinanceInvoice> */
-    public function getInvoicesProperty(): \Illuminate\Contracts\Pagination\LengthAwarePaginator
+    /** @return LengthAwarePaginator<int, FinanceInvoice> */
+    public function getInvoicesProperty(): LengthAwarePaginator
     {
         [$from, $to] = $this->periodDates();
 

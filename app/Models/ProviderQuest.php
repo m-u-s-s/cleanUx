@@ -22,8 +22,8 @@ use Illuminate\Support\Carbon;
  * @property string $reward_type
  * @property int $reward_value
  * @property bool $is_active
- * @property \Illuminate\Support\Carbon|null $starts_on
- * @property \Illuminate\Support\Carbon|null $ends_on
+ * @property Carbon|null $starts_on
+ * @property Carbon|null $ends_on
  */
 class ProviderQuest extends Model
 {

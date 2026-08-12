@@ -2,19 +2,22 @@
 
 namespace App\Http\Controllers\Api\Client;
 
-use App\Services\Missions\OnSite\MissionCheckInService;
-use DomainException;
-use App\Services\Missions\OnSite\MissionExtraService;
-use App\Models\MissionExtra;
 use App\Http\Controllers\Api\Concerns\AuthorizesClientBooking;
 use App\Http\Controllers\Controller;
 use App\Models\Booking;
+use App\Models\BookingTip;
+use App\Models\Feedback;
 use App\Models\Mission;
+use App\Models\MissionExtra;
 use App\Models\MissionIncident;
 use App\Models\MissionMedia;
+use App\Models\MissionReport;
+use App\Services\Missions\OnSite\MissionCheckInService;
+use App\Services\Missions\OnSite\MissionExtraService;
 use App\Services\Missions\OnSite\MissionIncidentService;
 use App\Services\Missions\OnSite\MissionMediaService;
 use App\Services\Missions\OnSite\MissionTimelineService;
+use DomainException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
@@ -274,14 +277,14 @@ class MissionOnSiteController extends Controller
             return response()->json(['data' => ['available' => false]]);
         }
 
-        $rapport = \App\Models\MissionReport::query()->where('mission_id', $mission->id)->first();
+        $rapport = MissionReport::query()->where('mission_id', $mission->id)->first();
 
-        $pourboireVerse = \App\Models\BookingTip::query()
+        $pourboireVerse = BookingTip::query()
             ->where('booking_id', $booking->id)
             ->whereNotIn('status', ['failed', 'cancelled'])
             ->exists();
 
-        $avisDonne = \App\Models\Feedback::query()
+        $avisDonne = Feedback::query()
             ->where('booking_id', $booking->id)
             ->where('client_user_id', $request->user()->id)
             ->exists();

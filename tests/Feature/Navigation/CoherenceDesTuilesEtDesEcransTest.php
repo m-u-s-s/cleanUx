@@ -106,7 +106,7 @@ class CoherenceDesTuilesEtDesEcransTest extends TestCase
      * l'ensemble des écrans qui répondent 200.
      *
      * @param  list<array{route: string, label: string}>  $cases
-     * @return list<string>  les incohérences, en clair
+     * @return list<string> les incohérences, en clair
      */
     private function incoherences(User $utilisateur, string $contexte, array $cases): array
     {

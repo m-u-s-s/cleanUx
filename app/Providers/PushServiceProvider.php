@@ -2,11 +2,11 @@
 
 namespace App\Providers;
 
+use App\Notifications\Channels\SmsChannel;
 use App\Services\Push\Providers\ApnsPushProvider;
 use App\Services\Push\Providers\FcmPushProvider;
 use App\Services\Push\Providers\PushMockProvider;
 use App\Services\Push\PushProviderInterface;
-use App\Notifications\Channels\SmsChannel;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\ServiceProvider;
 

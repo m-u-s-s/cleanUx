@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Carbon;
 
 /**
  * OÙ EN EST QUELQU'UN D'UN OBJECTIF (E13).
@@ -15,8 +16,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property int $provider_quest_id
  * @property int $user_id
  * @property int $progress
- * @property \Illuminate\Support\Carbon|null $completed_at
- * @property \Illuminate\Support\Carbon|null $rewarded_at
+ * @property Carbon|null $completed_at
+ * @property Carbon|null $rewarded_at
  */
 class ProviderQuestProgress extends Model
 {

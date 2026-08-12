@@ -6,6 +6,7 @@ use Database\Factories\LeaveRequestFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Carbon;
 
 /**
  * UNE DEMANDE D'ABSENCE (E21).
@@ -18,8 +19,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property int $organization_account_id
  * @property int $user_id
  * @property string $type
- * @property \Illuminate\Support\Carbon $starts_on
- * @property \Illuminate\Support\Carbon $ends_on
+ * @property Carbon $starts_on
+ * @property Carbon $ends_on
  * @property string $status
  */
 class LeaveRequest extends Model
@@ -70,7 +71,7 @@ class LeaveRequest extends Model
      * Bornes INCLUSIVES des deux côtés : un congé du 3 au 7 couvre le 7. L'exclure ferait travailler
      * quelqu'un le dernier jour de ses vacances, ce qu'aucun formulaire ne laisse supposer.
      */
-    public function couvre(\Illuminate\Support\Carbon $jour): bool
+    public function couvre(Carbon $jour): bool
     {
         return $this->status === self::STATUS_APPROVED
             && $jour->startOfDay()->betweenIncluded($this->starts_on, $this->ends_on);

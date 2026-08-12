@@ -4,6 +4,7 @@ namespace Tests\Feature\Security;
 
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Testing\TestResponse;
 use Tests\TestCase;
 
 /**
@@ -32,7 +33,7 @@ class CanalPresencePrestatairesTest extends TestCase
         require base_path('routes/channels.php');
     }
 
-    private function tenterAbonnement(): \Illuminate\Testing\TestResponse
+    private function tenterAbonnement(): TestResponse
     {
         return $this->postJson('/broadcasting/auth', [
             'socket_id' => '12345.67890',

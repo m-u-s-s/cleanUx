@@ -17,6 +17,7 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Locked;
 use Livewire\Component;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 /**
  * LE PILOTAGE D'UNE ENTREPRISE CLIENTE — BUDGETS (E7), APPROBATIONS (E8), NIVEAU DE SERVICE (E9) ET
@@ -156,7 +157,7 @@ class GovernanceCenter extends Component
 
     // ── E11 : les exports ────────────────────────────────────────────────────
 
-    public function exporter(string $format): \Symfony\Component\HttpFoundation\StreamedResponse
+    public function exporter(string $format): StreamedResponse
     {
         $this->autoriser('finance.download');
 
@@ -171,7 +172,7 @@ class GovernanceCenter extends Component
             : $service->csv(Auth::user(), $debut, $fin);
 
         return response()->streamDownload(
-            fn () => print($export['content']),
+            fn () => print ($export['content']),
             $export['filename'],
             ['Content-Type' => 'text/plain; charset=UTF-8'],
         );

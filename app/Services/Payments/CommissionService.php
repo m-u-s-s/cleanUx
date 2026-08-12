@@ -3,6 +3,7 @@
 namespace App\Services\Payments;
 
 use App\Models\Booking;
+use App\Models\User;
 
 class CommissionService
 {
@@ -46,7 +47,7 @@ class CommissionService
      * divergerait de ce que Stripe lui a réellement transféré — le genre d'écart qu'on ne découvre
      * qu'au rapprochement comptable, des mois plus tard.
      *
-     * @param  \App\Models\User|null  $provider  pour son éventuel taux négocié
+     * @param  User|null  $provider  pour son éventuel taux négocié
      * @return array{
      *   total_cents: int,
      *   platform_fee_cents: int,
@@ -55,7 +56,7 @@ class CommissionService
      *   currency: string
      * }
      */
-    public function calculateForAmount(int $totalCents, ?\App\Models\User $provider = null): array
+    public function calculateForAmount(int $totalCents, ?User $provider = null): array
     {
         $totalCents = max(0, $totalCents);
 

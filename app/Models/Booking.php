@@ -43,9 +43,9 @@ use Illuminate\Support\Facades\Schema;
  * @property ?string $client_absent_instructions
  * @property ?string $backup_contact_name
  * @property ?string $backup_contact_phone
- * @property ?\Illuminate\Support\Carbon $checkin_ping_sent_at
+ * @property ?Carbon $checkin_ping_sent_at
  * @property ?string $checkin_ping_answer
- * @property ?\Illuminate\Support\Carbon $checkin_ping_answered_at
+ * @property ?Carbon $checkin_ping_answered_at
  * @property-read string $service_display_name
  * @property string $total
  * @property ?string $trade_name

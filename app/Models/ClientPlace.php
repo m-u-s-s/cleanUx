@@ -6,6 +6,7 @@ use Database\Factories\ClientPlaceFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Carbon;
 
 /**
  * UN LIEU DU CARNET D'UN CLIENT (E2).
@@ -27,7 +28,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property int|null $service_zone_id
  * @property bool $is_default
  * @property array<string, mixed>|null $preferences
- * @property \Illuminate\Support\Carbon|null $archived_at
+ * @property Carbon|null $archived_at
  */
 class ClientPlace extends Model
 {

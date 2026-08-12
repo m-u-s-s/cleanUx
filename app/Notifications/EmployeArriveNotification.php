@@ -4,6 +4,7 @@ namespace App\Notifications;
 
 use App\Models\Mission;
 use App\Notifications\Channels\WebPushChannel;
+use App\Support\Notifications\InteractsWithUserNotificationPreferences;
 use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
@@ -17,7 +18,7 @@ class EmployeArriveNotification extends Notification
         public string $startCode
     ) {}
 
-    use \App\Support\Notifications\InteractsWithUserNotificationPreferences;
+    use InteractsWithUserNotificationPreferences;
 
     public function via($notifiable): array
     {

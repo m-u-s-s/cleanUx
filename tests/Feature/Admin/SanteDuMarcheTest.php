@@ -7,6 +7,7 @@ use App\Models\AsapDispatchRequest;
 use App\Models\Booking;
 use App\Models\PromoCode;
 use App\Models\ServiceZone;
+use App\Models\Trade;
 use App\Models\TradeZonePricing;
 use App\Models\User;
 use App\Services\Admin\DemandForecastService;
@@ -69,7 +70,7 @@ class SanteDuMarcheTest extends TestCase
             'booking_id' => $booking->id,
             // NOT NULL : le métier est un invariant de la recherche — sans lui, le dispatch ne
             // cherche personne plutôt que de chercher n'importe qui.
-            'trade_id' => $booking->trade_id ?? \App\Models\Trade::factory()->create()->id,
+            'trade_id' => $booking->trade_id ?? Trade::factory()->create()->id,
             'status' => AsapStatus::EXPIRED,
             'lat' => 50.85,
             'lng' => 4.35,
@@ -112,7 +113,7 @@ class SanteDuMarcheTest extends TestCase
 
         AsapDispatchRequest::query()->create([
             'booking_id' => $annulee->id,
-            'trade_id' => $annulee->trade_id ?? \App\Models\Trade::factory()->create()->id,
+            'trade_id' => $annulee->trade_id ?? Trade::factory()->create()->id,
             'status' => AsapStatus::CANCELLED,
             'lat' => 50.85,
             'lng' => 4.35,
@@ -215,7 +216,7 @@ class SanteDuMarcheTest extends TestCase
 
         $ouverte = AsapDispatchRequest::query()->create([
             'booking_id' => $enCours->id,
-            'trade_id' => $enCours->trade_id ?? \App\Models\Trade::factory()->create()->id,
+            'trade_id' => $enCours->trade_id ?? Trade::factory()->create()->id,
             'status' => AsapStatus::SEARCHING,
             'lat' => 50.85,
             'lng' => 4.35,
@@ -276,7 +277,7 @@ class SanteDuMarcheTest extends TestCase
 
         $ouverte = AsapDispatchRequest::query()->create([
             'booking_id' => $enCours->id,
-            'trade_id' => $enCours->trade_id ?? \App\Models\Trade::factory()->create()->id,
+            'trade_id' => $enCours->trade_id ?? Trade::factory()->create()->id,
             'status' => AsapStatus::SEARCHING,
             'lat' => 50.85,
             'lng' => 4.35,
@@ -296,7 +297,7 @@ class SanteDuMarcheTest extends TestCase
     public function la_carte_signale_les_depassements_de_plafond(): void
     {
         $zone = ServiceZone::factory()->create();
-        $metier = \App\Models\Trade::factory()->create();
+        $metier = Trade::factory()->create();
 
         TradeZonePricing::query()->create([
             'trade_id' => $metier->id,
@@ -322,7 +323,7 @@ class SanteDuMarcheTest extends TestCase
     public function la_carte_montre_aussi_les_grilles_neutres(): void
     {
         $zone = ServiceZone::factory()->create();
-        $metier = \App\Models\Trade::factory()->create();
+        $metier = Trade::factory()->create();
 
         TradeZonePricing::query()->create([
             'trade_id' => $metier->id,
