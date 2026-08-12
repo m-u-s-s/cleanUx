@@ -76,6 +76,7 @@ use App\Livewire\Admin\UtilisateursAdmin;
 use App\Livewire\Admin\WebhooksV2\WebhooksCenter;
 use App\Livewire\AdminDashboard;
 use App\Livewire\Shared\ModulesDirectory;
+use App\Livewire\SuperAdmin\PlatformSettlement;
 use App\Livewire\SuperAdmin\SuperAdminDashboard;
 use App\Models\Booking;
 use App\Models\Feedback;
@@ -623,4 +624,14 @@ Route::middleware(['role:super_admin', 'enforce_2fa'])
     ->name('super-admin.')
     ->group(function () {
         Route::get('/dashboard', SuperAdminDashboard::class)->name('dashboard');
+
+        /*
+         * Le registre de règlement — où part la commission Brio, par devise.
+         *
+         * Sa place ici et nulle part ailleurs tient au `enforce_2fa` du groupe : cette page
+         * expose la banque de la plateforme et l'historique de ses changements. Elle n'écrit
+         * rien chez Stripe, mais lire d'où part l'argent est déjà un renseignement qu'on ne
+         * laisse pas derrière un simple mot de passe.
+         */
+        Route::get('/reglement', PlatformSettlement::class)->name('reglement');
     });

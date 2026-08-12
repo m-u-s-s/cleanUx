@@ -21,6 +21,13 @@
                 </div>
 
                 <div class="flex flex-wrap gap-2">
+                    {{-- Sans ce lien, le registre de règlement n'aurait aucune porte d'entrée :
+                         une page qu'aucun écran ne mentionne n'existe pas pour son utilisateur. --}}
+                    @if(Route::has('super-admin.reglement'))
+                        <a href="{{ route('super-admin.reglement') }}" class="brio-btn-secondary inline-flex items-center gap-2">
+                            <span>Registre de règlement</span>
+                        </a>
+                    @endif
                     @if(Route::has('admin.dashboard'))
                         <a href="{{ route('admin.dashboard') }}" class="brio-btn-secondary inline-flex items-center gap-2">
                             <x-ui.icon name="chart-bar" class="w-4 h-4" />
