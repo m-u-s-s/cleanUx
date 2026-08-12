@@ -13,12 +13,16 @@ use App\Models\User;
 use App\Notifications\EmployeArriveNotification;
 use App\Notifications\EmployeEnRouteNotification;
 use App\Notifications\MissionCompletedNotification;
+use App\Notifications\MissionEndCodeNotification;
+use App\Notifications\MissionPayoutAnnouncedNotification;
 use App\Notifications\MissionStartedNotification;
 use App\Services\Geo\OnSiteVerifier;
 use App\Services\Notifications\SmsService;
 use App\Services\Payments\CommissionService;
 use App\Services\Payments\MissionPaymentService;
+use App\Services\Payments\PayoutAnnouncementService;
 use App\Services\Payments\ProviderWalletService;
+use App\Support\Domain\BookingStatus;
 use App\Support\Domain\MissionStatus;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
@@ -115,11 +119,7 @@ class MissionLifecycleService
             'Brio : votre employé est arrivé. Code de début : '.$generated['code']
         );
 
-        $generatedEnd = $this->verificationCodeService->createVerificationCode($mission, 'end');
-        app(SmsService::class)->send(
-            $mission->booking?->client?->phone ?? $mission->booking?->telephone_client,
-            'Brio : code de fin de mission : '.$generatedEnd['code'].'. Communiquez-le au prestataire en fin de service.'
-        );
+        $this->issueEndCode($mission);
 
         $mission = $mission->fresh(['assignments', 'verificationCodes', 'booking.client', 'leadEmployee']);
 
@@ -187,7 +187,57 @@ class MissionLifecycleService
             throw new RuntimeException('La mission doit être démarrée avant de générer un code de fin.');
         }
 
-        return $this->verificationCodeService->createVerificationCode($mission, 'end');
+        return $this->issueEndCode($mission);
+    }
+
+    /**
+     * ÉMET LE CODE DE FIN ET LE CONFIE À DES PORTEURS QUI ATTEIGNENT LE CLIENT.
+     *
+     * Passage obligé de toute création de code de fin, et la raison en tient au stockage :
+     * `createVerificationCode()` n'enregistre qu'une empreinte. Les six chiffres n'existent que
+     * dans la valeur de retour — qui les laisse échapper les oublie définitivement, sans qu'aucune
+     * page ni aucun support ne puisse les retrouver ensuite.
+     *
+     * Le SMS seul ne suffisait pas. Il part vers un unique numéro, et le plafond du module SMS
+     * (cinq messages par heure et par numéro) le fait basculer en `rate_limited` sans que rien ne
+     * le signale : ni le prestataire, ni le client n'apprennent que le code s'est évaporé. La
+     * notification, elle, atterrit dans le suivi web du client, qu'il peut consulter à volonté.
+     *
+     * L'échec d'un porteur ne doit pas empêcher l'autre : une arrivée déclarée ne peut pas être
+     * annulée parce qu'un canal de messagerie est indisponible.
+     *
+     * @return array<string, mixed> Le code en clair et son enregistrement — cf. createVerificationCode().
+     */
+    public function issueEndCode(Mission $mission): array
+    {
+        $generated = $this->verificationCodeService->createVerificationCode($mission, 'end');
+
+        $mission->loadMissing('booking.client');
+
+        try {
+            app(SmsService::class)->send(
+                $mission->booking?->client?->phone ?? $mission->booking?->telephone_client,
+                'Brio : code de fin de mission : '.$generated['code'].'. Communiquez-le au prestataire en fin de service.'
+            );
+        } catch (\Throwable $e) {
+            Log::warning('SMS du code de fin non parti', [
+                'mission_id' => $mission->id,
+                'message' => $e->getMessage(),
+            ]);
+        }
+
+        try {
+            $mission->booking?->client?->notify(
+                new MissionEndCodeNotification($mission, $generated['code'])
+            );
+        } catch (\Throwable $e) {
+            Log::warning('Notification du code de fin non partie', [
+                'mission_id' => $mission->id,
+                'message' => $e->getMessage(),
+            ]);
+        }
+
+        return $generated;
     }
 
     /**
@@ -405,13 +455,64 @@ class MissionLifecycleService
             }
         }
 
+        /*
+         * LA RÉSERVATION SUIT LA MISSION — sans quoi le client ne peut jamais noter.
+         *
+         * `RatingService::guardEligibility()` n'autorise un avis que sur une prestation TERMINÉE,
+         * et il lit le statut de la RÉSERVATION, pas celui de la mission. Or clôturer une mission
+         * ne touchait pas la réservation : elle restait `confirme` indéfiniment. Tout avis client
+         * était donc refusé par « Vous ne pouvez noter qu'une prestation terminée » — y compris
+         * depuis le lien « Donner mon avis » du courriel de fin de mission, qui menait droit à un
+         * formulaire incapable d'aboutir.
+         *
+         * `mission_finished_at` démarre la fenêtre de notation de 30 jours que ce même garde
+         * applique : la laisser vide rendait la fenêtre inopérante dans l'autre sens.
+         *
+         * `forceFill` plutôt que `update`, comme le bloc de paiement ci-dessus : la clôture ne doit
+         * pas dépendre de la composition de `$fillable`, qui a déjà écarté des colonnes en silence.
+         */
+        if ($mission->booking) {
+            $mission->booking->forceFill([
+                'status' => BookingStatus::TERMINE,
+                'mission_finished_at' => $mission->booking->mission_finished_at ?? now(),
+                'completed_at' => $mission->booking->completed_at ?? now(),
+            ])->save();
+
+            $mission->setRelation('booking', $mission->booking->fresh());
+        }
+
         if ($mission->booking?->client) {
             $mission->booking->client->notify(new MissionCompletedNotification($mission));
         }
         app(SmsService::class)->send(
             $mission->booking?->client?->phone ?? $mission->booking?->telephone_client,
-            'Brio : votre mission est terminée. Merci de laisser votre avis depuis votre espace client.'
+            'Brio : merci d’avoir fait confiance à Brio. Votre mission est terminée — laissez votre avis depuis votre espace client.'
         );
+
+        /*
+         * ET LE PRESTATAIRE, LUI, APPREND CE QU'IL A GAGNÉ.
+         *
+         * Tout ce qui précède part vers le client. Celui qui vient de travailler ne recevait rien :
+         * ni confirmation que sa mission était enregistrée, ni montant, ni date. C'est pourtant le
+         * seul instant où la question se pose et où la réponse est facile à donner.
+         *
+         * Soft-fail, comme le reste de cette clôture : une messagerie indisponible ne doit pas
+         * empêcher une mission d'être terminée ni un paiement d'être capturé.
+         */
+        try {
+            $annonceur = app(PayoutAnnouncementService::class);
+            $beneficiaire = $annonceur->beneficiaire($mission) ?? $user;
+            $annonce = $annonceur->pour($mission);
+
+            if ($annonce) {
+                $beneficiaire->notify(new MissionPayoutAnnouncedNotification($mission, $annonce));
+            }
+        } catch (\Throwable $e) {
+            Log::warning('Annonce de gain non envoyée au prestataire', [
+                'mission_id' => $mission->id,
+                'message' => $e->getMessage(),
+            ]);
+        }
 
         $mission = $this->missionQualityService->refreshMissionQuality($mission->fresh());
         $this->missionQualityService->generateOrRefreshReport($mission, $user);

@@ -12,6 +12,7 @@
  *    démarrage passe par /begin et le code communiqué au client par SMS.
  */
 import React from 'react';
+import { Alert } from 'react-native';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react-native';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import MockAdapter from 'axios-mock-adapter';
@@ -160,5 +161,59 @@ describe('MissionDetailScreen — cycle de vie', () => {
     renderWithStatus('assigned');
 
     await waitFor(() => expect(screen.getByLabelText('En route')).toBeTruthy());
+  });
+
+  /**
+   * LA CLÔTURE NE PARTAIT SANS RIEN ET NE DISAIT RIEN.
+   *
+   * « Mission terminée » postait un `complete` nu. Le serveur exige `end_code` dès qu'un code de
+   * fin est en attente — l'état normal, puisqu'il naît à l'arrivée — et refusait donc par un 422.
+   * Aucun `onError` n'étant fourni, l'écran restait rigoureusement identique : le prestataire
+   * confirmait dans le vide, sans champ pour saisir le code ni message pour l'y inviter.
+   */
+  describe('clôture', () => {
+    /** Le dialogue de confirmation est joué : sans cela, aucune requête n'est jamais émise. */
+    function confirmerLesAlertes() {
+      return jest.spyOn(Alert, 'alert').mockImplementation((_titre, _message, boutons) => {
+        const confirmer = (boutons ?? []).find(b => b.text === 'Confirmer');
+        confirmer?.onPress?.();
+      });
+    }
+
+    it('transmet le code de fin saisi', async () => {
+      const alerte = confirmerLesAlertes();
+      apiMock.onPost(`/provider/missions/${MISSION_ID}/complete`).reply(200, { ok: true, status: 'completed' });
+
+      renderWithStatus('started');
+      await waitFor(() => screen.getByLabelText('Code de fin (affiché sur l’espace client)'));
+
+      fireEvent.changeText(screen.getByLabelText('Code de fin (affiché sur l’espace client)'), '930858');
+      fireEvent.press(screen.getByLabelText('Mission terminée'));
+
+      await waitFor(() => expect(lifecycleCalls('complete')).toHaveLength(1));
+      expect(JSON.parse(lifecycleCalls('complete')[0]!.data)).toEqual({ end_code: '930858' });
+
+      alerte.mockRestore();
+    });
+
+    it('affiche le refus du serveur au lieu de rester muet', async () => {
+      const alerte = confirmerLesAlertes();
+      apiMock
+        .onPost(`/provider/missions/${MISSION_ID}/complete`)
+        .reply(422, { ok: false, message: 'Le code de fin est requis pour clôturer cette mission.' });
+
+      renderWithStatus('started');
+      await waitFor(() => screen.getByLabelText('Mission terminée'));
+
+      fireEvent.press(screen.getByLabelText('Mission terminée'));
+
+      await waitFor(() => expect(lifecycleCalls('complete')).toHaveLength(1));
+      // Le refus doit atterrir dans une alerte « Impossible », et non dans le silence.
+      await waitFor(() =>
+        expect(alerte.mock.calls.some(([titre]) => titre === 'Impossible')).toBe(true),
+      );
+
+      alerte.mockRestore();
+    });
   });
 });

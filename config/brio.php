@@ -10,6 +10,20 @@ return [
     // sur le montant réellement prélevé par Stripe (MissionPaymentService).
     'use_negotiated_commission' => (bool) env('BRIO_USE_NEGOTIATED_COMMISSION', false),
 
+    /*
+     * DÉLAI ANNONCÉ AU PRESTATAIRE POUR VOIR L'ARGENT SUR SON COMPTE BANCAIRE.
+     *
+     * Le modèle est la charge à destination : à la capture, Stripe a DÉJÀ viré la part du
+     * prestataire sur son compte Connect. Ce qui reste à courir n'est donc pas un virement de la
+     * plateforme — il n'y en a pas, et en ajouter un paierait deux fois — mais le calendrier de
+     * versement propre au compte Connect, que Stripe applique de son côté.
+     *
+     * Ce délai est donc une ANNONCE, pas une planification : rien dans ce dépôt ne déclenche le
+     * versement. Il est configurable parce qu'un compte neuf attend plus longtemps qu'un compte
+     * établi, et qu'annoncer une date fausse au prestataire coûte plus cher que ne rien annoncer.
+     */
+    'payout_delay_days' => (int) env('BRIO_PAYOUT_DELAY_DAYS', 7),
+
     'booking' => [
         'default_duration_minutes' => 90,
         'default_buffer_minutes' => 30,

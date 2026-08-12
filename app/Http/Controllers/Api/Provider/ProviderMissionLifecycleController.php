@@ -8,6 +8,7 @@ use App\Models\Mission;
 use App\Services\Missions\MissionLifecycleService;
 use App\Services\Missions\MissionVerificationCodeService;
 use App\Services\Notifications\SmsService;
+use App\Services\Payments\PayoutAnnouncementService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
@@ -223,6 +224,8 @@ class ProviderMissionLifecycleController extends Controller
             'ok' => true,
             'mission_id' => $mission->id,
             'status' => $mission->status,
+            // La clôture par scan mérite la même annonce que la clôture par code saisi.
+            'payout' => $this->annoncePayout($mission),
         ]);
     }
 
@@ -341,14 +344,24 @@ class ProviderMissionLifecycleController extends Controller
             ], 409);
         }
 
-        $genere = app(MissionVerificationCodeService::class)->createVerificationCode($mission, $data['type']);
+        /*
+         * LE CODE DE FIN PASSE PAR LE CYCLE DE VIE, PAS PAR LE SERVICE DE CODES.
+         *
+         * `issueEndCode()` émet le code ET le confie au suivi web du client, en plus du SMS. Créer
+         * le code ici en direct ne laissait qu'un SMS pour le transporter — or c'est justement son
+         * absence qui motive ce renvoi : le client qui n'a rien reçu la première fois ne recevrait
+         * toujours rien si le plafond d'envoi est déjà épuisé.
+         */
+        if ($data['type'] === 'end') {
+            $genere = $this->lifecycle->issueEndCode($mission);
+        } else {
+            $genere = app(MissionVerificationCodeService::class)->createVerificationCode($mission, 'start');
 
-        app(SmsService::class)->send(
-            $telephone,
-            $data['type'] === 'start'
-                ? 'Brio : votre employé est arrivé. Code de début : '.$genere['code']
-                : 'Brio : code de fin de mission : '.$genere['code'].'. Communiquez-le au prestataire en fin de service.',
-        );
+            app(SmsService::class)->send(
+                $telephone,
+                'Brio : votre employé est arrivé. Code de début : '.$genere['code'],
+            );
+        }
 
         Cache::put($cle, true, $attente);
 
@@ -460,7 +473,24 @@ class ProviderMissionLifecycleController extends Controller
             'mission_id' => $mission->id,
             'status' => $mission->status,
             'duration_minutes' => $mission->actual_duration_minutes,
+            // Ce que le prestataire doit lire À L'INSTANT où il clôture : combien, et quand. La
+            // notification durable part en parallèle, mais un message qui arrive plus tard ne
+            // répond pas à la question qu'il se pose en rangeant son matériel.
+            'payout' => $this->annoncePayout($mission),
         ]);
+    }
+
+    /**
+     * @return array<string, mixed>|null
+     */
+    protected function annoncePayout(Mission $mission): ?array
+    {
+        try {
+            return app(PayoutAnnouncementService::class)->pour($mission);
+        } catch (\Throwable $e) {
+            // Une annonce indisponible ne doit pas transformer une clôture réussie en erreur.
+            return null;
+        }
     }
 
     // ──────────────────────────────────────────────────────

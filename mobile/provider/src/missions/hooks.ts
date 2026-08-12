@@ -60,6 +60,28 @@ export type MissionLifecyclePayload =
   | { action: MissionLifecycleAction; code?: string };
 
 /**
+ * Ce que la clôture rapporte, tel que le serveur l'annonce.
+ *
+ * `date_transfert` est le VERSEMENT BANCAIRE annoncé, pas un virement déclenché par la
+ * plateforme : la part du prestataire est déjà sur son compte Stripe depuis l'encaissement.
+ */
+export type MissionPayoutAnnouncement = {
+  montant_prestataire: number;
+  commission_plateforme: number;
+  total: number;
+  taux_commission: number;
+  devise: string;
+  date_transfert: string;
+  delai_jours: number;
+};
+
+export type MissionLifecycleResult = {
+  ok?: boolean;
+  status?: string;
+  payout?: MissionPayoutAnnouncement | null;
+};
+
+/**
  * RENVOYER AU CLIENT LE CODE QU'IL N'A PAS REÇU.
  *
  * Un SMS se perd : réseau du client, numéro mal saisi, message noyé, plafond d'envoi atteint. Sans
@@ -79,7 +101,7 @@ export function useResendMissionCode(missionId: number) {
 
 export function useMissionLifecycle(missionId: number) {
   const qc = useQueryClient();
-  return useMutation<void, ApiError, MissionLifecyclePayload>({
+  return useMutation<MissionLifecycleResult, ApiError, MissionLifecyclePayload>({
     mutationFn: async (payload) => {
       const action = typeof payload === 'string' ? payload : payload.action;
       const code = typeof payload === 'string' ? undefined : payload.code;
@@ -92,7 +114,8 @@ export function useMissionLifecycle(missionId: number) {
             ? { start_code: code }
             : undefined
         : undefined;
-      await apiClient.post(`/provider/missions/${missionId}/${action}`, body);
+      // La réponse est RENDUE : elle porte l'annonce de gain que l'écran affiche aussitôt.
+      return (await apiClient.post(`/provider/missions/${missionId}/${action}`, body)).data ?? {};
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['provider', 'mission', missionId] });

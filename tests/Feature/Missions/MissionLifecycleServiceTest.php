@@ -12,6 +12,7 @@ use App\Models\User;
 use App\Notifications\EmployeArriveNotification;
 use App\Notifications\EmployeEnRouteNotification;
 use App\Notifications\MissionCompletedNotification;
+use App\Notifications\MissionPayoutAnnouncedNotification;
 use App\Notifications\MissionStartedNotification;
 use App\Services\Missions\MissionLifecycleService;
 use App\Support\Domain\MissionStatus;
@@ -210,6 +211,64 @@ class MissionLifecycleServiceTest extends TestCase
         $this->expectException(RuntimeException::class);
         $this->expectExceptionMessage('obligatoires');
         $this->service()->completeMission($mission, $provider);
+    }
+
+    /**
+     * LA CLÔTURE PARLE AUX DEUX PARTIES.
+     *
+     * Tout partait vers le client ; le prestataire qui venait de travailler ne recevait pas un mot,
+     * et n'avait donc aucun moyen de savoir ce que sa mission lui rapportait ni quand.
+     */
+    public function test_la_cloture_annonce_son_gain_au_prestataire(): void
+    {
+        Notification::fake();
+        config(['brio.payout_delay_days' => 7]);
+
+        [, $provider, $mission] = $this->makeMission(MissionStatus::STARTED);
+        $mission->update(['actual_start_at' => now()->subHour()]);
+
+        $this->service()->completeMission($mission, $provider);
+
+        Notification::assertSentTo(
+            $provider,
+            MissionPayoutAnnouncedNotification::class,
+            function (MissionPayoutAnnouncedNotification $notification) {
+                // 120 € au devis, 20 % de commission : 96 € au prestataire, 24 € à la plateforme.
+                $this->assertSame(96.0, $notification->annonce['montant_prestataire']);
+                $this->assertSame(24.0, $notification->annonce['commission_plateforme']);
+                $this->assertSame(
+                    now()->addDays(7)->toDateString(),
+                    $notification->annonce['date_transfert'],
+                );
+                $this->assertStringContainsString('Félicitations', $notification->corps());
+                $this->assertStringContainsString('96,00 €', $notification->corps());
+
+                return true;
+            },
+        );
+    }
+
+    public function test_la_cloture_remercie_le_client(): void
+    {
+        Notification::fake();
+
+        [$client, $provider, $mission] = $this->makeMission(MissionStatus::STARTED);
+        $mission->update(['actual_start_at' => now()->subHour()]);
+
+        $this->service()->completeMission($mission, $provider);
+
+        Notification::assertSentTo(
+            $client,
+            MissionCompletedNotification::class,
+            function (MissionCompletedNotification $notification) use ($client) {
+                $this->assertStringContainsString(
+                    'Merci d’avoir fait confiance à Brio',
+                    $notification->toArray($client)['message'],
+                );
+
+                return true;
+            },
+        );
     }
 
     public function test_set_en_route_rejects_unassigned_user(): void

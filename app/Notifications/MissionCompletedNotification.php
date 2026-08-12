@@ -39,8 +39,8 @@ class MissionCompletedNotification extends Notification
         $avis = route('client.feedback.create', $this->mission->booking_id);
 
         return (new MailMessage)
-            ->subject('Votre mission est terminée')
-            ->greeting('Bonjour,')
+            ->subject('Merci d’avoir fait confiance à Brio')
+            ->greeting('Merci d’avoir fait confiance à Brio,')
             ->line('La mission '.$this->mission->booking?->booking_reference.' est terminée.')
             ->line('Vous pouvez maintenant valider la présence ou signaler un problème.')
             // M3 — report is on the private disk; link via a longer-lived signed URL (7 days),
@@ -54,6 +54,8 @@ class MissionCompletedNotification extends Notification
     {
         return [
             'type' => 'mission_completed',
+            'titre' => 'Merci d’avoir fait confiance à Brio',
+            'message' => 'Merci d’avoir fait confiance à Brio. Votre mission est terminée — votre avis nous aide à garder le meilleur niveau.',
             'mission_id' => $this->mission->id,
             'rendez_vous_id' => $this->mission->booking_id,
             'booking_reference' => $this->mission->booking?->booking_reference,

@@ -56,7 +56,7 @@
             Donnez ce code à l’employé pour clôturer la mission.
         </p>
         <div class="inline-flex rounded-xl bg-white px-4 py-2 text-xl font-bold tracking-[0.3em] text-amber-800">
-            {{ session('mission_end_code_'.$mission->id) ?? 'Code généré côté employé' }}
+            {{ $clientEndCode ?? 'Code en attente' }}
         </div>
     </div>
     @endif
@@ -66,9 +66,30 @@
     @endif
 
     @if($mission->status === 'completed')
-    <div class="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700">
-        Mission terminée avec succès.
+    <div class="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
+        <p class="font-semibold">Merci d’avoir fait confiance à Brio.</p>
+        <p class="mt-1">Votre mission est terminée.</p>
     </div>
+
+    {{--
+        L'AVIS SE DONNE ICI, PAS AILLEURS.
+
+        Le formulaire d'avis existait déjà, sur sa propre page — atteignable seulement par un lien
+        dans un courriel de fin de mission. Un avis qu'il faut aller chercher n'est pas donné : le
+        client ferme la page dès qu'il a lu « mission terminée ». On le lui propose donc à l'endroit
+        et à l'instant où il regarde le résultat.
+
+        GARDE OBLIGATOIRE SUR LE PROPRIÉTAIRE. `ClientFeedbackForm::mount()` fait
+        `abort_unless($rendezVous->client_id === Auth::id(), 403)`, alors que ce suivi-ci admet
+        aussi les membres d'une organisation cliente. Sans cette condition, un collègue du
+        titulaire ferait tomber TOUTE la page en 403 en arrivant sur une mission terminée.
+    --}}
+    @if($mission->booking && (int) $mission->booking->client_id === (int) auth()->id())
+    <livewire:client.client-feedback-form
+        :rendez-vous="$mission->booking"
+        :key="'feedback-'.$mission->booking->id" />
+    @endif
+
     <livewire:client.mission-qr-codes :mission="$mission" :key="'qr-codes-'.$mission->id" />
     <livewire:client.mission-aftercare-summary :mission="$mission" :key="'aftercare-'.$mission->id" />
     <livewire:client.mission-final-validation :mission="$mission" :key="'final-validation-'.$mission->id" />

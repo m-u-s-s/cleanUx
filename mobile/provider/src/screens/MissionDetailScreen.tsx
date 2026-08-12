@@ -4,6 +4,7 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useNavigation } from '@react-navigation/native';
 import { Screen, Button, Badge, Divider, TextInput } from '@/ui';
 import { useMissionDetail, useMissionLifecycle, useResendMissionCode, missionStatusLabel } from '@/missions';
+import type { MissionLifecyclePayload, MissionPayoutAnnouncement } from '@/missions';
 import { useArriveOnSite } from '@/tracking';
 import { colors, spacing, typography, radius, shadows, useThemeColors } from '@/theme';
 import type { ThemeTokens } from '@/theme/useThemeColors';
@@ -50,6 +51,9 @@ export function MissionDetailScreen({ route }: Props) {
   // during the previous render », et l'écran plantait.
   const [startCode, setStartCode] = useState('');
 
+  // Même raison que ci-dessus pour le code de FIN : déclaré avant tout retour anticipé.
+  const [endCode, setEndCode] = useState('');
+
   if (isLoading || !mission) {
     return (
       <Screen>
@@ -58,10 +62,36 @@ export function MissionDetailScreen({ route }: Props) {
     );
   }
 
-  const handleAction = (action: 'start' | 'arrive' | 'complete', label: string) => {
+  /**
+   * TOUTE ACTION DE CYCLE DE VIE REND SA RÉPONSE VISIBLE.
+   *
+   * `lifecycle.mutate(action)` était appelé sans `onError`. Or le serveur refuse la clôture par un
+   * 422 « Le code de fin est requis pour clôturer cette mission » dès qu'un code de fin est en
+   * attente — ce qui est le cas normal, puisqu'il naît à l'arrivée. Le prestataire appuyait sur
+   * « Mission terminée », confirmait, et regardait un écran rigoureusement inchangé : ni erreur,
+   * ni progression, aucun moyen de deviner qu'il manquait six chiffres.
+   *
+   * L'action passe désormais par une charge complète, code compris, et la réponse du serveur —
+   * refus comme succès — est toujours affichée.
+   */
+  const handleAction = (payload: MissionLifecyclePayload, label: string) => {
+    const action = typeof payload === 'string' ? payload : payload.action;
+
     Alert.alert(label, `Confirmer "${label}" ?`, [
       { text: 'Annuler', style: 'cancel' },
-      { text: 'Confirmer', onPress: () => lifecycle.mutate(action) },
+      {
+        text: 'Confirmer',
+        onPress: () =>
+          lifecycle.mutate(payload, {
+            onSuccess: (resultat) => {
+              if (action !== 'complete') return;
+
+              Alert.alert('Félicitations 🎉', messageDeCloture(resultat?.payout));
+            },
+            onError: (e: any) =>
+              Alert.alert('Impossible', e?.message ?? 'Réessayez dans un instant.'),
+          }),
+      },
     ]);
   };
 
@@ -213,9 +243,28 @@ export function MissionDetailScreen({ route }: Props) {
               onPress={() => navigation.navigate('PresenceScan', { purpose: 'completion', missionId })}
               fullWidth
             />
+            {/* Le code de fin que le client lit sur son espace — ou reçoit par SMS. Il était
+                réclamé par le serveur sans qu'aucun champ ne permette de le saisir. */}
+            <TextInput
+              label="Code de fin (affiché sur l’espace client)"
+              value={endCode}
+              onChangeText={setEndCode}
+              keyboardType="number-pad"
+              maxLength={6}
+              placeholder="000000"
+              testID="end-code-input"
+            />
             <Button
               label="Mission terminée"
-              onPress={() => handleAction('complete', 'Terminer')}
+              onPress={() =>
+                handleAction(
+                  // Sans code saisi, on laisse le serveur trancher : il accepte la clôture
+                  // lorsqu'aucun code de fin n'est en attente, et la refuse sinon — avec un
+                  // message désormais visible.
+                  endCode.length === 6 ? { action: 'complete', code: endCode } : 'complete',
+                  'Terminer',
+                )
+              }
               variant="danger"
               fullWidth
             />
@@ -237,6 +286,36 @@ export function MissionDetailScreen({ route }: Props) {
       </View>
     </Screen>
   );
+}
+
+/**
+ * Ce que le prestataire lit à l'instant où il clôture : combien, et quand.
+ *
+ * Le montant vient du serveur et n'est jamais recalculé ici — un partage 80/20 refait côté client
+ * divergerait du jour où un taux négocié serait activé, et c'est le prestataire qui découvrirait
+ * l'écart sur son relevé.
+ *
+ * Sans annonce exploitable (réservation sans montant, service indisponible), on félicite quand
+ * même : la mission EST terminée, et taire le succès pour une somme manquante donnerait
+ * exactement l'impression de panne que ce chantier corrige.
+ */
+function messageDeCloture(payout?: MissionPayoutAnnouncement | null): string {
+  const felicitations = 'Félicitations, vous avez fini votre mission.';
+
+  if (!payout) {
+    return `${felicitations} Le montant vous sera transféré selon votre calendrier de versement habituel.`;
+  }
+
+  const montant = payout.montant_prestataire.toFixed(2).replace('.', ',');
+
+  return `${felicitations} ${montant} € seront transférés sur votre compte le ${dateFr(payout.date_transfert)}.`;
+}
+
+/** « 2026-08-19 » → « 19/08/2026 ». Formatage manuel : Intl est incomplet sous Hermes/Android. */
+function dateFr(iso: string): string {
+  const [annee, mois, jour] = (iso ?? '').split('-');
+
+  return annee && mois && jour ? `${jour}/${mois}/${annee}` : iso;
 }
 
 function DetailRow({ label, value }: { label: string; value: string }) {
