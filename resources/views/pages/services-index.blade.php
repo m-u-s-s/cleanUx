@@ -122,7 +122,7 @@
     {{-- JSON-LD ItemList --}}
     <script type="application/ld+json">
     {
-        "@context": "https://schema.org",
+        "@@context": "https://schema.org",
         "@type": "ItemList",
         "name": "Services Brio",
         "description": "Tous les services a domicile disponibles sur Brio en Belgique",

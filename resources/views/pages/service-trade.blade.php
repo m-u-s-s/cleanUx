@@ -6,7 +6,7 @@
     {{-- Schema.org Service JSON-LD --}}
     <script type="application/ld+json">
     {
-        "@context": "https://schema.org",
+        "@@context": "https://schema.org",
         "@type": "Service",
         "name": "{{ $trade->name }}",
         "description": "{{ $seoDescription }}",
@@ -280,7 +280,7 @@
                     {{-- FAQ JSON-LD --}}
                     <script type="application/ld+json">
                     {
-                        "@context": "https://schema.org",
+                        "@@context": "https://schema.org",
                         "@type": "FAQPage",
                         "mainEntity": [
                             {
