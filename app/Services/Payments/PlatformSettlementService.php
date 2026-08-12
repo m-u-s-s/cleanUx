@@ -3,6 +3,7 @@
 namespace App\Services\Payments;
 
 use App\Models\PlatformSettlementAccount;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Stripe\Stripe;
@@ -60,7 +61,7 @@ class PlatformSettlementService
     /**
      * Les comptes déclarés, groupés par devise.
      *
-     * @return array<string, \Illuminate\Support\Collection<int, PlatformSettlementAccount>>
+     * @return array<string, Collection<int, PlatformSettlementAccount>>
      */
     public function comptesParDevise(): array
     {

@@ -3,6 +3,7 @@
 namespace App\Notifications;
 
 use App\Models\Mission;
+use App\Support\Notifications\InteractsWithUserNotificationPreferences;
 use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
@@ -22,8 +23,8 @@ use Illuminate\Support\Carbon;
  */
 class MissionPayoutAnnouncedNotification extends Notification
 {
+    use InteractsWithUserNotificationPreferences;
     use Queueable;
-    use \App\Support\Notifications\InteractsWithUserNotificationPreferences;
 
     /**
      * @param  array<string, mixed>  $annonce  Sortie de PayoutAnnouncementService::pour()
