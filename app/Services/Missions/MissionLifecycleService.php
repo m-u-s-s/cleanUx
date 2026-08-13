@@ -549,7 +549,23 @@ class MissionLifecycleService
             $beneficiaire = $annonceur->beneficiaire($mission) ?? $user;
             $annonce = $annonceur->pour($mission);
 
-            if ($annonce) {
+            /*
+             * ON NE PROMET PAS UN VIREMENT PERSONNEL POUR UNE MISSION DE SOCIÉTÉ.
+             *
+             * Quand la mission appartient à une société prestataire, l'argent va à l'ENTREPRISE :
+             * le chef d'équipe et les renforts sont salariés, ils ne touchent pas la course. Leur
+             * annoncer « 150,80 € seront transférés sur votre compte » est faux, et c'est le genre
+             * de faux qu'on ne découvre qu'au moment où quelqu'un attend son virement.
+             *
+             * Le cas a été trouvé en jouant le parcours complet pour les quatre couples de rôles :
+             * il ne se voyait pas sur une étape isolée, seulement sur la jointure entre le montage
+             * de la société et la clôture.
+             *
+             * Une annonce destinée à la SOCIÉTÉ reste à construire — elle suppose de désigner qui,
+             * dans l'organisation, doit la recevoir. Se taire est provisoire mais juste ; promettre
+             * à la mauvaise personne ne l'est pas.
+             */
+            if ($annonce && $mission->provider_organization_id === null) {
                 $beneficiaire->notify(new MissionPayoutAnnouncedNotification($mission, $annonce));
             }
         } catch (\Throwable $e) {
