@@ -34,9 +34,11 @@ class ProviderWalletService
             ->where('direction', ProviderWalletTransaction::DIRECTION_CREDIT)
             ->sum('amount');
 
+        // TOUT DÉBIT NON ANNULÉ, et pas seulement ceux déjà aboutis : un retrait demandé est de
+        // l'argent promis, qui ne peut plus être promis une seconde fois. Voir
+        // ProviderWalletTransaction::scopeEngagedDebit().
         $availableDebits = (float) (clone $base)
-            ->availableBalance()
-            ->where('direction', ProviderWalletTransaction::DIRECTION_DEBIT)
+            ->engagedDebit()
             ->sum('amount');
 
         $pendingCredits = (float) (clone $base)

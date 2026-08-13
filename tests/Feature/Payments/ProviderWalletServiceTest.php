@@ -172,6 +172,69 @@ class ProviderWalletServiceTest extends TestCase
         $this->assertEqualsWithDelta(50.0, (float) $debit->amount, 0.01);
     }
 
+    /**
+     * UN RETRAIT ENGAGÉ DOIT RÉDUIRE LE SOLDE DISPONIBLE.
+     *
+     * `recordPayout()` inscrit son débit en `processing`, statut absent de
+     * `scopeAvailableBalance()` — qui ne retient que `available` et `cleared`. Le débit
+     * n'entrait donc dans aucun calcul : le solde restait intact après un retrait.
+     */
+    public function test_le_solde_disponible_baisse_apres_un_retrait(): void
+    {
+        $booking = $this->makeBooking(200.0, providerCents: 20000, feeCents: 0);
+        $this->wallet->recordEarning($booking);
+
+        $this->assertEqualsWithDelta(
+            200.0,
+            $this->wallet->balance($this->provider->id)['available'],
+            0.01,
+        );
+
+        $this->wallet->requestWithdraw($this->provider, 150.0);
+
+        $this->assertEqualsWithDelta(
+            50.0,
+            $this->wallet->balance($this->provider->id)['available'],
+            0.01,
+            'Un retrait engagé doit réduire le solde disponible dès sa demande.',
+        );
+    }
+
+    /**
+     * LE MÊME SOLDE NE PEUT PAS ÊTRE RETIRÉ DEUX FOIS.
+     *
+     * Conséquence directe du défaut ci-dessus, et la seule qui coûte de l'argent réel : le
+     * contrôle de `requestWithdraw()` lit un solde qui n'a pas bougé, si bien qu'un prestataire
+     * pouvait redemander le même montant autant de fois qu'il le souhaitait.
+     */
+    public function test_le_meme_solde_ne_peut_pas_etre_retire_deux_fois(): void
+    {
+        $booking = $this->makeBooking(200.0, providerCents: 20000, feeCents: 0);
+        $this->wallet->recordEarning($booking);
+
+        $this->wallet->requestWithdraw($this->provider, 150.0);
+
+        // 150 + 150 = 300 demandés sur 200 gagnés : le second retrait doit être refusé.
+        $this->expectException(ValidationException::class);
+        $this->wallet->requestWithdraw($this->provider, 150.0);
+    }
+
+    /** Un retrait annulé rend le solde : seul un débit REVERSED cesse d'engager. */
+    public function test_un_retrait_annule_rend_le_solde(): void
+    {
+        $booking = $this->makeBooking(200.0, providerCents: 20000, feeCents: 0);
+        $this->wallet->recordEarning($booking);
+
+        $payout = $this->wallet->requestWithdraw($this->provider, 150.0);
+        $this->wallet->reversePayout($payout, 'test');
+
+        $this->assertEqualsWithDelta(
+            200.0,
+            $this->wallet->balance($this->provider->id)['available'],
+            0.01,
+        );
+    }
+
     public function test_mark_payout_cleared_changes_transaction_status(): void
     {
         $booking = $this->makeBooking(200.0, providerCents: 20000, feeCents: 0);
