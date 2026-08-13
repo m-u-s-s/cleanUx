@@ -57,9 +57,32 @@ class ProviderWalletService
         ];
     }
 
+    /**
+     * QUI A RÉELLEMENT FAIT LE TRAVAIL — et donc qui doit être crédité ou repris.
+     *
+     * Le portefeuille lisait `bookings.employe_id`, le nom resté sur la COMMANDE. Or
+     * `completeMission()` désigne le bénéficiaire du VERSEMENT par la mission
+     * (`lead_provider_user_id`), et les deux divergent dès qu'une mission est réassignée — la
+     * réservation garde l'ancien nom — comme pour toute mission qu'une société confie à un salarié.
+     *
+     * La ligne comptable nommait alors une personne pendant que le solde retirable allait à une
+     * autre. Chacune des deux moitiés, lue seule, semblait juste : c'est ce qui l'a rendue
+     * invisible.
+     *
+     * La réservation reste en repli — pour une mission qui ne désigne personne, elle est la seule
+     * information disponible, et les parcours qui n'ont jamais divergé gardent leur comportement.
+     */
+    protected function intervenant(Booking $booking): int
+    {
+        return (int) ($booking->missions()->latest('id')->value('lead_provider_user_id')
+            ?? $booking->employe_id
+            ?? $booking->assigned_provider_user_id
+            ?? 0);
+    }
+
     public function recordEarning(Booking $booking, ?array $intent = null): ?ProviderWalletTransaction
     {
-        $providerId = (int) ($booking->employe_id ?? $booking->assigned_provider_user_id ?? 0);
+        $providerId = $this->intervenant($booking);
         if (! $providerId) {
             return null;
         }
@@ -117,7 +140,7 @@ class ProviderWalletService
 
     public function recordTip(Booking $booking, float $amount, ?string $sourceRef = null): ?ProviderWalletTransaction
     {
-        $providerId = (int) ($booking->employe_id ?? $booking->assigned_provider_user_id ?? 0);
+        $providerId = $this->intervenant($booking);
         if (! $providerId || $amount <= 0) {
             return null;
         }
@@ -149,7 +172,7 @@ class ProviderWalletService
 
     public function recordRefundClawback(Booking $booking, float $amount, ?string $stripeChargeId = null): ?ProviderWalletTransaction
     {
-        $providerId = (int) ($booking->employe_id ?? $booking->assigned_provider_user_id ?? 0);
+        $providerId = $this->intervenant($booking);
         if (! $providerId || $amount <= 0) {
             return null;
         }

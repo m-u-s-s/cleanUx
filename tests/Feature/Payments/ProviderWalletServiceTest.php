@@ -3,6 +3,7 @@
 namespace Tests\Feature\Payments;
 
 use App\Models\Booking;
+use App\Models\Mission;
 use App\Models\ProviderPayout;
 use App\Models\ProviderProfile;
 use App\Models\ProviderWalletTransaction;
@@ -138,6 +139,47 @@ class ProviderWalletServiceTest extends TestCase
         $this->assertSame('debit', $clawback->direction);
         $balance = $this->wallet->balance($this->provider->id);
         $this->assertEqualsWithDelta(0.0, $balance['available'], 0.01);
+    }
+
+    /**
+     * C'EST L'INTERVENANT QUI EST CRÉDITÉ, PAS LE NOM RESTÉ SUR LA COMMANDE.
+     *
+     * `completeMission()` désigne le bénéficiaire du VERSEMENT par la mission
+     * (`lead_provider_user_id`), et créditait le PORTEFEUILLE d'après la réservation
+     * (`employe_id`). Les deux divergent dès qu'une mission est réassignée — la réservation garde
+     * l'ancien nom — et pour toute mission qu'une société confie à l'un de ses salariés.
+     *
+     * La ligne comptable nommait alors une personne pendant que le solde retirable allait à une
+     * autre. Chacune des deux moitiés, lue seule, semblait juste.
+     */
+    public function test_c_est_l_intervenant_de_la_mission_qui_est_credite(): void
+    {
+        $booking = $this->makeBooking(200.0, providerCents: 16000, feeCents: 4000);
+
+        // La réservation garde le nom d'origine ; la mission désigne quelqu'un d'autre.
+        $ancien = User::factory()->employe()->create();
+        $booking->forceFill(['employe_id' => $ancien->id])->save();
+
+        Mission::factory()->create([
+            'booking_id' => $booking->id,
+            'lead_provider_user_id' => $this->provider->id,
+        ]);
+
+        $gain = $this->wallet->recordEarning($booking->fresh());
+
+        $this->assertNotNull($gain);
+        $this->assertSame(
+            $this->provider->id,
+            (int) $gain->provider_user_id,
+            'Le portefeuille crédite le nom resté sur la commande au lieu de celui qui est intervenu.',
+        );
+
+        $this->assertEqualsWithDelta(
+            0.0,
+            $this->wallet->balance($ancien->id)['available'],
+            0.01,
+            'L’ancien intervenant a été crédité d’une mission qu’il n’a pas faite.',
+        );
     }
 
     public function test_withdraw_rejects_below_minimum(): void
