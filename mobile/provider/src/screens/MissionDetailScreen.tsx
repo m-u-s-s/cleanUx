@@ -228,7 +228,16 @@ export function MissionDetailScreen({ route }: Props) {
         {/* `started`, PAS `in_progress` : ce dernier n'existe dans aucun statut du backend
             (MissionStatus), si bien qu'une mission démarrée n'affichait AUCUNE action — le
             prestataire ne pouvait ni ouvrir la mission terrain ni la clôturer. */}
-        {mission.status === 'started' && (
+        {/*
+          `paused` AUTANT QUE `started`, comme le fait le web depuis toujours.
+
+          `GET /provider/missions/active` sert les deux : une mission en pause apparaît donc dans
+          la liste du prestataire. Ne traiter que `started` la laissait sans la moindre action à
+          son ouverture — il la voyait, la touchait, et se retrouvait devant un écran vide. Le
+          suivi web, lui, affiche déjà le code de fin pour `['started','paused']` : c'est la même
+          intervention, seulement interrompue.
+        */}
+        {['started', 'paused'].includes(mission.status) && (
           <>
             <Button
               label="Mission terrain"

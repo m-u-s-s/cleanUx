@@ -94,7 +94,19 @@ export function MissionFieldScreen({ route }: Props) {
     );
   }, [extraLabel, extraPrix, proposerUnExtra]);
 
-  const enCours = mission?.status === 'started';
+  /*
+   * UNE MISSION EN PAUSE RESTE UNE MISSION EN COURS.
+   *
+   * `paused` est servi par la liste active du serveur au même titre que `started`, et le suivi web
+   * affiche déjà le code de fin pour les deux. Ne reconnaître que `started` privait une mission
+   * interrompue de son écran terrain ET de son bouton de clôture — la même impasse que le statut
+   * `in_progress` avait créée, pour la raison inverse : un mot juste, mais oublié.
+   *
+   * Le partage GPS suit le même drapeau, à dessein : le domaine ne distingue pas « en pause » de
+   * « en cours » pour la position, et inventer ici une distinction qu'il ne fait pas donnerait une
+   * troisième règle à tenir. Le prestataire garde l'interrupteur.
+   */
+  const enCours = mission ? ['started', 'paused'].includes(mission.status) : false;
 
   useGpsWatcher(
     gpsActive && enCours,

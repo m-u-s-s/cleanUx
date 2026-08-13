@@ -12,7 +12,7 @@
  *    démarrage passe par /begin et le code communiqué au client par SMS.
  */
 import React from 'react';
-import { Alert } from 'react-native';
+import { Alert, TouchableOpacity } from 'react-native';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react-native';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import MockAdapter from 'axios-mock-adapter';
@@ -74,6 +74,7 @@ jest.mock('@/theme', () => ({
 }));
 
 import { apiClient } from '@/api';
+import { missionStatusLabel } from '@/missions';
 import { MissionDetailScreen } from '@/screens/MissionDetailScreen';
 
 const apiMock = new MockAdapter(apiClient);
@@ -162,6 +163,34 @@ describe('MissionDetailScreen — cycle de vie', () => {
 
     await waitFor(() => expect(screen.getByLabelText('En route')).toBeTruthy());
   });
+
+  /**
+   * AUCUN STATUT ACTIF NE DOIT LAISSER LE PRESTATAIRE SANS RIEN À FAIRE.
+   *
+   * Le serveur décide de ce qu'il montre : `GET /provider/missions/active` expose `assigned`,
+   * `en_route`, `arrived`, `started` ET `paused`. Une mission qui apparaît dans la liste et
+   * n'offre aucune action à son ouverture est une impasse — le prestataire la voit, la touche, et
+   * se retrouve devant un écran qui ne propose rien.
+   *
+   * C'est la forme de défaut qui s'est répétée : `in_progress`, statut inexistant, laissait
+   * l'écran muet sur une mission démarrée. Le vocabulaire est aligné depuis ; ce test garde
+   * l'autre moitié du contrat — que chaque statut RÉELLEMENT servi mène quelque part.
+   *
+   * `paused` était la dernière impasse : le web traite depuis toujours `['started','paused']`
+   * ensemble pour la clôture, le mobile ne connaissait que `started`.
+   */
+  describe.each(['assigned', 'en_route', 'arrived', 'started', 'paused'])(
+    'statut actif « %s »',
+    (statut) => {
+      it('offre au moins une action au prestataire', async () => {
+        renderWithStatus(statut);
+
+        await waitFor(() => expect(screen.getByText(missionStatusLabel(statut))).toBeTruthy());
+
+        expect(screen.UNSAFE_getAllByType(TouchableOpacity).length).toBeGreaterThan(0);
+      });
+    },
+  );
 
   /**
    * LA CLÔTURE NE PARTAIT SANS RIEN ET NE DISAIT RIEN.
