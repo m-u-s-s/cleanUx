@@ -9,6 +9,7 @@ use App\Models\MissionAssignment;
 use App\Models\OrganizationMember;
 use App\Models\User;
 use App\Services\PermissionService;
+use App\Support\Domain\MissionStatus;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -206,10 +207,19 @@ class OrganizationMemberAdministration
             // `lead_provider_user_id` est lu par le tableau de bord, l'autorisation Reverb
             // `mission.{id}` et le suivi de trajet : le laisser en place ferait viser les trois sur
             // quelqu'un qui ne viendra pas.
+            /*
+             * `planned` ET NON `pending` : le domaine n'a pas de statut `pending` pour une mission.
+             *
+             * `MissionStatus` déclare `planned` pour exactement cet état — une mission qui existe
+             * mais n'est assignée à personne, ce que la fabrique produit déjà quand aucun
+             * intervenant n'est désigné. Écrire un mot hors vocabulaire faisait tomber ces missions
+             * en dehors de tous les filtres qui l'emploient : le départ d'un salarié rendait donc
+             * ses interventions à venir invisibles, y compris à qui devait les réassigner.
+             */
             Mission::query()
                 ->whereIn('id', $missionsAVenir)
                 ->where('lead_provider_user_id', $userId)
-                ->update(['lead_provider_user_id' => null, 'status' => 'pending']);
+                ->update(['lead_provider_user_id' => null, 'status' => MissionStatus::PLANNED]);
         }
 
         $canaux = Channel::query()
