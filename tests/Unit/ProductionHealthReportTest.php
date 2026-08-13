@@ -2,6 +2,7 @@
 
 namespace Tests\Unit;
 
+use App\Models\User;
 use App\Services\Ops\ProductionHealthReport;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
@@ -33,6 +34,92 @@ class ProductionHealthReportTest extends TestCase
         $this->assertNotNull($httpsCheck);
         $this->assertFalse($httpsCheck['ok']);
         $this->assertSame('ERROR', $httpsCheck['severity']);
+    }
+
+    /**
+     * LE GABARIT DE CLÉ PORTE LE BON PRÉFIXE, et c'est tout le piège.
+     *
+     * `.env.example` livre `sk_test_…` tronqué : un contrôle sur le seul préfixe déclarerait la
+     * plateforme prête alors qu'aucun `PaymentIntent` ne peut être créé.
+     */
+    public function test_le_gabarit_de_cle_stripe_est_signale(): void
+    {
+        Config::set('cashier.secret', 'sk_test_xxx');
+
+        $report = app(ProductionHealthReport::class)->build();
+        $check = collect($report['checks'])->firstWhere('label', 'Clé Stripe exploitable');
+
+        $this->assertNotNull($check);
+        $this->assertFalse($check['ok'], 'Une clé de 11 caractères ne peut pas encaisser.');
+        $this->assertSame('ERROR', $check['severity']);
+        $this->assertStringContainsString('gabarit', $report['metrics']['stripe_key_state']);
+    }
+
+    public function test_une_vraie_cle_passe_le_controle(): void
+    {
+        Config::set('cashier.secret', 'sk_test_'.str_repeat('a', 90));
+
+        $report = app(ProductionHealthReport::class)->build();
+        $check = collect($report['checks'])->firstWhere('label', 'Clé Stripe exploitable');
+
+        $this->assertTrue($check['ok']);
+        $this->assertSame('définie', $report['metrics']['stripe_key_state']);
+    }
+
+    /** Une clé de TEST en production encaisse dans le vide. */
+    public function test_une_cle_de_test_est_refusee_en_production(): void
+    {
+        Config::set('app.env', 'production');
+        Config::set('cashier.secret', 'sk_test_'.str_repeat('a', 90));
+
+        $report = app(ProductionHealthReport::class)->build();
+        $check = collect($report['checks'])->firstWhere('label', 'Clé Stripe non-test en production');
+
+        $this->assertFalse($check['ok']);
+        $this->assertSame('ERROR', $check['severity']);
+    }
+
+    /**
+     * SANS PRESTATAIRE ENCAISSABLE, AUCUNE RÉSERVATION NE PEUT ÊTRE PAYÉE.
+     *
+     * `MissionPaymentService::authorize()` refuse explicitement : la plateforme ne peut pas
+     * prélever ce qu'elle serait incapable de reverser. Sur une base sans onboarding Stripe —
+     * l'état de la base de démonstration au 2026-08-13 — le chemin de l'argent est donc
+     * intégralement bloqué, et rien ne le disait.
+     */
+    public function test_aucun_prestataire_encaissable_est_une_erreur(): void
+    {
+        $report = app(ProductionHealthReport::class)->build();
+        $check = collect($report['checks'])->firstWhere('label', 'Au moins un prestataire encaissable');
+
+        $this->assertNotNull($check);
+        $this->assertFalse($check['ok']);
+        $this->assertSame('ERROR', $check['severity']);
+        $this->assertSame(0, $report['metrics']['stripe_payable_providers']);
+    }
+
+    /** Un identifiant de compte NE SUFFIT PAS : il naît dès le premier écran du parcours Stripe. */
+    public function test_un_compte_connect_non_actif_ne_compte_pas(): void
+    {
+        User::factory()->create([
+            'role' => 'employe',
+            'stripe_connect_account_id' => 'acct_en_cours',
+            'stripe_connect_status' => 'pending',
+        ]);
+
+        $report = app(ProductionHealthReport::class)->build();
+
+        $this->assertSame(0, $report['metrics']['stripe_payable_providers']);
+
+        User::factory()->create([
+            'role' => 'employe',
+            'stripe_connect_account_id' => 'acct_pret',
+            'stripe_connect_status' => 'active',
+        ]);
+
+        $report = app(ProductionHealthReport::class)->build();
+
+        $this->assertSame(1, $report['metrics']['stripe_payable_providers']);
     }
 
     public function test_report_flags_mock_providers_as_error(): void

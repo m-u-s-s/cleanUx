@@ -71,6 +71,31 @@ class ProductionHealthReport
         $mock = $this->mockProviders();
         $this->pushCheck($checks, 'Aucun provider en mode mock', count($mock) === 0, 'error', count($mock) === 0 ? 'none' : implode(', ', $mock));
 
+        /*
+         * LE CHEMIN DE L'ARGENT, QUE CE RAPPORT NE REGARDAIT PAS.
+         *
+         * Il vérifiait que le SMS ou le KYC ne sont pas en mode simulé, mais rien sur Stripe : une
+         * plateforme pouvait donc être déclarée prête tout en étant incapable d'encaisser un seul
+         * euro. Constaté le 2026-08-13 sur la base de démonstration — clé de gabarit, aucun
+         * prestataire onboardé, zéro empreinte bancaire sur huit réservations, zéro versement,
+         * zéro écriture de portefeuille. Rien ne le signalait.
+         *
+         * Les quatre conditions ci-dessous sont celles SANS LESQUELLES AUCUN PAIEMENT N'EST
+         * POSSIBLE, et chacune échoue aujourd'hui en silence :
+         *   — sans clé exploitable, `PaymentIntent::create` lève une erreur d'authentification ;
+         *   — une clé de test en production encaisse dans le vide ;
+         *   — sans secret de webhook, aucune capture ni aucun remboursement ne revient jamais ;
+         *   — sans prestataire encaissable, `authorize()` refuse toute réservation, la plateforme
+         *     ne pouvant pas reverser ce qu'elle prélèverait.
+         */
+        $stripe = $this->stripeSnapshot();
+        $webhookSecret = filled(config('cashier.webhook.secret'));
+
+        $this->pushCheck($checks, 'Clé Stripe exploitable', $stripe['cle_exploitable'], 'error', $stripe['cle_etat']);
+        $this->pushCheck($checks, 'Clé Stripe non-test en production', ! $isProduction || ! $stripe['cle_test'], 'error', $stripe['cle_test'] ? 'clé de TEST' : 'OK');
+        $this->pushCheck($checks, 'Secret de webhook Stripe défini', $webhookSecret, 'error', $webhookSecret ? 'OK' : 'missing');
+        $this->pushCheck($checks, 'Au moins un prestataire encaissable', ($stripe['prestataires_encaissables'] ?? 0) > 0, 'error', $stripe['prestataires_encaissables'] === null ? 'unknown' : (string) $stripe['prestataires_encaissables']);
+
         $metrics = [
             'app_env' => $appEnv,
             'app_url' => $appUrl,
@@ -88,6 +113,12 @@ class ProductionHealthReport
             'pending_migrations' => $pending,
             'mock_providers' => $mock,
             'mock_providers_count' => count($mock),
+            // JAMAIS LA CLÉ ELLE-MÊME : ces métriques partent en journal et en supervision. On
+            // expose son ÉTAT, ce qui suffit à diagnostiquer sans jamais divulguer un secret.
+            'stripe_key_state' => $stripe['cle_etat'],
+            'stripe_key_is_test' => $stripe['cle_test'],
+            'stripe_webhook_secret' => $webhookSecret,
+            'stripe_payable_providers' => $stripe['prestataires_encaissables'],
         ];
 
         return [
@@ -153,6 +184,72 @@ class ProductionHealthReport
         }
 
         return Arr::has(config('filesystems.disks', []), $disk);
+    }
+
+    /**
+     * L'état du chemin de l'argent, sans jamais appeler Stripe.
+     *
+     * Un rapport de santé doit pouvoir être lu quand le réseau est coupé ou la clé absente —
+     * c'est-à-dire précisément dans les situations qu'il sert à détecter.
+     *
+     * @return array<string, mixed>
+     */
+    protected function stripeSnapshot(): array
+    {
+        $cle = (string) config('cashier.secret');
+
+        /*
+         * LE PRÉFIXE NE SUFFIT PAS, et c'est tout l'intérêt de ce contrôle. Le gabarit livré par
+         * `.env.example` porte le bon préfixe `sk_test_` : ne vérifier que lui laisserait passer
+         * une plateforme incapable d'encaisser. Une vraie clé Stripe dépasse la centaine de
+         * caractères ; le seuil est volontairement bas pour ne jamais rejeter une clé valide.
+         */
+        $cleExploitable = strlen($cle) >= 40
+            && (str_starts_with($cle, 'sk_') || str_starts_with($cle, 'rk_'));
+
+        return [
+            'cle_exploitable' => $cleExploitable,
+            'cle_test' => str_starts_with($cle, 'sk_test_') || str_starts_with($cle, 'rk_test_'),
+            'cle_etat' => match (true) {
+                $cle === '' => 'absente',
+                ! $cleExploitable => 'gabarit ('.strlen($cle).' caractères)',
+                default => 'définie',
+            },
+            'prestataires_encaissables' => $this->prestatairesEncaissables(),
+        ];
+    }
+
+    /**
+     * Combien de prestataires peuvent RÉELLEMENT recevoir des fonds.
+     *
+     * Même contrat que `User::canReceiveStripeConnectPayments()` : un identifiant de compte NE
+     * SUFFIT PAS, il naît dès le premier écran du parcours Stripe. Seul le statut `active`
+     * atteste qu'un virement aboutira.
+     *
+     * Le compte est fait sur les deux porteurs possibles — l'utilisateur et son profil — sans
+     * doublon, un même prestataire pouvant renseigner l'un, l'autre, ou les deux.
+     */
+    protected function prestatairesEncaissables(): ?int
+    {
+        try {
+            $identifiants = [];
+
+            foreach (['users' => 'id', 'provider_profiles' => 'user_id'] as $table => $colonne) {
+                if (! $this->safeHasTable($table) || ! Schema::hasColumn($table, 'stripe_connect_account_id')) {
+                    continue;
+                }
+
+                $identifiants = array_merge($identifiants, $this->db->table($table)
+                    ->whereNotNull('stripe_connect_account_id')
+                    ->where('stripe_connect_status', 'active')
+                    ->pluck($colonne)
+                    ->all());
+            }
+
+            return count(array_unique(array_filter($identifiants)));
+        } catch (Throwable) {
+            return null;
+        }
     }
 
     /** @return list<string> */

@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Config;
@@ -38,6 +39,16 @@ class GoLiveReadinessReportCommandTest extends TestCase
         Config::set('geolocation_v2.provider', 'google');
         Config::set('email_v2.provider', 'ses');
         Config::set('masked_calls.provider', 'twilio');
+
+        // Une mise en ligne qui ne peut pas encaisser n'est pas une mise en ligne : clé de
+        // production, secret de webhook et prestataire encaissable font partie du contrat.
+        Config::set('cashier.secret', 'sk_live_'.str_repeat('a', 90));
+        Config::set('cashier.webhook.secret', 'whsec_'.str_repeat('b', 32));
+        User::factory()->create([
+            'role' => 'employe',
+            'stripe_connect_account_id' => 'acct_pret',
+            'stripe_connect_status' => 'active',
+        ]);
 
         Config::set('operations.monitoring.heartbeat_enabled', true);
         Cache::put(
