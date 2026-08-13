@@ -4,6 +4,7 @@ namespace App\Services\Payments;
 
 use App\Models\ProviderPayout;
 use App\Models\User;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
 
@@ -100,27 +101,45 @@ class ExpressPayoutService
             ]);
         }
 
-        // Le retrait ordinaire fait déjà tout le travail — vérification Stripe Connect, ligne de
-        // registre, journal d'activité. On ne le réécrit pas : on l'annote.
-        $payout = $this->wallet->requestWithdraw($prestataire, $montantCents / 100, $devise);
+        /*
+         * LE VERSEMENT PORTE LE NET, ET LES FRAIS DEVIENNENT UNE ÉCRITURE.
+         *
+         * Le retrait était demandé pour le montant BRUT et les frais ne vivaient que dans les
+         * métadonnées. Résultat : le prestataire recevait le brut, la plateforme ne percevait
+         * rien, et l'écran continuait d'annoncer un net inférieur — trois versions d'un même
+         * virement, dont aucune n'était vérifiable dans les comptes.
+         *
+         * Le versement porte donc désormais ce qui part réellement, et les frais leur propre
+         * ligne. Les deux sont indissociables : un versement net sans sa ligne de frais rendrait
+         * au prestataire un solde qu'il a pourtant dépensé, d'où la transaction.
+         */
+        return DB::transaction(function () use ($prestataire, $devis, $devise) {
+            // Le retrait ordinaire fait déjà tout le travail — vérification Stripe Connect, ligne
+            // de registre, journal d'activité. On ne le réécrit pas : on l'annote.
+            $payout = $this->wallet->requestWithdraw($prestataire, $devis['net_cents'] / 100, $devise);
 
-        $payout->forceFill([
-            'metadata' => array_merge((array) $payout->metadata, [
-                'source' => 'express_withdraw',
-                // Le devis est FIGÉ sur la ligne : relire un taux six mois plus tard donnerait un
-                // autre montant que celui qui a été prélevé, et personne ne saurait l'expliquer.
-                'express_fee_cents' => $devis['fee_cents'],
-                'express_net_cents' => $devis['net_cents'],
-                'express_fee_basis_points' => self::FRAIS_BASIS_POINTS,
-            ]),
-        ])->save();
+            $this->wallet->recordExpressFee($payout, $devis['fee_cents']);
 
-        Log::info('[wallet] virement express demandé', [
-            'provider_user_id' => $prestataire->id,
-            'amount_cents' => $montantCents,
-            'fee_cents' => $devis['fee_cents'],
-        ]);
+            $payout->forceFill([
+                'metadata' => array_merge((array) $payout->metadata, [
+                    'source' => 'express_withdraw',
+                    // Le devis est FIGÉ sur la ligne : relire un taux six mois plus tard donnerait
+                    // un autre montant que celui prélevé, et personne ne saurait l'expliquer.
+                    'express_gross_cents' => $devis['amount_cents'],
+                    'express_fee_cents' => $devis['fee_cents'],
+                    'express_net_cents' => $devis['net_cents'],
+                    'express_fee_basis_points' => self::FRAIS_BASIS_POINTS,
+                ]),
+            ])->save();
 
-        return $payout->fresh();
+            Log::info('[wallet] virement express demandé', [
+                'provider_user_id' => $prestataire->id,
+                'gross_cents' => $devis['amount_cents'],
+                'fee_cents' => $devis['fee_cents'],
+                'net_cents' => $devis['net_cents'],
+            ]);
+
+            return $payout->fresh();
+        });
     }
 }

@@ -208,6 +208,51 @@ class ProviderWalletService
         ]);
     }
 
+    /**
+     * LES FRAIS D'UN VIREMENT EXPRESS, ÉCRITS COMME TELS.
+     *
+     * `ExpressPayoutService` calculait ses frais et les rangeait dans les métadonnées de la ligne
+     * de versement. Une métadonnée ne se totalise pas, ne se rapproche d'aucun relevé et n'entre
+     * dans aucun export comptable : la plateforme prélevait donc une somme que ses propres
+     * comptes ignoraient, pendant que le prestataire était débité du brut.
+     *
+     * NE PAS CONFONDRE AVEC LE DÉFAUT M4. La commission ordinaire est déduite À LA SOURCE — le
+     * gain est crédité NET — et lui ajouter un débit `platform_fee` déduisait deux fois, ce qu'un
+     * test voisin interdit désormais explicitement. Les frais express sont l'inverse : un
+     * prélèvement RÉEL et distinct, sur un montant déjà crédité, qui doit donc exister comme
+     * écriture. Le `source_type` `provider_payout` les distingue sans ambiguïté.
+     */
+    public function recordExpressFee(ProviderPayout $payout, int $feeCents): ?ProviderWalletTransaction
+    {
+        if ($feeCents <= 0) {
+            return null;
+        }
+
+        $idempotencyKey = sprintf('express_fee:payout:%d', $payout->id);
+
+        $existing = ProviderWalletTransaction::query()
+            ->where('idempotency_key', $idempotencyKey)
+            ->first();
+
+        if ($existing) {
+            return $existing;
+        }
+
+        return ProviderWalletTransaction::create([
+            'provider_user_id' => $payout->provider_user_id,
+            'type' => ProviderWalletTransaction::TYPE_PLATFORM_FEE,
+            'direction' => ProviderWalletTransaction::DIRECTION_DEBIT,
+            'amount' => round($feeCents / 100, 2),
+            'currency' => strtoupper((string) ($payout->currency ?? 'EUR')),
+            'status' => ProviderWalletTransaction::STATUS_AVAILABLE,
+            'source_type' => 'provider_payout',
+            'source_id' => $payout->id,
+            'idempotency_key' => $idempotencyKey,
+            'description' => 'Frais de virement express',
+            'occurred_at' => now(),
+        ]);
+    }
+
     public function markPayoutCleared(ProviderPayout $payout, ?string $stripePayoutId = null): void
     {
         ProviderWalletTransaction::query()
