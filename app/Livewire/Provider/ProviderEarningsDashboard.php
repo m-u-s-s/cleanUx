@@ -196,14 +196,28 @@ class ProviderEarningsDashboard extends Component
                 ->sum('amount_cents');
         }
 
+        /*
+         * DEUX COLONNES INEXISTANTES DANS LE MÊME BLOC — la section « portefeuille » de cette page
+         * n'a jamais rien pu afficher.
+         *
+         * Le filtre portait sur `user_id`, la colonne s'appelle `provider_user_id` ; la somme
+         * portait sur `amount_cents`, la colonne s'appelle `amount` et vaut des EUROS. Sur MySQL,
+         * chacune lève « Unknown column ». Sur SQLite — le moteur de la suite de tests — Laravel
+         * entoure les identifiants de guillemets doubles et SQLite traite un identifiant inconnu
+         * comme une CHAÎNE LITTÉRALE : la comparaison est fausse en silence et la somme rend zéro.
+         *
+         * Le défaut était donc invisible aux tests ET masqué par une table vide. Même un paiement
+         * réellement encaissé n'aurait rien affiché ici.
+         */
         $walletEarnedCents = 0;
         $walletPaidOutCents = 0;
         if (Schema::hasTable('provider_wallet_transactions')) {
             $base = ProviderWalletTransaction::query()
-                ->where('user_id', $userId)
+                ->where('provider_user_id', $userId)
                 ->whereBetween('created_at', [$start, $end]);
-            $walletEarnedCents = (int) (clone $base)->where('direction', 'credit')->sum('amount_cents');
-            $walletPaidOutCents = (int) (clone $base)->where('type', 'payout')->sum('amount_cents');
+
+            $walletEarnedCents = (int) round(((float) (clone $base)->where('direction', 'credit')->sum('amount')) * 100);
+            $walletPaidOutCents = (int) round(((float) (clone $base)->where('type', 'payout')->sum('amount')) * 100);
         }
 
         return [

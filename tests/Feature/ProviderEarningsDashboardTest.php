@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Livewire\Provider\ProviderEarningsDashboard;
 use App\Models\Booking;
 use App\Models\BookingTip;
+use App\Models\ProviderWalletTransaction;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
@@ -53,6 +54,65 @@ class ProviderEarningsDashboardTest extends TestCase
             // Pourboires 15,00 €
             ->assertSee('15,00')
             ->assertSee('Décomposition revenus');
+    }
+
+    /**
+     * LE PORTEFEUILLE N'A JAMAIS PU S'AFFICHER SUR CETTE PAGE.
+     *
+     * Deux colonnes inexistantes dans le même bloc : le filtre portait sur `user_id` quand la
+     * colonne s'appelle `provider_user_id`, et la somme sur `amount_cents` quand elle s'appelle
+     * `amount` et vaut des euros. Sur MySQL chacune lève « Unknown column » ; sur SQLite — le
+     * moteur de cette suite — un identifiant inconnu entre guillemets doubles devient une chaîne
+     * littérale, la comparaison est fausse en silence et la somme rend zéro.
+     *
+     * Le défaut était donc invisible aux tests ET masqué par une table vide : même un paiement
+     * réellement encaissé n'aurait rien affiché.
+     */
+    public function test_le_portefeuille_credite_apparait_dans_les_revenus(): void
+    {
+        $employe = User::factory()->employe()->create();
+
+        ProviderWalletTransaction::create([
+            'provider_user_id' => $employe->id,
+            'type' => ProviderWalletTransaction::TYPE_EARNING,
+            'direction' => ProviderWalletTransaction::DIRECTION_CREDIT,
+            'amount' => 150.80,
+            'currency' => 'EUR',
+            'status' => ProviderWalletTransaction::STATUS_AVAILABLE,
+            'idempotency_key' => 'test:earning:'.uniqid(),
+            'occurred_at' => now(),
+        ]);
+
+        ProviderWalletTransaction::create([
+            'provider_user_id' => $employe->id,
+            'type' => ProviderWalletTransaction::TYPE_PAYOUT,
+            'direction' => ProviderWalletTransaction::DIRECTION_DEBIT,
+            'amount' => 50.00,
+            'currency' => 'EUR',
+            'status' => ProviderWalletTransaction::STATUS_PROCESSING,
+            'idempotency_key' => 'test:payout:'.uniqid(),
+            'occurred_at' => now(),
+        ]);
+
+        // Un autre prestataire ne doit pas polluer le total : c'est ce que le filtre corrigé garde.
+        $autre = User::factory()->employe()->create();
+        ProviderWalletTransaction::create([
+            'provider_user_id' => $autre->id,
+            'type' => ProviderWalletTransaction::TYPE_EARNING,
+            'direction' => ProviderWalletTransaction::DIRECTION_CREDIT,
+            'amount' => 999.00,
+            'currency' => 'EUR',
+            'status' => ProviderWalletTransaction::STATUS_AVAILABLE,
+            'idempotency_key' => 'test:autre:'.uniqid(),
+            'occurred_at' => now(),
+        ]);
+
+        Livewire::actingAs($employe)
+            ->test(ProviderEarningsDashboard::class)
+            ->assertOk()
+            ->assertSee('150,80')
+            ->assertSee('50,00')
+            ->assertDontSee('999,00');
     }
 
     public function test_set_period_switches_each_window_and_rerenders(): void
