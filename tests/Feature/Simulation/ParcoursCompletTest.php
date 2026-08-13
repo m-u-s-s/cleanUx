@@ -14,6 +14,7 @@ use App\Models\MissionChecklist;
 use App\Models\MissionChecklistItem;
 use App\Models\OrganizationAccount;
 use App\Models\OrganizationMember;
+use App\Models\ProviderPresence;
 use App\Models\ProviderProfile;
 use App\Models\User;
 use App\Notifications\EmployeArriveNotification;
@@ -380,6 +381,46 @@ class ParcoursCompletTest extends TestCase
         $rapport = $this->jouerLeParcours($mission, $prestataire, $client);
 
         $this->assertSame(MissionStatus::COMPLETED, $rapport['mission']);
+    }
+
+    /**
+     * LE PRESTATAIRE REDEVIENT DISPONIBLE À LA CLÔTURE — sans quoi il disparaît de la répartition.
+     *
+     * `DispatchEngine` bascule le prestataire en `busy` dès qu'il accepte, pour qu'une seconde
+     * course ne lui parvienne pas pendant la première. Le retour à `online` dépend de
+     * `PresenceAutoTransitioner::bookingEnded()`, que `BookingObserver` ne déclenche QUE si la
+     * RÉSERVATION passe à un statut terminé.
+     *
+     * Tant que la clôture ne terminait pas la réservation, ce retour n'arrivait jamais : celui qui
+     * acceptait une mission restait `busy` indéfiniment, et `CandidateFinder` — qui exige `online`
+     * — cessait à jamais de le proposer. Un prestataire sortait donc de la répartition après sa
+     * PREMIÈRE course, en silence.
+     *
+     * Ce test épingle le circuit entier : clôture → réservation terminée → observateur → présence.
+     */
+    public function test_le_prestataire_occupe_redevient_disponible_apres_la_cloture(): void
+    {
+        Notification::fake();
+
+        $client = $this->clientParticulier();
+        $prestataire = $this->prestataireIndependant();
+
+        ProviderPresence::create([
+            'provider_user_id' => $prestataire->id,
+            'status' => ProviderPresence::STATUS_BUSY,
+            'heartbeat_at' => now(),
+        ]);
+
+        $reservation = $this->reservation($client);
+        $mission = $this->mission($reservation, independant: $prestataire);
+
+        $this->jouerLeParcours($mission, $prestataire, $client);
+
+        $this->assertSame(
+            ProviderPresence::STATUS_ONLINE,
+            ProviderPresence::where('provider_user_id', $prestataire->id)->value('status'),
+            'Le prestataire reste occupé après la clôture : il ne recevra plus aucune offre.',
+        );
     }
 
     public function test_client_particulier_avec_societe_prestataire(): void
